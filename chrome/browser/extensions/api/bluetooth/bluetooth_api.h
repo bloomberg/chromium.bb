@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_BLUETOOTH_API_H_
 #pragma once
 
+#include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
 
 namespace chromeos {
 
@@ -122,15 +124,43 @@ class BluetoothDisconnectFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class BluetoothReadFunction : public SyncExtensionFunction {
+class BluetoothReadFunction : public AsyncAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.read")
 
  protected:
   virtual ~BluetoothReadFunction() {}
 
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // AsyncAPIFunction:
+  virtual bool Prepare() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+  virtual void Work() OVERRIDE;
+
+ private:
+  bool success_;
+#if defined(OS_CHROMEOS)
+  scoped_refptr<chromeos::BluetoothSocket> socket_;
+#endif
+};
+
+class BluetoothWriteFunction : public AsyncAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.write")
+
+ protected:
+  virtual ~BluetoothWriteFunction() {}
+
+  // AsyncAPIFunction:
+  virtual bool Prepare() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+  virtual void Work() OVERRIDE;
+
+ private:
+  bool success_;
+  const base::BinaryValue* data_to_write_;  // memory is owned by args_
+#if defined(OS_CHROMEOS)
+  scoped_refptr<chromeos::BluetoothSocket> socket_;
+#endif
 };
 
 class BluetoothSetOutOfBandPairingDataFunction
@@ -154,17 +184,6 @@ class BluetoothGetOutOfBandPairingDataFunction
 
  protected:
   virtual ~BluetoothGetOutOfBandPairingDataFunction() {}
-
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
-};
-
-class BluetoothWriteFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.write")
-
- private:
-  virtual ~BluetoothWriteFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

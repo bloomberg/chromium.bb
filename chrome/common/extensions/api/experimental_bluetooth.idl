@@ -34,6 +34,7 @@
   callback DevicesCallback = void (Device[] result);
   callback SocketCallback = void (Socket result);
   callback DataCallback = void (ArrayBuffer result);
+  callback SizeCallback = void (long result);
   callback OutOfBandPairingDataCallback = void (OutOfBandPairingData data);
 
   interface Functions {
@@ -84,9 +85,9 @@
     // Write data to a bluetooth connection.
     // |socket|   : The socket to write to.
     // |data|     : The data to write.
-    // |callback| : Called to indicate success or failure.
+    // |callback| : Called with the number of bytes written.
     static void write(
-        Socket socket, ArrayBuffer data, optional ResultCallback callback);
+        Socket socket, ArrayBuffer data, optional SizeCallback callback);
 
     // Get the local Out of Band Pairing data.
     // |callback| : Called with the data.
