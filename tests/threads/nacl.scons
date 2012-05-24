@@ -199,39 +199,3 @@ mutex_leak_nexe = env.ComponentProgram('mutex_leak', ['mutex_leak.c'],
 
 node = env.CommandSelLdrTestNacl('mutex_leak.out', mutex_leak_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_mutex_leak_test')
-
-
-if env.Bit('nacl_glibc'):
-  env.Append(LINKFLAGS=['-lrt'])
-
-cond_timedwait_nexe = env.ComponentProgram('cond_timedwait',
-                                           ['cond_timedwait.c'],
-                                           EXTRA_LIBS=['${PTHREAD_LIBS}',
-                                                       '${NONIRT_LIBS}'])
-
-node = env.CommandSelLdrTestNacl('cond_timedwait_test.out',
-                                 cond_timedwait_nexe)
-
-# Do not run under valgrind.  The CPU time usage limits for
-# determining success/failure when running under valgrind is large and
-# rather than trying to adjust the experimentally determined
-# thresholds to take it into account, we just don't run the test.
-
-# NB: The largest acceptable CPU usage in the normal case is when we
-# are running ARM code under QEMU; since we wouldn't have ARM tests
-# except when running on ARM hardware (which is used/tested far less
-# frequently than via QEMU), the threshold is adjusted to take that
-# into account.
-#
-# Do not run on Windows.  The clock() function on Windows return the
-# wall-clock time and not the CPU time used.  Since this test is a
-# Native Client module that uses clock to estimate the amount of CPU
-# time used in order to fail the test, the time estimate is going to
-# be wrong for Windows -- it will always estimate that 100% of the CPU
-# was used.  BUG(bsy):
-# http://code.google.com/p/nativeclient/issues/detail?id=2805
-trusted_env = env.get('TRUSTED_ENV')
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_cond_timedwait_test',
-                       is_broken=(env.Bit('running_on_valgrind') or
-                                  (trusted_env is not None and
-                                   trusted_env.Bit('windows'))))
