@@ -71,6 +71,11 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
       var self = this;
 
+      // Ensure that navigation events are unblocked on uber page. A reload of
+      // the settings page while an overlay is open would otherwise leave uber
+      // page in a blocked state, where tab switching is not possible.
+      uber.invokeMethodOnParent('stopInterceptingEvents');
+
       window.addEventListener('message', this.handleWindowMessage_.bind(this));
 
       $('advanced-settings-expander').onclick = function() {
