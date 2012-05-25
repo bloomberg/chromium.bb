@@ -501,15 +501,24 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
       *accelerator = ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN);
       return true;
 #if defined(USE_ASH)
-    // When USE_ASH is defined, IDC_NEW_WINDOW and IDC_NEW_INCOGNITO_WINDOW are
-    // handled outside Chrome, in ash/accelerators/accelerator_table.cc.
-    // crbug.com/120196
+    // When USE_ASH is defined, the commands listed here are handled outside
+    // Chrome, in ash/accelerators/accelerator_table.cc (crbug.com/120196).
+    case IDC_CLEAR_BROWSING_DATA:
+      *accelerator = ui::Accelerator(ui::VKEY_BACK,
+                                     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
+      return true;
+    case IDC_NEW_TAB:
+      *accelerator = ui::Accelerator(ui::VKEY_T, ui::EF_CONTROL_DOWN);
+      return true;
     case IDC_NEW_WINDOW:
       *accelerator = ui::Accelerator(ui::VKEY_N, ui::EF_CONTROL_DOWN);
       return true;
     case IDC_NEW_INCOGNITO_WINDOW:
       *accelerator = ui::Accelerator(ui::VKEY_N,
                                      ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
+      return true;
+    case IDC_TASK_MANAGER:
+      *accelerator = ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN);
       return true;
 #endif
   }

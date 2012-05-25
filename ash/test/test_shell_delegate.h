@@ -24,12 +24,15 @@ class TestShellDelegate : public ShellDelegate {
   virtual bool IsScreenLocked() const OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void Exit() OVERRIDE;
+  virtual void NewTab() OVERRIDE;
   virtual void NewWindow(bool incognito) OVERRIDE;
   virtual void Search() OVERRIDE;
   virtual void OpenFileManager() OVERRIDE;
   virtual void OpenCrosh() OVERRIDE;
   virtual void OpenMobileSetup() OVERRIDE;
+  virtual void RestoreTab() OVERRIDE;
   virtual void ShowKeyboardOverlay() OVERRIDE;
+  virtual void ShowTaskManager() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual void ToggleSpokenFeedback() OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;

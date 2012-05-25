@@ -474,6 +474,10 @@ void TabRestoreService::LoadTabsFromLastSession() {
       &load_consumer_);
 }
 
+bool TabRestoreService::IsLoaded() const {
+  return !(load_state_ & (NOT_LOADED | LOADING));
+}
+
 void TabRestoreService::Shutdown() {
   if (backend())
     Save();

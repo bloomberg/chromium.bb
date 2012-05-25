@@ -13,6 +13,8 @@
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -115,6 +117,13 @@ void ChromeShellDelegate::Exit() {
   browser::AttemptUserExit();
 }
 
+void ChromeShellDelegate::NewTab() {
+  Browser* browser = browser::FindOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
+  browser->NewTab();
+  browser->window()->Show();
+}
+
 void ChromeShellDelegate::NewWindow(bool is_incognito) {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   Browser::NewEmptyWindow(
@@ -194,10 +203,37 @@ void ChromeShellDelegate::OpenMobileSetup() {
 #endif
 }
 
+void ChromeShellDelegate::RestoreTab() {
+  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(profile);
+  if (!service)
+    return;
+  if (service->IsLoaded()) {
+    Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
+    browser->RestoreTab();
+  } else {
+    service->LoadTabsFromLastSession();
+    // LoadTabsFromLastSession is asynchronous, so TabRestoreService has not
+    // finished loading the entries at this point. Wait for next event cycle
+    // which loads the restored tab entries.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromeShellDelegate::RestoreTab,
+                   weak_factory_.GetWeakPtr()));
+  }
+}
+
 void ChromeShellDelegate::ShowKeyboardOverlay() {
 #if defined(OS_CHROMEOS)
   KeyboardOverlayDialogView::ShowDialog();
 #endif
+}
+
+void ChromeShellDelegate::ShowTaskManager() {
+  Browser* browser = browser::FindOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
+  browser->OpenTaskManager(false);
 }
 
 content::BrowserContext* ChromeShellDelegate::GetCurrentBrowserContext() {

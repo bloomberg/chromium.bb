@@ -81,11 +81,26 @@ bool HandleExit() {
   return true;
 }
 
+bool HandleNewTab() {
+  ash::Shell::GetInstance()->delegate()->NewTab();
+  return true;
+}
+
 bool HandleNewWindow(bool is_incognito) {
   ash::ShellDelegate* delegate = ash::Shell::GetInstance()->delegate();
   if (!delegate)
     return false;
   delegate->NewWindow(is_incognito);
+  return true;
+}
+
+bool HandleRestoreTab() {
+  ash::Shell::GetInstance()->delegate()->RestoreTab();
+  return true;
+}
+
+bool HandleShowTaskManager() {
+  ash::Shell::GetInstance()->delegate()->ShowTaskManager();
   return true;
 }
 
@@ -315,8 +330,12 @@ bool AcceleratorController::AcceleratorPressed(
       return HandleExit();
     case NEW_INCOGNITO_WINDOW:
       return HandleNewWindow(true /* is_incognito */);
+    case NEW_TAB:
+      return HandleNewTab();
     case NEW_WINDOW:
       return HandleNewWindow(false /* is_incognito */);
+    case RESTORE_TAB:
+      return HandleRestoreTab();
     case TAKE_SCREENSHOT:
       if (screenshot_delegate_.get()) {
         aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
@@ -379,6 +398,8 @@ bool AcceleratorController::AcceleratorPressed(
         return true;
       }
       break;
+    case SHOW_TASK_MANAGER:
+      return HandleShowTaskManager();
     case NEXT_IME:
       if (ime_control_delegate_.get())
         return ime_control_delegate_->HandleNextIme();

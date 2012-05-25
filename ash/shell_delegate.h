@@ -59,6 +59,9 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user uses Ctrl-Shift-Q to close chrome.
   virtual void Exit() = 0;
 
+  // Invoked when the user uses Ctrl+T to open a new tab.
+  virtual void NewTab() = 0;
+
   // Invoked when the user uses Ctrl-N or Ctrl-Shift-N to open a new window.
   virtual void NewWindow(bool incognito) = 0;
 
@@ -74,8 +77,14 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user needs to set up mobile networking.
   virtual void OpenMobileSetup() = 0;
 
+  // Invoked when the user uses Shift+Ctrl+T to restore the closed tab.
+  virtual void RestoreTab() = 0;
+
   // Shows the keyboard shortcut overlay.
   virtual void ShowKeyboardOverlay() = 0;
+
+  // Shows the task manager window.
+  virtual void ShowTaskManager() = 0;
 
   // Get the current browser context. This will get us the current profile.
   virtual content::BrowserContext* GetCurrentBrowserContext() = 0;

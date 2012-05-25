@@ -56,6 +56,9 @@ void ShellDelegateImpl::Exit() {
   MessageLoopForUI::current()->Quit();
 }
 
+void ShellDelegateImpl::NewTab() {
+}
+
 void ShellDelegateImpl::NewWindow(bool incognito) {
   ash::shell::ToplevelWindow::CreateParams create_params;
   create_params.can_resize = true;
@@ -75,7 +78,13 @@ void ShellDelegateImpl::OpenCrosh() {
 void ShellDelegateImpl::OpenMobileSetup() {
 }
 
+void ShellDelegateImpl::RestoreTab() {
+}
+
 void ShellDelegateImpl::ShowKeyboardOverlay() {
+}
+
+void ShellDelegateImpl::ShowTaskManager() {
 }
 
 content::BrowserContext* ShellDelegateImpl::GetCurrentBrowserContext() {

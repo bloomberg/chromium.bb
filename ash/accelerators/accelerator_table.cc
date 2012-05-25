@@ -38,14 +38,17 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     TOGGLE_SPOKEN_FEEDBACK },
 
-  // When you change the shortcut for NEW_INCOGNITO_WINDOW or NEW_WINDOW,
-  // you also need to modify ToolbarView::GetAcceleratorForCommandId() in
+  // When you change the shortcuts for NEW_INCOGNITO_WINDOW, NEW_WINDOW, or
+  // NEW_TAB, you also need to modify
+  // ToolbarView::GetAcceleratorForCommandId() in
   // chrome/browser/ui/views/toolbar_view.cc.
   { true, ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     NEW_INCOGNITO_WINDOW },
   { true, ui::VKEY_N, ui::EF_CONTROL_DOWN, NEW_WINDOW },
+  { true, ui::VKEY_T, ui::EF_CONTROL_DOWN, NEW_TAB },
 
   { true, ui::VKEY_F5, ui::EF_SHIFT_DOWN, CYCLE_BACKWARD_LINEAR },
+  { true, ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, RESTORE_TAB },
   { true, ui::VKEY_F5, ui::EF_CONTROL_DOWN, TAKE_SCREENSHOT },
   { true, ui::VKEY_F5, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     TAKE_PARTIAL_SCREENSHOT },
@@ -70,6 +73,7 @@ const AcceleratorData kAcceleratorData[] = {
     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     SHOW_KEYBOARD_OVERLAY },
   { true, ui::VKEY_F1, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, SHOW_OAK },
+  { true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER },
   { true, ui::VKEY_1, ui::EF_ALT_DOWN, SELECT_WIN_0 },
   { true, ui::VKEY_2, ui::EF_ALT_DOWN, SELECT_WIN_1 },
   { true, ui::VKEY_3, ui::EF_ALT_DOWN, SELECT_WIN_2 },

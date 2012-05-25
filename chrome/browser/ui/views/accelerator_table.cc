@@ -39,7 +39,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #if !defined(OS_CHROMEOS)
   { ui::VKEY_F4, ui::EF_ALT_DOWN, IDC_CLOSE_WINDOW },
 #endif
-#if !defined(USE_AURA)
+#if !defined(USE_ASH)
   { ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_EXIT },
 #endif
   { ui::VKEY_F, ui::EF_CONTROL_DOWN, IDC_FIND },
@@ -98,9 +98,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #if !defined(USE_ASH)
   { ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_NEW_INCOGNITO_WINDOW },
-#endif
   { ui::VKEY_T, ui::EF_CONTROL_DOWN, IDC_NEW_TAB },
-#if !defined(USE_ASH)
   { ui::VKEY_N, ui::EF_CONTROL_DOWN, IDC_NEW_WINDOW },
 #endif
   { ui::VKEY_O, ui::EF_CONTROL_DOWN, IDC_OPEN_FILE },
@@ -119,7 +117,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_F3, ui::EF_SHIFT_DOWN, IDC_RELOAD_IGNORING_CACHE },
 #endif
   { ui::VKEY_HOME, ui::EF_ALT_DOWN, IDC_HOME },
+#if !defined(USE_ASH)
   { ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_RESTORE_TAB },
+#endif
   { ui::VKEY_S, ui::EF_CONTROL_DOWN, IDC_SAVE_PAGE },
   { ui::VKEY_9, ui::EF_CONTROL_DOWN, IDC_SELECT_LAST_TAB },
   { ui::VKEY_NUMPAD9, ui::EF_CONTROL_DOWN, IDC_SELECT_LAST_TAB },
@@ -156,7 +156,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_SHOW_AVATAR_MENU},
 #endif
   { ui::VKEY_ESCAPE, ui::EF_NONE, IDC_STOP },
+#if !defined(USE_ASH)
   { ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, IDC_TASK_MANAGER },
+#endif
   { ui::VKEY_OEM_PERIOD, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_TOGGLE_SPEECH_INPUT },
   { ui::VKEY_U, ui::EF_CONTROL_DOWN, IDC_VIEW_SOURCE },

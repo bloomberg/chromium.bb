@@ -649,6 +649,10 @@ TEST_F(AcceleratorControllerTest, DISABLED_GlobalAccelerators) {
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
 
+  // New tab
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_T, ui::EF_SHIFT_DOWN)));
+
   // New incognito window
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
@@ -661,6 +665,14 @@ TEST_F(AcceleratorControllerTest, DISABLED_GlobalAccelerators) {
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
 #endif
+
+  // Restore tab
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
+
+  // Show task manager
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN)));
 }
 
 TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {

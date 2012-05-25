@@ -45,6 +45,9 @@ void TestShellDelegate::Shutdown() {
 void TestShellDelegate::Exit() {
 }
 
+void TestShellDelegate::NewTab() {
+}
+
 void TestShellDelegate::NewWindow(bool incognito) {
 }
 
@@ -60,7 +63,13 @@ void TestShellDelegate::OpenCrosh() {
 void TestShellDelegate::OpenMobileSetup() {
 }
 
+void TestShellDelegate::RestoreTab() {
+}
+
 void TestShellDelegate::ShowKeyboardOverlay() {
+}
+
+void TestShellDelegate::ShowTaskManager() {
 }
 
 content::BrowserContext* TestShellDelegate::GetCurrentBrowserContext() {

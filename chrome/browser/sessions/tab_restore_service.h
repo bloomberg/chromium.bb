@@ -180,6 +180,9 @@ class TabRestoreService : public BaseSessionService {
   // from the previous session have already been loaded.
   void LoadTabsFromLastSession();
 
+  // Returns true if the tab entries have been loaded.
+  bool IsLoaded() const;
+
   // Max number of entries we'll keep around.
   static const size_t kMaxEntries;
 
