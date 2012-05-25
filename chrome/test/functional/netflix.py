@@ -19,7 +19,7 @@ class NetflixTestHelper():
   """
 
   # Netflix player states.
-  IS_GUEST_MODE_ERROR = '1'
+  IS_GUEST_MODE_ERROR = '0'
   IS_PLAYING = '4'
 
   TITLE_HOMEPAGE = 'http://movies.netflix.com/WiHome'
@@ -75,24 +75,20 @@ class NetflixTestHelper():
                                               windex=windex))
 
   def _HandleInfobars(self):
-    """Manage infobars, come up during the test.
-
-    We expect password and Netflix infobars. Processing only Netflix infobar,
-    since to start a vidoe, pressing the OK button is a must. We can keep other
-    infobars open."""
-    self._pyauto.WaitForInfobarCount(2)
-    tab_info = self._pyauto.GetBrowserInfo()['windows'][0]['tabs'][0]
-    infobars = tab_info['infobars']
-    index = 0
-    netflix_infobar_status = False
-    for infobar in infobars:
-       if infobar['buttons'][0] == 'OK':
-         self._pyauto.PerformActionOnInfobar('accept', infobar_index=index)
-         netflix_infobar_status = True
-       index = index + 1
-    self._pyauto.assertTrue(netflix_infobar_status,
+    """Manage infobars that come up during the test."""
+    def _HandleNetflixInfobar():
+      tab_info = self._pyauto.GetBrowserInfo()['windows'][0]['tabs'][0]
+      infobars = tab_info['infobars']
+      index = 0
+      for infobar in infobars:
+         if 'netflix' in infobar['text']:
+           self._pyauto.PerformActionOnInfobar('accept', infobar_index=index)
+           return True
+         index = index + 1
+      return False
+    self._pyauto.assertTrue(self._pyauto.WaitUntil(_HandleNetflixInfobar),
                             msg='Netflix infobar did not show up')
-         
+ 
   def CurrentPlaybackTime(self):
     """Returns the current playback time in seconds."""
     time = self._pyauto.ExecuteJavascript("""
@@ -126,6 +122,9 @@ class NetflixTestHelper():
     """
     self._pyauto.assertTrue(self._pyauto.WaitUntil(
         lambda: self._pyauto.ExecuteJavascript("""
+            if (typeof nrdp == 'undefined') {
+              window.domAutomationController.send('not ready');
+            }
             player_status = nrdp.video.readyState;
             window.domAutomationController.send(player_status + '');
         """), expect_retval=expected_result),
