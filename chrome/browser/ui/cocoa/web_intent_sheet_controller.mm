@@ -467,6 +467,12 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
     if (picker)
       model_ = picker->model();
     intentButtons_.reset([[NSMutableArray alloc] init]);
+
+    flipView_.reset([[WebIntentsContentView alloc] init]);
+    [flipView_ setAutoresizingMask:NSViewMinYMargin];
+    [[[self window] contentView] setSubviews:
+        [NSArray arrayWithObject:flipView_]];
+
     [self performLayoutWithModel:model_];
     [[self window] makeFirstResponder:self];
   }
@@ -511,15 +517,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   // Ensure minimum container width.
   containerSize.width = std::max(kWindowWidth, containerSize.width);
 
-  // Retrieve views involved in resizing.
-  // TODO(groby): This relies on knowledge of internal views. Separate object
-  // creation from laying out objects in performLayoutWithModel: so this can
-  // just call performLayout:.
-  NSView* contentView = [[self window] contentView];
-  NSView* flippedView = [[contentView subviews] objectAtIndex:0];
-  NSView* webContentView = contents_->web_contents()->GetNativeView();
-
   // Resize web contents.
+  NSView* webContentView = contents_->web_contents()->GetNativeView();
   [webContentView setFrameSize:inlineContentSize];
 
   // Position close button.
@@ -527,11 +526,15 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   buttonFrame.origin.x = containerSize.width - kFramePadding - kCloseButtonSize;
   [closeButton_ setFrame:buttonFrame];
 
-  // Resize container views.
+  [self setContainerSize:containerSize];
+}
+
+- (void)setContainerSize:(NSSize)containerSize {
+  // Resize container views
   NSRect frame = NSMakeRect(0, 0, 0, 0);
   frame.size = containerSize;
-  [contentView setFrame:frame];
-  [flippedView setFrame:frame];
+  [[[self window] contentView] setFrame:frame];
+  [flipView_ setFrame:frame];
 
   // Resize and reposition dialog window.
   frame.size = [[[self window] contentView] convertSize:containerSize
@@ -749,25 +752,11 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   // Add the bottom padding.
   offset += kVerticalSpacing;
 
-  // Create the dummy view that uses flipped coordinates.
-  NSRect contentFrame = NSMakeRect(0, 0, kWindowWidth, offset);
-  scoped_nsobject<WebIntentsContentView> contentView(
-      [[WebIntentsContentView alloc] initWithFrame:contentFrame]);
-  [contentView setSubviews:subviews];
-  [contentView setAutoresizingMask:NSViewMinYMargin];
-
-  // Adjust frame to fit all elements.
-  NSRect windowFrame = NSMakeRect(0, 0, kWindowWidth, offset);
-  windowFrame.size = [[[self window] contentView] convertSize:windowFrame.size
-                                                       toView:nil];
-
-  // Adjust the window frame to accomodate the content.
-  windowFrame=[[self window] frameRectForContentRect:windowFrame];
-  [[self window] setFrame:windowFrame display:YES animate:YES];
-
   // Replace the window's content.
-  [[[self window] contentView] setSubviews:
-      [NSArray arrayWithObject:contentView]];
+  [flipView_ setSubviews:subviews];
+
+  // And resize to fit.
+  [self setContainerSize:NSMakeSize(kWindowWidth, offset)];
 }
 
 - (void)setActionString:(NSString*)actionString {

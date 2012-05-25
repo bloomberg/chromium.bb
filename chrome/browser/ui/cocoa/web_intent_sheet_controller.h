@@ -34,6 +34,7 @@ class WebIntentPickerModel;
   scoped_nsobject<SuggestionView> suggestionView_;
   scoped_nsobject<NSButton> closeButton_;
   scoped_nsobject<NSMutableArray> intentButtons_;
+  scoped_nsobject<NSView> flipView_;
 }
 - (IBAction)installExtension:(id)sender;
 
