@@ -1634,6 +1634,8 @@
         'browser/policy/policy_service_stub.h',
         'browser/policy/url_blacklist_manager.cc',
         'browser/policy/url_blacklist_manager.h',
+        'browser/policy/user_cloud_policy_store_chromeos.cc',
+        'browser/policy/user_cloud_policy_store_chromeos.h',
         'browser/policy/user_policy_cache.cc',
         'browser/policy/user_policy_cache.h',
         'browser/policy/user_policy_disk_cache.cc',
