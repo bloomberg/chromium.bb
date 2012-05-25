@@ -465,14 +465,17 @@ std::string MetricsService::GetClientId() {
 }
 
 std::string MetricsService::GetEntropySource() {
-  // Note that client_id_ is empty if metrics reporting is not enabled. For
-  // metrics reporting-enabled users, we combine the client ID and low entropy
-  // source to get the final entropy source. This has two useful properties:
+  // For metrics reporting-enabled users, we combine the client ID and low
+  // entropy source to get the final entropy source. Otherwise, only use the low
+  // entropy source.
+  // This has two useful properties:
   //  1) It makes the entropy source less identifiable for parties that do not
   //     know the low entropy source.
   //  2) It makes the final entropy source resettable.
-  CHECK(reporting_active() || client_id_.empty());
-  return client_id_ + base::IntToString(GetLowEntropySource());
+  std::string low_entropy_source = base::IntToString(GetLowEntropySource());
+  if (reporting_active())
+    return client_id_ + low_entropy_source;
+  return low_entropy_source;
 }
 
 void MetricsService::ForceClientIdCreation() {
