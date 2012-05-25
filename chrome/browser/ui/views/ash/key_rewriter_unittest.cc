@@ -142,6 +142,12 @@ class KeyRewriterTest : public testing::Test {
 };
 
 }  // namespace
+#else
+class KeyRewriterTest : public testing::Test {
+ public:
+  KeyRewriterTest() {}
+  virtual ~KeyRewriterTest() {}
+};
 #endif
 
 TEST_F(KeyRewriterTest, TestGetDeviceType) {
