@@ -32,6 +32,10 @@
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/test/test_views_delegate.h"
 
+#if defined(OS_LINUX)
+#include "ui/base/touch/touch_factory.h"
+#endif
+
 namespace ash {
 namespace shell {
 void InitWindowTypeLauncher();
@@ -69,6 +73,9 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
 
 #if !defined(OS_MACOSX)
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
+#if defined(OS_LINUX)
+  ui::TouchFactory::SetTouchDeviceListFromCommandLine();
+#endif
 }
 #endif
 

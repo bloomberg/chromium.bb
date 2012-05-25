@@ -32,6 +32,9 @@ class UI_EXPORT TouchFactory {
   // Returns the TouchFactory singleton.
   static TouchFactory* GetInstance();
 
+  // Sets the touch devices from the command line.
+  static void SetTouchDeviceListFromCommandLine();
+
   // Updates the list of devices.
   void UpdateDeviceList(Display* display);
 

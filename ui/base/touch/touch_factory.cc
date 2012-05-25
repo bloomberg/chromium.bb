@@ -14,6 +14,8 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/x/x11_util.h"
 
@@ -93,6 +95,33 @@ TouchFactory::~TouchFactory() {
 // static
 TouchFactory* TouchFactory::GetInstance() {
   return Singleton<TouchFactory>::get();
+}
+
+// static
+void TouchFactory::SetTouchDeviceListFromCommandLine() {
+#if defined(TOOLKIT_VIEWS)
+  // Get a list of pointer-devices that should be treated as touch-devices.
+  // This is primarily used for testing/debugging touch-event processing when a
+  // touch-device isn't available.
+  std::string touch_devices =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kTouchDevices);
+
+  if (!touch_devices.empty()) {
+    std::vector<std::string> devs;
+    std::vector<unsigned int> device_ids;
+    unsigned int devid;
+    base::SplitString(touch_devices, ',', &devs);
+    for (std::vector<std::string>::iterator iter = devs.begin();
+        iter != devs.end(); ++iter) {
+      if (base::StringToInt(*iter, reinterpret_cast<int*>(&devid)))
+        device_ids.push_back(devid);
+      else
+        DLOG(WARNING) << "Invalid touch-device id: " << *iter;
+    }
+    ui::TouchFactory::GetInstance()->SetTouchDeviceList(device_ids);
+  }
+#endif
 }
 
 void TouchFactory::UpdateDeviceList(Display* display) {

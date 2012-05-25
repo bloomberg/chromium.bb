@@ -444,26 +444,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 #endif
 
 #if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
-  // Get a list of pointer-devices that should be treated as touch-devices.
-  // This is primarily used for testing/debugging touch-event processing when a
-  // touch-device isn't available.
-  std::string touch_devices =
-    command_line.GetSwitchValueASCII(switches::kTouchDevices);
-
-  if (!touch_devices.empty()) {
-    std::vector<std::string> devs;
-    std::vector<unsigned int> device_ids;
-    unsigned int devid;
-    base::SplitString(touch_devices, ',', &devs);
-    for (std::vector<std::string>::iterator iter = devs.begin();
-        iter != devs.end(); ++iter) {
-      if (base::StringToInt(*iter, reinterpret_cast<int*>(&devid)))
-        device_ids.push_back(devid);
-      else
-        DLOG(WARNING) << "Invalid touch-device id: " << *iter;
-    }
-    ui::TouchFactory::GetInstance()->SetTouchDeviceList(device_ids);
-  }
+  ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
 
   // If we don't want to launch a new browser window or tab (in the case

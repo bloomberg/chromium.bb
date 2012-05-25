@@ -399,10 +399,6 @@ extern const char kKioskModePrinting[];
 extern const char kDisableDesktopShortcuts[];
 #endif
 
-#if defined(TOOLKIT_VIEWS)
-extern const char kTouchDevices[];
-#endif
-
 #if defined(USE_AURA)
 extern const char kDisableTCVA[];
 #endif

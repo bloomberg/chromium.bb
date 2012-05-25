@@ -55,4 +55,11 @@ const char kDisableCompositedCoreAnimationPlugins[] =
     "disable-composited-core-animation-plugins";
 #endif
 
+#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+// Tells chrome to interpret events from these devices as touch events. Only
+// available with XInput 2 (i.e. X server 1.8 or above). The id's of the
+// devices can be retrieved from 'xinput list'.
+const char kTouchDevices[] = "touch-devices";
+#endif
+
 }  // namespace switches

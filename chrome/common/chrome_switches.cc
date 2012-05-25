@@ -1406,13 +1406,6 @@ const char kKioskModePrinting[]             = "kiosk-printing";
 const char kDisableDesktopShortcuts[]       = "disable-desktop-shortcuts";
 #endif
 
-#if defined(TOOLKIT_VIEWS)
-// Tells chrome to interpret events from these devices as touch events. Only
-// available with XInput 2 (i.e. X server 1.8 or above). The id's of the
-// devices can be retrieved from 'xinput list'.
-const char kTouchDevices[]                  = "touch-devices";
-#endif
-
 #if defined(USE_AURA)
 // Use NativeTabContentsViewAura instead of the default implementation.
 const char kDisableTCVA[]                    = "disable-tcva";

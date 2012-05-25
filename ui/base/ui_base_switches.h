@@ -35,6 +35,10 @@ UI_EXPORT extern const char kTouchOptimizedUIEnabled[];
 UI_EXPORT extern const char kDisableCompositedCoreAnimationPlugins[];
 #endif
 
+#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+UI_EXPORT extern const char kTouchDevices[];
+#endif
+
 }  // namespace switches
 
 #endif  // UI_BASE_UI_BASE_SWITCHES_H_
