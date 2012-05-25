@@ -132,7 +132,8 @@ class TrackingSynchronizer::RequestContext {
     bool received_process_group_count = request->received_process_group_count_;
     int unresponsive_processes = request->processes_pending_;
 
-    request->callback_object_->FinishedReceivingProfilerData();
+    if (request->callback_object_)
+      request->callback_object_->FinishedReceivingProfilerData();
 
     delete request;
     outstanding_requests_.Get().erase(it);
