@@ -22,59 +22,6 @@ namespace {
 // The X cursor is hidden if it is idle for kCursorIdleSeconds seconds.
 int kCursorIdleSeconds = 5;
 
-// Given the TouchParam, return the correspoding XIValuatorClassInfo using
-// the X device information through Atom name matching.
-XIValuatorClassInfo* FindTPValuator(Display* display,
-                                    XIDeviceInfo* info,
-                                    ui::TouchFactory::TouchParam tp) {
-  // Lookup table for mapping TouchParam to Atom string used in X.
-  // A full set of Atom strings can be found at xserver-properties.h.
-  static struct {
-    ui::TouchFactory::TouchParam tp;
-    const char* atom;
-  } kTouchParamAtom[] = {
-    { ui::TouchFactory::TP_TOUCH_MAJOR, "Abs MT Touch Major" },
-    { ui::TouchFactory::TP_TOUCH_MINOR, "Abs MT Touch Minor" },
-    { ui::TouchFactory::TP_ORIENTATION, "Abs MT Orientation" },
-    { ui::TouchFactory::TP_PRESSURE,    "Abs MT Pressure" },
-#if !defined(USE_XI2_MT)
-    // For Slot ID, See this chromeos revision: http://git.chromium.org/gitweb/?
-    //        p=chromiumos/overlays/chromiumos-overlay.git;
-    //        a=commit;h=9164d0a75e48c4867e4ef4ab51f743ae231c059a
-    { ui::TouchFactory::TP_SLOT_ID,     "Abs MT Slot ID" },
-#endif
-    { ui::TouchFactory::TP_TRACKING_ID, "Abs MT Tracking ID" },
-    { ui::TouchFactory::TP_LAST_ENTRY, NULL },
-  };
-
-  const char* atom_tp = NULL;
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTouchParamAtom); i++) {
-    if (tp == kTouchParamAtom[i].tp) {
-      atom_tp = kTouchParamAtom[i].atom;
-      break;
-    }
-  }
-
-  if (!atom_tp)
-    return NULL;
-
-  for (int i = 0; i < info->num_classes; i++) {
-    if (info->classes[i]->type != XIValuatorClass)
-      continue;
-    XIValuatorClassInfo* v =
-        reinterpret_cast<XIValuatorClassInfo*>(info->classes[i]);
-
-    if (v->label) {
-      ui::XScopedString atom(XGetAtomName(display, v->label));
-      if (atom.string() && strcmp(atom.string(), atom_tp) == 0)
-        return v;
-    }
-  }
-
-  return NULL;
-}
-
 }  // namespace
 
 namespace ui {
@@ -211,8 +158,6 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   }
   if (devices)
     XIFreeDeviceInfo(devices);
-
-  SetupValuator();
 }
 
 bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
@@ -278,8 +223,6 @@ void TouchFactory::SetTouchDeviceList(
     touch_device_lookup_[*iter] = true;
     touch_device_list_[*iter] = false;
   }
-
-  SetupValuator();
 }
 
 bool TouchFactory::IsTouchDevice(unsigned deviceid) const {
@@ -427,100 +370,8 @@ void TouchFactory::SetCursorVisible(bool show, bool start_timer) {
     XDefineCursor(display, window, invisible_cursor_);
 }
 
-bool TouchFactory::ExtractTouchParam(const XEvent& xev,
-                                     TouchParam tp,
-                                     float* value) {
-  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
-  if (xiev->sourceid >= kMaxDeviceNum)
-    return false;
-  int v = valuator_lookup_[xiev->sourceid][tp];
-  if (v >= 0 && XIMaskIsSet(xiev->valuators.mask, v)) {
-    *value = xiev->valuators.values[v];
-    return true;
-  }
-
-#if defined(USE_XI2_MT)
-  // With XInput2 MT, Tracking ID is provided in the detail field.
-  if (tp == TP_TRACKING_ID) {
-    *value = xiev->detail;
-    return true;
-  }
-#endif
-
-  return false;
-}
-
-bool TouchFactory::NormalizeTouchParam(unsigned int deviceid,
-                                       TouchParam tp,
-                                       float* value) {
-  float max_value;
-  float min_value;
-  if (GetTouchParamRange(deviceid, tp, &min_value, &max_value)) {
-    *value = (*value - min_value) / (max_value - min_value);
-    DCHECK(*value >= 0.0 && *value <= 1.0);
-    return true;
-  }
-  return false;
-}
-
-bool TouchFactory::GetTouchParamRange(unsigned int deviceid,
-                                      TouchParam tp,
-                                      float* min,
-                                      float* max) {
-  if (valuator_lookup_[deviceid][tp] >= 0) {
-    *min = touch_param_min_[deviceid][tp];
-    *max = touch_param_max_[deviceid][tp];
-    return true;
-  }
-  return false;
-}
-
 bool TouchFactory::IsTouchDevicePresent() {
   return (touch_device_available_ && touch_events_allowed_);
-}
-
-void TouchFactory::SetupValuator() {
-  memset(valuator_lookup_, -1, sizeof(valuator_lookup_));
-  memset(touch_param_min_, 0, sizeof(touch_param_min_));
-  memset(touch_param_max_, 0, sizeof(touch_param_max_));
-
-  Display* display = ui::GetXDisplay();
-  int ndevice;
-  XIDeviceInfo* info_list = XIQueryDevice(display, XIAllDevices, &ndevice);
-
-  for (int i = 0; i < ndevice; i++) {
-    XIDeviceInfo* info = info_list + i;
-
-    if (!IsTouchDevice(info->deviceid))
-      continue;
-
-    for (int j = 0; j < TP_LAST_ENTRY; j++) {
-      TouchParam tp = static_cast<TouchParam>(j);
-      XIValuatorClassInfo* valuator = FindTPValuator(display, info, tp);
-      if (valuator) {
-        valuator_lookup_[info->deviceid][j] = valuator->number;
-        touch_param_min_[info->deviceid][j] = valuator->min;
-        touch_param_max_[info->deviceid][j] = valuator->max;
-      }
-    }
-
-#if !defined(USE_XI2_MT)
-    // In order to support multi-touch with XI2.0, we need both a slot_id and
-    // tracking_id valuator.  Without these we'll treat the device as a
-    // single-touch device (like a mouse).
-    // TODO(rbyers): Multi-touch is disabled: http://crbug.com/112329
-    //if (valuator_lookup_[info->deviceid][TP_SLOT_ID] == -1 ||
-    //    valuator_lookup_[info->deviceid][TP_TRACKING_ID] == -1) {
-      DVLOG(1) << "Touch device " << info->deviceid <<
-        " does not provide enough information for multi-touch, treating as "
-        "a single-touch device.";
-      touch_device_list_[info->deviceid] = false;
-    //}
-#endif
-  }
-
-  if (info_list)
-    XIFreeDeviceInfo(info_list);
 }
 
 }  // namespace ui
