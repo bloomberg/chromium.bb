@@ -95,11 +95,21 @@ cr.define('cr.ui', function() {
 
   CardSlider.prototype = {
     /**
-     * The current left offset of the container relative to the frame.
+     * The current left offset of the container relative to the frame. This
+     * position does not include deltas from active drag operations, and
+     * always aligns with a frame boundary.
      * @type {number}
      * @private
      */
     currentLeft_: 0,
+
+    /**
+     * Current offset relative to |currentLeft_| due to an active drag
+     * operation.
+     * @type {number}
+     * @private
+     */
+    deltaX_: 0,
 
     /**
      * Initialize all elements and event handlers. Must call after construction
@@ -513,7 +523,7 @@ cr.define('cr.ui', function() {
 
       // If there's no change, return something to let the caller know there
       // won't be a transition occuring.
-      if (prevLeft == this.currentLeft_)
+      if (prevLeft == this.currentLeft_ && this.deltaX_ == 0)
         return false;
 
       // Animate to the current card, which will either transition if the
@@ -540,6 +550,7 @@ cr.define('cr.ui', function() {
       // Chrome and iOS.  Once Chrome does GPU acceleration on the position
       // fixed-layout elements we could simply set the element's position to
       // fixed and modify 'left' instead.
+      this.deltaX_ = x - this.currentLeft_;
       this.container_.style.WebkitTransform = 'translate3d(' + x + 'px, 0, 0)';
     },
 
@@ -558,12 +569,13 @@ cr.define('cr.ui', function() {
 
     /**
      * Tell the TouchHandler that dragging is acceptable when the user begins by
-     * scrolling horizontally.
+     * scrolling horizontally and there is more than one card to slide.
      * @param {!cr.ui.TouchHandler.Event} e The TouchHandler event.
      * @private
      */
     onDragStart_: function(e) {
-      e.enableDrag = Math.abs(e.dragDeltaX) > Math.abs(e.dragDeltaY);
+      e.enableDrag = this.cardCount > 1 && Math.abs(e.dragDeltaX) >
+          Math.abs(e.dragDeltaY);
     },
 
     /**
@@ -597,12 +609,18 @@ cr.define('cr.ui', function() {
 
       if (newCardIndex == this.currentCard && Math.abs(velocity) >
           CardSlider.TRANSITION_VELOCITY_THRESHOLD_) {
-        // If the drag wasn't far enough to change cards but the velocity was
+        // The drag wasn't far enough to change cards but the velocity was
         // high enough to transition anyways. If the velocity is to the left
-        // (negative) then the user wishes to go right (card +1).
+        // (negative) then the user wishes to go right (card + 1).
         newCardIndex += velocity > 0 ? -1 : 1;
       }
-
+      // Ensure that the new card index is valid.  The new card index could be
+      // invalid if a swipe suggests scrolling off the end of the list of
+      // cards.
+      if (newCardIndex < 0)
+        newCardIndex = 0;
+      else if (newCardIndex >= this.cardCount)
+        newCardIndex = this.cardCount - 1;
       this.selectCard(newCardIndex, /* animate */ true);
     },
 
