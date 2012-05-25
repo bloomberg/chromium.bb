@@ -11,7 +11,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura/x11_atom_cache.h"
 #include "ui/base/hit_test.h"
 
 namespace {
@@ -44,6 +43,12 @@ typedef struct {
 // pay attention to the value in |decorations|.
 const unsigned long kHintsDecorations = (1L << 1);
 
+const char* kAtomsToCache[] = {
+  "_MOTIF_WM_HINTS",
+  "_NET_WM_MOVERESIZE",
+  NULL
+};
+
 }  // namespace
 
 namespace views {
@@ -52,19 +57,19 @@ X11WindowEventFilter::X11WindowEventFilter(aura::RootWindow* root_window)
     : root_window_(root_window),
       xdisplay_(base::MessagePumpX::GetDefaultXDisplay()),
       xwindow_(root_window_->GetAcceleratedWidget()),
-      x_root_window_(DefaultRootWindow(xdisplay_)) {
+      x_root_window_(DefaultRootWindow(xdisplay_)),
+      atom_cache_(xdisplay_, kAtomsToCache) {
 }
 
 X11WindowEventFilter::~X11WindowEventFilter() {}
 
 void X11WindowEventFilter::SetUseHostWindowBorders(bool use_os_border) {
-  aura::X11AtomCache* cache = aura::Env::GetInstance()->atom_cache();
   MotifWmHints motif_hints;
   memset(&motif_hints, 0, sizeof(motif_hints));
   motif_hints.flags = kHintsDecorations;
   motif_hints.decorations = use_os_border ? 1 : 0;
 
-  ::Atom hint_atom = cache->GetAtom(aura::ATOM__MOTIF_WM_HINTS);
+  ::Atom hint_atom = atom_cache_.GetAtom("_MOTIF_WM_HINTS");
   XChangeProperty(base::MessagePumpX::GetDefaultXDisplay(),
                   xwindow_,
                   hint_atom,
@@ -173,8 +178,7 @@ bool X11WindowEventFilter::DispatchHostWindowDragMovement(
   event.xclient.type = ClientMessage;
   event.xclient.display = xdisplay_;
   event.xclient.window = xwindow_;
-  event.xclient.message_type = aura::Env::GetInstance()->atom_cache()->GetAtom(
-          aura::ATOM__NET_WM_MOVERESIZE);
+  event.xclient.message_type = atom_cache_.GetAtom("_NET_WM_MOVERESIZE");
   event.xclient.format = 32;
   event.xclient.data.l[0] = screen_location.x();
   event.xclient.data.l[1] = screen_location.y();

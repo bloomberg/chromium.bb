@@ -23,7 +23,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/x11_atom_cache.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -47,6 +46,14 @@ const int kBackMouseButton = 8;
 const int kForwardMouseButton = 9;
 
 const char kRootWindowHostLinuxKey[] = "__AURA_ROOT_WINDOW_HOST_LINUX__";
+
+const char* kAtomsToCache[] = {
+  "WM_DELETE_WINDOW",
+  "_NET_WM_PING",
+  "_NET_WM_PID",
+  "WM_S0",
+  NULL
+};
 
 // The events reported for slave devices can have incorrect information for some
 // fields. This utility function is used to check for such inconsistencies.
@@ -393,7 +400,8 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       bounds_(bounds),
       focus_when_shown_(false),
       pointer_barriers_(NULL),
-      image_cursors_(new ImageCursors) {
+      image_cursors_(new ImageCursors),
+      atom_cache_(xdisplay_, kAtomsToCache) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = None;
@@ -439,10 +447,9 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
   // TODO(erg): We currently only request window deletion events. We also
   // should listen for activation events and anything else that GTK+ listens
   // for, and do something useful.
-  X11AtomCache* cache = aura::Env::GetInstance()->atom_cache();
   ::Atom protocols[2];
-  protocols[0] = cache->GetAtom(ATOM_WM_DELETE_WINDOW);
-  protocols[1] = cache->GetAtom(ATOM__NET_WM_PING);
+  protocols[0] = atom_cache_.GetAtom("WM_DELETE_WINDOW");
+  protocols[1] = atom_cache_.GetAtom("_NET_WM_PING");
   XSetWMProtocols(xdisplay_, xwindow_, protocols, 2);
 
   // We need a WM_CLIENT_MACHINE and WM_LOCALE_NAME value so we integrate with
@@ -454,7 +461,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
   pid_t pid = getpid();
   XChangeProperty(xdisplay_,
                   xwindow_,
-                  cache->GetAtom(ATOM__NET_WM_PID),
+                  atom_cache_.GetAtom("_NET_WM_PID"),
                   XA_CARDINAL,
                   32,
                   PropModeReplace,
@@ -626,11 +633,10 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
     }
     case ClientMessage: {
       Atom message_type = static_cast<Atom>(xev->xclient.data.l[0]);
-      X11AtomCache* cache = aura::Env::GetInstance()->atom_cache();
-      if (message_type == cache->GetAtom(ATOM_WM_DELETE_WINDOW)) {
+      if (message_type == atom_cache_.GetAtom("WM_DELETE_WINDOW")) {
         // We have received a close message from the window manager.
         root_window_->OnRootWindowHostClosed();
-      } else if (message_type == cache->GetAtom(ATOM__NET_WM_PING)) {
+      } else if (message_type == atom_cache_.GetAtom("_NET_WM_PING")) {
         XEvent reply_event = *xev;
         reply_event.xclient.window = x_root_window_;
 
@@ -929,8 +935,7 @@ bool RootWindowHostLinux::IsWindowManagerPresent() {
   // Per ICCCM 2.8, "Manager Selections", window managers should take ownership
   // of WM_Sn selections (where n is a screen number).
   return XGetSelectionOwner(
-      xdisplay_,
-      aura::Env::GetInstance()->atom_cache()->GetAtom(ATOM_WM_S0)) != None;
+      xdisplay_, atom_cache_.GetAtom("WM_S0")) != None;
 }
 
 void RootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {

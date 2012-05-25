@@ -6,53 +6,34 @@
 
 #include <X11/Xatom.h>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_pump_x.h"
 
 namespace aura {
 
-namespace {
+X11AtomCache::X11AtomCache(Display* xdisplay, const char** to_cache)
+    : xdisplay_(xdisplay) {
+  int cache_count = 0;
+  for (const char** i = to_cache; *i != NULL; i++)
+    cache_count++;
 
-// A list of atoms that we'll intern on host creation to save roundtrips to the
-// X11 server. Must be kept in sync with AtomCache::AtomName
-struct AtomInfo {
-  AtomName id;
-  const char* name;
-} const kAtomList[] = {
-  { ATOM_WM_DELETE_WINDOW, "WM_DELETE_WINDOW" },
-  { ATOM__NET_WM_MOVERESIZE, "_NET_WM_MOVERESIZE" },
-  { ATOM__NET_WM_PING, "_NET_WM_PING" },
-  { ATOM__NET_WM_PID, "_NET_WM_PID" },
-  { ATOM_WM_S0, "WM_S0" },
-  { ATOM__MOTIF_WM_HINTS, "_MOTIF_WM_HINTS" }
-};
-
-// Our lists need to stay in sync here.
-COMPILE_ASSERT(arraysize(kAtomList) == ATOM_COUNT, atom_lists_are_same_size);
-
-}  // namespace
-
-::Atom X11AtomCache::GetAtom(AtomName name) const {
-  std::map<AtomName, ::Atom>::const_iterator it = cached_atoms_.find(name);
-  DCHECK(it != cached_atoms_.end());
-  return it->second;
-}
-
-X11AtomCache::X11AtomCache() {
-  const char* all_names[ATOM_COUNT];
-  ::Atom cached_atoms[ATOM_COUNT];
-
-  for (int i = 0; i < ATOM_COUNT; ++i)
-    all_names[i] = kAtomList[i].name;
+  scoped_array< ::Atom> cached_atoms(new ::Atom[cache_count]);
 
   // Grab all the atoms we need now to minimize roundtrips to the X11 server.
   XInternAtoms(base::MessagePumpX::GetDefaultXDisplay(),
-               const_cast<char**>(all_names), ATOM_COUNT, False,
-               cached_atoms);
+               const_cast<char**>(to_cache), cache_count, False,
+               cached_atoms.get());
 
-  for (int i = 0; i < ATOM_COUNT; ++i)
-    cached_atoms_.insert(std::make_pair(kAtomList[i].id, cached_atoms[i]));
+  for (int i = 0; i < cache_count; ++i)
+    cached_atoms_.insert(std::make_pair(to_cache[i], cached_atoms[i]));
 }
 
 X11AtomCache::~X11AtomCache() {}
+
+::Atom X11AtomCache::GetAtom(const char* name) const {
+  std::map<std::string, ::Atom>::const_iterator it = cached_atoms_.find(name);
+  CHECK(it != cached_atoms_.end());
+  return it->second;
+}
 
 }  // namespace aura

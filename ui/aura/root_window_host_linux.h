@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "ui/aura/root_window_host.h"
+#include "ui/aura/x11_atom_cache.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -95,6 +96,8 @@ class RootWindowHostLinux : public RootWindowHost,
 
   class ImageCursors;
   scoped_ptr<ImageCursors> image_cursors_;
+
+  X11AtomCache atom_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowHostLinux);
 };

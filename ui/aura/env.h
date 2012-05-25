@@ -12,10 +12,6 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/stacking_client.h"
 
-#if defined(USE_X11)
-#include "ui/aura/x11_atom_cache.h"
-#endif
-
 namespace aura {
 
 class EnvObserver;
@@ -59,12 +55,6 @@ class AURA_EXPORT Env {
   MonitorManager* monitor_manager() { return monitor_manager_.get(); }
   void SetMonitorManager(MonitorManager* monitor_manager);
 
-#if defined(USE_X11)
-  // Gets the X11 atom cache. This must not persist the cache across
-  // Env::DeleteInstance() calls.
-  X11AtomCache* atom_cache() { return &atom_cache_; }
-#endif
-
   // Returns the native event dispatcher. The result should only be passed to
   // MessageLoopForUI::RunWithDispatcher() or
   // MessageLoopForUI::RunAllPendingWithDispatcher(), or used to dispatch
@@ -93,7 +83,6 @@ class AURA_EXPORT Env {
 
 #if defined(USE_X11)
   scoped_ptr<internal::MonitorChangeObserverX11> monitor_change_observer_;
-  X11AtomCache atom_cache_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(Env);

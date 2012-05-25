@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
+#include "ui/aura/x11_atom_cache.h"
 #include "ui/views/views_export.h"
 
 namespace aura {
@@ -55,6 +56,8 @@ class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter {
 
   // The native root window.
   ::Window x_root_window_;
+
+  aura::X11AtomCache atom_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(X11WindowEventFilter);
 };
