@@ -24,6 +24,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
+#include "base/sys_info.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "grit/webkit_chromium_resources.h"
@@ -668,8 +669,8 @@ WebKit::WebString WebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
   return WebKit::WebString("");
 }
 
-#if defined(OS_LINUX)
-static size_t memoryUsageMBLinux() {
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+static size_t memoryUsageMB() {
   struct mallinfo minfo = mallinfo();
   uint64_t mem_usage =
 #if defined(USE_TCMALLOC)
@@ -683,10 +684,8 @@ static size_t memoryUsageMBLinux() {
   v8::V8::GetHeapStatistics(&stat);
   return mem_usage + (static_cast<uint64_t>(stat.total_heap_size()) >> 20);
 }
-#endif
-
-#if defined(OS_MACOSX)
-static size_t memoryUsageMBMac() {
+#elif defined(OS_MACOSX)
+static size_t memoryUsageMB() {
   using base::ProcessMetrics;
   static ProcessMetrics* process_metrics =
       // The default port provider is sufficient to get data for the current
@@ -696,10 +695,8 @@ static size_t memoryUsageMBMac() {
   DCHECK(process_metrics);
   return process_metrics->GetWorkingSetSize() >> 20;
 }
-#endif
-
-#if !defined(OS_LINUX) && !defined(OS_MACOSX)
-static size_t memoryUsageMBGeneric() {
+#else
+static size_t memoryUsageMB() {
   using base::ProcessMetrics;
   static ProcessMetrics* process_metrics =
       ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle());
@@ -715,14 +712,7 @@ static size_t getMemoryUsageMB(bool bypass_cache) {
       mem_usage_cache_singleton->IsCachedValueValid(&current_mem_usage))
     return current_mem_usage;
 
-  current_mem_usage =
-#if defined(OS_LINUX)
-      memoryUsageMBLinux();
-#elif defined(OS_MACOSX)
-      memoryUsageMBMac();
-#else
-      memoryUsageMBGeneric();
-#endif
+  current_mem_usage = memoryUsageMB();
   mem_usage_cache_singleton->SetMemoryValue(current_mem_usage);
   return current_mem_usage;
 }
@@ -734,6 +724,29 @@ size_t WebKitPlatformSupportImpl::memoryUsageMB() {
 size_t WebKitPlatformSupportImpl::actualMemoryUsageMB() {
   return getMemoryUsageMB(true);
 }
+
+#if defined(OS_ANDROID)
+size_t WebKitPlatformSupportImpl::lowMemoryUsageMB() {
+  // If memory usage is below this threshold, do not bother forcing GC.
+  // Allow us to use up to our memory class value before V8's GC kicks in.
+  // These values have been determined by experimentation.
+  return base::SysInfo::DalvikHeapSizeMB() / 2;
+}
+
+size_t WebKitPlatformSupportImpl::highMemoryUsageMB() {
+  // If memory usage is above this threshold, force GC more aggressively.
+  return base::SysInfo::DalvikHeapSizeMB() * 3 / 4;
+}
+
+size_t WebKitPlatformSupportImpl::highUsageDeltaMB() {
+  // If memory usage is above highMemoryUsageMB() and memory usage increased by
+  // more than highUsageDeltaMB() since the last GC, then force GC.
+  // Note that this limit should be greater than the amount of memory for V8
+  // internal data structures that are released on GC and reallocated during JS
+  // execution (about 8MB). Otherwise, it will cause too aggressive GCs.
+  return base::SysInfo::DalvikHeapSizeMB() / 8;
+}
+#endif
 
 void WebKitPlatformSupportImpl::SuspendSharedTimer() {
   ++shared_timer_suspended_;

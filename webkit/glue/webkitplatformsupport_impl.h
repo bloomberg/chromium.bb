@@ -18,7 +18,9 @@
 #include "webkit/glue/webthemeengine_impl_win.h"
 #elif defined(OS_MACOSX)
 #include "webkit/glue/webthemeengine_impl_mac.h"
-#elif defined(OS_POSIX)
+#elif defined(OS_ANDROID)
+#include "webkit/glue/webthemeengine_impl_android.h"
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
 #include "webkit/glue/webthemeengine_impl_linux.h"
 #endif
 
@@ -61,6 +63,11 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
       const WebKit::WebURL& url);
   virtual size_t memoryUsageMB();
   virtual size_t actualMemoryUsageMB();
+#if defined(OS_ANDROID)  // Other OSes just use the default values.
+  virtual size_t lowMemoryUsageMB() OVERRIDE;
+  virtual size_t highMemoryUsageMB() OVERRIDE;
+  virtual size_t highUsageDeltaMB() OVERRIDE;
+#endif
   virtual WebKit::WebURLLoader* createURLLoader();
   virtual WebKit::WebSocketStreamHandle* createSocketStreamHandle();
   virtual WebKit::WebString userAgent(const WebKit::WebURL& url);
