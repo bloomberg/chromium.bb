@@ -27,6 +27,8 @@ AC_SUBST(DLOPEN_LIBS)
 PKG_CHECK_MODULES(COMPOSITOR,
 		  [wayland-server egl >= 7.10 glesv2 xkbcommon pixman-1])
 
+PKG_CHECK_MODULES(WCAP, [cairo vpx])
+
 AC_CHECK_PROG(RSVG_CONVERT, rsvg-convert, rsvg-convert)
 AM_CONDITIONAL(HAVE_RSVG_CONVERT, test -n "$RSVG_CONVERT")
 
@@ -196,6 +198,7 @@ AC_CONFIG_FILES([Makefile
 		 src/Makefile
 		 src/xwayland/Makefile
 		 clients/Makefile
+		 wcap-decode/Makefile
 		 data/Makefile
 		 protocol/Makefile
 		 tests/Makefile])
