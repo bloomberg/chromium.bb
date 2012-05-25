@@ -1349,6 +1349,7 @@
         'browser/policy/cloud_policy_client_unittest.cc',
         'browser/policy/cloud_policy_controller_unittest.cc',
         'browser/policy/cloud_policy_provider_unittest.cc',
+        'browser/policy/cloud_policy_refresh_scheduler_unittest.cc',
         'browser/policy/cloud_policy_service_unittest.cc',
         'browser/policy/cloud_policy_subsystem_unittest.cc',
         'browser/policy/config_dir_policy_provider_unittest.cc',
