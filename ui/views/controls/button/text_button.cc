@@ -405,11 +405,18 @@ void TextButtonBase::UpdateColor() {
 }
 
 void TextButtonBase::UpdateTextSize() {
-  CalculateTextSize(&text_size_, width());
+  int text_width = width();
+  // If width is defined, use GetTextBounds.width() for maximum text width,
+  // as it will take size of checkbox/radiobutton into account.
+  if (text_width != 0) {
+    gfx::Rect text_bounds = GetTextBounds();
+    text_width = text_bounds.width();
+  }
+  CalculateTextSize(&text_size_, text_width);
   // Before layout width() is 0, and multiline text will be treated as one line.
   // Do not store max_text_size in this case. UpdateTextSize will be called
   // again once width() changes.
-  if (!multi_line_ || width() != 0) {
+  if (!multi_line_ || text_width != 0) {
     max_text_size_.SetSize(std::max(max_text_size_.width(), text_size_.width()),
                            std::max(max_text_size_.height(),
                                     text_size_.height()));
