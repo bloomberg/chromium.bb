@@ -202,6 +202,7 @@ class HostProcess
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
     host_user_interface_.reset(new HostUserInterface(context_.get()));
+    host_user_interface_->DisableDisconnectShortcutOnMac();
 #endif
 
     StartWatchingNatPolicy();

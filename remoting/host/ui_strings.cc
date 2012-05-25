@@ -18,7 +18,14 @@ UiStrings::UiStrings() :
     // doesn't have a bundle (and hence no dialog) on that platform and
     // the web-app will provide the correct localization for this string.
     disconnect_button_text_plus_shortcut(
-        ASCIIToUTF16("Disconnect (Ctrl+Alt+Esc)")),
+#if defined(OS_MACOSX)
+        // TODO(sergeyu): Currently the shortcut is disabled because it
+        // doesn't work properly on Mac.
+        ASCIIToUTF16("Disconnect")
+#else  // !defined(OS_MACOSX)
+        ASCIIToUTF16("Disconnect (Ctrl+Alt+Esc)")
+#endif  // !defined(OS_MACOSX)
+                                         ),
     continue_prompt(ASCIIToUTF16(
         "You are currently sharing this machine with another user. "
         "Please confirm that you want to continue sharing.")),

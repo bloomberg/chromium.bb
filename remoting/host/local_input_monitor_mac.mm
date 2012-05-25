@@ -52,6 +52,9 @@ typedef std::set<scoped_refptr<remoting::ChromotingHost> > Hosts;
 // monitored, in which case the object should be destroyed.
 - (bool)removeHost:(remoting::ChromotingHost*)host;
 
+// Disabled disconnection keyboard shortcut.
+- (void)disableShortcut;
+
 @end
 
 static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
@@ -141,6 +144,15 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
   return hosts_.empty();
 }
 
+- (void)disableShortcut {
+  if (hotKey_) {
+    GTMCarbonEventDispatcherHandler* handler =
+        [GTMCarbonEventDispatcherHandler sharedEventDispatcherHandler];
+    [handler unregisterHotKey:hotKey_];
+    hotKey_ = NULL;
+  }
+}
+
 @end
 
 namespace remoting {
@@ -153,6 +165,7 @@ class LocalInputMonitorMac : public LocalInputMonitor {
   virtual ~LocalInputMonitorMac();
   virtual void Start(ChromotingHost* host) OVERRIDE;
   virtual void Stop() OVERRIDE;
+  virtual void DisableShortcutOnMac() OVERRIDE;
 
  private:
   ChromotingHost* host_;
@@ -184,6 +197,10 @@ void LocalInputMonitorMac::Stop() {
     [local_input_monitor release];
     local_input_monitor = nil;
   }
+}
+
+void LocalInputMonitorMac::DisableShortcutOnMac() {
+  [local_input_monitor disableShortcut];
 }
 
 scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create() {

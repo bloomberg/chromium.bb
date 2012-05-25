@@ -18,6 +18,10 @@ class LocalInputMonitor {
   virtual void Start(ChromotingHost* host) = 0;
   virtual void Stop() = 0;
 
+  // TODO(sergeyu): This is a short-term hack to disable disconnection
+  // shortcut on Mac.
+  virtual void DisableShortcutOnMac() {};
+
   static scoped_ptr<LocalInputMonitor> Create();
 };
 
