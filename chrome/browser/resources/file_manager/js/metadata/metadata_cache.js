@@ -455,7 +455,7 @@ MetadataCache.prototype.evict_ = function() {
     var aTime = this.cache_[a].time;
     var bTime = this.cache_[b].time;
     return aTime < bTime ? -1 : aTime > bTime ? 1 : 0;
-  });
+  }.bind(this));
 
   removeCount = Math.min(removeCount, toRemove.length);
   this.totalCount_ -= removeCount;
