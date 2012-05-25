@@ -32,6 +32,18 @@
   #define SYS_SECCOMP 1
 #endif
 
+#ifndef __NR_openat
+  #define __NR_openat 257
+#endif
+
+#ifndef __NR_mkdirat
+  #define __NR_mkdirat 258
+#endif
+
+#ifndef __NR_readlinkat
+  #define __NR_readlinkat 267
+#endif
+
 #ifndef __NR_eventfd2
   #define __NR_eventfd2 290
 #endif
@@ -194,6 +206,20 @@ static void EmitAllowGettime(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_gettimeofday, program);
 }
 
+static void EmitSetupEmptyFileSystem(std::vector<struct sock_filter>* program) {
+  EmitFailSyscall(__NR_open, ENOENT, program);
+  EmitFailSyscall(__NR_openat, ENOENT, program);
+  EmitFailSyscall(__NR_execve, ENOENT, program);
+  EmitFailSyscall(__NR_access, ENOENT, program);
+  EmitFailSyscall(__NR_mkdir, ENOENT, program);
+  EmitFailSyscall(__NR_mkdirat, ENOENT, program);
+  EmitFailSyscall(__NR_readlink, ENOENT, program);
+  EmitFailSyscall(__NR_readlinkat, ENOENT, program);
+  EmitFailSyscall(__NR_stat, ENOENT, program);
+  EmitFailSyscall(__NR_lstat, ENOENT, program);
+  EmitFailSyscall(__NR_chdir, ENOENT, program);
+}
+
 static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
   // "Hot" syscalls go first.
   EmitAllowSyscall(__NR_read, program);
@@ -249,11 +275,7 @@ static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
 
   // Generally, filename-based syscalls will fail with ENOENT to behave
   // similarly to a possible future setuid sandbox.
-  EmitFailSyscall(__NR_open, ENOENT, program);
-  EmitFailSyscall(__NR_access, ENOENT, program);
-  EmitFailSyscall(__NR_mkdir, ENOENT, program);  // Nvidia binary driver.
-  EmitFailSyscall(__NR_readlink, ENOENT, program);  // ATI binary driver.
-  EmitFailSyscall(__NR_stat, ENOENT, program);  // Nvidia binary driver.
+  EmitSetupEmptyFileSystem(program);
 }
 
 static void ApplyFlashPolicy(std::vector<struct sock_filter>* program) {
@@ -307,9 +329,7 @@ static void ApplyFlashPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_shmat, program);
   EmitAllowSyscall(__NR_shmdt, program);
 
-  EmitFailSyscall(__NR_open, ENOENT, program);
-  EmitFailSyscall(__NR_execve, ENOENT, program);
-  EmitFailSyscall(__NR_access, ENOENT, program);
+  EmitSetupEmptyFileSystem(program);
 }
 
 static bool CanUseSeccompFilters() {
