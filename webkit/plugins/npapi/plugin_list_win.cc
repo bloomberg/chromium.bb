@@ -387,11 +387,8 @@ bool PluginList::ShouldLoadPlugin(const webkit::WebPluginInfo& info,
   }
 
   if (base::win::GetMetroModule()) {
-    // In metro mode we only allow internal (pepper) plugins except flash.
-    // TODO(cpu):remove this hack at some point in the future.
+    // In metro mode we only allow pepper plugins.
     if (info.type == WebPluginInfo::PLUGIN_TYPE_NPAPI)
-      return false;
-    if (filename == L"pepflashplayer.dll")
       return false;
   }
 
