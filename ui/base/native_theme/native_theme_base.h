@@ -134,7 +134,7 @@ class NativeThemeBase : public NativeTheme {
   void DrawTiledImage(SkCanvas* canvas,
                       const SkBitmap& bitmap,
                       int src_x, int src_y,
-                      double tile_scale_x, double tile_scale_y,
+                      float tile_scale_x, float tile_scale_y,
                       int dest_x, int dest_y, int w, int h) const;
 
   SkColor SaturateAndBrighten(SkScalar* hsv,

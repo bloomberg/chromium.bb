@@ -338,7 +338,8 @@ void Canvas::DrawBitmapInt(const gfx::ImageSkia& image,
                             SkFloatToScalar(-src_y * bitmap_scale));
   shader_scale.postTranslate(SkFloatToScalar(dest_x * bitmap_scale),
                              SkFloatToScalar(dest_y * bitmap_scale));
-  shader_scale.postScale(1.0f / bitmap_scale, 1.0f / bitmap_scale);
+  shader_scale.postScale(SkFloatToScalar(1.0f / bitmap_scale),
+                         SkFloatToScalar(1.0f / bitmap_scale));
   shader->setLocalMatrix(shader_scale);
 
   // Set up our paint to use the shader & release our reference (now just owned
@@ -388,11 +389,21 @@ void Canvas::TileImageInt(const gfx::ImageSkia& image,
 void Canvas::TileImageInt(const gfx::ImageSkia& image,
                           int src_x, int src_y,
                           int dest_x, int dest_y, int w, int h) {
+  TileImageInt(image, src_x, src_y, 1.0f, 1.0f, dest_x, dest_y, w, h);
+}
+
+void Canvas::TileImageInt(const gfx::ImageSkia& image,
+                          int src_x, int src_y,
+                          float tile_scale_x, float tile_scale_y,
+                          int dest_x, int dest_y, int w, int h) {
   if (!IntersectsClipRectInt(dest_x, dest_y, w, h))
     return;
 
   float bitmap_scale;
-  const SkBitmap& bitmap = GetBitmapToPaint(image, &bitmap_scale);
+  const SkBitmap& bitmap = GetBitmapToPaint(image,
+                                            tile_scale_x,
+                                            tile_scale_y,
+                                            &bitmap_scale);
   if (bitmap.isNull())
     return;
 
@@ -401,20 +412,26 @@ void Canvas::TileImageInt(const gfx::ImageSkia& image,
   SkShader* shader = SkShader::CreateBitmapShader(bitmap,
                                                   SkShader::kRepeat_TileMode,
                                                   SkShader::kRepeat_TileMode);
+
+  SkMatrix shader_scale;
+  shader_scale.setScale(SkFloatToScalar(tile_scale_x),
+                        SkFloatToScalar(tile_scale_y));
+  shader_scale.preTranslate(SkFloatToScalar(-src_x * bitmap_scale),
+                            SkFloatToScalar(-src_y * bitmap_scale));
+  shader_scale.postTranslate(SkFloatToScalar(dest_x * bitmap_scale),
+                             SkFloatToScalar(dest_y * bitmap_scale));
+  shader_scale.postScale(SkFloatToScalar(1.0f / bitmap_scale),
+                         SkFloatToScalar(1.0f / bitmap_scale));
+  shader->setLocalMatrix(shader_scale);
+
   paint.setShader(shader);
   paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
 
-  // CreateBitmapShader returns a Shader with a reference count of one, we
-  // need to unref after paint takes ownership of the shader.
-  shader->unref();
-  canvas_->save();
-  canvas_->translate(SkIntToScalar(dest_x - src_x),
-                     SkIntToScalar(dest_y - src_y));
-  ClipRect(gfx::Rect(src_x, src_y, w, h));
-  canvas_->scale(SkFloatToScalar(1.0f / bitmap_scale),
-                 SkFloatToScalar(1.0f / bitmap_scale));
-  canvas_->drawPaint(paint);
-  canvas_->restore();
+  SkRect dest_rect = { SkIntToScalar(dest_x),
+                       SkIntToScalar(dest_y),
+                       SkIntToScalar(dest_x + w),
+                       SkIntToScalar(dest_y + h) };
+  canvas_->drawRect(dest_rect, paint);
 }
 
 gfx::NativeDrawingContext Canvas::BeginPlatformPaint() {

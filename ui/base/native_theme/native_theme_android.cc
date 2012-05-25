@@ -11,6 +11,7 @@
 #include "grit/native_theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -602,11 +603,11 @@ void NativeThemeAndroid::PaintProgressBar(
   SkBitmap* left_border_image = rb.GetBitmapNamed(IDR_PROGRESS_BORDER_LEFT);
   SkBitmap* right_border_image = rb.GetBitmapNamed(IDR_PROGRESS_BORDER_RIGHT);
 
-  double tile_scale = static_cast<double>(rect.height()) /
+  float tile_scale = static_cast<float>(rect.height()) /
       bar_image->height();
 
   int new_tile_width = static_cast<int>(bar_image->width() * tile_scale);
-  double tile_scale_x = static_cast<double>(new_tile_width) /
+  float tile_scale_x = static_cast<float>(new_tile_width) /
       bar_image->width();
 
   DrawTiledImage(canvas, *bar_image, 0, 0, tile_scale_x, tile_scale,
@@ -616,7 +617,7 @@ void NativeThemeAndroid::PaintProgressBar(
     SkBitmap* value_image = rb.GetBitmapNamed(IDR_PROGRESS_VALUE);
 
     new_tile_width = static_cast<int>(value_image->width() * tile_scale);
-    tile_scale_x = static_cast<double>(new_tile_width) /
+    tile_scale_x = static_cast<float>(new_tile_width) /
         value_image->width();
 
     DrawTiledImage(canvas, *value_image, 0, 0, tile_scale_x, tile_scale,
@@ -661,84 +662,22 @@ void NativeThemeAndroid::DrawBitmapInt(SkCanvas* canvas,
                                        int dest_y,
                                        int dest_w,
                                        int dest_h) const {
-  DLOG_ASSERT(src_x + src_w < std::numeric_limits<int16_t>::max() &&
-              src_y + src_h < std::numeric_limits<int16_t>::max());
-  if (src_w <= 0 || src_h <= 0 || dest_w <= 0 || dest_h <= 0) {
-    NOTREACHED() << "Attempting to draw bitmap to/from an empty rect!";
-    return;
-  }
-
-  if (!IntersectsClipRectInt(canvas, dest_x, dest_y, dest_w, dest_h))
-    return;
-
-  SkRect dest_rect = { SkIntToScalar(dest_x),
-                       SkIntToScalar(dest_y),
-                       SkIntToScalar(dest_x + dest_w),
-                       SkIntToScalar(dest_y + dest_h) };
-
-  if (src_w == dest_w && src_h == dest_h) {
-    // Workaround for apparent bug in Skia that causes image to occasionally
-    // shift.
-    SkIRect src_rect = { src_x, src_y, src_x + src_w, src_y + src_h };
-    canvas->drawBitmapRect(bitmap, &src_rect, dest_rect);
-    return;
-  }
-
-  // Make a bitmap shader that contains the bitmap we want to draw. This is
-  // basically what SkCanvas.drawBitmap does internally, but it gives us
-  // more control over quality and will use the mipmap in the source image if
-  // it has one, whereas drawBitmap won't.
-  SkShader* shader = SkShader::CreateBitmapShader(bitmap,
-                                                  SkShader::kRepeat_TileMode,
-                                                  SkShader::kRepeat_TileMode);
-  SkMatrix shader_scale;
-  shader_scale.setScale(SkFloatToScalar(static_cast<float>(dest_w) / src_w),
-                        SkFloatToScalar(static_cast<float>(dest_h) / src_h));
-  shader_scale.preTranslate(SkIntToScalar(-src_x), SkIntToScalar(-src_y));
-  shader_scale.postTranslate(SkIntToScalar(dest_x), SkIntToScalar(dest_y));
-  shader->setLocalMatrix(shader_scale);
-
-  // The rect will be filled by the bitmap.
-  SkPaint p;
-  p.setFilterBitmap(true);
-  p.setShader(shader);
-  shader->unref();
-  canvas->drawRect(dest_rect, p);
+  gfx::Canvas(canvas).DrawBitmapInt(bitmap, src_x, src_y, src_w, src_h,
+      dest_x, dest_y, dest_w, dest_h, true);
 }
 
 void NativeThemeAndroid::DrawTiledImage(SkCanvas* canvas,
                                         const SkBitmap& bitmap,
                                         int src_x,
                                         int src_y,
-                                        double tile_scale_x,
-                                        double tile_scale_y,
+                                        float tile_scale_x,
+                                        float tile_scale_y,
                                         int dest_x,
                                         int dest_y,
                                         int w,
                                         int h) const {
-  SkShader* shader = SkShader::CreateBitmapShader(bitmap,
-                                                  SkShader::kRepeat_TileMode,
-                                                  SkShader::kRepeat_TileMode);
-  if (tile_scale_x != 1.0 || tile_scale_y != 1.0) {
-    SkMatrix shader_scale;
-    shader_scale.setScale(SkDoubleToScalar(tile_scale_x),
-                          SkDoubleToScalar(tile_scale_y));
-    shader->setLocalMatrix(shader_scale);
-  }
-
-  SkPaint paint;
-  paint.setShader(shader);
-  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-
-  // CreateBitmapShader returns a Shader with a reference count of one, we
-  // need to unref after paint takes ownership of the shader.
-  shader->unref();
-  canvas->save();
-  canvas->translate(SkIntToScalar(dest_x - src_x),
-                    SkIntToScalar(dest_y - src_y));
-  canvas->clipRect(SkRect::MakeXYWH(src_x, src_y, w, h));
-  canvas->drawPaint(paint);
-  canvas->restore();
+  gfx::Canvas(canvas).TileImageInt(bitmap, src_x, src_y, tile_scale_x,
+      tile_scale_y, dest_x, dest_y, w, h);
 }
 
 SkColor NativeThemeAndroid::SaturateAndBrighten(

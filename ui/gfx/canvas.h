@@ -319,6 +319,10 @@ class UI_EXPORT Canvas {
   void TileImageInt(const gfx::ImageSkia& image,
                     int src_x, int src_y,
                     int dest_x, int dest_y, int w, int h);
+  void TileImageInt(const gfx::ImageSkia& image,
+                    int src_x, int src_y,
+                    float tile_scale_x, float tile_scale_y,
+                    int dest_x, int dest_y, int w, int h);
 
   // Returns a native drawing context for platform specific drawing routines to
   // use. Must be balanced by a call to EndPlatformPaint().
