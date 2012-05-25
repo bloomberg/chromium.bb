@@ -402,7 +402,6 @@ Browser::Browser(Type type, Profile* profile)
     local_pref_registrar_.Init(local_state);
     local_pref_registrar_.Add(prefs::kPrintingEnabled, this);
     local_pref_registrar_.Add(prefs::kAllowFileSelectionDialogs, this);
-    local_pref_registrar_.Add(prefs::kMetricsReportingEnabled, this);
     local_pref_registrar_.Add(prefs::kInManagedMode, this);
   }
 
@@ -413,7 +412,6 @@ Browser::Browser(Type type, Profile* profile)
   profile_pref_registrar_.Add(prefs::kHomePage, this);
   profile_pref_registrar_.Add(prefs::kInstantEnabled, this);
   profile_pref_registrar_.Add(prefs::kIncognitoModeAvailability, this);
-  profile_pref_registrar_.Add(prefs::kSearchSuggestEnabled, this);
 
   InitCommandState();
   BrowserList::AddBrowser(this);
@@ -3853,9 +3851,7 @@ void Browser::Observe(int type,
           *content::Details<std::string>(details).ptr();
       if (pref_name == prefs::kPrintingEnabled) {
         UpdatePrintingState(GetContentRestrictionsForSelectedTab());
-      } else if (pref_name == prefs::kInstantEnabled ||
-                 pref_name == prefs::kMetricsReportingEnabled ||
-                 pref_name == prefs::kSearchSuggestEnabled) {
+      } else if (pref_name == prefs::kInstantEnabled) {
         if (!InstantController::IsEnabled(profile())) {
           if (instant()) {
             instant()->DestroyPreviewContents();
@@ -4901,7 +4897,8 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
 void Browser::CreateInstantIfNecessary() {
   if (is_type_tabbed() && InstantController::IsEnabled(profile()) &&
       !profile()->IsOffTheRecord()) {
-    instant_.reset(new InstantController(profile_, this));
+    instant_.reset(new InstantController(profile_, this,
+                                         InstantController::INSTANT));
     instant_unload_handler_.reset(new InstantUnloadHandler(this));
   }
 }

@@ -775,18 +775,6 @@ const char kImportFromFile[]                = "import-from-file";
 // Causes the browser to launch directly in incognito mode.
 const char kIncognito[]                     = "incognito";
 
-// Controls the Instant field trial. Valid values are defined below. If an
-// unknown value is supplied on the command line, the field trial is disabled.
-const char kInstantFieldTrial[]             = "instant-field-trial";
-// The field trial is forced into the HIDDEN group.
-const char kInstantFieldTrialHidden[]       = "hidden";
-// The field trial is forced into the INSTANT group.
-const char kInstantFieldTrialInstant[]      = "instant";
-// The field trial is forced into the SILENT group.
-const char kInstantFieldTrialSilent[]       = "silent";
-// The field trial is forced into the SUGGEST group.
-const char kInstantFieldTrialSuggest[]      = "suggest";
-
 // URL to use for instant. If specified this overrides the url from the
 // TemplateURL.
 const char kInstantURL[]                    = "instant-url";

@@ -8,11 +8,9 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/rand_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/instant/instant_delegate.h"
-#include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -36,7 +34,8 @@
 #endif
 
 InstantController::InstantController(Profile* profile,
-                                     InstantDelegate* delegate)
+                                     InstantDelegate* delegate,
+                                     Mode mode)
     : delegate_(delegate),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
       tab_contents_(NULL),
@@ -44,14 +43,11 @@ InstantController::InstantController(Profile* profile,
       is_out_of_date_(true),
       commit_on_mouse_up_(false),
       last_transition_type_(content::PAGE_TRANSITION_LINK),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      mode_(mode) {
   DCHECK(template_url_service_);
-  PrefService* prefs = profile->GetPrefs();
-  if (prefs && prefs->GetBoolean(prefs::kInstantEnabled)) {
-    // kInstantEnabledOnce was added after Instant, set it now to make sure it
-    // is correctly set.
-    prefs->SetBoolean(prefs::kInstantEnabledOnce, true);
-  }
+  DCHECK(mode_ == INSTANT || mode_ == SUGGEST || mode_ == HIDDEN ||
+         mode_ == SILENT);
 }
 
 InstantController::~InstantController() {
@@ -65,9 +61,6 @@ void InstantController::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kInstantEnabled,
                              false,
                              PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kInstantEnabledOnce,
-                             false,
-                             PrefService::SYNCABLE_PREF);
 }
 
 // static
@@ -77,7 +70,8 @@ void InstantController::RecordMetrics(Profile* profile) {
 
 // static
 bool InstantController::IsEnabled(Profile* profile) {
-  return InstantFieldTrial::GetMode(profile) != InstantFieldTrial::CONTROL;
+  const PrefService* prefs = profile ? profile->GetPrefs() : 0;
+  return prefs && prefs->GetBoolean(prefs::kInstantEnabled);
 }
 
 // static
@@ -86,14 +80,9 @@ void InstantController::Enable(Profile* profile) {
   if (!service)
     return;
 
-  base::Histogram* histogram = base::LinearHistogram::FactoryGet(
-      "Instant.Preference" + InstantFieldTrial::GetModeAsString(profile),
-      1, 2, 3, base::Histogram::kUmaTargetedHistogramFlag);
-  histogram->Add(1);
-
-  service->SetBoolean(prefs::kInstantEnabledOnce, true);
   service->SetBoolean(prefs::kInstantEnabled, true);
   service->SetBoolean(prefs::kInstantConfirmDialogShown, true);
+  UMA_HISTOGRAM_ENUMERATION("Instant.Preference", 1, 2);
 }
 
 // static
@@ -102,13 +91,8 @@ void InstantController::Disable(Profile* profile) {
   if (!service || !IsEnabled(profile))
     return;
 
-  base::Histogram* histogram = base::LinearHistogram::FactoryGet(
-      "Instant.Preference" + InstantFieldTrial::GetModeAsString(profile),
-      1, 2, 3, base::Histogram::kUmaTargetedHistogramFlag);
-  histogram->Add(0);
-
-  service->SetBoolean(prefs::kInstantEnabledOnce, true);
   service->SetBoolean(prefs::kInstantEnabled, false);
+  UMA_HISTOGRAM_ENUMERATION("Instant.Preference", 0, 2);
 }
 
 // static
@@ -143,17 +127,14 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
     return false;
   }
 
-  if (!loader_.get()) {
-    loader_.reset(new InstantLoader(this, template_url->id(),
-        InstantFieldTrial::GetModeAsString(tab_contents->profile())));
-  }
+  if (!loader_.get())
+    loader_.reset(new InstantLoader(this, template_url->id(), std::string()));
 
-  // In some rare cases (involving group policy), Instant can go from the field
-  // trial to normal mode, with no intervening call to DestroyPreviewContents().
+  // In some rare cases (involving group policy), Instant can go from a hidden
+  // mode to normal mode, with no intervening call to DestroyPreviewContents().
   // This would leave the loader in a weird state, which would manifest if the
   // user pressed <Enter> without calling Update(). TODO(sreeram): Handle it.
-  if (InstantFieldTrial::GetMode(tab_contents->profile()) ==
-          InstantFieldTrial::SILENT) {
+  if (mode_ == SILENT) {
     // For the SILENT mode, we process |user_text| at commit time, which means
     // we're never really out of date.
     is_out_of_date_ = false;
@@ -179,11 +160,8 @@ void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
   // bounds are in sync.
   omnibox_bounds_ = bounds;
 
-  if (loader_.get() && !is_out_of_date_ &&
-      InstantFieldTrial::GetMode(tab_contents_->profile()) ==
-          InstantFieldTrial::INSTANT) {
+  if (loader_.get() && !is_out_of_date_ && mode_ == INSTANT)
     loader_->SetOmniboxBounds(bounds);
-  }
 }
 
 void InstantController::DestroyPreviewContents() {
@@ -218,11 +196,8 @@ bool InstantController::PrepareForCommit() {
   if (is_out_of_date_ || !loader_.get())
     return false;
 
-  const InstantFieldTrial::Mode mode =
-      InstantFieldTrial::GetMode(tab_contents_->profile());
-
   // If we are in the visible (INSTANT) mode, return the status of the preview.
-  if (mode == InstantFieldTrial::INSTANT)
+  if (mode_ == INSTANT)
     return IsCurrent();
 
   const TemplateURL* template_url =
@@ -236,7 +211,7 @@ bool InstantController::PrepareForCommit() {
 
   // In the SUGGEST and HIDDEN modes, we must have sent an Update() by now, so
   // check if the loader failed to process it.
-  if ((mode == InstantFieldTrial::SUGGEST || mode == InstantFieldTrial::HIDDEN)
+  if ((mode_ == SUGGEST || mode_ == HIDDEN)
       && (!loader_->ready() || !loader_->http_status_ok())) {
     return false;
   }
@@ -359,10 +334,8 @@ void InstantController::OnAutocompleteGotFocus(
 
   tab_contents_ = tab_contents;
 
-  if (!loader_.get()) {
-    loader_.reset(new InstantLoader(this, template_url->id(),
-        InstantFieldTrial::GetModeAsString(tab_contents->profile())));
-  }
+  if (!loader_.get())
+    loader_.reset(new InstantLoader(this, template_url->id(), std::string()));
   loader_->MaybeLoadInstantURL(tab_contents, template_url);
 }
 
@@ -402,9 +375,7 @@ void InstantController::SetSuggestedTextFor(
   if (is_out_of_date_)
     return;
 
-  const InstantFieldTrial::Mode mode =
-      InstantFieldTrial::GetMode(tab_contents_->profile());
-  if (mode == InstantFieldTrial::INSTANT || mode == InstantFieldTrial::SUGGEST)
+  if (mode_ == INSTANT || mode_ == SUGGEST)
     delegate_->SetSuggestedText(text, behavior);
 }
 
@@ -449,24 +420,16 @@ void InstantController::InstantLoaderContentsFocused() {
 #if defined(USE_AURA)
   // On aura the omnibox only receives a focus lost if we initiate the focus
   // change. This does that.
-  if (InstantFieldTrial::GetMode(tab_contents_->profile()) ==
-          InstantFieldTrial::INSTANT) {
+  if (mode_ == INSTANT)
     delegate_->InstantPreviewFocused();
-  }
 #endif
 }
 
 void InstantController::UpdateIsDisplayable() {
-  if (!is_out_of_date_ &&
-      InstantFieldTrial::GetMode(tab_contents_->profile()) !=
-          InstantFieldTrial::INSTANT) {
-    return;
-  }
-
   bool displayable =
       (!is_out_of_date_ && loader_.get() && loader_->ready() &&
        loader_->http_status_ok());
-  if (displayable == is_displayable_)
+  if (displayable == is_displayable_ || mode_ != INSTANT)
     return;
 
   is_displayable_ = displayable;
@@ -488,15 +451,13 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
                                      bool verbatim,
                                      string16* suggested_text) {
   is_out_of_date_ = false;
-  const InstantFieldTrial::Mode mode =
-      InstantFieldTrial::GetMode(tab_contents_->profile());
-  if (mode == InstantFieldTrial::INSTANT)
+  if (mode_ == INSTANT)
     loader_->SetOmniboxBounds(omnibox_bounds_);
   loader_->Update(tab_contents_, template_url, url, transition_type, user_text,
                   verbatim, suggested_text);
   UpdateIsDisplayable();
-  // For the HIDDEN and SILENT field trials, don't send back suggestions.
-  if (mode == InstantFieldTrial::HIDDEN || mode == InstantFieldTrial::SILENT)
+  // For the HIDDEN and SILENT modes, don't send back suggestions.
+  if (mode_ == HIDDEN || mode_ == SILENT)
     suggested_text->clear();
 }
 

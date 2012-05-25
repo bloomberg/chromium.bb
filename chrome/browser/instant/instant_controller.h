@@ -48,7 +48,22 @@ class InstantController : public InstantLoaderDelegate {
   // Duration of the instant animation in which the colors change.
   static const int kAutoCommitFadeInTimeMS = 300;
 
-  InstantController(Profile* profile, InstantDelegate* delegate);
+  // InstantController may operate in one of these modes:
+  //   INSTANT: The default search engine is preloaded when the omnibox gets
+  //       focus. Queries are issued as the user types. Predicted queries are
+  //       are inline autocompleted into the omnibox. Result previews are shown.
+  //   SUGGEST: Same as INSTANT, without visible previews.
+  //   HIDDEN: Same as SUGGEST, without the inline autocompletion.
+  //   SILENT: Same as HIDDEN, without issuing queries as the user types. The
+  //       query is sent only after the user presses <Enter>.
+  enum Mode {
+    INSTANT,
+    SUGGEST,
+    HIDDEN,
+    SILENT
+  };
+
+  InstantController(Profile* profile, InstantDelegate* delegate, Mode mode);
   virtual ~InstantController();
 
   // Registers instant related preferences.
@@ -57,7 +72,7 @@ class InstantController : public InstantLoaderDelegate {
   // Records instant metrics.
   static void RecordMetrics(Profile* profile);
 
-  // Returns true if instant is enabled.
+  // Returns true if instant is enabled in the given |profile|'s preferences.
   static bool IsEnabled(Profile* profile);
 
   // Enables instant.
@@ -263,6 +278,9 @@ class InstantController : public InstantLoaderDelegate {
 
   // The most recent user_text passed to |Update|.
   string16 last_user_text_;
+
+  // See the enum description above.
+  const Mode mode_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };

@@ -46,7 +46,6 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_util.h"
-#include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/language_usage_metrics.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
@@ -1094,7 +1093,6 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   if (!proxy_policy_is_set)
     ProxyConnectionsFieldTrial();
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line());
-  InstantFieldTrial::Activate();
   SpdyFieldTrial();
   ConnectBackupJobsFieldTrial();
   WarmConnectionFieldTrial();

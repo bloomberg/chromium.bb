@@ -109,9 +109,6 @@ class BrowserOptionsHandler
   void CheckAutoLaunchCallback(bool is_in_auto_launch_group,
                                bool will_launch_at_login);
 
-  // Called to request information about the Instant field trial.
-  void GetInstantFieldTrialStatus(const base::ListValue* args);
-
   // Returns the string ID for the given default browser state.
   int StatusStringIdForState(ShellIntegration::DefaultWebClientState state);
 

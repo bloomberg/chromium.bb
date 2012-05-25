@@ -194,14 +194,8 @@ cr.define('options', function() {
         }
         return true;
       };
-      $('instant-field-trial-control').onchange = function(evt) {
-        this.checked = true;
-        chrome.send('disableInstant');
-      };
       Preferences.getInstance().addEventListener('instant.confirm_dialog_shown',
           this.onInstantConfirmDialogShownChanged_.bind(this));
-      Preferences.getInstance().addEventListener('instant.enabled',
-          this.onInstantEnabledChanged_.bind(this));
       Preferences.getInstance().addEventListener(
           'restore_session_state.dialog_shown',
           this.onSessionRestoreDialogShownChanged_.bind(this));
@@ -759,28 +753,6 @@ cr.define('options', function() {
      */
     onInstantConfirmDialogShownChanged_: function(event) {
       this.instantConfirmDialogShown_ = event.value['value'];
-    },
-
-    /**
-     * Called when the value of the instant.enabled preference changes. Request
-     * the state of the Instant field trial experiment.
-     * @param {Event} event Change event.
-     * @private
-     */
-    onInstantEnabledChanged_: function(event) {
-      chrome.send('getInstantFieldTrialStatus');
-    },
-
-    /**
-     * Called to set the Instant field trial status.
-     * @param {boolean} enabled If true, the experiment is enabled.
-     * @private
-     */
-    setInstantFieldTrialStatus_: function(enabled) {
-      $('instant-enabled-control').hidden = enabled;
-      $('instant-field-trial-control').hidden = !enabled;
-      $('instant-label').htmlFor = enabled ? 'instant-field-trial-control' :
-                                             'instant-enabled-control';
     },
 
     /**
@@ -1362,7 +1334,6 @@ cr.define('options', function() {
     'setFontSize',
     'setGtkThemeButtonEnabled',
     'setHighContrastCheckboxState',
-    'setInstantFieldTrialStatus',
     'setMetricsReportingCheckboxState',
     'setMetricsReportingSettingVisibility',
     'setPasswordGenerationSettingVisibility',

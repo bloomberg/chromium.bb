@@ -24,7 +24,6 @@
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/instant/instant_controller.h"
-#include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -435,10 +434,6 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "disableInstant",
       base::Bind(&BrowserOptionsHandler::DisableInstant,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getInstantFieldTrialStatus",
-      base::Bind(&BrowserOptionsHandler::GetInstantFieldTrialStatus,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "createProfile",
@@ -893,15 +888,6 @@ void BrowserOptionsHandler::ToggleAutoLaunch(const ListValue* args) {
                base::Bind(&auto_launch_util::DisableForegroundStartAtLogin,
                           profile->GetPath().BaseName().value()));
 #endif  // OS_WIN
-}
-
-void BrowserOptionsHandler::GetInstantFieldTrialStatus(const ListValue* args) {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  base::FundamentalValue enabled(
-      !profile->GetPrefs()->GetBoolean(prefs::kInstantEnabled) &&
-      InstantFieldTrial::GetMode(profile) == InstantFieldTrial::INSTANT);
-  web_ui()->CallJavascriptFunction("BrowserOptions.setInstantFieldTrialStatus",
-                                   enabled);
 }
 
 scoped_ptr<ListValue> BrowserOptionsHandler::GetProfilesInfoList() {

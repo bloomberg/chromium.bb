@@ -475,7 +475,6 @@ class MetricsService
 // as a 'friend' below.
 class MetricsServiceHelper {
  private:
-  friend class InstantFieldTrial;
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
   friend class extensions::ExtensionDownloader;
 

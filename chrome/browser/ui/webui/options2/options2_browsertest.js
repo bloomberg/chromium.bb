@@ -33,8 +33,6 @@ OptionsWebUITest.prototype = {
          'setObjectPref',
          'clearPref',
          'coreOptionsUserMetricsAction',
-         // TODO(scr): Handle this new message:
-         // getInstantFieldTrialStatus: function() {},
         ]);
 
     // Register stubs for methods expected to be called before/during tests.

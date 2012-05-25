@@ -166,7 +166,6 @@ extern const char kUrlBlacklist[];
 extern const char kUrlWhitelist[];
 extern const char kInstantConfirmDialogShown[];
 extern const char kInstantEnabled[];
-extern const char kInstantEnabledOnce[];
 extern const char kMultipleProfilePrefMigration[];
 extern const char kNetworkPredictionEnabled[];
 extern const char kDefaultAppsInstallState[];
