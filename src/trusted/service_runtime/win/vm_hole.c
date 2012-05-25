@@ -64,7 +64,7 @@ void NaClVmHoleOpeningMu(struct NaClApp *nap) {
    * placed into the mmap hole, untrusted code will not be able to
    * write to that location.
    */
-  NaClUntrustedThreadsSuspendAll(nap);
+  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 0);
 }
 
 /*

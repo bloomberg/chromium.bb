@@ -70,6 +70,7 @@ struct NaClManifestProxy;
 struct NaClReverseQuotaInterface;
 struct NaClSecureService;
 struct NaClSecureReverseService;
+struct NaClSignalContext;
 struct NaClThreadInterface;  /* see sel_ldr_thread_interface.h */
 struct NaClValidationCache;
 
@@ -759,14 +760,14 @@ void NaClVmIoPendingCheck_mu(struct NaClApp *nap,
 
 void NaClGdbHook(struct NaClApp const *nap);
 
-void NaClUntrustedThreadSuspend(struct NaClAppThread *natp);
+void NaClUntrustedThreadSuspend(struct NaClAppThread *natp, int save_registers);
 void NaClUntrustedThreadResume(struct NaClAppThread *natp);
-void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap);
+void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers);
 void NaClUntrustedThreadsResumeAll(struct NaClApp *nap);
 
 #if NACL_LINUX
 
-void NaClSuspendSignalHandler(void);
+void NaClSuspendSignalHandler(struct NaClSignalContext *regs);
 
 void handle_r_debug(const char *switch_value, char *argv0);
 

@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <sys/syscall.h>
 
+#include "native_client/src/include/concurrency_ops.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -74,9 +75,26 @@ void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
   }
 }
 
-void NaClSuspendSignalHandler(void) {
+void NaClSuspendSignalHandler(struct NaClSignalContext *regs) {
   uint32_t tls_idx = NaClTlsGetIdx();
   struct NaClAppThread *natp = nacl_thread[tls_idx];
+
+  /* Sanity check. */
+  if (natp->suspend_state != (NACL_APP_THREAD_UNTRUSTED |
+                              NACL_APP_THREAD_SUSPENDING)) {
+    NaClSignalErrorMessage("NaClSuspendSignalHandler: "
+                           "Unexpected suspend_state\n");
+    NaClAbort();
+  }
+
+  if (natp->suspended_registers != NULL) {
+    *natp->suspended_registers = *regs;
+    /*
+     * Ensure that the change to natp->suspend_state does not become
+     * visible before the change to natp->suspended_registers.
+     */
+    NaClWriteMemoryBarrier();
+  }
 
   /*
    * Indicate that we have suspended by setting
@@ -84,12 +102,6 @@ void NaClSuspendSignalHandler(void) {
    * operation for this since the calling thread will not be trying to
    * change suspend_state.
    */
-  if (natp->suspend_state != (NACL_APP_THREAD_UNTRUSTED |
-                              NACL_APP_THREAD_SUSPENDING)) {
-    NaClSignalErrorMessage("NaClSuspendSignalHandler: "
-                           "Unexpected suspend_state\n");
-    NaClAbort();
-  }
   natp->suspend_state |= NACL_APP_THREAD_SUSPENDED;
   FutexWake(&natp->suspend_state, 1);
 
@@ -121,7 +133,8 @@ static void WaitForUntrustedThreadToSuspend(struct NaClAppThread *natp) {
   }
 }
 
-void NaClUntrustedThreadSuspend(struct NaClAppThread *natp) {
+void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
+                                int save_registers) {
   Atomic32 old_state;
   Atomic32 suspending_state;
 
@@ -155,6 +168,17 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp) {
   DCHECK(natp->suspend_state == suspending_state);
 
   if (old_state == NACL_APP_THREAD_UNTRUSTED) {
+    /*
+     * Allocate register state struct if needed.  This is race-free
+     * when we are called by NaClUntrustedThreadsSuspendAll(), since
+     * that claims nap->threads_mu.
+     */
+    if (save_registers && natp->suspended_registers == NULL) {
+      natp->suspended_registers = malloc(sizeof(*natp->suspended_registers));
+      if (natp->suspended_registers == NULL) {
+        NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: malloc() failed\n");
+      }
+    }
     if (pthread_kill(natp->thread.tid, NACL_THREAD_SUSPEND_SIGNAL) != 0) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadsSuspend: "
               "pthread_kill() call failed\n");
@@ -197,7 +221,7 @@ void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
  * the list of threads.  NaClUntrustedThreadsResume() must be called
  * to undo this.
  */
-void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap) {
+void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers) {
   size_t index;
 
   NaClXMutexLock(&nap->threads_mu);
@@ -205,7 +229,7 @@ void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap) {
   for (index = 0; index < nap->threads.num_entries; index++) {
     struct NaClAppThread *natp = NaClGetThreadMu(nap, (int) index);
     if (natp != NULL) {
-      NaClUntrustedThreadSuspend(natp);
+      NaClUntrustedThreadSuspend(natp, save_registers);
     }
   }
 }

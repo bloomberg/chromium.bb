@@ -11,9 +11,11 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
@@ -25,6 +27,36 @@
  * threads running real untrusted code rather than on mock untrusted
  * threads.
  */
+
+/* This must be called with the mutex nap->threads_mu held. */
+static struct NaClAppThread *GetOnlyThread(struct NaClApp *nap) {
+  struct NaClAppThread *found_thread = NULL;
+  size_t index;
+  for (index = 0; index < nap->threads.num_entries; index++) {
+    struct NaClAppThread *natp = NaClGetThreadMu(nap, (int) index);
+    if (natp != NULL) {
+      CHECK(found_thread == NULL);
+      found_thread = natp;
+    }
+  }
+  CHECK(found_thread != NULL);
+  return found_thread;
+}
+
+/*
+ * This spins until any previous NaClAppThread has exited to the point
+ * where it is removed from the thread array, so that it will not be
+ * encountered by a subsequent call to GetOnlyThread().  This is
+ * necessary because the threads hosting NaClAppThreads are unjoined.
+ */
+static void WaitForThreadToExitFully(struct NaClApp *nap) {
+  int done;
+  do {
+    NaClXMutexLock(&nap->threads_mu);
+    done = (nap->num_threads == 0);
+    NaClXMutexUnlock(&nap->threads_mu);
+  } while (!done);
+}
 
 static struct SuspendTestShm *StartGuestWithSharedMemory(
     struct NaClApp *nap, char *test_name) {
@@ -43,6 +75,8 @@ static struct SuspendTestShm *StartGuestWithSharedMemory(
       NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS,
       -1, 0);
   SNPRINTF(arg_string, sizeof(arg_string), "0x%x", (unsigned int) mmap_addr);
+
+  WaitForThreadToExitFully(nap);
 
   CHECK(NaClCreateMainThread(nap, 3, args, NULL));
   return (struct SuspendTestShm *) NaClUserToSys(nap, mmap_addr);
@@ -77,7 +111,7 @@ static void TrySuspendingMutatorThread(struct NaClApp *nap) {
     uint32_t snapshot;
     int count;
 
-    NaClUntrustedThreadsSuspendAll(nap);
+    NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 0);
     snapshot = test_shm->var;
     for (count = 0; count < 100000; count++) {
       uint32_t snapshot2 = test_shm->var;
@@ -116,7 +150,7 @@ static void TrySuspendingSyscallInvokerThread(struct NaClApp *nap) {
   for (iteration = 0; iteration < 1000; iteration++) {
     uint32_t snapshot;
 
-    NaClUntrustedThreadsSuspendAll(nap);
+    NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 0);
     NaClUntrustedThreadsResumeAll(nap);
 
     /* Wait for guest program to make some progress. */
@@ -125,6 +159,83 @@ static void TrySuspendingSyscallInvokerThread(struct NaClApp *nap) {
   }
   test_shm->should_exit = 1;
   CHECK(NaClWaitForMainThreadToExit(nap) == 0);
+}
+
+static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
+  struct SuspendTestShm *test_shm;
+  struct NaClAppThread *natp;
+  struct NaClSignalContext *regs;
+
+  test_shm = StartGuestWithSharedMemory(nap, "RegisterSetterThread");
+  /*
+   * Wait for the guest program to reach untrusted code and set
+   * registers to known test values.
+   */
+  while (test_shm->var == 0) { /* do nothing */ }
+
+  /*
+   * Check that registers are not saved unless this is requested.
+   * Currently this must come before calling
+   * NaClUntrustedThreadsSuspendAll() with save_registers=1.
+   */
+  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 0);
+  natp = GetOnlyThread(nap);
+  CHECK(natp->suspended_registers == NULL);
+  NaClUntrustedThreadsResumeAll(nap);
+
+  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 1);
+  /*
+   * The previous natp is valid only while holding nap->threads_mu,
+   * which NaClUntrustedThreadsSuspendAll() claims for us.  Re-get
+   * natp in case the thread exited.
+   */
+  natp = GetOnlyThread(nap);
+  regs = natp->suspended_registers;
+  CHECK(regs != NULL);
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  CHECK(regs->eax == test_shm->var);
+  CHECK(regs->ebx == regs->prog_ctr + 0x2000);
+  CHECK(regs->ecx == regs->stack_ptr + 0x1000);
+  CHECK(regs->edx == 0x10000001);
+  CHECK(regs->ebp == 0x20000002);
+  CHECK(regs->esi == 0x30000003);
+  CHECK(regs->edi == 0x40000004);
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+  CHECK(regs->rax == test_shm->var);
+  CHECK(regs->rbx == regs->prog_ctr + 0x2000);
+  CHECK(regs->rcx == regs->stack_ptr + 0x1000);
+  CHECK(regs->rbp == regs->r15 + 0x10000001);
+  CHECK(regs->rdx == 0x2000000000000002);
+  CHECK(regs->rsi == 0x3000000000000003);
+  CHECK(regs->rdi == 0x4000000000000004);
+  CHECK(regs->r8 == 0x8000000000000008);
+  CHECK(regs->r9 == 0x9000000000000009);
+  CHECK(regs->r10 == 0xa00000000000000a);
+  CHECK(regs->r11 == 0xb00000000000000b);
+  CHECK(regs->r12 == 0xc00000000000000c);
+  CHECK(regs->r13 == 0xd00000000000000d);
+  CHECK(regs->r14 == 0xe00000000000000e);
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  CHECK(regs->r0 == test_shm->var);
+  CHECK(regs->r1 == regs->prog_ctr + 0x2000);
+  CHECK(regs->r2 == regs->stack_ptr + 0x1000);
+  CHECK(regs->r3 == 0x30000003);
+  CHECK(regs->r4 == 0x40000004);
+  CHECK(regs->r5 == 0x50000005);
+  CHECK(regs->r6 == 0x60000006);
+  CHECK(regs->r7 == 0x70000007);
+  CHECK(regs->r8 == 0x80000008);
+  /* r9 is reserved for TLS and is read-only. */
+  CHECK(regs->r9 == natp->user.r9);
+  CHECK(regs->r10 == 0xa000000a);
+  CHECK(regs->r11 == 0xb000000b);
+  CHECK(regs->r12 == 0xc000000c);
+  CHECK(regs->lr == 0xe000000e);
+#else
+# error Unsupported architecture
+#endif
+  /* For simplicity, we do not attempt to resume the thread. */
 }
 
 int main(int argc, char **argv) {
@@ -165,6 +276,9 @@ int main(int argc, char **argv) {
 
   printf("Running TrySuspendingSyscallInvokerThread...\n");
   TrySuspendingSyscallInvokerThread(&app);
+
+  printf("Running TestGettingRegisterSnapshot...\n");
+  TestGettingRegisterSnapshot(&app);
 
   /*
    * Avoid calling exit() because it runs process-global destructors

@@ -86,6 +86,22 @@ struct NaClAppThread {
   struct NaClThread         thread;  /* low level thread representation */
 
   Atomic32                  suspend_state; /* enum NaClSuspendState */
+  /*
+   * suspended_registers contains the register state of the thread if
+   * it has been suspended with save_registers=1 and if suspend_state
+   * contains NACL_APP_THREAD_UNTRUSTED.  This is for use by the debug
+   * stub.
+   *
+   * To save space, suspended_registers is allocated on demand.  It
+   * may be left allocated after the thread is resumed.
+   *
+   * suspended_registers will usually contain untrusted-code register
+   * state.  However, it may contain trusted-code register state if
+   * the thread suspension kicked in during a trusted/untrusted
+   * context switch (e.g. while executing the trampoline or
+   * nacl_syscall_hook.c).
+   */
+  struct NaClSignalContext  *suspended_registers;
 
   struct NaClThreadContext  user;
   struct NaClThreadContext  sys;

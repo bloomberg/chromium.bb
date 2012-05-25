@@ -27,7 +27,8 @@ void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
   NaClXMutexUnlock(&natp->mu);
 }
 
-void NaClUntrustedThreadSuspend(struct NaClAppThread *natp) {
+void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
+                                int save_registers) {
   enum NaClSuspendState old_state;
 
   /*
@@ -58,17 +59,30 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp) {
      * for the thread to be suspended.
      * See http://code.google.com/p/nativeclient/issues/detail?id=2557
      *
-     * Calling GetThreadContext() is a workaround: it should only be
-     * able to return a snapshot of the register state once the
-     * thread has actually suspended.
+     * As a workaround for that, we call GetThreadContext() even when
+     * save_registers=0.  GetThreadContext() should only be able to
+     * return a snapshot of the register state once the thread has
+     * actually suspended.
      *
-     * The set of registers we request via ContextFlags is
-     * unimportant as long as it is non-empty.
+     * If save_registers=0, the set of registers we request via
+     * ContextFlags is unimportant as long as it is non-empty.
      */
     context.ContextFlags = CONTEXT_CONTROL;
+    if (save_registers) {
+      context.ContextFlags |= CONTEXT_INTEGER;
+    }
     if (!GetThreadContext(natp->thread.tid, &context)) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadsSuspend: "
               "GetThreadContext() failed\n");
+    }
+    if (save_registers) {
+      if (natp->suspended_registers == NULL) {
+        natp->suspended_registers = malloc(sizeof(*natp->suspended_registers));
+        if (natp->suspended_registers == NULL) {
+          NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: malloc() failed\n");
+        }
+      }
+      NaClSignalContextFromHandler(natp->suspended_registers, &context);
     }
   }
   NaClXMutexUnlock(&natp->mu);
@@ -103,7 +117,7 @@ void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
  * the list of threads.  NaClUntrustedThreadsResume() must be called
  * to undo this.
  */
-void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap) {
+void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers) {
   size_t index;
 
   NaClXMutexLock(&nap->threads_mu);
@@ -118,7 +132,7 @@ void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap) {
   for (index = 0; index < nap->threads.num_entries; index++) {
     struct NaClAppThread *natp = NaClGetThreadMu(nap, (int) index);
     if (natp != NULL) {
-      NaClUntrustedThreadSuspend(natp);
+      NaClUntrustedThreadSuspend(natp, save_registers);
     }
   }
 }

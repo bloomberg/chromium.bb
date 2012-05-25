@@ -319,7 +319,7 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
 
 #if NACL_LINUX
   if (sig == NACL_THREAD_SUSPEND_SIGNAL) {
-    NaClSuspendSignalHandler();
+    NaClSuspendSignalHandler(&sigCtx);
     return;
   }
 #endif

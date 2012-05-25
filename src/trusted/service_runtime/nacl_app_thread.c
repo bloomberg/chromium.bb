@@ -201,6 +201,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   }
 
   natp->suspend_state = NACL_APP_THREAD_TRUSTED;
+  natp->suspended_registers = NULL;
 
   natp->thread_num = -1;  /* illegal index */
   natp->sys_tls = sys_tls;
@@ -234,6 +235,7 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
    * the thread must not be still running, else this crashes the system
    */
 
+  free(natp->suspended_registers);
   NaClThreadDtor(&natp->thread);
   NaClSignalStackFree(natp->signal_stack);
   natp->signal_stack = NULL;

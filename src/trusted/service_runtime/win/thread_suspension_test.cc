@@ -80,7 +80,7 @@ static void TrySuspendingMutatorThread(struct NaClApp *nap,
   while (*addr == 0) { /* do nothing */ }
 
   for (int iteration = 0; iteration < 100; iteration++) {
-    NaClUntrustedThreadsSuspendAll(nap);
+    NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 0);
     uint32_t snapshot = *addr;
     for (int count = 0; count < 100000; count++) {
       uint32_t snapshot2 = *addr;
@@ -144,7 +144,7 @@ static void TrySuspendingSyscallInvokerThread(struct NaClApp *nap,
   while (*addr == 0) { /* do nothing */ }
 
   for (int iteration = 0; iteration < 100; iteration++) {
-    NaClUntrustedThreadsSuspendAll(nap);
+    NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 0);
     NaClUntrustedThreadsResumeAll(nap);
 
     // Wait for guest program to make some progress.
