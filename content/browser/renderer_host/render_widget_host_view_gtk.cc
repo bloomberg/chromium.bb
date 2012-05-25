@@ -757,6 +757,10 @@ bool RenderWidgetHostViewGtk::HasFocus() const {
   return gtk_widget_is_focus(view_.get());
 }
 
+bool RenderWidgetHostViewGtk::IsSurfaceAvailableForCopy() const {
+  return !!host_->GetBackingStore(false);
+}
+
 void RenderWidgetHostViewGtk::Show() {
   gtk_widget_show(view_.get());
 }

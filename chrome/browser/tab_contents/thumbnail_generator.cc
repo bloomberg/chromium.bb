@@ -443,6 +443,11 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   history::TopSites* top_sites = profile->GetTopSites();
+  bool surface_available =
+      web_contents->GetRenderWidgetHostView()->IsSurfaceAvailableForCopy();
+  // Skip if we can't update the thumbnail.
+  if (!surface_available)
+    return;
   // Skip if we don't need to update the thumbnail.
   if (!ShouldUpdateThumbnail(profile, top_sites, url))
     return;

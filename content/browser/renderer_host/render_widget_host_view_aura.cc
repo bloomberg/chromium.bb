@@ -333,6 +333,10 @@ bool RenderWidgetHostViewAura::HasFocus() const {
   return window_->HasFocus();
 }
 
+bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
+  return current_surface_ != 0;
+}
+
 void RenderWidgetHostViewAura::Show() {
   window_->Show();
 }
@@ -449,9 +453,13 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
   if (!compositor)
     return;
 
-  ImageTransportClient* container = image_transport_clients_[current_surface_];
-  if (!container)
+  std::map<uint64, scoped_refptr<ImageTransportClient> >::iterator it =
+      image_transport_clients_.find(current_surface_);
+  if (it == image_transport_clients_.end())
     return;
+
+  ImageTransportClient* container = it->second;
+  DCHECK(container);
 
   gfx::Size size_in_pixel = content::ConvertSizeToPixel(this, size);
   if (!output->initialize(

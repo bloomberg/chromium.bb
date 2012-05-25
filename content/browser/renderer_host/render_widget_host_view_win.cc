@@ -906,6 +906,11 @@ bool RenderWidgetHostViewWin::HasFocus() const {
   return ::GetFocus() == m_hWnd;
 }
 
+bool RenderWidgetHostViewWin::IsSurfaceAvailableForCopy() const {
+  return !!render_widget_host_->GetBackingStore(false) ||
+      !!accelerated_surface_.get();
+}
+
 void RenderWidgetHostViewWin::Show() {
   if (!is_fullscreen_) {
     DCHECK(parent_hwnd_);

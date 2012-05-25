@@ -69,6 +69,10 @@ bool TestRenderWidgetHostView::HasFocus() const {
   return true;
 }
 
+bool TestRenderWidgetHostView::IsSurfaceAvailableForCopy() const {
+  return true;
+}
+
 void TestRenderWidgetHostView::Show() {
   is_showing_ = true;
 }

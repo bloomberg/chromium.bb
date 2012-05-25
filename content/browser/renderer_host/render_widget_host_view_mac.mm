@@ -524,6 +524,11 @@ bool RenderWidgetHostViewMac::HasFocus() const {
   return [[cocoa_view_ window] firstResponder] == cocoa_view_;
 }
 
+bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
+  return !!render_widget_host_->GetBackingStore(false) ||
+      (compositing_iosurface_.get() && compositing_iosurface_->HasIOSurface());
+}
+
 void RenderWidgetHostViewMac::Show() {
   [cocoa_view_ setHidden:NO];
 
