@@ -753,7 +753,10 @@ FileManager.prototype = {
 
     this.volumeManager_.addEventListener('gdata-status-changed',
         this.updateGDataUnmountedPanel_.bind(this));
-    if (this.params_.mountTriggered) {
+
+    this.closeOnUnmount_ = this.params_.mountTriggered;
+
+    if (this.closeOnUnmount_) {
       this.volumeManager_.addEventListener('externally-unmounted',
          this.onExternallyUnmounted_.bind(this));
     }
@@ -2867,8 +2870,10 @@ FileManager.prototype = {
 
   FileManager.prototype.onExternallyUnmounted_ = function(event) {
     if (event.mountPath == this.directoryModel_.getCurrentRootPath()) {
-      if (this.params_.mountTriggered) {
-        // TODO(serya): What if 2 USB sticks plugged?
+      if (this.closeOnUnmount_) {
+        // If the file manager opened automatically when a usb drive inserted,
+        // user have never changed current volume (that implies the current
+        // directory is still on the device) then close this tab.
         chrome.tabs.getCurrent(function(tab) {
           chrome.tabs.remove(tab.id);
         });
@@ -3662,6 +3667,12 @@ FileManager.prototype = {
 
     this.updateLocation_(event.initial, this.getCurrentDirectory());
     this.checkFreeSpace_(this.getCurrentDirectory());
+
+    if (this.closeOnUnmount_ && !event.initial &&
+          DirectoryModel.getRootPath(event.previousDirEntry.fullPath) !=
+          DirectoryModel.getRootPath(event.newDirEntry.fullPath)) {
+      this.closeOnUnmount_ = false;
+    }
 
     this.updateTitle_();
     this.updateGDataUnmountedPanel_();
