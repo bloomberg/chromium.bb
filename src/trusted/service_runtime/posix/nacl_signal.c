@@ -144,24 +144,34 @@ static void FindAndRunHandler(int sig, siginfo_t *info, void *uc) {
       /* If we handle this signal */
       if (s_Signals[a] == sig) {
         /* If this is a real sigaction pointer... */
-        if (s_OldActions[a].sa_flags & SA_SIGINFO) {
-          /* then call the old handler. */
-          s_OldActions[a].sa_sigaction(sig, info, uc);
-          break;
-        }
-        /* otherwise check if it is a real signal pointer */
-        if ((s_OldActions[a].sa_handler != SIG_DFL) &&
-            (s_OldActions[a].sa_handler != SIG_IGN)) {
-          /* and call the old signal. */
-          s_OldActions[a].sa_handler(sig);
-          break;
+        if ((s_OldActions[a].sa_flags & SA_SIGINFO) != 0) {
+          /*
+           * On Mac OS X, sigaction() can return a "struct sigaction"
+           * with SA_SIGINFO set but with a NULL sa_sigaction if no
+           * signal handler was previously registered.  This is
+           * allowed by POSIX, which does not require a struct
+           * returned by sigaction() to be intelligible.  We check for
+           * NULL here to avoid a crash.
+           */
+          if (s_OldActions[a].sa_sigaction != NULL) {
+            /* then call the old handler. */
+            s_OldActions[a].sa_sigaction(sig, info, uc);
+            break;
+          }
+        } else {
+          /* otherwise check if it is a real signal pointer */
+          if ((s_OldActions[a].sa_handler != SIG_DFL) &&
+              (s_OldActions[a].sa_handler != SIG_IGN)) {
+            /* and call the old signal. */
+            s_OldActions[a].sa_handler(sig);
+            break;
+          }
         }
         /*
          * We matched the signal, but didn't handle it, so we emulate
          * the default behavior which is to exit the app with the signal
          * number as the error code.
          */
-        NaClSignalErrorMessage("Failed to handle signal.\n");
         NaClExit(-sig);
       }
     }

@@ -135,31 +135,6 @@ enum NaClSignalResult NaClSignalHandleNone(int signal, void *ctx) {
   return NACL_SIGNAL_SKIP;
 }
 
-enum NaClSignalResult NaClSignalHandleAll(int signal, void *ctx) {
-  struct NaClSignalContext sigCtx;
-  char tmp[128];
-
-  /*
-   * Return an 8 bit error code which is -signal to
-   * simulate normal OS behavior
-   */
-
-  NaClSignalContextFromHandler(&sigCtx, ctx);
-  if (NaClSignalContextIsUntrusted(&sigCtx)) {
-    SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from untrusted code: Halting "
-             "at %" NACL_PRIXNACL_REG "h\n", signal, sigCtx.prog_ctr);
-    NaClSignalErrorMessage(tmp);
-    NaClExit((-signal) & 0xFF);
-  }
-  else {
-    SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from trusted code: Halting "
-             "at %" NACL_PRIXNACL_REG "h\n", signal, sigCtx.prog_ctr);
-    NaClSignalErrorMessage(tmp);
-    NaClExit((-signal) & 0xFF);
-  }
-  return NACL_SIGNAL_RETURN;
-}
-
 enum NaClSignalResult NaClSignalHandleUntrusted(int signal, void *ctx) {
   struct NaClSignalContext sigCtx;
   char tmp[128];
@@ -169,15 +144,19 @@ enum NaClSignalResult NaClSignalHandleUntrusted(int signal, void *ctx) {
    */
   NaClSignalContextFromHandler(&sigCtx, ctx);
   if (NaClSignalContextIsUntrusted(&sigCtx)) {
-    SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from untrusted code: Halting "
-             "at %" NACL_PRIXNACL_REG "h\n", signal, sigCtx.prog_ctr);
+    SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from untrusted code: "
+             "pc=%" NACL_PRIxNACL_REG "\n", signal, sigCtx.prog_ctr);
     NaClSignalErrorMessage(tmp);
     NaClExit((-signal) & 0xFF);
   }
   else {
-    SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from trusted code: Continuing "
-             "from %" NACL_PRIXNACL_REG "h\n", signal, sigCtx.prog_ctr);
+    SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from trusted code: "
+             "pc=%" NACL_PRIxNACL_REG "\n", signal, sigCtx.prog_ctr);
     NaClSignalErrorMessage(tmp);
+    /*
+     * Continue the search for another handler so that trusted crashes
+     * can be handled by the Breakpad crash reporter.
+     */
   }
   return NACL_SIGNAL_SEARCH;
 }
@@ -280,17 +259,7 @@ void NaClSignalHandlerInit() {
   }
 
   NaClSignalHandlerInitPlatform();
-#ifdef NACL_STANDALONE
-  /* In stand-alone mode (sel_ldr) we handle all signals. */
-  NaClSignalHandlerAdd(NaClSignalHandleAll);
-#else
-  /*
-   * When run in Chrome we handle only signals in untrusted code.
-   * Signals in trusted code are allowed to pass back to Chrome so
-   * that Breakpad can create a minidump when applicable.
-   */
   NaClSignalHandlerAdd(NaClSignalHandleUntrusted);
-#endif
 }
 
 void NaClSignalHandlerFini() {
