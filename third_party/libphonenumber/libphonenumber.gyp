@@ -58,6 +58,7 @@
     'direct_dependent_settings': {
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)/protoc_out/third_party/libphonenumber',
+        'src',
       ],
     },
     'variables': {

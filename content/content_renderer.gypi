@@ -46,6 +46,8 @@
     'renderer/android/content_detector.h',
     'renderer/android/email_detector.cc',
     'renderer/android/email_detector.h',
+    'renderer/android/phone_number_detector.cc',
+    'renderer/android/phone_number_detector.h',
     'renderer/active_notification_tracker.cc',
     'renderer/active_notification_tracker.h',
     'renderer/device_orientation_dispatcher.cc',
@@ -266,6 +268,11 @@
     ['OS=="win" and win_use_allocator_shim==1', {
       'dependencies': [
           '../base/allocator/allocator.gyp:allocator',
+      ],
+    }],
+    ['OS=="android"', {
+      'dependencies': [
+        '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
       ],
     }],
     # TODO(jrg): remove the OS=="android" section?
