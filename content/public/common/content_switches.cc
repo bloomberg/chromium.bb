@@ -77,6 +77,9 @@ const char kDisableDatabases[]              = "disable-databases";
 // Disables data transfer items.
 const char kDisableDataTransferItems[]      = "disable-data-transfer-items";
 
+// Disable deferred 2d canvas rendering.
+const char kDisableDeferred2dCanvas[]        = "disable-deferred-2d-canvas";
+
 // Disables desktop notifications (default enabled on windows).
 const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
 
@@ -221,9 +224,6 @@ const char kEnableBrowserPlugin[]           = "enable-browser-plugin";
 // Enables the creation of compositing layers for fixed position elements.
 const char kEnableCompositingForFixedPosition[] =
      "enable-fixed-position-compositing";
-
-// Enable deferred 2d canvas rendering.
-const char kEnableDeferred2dCanvas[]        = "enable-deferred-2d-canvas";
 
 // Enables CSS3 regions
 const char kEnableCssRegions[]              = "enable-css-regions";
