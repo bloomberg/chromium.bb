@@ -122,7 +122,7 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // Returns the range (in the model) the item at the specified index can be
   // dragged to.
-  std::pair<int,int> GetDragRange(int index);
+  std::pair<int, int> GetDragRange(int index);
 
   // If there is a drag operation in progress it's canceled. If |modified_index|
   // is valid, the new position of the corresponding item is returned.
@@ -136,6 +136,11 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // Shows the overflow menu.
   void ShowOverflowMenu();
+
+  // Update first launcher button's padding. This method adds padding to the
+  // first button to include the leading inset. It needs to be called once on
+  // button creation and every time when shelf alignment is changed.
+  void UpdateFirstButtonPadding();
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

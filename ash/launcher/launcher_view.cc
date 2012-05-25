@@ -4,6 +4,8 @@
 
 #include "ash/launcher/launcher_view.h"
 
+#include <algorithm>
+
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_icon_observer.h"
@@ -24,6 +26,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/animation/bounds_animator.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -54,7 +57,7 @@ namespace {
 // the ViewModel.
 class LauncherFocusSearch : public views::FocusSearch {
  public:
-  LauncherFocusSearch(views::ViewModel* view_model)
+  explicit LauncherFocusSearch(views::ViewModel* view_model)
       : FocusSearch(NULL, true, true),
         view_model_(view_model) {}
   virtual ~LauncherFocusSearch() {}
@@ -123,8 +126,8 @@ class MenuDelegateImpl : public ui::SimpleMenuModel::Delegate {
 // AnimationDelegate that deletes a view when done. This is used when a launcher
 // item is removed, which triggers a remove animation. When the animation is
 // done we delete the view.
-class DeleteViewAnimationDelegate :
-      public views::BoundsAnimator::OwnedAnimationDelegate {
+class DeleteViewAnimationDelegate
+    : public views::BoundsAnimator::OwnedAnimationDelegate {
  public:
   explicit DeleteViewAnimationDelegate(views::View* view) : view_(view) {}
   virtual ~DeleteViewAnimationDelegate() {}
@@ -137,8 +140,8 @@ class DeleteViewAnimationDelegate :
 
 // AnimationDelegate used when inserting a new item. This steadily increases the
 // opacity of the layer as the animation progress.
-class FadeInAnimationDelegate :
-      public views::BoundsAnimator::OwnedAnimationDelegate {
+class FadeInAnimationDelegate
+    : public views::BoundsAnimator::OwnedAnimationDelegate {
  public:
   explicit FadeInAnimationDelegate(views::View* view) : view_(view) {}
   virtual ~FadeInAnimationDelegate() {}
@@ -193,8 +196,8 @@ void ReflectItemStatus(const ash::LauncherItem& item,
 
 // AnimationDelegate used when inserting a new item. This steadily decreased the
 // opacity of the layer as the animation progress.
-class LauncherView::FadeOutAnimationDelegate :
-      public views::BoundsAnimator::OwnedAnimationDelegate {
+class LauncherView::FadeOutAnimationDelegate
+    : public views::BoundsAnimator::OwnedAnimationDelegate {
  public:
   FadeOutAnimationDelegate(LauncherView* host, views::View* view)
       : launcher_view_(host),
@@ -222,8 +225,8 @@ class LauncherView::FadeOutAnimationDelegate :
 // AnimationDelegate used to trigger fading an element in. When an item is
 // inserted this delegate is attached to the animation that expands the size of
 // the item.  When done it kicks off another animation to fade the item in.
-class LauncherView::StartFadeAnimationDelegate :
-      public views::BoundsAnimator::OwnedAnimationDelegate {
+class LauncherView::StartFadeAnimationDelegate
+    : public views::BoundsAnimator::OwnedAnimationDelegate {
  public:
   StartFadeAnimationDelegate(LauncherView* host,
                              views::View* view)
@@ -279,6 +282,7 @@ void LauncherView::Init() {
     view_model_->Add(child, static_cast<int>(i - items.begin()));
     AddChildView(child);
   }
+  UpdateFirstButtonPadding();
 
   overflow_button_ = new views::ImageButton(this);
   overflow_button_->set_accessibility_focusable(true);
@@ -304,6 +308,7 @@ void LauncherView::SetAlignment(ShelfAlignment alignment) {
   if (alignment_ == alignment)
     return;
   alignment_ = alignment;
+  UpdateFirstButtonPadding();
   LayoutToIdealBounds();
 }
 
@@ -375,6 +380,15 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
         x, y, kLauncherPreferredSize, kLauncherPreferredSize));
     x = primary_axis_coordinate(x + kLauncherPreferredSize + kButtonSpacing, 0);
     y = primary_axis_coordinate(0, y + kLauncherPreferredSize + kButtonSpacing);
+  }
+
+  if (view_model_->view_size() > 0) {
+    // Makes the first launcher button include the leading inset.
+    view_model_->set_ideal_bounds(0, gfx::Rect(gfx::Size(
+        primary_axis_coordinate(kLeadingInset + kLauncherPreferredSize,
+                                kLauncherPreferredSize),
+        primary_axis_coordinate(kLauncherPreferredSize,
+                                kLeadingInset + kLauncherPreferredSize))));
   }
 
   bounds->overflow_bounds.set_size(
@@ -469,7 +483,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
     }
 
     case TYPE_APP_LIST: {
-      // TODO[dave] turn this into a LauncherButton too.
+      // TODO(dave): turn this into a LauncherButton too.
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       views::ImageButton* button = new views::ImageButton(this);
       button->SetImage(
@@ -552,7 +566,7 @@ void LauncherView::ContinueDrag(const views::MouseEvent& event) {
   }
 
   // Constrain the location to the range of valid indices for the type.
-  std::pair<int,int> indices(GetDragRange(current_index));
+  std::pair<int, int> indices(GetDragRange(current_index));
   int last_drag_index = indices.second;
   // If the last index isn't valid, we're overflowing. Constrain to the app list
   // (which is the last visible item).
@@ -599,7 +613,7 @@ void LauncherView::ContinueDrag(const views::MouseEvent& event) {
 
 bool LauncherView::SameDragType(LauncherItemType typea,
                                 LauncherItemType typeb) const {
-  switch(typea) {
+  switch (typea) {
     case TYPE_TABBED:
     case TYPE_APP_PANEL:
       return (typeb == TYPE_TABBED || typeb == TYPE_APP_PANEL);
@@ -612,7 +626,7 @@ bool LauncherView::SameDragType(LauncherItemType typea,
   return false;
 }
 
-std::pair<int,int> LauncherView::GetDragRange(int index) {
+std::pair<int, int> LauncherView::GetDragRange(int index) {
   int min_index = -1;
   int max_index = -1;
   LauncherItemType type = model_->items()[index].type;
@@ -623,7 +637,7 @@ std::pair<int,int> LauncherView::GetDragRange(int index) {
       max_index = i;
     }
   }
-  return std::pair<int,int>(min_index, max_index);
+  return std::pair<int, int>(min_index, max_index);
 }
 
 void LauncherView::ConfigureChildView(views::View* view) {
@@ -682,6 +696,19 @@ void LauncherView::ShowOverflowMenu() {
     return;  // Window was deleted while menu was up.
   delegate_->ItemClicked(*window_iter, ui::EF_NONE);
 #endif  // !defined(OS_MACOSX)
+}
+
+void LauncherView::UpdateFirstButtonPadding() {
+  // Creates an empty border for first launcher button to make included leading
+  // inset act as the button's padding. This is only needed on button creation
+  // and when shelf alignment changes.
+  if (view_model_->view_size() > 0) {
+    view_model_->view_at(0)->set_border(views::Border::CreateEmptyBorder(
+        primary_axis_coordinate(0, kLeadingInset),
+        primary_axis_coordinate(kLeadingInset, 0),
+        0,
+        0));
+  }
 }
 
 int LauncherView::CancelDrag(int modified_index) {
@@ -905,7 +932,6 @@ string16 LauncherView::GetAccessibleName(const views::View* view) {
 
     case TYPE_BROWSER_SHORTCUT:
       return l10n_util::GetStringUTF16(IDS_AURA_NEW_TAB);
-
   }
   return string16();
 }

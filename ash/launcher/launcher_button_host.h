@@ -22,7 +22,7 @@ namespace internal {
 // This interface is used to enable reordering the items on the launcher.
 class ASH_EXPORT LauncherButtonHost {
  public:
-  // Invoked when the mose is pressed on a view.
+  // Invoked when the mouse is pressed on a view.
   virtual void MousePressedOnButton(views::View* view,
                                     const views::MouseEvent& event) = 0;
 

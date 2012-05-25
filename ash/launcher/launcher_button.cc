@@ -20,6 +20,7 @@
 #include "ui/views/controls/image_view.h"
 
 namespace {
+
 // Size of the bar. This is along the opposite axis of the shelf. For example,
 // if the shelf is aligned horizontally then this is the height of the bar.
 const int kBarSize = 3;
@@ -37,7 +38,7 @@ bool ShouldHop(int state) {
       state & ash::internal::LauncherButton::STATE_ACTIVE;
 }
 
-} // namespace
+}  // namespace
 
 namespace ash {
 
@@ -262,28 +263,29 @@ void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void LauncherButton::Layout() {
+  gfx::Rect rect(GetContentsBounds());
   int image_x, image_y;
 
   if (IsShelfHorizontal()) {
-    image_x = (width() - icon_view_->width()) / 2;
-    image_y = height() - (icon_view_->height() + kBarSize + kBarSpacing);
+    image_x = rect.x() + (rect.width() - icon_view_->width()) / 2;
+    image_y = rect.bottom() - (icon_view_->height() + kBarSize + kBarSpacing);
     if (ShouldHop(state_))
       image_y -= kHopSpacing;
   } else {
-    image_y = (height() - icon_view_->height()) / 2;
+    image_y = rect.y() + (rect.height() - icon_view_->height()) / 2;
     if (host_->GetShelfAlignment() == SHELF_ALIGNMENT_LEFT) {
-      image_x = kBarSize + kBarSpacing;
+      image_x = rect.x() + kBarSize + kBarSpacing;
       if (ShouldHop(state_))
         image_x += kHopSpacing;
     } else {
-      image_x = width() - (icon_view_->width() + kBarSize + kBarSpacing);
+      image_x = rect.right() - (icon_view_->width() + kBarSize + kBarSpacing);
       if (ShouldHop(state_))
         image_x -= kHopSpacing;
     }
   }
 
   icon_view_->SetPosition(gfx::Point(image_x, image_y));
-  bar_->SetBounds(0, 0, width(), height());
+  bar_->SetBoundsRect(rect);
 }
 
 bool LauncherButton::GetTooltipText(
