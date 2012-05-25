@@ -13,7 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_view_delegate.h"
 
-class AppListModelBuilder;
+class AppsModelBuilder;
+class SearchBuilder;
 
 class AppListViewDelegate : public app_list::AppListViewDelegate {
  public:
@@ -23,12 +24,16 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
  private:
   // Overridden from app_list::AppListViewDelegate:
   virtual void SetModel(app_list::AppListModel* model) OVERRIDE;
-  virtual void UpdateModel(const std::string& query) OVERRIDE;
-  virtual void OnAppListItemActivated(app_list::AppListItemModel* item,
-                                      int event_flags) OVERRIDE;
+  virtual void ActivateAppListItem(app_list::AppListItemModel* item,
+                                   int event_flags) OVERRIDE;
+  virtual void StartSearch() OVERRIDE;
+  virtual void StopSearch() OVERRIDE;
+  virtual void OpenSearchResult(const app_list::SearchResult& result,
+                                int event_flags) OVERRIDE;
   virtual void Close() OVERRIDE;
 
-  scoped_ptr<AppListModelBuilder> model_builder_;
+  scoped_ptr<AppsModelBuilder> apps_builder_;
+  scoped_ptr<SearchBuilder> search_builder_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewDelegate);
 };

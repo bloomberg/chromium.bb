@@ -4,22 +4,26 @@
 
 #include "ui/app_list/app_list_view.h"
 
+#include <algorithm>
 #include <string>
 
 #include "ui/app_list/app_list_bubble_border.h"
 #include "ui/app_list/app_list_item_view.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/app_list_model_view.h"
 #include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/apps_grid_view.h"
 #include "ui/app_list/page_switcher.h"
 #include "ui/app_list/pagination_model.h"
+#include "ui/app_list/search_box_model.h"
+#include "ui/app_list/search_box_view.h"
+#include "ui/app_list/search_result_list_view.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/background.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/layout/box_layout.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 
 namespace app_list {
@@ -31,11 +35,16 @@ const SkColor kWidgetBackgroundColor = SkColorSetARGB(0x33, 0, 0, 0);
 
 const float kModelViewAnimationScaleFactor = 0.9f;
 
+const int kPreferredWidth = 360;
+
 const int kPreferredIconDimension = 48;
 const int kPreferredCols = 4;
 const int kPreferredRows = 4;
 
-ui::Transform GetScaleTransform(AppListModelView* model_view) {
+// Inner padding space in pixels of bubble contents.
+const int kInnerPadding = 1;
+
+ui::Transform GetScaleTransform(AppsGridView* model_view) {
   gfx::Rect pixel_bounds = model_view->GetLayerBoundsInPixel();
   gfx::Point center(pixel_bounds.width() / 2, pixel_bounds.height() / 2);
   return ui::GetScaleTransform(center, kModelViewAnimationScaleFactor);
@@ -51,7 +60,10 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       pagination_model_(new PaginationModel),
       bubble_style_(false),
       bubble_border_(NULL),
-      model_view_(NULL) {
+      apps_view_(NULL),
+      page_switcher_view_(NULL),
+      search_box_view_(NULL),
+      search_results_view_(NULL) {
 }
 
 AppListView::~AppListView() {
@@ -67,10 +79,10 @@ void AppListView::InitAsFullscreenWidget(gfx::NativeView parent,
       kWidgetBackgroundColor));
   work_area_ = work_area;
 
-  model_view_ = new AppListModelView(this, pagination_model_.get());
-  model_view_->SetPaintToLayer(true);
-  model_view_->layer()->SetFillsBoundsOpaquely(false);
-  AddChildView(model_view_);
+  apps_view_ = new AppsGridView(this, pagination_model_.get());
+  apps_view_->SetPaintToLayer(true);
+  apps_view_->layer()->SetFillsBoundsOpaquely(false);
+  AddChildView(apps_view_);
 
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -87,26 +99,35 @@ void AppListView::InitAsFullscreenWidget(gfx::NativeView parent,
   widget->SetVisibilityChangedAnimationsEnabled(false);
 
   // Sets initial transform. AnimateShow changes it back to identity transform.
-  model_view_->SetTransform(GetScaleTransform(model_view_));
-  UpdateModel();
+  apps_view_->SetTransform(GetScaleTransform(apps_view_));
+  CreateModel();
 }
 
 void AppListView::InitAsBubble(gfx::NativeView parent, views::View* anchor) {
   bubble_style_ = true;
   set_background(NULL);
 
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  search_box_view_ = new SearchBoxView(this);
+  AddChildView(search_box_view_);
 
-  model_view_ = new AppListModelView(this, pagination_model_.get());
-  model_view_->SetLayout(kPreferredIconDimension,
+  apps_view_ = new AppsGridView(this, pagination_model_.get());
+  apps_view_->SetLayout(kPreferredIconDimension,
                          kPreferredCols,
                          kPreferredRows);
-  AddChildView(model_view_);
+  AddChildView(apps_view_);
 
-  PageSwitcher* page_switcher = new PageSwitcher(pagination_model_.get());
-  AddChildView(page_switcher);
+  search_results_view_ = new SearchResultListView(this);
+  search_results_view_->SetVisible(false);
+  AddChildView(search_results_view_);
+
+  page_switcher_view_ = new PageSwitcher(pagination_model_.get());
+  AddChildView(page_switcher_view_);
+
+  search_box_view_->set_grid_view(apps_view_);
+  search_box_view_->set_results_view(search_results_view_);
 
   set_anchor_view(anchor);
+  set_margin(0);
   set_parent_window(parent);
   set_close_on_deactivate(false);
   views::BubbleDelegateView::CreateBubble(this);
@@ -115,35 +136,38 @@ void AppListView::InitAsBubble(gfx::NativeView parent, views::View* anchor) {
   GetBubbleFrameView()->set_background(NULL);
 
   // Overrides border with AppListBubbleBorder.
-  bubble_border_ = new AppListBubbleBorder(this);
+  bubble_border_ = new AppListBubbleBorder(this,
+                                           search_box_view_,
+                                           apps_view_,
+                                           search_results_view_);
   GetBubbleFrameView()->SetBubbleBorder(bubble_border_);
   SizeToContents();  // Recalcuates with new border.
 
-  UpdateModel();
+  CreateModel();
 }
 
 void AppListView::AnimateShow(int duration_ms) {
   if (bubble_style_)
     return;
 
-  ui::Layer* layer = model_view_->layer();
+  ui::Layer* layer = apps_view_->layer();
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(duration_ms));
   animation.SetTweenType(ui::Tween::EASE_OUT);
-  model_view_->SetTransform(ui::Transform());
+  apps_view_->SetTransform(ui::Transform());
 }
 
 void AppListView::AnimateHide(int duration_ms) {
   if (bubble_style_)
     return;
 
-  ui::Layer* layer = model_view_->layer();
+  ui::Layer* layer = apps_view_->layer();
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(duration_ms));
   animation.SetTweenType(ui::Tween::EASE_IN);
-  model_view_->SetTransform(GetScaleTransform(model_view_));
+  apps_view_->SetTransform(GetScaleTransform(apps_view_));
 }
 
 void AppListView::Close() {
@@ -163,18 +187,45 @@ void AppListView::UpdateBounds(const gfx::Rect& screen_bounds,
   }
 }
 
-void AppListView::UpdateModel() {
+void AppListView::CreateModel() {
   if (delegate_.get()) {
+    // Creates a new model and update all references before releasing old one.
     scoped_ptr<AppListModel> new_model(new AppListModel);
+
     delegate_->SetModel(new_model.get());
-    delegate_->UpdateModel(std::string());
-    model_view_->SetModel(new_model.get());
+    apps_view_->SetModel(new_model->apps());
+
+    // search_box_view_ etc are not created for v1.
+    // TODO(xiyuan): Update this after v2 is ready.
+    if (search_box_view_)
+      search_box_view_->SetModel(new_model->search_box());
+    if (search_results_view_)
+      search_results_view_->SetResults(new_model->results());
+
     model_.reset(new_model.release());
   }
 }
 
 views::View* AppListView::GetInitiallyFocusedView() {
-  return model_view_;
+  if (bubble_style_)
+    return search_box_view_->search_box();
+  else
+    return apps_view_;
+}
+
+gfx::Size AppListView::GetPreferredSize() {
+  if (!bubble_style_)
+    return View::GetPreferredSize();
+
+  const int search_box_height = search_box_view_->GetPreferredSize().height();
+  const int grid_height = apps_view_->GetPreferredSize().height();
+  const int page_switcher_height =
+      page_switcher_view_->GetPreferredSize().height();
+  const int results_height = search_results_view_->GetPreferredSize().height();
+
+  int height = search_box_height + std::max(grid_height + page_switcher_height,
+                                            results_height);
+  return gfx::Size(kPreferredWidth, height);
 }
 
 void AppListView::Layout() {
@@ -183,7 +234,33 @@ void AppListView::Layout() {
     return;
 
   if (bubble_style_) {
-    views::View::Layout();
+    rect.Inset(kInnerPadding, kInnerPadding);
+
+    const int x = rect.x();
+    const int width = rect.width();
+
+    // SeachBoxView, AppsGridView and PageSwitcher uses a vertical box layout.
+    int y = rect.y();
+    const int search_box_height = search_box_view_->GetPreferredSize().height();
+    gfx::Rect search_box_frame(gfx::Point(x, y),
+                               gfx::Size(width, search_box_height));
+    search_box_view_->SetBoundsRect(rect.Intersect(search_box_frame));
+
+    y = search_box_view_->bounds().bottom();
+    const int grid_height = apps_view_->GetPreferredSize().height();
+    gfx::Rect grid_frame(gfx::Point(x, y), gfx::Size(width, grid_height));
+    apps_view_->SetBoundsRect(rect.Intersect(grid_frame));
+
+    y = apps_view_->bounds().bottom();
+    const int page_switcher_height = rect.bottom() - y;
+    gfx::Rect page_switcher_frame(gfx::Point(x, y),
+                                  gfx::Size(width, page_switcher_height));
+    page_switcher_view_->SetBoundsRect(rect.Intersect(page_switcher_frame));
+
+    // Results view is mutually exclusive with AppsGridView and PageSwitcher.
+    // It occupies the same space as those two views.
+    gfx::Rect results_frame(grid_frame.Union(page_switcher_frame));
+    search_results_view_->SetBoundsRect(rect.Intersect(results_frame));
   } else {
     // Gets work area rect, which is in screen coordinates.
     gfx::Rect workarea(work_area_);
@@ -194,7 +271,7 @@ void AppListView::Layout() {
     workarea.Offset(-origin.x(), -origin.y());
 
     rect = rect.Intersect(workarea);
-    model_view_->SetBoundsRect(rect);
+    apps_view_->SetBoundsRect(rect);
   }
 }
 
@@ -222,7 +299,7 @@ void AppListView::ButtonPressed(views::Button* sender,
     return;
 
   if (delegate_.get()) {
-    delegate_->OnAppListItemActivated(
+    delegate_->ActivateAppListItem(
         static_cast<AppListItemView*>(sender)->model(),
         event.flags());
   }
@@ -266,6 +343,38 @@ gfx::Rect AppListView::GetBubbleBounds() {
     GetBubbleFrameView()->SchedulePaint();
 
   return bubble_rect;
+}
+
+void AppListView::QueryChanged(SearchBoxView* sender) {
+  bool showing_search = search_results_view_->visible();
+  bool should_show_search = !model_->search_box()->text().empty();
+
+  if (delegate_.get()) {
+    if (should_show_search)
+      delegate_->StartSearch();
+    else
+      delegate_->StopSearch();
+  }
+
+  if (showing_search != should_show_search) {
+    // TODO(xiyuan): Animate this transition.
+    apps_view_->SetVisible(!should_show_search);
+    page_switcher_view_->SetVisible(!should_show_search);
+    search_results_view_->SetVisible(should_show_search);
+
+    // TODO(xiyuan): Highlight default match instead of the first.
+    if (search_results_view_->visible())
+      search_results_view_->SetSelectedIndex(0);
+
+    // Needs to repaint frame as well.
+    GetBubbleFrameView()->SchedulePaint();
+  }
+}
+
+void AppListView::OpenResult(const SearchResult& result, int event_flags) {
+  if (delegate_.get())
+    delegate_->OpenSearchResult(result, event_flags);
+  Close();
 }
 
 }  // namespace app_list

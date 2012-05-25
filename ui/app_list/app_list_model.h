@@ -7,34 +7,37 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/app_list_item_model.h"
 #include "ui/base/models/list_model.h"
 
 namespace app_list {
 
-// Model for AppListModelView that owns a list of AppListItemModel.
+class AppListItemModel;
+class SearchBoxModel;
+class SearchResult;
+
+// Master model of app list that consists of three sub models: Apps,
+// SearchBoxModel and SearchResults. The Apps sub model owns a list of
+// AppListItemModel and is displayed in the grid view. SearchBoxModel is
+// the model for SearchBoxView. SearchResults owns a list of SearchResult.
 class APP_LIST_EXPORT AppListModel {
  public:
+  typedef ui::ListModel<AppListItemModel> Apps;
+  typedef ui::ListModel<SearchResult> SearchResults;
+
   AppListModel();
   ~AppListModel();
 
-  // Adds an item to the model. The model takes ownership of |item|.
-  void AddItem(AppListItemModel* item);
-  void AddItemAt(size_t index, AppListItemModel* item);
-
-  void DeleteItemAt(size_t index);
-
-  AppListItemModel* GetItemAt(size_t index);
-
-  void AddObserver(ui::ListModelObserver* observer);
-  void RemoveObserver(ui::ListModelObserver* observer);
-
-  size_t item_count() const { return items_.item_count(); }
+  Apps* apps() { return apps_.get(); }
+  SearchBoxModel* search_box() { return search_box_.get(); }
+  SearchResults* results() { return results_.get(); }
 
  private:
-  typedef ui::ListModel<AppListItemModel> Items;
-  Items items_;
+  scoped_ptr<Apps> apps_;
+
+  scoped_ptr<SearchBoxModel> search_box_;
+  scoped_ptr<SearchResults> results_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListModel);
 };

@@ -4,36 +4,19 @@
 
 #include "ui/app_list/app_list_model.h"
 
+#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/search_box_model.h"
+#include "ui/app_list/search_result.h"
+
 namespace app_list {
 
-AppListModel::AppListModel() {
+AppListModel::AppListModel()
+    : apps_(new Apps),
+      search_box_(new SearchBoxModel),
+      results_(new SearchResults) {
 }
 
 AppListModel::~AppListModel() {
-}
-
-void AppListModel::AddItem(AppListItemModel* item) {
-  items_.Add(item);
-}
-
-void AppListModel::AddItemAt(size_t index, AppListItemModel* item) {
-  items_.AddAt(index, item);
-}
-
-void AppListModel::DeleteItemAt(size_t index) {
-  items_.DeleteAt(index);
-}
-
-AppListItemModel* AppListModel::GetItemAt(size_t index) {
-  return items_.GetItemAt(index);
-}
-
-void AppListModel::AddObserver(ui::ListModelObserver* observer) {
-  items_.AddObserver(observer);
-}
-
-void AppListModel::RemoveObserver(ui::ListModelObserver* observer) {
-  items_.RemoveObserver(observer);
 }
 
 }  // namespace app_list

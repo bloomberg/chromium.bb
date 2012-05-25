@@ -14,21 +14,22 @@ namespace app_list {
 // A class to paint bubble border and background.
 class AppListBubbleBorder : public views::BubbleBorder {
  public:
-  explicit AppListBubbleBorder(views::View* app_list_view);
+  AppListBubbleBorder(views::View* app_list_view,
+                      views::View* search_box_view,
+                      views::View* grid_view,
+                      views::View* results_view);
   virtual ~AppListBubbleBorder();
 
-  int arrow_offset() const {
-    return arrow_offset_;
-  }
-  void set_arrow_offset(int arrow_offset) {
-    arrow_offset_ = arrow_offset;
-  }
+  int arrow_offset() const { return arrow_offset_; }
+  void set_arrow_offset(int arrow_offset) { arrow_offset_ = arrow_offset; }
 
  private:
-  void PaintModelViewBackground(gfx::Canvas* canvas,
+  void PaintSearchBoxBackground(gfx::Canvas* canvas,
                                 const gfx::Rect& bounds) const;
-  void PaintPageSwitcherBackground(gfx::Canvas* canvas,
-                                   const gfx::Rect& bounds) const;
+  void PaintSearchResultListBackground(gfx::Canvas* canvas,
+                                       const gfx::Rect& bounds) const;
+  void PaintAppsGridBackground(gfx::Canvas* canvas,
+                               const gfx::Rect& bounds) const;
 
   // views::BubbleBorder overrides:
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
@@ -40,7 +41,12 @@ class AppListBubbleBorder : public views::BubbleBorder {
                      gfx::Canvas* canvas) const OVERRIDE;
 
   // AppListView hosted inside this bubble.
-  views::View* app_list_view_;
+  const views::View* app_list_view_;
+
+  // Children view of AppListView that needs to paint background.
+  const views::View* search_box_view_;
+  const views::View* grid_view_;
+  const views::View* results_view_;
 
   // Offset in pixels relative the default middle position.
   int arrow_offset_;

@@ -25,11 +25,11 @@ class PageSwitcher : public views::View,
   explicit PageSwitcher(PaginationModel* model);
   virtual ~PageSwitcher();
 
- private:
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
 
+ private:
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;

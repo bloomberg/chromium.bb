@@ -1,0 +1,79 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef UI_APP_LIST_SEARCH_BOX_VIEW_H_
+#define UI_APP_LIST_SEARCH_BOX_VIEW_H_
+#pragma once
+
+#include <string>
+
+#include "ui/app_list/search_box_model_observer.h"
+#include "ui/views/view.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
+
+namespace views {
+class ImageView;
+class Textfield;
+}  // namespace views
+
+namespace app_list {
+
+class SearchBoxModel;
+class SearchBoxViewDelegate;
+
+// SearchBoxView consists of an icon and a Textfield. SearchBoxModel is its data
+// model that controls what icon to display, what placeholder text to use for
+// Textfield. The text and selection model part could be set to change the
+// contents and selection model of the Textfield.
+class SearchBoxView : public views::View,
+                      public views::TextfieldController,
+                      public SearchBoxModelObserver {
+ public:
+  explicit SearchBoxView(SearchBoxViewDelegate* delegate);
+  virtual ~SearchBoxView();
+
+  void SetModel(SearchBoxModel* model);
+
+  views::Textfield* search_box() { return search_box_; }
+  void set_grid_view(View* grid_view) { grid_view_ = grid_view; }
+  void set_results_view(View* results_view) { results_view_ = results_view; }
+
+  // Overridden from views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+
+ private:
+  // Updates model text and selection model with current Textfield info.
+  void UpdateModel();
+
+  // Fires query change notification.
+  void NotifyQueryChanged();
+
+  // Overridden from views::TextfieldController:
+  virtual void ContentsChanged(views::Textfield* sender,
+                               const string16& new_contents) OVERRIDE;
+  virtual bool HandleKeyEvent(views::Textfield* sender,
+                              const views::KeyEvent& key_event) OVERRIDE;
+
+  // Overridden from SearchBoxModelObserver:
+  virtual void IconChanged() OVERRIDE;
+  virtual void HintTextChanged() OVERRIDE;
+  virtual void SelectionModelChanged() OVERRIDE;
+  virtual void TextChanged() OVERRIDE;
+
+  SearchBoxViewDelegate* delegate_;  // Not owned.
+  SearchBoxModel* model_;  // Owned by AppListModel
+
+  views::ImageView* icon_view_;  // Owned by views hierarchy
+  views::Textfield* search_box_;  // Owned by views hierarchy
+  views::View* grid_view_;  // Owned by views hierarchy
+  views::View* results_view_;  // Owned by views hierarchy
+
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxView);
+};
+
+}  // namespace app_list
+
+#endif  // UI_APP_LIST_SEARCH_BOX_VIEW_H_
+

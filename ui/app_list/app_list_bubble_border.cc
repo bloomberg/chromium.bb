@@ -27,18 +27,14 @@ const int kBorderSize = 1;
 const SkColor kShadowColor = SkColorSetARGB(0xFF, 0, 0, 0);
 const int kShadowRadius = 4;
 
+const SkColor kSearchBoxBackground = SK_ColorWHITE;
+
 // Colors and sizes of top separator between searchbox and grid view.
 const SkColor kTopSeparatorColor = SkColorSetRGB(0xDB, 0xDB, 0xDB);
 const int kTopSeparatorSize = 1;
 const SkColor kTopSeparatorGradientColor1 = SkColorSetRGB(0xEF, 0xEF, 0xEF);
 const SkColor kTopSeparatorGradientColor2 = SkColorSetRGB(0xF9, 0xF9, 0xF9);
 const int kTopSeparatorGradientSize = 9;
-
-// Colors and sizes of bottom separator bwtween grid view and page switcher.
-const SkColor kFooterBorderGradientColor1 = SkColorSetRGB(0x9F, 0x9F, 0x9F);
-const SkColor kFooterBorderGradientColor2 = SkColorSetRGB(0xD9, 0xD9, 0xD9);
-const int kFooterBorderSize = 3;
-const SkColor kFooterBackground = SkColorSetRGB(0xD9, 0xD9, 0xD9);
 
 // TODO(xiyuan): Merge this with the one in skia_util.
 SkShader* CreateVerticalGradientShader(int start_point,
@@ -93,28 +89,76 @@ void BuildShape(const gfx::Rect& bounds,
 
 namespace app_list {
 
-AppListBubbleBorder::AppListBubbleBorder(views::View* app_list_view)
+AppListBubbleBorder::AppListBubbleBorder(views::View* app_list_view,
+                                         views::View* search_box_view,
+                                         views::View* grid_view,
+                                         views::View* results_view)
     : views::BubbleBorder(views::BubbleBorder::BOTTOM_RIGHT,
                           views::BubbleBorder::NO_SHADOW),
       app_list_view_(app_list_view),
+      search_box_view_(search_box_view),
+      grid_view_(grid_view),
+      results_view_(results_view),
       arrow_offset_(0) {
 }
 
 AppListBubbleBorder::~AppListBubbleBorder() {
 }
 
-void AppListBubbleBorder::PaintModelViewBackground(
+void AppListBubbleBorder::PaintSearchBoxBackground(
     gfx::Canvas* canvas,
     const gfx::Rect& bounds) const {
-  const views::View* page_switcher = app_list_view_->child_at(1);
-  const gfx::Rect page_switcher_bounds =
-      app_list_view_->ConvertRectToWidget(page_switcher->bounds());
+  const gfx::Rect search_box_view_bounds =
+      app_list_view_->ConvertRectToWidget(search_box_view_->bounds());
   gfx::Rect rect(bounds.x(),
                  bounds.y(),
                  bounds.width(),
-                 page_switcher_bounds.y() - bounds.y());
+                 search_box_view_bounds.bottom() - bounds.y());
 
-  // TODO(xiyuan): Draw 1px separator line after SearchBoxView is added.
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setColor(kSearchBoxBackground);
+  canvas->DrawRect(rect, paint);
+
+  gfx::Rect seperator_rect(rect);
+  seperator_rect.set_y(seperator_rect.bottom());
+  seperator_rect.set_height(kTopSeparatorSize);
+  canvas->FillRect(seperator_rect, kTopSeparatorColor);
+}
+
+void AppListBubbleBorder::PaintSearchResultListBackground(
+    gfx::Canvas* canvas,
+    const gfx::Rect& bounds) const {
+  if (!results_view_->visible())
+    return;
+
+  const gfx::Rect search_box_view_bounds =
+      app_list_view_->ConvertRectToWidget(search_box_view_->bounds());
+  int start_y = search_box_view_bounds.bottom() + kTopSeparatorSize;
+  gfx::Rect rect(bounds.x(),
+                 start_y,
+                 bounds.width(),
+                 bounds.bottom() - start_y + kArrowHeight);
+
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setColor(kSearchBoxBackground);
+  canvas->DrawRect(rect, paint);
+}
+
+void AppListBubbleBorder::PaintAppsGridBackground(
+    gfx::Canvas* canvas,
+    const gfx::Rect& bounds) const {
+  if (!grid_view_->visible())
+    return;
+
+  const gfx::Rect search_box_view_bounds =
+      app_list_view_->ConvertRectToWidget(search_box_view_->bounds());
+  int start_y = search_box_view_bounds.bottom() + kTopSeparatorSize;
+  gfx::Rect rect(bounds.x(),
+                 start_y,
+                 bounds.width(),
+                 bounds.bottom() - start_y + kArrowHeight);
 
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
@@ -125,32 +169,6 @@ void AppListBubbleBorder::PaintModelViewBackground(
       kTopSeparatorGradientColor2,
       SkShader::kClamp_TileMode)));
   canvas->DrawRect(rect, paint);
-}
-
-void AppListBubbleBorder::PaintPageSwitcherBackground(
-    gfx::Canvas* canvas,
-    const gfx::Rect& bounds) const {
-  const views::View* page_switcher = app_list_view_->child_at(1);
-  const gfx::Rect page_switcher_bounds =
-      app_list_view_->ConvertRectToWidget(page_switcher->bounds());
-
-  gfx::Rect rect(bounds.x(),
-                 page_switcher_bounds.y(),
-                 bounds.width(),
-                 kFooterBorderSize);
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-  SkSafeUnref(paint.setShader(CreateVerticalGradientShader(
-      rect.y(),
-      rect.bottom(),
-      kFooterBorderGradientColor1,
-      kFooterBorderGradientColor2,
-      SkShader::kClamp_TileMode)));
-  canvas->DrawRect(rect, paint);
-
-  rect.set_y(rect.bottom());
-  rect.set_height(bounds.bottom() - rect.y() + kArrowHeight - kBorderSize);
-  canvas->FillRect(rect, kFooterBackground);
 }
 
 void AppListBubbleBorder::GetInsets(gfx::Insets* insets) const {
@@ -212,8 +230,9 @@ void AppListBubbleBorder::Paint(const views::View& view,
   canvas->Save();
   canvas->ClipPath(path);
 
-  PaintModelViewBackground(canvas, bounds);
-  PaintPageSwitcherBackground(canvas, bounds);
+  PaintSearchBoxBackground(canvas, bounds);
+  PaintAppsGridBackground(canvas, bounds);
+  PaintSearchResultListBackground(canvas, bounds);
 
   canvas->Restore();
 }

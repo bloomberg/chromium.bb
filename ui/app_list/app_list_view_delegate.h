@@ -6,14 +6,13 @@
 #define UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 #pragma once
 
-#include <string>
-
 #include "ui/app_list/app_list_export.h"
 
 namespace app_list {
 
 class AppListItemModel;
 class AppListModel;
+class SearchResult;
 
 class APP_LIST_EXPORT AppListViewDelegate {
  public:
@@ -24,12 +23,21 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Note that AppListView owns the model.
   virtual void SetModel(AppListModel* model) = 0;
 
-  // Invoked to ask the delegate to populate the model for given |query|.
-  virtual void UpdateModel(const std::string& query) = 0;
+  // Invoked when an AppListeItemModelView is activated by click or enter key.
+  virtual void ActivateAppListItem(AppListItemModel* item,
+                                   int event_flags) = 0;
 
-  // Invoked an AppListeItemModelView is  activated by click or enter key.
-  virtual void OnAppListItemActivated(AppListItemModel* item,
-                                      int event_flags) = 0;
+  // Invoked to start a new search. Delegate collects query input from
+  // SearchBoxModel and populates SearchResults. Both models are sub models
+  // of AppListModel.
+  virtual void StartSearch() = 0;
+
+  // Invoked to stop the current search.
+  virtual void StopSearch() = 0;
+
+  // Invoked to open the search result.
+  virtual void OpenSearchResult(const SearchResult& result,
+                                int event_flags) = 0;
 
   // Invoked to close app list.
   virtual void Close() = 0;

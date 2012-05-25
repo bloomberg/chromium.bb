@@ -8,6 +8,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
+#include "ui/app_list/search_box_view_delegate.h"
+#include "ui/app_list/search_result_list_view_delegate.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 
@@ -19,14 +21,19 @@ namespace app_list {
 
 class AppListBubbleBorder;
 class AppListModel;
-class AppListModelView;
+class AppsGridView;
 class AppListViewDelegate;
+class PageSwitcher;
 class PaginationModel;
+class SearchBoxView;
+class SearchResultListView;
 
 // AppListView is the top-level view and controller of app list UI. It creates
-// and hosts a AppListModelView and passes AppListModel to it for display.
+// and hosts a AppsGridView and passes AppListModel to it for display.
 class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
-                                    public views::ButtonListener {
+                                    public views::ButtonListener,
+                                    public SearchBoxViewDelegate,
+                                    public SearchResultListViewDelegate {
  public:
   // Takes ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
@@ -45,14 +52,17 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   void UpdateBounds(const gfx::Rect& screen_bounds,
                     const gfx::Rect& work_area);
 
+  SearchBoxView* search_box() const { return search_box_view_; }
+
  private:
-  // Updates model using query text in search box.
-  void UpdateModel();
+  // Creates models to use.
+  void CreateModel();
 
   // Overridden from views::WidgetDelegateView:
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
 
   // Overridden from views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
@@ -64,6 +74,13 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // Overridden from views::BubbleDelegate:
   virtual gfx::Rect GetBubbleBounds() OVERRIDE;
 
+  // Overridden from SearchBoxViewDelegate:
+  virtual void QueryChanged(SearchBoxView* sender) OVERRIDE;
+
+  // Overridden from SearchResultListViewDelegate:
+  virtual void OpenResult(const SearchResult& result,
+                          int event_flags) OVERRIDE;
+
   scoped_ptr<AppListModel> model_;
   scoped_ptr<AppListViewDelegate> delegate_;
 
@@ -72,7 +89,11 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   bool bubble_style_;
   AppListBubbleBorder* bubble_border_;  // Owned by views hierarchy.
-  AppListModelView* model_view_;
+
+  AppsGridView* apps_view_;  // Owned by views hierarchy.
+  PageSwitcher* page_switcher_view_;  // Owned by views hierarchy.
+  SearchBoxView* search_box_view_;  // Owned by views hierarchy.
+  SearchResultListView* search_results_view_;  // Owned by views hierarchy.
 
   // Work area in screen coordinates to layout app list. This is used for
   // full screen mode.

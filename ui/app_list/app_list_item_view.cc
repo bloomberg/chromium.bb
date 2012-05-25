@@ -12,7 +12,7 @@
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "ui/app_list/app_list_item_model.h"
-#include "ui/app_list/app_list_model_view.h"
+#include "ui/app_list/apps_grid_view.h"
 #include "ui/app_list/drop_shadow_label.h"
 #include "ui/app_list/icon_cache.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -180,7 +180,7 @@ class AppListItemView::IconOperation
   DISALLOW_COPY_AND_ASSIGN(IconOperation);
 };
 
-AppListItemView::AppListItemView(AppListModelView* list_model_view,
+AppListItemView::AppListItemView(AppsGridView* list_model_view,
                                  AppListItemModel* model,
                                  views::ButtonListener* listener)
     : CustomButton(listener),
@@ -214,7 +214,10 @@ AppListItemView::AppListItemView(AppListModelView* list_model_view,
 
   set_context_menu_controller(this);
   set_request_focus_on_press(false);
-  set_focusable(true);
+
+  // Don't take focus for v2 so that focus stays with the search box.
+  if (!list_model_view_->fixed_layout())
+    set_focusable(true);
 }
 
 AppListItemView::~AppListItemView() {
@@ -267,7 +270,8 @@ void AppListItemView::SetSelected(bool selected) {
   if (selected == selected_)
     return;
 
-  RequestFocus();
+  if (focusable())
+    RequestFocus();
   selected_ = selected;
   SchedulePaint();
 }

@@ -8,15 +8,17 @@
 #include "ui/app_list/pagination_model.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace {
 
+const int kPreferredHeight = 36;
+
 const int kButtonSpacing = 10;
 const int kButtonWidth = 60;
 const int kButtonHeight = 6;
-const int kButtonHeightPadding = 10;
 const int kButtonCornerRadius = 2;
 
 const SkColor kHoverColor = SkColorSetRGB(0x6E, 0x6E, 0x6E);
@@ -43,7 +45,7 @@ class PageSwitcherButton : public views::CustomButton {
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(kButtonWidth, kButtonHeight + kButtonHeightPadding);
+    return gfx::Size(kButtonWidth, kButtonHeight);
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
@@ -59,22 +61,13 @@ class PageSwitcherButton : public views::CustomButton {
  private:
   // Paints a button that has two rounded corner at bottom.
   void PaintButton(gfx::Canvas* canvas, SkColor color) {
-    gfx::Rect rect(GetContentsBounds());
-    rect.set_height(kButtonHeight);
-
-    gfx::Point center = rect.CenterPoint();
+    gfx::Rect rect(GetContentsBounds().Center(
+            gfx::Size(kButtonWidth, kButtonHeight)));
 
     SkPath path;
-    path.incReserve(12);
-    path.moveTo(SkIntToScalar(rect.x()), SkIntToScalar(rect.y()));
-    path.arcTo(SkIntToScalar(rect.x()), SkIntToScalar(rect.bottom()),
-               SkIntToScalar(center.x()), SkIntToScalar(rect.bottom()),
-               SkIntToScalar(kButtonCornerRadius));
-    path.arcTo(SkIntToScalar(rect.right()), SkIntToScalar(rect.bottom()),
-               SkIntToScalar(rect.right()), SkIntToScalar(rect.y()),
-               SkIntToScalar(kButtonCornerRadius));
-    path.lineTo(SkIntToScalar(rect.right()), SkIntToScalar(rect.y()));
-    path.close();
+    path.addRoundRect(gfx::RectToSkRect(rect),
+                      SkIntToScalar(kButtonCornerRadius),
+                      SkIntToScalar(kButtonCornerRadius));
 
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
@@ -116,12 +109,19 @@ PageSwitcher::~PageSwitcher() {
 gfx::Size PageSwitcher::GetPreferredSize() {
   // Always return a size with correct height so that container resize is not
   // needed when more pages are added.
-  return gfx::Size(kButtonWidth, kButtonHeight + kButtonHeightPadding);
+  return gfx::Size(buttons_->GetPreferredSize().width(),
+                   kPreferredHeight);
 }
 
 void PageSwitcher::Layout() {
   gfx::Rect rect(GetContentsBounds());
-  buttons_->SetBoundsRect(rect.Center(buttons_->GetPreferredSize()));
+  // Makes |buttons_| horizontally center and vertically fill.
+  gfx::Size buttons_size(buttons_->GetPreferredSize());
+  gfx::Rect buttons_bounds(rect.CenterPoint().x() - buttons_size.width() / 2,
+                           rect.y(),
+                           buttons_size.width(),
+                           rect.height());
+  buttons_->SetBoundsRect(rect.Intersect(buttons_bounds));
 }
 
 void PageSwitcher::ButtonPressed(views::Button* sender,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/app_list_model_view.h"
+#include "ui/app_list/apps_grid_view.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_item_view.h"
@@ -21,7 +21,7 @@ struct ModelViewCalculateLayoutCase {
 
 namespace app_list {
 
-TEST(AppListModelViewTest, ModelViewCalculateLayout) {
+TEST(AppsGridViewTest, ModelViewCalculateLayout) {
   // kMinTitleWidth is the average width of 15 chars of default size 12 font in
   // chromeos. Override here to avoid flakiness from different default font on
   // bots.
@@ -55,11 +55,11 @@ TEST(AppListModelViewTest, ModelViewCalculateLayout) {
     int cols = 0;
     gfx::Size content_size(kCases[i].screen_size.width(),
                            kCases[i].screen_size.height() - kLauncherHeight);
-    AppListModelView::CalculateLayout(content_size,
-                                      kCases[i].num_of_tiles,
-                                      &icon_size,
-                                      &rows,
-                                      &cols);
+    AppsGridView::CalculateLayout(content_size,
+                                  kCases[i].num_of_tiles,
+                                  &icon_size,
+                                  &rows,
+                                  &cols);
     EXPECT_EQ(kCases[i].expected_icon_size, icon_size) << "i=" << i;
     EXPECT_EQ(kCases[i].expected_rows, rows) << "i=" << i;
     EXPECT_EQ(kCases[i].expected_cols, cols) << "i=" << i;

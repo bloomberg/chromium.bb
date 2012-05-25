@@ -6,8 +6,9 @@
 
 #include "ash/shell.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/views/ash/app_list/app_list_model_builder.h"
+#include "chrome/browser/ui/views/ash/app_list/apps_model_builder.h"
 #include "chrome/browser/ui/views/ash/app_list/chrome_app_list_item.h"
+#include "chrome/browser/ui/views/ash/app_list/search_builder.h"
 
 AppListViewDelegate::AppListViewDelegate() {
 }
@@ -17,26 +18,40 @@ AppListViewDelegate::~AppListViewDelegate() {
 
 void AppListViewDelegate::SetModel(app_list::AppListModel* model) {
   if (model) {
-    if (!model_builder_.get()) {
-      model_builder_.reset(
-          new AppListModelBuilder(
-              ProfileManager::GetDefaultProfileOrOffTheRecord()));
-    }
-    model_builder_->SetModel(model);
+    Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+    apps_builder_.reset(new AppsModelBuilder(profile, model->apps()));
+    apps_builder_->Build();
+
+    search_builder_.reset(new SearchBuilder(profile,
+                                            model->search_box(),
+                                            model->results()));
   } else {
-    model_builder_.reset();
+    apps_builder_.reset();
+    search_builder_.reset();
   }
 }
 
-void AppListViewDelegate::UpdateModel(const std::string& query) {
-  DCHECK(model_builder_.get());
-  model_builder_->Build(query);
-}
-
-void AppListViewDelegate::OnAppListItemActivated(
+void AppListViewDelegate::ActivateAppListItem(
     app_list::AppListItemModel* item,
     int event_flags) {
   static_cast<ChromeAppListItem*>(item)->Activate(event_flags);
+}
+
+void AppListViewDelegate::StartSearch() {
+  if (search_builder_.get())
+    search_builder_->StartSearch();
+}
+
+void AppListViewDelegate::StopSearch() {
+  if (search_builder_.get())
+    search_builder_->StopSearch();
+}
+
+void AppListViewDelegate::OpenSearchResult(
+    const app_list::SearchResult& result,
+    int event_flags) {
+  if (search_builder_.get())
+    search_builder_->OpenResult(result, event_flags);
 }
 
 void AppListViewDelegate::Close()  {

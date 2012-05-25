@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/app_list_model_view.h"
+#include "ui/app_list/apps_grid_view.h"
 
 #include <algorithm>
 
 #include "ui/app_list/app_list_item_view.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/views/border.h"
 
@@ -18,14 +17,14 @@ const int kTopLeftRightPadding = 15;
 const int kBottomPadding = 30;
 
 // Preferred tile size when showing in fixed layout.
-const int kPreferredTileWidth = 80;
-const int kPreferredTileHeight = 88;
+const int kPreferredTileWidth = 82;
+const int kPreferredTileHeight = 90;
 
 }  // namespace
 
 namespace app_list {
 
-AppListModelView::AppListModelView(views::ButtonListener* listener,
+AppsGridView::AppsGridView(views::ButtonListener* listener,
                                    PaginationModel* pagination_model)
     : model_(NULL),
       listener_(listener),
@@ -38,13 +37,13 @@ AppListModelView::AppListModelView(views::ButtonListener* listener,
   pagination_model_->AddObserver(this);
 }
 
-AppListModelView::~AppListModelView() {
+AppsGridView::~AppsGridView() {
   if (model_)
     model_->RemoveObserver(this);
   pagination_model_->RemoveObserver(this);
 }
 
-void AppListModelView::CalculateLayout(const gfx::Size& content_size,
+void AppsGridView::CalculateLayout(const gfx::Size& content_size,
                                        int num_of_tiles,
                                        gfx::Size* icon_size,
                                        int* rows,
@@ -95,7 +94,7 @@ void AppListModelView::CalculateLayout(const gfx::Size& content_size,
   *rows = (num_of_tiles - 1) / (*cols) + 1;
 }
 
-void AppListModelView::SetLayout(int icon_size, int cols, int rows_per_page) {
+void AppsGridView::SetLayout(int icon_size, int cols, int rows_per_page) {
   fixed_layout_ = true;
 
   icon_size_.SetSize(icon_size, icon_size);
@@ -108,7 +107,7 @@ void AppListModelView::SetLayout(int icon_size, int cols, int rows_per_page) {
                                               kTopLeftRightPadding));
 }
 
-void AppListModelView::SetModel(AppListModel* model) {
+void AppsGridView::SetModel(AppListModel::Apps* model) {
   if (model_)
     model_->RemoveObserver(this);
 
@@ -118,54 +117,19 @@ void AppListModelView::SetModel(AppListModel* model) {
   Update();
 }
 
-void AppListModelView::SetSelectedItem(AppListItemView* item) {
+void AppsGridView::SetSelectedItem(AppListItemView* item) {
   int index = GetIndexOf(item);
   if (index >= 0)
     SetSelectedItemByIndex(index);
 }
 
-void AppListModelView::ClearSelectedItem(AppListItemView* item) {
+void AppsGridView::ClearSelectedItem(AppListItemView* item) {
   int index = GetIndexOf(item);
   if (index == selected_item_index_)
     SetSelectedItemByIndex(-1);
 }
 
-void AppListModelView::Update() {
-  selected_item_index_ = -1;
-  RemoveAllChildViews(true);
-  if (!model_ || model_->item_count() == 0)
-    return;
-
-  for (size_t i = 0; i < model_->item_count(); ++i)
-    AddChildView(new AppListItemView(this, model_->GetItemAt(i), listener_));
-
-  Layout();
-  SchedulePaint();
-}
-
-AppListItemView* AppListModelView::GetItemViewAtIndex(int index) {
-  return static_cast<AppListItemView*>(child_at(index));
-}
-
-void AppListModelView::SetSelectedItemByIndex(int index) {
-  if (selected_item_index_ == index)
-    return;
-
-  if (selected_item_index_ >= 0)
-    GetItemViewAtIndex(selected_item_index_)->SetSelected(false);
-
-  if (index < 0 || index >= child_count()) {
-    selected_item_index_ = -1;
-  } else {
-    selected_item_index_ = index;
-    GetItemViewAtIndex(selected_item_index_)->SetSelected(true);
-
-    if (tiles_per_page())
-      pagination_model_->SelectPage(selected_item_index_ / tiles_per_page());
-  }
-}
-
-gfx::Size AppListModelView::GetPreferredSize() {
+gfx::Size AppsGridView::GetPreferredSize() {
   if (!fixed_layout_)
     return gfx::Size();
 
@@ -175,7 +139,7 @@ gfx::Size AppListModelView::GetPreferredSize() {
                    tile_size.height() * rows_per_page_ + insets.height());
 }
 
-void AppListModelView::Layout() {
+void AppsGridView::Layout() {
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty() || child_count() == 0)
     return;
@@ -235,7 +199,7 @@ void AppListModelView::Layout() {
   }
 }
 
-bool AppListModelView::OnKeyPressed(const views::KeyEvent& event) {
+bool AppsGridView::OnKeyPressed(const views::KeyEvent& event) {
   bool handled = false;
   if (selected_item_index_ >= 0)
     handled = GetItemViewAtIndex(selected_item_index_)->OnKeyPressed(event);
@@ -284,7 +248,7 @@ bool AppListModelView::OnKeyPressed(const views::KeyEvent& event) {
   return handled;
 }
 
-bool AppListModelView::OnKeyReleased(const views::KeyEvent& event) {
+bool AppsGridView::OnKeyReleased(const views::KeyEvent& event) {
   bool handled = false;
   if (selected_item_index_ >= 0)
     handled = GetItemViewAtIndex(selected_item_index_)->OnKeyReleased(event);
@@ -292,11 +256,46 @@ bool AppListModelView::OnKeyReleased(const views::KeyEvent& event) {
   return handled;
 }
 
-void AppListModelView::OnPaintFocusBorder(gfx::Canvas* canvas) {
+void AppsGridView::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // Override to not paint focus frame.
 }
 
-void AppListModelView::ListItemsAdded(size_t start, size_t count) {
+void AppsGridView::Update() {
+  selected_item_index_ = -1;
+  RemoveAllChildViews(true);
+  if (!model_ || model_->item_count() == 0)
+    return;
+
+  for (size_t i = 0; i < model_->item_count(); ++i)
+    AddChildView(new AppListItemView(this, model_->GetItemAt(i), listener_));
+
+  Layout();
+  SchedulePaint();
+}
+
+AppListItemView* AppsGridView::GetItemViewAtIndex(int index) {
+  return static_cast<AppListItemView*>(child_at(index));
+}
+
+void AppsGridView::SetSelectedItemByIndex(int index) {
+  if (selected_item_index_ == index)
+    return;
+
+  if (selected_item_index_ >= 0)
+    GetItemViewAtIndex(selected_item_index_)->SetSelected(false);
+
+  if (index < 0 || index >= child_count()) {
+    selected_item_index_ = -1;
+  } else {
+    selected_item_index_ = index;
+    GetItemViewAtIndex(selected_item_index_)->SetSelected(true);
+
+    if (tiles_per_page())
+      pagination_model_->SelectPage(selected_item_index_ / tiles_per_page());
+  }
+}
+
+void AppsGridView::ListItemsAdded(size_t start, size_t count) {
   for (size_t i = start; i < start + count; ++i) {
     AddChildViewAt(new AppListItemView(this, model_->GetItemAt(i), listener_),
                    i);
@@ -305,7 +304,7 @@ void AppListModelView::ListItemsAdded(size_t start, size_t count) {
   SchedulePaint();
 }
 
-void AppListModelView::ListItemsRemoved(size_t start, size_t count) {
+void AppsGridView::ListItemsRemoved(size_t start, size_t count) {
   for (size_t i = 0; i < count; ++i)
     delete child_at(start);
 
@@ -313,14 +312,14 @@ void AppListModelView::ListItemsRemoved(size_t start, size_t count) {
   SchedulePaint();
 }
 
-void AppListModelView::ListItemsChanged(size_t start, size_t count) {
+void AppsGridView::ListItemsChanged(size_t start, size_t count) {
   NOTREACHED();
 }
 
-void AppListModelView::TotalPagesChanged() {
+void AppsGridView::TotalPagesChanged() {
 }
 
-void AppListModelView::SelectedPageChanged(int old_selected, int new_selected) {
+void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
   Layout();
 }
 

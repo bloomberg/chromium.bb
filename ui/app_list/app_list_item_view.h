@@ -26,14 +26,14 @@ class MenuRunner;
 namespace app_list {
 
 class AppListItemModel;
-class AppListModelView;
+class AppsGridView;
 class DropShadowLabel;
 
 class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
                                         public views::ContextMenuController,
                                         public AppListItemModelObserver {
  public:
-  AppListItemView(AppListModelView* list_model_view,
+  AppListItemView(AppsGridView* list_model_view,
                   AppListItemModel* model,
                   views::ButtonListener* listener);
   virtual ~AppListItemView();
@@ -92,7 +92,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   AppListItemModel* model_;
 
-  AppListModelView* list_model_view_;
+  AppsGridView* list_model_view_;
   views::ImageView* icon_;
   DropShadowLabel* title_;
 

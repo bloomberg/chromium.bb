@@ -16203,7 +16203,7 @@ Battery full
     <!-- Aura strings -->
     <if expr="pp_ifdef('use_ash')">
       <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
-        Search apps and more
+        Search
       </message>
       <message name="IDS_APP_LIST_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of an app list item.">
         Pin to Launcher

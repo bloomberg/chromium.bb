@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/app_list/app_list_model_builder.h"
+#include "chrome/browser/ui/views/ash/app_list/apps_model_builder.h"
 
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
@@ -55,9 +55,9 @@ class ChromeAppItem : public ChromeAppListItem {
 // ModelItemSortData provides a string key to sort with
 // l10n_util::StringComparator.
 struct ModelItemSortData {
-  explicit ModelItemSortData(app_list::AppListItemModel* item)
-      : item(item),
-        key(base::i18n::ToLower(UTF8ToUTF16(item->title()))) {
+  explicit ModelItemSortData(app_list::AppListItemModel* app)
+      : app(app),
+        key(base::i18n::ToLower(UTF8ToUTF16(app->title()))) {
   }
 
   // Needed by StringComparator<Element> in SortVectorWithStringKey, which uses
@@ -66,7 +66,7 @@ struct ModelItemSortData {
     return key;
   }
 
-  app_list::AppListItemModel* item;
+  app_list::AppListItemModel* app;
   string16 key;
 };
 
@@ -80,19 +80,13 @@ bool IsSpecialApp(const std::string& extension_id) {
   return false;
 }
 
-// Returns true if given |str| matches |query|. Currently, it returns
-// if |query| is a substr of |str|.
-bool MatchesQuery(const string16& query, const string16& str) {
-  return query.empty() ||
-      base::i18n::StringSearchIgnoringCaseAndAccents(query, str);
-}
-
 }  // namespace
 
-AppListModelBuilder::AppListModelBuilder(Profile* profile)
+AppsModelBuilder::AppsModelBuilder(Profile* profile,
+                                   app_list::AppListModel::Apps* model)
     : profile_(profile),
-      model_(NULL),
-      special_items_count_(0) {
+      model_(model),
+      special_apps_count_(0) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
       content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -101,34 +95,28 @@ AppListModelBuilder::AppListModelBuilder(Profile* profile)
       content::Source<Profile>(profile_));
 }
 
-AppListModelBuilder::~AppListModelBuilder() {
+AppsModelBuilder::~AppsModelBuilder() {
 }
 
-void AppListModelBuilder::SetModel(app_list::AppListModel* model) {
-  model_ = model;
-}
-
-void AppListModelBuilder::Build(const std::string& query) {
+void AppsModelBuilder::Build() {
   DCHECK(model_ && model_->item_count() == 0);
-  CreateSpecialItems();
+  CreateSpecialApps();
 
-  query_ = base::i18n::ToLower(UTF8ToUTF16(query));
+  Apps apps;
+  GetExtensionApps(&apps);
 
-  Items items;
-  GetExtensionApps(query_, &items);
-
-  SortAndPopulateModel(items);
+  SortAndPopulateModel(apps);
   HighlightApp();
 }
 
-void AppListModelBuilder::SortAndPopulateModel(const Items& items) {
+void AppsModelBuilder::SortAndPopulateModel(const Apps& apps) {
   // Just return if there is nothing to populate.
-  if (items.empty())
+  if (apps.empty())
     return;
 
-  // Sort items case insensitive alphabetically.
+  // Sort apps case insensitive alphabetically.
   std::vector<ModelItemSortData> sorted;
-  for (Items::const_iterator it = items.begin(); it != items.end(); ++it)
+  for (Apps::const_iterator it = apps.begin(); it != apps.end(); ++it)
     sorted.push_back(ModelItemSortData(*it));
 
   l10n_util::SortVectorWithStringKey(g_browser_process->GetApplicationLocale(),
@@ -137,11 +125,11 @@ void AppListModelBuilder::SortAndPopulateModel(const Items& items) {
   for (std::vector<ModelItemSortData>::const_iterator it = sorted.begin();
        it != sorted.end();
        ++it) {
-    model_->AddItem(it->item);
+    model_->Add(it->app);
   }
 }
 
-void AppListModelBuilder::InsertItemByTitle(app_list::AppListItemModel* item) {
+void AppsModelBuilder::InsertItemByTitle(app_list::AppListItemModel* app) {
   DCHECK(model_);
 
   icu::Locale locale(g_browser_process->GetApplicationLocale().c_str());
@@ -152,19 +140,18 @@ void AppListModelBuilder::InsertItemByTitle(app_list::AppListItemModel* item) {
     collator.reset();
 
   l10n_util::StringComparator<string16> c(collator.get());
-  ModelItemSortData data(item);
-  for (size_t i = special_items_count_; i < model_->item_count(); ++i) {
+  ModelItemSortData data(app);
+  for (size_t i = special_apps_count_; i < model_->item_count(); ++i) {
     ModelItemSortData current(model_->GetItemAt(i));
     if (!c(current.key, data.key)) {
-      model_->AddItemAt(i, item);
+      model_->AddAt(i, app);
       return;
     }
   }
-  model_->AddItem(item);
+  model_->Add(app);
 }
 
-void AppListModelBuilder::GetExtensionApps(const string16& query,
-                                           Items* items) {
+void AppsModelBuilder::GetExtensionApps(Apps* apps) {
   DCHECK(profile_);
   ExtensionService* service = profile_->GetExtensionService();
   if (!service)
@@ -175,17 +162,16 @@ void AppListModelBuilder::GetExtensionApps(const string16& query,
   for (ExtensionSet::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
     if ((*app)->ShouldDisplayInLauncher() &&
-        !IsSpecialApp((*app)->id()) &&
-        MatchesQuery(query, UTF8ToUTF16((*app)->name()))) {
-      items->push_back(new ExtensionAppItem(profile_, *app));
+        !IsSpecialApp((*app)->id())) {
+      apps->push_back(new ExtensionAppItem(profile_, *app));
     }
   }
 }
 
-void AppListModelBuilder::CreateSpecialItems() {
+void AppsModelBuilder::CreateSpecialApps() {
   DCHECK(model_ && model_->item_count() == 0);
 
-  model_->AddItem(new ChromeAppItem());
+  model_->Add(new ChromeAppItem());
 
   bool is_guest_session = Profile::IsGuestSession();
   ExtensionService* service = profile_->GetExtensionService();
@@ -198,21 +184,21 @@ void AppListModelBuilder::CreateSpecialItems() {
     const Extension* extension = service->GetInstalledExtension(extension_id);
     DCHECK(extension);
 
-    model_->AddItem(new ExtensionAppItem(profile_, extension));
+    model_->Add(new ExtensionAppItem(profile_, extension));
   }
 
-  special_items_count_ = model_->item_count();
+  special_apps_count_ = model_->item_count();
 }
 
-int AppListModelBuilder::FindApp(const std::string& app_id) {
+int AppsModelBuilder::FindApp(const std::string& app_id) {
   DCHECK(model_);
-  for (size_t i = special_items_count_; i < model_->item_count(); ++i) {
-    ChromeAppListItem* item =
+  for (size_t i = special_apps_count_; i < model_->item_count(); ++i) {
+    ChromeAppListItem* app =
         static_cast<ChromeAppListItem*>(model_->GetItemAt(i));
-    if (item->type() != ChromeAppListItem::TYPE_APP)
+    if (app->type() != ChromeAppListItem::TYPE_APP)
       continue;
 
-    ExtensionAppItem* extension_item = static_cast<ExtensionAppItem*>(item);
+    ExtensionAppItem* extension_item = static_cast<ExtensionAppItem*>(app);
     if (extension_item->extension_id() == app_id)
       return i;
   }
@@ -220,7 +206,7 @@ int AppListModelBuilder::FindApp(const std::string& app_id) {
   return -1;
 }
 
-void AppListModelBuilder::HighlightApp() {
+void AppsModelBuilder::HighlightApp() {
   DCHECK(model_);
   if (highlight_app_id_.empty())
     return;
@@ -233,15 +219,14 @@ void AppListModelBuilder::HighlightApp() {
   highlight_app_id_.clear();
 }
 
-void AppListModelBuilder::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
+void AppsModelBuilder::Observe(int type,
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      if (!extension->ShouldDisplayInLauncher() ||
-          !MatchesQuery(query_, UTF8ToUTF16(extension->name())))
+      if (!extension->ShouldDisplayInLauncher())
         return;
 
       if (FindApp(extension->id()) != -1)
@@ -257,7 +242,7 @@ void AppListModelBuilder::Observe(int type,
               details)->extension;
       int index = FindApp(extension->id());
       if (index >= 0)
-        model_->DeleteItemAt(index);
+        model_->DeleteAt(index);
       break;
     }
     case chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST: {

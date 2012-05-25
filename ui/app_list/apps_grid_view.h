@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_APP_LIST_MODEL_VIEW_H_
-#define UI_APP_LIST_APP_LIST_MODEL_VIEW_H_
+#ifndef UI_APP_LIST_APPS_GRID_VIEW_H_
+#define UI_APP_LIST_APPS_GRID_VIEW_H_
 #pragma once
 
 #include "ui/app_list/app_list_export.h"
+#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/views/view.h"
@@ -18,17 +19,16 @@ class ButtonListener;
 namespace app_list {
 
 class AppListItemView;
-class AppListModel;
 class PaginationModel;
 
-// AppListModelView displays the UI for an AppListModel.
-class APP_LIST_EXPORT AppListModelView : public views::View,
-                                         public ui::ListModelObserver,
-                                         public PaginationModelObserver {
+// AppsGridView displays a grid for AppListModel::Apps sub model.
+class APP_LIST_EXPORT AppsGridView : public views::View,
+                                     public ui::ListModelObserver,
+                                     public PaginationModelObserver {
  public:
-  AppListModelView(views::ButtonListener* listener,
+  AppsGridView(views::ButtonListener* listener,
                    PaginationModel* pagination_model);
-  virtual ~AppListModelView();
+  virtual ~AppsGridView();
 
   // Calculate preferred icon size, rows and cols for given |content_size| and
   // |num_of_tiles|.
@@ -43,7 +43,7 @@ class APP_LIST_EXPORT AppListModelView : public views::View,
   void SetLayout(int icon_size, int cols, int rows_per_page);
 
   // Sets |model| to use. Note this does not take ownership of |model|.
-  void SetModel(AppListModel* model);
+  void SetModel(AppListModel::Apps* model);
 
   void SetSelectedItem(AppListItemView* item);
   void ClearSelectedItem(AppListItemView* item);
@@ -56,19 +56,19 @@ class APP_LIST_EXPORT AppListModelView : public views::View,
     return fixed_layout_;
   }
 
- private:
-  // Updates from model.
-  void Update();
-
-  AppListItemView* GetItemViewAtIndex(int index);
-  void SetSelectedItemByIndex(int index);
-
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+
+ private:
+  // Updates from model.
+  void Update();
+
+  AppListItemView* GetItemViewAtIndex(int index);
+  void SetSelectedItemByIndex(int index);
 
   // Overridden from ListModelObserver:
   virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;
@@ -79,7 +79,7 @@ class APP_LIST_EXPORT AppListModelView : public views::View,
   virtual void TotalPagesChanged() OVERRIDE;
   virtual void SelectedPageChanged(int old_selected, int new_selected) OVERRIDE;
 
-  AppListModel* model_;  // Owned by parent AppListView.
+  AppListModel::Apps* model_;  // Owned by AppListModel.
   views::ButtonListener* listener_;
   PaginationModel* pagination_model_;  // Owned by AppListView.
 
@@ -90,9 +90,9 @@ class APP_LIST_EXPORT AppListModelView : public views::View,
 
   int selected_item_index_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListModelView);
+  DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_APP_LIST_MODEL_VIEW_H_
+#endif  // UI_APP_LIST_APPS_GRID_VIEW_H_
