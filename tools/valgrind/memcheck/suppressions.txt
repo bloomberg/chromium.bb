@@ -5797,19 +5797,6 @@
    fun:_ZN4base6Thread10ThreadMainEv
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
-{
-   bug_129607
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10extensions9Extension12LoadCommandsEPSbItN4base20string16_char_traitsESaItEE
-   fun:_ZN10extensions9Extension18LoadSharedFeaturesERKSt3setIN22ExtensionAPIPermission2IDESt4lessIS3_ESaIS3_EEPSbItN4base20string16_char_traitsESaItEE
-   fun:_ZN10extensions9Extension13InitFromValueEiPSbItN4base20string16_char_traitsESaItEE
-   fun:_ZN10extensions9Extension6CreateERK8FilePathNS0_8LocationERKN4base15DictionaryValueEiRKSsPSs
-   fun:_ZN10extensions9Extension6CreateERK8FilePathNS0_8LocationERKN4base15DictionaryValueEiPSs
-   fun:_ZN21ExtensionManifestTest13LoadExtensionERKNS_8ManifestEPSsN10extensions9Extension8LocationEi
-   fun:_ZN21ExtensionManifestTest20LoadAndExpectSuccessERKNS_8ManifestEN10extensions9Extension8LocationEi
-   fun:_ZN21ExtensionManifestTest20LoadAndExpectSuccessEPKcN10extensions9Extension8LocationEi
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
