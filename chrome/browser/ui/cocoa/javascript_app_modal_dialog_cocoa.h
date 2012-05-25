@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_JS_MODAL_DIALOG_COCOA_H_
-#define CHROME_BROWSER_UI_COCOA_JS_MODAL_DIALOG_COCOA_H_
+#ifndef CHROME_BROWSER_UI_COCOA_JAVASCRIPT_APP_MODAL_DIALOG_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_JAVASCRIPT_APP_MODAL_DIALOG_COCOA_H_
 #pragma once
 
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
@@ -20,10 +20,10 @@ class NSAlert;
 class JavaScriptAppModalDialogHelper;
 #endif
 
-class JSModalDialogCocoa : public NativeAppModalDialog {
+class JavaScriptAppModalDialogCocoa : public NativeAppModalDialog {
  public:
-  explicit JSModalDialogCocoa(JavaScriptAppModalDialog* dialog);
-  virtual ~JSModalDialogCocoa();
+  explicit JavaScriptAppModalDialogCocoa(JavaScriptAppModalDialog* dialog);
+  virtual ~JavaScriptAppModalDialogCocoa();
 
   // Overridden from NativeAppModalDialog:
   virtual int GetAppModalDialogButtons() const OVERRIDE;
@@ -41,8 +41,7 @@ class JSModalDialogCocoa : public NativeAppModalDialog {
   scoped_nsobject<JavaScriptAppModalDialogHelper> helper_;
   NSAlert* alert_; // weak, owned by |helper_|.
 
-  DISALLOW_COPY_AND_ASSIGN(JSModalDialogCocoa);
+  DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialogCocoa);
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_JS_MODAL_DIALOG_COCOA_H_
-
+#endif  // CHROME_BROWSER_UI_COCOA_JAVASCRIPT_APP_MODAL_DIALOG_COCOA_H_

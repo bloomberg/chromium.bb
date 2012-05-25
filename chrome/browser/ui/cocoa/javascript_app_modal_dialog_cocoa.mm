@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/js_modal_dialog_cocoa.h"
+#include "chrome/browser/ui/cocoa/javascript_app_modal_dialog_cocoa.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -48,12 +48,12 @@
   return textField_;
 }
 
-// |contextInfo| is the JSModalDialogCocoa that owns us.
+// |contextInfo| is the JavaScriptAppModalDialogCocoa that owns us.
 - (void)alertDidEnd:(NSAlert*)alert
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo {
-  scoped_ptr<JSModalDialogCocoa> native_dialog(
-      reinterpret_cast<JSModalDialogCocoa*>(contextInfo));
+  scoped_ptr<JavaScriptAppModalDialogCocoa> native_dialog(
+      reinterpret_cast<JavaScriptAppModalDialogCocoa*>(contextInfo));
   string16 input;
   if (textField_)
     input = base::SysNSStringToUTF16([textField_ stringValue]);
@@ -89,9 +89,10 @@
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
-// JSModalDialogCocoa, public:
+// JavaScriptAppModalDialogCocoa, public:
 
-JSModalDialogCocoa::JSModalDialogCocoa(JavaScriptAppModalDialog* dialog)
+JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
+    JavaScriptAppModalDialog* dialog)
     : dialog_(dialog),
       helper_(NULL) {
   // Determine the names of the dialog buttons based on the flags. "Default"
@@ -157,13 +158,13 @@ JSModalDialogCocoa::JSModalDialogCocoa(JavaScriptAppModalDialog* dialog)
   }
 }
 
-JSModalDialogCocoa::~JSModalDialogCocoa() {
+JavaScriptAppModalDialogCocoa::~JavaScriptAppModalDialogCocoa() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// JSModalDialogCocoa, NativeAppModalDialog implementation:
+// JavaScriptAppModalDialogCocoa, NativeAppModalDialog implementation:
 
-int JSModalDialogCocoa::GetAppModalDialogButtons() const {
+int JavaScriptAppModalDialogCocoa::GetAppModalDialogButtons() const {
   // From the above, it is the case that if there is 1 button, it is always the
   // OK button.  The second button, if it exists, is always the Cancel button.
   int num_buttons = [[alert_ buttons] count];
@@ -178,7 +179,7 @@ int JSModalDialogCocoa::GetAppModalDialogButtons() const {
   }
 }
 
-void JSModalDialogCocoa::ShowAppModalDialog() {
+void JavaScriptAppModalDialogCocoa::ShowAppModalDialog() {
   [alert_
       beginSheetModalForWindow:nil  // nil here makes it app-modal
                  modalDelegate:helper_.get()
@@ -189,10 +190,10 @@ void JSModalDialogCocoa::ShowAppModalDialog() {
     [[alert_ window] makeFirstResponder:[alert_ accessoryView]];
 }
 
-void JSModalDialogCocoa::ActivateAppModalDialog() {
+void JavaScriptAppModalDialogCocoa::ActivateAppModalDialog() {
 }
 
-void JSModalDialogCocoa::CloseAppModalDialog() {
+void JavaScriptAppModalDialogCocoa::CloseAppModalDialog() {
   DCHECK([alert_ isKindOfClass:[NSAlert class]]);
 
   // Note: the call below will delete |this|,
@@ -200,12 +201,12 @@ void JSModalDialogCocoa::CloseAppModalDialog() {
   [NSApp endSheet:[alert_ window]];
 }
 
-void JSModalDialogCocoa::AcceptAppModalDialog() {
+void JavaScriptAppModalDialogCocoa::AcceptAppModalDialog() {
   NSButton* first = [[alert_ buttons] objectAtIndex:0];
   [first performClick:nil];
 }
 
-void JSModalDialogCocoa::CancelAppModalDialog() {
+void JavaScriptAppModalDialogCocoa::CancelAppModalDialog() {
   DCHECK([[alert_ buttons] count] >= 2);
   NSButton* second = [[alert_ buttons] objectAtIndex:1];
   [second performClick:nil];
@@ -218,5 +219,5 @@ void JSModalDialogCocoa::CancelAppModalDialog() {
 NativeAppModalDialog* NativeAppModalDialog::CreateNativeJavaScriptPrompt(
     JavaScriptAppModalDialog* dialog,
     gfx::NativeWindow parent_window) {
-  return new JSModalDialogCocoa(dialog);
+  return new JavaScriptAppModalDialogCocoa(dialog);
 }

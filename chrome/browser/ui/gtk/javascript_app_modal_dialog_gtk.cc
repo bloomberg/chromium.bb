@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/js_modal_dialog_gtk.h"
+#include "chrome/browser/ui/gtk/javascript_app_modal_dialog_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -45,10 +45,11 @@ bool ShouldSuppressJSDialogs(GtkDialog* dialog) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// JSModalDialogGtk, public:
+// JavaScriptAppModalDialogGtk, public:
 
-JSModalDialogGtk::JSModalDialogGtk(JavaScriptAppModalDialog* dialog,
-                                   gfx::NativeWindow parent_window)
+JavaScriptAppModalDialogGtk::JavaScriptAppModalDialogGtk(
+    JavaScriptAppModalDialog* dialog,
+    gfx::NativeWindow parent_window)
     : dialog_(dialog) {
   GtkButtonsType buttons = GTK_BUTTONS_NONE;
   GtkMessageType message_type = GTK_MESSAGE_OTHER;
@@ -146,13 +147,13 @@ JSModalDialogGtk::JSModalDialogGtk(JavaScriptAppModalDialog* dialog,
   g_signal_connect(gtk_dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 }
 
-JSModalDialogGtk::~JSModalDialogGtk() {
+JavaScriptAppModalDialogGtk::~JavaScriptAppModalDialogGtk() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// JSModalDialogGtk, NativeAppModalDialog implementation:
+// JavaScriptAppModalDialogGtk, NativeAppModalDialog implementation:
 
-int JSModalDialogGtk::GetAppModalDialogButtons() const {
+int JavaScriptAppModalDialogGtk::GetAppModalDialogButtons() const {
   switch (dialog_->javascript_message_type()) {
     case ui::JAVASCRIPT_MESSAGE_TYPE_ALERT:
       return ui::DIALOG_BUTTON_OK;
@@ -169,33 +170,34 @@ int JSModalDialogGtk::GetAppModalDialogButtons() const {
   }
 }
 
-void JSModalDialogGtk::ShowAppModalDialog() {
+void JavaScriptAppModalDialogGtk::ShowAppModalDialog() {
   gtk_util::ShowDialogWithMinLocalizedWidth(GTK_WIDGET(gtk_dialog_),
       IDS_ALERT_DIALOG_WIDTH_CHARS);
 }
 
-void JSModalDialogGtk::ActivateAppModalDialog() {
+void JavaScriptAppModalDialogGtk::ActivateAppModalDialog() {
   DCHECK(gtk_dialog_);
   gtk_window_present(GTK_WINDOW(gtk_dialog_));
 }
 
-void JSModalDialogGtk::CloseAppModalDialog() {
+void JavaScriptAppModalDialogGtk::CloseAppModalDialog() {
   DCHECK(gtk_dialog_);
   OnResponse(gtk_dialog_, GTK_RESPONSE_DELETE_EVENT);
 }
 
-void JSModalDialogGtk::AcceptAppModalDialog() {
+void JavaScriptAppModalDialogGtk::AcceptAppModalDialog() {
   OnResponse(gtk_dialog_, GTK_RESPONSE_OK);
 }
 
-void JSModalDialogGtk::CancelAppModalDialog() {
+void JavaScriptAppModalDialogGtk::CancelAppModalDialog() {
   OnResponse(gtk_dialog_, GTK_RESPONSE_CANCEL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// JSModalDialogGtk, private:
+// JavaScriptAppModalDialogGtk, private:
 
-void JSModalDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
+void JavaScriptAppModalDialogGtk::OnResponse(GtkWidget* dialog,
+                                             int response_id) {
   switch (response_id) {
     case GTK_RESPONSE_OK:
       // The first arg is the prompt text and the second is true if we want to
@@ -227,5 +229,5 @@ void JSModalDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
 NativeAppModalDialog* NativeAppModalDialog::CreateNativeJavaScriptPrompt(
     JavaScriptAppModalDialog* dialog,
     gfx::NativeWindow parent_window) {
-  return new JSModalDialogGtk(dialog, parent_window);
+  return new JavaScriptAppModalDialogGtk(dialog, parent_window);
 }

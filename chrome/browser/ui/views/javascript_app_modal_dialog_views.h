@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_JS_MODAL_DIALOG_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_JS_MODAL_DIALOG_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
@@ -16,11 +16,11 @@ namespace views {
 class MessageBoxView;
 }
 
-class JSModalDialogViews : public NativeAppModalDialog,
-                           public views::DialogDelegate {
+class JavaScriptAppModalDialogViews : public NativeAppModalDialog,
+                                      public views::DialogDelegate {
  public:
-  explicit JSModalDialogViews(JavaScriptAppModalDialog* parent);
-  virtual ~JSModalDialogViews();
+  explicit JavaScriptAppModalDialogViews(JavaScriptAppModalDialog* parent);
+  virtual ~JavaScriptAppModalDialogViews();
 
   // Overridden from NativeAppModalDialog:
   virtual int GetAppModalDialogButtons() const OVERRIDE;
@@ -55,7 +55,7 @@ class JSModalDialogViews : public NativeAppModalDialog,
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(JSModalDialogViews);
+  DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialogViews);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_JS_MODAL_DIALOG_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/js_modal_dialog_views.h"
+#include "chrome/browser/ui/views/javascript_app_modal_dialog_views.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
@@ -14,9 +14,10 @@
 #include "ui/views/widget/widget.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// JSModalDialogViews, public:
+// JavaScriptAppModalDialogViews, public:
 
-JSModalDialogViews::JSModalDialogViews(JavaScriptAppModalDialog* parent)
+JavaScriptAppModalDialogViews::JavaScriptAppModalDialogViews(
+    JavaScriptAppModalDialog* parent)
     : parent_(parent) {
   int options = views::MessageBoxView::DETECT_DIRECTIONALITY;
   if (parent->javascript_message_type() == ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT)
@@ -36,86 +37,86 @@ JSModalDialogViews::JSModalDialogViews(JavaScriptAppModalDialog* parent)
   }
 }
 
-JSModalDialogViews::~JSModalDialogViews() {
+JavaScriptAppModalDialogViews::~JavaScriptAppModalDialogViews() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// JSModalDialogViews, NativeAppModalDialog implementation:
+// JavaScriptAppModalDialogViews, NativeAppModalDialog implementation:
 
-int JSModalDialogViews::GetAppModalDialogButtons() const {
+int JavaScriptAppModalDialogViews::GetAppModalDialogButtons() const {
   return GetDialogButtons();
 }
 
-void JSModalDialogViews::ShowAppModalDialog() {
+void JavaScriptAppModalDialogViews::ShowAppModalDialog() {
   GetWidget()->Show();
 }
 
-void JSModalDialogViews::ActivateAppModalDialog() {
+void JavaScriptAppModalDialogViews::ActivateAppModalDialog() {
   GetWidget()->Show();
   GetWidget()->Activate();
 }
 
-void JSModalDialogViews::CloseAppModalDialog() {
+void JavaScriptAppModalDialogViews::CloseAppModalDialog() {
   GetWidget()->Close();
 }
 
-void JSModalDialogViews::AcceptAppModalDialog() {
+void JavaScriptAppModalDialogViews::AcceptAppModalDialog() {
   GetDialogClientView()->AcceptWindow();
 }
 
-void JSModalDialogViews::CancelAppModalDialog() {
+void JavaScriptAppModalDialogViews::CancelAppModalDialog() {
   GetDialogClientView()->CancelWindow();
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// JSModalDialogViews, views::DialogDelegate implementation:
+// JavaScriptAppModalDialogViews, views::DialogDelegate implementation:
 
-int JSModalDialogViews::GetDefaultDialogButton() const {
+int JavaScriptAppModalDialogViews::GetDefaultDialogButton() const {
   return ui::DIALOG_BUTTON_OK;
 }
 
-int JSModalDialogViews::GetDialogButtons() const {
+int JavaScriptAppModalDialogViews::GetDialogButtons() const {
   if (parent_->javascript_message_type() == ui::JAVASCRIPT_MESSAGE_TYPE_ALERT)
     return ui::DIALOG_BUTTON_OK;
 
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
-string16 JSModalDialogViews::GetWindowTitle() const {
+string16 JavaScriptAppModalDialogViews::GetWindowTitle() const {
   return parent_->title();
 }
 
-void JSModalDialogViews::WindowClosing() {
+void JavaScriptAppModalDialogViews::WindowClosing() {
 }
 
-void JSModalDialogViews::DeleteDelegate() {
+void JavaScriptAppModalDialogViews::DeleteDelegate() {
   delete this;
 }
 
-bool JSModalDialogViews::Cancel() {
+bool JavaScriptAppModalDialogViews::Cancel() {
   parent_->OnCancel(message_box_view_->IsCheckBoxSelected());
   return true;
 }
 
-bool JSModalDialogViews::Accept() {
+bool JavaScriptAppModalDialogViews::Accept() {
   parent_->OnAccept(message_box_view_->GetInputText(),
                     message_box_view_->IsCheckBoxSelected());
   return true;
 }
 
-void JSModalDialogViews::OnClose() {
+void JavaScriptAppModalDialogViews::OnClose() {
   parent_->OnClose();
 }
 
-views::Widget* JSModalDialogViews::GetWidget() {
+views::Widget* JavaScriptAppModalDialogViews::GetWidget() {
   return message_box_view_->GetWidget();
 }
 
-const views::Widget* JSModalDialogViews::GetWidget() const {
+const views::Widget* JavaScriptAppModalDialogViews::GetWidget() const {
   return message_box_view_->GetWidget();
 }
 
-string16 JSModalDialogViews::GetDialogButtonLabel(
+string16 JavaScriptAppModalDialogViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (parent_->is_before_unload_dialog()) {
     if (button == ui::DIALOG_BUTTON_OK) {
@@ -134,17 +135,17 @@ string16 JSModalDialogViews::GetDialogButtonLabel(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// JSModalDialogViews, views::WidgetDelegate implementation:
+// JavaScriptAppModalDialogViews, views::WidgetDelegate implementation:
 
-ui::ModalType JSModalDialogViews::GetModalType() const {
+ui::ModalType JavaScriptAppModalDialogViews::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-views::View* JSModalDialogViews::GetContentsView() {
+views::View* JavaScriptAppModalDialogViews::GetContentsView() {
   return message_box_view_;
 }
 
-views::View* JSModalDialogViews::GetInitiallyFocusedView() {
+views::View* JavaScriptAppModalDialogViews::GetInitiallyFocusedView() {
   if (message_box_view_->text_box())
     return message_box_view_->text_box();
   return views::DialogDelegate::GetInitiallyFocusedView();
@@ -157,7 +158,7 @@ views::View* JSModalDialogViews::GetInitiallyFocusedView() {
 NativeAppModalDialog* NativeAppModalDialog::CreateNativeJavaScriptPrompt(
     JavaScriptAppModalDialog* dialog,
     gfx::NativeWindow parent_window) {
-  JSModalDialogViews* d = new JSModalDialogViews(dialog);
+  JavaScriptAppModalDialogViews* d = new JavaScriptAppModalDialogViews(dialog);
   views::Widget::CreateWindowWithParent(d, parent_window);
   return d;
 }

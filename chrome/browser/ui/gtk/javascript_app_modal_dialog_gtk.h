@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_JS_MODAL_DIALOG_GTK_H_
-#define CHROME_BROWSER_UI_GTK_JS_MODAL_DIALOG_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_JAVASCRIPT_APP_MODAL_DIALOG_GTK_H_
+#define CHROME_BROWSER_UI_GTK_JAVASCRIPT_APP_MODAL_DIALOG_GTK_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -17,13 +17,13 @@ typedef struct _GtkWidget GtkWidget;
 
 class JavaScriptAppModalDialog;
 
-class JSModalDialogGtk : public NativeAppModalDialog {
+class JavaScriptAppModalDialogGtk : public NativeAppModalDialog {
  public:
-  JSModalDialogGtk(JavaScriptAppModalDialog* dialog,
-                   gfx::NativeWindow parent_window);
-  virtual ~JSModalDialogGtk();
+  JavaScriptAppModalDialogGtk(JavaScriptAppModalDialog* dialog,
+                              gfx::NativeWindow parent_window);
+  virtual ~JavaScriptAppModalDialogGtk();
 
-  // NativeAppModalDialog:
+  // Overridden from NativeAppModalDialog:
   virtual int GetAppModalDialogButtons() const OVERRIDE;
   virtual void ShowAppModalDialog() OVERRIDE;
   virtual void ActivateAppModalDialog() OVERRIDE;
@@ -32,12 +32,12 @@ class JSModalDialogGtk : public NativeAppModalDialog {
   virtual void CancelAppModalDialog() OVERRIDE;
 
  private:
-  CHROMEGTK_CALLBACK_1(JSModalDialogGtk, void, OnResponse, int);
+  CHROMEGTK_CALLBACK_1(JavaScriptAppModalDialogGtk, void, OnResponse, int);
 
   scoped_ptr<JavaScriptAppModalDialog> dialog_;
   GtkWidget* gtk_dialog_;
 
-  DISALLOW_COPY_AND_ASSIGN(JSModalDialogGtk);
+  DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialogGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_JS_MODAL_DIALOG_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_JAVASCRIPT_APP_MODAL_DIALOG_GTK_H_
