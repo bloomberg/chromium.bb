@@ -438,7 +438,7 @@ bool CopyModifiers(const DictionaryValue* js_event,
   if (meta_key)
     event->modifiers |= WebInputEvent::MetaKey;
 
-  bool shift_key;
+  bool shift_key = false;
   if (js_event->HasKey(keys::kEventShiftKeyKey)) {
     if (!js_event->GetBoolean(keys::kEventShiftKeyKey, &shift_key))
       return false;
