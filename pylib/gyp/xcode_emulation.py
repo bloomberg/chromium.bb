@@ -360,6 +360,8 @@ class XcodeSettings(object):
       cflags_cc.append('-fvisibility-inlines-hidden')
     if self._Test('GCC_THREADSAFE_STATICS', 'NO', default='YES'):
       cflags_cc.append('-fno-threadsafe-statics')
+    if self._Test('GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO', 'NO', default='YES'):
+      cflags_cc.append('-Wno-invalid-offsetof')
 
     other_ccflags = []
 
