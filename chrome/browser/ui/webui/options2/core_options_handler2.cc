@@ -40,13 +40,12 @@ CoreOptionsHandler::CoreOptionsHandler()
 CoreOptionsHandler::~CoreOptionsHandler() {}
 
 void CoreOptionsHandler::InitializeHandler() {
-  clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
-                                      Profile::FromWebUI(web_ui()),
-                                      this);
+  plugin_status_pref_setter_.Init(Profile::FromWebUI(web_ui()), this);
 }
 
 void CoreOptionsHandler::InitializePage() {
   UpdateClearPluginLSOData();
+  UpdatePepperFlashSettingsEnabled();
 }
 
 void CoreOptionsHandler::GetLocalizedValues(
@@ -125,6 +124,10 @@ void CoreOptionsHandler::Observe(int type,
     if (*pref_name == prefs::kClearPluginLSODataEnabled) {
       // This preference is stored in Local State, not in the user preferences.
       UpdateClearPluginLSOData();
+      return;
+    }
+    if (*pref_name == prefs::kPepperFlashSettingsEnabled) {
+      UpdatePepperFlashSettingsEnabled();
       return;
     }
     NotifyPrefChanged(*pref_name, std::string());
@@ -464,9 +467,17 @@ void CoreOptionsHandler::HandleUserMetricsAction(const ListValue* args) {
 void CoreOptionsHandler::UpdateClearPluginLSOData() {
   scoped_ptr<base::Value> enabled(
       base::Value::CreateBooleanValue(
-          clear_plugin_lso_data_enabled_.GetValue()));
+          plugin_status_pref_setter_.IsClearPluginLSODataEnabled()));
   web_ui()->CallJavascriptFunction(
       "OptionsPage.setClearPluginLSODataEnabled", *enabled);
+}
+
+void CoreOptionsHandler::UpdatePepperFlashSettingsEnabled() {
+  scoped_ptr<base::Value> enabled(
+      base::Value::CreateBooleanValue(
+          plugin_status_pref_setter_.IsPepperFlashSettingsEnabled()));
+  web_ui()->CallJavascriptFunction(
+      "OptionsPage.setPepperFlashSettingsEnabled", *enabled);
 }
 
 }  // namespace options2

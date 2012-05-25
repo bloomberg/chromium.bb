@@ -425,7 +425,8 @@ html:not([hasFlashPlugin]) .flash-plugin-area,
  */
 html[flashPluginSupportsClearSiteData] .flash-plugin-area,
 html:not([flashPluginSupportsClearSiteData]) .clear-plugin-lso-data-enabled,
-html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled {
+html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled,
+html:not([enablePepperFlashSettings]) .pepper-flash-settings {
   display: none;
 }
 

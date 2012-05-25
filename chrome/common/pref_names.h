@@ -265,6 +265,7 @@ extern const char kDeleteCache[];
 extern const char kDeleteCookies[];
 extern const char kDeletePasswords[];
 extern const char kDeleteFormData[];
+extern const char kDeauthorizeContentLicenses[];
 extern const char kEnableSpellCheck[];
 extern const char kSpeechInputTrayNotificationShown[];
 extern const char kSpeechRecognitionFilterProfanities[];
@@ -652,6 +653,7 @@ extern const char kSyncSpareBootstrapToken[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];
+extern const char kPepperFlashSettingsEnabled[];
 extern const char kDiskCacheDir[];
 extern const char kDiskCacheSize[];
 extern const char kMediaCacheSize[];

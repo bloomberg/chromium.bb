@@ -49,6 +49,8 @@ void ClearBrowserDataHandler::GetLocalizedValues(
     { "deleteCookiesFlashCheckbox", IDS_DEL_COOKIES_FLASH_CHKBOX },
     { "deletePasswordsCheckbox", IDS_DEL_PASSWORDS_CHKBOX },
     { "deleteFormDataCheckbox", IDS_DEL_FORM_DATA_CHKBOX },
+    { "deauthorizeContentLicensesCheckbox",
+      IDS_DEAUTHORIZE_CONTENT_LICENSES_CHKBOX },
     { "clearBrowserDataCommit", IDS_CLEAR_BROWSING_DATA_COMMIT },
     { "flash_storage_url", IDS_FLASH_STORAGE_URL },
   };
@@ -114,6 +116,8 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
     remove_mask |= BrowsingDataRemover::REMOVE_PASSWORDS;
   if (prefs->GetBoolean(prefs::kDeleteFormData))
     remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
+  if (prefs->GetBoolean(prefs::kDeauthorizeContentLicenses))
+    remove_mask |= BrowsingDataRemover::REMOVE_CONTENT_LICENSES;
 
   int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
 

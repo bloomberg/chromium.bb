@@ -73,6 +73,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
     REMOVE_PASSWORDS = 1 << 10,
     REMOVE_WEBSQL = 1 << 11,
     REMOVE_SERVER_BOUND_CERTS = 1 << 12,
+    REMOVE_CONTENT_LICENSES = 1 << 13,
 
     // "Site data" includes cookies, appcache, file systems, indexedDBs, local
     // storage, webSQL, and plugin data.

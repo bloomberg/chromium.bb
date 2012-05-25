@@ -631,6 +631,16 @@ cr.define('options', function() {
     }
   };
 
+  OptionsPage.setPepperFlashSettingsEnabled = function(enabled) {
+    if (enabled) {
+      document.documentElement.setAttribute(
+          'enablePepperFlashSettings', '');
+    } else {
+      document.documentElement.removeAttribute(
+          'enablePepperFlashSettings');
+    }
+  };
+
   OptionsPage.prototype = {
     __proto__: cr.EventTarget.prototype,
 

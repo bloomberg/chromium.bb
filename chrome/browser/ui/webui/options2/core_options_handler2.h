@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/plugin_data_remover_helper.h"
+#include "chrome/browser/plugin_status_pref_setter.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
@@ -145,13 +145,12 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   void HandleUserMetricsAction(const ListValue* args);
 
   void UpdateClearPluginLSOData();
+  void UpdatePepperFlashSettingsEnabled();
 
   OptionsPageUIHandlerHost* handlers_host_;
   PrefChangeRegistrar registrar_;
 
-  // Used for asynchronously updating the preference stating whether clearing
-  // LSO data is supported.
-  PluginDataRemoverHelper clear_plugin_lso_data_enabled_;
+  PluginStatusPrefSetter plugin_status_pref_setter_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreOptionsHandler);
 };

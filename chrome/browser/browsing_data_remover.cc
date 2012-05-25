@@ -384,6 +384,13 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     }
   }
 
+  if (remove_mask & REMOVE_CONTENT_LICENSES) {
+    content::RecordAction(
+        UserMetricsAction("ClearBrowsingData_ContentLicenses"));
+
+    // TODO(yzshen): Implement it.
+  }
+
   // Also delete cached network related data (like TransportSecurityState,
   // HttpServerProperties data).
   profile_->ClearNetworkingHistorySince(delete_begin_);
