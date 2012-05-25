@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -34,6 +34,10 @@ class CrashReporterTest(pyauto.PyUITest):
     self.assertTrue(breakpad_folder, 'Cannot figure crash dir')
 
     unused = pyauto_utils.ExistingPathReplacer(path=breakpad_folder)
+    # If the temp dir was created as root on chromeos, make sure chronos can
+    # write to it
+    if self.IsChromeOS() and os.geteuid() == 0:
+      os.chown(breakpad_folder, 1000, 1000)
     self.NavigateToURL('about:crash')  # Trigger renderer crash
     dmp_files = glob.glob(os.path.join(breakpad_folder, '*.dmp'))
     self.assertEqual(1, len(dmp_files))
