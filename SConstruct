@@ -383,10 +383,7 @@ def SetUpArgumentBits(env):
 def CheckArguments():
   for key in ARGUMENTS:
     if key not in ACCEPTABLE_ARGUMENTS:
-      print 'ERROR'
-      print 'ERROR bad argument: %s' % key
-      print 'ERROR'
-      sys.exit(-1)
+      raise UserError('bad argument: %s' % key)
 
 
 # Sets a command line argument. Dies if an argument with this name is already
@@ -3054,6 +3051,16 @@ nacl_env = MakeArchSpecificEnv().Clone(
 # TODO(mseaborn): Enable for PNaCl and move to the Clone() block above.
 if not nacl_env.Bit('bitcode'):
   nacl_env.Append(CCFLAGS=['-g'])
+
+# Bitcode files are assumed to be x86-32 and that causes
+# problems when (bitcode) linking against native x86-64 libs
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2420
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2447
+if (nacl_env.Bit('nacl_glibc') and
+    nacl_env.Bit('bitcode') and
+    nacl_env.Bit('pnacl_generate_pexe') and
+    nacl_env.Bit('target_x86_64')):
+  raise UserError('pnacl x86-64 does not support pnacl_generate_pexe=1')
 
 # This is the address at which a user executable is expected to place its
 # data segment in order to be compatible with the integrated runtime (IRT)
