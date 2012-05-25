@@ -149,7 +149,8 @@ class PolicyTestBase(pyauto.PyUITest):
     if self.IsChromeOS():
       # Set up a temporary data dir and a TestServer serving files from there.
       # The TestServer makes its document root relative to the src dir.
-      self._temp_data_dir = tempfile.mkdtemp(dir=pyauto_paths.GetSourceDir())
+      source_dir = os.path.normpath(pyauto_paths.GetSourceDir())
+      self._temp_data_dir = tempfile.mkdtemp(dir=source_dir)
       relative_temp_data_dir = os.path.basename(self._temp_data_dir)
       self._http_server = self.StartHTTPServer(relative_temp_data_dir)
 
