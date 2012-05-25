@@ -473,7 +473,6 @@
     'all': [
       '@CONTINUOUS',
       'about_plugins_ui.ChromeAboutPluginsUITest',
-      'https.SSLTest',
       'media.media_basic_playback',
       'nacl_sdk',
       'translate',
