@@ -108,7 +108,7 @@ cr.define('ntp', function() {
      * If non-null, this is the ID of the app to highlight to the user the next
      * time getAppsCallback runs. "Highlight" in this case means to switch to
      * the page and run the new tile animation.
-     * @type {String}
+     * @type {?string}
      */
     highlightAppId: null,
 
@@ -155,8 +155,8 @@ cr.define('ntp', function() {
       } else {
         // No apps page.
         if (this.shownPage == loadTimeData.getInteger('apps_page_id')) {
-          this.shownPage = loadTimeData.getInteger('most_visited_page_id');
-          this.shownPageIndex = 0;
+          this.setShownPage_(
+              loadTimeData.getInteger('most_visited_page_id'), 0);
         }
 
         document.body.classList.add('bare-minimum');
@@ -417,6 +417,8 @@ cr.define('ntp', function() {
      * enabled if previously disabled.
      * @param {Object} appData A data structure full of relevant information for
      *     the app.
+     * @param {boolean=} opt_highlight Whether the app about to be added should
+     *     be highlighted.
      */
     appAdded: function(appData, opt_highlight) {
       assert(loadTimeData.getBoolean('showApps'));
@@ -439,10 +441,15 @@ cr.define('ntp', function() {
 
       var page = this.appsPages[pageIndex];
       var app = $(appData.id);
-      if (app)
+      if (app) {
         app.replaceAppData(appData);
-      else
-        page.insertApp(appData, !!opt_highlight);
+      } else if (opt_highlight) {
+        page.insertAndHighlightApp(appData);
+        this.setShownPage_(loadTimeData.getInteger('apps_page_id'),
+                           appData.page_index);
+      } else {
+        page.insertApp(appData, false);
+      }
     },
 
     /**
@@ -602,18 +609,16 @@ cr.define('ntp', function() {
       // reflect user actions).
       if (!this.isStartingUp_()) {
         if (page.classList.contains('apps-page')) {
-          this.shownPage = loadTimeData.getInteger('apps_page_id');
-          this.shownPageIndex = this.getAppsPageIndex(page);
+          this.setShownPage_(loadTimeData.getInteger('apps_page_id'),
+                             this.getAppsPageIndex(page));
         } else if (page.classList.contains('most-visited-page')) {
-          this.shownPage = loadTimeData.getInteger('most_visited_page_id');
-          this.shownPageIndex = 0;
+          this.setShownPage_(
+              loadTimeData.getInteger('most_visited_page_id'), 0);
         } else if (page.classList.contains('suggestions-page')) {
-          this.shownPage = loadTimeData.getInteger('suggestions_page_id');
-          this.shownPageIndex = 0;
+          this.setShownPage_(loadTimeData.getInteger('suggestions_page_id'), 0);
         } else {
           console.error('unknown page selected');
         }
-        chrome.send('pageSelected', [this.shownPage, this.shownPageIndex]);
       }
 
       // Update the active dot
@@ -622,6 +627,19 @@ cr.define('ntp', function() {
         curDot.classList.remove('selected');
       page.navigationDot.classList.add('selected');
       this.updatePageSwitchers();
+    },
+
+    /**
+     * Saves/updates the newly selected page to open when first loading the NTP.
+     * @type {number} shownPage The new shown page type.
+     * @type {number} shownPageIndex The new shown page index.
+     * @private
+     */
+    setShownPage_: function(shownPage, shownPageIndex) {
+      assert(shownPageIndex >= 0);
+      this.shownPage = shownPage;
+      this.shownPageIndex = shownPageIndex;
+      chrome.send('pageSelected', [this.shownPage, this.shownPageIndex]);
     },
 
     /**

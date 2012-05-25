@@ -660,6 +660,16 @@ cr.define('ntp', function() {
     },
 
     /**
+     * Highlight a newly installed app as it's added to the NTP.
+     * @param {Object} appData The data object that describes the app.
+     */
+    insertAndHighlightApp: function(appData) {
+      ntp.getCardSlider().selectCardByValue(this);
+      this.content_.scrollTop = this.content_.scrollHeight;
+      this.insertApp(appData, true);
+    },
+
+    /**
      * Similar to appendApp, but it respects the app_launch_ordinal field of
      * |appData|.
      * @param {Object} appData The data that describes the app.
