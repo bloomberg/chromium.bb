@@ -35,7 +35,6 @@
 
 #include <linux/input.h>
 #include <wayland-client.h>
-#include <wayland-cursor.h>
 
 #include "window.h"
 
@@ -244,7 +243,7 @@ motion_handler(struct widget *widget, struct input *input,
 			gears->view.rotx = gears->view.rotx + 360;
 	}
 
-	return WL_CURSOR_LEFT_PTR;
+	return POINTER_LEFT_PTR;
 }
 
 static void

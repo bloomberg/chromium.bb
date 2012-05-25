@@ -30,7 +30,6 @@
 #include <cairo.h>
 
 #include <wayland-client.h>
-#include <wayland-cursor.h>
 #include "window.h"
 
 struct smoke {
@@ -259,7 +258,7 @@ smoke_motion_handler(struct widget *widget, struct input *input,
 			smoke->b[0].d[k] += 1;
 		}
 
-	return WL_CURSOR_HAND1;
+	return POINTER_HAND1;
 }
 
 static void

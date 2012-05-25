@@ -32,7 +32,6 @@
 
 #include <linux/input.h>
 #include <wayland-client.h>
-#include <wayland-cursor.h>
 #include "window.h"
 
 struct flower {
@@ -134,7 +133,7 @@ static int
 motion_handler(struct widget *widget, struct input *input,
 	       uint32_t time, float x, float y, void *data)
 {
-	return WL_CURSOR_HAND1;
+	return POINTER_HAND1;
 }
 
 static void

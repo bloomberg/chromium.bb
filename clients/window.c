@@ -104,6 +104,7 @@ struct display {
 	} xkb;
 
 	struct wl_cursor_theme *cursor_theme;
+	struct wl_cursor **cursors;
 
 	PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
 	PFNEGLCREATEIMAGEKHRPROC create_image;
@@ -287,8 +288,8 @@ struct shm_pool {
 };
 
 enum {
-	WL_CURSOR_DEFAULT = 100,
-	WL_CURSOR_UNSET
+	POINTER_DEFAULT = 100,
+	POINTER_UNSET
 };
 
 enum window_location {
@@ -626,11 +627,48 @@ display_create_surface(struct display *display,
 	return display_create_shm_surface(display, rectangle, flags, NULL);
 }
 
+static const char *cursors[] = {
+	"bottom_left_corner",
+	"bottom_right_corner",
+	"bottom_side",
+	"grabbing",
+	"left_ptr",
+	"left_side",
+	"right_side",
+	"top_left_corner",
+	"top_right_corner",
+	"top_side",
+	"xterm",
+	"hand1",
+};
+
+static void
+create_cursors(struct display *display)
+{
+	unsigned int i;
+
+	display->cursor_theme = wl_cursor_theme_load(NULL, 32, display->shm);
+	display->cursors =
+		malloc(ARRAY_LENGTH(cursors) * sizeof display->cursors[0]);
+
+	for (i = 0; i < ARRAY_LENGTH(cursors); i++)
+		display->cursors[i] =
+			wl_cursor_theme_get_cursor(display->cursor_theme,
+						   cursors[i]);
+}
+
+static void
+destroy_cursors(struct display *display)
+{
+	wl_cursor_theme_destroy(display->cursor_theme);
+}
+
 struct wl_cursor_image *
 display_get_pointer_image(struct display *display, int pointer)
 {
 	struct wl_cursor *cursor =
-		wl_cursor_theme_get_cursor(display->cursor_theme, pointer);
+		wl_cursor_theme_get_cursor(display->cursor_theme,
+					   cursors[pointer]);
 
 	return cursor ? cursor->images[0] : NULL;
 }
@@ -1294,7 +1332,7 @@ frame_button_enter_handler(struct widget *widget,
 	widget_schedule_redraw(frame_button->widget);
 	frame_button->state = FRAME_BUTTON_OVER;
 
-	return WL_CURSOR_LEFT_PTR;
+	return POINTER_LEFT_PTR;
 }
 
 static void
@@ -1474,25 +1512,25 @@ frame_get_pointer_image_for_location(struct frame *frame, struct input *input)
 
 	switch (location) {
 	case THEME_LOCATION_RESIZING_TOP:
-		return WL_CURSOR_TOP;
+		return POINTER_TOP;
 	case THEME_LOCATION_RESIZING_BOTTOM:
-		return WL_CURSOR_BOTTOM;
+		return POINTER_BOTTOM;
 	case THEME_LOCATION_RESIZING_LEFT:
-		return WL_CURSOR_LEFT;
+		return POINTER_LEFT;
 	case THEME_LOCATION_RESIZING_RIGHT:
-		return WL_CURSOR_RIGHT;
+		return POINTER_RIGHT;
 	case THEME_LOCATION_RESIZING_TOP_LEFT:
-		return WL_CURSOR_TOP_LEFT;
+		return POINTER_TOP_LEFT;
 	case THEME_LOCATION_RESIZING_TOP_RIGHT:
-		return WL_CURSOR_TOP_RIGHT;
+		return POINTER_TOP_RIGHT;
 	case THEME_LOCATION_RESIZING_BOTTOM_LEFT:
-		return WL_CURSOR_BOTTOM_LEFT;
+		return POINTER_BOTTOM_LEFT;
 	case THEME_LOCATION_RESIZING_BOTTOM_RIGHT:
-		return WL_CURSOR_BOTTOM_RIGHT;
+		return POINTER_BOTTOM_RIGHT;
 	case THEME_LOCATION_EXTERIOR:
 	case THEME_LOCATION_TITLEBAR:
 	default:
-		return WL_CURSOR_LEFT_PTR;
+		return POINTER_LEFT_PTR;
 	}
 }
 
@@ -1567,7 +1605,7 @@ frame_button_handler(struct widget *widget,
 		case THEME_LOCATION_TITLEBAR:
 			if (!window->shell_surface)
 				break;
-			input_set_pointer_image(input, time, WL_CURSOR_DRAGGING);
+			input_set_pointer_image(input, time, POINTER_DRAGGING);
 			input_ungrab(input);
 			wl_shell_surface_move(window->shell_surface,
 					      input_get_seat(input),
@@ -1659,7 +1697,7 @@ input_set_focus_widget(struct input *input, struct widget *focus,
 		       float x, float y)
 {
 	struct widget *old, *widget;
-	int pointer = WL_CURSOR_LEFT_PTR;
+	int pointer = POINTER_LEFT_PTR;
 
 	if (focus == input->focus_widget)
 		return;
@@ -1695,7 +1733,7 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
 	struct widget *widget;
-	int cursor = WL_CURSOR_LEFT_PTR;
+	int cursor = POINTER_LEFT_PTR;
 	float sx = wl_fixed_to_double(sx_w);
 	float sy = wl_fixed_to_double(sy_w);
 
@@ -1826,7 +1864,7 @@ input_remove_pointer_focus(struct input *input)
 	input_set_focus_widget(input, NULL, 0, 0);
 
 	input->pointer_focus = NULL;
-	input->current_cursor = WL_CURSOR_UNSET;
+	input->current_cursor = POINTER_UNSET;
 }
 
 static void
@@ -2147,7 +2185,6 @@ static const struct wl_data_device_listener data_device_listener = {
 void
 input_set_pointer_image(struct input *input, uint32_t time, int pointer)
 {
-	struct display *display = input->display;
 	struct wl_buffer *buffer;
 	struct wl_cursor *cursor;
 	struct wl_cursor_image *image;
@@ -2155,7 +2192,7 @@ input_set_pointer_image(struct input *input, uint32_t time, int pointer)
 	if (pointer == input->current_cursor)
 		return;
 
-	cursor = wl_cursor_theme_get_cursor(display->cursor_theme, pointer);
+	cursor = input->display->cursors[pointer];
 	if (!cursor)
 		return;
 
@@ -2726,7 +2763,7 @@ menu_motion_handler(struct widget *widget,
 	if (widget == menu->widget)
 		menu_set_item(data, y);
 
-	return WL_CURSOR_LEFT_PTR;
+	return POINTER_LEFT_PTR;
 }
 
 static int
@@ -2738,7 +2775,7 @@ menu_enter_handler(struct widget *widget,
 	if (widget == menu->widget)
 		menu_set_item(data, y);
 
-	return WL_CURSOR_LEFT_PTR;
+	return POINTER_LEFT_PTR;
 }
 
 static void
@@ -3245,7 +3282,7 @@ display_create(int argc, char *argv[])
 	d->create_image = (void *) eglGetProcAddress("eglCreateImageKHR");
 	d->destroy_image = (void *) eglGetProcAddress("eglDestroyImageKHR");
 
-	d->cursor_theme = wl_cursor_theme_load(NULL, 32, d->shm);
+	create_cursors(d);
 
 	d->theme = theme_create();
 
@@ -3291,7 +3328,7 @@ display_destroy(struct display *display)
 	fini_xkb(display);
 
 	theme_destroy(display->theme);
-	wl_cursor_theme_destroy(display->cursor_theme);
+	destroy_cursors(display);
 
 #ifdef HAVE_CAIRO_EGL
 	fini_egl(display);

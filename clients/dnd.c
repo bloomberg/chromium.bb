@@ -318,7 +318,7 @@ create_drag_cursor(struct dnd_drag *dnd_drag,
 	cairo_pattern_t *pattern;
 	cairo_t *cr;
 
-	pointer = display_get_pointer_image(dnd->display, WL_CURSOR_DRAGGING);
+	pointer = display_get_pointer_image(dnd->display, POINTER_DRAGGING);
 
 	rectangle.width = item_width + 2 * pointer->width;
 	rectangle.height = item_height + 2 * pointer->height;
@@ -410,7 +410,7 @@ dnd_button_handler(struct widget *widget,
 					  dnd_drag->drag_surface,
 					  serial);
 
-		input_set_pointer_image(input, time, WL_CURSOR_DRAGGING);
+		input_set_pointer_image(input, time, POINTER_DRAGGING);
 
 		dnd_drag->opaque =
 			create_drag_cursor(dnd_drag, item, x, y, 1);
@@ -434,9 +434,9 @@ lookup_cursor(struct dnd *dnd, int x, int y)
 
 	item = dnd_get_item(dnd, x, y);
 	if (item)
-		return WL_CURSOR_HAND1;
+		return POINTER_HAND1;
 	else
-		return WL_CURSOR_LEFT_PTR;
+		return POINTER_LEFT_PTR;
 }
 
 static int

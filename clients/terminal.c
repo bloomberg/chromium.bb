@@ -34,7 +34,6 @@
 #include <sys/epoll.h>
 
 #include <wayland-client.h>
-#include <wayland-cursor.h>
 
 #include "window.h"
 
@@ -2246,7 +2245,7 @@ motion_handler(struct widget *widget,
 		widget_schedule_redraw(widget);
 	}
 
-	return WL_CURSOR_IBEAM;
+	return POINTER_IBEAM;
 }
 
 static struct terminal *

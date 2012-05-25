@@ -35,7 +35,6 @@
 
 #include <cairo.h>
 
-#include <wayland-cursor.h>
 #include "window.h"
 
 /** window title */
@@ -248,9 +247,9 @@ motion_handler(struct widget *widget, struct input *input, uint32_t time,
 
 	if (x > e->x && x < e->x + e->w)
 		if (y > e->y && y < e->y + e->h)
-			return WL_CURSOR_HAND1;
+			return POINTER_HAND1;
 
-	return WL_CURSOR_LEFT_PTR;
+	return POINTER_LEFT_PTR;
 }
 
 /**

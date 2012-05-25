@@ -32,7 +32,6 @@
 
 #include <linux/input.h>
 #include <wayland-client.h>
-#include <wayland-cursor.h>
 
 #include "window.h"
 
@@ -219,7 +218,7 @@ motion_handler(struct widget *widget,
 
 	window_schedule_redraw(clickdot->window);
 
-	return WL_CURSOR_LEFT_PTR;
+	return POINTER_LEFT_PTR;
 }
 
 static void
