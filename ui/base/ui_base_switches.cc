@@ -24,6 +24,10 @@ const char kEnableTouchEvents[] = "enable-touch-events";
 // language[-country] where language is the 2 letter code from ISO-639.
 const char kLang[] = "lang";
 
+// Loads 2x resources. These resource paks currently contain
+// mix of 1x and 2x and loading them may break the UI on 2x display.
+const char kLoad2xResources[] = "load-2x-resources";
+
 // Load the locale resources from the given path. When running on Mac/Unix the
 // path should point to a locale.pak file.
 const char kLocalePak[] = "locale_pak";

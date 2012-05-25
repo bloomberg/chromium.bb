@@ -4,11 +4,13 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_handle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/image/image.h"
 
 namespace {
@@ -38,17 +40,33 @@ void ResourceBundle::LoadCommonResources() {
               SCALE_FACTOR_100P);
 
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
+    // 1x touch
     AddDataPack(GetResourcesPakFilePath("theme_resources_touch_1x.pak"),
                 SCALE_FACTOR_100P);
     AddDataPack(GetResourcesPakFilePath("ui_resources_touch.pak"),
                 SCALE_FACTOR_100P);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kLoad2xResources)) {
+      // 2x touch
+      AddDataPack(GetResourcesPakFilePath("theme_resources_touch_2x.pak"),
+                  SCALE_FACTOR_200P);
+      AddDataPack(GetResourcesPakFilePath("ui_resources_touch_2x.pak"),
+                  SCALE_FACTOR_200P);
+    }
   } else {
+    // 1x non touch
     AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"),
                 SCALE_FACTOR_100P);
     AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
                 SCALE_FACTOR_100P);
-    AddDataPack(GetResourcesPakFilePath("ui_resources_2x.pak"),
-                SCALE_FACTOR_200P);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kLoad2xResources)) {
+      // 2x non touch
+      AddDataPack(GetResourcesPakFilePath("theme_resources_standard_2x.pak"),
+                  SCALE_FACTOR_200P);
+      AddDataPack(GetResourcesPakFilePath("ui_resources_2x.pak"),
+                  SCALE_FACTOR_200P);
+    }
   }
 }
 

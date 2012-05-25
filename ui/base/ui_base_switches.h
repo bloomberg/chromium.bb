@@ -18,6 +18,7 @@ UI_EXPORT extern const char kEnableTextSubpixelPositioning[];
 UI_EXPORT extern const char kEnableTouchCalibration[];
 UI_EXPORT extern const char kEnableTouchEvents[];
 UI_EXPORT extern const char kLang[];
+UI_EXPORT extern const char kLoad2xResources[];
 UI_EXPORT extern const char kLocalePak[];
 UI_EXPORT extern const char kNoMessageBox[];
 UI_EXPORT extern const char kTouchOptimizedUI[];
