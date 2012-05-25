@@ -20,7 +20,9 @@ namespace gestures {
 // button click event and suppresses that motion.
 
 class ClickWiggleFilterInterpreter : public Interpreter {
-  FRIEND_TEST(ClickWiggleFilterInterpreter, SimpleTest);
+  FRIEND_TEST(ClickWiggleFilterInterpreterTest, SimpleTest);
+  FRIEND_TEST(ClickWiggleFilterInterpreterTest, OneFingerClickSuppressTest);
+
  public:
   struct ClickWiggleRec {
     float x_, y_;  // position where we started blocking wiggle
