@@ -73,8 +73,8 @@ class ToplevelWindowEventFilterTest : public AshTestBase {
     parent_ = new aura::Window(NULL);
     parent_->Init(ui::LAYER_NOT_DRAWN);
     parent_->Show();
-    Shell::GetRootWindow()->AddChild(parent_);
-    parent_->SetBounds(Shell::GetRootWindow()->bounds());
+    Shell::GetPrimaryRootWindow()->AddChild(parent_);
+    parent_->SetBounds(Shell::GetPrimaryRootWindow()->bounds());
     filter_ = new ToplevelWindowEventFilter(parent_);
     parent_->SetEventFilter(filter_);
     SetGridSize(0);
@@ -99,12 +99,12 @@ class ToplevelWindowEventFilterTest : public AshTestBase {
   }
 
   void DragFromCenterBy(aura::Window* window, int dx, int dy) {
-    aura::test::EventGenerator generator(Shell::GetRootWindow(), window);
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), window);
     generator.DragMouseBy(dx, dy);
   }
 
   void TouchDragFromCenterBy(aura::Window* window, int dx, int dy) {
-    aura::test::EventGenerator generator(Shell::GetRootWindow(), window);
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), window);
     generator.PressMoveAndReleaseTouchBy(dx, dy);
   }
 
@@ -157,7 +157,7 @@ TEST_F(ToplevelWindowEventFilterTest, GrowBox) {
   window_delegate->set_min_size(gfx::Size(40, 40));
 
   gfx::Point position = w1->bounds().origin();
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseToCenterOf(w1.get());
   generator.DragMouseBy(100, 100);
   // Position should not have changed.
@@ -337,7 +337,7 @@ TEST_F(ToplevelWindowEventFilterTest, DoubleClickCaptionTogglesMaximize) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
   EXPECT_FALSE(wm::IsWindowMaximized(w1.get()));
 
-  aura::test::EventGenerator generator(Shell::GetRootWindow(), w1.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w1.get());
   generator.DoubleClickLeftButton();
 
   EXPECT_TRUE(wm::IsWindowMaximized(w1.get()));
@@ -392,7 +392,8 @@ TEST_F(ToplevelWindowEventFilterTest, BottomWorkArea) {
 // Verifies we don't let windows drag to a -y location.
 TEST_F(ToplevelWindowEventFilterTest, DontDragToNegativeY) {
   scoped_ptr<aura::Window> target(CreateWindow(HTTOP));
-  aura::test::EventGenerator generator(Shell::GetRootWindow(), target.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       target.get());
   generator.MoveMouseTo(0, 5);
   generator.DragMouseBy(0, -5);
   // The y location and height should not have changed.
@@ -430,7 +431,8 @@ TEST_F(ToplevelWindowEventFilterTest, ResizeSnaps) {
 TEST_F(ToplevelWindowEventFilterTest, DragSnaps) {
   SetGridSize(8);
   scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
-  aura::test::EventGenerator generator(Shell::GetRootWindow(), target.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       target.get());
   generator.PressLeftButton();
   generator.MoveMouseTo(generator.current_location().Add(gfx::Point(11, 21)));
 
@@ -452,13 +454,14 @@ TEST_F(ToplevelWindowEventFilterTest, DragSnaps) {
 #define MAYBE_EscapeReverts EscapeReverts
 #endif
 TEST_F(ToplevelWindowEventFilterTest, MAYBE_EscapeReverts) {
-  aura::RootWindow* root = Shell::GetRootWindow();
+  aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   aura::client::ActivationClient* original_client =
       aura::client::GetActivationClient(root);
   aura::test::TestActivationClient activation_client(root);
   scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
   target->Focus();
-  aura::test::EventGenerator generator(Shell::GetRootWindow(), target.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       target.get());
   generator.PressLeftButton();
   generator.MoveMouseTo(generator.current_location().Add(gfx::Point(10, 11)));
 

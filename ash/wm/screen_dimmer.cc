@@ -26,11 +26,11 @@ const int kDimmingTransitionMs = 200;
 }  // namespace
 
 ScreenDimmer::ScreenDimmer() : currently_dimming_(false) {
-  Shell::GetInstance()->GetRootWindow()->AddRootWindowObserver(this);
+  Shell::GetPrimaryRootWindow()->AddRootWindowObserver(this);
 }
 
 ScreenDimmer::~ScreenDimmer() {
-  Shell::GetInstance()->GetRootWindow()->RemoveRootWindowObserver(this);
+  Shell::GetPrimaryRootWindow()->RemoveRootWindowObserver(this);
 }
 
 void ScreenDimmer::SetDimming(bool should_dim) {
@@ -41,7 +41,7 @@ void ScreenDimmer::SetDimming(bool should_dim) {
     dimming_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     dimming_layer_->SetColor(SK_ColorBLACK);
     dimming_layer_->SetOpacity(0.0f);
-    ui::Layer* root_layer = Shell::GetRootWindow()->layer();
+    ui::Layer* root_layer = Shell::GetPrimaryRootWindow()->layer();
     dimming_layer_->SetBounds(root_layer->bounds());
     root_layer->Add(dimming_layer_.get());
     root_layer->StackAtTop(dimming_layer_.get());

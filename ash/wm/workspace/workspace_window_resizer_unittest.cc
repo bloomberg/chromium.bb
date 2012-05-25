@@ -50,7 +50,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-    aura::RootWindow* root = Shell::GetInstance()->GetRootWindow();
+    aura::RootWindow* root = Shell::GetPrimaryRootWindow();
     root->SetHostSize(gfx::Size(800, kRootHeight));
 
     gfx::Rect root_bounds(root->bounds());
@@ -85,7 +85,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   std::string WindowOrderAsString() const {
     std::string result;
     const aura::Window::Windows& windows =
-        Shell::GetInstance()->GetRootWindow()->children();
+        Shell::GetPrimaryRootWindow()->children();
     for (aura::Window::Windows::const_reverse_iterator i = windows.rbegin();
          i != windows.rend(); ++i) {
       if (*i == window_.get() || *i == window2_.get() || *i == window3_.get()) {
@@ -349,7 +349,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2) {
 // TODO(oshima): Host window doesn't get a resize event after
 // SetHostSize on Windows trybot, which gives wrong work/monitor area.
 TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
-  aura::RootWindow* root = Shell::GetInstance()->GetRootWindow();
+  aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   root->SetHostSize(gfx::Size(600, 800));
   LOG(ERROR) << "=== Calling OnHostResized, 600x800";
 
@@ -497,7 +497,7 @@ TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
 // Makes sure we don't allow dragging below the work area.
 TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
   Shell::GetInstance()->SetMonitorWorkAreaInsets(
-      Shell::GetInstance()->GetRootWindow(), gfx::Insets(0, 0, 10, 0));
+      Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 10, 0));
 
   window_->SetBounds(gfx::Rect(100, 200, 300, 400));
   SetGridSize(0);
@@ -514,7 +514,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
 // Makes sure we don't allow dragging off the top of the work area.
 TEST_F(WorkspaceWindowResizerTest, DontDragOffTop) {
   Shell::GetInstance()->SetMonitorWorkAreaInsets(
-      Shell::GetInstance()->GetRootWindow(), gfx::Insets(10, 0, 0, 0));
+      Shell::GetPrimaryRootWindow(), gfx::Insets(10, 0, 0, 0));
 
   window_->SetBounds(gfx::Rect(100, 200, 300, 400));
   SetGridSize(0);
@@ -527,7 +527,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffTop) {
 
 TEST_F(WorkspaceWindowResizerTest, ResizeBottomOutsideWorkArea) {
   Shell::GetInstance()->SetMonitorWorkAreaInsets(
-      Shell::GetInstance()->GetRootWindow(), gfx::Insets(0, 0, 50, 0));
+      Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 50, 0));
 
   window_->SetBounds(gfx::Rect(100, 200, 300, 380));
   SetGridSize(10);
@@ -594,7 +594,7 @@ TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
 // Verifies a window taller than work area height doesn't snap above the top of
 // the work area.
 TEST_F(WorkspaceWindowResizerTest, TallWindow) {
-  aura::RootWindow* root = Shell::GetInstance()->GetRootWindow();
+  aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   Shell::GetInstance()->SetMonitorWorkAreaInsets(
       root, gfx::Insets(0, 0, 50, 0));
   window_->SetBounds(gfx::Rect(0, 0, 320, 560));

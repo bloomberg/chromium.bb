@@ -33,7 +33,7 @@ const int kBadDeviceId = -1;
 KeyRewriter::KeyRewriter() : last_device_id_(kBadDeviceId) {
   // The ash shell isn't instantiated for our unit tests.
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->GetRootWindow()->AddRootWindowObserver(this);
+    ash::Shell::GetPrimaryRootWindow()->AddRootWindowObserver(this);
 #if defined(OS_CHROMEOS)
   if (base::chromeos::IsRunningOnChromeOS()) {
     chromeos::XInputHierarchyChangedEventListener::GetInstance()
@@ -45,7 +45,7 @@ KeyRewriter::KeyRewriter() : last_device_id_(kBadDeviceId) {
 
 KeyRewriter::~KeyRewriter() {
   if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->GetRootWindow()->RemoveRootWindowObserver(this);
+    ash::Shell::GetPrimaryRootWindow()->RemoveRootWindowObserver(this);
 #if defined(OS_CHROMEOS)
   if (base::chromeos::IsRunningOnChromeOS()) {
     chromeos::XInputHierarchyChangedEventListener::GetInstance()

@@ -72,7 +72,7 @@ const float kSlowCloseSizeRatio = 0.95f;
 // Returns the transform that should be applied to containers for the slow-close
 // animation.
 ui::Transform GetSlowCloseTransform() {
-  gfx::Size root_size = Shell::GetRootWindow()->bounds().size();
+  gfx::Size root_size = Shell::GetPrimaryRootWindow()->bounds().size();
   ui::Transform transform;
   transform.SetScale(kSlowCloseSizeRatio, kSlowCloseSizeRatio);
   transform.ConcatTranslate(
@@ -84,7 +84,7 @@ ui::Transform GetSlowCloseTransform() {
 // Returns the transform that should be applied to containers for the fast-close
 // animation.
 ui::Transform GetFastCloseTransform() {
-  gfx::Size root_size = Shell::GetRootWindow()->bounds().size();
+  gfx::Size root_size = Shell::GetPrimaryRootWindow()->bounds().size();
   ui::Transform transform;
   transform.SetScale(0.0, 0.0);
   transform.ConcatTranslate(floor(0.5 * root_size.width() + 0.5),
@@ -290,11 +290,11 @@ PowerButtonController::PowerButtonController()
       has_legacy_power_button_(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAuraLegacyPowerButton)) {
-  Shell::GetInstance()->GetRootWindow()->AddRootWindowObserver(this);
+  Shell::GetPrimaryRootWindow()->AddRootWindowObserver(this);
 }
 
 PowerButtonController::~PowerButtonController() {
-  Shell::GetInstance()->GetRootWindow()->RemoveRootWindowObserver(this);
+  Shell::GetPrimaryRootWindow()->RemoveRootWindowObserver(this);
 }
 
 void PowerButtonController::OnLoginStateChanged(user::LoginStatus status) {
@@ -309,7 +309,7 @@ void PowerButtonController::OnAppTerminating() {
     shutting_down_ = true;
     ash::Shell::GetInstance()->root_filter()->
         set_update_cursor_visibility(false);
-    Shell::GetRootWindow()->ShowCursor(false);
+    Shell::GetPrimaryRootWindow()->ShowCursor(false);
     ShowBackgroundLayer();
     StartAnimation(ALL_CONTAINERS, ANIMATION_HIDE);
   }
@@ -533,7 +533,7 @@ void PowerButtonController::StartShutdownAnimationAndRequestShutdown() {
   shutting_down_ = true;
 
   ash::Shell::GetInstance()->root_filter()->set_update_cursor_visibility(false);
-  Shell::GetRootWindow()->ShowCursor(false);
+  Shell::GetPrimaryRootWindow()->ShowCursor(false);
 
   ShowBackgroundLayer();
   if (login_status_ != user::LOGGED_IN_NONE) {
@@ -562,7 +562,7 @@ void PowerButtonController::ShowBackgroundLayer() {
     background_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     background_layer_->SetColor(SK_ColorBLACK);
 
-    ui::Layer* root_layer = Shell::GetRootWindow()->layer();
+    ui::Layer* root_layer = Shell::GetPrimaryRootWindow()->layer();
     background_layer_->SetBounds(root_layer->bounds());
     root_layer->Add(background_layer_.get());
     root_layer->StackAtBottom(background_layer_.get());

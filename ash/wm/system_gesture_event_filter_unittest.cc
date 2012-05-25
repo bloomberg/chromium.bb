@@ -100,7 +100,7 @@ typedef test::AshTestBase SystemGestureEventFilterTest;
 // Ensure that events targeted at the root window are consumed by the
 // system event handler.
 TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
-  aura::RootWindow* root_window = Shell::GetRootWindow();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
   Shell::TestApi shell_test(Shell::GetInstance());
 
@@ -132,7 +132,7 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
 
 // Ensure that a three fingered swipe is consumed by the system event handler.
 TEST_F(SystemGestureEventFilterTest, ThreeFingerSwipe) {
-  aura::RootWindow* root_window = Shell::GetRootWindow();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
   const int kTouchId = 5;
 
@@ -159,7 +159,7 @@ TEST_F(SystemGestureEventFilterTest, ThreeFingerSwipe) {
 
 // Ensure that the device control operation gets properly handled.
 TEST_F(SystemGestureEventFilterTest, DeviceControl) {
-  aura::RootWindow* root_window = Shell::GetRootWindow();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
   gfx::Rect screen = gfx::Screen::GetPrimaryMonitor().bounds();
   int ypos_half = screen.height() / 2;
@@ -269,7 +269,7 @@ TEST_F(SystemGestureEventFilterTest, DeviceControl) {
 
 // Ensure that the application control operations gets properly handled.
 TEST_F(SystemGestureEventFilterTest, ApplicationControl) {
-  aura::RootWindow* root_window = Shell::GetRootWindow();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
   gfx::Rect screen = gfx::Screen::GetPrimaryMonitor().bounds();
   int ypos_half = screen.height() / 2;

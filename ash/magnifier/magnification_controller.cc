@@ -25,7 +25,7 @@ namespace internal {
 
 MagnificationController::MagnificationController()
     : scale_(1.0f), x_(0), y_(0) {
-  root_window_ = ash::Shell::GetRootWindow();
+  root_window_ = ash::Shell::GetPrimaryRootWindow();
 }
 
 void MagnificationController::SetScale(float scale) {

@@ -30,7 +30,7 @@ void AshTestBase::SetUp() {
   ash::Shell::CreateInstance(delegate);
 
   helper_.SetUp();
-  helper_.InitRootWindow(Shell::GetRootWindow());
+  helper_.InitRootWindow(Shell::GetPrimaryRootWindow());
 
   // Disable animations during tests.
   ui::LayerAnimator::set_disable_animations_for_test(true);
@@ -57,7 +57,7 @@ void AshTestBase::ChangeMonitorConfig(float scale,
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {
-  helper_.RunAllPendingInMessageLoop(Shell::GetRootWindow());
+  helper_.RunAllPendingInMessageLoop(Shell::GetPrimaryRootWindow());
 }
 
 }  // namespace test

@@ -186,7 +186,7 @@ TooltipController::TooltipController()
   tooltip_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
       this, &TooltipController::TooltipTimerFired);
-  aura::client::SetTooltipClient(Shell::GetRootWindow(), this);
+  aura::client::SetTooltipClient(Shell::GetPrimaryRootWindow(), this);
 }
 
 TooltipController::~TooltipController() {
@@ -373,7 +373,7 @@ void TooltipController::TooltipTimerFired() {
 
 void TooltipController::UpdateIfRequired() {
   if (!tooltips_enabled_ || mouse_pressed_ || IsDragDropInProgress() ||
-      !Shell::GetRootWindow()->cursor_shown()) {
+      !Shell::GetPrimaryRootWindow()->cursor_shown()) {
     tooltip_->Hide();
     return;
   }
@@ -419,7 +419,7 @@ bool TooltipController::IsTooltipVisible() {
 
 bool TooltipController::IsDragDropInProgress() {
   aura::client::DragDropClient* client = aura::client::GetDragDropClient(
-      Shell::GetRootWindow());
+      Shell::GetPrimaryRootWindow());
   if (client)
     return client->IsDragDropInProgress();
   return false;

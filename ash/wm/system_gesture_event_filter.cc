@@ -47,7 +47,7 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
   // TODO(tdresser) handle system level gesture events
   if (event->type() == ui::ET_GESTURE_THREE_FINGER_SWIPE)
     return ui::GESTURE_STATUS_CONSUMED;
-  if (!target || target == Shell::GetRootWindow()) {
+  if (!target || target == Shell::GetPrimaryRootWindow()) {
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN: {
           gfx::Rect screen =

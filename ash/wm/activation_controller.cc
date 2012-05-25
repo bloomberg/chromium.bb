@@ -118,13 +118,13 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
 ActivationController::ActivationController()
     : updating_activation_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
-  aura::client::SetActivationClient(Shell::GetRootWindow(), this);
+  aura::client::SetActivationClient(Shell::GetPrimaryRootWindow(), this);
   aura::Env::GetInstance()->AddObserver(this);
-  Shell::GetRootWindow()->AddRootWindowObserver(this);
+  Shell::GetPrimaryRootWindow()->AddRootWindowObserver(this);
 }
 
 ActivationController::~ActivationController() {
-  Shell::GetRootWindow()->RemoveRootWindowObserver(this);
+  Shell::GetPrimaryRootWindow()->RemoveRootWindowObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
 }
 
@@ -165,7 +165,7 @@ void ActivationController::DeactivateWindow(aura::Window* window) {
 }
 
 aura::Window* ActivationController::GetActiveWindow() {
-  return Shell::GetRootWindow()->GetProperty(
+  return Shell::GetPrimaryRootWindow()->GetProperty(
       aura::client::kRootWindowActiveWindowKey);
 }
 
@@ -196,7 +196,7 @@ void ActivationController::OnWindowDestroying(aura::Window* window) {
     // Clear the property before activating something else, since
     // ActivateWindow() will attempt to notify the window stored in this value
     // otherwise.
-    Shell::GetRootWindow()->ClearProperty(
+    Shell::GetPrimaryRootWindow()->ClearProperty(
         aura::client::kRootWindowActiveWindowKey);
     ActivateWindow(GetTopmostWindowToActivate(window));
   }
@@ -258,8 +258,8 @@ void ActivationController::ActivateWindowWithEvent(aura::Window* window,
       !window->Contains(window->GetFocusManager()->GetFocusedWindow())) {
     window->GetFocusManager()->SetFocusedWindow(window, event);
   }
-  Shell::GetRootWindow()->SetProperty(aura::client::kRootWindowActiveWindowKey,
-                                      window);
+  Shell::GetPrimaryRootWindow()->SetProperty(
+      aura::client::kRootWindowActiveWindowKey, window);
   // Invoke OnLostActive after we've changed the active window. That way if the
   // delegate queries for active state it doesn't think the window is still
   // active.

@@ -119,7 +119,7 @@ ShelfLayoutManager::AutoHideEventFilter::PreHandleGestureEvent(
 // ShelfLayoutManager, public:
 
 ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
-    : root_window_(Shell::GetInstance()->GetRootWindow()),
+    : root_window_(Shell::GetPrimaryRootWindow()),
       in_layout_(false),
       auto_hide_behavior_(SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT),
       alignment_(SHELF_ALIGNMENT_BOTTOM),
@@ -233,7 +233,7 @@ void ShelfLayoutManager::LayoutShelf() {
   GetLayer(status_)->SetOpacity(target_bounds.opacity);
   status_->SetBounds(target_bounds.status_bounds);
   Shell::GetInstance()->SetMonitorWorkAreaInsets(
-      Shell::GetRootWindow(),
+      Shell::GetPrimaryRootWindow(),
       target_bounds.work_area_insets);
   UpdateHitTestBounds();
 }
@@ -380,7 +380,7 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   GetLayer(status_)->SetBounds(target_bounds.status_bounds);
   GetLayer(status_)->SetOpacity(target_bounds.opacity);
   Shell::GetInstance()->SetMonitorWorkAreaInsets(
-      Shell::GetRootWindow(),
+      Shell::GetPrimaryRootWindow(),
       target_bounds.work_area_insets);
   UpdateHitTestBounds();
   UpdateShelfBackground(change_type);

@@ -51,10 +51,10 @@ class MultiMonitorManagerTest : public test::AshTestBase,
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     monitor_manager()->AddObserver(this);
-    Shell::GetRootWindow()->AddObserver(this);
+    Shell::GetPrimaryRootWindow()->AddObserver(this);
   }
   virtual void TearDown() OVERRIDE {
-    Shell::GetRootWindow()->RemoveObserver(this);
+    Shell::GetPrimaryRootWindow()->RemoveObserver(this);
     monitor_manager()->RemoveObserver(this);
     AshTestBase::TearDown();
   }
@@ -94,7 +94,7 @@ class MultiMonitorManagerTest : public test::AshTestBase,
 
   // aura::WindowObserver overrides:
   virtual void OnWindowDestroying(aura::Window* window) {
-    ASSERT_EQ(Shell::GetRootWindow(), window);
+    ASSERT_EQ(Shell::GetPrimaryRootWindow(), window);
     root_window_destroyed_ = true;
   }
 

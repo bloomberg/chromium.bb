@@ -54,7 +54,8 @@ TEST_F(WorkspaceEventFilterTest, DoubleClickSingleAxisResizeEdge) {
   gfx::Rect work_area =
       gfx::Screen::GetMonitorNearestWindow(window.get()).work_area();
 
-  aura::test::EventGenerator generator(Shell::GetRootWindow(), window.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       window.get());
 
   // Double-click the top resize edge.
   wd.set_window_component(HTTOP);

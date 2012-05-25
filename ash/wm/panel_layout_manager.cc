@@ -91,13 +91,13 @@ PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
   views::View* content_view = new views::View;
   content_view->set_background(new CalloutWidgetBackground);
   callout_widget_->SetContentsView(content_view);
-  Shell::GetRootWindow()->AddObserver(this);
+  Shell::GetPrimaryRootWindow()->AddObserver(this);
 }
 
 PanelLayoutManager::~PanelLayoutManager() {
   if (launcher_)
     launcher_->RemoveIconObserver(this);
-  Shell::GetRootWindow()->RemoveObserver(this);
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 }
 
 void PanelLayoutManager::StartDragging(aura::Window* panel) {

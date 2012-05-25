@@ -187,7 +187,7 @@ TEST_F(WindowModalityControllerTest, Events) {
 
   {
     // Clicking a point within w1 should activate that window.
-    aura::test::EventGenerator generator(Shell::GetRootWindow(),
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                          gfx::Point(10, 10));
     generator.ClickLeftButton();
     EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
@@ -197,7 +197,7 @@ TEST_F(WindowModalityControllerTest, Events) {
 
   {
     // Clicking a point within w1 should activate w11.
-    aura::test::EventGenerator generator(Shell::GetRootWindow(),
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                          gfx::Point(10, 10));
     generator.ClickLeftButton();
     EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
@@ -249,7 +249,7 @@ TEST_F(WindowModalityControllerTest, ChangeCapture) {
 
   gfx::Point center(view->width() / 2, view->height() / 2);
   views::View::ConvertPointToScreen(view, &center);
-  aura::test::EventGenerator generator(Shell::GetRootWindow(), center);
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), center);
   generator.PressLeftButton();
   EXPECT_TRUE(view->got_press());
 

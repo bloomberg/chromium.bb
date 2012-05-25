@@ -21,7 +21,7 @@ const int kModifierFlagMask = (ui::EF_SHIFT_DOWN |
 bool ShouldProcessAcceleratorsNow(aura::Window* target) {
   if (!target)
     return true;
-  if (target == ash::Shell::GetInstance()->GetRootWindow())
+  if (target == ash::Shell::GetPrimaryRootWindow())
     return true;
   // Unless |target| is the root window, return false to let the custom focus
   // manager (see ash/shell.cc) handle Ash accelerators.

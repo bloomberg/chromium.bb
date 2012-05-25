@@ -53,7 +53,7 @@ void PartialScreenshotView::StartPartialScreenshot(
 
   widget->Init(params);
   widget->SetContentsView(view);
-  widget->SetBounds(Shell::GetRootWindow()->bounds());
+  widget->SetBounds(Shell::GetPrimaryRootWindow()->bounds());
   widget->GetNativeView()->SetName("PartialScreenshotView");
   widget->StackAtTop();
   widget->Show();
@@ -117,7 +117,7 @@ void PartialScreenshotView::OnMouseReleased(const views::MouseEvent& event) {
 
   is_dragging_ = false;
   if (screenshot_delegate_) {
-    aura::RootWindow *root_window = Shell::GetRootWindow();
+    aura::RootWindow *root_window = Shell::GetPrimaryRootWindow();
     screenshot_delegate_->HandleTakePartialScreenshot(
         root_window, root_window->bounds().Intersect(GetScreenshotRect()));
   }

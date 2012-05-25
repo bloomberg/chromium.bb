@@ -196,7 +196,7 @@ TEST_F(ActivationControllerTest, ClickOnMenu) {
   EXPECT_EQ(NULL, wm::GetActiveWindow());
 
   // Clicking on an activatable window activtes the window.
-  aura::test::EventGenerator generator(Shell::GetRootWindow(), w1.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w1.get());
   generator.ClickLeftButton();
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 
@@ -321,7 +321,7 @@ TEST_F(ActivationControllerTest, PreventFocusToNonActivatableWindow) {
       &wd, -1, gfx::Rect(50, 50), NULL));
   // The RootWindow is a non-activatable parent.
   scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
-      &wd, -2, gfx::Rect(50, 50), Shell::GetRootWindow()));
+      &wd, -2, gfx::Rect(50, 50), Shell::GetPrimaryRootWindow()));
   scoped_ptr<aura::Window> w21(aura::test::CreateTestWindowWithDelegate(
       &wd, -21, gfx::Rect(50, 50), w2.get()));
 
@@ -362,7 +362,7 @@ TEST_F(ActivationControllerTest, CanActivateWindowIteselfTest)
 
   // The RootWindow is a non-activatable parent.
   scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
-      &wd, -2, gfx::Rect(50, 50), Shell::GetRootWindow()));
+      &wd, -2, gfx::Rect(50, 50), Shell::GetPrimaryRootWindow()));
   scoped_ptr<aura::Window> w21(aura::test::CreateTestWindowWithDelegate(
       &wd, -21, gfx::Rect(50, 50), w2.get()));
   EXPECT_FALSE(wm::CanActivateWindow(w2.get()));

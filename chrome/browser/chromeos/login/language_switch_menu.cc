@@ -198,7 +198,7 @@ void LanguageSwitchMenu::ExecuteCommand(int command_id) {
   // that users can use those keyboard layouts on the login screen.
   SwitchLanguageAndEnableKeyboardLayouts(locale);
   InitLanguageMenu();
-  NotifyLocaleChanged(ash::Shell::GetRootWindow());
+  NotifyLocaleChanged(ash::Shell::GetPrimaryRootWindow());
 }
 
 }  // namespace chromeos

@@ -12,7 +12,7 @@ namespace ash {
 
 HighContrastController::HighContrastController()
     : enabled_(false) {
-  root_window_ = ash::Shell::GetRootWindow();
+  root_window_ = ash::Shell::GetPrimaryRootWindow();
 }
 
 void HighContrastController::SetEnabled(bool enabled) {

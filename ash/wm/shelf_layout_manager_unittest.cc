@@ -93,7 +93,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   const aura::MonitorManager* manager =
       aura::Env::GetInstance()->monitor_manager();
   const gfx::Monitor& monitor =
-      manager->GetMonitorNearestWindow(Shell::GetRootWindow());
+      manager->GetMonitorNearestWindow(Shell::GetPrimaryRootWindow());
   ASSERT_NE(-1, monitor.id());
   // Bottom inset should be the max of widget heights.
   EXPECT_EQ(shelf_height,
@@ -145,7 +145,7 @@ TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
   const aura::MonitorManager* manager =
       aura::Env::GetInstance()->monitor_manager();
   const gfx::Monitor& monitor =
-      manager->GetMonitorNearestWindow(Shell::GetRootWindow());
+      manager->GetMonitorNearestWindow(Shell::GetPrimaryRootWindow());
 
   // Hide the shelf.
   SetState(shelf, ShelfLayoutManager::HIDDEN);
@@ -198,7 +198,7 @@ TEST_F(ShelfLayoutManagerTest, DontReferenceLauncherAfterDeletion) {
 
 // Various assertions around auto-hide.
 TEST_F(ShelfLayoutManagerTest, AutoHide) {
-  aura::RootWindow* root = Shell::GetRootWindow();
+  aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   aura::test::EventGenerator generator(root, root);
   generator.MoveMouseTo(0, 0);
 
@@ -262,7 +262,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   // Since ShelfLayoutManager queries for mouse location, move the mouse so
   // it isn't over the shelf.
   aura::test::EventGenerator generator(
-      Shell::GetInstance()->GetRootWindow(), gfx::Point());
+      Shell::GetPrimaryRootWindow(), gfx::Point());
   generator.MoveMouseTo(0, 0);
 
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
@@ -276,7 +276,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
-  aura::RootWindow* root = Shell::GetRootWindow();
+  aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   // LayoutShelf() forces the animation to completion, at which point the
   // launcher should go off the screen.
   shelf->LayoutShelf();
@@ -312,7 +312,7 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
   // Since ShelfLayoutManager queries for mouse location, move the mouse so
   // it isn't over the shelf.
   aura::test::EventGenerator generator(
-      Shell::GetInstance()->GetRootWindow(), gfx::Point());
+      Shell::GetPrimaryRootWindow(), gfx::Point());
   generator.MoveMouseTo(0, 0);
 
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
@@ -365,7 +365,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenStatusOrLauncherFocused) {
   // Since ShelfLayoutManager queries for mouse location, move the mouse so
   // it isn't over the shelf.
   aura::test::EventGenerator generator(
-      Shell::GetInstance()->GetRootWindow(), gfx::Point());
+      Shell::GetPrimaryRootWindow(), gfx::Point());
   generator.MoveMouseTo(0, 0);
 
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
@@ -501,7 +501,7 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   const aura::MonitorManager* manager =
       aura::Env::GetInstance()->monitor_manager();
   gfx::Monitor monitor =
-      manager->GetMonitorNearestWindow(Shell::GetRootWindow());
+      manager->GetMonitorNearestWindow(Shell::GetPrimaryRootWindow());
   ASSERT_NE(-1, monitor.id());
   EXPECT_EQ(shelf->GetIdealBounds().width(),
             monitor.GetWorkAreaInsets().left());
@@ -524,7 +524,7 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
 
   shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
   launcher_bounds = shelf->launcher_widget()->GetWindowScreenBounds();
-  monitor = manager->GetMonitorNearestWindow(Shell::GetRootWindow());
+  monitor = manager->GetMonitorNearestWindow(Shell::GetPrimaryRootWindow());
   ASSERT_NE(-1, monitor.id());
   EXPECT_EQ(shelf->GetIdealBounds().width(),
             monitor.GetWorkAreaInsets().right());

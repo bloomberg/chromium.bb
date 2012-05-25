@@ -99,7 +99,7 @@ void VideoDetector::MaybeNotifyObservers(aura::Window* window,
   if (!window->IsVisible())
     return;
 
-  gfx::Rect root_bounds = Shell::GetRootWindow()->bounds();
+  gfx::Rect root_bounds = Shell::GetPrimaryRootWindow()->bounds();
   if (!window->GetBoundsInRootWindow().Intersects(root_bounds))
     return;
 

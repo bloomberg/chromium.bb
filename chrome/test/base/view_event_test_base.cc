@@ -87,7 +87,7 @@ void ViewEventTestBase::SetUp() {
   ash::Shell::CreateInstance(NULL);
   // The shell runs with a locked screen in tests, so we must clear the event
   // client so it doesn't interfere with event propagation.
-  aura::client::SetEventClient(ash::Shell::GetInstance()->GetRootWindow(),
+  aura::client::SetEventClient(ash::Shell::GetPrimaryRootWindow(),
                                NULL);
 #endif
   window_ = views::Widget::CreateWindow(this);

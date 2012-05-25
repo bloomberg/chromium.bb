@@ -25,7 +25,8 @@ aura::Window* GetLocalProcessWindowAtPointImpl(
 
   if (window->layer()->type() == ui::LAYER_TEXTURED) {
     gfx::Point window_point(screen_point);
-    aura::Window::ConvertPointToWindow(ash::Shell::GetRootWindow(), window,
+    aura::Window::ConvertPointToWindow(ash::Shell::GetPrimaryRootWindow(),
+                                       window,
                                        &window_point);
     return gfx::Rect(window->bounds().size()).Contains(window_point) ?
         window : NULL;
@@ -55,7 +56,7 @@ gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeView>& ignore) {
   return GetLocalProcessWindowAtPointImpl(
-      screen_point, ignore, ash::Shell::GetRootWindow());
+      screen_point, ignore, ash::Shell::GetPrimaryRootWindow());
 }
 
 bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {

@@ -113,7 +113,7 @@ void ScreensaverView::LoadScreensaver() {
 }
 
 void ScreensaverView::ShowWindow() {
-  aura::RootWindow* root_window = ash::Shell::GetRootWindow();
+  aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
   gfx::Rect screen_rect =
       gfx::Screen::GetMonitorNearestWindow(root_window).bounds();
 

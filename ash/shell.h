@@ -133,8 +133,9 @@ class ASH_EXPORT Shell {
 
   static void DeleteInstance();
 
-  // Gets the singleton RootWindow used by the Shell.
-  static aura::RootWindow* GetRootWindow();
+  // Gets the primary RootWindow. The primary RootWindow is the root window
+  // that has a launcher.
+  static aura::RootWindow* GetPrimaryRootWindow();
 
   internal::RootWindowLayoutManager* root_window_layout() const {
     return root_window_layout_;

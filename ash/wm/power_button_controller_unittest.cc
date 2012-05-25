@@ -114,7 +114,7 @@ TEST_F(PowerButtonControllerTest, LegacyLockAndShutDown) {
       test_api_->ContainerGroupIsAnimated(
           PowerButtonController::ALL_CONTAINERS,
           PowerButtonController::ANIMATION_FAST_CLOSE));
-  EXPECT_FALSE(Shell::GetRootWindow()->cursor_shown());
+  EXPECT_FALSE(Shell::GetPrimaryRootWindow()->cursor_shown());
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
   test_api_->trigger_real_shutdown_timeout();
   EXPECT_EQ(1, delegate_->num_shutdown_requests());
@@ -481,7 +481,7 @@ TEST_F(PowerButtonControllerTest, ShutdownWithoutButton) {
           PowerButtonController::ALL_CONTAINERS,
           PowerButtonController::ANIMATION_HIDE));
   EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
-  EXPECT_FALSE(Shell::GetRootWindow()->cursor_shown());
+  EXPECT_FALSE(Shell::GetPrimaryRootWindow()->cursor_shown());
 }
 
 // Test that we display the fast-close animation and shut down when we get an
@@ -498,7 +498,7 @@ TEST_F(PowerButtonControllerTest, RequestShutdownFromLoginScreen) {
           PowerButtonController::SCREEN_LOCKER_AND_RELATED_CONTAINERS,
           PowerButtonController::ANIMATION_FAST_CLOSE));
   EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
-  EXPECT_FALSE(Shell::GetRootWindow()->cursor_shown());
+  EXPECT_FALSE(Shell::GetPrimaryRootWindow()->cursor_shown());
 
   EXPECT_EQ(0, delegate_->num_shutdown_requests());
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
@@ -519,7 +519,7 @@ TEST_F(PowerButtonControllerTest, RequestShutdownFromLockScreen) {
           PowerButtonController::SCREEN_LOCKER_AND_RELATED_CONTAINERS,
           PowerButtonController::ANIMATION_FAST_CLOSE));
   EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
-  EXPECT_FALSE(Shell::GetRootWindow()->cursor_shown());
+  EXPECT_FALSE(Shell::GetPrimaryRootWindow()->cursor_shown());
 
   EXPECT_EQ(0, delegate_->num_shutdown_requests());
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
@@ -530,11 +530,11 @@ TEST_F(PowerButtonControllerTest, RequestShutdownFromLockScreen) {
 // Test that the background layer is resized in response to root window resizes.
 TEST_F(PowerButtonControllerTest, ResizeBackgroundLayer) {
   controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
-  EXPECT_EQ(Shell::GetRootWindow()->bounds().ToString(),
+  EXPECT_EQ(Shell::GetPrimaryRootWindow()->bounds().ToString(),
             test_api_->GetBackgroundLayerBounds().ToString());
 
   const gfx::Size kNewSize(400, 300);
-  Shell::GetRootWindow()->SetHostSize(kNewSize);
+  Shell::GetPrimaryRootWindow()->SetHostSize(kNewSize);
   EXPECT_EQ(gfx::Rect(kNewSize).ToString(),
             test_api_->GetBackgroundLayerBounds().ToString());
 }

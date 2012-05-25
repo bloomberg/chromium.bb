@@ -38,7 +38,7 @@ typedef ash::test::AshTestBase DIPTest;
 TEST_F(DIPTest, MAYBE_WorkArea) {
   ChangeMonitorConfig(1.0f, gfx::Rect(0, 0, 1000, 900));
 
-  aura::RootWindow* root = Shell::GetRootWindow();
+  aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   const gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(root);
 
   EXPECT_EQ("0,0 1000x900", monitor.bounds().ToString());

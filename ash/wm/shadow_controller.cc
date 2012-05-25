@@ -72,11 +72,11 @@ ShadowController::ShadowController()
     : ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
   aura::Env::GetInstance()->AddObserver(this);
   // Watch for window activation changes.
-  Shell::GetRootWindow()->AddObserver(this);
+  Shell::GetPrimaryRootWindow()->AddObserver(this);
 }
 
 ShadowController::~ShadowController() {
-  Shell::GetRootWindow()->RemoveObserver(this);
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
 }
 

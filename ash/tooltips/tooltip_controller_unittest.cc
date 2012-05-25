@@ -47,7 +47,7 @@ views::Widget* CreateNewWidget() {
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = Shell::GetRootWindow();
+  params.parent = Shell::GetPrimaryRootWindow();
   params.child = true;
   widget->Init(params);
   widget->Show();
@@ -71,7 +71,7 @@ void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
 
 ash::internal::TooltipController* GetController() {
   return static_cast<ash::internal::TooltipController*>(
-      aura::client::GetTooltipClient(Shell::GetRootWindow()));
+      aura::client::GetTooltipClient(Shell::GetPrimaryRootWindow()));
 }
 
 gfx::Font GetDefaultFont() {
@@ -116,7 +116,8 @@ class TooltipControllerTest : public AshTestBase {
 };
 
 TEST_F(TooltipControllerTest, NonNullTooltipClient) {
-  EXPECT_TRUE(aura::client::GetTooltipClient(Shell::GetRootWindow()) != NULL);
+  EXPECT_TRUE(aura::client::GetTooltipClient(Shell::GetPrimaryRootWindow())
+              != NULL);
   EXPECT_EQ(string16(), GetTooltipText());
   EXPECT_EQ(NULL, GetTooltipWindow());
   EXPECT_FALSE(IsTooltipVisible());
@@ -129,11 +130,11 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
   view->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(string16(), GetTooltipText());
   EXPECT_EQ(NULL, GetTooltipWindow());
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseToCenterOf(widget->GetNativeView());
 
   aura::Window* window = widget->GetNativeView();
-  EXPECT_EQ(window, Shell::GetRootWindow()->GetEventHandlerForPoint(
+  EXPECT_EQ(window, Shell::GetPrimaryRootWindow()->GetEventHandlerForPoint(
       generator.current_location()));
   string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
   EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(window));
@@ -166,7 +167,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
   aura::Window* window = widget->GetNativeView();
 
   // Fire tooltip timer so tooltip becomes visible.
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseRelativeTo(window,
                                 view1->bounds().CenterPoint());
   FireTooltipTimer();
@@ -175,7 +176,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
     generator.MoveMouseBy(1, 0);
     EXPECT_TRUE(IsTooltipVisible());
     EXPECT_EQ(window,
-        Shell::GetRootWindow()->GetEventHandlerForPoint(
+        Shell::GetPrimaryRootWindow()->GetEventHandlerForPoint(
             generator.current_location()));
     string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
     EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(window));
@@ -186,7 +187,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
     generator.MoveMouseBy(1, 0);
     EXPECT_FALSE(IsTooltipVisible());
     EXPECT_EQ(window,
-        Shell::GetRootWindow()->GetEventHandlerForPoint(
+        Shell::GetPrimaryRootWindow()->GetEventHandlerForPoint(
             generator.current_location()));
     string16 expected_tooltip;  // = ""
     EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(window));
@@ -203,7 +204,7 @@ TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
   EXPECT_EQ(string16(), GetTooltipText());
   EXPECT_EQ(NULL, GetTooltipWindow());
 
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseRelativeTo(widget->GetNativeView(),
                                 view->bounds().CenterPoint());
   string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
@@ -233,7 +234,7 @@ TEST_F(TooltipControllerTest, HideTooltipWhenCursorHidden) {
   EXPECT_EQ(string16(), GetTooltipText());
   EXPECT_EQ(NULL, GetTooltipWindow());
 
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseRelativeTo(widget->GetNativeView(),
                                 view->bounds().CenterPoint());
   string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
@@ -243,12 +244,12 @@ TEST_F(TooltipControllerTest, HideTooltipWhenCursorHidden) {
   EXPECT_TRUE(IsTooltipVisible());
 
   // Hide the cursor and check again.
-  Shell::GetRootWindow()->ShowCursor(false);
+  Shell::GetPrimaryRootWindow()->ShowCursor(false);
   FireTooltipTimer();
   EXPECT_FALSE(IsTooltipVisible());
 
   // Show the cursor and re-check.
-  Shell::GetRootWindow()->ShowCursor(true);
+  Shell::GetPrimaryRootWindow()->ShowCursor(true);
   FireTooltipTimer();
   EXPECT_TRUE(IsTooltipVisible());
 }

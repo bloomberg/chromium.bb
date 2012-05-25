@@ -33,5 +33,5 @@ bool IsFullScreenMode() {
   // This is used only by notification_ui_manager.cc. On aura, notification
   // will be managed in panel. This is temporary to get certain feature running
   // until we implement it for aura.
-  return CheckIfFullscreenWindowExists(ash::Shell::GetRootWindow());
+  return CheckIfFullscreenWindowExists(ash::Shell::GetPrimaryRootWindow());
 }

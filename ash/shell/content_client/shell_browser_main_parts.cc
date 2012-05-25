@@ -92,7 +92,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   ash::shell::InitWindowTypeLauncher();
 
-  ash::Shell::GetRootWindow()->ShowRootWindow();
+  ash::Shell::GetPrimaryRootWindow()->ShowRootWindow();
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {

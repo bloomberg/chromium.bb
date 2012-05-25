@@ -340,7 +340,7 @@ class IBusUiControllerImpl : public IBusUiController {
   static ui::InputMethodIBus* GetChromeInputMethod() {
     if (!ash::Shell::HasInstance())
       return NULL;
-    aura::Window* root_window = ash::Shell::GetRootWindow();
+    aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
     if (!root_window)
       return NULL;
     return static_cast<ui::InputMethodIBus*>(root_window->GetProperty(

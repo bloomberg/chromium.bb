@@ -66,7 +66,7 @@ TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
       scoped_ptr<ScreenshotDelegate>(delegate).Pass());
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   // AcceleratorController calls ScreenshotDelegate::HandleTakeScreenshot() when
   // VKEY_PRINT is pressed. See kAcceleratorData[] in accelerator_controller.cc.
   generator.PressKey(ui::VKEY_PRINT, 0);
@@ -94,7 +94,7 @@ TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
 
   // AcceleratorFilter should ignore the key events since the root window is
   // not focused.
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.PressKey(ui::VKEY_PRINT, 0);
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
   generator.ReleaseKey(ui::VKEY_PRINT, 0);
@@ -111,7 +111,7 @@ TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
       scoped_ptr<ScreenshotDelegate>(delegate).Pass());
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.PressKey(ui::VKEY_PRINT, 0);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
   generator.ReleaseKey(ui::VKEY_PRINT, 0);

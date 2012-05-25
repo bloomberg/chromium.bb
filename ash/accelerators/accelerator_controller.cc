@@ -122,12 +122,12 @@ bool HandleRotateScreen() {
     case 13: delta = 180; break;
   }
   i = (i + 1) % 14;
-  ash::Shell::GetRootWindow()->layer()->GetAnimator()->
+  ash::Shell::GetPrimaryRootWindow()->layer()->GetAnimator()->
       set_preemption_strategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
   scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
       new ui::LayerAnimationSequence(new ui::ScreenRotation(delta)));
-  screen_rotation->AddObserver(ash::Shell::GetRootWindow());
-  ash::Shell::GetRootWindow()->layer()->GetAnimator()->StartAnimation(
+  screen_rotation->AddObserver(ash::Shell::GetPrimaryRootWindow());
+  ash::Shell::GetPrimaryRootWindow()->layer()->GetAnimator()->StartAnimation(
       screen_rotation.release());
   return true;
 }
@@ -144,12 +144,12 @@ bool HandleToggleDesktopBackgroundMode() {
 }
 
 bool HandleToggleRootWindowFullScreen() {
-  ash::Shell::GetRootWindow()->ToggleFullScreen();
+  ash::Shell::GetPrimaryRootWindow()->ToggleFullScreen();
   return true;
 }
 
 bool HandlePrintLayerHierarchy() {
-  aura::RootWindow* root_window = ash::Shell::GetRootWindow();
+  aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
   ui::PrintLayerHierarchy(root_window->layer(),
                           root_window->last_mouse_location());
   return true;
@@ -319,7 +319,7 @@ bool AcceleratorController::AcceleratorPressed(
       return HandleNewWindow(false /* is_incognito */);
     case TAKE_SCREENSHOT:
       if (screenshot_delegate_.get()) {
-        aura::RootWindow* root_window = Shell::GetRootWindow();
+        aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
         screenshot_delegate_->HandleTakeScreenshot(root_window);
       }
       // Return true to prevent propagation of the key event.

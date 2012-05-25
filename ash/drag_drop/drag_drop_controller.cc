@@ -42,7 +42,7 @@ DragDropController::DragDropController()
       drag_drop_in_progress_(false),
       should_block_during_drag_drop_(true) {
   Shell::GetInstance()->AddRootWindowEventFilter(this);
-  aura::client::SetDragDropClient(Shell::GetRootWindow(), this);
+  aura::client::SetDragDropClient(Shell::GetPrimaryRootWindow(), this);
 }
 
 DragDropController::~DragDropController() {
@@ -56,9 +56,10 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
                                          const gfx::Point& root_location,
                                          int operation) {
   DCHECK(!drag_drop_in_progress_);
-  aura::Window* capture_window = Shell::GetRootWindow()->capture_window();
+  aura::Window* capture_window =
+      Shell::GetPrimaryRootWindow()->capture_window();
   if (capture_window)
-    Shell::GetRootWindow()->ReleaseCapture(capture_window);
+    Shell::GetPrimaryRootWindow()->ReleaseCapture(capture_window);
   drag_drop_in_progress_ = true;
 
   drag_data_ = &data;
@@ -117,7 +118,7 @@ void DragDropController::DragUpdate(aura::Window* target,
       int op = delegate->OnDragUpdated(e);
       gfx::NativeCursor cursor = (op == ui::DragDropTypes::DRAG_NONE)?
           ui::kCursorNoDrop : ui::kCursorCopy;
-      Shell::GetRootWindow()->SetCursor(cursor);
+      Shell::GetPrimaryRootWindow()->SetCursor(cursor);
     }
   }
 
@@ -130,7 +131,7 @@ void DragDropController::DragUpdate(aura::Window* target,
 
 void DragDropController::Drop(aura::Window* target,
                               const aura::LocatedEvent& event) {
-  Shell::GetRootWindow()->SetCursor(ui::kCursorPointer);
+  Shell::GetPrimaryRootWindow()->SetCursor(ui::kCursorPointer);
   aura::client::DragDropDelegate* delegate = NULL;
 
   // We must guarantee that a target gets a OnDragEntered before Drop. WebKit
@@ -159,7 +160,7 @@ void DragDropController::Drop(aura::Window* target,
 }
 
 void DragDropController::DragCancel() {
-  Shell::GetRootWindow()->SetCursor(ui::kCursorPointer);
+  Shell::GetPrimaryRootWindow()->SetCursor(ui::kCursorPointer);
 
   // |drag_window_| can be NULL if we have just started the drag and have not
   // received any DragUpdates, or, if the |drag_window_| gets destroyed during

@@ -153,7 +153,7 @@ void ShowWebFeedbackView(Browser* browser,
   // For ChromeOS, don't use the browser window but the root window
   // instead to grab the screenshot. We want everything on the screen, not
   // just the current browser.
-  native_window = ash::Shell::GetRootWindow();
+  native_window = ash::Shell::GetPrimaryRootWindow();
   snapshot_bounds = gfx::Rect(native_window->bounds());
 #else
   native_window = browser->window()->GetNativeHandle();

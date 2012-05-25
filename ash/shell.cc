@@ -572,7 +572,7 @@ Shell::~Shell() {
 
   // TooltipController is deleted with the Shell so removing its references.
   RemoveRootWindowEventFilter(tooltip_controller_.get());
-  aura::client::SetTooltipClient(GetRootWindow(), NULL);
+  aura::client::SetTooltipClient(GetPrimaryRootWindow(), NULL);
 
   // Make sure we delete WorkspaceController before launcher is
   // deleted as it has a reference to launcher model.
@@ -587,7 +587,7 @@ Shell::~Shell() {
 
   // Delete containers now so that child windows does not access
   // observers when they are destructed.
-  aura::RootWindow* root_window = GetRootWindow();
+  aura::RootWindow* root_window = GetPrimaryRootWindow();
   while (!root_window->children().empty()) {
     aura::Window* child = root_window->children()[0];
     delete child;
@@ -647,7 +647,7 @@ void Shell::DeleteInstance() {
 }
 
 // static
-aura::RootWindow* Shell::GetRootWindow() {
+aura::RootWindow* Shell::GetPrimaryRootWindow() {
   return GetInstance()->root_window_.get();
 }
 
@@ -656,7 +656,7 @@ void Shell::Init() {
   // Launcher, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
-  aura::RootWindow* root_window = GetRootWindow();
+  aura::RootWindow* root_window = GetPrimaryRootWindow();
   root_filter_ = new aura::shared::RootWindowEventFilter(root_window);
 #if !defined(OS_MACOSX)
   nested_dispatcher_controller_.reset(new NestedDispatcherController);
@@ -664,7 +664,7 @@ void Shell::Init() {
 #endif
   shell_context_menu_.reset(new internal::ShellContextMenu);
   // Pass ownership of the filter to the root window.
-  GetRootWindow()->SetEventFilter(root_filter_);
+  GetPrimaryRootWindow()->SetEventFilter(root_filter_);
 
   // KeyRewriterEventFilter must be the first one.
   DCHECK(!GetRootWindowEventFilterCount());
@@ -774,22 +774,22 @@ aura::Window* Shell::GetContainer(int container_id) {
 }
 
 const aura::Window* Shell::GetContainer(int container_id) const {
-  return GetRootWindow()->GetChildById(container_id);
+  return GetPrimaryRootWindow()->GetChildById(container_id);
 }
 
 void Shell::AddRootWindowEventFilter(aura::EventFilter* filter) {
   static_cast<aura::shared::RootWindowEventFilter*>(
-      GetRootWindow()->event_filter())->AddFilter(filter);
+      GetPrimaryRootWindow()->event_filter())->AddFilter(filter);
 }
 
 void Shell::RemoveRootWindowEventFilter(aura::EventFilter* filter) {
   static_cast<aura::shared::RootWindowEventFilter*>(
-      GetRootWindow()->event_filter())->RemoveFilter(filter);
+      GetPrimaryRootWindow()->event_filter())->RemoveFilter(filter);
 }
 
 size_t Shell::GetRootWindowEventFilterCount() const {
   return static_cast<aura::shared::RootWindowEventFilter*>(
-      GetRootWindow()->event_filter())->GetFilterCount();
+      GetPrimaryRootWindow()->event_filter())->GetFilterCount();
 }
 
 void Shell::ShowBackgroundMenu(views::Widget* widget,

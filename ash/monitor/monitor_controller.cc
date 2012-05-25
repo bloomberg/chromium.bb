@@ -46,7 +46,7 @@ MonitorController::MonitorController() {
 MonitorController::~MonitorController() {
   aura::Env::GetInstance()->monitor_manager()->RemoveObserver(this);
   // Remove the root first.
-  int monitor_id = Shell::GetRootWindow()->GetProperty(kMonitorIdKey);
+  int monitor_id = Shell::GetPrimaryRootWindow()->GetProperty(kMonitorIdKey);
   DCHECK(monitor_id >= 0);
   root_windows_.erase(monitor_id);
   STLDeleteContainerPairSecondPointers(
@@ -59,8 +59,8 @@ void MonitorController::OnMonitorBoundsChanged(const gfx::Monitor& monitor) {
 
 void MonitorController::OnMonitorAdded(const gfx::Monitor& monitor) {
   if (root_windows_.empty()) {
-    root_windows_[monitor.id()] = Shell::GetRootWindow();
-    Shell::GetRootWindow()->SetHostBounds(monitor.bounds_in_pixel());
+    root_windows_[monitor.id()] = Shell::GetPrimaryRootWindow();
+    Shell::GetPrimaryRootWindow()->SetHostBounds(monitor.bounds_in_pixel());
     return;
   }
   aura::RootWindow* root = aura::Env::GetInstance()->monitor_manager()->
@@ -73,10 +73,10 @@ void MonitorController::OnMonitorRemoved(const gfx::Monitor& monitor) {
   aura::RootWindow* root = root_windows_[monitor.id()];
   DCHECK(root);
   // Primary monitor should never be removed by MonitorManager.
-  DCHECK(root != Shell::GetRootWindow());
+  DCHECK(root != Shell::GetPrimaryRootWindow());
   // Monitor for root window will be deleted when the Primary RootWindow
   // is deleted by the Shell.
-  if (root != Shell::GetRootWindow()) {
+  if (root != Shell::GetPrimaryRootWindow()) {
     root_windows_.erase(monitor.id());
     delete root;
   }
@@ -89,8 +89,8 @@ void MonitorController::Init() {
     const gfx::Monitor& monitor = monitor_manager->GetMonitorAt(i);
     if (i == 0) {
       // Primary monitor
-      root_windows_[monitor.id()] = Shell::GetRootWindow();
-      Shell::GetRootWindow()->SetHostBounds(monitor.bounds_in_pixel());
+      root_windows_[monitor.id()] = Shell::GetPrimaryRootWindow();
+      Shell::GetPrimaryRootWindow()->SetHostBounds(monitor.bounds_in_pixel());
     } else {
       aura::RootWindow* root =
           monitor_manager->CreateRootWindowForMonitor(monitor);

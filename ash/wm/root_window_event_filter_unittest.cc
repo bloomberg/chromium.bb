@@ -76,7 +76,7 @@ TEST_F(RootWindowEventFilterTest, Focus) {
   Shell::GetInstance()->RemoveRootWindowEventFilter(
       shell_test.input_method_event_filter());
 
-  aura::RootWindow* root_window = Shell::GetRootWindow();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   root_window->SetBounds(gfx::Rect(0, 0, 510, 510));
 
   // Supplied ids are negative so as not to collide with shell ids.
@@ -108,7 +108,8 @@ TEST_F(RootWindowEventFilterTest, Focus) {
       SK_ColorGRAY, -13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
   // Click on a sub-window (w121) to focus it.
-  aura::test::EventGenerator generator(Shell::GetRootWindow(), w121.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       w121.get());
   generator.ClickLeftButton();
 
   aura::internal::FocusManager* focus_manager = w121->GetFocusManager();
@@ -178,7 +179,7 @@ TEST_F(RootWindowEventFilterTest, Focus) {
 
 // Various assertion testing for activating windows.
 TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
-  aura::RootWindow* root_window = Shell::GetRootWindow();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
   test::TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
@@ -205,7 +206,8 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
 
   {
     // Click on window2.
-    aura::test::EventGenerator generator(Shell::GetRootWindow(), w2.get());
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         w2.get());
     generator.ClickLeftButton();
 
     // Window2 should have become active.
@@ -221,7 +223,8 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
 
   {
     // Click back on window1, but set it up so w1 doesn't activate on click.
-    aura::test::EventGenerator generator(Shell::GetRootWindow(), w1.get());
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         w1.get());
     d1.set_activate(false);
     generator.ClickLeftButton();
 
@@ -251,7 +254,8 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
   {
     scoped_ptr<aura::Window> w11(CreateTestWindowWithDelegate(
           &wd, -1, gfx::Rect(10, 10, 10, 10), w1.get()));
-    aura::test::EventGenerator generator(Shell::GetRootWindow(), w11.get());
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         w11.get());
     // First set the focus to the child |w11|.
     generator.ClickLeftButton();
     EXPECT_EQ(w11.get(), focus_manager->GetFocusedWindow());
@@ -276,7 +280,8 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
     // Move focus to |w2| first.
     scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
           &wd, -1, gfx::Rect(70, 70, 50, 50), NULL));
-    aura::test::EventGenerator generator(Shell::GetRootWindow(), w2.get());
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         w2.get());
     generator.ClickLeftButton();
     EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
     EXPECT_FALSE(w11->CanFocus());
@@ -290,7 +295,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
 
 // Essentially the same as ActivateOnMouse, but for touch events.
 TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
-  aura::RootWindow* root_window = Shell::GetRootWindow();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
   test::TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
@@ -360,7 +365,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
 }
 
 TEST_F(RootWindowEventFilterTest, MouseEventCursors) {
-  aura::RootWindow* root_window = Shell::GetRootWindow();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   // Disable ash grid so that test can place a window at
   // specific location.
   ash::Shell::GetInstance()->DisableWorkspaceGridLayout();
@@ -440,7 +445,7 @@ TEST_F(RootWindowEventFilterTest, MAYBE_TransformActivate) {
   // specific location.
   ash::Shell::GetInstance()->DisableWorkspaceGridLayout();
 
-  aura::RootWindow* root_window = Shell::GetRootWindow();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   gfx::Size size = root_window->bounds().size();
   EXPECT_EQ(
       gfx::Rect(size).ToString(),
@@ -491,7 +496,7 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
   Shell::GetInstance()->RemoveRootWindowEventFilter(
       shell_test.input_method_event_filter());
 
-  aura::RootWindow* root_window = Shell::GetRootWindow();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
   // Creates a window and make it active
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindow(
@@ -563,7 +568,7 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
 // We should show and hide the cursor in response to mouse and touch events as
 // requested.
 TEST_F(RootWindowEventFilterTest, UpdateCursorVisibility) {
-  aura::RootWindow* root_window = Shell::GetRootWindow();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   root_window->SetBounds(gfx::Rect(0, 0, 500, 500));
   scoped_ptr<aura::Window> window(aura::test::CreateTestWindow(
       SK_ColorWHITE, -1, gfx::Rect(0, 0, 500, 500), NULL));

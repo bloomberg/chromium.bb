@@ -88,8 +88,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 #endif
   gesture_handler_.reset(new UserGestureHandler);
   aura::client::SetUserGestureClient(
-      ash::Shell::GetRootWindow(), gesture_handler_.get());
-  ash::Shell::GetRootWindow()->ShowRootWindow();
+      ash::Shell::GetPrimaryRootWindow(), gesture_handler_.get());
+  ash::Shell::GetPrimaryRootWindow()->ShowRootWindow();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {

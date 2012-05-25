@@ -451,7 +451,7 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
   // Since ShelfLayoutManager queries for mouse location, move the mouse so
   // it isn't over the shelf.
   aura::test::EventGenerator generator(
-      Shell::GetInstance()->GetRootWindow(), gfx::Point());
+      Shell::GetPrimaryRootWindow(), gfx::Point());
   generator.MoveMouseTo(0, 0);
 
   // Two windows, w1 normal, w2 maximized.
