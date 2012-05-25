@@ -373,6 +373,20 @@ void ChromotingHost::PauseSession(bool pause) {
   }
 }
 
+void ChromotingHost::DisconnectAllClients() {
+  if (!context_->network_message_loop()->BelongsToCurrentThread()) {
+    context_->network_message_loop()->PostTask(
+        FROM_HERE, base::Bind(&ChromotingHost::DisconnectAllClients, this));
+    return;
+  }
+
+  while (!clients_.empty()) {
+    size_t size = clients_.size();
+    clients_.front()->Disconnect();
+    CHECK_EQ(clients_.size(), size - 1);
+  }
+}
+
 void ChromotingHost::SetUiStrings(const UiStrings& ui_strings) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   DCHECK_EQ(state_, kInitial);

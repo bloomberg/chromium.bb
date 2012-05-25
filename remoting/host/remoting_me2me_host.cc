@@ -394,8 +394,8 @@ class HostProcess
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
     host_user_interface_->Start(
-        host_,
-        base::Bind(&HostProcess::OnRestartHostRequest, base::Unretained(this)));
+        host_, base::Bind(&HostProcess::OnDisconnectRequested,
+                          base::Unretained(this)));
 #endif
 
     host_->Start();
@@ -407,14 +407,12 @@ class HostProcess
     Shutdown(kInvalidOauthCredentialsExitCode);
   }
 
-  // Invoked from when the user uses the Disconnect windows to terminate
+  // Invoked when the user uses the Disconnect windows to terminate
   // the sessions.
-  void OnRestartHostRequest() {
+  void OnDisconnectRequested() {
     DCHECK(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
 
-    context_->network_message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&HostProcess::RestartHost, base::Unretained(this)));
+    host_->DisconnectAllClients();
   }
 
   void RestartHost() {

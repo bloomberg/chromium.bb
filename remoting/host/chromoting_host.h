@@ -133,8 +133,14 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void LocalMouseMoved(const SkIPoint& new_pos);
 
   // Pause or unpause the session. While the session is paused, remote input
-  // is ignored.
+  // is ignored. Can be called from any thread.
   void PauseSession(bool pause);
+
+  // Disconnects all active clients. Clients are disconnected
+  // asynchronously when this method is called on a thread other than
+  // the network thread. Potentically this may cause disconnection of
+  // clients that were not connected when this method is called.
+  void DisconnectAllClients();
 
   const UiStrings& ui_strings() { return ui_strings_; }
 
