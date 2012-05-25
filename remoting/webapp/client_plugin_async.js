@@ -179,7 +179,7 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
     }
     this.perfStats_ =
         /** @type {remoting.ClientSession.PerfStats} */ message.data;
-  } else if (message.method = 'injectClipboardItem') {
+  } else if (message.method == 'injectClipboardItem') {
     if (typeof message.data['mimeType'] != 'string' ||
         typeof message.data['item'] != 'string') {
       console.error('Received incorrect injectClipboardItem message.');
