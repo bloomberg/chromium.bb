@@ -245,9 +245,6 @@ SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 
 # Which toolchain to use for each arch.
 SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
-if ${PNACL_IN_CROS_CHROOT}; then
-  SBTC_BUILD_WITH_PNACL="armv7"
-fi
 
 # Current milestones in each repo
 readonly UPSTREAM_REV=${UPSTREAM_REV:-bce3f306c2c9}
@@ -611,11 +608,7 @@ checkout-all() {
   svn-checkout-clang
   hg-checkout-binutils
   hg-checkout-gold
-  if ${PNACL_IN_CROS_CHROOT}; then
-    git-sync-no-gclient
-  else
-    git-sync
-  fi
+  git-sync
 }
 
 hg-checkout-upstream() {
@@ -639,32 +632,6 @@ hg-checkout-binutils() {
 
 hg-checkout-gold() {
   hg-checkout ${REPO_GOLD} "${TC_SRC_GOLD}" ${GOLD_REV}
-}
-
-
-git-grab() {
-  local baseurl="http://git.chromium.org/native_client/"
-  local srcdir=$1
-  local repo=$2
-  local label=$3
-  local rev=$(cat "${PNACL_ROOT}"/DEPS | tr -d '",' |
-              grep ${label}: | awk '{print $2}')
-  StepBanner "GIT-SYNC" "Checking out ${repo} at ${rev}"
-  if ! [ -d "${srcdir}" ]; then
-    mkdir -p "${PNACL_GIT_ROOT}"
-    git clone ${baseurl}/${repo} "${srcdir}"
-  fi
-  spushd "${srcdir}"
-  git fetch
-  git reset --hard "${rev}"
-  spopd
-}
-
-# Used for grabbing git repositories in CrOS sandbox
-git-sync-no-gclient() {
-  git-grab "${TC_SRC_GCC}" pnacl-gcc.git pnacl_gcc_rev
-  git-grab "${TC_SRC_GLIBC}" nacl-glibc.git glibc_rev
-  git-grab "${TC_SRC_NEWLIB}" nacl-newlib.git newlib_rev
 }
 
 git-sync() {
@@ -753,11 +720,6 @@ everything() {
 #@ everything-hg         - Checkout everything from the repositories
 everything-hg() {
   mkdir -p "${INSTALL_ROOT}"
-  if ${PNACL_IN_CROS_CHROOT}; then
-    # TODO: http://code.google.com/p/nativeclient/issues/detail?id=135
-    Banner "You are running in a ChromiumOS Chroot."
-  fi
-
   checkout-all
   StepBanner "Updating upstreaming repository"
   update-all
@@ -1832,12 +1794,6 @@ libstdcpp-install() {
 
 #+ misc-tools            - Build and install sel_ldr and validator for ARM.
 misc-tools() {
-  if ${PNACL_IN_CROS_CHROOT}; then
-    Banner "In CrOS chroot. Not building misc-tools"
-    return
-  fi
-
-
   if ${PNACL_BUILD_ARM} ; then
     StepBanner "MISC-ARM" "Building sel_ldr (ARM)"
 
@@ -3209,11 +3165,7 @@ sdk() {
   sdk-clean
   sdk-headers
   sdk-libs
-  if ${PNACL_IN_CROS_CHROOT}; then
-    Banner "NOT COMPILING THE IRT SHIM on CrOS chroot"
-  else
-    sdk-irt-shim
-  fi
+  sdk-irt-shim
   sdk-verify
 }
 
@@ -3878,14 +3830,6 @@ has-trusted-toolchain() {
 
 check-for-trusted() {
   if ! ${PNACL_BUILD_ARM} ; then
-    return
-  fi
-
-  if ${PNACL_IN_CROS_CHROOT}; then
-    # TODO: http://code.google.com/p/nativeclient/issues/detail?id=135
-    Banner "You are running in a ChromiumOS Chroot." \
-      " You should make sure that the PNaCl sources are properly checked out " \
-      " And updated outside of the chroot"
     return
   fi
 

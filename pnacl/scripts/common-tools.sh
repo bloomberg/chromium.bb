@@ -35,15 +35,6 @@ SetLogDirectory() {
 }
 
 ######################################################################
-# Detect if we are in a ChromiumOS chroot
-######################################################################
-if [ -e /etc/debian_chroot ]; then
-  readonly PNACL_IN_CROS_CHROOT=true
-else
-  readonly PNACL_IN_CROS_CHROOT=false
-fi
-
-######################################################################
 # Detect system type
 ######################################################################
 
@@ -693,12 +684,7 @@ PackageCheck() {
   assert-bin "makeinfo" "makeinfo not found. Please install 'texinfo' package."
   assert-bin "bison"    "bison not found. Please install 'bison' package."
   assert-bin "flex"     "flex not found. Please install 'flex' package."
-  if ${PNACL_IN_CROS_CHROOT}; then
-    echo "In cros chroot - not running gclient"
-  else
-    assert-bin "gclient"  \
-     "gclient not found in PATH. Please install depot_tools."
-  fi
+  assert-bin "gclient"  "gclient not found in PATH. Please install depot_tools."
 }
 
 assert-bin() {
