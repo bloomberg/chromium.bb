@@ -39,6 +39,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGlyphCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
@@ -347,6 +348,18 @@ WebKit::WebFileError PlatformFileErrorToWebFileError(
     default:
       return WebKit::WebFileErrorInvalidModification;
   }
+}
+
+void PlatformFileInfoToWebFileInfo(
+    const base::PlatformFileInfo& file_info,
+    WebKit::WebFileInfo* web_file_info) {
+  DCHECK(web_file_info);
+  web_file_info->modificationTime = file_info.last_modified.ToDoubleT();
+  web_file_info->length = file_info.size;
+  if (file_info.is_directory)
+    web_file_info->type = WebKit::WebFileInfo::TypeDirectory;
+  else
+    web_file_info->type = WebKit::WebFileInfo::TypeFile;
 }
 
 namespace {

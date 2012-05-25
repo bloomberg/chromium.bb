@@ -31,6 +31,7 @@ bool FileUtilitiesMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(FileUtilitiesMsg_GetFileSize, OnGetFileSize)
     IPC_MESSAGE_HANDLER(FileUtilitiesMsg_GetFileModificationTime,
                         OnGetFileModificationTime)
+    IPC_MESSAGE_HANDLER(FileUtilitiesMsg_GetFileInfo, OnGetFileInfo)
     IPC_MESSAGE_HANDLER(FileUtilitiesMsg_OpenFile, OnOpenFile)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -69,6 +70,24 @@ void FileUtilitiesMessageFilter::OnGetFileModificationTime(
   file_info.size = 0;
   if (file_util::GetFileInfo(path, &file_info))
     *result = file_info.last_modified;
+}
+
+void FileUtilitiesMessageFilter::OnGetFileInfo(
+    const FilePath& path,
+    base::PlatformFileInfo* result,
+    base::PlatformFileError* status) {
+  *result = base::PlatformFileInfo();
+  *status = base::PLATFORM_FILE_OK;
+
+  // Get file metadata only when the child process has been granted
+  // permission to read the file.
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      process_id_, path)) {
+    return;
+  }
+
+  if (!file_util::GetFileInfo(path, result))
+    *status = base::PLATFORM_FILE_ERROR_FAILED;
 }
 
 void FileUtilitiesMessageFilter::OnOpenFile(

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/glue/webkit_glue.h"
@@ -59,6 +60,21 @@ bool WebFileUtilitiesImpl::getFileModificationTime(const WebString& path,
   if (!file_util::GetFileInfo(WebStringToFilePath(path), &info))
     return false;
   result = info.last_modified.ToDoubleT();
+  return true;
+}
+
+bool WebFileUtilitiesImpl::getFileInfo(const WebString& path,
+                                       WebKit::WebFileInfo& web_file_info) {
+  if (sandbox_enabled_) {
+    NOTREACHED();
+    return false;
+  }
+  base::PlatformFileInfo file_info;
+  if (!file_util::GetFileInfo(WebStringToFilePath(path), &file_info))
+    return false;
+
+  webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
+  web_file_info.platformPath = path;
   return true;
 }
 

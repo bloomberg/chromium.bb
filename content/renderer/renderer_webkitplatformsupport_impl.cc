@@ -34,6 +34,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobRegistry.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
@@ -79,6 +80,7 @@
 
 using WebKit::WebAudioDevice;
 using WebKit::WebBlobRegistry;
+using WebKit::WebFileInfo;
 using WebKit::WebFileSystem;
 using WebKit::WebFrame;
 using WebKit::WebGamepads;
@@ -115,6 +117,7 @@ class RendererWebKitPlatformSupportImpl::FileUtilities
   virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual bool getFileModificationTime(const WebKit::WebString& path,
                                        double& result);
+  virtual bool getFileInfo(const WebString& path, WebFileInfo& result);
   virtual base::PlatformFile openFile(const WebKit::WebString& path,
                                       int mode);
 };
@@ -430,6 +433,21 @@ bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileModificationTime(
 
   result = 0;
   return false;
+}
+
+bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
+    const WebString& path,
+    WebFileInfo& web_file_info) {
+  base::PlatformFileInfo file_info;
+  base::PlatformFileError status;
+  if (!SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileInfo(
+           webkit_glue::WebStringToFilePath(path), &file_info, &status)) ||
+      status != base::PLATFORM_FILE_OK) {
+    return false;
+  }
+  webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
+  web_file_info.platformPath = path;
+  return true;
 }
 
 base::PlatformFile RendererWebKitPlatformSupportImpl::FileUtilities::openFile(

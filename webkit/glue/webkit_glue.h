@@ -34,6 +34,7 @@ class PlatformCanvas;
 }
 
 namespace WebKit {
+struct WebFileInfo;
 class WebFrame;
 class WebString;
 }
@@ -143,6 +144,11 @@ WEBKIT_GLUE_EXPORT WebKit::WebString FilePathToWebString(
 // File error conversion
 WEBKIT_GLUE_EXPORT WebKit::WebFileError PlatformFileErrorToWebFileError(
     base::PlatformFileError error_code);
+
+// File info conversion
+WEBKIT_GLUE_EXPORT void PlatformFileInfoToWebFileInfo(
+    const base::PlatformFileInfo& file_info,
+    WebKit::WebFileInfo* web_file_info);
 
 // Returns a WebCanvas pointer associated with the given Skia canvas.
 WEBKIT_GLUE_EXPORT WebKit::WebCanvas* ToWebCanvas(skia::PlatformCanvas*);

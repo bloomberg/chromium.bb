@@ -6,6 +6,7 @@
 #define WEBFILEUTILITIES_IMPL_H_
 
 #include "base/platform_file.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileUtilities.h"
 #include "webkit/glue/webkit_glue_export.h"
 
@@ -25,6 +26,9 @@ class WEBKIT_GLUE_EXPORT WebFileUtilitiesImpl :
   virtual bool getFileModificationTime(
       const WebKit::WebString& path,
       double& result);
+  virtual bool getFileInfo(
+      const WebKit::WebString& path,
+      WebKit::WebFileInfo& result);
   virtual WebKit::WebString directoryName(const WebKit::WebString& path);
   virtual WebKit::WebString pathByAppendingComponent(
       const WebKit::WebString& path, const WebKit::WebString& component);

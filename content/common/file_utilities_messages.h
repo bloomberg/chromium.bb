@@ -25,6 +25,11 @@ IPC_SYNC_MESSAGE_CONTROL1_1(FileUtilitiesMsg_GetFileModificationTime,
                             FilePath /* path */,
                             base::Time /* result */)
 
+IPC_SYNC_MESSAGE_CONTROL1_2(FileUtilitiesMsg_GetFileInfo,
+                            FilePath /* path */,
+                            base::PlatformFileInfo /* result */,
+                            base::PlatformFileError /* status */)
+
 // Open the file.
 IPC_SYNC_MESSAGE_CONTROL2_1(FileUtilitiesMsg_OpenFile,
                             FilePath /* path */,

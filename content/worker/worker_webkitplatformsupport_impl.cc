@@ -5,6 +5,7 @@
 #include "content/worker/worker_webkitplatformsupport_impl.h"
 
 #include "base/logging.h"
+#include "base/platform_file.h"
 #include "base/utf_string_conversions.h"
 #include "content/common/database_util.h"
 #include "content/common/fileapi/webblobregistry_impl.h"
@@ -16,6 +17,7 @@
 #include "content/worker/worker_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "net/base/mime_util.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
@@ -24,6 +26,7 @@
 
 using WebKit::WebBlobRegistry;
 using WebKit::WebClipboard;
+using WebKit::WebFileInfo;
 using WebKit::WebFileSystem;
 using WebKit::WebFileUtilities;
 using WebKit::WebKitPlatformSupport;
@@ -43,6 +46,7 @@ class WorkerWebKitPlatformSupportImpl::FileUtilities
   virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual bool getFileModificationTime(const WebKit::WebString& path,
                                        double& result);
+  virtual bool getFileInfo(const WebString& path, WebFileInfo& result);
 };
 
 static bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) {
@@ -79,6 +83,21 @@ bool WorkerWebKitPlatformSupportImpl::FileUtilities::getFileModificationTime(
 
   result = 0;
   return false;
+}
+
+bool WorkerWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
+    const WebString& path,
+    WebFileInfo& web_file_info) {
+  base::PlatformFileInfo file_info;
+  base::PlatformFileError status;
+  if (!SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileInfo(
+           webkit_glue::WebStringToFilePath(path), &file_info, &status)) ||
+      status != base::PLATFORM_FILE_OK) {
+    return false;
+  }
+  webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
+  web_file_info.platformPath = path;
+  return true;
 }
 
 //------------------------------------------------------------------------------
