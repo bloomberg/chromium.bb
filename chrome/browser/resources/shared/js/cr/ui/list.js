@@ -484,12 +484,21 @@ cr.define('cr.ui', function() {
 
       // If the target was this element we need to make sure that the user did
       // not click on a border or a scrollbar.
-      if (target == this && !inViewport(target, e))
+      if (target == this) {
+        if (inViewport(target, e))
+          this.selectionController_.handlePointerDownUp(e, -1);
         return;
+      }
 
       target = this.getListItemAncestor(target);
 
-      var index = target ? this.getIndexOfListItem(target) : -1;
+      // While target of mouse events always are ancestors TOUCH_END target
+      // may be outside the list (for instance if it happens over a popup
+      // menu). Just ignore it.
+      if (!target)
+        return;
+
+      var index = this.getIndexOfListItem(target);
       this.selectionController_.handlePointerDownUp(e, index);
     },
 
