@@ -376,26 +376,27 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
 
   virtual void SetUp() OVERRIDE {
     AbstractProfileSyncServiceTest::SetUp();
-    profile_.CreateRequestContext();
+    profile_.reset(new ProfileMock());
+    profile_->CreateRequestContext();
     web_database_.reset(new WebDatabaseFake(&autofill_table_));
     web_data_service_ = static_cast<WebDataServiceFake*>(
         WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile_, WebDataServiceFake::Build).get());
+            profile_.get(), WebDataServiceFake::Build).get());
     web_data_service_->SetDatabase(web_database_.get());
     personal_data_manager_ = static_cast<PersonalDataManagerMock*>(
         PersonalDataManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile_, PersonalDataManagerMock::Build));
+            profile_.get(), PersonalDataManagerMock::Build));
     token_service_ = static_cast<TokenService*>(
         TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile_, BuildTokenService));
+            profile_.get(), BuildTokenService));
     // GetHistoryService() gets called indirectly, but the result is ignored, so
     // it is safe to return NULL.
-    EXPECT_CALL(profile_, GetHistoryService(_)).
+    EXPECT_CALL(*profile_, GetHistoryService(_)).
         WillRepeatedly(Return(static_cast<HistoryService*>(NULL)));
     EXPECT_CALL(*personal_data_manager_, LoadProfiles()).Times(1);
     EXPECT_CALL(*personal_data_manager_, LoadCreditCards()).Times(1);
 
-    personal_data_manager_->Init(&profile_);
+    personal_data_manager_->Init(profile_.get());
 
     // Note: This must be called *after* the notification service is created.
     web_data_service_->StartSyncableService();
@@ -405,7 +406,10 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     // Note: The tear down order is important.
     service_.reset();
     web_data_service_->ShutdownSyncableService();
-    profile_.ResetRequestContext();
+    profile_->ResetRequestContext();
+    // To prevent a leak, fully release TestURLRequestContext to ensure its
+    // destruction on the IO message loop.
+    profile_.reset();
     AbstractProfileSyncServiceTest::TearDown();
   }
 
@@ -413,20 +417,20 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
                         bool will_fail_association,
                         syncable::ModelType type) {
     AbstractAutofillFactory* factory = GetFactory(type);
-    SigninManager* signin = SigninManagerFactory::GetForProfile(&profile_);
+    SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
     signin->SetAuthenticatedUsername("test_user");
     ProfileSyncComponentsFactoryMock* components_factory =
         new ProfileSyncComponentsFactoryMock();
     service_.reset(
         new TestProfileSyncService(components_factory,
-                                   &profile_,
+                                   profile_.get(),
                                    signin,
                                    ProfileSyncService::AUTO_START,
                                    false,
                                    callback));
     DataTypeController* data_type_controller =
         factory->CreateDataTypeController(components_factory,
-            &profile_,
+            profile_.get(),
             service_.get());
 
     factory->SetExpectation(components_factory,
@@ -596,7 +600,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   friend class AddAutofillHelper<AutofillProfile>;
   friend class FakeServerUpdater;
 
-  ProfileMock profile_;
+  scoped_ptr<ProfileMock> profile_;
   AutofillTableMock autofill_table_;
   scoped_ptr<WebDatabaseFake> web_database_;
   scoped_refptr<WebDataServiceFake> web_data_service_;
