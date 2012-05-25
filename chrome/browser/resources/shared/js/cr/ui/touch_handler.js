@@ -191,11 +191,11 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Minimum movement of touch required to be considered a drag.
+   * Maximum movement of touch required to be considered a tap.
    * @type {number}
    * @private
    */
-  TouchHandler.MIN_TRACKING_FOR_DRAG_ = 8;
+  TouchHandler.MAX_TRACKING_FOR_TAP_ = 8;
 
 
   /**
@@ -334,6 +334,12 @@ cr.define('cr.ui', function() {
      * @private
      */
     swallowNextClick_: undefined,
+
+    /**
+     * @type {boolean}
+     * @private
+     */
+    draggingEnabled_: false,
 
     /**
      * Start listenting for events.
@@ -505,9 +511,8 @@ cr.define('cr.ui', function() {
           TouchHandler.TIME_FOR_LONG_PRESS_);
 
       // Dispatch the TOUCH_START event
-      if (!this.dispatchEvent_(TouchHandler.EventType.TOUCH_START, touch))
-        // Dragging was not enabled, nothing more to do
-        return;
+      this.draggingEnabled_ =
+          !!this.dispatchEvent_(TouchHandler.EventType.TOUCH_START, touch);
 
       // We want dragging notifications
       if (e.type == 'mousedown') {
@@ -575,10 +580,14 @@ cr.define('cr.ui', function() {
       this.lastTouchX_ = clientX;
       this.lastTouchY_ = clientY;
 
-      if (!this.dragging_ && (this.totalMoveY_ >
-          TouchHandler.MIN_TRACKING_FOR_DRAG_ ||
-          this.totalMoveX_ >
-          TouchHandler.MIN_TRACKING_FOR_DRAG_)) {
+      var couldBeTap =
+          this.totalMoveY_ <= TouchHandler.MAX_TRACKING_FOR_TAP_ ||
+          this.totalMoveX_ <= TouchHandler.MAX_TRACKING_FOR_TAP_;
+
+      if (!couldBeTap)
+        this.disableTap_ = true;
+
+      if (this.draggingEnabled_ && !this.dragging_ && !couldBeTap) {
         // If we're waiting for a long press, stop
         window.clearTimeout(this.longPressTimeout_);
 
@@ -597,7 +606,6 @@ cr.define('cr.ui', function() {
           this.startTouchX_ = clientX;
           this.startTouchY_ = clientY;
           this.startTime_ = e.timeStamp;
-          this.disableTap_ = true;
         } else {
           this.endTracking_();
         }
@@ -706,6 +714,7 @@ cr.define('cr.ui', function() {
 
         this.endTracking_();
       }
+      this.draggingEnabled_ = false;
 
       // Note that we dispatch the touchEnd event last so that events at
       // different levels of semantics nest nicely (similar to how DOM
