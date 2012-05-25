@@ -3493,6 +3493,28 @@ void GDataFileSystem::OnFileDownloaded(
     const FilePath& downloaded_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // If user cancels download of a pinned-but-not-fetched file, mark file as
+  // unpinned so that we do not sync the file again.
+  if (status == GDATA_CANCELLED) {
+    bool pinning_cancelled = false;
+    {
+      // To access root_. Limit the scope as SetPinStateOnUIThread() will
+      // acquire the lock.
+      base::AutoLock lock(lock_);
+      GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(
+          params.resource_id,
+          params.md5);
+      if (entry && entry->IsPinned())
+        pinning_cancelled = true;
+    }
+    // TODO(hshi): http://crbug.com/127138 notify when file properties change.
+    // This allows file manager to clear the "Available offline" checkbox.
+    if (pinning_cancelled) {
+      SetPinStateOnUIThread(params.virtual_file_path, false,
+                            FileOperationCallback());
+    }
+  }
+
   // At this point, the disk can be full or nearly full for several reasons:
   // - The expected file size was incorrect and the file was larger
   // - There was an in-flight download operation and it used up space
