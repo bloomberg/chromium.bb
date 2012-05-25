@@ -4,6 +4,7 @@
 
 #include "ui/oak/oak_window.h"
 
+#include "ui/oak/oak.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/root_window.h"

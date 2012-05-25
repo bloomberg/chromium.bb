@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_OAK_OAK_WINDOW_H_
-#define ASH_OAK_OAK_WINDOW_H_
+#ifndef UI_OAK_OAK_H_
+#define UI_OAK_OAK_H_
 #pragma once
 
 #include "ui/oak/oak_export.h"
@@ -11,8 +11,8 @@
 namespace oak {
 
 // Shows the Oak window. Refocuses an existing one.
-void ShowOakWindow();
+OAK_EXPORT void ShowOakWindow();
 
 }  // namespace oak
 
-#endif  // ASH_OAK_OAK_WINDOW_H_
+#endif  // UI_OAK_OAK_H_
