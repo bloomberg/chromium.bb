@@ -40,10 +40,9 @@ class RegisterIntentHandlerInfoBarDelegateTest
  protected:
   RegisterIntentHandlerInfoBarDelegateTest()
       : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()),
-        db_thread_(BrowserThread::DB) {}
+        db_thread_(BrowserThread::DB, MessageLoopForUI::current()) {}
 
   virtual void SetUp() {
-    db_thread_.Start();
     TabContentsWrapperTestHarness::SetUp();
 
     profile()->CreateWebDataService();
@@ -54,13 +53,6 @@ class RegisterIntentHandlerInfoBarDelegateTest
     web_intents_registry_ = NULL;
 
     TabContentsWrapperTestHarness::TearDown();
-    // Schedule another task on the DB thread to notify us that it's safe to
-    // carry on with the test.
-    base::WaitableEvent done(false, false);
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
-    done.Wait();
-    db_thread_.Stop();
   }
 
   MockWebIntentsRegistry* web_intents_registry_;

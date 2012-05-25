@@ -2060,13 +2060,6 @@
    fun:_ZN21MockRenderProcessHost*Profile
 }
 {
-   bug_56090
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11ProfileImpl20CreateWebDataServiceEv
-   fun:_ZN11ProfileImpl17GetWebDataServiceEN7Profile17ServiceAccessTypeE
-}
-{
    bug_56676
    Memcheck:Leak
    fun:_Znw*

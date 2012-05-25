@@ -361,11 +361,11 @@ static scoped_refptr<RefcountedProfileKeyedService> BuildWebDataService(
   WebDataService* web_data_service = new WebDataService();
   if (web_data_service)
     web_data_service->Init(profile->GetPath());
-  return scoped_refptr<WebDataService>(web_data_service);
+  return web_data_service;
 }
 
 void TestingProfile::CreateWebDataService() {
-  WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+  WebDataServiceFactory::GetInstance()->SetTestingFactory(
       this, BuildWebDataService);
 }
 
