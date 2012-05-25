@@ -1,12 +1,5 @@
 bin_PROGRAMS = weston				\
-	$(weston_launch)			\
-	wcap-decode
-
-wcap_decode_SOURCES =				\
-	wcap-decode.c
-
-wcap_decode_CFLAGS = $(CAIRO_EGL_CFLAGS)
-wcap_decode_LDADD = $(CAIRO_EGL_LIBS)
+	$(weston_launch)
 
 AM_CPPFLAGS =					\
 	-DDATADIR='"$(datadir)"'		\
