@@ -1301,7 +1301,9 @@ const views::View* TabStrip::GetViewByID(int view_id) const {
 
 bool TabStrip::OnMousePressed(const views::MouseEvent& event) {
   UpdateLayoutTypeFromMouseEvent(this, event);
-  return true;
+  // We can't return true here, else clicking in an empty area won't drag the
+  // window.
+  return false;
 }
 
 bool TabStrip::OnMouseDragged(const views::MouseEvent&  event) {
