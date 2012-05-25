@@ -33,26 +33,7 @@
 
 #include <cairo.h>
 
-struct wcap_header {
-	uint32_t width, height;
-};
-
-struct wcap_frame_header {
-	uint32_t msecs;
-	uint32_t nrects;
-};
-
-struct wcap_rectangle {
-	int32_t x1, y1, x2, y2;
-};
-
-struct wcap_decoder {
-	int fd;
-	size_t size;
-	void *map, *p, *end;
-	uint32_t *frame;
-	int width, height;
-};
+#include "wcap-decode.h"
 
 static void
 wcap_decoder_decode_rectangle(struct wcap_decoder *decoder,
@@ -92,7 +73,7 @@ wcap_decoder_decode_rectangle(struct wcap_decoder *decoder,
 	decoder->p = p;
 }
 
-static int
+int
 wcap_decoder_get_frame(struct wcap_decoder *decoder)
 {
 	struct wcap_rectangle *rects;
@@ -157,62 +138,4 @@ wcap_decoder_destroy(struct wcap_decoder *decoder)
 	munmap(decoder->map, decoder->size);
 	free(decoder->frame);
 	free(decoder);
-}
-
-static void
-write_png(struct wcap_decoder *decoder, const char *filename)
-{
-	cairo_surface_t *surface;
-
-	surface = cairo_image_surface_create_for_data((unsigned char *) decoder->frame,
-						      CAIRO_FORMAT_ARGB32,
-						      decoder->width,
-						      decoder->height,
-						      decoder->width * 4);
-	cairo_surface_write_to_png(surface, filename);
-	cairo_surface_destroy(surface);
-}
-
-static void
-write_all_pngs(struct wcap_decoder *decoder, int frame)
-{
-	char filename[200];
-	int i;
-
-	i = 0;
-	while (wcap_decoder_get_frame(decoder)) {
-		if (i == frame || frame == -1) {
-			snprintf(filename, sizeof filename,
-				 "wcap-frame-%d.png", i);
-			write_png(decoder, filename);
-			printf("wrote %s\n", filename);
-		}
-		i++;
-	}
-}
-
-int main(int argc, char *argv[])
-{
-	struct wcap_decoder *decoder;
-	int i, output_frame;
-
-	if (argc != 2 && argc != 3) {
-		fprintf(stderr, "usage: wcap-decode WCAP_FILE [FRAME]\n");
-		return 1;
-	}			
-
-	decoder = wcap_decoder_create(argv[1]);
-	output_frame = -1;
-	if (argc == 3)
-		output_frame = strtol(argv[2], NULL, 0);
-
-	if (0)
-		write_all_pngs(decoder, -1);
-	else
-		write_webm(decoder);
-
-	printf("wcap file: size %dx%d, %d frames\n",
-	       decoder->width, decoder->height, i);
-
-	wcap_decoder_destroy(decoder);
 }
