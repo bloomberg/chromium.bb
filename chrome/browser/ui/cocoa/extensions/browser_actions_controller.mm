@@ -721,25 +721,20 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 }
 
 - (void)browserActionClicked:(BrowserActionButton*)button {
-  int tabId = [self currentTabId];
-  if (tabId < 0) {
-    NOTREACHED() << "No current tab.";
-    return;
-  }
-  // If an extension popup is already open, it will get closed when it
-  // loses focus.
-
-  ExtensionAction* action = [button extension]->browser_action();
-  if (action->HasPopup(tabId)) {
-    GURL popupUrl = action->GetPopupUrl(tabId);
-    NSPoint arrowPoint = [self popupPointForBrowserAction:[button extension]];
-    [ExtensionPopupController showURL:popupUrl
-                            inBrowser:browser_
-                           anchoredAt:arrowPoint
-                        arrowLocation:info_bubble::kTopRight
-                              devMode:NO];
-  } else {
-    toolbarModel_->ExecuteBrowserAction(action->extension_id(), browser_);
+  const Extension* extension = [button extension];
+  GURL popupUrl;
+  switch (toolbarModel_->ExecuteBrowserAction(extension, browser_, &popupUrl)) {
+    case ExtensionToolbarModel::ACTION_NONE:
+      break;
+    case ExtensionToolbarModel::ACTION_SHOW_POPUP: {
+      NSPoint arrowPoint = [self popupPointForBrowserAction:extension];
+      [ExtensionPopupController showURL:popupUrl
+                              inBrowser:browser_
+                             anchoredAt:arrowPoint
+                          arrowLocation:info_bubble::kTopRight
+                                devMode:NO];
+      break;
+    }
   }
 }
 

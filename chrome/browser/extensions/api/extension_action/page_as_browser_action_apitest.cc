@@ -81,8 +81,7 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
     // Simulate the page action being clicked.
     ResultCatcher catcher;
     ExtensionService* service = browser()->profile()->GetExtensionService();
-    service->toolbar_model()->ExecuteBrowserAction(
-        extension->id(), browser());
+    service->toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
     EXPECT_TRUE(catcher.GetNextResult());
   }
 
@@ -118,8 +117,7 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, AddPopup) {
   {
     ResultCatcher catcher;
     ExtensionService* service = browser()->profile()->GetExtensionService();
-    service->toolbar_model()->ExecuteBrowserAction(
-        extension->id(), browser());
+    service->toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
     ASSERT_TRUE(catcher.GetNextResult());
   }
 

@@ -4,16 +4,20 @@
 
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 
+#include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 
 using extensions::Extension;
 using extensions::ExtensionList;
@@ -79,10 +83,28 @@ void ExtensionToolbarModel::MoveBrowserAction(const Extension* extension,
   UpdatePrefs();
 }
 
-void ExtensionToolbarModel::ExecuteBrowserAction(
-    const std::string& extension_id, Browser* browser) {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    BrowserActionExecuted(extension_id, browser));
+ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
+    const Extension* extension,
+    Browser* browser,
+    GURL* popup_url_out) {
+  TabContentsWrapper* tab_contents = browser->GetSelectedTabContentsWrapper();
+  if (!tab_contents)
+    return ACTION_NONE;
+
+  int tab_id = ExtensionTabUtil::GetTabId(tab_contents->web_contents());
+  if (tab_id < 0)
+    return ACTION_NONE;
+
+  ExtensionAction* browser_action = extension->browser_action();
+  if (browser_action->HasPopup(tab_id)) {
+    if (popup_url_out)
+      *popup_url_out = browser_action->GetPopupUrl(tab_id);
+    return ACTION_SHOW_POPUP;
+  }
+
+  service_->browser_event_router()->BrowserActionExecuted(
+      extension->id(), browser);
+  return ACTION_NONE;
 }
 
 void ExtensionToolbarModel::SetVisibleIconCount(int count) {

@@ -527,36 +527,15 @@ size_t BrowserActionsContainer::VisibleBrowserActions() const {
 
 void BrowserActionsContainer::OnBrowserActionExecuted(
     BrowserActionButton* button) {
-  ExtensionAction* browser_action = button->browser_action();
-
-  // Popups just display.  No notification to the extension.
-  // TODO(erikkay): should there be?
-  if (!button->IsPopup()) {
-    model_->ExecuteBrowserAction(browser_action->extension_id(), browser_);
-    return;
+  const Extension* extension = button->extension();
+  GURL popup_url;
+  switch (model_->ExecuteBrowserAction(extension, browser_, &popup_url)) {
+    case ExtensionToolbarModel::ACTION_NONE:
+      break;
+    case ExtensionToolbarModel::ACTION_SHOW_POPUP:
+      ShowPopup(button, popup_url);
+      break;
   }
-
-  // If we're showing the same popup, just hide it and return.
-  bool same_showing = popup_ && button == popup_button_;
-
-  // Always hide the current popup, even if it's not the same.
-  // Only one popup should be visible at a time.
-  HidePopup();
-
-  if (same_showing)
-    return;
-
-  // We can get the execute event for browser actions that are not visible,
-  // since buttons can be activated from the overflow menu (chevron). In that
-  // case we show the popup as originating from the chevron.
-  View* reference_view = button->parent()->visible() ? button : chevron_;
-  views::BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
-      views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
-  popup_ = ExtensionPopup::ShowPopup(button->GetPopupUrl(), browser_,
-               reference_view, arrow_location);
-  popup_->GetWidget()->AddObserver(this);
-  popup_button_ = button;
-  popup_button_->SetButtonPushed();
 }
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() {
@@ -1148,4 +1127,31 @@ bool BrowserActionsContainer::ShouldDisplayBrowserAction(
   return
       (!profile_->IsOffTheRecord() ||
        profile_->GetExtensionService()->IsIncognitoEnabled(extension->id()));
+}
+
+void BrowserActionsContainer::ShowPopup(BrowserActionButton* button,
+                                        const GURL& popup_url) {
+  // If we're showing the same popup, just hide it and return.
+  bool same_showing = popup_ && button == popup_button_;
+
+  // Always hide the current popup, even if it's not the same.
+  // Only one popup should be visible at a time.
+  HidePopup();
+
+  if (same_showing)
+    return;
+
+  // We can get the execute event for browser actions that are not visible,
+  // since buttons can be activated from the overflow menu (chevron). In that
+  // case we show the popup as originating from the chevron.
+  View* reference_view = button->parent()->visible() ? button : chevron_;
+  views::BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
+      views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
+  popup_ = ExtensionPopup::ShowPopup(popup_url,
+                                     browser_,
+                                     reference_view,
+                                     arrow_location);
+  popup_->GetWidget()->AddObserver(this);
+  popup_button_ = button;
+  popup_button_->SetButtonPushed();
 }

@@ -278,26 +278,6 @@ class BrowserActionButton : public content::NotificationObserver,
       toolbar_->overflow_menu_->Cancel();
   }
 
-  // Returns true to prevent further processing of the event that caused us to
-  // show the popup, or false to continue processing.
-  bool ShowPopup() {
-    ExtensionAction* browser_action = extension_->browser_action();
-
-    int tab_id = toolbar_->GetCurrentTabId();
-    if (tab_id < 0) {
-      NOTREACHED() << "No current tab.";
-      return true;
-    }
-
-    if (browser_action->HasPopup(tab_id)) {
-      ExtensionPopupGtk::Show(
-          browser_action->GetPopupUrl(tab_id), toolbar_->browser(), widget());
-      return true;
-    }
-
-    return false;
-  }
-
   void SetImage(GdkPixbuf* image) {
     if (!image_) {
       image_ = gtk_image_new_from_pixbuf(image);
@@ -324,11 +304,19 @@ class BrowserActionButton : public content::NotificationObserver,
   }
 
   static void OnClicked(GtkWidget* widget, BrowserActionButton* action) {
-    if (action->ShowPopup())
-      return;
+    ExtensionToolbarModel* model = action->toolbar_->model();
+    const Extension* extension = action->extension_;
+    Browser* browser = action->toolbar_->browser();
+    GtkWidget* chevron = action->toolbar_->chevron();
+    GURL popup_url;
 
-    action->toolbar_->model()->ExecuteBrowserAction(
-        action->extension_->id(), action->toolbar_->browser());
+    switch (model->ExecuteBrowserAction(extension, browser, &popup_url)) {
+      case ExtensionToolbarModel::ACTION_NONE:
+        break;
+      case ExtensionToolbarModel::ACTION_SHOW_POPUP:
+        ExtensionPopupGtk::Show(popup_url, browser, chevron);
+        break;
+    }
   }
 
   static gboolean OnExposeEvent(GtkWidget* widget,
@@ -794,19 +782,14 @@ bool BrowserActionsToolbarGtk::GetAcceleratorForCommandId(
 
 void BrowserActionsToolbarGtk::ExecuteCommand(int command_id) {
   const Extension* extension = model_->GetExtensionByIndex(command_id);
-  ExtensionAction* browser_action = extension->browser_action();
+  GURL popup_url;
 
-  int tab_id = GetCurrentTabId();
-  if (tab_id < 0) {
-    NOTREACHED() << "No current tab.";
-    return;
-  }
-
-  if (browser_action->HasPopup(tab_id)) {
-    ExtensionPopupGtk::Show(
-        browser_action->GetPopupUrl(tab_id), browser(), chevron());
-  } else {
-    model_->ExecuteBrowserAction(extension->id(), browser());
+  switch (model_->ExecuteBrowserAction(extension, browser(), &popup_url)) {
+    case ExtensionToolbarModel::ACTION_NONE:
+      break;
+    case ExtensionToolbarModel::ACTION_SHOW_POPUP:
+      ExtensionPopupGtk::Show(popup_url, browser(), chevron());
+      break;
   }
 }
 

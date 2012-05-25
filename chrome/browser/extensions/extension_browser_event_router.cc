@@ -72,10 +72,9 @@ DictionaryValue* ExtensionBrowserEventRouter::TabEntry::DidNavigate(
   return changed_properties;
 }
 
-void ExtensionBrowserEventRouter::Init(ExtensionToolbarModel* model) {
+void ExtensionBrowserEventRouter::Init() {
   if (initialized_)
     return;
-  model->AddObserver(this);
   BrowserList::AddObserver(this);
 #if defined(TOOLKIT_VIEWS)
   views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);

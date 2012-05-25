@@ -469,6 +469,9 @@ class BrowserActionsContainer
   // for incognito.
   bool ShouldDisplayBrowserAction(const extensions::Extension* extension);
 
+  // Show a popup.
+  void ShowPopup(BrowserActionButton* button, const GURL& popup_url);
+
   // The vector of browser actions (icons/image buttons for each action). Note
   // that not every BrowserAction in the ToolbarModel will necessarily be in
   // this collection. Some extensions may be disabled in incognito windows.

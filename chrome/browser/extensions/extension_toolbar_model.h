@@ -22,6 +22,14 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   explicit ExtensionToolbarModel(ExtensionService* service);
   virtual ~ExtensionToolbarModel();
 
+  // The action that should be taken as a result of clicking a browser action.
+  enum Action {
+    ACTION_NONE,
+    ACTION_SHOW_POPUP,
+    // Unlike ActionBoxController there is no ACTION_SHOW_CONTEXT_MENU, because
+    // UI implementations tend to handle this themselves at a higher level.
+  };
+
   // A class which is informed of changes to the model; represents the view of
   // MVC.
   class Observer {
@@ -38,11 +46,6 @@ class ExtensionToolbarModel : public content::NotificationObserver {
     virtual void BrowserActionMoved(const extensions::Extension* extension,
                                     int index) {}
 
-    // The browser action button for |extension_id| (which was not a popup) was
-    // clicked, executing it.
-    virtual void BrowserActionExecuted(const std::string& extension_id,
-                                       Browser* browser) {}
-
     // Called when the model has finished loading.
     virtual void ModelLoaded() {}
 
@@ -54,12 +57,18 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
   void MoveBrowserAction(const extensions::Extension* extension, int index);
-  void ExecuteBrowserAction(const std::string& extension_id, Browser* browser);
+  // Executes the browser action for an extension and returns the action that
+  // the UI should perform in response.
+  // |popup_url_out| will be set if the extension should show a popup, with
+  // the URL that should be shown, if non-NULL.
+  Action ExecuteBrowserAction(const extensions::Extension* extension,
+                              Browser* browser,
+                              GURL* popup_url_out);
   // If count == size(), this will set the visible icon count to -1, meaning
   // "show all actions".
   void SetVisibleIconCount(int count);
   // As above, a return value of -1 represents "show all actions".
-  int GetVisibleIconCount() { return visible_icon_count_; }
+  int GetVisibleIconCount() const { return visible_icon_count_; }
 
   bool extensions_initialized() const { return extensions_initialized_; }
 
@@ -124,6 +133,8 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   int visible_icon_count_;
 
   content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionToolbarModel);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TOOLBAR_MODEL_H_

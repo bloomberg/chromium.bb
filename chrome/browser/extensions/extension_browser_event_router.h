@@ -38,14 +38,13 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                                     public ui::ActiveWindowWatcherXObserver,
 #endif
                                     public BrowserList::Observer,
-                                    public ExtensionToolbarModel::Observer,
                                     public content::NotificationObserver {
  public:
   explicit ExtensionBrowserEventRouter(Profile* profile);
   virtual ~ExtensionBrowserEventRouter();
 
   // Must be called once. Subsequent calls have no effect.
-  void Init(ExtensionToolbarModel* model);
+  void Init();
 
   // BrowserList::Observer
   virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
@@ -97,6 +96,9 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                           const std::string& url,
                           int button);
 
+  // Browser Action execute event.
+  void BrowserActionExecuted(const std::string& extension_id, Browser* browser);
+
   // A keyboard shortcut resulted in an extension command.
   void CommandExecuted(Profile* profile,
                        const std::string& extension_id,
@@ -113,10 +115,6 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // Internal processing of tab updated events. Is called by both TabChangedAt
   // and Observe/NAV_ENTRY_COMMITTED.
   void TabUpdated(content::WebContents* contents, bool did_navigate);
-
-  // ExtensionToolbarModel::Observer. Browser Actions execute event.
-  virtual void BrowserActionExecuted(const std::string& extension_id,
-                                     Browser* browser) OVERRIDE;
 
   // The DispatchEvent methods forward events to the |profile|'s event router.
   // The ExtensionBrowserEventRouter listens to events for all profiles,
