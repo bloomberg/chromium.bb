@@ -79,6 +79,12 @@ Gallery.prototype.initDom_ = function() {
 
   doc.body.addEventListener('mousemove', this.onMouseMove_.bind(this));
 
+  // Show tools when the user touches the screen.
+  doc.body.addEventListener('touchstart', this.cancelFading_.bind(this));
+  var initiateFading = this.initiateFading_.bind(this, Gallery.FADE_TIMEOUT);
+  doc.body.addEventListener('touchend', initiateFading);
+  doc.body.addEventListener('touchcancel', initiateFading);
+
   window.addEventListener('unload', this.onUnload_.bind(this));
 
   // We need to listen to the top window 'unload' and 'beforeunload' because
