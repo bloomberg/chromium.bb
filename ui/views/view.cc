@@ -1885,10 +1885,11 @@ bool View::ProcessMousePressed(const MouseEvent& event, DragInfo* drag_info) {
   ContextMenuController* context_menu_controller = event.IsRightMouseButton() ?
       context_menu_controller_ : 0;
 
+  const bool enabled = enabled_;
   const bool result = OnMousePressed(event);
   // WARNING: we may have been deleted, don't use any View variables.
 
-  if (!enabled_)
+  if (!enabled)
     return result;
 
   if (drag_operations != ui::DragDropTypes::DRAG_NONE) {

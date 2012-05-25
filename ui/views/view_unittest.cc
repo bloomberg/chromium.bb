@@ -195,7 +195,7 @@ typedef ViewsTestBase ViewTest;
 // A derived class for testing purpose.
 class TestView : public View {
  public:
-  TestView() : View(), in_touch_sequence_(false) {}
+  TestView() : View(), delete_on_pressed_(false), in_touch_sequence_(false) {}
   virtual ~TestView() {}
 
   // Reset all test state
@@ -235,6 +235,7 @@ class TestView : public View {
   gfx::Point location_;
   bool received_mouse_enter_;
   bool received_mouse_exit_;
+  bool delete_on_pressed_;
 
   // Painting.
   std::vector<gfx::Rect> scheduled_paint_rects_;
@@ -326,6 +327,8 @@ TEST_F(ViewTest, OnBoundsChanged) {
 bool TestView::OnMousePressed(const MouseEvent& event) {
   last_mouse_event_type_ = event.type();
   location_.SetPoint(event.x(), event.y());
+  if (delete_on_pressed_)
+    delete this;
   return true;
 }
 
@@ -403,6 +406,38 @@ TEST_F(ViewTest, MouseEvent) {
   EXPECT_EQ(v2->location_.y(), -100);
   // Make sure v1 did not receive the event
   EXPECT_EQ(v1->last_mouse_event_type_, 0);
+
+  widget->CloseNow();
+}
+
+// Confirm that a view can be deleted as part of processing a mouse press.
+TEST_F(ViewTest, DeleteOnPressed) {
+  TestView* v1 = new TestView();
+  v1->SetBoundsRect(gfx::Rect(0, 0, 300, 300));
+
+  TestView* v2 = new TestView();
+  v2->SetBoundsRect(gfx::Rect(100, 100, 100, 100));
+
+  v1->Reset();
+  v2->Reset();
+
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(50, 50, 650, 650);
+  widget->Init(params);
+  View* root = widget->GetRootView();
+
+  root->AddChildView(v1);
+  v1->AddChildView(v2);
+
+  v2->delete_on_pressed_ = true;
+  MouseEvent pressed(ui::ET_MOUSE_PRESSED,
+                     110,
+                     120,
+                     ui::EF_LEFT_MOUSE_BUTTON);
+  root->OnMousePressed(pressed);
+  EXPECT_EQ(0, v1->child_count());
 
   widget->CloseNow();
 }
