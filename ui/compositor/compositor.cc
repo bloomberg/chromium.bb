@@ -101,7 +101,7 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContextCommon(
       webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWindow(
           attrs, compositor->widget(), share_group_.get());
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisableUIVsync)) {
+  if (!offscreen && !command_line->HasSwitch(switches::kDisableUIVsync)) {
     context->makeContextCurrent();
     gfx::GLContext* gl_context = gfx::GLContext::GetCurrent();
     gl_context->SetSwapInterval(1);

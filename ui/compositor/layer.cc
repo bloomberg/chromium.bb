@@ -328,7 +328,7 @@ void Layer::SetColor(SkColor color) {
 }
 
 bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
-  if (type_ == LAYER_SOLID_COLOR || !delegate_)
+  if (type_ == LAYER_SOLID_COLOR || (!delegate_ && !texture_))
     return false;
 
   damaged_region_.op(invalid_rect.x(),
@@ -347,7 +347,7 @@ void Layer::ScheduleDraw() {
 }
 
 void Layer::SendDamagedRects() {
-  if (delegate_ && !damaged_region_.isEmpty()) {
+  if ((delegate_ || texture_) && !damaged_region_.isEmpty()) {
     for (SkRegion::Iterator iter(damaged_region_);
          !iter.done(); iter.next()) {
       const SkIRect& sk_damaged = iter.rect();
@@ -359,7 +359,7 @@ void Layer::SendDamagedRects() {
 
       if (scale_content_ && web_layer_is_accelerated_) {
         damaged.Inset(-1, -1);
-        damaged = damaged.Intersect(bounds_);
+        damaged = damaged.Intersect(gfx::Rect(bounds_.size()));
       }
 
       gfx::Rect damaged_in_pixel = ConvertRectToPixel(this, damaged);
