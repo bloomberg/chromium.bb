@@ -9,18 +9,17 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/common/extensions/api/experimental_socket.h"
-#include "net/base/io_buffer.h"
 
 #include <string>
+
+namespace net {
+class IOBuffer;
+}
 
 namespace extensions {
 
 class APIResourceController;
 class APIResourceEventNotifier;
-
-extern const char kBytesWrittenKey[];
-extern const char kSocketIdKey[];
-extern const char kUdpSocketType[];
 
 class SocketExtensionFunction : public AsyncAPIFunction {
  protected:
