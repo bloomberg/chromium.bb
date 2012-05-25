@@ -196,6 +196,9 @@ function bb_compile {
 # loader is on by default, this entire function becomes obsolete.
 function bb_compile_apk_tests {
   echo "@@@BUILD_STEP Re-gyp for the native test runner@@@"
+  # Setup goma again. Not doing this breaks the android_gyp step.
+  bb_setup_goma_internal
+
   GYP_DEFINES="$GYP_DEFINES gtest_target_type=shared_library" android_gyp
 
   echo "@@@BUILD_STEP Native test runner compile@@@"
