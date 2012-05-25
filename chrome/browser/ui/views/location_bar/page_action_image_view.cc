@@ -5,15 +5,18 @@
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/action_box_controller.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -29,6 +32,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 
 using content::WebContents;
+using extensions::ActionBoxController;
 using extensions::Extension;
 
 PageActionImageView::PageActionImageView(LocationBarView* owner,
@@ -89,36 +93,47 @@ PageActionImageView::~PageActionImageView() {
 }
 
 void PageActionImageView::ExecuteAction(int button) {
-  if (current_tab_id_ < 0) {
-    NOTREACHED() << "No current tab.";
+  TabContentsWrapper* tab_contents = owner_->GetTabContentsWrapper();
+  if (!tab_contents)
     return;
-  }
 
-  if (page_action_->HasPopup(current_tab_id_)) {
-    bool popup_showing = popup_ != NULL;
+  ActionBoxController* controller =
+      tab_contents->extension_tab_helper()->action_box_controller();
 
-    // Always hide the current popup. Only one popup at a time.
-    HidePopup();
+  // 1 is left click.
+  switch (controller->OnClicked(page_action_->extension_id(), 1)) {
+    case ActionBoxController::ACTION_NONE:
+      break;
 
-    // If we were already showing, then treat this click as a dismiss.
-    if (popup_showing)
-      return;
+    case ActionBoxController::ACTION_SHOW_POPUP: {
+      bool popup_showing = popup_ != NULL;
 
-    views::BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
-        views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
+      // Always hide the current popup. Only one popup at a time.
+      HidePopup();
 
-    popup_ = ExtensionPopup::ShowPopup(
-        page_action_->GetPopupUrl(current_tab_id_),
-        browser_,
-        this,
-        arrow_location);
-    popup_->GetWidget()->AddObserver(this);
-  } else {
-    Profile* profile = owner_->profile();
-    ExtensionService* service = profile->GetExtensionService();
-    service->browser_event_router()->PageActionExecuted(
-        profile, page_action_->extension_id(), page_action_->id(),
-        current_tab_id_, current_url_.spec(), button);
+      // If we were already showing, then treat this click as a dismiss.
+      if (popup_showing)
+        return;
+
+      views::BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
+          views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
+
+      popup_ = ExtensionPopup::ShowPopup(
+          page_action_->GetPopupUrl(current_tab_id_),
+          browser_,
+          this,
+          arrow_location);
+      popup_->GetWidget()->AddObserver(this);
+      break;
+    }
+
+    case ActionBoxController::ACTION_SHOW_CONTEXT_MENU:
+      // We are never passing OnClicked a right-click button, so assume that
+      // we're never going to be asked to show a context menu.
+      // TODO(kalman): if this changes, update this class to pass the real
+      // mouse button through to the ActionBoxController.
+      NOTREACHED();
+      break;
   }
 }
 

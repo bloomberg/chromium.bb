@@ -29,13 +29,17 @@ ScriptBadgeController::~ScriptBadgeController() {
 
 scoped_ptr<std::vector<ExtensionAction*> >
 ScriptBadgeController::GetCurrentActions() {
-  const GURL& current_url = tab_contents_->web_contents()->GetURL();
-  const ExtensionSet* extensions = GetExtensionService()->extensions();
-
   scoped_ptr<std::vector<ExtensionAction*> > current_actions(
       new std::vector<ExtensionAction*>());
-  for (ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
+
+  ExtensionService* service = GetExtensionService();
+  if (!service)
+    return current_actions.Pass();
+
+  const GURL& current_url = tab_contents_->web_contents()->GetURL();
+
+  for (ExtensionSet::const_iterator it = service->extensions()->begin();
+       it != service->extensions()->end(); ++it) {
     const Extension* extension = *it;
     if (extension->HasContentScriptAtURL(current_url) ||
         extensions_executing_scripts_.count(extension->id())) {
@@ -47,8 +51,11 @@ ScriptBadgeController::GetCurrentActions() {
 
 ActionBoxController::Action ScriptBadgeController::OnClicked(
     const std::string& extension_id, int mouse_button) {
-  const Extension* extension =
-      GetExtensionService()->extensions()->GetByID(extension_id);
+  ExtensionService* service = GetExtensionService();
+  if (!service)
+    return ACTION_NONE;
+
+  const Extension* extension = service->extensions()->GetByID(extension_id);
   CHECK(extension);
 
   switch (mouse_button) {

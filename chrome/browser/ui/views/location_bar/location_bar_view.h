@@ -19,6 +19,8 @@
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -484,6 +486,9 @@ class LocationBarView : public LocationBar,
   // the widget so that we can draw the curved edges that attach to the toolbar
   // in the right location.
   int animation_offset_;
+
+  // Used to register for notifications received by NotificationObserver.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarView);
 };

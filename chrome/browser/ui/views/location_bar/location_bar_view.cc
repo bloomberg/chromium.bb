@@ -16,8 +16,10 @@
 #include "chrome/browser/chrome_to_mobile_service.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/extensions/action_box_controller.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
@@ -236,7 +238,8 @@ void LocationBarView::Init() {
     action_box_button_view_ = new ActionBoxButtonView();
     AddChildView(action_box_button_view_);
   } else if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
-    // Hide the star and ChromeToMobile icons in popups and in the app launcher.
+    // Note: condition above means that the star and ChromeToMobile icons are
+    // hidden in popups and in the app launcher.
     star_view_ = new StarView(command_updater_);
     AddChildView(star_view_);
     star_view_->SetVisible(true);
@@ -253,6 +256,10 @@ void LocationBarView::Init() {
       chrome_to_mobile_view_->SetVisible(service->HasDevices());
     }
   }
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_ACTION_BOX_UPDATED,
+                 content::Source<Profile>(profile_));
 
   // Initialize the location entry. We do this to avoid a black flash which is
   // visible when the location entry has just been initialized.
@@ -996,22 +1003,21 @@ void LocationBarView::RefreshPageActionViews() {
   if (mode_ != NORMAL)
     return;
 
-  ExtensionService* service = profile_->GetExtensionService();
-  if (!service)
-    return;
-
-  std::map<ExtensionAction*, bool> old_visibility;
-  for (PageActionViews::const_iterator i(page_action_views_.begin());
-       i != page_action_views_.end(); ++i)
-    old_visibility[(*i)->image_view()->page_action()] = (*i)->visible();
-
   // Remember the previous visibility of the page actions so that we can
   // notify when this changes.
+  std::map<ExtensionAction*, bool> old_visibility;
+  for (PageActionViews::const_iterator i(page_action_views_.begin());
+       i != page_action_views_.end(); ++i) {
+    old_visibility[(*i)->image_view()->page_action()] = (*i)->visible();
+  }
+
   std::vector<ExtensionAction*> page_actions;
-  for (ExtensionSet::const_iterator it = service->extensions()->begin();
-       it != service->extensions()->end(); ++it) {
-    if ((*it)->page_action())
-      page_actions.push_back((*it)->page_action());
+
+  TabContentsWrapper* tab_contents = GetTabContentsWrapper();
+  if (tab_contents) {
+    extensions::ActionBoxController* controller =
+        tab_contents->extension_tab_helper()->action_box_controller();
+    page_actions.swap(*controller->GetCurrentActions());
   }
 
   // On startup we sometimes haven't loaded any extensions. This makes sure
@@ -1020,8 +1026,12 @@ void LocationBarView::RefreshPageActionViews() {
     DeletePageActionViews();  // Delete the old views (if any).
 
     page_action_views_.resize(page_actions.size());
-    View* view = chrome_to_mobile_view_ ? chrome_to_mobile_view_ :
-                                          static_cast<View*>(star_view_);
+    View* right_anchor = chrome_to_mobile_view_;
+    if (!right_anchor)
+      right_anchor = star_view_;
+    if (!right_anchor)
+      right_anchor = action_box_button_view_;
+    DCHECK(right_anchor);
 
     // Add the page actions in reverse order, so that the child views are
     // inserted in left-to-right order for accessibility.
@@ -1029,7 +1039,7 @@ void LocationBarView::RefreshPageActionViews() {
       page_action_views_[i] = new PageActionWithBadgeView(
           delegate_->CreatePageActionImageView(this, page_actions[i]));
       page_action_views_[i]->SetVisible(false);
-      AddChildViewAt(page_action_views_[i], GetIndexOf(view));
+      AddChildViewAt(page_action_views_[i], GetIndexOf(right_anchor));
     }
   }
 
@@ -1286,10 +1296,25 @@ void LocationBarView::OnTemplateURLServiceChanged() {
 void LocationBarView::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* name = content::Details<std::string>(details).ptr();
-    if (*name == prefs::kEditBookmarksEnabled)
-      Update(NULL);
+  switch (type) {
+    case chrome::NOTIFICATION_PREF_CHANGED: {
+      std::string* name = content::Details<std::string>(details).ptr();
+      if (*name == prefs::kEditBookmarksEnabled)
+        Update(NULL);
+      break;
+    }
+
+    case chrome::NOTIFICATION_EXTENSION_ACTION_BOX_UPDATED: {
+      // Only update if the updated action box was for the active tab contents.
+      TabContentsWrapper* target_tab =
+          content::Details<TabContentsWrapper>(details).ptr();
+      if (target_tab == GetTabContentsWrapper())
+        UpdatePageActions();
+      break;
+    }
+
+    default:
+      NOTREACHED() << "Unexpected notification.";
   }
 }
 
