@@ -200,6 +200,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
 
   void set_last_mouse_down(GdkEventButton* event);
 
+  // Cause the next query for the widget center to recompute the cached value.
+  void MarkCachedWidgetCenterStale();
+
   gfx::Point GetWidgetCenter();
 
   // The model object.

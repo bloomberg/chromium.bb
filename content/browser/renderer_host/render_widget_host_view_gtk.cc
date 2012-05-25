@@ -207,8 +207,7 @@ class RenderWidgetHostViewGtkWidget {
   static gboolean OnConfigureEvent(GtkWidget* widget,
                                    GdkEventConfigure* event,
                                    RenderWidgetHostViewGtk* host_view) {
-    host_view->widget_center_valid_ = false;
-    host_view->mouse_has_been_warped_to_new_center_ = false;
+    host_view->MarkCachedWidgetCenterStale();
     return FALSE;
   }
 
@@ -1288,6 +1287,11 @@ bool RenderWidgetHostViewGtk::LockMouse() {
   // Clear the tooltip window.
   SetTooltipText(string16());
 
+  // Ensure that the widget center location will be relevant for this mouse
+  // lock session. It is updated whenever the window geometry moves
+  // but may be out of date due to switching tabs.
+  MarkCachedWidgetCenterStale();
+
   return true;
 }
 
@@ -1363,6 +1367,11 @@ void RenderWidgetHostViewGtk::set_last_mouse_down(GdkEventButton* event) {
     gdk_event_free(reinterpret_cast<GdkEvent*>(last_mouse_down_));
 
   last_mouse_down_ = temp;
+}
+
+void RenderWidgetHostViewGtk::MarkCachedWidgetCenterStale() {
+  widget_center_valid_ = false;
+  mouse_has_been_warped_to_new_center_ = false;
 }
 
 gfx::Point RenderWidgetHostViewGtk::GetWidgetCenter() {
