@@ -1555,7 +1555,12 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
                                  state_.monitor_bounds.bottom() - y));
       } else if (item->actual_menu_position() ==
                  MenuItemView::POSITION_BEST_FIT) {
-        if (state_.monitor_bounds.y() + pref.height() <
+        if (state_.monitor_bounds.height() < pref.height()) {
+          // Handle very tall menus.
+          pref.set_height(state_.monitor_bounds.height());
+          y = state_.monitor_bounds.bottom();
+          item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
+        } else if (state_.monitor_bounds.y() + pref.height() <
             state_.initial_bounds.y()) {
           // Flipping upwards if there is enough space.
           y = state_.initial_bounds.y() - pref.height();
