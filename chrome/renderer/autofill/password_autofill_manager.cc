@@ -282,14 +282,8 @@ bool PasswordAutofillManager::TextDidChangeInTextField(
   if (element.value().length() > kMaximumTextSizeForAutocomplete)
     return false;
 
-  // We post a task for doing the autocomplete as the caret position is not set
-  // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
-  // we need it to determine whether or not to trigger autocomplete.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PasswordAutofillManager::PerformInlineAutocomplete,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 element, password, iter->second.fill_data));
+  // The caret position should have already been updated.
+  PerformInlineAutocomplete(element, password, iter->second.fill_data);
   return true;
 }
 
