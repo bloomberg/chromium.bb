@@ -4517,7 +4517,8 @@
         }],
         ['input_speech==0', {
           'sources/': [
-            ['exclude', '^browser/speech/'],
+            ['exclude', '^browser/speech/*speech_recognition*'],
+            ['exclude', '^browser/speech/*speech_input*'],
           ],
         }],
         ['notifications==0', {

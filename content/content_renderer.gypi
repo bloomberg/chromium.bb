@@ -201,6 +201,8 @@
     'renderer/renderer_webcolorchooser_impl.h',
     'renderer/renderer_webkitplatformsupport_impl.cc',
     'renderer/renderer_webkitplatformsupport_impl.h',
+    'renderer/speech_recognition_dispatcher.cc',
+    'renderer/speech_recognition_dispatcher.h',
     'renderer/text_input_client_observer.cc',
     'renderer/text_input_client_observer.h',
     'renderer/v8_value_converter_impl.cc',
@@ -241,6 +243,8 @@
           'sources!': [
             'renderer/input_tag_speech_dispatcher.cc',
             'renderer/input_tag_speech_dispatcher.h',
+            'renderer/speech_recognition_dispatcher.cc',
+            'renderer/speech_recognition_dispatcher.h',
           ]
         }],
         ['notifications==0', {

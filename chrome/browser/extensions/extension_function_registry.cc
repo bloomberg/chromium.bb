@@ -260,10 +260,12 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::OmniboxSendSuggestionsFunction>();
   RegisterFunction<extensions::OmniboxSetDefaultSuggestionFunction>();
 
+#if defined(ENABLE_INPUT_SPEECH)
   // Speech input.
   RegisterFunction<StartSpeechInputFunction>();
   RegisterFunction<StopSpeechInputFunction>();
   RegisterFunction<IsRecordingSpeechInputFunction>();
+#endif
 
 #if defined(TOOLKIT_VIEWS)
   // Input.

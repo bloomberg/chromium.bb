@@ -81,7 +81,7 @@ void InputTagSpeechDispatcher::cancelRecognition(int request_id) {
 void InputTagSpeechDispatcher::stopRecording(int request_id) {
   VLOG(1) << "InputTagSpeechDispatcher::stopRecording enter";
   Send(new InputTagSpeechHostMsg_StopRecording(routing_id(),
-                                                        request_id));
+                                               request_id));
   VLOG(1) << "InputTagSpeechDispatcher::stopRecording exit";
 }
 
