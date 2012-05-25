@@ -41,7 +41,7 @@ class MediaStreamInfoBarDelegate : public InfoBarDelegate {
 
   // Returns the security origin (e.g. "www.html5rocks.com") at the origin
   // of this request.
-  const std::string& GetSecurityOrigin() const;
+  const GURL& GetSecurityOrigin() const;
 
   // Callbacks to handle accepting devices or denying the request. |audio_id|
   // and |video_id| are the device IDs of the accepted audio and video devices.

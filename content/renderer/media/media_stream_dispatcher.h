@@ -36,7 +36,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       media_stream::StreamOptions components,
-      const std::string& security_origin);
+      const GURL& security_origin);
 
   // Cancel the request for a new media stream to be created.
   virtual void CancelGenerateStream(int request_id);
@@ -49,7 +49,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       media_stream::MediaStreamType type,
-      const std::string& security_origin);
+      const GURL& security_origin);
 
   // Request to open a device.
   void OpenDevice(
@@ -57,7 +57,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       const std::string& device_id,
       media_stream::MediaStreamType type,
-      const std::string& security_origin);
+      const GURL& security_origin);
 
   // Close a started device. |label| is provided in OnDeviceOpened.
   void CloseDevice(const std::string& label);

@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/media_stream_request.h"
+#include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
 using content::MediaStreamDevice;
@@ -88,7 +89,7 @@ class MediaStreamDeviceSettingsRequest : public MediaStreamRequest {
   MediaStreamDeviceSettingsRequest(
       int render_pid,
       int render_vid,
-      const std::string& origin,
+      const GURL& origin,
       const StreamOptions& request_options)
       : MediaStreamRequest(render_pid, render_vid, origin),
         options(request_options),
@@ -119,7 +120,7 @@ MediaStreamDeviceSettings::~MediaStreamDeviceSettings() {
 
 void MediaStreamDeviceSettings::RequestCaptureDeviceUsage(
     const std::string& label, int render_process_id, int render_view_id,
-    const StreamOptions& request_options, const std::string& security_origin) {
+    const StreamOptions& request_options, const GURL& security_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (requests_.find(label) != requests_.end()) {

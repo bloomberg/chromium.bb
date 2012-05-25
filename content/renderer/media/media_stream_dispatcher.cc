@@ -8,6 +8,7 @@
 #include "content/common/media/media_stream_messages.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/render_view_impl.h"
+#include "googleurl/src/gurl.h"
 
 struct MediaStreamDispatcher::Request {
   Request(const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler,
@@ -41,7 +42,7 @@ void MediaStreamDispatcher::GenerateStream(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     media_stream::StreamOptions components,
-    const std::string& security_origin) {
+    const GURL& security_origin) {
   DVLOG(1) << "MediaStreamDispatcher::GenerateStream(" << request_id << ")";
 
   requests_.push_back(Request(event_handler, request_id, next_ipc_id_));
@@ -83,7 +84,7 @@ void MediaStreamDispatcher::EnumerateDevices(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     media_stream::MediaStreamType type,
-    const std::string& security_origin) {
+    const GURL& security_origin) {
   DVLOG(1) << "MediaStreamDispatcher::EnumerateDevices("
            << request_id << ")";
 
@@ -99,7 +100,7 @@ void MediaStreamDispatcher::OpenDevice(
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     const std::string& device_id,
     media_stream::MediaStreamType type,
-    const std::string& security_origin) {
+    const GURL& security_origin) {
   DVLOG(1) << "MediaStreamDispatcher::OpenDevice(" << request_id << ")";
 
   requests_.push_back(Request(event_handler, request_id, next_ipc_id_));

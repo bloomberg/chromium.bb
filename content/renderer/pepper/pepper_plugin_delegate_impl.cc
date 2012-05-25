@@ -57,6 +57,7 @@
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/renderer_restrict_dispatch_group.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
 #include "media/video/capture/video_capture_proxy.h"
 #include "ppapi/c/dev/pp_video_dev.h"
@@ -1420,7 +1421,8 @@ int PepperPluginDelegateImpl::EnumerateDevices(
 #if defined(ENABLE_WEBRTC)
   render_view_->media_stream_dispatcher()->EnumerateDevices(
       request_id, device_enumeration_event_handler_.get()->AsWeakPtr(),
-      PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type), "");
+      PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type),
+      GURL());
 #else
   MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -1611,7 +1613,8 @@ int PepperPluginDelegateImpl::OpenDevice(PP_DeviceType_Dev type,
       request_id,
       device_enumeration_event_handler_.get()->AsWeakPtr(),
       device_id,
-      PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type), "");
+      PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type),
+      GURL());
 #else
   MessageLoop::current()->PostTask(
       FROM_HERE,

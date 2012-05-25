@@ -43,7 +43,7 @@ class CONTENT_EXPORT MediaStreamDeviceSettings
                                  int render_process_id,
                                  int render_view_id,
                                  const StreamOptions& stream_components,
-                                 const std::string& security_origin);
+                                 const GURL& security_origin);
 
   // Called to pass in an array of available devices for a request represented
   // by |label|. There could be multiple calls for a request.

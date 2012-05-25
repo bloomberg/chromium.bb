@@ -8,6 +8,7 @@
 #include <string>
 
 #include "content/renderer/media/media_stream_dispatcher.h"
+#include "googleurl/src/gurl.h"
 
 // This class is a mock implementation of MediaStreamDispatcher.
 class MockMediaStreamDispatcher : public MediaStreamDispatcher {
@@ -19,7 +20,7 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       media_stream::StreamOptions components,
-      const std::string& security_origin) OVERRIDE;
+      const GURL& security_origin) OVERRIDE;
   virtual void StopStream(const std::string& label) OVERRIDE;
   virtual bool IsStream(const std::string& label) OVERRIDE;
   virtual int video_session_id(const std::string& label, int index) OVERRIDE;
@@ -30,7 +31,7 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
     return event_handler_;
   }
   const media_stream::StreamOptions& components() const { return components_; }
-  const std::string& security_origin() const { return security_origin_; }
+  const GURL& security_origin() const { return security_origin_; }
   int stop_stream_counter() const { return stop_stream_counter_; }
   const std::string& stream_label() const { return stream_label_;}
   media_stream::StreamDeviceInfoArray audio_array() const {
@@ -44,7 +45,7 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
   int request_id_;
   base::WeakPtr<MediaStreamDispatcherEventHandler> event_handler_;
   media_stream::StreamOptions components_;
-  std::string security_origin_;
+  GURL security_origin_;
   int stop_stream_counter_;
 
   std::string stream_label_;

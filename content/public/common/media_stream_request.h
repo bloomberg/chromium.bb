@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
+#include "googleurl/src/gurl.h"
 
 namespace content {
 
@@ -49,7 +50,7 @@ struct CONTENT_EXPORT MediaStreamRequest {
   MediaStreamRequest(
       int render_process_id,
       int render_view_id,
-      const std::string& security_origin);
+      const GURL& security_origin);
 
   ~MediaStreamRequest();
 
@@ -60,7 +61,7 @@ struct CONTENT_EXPORT MediaStreamRequest {
   int render_view_id;
 
   // The WebKit security origin for the current request (e.g. "html5rocks.com").
-  std::string security_origin;
+  GURL security_origin;
 
   // A list of devices present on the user's computer, for each device type
   // requested.

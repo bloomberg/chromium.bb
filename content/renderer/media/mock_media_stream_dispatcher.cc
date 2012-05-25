@@ -18,7 +18,7 @@ void MockMediaStreamDispatcher::GenerateStream(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     media_stream::StreamOptions components,
-    const std::string& security_origin) {
+    const GURL& security_origin) {
   request_id_ = request_id;
   event_handler_ = event_handler;
   components_ = media_stream::StreamOptions(components.audio,

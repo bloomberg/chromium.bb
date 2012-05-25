@@ -18,7 +18,7 @@ MediaStreamDevice::MediaStreamDevice(
 MediaStreamRequest::MediaStreamRequest(
     int render_process_id,
     int render_view_id,
-    const std::string& security_origin)
+    const GURL& security_origin)
     : render_process_id(render_process_id),
       render_view_id(render_view_id),
       security_origin(security_origin) {

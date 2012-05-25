@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "content/public/common/media_stream_request.h"
+#include "googleurl/src/gurl.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -68,7 +69,7 @@ content::MediaStreamDevices
   return it->second;
 }
 
-const std::string& MediaStreamInfoBarDelegate::GetSecurityOrigin() const {
+const GURL& MediaStreamInfoBarDelegate::GetSecurityOrigin() const {
   return request_->security_origin;
 }
 

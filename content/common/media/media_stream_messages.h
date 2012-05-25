@@ -9,6 +9,7 @@
 
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -81,7 +82,7 @@ IPC_MESSAGE_CONTROL4(MediaStreamHostMsg_GenerateStream,
                      int /* render view id */,
                      int /* request id */,
                      media_stream::StreamOptions /* options */,
-                     std::string /* security origin */)
+                     GURL /* security origin */)
 
 // Request to cancel the request for a new  media stream.
 IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_CancelGenerateStream,
@@ -98,7 +99,7 @@ IPC_MESSAGE_CONTROL4(MediaStreamHostMsg_EnumerateDevices,
                      int /* render view id */,
                      int /* request id */,
                      media_stream::MediaStreamType /* type */,
-                     std::string /* security origin */)
+                     GURL /* security origin */)
 
 // Request to open the device.
 IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_OpenDevice,
@@ -106,4 +107,4 @@ IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_OpenDevice,
                      int /* request id */,
                      std::string /* device_id */,
                      media_stream::MediaStreamType /* type */,
-                     std::string /* security origin */)
+                     GURL /* security origin */)

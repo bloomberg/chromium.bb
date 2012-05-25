@@ -59,7 +59,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     MediaStreamDispatcherHost::OnGenerateStream(kRenderId,
                                                 page_request_id,
                                                 components,
-                                                std::string());
+                                                GURL());
   }
   void OnStopGeneratedStream(const std::string& label) {
     MediaStreamDispatcherHost::OnStopGeneratedStream(kRenderId, label);

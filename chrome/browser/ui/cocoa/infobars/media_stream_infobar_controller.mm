@@ -172,7 +172,7 @@ void SizeAndPlaceControl(NSView* toModify, NSView* anchor, bool after) {
   else if (!delegate->has_video())
     messageId = IDS_MEDIA_CAPTURE_MIC_ONLY;
 
-  string16 securityOrigin = UTF8ToUTF16(delegate->GetSecurityOrigin());
+  string16 securityOrigin = UTF8ToUTF16(delegate->GetSecurityOrigin().spec());
   NSString* text = l10n_util::GetNSStringF(messageId, securityOrigin);
   [label1_ setStringValue:text];
 

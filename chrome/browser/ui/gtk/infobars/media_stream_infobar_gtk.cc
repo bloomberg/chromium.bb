@@ -43,7 +43,8 @@ void MediaStreamInfoBarGtk::Init() {
   else if (!GetDelegate()->has_video())
     message_id = IDS_MEDIA_CAPTURE_MIC_ONLY;
 
-  string16 security_origin = UTF8ToUTF16(GetDelegate()->GetSecurityOrigin());
+  string16 security_origin = UTF8ToUTF16(
+      GetDelegate()->GetSecurityOrigin().spec());
   string16 text(l10n_util::GetStringFUTF16(message_id,
                                            security_origin, &offset));
 

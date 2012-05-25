@@ -162,7 +162,7 @@ void MediaStreamImpl::requestUserMedia(
   bool audio = false;
   bool video = false;
   WebKit::WebFrame* frame = NULL;
-  std::string security_origin;
+  GURL security_origin;
 
   // |user_media_request| can't be mocked. So in order to test at all we check
   // if it isNull.
@@ -173,8 +173,7 @@ void MediaStreamImpl::requestUserMedia(
   } else {
     audio = user_media_request.audio();
     video = user_media_request.video();
-    security_origin = UTF16ToUTF8(
-        user_media_request.securityOrigin().toString());
+    security_origin = GURL(user_media_request.securityOrigin().toString());
     // Get the WebFrame that requested a MediaStream.
     // The frame is needed to tell the MediaStreamDispatcher when a stream goes
     // out of scope.
@@ -185,7 +184,7 @@ void MediaStreamImpl::requestUserMedia(
   DVLOG(1) << "MediaStreamImpl::generateStream(" << request_id << ", [ "
            << (audio ? "audio" : "")
            << (user_media_request.video() ? " video" : "") << "], "
-           << security_origin << ")";
+           << security_origin.spec() << ")";
 
   user_media_requests_[request_id] =
       UserMediaRequestInfo(frame, user_media_request);

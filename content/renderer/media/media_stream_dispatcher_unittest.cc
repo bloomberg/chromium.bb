@@ -10,6 +10,7 @@
 #include "content/common/media/media_stream_messages.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -91,7 +92,7 @@ TEST(MediaStreamDispatcherTest, BasicStream) {
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
   media_stream::StreamOptions components(true, true);
-  std::string security_origin;
+  GURL security_origin;
 
   int ipc_request_id1 = dispatcher->next_ipc_id_;
   dispatcher->GenerateStream(kRequestId1, handler.get()->AsWeakPtr(),
@@ -165,7 +166,7 @@ TEST(MediaStreamDispatcherTest, BasicVideoDevice) {
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
-  std::string security_origin;
+  GURL security_origin;
 
   int ipc_request_id1 = dispatcher->next_ipc_id_;
   dispatcher->EnumerateDevices(kRequestId1, handler.get()->AsWeakPtr(),
@@ -253,7 +254,7 @@ TEST(MediaStreamDispatcherTest, TestFailure) {
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
   media_stream::StreamOptions components(true, true);
-  std::string security_origin;
+  GURL security_origin;
 
   // Test failure when creating a stream.
   int ipc_request_id1 = dispatcher->next_ipc_id_;
@@ -322,9 +323,9 @@ TEST(MediaStreamDispatcherTest, CancelGenerateStream) {
   int ipc_request_id1 = dispatcher->next_ipc_id_;
 
   dispatcher->GenerateStream(kRequestId1, handler.get()->AsWeakPtr(),
-                             components, std::string());
+                             components, GURL());
   dispatcher->GenerateStream(kRequestId2, handler.get()->AsWeakPtr(),
-                             components, std::string());
+                             components, GURL());
 
   EXPECT_EQ(2u, dispatcher->requests_.size());
   dispatcher->CancelGenerateStream(kRequestId2);

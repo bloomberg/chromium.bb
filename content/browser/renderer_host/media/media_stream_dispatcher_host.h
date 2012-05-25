@@ -61,7 +61,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void OnGenerateStream(int render_view_id,
                         int page_request_id,
                         const StreamOptions& components,
-                        const std::string& security_origin);
+                        const GURL& security_origin);
   void OnCancelGenerateStream(int render_view_id,
                               int page_request_id);
   void OnStopGeneratedStream(int render_view_id, const std::string& label);
@@ -69,13 +69,13 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void OnEnumerateDevices(int render_view_id,
                           int page_request_id,
                           media_stream::MediaStreamType type,
-                          const std::string& security_origin);
+                          const GURL& security_origin);
 
   void OnOpenDevice(int render_view_id,
                     int page_request_id,
                     const std::string& device_id,
                     media_stream::MediaStreamType type,
-                    const std::string& security_origin);
+                    const GURL& security_origin);
 
   // Returns the media stream manager to forward events to,
   // creating one if needed.

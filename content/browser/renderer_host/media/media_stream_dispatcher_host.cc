@@ -6,6 +6,7 @@
 
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
+#include "googleurl/src/gurl.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
@@ -192,14 +193,14 @@ void MediaStreamDispatcherHost::OnGenerateStream(
     int render_view_id,
     int page_request_id,
     const media_stream::StreamOptions& components,
-    const std::string& security_origin) {
+    const GURL& security_origin) {
   DVLOG(1) << "MediaStreamDispatcherHost::OnGenerateStream("
            << render_view_id << ", "
            << page_request_id << ", [ "
            << (components.audio ? "audio " : "")
            << (components.video ? "video " : "")
            << "], "
-           << security_origin << ")";
+           << security_origin.spec() << ")";
 
   std::string label;
   manager()->GenerateStream(this, render_process_id_, render_view_id,
@@ -232,12 +233,12 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
     int render_view_id,
     int page_request_id,
     media_stream::MediaStreamType type,
-    const std::string& security_origin) {
+    const GURL& security_origin) {
   DVLOG(1) << "MediaStreamDispatcherHost::OnEnumerateDevices("
            << render_view_id << ", "
            << page_request_id << ", "
            << type << ", "
-           << security_origin << ")";
+           << security_origin.spec() << ")";
 
   std::string label;
   manager()->EnumerateDevices(this, render_process_id_, render_view_id,
@@ -251,13 +252,13 @@ void MediaStreamDispatcherHost::OnOpenDevice(
     int page_request_id,
     const std::string& device_id,
     media_stream::MediaStreamType type,
-    const std::string& security_origin) {
+    const GURL& security_origin) {
   DVLOG(1) << "MediaStreamDispatcherHost::OnOpenDevice("
            << render_view_id << ", "
            << page_request_id << ", device_id: "
            << device_id.c_str() << ", type: "
            << type << ", "
-           << security_origin << ")";
+           << security_origin.spec() << ")";
 
   std::string label;
   manager()->OpenDevice(this, render_process_id_, render_view_id,
