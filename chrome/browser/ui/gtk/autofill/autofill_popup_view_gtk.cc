@@ -84,7 +84,8 @@ AutofillPopupViewGtk::AutofillPopupViewGtk(
                                  GDK_POINTER_MOTION_MASK);
   g_signal_connect(window_, "expose-event",
                    G_CALLBACK(HandleExposeThunk), this);
-
+  g_signal_connect(window_, "leave-notify-event",
+                   G_CALLBACK(HandleLeaveThunk), this);
   g_signal_connect(window_, "motion-notify-event",
                    G_CALLBACK(HandleMotionThunk), this);
   g_signal_connect(window_, "button-release-event",
@@ -127,10 +128,13 @@ void AutofillPopupViewGtk::InvalidateRow(size_t row) {
 }
 
 void AutofillPopupViewGtk::ResizePopup() {
+  bounds_.set_width(GetPopupRequiredWidth());
+  bounds_.set_height(GetPopupRequiredHeight());
+
   gtk_widget_set_size_request(
       window_,
-      GetPopupRequiredWidth(),
-      GetPopupRequiredHeight());
+      bounds_.width(),
+      bounds_.height());
 }
 
 gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
@@ -186,6 +190,13 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
   cairo_destroy(cr);
 
   return TRUE;
+}
+
+gboolean AutofillPopupViewGtk::HandleLeave(GtkWidget* widget,
+                                           GdkEventCrossing* event) {
+  ClearSelectedLine();
+
+  return FALSE;
 }
 
 gboolean AutofillPopupViewGtk::HandleMotion(GtkWidget* widget,

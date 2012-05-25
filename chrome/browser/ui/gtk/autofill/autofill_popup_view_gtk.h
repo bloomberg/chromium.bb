@@ -26,6 +26,7 @@ class Rect;
 }
 
 typedef struct _GdkEventButton GdkEventButton;
+typedef struct _GdkEventCrossing GdkEventCrossing;
 typedef struct _GdkEventExpose GdkEventExpose;
 typedef struct _GdkEventKey GdkEventKey;
 typedef struct _GdkEventMotion GdkEventMotion;
@@ -53,6 +54,8 @@ class AutofillPopupViewGtk : public AutofillPopupView,
                        GdkEventButton*);
   CHROMEGTK_CALLBACK_1(AutofillPopupViewGtk, gboolean, HandleExpose,
                        GdkEventExpose*);
+  CHROMEGTK_CALLBACK_1(AutofillPopupViewGtk, gboolean, HandleLeave,
+                       GdkEventCrossing*)
   CHROMEGTK_CALLBACK_1(AutofillPopupViewGtk, gboolean, HandleMotion,
                        GdkEventMotion*);
 

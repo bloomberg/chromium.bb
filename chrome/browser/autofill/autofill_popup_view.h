@@ -76,6 +76,9 @@ class AutofillPopupView : public content::NotificationObserver {
   // Change which line is currently selected by the user.
   void SetSelectedLine(int selected_line);
 
+  // Clear the currently selected line so that nothing is selected.
+  void ClearSelectedLine();
+
   // Increase the selected line by 1, properly handling wrapping.
   void SelectNextLine();
 

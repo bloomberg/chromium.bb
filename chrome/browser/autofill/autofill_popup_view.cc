@@ -96,6 +96,10 @@ void AutofillPopupView::SetSelectedLine(int selected_line) {
   }
 }
 
+void AutofillPopupView::ClearSelectedLine() {
+  SetSelectedLine(kNoSelection);
+}
+
 void AutofillPopupView::SelectNextLine() {
   int new_selected_line = selected_line_ + 1;
 
