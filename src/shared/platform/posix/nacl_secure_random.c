@@ -30,15 +30,6 @@ static struct NaClSecureRngIfVtbl const kNaClSecureRngVtbl;
 static int  urandom_d = -1;
 
 /*
- * TODO(mseaborn): Remove the "#if !defined(NACL_STANDALONE)" cases
- * once Chromium has been switched over to using
- * NaClSecureRngModuleSetUrandomFd() via sel_main_chrome.h.
- */
-#if !defined(NACL_STANDALONE)
-# include "base/rand_util_c.h"
-#endif
-
-/*
  * This sets a /dev/urandom file descriptor for this module to use.
  * This is for use inside outer sandboxes where opening /dev/urandom
  * with open() does not work.
@@ -62,15 +53,11 @@ void NaClSecureRngModuleInit(void) {
     return;
   }
 
-#if defined(NACL_STANDALONE)
   urandom_d = open(NACL_SECURE_RANDOM_SYSTEM_RANDOM_SOURCE, O_RDONLY, 0);
   if (-1 == urandom_d) {
     NaClLog(LOG_FATAL, "Cannot open system random source %s\n",
             NACL_SECURE_RANDOM_SYSTEM_RANDOM_SOURCE);
   }
-#else
-  urandom_d = dup(GetUrandomFD());
-#endif
 }
 
 void NaClSecureRngModuleFini(void) {
