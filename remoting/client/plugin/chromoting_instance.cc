@@ -385,6 +385,11 @@ void ChromotingInstance::SetConnectionState(
   GetScriptableObject()->SetConnectionStatus(state, error);
 }
 
+void ChromotingInstance::OnFirstFrameReceived() {
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  PostChromotingMessage("onFirstFrameReceived", data.Pass());
+}
+
 ChromotingScriptableObject* ChromotingInstance::GetScriptableObject() {
   pp::VarPrivate object = GetInstanceObject();
   if (!object.is_undefined()) {

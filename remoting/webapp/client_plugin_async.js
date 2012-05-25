@@ -189,6 +189,10 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
       remoting.clipboard.fromHost(message.data['mimeType'],
                                   message.data['item']);
     }
+  } else if (message.method == 'onFirstFrameReceived') {
+    if (remoting.clientSession) {
+      remoting.clientSession.onFirstFrameReceived();
+    }
   }
 }
 

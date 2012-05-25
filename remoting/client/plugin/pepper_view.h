@@ -115,6 +115,9 @@ class PepperView : public ChromotingView,
   // True after Initialize() has been called, until TearDown().
   bool is_initialized_;
 
+  // True after the first call to ApplyBuffer().
+  bool frame_received_;
+
   DISALLOW_COPY_AND_ASSIGN(PepperView);
 };
 

@@ -56,6 +56,7 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
   /** @type {remoting.ClientPlugin} */
   this.plugin = null;
   this.scaleToFit = false;
+  this.hasReceivedFrame_ = false;
   this.logToServer = new remoting.LogToServer();
   this.onStateChange = onStateChange;
 
@@ -419,6 +420,22 @@ remoting.ClientSession.prototype.setScaleToFit = function(scaleToFit) {
 remoting.ClientSession.prototype.getScaleToFit = function() {
   return this.scaleToFit;
 }
+
+/**
+ * Called when the client receives its first frame.
+ *
+ * @return {void} Nothing.
+ */
+remoting.ClientSession.prototype.onFirstFrameReceived = function() {
+  this.hasReceivedFrame_ = true;
+};
+
+/**
+ * @return {boolean} Whether the client has received a video buffer.
+ */
+remoting.ClientSession.prototype.hasReceivedFrame = function() {
+  return this.hasReceivedFrame_;
+};
 
 /**
  * Sends an IQ stanza via the http xmpp proxy.

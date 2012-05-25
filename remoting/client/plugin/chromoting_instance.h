@@ -132,6 +132,7 @@ class ChromotingInstance :
   // Called by PepperView.
   void SetDesktopSize(int width, int height);
   void SetConnectionState(ConnectionState state, ConnectionError error);
+  void OnFirstFrameReceived();
 
   // Convenience wrapper to get the ChromotingScriptableObject.
   ChromotingScriptableObject* GetScriptableObject();

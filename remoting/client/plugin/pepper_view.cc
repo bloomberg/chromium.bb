@@ -78,7 +78,8 @@ PepperView::PepperView(ChromotingInstance* instance,
     clip_area_(SkIRect::MakeEmpty()),
     source_size_(SkISize::Make(0, 0)),
     flush_pending_(false),
-    is_initialized_(false) {
+    is_initialized_(false),
+    frame_received_(false) {
 }
 
 PepperView::~PepperView() {
@@ -185,6 +186,10 @@ void PepperView::ApplyBuffer(const SkISize& view_size,
                              const SkRegion& region) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
+  if (!frame_received_) {
+    instance_->OnFirstFrameReceived();
+    frame_received_ = true;
+  }
   // Currently we cannot use the data in the buffer is scale factor has changed
   // already.
   // TODO(alexeypa): We could rescale and draw it (or even draw it without
