@@ -33,7 +33,16 @@
 
 #include <cairo.h>
 
+#define WCAP_HEADER_MAGIC	0x57434150
+
+#define WCAP_FORMAT_XRGB8888	0x34325258
+#define WCAP_FORMAT_XBGR8888	0x34324258
+#define WCAP_FORMAT_RGBX8888	0x34325852
+#define WCAP_FORMAT_BGRX8888	0x34325842
+
 struct wcap_header {
+	uint32_t magic;
+	uint32_t format;
 	uint32_t width, height;
 };
 

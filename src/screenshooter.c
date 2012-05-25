@@ -318,12 +318,18 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 	pixman_region32_fini(&damage);
 }
 
+#define WCAP_HEADER_MAGIC	0x57434150
+#define WCAP_FORMAT_XRGB8888	0x34325258
+#define WCAP_FORMAT_XBGR8888	0x34324258
+#define WCAP_FORMAT_RGBX8888	0x34325852
+#define WCAP_FORMAT_BGRX8888	0x34325842
+
 static void
 weston_recorder_create(struct weston_output *output, const char *filename)
 {
 	struct weston_recorder *recorder;
 	int stride, size;
-	struct { uint32_t width, height; } header;
+	struct { uint32_t magic, format, width, height; } header;
 
 	recorder = malloc(sizeof *recorder);
 	recorder->output = output;
@@ -337,6 +343,17 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 
 	recorder->fd = open(filename,
 			    O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
+
+	header.magic = WCAP_HEADER_MAGIC;
+
+	switch (output->compositor->read_format) {
+	case GL_BGRA_EXT:
+		header.format = WCAP_FORMAT_XRGB8888;
+		break;
+	case GL_RGBA:
+		header.format = WCAP_FORMAT_XBGR8888;
+		break;
+	}
 
 	header.width = output->current->width;
 	header.height = output->current->height;
