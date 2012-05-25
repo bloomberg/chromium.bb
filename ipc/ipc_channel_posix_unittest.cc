@@ -17,6 +17,7 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "testing/multiprocess_func_list.h"
@@ -94,10 +95,11 @@ class IPCChannelPosixTestListener : public IPC::Channel::Listener {
 
 class IPCChannelPosixTest : public base::MultiProcessTest {
  public:
-  static const char kConnectionSocketTestName[];
   static void SetUpSocket(IPC::ChannelHandle *handle,
                           IPC::Channel::Mode mode);
   static void SpinRunLoop(int milliseconds);
+  static const std::string GetConnectionSocketName();
+  static const std::string GetChannelDirName();
 
  protected:
   virtual void SetUp();
@@ -107,13 +109,19 @@ private:
   scoped_ptr<MessageLoopForIO> message_loop_;
 };
 
+const std::string IPCChannelPosixTest::GetChannelDirName() {
 #if defined(OS_ANDROID)
-const char IPCChannelPosixTest::kConnectionSocketTestName[] =
-    "/data/local/chrome_IPCChannelPosixTest__ConnectionSocket";
+  FilePath tmp_dir;
+  PathService::Get(base::DIR_CACHE, &tmp_dir);
+  return tmp_dir.value();
 #else
-const char IPCChannelPosixTest::kConnectionSocketTestName[] =
-    "/var/tmp/chrome_IPCChannelPosixTest__ConnectionSocket";
+  return "/var/tmp";
 #endif
+}
+
+const std::string IPCChannelPosixTest::GetConnectionSocketName() {
+  return GetChannelDirName() + "/chrome_IPCChannelPosixTest__ConnectionSocket";
+}
 
 void IPCChannelPosixTest::SetUp() {
   MultiProcessTest::SetUp();
@@ -185,12 +193,9 @@ void IPCChannelPosixTest::SpinRunLoop(int milliseconds) {
 }
 
 TEST_F(IPCChannelPosixTest, BasicListen) {
+  const std::string kChannelName =
+      GetChannelDirName() + "/IPCChannelPosixTest_BasicListen";
 
-#if defined(OS_ANDROID)
-  const char* kChannelName = "/data/local/IPCChannelPosixTest_BasicListen";
-#else
-  const char* kChannelName = "/var/tmp/IPCChannelPosixTest_BasicListen";
-#endif
   // Test creating a socket that is listening.
   IPC::ChannelHandle handle(kChannelName);
   SetUpSocket(&handle, IPC::Channel::MODE_NAMED_SERVER);
@@ -228,7 +233,7 @@ TEST_F(IPCChannelPosixTest, BasicConnected) {
 TEST_F(IPCChannelPosixTest, AdvancedConnected) {
   // Test creating a connection to an external process.
   IPCChannelPosixTestListener listener(false);
-  IPC::ChannelHandle chan_handle(kConnectionSocketTestName);
+  IPC::ChannelHandle chan_handle(GetConnectionSocketName());
   SetUpSocket(&chan_handle, IPC::Channel::MODE_NAMED_SERVER);
   IPC::Channel channel(chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener);
   ASSERT_TRUE(channel.Connect());
@@ -258,7 +263,7 @@ TEST_F(IPCChannelPosixTest, ResetState) {
   // but continue to listen and make sure another external process can connect
   // to us.
   IPCChannelPosixTestListener listener(false);
-  IPC::ChannelHandle chan_handle(kConnectionSocketTestName);
+  IPC::ChannelHandle chan_handle(GetConnectionSocketName());
   SetUpSocket(&chan_handle, IPC::Channel::MODE_NAMED_SERVER);
   IPC::Channel channel(chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener);
   ASSERT_TRUE(channel.Connect());
@@ -317,7 +322,7 @@ TEST_F(IPCChannelPosixTest, MultiConnection) {
   // Test setting up a connection to an external process, and then have
   // another external process attempt to connect to us.
   IPCChannelPosixTestListener listener(false);
-  IPC::ChannelHandle chan_handle(kConnectionSocketTestName);
+  IPC::ChannelHandle chan_handle(GetConnectionSocketName());
   SetUpSocket(&chan_handle, IPC::Channel::MODE_NAMED_SERVER);
   IPC::Channel channel(chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener);
   ASSERT_TRUE(channel.Connect());
@@ -354,7 +359,7 @@ TEST_F(IPCChannelPosixTest, DoubleServer) {
   // Test setting up two servers with the same name.
   IPCChannelPosixTestListener listener(false);
   IPCChannelPosixTestListener listener2(false);
-  IPC::ChannelHandle chan_handle(kConnectionSocketTestName);
+  IPC::ChannelHandle chan_handle(GetConnectionSocketName());
   IPC::Channel channel(chan_handle, IPC::Channel::MODE_SERVER, &listener);
   IPC::Channel channel2(chan_handle, IPC::Channel::MODE_SERVER, &listener2);
   ASSERT_TRUE(channel.Connect());
@@ -364,30 +369,31 @@ TEST_F(IPCChannelPosixTest, DoubleServer) {
 TEST_F(IPCChannelPosixTest, BadMode) {
   // Test setting up two servers with a bad mode.
   IPCChannelPosixTestListener listener(false);
-  IPC::ChannelHandle chan_handle(kConnectionSocketTestName);
+  IPC::ChannelHandle chan_handle(GetConnectionSocketName());
   IPC::Channel channel(chan_handle, IPC::Channel::MODE_NONE, &listener);
   ASSERT_FALSE(channel.Connect());
 }
 
 TEST_F(IPCChannelPosixTest, IsNamedServerInitialized) {
+  const std::string& connection_socket_name = GetConnectionSocketName();
   IPCChannelPosixTestListener listener(false);
-  IPC::ChannelHandle chan_handle(kConnectionSocketTestName);
-  ASSERT_TRUE(file_util::Delete(FilePath(kConnectionSocketTestName), false));
+  IPC::ChannelHandle chan_handle(connection_socket_name);
+  ASSERT_TRUE(file_util::Delete(FilePath(connection_socket_name), false));
   ASSERT_FALSE(IPC::Channel::IsNamedServerInitialized(
-      kConnectionSocketTestName));
+      connection_socket_name));
   IPC::Channel channel(chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener);
   ASSERT_TRUE(IPC::Channel::IsNamedServerInitialized(
-      kConnectionSocketTestName));
+      connection_socket_name));
   channel.Close();
   ASSERT_FALSE(IPC::Channel::IsNamedServerInitialized(
-      kConnectionSocketTestName));
+      connection_socket_name));
 }
 
 // A long running process that connects to us
 MULTIPROCESS_TEST_MAIN(IPCChannelPosixTestConnectionProc) {
   MessageLoopForIO message_loop;
   IPCChannelPosixTestListener listener(true);
-  IPC::ChannelHandle handle(IPCChannelPosixTest::kConnectionSocketTestName);
+  IPC::ChannelHandle handle(IPCChannelPosixTest::GetConnectionSocketName());
   IPCChannelPosixTest::SetUpSocket(&handle, IPC::Channel::MODE_NAMED_CLIENT);
   IPC::Channel channel(handle, IPC::Channel::MODE_NAMED_CLIENT, &listener);
   EXPECT_TRUE(channel.Connect());
@@ -400,7 +406,7 @@ MULTIPROCESS_TEST_MAIN(IPCChannelPosixTestConnectionProc) {
 MULTIPROCESS_TEST_MAIN(IPCChannelPosixFailConnectionProc) {
   MessageLoopForIO message_loop;
   IPCChannelPosixTestListener listener(false);
-  IPC::ChannelHandle handle(IPCChannelPosixTest::kConnectionSocketTestName);
+  IPC::ChannelHandle handle(IPCChannelPosixTest::GetConnectionSocketName());
   IPCChannelPosixTest::SetUpSocket(&handle, IPC::Channel::MODE_NAMED_CLIENT);
   IPC::Channel channel(handle, IPC::Channel::MODE_NAMED_CLIENT, &listener);
 
