@@ -188,6 +188,8 @@ cr.define('login', function() {
       var params = [];
       if (data.gaiaOrigin)
         params.push('gaiaOrigin=' + encodeURIComponent(data.gaiaOrigin));
+      if (data.gaiaUrlPath)
+        params.push('gaiaUrlPath=' + encodeURIComponent(data.gaiaUrlPath));
       if (data.hl)
         params.push('hl=' + encodeURIComponent(data.hl));
       if (data.localizedStrings) {
@@ -208,7 +210,7 @@ cr.define('login', function() {
         url += '?' + params.join('&');
 
       if (data.forceReload || this.extensionUrl_ != url) {
-        console.log('Opening extension: ' + data.startUrl +
+        console.log('Opening extension: ' + data.url +
                     ', opt_email=' + data.email);
 
         this.error_ = 0;

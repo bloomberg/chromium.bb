@@ -152,8 +152,8 @@
         <include name="IDR_CROSH_BUILTIN_MANIFEST" file="resources\chromeos\crosh_builtin\manifest.json" type="BINDATA" />
         <!-- manifest file of ChromeVox accessibility extension -->
         <include name="IDR_CHROMEVOX_MANIFEST" file="resources\chromeos\access_chromevox\manifest.json" type="BINDATA" />
-        <include name="IDR_GAIA_AUTH_MANIFEST" file="resources\chromeos\gaia_auth\manifest.json" type="BINDATA" />
-        <include name="IDR_GAIA_TEST_AUTH_MANIFEST" file="resources\chromeos\gaia_auth\manifest_test.json" type="BINDATA" />
+        <include name="IDR_GAIA_AUTH_MANIFEST" file="resources\gaia_auth\manifest.json" type="BINDATA" />
+        <include name="IDR_GAIA_TEST_AUTH_MANIFEST" file="resources\gaia_auth\manifest_test.json" type="BINDATA" />
         <include name="IDR_GUEST_SESSION_TAB_HTML" file="resources\chromeos\guest_session_tab.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_HOST_REGISTRATION_PAGE_HTML" file="resources\chromeos\host_registration_page.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_IMAGEBURNER_HTML" file="resources\chromeos\image_burner.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

@@ -63,22 +63,34 @@ GaiaUrls::GaiaUrls() {
 
   captcha_url_prefix_ = "http://" + host_base + kCaptchaUrlPrefixSuffix;
   gaia_origin_url_ = "https://" + host_base;
-  client_login_url_ = gaia_origin_url_ + kClientLoginUrlSuffix;
-  service_login_url_ = gaia_origin_url_ + kServiceLoginUrlSuffix;
-  issue_auth_token_url_ = gaia_origin_url_ + kIssueAuthTokenUrlSuffix;
-  get_user_info_url_ = gaia_origin_url_ + kGetUserInfoUrlSuffix;
-  token_auth_url_ = gaia_origin_url_ + kTokenAuthUrlSuffix;
-  merge_session_url_ = gaia_origin_url_ + kMergeSessionUrlSuffix;
+  std::string gaia_url_base = gaia_origin_url_;
+  if (command_line->HasSwitch(switches::kGaiaUrlPath)) {
+    std::string path =
+        command_line->GetSwitchValueASCII(switches::kGaiaUrlPath);
+    if (!path.empty()) {
+      if (path[0] != '/')
+        gaia_url_base.append("/");
+
+      gaia_url_base.append(path);
+    }
+  }
+
+  client_login_url_ = gaia_url_base + kClientLoginUrlSuffix;
+  service_login_url_ = gaia_url_base + kServiceLoginUrlSuffix;
+  issue_auth_token_url_ = gaia_url_base + kIssueAuthTokenUrlSuffix;
+  get_user_info_url_ = gaia_url_base + kGetUserInfoUrlSuffix;
+  token_auth_url_ = gaia_url_base + kTokenAuthUrlSuffix;
+  merge_session_url_ = gaia_url_base + kMergeSessionUrlSuffix;
 
   // Federated login is not part of Gaia and has its own endpoints.
   get_oauth_token_url_ = std::string(kDefaultFederatedLoginBaseUrl) +
                          kGetOAuthTokenUrlSuffix;
 
-  oauth_get_access_token_url_ = gaia_origin_url_ +
+  oauth_get_access_token_url_ = gaia_url_base +
                                 kOAuthGetAccessTokenUrlSuffix;
-  oauth_wrap_bridge_url_ = gaia_origin_url_ + kOAuthWrapBridgeUrlSuffix;
-  oauth_revoke_token_url_ = gaia_origin_url_ + kOAuthRevokeTokenUrlSuffix;
-  oauth1_login_url_ = gaia_origin_url_ + kOAuth1LoginUrlSuffix;
+  oauth_wrap_bridge_url_ = gaia_url_base + kOAuthWrapBridgeUrlSuffix;
+  oauth_revoke_token_url_ = gaia_url_base + kOAuthRevokeTokenUrlSuffix;
+  oauth1_login_url_ = gaia_url_base + kOAuth1LoginUrlSuffix;
 
   // TODO(joaodasilva): these aren't configurable for now, but are managed here
   // so that users of Gaia URLs don't have to use static constants.

@@ -196,6 +196,7 @@ extern const char kFocusExistingTabOnOpen[];
 extern const char kFirstRun[];
 extern const char kForceAppsPromoVisible[];
 extern const char kGaiaHost[];
+extern const char kGaiaUrlPath[];
 extern const char kGaiaProfileInfo[];
 extern const char kGoogleSearchDomainCheckURL[];
 extern const char kGSSAPILibraryName[];

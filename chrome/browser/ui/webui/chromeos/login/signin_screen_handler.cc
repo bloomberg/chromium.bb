@@ -653,9 +653,13 @@ void SigninScreenHandler::LoadAuthExtension(
   }
 
   params.SetString("gaiaOrigin", GaiaUrls::GetInstance()->gaia_origin_url());
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kGaiaUrlPath)) {
+    params.SetString("gaiaUrlPath",
+                     command_line->GetSwitchValueASCII(switches::kGaiaUrlPath));
+  }
 
   // Test automation data:
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
     if (!test_user_.empty()) {
       params.SetString("test_email", test_user_);

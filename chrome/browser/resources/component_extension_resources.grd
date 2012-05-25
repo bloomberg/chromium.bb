@@ -21,7 +21,18 @@
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_TREE_JS" file="bookmark_manager/js/bmm/bookmark_tree.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_JS" file="bookmark_manager/js/bmm.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_CSS_JS" file="bookmark_manager/css/bmm.css.js" type="BINDATA" />
-
+      <if expr="pp_ifdef('chromeos')">
+        <include name="IDR_GAIA_AUTH_MAIN" file="gaia_auth/main.html" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_GAIA_AUTH_MAIN_JS" file="gaia_auth/main.js" type="BINDATA" />
+        <include name="IDR_GAIA_AUTH_MAIN_CSS" file="gaia_auth/main.css" type="BINDATA" />
+        <include name="IDR_GAIA_AUTH_OFFLINE" file="gaia_auth/offline.html" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_GAIA_AUTH_OFFLINE_JS" file="gaia_auth/offline.js" type="BINDATA" />
+        <include name="IDR_GAIA_AUTH_OFFLINE_CSS" file="gaia_auth/offline.css" type="BINDATA" />
+        <include name="IDR_GAIA_AUTH_SUCCESS" file="gaia_auth/success.html" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_GAIA_AUTH_SUCCESS_JS" file="gaia_auth/success.js" type="BINDATA" />
+        <include name="IDR_GAIA_AUTH_UTIL_JS" file="gaia_auth/util.js" type="BINDATA" />
+        <include name="IDR_GAIA_AUTH_TEST_CONTENT_JS" file="gaia_auth/test/content.js" type="BINDATA" />
+      </if>
       <if expr="pp_ifdef('file_manager_extension')">
         <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_MAIN_JS" file="file_manager/js/main_scripts.js" flattenhtml="true" type="BINDATA" />

@@ -238,6 +238,19 @@ void ComponentLoader::AddFileManagerExtension() {
 #endif  // defined(FILE_MANAGER_EXTENSION)
 }
 
+#if defined(OS_CHROMEOS)
+void ComponentLoader::AddGaiaAuthExtension() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
+    FilePath auth_extension_path =
+        command_line->GetSwitchValuePath(switches::kAuthExtensionPath);
+    Add(IDR_GAIA_TEST_AUTH_MANIFEST, auth_extension_path);
+    return;
+  }
+  Add(IDR_GAIA_AUTH_MANIFEST, FilePath(FILE_PATH_LITERAL("gaia_auth")));
+}
+#endif  // NDEBUG
+
 void ComponentLoader::AddOrReloadEnterpriseWebStore() {
   FilePath path(FILE_PATH_LITERAL("enterprise_web_store"));
 
@@ -279,36 +292,29 @@ void ComponentLoader::AddDefaultComponentExtensions() {
 #endif
 
 #if defined(OS_CHROMEOS)
-    Add(IDR_MOBILE_MANIFEST,
-        FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile")));
+  Add(IDR_MOBILE_MANIFEST,
+      FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile")));
 
-    Add(IDR_CROSH_BUILTIN_MANIFEST, FilePath(FILE_PATH_LITERAL(
-        "/usr/share/chromeos-assets/crosh_builtin")));
+  Add(IDR_CROSH_BUILTIN_MANIFEST, FilePath(FILE_PATH_LITERAL(
+      "/usr/share/chromeos-assets/crosh_builtin")));
 
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
-      FilePath auth_extension_path =
-          command_line->GetSwitchValuePath(switches::kAuthExtensionPath);
-      Add(IDR_GAIA_TEST_AUTH_MANIFEST, auth_extension_path);
-    } else {
-      Add(IDR_GAIA_AUTH_MANIFEST,
-          FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/gaia_auth")));
-    }
+  AddGaiaAuthExtension();
 
-    // TODO(gauravsh): Only include echo extension on official builds.
-    FilePath echo_extension_path(FILE_PATH_LITERAL(
-        "/usr/share/chromeos-assets/echo"));
-    if (command_line->HasSwitch(switches::kEchoExtensionPath)) {
-      echo_extension_path =
-          command_line->GetSwitchValuePath(switches::kEchoExtensionPath);
-    }
-    Add(IDR_ECHO_MANIFEST, echo_extension_path);
+  // TODO(gauravsh): Only include echo extension on official builds.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  FilePath echo_extension_path(FILE_PATH_LITERAL(
+      "/usr/share/chromeos-assets/echo"));
+  if (command_line->HasSwitch(switches::kEchoExtensionPath)) {
+    echo_extension_path =
+        command_line->GetSwitchValuePath(switches::kEchoExtensionPath);
+  }
+  Add(IDR_ECHO_MANIFEST, echo_extension_path);
 
 #if defined(OFFICIAL_BUILD)
-    if (browser_defaults::enable_help_app) {
-      Add(IDR_HELP_MANIFEST,
-          FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/helpapp")));
-    }
+  if (browser_defaults::enable_help_app) {
+    Add(IDR_HELP_MANIFEST,
+        FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/helpapp")));
+  }
 #endif
 #endif  // !defined(OS_CHROMEOS)
 

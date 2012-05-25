@@ -700,6 +700,11 @@ const char kForceAppsPromoVisible[]         = "force-apps-promo-visible";
 // omitted. The default value is "www.google.com".
 const char kGaiaHost[]                      = "gaia-host";
 
+// Specifies the path prefix for GAIA authentication URL. It should be used
+// for testing in cases where authentication path prefix differs from the one
+// used in production.
+const char kGaiaUrlPath[]                   = "gaia-url-path";
+
 // Enables using GAIA information to populate profile name and icon.
 const char kGaiaProfileInfo[]               = "gaia-profile-info";
 

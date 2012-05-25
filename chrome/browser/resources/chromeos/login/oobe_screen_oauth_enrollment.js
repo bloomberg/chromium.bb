@@ -184,8 +184,9 @@ cr.define('oobe', function() {
      */
     onBeforeShow: function(data) {
       var url = data.signin_url;
-      if (data.gaiaOrigin)
-        url += '?gaiaOrigin=' + encodeURIComponent(data.gaiaOrigin);
+      url += '?gaiaOrigin=' + encodeURIComponent(data.gaiaOrigin);
+      if (data.gaiaUrlBase)
+        url += '&gaiaUrlPath=' + encodeURIComponent(data.gaiaUrlPath);
       if (data.test_email) {
         url += '&test_email=' + encodeURIComponent(data.test_email);
         url += '&test_password=' + encodeURIComponent(data.test_password);

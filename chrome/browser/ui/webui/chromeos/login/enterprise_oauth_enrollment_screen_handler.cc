@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/policy/auto_enrollment_client.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -512,6 +514,11 @@ void EnterpriseOAuthEnrollmentScreenHandler::DoShow() {
   screen_data.SetString("signin_url", kGaiaExtStartPage);
   screen_data.SetString("gaiaOrigin",
                         GaiaUrls::GetInstance()->gaia_origin_url());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGaiaUrlPath)) {
+    screen_data.SetString("gaiaUrlPath",
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kGaiaUrlPath));
+  }
   screen_data.SetBoolean("is_auto_enrollment", is_auto_enrollment_);
   if (!test_email_.empty()) {
     screen_data.SetString("test_email", test_email_);
