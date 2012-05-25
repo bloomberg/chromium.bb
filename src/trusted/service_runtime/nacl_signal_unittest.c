@@ -1,15 +1,17 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
+#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
@@ -18,25 +20,13 @@
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 
-#ifdef WIN32
-#include "native_client/src/include/win/mman.h"
-/*
- * For Windows, we use __try, and __except as a means of safely returning
- * from the signal handler instead of re-executing the same code.
- */
-#define SIG_TRY_START __try {
-#define SIG_TRY_END   } __except (EXCEPTION_EXECUTE_HANDLER) {}
-#else
 /*
  * For Posix, we use sigsetjmp and siglongjmp as a means to safely return
  * from the signal handler instead of re-executing the same code.
  */
-#include <sys/mman.h>
-#include <setjmp.h>
 static sigjmp_buf try_state;
 #define SIG_TRY_START   if (0 == sigsetjmp(try_state, 1)) {
 #define SIG_TRY_END     }
-#endif
 
 int g_SigFound;
 
@@ -173,9 +163,7 @@ enum NaClSignalResult Handler(int signal_number, void *ctx) {
 
   g_SigFound = signal_number;
 
-#if NACL_LINUX || NACL_OSX
   siglongjmp(try_state, 1);
-#endif
 
   return NACL_SIGNAL_SKIP;
 }

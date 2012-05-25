@@ -172,7 +172,6 @@ def PrintTotalTime(total_time):
 # make it look like the process was killed by a signal.  Instead,
 # NaCl's signal handler encodes the signal number into the exit() code
 # by returning with exit(-signum) or equivalently, exit((-signum) & 0xff).
-# NaCl uses the same encoding on Windows.
 def IndirectSignal(signum):
   return (-signum) & 0xff
 
@@ -236,7 +235,6 @@ status_map = {
         'darwin': [-10], # SIGBUS
         'win32':  win32_untrusted_crash_exit,
         'win64':  win64_exit_via_ntdll_patch,
-        'win_fakesig': 11, # SIGSEGV
         },
     'untrusted_sigsegv_or_equivalent': {
         'linux2': [-11], # SIGSEGV
@@ -249,14 +247,12 @@ status_map = {
         'darwin': [-10], # SIGBUS
         'win32':  [MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)],
         'win64':  [MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)],
-        'win_fakesig': 11, # SIGSEGV
         },
     'trusted_sigsegv_or_equivalent': {
         'linux2': [-11], # SIGSEGV
         'darwin': [-11], # SIGSEGV
         'win32':  [],
         'win64':  [],
-        'win_fakesig': 11, # SIGSEGV
         },
     # This is like 'untrusted_segfault', but without the 'untrusted_'
     # prefix which marks the status type as expecting a
@@ -398,15 +394,10 @@ def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
   if expected_sigtype == 'normal':
     expected_printed_signum = None
   else:
-    if sys.platform == 'win32':
-      # On Windows, the NaCl signal handler maps the fault type to a
-      # Unix-like signal number.
-      expected_printed_signum = status_map[req_status]['win_fakesig']
-    else:
-      # On Unix, the NaCl signal handler reports the actual signal number.
-      assert len(expected_statuses) == 1
-      assert expected_statuses[0] < 0
-      expected_printed_signum = -expected_statuses[0]
+    assert sys.platform != 'win32'
+    assert len(expected_statuses) == 1
+    assert expected_statuses[0] < 0
+    expected_printed_signum = -expected_statuses[0]
     expected_statuses = [IndirectSignal(expected_printed_signum)]
 
   # If an uncaught signal occurs under QEMU (on ARM), the exit status

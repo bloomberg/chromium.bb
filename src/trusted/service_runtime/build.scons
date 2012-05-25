@@ -579,21 +579,21 @@ env.Requires(env_cleanser_test_exe, crt)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_env_cleanser_test')
 
 # Test nacl_signal
-if (not env.Bit('coverage_enabled') and
-    not env.Bit('target_arm') and
-    not env.IsRunningUnderValgrind()):
-  nacl_signal_exe = env.ComponentProgram('nacl_signal_unittest',
-                                         'nacl_signal_unittest.c',
-                                         EXTRA_LIBS=['sel', 'sel_debug_dummy'])
-  node = env.CommandTest('nacl_signal_unittest.out',
-                         command=[nacl_signal_exe],
-                         exit_status='trusted_sigsegv_or_equivalent',
-                         using_nacl_signal_handler=True)
-
-  env.Requires(nacl_signal_exe, crt)
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_signal_test')
-
 if env.Bit('posix'):
+  if (not env.Bit('coverage_enabled') and
+      not env.Bit('target_arm') and
+      not env.IsRunningUnderValgrind()):
+    nacl_signal_exe = env.ComponentProgram(
+        'nacl_signal_unittest', 'nacl_signal_unittest.c',
+        EXTRA_LIBS=['sel', 'sel_debug_dummy'])
+    node = env.CommandTest('nacl_signal_unittest.out',
+                           command=[nacl_signal_exe],
+                           exit_status='trusted_sigsegv_or_equivalent',
+                           using_nacl_signal_handler=True)
+
+    env.Requires(nacl_signal_exe, crt)
+    env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_signal_test')
+
   test_prog = env.ComponentProgram('nacl_signal_frame_test',
                                    'nacl_signal_frame_test.c',
                                    EXTRA_LIBS=['sel', 'sel_debug_dummy'])

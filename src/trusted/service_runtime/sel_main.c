@@ -138,7 +138,7 @@ static void PrintUsage() {
           " -c ignore validator! dangerous! Repeating this option twice skips\n"
           "    validation completely.\n"
           " -F fuzz testing; quit after loading NaCl app\n"
-          " -S enable signal handling.  Not secure on x86-64 Windows.\n"
+          " -S enable signal handling.  Not supported on Windows.\n"
           " -g enable gdb debug stub.  Not secure on x86-64 Windows.\n"
           " -l <file>  write log output to the given file\n"
           " -s safely stub out non-validating instructions\n"
