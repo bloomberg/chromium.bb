@@ -46,6 +46,11 @@ generator_default_variables = {
   'RULE_INPUT_NAME': '${name}',
 }
 
+# Placates pylint.
+generator_additional_non_configuration_keys = []
+generator_additional_path_sections = []
+generator_extra_sources_for_rules = []
+
 # TODO: figure out how to not build extra host objects in the non-cross-compile
 # case when this is enabled, and enable unconditionally.
 generator_supports_multiple_toolsets = (
@@ -1020,7 +1025,7 @@ class NinjaWriter:
     elif type == 'none':
       return '%s.stamp' % target
     else:
-      raise 'Unhandled output type', type
+      raise Exception('Unhandled output type %s' % type)
 
   def ComputeOutput(self, spec, type=None):
     """Compute the path for the final output of the spec."""

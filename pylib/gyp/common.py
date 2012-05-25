@@ -392,7 +392,7 @@ def CopyTool(flavor, out_path):
 
 def uniquer(seq, idfun=None):
     if idfun is None:
-        def idfun(x): return x
+        idfun = lambda x: x
     seen = {}
     result = []
     for item in seq:

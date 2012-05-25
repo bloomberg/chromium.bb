@@ -302,7 +302,6 @@ def ProcessToolsetsInDict(data):
       if 'toolset' in target and 'toolsets' not in target:
         new_target_list.append(target)
         continue
-      global multiple_toolsets
       if multiple_toolsets:
         toolsets = target.get('toolsets', ['target'])
       else:
@@ -331,8 +330,6 @@ def ProcessToolsetsInDict(data):
 # that contains the targets...
 def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
                         depth, check):
-  global absolute_build_file_paths
-
   # If depth is set, predefine the DEPTH variable to be a relative path from
   # this build file's directory to the directory identified by depth.
   if depth:
@@ -1142,7 +1139,6 @@ def QualifyDependencies(targets):
       for index in xrange(0, len(dependencies)):
         dep_file, dep_target, dep_toolset = gyp.common.ResolveTarget(
             target_build_file, dependencies[index], toolset)
-        global multiple_toolsets
         if not multiple_toolsets:
           # Ignore toolset specification in the dependency if it is specified.
           dep_toolset = toolset
@@ -1878,7 +1874,6 @@ def MergeConfigWithInheritance(new_configuration_dict, build_file,
 
 
 def SetUpConfigurations(target, target_dict):
-  global non_configuration_keys
   # key_suffixes is a list of key suffixes that might appear on key names.
   # These suffixes are handled in conditional evaluations (for =, +, and ?)
   # and rules/exclude processing (for ! and /).  Keys with these suffixes
@@ -2066,7 +2061,7 @@ def ProcessListFiltersInDict(name, the_dict):
         else:
           # This is an action that doesn't make any sense.
           raise ValueError, 'Unrecognized action ' + action + ' in ' + name + \
-                            ' key ' + key
+                            ' key ' + regex_key
 
         for index in xrange(0, len(the_list)):
           list_item = the_list[index]

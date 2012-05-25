@@ -54,6 +54,11 @@ generator_supports_multiple_toolsets = True
 # Request sorted dependencies in the order from dependents to dependencies.
 generator_wants_sorted_dependencies = False
 
+# Placates pylint.
+generator_additional_non_configuration_keys = []
+generator_additional_path_sections = []
+generator_extra_sources_for_rules = []
+
 
 def CalculateVariables(default_variables, params):
   """Calculate additional variables for use in the build (called by gyp)."""
@@ -79,7 +84,6 @@ def CalculateVariables(default_variables, params):
     global generator_extra_sources_for_rules
     generator_extra_sources_for_rules = getattr(xcode_generator,
         'generator_extra_sources_for_rules', [])
-    global COMPILABLE_EXTENSIONS
     COMPILABLE_EXTENSIONS.update({'.m': 'objc', '.mm' : 'objcxx'})
   else:
     operating_system = flavor
