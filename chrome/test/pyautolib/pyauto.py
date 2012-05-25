@@ -1400,19 +1400,21 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
-  def GetPrefsInfo(self):
+  def GetPrefsInfo(self, windex=0):
     """Return info about preferences.
 
     This represents a snapshot of the preferences. If you expect preferences
     to have changed, you need to call this method again to get a fresh
     snapshot.
 
+    Args:
+      windex: The window index, default is 0.
     Returns:
       an instance of prefs_info.PrefsInfo
     """
     cmd_dict = {
       'command': 'GetPrefsInfo',
-      'windex': 0,
+      'windex': windex,
     }
     return prefs_info.PrefsInfo(
         self._SendJSONRequest(-1, json.dumps(cmd_dict),
