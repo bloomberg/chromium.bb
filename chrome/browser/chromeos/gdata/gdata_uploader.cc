@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
@@ -30,8 +31,10 @@ const int kMaxFileOpenTries = 5;
 
 namespace gdata {
 
-GDataUploader::GDataUploader(GDataFileSystem* file_system)
+GDataUploader::GDataUploader(GDataFileSystem* file_system,
+                             DocumentsServiceInterface* documents_service)
   : file_system_(file_system),
+    documents_service_(documents_service),
     next_upload_id_(0),
     ALLOW_THIS_IN_INITIALIZER_LIST(uploader_factory_(this)) {
 }
@@ -182,12 +185,25 @@ void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
 
   // Open succeeded, initiate the upload.
   upload_file_info->should_retry_file_open = false;
-  file_system_->InitiateUpload(
-      upload_file_info->title,
-      upload_file_info->content_type,
-      upload_file_info->content_length,
-      upload_file_info->gdata_path.DirName(),
-      upload_file_info->gdata_path,
+  const GURL destination_directory_url = file_system_->GetUploadUrlForDirectory(
+      upload_file_info->gdata_path.DirName());
+  if (destination_directory_url.is_empty()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&GDataUploader::OnUploadLocationReceived,
+                   uploader_factory_.GetWeakPtr(),
+                   upload_file_info->upload_id,
+                   HTTP_BAD_REQUEST,
+                   GURL()));
+    return;
+  }
+
+  documents_service_->InitiateUpload(
+      InitiateUploadParams(upload_file_info->title,
+                           upload_file_info->content_type,
+                           upload_file_info->content_length,
+                           destination_directory_url,
+                           upload_file_info->gdata_path),
       base::Bind(&GDataUploader::OnUploadLocationReceived,
                  uploader_factory_.GetWeakPtr(),
                  upload_file_info->upload_id));
@@ -275,7 +291,7 @@ void GDataUploader::ReadCompletionCallback(
   upload_file_info->end_range = upload_file_info->start_range +
                                 bytes_read - 1;
 
-  file_system_->ResumeUpload(
+  documents_service_->ResumeUpload(
       ResumeUploadParams(upload_file_info->title,
                          upload_file_info->start_range,
                          upload_file_info->end_range,

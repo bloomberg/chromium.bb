@@ -25,10 +25,11 @@ namespace gdata {
 //===================== GDataSystemService ====================================
 GDataSystemService::GDataSystemService(Profile* profile)
     : profile_(profile),
-      file_system_(new GDataFileSystem(profile, new DocumentsService)),
-      uploader_(new GDataUploader(file_system_.get())),
+      documents_service_(new DocumentsService),
+      file_system_(new GDataFileSystem(profile, docs_service())),
+      uploader_(new GDataUploader(file_system(), docs_service())),
       download_observer_(new GDataDownloadObserver),
-      sync_client_(new GDataSyncClient(profile, file_system_.get())),
+      sync_client_(new GDataSyncClient(profile, file_system())),
       webapps_registry_(new DriveWebAppsRegistry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -58,13 +59,13 @@ void GDataSystemService::Initialize() {
 void GDataSystemService::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // These should shut down here as they depend on |file_system_|.
+  // Shut down the member objects in the reverse order of creation.
+  webapps_registry_.reset();
   sync_client_.reset();
   download_observer_.reset();
   uploader_.reset();
-  webapps_registry_.reset();
-
   file_system_.reset();
+  documents_service_.reset();
 }
 
 //===================== GDataSystemServiceFactory =============================

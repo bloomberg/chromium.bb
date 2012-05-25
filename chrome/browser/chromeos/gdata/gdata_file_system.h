@@ -105,11 +105,6 @@ typedef base::Callback<void(base::PlatformFileError error,
                             int64 bytes_used)>
     GetAvailableSpaceCallback;
 
-// Callback type for DocumentServiceInterface::ResumeUpload.
-typedef base::Callback<void(const ResumeUploadResponse& response,
-                            scoped_ptr<DocumentEntry> entry)>
-    ResumeFileUploadCallback;
-
 // Used by GDataFileSystem::GetDocumentResourceIdOnIOThreadPool to return
 // the resource ID read from a document JSON file on the local file system.
 typedef base::Callback<void(const std::string& resource_id)>
@@ -535,15 +530,18 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Used in tests to inject mock document service.
   void SetDocumentsServiceForTesting(DocumentsServiceInterface*
       new_document_service) {
-    documents_service_.reset(new_document_service);
+    documents_service_ = new_document_service;
   }
 
   // Used in tests to set cache root path to a test directory.
   // It should be called before cache is initialized (it will fail otherwise).
   bool SetCacheRootPathForTesting(const FilePath& root_path);
 
+  // Finds and returns upload url of a given directory. Returns empty url
+  // if directory can't be found.
+  GURL GetUploadUrlForDirectory(const FilePath& destination_directory);
+
  private:
-  friend class GDataUploader;
   friend class GDataFileSystemTest;
   FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
                            FindFirstMissingParentDirectory);
@@ -652,26 +650,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Inits cache directory paths in the provided root.
   // Should be called before cache is initialized.
   void SetCachePaths(const FilePath& root_path);
-
-  // Initiates upload operation of file defined with |file_name|,
-  // |content_type| and |content_length|. The operation will place the newly
-  // created file entity into |destination_directory|.
-  //
-  // Can be called from *UI* thread. |callback| is run on the calling thread.
-  // TODO(satorux,achuith): Remove this: crosbug.com/29943
-  void InitiateUpload(const std::string& file_name,
-                      const std::string& content_type,
-                      int64 content_length,
-                      const FilePath& destination_directory,
-                      const FilePath& virtual_path,
-                      const InitiateUploadCallback& callback);
-
-  // Resumes upload operation for chunk of file defined in |params..
-  //
-  // Can be called from *UI* thread. |callback| is run on the calling thread.
-  // TODO(satorux,achuith): Remove this: crosbug.com/29943
-  void ResumeUpload(const ResumeUploadParams& params,
-                    const ResumeFileUploadCallback& callback);
 
   // Converts document feed from gdata service into DirectoryInfo. On failure,
   // returns NULL and fills in |error| with an appropriate value.
@@ -1004,10 +982,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // <user_profile_dir>/GCache/v1/meta/|name| for later reloading when offline.
   void SaveFeed(scoped_ptr<base::Value> feed_vector,
                 const FilePath& name);
-
-  // Finds and returns upload url of a given directory. Returns empty url
-  // if directory can't be found.
-  GURL GetUploadUrlForDirectory(const FilePath& destination_directory);
 
   // Notifies events to observers on UI thread.
   void NotifyCacheInitialized();
@@ -1458,7 +1432,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   Profile* profile_;
 
   // The document service for the GDataFileSystem.
-  scoped_ptr<DocumentsServiceInterface> documents_service_;
+  DocumentsServiceInterface* documents_service_;
 
   // Base path for GData cache, e.g. <user_profile_dir>/user/GCache/v1.
   FilePath gdata_cache_path_;

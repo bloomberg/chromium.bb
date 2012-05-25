@@ -1069,7 +1069,7 @@ GDataFileSystem::~GDataFileSystem() {
   // Cancel all the in-flight operations.
   // This asynchronously cancels the URL fetch operations.
   documents_service_->CancelAll();
-  documents_service_.reset();
+  documents_service_ = NULL;
 
   // Lock to let root destroy cache map and resource map.
   base::AutoLock lock(lock_);
@@ -2393,45 +2393,6 @@ void GDataFileSystem::SetCachePaths(const FilePath& root_path) {
   cache_paths_.push_back(root_path.Append(kGDataCacheTmpDir));
   cache_paths_.push_back(root_path.Append(kGDataCacheTmpDownloadsDir));
   cache_paths_.push_back(root_path.Append(kGDataCacheTmpDocumentsDir));
-}
-
-void GDataFileSystem::InitiateUpload(
-    const std::string& file_name,
-    const std::string& content_type,
-    int64 content_length,
-    const FilePath& destination_directory,
-    const FilePath& virtual_path,
-    const InitiateUploadCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  GURL destination_directory_url =
-      GetUploadUrlForDirectory(destination_directory);
-
-  if (destination_directory_url.is_empty()) {
-    if (!callback.is_null()) {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(callback,
-                     HTTP_BAD_REQUEST, GURL()));
-    }
-    return;
-  }
-
-  documents_service_->InitiateUpload(
-      InitiateUploadParams(file_name,
-                           content_type,
-                           content_length,
-                           destination_directory_url,
-                           virtual_path),
-      callback);
-}
-
-void GDataFileSystem::ResumeUpload(
-    const ResumeUploadParams& params,
-    const ResumeFileUploadCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  documents_service_->ResumeUpload(params, callback);
 }
 
 void GDataFileSystem::GetEntryInfoByPathAsync(

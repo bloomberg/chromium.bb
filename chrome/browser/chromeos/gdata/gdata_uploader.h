@@ -24,11 +24,13 @@ class DownloadItem;
 namespace gdata {
 
 class GDataFileSystem;
+class DocumentsServiceInterface;
 struct UploadFileInfo;
 
 class GDataUploader {
  public:
-  explicit GDataUploader(GDataFileSystem* file_system);
+  explicit GDataUploader(GDataFileSystem* file_system,
+                         DocumentsServiceInterface* documents_service);
   virtual ~GDataUploader();
 
   // Uploads a file specified by |upload_file_info|. Transfers ownership.
@@ -81,8 +83,11 @@ class GDataUploader {
   void UploadFailed(UploadFileInfo* upload_file_info,
                     base::PlatformFileError error);
 
-  // Private data.
+  // Pointers to GDataFileSystem and DocumentsServiceInterface objects owned by
+  // GDataSystemService. The lifetime of these two objects is guaranteed to
+  // exceed that of the GDataUploader instance.
   GDataFileSystem* file_system_;
+  DocumentsServiceInterface* documents_service_;
 
   int next_upload_id_;  // id counter.
 

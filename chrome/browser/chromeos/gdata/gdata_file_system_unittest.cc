@@ -211,6 +211,8 @@ class GDataFileSystemTest : public testing::Test {
     EXPECT_CALL(*mock_doc_service_, CancelAll()).Times(1);
     delete file_system_;
     file_system_ = NULL;
+    delete mock_doc_service_;
+    mock_doc_service_ = NULL;
     SetFreeDiskSpaceGetterForTesting(NULL);
 
     // Run the remaining tasks on the main thread, so that reply tasks (2nd
