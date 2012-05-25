@@ -4167,19 +4167,6 @@ void TestingAutomationProvider::SetExtensionStateById(
   service->SetIsIncognitoEnabled(extension->id(), allow_in_incognito);
 }
 
-namespace {
-
-// Selects the given |browser| and |tab| if not selected already.
-void EnsureTabSelected(Browser* browser, WebContents* tab) {
-  if (browser->GetSelectedWebContents() != tab ||
-      browser != BrowserList::GetLastActive()) {
-    browser->ActivateTabAt(browser->GetIndexOfController(&tab->GetController()),
-                           true /* user_gesture */);
-  }
-}
-
-}  // namespace
-
 // See TriggerPageActionById() in chrome/test/pyautolib/pyauto.py
 // for sample json input.
 void TestingAutomationProvider::TriggerPageActionById(
@@ -6652,4 +6639,13 @@ void TestingAutomationProvider::WaitForProcessLauncherThreadToGoIdle(
 void TestingAutomationProvider::OnRemoveProvider() {
   if (g_browser_process)
     g_browser_process->GetAutomationProviderList()->RemoveProvider(this);
+}
+
+void TestingAutomationProvider::EnsureTabSelected(Browser* browser,
+                                                  WebContents* tab) {
+  if (browser->GetSelectedWebContents() != tab ||
+      browser != BrowserList::GetLastActive()) {
+    browser->ActivateTabAt(browser->GetIndexOfController(&tab->GetController()),
+        true /* user_gesture */);
+  }
 }

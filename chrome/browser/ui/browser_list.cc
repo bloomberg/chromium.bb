@@ -34,7 +34,7 @@
 
 using content::WebContents;
 
-namespace {
+namespace browser {
 
 // This object is instantiated when the first Browser object is added to the
 // list and delete when the last one is removed. It watches for loads and
@@ -107,7 +107,11 @@ class BrowserActivityObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(BrowserActivityObserver);
 };
 
-BrowserActivityObserver* activity_observer = NULL;
+BrowserActivityObserver* g_activity_observer = NULL;
+
+}  // namespace browser
+
+namespace {
 
 static BrowserList::BrowserVector& browsers() {
   CR_DEFINE_STATIC_LOCAL(BrowserList::BrowserVector, browser_vector, ());
@@ -138,8 +142,8 @@ void BrowserList::AddBrowser(Browser* browser) {
 
   g_browser_process->AddRefModule();
 
-  if (!activity_observer)
-    activity_observer = new BrowserActivityObserver;
+  if (!browser::g_activity_observer)
+    browser::g_activity_observer = new browser::BrowserActivityObserver;
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_OPENED,
@@ -265,14 +269,6 @@ void BrowserList::SetLastActive(Browser* browser) {
 }
 
 // static
-Browser* BrowserList::GetLastActive() {
-  if (!last_active_browsers().empty())
-    return *(last_active_browsers().rbegin());
-
-  return NULL;
-}
-
-// static
 BrowserList::const_reverse_iterator BrowserList::begin_last_active() {
   return last_active_browsers().rbegin();
 }
@@ -308,6 +304,14 @@ bool BrowserList::IsOffTheRecordSessionActiveForProfile(Profile* profile) {
     }
   }
   return false;
+}
+
+// static
+Browser* BrowserList::GetLastActive() {
+  if (!last_active_browsers().empty())
+    return *(last_active_browsers().rbegin());
+
+  return NULL;
 }
 
 // static

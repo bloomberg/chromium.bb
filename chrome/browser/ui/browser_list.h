@@ -9,11 +9,39 @@
 #include <set>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
 class Profile;
+
+namespace content {
+  class WebContents;
+}
+
+namespace browser {
+class BrowserActivityObserver;
+#if defined(OS_MACOSX)
+Browser* GetLastActiveBrowser();
+#endif
+#if defined(TOOLKIT_GTK)
+class ExtensionInstallDialog;
+#endif
+namespace internal {
+void NotifyNotDefaultBrowserCallback();
+}
+}
+
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+class ScreenLocker;
+}
+#endif
+
+#if defined(USE_ASH)
+content::WebContents* GetActiveWebContents();
+#endif
 
 // Stores a list of all Browser objects.
 class BrowserList {
@@ -53,17 +81,6 @@ class BrowserList {
   // allows us to determine what the last active Browser was.
   static void SetLastActive(Browser* browser);
 
-  // Returns the Browser object whose window was most recently active.  If the
-  // most recently open Browser's window was closed, returns the first Browser
-  // in the list.  If no Browsers exist, returns NULL.
-  //
-  // WARNING: this is NULL until a browser becomes active. If during startup
-  // a browser does not become active (perhaps the user launches Chrome, then
-  // clicks on another app before the first browser window appears) then this
-  // returns NULL.
-  // WARNING #2: this will always be NULL in unit tests run on the bots.
-  static Browser* GetLastActive();
-
   // Closes all browsers for |profile|.
   static void CloseAllBrowsersWithProfile(Profile* profile);
 
@@ -89,6 +106,64 @@ class BrowserList {
   static bool IsOffTheRecordSessionActiveForProfile(Profile* profile);
 
  private:
+  // DO NOT ADD MORE FRIENDS TO THIS LIST. This list should be reduced over
+  // time by wiring context through to the relevant code rather than using
+  // GetLastActive().
+  friend class BasePanelBrowserTest;
+  friend class BrowserView;
+  friend class CertificateViewerDialog;
+  friend class ChromeShellDelegate;
+  friend class ExtensionInstallDialogView;
+  friend class FeedbackHandler;
+  friend class GtkThemeService;
+  friend class NetworkProfileBubble;
+  friend class PrintPreviewHandler;
+  friend class PrintPreviewUnitTestBase;
+  friend class QueryTabsFunction;
+  friend class SelectFileDialogExtension;
+  friend class StartupBrowserCreatorImpl;
+  friend class TaskManager;
+  friend class TestingAutomationProvider;
+  friend class WindowSizer;
+  friend class browser::BrowserActivityObserver;
+#if defined(OS_CHROMEOS)
+  friend class chromeos::ScreenLocker;
+#endif
+#if defined(OS_MACOSX)
+  friend Browser* browser::GetLastActiveBrowser();
+#endif
+#if defined(TOOLKIT_GTK)
+  friend class browser::ExtensionInstallDialog;
+#endif
+#if defined(USE_ASH)
+  friend content::WebContents* GetActiveWebContents();
+#endif
+  friend void browser::internal::NotifyNotDefaultBrowserCallback();
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewTabControllerBrowserTest,
+                           NavigateFromInitiatorTab);
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewTabControllerBrowserTest,
+                           ReloadInitiatorTab);
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserTest, ActivateDeactivateMultiple);
+  FRIEND_TEST_ALL_PREFIXES(DetachToBrowserTabDragControllerTest,
+                           DetachToOwnWindow);
+  FRIEND_TEST_ALL_PREFIXES(DetachToBrowserTabDragControllerTest,
+                           DeleteSourceDetached);
+  FRIEND_TEST_ALL_PREFIXES(TabDragControllerTest, DetachToOwnWindow);
+  // DO NOT ADD MORE FRIENDS TO THIS LIST.
+
+  // Returns the Browser object whose window was most recently active.  If the
+  // most recently open Browser's window was closed, returns the first Browser
+  // in the list.  If no Browsers exist, returns NULL.
+  //
+  // WARNING: this is NULL until a browser becomes active. If during startup
+  // a browser does not become active (perhaps the user launches Chrome, then
+  // clicks on another app before the first browser window appears) then this
+  // returns NULL.
+  // WARNING #2: this will always be NULL in unit tests run on the bots.
+  // THIS FUNCTION IS PRIVATE AND NOT TO BE USED AS A REPLACEMENT FOR RELEVANT
+  // CONTEXT.
+  static Browser* GetLastActive();
+
   // Helper method to remove a browser instance from a list of browsers
   static void RemoveBrowserFrom(Browser* browser, BrowserVector* browser_list);
 };

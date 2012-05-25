@@ -48,6 +48,10 @@ void AddResourceIcon(const SkBitmap* icon, void* data) {
   gtk_box_pack_start(GTK_BOX(container), icon_widget, FALSE, FALSE, 0);
 }
 
+}  // namespace
+
+namespace browser {
+
 // Displays the dialog when constructed, deletes itself when dialog is
 // dismissed. Success/failure is passed back through the ExtensionInstallUI::
 // Delegate instance.
@@ -260,7 +264,7 @@ void ExtensionInstallDialog::OnStoreLinkClick(GtkWidget* sender) {
   OnResponse(dialog_, GTK_RESPONSE_CLOSE);
 }
 
-}  // namespace
+}  // namespace browser
 
 void ShowExtensionInstallDialogImpl(
     Profile* profile,
@@ -279,5 +283,6 @@ void ShowExtensionInstallDialogImpl(
     return;
   }
 
-  new ExtensionInstallDialog(browser_window->window(), delegate, prompt);
+  new browser::ExtensionInstallDialog(browser_window->window(), delegate,
+                                      prompt);
 }

@@ -1479,6 +1479,9 @@ class TestingAutomationProvider : public AutomationProvider,
       const string16& frame_xpath, const string16& script,
       IPC::Message* reply_message, content::RenderViewHost* render_view_host);
 
+  // Selects the given |browser| and |tab| if not selected already.
+  void EnsureTabSelected(Browser* browser, content::WebContents* tab);
+
 #if defined(OS_CHROMEOS)
   // Avoid scoped ptr here to avoid having to define it completely in the
   // non-ChromeOS code.

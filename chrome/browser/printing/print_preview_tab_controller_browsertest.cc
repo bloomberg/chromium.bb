@@ -19,8 +19,6 @@
 
 using content::WebContents;
 
-namespace {
-
 class PrintPreviewTabControllerBrowserTest : public InProcessBrowserTest {
  public:
   PrintPreviewTabControllerBrowserTest() {}
@@ -148,5 +146,3 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_TRUE(new_preview_tab);
 }
-
-}  // namespace

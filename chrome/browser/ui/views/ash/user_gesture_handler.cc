@@ -11,8 +11,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/public/browser/web_contents.h"
 
-namespace {
-
 // Returns the currently-active WebContents belonging to the active browser, or
 // NULL if there's no currently-active browser.
 content::WebContents* GetActiveWebContents() {
@@ -27,8 +25,6 @@ content::WebContents* GetActiveWebContents() {
     return NULL;
   return wrapper->web_contents();
 }
-
-}  // namespace
 
 UserGestureHandler::UserGestureHandler() {}
 

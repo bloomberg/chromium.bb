@@ -131,34 +131,15 @@ bool DefaultBrowserInfoBarDelegate::Cancel() {
   return true;
 }
 
-void NotifyNotDefaultBrowserCallback() {
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser)
-    return;  // Reached during ui tests.
-
-  // In ChromeBot tests, there might be a race. This line appears to get
-  // called during shutdown and |tab| can be NULL.
-  TabContentsWrapper* tab = browser->GetSelectedTabContentsWrapper();
-  if (!tab)
-    return;
-
-  // Don't show the info-bar if there are already info-bars showing.
-  InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
-  if (infobar_helper->infobar_count() > 0)
-    return;
-
-  infobar_helper->AddInfoBar(
-      new DefaultBrowserInfoBarDelegate(infobar_helper,
-                                        tab->profile()->GetPrefs()));
-}
-
 void CheckDefaultBrowserCallback() {
   if (ShellIntegration::IsDefaultBrowser() ||
       !ShellIntegration::CanSetAsDefaultBrowser()) {
     return;
   }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&NotifyNotDefaultBrowserCallback));
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&browser::internal::NotifyNotDefaultBrowserCallback));
 }
 
 }  // namespace
@@ -193,4 +174,28 @@ void ShowDefaultBrowserPrompt(Profile* profile) {
 
 }
 
+namespace internal {
+
+void NotifyNotDefaultBrowserCallback() {
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    return;  // Reached during ui tests.
+
+  // In ChromeBot tests, there might be a race. This line appears to get
+  // called during shutdown and |tab| can be NULL.
+  TabContentsWrapper* tab = browser->GetSelectedTabContentsWrapper();
+  if (!tab)
+    return;
+
+  // Don't show the info-bar if there are already info-bars showing.
+  InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
+  if (infobar_helper->infobar_count() > 0)
+    return;
+
+  infobar_helper->AddInfoBar(
+      new DefaultBrowserInfoBarDelegate(infobar_helper,
+                                        tab->profile()->GetPrefs()));
+}
+
+}  // namespace internal
 }  // namespace browser
