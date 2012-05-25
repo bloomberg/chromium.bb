@@ -32,6 +32,9 @@
         'conditions': [
           ['OS=="win"', {
             'variables': {
+              # NOTE: Python is invoked differently by the Native Client
+              # builders than the Chromium builders. Invoking using
+              # this python_exe defn won't work in the Chrome tree.
               'python_exe': 'call <(DEPTH)/native_client/tools/win_py.cmd',
               'nacl_glibc_tc_root': '<(DEPTH)/native_client/toolchain/win_x86',
             },
