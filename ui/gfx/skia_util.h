@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -14,11 +15,13 @@
 #include "ui/base/ui_export.h"
 
 class SkBitmap;
+class SkDrawLooper;
 class SkShader;
 
 namespace gfx {
 
 class Rect;
+class ShadowValue;
 
 // Convert between Skia and gfx rect types.
 UI_EXPORT SkRect RectToSkRect(const gfx::Rect& rect);
@@ -35,6 +38,14 @@ UI_EXPORT SkShader* CreateGradientShader(int start_point,
                                          int end_point,
                                          SkColor start_color,
                                          SkColor end_color);
+
+// Creates a draw looper to generate |shadows|. The caller owns the draw looper.
+// NULL is returned if |shadows| is empty since no draw looper is needed in
+// this case.
+// Example usage to avoid leaks:
+//   SkSafeUnref(paint.setDrawLooper(gfx::CreateShadowDrawLooper(shadows)));
+UI_EXPORT SkDrawLooper* CreateShadowDrawLooper(
+    const std::vector<ShadowValue>& shadows);
 
 // Returns true if the two bitmaps contain the same pixels.
 UI_EXPORT bool BitmapsAreEqual(const SkBitmap& bitmap1,

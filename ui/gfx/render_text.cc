@@ -10,11 +10,8 @@
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 #include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
@@ -874,42 +871,8 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
 }
 
 void RenderText::ApplyTextShadows(internal::SkiaTextRenderer* renderer) {
-  if (text_shadows_.empty()) {
-    renderer->SetDrawLooper(NULL);
-    return;
-  }
-
-  SkLayerDrawLooper* looper = new SkLayerDrawLooper;
+  SkDrawLooper* looper = gfx::CreateShadowDrawLooper(text_shadows_);
   SkAutoUnref auto_unref(looper);
-
-  looper->addLayer();  // top layer of the original.
-
-  SkLayerDrawLooper::LayerInfo layer_info;
-  layer_info.fPaintBits |= SkLayerDrawLooper::kMaskFilter_Bit;
-  layer_info.fPaintBits |= SkLayerDrawLooper::kColorFilter_Bit;
-  layer_info.fColorMode = SkXfermode::kSrc_Mode;
-
-  for (size_t i = 0; i < text_shadows_.size(); ++i) {
-    const ShadowValue& shadow = text_shadows_[i];
-
-    layer_info.fOffset.set(SkIntToScalar(shadow.x()),
-                           SkIntToScalar(shadow.y()));
-
-    // SkBlurMaskFilter's blur radius defines the range to extend the blur from
-    // original mask, which is half of blur amount as defined in ShadowValue.
-    SkMaskFilter* blur_mask = SkBlurMaskFilter::Create(
-        SkDoubleToScalar(shadow.blur() / 2),
-        SkBlurMaskFilter::kNormal_BlurStyle,
-        SkBlurMaskFilter::kHighQuality_BlurFlag);
-    SkColorFilter* color_filter = SkColorFilter::CreateModeFilter(
-        shadow.color(),
-        SkXfermode::kSrcIn_Mode);
-
-    SkPaint* paint = looper->addLayer(layer_info);
-    SkSafeUnref(paint->setMaskFilter(blur_mask));
-    SkSafeUnref(paint->setColorFilter(color_filter));
-  }
-
   renderer->SetDrawLooper(looper);
 }
 

@@ -6,11 +6,15 @@
 
 #include "base/i18n/char_iterator.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
+#include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/shadow_value.h"
 
 namespace gfx {
 
@@ -45,6 +49,43 @@ SkShader* CreateGradientShader(int start_point,
       grad_points, grad_colors, NULL, 2, SkShader::kRepeat_TileMode);
 }
 
+SkDrawLooper* CreateShadowDrawLooper(const std::vector<ShadowValue>& shadows) {
+  if (shadows.empty())
+    return NULL;
+
+  SkLayerDrawLooper* looper = new SkLayerDrawLooper;
+
+  looper->addLayer();  // top layer of the original.
+
+  SkLayerDrawLooper::LayerInfo layer_info;
+  layer_info.fPaintBits |= SkLayerDrawLooper::kMaskFilter_Bit;
+  layer_info.fPaintBits |= SkLayerDrawLooper::kColorFilter_Bit;
+  layer_info.fColorMode = SkXfermode::kSrc_Mode;
+
+  for (size_t i = 0; i < shadows.size(); ++i) {
+    const ShadowValue& shadow = shadows[i];
+
+    layer_info.fOffset.set(SkIntToScalar(shadow.x()),
+                           SkIntToScalar(shadow.y()));
+
+    // SkBlurMaskFilter's blur radius defines the range to extend the blur from
+    // original mask, which is half of blur amount as defined in ShadowValue.
+    SkMaskFilter* blur_mask = SkBlurMaskFilter::Create(
+        SkDoubleToScalar(shadow.blur() / 2),
+        SkBlurMaskFilter::kNormal_BlurStyle,
+        SkBlurMaskFilter::kHighQuality_BlurFlag);
+    SkColorFilter* color_filter = SkColorFilter::CreateModeFilter(
+        shadow.color(),
+        SkXfermode::kSrcIn_Mode);
+
+    SkPaint* paint = looper->addLayer(layer_info);
+    SkSafeUnref(paint->setMaskFilter(blur_mask));
+    SkSafeUnref(paint->setColorFilter(color_filter));
+  }
+
+  return looper;
+}
+
 bool BitmapsAreEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2) {
   void* addr1 = NULL;
   void* addr2 = NULL;
@@ -66,8 +107,8 @@ bool BitmapsAreEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2) {
 
 string16 RemoveAcceleratorChar(const string16& s,
                                char16 accelerator_char,
-                               int *accelerated_char_pos,
-                               int *accelerated_char_span) {
+                               int* accelerated_char_pos,
+                               int* accelerated_char_span) {
   bool escaped = false;
   int last_char_pos = -1;
   int last_char_span = 0;
