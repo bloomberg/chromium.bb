@@ -340,8 +340,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestSettingsContentSettingsPage DISABLED_TestSettingsContentSettingsPage
+#else
+#define MAYBE_TestSettingsContentSettingsPage TestSettingsContentSettingsPage
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsContentSettingsPage) {
+                       MAYBE_TestSettingsContentSettingsPage) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kContentSettingsSubPage);
   RunBidiCheckerOnPage(url);
@@ -396,8 +403,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestSettingsSearchEnginesOptionsPage DISABLED_TestSettingsSearchEnginesOptionsPage
+#else
+#define MAYBE_TestSettingsSearchEnginesOptionsPage TestSettingsSearchEnginesOptionsPage
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsSearchEnginesOptionsPage) {
+                       MAYBE_TestSettingsSearchEnginesOptionsPage) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kSearchEnginesSubPage);
   RunBidiCheckerOnPage(url);
@@ -414,8 +428,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestSettingsFrameSyncSetup DISABLED_TestSettingsFrameSyncSetup
+#else
+#define MAYBE_TestSettingsFrameSyncSetup TestSettingsFrameSyncSetup
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsFrameSyncSetup) {
+                       MAYBE_TestSettingsFrameSyncSetup) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kSyncSetupSubPage);
   RunBidiCheckerOnPage(url);
@@ -432,8 +453,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestSettingsFrameStartup DISABLED_TestSettingsFrameStartup
+#else
+#define MAYBE_TestSettingsFrameStartup TestSettingsFrameStartup
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsFrameStartup) {
+                       MAYBE_TestSettingsFrameStartup) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += "startup";
   RunBidiCheckerOnPage(url);
@@ -450,8 +478,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestSettingsFrameImportData DISABLED_TestSettingsFrameImportData
+#else
+#define MAYBE_TestSettingsFrameImportData TestSettingsFrameImportData
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsFrameImportData) {
+                       MAYBE_TestSettingsFrameImportData) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += chrome::kImportDataSubPage;
   RunBidiCheckerOnPage(url);
@@ -468,8 +503,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestSettingsFrameMangageProfile DISABLED_TestSettingsFrameMangageProfile
+#else
+#define MAYBE_TestSettingsFrameMangageProfile TestSettingsFrameMangageProfile
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsFrameMangageProfile) {
+                       MAYBE_TestSettingsFrameMangageProfile) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += chrome::kManageProfileSubPage;
   RunBidiCheckerOnPage(url);
@@ -487,8 +529,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestSettingsFrameContentExceptionsCookies DISABLED_TestSettingsFrameContentExceptionsCookies
+#else
+#define MAYBE_TestSettingsFrameContentExceptionsCookies TestSettingsFrameContentExceptionsCookies
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsFrameContentExceptionsCookies) {
+                       MAYBE_TestSettingsFrameContentExceptionsCookies) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += chrome::kContentSettingsExceptionsSubPage;
   url += "#cookies";
@@ -507,8 +556,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestSettingsFrameContentExceptionsImages DISABLED_TestSettingsFrameContentExceptionsImages
+#else
+#define MAYBE_TestSettingsFrameContentExceptionsImages TestSettingsFrameContentExceptionsImages
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsFrameContentExceptionsImages) {
+                       MAYBE_TestSettingsFrameContentExceptionsImages) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += chrome::kContentSettingsExceptionsSubPage;
   url += "#images";
@@ -527,8 +583,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestSettingsFrameContentExceptionsJavascript DISABLED_TestSettingsFrameContentExceptionsJavascript
+#else
+#define MAYBE_TestSettingsFrameContentExceptionsJavascript TestSettingsFrameContentExceptionsJavascript
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsFrameContentExceptionsJavascript) {
+                       MAYBE_TestSettingsFrameContentExceptionsJavascript) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += chrome::kContentSettingsExceptionsSubPage;
   url += "#javascript";
@@ -547,8 +610,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestSettingsFrameContentExceptionsPlugins DISABLED_TestSettingsFrameContentExceptionsPlugins
+#else
+#define MAYBE_TestSettingsFrameContentExceptionsPlugins TestSettingsFrameContentExceptionsPlugins
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsFrameContentExceptionsPlugins) {
+                       MAYBE_TestSettingsFrameContentExceptionsPlugins) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += chrome::kContentSettingsExceptionsSubPage;
   url += "#plugins";
@@ -621,8 +691,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestSettingsFrameContentExceptionsNotifications DISABLED_TestSettingsFrameContentExceptionsNotifications
+#else
+#define MAYBE_TestSettingsFrameContentExceptionsNotifications TestSettingsFrameContentExceptionsNotifications
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsFrameContentExceptionsNotifications) {
+                       MAYBE_TestSettingsFrameContentExceptionsNotifications) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += chrome::kContentSettingsExceptionsSubPage;
   url += "#notifications";
@@ -720,8 +797,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestSettingsFramePasswords DISABLED_TestSettingsFramePasswords
+#else
+#define MAYBE_TestSettingsFramePasswords TestSettingsFramePasswords
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsFramePasswords) {
+                       MAYBE_TestSettingsFramePasswords) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += "passwords";
   RunBidiCheckerOnPage(url);
@@ -775,7 +859,14 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, TestHelpFrame) {
   RunBidiCheckerOnPage(chrome::kChromeUIHelpFrameURL);
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, TestHelpFrame) {
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestHelpFrame DISABLED_TestHelpFrame
+#else
+#define MAYBE_TestHelpFrame TestHelpFrame
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, MAYBE_TestHelpFrame) {
   RunBidiCheckerOnPage(chrome::kChromeUIHelpFrameURL);
 }
 
