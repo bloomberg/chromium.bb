@@ -6,6 +6,7 @@
 """This script fetches and prepares an SDK chroot.
 """
 
+import logging
 import optparse
 import os
 import sys
@@ -292,30 +293,30 @@ Action taken is the following:
   sdk_latest_version = GetLatestVersion()
   parser = optparse.OptionParser(usage)
   # Actions:
-  parser.add_option('', '--bootstrap',
+  parser.add_option('--bootstrap',
                     action='store_true', dest='bootstrap', default=False,
                     help=('Build a new SDK chroot from source'))
-  parser.add_option('', '--delete',
+  parser.add_option('--delete',
                     action='store_true', dest='delete', default=False,
                     help=('Delete the current SDK chroot'))
-  parser.add_option('', '--download',
+  parser.add_option('--download',
                     action='store_true', dest='download', default=False,
                     help=('Download and install a prebuilt SDK'))
-  parser.add_option('', '--enter',
+  parser.add_option('--enter',
                     action='store_true', dest='enter', default=False,
                     help=('Enter the SDK chroot, possibly (re)create first'))
 
   # Global options:
-  parser.add_option('', '--chroot',
+  parser.add_option('--chroot',
                     dest='chroot', default=constants.DEFAULT_CHROOT_DIR,
                     help=('SDK chroot dir name [%s]' %
                           constants.DEFAULT_CHROOT_DIR))
 
   # Additional options:
-  parser.add_option('', '--chrome_root',
+  parser.add_option('--chrome_root',
                     dest='chrome_root', default='',
                     help=('Mount this chrome root into the SDK chroot'))
-  parser.add_option('', '--chrome_root_mount',
+  parser.add_option('--chrome_root_mount',
                     dest='chrome_root_mount', default='',
                     help=('Mount chrome into this path inside SDK chroot'))
   parser.add_option('-r', '--replace',
@@ -328,7 +329,14 @@ Action taken is the following:
   parser.add_option('-v', '--version',
                     dest='sdk_version', default='',
                     help=('Use this sdk version [%s]' % sdk_latest_version))
+  parser.add_option('--debug', action='store_true', default=False,
+                    help="Show debugging messages.")
   (options, remaining_arguments) = parser.parse_args(argv)
+
+  # Setup logging levels first so any parsing triggered log messages
+  # are appropriately filtered.
+  logging.getLogger().setLevel(
+      logging.DEBUG if options.debug else logging.INFO)
 
   # Some sanity checks first, before we ask for sudo credentials.
   if cros_build_lib.IsInsideChroot():
