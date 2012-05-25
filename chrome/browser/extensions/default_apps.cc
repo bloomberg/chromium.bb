@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,13 +39,9 @@ static bool ShouldInstallInProfile(Profile* profile) {
   switch (state) {
     case default_apps::kUnknown: {
       // This is the first time the default apps feature runs on this profile.
-      // Determine if we want to install them or not. The best check would be
-      // to see if this is a newly created profile, but its not possible to do
-      // that.  The next best thing is to see if this is a chrome first run.
-      // However, this means that multi-profile support is broken: secondary
-      // profiles will not get default apps.
-      // TODO(rogerta): add support for multiple profiles.
-      if (!first_run::IsChromeFirstRun())
+      // Determine if we want to install them or not.
+      chrome::VersionInfo version_info;
+      if (!profile->WasCreatedByVersionOrLater(version_info.Version().c_str()))
         install_apps = false;
       break;
     }
