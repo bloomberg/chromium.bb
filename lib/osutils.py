@@ -129,10 +129,10 @@ def _TempDirSetup(self, prefix='tmp', update_env=True):
       # internal to ensure all subprocess/raw tempfile
       # access goes into this location.
       os.environ.update((x, self.tempdir) for x in _TEMPDIR_ENV_VARS)
-      # Finally, adjust python's cached value (we now it's cached by here
+      # Finally, adjust python's cached value (we know it's cached by here
       # since we invoked _get_default_tempdir from above).  Note this
       # is necessary since we want *all* output from that point
-      # forward to got to this location.
+      # forward to go to this location.
       tempfile.tempdir = self.tempdir
 
 
