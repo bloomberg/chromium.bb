@@ -74,11 +74,10 @@ ImageEditor.Mode.Crop.prototype.positionDOM = function() {
   var screenClipped = this.viewport_.getScreenClipped();
 
   var screenCrop = this.viewport_.imageToScreenRect(this.cropRect_.getRect());
+  var delta = ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS;
   this.editor_.hideOverlappingTools(
-      screenCrop.inflate(ImageEditor.Mode.Crop.GRAB_RADIUS,
-                         ImageEditor.Mode.Crop.GRAB_RADIUS),
-      screenCrop.inflate(-ImageEditor.Mode.Crop.GRAB_RADIUS,
-                         -ImageEditor.Mode.Crop.GRAB_RADIUS));
+      screenCrop.inflate(delta, delta),
+      screenCrop.inflate(-delta, -delta));
 
   this.domOverlay_.style.left = screenClipped.left + 'px';
   this.domOverlay_.style.top  = screenClipped.top + 'px';
@@ -103,7 +102,8 @@ ImageEditor.Mode.Crop.prototype.cleanUpUI = function() {
   this.editor_.hideOverlappingTools();
 };
 
-ImageEditor.Mode.Crop.GRAB_RADIUS = 6;
+ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS = 6;
+ImageEditor.Mode.Crop.TOUCH_GRAB_RADIUS = 20;
 
 ImageEditor.Mode.Crop.prototype.getCommand = function() {
   var cropImageRect = this.cropRect_.getRect();
@@ -114,8 +114,7 @@ ImageEditor.Mode.Crop.prototype.createDefaultCrop = function() {
   var rect = new Rect(this.getViewport().getImageClipped());
   rect = rect.inflate (
       -Math.round(rect.width / 6), -Math.round(rect.height / 6));
-  this.cropRect_ = new DraggableRect(
-      rect, this.getViewport(), ImageEditor.Mode.Crop.GRAB_RADIUS);
+  this.cropRect_ = new DraggableRect(rect, this.getViewport());
   this.positionDOM();
 };
 
@@ -123,8 +122,8 @@ ImageEditor.Mode.Crop.prototype.getCursorStyle = function(x, y, mouseDown) {
   return this.cropRect_.getCursorStyle(x, y, mouseDown);
 };
 
-ImageEditor.Mode.Crop.prototype.getDragHandler = function(x, y) {
-  var cropDragHandler = this.cropRect_.getDragHandler(x, y);
+ImageEditor.Mode.Crop.prototype.getDragHandler = function(x, y, touch) {
+  var cropDragHandler = this.cropRect_.getDragHandler(x, y, touch);
   if (!cropDragHandler) return null;
 
   var self = this;
@@ -192,14 +191,16 @@ DraggableRect.prototype.getBottom = function() {
 
 DraggableRect.prototype.getRect = function() { return new Rect(this.bounds_) };
 
-DraggableRect.prototype.getDragMode = function(x, y) {
+DraggableRect.prototype.getDragMode = function(x, y, touch) {
   var result = {
     xSide: DraggableRect.NONE,
     ySide: DraggableRect.NONE
   };
 
   var bounds = this.bounds_;
-  var R = this.viewport_.screenToImageSize(this.sensitivity_);
+  var R = this.viewport_.screenToImageSize(
+      touch ? ImageEditor.Mode.Crop.TOUCH_GRAB_RADIUS :
+              ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS);
 
   var circle = new Circle(x, y, R);
 
@@ -250,14 +251,14 @@ DraggableRect.prototype.getCursorStyle = function(x, y, mouseDown) {
   return this.cssSide_[mode.ySide] + this.cssSide_[mode.xSide] + '-resize';
 };
 
-DraggableRect.prototype.getDragHandler = function(x, y) {
+DraggableRect.prototype.getDragHandler = function(x, y, touch) {
   x = this.viewport_.screenToImageX(x);
   y = this.viewport_.screenToImageY(y);
 
   var clipRect = this.viewport_.getImageClipped();
   if (!clipRect.inside(x, y)) return null;
 
-  this.dragMode_ = this.getDragMode(x, y);
+  this.dragMode_ = this.getDragMode(x, y, touch);
 
   var self = this;
 

@@ -375,7 +375,7 @@ ImageUtil.drawImageTransformed = function(dst, src, scaleX, scaleY, angle) {
  * @return {*} Clone of the value.
  */
 ImageUtil.deepCopy = function(value) {
-  return JSON.parse(JSON.stringify(obj));
+  return JSON.parse(JSON.stringify(value));
 };
 
 /**

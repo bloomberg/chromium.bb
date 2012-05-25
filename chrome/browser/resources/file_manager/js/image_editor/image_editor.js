@@ -586,15 +586,28 @@ ImageEditor.MouseControl = function(rootContainer, container, buffer) {
   this.rootContainer_ = rootContainer;
   this.container_ = container;
   this.buffer_ = buffer;
-  container.addEventListener('mousedown', this.onMouseDown.bind(this), false);
-  container.addEventListener('mouseup', this.onMouseUp.bind(this), false);
-  container.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+
+  var handlers = {
+    'touchstart': this.onTouchStart,
+    'touchend': this.onTouchEnd,
+    'touchcancel': this.onTouchCancel,
+    'touchmove': this.onTouchMove,
+
+     'mousedown': this.onMouseDown,
+     'mouseup': this.onMouseUp,
+     'mousemove': this.onMouseMove
+  };
+
+  for (var eventName in handlers) {
+    container.addEventListener(
+        eventName, handlers[eventName].bind(this), false);
+  }
 };
 
 /**
- * Convert the mouse position from the event object to client coordinates.
+ * Convert the event position from the event object to client coordinates.
  *
- * @param {Event} e Event.
+ * @param {MouseEvent|Touch} e Pointer position.
  * @return {object} A pair of x,y in client coordinates.
  * @private
  */
@@ -607,13 +620,80 @@ ImageEditor.MouseControl.getPosition_ = function(e) {
 };
 
 /**
+ * Returns touch position or null if there is more than one touch position.
+ *
+ * @param {TouchEvent} e Event.
+ * @return {object?} A pair of x,y in client coordinates.
+ * @private
+ */
+ImageEditor.MouseControl.prototype.getTouchPosition_ = function(e) {
+  if (e.targetTouches.length == 1)
+    return ImageEditor.MouseControl.getPosition_(e.targetTouches[0]);
+  else
+    return null;
+};
+
+/**
+ * Touch start handler.
+ * @param {TouchEvent} e Event.
+ */
+ImageEditor.MouseControl.prototype.onTouchStart = function(e) {
+  var position = this.getTouchPosition_(e);
+  if (position) {
+    this.dragHandler_ = this.buffer_.getDragHandler(position.x, position.y,
+                                                    true /* touch */);
+    this.dragHappened_ = false;
+  }
+  e.preventDefault();
+};
+
+/**
+ * Touch end handler.
+ * @param {TouchEvent} e Event.
+ */
+ImageEditor.MouseControl.prototype.onTouchEnd = function(e) {
+  var position = this.getTouchPosition_(e);
+
+  if (position && !this.dragHappened_) {
+    this.buffer_.onClick(position.x, position.y);
+  }
+  this.onTouchCancel(e);
+  e.preventDefault();
+};
+
+/**
+ * Touch chancel handler.
+ */
+ImageEditor.MouseControl.prototype.onTouchCancel = function() {
+  this.dragHandler_ = null;
+  this.dragHappened_ = false;
+  this.lockMouse_(false);
+};
+
+/**
+ * Touch move handler.
+ * @param {TouchEvent} e Event.
+ */
+ImageEditor.MouseControl.prototype.onTouchMove = function(e) {
+  var position = this.getTouchPosition_(e);
+
+  if (position && this.dragHandler_) {
+    this.dragHandler_(position.x, position.y);
+    this.dragHappened_ = true;
+    this.lockMouse_(true);
+  }
+  e.preventDefault();
+};
+
+/**
  * Mouse down handler.
- * @param {Event} e Event.
+ * @param {MouseEvent} e Event.
  */
 ImageEditor.MouseControl.prototype.onMouseDown = function(e) {
   var position = ImageEditor.MouseControl.getPosition_(e);
 
-  this.dragHandler_ = this.buffer_.getDragHandler(position.x, position.y);
+  this.dragHandler_ = this.buffer_.getDragHandler(position.x, position.y,
+                                                  false /* mouse */);
   this.dragHappened_ = false;
   this.updateCursor_(position);
   e.preventDefault();
@@ -621,7 +701,7 @@ ImageEditor.MouseControl.prototype.onMouseDown = function(e) {
 
 /**
  * Mouse up handler.
- * @param {Event} e Event.
+ * @param {MouseEvent} e Event.
  */
 ImageEditor.MouseControl.prototype.onMouseUp = function(e) {
   var position = ImageEditor.MouseControl.getPosition_(e);
@@ -637,7 +717,7 @@ ImageEditor.MouseControl.prototype.onMouseUp = function(e) {
 
 /**
  * Mouse move handler.
- * @param {Event} e Event.
+ * @param {MouseEvent} e Event.
  */
 ImageEditor.MouseControl.prototype.onMouseMove = function(e) {
   var position = ImageEditor.MouseControl.getPosition_(e);

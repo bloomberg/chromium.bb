@@ -16,7 +16,7 @@ function ImageBuffer() {
 /**
  * @param {ImageBuffer.Overlay} overlay
  */
-ImageBuffer.prototype.addOverlay = function (overlay) {
+ImageBuffer.prototype.addOverlay = function(overlay) {
   var zIndex = overlay.getZIndex();
   // Store the overlays in the ascending Z-order.
   var i;
@@ -29,7 +29,7 @@ ImageBuffer.prototype.addOverlay = function (overlay) {
 /**
  * @param {ImageBuffer.Overlay} overlay
  */
-ImageBuffer.prototype.removeOverlay = function (overlay) {
+ImageBuffer.prototype.removeOverlay = function(overlay) {
   for (var i = 0; i != this.overlays_.length; i++) {
     if (this.overlays_[i] == overlay) {
       this.overlays_.splice(i, 1);
@@ -42,7 +42,7 @@ ImageBuffer.prototype.removeOverlay = function (overlay) {
 /**
  * Draws overlays in the ascending Z-order.
  */
-ImageBuffer.prototype.draw = function () {
+ImageBuffer.prototype.draw = function() {
   for (var i = 0; i != this.overlays_.length; i++) {
     this.overlays_[i].draw();
   }
@@ -52,7 +52,7 @@ ImageBuffer.prototype.draw = function () {
  * Searches for a cursor style in the descending Z-order.
  * @return {String} A value for style.cursor CSS property.
  */
-ImageBuffer.prototype.getCursorStyle = function (x, y, mouseDown) {
+ImageBuffer.prototype.getCursorStyle = function(x, y, mouseDown) {
   for (var i = this.overlays_.length - 1; i >= 0; i--) {
     var style = this.overlays_[i].getCursorStyle(x, y, mouseDown);
     if (style) return style;
@@ -64,7 +64,7 @@ ImageBuffer.prototype.getCursorStyle = function (x, y, mouseDown) {
  * Searches for a click handler in the descending Z-order.
  * @return {Boolean} True if handled.
  */
-ImageBuffer.prototype.onClick = function (x, y) {
+ImageBuffer.prototype.onClick = function(x, y) {
   for (var i = this.overlays_.length - 1; i >= 0; i--) {
     if (this.overlays_[i].onClick(x, y)) return true;
   }
@@ -73,12 +73,16 @@ ImageBuffer.prototype.onClick = function (x, y) {
 
 /**
  * Searches for a drag handler in the descending Z-order.
+ * @param {number} x Event X coordinate.
+ * @param {number} y Event Y coordinate.
+ * @param {boolean} touch True if it's a touch event, false if mouse.
  * @return {function(number,number)} A function to be called on mouse drag.
  */
-ImageBuffer.prototype.getDragHandler = function (x, y) {
+ImageBuffer.prototype.getDragHandler = function(x, y, touch) {
   for (var i = this.overlays_.length - 1; i >= 0; i--) {
-    var handler = this.overlays_[i].getDragHandler(x, y);
-    if (handler) return handler;
+    var handler = this.overlays_[i].getDragHandler(x, y, touch);
+    if (handler)
+      return handler;
   }
   return null;
 };
