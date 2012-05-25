@@ -168,12 +168,30 @@ class TestEnvironment {
   }
 #endif
 
+#if defined(OS_ANDROID)
+  // On Android under layout test mode, we mock the current directory
+  // in SetCurrentDirectoryForFileURL() and GetAbsoluteWebStringFromUTF8Path(),
+  // as the directory might not exist on the device because we are using
+  // file-over-http bridge.
+  void set_mock_current_directory(const FilePath& directory) {
+    mock_current_directory_ = directory;
+  }
+
+  FilePath mock_current_directory() const {
+    return mock_current_directory_;
+  }
+#endif
+
  private:
   // Data member at_exit_manager_ will take the ownership of the input
   // AtExitManager and manage its lifecycle.
   scoped_ptr<base::AtExitManager> at_exit_manager_;
   scoped_ptr<MessageLoopType> main_message_loop_;
   scoped_ptr<TestWebKitPlatformSupport> webkit_platform_support_;
+
+#if defined(OS_ANDROID)
+  FilePath mock_current_directory_;
+#endif
 };
 
 class WebPluginImplWithPageDelegate
@@ -233,13 +251,9 @@ webkit_support::GraphicsContext3DImplementation
     g_graphics_context_3d_implementation =
         webkit_support::IN_PROCESS_COMMAND_BUFFER;
 
-}  // namespace
+TestEnvironment* test_environment;
 
-namespace webkit_support {
-
-static TestEnvironment* test_environment;
-
-static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
+void SetUpTestEnvironmentImpl(bool unit_test_mode) {
   base::EnableInProcessStackDumping();
   base::EnableTerminationOnHeapCorruption();
 
@@ -263,9 +277,9 @@ static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
   // to TestEnvironment.
   if (!unit_test_mode)
     at_exit_manager = new base::AtExitManager;
-  BeforeInitialize(unit_test_mode);
+  webkit_support::BeforeInitialize(unit_test_mode);
   test_environment = new TestEnvironment(unit_test_mode, at_exit_manager);
-  AfterInitialize(unit_test_mode);
+  webkit_support::AfterInitialize(unit_test_mode);
   if (!unit_test_mode) {
     // Load ICU data tables.  This has to run after TestEnvironment is created
     // because on Linux, we need base::AtExitManager.
@@ -274,6 +288,10 @@ static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
   webkit_glue::SetUserAgent(webkit_glue::BuildUserAgentFromProduct(
       "DumpRenderTree/0.0.0.0"), false);
 }
+
+}  // namespace
+
+namespace webkit_support {
 
 void SetUpTestEnvironment() {
   SetUpTestEnvironmentImpl(false);
@@ -498,9 +516,25 @@ WebString GetAbsoluteWebStringFromUTF8Path(const std::string& utf8_path) {
   return WebString(path.value());
 #else
   FilePath path(base::SysWideToNativeMB(base::SysUTF8ToWide(utf8_path)));
+#if defined(OS_ANDROID)
+  if (WebKit::layoutTestMode()) {
+    // See comment of TestEnvironment::set_mock_current_directory().
+    if (!path.IsAbsolute()) {
+      // Not using FilePath::Append() because it can't handle '..' in path.
+      DCHECK(test_environment);
+      GURL base_url = net::FilePathToFileURL(
+          test_environment->mock_current_directory()
+              .Append(FILE_PATH_LITERAL("foo")));
+      net::FileURLToFilePath(base_url.Resolve(path.value()), &path);
+    }
+  } else {
+    file_util::AbsolutePath(&path);
+  }
+#else
   file_util::AbsolutePath(&path);
+#endif  // else defined(OS_ANDROID)
   return WideToUTF16(base::SysNativeMBToWide(path.value()));
-#endif
+#endif  // else defined(OS_WIN)
 }
 
 WebURL CreateURLForPathOrURL(const std::string& path_or_url_in_nativemb) {
@@ -528,8 +562,14 @@ WebURL RewriteLayoutTestsURL(const std::string& utf8_url) {
 
   FilePath replacePath =
       GetWebKitRootDirFilePath().Append(FILE_PATH_LITERAL("LayoutTests/"));
+
+  // On Android, the file is actually accessed through file-over-http. Disable
+  // the following CHECK because the file is unlikely to exist on the device.
+#if !defined(OS_ANDROID)
   CHECK(file_util::PathExists(replacePath)) << replacePath.value() <<
       " (re-written from " << utf8_url << ") does not exit";
+#endif
+
 #if defined(OS_WIN)
   std::string utf8_path = WideToUTF8(replacePath.value());
 #else
@@ -543,8 +583,22 @@ WebURL RewriteLayoutTestsURL(const std::string& utf8_url) {
 
 bool SetCurrentDirectoryForFileURL(const WebKit::WebURL& fileUrl) {
   FilePath local_path;
-  return net::FileURLToFilePath(fileUrl, &local_path)
-      && file_util::SetCurrentDirectory(local_path.DirName());
+  if (!net::FileURLToFilePath(fileUrl, &local_path))
+    return false;
+#if defined(OS_ANDROID)
+  if (WebKit::layoutTestMode()) {
+    // See comment of TestEnvironment::set_mock_current_directory().
+    DCHECK(test_environment);
+    FilePath directory = local_path.DirName();
+    test_environment->set_mock_current_directory(directory);
+    // Still try to actually change the directory, but ignore any error.
+    // For a few tests that need to access resources directly as files
+    // (e.g. blob tests) we still push the resources and need to chdir there.
+    file_util::SetCurrentDirectory(directory);
+    return true;
+  }
+#endif
+  return file_util::SetCurrentDirectory(local_path.DirName());
 }
 
 WebURL LocalFileToDataURL(const WebURL& fileUrl) {
