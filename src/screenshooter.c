@@ -216,6 +216,7 @@ struct weston_recorder {
 	uint32_t total;
 	int fd;
 	struct wl_listener frame_listener;
+	int count;
 };
 
 static uint32_t *
@@ -260,6 +261,11 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 
 	r = pixman_region32_rectangles(&damage, &n);
 	if (n == 0)
+		return;
+	if (recorder->count++ == 0)
+		/* The first callback gives us the frame immediately
+		 * before the weston_output_damage() call, and
+		 * typically doesn't give us a full frame of damage.*/
 		return;
 
 	header.msecs = msecs;
@@ -339,6 +345,7 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 	recorder->frame = malloc(size);
 	recorder->rect = malloc(size);
 	recorder->total = 0;
+	recorder->count = 0;
 	memset(recorder->frame, 0, size);
 
 	recorder->fd = open(filename,
@@ -394,8 +401,9 @@ recorder_binding(struct wl_seat *seat, uint32_t time,
 		recorder = container_of(listener, struct weston_recorder,
 					frame_listener);
 
-		fprintf(stderr, "stopping recorder, total file size %dM\n",
-			recorder->total / (1024 * 1024));
+		fprintf(stderr,
+			"stopping recorder, total file size %dM, %d frames\n",
+			recorder->total / (1024 * 1024), recorder->count);
 
 		weston_recorder_destroy(recorder);
 	} else {
