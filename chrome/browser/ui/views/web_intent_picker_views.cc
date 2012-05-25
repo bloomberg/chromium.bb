@@ -789,10 +789,7 @@ class WebIntentPickerViews : public views::ButtonListener,
 WebIntentPicker* WebIntentPicker::Create(TabContentsWrapper* wrapper,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
-  WebIntentPickerViews* picker =
-      new WebIntentPickerViews(wrapper, delegate, model);
-
-  return picker;
+  return new WebIntentPickerViews(wrapper, delegate, model);
 }
 
 WebIntentPickerViews::WebIntentPickerViews(TabContentsWrapper* wrapper,
