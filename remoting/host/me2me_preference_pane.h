@@ -61,6 +61,10 @@ class JsonHostConfig {
 
   // True if a new proposed config file has been loaded into memory.
   BOOL have_new_config_;
+
+  // True if launchd has been instructed to stop the service and we are waiting
+  // for the operation to complete.
+  BOOL awaiting_service_stop_;
 }
 
 - (void)mainViewDidLoad;
