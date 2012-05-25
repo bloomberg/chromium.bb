@@ -138,6 +138,10 @@ void WebDialogView::WindowClosing() {
     OnDialogClosed("");
 }
 
+views::View* WebDialogView::GetContentsView() {
+  return this;
+}
+
 views::ClientView* WebDialogView::CreateClientView(views::Widget* widget) {
   return this;
 }

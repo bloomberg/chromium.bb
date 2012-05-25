@@ -71,6 +71,7 @@ class WebDialogView
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual std::string GetWindowName() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
   virtual ClientView* CreateClientView(views::Widget* widget) OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
