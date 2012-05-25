@@ -885,8 +885,14 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
     old_url = frame->top()->opener()->top()->document().url();
   }
 
+  // Only consider keeping non-app URLs in an app process if this window
+  // has an opener (in which case it might be an OAuth popup that tries to
+  // script an iframe within the app).
+  bool should_consider_workaround = !!frame->opener();
+
   return extensions::CrossesExtensionProcessBoundary(
-      extensions, ExtensionURLInfo(old_url), ExtensionURLInfo(new_url));
+      extensions, ExtensionURLInfo(old_url), ExtensionURLInfo(new_url),
+      should_consider_workaround);
 }
 
 void ChromeContentRendererClient::OnPurgeMemory() {

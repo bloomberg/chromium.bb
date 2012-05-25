@@ -183,8 +183,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   OpenWindow(tab, base_url.Resolve("path2/empty.html"), true, NULL);
   LOG(INFO) << "WindowOpenHelper 2.";
   // TODO(creis): This should open in a new process (i.e., false for the last
-  // argument), but we temporarily avoid swapping processes away from an app
-  // until we're able to support cross-process postMessage calls.
+  // argument), but we temporarily avoid swapping processes away from a hosted
+  // app if it has an opener, because some OAuth providers make script calls
+  // between non-app popups and non-app iframes in the app process.
   // See crbug.com/59285.
   OpenWindow(tab, base_url.Resolve("path3/empty.html"), true, NULL);
   LOG(INFO) << "WindowOpenHelper 3.";
@@ -197,10 +198,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   LOG(INFO) << "NavigateTabHelper 1.";
   NavigateInRenderer(browser()->GetWebContentsAt(3), app_url);
   LOG(INFO) << "NavigateTabHelper 2.";
-  // TODO(creis): This should swap out of the app's process (i.e., EXPECT_NE),
-  // but we temporarily avoid swapping away from an app in case the window
-  // tries to send a postMessage to the app.  See crbug.com/59285.
-  EXPECT_EQ(tab->GetRenderProcessHost(),
+  EXPECT_NE(tab->GetRenderProcessHost(),
             browser()->GetWebContentsAt(2)->GetRenderProcessHost());
   EXPECT_EQ(tab->GetRenderProcessHost(),
             browser()->GetWebContentsAt(3)->GetRenderProcessHost());
@@ -308,13 +306,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
 // 3. page2 redirects back to a page in the app
 // The final navigation should end up in the app process.
 // See http://crbug.com/61757
-// This test doesn't complete on WebKit Win (dbg). See crbug.com/108853.
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_AppProcessRedirectBack DISABLED_AppProcessRedirectBack
-#else
-#define MAYBE_AppProcessRedirectBack AppProcessRedirectBack
-#endif
-IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessRedirectBack) {
+IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessRedirectBack) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
@@ -326,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessRedirectBack) {
   browser()->NewTab();
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
   browser()->NewTab();
-  // Wait until the second tab finishes its redirect train (3 hops).
+  // Wait until the second tab finishes its redirect train (2 hops).
   // 1. We navigate to redirect.html
   // 2. Renderer navigates and finishes, counting as a load stop.
   // 3. Renderer issues the meta refresh to navigate to server-redirect.
@@ -334,13 +326,10 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessRedirectBack) {
   //    complete.
   // 5. Browser sees a redirect response from server-redirect to empty.html, and
   //    transfers that to a new navigation, using RequestTransferURL.
-  // 6. We navigate to empty.html.
-  // 7. Renderer is still in a provisional load to server-redirect, so that is
-  //    cancelled, and counts as a load stop
-  // 8. Renderer navigates to empty.html, and finishes loading, counting as the
-  //    third load stop
+  // 6. Renderer navigates to empty.html, and finishes loading, counting as the
+  //    second load stop
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), base_url.Resolve("path1/redirect.html"), 3);
+      browser(), base_url.Resolve("path1/redirect.html"), 2);
 
   // 3 tabs, including the initial about:blank. The last 2 should be the same
   // process.

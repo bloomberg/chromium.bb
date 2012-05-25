@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,10 +21,14 @@ const Extension* GetNonBookmarkAppExtension(const ExtensionSet& extensions,
 // Check if navigating a toplevel page from |old_url| to |new_url| would cross
 // an extension process boundary (e.g. navigating from a web URL into an
 // extension URL).
+// We temporarily consider a workaround where we will keep non-app URLs in
+// an app process, but only if |should_consider_workaround| is true.  See
+// http://crbug.com/59285.
 bool CrossesExtensionProcessBoundary(
     const ExtensionSet& extensions,
     const ExtensionURLInfo& old_url,
-    const ExtensionURLInfo& new_url);
+    const ExtensionURLInfo& new_url,
+    bool should_consider_workaround);
 
 }  // namespace extensions
 

@@ -677,7 +677,7 @@ bool ChromeContentBrowserClient::ShouldSwapProcessesForRedirect(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   return extensions::CrossesExtensionProcessBoundary(
       io_data->GetExtensionInfoMap()->extensions(),
-      ExtensionURLInfo(current_url), ExtensionURLInfo(new_url));
+      ExtensionURLInfo(current_url), ExtensionURLInfo(new_url), false);
 }
 
 std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,8 @@ const extensions::Extension* GetNonBookmarkAppExtension(
 bool CrossesExtensionProcessBoundary(
     const ExtensionSet& extensions,
     const ExtensionURLInfo& old_url,
-    const ExtensionURLInfo& new_url) {
+    const ExtensionURLInfo& new_url,
+    bool should_consider_workaround) {
   const extensions::Extension* old_url_extension = GetNonBookmarkAppExtension(
       extensions,
       old_url);
@@ -31,22 +32,29 @@ bool CrossesExtensionProcessBoundary(
 
   // TODO(creis): Temporary workaround for crbug.com/59285: Do not swap process
   // to navigate from a hosted app to a normal page or another hosted app
-  // (unless either is the web store).  This is because we do not yet support
-  // postMessage calls from outside the app back into it (e.g., as in Facebook
-  // OAuth 2.0).  This will be removed when http://crbug.com/99202 is fixed.
-  bool old_url_is_hosted_app = old_url_extension &&
-      !old_url_extension->web_extent().is_empty();
-  bool new_url_is_normal_or_hosted = !new_url_extension ||
-      !new_url_extension->web_extent().is_empty();
-  bool either_is_web_store =
-      (old_url_extension &&
-       old_url_extension->id() == extension_misc::kWebStoreAppId) ||
-      (new_url_extension &&
-       new_url_extension->id() == extension_misc::kWebStoreAppId);
-  if (old_url_is_hosted_app &&
-      new_url_is_normal_or_hosted &&
-      !either_is_web_store)
-    return false;
+  // (unless either is the web store).  This is because some OAuth providers
+  // use non-app popups that communicate with non-app iframes inside the app
+  // (e.g., Facebook).  This would require out-of-process iframes to support.
+  // See http://crbug.com/99379.
+  // Note that we skip this exception for isolated apps, which require strict
+  // process separation from non-app pages.
+  if (should_consider_workaround) {
+    bool old_url_is_hosted_app = old_url_extension &&
+        !old_url_extension->web_extent().is_empty() &&
+        !old_url_extension->is_storage_isolated();
+    bool new_url_is_normal_or_hosted = !new_url_extension ||
+        (!new_url_extension->web_extent().is_empty() &&
+        !new_url_extension->is_storage_isolated());
+    bool either_is_web_store =
+        (old_url_extension &&
+        old_url_extension->id() == extension_misc::kWebStoreAppId) ||
+        (new_url_extension &&
+        new_url_extension->id() == extension_misc::kWebStoreAppId);
+    if (old_url_is_hosted_app &&
+        new_url_is_normal_or_hosted &&
+        !either_is_web_store)
+      return false;
+  }
 
   return old_url_extension != new_url_extension;
 }
