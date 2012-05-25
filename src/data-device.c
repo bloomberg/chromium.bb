@@ -284,7 +284,7 @@ static void
 destroy_data_device_icon(struct wl_listener *listener, void *data)
 {
 	struct wl_seat *seat = container_of(listener, struct wl_seat,
-					    drag_data_source_listener);
+					    drag_icon_listener);
 
 	seat->drag_surface = NULL;
 }
