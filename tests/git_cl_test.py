@@ -411,13 +411,15 @@ class TestGitCl(TestCase):
               ParseCodereviewSettingsContent)
     self.mock(git_cl.os, 'access', self._mocked_call)
     self.mock(git_cl.os, 'chmod', self._mocked_call)
+    src_dir = os.path.join(os.path.sep, 'usr', 'local', 'src')
     def AbsPath(path):
-      if not path.startswith('/'):
-        return os.path.join('/usr/local/src', path)
+      if not path.startswith(os.path.sep):
+        return os.path.join(src_dir, path)
       return path
     self.mock(git_cl.os.path, 'abspath', AbsPath)
+    commit_msg_path = os.path.join(src_dir, '.git', 'hooks', 'commit-msg')
     def Exists(path):
-      if path == '/usr/local/src/.git/hooks/commit-msg':
+      if path == commit_msg_path:
         return False
       # others paths, such as /usr/share/locale/....
       return True
@@ -434,11 +436,10 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'gerrit.host'],), 'gerrit.chromium.org'),
         ((['git', 'config', 'rietveld.server'],), 'gerrit.chromium.org'),
         ((['git', 'rev-parse', '--show-cdup'],), ''),
-        (('/usr/local/src/.git/hooks/commit-msg', os.X_OK,), False),
+        ((commit_msg_path, os.X_OK,), False),
         (('https://gerrit.chromium.org/tools/hooks/commit-msg',
-          '/usr/local/src/.git/hooks/commit-msg',), ''),
-        (('/usr/local/src/.git/hooks/commit-msg',
-          stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR,), ''),
+          commit_msg_path,), ''),
+        ((commit_msg_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR,), ''),
         # GetCodereviewSettingsInteractively
         ((['git', 'config', 'rietveld.server'],), 'gerrit.chromium.org'),
         (('Rietveld server (host[:port]) [https://gerrit.chromium.org]:',),
@@ -450,7 +451,7 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'rietveld.viewvc-url'],), ''),
         (('ViewVC URL:',), ''),
         # DownloadHooks(True)
-        (('/usr/local/src/.git/hooks/commit-msg', os.X_OK,), True),
+        ((commit_msg_path, os.X_OK,), True),
         ]
     git_cl.main(['config'])
 
