@@ -1457,17 +1457,28 @@ LRESULT OmniboxViewWin::OnImeNotify(UINT message,
 LRESULT OmniboxViewWin::OnPointerDown(UINT message,
                                       WPARAM wparam,
                                       LPARAM lparam) {
-  SetFocus();
+  if (!model_->has_focus())
+    SetFocus();
 
   if (IS_POINTER_FIRSTBUTTON_WPARAM(wparam)) {
     TrackMousePosition(kLeft, CPoint(GET_X_LPARAM(lparam),
                                      GET_Y_LPARAM(lparam)));
   }
 
+  SetMsgHandled(false);
+
+  return 0;
+}
+
+LRESULT OmniboxViewWin::OnPointerUp(UINT message, WPARAM wparam,
+                                    LPARAM lparam) {
   // ITextInputPanel is not supported on all platforms.  NULL is fine.
   if (keyboard_ != NULL)
     keyboard_->SetInPlaceVisibility(true);
-  return DefWindowProc(message, wparam, lparam);
+
+  SetMsgHandled(false);
+
+  return 0;
 }
 
 void OmniboxViewWin::OnKeyDown(TCHAR key,

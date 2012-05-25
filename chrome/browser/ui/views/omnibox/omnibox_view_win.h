@@ -40,6 +40,9 @@ class View;
 #if !defined(WM_POINTERDOWN)
 #define WM_POINTERDOWN  0x0246
 #endif  // WM_POINTERDOWN
+#if !defined(WM_POINTERUP)
+#define WM_POINTERUP    0x0247
+#endif  // WM_POINTERUP
 #ifndef POINTER_MESSAGE_FLAG_FIRSTBUTTON
 #define POINTER_MESSAGE_FLAG_FIRSTBUTTON 0x00000010
 #endif  // POINTER_MESSAGE_FLAG_FIRSTBUTTON
@@ -182,7 +185,7 @@ class OmniboxViewWin
   void HandleExternalMsg(UINT msg, UINT flags, const CPoint& screen_point);
 
   // CWindowImpl
-  BEGIN_MSG_MAP(AutocompleteEdit)
+  BEGIN_MSG_MAP(OmniboxViewWin)
     MSG_WM_CHAR(OnChar)
     MSG_WM_CONTEXTMENU(OnContextMenu)
     MSG_WM_COPY(OnCopy)
@@ -191,6 +194,7 @@ class OmniboxViewWin
     MESSAGE_HANDLER_EX(WM_IME_COMPOSITION, OnImeComposition)
     MESSAGE_HANDLER_EX(WM_IME_NOTIFY, OnImeNotify)
     MESSAGE_HANDLER_EX(WM_POINTERDOWN, OnPointerDown)
+    MESSAGE_HANDLER_EX(WM_POINTERUP, OnPointerUp)
     MSG_WM_KEYDOWN(OnKeyDown)
     MSG_WM_KEYUP(OnKeyUp)
     MSG_WM_KILLFOCUS(OnKillFocus)
@@ -291,6 +295,7 @@ class OmniboxViewWin
   LRESULT OnImeComposition(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeNotify(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnPointerDown(UINT message, WPARAM wparam, LPARAM lparam);
+  LRESULT OnPointerUp(UINT message, WPARAM wparam, LPARAM lparam);
   void OnKeyDown(TCHAR key, UINT repeat_count, UINT flags);
   void OnKeyUp(TCHAR key, UINT repeat_count, UINT flags);
   void OnKillFocus(HWND focus_wnd);
