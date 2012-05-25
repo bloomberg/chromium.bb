@@ -72,125 +72,6 @@ void GLES2DecoderTestBase::AddExpectationsForVertexAttribManager() {
   }
 }
 
-// Setup the expectations required for the inialiazation of the resources
-// used by the GL_CHROMIUM_copy_texture extension.
-void GLES2DecoderTestBase::AddExpectationsForCopyTextureCHROMIUM() {
-  static GLuint copy_texture_chromium_buffer_ids[] = {
-    kServiceCopyTextureChromiumVertexBufferId,
-    kServiceCopyTextureChromiumTextureBufferId
-  };
-  EXPECT_CALL(*gl_, GenBuffersARB(arraysize(copy_texture_chromium_buffer_ids),
-                                  _))
-      .WillOnce(SetArrayArgument<1>(copy_texture_chromium_buffer_ids,
-          copy_texture_chromium_buffer_ids + arraysize(
-              copy_texture_chromium_buffer_ids)))
-      .RetiresOnSaturation();
-
-  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER,
-                               kServiceCopyTextureChromiumVertexBufferId))
-      .Times(1)
-      .RetiresOnSaturation();
-
-  EXPECT_CALL(*gl_, BufferData(GL_ARRAY_BUFFER, 16 * sizeof(GLfloat), _,
-                               GL_STATIC_DRAW))
-      .Times(1)
-      .RetiresOnSaturation();
-
-  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER,
-                               kServiceCopyTextureChromiumTextureBufferId))
-      .Times(1)
-      .RetiresOnSaturation();
-
-  EXPECT_CALL(*gl_, BufferData(GL_ARRAY_BUFFER, 8 * sizeof(GLfloat), _,
-                               GL_STATIC_DRAW))
-      .Times(1)
-      .RetiresOnSaturation();
-
-  static GLuint copy_texture_chromium_fbo_ids[] = {
-    kServiceCopyTextureChromiumFBOId
-  };
-  EXPECT_CALL(*gl_, GenFramebuffersEXT(arraysize(copy_texture_chromium_fbo_ids),
-                                       _))
-      .WillOnce(SetArrayArgument<1>(copy_texture_chromium_fbo_ids,
-          copy_texture_chromium_fbo_ids + arraysize(
-              copy_texture_chromium_fbo_ids)))
-      .RetiresOnSaturation();
-
-  for (int shader = 0; shader < 5; ++shader) {
-    EXPECT_CALL(*gl_, CreateShader(
-        shader == 0 ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER))
-        .WillOnce(Return(kServiceCopyTextureChromiumShaderId + shader))
-        .RetiresOnSaturation();
-
-    EXPECT_CALL(*gl_, ShaderSource(kServiceCopyTextureChromiumShaderId + shader,
-                                   1, _, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-
-    EXPECT_CALL(*gl_, CompileShader(
-        kServiceCopyTextureChromiumShaderId + shader))
-        .Times(1)
-        .RetiresOnSaturation();
-#ifndef NDEBUG
-    EXPECT_CALL(*gl_, GetShaderiv(kServiceCopyTextureChromiumShaderId + shader,
-                                  GL_COMPILE_STATUS, _))
-        .WillOnce(SetArgPointee<2>(GL_TRUE))
-        .RetiresOnSaturation();
-#endif
-  }
-
-  for (int program = 0; program < 4; ++program) {
-    EXPECT_CALL(*gl_, CreateProgram())
-        .WillOnce(Return(kServiceCopyTextureChromiumProgramId + program))
-        .RetiresOnSaturation();
-
-    EXPECT_CALL(*gl_, AttachShader(
-        kServiceCopyTextureChromiumProgramId + program,
-        kServiceCopyTextureChromiumShaderId))
-        .Times(1)
-        .RetiresOnSaturation();
-
-    EXPECT_CALL(*gl_, AttachShader(
-        kServiceCopyTextureChromiumProgramId + program,
-        kServiceCopyTextureChromiumShaderId + program + 1))
-        .Times(1)
-        .RetiresOnSaturation();
-
-    EXPECT_CALL(*gl_, BindAttribLocation(
-        kServiceCopyTextureChromiumProgramId + program, 0, _))
-        .Times(1)
-        .RetiresOnSaturation();
-
-    EXPECT_CALL(*gl_, BindAttribLocation(
-        kServiceCopyTextureChromiumProgramId + program, 1, _))
-        .Times(1)
-        .RetiresOnSaturation();
-
-    EXPECT_CALL(*gl_, LinkProgram(
-        kServiceCopyTextureChromiumProgramId + program))
-        .Times(1)
-        .RetiresOnSaturation();
-
-#ifndef NDEBUG
-    EXPECT_CALL(*gl_, GetProgramiv(
-        kServiceCopyTextureChromiumProgramId + program, GL_LINK_STATUS, _))
-        .WillOnce(SetArgPointee<2>(true))
-        .RetiresOnSaturation();
-#endif
-
-    EXPECT_CALL(*gl_, GetUniformLocation(
-        kServiceCopyTextureChromiumProgramId + program, _))
-        .WillOnce(Return(kServiceCopyTextureChromiumSamplerLocation))
-        .RetiresOnSaturation();
-  }
-
-  for (int shader = 0; shader < 5; ++shader)
-    EXPECT_CALL(*gl_,
-                DeleteShader(kServiceCopyTextureChromiumShaderId + shader))
-        .Times(1)
-        .RetiresOnSaturation();
-}
-
 void GLES2DecoderTestBase::InitDecoder(
     const char* extensions,
     bool has_alpha,
@@ -211,7 +92,6 @@ void GLES2DecoderTestBase::InitDecoder(
 
   EXPECT_TRUE(group_->Initialize(DisallowedFeatures(), NULL));
 
-  AddExpectationsForCopyTextureCHROMIUM();
   AddExpectationsForVertexAttribManager();
 
   EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
@@ -377,18 +257,6 @@ void GLES2DecoderTestBase::TearDown() {
 
   // All Tests should have read all their GLErrors before getting here.
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_CALL(*gl_, DeleteFramebuffersEXT(1,
-      Pointee(kServiceCopyTextureChromiumFBOId)))
-      .Times(1)
-      .RetiresOnSaturation();
-
-  EXPECT_CALL(*gl_, DeleteProgram(_))
-      .Times(4)
-      .RetiresOnSaturation();
-
-  EXPECT_CALL(*gl_, DeleteBuffersARB(2, _))
-      .Times(1)
-      .RetiresOnSaturation();
 
   EXPECT_CALL(*gl_, DeleteBuffersARB(1, _))
       .Times(2)

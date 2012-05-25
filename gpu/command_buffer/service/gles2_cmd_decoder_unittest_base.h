@@ -500,7 +500,6 @@ class GLES2DecoderTestBase : public testing::Test {
     Buffer invalid_buffer_;
   };
 
-  void AddExpectationsForCopyTextureCHROMIUM();
   void AddExpectationsForVertexAttribManager();
 
   scoped_ptr< ::testing::StrictMock<MockCommandBufferEngine> > engine_;

@@ -2017,10 +2017,6 @@ bool GLES2DecoderImpl::Initialize(
   }
   CHECK_GL_ERROR();
 
-  copy_texture_CHROMIUM_.reset(new CopyTextureCHROMIUMResourceManager());
-  copy_texture_CHROMIUM_->Initialize();
-  CHECK_GL_ERROR();
-
   disallowed_features_ = disallowed_features;
 
   vertex_attrib_manager_.reset(new VertexAttribManager());
@@ -8504,6 +8500,17 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     SetGLError(GL_INVALID_VALUE,
              "glCopyTextureCHROMIUM: Bad dimensions");
     return;
+  }
+
+  // Defer initializing the CopyTextureCHROMIUMResourceManager until it is
+  // needed because it takes 10s of milliseconds to initialize.
+  if (!copy_texture_CHROMIUM_.get()) {
+    CopyRealGLErrorsToWrapper();
+    copy_texture_CHROMIUM_.reset(new CopyTextureCHROMIUMResourceManager());
+    copy_texture_CHROMIUM_->Initialize();
+    RestoreCurrentFramebufferBindings();
+    if (PeekGLError() != GL_NO_ERROR)
+      return;
   }
 
   GLenum dest_type;
