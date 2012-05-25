@@ -40,6 +40,8 @@
 #include "EbmlWriter.h"
 #include "EbmlIDs.h"
 
+#include "wcap-decode.h"
+
 /* Need special handling of these functions on Windows */
 #if defined(_MSC_VER)
 /* MSVS doesn't define off_t, and uses _f{seek,tell}i64 */
@@ -289,7 +291,8 @@ enum video_file_type
 {
     FILE_TYPE_RAW,
     FILE_TYPE_IVF,
-    FILE_TYPE_Y4M
+    FILE_TYPE_Y4M,
+    FILE_TYPE_WCAP
 };
 
 struct detect_buffer {
@@ -310,8 +313,70 @@ struct input_state
     unsigned int          h;
     struct vpx_rational   framerate;
     int                   use_i420;
+    struct wcap_decoder  *wcap;
 };
 
+static inline int rgb_to_yuv(uint32_t p, int *u, int *v)
+{
+	int r = (p >> 16) & 0xff;
+	int g = (p >> 8) & 0xff;
+	int b = (p >> 0) & 0xff;
+	int y;
+
+	y = 0.299 * r + 0.587 * g + 0.114 * b;
+	if (y > 255)
+		y = 255;
+
+	*u += 0.713 * (r - y);
+	*v += 0.564 * (b - y);
+
+	return y;
+}
+
+static inline int clamp_uv(int u)
+{
+	if (u < -512)
+		return 0;
+	else if (u > 511)
+		return 255;
+	else
+		return u / 4 + 128;
+}
+
+static void convert_to_yv12(struct wcap_decoder *wcap, vpx_image_t *img)
+{
+	unsigned char *y1, *y2, *u, *v;
+	uint32_t *p1, *p2, *end;
+	int i, u_accum, v_accum;
+
+	for (i = 0; i < wcap->height; i += 2) {
+		y1 = img->planes[0] + img->stride[0] * i;
+		y2 = img->planes[0] + img->stride[0] * i + img->stride[0];
+		u = img->planes[2] + img->stride[2] * i / 2;
+		v = img->planes[1] + img->stride[1] * i / 2;
+		p1 = wcap->frame + wcap->width * i;
+		p2 = wcap->frame + wcap->width * i + wcap->width;
+		end = p1 + wcap->width;
+
+		while (p1 < end) {
+			u_accum = 0;
+			v_accum = 0;
+			y1[0] = rgb_to_yuv(p1[0], &u_accum, &v_accum);
+			y1[1] = rgb_to_yuv(p1[1], &u_accum, &v_accum);
+			y2[0] = rgb_to_yuv(p2[0], &u_accum, &v_accum);
+			y2[1] = rgb_to_yuv(p2[1], &u_accum, &v_accum);
+			u[0] = clamp_uv(u_accum);
+			v[0] = clamp_uv(v_accum);
+
+			y1 += 2;
+			p1 += 2;
+			y2 += 2;
+			p2 += 2;
+			u++;
+			v++;
+		}
+	}
+}
 
 #define IVF_FRAME_HDR_SZ (4+8) /* 4 byte size + 8 byte timestamp */
 static int read_frame(struct input_state *input, vpx_image_t *img)
@@ -327,6 +392,13 @@ static int read_frame(struct input_state *input, vpx_image_t *img)
     {
         if (y4m_input_fetch_frame(y4m, f, img) < 1)
            return 0;
+    }
+    else if (file_type == FILE_TYPE_WCAP)
+    {
+        if (!wcap_decoder_get_frame(input->wcap))
+            return 0;
+
+	convert_to_yv12(input->wcap, img);
     }
     else
     {
@@ -443,6 +515,13 @@ unsigned int file_is_ivf(struct input_state *input,
     return is_ivf;
 }
 
+unsigned int file_is_wcap(struct input_state *input)
+{
+    if(mem_get_le32(input->detect.buf) == WCAP_HEADER_MAGIC)
+	    return 1;
+
+    return 0;
+}
 
 static void write_ivf_file_header(FILE *outfile,
                                   const vpx_codec_enc_cfg_t *cfg,
@@ -1705,6 +1784,17 @@ void open_input_file(struct input_state *input)
             fatal("Unsupported fourcc (%08x) in IVF", fourcc);
         }
     }
+    else if (input->detect.buf_read == 4 && file_is_wcap(input))
+    {
+        input->wcap = wcap_decoder_create(input->fn);
+
+        input->file_type = FILE_TYPE_WCAP;
+        input->w = input->wcap->width;
+        input->h = input->wcap->height;
+        input->framerate.num = 30;
+        input->framerate.den = 1;
+        input->use_i420 = 0;
+    }
     else
     {
         input->file_type = FILE_TYPE_RAW;
@@ -1717,6 +1807,8 @@ static void close_input_file(struct input_state *input)
     fclose(input->file);
     if (input->file_type == FILE_TYPE_Y4M)
         y4m_input_close(&input->y4m);
+    else if (input->file_type == FILE_TYPE_WCAP)
+        wcap_decoder_destroy(input->wcap);
 }
 
 static struct stream_state *new_stream(struct global_config *global,
