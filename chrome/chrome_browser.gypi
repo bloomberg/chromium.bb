@@ -595,7 +595,6 @@
         'browser/chromeos/input_method/mock_ibus_controller.h',
         'browser/chromeos/input_method/xkeyboard.cc',
         'browser/chromeos/input_method/xkeyboard.h',
-        'browser/chromeos/input_method/xkeyboard_data.h',
         'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h',
         'browser/chromeos/kiosk_mode/kiosk_mode_metrics.cc',

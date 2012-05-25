@@ -26,7 +26,6 @@ enum ModifierLockStatus {
   kDontChange,
 };
 
-// TODO(yusukes): Remove this enum when crbug.com/115112 is implemented.
 enum ModifierKey {
   kSearchKey = 0,  // Customizable.
   kControlKey,  // Customizable.
@@ -38,19 +37,6 @@ enum ModifierKey {
   kNumModifierKeys,
 };
 
-// TODO(yusukes): Remove this struct when crbug.com/115112 is implemented.
-struct ModifierKeyPair {
-  ModifierKeyPair(ModifierKey in_original, ModifierKey in_replacement)
-      : original(in_original), replacement(in_replacement) {}
-  bool operator==(const ModifierKeyPair& rhs) const {
-    // For CheckMap() in chromeos_keyboard_unittest.cc.
-    return (rhs.original == original) && (rhs.replacement == replacement);
-  }
-  ModifierKey original;      // Replace the key with
-  ModifierKey replacement;   // this key.
-};
-typedef std::vector<ModifierKeyPair> ModifierMap;
-
 class InputMethodUtil;
 
 class XKeyboard {
@@ -61,12 +47,6 @@ class XKeyboard {
   // change the current mapping of the modifier keys. Returns true on success.
   virtual bool SetCurrentKeyboardLayoutByName(
       const std::string& layout_name) = 0;
-
-  // Remaps modifier keys. This function does not change the current keyboard
-  // layout. Returns true on success. For now, you can't remap Left Control and
-  // Left Alt keys to caps lock.
-  // TODO(yusukes): Remove this method when crbug.com/115112 is implemented.
-  virtual bool RemapModifierKeys(const ModifierMap& modifier_map) = 0;
 
   // Sets the current keyboard layout again. We have to call the function every
   // time when "XI_HierarchyChanged" XInput2 event is sent to Chrome. See
@@ -112,8 +92,7 @@ class XKeyboard {
   // directly: it is public for testability.
   // TODO(yusukes): Remove this method from the interface class.
   virtual std::string CreateFullXkbLayoutName(
-      const std::string& layout_name,
-      const ModifierMap& modifire_map) = 0;
+      const std::string& layout_name) = 0;
 
   // Returns a mask (e.g. 1U<<4) for Num Lock. On error, returns 0. Do not call
   // the function from non-UI threads.
@@ -146,11 +125,6 @@ class XKeyboard {
   // On success, set current auto repeat rate on |out_rate| and returns true.
   // Returns false otherwise. This function is protected: for testability.
   static bool GetAutoRepeatRateForTesting(AutoRepeatRate* out_rate);
-
-  // Returns true if |key| is in |modifier_map| as replacement. Do not call this
-  // function directly: it is public for testability.
-  static bool ContainsModifierKeyAsReplacement(const ModifierMap& modifier_map,
-                                               ModifierKey key);
 
   // Note: At this moment, classes other than InputMethodManager should not
   // instantiate the XKeyboard class.

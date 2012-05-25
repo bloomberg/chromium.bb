@@ -20,10 +20,6 @@ bool MockXKeyboard::SetCurrentKeyboardLayoutByName(
   return true;
 }
 
-bool MockXKeyboard::RemapModifierKeys(const ModifierMap& modifier_map) {
-  return true;
-}
-
 bool MockXKeyboard::ReapplyCurrentKeyboardLayout() {
   return true;
 }
@@ -58,8 +54,7 @@ bool MockXKeyboard::CapsLockIsEnabled() {
 }
 
 std::string MockXKeyboard::CreateFullXkbLayoutName(
-    const std::string& layout_name,
-      const ModifierMap& modifire_map) {
+    const std::string& layout_name) {
   return "";
 }
 

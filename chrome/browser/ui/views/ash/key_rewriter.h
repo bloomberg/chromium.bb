@@ -19,9 +19,19 @@
 #include "chrome/browser/chromeos/device_hierarchy_observer.h"
 #endif
 
+class PrefService;
+
 namespace aura {
 class RootWindow;
 }
+
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+namespace input_method {
+class XKeyboard;
+}
+}
+#endif
 
 class KeyRewriter : public ash::KeyRewriterDelegate,
                     public aura::RootWindowObserver
@@ -50,6 +60,14 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   void set_last_device_id_for_testing(int device_id) {
     last_device_id_ = device_id;
   }
+  void set_pref_service_for_testing(const PrefService* pref_service) {
+    pref_service_ = pref_service;
+  }
+#if defined(OS_CHROMEOS)
+  void set_xkeyboard_for_testing(chromeos::input_method::XKeyboard* xkeyboard) {
+    xkeyboard_ = xkeyboard;
+  }
+#endif
 
   // Gets DeviceType from the |device_name|.
   static DeviceType GetDeviceType(const std::string& device_name);
@@ -71,6 +89,8 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
 
   // Updates |*_xkeycode_| in response to a keyboard map change.
   void RefreshKeycodes();
+  // Converts an X key symbol like XK_Control_L to a key code.
+  unsigned char NativeKeySymToNativeKeycode(unsigned long keysym);
 #endif
 
   // Rewrites the |event| by applying all RewriteXXX functions as needed.
@@ -80,6 +100,10 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   // OS_CHROMEOS implementation is available at this point. Returns true when
   // |event| is rewritten.
   bool RewriteCommandToControl(aura::KeyEvent* event);
+
+  // Rewrites a modifier key press/release following the current user
+  // preferences.
+  bool RewriteModifiers(aura::KeyEvent* event);
 
   // Rewrites a NumPad key press/release without Num Lock to a corresponding key
   // press/release with the lock.  Returns true when |event| is rewritten.
@@ -103,6 +127,13 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   // X keycodes corresponding to various keysyms.
   unsigned int control_l_xkeycode_;
   unsigned int control_r_xkeycode_;
+  unsigned int alt_l_xkeycode_;
+  unsigned int alt_r_xkeycode_;
+  unsigned int meta_l_xkeycode_;
+  unsigned int meta_r_xkeycode_;
+  unsigned int windows_l_xkeycode_;
+  unsigned int caps_lock_xkeycode_;
+  unsigned int void_symbol_xkeycode_;
   unsigned int kp_0_xkeycode_;
   unsigned int kp_1_xkeycode_;
   unsigned int kp_2_xkeycode_;
@@ -114,7 +145,11 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   unsigned int kp_8_xkeycode_;
   unsigned int kp_9_xkeycode_;
   unsigned int kp_decimal_xkeycode_;
+
+  chromeos::input_method::XKeyboard* xkeyboard_;  // for testing.
 #endif
+
+  const PrefService* pref_service_;  // for testing.
 
   DISALLOW_COPY_AND_ASSIGN(KeyRewriter);
 };

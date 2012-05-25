@@ -17,7 +17,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/input_method/xkeyboard_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/x/x11_util.h"
 
@@ -39,13 +38,6 @@ const char kDefaultLayoutName[] = "us";
 // TODO(yusukes): Use libxkbfile.so instead of the command (crosbug.com/13105)
 const char kSetxkbmapCommand[] = "/usr/bin/setxkbmap";
 
-// See the comment at ModifierKey in the .h file.
-ModifierKey kCustomizableKeys[] = {
-  kSearchKey,
-  kControlKey,
-  kAltKey
-};
-
 // A string for obtaining a mask value for Num Lock.
 const char kNumLockVirtualModifierString[] = "NumLock";
 
@@ -57,7 +49,6 @@ class XKeyboardImpl : public XKeyboard {
   // Overridden from XKeyboard:
   virtual bool SetCurrentKeyboardLayoutByName(
       const std::string& layout_name) OVERRIDE;
-  virtual bool RemapModifierKeys(const ModifierMap& modifier_map) OVERRIDE;
   virtual bool ReapplyCurrentKeyboardLayout() OVERRIDE;
   virtual void ReapplyCurrentModifierLockStatus() OVERRIDE;
   virtual void SetLockedModifiers(
@@ -71,37 +62,21 @@ class XKeyboardImpl : public XKeyboard {
   virtual void GetLockedModifiers(bool* out_caps_lock_enabled,
                                   bool* out_num_lock_enabled) OVERRIDE;
   virtual std::string CreateFullXkbLayoutName(
-      const std::string& layout_name,
-      const ModifierMap& modifire_map) OVERRIDE;
+      const std::string& layout_name) OVERRIDE;
 
  private:
   // This function is used by SetLayout() and RemapModifierKeys(). Calls
   // setxkbmap command if needed, and updates the last_full_layout_name_ cache.
-  bool SetLayoutInternal(const std::string& layout_name,
-                         const ModifierMap& modifier_map,
-                         bool force);
+  bool SetLayoutInternal(const std::string& layout_name, bool force);
 
   // Executes 'setxkbmap -layout ...' command asynchronously using a layout name
   // in the |execute_queue_|. Do nothing if the queue is empty.
   // TODO(yusukes): Use libxkbfile.so instead of the command (crosbug.com/13105)
   void MaybeExecuteSetLayoutCommand();
 
-  // Returns true if the XKB layout uses the right Alt key for special purposes
-  // like AltGr.
-  bool KeepRightAlt(const std::string& xkb_layout_name) const;
-
-  // Returns true if the XKB layout uses the CapsLock key for special purposes.
-  // For example, since US Colemak layout uses the key as back space,
-  // KeepCapsLock("us(colemak)") would return true.
-  bool KeepCapsLock(const std::string& xkb_layout_name) const;
-
   // Returns true if the current thread is the UI thread, or the process is
   // running on Linux.
   bool CurrentlyOnUIThread() const;
-
-  // Converts |key| to a modifier key name which is used in
-  // /usr/share/X11/xkb/symbols/chromeos.
-  static std::string ModifierKeyToString(ModifierKey key);
 
   // Called when execve'd setxkbmap process exits.
   static void OnSetLayoutFinish(pid_t pid, int status, XKeyboardImpl* self);
@@ -114,14 +89,9 @@ class XKeyboardImpl : public XKeyboard {
   bool current_caps_lock_status_;
   // The XKB layout name which we set last time like "us" and "us(dvorak)".
   std::string current_layout_name_;
-  // The mapping of modifier keys we set last time.
-  ModifierMap current_modifier_map_;
 
   // A queue for executing setxkbmap one by one.
   std::queue<std::string> execute_queue_;
-
-  std::set<std::string> keep_right_alt_xkb_layout_names_;
-  std::set<std::string> caps_lock_remapped_xkb_layout_names_;
 
   DISALLOW_COPY_AND_ASSIGN(XKeyboardImpl);
 };
@@ -136,25 +106,9 @@ XKeyboardImpl::XKeyboardImpl(const InputMethodUtil& util)
   // code, and then remove the CHECK below.
   CHECK(!is_running_on_chrome_os_ || (num_lock_mask_ == Mod2Mask));
   GetLockedModifiers(&current_caps_lock_status_, &current_num_lock_status_);
-
-  for (size_t i = 0; i < arraysize(kCustomizableKeys); ++i) {
-    ModifierKey key = kCustomizableKeys[i];
-    current_modifier_map_.push_back(ModifierKeyPair(key, key));
-  }
-
-  std::string layout;
-  for (size_t i = 0; i < arraysize(kKeepRightAltInputMethods); ++i) {
-    layout = util.GetKeyboardLayoutName(kKeepRightAltInputMethods[i]);
-    keep_right_alt_xkb_layout_names_.insert(layout);
-  }
-  for (size_t i = 0; i < arraysize(kCapsLockRemapped); ++i) {
-    layout = util.GetKeyboardLayoutName(kCapsLockRemapped[i]);
-    caps_lock_remapped_xkb_layout_names_.insert(layout);
-  }
 }
 
 bool XKeyboardImpl::SetLayoutInternal(const std::string& layout_name,
-                                      const ModifierMap& modifier_map,
                                       bool force) {
   if (!is_running_on_chrome_os_) {
     // We should not try to change a layout on Linux or inside ui_tests. Just
@@ -162,24 +116,17 @@ bool XKeyboardImpl::SetLayoutInternal(const std::string& layout_name,
     return true;
   }
 
-  const std::string layout_to_set = CreateFullXkbLayoutName(
-      layout_name, modifier_map);
-  if (layout_to_set.empty()) {
+  const std::string layout_to_set = CreateFullXkbLayoutName(layout_name);
+  if (layout_to_set.empty())
     return false;
-  }
 
   if (!current_layout_name_.empty()) {
     const std::string current_layout = CreateFullXkbLayoutName(
-        current_layout_name_, current_modifier_map_);
+        current_layout_name_);
     if (!force && (current_layout == layout_to_set)) {
       DVLOG(1) << "The requested layout is already set: " << layout_to_set;
       return true;
     }
-  }
-
-  // Turn off caps lock if there is no kCapsLockKey in the remapped keys.
-  if (!ContainsModifierKeyAsReplacement(modifier_map, kCapsLockKey)) {
-    SetCapsLockEnabled(false);
   }
 
   DVLOG(1) << (force ? "Reapply" : "Set") << " layout: " << layout_to_set;
@@ -191,9 +138,9 @@ bool XKeyboardImpl::SetLayoutInternal(const std::string& layout_name,
   // layout name to the queue. setxkbmap command for the layout will be called
   // via OnSetLayoutFinish() callback later.
   execute_queue_.push(layout_to_set);
-  if (start_execution) {
+  if (start_execution)
     MaybeExecuteSetLayoutCommand();
-  }
+
   return true;
 }
 
@@ -201,9 +148,8 @@ bool XKeyboardImpl::SetLayoutInternal(const std::string& layout_name,
 // in the |execute_queue_|. Do nothing if the queue is empty.
 // TODO(yusukes): Use libxkbfile.so instead of the command (crosbug.com/13105)
 void XKeyboardImpl::MaybeExecuteSetLayoutCommand() {
-  if (execute_queue_.empty()) {
+  if (execute_queue_.empty())
     return;
-  }
   const std::string layout_to_set = execute_queue_.front();
 
   std::vector<std::string> argv;
@@ -248,9 +194,8 @@ unsigned int XKeyboardImpl::GetNumLockMask() {
   unsigned int real_mask = kBadMask;
   XkbDescPtr xkb_desc =
       XkbGetKeyboard(ui::GetXDisplay(), XkbAllComponentsMask, XkbUseCoreKbd);
-  if (!xkb_desc) {
+  if (!xkb_desc)
     return kBadMask;
-  }
 
   if (xkb_desc->dpy && xkb_desc->names && xkb_desc->names->vmods) {
     const std::string string_to_find(kNumLockVirtualModifierString);
@@ -279,28 +224,23 @@ void XKeyboardImpl::GetLockedModifiers(bool* out_caps_lock_enabled,
 
   if (out_num_lock_enabled && !num_lock_mask_) {
     DVLOG(1) << "Cannot get locked modifiers. Num Lock mask unknown.";
-    if (out_caps_lock_enabled) {
+    if (out_caps_lock_enabled)
       *out_caps_lock_enabled = false;
-    }
-    if (out_num_lock_enabled) {
+    if (out_num_lock_enabled)
       *out_num_lock_enabled = false;
-    }
     return;
   }
 
   XkbStateRec status;
   XkbGetState(ui::GetXDisplay(), XkbUseCoreKbd, &status);
-  if (out_caps_lock_enabled) {
+  if (out_caps_lock_enabled)
     *out_caps_lock_enabled = status.locked_mods & LockMask;
-  }
-  if (out_num_lock_enabled) {
+  if (out_num_lock_enabled)
     *out_num_lock_enabled = status.locked_mods & num_lock_mask_;
-  }
 }
 
 std::string XKeyboardImpl::CreateFullXkbLayoutName(
-    const std::string& layout_name,
-    const ModifierMap& modifier_map) {
+    const std::string& layout_name) {
   static const char kValidLayoutNameCharacters[] =
       "abcdefghijklmnopqrstuvwxyz0123456789()-_";
 
@@ -315,56 +255,10 @@ std::string XKeyboardImpl::CreateFullXkbLayoutName(
     return "";
   }
 
-  std::string use_search_key_as_str;
-  std::string use_left_control_key_as_str;
-  std::string use_left_alt_key_as_str;
-
-  for (size_t i = 0; i < modifier_map.size(); ++i) {
-    std::string* target = NULL;
-    switch (modifier_map[i].original) {
-      case kSearchKey:
-        target = &use_search_key_as_str;
-        break;
-      case kControlKey:
-        target = &use_left_control_key_as_str;
-        break;
-      case kAltKey:
-        target = &use_left_alt_key_as_str;
-        break;
-      default:
-        break;
-    }
-    if (!target) {
-      DVLOG(1) << "We don't support remaping "
-               << ModifierKeyToString(modifier_map[i].original);
-      return "";
-    }
-    if (!(target->empty())) {
-      DVLOG(1) << ModifierKeyToString(modifier_map[i].original)
-               << " appeared twice";
-      return "";
-    }
-    *target = ModifierKeyToString(modifier_map[i].replacement);
-  }
-
-  if (use_search_key_as_str.empty() ||
-      use_left_control_key_as_str.empty() ||
-      use_left_alt_key_as_str.empty()) {
-    DVLOG(1) << "Incomplete ModifierMap: size=" << modifier_map.size();
-    return "";
-  }
-
-  if (KeepCapsLock(layout_name)) {
-    use_search_key_as_str = ModifierKeyToString(kSearchKey);
-  }
-
+  // TODO(yusukes): Remove "+chromeos(...)".
   std::string full_xkb_layout_name =
-      base::StringPrintf("%s+chromeos(%s_%s_%s%s)",
-                         layout_name.c_str(),
-                         use_search_key_as_str.c_str(),
-                         use_left_control_key_as_str.c_str(),
-                         use_left_alt_key_as_str.c_str(),
-                         (KeepRightAlt(layout_name) ? "_keepralt" : ""));
+      base::StringPrintf("%s+chromeos(search_leftcontrol_leftalt_keepralt)",
+                         layout_name.c_str());
 
   return full_xkb_layout_name;
 }
@@ -390,9 +284,8 @@ void XKeyboardImpl::SetLockedModifiers(ModifierLockStatus new_caps_lock_status,
     current_num_lock_status_ = (new_num_lock_status == kEnableLock);
   }
 
-  if (affect_mask) {
+  if (affect_mask)
     XkbLockModifiers(ui::GetXDisplay(), XkbUseCoreKbd, affect_mask, value_mask);
-  }
 }
 
 void XKeyboardImpl::SetNumLockEnabled(bool enable_num_lock) {
@@ -407,7 +300,7 @@ void XKeyboardImpl::SetCapsLockEnabled(bool enable_caps_lock) {
 
 bool XKeyboardImpl::SetCurrentKeyboardLayoutByName(
     const std::string& layout_name) {
-  if (SetLayoutInternal(layout_name, current_modifier_map_, false)) {
+  if (SetLayoutInternal(layout_name, false)) {
     current_layout_name_ = layout_name;
     return true;
   }
@@ -419,32 +312,12 @@ bool XKeyboardImpl::ReapplyCurrentKeyboardLayout() {
     DVLOG(1) << "Can't reapply XKB layout: layout unknown";
     return false;
   }
-  return SetLayoutInternal(
-      current_layout_name_, current_modifier_map_, true /* force */);
+  return SetLayoutInternal(current_layout_name_, true /* force */);
 }
 
 void XKeyboardImpl::ReapplyCurrentModifierLockStatus() {
   SetLockedModifiers(current_caps_lock_status_ ? kEnableLock : kDisableLock,
                      current_num_lock_status_ ? kEnableLock : kDisableLock);
-}
-
-bool XKeyboardImpl::RemapModifierKeys(const ModifierMap& modifier_map) {
-  const std::string layout_name = current_layout_name_.empty() ?
-      kDefaultLayoutName : current_layout_name_;
-  if (SetLayoutInternal(layout_name, modifier_map, false)) {
-    current_layout_name_ = layout_name;
-    current_modifier_map_ = modifier_map;
-    return true;
-  }
-  return false;
-}
-
-bool XKeyboardImpl::KeepRightAlt(const std::string& xkb_layout_name) const {
-  return keep_right_alt_xkb_layout_names_.count(xkb_layout_name) > 0;
-}
-
-bool XKeyboardImpl::KeepCapsLock(const std::string& xkb_layout_name) const {
-  return caps_lock_remapped_xkb_layout_names_.count(xkb_layout_name) > 0;
 }
 
 bool XKeyboardImpl::CurrentlyOnUIThread() const {
@@ -454,29 +327,9 @@ bool XKeyboardImpl::CurrentlyOnUIThread() const {
   //   Check failed: constructor_message_loop_.get().
   // For now, just allow unit/browser tests to call any functions in this class.
   // TODO(yusukes): Stop special-casing browser_tests and remove this function.
-  if (!is_running_on_chrome_os_) {
+  if (!is_running_on_chrome_os_)
     return true;
-  }
   return BrowserThread::CurrentlyOn(BrowserThread::UI);
-}
-
-// static
-std::string XKeyboardImpl::ModifierKeyToString(ModifierKey key) {
-  switch (key) {
-    case kSearchKey:
-      return "search";
-    case kControlKey:
-      return "leftcontrol";
-    case kAltKey:
-      return "leftalt";
-    case kVoidKey:
-      return "disabled";
-    case kCapsLockKey:
-      return "capslock";
-    case kNumModifierKeys:
-      break;
-  }
-  return "";
 }
 
 // static
@@ -499,11 +352,10 @@ void XKeyboardImpl::OnSetLayoutFinish(pid_t pid,
 // static
 bool XKeyboard::SetAutoRepeatEnabled(bool enabled) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (enabled) {
+  if (enabled)
     XAutoRepeatOn(ui::GetXDisplay());
-  } else {
+  else
     XAutoRepeatOff(ui::GetXDisplay());
-  }
   DVLOG(1) << "Set auto-repeat mode to: " << (enabled ? "on" : "off");
   return true;
 }
@@ -535,18 +387,6 @@ bool XKeyboard::GetAutoRepeatRateForTesting(AutoRepeatRate* out_rate) {
   return XkbGetAutoRepeatRate(ui::GetXDisplay(), XkbUseCoreKbd,
                               &(out_rate->initial_delay_in_ms),
                               &(out_rate->repeat_interval_in_ms)) == True;
-}
-
-// static
-bool XKeyboard::ContainsModifierKeyAsReplacement(
-    const ModifierMap& modifier_map,
-    ModifierKey key) {
-  for (size_t i = 0; i < modifier_map.size(); ++i) {
-    if (modifier_map[i].replacement == key) {
-      return true;
-    }
-  }
-  return false;
 }
 
 // static
