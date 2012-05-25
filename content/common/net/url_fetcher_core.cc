@@ -267,6 +267,7 @@ URLFetcherCore::URLFetcherCore(net::URLFetcher* fetcher,
       current_upload_bytes_(-1),
       current_response_bytes_(0),
       total_response_bytes_(-1) {
+  CHECK(original_url_.is_valid());
 }
 
 URLFetcherCore::~URLFetcherCore() {
