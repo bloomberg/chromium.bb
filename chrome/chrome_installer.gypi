@@ -1000,8 +1000,7 @@
             ],
           },
           'xcode_settings': {
-            # TODO(thakis): Enable once http://crbug.com/90185 is done.
-            # 'ARCHS': [ 'i386', 'x86_64' ],
+            'ARCHS': [ 'i386', 'x86_64' ],
             'MACOSX_DEPLOYMENT_TARGET': '10.4',
             'GCC_ENABLE_OBJC_GC': 'supported',
           },
