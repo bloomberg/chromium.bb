@@ -85,6 +85,9 @@ bool WindowSizer::GetBoundsIgnoringPreviousState(
       GetDefaultWindowBounds(bounds);
     } else {
       *bounds = top_window->GetBoundsInRootWindow();
+      gfx::Rect work_area =
+          monitor_info_provider_->GetMonitorWorkAreaMatching(*bounds);
+      *bounds = bounds->AdjustToFit(work_area);
     }
     return true;
     // If both fail we will continue the default path.

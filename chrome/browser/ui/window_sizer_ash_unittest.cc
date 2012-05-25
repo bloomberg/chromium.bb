@@ -36,7 +36,7 @@ typedef ash::test::AshTestBase WindowSizerTest;
 class WindowSizerTestWithBrowser : public WindowSizerTest {
  public:
   WindowSizerTestWithBrowser();
-  ~WindowSizerTestWithBrowser();
+  virtual ~WindowSizerTestWithBrowser();
 
  private:
   // Note: It is important to delete the thread after the browser instances got
@@ -60,10 +60,12 @@ WindowSizerTestWithBrowser::~WindowSizerTestWithBrowser() {
 // it.
 class TestBrowserWindowAura : public TestBrowserWindow {
  public:
-  TestBrowserWindowAura(Browser* browser, aura::Window *native_window);
-  ~TestBrowserWindowAura();
+  TestBrowserWindowAura(Browser* browser, aura::Window* native_window);
+  virtual ~TestBrowserWindowAura();
 
-  gfx::NativeWindow GetNativeHandle() OVERRIDE { return native_window_; }
+  virtual gfx::NativeWindow GetNativeHandle() OVERRIDE {
+    return native_window_;
+  }
 
  private:
   gfx::NativeWindow native_window_;
@@ -73,10 +75,11 @@ class TestBrowserWindowAura : public TestBrowserWindow {
 
 } // namespace
 
-TestBrowserWindowAura::TestBrowserWindowAura(Browser* browser,
-                                             aura::Window *native_window) :
-    TestBrowserWindow(browser),
-    native_window_(native_window) {
+TestBrowserWindowAura::TestBrowserWindowAura(
+    Browser* browser,
+    aura::Window *native_window)
+    : TestBrowserWindow(browser),
+      native_window_(native_window) {
 }
 
 TestBrowserWindowAura::~TestBrowserWindowAura() {}
@@ -670,6 +673,16 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindowOverOldWindow) {
     EXPECT_EQ(gfx::Rect(50, 100, 300, 150), window_bounds);
   }
 
+  window->SetBounds(gfx::Rect(816, 720, 640, 320));
+  // Verifies newly created windows appear on screen.
+  {
+    gfx::Rect window_bounds;
+    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+                    gfx::Rect(50, 100, 300, 150), bottom_nonprimary,
+                    PERSISTED, &window_bounds, browser.get(), gfx::Rect());
+    EXPECT_EQ("384,448 640x320", window_bounds.ToString());
+  }
+
   window->Hide();
   { // If a window is there but not shown the default should be returned.
     // The existing popup should not have any impact as well.
@@ -704,4 +717,3 @@ TEST_F(WindowSizerTest, AdjustFitSize) {
     EXPECT_EQ(gfx::Rect(924, 668, 100, 100), window_bounds);
   }
 }
-
