@@ -60,8 +60,8 @@ class ClickWiggleFilterInterpreter : public Interpreter {
 
   map<short, ClickWiggleRec, kMaxFingers> wiggle_recs_;
 
-  // When a physical button down last occurred
-  stime_t button_down_occurred_;
+  // last time a physical button up or down edge occurred
+  stime_t button_edge_occurred_;
 
   map<short, float, kMaxFingers> prev_pressure_;
 

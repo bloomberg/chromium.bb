@@ -13,7 +13,7 @@ namespace gestures {
 // Takes ownership of |next|:
 ClickWiggleFilterInterpreter::ClickWiggleFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
-    : button_down_occurred_(0.0),
+    : button_edge_occurred_(0.0),
       prev_buttons_(0),
       wiggle_max_dist_(prop_reg, "Wiggle Max Distance", 5.5),
       wiggle_suppress_timeout_(prop_reg, "Wiggle Timeout", 0.075),
@@ -52,8 +52,8 @@ void ClickWiggleFilterInterpreter::UpdateClickWiggle(
   const bool button_down_edge = button_down && !prev_button_down;
   const bool button_up_edge = !button_down && prev_button_down;
 
-  if (button_down_edge)
-    button_down_occurred_ = hwstate.timestamp;
+  if (button_down_edge || button_up_edge)
+    button_edge_occurred_ = hwstate.timestamp;
 
   // Update wiggle_recs_ for each current finger
   for (size_t i = 0; i < hwstate.finger_cnt; i++) {
@@ -116,9 +116,9 @@ void ClickWiggleFilterInterpreter::UpdateClickWiggle(
 }
 
 void ClickWiggleFilterInterpreter::SetWarpFlags(HardwareState* hwstate) const {
-  if (button_down_occurred_ != 0.0 &&
-      button_down_occurred_ < hwstate->timestamp &&
-      button_down_occurred_ + one_finger_click_wiggle_timeout_.val_ >
+  if (button_edge_occurred_ != 0.0 &&
+      button_edge_occurred_ < hwstate->timestamp &&
+      button_edge_occurred_ + one_finger_click_wiggle_timeout_.val_ >
       hwstate->timestamp && hwstate->finger_cnt == 1) {
     hwstate->fingers[0].flags |=
         (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y);

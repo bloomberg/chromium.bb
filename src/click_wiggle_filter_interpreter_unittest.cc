@@ -146,6 +146,10 @@ TEST(ClickWiggleFilterInterpreterTest, OneFingerClickSuppressTest) {
     {0, 0, 0, 0, 37, 0, 43, 48, 1, 0},  // 1
     {0, 0, 0, 0, 38, 0, 43, 49, 1, 0},  // 2
     {0, 0, 0, 0, 38, 0, 43, 49, 1, 0},  // 3 (same as 2)
+    {0, 0, 0, 0, 38, 0, 43, 52, 1, 0},  // 4
+    {0, 0, 0, 0, 38, 0, 43, 55, 1, 0},  // 5
+    {0, 0, 0, 0, 38, 0, 43, 58, 1, 0},  // 6
+    {0, 0, 0, 0, 38, 0, 43, 58, 1, 0},  // 7
   };
   HardwareState hardware_state[] = {
     // time, buttons, finger count, touch count, finger states pointer
@@ -153,13 +157,17 @@ TEST(ClickWiggleFilterInterpreterTest, OneFingerClickSuppressTest) {
     { 1.1, 1, 1, 1, &finger_states[1] },  // 1
     { 1.11, 1, 1, 1, &finger_states[2] },  // 2
     { 1.25, 1, 1, 1, &finger_states[3] },  // 3, stable & > Timeout => no warp
+    { 1.5, 0, 1, 1, &finger_states[4] },  // 4 button up
+    { 1.6, 0, 1, 1, &finger_states[5] },  // 5
+    { 1.61, 0, 1, 1, &finger_states[6] },  // 6
+    { 1.85, 0, 1, 1, &finger_states[7] },  // 7, stable & > Timeout => no warp
   };
 
   interpreter.one_finger_click_wiggle_timeout_.val_ = 0.2;
 
   for (size_t i = 0; i < arraysize(hardware_state); ++i) {
     // Assertions happen in the base interpreter
-    base_interpreter->expect_warp_ = (i != 3);  // No warp after timeout
+    base_interpreter->expect_warp_ = (i != 3 && i != 7);
     interpreter.SyncInterpret(&hardware_state[i], NULL);
   }
 }
