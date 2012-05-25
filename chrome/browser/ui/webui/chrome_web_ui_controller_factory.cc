@@ -236,12 +236,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIPrintHost &&
       !g_browser_process->local_state()->GetBoolean(
           prefs::kPrintPreviewDisabled)) {
-    printing::PrintPreviewTabController* controller =
-        printing::PrintPreviewTabController::GetInstance();
-    bool valid = controller && controller->is_creating_print_preview_tab();
-
-    if (valid)
-      return &NewWebUI<PrintPreviewUI>;
+    return &NewWebUI<PrintPreviewUI>;
   }
   // Android does not support plugins for now.
   if (url.host() == chrome::kChromeUIPluginsHost)
