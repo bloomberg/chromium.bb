@@ -104,6 +104,7 @@ int GpuMain(const content::MainFunctionParams& parameters) {
       VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
     content::GetContentClient()->SetGpuInfo(gpu_info);
 
+#if !defined(OS_CHROMEOS)
     if (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA
         gpu_info.driver_vendor == "NVIDIA") {
       base::ThreadRestrictions::AssertIOAllowed();
@@ -113,7 +114,8 @@ int GpuMain(const content::MainFunctionParams& parameters) {
         dead_on_arrival = true;
       }
     }
-#endif
+#endif  // OS_CHROMEOS
+#endif  // OS_LINUX
   } else {
     VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
     gpu_info.gpu_accessible = false;

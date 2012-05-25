@@ -207,11 +207,13 @@ bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
     }
   }
 
+#if !defined(OS_CHROMEOS)
   // Disable all GPU features for Optimus on Linux.
   if (gpu_info->optimus) {
     gpu_info->gpu_accessible = false;
     gpu_info->finalized = true;
   }
+#endif
 
   return rt;
 }
