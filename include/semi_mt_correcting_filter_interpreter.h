@@ -66,6 +66,7 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, HistoryTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, LowPressureTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest);
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, OneToTwoJumpTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, TrackingIdMappingTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, TwoToOneJumpTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, WarpOnSwapTest);
@@ -147,6 +148,9 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   void SuppressFingerJump(HardwareState* hwstate);
 
   // Set WARP flags for both fingers immediately after 1->2 finger transitions
+  void SuppressOneToTwoFingerJump(HardwareState* hwstate);
+
+  // Set WARP flags for fingers immediately after 2->1 finger transitions
   void SuppressTwoToOneFingerJump(HardwareState* hwstate);
 
   // Starting finger positions of the two-finger gesture.

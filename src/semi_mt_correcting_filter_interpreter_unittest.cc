@@ -648,7 +648,7 @@ TEST(SemiMtCorrectingFilterInterpreterTest, HistoryTest) {
 const unsigned kWarpFlags = GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y;
 
 // Cr-48 tp firmware often reports the 'lifted' finger instead of the
-// 'still present' finger for one packet following 1->2 finger transitions.
+// 'still present' finger for one packet following 2->1 finger transitions.
 // This test simulates this, and tests that it doesn't generate motion.
 TEST(SemiMtCorrectingFilterInterpreterTest, TwoToOneJumpTest) {
   SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
@@ -693,6 +693,61 @@ TEST(SemiMtCorrectingFilterInterpreterTest, TwoToOneJumpTest) {
       break;
     }
     fs->flags &= ~kWarpFlags;
+  }
+}
+
+// Cr-48 tp firmware often reports a 'merged' position for the first one or two
+// packets following a 1->2 finger transitions.  This could lead to unwanted
+// pointer motion during drumroll.
+// This test uses a data from a feedback report, and tests that the WARP flag
+// is set after 1->2.
+TEST(SemiMtCorrectingFilterInterpreterTest, OneToTwoJumpTest) {
+  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
+      new SemiMtCorrectingFilterInterpreterTestInterpreter;
+  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 88, 0, 3316, 2522, 55, 0 },  // 0
+    { 0, 0, 0, 0, 88, 0, 3317, 2522, 55, 0 },  // 1
+    { 0, 0, 0, 0, 88, 0, 3213, 4542, 55, 0 },  // 2
+    { 0, 0, 0, 0, 88, 0, 3446, 2523, 56, 0 },
+    { 0, 0, 0, 0, 88, 0, 3129, 4586, 55, 0 },  // 4
+    { 0, 0, 0, 0, 88, 0, 3316, 2522, 56, 0 },
+    { 0, 0, 0, 0, 88, 0, 3068, 4636, 55, 0 },  // 6
+    { 0, 0, 0, 0, 88, 0, 3312, 2520, 56, 0 },
+  };
+
+  HardwareState hs[] = {
+    // time, buttons, finger count, touch count, fingers
+    { 167.663976, 0, 1, 1, &fs[0] },  // 0
+    { 167.674964, 0, 1, 1, &fs[1] },  // 1
+    { 167.700748, 0, 2, 2, &fs[2] },  // 2
+    { 167.724575, 0, 2, 2, &fs[4] },  // 3
+    { 167.749059, 0, 2, 2, &fs[6] },  // 4
+  };
+
+  HardwareProperties hwprops = {
+    1217, 1061, 5733, 4798,  // left, top, right, bottom
+    47, 65, 133, 133,  // x res, y res, x DPI, y DPI
+    2, 3,  // max_fingers, max_touch
+    false, true, true  // t5r2, semi_mt, is_button_pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+  interpreter.interpreter_enabled_.val_ = 1;
+
+  for (size_t i = 0; i < arraysize(hs); i++) {
+    interpreter.SyncInterpret(&hs[i], NULL);
+    switch (i) {
+    case 2:  // warp x & y for 2 hwstates after 1->2 on all fingers
+    case 3:
+      EXPECT_EQ(hs[i].fingers[0].flags & kWarpFlags, kWarpFlags);
+      EXPECT_EQ(hs[i].fingers[1].flags & kWarpFlags, kWarpFlags);
+      break;
+    default:
+      break;
+    }
   }
 }
 

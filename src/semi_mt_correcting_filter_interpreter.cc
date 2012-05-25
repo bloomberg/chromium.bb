@@ -41,6 +41,7 @@ Gesture* SemiMtCorrectingFilterInterpreter::SyncInterpret(
       if (clip_non_linear_edge_.val_)
         ClipNonLinearFingerPosition(hwstate);
       SuppressTwoToOneFingerJump(hwstate);
+      SuppressOneToTwoFingerJump(hwstate);
       CorrectFingerPosition(hwstate);
       SuppressFingerJump(hwstate);
       UpdateHistory(hwstate);
@@ -248,6 +249,20 @@ void SemiMtCorrectingFilterInterpreter::SuppressTwoToOneFingerJump(
   if (prev_hwstate_.finger_cnt == 2 || prev2_hwstate_.finger_cnt == 2)
     hwstate->fingers[0].flags |=
         GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y;
+}
+
+void SemiMtCorrectingFilterInterpreter::SuppressOneToTwoFingerJump(
+    HardwareState* hwstate) {
+  if (hwstate->finger_cnt != 2)
+    return;
+
+  // Warp finger motion for next two samples after 1F->2F transition
+  if (prev_hwstate_.finger_cnt == 1 || prev2_hwstate_.finger_cnt == 1) {
+    hwstate->fingers[0].flags |=
+        GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y;
+    hwstate->fingers[1].flags |=
+        GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y;
+  }
 }
 
 void SemiMtCorrectingFilterInterpreter::CorrectFingerPosition(
