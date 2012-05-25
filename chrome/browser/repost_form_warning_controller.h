@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,8 @@ class NavigationController;
 }
 
 // This class is used to continue or cancel a pending reload when the
-// repost form warning is shown. It is owned by the platform-dependent
-// |RepostFormWarning{Gtk,Mac,View}| classes.
+// repost form warning is shown. It is owned by the platform-specific
+// |TabModalConfirmDialog{Gtk, Mac, Views, WebUI}| classes.
 class RepostFormWarningController : public TabModalConfirmDialogDelegate {
  public:
   explicit RepostFormWarningController(content::WebContents* web_contents);
