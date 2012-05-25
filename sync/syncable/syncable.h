@@ -568,7 +568,6 @@ class MutableEntry : public Entry {
   friend class sync_api::WriteNode;
   void* operator new(size_t size) { return (::operator new)(size); }
 
-  bool PutImpl(StringField field, const std::string& value);
   bool PutUniqueClientTag(const std::string& value);
 
   // Adjusts the successor and predecessor entries so that they no longer

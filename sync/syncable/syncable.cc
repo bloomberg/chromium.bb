@@ -1705,29 +1705,26 @@ MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetById, const Id& id)
     : Entry(trans, GET_BY_ID, id), write_transaction_(trans) {
-  trans->SaveOriginal(kernel_);
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetByHandle,
                            int64 metahandle)
     : Entry(trans, GET_BY_HANDLE, metahandle), write_transaction_(trans) {
-  trans->SaveOriginal(kernel_);
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetByClientTag,
                            const std::string& tag)
     : Entry(trans, GET_BY_CLIENT_TAG, tag), write_transaction_(trans) {
-  trans->SaveOriginal(kernel_);
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetByServerTag,
                            const string& tag)
     : Entry(trans, GET_BY_SERVER_TAG, tag), write_transaction_(trans) {
-  trans->SaveOriginal(kernel_);
 }
 
 bool MutableEntry::PutIsDel(bool is_del) {
   DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
   if (is_del == kernel_->ref(IS_DEL)) {
     return true;
   }
@@ -1772,6 +1769,7 @@ bool MutableEntry::PutIsDel(bool is_del) {
 
 bool MutableEntry::Put(Int64Field field, const int64& value) {
   DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
   if (kernel_->ref(field) != value) {
     ScopedKernelLock lock(dir());
     if (SERVER_POSITION_IN_PARENT == field) {
@@ -1788,6 +1786,7 @@ bool MutableEntry::Put(Int64Field field, const int64& value) {
 
 bool MutableEntry::Put(TimeField field, const base::Time& value) {
   DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
   if (kernel_->ref(field) != value) {
     kernel_->put(field, value);
     kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
@@ -1797,6 +1796,7 @@ bool MutableEntry::Put(TimeField field, const base::Time& value) {
 
 bool MutableEntry::Put(IdField field, const Id& value) {
   DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
   if (kernel_->ref(field) != value) {
     if (ID == field) {
       if (!dir()->ReindexId(write_transaction(), kernel_, value))
@@ -1817,12 +1817,14 @@ bool MutableEntry::Put(IdField field, const Id& value) {
 }
 
 void MutableEntry::PutParentIdPropertyOnly(const Id& parent_id) {
+  write_transaction_->SaveOriginal(kernel_);
   dir()->ReindexParentId(write_transaction(), kernel_, parent_id);
   kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
 }
 
 bool MutableEntry::Put(BaseVersion field, int64 value) {
   DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
   if (kernel_->ref(field) != value) {
     kernel_->put(field, value);
     kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
@@ -1831,12 +1833,23 @@ bool MutableEntry::Put(BaseVersion field, int64 value) {
 }
 
 bool MutableEntry::Put(StringField field, const string& value) {
-  return PutImpl(field, value);
+  DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
+  if (field == UNIQUE_CLIENT_TAG) {
+    return PutUniqueClientTag(value);
+  }
+
+  if (kernel_->ref(field) != value) {
+    kernel_->put(field, value);
+    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+  }
+  return true;
 }
 
 bool MutableEntry::Put(ProtoField field,
                        const sync_pb::EntitySpecifics& value) {
   DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
   // TODO(ncarter): This is unfortunately heavyweight.  Can we do
   // better?
   if (kernel_->ref(field).SerializeAsString() != value.SerializeAsString()) {
@@ -1872,6 +1885,7 @@ bool MutableEntry::Put(ProtoField field,
 
 bool MutableEntry::Put(BitField field, bool value) {
   DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
   if (kernel_->ref(field) != value) {
     kernel_->put(field, value);
     kernel_->mark_dirty(GetDirtyIndexHelper());
@@ -1884,6 +1898,7 @@ MetahandleSet* MutableEntry::GetDirtyIndexHelper() {
 }
 
 bool MutableEntry::PutUniqueClientTag(const string& new_tag) {
+  write_transaction_->SaveOriginal(kernel_);
   // There is no SERVER_UNIQUE_CLIENT_TAG. This field is similar to ID.
   string old_tag = kernel_->ref(UNIQUE_CLIENT_TAG);
   if (old_tag == new_tag) {
@@ -1911,21 +1926,9 @@ bool MutableEntry::PutUniqueClientTag(const string& new_tag) {
   return true;
 }
 
-bool MutableEntry::PutImpl(StringField field, const string& value) {
-  DCHECK(kernel_);
-  if (field == UNIQUE_CLIENT_TAG) {
-    return PutUniqueClientTag(value);
-  }
-
-  if (kernel_->ref(field) != value) {
-    kernel_->put(field, value);
-    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
-  }
-  return true;
-}
-
 bool MutableEntry::Put(IndexedBitField field, bool value) {
   DCHECK(kernel_);
+  write_transaction_->SaveOriginal(kernel_);
   if (kernel_->ref(field) != value) {
     MetahandleSet* index;
     if (IS_UNSYNCED == field) {
