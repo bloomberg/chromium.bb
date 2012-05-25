@@ -48,6 +48,8 @@ class TraceInputs(unittest.TestCase):
       '--log', self.log,
       '--root-dir', ROOT_DIR,
     ]
+    if VERBOSE:
+      cmd.extend(['-v'] * 3)
     if is_gyp:
       cmd.extend(
           [
@@ -73,6 +75,8 @@ class TraceInputs(unittest.TestCase):
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd,
         universal_newlines=True)
     out, err = p.communicate()
+    if VERBOSE:
+      print err
     if p.returncode:
       raise CalledProcessError(p.returncode, cmd, out + err, cwd)
     return out or ''

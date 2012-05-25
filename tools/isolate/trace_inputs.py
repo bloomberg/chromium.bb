@@ -530,7 +530,13 @@ class Strace(ApiBase):
       stdout = subprocess.PIPE
       stderr = subprocess.STDOUT
     traces = ','.join(cls.Context.traces())
-    trace_cmd = ['strace', '-ff', '-e', 'trace=%s' % traces, '-o', logname]
+    trace_cmd = [
+      'strace',
+      '-ff',
+      '-s', '256',
+      '-e', 'trace=%s' % traces,
+      '-o', logname,
+    ]
     child = subprocess.Popen(
         trace_cmd + cmd,
         cwd=cwd,
@@ -545,6 +551,7 @@ class Strace(ApiBase):
       json.dump(
           {
             'cwd': cwd,
+            # The pid of strace process, not very useful.
             'pid': child.pid,
           },
           f)
@@ -1056,6 +1063,12 @@ class LogmanTrace(ApiBase):
       pass
 
     def handle_FileIo_Create(self, line):
+      """Handles a file open.
+
+      All FileIo events are descriped at
+      http://msdn.microsoft.com/library/windows/desktop/aa363884.aspx
+      for some value of 'description'.
+      """
       match = re.match(r'^\"(.+)\"$', line[self.FILE_PATH])
       self._handle_file(self._drive_map.to_dos(match.group(1)))
 
@@ -1089,7 +1102,8 @@ class LogmanTrace(ApiBase):
       """
       ppid = int(line[self.PARENT_PID], 16)
       if line[self.PROC_NAME] == '"logman.exe"':
-        # logman's parent is us.
+        # logman's parent is trace_input.py or whatever tool using it as a
+        # library. Trace any other children started by it.
         self._processes.add(ppid)
         logging.info('Found logman\'s parent at %d' % ppid)
 
@@ -1105,8 +1119,10 @@ class LogmanTrace(ApiBase):
       ppid = line[self.PID]
       pid = int(line[self.CHILD_PID], 16)
       if ppid in self._processes:
+        # Need to ignore processes we don't know about because the log is
+        # system-wide.
         if line[self.PROC_NAME] == '"logman.exe"':
-          # Skip the shutdown call.
+          # Skip the shutdown call when "logman.exe stop" is executed.
           return
         self._processes.add(pid)
         logging.info(
@@ -1168,6 +1184,57 @@ class LogmanTrace(ApiBase):
       os.remove(logname + '.etl')
 
   @classmethod
+  def _start_log(cls, etl):
+    """Starts the log collection.
+
+    Requires administrative access. logman.exe is synchronous so no need for a
+    "warmup" call.  'Windows Kernel Trace' is *localized* so use its GUID
+    instead.  The GUID constant name is SystemTraceControlGuid. Lovely.
+    """
+    cmd_start = [
+      'logman.exe',
+      'start',
+      'NT Kernel Logger',
+      '-p', '{9e814aad-3204-11d2-9a82-006008a86939}',
+      '(process,img,file,fileio)',
+      '-o', etl,
+      '-ets',  # Send directly to kernel
+      # Values extracted out of thin air.
+      '-bs', '1024',
+      '-nb', '200', '512',
+    ]
+    logging.debug('Running: %s' % cmd_start)
+    try:
+      subprocess.check_call(
+          cmd_start,
+          stdin=subprocess.PIPE,
+          stdout=subprocess.PIPE,
+          stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, e:
+      if e.returncode == -2147024891:
+        print >> sys.stderr, 'Please restart with an elevated admin prompt'
+      elif e.returncode == -2144337737:
+        print >> sys.stderr, (
+            'A kernel trace was already running, stop it and try again')
+      raise
+
+  @staticmethod
+  def _stop_log():
+    """Stops the kernel log collection."""
+    cmd_stop = [
+      'logman.exe',
+      'stop',
+      'NT Kernel Logger',
+      '-ets',  # Send directly to kernel
+    ]
+    logging.debug('Running: %s' % cmd_stop)
+    subprocess.check_call(
+        cmd_stop,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
+
+  @classmethod
   def gen_trace(cls, cmd, cwd, logname, output):
     """Uses logman.exe to start and stop the NT Kernel Logger while the
     executable to be traced is run.
@@ -1182,28 +1249,8 @@ class LogmanTrace(ApiBase):
       stdout = subprocess.PIPE
       stderr = subprocess.STDOUT
 
-    # 1. Start the log collection. Requires administrative access. logman.exe is
-    # synchronous so no need for a "warmup" call.
-    # 'Windows Kernel Trace' is *localized* so use its GUID instead.
-    # The GUID constant name is SystemTraceControlGuid. Lovely.
-    cmd_start = [
-      'logman.exe',
-      'start',
-      'NT Kernel Logger',
-      '-p', '{9e814aad-3204-11d2-9a82-006008a86939}',
-      '(process,img,file,fileio)',
-      '-o', etl,
-      '-ets',  # Send directly to kernel
-      # Values extracted out of thin air.
-      '-bs', '1024',
-      '-nb', '200', '512',
-    ]
-    logging.debug('Running: %s' % cmd_start)
-    subprocess.check_call(
-        cmd_start,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
+    # 1. Start the log collection.
+    cls._start_log(etl)
 
     # 2. Run the child process.
     logging.debug('Running: %s' % cmd)
@@ -1213,18 +1260,7 @@ class LogmanTrace(ApiBase):
       out = child.communicate()[0]
     finally:
       # 3. Stop the log collection.
-      cmd_stop = [
-        'logman.exe',
-        'stop',
-        'NT Kernel Logger',
-        '-ets',  # Send directly to kernel
-      ]
-      logging.debug('Running: %s' % cmd_stop)
-      subprocess.check_call(
-          cmd_stop,
-          stdin=subprocess.PIPE,
-          stdout=subprocess.PIPE,
-          stderr=subprocess.STDOUT)
+      cls._stop_log()
 
     # 4. Convert the traces to text representation.
     # Use "tracerpt -?" for help.
