@@ -21,7 +21,6 @@ namespace {
 
 // JS API callbacks names.
 const char kJsApiScreenStateInitialize[] = "screenStateInitialize";
-const char kJsApiToggleAccessibility[] = "toggleAccessibility";
 const char kJsApiSkipUpdateEnrollAfterEula[] = "skipUpdateEnrollAfterEula";
 
 }  // namespace
@@ -62,9 +61,6 @@ void CoreOobeHandler::Initialize() {
 }
 
 void CoreOobeHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(kJsApiToggleAccessibility,
-      base::Bind(&CoreOobeHandler::HandleToggleAccessibility,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kJsApiScreenStateInitialize,
       base::Bind(&CoreOobeHandler::HandleInitialized,
                  base::Unretained(this)));
@@ -75,10 +71,6 @@ void CoreOobeHandler::RegisterMessages() {
 
 void CoreOobeHandler::HandleInitialized(const base::ListValue* args) {
   oobe_ui_->InitializeHandlers();
-}
-
-void CoreOobeHandler::HandleToggleAccessibility(const base::ListValue* args) {
-  accessibility::ToggleSpokenFeedback(web_ui());
 }
 
 void CoreOobeHandler::HandleSkipUpdateEnrollAfterEula(

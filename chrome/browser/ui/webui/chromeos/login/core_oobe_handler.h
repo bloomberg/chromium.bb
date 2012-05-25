@@ -51,7 +51,6 @@ class CoreOobeHandler : public BaseScreenHandler,
  private:
   // Handlers for JS WebUI messages.
   void HandleInitialized(const base::ListValue* args);
-  void HandleToggleAccessibility(const base::ListValue* args);
   void HandleSkipUpdateEnrollAfterEula(const base::ListValue* args);
 
   // Calls javascript to sync OOBE UI visibility with show_oobe_ui_.

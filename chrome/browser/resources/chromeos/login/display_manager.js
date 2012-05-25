@@ -13,10 +13,8 @@
 /** @const */ var SCREEN_ACCOUNT_PICKER = 'account-picker';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
-/** @const */ var ACCELERATOR_ACCESSIBILITY = 'accessibility';
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
 /** @const */ var ACCELERATOR_ENROLLMENT = 'enrollment';
-/** @const */ var ACCELERATOR_EXIT = 'exit';
 /** @const */ var ACCELERATOR_VERSION = 'version';
 
 /* Help topic identifiers. */
@@ -83,9 +81,7 @@ cr.define('cr.ui.login', function() {
      * @param {string} name Accelerator name.
      */
     handleAccelerator: function(name) {
-      if (name == ACCELERATOR_ACCESSIBILITY) {
-        chrome.send('toggleAccessibility');
-      } else if (name == ACCELERATOR_CANCEL) {
+      if (name == ACCELERATOR_CANCEL) {
         if (this.currentScreen.cancel) {
           this.currentScreen.cancel();
         }
@@ -98,10 +94,6 @@ cr.define('cr.ui.login', function() {
           // In this case update check will be skipped and OOBE will
           // proceed straight to enrollment screen when EULA is accepted.
           chrome.send('skipUpdateEnrollAfterEula');
-        }
-      } else if (name == ACCELERATOR_EXIT) {
-        if (this.currentScreen.exit) {
-          this.currentScreen.exit();
         }
       } else if (name == ACCELERATOR_VERSION) {
         if (this.allowToggleVersion_)

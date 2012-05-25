@@ -42,10 +42,8 @@ namespace {
 const char kViewClassName[] = "browser/chromeos/login/WebUILoginView";
 
 // These strings must be kept in sync with handleAccelerator() in oobe.js.
-const char kAccelNameAccessibility[] = "accessibility";
 const char kAccelNameCancel[] = "cancel";
 const char kAccelNameEnrollment[] = "enrollment";
-const char kAccelNameExit[] = "exit";
 const char kAccelNameVersion[] = "version";
 
 // Observes IPC messages from the FrameSniffer and notifies JS if error
@@ -127,18 +125,11 @@ WebUILoginView::WebUILoginView()
                  chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
                  content::NotificationService::AllSources());
 
-  accel_map_[ui::Accelerator(ui::VKEY_Z,
-                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-      kAccelNameAccessibility;
   accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE)] =
       kAccelNameCancel;
   accel_map_[ui::Accelerator(ui::VKEY_E,
                              ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
       kAccelNameEnrollment;
-  // This should be kept in sync with the IDC_EXIT accelerator.
-  accel_map_[ui::Accelerator(ui::VKEY_Q,
-                             ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)] =
-      kAccelNameExit;
   accel_map_[ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)] =
       kAccelNameVersion;
 
