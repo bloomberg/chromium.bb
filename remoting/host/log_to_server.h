@@ -6,6 +6,8 @@
 #define REMOTING_HOST_LOG_TO_SERVER_H_
 
 #include <deque>
+#include <map>
+#include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -42,7 +44,7 @@ class LogToServer : public base::NonThreadSafe,
 
   // Logs a session state change. Currently, this is either
   // connection or disconnection.
-  void LogSessionStateChange(bool connected);
+  void LogSessionStateChange(const std::string& jid, bool connected);
 
   // SignalStrategy::Listener interface.
   virtual void OnSignalStrategyStateChange(
@@ -64,8 +66,10 @@ class LogToServer : public base::NonThreadSafe,
   ServerLogEntry::Mode mode_;
   SignalStrategy* signal_strategy_;
   scoped_ptr<IqSender> iq_sender_;
-  protocol::TransportRoute::RouteType connection_type_;
-  bool connection_type_set_;
+  // A map from client JID to the route type of that client's connection to
+  // this host.
+  std::map<std::string, protocol::TransportRoute::RouteType>
+      connection_route_type_;
   std::deque<ServerLogEntry> pending_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(LogToServer);

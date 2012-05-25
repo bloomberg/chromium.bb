@@ -26,8 +26,7 @@ LogToServer::LogToServer(ChromotingHost* host,
                          SignalStrategy* signal_strategy)
     : host_(host),
       mode_(mode),
-      signal_strategy_(signal_strategy),
-      connection_type_set_(false) {
+      signal_strategy_(signal_strategy) {
   signal_strategy_->AddListener(this);
 
   // |host| may be NULL in tests.
@@ -41,7 +40,8 @@ LogToServer::~LogToServer() {
     host_->RemoveStatusObserver(this);
 }
 
-void LogToServer::LogSessionStateChange(bool connected) {
+void LogToServer::LogSessionStateChange(const std::string& jid,
+                                        bool connected) {
   DCHECK(CalledOnValidThread());
 
   scoped_ptr<ServerLogEntry> entry(
@@ -50,8 +50,8 @@ void LogToServer::LogSessionStateChange(bool connected) {
   entry->AddModeField(mode_);
 
   if (connected) {
-    DCHECK(connection_type_set_);
-    entry->AddConnectionTypeField(connection_type_);
+    DCHECK(connection_route_type_.count(jid) == 1);
+    entry->AddConnectionTypeField(connection_route_type_[jid]);
   }
   Log(*entry.get());
 }
@@ -69,13 +69,13 @@ void LogToServer::OnSignalStrategyStateChange(SignalStrategy::State state) {
 
 void LogToServer::OnClientConnected(const std::string& jid) {
   DCHECK(CalledOnValidThread());
-  LogSessionStateChange(true);
+  LogSessionStateChange(jid, true);
 }
 
 void LogToServer::OnClientDisconnected(const std::string& jid) {
   DCHECK(CalledOnValidThread());
-  LogSessionStateChange(false);
-  connection_type_set_ = false;
+  LogSessionStateChange(jid, false);
+  connection_route_type_.erase(jid);
 }
 
 void LogToServer::OnClientRouteChange(const std::string& jid,
@@ -84,8 +84,7 @@ void LogToServer::OnClientRouteChange(const std::string& jid,
   // Store connection type for the video channel. It is logged later
   // when client authentication is finished.
   if (channel_name == kVideoChannelName) {
-    connection_type_ = route.type;
-    connection_type_set_ = true;
+    connection_route_type_[jid] = route.type;
   }
 }
 
