@@ -64,6 +64,8 @@
         'renderer/extensions/api_definitions_natives.h',
         'renderer/extensions/app_bindings.cc',
         'renderer/extensions/app_bindings.h',
+        'renderer/extensions/app_window_custom_bindings.cc',
+        'renderer/extensions/app_window_custom_bindings.h',
         'renderer/extensions/chrome_v8_context.cc',
         'renderer/extensions/chrome_v8_context.h',
         'renderer/extensions/chrome_v8_context_set.cc',

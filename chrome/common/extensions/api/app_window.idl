@@ -1,0 +1,32 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// File-level comment to appease parser. Eventually this will not be necessary.
+
+[nodoc] namespace appWindow {
+  dictionary CreateWindowOptions {
+    // Width of the window.
+    long? width;
+
+    // Height of the window.
+    long? height;
+
+    long? left;
+    long? top;
+
+    // Window type: 'panel' or 'shell' (defaults to 'shell')
+    DOMString? type;
+
+    // Frame type: 'custom' or 'chrome' (defaults to 'chrome')
+    DOMString? frame;
+  };
+
+  callback CreateWindowCallback = void (long view_id);
+
+  interface Functions {
+    static void create(DOMString url,
+                       CreateWindowOptions options,
+                       CreateWindowCallback callback);
+  };
+};

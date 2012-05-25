@@ -45,6 +45,7 @@ class ShellWindow : public content::NotificationObserver,
     return extension_window_controller_.get();
   }
   const extensions::Extension* extension() const { return extension_; }
+  content::WebContents* web_contents() const { return web_contents_; }
 
  protected:
   // TODO(mihaip): Switch from hardcoded defaults to passing in the window
@@ -56,8 +57,6 @@ class ShellWindow : public content::NotificationObserver,
               const extensions::Extension* extension,
               const GURL& url);
   virtual ~ShellWindow();
-
-  content::WebContents* web_contents() const { return web_contents_; }
 
  private:
   // PlatformAppBrowserTest needs access to web_contents()

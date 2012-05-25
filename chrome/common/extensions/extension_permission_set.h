@@ -100,6 +100,7 @@ class ExtensionAPIPermission {
     kActiveTab,
     kAlarms,
     kAppNotifications,
+    kAppWindow,
     kBackground,
     kBookmark,
     kBrowsingData,

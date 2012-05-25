@@ -28,6 +28,7 @@
         ],
         'idl_schema_files': [
           'alarms.idl',
+          'app_window.idl',
           'experimental_bluetooth.idl',
           'experimental_discovery.idl',
           'experimental_dns.idl',

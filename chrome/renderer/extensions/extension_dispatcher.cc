@@ -20,6 +20,7 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/api_definitions_natives.h"
 #include "chrome/renderer/extensions/app_bindings.h"
+#include "chrome/renderer/extensions/app_window_custom_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/context_menus_custom_bindings.h"
@@ -71,6 +72,7 @@ using WebKit::WebVector;
 using WebKit::WebView;
 using content::RenderThread;
 using extensions::ApiDefinitionsNatives;
+using extensions::AppWindowCustomBindings;
 using extensions::ContextMenusCustomBindings;
 using extensions::Extension;
 using extensions::ExperimentalUsbCustomBindings;
@@ -492,6 +494,8 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   // Custom bindings.
   module_system->RegisterNativeHandler("app",
       scoped_ptr<NativeHandler>(new AppBindings(this, context)));
+  module_system->RegisterNativeHandler("app_window",
+      scoped_ptr<NativeHandler>(new AppWindowCustomBindings(this)));
   module_system->RegisterNativeHandler("context_menus",
       scoped_ptr<NativeHandler>(new ContextMenusCustomBindings()));
   module_system->RegisterNativeHandler("extension",
@@ -538,6 +542,7 @@ void ExtensionDispatcher::PopulateSourceMap() {
 
   // Custom bindings.
   source_map_.RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("appWindow", IDR_APP_WINDOW_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("browserAction",
                              IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("contentSettings",
