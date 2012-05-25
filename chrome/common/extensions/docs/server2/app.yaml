@@ -1,0 +1,8 @@
+application: chromeextensiondocs2
+version: 1-0-0
+runtime: python
+api_version: 1
+
+handlers:
+- url: /.*
+  script: echo_handler.py
