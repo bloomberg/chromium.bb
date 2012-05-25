@@ -31,7 +31,7 @@
 #include "compositor.h"
 #include "screenshooter-server-protocol.h"
 
-#include "../wcap-decode/wcap-decode.h"
+#include "../wcap/wcap-decode.h"
 
 struct screenshooter {
 	struct wl_object base;

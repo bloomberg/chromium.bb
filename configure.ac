@@ -198,7 +198,7 @@ AC_CONFIG_FILES([Makefile
 		 src/Makefile
 		 src/xwayland/Makefile
 		 clients/Makefile
-		 wcap-decode/Makefile
+		 wcap/Makefile
 		 data/Makefile
 		 protocol/Makefile
 		 tests/Makefile])
