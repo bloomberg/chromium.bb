@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
+#include "chrome/browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_chrome_auth_private_api.h"
@@ -43,7 +44,6 @@
 #include "chrome/browser/extensions/extension_record_api.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
-#include "chrome/browser/extensions/extension_web_socket_proxy_private_api.h"
 #include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/extensions/system/system_api.h"
 #include "chrome/browser/history/history_extension_api.h"
@@ -386,8 +386,9 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 #endif
 
   // Websocket to TCP proxy. Currently noop on anything other than ChromeOS.
-  RegisterFunction<WebSocketProxyPrivateGetPassportForTCPFunction>();
-  RegisterFunction<WebSocketProxyPrivateGetURLForTCPFunction>();
+  RegisterFunction<
+      extensions::WebSocketProxyPrivateGetPassportForTCPFunction>();
+  RegisterFunction<extensions::WebSocketProxyPrivateGetURLForTCPFunction>();
 
   // Debugger
   RegisterFunction<AttachDebuggerFunction>();

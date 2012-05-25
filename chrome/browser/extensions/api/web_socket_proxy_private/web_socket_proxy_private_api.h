@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_SOCKET_PROXY_PRIVATE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_SOCKET_PROXY_PRIVATE_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_SOCKET_PROXY_PRIVATE_WEB_SOCKET_PROXY_PRIVATE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_WEB_SOCKET_PROXY_PRIVATE_WEB_SOCKET_PROXY_PRIVATE_API_H_
 #pragma once
 
 #include "base/timer.h"
@@ -17,6 +17,8 @@ class IOThread;
 namespace net {
 class SingleRequestHostResolver;
 }
+
+namespace extensions {
 
 // Base class for web socket proxy functions.
 class WebSocketProxyPrivate
@@ -107,4 +109,6 @@ class WebSocketProxyPrivateGetPassportForTCPFunction
   virtual void CustomFinalize() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_SOCKET_PROXY_PRIVATE_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_SOCKET_PROXY_PRIVATE_WEB_SOCKET_PROXY_PRIVATE_API_H_

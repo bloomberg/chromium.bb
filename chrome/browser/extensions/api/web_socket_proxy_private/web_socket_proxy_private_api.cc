@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_web_socket_proxy_private_api.h"
+#include "chrome/browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.h"
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -25,6 +25,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #endif
+
+namespace extensions {
 
 WebSocketProxyPrivate::WebSocketProxyPrivate()
     : port_(-1),
@@ -203,3 +205,5 @@ void WebSocketProxyPrivateGetPassportForTCPFunction::CustomFinalize() {
   result_.reset(Value::CreateStringValue(passport));
 #endif
 }
+
+}  // namespace extensions
