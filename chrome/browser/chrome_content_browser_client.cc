@@ -120,18 +120,6 @@
 #include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_views.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/chrome_browser_main_extra_parts_gtk.h"
-#endif
-
-#if defined(USE_AURA)
-#include "chrome/browser/chrome_browser_main_extra_parts_aura.h"
-#endif
-
-#if defined(USE_ASH)
-#include "chrome/browser/chrome_browser_main_extra_parts_ash.h"
-#endif
-
 #if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_ANDROID)
 #include "base/linux_util.h"
 #include "chrome/browser/crash_handler_host_linuxish.h"
@@ -349,7 +337,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   // Construct additional browser parts. Stages are called in the order in
   // which they are added.
 #if defined(TOOLKIT_GTK)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsGtk());
+  browser::AddGtkToolkitExtraParts(main_parts);
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -357,11 +345,11 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 #endif
 
 #if defined(USE_ASH)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
+  browser::AddAshToolkitExtraParts(main_parts);
 #endif
 
 #if defined(USE_AURA)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsAura());
+  browser::AddAuraToolkitExtraParts(main_parts);
 #endif
 
   return main_parts;

@@ -12,8 +12,20 @@ class ChromeBrowserMainParts;
 
 namespace browser {
 
+#if defined(TOOLKIT_GTK)
+void AddGtkToolkitExtraParts(ChromeBrowserMainParts* main_parts);
+#endif
+
 #if defined(TOOLKIT_VIEWS)
 void AddViewsToolkitExtraParts(ChromeBrowserMainParts* main_parts);
+#endif
+
+#if defined(USE_ASH)
+void AddAshToolkitExtraParts(ChromeBrowserMainParts* main_parts);
+#endif
+
+#if defined(USE_AURA)
+void AddAuraToolkitExtraParts(ChromeBrowserMainParts* main_parts);
 #endif
 
 }  // namespace browser

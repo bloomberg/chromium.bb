@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_browser_main_extra_parts_ash.h"
+#include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_switches.h"
@@ -11,6 +11,8 @@
 #include "ash/wm/key_rewriter_event_filter.h"
 #include "ash/wm/property_util.h"
 #include "base/command_line.h"
+#include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/views/ash/caps_lock_handler.h"
@@ -98,3 +100,11 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   ash::Shell::DeleteInstance();
 }
+
+namespace browser {
+
+void AddAshToolkitExtraParts(ChromeBrowserMainParts* main_parts) {
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
+}
+
+}  // namespace browser

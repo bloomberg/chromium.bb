@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_browser_main_extra_parts_aura.h"
+#include "chrome/browser/ui/aura/chrome_browser_main_extra_parts_aura.h"
 
+#include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/toolkit_extra_parts.h"
 #include "ui/aura/env.h"
 
 #if !defined(USE_ASH)
@@ -35,3 +37,11 @@ void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
   // aura::Env instance is deleted in BrowserProcessImpl::StartTearDown
   // after the metrics service is deleted.
 }
+
+namespace browser {
+
+void AddAuraToolkitExtraParts(ChromeBrowserMainParts* main_parts) {
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsAura());
+}
+
+}  // namespace browser

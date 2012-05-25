@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Contains functions used by BrowserMain() that are gtk-specific.
-
-#ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_EXTRA_PARTS_GTK_H_
-#define CHROME_BROWSER_CHROME_BROWSER_MAIN_EXTRA_PARTS_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_CHROME_BROWSER_MAIN_EXTRA_PARTS_GTK_H_
+#define CHROME_BROWSER_UI_GTK_CHROME_BROWSER_MAIN_EXTRA_PARTS_GTK_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
@@ -15,9 +14,10 @@ class ChromeBrowserMainExtraPartsGtk : public ChromeBrowserMainExtraParts {
  public:
   ChromeBrowserMainExtraPartsGtk();
 
-  virtual void PreEarlyInitialization() OVERRIDE;
-
   static void ShowMessageBox(const char* message);
+
+  // Overridden from ChromeBrowserMainExtraParts:
+  virtual void PreEarlyInitialization() OVERRIDE;
 
  private:
   void DetectRunningAsRoot();
@@ -25,4 +25,4 @@ class ChromeBrowserMainExtraPartsGtk : public ChromeBrowserMainExtraParts {
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsGtk);
 };
 
-#endif  // CHROME_BROWSER_CHROME_BROWSER_MAIN_EXTRA_PARTS_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_CHROME_BROWSER_MAIN_EXTRA_PARTS_GTK_H_

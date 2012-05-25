@@ -27,7 +27,7 @@
 #endif
 
 #if defined(TOOLKIT_GTK)
-#include "chrome/browser/chrome_browser_main_extra_parts_gtk.h"
+#include "chrome/browser/ui/gtk/chrome_browser_main_extra_parts_gtk.h"
 #include "chrome/browser/printing/print_dialog_gtk.h"
 #endif
 

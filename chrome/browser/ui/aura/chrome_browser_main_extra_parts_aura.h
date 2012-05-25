@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_EXTRA_PARTS_AURA_H_
-#define CHROME_BROWSER_CHROME_BROWSER_MAIN_EXTRA_PARTS_AURA_H_
+#ifndef CHROME_BROWSER_UI_AURA_CHROME_BROWSER_MAIN_EXTRA_PARTS_AURA_H_
+#define CHROME_BROWSER_UI_AURA_CHROME_BROWSER_MAIN_EXTRA_PARTS_AURA_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -21,6 +22,7 @@ class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
  public:
   ChromeBrowserMainExtraPartsAura();
 
+  // Overridden from ChromeBrowserMainExtraParts:
   virtual void PreProfileInit() OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
@@ -32,4 +34,4 @@ class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAura);
 };
 
-#endif  // CHROME_BROWSER_CHROME_BROWSER_MAIN_EXTRA_PARTS_AURA_H_
+#endif  // CHROME_BROWSER_UI_AURA_CHROME_BROWSER_MAIN_EXTRA_PARTS_AURA_H_
