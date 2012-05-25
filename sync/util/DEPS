@@ -4,4 +4,8 @@ include_rules = [
   "+sync/syncable/model_type.h",
   "+sync/syncable/model_type_test_util.h",
   "+sync/test/fake_encryptor.h",
+
+  # TODO(kochi): Remove this hack after "Chromebox" hack in get_session_name.cc
+  # is gone.
+  "+chrome/browser/chromeos/system",
 ]

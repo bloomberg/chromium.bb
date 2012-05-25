@@ -18,6 +18,7 @@
 #include "jingle/notifier/base/notification_method.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/host_resolver.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/sync_notifier.h"
@@ -127,6 +128,41 @@ notifier::NotifierOptions ParseNotifierOptions(
   return notifier_options;
 }
 
+// Needed to use a real host resolver.
+class MyTestURLRequestContext : public TestURLRequestContext {
+ public:
+  MyTestURLRequestContext() : TestURLRequestContext(true) {
+    context_storage_.set_host_resolver(
+        net::CreateSystemHostResolver(
+            net::HostResolver::kDefaultParallelism,
+            net::HostResolver::kDefaultRetryAttempts,
+            NULL));
+    Init();
+  }
+
+  virtual ~MyTestURLRequestContext() {}
+};
+
+class MyTestURLRequestContextGetter : public TestURLRequestContextGetter {
+ public:
+  explicit MyTestURLRequestContextGetter(
+      const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy)
+      : TestURLRequestContextGetter(io_message_loop_proxy) {}
+
+  virtual TestURLRequestContext* GetURLRequestContext() OVERRIDE {
+    // Construct |context_| lazily so it gets constructed on the right
+    // thread (the IO thread).
+    if (!context_.get())
+      context_.reset(new MyTestURLRequestContext());
+    return context_.get();
+  }
+
+ private:
+  virtual ~MyTestURLRequestContextGetter() {}
+
+  scoped_ptr<MyTestURLRequestContext> context_;
+};
+
 }  // namespace
 
 int main(int argc, char* argv[]) {
@@ -169,7 +205,7 @@ int main(int argc, char* argv[]) {
   const notifier::NotifierOptions& notifier_options =
       ParseNotifierOptions(
           command_line,
-          new TestURLRequestContextGetter(io_thread.message_loop_proxy()));
+          new MyTestURLRequestContextGetter(io_thread.message_loop_proxy()));
   const char kClientInfo[] = "sync_listen_notifications";
   NullInvalidationStateTracker null_invalidation_state_tracker;
   sync_notifier::SyncNotifierFactory sync_notifier_factory(
