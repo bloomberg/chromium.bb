@@ -23,8 +23,11 @@
 namespace content {
 class URLFetcherCore;
 class URLFetcherDelegate;
-class URLFetcherFactory;
 }  // namespace content
+
+namespace net {
+class URLFetcherFactory;
+}  // namespace net
 
 class CONTENT_EXPORT URLFetcherImpl : public net::URLFetcher {
  public:
@@ -100,14 +103,14 @@ class CONTENT_EXPORT URLFetcherImpl : public net::URLFetcher {
   // actively running.
   static int GetNumFetcherCores();
 
-  static content::URLFetcherFactory* factory();
+  static net::URLFetcherFactory* factory();
 
   // Sets the factory used by the static method Create to create a URLFetcher.
   // URLFetcher does not take ownership of |factory|. A value of NULL results
   // in a URLFetcher being created directly.
   //
   // NOTE: for safety, this should only be used through ScopedURLFetcherFactory!
-  static void set_factory(content::URLFetcherFactory* factory);
+  static void set_factory(net::URLFetcherFactory* factory);
 
   const scoped_refptr<content::URLFetcherCore> core_;
 

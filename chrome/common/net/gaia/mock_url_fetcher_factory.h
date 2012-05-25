@@ -41,7 +41,7 @@ class MockFetcher : public TestURLFetcher {
 };
 
 template<typename T>
-class MockURLFetcherFactory : public content::URLFetcherFactory,
+class MockURLFetcherFactory : public net::URLFetcherFactory,
                               public ScopedURLFetcherFactory {
  public:
   MockURLFetcherFactory()

@@ -76,7 +76,7 @@ const char kCWSResponseResultFormat[] =
 
 const char kCWSFakeIconURLFormat[] = "http://example.com/%s/icon.png";
 
-class DummyURLFetcherFactory : public content::URLFetcherFactory {
+class DummyURLFetcherFactory : public net::URLFetcherFactory {
  public:
    DummyURLFetcherFactory() {}
    virtual ~DummyURLFetcherFactory() {}

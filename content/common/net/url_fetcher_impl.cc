@@ -8,9 +8,9 @@
 #include "base/message_loop_proxy.h"
 #include "content/common/net/url_fetcher_core.h"
 #include "content/common/net/url_request_user_data.h"
-#include "content/public/common/url_fetcher_factory.h"
+#include "net/url_request/url_fetcher_factory.h"
 
-static content::URLFetcherFactory* g_factory = NULL;
+static net::URLFetcherFactory* g_factory = NULL;
 
 // static
 net::URLFetcher* content::URLFetcher::Create(
@@ -232,11 +232,11 @@ net::URLFetcherDelegate* URLFetcherImpl::delegate() const {
 }
 
 // static
-content::URLFetcherFactory* URLFetcherImpl::factory() {
+net::URLFetcherFactory* URLFetcherImpl::factory() {
   return g_factory;
 }
 
 // static
-void URLFetcherImpl::set_factory(content::URLFetcherFactory* factory) {
+void URLFetcherImpl::set_factory(net::URLFetcherFactory* factory) {
   g_factory = factory;
 }

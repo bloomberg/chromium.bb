@@ -33,7 +33,7 @@ struct TestURLResponse {
 
 // Creates mock URLFetchers whose behavior can be controlled in tests. To do so
 // set mock expectations on the method |Intercept|.
-class TestingPolicyURLFetcherFactory : public content::URLFetcherFactory,
+class TestingPolicyURLFetcherFactory : public net::URLFetcherFactory,
                                        public ScopedURLFetcherFactory {
  public:
   explicit TestingPolicyURLFetcherFactory(EventLogger* logger);

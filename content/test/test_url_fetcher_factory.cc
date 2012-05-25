@@ -17,7 +17,7 @@
 #include "net/url_request/url_request_status.h"
 
 ScopedURLFetcherFactory::ScopedURLFetcherFactory(
-    content::URLFetcherFactory* factory) {
+    net::URLFetcherFactory* factory) {
   DCHECK(!URLFetcherImpl::factory());
   URLFetcherImpl::set_factory(factory);
 }
@@ -290,7 +290,7 @@ FakeURLFetcherFactory::FakeURLFetcherFactory()
 }
 
 FakeURLFetcherFactory::FakeURLFetcherFactory(
-    content::URLFetcherFactory* default_factory)
+    net::URLFetcherFactory* default_factory)
     : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       default_factory_(default_factory) {
 }

@@ -12,16 +12,16 @@
 #include <utility>
 
 #include "base/threading/non_thread_safe.h"
-#include "content/public/common/url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_request_headers.h"
+#include "net/url_request/url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 
 // Changes URLFetcher's Factory for the lifetime of the object.
 // Note that this scoper cannot be nested (to make it even harder to misuse).
 class ScopedURLFetcherFactory : public base::NonThreadSafe {
  public:
-  explicit ScopedURLFetcherFactory(content::URLFetcherFactory* factory);
+  explicit ScopedURLFetcherFactory(net::URLFetcherFactory* factory);
   virtual ~ScopedURLFetcherFactory();
 
  private:
@@ -180,7 +180,7 @@ class TestURLFetcher : public net::URLFetcher {
 
 // Simple URLFetcherFactory method that creates TestURLFetchers. All fetchers
 // are registered in a map by the id passed to the create method.
-class TestURLFetcherFactory : public content::URLFetcherFactory,
+class TestURLFetcherFactory : public net::URLFetcherFactory,
                               public ScopedURLFetcherFactory {
  public:
   TestURLFetcherFactory();
@@ -234,13 +234,13 @@ class TestURLFetcherFactory : public content::URLFetcherFactory,
 //  SomeService service;
 //  service.Run();  // Will eventually request these two URLs.
 
-class FakeURLFetcherFactory : public content::URLFetcherFactory,
+class FakeURLFetcherFactory : public net::URLFetcherFactory,
                               public ScopedURLFetcherFactory {
  public:
   FakeURLFetcherFactory();
   // FakeURLFetcherFactory that will delegate creating URLFetcher for unknown
   // url to the given factory.
-  explicit FakeURLFetcherFactory(content::URLFetcherFactory* default_factory);
+  explicit FakeURLFetcherFactory(net::URLFetcherFactory* default_factory);
   virtual ~FakeURLFetcherFactory();
 
   // If no fake response is set for the given URL this method will delegate the
@@ -267,7 +267,7 @@ class FakeURLFetcherFactory : public content::URLFetcherFactory,
  private:
   typedef std::map<GURL, std::pair<std::string, bool> > FakeResponseMap;
   FakeResponseMap fake_responses_;
-  content::URLFetcherFactory* default_factory_;
+  net::URLFetcherFactory* default_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcherFactory);
 };
@@ -276,7 +276,7 @@ class FakeURLFetcherFactory : public content::URLFetcherFactory,
 // URLFetcherImpl. It can be use in conjunction with a FakeURLFetcherFactory in
 // integration tests to control the behavior of some requests but execute
 // all the other ones.
-class URLFetcherImplFactory : public content::URLFetcherFactory {
+class URLFetcherImplFactory : public net::URLFetcherFactory {
  public:
   URLFetcherImplFactory();
   virtual ~URLFetcherImplFactory();

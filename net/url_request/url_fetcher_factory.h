@@ -2,32 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_URL_FETCHER_FACTORY_H_
-#define CONTENT_PUBLIC_COMMON_URL_FETCHER_FACTORY_H_
+#ifndef NET_URL_REQUEST_URL_FETCHER_FACTORY_H_
+#define NET_URL_REQUEST_URL_FETCHER_FACTORY_H_
 #pragma once
 
+#include "net/base/net_export.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace net {
 class URLFetcherDelegate;
-}  // namespace net
-
-namespace content {
 
 // URLFetcher::Create uses the currently registered Factory to create the
 // URLFetcher. Factory is intended for testing.
-class URLFetcherFactory {
+class NET_EXPORT URLFetcherFactory {
  public:
-  virtual net::URLFetcher* CreateURLFetcher(
+  virtual URLFetcher* CreateURLFetcher(
       int id,
       const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* d) = 0;
+      URLFetcher::RequestType request_type,
+      URLFetcherDelegate* d) = 0;
 
  protected:
-  virtual ~URLFetcherFactory() {}
+  virtual ~URLFetcherFactory();
 };
 
-}  // namespace content
+}  // namespace net
 
-#endif  // CONTENT_PUBLIC_COMMON_URL_FETCHER_FACTORY_H_
+#endif  // NET_URL_REQUEST_URL_FETCHER_FACTORY_H_

@@ -64,7 +64,7 @@ class MockOAuthFetcher : public TestURLFetcher {
   DISALLOW_COPY_AND_ASSIGN(MockOAuthFetcher);
 };
 
-class MockOAuthFetcherFactory : public content::URLFetcherFactory,
+class MockOAuthFetcherFactory : public net::URLFetcherFactory,
                                 public ScopedURLFetcherFactory {
  public:
   MockOAuthFetcherFactory()
