@@ -378,12 +378,12 @@ void BufferedResourceLoader::didReceiveResponse(
   int shift = 0;
   int max_enum = base::bits::Log2Ceiling(kMaxReason);
   while (reasons) {
+    DCHECK_LT(shift, max_enum);  // Sanity check.
     if (reasons & 0x1)
       UMA_HISTOGRAM_ENUMERATION("Media.UncacheableReason", shift, max_enum);
     reasons >>= 1;
     ++shift;
   }
-  DCHECK_LT(shift, max_enum);  // Sanity check.
 
   // Expected content length can be |kPositionNotSpecified|, in that case
   // |content_length_| is not specified and this is a streaming response.
