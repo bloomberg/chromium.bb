@@ -15,7 +15,6 @@
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/touch/touch_factory.h"
-#include "ui/base/x/valuators.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/monitor.h"
@@ -50,7 +49,7 @@ const int kMinWheelButton = 4;
 const int kMaxWheelButton = 7;
 
 // A class to support the detection of scroll events, using X11 valuators.
-class CMTEventData {
+class UI_EXPORT CMTEventData {
  public:
   // Returns the ScrollEventData singleton.
   static CMTEventData* GetInstance() {
@@ -374,7 +373,7 @@ class CMTEventData {
 // A class to track current modifier state on master device. Only track ctrl,
 // alt, shift and caps lock keys currently. The tracked state can then be used
 // by floating device.
-class XModifierStateWatcher{
+class UI_EXPORT XModifierStateWatcher{
  public:
   static XModifierStateWatcher* GetInstance() {
     return Singleton<XModifierStateWatcher>::get();
@@ -527,11 +526,9 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
   // when necessary, by a RWHVV.
   // TODO(sad): When should _CANCELLED be generated?
 
-  ui::ValuatorTracker* valuators = ui::ValuatorTracker::GetInstance();
-
   float slot;
-  if (!valuators->ExtractValuator(
-      *native_event, ui::ValuatorTracker::VAL_SLOT_ID, &slot))
+  if (!factory->ExtractTouchParam(*native_event, ui::TouchFactory::TP_SLOT_ID,
+                                  &slot))
     return ui::ET_UNKNOWN;
 
   if (!factory->IsSlotUsed(slot)) {
@@ -540,8 +537,8 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
   }
 
   float tracking;
-  if (!valuators->ExtractValuator(
-      *native_event, ui::ValuatorTracker::VAL_TRACKING_ID, &tracking))
+  if (!factory->ExtractTouchParam(*native_event,
+                                  ui::TouchFactory::TP_TRACKING_ID, &tracking))
     return ui::ET_UNKNOWN;
 
   if (tracking == 0l) {
@@ -554,10 +551,9 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
 }
 
 float GetTouchParamFromXEvent(XEvent* xev,
-                              ui::ValuatorTracker::Valuator val,
+                              ui::TouchFactory::TouchParam tp,
                               float default_value) {
-  ui::ValuatorTracker::GetInstance()->ExtractValuator(
-      *xev, val, &default_value);
+  ui::TouchFactory::GetInstance()->ExtractTouchParam(*xev, tp, &default_value);
   return default_value;
 }
 
@@ -630,7 +626,6 @@ void UpdateDeviceList() {
   Display* display = GetXDisplay();
   CMTEventData::GetInstance()->UpdateDeviceList(display);
   TouchFactory::GetInstance()->UpdateDeviceList(display);
-  ValuatorTracker::GetInstance()->SetupValuator();
 }
 
 EventType EventTypeFromNative(const base::NativeEvent& native_event) {
@@ -879,12 +874,10 @@ int GetTouchId(const base::NativeEvent& xev) {
     return slot;
   }
 
-  ui::ValuatorTracker* valuators = ui::ValuatorTracker::GetInstance();
-
 #if defined(USE_XI2_MT)
   float tracking_id;
-  if (!valuators->ExtractValuator(
-      *xev, ui::ValuatorTracker::VAL_TRACKING_ID, &tracking_id)) {
+  if (!factory->ExtractTouchParam(
+         *xev, ui::TouchFactory::TP_TRACKING_ID, &tracking_id)) {
     LOG(ERROR) << "Could not get the slot ID for the event. Using 0.";
   } else {
     slot = factory->GetSlotForTrackingID(tracking_id);
@@ -895,8 +888,8 @@ int GetTouchId(const base::NativeEvent& xev) {
     }
   }
 #else
-  if (!valuators->ExtractValuator(
-      *xev, ui::ValuatorTracker::VAL_SLOT_ID, &slot))
+  if (!factory->ExtractTouchParam(
+         *xev, ui::TouchFactory::TP_SLOT_ID, &slot))
     LOG(ERROR) << "Could not get the slot ID for the event. Using 0.";
 #endif
   return slot;
@@ -904,28 +897,28 @@ int GetTouchId(const base::NativeEvent& xev) {
 
 float GetTouchRadiusX(const base::NativeEvent& native_event) {
   return GetTouchParamFromXEvent(native_event,
-      ui::ValuatorTracker::VAL_TOUCH_MAJOR, 0.0) / 2.0;
+      ui::TouchFactory::TP_TOUCH_MAJOR, 0.0) / 2.0;
 }
 
 float GetTouchRadiusY(const base::NativeEvent& native_event) {
   return GetTouchParamFromXEvent(native_event,
-      ui::ValuatorTracker::VAL_TOUCH_MINOR, 0.0) / 2.0;
+      ui::TouchFactory::TP_TOUCH_MINOR, 0.0) / 2.0;
 }
 
 float GetTouchAngle(const base::NativeEvent& native_event) {
   return GetTouchParamFromXEvent(native_event,
-      ui::ValuatorTracker::VAL_ORIENTATION, 0.0) / 2.0;
+      ui::TouchFactory::TP_ORIENTATION, 0.0) / 2.0;
 }
 
 float GetTouchForce(const base::NativeEvent& native_event) {
   float force = 0.0;
-  force = GetTouchParamFromXEvent(native_event,
-      ui::ValuatorTracker::VAL_PRESSURE, 0.0);
+  force = GetTouchParamFromXEvent(native_event, ui::TouchFactory::TP_PRESSURE,
+                                  0.0);
   unsigned int deviceid =
       static_cast<XIDeviceEvent*>(native_event->xcookie.data)->sourceid;
   // Force is normalized to fall into [0, 1]
-  if (!ui::ValuatorTracker::GetInstance()->NormalizeValuator(
-      deviceid, ui::ValuatorTracker::VAL_PRESSURE, &force))
+  if (!ui::TouchFactory::GetInstance()->NormalizeTouchParam(
+      deviceid, ui::TouchFactory::TP_PRESSURE, &force))
     force = 0.0;
   return force;
 }
