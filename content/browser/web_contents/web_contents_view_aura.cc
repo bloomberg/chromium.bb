@@ -5,6 +5,7 @@
 #include "content/browser/web_contents/web_contents_view_aura.h"
 
 #include "base/utf_string_conversions.h"
+#include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -67,7 +68,9 @@ class WebDragSourceAura : public MessageLoopForUI::Observer {
       case ui::ET_MOUSE_DRAGGED:
         rvh = contents_->GetRenderViewHost();
         if (rvh) {
-          gfx::Point screen_loc = ui::EventLocationFromNative(event);
+          gfx::Point screen_loc_in_pixel = ui::EventLocationFromNative(event);
+          gfx::Point screen_loc = content::ConvertPointToDIP(rvh->GetView(),
+              screen_loc_in_pixel);
           gfx::Point client_loc = screen_loc;
           aura::Window* window = rvh->GetView()->GetNativeView();
           aura::Window::ConvertPointToWindow(window->GetRootWindow(),
