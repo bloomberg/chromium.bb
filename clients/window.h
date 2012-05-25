@@ -112,6 +112,7 @@ display_get_image_for_egl_image_surface(struct display *display,
 #endif
 
 #define SURFACE_OPAQUE 0x01
+#define SURFACE_SHM    0x02
 
 cairo_surface_t *
 display_create_surface(struct display *display,

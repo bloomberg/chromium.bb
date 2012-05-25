@@ -618,7 +618,7 @@ display_create_surface(struct display *display,
 	if (check_size(rectangle) < 0)
 		return NULL;
 #ifdef HAVE_CAIRO_EGL
-	if (display->dpy)
+	if (display->dpy && !(flags & SURFACE_SHM))
 		return display_create_egl_window_surface(display,
 							 surface,
 							 flags,

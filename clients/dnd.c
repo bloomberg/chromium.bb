@@ -106,7 +106,8 @@ item_create(struct display *display, int x, int y, int seed)
 
 	rect.width = item_width;
 	rect.height = item_height;
-	item->surface = display_create_surface(display, NULL, &rect, 0);
+	item->surface =
+		display_create_surface(display, NULL, &rect, SURFACE_SHM);
 
 	item->x = x;
 	item->y = y;
@@ -322,7 +323,8 @@ create_drag_cursor(struct dnd_drag *dnd_drag,
 
 	rectangle.width = item_width + 2 * pointer->width;
 	rectangle.height = item_height + 2 * pointer->height;
-	surface = display_create_surface(dnd->display, NULL, &rectangle, 0);
+	surface = display_create_surface(dnd->display, NULL, &rectangle,
+					 SURFACE_SHM);
 
 	cr = cairo_create(surface);
 	cairo_translate(cr, pointer->width, pointer->height);
