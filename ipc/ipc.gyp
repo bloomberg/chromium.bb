@@ -63,7 +63,7 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
-        ['OS=="android" and "<(gtest_target_type)"=="shared_library"', {
+        ['OS == "android" and gtest_target_type == "shared_library"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
@@ -93,47 +93,24 @@
     },
   ],
   'conditions': [
-    # Special target to wrap a <(gtest_target_type)==shared_library
+    # Special target to wrap a gtest_target_type==shared_library
     # ipc_tests into an android apk for execution.
     # See base.gyp for TODO(jrg)s about this strategy.
-    ['OS=="android" and "<(gtest_target_type)"=="shared_library"', {
+    ['OS == "android" and gtest_target_type == "shared_library"', {
       'targets': [
         {
           'target_name': 'ipc_tests_apk',
           'type': 'none',
           'dependencies': [
+            '../base/base.gyp:base_java',
             'ipc_tests',
           ],
-          'actions': [
-            {
-              # Generate apk files (including source and antfile) from
-              # a template, and builds them.
-              'action_name': 'generate_and_build',
-              'inputs': [
-                '../testing/android/AndroidManifest.xml',
-                '../testing/android/generate_native_test.py',
-                '<(PRODUCT_DIR)/lib.target/libipc_tests.so',
-                '<(PRODUCT_DIR)/lib.java/chromium_base.jar'
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/ipc_tests_apk/ipc_tests-debug.apk',
-              ],
-              'action': [ 
-                '../testing/android/generate_native_test.py',
-                '--native_library',
-                '<(PRODUCT_DIR)/lib.target/libipc_tests.so',
-                # TODO(jrg): find a better way to specify jar
-                # dependencies.  Hard coding seems fragile.
-                '--jar',
-                '<(PRODUCT_DIR)/lib.java/chromium_base.jar',
-                '--output',
-                '<(PRODUCT_DIR)/ipc_tests_apk',
-                '--ant-args', 
-                '-DPRODUCT_DIR=<(PRODUCT_DIR)',
-                '--ant-compile'
-              ],
-            },
-          ],
+          'variables': {
+            'test_suite_name': 'ipc_tests',
+            'input_shlib_path': '<(PRODUCT_DIR)/lib.target/<(SHARED_LIB_PREFIX)ipc_tests<(SHARED_LIB_SUFFIX)',
+            'input_jars_paths': ['<(PRODUCT_DIR)/lib.java/chromium_base.jar',],
+          },
+          'includes': [ '../build/apk_test.gypi' ],
         }],
     }],
   ],

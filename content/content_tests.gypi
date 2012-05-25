@@ -162,7 +162,7 @@
     },
     {
       'target_name': 'content_unittests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
         'content_browser',
@@ -400,6 +400,11 @@
             'browser/geolocation/wifi_data_provider_linux_unittest.cc',
           ],
         }],
+        ['OS == "android" and gtest_target_type == "shared_library"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ]
+        }],
       ],
     },
     {
@@ -538,6 +543,31 @@
             'common/gpu/media/h264_parser_unittest.cc',
           ],
         }
+      ],
+    }],
+    # Special target to wrap a gtest_target_type==shared_library
+    # content_unittests into an android apk for execution.
+    # See base.gyp for TODO(jrg)s about this strategy.
+    ['OS == "android" and gtest_target_type == "shared_library"', {
+      'targets': [
+        {
+          'target_name': 'content_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+            'content_java',
+            'content_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'content_unittests',
+            'input_shlib_path': '<(PRODUCT_DIR)/lib.target/<(SHARED_LIB_PREFIX)content_unittests<(SHARED_LIB_SUFFIX)',
+            'input_jars_paths': [
+              '<(PRODUCT_DIR)/lib.java/chromium_base.jar',
+              '<(PRODUCT_DIR)/lib.java/chromium_content.jar',
+            ],
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
       ],
     }],
   ],
