@@ -61,6 +61,9 @@ if pyauto.PyUITest.IsChromeOS():
   from autotest.cros import cros_ui
 elif pyauto.PyUITest.IsWin():
   import _winreg as winreg
+elif pyauto.PyUITest.IsMac():
+  import getpass
+  import plistlib
 
 # ASN.1 object identifier for PKCS#1/RSA.
 PKCS1_RSA_OID = '\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
@@ -246,7 +249,7 @@ class PolicyTestBase(pyauto.PyUITest):
     """Writes the given user policy to the JSON policy file read by Chrome."""
     assert self.IsLinux()
     sudo_cmd_file = os.path.join(os.path.dirname(__file__),
-                                 'policy_linux_util.py')
+                                 'policy_posix_util.py')
 
     if self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome':
       policies_location_base = '/etc/opt/chrome'
@@ -265,10 +268,36 @@ class PolicyTestBase(pyauto.PyUITest):
       policies_location = '%s/policies/managed' % policies_location_base
       subprocess.call(['suid-python', sudo_cmd_file,
                        'setup_dir', policies_location])
+      subprocess.call(['suid-python', sudo_cmd_file,
+                       'perm_dir', policies_location])
       # Copy chrome.json file to the managed directory
       subprocess.call(['suid-python', sudo_cmd_file,
                        'copy', '/tmp/chrome.json', policies_location])
       os.remove('/tmp/chrome.json')
+
+  def _SetUserPolicyMac(self, user_policy=None):
+    """Writes the given user policy to the plist policy file read by Chrome."""
+    assert self.IsMac()
+    sudo_cmd_file = os.path.join(os.path.dirname(__file__),
+                                 'policy_posix_util.py')
+
+    if self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome':
+      policies_file_base = 'com.google.Chrome.plist'
+    else:
+      policies_file_base = 'org.chromium.Chromium.plist'
+
+    policies_location = os.path.join('/Library', 'Managed Preferences',
+                                     getpass.getuser())
+
+    if user_policy is not None:
+      policies_tmp_file = os.path.join('/tmp', policies_file_base)
+      plistlib.writePlist(user_policy, policies_tmp_file)
+      subprocess.call(['suid-python', sudo_cmd_file,
+                       'setup_dir', policies_location])
+      # Copy policy file to the managed directory
+      subprocess.call(['suid-python', sudo_cmd_file,
+                       'copy', policies_tmp_file, policies_location])
+      os.remove(policies_tmp_file)
 
   def SetUserPolicy(self, user_policy=None):
     """Sets the user policy provided as a dict.
@@ -280,6 +309,8 @@ class PolicyTestBase(pyauto.PyUITest):
       self._SetUserPolicyWin(user_policy=user_policy)
     elif self.IsLinux():
       self._SetUserPolicyLinux(user_policy=user_policy)
+    elif self.IsMac():
+      self._SetUserPolicyMac(user_policy=user_policy)
     else:
       raise NotImplementedError('Not available on this platform.')
 
