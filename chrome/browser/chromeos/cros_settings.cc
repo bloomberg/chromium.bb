@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/device_settings_provider.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
@@ -235,13 +234,16 @@ const base::Value* CrosSettings::GetPref(const std::string& path) const {
   return NULL;
 }
 
-bool CrosSettings::PrepareTrustedValues(const base::Closure& callback) const {
+CrosSettingsProvider::TrustedStatus CrosSettings::PrepareTrustedValues(
+    const base::Closure& callback) const {
   DCHECK(CalledOnValidThread());
   for (size_t i = 0; i < providers_.size(); ++i) {
-    if (!providers_[i]->PrepareTrustedValues(callback))
-      return false;
+    CrosSettingsProvider::TrustedStatus status =
+        providers_[i]->PrepareTrustedValues(callback);
+    if (status != CrosSettingsProvider::TRUSTED)
+      return status;
   }
-  return true;
+  return CrosSettingsProvider::TRUSTED;
 }
 
 bool CrosSettings::GetBoolean(const std::string& path,

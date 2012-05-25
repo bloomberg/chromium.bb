@@ -412,7 +412,7 @@ void ExistingUserController::LoginAsGuest() {
 
   // Check allow_guest in case this call is fired from key accelerator.
   // Must not proceed without signature verification.
-  if (!cros_settings_->PrepareTrustedValues(
+  if (CrosSettingsProvider::TRUSTED != cros_settings_->PrepareTrustedValues(
       base::Bind(&ExistingUserController::LoginAsGuest,
                  weak_factory_.GetWeakPtr()))) {
     // Value of AllowGuest setting is still not verified.
@@ -626,7 +626,7 @@ void ExistingUserController::OnOffTheRecordLoginSuccess() {
 
 void ExistingUserController::OnPasswordChangeDetected() {
   // Must not proceed without signature verification.
-  if (!cros_settings_->PrepareTrustedValues(
+  if (CrosSettingsProvider::TRUSTED != cros_settings_->PrepareTrustedValues(
       base::Bind(&ExistingUserController::OnPasswordChangeDetected,
                  weak_factory_.GetWeakPtr()))) {
     // Value of owner email is still not verified.

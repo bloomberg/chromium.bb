@@ -327,7 +327,8 @@ void DevicePolicyCache::InstallInitialPolicy(
 
 void DevicePolicyCache::SetTokenAndFlagReady(const std::string& device_token) {
   // Wait for device settings to become available.
-  if (!chromeos::CrosSettings::Get()->PrepareTrustedValues(
+  if (chromeos::CrosSettingsProvider::TRUSTED !=
+      chromeos::CrosSettings::Get()->PrepareTrustedValues(
           base::Bind(&DevicePolicyCache::SetTokenAndFlagReady,
                      weak_ptr_factory_.GetWeakPtr(),
                      device_token))) {

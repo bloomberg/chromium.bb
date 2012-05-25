@@ -52,7 +52,7 @@ void KioskModeSettings::Initialize(const base::Closure& notify_initialized) {
   }
 
   CrosSettings* cros_settings = CrosSettings::Get();
-  if (!cros_settings->PrepareTrustedValues(
+  if (CrosSettingsProvider::TRUSTED != cros_settings->PrepareTrustedValues(
       base::Bind(&KioskModeSettings::Initialize,
                  base::Unretained(this),
                  notify_initialized))) {

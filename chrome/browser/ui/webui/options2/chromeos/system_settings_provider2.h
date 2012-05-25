@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_SYSTEM_SETTINGS_PROVIDER2_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_SYSTEM_SETTINGS_PROVIDER2_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -14,9 +15,8 @@
 #include "third_party/icu/public/i18n/unicode/timezone.h"
 
 namespace base {
-class Value;
 class ListValue;
-class StringValue;
+class Value;
 }
 
 namespace chromeos {
@@ -30,7 +30,8 @@ class SystemSettingsProvider : public CrosSettingsProvider,
 
   // CrosSettingsProvider implementation.
   virtual const base::Value* Get(const std::string& path) const OVERRIDE;
-  virtual bool PrepareTrustedValues(const base::Closure& callback) OVERRIDE;
+  virtual TrustedStatus PrepareTrustedValues(
+      const base::Closure& callback) OVERRIDE;
   virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
   virtual void Reload() OVERRIDE;
 

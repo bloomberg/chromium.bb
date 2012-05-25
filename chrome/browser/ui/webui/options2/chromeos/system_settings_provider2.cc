@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
 
-#include <string>
-
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -226,8 +224,9 @@ const base::Value* SystemSettingsProvider::Get(const std::string& path) const {
 }
 
 // The timezone is always trusted.
-bool SystemSettingsProvider::PrepareTrustedValues(const base::Closure& cb) {
-  return true;
+CrosSettingsProvider::TrustedStatus
+    SystemSettingsProvider::PrepareTrustedValues(const base::Closure& cb) {
+  return TRUSTED;
 }
 
 bool SystemSettingsProvider::HandlesSetting(const std::string& path) const {

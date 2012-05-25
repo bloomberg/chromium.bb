@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "content/public/browser/notification_observer.h"
 
 namespace base {
@@ -23,8 +24,6 @@ class Value;
 }
 
 namespace chromeos {
-
-class CrosSettingsProvider;
 
 // This class manages per-device/global settings.
 class CrosSettings : public base::NonThreadSafe {
@@ -46,7 +45,8 @@ class CrosSettings : public base::NonThreadSafe {
   // are trusted during the current loop cycle; otherwise returns false, and
   // |callback| will be invoked later when trusted values become available.
   // PrepareTrustedValues() should be tried again in that case.
-  virtual bool PrepareTrustedValues(const base::Closure& callback) const;
+  virtual CrosSettingsProvider::TrustedStatus PrepareTrustedValues(
+      const base::Closure& callback) const;
 
   // Convenience forms of Set().  These methods will replace any existing
   // value at that |path|, even if it has a different type.

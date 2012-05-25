@@ -30,13 +30,14 @@ namespace chromeos {
 class DeviceSettingsProvider : public CrosSettingsProvider,
                                public content::NotificationObserver {
  public:
-  explicit DeviceSettingsProvider(const NotifyObserversCallback& notify_cb,
-                                  SignedSettingsHelper* signed_settings_helper);
+  DeviceSettingsProvider(const NotifyObserversCallback& notify_cb,
+                         SignedSettingsHelper* signed_settings_helper);
   virtual ~DeviceSettingsProvider();
 
   // CrosSettingsProvider implementation.
   virtual const base::Value* Get(const std::string& path) const OVERRIDE;
-  virtual bool PrepareTrustedValues(const base::Closure& callback) OVERRIDE;
+  virtual TrustedStatus PrepareTrustedValues(
+      const base::Closure& callback) OVERRIDE;
   virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
   virtual void Reload() OVERRIDE;
 
@@ -114,7 +115,7 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
 
   // Checks if the current cache value can be trusted for being representative
   // for the disk cache.
-  bool RequestTrustedEntity();
+  TrustedStatus RequestTrustedEntity();
 
   // Called right after signed value was checked.
   void OnPropertyRetrieve(const std::string& path,
@@ -143,7 +144,7 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   int retries_left_;
 
   enterprise_management::PolicyData policy_;
-  bool trusted_;
+  TrustedStatus trusted_status_;
 
   PrefValueMap values_cache_;
 

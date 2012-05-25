@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/device_settings_provider.h"
 
-#include <map>
 #include <string>
 
 #include "base/bind.h"
@@ -48,7 +47,7 @@ protected:
   virtual ~DeviceSettingsProviderTest() {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     PrepareEmptyPolicy();
 
     EXPECT_CALL(*this, SettingChanged(_))
@@ -76,9 +75,6 @@ protected:
             &signed_settings_helper_));
     provider_->set_ownership_status(OwnershipService::OWNERSHIP_TAKEN);
     provider_->Reload();
-  }
-
-  virtual void TearDown() {
   }
 
   void PrepareEmptyPolicy() {
@@ -113,9 +109,10 @@ protected:
 
 TEST_F(DeviceSettingsProviderTest, InitializationTest) {
   // Verify that the policy blob has been correctly parsed and trusted.
-  EXPECT_TRUE(provider_->PrepareTrustedValues(
-      base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
-                 base::Unretained(this))));
+  EXPECT_EQ(CrosSettingsProvider::TRUSTED,
+            provider_->PrepareTrustedValues(
+                base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
+                           base::Unretained(this))));
   // The trusted flag should be established already prior to calling GetTrusted.
   message_loop_.RunAllPending();
   const base::Value* value = provider_->Get(kStatsReportingPref);
@@ -132,9 +129,10 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
   provider_->set_ownership_status(OwnershipService::OWNERSHIP_NONE);
   provider_->Reload();
   // Verify that the cache policy blob is "trusted".
-  EXPECT_TRUE(provider_->PrepareTrustedValues(
-      base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
-                 base::Unretained(this))));
+  EXPECT_EQ(CrosSettingsProvider::TRUSTED,
+            provider_->PrepareTrustedValues(
+                base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
+                           base::Unretained(this))));
   // The trusted flag should be established already prior to calling GetTrusted.
   message_loop_.RunAllPending();
   const base::Value* value = provider_->Get(kReleaseChannel);
@@ -191,14 +189,15 @@ TEST_F(DeviceSettingsProviderTest, PolicyRetrievalFailedBadSingature) {
               policy_blob_));
   provider_->Reload();
   // Verify that the cache policy blob is not "trusted".
-  EXPECT_FALSE(provider_->PrepareTrustedValues(
-      base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
-                 base::Unretained(this))));
+  EXPECT_EQ(CrosSettingsProvider::PERMANENTLY_UNTRUSTED,
+            provider_->PrepareTrustedValues(
+                base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
+                           base::Unretained(this))));
   // The trusted flag should be established already prior to calling GetTrusted.
   message_loop_.RunAllPending();
 }
 
-TEST_F(DeviceSettingsProviderTest, PolicyRetrievalOperationFailed) {
+TEST_F(DeviceSettingsProviderTest, PolicyRetrievalOperationFailedPermanently) {
   // No calls to the SignedSettingsHelper should occur in this case!
   Mock::VerifyAndClear(&signed_settings_helper_);
   EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_))
@@ -209,9 +208,33 @@ TEST_F(DeviceSettingsProviderTest, PolicyRetrievalOperationFailed) {
               policy_blob_));
   provider_->Reload();
   // Verify that the cache policy blob is not "trusted".
-  EXPECT_FALSE(provider_->PrepareTrustedValues(
-      base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
-                 base::Unretained(this))));
+  EXPECT_EQ(CrosSettingsProvider::PERMANENTLY_UNTRUSTED,
+            provider_->PrepareTrustedValues(
+                base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
+                           base::Unretained(this))));
+  // The trusted flag should be established already prior to calling GetTrusted.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(DeviceSettingsProviderTest, PolicyRetrievalOperationFailedOnce) {
+  // No calls to the SignedSettingsHelper should occur in this case!
+  Mock::VerifyAndClear(&signed_settings_helper_);
+  EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_))
+      .WillOnce(
+          MockSignedSettingsHelperRetrievePolicy(
+              SignedSettings::OPERATION_FAILED,
+              policy_blob_))
+      .WillRepeatedly(
+          MockSignedSettingsHelperRetrievePolicy(
+              SignedSettings::SUCCESS,
+              policy_blob_));
+  // Should be trusted after an automatic reload.
+  provider_->Reload();
+  // Verify that the cache policy blob is not "trusted".
+  EXPECT_EQ(CrosSettingsProvider::TRUSTED,
+            provider_->PrepareTrustedValues(
+                base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
+                           base::Unretained(this))));
   // The trusted flag should be established already prior to calling GetTrusted.
   message_loop_.RunAllPending();
 }

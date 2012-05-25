@@ -64,7 +64,8 @@ class CrosSettingsTest : public testing::Test {
     if (expected_props_.find(pref) == expected_props_.end())
       return;
 
-    if (CrosSettings::Get()->PrepareTrustedValues(
+    if (CrosSettingsProvider::TRUSTED ==
+        CrosSettings::Get()->PrepareTrustedValues(
             base::Bind(&CrosSettingsTest::FetchPref,
                        pointer_factory_.GetWeakPtr(), pref))) {
       scoped_ptr<base::Value> expected_value(

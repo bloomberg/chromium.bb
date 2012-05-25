@@ -90,8 +90,9 @@ TEST_F(StubCrosSettingsProviderTest, SetMissing) {
 
 TEST_F(StubCrosSettingsProviderTest, PrepareTrustedValues) {
   // Should return immediately without invoking the callback.
-  bool trusted = provider_->PrepareTrustedValues(base::Bind(&Fail));
-  EXPECT_TRUE(trusted);
+  CrosSettingsProvider::TrustedStatus trusted =
+      provider_->PrepareTrustedValues(base::Bind(&Fail));
+  EXPECT_EQ(CrosSettingsProvider::TRUSTED, trusted);
 }
 
 }  // namespace chromeos

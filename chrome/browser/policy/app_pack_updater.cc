@@ -168,7 +168,7 @@ void AppPackUpdater::Observe(int type,
 
 void AppPackUpdater::LoadPolicy() {
   chromeos::CrosSettings* settings = chromeos::CrosSettings::Get();
-  if (!settings->PrepareTrustedValues(
+  if (chromeos::CrosSettingsProvider::TRUSTED != settings->PrepareTrustedValues(
           base::Bind(&AppPackUpdater::LoadPolicy,
                      weak_ptr_factory_.GetWeakPtr()))) {
     return;

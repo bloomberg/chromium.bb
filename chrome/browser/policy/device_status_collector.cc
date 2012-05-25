@@ -171,9 +171,10 @@ void DeviceStatusCollector::UpdateReportingSettings() {
   // Attempt to fetch the current value of the reporting settings.
   // If trusted values are not available, register this function to be called
   // back when they are available.
-  if (!cros_settings_->PrepareTrustedValues(
+  if (chromeos::CrosSettingsProvider::TRUSTED !=
+      cros_settings_->PrepareTrustedValues(
       base::Bind(&DeviceStatusCollector::UpdateReportingSettings,
-                 base::Unretained(this)))) {
+                 weak_factory_.GetWeakPtr()))) {
     return;
   }
   cros_settings_->GetBoolean(

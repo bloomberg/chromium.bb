@@ -269,7 +269,7 @@ void LoginPerformer::CompleteLogin(const std::string& username,
   // should not be performed when ScreenLock is active (pending online auth).
   if (!ScreenLocker::default_screen_locker()) {
     // Must not proceed without signature verification or valid user list.
-    if (!cros_settings->PrepareTrustedValues(
+    if (CrosSettingsProvider::TRUSTED != cros_settings->PrepareTrustedValues(
             base::Bind(&LoginPerformer::CompleteLogin,
                        weak_factory_.GetWeakPtr(),
                        username, password))) {
@@ -304,7 +304,7 @@ void LoginPerformer::Login(const std::string& username,
   // should not be performed when ScreenLock is active (pending online auth).
   if (!ScreenLocker::default_screen_locker()) {
     // Must not proceed without signature verification.
-    if (!cros_settings->PrepareTrustedValues(
+    if (CrosSettingsProvider::TRUSTED != cros_settings->PrepareTrustedValues(
             base::Bind(&LoginPerformer::Login,
                        weak_factory_.GetWeakPtr(),
                        username, password))) {

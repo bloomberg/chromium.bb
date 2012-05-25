@@ -390,11 +390,7 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* pref_service)
   if (pref_service->FindPreference(prefs::kUseSharedProxies))
     use_shared_proxies_.Init(prefs::kUseSharedProxies, pref_service, this);
 
-  if (CrosSettings::Get()->PrepareTrustedValues(
-          base::Bind(&ProxyConfigServiceImpl::FetchProxyPolicy,
-                     pointer_factory_.GetWeakPtr()))) {
-    FetchProxyPolicy();
-  }
+  FetchProxyPolicy();
 
   // Register for flimflam network notifications.
   NetworkLibrary* network_lib = CrosLibrary::Get()->GetNetworkLibrary();
@@ -820,6 +816,13 @@ void ProxyConfigServiceImpl::ResetUICache() {
 }
 
 void ProxyConfigServiceImpl::FetchProxyPolicy() {
+  if (CrosSettingsProvider::TRUSTED !=
+      CrosSettings::Get()->PrepareTrustedValues(
+          base::Bind(&ProxyConfigServiceImpl::FetchProxyPolicy,
+                     pointer_factory_.GetWeakPtr()))) {
+    return;
+  }
+
   std::string policy_value;
   if (!CrosSettings::Get()->GetString(kSettingProxyEverywhere,
                                       &policy_value)) {

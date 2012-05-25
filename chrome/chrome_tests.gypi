@@ -1060,6 +1060,7 @@
         'browser/chromeos/dbus/cros_dbus_service_unittest.cc',
         'browser/chromeos/dbus/introspect_util_unittest.cc',
         'browser/chromeos/dbus/proxy_resolution_service_provider_unittest.cc',
+        'browser/chromeos/device_settings_provider_unittest.cc',
         'browser/chromeos/extensions/file_browser_notifications_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/gdata/drive_webapps_registry_unittest.cc',

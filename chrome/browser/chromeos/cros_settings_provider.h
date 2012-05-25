@@ -21,6 +21,20 @@ class CrosSettingsProvider {
   // about a setting change.
   typedef base::Callback<void(const std::string&)> NotifyObserversCallback;
 
+  // Possible results of a trusted check.
+  enum TrustedStatus {
+    // The trusted values were populated in the cache and can be accessed
+    // until the next iteration of the message loop.
+    TRUSTED,
+    // Either a store or a load operation is in progress. The provided
+    // callback will be invoked once the verification has finished.
+    TEMPORARILY_UNTRUSTED,
+    // The verification of the trusted store has failed permanently. The
+    // client should assume this state final and further checks for
+    // trustedness will fail at least until the browser restarts.
+    PERMANENTLY_UNTRUSTED,
+  };
+
   // Creates a new provider instance. |notify_cb| will be used to notify
   // about setting changes.
   explicit CrosSettingsProvider(const NotifyObserversCallback& notify_cb);
@@ -33,11 +47,13 @@ class CrosSettingsProvider {
   virtual const base::Value* Get(const std::string& path) const = 0;
 
   // Requests the provider to fetch its values from a trusted store, if it
-  // hasn't done so yet. Returns true if the values returned by this provider
-  // are trusted during the current loop cycle; otherwise returns false, and
-  // |callback| will be invoked later when trusted values become available.
-  // PrepareTrustedValues() should be tried again in that case.
-  virtual bool PrepareTrustedValues(const base::Closure& callback) = 0;
+  // hasn't done so yet. Returns TRUSTED if the values returned by this provider
+  // are trusted during the current loop cycle. Otherwise returns
+  // TEMPORARILY_UNTRUSTED, and |callback| will be invoked later when trusted
+  // values become available, PrepareTrustedValues() should be tried again in
+  // that case. Returns PERMANENTLY_UNTRUSTED if a permanent error has occurred.
+  virtual TrustedStatus PrepareTrustedValues(
+      const base::Closure& callback) = 0;
 
   // Gets the namespace prefix provided by this provider.
   virtual bool HandlesSetting(const std::string& path) const = 0;
