@@ -1540,20 +1540,51 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     } else if (!state_.monitor_bounds.IsEmpty() &&
         y + pref.height() > state_.monitor_bounds.bottom() &&
         item->actual_menu_position() != MenuItemView::POSITION_OVER_BOUNDS) {
-      // The menu doesn't fit on screen. The menu position with
-      // respect to the bounds will be preserved if it has already
-      // been drawn. On the first drawing if the first location is
-      // above the half way point then show from the mouse location to
-      // bottom of screen, otherwise show from the top of the screen
-      // to the location of the mouse.  While odd, this behavior
-      // matches IE.
-      if (item->actual_menu_position() == MenuItemView::POSITION_BELOW_BOUNDS ||
-          (item->actual_menu_position() == MenuItemView::POSITION_BEST_FIT &&
-           y < (state_.monitor_bounds.y() +
-                state_.monitor_bounds.height() / 2))) {
+      // The menu doesn't fit fully below the button on the screen. The menu
+      // position with respect to the bounds will be preserved if it has
+      // already been drawn. When the requested positioning is below the bounds
+      // it will shrink the menu to make it fit below.
+      // If the requested positioning is best fit, it will first try to fit the
+      // menu below. If that does not fit it will try to place it above. If
+      // that will not fit it will place it at the bottom of the work area and
+      // moving it off the initial_bounds region to avoid overlap.
+      // In all other requested position styles it will be flipped above and
+      // the height will be shrunken to the usable height.
+      if (item->actual_menu_position() == MenuItemView::POSITION_BELOW_BOUNDS) {
         pref.set_height(std::min(pref.height(),
                                  state_.monitor_bounds.bottom() - y));
-        item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
+      } else if (item->actual_menu_position() ==
+                 MenuItemView::POSITION_BEST_FIT) {
+        if (state_.monitor_bounds.y() + pref.height() <
+            state_.initial_bounds.y()) {
+          // Flipping upwards if there is enough space.
+          y = state_.initial_bounds.y() - pref.height();
+          item->set_actual_menu_position(MenuItemView::POSITION_ABOVE_BOUNDS);
+        } else {
+          // The user prefers to move the menu a bit around in order to get the
+          // best fit and to avoid showing scroll elements.
+          y = state_.monitor_bounds.bottom() - pref.height();
+          item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
+          // The menu should never overlap the owning button. So move it.
+          // We use the anchor view style to determine the preferred position
+          // relative to the owning button.
+          if (state_.anchor == MenuItemView::TOPLEFT) {
+            // The menu starts with the same x coordinate as the owning button.
+            if (x + state_.initial_bounds.width() + pref.width() >
+                state_.monitor_bounds.right())
+              x -= pref.width();  // Move the menu to the left of the button.
+            else
+              x += state_.initial_bounds.width(); // Move the menu right.
+          } else {
+            // The menu should end with the same x coordinate as the owning
+            // button.
+            if (state_.monitor_bounds.x() >
+                state_.initial_bounds.x() - pref.width())
+              x = state_.initial_bounds.right();  // Move right of the button.
+            else
+              x = state_.initial_bounds.x() - pref.width(); // Move left.
+          }
+        }
       } else {
         pref.set_height(std::min(pref.height(),
             state_.initial_bounds.y() - state_.monitor_bounds.y()));
