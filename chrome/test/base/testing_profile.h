@@ -33,10 +33,12 @@ class SpecialStoragePolicy;
 }
 
 class AutocompleteClassifier;
+class BookmarkModel;
 class CommandLine;
 class ExtensionPrefs;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
+class HistoryService;
 class HostContentSettingsMap;
 class PrefService;
 class ProfileDependencyManager;
@@ -266,6 +268,12 @@ class TestingProfile : public Profile {
 
   // The favicon service. Only created if CreateFaviconService is invoked.
   scoped_ptr<FaviconService> favicon_service_;
+
+  // The history service. Only created if CreateHistoryService is invoked.
+  scoped_refptr<HistoryService> history_service_;
+
+  // The BookmarkModel. Only created if CreateBookmarkModel is invoked.
+  scoped_ptr<BookmarkModel> bookmark_bar_model_;
 
   // The ProtocolHandlerRegistry. Only created if CreateProtocolHandlerRegistry
   // is invoked.

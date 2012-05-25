@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,16 +10,15 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 
-BookmarkExpandedStateTracker::BookmarkExpandedStateTracker(
-    Profile* profile,
-    const char* path,
-    BookmarkModel* bookmark_model)
+BookmarkExpandedStateTracker::BookmarkExpandedStateTracker(Profile* profile,
+                                                           const char* path)
     : profile_(profile),
       pref_path_(path) {
-  bookmark_model->AddObserver(this);
+  profile_->GetBookmarkModel()->AddObserver(this);
 }
 
 BookmarkExpandedStateTracker::~BookmarkExpandedStateTracker() {
+  profile_->GetBookmarkModel()->RemoveObserver(this);
 }
 
 void BookmarkExpandedStateTracker::SetExpandedNodes(const Nodes& nodes) {
@@ -72,7 +71,6 @@ void BookmarkExpandedStateTracker::BookmarkModelChanged() {
 
 void BookmarkExpandedStateTracker::BookmarkModelBeingDeleted(
     BookmarkModel* model) {
-  model->RemoveObserver(this);
 }
 
 void BookmarkExpandedStateTracker::BookmarkNodeRemoved(

@@ -19,7 +19,6 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/ref_counted_util.h"
 #include "content/public/browser/notification_observer.h"
@@ -97,7 +96,7 @@ class HistoryDBTask : public base::RefCountedThreadSafe<HistoryDBTask> {
 // thread that made the request.
 class HistoryService : public CancelableRequestProvider,
                        public content::NotificationObserver,
-                       public RefcountedProfileKeyedService {
+                       public base::RefCountedThreadSafe<HistoryService> {
  public:
   // Miscellaneous commonly-used types.
   typedef std::vector<PageUsageData*> PageUsageDataList;
@@ -159,9 +158,6 @@ class HistoryService : public CancelableRequestProvider,
   history::InMemoryURLIndex* InMemoryIndex() const {
     return in_memory_url_index_.get();
   }
-
-  // RefcountedProfileKeyedService:
-  virtual void ShutdownOnUIThread() OVERRIDE;
 
   // Navigation ----------------------------------------------------------------
 

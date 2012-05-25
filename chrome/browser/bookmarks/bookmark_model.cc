@@ -152,12 +152,21 @@ BookmarkModel::~BookmarkModel() {
   }
 }
 
-void BookmarkModel::Shutdown() {
+// static
+void BookmarkModel::RegisterUserPrefs(PrefService* prefs) {
+  // Don't sync this, as otherwise, due to a limitation in sync, it
+  // will cause a deadlock (see http://crbug.com/97955).  If we truly
+  // want to sync the expanded state of folders, it should be part of
+  // bookmark sync itself (i.e., a property of the sync folder nodes).
+  prefs->RegisterListPref(prefs::kBookmarkEditorExpandedNodes, new ListValue,
+                          PrefService::UNSYNCABLE_PREF);
+}
+
+void BookmarkModel::Cleanup() {
   if (loaded_)
     return;
 
-  // See comment in HistoryService::ShutdownOnUIThread where this is invoked for
-  // details. It is also called when the BookmarkModel is deleted.
+  // See comment in Profile shutdown code where this is invoked for details.
   loaded_signal_.Signal();
 }
 
@@ -170,7 +179,7 @@ void BookmarkModel::Load() {
   }
 
   expanded_state_tracker_.reset(new BookmarkExpandedStateTracker(
-      profile_, prefs::kBookmarkEditorExpandedNodes, this));
+      profile_, prefs::kBookmarkEditorExpandedNodes));
 
   // Listen for changes to favicons so that we can update the favicon of the
   // node appropriately.

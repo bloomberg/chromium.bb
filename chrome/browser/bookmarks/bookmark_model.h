@@ -21,7 +21,6 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -193,18 +192,19 @@ class BookmarkPermanentNode : public BookmarkNode {
 // An observer may be attached to observe relevant events.
 //
 // You should NOT directly create a BookmarkModel, instead go through the
-// BookmarkModelFactory.
+// Profile.
 class BookmarkModel : public content::NotificationObserver,
-                      public BookmarkService,
-                      public ProfileKeyedService {
+                      public BookmarkService {
  public:
   explicit BookmarkModel(Profile* profile);
   virtual ~BookmarkModel();
 
-  // Invoked prior to destruction to release any necessary resources.
-  virtual void Shutdown() OVERRIDE;
+  static void RegisterUserPrefs(PrefService* prefs);
 
-  // Loads the bookmarks. This is called upon creation of the
+  // Invoked prior to destruction to release any necessary resources.
+  void Cleanup();
+
+  // Loads the bookmarks. This is called by Profile upon creation of the
   // BookmarkModel. You need not invoke this directly.
   void Load();
 
