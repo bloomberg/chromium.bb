@@ -200,26 +200,6 @@ void ConfigureOmniboxPrerender() {
           2012, 12, 30, &g_omnibox_trial_default_group_number));
   omnibox_prerender_trial->AppendGroup("OmniboxPrerenderDisabled",
                                        kDisabledProbability);
-
-  // Field trial to set weighting of hits.
-  const base::FieldTrial::Probability kFourProbability = 33;
-  const base::FieldTrial::Probability kEightProbability = 33;
-
-  scoped_refptr<base::FieldTrial> weighting_trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          "OmniboxPrerenderHitWeightingTrial", kDivisor,
-          "OmniboxPrerenderWeight1.0", 2012, 8, 30, NULL));
-  const int kOmniboxWeightFourGroup =
-      weighting_trial->AppendGroup("OmniboxPrerenderWeight4.0",
-                                   kFourProbability);
-  const int kOmniboxWeightEightGroup =
-      weighting_trial->AppendGroup("OmniboxPrerenderWeight8.0",
-                                   kEightProbability);
-  const int group = weighting_trial->group();
-  if (group == kOmniboxWeightFourGroup)
-    predictors::AutocompleteActionPredictor::set_hit_weight(4.0);
-  else if (group == kOmniboxWeightEightGroup)
-    predictors::AutocompleteActionPredictor::set_hit_weight(8.0);
 }
 
 bool IsOmniboxEnabled(Profile* profile) {

@@ -74,7 +74,6 @@ function updateDatabaseView(database) {
     }
   }
   $('countBanner').textContent = 'Entries: ' + databaseSection.children.length;
-  $('countBanner').textContent += '  Hit Weight: ' + database.hit_weight;
 }
 
 document.addEventListener('DOMContentLoaded',

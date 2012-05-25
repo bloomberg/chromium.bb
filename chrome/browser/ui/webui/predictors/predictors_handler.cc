@@ -48,7 +48,6 @@ void PredictorsHandler::RequestAutocompleteActionPredictorDb(
       db->Append(entry);
     }
     dict.Set("db", db);
-    dict.SetDouble("hit_weight", AutocompleteActionPredictor::get_hit_weight());
   }
 
   web_ui()->CallJavascriptFunction("updateDatabaseTable", dict);

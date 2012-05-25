@@ -75,8 +75,6 @@ namespace predictors {
 
 const int AutocompleteActionPredictor::kMaximumDaysToKeepEntry = 14;
 
-double AutocompleteActionPredictor::hit_weight_ = 1.0;
-
 AutocompleteActionPredictor::AutocompleteActionPredictor(Profile* profile)
     : profile_(profile),
       table_(PredictorDatabaseFactory::GetForProfile(
@@ -242,8 +240,7 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(
   const AutocompleteMatch& match = log.result.match_at(log.selected_index);
 
   UMA_HISTOGRAM_BOOLEAN(
-      StringPrintf("Prerender.OmniboxNavigationsCouldPrerender_%.1f%s",
-                   get_hit_weight(),
+      StringPrintf("Prerender.OmniboxNavigationsCouldPrerender_%s",
                    prerender::PrerenderManager::GetModeString()).c_str(),
       prerender::IsOmniboxEnabled(profile_));
 
@@ -424,7 +421,7 @@ double AutocompleteActionPredictor::CalculateConfidenceForDbEntry(
   if (value.number_of_hits < kMinimumNumberOfHits)
     return 0.0;
 
-  const double number_of_hits = value.number_of_hits * hit_weight_;
+  const double number_of_hits = static_cast<double>(value.number_of_hits);
   return number_of_hits / (number_of_hits + value.number_of_misses);
 }
 

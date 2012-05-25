@@ -48,10 +48,7 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
 
   switch (origin) {
     case ORIGIN_OMNIBOX:
-      return ComposeHistogramName(
-          StringPrintf("omnibox_%.1f",
-                       AutocompleteActionPredictor::get_hit_weight()).c_str(),
-          name);
+      return ComposeHistogramName("omnibox", name);
     case ORIGIN_LINK_REL_PRERENDER:
       return ComposeHistogramName("web", name);
     case ORIGIN_GWS_PRERENDER:  // Handled above.
@@ -154,8 +151,7 @@ void PrerenderHistograms::RecordPrerender(Origin origin, const GURL& url) {
 void PrerenderHistograms::RecordPrerenderStarted(Origin origin) const {
   if (OriginIsOmnibox(origin)) {
     UMA_HISTOGRAM_COUNTS(
-        StringPrintf("Prerender.OmniboxPrerenderCount_%.1f%s",
-                     AutocompleteActionPredictor::get_hit_weight(),
+        StringPrintf("Prerender.OmniboxPrerenderCount_%s",
                      PrerenderManager::GetModeString()).c_str(),
         1);
   }
@@ -164,8 +160,7 @@ void PrerenderHistograms::RecordPrerenderStarted(Origin origin) const {
 void PrerenderHistograms::RecordUsedPrerender(Origin origin) const {
   if (OriginIsOmnibox(origin)) {
     UMA_HISTOGRAM_COUNTS(
-        StringPrintf("Prerender.OmniboxNavigationsUsedPrerenderCount_%.1f%s",
-                     AutocompleteActionPredictor::get_hit_weight(),
+        StringPrintf("Prerender.OmniboxNavigationsUsedPrerenderCount_%s",
                      PrerenderManager::GetModeString()).c_str(),
         1);
   }
