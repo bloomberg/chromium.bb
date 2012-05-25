@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,26 +43,31 @@ void ExtensionAppProviderTest::SetUp() {
 
   app_provider_ = new ExtensionAppProvider(NULL, profile_.get());
 
-  struct ExtensionApps {
+  struct TestExtensionApp {
     const char* app_name;
-    const char* url;
+    const char* launch_url;
+    bool should_match_against_launch_url;
     const char* title;
     int typed_count;
   } kExtensionApps[] = {
-    {"COYB", "http://asdf/", "COYB", 7},
-    {"NSNO", "http://fdsa/", "NSNO", 2},
+    {"COYB", "http://asdf/",            true,  "COYB", 7},
+    {"NSNO", "http://fdsa/",            true,  "NSNO", 2},
+    {"APPP", "chrome-extension://xyz/", false, "APPP", 2},
   };
 
   history::URLDatabase* url_db = history_service_->InMemoryDatabase();
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kExtensionApps); ++i) {
     // Populate the Extension Apps list.
-    app_provider_->AddExtensionAppForTesting(
-        ASCIIToUTF16(kExtensionApps[i].app_name),
-        ASCIIToUTF16(kExtensionApps[i].url));
+    ExtensionAppProvider::ExtensionApp extension_app = {
+      ASCIIToUTF16(kExtensionApps[i].app_name),
+      ASCIIToUTF16(kExtensionApps[i].launch_url),
+      kExtensionApps[i].should_match_against_launch_url
+    };
+    app_provider_->AddExtensionAppForTesting(extension_app);
 
     // Populate the InMemoryDatabase.
-    history::URLRow info(GURL(kExtensionApps[i].url));
+    history::URLRow info(GURL(kExtensionApps[i].launch_url));
     info.set_title(UTF8ToUTF16(kExtensionApps[i].title));
     info.set_typed_count(kExtensionApps[i].typed_count);
     url_db->AddURL(info);
@@ -101,6 +106,13 @@ TEST_F(ExtensionAppProviderTest, BasicMatching) {
     // Try with URL matching.
     {ASCIIToUTF16("http://asdf/"),    1, { GURL("http://asdf/") }},
     {ASCIIToUTF16("http://fdsa/"),    1, { GURL("http://fdsa/") }},
+
+    // "xyz" appears in a launch URL, but we're not matching against it.
+    {ASCIIToUTF16("xyz"),             0, { GURL() }},
+
+    // But it should be matcheable by title.
+    {ASCIIToUTF16("APPP"),            1, { GURL("chrome-extension://xyz/") }},
+
   };
 
   RunTest(edit_cases, ARRAYSIZE_UNSAFE(edit_cases));
@@ -120,10 +132,13 @@ TEST_F(ExtensionAppProviderTest, CreateMatchSanitize) {
                           true, true, true, AutocompleteInput::BEST_MATCH);
   string16 url(ASCIIToUTF16("http://example.com"));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    ExtensionAppProvider::ExtensionApp extension_app =
+        {ASCIIToUTF16(cases[i].name), url, true};
     AutocompleteMatch match =
         app_provider_->CreateAutocompleteMatch(input,
-                                               ASCIIToUTF16(cases[i].name),
-                                               url, 0, string16::npos);
+                                               extension_app,
+                                               0,
+                                               string16::npos);
     EXPECT_EQ(ASCIIToUTF16(cases[i].match_contents), match.contents);
   }
 }

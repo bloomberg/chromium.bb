@@ -16,6 +16,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
+#include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -596,7 +597,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
   }
 
   if (match.type == AutocompleteMatch::EXTENSION_APP) {
-    extensions::LaunchAppFromOmnibox(match, profile_, disposition);
+    ExtensionAppProvider::LaunchAppFromOmnibox(match, profile_, disposition);
   } else {
     controller_->OnAutocompleteAccept(match.destination_url, disposition,
                                       match.transition, alternate_nav_url);

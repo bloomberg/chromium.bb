@@ -13,7 +13,6 @@
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "webkit/glue/window_open_disposition.h"
 
 class TemplateURL;
 namespace base {
@@ -118,13 +117,6 @@ void ApplyDefaultSuggestionForExtensionKeyword(
     const TemplateURL* keyword,
     const string16& remaining_input,
     AutocompleteMatch* match);
-
-// Launch an Extension App from |match| details provided by the Omnibox. If the
-// application wants to launch as a window or panel, |disposition| is ignored;
-// otherwise it's used to determine in which tab we'll launch the application.
-void LaunchAppFromOmnibox(const AutocompleteMatch& match,
-                          Profile* profile,
-                          WindowOpenDisposition disposition);
 
 }  // namespace extensions
 

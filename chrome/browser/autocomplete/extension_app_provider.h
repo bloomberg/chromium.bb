@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -25,33 +25,51 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "webkit/glue/window_open_disposition.h"
 
 class ExtensionAppProvider : public AutocompleteProvider,
                              public content::NotificationObserver {
  public:
   ExtensionAppProvider(ACProviderListener* listener, Profile* profile);
 
-  // Only used for testing.
-  void AddExtensionAppForTesting(const string16& app_name,
-                                 const string16& url);
-
   // AutocompleteProvider implementation:
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
 
+  // Launch an Extension App from |match| details provided by the Omnibox. If
+  // the application wants to launch as a window or panel, |disposition| is
+  // ignored; otherwise it's used to determine in which tab we'll launch the
+  // application.
+  static void LaunchAppFromOmnibox(const AutocompleteMatch& match,
+                                   Profile* profile,
+                                   WindowOpenDisposition disposition);
+
  private:
+  friend class ExtensionAppProviderTest;
   FRIEND_TEST_ALL_PREFIXES(ExtensionAppProviderTest, CreateMatchSanitize);
 
-  // An ExtensionApp is a pair of Extension Name and the Launch URL.
-  typedef std::pair<string16, string16> ExtensionApp;
+  // ExtensionApp stores the minimal metadata that we need to match against
+  // eligible apps.
+  struct ExtensionApp {
+    // App's name.
+    string16 name;
+    // App's launch URL (for platform apps, which don't have a launch URL, this
+    // just points to the app's origin).
+    string16 launch_url;
+    // If false, then the launch_url will not be considered for matching,
+    // not shown next to the match, and not displayed as the editable text if
+    // the user selects the match with the arrow keys.
+    bool should_match_against_launch_url;
+  };
   typedef std::vector<ExtensionApp> ExtensionApps;
 
   virtual ~ExtensionAppProvider();
 
+  void AddExtensionAppForTesting(const ExtensionApp& extension_app);
+
   // Construct a match for the specified parameters.
   AutocompleteMatch CreateAutocompleteMatch(const AutocompleteInput& input,
-                                            const string16& name,
-                                            const string16& url,
+                                            const ExtensionApp& app,
                                             size_t name_match_index,
                                             size_t url_match_index);
 
@@ -75,7 +93,7 @@ class ExtensionAppProvider : public AutocompleteProvider,
   content::NotificationRegistrar registrar_;
 
   // Our cache of ExtensionApp objects (name + url) representing the extension
-  // apps we know about.
+  // apps we know/care about.
   ExtensionApps extension_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppProvider);
