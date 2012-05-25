@@ -72,20 +72,6 @@ void WimaxConfigView::UpdateDialogButtons() {
   parent_->GetDialogClientView()->UpdateDialogButtons();
 }
 
-void WimaxConfigView::RefreshShareCheckbox() {
-  if (!share_network_checkbox_)
-    return;
-
-  if (!UserManager::Get()->IsUserLoggedIn()) {
-    // If not logged in, networks must be shared.
-    share_network_checkbox_->SetEnabled(false);
-    share_network_checkbox_->SetChecked(true);
-  } else {
-    share_network_checkbox_->SetEnabled(true);
-    share_network_checkbox_->SetChecked(false);  // Default to unshared.
-  }
-}
-
 void WimaxConfigView::UpdateErrorLabel() {
   std::string error_msg;
   if (!service_path_.empty()) {
@@ -158,6 +144,7 @@ bool WimaxConfigView::Login() {
   }
   wimax->SetEAPIdentity(GetEapIdentity());
   wimax->SetEAPPassphrase(GetEapPassphrase());
+  wimax->SetSaveCredentials(GetSaveCredentials());
   bool share_default = (wimax->profile_type() != PROFILE_USER);
   bool share = GetShareNetwork(share_default);
   wimax->SetEnrollmentDelegate(
@@ -182,7 +169,7 @@ std::string WimaxConfigView::GetEapPassphrase() const {
 
 bool WimaxConfigView::GetSaveCredentials() const {
   return save_credentials_checkbox_ ? save_credentials_checkbox_->checked() :
-                                      true;
+                                      false;
 }
 
 bool WimaxConfigView::GetShareNetwork(bool share_default) const {
@@ -292,24 +279,29 @@ void WimaxConfigView::Init(WimaxNetwork* wimax) {
 
   // Checkboxes.
 
-  // Save credentials
-  layout->StartRow(0, column_view_set_id);
-  save_credentials_checkbox_ = new views::Checkbox(
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SAVE_CREDENTIALS));
-  save_credentials_checkbox_->SetEnabled(
-      save_credentials_ui_data_.editable());
-  layout->SkipColumns(1);
-  layout->AddView(save_credentials_checkbox_);
-  layout->AddView(
-      new ControlledSettingIndicatorView(save_credentials_ui_data_));
-
-  // Share network
-  if (wimax->profile_type() == PROFILE_NONE && wimax->passphrase_required()) {
+  if (UserManager::Get()->IsUserLoggedIn()) {
+    // Save credentials
     layout->StartRow(0, column_view_set_id);
-    share_network_checkbox_ = new views::Checkbox(
+    save_credentials_checkbox_ = new views::Checkbox(
         l10n_util::GetStringUTF16(
-            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHARE_NETWORK));
+            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SAVE_CREDENTIALS));
+    save_credentials_checkbox_->SetEnabled(
+        save_credentials_ui_data_.editable());
+    save_credentials_checkbox_->SetChecked(wimax->save_credentials());
+    layout->SkipColumns(1);
+    layout->AddView(save_credentials_checkbox_);
+    layout->AddView(
+        new ControlledSettingIndicatorView(save_credentials_ui_data_));
+
+    // Share network
+    if (wimax->profile_type() == PROFILE_NONE && wimax->passphrase_required()) {
+      layout->StartRow(0, column_view_set_id);
+      share_network_checkbox_ = new views::Checkbox(
+          l10n_util::GetStringUTF16(
+              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHARE_NETWORK));
+      share_network_checkbox_->SetEnabled(true);
+      share_network_checkbox_->SetChecked(false);  // Default to unshared.
+    }
     layout->SkipColumns(1);
     layout->AddView(share_network_checkbox_);
   }
@@ -323,7 +315,6 @@ void WimaxConfigView::Init(WimaxNetwork* wimax) {
   error_label_->SetEnabledColor(SK_ColorRED);
   layout->AddView(error_label_);
 
-  RefreshShareCheckbox();
   UpdateErrorLabel();
 }
 

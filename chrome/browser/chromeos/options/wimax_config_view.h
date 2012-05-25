@@ -66,9 +66,6 @@ class WimaxConfigView : public ChildNetworkConfigView,
   // Updates state of the Login button.
   void UpdateDialogButtons();
 
-  // Enable/Disable "share this network" checkbox.
-  void RefreshShareCheckbox();
-
   // Updates the error text label.
   void UpdateErrorLabel();
 
