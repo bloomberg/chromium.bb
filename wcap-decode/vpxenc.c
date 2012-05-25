@@ -33,12 +33,12 @@
 #include <unistd.h>
 #endif
 #include "vpx/vp8cx.h"
-#include "vpx_ports/mem_ops.h"
-#include "vpx_ports/vpx_timer.h"
+#include "mem_ops.h"
+#include "vpx_timer.h"
 #include "tools_common.h"
 #include "y4minput.h"
-#include "libmkv/EbmlWriter.h"
-#include "libmkv/EbmlIDs.h"
+#include "EbmlWriter.h"
+#include "EbmlIDs.h"
 
 /* Need special handling of these functions on Windows */
 #if defined(_MSC_VER)
