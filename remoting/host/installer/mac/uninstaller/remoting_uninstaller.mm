@@ -12,18 +12,20 @@
 @implementation RemotingUninstallerAppDelegate
 
 NSString* const kLaunchAgentsDir = @"/Library/LaunchAgents";
+NSString* const kPrefPaneDir = @"/Library/PreferencePanes";
 NSString* const kHelperToolsDir = @"/Library/PrivilegedHelperTools";
 NSString* const kApplicationDir = @"/Applications";
 
 NSString* const kServiceName = @"org.chromium.chromoting";
+NSString* const kPrefPaneName = @"org.chromium.chromoting.prefPane";
 NSString* const kUninstallerName =
     @"Chrome Remote Desktop Host Uninstaller.app";
 
 // Keystone
-NSString* const kKeystoneAdmin = @"/Library/Google/GoogleSoftwareUpdate/"
-                                   "GoogleSoftwareUpdate.bundle/Contents/MacOS/"
-                                   "ksadmin";
-NSString* const kKeystonePID = @"com.google.chrome_remote_desktop";
+const char kKeystoneAdmin[] = "/Library/Google/GoogleSoftwareUpdate/"
+                              "GoogleSoftwareUpdate.bundle/Contents/MacOS/"
+                              "ksadmin";
+const char kKeystonePID[] = "com.google.chrome_remote_desktop";
 
 - (void)dealloc {
   [super dealloc];
@@ -51,31 +53,6 @@ NSString* const kKeystonePID = @"com.google.chrome_remote_desktop";
                                  NULL, NULL, NULL,
                                  CFSTR("Chrome Remote Desktop Uninstaller"),
                                  message_ref, NULL, NULL, NULL, &result);
-}
-
-- (void)sudoDelete:(const char*)filename
-         usingAuth:(AuthorizationRef)authRef  {
-
-  NSLog(@"Executing (as Admin) rm -rf %s", filename);
-  const char* tool = "/bin/rm";
-  const char* args[] = {"-rf", filename, NULL};
-  FILE* pipe = NULL;
-  OSStatus status;
-  status = AuthorizationExecuteWithPrivileges(authRef, tool,
-                                              kAuthorizationFlagDefaults,
-                                              (char* const*)args,
-                                              &pipe);
-
-  if (status == errAuthorizationToolExecuteFailure) {
-    NSLog(@"Error errAuthorizationToolExecuteFailure");
-  } else if (status != errAuthorizationSuccess) {
-    NSLog(@"Error while executing rm. Status=%lx", status);
-  } else {
-    [self logOutput:pipe];
-  }
-
-  if (pipe != NULL)
-    fclose(pipe);
 }
 
 -(void)runCommand:(NSString*)cmd
@@ -116,6 +93,44 @@ NSString* const kKeystonePID = @"com.google.chrome_remote_desktop";
   }
 }
 
+- (void)sudoCommand:(const char*)cmd
+      withArguments:(const char**)args
+          usingAuth:(AuthorizationRef)authRef  {
+
+  NSMutableArray* arg_array = [[[NSMutableArray alloc] init] autorelease];
+  int i = 0;
+  const char* arg = args[i++];
+  while (arg != NULL) {
+    [arg_array addObject:[NSString stringWithUTF8String:arg]];
+    arg = args[i++];
+  }
+  NSLog(@"Executing (as Admin): %s %@", cmd,
+        [arg_array componentsJoinedByString:@" "]);
+  FILE* pipe = NULL;
+  OSStatus status;
+  status = AuthorizationExecuteWithPrivileges(authRef, cmd,
+                                              kAuthorizationFlagDefaults,
+                                              (char* const*)args,
+                                              &pipe);
+
+  if (status == errAuthorizationToolExecuteFailure) {
+    NSLog(@"Error errAuthorizationToolExecuteFailure");
+  } else if (status != errAuthorizationSuccess) {
+    NSLog(@"Error while executing %s. Status=%lx", cmd, status);
+  } else {
+    [self logOutput:pipe];
+  }
+
+  if (pipe != NULL)
+    fclose(pipe);
+}
+
+- (void)sudoDelete:(const char*)filename
+         usingAuth:(AuthorizationRef)authRef  {
+  const char* args[] = { "-rf", filename, NULL };
+  [self sudoCommand:"/bin/rm" withArguments:args usingAuth:authRef];
+}
+
 -(void)shutdownService {
   NSString* launchCtl = @"/bin/launchctl";
   NSArray* argsStop = [NSArray arrayWithObjects:@"stop",
@@ -131,10 +146,9 @@ NSString* const kKeystonePID = @"com.google.chrome_remote_desktop";
   }
 }
 
--(void)keystoneUnregister {
-  NSArray* args = [NSArray arrayWithObjects:@"--delete",
-                  @"--productid", kKeystonePID, nil];
-  [self runCommand:kKeystoneAdmin withArguments:args];
+-(void)keystoneUnregisterUsingAuth:(AuthorizationRef)authRef {
+  const char* args[] = { "--delete", "--productid", kKeystonePID, "-S", NULL };
+  [self sudoCommand:kKeystoneAdmin withArguments:args usingAuth:authRef];
 }
 
 -(void)remotingUninstallUsingAuth:(AuthorizationRef)authRef {
@@ -160,11 +174,15 @@ NSString* const kKeystonePID = @"com.google.chrome_remote_desktop";
                     kHelperToolsDir, kServiceName];
   [self sudoDelete:[auth UTF8String] usingAuth:authRef];
 
+  NSString* prefpane = [NSString stringWithFormat:@"%@/%@",
+                        kPrefPaneDir, kPrefPaneName];
+  [self sudoDelete:[prefpane UTF8String] usingAuth:authRef];
+
   NSString* uninstaller = [NSString stringWithFormat:@"%@/%@",
                            kApplicationDir, kUninstallerName];
   [self sudoDelete:[uninstaller UTF8String] usingAuth:authRef];
 
-  [self keystoneUnregister];
+  [self keystoneUnregisterUsingAuth:authRef];
 }
 
 - (IBAction)uninstall:(NSButton*)sender {
