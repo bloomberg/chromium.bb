@@ -247,7 +247,7 @@ SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-bce3f306c2c9}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-661f2a9ba47c}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=5ccab9d0bb73
