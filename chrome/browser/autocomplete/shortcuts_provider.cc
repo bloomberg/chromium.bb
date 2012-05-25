@@ -65,7 +65,8 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
                               bool minimal_changes) {
   matches_.clear();
 
-  if (input.type() == AutocompleteInput::INVALID)
+  if ((input.type() == AutocompleteInput::INVALID) ||
+      (input.type() == AutocompleteInput::FORCED_QUERY))
     return;
 
   if (input.text().empty())
