@@ -101,10 +101,11 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContextCommon(
       webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWindow(
           attrs, compositor->widget(), share_group_.get());
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!offscreen && !command_line->HasSwitch(switches::kDisableUIVsync)) {
+  if (!offscreen) {
     context->makeContextCurrent();
     gfx::GLContext* gl_context = gfx::GLContext::GetCurrent();
-    gl_context->SetSwapInterval(1);
+    bool vsync = !command_line->HasSwitch(switches::kDisableUIVsync);
+    gl_context->SetSwapInterval(vsync ? 1 : 0);
     gl_context->ReleaseCurrent(NULL);
   }
   return context;
