@@ -26,7 +26,7 @@ DragDownloadFile::DragDownloadFile(
     const FilePath& file_name_or_path,
     linked_ptr<net::FileStream> file_stream,
     const GURL& url,
-    const GURL& referrer,
+    const content::Referrer& referrer,
     const std::string& referrer_encoding,
     WebContents* web_contents)
     : file_stream_(file_stream),
@@ -139,7 +139,7 @@ void DragDownloadFile::InitiateDownload() {
       download_stats::INITIATED_BY_DRAG_N_DROP);
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(web_contents_, url_, save_info));
-  params->set_referrer(referrer_);
+  params->set_referrer(referrer_.url);
   params->set_referrer_encoding(referrer_encoding_);
   download_manager_->DownloadUrl(params.Pass());
 }

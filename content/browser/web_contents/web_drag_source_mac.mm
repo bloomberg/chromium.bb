@@ -336,7 +336,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
         filePath,
         linked_ptr<net::FileStream>(fileStream),
         downloadURL_,
-        contents_->GetURL(),
+        content::Referrer(contents_->GetURL(), dropData_->referrer_policy),
         contents_->GetEncoding(),
         contents_));
 

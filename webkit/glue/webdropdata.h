@@ -15,6 +15,7 @@
 
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebReferrerPolicy.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 struct IDataObject;
@@ -48,6 +49,10 @@ struct WEBKIT_GLUE_EXPORT WebDropData {
 
   // User is dragging a link out-of the webview.
   string16 download_metadata;
+
+  // Referrer policy to use when dragging a link out of the webview results in
+  // a download.
+  WebKit::WebReferrerPolicy referrer_policy;
 
   // User is dropping one or more files on the webview.
   std::vector<FileInfo> filenames;

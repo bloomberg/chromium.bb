@@ -12,6 +12,7 @@
 #include "content/browser/download/download_file.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/file_stream.h"
 #include "ui/base/dragdrop/download_file_interface.h"
@@ -43,7 +44,7 @@ class DragDownloadFile
   DragDownloadFile(const FilePath& file_name_or_path,
                    linked_ptr<net::FileStream> file_stream,
                    const GURL& url,
-                   const GURL& referrer,
+                   const content::Referrer& referrer,
                    const std::string& referrer_encoding,
                    content::WebContents* web_contents);
 
@@ -94,7 +95,7 @@ class DragDownloadFile
   FilePath file_name_;
   linked_ptr<net::FileStream> file_stream_;
   GURL url_;
-  GURL referrer_;
+  content::Referrer referrer_;
   std::string referrer_encoding_;
   content::WebContents* web_contents_;
   MessageLoop* drag_message_loop_;

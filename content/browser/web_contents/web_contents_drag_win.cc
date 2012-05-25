@@ -215,12 +215,13 @@ void WebContentsDragWin::PrepareDragForDownload(
   // Zone.Identifier ADS (Alternate Data Stream) attached will be created.
   linked_ptr<net::FileStream> empty_file_stream;
   scoped_refptr<DragDownloadFile> download_file =
-      new DragDownloadFile(generated_download_file_name,
-                           empty_file_stream,
-                           download_url,
-                           page_url,
-                           page_encoding,
-                           web_contents_);
+      new DragDownloadFile(
+          generated_download_file_name,
+          empty_file_stream,
+          download_url,
+          content::Referrer(page_url, drop_data.referrer_policy),
+          page_encoding,
+          web_contents_);
   ui::OSExchangeData::DownloadFileInfo file_download(FilePath(),
                                                      download_file.get());
   data->SetDownloadFileInfo(file_download);

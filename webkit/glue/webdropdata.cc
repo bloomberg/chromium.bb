@@ -30,7 +30,8 @@ WebDropData::FileInfo::FileInfo(const string16& path,
       display_name(display_name) {
 }
 
-WebDropData::WebDropData(const WebDragData& drag_data) {
+WebDropData::WebDropData(const WebDragData& drag_data)
+    : referrer_policy(WebKit::WebReferrerPolicyDefault) {
   const WebVector<WebDragData::Item>& item_list = drag_data.items();
   for (size_t i = 0; i < item_list.size(); ++i) {
     const WebDragData::Item& item = item_list[i];
@@ -71,7 +72,8 @@ WebDropData::WebDropData(const WebDragData& drag_data) {
   }
 }
 
-WebDropData::WebDropData() {
+WebDropData::WebDropData()
+    : referrer_policy(WebKit::WebReferrerPolicyDefault) {
 }
 
 WebDropData::~WebDropData() {

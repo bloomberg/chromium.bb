@@ -2055,8 +2055,10 @@ void RenderViewImpl::startDragging(WebFrame* frame,
                                    WebDragOperationsMask mask,
                                    const WebImage& image,
                                    const WebPoint& imageOffset) {
+  WebDropData drop_data(data);
+  drop_data.referrer_policy = frame->document().referrerPolicy();
   Send(new DragHostMsg_StartDragging(routing_id_,
-                                     WebDropData(data),
+                                     drop_data,
                                      mask,
                                      image.getSkBitmap(),
                                      imageOffset));
