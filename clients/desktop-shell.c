@@ -213,7 +213,7 @@ panel_launcher_motion_handler(struct widget *widget, struct input *input,
 
 	widget_set_tooltip(widget, basename((char *)launcher->path), x, y);
 
-	return POINTER_LEFT_PTR;
+	return CURSOR_LEFT_PTR;
 }
 
 static void
@@ -252,7 +252,7 @@ panel_launcher_enter_handler(struct widget *widget, struct input *input,
 	launcher->focused = 1;
 	widget_schedule_redraw(widget);
 
-	return POINTER_LEFT_PTR;
+	return CURSOR_LEFT_PTR;
 }
 
 static void
@@ -526,7 +526,7 @@ unlock_dialog_widget_enter_handler(struct widget *widget,
 	dialog->button_focused = 1;
 	widget_schedule_redraw(widget);
 
-	return POINTER_LEFT_PTR;
+	return CURSOR_LEFT_PTR;
 }
 
 static void

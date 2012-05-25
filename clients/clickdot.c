@@ -218,7 +218,7 @@ motion_handler(struct widget *widget,
 
 	window_schedule_redraw(clickdot->window);
 
-	return POINTER_LEFT_PTR;
+	return CURSOR_LEFT_PTR;
 }
 
 static void

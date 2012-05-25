@@ -133,7 +133,7 @@ static int
 motion_handler(struct widget *widget, struct input *input,
 	       uint32_t time, float x, float y, void *data)
 {
-	return POINTER_HAND1;
+	return CURSOR_HAND1;
 }
 
 static void

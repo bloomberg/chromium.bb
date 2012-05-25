@@ -2245,7 +2245,7 @@ motion_handler(struct widget *widget,
 		widget_schedule_redraw(widget);
 	}
 
-	return POINTER_IBEAM;
+	return CURSOR_IBEAM;
 }
 
 static struct terminal *

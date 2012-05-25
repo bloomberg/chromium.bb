@@ -247,9 +247,9 @@ motion_handler(struct widget *widget, struct input *input, uint32_t time,
 
 	if (x > e->x && x < e->x + e->w)
 		if (y > e->y && y < e->y + e->h)
-			return POINTER_HAND1;
+			return CURSOR_HAND1;
 
-	return POINTER_LEFT_PTR;
+	return CURSOR_LEFT_PTR;
 }
 
 /**

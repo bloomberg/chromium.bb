@@ -139,19 +139,19 @@ display_run(struct display *d);
 void
 display_exit(struct display *d);
 
-enum pointer_type {
-	POINTER_BOTTOM_LEFT,
-	POINTER_BOTTOM_RIGHT,
-	POINTER_BOTTOM,
-	POINTER_DRAGGING,
-	POINTER_LEFT_PTR,
-	POINTER_LEFT,
-	POINTER_RIGHT,
-	POINTER_TOP_LEFT,
-	POINTER_TOP_RIGHT,
-	POINTER_TOP,
-	POINTER_IBEAM,
-	POINTER_HAND1,
+enum cursor_type {
+	CURSOR_BOTTOM_LEFT,
+	CURSOR_BOTTOM_RIGHT,
+	CURSOR_BOTTOM,
+	CURSOR_DRAGGING,
+	CURSOR_LEFT_PTR,
+	CURSOR_LEFT,
+	CURSOR_RIGHT,
+	CURSOR_TOP_LEFT,
+	CURSOR_TOP_RIGHT,
+	CURSOR_TOP,
+	CURSOR_IBEAM,
+	CURSOR_HAND1,
 };
 
 typedef void (*window_key_handler_t)(struct window *window, struct input *input,

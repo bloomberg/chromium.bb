@@ -288,8 +288,8 @@ struct shm_pool {
 };
 
 enum {
-	POINTER_DEFAULT = 100,
-	POINTER_UNSET
+	CURSOR_DEFAULT = 100,
+	CURSOR_UNSET
 };
 
 enum window_location {
@@ -1332,7 +1332,7 @@ frame_button_enter_handler(struct widget *widget,
 	widget_schedule_redraw(frame_button->widget);
 	frame_button->state = FRAME_BUTTON_OVER;
 
-	return POINTER_LEFT_PTR;
+	return CURSOR_LEFT_PTR;
 }
 
 static void
@@ -1512,25 +1512,25 @@ frame_get_pointer_image_for_location(struct frame *frame, struct input *input)
 
 	switch (location) {
 	case THEME_LOCATION_RESIZING_TOP:
-		return POINTER_TOP;
+		return CURSOR_TOP;
 	case THEME_LOCATION_RESIZING_BOTTOM:
-		return POINTER_BOTTOM;
+		return CURSOR_BOTTOM;
 	case THEME_LOCATION_RESIZING_LEFT:
-		return POINTER_LEFT;
+		return CURSOR_LEFT;
 	case THEME_LOCATION_RESIZING_RIGHT:
-		return POINTER_RIGHT;
+		return CURSOR_RIGHT;
 	case THEME_LOCATION_RESIZING_TOP_LEFT:
-		return POINTER_TOP_LEFT;
+		return CURSOR_TOP_LEFT;
 	case THEME_LOCATION_RESIZING_TOP_RIGHT:
-		return POINTER_TOP_RIGHT;
+		return CURSOR_TOP_RIGHT;
 	case THEME_LOCATION_RESIZING_BOTTOM_LEFT:
-		return POINTER_BOTTOM_LEFT;
+		return CURSOR_BOTTOM_LEFT;
 	case THEME_LOCATION_RESIZING_BOTTOM_RIGHT:
-		return POINTER_BOTTOM_RIGHT;
+		return CURSOR_BOTTOM_RIGHT;
 	case THEME_LOCATION_EXTERIOR:
 	case THEME_LOCATION_TITLEBAR:
 	default:
-		return POINTER_LEFT_PTR;
+		return CURSOR_LEFT_PTR;
 	}
 }
 
@@ -1605,7 +1605,7 @@ frame_button_handler(struct widget *widget,
 		case THEME_LOCATION_TITLEBAR:
 			if (!window->shell_surface)
 				break;
-			input_set_pointer_image(input, time, POINTER_DRAGGING);
+			input_set_pointer_image(input, time, CURSOR_DRAGGING);
 			input_ungrab(input);
 			wl_shell_surface_move(window->shell_surface,
 					      input_get_seat(input),
@@ -1697,7 +1697,7 @@ input_set_focus_widget(struct input *input, struct widget *focus,
 		       float x, float y)
 {
 	struct widget *old, *widget;
-	int pointer = POINTER_LEFT_PTR;
+	int pointer = CURSOR_LEFT_PTR;
 
 	if (focus == input->focus_widget)
 		return;
@@ -1733,7 +1733,7 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
 	struct widget *widget;
-	int cursor = POINTER_LEFT_PTR;
+	int cursor = CURSOR_LEFT_PTR;
 	float sx = wl_fixed_to_double(sx_w);
 	float sy = wl_fixed_to_double(sy_w);
 
@@ -1864,7 +1864,7 @@ input_remove_pointer_focus(struct input *input)
 	input_set_focus_widget(input, NULL, 0, 0);
 
 	input->pointer_focus = NULL;
-	input->current_cursor = POINTER_UNSET;
+	input->current_cursor = CURSOR_UNSET;
 }
 
 static void
@@ -2763,7 +2763,7 @@ menu_motion_handler(struct widget *widget,
 	if (widget == menu->widget)
 		menu_set_item(data, y);
 
-	return POINTER_LEFT_PTR;
+	return CURSOR_LEFT_PTR;
 }
 
 static int
@@ -2775,7 +2775,7 @@ menu_enter_handler(struct widget *widget,
 	if (widget == menu->widget)
 		menu_set_item(data, y);
 
-	return POINTER_LEFT_PTR;
+	return CURSOR_LEFT_PTR;
 }
 
 static void
