@@ -299,6 +299,7 @@
         'test/run_all_unittests.cc',
         '../webkit/media/buffered_data_source_unittest.cc',
         '../webkit/media/buffered_resource_loader_unittest.cc',
+        '../webkit/media/cache_util_unittest.cc',
         '../webkit/media/skcanvas_video_renderer_unittest.cc',
         '../webkit/media/test_response_generator.cc',
         '../webkit/media/test_response_generator.h',

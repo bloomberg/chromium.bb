@@ -4,13 +4,16 @@
 
 #include "webkit/media/buffered_resource_loader.h"
 
+#include "base/bits.h"
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "media/base/media_log.h"
 #include "net/http/http_request_headers.h"
+#include "webkit/media/cache_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
@@ -111,6 +114,7 @@ BufferedResourceLoader::BufferedResourceLoader(
     : buffer_(kMinBufferCapacity, kMinBufferCapacity),
       loader_failed_(false),
       defer_strategy_(strategy),
+      might_be_reused_from_cache_in_future_(true),
       range_supported_(false),
       saved_forward_capacity_(0),
       url_(url),
@@ -368,6 +372,19 @@ void BufferedResourceLoader::didReceiveResponse(
   if (start_cb_.is_null())
     return;
 
+  uint32 reasons = GetReasonsForUncacheability(response);
+  might_be_reused_from_cache_in_future_ = reasons == 0;
+  UMA_HISTOGRAM_BOOLEAN("Media.CacheUseful", reasons == 0);
+  int shift = 0;
+  int max_enum = base::bits::Log2Ceiling(kMaxReason);
+  while (reasons) {
+    if (reasons & 0x1)
+      UMA_HISTOGRAM_ENUMERATION("Media.UncacheableReason", shift, max_enum);
+    reasons >>= 1;
+    ++shift;
+  }
+  DCHECK_LT(shift, max_enum);  // Sanity check.
+
   // Expected content length can be |kPositionNotSpecified|, in that case
   // |content_length_| is not specified and this is a streaming response.
   content_length_ = response.expectedContentLength();
@@ -540,6 +557,8 @@ bool BufferedResourceLoader::HasSingleOrigin() const {
 }
 
 void BufferedResourceLoader::UpdateDeferStrategy(DeferStrategy strategy) {
+  if (!might_be_reused_from_cache_in_future_ && strategy == kNeverDefer)
+    strategy = kThresholdDefer;
   defer_strategy_ = strategy;
   UpdateDeferBehavior();
 }

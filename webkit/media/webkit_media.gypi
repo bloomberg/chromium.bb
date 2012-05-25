@@ -27,6 +27,8 @@
         'buffered_data_source.h',
         'buffered_resource_loader.cc',
         'buffered_resource_loader.h',
+        'cache_util.cc',
+        'cache_util.h',
         'filter_helpers.cc',
         'filter_helpers.h',
         'key_systems.cc',

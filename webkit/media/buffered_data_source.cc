@@ -280,9 +280,9 @@ void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
     loader_->UpdateDeferStrategy(BufferedResourceLoader::kThresholdDefer);
   } else if (media_has_played_ && playback_rate == 0) {
     // If the playback has started (at which point the preload value is ignored)
-    // and we're paused, then try to load as much as possible.
-    // TODO(fischman): except, don't do this if we can prove that the media
-    // cache is just throwing away the bits anyway.  http://crbug.com/123074
+    // and we're paused, then try to load as much as possible (the loader will
+    // fall back to kThresholdDefer if it knows the current response won't be
+    // useful from the cache in the future).
     loader_->UpdateDeferStrategy(BufferedResourceLoader::kNeverDefer);
   } else {
     // If media is currently playing or the page indicated preload=auto,

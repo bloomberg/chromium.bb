@@ -169,7 +169,10 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Only valid to call after Start() has completed.
   bool HasSingleOrigin() const;
 
-  // Sets the defer strategy to the given value.
+  // Sets the defer strategy to the given value unless it seems unwise.
+  // Specifically downgrade kNeverDefer to kThresholdDefer if we know the
+  // current response will not be used to satisfy future requests (the cache
+  // won't help us).
   void UpdateDeferStrategy(DeferStrategy strategy);
 
   // Sets the playback rate to the given value and updates buffer window
@@ -266,6 +269,10 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
 
   // Current buffering algorithm in place for resource loading.
   DeferStrategy defer_strategy_;
+
+  // True if the currently-reading response might be used to satisfy a future
+  // request from the cache.
+  bool might_be_reused_from_cache_in_future_;
 
   // True if Range header is supported.
   bool range_supported_;
