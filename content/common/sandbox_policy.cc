@@ -78,6 +78,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"owexplorer-10522.dll",        // Overwolf.
   L"owexplorer-10523.dll",        // Overwolf.
   L"pavhook.dll",                 // Panda Internet Security.
+  L"pavlsphook.dll",              // Panda Antivirus.
   L"pavshook.dll",                // Panda Antivirus.
   L"pavshookwow.dll",             // Panda Antivirus.
   L"pctavhook.dll",               // PC Tools Antivirus.
