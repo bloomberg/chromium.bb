@@ -98,6 +98,21 @@
             "description": "HTTP request header name (case-insensitive)."
           }
         }
+      },
+      {
+        "id": "declarativeWebRequest.IgnoreRules",
+        "description": "Masks all rules that match the specified criteria.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.IgnoreRules"],
+            "nodoc": true
+          },
+          "lowerPriorityThan": {
+            "type": "integer",
+            "description": "If set, rules with a lower priority than the specified value are ignored. This boundary is not persited, it affects only rules and their actions of the same network request stage. TODO(battre): Explain network request stages."
+          }
+        }
       }
     ],
     "functions": [
@@ -115,7 +130,8 @@
             "declarativeWebRequest.RedirectToTransparentImage",
             "declarativeWebRequest.RedirectToEmptyDocument",
             "declarativeWebRequest.SetRequestHeader",
-            "declarativeWebRequest.RemoveRequestHeader"
+            "declarativeWebRequest.RemoveRequestHeader",
+            "declarativeWebRequest.IgnoreRules"
           ]
         }
       }

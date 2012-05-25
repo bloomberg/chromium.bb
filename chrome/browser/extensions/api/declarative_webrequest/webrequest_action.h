@@ -48,6 +48,7 @@ class WebRequestAction {
     ACTION_REDIRECT_TO_EMPTY_DOCUMENT,
     ACTION_SET_REQUEST_HEADER,
     ACTION_REMOVE_REQUEST_HEADER,
+    ACTION_IGNORE_RULES,
   };
 
   WebRequestAction();
@@ -59,6 +60,10 @@ class WebRequestAction {
   virtual int GetStages() const = 0;
 
   virtual Type GetType() const = 0;
+
+  // Returns the minimum priority of rules that may be evaluated after
+  // this rule. Defaults to MIN_INT.
+  virtual int GetMinimumPriority() const;
 
   // Factory method that instantiates a concrete WebRequestAction
   // implementation according to |json_action|, the representation of the
@@ -106,6 +111,10 @@ class WebRequestActionSet {
       RequestStages request_stage,
       const std::string& extension_id,
       const base::Time& extension_install_time) const;
+
+  // Returns the minimum priority of rules that may be evaluated after
+  // this rule. Defaults to MIN_INT.
+  int GetMinimumPriority() const;
 
   const Actions& actions() const { return actions_; }
 
@@ -238,6 +247,27 @@ class WebRequestRemoveRequestHeaderAction : public WebRequestAction {
  private:
   std::string name_;
   DISALLOW_COPY_AND_ASSIGN(WebRequestRemoveRequestHeaderAction);
+};
+
+// Action that instructs to ignore rules below a certain priority.
+class WebRequestIgnoreRulesAction : public WebRequestAction {
+ public:
+  explicit WebRequestIgnoreRulesAction(int minimum_priority);
+  virtual ~WebRequestIgnoreRulesAction();
+
+  // Implementation of WebRequestAction:
+  virtual int GetStages() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual int GetMinimumPriority() const OVERRIDE;
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const OVERRIDE;
+
+ private:
+  int minimum_priority_;
+  DISALLOW_COPY_AND_ASSIGN(WebRequestIgnoreRulesAction);
 };
 
 // TODO(battre) Implement further actions:

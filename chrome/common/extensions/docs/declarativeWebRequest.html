@@ -250,6 +250,10 @@
                 <a href="#type-declarativeWebRequest.RemoveRequestHeader">declarativeWebRequest.RemoveRequestHeader</a>
                 <ol>
                 </ol>
+              </li><li>
+                <a href="#type-declarativeWebRequest.IgnoreRules">declarativeWebRequest.IgnoreRules</a>
+                <ol>
+                </ol>
               </li>
             </ol>
           </li>
@@ -456,6 +460,15 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                       <div>
           <dt>
             <a href="declarativeWebRequest.html#type-declarativeWebRequest.RemoveRequestHeader">declarativeWebRequest.RemoveRequestHeader</a>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
+            <a href="declarativeWebRequest.html#type-declarativeWebRequest.IgnoreRules">declarativeWebRequest.IgnoreRules</a>
           </dt>
           <dd class="todo">
             Undocumented.
@@ -889,6 +902,58 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
               </em>
           </dt>
           <dd>HTTP request header name (case-insensitive).</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.IgnoreRules"></a>
+              <h4>declarativeWebRequest.IgnoreRules</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Masks all rules that match the specified criteria.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>lowerPriorityThan</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>If set, rules with a lower priority than the specified value are ignored. This boundary is not persited, it affects only rules and their actions of the same network request stage. TODO(battre): Explain network request stages.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

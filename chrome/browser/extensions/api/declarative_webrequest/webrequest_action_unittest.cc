@@ -66,9 +66,11 @@ TEST(WebRequestActionTest, CreateActionSet) {
   EXPECT_FALSE(bad_message);
   ASSERT_TRUE(result.get());
   EXPECT_TRUE(result->actions().empty());
+  EXPECT_EQ(std::numeric_limits<int>::min(), result->GetMinimumPriority());
 
   DictionaryValue correct_action;
-  correct_action.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
+  correct_action.SetString(keys::kInstanceTypeKey, keys::kIgnoreRulesType);
+  correct_action.SetInteger(keys::kLowerPriorityThanKey, 10);
   DictionaryValue incorrect_action;
   incorrect_action.SetString(keys::kInstanceTypeKey, kUnknownActionType);
 
@@ -83,8 +85,9 @@ TEST(WebRequestActionTest, CreateActionSet) {
   EXPECT_FALSE(bad_message);
   ASSERT_TRUE(result.get());
   ASSERT_EQ(1u, result->actions().size());
-  EXPECT_EQ(WebRequestAction::ACTION_CANCEL_REQUEST,
+  EXPECT_EQ(WebRequestAction::ACTION_IGNORE_RULES,
             result->actions()[0]->GetType());
+  EXPECT_EQ(10, result->GetMinimumPriority());
 
   // Test failure.
   linked_ptr<json_schema_compiler::any::Any> action2 = make_linked_ptr(

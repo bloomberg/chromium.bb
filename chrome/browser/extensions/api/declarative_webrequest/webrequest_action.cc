@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_action.h"
 
+#include <limits>
+
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
@@ -77,6 +79,17 @@ scoped_ptr<WebRequestAction> CreateRemoveRequestHeaderAction(
       new WebRequestRemoveRequestHeaderAction(name));
 }
 
+scoped_ptr<WebRequestAction> CreateIgnoreRulesAction(
+    const base::DictionaryValue* dict,
+    std::string* error,
+    bool* bad_message) {
+  int minium_priority;
+  INPUT_FORMAT_VALIDATE(
+      dict->GetInteger(keys::kLowerPriorityThanKey, &minium_priority));
+  return scoped_ptr<WebRequestAction>(
+      new WebRequestIgnoreRulesAction(minium_priority));
+}
+
 struct WebRequestActionFactory {
   // Factory methods for WebRequestAction instances. |dict| contains the json
   // dictionary that describes the action. |error| is used to return error
@@ -103,6 +116,8 @@ struct WebRequestActionFactory {
         &CreateSetRequestHeaderAction;
     factory_methods[keys::kRemoveRequestHeaderType] =
         &CreateRemoveRequestHeaderAction;
+    factory_methods[keys::kIgnoreRulesType] =
+        &CreateIgnoreRulesAction;
   }
 };
 
@@ -118,6 +133,10 @@ base::LazyInstance<WebRequestActionFactory>::Leaky
 WebRequestAction::WebRequestAction() {}
 
 WebRequestAction::~WebRequestAction() {}
+
+int WebRequestAction::GetMinimumPriority() const {
+  return std::numeric_limits<int>::min();
+}
 
 // static
 scoped_ptr<WebRequestAction> WebRequestAction::Create(
@@ -191,6 +210,14 @@ std::list<LinkedPtrEventResponseDelta> WebRequestActionSet::CreateDeltas(
     }
   }
   return result;
+}
+
+int WebRequestActionSet::GetMinimumPriority() const {
+  int minimum_priority = std::numeric_limits<int>::min();
+  for (Actions::const_iterator i = actions_.begin(); i != actions_.end(); ++i) {
+    minimum_priority = std::max(minimum_priority, (*i)->GetMinimumPriority());
+  }
+  return minimum_priority;
 }
 
 //
@@ -389,6 +416,39 @@ WebRequestRemoveRequestHeaderAction::CreateDelta(
           extension_id, extension_install_time));
   result->deleted_request_headers.push_back(name_);
   return result;
+}
+
+//
+// WebRequestIgnoreRulesAction
+//
+
+WebRequestIgnoreRulesAction::WebRequestIgnoreRulesAction(
+    int minimum_priority)
+    : minimum_priority_(minimum_priority) {
+}
+
+WebRequestIgnoreRulesAction::~WebRequestIgnoreRulesAction() {}
+
+int WebRequestIgnoreRulesAction::GetStages() const {
+  return ON_BEFORE_REQUEST | ON_BEFORE_SEND_HEADERS | ON_HEADERS_RECEIVED |
+      ON_AUTH_REQUIRED;
+}
+
+WebRequestAction::Type WebRequestIgnoreRulesAction::GetType() const {
+  return WebRequestAction::ACTION_IGNORE_RULES;
+}
+
+int WebRequestIgnoreRulesAction::GetMinimumPriority() const {
+  return minimum_priority_;
+}
+
+LinkedPtrEventResponseDelta WebRequestIgnoreRulesAction::CreateDelta(
+    net::URLRequest* request,
+    RequestStages request_stage,
+    const std::string& extension_id,
+    const base::Time& extension_install_time) const {
+  CHECK(request_stage & GetStages());
+  return LinkedPtrEventResponseDelta(NULL);
 }
 
 }  // namespace extensions

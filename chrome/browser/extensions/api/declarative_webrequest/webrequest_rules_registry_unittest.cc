@@ -22,6 +22,7 @@ const char kExtensionId2[] = "ext2";
 const char kRuleId1[] = "rule1";
 const char kRuleId2[] = "rule2";
 const char kRuleId3[] = "rule3";
+const char kRuleId4[] = "rule4";
 }  // namespace
 
 namespace extensions {
@@ -163,6 +164,34 @@ class WebRequestRulesRegistryTest : public testing::Test {
     return rule;
   }
 
+  // Create a rule to ignore all other rules for a destination that
+  // contains index.html.
+  linked_ptr<RulesRegistry::Rule> CreateIgnoreRule() {
+    linked_ptr<json_schema_compiler::any::Any> condition = make_linked_ptr(
+        new json_schema_compiler::any::Any);
+    DictionaryValue condition_dict;
+    DictionaryValue* http_condition_dict = new DictionaryValue();
+    http_condition_dict->SetString(keys2::kPathContainsKey, "index.html");
+    condition_dict.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
+    condition_dict.Set(keys::kUrlKey, http_condition_dict);
+    condition->Init(condition_dict);
+
+    DictionaryValue action_dict;
+    action_dict.SetString(keys::kInstanceTypeKey, keys::kIgnoreRulesType);
+    action_dict.SetInteger(keys::kLowerPriorityThanKey, 150);
+    linked_ptr<json_schema_compiler::any::Any> action = make_linked_ptr(
+        new json_schema_compiler::any::Any);
+    action->Init(action_dict);
+
+    linked_ptr<RulesRegistry::Rule> rule =
+        make_linked_ptr(new RulesRegistry::Rule);
+    rule->id.reset(new std::string(kRuleId4));
+    rule->priority.reset(new int(200));
+    rule->actions.push_back(action);
+    rule->conditions.push_back(condition);
+    return rule;
+  }
+
  protected:
   MessageLoop message_loop;
   content::TestBrowserThread ui;
@@ -288,6 +317,7 @@ TEST_F(WebRequestRulesRegistryTest, RemoveAllRulesImpl) {
   EXPECT_TRUE(registry->IsEmpty());
 }
 
+// Test precedences between extensions.
 TEST_F(WebRequestRulesRegistryTest, Precedences) {
   scoped_refptr<WebRequestRulesRegistry> registry(
       new TestWebRequestRulesRegistry());
@@ -328,4 +358,39 @@ TEST_F(WebRequestRulesRegistryTest, Precedences) {
   EXPECT_EQ(GURL("http://www.foo.com"), loser->new_url);
 }
 
+// Test priorities of rules within one extension.
+TEST_F(WebRequestRulesRegistryTest, Priorities) {
+  scoped_refptr<WebRequestRulesRegistry> registry(
+      new TestWebRequestRulesRegistry());
+  std::string error;
+
+  std::vector<linked_ptr<RulesRegistry::Rule> > rules_to_add_1(1);
+  rules_to_add_1[0] = CreateRedirectRule("http://www.foo.com");
+  error = registry->AddRules(kExtensionId, rules_to_add_1);
+  EXPECT_EQ("", error);
+
+  std::vector<linked_ptr<RulesRegistry::Rule> > rules_to_add_2(1);
+  rules_to_add_2[0] = CreateRedirectRule("http://www.bar.com");
+  error = registry->AddRules(kExtensionId2, rules_to_add_2);
+  EXPECT_EQ("", error);
+
+  std::vector<linked_ptr<RulesRegistry::Rule> > rules_to_add_3(1);
+  rules_to_add_3[0] = CreateIgnoreRule();
+  error = registry->AddRules(kExtensionId, rules_to_add_3);
+  EXPECT_EQ("", error);
+
+  GURL url("http://www.google.com/index.html");
+  TestURLRequest request(url, NULL);
+  std::list<LinkedPtrEventResponseDelta> deltas =
+      registry->CreateDeltas(&request, ON_BEFORE_REQUEST);
+
+  // The redirect by the first extension is ignored due to the ignore rule.
+  ASSERT_EQ(1u, deltas.size());
+  LinkedPtrEventResponseDelta effective_rule = *(deltas.begin());
+
+  EXPECT_EQ(kExtensionId2, effective_rule->extension_id);
+  EXPECT_EQ(base::Time() + base::TimeDelta::FromDays(2),
+            effective_rule->extension_install_time);
+  EXPECT_EQ(GURL("http://www.bar.com"), effective_rule->new_url);
+}
 }  // namespace extensions

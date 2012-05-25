@@ -12,6 +12,7 @@ const char kOnRequest[] = "declarativeWebRequest.onRequest";
 
 // Keys of dictionaries.
 const char kInstanceTypeKey[] = "instanceType";
+const char kLowerPriorityThanKey[] = "lowerPriorityThan";
 const char kNameKey[] = "name";
 const char kRedirectUrlKey[] = "redirectUrl";
 const char kResourceTypeKey[] = "resourceType";
@@ -20,6 +21,7 @@ const char kValueKey[] = "value";
 
 // Values of dictionaries, in particular instance types
 const char kCancelRequestType[] = "declarativeWebRequest.CancelRequest";
+const char kIgnoreRulesType[] = "declarativeWebRequest.IgnoreRules";
 const char kRedirectRequestType[] = "declarativeWebRequest.RedirectRequest";
 const char kRedirectToEmptyDocumentType[] =
     "declarativeWebRequest.RedirectToEmptyDocument";

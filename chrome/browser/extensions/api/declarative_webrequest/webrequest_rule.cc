@@ -20,11 +20,13 @@ WebRequestRule::WebRequestRule(
     const GlobalRuleId& id,
     base::Time extension_installation_time,
     scoped_ptr<WebRequestConditionSet> conditions,
-    scoped_ptr<WebRequestActionSet> actions)
+    scoped_ptr<WebRequestActionSet> actions,
+    Priority priority)
     : id_(id),
       extension_installation_time_(extension_installation_time),
       conditions_(conditions.release()),
-      actions_(actions.release()) {
+      actions_(actions.release()),
+      priority_(priority) {
   CHECK(conditions_.get());
   CHECK(actions_.get());
 }
@@ -74,10 +76,13 @@ scoped_ptr<WebRequestRule> WebRequestRule::Create(
     return error_result.Pass();
   }
 
+  CHECK(rule->priority.get());
+  int priority = *(rule->priority);
+
   GlobalRuleId rule_id(extension_id, *(rule->id));
   return scoped_ptr<WebRequestRule>(
       new WebRequestRule(rule_id, extension_installation_time,
-                         conditions.Pass(), actions.Pass()));
+                         conditions.Pass(), actions.Pass(), priority));
 }
 
 std::list<LinkedPtrEventResponseDelta> WebRequestRule::CreateDeltas(
@@ -85,6 +90,10 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRule::CreateDeltas(
     RequestStages request_stage) const {
   return actions_->CreateDeltas(request, request_stage, id_.first,
       extension_installation_time_);
+}
+
+int WebRequestRule::GetMinimumPriority() const {
+  return actions_->GetMinimumPriority();
 }
 
 }  // namespace extensions

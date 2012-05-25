@@ -55,4 +55,10 @@ chromeHidden.registerCustomHook('declarativeWebRequest', function(api) {
   chrome.declarativeWebRequest.RedirectToEmptyDocument = function(parameters) {
     setupInstance(this, parameters, 'RedirectToEmptyDocument');
   };
+  chrome.declarativeWebRequest.RedirectToEmptyDocument = function(parameters) {
+    setupInstance(this, parameters, 'RedirectToEmptyDocument');
+  };
+  chrome.declarativeWebRequest.IgnoreRules = function(parameters) {
+    setupInstance(this, parameters, 'IgnoreRules');
+  };
 });

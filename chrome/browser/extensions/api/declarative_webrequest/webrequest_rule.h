@@ -39,11 +39,13 @@ class WebRequestRule {
   typedef std::string ExtensionId;
   typedef std::string RuleId;
   typedef std::pair<ExtensionId, RuleId> GlobalRuleId;
+  typedef int Priority;
 
   WebRequestRule(const GlobalRuleId& id,
                  base::Time extension_installation_time,
                  scoped_ptr<WebRequestConditionSet> conditions,
-                 scoped_ptr<WebRequestActionSet> actions);
+                 scoped_ptr<WebRequestActionSet> actions,
+                 Priority priority);
   virtual ~WebRequestRule();
 
   // If |error| is empty, the translation was successful and the returned
@@ -58,10 +60,16 @@ class WebRequestRule {
   const GlobalRuleId& id() const { return id_; }
   const WebRequestConditionSet& conditions() const { return *conditions_; }
   const WebRequestActionSet& actions() const { return *actions_; }
+  Priority priority() const { return priority_; }
 
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
       net::URLRequest* request,
       RequestStages request_stage) const;
+
+  // Returns the minimum priority of rules that may be evaluated after
+  // this rule. Defaults to MAX_INT. Only valid if the conditions of this rule
+  // are fulfilled.
+  Priority GetMinimumPriority() const;
 
  private:
   // Checks whether the set of |conditions| and |actions| are consistent,
@@ -76,6 +84,7 @@ class WebRequestRule {
   base::Time extension_installation_time_;  // For precedences of rules.
   scoped_ptr<WebRequestConditionSet> conditions_;
   scoped_ptr<WebRequestActionSet> actions_;
+  Priority priority_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestRule);
 };

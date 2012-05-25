@@ -14,6 +14,8 @@ var SetRequestHeader =
     chrome.declarativeWebRequest.SetRequestHeader;
 var RemoveRequestHeader =
     chrome.declarativeWebRequest.RemoveRequestHeader;
+var IgnoreRules =
+    chrome.declarativeWebRequest.IgnoreRules;
 
 // Constants as functions, not to be called until after runTests.
 function getURLEchoUserAgent() {
@@ -48,7 +50,7 @@ runTests([
           }
         },
       ],
-      [ ["onCompleted"] ]);
+      [ ["onErrorOccurred"] ]);
     onRequest.addRules(
       [ {'conditions': [
            new RequestMatcher({
@@ -218,6 +220,34 @@ runTests([
             });
         });
       });
+  },
+
+  function testPriorities() {
+    ignoreUnexpected = true;
+    expect(
+      [
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLHttpSimple(),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.0 200 OK",
+            ip: "127.0.0.1",
+          }
+        }
+      ],
+      [ ["onCompleted"] ]);
+
+    onRequest.addRules(
+      [ {conditions: [new RequestMatcher({url: {pathContains: "simpleLoad"}})],
+         actions: [new CancelRequest()]},
+        {conditions: [new RequestMatcher({url: {pathContains: "a.html"}})],
+         actions: [new IgnoreRules({lowerPriorityThan: 200})],
+         priority: 200}
+      ],
+      function() {navigateAndWait(getURLHttpSimple());}
+    );
   },
 
   ]);
