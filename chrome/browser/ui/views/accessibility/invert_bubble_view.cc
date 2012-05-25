@@ -58,7 +58,11 @@ class InvertBubbleView : public views::BubbleDelegateView,
 
 InvertBubbleView::InvertBubbleView(Profile* profile, views::View* anchor_view)
     : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
-      profile_(profile) {
+      profile_(profile),
+      high_contrast_(NULL),
+      dark_theme_(NULL),
+      learn_more_(NULL),
+      close_(NULL) {
 }
 
 InvertBubbleView::~InvertBubbleView() {
