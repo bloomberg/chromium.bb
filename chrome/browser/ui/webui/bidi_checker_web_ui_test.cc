@@ -375,8 +375,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+#if defined(OS_WIN)
+// TestSettings tests are flaky http://crbug.com/95425
+#define MAYBE_TestSettingsLanguageOptionsPage DISABLED_TestSettingsLanguageOptionsPage
+#else
+#define MAYBE_TestSettingsLanguageOptionsPage TestSettingsLanguageOptionsPage
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsLanguageOptionsPage) {
+                       MAYBE_TestSettingsLanguageOptionsPage) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kLanguageOptionsSubPage);
   RunBidiCheckerOnPage(url);
