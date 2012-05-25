@@ -12,7 +12,10 @@
 #include "chrome/app/breakpad_win.h"
 #include "chrome/common/child_process_logging.h"
 
-extern "C" void __declspec(dllexport) __cdecl SetExperimentList(
+// Note that this is suffixed with "2" due to a parameter change that was made
+// to the predecessor "SetExperimentList()". If the signature changes again, use
+// a new name.
+extern "C" void __declspec(dllexport) __cdecl SetExperimentList2(
       const wchar_t** experiment_strings, size_t experiment_strings_size) {
   // Make sure we were initialized before we start writing data
   if (breakpad_win::g_experiment_chunks_offset == 0)
@@ -68,7 +71,7 @@ namespace testing {
 void SetExperimentList(const std::vector<string16>& experiment_strings) {
   std::vector<const wchar_t*> cstrings;
   StringVectorToCStringVector(experiment_strings, &cstrings);
-  ::SetExperimentList(&cstrings[0], cstrings.size());
+  ::SetExperimentList2(&cstrings[0], cstrings.size());
 }
 
 }  // namespace testing

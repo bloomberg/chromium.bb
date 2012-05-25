@@ -48,11 +48,11 @@ typedef void (__cdecl *MainSetPrinterInfo)(const wchar_t*);
 typedef void (__cdecl *MainSetNumberOfViews)(int);
 
 // exported in breakpad_win.cc:
-//   void __declspec(dllexport) __cdecl SetCommandLine
+//   void __declspec(dllexport) __cdecl SetCommandLine2
 typedef void (__cdecl *MainSetCommandLine)(const wchar_t**, size_t);
 
 // exported in breakpad_field_trial_win.cc:
-//   void __declspec(dllexport) __cdecl SetExperimentList
+//   void __declspec(dllexport) __cdecl SetExperimentList2
 typedef void (__cdecl *MainSetExperimentList)(const wchar_t**, size_t);
 
 // Copied from breakpad_win.cc.
@@ -199,7 +199,7 @@ void SetCommandLine(const CommandLine* command_line) {
     if (!exe_module)
       return;
     set_command_line = reinterpret_cast<MainSetCommandLine>(
-        GetProcAddress(exe_module, "SetCommandLine"));
+        GetProcAddress(exe_module, "SetCommandLine2"));
     if (!set_command_line)
       return;
   }
@@ -217,7 +217,7 @@ void SetExperimentList(const std::vector<string16>& state) {
     if (!exe_module)
       return;
     set_experiment_list = reinterpret_cast<MainSetExperimentList>(
-        GetProcAddress(exe_module, "SetExperimentList"));
+        GetProcAddress(exe_module, "SetExperimentList2"));
     if (!set_experiment_list)
       return;
   }

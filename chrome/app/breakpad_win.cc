@@ -151,7 +151,10 @@ bool IsBoringCommandLineSwitch(const std::wstring& flag) {
          flag == L"--flag-switches-end";
 }
 
-extern "C" void __declspec(dllexport) __cdecl SetCommandLine(
+// Note that this is suffixed with "2" due to a parameter change that was made
+// to the predecessor "SetCommandLine()". If the signature changes again, use
+// a new name.
+extern "C" void __declspec(dllexport) __cdecl SetCommandLine2(
     const wchar_t** argv, size_t argc) {
   if (!g_custom_entries)
     return;
@@ -302,7 +305,7 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
       google_breakpad::CustomInfoEntry(L"guid", guid.c_str()));
 
   // Add empty values for the command line switches. We will fill them with
-  // actual values as part of SetCommandLine().
+  // actual values as part of SetCommandLine2().
   g_num_switches_offset = g_custom_entries->size();
   g_custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"num-switches", L""));
@@ -315,12 +318,12 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
   }
 
   // Fill in the command line arguments using CommandLine::ForCurrentProcess().
-  // The browser process may call SetCommandLine() again later on with a command
-  // line that has been augmented with the about:flags experiments.
+  // The browser process may call SetCommandLine2() again later on with a
+  // command line that has been augmented with the about:flags experiments.
   std::vector<const wchar_t*> switches;
   StringVectorToCStringVector(
       CommandLine::ForCurrentProcess()->argv(), &switches);
-  SetCommandLine(&switches[0], switches.size());
+  SetCommandLine2(&switches[0], switches.size());
 
   if (type == L"renderer" || type == L"plugin" || type == L"gpu-process") {
     g_num_of_views_offset = g_custom_entries->size();
