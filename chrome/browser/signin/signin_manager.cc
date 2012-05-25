@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -25,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "net/cookies/cookie_monster.h"
+#include "unicode/regex.h"
 
 namespace {
 
@@ -78,10 +80,41 @@ void SigninManager::Initialize(Profile* profile) {
       token_service->LoadTokensFromDB();
     }
   }
+  if (!user.empty() && !IsAllowedUsername(user)) {
+    // User is signed in, but the username is invalid - the administrator must
+    // have changed the policy since the last signin, so sign out the user.
+    SignOut();
+  }
 }
 
 bool SigninManager::IsInitialized() const {
   return profile_ != NULL;
+}
+
+bool SigninManager::IsAllowedUsername(const std::string& username) const {
+  std::string pattern = profile_->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsernamePattern);
+  if (pattern.empty())
+    return true;
+
+  // See if the username matches the policy-provided pattern.
+  UErrorCode status = U_ZERO_ERROR;
+  string16 pattern16 = UTF8ToUTF16(pattern);
+  const icu::UnicodeString icu_pattern(pattern16.data(), pattern16.length());
+  icu::RegexMatcher matcher(icu_pattern, UREGEX_CASE_INSENSITIVE, status);
+  if (!U_SUCCESS(status)) {
+    LOG(ERROR) << "Invalid login regex: " << pattern << ", status: " << status;
+    // If an invalid pattern is provided, then prohibit *all* logins (better to
+    // break signin than to quietly allow users to sign in).
+    return false;
+  }
+  string16 username16 = UTF8ToUTF16(username);
+  icu::UnicodeString icu_input(username16.data(), username16.length());
+  matcher.reset(icu_input);
+  status = U_ZERO_ERROR;
+  UBool match = matcher.matches(status);
+  DCHECK(U_SUCCESS(status));
+  return !!match;  // !! == convert from UBool to bool.
 }
 
 void SigninManager::CleanupNotificationRegistration() {
@@ -115,10 +148,19 @@ void SigninManager::SetAuthenticatedUsername(const std::string& username) {
   // authenticated_username_ altogether). Bug 107160.
 }
 
-void SigninManager::PrepareForSignin(SigninType type,
+bool SigninManager::PrepareForSignin(SigninType type,
                                      const std::string& username,
                                      const std::string& password) {
   DCHECK(possibly_invalid_username_.empty());
+  DCHECK(!username.empty());
+
+  if (!IsAllowedUsername(username)) {
+    // Account is not allowed by admin policy.
+    HandleAuthError(GoogleServiceAuthError(
+        GoogleServiceAuthError::ACCOUNT_DISABLED), true);
+    return false;
+  }
+
   // This attempt is either 1) the user trying to establish initial sync, or
   // 2) trying to refresh credentials for an existing username.  If it is 2, we
   // need to try again, but take care to leave state around tracking that the
@@ -132,6 +174,7 @@ void SigninManager::PrepareForSignin(SigninType type,
   client_login_.reset(new GaiaAuthFetcher(this,
                                           GaiaConstants::kChromeSource,
                                           profile_->GetRequestContext()));
+  return true;
 }
 
 // Users must always sign out before they sign in again.
@@ -141,7 +184,9 @@ void SigninManager::StartSignIn(const std::string& username,
                                 const std::string& login_captcha) {
   DCHECK(authenticated_username_.empty() ||
          username == authenticated_username_);
-  PrepareForSignin(SIGNIN_TYPE_CLIENT_LOGIN, username, password);
+
+  if (!PrepareForSignin(SIGNIN_TYPE_CLIENT_LOGIN, username, password))
+    return;
 
   client_login_->StartClientLogin(username,
                                   password,
@@ -185,7 +230,9 @@ void SigninManager::StartSignInWithCredentials(const std::string& session_index,
                                                const std::string& username,
                                                const std::string& password) {
   DCHECK(authenticated_username_.empty());
-  PrepareForSignin(SIGNIN_TYPE_WITH_CREDENTIALS, username, password);
+
+  if (!PrepareForSignin(SIGNIN_TYPE_WITH_CREDENTIALS, username, password))
+    return;
 
   // This function starts with the current state of the web session's cookie
   // jar and mints a new ClientLogin-style SID/LSID pair.  This involves going
@@ -206,7 +253,9 @@ void SigninManager::StartSignInWithCredentials(const std::string& session_index,
 void SigninManager::StartSignInWithOAuth(const std::string& username,
                                          const std::string& password) {
   DCHECK(authenticated_username_.empty());
-  PrepareForSignin(SIGNIN_TYPE_CLIENT_OAUTH, username, password);
+
+  if (!PrepareForSignin(SIGNIN_TYPE_CLIENT_OAUTH, username, password))
+    return;
 
   std::vector<std::string> scopes;
   scopes.push_back(GaiaUrls::GetInstance()->oauth1_login_scope());

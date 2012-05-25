@@ -304,6 +304,13 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
     }
   }
 
+  // Make sure this username is not prohibited by policy.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  if (!signin->IsAllowedUsername(email))
+    return;
+
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
   if (!wrapper)

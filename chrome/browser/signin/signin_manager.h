@@ -61,6 +61,10 @@ class SigninManager : public GaiaAuthConsumer,
   void Initialize(Profile* profile);
   bool IsInitialized() const;
 
+  // Returns true if the passed username is allowed by policy. Virtual for
+  // mocking in tests.
+  virtual bool IsAllowedUsername(const std::string& username) const;
+
   // If a user has previously established a username and SignOut has not been
   // called, this will return the username.
   // Otherwise, it will return an empty string.
@@ -158,8 +162,9 @@ class SigninManager : public GaiaAuthConsumer,
   // Called to setup the transient signin data during one of the
   // StartSigninXXX methods.  |type| indicates which of the methods is being
   // used to perform the signin while |username| and |password| identify the
-  // account to be signed in.
-  void PrepareForSignin(SigninType type,
+  // account to be signed in. Returns false and generates an auth error if the
+  // passed |username| is not allowed by policy.
+  bool PrepareForSignin(SigninType type,
                         const std::string& username,
                         const std::string& password);
 

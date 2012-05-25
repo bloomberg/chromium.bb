@@ -10064,6 +10064,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
           Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>...
         </message>
       </if>
+      <message name="IDS_SYNC_LOGIN_NAME_PROHIBITED" desc="The error message shown when the user tries to sign in to sync using a name that is not allowed by the admin policy">
+        Signing in with this username has been disabled by your administrator.
+      </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_SYNC_USER_NAME_IN_USE_ERROR" desc="Mobile: An error message shown when a user tries to sign in to sync using a user name that's already in use by another profile.">
           This account is already being used on this mobile device.

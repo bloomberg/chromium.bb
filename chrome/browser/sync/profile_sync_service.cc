@@ -192,8 +192,10 @@ void ProfileSyncService::Initialize() {
 
   RegisterAuthNotifications();
 
-  if (!HasSyncSetupCompleted())
-    DisableForUser();  // Clean up in case of previous crash / setup abort.
+  if (!HasSyncSetupCompleted() || signin_->GetAuthenticatedUsername().empty()) {
+    // Clean up in case of previous crash / setup abort / signout.
+    DisableForUser();
+  }
 
   TryStart();
 }

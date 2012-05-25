@@ -69,6 +69,7 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest,
                            UnrecoverableErrorInitializingSync);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, UnsuccessfullySetPassphrase);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SubmitAuthWithInvalidUsername);
 
 
   // Subclasses must implement this to show the setup UI that's appropriate

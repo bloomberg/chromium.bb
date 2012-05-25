@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "content/test/mock_web_ui.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -18,8 +19,11 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using ::testing::_;
 using ::testing::A;
@@ -293,6 +297,8 @@ class SigninManagerMock : public FakeSigninManager {
     password_.clear();
     captcha_.clear();
   }
+
+  MOCK_CONST_METHOD1(IsAllowedUsername, bool(const std::string& username));
 
   std::string username_;
   std::string password_;
@@ -984,4 +990,46 @@ TEST_F(SyncSetupHandlerTest, ShowSetupEncryptAll) {
   DictionaryValue* dictionary;
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
   CheckBool(dictionary, "encryptAllData", true);
+}
+
+// Tests that trying to log in with an invalid username results in an error
+// displayed to the user.
+TEST_F(SyncSetupHandlerTest, SubmitAuthWithInvalidUsername) {
+  EXPECT_CALL(*mock_signin_, IsAllowedUsername(_)).
+      WillRepeatedly(Return(false));
+
+  // Generate a blob of json that matches what would be submitted by the login
+  // javascript code.
+  DictionaryValue args;
+  args.SetString("user", "user@not_allowed.com");
+  args.SetString("pass", "password");
+  args.SetString("captcha", "");
+  args.SetString("otp", "");
+  args.SetString("accessCode", "");
+  std::string json;
+  base::JSONWriter::Write(&args, &json);
+  ListValue list_args;
+  list_args.Append(new StringValue(json));
+
+  // Mimic a login attempt from the UI.
+  handler_->HandleSubmitAuth(&list_args);
+
+  // Should result in the login page being displayed again.
+  ASSERT_EQ(1U, web_ui_.call_data().size());
+  const TestWebUI::CallData& data = web_ui_.call_data()[0];
+  EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name);
+  std::string page;
+  ASSERT_TRUE(data.arg1->GetAsString(&page));
+  EXPECT_EQ(page, "login");
+
+  // Also make sure that the appropriate error message is being passed.
+  DictionaryValue* dictionary;
+  ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
+  std::string err = l10n_util::GetStringUTF8(IDS_SYNC_LOGIN_NAME_PROHIBITED);
+  CheckShowSyncSetupArgs(
+      dictionary, err, false, GoogleServiceAuthError::NONE, "", true, "");
+  handler_->CloseSyncSetup();
+  EXPECT_EQ(NULL,
+            LoginUIServiceFactory::GetForProfile(
+                profile_.get())->current_login_ui());
 }

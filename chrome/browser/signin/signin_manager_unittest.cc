@@ -202,6 +202,27 @@ TEST_F(SigninManagerTest, SignInClientLogin) {
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
 }
 
+TEST_F(SigninManagerTest, Prohibited) {
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsernamePattern,
+                                  ".*@google.com");
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->IsAllowedUsername("test@google.com"));
+  EXPECT_TRUE(manager_->IsAllowedUsername("happy@google.com"));
+  EXPECT_FALSE(manager_->IsAllowedUsername("test@invalid.com"));
+  EXPECT_FALSE(manager_->IsAllowedUsername("test@notgoogle.com"));
+  EXPECT_FALSE(manager_->IsAllowedUsername(""));
+}
+
+TEST_F(SigninManagerTest, ProhibitedAtStartup) {
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                  "monkey@invalid.com");
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsernamePattern,
+                                  ".*@google.com");
+  manager_->Initialize(profile_.get());
+  // Currently signed in user is prohibited by policy, so should be signed out.
+  EXPECT_EQ("", manager_->GetAuthenticatedUsername());
+}
+
 TEST_F(SigninManagerTest, SignInWithCredentials) {
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());

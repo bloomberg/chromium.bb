@@ -987,11 +987,20 @@ void SyncSetupHandler::CloseOverlay() {
 
 bool SyncSetupHandler::IsLoginAuthDataValid(const std::string& username,
                                             string16* error_message) {
-  // Happens during unit tests.
-  if (!web_ui() || !profile_manager_)
+  if (username.empty())
     return true;
 
-  if (username.empty())
+  // Can be null during some unit tests.
+  if (!web_ui())
+    return true;
+
+  if (!GetSignin()->IsAllowedUsername(username)) {
+    *error_message = l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_NAME_PROHIBITED);
+    return false;
+  }
+
+  // If running in a unit test, skip profile check.
+  if (!profile_manager_)
     return true;
 
   // Check if the username is already in use by another profile.
