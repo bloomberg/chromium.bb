@@ -229,10 +229,7 @@ void NPChannelBase::RemoveRoute(int route_id) {
     for (ListenerMap::iterator npobj_iter = npobject_listeners_.begin();
          npobj_iter != npobject_listeners_.end(); ++npobj_iter) {
       if (npobj_iter->second) {
-        IPC::Channel::Listener* channel_listener =
-            npobj_iter->second->GetChannelListener();
-        DCHECK(channel_listener != NULL);
-        channel_listener->OnChannelError();
+        npobj_iter->second->GetChannelListener()->OnChannelError();
       }
     }
 
