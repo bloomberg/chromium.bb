@@ -188,7 +188,7 @@ OmniboxViewGtk::OmniboxViewGtk(
       handling_key_press_(false),
       content_maybe_changed_by_key_press_(false),
       update_popup_without_focus_(false),
-      supports_pre_edit_(gtk_check_version(2, 20, 0)),
+      supports_pre_edit_(!gtk_check_version(2, 20, 0)),
       pre_edit_size_before_change_(0),
       going_to_focus_(NULL) {
   popup_view_.reset(
