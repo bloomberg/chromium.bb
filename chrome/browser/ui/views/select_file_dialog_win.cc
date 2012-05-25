@@ -39,6 +39,7 @@ std::wstring GetExtensionWithoutLeadingDot(const std::wstring& extension) {
   return extension.empty() ? extension : extension.substr(1);
 }
 
+// Diverts to a metro-specific implementation as appropriate.
 bool CallGetOpenFileName(OPENFILENAME* ofn) {
   HMODULE metro_module = base::win::GetMetroModule();
   if (metro_module != NULL) {
@@ -46,10 +47,33 @@ bool CallGetOpenFileName(OPENFILENAME* ofn) {
     MetroGetOpenFileName metro_get_open_file_name =
         reinterpret_cast<MetroGetOpenFileName>(
             ::GetProcAddress(metro_module, "MetroGetOpenFileName"));
+    if (metro_get_open_file_name == NULL) {
+      NOTREACHED();
+      return false;
+    }
 
-    return !!metro_get_open_file_name(ofn);
+    return metro_get_open_file_name(ofn) == TRUE;
   } else {
-    return !!GetOpenFileName(ofn);
+    return GetOpenFileName(ofn) == TRUE;
+  }
+}
+
+// Diverts to a metro-specific implementation as appropriate.
+bool CallGetSaveFileName(OPENFILENAME* ofn) {
+  HMODULE metro_module = base::win::GetMetroModule();
+  if (metro_module != NULL) {
+    typedef BOOL (*MetroGetSaveFileName)(OPENFILENAME*);
+    MetroGetSaveFileName metro_get_save_file_name =
+        reinterpret_cast<MetroGetSaveFileName>(
+            ::GetProcAddress(metro_module, "MetroGetSaveFileName"));
+    if (metro_get_save_file_name == NULL) {
+      NOTREACHED();
+      return false;
+    }
+
+    return metro_get_save_file_name(ofn) == TRUE;
+  } else {
+    return GetSaveFileName(ofn) == TRUE;
   }
 }
 
@@ -329,7 +353,7 @@ bool SaveFileAsWithFilter(HWND owner,
   save_as.pvReserved = NULL;
   save_as.dwReserved = 0;
 
-  if (!GetSaveFileName(&save_as)) {
+  if (!CallGetSaveFileName(&save_as)) {
     // Zero means the dialog was closed, otherwise we had an error.
     DWORD error_code = CommDlgExtendedError();
     if (error_code != 0) {
