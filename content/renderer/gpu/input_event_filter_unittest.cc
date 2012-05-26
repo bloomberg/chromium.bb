@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,6 +93,9 @@ class IPCMessageRecorder : public IPC::Channel::Listener {
 
 void InitMouseEvent(WebMouseEvent* event, WebInputEvent::Type type,
                     int x, int y) {
+  // Avoid valgrind false positives by initializing memory completely.
+  memset(event, 0, sizeof(*event));
+
   new (event) WebMouseEvent();
   event->type = type;
   event->x = x;

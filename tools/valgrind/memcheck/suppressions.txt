@@ -4369,12 +4369,6 @@
    fun:_ZN12*FinishPepperFlashUpdateRegistrationEP22ComponentUpdateServiceRK7Version
 }
 {
-   bug_102622
-   Memcheck:Uninitialized
-   fun:bcmp
-   fun:_ZN31InputEventFilterTest_Basic_Test8TestBodyEv
-}
-{
    bug_102831_a
    Memcheck:Leak
    ...
