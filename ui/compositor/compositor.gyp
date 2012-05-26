@@ -63,7 +63,7 @@
           # TODO(sky): before we make this real need to remove
           # IDR_BITMAP_BRUSH_IMAGE.
           'dependencies': [
-            '<(DEPTH)/ui/ui.gyp:native_theme_resources',
+            '<(DEPTH)/ui/ui.gyp:ui_resources_standard',
             '<(DEPTH)/third_party/angle/src/build_angle.gyp:libEGL',
             '<(DEPTH)/third_party/angle/src/build_angle.gyp:libGLESv2',
           ],
@@ -125,8 +125,8 @@
         'test/test_suite.h',
         'test/test_utils.cc',
         'test/test_utils.h',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/native_theme/native_theme_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc'
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
       ],
       'conditions': [
         # osmesa GL implementation is used on linux.
