@@ -51,6 +51,8 @@ struct wcap_decoder {
 	void *map, *p, *end;
 	uint32_t *frame;
 	uint32_t format;
+	uint32_t msecs;
+	uint32_t count;
 	int width, height;
 };
 

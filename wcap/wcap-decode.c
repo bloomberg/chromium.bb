@@ -86,6 +86,8 @@ wcap_decoder_get_frame(struct wcap_decoder *decoder)
 		return 0;
 
 	header = decoder->p;
+	decoder->msecs = header->msecs;
+	decoder->count++;
 
 	rects = (void *) (header + 1);
 	decoder->p = (uint32_t *) (rects + header->nrects);
@@ -121,6 +123,7 @@ wcap_decoder_create(const char *filename)
 		
 	header = decoder->map;
 	decoder->format = header->format;
+	decoder->count = 0;
 	decoder->width = header->width;
 	decoder->height = header->height;
 	decoder->p = header + 1;

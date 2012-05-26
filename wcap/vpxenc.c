@@ -314,6 +314,7 @@ struct input_state
     struct vpx_rational   framerate;
     int                   use_i420;
     struct wcap_decoder  *wcap;
+    uint32_t              output_msecs;
 };
 
 static inline int rgb_to_yuv(uint32_t format, uint32_t p, int *u, int *v)
@@ -406,10 +407,18 @@ static int read_frame(struct input_state *input, vpx_image_t *img)
     }
     else if (file_type == FILE_TYPE_WCAP)
     {
-        if (!wcap_decoder_get_frame(input->wcap))
-            return 0;
+        if (input->wcap->count == 0) {
+            wcap_decoder_get_frame(input->wcap);
+	    input->output_msecs = input->wcap->msecs;
+	}
+
+	while (input->output_msecs > input->wcap->msecs)
+            if (!wcap_decoder_get_frame(input->wcap))
+                return 0;
 
 	convert_to_yv12(input->wcap, img);
+	input->output_msecs +=
+		input->framerate.den * 1000 / input->framerate.num;
     }
     else
     {
@@ -1748,7 +1757,7 @@ static void parse_global_config(struct global_config *global, char **argv)
 }
 
 
-void open_input_file(struct input_state *input)
+void open_input_file(struct input_state *input, struct global_config *global)
 {
     unsigned int fourcc;
 
@@ -1802,8 +1811,7 @@ void open_input_file(struct input_state *input)
         input->file_type = FILE_TYPE_WCAP;
         input->w = input->wcap->width;
         input->h = input->wcap->height;
-        input->framerate.num = 30;
-        input->framerate.den = 1;
+        input->framerate = global->framerate;
         input->use_i420 = 0;
     }
     else
@@ -2488,7 +2496,7 @@ int main(int argc, const char **argv_)
     {
         int frames_in = 0;
 
-        open_input_file(&input);
+        open_input_file(&input, &global);
 
         /* If the input file doesn't specify its w/h (raw files), try to get
          * the data from the first stream's configuration.
