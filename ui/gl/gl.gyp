@@ -97,6 +97,7 @@
             '<(DEPTH)/third_party/khronos/GLES2/gl2ext.h',
             '<(DEPTH)/third_party/khronos/EGL/eglext.h',
             '<(DEPTH)/third_party/mesa/MesaLib/include/GL/glext.h',
+            '<(DEPTH)/third_party/mesa/MesaLib/include/GL/glx.h',
             '<(DEPTH)/third_party/mesa/MesaLib/include/GL/glxext.h',
             '<(DEPTH)/third_party/mesa/MesaLib/include/GL/wglext.h',
           ],

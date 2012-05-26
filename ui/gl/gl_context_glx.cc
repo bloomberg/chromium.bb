@@ -224,6 +224,8 @@ void GLContextGLX::SetSwapInterval(int interval) {
         display_,
         glXGetCurrentDrawable(),
         interval);
+  } else if (HasExtension("GLX_MESA_swap_control") && glXSwapIntervalMESA) {
+    glXSwapIntervalMESA(interval);
   } else {
     if(interval == 0)
       LOG(WARNING) <<

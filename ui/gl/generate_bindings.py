@@ -1043,6 +1043,9 @@ GLX_FUNCTIONS = [
   'names': ['glXGetSelectedEvent'],
   'arguments': 'Display* dpy, GLXDrawable drawable, unsigned long* mask', },
 { 'return_type': 'void',
+  'names': ['glXSwapIntervalMESA'],
+  'arguments': 'unsigned int interval', },
+{ 'return_type': 'void',
   'names': ['glXSwapIntervalEXT'],
   'arguments': 'Display* dpy, GLXDrawable drawable, int interval', },
 { 'return_type': 'GLXFBConfig',
@@ -1067,6 +1070,7 @@ FUNCTION_SETS = [
   [WGL_FUNCTIONS, 'wgl', [
     '../../third_party/mesa/MesaLib/include/GL/wglext.h'], []],
   [GLX_FUNCTIONS, 'glx', [
+    '../../third_party/mesa/MesaLib/include/GL/glx.h',
     '../../third_party/mesa/MesaLib/include/GL/glxext.h'], []],
 ]
 
