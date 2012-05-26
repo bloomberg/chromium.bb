@@ -264,14 +264,12 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
                     reinterpret_cast<LPARAM>(&visible_window));
 
   // If there is a visible browser window, ask the user before killing it.
-  if (visible_window) {
-    const string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-    const string16 message = l10n_util::GetStringUTF16(
-        IDS_BROWSER_HUNGBROWSER_MESSAGE);
-    if (!browser::ShowQuestionMessageBox(NULL, title, message)) {
-      // The user denied. Quit silently.
-      return PROCESS_NOTIFIED;
-    }
+  if (visible_window && browser::ShowMessageBox(NULL,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+      l10n_util::GetStringUTF16(IDS_BROWSER_HUNGBROWSER_MESSAGE),
+      browser::MESSAGE_BOX_TYPE_QUESTION) == browser::MESSAGE_BOX_RESULT_NO) {
+    // The user denied. Quit silently.
+    return PROCESS_NOTIFIED;
   }
 
   // Time to take action. Kill the browser process.

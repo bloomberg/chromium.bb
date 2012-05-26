@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "grit/generated_resources.h"
@@ -22,43 +21,20 @@
 #include "ui/aura/root_window.h"
 #endif
 
+namespace browser {
+
 namespace {
 
 class SimpleMessageBoxViews : public views::DialogDelegate,
-                              public MessageLoop::Dispatcher,
-                              public base::RefCounted<SimpleMessageBoxViews> {
+                              public MessageLoop::Dispatcher {
  public:
-  static void ShowMessageBox(gfx::NativeWindow parent_window,
-                             const string16& title,
-                             const string16& message,
-                             browser::MessageBoxType type);
-  static bool ShowQuestionMessageBox(gfx::NativeWindow parent_window,
-                                     const string16& title,
-                                     const string16& message);
+  SimpleMessageBoxViews(const string16& title,
+                        const string16& message,
+                        MessageBoxType type);
 
-  // Returns true if the Accept button was clicked.
-  bool accepted() const { return disposition_ == DISPOSITION_OK; }
+  MessageBoxResult result() const { return result_; }
 
  private:
-  friend class base::RefCounted<SimpleMessageBoxViews>;
-
-  enum DialogType {
-    DIALOG_TYPE_INFORMATION,
-    DIALOG_TYPE_WARNING,
-    DIALOG_TYPE_QUESTION,
-  };
-
-  // The state of the dialog when closing.
-  enum Disposition {
-    DISPOSITION_UNKNOWN,
-    DISPOSITION_CANCEL,
-    DISPOSITION_OK
-  };
-
-  SimpleMessageBoxViews(gfx::NativeWindow parent_window,
-                        const string16& title,
-                        const string16& message,
-                        DialogType dialog_type);
   virtual ~SimpleMessageBoxViews();
 
   // Overridden from views::DialogDelegate:
@@ -79,9 +55,13 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   const string16 window_title_;
-  const DialogType dialog_type_;
-  Disposition disposition_;
+  const MessageBoxType type_;
+  MessageBoxResult result_;
   views::MessageBoxView* message_box_view_;
+
+  // Set to false as soon as the user clicks a dialog button; this tells the
+  // dispatcher we're done.
+  bool should_show_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleMessageBoxViews);
 };
@@ -89,79 +69,32 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMessageBoxViews, public:
 
-// static
-void SimpleMessageBoxViews::ShowMessageBox(
-    gfx::NativeWindow parent_window,
-    const string16& title,
-    const string16& message,
-    browser::MessageBoxType type) {
-  DialogType message_type = DIALOG_TYPE_INFORMATION;
-  if (type == browser::MESSAGE_BOX_TYPE_WARNING)
-    message_type = DIALOG_TYPE_WARNING;
-
-  // This is a reference counted object so it is given an initial increment
-  // in the constructor with a corresponding decrement in DeleteDelegate().
-  new SimpleMessageBoxViews(parent_window, title, message, message_type);
-}
-
-bool SimpleMessageBoxViews::ShowQuestionMessageBox(
-    gfx::NativeWindow parent_window,
-    const string16& title,
-    const string16& message) {
-  // This is a reference counted object so it is given an initial increment
-  // in the constructor plus an extra one below to ensure the dialog persists
-  // until we retrieve the user response..
-  scoped_refptr<SimpleMessageBoxViews> dialog = new SimpleMessageBoxViews(
-      parent_window, title, message, DIALOG_TYPE_QUESTION);
-
-  // Make sure Chrome doesn't attempt to shut down with the dialog up.
-  g_browser_process->AddRefModule();
-
-#if defined(USE_AURA)
-  aura::client::GetDispatcherClient(parent_window->GetRootWindow())->
-      RunWithDispatcher(dialog, parent_window, true);
-#else
-  {
-    MessageLoop::ScopedNestableTaskAllower allow(MessageLoopForUI::current());
-    MessageLoopForUI::current()->RunWithDispatcher(dialog);
-  }
-#endif
-
-  g_browser_process->ReleaseModule();
-
-  return dialog->accepted();
+SimpleMessageBoxViews::SimpleMessageBoxViews(const string16& title,
+                                             const string16& message,
+                                             MessageBoxType type)
+    : window_title_(title),
+      type_(type),
+      result_(MESSAGE_BOX_RESULT_NO),
+      message_box_view_(new views::MessageBoxView(
+          views::MessageBoxView::InitParams(message))),
+      should_show_dialog_(true) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMessageBoxViews, private:
 
-SimpleMessageBoxViews::SimpleMessageBoxViews(gfx::NativeWindow parent_window,
-                                             const string16& title,
-                                             const string16& message,
-                                             DialogType dialog_type)
-    : window_title_(title),
-      dialog_type_(dialog_type),
-      disposition_(DISPOSITION_UNKNOWN),
-      message_box_view_(new views::MessageBoxView(
-          views::MessageBoxView::InitParams(message))) {
-  views::Widget::CreateWindowWithParent(this, parent_window)->Show();
-
-  // Add reference to be released in DeleteDelegate().
-  AddRef();
-}
-
 SimpleMessageBoxViews::~SimpleMessageBoxViews() {
 }
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
-  if (dialog_type_ == DIALOG_TYPE_QUESTION)
+  if (type_ == MESSAGE_BOX_TYPE_QUESTION)
     return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
   return ui::DIALOG_BUTTON_OK;
 }
 
 string16 SimpleMessageBoxViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  if (dialog_type_ == DIALOG_TYPE_QUESTION) {
+  if (type_ == MESSAGE_BOX_TYPE_QUESTION) {
     return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
         IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL :
         IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
@@ -170,12 +103,14 @@ string16 SimpleMessageBoxViews::GetDialogButtonLabel(
 }
 
 bool SimpleMessageBoxViews::Cancel() {
-  disposition_ = DISPOSITION_CANCEL;
+  should_show_dialog_= false;
+  result_ = MESSAGE_BOX_RESULT_NO;
   return true;
 }
 
 bool SimpleMessageBoxViews::Accept() {
-  disposition_ = DISPOSITION_OK;
+  should_show_dialog_ = false;
+  result_ = MESSAGE_BOX_RESULT_YES;
   return true;
 }
 
@@ -184,7 +119,7 @@ string16 SimpleMessageBoxViews::GetWindowTitle() const {
 }
 
 void SimpleMessageBoxViews::DeleteDelegate() {
-  Release();
+  delete this;
 }
 
 ui::ModalType SimpleMessageBoxViews::GetModalType() const {
@@ -210,24 +145,31 @@ bool SimpleMessageBoxViews::Dispatch(const base::NativeEvent& event) {
 #elif defined(USE_AURA)
   aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);
 #endif
-  return disposition_ == DISPOSITION_UNKNOWN;
+  return should_show_dialog_;
 }
 
 }  // namespace
 
-namespace browser {
+MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
+                                const string16& title,
+                                const string16& message,
+                                MessageBoxType type) {
+  SimpleMessageBoxViews* dialog =
+      new SimpleMessageBoxViews(title, message, type);
 
-void ShowMessageBox(gfx::NativeWindow parent,
-                    const string16& title,
-                    const string16& message,
-                    MessageBoxType type) {
-  SimpleMessageBoxViews::ShowMessageBox(parent, title, message, type);
-}
+  views::Widget::CreateWindowWithParent(dialog, parent)->Show();
 
-bool ShowQuestionMessageBox(gfx::NativeWindow parent,
-                            const string16& title,
-                            const string16& message) {
-  return SimpleMessageBoxViews::ShowQuestionMessageBox(parent, title, message);
+#if defined(USE_AURA)
+  aura::client::GetDispatcherClient(parent->GetRootWindow())->RunWithDispatcher(
+      dialog, parent, true);
+#else
+  {
+    MessageLoop::ScopedNestableTaskAllower allow(MessageLoopForUI::current());
+    MessageLoopForUI::current()->RunWithDispatcher(dialog);
+  }
+#endif
+
+  return dialog->result();
 }
 
 }  // namespace browser

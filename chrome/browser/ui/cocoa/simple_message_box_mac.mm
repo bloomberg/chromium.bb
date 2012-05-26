@@ -12,36 +12,27 @@
 
 namespace browser {
 
-void ShowMessageBox(gfx::NativeWindow parent,
-                    const string16& title,
-                    const string16& message,
-                    MessageBoxType type) {
-  // Ignore the title; it's the window title on other platforms and ignorable.
-  NSAlert* alert = [[[NSAlert alloc] init] autorelease];
-  [alert addButtonWithTitle:l10n_util::GetNSString(IDS_OK)];
-  [alert setMessageText:base::SysUTF16ToNSString(message)];
-  if (type == MESSAGE_BOX_TYPE_INFORMATION)
-    [alert setAlertStyle:NSInformationalAlertStyle];
-  else
-    [alert setAlertStyle:NSWarningAlertStyle];
-  [alert runModal];
-}
-
-bool ShowQuestionMessageBox(gfx::NativeWindow parent,
-                            const string16& title,
-                            const string16& message) {
+MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
+                                const string16& title,
+                                const string16& message,
+                                MessageBoxType type) {
   // Ignore the title; it's the window title on other platforms and ignorable.
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
   [alert setMessageText:base::SysUTF16ToNSString(message)];
-  [alert setAlertStyle:NSWarningAlertStyle];
-
-  [alert addButtonWithTitle:
-      l10n_util::GetNSString(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL)];
-  [alert addButtonWithTitle:
-      l10n_util::GetNSString(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL)];
-
+  NSUInteger style = (type == MESSAGE_BOX_TYPE_INFORMATION) ?
+      NSInformationalAlertStyle : NSWarningAlertStyle;
+  [alert setAlertStyle:style];
+  if (type == MESSAGE_BOX_TYPE_QUESTION) {
+    [alert addButtonWithTitle:
+        l10n_util::GetNSString(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL)];
+    [alert addButtonWithTitle:
+        l10n_util::GetNSString(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL)];
+  } else {
+    [alert addButtonWithTitle:l10n_util::GetNSString(IDS_OK)];
+  }
   NSInteger result = [alert runModal];
-  return result == NSAlertFirstButtonReturn;
+  return (result == NSAlertSecondButtonReturn) ?
+      MESSAGE_BOX_RESULT_NO : MESSAGE_BOX_RESULT_YES;
 }
 
 }  // namespace browser

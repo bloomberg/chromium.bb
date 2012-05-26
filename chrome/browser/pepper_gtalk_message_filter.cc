@@ -50,7 +50,8 @@ void PepperGtalkMessageFilter::OnTalkGetPermission(uint32 plugin_dispatcher_id,
 
   aura::Window* parent = ash::Shell::GetInstance()->GetContainer(
       ash::internal::kShellWindowId_SystemModalContainer);
-  user_response = browser::ShowQuestionMessageBox(parent, title, message);
+  user_response = browser::ShowMessageBox(parent, title, message,
+      browser::MESSAGE_BOX_TYPE_QUESTION) == browser::MESSAGE_BOX_RESULT_YES;
 #else
   NOTIMPLEMENTED();
 #endif

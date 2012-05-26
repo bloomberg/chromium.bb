@@ -11,25 +11,29 @@
 
 namespace browser {
 
+enum MessageBoxResult {
+  MESSAGE_BOX_RESULT_NO = 0,
+  MESSAGE_BOX_RESULT_YES = 1,
+};
+
 enum MessageBoxType {
   MESSAGE_BOX_TYPE_INFORMATION,
   MESSAGE_BOX_TYPE_WARNING,
+  MESSAGE_BOX_TYPE_QUESTION,
 };
 
-// Shows a message box with an OK button. If |parent| is non-null,
-// the box will be modal on it. (On Mac, it is always app-modal.) Generally
-// speaking, this function should not be used for much. Infobars are preferred.
-void ShowMessageBox(gfx::NativeWindow parent,
-                    const string16& title,
-                    const string16& message,
-                    MessageBoxType type);
-
-// Shows a question message box with two buttons (Yes/No), with the default
-// button of Yes. If |parent| is non-null, the box will be modal on it. (On Mac,
-// it is always app-modal.) Returns true if the Yes button was chosen.
-bool ShowQuestionMessageBox(gfx::NativeWindow parent,
-                            const string16& title,
-                            const string16& message);
+// Shows a dialog box with the given |title| and |message|. If |parent| is
+// non-NULL, the box will be made modal to the |parent|, except on Mac, where it
+// is always app-modal. If |type| is MESSAGE_BOX_TYPE_QUESTION, the box will
+// have YES and NO buttons; otherwise it will have an OK button.
+//
+// NOTE: In general, you should avoid this since it's usually poor UI.
+// We have a variety of other surfaces such as wrench menu notifications and
+// infobars; consult the UI leads for a recommendation.
+MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
+                                const string16& title,
+                                const string16& message,
+                                MessageBoxType type);
 
 }  // namespace browser
 
