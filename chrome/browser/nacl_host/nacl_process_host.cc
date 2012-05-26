@@ -599,9 +599,8 @@ bool NaClProcessHost::StartNaClExecution() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
 
   nacl::NaClStartParams params;
-  params.validation_cache_enabled = nacl_browser->validation_cache.IsEnabled();
-  params.validation_cache_key =
-      nacl_browser->validation_cache.GetValidationCacheKey();
+  params.validation_cache_enabled = nacl_browser->ValidationCacheIsEnabled();
+  params.validation_cache_key = nacl_browser->GetValidationCacheKey();
   params.version = chrome::VersionInfo().CreateVersionString();
   params.enable_exception_handling = enable_exception_handling_;
 
@@ -684,11 +683,11 @@ bool NaClProcessHost::StartWithLaunchedProcess() {
 void NaClProcessHost::OnQueryKnownToValidate(const std::string& signature,
                                              bool* result) {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
-  *result = nacl_browser->validation_cache.QueryKnownToValidate(signature);
+  *result = nacl_browser->QueryKnownToValidate(signature);
 }
 
 void NaClProcessHost::OnSetKnownToValidate(const std::string& signature) {
-  NaClBrowser::GetInstance()->validation_cache.SetKnownToValidate(signature);
+  NaClBrowser::GetInstance()->SetKnownToValidate(signature);
 }
 
 #if defined(OS_WIN)

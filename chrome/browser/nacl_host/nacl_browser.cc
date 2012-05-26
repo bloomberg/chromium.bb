@@ -5,12 +5,27 @@
 #include "chrome/browser/nacl_host/nacl_browser.h"
 
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/pickle.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
+
+// An arbitrary delay to coalesce multiple writes to the cache.
+const int kValidationCacheCoalescingTimeMS = 6000;
+const char kValidationCacheSequenceName[] = "NaClValidationCache";
+const FilePath::CharType kValidationCacheFileName[] =
+    FILE_PATH_LITERAL("nacl_validation_cache.bin");
+
+enum ValidationCacheStatus {
+  CACHE_MISS = 0,
+  CACHE_HIT,
+  CACHE_MAX
+};
 
 // Determine the name of the IRT file based on the architecture.
 #define NACL_IRT_FILE_NAME(arch_string) \
@@ -39,6 +54,36 @@ const FilePath::StringType NaClIrtName() {
 #endif
 }
 
+bool CheckEnvVar(const char* name, bool default_value) {
+  bool result = default_value;
+  const char* var = getenv(name);
+  if (var && strlen(var) > 0) {
+    result = var[0] != '0';
+  }
+  return result;
+}
+
+void ReadCache(const FilePath& filename, std::string* data) {
+  if (!file_util::ReadFileToString(filename, data)) {
+    // Zero-size data used as an in-band error code.
+    data->clear();
+  }
+}
+
+void WriteCache(const FilePath& filename, const Pickle* pickle) {
+  file_util::WriteFile(filename, static_cast<const char*>(pickle->data()),
+                       pickle->size());
+}
+
+void LogCacheQuery(ValidationCacheStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Query", status, CACHE_MAX);
+}
+
+void LogCacheSet(ValidationCacheStatus status) {
+  // Bucket zero is reserved for future use.
+  UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Set", status, CACHE_MAX);
+}
+
 }  // namespace
 
 NaClBrowser::NaClBrowser()
@@ -46,6 +91,10 @@ NaClBrowser::NaClBrowser()
       irt_platform_file_(base::kInvalidPlatformFileValue),
       irt_filepath_(),
       irt_state_(NaClResourceUninitialized),
+      validation_cache_file_path_(),
+      validation_cache_is_enabled_(CheckEnvVar("NACL_VALIDATION_CACHE", false)),
+      validation_cache_is_modified_(false),
+      validation_cache_state_(NaClResourceUninitialized),
       ok_(true) {
   InitIrtFilePath();
 }
@@ -82,7 +131,9 @@ NaClBrowser* NaClBrowser::GetInstance() {
 }
 
 bool NaClBrowser::IsReady() const {
-  return IsOk() && irt_state_ == NaClResourceReady;
+  return (IsOk() &&
+          irt_state_ == NaClResourceReady &&
+          validation_cache_state_ == NaClResourceReady);
 }
 
 bool NaClBrowser::IsOk() const {
@@ -96,9 +147,8 @@ base::PlatformFile NaClBrowser::IrtFile() const {
 }
 
 void NaClBrowser::EnsureAllResourcesAvailable() {
-  // Currently the only resource we need to initialize is the IRT.
-  // In the future we will need to load the validation cache from disk.
   EnsureIrtAvailable();
+  EnsureValidationCacheAvailable();
 }
 
 // Load the IRT async.
@@ -136,6 +186,66 @@ void NaClBrowser::OnIrtOpened(base::PlatformFileError error_code,
   CheckWaiting();
 }
 
+void NaClBrowser::EnsureValidationCacheAvailable() {
+  if (IsOk() && validation_cache_state_ == NaClResourceUninitialized) {
+    if (ValidationCacheIsEnabled()) {
+      validation_cache_state_ = NaClResourceRequested;
+
+      // Determine where the validation cache resides in the file system.  It
+      // exists in Chrome's cache directory and is not tied to any specific
+      // profile.
+      // Start by finding the user data directory.
+      FilePath user_data_dir;
+      if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+        RunWithoutValidationCache();
+        return;
+      }
+      // The cache directory may or may not be the user data directory.
+      FilePath cache_file_path;
+      chrome::GetUserCacheDirectory(user_data_dir, &cache_file_path);
+      // Append the base file name to the cache directory.
+      validation_cache_file_path_ =
+          cache_file_path.Append(kValidationCacheFileName);
+
+      // Structure for carrying data between the callbacks.
+      std::string* data = new std::string();
+      // We can get away not giving this a sequence ID because this is the first
+      // task and further file access will not occur until after we get a
+      // response.
+      if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
+              FROM_HERE,
+              base::Bind(ReadCache, validation_cache_file_path_, data),
+              base::Bind(&NaClBrowser::OnValidationCacheLoaded,
+                         weak_factory_.GetWeakPtr(),
+                         base::Owned(data)))) {
+        RunWithoutValidationCache();
+      }
+    } else {
+      RunWithoutValidationCache();
+    }
+  }
+}
+
+void NaClBrowser::OnValidationCacheLoaded(const std::string *data) {
+  if (data->size() == 0) {
+    // No file found.
+    validation_cache_.Reset();
+  } else {
+    Pickle pickle(data->data(), data->size());
+    validation_cache_.Deserialize(&pickle);
+  }
+  validation_cache_state_ = NaClResourceReady;
+  CheckWaiting();
+}
+
+void NaClBrowser::RunWithoutValidationCache() {
+  // Be paranoid.
+  validation_cache_.Reset();
+  validation_cache_is_enabled_ = false;
+  validation_cache_state_ = NaClResourceReady;
+  CheckWaiting();
+}
+
 void NaClBrowser::CheckWaiting() {
   if (!IsOk() || IsReady()) {
     // Queue the waiting tasks into the message loop.  This helps avoid
@@ -163,4 +273,51 @@ void NaClBrowser::WaitForResources(const base::Closure& reply) {
 
 const FilePath& NaClBrowser::GetIrtFilePath() {
   return irt_filepath_;
+}
+
+bool NaClBrowser::QueryKnownToValidate(const std::string& signature) {
+  bool result = validation_cache_.QueryKnownToValidate(signature);
+  LogCacheQuery(result ? CACHE_HIT : CACHE_MISS);
+  // Queries can modify the MRU order of the cache.
+  MarkValidationCacheAsModified();
+  return result;
+}
+
+void NaClBrowser::SetKnownToValidate(const std::string& signature) {
+  validation_cache_.SetKnownToValidate(signature);
+  // The number of sets should be equal to the number of cache misses, minus
+  // validation failures and successful validations where stubout occurs.
+  LogCacheSet(CACHE_HIT);
+  MarkValidationCacheAsModified();
+}
+
+void NaClBrowser::MarkValidationCacheAsModified() {
+  if (!validation_cache_is_modified_) {
+    // Wait before persisting to disk.  This can coalesce multiple cache
+    // modifications info a single disk write.
+    MessageLoop::current()->PostDelayedTask(
+         FROM_HERE,
+         base::Bind(&NaClBrowser::PersistValidationCache,
+                    weak_factory_.GetWeakPtr()),
+         base::TimeDelta::FromMilliseconds(kValidationCacheCoalescingTimeMS));
+    validation_cache_is_modified_ = true;
+  }
+}
+
+void NaClBrowser::PersistValidationCache() {
+  if (!validation_cache_file_path_.empty()) {
+    Pickle* pickle = new Pickle();
+    validation_cache_.Serialize(pickle);
+
+    // Pass the serialized data to another thread to write to disk.  File IO is
+    // not allowed on the IO thread (which is the thread this method runs on)
+    // because it can degrade the responsiveness of the browser.
+    // The task is sequenced so that multiple writes happen in order.
+    content::BrowserThread::PostBlockingPoolSequencedTask(
+        kValidationCacheSequenceName,
+        FROM_HERE,
+        base::Bind(WriteCache, validation_cache_file_path_,
+                   base::Owned(pickle)));
+  }
+  validation_cache_is_modified_ = false;
 }

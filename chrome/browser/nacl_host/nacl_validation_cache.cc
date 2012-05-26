@@ -4,7 +4,7 @@
 
 #include "chrome/browser/nacl_host/nacl_validation_cache.h"
 
-#include "base/metrics/histogram.h"
+#include "base/pickle.h"
 #include "base/rand_util.h"
 
 namespace {
@@ -16,37 +16,16 @@ const size_t kValidationCacheKeySize = 64;
 // Entry size is equal to the digest size of SHA256.
 const size_t kValidationCacheEntrySize = 32;
 
-enum ValidationCacheStatus {
-  CACHE_MISS = 0,
-  CACHE_HIT,
-  CACHE_ERROR,
-  CACHE_MAX
-};
-
-void LogCacheQuery(ValidationCacheStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Query", status, CACHE_MAX);
-}
-
-void LogCacheSet(ValidationCacheStatus status) {
-  // Bucket zero is reserved for future use.
-  UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Set", status, CACHE_MAX);
-}
-
-bool CheckEnvVar(const char* name, bool default_value) {
-  bool result = default_value;
-  const char* var = getenv(name);
-  if (var && strlen(var) > 0) {
-    result = var[0] != '0';
-  }
-  return result;
-}
+const char kValidationCacheBeginMagic[] = "NaCl";
+const char kValidationCacheEndMagic[] = "Done";
 
 }  // namespace
 
 NaClValidationCache::NaClValidationCache()
-    : validation_cache_(kValidationCacheCacheSize),
-      validation_cache_key_(base::RandBytesAsString(kValidationCacheKeySize)),
-      enabled_(CheckEnvVar("NACL_VALIDATION_CACHE", false)){
+    : validation_cache_(kValidationCacheCacheSize) {
+  // Make sure the cache key is unpredictable, even if the cache has not
+  // been loaded.
+  Reset();
 }
 
 NaClValidationCache::~NaClValidationCache() {
@@ -54,28 +33,91 @@ NaClValidationCache::~NaClValidationCache() {
 }
 
 bool NaClValidationCache::QueryKnownToValidate(const std::string& signature) {
-  bool result = false;
-  if (signature.length() != kValidationCacheEntrySize) {
-    // Signature is the wrong size, something is wrong.
-    LogCacheQuery(CACHE_ERROR);
-  } else {
+  if (signature.length() == kValidationCacheEntrySize) {
     ValidationCacheType::iterator iter = validation_cache_.Get(signature);
     if (iter != validation_cache_.end()) {
-      result = iter->second;
+      return iter->second;
     }
-    LogCacheQuery(result ? CACHE_HIT : CACHE_MISS);
   }
-  return result;
+  return false;
 }
 
 void NaClValidationCache::SetKnownToValidate(const std::string& signature) {
-  if (signature.length() != kValidationCacheEntrySize) {
-    // Signature is the wrong size, something is wrong.
-    LogCacheSet(CACHE_ERROR);
-  } else {
+  if (signature.length() == kValidationCacheEntrySize) {
     validation_cache_.Put(signature, true);
-    // The number of sets should be equal to the number of cache misses, minus
-    // validation failures and successful validations where stubout occurs.
-    LogCacheSet(CACHE_HIT);
   }
 }
+
+void NaClValidationCache::Serialize(Pickle* pickle) const {
+  // Mark the beginning of the data stream.
+  pickle->WriteString(kValidationCacheBeginMagic);
+  pickle->WriteString(validation_cache_key_);
+  pickle->WriteInt(validation_cache_.size());
+
+  // Serialize the cache in reverse order so that deserializing it can easily
+  // preserve the MRU order.  (Last item deserialized => most recently used.)
+  ValidationCacheType::const_reverse_iterator iter;
+  for (iter = validation_cache_.rbegin();
+       iter != validation_cache_.rend();
+       ++iter) {
+    pickle->WriteString(iter->first);
+  }
+
+  // Mark the end of the data stream.
+  pickle->WriteString(kValidationCacheEndMagic);
+}
+
+void NaClValidationCache::Reset() {
+  validation_cache_key_ = base::RandBytesAsString(kValidationCacheKeySize);
+  validation_cache_.Clear();
+}
+
+bool NaClValidationCache::Deserialize(const Pickle* pickle) {
+  bool success = DeserializeImpl(pickle);
+  if (!success) {
+    Reset();
+  }
+  return success;
+}
+
+bool NaClValidationCache::DeserializeImpl(const Pickle* pickle) {
+  PickleIterator iter(*pickle);
+  std::string buffer;
+  int count;
+
+  // Magic
+  if (!iter.ReadString(&buffer))
+    return false;
+  if (0 != buffer.compare(kValidationCacheBeginMagic))
+    return false;
+
+  // Key
+  if (!iter.ReadString(&buffer))
+    return false;
+  if (buffer.size() != kValidationCacheKeySize)
+    return false;
+
+  validation_cache_key_ = buffer;
+  validation_cache_.Clear();
+
+  // Cache entries
+  if (!iter.ReadInt(&count))
+    return false;
+  for (int i = 0; i < count; ++i) {
+    if (!iter.ReadString(&buffer))
+      return false;
+    if (buffer.size() != kValidationCacheEntrySize)
+      return false;
+    validation_cache_.Put(buffer, true);
+  }
+
+  // Magic
+  if (!iter.ReadString(&buffer))
+    return false;
+  if (0 != buffer.compare(kValidationCacheEndMagic))
+    return false;
+
+  // Success!
+  return true;
+}
+

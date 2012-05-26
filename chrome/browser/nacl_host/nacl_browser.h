@@ -44,7 +44,16 @@ class NaClBrowser {
   // IRT file handle, only available when IsReady().
   base::PlatformFile IrtFile() const;
 
-  NaClValidationCache validation_cache;
+  bool ValidationCacheIsEnabled() const {
+    return validation_cache_is_enabled_;
+  }
+
+  const std::string& GetValidationCacheKey() const {
+    return validation_cache_.GetValidationCacheKey();
+  }
+
+  bool QueryKnownToValidate(const std::string& signature);
+  void SetKnownToValidate(const std::string& signature);
 
  private:
   friend struct DefaultSingletonTraits<NaClBrowser>;
@@ -65,19 +74,32 @@ class NaClBrowser {
   void OnIrtOpened(base::PlatformFileError error_code,
                    base::PassPlatformFile file, bool created);
 
+  void EnsureValidationCacheAvailable();
+  void OnValidationCacheLoaded(const std::string* data);
+  void RunWithoutValidationCache();
+
   // Dispatch waiting tasks if we are ready, or if we know we'll never be ready.
   void CheckWaiting();
 
   // Indicate that it is impossible to launch a NaCl process.
   void MarkAsFailed();
 
+  void MarkValidationCacheAsModified();
+  void PersistValidationCache();
+
   // Singletons get destroyed at shutdown.
   base::WeakPtrFactory<NaClBrowser> weak_factory_;
 
   base::PlatformFile irt_platform_file_;
   FilePath irt_filepath_;
-
   NaClResourceState irt_state_;
+
+  NaClValidationCache validation_cache_;
+  FilePath validation_cache_file_path_;
+  bool validation_cache_is_enabled_;
+  bool validation_cache_is_modified_;
+  NaClResourceState validation_cache_state_;
+
   bool ok_;
 
   // A list of pending tasks to start NaCl processes.
