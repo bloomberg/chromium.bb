@@ -132,20 +132,27 @@ void P2PPortAllocatorSession::GetPortConfigurations() {
   // can be started immediately.
   ConfigReady(new cricket::PortConfiguration(talk_base::SocketAddress()));
 
-  ResolveStunServerAddress();
+  if (stun_server_address_.IsNil()) {
+    ResolveStunServerAddress();
+  } else {
+    AddConfig();
+  }
+
   AllocateRelaySession();
 }
 
 void P2PPortAllocatorSession::ResolveStunServerAddress() {
- if (allocator_->config_.stun_server.empty())
-   return;
+  if (allocator_->config_.stun_server.empty())
+    return;
 
- DCHECK(!stun_address_request_);
- stun_address_request_ =
-     new P2PHostAddressRequest(allocator_->socket_dispatcher_);
- stun_address_request_->Request(allocator_->config_.stun_server, base::Bind(
-     &P2PPortAllocatorSession::OnStunServerAddress,
-     base::Unretained(this)));
+  if (stun_address_request_)
+    return;
+
+  stun_address_request_ =
+      new P2PHostAddressRequest(allocator_->socket_dispatcher_);
+  stun_address_request_->Request(allocator_->config_.stun_server, base::Bind(
+      &P2PPortAllocatorSession::OnStunServerAddress,
+      base::Unretained(this)));
 }
 
 void P2PPortAllocatorSession::OnStunServerAddress(
