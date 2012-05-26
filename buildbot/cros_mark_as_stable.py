@@ -83,7 +83,7 @@ def _DoWeHaveLocalCommits(stable_branch, tracking_branch, cwd):
     return False
   output = cros_build_lib.RunGitCommand(
       cwd, ['rev-parse', 'HEAD', tracking_branch]).output.split()
-  return output[0] == output[1]
+  return output[0] != output[1]
 
 
 def _CheckSaneArguments(package_list, command, options):
