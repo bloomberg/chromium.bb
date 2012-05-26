@@ -7,3 +7,40 @@
     font-family: monospace;
     white-space: pre;
 }
+
+.timeline-slice {
+    border-spacing: 4px 0;
+}
+.timeline-slice-header {
+    text-align: left;
+}
+.timeline-slice-col-0 {
+}
+.timeline-slice-col-1 {
+}
+
+.timeline-slices {
+    border-spacing: 4px 0;
+}
+.timeline-slices-header {
+    text-align: left;
+}
+.timeline-slices-col-0 {
+}
+.timeline-slices-col-1 {
+    text-align: right;
+}
+.timeline-slices-col-2 {
+    text-align: right;
+}
+
+.timeline-counter {
+    border-spacing: 4px 0;
+}
+.timeline-counter-header {
+    text-align: left;
+}
+.timeline-counter-col-0 {
+}
+.timeline-counter-col-1 {
+}

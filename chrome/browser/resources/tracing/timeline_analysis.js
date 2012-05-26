@@ -13,64 +13,140 @@ cr.define('tracing', function() {
     return Math.round(ts * 1000.0) / 1000.0;
   }
 
-  function getPadding(text, width) {
-    width = width || 0;
-
-    if (typeof text != 'string')
-      text = String(text);
-
-    if (text.length >= width)
-      return '';
-
-    var pad = '';
-    for (var i = 0; i < width - text.length; i++)
-      pad += ' ';
-    return pad;
+  /**
+   * Creates and appends a DOM node of type |tagName| to |parent|. Optionally,
+   * sets the new node's text to |opt_text|. Returns the newly created node.
+   */
+  function appendElement(parent, tagName, opt_text) {
+    var n = parent.ownerDocument.createElement(tagName);
+    parent.appendChild(n);
+    if (opt_text != undefined)
+      n.textContent = opt_text;
+    return n;
   }
 
-  function leftAlign(text, width) {
-    return text + getPadding(text, width);
+  /**
+   * Adds |tagName| to |parent| with className |classname|.  Returns
+   * the newly created node.
+   */
+  function appendElementWithClass(parent, tagName, classname) {
+    var n = appendElement(parent, tagName);
+    n.className = classname;
+    return n;
   }
 
-  function rightAlign(text, width) {
-    return getPadding(text, width) + text;
+  /**
+   * Adds |text| to |parent|.
+   */
+  function appendText(parent, text) {
+    var textNode = parent.ownerDocument.createTextNode(text);
+    parent.appendChild(textNode);
+    return textNode;
   }
 
+  /**
+   * Adds a table header to |row| with |text| and className
+   * |table|.className-header.  Returns the newly created node.
+   */
+  function appendTableHeader(table, row, text) {
+    var th = appendElement(row, 'th', text);
+    th.className = table.className + '-header';
+    return th;
+  }
 
-  function getTextForSelection(selection) {
-    var text = '';
+  /**
+   * Adds table cell number |cellnum| to |row| with |text| and
+   * className |table|.className-col-|cellnum|.  Returns the newly
+   * created node.
+   */
+  function appendTableCell(table, row, cellnum, text) {
+    var td = appendElement(row, 'td', text);
+    td.className = table.className + '-col-' + cellnum;
+    return td;
+  }
+
+  /**
+   * Creates and appends a row to |table| with a left-aligned |label]
+   * header that spans all columns.  Returns the newly created nodes.
+   */
+  function appendSummaryHeader(table, label) {
+    var row = appendElement(table, 'tr');
+    var th = appendTableHeader(table, row, label);
+    return row;
+  }
+
+  /**
+   * Creates and appends a row to |table| with a left-aligned |label]
+   * in the first column and an optional |opt_text| value in the second
+   * column.  Returns the newly created nodes.
+   */
+  function appendSummaryRow(table, label, opt_text) {
+    var row = appendElement(table, 'tr');
+    var td = appendTableCell(table, row, 0, label);
+    if (opt_text) {
+      var td = appendTableCell(table, row, 1, opt_text);
+    }
+    return row;
+  }
+
+  /**
+   * Creates and appends a row to |table| with a left-aligned |label]
+   * in the first column and a millisecvond |time| value in the second
+   * column.  Returns the newly created nodes.
+   */
+  function appendSummaryRowTime(table, label, time) {
+    return appendSummaryRow(table, label, tsRound(time) + ' ms');
+  }
+
+  /**
+   * Creates and appends a row to |table| that summarizes one or more slices.
+   * The row has a left-aligned |label] in the first column, the |duration|
+   * of the data in the second, the number of |occurrences| in the third.
+   * Returns the newly created nodes.
+   */
+  function appendSliceRow(table, label, duration, occurences) {
+      var row = appendElement(table, 'tr');
+      var td = appendTableCell(table, row, 0, label);
+      var td = appendTableCell(table, row, 1, tsRound(duration) + ' ms');
+      var td = appendTableCell(table, row, 2,
+          String(occurences) + ' occurences');
+      return row;
+  }
+
+  /**
+   * Converts the selection to a tabular summary display and appends
+   * the newly created elements to |parent|.  Returns the new elements.
+   */
+  function createSummaryElementForSelection(parent, selection) {
     var sliceHits = selection.getSliceHits();
     var counterSampleHits = selection.getCounterSampleHits();
 
     if (sliceHits.length == 1) {
-      var c0Width = 14;
       var slice = sliceHits[0].slice;
-      text = 'Selected item:\n';
-      text += leftAlign('Title', c0Width) + ': ' + slice.title + '\n';
-      text += leftAlign('Start', c0Width) + ': ' +
-          tsRound(slice.start) + ' ms\n';
-      text += leftAlign('Duration', c0Width) + ': ' +
-          tsRound(slice.duration) + ' ms\n';
+
+      var table = appendElementWithClass(parent, 'table', 'timeline-slice');
+
+      appendSummaryHeader(table, 'Selected item:');
+
+      appendSummaryRow(table, 'Title', slice.title);
+      appendSummaryRowTime(table, 'Start', slice.start);
+      appendSummaryRowTime(table, 'Duration', slice.duration);
       if (slice.durationInUserTime)
-        text += leftAlign('Duration (U)', c0Width) + ': ' +
-            tsRound(slice.durationInUserTime) + ' ms\n';
+        appendSummaryRowTime(table, 'Duration (U)', slice.durationInUserTime);
 
       var n = 0;
       for (var argName in slice.args) {
         n += 1;
       }
       if (n > 0) {
-        text += leftAlign('Args', c0Width) + ':\n';
+        appendSummaryRow(table, 'Args');
         for (var argName in slice.args) {
           var argVal = slice.args[argName];
-          text += leftAlign(' ' + argName, c0Width) + ': ' + argVal + '\n';
+          // TODO(sleffler) use span instead?
+          appendSummaryRow(table, ' ' + argName, argVal);
         }
       }
     } else if (sliceHits.length > 1) {
-      var c0Width = 55;
-      var c1Width = 12;
-      var c2Width = 5;
-      text = 'Slices:\n';
       var tsLo = sliceHits.range.min;
       var tsHi = sliceHits.range.max;
 
@@ -86,6 +162,11 @@ cr.define('tracing', function() {
           };
         slicesByTitle[slice.title].slices.push(slice);
       }
+
+      var table = appendElementWithClass(parent, 'table', 'timeline-slices');
+
+      appendSummaryHeader(table, 'Slices:');
+
       var totalDuration = 0;
       for (var sliceGroupTitle in slicesByTitle) {
         var sliceGroup = slicesByTitle[sliceGroupTitle];
@@ -94,50 +175,39 @@ cr.define('tracing', function() {
           duration += sliceGroup.slices[i].duration;
         totalDuration += duration;
 
-        text += ' ' +
-            leftAlign(sliceGroupTitle, c0Width) + ': ' +
-            rightAlign(tsRound(duration) + 'ms', c1Width) + '   ' +
-            rightAlign(String(sliceGroup.slices.length), c2Width) +
-            ' occurrences' + '\n';
+        appendSliceRow(table, sliceGroupTitle, duration,
+            sliceGroup.slices.length);
       }
 
-      text += leftAlign('*Totals', c0Width) + ' : ' +
-          rightAlign(tsRound(totalDuration) + 'ms', c1Width) + '   ' +
-          rightAlign(String(sliceHits.length), c2Width) + ' occurrences' +
-          '\n';
+      appendSliceRow(table, '*Totals', totalDuration, sliceHits.length);
 
-      text += '\n';
-
-      text += leftAlign('Selection start', c0Width) + ' : ' +
-          rightAlign(tsRound(tsLo) + 'ms', c1Width) +
-          '\n';
-      text += leftAlign('Selection extent', c0Width) + ' : ' +
-          rightAlign(tsRound(tsHi - tsLo) + 'ms', c1Width) +
-          '\n';
+      appendElement(table, 'p');  // TODO(sleffler) proper vertical space?
+      appendSummaryRowTime(table, 'Selection start', tsLo);
+      appendSummaryRowTime(table, 'Selection extent', tsHi - tsLo);
     }
 
     if (counterSampleHits.length == 1) {
-      text = 'Selected counter:\n';
-      var c0Width = 55;
       var hit = counterSampleHits[0];
       var ctr = hit.counter;
       var sampleIndex = hit.sampleIndex;
       var values = [];
       for (var i = 0; i < ctr.numSeries; ++i)
         values.push(ctr.samples[ctr.numSeries * sampleIndex + i]);
-      text += leftAlign('Title', c0Width) + ': ' + ctr.name + '\n';
-      text += leftAlign('Timestamp', c0Width) + ': ' +
-        tsRound(ctr.timestamps[sampleIndex]) + ' ms\n';
-      if (ctr.numSeries > 1)
-        text += leftAlign('Values', c0Width) + ': ' + values.join('\n') + '\n';
-      else
-        text += leftAlign('Value', c0Width) + ': ' + values.join('\n') + '\n';
 
+      var table = appendElementWithClass(parent, 'table', 'timeline-counter');
+
+      appendSummaryHeader(table, 'Selected counter:');
+
+      appendSummaryRow(table, 'Title', ctr.name);
+      appendSummaryRowTime(table, 'Timestamp', ctr.timestamps[sampleIndex]);
+      if (ctr.numSeries > 1)
+        appendSummaryRow(table, 'Values', values.join('\n'));
+      else
+        appendSummaryRow(table, 'Value', values.join('\n'));
     } else if (counterSampleHits.length > 1 && sliceHits.length == 0) {
-      text += 'Analysis of multiple counters not yet implemented. ' +
-          'Pick a single counter.';
+      appendText(parent, 'Analysis of multiple counters is not yet' +
+          'implemented. Pick a single counter.');
     }
-    return text;
   }
 
   var TimelineAnalysisView = cr.ui.define('div');
@@ -150,7 +220,8 @@ cr.define('tracing', function() {
     },
 
     set selection(selection) {
-      this.textContent = getTextForSelection(selection);
+      this.textContent = '';
+      createSummaryElementForSelection(this, selection);
     }
   };
 
