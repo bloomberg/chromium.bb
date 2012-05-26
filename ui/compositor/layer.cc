@@ -49,6 +49,7 @@ Layer::Layer()
       compositor_(NULL),
       parent_(NULL),
       visible_(true),
+      force_render_surface_(false),
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
       opacity_(1.0f),
@@ -64,6 +65,7 @@ Layer::Layer(LayerType type)
       compositor_(NULL),
       parent_(NULL),
       visible_(true),
+      force_render_surface_(false),
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
       opacity_(1.0f),
@@ -313,6 +315,7 @@ void Layer::SetExternalTexture(Texture* texture) {
     web_layer_.setOpaque(fills_bounds_opaquely_);
     web_layer_.setOpacity(visible_ ? opacity_ : 0.f);
     web_layer_.setDebugBorderWidth(show_debug_borders_ ? 2 : 0);
+    web_layer_.setForceRenderSurface(force_render_surface_);
     RecomputeTransform();
     RecomputeDebugBorderColor();
   }
@@ -414,6 +417,14 @@ void Layer::paintContents(WebKit::WebCanvas* web_canvas,
     delegate_->OnPaintLayer(&canvas);
   if (scale_content)
     canvas.Restore();
+}
+
+void Layer::SetForceRenderSurface(bool force) {
+  if (force_render_surface_ == force)
+    return;
+
+  force_render_surface_ = force;
+  web_layer_.setForceRenderSurface(force_render_surface_);
 }
 
 float Layer::GetCombinedOpacity() const {

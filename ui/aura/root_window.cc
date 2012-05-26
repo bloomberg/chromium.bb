@@ -245,8 +245,8 @@ void RootWindow::Draw() {
 
   TRACE_EVENT_ASYNC_BEGIN0("ui", "RootWindow::Draw", draw_trace_count_++);
 
-  compositor_->Draw(false);
   defer_draw_scheduling_ = false;
+  compositor_->Draw(false);
 }
 
 void RootWindow::ScheduleFullDraw() {

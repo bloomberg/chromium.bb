@@ -222,6 +222,31 @@
       ],
     },
     {
+      'target_name': 'aura_bench',
+      'type': 'executable',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:base_i18n',
+        '../../skia/skia.gyp:skia',
+        '../../third_party/icu/icu.gyp:icui18n',
+        '../../third_party/icu/icu.gyp:icuuc',
+        '../compositor/compositor.gyp:compositor',
+        '../compositor/compositor.gyp:compositor_test_support',
+        '../ui.gyp:native_theme_resources',
+        '../ui.gyp:ui',
+        '../ui.gyp:ui_resources',
+        'aura',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'bench/bench_main.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/native_theme/native_theme_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+      ],
+    },
+    {
       'target_name': 'aura_unittests',
       'type': 'executable',
       'dependencies': [

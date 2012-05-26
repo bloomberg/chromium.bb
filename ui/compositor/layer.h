@@ -220,6 +220,11 @@ class COMPOSITOR_EXPORT Layer :
 
   float device_scale_factor() const { return device_scale_factor_; }
 
+  // Forces a render surface to be used on this layer. This has no positive
+  // impact, and is only used for benchmarking/testing purpose.
+  void SetForceRenderSurface(bool force);
+  bool force_render_surface() const { return force_render_surface_; }
+
  private:
   // TODO(vollick): Eventually, if a non-leaf node has an opacity of less than
   // 1.0, we'll render to a separate texture, and then apply the alpha.
@@ -282,6 +287,8 @@ class COMPOSITOR_EXPORT Layer :
 
   // Visibility of this layer. See SetVisible/IsDrawn for more details.
   bool visible_;
+
+  bool force_render_surface_;
 
   bool fills_bounds_opaquely_;
 
