@@ -76,7 +76,13 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
                !!document.getElementById('pod-row').getPodWithUsername_(''));
                """)
 
+  def _GetCurrentLoginScreenId(self):
+    return self.ExecuteJavascriptInOOBEWebUI(
+        """window.domAutomationController.send(
+               String(cr.ui.Oobe.getInstance().currentScreen.id));""")
+
   def testGuestModeEnabled(self):
+    """Checks that guest mode login can be enabled/disabled."""
     self._SetDevicePolicyAndOwner({'guest_mode_enabled': True})
     self.assertTrue(self._CheckGuestModeAvailableInLoginWindow(),
                     msg='Expected guest mode to be available.')
@@ -108,6 +114,29 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self._SetDevicePolicyAndOwner({'guest_mode_enabled': False})
     self.assertFalse(self._CheckGuestModeAvailableInAccountPicker(),
                      msg='Expected guest mode to not be available.')
+
+  def testShowUserNamesOnSignin(self):
+    """Checks that the account picker can be enabled/disabled."""
+    # TODO(bartfab): Remove this after crosbug.com/20709 is fixed.
+    self.TryToDisableLocalStateAutoClearing()
+    if self._local_state_auto_clearing:
+      logging.warn('Unable to disable local state clearing. Skipping test.')
+      return
+
+    # Log in as a regular user so that the pod row contains at least one pod and
+    # the account picker can be shown.
+    self.Login(as_guest=False)
+    self.Logout()
+
+    self._SetDevicePolicyAndOwner({'show_user_names': True})
+    self.assertEquals('account-picker',
+                      self._GetCurrentLoginScreenId(),
+                      msg='Expected the account picker to be visible.')
+
+    self._SetDevicePolicyAndOwner({'show_user_names': False})
+    self.assertEquals('gaia-signin',
+                     self._GetCurrentLoginScreenId(),
+                     msg='Expected the account picker to not be visible.')
 
 
 if __name__ == '__main__':
