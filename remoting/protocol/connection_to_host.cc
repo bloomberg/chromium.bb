@@ -18,7 +18,7 @@
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/jingle_session_manager.h"
-#include "remoting/protocol/pepper_transport_factory.h"
+#include "remoting/protocol/transport.h"
 #include "remoting/protocol/video_reader.h"
 #include "remoting/protocol/video_stub.h"
 #include "remoting/protocol/util.h"
