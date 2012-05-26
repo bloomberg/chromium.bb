@@ -33,7 +33,11 @@ void PopupMenuHelper::ShowPopupMenu(
     double item_font_size,
     int selected_item,
     const std::vector<WebMenuItem>& items,
-    bool right_aligned) {
+    bool right_aligned,
+    bool allow_multiple_selection) {
+  // Only single selection list boxes show a popup on Mac.
+  DCHECK(!allow_multiple_selection);
+
   // Retain the Cocoa view for the duration of the pop-up so that it can't be
   // dealloced if my Destroy() method is called while the pop-up's up (which
   // would in turn delete me, causing a crash once the -runMenuInView

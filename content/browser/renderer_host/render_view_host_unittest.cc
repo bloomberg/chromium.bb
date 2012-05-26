@@ -82,17 +82,25 @@ class MockDraggingRenderViewHostDelegateView
     : public content::RenderViewHostDelegateView {
  public:
   virtual ~MockDraggingRenderViewHostDelegateView() {}
-  virtual void ShowContextMenu(const content::ContextMenuParams& params) {}
+  virtual void ShowContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE {}
+  virtual void ShowPopupMenu(const gfx::Rect& bounds,
+                             int item_height,
+                             double item_font_size,
+                             int selected_item,
+                             const std::vector<WebMenuItem>& items,
+                             bool right_aligned,
+                             bool allow_multiple_selection) OVERRIDE {}
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_ops,
                              const SkBitmap& image,
-                             const gfx::Point& image_offset) {
+                             const gfx::Point& image_offset) OVERRIDE {
     drag_url_ = drop_data.url;
     html_base_url_ = drop_data.html_base_url;
   }
-  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) {}
-  virtual void GotFocus() {}
-  virtual void TakeFocus(bool reverse) {}
+  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE {}
+  virtual void GotFocus() OVERRIDE {}
+  virtual void TakeFocus(bool reverse) OVERRIDE {}
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 
   GURL drag_url() {

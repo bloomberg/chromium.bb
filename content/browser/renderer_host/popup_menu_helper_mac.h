@@ -33,7 +33,8 @@ class PopupMenuHelper : public content::NotificationObserver {
                      double item_font_size,
                      int selected_item,
                      const std::vector<WebMenuItem>& items,
-                     bool right_aligned);
+                     bool right_aligned,
+                     bool allow_multiple_selection);
 
  private:
   // content::NotificationObserver implementation:

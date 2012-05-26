@@ -393,6 +393,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   void DidCancelPopupMenu();
 #endif
 
+#if defined(OS_ANDROID)
+  void DidSelectPopupMenuItems(const std::vector<int>& selected_indices);
+  void DidCancelPopupMenu();
+#endif
+
   // User rotated the screen. Calls the "onorientationchange" Javascript hook.
   void SendOrientationChangeEvent(int orientation);
 
@@ -543,7 +548,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDomOperationResponse(const std::string& json_string,
                               int automation_id);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);
 #endif
 

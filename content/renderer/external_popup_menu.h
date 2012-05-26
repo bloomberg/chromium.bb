@@ -1,9 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CONTENT_RENDERER_EXTERNAL_POPUP_MENU_H_
 #define CONTENT_RENDERER_EXTERNAL_POPUP_MENU_H_
+
+#include <vector>
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExternalPopupMenu.h"
@@ -22,9 +24,16 @@ class ExternalPopupMenu : public WebKit::WebExternalPopupMenu {
 
   virtual ~ExternalPopupMenu() {}
 
+#if defined(OS_MACOSX)
   // Called when the user has selected an item. |selected_item| is -1 if the
   // user canceled the popup.
   void DidSelectItem(int selected_index);
+#endif
+
+#if defined(OS_ANDROID)
+  // Called when the user has selected items or canceled the popup.
+  void DidSelectItems(bool canceled, const std::vector<int>& selected_indices);
+#endif
 
   // WebKit::WebExternalPopupMenu implementation:
   virtual void show(const WebKit::WebRect& bounds);

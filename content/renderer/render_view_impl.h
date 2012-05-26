@@ -968,6 +968,12 @@ class RenderViewImpl : public RenderWidget,
                             const gfx::Rect& view_frame);
   CONTENT_EXPORT void OnSelectPopupMenuItem(int selected_index);
 #endif
+
+#if defined(OS_ANDROID)
+  void OnSelectPopupMenuItems(bool canceled,
+                              const std::vector<int>& selected_indices);
+#endif
+
   void OnZoom(content::PageZoom zoom);
   void OnZoomFactor(content::PageZoom zoom, int zoom_center_x,
                     int zoom_center_y);

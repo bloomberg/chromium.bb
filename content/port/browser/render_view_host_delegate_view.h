@@ -6,15 +6,19 @@
 #define CONTENT_PORT_BROWSER_RENDER_VIEW_HOST_DELEGATE_VIEW_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 
 class SkBitmap;
 struct WebDropData;
+struct WebMenuItem;
 
 namespace gfx {
 class Point;
+class Rect;
 }
 
 namespace content {
@@ -29,6 +33,17 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
   // A context menu should be shown, to be built using the context information
   // provided in the supplied params.
   virtual void ShowContextMenu(const ContextMenuParams& params) {}
+
+  // Shows a popup menu with the specified items.
+  // This method should call RenderViewHost::DidSelectPopupMenuItem[s]() or
+  // RenderViewHost::DidCancelPopupMenu() based on the user action.
+  virtual void ShowPopupMenu(const gfx::Rect& bounds,
+                             int item_height,
+                             double item_font_size,
+                             int selected_item,
+                             const std::vector<WebMenuItem>& items,
+                             bool right_aligned,
+                             bool allow_multiple_selection) = 0;
 
   // The user started dragging content of the specified type within the
   // RenderView. Contextual information about the dragged content is supplied

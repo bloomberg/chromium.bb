@@ -466,6 +466,9 @@ IPC_STRUCT_BEGIN(ViewHostMsg_ShowPopup_Params)
 
   // Whether items should be right-aligned.
   IPC_STRUCT_MEMBER(bool, right_aligned)
+
+  // Whether this is a multi-select popup.
+  IPC_STRUCT_MEMBER(bool, allow_multiple_selection)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
@@ -973,8 +976,14 @@ IPC_MESSAGE_ROUTED2(ViewMsg_CSSInsertRequest,
                     std::string  /* css string */)
 
 // External popup menus.
+#if defined(OS_MACOSX)
 IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
                     int /* selected index, -1 means no selection */)
+#elif defined(OS_ANDROID)
+IPC_MESSAGE_ROUTED2(ViewMsg_SelectPopupMenuItems,
+                    bool /* user canceled the popup */,
+                    std::vector<int> /* selected indices */)
+#endif
 
 // Change the zoom level for the current main frame.  If the level actually
 // changes, a ViewHostMsg_DidZoomURL message will be sent back to the browser

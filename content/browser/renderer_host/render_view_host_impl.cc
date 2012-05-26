@@ -1531,6 +1531,19 @@ void RenderViewHostImpl::DidCancelPopupMenu() {
 }
 #endif
 
+#if defined(OS_ANDROID)
+void RenderViewHostImpl::DidSelectPopupMenuItems(
+    const std::vector<int>& selected_indices) {
+  Send(new ViewMsg_SelectPopupMenuItems(GetRoutingID(), false,
+                                        selected_indices));
+}
+
+void RenderViewHostImpl::DidCancelPopupMenu() {
+  Send(new ViewMsg_SelectPopupMenuItems(GetRoutingID(), true,
+                                        std::vector<int>()));
+}
+#endif
+
 void RenderViewHostImpl::SendOrientationChangeEvent(int orientation) {
   Send(new ViewMsg_OrientationChangeEvent(GetRoutingID(), orientation));
 }
@@ -1786,13 +1799,19 @@ void RenderViewHostImpl::OnCancelDesktopNotification(int notification_id) {
       GetProcess()->GetID(), GetRoutingID(), notification_id);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
 void RenderViewHostImpl::OnMsgShowPopup(
     const ViewHostMsg_ShowPopup_Params& params) {
-  PopupMenuHelper popup_menu_helper(this);
-  popup_menu_helper.ShowPopupMenu(params.bounds, params.item_height,
-                                  params.item_font_size, params.selected_item,
-                                  params.popup_items, params.right_aligned);
+  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
+  if (view) {
+    view->ShowPopupMenu(params.bounds,
+                        params.item_height,
+                        params.item_font_size,
+                        params.selected_item,
+                        params.popup_items,
+                        params.right_aligned,
+                        params.allow_multiple_selection);
+  }
 }
 #endif
 

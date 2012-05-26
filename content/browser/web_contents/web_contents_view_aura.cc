@@ -405,6 +405,17 @@ void WebContentsViewAura::ShowContextMenu(
     delegate_->ShowContextMenu(params);
 }
 
+void WebContentsViewAura::ShowPopupMenu(const gfx::Rect& bounds,
+                                        int item_height,
+                                        double item_font_size,
+                                        int selected_item,
+                                        const std::vector<WebMenuItem>& items,
+                                        bool right_aligned,
+                                        bool allow_multiple_selection) {
+  // External popup menus are only used on Mac and Android.
+  NOTIMPLEMENTED();
+}
+
 void WebContentsViewAura::StartDragging(
     const WebDropData& drop_data,
     WebKit::WebDragOperationsMask operations,

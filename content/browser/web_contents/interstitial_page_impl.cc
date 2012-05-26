@@ -86,13 +86,20 @@ class InterstitialPageImpl::InterstitialPageRVHDelegateView
   explicit InterstitialPageRVHDelegateView(InterstitialPageImpl* page);
 
   // RenderViewHostDelegateView implementation:
+  virtual void ShowPopupMenu(const gfx::Rect& bounds,
+                             int item_height,
+                             double item_font_size,
+                             int selected_item,
+                             const std::vector<WebMenuItem>& items,
+                             bool right_aligned,
+                             bool allow_multiple_selection) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,
                              WebDragOperationsMask operations_allowed,
                              const SkBitmap& image,
-                             const gfx::Point& image_offset);
-  virtual void UpdateDragCursor(WebDragOperation operation);
-  virtual void GotFocus();
-  virtual void TakeFocus(bool reverse);
+                             const gfx::Point& image_offset) OVERRIDE;
+  virtual void UpdateDragCursor(WebDragOperation operation) OVERRIDE;
+  virtual void GotFocus() OVERRIDE;
+  virtual void TakeFocus(bool reverse) OVERRIDE;
   virtual void OnFindReply(int request_id,
                            int number_of_matches,
                            const gfx::Rect& selection_rect,
@@ -691,6 +698,17 @@ void InterstitialPageImpl::TakeActionOnResourceDispatcher(
 InterstitialPageImpl::InterstitialPageRVHDelegateView::
     InterstitialPageRVHDelegateView(InterstitialPageImpl* page)
     : interstitial_page_(page) {
+}
+
+void InterstitialPageImpl::InterstitialPageRVHDelegateView::ShowPopupMenu(
+    const gfx::Rect& bounds,
+    int item_height,
+    double item_font_size,
+    int selected_item,
+    const std::vector<WebMenuItem>& items,
+    bool right_aligned,
+    bool allow_multiple_selection) {
+  NOTREACHED() << "InterstitialPage does not support showing popup menus.";
 }
 
 void InterstitialPageImpl::InterstitialPageRVHDelegateView::StartDragging(
