@@ -479,6 +479,38 @@ class TestValidationPool(mox.MoxTestBase):
     pool.HandleCouldNotVerify(my_patch)
     self.mox.VerifyAll()
 
+  def testUnhandledExceptions(self):
+    """Test that CQ doesn't loop due to unhandled Exceptions."""
+    patch1 = self.MockPatch(1)
+    patch2 = self.MockPatch(2)
+    build_root = 'fakebuildroot'
+
+    class MyException(Exception):
+      pass
+
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
+    pool.changes = [patch1, patch2]
+    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'RemoveCommitReady')
+    self.SetPoolsContentMergingProjects(pool)
+    pool.build_log = 'log'
+
+    patch1.GerritDependencies(build_root).AndReturn([])
+    patch1.PaladinDependencies(build_root).AndReturn([])
+    patch1.Apply(build_root, trivial=True).AndRaise(MyException())
+
+    pool.HandleCouldNotApply(patch1)
+    pool.HandleCouldNotApply(patch2)
+
+    self.mox.ReplayAll()
+    # TODO(ferringb): remove the need for this.
+    # Reset before re-running so the error messages don't persist; they're
+    # currently stored on the instances themselves, although that'll be
+    # rectified soon enough
+    for patch in pool.changes:
+      patch.apply_error_message = None
+    self.assertRaises(MyException, pool.ApplyPoolIntoRepo,build_root)
+    self.mox.VerifyAll()
+
 
 # pylint: disable=W0212,R0904
 class TestTreeStatus(mox.MoxTestBase):

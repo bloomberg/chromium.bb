@@ -595,8 +595,20 @@ class ValidationPool(object):
 
     True if we managed to apply any changes.
     """
-    applied, failed_tot, failed_inflight = self._patch_series.Apply(
-        buildroot, self.changes, self.dryrun)
+    try:
+      applied, failed_tot, failed_inflight = self._patch_series.Apply(
+          buildroot, self.changes, self.dryrun)
+    except (KeyboardInterrupt, RuntimeError, SystemExit):
+      raise
+    except Exception, e:
+      cros_build_lib.Error(
+          "Unhandled Exception occured during CQ's Apply: %s\n"
+          "Failing the entire series to prevent CQ from going into an "
+          "infinite loop hanging on these CLs.\n"
+          "Affected patches: %s"
+          % (e, ' '.join(x.change_id for x in self.changes)))
+      self.HandleApplicationFailure(self.changes)
+      raise
 
     if self.is_master:
       for change in applied:
