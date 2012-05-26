@@ -896,7 +896,6 @@ class ManifestCheckout(Manifest):
   def _FinalizeProjectData(self, attrs):
     Manifest._FinalizeProjectData(self, attrs)
     attrs['local_path'] = os.path.join(self.root, attrs['path'])
-    attrs['tracking_branch'] = self.default_branch
 
   @staticmethod
   def _GetManifestsBranch(root):

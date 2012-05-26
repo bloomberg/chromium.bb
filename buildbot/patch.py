@@ -273,8 +273,13 @@ class GitRepoPatch(object):
     # value now, has no relevance/value once cherry-picking is in.
     branch_base = os.path.basename(upstream)
     if self.tracking_branch != branch_base:
-      raise PatchException('branch %s for project %s is not tracking %s'
-                           % (self.ref, self.project, branch_base))
+      if upstream.startswith('refs/'):
+        raise PatchException('branch %s for project %s is not tracking %s'
+                             % (self.ref, self.project, branch_base))
+      cros_lib.Warning(
+          "Patch %s is applied against a revlocked manifest; there is no way "
+          "to discern (nor sanely validate) the upstream vs local tracking.  "
+          "Suppressing the check." % (self,))
 
     rev = self.Fetch(project_dir)
 
