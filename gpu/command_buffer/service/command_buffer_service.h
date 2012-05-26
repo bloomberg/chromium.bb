@@ -5,9 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_COMMAND_BUFFER_SERVICE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_COMMAND_BUFFER_SERVICE_H_
 
-#include <set>
-#include <vector>
-
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,6 +13,8 @@
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 
 namespace gpu {
+
+class TransferBufferManagerInterface;
 
 // An object that implements a shared memory command buffer and a synchronous
 // API to manage the put and get pointers.
@@ -73,13 +72,11 @@ class GPU_EXPORT CommandBufferService : public CommandBuffer {
   base::Closure put_offset_change_callback_;
   GetBufferChangedCallback get_buffer_change_callback_;
   base::Closure parse_error_callback_;
-  std::vector<Buffer> registered_objects_;
-  std::set<int32> unused_registered_object_elements_;
+  scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   int32 token_;
   uint32 generation_;
   error::Error error_;
   error::ContextLostReason context_lost_reason_;
-  size_t shared_memory_bytes_allocated_;
 };
 
 }  // namespace gpu
