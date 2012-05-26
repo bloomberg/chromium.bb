@@ -266,6 +266,8 @@ class PatchSeries(object):
                 MarkChangeFailedToT(change))
 
           break
+        except cros_patch.PatchException, e:
+          changes_that_failed_to_apply_to_tot.add(MarkChangeFailedToT(change))
         else:
           # We applied the change successfully.
           changes_applied.add(change)

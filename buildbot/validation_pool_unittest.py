@@ -176,10 +176,11 @@ class TestValidationPool(mox.MoxTestBase):
     patch2 = self.MockPatch(2)
     patch3 = self.MockPatch(3)
     patch4 = self.MockPatch(4)
+    patch5 = self.MockPatch(5)
     build_root = 'fakebuildroot'
 
     pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-    pool.changes = [patch1, patch2, patch3, patch4]
+    pool.changes = [patch1, patch2, patch3, patch4, patch5]
     self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'RemoveCommitReady')
     self.SetPoolsContentMergingProjects(pool)
     pool.build_log = 'log'
@@ -202,8 +203,15 @@ class TestValidationPool(mox.MoxTestBase):
     patch4.Apply(build_root, trivial=True).AndRaise(
         cros_patch.ApplyPatchException(patch1, inflight=True))
 
+    patch5.GerritDependencies(build_root).AndReturn([])
+    patch5.PaladinDependencies(build_root).AndReturn([])
+    patch5.Apply(build_root, trivial=True).AndRaise(
+        cros_patch.PatchException())
+
     validation_pool.MarkChangeFailedToT(patch1)
     pool.HandleCouldNotApply(patch1)
+    validation_pool.MarkChangeFailedToT(patch5)
+    pool.HandleCouldNotApply(patch5)
 
     self.mox.ReplayAll()
     # TODO(ferringb): remove the need for this.
