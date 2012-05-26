@@ -25,6 +25,19 @@
     "ChromotingElevatedController.ElevatedController" ?>
   <?define ControllerTypelib = "{9d9a5a2c-576e-4acd-9c75-aabff74b205d}" ?>
 
+  <!--
+    The long hex value below is a security descriptor that allows SYSTEM,
+    built-in administrators and interactive users to call methods of a COM
+    object (COM_RIGHTS_EXECUTE and COM_RIGHTS_EXECUTE_LOCAL). The security
+    descriptor was generated from SDDL definition using the PowerShell script
+    below:
+
+      $sddl = "O:BAG:BAD:(A;;0x3;;;IU)(A;;0x3;;;SY)(A;;0x3;;;BA)"
+      $i = ([wmiclass]"Win32_SecurityDescriptorHelper").SDDLToBinarySD($sddl).BinarySD
+      -join ($i | foreach {$_.ToString("X2")})
+  -->
+  <?define ControllerSd = "010004805C0000006C00000000000000140000000200480003000000000014000300000001010000000000050400000000001400030000000101000000000005120000000000180003000000010200000000000520000000200200000102000000000005200000002002000001020000000000052000000020020000" ?>
+
   <?ifndef FileSource ?>
     <?error FileSource must be defined ?>
   <?endif?>
@@ -175,6 +188,9 @@
             <RegistryKey Key="$(var.ControllerAppid)" Action="create">
               <RegistryValue Type="string"
                              Value="ChromotingElevatedController"/>
+              <RegistryValue Name="AccessPermission"
+                             Type="binary"
+                             Value="$(var.ControllerSd)"/>
             </RegistryKey>
 
             <RegistryKey Key="$(var.ControllerBinary)" Action="create">
