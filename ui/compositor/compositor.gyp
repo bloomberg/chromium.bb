@@ -104,6 +104,8 @@
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
+        '<(DEPTH)/ui/ui.gyp:ui_resources',
+        '<(DEPTH)/ui/ui.gyp:ui_resources_standard',
         'compositor',
         'compositor_test_support',
       ],
