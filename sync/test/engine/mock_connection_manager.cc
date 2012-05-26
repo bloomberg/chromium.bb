@@ -169,6 +169,7 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   if (post.message_contents() == ClientToServerMessage::COMMIT &&
       !mid_commit_callback_.is_null()) {
     mid_commit_callback_.Run();
+    mid_commit_callback_.Reset();
   }
   if (mid_commit_observer_) {
     mid_commit_observer_->Observe();

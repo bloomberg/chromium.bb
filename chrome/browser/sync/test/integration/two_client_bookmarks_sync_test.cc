@@ -1915,7 +1915,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   RestartSyncService(0);
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Restarted sync."));
   ASSERT_TRUE(AllModelsMatchVerifier());
-  ASSERT_EQ(0, GetClient(0)->GetStatus().unsynced_count);
 }
 
 // Trigger the server side creation of Synced Bookmarks. Ensure both clients

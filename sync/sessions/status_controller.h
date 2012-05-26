@@ -71,18 +71,6 @@ class StatusController {
       ModelSafeGroup group);
 
   // ClientToServer messages.
-  const ClientToServerMessage& commit_message() {
-    return shared_.commit_message;
-  }
-  ClientToServerMessage* mutable_commit_message() {
-    return &shared_.commit_message;
-  }
-  const ClientToServerResponse& commit_response() const {
-    return shared_.commit_response;
-  }
-  ClientToServerResponse* mutable_commit_response() {
-    return &shared_.commit_response;
-  }
   const syncable::ModelTypeSet updates_request_types() const {
     return shared_.updates_request_types;
   }
@@ -109,40 +97,16 @@ class StatusController {
     return shared_.num_server_changes_remaining.value();
   }
 
-  // Commit path data.
-  const std::vector<syncable::Id>& commit_ids() const {
-    DCHECK(!group_restriction_in_effect_) << "Group restriction in effect!";
-    return shared_.commit_set.GetAllCommitIds();
-  }
-  const OrderedCommitSet::Projection& commit_id_projection() {
+  const OrderedCommitSet::Projection& commit_id_projection(
+      const sessions::OrderedCommitSet &commit_set) {
     DCHECK(group_restriction_in_effect_)
         << "No group restriction for projection.";
-    return shared_.commit_set.GetCommitIdProjection(group_restriction_);
-  }
-  const syncable::Id& GetCommitIdAt(size_t index) {
-    DCHECK(CurrentCommitIdProjectionHasIndex(index));
-    return shared_.commit_set.GetCommitIdAt(index);
-  }
-  syncable::ModelType GetCommitModelTypeAt(size_t index) {
-    DCHECK(CurrentCommitIdProjectionHasIndex(index));
-    return shared_.commit_set.GetModelTypeAt(index);
-  }
-  syncable::ModelType GetUnrestrictedCommitModelTypeAt(size_t index) const {
-    DCHECK(!group_restriction_in_effect_) << "Group restriction in effect!";
-    return shared_.commit_set.GetModelTypeAt(index);
-  }
-  const std::vector<int64>& unsynced_handles() const {
-    DCHECK(!group_restriction_in_effect_)
-        << "unsynced_handles is unrestricted.";
-    return shared_.unsynced_handles.value();
+    return commit_set.GetCommitIdProjection(group_restriction_);
   }
 
   // Control parameters for sync cycles.
   bool conflicts_resolved() const {
     return shared_.control_params.conflicts_resolved;
-  }
-  bool did_commit_items() const {
-    return shared_.control_params.items_committed;
   }
 
   // If a GetUpdates for any data type resulted in downloading an update that
@@ -164,13 +128,6 @@ class StatusController {
 
   // Returns the number of updates received from the sync server.
   int64 CountUpdates() const;
-
-  // Returns true iff any of the commit ids added during this session are
-  // bookmark related, and the bookmark group restriction is in effect.
-  bool HasBookmarkCommitActivity() const {
-    return ActiveGroupRestrictionIncludesModel(syncable::BOOKMARKS) &&
-        shared_.commit_set.HasBookmarkCommitId();
-  }
 
   // Returns true if the last download_updates_command received a valid
   // server response.
@@ -196,16 +153,12 @@ class StatusController {
     return sync_start_time_;
   }
 
-  // Check whether a particular model is included by the active group
-  // restriction.
-  bool ActiveGroupRestrictionIncludesModel(syncable::ModelType model) const {
-    if (!group_restriction_in_effect_)
-      return true;
-    ModelSafeRoutingInfo::const_iterator it = routing_info_.find(model);
-    if (it == routing_info_.end())
-      return false;
-    return group_restriction() == it->second;
+  bool HasBookmarkCommitActivity() const {
+    return ActiveGroupRestrictionIncludesModel(syncable::BOOKMARKS);
   }
+
+  SyncerError last_post_commit_result() const;
+  SyncerError last_process_commit_response_result() const;
 
   // A toolbelt full of methods for updating counters and flags.
   void set_num_server_changes_remaining(int64 changes_remaining);
@@ -217,7 +170,6 @@ class StatusController {
   void increment_num_tombstone_updates_downloaded_by(int value);
   void increment_num_reflected_updates_downloaded_by(int value);
   void set_types_needing_local_migration(syncable::ModelTypeSet types);
-  void set_unsynced_handles(const std::vector<int64>& unsynced_handles);
   void increment_num_local_overwrites();
   void increment_num_server_overwrites();
   void set_sync_protocol_error(const SyncProtocolError& error);
@@ -225,10 +177,8 @@ class StatusController {
   void set_last_post_commit_result(const SyncerError result);
   void set_last_process_commit_response_result(const SyncerError result);
 
-  void set_commit_set(const OrderedCommitSet& commit_set);
   void update_conflicts_resolved(bool resolved);
   void reset_conflicts_resolved();
-  void set_items_committed();
 
   void UpdateStartTime();
 
@@ -239,9 +189,16 @@ class StatusController {
  private:
   friend class ScopedModelSafeGroupRestriction;
 
-  // Returns true iff the commit id projection for |group_restriction_|
-  // references position |index| into the full set of commit ids in play.
-  bool CurrentCommitIdProjectionHasIndex(size_t index);
+  // Check whether a particular model is included by the active group
+  // restriction.
+  bool ActiveGroupRestrictionIncludesModel(syncable::ModelType model) const {
+    if (!group_restriction_in_effect_)
+      return true;
+    ModelSafeRoutingInfo::const_iterator it = routing_info_.find(model);
+    if (it == routing_info_.end())
+      return false;
+    return group_restriction() == it->second;
+  }
 
   // Returns the state, if it exists, or NULL otherwise.
   const PerModelSafeGroupState* GetModelSafeGroupState(

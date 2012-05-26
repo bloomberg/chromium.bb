@@ -29,7 +29,6 @@ sync_api::SyncManager::Status AllStatus::CreateBlankStatus() const {
   // whose values accumulate (e.g. lifetime counters like updates_received)
   // are not to be cleared here.
   sync_api::SyncManager::Status status = status_;
-  status.unsynced_count = 0;
   status.encryption_conflicts = 0;
   status.hierarchy_conflicts = 0;
   status.simple_conflicts = 0;
@@ -44,7 +43,6 @@ sync_api::SyncManager::Status AllStatus::CalcSyncing(
     const SyncEngineEvent &event) const {
   sync_api::SyncManager::Status status = CreateBlankStatus();
   const sessions::SyncSessionSnapshot& snapshot = event.snapshot;
-  status.unsynced_count = static_cast<int>(snapshot.unsynced_count());
   status.encryption_conflicts = snapshot.num_encryption_conflicts();
   status.hierarchy_conflicts = snapshot.num_hierarchy_conflicts();
   status.simple_conflicts = snapshot.num_simple_conflicts();

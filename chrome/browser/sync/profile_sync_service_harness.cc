@@ -792,10 +792,11 @@ bool ProfileSyncServiceHarness::IsFullySynced() {
     return false;
   }
   const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
-  // snap.unsynced_count() == 0 is a fairly reliable indicator of whether or not
-  // our timestamp is in sync with the server.
-  bool is_fully_synced = IsDataSyncedImpl(snap) &&
-      snap.unsynced_count() == 0;
+  // If we didn't try to commit anything in the previous cycle, there's a
+  // good chance that we're now fully up to date.
+  bool is_fully_synced =
+      (snap.errors().last_post_commit_result == browser_sync::UNSET)
+      && IsDataSyncedImpl(snap);
 
   DVLOG(1) << GetClientInfoString(
       is_fully_synced ? "IsFullySynced: true" : "IsFullySynced: false");
@@ -998,8 +999,6 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << snap.has_more_to_sync()
        << ", has_unsynced_items: "
        << (service()->sync_initialized() ? service()->HasUnsyncedItems() : 0)
-       << ", unsynced_count: "
-       << snap.unsynced_count()
        << ", encryption conflicts: "
        << snap.num_encryption_conflicts()
        << ", hierarchy conflicts: "

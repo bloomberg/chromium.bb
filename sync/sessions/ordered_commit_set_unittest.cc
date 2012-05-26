@@ -115,6 +115,18 @@ TEST_F(OrderedCommitSetTest, HasBookmarkCommitId) {
   EXPECT_FALSE(commit_set.HasBookmarkCommitId());
 }
 
+TEST_F(OrderedCommitSetTest, AddAndRemoveEntries) {
+  OrderedCommitSet commit_set(routes_);
+
+  ASSERT_TRUE(commit_set.Empty());
+
+  commit_set.AddCommitItem(0, ids_.NewLocalId(), syncable::AUTOFILL);
+  ASSERT_EQ(static_cast<size_t>(1), commit_set.Size());
+
+  commit_set.Clear();
+  ASSERT_TRUE(commit_set.Empty());
+}
+
 }  // namespace sessions
 }  // namespace browser_sync
 

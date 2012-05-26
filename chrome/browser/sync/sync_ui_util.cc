@@ -667,9 +667,6 @@ void ConstructAboutInformation(ProfileSyncService* service,
     // This is counted when we prepare the commit message.
     ListValue* transient_cycle = AddSyncDetailsSection(
         details, "Transient Counters (this cycle)");
-    sync_ui_util::AddIntSyncDetail(transient_cycle,
-                                   "Unsynced Count (before commit)",
-                                   full_status.unsynced_count);
 
     // These are counted during the ApplyUpdates step.
     sync_ui_util::AddIntSyncDetail(

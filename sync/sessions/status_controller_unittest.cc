@@ -39,28 +39,11 @@ TEST_F(StatusControllerTest, GetsDirty) {
         AddSimpleConflictingItemById(syncable::Id());
   }
   EXPECT_TRUE(status.TestAndClearIsDirty());
-
-  std::vector<int64> v;
-  v.push_back(1);
-  status.set_unsynced_handles(v);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-  std::vector<int64> v2;
-  v2.push_back(1);
-  status.set_unsynced_handles(v2);
-  EXPECT_FALSE(status.TestAndClearIsDirty());  // Test for deep comparison.
 }
 
 TEST_F(StatusControllerTest, StaysClean) {
   StatusController status(routes_);
   status.update_conflicts_resolved(true);
-  EXPECT_FALSE(status.TestAndClearIsDirty());
-
-  status.set_items_committed();
-  EXPECT_FALSE(status.TestAndClearIsDirty());
-
-  OrderedCommitSet commits(routes_);
-  commits.AddCommitItem(0, syncable::Id(), syncable::BOOKMARKS);
-  status.set_commit_set(commits);
   EXPECT_FALSE(status.TestAndClearIsDirty());
 }
 
@@ -93,11 +76,6 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   for (int i = 0; i < 14; i++)
     status.increment_num_successful_commits();
   EXPECT_EQ(14, status.syncer_status().num_successful_commits);
-
-  std::vector<int64> v;
-  v.push_back(16);
-  status.set_unsynced_handles(v);
-  EXPECT_EQ(16, v[0]);
 }
 
 TEST_F(StatusControllerTest, HasConflictingUpdates) {
@@ -179,16 +157,9 @@ TEST_F(StatusControllerTest, Unrestricted) {
   const UpdateProgress* progress =
       status.GetUnrestrictedUpdateProgress(GROUP_UI);
   EXPECT_FALSE(progress);
-  status.mutable_commit_message();
-  status.commit_response();
-  status.mutable_commit_response();
-  status.updates_response();
-  status.mutable_updates_response();
   status.error();
   status.syncer_status();
   status.num_server_changes_remaining();
-  status.commit_ids();
-  status.HasBookmarkCommitActivity();
   status.download_updates_succeeded();
   status.ServerSaysNothingMoreToDownload();
   status.group_restriction();

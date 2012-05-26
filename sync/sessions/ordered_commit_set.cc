@@ -31,8 +31,15 @@ void OrderedCommitSet::AddCommitItem(const int64 metahandle,
   }
 }
 
+const OrderedCommitSet::Projection& OrderedCommitSet::GetCommitIdProjection(
+    browser_sync::ModelSafeGroup group) const {
+  Projections::const_iterator i = projections_.find(group);
+  DCHECK(i != projections_.end());
+  return i->second;
+}
+
 void OrderedCommitSet::Append(const OrderedCommitSet& other) {
-  for (int i = 0; i < other.Size(); ++i) {
+  for (size_t i = 0; i < other.Size(); ++i) {
     CommitItem item = other.GetCommitItemAt(i);
     AddCommitItem(item.meta, item.id, item.group);
   }
@@ -71,8 +78,19 @@ void OrderedCommitSet::Truncate(size_t max_size) {
   }
 }
 
+void OrderedCommitSet::Clear() {
+  inserted_metahandles_.clear();
+  commit_ids_.clear();
+  metahandle_order_.clear();
+  for (Projections::iterator it = projections_.begin();
+       it != projections_.end(); ++it) {
+    it->second.clear();
+  }
+  types_.clear();
+}
+
 OrderedCommitSet::CommitItem OrderedCommitSet::GetCommitItemAt(
-    const int position) const {
+    const size_t position) const {
   DCHECK(position < Size());
   CommitItem return_item = {metahandle_order_[position],
       commit_ids_[position],

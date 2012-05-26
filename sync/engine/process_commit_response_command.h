@@ -18,14 +18,43 @@ namespace syncable {
 class Id;
 class WriteTransaction;
 class MutableEntry;
+class Directory;
 }
 
 namespace browser_sync {
 
+namespace sessions {
+class OrderedCommitSet;
+}
+
+// A class that processes the server's response to our commmit attempt.  Note
+// that some of the preliminary processing is performed in
+// PostClientToServerMessage command.
+//
+// As part of processing the commit response, this command will modify sync
+// entries.  It can rename items, update their versions, etc.
+//
+// This command will return a non-SYNCER_OK value if an error occurred while
+// processing the response, or if the server's response indicates that it had
+// trouble processing the request.
+//
+// See SyncerCommand documentation for more info.
 class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
  public:
 
-  ProcessCommitResponseCommand();
+  // The commit_set parameter contains references to all the items which were
+  // to be committed in this batch.
+  //
+  // The commmit_message parameter contains the message that was sent to the
+  // server.
+  //
+  // The commit_response parameter contains the response received from the
+  // server.  This may be uninitialized if we were unable to contact the server
+  // or a serious error was encountered.
+  ProcessCommitResponseCommand(
+      const sessions::OrderedCommitSet& commit_set,
+      const ClientToServerMessage& commit_message,
+      const ClientToServerResponse& commit_response);
   virtual ~ProcessCommitResponseCommand();
 
  protected:
@@ -43,7 +72,6 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
       const sync_pb::CommitResponse_EntryResponse& pb_commit_response,
       const sync_pb::SyncEntity& pb_committed_entry,
       const syncable::Id& pre_commit_id,
-      std::set<syncable::Id>* conflicting_new_directory_ids,
       std::set<syncable::Id>* deleted_folders);
 
   // Actually does the work of execute.
@@ -92,6 +120,15 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
   const std::string& GetResultingPostCommitName(
       const sync_pb::SyncEntity& committed_entry,
       const CommitResponse_EntryResponse& entry_response);
+
+  // Helper to clean up in case of failure.
+  void ClearSyncingBits(
+      syncable::Directory *dir,
+      const std::vector<syncable::Id>& commit_ids);
+
+  const sessions::OrderedCommitSet& commit_set_;
+  const ClientToServerMessage& commit_message_;
+  const ClientToServerResponse& commit_response_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessCommitResponseCommand);
 };

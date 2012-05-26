@@ -23,7 +23,6 @@
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/syncproto.h"
 #include "sync/protocol/sync_protocol_error.h"
-#include "sync/sessions/ordered_commit_set.h"
 #include "sync/syncable/model_type.h"
 #include "sync/syncable/model_type_payload_map.h"
 #include "sync/syncable/syncable.h"
@@ -114,12 +113,10 @@ class SyncSessionSnapshot {
       const syncable::ModelTypePayloadMap& download_progress_markers,
       bool more_to_sync,
       bool is_silenced,
-      int64 unsynced_count,
       int num_encryption_conflicts,
       int num_hierarchy_conflicts,
       int num_simple_conflicts,
       int num_server_conflicts,
-      bool did_commit_items,
       const SyncSourceInfo& source,
       bool notifications_enabled,
       size_t num_entries,
@@ -140,7 +137,6 @@ class SyncSessionSnapshot {
   syncable::ModelTypePayloadMap download_progress_markers() const;
   bool has_more_to_sync() const;
   bool is_silenced() const;
-  int64 unsynced_count() const;
   int num_encryption_conflicts() const;
   int num_hierarchy_conflicts() const;
   int num_simple_conflicts() const;
@@ -161,12 +157,10 @@ class SyncSessionSnapshot {
   syncable::ModelTypePayloadMap download_progress_markers_;
   bool has_more_to_sync_;
   bool is_silenced_;
-  int64 unsynced_count_;
   int num_encryption_conflicts_;
   int num_hierarchy_conflicts_;
   int num_simple_conflicts_;
   int num_server_conflicts_;
-  bool did_commit_items_;
   SyncSourceInfo source_;
   bool notifications_enabled_;
   size_t num_entries_;
@@ -321,20 +315,15 @@ struct AllModelTypeState {
   explicit AllModelTypeState(bool* dirty_flag);
   ~AllModelTypeState();
 
-  // Commits for all model types are bundled together into a single message.
-  ClientToServerMessage commit_message;
-  ClientToServerResponse commit_response;
   // We GetUpdates for some combination of types at once.
   // requested_update_types stores the set of types which were requested.
   syncable::ModelTypeSet updates_request_types;
   ClientToServerResponse updates_response;
   // Used to build the shared commit message.
-  DirtyOnWrite<std::vector<int64> > unsynced_handles;
   DirtyOnWrite<SyncerStatus> syncer_status;
   DirtyOnWrite<ErrorCounters> error;
   SyncCycleControlParameters control_params;
   DirtyOnWrite<int64> num_server_changes_remaining;
-  OrderedCommitSet commit_set;
 };
 
 // Grouping of all state that applies to a single ModelSafeGroup.

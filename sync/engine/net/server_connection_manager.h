@@ -28,8 +28,6 @@ class ClientToServerMessage;
 
 namespace browser_sync {
 
-class ClientToServerMessage;
-
 static const int32 kUnsetResponseCode = -1;
 static const int32 kUnsetContentLength = -1;
 static const int32 kUnsetPayloadLength = -1;

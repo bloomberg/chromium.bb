@@ -38,7 +38,6 @@ void SimulateSuccess(sessions::SyncSession* session,
     ADD_FAILURE() << "Shouldn't have more to sync";
   }
   ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
-  ASSERT_EQ(0U, session->status_controller().unsynced_handles().size());
 }
 
 void SimulateThrottledImpl(sessions::SyncSession* session,

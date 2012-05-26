@@ -199,6 +199,8 @@ enum {
 };
 
 enum BitTemp {
+  // Not to be confused with IS_UNSYNCED, this bit is used to detect local
+  // changes to items that happen during the server Commit operation.
   SYNCING = BIT_TEMPS_BEGIN,
   BIT_TEMPS_END,
 };

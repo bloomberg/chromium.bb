@@ -159,5 +159,4 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   RestartSyncService(0);
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Restarted sync."));
   ASSERT_TRUE(ModelMatchesVerifier(0));
-  ASSERT_EQ(0, GetClient(0)->GetStatus().unsynced_count);
 }

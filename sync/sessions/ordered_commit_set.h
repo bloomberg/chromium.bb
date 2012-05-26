@@ -64,12 +64,15 @@ class OrderedCommitSet {
   // belonging to |group|.  This is useful when you need to process a commit
   // response one ModelSafeGroup at a time. See GetCommitIdAt for how the
   // indices contained in the returned Projection can be used.
-  const Projection& GetCommitIdProjection(browser_sync::ModelSafeGroup group) {
-    return projections_[group];
+  const Projection& GetCommitIdProjection(
+      browser_sync::ModelSafeGroup group) const;
+
+  size_t Size() const {
+    return commit_ids_.size();
   }
 
-  int Size() const {
-    return commit_ids_.size();
+  bool Empty() const {
+    return Size() == 0;
   }
 
   // Returns true iff any of the commit ids added to this set have model type
@@ -79,6 +82,9 @@ class OrderedCommitSet {
   void Append(const OrderedCommitSet& other);
   void AppendReverse(const OrderedCommitSet& other);
   void Truncate(size_t max_size);
+
+  // Removes all entries from this set.
+  void Clear();
 
   void operator=(const OrderedCommitSet& other);
  private:
@@ -92,7 +98,7 @@ class OrderedCommitSet {
     syncable::ModelType group;
   };
 
-  CommitItem GetCommitItemAt(const int position) const;
+  CommitItem GetCommitItemAt(const size_t position) const;
 
   // These lists are different views of the same items; e.g they are
   // isomorphic.

@@ -20,11 +20,23 @@ using std::vector;
 
 namespace browser_sync {
 
+// A class that contains the code used to search the syncable::Directory for
+// locally modified items that are ready to be committed to the server.
+//
+// See SyncerCommand documentation for more info.
 class GetCommitIdsCommand : public SyncerCommand {
   friend class SyncerTest;
 
  public:
-  explicit GetCommitIdsCommand(int commit_batch_size);
+  // The batch_size parameter is the maximum number of entries we are allowed
+  // to commit in a single batch.  This value can be modified by the server.
+  //
+  // The ordered_commit_set parameter is an output parameter that will contain a
+  // set of items that are ready to commit.  Its size shall not exceed the
+  // provided batch_size.  This contents of this "set" will be ordered; see the
+  // comments in this class' implementation for details.
+  GetCommitIdsCommand(const size_t commit_batch_size,
+                      sessions::OrderedCommitSet* ordered_commit_set);
   virtual ~GetCommitIdsCommand();
 
   // SyncerCommand implementation.
@@ -93,8 +105,7 @@ class GetCommitIdsCommand : public SyncerCommand {
                                sessions::OrderedCommitSet* result) const;
 
   // Appends all commit ready predecessors of |item|, followed by |item| itself,
-  // to |ordered_commit_set_|, iff item and all its predecessors not in
-  // conflict.
+  // to |commit_set|, iff item and all its predecessors not in conflict.
   // Return values:
   //   False: if there was an entry in conflict.
   //   True: if all entries were checked for commit readiness and added to
@@ -103,7 +114,7 @@ class GetCommitIdsCommand : public SyncerCommand {
                                const ModelSafeRoutingInfo& routes,
                                const std::set<int64>& ready_unsynced_set,
                                const syncable::Entry& item,
-                               sessions::OrderedCommitSet* result) const;
+                               sessions::OrderedCommitSet* commit_set) const;
 
   bool IsCommitBatchFull() const;
 
@@ -114,9 +125,11 @@ class GetCommitIdsCommand : public SyncerCommand {
   void AddDeletes(syncable::WriteTransaction* write_transaction,
                   const std::set<int64>& ready_unsynced_set);
 
-  scoped_ptr<sessions::OrderedCommitSet> ordered_commit_set_;
+  // Input parameter; see constructor comment.
+  const size_t requested_commit_batch_size_;
 
-  int requested_commit_batch_size_;
+  // Output parameter; see constructor comment.
+  sessions::OrderedCommitSet* commit_set_;
 
   DISALLOW_COPY_AND_ASSIGN(GetCommitIdsCommand);
 };

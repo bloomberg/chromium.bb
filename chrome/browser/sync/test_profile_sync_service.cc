@@ -52,8 +52,8 @@ void SyncBackendHostForProfileSyncTest::
   syncable::ModelTypePayloadMap download_progress_markers;
   HandleSyncCycleCompletedOnFrontendLoop(SyncSessionSnapshot(
       SyncerStatus(), ErrorCounters(), 0, false,
-      sync_ended, download_progress_markers, false, false, 0, 0, 0, 0, 0,
-      false, SyncSourceInfo(), false, 0, base::Time::Now(), false));
+      sync_ended, download_progress_markers, false, false, 0, 0, 0, 0,
+      SyncSourceInfo(), false, 0, base::Time::Now(), false));
 }
 
 namespace {
@@ -95,8 +95,8 @@ void SyncBackendHostForProfileSyncTest::StartConfiguration(
     syncable::ModelTypePayloadMap download_progress_markers;
     HandleSyncCycleCompletedOnFrontendLoop(SyncSessionSnapshot(
         SyncerStatus(), ErrorCounters(), 0, false,
-        sync_ended, download_progress_markers, false, false, 0, 0, 0, 0, 0,
-        false, SyncSourceInfo(), false, 0, base::Time::Now(), false));
+        sync_ended, download_progress_markers, false, false, 0, 0, 0, 0,
+        SyncSourceInfo(), false, 0, base::Time::Now(), false));
   }
 }
 

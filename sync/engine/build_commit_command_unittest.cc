@@ -10,7 +10,16 @@ namespace browser_sync {
 // A test fixture for tests exercising ClearDataCommandTest.
 class BuildCommitCommandTest : public SyncerCommandTest {
  protected:
-  BuildCommitCommandTest() {}
+  BuildCommitCommandTest()
+    : batch_commit_set_(ModelSafeRoutingInfo()),
+      command_(batch_commit_set_, &commit_message_) {
+  }
+
+ private:
+  sessions::OrderedCommitSet batch_commit_set_;
+  ClientToServerMessage commit_message_;
+
+ protected:
   BuildCommitCommand command_;
 
  private:

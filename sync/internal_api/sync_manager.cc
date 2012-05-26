@@ -721,7 +721,6 @@ SyncManager::SyncManager(const std::string& name)
 SyncManager::Status::Status()
     : notifications_enabled(false),
       notifications_received(0),
-      unsynced_count(0),
       encryption_conflicts(0),
       hierarchy_conflicts(0),
       simple_conflicts(0),

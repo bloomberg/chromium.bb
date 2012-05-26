@@ -42,6 +42,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
       browser_sync::ScopedServerStatusWatcher* watcher) OVERRIDE;
 
   // Control of commit response.
+  // NOTE: Commit callback is invoked only once then reset.
   void SetMidCommitCallback(const base::Closure& callback);
   void SetMidCommitObserver(MidCommitObserver* observer);
 

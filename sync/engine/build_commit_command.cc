@@ -12,9 +12,10 @@
 #include "base/string_util.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
+#include "sync/sessions/ordered_commit_set.h"
 #include "sync/sessions/sync_session.h"
-#include "sync/syncable/syncable.h"
 #include "sync/syncable/syncable_changes_version.h"
+#include "sync/syncable/syncable.h"
 #include "sync/util/time.h"
 
 using std::set;
@@ -49,7 +50,12 @@ int64 BuildCommitCommand::GetGap() {
   return 1LL << 20;
 }
 
-BuildCommitCommand::BuildCommitCommand() {}
+BuildCommitCommand::BuildCommitCommand(
+    const sessions::OrderedCommitSet& batch_commit_set,
+    ClientToServerMessage* commit_message)
+  : batch_commit_set_(batch_commit_set), commit_message_(commit_message) {
+}
+
 BuildCommitCommand::~BuildCommitCommand() {}
 
 void BuildCommitCommand::AddExtensionsActivityToMessage(
@@ -57,21 +63,29 @@ void BuildCommitCommand::AddExtensionsActivityToMessage(
   // We only send ExtensionsActivity to the server if bookmarks are being
   // committed.
   ExtensionsActivityMonitor* monitor = session->context()->extensions_monitor();
-  if (!session->status_controller().HasBookmarkCommitActivity()) {
-    // Return the records to the activity monitor.
-    monitor->PutRecords(session->extensions_activity());
-    session->mutable_extensions_activity()->clear();
-    return;
-  }
-  const ExtensionsActivityMonitor::Records& records =
-      session->extensions_activity();
-  for (ExtensionsActivityMonitor::Records::const_iterator it = records.begin();
-       it != records.end(); ++it) {
-    sync_pb::ChromiumExtensionsActivity* activity_message =
-        message->add_extensions_activity();
-    activity_message->set_extension_id(it->second.extension_id);
-    activity_message->set_bookmark_writes_since_last_commit(
-        it->second.bookmark_write_count);
+  if (batch_commit_set_.HasBookmarkCommitId()) {
+    // This isn't perfect, since the set of extensions activity may not
+    // correlate exactly with the items being committed.  That's OK as
+    // long as we're looking for a rough estimate of extensions activity,
+    // not an precise mapping of which commits were triggered by which
+    // extension.
+    //
+    // We will push this list of extensions activity back into the
+    // ExtensionsActivityMonitor if this commit fails.  That's why we must keep
+    // a copy of these records in the session.
+    monitor->GetAndClearRecords(session->mutable_extensions_activity());
+
+    const ExtensionsActivityMonitor::Records& records =
+        session->extensions_activity();
+    for (ExtensionsActivityMonitor::Records::const_iterator it =
+         records.begin();
+         it != records.end(); ++it) {
+      sync_pb::ChromiumExtensionsActivity* activity_message =
+          message->add_extensions_activity();
+      activity_message->set_extension_id(it->second.extension_id);
+      activity_message->set_bookmark_writes_since_last_commit(
+          it->second.bookmark_write_count);
+    }
   }
 }
 
@@ -86,16 +100,15 @@ void SetEntrySpecifics(MutableEntry* meta_entry, SyncEntity* sync_entry) {
 }  // namespace
 
 SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
-  ClientToServerMessage message;
-  message.set_share(session->context()->account_name());
-  message.set_message_contents(ClientToServerMessage::COMMIT);
+  commit_message_->set_share(session->context()->account_name());
+  commit_message_->set_message_contents(ClientToServerMessage::COMMIT);
 
-  CommitMessage* commit_message = message.mutable_commit();
+  CommitMessage* commit_message = commit_message_->mutable_commit();
   commit_message->set_cache_guid(
       session->write_transaction()->directory()->cache_guid());
   AddExtensionsActivityToMessage(session, commit_message);
   SyncerProtoUtil::AddRequestBirthday(
-      session->write_transaction()->directory(), &message);
+      session->write_transaction()->directory(), commit_message_);
 
   // Cache previously computed position values.  Because |commit_ids|
   // is already in sibling order, we should always hit this map after
@@ -105,9 +118,8 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
   // whose ID is the map's key.
   std::map<Id, std::pair<int64, int64> > position_map;
 
-  const vector<Id>& commit_ids = session->status_controller().commit_ids();
-  for (size_t i = 0; i < commit_ids.size(); i++) {
-    Id id = commit_ids[i];
+  for (size_t i = 0; i < batch_commit_set_.Size(); i++) {
+    Id id = batch_commit_set_.GetCommitIdAt(i);
     SyncEntity* sync_entry =
         static_cast<SyncEntity*>(commit_message->add_entries());
     sync_entry->set_id(id);
@@ -208,8 +220,6 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
       SetEntrySpecifics(&meta_entry, sync_entry);
     }
   }
-  session->mutable_status_controller()->
-      mutable_commit_message()->CopyFrom(message);
 
   return SYNCER_OK;
 }

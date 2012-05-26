@@ -14,9 +14,26 @@
 
 namespace browser_sync {
 
+namespace sessions {
+class OrderedCommitSet;
+}
+
+// A class that contains the code used to serialize a set of sync items into a
+// protobuf commit message.  This conversion process references the
+// syncable::Directory, which is why it must be called within the same
+// transaction as the GetCommitIdsCommand that fetched the set of items to be
+// committed.
+//
+// See SyncerCommand documentation for more info.
 class BuildCommitCommand : public SyncerCommand {
  public:
-  BuildCommitCommand();
+  // The batch_commit_set parameter contains a set of references to the items
+  // that should be committed.
+  //
+  // The commit_message parameter is an output parameter which will contain the
+  // fully initialized commit message once ExecuteImpl() has been called.
+  BuildCommitCommand(const sessions::OrderedCommitSet& batch_commit_set,
+                     ClientToServerMessage* commit_message);
   virtual ~BuildCommitCommand();
 
   // SyncerCommand implementation.
@@ -44,6 +61,12 @@ class BuildCommitCommand : public SyncerCommand {
   int64 InterpolatePosition(int64 lo, int64 hi);
 
   DISALLOW_COPY_AND_ASSIGN(BuildCommitCommand);
+
+  // Input parameter; see constructor comment.
+  const sessions::OrderedCommitSet& batch_commit_set_;
+
+  // Output parameter; see constructor comment.
+  ClientToServerMessage* commit_message_;
 };
 
 }  // namespace browser_sync

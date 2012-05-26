@@ -192,26 +192,6 @@ TEST_F(SyncSessionTest, SetWriteTransaction) {
   }
 }
 
-TEST_F(SyncSessionTest, MoreToSyncIfUnsyncedGreaterThanCommitted) {
-  // If any forward progress was made during the session, and the number of
-  // unsynced handles still exceeds the number of commit ids we added, there is
-  // more to sync. For example, this occurs if we had more commit ids
-  // than could fit in a single commit batch.
-  EXPECT_FALSE(session_->HasMoreToSync());
-  OrderedCommitSet commit_set(routes_);
-  commit_set.AddCommitItem(0, syncable::Id(), syncable::BOOKMARKS);
-  status()->set_commit_set(commit_set);
-  EXPECT_FALSE(session_->HasMoreToSync());
-
-  std::vector<int64> unsynced_handles;
-  unsynced_handles.push_back(1);
-  unsynced_handles.push_back(2);
-  status()->set_unsynced_handles(unsynced_handles);
-  EXPECT_FALSE(session_->HasMoreToSync());
-  status()->increment_num_successful_commits();
-  EXPECT_TRUE(session_->HasMoreToSync());
-}
-
 TEST_F(SyncSessionTest, MoreToDownloadIfDownloadFailed) {
   status()->set_updates_request_types(ParamsMeaningAllEnabledTypes());
 

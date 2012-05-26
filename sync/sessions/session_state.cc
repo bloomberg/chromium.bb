@@ -86,12 +86,10 @@ SyncSessionSnapshot::SyncSessionSnapshot()
       is_share_usable_(false),
       has_more_to_sync_(false),
       is_silenced_(false),
-      unsynced_count_(0),
       num_encryption_conflicts_(0),
       num_hierarchy_conflicts_(0),
       num_simple_conflicts_(0),
       num_server_conflicts_(0),
-      did_commit_items_(false),
       notifications_enabled_(false),
       num_entries_(0),
       retry_scheduled_(false) {
@@ -106,12 +104,10 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     const syncable::ModelTypePayloadMap& download_progress_markers,
     bool more_to_sync,
     bool is_silenced,
-    int64 unsynced_count,
     int num_encryption_conflicts,
     int num_hierarchy_conflicts,
     int num_simple_conflicts,
     int num_server_conflicts,
-    bool did_commit_items,
     const SyncSourceInfo& source,
     bool notifications_enabled,
     size_t num_entries,
@@ -125,12 +121,10 @@ SyncSessionSnapshot::SyncSessionSnapshot(
       download_progress_markers_(download_progress_markers),
       has_more_to_sync_(more_to_sync),
       is_silenced_(is_silenced),
-      unsynced_count_(unsynced_count),
       num_encryption_conflicts_(num_encryption_conflicts),
       num_hierarchy_conflicts_(num_hierarchy_conflicts),
       num_simple_conflicts_(num_simple_conflicts),
       num_server_conflicts_(num_server_conflicts),
-      did_commit_items_(did_commit_items),
       source_(source),
       notifications_enabled_(notifications_enabled),
       num_entries_(num_entries),
@@ -154,8 +148,6 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
   value->SetBoolean("hasMoreToSync", has_more_to_sync_);
   value->SetBoolean("isSilenced", is_silenced_);
   // We don't care too much if we lose precision here, also.
-  value->SetInteger("unsyncedCount",
-                    static_cast<int>(unsynced_count_));
   value->SetInteger("numEncryptionConflicts",
                     num_encryption_conflicts_);
   value->SetInteger("numHierarchyConflicts",
@@ -164,7 +156,6 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
                     num_simple_conflicts_);
   value->SetInteger("numServerConflicts",
                     num_server_conflicts_);
-  value->SetBoolean("didCommitItems", did_commit_items_);
   value->SetInteger("numEntries", num_entries_);
   value->Set("source", source_.ToValue());
   value->SetBoolean("notificationsEnabled", notifications_enabled_);
@@ -213,10 +204,6 @@ bool SyncSessionSnapshot::is_silenced() const {
   return is_silenced_;
 }
 
-int64 SyncSessionSnapshot::unsynced_count() const {
-  return unsynced_count_;
-}
-
 int SyncSessionSnapshot::num_encryption_conflicts() const {
   return num_encryption_conflicts_;
 }
@@ -231,10 +218,6 @@ int SyncSessionSnapshot::num_simple_conflicts() const {
 
 int SyncSessionSnapshot::num_server_conflicts() const {
   return num_server_conflicts_;
-}
-
-bool SyncSessionSnapshot::did_commit_items() const {
-  return did_commit_items_;
 }
 
 SyncSourceInfo SyncSessionSnapshot::source() const {
@@ -381,11 +364,9 @@ bool UpdateProgress::HasConflictingUpdates() const {
 }
 
 AllModelTypeState::AllModelTypeState(bool* dirty_flag)
-    : unsynced_handles(dirty_flag),
-      syncer_status(dirty_flag),
+    : syncer_status(dirty_flag),
       error(dirty_flag),
-      num_server_changes_remaining(dirty_flag, 0),
-      commit_set(ModelSafeRoutingInfo()) {
+      num_server_changes_remaining(dirty_flag, 0) {
 }
 
 AllModelTypeState::~AllModelTypeState() {}

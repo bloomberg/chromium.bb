@@ -159,12 +159,10 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       download_progress_markers,
       HasMoreToSync(),
       delegate_->IsSyncingCurrentlySilenced(),
-      status_controller_->unsynced_handles().size(),
       status_controller_->TotalNumEncryptionConflictingItems(),
       status_controller_->TotalNumHierarchyConflictingItems(),
       status_controller_->TotalNumSimpleConflictingItems(),
       status_controller_->TotalNumServerConflictingItems(),
-      status_controller_->did_commit_items(),
       source_,
       context_->notifications_enabled(),
       dir->GetEntriesCount(),
@@ -182,11 +180,7 @@ void SyncSession::SendEventNotification(SyncEngineEvent::EventCause cause) {
 
 bool SyncSession::HasMoreToSync() const {
   const StatusController* status = status_controller_.get();
-  return ((status->commit_ids().size() < status->unsynced_handles().size()) &&
-      status->syncer_status().num_successful_commits > 0) ||
-      status->conflicts_resolved();
-      // Or, we have conflicting updates, but we're making progress on
-      // resolving them...
+  return status->conflicts_resolved();
 }
 
 const std::set<ModelSafeGroup>& SyncSession::GetEnabledGroups() const {

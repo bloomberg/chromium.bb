@@ -102,9 +102,6 @@ class SyncManager {
 
     browser_sync::SyncProtocolError sync_protocol_error;
 
-    // Number of unsynced items counted at the start of most recent sync cycle.
-    int unsynced_count;
-
     // Number of encryption conflicts counted during most recent sync cycle.
     int encryption_conflicts;
 
