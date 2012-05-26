@@ -27,11 +27,6 @@ AC_SUBST(DLOPEN_LIBS)
 PKG_CHECK_MODULES(COMPOSITOR,
 		  [wayland-server egl >= 7.10 glesv2 xkbcommon pixman-1])
 
-PKG_CHECK_MODULES(WCAP, [cairo vpx])
-
-AC_CHECK_PROG(RSVG_CONVERT, rsvg-convert, rsvg-convert)
-AM_CONDITIONAL(HAVE_RSVG_CONVERT, test -n "$RSVG_CONVERT")
-
 
 AC_ARG_ENABLE(setuid-install, [  --enable-setuid-install],,
 	      enable_setuid_install=yes)
@@ -182,6 +177,19 @@ AC_ARG_ENABLE(tablet-shell, [  --enable-tablet-shell],,
 	      enable_tablet_shell=yes)
 AM_CONDITIONAL(ENABLE_TABLET_SHELL,
 	       test x$enable_tablet_shell = xyes)
+
+
+AC_ARG_ENABLE(wcap-tools, [  --disable-wcap-tools],, enable_wcap_tools=yes)
+AM_CONDITIONAL(BUILD_WCAP_TOOLS, test x$enable_wcap_tools = xyes)
+if test x$enable_wcap_tools = xyes; then
+  AC_DEFINE([BUILD_WCAP_TOOLS], [1], [Build the wcap tools])
+  PKG_CHECK_MODULES(WCAP, [cairo vpx])
+  WCAP_LIBS="$WCAP_LIBS -lm"
+fi
+
+AC_CHECK_PROG(RSVG_CONVERT, rsvg-convert, rsvg-convert)
+AM_CONDITIONAL(HAVE_RSVG_CONVERT, test -n "$RSVG_CONVERT")
+
 
 if test "x$GCC" = "xyes"; then
 	GCC_CFLAGS="-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes \
