@@ -39,8 +39,8 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libpng/libpng.gyp:libpng',
-        'native_theme_resources',
         'ui',
+        'ui_resources_standard',
         'ui_test_support',
       ],
       'sources': [
@@ -98,7 +98,7 @@
         'test/run_all_unittests.cc',
         'test/test_suite.cc',
         'test/test_suite.h',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/native_theme/native_theme_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
       ],
       'include_dirs': [
         '../',

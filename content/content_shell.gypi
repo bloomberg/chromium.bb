@@ -217,13 +217,6 @@
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
             ],
-            'conditions': [
-              ['OS != "mac"', {
-                'pak_inputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/ui/native_theme/native_theme_resources.pak',
-                ]
-              }],
-            ],
           },
           'inputs': [
             '<(repack_path)',

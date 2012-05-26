@@ -16,7 +16,6 @@
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../skia/skia.gyp:skia',
         '../compositor/compositor.gyp:compositor',
-        '../ui.gyp:native_theme_resources',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         '../ui.gyp:ui_resources_2x',
@@ -207,9 +206,9 @@
         '../../third_party/icu/icu.gyp:icuuc',
         '../compositor/compositor.gyp:compositor',
         '../compositor/compositor.gyp:compositor_test_support',
-        '../ui.gyp:native_theme_resources',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
+        '../ui.gyp:ui_resources_standard',
         'aura',
       ],
       'include_dirs': [
@@ -217,8 +216,8 @@
       ],
       'sources': [
         'demo/demo_main.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/native_theme/native_theme_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
       ],
     },
     {
@@ -257,9 +256,9 @@
         '../compositor/compositor.gyp:compositor_test_support',
         '../compositor/compositor.gyp:compositor',
         '../gl/gl.gyp:gl',
-        '../ui.gyp:native_theme_resources',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
+        '../ui.gyp:ui_resources_standard',
         'test_support_aura',
         'aura',
       ],
@@ -277,8 +276,8 @@
         'event_filter_unittest.cc',
         'event_unittest.cc',
         'window_unittest.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/native_theme/native_theme_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
       ],
       'conditions': [
         # osmesa GL implementation is used on linux.

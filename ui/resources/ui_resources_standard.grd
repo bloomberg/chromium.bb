@@ -6,6 +6,9 @@
     </output>
     <output filename="grit/ui_resources_standard_map.cc" type="resource_map_source" />
     <output filename="grit/ui_resources_standard_map.h" type="resource_map_header" />
+    <!-- TODO(oshima): Remove gfx_resources.pak once DumpRenderTree.gyp
+         is updated. -->
+    <output filename="gfx_resources.pak" type="data_package" />
     <output filename="ui_resources_standard.pak" type="data_package" />
     <output filename="ui_resources_standard.rc" type="rc_all" />
   </outputs>
@@ -90,6 +93,74 @@
         <include name="IDR_AURA_CURSOR_EAST_RESIZE" file="default_100_percent/aura/sb_h_double_arrow.png" type="BINDATA" />
         <include name="IDR_AURA_CURSOR_SOUTH_RESIZE" file="default_100_percent/aura/sb_v_double_arrow.png" type="BINDATA" />
         <include name="IDR_AURA_CURSOR_WEST_RESIZE" file="default_100_percent/aura/sb_h_double_arrow.png" type="BINDATA" />
+      </if>
+
+      <if expr="is_posix and not is_macosx and not pp_ifdef('use_aura')">
+        <include name="IDR_CHECKBOX_DISABLED_INDETERMINATE" file="default_100_percent/linux-checkbox-disabled-indeterminate.png" type="BINDATA" />
+        <include name="IDR_CHECKBOX_DISABLED_OFF" file="default_100_percent/linux-checkbox-disabled-off.png" type="BINDATA" />
+        <include name="IDR_CHECKBOX_DISABLED_ON" file="default_100_percent/linux-checkbox-disabled-on.png" type="BINDATA" />
+        <include name="IDR_CHECKBOX_INDETERMINATE" file="default_100_percent/linux-checkbox-indeterminate.png" type="BINDATA" />
+        <include name="IDR_CHECKBOX_OFF" file="default_100_percent/linux-checkbox-off.png" type="BINDATA" />
+        <include name="IDR_CHECKBOX_ON" file="default_100_percent/linux-checkbox-on.png" type="BINDATA" />
+        <include name="IDR_RADIO_DISABLED_OFF" file="default_100_percent/linux-radio-disabled-off.png" type="BINDATA" />
+        <include name="IDR_RADIO_DISABLED_ON" file="default_100_percent/linux-radio-disabled-on.png" type="BINDATA" />
+        <include name="IDR_RADIO_OFF" file="default_100_percent/linux-radio-off.png" type="BINDATA" />
+        <include name="IDR_RADIO_ON" file="default_100_percent/linux-radio-on.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_BAR" file="default_100_percent/linux-progress-bar.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_BORDER_LEFT" file="default_100_percent/linux-progress-border-left.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_BORDER_RIGHT" file="default_100_percent/linux-progress-border-right.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_VALUE" file="default_100_percent/linux-progress-value.png" type="BINDATA" />
+      </if>
+
+      <!-- TODO(jamescook): Replace Linux images with Aura-specific ones. -->
+      <if expr="pp_ifdef('use_aura')">
+        <include name="IDR_CHECKBOX_DISABLED_INDETERMINATE" file="default_100_percent/linux-checkbox-disabled-indeterminate.png" type="BINDATA" />
+        <include name="IDR_CHECKBOX_DISABLED_OFF" file="default_100_percent/linux-checkbox-disabled-off.png" type="BINDATA" />
+        <include name="IDR_CHECKBOX_DISABLED_ON" file="default_100_percent/linux-checkbox-disabled-on.png" type="BINDATA" />
+        <include name="IDR_CHECKBOX_INDETERMINATE" file="default_100_percent/linux-checkbox-indeterminate.png" type="BINDATA" />
+        <include name="IDR_CHECKBOX_OFF" file="default_100_percent/linux-checkbox-off.png" type="BINDATA" />
+        <include name="IDR_CHECKBOX_ON" file="default_100_percent/linux-checkbox-on.png" type="BINDATA" />
+        <include name="IDR_RADIO_DISABLED_OFF" file="default_100_percent/linux-radio-disabled-off.png" type="BINDATA" />
+        <include name="IDR_RADIO_DISABLED_ON" file="default_100_percent/linux-radio-disabled-on.png" type="BINDATA" />
+        <include name="IDR_RADIO_OFF" file="default_100_percent/linux-radio-off.png" type="BINDATA" />
+        <include name="IDR_RADIO_ON" file="default_100_percent/linux-radio-on.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_BAR" file="default_100_percent/linux-progress-bar.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_BORDER_LEFT" file="default_100_percent/linux-progress-border-left.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_BORDER_RIGHT" file="default_100_percent/linux-progress-border-right.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_VALUE" file="default_100_percent/linux-progress-value.png" type="BINDATA" />
+
+        <include name="IDR_SCROLL_BASE_CORNER" file="default_100_percent/scrollbar_base_normal_edge.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_CORNER_H" file="default_100_percent/scrollbar_base_hover_edge.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_HORIZONTAL_CENTER" file="default_100_percent/scrollbar_base_horizontal_normal_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_HORIZONTAL_CENTER_H" file="default_100_percent/scrollbar_base_horizontal_hover_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_HORIZONTAL_LEFT" file="default_100_percent/scrollbar_base_horizontal_normal_left.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_HORIZONTAL_LEFT_H" file="default_100_percent/scrollbar_base_horizontal_hover_left.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT" file="default_100_percent/scrollbar_base_horizontal_normal_right.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT_H" file="default_100_percent/scrollbar_base_horizontal_hover_right.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_VERTICAL_BOTTOM" file="default_100_percent/scrollbar_base_vertical_normal_bottom.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_VERTICAL_BOTTOM_H" file="default_100_percent/scrollbar_base_vertical_hover_bottom.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_VERTICAL_CENTER" file="default_100_percent/scrollbar_base_vertical_normal_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_VERTICAL_CENTER_H" file="default_100_percent/scrollbar_base_vertical_hover_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_VERTICAL_TOP" file="default_100_percent/scrollbar_base_vertical_normal_top.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_VERTICAL_TOP_H" file="default_100_percent/scrollbar_base_vertical_hover_top.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER" file="default_100_percent/scrollbar_thumb_horizontal_normal_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER_H" file="default_100_percent/scrollbar_thumb_horizontal_hover_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER_P" file="default_100_percent/scrollbar_thumb_horizontal_pressed_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT" file="default_100_percent/scrollbar_thumb_horizontal_normal_left.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT_H" file="default_100_percent/scrollbar_thumb_horizontal_hover_left.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT_P" file="default_100_percent/scrollbar_thumb_horizontal_pressed_left.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT" file="default_100_percent/scrollbar_thumb_horizontal_normal_right.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_H" file="default_100_percent/scrollbar_thumb_horizontal_hover_right.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_P" file="default_100_percent/scrollbar_thumb_horizontal_pressed_right.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM" file="default_100_percent/scrollbar_thumb_vertical_normal_bottom.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM_H" file="default_100_percent/scrollbar_thumb_vertical_hover_bottom.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM_P" file="default_100_percent/scrollbar_thumb_vertical_pressed_bottom.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_CENTER" file="default_100_percent/scrollbar_thumb_vertical_normal_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_CENTER_H" file="default_100_percent/scrollbar_thumb_vertical_hover_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_CENTER_P" file="default_100_percent/scrollbar_thumb_vertical_pressed_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_TOP" file="default_100_percent/scrollbar_thumb_vertical_normal_top.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_TOP_H" file="default_100_percent/scrollbar_thumb_vertical_hover_top.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_TOP_P" file="default_100_percent/scrollbar_thumb_vertical_pressed_top.png" type="BINDATA" />
       </if>
     </includes>
   </release>

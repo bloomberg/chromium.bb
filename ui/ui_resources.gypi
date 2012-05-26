@@ -53,6 +53,16 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
       ],
+      # gfx_resources.pak is used by DumpRenderTree.
+      # TODO(oshima): Update DumpRenderTree.gyp to use new pak file and
+      # remove this.
+      'copies': [ {
+          'destination': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/',
+          'files' : [
+             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/gfx_resources.pak',
+          ],
+        },
+      ],
       'includes': [ '../build/grit_target.gypi' ],
     },
     {
