@@ -255,7 +255,7 @@ class GitRepoPatch(object):
     # to the originating repo) is what should be used for rebasing
     # this patch into the current tree).
     manifest = cros_lib.ManifestCheckout.Cached(buildroot)
-    return manifest.projects[self.project]['local_revision']
+    return manifest.GetProjectsLocalRevision(self.project)
 
   def ApplyIntoGitRepo(self, project_dir, upstream, trivial=False):
     """Apply patch into a standalone git repo.
@@ -656,7 +656,7 @@ def PrepareLocalPatches(manifest, patches):
   for patch in patches:
     project, branch = patch.split(':')
     project_dir = manifest.GetProjectPath(project, True)
-    tracking_branch = manifest.GetRevisionForProject(project)
+    tracking_branch = manifest.GetProjectsLocalRevision(project)
 
     cmd = ['git', 'rev-list', '-n1', '%s..%s' % (tracking_branch, branch)]
     result = cros_lib.RunCommand(cmd, redirect_stdout=True, cwd=project_dir)

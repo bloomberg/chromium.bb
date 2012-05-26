@@ -482,7 +482,7 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
     output_obj = self.mox.CreateMock(cros_lib.CommandResult)
     output_obj.output= '12345'
     self.manifest.GetProjectPath('my/project', True).AndReturn('mydir')
-    self.manifest.GetRevisionForProject('my/project').AndReturn('m/kernel')
+    self.manifest.GetProjectsLocalRevision('my/project').AndReturn('m/kernel')
     cros_lib.RunCommand(mox.In('m/kernel..mybranch'),
                         redirect_stdout=mox.IgnoreArg(),
                         cwd='mydir').AndReturn(output_obj)
@@ -497,7 +497,7 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
     output_obj = self.mox.CreateMock(cros_lib.CommandResult)
     output_obj.output=''
     self.manifest.GetProjectPath('my/project', True).AndReturn('mydir')
-    self.manifest.GetRevisionForProject('my/project').AndReturn('m/master')
+    self.manifest.GetProjectsLocalRevision('my/project').AndReturn('m/master')
     cros_lib.RunCommand(mox.In('m/master..mybranch'),
                         redirect_stdout=mox.IgnoreArg(),
                         cwd='mydir').AndReturn(output_obj)

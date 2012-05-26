@@ -809,7 +809,7 @@ class Manifest(object):
     """Gets an attribute for a project, falling back to defaults if needed."""
     return self.projects[project].get(attribute)
 
-  def GetRevisionForProject(self, project):
+  def GetProjectsLocalRevision(self, project):
     """Returns the upstream defined revspec for a project."""
     return self.GetAttributeForProject(project, 'local_revision')
 
@@ -897,10 +897,6 @@ class ManifestCheckout(Manifest):
     Manifest._FinalizeProjectData(self, attrs)
     attrs['local_path'] = os.path.join(self.root, attrs['path'])
     attrs['tracking_branch'] = self.default_branch
-
-  def GetRevisionForProject(self, project):
-    """Returns the upstream defined revspec for a project."""
-    return self.GetAttributeForProject(project, 'tracking_branch')
 
   @staticmethod
   def _GetManifestsBranch(root):
