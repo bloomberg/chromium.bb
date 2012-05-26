@@ -1555,21 +1555,23 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
                                  state_.monitor_bounds.bottom() - y));
       } else if (item->actual_menu_position() ==
                  MenuItemView::POSITION_BEST_FIT) {
+        MenuItemView::MenuPosition orientation =
+            MenuItemView::POSITION_BELOW_BOUNDS;
         if (state_.monitor_bounds.height() < pref.height()) {
           // Handle very tall menus.
           pref.set_height(state_.monitor_bounds.height());
-          y = state_.monitor_bounds.bottom();
-          item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
+          y = state_.monitor_bounds.y();
         } else if (state_.monitor_bounds.y() + pref.height() <
             state_.initial_bounds.y()) {
           // Flipping upwards if there is enough space.
           y = state_.initial_bounds.y() - pref.height();
-          item->set_actual_menu_position(MenuItemView::POSITION_ABOVE_BOUNDS);
+          orientation = MenuItemView::POSITION_ABOVE_BOUNDS;
         } else {
-          // The user prefers to move the menu a bit around in order to get the
+          // It is allowed to move the menu a bit around in order to get the
           // best fit and to avoid showing scroll elements.
           y = state_.monitor_bounds.bottom() - pref.height();
-          item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
+        }
+        if (orientation == MenuItemView::POSITION_BELOW_BOUNDS) {
           // The menu should never overlap the owning button. So move it.
           // We use the anchor view style to determine the preferred position
           // relative to the owning button.
@@ -1590,6 +1592,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
               x = state_.initial_bounds.x() - pref.width(); // Move left.
           }
         }
+        item->set_actual_menu_position(orientation);
       } else {
         pref.set_height(std::min(pref.height(),
             state_.initial_bounds.y() - state_.monitor_bounds.y()));
