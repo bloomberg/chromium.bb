@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/service/cmd_parser.h"
 
 #include "base/logging.h"
+#include "base/debug/trace_event.h"
 
 namespace gpu {
 
@@ -58,6 +59,8 @@ error::Error CommandParser::ProcessCommand() {
     DVLOG(1) << "Error: get offset out of bounds";
     return error::kOutOfBounds;
   }
+
+  TRACE_EVENT0("cb_command", handler_->GetCommandName(header.command));
 
   error::Error result = handler_->DoCommand(
       header.command, header.size - 1, buffer_ + get);

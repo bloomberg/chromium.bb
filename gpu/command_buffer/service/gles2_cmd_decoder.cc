@@ -2253,6 +2253,8 @@ void GLES2DecoderImpl::UpdateCapabilities() {
 }
 
 bool GLES2DecoderImpl::InitializeShaderTranslator() {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::InitializeShaderTranslator");
+
   // Re-check the state of use_shader_translator_ each time this is called.
   if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
       (feature_info_->feature_flags().chromium_webglsl ||
@@ -4525,7 +4527,6 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
 }
 
 void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoLinkProgram");
   ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
       program, "glLinkProgram");
   if (!info) {
@@ -5596,7 +5597,6 @@ error::Error GLES2DecoderImpl::HandleShaderSourceBucket(
 }
 
 void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCompileShader");
   ShaderManager::ShaderInfo* info = GetShaderInfoNotProgram(
       client_id, "glCompileShader");
   if (!info) {
@@ -6354,7 +6354,6 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
 
 error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
     uint32 immediate_data_size, const gles2::PostSubBufferCHROMIUM& c) {
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandlePostSubBufferCHROMIUM");
   if (!context_->HasExtension("GL_CHROMIUM_post_sub_buffer")) {
     SetGLError(GL_INVALID_OPERATION,
                "glPostSubBufferCHROMIUM: command not supported by surface");
@@ -6675,6 +6674,8 @@ bool GLES2DecoderImpl::ClearLevel(
     return false;
   }
 
+  TRACE_EVENT1("gpu", "GLES2DecoderImpl::ClearLevel", "size", size);
+
   int tile_height;
 
   if (size > kMaxZeroSize) {
@@ -6991,7 +6992,6 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
 
 error::Error GLES2DecoderImpl::HandleTexImage2D(
     uint32 immediate_data_size, const gles2::TexImage2D& c) {
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleTexImage2D");
   tex_image_2d_failed_ = true;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -7110,14 +7110,14 @@ static void Clip(
 }
 
 void GLES2DecoderImpl::DoCopyTexImage2D(
-  GLenum target,
-  GLint level,
-  GLenum internal_format,
-  GLint x,
-  GLint y,
-  GLsizei width,
-  GLsizei height,
-  GLint border) {
+    GLenum target,
+    GLint level,
+    GLenum internal_format,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    GLint border) {
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_OPERATION,
@@ -7201,14 +7201,14 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
 }
 
 void GLES2DecoderImpl::DoCopyTexSubImage2D(
-  GLenum target,
-  GLint level,
-  GLint xoffset,
-  GLint yoffset,
-  GLint x,
-  GLint y,
-  GLsizei width,
-  GLsizei height) {
+    GLenum target,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height) {
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_OPERATION,
@@ -7355,7 +7355,6 @@ void GLES2DecoderImpl::DoTexSubImage2D(
 
 error::Error GLES2DecoderImpl::HandleTexSubImage2D(
     uint32 immediate_data_size, const gles2::TexSubImage2D& c) {
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleTexSubImage2D");
   GLboolean internal = static_cast<GLboolean>(c.internal);
   if (internal == GL_TRUE && tex_image_2d_failed_)
     return error::kNoError;
@@ -8621,12 +8620,11 @@ static GLenum ExtractTypeFromStorageFormat(GLenum internalformat) {
 }
 
 void GLES2DecoderImpl::DoTexStorage2DEXT(
-  GLenum target,
-  GLint levels,
-  GLenum internal_format,
-  GLsizei width,
-  GLsizei height) {
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoTexStorage2DEXT");
+    GLenum target,
+    GLint levels,
+    GLenum internal_format,
+    GLsizei width,
+    GLsizei height) {
   if (!texture_manager()->ValidForTarget(target, 0, width, height, 1) ||
       TextureManager::ComputeMipMapCount(width, height, 1) < levels) {
     SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT: dimensions out of range");
