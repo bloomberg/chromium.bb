@@ -52,11 +52,9 @@ TEST(ShadowValueTest, GetMargin) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
-    std::vector<ShadowValue> shadows(
-        &kTestCases[i].shadows[0],
-        &kTestCases[i].shadows[kTestCases[i].shadow_count]);
-
-    Insets margin = ShadowValue::GetMargin(shadows);
+    Insets margin = ShadowValue::GetMargin(
+        ShadowValues(kTestCases[i].shadows,
+                     kTestCases[i].shadows + kTestCases[i].shadow_count));
 
     EXPECT_EQ(kTestCases[i].expected_margin, margin) << " i=" << i;
   }

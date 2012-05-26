@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_SHADOW_VALUE_
-#define UI_GFX_SHADOW_VALUE_
+#ifndef UI_GFX_SHADOW_VALUE_H_
+#define UI_GFX_SHADOW_VALUE_H_
 #pragma once
 
 #include <string>
@@ -16,6 +16,9 @@
 namespace gfx {
 
 class Insets;
+
+class ShadowValue;
+typedef std::vector<ShadowValue> ShadowValues;
 
 // ShadowValue encapsulates parameters needed to define a shadow, including the
 // shadow's offset, blur amount and color.
@@ -35,7 +38,7 @@ class UI_EXPORT ShadowValue {
 
   // Gets margin space needed for shadows. Note that values in returned Insets
   // are negative because shadow margins are outside a boundary.
-  static Insets GetMargin(const std::vector<ShadowValue>& shadows);
+  static Insets GetMargin(const ShadowValues& shadows);
 
  private:
   gfx::Point offset_;
@@ -55,4 +58,4 @@ class UI_EXPORT ShadowValue {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_SHADOW_VALUE_
+#endif  // UI_GFX_SHADOW_VALUE_H_

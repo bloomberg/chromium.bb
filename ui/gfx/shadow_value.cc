@@ -4,6 +4,8 @@
 
 #include "ui/gfx/shadow_value.h"
 
+#include <algorithm>
+
 #include "base/stringprintf.h"
 #include "ui/gfx/insets.h"
 
@@ -37,7 +39,7 @@ std::string ShadowValue::ToString() const {
 }
 
 // static
-Insets ShadowValue::GetMargin(const std::vector<ShadowValue>& shadows) {
+Insets ShadowValue::GetMargin(const ShadowValues& shadows) {
   int left = 0;
   int top = 0;
   int right = 0;

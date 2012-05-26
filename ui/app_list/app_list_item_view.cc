@@ -11,6 +11,7 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
+#include "skia/ext/image_operations.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/apps_grid_view.h"
 #include "ui/app_list/drop_shadow_label.h"
@@ -126,39 +127,27 @@ class AppListItemView::IconOperation
   static const int kShadowPadding = 15;
 
   void ResizeAndGenerateShadow() {
+    if (cancel_flag_.IsSet())
+      return;
+
+    if (size_ != gfx::Size(bitmap_.width(), bitmap_.height())) {
+      bitmap_ = skia::ImageOperations::Resize(bitmap_,
+          skia::ImageOperations::RESIZE_BEST, size_.width(), size_.height());
+    }
+
+    if (cancel_flag_.IsSet())
+      return;
+
     // If you change shadow radius and shadow offset, please also update
     // kShadowPaddingAbove.
-    const SkColor kShadowColor[] = {
-      SkColorSetARGB(0xCC, 0, 0, 0),
-      SkColorSetARGB(0x33, 0, 0, 0),
-      SkColorSetARGB(0x4C, 0, 0, 0),
+    const gfx::ShadowValue kShadows[] = {
+      gfx::ShadowValue(gfx::Point(0, 0), 2, SkColorSetARGB(0xCC, 0, 0, 0)),
+      gfx::ShadowValue(gfx::Point(0, 4), 4, SkColorSetARGB(0x33, 0, 0, 0)),
+      gfx::ShadowValue(gfx::Point(0, 5), 10, SkColorSetARGB(0x4C, 0, 0, 0)),
     };
-    const gfx::Point kShadowOffset[] = {
-      gfx::Point(0, 0),
-      gfx::Point(0, 4),
-      gfx::Point(0, 5),
-    };
-    const SkScalar kShadowRadius[] = {
-      SkIntToScalar(2),
-      SkIntToScalar(4),
-      SkIntToScalar(10),
-    };
-
-    if (cancel_flag_.IsSet())
-      return;
-
-    if (size_ != gfx::Size(bitmap_.width(), bitmap_.height()))
-      bitmap_ = SkBitmapOperations::CreateResizedBitmap(bitmap_, size_);
-
-    if (cancel_flag_.IsSet())
-      return;
 
     bitmap_ = SkBitmapOperations::CreateDropShadow(
-        bitmap_,
-        arraysize(kShadowColor),
-        kShadowColor,
-        kShadowOffset,
-        kShadowRadius);
+        bitmap_, gfx::ShadowValues(kShadows, kShadows + arraysize(kShadows)));
   }
 
   void Cancel() {

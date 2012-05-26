@@ -8,6 +8,7 @@
 
 #include "ash/launcher/launcher_button_host.h"
 #include "grit/ui_resources.h"
+#include "skia/ext/image_operations.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/throb_animation.h"
@@ -16,6 +17,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/image_view.h"
 
@@ -123,28 +125,14 @@ LauncherButton::~LauncherButton() {
 }
 
 void LauncherButton::SetShadowedImage(const SkBitmap& bitmap) {
-  const SkColor kShadowColor[] = {
-    SkColorSetARGB(0x1A, 0, 0, 0),
-    SkColorSetARGB(0x1A, 0, 0, 0),
-    SkColorSetARGB(0x54, 0, 0, 0),
-  };
-  const gfx::Point kShadowOffset[] = {
-    gfx::Point(0, 2),
-    gfx::Point(0, 3),
-    gfx::Point(0, 0),
-  };
-  const SkScalar kShadowRadius[] = {
-    SkIntToScalar(0),
-    SkIntToScalar(1),
-    SkIntToScalar(1),
+  const gfx::ShadowValue kShadows[] = {
+    gfx::ShadowValue(gfx::Point(0, 2), 0, SkColorSetARGB(0x1A, 0, 0, 0)),
+    gfx::ShadowValue(gfx::Point(0, 3), 1, SkColorSetARGB(0x1A, 0, 0, 0)),
+    gfx::ShadowValue(gfx::Point(0, 0), 1, SkColorSetARGB(0x54, 0, 0, 0)),
   };
 
   SkBitmap shadowed_bitmap = SkBitmapOperations::CreateDropShadow(
-      bitmap,
-      arraysize(kShadowColor) - 1,
-      kShadowColor,
-      kShadowOffset,
-      kShadowRadius);
+      bitmap, gfx::ShadowValues(kShadows, kShadows + arraysize(kShadows)));
   icon_view_->SetImage(shadowed_bitmap);
 }
 
@@ -176,8 +164,8 @@ void LauncherButton::SetImage(const SkBitmap& image) {
     return;
   }
 
-  SkBitmap resized_image = SkBitmapOperations::CreateResizedBitmap(
-      image, gfx::Size(width, height));
+  SkBitmap resized_image = skia::ImageOperations::Resize(
+      image, skia::ImageOperations::RESIZE_BEST, width, height);
   SetShadowedImage(resized_image);
 }
 

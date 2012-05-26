@@ -14,6 +14,7 @@
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
@@ -743,30 +744,6 @@ SkBitmap SkBitmapOperations::CreateTransposedBtmap(const SkBitmap& image) {
 }
 
 // static
-SkBitmap SkBitmapOperations::CreateResizedBitmap(const SkBitmap& bitmap,
-                                                 const gfx::Size& size) {
-  DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
-
-  SkBitmap src = bitmap;
-  src.buildMipMap(false);
-
-  SkBitmap resized;
-  resized.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
-  resized.allocPixels();
-  resized.eraseARGB(0, 0, 0, 0);
-
-  SkCanvas canvas(resized);
-
-  SkIRect src_rect = SkIRect::MakeWH(src.width(), src.height());
-  SkRect dst_rect = SkRect::MakeWH(size.width(), size.height());
-
-  SkPaint paint;
-  paint.setFilterBitmap(true);
-  canvas.drawBitmapRect(src, &src_rect, dst_rect, &paint);
-  return resized;
-}
-
-// static
 SkBitmap SkBitmapOperations::CreateColorMask(const SkBitmap& bitmap,
                                              SkColor c) {
   DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
@@ -788,43 +765,41 @@ SkBitmap SkBitmapOperations::CreateColorMask(const SkBitmap& bitmap,
 }
 
 // static
-SkBitmap SkBitmapOperations::CreateDropShadow(const SkBitmap& bitmap,
-                                              int shadow_count,
-                                              const SkColor* shadow_color,
-                                              const gfx::Point* shadow_offset,
-                                              const SkScalar* shadow_radius) {
+SkBitmap SkBitmapOperations::CreateDropShadow(
+    const SkBitmap& bitmap,
+    const gfx::ShadowValues& shadows) {
   DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
 
-  int padding = 0;
-  for (int i = 0; i < shadow_count; ++i) {
-    int shadow_space = std::max(abs(shadow_offset[i].x()),
-                                abs(shadow_offset[i].y())) + shadow_radius[i];
-    if (shadow_space > padding)
-      padding = shadow_space;
-  }
+  // Shadow margin insets are negative values because they grow outside.
+  // Negate them here as grow direction is not important and only pixel value
+  // is of interest here.
+  gfx::Insets shadow_margin = -gfx::ShadowValue::GetMargin(shadows);
 
   SkBitmap image_with_shadow;
   image_with_shadow.setConfig(SkBitmap::kARGB_8888_Config,
-                              bitmap.width() + 2 * padding,
-                              bitmap.height() + 2 * padding);
+                              bitmap.width() + shadow_margin.width(),
+                              bitmap.height() + shadow_margin.height());
   image_with_shadow.allocPixels();
   image_with_shadow.eraseARGB(0, 0, 0, 0);
 
   SkCanvas canvas(image_with_shadow);
-  canvas.translate(SkIntToScalar(padding), SkIntToScalar(padding));
+  canvas.translate(SkIntToScalar(shadow_margin.left()),
+                   SkIntToScalar(shadow_margin.top()));
 
   SkPaint paint;
-  for (int i = 0; i < shadow_count; ++i) {
-    SkBitmap shadow = SkBitmapOperations::CreateColorMask(bitmap,
-                                                          shadow_color[i]);
+  for (size_t i = 0; i < shadows.size(); ++i) {
+    const gfx::ShadowValue& shadow = shadows[i];
+    SkBitmap shadow_image = SkBitmapOperations::CreateColorMask(bitmap,
+                                                                shadow.color());
 
     paint.setImageFilter(
-        new SkBlurImageFilter(shadow_radius[i], shadow_radius[i]))->unref();
+        new SkBlurImageFilter(SkDoubleToScalar(shadow.blur()),
+                              SkDoubleToScalar(shadow.blur())))->unref();
 
     canvas.saveLayer(0, &paint);
-    canvas.drawBitmap(shadow,
-                      SkIntToScalar(shadow_offset[i].x()),
-                      SkIntToScalar(shadow_offset[i].y()));
+    canvas.drawBitmap(shadow_image,
+                      SkIntToScalar(shadow.x()),
+                      SkIntToScalar(shadow.y()));
     canvas.restore();
   }
 
