@@ -10,17 +10,12 @@ function load() {
   var params = getUrlSearchParams(location.search);
 
   // Setup localized strings.
-  var signInTitle = $('sign-in-title');
-  var emailLabel = $('email-label');
-  var passwordLabel = $('password-label');
-  var submitButton = $('submit-button');
-  var errorSpan = $('errormsg-alert');
-
-  signInTitle.textContent = decodeURIComponent(params['stringSignIn']);
-  emailLabel.textContent = decodeURIComponent(params['stringEmail']);
-  passwordLabel.textContent = decodeURIComponent(params['stringPassword']);
-  submitButton.value = decodeURIComponent(params['stringSignIn']);
-  errorSpan.textContent = decodeURIComponent(params['stringError']);
+  $('sign-in-title').textContent = decodeURIComponent(params['stringSignIn']);
+  $('email-label').textContent = decodeURIComponent(params['stringEmail']);
+  $('password-label').textContent =
+      decodeURIComponent(params['stringPassword']);
+  $('submit-button').value = decodeURIComponent(params['stringSignIn']);
+  $('errormsg-alert').textContent = decodeURIComponent(params['stringError']);
 
   // Setup actions.
   var form = $('offline-login-form');

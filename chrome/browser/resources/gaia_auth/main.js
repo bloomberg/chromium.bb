@@ -1,3 +1,7 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 function Authenticator() {
 }
 
@@ -26,8 +30,6 @@ Authenticator.prototype = {
   PARENT_PAGE: 'chrome://oobe/',
 
   initialize: function() {
-    console.log('### Authenticator.initialize');
-
     var params = getUrlSearchParams(location.search);
     this.gaiaOrigin_ = params['gaiaOrigin'] || this.GAIA_PAGE_ORIGIN;
     this.gaiaUrlPath_ = params['gaiaUrlPath'] || '';
@@ -71,7 +73,6 @@ Authenticator.prototype = {
   },
 
   loadFrame_: function() {
-    console.log('Authenticator loading GAIA frame from ' + this.getFrameUrl_());
     $('gaia-frame').src = this.getFrameUrl_();
   },
 
@@ -85,12 +86,10 @@ Authenticator.prototype = {
       'method': 'loginUILoaded'
     };
     window.parent.postMessage(msg, this.PARENT_PAGE);
-    console.log('### Authenticator.onLoginUILoaded.');
   },
 
   onMessage: function(e) {
     var msg = e.data;
-    console.log('#### Authenticator.onMessage: method=' + msg.method);
     if (msg.method == 'attemptLogin' && this.isGaiaMessage_(e)) {
       this.email_ = msg.email;
       this.password_ = msg.password;
@@ -117,6 +116,5 @@ Authenticator.prototype = {
   }
 };
 
-console.log('#### main.html start');
 Authenticator.getInstance().initialize();
 
