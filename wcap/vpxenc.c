@@ -316,12 +316,22 @@ struct input_state
     struct wcap_decoder  *wcap;
 };
 
-static inline int rgb_to_yuv(uint32_t p, int *u, int *v)
+static inline int rgb_to_yuv(uint32_t format, uint32_t p, int *u, int *v)
 {
-	int r = (p >> 16) & 0xff;
-	int g = (p >> 8) & 0xff;
-	int b = (p >> 0) & 0xff;
-	int y;
+	int r, g, b, y;
+
+	switch (format) {
+	case WCAP_FORMAT_XRGB8888:
+		r = (p >> 16) & 0xff;
+		g = (p >> 8) & 0xff;
+		b = (p >> 0) & 0xff;
+		break;
+	case WCAP_FORMAT_XBGR8888:
+		r = (p >> 0) & 0xff;
+		g = (p >> 8) & 0xff;
+		b = (p >> 16) & 0xff;
+		break;
+	}
 
 	y = 0.299 * r + 0.587 * g + 0.114 * b;
 	if (y > 255)
@@ -348,6 +358,7 @@ static void convert_to_yv12(struct wcap_decoder *wcap, vpx_image_t *img)
 	unsigned char *y1, *y2, *u, *v;
 	uint32_t *p1, *p2, *end;
 	int i, u_accum, v_accum;
+	uint32_t format = wcap->format;
 
 	for (i = 0; i < wcap->height; i += 2) {
 		y1 = img->planes[0] + img->stride[0] * i;
@@ -361,10 +372,10 @@ static void convert_to_yv12(struct wcap_decoder *wcap, vpx_image_t *img)
 		while (p1 < end) {
 			u_accum = 0;
 			v_accum = 0;
-			y1[0] = rgb_to_yuv(p1[0], &u_accum, &v_accum);
-			y1[1] = rgb_to_yuv(p1[1], &u_accum, &v_accum);
-			y2[0] = rgb_to_yuv(p2[0], &u_accum, &v_accum);
-			y2[1] = rgb_to_yuv(p2[1], &u_accum, &v_accum);
+			y1[0] = rgb_to_yuv(format, p1[0], &u_accum, &v_accum);
+			y1[1] = rgb_to_yuv(format, p1[1], &u_accum, &v_accum);
+			y2[0] = rgb_to_yuv(format, p2[0], &u_accum, &v_accum);
+			y2[1] = rgb_to_yuv(format, p2[1], &u_accum, &v_accum);
 			u[0] = clamp_uv(u_accum);
 			v[0] = clamp_uv(v_accum);
 

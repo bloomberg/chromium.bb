@@ -120,6 +120,7 @@ wcap_decoder_create(const char *filename)
 			    PROT_READ, MAP_PRIVATE, decoder->fd, 0);
 		
 	header = decoder->map;
+	decoder->format = header->format;
 	decoder->width = header->width;
 	decoder->height = header->height;
 	decoder->p = header + 1;
