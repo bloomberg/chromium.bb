@@ -1344,7 +1344,7 @@ void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
                                         int index,
                                         bool user_gesture) {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::ActiveTabChanged");
-  if (old_contents && !old_contents->web_contents()->IsBeingDestroyed())
+  if (old_contents && !old_contents->in_destructor())
     old_contents->web_contents()->GetView()->StoreFocus();
 
   // Update various elements that are interested in knowing the current

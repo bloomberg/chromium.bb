@@ -20,6 +20,8 @@
 #include "content/test/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+class TabContentsWrapper;
+
 // TestNotificationObserver ---------------------------------------------------
 
 namespace {
@@ -241,8 +243,8 @@ void GoogleURLTrackerTest::SetSearchPending(const GURL& search_url,
     google_url_tracker_->OnNavigationPending(
         content::Source<content::NavigationController>(
             reinterpret_cast<content::NavigationController*>(unique_id)),
-        content::Source<content::WebContents>(
-            reinterpret_cast<content::WebContents*>(unique_id)),
+        content::Source<TabContentsWrapper>(
+            reinterpret_cast<TabContentsWrapper*>(unique_id)),
         reinterpret_cast<InfoBarTabHelper*>(unique_id), search_url);
   }
 }
@@ -253,20 +255,20 @@ void GoogleURLTrackerTest::CommitSearch(int unique_id) {
   if (google_url_tracker_->registrar_.IsRegistered(google_url_tracker_.get(),
       content::NOTIFICATION_NAV_ENTRY_COMMITTED, source)) {
     google_url_tracker_->OnNavigationCommittedOrTabClosed(source,
-        content::Source<content::WebContents>(
-            reinterpret_cast<content::WebContents*>(unique_id)),
+        content::Source<TabContentsWrapper>(
+            reinterpret_cast<TabContentsWrapper*>(unique_id)),
         reinterpret_cast<InfoBarTabHelper*>(unique_id), true);
   }
 }
 
 void GoogleURLTrackerTest::CloseTab(int unique_id) {
   unique_ids_seen_.erase(unique_id);
-  content::Source<content::WebContents> source(
-      reinterpret_cast<content::WebContents*>(unique_id));
+  content::Source<TabContentsWrapper> source(
+      reinterpret_cast<TabContentsWrapper*>(unique_id));
   InfoBarTabHelper* infobar_helper =
       reinterpret_cast<InfoBarTabHelper*>(unique_id);
   if (google_url_tracker_->registrar_.IsRegistered(google_url_tracker_.get(),
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED, source)) {
+      chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED, source)) {
     google_url_tracker_->OnNavigationCommittedOrTabClosed(
         content::Source<content::NavigationController>(
             reinterpret_cast<content::NavigationController*>(unique_id)),

@@ -138,9 +138,9 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
 
   // Called by Observe() after SearchCommitted() registers notification
   // listeners, to indicate that we've received the "load now pending"
-  // notification.  |navigation_controller_source| and |web_contents_source| are
+  // notification.  |navigation_controller_source| and |tab_contents_source| are
   // NotificationSources pointing to the associated NavigationController and
-  // WebContents, respectively, for this load; |infobar_helper| is the
+  // TabContentsWrapper, respectively, for this load; |infobar_helper| is the
   // InfoBarTabHelper of the associated tab; and |search_url| is the actual
   // search performed by the user, which if necessary we'll re-do on a new
   // domain later.  This function creates a (still-invisible) InfoBarDelegate
@@ -148,7 +148,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // notification that will tell us it's safe to show the infobar.
   void OnNavigationPending(
       const content::NotificationSource& navigation_controller_source,
-      const content::NotificationSource& web_contents_source,
+      const content::NotificationSource& tab_contents_source,
       InfoBarTabHelper* infobar_helper,
       const GURL& search_url);
 
@@ -159,7 +159,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // opposed to tab closue (which means we should delete the infobar).
   void OnNavigationCommittedOrTabClosed(
       const content::NotificationSource& navigation_controller_source,
-      const content::NotificationSource& web_contents_source,
+      const content::NotificationSource& tab_contents_source,
       const InfoBarTabHelper* infobar_helper,
       bool navigated);
 

@@ -105,6 +105,9 @@ class TabContentsWrapper : public content::WebContentsObserver {
   // Returns the Profile that is associated with this TabContentsWrapper.
   Profile* profile() const;
 
+  // True if this TabContentsWrapper is being torn down.
+  bool in_destructor() const { return in_destructor_; }
+
   // Tab Helpers ---------------------------------------------------------------
 
   AutocompleteHistoryManager* autocomplete_history_manager() {

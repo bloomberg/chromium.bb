@@ -397,12 +397,6 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  // TAB_CONTENTS_DISCONNECTED should be enough to know when to remove a
-  // resource.  This is an attempt at mitigating a crasher that seem to
-  // indicate a resource is still referencing a deleted WebContents
-  // (http://crbug.com/7321).
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_INSTANT_COMMITTED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
@@ -420,9 +414,6 @@ void TaskManagerTabContentsResourceProvider::StopUpdating() {
       content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Remove(
       this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-      content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(
-      this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Remove(
       this, chrome::NOTIFICATION_INSTANT_COMMITTED,
@@ -520,12 +511,6 @@ void TaskManagerTabContentsResourceProvider::Observe(int type,
       Remove(tab_contents);
       Add(tab_contents);
       break;
-    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
-      // If this DCHECK is triggered, it could explain http://crbug.com/7321 .
-      DCHECK(resources_.find(tab_contents) ==
-             resources_.end()) << "TAB_CONTENTS_DESTROYED with no associated "
-                                  "TAB_CONTENTS_DISCONNECTED";
-      // Fall through.
     case content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED:
       Remove(tab_contents);
       break;

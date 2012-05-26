@@ -151,13 +151,13 @@
 
   for (int i = 0; i < browser_->tab_count(); ++i) {
     // Check to see if tab is closing.
-    if (browser_->GetWebContentsAt(i)->IsBeingDestroyed()) {
+    TabContentsWrapper* tab_contents = browser_->GetTabContentsWrapperAt(i);
+    if (tab_contents->in_destructor()) {
       continue;
     }
 
     scoped_nsobject<TabAppleScript> tab(
-        [[TabAppleScript alloc]
-            initWithTabContent:(browser_->GetTabContentsWrapperAt(i))]);
+        [[TabAppleScript alloc] initWithTabContent:tab_contents]);
     [tab setContainer:self
              property:AppleScript::kTabsProperty];
     [tabs addObject:tab];

@@ -384,48 +384,49 @@ void GoogleURLTracker::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       content::NavigationController* controller =
           content::Source<content::NavigationController>(source).ptr();
-      content::WebContents* contents = controller->GetWebContents();
+      TabContentsWrapper* tab_contents =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              controller->GetWebContents());
       OnNavigationPending(source,
-          content::Source<content::WebContents>(contents),
-          TabContentsWrapper::GetCurrentWrapperForContents(contents)->
-              infobar_tab_helper(), controller->GetPendingEntry()->GetURL());
+                          content::Source<TabContentsWrapper>(tab_contents),
+                          tab_contents->infobar_tab_helper(),
+                          controller->GetPendingEntry()->GetURL());
       break;
     }
 
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      content::WebContents* contents =
-          content::Source<content::NavigationController>(source)->
-              GetWebContents();
+      TabContentsWrapper* tab_contents =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              content::Source<content::NavigationController>(source)->
+                  GetWebContents());
       OnNavigationCommittedOrTabClosed(source,
-          content::Source<content::WebContents>(contents),
-          TabContentsWrapper::GetCurrentWrapperForContents(contents)->
-              infobar_tab_helper(), true);
+          content::Source<TabContentsWrapper>(tab_contents),
+          tab_contents->infobar_tab_helper(), true);
       break;
     }
 
-    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
-      content::WebContents* contents =
-          content::Source<content::WebContents>(source).ptr();
+    case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
+      TabContentsWrapper* tab_contents =
+          content::Source<TabContentsWrapper>(source).ptr();
       OnNavigationCommittedOrTabClosed(
-          content::Source<content::NavigationController>(&contents->
-              GetController()), source,
-          TabContentsWrapper::GetCurrentWrapperForContents(contents)->
-              infobar_tab_helper(), false);
+          content::Source<content::NavigationController>(
+              &tab_contents->web_contents()->GetController()), source,
+          tab_contents->infobar_tab_helper(), false);
       break;
     }
 
     case chrome::NOTIFICATION_INSTANT_COMMITTED: {
-      TabContentsWrapper* wrapper =
+      TabContentsWrapper* tab_contents =
           content::Source<TabContentsWrapper>(source).ptr();
-      content::WebContents* contents = wrapper->web_contents();
+      content::WebContents* web_contents = tab_contents->web_contents();
       content::Source<content::NavigationController> source(
-          &contents->GetController());
-      content::Source<content::WebContents> contents_source(contents);
-      InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
-      OnNavigationPending(source, contents_source, infobar_helper,
-                          contents->GetURL());
-      OnNavigationCommittedOrTabClosed(source, contents_source, infobar_helper,
-                                       true);
+          &web_contents->GetController());
+      content::Source<TabContentsWrapper> tab_contents_source(tab_contents);
+      InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+      OnNavigationPending(source, tab_contents_source, infobar_helper,
+                          web_contents->GetURL());
+      OnNavigationCommittedOrTabClosed(source, tab_contents_source,
+                                       infobar_helper, true);
       break;
     }
 
@@ -459,7 +460,7 @@ void GoogleURLTracker::SearchCommitted() {
 
 void GoogleURLTracker::OnNavigationPending(
     const content::NotificationSource& navigation_controller_source,
-    const content::NotificationSource& web_contents_source,
+    const content::NotificationSource& tab_contents_source,
     InfoBarTabHelper* infobar_helper,
     const GURL& search_url) {
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
@@ -468,7 +469,7 @@ void GoogleURLTracker::OnNavigationPending(
       content::NotificationService::AllBrowserContextsAndSources());
 
   if (registrar_.IsRegistered(this,
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED, web_contents_source)) {
+      chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED, tab_contents_source)) {
     // If the previous load hasn't committed and the user triggers a new load,
     // we don't need to re-register our listeners; just kill the old,
     // never-shown infobar (to be replaced by a new one below).
@@ -482,8 +483,8 @@ void GoogleURLTracker::OnNavigationPending(
     // tab since this navigation will close it.
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    navigation_controller_source);
-    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                   web_contents_source);
+    registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+                   tab_contents_source);
   }
 
   infobar_map_[infobar_helper] = (*infobar_creator_)(infobar_helper, search_url,
@@ -492,13 +493,13 @@ void GoogleURLTracker::OnNavigationPending(
 
 void GoogleURLTracker::OnNavigationCommittedOrTabClosed(
     const content::NotificationSource& navigation_controller_source,
-    const content::NotificationSource& web_contents_source,
+    const content::NotificationSource& tab_contents_source,
     const InfoBarTabHelper* infobar_helper,
     bool navigated) {
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                     navigation_controller_source);
-  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                    web_contents_source);
+  registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+                    tab_contents_source);
 
   InfoBarMap::iterator i(infobar_map_.find(infobar_helper));
   DCHECK(i != infobar_map_.end());

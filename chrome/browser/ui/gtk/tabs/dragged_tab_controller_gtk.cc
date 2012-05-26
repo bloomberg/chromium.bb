@@ -18,8 +18,8 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/gfx/screen.h"
@@ -163,10 +163,8 @@ DraggedTabData DraggedTabControllerGtk::InitDraggedTabData(TabGtk* tab) {
 
   DraggedTabData dragged_tab_data(tab, contents, original_delegate,
                                   source_model_index, pinned, mini);
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<WebContents>(dragged_tab_data.contents_->web_contents()));
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+      content::Source<TabContentsWrapper>(dragged_tab_data.contents_));
   return dragged_tab_data;
 }
 
@@ -227,13 +225,15 @@ void DraggedTabControllerGtk::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
-  WebContents* destroyed_contents = content::Source<WebContents>(source).ptr();
+  DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED, type);
+  TabContentsWrapper* destroyed_tab_contents =
+      content::Source<TabContentsWrapper>(source).ptr();
+  WebContents* destroyed_web_contents = destroyed_tab_contents->web_contents();
   for (size_t i = 0; i < drag_data_->size(); ++i) {
-    if (drag_data_->get(i)->contents_->web_contents() == destroyed_contents) {
+    if (drag_data_->get(i)->contents_ == destroyed_tab_contents) {
       // One of the tabs we're dragging has been destroyed. Cancel the drag.
-      if (destroyed_contents->GetDelegate() == this)
-        destroyed_contents->SetDelegate(NULL);
+      if (destroyed_web_contents->GetDelegate() == this)
+        destroyed_web_contents->SetDelegate(NULL);
       drag_data_->get(i)->contents_ = NULL;
       drag_data_->get(i)->original_delegate_ = NULL;
       EndDragImpl(TAB_DESTROYED);
@@ -845,10 +845,8 @@ void DraggedTabControllerGtk::CleanUpDraggedTabs() {
   if (attached_tabstrip_ != source_tabstrip_) {
     for (size_t i = 0; i < drag_data_->size(); ++i) {
       if (drag_data_->get(i)->contents_) {
-        registrar_.Remove(
-            this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-            content::Source<WebContents>(
-                drag_data_->get(i)->contents_->web_contents()));
+        registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+            content::Source<TabContentsWrapper>(drag_data_->get(i)->contents_));
       }
       source_tabstrip_->DestroyDraggedTab(drag_data_->get(i)->tab_);
       drag_data_->get(i)->tab_ = NULL;

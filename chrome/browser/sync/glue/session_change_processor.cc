@@ -139,19 +139,15 @@ void SessionChangeProcessor::Observe(
       break;
     }
 
-    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
+    case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
       TabContentsWrapper* tab_contents_wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              content::Source<WebContents>(source).ptr());
-      if (!tab_contents_wrapper) {
-        return;
-      }
+          content::Source<TabContentsWrapper>(source).ptr();
       SyncedTabDelegate* tab = tab_contents_wrapper->synced_tab_delegate();
       if (!tab || tab->profile() != profile_) {
         return;
       }
       modified_tabs.push_back(tab);
-      DVLOG(1) << "Received NOTIFICATION_WEB_CONTENTS_DESTROYED for profile "
+      DVLOG(1) << "Received NOTIFICATION_TAB_CONTENTS_DESTROYED for profile "
                << profile_;
       break;
     }
@@ -354,8 +350,7 @@ void SessionChangeProcessor::StartObserving() {
     return;
   notification_registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
       content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
       content::NotificationService::AllSources());

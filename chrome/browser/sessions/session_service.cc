@@ -508,7 +508,7 @@ void SessionService::Init() {
   // Register for the notifications we're interested in.
   registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
                  content::NotificationService::AllSources());
@@ -603,18 +603,15 @@ void SessionService::Observe(int type,
       break;
     }
 
-    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
+    case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
       TabContentsWrapper* tab =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              content::Source<content::WebContents>(source).ptr());
+          content::Source<TabContentsWrapper>(source).ptr();
       if (!tab || tab->profile() != profile())
         return;
       TabClosed(tab->restore_tab_helper()->window_id(),
                 tab->restore_tab_helper()->session_id(),
                 tab->web_contents()->GetClosedByUserGesture());
-      RecordSessionUpdateHistogramData(
-          content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-          &last_updated_tab_closed_time_);
+      RecordSessionUpdateHistogramData(type, &last_updated_tab_closed_time_);
       break;
     }
 
@@ -1581,7 +1578,7 @@ void SessionService::RecordSessionUpdateHistogramData(int type,
         RecordUpdatedSaveTime(delta, use_long_period);
         RecordUpdatedSessionNavigationOrTab(delta, use_long_period);
         break;
-      case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
+      case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED:
         RecordUpdatedTabClosed(delta, use_long_period);
         RecordUpdatedSessionNavigationOrTab(delta, use_long_period);
         break;

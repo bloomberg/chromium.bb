@@ -73,7 +73,7 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
       order_controller_(NULL) {
   DCHECK(delegate_);
   registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -1006,11 +1006,12 @@ void TabStripModel::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
+    case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
       // Sometimes, on qemu, it seems like a WebContents object can be destroyed
       // while we still have a reference to it. We need to break this reference
       // here so we don't crash later.
-      int index = GetWrapperIndex(content::Source<WebContents>(source).ptr());
+      int index = GetIndexOfTabContents(
+          content::Source<TabContentsWrapper>(source).ptr());
       if (index != TabStripModel::kNoTab) {
         // Note that we only detach the contents here, not close it - it's
         // already been closed. We just want to undo our bookkeeping.

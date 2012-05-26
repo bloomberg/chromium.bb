@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ SessionID::id_type TabContentsWrapperSyncedTabDelegate::GetSessionId() const {
 }
 
 bool TabContentsWrapperSyncedTabDelegate::IsBeingDestroyed() const {
-  return tab_contents_wrapper_->web_contents()->IsBeingDestroyed();
+  return tab_contents_wrapper_->in_destructor();
 }
 
 Profile* TabContentsWrapperSyncedTabDelegate::profile() const {
