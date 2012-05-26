@@ -712,8 +712,6 @@
   'CHROMEOS_ACCESSIBILITY': {
     'chromeos': [
       'chromeos_accessibility',
-      # crosbug.com/26731
-      '-chromeos_accessibility.AccessibilityTest.testPagePerformance',
     ],
   },
 
