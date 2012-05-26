@@ -86,7 +86,7 @@ class FlimflamManagerClientImpl : public FlimflamManagerClient {
                                  flimflam::kSetPropertyFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
-    dbus::AppendBasicTypeValueData(&writer, value);
+    FlimflamClientHelper::AppendValueDataAsVariant(&writer, value);
     helper_.CallVoidMethod(&method_call, callback);
   }
 
