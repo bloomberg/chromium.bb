@@ -150,11 +150,6 @@ void ImageTransportHelper::SetScheduled(bool is_scheduled) {
   if (!scheduler)
     return;
 
-  if (is_scheduled) {
-    TRACE_EVENT_ASYNC_END0("gpu", "Descheduled", this);
-  } else {
-    TRACE_EVENT_ASYNC_BEGIN0("gpu", "Descheduled", this);
-  }
   scheduler->SetScheduled(is_scheduled);
 }
 

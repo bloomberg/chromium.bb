@@ -107,6 +107,7 @@ void GpuScheduler::SetScheduled(bool scheduled) {
     DCHECK_GE(unscheduled_count_, 0);
 
     if (unscheduled_count_ == 0) {
+      TRACE_EVENT_ASYNC_END1("gpu", "Descheduled", this, "GpuScheduler", this);
       // When the scheduler transitions from the unscheduled to the scheduled
       // state, cancel the task that would reschedule it after a timeout.
       reschedule_task_factory_.InvalidateWeakPtrs();
@@ -116,6 +117,8 @@ void GpuScheduler::SetScheduled(bool scheduled) {
     }
   } else {
     if (unscheduled_count_ == 0) {
+      TRACE_EVENT_ASYNC_BEGIN1("gpu", "Descheduled", this,
+                               "GpuScheduler", this);
 #if defined(OS_WIN)
       // When the scheduler transitions from scheduled to unscheduled, post a
       // delayed task that it will force it back into a scheduled state after a
