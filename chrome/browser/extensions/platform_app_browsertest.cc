@@ -298,11 +298,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ExtensionWindowingApis) {
 #if !defined(OS_CHROMEOS)
 // Tests that command line parameters get passed through to platform apps
 // via launchData correctly when launching with a file.
+// TODO(benwells): fix this test for Linux (http://crbug.com/129885).
+#if !defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFile) {
   SetCommandLineArg( "platform_apps/launch_files/test.txt");
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_file"))
       << message_;
 }
+#endif  // defined(OS_LINUX)
 
 // Tests that no launch data is sent through if the platform app provides
 // an intent with the wrong action.
