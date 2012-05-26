@@ -426,6 +426,7 @@ void Canvas::TileImageInt(const gfx::ImageSkia& image,
 
   paint.setShader(shader);
   paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  shader->unref();
 
   SkRect dest_rect = { SkIntToScalar(dest_x),
                        SkIntToScalar(dest_y),
