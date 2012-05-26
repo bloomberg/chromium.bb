@@ -83,7 +83,47 @@
         "nodoc": true,
         "name": "onLaunched",
         "type": "function",
-        "description": "Fired when the app is launched."
+        "description": "Fired when the app is launched.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "launchData",
+            "description": "Optional data for the launch.",
+            "optional": true,
+            "properties": {
+              "intent": {
+                "type": "object",
+                "description": "File being opened in the form of a WebIntents intent object.",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "description": "The WebIntent being invoked."
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "The MIME type of the file being opened."
+                  },
+                  "data": {
+                    "type": "object",
+                    "isInstanceOf": "FileEntry",
+                    "description": "A FileEntry for the file being opened.",
+                    "additionalProperties": {
+                      "type": "any"
+                    }
+                  },
+                  "postResult": {
+                    "type": "function",
+                    "description": "Null callback to be compatible with WebIntents."
+                  },
+                  "postFailure": {
+                    "type": "function",
+                    "description": "Null callback to be compatible with WebIntents."
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
     ]
   }

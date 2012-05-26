@@ -4,8 +4,10 @@
 
 #include "chrome/browser/extensions/api/app/app_api.h"
 
+#include "base/json/json_writer.h"
 #include "base/values.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -119,6 +121,29 @@ void AppEventRouter::DispatchOnLaunchedEvent(
     Profile* profile, const Extension* extension) {
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension->id(), kOnLaunchedEvent, "[]", NULL, GURL());
+}
+
+// static.
+void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
+    Profile* profile, const Extension* extension, const string16& action,
+    const std::string& file_system_id, const FilePath& base_name) {
+  ListValue args;
+  DictionaryValue* launch_data = new DictionaryValue();
+  DictionaryValue* intent = new DictionaryValue();
+  intent->SetString("action", UTF16ToUTF8(action));
+  launch_data->Set("intent", intent);
+  intent->SetString("type", "chrome-extension://fileentry");
+  args.Append(launch_data);
+  args.Append(Value::CreateStringValue(file_system_id));
+#if defined(OS_WIN)
+  args.Append(Value::CreateStringValue(UTF16ToUTF8(base_name.value())));
+#else
+  args.Append(Value::CreateStringValue(base_name.value()));
+#endif
+  std::string json_args;
+  base::JSONWriter::Write(&args, &json_args);
+  profile->GetExtensionEventRouter()->DispatchEventToExtension(
+      extension->id(), kOnLaunchedEvent, json_args, NULL, GURL());
 }
 
 }  // namespace extensions

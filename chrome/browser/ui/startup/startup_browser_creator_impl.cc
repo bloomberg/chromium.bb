@@ -427,7 +427,8 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(Profile* profile) {
 
     RecordCmdLineAppHistogram();
     WebContents* tab_in_app_window = application_launch::OpenApplication(
-        profile, extension, launch_container, GURL(), NEW_WINDOW);
+        profile, extension, launch_container, GURL(), NEW_WINDOW,
+        &command_line_);
     // Platform apps fire off a launch event which may or may not open a window.
     return (tab_in_app_window != NULL || extension->is_platform_app());
   }

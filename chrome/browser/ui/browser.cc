@@ -48,7 +48,6 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_started_animation.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/extensions/api/app/app_api.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps_trial.h"

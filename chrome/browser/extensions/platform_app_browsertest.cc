@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -77,7 +77,8 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
         extension,
         extension_misc::LAUNCH_NONE,
         GURL(),
-        NEW_WINDOW);
+        NEW_WINDOW,
+        NULL);
 
     app_loaded_observer.Wait();
 
@@ -127,6 +128,26 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   size_t GetShellWindowCount() {
     return ShellWindowRegistry::Get(browser()->profile())->
         shell_windows().size();
+  }
+
+  // The command line already has an argument on it - about:blank, which
+  // is set by InProcessBrowserTest::PrepareTestCommandLine. For platform app
+  // launch tests we need to clear this.
+  void ClearCommandLineArgs() {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    CommandLine::StringVector args = command_line->GetArgs();
+    CommandLine::StringVector argv = command_line->argv();
+    for (size_t i = 0; i < args.size(); i++)
+      argv.pop_back();
+    command_line->InitFromArgv(argv);
+  }
+
+  void SetCommandLineArg(const std::string& test_file) {
+    ClearCommandLineArgs();
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    FilePath test_doc(test_data_dir_.AppendASCII(test_file));
+    test_doc = test_doc.NormalizePathSeparators();
+    command_line->AppendArgPath(test_doc);
   }
 };
 
@@ -272,3 +293,68 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ExtensionWindowingApis) {
   ASSERT_EQ(1U, RunGetWindowsFunctionForExtension(platform_app));
   ASSERT_EQ(1U, RunGetWindowsFunctionForExtension(platform_app2));
 }
+
+// TODO(benwells): fix these tests for ChromeOS.
+#if !defined(OS_CHROMEOS)
+// Tests that command line parameters get passed through to platform apps
+// via launchData correctly when launching with a file.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFile) {
+  SetCommandLineArg( "platform_apps/launch_files/test.txt");
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_file"))
+      << message_;
+}
+
+// Tests that no launch data is sent through if the platform app provides
+// an intent with the wrong action.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithWrongIntent) {
+  SetCommandLineArg("platform_apps/launch_files/test.txt");
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_wrong_intent"))
+      << message_;
+}
+
+// Tests that no launch data is sent through if the file is of the wrong MIME
+// type.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithWrongType) {
+  SetCommandLineArg("platform_apps/launch_files/test.txt");
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_wrong_type"))
+      << message_;
+}
+
+// Tests that no launch data is sent through if the platform app does not
+// provide an intent.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithNoIntent) {
+  SetCommandLineArg("platform_apps/launch_files/test.txt");
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_no_intent"))
+      << message_;
+}
+
+// Tests that no launch data is sent through if the file MIME type cannot
+// be read.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchNoType) {
+  SetCommandLineArg("platform_apps/launch_files/test.unknownextension");
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_invalid"))
+      << message_;
+}
+
+// Tests that no launch data is sent through if the file does not exist.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchNoFile) {
+  SetCommandLineArg("platform_apps/launch_files/doesnotexist.txt");
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_invalid"))
+      << message_;
+}
+
+// Tests that no launch data is sent through if the argument is a directory.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithDirectory) {
+  SetCommandLineArg("platform_apps/launch_files");
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_invalid"))
+      << message_;
+}
+
+// Tests that no launch data is sent through if there are no arguments passed
+// on the command line
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithNothing) {
+  ClearCommandLineArgs();
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_nothing"))
+      << message_;
+}
+#endif  // defined(OS_CHROMEOS)

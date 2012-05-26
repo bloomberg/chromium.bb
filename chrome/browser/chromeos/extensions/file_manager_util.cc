@@ -471,8 +471,8 @@ void OpenFileBrowser(const FilePath& path,
           GetLaunchContainer(extension, ExtensionPrefs::LAUNCH_DEFAULT);
 
   content::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
-  application_launch::OpenApplication(
-      profile, extension, launch_container, GURL(url), NEW_FOREGROUND_TAB);
+  application_launch::OpenApplication(profile, extension, launch_container,
+      GURL(url), NEW_FOREGROUND_TAB, NULL);
 }
 
 void ViewRemovableDrive(const FilePath& path) {

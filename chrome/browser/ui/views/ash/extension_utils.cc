@@ -32,12 +32,12 @@ void OpenExtension(Profile* profile,
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
     // Opens in a tab.
     application_launch::OpenApplication(
-        profile, extension, extension_misc::LAUNCH_TAB, url, disposition);
+        profile, extension, extension_misc::LAUNCH_TAB, url, disposition, NULL);
   } else if (disposition == NEW_WINDOW) {
     // Force a new window open.
     application_launch::OpenApplication(
         profile, extension, extension_misc::LAUNCH_WINDOW, url,
-        disposition);
+        disposition, NULL);
   } else {
     // Look at preference to find the right launch container.  If no preference
     // is set, launch as a regular tab.
@@ -47,7 +47,7 @@ void OpenExtension(Profile* profile,
 
     application_launch::OpenApplication(
         profile, extension, launch_container, GURL(url),
-        NEW_FOREGROUND_TAB);
+        NEW_FOREGROUND_TAB, NULL);
   }
 }
 

@@ -1790,13 +1790,13 @@ bool Extension::LoadWebIntentAction(const std::string& action_name,
   if (href.empty()) {
     if (is_hosted_app()) {
       href = launch_web_url();
-    } else if (is_packaged_app() || is_platform_app()) {
+    } else if (is_packaged_app()) {
       href = launch_local_path();
     }
   }
 
   // If we still don't have an href, the manifest is malformed.
-  if (href.empty()) {
+  if (href.empty() && !is_platform_app()) {
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidIntentHrefEmpty, action_name);
     return false;
@@ -1812,7 +1812,7 @@ bool Extension::LoadWebIntentAction(const std::string& action_name,
       return false;
     }
     service.service_url = service_url;
-  } else {
+  } else if (!is_platform_app()) {
     // We do not allow absolute intent URLs in non-hosted apps.
     if (service_url.is_valid()) {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(

@@ -1564,7 +1564,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
                                           extension_app,
                                           extension_misc::LAUNCH_WINDOW,
                                           GURL(),
-                                          NEW_WINDOW);
+                                          NEW_WINDOW,
+                                          NULL);
   ASSERT_TRUE(app_window);
 
   // Apps launched in a window from the NTP do not have extension_app set in

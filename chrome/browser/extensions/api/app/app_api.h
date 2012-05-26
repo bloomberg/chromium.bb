@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 class Profile;
+class GURL;
 
 namespace extensions {
 
@@ -34,9 +35,32 @@ class AppClearAllNotificationsFunction : public SyncExtensionFunction {
 
 class AppEventRouter {
  public:
-  // Dispatches the onLaunched event to the given app.
+  // Dispatches the onLaunched event to the given app, providing no launch
+  // data.
   static void DispatchOnLaunchedEvent(Profile* profile,
                                       const Extension* extension);
+
+  // Dispatches the onLaunched event to the given app, providing launch data of
+  // the form:
+  // {
+  //   "intent" : {
+  //     "action" : |action|,
+  //     "type" : "chrome-extension://fileentry",
+  //     "data" : a FileEntry,
+  //     "postResults" : a null function,
+  //     "postFailure" : a null function
+  //   }
+  // }
+
+  // launchData.intent.data and launchData.intent.postResults are created in a
+  // custom dispatch event in javascript. The FileEntry is created from
+  // |file_system_id| and |base_name|.
+  static void DispatchOnLaunchedEventWithFileEntry(
+      Profile* profile,
+      const Extension* extension,
+      const string16& action,
+      const std::string& file_system_id,
+      const FilePath& base_name);
 };
 
 }  // namespace extensions

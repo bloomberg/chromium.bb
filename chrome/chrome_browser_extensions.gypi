@@ -407,6 +407,8 @@
         'browser/extensions/pack_extension_job.h',
         'browser/extensions/page_action_controller.cc',
         'browser/extensions/page_action_controller.h',
+        'browser/extensions/platform_app_launcher.cc',
+        'browser/extensions/platform_app_launcher.h',
         'browser/extensions/pending_extension_info.cc',
         'browser/extensions/pending_extension_info.h',
         'browser/extensions/pending_extension_manager.cc',

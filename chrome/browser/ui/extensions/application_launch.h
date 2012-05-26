@@ -10,6 +10,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
+class CommandLine;
 class GURL;
 class Profile;
 
@@ -25,12 +26,17 @@ namespace application_launch {
 
 // Open |extension| in |container|, using |disposition| if container type is
 // TAB. Returns the WebContents* that was created or NULL. If non-empty,
-// |override_url| is used in place of the app launch url.
+// |override_url| is used in place of the app launch url. Pass relevant
+// information in |command_line| onto platform app as launch data.
+// |command_line| can be NULL, indicating there is no launch data to pass on.
+// TODO(benwells): Put the parameters to this into an ApplicationLaunchParams
+// struct.
 content::WebContents* OpenApplication(Profile* profile,
                                       const extensions::Extension* extension,
                                       extension_misc::LaunchContainer container,
                                       const GURL& override_url,
-                                      WindowOpenDisposition disposition);
+                                      WindowOpenDisposition disposition,
+                                      const CommandLine* command_line);
 
 #if defined(USE_ASH)
 // Opens |url| in a new application panel window for the specified url.

@@ -39,6 +39,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                                        int permissions) OVERRIDE;
   virtual void GrantReadFile(int child_id, const FilePath& file) OVERRIDE;
   virtual void GrantScheme(int child_id, const std::string& scheme) OVERRIDE;
+  virtual void GrantAccessFileSystem(int child_id,
+                                     const std::string& filesystem_id) OVERRIDE;
+  virtual bool CanReadFile(int child_id, const FilePath& file) OVERRIDE;
 
   // Pseudo schemes are treated differently than other schemes because they
   // cannot be requested like normal URLs.  There is no mechanism for revoking
@@ -77,9 +80,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Revokes all permissions granted to the given file.
   void RevokeAllPermissionsForFile(int child_id, const FilePath& file);
 
-  // Grants access permission to the given filesystem_id.
-  void GrantAccessFileSystem(int child_id, const std::string& filesystem_id);
-
   // Grant the child process the ability to use Web UI Bindings.
   void GrantWebUIBindings(int child_id);
 
@@ -93,11 +93,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // call this method to determine whether the process has the capability to
   // request the URL.
   bool CanRequestURL(int child_id, const GURL& url);
-
-  // Before servicing a child process's request to upload a file to the web, the
-  // browser should call this method to determine whether the process has the
-  // capability to upload the requested file.
-  bool CanReadFile(int child_id, const FilePath& file);
 
   // Before servicing a child process's request to enumerate a directory
   // the browser should call this method to check for the capability.

@@ -223,6 +223,8 @@ std::string GetFileSystemTypeString(FileSystemType type) {
       return fileapi::kPersistentName;
     case kFileSystemTypeExternal:
       return fileapi::kExternalName;
+    case kFileSystemTypeIsolated:
+      return fileapi::kIsolatedName;
     case kFileSystemTypeTest:
       return fileapi::kTestName;
     case kFileSystemTypeUnknown:

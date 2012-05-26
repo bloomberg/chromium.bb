@@ -5651,7 +5651,7 @@ void TestingAutomationProvider::LaunchApp(
   new AppLaunchObserver(&old_contents->GetController(), this, reply_message,
                         launch_container);
   application_launch::OpenApplication(profile(), extension, launch_container,
-                                      GURL(), CURRENT_TAB);
+                                      GURL(), CURRENT_TAB, NULL);
 }
 
 // Sample JSON input: { "command": "SetAppLaunchType",

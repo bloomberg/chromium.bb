@@ -55,7 +55,8 @@ class PanelAppBrowserTest : public ExtensionBrowserTest {
         // Overriding manifest to open in a panel.
         extension_misc::LAUNCH_PANEL,
         GURL(),
-        NEW_WINDOW);
+        NEW_WINDOW,
+        NULL);
 
     // Now we have a new browser instance.
     EXPECT_EQ(browser_count + 1, BrowserList::size());

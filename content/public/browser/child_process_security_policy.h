@@ -53,10 +53,19 @@ class ChildProcessSecurityPolicy {
                                        const FilePath& file,
                                        int permissions) = 0;
 
+  // Before servicing a child process's request to upload a file to the web, the
+  // browser should call this method to determine whether the process has the
+  // capability to upload the requested file.
+  virtual bool CanReadFile(int child_id, const FilePath& file) = 0;
+
   // Whenever the user picks a file from a <input type="file"> element, the
   // browser should call this function to grant the child process the capability
   // to upload the file to the web.
   virtual void GrantReadFile(int child_id, const FilePath& file) = 0;
+
+  // Grants access permission to the given filesystem_id.
+  virtual void GrantAccessFileSystem(int child_id,
+                                     const std::string& filesystem_id) = 0;
 
   // Grants the child process the capability to access URLs of the provided
   // scheme.

@@ -4,13 +4,14 @@
 
 #include "chrome/browser/ui/extensions/application_launch.h"
 
+#include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/extensions/api/app/app_api.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/browser.h"
@@ -81,7 +82,8 @@ WebContents* OpenApplication(Profile* profile,
                              const Extension* extension,
                              extension_misc::LaunchContainer container,
                              const GURL& override_url,
-                             WindowOpenDisposition disposition) {
+                             WindowOpenDisposition disposition,
+                             const CommandLine* command_line) {
   WebContents* tab = NULL;
   ExtensionPrefs* prefs = profile->GetExtensionService()->extension_prefs();
   prefs->SetActiveBit(extension->id(), true);
@@ -93,7 +95,7 @@ WebContents* OpenApplication(Profile* profile,
 #endif
 
   if (extension->is_platform_app()) {
-    extensions::AppEventRouter::DispatchOnLaunchedEvent(profile, extension);
+    extensions::LaunchPlatformApp(profile, extension, command_line);
     return NULL;
   }
 

@@ -267,7 +267,7 @@ void BackgroundModeManager::LaunchBackgroundApplication(
       service->extension_prefs()->GetLaunchContainer(
           extension, ExtensionPrefs::LAUNCH_REGULAR);
   application_launch::OpenApplication(profile, extension, launch_container,
-                                      GURL(), NEW_FOREGROUND_TAB);
+                                      GURL(), NEW_FOREGROUND_TAB, NULL);
 }
 
 bool BackgroundModeManager::IsBackgroundModeActiveForTest() {

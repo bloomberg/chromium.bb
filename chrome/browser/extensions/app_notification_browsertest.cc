@@ -63,7 +63,8 @@ IN_PROC_BROWSER_TEST_F(AppNotificationTest, SaveClientId) {
                                       app,
                                       extension_misc::LAUNCH_TAB,
                                       GURL(),
-                                      NEW_FOREGROUND_TAB);
+                                      NEW_FOREGROUND_TAB,
+                                      NULL);
   if (!interceptor.was_called())
     ui_test_utils::RunMessageLoop();
   EXPECT_TRUE(interceptor.was_called());
