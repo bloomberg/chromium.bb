@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,10 +140,11 @@ TEST_F(SSLConfigServiceManagerPrefTest, IgnoreLegacySSLSettings) {
 
   SSLConfig ssl_config;
   config_service->GetSSLConfig(&ssl_config);
-  // The default value in the absence of command-line options is that both
-  // protocols are enabled.
-  EXPECT_TRUE(ssl_config.ssl3_enabled);
-  EXPECT_TRUE(ssl_config.tls1_enabled);
+  // The default value in the absence of command-line options is that
+  // SSL 3.0 ~ default_version_max() are enabled.
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_SSL3, ssl_config.version_min);
+  EXPECT_EQ(net::SSLConfigService::default_version_max(),
+            ssl_config.version_max);
 
   // The existing user settings should be removed from the pref_service.
   EXPECT_FALSE(pref_service->HasPrefPath(prefs::kSSL3Enabled));
@@ -196,8 +197,8 @@ TEST_F(SSLConfigServiceManagerPrefTest, CommandLineOverridesUserPrefs) {
   config_service->GetSSLConfig(&ssl_config);
   // Command-line flags to disable should override the user preferences to
   // enable.
-  EXPECT_FALSE(ssl_config.ssl3_enabled);
-  EXPECT_FALSE(ssl_config.tls1_enabled);
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_min);
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_SSL3, ssl_config.version_max);
 
   // Explicitly double-check the settings are not in the user preference
   // store.

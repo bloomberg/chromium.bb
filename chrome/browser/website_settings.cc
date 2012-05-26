@@ -357,7 +357,7 @@ void WebsiteSettings::Init(Profile* profile,
         ASCIIToUTF16(ssl_version_str));
 
     bool did_fallback = (ssl.connection_status &
-                         net::SSL_CONNECTION_SSL3_FALLBACK) != 0;
+                         net::SSL_CONNECTION_VERSION_FALLBACK) != 0;
     bool no_renegotiation =
         (ssl.connection_status &
         net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) != 0;

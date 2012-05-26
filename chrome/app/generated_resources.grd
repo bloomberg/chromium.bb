@@ -8327,7 +8327,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         The connection is compressed with <ph name="COMPRESSION">$1<ex>DEFLATE</ex></ph>.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_FALLBACK_MESSAGE" desc="This message is displayed when the first secure connection to a site failed and Chrome retried with an older protocol.">
-        The connection had to be retried using SSL 3.0. This typically means that the server is using very old software and may have other security issues.
+        The connection had to be retried using an older version of the TLS or SSL protocol. This typically means that the server is using very old software and may have other security issues.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_RENEGOTIATION_MESSAGE" desc="This message is displayed when the server hasn't been updated to fix a recent security issues. TLS here is an acronym and need not be translated. 'renegotiation' is a technical term describing a process of agreeing on a new set of security parameters and secrets. 'extension' here should be taken to mean 'amendment' rather than elongation.">
         The server does not support the TLS renegotiation extension.

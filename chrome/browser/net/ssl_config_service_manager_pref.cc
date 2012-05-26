@@ -178,10 +178,12 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefService* prefs) {
   net::SSLConfig default_config;
   prefs->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
                              default_config.rev_checking_enabled);
-  prefs->RegisterBooleanPref(prefs::kSSL3Enabled,
-                             default_config.ssl3_enabled);
-  prefs->RegisterBooleanPref(prefs::kTLS1Enabled,
-                             default_config.tls1_enabled);
+  bool ssl3_enabled =
+      default_config.version_min == net::SSL_PROTOCOL_VERSION_SSL3;
+  bool tls1_enabled =
+      default_config.version_max >= net::SSL_PROTOCOL_VERSION_TLS1;
+  prefs->RegisterBooleanPref(prefs::kSSL3Enabled, ssl3_enabled);
+  prefs->RegisterBooleanPref(prefs::kTLS1Enabled, tls1_enabled);
   prefs->RegisterBooleanPref(prefs::kEnableOriginBoundCerts,
                              default_config.domain_bound_certs_enabled);
   prefs->RegisterBooleanPref(prefs::kDisableSSLRecordSplitting,
@@ -228,8 +230,18 @@ void SSLConfigServiceManagerPref::Observe(
 void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
     net::SSLConfig* config) {
   config->rev_checking_enabled = rev_checking_enabled_.GetValue();
-  config->ssl3_enabled = ssl3_enabled_.GetValue();
-  config->tls1_enabled = tls1_enabled_.GetValue();
+  // TODO(wtc): replace ssl3_enabled_ and tls1_enabled_ with preferences
+  // that specify the minimum and maximum protocol versions. For now,
+  // generalize tls1_enabled_ to mean enabling or disabling all TLS
+  // versions.
+  bool ssl3_enabled = ssl3_enabled_.GetValue();
+  bool tls1_enabled = tls1_enabled_.GetValue();
+  config->version_min = net::SSLConfigService::default_version_min();
+  config->version_max = net::SSLConfigService::default_version_max();
+  if (!ssl3_enabled && config->version_min == net::SSL_PROTOCOL_VERSION_SSL3)
+    config->version_min = net::SSL_PROTOCOL_VERSION_TLS1;
+  if (!tls1_enabled)
+    config->version_max = net::SSL_PROTOCOL_VERSION_SSL3;
   config->disabled_cipher_suites = disabled_cipher_suites_;
   config->domain_bound_certs_enabled = domain_bound_certs_enabled_.GetValue();
   // disabling False Start also happens to disable record splitting.

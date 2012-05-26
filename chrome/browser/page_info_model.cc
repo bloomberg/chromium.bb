@@ -228,7 +228,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
         ASCIIToUTF16(ssl_version_str));
 
     bool did_fallback = (ssl.connection_status &
-                         net::SSL_CONNECTION_SSL3_FALLBACK) != 0;
+                         net::SSL_CONNECTION_VERSION_FALLBACK) != 0;
     bool no_renegotiation =
         (ssl.connection_status &
         net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) != 0;
@@ -255,7 +255,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
     }
 
     if (did_fallback) {
-      // For now, only SSLv3 fallback will trigger a warning icon.
+      // For now, only SSL/TLS version fallback will trigger a warning icon.
       if (icon_id < ICON_STATE_WARNING_MINOR)
         icon_id = ICON_STATE_WARNING_MINOR;
       description += ASCIIToUTF16("\n\n");
