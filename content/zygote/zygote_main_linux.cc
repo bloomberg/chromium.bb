@@ -517,8 +517,9 @@ static bool CreateInitProcessReaper() {
 
 // This will set the *using_suid_sandbox variable to true if the SUID sandbox
 // is enabled. This does not necessarily exclude other types of sandboxing.
-static bool EnterSandbox(bool* using_suid_sandbox) {
+static bool EnterSandbox(bool* using_suid_sandbox, bool* has_started_new_init) {
   *using_suid_sandbox = false;
+  *has_started_new_init = false;
 
   PreSandboxInit();
   SkiaFontConfigSetImplementation(
@@ -565,6 +566,7 @@ static bool EnterSandbox(bool* using_suid_sandbox) {
         LOG(ERROR) << "Error creating an init process to reap zombies";
         return false;
       }
+      *has_started_new_init = true;
     }
 
 #if !defined(OS_OPENBSD)
@@ -600,8 +602,9 @@ static bool EnterSandbox(bool* using_suid_sandbox) {
 }
 #else  // CHROMIUM_SELINUX
 
-static bool EnterSandbox(bool* using_suid_sandbox) {
+static bool EnterSandbox(bool* using_suid_sandbox, bool* has_started_new_init) {
   *using_suid_sandbox = false;
+  *has_started_new_init = false;
 
   PreSandboxInit();
   SkiaFontConfigSetImplementation(
@@ -642,19 +645,27 @@ bool ZygoteMain(const MainFunctionParams& params,
 
   // Turn on the SELinux or SUID sandbox.
   bool using_suid_sandbox = false;
-  if (!EnterSandbox(&using_suid_sandbox)) {
+  bool has_started_new_init = false;
+  if (!EnterSandbox(&using_suid_sandbox, &has_started_new_init)) {
     LOG(FATAL) << "Failed to enter sandbox. Fail safe abort. (errno: "
                << errno << ")";
     return false;
   }
 
   int sandbox_flags = 0;
-  if (using_suid_sandbox)
+  if (using_suid_sandbox) {
     sandbox_flags |= kSandboxLinuxSUID;
-  if (getenv("SBX_PID_NS"))
-    sandbox_flags |= kSandboxLinuxPIDNS;
-  if (getenv("SBX_NET_NS"))
-    sandbox_flags |= kSandboxLinuxNetNS;
+    if (getenv("SBX_PID_NS"))
+      sandbox_flags |= kSandboxLinuxPIDNS;
+    if (getenv("SBX_NET_NS"))
+      sandbox_flags |= kSandboxLinuxNetNS;
+  }
+
+  if ((sandbox_flags & kSandboxLinuxPIDNS) && !has_started_new_init) {
+    LOG(ERROR) << "The SUID sandbox created a new PID namespace but Zygote "
+                  "is not the init process. Please, make sure the SUID "
+                  "binary is up to date.";
+  }
 
 #if defined(SECCOMP_SANDBOX)
   // The seccomp sandbox will be turned on when the renderers start. But we can
