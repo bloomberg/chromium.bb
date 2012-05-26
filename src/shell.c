@@ -30,6 +30,7 @@
 #include <assert.h>
 #include <signal.h>
 #include <math.h>
+#include <sys/types.h>
 
 #include <wayland-server.h>
 #include "compositor.h"
@@ -2575,6 +2576,24 @@ debug_repaint_binding(struct wl_seat *seat, uint32_t time,
 }
 
 static void
+force_kill_binding(struct wl_seat *seat, uint32_t time,
+		   uint32_t key, uint32_t button, uint32_t axis,
+		   int32_t value, void *data)
+{
+	struct wl_client *client;
+	pid_t pid;
+	uid_t uid;
+	gid_t gid;
+
+	if (value == 1) {
+		client = seat->keyboard->focus->resource.client;
+		wl_client_get_credentials(client, &pid, &uid, &gid);
+
+		kill(pid, SIGKILL);
+	}
+}
+
+static void
 shell_destroy(struct wl_listener *listener, void *data)
 {
 	struct desktop_shell *shell =
@@ -2633,6 +2652,8 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 				      backlight_binding, ec);
 	weston_compositor_add_binding(ec, KEY_SPACE, 0, 0, mod,
 				      debug_repaint_binding, shell);
+	weston_compositor_add_binding(ec, KEY_K, 0, 0, mod,
+				      force_kill_binding, shell);
 }
 
 int
