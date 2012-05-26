@@ -231,9 +231,9 @@
         '../../third_party/icu/icu.gyp:icuuc',
         '../compositor/compositor.gyp:compositor',
         '../compositor/compositor.gyp:compositor_test_support',
-        '../ui.gyp:native_theme_resources',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
+        '../ui.gyp:ui_resources_standard',
         'aura',
       ],
       'include_dirs': [
@@ -241,8 +241,8 @@
       ],
       'sources': [
         'bench/bench_main.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/native_theme/native_theme_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
       ],
     },
     {
