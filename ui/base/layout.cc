@@ -41,11 +41,10 @@ bool UseTouchOptimizedUI() {
     }
   }
 
-#if defined(ENABLE_METRO)
+#if defined(OS_WIN)
+  // On Windows, we use the touch layout only when we are running in
+  // Metro mode.
   return base::win::GetMetroModule() != NULL;
-#elif defined(OS_WIN)
-  // No touch support on Win outside Metro yet (even with Aura).
-  return false;
 #elif defined(USE_AURA) && defined(USE_X11)
   // Determine whether touch-screen hardware is currently available.
   // For now we assume this won't change over the life of the process, but

@@ -204,13 +204,13 @@
                     'enable_hidpi_flag': '',
                   },
                 }],
-                ['enable_metro == 1', {
+                ['enable_touch_ui == 1', {
                   'variables': {
-                    'enable_metro_flag': '--enable_metro=1',
+                    'enable_touch_ui_flag': '--enable_touch_ui=1',
                   },
                 }, {
                   'variables': {
-                    'enable_metro_flag': '',
+                    'enable_touch_ui_flag': '',
                   },
                 }],
                 ['component == "shared_library"', {
@@ -249,7 +249,7 @@
                 '--input_file', '<(RULE_INPUT_PATH)',
                 '--resource_file_path', '<(INTERMEDIATE_DIR)/packed_files.rc',
                 '<(enable_hidpi_flag)',
-                '<(enable_metro_flag)',
+                '<(enable_touch_ui_flag)',
                 '<(component_build_flag)',
                 # TODO(sgk):  may just use environment variables
                 #'--distribution=$(CHROMIUM_BUILD)',

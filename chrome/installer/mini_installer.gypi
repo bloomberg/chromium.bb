@@ -46,7 +46,7 @@
       'ExceptionHandling': '0',
     },
     'VCLinkerTool': {
-      'OutputFile': '<(output_dir)/mini_installer.exe', 
+      'OutputFile': '<(output_dir)/mini_installer.exe',
       'ProgramDatabaseFile': '<(output_dir)/mini_installer.pdb',
       'MapFileName': '<(output_dir)/mini_installer.map',
       'RandomizedBaseAddress': '1',
@@ -167,13 +167,13 @@
             'enable_hidpi_flag': '',
           },
         }],
-        ['enable_metro == 1', {
+        ['enable_touch_ui == 1', {
           'variables': {
-            'enable_metro_flag': '--enable_metro=1',
+            'enable_touch_ui_flag': '--enable_touch_ui=1',
           },
         }, {
           'variables': {
-            'enable_metro_flag': '',
+            'enable_touch_ui_flag': '',
           },
         }],
       ],
@@ -204,7 +204,7 @@
         '--input_file=<(RULE_INPUT_PATH)',
         '--resource_file_path=<(INTERMEDIATE_DIR)/packed_files.rc',
         '<(enable_hidpi_flag)',
-        '<(enable_metro_flag)',
+        '<(enable_touch_ui_flag)',
         # TODO(sgk):  may just use environment variables
         #'--distribution=$(CHROMIUM_BUILD)',
         '--distribution=_google_chrome',

@@ -35,7 +35,7 @@ default_apps\external_extensions.json: %(VersionDir)s\default_apps\
 theme_resources_2x.pak: %(VersionDir)s\
 ui_resources_2x.pak: %(VersionDir)s\
 
-[METRO]
+[TOUCH]
 theme_resources_touch_1x.pak: %(VersionDir)s\
 
 [GOOGLE_CHROME]
