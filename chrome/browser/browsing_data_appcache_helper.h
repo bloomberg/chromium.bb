@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "net/base/completion_callback.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/appcache/appcache_service.h"

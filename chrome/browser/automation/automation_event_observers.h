@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_EVENT_OBSERVERS_H_
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_EVENT_OBSERVERS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
 #include "base/values.h"
 #include "chrome/browser/automation/automation_event_queue.h"
 #include "chrome/browser/automation/automation_provider.h"

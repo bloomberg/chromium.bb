@@ -9,7 +9,7 @@
 #include <map>
 
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/history/history_types.h"

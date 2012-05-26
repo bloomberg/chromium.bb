@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 

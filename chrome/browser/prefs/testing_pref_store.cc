@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prefs/testing_pref_store.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 TestingPrefStore::TestingPrefStore()

@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/value_map_pref_store.h"
 

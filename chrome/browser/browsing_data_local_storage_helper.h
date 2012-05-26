@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "chrome/common/url_constants.h"

@@ -8,8 +8,8 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 

@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 
 // Mock for BrowsingDataIndexedDBHelper.
