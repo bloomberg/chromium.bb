@@ -23,6 +23,10 @@
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/chromeos/chromeos_version.h"
+#endif
+
 namespace {
 
 const double kDefaultRefreshRate = 60.0;
@@ -353,6 +357,12 @@ COMPOSITOR_EXPORT void SetupTestCompositor() {
       switches::kDisableTestCompositor)) {
     test_compositor_enabled = true;
   }
+#if defined(OS_CHROMEOS)
+  // If the test is running on the chromeos envrionment (such as
+  // device or vm bots), use the real compositor.
+  if (base::chromeos::IsRunningOnChromeOS())
+    test_compositor_enabled = false;
+#endif
 }
 
 COMPOSITOR_EXPORT void DisableTestCompositor() {
