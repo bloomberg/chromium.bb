@@ -220,7 +220,7 @@ _settings = dict(
 
 # images -- List of images we want to build -- see build_image for more details.
   images=['test'],
-  factory_install_netboot=False,
+  factory_install_netboot=True,
 
 
 # push_image -- Do we push a final release image to chromeos-images.
@@ -389,9 +389,6 @@ arm = _config(
   # VM/tests are broken on arm.
   unittests=False,
   vm_tests=None,
-
-  # The factory install image should be a netboot image on ARM.
-  factory_install_netboot=True,
 )
 
 amd64 = _config()
