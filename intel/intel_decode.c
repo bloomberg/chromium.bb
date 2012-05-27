@@ -139,6 +139,22 @@ instr_out(struct drm_intel_decode *ctx, unsigned int index,
 }
 
 static int
+decode_MI_SET_CONTEXT(struct drm_intel_decode *ctx)
+{
+	uint32_t data = ctx->data[1];
+	if (ctx->gen > 7)
+		return 1;
+
+	instr_out(ctx, 0, "MI_SET_CONTEXT\n");
+	instr_out(ctx, 1, "gtt offset = 0x%x%s%s\n",
+		  data & ~0xfff,
+		  data & (1<<1)? ", Force Restore": "",
+		  data & (1<<0)? ", Restore Inhibit": "");
+
+	return 2;
+}
+
+static int
 decode_MI_WAIT_FOR_EVENT(struct drm_intel_decode *ctx)
 {
 	const char *cc_wait;
@@ -233,7 +249,7 @@ decode_mi(struct drm_intel_decode *ctx)
 		{ 0x00, 0, 1, 1, "MI_NOOP" },
 		{ 0x11, 0x3f, 2, 2, "MI_OVERLAY_FLIP" },
 		{ 0x07, 0, 1, 1, "MI_REPORT_HEAD" },
-		{ 0x18, 0x3f, 2, 2, "MI_SET_CONTEXT" },
+		{ 0x18, 0x3f, 2, 2, "MI_SET_CONTEXT", decode_MI_SET_CONTEXT },
 		{ 0x20, 0x3f, 3, 4, "MI_STORE_DATA_IMM" },
 		{ 0x21, 0x3f, 3, 4, "MI_STORE_DATA_INDEX" },
 		{ 0x24, 0x3f, 3, 3, "MI_STORE_REGISTER_MEM" },
