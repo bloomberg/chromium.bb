@@ -372,6 +372,7 @@ struct terminal {
 	int data_pitch, attr_pitch;  /* The width in bytes of a line */
 	int width, height, start, row, column;
 	int saved_row, saved_column;
+	int send_cursor_position;
 	int fd, master;
 	uint32_t modifiers;
 	char escape[MAX_ESCAPE+1];
@@ -926,7 +927,7 @@ redraw_handler(struct widget *widget, void *data)
 	struct rectangle allocation;
 	cairo_t *cr;
 	int top_margin, side_margin;
-	int row, col;
+	int row, col, cursor_x, cursor_y;
 	union utf8_char *p_row;
 	union decoded_attr attr;
 	int text_x, text_y;
@@ -1022,6 +1023,16 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_paint(cr);
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
+
+	if (terminal->send_cursor_position) {
+		cursor_x = side_margin + allocation.x +
+				terminal->column * extents.max_x_advance;
+		cursor_y = top_margin + allocation.y +
+				terminal->row * extents.height;
+		window_set_text_cursor_position(terminal->window,
+						cursor_x, cursor_y);
+		terminal->send_cursor_position = 0;
+	}
 }
 
 static void
@@ -1029,6 +1040,7 @@ terminal_write(struct terminal *terminal, const char *data, size_t length)
 {
 	if (write(terminal->master, data, length) < 0)
 		abort();
+	terminal->send_cursor_position = 1;
 }
 
 static void

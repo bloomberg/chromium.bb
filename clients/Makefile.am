@@ -57,7 +57,9 @@ noinst_LIBRARIES = libtoytoolkit.a
 
 libtoytoolkit_a_SOURCES =			\
 	window.c				\
-	window.h
+	window.h				\
+	text-cursor-position-protocol.c		\
+	text-cursor-position-client-protocol.h
 
 toolkit_libs =						\
 	libtoytoolkit.a					\
@@ -106,6 +108,8 @@ weston_tablet_shell_LDADD = $(toolkit_libs)
 BUILT_SOURCES =					\
 	screenshooter-client-protocol.h		\
 	screenshooter-protocol.c		\
+	text-cursor-position-client-protocol.h	\
+	text-cursor-position-protocol.c		\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	tablet-shell-client-protocol.h		\

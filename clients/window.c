@@ -61,6 +61,7 @@
 #include <linux/input.h>
 #include <wayland-client.h>
 #include "../shared/cairo-util.h"
+#include "text-cursor-position-client-protocol.h"
 
 #include "window.h"
 
@@ -72,6 +73,7 @@ struct display {
 	struct wl_shell *shell;
 	struct wl_shm *shm;
 	struct wl_data_device_manager *data_device_manager;
+	struct text_cursor_position *text_cursor_position;
 	EGLDisplay dpy;
 	EGLConfig argb_config;
 	EGLContext argb_ctx;
@@ -149,6 +151,7 @@ struct window {
 	int resize_needed;
 	int type;
 	int transparent;
+	int send_cursor_position;
 	struct input *keyboard_device;
 	enum window_buffer_type buffer_type;
 
@@ -1823,6 +1826,9 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	if (!window || window->keyboard_device != input)
 		return;
 
+	if (state)
+		window->send_cursor_position = 1;
+
 	num_syms = xkb_key_get_syms(d->xkb.state, code, &syms);
 	xkb_state_update_key(d->xkb.state, code,
 			     state ? XKB_KEY_DOWN : XKB_KEY_UP);
@@ -2610,6 +2616,21 @@ window_get_title(struct window *window)
 }
 
 void
+window_set_text_cursor_position(struct window *window, int32_t x, int32_t y)
+{
+	struct text_cursor_position *text_cursor_position =
+					window->display->text_cursor_position;
+
+	if (!window->send_cursor_position || !text_cursor_position)
+		return;
+
+	text_cursor_position_notify(text_cursor_position,
+						window->surface, x, y);
+
+	window->send_cursor_position = 0;
+}
+
+void
 window_damage(struct window *window, int32_t x, int32_t y,
 	      int32_t width, int32_t height)
 {
@@ -2695,6 +2716,7 @@ window_create_internal(struct display *display, struct window *parent)
 	window->allocation.height = 0;
 	window->saved_allocation = window->allocation;
 	window->transparent = 1;
+	window->send_cursor_position = 0;
 	window->type = TYPE_NONE;
 	window->input_region = NULL;
 	window->opaque_region = NULL;
@@ -3097,6 +3119,10 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		d->data_device_manager =
 			wl_display_bind(display, id,
 					&wl_data_device_manager_interface);
+	} else if (strcmp(interface, "text_cursor_position") == 0) {
+		d->text_cursor_position =
+			wl_display_bind(display, id,
+					&text_cursor_position_interface);
 	}
 }
 

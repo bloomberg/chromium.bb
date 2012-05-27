@@ -1,0 +1,11 @@
+<protocol name="text_cursor_position">
+
+  <interface name="text_cursor_position" version="1">
+    <request name="notify">
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="x" type="uint"/>
+      <arg name="y" type="uint"/>
+    </request>
+  </interface>
+
+</protocol>

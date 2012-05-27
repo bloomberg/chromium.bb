@@ -307,6 +307,9 @@ window_set_title(struct window *window, const char *title);
 const char *
 window_get_title(struct window *window);
 
+void
+window_set_text_cursor_position(struct window *window, int32_t x, int32_t y);
+
 int
 widget_set_tooltip(struct widget *parent, char *entry, float x, float y);
 

@@ -1689,7 +1689,8 @@ zoom_binding(struct wl_seat *seat, uint32_t time,
 
 			weston_output_update_zoom(output,
 			                          seat->pointer->x,
-						  seat->pointer->y);
+						  seat->pointer->y,
+						  ZOOM_POINTER);
 		}
 	}
 }

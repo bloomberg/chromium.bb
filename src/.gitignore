@@ -2,6 +2,8 @@ weston
 weston-launch
 screenshooter-protocol.c
 screenshooter-server-protocol.h
+text-cursor-position-protocol.c
+text-cursor-position-server-protocol.h
 tablet-shell-protocol.c
 tablet-shell-server-protocol.h
 xserver-protocol.c

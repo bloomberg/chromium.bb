@@ -1632,7 +1632,7 @@ notify_motion(struct wl_seat *seat, uint32_t time, wl_fixed_t x, wl_fixed_t y)
 		if (output->zoom.active &&
 		    pixman_region32_contains_point(&output->region,
 						   ix, iy, NULL))
-			weston_output_update_zoom(output, x, y);
+			weston_output_update_zoom(output, x, y, ZOOM_POINTER);
 
 	weston_device_repick(seat);
 	interface = seat->pointer->grab->interface;
@@ -2445,9 +2445,34 @@ weston_output_destroy(struct weston_output *output)
 }
 
 WL_EXPORT void
-weston_output_update_zoom(struct weston_output *output, wl_fixed_t fx, wl_fixed_t fy)
+weston_text_cursor_position_notify(struct weston_surface *surface,
+						int32_t cur_pos_x,
+						int32_t cur_pos_y)
+{
+	struct weston_output *output;
+	int32_t global_x, global_y;
+
+	weston_surface_to_global(surface, cur_pos_x, cur_pos_y,
+						&global_x, &global_y);
+
+	wl_list_for_each(output, &surface->compositor->output_list, link)
+		if (output->zoom.active &&
+		    pixman_region32_contains_point(&output->region,
+						global_x, global_y, NULL))
+			weston_output_update_zoom(output,
+						wl_fixed_from_int(global_x),
+						wl_fixed_from_int(global_y),
+						ZOOM_TEXT_CURSOR);
+}
+
+WL_EXPORT void
+weston_output_update_zoom(struct weston_output *output,
+						wl_fixed_t fx,
+						wl_fixed_t fy,
+						uint32_t type)
 {
 	int32_t x, y;
+	float trans_min, trans_max;
 
 	if (output->zoom.level >= 1.0)
 		return;
@@ -2455,10 +2480,29 @@ weston_output_update_zoom(struct weston_output *output, wl_fixed_t fx, wl_fixed_
 	x = wl_fixed_to_int(fx);
 	y = wl_fixed_to_int(fy);
 
-	output->zoom.trans_x = (((float)(x - output->x) / output->current->width) *
-					(output->zoom.level * 2)) - output->zoom.level;
-	output->zoom.trans_y = (((float)(y - output->y) / output->current->height) *
-					(output->zoom.level * 2)) - output->zoom.level;
+	output->zoom.trans_x =
+		(((float)(x - output->x) / output->current->width) *
+		(output->zoom.level * 2)) - output->zoom.level;
+	output->zoom.trans_y =
+		(((float)(y - output->y) / output->current->height) *
+		(output->zoom.level * 2)) - output->zoom.level;
+
+	if (type == ZOOM_TEXT_CURSOR) {
+		output->zoom.trans_x *= 1 / output->zoom.level;
+		output->zoom.trans_y *= 1 / output->zoom.level;
+
+		trans_max = output->zoom.level * 2 - output->zoom.level;
+		trans_min = -trans_max;
+
+		if (output->zoom.trans_x > trans_max)
+			output->zoom.trans_x = trans_max;
+		else if (output->zoom.trans_x < trans_min)
+			output->zoom.trans_x = trans_min;
+		if (output->zoom.trans_y > trans_max)
+			output->zoom.trans_y = trans_max;
+		else if (output->zoom.trans_y < trans_min)
+			output->zoom.trans_y = trans_min;
+	}
 
 	output->dirty = 1;
 	weston_output_damage(output);
@@ -2647,6 +2691,7 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 	weston_layer_init(&ec->cursor_layer, &ec->fade_layer.link);
 
 	screenshooter_create(ec);
+	text_cursor_position_notifier_create(ec);
 
 	ec->ping_handler = NULL;
 

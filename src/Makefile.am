@@ -18,6 +18,9 @@ weston_SOURCES =				\
 	screenshooter.c				\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\
+	text-cursor-position.c			\
+	text-cursor-position-protocol.c		\
+	text-cursor-position-server-protocol.h	\
 	util.c					\
 	matrix.c				\
 	matrix.h				\
@@ -144,6 +147,8 @@ endif
 BUILT_SOURCES =					\
 	screenshooter-server-protocol.h		\
 	screenshooter-protocol.c		\
+	text-cursor-position-server-protocol.h	\
+	text-cursor-position-protocol.c		\
 	tablet-shell-protocol.c			\
 	tablet-shell-server-protocol.h		\
 	desktop-shell-protocol.c		\

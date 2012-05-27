@@ -82,6 +82,11 @@ struct weston_border {
 	int32_t left, right, top, bottom;
 };
 
+enum {
+	ZOOM_POINTER,
+	ZOOM_TEXT_CURSOR
+};
+
 struct weston_output_zoom {
 	int active;
 	float increment;
@@ -561,7 +566,10 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 void
 weston_compositor_shutdown(struct weston_compositor *ec);
 void
-weston_output_update_zoom(struct weston_output *output, int x, int y);
+weston_output_update_zoom(struct weston_output *output,
+						int x, int y, uint32_t type);
+void
+weston_text_cursor_position_notify(struct weston_surface *surface, int x, int y);
 void
 weston_output_update_matrix(struct weston_output *output);
 void
@@ -597,6 +605,9 @@ tty_activate_vt(struct tty *tty, int vt);
 
 void
 screenshooter_create(struct weston_compositor *ec);
+
+void
+text_cursor_position_notifier_create(struct weston_compositor *ec);
 
 struct weston_process;
 typedef void (*weston_process_cleanup_func_t)(struct weston_process *process,
