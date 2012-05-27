@@ -14,6 +14,7 @@
 #include "content/common/pepper_file_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_constants.h"
 #include "ipc/ipc_platform_file.h"
 #include "webkit/plugins/ppapi/file_path.h"
 
@@ -72,7 +73,7 @@ void PepperFileMessageFilter::OnDestruct() const {
 
 // static
 FilePath PepperFileMessageFilter::GetDataDirName(const FilePath& profile_path) {
-  return profile_path.Append(FILE_PATH_LITERAL("Pepper Data"));
+  return profile_path.Append(content::kPepperDataDirname);
 }
 
 PepperFileMessageFilter::~PepperFileMessageFilter() {

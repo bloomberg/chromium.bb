@@ -102,6 +102,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       cache_(NULL),
       main_context_getter_(profile->GetRequestContext()),
       media_context_getter_(profile->GetRequestContextForMedia()),
+      deauthorize_content_licenses_request_id_(0),
       waiting_for_clear_cache_(false),
       waiting_for_clear_cookies_count_(0),
       waiting_for_clear_history_(false),
@@ -109,6 +110,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_server_bound_certs_(false),
       waiting_for_clear_plugin_data_(false),
       waiting_for_clear_quota_managed_data_(false),
+      waiting_for_clear_content_licenses_(false),
       remove_mask_(0),
       remove_origin_(GURL()),
       remove_protected_(false) {
@@ -127,6 +129,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       cache_(NULL),
       main_context_getter_(profile->GetRequestContext()),
       media_context_getter_(profile->GetRequestContextForMedia()),
+      deauthorize_content_licenses_request_id_(0),
       waiting_for_clear_cache_(false),
       waiting_for_clear_cookies_count_(0),
       waiting_for_clear_history_(false),
@@ -134,6 +137,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_server_bound_certs_(false),
       waiting_for_clear_plugin_data_(false),
       waiting_for_clear_quota_managed_data_(false),
+      waiting_for_clear_content_licenses_(false),
       remove_mask_(0),
       remove_origin_(GURL()),
       remove_protected_(false) {
@@ -388,7 +392,13 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     content::RecordAction(
         UserMetricsAction("ClearBrowsingData_ContentLicenses"));
 
-    // TODO(yzshen): Implement it.
+    waiting_for_clear_content_licenses_ = true;
+    if (!pepper_flash_settings_manager_.get()) {
+      pepper_flash_settings_manager_.reset(
+          new PepperFlashSettingsManager(this, profile_));
+    }
+    deauthorize_content_licenses_request_id_ =
+        pepper_flash_settings_manager_->DeauthorizeContentLicenses();
   }
 
   // Also delete cached network related data (like TransportSecurityState,
@@ -676,6 +686,16 @@ void BrowsingDataRemover::OnQuotaManagedDataDeleted() {
 void BrowsingDataRemover::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
   waiting_for_clear_plugin_data_ = false;
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::OnDeauthorizeContentLicensesCompleted(
+    uint32 request_id,
+    bool /* success */) {
+  DCHECK(waiting_for_clear_content_licenses_);
+  DCHECK_EQ(request_id, deauthorize_content_licenses_request_id_);
+
+  waiting_for_clear_content_licenses_ = false;
   NotifyAndDeleteIfDone();
 }
 

@@ -7,6 +7,8 @@ namespace content {
 
 const FilePath::CharType kAppCacheDirname[] =
     FILE_PATH_LITERAL("Application Cache");
+const FilePath::CharType kPepperDataDirname[] =
+    FILE_PATH_LITERAL("Pepper Data");
 
 // This number used to be limited to 32 in the past (see b/535234).
 const size_t kMaxRendererProcessCount = 82;

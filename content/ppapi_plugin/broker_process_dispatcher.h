@@ -27,11 +27,15 @@ class BrokerProcessDispatcher : public ppapi::proxy::BrokerSideDispatcher {
                           uint64 flags,
                           uint64 max_age);
 
+  void OnMsgDeauthorizeContentLicenses(uint32 request_id,
+                                       const FilePath& plugin_data_path);
+
   // Requests that the plugin clear data, returning true on success.
   bool ClearSiteData(const FilePath& plugin_data_path,
                      const std::string& site,
                      uint64 flags,
                      uint64 max_age);
+  bool DeauthorizeContentLicenses(const FilePath& plugin_data_path);
 
   PP_GetInterface_Func get_plugin_interface_;
 

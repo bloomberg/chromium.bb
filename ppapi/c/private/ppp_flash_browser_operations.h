@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_flash_browser_operations.idl,
- *   modified Wed Apr 11 16:26:42 2012.
+ *   modified Thu May 24 15:41:01 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_FLASH_BROWSER_OPERATIONS_H_
@@ -13,11 +13,14 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_var.h"
 
 #define PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_0 \
     "PPP_Flash_BrowserOperations;1.0"
+#define PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_1 \
+    "PPP_Flash_BrowserOperations;1.1"
 #define PPP_FLASH_BROWSEROPERATIONS_INTERFACE \
-    PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_0
+    PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_1
 
 /**
  * @file
@@ -26,13 +29,64 @@
 
 
 /**
+ * @addtogroup Enums
+ * @{
+ */
+typedef enum {
+  PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC = 0,
+  PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_PEERNETWORKING = 1
+} PP_Flash_BrowserOperations_SettingType;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Flash_BrowserOperations_SettingType, 4);
+
+typedef enum {
+  /* This value is only used with <code>SetSitePermission()</code>. */
+  PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT = 0,
+  PP_FLASH_BROWSEROPERATIONS_PERMISSION_ALLOW = 1,
+  PP_FLASH_BROWSEROPERATIONS_PERMISSION_BLOCK = 2,
+  PP_FLASH_BROWSEROPERATIONS_PERMISSION_ASK = 3
+} PP_Flash_BrowserOperations_Permission;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Flash_BrowserOperations_Permission, 4);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Structs
+ * @{
+ */
+struct PP_Flash_BrowserOperations_SiteSetting {
+  struct PP_Var site;
+  PP_Flash_BrowserOperations_Permission permission;
+  /* Makes the size consistent across compilers. */
+  int32_t padding;
+};
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Flash_BrowserOperations_SiteSetting, 24);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Typedefs
+ * @{
+ */
+typedef void (*PPB_Flash_BrowserOperations_GetSettingsCallback)(
+    void* user_data,
+    PP_Bool success,
+    PP_Flash_BrowserOperations_Permission default_permission,
+    uint32_t site_count,
+    const struct PP_Flash_BrowserOperations_SiteSetting sites[]);
+/**
+ * @}
+ */
+
+/**
  * @addtogroup Interfaces
  * @{
  */
 /**
  * This interface allows the browser to request the plugin do things.
  */
-struct PPP_Flash_BrowserOperations_1_0 {
+struct PPP_Flash_BrowserOperations_1_1 {
   /**
    * This function allows the plugin to implement the "Clear site data" feature.
    *
@@ -59,9 +113,80 @@ struct PPP_Flash_BrowserOperations_1_0 {
                            const char* site,
                            uint64_t flags,
                            uint64_t max_age);
+  /**
+   * Requests the plugin to deauthorize content licenses. It prevents Flash from
+   * playing protected content, such as movies and music the user may have
+   * rented or purchased.
+   *
+   * @param[in] plugin_data_path String containing the directory where the
+   * plugin settings are stored.
+   *
+   * @return <code>PP_TRUE</code> on success, <code>PP_FALSE</code> on failure.
+   */
+  PP_Bool (*DeauthorizeContentLicenses)(const char* plugin_data_path);
+  /**
+   * Gets permission settings. <code>callback</code> will be called exactly once
+   * to return the settings.
+   *
+   * @param[in] plugin_data_path String containing the directory where the
+   * plugin settings are stored.
+   * @param[in] setting_type What type of setting to retrieve.
+   * @param[in] callback The callback to return retrieved data.
+   * @param[inout] user_data An opaque pointer that will be passed to
+   * <code>callback</code>.
+   */
+  void (*GetPermissionSettings)(
+      const char* plugin_data_path,
+      PP_Flash_BrowserOperations_SettingType setting_type,
+      PPB_Flash_BrowserOperations_GetSettingsCallback callback,
+      void* user_data);
+  /**
+   * Sets default permission. It applies to all sites except those with
+   * site-specific settings.
+   *
+   * @param[in] plugin_data_path String containing the directory where the
+   * plugin settings are stored.
+   * @param[in] setting_type What type of setting to set.
+   * @param[in] permission The default permission.
+   * @param[in] clear_site_specific Whether to remove all site-specific
+   * settings.
+   *
+   * @return <code>PP_TRUE</code> on success, <code>PP_FALSE</code> on failure.
+   */
+  PP_Bool (*SetDefaultPermission)(
+      const char* plugin_data_path,
+      PP_Flash_BrowserOperations_SettingType setting_type,
+      PP_Flash_BrowserOperations_Permission permission,
+      PP_Bool clear_site_speicifc);
+  /**
+   * Sets site-specific permission. If a site has already got site-specific
+   * permission and it is not in <code>sites</code>, it won't be affected.
+   *
+   * @param[in] plugin_data_path String containing the directory where the
+   * plugin settings are stored.
+   * @param[in] setting_type What type of setting to set.
+   * @param[in] site_count How many items are there in <code>sites</code>.
+   * @param[in] sites The site-specific settings. If a site is specified with
+   * <code>PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT</code> permission, it
+   * will be removed from the site-specific list.
+   *
+   * @return <code>PP_TRUE</code> on success, <code>PP_FALSE</code> on failure.
+   */
+  PP_Bool (*SetSitePermission)(
+      const char* plugin_data_path,
+      PP_Flash_BrowserOperations_SettingType setting_type,
+      uint32_t site_count,
+      const struct PP_Flash_BrowserOperations_SiteSetting sites[]);
 };
 
-typedef struct PPP_Flash_BrowserOperations_1_0 PPP_Flash_BrowserOperations;
+typedef struct PPP_Flash_BrowserOperations_1_1 PPP_Flash_BrowserOperations;
+
+struct PPP_Flash_BrowserOperations_1_0 {
+  PP_Bool (*ClearSiteData)(const char* plugin_data_path,
+                           const char* site,
+                           uint64_t flags,
+                           uint64_t max_age);
+};
 /**
  * @}
  */

@@ -15,6 +15,7 @@
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/time.h"
 #include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -46,7 +47,8 @@ class QuotaManager;
 // visits in url database, downloads, cookies ...
 
 class BrowsingDataRemover : public content::NotificationObserver,
-                            public base::WaitableEventWatcher::Delegate {
+                            public base::WaitableEventWatcher::Delegate,
+                            public PepperFlashSettingsManager::Client {
  public:
   // Time period ranges available when doing browsing data removals.
   enum TimePeriod {
@@ -179,6 +181,10 @@ class BrowsingDataRemover : public content::NotificationObserver,
   virtual void OnWaitableEventSignaled(
       base::WaitableEvent* waitable_event) OVERRIDE;
 
+  // PepperFlashSettingsManager::Client implementation.
+  virtual void OnDeauthorizeContentLicensesCompleted(uint32 request_id,
+                                                     bool success) OVERRIDE;
+
   // Removes the specified items related to browsing for a specific host. If the
   // provided |origin| is empty, data is removed for all origins. If
   // |remove_protected_origins| is true, then data is removed even if the origin
@@ -255,7 +261,8 @@ class BrowsingDataRemover : public content::NotificationObserver,
            !waiting_for_clear_networking_history_ &&
            !waiting_for_clear_server_bound_certs_ &&
            !waiting_for_clear_plugin_data_ &&
-           !waiting_for_clear_quota_managed_data_;
+           !waiting_for_clear_quota_managed_data_ &&
+           !waiting_for_clear_content_licenses_;
   }
 
   // Setter for removing_; DCHECKs that we can only start removing if we're not
@@ -294,6 +301,10 @@ class BrowsingDataRemover : public content::NotificationObserver,
   scoped_ptr<content::PluginDataRemover> plugin_data_remover_;
   base::WaitableEventWatcher watcher_;
 
+  // Used to deauthorize content licenses for Pepper Flash.
+  scoped_ptr<PepperFlashSettingsManager> pepper_flash_settings_manager_;
+  uint32 deauthorize_content_licenses_request_id_;
+
   // True if we're waiting for various data to be deleted.
   // These may only be accessed from UI thread in order to avoid races!
   bool waiting_for_clear_cache_;
@@ -304,6 +315,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   bool waiting_for_clear_server_bound_certs_;
   bool waiting_for_clear_plugin_data_;
   bool waiting_for_clear_quota_managed_data_;
+  bool waiting_for_clear_content_licenses_;
 
   // Tracking how many origins need to be deleted, and whether we're finished
   // gathering origins.

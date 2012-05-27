@@ -18,6 +18,9 @@ namespace content {
 // The name of the directory under BrowserContext::GetPath where the AppCache is
 // put.
 CONTENT_EXPORT extern const FilePath::CharType kAppCacheDirname[];
+// The name of the directory under BrowserContext::GetPath where Pepper plugin
+// data is put.
+CONTENT_EXPORT extern const FilePath::CharType kPepperDataDirname[];
 
 CONTENT_EXPORT extern const size_t kMaxRendererProcessCount;
 

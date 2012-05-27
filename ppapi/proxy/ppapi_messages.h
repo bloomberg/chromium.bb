@@ -34,6 +34,7 @@
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
+#include "ppapi/c/private/ppp_flash_browser_operations.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
@@ -53,6 +54,8 @@
 #define IPC_MESSAGE_START PpapiMsgStart
 
 IPC_ENUM_TRAITS(PP_DeviceType_Dev)
+IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_Permission)
+IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_SettingType)
 IPC_ENUM_TRAITS(PP_InputEvent_MouseButton)
 IPC_ENUM_TRAITS(PP_InputEvent_Type)
 IPC_ENUM_TRAITS(PP_NetAddressFamily_Private)
@@ -256,6 +259,13 @@ IPC_MESSAGE_CONTROL4(PpapiMsg_ClearSiteData,
                      uint64 /* flags */,
                      uint64 /* max_age */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_ClearSiteDataResult,
+                     bool /* success */)
+
+IPC_MESSAGE_CONTROL2(PpapiMsg_DeauthorizeContentLicenses,
+                     uint32 /* request_id */,
+                     FilePath /* plugin_data_path */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_DeauthorizeContentLicensesResult,
+                     uint32 /* request_id */,
                      bool /* success */)
 
 // Broker Process.

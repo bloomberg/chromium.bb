@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "content/common/child_process.h"
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
@@ -15,6 +16,15 @@ namespace {
 
 // How long we wait before releasing the broker process.
 const int kBrokerReleaseTimeSeconds = 30;
+
+std::string ConvertPluginDataPath(const FilePath& plugin_data_path) {
+  // The string is always 8-bit, convert on Windows.
+#if defined(OS_WIN)
+  return WideToUTF8(plugin_data_path.value());
+#else
+  return plugin_data_path.value();
+#endif
+}
 
 }  // namespace
 
@@ -43,6 +53,8 @@ BrokerProcessDispatcher::~BrokerProcessDispatcher() {
 bool BrokerProcessDispatcher::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(BrokerProcessDispatcher, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_ClearSiteData, OnMsgClearSiteData)
+    IPC_MESSAGE_HANDLER(PpapiMsg_DeauthorizeContentLicenses,
+                        OnMsgDeauthorizeContentLicenses)
     IPC_MESSAGE_UNHANDLED(return BrokerSideDispatcher::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP()
   return true;
@@ -57,6 +69,13 @@ void BrokerProcessDispatcher::OnMsgClearSiteData(
       ClearSiteData(plugin_data_path, site, flags, max_age)));
 }
 
+void BrokerProcessDispatcher::OnMsgDeauthorizeContentLicenses(
+    uint32 request_id,
+    const FilePath& plugin_data_path) {
+  Send(new PpapiHostMsg_DeauthorizeContentLicensesResult(
+      request_id, DeauthorizeContentLicenses(plugin_data_path)));
+}
+
 bool BrokerProcessDispatcher::ClearSiteData(const FilePath& plugin_data_path,
                                             const std::string& site,
                                             uint64 flags,
@@ -69,16 +88,25 @@ bool BrokerProcessDispatcher::ClearSiteData(const FilePath& plugin_data_path,
   if (!browser_interface)
     return false;
 
-  // The string is always 8-bit, convert on Windows.
-#if defined(OS_WIN)
-  std::string data_str = WideToUTF8(plugin_data_path.value());
-#else
-  std::string data_str = plugin_data_path.value();
-#endif
-
+  std::string data_str = ConvertPluginDataPath(plugin_data_path);
   browser_interface->ClearSiteData(data_str.c_str(),
                                    site.empty() ? NULL : site.c_str(),
                                    flags, max_age);
   return true;
+}
+
+bool BrokerProcessDispatcher::DeauthorizeContentLicenses(
+    const FilePath& plugin_data_path) {
+  if (!get_plugin_interface_)
+    return false;
+  const PPP_Flash_BrowserOperations_1_1* browser_interface =
+      static_cast<const PPP_Flash_BrowserOperations_1_1*>(
+          get_plugin_interface_(PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_1));
+  if (!browser_interface)
+    return false;
+
+  std::string data_str = ConvertPluginDataPath(plugin_data_path);
+  return PP_ToBool(browser_interface->DeauthorizeContentLicenses(
+      data_str.c_str()));
 }
 
