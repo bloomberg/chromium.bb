@@ -1,5 +1,6 @@
 include_rules = [
   "+cros",
   "+dbus",
+  "+media/base/media_switches.h",  # For media command line switches.
   "+third_party/mozc",
 ]
