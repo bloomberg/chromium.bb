@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_ACTION_BOX_CONTROLLER_H_
-#define CHROME_BROWSER_EXTENSIONS_ACTION_BOX_CONTROLLER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_LOCATION_BAR_CONTROLLER_H_
+#define CHROME_BROWSER_EXTENSIONS_LOCATION_BAR_CONTROLLER_H_
 #pragma once
 
 #include <set>
@@ -16,8 +16,10 @@ class ExtensionAction;
 
 namespace extensions {
 
-// Controller of the "badges" (aka "page actions") in the UI.
-class ActionBoxController {
+// Interface for a class that controls the the extension icons that show up in
+// the location bar. Depending on switches, these icons can have differing
+// behavior.
+class LocationBarController {
  public:
   // The reaction that the UI should take after executing |OnClicked|.
   enum Action {
@@ -26,7 +28,7 @@ class ActionBoxController {
     ACTION_SHOW_CONTEXT_MENU,
   };
 
-  virtual ~ActionBoxController() {}
+  virtual ~LocationBarController() {}
 
   // Utility to add any actions to |out| which aren't present in |actions|.
   static void AddMissingActions(
@@ -45,4 +47,4 @@ class ActionBoxController {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_ACTION_BOX_CONTROLLER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_LOCATION_BAR_CONTROLLER_H_

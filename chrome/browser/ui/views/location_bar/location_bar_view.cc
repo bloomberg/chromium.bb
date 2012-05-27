@@ -16,10 +16,10 @@
 #include "chrome/browser/chrome_to_mobile_service.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/action_box_controller.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
@@ -258,7 +258,7 @@ void LocationBarView::Init() {
   }
 
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_ACTION_BOX_UPDATED,
+                 chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
                  content::Source<Profile>(profile_));
 
   // Initialize the location entry. We do this to avoid a black flash which is
@@ -1015,8 +1015,8 @@ void LocationBarView::RefreshPageActionViews() {
 
   TabContentsWrapper* tab_contents = GetTabContentsWrapper();
   if (tab_contents) {
-    extensions::ActionBoxController* controller =
-        tab_contents->extension_tab_helper()->action_box_controller();
+    extensions::LocationBarController* controller =
+        tab_contents->extension_tab_helper()->location_bar_controller();
     page_actions.swap(*controller->GetCurrentActions());
   }
 
@@ -1304,7 +1304,7 @@ void LocationBarView::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_ACTION_BOX_UPDATED: {
+    case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
       // Only update if the updated action box was for the active tab contents.
       TabContentsWrapper* target_tab =
           content::Details<TabContentsWrapper>(details).ptr();

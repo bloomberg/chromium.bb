@@ -10,20 +10,21 @@
 #include <string>
 
 #include "base/observer_list.h"
-#include "chrome/browser/extensions/action_box_controller.h"
+#include "chrome/browser/extensions/location_bar_controller.h"
 
 class ExtensionService;
 class TabContentsWrapper;
 
 namespace extensions {
 
-// An ActionBoxController which corresponds to the page actions of an extension.
-class PageActionController : public ActionBoxController {
+// A LocationBarController which populates the location bar with icons based
+// on the page_action extension API.
+class PageActionController : public LocationBarController {
  public:
   explicit PageActionController(TabContentsWrapper* tab_contents);
   virtual ~PageActionController();
 
-  // ActionBoxController implementation.
+  // LocationBarController implementation.
   virtual scoped_ptr<std::vector<ExtensionAction*> > GetCurrentActions()
       OVERRIDE;
   virtual Action OnClicked(const std::string& extension_id,

@@ -53,7 +53,6 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/extensions except for
         # tests and mocks.
-        'browser/extensions/action_box_controller.h',
         'browser/extensions/api/api_function.cc',
         'browser/extensions/api/api_function.h',
         'browser/extensions/api/api_resource.cc',
@@ -403,6 +402,7 @@
         'browser/extensions/key_identifier_conversion_views.h',
         'browser/extensions/lazy_background_task_queue.cc',
         'browser/extensions/lazy_background_task_queue.h',
+        'browser/extensions/location_bar_controller.h',
         'browser/extensions/pack_extension_job.cc',
         'browser/extensions/pack_extension_job.h',
         'browser/extensions/page_action_controller.cc',

@@ -26,8 +26,9 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   enum Action {
     ACTION_NONE,
     ACTION_SHOW_POPUP,
-    // Unlike ActionBoxController there is no ACTION_SHOW_CONTEXT_MENU, because
-    // UI implementations tend to handle this themselves at a higher level.
+    // Unlike LocationBarController there is no ACTION_SHOW_CONTEXT_MENU,
+    // because UI implementations tend to handle this themselves at a higher
+    // level.
   };
 
   // A class which is informed of changes to the model; represents the view of

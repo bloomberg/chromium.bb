@@ -53,7 +53,7 @@ ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
     script_badge_controller_.reset(new ScriptBadgeController(wrapper));
   } else {
     script_executor_.reset(new ScriptExecutorImpl(wrapper->web_contents()));
-    action_box_controller_.reset(new PageActionController(wrapper));
+    location_bar_controller_.reset(new PageActionController(wrapper));
   }
 }
 
@@ -113,10 +113,11 @@ extensions::ScriptExecutor* ExtensionTabHelper::script_executor() {
   return script_executor_.get();
 }
 
-extensions::ActionBoxController* ExtensionTabHelper::action_box_controller() {
+extensions::LocationBarController*
+    ExtensionTabHelper::location_bar_controller() {
   if (script_badge_controller_.get())
     return script_badge_controller_.get();
-  return action_box_controller_.get();
+  return location_bar_controller_.get();
 }
 
 void ExtensionTabHelper::DidNavigateMainFrame(

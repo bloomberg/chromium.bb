@@ -35,7 +35,7 @@ PageActionController::GetCurrentActions() {
   return current_actions.Pass();
 }
 
-ActionBoxController::Action PageActionController::OnClicked(
+LocationBarController::Action PageActionController::OnClicked(
     const std::string& extension_id, int mouse_button) {
   const Extension* extension =
       GetExtensionService()->extensions()->GetByID(extension_id);

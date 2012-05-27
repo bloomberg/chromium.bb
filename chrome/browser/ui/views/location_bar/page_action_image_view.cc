@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/action_box_controller.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -32,7 +32,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 
 using content::WebContents;
-using extensions::ActionBoxController;
+using extensions::LocationBarController;
 using extensions::Extension;
 
 PageActionImageView::PageActionImageView(LocationBarView* owner,
@@ -97,15 +97,15 @@ void PageActionImageView::ExecuteAction(int button) {
   if (!tab_contents)
     return;
 
-  ActionBoxController* controller =
-      tab_contents->extension_tab_helper()->action_box_controller();
+  LocationBarController* controller =
+      tab_contents->extension_tab_helper()->location_bar_controller();
 
   // 1 is left click.
   switch (controller->OnClicked(page_action_->extension_id(), 1)) {
-    case ActionBoxController::ACTION_NONE:
+    case LocationBarController::ACTION_NONE:
       break;
 
-    case ActionBoxController::ACTION_SHOW_POPUP: {
+    case LocationBarController::ACTION_SHOW_POPUP: {
       bool popup_showing = popup_ != NULL;
 
       // Always hide the current popup. Only one popup at a time.
@@ -127,11 +127,11 @@ void PageActionImageView::ExecuteAction(int button) {
       break;
     }
 
-    case ActionBoxController::ACTION_SHOW_CONTEXT_MENU:
+    case LocationBarController::ACTION_SHOW_CONTEXT_MENU:
       // We are never passing OnClicked a right-click button, so assume that
       // we're never going to be asked to show a context menu.
       // TODO(kalman): if this changes, update this class to pass the real
-      // mouse button through to the ActionBoxController.
+      // mouse button through to the LocationBarController.
       NOTREACHED();
       break;
   }

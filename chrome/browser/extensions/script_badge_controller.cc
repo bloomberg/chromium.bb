@@ -49,7 +49,7 @@ ScriptBadgeController::GetCurrentActions() {
   return current_actions.Pass();
 }
 
-ActionBoxController::Action ScriptBadgeController::OnClicked(
+LocationBarController::Action ScriptBadgeController::OnClicked(
     const std::string& extension_id, int mouse_button) {
   ExtensionService* service = GetExtensionService();
   if (!service)
@@ -86,7 +86,7 @@ void ScriptBadgeController::ExecuteScript(
   // This tab should now show that the extension executing a script.
   extensions_executing_scripts_.insert(extension_id);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_ACTION_BOX_UPDATED,
+      chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
       content::Source<Profile>(tab_contents_->profile()),
       content::Details<TabContentsWrapper>(tab_contents_));
 }

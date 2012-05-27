@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/extensions/action_box_controller.h"
+#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/extensions/script_executor_impl.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -24,16 +24,30 @@ namespace extensions {
 
 class Extension;
 
-// An ActionBoxController which corresponds to script badges, and implements
-// ScriptExecutor in order to show those scripts in the action box too.
-class ScriptBadgeController : public ActionBoxController,
+// An LocationBarController which displays icons whenever a script is executing
+// in a tab. It accomplishes this two different ways:
+//
+// - For content_script declarations, the current URL in the tab is compared to
+//   registered content scripts when GetCurrentActions() is called.
+// - An interface is exposed for programmatically executing scripts. Executed
+//   scripts are recorded and used later to populate GetCurrentActions().
+//
+// TODO(aa): There are some edge cases that need to be thought-through here:
+//
+// - Redirects. In this case, I think we may flicker the icons in the url bar
+//   as we bounce from URL to URL, without any script actually being executed.
+// - Frames. This won't show icons for content_scripts running in frames. Should
+//   it?
+// - Possibly other weirdness where the state here doesn't match the state in
+//   the renderer for whatever reason.
+class ScriptBadgeController : public LocationBarController,
                               public ScriptExecutor,
                               public content::WebContentsObserver {
  public:
   explicit ScriptBadgeController(TabContentsWrapper* tab_contents);
   virtual ~ScriptBadgeController();
 
-  // ActionBoxController implementation.
+  // LocationBarController implementation.
   virtual scoped_ptr<std::vector<ExtensionAction*> > GetCurrentActions()
       OVERRIDE;
   virtual Action OnClicked(const std::string& extension_id,
