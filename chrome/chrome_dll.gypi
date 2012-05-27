@@ -388,7 +388,7 @@
                   'postbuild_name': 'Symlink Libraries',
                   'action': [
                     'ln',
-                    '-fhs',
+                    '-fns',
                     'Versions/Current/Libraries',
                     '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Libraries'
                   ],
@@ -519,7 +519,7 @@
                       'postbuild_name': 'Symlink Frameworks',
                       'action': [
                         'ln',
-                        '-fhs',
+                        '-fns',
                         'Versions/Current/Frameworks',
                         '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Frameworks'
                       ],
