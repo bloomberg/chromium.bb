@@ -87,4 +87,17 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
   return installer;
 }
 
+bool IsExtensionDownload(const DownloadItem& download_item) {
+  if (download_item.PromptUserForSaveLocation())
+    return false;
+
+  if (download_item.GetMimeType() == extensions::Extension::kMimeType ||
+      UserScript::IsURLUserScript(download_item.GetURL(),
+                                  download_item.GetMimeType())) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 }  // namespace download_crx_util

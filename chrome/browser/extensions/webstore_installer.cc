@@ -14,7 +14,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -287,7 +287,7 @@ void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
       break;
     case DownloadItem::COMPLETE:
       // Wait for other notifications if the download is really an extension.
-      if (!ChromeDownloadManagerDelegate::IsExtensionDownload(download))
+      if (!download_crx_util::IsExtensionDownload(*download))
         ReportFailure(kInvalidDownloadError);
       break;
     default:

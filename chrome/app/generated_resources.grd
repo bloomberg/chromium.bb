@@ -4174,15 +4174,18 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> requires new permissions
       </message>
 
-      <!-- Extension/App install prompt -->
+      <!-- Extension install prompt -->
       <message name="IDS_EXTENSION_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt window">
         Confirm Installation
       </message>
-      <message name="IDS_EXTENSION_INSTALL_APP_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt window">
+      <message name="IDS_EXTENSION_INSTALL_APP_PROMPT_TITLE" desc="Titlebar of the app installation prompt window">
         Confirm New App
       </message>
-      <message name="IDS_EXTENSION_INSTALL_EXTENSION_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt window">
+      <message name="IDS_EXTENSION_INSTALL_EXTENSION_PROMPT_TITLE" desc="Titlebar of the extension installation prompt window">
         Confirm New Extension
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_THEME_PROMPT_TITLE" desc="Titlebar of the theme installation prompt window">
+        Confirm New Theme
       </message>
       <message name="IDS_EXTENSION_UNINSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app uninstallation prompt window">
         Confirm Removal
@@ -4410,6 +4413,9 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       </message>
       <message name="IDS_EXTENSION_INSTALL_UNEXPECTED_ID" desc="Error displayed during installation of a side-loaded app, extension, or theme when the ID of the referenced extension does not match the ID the developer declared during registration.">
         Expected ID "<ph name="EXPECTED_ID">$1<ex>bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb</ex></ph>", but ID was "<ph name="NEW_ID">$2<ex>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</ex></ph>".
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE" desc="Error displayed during installation of an extension when installation is not allowed from the current site.">
+        Extensions, apps, and user scripts cannot be installed from this web site.
       </message>
       <message name="IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION" desc="Error displayed during installation of a side-loaded app, extension, or theme when the version of the referenced extension does not match the version the developer declared during registration.">
         Expected version "<ph name="EXPECTED_VERSION">$1<ex>2.0</ex></ph>", but version was "<ph name="NEW_ID">$2<ex>1.0</ex></ph>".
@@ -4717,7 +4723,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <ph name="EXTENSION_FILE">$1<ex>c:\users\aa\myextension.crx</ex></ph>
       </message>
       <message name="IDS_EXTENSION_INSTALL_FAILURE_TITLE" desc="Message shown in titlebar/header of the dialog informing the user that an extension failed to install.">
-        Extension Install Failure
+        Install Failure
       </message>
 
       <message name="IDS_EXTENSION_PROMPT_INSTALL_BUTTON" desc="Text for the install button on the extension install prompt">

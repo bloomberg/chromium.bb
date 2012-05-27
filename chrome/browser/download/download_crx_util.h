@@ -37,6 +37,10 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
     Profile* profile,
     const content::DownloadItem& download_item);
 
+// Returns true if this is an extension download. This also considers user
+// scripts to be extension downloads, since we convert those automatically.
+bool IsExtensionDownload(const content::DownloadItem& download_item);
+
 }  // namespace download_crx_util
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CRX_UTIL_H_

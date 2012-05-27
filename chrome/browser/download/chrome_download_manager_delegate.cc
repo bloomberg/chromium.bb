@@ -109,19 +109,6 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
 ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
 }
 
-bool ChromeDownloadManagerDelegate::IsExtensionDownload(
-    const DownloadItem* item) {
-  if (item->PromptUserForSaveLocation())
-    return false;
-
-  if (item->GetMimeType() == extensions::Extension::kMimeType ||
-      UserScript::IsURLUserScript(item->GetURL(), item->GetMimeType())) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
 void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
   download_manager_ = dm;
   download_history_.reset(new DownloadHistory(profile_));
@@ -300,29 +287,24 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(
 }
 
 bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
-  if (IsExtensionDownload(item)) {
-    // We can open extensions if either they came from the store, or
-    // off-store-install is enabled.
-    if (extensions::switch_utils::IsOffStoreInstallEnabled() ||
-        WebstoreInstaller::GetAssociatedApproval(*item)) {
-      scoped_refptr<CrxInstaller> crx_installer =
-          download_crx_util::OpenChromeExtension(profile_, *item);
+  if (download_crx_util::IsExtensionDownload(*item)) {
+    scoped_refptr<CrxInstaller> crx_installer =
+        download_crx_util::OpenChromeExtension(profile_, *item);
 
-      // CRX_INSTALLER_DONE will fire when the install completes.  Observe()
-      // will call DelayedDownloadOpened() on this item.  If this DownloadItem
-      // is not around when CRX_INSTALLER_DONE fires, Complete() will not be
-      // called.
-      registrar_.Add(this,
-                     chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                     content::Source<CrxInstaller>(crx_installer.get()));
+    // CRX_INSTALLER_DONE will fire when the install completes.  Observe()
+    // will call DelayedDownloadOpened() on this item.  If this DownloadItem
+    // is not around when CRX_INSTALLER_DONE fires, Complete() will not be
+    // called.
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+                   content::Source<CrxInstaller>(crx_installer.get()));
 
-      crx_installers_[crx_installer.get()] = item->GetId();
-      // The status text and percent complete indicator will change now
-      // that we are installing a CRX.  Update observers so that they pick
-      // up the change.
-      item->UpdateObservers();
-      return false;
-    }
+    crx_installers_[crx_installer.get()] = item->GetId();
+    // The status text and percent complete indicator will change now
+    // that we are installing a CRX.  Update observers so that they pick
+    // up the change.
+    item->UpdateObservers();
+    return false;
   }
 
   if (ShouldOpenWithWebIntents(item)) {
@@ -572,7 +554,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
       //    "save as...".
       // 2) Filetypes marked "always open." If the user just wants this file
       //    opened, don't bother asking where to keep it.
-      if (!IsExtensionDownload(download) &&
+      if (!download_crx_util::IsExtensionDownload(*download) &&
           !ShouldOpenFileBasedOnExtension(generated_name))
         state.prompt_user_for_save_location = true;
     }
@@ -743,9 +725,9 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
 
   // Extensions that are not from the gallery are considered dangerous.
   // When off-store install is disabled we skip this, since in this case, we
-  // will not offer to install the extension.
+  // will cancel the install later.
   if (extensions::switch_utils::IsOffStoreInstallEnabled() &&
-      IsExtensionDownload(&download) &&
+      download_crx_util::IsExtensionDownload(download) &&
       !WebstoreInstaller::GetAssociatedApproval(download)) {
     return true;
   }

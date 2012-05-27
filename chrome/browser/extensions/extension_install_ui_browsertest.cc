@@ -52,7 +52,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        MAYBE_TestThemeInstallUndoResetsToDefault) {
   // Install theme once and undo to verify we go back to default theme.
   FilePath theme_crx = PackExtension(test_data_dir_.AppendASCII("theme"));
-  ASSERT_TRUE(InstallExtensionWithUI(theme_crx, 1));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
+      theme_crx, 1, browser()->profile()));
   const Extension* theme = GetTheme();
   ASSERT_TRUE(theme);
   std::string theme_id = theme->id();
@@ -63,11 +64,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   // We set the |expected_change| to zero in these 'InstallExtensionWithUI'
   // calls since the theme has already been installed above and this is an
   // overinstall to set the active theme.
-  ASSERT_TRUE(InstallExtensionWithUI(theme_crx, 0));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
+      theme_crx, 0, browser()->profile()));
   theme = GetTheme();
   ASSERT_TRUE(theme);
   ASSERT_EQ(theme_id, theme->id());
-  ASSERT_TRUE(InstallExtensionWithUI(theme_crx, 0));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
+      theme_crx, 0, browser()->profile()));
   theme = GetTheme();
   ASSERT_TRUE(theme);
   ASSERT_EQ(theme_id, theme->id());
@@ -79,14 +82,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        TestThemeInstallUndoResetsToPreviousTheme) {
   // Install first theme.
   FilePath theme_path = test_data_dir_.AppendASCII("theme");
-  ASSERT_TRUE(InstallExtensionWithUI(theme_path, 1));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
+      theme_path, 1, browser()->profile()));
   const Extension* theme = GetTheme();
   ASSERT_TRUE(theme);
   std::string theme_id = theme->id();
 
   // Then install second theme.
   FilePath theme_path2 = test_data_dir_.AppendASCII("theme2");
-  ASSERT_TRUE(InstallExtensionWithUI(theme_path2, 1));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
+      theme_path2, 1, browser()->profile()));
   const Extension* theme2 = GetTheme();
   ASSERT_TRUE(theme2);
   EXPECT_FALSE(theme_id == theme2->id());

@@ -48,9 +48,6 @@ class ChromeDownloadManagerDelegate
 
   void SetDownloadManager(content::DownloadManager* dm);
 
-  // Returns true if the given item is for an extension download.
-  static bool IsExtensionDownload(const content::DownloadItem* item);
-
   // Should be called before the first call to ShouldCompleteDownload() to
   // disable SafeBrowsing checks for |item|.
   static void DisableSafeBrowsing(content::DownloadItem* item);

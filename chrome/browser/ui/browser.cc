@@ -41,7 +41,7 @@
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/debugger/devtools_window.h"
-#include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -3400,7 +3400,7 @@ void Browser::OnStartDownload(WebContents* source,
     // window is minimized, we're in a unit test, etc.).
     WebContents* shelf_tab = shelf->browser()->GetSelectedWebContents();
     if ((download->GetTotalBytes() > 0) &&
-        !ChromeDownloadManagerDelegate::IsExtensionDownload(download) &&
+        !download_crx_util::IsExtensionDownload(*download) &&
         platform_util::IsVisible(shelf_tab->GetNativeView()) &&
         ui::Animation::ShouldRenderRichAnimation()) {
       DownloadStartedAnimation::Show(shelf_tab);

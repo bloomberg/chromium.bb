@@ -31,7 +31,7 @@ class DictionaryValue;
 namespace extensions {
 class BundleInstaller;
 class Extension;
-class ExtensionNoConfirmWebstorePrivateApiTest;
+class ExtensionWebstorePrivateApiTest;
 }  // namespace extensions
 
 // Displays all the UI around extension installation.
@@ -226,7 +226,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   static void OpenAppInstalledUI(Browser* browser, const std::string& app_id);
 
  protected:
-  friend class extensions::ExtensionNoConfirmWebstorePrivateApiTest;
+  friend class extensions::ExtensionWebstorePrivateApiTest;
   friend class WebstoreInlineInstallUnpackFailureTest;
 
   // Disables showing UI (ErrorBox, etc.) for install failures. To be used only

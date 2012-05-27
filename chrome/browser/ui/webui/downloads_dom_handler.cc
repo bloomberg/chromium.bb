@@ -17,7 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -213,7 +213,7 @@ void DownloadsDOMHandler::ModelChanged(content::DownloadManager* manager) {
 
   // Remove any extension downloads.
   for (size_t i = 0; i < download_items_.size();) {
-    if (ChromeDownloadManagerDelegate::IsExtensionDownload(download_items_[i]))
+    if (download_crx_util::IsExtensionDownload(*download_items_[i]))
       download_items_.erase(download_items_.begin() + i);
     else
       i++;

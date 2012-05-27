@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_service.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -21,6 +22,11 @@
 class InfoBarsTest : public InProcessBrowserTest {
  public:
   InfoBarsTest() {}
+
+  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitchASCII(
+        switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+  }
 
   void InstallExtension(const char* filename) {
     FilePath path = ui_test_utils::GetTestFilePath(

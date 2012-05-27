@@ -54,14 +54,14 @@ bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
     case OPEN_WHEN_COMPLETE:
       return download_item_->CanShowInFolder() &&
           !download_item_->IsTemporary() &&
-          (!Extension::IsExtension(download_item_->GetTargetName()) ||
-           extensions::switch_utils::IsOffStoreInstallEnabled());
+          (!download_crx_util::IsExtensionDownload(*download_item_) ||
+           download_item_->IsComplete());
     case ALWAYS_OPEN_TYPE:
       // For temporary downloads, the target filename might be a temporary
       // filename. Don't base an "Always open" decision based on it. Also
       // exclude extensions.
       return download_item_->CanOpenDownload() &&
-          !Extension::IsExtension(download_item_->GetTargetName()) &&
+          !download_crx_util::IsExtensionDownload(*download_item_) &&
           !download_item_->IsTemporary();
     case CANCEL:
       return download_item_->IsPartialDownload();
@@ -75,7 +75,8 @@ bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
 bool DownloadShelfContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
     case OPEN_WHEN_COMPLETE:
-      return download_item_->GetOpenWhenComplete();
+      return download_item_->GetOpenWhenComplete() ||
+          download_crx_util::IsExtensionDownload(*download_item_);
     case ALWAYS_OPEN_TYPE:
       return download_item_->ShouldOpenFileBasedOnExtension();
     case TOGGLE_PAUSE:

@@ -87,12 +87,14 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
 }  // namespace
 
 // A base class for tests below.
-class ExtensionNoConfirmWebstorePrivateApiTest : public ExtensionApiTest {
+class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
  public:
   void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kAppsGalleryURL, "http://www.example.com");
+    command_line->AppendSwitchASCII(
+        switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
   }
 
   void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -146,16 +148,6 @@ class ExtensionNoConfirmWebstorePrivateApiTest : public ExtensionApiTest {
   }
 
   ScopedTempDir tmp_;
-};
-
-class ExtensionWebstorePrivateApiTest :
-    public ExtensionNoConfirmWebstorePrivateApiTest {
- public:
-  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionNoConfirmWebstorePrivateApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(
-        switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
-  }
 };
 
 class ExtensionWebstorePrivateBundleTest
@@ -353,8 +345,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, BeginInstall) {
 }
 
 // Tests that themes are installed without an install prompt.
-IN_PROC_BROWSER_TEST_F(ExtensionNoConfirmWebstorePrivateApiTest,
-                       InstallTheme) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallTheme) {
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("theme.html", "../../../theme.crx"));

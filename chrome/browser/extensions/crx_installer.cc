@@ -36,6 +36,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -188,6 +189,14 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
                                 string16* error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(error);
+
+  if (!extension->is_theme() &&
+      !extensions::switch_utils::IsOffStoreInstallEnabled() &&
+      !is_gallery_install()) {
+    *error = l10n_util::GetStringUTF16(
+        IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE);
+    return false;
+  }
 
   // Make sure the expected ID matches if one was supplied or if we want to
   // bypass the prompt.

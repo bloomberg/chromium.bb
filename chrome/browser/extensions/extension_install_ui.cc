@@ -123,13 +123,18 @@ void ExtensionInstallUI::Prompt::SetInlineInstallWebstoreData(
 }
 
 string16 ExtensionInstallUI::Prompt::GetDialogTitle() const {
+  int resource_id = kTitleIds[type_];
+
   if (type_ == INSTALL_PROMPT) {
-    return l10n_util::GetStringUTF16(extension_->is_app() ?
-        IDS_EXTENSION_INSTALL_APP_PROMPT_TITLE :
-        IDS_EXTENSION_INSTALL_EXTENSION_PROMPT_TITLE);
-  } else {
-    return l10n_util::GetStringUTF16(kTitleIds[type_]);
+    if (extension_->is_app())
+      resource_id = IDS_EXTENSION_INSTALL_APP_PROMPT_TITLE;
+    else if (extension_->is_theme())
+      resource_id = IDS_EXTENSION_INSTALL_THEME_PROMPT_TITLE;
+    else
+      resource_id = IDS_EXTENSION_INSTALL_EXTENSION_PROMPT_TITLE;
   }
+
+  return l10n_util::GetStringUTF16(resource_id);
 }
 
 string16 ExtensionInstallUI::Prompt::GetHeading() const {
@@ -313,10 +318,14 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
   delegate_ = delegate;
   prompt_type_ = INSTALL_PROMPT;
 
-  // We special-case themes to not show any confirm UI. Instead they are
-  // immediately installed, and then we show an infobar (see OnInstallSuccess)
-  // to allow the user to revert if they don't like it.
-  if (extension->is_theme()) {
+  // In the Web Store, we special-case themes to not show any confirm UI.
+  // Instead they are immediately installed, and then we show an infobar (see
+  // OnInstallSuccess) to allow the user to revert if they don't like it.
+  //
+  // We don't do this off-store because we don't want websites to be able to
+  // clickjack people into installing themes. Even though it's not dangerous, it
+  // would be annoying.
+  if (extension->from_webstore() && extension->is_theme()) {
     delegate->InstallUIProceed();
     return;
   }
