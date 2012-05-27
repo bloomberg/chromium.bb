@@ -248,16 +248,19 @@ class GitRepoPatch(object):
       cros_lib.RunCommand(['git', 'checkout', constants.PATCH_BRANCH],
                           cwd=project_dir, print_cmd=False)
 
-  def _GetUpstreamBranch(self, buildroot):
+  def _GetUpstreamBranch(self, buildroot, force_default=False):
     """Get the branch specified in the manifest for this patch."""
     # TODO(ferringb): remove this via cherry-picking; it's broken
     # now since it assumes the tracking_branch (which is local
     # to the originating repo) is what should be used for rebasing
     # this patch into the current tree).
     manifest = cros_lib.ManifestCheckout.Cached(buildroot)
+    if force_default:
+      return manifest.default_branch
     return manifest.GetProjectsLocalRevision(self.project)
 
-  def ApplyIntoGitRepo(self, project_dir, upstream, trivial=False):
+  def ApplyIntoGitRepo(self, project_dir, upstream, trivial=False,
+                       do_check=True):
     """Apply patch into a standalone git repo.
 
     The git repo does not need to be part of a repo checkout.
@@ -266,20 +269,16 @@ class GitRepoPatch(object):
       project_dir: The directory of the project.
       upstream: The branch to base the patch on.
       trivial: Only allow trivial merges when applying change.
+      do_check: Check if tracking is the same as the given upstream.
     """
     # Check that the patch is based on the same branch as project we are
     # patching into.
     # TODO(ferringb): remove this when cherry-pick lands; has questionable
     # value now, has no relevance/value once cherry-picking is in.
     branch_base = os.path.basename(upstream)
-    if self.tracking_branch != branch_base:
-      if upstream.startswith('refs/'):
-        raise PatchException('branch %s for project %s is not tracking %s'
-                             % (self.ref, self.project, branch_base))
-      cros_lib.Warning(
-          "Patch %s is applied against a revlocked manifest; there is no way "
-          "to discern (nor sanely validate) the upstream vs local tracking.  "
-          "Suppressing the check." % (self,))
+    if self.tracking_branch != branch_base and do_check:
+      raise PatchException('branch %s for project %s is not tracking %s'
+                           % (self.ref, self.project, branch_base))
 
     rev = self.Fetch(project_dir)
 
@@ -300,8 +299,15 @@ class GitRepoPatch(object):
     """
     logging.info('Attempting to apply change %s', self)
     manifest_branch = self._GetUpstreamBranch(buildroot)
+    do_check = manifest_branch.startswith('refs/')
+    if not do_check:
+      # Revision locked.  Use the manifest default branch which
+      # is set to the manifest locked revision, and
+      # suppress the tracking/upstream check.
+      manifest_branch = self._GetUpstreamBranch(buildroot, True)
     project_dir = self.ProjectDir(buildroot)
-    self.ApplyIntoGitRepo(project_dir, manifest_branch, trivial)
+    self.ApplyIntoGitRepo(project_dir, manifest_branch, trivial,
+                          do_check=do_check)
 
   def GerritDependencies(self, buildroot):
     """Returns an ordered list of dependencies from Gerrit.
@@ -321,9 +327,9 @@ class GitRepoPatch(object):
 
     rev = self.Fetch(project_dir)
 
-    manifest_branch = self._GetUpstreamBranch(buildroot)
+    tracking_branch = self._GetUpstreamBranch(buildroot)
     return_obj = cros_lib.RunCommand(
-        ['git', 'log', '--format=%B%x00', '%s..%s^' % (manifest_branch, rev)],
+        ['git', 'log', '--format=%B%x00', '%s..%s^' % (tracking_branch, rev)],
         cwd=project_dir, redirect_stdout=True, print_cmd=False)
 
     patches = []

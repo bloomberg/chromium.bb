@@ -58,9 +58,9 @@ class _PatchSuppression(object):
     # Short circuit this to not require manifest parsing.
     return buildroot
 
-  def _GetUpstreamBranch(self, buildroot):
+  def _GetUpstreamBranch(self, buildroot, force_default=False):
     # Tests are built around the assumption of this upstream value.
-    return 'origin/master'
+    return 'refs/remotes/origin/master'
 
 
 class TestGitRepoPatch(cros_test_lib.TempDirMixin, unittest.TestCase):
