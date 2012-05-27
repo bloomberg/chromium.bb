@@ -597,17 +597,23 @@ validMatch ()
       if (k == src)
 	prevAttr = currentInputChar->attributes;
       ruleChar = findCharOrDots (transRule->charsdots[kk++], 0);
-      if ((currentInputChar->lowercase != ruleChar->lowercase)
-	  || (typebuf != NULL && (typebuf[src] & capsemph) == 0 &&
-	      (typebuf[k] & mask) != (typebuf[src] & mask))
-	  || (k != (src + 1) && (prevAttr &
+      if ((currentInputChar->lowercase != ruleChar->lowercase))
+	return 0;
+      if (typebuf != NULL && (typebuf[src] & capsemph) == 0 &&
+	  (typebuf[k] & mask) != (typebuf[src] & mask))
+	return 0;
+      if (currentInputChar->attributes != CTC_Letter)
+	{
+	  if (k != (src + 1) && (prevAttr &
 				 CTC_Letter)
 	      && (currentInputChar->attributes & CTC_Letter)
 	      &&
 	      ((currentInputChar->
-		attributes & (CTC_LowerCase | CTC_UpperCase)) !=
-	       (prevAttr & (CTC_LowerCase | CTC_UpperCase)))))
-	return 0;
+		attributes & (CTC_LowerCase | CTC_UpperCase |
+			      CTC_Letter)) !=
+	       (prevAttr & (CTC_LowerCase | CTC_UpperCase | CTC_Letter))))
+	    return 0;
+	}
       prevAttr = currentInputChar->attributes;
     }
   return 1;
