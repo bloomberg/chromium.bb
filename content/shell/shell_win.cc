@@ -250,6 +250,16 @@ LRESULT CALLBACK Shell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
         shell->PlatformResizeSubViews();
       return 0;
     }
+
+    case WM_WINDOWPOSCHANGED: {
+      // Notify the content view that the window position of its parent window
+      // has been changed by sending window message
+      gfx::NativeView native_view = shell->GetContentView();
+      if (native_view) {
+        SendMessage(native_view, message, wParam, lParam);
+      }
+      break;
+   }
   }
 
   return DefWindowProc(hwnd, message, wParam, lParam);
