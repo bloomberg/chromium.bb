@@ -7,12 +7,12 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -127,10 +127,6 @@ static ObserverList<BrowserList::Observer>& observers() {
   CR_DEFINE_STATIC_LOCAL(
       ObserverList<BrowserList::Observer>, observer_vector, ());
   return observer_vector;
-}
-
-printing::BackgroundPrintingManager* GetBackgroundPrintingManager() {
-  return g_browser_process->background_printing_manager();
 }
 
 }  // namespace
@@ -323,43 +319,3 @@ void BrowserList::RemoveBrowserFrom(Browser* browser,
     browser_list->erase(remove_browser);
 }
 
-TabContentsIterator::TabContentsIterator()
-    : browser_iterator_(BrowserList::begin()),
-      web_view_index_(-1),
-      bg_printing_iterator_(GetBackgroundPrintingManager()->begin()),
-      cur_(NULL) {
-  Advance();
-}
-
-void TabContentsIterator::Advance() {
-  // The current WebContents should be valid unless we are at the beginning.
-  DCHECK(cur_ || (web_view_index_ == -1 &&
-                  browser_iterator_ == BrowserList::begin()))
-      << "Trying to advance past the end";
-
-  // Update cur_ to the next WebContents in the list.
-  while (browser_iterator_ != BrowserList::end()) {
-    if (++web_view_index_ >= (*browser_iterator_)->tab_count()) {
-      // Advance to the next Browser in the list.
-      ++browser_iterator_;
-      web_view_index_ = -1;
-      continue;
-    }
-
-    TabContentsWrapper* next_tab =
-        (*browser_iterator_)->GetTabContentsWrapperAt(web_view_index_);
-    if (next_tab) {
-      cur_ = next_tab;
-      return;
-    }
-  }
-  // If no more WebContents from Browsers, check the BackgroundPrintingManager.
-  while (bg_printing_iterator_ != GetBackgroundPrintingManager()->end()) {
-    cur_ = *bg_printing_iterator_;
-    CHECK(cur_);
-    ++bg_printing_iterator_;
-    return;
-  }
-  // Reached the end - no more WebContents.
-  cur_ = NULL;
-}

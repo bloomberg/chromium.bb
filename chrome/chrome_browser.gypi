@@ -3222,6 +3222,8 @@
         'browser/ui/tab_contents/core_tab_helper.h',
         'browser/ui/tab_contents/core_tab_helper_delegate.cc',
         'browser/ui/tab_contents/core_tab_helper_delegate.h',
+        'browser/ui/tab_contents/tab_contents_iterator.cc',
+        'browser/ui/tab_contents/tab_contents_iterator.h',
         'browser/ui/tab_contents/tab_contents_wrapper.cc',
         'browser/ui/tab_contents/tab_contents_wrapper.h',
         'browser/ui/tab_modal_confirm_dialog_delegate.cc',

@@ -12,7 +12,7 @@
 #import "base/metrics/histogram.h"
 #import "base/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #import "chrome/common/mac/objc_method_swizzle.h"
 #import "chrome/common/mac/objc_zombie.h"

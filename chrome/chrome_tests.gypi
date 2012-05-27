@@ -1570,7 +1570,6 @@
         'browser/task_profiler/task_profiler_data_serializer_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
         'browser/themes/theme_service_unittest.cc',
-        'browser/ui/browser_list_unittest.cc',
         'browser/ui/browser_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
         # without an explicit exclusion since gyp is smart enough to
@@ -1750,6 +1749,7 @@
         'browser/ui/panels/panel_mouse_watcher_unittest.cc',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
         'browser/ui/select_file_dialog_unittest.cc',
+        'browser/ui/tab_contents/tab_contents_iterator_unittest.cc',
         'browser/ui/tabs/dock_info_unittest.cc',
         'browser/ui/tabs/pinned_tab_codec_unittest.cc',
         'browser/ui/tabs/pinned_tab_service_unittest.cc',
@@ -2343,8 +2343,8 @@
             'browser/sync/profile_sync_service_session_unittest.cc',
             'browser/sync/sync_global_error_unittest.cc',
             'browser/sync/sync_setup_wizard_unittest.cc',
-            'browser/ui/browser_list_unittest.cc',
             'browser/ui/browser_unittest.cc',
+            'browser/ui/tab_contents/tab_contents_iterator_unittest.cc',
             'browser/ui/toolbar/toolbar_model_unittest.cc',
             'browser/ui/toolbar/wrench_menu_model_unittest.cc',
             'browser/ui/webui/web_dialog_web_contents_delegate_unittest.cc',
