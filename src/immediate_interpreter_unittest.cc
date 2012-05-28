@@ -3495,4 +3495,65 @@ TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest) {
   }
 }
 
+TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
+  ImmediateInterpreter ii(NULL);
+
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    90.404251,  // right edge
+    48.953846,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    133,  // screen DPI x
+    133,  // screen DPI y
+    2,  // max fingers
+    3,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    true  // is button pad
+  };
+
+  FingerState finger_state[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    {0, 0, 0, 0, 25, 0, 30, 53, 1, 3},  // index 0
+    {0, 0, 0, 0, 46, 0, 30, 53, 1, 3},  // index 1
+    {0, 0, 0, 0, 69, 0, 30, 53, 1, 3},  // index 2
+
+    {0, 0, 0, 0, 67, 0, 30, 53, 1, 3},  // index 3
+    {0, 0, 0, 0, 67, 0, 68, 27, 2, 3},
+
+    {0, 0, 0, 0, 91, 0, 43, 52, 1, 3},  // index 5
+    {0, 0, 0, 0, 91, 0, 44, 23, 2, 0},
+
+    {0, 0, 0, 0, 91, 0, 43, 52, 1, 3},  // index 7
+    {0, 0, 0, 0, 91, 0, 43, 23, 2, 0},
+  };
+
+
+  HardwareState hardware_states[] = {
+    // time, buttons down, finger count, touch count, finger states pointer
+    { 2106.273252, 0, 1, 1, &finger_state[0] },
+    { 2106.285466, 0, 1, 1, &finger_state[1] },
+    { 2106.298021, 0, 1, 1, &finger_state[2] },
+    { 2106.325599, 0, 2, 2, &finger_state[3] },
+    { 2106.648152, 0, 2, 2, &finger_state[5] },
+    { 2106.660447, 0, 2, 2, &finger_state[7] },  // pinch if not semi_mt device
+  };
+
+  ii.SetHardwareProperties(hwprops);
+
+  Gesture *gesture;
+  for (size_t idx = 0; idx < arraysize(hardware_states); ++idx)
+    gesture = ii.SyncInterpret(&hardware_states[idx], NULL);
+  EXPECT_EQ(gesture->type, kGestureTypePinch);
+
+  // For a semi_mt device, replay the same inputs should not generate
+  // a pinch gesture.
+  hwprops.support_semi_mt = 1;
+  ii.SetHardwareProperties(hwprops);
+  for (size_t idx = 0; idx < arraysize(hardware_states); ++idx)
+    gesture = ii.SyncInterpret(&hardware_states[idx], NULL);
+  EXPECT_NE(gesture->type, kGestureTypePinch);
+}
 }  // namespace gestures

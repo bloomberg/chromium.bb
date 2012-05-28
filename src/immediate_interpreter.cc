@@ -756,7 +756,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
 
       if ((current_gesture_type_ == kGestureTypeMove ||
            current_gesture_type_ == kGestureTypeNull) &&
-          pinch_enable_.val_) {
+          (pinch_enable_.val_ && !hw_props_.support_semi_mt)) {
         bool do_pinch = UpdatePinchState(hwstate, false);
         if(do_pinch) {
           current_gesture_type_ = kGestureTypePinch;

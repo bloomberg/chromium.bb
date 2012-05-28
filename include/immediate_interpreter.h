@@ -108,6 +108,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, PinchTests);
   FRIEND_TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest);
   FRIEND_TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest);
+  FRIEND_TEST(ImmediateInterpreterTest, SemiMtNoPinchTest);
   FRIEND_TEST(ImmediateInterpreterTest, StationaryPalmTest);
   FRIEND_TEST(ImmediateInterpreterTest, SwipeTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapRecordTest);
