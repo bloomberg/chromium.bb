@@ -344,6 +344,7 @@ extern const char kWinHttpProxyResolver[];
 // Keep switches in alphabetical order.
 extern const char kDisableGData[];
 extern const char kEnableLibcros[];
+extern const char kEnableNewOobe[];
 extern const char kEnableTouchpadThreeFingerClick[];
 extern const char kSkipOAuthLogin[];
 extern const char kEnableDevicePolicy[];

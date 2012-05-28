@@ -5703,6 +5703,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_DESCRIPTION" desc="Description for the flag to enable touchpad three finger click as middle button.">
           Enables touchpad three-finger-click as middle button.
         </message>
+        <message name="IDS_FLAGS_ENABLE_NEW_OOBE" desc="Name for the flag to enable new design for OOBE / sign in flows.">
+          Enable OOBE/sign in redesign.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_NEW_OOBE_DESCRIPTION" desc="Description for the flag to enable new design for OOBE / sign in flows.">
+          Enables new design for OOBE / sign in flows.
+        </message>
       </if>
 
       <message name="IDS_FLAGS_CAPTIVE_PORTAL_CHECK_ON_ERROR_NAME" desc="Name for the flag to enable automatic checking for captive portals.">

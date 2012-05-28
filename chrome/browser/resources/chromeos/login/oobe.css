@@ -13,11 +13,15 @@ body {
 }
 
 body {
-  background: #fefefe;
+  background-color: #fefefe;
   font-size: 14px;
   margin: 0;
   overflow: hidden;
   padding: 0;
+}
+
+html[oobe=new]:not([screen=lock]) body {
+  background-color: transparent;
 }
 
 progress {

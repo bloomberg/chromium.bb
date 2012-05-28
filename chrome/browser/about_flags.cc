@@ -746,6 +746,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnablePinch),
   },
 #endif  // defined(USE_ASH)
+#if defined(OS_CHROMEOS)
+  {
+    "enable-new-oobe",
+    IDS_FLAGS_ENABLE_NEW_OOBE,
+    IDS_FLAGS_ENABLE_NEW_OOBE_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableNewOobe),
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

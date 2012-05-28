@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 #include "chrome/browser/ui/webui/options2/chromeos/user_image_source2.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -227,6 +229,17 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   for (size_t i = 0; i < handlers_.size(); ++i)
     handlers_[i]->GetLocalizedStrings(localized_strings);
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(localized_strings);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNewOobe))
+    localized_strings->SetString("oobeType", "new");
+  else
+    localized_strings->SetString("oobeType", "old");
+
+  // OobeUI is used for OOBE/login and lock screen.
+  if (BaseLoginDisplayHost::default_host())
+    localized_strings->SetString("screenType", "login");
+  else
+    localized_strings->SetString("screenType", "lock");
 }
 
 void OobeUI::AddScreenHandler(BaseScreenHandler* handler) {

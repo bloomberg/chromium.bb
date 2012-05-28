@@ -1263,6 +1263,9 @@ const char kDisableGData[]                  = "disable-gdata";
 // Enables Libcros.
 const char kEnableLibcros[]                = "enable-libcros";
 
+// Enables new OOBE/sign in design.
+extern const char kEnableNewOobe[]         = "enable-new-oobe";
+
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]
     = "touchpad-enable-three-finger-click";
