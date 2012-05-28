@@ -21,11 +21,16 @@ namespace Create = extensions::api::app_window::Create;
 
 namespace extensions {
 
+const char kCustomFrameOption[] = "custom";
+
 bool AppWindowCreateFunction::RunImpl() {
   scoped_ptr<Create::Params> params(Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   GURL url = GetExtension()->GetResourceURL(params->url);
+
+  bool use_custom_frame = params->options.frame.get() &&
+      *params->options.frame.get() == kCustomFrameOption;
 
   // TODO(jeremya): figure out a way to pass the opening WebContents through to
   // ShellWindow::Create so we can set the opener at create time rather than
@@ -39,6 +44,9 @@ bool AppWindowCreateFunction::RunImpl() {
     create_params.bounds.set_x(*params->options.left.get());
   if (params->options.top.get())
     create_params.bounds.set_y(*params->options.top.get());
+  create_params.frame = use_custom_frame ?
+      ShellWindow::CreateParams::FRAME_CUSTOM :
+      ShellWindow::CreateParams::FRAME_CHROME;
   ShellWindow* shell_window =
       ShellWindow::Create(profile(), GetExtension(), url, create_params);
   shell_window->Show();
