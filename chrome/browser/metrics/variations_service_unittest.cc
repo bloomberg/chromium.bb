@@ -154,7 +154,7 @@ TEST(VariationsServiceTest, CheckStudyVersionWildcards) {
   EXPECT_FALSE(VariationsService::CheckStudyVersion(study, "1.2.3"));
 }
 
-TEST(VariationsServiceTest, CheckStudyDate) {
+TEST(VariationsServiceTest, CheckStudyStartDate) {
   const base::Time now = base::Time::Now();
   const base::TimeDelta delta = base::TimeDelta::FromHours(1);
   const struct {
@@ -165,45 +165,42 @@ TEST(VariationsServiceTest, CheckStudyDate) {
     { now, true },
     { now + delta, false },
   };
+
+  chrome_variations::Study study;
+
+  // Start date not set should result in true.
+  EXPECT_TRUE(VariationsService::CheckStudyStartDate(study, now));
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(start_test_cases); ++i) {
+    study.set_start_date(TimeToProtoTime(start_test_cases[i].start_date));
+    const bool result = VariationsService::CheckStudyStartDate(study, now);
+    EXPECT_EQ(start_test_cases[i].expected_result, result)
+        << "Case " << i << " failed!";
+  }
+}
+
+TEST(VariationsServiceTest, IsStudyExpired) {
+  const base::Time now = base::Time::Now();
+  const base::TimeDelta delta = base::TimeDelta::FromHours(1);
   const struct {
     const base::Time expiry_date;
     bool expected_result;
   } expiry_test_cases[] = {
-    { now - delta, false },
-    { now, false },
-    { now + delta, true },
+    { now - delta, true },
+    { now, true },
+    { now + delta, false },
   };
 
   chrome_variations::Study study;
 
-  // Start/expiry date not set should result in true.
-  EXPECT_TRUE(VariationsService::CheckStudyDate(study, now));
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(start_test_cases); ++i) {
-    study.set_start_date(TimeToProtoTime(start_test_cases[i].start_date));
-    const bool result = VariationsService::CheckStudyDate(study, now);
-    EXPECT_EQ(start_test_cases[i].expected_result, result)
-        << "Case " << i << " failed!";
-  }
-  study.clear_start_date();
+  // Expiry date not set should result in false.
+  EXPECT_FALSE(VariationsService::IsStudyExpired(study, now));
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(expiry_test_cases); ++i) {
     study.set_expiry_date(TimeToProtoTime(expiry_test_cases[i].expiry_date));
-    const bool result = VariationsService::CheckStudyDate(study, now);
+    const bool result = VariationsService::IsStudyExpired(study, now);
     EXPECT_EQ(expiry_test_cases[i].expected_result, result)
         << "Case " << i << " failed!";
-  }
-
-  // Check intersection semantics.
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(start_test_cases); ++i) {
-    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(expiry_test_cases); ++j) {
-      study.set_start_date(TimeToProtoTime(start_test_cases[i].start_date));
-      study.set_expiry_date(TimeToProtoTime(expiry_test_cases[j].expiry_date));
-      const bool expected = start_test_cases[i].expected_result &&
-                            expiry_test_cases[j].expected_result;
-      const bool result = VariationsService::CheckStudyDate(study, now);
-      EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
-    }
   }
 }
 

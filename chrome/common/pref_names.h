@@ -375,6 +375,7 @@ extern const char kMetricsOngoingLogsXml[];
 extern const char kMetricsOngoingLogsProto[];
 
 extern const char kVariationsSeed[];
+extern const char kVariationsSeedDate[];
 
 extern const char kProfileLastUsed[];
 extern const char kProfilesLastActive[];

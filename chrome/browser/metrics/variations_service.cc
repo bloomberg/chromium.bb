@@ -17,6 +17,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {
@@ -58,10 +59,25 @@ VariationsService::~VariationsService() {}
 bool VariationsService::CreateTrialsFromSeed(PrefService* local_prefs) {
   chrome_variations::TrialsSeed seed;
   if (!LoadTrialsSeedFromPref(local_prefs, &seed))
-      return false;
+    return false;
 
-  for (int i = 0; i < seed.study_size(); ++i)
-    CreateTrialFromStudy(seed.study(i));
+  const int64 date_value = local_prefs->GetInt64(prefs::kVariationsSeedDate);
+  const base::Time seed_date = base::Time::FromInternalValue(date_value);
+  const base::Time build_time = base::GetBuildTime();
+  // Use the build time for date checks if either the seed date is invalid or
+  // the build time is newer than the seed date.
+  base::Time reference_date = seed_date;
+  if (seed_date.is_null() || seed_date < build_time)
+    reference_date = build_time;
+
+  const chrome::VersionInfo current_version_info;
+  if (!current_version_info.is_valid())
+    return false;
+
+  for (int i = 0; i < seed.study_size(); ++i) {
+    if (ShouldAddStudy(seed.study(i), current_version_info, reference_date))
+      CreateTrialFromStudy(seed.study(i), reference_date);
+  }
 
   return true;
 }
@@ -90,17 +106,25 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
 
   std::string seed_data;
-  request->GetResponseAsString(&seed_data);
+  bool success = request->GetResponseAsString(&seed_data);
+  DCHECK(success);
 
-  StoreSeedData(seed_data, g_browser_process->local_state());
+  base::Time response_date;
+  success = request->GetResponseHeaders()->GetDateValue(&response_date);
+  DCHECK(success || response_date.is_null());
+
+  StoreSeedData(seed_data, response_date, g_browser_process->local_state());
 }
 
 // static
 void VariationsService::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kVariationsSeed, std::string());
+  prefs->RegisterInt64Pref(prefs::kVariationsSeedDate,
+                           base::Time().ToInternalValue());
 }
 
 void VariationsService::StoreSeedData(const std::string& seed_data,
+                                      const base::Time& seed_date,
                                       PrefService* local_prefs) {
   // Only store the seed data if it parses correctly.
   chrome_variations::TrialsSeed seed;
@@ -109,34 +133,36 @@ void VariationsService::StoreSeedData(const std::string& seed_data,
             << "rejecting the seed.";
     return;
   }
+
   std::string base64_seed_data;
   if (!base::Base64Encode(seed_data, &base64_seed_data)) {
     VLOG(1) << "Variations Seed data from server fails Base64Encode, rejecting "
             << "the seed.";
     return;
   }
+
   local_prefs->SetString(prefs::kVariationsSeed, base64_seed_data);
+  local_prefs->SetInt64(prefs::kVariationsSeedDate,
+                        seed_date.ToInternalValue());
 }
 
 // static
-bool VariationsService::ShouldAddStudy(const chrome_variations::Study& study) {
-  const chrome::VersionInfo current_version_info;
-  if (!current_version_info.is_valid())
-    return false;
-
+bool VariationsService::ShouldAddStudy(
+    const chrome_variations::Study& study,
+    const chrome::VersionInfo& version_info,
+    const base::Time& reference_date) {
   if (!CheckStudyChannel(study, chrome::VersionInfo::GetChannel())) {
     DVLOG(1) << "Filtered out study " << study.name() << " due to version.";
     return false;
   }
 
-  if (!CheckStudyVersion(study, current_version_info.Version())) {
+  if (!CheckStudyVersion(study, version_info.Version())) {
     DVLOG(1) << "Filtered out study " << study.name() << " due to version.";
     return false;
   }
 
-  // Use build time and not system time to match what is done in field_trial.cc.
-  if (!CheckStudyDate(study, base::GetBuildTime())) {
-    DVLOG(1) << "Filtered out study " << study.name() << " due to date.";
+  if (!CheckStudyStartDate(study, reference_date)) {
+    DVLOG(1) << "Filtered out study " << study.name() << " due to start date.";
     return false;
   }
 
@@ -148,10 +174,9 @@ bool VariationsService::ShouldAddStudy(const chrome_variations::Study& study) {
 bool VariationsService::CheckStudyChannel(
     const chrome_variations::Study& study,
     chrome::VersionInfo::Channel channel) {
-  if (study.channel_size() == 0) {
-    // An empty channel list matches all channels.
+  // An empty channel list matches all channels.
+  if (study.channel_size() == 0)
     return true;
-  }
 
   for (int i = 0; i < study.channel_size(); ++i) {
     if (ConvertStudyChannelToVersionChannel(study.channel(i)) == channel)
@@ -163,8 +188,8 @@ bool VariationsService::CheckStudyChannel(
 // static
 bool VariationsService::CheckStudyVersion(const chrome_variations::Study& study,
                                           const std::string& version_string) {
-  const Version current_version(version_string);
-  if (!current_version.IsValid()) {
+  const Version version(version_string);
+  if (!version.IsValid()) {
     NOTREACHED();
     return false;
   }
@@ -173,7 +198,7 @@ bool VariationsService::CheckStudyVersion(const chrome_variations::Study& study,
     const Version min_version(study.min_version());
     if (!min_version.IsValid())
       return false;
-    if (current_version.CompareTo(min_version) < 0)
+    if (version.CompareTo(min_version) < 0)
       return false;
   }
 
@@ -181,7 +206,7 @@ bool VariationsService::CheckStudyVersion(const chrome_variations::Study& study,
     const Version max_version(study.max_version());
     if (!max_version.IsValid())
       return false;
-    if (current_version.CompareTo(max_version) > 0)
+    if (version.CompareTo(max_version) > 0)
       return false;
   }
 
@@ -189,23 +214,27 @@ bool VariationsService::CheckStudyVersion(const chrome_variations::Study& study,
 }
 
 // static
-bool VariationsService::CheckStudyDate(const chrome_variations::Study& study,
-                                       const base::Time& date_time) {
+bool VariationsService::CheckStudyStartDate(
+    const chrome_variations::Study& study,
+    const base::Time& date_time) {
   if (study.has_start_date()) {
     const base::Time start_date =
         ConvertStudyDateToBaseTime(study.start_date());
-    if (date_time < start_date)
-      return false;
-  }
-
-  if (study.has_expiry_date()) {
-    const base::Time expiry_date =
-        ConvertStudyDateToBaseTime(study.expiry_date());
-    if (date_time >= expiry_date)
-      return false;
+    return date_time >= start_date;
   }
 
   return true;
+}
+
+bool VariationsService::IsStudyExpired(const chrome_variations::Study& study,
+                                       const base::Time& date_time) {
+  if (study.has_expiry_date()) {
+    const base::Time expiry_date =
+        ConvertStudyDateToBaseTime(study.expiry_date());
+    return date_time >= expiry_date;
+  }
+
+  return false;
 }
 
 // static
@@ -263,24 +292,19 @@ bool VariationsService::LoadTrialsSeedFromPref(
 }
 
 void VariationsService::CreateTrialFromStudy(
-    const chrome_variations::Study& study) {
+    const chrome_variations::Study& study,
+    const base::Time& reference_date) {
   base::FieldTrial::Probability total_probability = 0;
   if (!ValidateStudyAndComputeTotalProbability(study, &total_probability))
     return;
 
-  if (!ShouldAddStudy(study))
-    return;
-
-  const base::Time expiry_date =
-      ConvertStudyDateToBaseTime(study.expiry_date());
-  base::Time::Exploded exploded_end_date;
-  expiry_date.UTCExplode(&exploded_end_date);
-
+  // The trial is created without specifying an expiration date because the
+  // expiration check in field_trial.cc is based on the build date. Instead,
+  // the expiration check using |reference_date| is done explicitly below.
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           study.name(), total_probability, study.default_experiment_name(),
-          exploded_end_date.year, exploded_end_date.month,
-          exploded_end_date.day_of_month, NULL));
+          base::FieldTrialList::kExpirationYearInFuture, 1, 1, NULL));
 
   if (study.has_consistency() &&
       study.consistency() == chrome_variations::Study_Consistency_PERMANENT) {
@@ -296,4 +320,6 @@ void VariationsService::CreateTrialFromStudy(
 
   // TODO(jwd): Add experiment_id association code.
   trial->SetForced();
+  if (IsStudyExpired(study, reference_date))
+    trial->Disable();
 }

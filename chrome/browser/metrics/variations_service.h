@@ -50,18 +50,24 @@ class VariationsService : public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyChannel);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyVersion);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyVersionWildcards);
-  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyDate);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyStartDate);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, IsStudyExpired);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ValidateStudy);
 
   // Store the given seed data to the given local prefs. Note that |seed_data|
   // is assumed to be the raw serialized protobuf data stored in a string. It
   // will be Base64Encoded for storage. If the string is invalid or the encoding
   // fails, the |local_prefs| is left as is.
-  void StoreSeedData(const std::string& seed_data, PrefService* local_prefs);
+  void StoreSeedData(const std::string& seed_data,
+                     const base::Time& seed_date,
+                     PrefService* local_prefs);
 
-  // Returns whether |study| should be added to the local field trials list
-  // according to its restriction parameters.
-  static bool ShouldAddStudy(const chrome_variations::Study& study);
+  // Returns whether |study| should be disabled according to its restriction
+  // parameters. Uses |version_info| for min / max version checks and
+  // |reference_date| for the start date check.
+  static bool ShouldAddStudy(const chrome_variations::Study& study,
+                             const chrome::VersionInfo& version_info,
+                             const base::Time& reference_date);
 
   // Checks whether |study| is applicable for the given |channel|.
   static bool CheckStudyChannel(const chrome_variations::Study& study,
@@ -72,7 +78,11 @@ class VariationsService : public net::URLFetcherDelegate {
                                 const std::string& version_string);
 
   // Checks whether |study| is applicable for the given date/time.
-  static bool CheckStudyDate(const chrome_variations::Study& study,
+  static bool CheckStudyStartDate(const chrome_variations::Study& study,
+                                  const base::Time& date_time);
+
+  // Checks whether |study| is expired using the given date/time.
+  static bool IsStudyExpired(const chrome_variations::Study& study,
                              const base::Time& date_time);
 
   // Validates the sanity of |study| and computes the total probability.
@@ -87,16 +97,14 @@ class VariationsService : public net::URLFetcherDelegate {
   bool LoadTrialsSeedFromPref(PrefService* local_prefs,
                               chrome_variations::TrialsSeed* seed);
 
-  void CreateTrialFromStudy(const chrome_variations::Study& study);
+  // Creates and registers a field trial from the |study| data. Disables the
+  // trial if IsStudyExpired(study, reference_date) is true.
+  void CreateTrialFromStudy(const chrome_variations::Study& study,
+                            const base::Time& reference_date);
 
   // Contains the current seed request. Will only have a value while a request
   // is pending, and will be reset by |OnURLFetchComplete|.
   scoped_ptr<net::URLFetcher> pending_seed_request_;
-
-  // The variations seed data being used for this session.
-  // TODO(jwd): This should be removed. When the seed data is loaded, it will be
-  // used immediately so it won't need to be stored.
-  chrome_variations::TrialsSeed variations_seed_;
 };
 
 #endif  // CHROME_BROWSER_METRICS_VARIATIONS_SERVICE_H_

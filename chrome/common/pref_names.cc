@@ -1039,6 +1039,9 @@ const char kMetricsOngoingLogsProto[] =
 // String serialized form of variations seed protobuf.
 const char kVariationsSeed[] = "variations_seed";
 
+// 64-bit integer serialization of the base::Time from the last seed received.
+const char kVariationsSeedDate[] = "variations_seed_date";
+
 // Where profile specific metrics are placed.
 const char kProfileMetrics[] = "user_experience_metrics.profiles";
 
