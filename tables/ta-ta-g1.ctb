@@ -18,6 +18,13 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+include text_nabcc.dis
+include braille-patterns.cti # unicode braille.
+
+punctuation	\x2018 236 #left single quote
+punctuation	\x2019 356 #right single quote
+punctuation	\x201c 6-236 #left quote
+punctuation	\x201d 356-3 #right quote
 
 include en-us-g1.ctb
 
@@ -37,22 +44,22 @@ sign	\x0b90	34	# TAMIL sign AI
 
 sign	\x0b92	1346	# TAMIL sign O
 
-sign	\x0b93	135	# TAMIL sign OO
-sign	\x0b94	246	# TAMIL sign AU
-sign	\x0b95	13	# TAMIL sign KA
-sign	\x0b99	346	# TAMIL sign NGA
-sign	\x0b9a	14	# TAMIL sign CA
-sign	\x0b9c	245	# TAMIL sign JA
-sign	\x0b9e	25	# TAMIL sign NYA
-sign	\x0b9f	23456	# TAMIL sign TTA
-sign	\x0ba3	3456	# TAMIL sign NNA
-sign	\x0ba4	2345	# TAMIL sign TA
-sign	\x0ba8	1345	# TAMIL sign NA
-sign	\x0ba9	56	# TAMIL sign NNNA
-sign	\x0baa	1234	# TAMIL sign PA
-sign	\x0bae	134	# TAMIL sign MA
-sign	\x0baf	13456	# TAMIL sign YA
-sign	\x0bb0	1235	# TAMIL sign RA
+letter	\x0b93	135	# TAMIL sign OO
+letter	\x0b94	246	# TAMIL sign AU
+letter	\x0b95	13	# TAMIL sign KA
+letter	\x0b99	346	# TAMIL sign NGA
+letter	\x0b9a	14	# TAMIL sign CA
+letter	\x0b9c	245	# TAMIL sign JA
+letter	\x0b9e	25	# TAMIL sign NYA
+letter	\x0b9f	23456	# TAMIL sign TTA
+letter	\x0ba3	3456	# TAMIL sign NNA
+letter	\x0ba4	2345	# TAMIL sign TA
+letter	\x0ba8	1345	# TAMIL sign NA
+letter	\x0ba9	56	# TAMIL sign NNNA
+letter	\x0baa	1234	# TAMIL sign PA
+letter	\x0bae	134	# TAMIL sign MA
+letter	\x0baf	13456	# TAMIL sign YA
+letter	\x0bb0	1235	# TAMIL sign RA
 
 sign	\x0bb1	12456	# TAMIL sign RRA
 
@@ -93,11 +100,6 @@ sign	\x0bec	124	# TAMIL DIGIT SIX
 sign	\x0bed	1245	# TAMIL DIGIT SEVEN
 sign	\x0bee	125	# TAMIL DIGIT EIGHT
 sign	\x0bef	24	# TAMIL DIGIT NINE
-
-sign	\x2018 236 #left single quote
-sign	\x2019 345 #right single quote
-sign	\x201c 6-236 #left quote
-sign	\x201d 356-3 #right quote
 
 #--------
 # half characters
