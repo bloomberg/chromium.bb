@@ -54,6 +54,7 @@
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
+        '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui',
