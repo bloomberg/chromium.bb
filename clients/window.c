@@ -661,6 +661,7 @@ static void
 destroy_cursors(struct display *display)
 {
 	wl_cursor_theme_destroy(display->cursor_theme);
+	free(display->cursors);
 }
 
 struct wl_cursor_image *
