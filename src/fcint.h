@@ -539,6 +539,13 @@ struct _FcRange {
     FcChar32 end;
 };
 
+typedef struct _FcStatFS    FcStatFS;
+
+struct _FcStatFS {
+    FcBool is_remote_fs;
+    FcBool is_mtime_broken;
+};
+
 /* fcblanks.c */
 
 /* fccache.c */
@@ -1021,6 +1028,12 @@ FcMatrixFree (FcMatrix *mat);
 
 FcPrivate int
 FcStat (const FcChar8 *file, struct stat *statb);
+
+FcPrivate FcBool
+FcIsFsMmapSafe (int fd);
+
+FcPrivate FcBool
+FcIsFsMtimeBroken (const FcChar8 *dir);
 
 /* fcstr.c */
 FcPrivate void

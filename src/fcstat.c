@@ -26,6 +26,21 @@
 #include "fcint.h"
 #include "fcarch.h"
 #include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#ifdef HAVE_SYS_VFS_H
+#include <sys/vfs.h>
+#endif
+#ifdef HAVE_SYS_STATFS_H
+#include <sys/statfs.h>
+#endif
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
+#ifdef HAVE_SYS_MOUNT_H
+#include <sys/mount.h>
+#endif
 
 #ifdef _WIN32
 
@@ -114,3 +129,96 @@ FcStat (const FcChar8 *file, struct stat *statb)
 }
 
 #endif
+
+static int
+FcFStatFs (int fd, FcStatFS *statb)
+{
+    const char *p = NULL;
+    int ret;
+    FcBool flag = FcFalse;
+
+    memset (statb, 0, sizeof (FcStatFS));
+
+#if defined(HAVE_FSTATVFS) && (defined(HAVE_STRUCT_STATVFS_F_BASETYPE) || defined(HAVE_STRUCT_STATVFS_F_FSTYPENAME))
+    struct statvfs buf;
+
+    if ((ret = fstatvfs (fd, &buf)) == 0)
+    {
+#  if defined(HAVE_STRUCT_STATVFS_F_BASETYPE)
+	p = buf.f_basetype;
+#  elif defined(HAVE_STRUCT_STATVFS_F_FSTYPENAME)
+	p = buf.f_fstypename;
+#  endif
+    }
+#elif defined(HAVE_FSTATFS) && (defined(HAVE_STRUCT_STATFS_F_FLAGS) || defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) || defined(__linux__))
+    struct statfs buf;
+
+    if ((ret = fstatfs (fd, &buf)) == 0)
+    {
+#  if defined(HAVE_STRUCT_STATFS_F_FLAGS) && defined(MNT_LOCAL)
+	statb->is_remote_fs = !(buf.f_flags & MNT_LOCAL);
+	flag = FcTrue;
+#  endif
+#  if defined(HAVE_STRUCT_STATFS_F_FSTYPENAME)
+	p = buf.f_fstypename;
+#  elif defined(__linux__)
+	switch (buf.f_type)
+	{
+	case 0x6969: /* nfs */
+	    statb->is_remote_fs = FcTrue;
+	    break;
+	case 0x4d44: /* fat */
+	    statb->is_mtime_broken = FcTrue;
+	    break;
+	default:
+	    break;
+	}
+
+	return ret;
+#  else
+#    error "BUG: No way to figure out with fstatfs()"
+#  endif
+    }
+#endif
+    if (p)
+    {
+	if (!flag && strcmp (p, "nfs") == 0)
+	    statb->is_remote_fs = FcTrue;
+	if (strcmp (p, "msdosfs") == 0 ||
+	    strcmp (p, "pcfs") == 0)
+	    statb->is_mtime_broken = FcTrue;
+    }
+
+    return ret;
+}
+
+FcBool
+FcIsFsMmapSafe (int fd)
+{
+    FcStatFS statb;
+
+    if (FcFStatFs (fd, &statb) < 0)
+	return FcTrue;
+
+    return !statb.is_remote_fs;
+}
+
+FcBool
+FcIsFsMtimeBroken (const FcChar8 *dir)
+{
+    int fd = open ((const char *) dir, O_RDONLY);
+
+    if (fd != -1)
+    {
+	FcStatFS statb;
+	int ret = FcFStatFs (fd, &statb);
+
+	close (fd);
+	if (ret < 0)
+	    return FcFalse;
+
+	return statb.is_mtime_broken;
+    }
+
+    return FcFalse;
+}
