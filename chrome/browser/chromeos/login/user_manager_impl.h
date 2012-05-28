@@ -124,6 +124,10 @@ class UserManagerImpl : public UserManager,
   // Subsequent calls have no effect. Must be called on the UI thread.
   void EnsureUsersLoaded();
 
+  // Loads wallpaper asynchronously if the current wallpaper is not the
+  // wallpaper of logged in user.
+  void EnsureLoggedInUserWallpaperLoaded();
+
   // Retrieves trusted device policies and removes users from the persistent
   // list if ephemeral users are enabled. Schedules a callback to itself if
   // trusted device policies are not yet available.
@@ -195,10 +199,11 @@ class UserManagerImpl : public UserManager,
                                  WallpaperDelegate* delegate,
                                  const SkBitmap& image);
 
-  // Loads custom wallpaper thumbnail asynchronously.
-  void LoadCustomWallpaperThumbnail(const std::string& email,
-                                    ash::WallpaperLayout layout,
-                                    const SkBitmap& wallpaper);
+  // Sets desktop background to custom wallpaper and loads wallpaper thumbnail
+  // asynchronously.
+  void OnCustomWallpaperLoaded(const std::string& email,
+                               ash::WallpaperLayout layout,
+                               const SkBitmap& wallpaper);
 
   // Caches the loaded wallpaper for the given user.
   void OnCustomWallpaperThumbnailLoaded(const std::string& email,

@@ -320,6 +320,9 @@ void UserManagerImpl::UserLoggedIn(const std::string& email) {
                               kHistogramImagesCount);
   }
 
+  // For GAIA login flow, logged in user wallpaper may not be loaded.
+  EnsureLoggedInUserWallpaperLoaded();
+
   NotifyOnLogin();
 }
 
@@ -374,7 +377,7 @@ void UserManagerImpl::UserSelected(const std::string& email) {
       // Load user image asynchronously.
       image_loader_->Start(
           wallpaper_path, 0,
-          base::Bind(&UserManagerImpl::LoadCustomWallpaperThumbnail,
+          base::Bind(&UserManagerImpl::OnCustomWallpaperLoaded,
               base::Unretained(this), email, layout));
       return;
     }
@@ -794,6 +797,16 @@ void UserManagerImpl::EnsureUsersLoaded() {
   }
 }
 
+void UserManagerImpl::EnsureLoggedInUserWallpaperLoaded() {
+  User::WallpaperType type;
+  int index;
+  GetLoggedInUserWallpaperProperties(&type, &index);
+
+  if (type != current_user_wallpaper_type_ ||
+      index != current_user_wallpaper_index_)
+    UserSelected(GetLoggedInUser().email());
+}
+
 void UserManagerImpl::RetrieveTrustedDevicePolicies() {
   ephemeral_users_enabled_ = false;
   owner_email_ = "";
@@ -1107,15 +1120,16 @@ void UserManagerImpl::SaveUserWallpaperInternal(const std::string& username,
                  layout, User::CUSTOMIZED));
 }
 
-void UserManagerImpl::LoadCustomWallpaperThumbnail(const std::string& email,
-                                                   ash::WallpaperLayout layout,
-                                                   const SkBitmap& wallpaper) {
+void UserManagerImpl::OnCustomWallpaperLoaded(const std::string& email,
+                                              ash::WallpaperLayout layout,
+                                              const SkBitmap& wallpaper) {
   ash::Shell::GetInstance()->desktop_background_controller()->
       SetCustomWallpaper(wallpaper, layout);
-  // Load wallpaper thumbnail
-  std::string wallpaper_path = GetWallpaperPathForUser(email, true).value();
+  // Starting to load wallpaper thumbnail
+  std::string wallpaper_thumbnail_path =
+      GetWallpaperPathForUser(email, true).value();
   image_loader_->Start(
-      wallpaper_path, 0,
+      wallpaper_thumbnail_path, 0,
       base::Bind(&UserManagerImpl::OnCustomWallpaperThumbnailLoaded,
       base::Unretained(this), email));
 }
