@@ -21,7 +21,7 @@ class IsolatedContext;
 
 class IsolatedFileUtil : public FileSystemFileUtil {
  public:
-  explicit IsolatedFileUtil(FileSystemFileUtil* underlying_file_util);
+  IsolatedFileUtil();
   virtual ~IsolatedFileUtil() {}
 
   // FileSystemFileUtil overrides.
@@ -33,7 +33,7 @@ class IsolatedFileUtil : public FileSystemFileUtil {
       bool* created) OVERRIDE;
   virtual base::PlatformFileError Close(
       FileSystemOperationContext* context,
-      base::PlatformFile) OVERRIDE;
+      base::PlatformFile file) OVERRIDE;
   virtual base::PlatformFileError EnsureFileExists(
       FileSystemOperationContext* context,
       const FileSystemPath& path, bool* created) OVERRIDE;
@@ -51,6 +51,10 @@ class IsolatedFileUtil : public FileSystemFileUtil {
       FileSystemOperationContext* context,
       const FileSystemPath& root_path,
       bool recursive) OVERRIDE;
+  virtual PlatformFileError GetLocalFilePath(
+      FileSystemOperationContext* context,
+      const FileSystemPath& file_system_path,
+      FilePath* local_file_path) OVERRIDE;
   virtual base::PlatformFileError Touch(
       FileSystemOperationContext* context,
       const FileSystemPath& path,

@@ -50,7 +50,7 @@ class FileSystemFileUtilTest : public testing::Test {
     ScopedTempDir base_dir;
     ASSERT_TRUE(base_dir.CreateUniqueTempDir());
     scoped_ptr<ObfuscatedFileUtil> file_util(
-        new ObfuscatedFileUtil(base_dir.path(), new NativeFileUtil()));
+        new ObfuscatedFileUtil(base_dir.path()));
     FileSystemTestOriginHelper src_helper(src_origin, src_type);
     src_helper.SetUp(base_dir.path(),
                      false,  // unlimited quota

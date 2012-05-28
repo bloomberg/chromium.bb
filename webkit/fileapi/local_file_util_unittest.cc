@@ -25,7 +25,7 @@ namespace fileapi {
 class LocalFileUtilTest : public testing::Test {
  public:
   LocalFileUtilTest()
-      : local_file_util_(new LocalFileUtil(new NativeFileUtil())) {
+      : local_file_util_(new LocalFileUtil()) {
   }
 
   void SetUp() {

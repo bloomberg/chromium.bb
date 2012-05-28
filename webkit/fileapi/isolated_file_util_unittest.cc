@@ -54,7 +54,7 @@ class IsolatedFileUtilTest : public testing::Test {
 
   void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    file_util_.reset(new IsolatedFileUtil(new NativeFileUtil()));
+    file_util_.reset(new IsolatedFileUtil());
 
     // Register the files/directories of RegularTestCases (with random
     // root paths) as dropped files.
@@ -69,7 +69,7 @@ class IsolatedFileUtilTest : public testing::Test {
         CreateAllowFileAccessOptions());
 
     // For cross-FileUtil copy/move tests.
-    other_file_util_.reset(new LocalFileUtil(new NativeFileUtil()));
+    other_file_util_.reset(new LocalFileUtil());
     other_file_util_helper_.SetUp(file_system_context_, other_file_util_.get());
   }
 
@@ -332,6 +332,20 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
       EXPECT_EQ(found->second.last_modified_time.ToDoubleT(),
                 entry.last_modified_time.ToDoubleT());
     }
+  }
+}
+
+TEST_F(IsolatedFileUtilTest, GetLocalFilePathTest) {
+  for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
+    const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
+    FileSystemPath path = GetFileSystemPath(FilePath(test_case.path));
+
+    FileSystemOperationContext context(file_system_context());
+
+    FilePath local_file_path;
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+              file_util()->GetLocalFilePath(&context, path, &local_file_path));
+    EXPECT_EQ(GetTestCasePlatformPath(test_case.path), local_file_path);
   }
 }
 

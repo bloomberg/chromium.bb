@@ -27,7 +27,7 @@
 namespace fileapi {
 
 IsolatedMountPointProvider::IsolatedMountPointProvider()
-  : isolated_file_util_(new IsolatedFileUtil(new NativeFileUtil())) {
+    : isolated_file_util_(new IsolatedFileUtil()) {
 }
 
 IsolatedMountPointProvider::~IsolatedMountPointProvider() {

@@ -38,7 +38,7 @@ class LocalFileUtil : public FileSystemFileUtil {
   // |underlying_file_util| is owned by the instance.  It will be deleted by
   // the owner instance.  For example, it can be instanciated as follows:
   // FileSystemFileUtil* file_util = new LocalFileUtil(new NativeFileUtil());
-  explicit LocalFileUtil(FileSystemFileUtil* underlying_file_util);
+  LocalFileUtil();
   virtual ~LocalFileUtil();
 
   virtual PlatformFileError CreateOrOpen(
@@ -47,6 +47,9 @@ class LocalFileUtil : public FileSystemFileUtil {
       int file_flags,
       PlatformFile* file_handle,
       bool* created) OVERRIDE;
+  virtual PlatformFileError Close(
+      FileSystemOperationContext* context,
+      PlatformFile file) OVERRIDE;
   virtual PlatformFileError EnsureFileExists(
       FileSystemOperationContext* context,
       const FileSystemPath& path, bool* created) OVERRIDE;

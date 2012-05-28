@@ -12,6 +12,7 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path.h"
 #include "webkit/fileapi/isolated_context.h"
+#include "webkit/fileapi/native_file_util.h"
 
 using base::PlatformFileError;
 using base::PlatformFileInfo;
@@ -24,15 +25,10 @@ namespace {
 // Used to enumerate top-level paths of an isolated filesystem.
 class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
-  SetFileEnumerator(FileSystemFileUtil* underlying_file_util,
-                    const FileSystemOperationContext& context,
-                    const std::vector<FilePath>& paths,
-                    const FileSystemPath& root)
-      : underlying_file_util_(underlying_file_util),
-        context_(context),
-        paths_(paths),
+  SetFileEnumerator(const std::vector<FilePath>& paths,
+                    const FilePath& root)
+      : paths_(paths),
         root_(root) {
-    DCHECK(underlying_file_util_);
     path_iter_ = paths_.begin();
   }
   virtual ~SetFileEnumerator() {}
@@ -41,11 +37,9 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   virtual FilePath Next() OVERRIDE {
     if (path_iter_ == paths_.end())
       return FilePath();
-    FilePath platform_path;
-    underlying_file_util_->GetFileInfo(
-        &context_, root_.WithInternalPath(*path_iter_++),
-        &file_info_, &platform_path);
-    return root_.internal_path().Append(platform_path.BaseName());
+    FilePath platform_path = *path_iter_++;
+    NativeFileUtil::GetFileInfo(platform_path, &file_info_);
+    return root_.Append(platform_path.BaseName());
   }
   virtual int64 Size() OVERRIDE { return file_info_.size; }
   virtual bool IsDirectory() OVERRIDE { return file_info_.is_directory; }
@@ -55,15 +49,9 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   virtual bool IsLink() OVERRIDE { return file_info_.is_symbolic_link; }
 
  private:
-  // Not owned; Enumerator is instantiated only within methods of
-  // FileSystemFileUtil so it must be ok to assume the underlying_file_util
-  // is alive throughout the lifetime of the enumerator.
-  FileSystemFileUtil* underlying_file_util_;
-
-  FileSystemOperationContext context_;
   std::vector<FilePath> paths_;
   std::vector<FilePath>::const_iterator path_iter_;
-  FileSystemPath root_;
+  FilePath root_;
   base::PlatformFileInfo file_info_;
 };
 
@@ -121,20 +109,15 @@ class PathConverterEnumerator
 class RecursiveSetFileEnumerator
     : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
-  RecursiveSetFileEnumerator(FileSystemFileUtil* underlying_file_util,
-                             const FileSystemOperationContext& context,
-                             const FilePath& virtual_base_path,
+  RecursiveSetFileEnumerator(const FilePath& virtual_base_path,
                              const std::vector<FilePath>& paths,
-                             const FileSystemPath& root)
-      : underlying_file_util_(underlying_file_util),
-        context_(context),
-        virtual_base_path_(virtual_base_path),
+                             const FilePath& root)
+      : virtual_base_path_(virtual_base_path),
         paths_(paths),
         root_(root) {
-    DCHECK(underlying_file_util_);
     path_iter_ = paths_.begin();
     current_enumerator_.reset(
-        new SetFileEnumerator(underlying_file_util, context, paths, root));
+        new SetFileEnumerator(paths, root));
   }
   virtual ~RecursiveSetFileEnumerator() {}
 
@@ -158,15 +141,11 @@ class RecursiveSetFileEnumerator
   }
 
  private:
-  // Not owned.
-  FileSystemFileUtil* underlying_file_util_;
-
-  FileSystemOperationContext context_;
   FilePath virtual_base_path_;
   std::vector<FilePath> paths_;
   std::vector<FilePath>::iterator path_iter_;
   base::PlatformFileInfo file_info_;
-  FileSystemPath root_;
+  FilePath root_;
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> current_enumerator_;
 };
 
@@ -185,9 +164,8 @@ FilePath RecursiveSetFileEnumerator::Next() {
   FilePath next_path = *path_iter_++;
   current_enumerator_.reset(
       new PathConverterEnumerator(
-          underlying_file_util_->CreateFileEnumerator(
-              &context_, root_.WithInternalPath(next_path),
-              true /* recursive */),
+          NativeFileUtil::CreateFileEnumerator(
+              next_path, true /* recursive */),
           virtual_base_path_, next_path));
   DCHECK(current_enumerator_.get());
   return current_enumerator_->Next();
@@ -195,9 +173,7 @@ FilePath RecursiveSetFileEnumerator::Next() {
 
 }  // namespace
 
-IsolatedFileUtil::IsolatedFileUtil(FileSystemFileUtil* underlying_file_util)
-    : FileSystemFileUtil(underlying_file_util) {
-  DCHECK(underlying_file_util);
+IsolatedFileUtil::IsolatedFileUtil() {
 }
 
 PlatformFileError IsolatedFileUtil::CreateOrOpen(
@@ -251,8 +227,11 @@ PlatformFileError IsolatedFileUtil::GetFileInfo(
     file_info->size = 0;
     return base::PLATFORM_FILE_OK;
   }
-  return underlying_file_util()->GetFileInfo(
-      context, path.WithInternalPath(cracked_path), file_info, platform_path);
+  base::PlatformFileError error =
+      NativeFileUtil::GetFileInfo(cracked_path, file_info);
+  if (error == base::PLATFORM_FILE_OK)
+    *platform_path = cracked_path;
+  return error;
 }
 
 FileSystemFileUtil::AbstractFileEnumerator*
@@ -272,8 +251,7 @@ IsolatedFileUtil::CreateFileEnumerator(
 
   if (!cracked_path.empty()) {
     return new PathConverterEnumerator(
-        underlying_file_util()->CreateFileEnumerator(
-            context, root.WithInternalPath(cracked_path), recursive),
+        NativeFileUtil::CreateFileEnumerator(cracked_path, recursive),
         virtual_base_path, root_path);
   }
 
@@ -281,10 +259,18 @@ IsolatedFileUtil::CreateFileEnumerator(
   std::vector<FilePath> toplevels;
   IsolatedContext::GetInstance()->GetTopLevelPaths(filesystem_id, &toplevels);
   if (!recursive)
-    return new SetFileEnumerator(underlying_file_util(), *context,
-                                 toplevels, root);
-  return new RecursiveSetFileEnumerator(underlying_file_util(), *context,
-                                        virtual_base_path, toplevels, root);
+    return new SetFileEnumerator(toplevels, root.internal_path());
+  return new RecursiveSetFileEnumerator(
+      virtual_base_path, toplevels, root.internal_path());
+}
+
+PlatformFileError IsolatedFileUtil::GetLocalFilePath(
+    FileSystemOperationContext* context,
+    const FileSystemPath& file_system_path,
+    FilePath* local_file_path) {
+  if (GetPlatformPath(file_system_path, local_file_path))
+    return base::PLATFORM_FILE_OK;
+  return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
 PlatformFileError IsolatedFileUtil::Touch(
@@ -312,8 +298,7 @@ bool IsolatedFileUtil::PathExists(
     // The root directory case.
     return true;
   }
-  return underlying_file_util()->PathExists(
-      context, path.WithInternalPath(platform_path));
+  return NativeFileUtil::PathExists(platform_path);
 }
 
 bool IsolatedFileUtil::DirectoryExists(
@@ -326,8 +311,7 @@ bool IsolatedFileUtil::DirectoryExists(
     // The root directory case.
     return true;
   }
-  return underlying_file_util()->DirectoryExists(
-      context, path.WithInternalPath(platform_path));
+  return NativeFileUtil::DirectoryExists(platform_path);
 }
 
 bool IsolatedFileUtil::IsDirectoryEmpty(
@@ -345,8 +329,7 @@ bool IsolatedFileUtil::IsDirectoryEmpty(
     DCHECK(success);
     return toplevels.empty();
   }
-  return underlying_file_util()->IsDirectoryEmpty(
-      context, path.WithInternalPath(platform_path));
+  return NativeFileUtil::IsDirectoryEmpty(platform_path);
 }
 
 PlatformFileError IsolatedFileUtil::CopyOrMoveFile(

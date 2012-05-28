@@ -20,7 +20,6 @@
 #include "webkit/fileapi/file_system_file_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/native_file_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
@@ -59,8 +58,7 @@ CrosMountPointProvider::CrosMountPointProvider(
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy)
     : special_storage_policy_(special_storage_policy),
       file_access_permissions_(new FileAccessPermissions()),
-      local_file_util_(
-          new fileapi::LocalFileUtil(new fileapi::NativeFileUtil())) {
+      local_file_util_(new fileapi::LocalFileUtil()) {
   const std::string home = GetHomeDirectory();
   if (!home.empty()) {
     AddLocalMountPoint(

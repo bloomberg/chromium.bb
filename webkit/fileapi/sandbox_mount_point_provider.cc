@@ -330,8 +330,7 @@ SandboxMountPointProvider::SandboxMountPointProvider(
       file_system_options_(file_system_options),
       sandbox_file_util_(
           new ObfuscatedFileUtil(
-              profile_path.Append(kNewFileSystemDirectory),
-              new NativeFileUtil())),
+              profile_path.Append(kNewFileSystemDirectory))),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 

@@ -82,7 +82,7 @@ TestMountPointProvider::TestMountPointProvider(
     base::SequencedTaskRunner* task_runner,
     const FilePath& base_path)
     : base_path_(base_path),
-      local_file_util_(new LocalFileUtil(new NativeFileUtil())),
+      local_file_util_(new LocalFileUtil()),
       quota_util_(new TestFileSystemQuotaUtil(task_runner)) {
 }
 

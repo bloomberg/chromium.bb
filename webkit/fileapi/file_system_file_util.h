@@ -23,8 +23,8 @@ class FileSystemOperationContext;
 // A file utility interface that provides basic file utility methods for
 // FileSystem API.
 //
-// TODO(kinuko): Move all the default implementation out of this class
-// and make this class pure abstract class.
+// Layering structure of the FileSystemFileUtil was split out.
+// See http://crbug.com/128136 if you need it.
 class FileSystemFileUtil {
  public:
   // It will be implemented by each subclass such as FileSystemFileEnumerator.
@@ -49,7 +49,7 @@ class FileSystemFileUtil {
     virtual bool IsLink() OVERRIDE { return false; }
   };
 
-  virtual ~FileSystemFileUtil();
+  virtual ~FileSystemFileUtil() {}
 
   // Creates or opens a file with the given flags.
   // If PLATFORM_FILE_CREATE is set in |file_flags| it always tries to create
@@ -60,12 +60,12 @@ class FileSystemFileUtil {
       const FileSystemPath& path,
       int file_flags,
       PlatformFile* file_handle,
-      bool* created);
+      bool* created) = 0;
 
   // Closes the given file handle.
   virtual PlatformFileError Close(
       FileSystemOperationContext* context,
-      PlatformFile);
+      PlatformFile file) = 0;
 
   // Ensures that the given |path| exist.  This creates a empty new file
   // at |path| if the |path| does not exist.
@@ -78,7 +78,7 @@ class FileSystemFileUtil {
   // reasons, |created| is set false and |error code| indicates the error.
   virtual PlatformFileError EnsureFileExists(
       FileSystemOperationContext* context,
-      const FileSystemPath& path, bool* created);
+      const FileSystemPath& path, bool* created) = 0;
 
   // Creates directory at given path. It's an error to create
   // if |exclusive| is true and dir already exists.
@@ -86,14 +86,14 @@ class FileSystemFileUtil {
       FileSystemOperationContext* context,
       const FileSystemPath& path,
       bool exclusive,
-      bool recursive);
+      bool recursive) = 0;
 
   // Retrieves the information about a file.
   virtual PlatformFileError GetFileInfo(
       FileSystemOperationContext* context,
       const FileSystemPath& path,
       base::PlatformFileInfo* file_info,
-      FilePath* platform_path);
+      FilePath* platform_path) = 0;
 
   // Returns a pointer to a new instance of AbstractFileEnumerator which is
   // implemented for each FileSystemFileUtil subclass. The instance needs to be
@@ -105,7 +105,7 @@ class FileSystemFileUtil {
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemPath& root_path,
-      bool recursive);
+      bool recursive) = 0;
 
   // Maps |virtual_path| given |context| into |local_file_path| which represents
   // physical file location on the host OS.
@@ -113,7 +113,7 @@ class FileSystemFileUtil {
   virtual PlatformFileError GetLocalFilePath(
       FileSystemOperationContext* context,
       const FileSystemPath& file_system_path,
-      FilePath* local_file_path);
+      FilePath* local_file_path) = 0;
 
   // Updates the file metadata information.  Unlike posix's touch, it does
   // not create a file even if |path| does not exist, but instead fails
@@ -122,36 +122,36 @@ class FileSystemFileUtil {
       FileSystemOperationContext* context,
       const FileSystemPath& path,
       const base::Time& last_access_time,
-      const base::Time& last_modified_time);
+      const base::Time& last_modified_time) = 0;
 
   // Truncates a file to the given length.  If |length| is greater than the
   // current length of the file, the file will be extended with zeroes.
   virtual PlatformFileError Truncate(
       FileSystemOperationContext* context,
       const FileSystemPath& path,
-      int64 length);
+      int64 length) = 0;
 
   // Returns true if a given |path| exists.
   virtual bool PathExists(
       FileSystemOperationContext* context,
-      const FileSystemPath& path);
+      const FileSystemPath& path) = 0;
 
   // Returns true if a given |path| exists and is a directory.
   virtual bool DirectoryExists(
       FileSystemOperationContext* context,
-      const FileSystemPath& path);
+      const FileSystemPath& path) = 0;
 
   // Returns true if a given |path| is an empty directory.
   virtual bool IsDirectoryEmpty(
       FileSystemOperationContext* context,
-      const FileSystemPath& path);
+      const FileSystemPath& path) = 0;
 
   // Copies or moves a single file from |src_path| to |dest_path|.
   virtual PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* context,
       const FileSystemPath& src_path,
       const FileSystemPath& dest_path,
-      bool copy);
+      bool copy) = 0;
 
   // Copies in a single file from a different filesystem.  The
   // |underlying_src_path| is a local path which can be handled by the
@@ -159,32 +159,24 @@ class FileSystemFileUtil {
   virtual PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* context,
         const FilePath& src_file_path,
-        const FileSystemPath& dest_path);
+        const FileSystemPath& dest_path) = 0;
 
   // Deletes a single file.
   // It assumes the given path points a file.
   virtual PlatformFileError DeleteFile(
       FileSystemOperationContext* context,
-      const FileSystemPath& path);
+      const FileSystemPath& path) = 0;
 
   // Deletes a single empty directory.
   // It assumes the given path points an empty directory.
   virtual PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* context,
-      const FileSystemPath& path);
+      const FileSystemPath& path) = 0;
 
  protected:
-  FileSystemFileUtil();
-  explicit FileSystemFileUtil(FileSystemFileUtil* underlying_file_util);
-
-  // TODO(kinuko): We should stop FileUtil layering.
-  FileSystemFileUtil* underlying_file_util() const {
-    return underlying_file_util_.get();
-  }
+  FileSystemFileUtil() {}
 
  private:
-  scoped_ptr<FileSystemFileUtil> underlying_file_util_;
-
   DISALLOW_COPY_AND_ASSIGN(FileSystemFileUtil);
 };
 

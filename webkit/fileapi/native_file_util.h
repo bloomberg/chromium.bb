@@ -18,81 +18,42 @@ namespace fileapi {
 
 using base::PlatformFile;
 using base::PlatformFileError;
-class FileSystemOperationContext;
 
 // TODO(dmikurube): Add unit tests for NativeFileUtil.
 // This class handles accessing the OS native filesystem.
-class NativeFileUtil : public FileSystemFileUtil {
+class NativeFileUtil {
  public:
-  NativeFileUtil() {}
-  virtual ~NativeFileUtil() {}
-
-  virtual PlatformFileError CreateOrOpen(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& path,
+  static PlatformFileError CreateOrOpen(
+      const FilePath& path,
       int file_flags,
       PlatformFile* file_handle,
-      bool* created) OVERRIDE;
-  virtual PlatformFileError Close(
-      FileSystemOperationContext* unused,
-      PlatformFile) OVERRIDE;
-  virtual PlatformFileError EnsureFileExists(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& path, bool* created) OVERRIDE;
-  virtual PlatformFileError CreateDirectory(
-      FileSystemOperationContext* context,
-      const FileSystemPath& path,
-      bool exclusive,
-      bool recursive) OVERRIDE;
-  virtual PlatformFileError GetFileInfo(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& path,
-      base::PlatformFileInfo* file_info,
-      FilePath* platform_file_path) OVERRIDE;
-  virtual AbstractFileEnumerator* CreateFileEnumerator(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& root_path,
-      bool recursive) OVERRIDE;
-  virtual PlatformFileError GetLocalFilePath(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& file_system_path,
-      FilePath* local_file_path) OVERRIDE;
-  virtual PlatformFileError Touch(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& path,
-      const base::Time& last_access_time,
-      const base::Time& last_modified_time) OVERRIDE;
-  virtual PlatformFileError Truncate(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& path,
-      int64 length) OVERRIDE;
-  virtual bool PathExists(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& path) OVERRIDE;
-  virtual bool DirectoryExists(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& path) OVERRIDE;
-  virtual bool IsDirectoryEmpty(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& path) OVERRIDE;
-  virtual PlatformFileError CopyOrMoveFile(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& src_path,
-      const FileSystemPath& dest_path,
-      bool copy) OVERRIDE;
-  virtual PlatformFileError CopyInForeignFile(
-        FileSystemOperationContext* unused,
-        const FilePath& src_file_path,
-        const FileSystemPath& dest_path) OVERRIDE;
-  virtual PlatformFileError DeleteFile(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& path) OVERRIDE;
-  virtual PlatformFileError DeleteSingleDirectory(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& path) OVERRIDE;
+      bool* created);
+  static PlatformFileError Close(PlatformFile file);
+  static PlatformFileError EnsureFileExists(const FilePath& path,
+                                            bool* created);
+  static PlatformFileError CreateDirectory(const FilePath& path,
+                                           bool exclusive,
+                                           bool recursive);
+  static PlatformFileError GetFileInfo(const FilePath& path,
+                                       base::PlatformFileInfo* file_info);
+  static FileSystemFileUtil::AbstractFileEnumerator* CreateFileEnumerator(
+      const FilePath& root_path,
+      bool recursive);
+  static PlatformFileError Touch(const FilePath& path,
+                                 const base::Time& last_access_time,
+                                 const base::Time& last_modified_time);
+  static PlatformFileError Truncate(const FilePath& path, int64 length);
+  static bool PathExists(const FilePath& path);
+  static bool DirectoryExists(const FilePath& path);
+  static bool IsDirectoryEmpty(const FilePath& path);
+  static PlatformFileError CopyOrMoveFile(const FilePath& src_path,
+                                   const FilePath& dest_path,
+                                   bool copy);
+  static PlatformFileError DeleteFile(const FilePath& path);
+  static PlatformFileError DeleteSingleDirectory(const FilePath& path);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NativeFileUtil);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(NativeFileUtil);
 };
 
 }  // namespace fileapi
