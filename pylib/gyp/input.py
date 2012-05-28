@@ -813,8 +813,6 @@ def ExpandVariables(input, phase, variables, build_file):
   elif IsStrCanonicalInt(output):
     output = int(output)
 
-  gyp.DebugOutput(gyp.DEBUG_VARIABLES,
-                  "Expanding %s to %s" % (repr(input), repr(output)))
   return output
 
 
