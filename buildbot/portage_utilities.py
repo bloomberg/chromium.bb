@@ -14,6 +14,7 @@ import shutil
 import sys
 
 from chromite.lib import cros_build_lib
+from chromite.buildbot import constants
 from chromite.buildbot import gerrit_helper
 
 _CACHE_OVERLAY = '%(build_root)s/src/third_party/portage-stable'
@@ -24,7 +25,7 @@ _OVERLAY_LIST_CMD = '%(build_root)s/src/platform/dev/host/cros_overlay_list'
 _GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s with commit %s as stable.'
 
 
-def FindOverlays(srcroot, overlay_type):
+def FindOverlays(srcroot, overlay_type, board=None):
   """Return the list of overlays to use for a given buildbot.
 
   Args:
@@ -32,6 +33,7 @@ def FindOverlays(srcroot, overlay_type):
               'private': Just the private overlay.
               'public': Just the public overlay.
               'both': Both the public and private overlays.
+    board: Board to look at.
   """
   # we use a dictionary to allow tests to override _OVERLAY_LIST_CMD;
   # see the cbuildbot_stages and portage_utilities unit tests.
@@ -41,17 +43,22 @@ def FindOverlays(srcroot, overlay_type):
   if not os.path.exists(cmd):
     return []
 
-  cmd_argv = [cmd, '--all_boards']
-  if overlay_type == 'private':
+  cmd_argv = [cmd]
+  if overlay_type == constants.PRIVATE_OVERLAYS:
     cmd_argv.append('--nopublic')
-  elif overlay_type == 'public':
+  elif overlay_type == constants.PUBLIC_OVERLAYS:
     cmd_argv.append('--noprivate')
-  elif overlay_type != 'both':
+  elif overlay_type != constants.BOTH_OVERLAYS:
     return []
+
+  if board:
+    cmd_argv.extend(['--board', board])
+  else:
+    cmd_argv.append('--all_boards')
 
   overlays = cros_build_lib.RunCommand(
       cmd_argv, redirect_stdout=True, print_cmd=False).output.split()
-  if overlay_type != 'private':
+  if overlay_type != constants.PRIVATE_OVERLAYS:
     # TODO(davidjames): cros_overlay_list should include chromiumos-overlay in
     #                   its list of public overlays. But it doesn't yet...
     overlays.append(_PUBLIC_OVERLAY % format_args)
