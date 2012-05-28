@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_ANDROID_PHONE_NUMBER_DETECTOR_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "content/renderer/android/content_detector.h"
 
 class PhoneNumberDetectorTest;

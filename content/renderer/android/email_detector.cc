@@ -4,6 +4,7 @@
 
 #include "content/renderer/android/email_detector.h"
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"

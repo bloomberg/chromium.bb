@@ -5,6 +5,7 @@
 #include "content/renderer/android/address_detector.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

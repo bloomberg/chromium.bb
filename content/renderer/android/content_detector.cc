@@ -4,6 +4,7 @@
 
 #include "content/renderer/android/content_detector.h"
 
+#include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHitTestResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSurroundingText.h"
 
@@ -27,7 +28,8 @@ ContentDetector::Result ContentDetector::FindTappedContent(
 }
 
 WebRange ContentDetector::FindContentRange(
-    const WebKit::WebHitTestResult& hit_test, std::string* content_text) {
+    const WebKit::WebHitTestResult& hit_test,
+    std::string* content_text) {
   // As the surrounding text extractor looks at maxLength/2 characters on
   // either side of the hit point, we need to double max content length here.
   WebSurroundingText surrounding_text;

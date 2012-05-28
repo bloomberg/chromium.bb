@@ -6,6 +6,7 @@
 
 #include <bitset>
 
+#include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
@@ -281,6 +282,13 @@ bool AddressDetector::FindContent(const string16::const_iterator& begin,
   }
 
   return false;
+}
+
+AddressDetector::Word::Word(const string16::const_iterator& begin,
+                            const string16::const_iterator& end)
+    : begin(begin),
+      end(end) {
+  DCHECK(begin <= end);
 }
 
 bool AddressDetector::HouseNumberParser::IsPreDelimiter(

@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/string_tokenizer.h"
 #include "content/renderer/android/content_detector.h"
 
@@ -41,12 +42,8 @@ class AddressDetector : public ContentDetector {
     string16::const_iterator end;
 
     Word() {}
-    Word(const string16::const_iterator& begin_it,
-         const string16::const_iterator& end_it)
-        : begin(begin_it),
-          end(end_it) {
-      DCHECK(begin_it <= end_it);
-    }
+    Word(const string16::const_iterator& begin,
+         const string16::const_iterator& end);
   };
 
   class HouseNumberParser {
