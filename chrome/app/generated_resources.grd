@@ -11087,6 +11087,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_FILE_ERROR_PATH_EXISTS" desc="In the File Manager, the error message when the a file or a directory with the same name already exists.">
         A file or a directory with the same name already exists.
       </message>
+      <message name="IDS_FILE_BROWSER_FILE_ERROR_QUOTA_EXCEEDED" desc="In the File Manager, the error message when there is not enough space to complete the operation.">
+        There is not enough space.
+      </message>
 
       <message name="IDS_FILE_BROWSER_SEARCH_NO_MATCHING_FILES" desc="In the File Manager, the message informing the user that the search did not match any files.">
         No files match &lt;b&gt;"<ph name="SEARCH_STRING">$1<ex>abc</ex></ph>"&lt;/b&gt;
