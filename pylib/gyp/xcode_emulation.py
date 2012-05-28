@@ -15,6 +15,10 @@ import shlex
 class XcodeSettings(object):
   """A class that understands the gyp 'xcode_settings' object."""
 
+  # Computed lazily by _GetSdkBaseDir(). Shared by all XcodeSettings, so cached
+  # at class-level for efficiency.
+  _sdk_base_dir = None
+
   def __init__(self, spec):
     self.spec = spec
 
@@ -32,9 +36,6 @@ class XcodeSettings(object):
 
     # Used by _AdjustLibrary to match .a and .dylib entries in libraries.
     self.library_re = re.compile(r'^lib([^/]+)\.(a|dylib)$')
-
-    # Computed lazily by _GetSdkBaseDir().
-    self.sdk_base_dir = None
 
   def _Settings(self):
     assert self.configname
@@ -222,7 +223,7 @@ class XcodeSettings(object):
     """Returns the root of the 'Developer' directory. On Xcode 4.2 and prior,
     this is usually just /Developer. Xcode 4.3 moved that folder into the Xcode
     bundle."""
-    if not self.sdk_base_dir:
+    if not XcodeSettings._sdk_base_dir:
       import subprocess
       job = subprocess.Popen(['xcode-select', '-print-path'],
                              stdout=subprocess.PIPE,
@@ -235,10 +236,10 @@ class XcodeSettings(object):
       xcode43_sdk_path = os.path.join(
           out.rstrip(), 'Platforms/MacOSX.platform/Developer/SDKs')
       if os.path.isdir(xcode43_sdk_path):
-        self.sdk_base_dir = xcode43_sdk_path
+        XcodeSettings._sdk_base_dir = xcode43_sdk_path
       else:
-        self.sdk_base_dir = os.path.join(out.rstrip(), 'SDKs')
-    return self.sdk_base_dir
+        XcodeSettings._sdk_base_dir = os.path.join(out.rstrip(), 'SDKs')
+    return XcodeSettings._sdk_base_dir
 
   def _SdkPath(self):
     sdk_root = self.GetPerTargetSetting('SDKROOT', default='macosx10.5')
