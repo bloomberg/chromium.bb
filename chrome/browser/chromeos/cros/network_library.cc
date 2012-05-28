@@ -549,7 +549,7 @@ void VirtualNetwork::AttemptConnection(const base::Closure& connect) {
 }
 
 void VirtualNetwork::CopyCredentialsFromRemembered(Network* remembered) {
-  DCHECK_EQ(remembered->type(), TYPE_VPN);
+  CHECK_EQ(remembered->type(), TYPE_VPN);
   VirtualNetwork* remembered_vpn = static_cast<VirtualNetwork*>(remembered);
   VLOG(1) << "Copy VPN credentials: " << name()
           << " username: " << remembered_vpn->username();

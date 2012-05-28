@@ -235,7 +235,7 @@ void NetworkLibraryImplCros::WifiServiceUpdateAndConnect(
     const base::DictionaryValue* properties) {
   if (properties) {
     Network* network = ParseNetwork(service_path, *properties);
-    DCHECK_EQ(network->type(), TYPE_WIFI);
+    CHECK_EQ(network->type(), TYPE_WIFI);
     ConnectToWifiNetworkUsingConnectData(static_cast<WifiNetwork*>(network));
   }
 }
@@ -257,7 +257,7 @@ void NetworkLibraryImplCros::VPNServiceUpdateAndConnect(
   if (properties) {
     VLOG(1) << "Connecting to new VPN Service: " << service_path;
     Network* network = ParseNetwork(service_path, *properties);
-    DCHECK_EQ(network->type(), TYPE_VPN);
+    CHECK_EQ(network->type(), TYPE_VPN);
     ConnectToVirtualNetworkUsingConnectData(
         static_cast<VirtualNetwork*>(network));
   } else {
@@ -626,19 +626,19 @@ void NetworkLibraryImplCros::NetworkManagerStatusChanged(
       // Currently we ignore the network manager state.
       break;
     case PROPERTY_INDEX_AVAILABLE_TECHNOLOGIES: {
-      DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
+      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
       const ListValue* vlist = static_cast<const ListValue*>(value);
       UpdateAvailableTechnologies(vlist);
       break;
     }
     case PROPERTY_INDEX_ENABLED_TECHNOLOGIES: {
-      DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
+      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
       const ListValue* vlist = static_cast<const ListValue*>(value);
       UpdateEnabledTechnologies(vlist);
       break;
     }
     case PROPERTY_INDEX_CONNECTED_TECHNOLOGIES: {
-      DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
+      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
       const ListValue* vlist = static_cast<const ListValue*>(value);
       UpdateConnectedTechnologies(vlist);
       break;
@@ -663,27 +663,27 @@ void NetworkLibraryImplCros::NetworkManagerStatusChanged(
       break;
     }
     case PROPERTY_INDEX_PROFILES: {
-      DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
+      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
       const ListValue* vlist = static_cast<const ListValue*>(value);
       UpdateRememberedNetworks(vlist);
       RequestRememberedNetworksUpdate();
       break;
     }
     case PROPERTY_INDEX_SERVICES: {
-      DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
+      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
       const ListValue* vlist = static_cast<const ListValue*>(value);
       UpdateNetworkServiceList(vlist);
       break;
     }
     case PROPERTY_INDEX_SERVICE_WATCH_LIST: {
-      DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
+      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
       const ListValue* vlist = static_cast<const ListValue*>(value);
       UpdateWatchedNetworkServiceList(vlist);
       break;
     }
     case PROPERTY_INDEX_DEVICE:
     case PROPERTY_INDEX_DEVICES: {
-      DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
+      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
       const ListValue* vlist = static_cast<const ListValue*>(value);
       UpdateNetworkDeviceList(vlist);
       break;

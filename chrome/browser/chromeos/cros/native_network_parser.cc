@@ -825,8 +825,10 @@ NativeWirelessNetworkParser::~NativeWirelessNetworkParser() {}
 bool NativeWirelessNetworkParser::ParseValue(PropertyIndex index,
                                              const base::Value& value,
                                              Network* network) {
-  DCHECK_NE(TYPE_ETHERNET, network->type());
-  DCHECK_NE(TYPE_VPN, network->type());
+  CHECK(network->type() == TYPE_WIFI ||
+        network->type() == TYPE_WIMAX ||
+        network->type() == TYPE_BLUETOOTH ||
+        network->type() == TYPE_CELLULAR);
   WirelessNetwork* wireless_network = static_cast<WirelessNetwork*>(network);
   switch (index) {
     case PROPERTY_INDEX_SIGNAL_STRENGTH: {
@@ -851,7 +853,7 @@ NativeCellularNetworkParser::~NativeCellularNetworkParser() {}
 bool NativeCellularNetworkParser::ParseValue(PropertyIndex index,
                                              const base::Value& value,
                                              Network* network) {
-  DCHECK_EQ(TYPE_CELLULAR, network->type());
+  CHECK_EQ(TYPE_CELLULAR, network->type());
   CellularNetwork* cellular_network = static_cast<CellularNetwork*>(network);
   switch (index) {
     case PROPERTY_INDEX_ACTIVATION_STATE: {
@@ -1036,7 +1038,7 @@ NativeWimaxNetworkParser::~NativeWimaxNetworkParser() {}
 bool NativeWimaxNetworkParser::ParseValue(PropertyIndex index,
                                           const base::Value& value,
                                           Network* network) {
-  DCHECK(TYPE_WIMAX == network->type());
+  CHECK_EQ(TYPE_WIMAX, network->type());
   WimaxNetwork* wimax_network = static_cast<WimaxNetwork*>(network);
   switch (index) {
     case PROPERTY_INDEX_PASSPHRASE_REQUIRED: {
@@ -1075,7 +1077,7 @@ NativeWifiNetworkParser::~NativeWifiNetworkParser() {}
 bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
                                          const base::Value& value,
                                          Network* network) {
-  DCHECK(TYPE_WIFI == network->type());
+  CHECK_EQ(TYPE_WIFI, network->type());
   WifiNetwork* wifi_network = static_cast<WifiNetwork*>(network);
   switch (index) {
     case PROPERTY_INDEX_WIFI_HEX_SSID: {
@@ -1255,7 +1257,7 @@ NativeVirtualNetworkParser::~NativeVirtualNetworkParser() {}
 bool NativeVirtualNetworkParser::UpdateNetworkFromInfo(
     const DictionaryValue& info,
     Network* network) {
-  DCHECK_EQ(TYPE_VPN, network->type());
+  CHECK_EQ(TYPE_VPN, network->type());
   VirtualNetwork* virtual_network = static_cast<VirtualNetwork*>(network);
   if (!NativeNetworkParser::UpdateNetworkFromInfo(info, network))
     return false;
@@ -1273,7 +1275,7 @@ bool NativeVirtualNetworkParser::UpdateNetworkFromInfo(
 bool NativeVirtualNetworkParser::ParseValue(PropertyIndex index,
                                             const base::Value& value,
                                             Network* network) {
-  DCHECK_EQ(TYPE_VPN, network->type());
+  CHECK_EQ(TYPE_VPN, network->type());
   VirtualNetwork* virtual_network = static_cast<VirtualNetwork*>(network);
   switch (index) {
     case PROPERTY_INDEX_PROVIDER: {
