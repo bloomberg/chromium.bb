@@ -721,10 +721,9 @@ DirectoryModel.prototype.renameEntry = function(entry, newDisplayName,
   var self = this;
   function onSuccess(newEntry) {
     self.prefetchCacheForSorting_([newEntry], function() {
-      var fileList = self.fileList_;
-      var index = fileList.indexOf(entry);
+      var index = self.findIndexByName_(entry.name);
       if (index >= 0)
-        fileList.splice(index, 1, newEntry);
+        self.fileList_.splice(index, 1, newEntry);
       self.selectEntry(newEntry.name);
       // If the entry doesn't exist in the list it mean that it updated from
       // outside (probably by directory rescan).
