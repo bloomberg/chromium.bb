@@ -195,6 +195,7 @@ class IsolateBase(unittest.TestCase):
       stdout = None
       stderr = None
 
+    logging.debug(cmd)
     cwd = ROOT_DIR
     p = subprocess.Popen(
         cmd,
@@ -609,6 +610,7 @@ class IsolateNoOutdir(IsolateBase):
       stdout = None
       stderr = None
 
+    logging.debug(cmd)
     cwd = self.tempdir
     p = subprocess.Popen(
         cmd,
