@@ -8,6 +8,7 @@
   bottom: 0;
   left: 0;
   position: absolute;
+  right: 0;
 }
 
 #login-header-bar button,
