@@ -964,15 +964,14 @@ class LogmanTrace(ApiBase):
 
     Ignores directories.
     """
-
+    # Only the useful headers common to all entries are listed there. Any column
+    # at 19 or higher is dependent on the specific event.
     EVENT_NAME = 0
     TYPE = 1
     PID = 9
-    CHILD_PID = 20
-    PARENT_PID = 21
-    FILE_PATH = 25
-    PROC_NAME = 26
-    CMD_LINE = 27
+    TID = 10
+    PROCESSOR_ID = 11
+    TIMESTAMP = 16
 
     def __init__(self, blacklist):
       self.blacklist = blacklist
@@ -982,6 +981,8 @@ class LogmanTrace(ApiBase):
       self._processes = set()
       self._drive_map = DosDriveMap()
       self._first_line = False
+      # Threads mapping to the corresponding process id.
+      self._threads_active = {}
 
     def on_csv_line(self, line):
       """Processes a CSV Event line."""
@@ -1006,8 +1007,8 @@ class LogmanTrace(ApiBase):
           u'Activity ID',
           u'Related Activity ID',  # 15
           u'Clock-Time',
-          u'Kernel(ms)',
-          u'User(ms)',
+          u'Kernel(ms)',  # Both have a resolution of ~15ms which makes them
+          u'User(ms)',    # pretty much useless.
           u'User Data',
         ]
         self._first_line = True
@@ -1059,36 +1060,76 @@ class LogmanTrace(ApiBase):
     def nb_processes(self):
       return len(self._processes)
 
+    @staticmethod
+    def handle_EventTrace_Header(line):
+      """Verifies no event was dropped, e.g. no buffer overrun occured."""
+      #BUFFER_SIZE = 19
+      #VERSION = 20
+      #PROVIDER_VERSION = 21
+      #NUMBER_OF_PROCESSORS = 22
+      #END_TIME = 23
+      #TIMER_RESOLUTION = 24
+      #MAX_FILE_SIZE = 25
+      #LOG_FILE_MODE = 26
+      #BUFFERS_WRITTEN = 27
+      #START_BUFFERS = 28
+      #POINTER_SIZE = 29
+      EVENTS_LOST = 30
+      #CPU_SPEED = 31
+      #LOGGER_NAME = 32
+      #LOG_FILE_NAME = 33
+      #BOOT_TIME = 34
+      #PERF_FREQ = 35
+      #START_TIME = 36
+      #RESERVED_FLAGS = 37
+      #BUFFERS_LOST = 38
+      #SESSION_NAME_STRING = 39
+      #LOG_FILE_NAME_STRING = 40
+      assert line[EVENTS_LOST] == '0'
+
     def handle_EventTrace_Any(self, line):
       pass
 
     def handle_FileIo_Create(self, line):
       """Handles a file open.
 
-      All FileIo events are descriped at
+      All FileIo events are described at
       http://msdn.microsoft.com/library/windows/desktop/aa363884.aspx
       for some value of 'description'.
+
+      " (..) process and thread id values of the IO events (..) are not valid "
+      http://msdn.microsoft.com/magazine/ee358703.aspx
       """
-      match = re.match(r'^\"(.+)\"$', line[self.FILE_PATH])
-      self._handle_file(self._drive_map.to_dos(match.group(1)))
+      #IRP = 19
+      TTID = 20  # Thread ID, that's what we want.
+      #FILE_OBJECT = 21
+      #CREATE_OPTIONS = 22
+      #FILE_ATTRIBUTES = 23
+      #SHARE_ACCESS = 24
+      OPEN_PATH = 25
+
+      # Find the process from the thread id.
+      tid = int(line[TTID], 16)
+      if self._threads_active.get(tid) not in self._processes:
+        # Not a process we care about.
+        return
+
+      match = re.match(r'^\"(.+)\"$', line[OPEN_PATH])
+      raw_path = match.group(1)
+      # Ignore directories and bare drive right away.
+      if raw_path.endswith(os.path.sep):
+        return
+      filename = self._drive_map.to_dos(raw_path)
+      # Ignore bare drive right away.
+      if len(raw_path) == 2:
+        return
+      self._handle_file(filename)
 
     def handle_FileIo_Rename(self, line):
       # TODO(maruel): Handle?
       pass
 
     def handle_FileIo_Any(self, line):
-      pass
-
-    def handle_Image_DCStart(self, line):
-      # TODO(maruel): Handle?
-      pass
-
-    def handle_Image_Load(self, line):
-      # TODO(maruel): Handle?
-      pass
-
-    def handle_Image_Any(self, line):
-      # TODO(maruel): Handle?
       pass
 
     def handle_Process_Any(self, line):
@@ -1100,35 +1141,91 @@ class LogmanTrace(ApiBase):
       Use it to extract the pid of the trace_inputs.py parent process that
       started logman.exe.
       """
-      ppid = int(line[self.PARENT_PID], 16)
-      if line[self.PROC_NAME] == '"logman.exe"':
+      #UNIQUE_PROCESS_KEY = 19
+      #PROCESS_ID = 20
+      PARENT_PID = 21
+      #SESSION_ID = 22
+      #EXIT_STATUS = 23
+      #DIRECTORY_TABLE_BASE = 24
+      #USER_SID = 25
+      IMAGE_FILE_NAME = 26
+      #COMMAND_LINE = 27
+
+      ppid = int(line[PARENT_PID], 16)
+      if line[IMAGE_FILE_NAME] == '"logman.exe"':
         # logman's parent is trace_input.py or whatever tool using it as a
         # library. Trace any other children started by it.
+        assert ppid not in self._processes
         self._processes.add(ppid)
         logging.info('Found logman\'s parent at %d' % ppid)
 
     def handle_Process_End(self, line):
       # Look if it is logman terminating, if so, grab the parent's process pid
       # and inject cwd.
-      if line[self.PID] in self._processes:
-        logging.info('Terminated: %d' % line[self.PID])
-        self._processes.remove(line[self.PID])
+      pid = line[self.PID]
+      if pid in self._processes:
+        logging.info('Terminated: %d' % pid)
+        self._processes.remove(pid)
 
     def handle_Process_Start(self, line):
       """Handles a new child process started by PID."""
+      #UNIQUE_PROCESS_KEY = 19
+      PROCESS_ID = 20
+      #PARENT_PID = 21
+      #SESSION_ID = 22
+      #EXIT_STATUS = 23
+      #DIRECTORY_TABLE_BASE = 24
+      #USER_SID = 25
+      IMAGE_FILE_NAME = 26
+      #COMMAND_LINE = 27
+
       ppid = line[self.PID]
-      pid = int(line[self.CHILD_PID], 16)
+      pid = int(line[PROCESS_ID], 16)
       if ppid in self._processes:
         # Need to ignore processes we don't know about because the log is
         # system-wide.
-        if line[self.PROC_NAME] == '"logman.exe"':
+        if line[IMAGE_FILE_NAME] == '"logman.exe"':
           # Skip the shutdown call when "logman.exe stop" is executed.
           return
+        assert pid not in self._processes
         self._processes.add(pid)
         logging.info(
-            'New child: %d -> %d %s' % (ppid, pid, line[self.PROC_NAME]))
+            'New child: %d -> %d %s' % (ppid, pid, line[IMAGE_FILE_NAME]))
+
+    def handle_Thread_End(self, line):
+      """Has the same parameters as Thread_Start."""
+      tid = int(line[self.TID], 16)
+      self._threads_active.pop(tid, None)
+
+    def handle_Thread_Start(self, line):
+      """Handles a new thread created.
+
+      Do not use self.PID here since a process' initial thread is created by
+      the parent process.
+      """
+      PROCESS_ID = 19
+      TTHREAD_ID = 20
+      #STACK_BASE = 21
+      #STACK_LIMIT = 22
+      #USER_STACK_BASE = 23
+      #USER_STACK_LIMIT = 24
+      #AFFINITY = 25
+      #WIN32_START_ADDR = 26
+      #TEB_BASE = 27
+      #SUB_PROCESS_TAG = 28
+      #BASE_PRIORITY = 29
+      #PAGE_PRIORITY = 30
+      #IO_PRIORITY = 31
+      #THREAD_FLAGS = 32
+      pid = int(line[PROCESS_ID], 16)
+      tid = int(line[TTHREAD_ID], 16)
+      self._threads_active[tid] = pid
+
+    def handle_Thread_Any(self, line):
+      pass
 
     def handle_SystemConfig_Any(self, line):
+      """If you have too many of these, check your hardware."""
       pass
 
     def _handle_file(self, filename):
@@ -1170,10 +1267,10 @@ class LogmanTrace(ApiBase):
 
     # Also add their short path name equivalents.
     for i in list(self.IGNORED):
-      self.IGNORED.add(GetShortPathName(i))
+      self.IGNORED.add(GetShortPathName(i.replace('/', os.path.sep)))
 
     # Add this one last since it has no short path name equivalent.
-    self.IGNORED.add('\\systemroot')
+    self.IGNORED.add('\\SystemRoot')
     self.IGNORED = tuple(sorted(self.IGNORED))
 
   @staticmethod
@@ -1190,13 +1287,17 @@ class LogmanTrace(ApiBase):
     Requires administrative access. logman.exe is synchronous so no need for a
     "warmup" call.  'Windows Kernel Trace' is *localized* so use its GUID
     instead.  The GUID constant name is SystemTraceControlGuid. Lovely.
+
+    One can get the list of potentially interesting providers with:
+    "logman query providers | findstr /i file"
     """
     cmd_start = [
       'logman.exe',
       'start',
       'NT Kernel Logger',
       '-p', '{9e814aad-3204-11d2-9a82-006008a86939}',
-      '(process,img,file,fileio)',
+      # splitio,fileiocompletion,syscall,file,cswitch,img
+      '(process,fileio,thread)',
       '-o', etl,
       '-ets',  # Send directly to kernel
       # Values extracted out of thin air.
@@ -1225,7 +1326,7 @@ class LogmanTrace(ApiBase):
       'logman.exe',
       'stop',
       'NT Kernel Logger',
-      '-ets',  # Send directly to kernel
+      '-ets',  # Sends the command directly to the kernel.
     ]
     logging.debug('Running: %s' % cmd_stop)
     subprocess.check_call(
@@ -1272,6 +1373,8 @@ class LogmanTrace(ApiBase):
       '-o', logname,
       '-gmt',  # Use UTC
       '-y',  # No prompt
+      # Use -of XML to get the header of each items after column 19, e.g. all
+      # the actual headers of 'User Data'.
     ]
 
     # Normally, 'csv' is sufficient. If complex scripts are used (like eastern
@@ -1300,12 +1403,12 @@ class LogmanTrace(ApiBase):
   def parse_log(cls, filename, blacklist):
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
 
-    # Auto-detect the log format
+    # Auto-detect the log format.
     with open(filename, 'rb') as f:
       hdr = f.read(2)
       assert len(hdr) == 2
       if hdr == '<E':
-        # It starts with <Events>
+        # It starts with <Events>.
         logformat = 'xml'
       elif hdr == '\xFF\xEF':
         # utf-16 BOM.
@@ -1348,7 +1451,7 @@ class LogmanTrace(ApiBase):
       # The fastest and smallest format but only supports 'ANSI' file paths.
       # E.g. the filenames are encoding in the 'current' encoding.
       for line in ansi_csv_reader(open(filename)):
-        # line is a list of unicode objects
+        # line is a list of unicode objects.
         context.on_csv_line(line)
 
     else:
