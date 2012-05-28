@@ -884,21 +884,19 @@ ContentProvider.prototype.onInitialized_ = function(regexp) {
   // Automated tests need to wait for this, otherwise we crash in
   // browser_test cleanup because the worker process still has
   // URL requests in-flight.
-  chrome.test.sendMessage('worker-initialized');
+  var test = chrome.test || window.top.chrome.test;
+  test.sendMessage('worker-initialized');
   this.initialized_ = true;
 };
 
 /**
- * Handles the 'result' message from the worker.
- * @param {string} url File url.
- * @param {Object} metadata The metadata.
- * @private
+ * Converts content metadata from parsers to the internal format.
+ * @param {Object} metadata The content metadata.
+ * @param {Object=} opt_result The internal metadata object ot put result in.
+ * @return {Object!} Converted metadata.
  */
-ContentProvider.prototype.onResult_ = function(url, metadata) {
-  var callback = this.callbacks_[url];
-  delete this.callbacks_[url];
-
-  var result = {};
+ContentProvider.ConvertContentMetadata = function(metadata, opt_result) {
+  var result = opt_result || {};
 
   if ('thumbnailURL' in metadata) {
     metadata.thumbnailTransform = metadata.thumbnailTransform || null;
@@ -906,8 +904,6 @@ ContentProvider.prototype.onResult_ = function(url, metadata) {
       url: metadata.thumbnailURL,
       transform: metadata.thumbnailTransform
     };
-    delete metadata.thumbnailURL;
-    delete metadata.thumbnailTransform;
   }
 
   for (var key in metadata) {
@@ -921,7 +917,19 @@ ContentProvider.prototype.onResult_ = function(url, metadata) {
     result.fetchedMedia = result.media;
   }
 
-  callback(result);
+  return result;
+};
+
+/**
+ * Handles the 'result' message from the worker.
+ * @param {string} url File url.
+ * @param {Object} metadata The metadata.
+ * @private
+ */
+ContentProvider.prototype.onResult_ = function(url, metadata) {
+  var callback = this.callbacks_[url];
+  delete this.callbacks_[url];
+  callback(ContentProvider.ConvertContentMetadata(metadata));
 };
 
 /**

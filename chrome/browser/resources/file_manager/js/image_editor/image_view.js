@@ -6,9 +6,9 @@
  * The overlay displaying the image.
  * @param {HTMLElement} container The container element.
  * @param {Viewport} viewport The viewport.
- * @param {MetadataProvider} metadataProvider The metadataProvider.
+ * @param {MetadataCache} metadataCache The metadataCache.
  */
-function ImageView(container, viewport, metadataProvider) {
+function ImageView(container, viewport, metadataCache) {
   this.container_ = container;
   this.viewport_ = viewport;
   this.document_ = container.ownerDocument;
@@ -40,8 +40,8 @@ function ImageView(container, viewport, metadataProvider) {
   this.screenImage_ = null;
 
   this.localImageTransformFetcher_ = function(url, callback) {
-    metadataProvider.fetchLocal(url, function(metadata) {
-      callback(metadata.imageTransform);
+    metadataCache.get(url, 'fetchedMedia', function(fetchedMedia) {
+      callback(fetchedMedia.imageTransform);
     });
   };
 }
@@ -311,22 +311,24 @@ ImageView.prototype.load = function(
   var loadingVideo = FileType.getMediaType(url) == 'video';
   if (loadingVideo) {
     var video = this.document_.createElement('video');
-    if (metadata.thumbnailURL) {
-      video.setAttribute('poster', metadata.thumbnailURL);
+    if (metadata.thumbnail && metadata.thumbnail.url) {
+      video.setAttribute('poster', metadata.thumbnail.url);
       this.replace(video, slide); // Show the poster immediately.
     }
     video.addEventListener('loadedmetadata', onVideoLoad);
     video.addEventListener('error', onVideoLoad);
 
     // Do not try no stream when offline.
-    video.src = (navigator.onLine && metadata.streamingURL) || url;
+    video.src = (navigator.onLine && metadata.streaming &&
+                 metadata.streaming.url) || url;
     video.load();
 
     function onVideoLoad() {
       video.removeEventListener('loadedmetadata', onVideoLoad);
       video.removeEventListener('error', onVideoLoad);
       displayMainImage(ImageView.LOAD_TYPE_VIDEO_FILE, slide,
-          !!metadata.thumbnailURL /* preview shown */, video);
+          !!(metadata.thumbnail && metadata.thumbnail.url) /* preview shown */,
+          video);
     }
     return;
   }
@@ -342,10 +344,10 @@ ImageView.prototype.load = function(
       // As far as the user can tell the image is loaded. We still need to load
       // the full res image to make editing possible, but we can report now.
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
-    } else if (metadata.thumbnailURL) {
+    } else if (metadata.thumbnail && metadata.thumbnail.url) {
       this.imageLoader_.load(
-          metadata.thumbnailURL,
-          function(url, callback) { callback(metadata.thumbnailTransform); },
+          metadata.thumbnail.url,
+          function(url, callback) { callback(metadata.thumbnail.transform); },
           displayThumbnail.bind(null, ImageView.LOAD_TYPE_IMAGE_FILE, slide));
     } else {
       loadMainImage(ImageView.LOAD_TYPE_IMAGE_FILE, slide, url,
@@ -369,7 +371,7 @@ ImageView.prototype.load = function(
     self.lastLoadTime_ = time;
 
     if (canvas.width) {
-      if (metadata.remote) {
+      if (!!metadata.media.width) {
         // We do not know the main image size, but chances are that it is large
         // enough. Show the thumbnail at the maximum possible scale.
         var bounds = self.viewport_.getScreenBounds();
@@ -379,7 +381,7 @@ ImageView.prototype.load = function(
             canvas.width * scale, canvas.height * scale, true /* preview */);
       } else {
         self.replace(canvas, slide,
-            metadata.width, metadata.height, true /* preview */);
+            metadata.media.width, metadata.media.height, true /* preview */);
       }
       if (!mainImageSlide) mainImageLoadDelay = 0;
       mainImageSlide = 0;

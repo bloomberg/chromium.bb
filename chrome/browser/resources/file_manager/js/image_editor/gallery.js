@@ -23,7 +23,7 @@ RibbonClient.prototype.closeImage = function(item) {};
  *     {function(string)} onNameChange Called every time a selected
  *         item name changes (on rename and on selection change).
  *     {function} onClose
- *     {string} rootUrl
+ *     {MetadataCache} metadataCache
  *     {Array.<Object>} shareActions
  *     {string} readonlyDirName Directory name for readonly warning or null.
  *     {DirEntry} saveDirEntry Directory to save to.
@@ -33,7 +33,7 @@ function Gallery(container, context) {
   this.container_ = container;
   this.document_ = container.ownerDocument;
   this.context_ = context;
-  this.context_.metadataProvider = new MetadataProvider(this.context_.rootUrl);
+  this.metadataCache_ = context.metadataCache;
 
   var strf = context.displayStringFunction;
   this.displayStringFunction_ = function(id, formatArgs) {
@@ -69,6 +69,11 @@ Gallery.editorModes = [
 Gallery.FADE_TIMEOUT = 3000;
 Gallery.FIRST_FADE_TIMEOUT = 1000;
 Gallery.OVERWRITE_BUBBLE_MAX_TIMES = 5;
+
+/**
+ * Types of metadata Gallery uses (to query the metadata cache).
+ */
+Gallery.METADATA_TYPE = 'thumbnail|filesystem|media|streaming';
 
 Gallery.prototype.initDom_ = function() {
   var doc = this.document_;
@@ -231,7 +236,7 @@ Gallery.prototype.initDom_ = function() {
   this.errorWrapper_.appendChild(this.errorBanner_);
 
   this.ribbon_ = new Ribbon(this.document_,
-      this, this.context_.metadataProvider, this.arrowLeft_, this.arrowRight_);
+      this, this.metadataCache_, this.arrowLeft_, this.arrowRight_);
   this.ribbonSpacer_.appendChild(this.ribbon_);
 
   this.editBar_  = doc.createElement('div');
@@ -262,7 +267,7 @@ Gallery.prototype.initDom_ = function() {
   this.imageView_ = new ImageView(
       this.imageContainer_,
       this.viewport_,
-      this.context_.metadataProvider);
+      this.metadataCache_);
 
   this.editor_ = new ImageEditor(
       this.viewport_,
@@ -334,9 +339,10 @@ Gallery.prototype.load = function(items, selectedItem) {
 
   // Show the selected item ASAP, then complete the initialization (populating
   // the ribbon can take especially long time).
-  this.context_.metadataProvider.fetch(selectedURL, function (metadata) {
-    self.openImage(selectedIndex, selectedURL, metadata, 0, initRibbon);
-  });
+  this.metadataCache_.get(selectedURL, Gallery.METADATA_TYPE,
+      function (metadata) {
+        self.openImage(selectedIndex, selectedURL, metadata, 0, initRibbon);
+      });
 
   this.context_.getShareActions(urls, function(tasks) {
     if (tasks.length > 0) {
@@ -409,9 +415,10 @@ Gallery.prototype.saveCurrentImage_ = function(callback) {
 
   this.showSpinner_(true);
   var metadataEncoder = ImageEncoder.encodeMetadata(
-      this.selectedImageMetadata_, canvas, 1 /* quality */);
+      this.selectedImageMetadata_.media, canvas, 1 /* quality */);
 
-  this.selectedImageMetadata_ = metadataEncoder.getMetadata();
+  this.selectedImageMetadata_ = ContentProvider.ConvertContentMetadata(
+      metadataEncoder.getMetadata(), this.selectedImageMetadata_);
   item.setThumbnail(this.selectedImageMetadata_);
 
   item.saveToFile(
@@ -423,7 +430,7 @@ Gallery.prototype.saveCurrentImage_ = function(callback) {
         // Until then pretend that the save succeeded.
         this.showSpinner_(false);
         this.flashSavedLabel_();
-        this.context_.metadataProvider.reset(item.getUrl());
+        this.metadataCache_.clear(item.getUrl(), Gallery.METADATA_TYPE);
         callback();
       }.bind(this));
 };
@@ -580,7 +587,7 @@ Gallery.prototype.openImage = function(id, url, metadata, slide, callback) {
   this.filenameSpacer_.removeAttribute('overwrite');
   this.filenameSpacer_.removeAttribute('saved');
 
-  this.selectedImageMetadata_ = metadata;
+  this.selectedImageMetadata_ = ImageUtil.deepCopy(metadata);
   this.updateFilename_(url);
 
   this.showSpinner_(true);
@@ -608,7 +615,7 @@ Gallery.prototype.openImage = function(id, url, metadata, slide, callback) {
       function toMillions(number) { return Math.round(number / (1000 * 1000)) }
 
       ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MB'),
-          toMillions(metadata.fileSize));
+          toMillions(metadata.filesystem.size));
 
       var canvas = self.imageView_.getCanvas();
       ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),
@@ -825,14 +832,14 @@ Gallery.prototype.cancelFading_ = function() {
 /**
  * @param {HTMLDocument} document
  * @param {RibbonClient} client
- * @param {MetadataProvider} metadataProvider
+ * @param {MetadataCache} metadataCache
  * @param {HTMLElement} arrowLeft
  * @param {HTMLElement} arrowRight
  * @constructor
  */
-function Ribbon(document, client, metadataProvider, arrowLeft, arrowRight) {
+function Ribbon(document, client, metadataCache, arrowLeft, arrowRight) {
   var self = document.createElement('div');
-  Ribbon.decorate(self, client, metadataProvider, arrowLeft, arrowRight);
+  Ribbon.decorate(self, client, metadataCache, arrowLeft, arrowRight);
   return self;
 }
 
@@ -841,15 +848,15 @@ Ribbon.prototype.__proto__ = HTMLDivElement.prototype;
 /**
  * @param {HTMLDivElement} self Element to decorate.
  * @param {RibbonClient} client
- * @param {MetadataProvider} metadataProvider
+ * @param {MetadataCache} metadataCache
  * @param {HTMLElement} arrowLeft
  * @param {HTMLElement} arrowRight
  */
 Ribbon.decorate = function(
-    self, client, metadataProvider, arrowLeft, arrowRight) {
+    self, client, metadataCache, arrowLeft, arrowRight) {
   self.__proto__ = Ribbon.prototype;
   self.client_ = client;
-  self.metadataProvider_ = metadataProvider;
+  self.metadataCache_ = metadataCache;
 
   self.items_ = [];
   self.selectedIndex_ = -1;
@@ -973,18 +980,20 @@ Ribbon.prototype.doSelect_ = function(index, opt_forceStep, opt_callback) {
   }
 
   var self = this;
-  this.metadataProvider_.fetch(selectedItem.getUrl(), function(metadata){
-     if (!selectedItem.isSelected()) return;
-     self.client_.openImage(
-         selectedItem.getIndex(), selectedItem.getUrl(), metadata, step,
-         function(loadType) {
-           if (!selectedItem.isSelected()) return;
-           if (shouldPrefetch(loadType, step, self.sequenceLength_)) {
-             self.requestPrefetch(step);
-           }
-           if (opt_callback) opt_callback();
-         });
-  });
+  function onMetadata(metadata) {
+    if (!selectedItem.isSelected()) return;
+    self.client_.openImage(
+        selectedItem.getIndex(), selectedItem.getUrl(), metadata, step,
+        function(loadType) {
+          if (!selectedItem.isSelected()) return;
+          if (shouldPrefetch(loadType, step, self.sequenceLength_)) {
+            self.requestPrefetch(step);
+          }
+          if (opt_callback) opt_callback();
+        });
+  }
+  this.metadataCache_.get(selectedItem.getUrl(),
+      Gallery.METADATA_TYPE, onMetadata);
 };
 
 Ribbon.prototype.requestPrefetch = function(direction) {
@@ -994,10 +1003,11 @@ Ribbon.prototype.requestPrefetch = function(direction) {
   var nextItemUrl = this.items_[index].getUrl();
 
   var selectedItem = this.getSelectedItem();
-  this.metadataProvider_.fetch(nextItemUrl, function(metadata) {
-    if (!selectedItem.isSelected()) return;
-    this.client_.prefetchImage(index, nextItemUrl, metadata);
-  }.bind(this));
+  this.metadataCache_.get(nextItemUrl, Gallery.METADATA_TYPE,
+      function(metadata) {
+        if (!selectedItem.isSelected()) return;
+        this.client_.prefetchImage(index, nextItemUrl, metadata);
+      }.bind(this));
 };
 
 Ribbon.ITEMS_COUNT = 5;
@@ -1010,7 +1020,8 @@ Ribbon.prototype.redraw = function() {
   var initThumbnail = function(index) {
     var item = this.items_[index];
     if (!item.hasThumbnail())
-      this.metadataProvider_.fetch(item.getUrl(), item.setThumbnail.bind(item));
+      this.metadataCache_.get(item.getUrl(), Gallery.METADATA_TYPE,
+          item.setThumbnail.bind(item));
   }.bind(this);
 
   // TODO(dgozman): use margin instead of 2 here.
@@ -1266,7 +1277,8 @@ Ribbon.Item.prototype.createCopyName_ = function(dirEntry, metadata, callback) {
     name = name.substr(0, index);
   }
 
-  var mimeType = metadata.mimeType.toLowerCase();
+  var mimeType = metadata.media && metadata.media.mimeType;
+  mimeType = (mimeType || '').toLowerCase();
   if (mimeType != 'image/jpeg') {
     // Chrome can natively encode only two formats: JPEG and PNG.
     // All non-JPEG images are saved in PNG, hence forcing the file extension.
@@ -1327,13 +1339,14 @@ Ribbon.Item.prototype.setThumbnail = function(metadata) {
 
   var mediaType = FileType.getMediaType(this.url_);
 
-  if (metadata.thumbnailURL) {
-    url = metadata.thumbnailURL;
-    transform = metadata.thumbnailTransform;
-  } else if (mediaType == 'image' &&
-      FileType.canUseImageUrlForPreview(metadata.width, metadata.height, 0)) {
+  if (metadata.thumbnail && metadata.thumbnail.url) {
+    url = metadata.thumbnail.url;
+    transform = metadata.thumbnail.transform;
+  } else if (mediaType == 'image' && metadata.media &&
+             FileType.canUseImageUrlForPreview(metadata.media.width,
+                                               metadata.media.height, 0)) {
     url = this.url_;
-    transform = metadata.imageTransform;
+    transform = metadata.media.imageTransform;
   } else {
     url = FileType.getPreviewArt(mediaType);
   }
@@ -1360,8 +1373,8 @@ Ribbon.Item.prototype.setThumbnail = function(metadata) {
 
   var img = this.querySelector('img');
 
-  if (metadata.width && metadata.height) {
-    var aspect = metadata.width / metadata.height;
+  if (metadata.media && metadata.media.width && metadata.media.height) {
+    var aspect = metadata.media.width / metadata.media.height;
     if (transform && transform.rotate90) {
       aspect = 1 / aspect;
     }

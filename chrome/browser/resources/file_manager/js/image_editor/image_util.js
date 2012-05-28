@@ -560,7 +560,11 @@ ImageUtil.ImageLoader.prototype.copyStrip_ = function(
     if (this.url_.substr(0, 5) != 'data:') {  // Ignore data urls.
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('LoadTime'));
     }
-    setTimeout(this.callback_, 0, context.canvas);
+    try {
+      setTimeout(this.callback_, 0, context.canvas);
+    } catch (e) {
+      console.log(e);
+    }
     this.callback_ = null;
   } else {
     var self = this;

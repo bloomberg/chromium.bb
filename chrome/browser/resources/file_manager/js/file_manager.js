@@ -3068,7 +3068,7 @@ FileManager.prototype = {
                     self.directoryModel_.getRootName()) :
                 null,
         saveDirEntry: readonly ? downloadsDir : currentDir,
-        rootUrl: self.filesystem_.root.toURL(),
+        metadataCache: self.metadataCache_,
         getShareActions: self.getShareActions_.bind(self),
         onNameChange: function(name) {
           self.document_.title = gallerySelection = name;
