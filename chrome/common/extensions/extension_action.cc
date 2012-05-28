@@ -68,11 +68,11 @@ void ExtensionAction::SetPopupUrl(int tab_id, const GURL& url) {
   SetValue(&popup_url_, tab_id, url);
 }
 
-bool ExtensionAction::HasPopup(int tab_id) {
+bool ExtensionAction::HasPopup(int tab_id) const {
   return !GetPopupUrl(tab_id).is_empty();
 }
 
-GURL ExtensionAction::GetPopupUrl(int tab_id) {
+GURL ExtensionAction::GetPopupUrl(int tab_id) const {
   return GetValue(&popup_url_, tab_id);
 }
 
@@ -80,7 +80,7 @@ void ExtensionAction::SetIcon(int tab_id, const SkBitmap& bitmap) {
   SetValue(&icon_, tab_id, bitmap);
 }
 
-SkBitmap ExtensionAction::GetIcon(int tab_id) {
+SkBitmap ExtensionAction::GetIcon(int tab_id) const {
   return GetValue(&icon_, tab_id);
 }
 

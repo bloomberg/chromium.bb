@@ -13,19 +13,15 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace extensions {
 
 ScriptBadgeController::ScriptBadgeController(TabContentsWrapper* tab_contents)
     : content::WebContentsObserver(tab_contents->web_contents()),
       script_executor_(tab_contents->web_contents()),
-      tab_contents_(tab_contents) {
-}
+      tab_contents_(tab_contents) {}
 
-ScriptBadgeController::~ScriptBadgeController() {
-}
+ScriptBadgeController::~ScriptBadgeController() {}
 
 scoped_ptr<std::vector<ExtensionAction*> >
 ScriptBadgeController::GetCurrentActions() {
@@ -43,7 +39,7 @@ ScriptBadgeController::GetCurrentActions() {
     const Extension* extension = *it;
     if (extension->HasContentScriptAtURL(current_url) ||
         extensions_executing_scripts_.count(extension->id())) {
-      current_actions->push_back(GetScriptBadge(extension));
+      current_actions->push_back(extension->GetScriptBadge());
     }
   }
   return current_actions.Pass();
@@ -95,38 +91,6 @@ void ScriptBadgeController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   extensions_executing_scripts_.clear();
-}
-
-ExtensionAction* ScriptBadgeController::GetScriptBadge(
-    const Extension* extension) {
-  ScriptBadgeMap::iterator existing = script_badges_.find(extension->id());
-  if (existing != script_badges_.end())
-    return existing->second.get();
-
-  linked_ptr<ExtensionAction> badge(new ExtensionAction(extension->id()));
-  badge->SetTitle(ExtensionAction::kDefaultTabId, extension->name());
-  badge->SetIsVisible(ExtensionAction::kDefaultTabId, true);
-
-  // If there are existing actions, and they have default icon paths, use those.
-  // Otherwise we'll need to use the default icon and set it for all tabs.
-  std::string default_icon_path;
-
-  if (extension->browser_action())
-    default_icon_path = extension->browser_action()->default_icon_path();
-  else if (extension->page_action())
-    default_icon_path = extension->page_action()->default_icon_path();
-
-  if (!default_icon_path.empty()) {
-    badge->set_default_icon_path(default_icon_path);
-  } else {
-    badge->SetIcon(
-        ExtensionAction::kDefaultTabId,
-        *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_EXTENSIONS_FAVICON).ToSkBitmap());
-  }
-
-  script_badges_[extension->id()] = badge;
-  return badge.get();
 }
 
 ExtensionService* ScriptBadgeController::GetExtensionService() {

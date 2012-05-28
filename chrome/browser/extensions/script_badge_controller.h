@@ -68,9 +68,6 @@ class ScriptBadgeController : public LocationBarController,
       const content::FrameNavigateParams& params) OVERRIDE;
 
  private:
-  // Gets the script badge for |extension|.
-  ExtensionAction* GetScriptBadge(const Extension* extension);
-
   // Gets the ExtensionService for |tab_contents_|.
   ExtensionService* GetExtensionService();
 
@@ -82,12 +79,6 @@ class ScriptBadgeController : public LocationBarController,
 
   // The extensions that have called ExecuteScript on the current frame.
   std::set<std::string> extensions_executing_scripts_;
-
-  // Script badges that have been generated for extensions. This is both those
-  // with actions already declared that are copied and normalised, and actions
-  // that get generated for extensions that haven't declared anything.
-  typedef std::map<std::string, linked_ptr<ExtensionAction> > ScriptBadgeMap;
-  ScriptBadgeMap script_badges_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptBadgeController);
 };

@@ -3519,6 +3519,46 @@ bool Extension::HasContentScriptAtURL(const GURL& url) const {
   return false;
 }
 
+ExtensionAction* Extension::GetScriptBadge() const {
+  if (!script_badge_.get()) {
+    script_badge_.reset(new ExtensionAction(id()));
+
+    // On initialization, copy the default icon path from the browser action,
+    // or generate a puzzle piece if there isn't one. Extensions may later
+    // overwrite this icon using the browserAction API.
+    if (browser_action() && !browser_action()->default_icon_path().empty()) {
+      script_badge_->set_default_icon_path(
+          browser_action()->default_icon_path());
+    } else {
+      script_badge_->SetIcon(
+          ExtensionAction::kDefaultTabId,
+          *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+              IDR_EXTENSIONS_FAVICON).ToSkBitmap());
+    }
+
+    // Likewise, make sure there is always a title.
+    script_badge_->SetTitle(ExtensionAction::kDefaultTabId, name());
+  }
+
+  // Every time, re-initialize the script badge based on the current state of
+  // the browser action.
+  int kDefaultTabId = ExtensionAction::kDefaultTabId;
+
+  script_badge_->SetIsVisible(kDefaultTabId, true);
+
+  if (browser_action()) {
+    SkBitmap icon = browser_action()->GetIcon(kDefaultTabId);
+    if (!icon.isNull())
+      script_badge_->SetIcon(kDefaultTabId, icon);
+
+    std::string title = browser_action()->GetTitle(kDefaultTabId);
+    if (!title.empty())
+      script_badge_->SetTitle(kDefaultTabId, title);
+  }
+
+  return script_badge_.get();
+}
+
 bool Extension::CheckPlatformAppFeatures(std::string* utf8_error) {
   if (!is_platform_app())
     return true;

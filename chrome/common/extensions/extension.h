@@ -538,6 +538,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns true if the extension has a content script declared at |url|.
   bool HasContentScriptAtURL(const GURL& url) const;
 
+  // Returns an ExtensionAction representing the script badge that should be
+  // shown for this extension in the location bar.
+  ExtensionAction* GetScriptBadge() const;
+
   // Accessors:
 
   const FilePath& path() const { return path_; }
@@ -933,6 +937,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // browser_action, since page actions may be turned into browser actions and
   // browser actions may be generated without any action declared.
   ExtensionAction::Type declared_action_type_;
+
+  // The extension's script badge. Lazily populated (and subsequently updated)
+  // as required by GetScriptBadge.
+  mutable scoped_ptr<ExtensionAction> script_badge_;
 
   // The extension's file browser actions, if any.
   scoped_ptr<FileBrowserHandlerList> file_browser_handlers_;

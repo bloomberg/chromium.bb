@@ -55,10 +55,10 @@ class ExtensionAction {
   void SetPopupUrl(int tab_id, const GURL& url);
 
   // Use HasPopup() to see if a popup should be displayed.
-  bool HasPopup(int tab_id);
+  bool HasPopup(int tab_id) const;
 
   // Get the URL to display in a popup.
-  GURL GetPopupUrl(int tab_id);
+  GURL GetPopupUrl(int tab_id) const;
 
   // Set this action's title on a specific tab.
   void SetTitle(int tab_id, const std::string& title) {
@@ -67,7 +67,7 @@ class ExtensionAction {
 
   // If tab |tab_id| has a set title, return it.  Otherwise, return
   // the default title.
-  std::string GetTitle(int tab_id) { return GetValue(&title_, tab_id); }
+  std::string GetTitle(int tab_id) const { return GetValue(&title_, tab_id); }
 
   // Icons are a bit different because the default value can be set to either a
   // bitmap or a path. However, conceptually, there is only one default icon.
@@ -80,7 +80,7 @@ class ExtensionAction {
   void SetIcon(int tab_id, const SkBitmap& bitmap);
 
   // Get the icon for a tab, or the default if no icon was set.
-  SkBitmap GetIcon(int tab_id);
+  SkBitmap GetIcon(int tab_id) const;
 
   // Set this action's icon index for a specific tab.  For use with
   // icon_paths(), only used in page actions.
@@ -88,7 +88,7 @@ class ExtensionAction {
 
   // Get this action's icon index for a tab, or the default if no icon index
   // was set.
-  int GetIconIndex(int tab_id) {
+  int GetIconIndex(int tab_id) const {
     return GetValue(&icon_index_, tab_id);
   }
 
@@ -97,7 +97,7 @@ class ExtensionAction {
   void set_default_icon_path(const std::string& path) {
     default_icon_path_ = path;
   }
-  std::string default_icon_path() {
+  std::string default_icon_path() const {
     return default_icon_path_;
   }
 
@@ -106,7 +106,7 @@ class ExtensionAction {
     SetValue(&badge_text_, tab_id, text);
   }
   // Get the badge text for a tab, or the default if no badge text was set.
-  std::string GetBadgeText(int tab_id) {
+  std::string GetBadgeText(int tab_id) const {
     return GetValue(&badge_text_, tab_id);
   }
 
@@ -116,7 +116,7 @@ class ExtensionAction {
   }
   // Get the text color for a tab, or the default color if no text color
   // was set.
-  SkColor GetBadgeTextColor(int tab_id) {
+  SkColor GetBadgeTextColor(int tab_id) const {
     return GetValue(&badge_text_color_, tab_id);
   }
 
@@ -126,7 +126,7 @@ class ExtensionAction {
   }
   // Get the badge background color for a tab, or the default if no color
   // was set.
-  SkColor GetBadgeBackgroundColor(int tab_id) {
+  SkColor GetBadgeBackgroundColor(int tab_id) const {
     return GetValue(&badge_background_color_, tab_id);
   }
 
@@ -136,7 +136,7 @@ class ExtensionAction {
   }
   // Get the badge visibility for a tab, or the default badge visibility
   // if none was set.
-  bool GetIsVisible(int tab_id) {
+  bool GetIsVisible(int tab_id) const {
     return GetValue(&visible_, tab_id);
   }
 
@@ -160,8 +160,8 @@ class ExtensionAction {
   }
 
   template<class T>
-  T GetValue(std::map<int, T>* map, int tab_id) {
-    typename std::map<int, T>::iterator iter = map->find(tab_id);
+  T GetValue(const std::map<int, T>* map, int tab_id) const {
+    typename std::map<int, T>::const_iterator iter = map->find(tab_id);
     if (iter != map->end()) {
       return iter->second;
     } else {
