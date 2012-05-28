@@ -14,7 +14,8 @@
 
 ShellWindowGtk::ShellWindowGtk(Profile* profile,
                                const extensions::Extension* extension,
-                               const GURL& url)
+                               const GURL& url,
+                               const ShellWindow::CreateParams params)
     : ShellWindow(profile, extension, url),
       state_(GDK_WINDOW_STATE_WITHDRAWN),
       is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()) {
@@ -24,7 +25,8 @@ ShellWindowGtk::ShellWindowGtk(Profile* profile,
       web_contents()->GetView()->GetNativeView();
   gtk_container_add(GTK_CONTAINER(window_), native_view);
 
-  gtk_window_set_default_size(window_, kDefaultWidth, kDefaultHeight);
+  gtk_window_set_default_size(
+      window_, params.bounds.width(), params.bounds.height());
 
   // TODO(mihaip): Mirror contents of <title> tag in window title
   gtk_window_set_title(window_, extension->name().c_str());
@@ -37,8 +39,6 @@ ShellWindowGtk::ShellWindowGtk(Profile* profile,
                    G_CALLBACK(OnWindowStateThunk), this);
 
   ui::ActiveWindowWatcherX::AddObserver(this);
-
-  gtk_window_present(window_);
 }
 
 ShellWindowGtk::~ShellWindowGtk() {
@@ -169,6 +169,7 @@ gboolean ShellWindowGtk::OnWindowState(GtkWidget* sender,
 // static
 ShellWindow* ShellWindow::CreateImpl(Profile* profile,
                                      const extensions::Extension* extension,
-                                     const GURL& url) {
-  return new ShellWindowGtk(profile, extension, url);
+                                     const GURL& url,
+                                     const ShellWindow::CreateParams params) {
+  return new ShellWindowGtk(profile, extension, url, params);
 }

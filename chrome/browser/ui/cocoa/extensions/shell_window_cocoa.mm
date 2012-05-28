@@ -26,10 +26,12 @@
 
 ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
                                    const extensions::Extension* extension,
-                                   const GURL& url)
+                                   const GURL& url,
+                                   const ShellWindow::CreateParams params)
     : ShellWindow(profile, extension, url),
       attention_request_id_(0) {
-  NSRect rect = NSMakeRect(0, 0, kDefaultWidth, kDefaultHeight);
+  NSRect rect = NSMakeRect(params.bounds.x(), params.bounds.y(),
+                           params.bounds.width(), params.bounds.height());
   NSUInteger styleMask = NSTitledWindowMask | NSClosableWindowMask |
                          NSMiniaturizableWindowMask | NSResizableWindowMask;
   scoped_nsobject<NSWindow> window([[UnderlayOpenGLHostingWindow alloc]
@@ -48,7 +50,6 @@ ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
       [[ShellWindowController alloc] initWithWindow:window.release()]);
   [[window_controller_ window] setDelegate:window_controller_];
   [window_controller_ setShellWindow:this];
-  [window_controller_ showWindow:nil];
 }
 
 bool ShellWindowCocoa::IsActive() const {
@@ -81,6 +82,7 @@ gfx::Rect ShellWindowCocoa::GetBounds() const {
 }
 
 void ShellWindowCocoa::Show() {
+  [window_controller_ showWindow:nil];
   [window() makeKeyAndOrderFront:window_controller_];
 }
 
@@ -171,6 +173,7 @@ NSWindow* ShellWindowCocoa::window() const {
 // static
 ShellWindow* ShellWindow::CreateImpl(Profile* profile,
                                      const extensions::Extension* extension,
-                                     const GURL& url) {
-  return new ShellWindowCocoa(profile, extension, url);
+                                     const GURL& url,
+                                     const ShellWindow::CreateParams params) {
+  return new ShellWindowCocoa(profile, extension, url, params);
 }

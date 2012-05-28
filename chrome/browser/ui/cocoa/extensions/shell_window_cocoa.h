@@ -32,7 +32,8 @@ class ShellWindowCocoa : public ShellWindow {
  public:
   ShellWindowCocoa(Profile* profile,
                    const extensions::Extension* extension,
-                   const GURL& url);
+                   const GURL& url,
+                   const CreateParams params);
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;

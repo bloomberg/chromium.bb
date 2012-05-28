@@ -15,6 +15,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/rect.h"
 
 namespace Create = extensions::api::app_window::Create;
 
@@ -29,9 +30,18 @@ bool AppWindowCreateFunction::RunImpl() {
   // TODO(jeremya): figure out a way to pass the opening WebContents through to
   // ShellWindow::Create so we can set the opener at create time rather than
   // with a hack in AppWindowCustomBindings::GetView().
+  ShellWindow::CreateParams create_params;
+  if (params->options.width.get())
+    create_params.bounds.set_width(*params->options.width.get());
+  if (params->options.height.get())
+    create_params.bounds.set_height(*params->options.height.get());
+  if (params->options.left.get())
+    create_params.bounds.set_x(*params->options.left.get());
+  if (params->options.top.get())
+    create_params.bounds.set_y(*params->options.top.get());
   ShellWindow* shell_window =
-      ShellWindow::Create(profile(), GetExtension(), url);
-  // TODO(jeremya): allow caller to specify window bounds.
+      ShellWindow::Create(profile(), GetExtension(), url, create_params);
+  shell_window->Show();
 
   content::WebContents* created_contents = shell_window->web_contents();
   int view_id = created_contents->GetRenderViewHost()->GetRoutingID();

@@ -33,6 +33,11 @@
 using content::SiteInstance;
 using content::WebContents;
 
+namespace {
+static const int kDefaultWidth = 512;
+static const int kDefaultHeight = 384;
+}  // namespace
+
 namespace internal {
 
 class ShellWindowController : public ExtensionWindowController {
@@ -91,11 +96,17 @@ bool ShellWindowController::IsVisibleToExtension(
 
 }  // namespace internal
 
+ShellWindow::CreateParams::CreateParams()
+  : frame(ShellWindow::CreateParams::FRAME_CUSTOM),
+    bounds(10, 10, kDefaultWidth, kDefaultHeight) {
+}
+
 ShellWindow* ShellWindow::Create(Profile* profile,
                                  const extensions::Extension* extension,
-                                 const GURL& url) {
+                                 const GURL& url,
+                                 const ShellWindow::CreateParams params) {
   // This object will delete itself when the window is closed.
-  return ShellWindow::CreateImpl(profile, extension, url);
+  return ShellWindow::CreateImpl(profile, extension, url, params);
 }
 
 ShellWindow::ShellWindow(Profile* profile,

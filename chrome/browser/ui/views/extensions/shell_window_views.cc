@@ -100,7 +100,8 @@ void ShellWindowFrameView::GetWindowMask(const gfx::Size& size,
 
 ShellWindowViews::ShellWindowViews(Profile* profile,
                                    const extensions::Extension* extension,
-                                   const GURL& url)
+                                   const GURL& url,
+                                   const ShellWindow::CreateParams win_params)
     : ShellWindow(profile, extension, url),
       initialized_(false),
       use_native_frame_(true) {
@@ -108,8 +109,7 @@ ShellWindowViews::ShellWindowViews(Profile* profile,
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;
   params.remove_standard_frame = !use_native_frame_;
-  gfx::Rect bounds(10, 10, kDefaultWidth, kDefaultHeight);
-  params.bounds = bounds;
+  params.bounds = win_params.bounds;
   window_->Init(params);
 #if defined(OS_WIN) && !defined(USE_AURA)
   std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
@@ -121,8 +121,6 @@ ShellWindowViews::ShellWindowViews(Profile* profile,
 #endif
   SetLayoutManager(new views::FillLayout);
   Layout();
-
-  window_->Show();
 }
 
 ShellWindowViews::~ShellWindowViews() {
@@ -349,6 +347,7 @@ void ShellWindowViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 // static
 ShellWindow* ShellWindow::CreateImpl(Profile* profile,
                                      const extensions::Extension* extension,
-                                     const GURL& url) {
-  return new ShellWindowViews(profile, extension, url);
+                                     const GURL& url,
+                                     const ShellWindow::CreateParams params) {
+  return new ShellWindowViews(profile, extension, url, params);
 }

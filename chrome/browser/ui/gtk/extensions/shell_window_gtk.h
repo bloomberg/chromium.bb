@@ -26,7 +26,8 @@ class ShellWindowGtk : public ShellWindow,
  public:
   ShellWindowGtk(Profile* profile,
                  const extensions::Extension* extension,
-                 const GURL& url);
+                 const GURL& url,
+                 const CreateParams params);
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;

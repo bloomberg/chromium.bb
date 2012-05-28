@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/gfx/rect.h"
 
 class ExtensionWindowController;
 class GURL;
@@ -36,9 +37,24 @@ class ShellWindow : public content::NotificationObserver,
                     public ExtensionFunctionDispatcher::Delegate,
                     public BaseWindow {
  public:
+  struct CreateParams {
+    enum Frame {
+      FRAME_CHROME, // Chrome-style window frame.
+      FRAME_CUSTOM, // Chromeless frame.
+    };
+
+    CreateParams();
+
+    Frame frame;
+    // Specify the initial bounds of the window. If empty, the window will be a
+    // default size.
+    gfx::Rect bounds;
+  };
+
   static ShellWindow* Create(Profile* profile,
                              const extensions::Extension* extension,
-                             const GURL& url);
+                             const GURL& url,
+                             const CreateParams params);
 
   const SessionID& session_id() const { return session_id_; }
   const ExtensionWindowController* extension_window_controller() const {
@@ -48,11 +64,6 @@ class ShellWindow : public content::NotificationObserver,
   content::WebContents* web_contents() const { return web_contents_; }
 
  protected:
-  // TODO(mihaip): Switch from hardcoded defaults to passing in the window
-  // creation parameters to ShellWindow::Create.
-  static const int kDefaultWidth = 512;
-  static const int kDefaultHeight = 384;
-
   ShellWindow(Profile* profile,
               const extensions::Extension* extension,
               const GURL& url);
@@ -66,7 +77,8 @@ class ShellWindow : public content::NotificationObserver,
   // per platform). Public users of ShellWindow should use ShellWindow::Create.
   static ShellWindow* CreateImpl(Profile* profile,
                                  const extensions::Extension* extension,
-                                 const GURL& url);
+                                 const GURL& url,
+                                 CreateParams params);
 
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

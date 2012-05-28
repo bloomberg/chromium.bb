@@ -540,11 +540,11 @@ bool CreateWindowFunction::RunImpl() {
       } else if (type_str == keys::kWindowTypeValueShell &&
           GetExtension()->is_platform_app()) {
         GURL window_url = urls.empty() ? GURL(chrome::kAboutBlankURL) : urls[0];
-        ShellWindow* shell_window =
-            ShellWindow::Create(window_profile, GetExtension(), window_url);
-        // TODO(mihaip): It might be less janky to pass in the desired bounds
-        // into ShellWindow::Create directly.
-        shell_window->SetBounds(window_bounds);
+        ShellWindow::CreateParams params;
+        params.bounds = window_bounds;
+        ShellWindow* shell_window = ShellWindow::Create(
+            window_profile, GetExtension(), window_url, params);
+        shell_window->Show();
         result_.reset(shell_window->extension_window_controller()->
             CreateWindowValueWithTabs());
         return true;
