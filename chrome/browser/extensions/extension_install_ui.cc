@@ -35,6 +35,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -318,16 +319,19 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
   delegate_ = delegate;
   prompt_type_ = INSTALL_PROMPT;
 
-  // In the Web Store, we special-case themes to not show any confirm UI.
-  // Instead they are immediately installed, and then we show an infobar (see
-  // OnInstallSuccess) to allow the user to revert if they don't like it.
+  // We special-case themes to not show any confirm UI. Instead they are
+  // immediately installed, and then we show an infobar (see OnInstallSuccess)
+  // to allow the user to revert if they don't like it.
   //
-  // We don't do this off-store because we don't want websites to be able to
-  // clickjack people into installing themes. Even though it's not dangerous, it
-  // would be annoying.
-  if (extension->from_webstore() && extension->is_theme()) {
-    delegate->InstallUIProceed();
-    return;
+  // We don't do this in the case where off-store extension installs are
+  // disabled because in that case, we don't show the dangerous download UI, so
+  // we need the UI confirmation.
+  if (extension->is_theme()) {
+    if (extension->from_webstore() ||
+        extensions::switch_utils::IsOffStoreInstallEnabled()) {
+      delegate->InstallUIProceed();
+      return;
+    }
   }
 
   LoadImageIfNeeded();
