@@ -761,7 +761,7 @@ GDataProvider.prototype.convert_ = function(data) {
       transform: null
     };
   }
-  if (data.isPresent && ('contentUrl' in data)) {
+  if (!data.isPresent && ('contentUrl' in data)) {
     result.streaming = {
       url: data.contentUrl.replace(/\?.*$/gi, '')
     };
