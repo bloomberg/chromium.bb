@@ -24,7 +24,7 @@ class ShellJavaScriptDialogCreator : public JavaScriptDialogCreator {
       WebContents* web_contents,
       const GURL& origin_url,
       const std::string& accept_lang,
-      ui::JavascriptMessageType javascript_message_type,
+      JavaScriptMessageType javascript_message_type,
       const string16& message_text,
       const string16& default_prompt_text,
       const DialogClosedCallback& callback,

@@ -7,8 +7,8 @@
 #include "content/browser/mock_content_browser_client.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
+#include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/render_view_host_manager.h"
 #include "content/browser/web_contents/test_web_contents.h"
 #include "content/common/test_url_constants.h"
@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_controller_factory.h"
+#include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/mock_render_process_host.h"
@@ -26,7 +27,6 @@
 #include "content/test/test_notification_tracker.h"
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/javascript_message_type.h"
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserContext;
@@ -325,7 +325,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
   ntp_process_host->sink().ClearMessages();
   ViewHostMsg_RunJavaScriptMessage js_msg(
       rvh()->GetRoutingID(), msg, msg, kNtpUrl,
-      ui::JAVASCRIPT_MESSAGE_TYPE_CONFIRM, &result, &unused);
+      content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM, &result, &unused);
   js_msg.EnableMessagePumping();
   EXPECT_TRUE(ntp_rvh->OnMessageReceived(js_msg));
   EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));

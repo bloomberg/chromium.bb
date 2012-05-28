@@ -24,7 +24,7 @@ class ShellJavaScriptDialog {
  public:
   ShellJavaScriptDialog(
       ShellJavaScriptDialogCreator* creator,
-      ui::JavascriptMessageType javascript_message_type,
+      JavaScriptMessageType message_type,
       const string16& message_text,
       const string16& default_prompt_text,
       const JavaScriptDialogCreator::DialogClosedCallback& callback);
@@ -40,7 +40,7 @@ class ShellJavaScriptDialog {
 #if defined(OS_MACOSX)
   ShellJavaScriptDialogHelper* helper_;  // owned
 #elif defined(OS_WIN)
-  ui::JavascriptMessageType message_type_;
+  JavaScriptMessageType message_type_;
   HWND dialog_win_;
   string16 message_text_;
   string16 default_prompt_text_;

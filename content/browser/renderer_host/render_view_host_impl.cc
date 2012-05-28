@@ -1288,7 +1288,7 @@ void RenderViewHostImpl::OnMsgRunJavaScriptMessage(
     const string16& message,
     const string16& default_prompt,
     const GURL& frame_url,
-    ui::JavascriptMessageType type,
+    content::JavaScriptMessageType type,
     IPC::Message* reply_msg) {
   // While a JS message dialog is showing, tabs in the same process shouldn't
   // process input events.

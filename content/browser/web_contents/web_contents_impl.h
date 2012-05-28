@@ -334,7 +334,7 @@ class CONTENT_EXPORT WebContentsImpl
                                     const string16& message,
                                     const string16& default_prompt,
                                     const GURL& frame_url,
-                                    ui::JavascriptMessageType type,
+                                    content::JavaScriptMessageType type,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) OVERRIDE;
   virtual void RunBeforeUnloadConfirm(content::RenderViewHost* rvh,

@@ -20,9 +20,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/javascript_message_type.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
-#include "ui/base/javascript_message_type.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::JavaScriptDialogCreator;
@@ -42,7 +42,7 @@ class ChromeJavaScriptDialogCreator : public JavaScriptDialogCreator,
       WebContents* web_contents,
       const GURL& origin_url,
       const std::string& accept_lang,
-      ui::JavascriptMessageType javascript_message_type,
+      content::JavaScriptMessageType message_type,
       const string16& message_text,
       const string16& default_prompt_text,
       const DialogClosedCallback& callback,
@@ -121,7 +121,7 @@ void ChromeJavaScriptDialogCreator::RunJavaScriptDialog(
     WebContents* web_contents,
     const GURL& origin_url,
     const std::string& accept_lang,
-    ui::JavascriptMessageType javascript_message_type,
+    content::JavaScriptMessageType message_type,
     const string16& message_text,
     const string16& default_prompt_text,
     const DialogClosedCallback& callback,
@@ -147,7 +147,7 @@ void ChromeJavaScriptDialogCreator::RunJavaScriptDialog(
     display_suppress_checkbox = true;
   }
 
-  bool is_alert = javascript_message_type == ui::JAVASCRIPT_MESSAGE_TYPE_ALERT;
+  bool is_alert = message_type == content::JAVASCRIPT_MESSAGE_TYPE_ALERT;
   string16 dialog_title = GetTitle(origin_url, accept_lang, is_alert);
 
   if (extension_host_)
@@ -157,7 +157,7 @@ void ChromeJavaScriptDialogCreator::RunJavaScriptDialog(
       web_contents,
       extra_data,
       dialog_title,
-      javascript_message_type,
+      message_type,
       message_text,
       default_prompt_text,
       display_suppress_checkbox,
@@ -189,7 +189,7 @@ void ChromeJavaScriptDialogCreator::RunBeforeUnloadDialog(
       web_contents,
       extra_data,
       title,
-      ui::JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
+      content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
       full_message,
       string16(),  // default_prompt_text
       false,       // display_suppress_checkbox

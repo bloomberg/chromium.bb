@@ -21,7 +21,7 @@ void ShellJavaScriptDialogCreator::RunJavaScriptDialog(
     WebContents* web_contents,
     const GURL& origin_url,
     const std::string& accept_lang,
-    ui::JavascriptMessageType javascript_message_type,
+    JavaScriptMessageType javascript_message_type,
     const string16& message_text,
     const string16& default_prompt_text,
     const DialogClosedCallback& callback,
@@ -68,7 +68,7 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
       ASCIIToUTF16("\n\nIs it OK to leave/reload this page?");
 
   dialog_.reset(new ShellJavaScriptDialog(this,
-                                          ui::JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
+                                          JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
                                           new_message_text,
                                           string16(),  // default_prompt_text
                                           callback));

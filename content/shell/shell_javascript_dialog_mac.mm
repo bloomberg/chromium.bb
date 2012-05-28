@@ -88,16 +88,14 @@ namespace content {
 
 ShellJavaScriptDialog::ShellJavaScriptDialog(
     ShellJavaScriptDialogCreator* creator,
-    ui::JavascriptMessageType javascript_message_type,
+    JavaScriptMessageType message_type,
     const string16& message_text,
     const string16& default_prompt_text,
     const JavaScriptDialogCreator::DialogClosedCallback& callback)
     : creator_(creator),
       callback_(callback) {
-  bool text_field =
-      javascript_message_type == ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT;
-  bool one_button =
-      javascript_message_type == ui::JAVASCRIPT_MESSAGE_TYPE_ALERT;
+  bool text_field = message_type == JAVASCRIPT_MESSAGE_TYPE_PROMPT;
+  bool one_button = message_type == JAVASCRIPT_MESSAGE_TYPE_ALERT;
 
   helper_ =
       [[ShellJavaScriptDialogHelper alloc] initHelperWithCreator:creator

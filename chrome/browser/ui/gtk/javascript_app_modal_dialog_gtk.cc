@@ -57,12 +57,12 @@ JavaScriptAppModalDialogGtk::JavaScriptAppModalDialogGtk(
   // We add in the OK button manually later because we want to focus it
   // explicitly.
   switch (dialog_->javascript_message_type()) {
-    case ui::JAVASCRIPT_MESSAGE_TYPE_ALERT:
+    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT:
       buttons = GTK_BUTTONS_NONE;
       message_type = GTK_MESSAGE_WARNING;
       break;
 
-    case ui::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
+    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
       if (dialog_->is_before_unload_dialog()) {
         // onbeforeunload also uses a confirm prompt, it just has custom
         // buttons.  We add the buttons using gtk_dialog_add_button below.
@@ -73,7 +73,7 @@ JavaScriptAppModalDialogGtk::JavaScriptAppModalDialogGtk(
       message_type = GTK_MESSAGE_QUESTION;
       break;
 
-    case ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT:
+    case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT:
       buttons = GTK_BUTTONS_CANCEL;
       message_type = GTK_MESSAGE_QUESTION;
       break;
@@ -98,7 +98,7 @@ JavaScriptAppModalDialogGtk::JavaScriptAppModalDialogGtk(
   // Adjust content area as needed.  Set up the prompt text entry or
   // suppression check box.
   if (dialog_->javascript_message_type() ==
-          ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT) {
+          content::JAVASCRIPT_MESSAGE_TYPE_PROMPT) {
     GtkWidget* content_area =
         gtk_dialog_get_content_area(GTK_DIALOG(gtk_dialog_));
     GtkWidget* text_box = gtk_entry_new();
@@ -139,7 +139,7 @@ JavaScriptAppModalDialogGtk::JavaScriptAppModalDialogGtk(
     GtkWidget* ok_button = gtk_dialog_add_button(GTK_DIALOG(gtk_dialog_),
         GTK_STOCK_OK, GTK_RESPONSE_OK);
     if (dialog_->javascript_message_type() !=
-            ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT)
+            content::JAVASCRIPT_MESSAGE_TYPE_PROMPT)
       gtk_widget_grab_focus(ok_button);
   }
 
@@ -155,13 +155,13 @@ JavaScriptAppModalDialogGtk::~JavaScriptAppModalDialogGtk() {
 
 int JavaScriptAppModalDialogGtk::GetAppModalDialogButtons() const {
   switch (dialog_->javascript_message_type()) {
-    case ui::JAVASCRIPT_MESSAGE_TYPE_ALERT:
+    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT:
       return ui::DIALOG_BUTTON_OK;
 
-    case ui::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
+    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
       return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 
-    case ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT:
+    case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT:
       return ui::DIALOG_BUTTON_OK;
 
     default:
