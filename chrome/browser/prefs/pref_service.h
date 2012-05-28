@@ -271,6 +271,10 @@ class PrefService : public base::NonThreadSafe {
   // the preference is not set in the user pref store, returns NULL.
   const base::Value* GetUserPrefValue(const char* path) const;
 
+  // Returns the default value of the given preference. |path| must point to a
+  // registered preference. In that case, will never return NULL.
+  const base::Value* GetDefaultPrefValue(const char* path) const;
+
   // Removes a user pref and restores the pref to its default value.
   void ClearPref(const char* path);
 

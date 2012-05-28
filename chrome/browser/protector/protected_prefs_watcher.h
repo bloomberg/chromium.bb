@@ -75,9 +75,9 @@ class ProtectedPrefsWatcher : public content::NotificationObserver {
   // Migrates backup if it is an older version.
   void MigrateOldBackupIfNeeded();
 
-  // Updates the backup утекн for |pref_name| and кeturns |true| if the
-  // backup has changed.
-  bool UpdateBackupEntry(const std::string& pref_name);
+  // Updates the backup entry for |path| and returns |true| if the backup has
+  // changed.
+  bool UpdateBackupEntry(const std::string& path);
 
   // Perform a check that backup is valid and settings have not been modified.
   void ValidateBackup();

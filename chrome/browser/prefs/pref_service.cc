@@ -696,16 +696,25 @@ const base::Value* PrefService::GetUserPrefValue(const char* path) const {
   // Look for an existing preference in the user store. If it doesn't
   // exist, return NULL.
   base::Value* value = NULL;
-  if (user_pref_store_->GetMutableValue(path, &value) !=
-          PersistentPrefStore::READ_OK) {
+  if (user_pref_store_->GetMutableValue(path, &value) != PrefStore::READ_OK)
     return NULL;
-  }
 
   if (!value->IsType(pref->GetType())) {
     NOTREACHED() << "Pref value type doesn't match registered type.";
     return NULL;
   }
 
+  return value;
+}
+
+const base::Value* PrefService::GetDefaultPrefValue(const char* path) const {
+  DCHECK(CalledOnValidThread());
+  // Lookup the preference in the default store.
+  const base::Value* value = NULL;
+  if (default_store_->GetValue(path, &value) != PrefStore::READ_OK) {
+    NOTREACHED() << "Default value missing for pref: " << path;
+    return NULL;
+  }
   return value;
 }
 
@@ -870,8 +879,7 @@ Value* PrefService::GetMutableUserPref(const char* path,
   // Look for an existing preference in the user store. If it doesn't
   // exist or isn't the correct type, create a new user preference.
   Value* value = NULL;
-  if (user_pref_store_->GetMutableValue(path, &value)
-          != PersistentPrefStore::READ_OK ||
+  if (user_pref_store_->GetMutableValue(path, &value) != PrefStore::READ_OK ||
       !value->IsType(type)) {
     if (type == Value::TYPE_DICTIONARY) {
       value = new DictionaryValue;

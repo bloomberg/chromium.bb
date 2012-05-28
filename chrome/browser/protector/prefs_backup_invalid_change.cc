@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/protector/base_prefs_change.h"
@@ -131,10 +132,12 @@ void PrefsBackupInvalidChange::ApplyDefaults(Profile* profile) {
   if (startup_pref.type != SessionStartupPref::LAST) {
     // If startup type is LAST, resetting it is dangerous (the whole previous
     // session will be lost).
-    startup_pref.type = SessionStartupPref::GetDefaultStartupType();
-    SessionStartupPref::SetStartupPref(prefs, startup_pref);
+    prefs->ClearPref(prefs::kRestoreOnStartup);
     startup_pref_reset_ = true;
   }
+  prefs->ClearPref(prefs::kHomePageIsNewTabPage);
+  prefs->ClearPref(prefs::kHomePage);
+  prefs->ClearPref(prefs::kShowHomeButton);
 }
 
 bool PrefsBackupInvalidChange::CanBeMerged() const {

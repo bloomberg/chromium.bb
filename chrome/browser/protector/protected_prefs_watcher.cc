@@ -24,7 +24,18 @@ namespace protector {
 
 namespace {
 
+// Prefix added to names of backup entries.
 const char kBackupPrefsPrefix[] = "backup.";
+
+// Names of prefs that are backed up.
+const char* const kProtectedPrefNames[] = {
+  prefs::kHomePage,
+  prefs::kHomePageIsNewTabPage,
+  prefs::kShowHomeButton,
+  prefs::kRestoreOnStartup,
+  prefs::kURLsToRestoreOnStartup,
+  prefs::kPinnedTabs
+};
 
 // Backup pref names.
 const char kBackupHomePage[] = "backup.homepage";
@@ -34,9 +45,16 @@ const char kBackupRestoreOnStartup[] = "backup.session.restore_on_startup";
 const char kBackupURLsToRestoreOnStartup[] =
     "backup.session.urls_to_restore_on_startup";
 const char kBackupPinnedTabs[] = "backup.pinned_tabs";
+
+// Special backup entries.
 const char kBackupExtensionsIDs[] = "backup.extensions.ids";
 const char kBackupSignature[] = "backup._signature";
 const char kBackupVersion[] = "backup._version";
+
+// Returns name of the backup entry for pref |pref_name|.
+std::string GetBackupNameFor(const std::string& pref_name) {
+  return kBackupPrefsPrefix + pref_name;
+}
 
 // Appends a list of strings to |out|.
 void StringAppendStringList(const base::ListValue* list, std::string* out) {
@@ -60,10 +78,28 @@ void StringAppendStringDictionary(const base::DictionaryValue* dict,
   }
 }
 
+void StringAppendBoolean(PrefService* prefs,
+                         const char* path,
+                         std::string* out) {
+  if (prefs->HasPrefPath(path))
+    base::StringAppendF(out, "|%d", prefs->GetBoolean(path) ? 1 : 0);
+  else
+    base::StringAppendF(out, "|");
+}
+
+void StringAppendInteger(PrefService* prefs,
+                         const char* path,
+                         std::string* out) {
+  if (prefs->HasPrefPath(path))
+    base::StringAppendF(out, "|%d", prefs->GetInteger(path));
+  else
+    base::StringAppendF(out, "|");
+}
+
 }  // namespace
 
 // static
-const int ProtectedPrefsWatcher::kCurrentVersionNumber = 3;
+const int ProtectedPrefsWatcher::kCurrentVersionNumber = 4;
 
 ProtectedPrefsWatcher::ProtectedPrefsWatcher(Profile* profile)
     : is_backup_valid_(true),
@@ -104,30 +140,37 @@ void ProtectedPrefsWatcher::RegisterUserPrefs(PrefService* prefs) {
 }
 
 bool ProtectedPrefsWatcher::DidPrefChange(const std::string& path) const {
-  const base::Value* backup_value = GetBackupForPref(path);
-  if (!backup_value) {
-    LOG(WARNING) << "No backup for " << path;
-    return false;
-  }
-  const PrefService::Preference* new_pref =
-      profile_->GetPrefs()->FindPreference(path.c_str());
+  std::string backup_path = GetBackupNameFor(path);
+  PrefService* prefs = profile_->GetPrefs();
+  const PrefService::Preference* new_pref = prefs->FindPreference(path.c_str());
   DCHECK(new_pref);
-  if (new_pref->IsManaged())
+  const PrefService::Preference* backup_pref =
+      profile_->GetPrefs()->FindPreference(backup_path.c_str());
+  DCHECK(backup_pref);
+  if (new_pref->IsDefaultValue())
+    return !backup_pref->IsDefaultValue();
+  if (!new_pref->IsUserControlled())
     return false;
-  return !backup_value->Equals(new_pref->GetValue());
+  return !backup_pref->GetValue()->Equals(new_pref->GetValue());
 }
 
 const base::Value* ProtectedPrefsWatcher::GetBackupForPref(
     const std::string& path) const {
   if (!is_backup_valid_)
     return NULL;
-  std::string backup_path = std::string(kBackupPrefsPrefix) + path;
+  std::string backup_path = GetBackupNameFor(path);
+  // These do not directly correspond to any real preference.
+  DCHECK(backup_path != kBackupExtensionsIDs &&
+         backup_path != kBackupSignature);
+  PrefService* prefs = profile_->GetPrefs();
+  // If backup is not set, return the default value of the actual pref.
+  // TODO(ivankr): return NULL instead and handle appropriately in SettingChange
+  // classes.
+  if (!prefs->HasPrefPath(backup_path.c_str()))
+    return prefs->GetDefaultPrefValue(path.c_str());
   const PrefService::Preference* backup_pref =
       profile_->GetPrefs()->FindPreference(backup_path.c_str());
-  DCHECK(backup_pref &&
-         // These do not directly correspond to any real preference.
-         backup_path != kBackupExtensionsIDs &&
-         backup_path != kBackupSignature);
+  DCHECK(backup_pref);
   return backup_pref->GetValue();
 }
 
@@ -157,9 +200,15 @@ void ProtectedPrefsWatcher::EnsurePrefsMigration() {
 bool ProtectedPrefsWatcher::UpdateCachedPrefs() {
   // Direct access to the extensions prefs is required becase ExtensionService
   // may not yet have been initialized.
+  const base::DictionaryValue* extension_prefs;
+  const base::Value* extension_prefs_value =
+      profile_->GetPrefs()->GetUserPrefValue(ExtensionPrefs::kExtensionsPref);
+  if (!extension_prefs_value ||
+      !extension_prefs_value->GetAsDictionary(&extension_prefs)) {
+    return false;
+  }
   ExtensionPrefs::ExtensionIdSet extension_ids =
-      ExtensionPrefs::GetExtensionsFrom(
-          profile_->GetPrefs()->GetDictionary(ExtensionPrefs::kExtensionsPref));
+      ExtensionPrefs::GetExtensionsFrom(extension_prefs);
   if (extension_ids == cached_extension_ids_)
     return false;
   cached_extension_ids_.swap(extension_ids);
@@ -176,16 +225,12 @@ bool ProtectedPrefsWatcher::HasBackup() const {
 
 void ProtectedPrefsWatcher::InitBackup() {
   PrefService* prefs = profile_->GetPrefs();
-  prefs->SetString(kBackupHomePage, prefs->GetString(prefs::kHomePage));
-  prefs->SetBoolean(kBackupHomePageIsNewTabPage,
-                    prefs->GetBoolean(prefs::kHomePageIsNewTabPage));
-  prefs->SetBoolean(kBackupShowHomeButton,
-                    prefs->GetBoolean(prefs::kShowHomeButton));
-  prefs->SetInteger(kBackupRestoreOnStartup,
-                    prefs->GetInteger(prefs::kRestoreOnStartup));
-  prefs->Set(kBackupURLsToRestoreOnStartup,
-             *prefs->GetList(prefs::kURLsToRestoreOnStartup));
-  prefs->Set(kBackupPinnedTabs, *prefs->GetList(prefs::kPinnedTabs));
+  for (size_t i = 0; i < arraysize(kProtectedPrefNames); ++i) {
+    if (prefs->HasPrefPath(kProtectedPrefNames[i])) {
+      prefs->Set(GetBackupNameFor(kProtectedPrefNames[i]).c_str(),
+                 *prefs->GetUserPrefValue(kProtectedPrefNames[i]));
+    }
+  }
   ListPrefUpdate extension_ids_update(prefs, kBackupExtensionsIDs);
   base::ListValue* extension_ids = extension_ids_update.Get();
   extension_ids->Clear();
@@ -208,8 +253,9 @@ void ProtectedPrefsWatcher::MigrateOldBackupIfNeeded() {
 
   switch (current_version) {
     case 1:
-      // Add pinned tabs.
-      prefs->Set(kBackupPinnedTabs, *prefs->GetList(prefs::kPinnedTabs));
+      // Add pinned tabs backup.
+      prefs->Set(kBackupPinnedTabs,
+                 *prefs->GetUserPrefValue(prefs::kPinnedTabs));
       // FALL THROUGH
 
     case 2:
@@ -220,15 +266,25 @@ void ProtectedPrefsWatcher::MigrateOldBackupIfNeeded() {
       prefs->Set(kBackupURLsToRestoreOnStartup,
                  *prefs->GetList(prefs::kURLsToRestoreOnStartup));
       // FALL THROUGH
+
+    case 3:
+      // Reset to default values backup prefs whose actual prefs are not set.
+      for (size_t i = 0; i < arraysize(kProtectedPrefNames); ++i) {
+        if (!prefs->HasPrefPath(kProtectedPrefNames[i]))
+          prefs->ClearPref(GetBackupNameFor(kProtectedPrefNames[i]).c_str());
+      }
+      // FALL THROUGH
   }
 
   prefs->SetInteger(kBackupVersion, kCurrentVersionNumber);
   UpdateBackupSignature();
 }
 
-bool ProtectedPrefsWatcher::UpdateBackupEntry(const std::string& pref_name) {
+bool ProtectedPrefsWatcher::UpdateBackupEntry(const std::string& path) {
+  std::string backup_path = GetBackupNameFor(path);
   PrefService* prefs = profile_->GetPrefs();
-  if (pref_name == ExtensionPrefs::kExtensionsPref) {
+  const PrefService::Preference* pref = prefs->FindPreference(path.c_str());
+  if (path == ExtensionPrefs::kExtensionsPref) {
     // For changes in extension dictionary, do nothing if the IDs list remained
     // the same.
     if (!UpdateCachedPrefs())
@@ -241,27 +297,15 @@ bool ProtectedPrefsWatcher::UpdateBackupEntry(const std::string& pref_name) {
          it != cached_extension_ids_.end(); ++it) {
       extension_ids->Append(base::Value::CreateStringValue(*it));
     }
-  } else if (pref_name == prefs::kHomePage) {
-    prefs->SetString(kBackupHomePage, prefs->GetString(prefs::kHomePage));
-  } else if (pref_name == prefs::kHomePageIsNewTabPage) {
-    prefs->SetBoolean(kBackupHomePageIsNewTabPage,
-                      prefs->GetBoolean(prefs::kHomePageIsNewTabPage));
-  } else if (pref_name == prefs::kShowHomeButton) {
-    prefs->SetBoolean(kBackupShowHomeButton,
-                      prefs->GetBoolean(prefs::kShowHomeButton));
-  } else if (pref_name == prefs::kRestoreOnStartup) {
-    prefs->SetInteger(kBackupRestoreOnStartup,
-                      prefs->GetInteger(prefs::kRestoreOnStartup));
-  } else if (pref_name == prefs::kURLsToRestoreOnStartup) {
-    prefs->Set(kBackupURLsToRestoreOnStartup,
-               *prefs->GetList(prefs::kURLsToRestoreOnStartup));
-  } else if (pref_name == prefs::kPinnedTabs) {
-    prefs->Set(kBackupPinnedTabs, *prefs->GetList(prefs::kPinnedTabs));
-  } else {
-    NOTREACHED();
+  } else if (!prefs->HasPrefPath(path.c_str())) {
+    // Preference has been removed, remove the backup as well.
+    prefs->ClearPref(backup_path.c_str());
+  } else if (!pref->IsUserControlled()) {
     return false;
+  } else {
+    prefs->Set(backup_path.c_str(), *pref->GetValue());
   }
-  VLOG(1) << "Updated backup entry for: " << pref_name;
+  VLOG(1) << "Updated backup entry for: " << path;
   return true;
 }
 
@@ -321,12 +365,10 @@ std::string ProtectedPrefsWatcher::GetSignatureData(PrefService* prefs) const {
   int current_version = prefs->GetInteger(kBackupVersion);
   // TODO(ivankr): replace this with some existing reliable serializer.
   // JSONWriter isn't a good choice because JSON formatting may change suddenly.
-  std::string data = base::StringPrintf(
-      "%s|%d|%d|%d",
-      prefs->GetString(kBackupHomePage).c_str(),
-      prefs->GetBoolean(kBackupHomePageIsNewTabPage) ? 1 : 0,
-      prefs->GetBoolean(kBackupShowHomeButton) ? 1 : 0,
-      prefs->GetInteger(kBackupRestoreOnStartup));
+  std::string data = prefs->GetString(kBackupHomePage);
+  StringAppendBoolean(prefs, kBackupHomePageIsNewTabPage, &data);
+  StringAppendBoolean(prefs, kBackupShowHomeButton, &data);
+  StringAppendInteger(prefs, kBackupRestoreOnStartup, &data);
   StringAppendStringList(prefs->GetList(kBackupURLsToRestoreOnStartup), &data);
   StringAppendStringList(prefs->GetList(kBackupExtensionsIDs), &data);
   if (current_version >= 2) {

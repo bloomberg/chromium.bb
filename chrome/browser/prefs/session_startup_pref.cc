@@ -224,16 +224,8 @@ SessionStartupPref::Type SessionStartupPref::PrefValueToType(int pref_value) {
 bool SessionStartupPref::DidStartupPrefChange(Profile* profile) {
   ProtectedPrefsWatcher* prefs_watcher =
       ProtectorServiceFactory::GetForProfile(profile)->GetPrefsWatcher();
-  if (prefs_watcher->DidPrefChange(prefs::kRestoreOnStartup))
-    return true;
-#if defined(OS_MACOSX)
-  // On Mac OS, default value for |kRestoreOnStartup| depends on system
-  // settings and may be different from one run to another.
-  PrefService* prefs = profile->GetPrefs();
-  if (prefs->FindPreference(prefs::kRestoreOnStartup)->IsDefaultValue())
-    return false;
-#endif
-  return prefs_watcher->DidPrefChange(prefs::kURLsToRestoreOnStartup);
+  return prefs_watcher->DidPrefChange(prefs::kRestoreOnStartup) ||
+      prefs_watcher->DidPrefChange(prefs::kURLsToRestoreOnStartup);
 }
 
 // static

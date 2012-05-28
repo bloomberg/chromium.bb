@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/protector/base_setting_change.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,6 +39,11 @@ TEST_F(PrefsBackupInvalidChangeTest, Defaults) {
   // Startup URLs should be left unchanged.
   EXPECT_EQ(1UL, new_startup_pref.urls.size());
   EXPECT_EQ(std::string(kStartupUrl), new_startup_pref.urls[0].spec());
+  // Homepage prefs are reset to defaults.
+  PrefService* prefs = profile_.GetPrefs();
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kHomePageIsNewTabPage));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kHomePage));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kShowHomeButton));
 }
 
 // Test that "restore last session" setting is not changed by Init.
