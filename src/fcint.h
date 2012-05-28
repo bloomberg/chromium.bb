@@ -358,7 +358,7 @@ struct _FcCache {
     intptr_t	dirs;		    /* offset to subdirs */
     int		dirs_count;	    /* number of subdir strings */
     intptr_t	set;		    /* offset to font set */
-    int		mtime;		    /* low bits of directory mtime */
+    int		checksum;	    /* checksum of directory state */
 };
 
 #undef FcCacheDir
@@ -1028,6 +1028,9 @@ FcMatrixFree (FcMatrix *mat);
 
 FcPrivate int
 FcStat (const FcChar8 *file, struct stat *statb);
+
+FcPrivate int
+FcStatChecksum (const FcChar8 *file, struct stat *statb);
 
 FcPrivate FcBool
 FcIsFsMmapSafe (int fd);

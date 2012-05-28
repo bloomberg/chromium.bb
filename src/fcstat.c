@@ -130,6 +130,90 @@ FcStat (const FcChar8 *file, struct stat *statb)
 
 #endif
 
+/* Adler-32 checksum implementation */
+struct Adler32 {
+    int a;
+    int b;
+};
+
+static void
+Adler32Init (struct Adler32 *ctx)
+{
+    ctx->a = 1;
+    ctx->b = 0;
+}
+
+static void
+Adler32Update (struct Adler32 *ctx, const char *data, int data_len)
+{
+    while (data_len--)
+    {
+	ctx->a = (ctx->a + *data++) % 65521;
+	ctx->b = (ctx->b + ctx->a) % 65521;
+    }
+}
+
+static int
+Adler32Finish (struct Adler32 *ctx)
+{
+    return ctx->a + (ctx->b << 16);
+}
+
+/* dirent.d_type can be relied upon on FAT filesystem */
+static FcBool
+FcDirChecksumScandirFilter(const struct dirent *entry)
+{
+    return entry->d_type != DT_DIR;
+}
+
+static int
+FcDirChecksumScandirSorter(const struct dirent **lhs, const struct dirent **rhs)
+{
+    return strcmp((*lhs)->d_name, (*rhs)->d_name);
+}
+
+static int
+FcDirChecksum (const FcChar8 *dir, time_t *checksum)
+{
+    struct Adler32 ctx;
+    struct dirent **files;
+    int n;
+
+    Adler32Init (&ctx);
+
+    n = scandir ((const char *)dir, &files,
+                 &FcDirChecksumScandirFilter,
+                 &FcDirChecksumScandirSorter);
+    if (n == -1)
+        return -1;
+
+    while (n--)
+    {
+        Adler32Update (&ctx, files[n]->d_name, strlen(files[n]->d_name) + 1);
+        Adler32Update (&ctx, (char *)&files[n]->d_type, sizeof(files[n]->d_type));
+        free(files[n]);
+    }
+    free(files);
+
+    *checksum = Adler32Finish (&ctx);
+    return 0;
+}
+
+int
+FcStatChecksum (const FcChar8 *file, struct stat *statb)
+{
+    if (FcStat (file, statb) == -1)
+        return -1;
+
+    if (FcIsFsMtimeBroken (file))
+    {
+        if (FcDirChecksum (file, &statb->st_mtime) == -1)
+            return -1;
+    }
+
+    return 0;
+}
+
 static int
 FcFStatFs (int fd, FcStatFS *statb)
 {

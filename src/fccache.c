@@ -181,7 +181,7 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
     struct stat file_stat, dir_stat;
     FcBool	ret = FcFalse;
 
-    if (FcStat (dir, &dir_stat) < 0)
+    if (FcStatChecksum (dir, &dir_stat) < 0)
         return FcFalse;
 
     FcDirCacheBasename (dir, cache_base);
@@ -508,14 +508,14 @@ FcCacheTimeValid (FcCache *cache, struct stat *dir_stat)
 
     if (!dir_stat)
     {
-	if (FcStat (FcCacheDir (cache), &dir_static) < 0)
+	if (FcStatChecksum (FcCacheDir (cache), &dir_static) < 0)
 	    return FcFalse;
 	dir_stat = &dir_static;
     }
     if (FcDebug () & FC_DBG_CACHE)
-	printf ("FcCacheTimeValid dir \"%s\" cache time %d dir time %d\n",
-		FcCacheDir (cache), cache->mtime, (int) dir_stat->st_mtime);
-    return cache->mtime == (int) dir_stat->st_mtime;
+	printf ("FcCacheTimeValid dir \"%s\" cache checksum %d dir checksum %d\n",
+		FcCacheDir (cache), cache->checksum, (int) dir_stat->st_mtime);
+    return cache->checksum == (int) dir_stat->st_mtime;
 }
 
 /*
@@ -679,7 +679,7 @@ FcDirCacheValidateHelper (int fd, struct stat *fd_stat, struct stat *dir_stat, v
 	ret = FcFalse;
     else if (fd_stat->st_size != c.size)
 	ret = FcFalse;
-    else if (c.mtime != (int) dir_stat->st_mtime)
+    else if (c.checksum != (int) dir_stat->st_mtime)
 	ret = FcFalse;
     return ret;
 }
@@ -754,7 +754,7 @@ FcDirCacheBuild (FcFontSet *set, const FcChar8 *dir, struct stat *dir_stat, FcSt
     cache->magic = FC_CACHE_MAGIC_ALLOC;
     cache->version = FC_CACHE_CONTENT_VERSION;
     cache->size = serialize->size;
-    cache->mtime = (int) dir_stat->st_mtime;
+    cache->checksum = (int) dir_stat->st_mtime;
 
     /*
      * Serialize directory name
