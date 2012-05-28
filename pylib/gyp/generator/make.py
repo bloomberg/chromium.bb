@@ -1233,7 +1233,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                      "$(CFLAGS_CC_$(BUILDTYPE)) "
                      "$(CFLAGS_OBJCC_$(BUILDTYPE))")
 
-    self.WritePchTargets(precompiled_header.GetGchBuildCommands())
+    self.WritePchTargets(precompiled_header.GetPchBuildCommands())
 
     # If there are any object files in our input file list, link them into our
     # output.

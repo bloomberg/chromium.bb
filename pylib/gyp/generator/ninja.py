@@ -382,11 +382,16 @@ class NinjaWriter:
     link_deps = []
     sources = spec.get('sources', []) + extra_sources
     if sources:
+      pch = None
+      if self.flavor == 'win':
+        pch = gyp.msvs_emulation.PrecompiledHeader(
+            self.msvs_settings, config_name, self.GypPathToNinja)
+      else:
+        pch = gyp.xcode_emulation.MacPrefixHeader(
+            self.xcode_settings, self.GypPathToNinja,
+            lambda path, lang: self.GypPathToUniqueOutput(path + '-' + lang))
       link_deps = self.WriteSources(
-          config_name, config, sources, compile_depends_stamp,
-          gyp.xcode_emulation.MacPrefixHeader(
-              self.xcode_settings, self.GypPathToNinja,
-              lambda path, lang: self.GypPathToUniqueOutput(path + '-' + lang)))
+          config_name, config, sources, compile_depends_stamp, pch)
       # Some actions/rules output 'sources' that are already object files.
       link_deps += [self.GypPathToNinja(f)
           for f in sources if f.endswith(self.obj_ext)]
@@ -686,6 +691,7 @@ class NinjaWriter:
       cflags_cc = self.msvs_settings.GetCflagsCC(config_name)
       extra_defines = self.msvs_settings.GetComputedDefines(config_name)
       self.WriteVariableList('pdbname', [self.name + '.pdb'])
+      self.WriteVariableList('pchprefix', [self.name])
     else:
       cflags = config.get('cflags', [])
       cflags_c = config.get('cflags_c', [])
@@ -706,7 +712,7 @@ class NinjaWriter:
         [QuoteShellArgument('-I' + self.GypPathToNinja(i), self.flavor)
          for i in include_dirs])
 
-    pch_commands = precompiled_header.GetGchBuildCommands()
+    pch_commands = precompiled_header.GetPchBuildCommands()
     if self.flavor == 'mac':
       self.WriteVariableList('cflags_pch_c',
                              [precompiled_header.GetInclude('c')])
@@ -775,9 +781,11 @@ class NinjaWriter:
         'mm': 'cflags_pch_objcc',
       }[lang]
 
-      cmd = { 'c': 'cc', 'cc': 'cxx', 'm': 'objc', 'mm': 'objcxx', }.get(lang)
+      map = { 'c': 'cc', 'cc': 'cxx', 'm': 'objc', 'mm': 'objcxx', }
+      if self.flavor == 'win':
+        map.update({'c': 'cc_pch', 'cc': 'cxx_pch'})
+      cmd = map.get(lang)
       self.ninja.build(gch, cmd, input, variables=[(var_name, lang_flag)])
-
 
   def WriteLink(self, spec, config_name, config, link_deps):
     """Write out a link step. Fills out target.binary. """
@@ -1294,23 +1302,43 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   else:
     # TODO(scottmg): Requires fork of ninja for dependency and linking
     # support: https://github.com/sgraham/ninja
+    # Template for compile commands mostly shared between compiling files
+    # and generating PCH. In the case of PCH, the "output" is specified by /Fp
+    # rather than /Fo (for object files), but we still need to specify an /Fo
+    # when compiling PCH.
+    cc_template = ('cmd /s /c "$cc /nologo /showIncludes '
+                   '@$out.rsp '
+                   '$cflags_pch_c /c $in %(outspec)s /Fd$pdbname '
+                   '| ninja-deplist-helper -r . -q -f cl -o $out.dl"')
+    cxx_template = ('cmd /s /c "$cxx /nologo /showIncludes '
+                    '@$out.rsp '
+                    '$cflags_pch_cc /c $in %(outspec)s $pchobj /Fd$pdbname '
+                    '| ninja-deplist-helper -r . -q -f cl -o $out.dl"')
     master_ninja.rule(
       'cc',
       description='CC $out',
-      command=('cmd /s /c "$cc /nologo /showIncludes '
-               '@$out.rsp '
-               '$cflags_pch_c /c $in /Fo$out /Fd$pdbname '
-               '| ninja-deplist-helper -r . -q -f cl -o $out.dl"'),
+      command=cc_template % {'outspec': '/Fo$out'},
+      deplist='$out.dl',
+      rspfile='$out.rsp',
+      rspfile_content='$defines $includes $cflags $cflags_c')
+    master_ninja.rule(
+      'cc_pch',
+      description='CC PCH $out',
+      command=cc_template % {'outspec': '/Fp$out /Fo$out.obj'},
       deplist='$out.dl',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_c')
     master_ninja.rule(
       'cxx',
       description='CXX $out',
-      command=('cmd /s /c "$cxx /nologo /showIncludes '
-               '@$out.rsp '
-               '$cflags_pch_cc /c $in /Fo$out /Fd$pdbname '
-               '| ninja-deplist-helper -r . -q -f cl -o $out.dl"'),
+      command=cxx_template % {'outspec': '/Fo$out'},
+      deplist='$out.dl',
+      rspfile='$out.rsp',
+      rspfile_content='$defines $includes $cflags $cflags_cc')
+    master_ninja.rule(
+      'cxx_pch',
+      description='CXX PCH $out',
+      command=cxx_template % {'outspec': '/Fp$out /Fo$out.obj'},
       deplist='$out.dl',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_cc')

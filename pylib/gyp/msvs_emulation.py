@@ -143,6 +143,8 @@ class MsvsSettings(object):
         ('msvs_settings', dict),
         ('msvs_system_include_dirs', list),
         ('msvs_disabled_warnings', list),
+        ('msvs_precompiled_header', str),
+        ('msvs_precompiled_source', str),
         ]
     configs = spec['configurations']
     for field, default in supported_fields:
@@ -275,13 +277,31 @@ class MsvsSettings(object):
     cflags = filter(lambda x: not x.startswith('/MP'), cflags)
     return cflags
 
+  def GetPrecompiledHeader(self, config, gyp_to_build_path):
+    """Returns an object that handles the generation of precompiled header
+    build steps."""
+    return _PchHelper(self, config, gyp_to_build_path)
+
+  def _GetPchFlags(self, config, extension):
+    """Get the flags to be added to the cflags for precompiled header support.
+    """
+    # The PCH is only built once by a particular source file. Usage of PCH must
+    # only be for the same language (i.e. C vs. C++), so only include the pch
+    # flags when the language matches.
+    if self.msvs_precompiled_header[config]:
+      source_ext = os.path.splitext(self.msvs_precompiled_source[config])[1]
+      if _LanguageMatchesForPch(source_ext, extension):
+        pch = os.path.split(self.msvs_precompiled_header[config])[1]
+        return ['/Yu' + pch, '/FI' + pch, '/Fp${pchprefix}.' + pch + '.pch']
+    return  []
+
   def GetCflagsC(self, config):
     """Returns the flags that need to be added to .c compilations."""
-    return []
+    return self._GetPchFlags(config, '.c')
 
   def GetCflagsCC(self, config):
     """Returns the flags that need to be added to .cc compilations."""
-    return ['/TP']
+    return ['/TP'] + self._GetPchFlags(config, '.cc')
 
   def _GetAdditionalLibraryDirectories(self, root, config, gyp_to_build_path):
     """Get and normalize the list of paths in AdditionalLibraryDirectories
@@ -437,6 +457,63 @@ class MsvsSettings(object):
     # TODO(scottmg): Are there configuration settings to set these flags?
     flags = ['/char', 'signed', '/env', 'win32', '/Oicf']
     return outdir, output, variables, flags
+
+
+def _LanguageMatchesForPch(source_ext, pch_source_ext):
+  c_exts = ('.c',)
+  cc_exts = ('.cc', '.cxx', '.cpp')
+  return ((source_ext in c_exts and pch_source_ext in c_exts) or
+          (source_ext in cc_exts and pch_source_ext in cc_exts))
+
+class PrecompiledHeader(object):
+  """Helper to generate dependencies and build rules to handle generation of
+  precompiled headers. Interface matches the GCH handler in xcode_emulation.py.
+  """
+  def __init__(self, settings, config, gyp_to_build_path):
+    self.settings = settings
+    self.config = config
+    self.gyp_to_build_path = gyp_to_build_path
+
+  def _PchHeader(self):
+    """Get the header that will appear in an #include line for all source
+    files."""
+    return os.path.split(self.settings.msvs_precompiled_header[self.config])[1]
+
+  def _PchSource(self):
+    """Get the source file that is built once to compile the pch data."""
+    return self.gyp_to_build_path(
+        self.settings.msvs_precompiled_source[self.config])
+
+  def _PchOutput(self):
+    """Get the name of the output of the compiled pch data."""
+    return '${pchprefix}.' + self._PchHeader() + '.pch'
+
+  def GetObjDependencies(self, sources, objs):
+    """Given a list of sources files and the corresponding object files,
+    returns a list of the pch files that should be depended upon. The
+    additional wrapping in the return value is for interface compatability
+    with make.py on Mac, and xcode_emulation.py."""
+    if not self._PchHeader():
+      return []
+    source = self._PchSource()
+    assert source
+    pch_ext = os.path.splitext(self._PchSource())[1]
+    for source in sources:
+      if _LanguageMatchesForPch(os.path.splitext(source)[1], pch_ext):
+        return [(None, None, self._PchOutput())]
+    return []
+
+  def GetPchBuildCommands(self):
+    """Returns [(path_to_pch, language_flag, language, header)].
+    |path_to_gch| and |header| are relative to the build directory."""
+    header = self._PchHeader()
+    source = self._PchSource()
+    if not source or not header:
+      return []
+    ext = os.path.splitext(source)[1]
+    lang = 'c' if ext == '.c' else 'cc'
+    return [(self._PchOutput(), '/Yc' + header, lang, source)]
+
 
 vs_version = None
 def GetVSVersion(generator_flags):

@@ -754,7 +754,7 @@ class MacPrefixHeader(object):
         result.append((source, obj, self._Gch(lang)))
     return result
 
-  def GetGchBuildCommands(self):
+  def GetPchBuildCommands(self):
     """Returns [(path_to_gch, language_flag, language, header)].
     |path_to_gch| and |header| are relative to the build directory.
     """
