@@ -122,11 +122,14 @@ FileManager.prototype = {
 
   /**
    * Item for the Grid View.
+   * @param {FileManager} fileManager FileManager instance.
+   * @param {boolean} showCheckbox True if select checkbox should be visible
+   * @param {Entry} entry File entry.
    * @constructor
    */
-  function GridItem(fileManager, entry) {
+  function GridItem(fileManager, showCheckbox, entry) {
     var li = fileManager.document_.createElement('li');
-    GridItem.decorate(li, fileManager, entry);
+    GridItem.decorate(li, fileManager, showCheckbox, entry);
     return li;
   }
 
@@ -142,9 +145,15 @@ FileManager.prototype = {
     }
   };
 
-  GridItem.decorate = function(li, fileManager, entry) {
+  /**
+   * @param {Element} li List item element.
+   * @param {FileManager} fileManager FileManager instance.
+   * @param {boolean} showCheckbox True if select checkbox should be visible
+   * @param {Entry} entry File entry.
+   */
+  GridItem.decorate = function(li, fileManager, showCheckbox, entry) {
     li.__proto__ = GridItem.prototype;
-    fileManager.decorateThumbnail_(li, entry);
+    fileManager.decorateThumbnail_(li, showCheckbox, entry);
   };
 
   /**
@@ -537,7 +546,7 @@ FileManager.prototype = {
     var controller = this.fileTransferController_ = new FileTransferController(
         this.directoryModel_.getFileList(),
         this.directoryModel_.getFileListSelection(),
-        GridItem.bind(null, this),
+        GridItem.bind(null, this, false /* no checkbox */),
         this.copyManager_,
         this.directoryModel_);
     controller.attachDragSource(this.table_.list);
@@ -1171,7 +1180,8 @@ FileManager.prototype = {
    */
   FileManager.prototype.initGrid_ = function() {
     var self = this;
-    this.grid_.itemConstructor = GridItem.bind(null, this);
+    this.grid_.itemConstructor =
+        GridItem.bind(null, this, this.showCheckboxes_);
     // TODO(bshe): should override cr.ui.List's activateItemAtIndex function
     // rather than listen explicitly for double click or tap events.
     this.grid_.addEventListener(
@@ -1715,35 +1725,68 @@ FileManager.prototype = {
   };
 
   /**
-   * Update the thumbnail image to fit/fill the square container.
+   * Update the thumbnail image style to fit/fill the square container.
+   *
+   * TODO(kaznacheev): Reuse this function in the Gallery.
    *
    * Using webkit center packing does not align the image properly, so we need
    * to wait until the image loads and its proportions are known, then manually
    * position it at the center.
    *
-   * @param {CSSStyleDeclaration} style Style object of the image.
-   * @param {number} width Width of the image.
-   * @param {number} height Height of the image.
+   * @param {HTMLElement} box Containing element.
+   * @param {HTMLImageElement} img Image element.
    * @param {boolean} fill True: the image should fill the entire container,
    *                       false: the image should fully fit into the container.
+   * @param {boolean} rotate True if the image should be rotated 90 degrees.
+   * @param {number} fullWidth The width of the full image. Might differ from
+   *   img.width if img contains a thumbnail image.
    */
-  FileManager.prototype.centerImage_ = function(style, width, height, fill) {
+  FileManager.centerImage = function(box, img, fill, rotate, fullWidth) {
+    var imageWidth = img.width;
+    var imageHeight = img.height;
+
+    var fractionX;
+    var fractionY;
+
+    var boxWidth = box.clientWidth;
+    var boxHeight = box.clientHeight;
+
+    if (boxWidth && boxHeight) {
+      // When we know the box size we can position the image correctly even
+      // in a non-square box.
+      var fitScaleX = (rotate ? boxHeight : boxWidth) / imageWidth;
+      var fitScaleY = (rotate ? boxWidth : boxHeight) / imageHeight;
+
+      var scale = fill ?
+          Math.max(fitScaleX, fitScaleY) :
+          Math.min(fitScaleX, fitScaleY);
+
+      // If the full width is known make the image no wider than it.
+      var scaleLimit = fullWidth ? (fullWidth / imageWidth) : 1;
+      scale = Math.min(scale, scaleLimit);
+
+      fractionX = imageWidth * scale / boxWidth;
+      fractionY = imageHeight * scale / boxHeight;
+    } else {
+      // We do not know the box size so we assume it is square.
+      // Compute the image position based only on the image dimensions.
+      // First try vertical fit or horizontal fill.
+      fractionX = imageWidth / imageHeight;
+      fractionY = 1;
+      if ((fractionX < 1) == !!fill) {  // Vertical fill or horizontal fit.
+        fractionY = 1 / fractionX;
+        fractionX = 1;
+      }
+    }
+
     function percent(fraction) {
-      return Math.round(fraction * 100 * 10) / 10 + '%';  // Round to 0.1%
+      return (fraction * 100).toFixed(2) + '%';
     }
 
-    // First try vertical fit or horizontal fill.
-    var fractionX = width / height;
-    var fractionY = 1;
-    if ((fractionX < 1) == !!fill) {  // Vertical fill or horizontal fit.
-      fractionY = 1 / fractionX;
-      fractionX = 1;
-    }
-
-    style.width = percent(fractionX);
-    style.height = percent(fractionY);
-    style.left = percent((1 - fractionX) / 2);
-    style.top = percent((1 - fractionY) / 2);
+    img.style.width = percent(fractionX);
+    img.style.height = percent(fractionY);
+    img.style.left = percent((1 - fractionX) / 2);
+    img.style.top = percent((1 - fractionY) / 2);
   };
 
   /**
@@ -1770,9 +1813,11 @@ FileManager.prototype = {
     }
     var img = box.querySelector('img') || this.document_.createElement('img');
 
-    function onThumbnailURL(iconType, url, transform) {
+    function onThumbnailURL(iconType, url, transform, fullWidth) {
       img.onload = function() {
-        self.centerImage_(img.style, img.width, img.height, fill);
+        FileManager.centerImage(box, img, fill,
+            transform && (transform.rotate90 % 2 == 1),
+            fullWidth);
         if (opt_imageLoadCallback)
           opt_imageLoadCallback(img, transform);
         if (img.parentNode != box)
@@ -1799,14 +1844,29 @@ FileManager.prototype = {
     return box;
   };
 
-  FileManager.prototype.decorateThumbnail_ = function(li, entry) {
+  FileManager.prototype.decorateThumbnail_ =
+      function(li, showCheckbox, entry) {
     li.className = 'thumbnail-item';
 
-    if (this.showCheckboxes_)
-      li.appendChild(this.renderSelectionCheckbox_(entry));
+    var frame = this.document_.createElement('div');
+    frame.className = 'thumbnail-frame';
+    li.appendChild(frame);
 
-    li.appendChild(this.renderThumbnailBox_(entry, false));
-    li.appendChild(this.renderFileNameLabel_(entry));
+    frame.appendChild(this.renderThumbnailBox_(entry, false));
+
+    var bottom = this.document_.createElement('div');
+    bottom.className = 'thumbnail-bottom';
+    frame.appendChild(bottom);
+
+    bottom.appendChild(this.renderFileNameLabel_(entry));
+
+    if (showCheckbox) {
+      var checkBox = this.renderSelectionCheckbox_(entry);
+      checkBox.classList.add('white');
+      bottom.appendChild(checkBox);
+      bottom.classList.add('show-checkbox');
+    }
+
     this.updateGDataStyle_(
         li, entry, this.metadataCache_.getCached(entry, 'gdata'));
   };
@@ -3235,7 +3295,7 @@ FileManager.prototype = {
     var metadataCache = this.metadataCache_;
 
     function returnStockIcon() {
-      callback(iconType, FileType.getPreviewArt(iconType), '');
+      callback(iconType, FileType.getPreviewArt(iconType));
     }
 
     function tryUsingImageUrl() {
@@ -3251,9 +3311,18 @@ FileManager.prototype = {
       });
     }
 
-    metadataCache.get(entry, 'thumbnail', function(thumbnail) {
-      if (thumbnail) {
-        callback(iconType, thumbnail.url, thumbnail.transform);
+    metadataCache.get(entry, 'thumbnail|media', function(metadata) {
+      if (metadata.thumbnail && metadata.thumbnail.url) {
+        callback(iconType,
+            metadata.thumbnail.url,
+            metadata.thumbnail.transform,
+            (metadata.media && metadata.media.width) ||
+                (DirectoryModel.getRootType(entry.fullPath) ==
+                 DirectoryModel.RootType.GDATA) ? 320 : 0);
+                // HACK(kaznacheev): GDrive thumbnails are <=220px wide/tall
+                // and the full image width is not available. Scaling to 320px
+                // makes for better visual experience. The downside is that we
+                // will overscale small images (which should be rare).
       } else if (iconType == 'image') {
         tryUsingImageUrl();
       } else {
