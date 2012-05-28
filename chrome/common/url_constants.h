@@ -88,6 +88,7 @@ extern const char kChromeUISlideshowURL[];
 extern const char kChromeUISystemInfoURL[];
 extern const char kChromeUITermsOemURL[];
 extern const char kChromeUIUserImageURL[];
+extern const char kChromeUIWallpaperURL[];
 extern const char kChromeUIWallpaperThumbnailURL[];
 #endif
 
@@ -213,6 +214,7 @@ extern const char kChromeUISimUnlockHost[];
 extern const char kChromeUISlideshowHost[];
 extern const char kChromeUISystemInfoHost[];
 extern const char kChromeUIUserImageHost[];
+extern const char kChromeUIWallpaperHost[];
 extern const char kChromeUIWallpaperThumbnailHost[];
 
 extern const char kChromeUIMenu[];

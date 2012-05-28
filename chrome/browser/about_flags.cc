@@ -748,6 +748,13 @@ const Experiment kExperiments[] = {
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
   {
+    "experimental-wallpaper-ui",
+    IDS_FLAGS_EXPERIMENTAL_WALLPAPER_UI_NAME,
+    IDS_FLAGS_EXPERIMENTAL_WALLPAPER_UI_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kExperimentalWallpaperUI)
+  },
+  {
     "enable-new-oobe",
     IDS_FLAGS_ENABLE_NEW_OOBE,
     IDS_FLAGS_ENABLE_NEW_OOBE_DESCRIPTION,

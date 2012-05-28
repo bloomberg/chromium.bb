@@ -2325,6 +2325,7 @@ bool Extension::LoadChromeURLOverrides(string16* error) {
     if ((page != chrome::kChromeUINewTabHost &&
 #if defined(OS_CHROMEOS)
          page != chrome::kChromeUIActivationMessageHost &&
+         page != chrome::kChromeUIWallpaperHost &&
 #endif
          page != chrome::kChromeUIBookmarksHost &&
          page != chrome::kChromeUIHistoryHost
@@ -2340,6 +2341,7 @@ bool Extension::LoadChromeURLOverrides(string16* error) {
     }
     // Replace the entry with a fully qualified chrome-extension:// URL.
     chrome_url_overrides_[page] = GetResourceURL(val);
+
     // For component extensions, add override URL to extent patterns.
     if (is_packaged_app() && location() == COMPONENT) {
       URLPattern pattern(URLPattern::SCHEME_CHROMEUI);

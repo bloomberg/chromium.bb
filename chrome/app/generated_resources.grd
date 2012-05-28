@@ -5683,6 +5683,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_APPLIST_V2_DESCRIPTION" desc="Description of the flag to enable applist v2 in ash.">
         Enables the bubble-style applist v2.
       </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_WALLPAPER_UI_NAME" desc="Name of the flag to enable experimental wallpaper picker ui in chromeos.">
+        Experimental Wallpaper UI.
+      </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_WALLPAPER_UI_DESCRIPTION" desc="Description of the flag to enabel experimental wallpaper picker ui in chromeos.">
+        Enables the experimental wallpaper UI.
+      </message>
       <message name="IDS_FLAGS_ENABLE_ASH_NOTIFY_NAME" desc="Name of the flag to enable applist v2 in ash.">
         Enable Ash notifications.
       </message>

@@ -293,9 +293,16 @@ ExtensionProtocolHandler::MaybeCreateJob(net::URLRequest* request) const {
   }
 
   FilePath resources_path;
+  FilePath relative_path;
+  // Try to load extension resources from chrome resource file if
+  // directory_path is a descendant of resources_path. resources_path
+  // corresponds to src/chrome/browser/resources in source tree.
   if (PathService::Get(chrome::DIR_RESOURCES, &resources_path) &&
-      directory_path.DirName() == resources_path) {
-    FilePath relative_path = directory_path.BaseName().Append(
+      // Since component extension resources are included in
+      // component_extension_resources.pak file in resources_path, calculate
+      // extension relative path against resources_path.
+      resources_path.AppendRelativePath(directory_path, &relative_path)) {
+    relative_path = relative_path.Append(
         extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
     relative_path = relative_path.NormalizePathSeparators();
 

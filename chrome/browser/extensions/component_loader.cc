@@ -287,6 +287,14 @@ void ComponentLoader::AddDefaultComponentExtensions() {
   Add(IDR_BOOKMARKS_MANIFEST, FilePath(FILE_PATH_LITERAL("bookmark_manager")));
 #endif
 
+#if defined(OS_CHROMEOS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kExperimentalWallpaperUI)) {
+    Add(IDR_WALLPAPERMANAGER_MANIFEST,
+        FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
+  }
+#endif
+
 #if defined(FILE_MANAGER_EXTENSION)
   AddFileManagerExtension();
 #endif

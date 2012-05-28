@@ -76,6 +76,7 @@ const char* const kChromePaths[] = {
   chrome::kChromeUIOSCreditsHost,
   chrome::kChromeUIProxySettingsHost,
   chrome::kChromeUISystemInfoHost,
+  chrome::kChromeUIWallpaperHost,
 #endif
 };
 
@@ -164,4 +165,3 @@ std::vector<std::string> ChromePaths() {
     paths.push_back(kChromePaths[i]);
   return paths;
 }
-

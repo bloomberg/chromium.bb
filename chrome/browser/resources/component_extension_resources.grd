@@ -222,6 +222,9 @@
 
         <include name="IDR_FILE_MANAGER_MEDIA_ERROR" file="file_manager/images/media/error.png" type="BINDATA" />
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <include name="IDR_WALLPAPER_MANAGER_MAIN" file="chromeos/wallpaper_manager/main.html" flattenhtml="true" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

@@ -1293,6 +1293,9 @@ const char kEnableONCPolicy[]               = "enable-onc-policy";
 // default.
 const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
 
+// Enables the experimental wallpaper picker UI.
+const char kExperimentalWallpaperUI[] = "experimental-wallpaper-ui";
+
 // Path for the screensaver used in Kiosk mode
 const char kKioskModeScreensaverPath[]      = "kiosk-mode-screensaver-path";
 

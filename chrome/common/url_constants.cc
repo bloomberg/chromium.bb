@@ -94,6 +94,7 @@ const char kChromeUISlideshowURL[] = "chrome://slideshow/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
 const char kChromeUITermsOemURL[] = "chrome://terms/oem";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
+const char kChromeUIWallpaperURL[] = "chrome://wallpapers/";
 const char kChromeUIWallpaperThumbnailURL[] = "chrome://wallpaper/";
 #endif
 
@@ -221,6 +222,7 @@ const char kChromeUISimUnlockHost[] = "sim-unlock";
 const char kChromeUISlideshowHost[] = "slideshow";
 const char kChromeUISystemInfoHost[] = "system";
 const char kChromeUIUserImageHost[] = "userimage";
+const char kChromeUIWallpaperHost[] = "wallpapers";
 const char kChromeUIWallpaperThumbnailHost[] = "wallpaper";
 
 const char kChromeUIMenu[] = "menu";
