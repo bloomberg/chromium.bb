@@ -14,6 +14,9 @@ if 'TRUSTED_ENV' not in env:
 if not env.Bit('host_linux') or env.Bit('bitcode') or env.Bit('target_arm'):
   Return()
 
+# We need -O0 to make stepping predictable and read local variables/function
+# arguments that may otherwise be optimized out.
+env.Append(CCFLAGS=['-O0', '-g'])
 gdb_test_guest = env.ComponentProgram(
     'gdb_test_guest', 'gdb_test_guest.c',
     EXTRA_LIBS=['${NONIRT_LIBS}'])
@@ -33,11 +36,23 @@ if env.Bit('asan'):
   env_vars += ['NACL_ASAN=1']
 
 node = env.CommandTest(
-    'stepi_after_break.out',
+    'gdb_stepi_after_break.out',
     command=['${PYTHON}', env.File('stepi_after_break.py')],
     osenv=env_vars,
     extra_deps=dependencies)
 
 # TODO(halyavin): commit changes to gdb to support breakpoints in glibc.
-env.AddNodeToTestSuite(node, ['large_tests'], 'run_stepi_after_break_test',
-                       is_broken=not env.Bit('nacl_static_link'))
+# Nearly nothing works in 64-bit debugger due to address size issues.
+env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_stepi_after_break_test',
+                       is_broken=not env.Bit('nacl_static_link') or
+                                 env.Bit('build_x86_64'))
+
+node = env.CommandTest(
+    'gdb_print_symbol.out',
+    command=['${PYTHON}', env.File('print_symbol.py')],
+    osenv=env_vars,
+    extra_deps=dependencies)
+
+env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_print_symbol_test',
+                       is_broken=not env.Bit('nacl_static_link') or
+                                 env.Bit('build_x86_64'))

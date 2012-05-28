@@ -20,6 +20,11 @@ def LaunchSelLdr(program, name):
   return subprocess.Popen(args, stdout=stdout, stderr=stderr)
 
 
+def RemovePrefix(prefix, string):
+    assert string.startswith(prefix)
+    return string[len(prefix):]
+
+
 class Gdb(object):
 
   def __init__(self, name):
@@ -68,6 +73,13 @@ class Gdb(object):
     for line in result:
       if line.startswith('*'):
         return line[1:].split(',', 1)[0]
+
+  def GetExpressionResult(self, expression):
+    result = self.SendRequest('-data-evaluate-expression ' + expression)
+    assert len(result) == 1, result
+    value = RemovePrefix('^done,value="', result[0])
+    assert value.endswith('"')
+    return value[:-1]
 
   def Connect(self, program):
     self.GetResponse()

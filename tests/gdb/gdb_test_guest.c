@@ -4,6 +4,14 @@
  * found in the LICENSE file.
  */
 
+int global_var;
+
+void set_global_var(int arg) {
+  global_var = arg;
+}
+
 int main() {
-  return 1;
+  global_var = 2;
+  set_global_var(1);
+  return global_var;
 }
