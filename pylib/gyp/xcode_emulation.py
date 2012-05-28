@@ -883,7 +883,7 @@ def GetMacInfoPlist(product_dir, xcode_settings, gyp_path_to_build_path):
   return info_plist, dest_plist, defines, extra_env
 
 
-def GetXcodeEnv(xcode_settings, built_products_dir, srcroot, configuration,
+def _GetXcodeEnv(xcode_settings, built_products_dir, srcroot, configuration,
                 additional_settings=None):
   """Return the environment variables that Xcode would set. See
   http://developer.apple.com/library/mac/#documentation/DeveloperTools/Reference/XcodeBuildSettingRef/1-Build_Setting_Reference/build_setting_ref.html#//apple_ref/doc/uid/TP40003931-CH3-SW153
@@ -975,17 +975,17 @@ def _NormalizeEnvVarReferences(str):
 
 def ExpandEnvVars(string, expansions):
   """Expands ${VARIABLES}, $(VARIABLES), and $VARIABLES in string per the
-  expansions dict. If the variable expands to something that references
+  expansions list. If the variable expands to something that references
   another variable, this variable is expanded as well if it's in env --
   until no variables present in env are left."""
-  for k in reversed(TopologicallySortedEnvVarKeys(expansions)):
-    string = string.replace('${' + k + '}', expansions[k])
-    string = string.replace('$(' + k + ')', expansions[k])
-    string = string.replace('$' + k, expansions[k])
+  for k, v in reversed(expansions):
+    string = string.replace('${' + k + '}', v)
+    string = string.replace('$(' + k + ')', v)
+    string = string.replace('$' + k, v)
   return string
 
 
-def TopologicallySortedEnvVarKeys(env):
+def _TopologicallySortedEnvVarKeys(env):
   """Takes a dict |env| whose values are strings that can refer to other keys,
   for example env['foo'] = '$(bar) and $(baz)'. Returns a list L of all keys of
   env such that key2 is after key1 in L if env[key2] refers to env[key1].
@@ -1014,9 +1014,16 @@ def TopologicallySortedEnvVarKeys(env):
     order = gyp.common.TopologicallySorted(env.keys(), GetEdges)
     order.reverse()
     return order
-  except CycleError, e:
+  except gyp.common.CycleError, e:
     raise Exception(
         'Xcode environment variables are cyclically dependent: ' + str(e.nodes))
+
+
+def GetSortedXcodeEnv(xcode_settings, built_products_dir, srcroot,
+                      configuration, additional_settings=None):
+  env = _GetXcodeEnv(xcode_settings, built_products_dir, srcroot, configuration,
+                    additional_settings)
+  return [(key, env[key]) for key in _TopologicallySortedEnvVarKeys(env)]
 
 
 def GetSpecPostbuildCommands(spec, quiet=False):

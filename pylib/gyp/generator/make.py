@@ -898,7 +898,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # Same for environment.
       self.WriteLn("%s: obj := $(abs_obj)" % QuoteSpaces(outputs[0]))
       self.WriteLn("%s: builddir := $(abs_builddir)" % QuoteSpaces(outputs[0]))
-      self.WriteXcodeEnv(outputs[0], self.GetXcodeEnv())
+      self.WriteSortedXcodeEnv(outputs[0], self.GetSortedXcodeEnv())
 
       for input in inputs:
         assert ' ' not in input, (
@@ -908,7 +908,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
             "Spaces in action output filenames not supported (%s)"  % output)
 
       # See the comment in WriteCopies about expanding env vars.
-      env = self.GetXcodeEnv()
+      env = self.GetSortedXcodeEnv()
       outputs = [gyp.xcode_emulation.ExpandEnvVars(o, env) for o in outputs]
       inputs = [gyp.xcode_emulation.ExpandEnvVars(i, env) for i in inputs]
 
@@ -1069,7 +1069,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         # As a workaround, manually expand variables at gyp time. Since 'copies'
         # can't run scripts, there's no need to write the env then.
         # WriteDoCmd() will escape spaces for .d files.
-        env = self.GetXcodeEnv()
+        env = self.GetSortedXcodeEnv()
         output = gyp.xcode_emulation.ExpandEnvVars(output, env)
         path = gyp.xcode_emulation.ExpandEnvVars(path, env)
         self.WriteDoCmd([output], [path], 'copy', part_of_all)
@@ -1111,7 +1111,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
            '@plutil -convert xml1 $@ $@'])
       info_plist = intermediate_plist
     # plists can contain envvars and substitute them into the file.
-    self.WriteXcodeEnv(out, self.GetXcodeEnv(additional_settings=extra_env))
+    self.WriteSortedXcodeEnv(
+        out, self.GetSortedXcodeEnv(additional_settings=extra_env))
     self.WriteDoCmd([out], [info_plist], 'mac_tool,,,copy-info-plist',
                     part_of_all=True)
     bundle_deps.append(out)
@@ -1448,7 +1449,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # Envvars may be referenced by TARGET_POSTBUILDS_$(BUILDTYPE),
       # so we must output its definition first, since we declare variables
       # using ":=".
-      self.WriteXcodeEnv(self.output, self.GetXcodePostbuildEnv())
+      self.WriteSortedXcodeEnv(self.output, self.GetSortedXcodePostbuildEnv())
 
       for configname in target_postbuilds:
         self.WriteLn('%s: TARGET_POSTBUILDS_%s := %s' %
@@ -1783,33 +1784,33 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     self.fp.write(text + '\n')
 
 
-  def GetXcodeEnv(self, additional_settings=None):
-    return gyp.xcode_emulation.GetXcodeEnv(
+  def GetSortedXcodeEnv(self, additional_settings=None):
+    return gyp.xcode_emulation.GetSortedXcodeEnv(
         self.xcode_settings, "$(abs_builddir)",
         os.path.join("$(abs_srcdir)", self.path), "$(BUILDTYPE)",
         additional_settings)
 
 
-  def GetXcodePostbuildEnv(self):
+  def GetSortedXcodePostbuildEnv(self):
     # CHROMIUM_STRIP_SAVE_FILE is a chromium-specific hack.
     # TODO(thakis): It would be nice to have some general mechanism instead.
     strip_save_file = self.xcode_settings.GetPerTargetSetting(
         'CHROMIUM_STRIP_SAVE_FILE', '')
     # Even if strip_save_file is empty, explicitly write it. Else a postbuild
     # might pick up an export from an earlier target.
-    return self.GetXcodeEnv(
+    return self.GetSortedXcodeEnv(
         additional_settings={'CHROMIUM_STRIP_SAVE_FILE': strip_save_file})
 
 
-  def WriteXcodeEnv(self, target, env):
-    for k in gyp.xcode_emulation.TopologicallySortedEnvVarKeys(env):
+  def WriteSortedXcodeEnv(self, target, env):
+    for k, v in env:
       # For
       #  foo := a\ b
       # the escaped space does the right thing. For
       #  export foo := a\ b
       # it does not -- the backslash is written to the env as literal character.
       # So don't escape spaces in |env[k]|.
-      self.WriteLn('%s: export %s := %s' % (QuoteSpaces(target), k, env[k]))
+      self.WriteLn('%s: export %s := %s' % (QuoteSpaces(target), k, v))
 
 
   def Objectify(self, path):

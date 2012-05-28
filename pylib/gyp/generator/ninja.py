@@ -503,7 +503,7 @@ class NinjaWriter:
   def WriteActions(self, actions, extra_sources, prebuild,
                    extra_mac_bundle_resources):
     # Actions cd into the base directory.
-    env = self.GetXcodeEnv()
+    env = self.GetSortedXcodeEnv()
     if self.flavor == 'win':
       env = self.msvs_settings.GetVSMacroEnv('$!PRODUCT_DIR')
     all_outputs = []
@@ -622,7 +622,7 @@ class NinjaWriter:
 
   def WriteCopies(self, copies, prebuild):
     outputs = []
-    env = self.GetXcodeEnv()
+    env = self.GetSortedXcodeEnv()
     for copy in copies:
       for path in copy['files']:
         # Normalize the path so trailing slashes don't confuse us.
@@ -659,7 +659,7 @@ class NinjaWriter:
       info_plist = self.ninja.build(intermediate_plist, 'infoplist', info_plist,
                                     variables=[('defines',defines)])
 
-    env = self.GetXcodeEnv(additional_settings=extra_env)
+    env = self.GetSortedXcodeEnv(additional_settings=extra_env)
     env = self.ComputeExportEnvString(env)
 
     self.ninja.build(out, 'mac_tool', info_plist,
@@ -906,16 +906,16 @@ class NinjaWriter:
     self.target.bundle = output
     return output
 
-  def GetXcodeEnv(self, additional_settings=None):
+  def GetSortedXcodeEnv(self, additional_settings=None):
     """Returns the variables Xcode would set for build steps."""
     assert self.abs_build_dir
     abs_build_dir = self.abs_build_dir
-    return gyp.xcode_emulation.GetXcodeEnv(
+    return gyp.xcode_emulation.GetSortedXcodeEnv(
         self.xcode_settings, abs_build_dir,
         os.path.join(abs_build_dir, self.build_to_base), self.config_name,
         additional_settings)
 
-  def GetXcodePostbuildEnv(self):
+  def GetSortedXcodePostbuildEnv(self):
     """Returns the variables Xcode would set for postbuild steps."""
     postbuild_settings = {}
     # CHROMIUM_STRIP_SAVE_FILE is a chromium-specific hack.
@@ -924,7 +924,7 @@ class NinjaWriter:
         'CHROMIUM_STRIP_SAVE_FILE')
     if strip_save_file:
       postbuild_settings['CHROMIUM_STRIP_SAVE_FILE'] = strip_save_file
-    return self.GetXcodeEnv(additional_settings=postbuild_settings)
+    return self.GetSortedXcodeEnv(additional_settings=postbuild_settings)
 
   def GetPostbuildCommand(self, spec, output, output_binary,
                           is_command_start=False):
@@ -949,7 +949,7 @@ class NinjaWriter:
     # implicit postbuild to cd to there.
     postbuilds.insert(0, gyp.common.EncodePOSIXShellList(
         ['cd', self.build_to_base]))
-    env = self.ComputeExportEnvString(self.GetXcodePostbuildEnv())
+    env = self.ComputeExportEnvString(self.GetSortedXcodePostbuildEnv())
     # G will be non-null if any postbuild fails. Run all postbuilds in a
     # subshell.
     commands = env + ' (F=0; ' + \
@@ -968,9 +968,9 @@ class NinjaWriter:
         'export FOO=foo; export BAR="${FOO} bar;'
     that exports |env| to the shell."""
     export_str = []
-    for k in gyp.xcode_emulation.TopologicallySortedEnvVarKeys(env):
+    for k, v in env:
       export_str.append('export %s=%s;' %
-          (k, ninja_syntax.escape(gyp.common.EncodePOSIXShellArgument(env[k]))))
+          (k, ninja_syntax.escape(gyp.common.EncodePOSIXShellArgument(v))))
     return ' '.join(export_str)
 
   def ComputeMacBundleOutput(self):
