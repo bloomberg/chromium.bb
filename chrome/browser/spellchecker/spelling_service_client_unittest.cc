@@ -120,9 +120,11 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
   }
 
   void VerifyResponse(bool success,
+                      const string16& request_text,
                       const std::vector<SpellCheckResult>& results) {
     EXPECT_EQ(success_, success);
     string16 text(UTF8ToUTF16(request_text_));
+    EXPECT_EQ(text, request_text);
     for (std::vector<SpellCheckResult>::const_iterator it = results.begin();
          it != results.end(); ++it) {
       text.replace(it->location, it->length, it->replacement);
@@ -158,8 +160,9 @@ class SpellingServiceClientTest : public testing::Test {
 
   void OnTextCheckComplete(int tag,
                            bool success,
+                           const string16& text,
                            const std::vector<SpellCheckResult>& results) {
-    client_.VerifyResponse(success, results);
+    client_.VerifyResponse(success, text, results);
   }
 
  protected:

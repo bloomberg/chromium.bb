@@ -69,6 +69,7 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   typedef base::Callback<void(
       int /* tag */,
       bool /* success */,
+      const string16& /* text */,
       const std::vector<SpellCheckResult>& /* results */)>
           TextCheckCompleteCallback;
 
@@ -104,6 +105,9 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   // The callback function to be called when we receive a response from the
   // Spelling service and parse it.
   TextCheckCompleteCallback callback_;
+
+  // The text checked by the Spelling service.
+  string16 text_;
 
   // The identifier provided by users so they can identify a text-check request.
   // When a JSON-RPC call finishes successfully, this value is used as the

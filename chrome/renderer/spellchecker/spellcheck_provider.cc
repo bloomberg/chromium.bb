@@ -18,7 +18,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
-using spellcheck::ToWebResultList;
 using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebTextCheckingCompletion;
@@ -42,6 +41,28 @@ COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeCorrection) ==
                int(SpellCheckResult::CORRECTION), mismatching_enums);
 COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeShowCorrectionPanel) ==
                int(SpellCheckResult::SHOWCORRECTIONPANEL), mismatching_enums);
+
+namespace {
+
+// Converts a vector of SpellCheckResult objects (used by Chrome) to a vector of
+// WebTextCheckingResult objects (used by WebKit).
+void CreateTextCheckingResults(
+    int offset,
+    const std::vector<SpellCheckResult>& spellcheck_results,
+    WebKit::WebVector<WebKit::WebTextCheckingResult>* textcheck_results) {
+  size_t result_size = spellcheck_results.size();
+  WebKit::WebVector<WebKit::WebTextCheckingResult> list(result_size);
+  for (size_t i = 0; i < result_size; ++i) {
+    list[i] = WebTextCheckingResult(
+        static_cast<WebTextCheckingType>(spellcheck_results[i].type),
+        spellcheck_results[i].location + offset,
+        spellcheck_results[i].length,
+        spellcheck_results[i].replacement);
+  }
+  textcheck_results->swap(list);
+}
+
+}  // namespace
 
 SpellCheckProvider::SpellCheckProvider(
     content::RenderView* render_view,
@@ -181,11 +202,9 @@ void SpellCheckProvider::checkTextOfParagraph(
   if (!chrome_content_renderer_client_)
     return;
 
-  std::vector<SpellCheckResult> tmp_results;
   chrome_content_renderer_client_->spellcheck()->SpellCheckParagraph(
       string16(text),
-      &tmp_results);
-  ToWebResultList(0, tmp_results, results);
+      results);
 #endif
 }
 
@@ -231,7 +250,7 @@ void SpellCheckProvider::OnRespondSpellingService(
     int identifier,
     int offset,
     bool succeeded,
-    const string16& text,
+    const string16& line,
     const std::vector<SpellCheckResult>& results) {
   WebTextCheckingCompletion* completion =
       text_check_completions_.Lookup(identifier);
@@ -244,12 +263,21 @@ void SpellCheckProvider::OnRespondSpellingService(
     // |chrome_content_renderer_client| may be NULL in unit tests.
     if (chrome_content_renderer_client_) {
       chrome_content_renderer_client_->spellcheck()->RequestTextChecking(
-          text, offset, completion);
+          line, offset, completion);
       return;
     }
   }
 
-  completion->didFinishCheckingText(ToWebResultList(offset, results));
+  // Double-check the returned spellchecking results with our spellchecker to
+  // visualize the differences between ours and the on-line spellchecker.
+  WebKit::WebVector<WebKit::WebTextCheckingResult> textcheck_results;
+  if (chrome_content_renderer_client_) {
+    chrome_content_renderer_client_->spellcheck()->CreateTextCheckingResults(
+        offset, line, results, &textcheck_results);
+  } else {
+    CreateTextCheckingResults(offset, results, &textcheck_results);
+  }
+  completion->didFinishCheckingText(textcheck_results);
 }
 
 bool SpellCheckProvider::HasWordCharacters(const string16& text,
@@ -322,7 +350,9 @@ void SpellCheckProvider::OnRespondTextCheck(
   if (!completion)
     return;
   text_check_completions_.Remove(identifier);
-  completion->didFinishCheckingText(ToWebResultList(0, results));
+  WebKit::WebVector<WebKit::WebTextCheckingResult> textcheck_results;
+  CreateTextCheckingResults(0, results, &textcheck_results);
+  completion->didFinishCheckingText(textcheck_results);
 }
 
 void SpellCheckProvider::OnToggleSpellPanel(bool is_currently_visible) {

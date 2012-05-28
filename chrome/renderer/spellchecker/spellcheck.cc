@@ -25,32 +25,6 @@ using WebKit::WebVector;
 using WebKit::WebTextCheckingResult;
 using WebKit::WebTextCheckingType;
 
-namespace spellcheck {
-void ToWebResultList(
-    int offset,
-    const std::vector<SpellCheckResult>& results,
-    WebVector<WebTextCheckingResult>* web_results) {
-  WebVector<WebTextCheckingResult> list(results.size());
-  for (size_t i = 0; i < results.size(); ++i) {
-    list[i] = WebTextCheckingResult(
-        static_cast<WebTextCheckingType>(results[i].type),
-        results[i].location + offset,
-        results[i].length,
-        results[i].replacement);
-  }
-
-  list.swap(*web_results);
-}
-
-WebVector<WebTextCheckingResult> ToWebResultList(
-    int offset,
-    const std::vector<SpellCheckResult>& results) {
-  WebVector<WebTextCheckingResult> web_results;
-  ToWebResultList(offset, results, &web_results);
-  return web_results;
-}
-} // namespace spellcheck
-
 class SpellCheck::SpellCheckRequestParam
     : public base::RefCountedThreadSafe<SpellCheck::SpellCheckRequestParam> {
  public:
@@ -224,11 +198,11 @@ bool SpellCheck::SpellCheckWord(
 
 bool SpellCheck::SpellCheckParagraph(
     const string16& text,
-    std::vector<SpellCheckResult>* results) {
+    WebKit::WebVector<WebKit::WebTextCheckingResult>* results) {
 #if !defined(OS_MACOSX)
   // Mac has its own spell checker, so this method will not be used.
   DCHECK(results);
-
+  std::vector<WebKit::WebTextCheckingResult> textcheck_results;
   size_t length = text.length();
   size_t offset = 0;
 
@@ -246,18 +220,19 @@ bool SpellCheck::SpellCheckParagraph(
                        &misspelling_start,
                        &misspelling_length,
                        NULL)) {
+      results->assign(textcheck_results);
       return true;
     }
 
     string16 replacement;
-    results->push_back(SpellCheckResult(
-        SpellCheckResult::SPELLING,
+    textcheck_results.push_back(WebKit::WebTextCheckingResult(
+        WebKit::WebTextCheckingTypeSpelling,
         misspelling_start + offset,
         misspelling_length,
         replacement));
     offset += misspelling_start + misspelling_length;
   }
-
+  results->assign(textcheck_results);
   return false;
 #else
   return true;
@@ -446,10 +421,9 @@ void SpellCheck::PerformSpellCheck() {
   DCHECK(param);
   requested_params_.pop();
 
-  std::vector<SpellCheckResult> results;
+  WebKit::WebVector<WebKit::WebTextCheckingResult> results;
   SpellCheckParagraph(param->text(), &results);
-  param->completion()->didFinishCheckingText(
-      spellcheck::ToWebResultList(param->offset(), results));
+  param->completion()->didFinishCheckingText(results);
 #else
   // SpellCheck::SpellCheckParagraph is not implemented on Mac,
   // so we return without spellchecking. Note that Mac uses its own
@@ -511,3 +485,36 @@ bool SpellCheck::IsValidContraction(const string16& contraction, int tag) {
   }
   return true;
 }
+
+#if !defined(OS_MACOSX)
+void SpellCheck::CreateTextCheckingResults(
+    int line_offset,
+    const string16& line_text,
+    const std::vector<SpellCheckResult>& spellcheck_results,
+    WebVector<WebTextCheckingResult>* textcheck_results) {
+  // Double-check misspelled words with our spellchecker and attach grammar
+  // markers to them if our spellchecker tells they are correct words, i.e. they
+  // are probably contextually-misspelled words.
+  const char16* text = line_text.c_str();
+  WebVector<WebTextCheckingResult> list(spellcheck_results.size());
+  for (size_t i = 0; i < spellcheck_results.size(); ++i) {
+    WebTextCheckingType type =
+        static_cast<WebTextCheckingType>(spellcheck_results[i].type);
+    int word_location = spellcheck_results[i].location;
+    int word_length = spellcheck_results[i].length;
+    if (type == WebKit::WebTextCheckingTypeSpelling) {
+      int misspelling_start = 0;
+      int misspelling_length = 0;
+      if (SpellCheckWord(text + word_location, word_length, 0,
+                         &misspelling_start, &misspelling_length, NULL)) {
+        type = WebKit::WebTextCheckingTypeGrammar;
+      }
+    }
+    list[i] = WebKit::WebTextCheckingResult(type,
+                                            word_location + line_offset,
+                                            word_length,
+                                            spellcheck_results[i].replacement);
+  }
+  textcheck_results->swap(list);
+}
+#endif

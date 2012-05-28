@@ -54,6 +54,7 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   void OnTextCheckComplete(
       int tag,
       bool success,
+      const string16& text,
       const std::vector<SpellCheckResult>& results);
 
  private:

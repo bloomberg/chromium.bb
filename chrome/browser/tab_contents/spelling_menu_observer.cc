@@ -247,6 +247,7 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
 void SpellingMenuObserver::OnTextCheckComplete(
     int tag,
     bool success,
+    const string16& text,
     const std::vector<SpellCheckResult>& results) {
   animation_timer_.Stop();
 

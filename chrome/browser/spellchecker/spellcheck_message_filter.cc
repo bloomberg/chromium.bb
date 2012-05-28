@@ -101,6 +101,7 @@ void SpellCheckMessageFilter::OnCallSpellingService(
     int document_tag,
     const string16& text) {
   DCHECK(!text.empty());
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!CallSpellingService(route_id, identifier, document_tag, text)) {
     std::vector<SpellCheckResult> results;
     Send(new SpellCheckMsg_RespondSpellingService(route_id,
@@ -118,12 +119,13 @@ void SpellCheckMessageFilter::OnCallSpellingService(
 void SpellCheckMessageFilter::OnTextCheckComplete(
     int tag,
     bool success,
+    const string16& text,
     const std::vector<SpellCheckResult>& results) {
   Send(new SpellCheckMsg_RespondSpellingService(route_id_,
                                                 identifier_,
                                                 tag,
                                                 success,
-                                                string16(),
+                                                text,
                                                 results));
   client_.reset();
 }

@@ -104,6 +104,7 @@ bool SpellingServiceClient::RequestTextCheck(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->Start();
   tag_ = tag;
+  text_ = text;
   callback_ = callback;
   return true;
 }
@@ -118,7 +119,7 @@ void SpellingServiceClient::OnURLFetchComplete(
     source->GetResponseAsString(&data);
     success = ParseResponse(data, &results);
   }
-  callback_.Run(tag_, success, results);
+  callback_.Run(tag_, success, text_, results);
 }
 
 net::URLFetcher* SpellingServiceClient::CreateURLFetcher(const GURL& url) {

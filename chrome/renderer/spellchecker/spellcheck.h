@@ -35,19 +35,6 @@ class WebTextCheckingCompletion;
 struct WebTextCheckingResult;
 }
 
-namespace spellcheck {
-// Converts vector<SpellCheckResult> to WebVector<WebTextCheckingResult>
-// for WebKit.
-void ToWebResultList(
-    int offset,
-    const std::vector<SpellCheckResult>& results,
-    WebKit::WebVector<WebKit::WebTextCheckingResult>* web_results);
-
-WebKit::WebVector<WebKit::WebTextCheckingResult> ToWebResultList(
-    int offset,
-    const std::vector<SpellCheckResult>& results);
-}
-
 // TODO(morrita): Needs reorg with SpellCheckProvider.
 // See http://crbug.com/73699.
 class SpellCheck : public content::RenderProcessObserver,
@@ -80,8 +67,9 @@ class SpellCheck : public content::RenderProcessObserver,
   // SpellCheck a paragrpah.
   // Returns true if |text| is correctly spelled, false otherwise.
   // If the spellchecker failed to initialize, always returns true.
-  bool SpellCheckParagraph(const string16& text,
-                           std::vector<SpellCheckResult>* results);
+  bool SpellCheckParagraph(
+      const string16& text,
+      WebKit::WebVector<WebKit::WebTextCheckingResult>* results);
 
   // Find a possible correctly spelled word for a misspelled word. Computes an
   // empty string if input misspelled word is too long, there is ambiguity, or
@@ -96,6 +84,16 @@ class SpellCheck : public content::RenderProcessObserver,
   void RequestTextChecking(const string16& text,
                            int offset,
                            WebKit::WebTextCheckingCompletion* completion);
+
+  // Creates a list of WebTextCheckingResult objects (used by WebKit) from a
+  // list of SpellCheckResult objects (used by Chrome). This function also
+  // checks misspelled words returned by the Spelling service and changes the
+  // underline colors of contextually-misspelled words.
+  void CreateTextCheckingResults(
+      int line_offset,
+      const string16& line_text,
+      const std::vector<SpellCheckResult>& spellcheck_results,
+      WebKit::WebVector<WebKit::WebTextCheckingResult>* textcheck_results);
 
   // Returns true if the spellchecker delegate checking to a system-provided
   // checker on the browser process.
