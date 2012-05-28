@@ -4651,7 +4651,7 @@ void RenderViewImpl::OnGetAllSavableResourceLinksForCurrentPage(
           webview(),
           page_url,
           &result,
-          content::GetSavableSchemes())) {
+          const_cast<const char**>(content::GetSavableSchemes()))) {
     // If something is wrong when collecting all savable resource links,
     // send empty list to embedder(browser) to tell it failed.
     referrer_urls_list.clear();

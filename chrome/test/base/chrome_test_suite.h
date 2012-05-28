@@ -10,7 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/test/test_suite.h"
+#include "content/test/content_test_suite_base.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
@@ -20,7 +20,7 @@ namespace base {
 class StatsTable;
 }
 
-class ChromeTestSuite : public base::TestSuite {
+class ChromeTestSuite : public content::ContentTestSuiteBase {
  public:
   // Make the browser_test binary launch as a regular browser.
   static const char kLaunchAsBrowser[];
@@ -31,6 +31,8 @@ class ChromeTestSuite : public base::TestSuite {
  protected:
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
+
+  virtual content::ContentClient* CreateClientForInitialization() OVERRIDE;
 
   void SetBrowserDirectory(const FilePath& browser_dir) {
     browser_dir_ = browser_dir;

@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "base/test/test_suite.h"
 #include "base/win/scoped_com_initializer.h"
+#include "content/test/content_test_suite_base.h"
 
 #if defined(USE_AURA)
 namespace aura {
@@ -18,13 +18,17 @@ class TestAuraInitializer;
 }  // namespace aura
 #endif
 
-class ContentTestSuite : public base::TestSuite {
+namespace content {
+
+class ContentTestSuite : public ContentTestSuiteBase {
  public:
   ContentTestSuite(int argc, char** argv);
   virtual ~ContentTestSuite();
 
  protected:
   virtual void Initialize() OVERRIDE;
+
+  virtual ContentClient* CreateClientForInitialization() OVERRIDE;
 
  private:
   base::win::ScopedCOMInitializer com_initializer_;
@@ -35,5 +39,7 @@ class ContentTestSuite : public base::TestSuite {
 
   DISALLOW_COPY_AND_ASSIGN(ContentTestSuite);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_TEST_CONTENT_TEST_SUITE_H_

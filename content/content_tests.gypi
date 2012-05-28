@@ -55,6 +55,8 @@
         'test/browser_test_base.h',
         'test/content_test_suite.cc',
         'test/content_test_suite.h',
+        'test/content_test_suite_base.cc',
+        'test/content_test_suite_base.h',
         'test/gpu/gpu_test_config.cc',
         'test/gpu/gpu_test_config.h',
         'test/gpu/gpu_test_expectations_parser.cc',

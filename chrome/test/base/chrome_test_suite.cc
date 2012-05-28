@@ -19,14 +19,12 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/public/common/content_paths.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
-#include "ui/base/ui_base_paths.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/bundle_locations.h"
@@ -38,8 +36,6 @@
 #if defined(OS_POSIX)
 #include "base/shared_memory.h"
 #endif
-
-#include "ui/compositor/compositor_setup.h"
 
 namespace {
 
@@ -157,7 +153,7 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
 const char ChromeTestSuite::kLaunchAsBrowser[] = "as-browser";
 
 ChromeTestSuite::ChromeTestSuite(int argc, char** argv)
-    : base::TestSuite(argc, argv) {
+    : content::ContentTestSuiteBase(argc, argv) {
 }
 
 ChromeTestSuite::~ChromeTestSuite() {
@@ -169,16 +165,9 @@ void ChromeTestSuite::Initialize() {
   chrome_browser_application_mac::RegisterBrowserCrApp();
 #endif
 
-  base::TestSuite::Initialize();
-
-  chrome::ChromeContentClient client_for_init;
-  content::SetContentClient(&client_for_init);
-  content::RegisterContentSchemes(false);
-  content::SetContentClient(NULL);
+  content::ContentTestSuiteBase::Initialize();
 
   chrome::RegisterPathProvider();
-  content::RegisterPathProvider();
-  ui::RegisterPathProvider();
 
   if (!browser_dir_.empty()) {
     PathService::Override(base::DIR_EXE, browser_dir_);
@@ -203,9 +192,6 @@ void ChromeTestSuite::Initialize() {
   ResourceBundle::GetSharedInstance().AddDataPack(
       resources_pack_path, ui::SCALE_FACTOR_100P);
 
-  // Mock out the compositor on platforms that use it.
-  ui::SetupTestCompositor();
-
   stats_filename_ = base::StringPrintf("unit_tests-%d",
                                        base::GetCurrentProcId());
   RemoveSharedMemoryFile(stats_filename_);
@@ -215,6 +201,10 @@ void ChromeTestSuite::Initialize() {
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new ChromeTestSuiteInitializer);
+}
+
+content::ContentClient* ChromeTestSuite::CreateClientForInitialization() {
+  return new chrome::ChromeContentClient();
 }
 
 void ChromeTestSuite::Shutdown() {
