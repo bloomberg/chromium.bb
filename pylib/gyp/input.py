@@ -537,273 +537,277 @@ def ExpandVariables(input, phase, variables, build_file):
     assert False
 
   input_str = str(input)
+  if IsStrCanonicalInt(input_str):
+    return int(input_str)
+
   # Do a quick scan to determine if an expensive regex search is warranted.
-  if expansion_symbol in input_str:
-    # Get the entire list of matches as a list of MatchObject instances.
-    # (using findall here would return strings instead of MatchObjects).
-    matches = [match for match in variable_re.finditer(input_str)]
-  else:
-    matches = None
+  if expansion_symbol not in input_str:
+    return input_str
+
+  # Get the entire list of matches as a list of MatchObject instances.
+  # (using findall here would return strings instead of MatchObjects).
+  matches = [match for match in variable_re.finditer(input_str)]
+  if not matches:
+    return input_str
 
   output = input_str
-  if matches:
-    # Reverse the list of matches so that replacements are done right-to-left.
-    # That ensures that earlier replacements won't mess up the string in a
-    # way that causes later calls to find the earlier substituted text instead
-    # of what's intended for replacement.
-    matches.reverse()
-    for match_group in matches:
-      match = match_group.groupdict()
-      gyp.DebugOutput(gyp.DEBUG_VARIABLES,
-                      "Matches: %s" % repr(match))
-      # match['replace'] is the substring to look for, match['type']
-      # is the character code for the replacement type (< > <! >! <| >| <@
-      # >@ <!@ >!@), match['is_array'] contains a '[' for command
-      # arrays, and match['content'] is the name of the variable (< >)
-      # or command to run (<! >!). match['command_string'] is an optional
-      # command string. Currently, only 'pymod_do_main' is supported.
-
-      # run_command is true if a ! variant is used.
-      run_command = '!' in match['type']
-      command_string = match['command_string']
-
-      # file_list is true if a | variant is used.
-      file_list = '|' in match['type']
-
-      # Capture these now so we can adjust them later.
-      replace_start = match_group.start('replace')
-      replace_end = match_group.end('replace')
-
-      # Find the ending paren, and re-evaluate the contained string.
-      (c_start, c_end) = FindEnclosingBracketGroup(input_str[replace_start:])
-
-      # Adjust the replacement range to match the entire command
-      # found by FindEnclosingBracketGroup (since the variable_re
-      # probably doesn't match the entire command if it contained
-      # nested variables).
-      replace_end = replace_start + c_end
-
-      # Find the "real" replacement, matching the appropriate closing
-      # paren, and adjust the replacement start and end.
-      replacement = input_str[replace_start:replace_end]
-
-      # Figure out what the contents of the variable parens are.
-      contents_start = replace_start + c_start + 1
-      contents_end = replace_end - 1
-      contents = input_str[contents_start:contents_end]
-
-      # Do filter substitution now for <|().
-      # Admittedly, this is different than the evaluation order in other
-      # contexts. However, since filtration has no chance to run on <|(),
-      # this seems like the only obvious way to give them access to filters.
-      if file_list:
-        processed_variables = copy.deepcopy(variables)
-        ProcessListFiltersInDict(contents, processed_variables)
-        # Recurse to expand variables in the contents
-        contents = ExpandVariables(contents, phase,
-                                   processed_variables, build_file)
-      else:
-        # Recurse to expand variables in the contents
-        contents = ExpandVariables(contents, phase, variables, build_file)
-
-      # Strip off leading/trailing whitespace so that variable matches are
-      # simpler below (and because they are rarely needed).
-      contents = contents.strip()
-
-      # expand_to_list is true if an @ variant is used.  In that case,
-      # the expansion should result in a list.  Note that the caller
-      # is to be expecting a list in return, and not all callers do
-      # because not all are working in list context.  Also, for list
-      # expansions, there can be no other text besides the variable
-      # expansion in the input string.
-      expand_to_list = '@' in match['type'] and input_str == replacement
-
-      if run_command or file_list:
-        # Find the build file's directory, so commands can be run or file lists
-        # generated relative to it.
-        build_file_dir = os.path.dirname(build_file)
-        if build_file_dir == '':
-          # If build_file is just a leaf filename indicating a file in the
-          # current directory, build_file_dir might be an empty string.  Set
-          # it to None to signal to subprocess.Popen that it should run the
-          # command in the current directory.
-          build_file_dir = None
-
-      # Support <|(listfile.txt ...) which generates a file
-      # containing items from a gyp list, generated at gyp time.
-      # This works around actions/rules which have more inputs than will
-      # fit on the command line.
-      if file_list:
-        if type(contents) == list:
-          contents_list = contents
-        else:
-          contents_list = contents.split(' ')
-        replacement = contents_list[0]
-        path = replacement
-        if not os.path.isabs(path):
-          path = os.path.join(build_file_dir, path)
-        f = gyp.common.WriteOnDiff(path)
-        for i in contents_list[1:]:
-          f.write('%s\n' % i)
-        f.close()
-
-      elif run_command:
-        use_shell = True
-        if match['is_array']:
-          contents = eval(contents)
-          use_shell = False
-
-        # Check for a cached value to avoid executing commands, or generating
-        # file lists more than once.
-        # TODO(http://code.google.com/p/gyp/issues/detail?id=112): It is
-        # possible that the command being invoked depends on the current
-        # directory. For that case the syntax needs to be extended so that the
-        # directory is also used in cache_key (it becomes a tuple).
-        # TODO(http://code.google.com/p/gyp/issues/detail?id=111): In theory,
-        # someone could author a set of GYP files where each time the command
-        # is invoked it produces different output by design. When the need
-        # arises, the syntax should be extended to support no caching off a
-        # command's output so it is run every time.
-        cache_key = str(contents)
-        cached_value = cached_command_results.get(cache_key, None)
-        if cached_value is None:
-          gyp.DebugOutput(gyp.DEBUG_VARIABLES,
-                          "Executing command '%s' in directory '%s'" %
-                          (contents,build_file_dir))
-
-          replacement = ''
-
-          if command_string == 'pymod_do_main':
-            # <!pymod_do_main(modulename param eters) loads |modulename| as a
-            # python module and then calls that module's DoMain() function,
-            # passing ["param", "eters"] as a single list argument. For modules
-            # that don't load quickly, this can be faster than
-            # <!(python modulename param eters). Do this in |build_file_dir|.
-            oldwd = os.getcwd()  # Python doesn't like os.open('.'): no fchdir.
-            os.chdir(build_file_dir)
-
-            parsed_contents = shlex.split(contents)
-            py_module = __import__(parsed_contents[0])
-            replacement = str(py_module.DoMain(parsed_contents[1:])).rstrip()
-
-            os.chdir(oldwd)
-            assert replacement != None
-          elif command_string:
-            raise Exception("Unknown command string '%s' in '%s'." %
-                            (command_string, contents))
-          else:
-            # Fix up command with platform specific workarounds.
-            contents = FixupPlatformCommand(contents)
-            p = subprocess.Popen(contents, shell=use_shell,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 stdin=subprocess.PIPE,
-                                 cwd=build_file_dir)
-
-            p_stdout, p_stderr = p.communicate('')
-
-            if p.wait() != 0 or p_stderr:
-              sys.stderr.write(p_stderr)
-              # Simulate check_call behavior, since check_call only exists
-              # in python 2.5 and later.
-              raise Exception("Call to '%s' returned exit status %d." %
-                              (contents, p.returncode))
-            replacement = p_stdout.rstrip()
-
-          cached_command_results[cache_key] = replacement
-        else:
-          gyp.DebugOutput(gyp.DEBUG_VARIABLES,
-                          "Had cache value for command '%s' in directory '%s'" %
-                          (contents,build_file_dir))
-          replacement = cached_value
-
-      else:
-        if not contents in variables:
-          if contents[-1] in ['!', '/']:
-            # In order to allow cross-compiles (nacl) to happen more naturally,
-            # we will allow references to >(sources/) etc. to resolve to
-            # and empty list if undefined. This allows actions to:
-            # 'action!': [
-            #   '>@(_sources!)',
-            # ],
-            # 'action/': [
-            #   '>@(_sources/)',
-            # ],
-            replacement = []
-          else:
-            raise KeyError, 'Undefined variable ' + contents + \
-                            ' in ' + build_file
-        else:
-          replacement = variables[contents]
-
-      if isinstance(replacement, list):
-        for item in replacement:
-          if (not contents[-1] == '/' and
-              not isinstance(item, str) and not isinstance(item, int)):
-            raise TypeError, 'Variable ' + contents + \
-                             ' must expand to a string or list of strings; ' + \
-                             'list contains a ' + \
-                             item.__class__.__name__
-        # Run through the list and handle variable expansions in it.  Since
-        # the list is guaranteed not to contain dicts, this won't do anything
-        # with conditions sections.
-        ProcessVariablesAndConditionsInList(replacement, phase, variables,
-                                            build_file)
-      elif not isinstance(replacement, str) and \
-           not isinstance(replacement, int):
-            raise TypeError, 'Variable ' + contents + \
-                             ' must expand to a string or list of strings; ' + \
-                             'found a ' + replacement.__class__.__name__
-
-      if expand_to_list:
-        # Expanding in list context.  It's guaranteed that there's only one
-        # replacement to do in |input_str| and that it's this replacement.  See
-        # above.
-        if isinstance(replacement, list):
-          # If it's already a list, make a copy.
-          output = replacement[:]
-        else:
-          # Split it the same way sh would split arguments.
-          output = shlex.split(str(replacement))
-      else:
-        # Expanding in string context.
-        encoded_replacement = ''
-        if isinstance(replacement, list):
-          # When expanding a list into string context, turn the list items
-          # into a string in a way that will work with a subprocess call.
-          #
-          # TODO(mark): This isn't completely correct.  This should
-          # call a generator-provided function that observes the
-          # proper list-to-argument quoting rules on a specific
-          # platform instead of just calling the POSIX encoding
-          # routine.
-          encoded_replacement = gyp.common.EncodePOSIXShellList(replacement)
-        else:
-          encoded_replacement = replacement
-
-        output = output[:replace_start] + str(encoded_replacement) + \
-                 output[replace_end:]
-      # Prepare for the next match iteration.
-      input_str = output
-
-    # Look for more matches now that we've replaced some, to deal with
-    # expanding local variables (variables defined in the same
-    # variables block as this one).
+  # Reverse the list of matches so that replacements are done right-to-left.
+  # That ensures that earlier replacements won't mess up the string in a
+  # way that causes later calls to find the earlier substituted text instead
+  # of what's intended for replacement.
+  matches.reverse()
+  for match_group in matches:
+    match = match_group.groupdict()
     gyp.DebugOutput(gyp.DEBUG_VARIABLES,
-                    "Found output %s, recursing." % repr(output))
-    if isinstance(output, list):
-      if output and isinstance(output[0], list):
-        # Leave output alone if it's a list of lists.
-        # We don't want such lists to be stringified.
-        pass
-      else:
-        new_output = []
-        for item in output:
-          new_output.append(
-              ExpandVariables(item, phase, variables, build_file))
-        output = new_output
+                    "Matches: %s" % repr(match))
+    # match['replace'] is the substring to look for, match['type']
+    # is the character code for the replacement type (< > <! >! <| >| <@
+    # >@ <!@ >!@), match['is_array'] contains a '[' for command
+    # arrays, and match['content'] is the name of the variable (< >)
+    # or command to run (<! >!). match['command_string'] is an optional
+    # command string. Currently, only 'pymod_do_main' is supported.
+
+    # run_command is true if a ! variant is used.
+    run_command = '!' in match['type']
+    command_string = match['command_string']
+
+    # file_list is true if a | variant is used.
+    file_list = '|' in match['type']
+
+    # Capture these now so we can adjust them later.
+    replace_start = match_group.start('replace')
+    replace_end = match_group.end('replace')
+
+    # Find the ending paren, and re-evaluate the contained string.
+    (c_start, c_end) = FindEnclosingBracketGroup(input_str[replace_start:])
+
+    # Adjust the replacement range to match the entire command
+    # found by FindEnclosingBracketGroup (since the variable_re
+    # probably doesn't match the entire command if it contained
+    # nested variables).
+    replace_end = replace_start + c_end
+
+    # Find the "real" replacement, matching the appropriate closing
+    # paren, and adjust the replacement start and end.
+    replacement = input_str[replace_start:replace_end]
+
+    # Figure out what the contents of the variable parens are.
+    contents_start = replace_start + c_start + 1
+    contents_end = replace_end - 1
+    contents = input_str[contents_start:contents_end]
+
+    # Do filter substitution now for <|().
+    # Admittedly, this is different than the evaluation order in other
+    # contexts. However, since filtration has no chance to run on <|(),
+    # this seems like the only obvious way to give them access to filters.
+    if file_list:
+      processed_variables = copy.deepcopy(variables)
+      ProcessListFiltersInDict(contents, processed_variables)
+      # Recurse to expand variables in the contents
+      contents = ExpandVariables(contents, phase,
+                                 processed_variables, build_file)
     else:
-      output = ExpandVariables(output, phase, variables, build_file)
+      # Recurse to expand variables in the contents
+      contents = ExpandVariables(contents, phase, variables, build_file)
+
+    # Strip off leading/trailing whitespace so that variable matches are
+    # simpler below (and because they are rarely needed).
+    contents = contents.strip()
+
+    # expand_to_list is true if an @ variant is used.  In that case,
+    # the expansion should result in a list.  Note that the caller
+    # is to be expecting a list in return, and not all callers do
+    # because not all are working in list context.  Also, for list
+    # expansions, there can be no other text besides the variable
+    # expansion in the input string.
+    expand_to_list = '@' in match['type'] and input_str == replacement
+
+    if run_command or file_list:
+      # Find the build file's directory, so commands can be run or file lists
+      # generated relative to it.
+      build_file_dir = os.path.dirname(build_file)
+      if build_file_dir == '':
+        # If build_file is just a leaf filename indicating a file in the
+        # current directory, build_file_dir might be an empty string.  Set
+        # it to None to signal to subprocess.Popen that it should run the
+        # command in the current directory.
+        build_file_dir = None
+
+    # Support <|(listfile.txt ...) which generates a file
+    # containing items from a gyp list, generated at gyp time.
+    # This works around actions/rules which have more inputs than will
+    # fit on the command line.
+    if file_list:
+      if type(contents) == list:
+        contents_list = contents
+      else:
+        contents_list = contents.split(' ')
+      replacement = contents_list[0]
+      path = replacement
+      if not os.path.isabs(path):
+        path = os.path.join(build_file_dir, path)
+      f = gyp.common.WriteOnDiff(path)
+      for i in contents_list[1:]:
+        f.write('%s\n' % i)
+      f.close()
+
+    elif run_command:
+      use_shell = True
+      if match['is_array']:
+        contents = eval(contents)
+        use_shell = False
+
+      # Check for a cached value to avoid executing commands, or generating
+      # file lists more than once.
+      # TODO(http://code.google.com/p/gyp/issues/detail?id=112): It is
+      # possible that the command being invoked depends on the current
+      # directory. For that case the syntax needs to be extended so that the
+      # directory is also used in cache_key (it becomes a tuple).
+      # TODO(http://code.google.com/p/gyp/issues/detail?id=111): In theory,
+      # someone could author a set of GYP files where each time the command
+      # is invoked it produces different output by design. When the need
+      # arises, the syntax should be extended to support no caching off a
+      # command's output so it is run every time.
+      cache_key = str(contents)
+      cached_value = cached_command_results.get(cache_key, None)
+      if cached_value is None:
+        gyp.DebugOutput(gyp.DEBUG_VARIABLES,
+                        "Executing command '%s' in directory '%s'" %
+                        (contents,build_file_dir))
+
+        replacement = ''
+
+        if command_string == 'pymod_do_main':
+          # <!pymod_do_main(modulename param eters) loads |modulename| as a
+          # python module and then calls that module's DoMain() function,
+          # passing ["param", "eters"] as a single list argument. For modules
+          # that don't load quickly, this can be faster than
+          # <!(python modulename param eters). Do this in |build_file_dir|.
+          oldwd = os.getcwd()  # Python doesn't like os.open('.'): no fchdir.
+          os.chdir(build_file_dir)
+
+          parsed_contents = shlex.split(contents)
+          py_module = __import__(parsed_contents[0])
+          replacement = str(py_module.DoMain(parsed_contents[1:])).rstrip()
+
+          os.chdir(oldwd)
+          assert replacement != None
+        elif command_string:
+          raise Exception("Unknown command string '%s' in '%s'." %
+                          (command_string, contents))
+        else:
+          # Fix up command with platform specific workarounds.
+          contents = FixupPlatformCommand(contents)
+          p = subprocess.Popen(contents, shell=use_shell,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               stdin=subprocess.PIPE,
+                               cwd=build_file_dir)
+
+          p_stdout, p_stderr = p.communicate('')
+
+          if p.wait() != 0 or p_stderr:
+            sys.stderr.write(p_stderr)
+            # Simulate check_call behavior, since check_call only exists
+            # in python 2.5 and later.
+            raise Exception("Call to '%s' returned exit status %d." %
+                            (contents, p.returncode))
+          replacement = p_stdout.rstrip()
+
+        cached_command_results[cache_key] = replacement
+      else:
+        gyp.DebugOutput(gyp.DEBUG_VARIABLES,
+                        "Had cache value for command '%s' in directory '%s'" %
+                        (contents,build_file_dir))
+        replacement = cached_value
+
+    else:
+      if not contents in variables:
+        if contents[-1] in ['!', '/']:
+          # In order to allow cross-compiles (nacl) to happen more naturally,
+          # we will allow references to >(sources/) etc. to resolve to
+          # and empty list if undefined. This allows actions to:
+          # 'action!': [
+          #   '>@(_sources!)',
+          # ],
+          # 'action/': [
+          #   '>@(_sources/)',
+          # ],
+          replacement = []
+        else:
+          raise KeyError, 'Undefined variable ' + contents + \
+                          ' in ' + build_file
+      else:
+        replacement = variables[contents]
+
+    if isinstance(replacement, list):
+      for item in replacement:
+        if (not contents[-1] == '/' and
+            not isinstance(item, str) and not isinstance(item, int)):
+          raise TypeError, 'Variable ' + contents + \
+                           ' must expand to a string or list of strings; ' + \
+                           'list contains a ' + \
+                           item.__class__.__name__
+      # Run through the list and handle variable expansions in it.  Since
+      # the list is guaranteed not to contain dicts, this won't do anything
+      # with conditions sections.
+      ProcessVariablesAndConditionsInList(replacement, phase, variables,
+                                          build_file)
+    elif not isinstance(replacement, str) and \
+         not isinstance(replacement, int):
+          raise TypeError, 'Variable ' + contents + \
+                           ' must expand to a string or list of strings; ' + \
+                           'found a ' + replacement.__class__.__name__
+
+    if expand_to_list:
+      # Expanding in list context.  It's guaranteed that there's only one
+      # replacement to do in |input_str| and that it's this replacement.  See
+      # above.
+      if isinstance(replacement, list):
+        # If it's already a list, make a copy.
+        output = replacement[:]
+      else:
+        # Split it the same way sh would split arguments.
+        output = shlex.split(str(replacement))
+    else:
+      # Expanding in string context.
+      encoded_replacement = ''
+      if isinstance(replacement, list):
+        # When expanding a list into string context, turn the list items
+        # into a string in a way that will work with a subprocess call.
+        #
+        # TODO(mark): This isn't completely correct.  This should
+        # call a generator-provided function that observes the
+        # proper list-to-argument quoting rules on a specific
+        # platform instead of just calling the POSIX encoding
+        # routine.
+        encoded_replacement = gyp.common.EncodePOSIXShellList(replacement)
+      else:
+        encoded_replacement = replacement
+
+      output = output[:replace_start] + str(encoded_replacement) + \
+               output[replace_end:]
+    # Prepare for the next match iteration.
+    input_str = output
+
+  # Look for more matches now that we've replaced some, to deal with
+  # expanding local variables (variables defined in the same
+  # variables block as this one).
+  gyp.DebugOutput(gyp.DEBUG_VARIABLES,
+                  "Found output %s, recursing." % repr(output))
+  if isinstance(output, list):
+    if output and isinstance(output[0], list):
+      # Leave output alone if it's a list of lists.
+      # We don't want such lists to be stringified.
+      pass
+    else:
+      new_output = []
+      for item in output:
+        new_output.append(
+            ExpandVariables(item, phase, variables, build_file))
+      output = new_output
+  else:
+    output = ExpandVariables(output, phase, variables, build_file)
 
   # Convert all strings that are canonically-represented integers into integers.
   if isinstance(output, list):
