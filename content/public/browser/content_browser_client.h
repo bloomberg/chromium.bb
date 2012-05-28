@@ -82,8 +82,6 @@ typedef base::Callback< void(const MediaStreamDevices&) > MediaResponseCallback;
 // the observer interfaces.)
 class ContentBrowserClient {
  public:
-  virtual ~ContentBrowserClient() {}
-
   // Allows the embedder to set any number of custom BrowserMainParts
   // implementations for the browser startup code. See comments in
   // browser_main_parts.h.
@@ -424,6 +422,9 @@ class ContentBrowserClient {
       crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(
           const GURL& url) = 0;
 #endif
+
+ protected:
+  virtual ~ContentBrowserClient() {}
 };
 
 }  // namespace content

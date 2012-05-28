@@ -489,7 +489,7 @@ void TestingAutomationProvider::AppendTab(int handle,
                                           const GURL& url,
                                           IPC::Message* reply_message) {
   int append_tab_response = -1;  // -1 is the error code
-  content::NotificationObserver* observer = NULL;
+  TabAppendedNotificationObserver* observer = NULL;
 
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);

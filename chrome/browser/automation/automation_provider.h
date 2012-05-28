@@ -45,10 +45,12 @@ class AutomationWindowTracker;
 class Browser;
 class ExternalTabContainer;
 class FilePath;
+class FindInPageNotificationObserver;
 class InitialLoadObserver;
 class LoginHandler;
 class MetricEventDurationObserver;
 class NavigationControllerRestoredObserver;
+class NewTabUILoadObserver;
 class Profile;
 struct AutomationMsg_Find_Params;
 struct Reposition_Params;
@@ -342,8 +344,8 @@ class AutomationProvider
 #endif  // defined(OS_WIN) && !defined(USE_AURA)
 
   scoped_ptr<IPC::ChannelProxy> channel_;
-  scoped_ptr<content::NotificationObserver> new_tab_ui_load_observer_;
-  scoped_ptr<content::NotificationObserver> find_in_page_observer_;
+  scoped_ptr<NewTabUILoadObserver> new_tab_ui_load_observer_;
+  scoped_ptr<FindInPageNotificationObserver> find_in_page_observer_;
 
   // True iff we should enable observers that check for initial load conditions.
   bool use_initial_load_observers_;

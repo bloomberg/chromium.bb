@@ -14,7 +14,7 @@ class NotificationServiceImpl;
 namespace content {
 
 class ContentClient;
-class ContentBrowserClient;
+class MockContentBrowserClient;
 
 // Initializes various objects needed to run unit tests that use content::
 // objects. Currently this includes setting up the notification service,
@@ -27,7 +27,7 @@ class TestContentClientInitializer {
  private:
   scoped_ptr<NotificationServiceImpl> notification_service_;
   scoped_ptr<content::ContentClient> content_client_;
-  scoped_ptr<content::ContentBrowserClient> content_browser_client_;
+  scoped_ptr<MockContentBrowserClient> content_browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentClientInitializer);
 };
