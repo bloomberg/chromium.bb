@@ -222,7 +222,7 @@ ImageEditor.prototype.updateUndoRedo = function() {
   var canUndo = this.commandQueue_ && this.commandQueue_.canUndo();
   var canRedo = this.commandQueue_ && this.commandQueue_.canRedo();
   ImageUtil.setAttribute(this.undoButton_, 'disabled', !canUndo);
-  ImageUtil.setAttribute(this.redoButton_, 'hidden', !canRedo);
+  this.redoButton_.hidden = !canRedo;
 };
 
 /**
@@ -918,7 +918,7 @@ ImageEditor.Toolbar.prototype.show = function(on) {
   if (!this.wrapper_.firstChild)
     return;  // Do not show empty toolbar;
 
-  ImageUtil.setAttribute(this.wrapper_, 'hidden', !on);
+  this.wrapper_.hidden = !on;
 };
 
 /** A prompt panel for the editor.

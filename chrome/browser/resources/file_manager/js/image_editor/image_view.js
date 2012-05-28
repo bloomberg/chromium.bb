@@ -588,15 +588,15 @@ ImageView.prototype.replace = function(
     return num < 0 ? 'left' : num > 0 ? 'right' : 'center';
   }
 
-  newScreenImage.setAttribute('fade', 'true');
+  ImageUtil.setAttribute(newScreenImage, 'fade', true);
   this.setTransform(newScreenImage, opt_slide);
   this.container_.appendChild(newScreenImage);
 
   setTimeout(function() {
-    newScreenImage.removeAttribute('fade');
+    ImageUtil.setAttribute(newScreenImage, 'fade', false);
     this.setTransform(newScreenImage);
     if (oldScreenImage) {
-      oldScreenImage.setAttribute('fade', 'true');
+      ImageUtil.setAttribute(oldScreenImage, 'fade', true);
       this.setTransform(oldScreenImage, -opt_slide);
       setTimeout(function() {
         oldScreenImage.parentNode.removeChild(oldScreenImage);
@@ -709,7 +709,8 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
   var deviceCropRect = this.viewport_.screenToDeviceRect(
         this.viewport_.imageToScreenRect(imageCropRect));
 
-  newScreenImage.setAttribute('fade', 'true');
+  var setFade = ImageUtil.setAttribute.bind(null, newScreenImage, 'fade');
+  setFade(true);
   oldScreenImage.parentNode.insertBefore(newScreenImage, oldScreenImage);
 
   // Animate to the transformed state.
@@ -720,7 +721,7 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
       this.viewport_.getScale() / oldScale,
       0);
 
-  setTimeout(function() { newScreenImage.removeAttribute('fade') }, 0);
+  setTimeout(setFade.bind(null, false), 0);
 
   setTimeout(function() {
     oldScreenImage.parentNode.removeChild(oldScreenImage);

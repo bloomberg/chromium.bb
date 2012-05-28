@@ -135,7 +135,7 @@ Gallery.prototype.initDom_ = function() {
   bubbleClose.className = 'close-x';
   bubbleClose.addEventListener('click', this.onCloseBubble_.bind(this));
   this.bubble_.appendChild(bubbleClose);
-  this.bubble_.setAttribute('hidden', 'hidden');
+  this.bubble_.hidden = true;
   this.toolbar_.appendChild(this.bubble_);
 
   var nameBox = doc.createElement('div');
@@ -258,7 +258,7 @@ Gallery.prototype.initDom_ = function() {
   this.container_.appendChild(this.editBarMode_);
 
   this.editBarModeWrapper_  = doc.createElement('div');
-  ImageUtil.setAttribute(this.editBarModeWrapper_, 'hidden', true);
+  this.editBarModeWrapper_.hidden = true;
   this.editBarModeWrapper_.className = 'edit-modal-wrapper';
   this.editBarMode_.appendChild(this.editBarModeWrapper_);
 
@@ -362,8 +362,8 @@ Gallery.prototype.onImageContentChanged_ = function() {
 
   if (revision == 1) {
     // First edit.
-    this.filenameSpacer_.setAttribute('saved', 'saved');
-    this.filenameSpacer_.setAttribute('overwrite', 'overwrite');
+    ImageUtil.setAttribute(this.filenameSpacer_, 'saved', true);
+    ImageUtil.setAttribute(this.filenameSpacer_, 'overwrite', true);
 
     var key = 'gallery-overwrite-original';
     var overwrite = key in localStorage ? (localStorage[key] == "true") : true;
@@ -373,7 +373,7 @@ Gallery.prototype.onImageContentChanged_ = function() {
     key = 'gallery-overwrite-bubble';
     var times = key in localStorage ? parseInt(localStorage[key], 10) : 0;
     if (times < Gallery.OVERWRITE_BUBBLE_MAX_TIMES) {
-      this.bubble_.removeAttribute('hidden');
+      this.bubble_.hidden = false;
       localStorage[key] = times + 1;
     }
 
@@ -382,9 +382,10 @@ Gallery.prototype.onImageContentChanged_ = function() {
 };
 
 Gallery.prototype.flashSavedLabel_ = function() {
-  var label = this.savedLabel_;
-  setTimeout(function(){ label.setAttribute('highlighted', 'true'); }, 0);
-  setTimeout(function(){ label.removeAttribute('highlighted'); }, 300);
+  var selLabelHighlighted =
+      ImageUtil.setAttribute.bind(null, this.savedLabel_, 'highlighted');
+  setTimeout(selLabelHighlighted.bind(null, true), 0);
+  setTimeout(selLabelHighlighted.bind(null, false), 300);
 };
 
 Gallery.prototype.applyOverwrite_ = function(overwrite) {
@@ -405,7 +406,7 @@ Gallery.prototype.onOverwriteOriginalClick_ = function(event) {
 };
 
 Gallery.prototype.onCloseBubble_ = function(event) {
-  this.bubble_.setAttribute('hidden', 'hidden');
+  this.bubble_.hidden = true;
   localStorage['gallery-overwrite-bubble'] = Gallery.OVERWRITE_BUBBLE_MAX_TIMES;
 };
 
@@ -525,7 +526,7 @@ Gallery.prototype.renameItem_ = function(item, name) {
     if (item.hasNameForSaving()) {
       // Use this name in the next save operation.
       item.setNameForSaving(newName);
-      self.filenameSpacer_.removeAttribute('overwrite');
+      ImageUtil.setAttribute(self.filenameSpacer_, 'overwrite', false);
       self.updateFilename_();
     } else {
       // Rename file in place.
@@ -584,8 +585,8 @@ Gallery.prototype.prefetchImage = function(id, url) {
 };
 
 Gallery.prototype.openImage = function(id, url, metadata, slide, callback) {
-  this.filenameSpacer_.removeAttribute('overwrite');
-  this.filenameSpacer_.removeAttribute('saved');
+  ImageUtil.setAttribute(this.filenameSpacer_, 'overwrite', false);
+  ImageUtil.setAttribute(this.filenameSpacer_, 'saved', false);
 
   this.selectedImageMetadata_ = ImageUtil.deepCopy(metadata);
   this.updateFilename_(url);
@@ -710,8 +711,8 @@ Gallery.prototype.onEdit_ = function() {
     this.cancelFading_();
   } else {
     this.editor_.getPrompt().hide();
-    this.filenameSpacer_.removeAttribute('saved');
-    this.filenameSpacer_.removeAttribute('overwrite');
+    ImageUtil.setAttribute(this.filenameSpacer_, 'saved', false);
+    ImageUtil.setAttribute(this.filenameSpacer_, 'overwrite', false);
     this.initiateFading_();
   }
 
@@ -807,7 +808,7 @@ Gallery.prototype.onMouseMove_ = function(e) {
 Gallery.prototype.onFadeTimeout_ = function() {
   this.fadeTimeoutId_ = null;
   if (this.isEditing_() || this.isSharing_() || this.isRenaming_()) return;
-  this.container_.removeAttribute('tools');
+  ImageUtil.setAttribute(this.container_, 'tools', false);
 };
 
 Gallery.prototype.initiateFading_ = function(opt_timeout) {
@@ -1422,7 +1423,7 @@ function ShareMode(editor, container, toolbar, shareActions,
 
   this.menu_ = doc.createElement('div');
   this.menu_.className = 'share-menu';
-  this.menu_.setAttribute('hidden', 'hidden');
+  this.menu_.hidden = true;
   for (var index = 0; index < shareActions.length; index++) {
     var action = shareActions[index];
     var row = doc.createElement('div');
@@ -1446,7 +1447,7 @@ ShareMode.prototype = { __proto__: ImageEditor.Mode.prototype };
  */
 ShareMode.prototype.setUp = function() {
   ImageEditor.Mode.prototype.setUp.apply(this, arguments);
-  ImageUtil.setAttribute(this.menu_, 'hidden', false);
+  this.menu_.hidden = false;
   ImageUtil.setAttribute(this.button_, 'pressed', false);
 };
 
@@ -1455,5 +1456,5 @@ ShareMode.prototype.setUp = function() {
  */
 ShareMode.prototype.cleanUpUI = function() {
   ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
-  ImageUtil.setAttribute(this.menu_, 'hidden', true);
+  this.menu_.hidden = true;
 };
