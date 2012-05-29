@@ -48,10 +48,4 @@
 //
 // START OVERRIDES HERE
 
-// added by epoger on 22 May 2012
-BUGCR129184 : svg/filters/subRegion-one-effect.svg = IMAGE
-BUGCR129184 : svg/filters/subRegion-two-effects.svg = IMAGE
-BUGCR129184 : svg/transforms/svg-css-transforms.xhtml = IMAGE
-BUGCR129184 : transforms/svg-vs-css.xhtml = IMAGE
-
 // END OVERRIDES HERE (this line ensures that the file is newline-terminated)
