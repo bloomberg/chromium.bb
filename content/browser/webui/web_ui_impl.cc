@@ -82,8 +82,8 @@ bool WebUIImpl::OnMessageReceived(const IPC::Message& message) {
 void WebUIImpl::OnWebUISend(const GURL& source_url,
                             const std::string& message,
                             const ListValue& args) {
-  bool data_urls_allowed =
-      web_contents_->GetDelegate()->CanLoadDataURLsInWebUI();
+  content::WebContentsDelegate* delegate = web_contents_->GetDelegate();
+  bool data_urls_allowed = delegate && delegate->CanLoadDataURLsInWebUI();
   content::WebUIControllerFactory* factory =
       content::GetContentClient()->browser()->GetWebUIControllerFactory();
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->
