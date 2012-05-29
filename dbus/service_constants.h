@@ -171,6 +171,8 @@ const char kScreenIsUnlockedMethod[] = "ScreenIsUnlocked";
 const char kGetPowerSupplyPropertiesMethod[] = "GetPowerSupplyProperties";
 const char kStateOverrideRequest[] = "StateOverrideRequest";
 const char kGetPowerAccumulationMethod[] = "GetPowerAccumulation";
+const char kHandleUserActivityMethod[] = "HandleUserActivity";
+const char kHandleVideoActivityMethod[] = "HandleVideoActivity";
 // DEPRECATED
 const char kPowerManagerDecreaseScreenBrightness[] =
     "DecreaseScreenBrightness";
