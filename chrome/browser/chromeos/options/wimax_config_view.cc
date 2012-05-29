@@ -301,9 +301,9 @@ void WimaxConfigView::Init(WimaxNetwork* wimax) {
               IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHARE_NETWORK));
       share_network_checkbox_->SetEnabled(true);
       share_network_checkbox_->SetChecked(false);  // Default to unshared.
+      layout->SkipColumns(1);
+      layout->AddView(share_network_checkbox_);
     }
-    layout->SkipColumns(1);
-    layout->AddView(share_network_checkbox_);
   }
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
