@@ -40,6 +40,9 @@ class InstantDelegate {
   // Invoked when the WebContents becomes focused.
   virtual void InstantPreviewFocused() = 0;
 
+  // Returns the tab contents over which the instant preview is overlaid.
+  virtual TabContentsWrapper* GetInstantHostTabContents() const = 0;
+
  protected:
   virtual ~InstantDelegate() {}
 };

@@ -1905,7 +1905,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 }
 
 - (void)commitInstant {
-  InstantController::CommitIfCurrent(browser_->instant());
+  InstantController* instant = browser_->instant();
+  if (instant)
+    instant->CommitIfCurrent();
 }
 
 

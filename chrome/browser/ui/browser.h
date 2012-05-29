@@ -1039,6 +1039,7 @@ class Browser : public TabStripModelDelegate,
                                 InstantCompleteBehavior behavior) OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual void InstantPreviewFocused() OVERRIDE;
+  virtual TabContentsWrapper* GetInstantHostTabContents() const OVERRIDE;
 
   // Command and state updating ///////////////////////////////////////////////
 

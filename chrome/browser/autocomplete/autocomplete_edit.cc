@@ -220,7 +220,8 @@ bool AutocompleteEditModel::CommitSuggestedText(bool skip_inline_autocomplete) {
 }
 
 bool AutocompleteEditModel::AcceptCurrentInstantPreview() {
-  return InstantController::CommitIfCurrent(controller_->GetInstant());
+  InstantController* instant = controller_->GetInstant();
+  return instant && instant->CommitIfCurrent();
 }
 
 void AutocompleteEditModel::OnChanged() {
@@ -669,9 +670,8 @@ void AutocompleteEditModel::OnSetFocus(bool control_down) {
   control_key_state_ = control_down ? DOWN_WITHOUT_CHANGE : UP;
 
   InstantController* instant = controller_->GetInstant();
-  TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
-  if (instant && tab)
-    instant->OnAutocompleteGotFocus(tab);
+  if (instant)
+    instant->OnAutocompleteGotFocus();
 }
 
 void AutocompleteEditModel::OnWillKillFocus(
@@ -1082,15 +1082,8 @@ bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
   if (!instant)
     return false;
 
-  // It's possible the tab strip does not have an active tab contents, for
-  // instance if the tab has been closed or on return from a sleep state
-  // (http://crbug.com/105689)
-  TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
-  if (!tab)
-    return false;
-
   if (user_input_in_progress_ && popup_->IsOpen()) {
-    return instant->Update(tab, match, view_->GetText(), UseVerbatimInstant(),
+    return instant->Update(match, view_->GetText(), UseVerbatimInstant(),
                            suggested_text);
   }
 

@@ -3928,7 +3928,6 @@ void Browser::OnStateChanged() {
 // Browser, InstantDelegate implementation:
 
 void Browser::ShowInstant(TabContentsWrapper* preview_contents) {
-  DCHECK(instant_->tab_contents() == GetSelectedTabContentsWrapper());
   window_->ShowInstant(preview_contents);
 
   GetSelectedWebContents()->HideContents();
@@ -3944,7 +3943,7 @@ void Browser::HideInstant() {
 }
 
 void Browser::CommitInstant(TabContentsWrapper* preview_contents) {
-  TabContentsWrapper* tab_contents = instant_->tab_contents();
+  TabContentsWrapper* tab_contents = GetSelectedTabContentsWrapper();
   int index = tab_strip_model_->GetIndexOfTabContents(tab_contents);
   DCHECK_NE(TabStripModel::kNoTab, index);
   // TabStripModel takes ownership of preview_contents.
@@ -3973,6 +3972,10 @@ gfx::Rect Browser::GetInstantBounds() {
 void Browser::InstantPreviewFocused() {
   // NOTE: This is only invoked on aura.
   window_->WebContentsFocused(instant_->GetPreviewContents()->web_contents());
+}
+
+TabContentsWrapper* Browser::GetInstantHostTabContents() const {
+  return GetSelectedTabContentsWrapper();
 }
 
 
@@ -4896,8 +4899,7 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
 void Browser::CreateInstantIfNecessary() {
   if (is_type_tabbed() && InstantController::IsEnabled(profile()) &&
       !profile()->IsOffTheRecord()) {
-    instant_.reset(new InstantController(profile_, this,
-                                         InstantController::INSTANT));
+    instant_.reset(new InstantController(this, InstantController::INSTANT));
     instant_unload_handler_.reset(new InstantUnloadHandler(this));
   }
 }
