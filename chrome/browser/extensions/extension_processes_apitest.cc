@@ -13,7 +13,8 @@
 
 // Sometimes times out on Mac OS and Windows
 // crbug.com/97499
-#if defined(OS_MACOSX) || defined(OS_WIN)
+// Also on Linux: crbug.com/130138
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Processes) {
 #else
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Processes) {
