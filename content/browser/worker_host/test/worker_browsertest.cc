@@ -371,7 +371,13 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerHttpAuth) {
       browser(), url, CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_AUTH);
 }
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+// This test is flaky inside the Linux SUID sandbox.
+// http://crbug.com/130116
+IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitPerPage) {
+#else
 IN_PROC_BROWSER_TEST_F(WorkerTest, LimitPerPage) {
+#endif
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
   std::string query = StringPrintf("?count=%d", max_workers_per_tab + 1);
 
@@ -380,8 +386,14 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, LimitPerPage) {
   ASSERT_TRUE(WaitForWorkerProcessCount(max_workers_per_tab));
 }
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+// This test is flaky inside the Linux SUID sandbox.
+// http://crbug.com/130116
+IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitTotal) {
+#else
 // http://crbug.com/36800
 IN_PROC_BROWSER_TEST_F(WorkerTest, LimitTotal) {
+#endif
   if (base::SysInfo::AmountOfPhysicalMemoryMB() < 8192) {
     LOG(INFO) << "WorkerTest.LimitTotal not running because it needs 8 GB RAM.";
     return;
