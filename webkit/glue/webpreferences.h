@@ -123,6 +123,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool per_tile_painting_enabled;
   bool css_regions_enabled;
   bool css_shaders_enabled;
+  bool device_supports_touch;
   int default_tile_width;
   int default_tile_height;
   int max_untiled_layer_width;

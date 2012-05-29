@@ -107,6 +107,7 @@ WebPreferences::WebPreferences()
       per_tile_painting_enabled(false),
       css_regions_enabled(false),
       css_shaders_enabled(false),
+      device_supports_touch(false),
       default_tile_width(256),
       default_tile_height(256),
       max_untiled_layer_width(512),
@@ -368,6 +369,8 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   settings->setExperimentalCSSRegionsEnabled(css_regions_enabled);
   settings->setExperimentalCSSCustomFilterEnabled(css_shaders_enabled);
+
+  settings->setDeviceSupportsTouch(device_supports_touch);
 
   settings->setDefaultTileSize(
       WebSize(default_tile_width, default_tile_height));

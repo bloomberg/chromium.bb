@@ -67,6 +67,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/monitor.h"
 #include "ui/gfx/screen.h"
@@ -479,6 +480,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableCssRegions);
   prefs.css_shaders_enabled =
       command_line.HasSwitch(switches::kEnableCssShaders);
+  prefs.device_supports_touch =
+      ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
 
 #if defined(OS_MACOSX)
   bool default_enable_scroll_animator = true;
