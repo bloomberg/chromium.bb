@@ -37,12 +37,16 @@
 #include "window.h"
 #include "../shared/cairo-util.h"
 
+struct dnd_drag;
+
 struct dnd {
 	struct window *window;
 	struct widget *widget;
 	struct display *display;
 	uint32_t key;
 	struct item *items[16];
+	int self_only;
+	struct dnd_drag *current_drag;
 };
 
 struct dnd_drag {
@@ -366,6 +370,7 @@ dnd_button_handler(struct widget *widget,
 	struct wl_buffer *buffer;
 	unsigned int i;
 	uint32_t serial;
+	cairo_surface_t *icon;
 
 	widget_get_allocation(dnd->widget, &allocation);
 	input_get_position(input, &x, &y);
@@ -397,15 +402,20 @@ dnd_button_handler(struct widget *widget,
 
 		input_ungrab(input);
 
-		dnd_drag->data_source =
-			display_create_data_source(dnd->display);
-		wl_data_source_add_listener(dnd_drag->data_source,
-					    &data_source_listener,
-					    dnd_drag);
-		wl_data_source_offer(dnd_drag->data_source,
-				     "application/x-wayland-dnd-flower");
-		wl_data_source_offer(dnd_drag->data_source,
-				     "text/plain; charset=utf-8");
+		if (dnd->self_only) {
+			dnd_drag->data_source = NULL;
+		} else {
+			dnd_drag->data_source =
+				display_create_data_source(dnd->display);
+			wl_data_source_add_listener(dnd_drag->data_source,
+						    &data_source_listener,
+						    dnd_drag);
+			wl_data_source_offer(dnd_drag->data_source,
+					     "application/x-wayland-dnd-flower");
+			wl_data_source_offer(dnd_drag->data_source,
+					     "text/plain; charset=utf-8");
+		}
+
 		wl_data_device_start_drag(input_get_data_device(input),
 					  dnd_drag->data_source,
 					  window_get_wl_surface(dnd->window),
@@ -419,12 +429,18 @@ dnd_button_handler(struct widget *widget,
 		dnd_drag->translucent =
 			create_drag_cursor(dnd_drag, item, x, y, 0.2);
 
-		buffer = display_get_buffer_for_surface(dnd->display, dnd_drag->translucent);
+		if (dnd->self_only)
+			icon = dnd_drag->opaque;
+		else
+			icon = dnd_drag->translucent;
+
+		buffer = display_get_buffer_for_surface(dnd->display, icon);
 		wl_surface_attach(dnd_drag->drag_surface, buffer,
 				  -dnd_drag->hotspot_x, -dnd_drag->hotspot_y);
 		wl_surface_damage(dnd_drag->drag_surface, 0, 0,
 				  dnd_drag->width, dnd_drag->height);
 
+		dnd->current_drag = dnd_drag;
 		window_schedule_redraw(dnd->window);
 	}
 }
@@ -445,7 +461,11 @@ static int
 dnd_enter_handler(struct widget *widget,
 		  struct input *input, float x, float y, void *data)
 {
-	return lookup_cursor(data, x, y);
+	struct dnd *dnd = data;
+
+	dnd->current_drag = NULL;
+
+	return lookup_cursor(dnd, x, y);
 }
 
 static int
@@ -463,10 +483,13 @@ dnd_data_handler(struct window *window,
 {
 	struct dnd *dnd = data;
 
-	if (!dnd_get_item(dnd, x, y)) {
-		input_accept(input, types[0]);
-	} else {
+	if (!types)
+		return;
+
+	if (dnd_get_item(dnd, x, y) || dnd->self_only) {
 		input_accept(input, NULL);
+	} else {
+		input_accept(input, types[0]);
 	}
 }
 
@@ -501,15 +524,26 @@ dnd_drop_handler(struct window *window, struct input *input,
 		 int32_t x, int32_t y, void *data)
 {
 	struct dnd *dnd = data;
+	struct dnd_flower_message message;
 
 	if (dnd_get_item(dnd, x, y)) {
 		fprintf(stderr, "got 'drop', but no target\n");
 		return;
 	}
 
-	input_receive_drag_data(input, 
-				"application/x-wayland-dnd-flower",
-				dnd_receive_func, dnd);
+	if (!dnd->self_only) {
+		input_receive_drag_data(input,
+					"application/x-wayland-dnd-flower",
+					dnd_receive_func, dnd);
+	} else if (dnd->current_drag) {
+		message.seed = dnd->current_drag->item->seed;
+		message.x_offset = dnd->current_drag->x_offset;
+		message.y_offset = dnd->current_drag->y_offset;
+		dnd_receive_func(&message, sizeof message, x, y, dnd);
+		dnd->current_drag = NULL;
+	} else {
+		fprintf(stderr, "ignoring drop from another client\n");
+	}
 }
 
 static struct dnd *
@@ -564,6 +598,8 @@ int
 main(int argc, char *argv[])
 {
 	struct display *d;
+	struct dnd *dnd;
+	int i;
 
 	d = display_create(argc, argv);
 	if (d == NULL) {
@@ -571,7 +607,11 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
-	dnd_create(d);
+	dnd = dnd_create(d);
+
+	for (i = 1; i < argc; i++)
+		if (strcmp("--self-only", argv[i]) == 0)
+			dnd->self_only = 1;
 
 	display_run(d);
 

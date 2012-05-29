@@ -2099,22 +2099,30 @@ data_device_enter(void *data, struct wl_data_device *data_device,
 {
 	struct input *input = data;
 	struct window *window;
+	void *types_data;
 	float x = wl_fixed_to_double(x_w);
 	float y = wl_fixed_to_double(y_w);
 	char **p;
 
 	input->pointer_enter_serial = serial;
-	input->drag_offer = wl_data_offer_get_user_data(offer);
 	window = wl_surface_get_user_data(surface);
 	input->pointer_focus = window;
 
-	p = wl_array_add(&input->drag_offer->types, sizeof *p);
-	*p = NULL;
+	if (offer) {
+		input->drag_offer = wl_data_offer_get_user_data(offer);
+
+		p = wl_array_add(&input->drag_offer->types, sizeof *p);
+		*p = NULL;
+
+		types_data = input->drag_offer->types.data;
+	} else {
+		input->drag_offer = NULL;
+		types_data = NULL;
+	}
 
 	window = input->pointer_focus;
 	if (window->data_handler)
-		window->data_handler(window, input, x, y,
-				     input->drag_offer->types.data,
+		window->data_handler(window, input, x, y, types_data,
 				     window->user_data);
 }
 
@@ -2123,8 +2131,10 @@ data_device_leave(void *data, struct wl_data_device *data_device)
 {
 	struct input *input = data;
 
-	data_offer_destroy(input->drag_offer);
-	input->drag_offer = NULL;
+	if (input->drag_offer) {
+		data_offer_destroy(input->drag_offer);
+		input->drag_offer = NULL;
+	}
 }
 
 static void
@@ -2135,13 +2145,18 @@ data_device_motion(void *data, struct wl_data_device *data_device,
 	struct window *window = input->pointer_focus;
 	float x = wl_fixed_to_double(x_w);
 	float y = wl_fixed_to_double(y_w);
+	void *types_data;
 
 	input->sx = x;
 	input->sy = y;
 
+	if (input->drag_offer)
+		types_data = input->drag_offer->types.data;
+	else
+		types_data = NULL;
+
 	if (window->data_handler)
-		window->data_handler(window, input, x, y,
-				     input->drag_offer->types.data,
+		window->data_handler(window, input, x, y, types_data,
 				     window->user_data);
 }
 
