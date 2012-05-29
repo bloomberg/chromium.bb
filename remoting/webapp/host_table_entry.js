@@ -181,11 +181,11 @@ remoting.HostTableEntry.prototype.updateStatus = function(opt_forEdit) {
   var clickToConnect = this.host.status == 'ONLINE' && !opt_forEdit;
   if (clickToConnect) {
     if (!this.onConnectReference_) {
-      /** @type {remoting.HostTableEntry} */
-      var that = this;
+      /** @type {string} */
+      var encodedHostId = encodeURIComponent(this.host.hostId)
       this.onConnectReference_ = function() {
         var hostUrl = chrome.extension.getURL('main.html') +
-            '?mode=me2me&hostId=' + encodeURIComponent(that.host.hostId);
+            '?mode=me2me&hostId=' + encodedHostId;
         window.location.assign(hostUrl);
       };
       this.tableRow.addEventListener('click', this.onConnectReference_, false);
@@ -225,14 +225,10 @@ remoting.HostTableEntry.prototype.beginRename_ = function() {
   this.hostNameCell_.appendChild(editBox);
   editBox.select();
 
-  /** @type {remoting.HostTableEntry} */
-  var that = this;
-  this.onBlurReference_ = function() { that.commitRename_(); };
+  this.onBlurReference_ = this.commitRename_.bind(this);
   editBox.addEventListener('blur', this.onBlurReference_, false);
 
-  /** @param {Event} event The keydown event. */
-  var onKeydown = function(event) { that.onKeydown_(event); }
-  editBox.addEventListener('keydown', onKeydown, false);
+  editBox.addEventListener('keydown', this.onKeydown_.bind(this), false);
   this.updateStatus(true);
 };
 
@@ -262,12 +258,10 @@ remoting.HostTableEntry.prototype.commitRename_ = function() {
 remoting.HostTableEntry.prototype.showDeleteConfirmation_ = function() {
   var message = document.getElementById('confirm-host-delete-message');
   l10n.localizeElement(message, this.host.hostName);
-  /** @type {remoting.HostTableEntry} */
-  var that = this;
   var confirm = document.getElementById('confirm-host-delete');
   var cancel = document.getElementById('cancel-host-delete');
-  this.onConfirmDeleteReference_ = function() { that.confirmDelete_(); };
-  this.onCancelDeleteReference_ = function() { that.cancelDelete_(); };
+  this.onConfirmDeleteReference_ = this.confirmDelete_.bind(this);
+  this.onCancelDeleteReference_ = this.cancelDelete_.bind(this);
   confirm.addEventListener('click', this.onConfirmDeleteReference_, false);
   cancel.addEventListener('click', this.onCancelDeleteReference_, false);
   remoting.setMode(remoting.AppMode.CONFIRM_HOST_DELETE);
@@ -379,10 +373,8 @@ remoting.HostTableEntry.prototype.onKeydown_ = function(event) {
  * @private
  */
 remoting.HostTableEntry.prototype.registerFocusHandlers_ = function(e) {
-  /** @type {remoting.HostTableEntry} */
-  var that = this;
-  e.addEventListener('focus', function() { that.onFocusChange_(); }, false);
-  e.addEventListener('blur', function() { that.onFocusChange_(); }, false);
+  e.addEventListener('focus', this.onFocusChange_.bind(this), false);
+  e.addEventListener('blur', this.onFocusChange_.bind(this), false);
 };
 
 /**

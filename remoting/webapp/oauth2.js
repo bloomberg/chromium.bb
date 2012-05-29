@@ -201,10 +201,12 @@ remoting.OAuth2.prototype.clearAccessToken = function() {
  * Update state based on token response from the OAuth2 /token endpoint.
  *
  * @private
+ * @param {function(XMLHttpRequest): void} onDone Callback to invoke on
+ *     completion.
  * @param {XMLHttpRequest} xhr The XHR object for this request.
  * @return {void} Nothing.
  */
-remoting.OAuth2.prototype.processTokenResponse_ = function(xhr) {
+remoting.OAuth2.prototype.processTokenResponse_ = function(onDone, xhr) {
   if (xhr.status == 200) {
     try {
       // Don't use jsonParseSafe here unless you move the definition out of
@@ -232,6 +234,7 @@ remoting.OAuth2.prototype.processTokenResponse_ = function(xhr) {
     console.error('Failed to get tokens. Status: ' + xhr.status +
                   ' response: ' + xhr.responseText);
   }
+  onDone(xhr);
 };
 
 /**
@@ -255,15 +258,8 @@ remoting.OAuth2.prototype.refreshAccessToken = function(onDone) {
     'grant_type': 'refresh_token'
   };
 
-  /** @type {remoting.OAuth2} */
-  var that = this;
-  /** @param {XMLHttpRequest} xhr The XHR reply. */
-  var processTokenResponse = function(xhr) {
-    that.processTokenResponse_(xhr);
-    onDone(xhr);
-  };
   remoting.xhr.post(this.OAUTH2_TOKEN_ENDPOINT_,
-                    processTokenResponse,
+                    this.processTokenResponse_.bind(this, onDone),
                     parameters);
 };
 
@@ -301,16 +297,8 @@ remoting.OAuth2.prototype.exchangeCodeForToken = function(code, onDone) {
     'code': code,
     'grant_type': 'authorization_code'
   };
-
-  /** @type {remoting.OAuth2} */
-  var that = this;
-  /** @param {XMLHttpRequest} xhr The XHR reply. */
-  var processTokenResponse = function(xhr) {
-    that.processTokenResponse_(xhr);
-    onDone(xhr);
-  };
   remoting.xhr.post(this.OAUTH2_TOKEN_ENDPOINT_,
-                    processTokenResponse,
+                    this.processTokenResponse_.bind(this, onDone),
                     parameters);
 };
 

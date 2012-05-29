@@ -43,13 +43,12 @@ remoting.Toolbar = function(toolbar) {
    */
   this.stubRight_ = 0;
 
-  /** @type {remoting.Toolbar} */
-  var that = this;
-
   window.addEventListener('mousemove', remoting.Toolbar.onMouseMove, false);
-  window.addEventListener('resize', function() { that.center(); }, false);
+  window.addEventListener('resize', this.center.bind(this), false);
 
   // Prevent the preview canceling if the user is interacting with the tool-bar.
+  /** @type {remoting.Toolbar} */
+  var that = this;
   var stopTimer = function() {
     if (that.timerId_) {
       window.clearTimeout(that.timerId_);
@@ -69,12 +68,10 @@ remoting.Toolbar.prototype.preview = function() {
     window.clearTimeout(this.timerId_);
     this.timerId_ = null;
   }
-  /** @type {remoting.Toolbar} */
-  var that = this;
-  var endPreview = function() {
-    that.toolbar_.classList.remove(remoting.Toolbar.VISIBLE_CLASS_);
-  };
-  this.timerId_ = window.setTimeout(endPreview, 3000);
+  var classList = this.toolbar_.classList;
+  this.timerId_ = window.setTimeout(
+      classList.remove.bind(classList, remoting.Toolbar.VISIBLE_CLASS_),
+      3000);
 };
 
 /**

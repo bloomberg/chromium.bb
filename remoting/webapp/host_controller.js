@@ -116,7 +116,7 @@ remoting.HostController.prototype.setTooltips = function() {
 remoting.HostController.prototype.start = function(hostPin, callback) {
   /** @type {remoting.HostController} */
   var that = this;
-  var hostName = that.plugin_.getHostName();
+  var hostName = this.plugin_.getHostName();
 
   /** @return {string} */
   function generateUuid() {
@@ -242,8 +242,9 @@ remoting.HostController.prototype.stop = function(callback) {
 
   /** @param {remoting.HostController.AsyncResult} result */
   function onStopped(result) {
-    if (that.localHost && that.localHost.hostId)
+    if (that.localHost && that.localHost.hostId) {
       remoting.HostList.unregisterHostById(that.localHost.hostId);
+    }
     callback(result);
   };
   this.plugin_.stopDaemon(onStopped);

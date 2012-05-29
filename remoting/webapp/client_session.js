@@ -60,30 +60,24 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
   this.logToServer = new remoting.LogToServer();
   this.onStateChange = onStateChange;
 
-  /** @type {number?} */
+  /** @type {number?} @private */
   this.notifyClientDimensionsTimer_ = null;
 
-  /** @type {remoting.ClientSession} */
-  var that = this;
-  /** @type {function():void} @private */
-  this.callPluginLostFocus_ = function() { that.pluginLostFocus_(); };
-  /** @type {function():void} @private */
-  this.callPluginGotFocus_ = function() { that.pluginGotFocus_(); };
-  /** @type {function():void} @private */
-  this.callEnableShrink_ = function() {
-    that.setScaleToFit(true);
-    that.scroll_(0, 0);  // Reset bump-scroll offsets.
-  };
-  /** @type {function():void} @private */
-  this.callDisableShrink_ = function() { that.setScaleToFit(false); };
-  /** @type {function():void} @private */
-  this.callToggleFullScreen_ = function() { that.toggleFullScreen_(); };
-  /** @type {remoting.MenuButton} @private */
+  /** @private */
+  this.callPluginLostFocus_ = this.pluginLostFocus_.bind(this);
+  /** @private */
+  this.callPluginGotFocus_ = this.pluginGotFocus_.bind(this);
+  /** @private */
+  this.callEnableShrink_ = this.setScaleToFit.bind(this, true);
+  /** @private */
+  this.callDisableShrink_ = this.setScaleToFit.bind(this, false);
+  /** @private */
+  this.callToggleFullScreen_ = this.toggleFullScreen_.bind(this);
+  /** @private */
   this.screenOptionsMenu_ = new remoting.MenuButton(
       document.getElementById('screen-options-menu'),
-      function() { that.onShowOptionsMenu_(); }
-  );
-  /** @type {remoting.MenuButton} @private */
+      this.onShowOptionsMenu_.bind(this));
+  /** @private */
   this.sendKeysMenu_ = new remoting.MenuButton(
       document.getElementById('send-keys-menu')
   );
@@ -256,12 +250,9 @@ remoting.ClientSession.prototype.createPluginAndConnect =
 
   this.plugin.element().focus();
 
-  /** @type {remoting.ClientSession} */
-  var that = this;
   /** @param {boolean} result */
-  this.plugin.initialize(function(result) {
-      that.onPluginInitialized_(oauth2AccessToken, result);
-    });
+  this.plugin.initialize(
+      this.onPluginInitialized_.bind(this, oauth2AccessToken));
   this.plugin.element().addEventListener(
       'focus', this.callPluginGotFocus_, false);
   this.plugin.element().addEventListener(
@@ -311,24 +302,17 @@ remoting.ClientSession.prototype.onPluginInitialized_ =
   this.setScaleToFit(this.plugin.hasFeature(
       remoting.ClientPlugin.Feature.HIGH_QUALITY_SCALING));
 
-  /** @type {remoting.ClientSession} */ var that = this;
   /** @param {string} msg The IQ stanza to send. */
-  this.plugin.onOutgoingIqHandler = function(msg) { that.sendIq_(msg); };
+  this.plugin.onOutgoingIqHandler = this.sendIq_.bind(this);
   /** @param {string} msg The message to log. */
   this.plugin.onDebugMessageHandler = function(msg) {
     console.log('plugin: ' + msg);
   };
 
-  /**
-   * @param {number} status The plugin status.
-   * @param {number} error The plugin error status, if any.
-   */
-  this.plugin.onConnectionStatusUpdateHandler = function(status, error) {
-    that.connectionStatusUpdateCallback(status, error);
-  };
-  this.plugin.onDesktopSizeUpdateHandler = function() {
-    that.onDesktopSizeChanged_();
-  };
+  this.plugin.onConnectionStatusUpdateHandler =
+      this.connectionStatusUpdateCallback.bind(this);
+  this.plugin.onDesktopSizeUpdateHandler =
+      this.onDesktopSizeChanged_.bind(this);
 
   this.connectPluginToWcs_(oauth2AccessToken);
 };
@@ -410,6 +394,10 @@ remoting.ClientSession.prototype.sendCtrlAltDel = function() {
 remoting.ClientSession.prototype.setScaleToFit = function(scaleToFit) {
   this.scaleToFit = scaleToFit;
   this.updateDimensions();
+  // If enabling scaling, reset bump-scroll offsets.
+  if (scaleToFit) {
+    this.scroll_(0, 0);
+  }
 }
 
 /**
@@ -480,15 +468,15 @@ remoting.ClientSession.prototype.connectPluginToWcs_ =
     console.error('Tried to connect without a full JID.');
   }
   remoting.formatIq.setJids(this.clientJid, this.hostJid);
-  /** @type {remoting.ClientSession} */
-  var that = this;
+  var plugin = this.plugin;
+  var forwardIq = plugin.onIncomingIq.bind(plugin);
   /** @param {string} stanza The IQ stanza received. */
   var onIncomingIq = function(stanza) {
     console.log(remoting.formatIq.prettifyReceiveIq(stanza));
-    that.plugin.onIncomingIq(stanza);
+    forwardIq(stanza);
   }
   remoting.wcs.setOnIq(onIncomingIq);
-  that.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
+  this.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
                       this.sharedSecret, this.authenticationMethods,
                       this.authenticationTag);
 };
@@ -540,13 +528,11 @@ remoting.ClientSession.prototype.onResize = function() {
 
   // Defer notifying the host of the change until the window stops resizing, to
   // avoid overloading the control channel with notifications.
-  /** @type {remoting.ClientSession} */
-  var that = this;
-  var notifyClientDimensions = function() {
-    that.plugin.notifyClientDimensions(window.innerWidth, window.innerHeight);
-  }
-  this.notifyClientDimensionsTimer_ =
-      window.setTimeout(notifyClientDimensions, 1000);
+  this.notifyClientDimensionsTimer_ = window.setTimeout(
+      this.plugin.notifyClientDimensions.bind(this.plugin,
+                                              window.innerWidth,
+                                              window.innerHeight),
+      1000);
 
   // If bump-scrolling is enabled, adjust the plugin margins to fully utilize
   // the new window area.
@@ -727,12 +713,8 @@ remoting.ClientSession.prototype.scroll_ = function(dx, dy) {
  */
 remoting.ClientSession.prototype.enableBumpScroll_ = function(enable) {
   if (enable) {
-    /** @type {remoting.ClientSession} */
-    var that = this;
-    /** @param {Event} event */
-    this.onMouseMoveRef_ = function(event) {
-      that.onMouseMove_(event);
-    }
+    /** @type {null|function(Event):void} */
+    this.onMouseMoveRef_ = this.onMouseMove_.bind(this);
     this.plugin.element().addEventListener('mousemove', this.onMouseMoveRef_,
                                            false);
   } else {

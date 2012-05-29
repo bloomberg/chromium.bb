@@ -52,26 +52,15 @@ remoting.Wcs = function(wcsIqClient, token, onReady) {
    */
   this.clientFullJid_ = '';
 
-  /** @type {remoting.Wcs} */
-  var that = this;
+  var updateAccessToken = this.updateAccessToken_.bind(this);
+
   /**
    * A timer that polls for an updated access token.
    * @type {number}
    * @private
    */
   this.pollForUpdatedToken_ = setInterval(
-      function() {
-        /** @param {string?} token */
-        var updateAccessToken = function(token) {
-          if (token) {
-            that.updateAccessToken_(token);
-          } else {
-            console.error('pollForUpdatedToken: Authentication failed.');
-            // No need to update the token. The hanging GET will fail anyway.
-          }
-        }
-        remoting.oauth2.callWithToken(updateAccessToken);
-      },
+      function() { remoting.oauth2.callWithToken(updateAccessToken); },
       60 * 1000);
 
   /**
@@ -82,9 +71,7 @@ remoting.Wcs = function(wcsIqClient, token, onReady) {
   this.onIq_ = function(stanza) {};
 
   // Handle messages from the WcsIqClient.
-  /** @param {Array.<string>} msg An array of message strings. */
-  var onMessage = function(msg) { that.onMessage_(msg); };
-  this.wcsIqClient_.setOnMessage(onMessage);
+  this.wcsIqClient_.setOnMessage(this.onMessage_.bind(this));
 
   // Start the WcsIqClient.
   this.wcsIqClient_.connectChannel();
@@ -98,7 +85,10 @@ remoting.Wcs = function(wcsIqClient, token, onReady) {
  * @private
  */
 remoting.Wcs.prototype.updateAccessToken_ = function(tokenNew) {
-  if (tokenNew != this.token_) {
+  if (!tokenNew) {
+    console.error('updateAccessToken_: Authentication failed.');
+    // No need to update the token. The hanging GET will fail anyway.
+  } else if (tokenNew != this.token_) {
     this.token_ = tokenNew;
     this.wcsIqClient_.updateAccessToken(this.token_);
   }

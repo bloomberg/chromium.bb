@@ -85,7 +85,7 @@ remoting.MenuButton.select = function(item, selected) {
   } else {
     item.classList.remove('selected');
   }
-}
+};
 
 /** @const @private */
 remoting.MenuButton.BUTTON_ACTIVE_CLASS_ = 'active';

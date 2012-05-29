@@ -58,10 +58,7 @@ remoting.ClientPluginAsync = function(plugin) {
   this.plugin.addEventListener('message', function(event) {
       that.handleMessage_(event.data);
     }, false);
-  var showPluginForClickToPlay = function() {
-    that.showPluginForClickToPlay_();
-  };
-  window.setTimeout(showPluginForClickToPlay, 500);
+  window.setTimeout(this.showPluginForClickToPlay_.bind(this), 500);
 };
 
 /**

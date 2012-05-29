@@ -40,23 +40,18 @@ remoting.ClientPluginV1 = function(plugin) {
 
   // Connect event handlers.
 
-  /** @type {remoting.ClientPluginV1} */
-  var that = this;
-
   /** @param {string} iq The IQ stanza to send. */
-  this.plugin.sendIq = function(iq) { that.onSendIq_(iq); };
+  this.plugin.sendIq = this.onSendIq_.bind(this);
 
   /** @param {string} msg The message to log. */
-  this.plugin.debugInfo = function(msg) { that.onDebugInfo_(msg); };
+  this.plugin.debugInfo = this.onDebugInfo_.bind(this);
 
   /**
    * @param {number} status The plugin status.
    * @param {number} error The plugin error status, if any.
    */
-  this.plugin.connectionInfoUpdate = function(status, error) {
-    that.onConnectionInfoUpdate_(status, error);
-  };
-  this.plugin.desktopSizeUpdate = function() { that.onDesktopSizeUpdate_(); };
+  this.plugin.connectionInfoUpdate = this.onConnectionInfoUpdate_.bind(this);
+  this.plugin.desktopSizeUpdate = this.onDesktopSizeUpdate_.bind(this);
 };
 
 /**

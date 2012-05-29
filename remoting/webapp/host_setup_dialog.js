@@ -16,7 +16,6 @@ remoting.HostSetupFlow = function(sequence) {
   this.sequence_ = sequence;
   this.currentStep_ = 0;
   this.state_ = sequence[0];
-
   this.pin = '';
 };
 

@@ -84,12 +84,10 @@ remoting.HostList.prototype.getHostForId = function(hostId) {
  * @return {void} Nothing.
  */
 remoting.HostList.prototype.refresh = function(onDone) {
+  /** @param {XMLHttpRequest} xhr The response from the server. */
+  var parseHostListResponse = this.parseHostListResponse_.bind(this, onDone);
   /** @type {remoting.HostList} */
   var that = this;
-  /** @param {XMLHttpRequest} xhr The response from the server. */
-  var parseHostListResponse = function(xhr) {
-    that.parseHostListResponse_(xhr, onDone);
-  }
   /** @param {string?} token The OAuth2 token. */
   var getHosts = function(token) {
     if (token) {
@@ -114,12 +112,12 @@ remoting.HostList.prototype.refresh = function(onDone) {
  * include a JSON-encoded list of host descriptions, which we display if we're
  * able to successfully parse it.
  *
- * @param {XMLHttpRequest} xhr The XHR object for the host list request.
  * @param {function(boolean):void} onDone The callback passed to |refresh|.
+ * @param {XMLHttpRequest} xhr The XHR object for the host list request.
  * @return {void} Nothing.
  * @private
  */
-remoting.HostList.prototype.parseHostListResponse_ = function(xhr, onDone) {
+remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
   try {
     if (xhr.status == 200) {
       var response =
@@ -177,19 +175,6 @@ remoting.HostList.prototype.display = function(thisHostId) {
   this.errorDiv_.innerText = '';
   this.hostTableEntries_ = [];
 
-  /**
-   * @type {remoting.HostList}
-   */
-  var that = this;
-  /**
-   * @param {remoting.HostTableEntry} hostTableEntry The entry being renamed.
-   */
-  var onRename = function(hostTableEntry) { that.renameHost(hostTableEntry); }
-  /**
-   * @param {remoting.HostTableEntry} hostTableEntry The entry beign deleted.
-   */
-  var onDelete = function(hostTableEntry) { that.deleteHost_(hostTableEntry); }
-
   this.table_.hidden = (this.hosts_.length == 0);
 
   for (var i = 0; i < this.hosts_.length; ++i) {
@@ -201,7 +186,9 @@ remoting.HostList.prototype.display = function(thisHostId) {
     if (host.hostName && host.hostId && host.status && host.publicKey &&
         host.hostId != thisHostId) {
       var hostTableEntry = new remoting.HostTableEntry();
-      hostTableEntry.create(host, onRename, onDelete);
+      hostTableEntry.create(host,
+                            this.renameHost.bind(this),
+                            this.deleteHost_.bind(this));
       this.hostTableEntries_[i] = hostTableEntry;
       this.table_.appendChild(hostTableEntry.tableRow);
     }
