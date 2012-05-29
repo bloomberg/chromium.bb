@@ -887,7 +887,7 @@ input.rename {
 
 /* Text label in a table header. */
 .table-header-label {
-  margin: 5px 10px 0 10px;
+  margin: 5px 10px 0 9px;
 }
 
 .table-row-cell > * {
@@ -915,8 +915,8 @@ input.rename {
 }
 
 #select-all-checkbox {
-  -webkit-margin-end: 10px;
-  -webkit-margin-start: 0;
+  -webkit-margin-end: 11px;
+  -webkit-margin-start: 1px;
   margin-bottom: 0;
   margin-top: 0;
   /* 1px below text */
@@ -1098,7 +1098,8 @@ input.rename {
 
 /* Overriding input.common[type='checkbox'] rule in common.css. */
 .detail-name > input.common[type='checkbox'] {
-  -webkit-margin-end: 3px;
+  -webkit-margin-end: 4px;
+  -webkit-margin-start: -1px;
 }
 
 list .detail-name > .file-checkbox::before,
@@ -1107,10 +1108,10 @@ list .detail-name > .file-checkbox::before,
   content: '';
   display: -webkit-box;
   height: 38px;
-  left: -4px;
+  left: -8px;
   position: absolute;
+  right: -9px;
   top: -14px;
-  width: 17px;
 }
 
 .filename-input {
