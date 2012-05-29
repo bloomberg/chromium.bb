@@ -303,7 +303,7 @@ void WebMediaPlayerImpl::seek(float seconds) {
 
   seeking_ = true;
 
-  proxy_->DemuxerFlush();
+  proxy_->DemuxerStartWaitingForSeek();
 
   // Kick off the asynchronous seek!
   pipeline_->Seek(

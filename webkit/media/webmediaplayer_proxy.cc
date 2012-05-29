@@ -189,9 +189,9 @@ void WebMediaPlayerProxy::KeyNeeded(scoped_array<uint8> init_data,
       base::Passed(&init_data), init_data_size));
 }
 
-void WebMediaPlayerProxy::DemuxerFlush() {
+void WebMediaPlayerProxy::DemuxerStartWaitingForSeek() {
   if (chunk_demuxer_.get())
-    chunk_demuxer_->FlushData();
+    chunk_demuxer_->StartWaitingForSeek();
 }
 
 media::ChunkDemuxer::Status WebMediaPlayerProxy::DemuxerAddId(

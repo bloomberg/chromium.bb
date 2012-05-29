@@ -92,7 +92,7 @@ class WebMediaPlayerProxy
                          int init_data_size) OVERRIDE;
 
   // Methods for Demuxer communication.
-  void DemuxerFlush();
+  void DemuxerStartWaitingForSeek();
   media::ChunkDemuxer::Status DemuxerAddId(const std::string& id,
                                            const std::string& type,
                                            std::vector<std::string>& codecs);

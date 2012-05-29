@@ -5,24 +5,26 @@
 #ifndef MEDIA_FILTERS_SOURCE_BUFFER_H_
 #define MEDIA_FILTERS_SOURCE_BUFFER_H_
 
-#include "media/base/audio_decoder_config.h"
+#include "media/base/demuxer_stream.h"
 #include "media/base/stream_parser.h"
-#include "media/base/video_decoder_config.h"
+#include "media/filters/source_buffer_stream.h"
 
 namespace media {
 
-// SourceBuffer will store media segments and initialization segments that are
-// dynamically appended to a particular source ID, hand them to a StreamParser
-// to be parsed, and provide buffers to ChunkDemuxerStreams during playback.
+// SourceBuffer stores media segments and initialization segments that are
+// dynamically appended to a particular source ID, hands them to a StreamParser
+// to be parsed, and provides buffers to ChunkDemuxerStreams during playback.
 class MEDIA_EXPORT SourceBuffer {
  public:
+  typedef std::vector<std::pair<base::TimeDelta, base::TimeDelta> > Ranges;
+
   SourceBuffer();
   ~SourceBuffer();
 
   typedef base::Callback<void(bool, base::TimeDelta)> InitCB;
   typedef base::Callback<bool(const AudioDecoderConfig&,
                               const VideoDecoderConfig&)> NewConfigCB;
-  typedef base::Callback<bool(const StreamParser::BufferQueue&)> NewBuffersCB;
+  typedef base::Callback<bool()> NewBuffersCB;
   typedef base::Callback<bool(scoped_array<uint8>, int)> KeyNeededCB;
 
   void Init(scoped_ptr<StreamParser> parser,
@@ -32,14 +34,42 @@ class MEDIA_EXPORT SourceBuffer {
             const NewBuffersCB& video_cb,
             const KeyNeededCB& key_needed_cb);
 
-  // Add buffers to this source.  Incoming data will be parsed and then stored
-  // in SourceBufferStreams, which will handle ordering and overlap resolution.
-  // Returns true if data was successfully appended, false if the parse failed.
+  // Add buffers to this source.  Incoming data is parsed and stored in
+  // SourceBufferStreams, which handle ordering and overlap resolution.
+  // Returns true if parsing was successful.
   bool AppendData(const uint8* data, size_t length);
 
-  // Clears the data from this buffer.  Used during a seek to ensure the next
-  // buffers provided during a read are the buffers appended after the seek.
-  void Flush();
+  // Fills |out_buffer| with a new buffer from the SourceBufferStream indicated
+  // by |type|.
+  // Returns true if |out_buffer| is filled with a valid buffer, false if
+  // there is not enough data buffered to fulfill the request or if |type| is
+  // not a supported stream type.
+  bool Read(DemuxerStream::Type type,
+            scoped_refptr<StreamParserBuffer>* out_buffer);
+
+  // Seeks the SourceBufferStreams to a new |time|.
+  void Seek(base::TimeDelta time);
+
+  // Returns true if this SourceBuffer has seeked to a time without buffered
+  // data and is waiting for more data to be appended.
+  bool IsSeekPending() const;
+
+  // Resets StreamParser so it can accept a new segment.
+  void ResetParser();
+
+  // Fills |ranges_out| with the Ranges that are currently buffered.
+  // Returns false if no data is buffered.
+  bool GetBufferedRanges(Ranges* ranges_out) const;
+
+  // Notifies all the streams in this SourceBuffer that EndOfStream has been
+  // called so that they can return EOS buffers for reads requested after the
+  // last buffer in the stream.
+  // Returns false if called when there is a gap between the current position
+  // and the end of the buffered data.
+  bool EndOfStream();
+
+  const AudioDecoderConfig& GetCurrentAudioDecoderConfig();
+  const VideoDecoderConfig& GetCurrentVideoDecoderConfig();
 
  private:
   // StreamParser callbacks.
@@ -57,6 +87,9 @@ class MEDIA_EXPORT SourceBuffer {
   NewBuffersCB audio_cb_;
   NewBuffersCB video_cb_;
   KeyNeededCB key_needed_cb_;
+
+  scoped_ptr<SourceBufferStream> audio_;
+  scoped_ptr<SourceBufferStream> video_;
 
   DISALLOW_COPY_AND_ASSIGN(SourceBuffer);
 };
