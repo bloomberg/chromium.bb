@@ -3,6 +3,8 @@ client-test
 connection-test
 event-loop-test
 exec-fd-leak-checker
+fixed-benchmark
+fixed-test
 list-test
 map-test
 os-wrappers-test
