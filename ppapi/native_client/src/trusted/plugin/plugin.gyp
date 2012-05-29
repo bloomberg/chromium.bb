@@ -85,7 +85,6 @@
           'type': 'loadable_module',
           'sources': [
             '<@(common_sources)',
-            'browser_utils.cc',
           ],
           'xcode_settings': {
             'OTHER_LDFLAGS': [

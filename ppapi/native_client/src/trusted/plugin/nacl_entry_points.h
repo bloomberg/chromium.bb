@@ -23,11 +23,8 @@ typedef bool (*LaunchNaClProcessFunc)(PP_Instance instance,
 
 typedef bool (*StartPpapiProxyFunc)(PP_Instance instance);
 
-typedef int (*GetURandomFDFunc)(void);
-
 
 extern LaunchNaClProcessFunc launch_nacl_process;
 extern StartPpapiProxyFunc start_ppapi_proxy;
-extern GetURandomFDFunc get_urandom_fd;
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_ENTRY_POINTS_H_

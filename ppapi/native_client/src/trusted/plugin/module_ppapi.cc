@@ -13,8 +13,6 @@
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/module.h"
 
-GetURandomFDFunc get_urandom_fd;
-
 namespace plugin {
 
 class ModulePpapi : public pp::Module {
@@ -48,11 +46,12 @@ class ModulePpapi : public pp::Module {
 
     launch_nacl_process = reinterpret_cast<LaunchNaClProcessFunc>(
         private_interface_->LaunchSelLdr);
-    // TODO(mseaborn): Remove this get_urandom_fd global variable once
-    // the NaCl side no longer depends on it.
-    get_urandom_fd = private_interface_->UrandomFD;
 
 #if NACL_LINUX || NACL_OSX
+    // Note that currently we do not need random numbers inside the
+    // NaCl trusted plugin on Unix, but NaClSecureRngModuleInit() is
+    // strict and will raise a fatal error unless we provide it with a
+    // /dev/urandom FD beforehand.
     NaClSecureRngModuleSetUrandomFd(dup(private_interface_->UrandomFD()));
 #endif
 
