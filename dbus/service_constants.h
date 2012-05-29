@@ -703,6 +703,15 @@ const char kNetworksProperty[] = "Networks";
 const char kEAPAnonymousIdentity[] = "EAPAnonymousIdentity";
 const char kEAPUserIdentity[] = "EAPUserIdentity";
 const char kEAPUserPassword[] = "EAPUserPassword";
+
+enum DeviceStatus {
+  kDeviceStatusUninitialized,
+  kDeviceStatusDisabled,
+  kDeviceStatusReady,
+  kDeviceStatusScanning,
+  kDeviceStatusConnecting,
+  kDeviceStatusConnected
+};
 }  // namespace wimax_manager
 
 namespace bluetooth_common {
