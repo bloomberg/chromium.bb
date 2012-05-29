@@ -35,6 +35,9 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
   // invocation. |service.is_valid()| will be false otherwise.
   GURL service;
 
+  // Any suggested service url the client attached to the intent.
+  std::vector<GURL> suggestions;
+
   // String payload data.
   string16 unserialized_data;
 

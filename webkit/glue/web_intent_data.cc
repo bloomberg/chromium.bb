@@ -7,7 +7,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMessagePortChannel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+
+using WebKit::WebString;
+using WebKit::WebURL;
+using WebKit::WebVector;
 
 namespace webkit_glue {
 
@@ -26,10 +31,14 @@ WebIntentData::WebIntentData(const WebKit::WebIntent& intent)
       service(intent.service()),
       blob_length(0),
       data_type(SERIALIZED) {
-  WebKit::WebVector<WebKit::WebString> names = intent.extrasNames();
+  const WebVector<WebString>& names = intent.extrasNames();
   for (size_t i = 0; i < names.size(); ++i) {
     extra_data[names[i]] = intent.extrasValue(names[i]);
   }
+
+  const WebVector<WebURL>& clientSuggestions = intent.suggestions();
+  for (size_t i = 0; i < clientSuggestions.size(); ++i)
+    suggestions.push_back(clientSuggestions[i]);
 }
 
 WebIntentData::WebIntentData(const string16& action_in,
