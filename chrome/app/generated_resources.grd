@@ -1435,18 +1435,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Describes how to escape the url">
         Insert <ph name="SEARCH_TERMS_LITERAL">%s</ph> in the URL where the search terms should appear.
       </message>
-      <message name="IDS_SEARCH_ENGINES_EDITOR_NEW_BUTTON"
-               desc="Text of the new button in the search engines editor">
-        &amp;Add...
-      </message>
-      <message name="IDS_SEARCH_ENGINES_EDITOR_REMOVE_BUTTON"
-               desc="Text of the remove button in the search engines editor">
-        &amp;Remove
-      </message>
-      <message name="IDS_SEARCH_ENGINES_EDITOR_EDIT_BUTTON"
-               desc="Text of the edit button in the search engines editor">
-        Edit...
-      </message>
       <message name="IDS_SEARCH_ENGINES_EDITOR_MAKE_DEFAULT_BUTTON"
                desc="Text of the button that makes the selected endint the default search engine">
         Make default
