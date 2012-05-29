@@ -390,31 +390,22 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   }
   config.shared_secret = args[arg++].AsString();
 
-  // Older versions of the webapp do not supply the following two
-  // parameters.
-
-  // By default use V1 authentication.
-  config.use_v1_authenticator = true;
-  if (args.size() > arg) {
-    if (!args[arg].is_string()) {
-      *exception = Var("The authentication_methods must be a string.");
-      return Var();
-    }
-
-    if (!ChromotingInstance::ParseAuthMethods(
-            args[arg++].AsString(), &config)) {
-      *exception = Var("No valid authentication methods specified.");
-      return Var();
-    }
+  if (!args[arg].is_string()) {
+    *exception = Var("The authentication_methods must be a string.");
+    return Var();
   }
 
-  if (args.size() > arg) {
-    if (!args[arg].is_string()) {
-      *exception = Var("The authentication_tag must be a string.");
-      return Var();
-    }
-    config.authentication_tag = args[arg++].AsString();
+  if (!ChromotingInstance::ParseAuthMethods(
+          args[arg++].AsString(), &config)) {
+    *exception = Var("No valid authentication methods specified.");
+    return Var();
   }
+
+  if (!args[arg].is_string()) {
+    *exception = Var("The authentication_tag must be a string.");
+    return Var();
+  }
+  config.authentication_tag = args[arg++].AsString();
 
   if (args.size() != arg) {
     *exception = Var("Too many agruments passed to connect().");

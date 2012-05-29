@@ -6,8 +6,7 @@
 
 namespace remoting {
 
-ClientConfig::ClientConfig()
-    : use_v1_authenticator(false) {
+ClientConfig::ClientConfig() {
 }
 
 ClientConfig::~ClientConfig() {

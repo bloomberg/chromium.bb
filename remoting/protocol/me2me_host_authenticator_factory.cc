@@ -9,7 +9,6 @@
 #include "crypto/rsa_private_key.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/negotiating_authenticator.h"
-#include "remoting/protocol/v1_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace remoting {
@@ -88,16 +87,6 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
       !StartsWithASCII(remote_jid, local_jid.substr(0, slash_pos + 1), false)) {
     LOG(ERROR) << "Rejecting incoming connection from " << remote_jid;
     return scoped_ptr<Authenticator>(new RejectingAuthenticator());
-  }
-
-  if (shared_secret_hash_.hash_function == AuthenticationMethod::NONE &&
-      shared_secret_hash_.value.empty()) {
-    // PIN isn't set. Enable V1 authentication.
-    if (!NegotiatingAuthenticator::IsNegotiableMessage(first_message)) {
-      return scoped_ptr<Authenticator>(
-          new V1HostAuthenticator(local_cert_, *local_private_key_,
-                                  "", remote_jid));
-    }
   }
 
   return NegotiatingAuthenticator::CreateForHost(
