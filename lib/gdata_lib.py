@@ -265,6 +265,14 @@ class Issue(object):
     return comments
 
 
+class TrackerError(RuntimeError):
+  """Error class for tracker communication errors."""
+
+
+class TrackerInvalidUserError(TrackerError):
+  """Error class for when user not recognized by Tracker."""
+
+
 class TrackerComm(object):
   """Class to manage communication with Tracker."""
 
@@ -321,15 +329,20 @@ class TrackerComm(object):
 
   def CreateTrackerIssue(self, issue):
     """Create a new issue in Tracker according to |issue|."""
-    created = self.it_client.add_issue(project_name=self.project_name,
-                                       title=issue.title,
-                                       content=issue.summary,
-                                       author=self.author,
-                                       status=issue.status,
-                                       owner=issue.owner,
-                                       labels=issue.labels)
-    issue.id = int(created.id.text.split('/')[-1])
-    return issue.id
+    try:
+      created = self.it_client.add_issue(project_name=self.project_name,
+                                         title=issue.title,
+                                         content=issue.summary,
+                                         author=self.author,
+                                         status=issue.status,
+                                         owner=issue.owner,
+                                         labels=issue.labels)
+      issue.id = int(created.id.text.split('/')[-1])
+      return issue.id
+    except gdata.client.RequestError as ex:
+      if ex.body and ex.body.lower() == 'user not found':
+        raise TrackerInvalidUserError('Tracker user %s not found' % issue.owner)
+      raise
 
   def AppendTrackerIssueById(self, issue_id, comment):
     """Append |comment| to issue |issue_id| in Tracker"""

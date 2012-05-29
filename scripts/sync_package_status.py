@@ -304,7 +304,18 @@ class Syncer(object):
                    ' creation.  Error was:\n%s' % (rowIx, pkg, ex))
         raise SyncError
 
-      issue_id = self.tcomm.CreateTrackerIssue(issue)
+      try:
+        issue_id = self.tcomm.CreateTrackerIssue(issue)
+      except gdata_lib.TrackerInvalidUserError as ex:
+        oper.Warning('%s.  Ignoring owner field for issue %d, package %r.' %
+                     (ex, rowIx, pkg))
+        issue.summary += ('\n\nNote that the row for this package in'
+                          ' the spreadsheet at go/crospkgs has an "owner"\n'
+                          'value that is not a valid Tracker user: "%s".' %
+                          issue.owner)
+        issue.owner = None
+        issue_id = self.tcomm.CreateTrackerIssue(issue)
+
       oper.Info('Inserting new Tracker issue %d for package %s' %
                 (issue_id, pkg))
       ss_issue_val = self._GenSSLinkToIssue(issue_id)
