@@ -188,7 +188,8 @@ static const pixman_region32_data_t undef_region_data;
 static void
 undef_region(pixman_region32_t *region)
 {
-	pixman_region32_fini(region);
+	if (region->data != &undef_region_data)
+		pixman_region32_fini(region);
 	region->data = (pixman_region32_data_t *) &undef_region_data;
 }
 
