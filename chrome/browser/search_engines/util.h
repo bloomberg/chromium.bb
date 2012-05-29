@@ -13,6 +13,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 
 class Profile;
 class TemplateURL;
@@ -40,7 +41,7 @@ void GetSearchProvidersUsingKeywordResult(
     const WDTypedResult& result,
     WebDataService* service,
     Profile* profile,
-    std::vector<TemplateURL*>* template_urls,
+    TemplateURLService::TemplateURLVector* template_urls,
     TemplateURL** default_search_provider,
     int* new_resource_keyword_version,
     std::set<std::string>* removed_keyword_guids);
@@ -53,5 +54,17 @@ bool DidDefaultSearchProviderChange(
     const WDTypedResult& result,
     Profile* profile,
     scoped_ptr<TemplateURL>* backup_default_search_provider);
+
+// Removes (and deletes) TemplateURLs from |template_urls| and |service| if they
+// have duplicate prepopulate ids. If |removed_keyword_guids| is not NULL, the
+// Sync GUID of each item removed from the DB will be added to it. This is a
+// helper used by GetSearchProvidersUsingKeywordResult(), but is declared here
+// so it's accessible by unittests.
+void RemoveDuplicatePrepopulateIDs(
+    WebDataService* service,
+    const ScopedVector<TemplateURL>& prepopulated_urls,
+    TemplateURL* default_search_provider,
+    TemplateURLService::TemplateURLVector* template_urls,
+    std::set<std::string>* removed_keyword_guids);
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_UTIL_H_
