@@ -39,14 +39,14 @@ namespace aura {
 
 DispatcherLinux::DispatcherLinux()
     : x_root_window_(
-        DefaultRootWindow(base::MessagePumpX::GetDefaultXDisplay())) {
-  base::MessagePumpX::SetDefaultDispatcher(this);
+        DefaultRootWindow(base::MessagePumpAuraX11::GetDefaultXDisplay())) {
+  base::MessagePumpAuraX11::SetDefaultDispatcher(this);
   MessageLoopForUI::current()->AddObserver(this);
 }
 
 DispatcherLinux::~DispatcherLinux() {
   MessageLoopForUI::current()->RemoveObserver(this);
-  base::MessagePumpX::SetDefaultDispatcher(NULL);
+  base::MessagePumpAuraX11::SetDefaultDispatcher(NULL);
 }
 
 void DispatcherLinux::AddDispatcherForWindow(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_pump_x.h"
+#include "base/message_pump_aurax11.h"
 
 #include <X11/extensions/XInput2.h>
 
@@ -12,7 +12,7 @@
 namespace {
 
 gboolean XSourcePrepare(GSource* source, gint* timeout_ms) {
-  if (XPending(base::MessagePumpX::GetDefaultXDisplay()))
+  if (XPending(base::MessagePumpAuraX11::GetDefaultXDisplay()))
     *timeout_ms = 0;
   else
     *timeout_ms = -1;
@@ -20,13 +20,13 @@ gboolean XSourcePrepare(GSource* source, gint* timeout_ms) {
 }
 
 gboolean XSourceCheck(GSource* source) {
-  return XPending(base::MessagePumpX::GetDefaultXDisplay());
+  return XPending(base::MessagePumpAuraX11::GetDefaultXDisplay());
 }
 
 gboolean XSourceDispatch(GSource* source,
                          GSourceFunc unused_func,
                          gpointer data) {
-  base::MessagePumpX* pump = static_cast<base::MessagePumpX*>(data);
+  base::MessagePumpAuraX11* pump = static_cast<base::MessagePumpAuraX11*>(data);
   return pump->DispatchXEvents();
 }
 
@@ -45,7 +45,7 @@ Display* g_xdisplay = NULL;
 base::MessagePumpDispatcher* g_default_dispatcher = NULL;
 
 bool InitializeXInput2Internal() {
-  Display* display = base::MessagePumpX::GetDefaultXDisplay();
+  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
   if (!display)
     return false;
 
@@ -87,31 +87,32 @@ bool InitializeXInput2() {
 
 namespace base {
 
-MessagePumpX::MessagePumpX() : MessagePumpGlib(),
+MessagePumpAuraX11::MessagePumpAuraX11() : MessagePumpGlib(),
     x_source_(NULL) {
   InitializeXInput2();
   InitXSource();
 }
 
 // static
-Display* MessagePumpX::GetDefaultXDisplay() {
+Display* MessagePumpAuraX11::GetDefaultXDisplay() {
   if (!g_xdisplay)
     g_xdisplay = XOpenDisplay(NULL);
   return g_xdisplay;
 }
 
 // static
-bool MessagePumpX::HasXInput2() {
+bool MessagePumpAuraX11::HasXInput2() {
   return InitializeXInput2();
 }
 
 // static
-void MessagePumpX::SetDefaultDispatcher(MessagePumpDispatcher* dispatcher) {
+void MessagePumpAuraX11::SetDefaultDispatcher(
+    MessagePumpDispatcher* dispatcher) {
   DCHECK(!g_default_dispatcher || !dispatcher);
   g_default_dispatcher = dispatcher;
 }
 
-gboolean MessagePumpX::DispatchXEvents() {
+gboolean MessagePumpAuraX11::DispatchXEvents() {
   Display* display = GetDefaultXDisplay();
   DCHECK(display);
   MessagePumpDispatcher* dispatcher =
@@ -128,14 +129,14 @@ gboolean MessagePumpX::DispatchXEvents() {
   return TRUE;
 }
 
-MessagePumpX::~MessagePumpX() {
+MessagePumpAuraX11::~MessagePumpAuraX11() {
   g_source_destroy(x_source_);
   g_source_unref(x_source_);
   XCloseDisplay(g_xdisplay);
   g_xdisplay = NULL;
 }
 
-void MessagePumpX::InitXSource() {
+void MessagePumpAuraX11::InitXSource() {
   // CHECKs are to help track down crbug.com/113106.
   CHECK(!x_source_);
   Display* display = GetDefaultXDisplay();
@@ -152,8 +153,8 @@ void MessagePumpX::InitXSource() {
   g_source_attach(x_source_, g_main_context_default());
 }
 
-bool MessagePumpX::ProcessXEvent(MessagePumpDispatcher* dispatcher,
-                                 XEvent* xev) {
+bool MessagePumpAuraX11::ProcessXEvent(MessagePumpDispatcher* dispatcher,
+                                       XEvent* xev) {
   bool should_quit = false;
 
   bool have_cookie = false;
@@ -177,7 +178,7 @@ bool MessagePumpX::ProcessXEvent(MessagePumpDispatcher* dispatcher,
   return should_quit;
 }
 
-bool MessagePumpX::WillProcessXEvent(XEvent* xevent) {
+bool MessagePumpAuraX11::WillProcessXEvent(XEvent* xevent) {
   if (!observers().might_have_observers())
     return false;
   ObserverListBase<MessagePumpObserver>::Iterator it(observers());
@@ -189,7 +190,7 @@ bool MessagePumpX::WillProcessXEvent(XEvent* xevent) {
   return false;
 }
 
-void MessagePumpX::DidProcessXEvent(XEvent* xevent) {
+void MessagePumpAuraX11::DidProcessXEvent(XEvent* xevent) {
   FOR_EACH_OBSERVER(MessagePumpObserver, observers(), DidProcessEvent(xevent));
 }
 

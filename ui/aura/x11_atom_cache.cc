@@ -6,8 +6,8 @@
 
 #include <X11/Xatom.h>
 
+#include "base/message_pump_aurax11.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_pump_x.h"
 
 namespace aura {
 
@@ -20,7 +20,7 @@ X11AtomCache::X11AtomCache(Display* xdisplay, const char** to_cache)
   scoped_array< ::Atom> cached_atoms(new ::Atom[cache_count]);
 
   // Grab all the atoms we need now to minimize roundtrips to the X11 server.
-  XInternAtoms(base::MessagePumpX::GetDefaultXDisplay(),
+  XInternAtoms(base::MessagePumpAuraX11::GetDefaultXDisplay(),
                const_cast<char**>(to_cache), cache_count, False,
                cached_atoms.get());
 

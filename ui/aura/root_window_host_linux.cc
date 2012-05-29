@@ -13,7 +13,7 @@
 #include <X11/extensions/Xrandr.h>
 #include <algorithm>
 
-#include "base/message_pump_x.h"
+#include "base/message_pump_aurax11.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "grit/ui_resources_standard.h"
@@ -392,7 +392,7 @@ class RootWindowHostLinux::ImageCursors {
 
 RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
     : root_window_(NULL),
-      xdisplay_(base::MessagePumpX::GetDefaultXDisplay()),
+      xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       current_cursor_(ui::kCursorNull),
@@ -962,7 +962,7 @@ RootWindowHost* RootWindowHost::GetForAcceleratedWidget(
 
 // static
 gfx::Size RootWindowHost::GetNativeScreenSize() {
-  ::Display* xdisplay = base::MessagePumpX::GetDefaultXDisplay();
+  ::Display* xdisplay = base::MessagePumpAuraX11::GetDefaultXDisplay();
   return gfx::Size(DisplayWidth(xdisplay, 0), DisplayHeight(xdisplay, 0));
 }
 

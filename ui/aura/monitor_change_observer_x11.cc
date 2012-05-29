@@ -11,7 +11,7 @@
 
 #include <X11/extensions/Xrandr.h>
 
-#include "base/message_pump_x.h"
+#include "base/message_pump_aurax11.h"
 #include "ui/aura/env.h"
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/monitor_manager.h"
@@ -46,7 +46,7 @@ bool CompareMonitorY(const gfx::Monitor& lhs, const gfx::Monitor& rhs) {
 }  // namespace
 
 MonitorChangeObserverX11::MonitorChangeObserverX11()
-    : xdisplay_(base::MessagePumpX::GetDefaultXDisplay()),
+    : xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       xrandr_event_base_(0) {
   XRRSelectInput(xdisplay_, x_root_window_, RRScreenChangeNotifyMask);

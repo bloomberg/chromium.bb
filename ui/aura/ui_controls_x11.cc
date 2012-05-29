@@ -11,7 +11,7 @@
 #endif
 
 #include "base/logging.h"
-#include "base/message_pump_x.h"
+#include "base/message_pump_aurax11.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/ui_controls_aura.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
@@ -65,7 +65,7 @@ int g_current_y = -1000;
 
 // Returns atom that indidates that the XEvent is marker event.
 Atom MarkerEventAtom() {
-  return XInternAtom(base::MessagePumpX::GetDefaultXDisplay(),
+  return XInternAtom(base::MessagePumpAuraX11::GetDefaultXDisplay(),
                      "marker_event",
                      False);
 }
@@ -108,7 +108,7 @@ class UIControlsX11 : public ui_controls::UIControlsAura {
     if (alt)
       SetKeycodeAndSendThenMask(&xevent, XK_Alt_L, Mod1Mask);
     xevent.xkey.keycode =
-        XKeysymToKeycode(base::MessagePumpX::GetDefaultXDisplay(),
+        XKeysymToKeycode(base::MessagePumpAuraX11::GetDefaultXDisplay(),
                          ui::XKeysymForWindowsKeyCode(key, shift));
     root_window_->PostNativeEvent(&xevent);
 
@@ -209,7 +209,7 @@ class UIControlsX11 : public ui_controls::UIControlsAura {
                                  KeySym keysym,
                                  unsigned int mask) {
     xevent->xkey.keycode =
-        XKeysymToKeycode(base::MessagePumpX::GetDefaultXDisplay(),
+        XKeysymToKeycode(base::MessagePumpAuraX11::GetDefaultXDisplay(),
                          keysym);
     root_window_->PostNativeEvent(xevent);
     xevent->xkey.state |= mask;
@@ -220,7 +220,7 @@ class UIControlsX11 : public ui_controls::UIControlsAura {
                                    KeySym keysym) {
     xevent->xkey.state ^= mask;
     xevent->xkey.keycode =
-        XKeysymToKeycode(base::MessagePumpX::GetDefaultXDisplay(),
+        XKeysymToKeycode(base::MessagePumpAuraX11::GetDefaultXDisplay(),
                          keysym);
     root_window_->PostNativeEvent(xevent);
   }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_PUMP_X_H
-#define BASE_MESSAGE_PUMP_X_H
+#ifndef BASE_MESSAGE_PUMP_AURAX11_H
+#define BASE_MESSAGE_PUMP_AURAX11_H
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_pump.h"
@@ -20,9 +20,9 @@ typedef struct _XDisplay Display;
 namespace base {
 
 // This class implements a message-pump for dispatching X events.
-class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
+class BASE_EXPORT MessagePumpAuraX11 : public MessagePumpGlib {
  public:
-  MessagePumpX();
+  MessagePumpAuraX11();
 
   // Returns default X Display.
   static Display* GetDefaultXDisplay();
@@ -38,7 +38,7 @@ class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
   gboolean DispatchXEvents();
 
  protected:
-  virtual ~MessagePumpX();
+  virtual ~MessagePumpAuraX11();
 
  private:
   // Initializes the glib event source for X.
@@ -60,11 +60,11 @@ class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
   // The poll attached to |x_source_|.
   scoped_ptr<GPollFD> x_poll_;
 
-  DISALLOW_COPY_AND_ASSIGN(MessagePumpX);
+  DISALLOW_COPY_AND_ASSIGN(MessagePumpAuraX11);
 };
 
-typedef MessagePumpX MessagePumpForUI;
+typedef MessagePumpAuraX11 MessagePumpForUI;
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_PUMP_X_H
+#endif  // BASE_MESSAGE_PUMP_AURAX11_H

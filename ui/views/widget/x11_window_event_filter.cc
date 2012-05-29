@@ -7,7 +7,7 @@
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
 
-#include "base/message_pump_x.h"
+#include "base/message_pump_aurax11.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
@@ -55,7 +55,7 @@ namespace views {
 
 X11WindowEventFilter::X11WindowEventFilter(aura::RootWindow* root_window)
     : root_window_(root_window),
-      xdisplay_(base::MessagePumpX::GetDefaultXDisplay()),
+      xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       xwindow_(root_window_->GetAcceleratedWidget()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache) {
@@ -70,7 +70,7 @@ void X11WindowEventFilter::SetUseHostWindowBorders(bool use_os_border) {
   motif_hints.decorations = use_os_border ? 1 : 0;
 
   ::Atom hint_atom = atom_cache_.GetAtom("_MOTIF_WM_HINTS");
-  XChangeProperty(base::MessagePumpX::GetDefaultXDisplay(),
+  XChangeProperty(base::MessagePumpAuraX11::GetDefaultXDisplay(),
                   xwindow_,
                   hint_atom,
                   hint_atom,

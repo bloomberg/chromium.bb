@@ -35,7 +35,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 
 #if defined(USE_X11)
-#include "base/message_pump_x.h"
+#include "base/message_pump_aurax11.h"
 #endif
 
 using base::TimeTicks;

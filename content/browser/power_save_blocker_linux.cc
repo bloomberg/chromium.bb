@@ -25,7 +25,7 @@
 #if defined(TOOLKIT_GTK)
 #include "base/message_pump_gtk.h"
 #else
-#include "base/message_pump_x.h"
+#include "base/message_pump_aurax11.h"
 #endif
 #include "base/nix/xdg_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -481,11 +481,7 @@ DBusPowerSaveBlocker::~DBusPowerSaveBlocker() {
 
 // static
 bool DBusPowerSaveBlocker::DPMSEnabled() {
-#if defined(TOOLKIT_GTK)
-  Display* display = base::MessagePumpGtk::GetDefaultXDisplay();
-#else
-  Display* display = base::MessagePumpX::GetDefaultXDisplay();
-#endif
+  Display* display = base::MessagePumpForUI::GetDefaultXDisplay();
   BOOL enabled = false;
   int dummy;
   if (DPMSQueryExtension(display, &dummy, &dummy) && DPMSCapable(display)) {
