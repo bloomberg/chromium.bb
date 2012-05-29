@@ -45,7 +45,6 @@ class WebIntentPickerController : public content::NotificationObserver,
                                   public WebIntentPickerDelegate,
                                   public WebstoreInstaller::Delegate {
  public:
-  // Takes ownership of |factory|.
   explicit WebIntentPickerController(TabContentsWrapper* wrapper);
   virtual ~WebIntentPickerController();
 
