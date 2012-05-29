@@ -541,7 +541,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     // Closing another panel while dragging in progress will keep the dragging
     // panel intact.
     // We have:  P1*  P4  P3
-    CloseWindowAndWait(panel2->browser());
+    CloseWindowAndWait(panel2);
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
@@ -596,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     // Closing another panel while dragging in progress will keep the dragging
     // panel intact.
     // We have:  P1*  P4
-    CloseWindowAndWait(panel3->browser());
+    CloseWindowAndWait(panel3);
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
@@ -644,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
 
     // Closing the dragging panel should end the drag.
     // We have:  P4
-    CloseWindowAndWait(panel1->browser());
+    CloseWindowAndWait(panel1);
     EXPECT_FALSE(drag_controller->IsDragging());
 
     ASSERT_EQ(1, docked_strip->num_panels());
@@ -744,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
 
     // Closing another panel while dragging in progress will keep the dragging
     // panel intact.
-    CloseWindowAndWait(panel2->browser());
+    CloseWindowAndWait(panel2);
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
@@ -791,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
 
     // Closing another panel while dragging in progress will keep the dragging
     // panel intact.
-    CloseWindowAndWait(panel3->browser());
+    CloseWindowAndWait(panel3);
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
@@ -830,7 +830,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
 
     // Closing the dragging panel should end the drag.
-    CloseWindowAndWait(panel1->browser());
+    CloseWindowAndWait(panel1);
     EXPECT_FALSE(drag_controller->IsDragging());
 
     ASSERT_EQ(1, detached_strip->num_panels());

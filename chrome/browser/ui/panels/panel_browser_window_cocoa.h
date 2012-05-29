@@ -88,7 +88,6 @@ class PanelBrowserWindowCocoa : public NativePanel,
                        const content::NotificationDetails& details) OVERRIDE;
 
   Panel* panel() { return panel_.get(); }
-  Browser* browser() const { return browser_.get(); }
 
   // Callback from PanelWindowControllerCocoa that native window was actually
   // closed. The window may not close right away because of onbeforeunload

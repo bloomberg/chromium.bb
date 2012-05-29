@@ -233,7 +233,7 @@ void PanelBrowserWindowGtk::SaveWindowPosition() {
 void PanelBrowserWindowGtk::SetGeometryHints() {
   // Set minimum height the window can be set to.
   GdkGeometry hints;
-  hints.min_height = Panel::kMinimizedPanelHeight;
+  hints.min_height = panel::kMinimizedPanelHeight;
   hints.min_width = kMinWindowWidth;
   gtk_window_set_geometry_hints(
       window(), GTK_WIDGET(window()), &hints, GDK_HINT_MIN_SIZE);
@@ -292,7 +292,7 @@ const gfx::Image* PanelBrowserWindowGtk::GetThemeFrameImage() const {
     return GetAttentionBackgroundImage();
 
   GtkThemeService* theme_provider = GtkThemeService::GetFrom(
-      browser()->profile());
+      GetPanelBrowser()->profile());
   if (theme_provider->UsingDefaultTheme()) {
     // We choose to use the window frame theme to paint panels for the default
     // theme. This is because the default tab theme does not work well for the
@@ -399,7 +399,7 @@ void PanelBrowserWindowGtk::ActivatePanel() {
 
 void PanelBrowserWindowGtk::DeactivatePanel() {
   BrowserWindow* browser_window =
-      panel_->manager()->GetNextBrowserWindowToActivate(panel_.get());
+      panel_->manager()->GetNextBrowserWindowToActivate(GetPanelBrowser());
   if (browser_window) {
     browser_window->Activate();
   } else {

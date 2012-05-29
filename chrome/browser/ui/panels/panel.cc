@@ -21,13 +21,12 @@
 #include "ui/gfx/rect.h"
 
 using content::RenderViewHost;
-using content::WebContents;
 
-Panel::Panel(Browser* browser, const gfx::Size& requested_size)
-    : browser_(browser),
-      panel_strip_(NULL),
+Panel::Panel(const gfx::Size& min_size, const gfx::Size& max_size)
+    : panel_strip_(NULL),
       initialized_(false),
-      full_size_(requested_size),
+      min_size_(min_size),
+      max_size_(max_size),
       max_size_policy_(DEFAULT_MAX_SIZE),
       auto_resizable_(false),
       always_on_top_(false),
@@ -41,15 +40,16 @@ Panel::~Panel() {
   // Invoked by native panel destructor. Do not access native_panel_ here.
 }
 
-void Panel::Initialize(const gfx::Rect& bounds) {
+void Panel::Initialize(const gfx::Rect& bounds, Browser* browser) {
   DCHECK(!initialized_);
+  DCHECK(!panel_strip_);  // Cannot be added to a strip until fully created.
+  DCHECK_EQ(EXPANDED, expansion_state_);
   DCHECK(!bounds.IsEmpty());
   initialized_ = true;
-  native_panel_ = CreateNativePanel(browser_, this, bounds);
+  full_size_ = bounds.size();
+  native_panel_ = CreateNativePanel(browser, this, bounds);
   panel_browser_window_.reset(
-      new PanelBrowserWindow(browser_, this, native_panel_));
-  if (panel_strip_ != NULL)
-    native_panel_->PreventActivationByOS(panel_strip_->IsPanelMinimized(this));
+      new PanelBrowserWindow(browser, this, native_panel_));
 }
 
 void Panel::OnNativePanelClosed() {
@@ -61,8 +61,16 @@ PanelManager* Panel::manager() const {
   return PanelManager::GetInstance();
 }
 
+Browser* Panel::browser() const {
+  return native_panel_->GetPanelBrowser();
+}
+
 BrowserWindow* Panel::browser_window() const {
   return panel_browser_window_.get();
+}
+
+content::WebContents* Panel::WebContents() const {
+  return native_panel_->GetPanelBrowser()->GetSelectedWebContents();
 }
 
 bool Panel::CanMinimize() const {
@@ -124,7 +132,7 @@ void Panel::SetAutoResizable(bool resizable) {
     return;
 
   auto_resizable_ = resizable;
-  WebContents* web_contents = browser()->GetSelectedWebContents();
+  content::WebContents* web_contents = WebContents();
   if (auto_resizable_) {
     if (web_contents)
       EnableWebContentsAutoResize(web_contents);
@@ -149,7 +157,7 @@ void Panel::SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size) {
   min_size_ = min_size;
   max_size_ = max_size;
 
-  ConfigureAutoResize(browser()->GetSelectedWebContents());
+  ConfigureAutoResize(WebContents());
 }
 
 void Panel::IncreaseMaxSize(const gfx::Size& desired_panel_size) {
@@ -353,7 +361,7 @@ void Panel::OnWindowResizedByMouse(const gfx::Rect& new_bounds) {
     panel_strip_->OnPanelResizedByMouse(this, new_bounds);
 }
 
-void Panel::EnableWebContentsAutoResize(WebContents* web_contents) {
+void Panel::EnableWebContentsAutoResize(content::WebContents* web_contents) {
   DCHECK(web_contents);
   ConfigureAutoResize(web_contents);
 
@@ -363,14 +371,14 @@ void Panel::EnableWebContentsAutoResize(WebContents* web_contents) {
   registrar_.Add(
       this,
       content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
-      content::Source<WebContents>(web_contents));
+      content::Source<content::WebContents>(web_contents));
 }
 
 void Panel::Observe(int type,
                     const content::NotificationSource& source,
                     const content::NotificationDetails& details) {
   DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_SWAPPED, type);
-  ConfigureAutoResize(content::Source<WebContents>(source).ptr());
+  ConfigureAutoResize(content::Source<content::WebContents>(source).ptr());
 }
 
 void Panel::OnActiveStateChanged(bool active) {
@@ -392,7 +400,7 @@ void Panel::OnActiveStateChanged(bool active) {
       content::NotificationService::NoDetails());
 }
 
-void Panel::ConfigureAutoResize(WebContents* web_contents) {
+void Panel::ConfigureAutoResize(content::WebContents* web_contents) {
   if (!auto_resizable_ || !web_contents)
     return;
 
@@ -407,7 +415,7 @@ void Panel::ConfigureAutoResize(WebContents* web_contents) {
 }
 
 void Panel::OnWindowSizeAvailable() {
-  ConfigureAutoResize(browser()->GetSelectedWebContents());
+  ConfigureAutoResize(WebContents());
 }
 
 void Panel::OnTitlebarClicked(panel::ClickModifier modifier) {

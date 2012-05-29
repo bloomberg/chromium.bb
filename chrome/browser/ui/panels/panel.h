@@ -57,13 +57,14 @@ class Panel : public BaseWindow,
     USE_SYSTEM_ATTENTION = 0x02
   };
 
-  // The panel can be minimized to 4-pixel lines.
-  static const int kMinimizedPanelHeight = 4;
-
   virtual ~Panel();
 
   // Returns the PanelManager associated with this panel.
   PanelManager* manager() const;
+
+  // Returns web contents of the panel, if any. There may be none if web
+  // contents have not been added to the panel yet.
+  content::WebContents* WebContents() const;
 
   void SetExpansionState(ExpansionState new_expansion_state);
 
@@ -132,8 +133,9 @@ class Panel : public BaseWindow,
   // Asynchronous completion of panel close request.
   void OnNativePanelClosed();
 
-  NativePanel* native_panel() { return native_panel_; }
-  Browser* browser() const { return browser_; }
+  // Legacy accessors.
+  Browser* browser() const;
+  NativePanel* native_panel() const { return native_panel_; }
   BrowserWindow* browser_window() const;
 
   // May be NULL if:
@@ -167,7 +169,7 @@ class Panel : public BaseWindow,
   // Panel must be initialized to be "fully created" and ready for use.
   // Only called by PanelManager.
   bool initialized() const { return initialized_; }
-  void Initialize(const gfx::Rect& bounds);
+  void Initialize(const gfx::Rect& bounds, Browser* browser);
 
   // This is different from BrowserWindow::SetBounds():
   // * SetPanelBounds() is only called by PanelManager to manage its position.
@@ -239,7 +241,6 @@ class Panel : public BaseWindow,
  private:
   friend class PanelManager;
   friend class PanelBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserTest, RestoredBounds);
 
   enum MaxSizePolicy {
     // Default maximum size is proportional to the work area.
@@ -249,14 +250,10 @@ class Panel : public BaseWindow,
   };
 
   // Panel can only be created using PanelManager::CreatePanel().
-  // |requested_size| is the desired size for the panel, but actual
-  // size may differ after panel layout.
-  Panel(Browser* browser, const gfx::Size& requested_size);
+  explicit Panel(const gfx::Size& min_size, const gfx::Size& max_size);
 
   // Configures the renderer for auto resize (if auto resize is enabled).
   void ConfigureAutoResize(content::WebContents* web_contents);
-
-  Browser* browser_;  // Weak, owned by native panel.
 
   // A BrowserWindow for the browser to interact with.
   scoped_ptr<PanelBrowserWindow> panel_browser_window_;

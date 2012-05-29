@@ -443,12 +443,13 @@ enum {
 }
 
 - (ui::ThemeProvider*)themeProvider {
-  return ThemeServiceFactory::GetForProfile(windowShim_->browser()->profile());
+  return ThemeServiceFactory::GetForProfile(
+      windowShim_->GetPanelBrowser()->profile());
 }
 
 - (ThemedWindowStyle)themedWindowStyle {
   ThemedWindowStyle style = THEMED_POPUP;
-  if (windowShim_->browser()->profile()->IsOffTheRecord())
+  if (windowShim_->GetPanelBrowser()->profile()->IsOffTheRecord())
     style |= THEMED_INCOGNITO;
   return style;
 }
@@ -547,7 +548,7 @@ enum {
 
 - (void)updateTitleBar {
   NSString* newTitle = base::SysUTF16ToNSString(
-      windowShim_->browser()->GetWindowTitleForCurrentTab());
+      windowShim_->GetPanelBrowser()->GetWindowTitleForCurrentTab());
   pendingWindowTitle_.reset(
       [BrowserWindowUtils scheduleReplaceOldTitle:pendingWindowTitle_.get()
                                      withNewTitle:newTitle
@@ -570,7 +571,7 @@ enum {
                                                   image:iconImage];
   } else {
     NSImage* iconImage = mac::FaviconForTabContents(
-        windowShim_->browser()->GetSelectedTabContentsWrapper());
+        windowShim_->GetPanelBrowser()->GetSelectedTabContentsWrapper());
     if (!iconImage)
       iconImage = gfx::GetCachedImageWithName(@"nav.pdf");
     NSImageView* iconView =
@@ -635,7 +636,8 @@ enum {
   if (action == @selector(commandDispatch:) ||
       action == @selector(commandDispatchUsingKeyModifiers:)) {
     NSInteger tag = [item tag];
-    CommandUpdater* command_updater = windowShim_->browser()->command_updater();
+    CommandUpdater* command_updater =
+        windowShim_->GetPanelBrowser()->command_updater();
     if (command_updater->SupportsCommand(tag)) {
       enable = command_updater->IsCommandEnabled(tag);
       // Disable commands that do not apply to Panels.
@@ -667,7 +669,7 @@ enum {
 // disabled in the UI in validateUserInterfaceItem:.
 - (void)commandDispatch:(id)sender {
   DCHECK(sender);
-  windowShim_->browser()->ExecuteCommand([sender tag]);
+  windowShim_->GetPanelBrowser()->ExecuteCommand([sender tag]);
 }
 
 // Same as |-commandDispatch:|, but executes commands using a disposition
@@ -678,12 +680,12 @@ enum {
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEventWithFlags(
           event, [event modifierFlags]);
-  windowShim_->browser()->ExecuteCommandWithDisposition(
+  windowShim_->GetPanelBrowser()->ExecuteCommandWithDisposition(
       [sender tag], disposition);
 }
 
 - (void)executeCommand:(int)command {
-  windowShim_->browser()->ExecuteCommandIfEnabled(command);
+  windowShim_->GetPanelBrowser()->ExecuteCommandIfEnabled(command);
 }
 
 // Handler for the custom Close button.
@@ -714,7 +716,7 @@ enum {
 // finally ready.
 // This callback is only called if the standard Close button is enabled in XIB.
 - (BOOL)windowShouldClose:(id)sender {
-  Browser* browser = windowShim_->browser();
+  Browser* browser = windowShim_->GetPanelBrowser();
   // Give beforeunload handlers the chance to cancel the close before we hide
   // the window below.
   if (!browser->ShouldCloseWindow())
@@ -739,7 +741,7 @@ enum {
 // When windowShouldClose returns YES (or if controller receives direct 'close'
 // signal), window will be unconditionally closed. Clean up.
 - (void)windowWillClose:(NSNotification*)notification {
-  DCHECK(windowShim_->browser()->tab_strip_model()->empty());
+  DCHECK(windowShim_->GetPanelBrowser()->tab_strip_model()->empty());
   // Avoid callbacks from a nonblocking animation in progress, if any.
   [self terminateBoundsAnimation];
   windowShim_->DidCloseNativeWindow();
@@ -899,7 +901,7 @@ enum {
 // whether it's refactoring more things into BrowserWindowUtils or making a
 // common base controller for browser windows.
 - (void)windowDidBecomeKey:(NSNotification*)notification {
-  BrowserList::SetLastActive(windowShim_->browser());
+  BrowserList::SetLastActive(windowShim_->GetPanelBrowser());
 
   // We need to activate the controls (in the "WebView"). To do this, get the
   // selected WebContents's RenderWidgetHostView and tell it to activate.
@@ -936,7 +938,7 @@ enum {
     return;
   BrowserWindow* browser_window =
       windowShim_->panel()->manager()->GetNextBrowserWindowToActivate(
-          windowShim_->panel());
+          windowShim_->GetPanelBrowser());
 
   if (browser_window)
     browser_window->Activate();

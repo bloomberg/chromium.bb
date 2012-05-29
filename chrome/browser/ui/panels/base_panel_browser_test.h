@@ -100,7 +100,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   void MoveMouseAndWaitForExpansionStateChange(Panel* panel,
                                                const gfx::Point& position);
   static void MoveMouse(const gfx::Point& position);
-  void CloseWindowAndWait(Browser* browser);
+  void CloseWindowAndWait(Panel* panel);
   static std::string MakePanelName(int index);
 
   // |primary_screen_area| must contain |work_area|. If empty rect is passed

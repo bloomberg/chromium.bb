@@ -80,7 +80,7 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   // Returns the next browser window which could be either panel window or
   // tabbed window, to switch to if the given panel is going to be deactivated.
   // Returns NULL if such window cannot be found.
-  BrowserWindow* GetNextBrowserWindowToActivate(Panel* panel) const;
+  BrowserWindow* GetNextBrowserWindowToActivate(Browser* current_browser) const;
 
   int num_panels() const;
   std::vector<Panel*> panels() const;

@@ -87,6 +87,10 @@ class DockedPanelStrip : public PanelStrip,
   // Brings up or down the titlebars for all minimized panels.
   void BringUpOrDownTitlebars(bool bring_up);
 
+  // Compute default bounds for a panel of |full_size| that would be used
+  // when adding the panel to the collection.
+  gfx::Point GetDefaultPositionForPanel(const gfx::Size& full_size) const;
+
   // Returns the bottom position for the panel per its expansion state. If auto-
   // hide bottom bar is present, we want to move the minimized panel to the
   // bottom of the screen, not the bottom of the work area.
@@ -140,12 +144,6 @@ class DockedPanelStrip : public PanelStrip,
   virtual void OnAutoHidingDesktopBarVisibilityChanged(
       DisplaySettingsProvider::DesktopBarAlignment alignment,
       DisplaySettingsProvider::DesktopBarVisibility visibility) OVERRIDE;
-
-  // Helper methods to put the panel to the collection.
-  gfx::Point GetDefaultPositionForPanel(const gfx::Size& full_size) const;
-  void InsertNewlyCreatedPanel(Panel* panel);
-  void InsertExistingPanelAtKnownPosition(Panel* panel);
-  void InsertExistingPanelAtDefaultPosition(Panel* panel);
 
   // Schedules a layout refresh with a short delay to avoid too much flicker.
   void ScheduleLayoutRefresh();
@@ -201,12 +199,6 @@ class DockedPanelStrip : public PanelStrip,
   PanelPlacement saved_panel_placement_;
 
   static const int kPanelsHorizontalSpacing = 4;
-
-  // Absolute minimum width and height for panels, including non-client area.
-  // Should only be big enough to accomodate a close button on the reasonably
-  // recognisable titlebar.
-  static const int kPanelMinWidth;
-  static const int kPanelMinHeight;
 
   DISALLOW_COPY_AND_ASSIGN(DockedPanelStrip);
 };

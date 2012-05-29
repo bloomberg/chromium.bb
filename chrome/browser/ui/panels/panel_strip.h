@@ -29,8 +29,12 @@ class PanelStrip {
     DEFAULT_POSITION = 0x0,
     // The panel is being added based on its current known position.
     KNOWN_POSITION = 0x1,
-    // Do not update panel bounds. Only valid with DEFAULT_POSITION.
-    DO_NOT_UPDATE_BOUNDS = 0x2
+    // Do not update panel bounds. Only valid with DEFAULT_POSIITON.
+    DO_NOT_UPDATE_BOUNDS = 0x2,
+    // Wait for a brief delay before refreshing layout of the strip after
+    // adding panel to the strip. If not set, the strip will refresh its layout
+    // immediately.
+    DELAY_LAYOUT_REFRESH = 0x4,
   };
 
   Type type() const { return type_; }

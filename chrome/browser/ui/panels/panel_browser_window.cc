@@ -476,5 +476,3 @@ void PanelBrowserWindow::TabInsertedAt(TabContentsWrapper* contents,
     panel_->EnableWebContentsAutoResize(contents->web_contents());
   }
 }
-
-

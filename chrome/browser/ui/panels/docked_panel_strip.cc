@@ -19,10 +19,6 @@
 #include "content/public/browser/notification_source.h"
 
 namespace {
-// Width to height ratio is used to compute the default width or height
-// when only one value is provided.
-const double kPanelDefaultWidthToHeightRatio = 1.62;  // golden ratio
-
 // Occasionally some system, like Windows, might not bring up or down the bottom
 // bar when the mouse enters or leaves the bottom screen area. This is the
 // maximum time we will wait for the bottom bar visibility change notification.
@@ -45,15 +41,6 @@ const int kRefreshLayoutAfterActivePanelChangeDelayMs = 600;  // arbitrary
 const int kNumPanelsToAnimateSimultaneously = 3;
 
 }  // namespace
-
-// static
-// These numbers are semi-arbitrary.
-// Motivation for 'width' is to make main buttons on the titlebar functional.
-// Motivation for height is to allow autosized tightly-wrapped panel with a
-// single line of text - so the height is set to be likely less then a titlebar,
-// to make sure even small content is tightly wrapped.
-const int DockedPanelStrip::kPanelMinWidth = 80;
-const int DockedPanelStrip::kPanelMinHeight = 20;
 
 DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
     : PanelStrip(PanelStrip::DOCKED),
@@ -101,24 +88,32 @@ void DockedPanelStrip::AddPanel(Panel* panel,
   // This method does not handle minimized panels.
   DCHECK_EQ(Panel::EXPANDED, panel->expansion_state());
 
+  DCHECK(panel->initialized());
   DCHECK_NE(this, panel->panel_strip());
   panel->set_panel_strip(this);
 
-  bool known_position = (positioning_mask & KNOWN_POSITION) != 0;
+  bool default_position = (positioning_mask & KNOWN_POSITION) == 0;
   bool update_bounds = (positioning_mask & DO_NOT_UPDATE_BOUNDS) == 0;
 
-  if (!panel->initialized()) {
-    DCHECK(!known_position && update_bounds);
-    InsertNewlyCreatedPanel(panel);
-    ScheduleLayoutRefresh();
-  } else if (known_position) {
-    DCHECK(update_bounds);
-    InsertExistingPanelAtKnownPosition(panel);
-    RefreshLayout();
+  if (default_position) {
+    gfx::Size full_size = panel->full_size();
+    gfx::Point pt = GetDefaultPositionForPanel(full_size);
+    panel->SetPanelBounds(gfx::Rect(pt, full_size));
+    panels_.push_back(panel);
   } else {
-    DCHECK(!known_position);
-    InsertExistingPanelAtDefaultPosition(panel);
-    if (update_bounds)
+    DCHECK(update_bounds);
+    int x = panel->GetBounds().x();
+    Panels::iterator iter = panels_.begin();
+    for (; iter != panels_.end(); ++iter)
+      if (x > (*iter)->GetBounds().x())
+        break;
+    panels_.insert(iter, panel);
+  }
+
+  if (update_bounds) {
+    if ((positioning_mask & DELAY_LAYOUT_REFRESH) != 0)
+      ScheduleLayoutRefresh();
+    else
       RefreshLayout();
   }
 }
@@ -144,72 +139,6 @@ gfx::Point DockedPanelStrip::GetDefaultPositionForPanel(
                  display_area_.x());
   }
   return gfx::Point(x, display_area_.bottom() - full_size.height());
-}
-
-void DockedPanelStrip::InsertNewlyCreatedPanel(Panel* panel) {
-  DCHECK(!panel->initialized());
-
-  int max_panel_width = panel_manager_->GetMaxPanelWidth();
-  int max_panel_height = panel_manager_->GetMaxPanelHeight();
-  gfx::Size full_size = panel->full_size();
-  int height = full_size.height();
-  int width = full_size.width();
-
-  // Initialize the newly created panel. Does not bump any panels from strip.
-  // We need to come up with some temporary position and dimensions
-  // for this panel -- they may be changed at RefreshLayout time.
-  if (height == 0 && width == 0 && panel_manager_->auto_sizing_enabled()) {
-    // Auto resizable is enabled only if no initial size is provided.
-    panel->SetAutoResizable(true);
-  } else {
-    if (height == 0)
-      height = width / kPanelDefaultWidthToHeightRatio;
-    if (width == 0)
-      width = height * kPanelDefaultWidthToHeightRatio;
-  }
-
-  // Constrain sizes to limits.
-  if (width < kPanelMinWidth)
-    width = kPanelMinWidth;
-  else if (width > max_panel_width)
-    width = max_panel_width;
-
-  if (height < kPanelMinHeight)
-    height = kPanelMinHeight;
-  else if (height > max_panel_height)
-    height = max_panel_height;
-
-  full_size = gfx::Size(width, height);
-  panel->set_full_size(full_size);
-  gfx::Point pt = GetDefaultPositionForPanel(full_size);
-
-  panel->Initialize(gfx::Rect(pt.x(), pt.y(), width, height));
-
-  panel->SetSizeRange(gfx::Size(kPanelMinWidth, kPanelMinHeight),
-                      gfx::Size(max_panel_width, max_panel_height));
-
-  InsertExistingPanelAtKnownPosition(panel);
-}
-
-void DockedPanelStrip::InsertExistingPanelAtKnownPosition(Panel* panel) {
-  DCHECK(panel->initialized());
-
-  int x = panel->GetBounds().x();
-  Panels::iterator iter = panels_.begin();
-  for (; iter != panels_.end(); ++iter)
-    if (x > (*iter)->GetBounds().x())
-      break;
-  panels_.insert(iter, panel);
-}
-
-void DockedPanelStrip::InsertExistingPanelAtDefaultPosition(Panel* panel) {
-  DCHECK(panel->initialized());
-
-  gfx::Size full_size = panel->full_size();
-  gfx::Point pt = GetDefaultPositionForPanel(full_size);
-  panel->SetPanelBounds(gfx::Rect(pt, full_size));
-
-  panels_.push_back(panel);
 }
 
 int DockedPanelStrip::StartingRightPosition() const {
@@ -456,7 +385,7 @@ void DockedPanelStrip::AdjustPanelBoundsPerExpansionState(Panel* panel,
 
       break;
     case Panel::MINIMIZED:
-      bounds->set_height(Panel::kMinimizedPanelHeight);
+      bounds->set_height(panel::kMinimizedPanelHeight);
 
       break;
     default:
@@ -888,7 +817,7 @@ int DockedPanelStrip::WidthToDisplayPanelInStrip(bool is_for_active_panel,
                                                  double squeeze_factor,
                                                  int full_width) const {
   return is_for_active_panel ? full_width :
-      std::max(kPanelMinWidth,
+      std::max(panel::kPanelMinWidth,
                static_cast<int>(floor(full_width * squeeze_factor)));
 }
 

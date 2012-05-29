@@ -119,8 +119,8 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
 
   void ClosePanelAndWaitForNotification(Panel* panel) {
     ui_test_utils::WindowedNotificationObserver signal(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::Source<Browser>(panel->browser()));
+        chrome::NOTIFICATION_PANEL_CLOSED,
+        content::Source<Panel>(panel));
     panel->Close();
     signal.Wait();
   }

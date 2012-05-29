@@ -77,7 +77,7 @@ void PanelBrowserWindowCocoa::ShowPanel() {
   // until we return to the runloop. Therefore any calls to
   // |BrowserList::GetLastActive()| (for example, in bookmark_util), will return
   // the previous browser instead if we don't explicitly set it here.
-  BrowserList::SetLastActive(browser());
+  BrowserList::SetLastActive(GetPanelBrowser());
 
   ShowPanelInactive();
   ActivatePanel();
@@ -261,7 +261,7 @@ bool PanelBrowserWindowCocoa::PreHandlePanelKeyboardEvent(
   if (id == -1)
     return false;
 
-  if (browser()->IsReservedCommandOrKey(id, event)) {
+  if (GetPanelBrowser()->IsReservedCommandOrKey(id, event)) {
       return [BrowserWindowUtils handleKeyboardEvent:event.os_event
                                  inWindow:GetNativePanelHandle()];
   }
@@ -285,7 +285,7 @@ void PanelBrowserWindowCocoa::FullScreenModeChanged(
 }
 
 Browser* PanelBrowserWindowCocoa::GetPanelBrowser() const {
-  return browser();
+  return browser_.get();
 }
 
 void PanelBrowserWindowCocoa::DestroyPanelBrowser() {

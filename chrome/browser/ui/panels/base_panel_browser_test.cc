@@ -360,7 +360,7 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
       ui::GuessWindowManager() == ui::WM_ICE_WM) {
     last_active_browser_to_restore = BrowserList::GetLastActive();
     EXPECT_TRUE(last_active_browser_to_restore);
-    EXPECT_NE(last_active_browser_to_restore, panel->browser());
+    EXPECT_NE(last_active_browser_to_restore, panel_browser);
   }
 #endif
 
@@ -468,17 +468,18 @@ void BasePanelBrowserTest::SetTestingAreas(const gfx::Rect& primary_screen_area,
       work_area.IsEmpty() ? primary_screen_area : work_area);
 }
 
-void BasePanelBrowserTest::CloseWindowAndWait(Browser* browser) {
-  // Closing a browser window may involve several async tasks. Need to use
+void BasePanelBrowserTest::CloseWindowAndWait(Panel* panel) {
+  // Closing a panel may involve several async tasks. Need to use
   // message pump and wait for the notification.
-  size_t browser_count = BrowserList::size();
+  PanelManager* manager = PanelManager::GetInstance();
+  int panel_count = manager->num_panels();
   ui_test_utils::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::Source<Browser>(browser));
-  browser->CloseWindow();
+      chrome::NOTIFICATION_PANEL_CLOSED,
+      content::Source<Panel>(panel));
+  panel->Close();
   signal.Wait();
-  // Now we have one less browser instance.
-  EXPECT_EQ(browser_count - 1, BrowserList::size());
+  // Now we have one less panel.
+  EXPECT_EQ(panel_count - 1, manager->num_panels());
 
 #if defined(OS_MACOSX)
   // Mac window controllers may be autoreleased, and in the non-test
