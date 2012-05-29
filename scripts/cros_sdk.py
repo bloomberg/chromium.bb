@@ -129,8 +129,13 @@ def FetchRemoteTarballs(urls):
     result = RunCurl(['-I', url],
                      redirect_stdout=True, redirect_stderr=True,
                      print_cmd=False)
-    header = result.output.splitlines()[0]
-    return header.find('200 OK') != -1
+    # We must walk the output to find the string '200 OK' for use cases where
+    # a proxy is involved and may have pushed down the actual header.
+    for header in result.output.splitlines():
+      if header.find('200 OK') != -1:
+        return 1
+    return 0
+
 
   url = None
   for url in urls:
