@@ -57,6 +57,10 @@
 
   callback SendToCallback = void (WriteInfo writeInfo);
 
+  callback SetKeepAliveCallback = void (boolean result);
+
+  callback SetNoDelayCallback = void (boolean result);
+
   interface Functions {
     // Creates a socket of the specified type that will connect to the specified
     // remote machine.
@@ -87,7 +91,7 @@
     // |socketId| : The socketId.
     // |address| : The address of the remote machine.
     // |port| : The port of the remote machine.
-    // |callback| : Called when the connection attempt is complete.
+    // |callback| : Called when the bind attempt is complete.
     static void bind(long socketId,
                      DOMString address,
                      long port,
@@ -141,6 +145,25 @@
                        DOMString address,
                        long port,
                        SendToCallback callback);
+
+    // Enable/disable keep-alive functionality for a TCP connection.
+    // |socketId| : The socketId.
+    // |enable| : If true, enable keep-alive functionality.
+    // |delay| : Set the delay seconds between the last data packet received
+    // and the first keepalive probe. Default is 0.
+    // |callback| : Called when the setKeepAlive attempt is complete.
+    static void setKeepAlive(long socketId,
+                             boolean enable,
+                             optional long delay,
+                             SetKeepAliveCallback callback);
+
+    // Enable/disable Nagle algorithm.
+    // |socketId| : The socketId.
+    // |noDelay| : If true, disable Nagle algorithm.
+    // |callback| : Called when the setNoDelay attempt is complete.
+    static void setNoDelay(long socketId,
+                           boolean noDelay,
+                           SetNoDelayCallback callback);
   };
 
 };

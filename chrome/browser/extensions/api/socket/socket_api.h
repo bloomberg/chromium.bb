@@ -207,6 +207,40 @@ class SocketSendToFunction : public SocketExtensionFunction {
   int port_;
 };
 
+class SocketSetKeepAliveFunction : public SocketExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.setKeepAlive")
+
+  SocketSetKeepAliveFunction();
+
+ protected:
+  virtual ~SocketSetKeepAliveFunction();
+
+  // AsyncAPIFunction:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+
+ private:
+  scoped_ptr<api::experimental_socket::SetKeepAlive::Params> params_;
+};
+
+class SocketSetNoDelayFunction : public SocketExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.setNoDelay")
+
+  SocketSetNoDelayFunction();
+
+ protected:
+  virtual ~SocketSetNoDelayFunction();
+
+  // AsyncAPIFunction:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+
+ private:
+  scoped_ptr<api::experimental_socket::SetNoDelay::Params> params_;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SOCKET_SOCKET_API_H_

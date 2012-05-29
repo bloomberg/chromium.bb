@@ -74,6 +74,14 @@ void Socket::OnWriteComplete(int result) {
     WriteData();
 }
 
+bool Socket::SetKeepAlive(bool enable, int delay) {
+  return false;
+}
+
+bool Socket::SetNoDelay(bool no_delay) {
+  return false;
+}
+
 // static
 bool Socket::StringAndPortToIPEndPoint(const std::string& ip_address_str,
                                        int port,

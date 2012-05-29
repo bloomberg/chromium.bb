@@ -41,6 +41,8 @@ class TCPSocket : public Socket {
                       const std::string& address,
                       int port,
                       const CompletionCallback& callback) OVERRIDE;
+  virtual bool SetKeepAlive(bool enable, int delay) OVERRIDE;
+  virtual bool SetNoDelay(bool no_delay) OVERRIDE;
 
   static TCPSocket* CreateSocketForTesting(
       net::TCPClientSocket* tcp_client_socket,

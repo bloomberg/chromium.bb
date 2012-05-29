@@ -128,6 +128,18 @@ void TCPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
   callback.Run(net::ERR_FAILED);
 }
 
+bool TCPSocket::SetKeepAlive(bool enable, int delay) {
+  if (!socket_.get())
+    return false;
+  return socket_->SetKeepAlive(enable, delay);
+}
+
+bool TCPSocket::SetNoDelay(bool no_delay) {
+  if (!socket_.get())
+    return false;
+  return socket_->SetNoDelay(no_delay);
+}
+
 int TCPSocket::WriteImpl(net::IOBuffer* io_buffer,
                          int io_buffer_size,
                          const net::CompletionCallback& callback) {

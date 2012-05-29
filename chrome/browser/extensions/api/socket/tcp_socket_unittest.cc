@@ -31,6 +31,8 @@ class MockTCPSocket : public net::TCPClientSocket {
                          const net::CompletionCallback& callback));
   MOCK_METHOD3(Write, int(net::IOBuffer* buf, int buf_len,
                           const net::CompletionCallback& callback));
+  MOCK_METHOD2(SetKeepAlive, bool(bool enable, int delay));
+  MOCK_METHOD1(SetNoDelay, bool(bool no_delay));
   virtual bool IsConnected() const OVERRIDE {
     return true;
   }
@@ -163,6 +165,58 @@ TEST(SocketTest, TestTCPSocketBlockedWriteReentry) {
   for (i = 0; i < 5; i++) {
     callback.Run(128 + i * 50);
   }
+}
+
+TEST(SocketTest, TestTCPSocketSetNoDelay) {
+  net::AddressList address_list;
+  MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
+  MockAPIResourceEventNotifier* notifier = new MockAPIResourceEventNotifier();
+
+  scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
+      tcp_client_socket, notifier));
+
+  bool no_delay = false;
+  EXPECT_CALL(*tcp_client_socket, SetNoDelay(_))
+      .WillOnce(testing::DoAll(SaveArg<0>(&no_delay), Return(true)));
+  int result = socket->SetNoDelay(true);
+  EXPECT_TRUE(result);
+  EXPECT_TRUE(no_delay);
+
+  EXPECT_CALL(*tcp_client_socket, SetNoDelay(_))
+      .WillOnce(testing::DoAll(SaveArg<0>(&no_delay), Return(false)));
+
+  result = socket->SetNoDelay(false);
+  EXPECT_FALSE(result);
+  EXPECT_FALSE(no_delay);
+}
+
+TEST(SocketTest, TestTCPSocketSetKeepAlive) {
+  net::AddressList address_list;
+  MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
+  MockAPIResourceEventNotifier* notifier = new MockAPIResourceEventNotifier();
+
+  scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
+      tcp_client_socket, notifier));
+
+  bool enable = false;
+  int delay = 0;
+  EXPECT_CALL(*tcp_client_socket, SetKeepAlive(_, _))
+      .WillOnce(testing::DoAll(SaveArg<0>(&enable),
+                               SaveArg<1>(&delay),
+                               Return(true)));
+  int result = socket->SetKeepAlive(true, 4500);
+  EXPECT_TRUE(result);
+  EXPECT_TRUE(enable);
+  EXPECT_EQ(4500, delay);
+
+  EXPECT_CALL(*tcp_client_socket, SetKeepAlive(_, _))
+      .WillOnce(testing::DoAll(SaveArg<0>(&enable),
+                               SaveArg<1>(&delay),
+                               Return(false)));
+  result = socket->SetKeepAlive(false, 0);
+  EXPECT_FALSE(result);
+  EXPECT_FALSE(enable);
+  EXPECT_EQ(0, delay);
 }
 
 }  // namespace extensions

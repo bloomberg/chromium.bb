@@ -307,4 +307,51 @@ void SocketSendToFunction::OnCompleted(int bytes_written) {
   AsyncWorkCompleted();
 }
 
+SocketSetKeepAliveFunction::SocketSetKeepAliveFunction()
+  : params_(NULL) {
+}
+
+SocketSetKeepAliveFunction::~SocketSetKeepAliveFunction() {}
+
+bool SocketSetKeepAliveFunction::Prepare() {
+  params_ = api::experimental_socket::SetKeepAlive::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void SocketSetKeepAliveFunction::Work() {
+  bool result = false;
+  Socket* socket = controller()->GetSocket(params_->socket_id);
+  if (socket) {
+    int delay = 0;
+    if (params_->delay.get())
+      delay = *params_->delay;
+      result = socket->SetKeepAlive(params_->enable, delay);
+  } else {
+    error_ = kSocketNotFoundError;
+  }
+  result_.reset(Value::CreateBooleanValue(result));
+}
+
+SocketSetNoDelayFunction::SocketSetNoDelayFunction()
+  : params_(NULL) {
+}
+
+SocketSetNoDelayFunction::~SocketSetNoDelayFunction() {}
+
+bool SocketSetNoDelayFunction::Prepare() {
+  params_ = api::experimental_socket::SetNoDelay::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void SocketSetNoDelayFunction::Work() {
+  bool result = false;
+  Socket* socket = controller()->GetSocket(params_->socket_id);
+  if (socket)
+      result = socket->SetNoDelay(params_->no_delay);
+  else
+    error_ = kSocketNotFoundError;
+  result_.reset(Value::CreateBooleanValue(result));
+}
 }  // namespace extensions

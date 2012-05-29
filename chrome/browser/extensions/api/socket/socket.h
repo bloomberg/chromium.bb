@@ -60,6 +60,10 @@ class Socket : public APIResource {
                       const std::string& address,
                       int port,
                       const CompletionCallback& callback) = 0;
+
+  virtual bool SetKeepAlive(bool enable, int delay);
+  virtual bool SetNoDelay(bool no_delay);
+
   static bool StringAndPortToAddressList(const std::string& ip_address_str,
                                          int port,
                                          net::AddressList* address_list);

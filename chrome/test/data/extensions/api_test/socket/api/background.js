@@ -64,10 +64,10 @@ function onDataRead(readInfo) {
 
   arrayBuffer2String(readInfo.data, function(s) {
       dataAsString = s;  // save this for error reporting
-      if (s.match(expectedResponsePattern)) {
-        succeeded = true;
-        chrome.test.succeed();
-      }
+      var match = !!s.match(expectedResponsePattern);
+      chrome.test.assertTrue(match, "Received data does not match.");
+      succeeded = true;
+      chrome.test.succeed();
   });
 }
 
@@ -81,15 +81,33 @@ function onWriteOrSendToComplete(writeInfo) {
   }
 }
 
-function onConnectOrBindComplete(connectResult) {
-  if (connectResult == 0) {
-    string2ArrayBuffer(request, function(arrayBuffer) {
-        if (protocol == "tcp")
-          socket.write(socketId, arrayBuffer, onWriteOrSendToComplete);
-        else
-          socket.sendTo(socketId, arrayBuffer, address, port,
-              onWriteOrSendToComplete);
-      });
+function onConnectOrBindComplete(result) {
+  chrome.test.assertEq(0, result, "Connect or bind failed.");
+  if (result == 0) {
+    var onSetKeepAlive = function(result) {
+      if (protocol == "tcp")
+        chrome.test.assertTrue(result, "setKeepAlive failed for TCP.");
+      else
+        chrome.test.assertFalse(result, "setKeepAlive did not fail for UDP.");
+
+      string2ArrayBuffer(request, function(arrayBuffer) {
+          if (protocol == "tcp")
+            socket.write(socketId, arrayBuffer, onWriteOrSendToComplete);
+          else
+            socket.sendTo(socketId, arrayBuffer, address, port,
+                onWriteOrSendToComplete);
+        });
+    };
+
+    var onSetNoDelay = function(result) {
+      if (protocol == "tcp")
+        chrome.test.assertTrue(result, "setNoDelay failed for TCP.");
+      else
+        chrome.test.assertFalse(result, "setNoDelay did not fail for UDP.");
+      socket.setKeepAlive(socketId, true, 1000, onSetKeepAlive);
+    };
+
+    socket.setNoDelay(socketId, true, onSetNoDelay);
   }
 }
 
