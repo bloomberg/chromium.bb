@@ -251,7 +251,7 @@ readonly UPSTREAM_REV=${UPSTREAM_REV:-bce3f306c2c9}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=5ccab9d0bb73
-readonly GOLD_REV=2a4cafa72ca0
+readonly GOLD_REV=91d07b025afe
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
 readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-156513}
@@ -778,7 +778,6 @@ translator-all() {
     sdk newlib
   fi
 
-  StepBanner "SANDBOXED TRANSLATORS"
   binutils-liberty
   if ${SBTC_PRODUCTION}; then
     # Build each architecture separately.
@@ -813,6 +812,8 @@ translator-clean() {
 
 #+ translator            - Build a sandboxed translator.
 translator() {
+  StepBanner "SANDBOXED TRANSLATORS"
+
   sb-setup "$@"
 
   # Building the sandboxed tools requires the SDK
@@ -824,8 +825,11 @@ translator() {
   fi
 
   llvm-sb
-  binutils-sb
-  binutils-gold-sb
+# Note: for the two binutils cases below we need to force
+# the "setup" which is done by passing through "$@"
+# TODO(robertm): investigate less complicated solutions
+  binutils-sb "$@"
+  binutils-gold-sb "$@"
 
   if ${PNACL_PRUNE}; then
     if [ "${SB_ARCH}" == universal ]; then
@@ -2139,6 +2143,10 @@ sb-setup() {
   SB_LABEL="${SB_ARCH}_${SB_SRPCMODE}_${SB_LIBMODE}"
   SB_OBJDIR="${TC_BUILD}/translator-${SB_LABEL//_/-}"
   SB_INSTALL_DIR="$(GetTranslatorInstallDir ${SB_ARCH})"
+
+  StepBanner "SB-SETUP" "ARCH: ${SB_ARCH}"
+  StepBanner "SB-SETUP" "OBJ_DIR: ${SB_OBJDIR}"
+  StepBanner "SB-SETUP" "INSTALL_DIR: ${SB_INSTALL_DIR}"
 }
 
 LLVM_SB_SETUP=false
@@ -2424,7 +2432,7 @@ binutils-sb-setup() {
 
   # TODO(jvoung): investigate if these are only needed by AS or not.
   local flags="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH"
-  if ${BINUTILS_SB_SETUP}; then
+  if ${BINUTILS_SB_SETUP} && [ $# -eq 0 ]; then
     return 0
   fi
   BINUTILS_SB_SETUP=true
@@ -2588,7 +2596,7 @@ binutils-sb-install() {
 #+                 It has nothing to do with the bitcode linker
 #+                 which is also gold based.
 binutils-gold() {
-  StepBanner "GOLD-NATIVE (libiberty + gold)"
+  StepBanner "GOLD-NATIVE" "(libiberty + gold)"
 
   local srcdir="${TC_SRC_GOLD}"
   assert-dir "${srcdir}" "You need to checkout gold."
@@ -2712,7 +2720,7 @@ binutils-gold-install() {
 #+                 It has nothing to do with the bitcode linker
 #+                 which is also gold based.
 binutils-gold-sb() {
-  StepBanner "GOLD-NATIVE-SB (libiberty + gold)"
+  StepBanner "GOLD-NATIVE-SB" "(libiberty + gold)"
 
   local srcdir="${TC_SRC_GOLD}"
   assert-dir "${srcdir}" "You need to checkout gold."
@@ -2730,7 +2738,7 @@ BINUTILS_GOLD_SB_SETUP=false
 binutils-gold-sb-setup() {
   sb-setup "$@"
 
-  if ${BINUTILS_GOLD_SB_SETUP}; then
+  if ${BINUTILS_GOLD_SB_SETUP} && [ $# -eq 0 ]; then
     return 0
   fi
   BINUTILS_GOLD_SB_SETUP=true
@@ -2776,35 +2784,39 @@ binutils-gold-sb-configure() {
   local objdir="${BINUTILS_GOLD_SB_OBJDIR}"
   local installbin="${SB_INSTALL_DIR}/bin"
 
+  # gold always adds "target" to the enabled targets so we are
+  # little careful to not build too much
+  # Note: we are (ab)using target for both --host and --target
+  #       which configure expects to be present
+  local target
+  if [ ${SB_ARCH} == "universal" ] ; then
+      target=i686-pc-nacl
+  else
+      target=${BINUTILS_GOLD_SB_ELF_TARGETS}
+  fi
+  local gold_targets=${BINUTILS_GOLD_SB_ELF_TARGETS}
+
   StepBanner "GOLD-NATIVE-SB" "Configure (libiberty)"
   # Gold depends on liberty only for a few functions:
   # xrealloc, lbasename, etc.
   # we could remove these if necessary.
-  # TODO(jvoung): fix the --host= and --target= ... they should be the same.
 
   mkdir -p "${objdir}/libiberty"
   spushd "${objdir}/libiberty"
+  StepBanner "GOLD-NATIVE-SB" "Dir [$(pwd)]"
   RunWithLog "${BINUTILS_GOLD_SB_LOG_PREFIX}".configure \
     env -i \
     PATH="/usr/bin:/bin" \
     "${BINUTILS_GOLD_SB_CONFIGURE_ENV[@]}" \
     ${srcdir}/libiberty/configure --prefix="${installbin}" \
-    --host=i686-pc-nacl \
-    --target=i686-pc-nacl
+    --host=${target} \
+    --target=${target}
   spopd
 
-
   StepBanner "GOLD-NATIVE-SB" "Configure (gold)"
-  # NOTE: we are still building one unnecessary target: "32bit big-endian"
-  # which is dragged in by targ_extra_big_endian=true in
-  # pnacl/src/gold/gold/configure.tgt
-  # removing it causes undefined symbols during linking of gold.
-  # The potential savings are guesstimated to be 300kB in binary size
-  local gold_targets=${BINUTILS_GOLD_SB_ELF_TARGETS}
-  # TODO(jvoung): fix the --host= and --target= ... they should be the same.
-
   mkdir -p "${objdir}/gold"
   spushd "${objdir}/gold"
+  StepBanner "GOLD-NATIVE-SB" "Dir [$(pwd)]"
   RunWithLog "${BINUTILS_GOLD_SB_LOG_PREFIX}".configure \
     env -i \
     PATH="/usr/bin:/bin" \
@@ -2819,8 +2831,8 @@ binutils-gold-sb-configure() {
     ac_cv_prog_cxx_g=no \
     ${srcdir}/gold/configure --prefix="${installbin}" \
                                       --enable-targets=${gold_targets} \
-                                      --host=i686-pc-nacl \
-                                      --target=i686-pc-nacl \
+                                      --host=${target} \
+                                      --target=${target} \
                                       --disable-nls \
                                       --enable-plugins=no \
                                       --enable-naclsrpc=yes \
