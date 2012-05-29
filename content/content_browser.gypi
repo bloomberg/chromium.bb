@@ -51,6 +51,7 @@
     'public/browser/child_process_data.h',
     'public/browser/child_process_security_policy.h',
     'public/browser/color_chooser.h',
+    'public/browser/content_browser_client.cc',
     'public/browser/content_browser_client.h',
     'public/browser/content_ipc_logging.h',
     'public/browser/devtools_agent_host_registry.h',
