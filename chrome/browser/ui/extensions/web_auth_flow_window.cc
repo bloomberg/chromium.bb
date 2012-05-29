@@ -10,7 +10,7 @@ using content::BrowserContext;
 using content::WebContents;
 
 // TODO(munjal): Remove this once we have mac/linux implementations.
-#ifndef TOOLKIT_VIEWS
+#if defined(OS_MACOSX)
 // static
 WebAuthFlowWindow* WebAuthFlowWindow::Create(
     Delegate* delegate,

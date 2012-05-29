@@ -2930,6 +2930,8 @@
         'browser/ui/gtk/extensions/extension_view_gtk.h',
         'browser/ui/gtk/extensions/shell_window_gtk.cc',
         'browser/ui/gtk/extensions/shell_window_gtk.h',
+        'browser/ui/gtk/extensions/web_auth_flow_window_gtk.cc',
+        'browser/ui/gtk/extensions/web_auth_flow_window_gtk.h',
         'browser/ui/gtk/external_protocol_dialog_gtk.cc',
         'browser/ui/gtk/external_protocol_dialog_gtk.h',
         'browser/ui/gtk/find_bar_gtk.cc',
