@@ -457,7 +457,8 @@ class BuildSpecsManager(object):
       message = ('Automatic: %s - Updating to a new version number from %s' % (
                  self.build_name, version))
       version = version_info.IncrementVersion(message, dry_run=self.dry_run)
-      logging.debug('Incremented version number to  %s', version)
+      assert version != self.latest
+      cros_build_lib.Info('Incremented version number to  %s', version)
 
     return version
 
