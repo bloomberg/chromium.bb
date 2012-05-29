@@ -222,6 +222,55 @@ def cleanup_path(x):
 
 
 class ApiBase(object):
+  """OS-agnostic API to trace a process and its children."""
+  class Context(object):
+    """Processes one log line at a time and keeps the list of traced processes.
+    """
+    class Process(object):
+      """Keeps context for one traced child process.
+
+      Logs all the files this process touched. Ignores directories.
+      """
+      def __init__(self, root, pid, initial_cwd, parentid):
+        """root is a reference to the Context."""
+        assert isinstance(root, ApiBase.Context)
+        assert isinstance(pid, int), repr(pid)
+        self.root = weakref.ref(root)
+        self.pid = pid
+        # Children are pids.
+        self.children = []
+        self.parentid = parentid
+        self.initial_cwd = initial_cwd
+        self.cwd = None
+        self.files = set()
+
+      def add_file(self, filepath):
+        if self.root().blacklist(unicode(filepath)):
+          return
+        logging.debug('add_file(%d, %s)' % (self.pid, filepath))
+        self.files.add(filepath)
+
+    def __init__(self, blacklist):
+      self.blacklist = blacklist
+      self.processes = {}
+
+    def resolve(self):
+      """Resolve all the filenames and returns them."""
+      files = set()
+      non_existent = set()
+      for p in self.processes.itervalues():
+        for filepath in p.files:
+          filepath = unicode(filepath)
+          # For late-bound file paths, it could be blacklisted after all the
+          # processes are processed so it needs to be checked again.
+          if self.blacklist(filepath):
+            break
+          if os.path.isfile(filepath):
+            files.add(filepath)
+          else:
+            non_existent.add(filepath)
+      return files, non_existent
+
   @staticmethod
   def clean_trace(logname):
     """Deletes the old log."""
@@ -264,7 +313,7 @@ class Strace(ApiBase):
     '/var',
   )
 
-  class Context(object):
+  class Context(ApiBase.Context):
     """Processes a strace log line and keeps the list of existent and non
     existent files accessed.
 
@@ -277,7 +326,7 @@ class Strace(ApiBase):
     order and use late binding with RelativePath to be able to deduce the
     initial directory of each process once all the logs are parsed.
     """
-    class Process(object):
+    class Process(ApiBase.Context.Process):
       """Represents the state of a process.
 
       Contains all the information retrieved from the pid-specific log.
@@ -333,28 +382,23 @@ class Strace(ApiBase):
           return str(self.render())
 
       def __init__(self, root, pid):
-        self.root = weakref.ref(root)
-        self.pid = pid
-        self.children = []
-        self.parentid = None
+        super(Strace.Context.Process, self).__init__(root, pid, None, None)
         # The dict key is the function name of the pending call, like 'open'
         # or 'execve'.
         self._pending_calls = {}
         self._line_number = 0
         # Current directory when the process started.
         self.initial_cwd = self.RelativePath(self.root(), None)
-        self._cwd = None
-        self.files = set()
 
-      @property
-      def cwd(self):
-        return self._cwd or self.initial_cwd
+      def get_cwd(self):
+        """Returns the best known value of cwd."""
+        return self.cwd or self.initial_cwd
 
       def render(self):
         """Returns the string value of the RelativePath() object.
 
         Used by RelativePath. Returns the initial directory and not the
-        current one since the current directory '_cwd' validity is time-limited.
+        current one since the current directory 'cwd' validity is time-limited.
 
         The validity is only guaranteed once all the logs are processed.
         """
@@ -411,7 +455,7 @@ class Strace(ApiBase):
         """Updates cwd."""
         assert result.startswith('0'), 'Unexecpected fail: %s' % result
         cwd = self.RE_CHDIR.match(args).group(1)
-        self._cwd = self.RelativePath(self, cwd)
+        self.cwd = self.RelativePath(self, cwd)
         logging.debug('handle_chdir(%d, %s)' % (self.pid, self.cwd))
 
       def handle_clone(self, _function, _args, result):
@@ -421,8 +465,8 @@ class Strace(ApiBase):
         # Update the other process right away.
         childpid = int(result)
         child = self.root().get_or_set_proc(childpid)
-        # Copy the _cwd object.
-        child.initial_cwd = self.cwd
+        # Copy the cwd object.
+        child.initial_cwd = self.get_cwd()
         assert child.parentid is None
         child.parentid = self.pid
         self.children.append(childpid)
@@ -434,8 +478,8 @@ class Strace(ApiBase):
         self._handle_file(self.RE_EXECVE.match(args).group(1), result)
 
       def handle_exit_group(self, _function, _args, _result):
-        """Removes _cwd."""
-        self._cwd = None
+        """Removes cwd."""
+        self.cwd = None
 
       @staticmethod
       def handle_fork(_function, args, result):
@@ -463,17 +507,11 @@ class Strace(ApiBase):
       def _handle_file(self, filepath, result):
         if result.startswith('-1'):
           return
-        filepath = self.RelativePath(self.cwd, filepath)
-        if self.root().blacklist(unicode(filepath)):
-          return
-        logging.debug('_handle_file(%d, %s)' % (self.pid, filepath))
-        self.files.add(filepath)
+        filepath = self.RelativePath(self.get_cwd(), filepath)
+        self.add_file(filepath)
 
     def __init__(self, blacklist, initial_cwd):
-      self.blacklist = blacklist
-      self.files = set()
-      self.non_existent = set()
-      self.processes = {}
+      super(Strace.Context, self).__init__(blacklist)
       self.initial_cwd = initial_cwd
 
     def render(self):
@@ -496,18 +534,6 @@ class Strace(ApiBase):
     def traces(cls):
       prefix = 'handle_'
       return [i[len(prefix):] for i in dir(cls.Process) if i.startswith(prefix)]
-
-    def resolve(self):
-      """Resolve all the filenames."""
-      for p in self.processes.itervalues():
-        for filepath in p.files:
-          filepath = unicode(filepath)
-          if self.blacklist(filepath):
-            return
-          if os.path.isfile(filepath):
-            self.files.add(filepath)
-          else:
-            self.non_existent.add(filepath)
 
   @staticmethod
   def clean_trace(logname):
@@ -570,11 +596,11 @@ class Strace(ApiBase):
         # TODO(maruel): Load as utf-8
         for line in open(pidfile, 'rb'):
           context.on_line(pid, line)
-    context.resolve()
+    files, non_existent = context.resolve()
     # Resolve any symlink we hit.
     return (
-        set(os.path.realpath(f) for f in context.files),
-        set(os.path.realpath(f) for f in context.non_existent),
+        set(os.path.realpath(f) for f in files),
+        set(os.path.realpath(f) for f in non_existent),
         len(context.processes))
 
 
@@ -728,12 +754,7 @@ class Dtrace(ApiBase):
         '  logindex++;\n'
         '}\n') + cls.D_CODE
 
-  class Context(object):
-    """Processes a dtrace log line and keeps the list of existent and non
-    existent files accessed.
-
-    Ignores directories.
-    """
+  class Context(ApiBase.Context):
     # This is the most common format. index pid function(args) = result
     RE_HEADER = re.compile(r'^\d+ (\d+):(\d+) ([a-zA-Z_\-]+)\((.*?)\) = (.+)$')
 
@@ -744,15 +765,8 @@ class Dtrace(ApiBase):
 
     O_DIRECTORY = 0x100000
 
-    def __init__(self, blacklist):
-      # TODO(maruel): Handling chdir() and cwd in general on OSX is tricky
-      # because OSX only keeps relative directory names. In addition, cwd is a
-      # process local variable so forks need to be properly traced and cwd
-      # saved.
-      self._cwd = {}
-      self.blacklist = blacklist
-      self.files = set()
-      self.non_existent = set()
+    class Process(ApiBase.Context.Process):
+      pass
 
     def on_line(self, line):
       match = self.RE_HEADER.match(line)
@@ -768,33 +782,34 @@ class Dtrace(ApiBase):
           match.group(4),
           match.group(5))
 
-    @property
-    def nb_processes(self):
-      return len(self._cwd)
-
     def handle_dtrace_BEGIN(self, _ppid, _pid, _function, args, _result):
       pass
 
     def handle_proc_start(self, ppid, pid, _function, _args, result):
       """Transfers cwd."""
       assert result == '0'
-      self._cwd[pid] = self._cwd[ppid]
+      cwd = self.processes[ppid].cwd
+      assert pid not in self.processes
+      proc = self.processes[pid] = self.Process(self, pid, cwd, ppid)
+      proc.cwd = cwd
 
     def handle_proc_exit(self, _ppid, pid, _function, _args, _result):
       """Removes cwd."""
-      del self._cwd[pid]
+      self.processes[pid].cwd = None
 
-    def handle_chdir(self, _ppid, pid, _function, args, result):
+    def handle_chdir(self, ppid, pid, _function, args, result):
       """Updates cwd."""
       if result.startswith('0'):
         cwd = self.RE_CHDIR.match(args).group(1)
         if not cwd.startswith('/'):
-          cwd2 = os.path.join(self._cwd[pid], cwd)
+          cwd2 = os.path.join(self.processes[pid].cwd, cwd)
           logging.debug('handle_chdir(%d, %s) -> %s' % (pid, cwd, cwd2))
-          self._cwd[pid] = cwd2
         else:
           logging.debug('handle_chdir(%d, %s)' % (pid, cwd))
-          self._cwd[pid] = cwd
+          cwd2 = cwd
+        proc = self.processes.setdefault(
+            pid, self.Process(self, pid, cwd2, ppid))
+        proc.cwd = cwd2
       else:
         assert False, 'Unexecpected fail: %s' % result
 
@@ -819,26 +834,15 @@ class Dtrace(ApiBase):
     def _handle_file(self, pid, filepath, result):
       if result.startswith(('-1', '2')):
         return
-      orig_filepath = filepath
       if not filepath.startswith('/'):
-        filepath = os.path.join(self._cwd[pid], filepath)
+        filepath = os.path.join(self.processes[pid].cwd, filepath)
+      # We can get '..' in the path.
       filepath = os.path.normpath(filepath)
-      if self.blacklist(filepath):
-        return
       # Sadly, still need to filter out directories here;
       # saw open_nocancel(".", 0, 0) = 0 lines.
-      if (filepath not in self.files and
-          filepath not in self.non_existent and
-          not os.path.isdir(filepath)):
-        if orig_filepath:
-          logging.debug(
-              '_handle_file(%d, %s) -> %s' % (pid, orig_filepath, filepath))
-        else:
-          logging.debug('_handle_file(%d, %s)' % (pid, filepath))
-        if os.path.isfile(filepath):
-          self.files.add(filepath)
-        else:
-          self.non_existent.add(filepath)
+      if os.path.isdir(filepath):
+        return
+      self.processes[pid].add_file(filepath)
 
     @staticmethod
     def _handle_ignored(_ppid, pid, function, args, result):
@@ -934,11 +938,12 @@ class Dtrace(ApiBase):
     context = cls.Context(blacklist)
     for line in open(filename, 'rb'):
       context.on_line(line)
+    files, non_existent = context.resolve()
     # Resolve any symlink we hit.
     return (
-        set(os.path.realpath(f) for f in context.files),
-        set(os.path.realpath(f) for f in context.non_existent),
-        context.nb_processes)
+        set(os.path.realpath(f) for f in files),
+        set(os.path.realpath(f) for f in non_existent),
+        len(context.processes))
 
   @staticmethod
   def _sort_log(logname):
@@ -958,7 +963,7 @@ class LogmanTrace(ApiBase):
   """Uses the native Windows ETW based tracing functionality to trace a child
   process.
   """
-  class Context(object):
+  class Context(ApiBase.Context):
     """Processes a ETW log line and keeps the list of existent and non
     existent files accessed.
 
@@ -973,12 +978,11 @@ class LogmanTrace(ApiBase):
     PROCESSOR_ID = 11
     TIMESTAMP = 16
 
-    def __init__(self, blacklist):
-      self.blacklist = blacklist
-      self.files = set()
-      self.non_existent = set()
+    class Process(ApiBase.Context.Process):
+      pass
 
-      self._processes = set()
+    def __init__(self, blacklist):
+      super(LogmanTrace.Context, self).__init__(blacklist)
       self._drive_map = DosDriveMap()
       self._first_line = False
       # Threads mapping to the corresponding process id.
@@ -1056,10 +1060,6 @@ class LogmanTrace(ApiBase):
       else:
         assert False, '%s_%s' % (line[self.EVENT_NAME], line[self.TYPE])
 
-    @property
-    def nb_processes(self):
-      return len(self._processes)
-
     @staticmethod
     def handle_EventTrace_Header(line):
       """Verifies no event was dropped, e.g. no buffer overrun occured."""
@@ -1110,7 +1110,8 @@ class LogmanTrace(ApiBase):
 
       # Find the process from the thread id.
       tid = int(line[TTID], 16)
-      if self._threads_active.get(tid) not in self._processes:
+      proc = self.processes.get(self._threads_active.get(tid))
+      if not proc:
         # Not a process we care about.
         return
 
@@ -1123,7 +1124,7 @@ class LogmanTrace(ApiBase):
       # Ignore bare drive right away.
       if len(raw_path) == 2:
         return
-      self._handle_file(filename)
+      proc.add_file(filename)
 
     def handle_FileIo_Rename(self, line):
       # TODO(maruel): Handle?
@@ -1155,17 +1156,17 @@ class LogmanTrace(ApiBase):
       if line[IMAGE_FILE_NAME] == '"logman.exe"':
         # logman's parent is trace_input.py or whatever tool using it as a
         # library. Trace any other children started by it.
-        assert ppid not in self._processes
-        self._processes.add(ppid)
+        assert ppid not in self.processes
+        self.processes[ppid] = self.Process(self, ppid, None, None)
         logging.info('Found logman\'s parent at %d' % ppid)
 
     def handle_Process_End(self, line):
       # Look if it is logman terminating, if so, grab the parent's process pid
       # and inject cwd.
       pid = line[self.PID]
-      if pid in self._processes:
+      if pid in self.processes:
         logging.info('Terminated: %d' % pid)
-        self._processes.remove(pid)
+        self.processes[pid].cwd = None
 
     def handle_Process_Start(self, line):
       """Handles a new child process started by PID."""
@@ -1181,14 +1182,14 @@ class LogmanTrace(ApiBase):
 
       ppid = line[self.PID]
       pid = int(line[PROCESS_ID], 16)
-      if ppid in self._processes:
+      if ppid in self.processes:
         # Need to ignore processes we don't know about because the log is
         # system-wide.
         if line[IMAGE_FILE_NAME] == '"logman.exe"':
           # Skip the shutdown call when "logman.exe stop" is executed.
           return
-        assert pid not in self._processes
-        self._processes.add(pid)
+        assert pid not in self.processes
+        self.processes[pid] = self.Process(self, pid, None, ppid)
         logging.info(
             'New child: %d -> %d %s' % (ppid, pid, line[IMAGE_FILE_NAME]))
 
@@ -1217,6 +1218,8 @@ class LogmanTrace(ApiBase):
       #PAGE_PRIORITY = 30
       #IO_PRIORITY = 31
       #THREAD_FLAGS = 32
+      # Do not use self.PID here since a process' initial thread is created by
+      # the parent process.
       pid = int(line[PROCESS_ID], 16)
       tid = int(line[TTHREAD_ID], 16)
       self._threads_active[tid] = pid
@@ -1227,23 +1230,6 @@ class LogmanTrace(ApiBase):
     def handle_SystemConfig_Any(self, line):
       """If you have too many of these, check your hardware."""
       pass
-
-    def _handle_file(self, filename):
-      """Handles a file that was touched.
-
-      Interestingly enough, the file is always with an absolute path.
-      """
-      if (not filename or
-          self.blacklist(filename) or
-          os.path.isdir(filename) or
-          filename in self.files or
-          filename in self.non_existent):
-        return
-      logging.debug('_handle_file(%s)' % filename)
-      if os.path.isfile(filename):
-        self.files.add(filename)
-      else:
-        self.non_existent.add(filename)
 
   def __init__(self):
     super(LogmanTrace, self).__init__()
@@ -1457,10 +1443,12 @@ class LogmanTrace(ApiBase):
     else:
       raise NotImplementedError('Implement %s' % logformat)
 
+    files, non_existent = context.resolve()
+    # Resolve any symlink we hit.
     return (
-        set(os.path.realpath(f) for f in context.files),
-        set(os.path.realpath(f) for f in context.non_existent),
-        context.nb_processes)
+        set(os.path.realpath(f) for f in files),
+        set(os.path.realpath(f) for f in non_existent),
+        len(context.processes))
 
 
 def relevant_files(files, root):

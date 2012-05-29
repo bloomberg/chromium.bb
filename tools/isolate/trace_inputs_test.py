@@ -97,13 +97,15 @@ class TraceInputs(unittest.TestCase):
 
 if trace_inputs.get_flavor() == 'linux':
   class StraceInputs(unittest.TestCase):
-    def _test_lines(self, lines, initial_cwd, files, non_existent):
+    def _test_lines(
+        self, lines, initial_cwd, expected_files, expected_non_existent):
       context = trace_inputs.Strace.Context(lambda _: False, initial_cwd)
       for line in lines:
         context.on_line(*line)
-      context.resolve()
-      self.assertEquals(sorted(files), sorted(context.files))
-      self.assertEquals(sorted(non_existent), sorted(context.non_existent))
+      actual_files, actual_non_existent = context.resolve()
+      self.assertEquals(sorted(expected_files), sorted(actual_files))
+      self.assertEquals(
+          sorted(expected_non_existent), sorted(actual_non_existent))
 
     def test_empty(self):
       self._test_lines([], None, [], [])
