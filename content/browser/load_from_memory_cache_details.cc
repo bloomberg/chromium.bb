@@ -9,8 +9,8 @@ LoadFromMemoryCacheDetails::LoadFromMemoryCacheDetails(
     int pid,
     int cert_id,
     net::CertStatus cert_status,
-    std::string http_method,
-    std::string mime_type,
+    const std::string& http_method,
+    const std::string& mime_type,
     ResourceType::Type resource_type)
     : url_(url),
       pid_(pid),
