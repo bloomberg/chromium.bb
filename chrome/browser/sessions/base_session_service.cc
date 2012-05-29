@@ -87,8 +87,15 @@ BaseSessionService::BaseSessionService(SessionType type,
   backend_ = new SessionBackend(type, profile_ ? profile_->GetPath() : path);
   DCHECK(backend_.get());
 
-  RunTaskOnBackendThread(FROM_HERE,
-                         base::Bind(&SessionBackend::Init, backend_));
+  // SessionBackend::Init() cannot be scheduled to be called here. There are
+  // service processes which create the BaseSessionService, but they should not
+  // initialize the backend. If they do, the backend will cycle the session
+  // restore files. That in turn prevents the session restore from working when
+  // the normal chromium process is launched. Normally, the backend will be
+  // initialized before it's actually used. However, if we're running as a part
+  // of a test, it must be initialized now.
+  if (!RunningInProduction())
+    backend_->Init();
 }
 
 BaseSessionService::~BaseSessionService() {
@@ -379,4 +386,8 @@ bool BaseSessionService::RunTaskOnBackendThread(
     task.Run();
     return true;
   }
+}
+
+bool BaseSessionService::RunningInProduction() const {
+  return profile_ && BrowserThread::IsMessageLoopValid(BrowserThread::FILE);
 }

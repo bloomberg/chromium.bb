@@ -182,6 +182,10 @@ class BaseSessionService : public CancelableRequestProvider,
   bool RunTaskOnBackendThread(const tracked_objects::Location& from_here,
                               const base::Closure& task);
 
+  // Returns true if we appear to be running in production, false if we appear
+  // to be running as part of a unit test or if the FILE thread has gone away.
+  bool RunningInProduction() const;
+
   // Max number of navigation entries in each direction we'll persist.
   static const int max_persist_navigation_count;
 
