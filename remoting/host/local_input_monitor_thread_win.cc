@@ -6,8 +6,9 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-
 #include "base/synchronization/waitable_event.h"
+#include "remoting/host/mouse_move_observer.h"
+#include "third_party/skia/include/core/SkPoint.h"
 
 using namespace remoting;
 
@@ -16,24 +17,25 @@ LocalInputMonitorThread* g_local_input_monitor_thread = NULL;
 base::LazyInstance<base::Lock>::Leaky g_thread_lock = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
-
 LocalInputMonitorThread::LocalInputMonitorThread()
     : base::SimpleThread("LocalInputMonitor") {
 }
 
 LocalInputMonitorThread::~LocalInputMonitorThread() {
-  DCHECK(hosts_.empty());
+  DCHECK(observers_.empty());
 }
 
-void LocalInputMonitorThread::AddHost(ChromotingHost* host) {
-  base::AutoLock lock(hosts_lock_);
-  hosts_.insert(host);
+void LocalInputMonitorThread::AddObserver(
+    MouseMoveObserver* mouse_move_observer) {
+  base::AutoLock lock(lock_);
+  observers_.insert(mouse_move_observer);
 }
 
-bool LocalInputMonitorThread::RemoveHost(ChromotingHost* host) {
-  base::AutoLock lock(hosts_lock_);
-  hosts_.erase(host);
-  return hosts_.empty();
+bool LocalInputMonitorThread::RemoveObserver(
+    MouseMoveObserver* mouse_move_observer) {
+  base::AutoLock lock(lock_);
+  observers_.erase(mouse_move_observer);
+  return observers_.empty();
 }
 
 void LocalInputMonitorThread::Stop() {
@@ -69,10 +71,10 @@ void LocalInputMonitorThread::Run() {
 }
 
 void LocalInputMonitorThread::LocalMouseMoved(const SkIPoint& mouse_position) {
-  base::AutoLock lock(hosts_lock_);
-  for (ChromotingHosts::const_iterator i = hosts_.begin();
-       i != hosts_.end(); ++i) {
-    (*i)->LocalMouseMoved(mouse_position);
+  base::AutoLock lock(lock_);
+  for (MouseMoveObservers::const_iterator i = observers_.begin();
+       i != observers_.end(); ++i) {
+    (*i)->OnLocalMouseMoved(mouse_position);
   }
 }
 
@@ -94,19 +96,23 @@ LRESULT WINAPI LocalInputMonitorThread::HandleLowLevelMouseEvent(
 }
 
 
-void LocalInputMonitorThread::AddHostToInputMonitor(ChromotingHost* host) {
+// static
+void LocalInputMonitorThread::AddMouseMoveObserver(
+    MouseMoveObserver* mouse_move_observer) {
   base::AutoLock lock(g_thread_lock.Get());
   if (!g_local_input_monitor_thread) {
     g_local_input_monitor_thread = new LocalInputMonitorThread;
     g_local_input_monitor_thread->Start();
   }
-  g_local_input_monitor_thread->AddHost(host);
+  g_local_input_monitor_thread->AddObserver(mouse_move_observer);
 }
 
-void LocalInputMonitorThread::RemoveHostFromInputMonitor(ChromotingHost* host) {
+// static
+void LocalInputMonitorThread::RemoveMouseMoveObserver(
+    MouseMoveObserver* mouse_move_observer) {
   DCHECK(g_local_input_monitor_thread);
   base::AutoLock lock(g_thread_lock.Get());
-  if (g_local_input_monitor_thread->RemoveHost(host)) {
+  if (g_local_input_monitor_thread->RemoveObserver(mouse_move_observer)) {
     g_local_input_monitor_thread->Stop();
     delete g_local_input_monitor_thread;
     g_local_input_monitor_thread = NULL;

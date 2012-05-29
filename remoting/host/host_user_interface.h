@@ -31,11 +31,6 @@ class HostUserInterface : public HostStatusObserver {
   virtual void Start(ChromotingHost* host,
                      const base::Closure& disconnect_callback);
 
-  // TODO(sergeyu): Disconnect shortcut is disabled with Me2Me on Mac
-  // because it didn't work properly. Fix and remove this hack.
-  // http://crbug.com/129684
-  void DisableDisconnectShortcutOnMac();
-
   // HostStatusObserver implementation.  These methods will be called from the
   // network thread.
   virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
@@ -101,8 +96,6 @@ class HostUserInterface : public HostStatusObserver {
   bool is_monitoring_local_inputs_;
 
   ScopedThreadProxy ui_thread_proxy_;
-
-  bool disable_disconnect_shortcut_on_mac_;
 
   DISALLOW_COPY_AND_ASSIGN(HostUserInterface);
 };

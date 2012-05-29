@@ -1,24 +1,29 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef LOCAL_INPUT_MONITOR_THREAD_LINUX_H_
 #define LOCAL_INPUT_MONITOR_THREAD_LINUX_H_
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/simple_thread.h"
-#include "third_party/skia/include/core/SkPoint.h"
+#include "remoting/host/local_input_monitor.h"
 
 typedef struct _XDisplay Display;
 
+struct SkIPoint;
+
 namespace remoting {
 
-class ChromotingHost;
+class MouseMoveObserver;
 
 class LocalInputMonitorThread : public base::SimpleThread {
  public:
-  explicit LocalInputMonitorThread(ChromotingHost* host);
+  LocalInputMonitorThread(
+      MouseMoveObserver* mouse_move_observer,
+      const base::Closure& disconnect_callback);
   virtual ~LocalInputMonitorThread();
 
   void Stop();
@@ -28,7 +33,8 @@ class LocalInputMonitorThread : public base::SimpleThread {
   void LocalKeyPressed(int key_code, bool down);
 
  private:
-  scoped_refptr<ChromotingHost> host_;
+  MouseMoveObserver* mouse_move_observer_;
+  base::Closure disconnect_callback_;
   int wakeup_pipe_[2];
   Display* display_;
   bool alt_pressed_;

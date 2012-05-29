@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,14 +18,7 @@ UiStrings::UiStrings() :
     // doesn't have a bundle (and hence no dialog) on that platform and
     // the web-app will provide the correct localization for this string.
     disconnect_button_text_plus_shortcut(
-#if defined(OS_MACOSX)
-        // TODO(sergeyu): Currently the shortcut is disabled because it
-        // doesn't work properly on Mac.
-        ASCIIToUTF16("Disconnect")
-#else  // !defined(OS_MACOSX)
-        ASCIIToUTF16("Disconnect (Ctrl+Alt+Esc)")
-#endif  // !defined(OS_MACOSX)
-                                         ),
+        ASCIIToUTF16("Disconnect (Ctrl+Alt+Esc)")),
     continue_prompt(ASCIIToUTF16(
         "You are currently sharing this machine with another user. "
         "Please confirm that you want to continue sharing.")),

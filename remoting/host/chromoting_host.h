@@ -18,6 +18,7 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_status_observer.h"
+#include "remoting/host/mouse_move_observer.h"
 #include "remoting/host/network_settings.h"
 #include "remoting/host/ui_strings.h"
 #include "remoting/jingle_glue/jingle_thread.h"
@@ -65,7 +66,8 @@ class ScreenRecorder;
 //    incoming connection.
 class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public ClientSession::EventHandler,
-                       public protocol::SessionManager::Listener {
+                       public protocol::SessionManager::Listener,
+                       public MouseMoveObserver {
  public:
   // The caller must ensure that |context|, |signal_strategy| and
   // |environment| out-live the host.
@@ -124,13 +126,12 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) OVERRIDE;
 
+  // MouseMoveObserver interface.
+  virtual void OnLocalMouseMoved(const SkIPoint& new_pos) OVERRIDE;
+
   // Sets desired configuration for the protocol. Ownership of the
   // |config| is transferred to the object. Must be called before Start().
   void set_protocol_config(protocol::CandidateSessionConfig* config);
-
-  // Notify all active client sessions that local input has been detected, and
-  // that remote input should be ignored for a short time.
-  void LocalMouseMoved(const SkIPoint& new_pos);
 
   // Pause or unpause the session. While the session is paused, remote input
   // is ignored. Can be called from any thread.

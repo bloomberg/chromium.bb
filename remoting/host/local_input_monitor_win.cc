@@ -18,32 +18,35 @@ class LocalInputMonitorWin : public LocalInputMonitor {
   LocalInputMonitorWin();
   ~LocalInputMonitorWin();
 
-  virtual void Start(ChromotingHost* host) OVERRIDE;
+  virtual void Start(MouseMoveObserver* mouse_move_observer,
+                     const base::Closure& disconnect_callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorWin);
 
-  ChromotingHost* chromoting_host_;
+  MouseMoveObserver* mouse_move_observer_;
 };
 
-LocalInputMonitorWin::LocalInputMonitorWin() : chromoting_host_(NULL) {
+LocalInputMonitorWin::LocalInputMonitorWin()
+    : mouse_move_observer_(NULL) {
 }
 
 LocalInputMonitorWin::~LocalInputMonitorWin() {
-  DCHECK(chromoting_host_ == NULL);
+  DCHECK(!mouse_move_observer_);
 }
 
-void LocalInputMonitorWin::Start(ChromotingHost* host) {
-  DCHECK(chromoting_host_ == NULL);
-  chromoting_host_ = host;
-  LocalInputMonitorThread::AddHostToInputMonitor(chromoting_host_);
+void LocalInputMonitorWin::Start(MouseMoveObserver* mouse_move_observer,
+                                 const base::Closure& disconnect_callback) {
+  DCHECK(!mouse_move_observer_);
+  mouse_move_observer_ = mouse_move_observer;
+  LocalInputMonitorThread::AddMouseMoveObserver(mouse_move_observer_);
 }
 
 void LocalInputMonitorWin::Stop() {
-  DCHECK(chromoting_host_ != NULL);
-  LocalInputMonitorThread::RemoveHostFromInputMonitor(chromoting_host_);
-  chromoting_host_ = NULL;
+  DCHECK(mouse_move_observer_);
+  LocalInputMonitorThread::RemoveMouseMoveObserver(mouse_move_observer_);
+  mouse_move_observer_ = NULL;
 }
 
 }  // namespace

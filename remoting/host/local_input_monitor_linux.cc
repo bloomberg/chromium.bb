@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "remoting/host/local_input_monitor.h"
-#include "remoting/host/local_input_monitor_thread_linux.h"
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "remoting/host/local_input_monitor_thread_linux.h"
 
 namespace remoting {
 
@@ -17,7 +17,8 @@ class LocalInputMonitorLinux : public LocalInputMonitor {
   LocalInputMonitorLinux();
   ~LocalInputMonitorLinux();
 
-  virtual void Start(ChromotingHost* host) OVERRIDE;
+  virtual void Start(MouseMoveObserver* mouse_move_observer,
+                     const base::Closure& disconnect_callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
 
  private:
@@ -32,9 +33,12 @@ LocalInputMonitorLinux::~LocalInputMonitorLinux() {
   CHECK(!thread_);
 }
 
-void LocalInputMonitorLinux::Start(ChromotingHost* host) {
+void LocalInputMonitorLinux::Start(
+    MouseMoveObserver* mouse_move_observer,
+    const base::Closure& disconnect_callback) {
   CHECK(!thread_);
-  thread_ = new LocalInputMonitorThread(host);
+  thread_ = new LocalInputMonitorThread(mouse_move_observer,
+                                        disconnect_callback);
   thread_->Start();
 }
 

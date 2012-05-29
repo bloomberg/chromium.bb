@@ -1137,6 +1137,7 @@
         'host/local_input_monitor_win.cc',
         'host/log_to_server.cc',
         'host/log_to_server.h',
+        'host/mouse_move_observer.h',
         'host/network_settings.h',
         'host/pin_hash.cc',
         'host/pin_hash.h',

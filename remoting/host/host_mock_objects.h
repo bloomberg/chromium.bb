@@ -64,7 +64,8 @@ class MockLocalInputMonitor : public LocalInputMonitor {
   MockLocalInputMonitor();
   virtual ~MockLocalInputMonitor();
 
-  MOCK_METHOD1(Start, void(remoting::ChromotingHost* host));
+  MOCK_METHOD2(Start, void(MouseMoveObserver* mouse_move_observer,
+                           const base::Closure& disconnect_callback));
   MOCK_METHOD0(Stop, void());
 };
 

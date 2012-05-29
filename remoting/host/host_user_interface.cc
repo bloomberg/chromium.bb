@@ -16,8 +16,7 @@ HostUserInterface::HostUserInterface(ChromotingHostContext* context)
     : host_(NULL),
       context_(context),
       is_monitoring_local_inputs_(false),
-      ui_thread_proxy_(context->ui_message_loop()),
-      disable_disconnect_shortcut_on_mac_(false) {
+      ui_thread_proxy_(context->ui_message_loop()) {
 }
 
 HostUserInterface::~HostUserInterface() {
@@ -40,10 +39,6 @@ void HostUserInterface::Start(ChromotingHost* host,
   disconnect_window_ = DisconnectWindow::Create();
   local_input_monitor_ = LocalInputMonitor::Create();
   host_->AddStatusObserver(this);
-}
-
-void HostUserInterface::DisableDisconnectShortcutOnMac() {
-  disable_disconnect_shortcut_on_mac_ = true;
 }
 
 void HostUserInterface::OnClientAuthenticated(const std::string& jid) {
@@ -129,10 +124,7 @@ void HostUserInterface::MonitorLocalInputs(bool enable) {
 
   if (enable != is_monitoring_local_inputs_) {
     if (enable) {
-      local_input_monitor_->Start(host_);
-      if (disable_disconnect_shortcut_on_mac_) {
-        local_input_monitor_->DisableShortcutOnMac();
-      }
+      local_input_monitor_->Start(host_, disconnect_callback_);
     } else {
       local_input_monitor_->Stop();
     }
