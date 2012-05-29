@@ -1,3 +1,10 @@
 HKCR
 {
+  NoRemove AppID
+  {
+    ForceRemove '%APPID%'
+    {
+      val LocalService = s 'CloudPrintService'
+    }
+  }
 }

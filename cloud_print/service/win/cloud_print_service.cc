@@ -148,11 +148,16 @@ class CloudPrintServiceModule
     return S_OK;
   }
 
-  HRESULT Install(const FilePath& user_data_dir) {
+  HRESULT InstallService(const FilePath& user_data_dir) {
     // TODO(vitalybuka): consider "lite" version if we don't want unregister
     // printers here.
-    if (!Uninstall())
-      return E_FAIL;
+    HRESULT hr = UninstallService();
+    if (FAILED(hr))
+      return hr;
+
+    hr = UpdateRegistryAppId(true);
+    if (FAILED(hr))
+      return hr;
 
     FilePath service_path;
     CHECK(PathService::Get(base::FILE_EXE, &service_path));
@@ -161,7 +166,7 @@ class CloudPrintServiceModule
     command_line.AppendSwitchPath(kUserDataDirSwitch, user_data_dir);
 
     ServiceHandle scm;
-    HRESULT hr = OpenServiceManager(&scm);
+    hr = OpenServiceManager(&scm);
     if (FAILED(hr))
       return hr;
 
@@ -176,6 +181,12 @@ class CloudPrintServiceModule
       return HResultFromLastError();
 
     return S_OK;
+  }
+
+  HRESULT UninstallService() {
+    if (!Uninstall())
+      return E_FAIL;
+    return UpdateRegistryAppId(false);
   }
 
   bool ParseCommandLine(LPCTSTR lpCmdLine, HRESULT* pnRetCode) {
@@ -220,7 +231,7 @@ class CloudPrintServiceModule
       return StopService();
 
     if (command_line.HasSwitch(kUninstallSwitch))
-      return Uninstall() ? S_OK : E_FAIL;
+      return UninstallService();
 
     if (command_line.HasSwitch(kInstallSwitch)) {
       if (!command_line.HasSwitch(kUserDataDirSwitch)) {
@@ -233,7 +244,7 @@ class CloudPrintServiceModule
                                        command_line.HasSwitch(kQuietSwitch));
       if (FAILED(hr))
         return hr;
-      hr = Install(data_dir);
+      hr = InstallService(data_dir);
       if (SUCCEEDED(hr) && command_line.HasSwitch(kStartSwitch))
         return StartService();
 
@@ -274,16 +285,18 @@ class CloudPrintServiceModule
       if (quiet)
         return is_valid ? S_OK : HRESULT_FROM_WIN32(ERROR_FILE_INVALID);
 
-      std::cout << "Do you want to use this file [y/n]:";
-      for (;;) {
-        std::string input;
-        std::getline(std::cin, input);
-        StringToLowerASCII(&input);
-        if (input == "y") {
-          return S_OK;
-        } else if (input == "n") {
-          is_valid = false;
-          break;
+      if (!contents.empty()) {
+        std::cout << "Do you want to use this file [y/n]:";
+        for (;;) {
+          std::string input;
+          std::getline(std::cin, input);
+          StringToLowerASCII(&input);
+          if (input == "y") {
+            return S_OK;
+          } else if (input == "n") {
+            is_valid = false;
+            break;
+          }
         }
       }
 
