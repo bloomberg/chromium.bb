@@ -57,8 +57,6 @@ FilePath FilePathFromFilename(const string16& filename) {
 // and move it somewhere sensible.
 FilePath GetFileNameFromDragData(const WebDropData& drop_data) {
   FilePath file_name(FilePathFromFilename(drop_data.file_description_filename));
-  std::string extension = file_name.Extension();
-  file_name = file_name.BaseName().RemoveExtension();
 
   // Images without ALT text will only have a file extension so we need to
   // synthesize one from the provided extension and URL.
@@ -66,10 +64,12 @@ FilePath GetFileNameFromDragData(const WebDropData& drop_data) {
     // Retrieve the name from the URL.
     string16 suggested_filename =
         net::GetSuggestedFilename(drop_data.url, "", "", "", "", "");
+    const std::string extension = file_name.Extension();
     file_name = FilePathFromFilename(suggested_filename);
+    file_name = file_name.ReplaceExtension(extension);
   }
 
-  return file_name.ReplaceExtension(extension);
+  return file_name;
 }
 
 // This helper's sole task is to write out data for a promised file; the caller

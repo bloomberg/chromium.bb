@@ -234,11 +234,11 @@ void WebContentsDragWin::PrepareDragForFileContents(
     const WebDropData& drop_data, ui::OSExchangeData* data) {
   static const int kMaxFilenameLength = 255;  // FAT and NTFS
   FilePath file_name(drop_data.file_description_filename);
-  string16 extension = file_name.Extension();
-  file_name = file_name.BaseName().RemoveExtension();
+
   // Images without ALT text will only have a file extension so we need to
   // synthesize one from the provided extension and URL.
-  if (file_name.value().empty()) {
+  if (file_name.BaseName().RemoveExtension().empty()) {
+    const string16 extension = file_name.Extension();
     // Retrieve the name from the URL.
     file_name = FilePath(
         net::GetSuggestedFilename(drop_data.url, "", "", "", "", ""));
@@ -246,8 +246,8 @@ void WebContentsDragWin::PrepareDragForFileContents(
       file_name = FilePath(file_name.value().substr(
           0, kMaxFilenameLength - extension.size()));
     }
+    file_name = file_name.ReplaceExtension(extension);
   }
-  file_name = file_name.ReplaceExtension(extension);
   data->SetFileContents(file_name, drop_data.file_contents);
 }
 
