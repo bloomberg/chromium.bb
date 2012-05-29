@@ -46,7 +46,6 @@ nrd_lib_inputs = [
     'nacl_desc_sync_socket.c',
     'nrd_all_modules.c',
     nrd_xfer_obj,
-    'nrd_xfer_effector.c',
     wrapper_obj,
 ]
 

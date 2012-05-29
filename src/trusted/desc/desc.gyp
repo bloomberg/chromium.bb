@@ -78,8 +78,6 @@
           'nrd_xfer.c',
           'nrd_xfer.h',
           'nrd_xfer_intern.h',
-          'nrd_xfer_effector.c',
-          'nrd_xfer_effector.h',
         ],
         # TODO(bsy,bradnelson): when gyp can do per-file flags, make
         # -fno-strict-aliasing and -Wno-missing-field-initializers
