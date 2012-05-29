@@ -76,10 +76,6 @@ class GaiaAuthConsumer {
   virtual void OnGetUserInfoSuccess(const UserInfoMap& data) {}
   virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error) {}
 
-  virtual void OnTokenAuthSuccess(const net::ResponseCookies& cookies,
-                                  const std::string& data) {}
-  virtual void OnTokenAuthFailure(const GoogleServiceAuthError& error) {}
-
   virtual void OnUberAuthTokenSuccess(const std::string& token) {}
   virtual void OnUberAuthTokenFailure(const GoogleServiceAuthError& error) {}
 

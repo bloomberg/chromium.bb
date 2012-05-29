@@ -92,11 +92,6 @@ const char GaiaAuthFetcher::kOAuth2CodeToTokenPairBodyFormat[] =
 const char GaiaAuthFetcher::kGetUserInfoFormat[] =
     "LSID=%s";
 // static
-const char GaiaAuthFetcher::kTokenAuthFormat[] =
-    "auth=%s&"
-    "continue=%s&"
-    "source=%s";
-// static
 const char GaiaAuthFetcher::kMergeSessionFormat[] =
     "uberauth=%s&"
     "continue=%s&"
@@ -203,7 +198,6 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
       issue_auth_token_gurl_(GaiaUrls::GetInstance()->issue_auth_token_url()),
       oauth2_token_gurl_(GaiaUrls::GetInstance()->oauth2_token_url()),
       get_user_info_gurl_(GaiaUrls::GetInstance()->get_user_info_url()),
-      token_auth_gurl_(GaiaUrls::GetInstance()->token_auth_url()),
       merge_session_gurl_(GaiaUrls::GetInstance()->merge_session_url()),
       uberauth_token_gurl_(base::StringPrintf(kUberAuthTokenURLFormat,
           GaiaUrls::GetInstance()->oauth1_login_url().c_str(), source.c_str())),
@@ -345,20 +339,6 @@ std::string GaiaAuthFetcher::MakeGetTokenPairBody(
 std::string GaiaAuthFetcher::MakeGetUserInfoBody(const std::string& lsid) {
   std::string encoded_lsid = net::EscapeUrlEncodedData(lsid, true);
   return base::StringPrintf(kGetUserInfoFormat, encoded_lsid.c_str());
-}
-
-// static
-std::string GaiaAuthFetcher::MakeTokenAuthBody(const std::string& auth_token,
-                                               const std::string& continue_url,
-                                               const std::string& source) {
-  std::string encoded_auth_token = net::EscapeUrlEncodedData(auth_token, true);
-  std::string encoded_continue_url = net::EscapeUrlEncodedData(continue_url,
-                                                               true);
-  std::string encoded_source = net::EscapeUrlEncodedData(source, true);
-  return base::StringPrintf(kTokenAuthFormat,
-                            encoded_auth_token.c_str(),
-                            encoded_continue_url.c_str(),
-                            encoded_source.c_str());
 }
 
 // static
@@ -694,26 +674,6 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid) {
   fetcher_->Start();
 }
 
-void GaiaAuthFetcher::StartTokenAuth(const std::string& auth_token) {
-  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
-
-  DVLOG(1) << "Starting TokenAuth with auth_token=" << auth_token;
-
-  // The continue URL is a required parameter of the TokenAuth API, but in this
-  // case we don't actually need or want to navigate to it.  Setting it to
-  // an arbitrary Google URL.
-  std::string continue_url("http://www.google.com");
-  request_body_ = MakeTokenAuthBody(auth_token, continue_url, source_);
-  fetcher_.reset(CreateGaiaFetcher(getter_,
-                                   request_body_,
-                                   "",
-                                   token_auth_gurl_,
-                                   kLoadFlagsIgnoreCookies,
-                                   this));
-  fetch_pending_ = true;
-  fetcher_->Start();
-}
-
 void GaiaAuthFetcher::StartMergeSession(const std::string& uber_token) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
@@ -1032,17 +992,6 @@ void GaiaAuthFetcher::OnGetUserInfoFetched(
   }
 }
 
-void GaiaAuthFetcher::OnTokenAuthFetched(const net::ResponseCookies& cookies,
-                                         const std::string& data,
-                                         const net::URLRequestStatus& status,
-                                         int response_code) {
-  if (status.is_success() && response_code == net::HTTP_OK) {
-    consumer_->OnTokenAuthSuccess(cookies, data);
-  } else {
-    consumer_->OnTokenAuthFailure(GenerateAuthError(data, status));
-  }
-}
-
 void GaiaAuthFetcher::OnMergeSessionFetched(const std::string& data,
                                             const net::URLRequestStatus& status,
                                             int response_code) {
@@ -1135,8 +1084,6 @@ void GaiaAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     OnOAuth2TokenPairFetched(data, status, response_code);
   } else if (url == get_user_info_gurl_) {
     OnGetUserInfoFetched(data, status, response_code);
-  } else if (url == token_auth_gurl_) {
-    OnTokenAuthFetched(source->GetCookies(), data, status, response_code);
   } else if (url == merge_session_gurl_) {
     OnMergeSessionFetched(data, status, response_code);
   } else if (url == uberauth_token_gurl_) {

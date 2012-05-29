@@ -240,10 +240,8 @@ void SigninManager::StartSignInWithCredentials(const std::string& session_index,
   //
   // - call /o/oauth2/programmatic_auth with the returned token to get oauth2
   //   access and refresh tokens
-  // - call /accounts/OAuthLogin with the oauth2 access token and get an uber
-  //   auth token
-  // - call /TokenAuth with the uber auth token to get a SID/LSID pair for use
-  //   by the token service
+  // - call /accounts/OAuthLogin with the oauth2 access token and get SID/LSID
+  //   pair for use by the token service
   //
   // The resulting SID/LSID can then be used just as if
   // client_login_->StartClientLogin() had completed successfully.
@@ -376,11 +374,9 @@ void SigninManager::OnClientOAuthSuccess(const ClientOAuthResult& result) {
 
   switch (type_) {
     case SIGNIN_TYPE_CLIENT_OAUTH:
+    case SIGNIN_TYPE_WITH_CREDENTIALS:
       client_login_->StartOAuthLogin(result.access_token,
                                      GaiaConstants::kGaiaService);
-      break;
-    case SIGNIN_TYPE_WITH_CREDENTIALS:
-      client_login_->StartTokenFetchForUberAuthExchange(result.access_token);
       break;
     default:
       NOTREACHED();
@@ -447,49 +443,6 @@ void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {
   LOG(ERROR) << "Unable to retreive the canonical email address. Login failed.";
   // REVIEW: why does this call OnClientLoginFailure?
   OnClientLoginFailure(error);
-}
-
-void SigninManager::OnTokenAuthSuccess(const net::ResponseCookies& cookies,
-                                       const std::string& data) {
-  DVLOG(1) << "SigninManager::OnTokenAuthSuccess";
-
-  // The SID and LSID from this request is equivalent the pair returned by
-  // ClientLogin.
-  std::string sid;
-  std::string lsid;
-  for (net::ResponseCookies::const_iterator i = cookies.begin();
-       i != cookies.end(); ++i) {
-    net::CookieMonster::ParsedCookie parsed(*i);
-    if (parsed.Name() == "SID") {
-      sid = parsed.Value();
-    } else if (parsed.Name() == "LSID") {
-      lsid = parsed.Value();
-    }
-  }
-
-  if (!sid.empty() && !lsid.empty()) {
-    OnClientLoginSuccess(
-        GaiaAuthConsumer::ClientLoginResult(sid, lsid, "", data));
-  } else {
-    OnTokenAuthFailure(
-        GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
-  }
-}
-
-void SigninManager::OnTokenAuthFailure(const GoogleServiceAuthError& error) {
-  DVLOG(1) << "Unable to retrieve the token auth.";
-  HandleAuthError(error, true);
-}
-
-void SigninManager::OnUberAuthTokenSuccess(const std::string& token) {
-  DVLOG(1) << "SigninManager::OnUberAuthTokenSuccess token=" << token;
-  client_login_->StartTokenAuth(token);
-}
-
-void SigninManager::OnUberAuthTokenFailure(
-    const GoogleServiceAuthError& error) {
-  LOG(WARNING) << "SigninManager::OnUberAuthTokenFailure";
-  HandleAuthError(error, true);
 }
 
 void SigninManager::Observe(int type,

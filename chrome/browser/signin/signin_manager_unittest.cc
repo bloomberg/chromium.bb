@@ -140,19 +140,10 @@ class SigninManagerTest : public TokenServiceTestHarness {
     SetupFetcherAndComplete(GaiaUrls::GetInstance()->oauth2_token_url(), 200,
                             net::ResponseCookies(), kGetTokenPairValidResponse);
 
-    // Simulate the correct StartUberAuthTokenFetch response.
-    std::string url(base::StringPrintf(
-        "%s?source=%s&issueuberauth=1",
-        GaiaUrls::GetInstance()->oauth1_login_url().c_str(),
-        GaiaConstants::kChromeSource));
-    SetupFetcherAndComplete(url, 200, net::ResponseCookies(), "token");
-
-    // Simulate the correct StartTokenAuth response.
-    net::ResponseCookies cookies;
-    cookies.push_back("SID=sid");
-    cookies.push_back("LSID=lsid");
-    SetupFetcherAndComplete(GaiaUrls::GetInstance()->token_auth_url(), 200,
-                            cookies, "data");
+    // Simulate the correct StartOAuthLogin response.
+    SetupFetcherAndComplete(GaiaUrls::GetInstance()->oauth1_login_url(), 200,
+                            net::ResponseCookies(),
+                            "SID=sid\nLSID=lsid\nAuth=auth_token");
 
     SimulateValidResponseGetClientInfo(false);
   }
