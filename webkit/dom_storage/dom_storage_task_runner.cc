@@ -51,7 +51,7 @@ bool DomStorageWorkerPoolTaskRunner::PostDelayedTask(
   if (delay == base::TimeDelta()) {
     return sequenced_worker_pool_->PostSequencedWorkerTaskWithShutdownBehavior(
         primary_sequence_token_, from_here, task,
-        base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+        base::SequencedWorkerPool::BLOCK_SHUTDOWN);
   }
   // Post a task to call this->PostTask() after the delay.
   return message_loop_->PostDelayedTask(

@@ -21,8 +21,9 @@ namespace dom_storage {
 // primary access from queuing up behind commits to disk.
 // * Initialization, shutdown, and administrative tasks are performed as
 //   shutdown-blocking primary sequence tasks.
-// * Methods that return values to the javascript'able interface are performed
-//   as non-shutdown-blocking primary sequence tasks.
+// * Tasks directly related to the javascript'able interface are performed
+//   as shutdown-blocking primary sequence tasks.
+//   TODO(michaeln): Skip tasks for reading during shutdown.
 // * Internal tasks related to committing changes to disk are performed as
 //   shutdown-blocking commit sequence tasks.
 class DomStorageTaskRunner : public base::TaskRunner {
@@ -33,7 +34,7 @@ class DomStorageTaskRunner : public base::TaskRunner {
   };
 
   // The PostTask() and PostDelayedTask() methods defined by TaskRunner
-  // post non-shutdown-blocking tasks on the primary sequence.
+  // post shutdown-blocking tasks on the primary sequence.
   virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
