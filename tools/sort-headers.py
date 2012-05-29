@@ -37,6 +37,7 @@ def IncludeCompareKey(line):
   """Sorting comparator key used for comparing two #include lines.
   Returns the filename without the #include/#import prefix.
   """
+  line = line.lower()
   for prefix in ('#include ', '#import '):
     if line.startswith(prefix):
       line = line[len(prefix):]
