@@ -6,6 +6,7 @@ import types
 
 import selenium.common.exceptions
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 def _FocusField(driver, list_elem, field_elem):
@@ -512,31 +513,40 @@ class BasicSettingsPage(object):
     startup_option_elem.click()
 
   def _GoToStartupSetPages(self):
-    self._driver.get(self._URL)
     self._driver.find_element_by_id('startup-set-pages').click()
 
-  def _FillStartupURLs(self, url_list):
+  def _FillStartupURL(self, url):
     list = DynamicList(self._driver, self._driver.find_element_by_id(
                        'startupPagesList'))
-    for url in url_list:
-      list.Add(url + '\n')
+    list.Add(url + '\n')
 
-  def AddStartupPages(self, url_list):
-    """Add startup URLs.
+  def AddStartupPage(self, url):
+    """Add a startup URL.
 
     Args:
-      url_list: A list or startup urls
+      url: A startup url.
     """
     self._GoToStartupSetPages()
-    self._FillStartupURLs(url_list)
+    self._FillStartupURL(url)
     self._driver.find_element_by_id('startup-overlay-confirm').click()
     self._driver.get(self._URL)
 
-  def UseCurrentPageForStartup(self):
-    """Use current pages and verify page url show up in settings."""
+  def UseCurrentPageForStartup(self, title_list):
+    """Use current pages and verify page url show up in settings.
+
+    Args:
+      title_list: startup web page title list.
+    """
     self._GoToStartupSetPages()
     self._driver.find_element_by_id('startupUseCurrentButton').click()
     self._driver.find_element_by_id('startup-overlay-confirm').click()
+    def is_current_page_visible(driver):
+      title_elem_list = driver.find_elements_by_xpath(
+          '//*[contains(@class, "title")][text()="%s"]' % title_list[0])
+      if len(title_elem_list) == 0:
+        return False
+      return True
+    WebDriverWait(self._driver, 10).until(is_current_page_visible)
     self._driver.get(self._URL)
 
   def VerifyStartupURLs(self, title_list):
@@ -558,13 +568,13 @@ class BasicSettingsPage(object):
             % title_list[i])
     self._driver.find_element_by_id('startup-overlay-cancel').click()
 
-  def CancelStartupURLSetting(self, url_list):
+  def CancelStartupURLSetting(self, url):
     """Cancel start up URL settings.
 
     Args:
-      url_list: A list of startup urls.
+      url: A startup url.
     """
     self._GoToStartupSetPages()
-    self._FillStartupURLs(url_list)
+    self._FillStartupURL(url)
     self._driver.find_element_by_id('startup-overlay-cancel').click()
     self._driver.get(self._URL)

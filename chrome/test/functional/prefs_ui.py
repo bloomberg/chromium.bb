@@ -229,9 +229,9 @@ class BasicSettingsUITest(pyauto.PyUITest):
 
   def testSetStartupPages(self):
     """Verify user can add urls for startup pages."""
-    url_list = ['www.google.com', 'http://www.amazon.com', 'ebay.com']
     page = settings.BasicSettingsPage.FromNavigation(self._driver)
-    page.AddStartupPages(url_list)
+    for url in ['www.google.com', 'http://www.amazon.com', 'ebay.com']:
+      page.AddStartupPage(url)
     self.assertEqual(RestoreOnStartupType.RESTORE_URLS,
         self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
     startup_urls = self.GetPrefsInfo().Prefs(pyauto.kURLsToRestoreOnStartup)
@@ -249,7 +249,7 @@ class BasicSettingsUITest(pyauto.PyUITest):
     self.AppendTab(pyauto.GURL(url2), 1)
     title_list = ['Title Of Awesomeness',
                   'Title Of More Awesomeness']
-    page.UseCurrentPageForStartup()
+    page.UseCurrentPageForStartup(title_list)
     page.VerifyStartupURLs(title_list)
     self.assertEqual(RestoreOnStartupType.RESTORE_URLS,
         self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
@@ -261,8 +261,8 @@ class BasicSettingsUITest(pyauto.PyUITest):
   def testCancelStartupURLSetting(self):
     """Verify canceled start up URLs settings are not saved."""
     page = settings.BasicSettingsPage.FromNavigation(self._driver)
-    url_list = ['www.google.com', 'http://www.amazon.com']
-    page.CancelStartupURLSetting(url_list)
+    for url in ['www.google.com', 'http://www.amazon.com']:
+      page.CancelStartupURLSetting(url)
     startup_urls = self.GetPrefsInfo().Prefs(pyauto.kURLsToRestoreOnStartup)
     self.assertEqual(len(startup_urls), 0)
 
