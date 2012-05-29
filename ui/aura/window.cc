@@ -76,8 +76,7 @@ Window::~Window() {
     root_window->OnWindowDestroying(this);
 
   // Then destroy the children.
-  size_t child_count = children_.size();
-  while (child_count-- > 0) {
+  while (!children_.empty()) {
     Window* child = children_[0];
     if (child->owned_by_parent_) {
       delete child;

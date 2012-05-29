@@ -1898,5 +1898,48 @@ TEST_F(WindowTest, OwnedByParentFalse) {
   EXPECT_EQ(NULL, w2->parent());
 }
 
+namespace {
+
+// Used By DeleteWindowFromOnWindowDestroyed. Destroys a Window from
+// OnWindowDestroyed().
+class OwningWindowDelegate : public TestWindowDelegate {
+ public:
+  OwningWindowDelegate() {}
+
+  void SetOwnedWindow(Window* window) {
+    owned_window_.reset(window);
+  }
+
+  virtual void OnWindowDestroyed() OVERRIDE {
+    owned_window_.reset(NULL);
+  }
+
+ private:
+  scoped_ptr<Window> owned_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(OwningWindowDelegate);
+};
+
+}  // namespace
+
+// Creates a window with two child windows. When the first child window is
+// destroyed (WindowDelegate::OnWindowDestroyed) it deletes the second child.
+// This synthesizes BrowserView and the status bubble. Both are children of the
+// same parent and destroying BrowserView triggers it destroying the status
+// bubble.
+TEST_F(WindowTest, DeleteWindowFromOnWindowDestroyed) {
+  scoped_ptr<Window> parent(new Window(NULL));
+  parent->Init(ui::LAYER_NOT_DRAWN);
+  OwningWindowDelegate delegate;
+  Window* c1 = new Window(&delegate);
+  c1->Init(ui::LAYER_NOT_DRAWN);
+  c1->SetParent(parent.get());
+  Window* c2 = new Window(NULL);
+  c2->Init(ui::LAYER_NOT_DRAWN);
+  c2->SetParent(parent.get());
+  delegate.SetOwnedWindow(c2);
+  parent.reset();
+}
+
 }  // namespace test
 }  // namespace aura
