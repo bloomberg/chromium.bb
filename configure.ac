@@ -80,9 +80,12 @@ AC_CONFIG_FILES([Makefile
 		 wayland-scanner.m4
 		 cursor/Makefile
 		 cursor/wayland-cursor.pc
+		 cursor/wayland-cursor-uninstalled.pc
 		 doc/Makefile
 		 doc/Wayland/Makefile
 		 src/Makefile
+		 src/wayland-server-uninstalled.pc
+		 src/wayland-client-uninstalled.pc
 		 src/wayland-server.pc
 		 src/wayland-client.pc
 		 src/wayland-version.h
