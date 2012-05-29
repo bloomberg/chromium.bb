@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/io_thread.h"
 #include "net/base/address_list.h"
-#include "net/base/capturing_net_log.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_resolver.h"
 
@@ -50,7 +49,6 @@ class DnsResolveFunction : public AsyncExtensionFunction {
   // plain pointer to it here as we move from thread to thread.
   IOThread* io_thread_;
 
-  scoped_ptr<net::CapturingBoundNetLog> capturing_bound_net_log_;
   scoped_ptr<net::HostResolver::RequestHandle> request_handle_;
   scoped_ptr<net::AddressList> addresses_;
 };

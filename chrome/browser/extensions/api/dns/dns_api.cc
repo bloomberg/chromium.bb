@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 
 using content::BrowserThread;
 using extensions::api::experimental_dns::ResolveCallbackResolveInfo;
@@ -32,8 +33,6 @@ net::HostResolver* g_host_resolver_for_testing = NULL;
 DnsResolveFunction::DnsResolveFunction()
     : response_(false),
       io_thread_(g_browser_process->io_thread()),
-      capturing_bound_net_log_(new net::CapturingBoundNetLog(
-          net::CapturingNetLog::kUnbounded)),
       request_handle_(new net::HostResolver::RequestHandle()),
       addresses_(new net::AddressList) {
 }
@@ -76,7 +75,7 @@ void DnsResolveFunction::WorkOnIOThread() {
   int resolve_result = host_resolver->Resolve(
       request_info, addresses_.get(),
       base::Bind(&DnsResolveFunction::OnLookupFinished, this),
-      request_handle_.get(), capturing_bound_net_log_->bound());
+      request_handle_.get(), net::BoundNetLog());
 
   // Balanced in OnLookupFinished.
   AddRef();
