@@ -249,7 +249,7 @@ void Canvas::DrawStringWithShadows(const string16& text,
                                    SkColor color,
                                    const gfx::Rect& text_bounds,
                                    int flags,
-                                   const std::vector<ShadowValue>& shadows) {
+                                   const ShadowValues& shadows) {
   DLOG_IF(WARNING, !shadows.empty()) << "Text shadow not implemented.";
 
   if (!IntersectsClipRect(text_bounds))

@@ -36,7 +36,7 @@ class DropShadowLabel : public views::Label  {
                          const gfx::Rect& text_bounds,
                          int flags) OVERRIDE;
 
-  std::vector<gfx::ShadowValue> text_shadows_;
+  gfx::ShadowValues text_shadows_;
 
   DISALLOW_COPY_AND_ASSIGN(DropShadowLabel);
 };

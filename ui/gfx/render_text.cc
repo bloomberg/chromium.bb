@@ -16,7 +16,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/shadow_value.h"
 
 namespace {
 
@@ -685,7 +684,7 @@ SelectionModel RenderText::GetSelectionModelForSelectionStart() {
                         sel.is_reversed() ? CURSOR_BACKWARD : CURSOR_FORWARD);
 }
 
-void RenderText::SetTextShadows(const std::vector<ShadowValue>& shadows) {
+void RenderText::SetTextShadows(const ShadowValues& shadows) {
   text_shadows_ = shadows;
 }
 

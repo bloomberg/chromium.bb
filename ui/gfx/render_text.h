@@ -22,6 +22,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/selection_model.h"
+#include "ui/gfx/shadow_value.h"
 
 class SkCanvas;
 class SkDrawLooper;
@@ -34,7 +35,6 @@ namespace gfx {
 class Canvas;
 class Font;
 class RenderTextTest;
-class ShadowValue;
 struct StyleRange;
 
 namespace internal {
@@ -277,7 +277,7 @@ class UI_EXPORT RenderText {
   SelectionModel GetSelectionModelForSelectionStart();
 
   // Sets shadows to drawn with text.
-  void SetTextShadows(const std::vector<ShadowValue>& shadows);
+  void SetTextShadows(const ShadowValues& shadows);
 
   typedef std::pair<Font, ui::Range> FontSpan;
   // For testing purposes, returns which fonts were chosen for which parts of
@@ -483,7 +483,7 @@ class UI_EXPORT RenderText {
   bool cached_bounds_and_offset_valid_;
 
   // Text shadows to be drawn.
-  std::vector<ShadowValue> text_shadows_;
+  ShadowValues text_shadows_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

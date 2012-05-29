@@ -14,6 +14,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/shadow_value.h"
 
 class SkBitmap;
 
@@ -27,7 +28,6 @@ class Brush;
 class Rect;
 class Font;
 class Point;
-class ShadowValue;
 class Size;
 
 // Canvas is a SkCanvas wrapper that provides a number of methods for
@@ -306,7 +306,7 @@ class UI_EXPORT Canvas {
                              SkColor color,
                              const gfx::Rect& text_bounds,
                              int flags,
-                             const std::vector<ShadowValue>& shadows);
+                             const ShadowValues& shadows);
 
   // Draws a dotted gray rectangle used for focus purposes.
   void DrawFocusRect(const gfx::Rect& rect);

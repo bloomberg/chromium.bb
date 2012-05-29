@@ -13,7 +13,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 
@@ -378,7 +377,7 @@ void Canvas::DrawStringInt(const string16& text,
                         color,
                         gfx::Rect(x, y, w, h),
                         flags,
-                        std::vector<ShadowValue>());
+                        ShadowValues());
 }
 
 void Canvas::TileImageInt(const gfx::ImageSkia& image,
