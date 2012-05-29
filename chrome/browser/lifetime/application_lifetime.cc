@@ -162,9 +162,11 @@ void CloseAllBrowsers() {
   // Tell everyone that we are shutting down.
   browser_shutdown::SetTryingToQuit(true);
 
+#if defined(ENABLE_SESSION_SERVICE)
   // Before we close the browsers shutdown all session services. That way an
   // exit can restore all browsers open before exiting.
   ProfileManager::ShutdownSessionServices();
+#endif
 
   // If there are no browsers, send the APP_TERMINATING action here. Otherwise,
   // it will be sent by RemoveBrowser() when the last browser has closed.
