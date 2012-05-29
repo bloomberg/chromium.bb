@@ -186,8 +186,8 @@ class ComponentUpdaterTest : public testing::Test {
   }
 
   void RegisterComponent(CrxComponent* com,
-                       TestComponents component,
-                       const Version& version) {
+                         TestComponents component,
+                         const Version& version) {
     if (component == kTestComponent_abag) {
       com->name = "test_abag";
       com->pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
@@ -196,8 +196,9 @@ class ComponentUpdaterTest : public testing::Test {
       com->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
     }
     com->version = version;
-    com->installer = new TestInstaller;
-    test_installers_.push_back(com->installer);
+    TestInstaller* installer = new TestInstaller;
+    com->installer = installer;
+    test_installers_.push_back(installer);
     component_updater_->RegisterComponent(*com);
   }
 
@@ -207,7 +208,7 @@ class ComponentUpdaterTest : public testing::Test {
   TestNotificationTracker notification_tracker_;
   TestConfigurator* test_config_;
   // ComponentInstaller objects to delete after each test.
-  ScopedVector<ComponentInstaller> test_installers_;
+  ScopedVector<TestInstaller> test_installers_;
 };
 
 // Verify that our test fixture work and the component updater can
