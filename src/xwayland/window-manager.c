@@ -740,6 +740,9 @@ weston_wm_handle_destroy_notify(struct weston_wm *wm, xcb_generic_event_t *event
 	xcb_destroy_window(wm->conn, window->frame_id);
 	if (window->surface)
 		wl_list_remove(&window->surface_destroy_listener.link);
+	if (wm->focus_window == window)
+		wm->focus_window = NULL;
+
 	free(window);
 }
 
