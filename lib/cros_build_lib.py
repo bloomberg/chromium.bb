@@ -61,7 +61,7 @@ class RunCommandError(Exception):
     self.args = (msg, result)
 
   def __str__(self):
-    items = []
+    items = ['return code: %s' % (self.result.returncode,)]
     if self.result.error:
       items.append(self.result.error)
     if self.result.output:
