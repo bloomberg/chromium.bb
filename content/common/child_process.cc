@@ -4,7 +4,7 @@
 
 #include "content/common/child_process.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
 #include <signal.h>  // For SigUSR1Handler below.
 #endif
 
@@ -15,7 +15,11 @@
 #include "base/utf_string_conversions.h"
 #include "content/common/child_thread.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_ANDROID)
+#include "base/debug/debugger.h"
+#endif
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
 static void SigUSR1Handler(int signal) { }
 #endif
 
@@ -95,6 +99,11 @@ void ChildProcess::WaitForDebugger(const std::string& label) {
   ::MessageBox(NULL, UTF8ToWide(message).c_str(), UTF8ToWide(title).c_str(),
                MB_OK | MB_SETFOREGROUND);
 #elif defined(OS_POSIX)
+#if defined(OS_ANDROID)
+  LOG(ERROR) << label << " waiting for GDB.";
+  // Wait 24 hours for a debugger to be attached to the current process.
+  base::debug::WaitForDebugger(24 * 60 * 60, false);
+#else
   // TODO(playmobil): In the long term, overriding this flag doesn't seem
   // right, either use our own flag or open a dialog we can use.
   // This is just to ease debugging in the interim.
@@ -109,5 +118,6 @@ void ChildProcess::WaitForDebugger(const std::string& label) {
   sigaction(SIGUSR1, &sa, NULL);
 
   pause();
+#endif  // defined(OS_ANDROID)
 #endif  // defined(OS_POSIX)
 }
