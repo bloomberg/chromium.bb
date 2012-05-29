@@ -26,10 +26,6 @@
 UNFILED MAC WIN LINUX : conformance_more_* = SKIP
 UNFILED MAC WIN LINUX : conformance_ogles_* = SKIP
 
-UNFILED MAC WIN LINUX : conformance_textures_tex_image_and_sub_image_2d_with_canvas_* = FAIL
-UNFILED MAC WIN LINUX : conformance_textures_tex_image_and_sub_image_2d_with_image_data_* = FAIL
-UNFILED MAC WIN LINUX : conformance_textures_tex_image_and_sub_image_2d_with_image_* = FAIL
-
 UNFILED MAC WIN LINUX : conformance_state_gl_get_calls = FAIL
 UNFILED MAC WIN LINUX : conformance_attribs_gl_vertex_attrib_render = FAIL
 
@@ -167,7 +163,3 @@ UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
 //  Temprory entries: they should be removed once the bugs are fixed.
 //
 ////////////////////////////////////////////////////////////////////////////////
-
-// Should be passing after the next webkit roll
-UNFILED MAC WIN LINUX : conformance_renderbuffers_framebuffer_state_restoration = FAIL
-UNFILED MAC WIN LINUX : conformance_canvas_framebuffer_bindings_unaffected_on_resize = FAIL
