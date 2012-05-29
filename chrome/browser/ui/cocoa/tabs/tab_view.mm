@@ -213,9 +213,7 @@ const CGFloat kRapidCloseDist = 2.5;
   }
 
   // Fire the action to select the tab.
-  if ([[controller_ target] respondsToSelector:[controller_ action]])
-    [[controller_ target] performSelector:[controller_ action]
-                               withObject:self];
+  [controller_ selectTab:self];
 
   // Messaging the drag controller with |-endDrag:| would seem like the right
   // thing to do here. But, when a tab has been detached, the controller's

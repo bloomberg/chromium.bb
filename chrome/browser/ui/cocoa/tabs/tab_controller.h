@@ -96,6 +96,9 @@ class MenuDelegate;
 // perform the close.
 - (IBAction)closeTab:(id)sender;
 
+// Selects the associated TabView by sending |action_| to |target_|.
+- (void)selectTab:(id)sender;
+
 // Replace the current icon view with the given view. |iconView| will be
 // resized to the size of the current icon view.
 - (void)setIconView:(NSView*)iconView;

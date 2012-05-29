@@ -147,8 +147,7 @@ const NSTimeInterval kTearDuration = 0.333;
     } else if (type == NSLeftMouseDragged) {
       [self continueDrag:theEvent];
     } else if (type == NSLeftMouseUp) {
-      DCHECK(![tab inRapidClosureMode]);
-      [[tab view] mouseUp:theEvent];
+      [tab selectTab:self];
       [self endDrag:theEvent];
       break;
     } else {
