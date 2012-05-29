@@ -171,7 +171,8 @@ class PluginDelegate {
     virtual ~PlatformContext3D() {}
 
     // Initialize the context.
-    virtual bool Init(const int32* attrib_list) = 0;
+    virtual bool Init(const int32* attrib_list,
+                      PlatformContext3D* share_context) = 0;
 
     // If the plugin instance is backed by an OpenGL, return its ID in the
     // compositors namespace. Otherwise return 0. Returns 0 by default.

@@ -787,8 +787,9 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics2D_Flush,
                     ppapi::HostResource /* graphics_2d */)
 
 // PPB_Graphics3D.
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBGraphics3D_Create,
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics3D_Create,
                            PP_Instance /* instance */,
+                           ppapi::HostResource /* share_context */,
                            std::vector<int32_t> /* attrib_list */,
                            ppapi::HostResource /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBGraphics3D_InitCommandBuffer,

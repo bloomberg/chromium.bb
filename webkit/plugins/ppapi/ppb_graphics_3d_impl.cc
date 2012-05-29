@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ppapi/c/ppp_graphics_3d.h"
+#include "ppapi/thunk/enter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -19,6 +20,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
+using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Graphics3D_API;
 using WebKit::WebConsoleMessage;
 using WebKit::WebFrame;
@@ -78,9 +80,18 @@ PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
 PP_Resource PPB_Graphics3D_Impl::Create(PP_Instance instance,
                                         PP_Resource share_context,
                                         const int32_t* attrib_list) {
+  PPB_Graphics3D_API* share_api = NULL;
+  if (share_context) {
+    EnterResourceNoLock<PPB_Graphics3D_API> enter(share_context, true);
+    if (enter.failed())
+      return 0;
+    share_api = enter.object();
+  }
+
   scoped_refptr<PPB_Graphics3D_Impl> graphics_3d(
       new PPB_Graphics3D_Impl(instance));
-  if (!graphics_3d->Init(share_context, attrib_list))
+
+  if (!graphics_3d->Init(share_api, attrib_list))
     return 0;
   return graphics_3d->GetReference();
 }
@@ -88,9 +99,16 @@ PP_Resource PPB_Graphics3D_Impl::Create(PP_Instance instance,
 PP_Resource PPB_Graphics3D_Impl::CreateRaw(PP_Instance instance,
                                            PP_Resource share_context,
                                            const int32_t* attrib_list) {
+  PPB_Graphics3D_API* share_api = NULL;
+  if (share_context) {
+    EnterResourceNoLock<PPB_Graphics3D_API> enter(share_context, true);
+    if (enter.failed())
+      return 0;
+    share_api = enter.object();
+  }
   scoped_refptr<PPB_Graphics3D_Impl> graphics_3d(
       new PPB_Graphics3D_Impl(instance));
-  if (!graphics_3d->InitRaw(share_context, attrib_list))
+  if (!graphics_3d->InitRaw(share_api, attrib_list))
     return 0;
   return graphics_3d->GetReference();
 }
@@ -199,7 +217,7 @@ int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
   return PP_OK_COMPLETIONPENDING;
 }
 
-bool PPB_Graphics3D_Impl::Init(PP_Resource share_context,
+bool PPB_Graphics3D_Impl::Init(PPB_Graphics3D_API* share_context,
                                const int32_t* attrib_list) {
   if (!InitRaw(share_context, attrib_list))
     return false;
@@ -208,25 +226,34 @@ bool PPB_Graphics3D_Impl::Init(PP_Resource share_context,
   if (!command_buffer->Initialize())
     return false;
 
-  return CreateGLES2Impl(kCommandBufferSize, kTransferBufferSize);
+  gpu::gles2::GLES2Implementation* share_gles2 = NULL;
+  if (share_context) {
+    share_gles2 =
+        static_cast<PPB_Graphics3D_Shared*>(share_context)->gles2_impl();
+  }
+
+  return CreateGLES2Impl(kCommandBufferSize, kTransferBufferSize,
+                         share_gles2);
 }
 
-bool PPB_Graphics3D_Impl::InitRaw(PP_Resource share_context,
+bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
                                   const int32_t* attrib_list) {
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return false;
 
-  // TODO(alokp): Support shared context.
-  DCHECK_EQ(0, share_context);
-  if (share_context != 0)
-    return false;
+  PluginDelegate::PlatformContext3D* share_platform_context = NULL;
+  if (share_context) {
+    PPB_Graphics3D_Impl* share_graphics =
+        static_cast<PPB_Graphics3D_Impl*>(share_context);
+    share_platform_context = share_graphics->platform_context();
+  }
 
   platform_context_.reset(plugin_instance->CreateContext3D());
   if (!platform_context_.get())
     return false;
 
-  if (!platform_context_->Init(attrib_list))
+  if (!platform_context_->Init(attrib_list, share_platform_context))
     return false;
 
   platform_context_->SetContextLostCallback(

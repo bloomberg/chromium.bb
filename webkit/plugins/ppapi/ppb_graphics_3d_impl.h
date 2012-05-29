@@ -67,9 +67,9 @@ class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
  private:
   explicit PPB_Graphics3D_Impl(PP_Instance instance);
 
-  bool Init(PP_Resource share_context,
+  bool Init(PPB_Graphics3D_API* share_context,
             const int32_t* attrib_list);
-  bool InitRaw(PP_Resource share_context,
+  bool InitRaw(PPB_Graphics3D_API* share_context,
                const int32_t* attrib_list);
 
   // Notifications received from the GPU process.

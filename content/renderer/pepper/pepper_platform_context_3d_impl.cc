@@ -51,7 +51,8 @@ PlatformContext3DImpl::~PlatformContext3DImpl() {
   channel_ = NULL;
 }
 
-bool PlatformContext3DImpl::Init(const int32* attrib_list) {
+bool PlatformContext3DImpl::Init(const int32* attrib_list,
+                                 PlatformContext3D* share_context) {
   // Ignore initializing more than once.
   if (command_buffer_)
     return true;
@@ -114,9 +115,16 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
     attribs.push_back(PP_GRAPHICS3DATTRIB_NONE);
   }
 
+  CommandBufferProxy* share_buffer = NULL;
+  if (share_context) {
+    PlatformContext3DImpl* share_impl =
+        static_cast<PlatformContext3DImpl*>(share_context);
+    share_buffer = share_impl->command_buffer_;
+  }
+
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
       surface_size,
-      NULL,
+      share_buffer,
       "*",
       attribs,
       GURL::EmptyGURL(),

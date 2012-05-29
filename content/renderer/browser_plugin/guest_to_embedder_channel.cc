@@ -168,6 +168,7 @@ bool GuestToEmbedderChannel::CreateGraphicsContext(
   bool success = Send(new PpapiHostMsg_PPBGraphics3D_Create(
       ppapi::API_ID_PPB_GRAPHICS_3D,
       render_view->guest_pp_instance(),
+      ppapi::HostResource(),
       attribs,
       &resource));
   if (!success || resource.is_null())

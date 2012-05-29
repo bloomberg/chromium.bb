@@ -69,7 +69,7 @@ Graphics3D::~Graphics3D() {
   DestroyGLES2Impl();
 }
 
-bool Graphics3D::Init() {
+bool Graphics3D::Init(gpu::gles2::GLES2Implementation* share_gles2) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForResource(this);
   if (!dispatcher)
     return false;
@@ -79,7 +79,8 @@ bool Graphics3D::Init() {
   if (!command_buffer_->Initialize())
     return false;
 
-  return CreateGLES2Impl(kCommandBufferSize, kTransferBufferSize);
+  return CreateGLES2Impl(kCommandBufferSize, kTransferBufferSize,
+                         share_gles2);
 }
 
 PP_Bool Graphics3D::InitCommandBuffer() {
@@ -152,10 +153,18 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
   if (!dispatcher)
     return PP_ERROR_BADARGUMENT;
 
-  // TODO(alokp): Support shared context.
-  DCHECK_EQ(0, share_context);
-  if (share_context != 0)
-    return 0;
+  HostResource share_host;
+  gpu::gles2::GLES2Implementation* share_gles2 = NULL;
+  if (share_context != 0) {
+    EnterResourceNoLock<PPB_Graphics3D_API> enter(share_context, true);
+    if (enter.failed())
+      return PP_ERROR_BADARGUMENT;
+
+    PPB_Graphics3D_Shared* share_graphics =
+        static_cast<PPB_Graphics3D_Shared*>(enter.object());
+    share_host = share_graphics->host_resource();
+    share_gles2 = share_graphics->gles2_impl();
+  }
 
   std::vector<int32_t> attribs;
   if (attrib_list) {
@@ -170,12 +179,12 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBGraphics3D_Create(
-      API_ID_PPB_GRAPHICS_3D, instance, attribs, &result));
+      API_ID_PPB_GRAPHICS_3D, instance, share_host, attribs, &result));
   if (result.is_null())
     return 0;
 
   scoped_refptr<Graphics3D> graphics_3d(new Graphics3D(result));
-  if (!graphics_3d->Init())
+  if (!graphics_3d->Init(share_gles2))
     return 0;
   return graphics_3d->GetReference();
 }
@@ -214,16 +223,20 @@ bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PPB_Graphics3D_Proxy::OnMsgCreate(PP_Instance instance,
+                                       HostResource share_context,
                                        const std::vector<int32_t>& attribs,
                                        HostResource* result) {
   if (attribs.empty() || attribs.back() != PP_GRAPHICS3DATTRIB_NONE)
     return;  // Bad message.
 
   thunk::EnterResourceCreation enter(instance);
+
   if (enter.succeeded()) {
     result->SetHostResource(
-        instance,
-        enter.functions()->CreateGraphics3DRaw(instance, 0, &attribs.front()));
+      instance,
+      enter.functions()->CreateGraphics3DRaw(instance,
+                                             share_context.host_resource(),
+                                             &attribs.front()));
   }
 }
 

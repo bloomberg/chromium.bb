@@ -36,7 +36,8 @@ class PlatformContext3DImpl
       PepperParentContextProvider* parent_context_provider);
   virtual ~PlatformContext3DImpl();
 
-  virtual bool Init(const int32* attrib_list) OVERRIDE;
+  virtual bool Init(const int32* attrib_list,
+                    PlatformContext3D* share_context) OVERRIDE;
   virtual unsigned GetBackingTextureId() OVERRIDE;
   virtual bool IsOpaque() OVERRIDE;
   virtual gpu::CommandBuffer* GetCommandBuffer() OVERRIDE;
