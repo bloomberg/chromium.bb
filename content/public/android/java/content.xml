@@ -13,7 +13,7 @@
   <property name="sdk.version" value="${env.ANDROID_SDK_VERSION}"/>
   <property name="src" location="."/>
   <property name="out.dir" location="${PRODUCT_DIR}/lib.java"/>
-  <property name="classes.dir" location="${out.dir}/java/${PACKAGE_NAME}"/>
+  <property name="classes.dir" location="${PRODUCT_DIR}/java/${PACKAGE_NAME}"/>
   <property name="jar.dir" location="${out.dir}"/>
 
   <condition property="location.base"

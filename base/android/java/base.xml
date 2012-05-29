@@ -52,7 +52,7 @@
   <target name="dist" depends="compile"
           description="generate the distribution" >
     <!-- Create the distribution directory -->
-    <mkdir dir="${dist}/lib"/>
+    <mkdir dir="${out.dir}"/>
 
     <jar jarfile="${out.dir}/chromium_base.jar" basedir="${dest.dir}"/>
   </target>

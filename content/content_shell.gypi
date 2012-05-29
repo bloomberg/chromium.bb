@@ -572,7 +572,7 @@
               ],
               'action': [
                 'ant',
-                '-DPRODUCT_DIR=<(PRODUCT_DIR)',
+                '-DPRODUCT_DIR=<(ant_build_out)',
                 '-DAPP_ABI=<(android_app_abi)',
                 '-buildfile',
                 '<(DEPTH)/content/shell/android/content_shell_apk.xml',

@@ -45,7 +45,7 @@
   <target name="dist" depends="compile"
           description="generate the distribution" >
     <!-- Create the distribution directory -->
-    <mkdir dir="${dist}/lib"/>
+    <mkdir dir="${out.dir}"/>
 
     <!-- Put everything in ${build} into the chromium_media.jar file -->
     <jar jarfile="${out.dir}/chromium_media.jar" basedir="${dest.dir}"/>

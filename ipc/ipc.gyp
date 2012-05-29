@@ -107,7 +107,7 @@
           ],
           'variables': {
             'test_suite_name': 'ipc_tests',
-            'input_shlib_path': '<(PRODUCT_DIR)/lib.target/<(SHARED_LIB_PREFIX)ipc_tests<(SHARED_LIB_SUFFIX)',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)ipc_tests<(SHARED_LIB_SUFFIX)',
             'input_jars_paths': ['<(PRODUCT_DIR)/lib.java/chromium_base.jar',],
           },
           'includes': [ '../build/apk_test.gypi' ],
