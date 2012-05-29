@@ -8,10 +8,16 @@ namespace {
 
 typedef extensions::SuggestedLinksRegistry::SuggestedLinkList SuggestedLinkList;
 
-void RemoveLinkFromList(const std::string& link_url, SuggestedLinkList* list) {
+SuggestedLinkList::iterator FindUrlInList(const std::string& link_url,
+                                          SuggestedLinkList* list) {
   SuggestedLinkList::iterator found = list->begin();
   for (; found != list->end(); ++found)
     if (link_url.compare((*found)->link_url()) == 0) break;
+  return found;
+}
+
+void RemoveLinkFromList(const std::string& link_url, SuggestedLinkList* list) {
+  SuggestedLinkList::iterator found = FindUrlInList(link_url, list);
   if (found != list->end())
     list->erase(found);
 }
@@ -28,7 +34,12 @@ SuggestedLinksRegistry::~SuggestedLinksRegistry() {
 void SuggestedLinksRegistry::Add(const std::string& extension_id,
                                  scoped_ptr<extensions::SuggestedLink> item) {
   SuggestedLinkList& list = GetAllInternal(extension_id);
-  list.push_back(linked_ptr<extensions::SuggestedLink>(item.release()));
+  SuggestedLinkList::iterator found = FindUrlInList(item->link_url(), &list);
+  linked_ptr<extensions::SuggestedLink> new_item(item.release());
+  if (found != list.end())
+    *found = new_item;
+  else
+    list.push_back(new_item);
 }
 
 const SuggestedLinkList* SuggestedLinksRegistry::GetAll(
@@ -36,7 +47,7 @@ const SuggestedLinkList* SuggestedLinksRegistry::GetAll(
   SuggestedLinksMap::const_iterator found = suggested_links_.find(extension_id);
   if (found != suggested_links_.end())
     return &found->second;
-  return NULL;
+  return &empty_list_;
 }
 
 void SuggestedLinksRegistry::Remove(const std::string& extension_id,

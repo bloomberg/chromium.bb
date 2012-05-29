@@ -48,6 +48,10 @@ class SuggestedLinksRegistry : public ProfileKeyedService {
 
   SuggestedLinksMap suggested_links_;
 
+  // An empty list of suggestions that can be returned for non-existing
+  // extensions.
+  SuggestedLinkList empty_list_;
+
   DISALLOW_COPY_AND_ASSIGN(SuggestedLinksRegistry);
 };
 

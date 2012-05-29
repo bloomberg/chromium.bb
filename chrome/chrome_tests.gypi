@@ -1167,6 +1167,7 @@
         'browser/extensions/api/cookies/cookies_unittest.cc',
         'browser/extensions/api/declarative/initializing_rules_registry_unittest.cc',
         'browser/extensions/api/declarative/rules_registry_service_unittest.cc',
+        'browser/extensions/api/discovery/discovery_api_unittest.cc',
         'browser/extensions/api/declarative/rules_registry_with_cache_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_action_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_condition_attribute_unittest.cc',

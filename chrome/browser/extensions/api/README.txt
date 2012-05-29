@@ -19,16 +19,20 @@ Create "chrome/common/extensions/api/experimental_foo.json". For inspiration
 look at the "app" API. Include descriptions fields to generate the
 documentation.
 
-2) Add your API specification to the project.
+2) Add your API specification to extensions_api_resources.grd.
 Add an "<include ...>" line with your JSON specification file to
 "chrome/common/extensions_api_resources.grd".
 
-3) Write the API function handlers.
-Create foo_api.cc and foo_api.h under "chrome/browser/extensions/api/foo". You
-should use the JSON Schema Compiler. Look at the "alarms_api.cc" for details on
-how to do that.
+3) Add your API specification to api.gyp.
+Add "experimental_foo.json" to the "json_schema_files" section in
+"chrome/common/extensions/api/api.gyp".
 
-4) Register function handlers.
+4) Write the API function handlers.
+Create foo_api.cc and foo_api.h under "chrome/browser/extensions/api/foo". You
+should use the JSON Schema Compiler. Look at the "permissions_api.cc" for
+details on how to do that.
+
+5) Register function handlers.
 In "chrome/browser/extensions/extension_function_registry.cc" include foo_api.h 
 and instantiate a RegisterFunction for each function you created in (3).
 
@@ -40,7 +44,7 @@ Create "chrome/common/extensions/api/experimental_foo.idl". For inspiration look
 at "alarms.idl". Include comments, they will be used to automatically generate
 the documentation.
 
-2) Add your API specification to the project.
+2) Add your API specification to api.gyp.
 Add "experimental_foo.idl" to the "idl_schema_files" section in
 "chrome/common/extensions/api/api.gyp".
 
@@ -49,34 +53,34 @@ Create foo_api.cc and foo_api.h under "chrome/browser/extensions/api/foo". You
 should use the JSON Schema Compiler. Look at the "alarms_api.cc" for details on
 how to do that.
 
-4) Nothing to do! Function handlers are automatically registered for you.
+4-5) Nothing to do! Function handlers are automatically registered for you.
 
 --------------------------------------------------------------------------------
 STEPS COMMON TO BOTH APPROACHES
 
-5) Write support classes for your API
+6) Write support classes for your API
 If your API needs any support classes add them to
 "chrome/browser/extensions/api/foo". Some old APIs added their support classes
 directly to chrome/browser/extensions. Don't do that.
 
-6) Update the project with your new files.
+7) Update the project with your new files.
 The files you created in (3) and (5) should be added to
 "chrome/chrome_browser_extensions.gypi".
 
 --------------------------------------------------------------------------------
 GENERATING DOCUMENTATION
 
-7) Build the project. (Only required if you used IDL files.)
+8) Build the project. (Only required if you used IDL files.)
 If you used IDL files, you need to build the project once in order for the
 documentation to be properly generated. Do this now. (This is required in order
 to generate the JSON file used to generate documentation.)
 
-8) Add your JSON file to the documentation controller
+9) Add your JSON file to the documentation controller
 Open "chrome/common/extensions/docs/js/api_page_generator.js" and add a line
 referring to "../api/experimental_foo.json". Do this even if you used the IDL
 approach as this JSON file has been generated in (7).
 
-9) Write the static HTML page.
+10) Write the static HTML page.
 Write a small snippet of static HTML describing your API in
 "chrome/common/extensions/docs/static/experimental.foo.html". For the moment,
 just include the following in this file, adjusting it to describe your API:
@@ -87,7 +91,7 @@ just include the following in this file, adjusting it to describe your API:
   <p>The current methods allow applications to...</p>
   <!-- END AUTHORED CONTENT -->
 
-10) Build the documentation.
+11) Build the documentation.
 You will need to build DumpRenderTree once before you can build the
 documentation. Once this is done, from "chrome/common/extensions/docs" run
 "build/build.py". For more information on building documentation see README.txt
@@ -96,5 +100,7 @@ in "chrome/common/extensions/docs".
 --------------------------------------------------------------------------------
 WRITING TESTS
 
-TODO(beaudoin)
-
+12) Write a unit test for your API.
+Create "chrome/browser/extensions/api/foo/foo_api_unittest.cc" and test each of
+your API methods. See "alarms_api_unittest.cc" for details. Once done add your
+.cc to "chrome/chrome_tests.gypi".
