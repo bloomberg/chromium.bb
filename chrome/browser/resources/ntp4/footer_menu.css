@@ -19,6 +19,7 @@
   /* The padding increases the clickable area. */
   padding-bottom: 0;
   padding-top: 0;
+  white-space: nowrap;
 }
 
 .footer-menu-button:hover:not([menu-shown]) {
