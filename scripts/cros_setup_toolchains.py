@@ -396,19 +396,15 @@ def CreatePackageKeywords(target):
 
 
 # Main functions performing the actual update steps.
-def InitializeCrossdevTargets(targets, usepkg):
+def UpdateCrossdevTargets(targets, usepkg, config_only=False):
   """Calls crossdev to initialize a cross target.
   args:
     targets - the list of targets to initialize using crossdev
     usepkg - copies the commandline opts
   """
-  print 'The following targets need to be re-initialized:'
-  print targets
-
-  extra_env = { 'FEATURES' : 'splitdebug' }
   for target in targets:
-    cmd = ['crossdev', '--show-fail-log',
-           '-t', target]
+    cmd = ['crossdev', '--show-fail-log', '-t', target]
+    cmd.extend(['--env', 'FEATURES=splitdebug'])
     # Pick stable by default, and override as necessary.
     cmd.extend(['-P', '--oneshot'])
     if usepkg:
@@ -427,7 +423,13 @@ def InitializeCrossdevTargets(targets, usepkg):
       # The first of the desired versions is the "primary" one.
       version = GetDesiredPackageVersions(target, pkg)[0]
       cmd.extend(['--%s' % pkg, version])
-    cros_build_lib.RunCommand(cmd, extra_env=extra_env)
+
+    if config_only:
+      # In this case we want to just quietly reinit
+      cmd.append('--init-target')
+      cros_build_lib.RunCommand(cmd, print_cmd=False, redirect_stdout=True)
+    else:
+      cros_build_lib.RunCommand(cmd)
 
 
 def UpdateTargets(targets, usepkg):
@@ -582,7 +584,12 @@ def UpdateToolchains(usepkg, deleteold, hostonly, targets_wanted):
     crossdev_targets = \
         [t for t in targets if not TargetIsInitialized(t)]
     if crossdev_targets:
-      InitializeCrossdevTargets(crossdev_targets, usepkg)
+      print 'The following targets need to be re-initialized:'
+      print crossdev_targets
+      UpdateCrossdevTargets(crossdev_targets, usepkg)
+    # Those that were not initialized may need a config update.
+    reconfig_targets = targets.difference(set(crossdev_targets))
+    UpdateCrossdevTargets(reconfig_targets, usepkg, config_only=True)
 
   # We want host updated.
   targets.add('host')
