@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -22,22 +22,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
-
-void NaClDeallocAddrRange(uintptr_t addr,
-                          size_t    len) {
-  uintptr_t p;
-  uintptr_t end_addr;
-
-  end_addr = addr + len;
-  if (end_addr < addr) {
-    NaClLog(LOG_FATAL, "NaClDeallocAddrRange(0x%08x, 0x%x): integer overflow",
-            addr, len);
-  }
-  for (p = addr; p < end_addr; p += NACL_MAP_PAGESIZE) {
-    VirtualFree((void *) p, 0, MEM_RELEASE);
-  }
-  return;
-}
 
 int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat   *dst,
                                          nacl_host_stat_t const *src) {

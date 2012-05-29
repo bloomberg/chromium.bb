@@ -369,11 +369,6 @@ void NaClDescSafeUnref(struct NaClDesc *ndp);
 
 /* utility routines */
 
-/* in PLATFORM/nacl_desc.c */
-void NaClDeallocAddrRange(uintptr_t addr,
-                          size_t    len);
-
-
 int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat    *dst,
                                          nacl_host_stat_t const  *src);
 
@@ -500,11 +495,6 @@ int NaClDescInternalizeNotImplemented(
     struct NaClDesc                **out_desc,
     struct NaClDescXferState       *xfer,
     struct NaClDescQuotaInterface  *quota_interface);
-
-int NaClDescMapDescriptor(struct NaClDesc         *desc,
-                          struct NaClDescEffector *effector,
-                          void                    **addr,
-                          size_t                  *size);
 
 
 int NaClSafeCloseNaClHandle(NaClHandle h);

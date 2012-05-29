@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -24,13 +24,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
-
-void NaClDeallocAddrRange(uintptr_t addr,
-                          size_t    len) {
-  UNREFERENCED_PARAMETER(addr);
-  UNREFERENCED_PARAMETER(len);
-  return;
-}
 
 /*
  * Not quite a copy ctor.  Call it a translating ctor, since the
