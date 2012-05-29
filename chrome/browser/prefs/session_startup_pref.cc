@@ -149,14 +149,16 @@ void SessionStartupPref::MigrateIfNecessary(PrefService* prefs) {
     const base::Value* homepage_is_new_tab_page_value =
         prefs->GetUserPrefValue(prefs::kHomePageIsNewTabPage);
     bool homepage_is_new_tab_page = true;
-    if (homepage_is_new_tab_page_value)
-      homepage_is_new_tab_page_value->GetAsBoolean(&homepage_is_new_tab_page);
+    if (homepage_is_new_tab_page_value) {
+      CHECK(homepage_is_new_tab_page_value->GetAsBoolean(
+          &homepage_is_new_tab_page));
+    }
 
     const base::Value* restore_on_startup_value =
         prefs->GetUserPrefValue(prefs::kRestoreOnStartup);
     int restore_on_startup = -1;
     if (restore_on_startup_value)
-      restore_on_startup_value->GetAsInteger(&restore_on_startup);
+      CHECK(restore_on_startup_value->GetAsInteger(&restore_on_startup));
 
     // If restore_on_startup has the deprecated value kPrefValueHomePage,
     // migrate it to open the homepage on startup. If 'homepage is NTP' is set,
