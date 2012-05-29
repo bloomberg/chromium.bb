@@ -2599,23 +2599,24 @@ FileManager.prototype = {
           task.iconUrl =
               chrome.extension.getURL('images/filetype_audio.png');
           task.title = str('ACTION_LISTEN');
-          this.playTask_ = task;
         } else if (task_parts[1] == 'mount-archive') {
           task.iconUrl =
               chrome.extension.getURL('images/filetype_archive.png');
           task.title = str('MOUNT_ARCHIVE');
         } else if (task_parts[1] == 'gallery') {
-          if (selection.urls.filter(FileType.isImage).length) {
-            // Some images sected, use the generic "Open" title.
-            task.title = str('ACTION_OPEN');
-            task.iconUrl =
-                chrome.extension.getURL('images/filetype_image.png');
-          } else {
-            // The selection is all videos, use the specific "Watch" title.
-            task.title = str('ACTION_WATCH');
-            task.iconUrl =
-                chrome.extension.getURL('images/filetype_video.png');
-          }
+          // If a single video is selected the Gallery is redundant.
+          if (selection.urls.length == 1 && FileType.isVideo(selection.urls[0]))
+            continue;
+          task.title = str('ACTION_OPEN');
+          task.iconUrl =
+              chrome.extension.getURL('images/filetype_image.png');
+        } else if (task_parts[1] == 'watch') {
+          // Hide "Watch" action for multiple selection.
+          if (selection.urls.length > 1)
+            continue;
+          task.iconUrl =
+              chrome.extension.getURL('images/filetype_video.png');
+          task.title = str('ACTION_WATCH');
         } else if (task_parts[1] == 'open-hosted') {
           if (selection.urls.length > 1) {
             task.iconUrl =
@@ -2988,8 +2989,8 @@ FileManager.prototype = {
     } else if (id == 'gallery') {
       this.openGallery_(urls);
     } else if (id == 'view-pdf' || id == 'view-in-browser' ||
-        id == 'install-crx' || id == 'open-hosted') {
-      chrome.fileBrowserPrivate.viewFiles(urls, 'default', function(success) {
+        id == 'install-crx' || id == 'open-hosted' || id == 'watch') {
+      chrome.fileBrowserPrivate.viewFiles(urls, id, function(success) {
         if (!success)
           console.error('chrome.fileBrowserPrivate.viewFiles failed', urls);
       });

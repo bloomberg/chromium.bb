@@ -65,6 +65,10 @@ const char kFileBrowserDomain[] = FILEBROWSER_EXTENSON_ID;
 
 const char kFileBrowserGalleryTaskId[] = "gallery";
 const char kFileBrowserMountArchiveTaskId[] = "mount-archive";
+const char kFileBrowserWatchTaskId[] = "watch";
+const char kFileBrowserPlayTaskId[] = "play";
+
+const char kVideoPlayerAppName[] = "videoplayer";
 
 namespace file_manager_util {
 namespace {
@@ -77,7 +81,7 @@ namespace {
 const char kFileBrowserExtensionUrl[] = FILEBROWSER_URL("");
 const char kBaseFileBrowserUrl[] = FILEBROWSER_URL("main.html");
 const char kMediaPlayerUrl[] = FILEBROWSER_URL("mediaplayer.html");
-const char kMediaPlayerPlaylistUrl[] = FILEBROWSER_URL("playlist.html");
+const char kVideoPlayerUrl[] = FILEBROWSER_URL("video_player.html");
 #undef FILEBROWSER_URL
 #undef FILEBROWSER_EXTENSON_ID
 
@@ -90,17 +94,6 @@ const char* kBrowserSupportedExtensions[] = {
 #endif
     ".bmp", ".jpg", ".jpeg", ".png", ".webp", ".gif", ".txt", ".html", ".htm",
     ".mhtml", ".mht"
-};
-// List of file extension that can be handled with the media player.
-const char* kAVExtensions[] = {
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-    ".mp3", ".m4a",
-#endif
-    ".flac", ".ogm", ".ogg", ".oga", ".wav",
-/* TODO(zelidrag): Add unsupported ones as we enable them:
-    ".mkv", ".divx", ".xvid", ".wmv", ".asf", ".mpeg", ".mpg",
-    ".wma", ".aiff",
-*/
 };
 
 // Keep in sync with 'open-hosted' task handler in the File Browser manifest.
@@ -120,15 +113,6 @@ const char* kUMATrackingExtensions[] = {
 bool IsSupportedBrowserExtension(const char* file_extension) {
   for (size_t i = 0; i < arraysize(kBrowserSupportedExtensions); i++) {
     if (base::strcasecmp(file_extension, kBrowserSupportedExtensions[i]) == 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool IsSupportedAVExtension(const char* file_extension) {
-  for (size_t i = 0; i < arraysize(kAVExtensions); i++) {
-    if (base::strcasecmp(file_extension, kAVExtensions[i]) == 0) {
       return true;
     }
   }
@@ -281,8 +265,8 @@ GURL GetMediaPlayerUrl() {
   return GURL(kMediaPlayerUrl);
 }
 
-GURL GetMediaPlayerPlaylistUrl() {
-  return GURL(kMediaPlayerPlaylistUrl);
+GURL GetVideoPlayerUrl(const GURL& source_url) {
+  return GURL(kVideoPlayerUrl + std::string("?") + source_url.spec());
 }
 
 bool ConvertFileToFileSystemUrl(
@@ -509,7 +493,7 @@ class StandaloneExecutor : public FileTaskExecutor {
   virtual void Done(bool) {}
 };
 
-bool TryOpeningFileBrowser(Profile* profile, const FilePath& path) {
+bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
   GURL url;
   if (!ConvertFileToFileSystemUrl(profile, path,
       GetFileBrowserExtensionUrl().GetOrigin(), &url))
@@ -523,7 +507,7 @@ bool TryOpeningFileBrowser(Profile* profile, const FilePath& path) {
   std::string action_id = handler->id();
   if (extension_id == kFileBrowserDomain) {
     // Only two of the built-in File Browser tasks require opening the File
-    // Browser tab. Others just end up calling TryViewingFile.
+    // Browser tab.
     if (action_id == kFileBrowserGalleryTaskId ||
         action_id == kFileBrowserMountArchiveTaskId) {
       // Tab reuse currently does not work for these two tasks.
@@ -532,6 +516,8 @@ bool TryOpeningFileBrowser(Profile* profile, const FilePath& path) {
       // |mount-archive| does not even try.
       OpenFileBrowser(path, REUSE_SAME_PATH, "");
       return true;
+    } else {
+      return ExecuteBuiltinHandler(profile, path, action_id);
     }
   } else {
     // We are executing the task on behalf of File Browser extension.
@@ -552,15 +538,13 @@ bool TryOpeningFileBrowser(Profile* profile, const FilePath& path) {
     executor->Execute(urls);
     return true;
   }
-  return false;
+  return ExecuteBuiltinHandler(profile, path, std::string());
 }
 
 void ViewFile(const FilePath& path) {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  if (!TryOpeningFileBrowser(profile, path) &&
-      !TryViewingFile(profile, path)) {
+  if (!ExecuteDefaultHandler(profile, path))
     ShowWarningMessageBox(profile, path);
-  }
 }
 
 // Reads an entire file into a string. Fails is the file is 4K or longer.
@@ -606,7 +590,9 @@ void ReadUrlFromGDocOnFileThread(const FilePath& file_path) {
       base::Bind(OpenNewTab, GURL(edit_url_string), (Profile*)NULL));
 }
 
-bool TryViewingFile(Profile* profile, const FilePath& path) {
+bool ExecuteBuiltinHandler(Profile* profile, const FilePath& path,
+    const std::string& internal_task_id) {
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::string file_extension = path.Extension();
@@ -657,7 +643,7 @@ bool TryViewingFile(Profile* profile, const FilePath& path) {
   }
 
 #if defined(OS_CHROMEOS)
-  if (IsSupportedAVExtension(file_extension.data())) {
+  if (internal_task_id == kFileBrowserPlayTaskId) {
     GURL url;
     if (!ConvertFileToFileSystemUrl(profile, path,
         GetFileBrowserExtensionUrl().GetOrigin(), &url))
@@ -665,6 +651,26 @@ bool TryViewingFile(Profile* profile, const FilePath& path) {
     MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
     mediaplayer->PopupMediaPlayer();
     mediaplayer->ForcePlayMediaURL(url);
+    return true;
+  }
+  if (internal_task_id == kFileBrowserWatchTaskId) {
+    GURL url;
+    if (!ConvertFileToFileSystemUrl(profile, path,
+        GetFileBrowserExtensionUrl().GetOrigin(), &url))
+      return false;
+
+    ExtensionService* service = profile->GetExtensionService();
+    if (!service)
+      return false;
+
+    const extensions::Extension* extension =
+      service->GetExtensionById(kFileBrowserDomain, false);
+    if (!extension)
+      return false;
+
+    application_launch::OpenApplication(
+        profile, extension, extension_misc::LAUNCH_WINDOW,
+        GetVideoPlayerUrl(url), NEW_FOREGROUND_TAB, NULL);
     return true;
   }
 #endif  // OS_CHROMEOS

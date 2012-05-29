@@ -859,9 +859,8 @@ void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
   for (SelectedFileInfoList::const_iterator iter = files.begin();
        iter != files.end();
        ++iter) {
-    bool handled = file_manager_util::TryViewingFile(profile(), iter->path);
-    // If there is no default browser-defined handler for viewing this type
-    // of file, try to see if we have any extension installed for it instead.
+    bool handled = file_manager_util::ExecuteBuiltinHandler(
+        profile(), iter->path, internal_task_id);
     if (!handled && files.size() == 1)
       success = false;
   }

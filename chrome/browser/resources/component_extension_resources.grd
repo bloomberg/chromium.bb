@@ -38,6 +38,8 @@
         <include name="IDR_FILE_MANAGER_MAIN_JS" file="file_manager/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_MEDIAPLAYER" file="file_manager/mediaplayer.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_MEDIAPLAYER_JS" file="file_manager/js/media/mediaplayer_scripts.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_VIDEO_PLAYER" file="file_manager/video_player.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_VIDEO_PLAYER_JS" file="file_manager/js/media/video_player_scripts.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMAGE_EDITOR" file="file_manager/gallery.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMAGE_EDITOR_JS" file="file_manager/js/image_editor/gallery_scripts.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_UTIL" file="file_manager/js/util.js" type="BINDATA" />

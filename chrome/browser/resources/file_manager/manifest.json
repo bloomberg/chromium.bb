@@ -43,6 +43,26 @@
       ]
     },
     {
+      "id": "watch",
+      "default_title": "__MSG_PLAY_MEDIA__",
+      "default_icon": "images/filetype_video.png",
+      "file_filters": [
+        "filesystem:*.3gp",
+        "filesystem:*.avi",
+        "filesystem:*.m4v",
+        "filesystem:*.mov",
+        "filesystem:*.mp4",
+        "filesystem:*.mpeg",
+        "filesystem:*.mpeg4",
+        "filesystem:*.mpg",
+        "filesystem:*.mpg4",
+        "filesystem:*.ogm",
+        "filesystem:*.ogv",
+        "filesystem:*.ogx",
+        "filesystem:*.webm"
+      ]
+    },
+    {
       "id": "mount-archive",
       "default_title": "__MSG_MOUNT_ARCHIVE__",
       "default_icon": "images/filetype_archive.png",

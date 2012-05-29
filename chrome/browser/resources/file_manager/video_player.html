@@ -1,0 +1,42 @@
+<!--
+  -- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+<html>
+<head>
+  <!-- We have to set some default title, or chrome will use the page name.
+    -- As soon as the i18n'd strings are loaded we replace it with the correct
+    -- string. Until then, use an invisible non-whitespace character.
+    -->
+  <title>&#xFEFF;</title>
+  <link rel="icon" type="image/png" href="images/filetype_video.png"/>
+  <link rel="stylesheet" type="text/css" href="css/media_controls.css"/>
+  <link rel="stylesheet" type="text/css" href="css/video_player.css"/>
+
+  <script src="js/media/video_player_scripts.js"></script>
+
+  <if expr="0">
+    <!-- This file has not been flattened, load individual scripts.
+         Keep the list in sync with video_player_scripts.js. -->
+    <script src="js/metrics.js"></script>
+    <script src="../shared/js/load_time_data.js"></script>
+    <script src="js/media/media_controls.js"></script>
+    <script src="js/media/util.js"></script>
+    <script src="js/media/video_player.js"></script>
+  </if>
+</head>
+<body>
+  <div id="video-player" tools>
+    <div id="video-container">
+      <video></video>
+    </div>
+    <div id="controls-wrapper">
+      <div id="controls" class="tool"></div>
+    </div>
+    <div id="error-wrapper">
+      <div id="error"></div>
+    </div>
+  </div>
+</body>
+</html>
