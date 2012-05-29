@@ -3385,7 +3385,7 @@ nonvariant_tests = ExtendFileList([
     'tests/translator_size_limits/nacl.scons',
     'tests/trusted_crash/osx_crash_filter/nacl.scons',
     'tests/trusted_crash/osx_crash_forwarding/nacl.scons',
-    'tests/trusted_crash/win_crash_in_syscall/nacl.scons',
+    'tests/trusted_crash/crash_in_syscall/nacl.scons',
     'tests/unittests/shared/imc/nacl.scons',
     'tests/unittests/shared/srpc/nacl.scons',
     #### ALPHABETICALLY SORTED ####
