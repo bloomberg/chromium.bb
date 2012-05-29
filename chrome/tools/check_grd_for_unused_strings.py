@@ -132,8 +132,6 @@ def main():
     chrome_app_res_dir = os.path.join(chrome_app_dir, 'resources')
     ui_base_dir = os.path.join(src_dir, 'ui', 'base',)
     ui_base_strings_dir = os.path.join(ui_base_dir, 'strings')
-    ui_base_native_theme_dir =
-        os.path.join(ui_base_dir, 'native_theme', 'resources')
     grd_files = [
       os.path.join(ash_base_dir, 'ash_strings.grd'),
       os.path.join(chrome_app_dir, 'chromium_strings.grd'),
@@ -150,7 +148,7 @@ def main():
       os.path.join(chrome_dir, 'common', 'common_resources.grd'),
       os.path.join(chrome_dir, 'renderer', 'renderer_resources.grd'),
       os.path.join(src_dir, 'ui', 'resources', 'ui_resources.grd'),
-      os.path.join(ui_base_native_theme_dir, 'native_theme_resources.grd'),
+      os.path.join(src_dir, 'ui', 'resources', 'ui_resources_standard.grd'),
       os.path.join(ui_base_strings_dir, 'app_locale_settings.grd'),
       os.path.join(ui_base_strings_dir, 'ui_strings.grd'),
     ]
