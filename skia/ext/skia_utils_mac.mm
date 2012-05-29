@@ -307,7 +307,83 @@ void SkiaBitLocker::releaseIfNeeded() {
   if (useDeviceBits_) {
     bitmap_.unlockPixels();
   } else {
-    canvas_->drawBitmap(bitmap_, 0, 0);
+    // Find the bits that were drawn to.
+    SkAutoLockPixels lockedPixels(bitmap_);
+    const uint32_t* pixelBase
+        = reinterpret_cast<uint32_t*>(bitmap_.getPixels());
+    int rowPixels = bitmap_.rowBytesAsPixels();
+    int width = bitmap_.width();
+    int height = bitmap_.height();
+    SkIRect bounds;
+    bounds.fTop = 0;
+    int x;
+    int y = -1;
+    const uint32_t* pixels = pixelBase;
+    while (++y < height) {
+      for (x = 0; x < width; ++x) {
+        if (pixels[x]) {
+          bounds.fTop = y;
+          goto foundTop;
+        }
+      }
+      pixels += rowPixels;
+    }
+foundTop:
+    bounds.fBottom = height;
+    y = height;
+    pixels = pixelBase + rowPixels * (y - 1);
+    while (--y > bounds.fTop) {
+      for (x = 0; x < width; ++x) {
+        if (pixels[x]) {
+          bounds.fBottom = y + 1;
+          goto foundBottom;
+        }
+      }
+      pixels -= rowPixels;
+    }
+foundBottom:
+    bounds.fLeft = 0;
+    x = -1;
+    while (++x < width) {
+      pixels = pixelBase + rowPixels * bounds.fTop;
+      for (y = bounds.fTop; y < bounds.fBottom; ++y) {
+        if (pixels[x]) {
+          bounds.fLeft = x;
+          goto foundLeft;
+        }
+        pixels += rowPixels;
+      }
+    }
+foundLeft:
+    bounds.fRight = width;
+    x = width;
+    while (--x > bounds.fLeft) {
+      pixels = pixelBase + rowPixels * bounds.fTop;
+      for (y = bounds.fTop; y < bounds.fBottom; ++y) {
+        if (pixels[x]) {
+          bounds.fRight = x + 1;
+          goto foundRight;
+        }
+        pixels += rowPixels;
+      }
+    }
+foundRight:
+    SkBitmap subset;
+    if (!bitmap_.extractSubset(&subset, bounds)) {
+        return;
+    }
+    // Neutralize the global matrix by concatenating the inverse. In the
+    // future, Skia may provide some mechanism to set the device portion of
+    // the matrix to identity without clobbering any hosting matrix (e.g., the
+    // picture's matrix).
+    const SkMatrix& skMatrix = canvas_->getTotalMatrix();
+    SkMatrix inverse;
+    if (!skMatrix.invert(&inverse))
+      return;
+    canvas_->save();
+    canvas_->concat(inverse);
+    canvas_->drawBitmap(subset, bounds.fLeft, bounds.fTop);
+    canvas_->restore();
   }
   CGContextRelease(cgContext_);
   cgContext_ = 0;
@@ -340,33 +416,32 @@ CGContextRef SkiaBitLocker::cgContext() {
       -device->height());
   CGContextConcatCTM(cgContext_, contentsTransform);
 
-  // Skip applying the matrix and clip when not writing directly to device.
-  // They're applied in the offscreen case when the bitmap is drawn.
-  if (!useDeviceBits_) {
-    return cgContext_;
-  }
-
-  // Apply clip in device coordinates.
-  CGMutablePathRef clipPath = CGPathCreateMutable();
-  const SkRegion& clipRgn = canvas_->getTotalClip();
-  if (clipRgn.isEmpty()) {
-    // CoreGraphics does not consider a newly created path to be empty.
-    // Explicitly set it to empty so the subsequent drawing is clipped out.
-    // It would be better to make the CGContext hidden if there was a CG call
-    // that does that.
-    CGPathAddRect(clipPath, 0, CGRectMake(0, 0, 0, 0));
-  }
-  SkRegion::Iterator iter(clipRgn);
   const SkIPoint& pt = device->getOrigin();
-  for (; !iter.done(); iter.next()) {
-    SkIRect skRect = iter.rect();
-    skRect.offset(-pt);
-    CGRect cgRect = SkIRectToCGRect(skRect);
-    CGPathAddRect(clipPath, 0, cgRect);
+  // Skip applying the clip when not writing directly to device.
+  // They're applied in the offscreen case when the bitmap is drawn.
+  if (useDeviceBits_) {
+      // Apply clip in device coordinates.
+      CGMutablePathRef clipPath = CGPathCreateMutable();
+      const SkRegion& clipRgn = canvas_->getTotalClip();
+      if (clipRgn.isEmpty()) {
+        // CoreGraphics does not consider a newly created path to be empty.
+        // Explicitly set it to empty so the subsequent drawing is clipped out.
+        // It would be better to make the CGContext hidden if there was a CG
+        // call that does that.
+        CGPathAddRect(clipPath, 0, CGRectMake(0, 0, 0, 0));
+      }
+      SkRegion::Iterator iter(clipRgn);
+      const SkIPoint& pt = device->getOrigin();
+      for (; !iter.done(); iter.next()) {
+        SkIRect skRect = iter.rect();
+        skRect.offset(-pt);
+        CGRect cgRect = SkIRectToCGRect(skRect);
+        CGPathAddRect(clipPath, 0, cgRect);
+      }
+      CGContextAddPath(cgContext_, clipPath);
+      CGContextClip(cgContext_);
+      CGPathRelease(clipPath);
   }
-  CGContextAddPath(cgContext_, clipPath);
-  CGContextClip(cgContext_);
-  CGPathRelease(clipPath);
 
   // Apply content matrix.
   SkMatrix skMatrix = canvas_->getTotalMatrix();
