@@ -135,7 +135,7 @@
 <translation id="4668325077104657568">Výchozí nastavení obrázků</translation>
 <translation id="7161193985878519056">Anonymní režim je zakázán.</translation>
 <translation id="6368403635025849609">Povolit JavaScript na těchto stránkách</translation>
-<translation id="6074963268421707432">Nepovolit žádnému webu zobrazovat oznámení na ploše</translation>
+<translation id="6074963268421707432">Nepovolovat žádnému webu zobrazovat oznámení na ploše</translation>
 <translation id="8614804915612153606">Zakáže automatické aktualizace</translation>
 <translation id="8104962233214241919">Automatický výběr certifikátů klienta u těchto webů</translation>
 <translation id="2906874737073861391">Seznam rozšíření AppPack</translation>
@@ -146,6 +146,9 @@
       Pokud tuto zásadu nastavíte, bude plugin <ph name="PRODUCT_FRAME_NAME"/> používat zadaný adresář.
 
       Pokud tuto zásadu nenastavíte, použije se výchozí adresář profilu.</translation>
+<translation id="8818173863808665831">Oznámí zeměpisnou polohu zařízení.
+
+      Pokud tato zásada není nastavena, nebo je nastavena na hodnotu false, poloha oznamována nebude.</translation>
 <translation id="4899708173828500852">Aktivovat Bezpečné prohlížení</translation>
 <translation id="7719251660743813569">Určuje, zda se budou Googlu nahlašovat metriky využití. Je-li tato zásada nastavena na hodnotu True, bude systém <ph name="PRODUCT_OS_NAME"/> hlásit metriky využití. Pokud není nastavena, nebo je nastavena na hodnotu False, budou hlášení o metrikách vypnuta.</translation>
 <translation id="3570008976476035109">Blokovat pluginy na těchto stránkách</translation>
@@ -266,9 +269,9 @@
 
       Není-li nastavena, může se uživatelům zobrazit výzva, zda chtějí historii importovat, nebo může import probíhat automaticky.</translation>
 <translation id="6786747875388722282">Rozšíření</translation>
+<translation id="8947415621777543415">Oznamovat polohu zařízení</translation>
 <translation id="1655229863189977773">Nastavit velikost diskové mezipaměti v bajtech</translation>
 <translation id="6899705656741990703">Zjistit nastavení serveru proxy automaticky</translation>
-<translation id="4101772068965291327">Otevřít domovskou stránku</translation>
 <translation id="7003334574344702284">Je-li tato zásada aktivovaná, vynucuje import uložených hesel z předchozího výchozího prohlížeče. Aktivace této zásady má také vliv na dialogové okno importu.
 
      Je-li deaktivovaná, k importu hesel nedojde. 
@@ -354,6 +357,20 @@
       Není-li zásada nastavena, mohou si uživatelé vybrat, zda chtějí být vyzváni k zadání hesla k odemčení zařízení, nebo nikoliv.</translation>
 <translation id="6022948604095165524">Akce při spuštění</translation>
 <translation id="9042911395677044526">Umožňuje přenést nastavení sítě, která se uplatní pro jednotlivé uživatele v zařízení se systémem <ph name="PRODUCT_OS_NAME"/>. Konfigurace sítě je řetězec ve formátu JSON, který se řídí definicí formátu Open Network Configuration popsanou na stránce <ph name="ONC_SPEC_URL"/>.</translation>
+<translation id="7128918109610518786">Seznam identifikátorů aplikací, které se v <ph name="PRODUCT_OS_NAME"/> zobrazují jako připnuté na liště spouštěče.
+
+      Když je zásada nakonfigurována, jsou tyto aplikace pevně dány a uživatel je nemůže změnit.
+
+      Pokud zásada nastavena není, uživatel seznam aplikací ve spouštěči změnit může.</translation>
+<translation id="6177482277304066047">Nastavuje cílovou verzi automatické aktualizace.
+
+      Určuje předponu cílové verze, na kterou se má <ph name="PRODUCT_OS_NAME"/> aktualizovat. Pokud zařízení obsahuje starší verzi, než jakou určuje předpona, bude systém aktualizován na poslední verzi s danou předponou. Jestliže zařízení již obsahuje novější verzi, nestane se nic (tj. nedojde k přechodu na nižší verzi) a zařízení zůstane u stávající verze. Formát předpony funguje na základě komponent, jak ukazuje následující příklad:
+
+      &quot;&quot; (nebo není nastaveno): aktualizovat na nejnovější dostupnou verzi.
+      &quot;1412.&quot;: aktualizovat na libovolnou podverzi verze 1412 (např. 1412.24.34 nebo 1412.60.2)
+      &quot;1412.2.&quot;: aktualizovat na libovolnou podverzi verze 1412.2 (nebo 1412.2.34 nebo 1412.2.2)
+      &quot;1412.24.34&quot;: aktualizovat pouze na tuto konkrétní verzi
+      </translation>
 <translation id="7625444193696794922">Určuje, jaký kanál verzí by měl být v zařízení nastaven a uzamčen.</translation>
 <translation id="2240879329269430151">Umožňuje nastavit, zda mohou webové stránky zobrazovat vyskakovací okna. Zobrazování vyskakovacích oken lze buď povolit pro všechny weby, nebo je pro všechny weby zakázat.
 
@@ -389,6 +406,9 @@
 
       Pokud zásada není nastavena, je režim na pozadí zpočátku neaktivní a může být ovládán uživatelem v nastaveních prohlížeče.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 nebo novější</translation>
+<translation id="5148753489738115745">Umožňuje nastavit dodatečné parametry, které plugin <ph name="PRODUCT_FRAME_NAME"/> při spouštění aplikace <ph name="PRODUCT_NAME"/> použije.
+
+          Když tato zásada není nastavena, bude použit výchozí příkazový řádek.</translation>
 <translation id="2646290749315461919">Umožňuje nastavit, zda mohou webové stránky sledovat fyzickou polohu uživatele. Sledování fyzické polohy uživatelů lze nakonfigurovat tak, že bude ve výchozím nastavení povoleno nebo zakázáno. Také lze nastavit, že se při každém pokusu webových stránek o sledování fyzické polohy uživateli zobrazí výzva.
 
          Není-li zásada nastavena, bude použita zásada AskGeolocation a uživatel ji bude moci změnit.</translation>
@@ -522,6 +542,19 @@
       Pokud tuto zásadu nastavíte, použije aplikace <ph name="PRODUCT_NAME"/> zadaný adresář i v případě, že uživatel zadal jiný adresář nebo zvolil, že chce pokaždé zobrazit výzvu k zadání umístění stahovaného souboru.
 
       Pokud tuto zásadu nenastavíte, použije se výchozí adresář pro stahování a uživatelé jej budou moci změnit.</translation>
+<translation id="7750991880413385988">Otevřít stránku Nová karta</translation>
+<translation id="741903087521737762">Umožňuje nastavit možnosti spouštění.
+
+          Pokud vyberete možnost Otevřít stránku Nová karta, otevře se při spuštění <ph name="PRODUCT_NAME"/> stránka Nová karta.
+
+          Pokud vyberete možnost Obnovit poslední relaci, otevřou se adresy, které byly otevřené při posledním ukončení <ph name="PRODUCT_NAME"/>, a relace prohlížeče se obnoví ve stavu, v jakém jste ji opustili.
+          Výběrem této možnosti deaktivujete některá nastavení, která jsou závislá na relacích nebo provádějí akce při zavření prohlížeče (například smazání údajů o prohlížení při ukončení nebo omezení souborů cookie pouze na relaci).
+
+          Pokud vyberete možnost Otevřít seznam adres, otevřou se při spuštění <ph name="PRODUCT_NAME"/> adresy uvedené v seznamu Adresy URL otevírané při spuštění.
+
+          Pokud toto nastavení aktivujete, uživatelé je v <ph name="PRODUCT_NAME"/> nemohou změnit ani přepsat.
+
+          Pokud nastavení deaktivujete, je to stejné, jako kdybyste je nenakonfigurovali. Uživatelé je v <ph name="PRODUCT_NAME"/> budou moci změnit.</translation>
 <translation id="5761030451068906335">Nakonfiguruje nastavení serveru proxy pro službu <ph name="PRODUCT_NAME"/>.
 
       Tato zásada zatím není připravena k použití. Nepoužívejte ji prosím.</translation>
@@ -535,6 +568,7 @@
 
      Je-li zvolena možnost Povinné, stránky lze otevřít POUZE v anonymním režimu.</translation>
 <translation id="5085647276663819155">Deaktivovat náhled tisku</translation>
+<translation id="8672321184841719703">Cílová verze automatické aktualizace</translation>
 <translation id="2030905906517501646">Klíčové slovo výchozího poskytovatele vyhledávání</translation>
 <translation id="3072045631333522102">Spořič obrazovky, který bude použit na přihlašovací obrazovce v režimu prodeje</translation>
 <translation id="7393895128271703858">Tato zásada se již nepoužívá. Namísto ní použijte prosím zásadu DefaultJavaScriptSetting.
@@ -555,7 +589,7 @@
           Pokud zásadu nenastavíte, bude pro integrované ověření přijímán jakýkoliv server.</translation>
 <translation id="350797926066071931">Aktivovat Překladač</translation>
 <translation id="4518251772179446575">Dotázat se vždy, když se webové stránky snaží sledovat fyzickou polohu uživatele</translation>
-<translation id="402759845255257575">Nepovolit spouštění JavaScriptu žádnému webu</translation>
+<translation id="402759845255257575">Nepovolovat spouštění JavaScriptu žádnému webu</translation>
 <translation id="5457924070961220141">Umožňuje nakonfigurovat výchozí modul vykreslování obsahu HTML, pokud je nainstalován plugin <ph name="PRODUCT_FRAME_NAME"/>.
           Pokud není tato zásada nastavena, vykresluje obsah ve výchozím nastavení hostitelský prohlížeč, toto nastavení však můžete přepsat a namísto toho vykreslovat stránky HTML pomocí pluginu <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="706669471845501145">Povolit webovým stránkám zobrazovat upozornění na ploše</translation>
@@ -761,6 +795,7 @@
 <translation id="2299220924812062390">Zadat seznam aktivovaných pluginů</translation>
 <translation id="924557436754151212">Importování uložených hesel z výchozího prohlížeče při prvním spuštění</translation>
 <translation id="1897365952389968758">Povolit všem webům spouštět JavaScript</translation>
+<translation id="7323896582714668701">Dodatečné parametry příkazového řádku pro <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Deaktivovat synchronizaci dat se servery Google</translation>
 <translation id="36674322972891584">Aktivuje v aplikaci <ph name="PRODUCT_NAME"/> předvídání akcí sítě a brání uživatelům, aby toto nastavení změnili.
 
@@ -786,6 +821,7 @@
 
           Ukázkové vzory naleznete na adrese http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Zvolit způsob konfigurace nastavení serveru proxy</translation>
+<translation id="1803646570632580723">Seznam připnutých aplikací, které se zobrazují ve spouštěči</translation>
 <translation id="7774768074957326919">Použít systémová nastavení serveru proxy</translation>
 <translation id="3891357445869647828">Povolit JavaScript</translation>
 <translation id="868187325500643455">Povolit automatické spouštění pluginů všem webům</translation>
@@ -980,16 +1016,4 @@
       Pokud je toto nastavení aktivováno nebo není nakonfigurováno, uživatelé mohou ve službě <ph name="CLOUD_PRINT_NAME"/> tisknout z dialogového okna tisku v aplikaci <ph name="PRODUCT_NAME"/>.
 
       Pokud je nastavení deaktivováno, uživatelé nemohou ve službě <ph name="CLOUD_PRINT_NAME"/> z dialogového okna tisku v aplikaci <ph name="PRODUCT_NAME"/> tisknout</translation>
-<translation id="2339225390014743328">Umožňuje určit chování při spuštění.
-
-          Pokud vyberete možnost Otevřít domovskou stránku, otevře se při každém spuštění prohlížeče <ph name="PRODUCT_NAME"/> domovská stránka.
-
-           Pokud vyberete možnost „Obnovit poslední relaci“, otevře se adresa URL, která byla otevřena při posledním zavření prohlížeče <ph name="PRODUCT_NAME"/> a relace prohlížení bude obnovena do stavu, v jakém jste ji zanechali.
-           Výběrem této možnosti zakážete některá nastavení, která jsou založena na relacích nebo vykonávají akce při ukončení (například nastavení, které po ukončení vymaže údaje o prohlížení, nebo soubory cookie určené pouze pro jednu relaci).
-
-          Pokud vyberete možnost „Otevřít seznam adres URL“, otevře se při spuštění prohlížeče <ph name="PRODUCT_NAME"/> seznam adres URL.
-
-          Pokud toto nastavení aktivujete, uživatelé je v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.
-
-          Zakázání tohoto nastavení se projevuje stejně, jako byste je nenastavili. Uživatel je bude moci v <ph name="PRODUCT_NAME"/> změnit.</translation>
 </translationbundle>

@@ -3,7 +3,6 @@
 <translationbundle lang="zh-CN">
 <translation id="6676384891291319759">访问互联网</translation>
 <translation id="6373523479360886564">确定要卸载 Chromium 吗？</translation>
-<translation id="8957741245723343544">您所做的更改会在下次重新启动 Chromium 操作系统时生效。</translation>
 <translation id="6510925080656968729">卸载 Chromium</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您已经至少 30 天未使用它了。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
@@ -11,7 +10,6 @@
 <translation id="3748537968684000502">您正在查看的是安全的 Chromium 网页。</translation>
 <translation id="8971920611044657379">Chromium 内嵌框架</translation>
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
-<translation id="2469082501656808441">Chromium 已推出新版本</translation>
 <translation id="4222661289444749267">Chromium 内嵌框架更新。</translation>
 <translation id="2843244238218937196">Chromium 呈现器</translation>
 <translation id="7128196614940529818">此计算机已安装了 Chromium 内嵌框架以供所有用户使用。如果您要安装用户级 Chromium 内嵌框架，就必须先卸载由管理员安装的系统级版本。</translation>
@@ -26,13 +24,12 @@
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
 <translation id="2589479092236095792">Chromium 自动填充设置</translation>
 <translation id="3555616473548901994">卸载已完成。</translation>
-<translation id="2940837712536340734">Chromium 操作系统已是最新版本。</translation>
 <translation id="2886012850691518054">可选：将使用情况统计信息和崩溃报告自动发送给 Google，帮助我们完善 Chromium。</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">您尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书包含错误。Chromium 无法使用有错误的证书，也无法验证所尝试连接的网站的身份。</translation>
 <translation id="3103660991484857065">安装程序解压缩归档失败。请重新下载 Chromium。</translation>
-<translation id="2933983827758164650">如果现在关闭 Chromium，系统将会取消此项下载。</translation>
 <translation id="872034308864968620">让 Chromium 在后台运行</translation>
+<translation id="5109068449432240255">是的，退出 Chromium</translation>
 <translation id="4320129595801648679">Chromium 的新标签页已经过重新设计。点击这些标签可在各部分之间进行切换。Chromium 会记住您的偏好设置，并在下次打开时应用。</translation>
 <translation id="3032787606318309379">正在添加到 Chromium...</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>警告<ph name="END_BOLD"/>：Chromium 无法阻止扩展程序记录您的浏览历史记录。要在隐身模式下停用此扩展程序，请取消选中此选项。</translation>
@@ -45,10 +42,11 @@
 <translation id="4330585738697551178">已知此模块与 Chromium 存在冲突。</translation>
 <translation id="3190315855212034486">哎呀！Chromium 崩溃了。要立即重新启动吗？</translation>
 <translation id="6714487516757221107">未发现所安装的 Chromium 或 Chromium 内嵌框架有任何更新。</translation>
+<translation id="3197823471738295152">您的设备已更新到最新版本。</translation>
+<translation id="8551886023433311834">即将更新到最新版本！请重新启动您的设备，以完成更新。</translation>
 <translation id="4124681358536363708">Chromium 的安装目录似乎正在使用中。请重新启动计算机并重试。</translation>
 <translation id="8770560772173120024">Chromium 正在导入收藏夹/书签。</translation>
 <translation id="6290315939897260265">未在 Chromium 中使用。该占位符用于在同步中保留资源映射。</translation>
-<translation id="2977470724722393594">Chromium 已是最新版本</translation>
 <translation id="9191268552238695869">管理员已在此系统上安装了 Chromium 以供所有用户使用。系统级 Chromium 将替换您安装的用户级版本。</translation>
 <translation id="3509308970982693815">请关闭所有 Chromium 窗口并重试。</translation>
 <translation id="4077262827416206768">请关闭所有 Chromium 窗口，然后重新启动 Chromium，以便让此更改生效。</translation>
@@ -57,7 +55,6 @@
 <translation id="118298050220780080">您尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书是由您计算机操作系统不信任的实体发布的。这可能意味着该服务器自行生成了安全凭据，Chromium 无法依据这些凭据确定身份信息，也可能是某个攻击者尝试拦截您的通信内容。</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">关闭 Chromium 后继续运行后台应用</translation>
-<translation id="2918265831258045091">您正在进行一项下载，确定要退出 Chromium 吗？</translation>
 <translation id="6055895534982063517">Chromium 现已推出速度更快的新版本。</translation>
 <translation id="2407806170074302369">关于 Chromium 内嵌框架...</translation>
 <translation id="5405650547142096840">从 Chromium 中删除</translation>
@@ -67,6 +64,7 @@
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4932687624772039103">Chromium 不支持 <ph name="OS_NAME"/>。</translation>
 <translation id="8738921060445980047">版本未知。</translation>
+<translation id="6970811910055250180">正在更新设备...</translation>
 <translation id="2485422356828889247">卸载</translation>
 <translation id="85843667276690461">获取 Chromium 使用帮助</translation>
 <translation id="263863604136125912">启动 Chromium</translation>
@@ -84,7 +82,6 @@
 <translation id="3069161343438701711">Chromium 工作应用</translation>
 <translation id="5820394555380036790">Chromium 操作系统</translation>
 <translation id="6757767188268205357">谢绝打扰</translation>
-<translation id="7700951445648533795">您正在进行 <ph name="DOWNLOAD_COUNT"/> 项下载，确定要退出 Chromium 吗？</translation>
 <translation id="275588974610408078">Chromium 未提供崩溃报告。</translation>
 <translation id="5909170354645388250">未在 Chromium 中使用。该占位符用于在同步中保留资源映射。要求使用一个参数：$1。</translation>
 <translation id="3582788516608077514">正在更新 Chromium...</translation>
@@ -95,7 +92,6 @@
 <translation id="2648074677641340862">安装过程中出现操作系统错误。请重新下载 Chromium。</translation>
 <translation id="5942520288919337908">“<ph name="EXTENSION_NAME"/>”已添加到 Chromium。</translation>
 <translation id="8678787945719392857">要使用此 Google 帐户同步您的所有 Chromium 资料吗？</translation>
-<translation id="5974438302735098483">Chromium 已更新</translation>
 <translation id="8621669128220841554">未指定的错误导致安装失败。请重新下载 Chromium。</translation>
 <translation id="6717134281241384636">无法使用您的配置文件，因为该文件来自更高版本的 Chromium。
 
@@ -105,8 +101,8 @@
 <translation id="6212496753309875659">此计算机已安装了更高版本的 Chromium。如果软件无法正常运行，请卸载 Chromium 并重试。</translation>
 <translation id="3014684866565908571">Chromium 实用工具</translation>
 <translation id="1298199220304005244">获取 Chromium 操作系统使用帮助</translation>
-<translation id="667672506951335584">如果现在关闭 Chromium，系统将会取消这些下载。</translation>
 <translation id="1691304614444223855">Chromium 内嵌框架已更新。请重新启动浏览器。Chromium 版本：<ph name="TODO_0001"/>，Chromium 内嵌框架版本：<ph name="TODO_0002"/></translation>
+<translation id="130631256467250065">您所做的更改会在下次重新启动设备时生效。</translation>
 <translation id="1105130903706696483">Chromium 未正确关闭。要重新打开曾经打开过的网页，请点击“恢复”。</translation>
 <translation id="1929939181775079593">Chromium 未响应。要立即重新启动吗？</translation>
 <translation id="6089587093203430357">即搜即得</translation>
@@ -120,18 +116,20 @@
 <translation id="8865765905101981392">互联网浏览器</translation>
 <translation id="2910007522516064972">关于 Chromium(&amp;C)</translation>
 <translation id="8453117565092476964">安装程序归档损坏或无效。请重新下载 Chromium。</translation>
-<translation id="309634601461115233">请先退出 Chromium 操作系统，然后重新登录，以便让此更改生效。</translation>
 <translation id="3249425904492147663">您尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书已过期。由于该证书已过期，因此没有任何信息可表明它是否已被盗用。这意味着 Chromium 无法保证与您通信的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 还是攻击者。您计算机时钟的当前设置为 <ph name="CURRENT_TIME"/>。该设置是否正确？如果不正确，您应更正错误并刷新此页面。</translation>
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>
 <translation id="7483335560992089831">无法安装与当前运行的版本相同的 Chromium。请关闭 Chromium 并重试。</translation>
 <translation id="7641113255207688324">Chromium 不是您的默认浏览器。</translation>
+<translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
 <translation id="2174090135251659490">您尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书尚未生效。没有任何信息可表明该证书是否可以信任。Chromium 无法准确保证与您通信的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而不是攻击者。您计算机时钟的当前设置为 <ph name="CURRENT_TIME"/>。该设置是否正确？如果不正确，您应更正错误并刷新此页面。</translation>
 <translation id="2119636228670142020">关于 Chromium 操作系统(&amp;C)</translation>
 <translation id="1708666629004767631">Chromium 现已推出更安全的新版本。</translation>
 <translation id="5859758987635973787">Chromium 已是最新版本 (<ph name="VERSION"/>)</translation>
 <translation id="8616882682724010661">了解登录 Chromium 的<ph name="BEGIN_LINK"/>更多优势<ph name="END_LINK"/>。</translation>
 <translation id="378917192836375108">您可以在 Chromium 中点击网上的电话号码，然后通过 Skype 拨打！</translation>
+<translation id="8724049448828509830">正在进行一项下载。您希望退出 Chromium 并取消该下载吗？</translation>
 <translation id="7503101070699687603">Chromium 插件主程序</translation>
+<translation id="2739631515503418643">正在进行多项下载。您希望退出 Chromium 并取消这些下载吗？</translation>
 <translation id="9013262824292842194">Chromium 要求操作系统为 Windows Vista，或者 Windows XP SP2 或更高版本。</translation>
 <translation id="1967743265616885482">已发现一个同名的模块与 Chromium 存在冲突。</translation>
 <translation id="4224199872375172890">Chromium 已是最新版本。</translation>
@@ -144,6 +142,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7123348595797445166">试用（已安装）</translation>
 <translation id="6403826409255603130">Chromium 是一款可高速运行网页和应用的网络浏览器。它快捷、稳定且易于使用。Chromium 内置的防护恶意软件和网上诱骗的功能可让您更安全地浏览网页。</translation>
 <translation id="2927042866129133279">参数无效。在准备模式下，Chromium 内嵌框架必须与 Chromium 同时安装。</translation>
+<translation id="546394857889685352">您的设备已更新到 <ph name="VERSION"/></translation>
 <translation id="2572494885440352020">Chromium 帮助程序</translation>
 <translation id="442817494342774222">Chromium 已配置为在计算机启动时自动启动。</translation>
 <translation id="8974095189086268230">Chromium 操作系统的问世还有其他<ph name="BEGIN_LINK_CROS_OSS"/>开放源代码软件<ph name="END_LINK_CROS_OSS"/>的一份功能。</translation>

@@ -10,6 +10,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="573759479754913123">О Chrome ОС-у</translation>
 <translation id="5453904507266736060">Нека Google Chrome ради у позадини</translation>
 <translation id="2383457833405848421">О Chrome Frame-у...</translation>
+<translation id="3454512769850953877">Да, изађи из Chrome-а</translation>
 <translation id="386202838227397562">Затворите све прозоре Google Chrome прегледача и покушајте поново.</translation>
 <translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
 <translation id="7400722733683201933">О програму Google Chrome</translation>
@@ -19,7 +20,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7781002470561365167">Доступна је нова верзија Google Chrome прегледача.</translation>
 <translation id="1484802885942301358">Google Chrome је актуелан (<ph name="VERSION"/>)</translation>
 <translation id="7101265395643981223">Покрените Google Chrome</translation>
-<translation id="4738120821427858478">Промене ће ступити на снагу када следећи пут поново покренете Google Chrome ОС.</translation>
 <translation id="4891791193823137474">Нека Google Chrome ради у позадини</translation>
 <translation id="2879385160622431163">Google Chrome инстант</translation>
 <translation id="2370289711218562573">Google Chrome тренутно увози ставке „Омиљено/обележивачи“.</translation>
@@ -31,7 +31,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="5339639696978861456">Chrome Frame је ажуриран. Поново покрените прегледач. Верзија Chrome прегледача: <ph name="TODO_0001"/>, верзија Chrome Frame-а: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Услови коришћења услуге</translation>
 <translation id="8398145039500709259">Да ли желите да користите овај Google налог за синхронизацију свих Chrome садржаја?</translation>
-<translation id="6862759394142635932">Ако сада затворите Google Chrome, ово преузимање ће бити отказано.</translation>
 <translation id="1779550429052479749">У систему је пронађена некомпатибилна инсталација Google Chrome прегледача или Google Chrome Frame-а. Деинсталирајте је и покушајте поново.</translation>
 <translation id="3555616473548901994">Деинсталација је довршена.</translation>
 <translation id="8556340503434111824">Доступна је нова верзија Google Chrome прегледача, бржа него икад пре.</translation>
@@ -52,14 +51,15 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="3487814320513494737">Промењена је структура странице Нова картица у Chrome прегледачу. Прелазите са једног одељка на други кликом на ове ознаке. Chrome ће запамтити жељено подешавање за следећи пут.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="6423071462708908582">Покушали сте да успоставите везу са доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, али је сервер приказао истекли сертификат. Нису доступне никакве информације које би указале на то да ли је сертификат компромитован од када је истекао. То значи да Google Chrome не може да гарантује да комуницирате са доменом &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не са нападачем. Сат на рачунару је тренутно подешен на  <ph name="CURRENT_TIME"/>. Да ли вам то делује тачно? Ако не делује, треба да исправите грешку и освежите ову страницу.</translation>
+<translation id="3197823471738295152">Уређај је ажуриран.</translation>
 <translation id="2653935705142821164">Chrome апликација за приказивање</translation>
 <translation id="3889417619312448367">Деинсталирај Google Chrome</translation>
+<translation id="8551886023433311834">Ажурирање је скоро готово! Покрените поново уређај да бисте довршили ажурирање.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> – Google Chrome</translation>
 <translation id="3282568296779691940">Пријављивање на Chrome</translation>
 <translation id="3089968997497233615">Доступна је нова, безбеднија верзија Google Chrome прегледача.</translation>
 <translation id="5037239767309817516">Затворите све прозоре Google Chrome прегледача и поново га покрените да би ова промена ступила на снагу.</translation>
 <translation id="7451721381978275812">Неважећи аргументи. Google Chrome Frame не може да се инсталира у спремном режиму, а да се притом не инсталира и Google Chrome.</translation>
-<translation id="5727432509906037972">Да ли желите да изађете из Google Chrome-а док је преузимање у току?</translation>
 <translation id="4585888816441913908">Овај рачунар већ има новију верзију Google Chrome прегледача и Google Chrome Frame-а. Ако софтвер не функционише, деинсталирајте и Google Chrome и Google Chrome Frame и покушајте поново.</translation>
 <translation id="6368958679917195344">Chrome OС je могућ захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS"/>софтвер отвореног кода<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Подесите Синхронизацију како бисте сачували персонализоване функције прегледача на Веб и приступали им из Google Chrome-а на било ком рачунару.</translation>
@@ -75,24 +75,24 @@ Google Chrome не може да врати подешавања.</translation>
 
 Неке функције су можда недоступне. Наведите други директоријум профила или користите новију верзију Chrome-а.</translation>
 <translation id="8738921060445980047">Непозната верзија.</translation>
+<translation id="6970811910055250180">Ажурирање уређаја...</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
 <translation id="2748463065602559597">Прегледате безбедну Google Chrome страницу.</translation>
 <translation id="7185038942300673794">Додатак <ph name="EXTENSION_NAME"/> је додат у Chrome.</translation>
 <translation id="9073088951656332330">Нису пронађене Google Chrome или Google Chrome Frame инсталације за ажурирање.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Упозорење:<ph name="END_BOLD"/> Google Chrome не може да спречи додатке да снимају историју прегледања. Да бисте онемогућили овај додатак у режиму без архивирања, опозовите избор ове опције.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="3904146009066562368">Доступна је нова верзија Google Chrome-а</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="5074344184765391290">Хост Chrome додатне компоненте</translation>
 <translation id="8862326446509486874">Немате одговарајућа права за инсталацију на нивоу система. Покушајте поново да покренете програм за инсталацију, овога пута као администратор.</translation>
 <translation id="595871952790078940">Chrome услужни програм</translation>
 <translation id="2874156562296220396"><ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> пројекат софтвера отвореног кода и други типови <ph name="BEGIN_LINK_OSS"/>софтвера отвореног кода<ph name="END_LINK_OSS"/> су омогућили настанак програма Google Chrome.</translation>
-<translation id="7855730255114109580">Google Chrome је актуелан</translation>
 <translation id="3847841918622877581">Google Chrome може да користи веб услуге да би побољшао доживљај прегледања.</translation>
 <translation id="7436949144778751379">Google Chrome захтева Windows XP или новију верзију. Неке функције можда неће радити.</translation>
 <translation id="6757767188268205357">Не досађуј</translation>
 <translation id="2290095356545025170">Да ли заиста желите да деинсталирате Google Chrome?</translation>
+<translation id="7062966102157262887">Преузимање је у току. Да ли желите да изађете из Google Chrome-а и откажете преузимање?</translation>
 <translation id="4273752058983339720">Google Chrome је конфигурисан тако да се аутоматски покреће када покренете рачунар.</translation>
 <translation id="1104959162601287462">О &amp;Chrome ОС-у</translation>
 <translation id="5941830788786076944">Подесите Google Chrome као подразумевани прегледач</translation>
@@ -110,9 +110,8 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7161904924553537242">Добро дошли у Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome помоћник</translation>
 <translation id="870251953148363156">Ажурирај &amp;Google Chrome</translation>
-<translation id="147599965395609989">Google Chrome је ажуриран</translation>
+<translation id="130631256467250065">Промене ће ступити на снагу када следећи пут поново покренете уређај.</translation>
 <translation id="1399397803214730675">Овај рачунар већ има новију верзију Google Chrome прегледача. Ако софтвер не функционише, деинсталирајте Google Chrome и покушајте поново.</translation>
-<translation id="2827900704927383772">Да ли желите да изађете из Google Chrome-а док су преузимања (<ph name="DOWNLOAD_COUNT"/>) у току?</translation>
 <translation id="3444832043240812445">Ова страница приказује информације о недавним отказивањима само уколико <ph name="BEGIN_LINK"/>омогућите извештавање о отказивањима<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome не реагује. Желите ли да га одмах поново покренете?</translation>
 <translation id="5318056482164160049">Хост Google Chrome додатне компоненте</translation>
@@ -120,7 +119,6 @@ Google Chrome не може да врати подешавања.</translation>
 </translation>
 <translation id="6126631249883707068">Желите ли да Google Chrome сачува лозинку?</translation>
 <translation id="5046764976540625289">Напусти Chrome</translation>
-<translation id="2925521875688282191">Одјавите се са Chrome OS-а и пријавите се поново да би ова промена ступила на снагу.</translation>
 <translation id="9039578207253536065">Google Chrome радник</translation>
 <translation id="2680623880102270805">Google Chrome не може да направи пречицу апликације јер не може да одреди тренутно рачунарско окружење.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
@@ -128,14 +126,14 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="2189123953385179981">Google ChromeOS не подржава покретање спољних апликација ради обраде <ph name="SCHEME"/> веза. Потребна веза је <ph name="PROTOLINK"/>.</translation>
 <translation id="711654979569750606">Ауторска права © 2006–2012. Google Inc. Сва права задржана.</translation>
 <translation id="8205111949707227942">Опционално: Помозите да побољшамо Chrome ОС аутоматским слањем статистике о коришћењу и извештаја о отказивању Google-у.</translation>
-<translation id="8345657477105118085">Chrome ОС је ажуриран.</translation>
+<translation id="7253415505590551024">Преузимања су у току. Да ли желите да изађете из Google Chrome-а и откажете преузимања?</translation>
 <translation id="7196020411877309443">Зашто видим ово?</translation>
 <translation id="2769762047821873045">Google Chrome није ваш подразумевани прегледач.</translation>
 <translation id="7825851276765848807">Инсталација није успела услед неутврђене грешке. Преузмите Google Chrome поново.</translation>
 <translation id="3335672657969596251">Google Chrome не подржава <ph name="OS_NAME"/>.</translation>
+<translation id="4458285410772214805">Одјавите се и поново се пријавите да би ова промена ступила на снагу.</translation>
 <translation id="2666187591945638709">Google Chrome је ажуриран на верзију <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">За овај модул је познато да се сукобљава са Google Chrome прегледачем.</translation>
-<translation id="4892299120052124303">Ако сада затворите Google Chrome, ова преузимања ће бити отказана.</translation>
 <translation id="6634887557811630702">Google Chrome је ажуриран.</translation>
 <translation id="2084710999043359739">Додавање у Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame је већ инсталиран и доступан свим корисницима на овом рачунару. Ако желите да инсталирате Google Chrome Frame на нивоу корисника, морате прво да деинсталирате верзију на нивоу система коју је инсталирао администратор.</translation>
@@ -154,6 +152,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Подешавања Chrome аутоматског попуњавања</translation>
 <translation id="3836351788193713666">Скоро ажурирано! Покрените поново Google Chrome да бисте довршили ажурирање.</translation>
+<translation id="546394857889685352">Уређај је ажуриран на верзију <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Менаџер задатака – Google Chrome</translation>
 <translation id="1826482739472655104">Покушали сте да успоставите везу са доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, али је сервер приказао сертификат који још увек није важећи. Нису доступне никакве информације које би указале на то да ли се том сертификату може веровати. Google Chrome не може са сигурношћу да тврди да комуницирате са доменом &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не са нападачем. Сат на рачунару је тренутно подешен на  <ph name="CURRENT_TIME"/>. Да ли вам то делује тачно? Ако не делује, треба да исправите грешку и освежите ову страницу.</translation>
 <translation id="8449380764213232436">Google Chrome тренутно увози следеће ставке из <ph name="BROWSER_COMPONENT"/>:</translation>

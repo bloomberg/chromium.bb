@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
+<translation id="248395913932153421">日</translation>
+<translation id="6015796118275082299">年</translation>
 <translation id="9186171386827445984">正在載入文件：第 <ph name="PAGE_NUMBER"/> 頁，共 <ph name="NUMBER_OF_PAGES"/> 頁...</translation>
 <translation id="1235745349614807883">清除最近的搜尋記錄</translation>
 <translation id="1171774979989969504">請輸入電子郵件地址。</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">連結</translation>
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="8451268428117625855">請選取檔案。</translation>
+<translation id="2674318244760992338">頁尾</translation>
+<translation id="8987927404178983737">月</translation>
 <translation id="7364796246159120393">選擇檔案</translation>
 <translation id="2761667185364618470">如果您要繼續執行，請勾選這個核取方塊。</translation>
 <translation id="8964020114565522021">拖曳檔案至此</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024 (中等)</translation>
 <translation id="1637811476055996098">選擇檔案</translation>
 <translation id="5476505524087279545">取消選取</translation>
+<translation id="2148716181193084225">今天</translation>
 <translation id="2507943997699731163">請填寫這個欄位。</translation>
 <translation id="5919473608089529604">無法載入外掛程式。</translation>
 <translation id="6663448176199120256">最近的搜尋</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">值必須小於或等於 <ph name="MAXIMUM"/>。</translation>
 <translation id="6119846243427417423">啟動</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> 個檔案</translation>
+<translation id="6643016212128521049">清除</translation>
 <translation id="3934680773876859118">無法載入 PDF 文件</translation>
 <translation id="8597182159515967513">標題</translation>
 <translation id="2653659639078652383">提交</translation>

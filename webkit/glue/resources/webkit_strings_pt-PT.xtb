@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
+<translation id="248395913932153421">Dia</translation>
+<translation id="6015796118275082299">Ano</translation>
 <translation id="9186171386827445984">A carregar o documento: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> páginas...</translation>
 <translation id="1235745349614807883">Limpar pesquisas recentes</translation>
 <translation id="1171774979989969504">Introduza um endereço de e-mail.</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">link</translation>
 <translation id="4522570452068850558">Detalhes</translation>
 <translation id="8451268428117625855">Seleccione um ficheiro.</translation>
+<translation id="2674318244760992338">rodapé</translation>
+<translation id="8987927404178983737">Mês</translation>
 <translation id="7364796246159120393">Escolher ficheiro</translation>
 <translation id="2761667185364618470">Seleccione esta caixa se pretender continuar.</translation>
 <translation id="8964020114565522021">Arraste o ficheiro para aqui</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024 (Tamanho médio)</translation>
 <translation id="1637811476055996098">Escolher Ficheiros</translation>
 <translation id="5476505524087279545">desmarcar</translation>
+<translation id="2148716181193084225">Hoje</translation>
 <translation id="2507943997699731163">Preencha este campo.</translation>
 <translation id="5919473608089529604">Não foi possível carregar o plug-in.</translation>
 <translation id="6663448176199120256">Pesquisas recentes</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">O valor tem de ser inferior ou igual a <ph name="MAXIMUM"/>.</translation>
 <translation id="6119846243427417423">activar</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ficheiros</translation>
+<translation id="6643016212128521049">Limpar</translation>
 <translation id="3934680773876859118">Falha ao carregar o documento em PDF</translation>
 <translation id="8597182159515967513">cabeçalho</translation>
 <translation id="2653659639078652383">Submeter</translation>

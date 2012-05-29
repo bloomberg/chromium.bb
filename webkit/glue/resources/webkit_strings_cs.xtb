@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="248395913932153421">Den</translation>
+<translation id="6015796118275082299">Rok</translation>
 <translation id="9186171386827445984">Načítání dokumentu: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> stran...</translation>
 <translation id="1235745349614807883">Smazat nedávná vyhledávání</translation>
 <translation id="1171774979989969504">Zadejte prosím e-mailovou adresu.</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">odkaz</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="8451268428117625855">Vyberte prosím soubor.</translation>
+<translation id="2674318244760992338">zápatí</translation>
+<translation id="8987927404178983737">Měsíc</translation>
 <translation id="7364796246159120393">Vybrat soubor</translation>
 <translation id="2761667185364618470">Chcete-li pokračovat, zaškrtněte toto políčko.</translation>
 <translation id="8964020114565522021">Přetáhnout soubor sem</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024 (Střední kvalita)</translation>
 <translation id="1637811476055996098">Zvolit soubory</translation>
 <translation id="5476505524087279545">odstranit zaškrtnutí</translation>
+<translation id="2148716181193084225">Dnes</translation>
 <translation id="2507943997699731163">Vyplňte prosím toto pole.</translation>
 <translation id="5919473608089529604">Plugin se nepodařilo načíst.</translation>
 <translation id="6663448176199120256">Nedávná vyhledávání</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">Hodnota musí být menší nebo rovna <ph name="MAXIMUM"/>.</translation>
 <translation id="6119846243427417423">aktivovat</translation>
 <translation id="8444882422881193423">Počet souborů: <ph name="NUMBER_OF_FILES"/></translation>
+<translation id="6643016212128521049">Vymazat</translation>
 <translation id="3934680773876859118">Načítání dokumentu PDF se nezdařilo.</translation>
 <translation id="8597182159515967513">záhlaví</translation>
 <translation id="2653659639078652383">Odeslat</translation>

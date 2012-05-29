@@ -2,50 +2,67 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="3595596368722241419">电池已充满</translation>
-<translation id="908313544993743941">停用蜂窝网络</translation>
+<translation id="5250713215130379958">自动隐藏启动程序</translation>
 <translation id="30155388420722288">溢出按钮</translation>
 <translation id="5571066253365925590">蓝牙已启用</translation>
 <translation id="9074739597929991885">蓝牙</translation>
 <translation id="2268130516524549846">蓝牙已停用</translation>
+<translation id="370649949373421643">启用 Wi-Fi</translation>
 <translation id="3626281679859535460">亮度</translation>
 <translation id="7982789257301363584">网络</translation>
+<translation id="5565793151875479467">代理...</translation>
+<translation id="6979158407327259162">Google 云端硬盘</translation>
 <translation id="2297568595583585744">状态栏</translation>
 <translation id="2946640296642327832">启用蓝牙</translation>
 <translation id="6596816719288285829">IP 地址</translation>
-<translation id="289426338439836048">其他移动网络...</translation>
 <translation id="5233638681132016545">新建标签页</translation>
+<translation id="3846575436967432996">没有可用的网络信息</translation>
+<translation id="3026237328237090306">设置移动数据</translation>
 <translation id="785750925697875037">查看移动帐户</translation>
+<translation id="8121288016949447968">Shift + 搜索键</translation>
 <translation id="7864539943188674973">停用蓝牙</translation>
 <translation id="3126069444801937830">重新启动以进行更新</translation>
+<translation id="1525975890706558596">大写锁定已打开。
+按 Shift + 搜索键可取消。</translation>
 <translation id="8190698733819146287">自定义语言和输入法...</translation>
-<translation id="7911992579061465928">电池电量不足</translation>
 <translation id="598295083618286569">蓝牙已连接</translation>
 <translation id="5222676887888702881">退出</translation>
+<translation id="2091132388437059185">最大化时自动隐藏启动程序</translation>
+<translation id="425878420164891689">正在计算充满电所需剩余时间</translation>
+<translation id="2964193600955408481">停用 Wi-Fi</translation>
 <translation id="811680302244032017">添加设备...</translation>
+<translation id="2509468283778169019">CAPS LOCK 已打开</translation>
+<translation id="6426039856985689743">停用移动数据</translation>
 <translation id="3232695630852378748">蓝牙设置...</translation>
 <translation id="1480041086352807611">演示模式</translation>
 <translation id="4186384497305035875">此屏幕特意留空</translation>
 <translation id="9089416786594320554">输入法</translation>
-<translation id="7706302027196209560">启用 Wi-Fi</translation>
 <translation id="4430019312045809116">音量</translation>
+<translation id="1383876407941801731">搜索</translation>
 <translation id="3557139239102318020">向下拖动可最小化，向左或向右拖动可平铺显示</translation>
 <translation id="5980301590375426705">退出访客模式</translation>
 <translation id="8308637677604853869">上一菜单</translation>
+<translation id="8528322925433439945">移动...</translation>
 <translation id="3595065677684516080">设置和帮助</translation>
 <translation id="4479639480957787382">以太网</translation>
+<translation id="7573721444069009535">Wi-Fi...</translation>
+<translation id="6223565363550976998">剩余电量：<ph name="PERCENTAGE"/>％</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">锁定</translation>
-<translation id="5836819469861742634">更改代理设置...</translation>
+<translation id="2805756323405976993">应用</translation>
 <translation id="2872961005593481000">关闭</translation>
-<translation id="8735871257195921372">其他 Wi-Fi 网络...</translation>
-<translation id="2152495481414285304">应用</translation>
-<translation id="1690310444231390462">停用 Wi-Fi</translation>
-<translation id="77565731175229781">网络设置...</translation>
+<translation id="7052914147756339792">设置壁纸...</translation>
+<translation id="1602076796624386989">启用移动数据</translation>
+<translation id="8573351908869164327">还能使用 <ph name="HOUR"/> 小时 <ph name="MINUTE"/> 分钟</translation>
 <translation id="7029814467594812963">退出会话</translation>
-<translation id="7908019422099334890">设置壁纸...</translation>
+<translation id="2983818520079887040">设置...</translation>
+<translation id="8660803626959853127">正在同步 <ph name="COUNT"/> 个文件</translation>
+<translation id="639644700271529076">CAPS LOCK 已关闭</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7841796031898165175">启用蜂窝网络</translation>
-<translation id="9072667645353666975">电池电量：<ph name="PERCENTAGE"/>%
-<ph name="HOUR"/> 小时 <ph name="MINUTE"/> 分钟</translation>
+<translation id="5045002648206642691">Google 云端硬盘设置...</translation>
 <translation id="48607902311828362">飞行模式</translation>
+<translation id="5361734574074701223">正在计算剩余时间</translation>
+<translation id="9169585155162064169">大写锁定已打开。
+按 Shift + 搜索键可取消。</translation>
+<translation id="412065659894267608">还需要 <ph name="HOUR"/> 小时 <ph name="MINUTE"/> 分钟才能充满电</translation>
 </translationbundle>

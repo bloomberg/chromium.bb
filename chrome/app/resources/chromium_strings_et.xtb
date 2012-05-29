@@ -3,7 +3,6 @@
 <translationbundle lang="et">
 <translation id="6676384891291319759">Pääs Internetti</translation>
 <translation id="6373523479360886564">Kas soovite kindlasti Chromiumi desinstallida?</translation>
-<translation id="8957741245723343544">Teie muudatused jõustuvad järgmine kord, kui Chromium OS-i taaskäivitate.</translation>
 <translation id="6510925080656968729">Desinstalli Chromium</translation>
 <translation id="6893813176749746474">Chromiumi on värskendatud, kuid te ei ole seda kasutanud vähemalt 30 päeva.</translation>
 <translation id="2770231113462710648">Asenda vaikebrauser:</translation>
@@ -11,7 +10,6 @@
 <translation id="3748537968684000502">Vaatate turvalist Chromiumi lehte.</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>
 <translation id="1065672644894730302">Teie eelistusi ei saa lugeda. Mõned funktsioonid ei pruugi saadaval olla ja eelistuste muudatusi ei salvestata.</translation>
-<translation id="2469082501656808441">Saadaval on Chromiumi uus versioon</translation>
 <translation id="4222661289444749267">Chromium Frame'i värskendus.</translation>
 <translation id="2843244238218937196">Chromium Renderer</translation>
 <translation id="7128196614940529818">Chromium Frame on juba installitud ja arvutis kõikidele kasutajatele saadaval. Kui soovite installida Chromium Frame'i kasutaja tasemel, siis tuleb teil esmalt desinstallida süsteemi taseme versioon, mille on installinud administraator.</translation>
@@ -26,13 +24,12 @@
 <translation id="4285930937574705105">Installimine ebaõnnestus tundmatu vea tõttu. Kui Chromium praegu töötab, siis sulgege see ja proovige uuesti.</translation>
 <translation id="2589479092236095792">Chromiumi automaatse täitmise seaded</translation>
 <translation id="3555616473548901994">Desinstallimine on lõpetatud.</translation>
-<translation id="2940837712536340734">Chromium OS on ajakohane.</translation>
 <translation id="2886012850691518054">Valikuline: aidake muuta Chromiumi paremaks, saates Google'ile automaatselt kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> – Chromium</translation>
 <translation id="1989424089625731201">Üritasite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid serveri esitatud sertifikaat sisaldab vigu. Chromium ei saa kasutada vigadega sertifikaati ega tuvastada soovitud saidi identiteeti.</translation>
 <translation id="3103660991484857065">Installeril ei õnnestunud arhiivi lahti pakkida. Laadige Chromium uuesti alla.</translation>
-<translation id="2933983827758164650">Kui sulgete praegu Chromiumi, siis see allalaadimine tühistatakse.</translation>
 <translation id="872034308864968620">Luba Chromiumil taustal töötada</translation>
+<translation id="5109068449432240255">Jah, välju Chromiumist</translation>
 <translation id="4320129595801648679">Chromiumi uus vaheleht kujundati ümber. Vahetage jaotiste vahel nendel siltidel klõpsates. Chromium jätab teie eelistuse järgmiseks korraks meelde.</translation>
 <translation id="3032787606318309379">Chromiumi lisamine ...</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Hoiatus:<ph name="END_BOLD"/> Chromium ei saa takistada rakendusi teie sirvimisajalugu talletamast. Kui soovite laienduse inkognitorežiimis keelata, siis tühistage see valik.</translation>
@@ -45,10 +42,11 @@
 <translation id="4330585738697551178">See moodul põhjustab teadaolevalt Chromiumiga vastuolusid.</translation>
 <translation id="3190315855212034486">Chromium jooksis kokku. Kas soovite kohe taaskäivitada?</translation>
 <translation id="6714487516757221107">Ei leitud Chromiumi või Chromium Frame'i installi, mida värskendada.</translation>
+<translation id="3197823471738295152">Teie seade on ajakohane.</translation>
+<translation id="8551886023433311834">Seade on peaaegu ajakohane. Täienduse lõpuleviimiseks taaskäivitage seade.</translation>
 <translation id="4124681358536363708">Chromiumi installikataloog paistab olevat kasutusel. Taaskäivitage arvuti ja proovige uuesti.</translation>
 <translation id="8770560772173120024">Chromium impordib nüüd lemmikud/järjehoidjad.</translation>
 <translation id="6290315939897260265">Seda ei kasutata Chromiumis. See on kohatäide, mis sünkroonib ressursikaarte.</translation>
-<translation id="2977470724722393594">Chromium on ajakohane</translation>
 <translation id="9191268552238695869">Administraator on installinud teie süsteemi Chromiumi ja see on kõikidele kasutajatele saadava. Süsteemi taseme Chromium asendab nüüd kasutaja taseme installi.</translation>
 <translation id="3509308970982693815">Sulgege kõik Chromiumi aknad ja proovige uuesti.</translation>
 <translation id="4077262827416206768">Muudatuse rakendamiseks sulgege kõik Chromiumi aknad ja taaskäivitage Chromium.</translation>
@@ -57,7 +55,6 @@
 <translation id="118298050220780080">Üritasite jõuda domeenile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas sertifikaadi, mille väljastajat arvuti operatsioonisüsteem ei usalda. See võib tähendada, et server lõi ise turbemandaadid, mille identiteediteabele Chromium ei saa tugineda, või ründaja üritab teie sidet häirida.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Jätka taustarakenduste käitamist pärast Chromiumi sulgemist</translation>
-<translation id="2918265831258045091">Kas soovite Chromiumist väljuda, kui allalaadimine on pooleli?</translation>
 <translation id="6055895534982063517">Saadaval on Chromiumi uus versioon ja see on kiirem kui kunagi varem.</translation>
 <translation id="2407806170074302369">Teave Chromium Frame'i kohta ...</translation>
 <translation id="5405650547142096840">Eemalda Chromiumist</translation>
@@ -67,6 +64,7 @@
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4932687624772039103">Chromium ei toeta operatsioonisüsteemi <ph name="OS_NAME"/> .</translation>
 <translation id="8738921060445980047">Tundmatu versioon.</translation>
+<translation id="6970811910055250180">Teie seadme täiendamine ...</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
 <translation id="85843667276690461">Hangi abi Chromiumi kasutamise kohta</translation>
 <translation id="263863604136125912">Käivita Chromium</translation>
@@ -84,7 +82,6 @@
 <translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">Ära tüüta mind</translation>
-<translation id="7700951445648533795">Kas soovite Chromiumist väljuda, kui <ph name="DOWNLOAD_COUNT"/> allalaadimist on pooleli?</translation>
 <translation id="275588974610408078">Krahhiaruandlus ei ole Chromiumis saadaval.</translation>
 <translation id="5909170354645388250">Seda ei kasutata Chromiumis. See on kohatäide, mis sünkroonib ressursikaarte. See eeldab üht argumenti: $1.</translation>
 <translation id="3582788516608077514">Chromiumi värskendamine ...</translation>
@@ -95,7 +92,6 @@
 <translation id="2648074677641340862">Installimisel ilmnes operatsioonisüsteemi viga. Laadige Chromium uuesti alla.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> on Chromiumi lisatud.</translation>
 <translation id="8678787945719392857">Kas soovite kasutada seda Google'i kontot kogu Chromiumi kraami sünkroonimiseks?</translation>
-<translation id="5974438302735098483">Chromium on värskendatud</translation>
 <translation id="8621669128220841554">Installimine ebaõnnestus tundmatu vea tõttu. Laadige Chromium uuesti alla.</translation>
 <translation id="6717134281241384636">Teie profiili ei saa kasutada, kuna see pärineb Chromiumi uuemast versioonist.
 
@@ -105,8 +101,8 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="6212496753309875659">Arvutis on juba Chromiumi uuem versioon. Kui tarkvara ei tööta, siis desinstallige Chromium ja proovige uuesti.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>
 <translation id="1298199220304005244">Hangi abi Chromium OS-i kasutamise kohta</translation>
-<translation id="667672506951335584">Kui sulgete praegu Chromiumi, siis need allalaadimised tühistatakse.</translation>
 <translation id="1691304614444223855">Chromium Frame on värskendatud. Taaskäivitage brauser. Chromiumi versioon: <ph name="TODO_0001"/>, Chromium Frame'i versioon: <ph name="TODO_0002"/></translation>
+<translation id="130631256467250065">Muudatused jõustuvad järgmine kord, kui seadme taaskäivitate.</translation>
 <translation id="1105130903706696483">Chromium ei sulgunud korralikult. Lehtede taasavamiseks klõpsake käsul taasta.</translation>
 <translation id="1929939181775079593">Chromium ei reageeri. Kas soovite kohe taaskäivitada?</translation>
 <translation id="6089587093203430357">Instant</translation>
@@ -120,18 +116,20 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="8865765905101981392">Interneti-brauser</translation>
 <translation id="2910007522516064972">Teave &amp;Chromiumi kohta</translation>
 <translation id="8453117565092476964">Installeri arhiiv on rikutud või kehtetu. Laadige Chromium uuesti alla.</translation>
-<translation id="309634601461115233">Muudatuse rakendamiseks logige Chromium OS-ist välja ja uuesti sisse.</translation>
 <translation id="3249425904492147663">Üritasite jõuda domeenile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas aegunud sertifikaadi. Saadaval ei ole teavet selle kohta, kas sertifikaati on pärast aegumist rikutud. Seetõttu ei saa Chromium tagada, et suhtlete domeeniga &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mitte ründajaga. Teie arvuti kell on praegu <ph name="CURRENT_TIME"/>. Kas see on õige? Vastasel korral parandage viga ja värskendage lehte.</translation>
 <translation id="7196020411877309443">Miks mulle seda näidatakse?</translation>
 <translation id="7483335560992089831">Ei saa installida sama Chromiumi versiooni, mis praegu töötab. Sulgege Chromium ja proovige uuesti.</translation>
 <translation id="7641113255207688324">Chromium ei ole teie vaikebrauser.</translation>
+<translation id="4458285410772214805">Muudatuse jõustamiseks logige välja ja uuesti sisse.</translation>
 <translation id="2174090135251659490">Üritasite jõuda domeenile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas sertifikaadi, mis ei kehti veel. Saadaval ei ole teavet, mis näitab, kas sertifikaat on usaldusväärne. Chromium ei saa tagada, et suhtlete domeeniga &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mitte ründajaga. Teie arvuti kell on praegu <ph name="CURRENT_TIME"/>. Kas see on õige? Vastasel korral parandage viga ja värskendage lehte.</translation>
 <translation id="2119636228670142020">Teave &amp;Chromium OS-i kohta</translation>
 <translation id="1708666629004767631">Saadaval on Chromiumi uus, turvalisem versioon.</translation>
 <translation id="5859758987635973787">Chromium on ajakohane (<ph name="VERSION"/>)</translation>
 <translation id="8616882682724010661">Vaadake Chromiumi sisselogimise <ph name="BEGIN_LINK"/>muid eeliseid<ph name="END_LINK"/>.</translation>
 <translation id="378917192836375108">Chromium võimaldab teil veebis telefoninumbril klõpsata ja sellele Skype'i kaudu helistada!</translation>
+<translation id="8724049448828509830">Allalaadimine on pooleli. Kas soovite Chromiumist väljuda ja allalaadimise tühistada?</translation>
 <translation id="7503101070699687603">Chromium Plug-In Host</translation>
+<translation id="2739631515503418643">Allalaadimised on pooleli. Kas soovite Chromiumist väljuda ja allalaadimised tühistada?</translation>
 <translation id="9013262824292842194">Chromium nõuab Windows Vistat või Windows XP-d vähemalt hoolduspaketiga SP2.</translation>
 <translation id="1967743265616885482">Samanimeline moodul põhjustab teadaolevalt Chromiumiga vastuolusid.</translation>
 <translation id="4224199872375172890">Chromium on ajakohane.</translation>
@@ -144,6 +142,7 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="7123348595797445166">Proovi seda (juba installitud)</translation>
 <translation id="6403826409255603130">Chromium on veebibrauser, mis avab veebilehti ja rakendusi välgukiirusel. See on kiire, stabiilne ja hõlpsasti kasutatav. Sirvige veebi turvalisemalt tänu Chromiumi sisseehitatud pahavara- ja andmepüügikaitsele.</translation>
 <translation id="2927042866129133279">Argumendid on kehtetud. Chromium Frame'i valmisolekurežiimis installimiseks tuleb installida ka Chromium.</translation>
+<translation id="546394857889685352">Seade on täiendatud versioonile <ph name="VERSION"/></translation>
 <translation id="2572494885440352020">Chromiumi abiline</translation>
 <translation id="442817494342774222">Chromium on seadistatud arvuti sisselülitamisel automaatselt käivituma.</translation>
 <translation id="8974095189086268230">Chromium OS-i aluseks on täiendav <ph name="BEGIN_LINK_CROS_OSS"/>avatud lähtekoodiga tarkvara<ph name="END_LINK_CROS_OSS"/>.</translation>

@@ -78,6 +78,9 @@
       如果您設定這項政策，<ph name="PRODUCT_FRAME_NAME"/> 會使用提供的目錄。
 
       如果您未調整這項設定，系統會使用預設的設定檔目錄。</translation>
+<translation id="8818173863808665831">回報裝置的地理位置。
+
+      如果未設定這項政策，或將其設定為 False，系統將不會回報位置。</translation>
 <translation id="4899708173828500852">啟用安全瀏覽</translation>
 <translation id="7719251660743813569">控制是否要將使用計量回報給 Google。如果設為 True，<ph name="PRODUCT_OS_NAME"/> 會回報使用計量。如未設定或設為 False，計量回報就會遭到停用。</translation>
 <translation id="3570008976476035109">封鎖這些網站的外掛程式</translation>
@@ -137,9 +140,9 @@
 <translation id="5776485039795852974">每當網站要顯示桌面通知時詢問我</translation>
 <translation id="5052081091120171147">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入瀏覽記錄 (也會影響匯入對話方塊的選項)。如果停用這項政策，則不會匯入瀏覽記錄。如果未設定這項政策，系統會自動匯入瀏覽記錄，或詢問使用者是否要匯入瀏覽記錄。</translation>
 <translation id="6786747875388722282">擴充功能</translation>
+<translation id="8947415621777543415">回報裝置位置</translation>
 <translation id="1655229863189977773">設定磁碟快取大小 (以位元組為單位)</translation>
 <translation id="6899705656741990703">自動偵測 Proxy 設定</translation>
-<translation id="4101772068965291327">開啟首頁</translation>
 <translation id="7003334574344702284">如果啟用這項政策，則會強制從之前的預設瀏覽器匯入儲存的密碼，並影響匯入對話方塊。如果停用這項政策，則不會匯入儲存的密碼。如果未設定這項政策，系統會自動匯入儲存的密碼，或詢問使用者是否要匯入儲存的密碼。</translation>
 <translation id="6258193603492867656">指定產生的 Kerberos SPN 是否應該包含非標準的通訊埠。如果您啟用這項設定並輸入非標準通訊埠 (例如 80 或 443 之外的通訊埠)，那麼產生的 Kerberos SPN 就會包含該通訊埠。如果您停用或未調整這項設定，那麼不論在任何情況下，產生的 Kerberos SPN 都不會包含通訊埠。</translation>
 <translation id="8992176907758534924">不允許任何網站顯示圖片</translation>
@@ -187,6 +190,20 @@
       如果未設定這項政策，則使用者可選擇是否要輸入密碼才能裝置解除鎖定。</translation>
 <translation id="6022948604095165524">起始動作</translation>
 <translation id="9042911395677044526">允許將網路設定按照使用者套用至安裝了 <ph name="PRODUCT_OS_NAME"/> 的裝置。本網路設定是由開放網路設定格式 (網址為：<ph name="ONC_SPEC_URL"/>) 所定義的 JSON 格式字串。</translation>
+<translation id="7128918109610518786">列出 <ph name="PRODUCT_OS_NAME"/> 在啟動器列中顯示為固定應用程式的應用程式識別碼。
+
+      如果設定這項政策，應用程式集將會固定，無法讓使用者變更。
+
+      如果未設定這項政策，使用者就可以變更啟動器中的固定應用程式清單。</translation>
+<translation id="6177482277304066047">設定自動更新的目標版本。
+
+      指定要更新的 <ph name="PRODUCT_OS_NAME"/> 目標版本前置碼。如果裝置執行的版本比指定的前置碼版本更舊，系統會自動更新至指定前置碼的最新版本。如果裝置使用的是最新版本則無影響 (不會執行降級)，裝置將保留目前版本。前置碼格式為一組數字組合，運作方式如下列範例所示：
+
+      &quot;&quot; (或尚未設定)：更新至可用的最新版本。
+      &quot;1412.&quot;：更新至 1412 的任一次要版本 (例如 1412.24.34 或 1412.60.2)
+      &quot;1412.2.&quot;：更新至 1412.2 的任一次要版本 (例如 1412.2.34 或 1412.2.2)
+      &quot;1412.24.34&quot;：僅更新至特定版本
+      </translation>
 <translation id="7625444193696794922">指定裝置的固定發佈頻道。</translation>
 <translation id="2240879329269430151">允許您設定是否要讓網站顯示彈出式視窗。您可以允許或禁止所有網站顯示彈出式視窗。如果未設定這項政策，系統會使用「BlockPopups」，不過使用者可以變更設定。</translation>
 <translation id="5289914968905023866">禁止存取黑名單中的網址。這項政策會禁止使用者從黑名單所列網址載入網頁。網址格式為「通訊協定://主機:通訊埠/路徑」。「通訊協定」這項非必要項目可為 http、https 或 ftp，但只有所列出的這個通訊協定才會受到封鎖；如果不指定通訊協定，則會封鎖所有通訊協定。「主機」可為主機名稱或 IP 位址。封鎖某個主機名稱時，也會一併封鎖其子網域。如果不想封鎖子網域，則可在主機名稱前加上「.」。如果使用特殊主機名稱「*」，則會封鎖所有網域。「通訊埠」這項非必要項目可為 1 到 65535 中的有效埠號。如果未指定，則會封鎖所有通訊埠。如果指定「路徑」這項非必要項目，則只會封鎖帶有該字首的路徑。您可以在網址許可清單政策中定義例外情況，不過這些政策僅限 100 項，之後的項目將遭到忽略。如果未設定這項政策，瀏覽器就不會將任何網址列入黑名單。</translation>
@@ -200,6 +217,9 @@
 
       如未設定這項政策，會先停用背景模式，並且允許使用者從瀏覽器設定控制模式。</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更新版本</translation>
+<translation id="5148753489738115745">允許您指定 <ph name="PRODUCT_FRAME_NAME"/> 啟動 <ph name="PRODUCT_NAME"/> 時使用的其他參數。
+
+          如果未設定這項政策，系統會使用預設命令列。</translation>
 <translation id="2646290749315461919">允許您設定是否要讓網站追蹤使用者的實際位置。您可以直接預設為允許或不允許追蹤使用者的實際位置，或讓網站每次要求實際位置時都詢問使用者一次。如果未設定這項政策，系統會使用「AskGeolocation」，不過使用者可以變更設定。</translation>
 <translation id="5770738360657678870">開發頻道 (可能不穩定)</translation>
 <translation id="2959898425599642200">Proxy 略過規則</translation>
@@ -262,6 +282,19 @@
 <translation id="717221064259627503">設定「<ph name="PRODUCT_NAME"/>」用來在磁碟中儲存快取檔案的目錄。如果設定這項政策，則不論使用者是否指定「--disk-cache-dir」參數，「<ph name="PRODUCT_NAME"/>」都會使用提供的目錄。如果未設定這項政策，系統會使用預設的快取目錄，而且使用者可以用「--disk-cache-dir」命令列參數加以覆寫。</translation>
 <translation id="2312134445771258233">允許您設定起始時載入的網頁。系統會忽略 [起始時開啟的網址] 網頁清單內容，除非您在 [起始動作] 中選取 [開啟網址清單]。</translation>
 <translation id="2538628396238281971">設定「<ph name="PRODUCT_NAME"/>」會用來下載檔案的目錄。如果設定這項政策，則不論使用者是否指定政策或啟用每次都要提示下載位置的參數，「<ph name="PRODUCT_NAME"/>」會使用提供的目錄。如果未設定這項政策，系統會使用預設的下載目錄，不過使用者可以變更設定。</translation>
+<translation id="7750991880413385988">開啟新分頁</translation>
+<translation id="741903087521737762">允許您指定起始動作。
+
+          如果您選擇 [開啟新分頁]，那麼每當您啟動 <ph name="PRODUCT_NAME"/>，就會開啟新分頁。
+
+          如果您選擇 [還原上一個工作階段]，系統就會重新開啟上次關閉 <ph name="PRODUCT_NAME"/> 時開啟的網址，瀏覽工作階段將還原到上次離開前的狀態。
+          選擇這個選項後，部分與工作階段相依的設定或在關閉時執行動作的設定將遭到停用 (例如關閉時清除瀏覽資料或單一工作階段 Cookie)。
+
+          如果您選擇 [開啟網址清單]，使用者啟動 <ph name="PRODUCT_NAME"/> 時，會一併開啟「起始時開啟的網址」清單。
+
+          如果您啟用這項設定，使用者將無法在 <ph name="PRODUCT_NAME"/> 中變更或覆寫設定。
+
+          停用這項設定等同未進行任何設定，使用者仍然可以在 <ph name="PRODUCT_NAME"/> 中變更設定。</translation>
 <translation id="5761030451068906335">調整 <ph name="PRODUCT_NAME"/> 的 Proxy 設定。
 
       這項政策尚未準備完成，請勿使用。</translation>
@@ -269,6 +302,7 @@
 <translation id="1019101089073227242">設定使用者資料目錄</translation>
 <translation id="5826047473100157858">指定使用者是否可以在「<ph name="PRODUCT_NAME"/>」中以無痕模式開啟網頁。如果選取的是 [啟用] 或未設定政策，網頁能以無痕模式開啟。如果選取的是 [停用]，則網頁可能無法以無痕模式開啟。如果選取的是 [強制]，系統只會以無痕模式開啟網頁。</translation>
 <translation id="5085647276663819155">停用列印預覽</translation>
+<translation id="8672321184841719703">指定目標的自動更新版本</translation>
 <translation id="2030905906517501646">預設搜尋引擎關鍵字</translation>
 <translation id="3072045631333522102">在零售模式下登入畫面所使用的螢幕保護程式</translation>
 <translation id="7393895128271703858">這項政策已被取代，請改用 DefaultJavaScriptSetting。在「<ph name="PRODUCT_NAME"/>」中啟用 JavaScript，並且禁止使用者變更這項設定。如果這項設定已啟用或尚未設定，網頁都能使用 JavaScript。如果這項設定已停用，網頁就無法使用 JavaScript。如果未設定這項政策，系統會使用已啟用的預設值並啟用這項設定，但使用者可以加以變更。</translation>
@@ -379,6 +413,7 @@
 <translation id="2299220924812062390">指定停用的外掛程式清單</translation>
 <translation id="924557436754151212">第一次執行時從預設瀏覽器匯入已儲存的密碼</translation>
 <translation id="1897365952389968758">允許所有網站執行 JavaScript</translation>
+<translation id="7323896582714668701"><ph name="PRODUCT_NAME"/> 額外命令列參數</translation>
 <translation id="6931242315485576290">停用 Google 資料同步處理功能</translation>
 <translation id="36674322972891584">啟用「<ph name="PRODUCT_NAME"/>」的網路預測功能，並且禁止使用者變更這項設定。不論您啟用或停用這項設定，使用者都無法變更或覆寫「<ph name="PRODUCT_NAME"/>」中的這項設定。如果未設定這項政策，系統會啟用這項功能，不過使用者也能加以變更。</translation>
 <translation id="7006788746334555276">內容設定</translation>
@@ -390,6 +425,7 @@
 <translation id="187819629719252111">允許「<ph name="PRODUCT_NAME"/>」顯示檔案選項對話方塊，即可允許本機檔案的存取權。如果您啟用這項設定，使用者就能照常開啟檔案選項對話方塊。如果您停用這項設定，只要使用者執行的動作會開啟檔案選項對話方塊 (例如匯入書籤、上傳檔案、儲存連結等)，螢幕上就會顯示訊息，並假設使用者已按下檔案選項對話方塊上的 [取消]。如果未調整這項設定，使用者就能照常開啟檔案選項對話方塊。</translation>
 <translation id="4507081891926866240">自訂網址模式清單，其中的網址模式應一律由「<ph name="PRODUCT_FRAME_NAME"/>」轉譯。如果未設定這項政策，所有網站都會使用「ChromeFrameRendererSettings」政策指定的預設轉譯器。如需模式範例，請參閱 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="3101501961102569744">選擇如何指定 Proxy 伺服器設定</translation>
+<translation id="1803646570632580723">要顯示在啟動器中的固定應用程式清單</translation>
 <translation id="7774768074957326919">使用系統 Proxy 設定</translation>
 <translation id="3891357445869647828">啟用 JavaScript</translation>
 <translation id="868187325500643455">允許所有網站自動執行外掛程式</translation>
@@ -471,16 +507,4 @@
 <translation id="5645779841392247734">允許這些網站的 Cookie</translation>
 <translation id="8220342550735772883">設定「<ph name="PRODUCT_NAME"/>」會用來在磁碟上儲存快取媒體檔案的快取大小。如果您設定這項政策，則不論使用者是否指定「--media-cache-size」參數，「<ph name="PRODUCT_NAME"/>」都會使用提供的快取大小。如果這項政策的值是 0，系統會使用預設快取大小，不過使用者無法加以變更。如果未設定這項政策，系統會使用預設大小，而且使用者可用「--media-cache-size」參數加以覆寫。</translation>
 <translation id="7049373494483449255">啟用「<ph name="PRODUCT_NAME"/>」將文件提交至「<ph name="CLOUD_PRINT_NAME"/>」列印。注意：這只會影響可支援「<ph name="PRODUCT_NAME"/>」的「<ph name="CLOUD_PRINT_NAME"/>」，但無法禁止使用者提交至網站上的列印工作。如果啟用或尚未設定這項設定，使用者可以從「<ph name="PRODUCT_NAME"/>」列印對話方塊中使用「<ph name="CLOUD_PRINT_NAME"/>」進行列印。如果停用這項設定，使用者則無法從「<ph name="PRODUCT_NAME"/>」列印對話方塊中使用「<ph name="CLOUD_PRINT_NAME"/>」進行列印。</translation>
-<translation id="2339225390014743328">允許您指定起始動作。
-
-          如果您選擇 [開啟首頁]，那麼每當您啟用 <ph name="PRODUCT_NAME"/>，就會開啟首頁。
-
-          如果您選擇 [還原上次工作階段]，那麼就會重新開啟上次關閉 <ph name="PRODUCT_NAME"/> 時開啟的網址，並且還原成上次離開時的瀏覽工作階段。
-          選擇這個選項會停用工作階段中的某些設定，或在結束時執行動作的設定 (例如在結束時清除瀏覽資料或單一工作階段 Cookie)。
-
-          如果您選擇 [開啟網址清單]，那麼當使用者啟用 <ph name="PRODUCT_NAME"/> 時，會一併開啟「起始時開啟的網址」清單。
-
-          如果您啟用這項設定，使用者就無法在 <ph name="PRODUCT_NAME"/> 中變更或覆寫該清單。
-
-          停用這項設定等同放著清單不做任何設定。使用者仍然可以在 <ph name="PRODUCT_NAME"/> 中變更清單。</translation>
 </translationbundle>

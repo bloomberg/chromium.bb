@@ -2,50 +2,67 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="3595596368722241419">Pin đầy</translation>
-<translation id="908313544993743941">Tắt mạng di động</translation>
+<translation id="5250713215130379958">Tự động ẩn trình khởi chạy</translation>
 <translation id="30155388420722288">Nút tràn</translation>
 <translation id="5571066253365925590">Đã bật bluetooth</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Đã tắt bluetooth</translation>
+<translation id="370649949373421643">Bật Wi-Fi</translation>
 <translation id="3626281679859535460">Độ sáng</translation>
 <translation id="7982789257301363584">Mạng</translation>
+<translation id="5565793151875479467">Proxy...</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Khay trạng thái</translation>
 <translation id="2946640296642327832">Bật bluetooth</translation>
 <translation id="6596816719288285829">Địa chỉ IP</translation>
-<translation id="289426338439836048">Mạng di động khác...</translation>
 <translation id="5233638681132016545">Tab mới</translation>
+<translation id="3846575436967432996">Không có thông tin mạng</translation>
+<translation id="3026237328237090306">Thiết lập dữ liệu di động</translation>
 <translation id="785750925697875037">Xem tài khoản di động</translation>
+<translation id="8121288016949447968">Shift+Tìm kiếm</translation>
 <translation id="7864539943188674973">Tắt bluetooth</translation>
 <translation id="3126069444801937830">Khởi động lại để cập nhật</translation>
+<translation id="1525975890706558596">Đang bật CAPS LOCK.
+Nhấn phím Shift + Tìm kiếm để hủy.</translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
-<translation id="7911992579061465928">Pin yếu</translation>
 <translation id="598295083618286569">Đã kết nối bluetooth</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
+<translation id="2091132388437059185">Tự động ẩn trình khởi chạy khi phóng to</translation>
+<translation id="425878420164891689">Đang tính thời gian cho tới khi pin được sạc đầy</translation>
+<translation id="2964193600955408481">Tắt Wi-Fi</translation>
 <translation id="811680302244032017">Thêm thiết bị...</translation>
+<translation id="2509468283778169019">Đang bật CAPS LOCK</translation>
+<translation id="6426039856985689743">Tắt dữ liệu di động</translation>
 <translation id="3232695630852378748">Cài đặt bluetooth...</translation>
 <translation id="1480041086352807611">Chế độ trình diễn</translation>
 <translation id="4186384497305035875">Màn hình này được cố tình để trống</translation>
 <translation id="9089416786594320554">Phương thức nhập</translation>
-<translation id="7706302027196209560">Bật wi-fi</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
+<translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="3557139239102318020">Kéo xuống để thu nhỏ, kéo sang trái hoặc phải để xếp kề</translation>
 <translation id="5980301590375426705">Thoát khỏi phiên khách</translation>
 <translation id="8308637677604853869">Trình đơn trước</translation>
+<translation id="8528322925433439945">Di động ...</translation>
 <translation id="3595065677684516080">Cài đặt và trợ giúp</translation>
 <translation id="4479639480957787382">Ethernet</translation>
+<translation id="7573721444069009535">Wi-Fi ...</translation>
+<translation id="6223565363550976998">Pin: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">Khóa</translation>
-<translation id="5836819469861742634">Thay đổi cài đặt proxy ...</translation>
+<translation id="2805756323405976993">Ứng dụng</translation>
 <translation id="2872961005593481000">Tắt</translation>
-<translation id="8735871257195921372">Mạng wi-fi khác...</translation>
-<translation id="2152495481414285304">Ứng dụng</translation>
-<translation id="1690310444231390462">Tắt wi-fi</translation>
-<translation id="77565731175229781">Cài đặt mạng ...</translation>
+<translation id="7052914147756339792">Đặt hình nền...</translation>
+<translation id="1602076796624386989">Bật dữ liệu di động</translation>
+<translation id="8573351908869164327">Còn lại <ph name="HOUR"/>g <ph name="MINUTE"/>p</translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
-<translation id="7908019422099334890">Đặt hình nền...</translation>
+<translation id="2983818520079887040">Cài đặt...</translation>
+<translation id="8660803626959853127">Đang đồng bộ hóa <ph name="COUNT"/> tệp</translation>
+<translation id="639644700271529076">CAPS LOCK tắt</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7841796031898165175">Bật mạng di động</translation>
-<translation id="9072667645353666975">Pin: <ph name="PERCENTAGE"/>%
-<ph name="HOUR"/> giờ <ph name="MINUTE"/> phút</translation>
+<translation id="5045002648206642691">Cài đặt Google Drive...</translation>
 <translation id="48607902311828362">Chế độ trên máy bay</translation>
+<translation id="5361734574074701223">Đang tính thời gian còn lại</translation>
+<translation id="9169585155162064169">Đang bật CAPS LOCK.
+Nhấn phím Tìm kiếm để hủy.</translation>
+<translation id="412065659894267608"><ph name="HOUR"/>g <ph name="MINUTE"/>p cho đến khi đầy</translation>
 </translationbundle>

@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="248395913932153421">День</translation>
+<translation id="6015796118275082299">Год</translation>
 <translation id="9186171386827445984">Загрузка документа: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> стр.</translation>
 <translation id="1235745349614807883">Очистить недавние поиски</translation>
 <translation id="1171774979989969504">Введите адрес электронной почты.</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">ссылка</translation>
 <translation id="4522570452068850558">Подробнее</translation>
 <translation id="8451268428117625855">Выберите файл.</translation>
+<translation id="2674318244760992338">нижний колонтитул</translation>
+<translation id="8987927404178983737">Месяц</translation>
 <translation id="7364796246159120393">Выберите файл</translation>
 <translation id="2761667185364618470">Чтобы продолжить, установите этот флажок.</translation>
 <translation id="8964020114565522021">Перетащите файл сюда</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024 (Средний размер)</translation>
 <translation id="1637811476055996098">Выбрать файлы</translation>
 <translation id="5476505524087279545">снять галочку</translation>
+<translation id="2148716181193084225">Сегодня</translation>
 <translation id="2507943997699731163">Заполните это поле.</translation>
 <translation id="5919473608089529604">Не удалось загрузить плагин.</translation>
 <translation id="6663448176199120256">Недавние поиски</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">Значение должно быть меньше или равно <ph name="MAXIMUM"/>.</translation>
 <translation id="6119846243427417423">активировать</translation>
 <translation id="8444882422881193423">Число файлов: <ph name="NUMBER_OF_FILES"/></translation>
+<translation id="6643016212128521049">Очистить</translation>
 <translation id="3934680773876859118">Не удалось загрузить документ PDF</translation>
 <translation id="8597182159515967513">заголовок</translation>
 <translation id="2653659639078652383">Отправить</translation>

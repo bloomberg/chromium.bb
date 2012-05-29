@@ -146,6 +146,9 @@
       Om du anger den här policyn använder <ph name="PRODUCT_FRAME_NAME"/> den katalog som du anger.
 
       Om den här inställningen inte anges används profilens standardkatalog.</translation>
+<translation id="8818173863808665831">Rapportera enhetens geografiska plats.
+
+      Om policyn inte är inställd eller inte är aktiverad rapporteras inte platsen.</translation>
 <translation id="4899708173828500852">Aktivera Säker webbsökning</translation>
 <translation id="7719251660743813569">Styr om användarstatistik rapporteras till Google. Om värdet är sant rapporterar <ph name="PRODUCT_OS_NAME"/> användarstatistik. Om policyn inte är konfigurerad eller inställd på falskt inaktiveras statistikrapportering.</translation>
 <translation id="3570008976476035109">Blockera plugin-program för dessa webbplatser</translation>
@@ -264,9 +267,9 @@
 
       Om den inte anges kan användaren få välja om import ska göras, eller så kan import göras automatiskt.</translation>
 <translation id="6786747875388722282">Tillägg</translation>
+<translation id="8947415621777543415">Rapportera enhetsplats</translation>
 <translation id="1655229863189977773">Ange enhetens cachestorlek i byte</translation>
 <translation id="6899705656741990703">Identifiera proxyinställningar automatiskt</translation>
-<translation id="4101772068965291327">Öppna startsidan</translation>
 <translation id="7003334574344702284">När den här policyn är aktiverad tvingas import av sparade lösenord från standardwebbläsaren. Policyn påverkar också dialogrutan för import.
 
       Om policyn inte är aktiverad importeras inte sparade lösenord.
@@ -348,6 +351,20 @@
       Om du inte anger policyn kan användarna välja om det ska behövas ett lösenord för att låsa upp enheten eller inte.</translation>
 <translation id="6022948604095165524">Åtgärd vid start</translation>
 <translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME"/>-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Visar en lista med de appidentifierare som ska visas som fasta appar i startfältet i <ph name="PRODUCT_OS_NAME"/>.
+
+      Om den här policyn är konfigurerad är appuppsättningen fast och kan inte ändras av användaren.
+
+      Om den här policyn inte ställs in kan användaren ändra listan med fasta appar i startfältet.</translation>
+<translation id="6177482277304066047">Anger en målversion för automatiska uppdateringar.
+
+      Anger prefix för en målversion som <ph name="PRODUCT_OS_NAME"/> ska uppdateras till. Om enheten har en version som är äldre än det angivna prefixet uppdateras den till den senaste versionen med det angivna prefixet. Om enheten redan har en nyare version händer ingenting (ingen nedgradering görs) och enhetens befintliga version påverkas inte. Prefixformatet fungerar per komponent som i följande exempel:
+
+      &quot;&quot; (eller inte konfigurerad): uppdatera till den senaste tillgängliga versionen.
+      &quot;1412.&quot;: uppdatera till alla delversioner av 1412 (t.ex. 1412.24.34 eller 1412.60.2)
+      &quot;1412.2.&quot;: uppdatera till alla delversioner av 1412.2 (t.ex. 1412.2.34 eller 1412.2.2)
+      &quot;1412.24.34&quot;: uppdatera bara till denna specifika version.
+      </translation>
 <translation id="7625444193696794922">Policyn anger vilken versionskanal som enheten ska låsas till.</translation>
 <translation id="2240879329269430151">Gör att du kan ange om webbplatser får visa popup-fönster. Du kan tillåta popup-fönster för alla webbplatser eller blockera popup-fönster för alla webbplatser.
 
@@ -383,6 +400,9 @@
 
       Om policyn inte ställs in är bakgrundsläget inaktiverat och kan ändras av användaren i webbläsarinställningarna.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller senare</translation>
+<translation id="5148753489738115745">Innebär att du kan ange ytterligare parametrar som används när <ph name="PRODUCT_FRAME_NAME"/> startar <ph name="PRODUCT_NAME"/>.
+
+          Om policyn inte anges används standardkommandoraden.</translation>
 <translation id="2646290749315461919">Policyn gör att du kan ställa in om webbplatser får spåra användarnas fysiska plats. Att spåra användarnas fysiska plats kan vara tillåtet som standard, inte tillåtet som standard eller användaren kan bli tillfrågad varje gång en webbplats efterfrågar den fysiska platsen.
 
           Om policyn inte har angetts används AskGeolocation och användaren kan ändra inställningen.</translation>
@@ -518,6 +538,19 @@
       Om du anger den här policyn använder <ph name="PRODUCT_NAME"/> den katalog som anges oavsett om användaren har angett en eller aktiverat flaggan om att bli frågad om hämtning varje gång.
 
       Om den här policyn inte anges används standardkatalogen för hämtning och användaren kan ändra inställningen.</translation>
+<translation id="7750991880413385988">Öppna sidan Ny flik</translation>
+<translation id="741903087521737762">Innebär att du kan ange beteende vid start.
+
+          Om du väljer Öppna sidan Ny flik öppnas alltid sidan ny flik när du startar <ph name="PRODUCT_NAME"/>.
+
+          Om du väljer Återställ den senaste sessionen öppnas de webbadresser som var öppna när <ph name="PRODUCT_NAME"/> stängdes senast och webbläsarsessionen återställs som den lämnades.
+          Om du väljer det här alternativet inaktiveras vissa inställningar som är beroende av sessioner eller som utför åtgärder när programmet avslutas (till exempel att ta bort webbläsardata eller endast sessions-cookies).
+
+          Om du väljer Öppna en lista med webbadresser visas listan med webbadresser som ska öppnas vid start när en användare startar <ph name="PRODUCT_NAME"/>.
+
+          Om du aktiverar den här inställningen kan den inte ändras eller åsidosättas av användaren i <ph name="PRODUCT_NAME"/>.
+
+          Om du inaktiverar inställningen är det samma sak som att inte konfigurera den. Användaren kan fortfarande ändra den i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Konfigurerar proxyinställningarna för <ph name="PRODUCT_NAME"/>. Använd inte policyn. Den är inte redo ännu.</translation>
 <translation id="8344454543174932833">Importera bokmärken från standardwebbläsaren första gången den körs</translation>
 <translation id="1019101089073227242">Ange katalog för användardata</translation>
@@ -529,6 +562,7 @@
 
       Om tvingat läge är valt kan sidor BARA öppnas i inkognitoläge.</translation>
 <translation id="5085647276663819155">Inaktivera förhandsgranskning av utskrift</translation>
+<translation id="8672321184841719703">Målversion för automatisk uppdatering</translation>
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
 <translation id="3072045631333522102">Skärmsläckare att använda på inloggningsskärmen i återförsäljarläge</translation>
 <translation id="7393895128271703858">Den här policyn är föråldrad. Använd DefaultJavaScriptSetting istället.
@@ -753,6 +787,7 @@
 <translation id="2299220924812062390">Ange en lista med aktiverade plugin-program</translation>
 <translation id="924557436754151212">Importera sparade lösenord från standardwebbläsaren första gången den körs</translation>
 <translation id="1897365952389968758">Tillåt alla webbplatser att köra JavaScript (rekommenderas)</translation>
+<translation id="7323896582714668701">Ytterligare kommandoradsparametrar för <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Inaktivera synkronisering av data med Google</translation>
 <translation id="36674322972891584">Policyn aktiverar nätverksförslag i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
 
@@ -778,6 +813,7 @@
 
           Exempel på mönster finns på http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Välj hur inställningar för proxyserver ska anges</translation>
+<translation id="1803646570632580723">Lista över fasta appar som ska visas i startfönstret</translation>
 <translation id="7774768074957326919">Använd systemets proxyinställningar</translation>
 <translation id="3891357445869647828">Aktivera JavaScript</translation>
 <translation id="868187325500643455">Tillåt alla webbplatser att köra pluginprogram automatiskt</translation>
@@ -970,16 +1006,4 @@
       Om inställningen är aktiverad eller inte konfigurerad kan användarna skriva ut till <ph name="CLOUD_PRINT_NAME"/> från dialogrutan Skriv ut i <ph name="PRODUCT_NAME"/>.
 
       Om inställningen är inaktiverad kan användarna inte skriva ut till <ph name="CLOUD_PRINT_NAME"/> från dialogrutan Skriv ut i <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2339225390014743328">Innebär att du kan ange vad som ska hända vid start.
-
-          Om du väljer Öppna startsidan visas alltid startsidan när du startar <ph name="PRODUCT_NAME"/>.
-
-          Om du väljer Återställ den senaste sessionen öppnas de webbadresser som var öppna förra gången som <ph name="PRODUCT_NAME"/> stängdes och webbläsarsessionen återställs som den var då.
-          Om du väljer det här alternativet inaktiveras vissa inställningar som kräver sessioner eller som utför åtgärder när programmet avslutas (till exempel Ta bort webbläsardata när webbläsaren avslutas eller sessionscookies).
-
-          Om du väljer Öppna en lista med webbadresser öppnas listan med webbadresser som ska öppnas när användaren startar <ph name="PRODUCT_NAME"/>.
-
-          Om du aktiverar den här inställningen kan den inte ändras eller åsidosättas i <ph name="PRODUCT_NAME"/> av användare.
-
-          Att inaktivera den här inställningen har samma funktion som att inte konfigurera den alls. Användaren kan fortfarande ändra den i <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

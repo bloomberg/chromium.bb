@@ -146,6 +146,9 @@
       Jei nustatysite šią politiką, „<ph name="PRODUCT_FRAME_NAME"/>“ naudos pateiktą katalogą.
 
       Nenustačius šio nustatymo bus naudojamas numatytasis profilio katalogas.</translation>
+<translation id="8818173863808665831">Pranešti geografinę šio įrenginio vietą.
+
+      Jei ši politika nenustatyta ar nustatyta „Ne“, nebus pranešta apie vietą.</translation>
 <translation id="4899708173828500852">Įgalinti saugų naršymą</translation>
 <translation id="7719251660743813569">Valdoma, ar naudojimo metrikos ataskaitos teikiamos atgal „Google“. Jei nustatyta į „true“ (tiesa), „<ph name="PRODUCT_OS_NAME"/>“ teikiamos naudojimo metrikos ataskaitos. Jei nesukonfigūruota ar nustatyta į „false“ (netiesa), metrikos ataskaitų teikimas neleidžiamas.</translation>
 <translation id="3570008976476035109">Blokuoti papildinius šiose svetainėse</translation>
@@ -264,9 +267,9 @@
 
       Jei nenustatyta, naudotojo gali būti klausiama, ar importuoti, arba gali būti automatiškai importuojama.</translation>
 <translation id="6786747875388722282">Plėtiniai</translation>
+<translation id="8947415621777543415">Pranešti įrenginio vietą</translation>
 <translation id="1655229863189977773">Nustatyti disko talpyklos dydį baitais</translation>
 <translation id="6899705656741990703">Automatiškai aptikti tarpinio serverio nustatymus</translation>
-<translation id="4101772068965291327">Atidaryti pagrindinį puslapį</translation>
 <translation id="7003334574344702284">Pagal šią politiką priverstinai importuojami išsaugoti slaptažodžiai iš ankstesnės numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
 
       Jei neleidžiama, išsaugoti slaptažodžiai neimportuojami.
@@ -352,6 +355,20 @@
       Nenustačius politikos naudotojas galės pasirinkti, ar nori, kad būtų prašoma slaptažodžio atrakinant įrenginį.</translation>
 <translation id="6022948604095165524">Veiksmai paleidžiant</translation>
 <translation id="9042911395677044526">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma „<ph name="PRODUCT_OS_NAME"/>“ įrenginiui pagal naudotoją. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Programų identifikatorių sąrašas „<ph name="PRODUCT_OS_NAME"/>“ rodomas kaip paleidimo priemonės juostoje prisegtos programos.
+
+      Jei sukonfigūruota ši politika, nustatomas programų sąrašas ir naudotojas jo keisti negali.
+
+      Jei ši politika paliekama nenustatyta, naudotojas gali pakeisti paleidimo priemonėje prisegtų programų sąrašą.</translation>
+<translation id="6177482277304066047">Nustato taikomą automatinių naujinių versiją.
+
+      Nurodo taikomos versijos „<ph name="PRODUCT_OS_NAME"/>“ priešdėlį, į kurį reikia naujinti. Jei įrenginyje veikia ankstesnė versija, nei nurodytas priešdėlis, ji bus atnaujinta į naujausią versiją su nurodytu priešdėliu. Jei įrenginyje jau naudojama naujausia versija, nebus atliekami jokie veiksmai (t. y. nebus grąžinama ankstesnė versija) ir įrenginyje liks dabartinė versija. Priešdėlio formatas veikia pagal komponentus, kaip parodyta toliau pateiktame pavyzdyje:
+
+      „“ (arba nesukonfigūruota): naujinti į naujausią versiją.
+      „1412.“: naujinti į bet kurią mažąją 1412 versiją (pvz., 1412.24.34 arba 1412.60.2)
+      „1412.2.“: naujinti į bet kurią mažąją 1412.2 versiją (pvz., 1412.2.34 arba 1412.2.2)
+      „1412.24.34“: naujinti tik i šią konkrečią versiją
+      </translation>
 <translation id="7625444193696794922">Nurodomas leidimo kanalas, su kuriuo šis įrenginys turėtų būti sujungtas.</translation>
 <translation id="2240879329269430151">Leidžiama nustatyti, ar svetainėse leidžiama rodyti iššokančiuosius langus. Iššokančiųjų langų rodymas gali būti leidžiamas arba draudžiamas visose svetainėse.
 
@@ -387,6 +404,9 @@
 
       Nenustačius šios politikos fono režimas iš pradžių neleidžiamas ir jį gali valdyti naudotojas naršyklės nustatymuose.</translation>
 <translation id="4320376026953250541">„Microsoft Windows XP“ SP2 arba naujesnė versija</translation>
+<translation id="5148753489738115745">Leidžia nurodyti papildomus parametrus, naudojamus, kai „<ph name="PRODUCT_FRAME_NAME"/>“ paleidžia „<ph name="PRODUCT_NAME"/>“.
+
+          Nenustačius šios politikos bus naudojama numatytoji komandinė eilutė.</translation>
 <translation id="2646290749315461919">Leidžiama nustatyti, ar svetainėse galima stebėti naudotojų fizinę vietą. Naudotojų fizinės vietos stebėjimas gali būti leidžiamas, draudžiamas pagal numatytuosius nustatymus arba naudotojo (-os) gali būti klausiama kiekvieną kartą, kai svetainėje pateikiama fizinės vietos užklausa.
 
           Nenustačius šios politikos bus naudojama „Klausti geografinės vietos“ ir naudotojas (-a) galės tai pakeisti.</translation>
@@ -520,6 +540,19 @@
       Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME"/>“ bus naudojamas nurodytas katalogas, neatsižvelgiant į tai, ar naudotojas jį nurodė ar įgalino žymą, kad būtų kaskart raginama atsisiųsti vietą.
 
       Nenustačius šios politikos, bus naudojamas numatytasis atsisiuntimo katalogas ir naudotojas (-a) galės jį pakeisti.</translation>
+<translation id="7750991880413385988">Naujo skirtuko puslapio atidarymas</translation>
+<translation id="741903087521737762">Leidžiama nurodyti veiksmus, kurie turi būti atliekami paleidus naršyklę.
+
+          Jei pasirinksite „Atidaryti naujo skirtuko puslapį“, paleidus „<ph name="PRODUCT_NAME"/>“ visada bus atidarytas naujo skirtuko puslapis.
+
+          Jei pasirinksite „Atkurti paskutinę sesiją“, bus iš naujo atidaryti URL, kurie buvo atidaryti prieš paskutinį kartą uždarant „<ph name="PRODUCT_NAME"/>“, ir bus atkurta palikta naršymo sesija.
+          Naudojant šią parinktį neleidžiami kai kurie nustatymai, kurie priklauso nuo sesijų arba kurie atlieka su išėjimu susijusius veiksmus (pvz., naršymo duomenų valymas išeinant ar tik per sesiją naudojami slapukai).
+
+          Jei pasirinksite „Atidaryti URL sąrašą“, naudotojui paleidus „<ph name="PRODUCT_NAME"/>“ bus atidarytas sąrašas „URL, kuriuos reikia atidaryti paleidžiant“.
+
+          Jei įgalinsite šį nustatymą, paleidę „<ph name="PRODUCT_NAME"/>“ naudotojai negalės jo pakeisti arba nepaisyti.
+
+          Jei šio nustatymo neleisite, jis bus toks, kaip nesukonfigūruotas. Paleidęs „<ph name="PRODUCT_NAME"/>“ naudotojas vis tiek galės jį pakeisti.</translation>
 <translation id="5761030451068906335">Bus sukonfigūruoti įgaliotojo serverio nustatymai, skirti „<ph name="PRODUCT_NAME"/>“.
 
       Ši politika dar neparuošta naudoti; nenaudokite jos.</translation>
@@ -533,6 +566,7 @@
 
       Jei pasirinkta „Priverstinai“, puslapius galima atidaryti TIK inkognito režimu.</translation>
 <translation id="5085647276663819155">Neleisti spaudinio peržiūros</translation>
+<translation id="8672321184841719703">Taikomo automatinio naujinio versija</translation>
 <translation id="2030905906517501646">Numatytojo paieškos teikėjo raktinis žodis</translation>
 <translation id="3072045631333522102">Naudotina prisijungimo ekrano užsklanda dirbant mažmeninės prekybos režimu</translation>
 <translation id="7393895128271703858">Ši politika nepatvirtinta. Vietoje jos naudokite „Numatytasis „JavaScript“ nustatymas“.
@@ -759,6 +793,7 @@
 <translation id="2299220924812062390">Nurodyti įgalintų papildinių sąrašą</translation>
 <translation id="924557436754151212">Importuoti išsaugotus slaptažodžius iš numatytosios naršyklės paleidžiant pirmą kartą</translation>
 <translation id="1897365952389968758">Leisti visose svetainėse paleisti „JavaScript“</translation>
+<translation id="7323896582714668701">Papildomi „<ph name="PRODUCT_NAME"/>“ komandinės eilutės parametrai</translation>
 <translation id="6931242315485576290">Neleisti sinchronizuoti duomenų su „Google“</translation>
 <translation id="36674322972891584">Įgalinamas tinklo numatymas „<ph name="PRODUCT_NAME"/>“ ir neleidžiama naudotojams keisti šio nustatymo.
 
@@ -784,6 +819,7 @@
 
           Jei reikia pavyzdinių šablonų, žr. šiuo adresu: http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Pasirinkti, kaip nurodyti tarpinio serverio nustatymus</translation>
+<translation id="1803646570632580723">Paleidimo priemonėje prisegtų rodomų programų sąrašas</translation>
 <translation id="7774768074957326919">Naudoti sistemos tarpinio serverio nustatymus</translation>
 <translation id="3891357445869647828">Įgalinti „JavaScript“</translation>
 <translation id="868187325500643455">Leisti visose svetainėse automatiškai paleisti papildinius</translation>
@@ -978,16 +1014,4 @@
       Jei šis nustatymas įgalintas arba nesukonfigūruotas, naudotojai gali spausdinti „<ph name="CLOUD_PRINT_NAME"/>“ iš „<ph name="PRODUCT_NAME"/>“ spausdinimo dialogo lango.
 
       Jei šis nustatymas neleidžiamas, naudotojai negali spausdinti „<ph name="CLOUD_PRINT_NAME"/>“ iš „<ph name="PRODUCT_NAME"/>“ spausdinimo dialogo lango</translation>
-<translation id="2339225390014743328">Leidžiama nurodyti elgseną paleidžiant.
-
-          Jei pasirinksite „Atidaryti pagrindinį puslapį“, paleidus „<ph name="PRODUCT_NAME"/>“ bus visada atidarytas pagrindinis puslapis.
-
-          Jei pasirinksite „Atkurti paskutinę sesiją“, URL, kurie buvo atidaryti paskutinį kartą uždarius „<ph name="PRODUCT_NAME"/>“, bus iš naujo atidaryti ir naršymo sesija bus atkurta tokia, kokia buvo baigus.
-          Pasirinkus šią parinktį neleidžiami keli nustatymai, veikiantys sesijų pagrindu arba pagal kuriuos atliekami veiksmai išėjus (pvz., naršymo duomenų išėjus ar tik sesijos slapukų išvalymas).
-
-          Jei pasirinksite „Atidaryti URL sąrašą“, naudotojui paleidus „<ph name="PRODUCT_NAME"/>“ bus atidarytas „Paleidžiant atidarytinų URL“ sąrašas.
-
-          Jei įgalinsite šį nustatymą, naudotojai negalės jo pakeisti ar panaikinti „<ph name="PRODUCT_NAME"/>“.
-
-          Šio nustatymo neleidimas atitinka jo palikimą nesukonfigūravus. Naudotojas vis tiek galės jį pakeisti „<ph name="PRODUCT_NAME"/>“.</translation>
 </translationbundle>

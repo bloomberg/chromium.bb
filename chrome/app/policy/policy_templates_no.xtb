@@ -123,6 +123,9 @@
       Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_FRAME_NAME"/> katalogen tildelt for dette.
 
       Standard profilkatalog brukes om ikke annet spesifisert.</translation>
+<translation id="8818173863808665831">Rapportering av enhetens geografiske posisjon.
+
+      Hvis denne innstillingen ikke er angitt, eller er satt til «false», blir ikke posisjonen rapportert.</translation>
 <translation id="4899708173828500852">Aktiver Safe Browsing</translation>
 <translation id="7719251660743813569">Kontrollerer om bruksberegninger rapporteres til Google. Hvis innstillingen er angitt som Sann, rapporterer <ph name="PRODUCT_OS_NAME"/> bruksberegninger. Hvis innstillingen ikke konfigureres eller angis som Usann, deaktiveres rapportering av beregninger.</translation>
 <translation id="3570008976476035109">Blokkér programtillegg på disse nettstedene</translation>
@@ -224,9 +227,9 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="5776485039795852974">Spør hver gang et nettsted ønsker å vise skrivebordsvarslinger</translation>
 <translation id="5052081091120171147">Denne retningslinjen tvinger import av nettleserloggen fra den aktuelle standardnettleseren hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importdialogen. Hvis den er deaktivert, importeres ingen nettleserlogg. Hvis den ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="6786747875388722282">Utvidelser</translation>
+<translation id="8947415621777543415">Rapportering av enhetsposisjonen</translation>
 <translation id="1655229863189977773">Angi størrelse på diskbuffer i byte</translation>
 <translation id="6899705656741990703">Gjenkjenn mellomtjenerinnstillinger automatisk</translation>
-<translation id="4101772068965291327">Åpne startsiden</translation>
 <translation id="7003334574344702284">Denne retningslinjen tvinger import av de lagrede passordene fra forrige standardnettleser hvis den er aktivert. Hvis den er aktivert, påvirker retningslinjen også importeringsdialogen.
 
       Hvis den er deaktivert, importeres ikke de lagrede passordene.
@@ -304,6 +307,20 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Hvis retningslinjen ikke spesifiseres, kan brukeren velge om enheten skal passordaktiveres etter en periode i hvilemodus eller ikke.</translation>
 <translation id="6022948604095165524">Handling ved oppstart</translation>
 <translation id="9042911395677044526">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME"/>-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Viser en liste over programidentifikatorene <ph name="PRODUCT_OS_NAME"/> viser som festede programmer i programlisteraden.
+
+      Hvis denne innstillingen er konfigurert, blir programsettet festet og kan ikke endres av brukeren.
+
+      Hvis denne innstillingen ikke angis, kan brukeren endre listen over programmer som er festet i programlisten.</translation>
+<translation id="6177482277304066047">Angir en målversjon for automatiske oppdateringer.
+
+      Spesifiserer prefiksen for en målversjon som <ph name="PRODUCT_OS_NAME"/> skal oppdateres til. Hvis enheten kjører en versjon som er eldre en den angitte prefiksen, blir den oppdatert til den nyeste versjonen med den angitte prefiksen. Hvis enheten allerede har en nyere versjon, får det ingen følger (det vil si at nedgraderinger ikke utføres) og enheten forblir på den gjeldende versjonen. Prefiksformatet fungerer på komponentnivå, som demonstrert i det følgende eksempelet:
+
+      &quot;&quot; (eller ikke konfigurert): oppdater til den nyeste versjonen som er tilgjengelig
+      &quot;1412.&quot;: oppdater til hvilken som helst underversjon av 1412 (f.eks. 1412.24.34 eller 1412.60.2)
+      &quot;1412.2.&quot;: oppdater til hvilken som helst underversjon av 1412.2 (f.eks. 1412.2.34 eller 1412.2.2)
+      &quot;1412.24.34&quot;: oppdater bare til denne spesifikke versjonen
+      </translation>
 <translation id="7625444193696794922">Angir den frigivende kanalen som denne enheten skal låses til.</translation>
 <translation id="2240879329269430151">Gjør at du kan angi om nettsteder tillates å vise forgrunnsvinduer. Visning av forgrunnsvinduer kan enten tillates for alle nettsteder, eller nektes for alle nettsteder. Hvis denne retningslinjen ikke angis, brukes BlockPopups, og brukeren har mulighet til å endre på dette.</translation>
 <translation id="5289914968905023866">Blokkerer tilgang til de angitte nettadressene. Denne retningslinjen hindrer brukeren i å laste inn nettsider fra nettadresser som er svartelistet. En nettadresse har formatet scheme://host:port/path. Det valgfrie skjemaet kan være http, https eller ftp. Bare dette skjemaet vil bli blokkert, og hvis ingenting angis, blokkeres alle skjemaer. Verten kan være et vertsnavn eller en IP-adresse. Underdomener til et vertsnavn vil også bli blokkert. Hvis du vil forhindre blokkering av underdomener, legger du til et punktum (.) før vertsnavnet. Det spesielle vertsnavnet * vil blokkere alle domener. Den valgfrie porten er et gyldig portnummer fra 1 til 65535. Hvis ingenting angis, blokkeres alle porter. Hvis den valgfrie banen angis, vil bare baner med det aktuelle prefikset blokkeres. Det kan angis unntak i retningslinjenene for nettadressenes godkjenningsliste. Disse retningslinjene er begrenset til 100 oppføringer. Oppføringer etter de første 100 blir ignorert. Hvis denne retningslinjen ikke angis, vil ingen nettadresser svartelistes i nettleseren.</translation>
@@ -317,6 +334,9 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
       Hvis denne retningslinjen ikke angis, blir bakgrunnsmodus deaktivert til å begynne med, og den kan ikke kontrolleres av brukeren under nettleserinnstillingene.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
+<translation id="5148753489738115745">Lar deg spesifisere ytterligere parametere som brukes når <ph name="PRODUCT_FRAME_NAME"/> kjører <ph name="PRODUCT_NAME"/>.
+
+          Hvis denne tillatelsen ikke er angitt, blir standardkommandolinjen brukt.</translation>
 <translation id="2646290749315461919">Gjør at du kan angi om nettsteder tillates å spore brukernes fysiske posisjon. Sporing av brukernes fysiske posisjon kan tillates som standard, nektes som standard, eller brukeren kan blir spurt hver gang et nettsted ber om den fysiske posisjonen. Hvis denne retningslinjen ikke angis, brukes AskGeolocation, og brukeren kan endre på dette.</translation>
 <translation id="5770738360657678870">Utviklerkanal (kan være ustabil)</translation>
 <translation id="2959898425599642200">Regler for å omgå mellomtjener</translation>
@@ -422,6 +442,19 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_NAME"/> den oppgitte katalogen uansett om brukeren har angitt en eller aktivert flagget for å bli med om nedlastingsposisjon hver gang.
 
       Hvis denne retningslinjen ikke angis, brukes standard nedlastingskatalog, og brukeren kan endre på dette.</translation>
+<translation id="7750991880413385988">Åpne Ny fane-siden</translation>
+<translation id="741903087521737762">Lar deg angi atferden ved oppstart.
+
+         Hvis du velger «Åpne Ny fane-siden», blir denne alltid åpnet når du starter <ph name="PRODUCT_NAME"/>.
+
+          Hvis du velger «Åpne på nytt sidene som sist var åpne», blir nettadressene som var åpne sist du lukket <ph name="PRODUCT_NAME"/> åpnet på nytt, og du kan fortsette der du avsluttet.
+          Å velge dette alternativet deaktiverer enkelte innstillinger som er tilknyttet økter eller utfører handlinger når du avslutter (som f.eks. sletting av nettleserdata ved avslutting eller øktspesifikke informasjonskapsler).
+
+          Hvis du velger «Åpne en liste med nettadresser», blir listen med nettadresser som åpnes ved oppstart åpnet når en bruker starter <ph name="PRODUCT_NAME"/>.
+
+          Hvis du aktiverer denne innstillingen, kan ikke andre brukere endre eller overstyre dette i <ph name="PRODUCT_NAME"/>.
+
+          Deaktivering av denne innstillingen er det samme som å ikke konfigurere den. Brukere kan fortsatt endre det i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Konfigurerer innstillinger for mellomtjener i <ph name="PRODUCT_NAME"/>. Disse retningslinjene er ikke klare for bruk ennå, så vi ber deg om ikke å bruke dem.</translation>
 <translation id="8344454543174932833">Importer bokmerker fra standard nettleser ved første kjøring</translation>
 <translation id="1019101089073227242">Angi katalog for brukerdata</translation>
@@ -433,6 +466,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
       Hvis dette er angitt til Tvunget, kan sider åpnes BARE i inkognitomodus.</translation>
 <translation id="5085647276663819155">Deaktiver forhåndsvisning av utskrift</translation>
+<translation id="8672321184841719703">Målversjon for automatiske oppdateringer</translation>
 <translation id="2030905906517501646">Søkeord for standard søkeleverandør</translation>
 <translation id="3072045631333522102">Skjermsparer som skal brukes på påloggingssiden i detaljistmodus</translation>
 <translation id="7393895128271703858">Denne retningslinjen er foreldet. Bruk DefaultJavaScriptSetting i stedet.
@@ -639,6 +673,7 @@ Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et
 <translation id="2299220924812062390">Angi en liste over aktiverte programtillegg</translation>
 <translation id="924557436754151212">Importér lagrede passord fra standard nettleser ved første kjøring</translation>
 <translation id="1897365952389968758">Tillat alle nettsteder å kjøre JavaScript</translation>
+<translation id="7323896582714668701">Ytterligere kommandolinjeparametere for <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Deaktiver synkronisering av data med Google</translation>
 <translation id="36674322972891584">Aktiverer nettverksforslag i <ph name="PRODUCT_NAME"/>, og hindrer brukerne i å endre denne innstillingen.
 
@@ -662,6 +697,7 @@ Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et
 
           Hvis du vil se eksempelmønstre, kan du gå til http://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
 <translation id="3101501961102569744">Velg hvordan proxytjenerinnstillinger angis</translation>
+<translation id="1803646570632580723">Liste over programmer som er festet i programlisten</translation>
 <translation id="7774768074957326919">Bruk systeminnstillingene for mellomtjener</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
 <translation id="868187325500643455">Tillat alle nettsteder å kjøre programtillegg</translation>
@@ -822,16 +858,4 @@ Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et
       Hvis denne innstillingen er aktivert eller ikke konfigurert, kan brukerne sende utskrift til <ph name="CLOUD_PRINT_NAME"/> fra <ph name="PRODUCT_NAME"/>-utskriftsdialogen.
 
       Hvis denne innstillingen er deaktivert, kan ikke brukerne sende utskrift tl <ph name="CLOUD_PRINT_NAME"/> fra <ph name="PRODUCT_NAME"/>-utskriftsdialogen</translation>
-<translation id="2339225390014743328">Lar deg spesifisere atferden ved oppstart.
-
-          Hvis du velger «Åpne startsiden», åpnes alltid startsiden når du åpner <ph name="PRODUCT_NAME"/>.
-
-          Hvis du velger «Gjenopprett den siste økten», blir nettadressene som var åpne sist gang <ph name="PRODUCT_NAME"/> ble lukket, åpnet på nytt. I tillegg blir surfeøkten gjenopprettet slik den var da den ble avsluttet.
-          Hvis du velger dette alternativet, deaktiveres enkelte innstillinger som er avhengige av økter, eller som utfører handlinger når de avsluttes (blant annet sletting av nettleserdata ved avslutning eller øktspesifikke informasjonskapsler).
-
-          Hvis du velger «Åpne en liste over nettadresser», åpnes listen «Nettadresser som skal åpnes ved oppstart» når en bruker starter <ph name="PRODUCT_NAME"/>.
-
-          Hvis du aktiverer denne innstillingen, kan ikke brukere endre eller overstyre den i <ph name="PRODUCT_NAME"/>.
-
-          Deaktivering av denne innstillingen er det samme som å ikke konfigurere den. Brukeren vil fortsatt kunne endre den i <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

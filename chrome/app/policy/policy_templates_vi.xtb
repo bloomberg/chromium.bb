@@ -140,6 +140,9 @@
       Nếu bạn đặt chính sách này, <ph name="PRODUCT_FRAME_NAME"/> sẽ sử dụng thư mục được cung cấp.
 
       Nếu cài đặt này không được đặt, thư mục cấu hình mặc định sẽ được sử dụng.</translation>
+<translation id="8818173863808665831">Báo cáo vị trí địa lý của thiết bị.
+
+      Nếu chính sách này không được đặt hoặc được đặt thành false, vị trí sẽ không được báo cáo.</translation>
 <translation id="4899708173828500852">Bật Duyệt web an toàn</translation>
 <translation id="7719251660743813569">Kiểm soát liệu số liệu sử dụng có được báo cáo lại cho Google hay không. Nếu được đặt thành đúng, <ph name="PRODUCT_OS_NAME"/> sẽ báo cáo số liệu sử dụng. Nếu không được định cấu hình hoặc được đặt thành sai, báo cáo số liệu sẽ bị tắt.</translation>
 <translation id="3570008976476035109">Chặn trình cắm trên các trang web này</translation>
@@ -260,9 +263,9 @@
 
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
 <translation id="6786747875388722282">Tiện ích mở rộng</translation>
+<translation id="8947415621777543415">Báo cáo vị trí thiết bị</translation>
 <translation id="1655229863189977773">Đặt kích thước bộ nhớ cache của đĩa theo byte</translation>
 <translation id="6899705656741990703">Cài đặt tự động phát hiện proxy</translation>
-<translation id="4101772068965291327">Mở trang chủ</translation>
 <translation id="7003334574344702284">Chính sách này nếu được bật sẽ buộc mật khẩu đã lưu phải được nhập từ trình duyệt mặc định trước đó. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
 
       Nếu tắt chính sách này, sẽ không có mật khẩu đã lưu nào được nhập.
@@ -326,6 +329,20 @@
       Nếu chính sách này không được đặt, người dùng có thể chọn liệu họ có muốn được yêu cầu cung cấp mật khẩu để mở khóa thiết bị hay không.</translation>
 <translation id="6022948604095165524">Tác vụ khi khởi động</translation>
 <translation id="9042911395677044526">Cho phép áp dụng cấu hình mạng cho mỗi người dùng thiết bị <ph name="PRODUCT_OS_NAME"/>. Cấu hình mạng là chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Liệt kê số nhận dạng ứng dụng mà <ph name="PRODUCT_OS_NAME"/> hiển thị dưới dạng ứng dụng được ghim trong thanh trình khởi chạy.
+
+      Nếu chính sách này được định cấu hình, bộ ứng dụng sẽ được cố định và người dùng không thể thay đổi được.
+
+      Nếu chính sách này không được đặt, người dùng có thể thay đổi danh sách các ứng dụng được ghim trong trình khởi chạy.</translation>
+<translation id="6177482277304066047">Đặt phiên bản đích cho Cập nhật tự động.
+
+      Chỉ định tiền tố của phiên bản đích <ph name="PRODUCT_OS_NAME"/> sẽ cập nhật. Nếu thiết bị đang chạy phiên bản trước tiền tố đã chỉ định, thiết bị sẽ cập nhật lên phiên bản mới nhất có tiền tố đã cho. Nếu thiết bị đã chạy phiên bản mới hơn, thì sẽ không có ảnh hưởng gì (nghĩa là không có hạ cấp nào được thực hiện) và thiết bị sẽ vẫn ở phiên bản hiện tại. Định dạng tiền tố hoạt động theo từng thành phần như được minh họa trong ví dụ sau:
+
+      &quot;&quot; (hoặc không được định cấu hình): cập nhật lên phiên bản mới nhất hiện có.
+      &quot;1412.&quot;: cập nhật lên bất kỳ phiên bản phụ nào của 1412 (ví dụ: 1412.24.34 hoặc 1412.60.2)
+      &quot;1412.2.&quot;: cập nhật lên bất kỳ phiên bản phụ nào của 1412.2 (ví dụ: 1412.2.34 hoặc 1412.2.2)
+      &quot;1412.24.34&quot;: chỉ cập nhật lên phiên bản cụ thể này
+      </translation>
 <translation id="7625444193696794922">Chỉ định kênh phát hành mà thiết bị này phải bị khóa.</translation>
 <translation id="2240879329269430151">Cho phép bạn đặt liệu các trang web có được phép hiển thị cửa sổ bật lên hay không. Bạn có thể cho phép hoặc từ chối hiển thị cửa sổ bật lên đối với tất cả các trang web.
 
@@ -359,6 +376,9 @@
 
       Nếu chính sách này không được đặt, chế độ chạy dưới nền lúc đầu sẽ bị tắt và người dùng có thể điều khiển chế độ này trong cài đặt trình duyệt.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 hoặc mới hơn</translation>
+<translation id="5148753489738115745">Cho phép bạn chỉ định tham số bổ sung được sử dụng khi <ph name="PRODUCT_FRAME_NAME"/> khởi chạy <ph name="PRODUCT_NAME"/>.
+
+          Nếu chính sách này không được đặt, dòng lệnh mặc định sẽ được sử dụng.</translation>
 <translation id="2646290749315461919">Cho phép bạn đặt liệu các trang web có được phép theo dõi vị trí thực của người dùng hay không. Theo dõi vị trí thực của người dùng có thể được cho phép theo mặc định, từ chối theo mặc định hoặc người dùng có thể được hỏi mỗi lần trang web yêu cầu cung cấp vị trí thực.
 
           Nếu không thiết lập chính sách này, 'AskGeolocation' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
@@ -473,6 +493,19 @@
       Nếu bạn thiết lập chính sách này, <ph name="PRODUCT_NAME"/> sẽ luôn sử dụng thư mục được cung cấp bất kể người dùng đã chỉ định thư mục hoặc bật cờ nhắc tại vị trí tải xuống.
 
       Nếu không thiết lập chính sách này, thư mục tải xuống mặc định sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
+<translation id="7750991880413385988">Mở trang tab mới</translation>
+<translation id="741903087521737762">Cho phép bạn chỉ định chế độ khi khởi động.
+
+          Nếu bạn chọn 'Mở trang tab mới', trang tab mới sẽ luôn được mở ra khi bạn khởi động <ph name="PRODUCT_NAME"/>.
+
+          Nếu bạn chọn 'Khôi phục phiên trước', các URL được mở khi đóng <ph name="PRODUCT_NAME"/> lần trước sẽ được mở lại và phiên duyệt web sẽ được khôi phục như khi thoát.
+          Chọn tùy chọn này sẽ tắt một số cài đặt phụ thuộc vào phiên hoặc thực hiện tác vụ khi thoát (chẳng hạn như Xóa dữ liệu duyệt web khi thoát hoặc cookie chỉ phiên).
+
+          Nếu bạn chọn 'Mở danh sách URL', danh sách 'URL sẽ mở ra khi khởi động' sẽ được mở ra khi người dùng khởi động <ph name="PRODUCT_NAME"/>.
+
+          Nếu bạn bật cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME"/>.
+
+          Tắt cài đặt này tương ứng với không định cấu hình. Người dùng vẫn có thể thay đổi cài đặt này trong <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Định cấu hình cài đặt proxy cho <ph name="PRODUCT_NAME"/>.
 
       Chính sách chưa sẵn sàng để sử dụng, vui lòng không sử dụng chính sách này.</translation>
@@ -486,6 +519,7 @@
 
       Nếu chọn 'Bắt buộc', bạn CHỈ có thể mở trang ở chế độ Ẩn danh.</translation>
 <translation id="5085647276663819155">Vô hiệu hóa xem trước bản in</translation>
+<translation id="8672321184841719703">Phiên bản cập nhật tự động đích</translation>
 <translation id="2030905906517501646">Từ khóa nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="3072045631333522102">Trình bảo vệ màn hình được sử dụng trên màn hình đăng nhập ở chế độ bán lẻ</translation>
 <translation id="7393895128271703858">Chính sách này không được chấp thuận, vui lòng sử dụng DefaultJavaScriptSetting.
@@ -698,6 +732,7 @@
 <translation id="2299220924812062390">Chỉ định danh sách plugin được phép</translation>
 <translation id="924557436754151212">Nhập mật khẩu đã lưu từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="1897365952389968758">Cho phép tất cả các trang web chạy JavaScript</translation>
+<translation id="7323896582714668701">Tham số dòng lệnh bổ sung cho <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Tắt đồng bộ hóa dữ liệu với Google</translation>
 <translation id="36674322972891584">Bật dự báo mạng trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi cài đặt này.
 
@@ -717,6 +752,7 @@
 
           Để biết các mẫu ví dụ, hãy xem http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Chọn cách chỉ định cài đặt máy chủ proxy</translation>
+<translation id="1803646570632580723">Danh sách các ứng dụng được ghim sẽ hiển thị trong trình khởi chạy</translation>
 <translation id="7774768074957326919">Sử dụng cài đặt proxy hệ thống</translation>
 <translation id="3891357445869647828">Bật JavaScript</translation>
 <translation id="868187325500643455">Cho phép tất cả các trang web tự động chạy plugin</translation>
@@ -898,16 +934,4 @@
       Nếu bật hoặc không định cấu hình cài đặt này, người dùng có thể in sang <ph name="CLOUD_PRINT_NAME"/> từ hộp thoại in của <ph name="PRODUCT_NAME"/>.
 
       Nếu tắt cài đặt này, người dùng không thể in sang <ph name="CLOUD_PRINT_NAME"/> từ hộp thoại in của <ph name="PRODUCT_NAME"/></translation>
-<translation id="2339225390014743328">Cho phép bạn chỉ định hoạt động khi khởi động.
-
-          Nếu bạn chọn 'Mở trang chủ', trang chủ sẽ luôn được mở khi bạn khởi động <ph name="PRODUCT_NAME"/>.
-
-          Nếu bạn chọn 'Khôi phục phiên trước đó', các URL đã mở lượt cuối cùng trước khi <ph name="PRODUCT_NAME"/> bị đóng sẽ được mở lại và phiên duyệt đó sẽ được khôi phục lại như cũ.
-          Việc chọn tùy chọn này sẽ tắt một số cài đặt dựa trên các phiên hoặc những cài đặt thực hiện các tác vụ khi thoát (chẳng hạn như Xóa dữ liệu duyệt web khi thoát hoặc chỉ cookie của phiên).
-
-          Nếu bạn chọn 'Mở danh sách URL', danh sách các 'URL để mở khi khởi động' sẽ được mở khi người dùng khởi động <ph name="PRODUCT_NAME"/>.
-
-          Nếu bạn bật cài đặt này, người dùng sẽ không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME"/>.
-
-          Việc tắt cài đặt này tương đương với việc để mặc cài đặt không được định cấu hình. Người dùng sẽ vẫn có thể thay đổi cài đặt này trong <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

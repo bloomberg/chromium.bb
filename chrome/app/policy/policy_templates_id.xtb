@@ -78,6 +78,9 @@
       Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_FRAME_NAME"/> akan menggunakan direktori yang diberikan.
 
       Jika setelan ini dibiarkan tanpa disetel, direktori profil default akan digunakan.</translation>
+<translation id="8818173863808665831">Melaporkan lokasi geografis perangkat.
+
+      Jika kebijakan tidak disetel, atau disetel ke false, lokasi tidak akan dilaporkan.</translation>
 <translation id="4899708173828500852">Aktifkan Penjelajahan Aman</translation>
 <translation id="7719251660743813569">Mengontrol apakah metrik penggunaan dilaporkan kembali ke Google. Jika disetel ke true, <ph name="PRODUCT_OS_NAME"/> akan melaporkan metrik penggunaan. Jika tidak dikonfigurasi atau disetel ke false, pelaporan metrik akan dinonaktifkan.</translation>
 <translation id="3570008976476035109">Mencekal plugin di situs ini</translation>
@@ -137,9 +140,9 @@
 <translation id="5776485039795852974">Tanyakan setiap kali situs ingin menampilkan pemberitahuan desktop</translation>
 <translation id="5052081091120171147">Kebijakan ini memaksa riwayat browseran diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada riwayat browseran yang diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="6786747875388722282">Ekstensi</translation>
+<translation id="8947415621777543415">Laporkan lokasi perangkat</translation>
 <translation id="1655229863189977773">Setel ukuran cache disk dalam byte</translation>
 <translation id="6899705656741990703">Mendeteksi setelan proxy secara otomatis</translation>
-<translation id="4101772068965291327">Buka beranda</translation>
 <translation id="7003334574344702284">Kebijakan ini memaksa sandi tersimpan untuk diimpor dari browser default sebelumnya, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, sandi yang disimpan tidak diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="6258193603492867656">Menentukan apakah SPN Kerberos yang dihasilkan harus mencakup port non-standar. Jika Anda mengaktifkan setelan ini, dan port non-standar (selain port 80 atau 443) dimasukkan, port ini akan dimasukkan ke SPN Kerberos yang dihasilkan. Jika Anda menonaktifkan setelan ini atau membiarkannya tidak disetel, SPN Kerberos yang dihasilkan tidak akan pernah mencakup port.</translation>
 <translation id="8992176907758534924">Jangan izinkan situs apa pun menampilkan gambar</translation>
@@ -183,6 +186,20 @@
       Jika kebijakan dibiarkan tidak disetel, maka pengguna dapat memilih apakah mereka ingin diminta untuk memasukkan sandi untuk membuka kunci perangkat atau tidak.</translation>
 <translation id="6022948604095165524">Tindakan saat permulaan</translation>
 <translation id="9042911395677044526">Memungkinkan konfigurasi jaringan dorongan untuk diterapkan per pengguna ke perangkat <ph name="PRODUCT_OS_NAME"/>. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka yang diuraikan di <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Mendaftar pengenal aplikasi yang ditampilkan <ph name="PRODUCT_OS_NAME"/> sebagai aplikasi tersemat pada bilah peluncur.
+
+      Jika kebijakan ini dikonfigurasi, kumpulan aplikasi akan ditetapkan dan tidak dapat diubah oleh pengguna.
+
+      Jika kebijakan ini dibiarkan tanpa disetel, pengguna dapat mengubah daftar aplikasi tersemat pada peluncur.</translation>
+<translation id="6177482277304066047">Menyetel versi target untuk Pembaruan Otomatis.
+
+      Menentukan awalan versi target <ph name="PRODUCT_OS_NAME"/> yang harus diperbarui. Jika perangkat menjalankan versi sebelum awalan yang ditentukan, perangkat akan diperbarui ke versi teranyar dengan awalan yang diberikan. Jika perangkat sudah pada versi terakhir, tidak akan ada pengaruh yang terjadi (mis., tidak dilakukan penurunan versi) dan perangkat akan tetap pada versi yang sekarang. Format awalan bekerja secara bijak-komponen seperti yang diperagakan pada contoh berikut:
+
+      &quot;&quot; (atau tidak dikonfigurasi): pembaruan ke versi yang terbaru tersedia.
+      &quot;1412.&quot;: pembaruan ke versi minor apa pun dari 1412 (mis., 1412.24.34 atau 1412.60.2)
+      &quot;1412.2.&quot;: pembaruan ke versi minor apa pun dari 1412.2 (mis., 1412.2.34 atau 1412.2.2)
+      &quot;1412.24.34&quot;: pembaruan ke versi spesifik ini saja
+      </translation>
 <translation id="7625444193696794922">Menentukan saluran rilis yang harus dikunci oleh perangkat ini.</translation>
 <translation id="2240879329269430151">Memungkinkan Anda menyetel apakah situs web diizinkan untuk menampilkan munculan. Menampilkan munculan dapat diizinkan untuk semua situs web atau ditolak untuk semua situs web. Jika kebijakan ini dibiarkan tidak disetel, 'BlockPopups' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="5289914968905023866">Mencekal akses ke URL yang dicantumkan. Kebijakan ini mencegah pengguna memuat laman web dari URL yang ada dalam daftar hitam. URL memiliki format 'scheme://host:port/path'. Skema opsional bisa berupa http, https, atau ftp. Hanya skema ini yang akan dicekal; jika tidak ada yang ditetapkan, semua skema akan dicekal. Host bisa berupa nama host atau alamat IP. Subdomain nama host juga akan dicekal. Untuk mencegah pencekalan subdomain, masukkan '.' sebelum nama host. Nama host khusus '*' akan mencekal semua domain. Port opsional adalah nomor port yang valid dari 1 hingga 65535. Jika tidak ada yang ditetapkan, semua port akan dicekal. Jika jalur opsional ditetapkan, hanya jalur dengan prefiks tersebut yang akan dicekal. Pengecualian dapat ditetapkan dalam kebijakan daftar putih URL. Kebijakan ini dibatasi untuk 100 entri; entri selanjutnya akan diabaikan. Jika kebijakan ini tidak disetel, tidak akan ada URL yang masuk dalam daftar hitam di browser.</translation>
@@ -196,6 +213,9 @@
 
       Jika kebijakan ini dibiarkan tanpa disetel, mode latar belakang awalnya dinonaktifkan dan dapat dikontrol oleh pengguna dalam setelan browser.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 atau yang lebih baru</translation>
+<translation id="5148753489738115745">Memungkinkan Anda menentukan parameter tambahan yang digunakan saat <ph name="PRODUCT_FRAME_NAME"/> meluncurkan <ph name="PRODUCT_NAME"/>.
+
+          Jika kebijakan ini tidak disetel, baris perintah default akan digunakan.</translation>
 <translation id="2646290749315461919">Memungkinkan Anda mengatur apakah situs web diizinkan untuk melacak lokasi fisik pengguna. Melacak lokasi fisik pengguna dapat diizinkan secara default, ditolak secara default, atau pengguna dapat ditanya setiap kali sebuah situs web meminta lokasi fisik. Jika kebijakan ini dibiarkan tidak disetel, 'AskGeolocation' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="5770738360657678870">Saluran pengembang (mungkin tidak stabil)</translation>
 <translation id="2959898425599642200">Peraturan mengabaikan proxy</translation>
@@ -256,11 +276,25 @@
 <translation id="717221064259627503">Mengonfigurasi direktori yang akan digunakan <ph name="PRODUCT_NAME"/> untuk menyimpan file dalam cache pada disk. Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME"/> akan menggunakan direktori yang disediakan tanpa mempedulikan apakah pengguna telah menentukan panji --'disk-cache-dir'- atau tidak. Jika kebijakan ini tidak disetel, direktori cache default akan digunakan dan pengguna dapat menimpanya dengan panji baris perintah '--disk-cache-dir-'.</translation>
 <translation id="2312134445771258233">Memungkinkan Anda mengonfigurasi laman yang dimuat saat permulaan. Isi daftar 'URL yang dibuka saat permulaan' diabaikan kecuali jika Anda memilih 'Buka daftar URL' dalam 'Tindakan saat permulaan'.</translation>
 <translation id="2538628396238281971">Mengonfigurasi direktori yang akan digunakan <ph name="PRODUCT_NAME"/> untuk mengunduh file. Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME"/> akan menggunakan direktori yang disediakan tanpa mempedulikan apakah pengguna telah menentukan satu direktori atau mengaktifkan panji untuk ditanya tentang lokasi unduhan setiap kali mengunduh. Jika kebijakan ini tidak disetel, direktori unduhan default akan digunakan dan pengguna dapat mengubahnya.</translation>
+<translation id="7750991880413385988">Buka Laman Tab Baru</translation>
+<translation id="741903087521737762">Memungkinkan Anda menentukan perilaku saat memulai.
+
+          Jika Anda memilih 'Buka Laman Tab Baru', Laman Tab Baru akan selalu dibuka saat Anda memulai <ph name="PRODUCT_NAME"/>.
+
+          Jika Anda memilih 'Pulihkan sesi terakhir', URL yang dibuka saat <ph name="PRODUCT_NAME"/> terakhir ditutup akan kembali dibuka dan sesi penjelajahan akan dipulihkan seperti saat ditinggalkan.
+          Memilih opsi ini akan menonaktifkan beberapa setelan yang bergantung pada sesi atau yang melakukan tindakan saat keluar (misalnya, Hapus data penjelajahan saat keluar atau cookie hanya sesi).
+
+          Jika Anda memilih 'Buka daftar URL', daftar 'URL untuk dibuka saat mulai' akan dibuka saat pengguna memulai <ph name="PRODUCT_NAME"/>.
+
+          Jika Anda mengaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpanya di <ph name="PRODUCT_NAME"/>.
+
+          Menonaktifkan setelah ini sama dengan membiarkannya tanpa dikonfigurasi. Pengguna masih dapat mengubahnya di <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Mengonfigurasi setelan proxy untuk <ph name="PRODUCT_NAME"/>. Kebijakan ini belum siap untuk digunakan, jangan menggunakannya.</translation>
 <translation id="8344454543174932833">Impor bookmark dari browser default saat pertama kali dijalankan</translation>
 <translation id="1019101089073227242">Menyetel direktori data pengguna</translation>
 <translation id="5826047473100157858">Menentukan apakah pengguna dapat membuka laman dalam mode Penyamaran di <ph name="PRODUCT_NAME"/>. Jika 'Aktifkan' dipilih atau kebijakan dibiarkan tidak disetel, laman dapat dibuka dalam mode Penyamaran. Jika 'Nonaktifkan' dipilih, laman tidak dapat dibuka dalam mode Penyamaran. Jika 'Paksa' dipilih, laman dapat dibuka HANYA dalam mode Penyamaran.</translation>
 <translation id="5085647276663819155">Nonaktifkan Pratinjau Cetak</translation>
+<translation id="8672321184841719703">Versi Pembaruan Otomatis Target</translation>
 <translation id="2030905906517501646">Kata kunci penyedia penelusuran default</translation>
 <translation id="3072045631333522102">Tirai layar untuk digunakan pada layar masuk dalam mode eceran</translation>
 <translation id="7393895128271703858">Kebijakan ini sudah tidak digunakan, gunakan DefaultJavaScriptSetting sebagai gantinya. Mengaktifkan JavaScript di <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini. Jika setelan ini diaktifkan atau tidak dikonfigurasi, laman web dapat menggunakan JavaScript. Jika setelan ini dinonaktifkan, laman web tidak dapat menggunakan JavaScript. Jika kebijakan ini tidak disetel, nilai default akan digunakan. Jika kebijakan ini dibiarkan tanpa disetel, kebijakan ini akan diaktifkan dan pengguna dapat mengubahnya.</translation>
@@ -367,6 +401,7 @@
 <translation id="2299220924812062390">Tentukan daftar plugin yang diaktifkan</translation>
 <translation id="924557436754151212">Impor sandi yang disimpan dari browser default saat pertama kali dijalankan</translation>
 <translation id="1897365952389968758">Izinkan semua situs menjalankan JavaScript</translation>
+<translation id="7323896582714668701">Parameter baris perintah tambahan untuk <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Nonaktifkan sinkronisasi data dengan Google</translation>
 <translation id="36674322972891584">Mengaktifkan prediksi jaringan di <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan di <ph name="PRODUCT_NAME"/>. Jika kebijakan ini tidak disetel, setelan ini akan diaktifkan namun pengguna dapat mengubahnya.</translation>
 <translation id="7006788746334555276">Setelan Konten</translation>
@@ -378,6 +413,7 @@
 <translation id="187819629719252111">Memungkinkan akses ke file lokal pada mesin dengan mengizinkan <ph name="PRODUCT_NAME"/> menampilkan dialog pemilihan file. Jika Anda mengaktifkan setelan ini, pengguna dapat membuka dialog pemilihan file seperti biasa. Jika Anda menonaktifkan setelan ini, setiap kali pengguna melakukan tindakan yang akan memicu dialog pemilihan file (seperti mengimpor bookmark, mengunggah file, menyimpan tautan, dll.), yang akan ditampilkan adalah pesan, dan pengguna dianggap telah mengeklik Batal pada dialog pemilihan file. Jika setelan ini tidak disetel, pengguna dapat membuka dialog pemilihan file seperti biasa.</translation>
 <translation id="4507081891926866240">Mengubahsuai daftar pola URL yang harus selalu dirender oleh <ph name="PRODUCT_FRAME_NAME"/>. Jika kebijakan ini tidak disetel, perender default akan digunakan untuk semua situs yang ditentukan oleh kebijakan 'ChromeFrameRendererSettings'. Untuk contoh pola, lihat http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Pilih cara menentukan setelan server proxy</translation>
+<translation id="1803646570632580723">Daftar aplikasi tersemat untuk ditampilkan pada peluncur</translation>
 <translation id="7774768074957326919">Gunakan setelan proxy sistem</translation>
 <translation id="3891357445869647828">Mengaktifkan JavaScript</translation>
 <translation id="868187325500643455">Izinkan semua situs menjalankan plugin secara otomatis</translation>
@@ -457,16 +493,4 @@
 <translation id="5645779841392247734">Izinkan cookie di situs ini</translation>
 <translation id="8220342550735772883">Mengonfigurasi ukuran cache yang akan digunakan <ph name="PRODUCT_NAME"/> untuk menyimpan file media yang disimpan dalam cache di disk. Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME"/> akan menggunakan ukuran cache yang disediakan tanpa mempedulikan apakah pengguna telah menentukan panji '--media-cache-size' atau tidak. Jika nilai dari kebijakan ini adalah 0, ukuran cache default akan digunakan tetapi pengguna tidak akan dapat mengubahnya. Jika kebijakan ini tidak disetel, ukuran default akan digunakan dan pengguna dapat menimpanya dengan panji --media-cache-size.</translation>
 <translation id="7049373494483449255">Mengizinkan <ph name="PRODUCT_NAME"/> mengirimkan dokumen ke <ph name="CLOUD_PRINT_NAME"/> untuk pencetakan. CATATAN: Setelan ini hanya memengaruhi dukungan <ph name="CLOUD_PRINT_NAME"/> dalam <ph name="PRODUCT_NAME"/>. Setelan ini tidak mencegah pengguna mengirimkan pekerjaan cetak di situs web. Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat mencetak ke <ph name="CLOUD_PRINT_NAME"/> dari dialog cetak <ph name="PRODUCT_NAME"/>. Jika setelan ini dinonaktifkan, pengguna tidak dapat mencetak ke <ph name="CLOUD_PRINT_NAME"/> dari dialog pencetakan <ph name="PRODUCT_NAME"/></translation>
-<translation id="2339225390014743328">Memungkinkan Anda menentukan perilaku saat mulai.
-
-          Jika Anda memilih 'Buka beranda', laman beranda akan selalu terbuka saat Anda memulai <ph name="PRODUCT_NAME"/>.
-
-          Jika Anda memilih 'Pulihkan sesi sebelumnya', URL yang dibuka terakhir saat <ph name="PRODUCT_NAME"/> ditutup akan dibuka lagi dan sesi penjelajahan akan dipulihkan seperti saat ditinggalkan.
-          Memilih opsi ini akan menonaktifkan beberapa setelan yang bergantung pada sesi atau yang melakukan tindakan saat keluar (misalnya, Hapus data penjelajahan saat keluar atau cookie hanya-sesi).
-
-          Jika Anda memilih 'Buka daftar URL', daftar 'URL untuk dibuka saat mulai' akan dibuka saat pengguna memulai <ph name="PRODUCT_NAME"/>.
-
-          Jika Anda menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menggantinya di <ph name="PRODUCT_NAME"/>.
-
-          Menonaktifkan setelan ini sama dengan membiarkannya tanpa dikonfigurasi. Pengguna masih akan dapat mengubahnya di <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

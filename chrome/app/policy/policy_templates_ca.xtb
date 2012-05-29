@@ -86,6 +86,9 @@
       Si es defineix aquesta política, <ph name="PRODUCT_FRAME_NAME"/> utilitzarà el directori proporcionat.
 
       Si no es defineix aquest paràmetre, s'utilitzarà el directori del perfil predeterminat.</translation>
+<translation id="8818173863808665831">Informeu de la ubicació geogràfica d'un dispositiu.
+
+      Si no definiu la política, o bé si la definiu com a falsa, no s'informarà de la ubicació.</translation>
 <translation id="4899708173828500852">Activa la navegació segura</translation>
 <translation id="7719251660743813569">Controla si es notifiquen a Google les mètriques d'ús. Si es defineix a «true» (cert), <ph name="PRODUCT_OS_NAME"/> informarà de les mètriques d'ús. Si no es configura o es defineix a «false» (fals), es desactivarà la creació d'informes de mètriques.</translation>
 <translation id="3570008976476035109">Bloqueja els connectors en aquests llocs</translation>
@@ -145,9 +148,9 @@
 <translation id="5776485039795852974">Demana permís cada vegada que un lloc vulgui mostrar notificacions d'escriptori</translation>
 <translation id="5052081091120171147">Si està activada, aquesta política fa que l'historial de navegació s'importi des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, no s'importarà cap historial de navegació. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="6786747875388722282">Extensions</translation>
+<translation id="8947415621777543415">Informa de la ubicació d'un dispositiu</translation>
 <translation id="1655229863189977773">Defineix la mida de la memòria cau del disc en bytes</translation>
 <translation id="6899705656741990703">Configuració de la detecció automàtica de servidors intermediaris</translation>
-<translation id="4101772068965291327">Obre la pàgina d'inici</translation>
 <translation id="7003334574344702284">Si està activada, aquesta política fa que les contrasenyes desades s'importin des del navegador predeterminat anterior. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, les contrasenyes desades no s'importaran. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="6258193603492867656">Especifica si l'SPN de Kerberos que es genera ha d'incloure un port no estàndard. Si activeu aquest paràmetre i introduïu un port no estàndard (p. ex. un port diferent de 80 o de 443), s'inclourà a l'SPN de Kerberos que es generi. Si desactiveu aquest paràmetre o no el definiu, l'SPN del Kerberos que es generi no inclourà cap port en cap cas.</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
@@ -195,6 +198,20 @@
       Si no es defineix la política, l'usuari podrà triar si vol que se li demani una contrasenya per desbloquejar el dispositiu o no.</translation>
 <translation id="6022948604095165524">Acció en iniciar</translation>
 <translation id="9042911395677044526">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME"/>. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Enumera els identificadors de les aplicacions que <ph name="PRODUCT_OS_NAME"/> mostra com a aplicacions fixades a la barra d'execució ràpida.
+
+      Si configureu aquesta política, el conjunt d'aplicacions queda fixada i l'usuari no la pot modificar.
+
+      Si no configureu aquesta política, l'usuari pot modificar la llista d'aplicacions fixades a la barra d'execució ràpida.</translation>
+<translation id="6177482277304066047">Defineix la versió objectiu de les actualitzacions automàtiques.
+
+      Especifica el prefix o la versió objectiu a la qual s'ha d'actualitzar <ph name="PRODUCT_OS_NAME"/>. Si el dispositiu executa una versió anterior al prefix especificat, s'actualitzarà a la versió més recent que tingui el prefix indicat. Si el dispositiu ja disposa d'una versió més recent, no produirà cap efecte (és a dir, no es canviarà a una versió anterior) i el dispositiu mantindrà la versió actual. El format del prefix depèn del component, com es mostra en l'exemple següent:
+
+      &quot;&quot; (o sense configurar): actualitza a la darrera versió disponible.
+      &quot;1412.&quot;: actualitza a qualsevol versió menor de 1412 (p. ex., 1412.24.34 o 1412.60.2)
+      &quot;1412.2.&quot;: actualitza a qualsevol versió menor de 1412.2 (p. ex., 1412.2.34 o 1412.2.2)
+      &quot;1412.24.34&quot;: només actualitza a aquesta versió concreta
+      </translation>
 <translation id="7625444193696794922">Especifica el canal de llançament al qual aquest dispositiu s'hauria de bloquejar.</translation>
 <translation id="2240879329269430151">Us permet definir si els llocs web poden mostrar finestres emergents. L'aparició de finestres emergents es pot autoritzar o denegar per a tots els llocs web. Si no es defineix aquesta política, s'utilitzarà el paràmetre &quot;BlockPopups&quot; i l'usuari podrà canviar-lo.</translation>
 <translation id="5289914968905023866">Bloqueja l'accés als URL de la llista.
@@ -218,6 +235,9 @@
 
       Si aquesta política es deixa sense definir, es desactiva el mode de segon pla en un primer moment i l'usuari el pot controlar a la configuració del navegador.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o una versió posterior</translation>
+<translation id="5148753489738115745">Us permet especificar els paràmetres especials que s'utilitzen quan <ph name="PRODUCT_FRAME_NAME"/> inicia <ph name="PRODUCT_NAME"/>.
+
+          Si no definiu aquesta política, s'utilitzarà la línia d'ordres predeterminada.</translation>
 <translation id="2646290749315461919">Us permet definir si els llocs web poden rastrejar la ubicació física dels usuaris. El seguiment de la ubicació física dels usuaris es pot autoritzar o denegar de manera predeterminada o bé es pot preguntar a l'usuari cada vegada que un lloc web demani la ubicació física. Si no es defineix aquesta política, s'utilitzarà el paràmetre &quot;AskGeolocation&quot; i l'usuari podrà canviar-lo.</translation>
 <translation id="5770738360657678870">Canal per a desenvolupadors (pot ser inestable)</translation>
 <translation id="2959898425599642200">Regles d'evitació de servidors intermediaris</translation>
@@ -280,6 +300,19 @@
 <translation id="717221064259627503">Configura el directori que <ph name="PRODUCT_NAME"/> utilitzarà per a l'emmagatzematge de fitxers emmagatzemats a la memòria cau al disc. Si es defineix aquesta política, <ph name="PRODUCT_NAME"/> utilitzarà el directori proporcionat, independentment de si l'usuari ha especificat la marca &quot;--disk-cache-dir&quot; o no. Si no es defineix aquesta política, s'utilitzarà el directori de memòria cau predeterminat i l'usuari podrà substituir-lo per la marca de la línia d'ordres &quot;--disk-cache-dir&quot;.</translation>
 <translation id="2312134445771258233">Us permet configurar les pàgines que es carreguen en iniciar. El contingut de la llista &quot;URL que s'han d'obrir en iniciar&quot; s'ignora tret que seleccioneu &quot;Obre una llista d'URL&quot; a &quot;Acció a l'inici&quot;.</translation>
 <translation id="2538628396238281971">Configura el directori que <ph name="PRODUCT_NAME"/> utilitzarà per a la baixada de fitxers. Si es defineix aquesta política, <ph name="PRODUCT_NAME"/> utilitzarà el directori proporcionat, independentment de si l'usuari n'ha especificat un o ha activat la marca que ha de preguntar cada vegada per la ubicació de baixada. Si no es defineix aquesta política, s'utilitzarà el directori de baixades predeterminat i l'usuari podrà canviar-lo.</translation>
+<translation id="7750991880413385988">Obre la pestanya nova</translation>
+<translation id="741903087521737762">Us permet especificar el comportament en iniciar.
+
+          Si trieu &quot;Obre la pestanya nova&quot;, sempre s'obrirà la pestanya nova quan inicieu <ph name="PRODUCT_NAME"/>.
+
+          Si trieu &quot;Restaura l'última sessió&quot;, es tornaran a obrir els URL que teníeu oberts l'última vegada que es va tancar <ph name="PRODUCT_NAME"/>, i es restaurarà la sessió de navegació que hi havia en aquell moment.
+          La tria d'aquesta opció desactiva la configuració que depèn de les sessions o que realitza accions en sortir (com ara esborrar les dades de navegació en sortir o les galetes només de sessió).
+
+          Si trieu &quot;Obre una llista d'URL&quot;, quan l'usuari iniciï <ph name="PRODUCT_NAME"/> s'obrirà la llista d'URL que s'ha d'obrir en iniciar.
+
+          Si activeu aquesta configuració, els usuaris no podran canviar-la ni anul·lar-la a <ph name="PRODUCT_NAME"/>.
+
+          Si desactiveu aquesta configuració, serà com si la deixéssiu sense configurar. L'usuari podrà canviar-la a <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Configura el servidor intermediari per a <ph name="PRODUCT_NAME"/>.
 
       Aquesta política encara no està llesta; no la feu servir.</translation>
@@ -287,6 +320,7 @@
 <translation id="1019101089073227242">Estableix el directori de dades de l'usuari</translation>
 <translation id="5826047473100157858">Especifica si l'usuari pot obrir les pàgines en mode d'incògnit a <ph name="PRODUCT_NAME"/>. Si se selecciona l'opció &quot;activat&quot; o no es defineix la política, les pàgines es podran obrir en mode d'incògnit. Si se selecciona l'opció &quot;desactivat&quot;, les pàgines no es podran obrir en mode d'incògnit. Si se selecciona l'opció &quot;forçat&quot;, les pàgines NOMÉS es podran obrir en mode d'incògnit.</translation>
 <translation id="5085647276663819155">Desactiva la visualització prèvia d'impressió</translation>
+<translation id="8672321184841719703">Versió objectiu de l'actualització automàtica</translation>
 <translation id="2030905906517501646">Paraula clau del proveïdor de cerca predeterminat</translation>
 <translation id="3072045631333522102">Protector de pantalla per utilitzar a la pantalla d'inici de sessió en mode de venta</translation>
 <translation id="7393895128271703858">Aquesta política és obsoleta, utilitzeu DefaultJavaScriptSetting en lloc seu. Activa JavaScript a <ph name="PRODUCT_NAME"/> i impedeix que els usuaris puguin canviar aquesta configuració. Si s'ha activat o no s'ha configurat aquest paràmetre, les pàgines web podran utilitzar JavaScript. Si s'ha desactivat aquest paràmetre, les pàgines web no podran utilitzar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor predeterminat que estigui activat i l'usuari podrà canviar-lo. Si no es defineix aquesta política, s'activarà aquest paràmetre però l'usuari podrà canviar-lo.</translation>
@@ -397,6 +431,7 @@
 <translation id="2299220924812062390">Especifica una llista de connectors activats</translation>
 <translation id="924557436754151212">Importació de les contrasenyes desades des del navegador predeterminat en la primera execució</translation>
 <translation id="1897365952389968758">Permet que tots els llocs executin JavaScript</translation>
+<translation id="7323896582714668701">Paràmetres de línia d'ordres de <ph name="PRODUCT_NAME"/> addicionals</translation>
 <translation id="6931242315485576290">Desactiva la sincronització de dades amb Google</translation>
 <translation id="36674322972891584">Activa la predicció de la xarxa a <ph name="PRODUCT_NAME"/> i impedeix que els usuaris puguin canviar aquesta configuració. Si activeu o desactiveu aquest paràmetre, els usuaris no podran canviar ni suprimir aquesta configuració a <ph name="PRODUCT_NAME"/>. Si no es defineix aquesta política, aquest paràmetre s'activarà però l'usuari podrà canviar-lo.</translation>
 <translation id="7006788746334555276">Configuració del contingut</translation>
@@ -408,6 +443,7 @@
 <translation id="187819629719252111">Permet que <ph name="PRODUCT_NAME"/> mostri diàlegs de selecció de fitxers per permetre l'accés als fitxers locals de l'equip. Si activeu aquest paràmetre, els usuaris podran obrir els diàlegs de selecció de fitxers de la manera habitual. Si el desactiveu, cada vegada que un usuari dugui a terme una acció que provoqui l'obertura d'un diàleg de selecció de fitxers (com ara la importació de marcadors, la càrrega de fitxers, el desament d'enllaços, etc.), li apareixerà un missatge que serà com si l'usuari fes clic a Cancel·la al diàleg de selecció de fitxers. Si no definiu aquest paràmetre, els usuaris podran obrir diàlegs de selecció de fitxers de la manera habitual.</translation>
 <translation id="4507081891926866240">Personalitzeu la llista dels patrons d'URL que sempre s'han de representar per <ph name="PRODUCT_FRAME_NAME"/>. Si no es defineix aquesta política, s'utilitzarà el processador predeterminat per a tots els llocs especificats per la política &quot;ChromeFrameRendererSettings&quot;. Per obtenir patrons d'exemple, consulteu http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Tria com vols especificar la configuració del servidor intermediari</translation>
+<translation id="1803646570632580723">Llista d'aplicacions fixades perquè es mostrin a la barra d'execució ràpida</translation>
 <translation id="7774768074957326919">Utilitza la configuració del servidor intermediari del sistema</translation>
 <translation id="3891357445869647828">Activa JavaScript</translation>
 <translation id="868187325500643455">Permet que tots els llocs executin connectors automàticament</translation>
@@ -493,16 +529,4 @@
 <translation id="5645779841392247734">Permet les galetes en aquests llocs</translation>
 <translation id="8220342550735772883">Configura la mida de la memòria cau que <ph name="PRODUCT_NAME"/> utilitzarà per emmagatzemar fitxers multimèdia emmagatzemats a la memòria cau del disc. Si es defineix aquesta política, <ph name="PRODUCT_NAME"/> utilitzarà la mida de la memòria cau proporcionada, independentment de si l'usuari ha especificat la marca &quot;--media-cache-size&quot; o no. Si el valor d'aquesta política és 0, s'utilitzarà la mida de la memòria cau predeterminada, però l'usuari no podrà canviar-la. Si no es defineix aquesta política, s'utilitzarà la mida predeterminada i l'usuari podrà reemplaçar-la per la marca &quot;--media-cache-size&quot;.</translation>
 <translation id="7049373494483449255">Permet que <ph name="PRODUCT_NAME"/> enviï documents a <ph name="CLOUD_PRINT_NAME"/> per imprimir. NOTA: Això només afecta a l'assistència de <ph name="CLOUD_PRINT_NAME"/> a <ph name="PRODUCT_NAME"/>. No impedeix que els usuaris enviïn treballs d'impressió als llocs web. Si aquest paràmetre està activat o no està configurat, els usuaris podran imprimir a <ph name="CLOUD_PRINT_NAME"/> des del diàleg d'impressió <ph name="PRODUCT_NAME"/>. Si aquest paràmetre està desactivat, els usuaris no podran imprimir a <ph name="CLOUD_PRINT_NAME"/> des del diàleg d'impressió <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2339225390014743328">Us permet especificar el comportament del navegador en iniciar-se.
-
-          Si trieu &quot;Obre la pàgina d'inici&quot;, la pàgina d'inici s'obrirà sempre que inicieu <ph name="PRODUCT_NAME"/>.
-
-          Si trieu &quot;Restaura l'última sessió&quot;, es tornaran a obrir els URL que estaven oberts la darrera vegada que <ph name="PRODUCT_NAME"/> es va tancar i es restaurarà la sessió de navegació tal com es va deixar.
-          Si trieu aquesta opció, es desactiven algunes configuracions que depenen de les sessions o que fan accions en sortir (com ara esborrar les dades de navegació en sortir o les galetes per a només la sessió).
-
-          Si trieu &quot;Obre una llista d'URL&quot;, s'obrirà la llista d'&quot;URL que s'han d'obrir en iniciar&quot; quan un usuari iniciï <ph name="PRODUCT_NAME"/>.
-
-          Si activeu aquest paràmetre, l'usuari no podrà modificar-lo ni substituir-lo a <ph name="PRODUCT_NAME"/>.
-
-          Si el desactiveu, és com si el deixéssiu sense configurar. L'usuari podrà modificar-lo a <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

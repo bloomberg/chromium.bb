@@ -8,6 +8,7 @@
 <translation id="573759479754913123">Σχετικά με το Chrome OS</translation>
 <translation id="5453904507266736060">Να επιτρέπεται στο Google Chrome να εκτελείται στο παρασκήνιο</translation>
 <translation id="2383457833405848421">Σχετικά με το Chrome Frame...</translation>
+<translation id="3454512769850953877">Ναι, να κλείσει το Chrome</translation>
 <translation id="386202838227397562">Κλείστε όλα τα παράθυρα του Google Chrome και προσπαθήστε ξανά.</translation>
 <translation id="2770231113462710648">Αλλαγή προεπιλεγμένου προγράμματος περιήγησης σε:</translation>
 <translation id="7400722733683201933">Πληροφορίες για το Google Chrome</translation>
@@ -15,7 +16,6 @@
 <translation id="7781002470561365167">Μια νέα έκδοση του Google Chrome είναι διαθέσιμη.</translation>
 <translation id="1484802885942301358">Το Google Chrome είναι ενημερωμένο (<ph name="VERSION"/>)</translation>
 <translation id="7101265395643981223">Έναρξη του Google Chrome</translation>
-<translation id="4738120821427858478">Οι αλλαγές που πραγματοποιήσατε θα ισχύσουν την επόμενη φορά που θα επανεκκινήσετε το Google Chrome OS.</translation>
 <translation id="4891791193823137474">Να επιτρέπεται στο Google Chrome να εκτελείται στο παρασκήνιο</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Το Google Chrome πραγματοποιεί εισαγωγή Αγαπημένων/Σελιδοδεικτών.</translation>
@@ -27,7 +27,6 @@
 <translation id="5339639696978861456">Έγινε ενημέρωση του Chrome Frame. Επανεκκινήστε το πρόγραμμα περιήγησής σας. Έκδοση Chrome: <ph name="TODO_0001"/>, έκδοση Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Όροι Παροχής Υπηρεσιών</translation>
 <translation id="8398145039500709259">Χρησιμοποιήστε αυτόν τον Λογαριασμό Google για το συγχρονισμό όλων των στοιχείων που διαθέτετε στο Chrome;</translation>
-<translation id="6862759394142635932">Εάν κλείσετε τώρα το Google Chrome, αυτή η λήψη θα ακυρωθεί.</translation>
 <translation id="1779550429052479749">Εντοπίστηκε στο σύστημα μια εγκατάσταση σε διένεξη του Google Chrome ή του Google Chrome Frame. Καταργήστε την εγκατάσταση και προσπαθήστε ξανά.</translation>
 <translation id="3555616473548901994">Η κατάργηση εγκατάστασης ολοκληρώθηκε.</translation>
 <translation id="8556340503434111824">Υπάρχει μια νέα έκδοση του Google Chrome και είναι ταχύτερη από ποτέ.</translation>
@@ -48,14 +47,15 @@
 <translation id="3487814320513494737">Ο σχεδιασμός της σελίδας νέας καρτέλας του Chrome έχει αλλάξει. Για εναλλαγή μεταξύ των ενοτήτων, κάντε κλικ σε αυτές τις ετικέτες. Το Chrome θα απομνημονεύσει την προτίμησή σας για την επόμενη φορά.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="6423071462708908582">Επιχειρήσατε να συνδεθείτε με τον τομέα &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, αλλά ο διακομιστής παρουσίασε κάποιο πιστοποιητικό το οποίο έχει λήξει. Δεν υπάρχουν διαθέσιμες πληροφορίες οι οποίες υποδεικνύουν εάν το πιστοποιητικό έχει παραβιαστεί από τη λήξη του. Αυτό σημαίνει ότι το Google Chrome δεν μπορεί να εγγυηθεί την επικοινωνία σας με τον τομέα &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; και όχι με κάποιο κακόβουλο λογισμικό. Αυτήν τη στιγμή, το ρολόι του υπολογιστή σας έχει οριστεί σε <ph name="CURRENT_TIME"/>. Σας φαίνεται σωστό; Εάν όχι, διορθώστε το σφάλμα και ανανεώστε τη σελίδα.</translation>
+<translation id="3197823471738295152">Η συσκευή σας είναι ενημερωμένη.</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="3889417619312448367">Κατάργηση εγκατάστασης Google Chrome</translation>
+<translation id="8551886023433311834">Η ενημέρωση σχεδόν πραγματοποιήθηκε! Επανεκκινήστε τη συσκευή σας για να ολοκληρωθεί η ενημέρωση.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3282568296779691940">Σύνδεση στο Chrome</translation>
 <translation id="3089968997497233615">Υπάρχει μια νέα, ασφαλέστερη έκδοση του Google Chrome.</translation>
 <translation id="5037239767309817516">Κλείστε όλα τα παράθυρα του Google Chrome και επανεκκινήστε τον για να εφαρμοστεί αυτή η αλλαγή.</translation>
 <translation id="7451721381978275812">Μη έγκυρα ορίσματα. Το Google Chrome Frame δεν μπορεί να εγκατασταθεί σε κατάσταση ετοιμότητας χωρίς να γίνει εγκατάσταση και του Google Chrome.</translation>
-<translation id="5727432509906037972">Θέλετε να πραγματοποιήσετε έξοδο από το Google Chrome ενώ υπάρχει μια λήψη σε εξέλιξη;</translation>
 <translation id="4585888816441913908">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome και του Google Chrome Frame. Εάν το λογισμικό δεν λειτουργεί, καταργήστε την εγκατάσταση του Google Chrome και του Google Chrome Frame και προσπαθήστε ξανά.</translation>
 <translation id="6368958679917195344">Το Chrome OS έγινε πραγματικότητα χάρη στην ύπαρξη πρόσθετων <ph name="BEGIN_LINK_CROS_OSS"/>λογισμικών ανοικτού κώδικα<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Ρυθμίστε τον συγχρονισμό για την αποθήκευση όλων των εξατομικευμένων λειτουργιών του προγράμματος περιήγησής σας στον ιστό και μεταβείτε σε αυτές από το Google Chrome μέσω οποιουδήποτε υπολογιστή.</translation>
@@ -71,24 +71,24 @@
 
 Ορισμένες λειτουργίες μπορεί να μην είναι διαθέσιμες. Προσδιορίστε έναν διαφορετικό κατάλογο προφίλ ή χρησιμοποιήστε μια νεότερη έκδοση του Chrome.</translation>
 <translation id="8738921060445980047">Άγνωστη έκδοση.</translation>
+<translation id="6970811910055250180">Ενημέρωση της συσκευής σας...</translation>
 <translation id="2485422356828889247">Κατάργηση Εγκατάστασης</translation>
 <translation id="2748463065602559597">Βλέπετε μια ασφαλή σελίδα του Google Chrome.</translation>
 <translation id="7185038942300673794">Το <ph name="EXTENSION_NAME"/> προστέθηκε στο Chrome.</translation>
 <translation id="9073088951656332330">Δεν βρέθηκε εγκατάσταση του Google Chrome ή το Google Chrome Frame για ενημέρωση.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Προειδοποιήση:<ph name="END_BOLD"/> το Google Chrome δεν μπορεί να αποτρέψει τις επεκτάσεις από την καταγραφή του ιστορικού σας περιήγησης. Για την απενεργοποίηση αυτής της επέκτασης στη λειτουργία ανώνυμης περιήγησης, καταργήστε αυτήν την επιλογή.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="3904146009066562368">Διατίθεται μια νέα έκδοση του Google Chrome</translation>
 <translation id="911206726377975832">Να γίνει διαγραφή και των δεδομένων περιήγησης;</translation>
 <translation id="2044287590254833138">Γραμμή εργαλείων του Google Chrome</translation>
 <translation id="5074344184765391290">Εφαρμογή Προσθήκης του Chrome</translation>
 <translation id="8862326446509486874">Δεν έχετε τα απαραίτητα δικαιώματα για εγκατάσταση σε επίπεδο συστήματος. Δοκιμάστε να εκτελέσετε ξανά το πρόγραμμα εγκατάστασης ως Διαχειριστής.</translation>
 <translation id="595871952790078940">Βοηθητικό Πρόγραμμα του Chrome</translation>
 <translation id="2874156562296220396">Το Google Chrome υλοποιήθηκε με τη βοήθεια του έργου ανοικτού κώδικα <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> και άλλου <ph name="BEGIN_LINK_OSS"/>λογισμικού ανοικτού κώδικα<ph name="END_LINK_OSS"/>.</translation>
-<translation id="7855730255114109580">Το Google Chrome είναι ενημερωμένο</translation>
 <translation id="3847841918622877581">Το Google Chrome μπορεί να χρησιμοποιήσει υπηρεσίες ιστού για να βελτιώσει την εμπειρία περιήγησής σας.</translation>
 <translation id="7436949144778751379">Το Google Chrome απαιτεί Windows XP ή νεότερη έκδοση. Ορισμένες λειτουργίες ενδέχεται να μην είναι διαθέσιμες.</translation>
 <translation id="6757767188268205357">Δεν με ενδιαφέρει</translation>
 <translation id="2290095356545025170">Είστε βέβαιοι ότι θέλετε να καταργήσετε την εγκατάσταση του Google Chrome;</translation>
+<translation id="7062966102157262887">Αυτήν τη στιγμή, μια λήψη βρίσκεται σε εξέλιξη. Θέλετε να κλείσετε το Google Chrome και να ακυρώσετε τη λήψη;</translation>
 <translation id="4273752058983339720">Το Google Chrome έχει διαμορφωθεί για να ξεκινάει αυτόματα κατά την εκκίνηση του υπολογιστή σας.</translation>
 <translation id="1104959162601287462">Σχ&amp;ετικά με το Chrome OS</translation>
 <translation id="5941830788786076944">Ορισμός Google Chrome ως προεπιλεγμένο πρόγραμμα περιήγησης</translation>
@@ -106,16 +106,14 @@
 <translation id="7161904924553537242">Καλώς ήρθατε στο Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Ενημέρωση &amp;του Google Chrome</translation>
-<translation id="147599965395609989">Το Google Chrome ενημερώθηκε</translation>
+<translation id="130631256467250065">Οι αλλαγές σας θα εφαρμοστούν την επόμενη φορά που θα επανεκκινήσετε τη συσκευή σας.</translation>
 <translation id="1399397803214730675">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, καταργήστε την εγκατάσταση του Google Chrome και δοκιμάστε ξανά.</translation>
-<translation id="2827900704927383772">Θέλετε να πραγματοποιήσετε έξοδο από το Google Chrome ενώ υπάρχουν <ph name="DOWNLOAD_COUNT"/> λήψεις σε εξέλιξη;</translation>
 <translation id="3444832043240812445">Αυτή η σελίδα εμφανίζει μόνο πληροφορίες για τα σφάλματα που παρουσιάστηκαν πρόσφατα εφόσον <ph name="BEGIN_LINK"/>έχετε ενεργοποιημένη την αναφορά σφαλμάτων<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Το Google Chrome δεν αποκρίνεται. Επανεκκίνηση τώρα;</translation>
 <translation id="5318056482164160049">Εφαρμογή Προσθήκης του Google Chrome</translation>
 <translation id="5699533844376998780">Έχει γίνει προσθήκη της επέκτασης &quot;<ph name="EXTENSION_NAME"/>&quot;.</translation>
 <translation id="6126631249883707068">Θέλετε το Google Chrome να αποθηκεύσει τον κωδικό πρόσβασής σας;</translation>
 <translation id="5046764976540625289">Έξοδος από το Chrome</translation>
-<translation id="2925521875688282191">Αποσυνδεθείτε από το Chrome OS και συνδεθείτε ξανά για να τεθούν σε ισχύ οι αλλαγές.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="2680623880102270805">Το Google Chrome δεν είναι δυνατό να δημιουργήσει μια συντόμευση εφαρμογής, επειδή δεν μπορεί να καθορίσει το τρέχον περιβάλλον επιφάνειας εργασίας.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
@@ -123,14 +121,14 @@
 <translation id="2189123953385179981">Το Google ChromeOS δεν υποστηρίζει την εκκίνηση εξωτερικής εφαρμογής για το χειρισμό συνδέσμων <ph name="SCHEME"/>. Ο σύνδεσμος που ζητήθηκε είναι <ph name="PROTOLINK"/>.</translation>
 <translation id="711654979569750606">Πνευματικά δικαιώματα © 2006-2011 Google Inc. Με την επιφύλαξη παντός δικαιώματος.</translation>
 <translation id="8205111949707227942">Προαιρετικό: Συμβάλετε στη βελτίωση του Chrome OS στέλνοντας αυτόματα στην Google στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων.</translation>
-<translation id="8345657477105118085">Το Chrome OS έχει ενημερωθεί.</translation>
+<translation id="7253415505590551024">Αυτήν τη στιγμή, βρίσκονται σε εξέλιξη λήψεις. Θέλετε να κλείσετε το Google Chrome και να ακυρώσετε τις λήψεις;</translation>
 <translation id="7196020411877309443">Γιατί το βλέπω αυτό;</translation>
 <translation id="2769762047821873045">Το Google Chrome δεν είναι το προεπιλεγμένο πρόγραμμα περιήγησης.</translation>
 <translation id="7825851276765848807">Η εγκατάσταση απέτυχε λόγω μη καθορισμένου σφάλματος. Κάντε λήψη του Google Chrome ξανά.</translation>
 <translation id="3335672657969596251">Το Google Chrome δεν υποστηρίζει το <ph name="OS_NAME"/>.</translation>
+<translation id="4458285410772214805">Για να εφαρμοστεί αυτή η αλλαγή, αποσυνδεθείτε και συνδεθείτε ξανά.</translation>
 <translation id="2666187591945638709">Το Google Chrome ενημερώθηκε στην έκδοση <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">Έχει διαπιστωθεί ότι αυτή η λειτουργική μονάδα έρχεται σε διένεξη με το Google Chrome.</translation>
-<translation id="4892299120052124303">Εάν κλείσετε τώρα το Google Chrome, αυτές οι λήψεις θα ακυρωθούν.</translation>
 <translation id="6634887557811630702">Το Google Chrome έχει ενημερωθεί.</translation>
 <translation id="2084710999043359739">Προσθήκη στο Chrome</translation>
 <translation id="4084877369264707540">Το Google Chrome Frame έχει ήδη εγκατασταθεί και είναι διαθέσιμο σε όλους τους χρήστες αυτού του υπολογιστή. Αν επιθυμείτε να εγκαταστήσετε το Google Chrome Frame σε επίπεδο χρήστη, πρέπει να απεγκαταστήσετε πρώτα την έκδοση επιπέδου συστήματος η οποία έχει εγκατασταθεί από έναν διαχειριστή.</translation>
@@ -149,6 +147,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Ρυθμίσεις Αυτόματης συμπλήρωσης Chrome</translation>
 <translation id="3836351788193713666">Η ενημέρωση σχεδόν ολοκληρώθηκε! Εκτελέστε ξανά το Google Chrome για να ολοκληρωθεί η ενημέρωση.</translation>
+<translation id="546394857889685352">Η συσκευή σας έχει ενημερωθεί στο <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Διαχείριση Εργασιών - Google Chrome</translation>
 <translation id="1826482739472655104">Επιχειρήσατε να συνδεθείτε με τον τομέα &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, αλλά ο διακομιστής παρουσίασε κάποιο πιστοποιητικό το οποίο δεν είναι ακόμα έγκυρο. Δεν υπάρχουν διαθέσιμες πληροφορίες οι οποίες υποδεικνύουν εάν το πιστοποιητικό είναι αξιόπιστο. Το Google Chrome δεν μπορεί να εγγυηθεί αξιόπιστα ότι επικοινωνείτε με τον τομέα &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; και όχι με κάποιο κακόβουλο λογισμικό. Αυτήν τη στιγμή, το ρολόι του υπολογιστή σας έχει οριστεί σε <ph name="CURRENT_TIME"/>. Σας φαίνεται σωστό; Εάν όχι, διορθώστε το σφάλμα και ανανεώστε τη σελίδα.</translation>
 <translation id="8449380764213232436">Το Google Chrome πραγματοποιεί εισαγωγή των ακόλουθων στοιχείων από το <ph name="BROWSER_COMPONENT"/>:</translation>

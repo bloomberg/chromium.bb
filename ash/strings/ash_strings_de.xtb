@@ -2,50 +2,67 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="3595596368722241419">Akku vollständig geladen</translation>
-<translation id="908313544993743941">Mobilfunknetz deaktivieren</translation>
+<translation id="5250713215130379958">Übersicht automatisch ausblenden</translation>
 <translation id="30155388420722288">Überlaufschaltfläche</translation>
 <translation id="5571066253365925590">Bluetooth aktiviert</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth deaktiviert</translation>
+<translation id="370649949373421643">WLAN aktivieren</translation>
 <translation id="3626281679859535460">Helligkeit</translation>
 <translation id="7982789257301363584">Netzwerk</translation>
+<translation id="5565793151875479467">Proxy...</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Statusleiste</translation>
 <translation id="2946640296642327832">Bluetooth aktivieren</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
-<translation id="289426338439836048">Anderes Mobilfunknetz...</translation>
 <translation id="5233638681132016545">Neuer Tab</translation>
+<translation id="3846575436967432996">Keine Netzwerkinformationen verfügbar</translation>
+<translation id="3026237328237090306">Mobile Daten einrichten</translation>
 <translation id="785750925697875037">Mobiles Konto aufrufen</translation>
+<translation id="8121288016949447968">Umschalttaste+Suche</translation>
 <translation id="7864539943188674973">Bluetooth deaktivieren</translation>
 <translation id="3126069444801937830">Zum Aktualisieren neu starten</translation>
+<translation id="1525975890706558596">Die Feststelltaste ist aktiviert.
+Drücken Sie die Umschalttaste zusammen mit der Suchtaste, um die Aktivierung aufzuheben.</translation>
 <translation id="8190698733819146287">Sprache und Eingabe anpassen...</translation>
-<translation id="7911992579061465928">Schwacher Akku</translation>
 <translation id="598295083618286569">Mit Bluetooth verbunden</translation>
 <translation id="5222676887888702881">Abmelden</translation>
+<translation id="2091132388437059185">Beim Maximieren Übersicht automatisch ausblenden</translation>
+<translation id="425878420164891689">Zeit bis zur vollständigen Aufladung wird berechnet...</translation>
+<translation id="2964193600955408481">WLAN deaktivieren</translation>
 <translation id="811680302244032017">Gerät hinzufügen...</translation>
+<translation id="2509468283778169019">Die Feststelltaste ist aktiviert.</translation>
+<translation id="6426039856985689743">Mobile Daten deaktivieren</translation>
 <translation id="3232695630852378748">Bluetooth-Einstellungen...</translation>
 <translation id="1480041086352807611">Demo-Modus</translation>
 <translation id="4186384497305035875">Diese Seite ist absichtlich leer.</translation>
 <translation id="9089416786594320554">Eingabemethoden</translation>
-<translation id="7706302027196209560">WLAN aktivieren</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
+<translation id="1383876407941801731">Suche</translation>
 <translation id="3557139239102318020">Zum Minimieren nach unten ziehen, zur Änderung der Größe nach links oder rechts ziehen</translation>
 <translation id="5980301590375426705">Gastsitzung beenden</translation>
 <translation id="8308637677604853869">Vorheriges Menü</translation>
+<translation id="8528322925433439945">Mobil...</translation>
 <translation id="3595065677684516080">Einstellungen und Hilfe</translation>
 <translation id="4479639480957787382">Ethernet</translation>
+<translation id="7573721444069009535">WLAN...</translation>
+<translation id="6223565363550976998">Akku: <ph name="PERCENTAGE"/> %</translation>
 <translation id="8814190375133053267">WLAN</translation>
 <translation id="3784455785234192852">Sperren</translation>
-<translation id="5836819469861742634">Proxy-Einstellungen ändern...</translation>
+<translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
-<translation id="8735871257195921372">Anderes WLAN-Netzwerk...</translation>
-<translation id="2152495481414285304">Apps</translation>
-<translation id="1690310444231390462">WLAN deaktivieren</translation>
-<translation id="77565731175229781">Netzwerkeinstellungen...</translation>
+<translation id="7052914147756339792">Hintergrund festlegen...</translation>
+<translation id="1602076796624386989">Mobile Daten aktivieren</translation>
+<translation id="8573351908869164327">Noch <ph name="HOUR"/> Std. <ph name="MINUTE"/> Min.</translation>
 <translation id="7029814467594812963">Sitzung beenden</translation>
-<translation id="7908019422099334890">Hintergrund festlegen...</translation>
+<translation id="2983818520079887040">Einstellungen...</translation>
+<translation id="8660803626959853127"><ph name="COUNT"/> Datei(en) wird bzw. werden synchronisiert.</translation>
+<translation id="639644700271529076">Die Feststelltaste ist deaktiviert.</translation>
 <translation id="6362354186508391853">Strg +</translation>
-<translation id="7841796031898165175">Mobilfunknetz aktivieren</translation>
-<translation id="9072667645353666975">Akku: <ph name="PERCENTAGE"/> %
-<ph name="HOUR"/> h <ph name="MINUTE"/> m</translation>
+<translation id="5045002648206642691">Google Drive-Einstellungen...</translation>
 <translation id="48607902311828362">Flugmodus</translation>
+<translation id="5361734574074701223">Verbleibende Zeit wird berechnet...</translation>
+<translation id="9169585155162064169">Die Feststelltaste ist aktiviert.
+Drücken Sie die Suchtaste, um die Aktivierung aufzuheben.</translation>
+<translation id="412065659894267608">In <ph name="HOUR"/> Std. <ph name="MINUTE"/> Min. vollständig aufgeladen</translation>
 </translationbundle>

@@ -146,6 +146,9 @@
       Si se establece esta política, <ph name="PRODUCT_FRAME_NAME"/> usará el directorio proporcionado.
 
       Si no se establece esta opción, se utilizará el directorio de perfil predeterminado.</translation>
+<translation id="8818173863808665831">Informa de la ubicación geográfica del dispositivo.
+
+     Si no se establece esta política o se establece el valor &quot;false&quot;, no se informará de la ubicación.</translation>
 <translation id="4899708173828500852">Habilitar la navegación segura</translation>
 <translation id="7719251660743813569">Permite controlar el envío de informes sobre estadísticas de uso a Google. Si el valor se establece en &quot;true&quot;, <ph name="PRODUCT_OS_NAME"/> enviará informes sobre estadísticas de uso. Si no se configura o el valor se establece en &quot;false&quot;, se inhabilitarán los informes estadísticos.</translation>
 <translation id="3570008976476035109">Bloquear complementos en estos sitios</translation>
@@ -266,9 +269,9 @@
 
       Si no se establece, es posible que se le pida al usuario que haga la importación o que el historial de navegación se importe automáticamente.</translation>
 <translation id="6786747875388722282">Extensiones</translation>
+<translation id="8947415621777543415">Informar de ubicación del dispositivo</translation>
 <translation id="1655229863189977773">Establecer tamaño de caché de disco en bytes</translation>
 <translation id="6899705656741990703">Detección automática de la configuración del proxy</translation>
-<translation id="4101772068965291327">Abrir página de inicio</translation>
 <translation id="7003334574344702284">Si se habilita, esta política fuerza la importación de las contraseñas guardadas desde el navegador predeterminado actual. Si está habilitada, esta política también afecta al cuadro de diálogo de importación.
 
       Si se inhabilita, no se importarán las contraseñas guardadas.
@@ -354,6 +357,20 @@
       Si no se establece esta política, el usuario podrá decidir si quiere que sea necesaria una contraseña para volver a activar el dispositivo o no.</translation>
 <translation id="6022948604095165524">Acción al iniciar</translation>
 <translation id="9042911395677044526">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME"/> de cada usuario. La configuración de red es una cadena escrita en formato JSON, tal como se define en la siguiente página sobre el formato Open Network Configuration: <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Presenta una relación de los identificadores de aplicaciones que muestra <ph name="PRODUCT_OS_NAME"/> como aplicaciones fijadas en la barra de aplicaciones.
+
+      Si se configura esta política, se fija el conjunto de aplicaciones y el usuario no puede cambiarlo.
+
+      Si no se establece la política, el usuario puede cambiar la lista de aplicaciones fijadas de la barra de aplicaciones.</translation>
+<translation id="6177482277304066047">Establece una versión de destino para las actualizaciones automáticas.
+
+      Especifica el prefijo de una versión de destino a la que se debería actualizar <ph name="PRODUCT_OS_NAME"/>. Si el dispositivo está ejecutando una versión anterior al prefijo especificado, esta se actualizará a la versión más reciente con el prefijo especificado. Si el dispositivo ya dispone de una versión posterior, no ocurrirá nada (por ejemplo, no se cambiará a una versión anterior) y el dispositivo mantendrá la versión actual. El formato del prefijo depende del componente, tal como se observa en el ejemplo que aparece a continuación.
+
+      &quot;&quot; (o no configurado): actualización a la última versión disponible
+      &quot;1412.&quot;: actualización a cualquier versión secundaria de 1412 (por ejemplo, 1412.24.34 o 1412.60.2)
+      &quot;1412.2.&quot;: actualización a cualquier versión secundaria de 1412.2 (por ejemplo, 1412.2.34 o 1412.2.2)
+      &quot;1412.24.34&quot;: actualización únicamente a esta versión específica
+      </translation>
 <translation id="7625444193696794922">Permite especificar el canal de versiones al que se vinculará este dispositivo.</translation>
 <translation id="2240879329269430151">Permite establecer si los sitios web pueden mostrar o no pop-ups. La ejecución de pop-ups se permite o se deniega a todos los sitios web.
 
@@ -389,6 +406,9 @@
 
       Si no se establece esta política, inicialmente se inhabilitará el modo en segundo plano, pero el usuario podrá controlarlo en la configuración del navegador.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o posterior</translation>
+<translation id="5148753489738115745">Te permite especificar los parámetros adicionales que se utilizan cuando <ph name="PRODUCT_FRAME_NAME"/> inicia <ph name="PRODUCT_NAME"/>.
+
+          Si no se establece esta política, se utilizará la línea de comandos predeterminada.</translation>
 <translation id="2646290749315461919">Permite establecer si los sitios web pueden hacer un seguimiento de la ubicación de los usuarios. El seguimiento de la ubicación de los usuarios se puede permitir o denegar de forma predeterminada o se puede establecer que un sitio web pida permiso al usuario siempre que quiera conocer la ubicación.
 
           Si no se establece esta política, se usará la política AskGeolocation y el usuario podrá modificarla.</translation>
@@ -525,6 +545,19 @@
       Si se establece esta política, <ph name="PRODUCT_NAME"/> usará el directorio proporcionado aunque el usuario especifique uno o habilite una instrucción para que se le pregunte la ubicación de destino siempre que vaya a descargar un archivo.
 
       Si no se establece esta política, se usará el directorio de descarga predeterminado, y el usuario podrá modificarlo.</translation>
+<translation id="7750991880413385988">Abrir página Nueva pestaña</translation>
+<translation id="741903087521737762">Te permite especificar el comportamiento al iniciar.
+
+          Si eliges la opción de abrir una página Nueva pestaña, siempre se abrirá esa página al iniciar <ph name="PRODUCT_NAME"/>.
+
+          Si eliges la opción de restaurar la última sesión, se volverán a abrir las URL que estaban abiertas la última vez que se cerró <ph name="PRODUCT_NAME"/> y se restaurará la sesión de navegación.
+          Al seleccionar esta opción, se inhabilitan algunas opciones de configuración que se basan en sesiones o que llevan a cabo acciones al salir (como eliminar los datos de navegación o las cookies de la sesión).
+
+          Si eliges la opción de abrir una lista de URL, se abrirá la lista de URL que se deben abrir al inicio cuando el usuario inicie <ph name="PRODUCT_NAME"/>.
+
+          Si habilitas esta opción de configuración, los usuarios no podrán cambiarla ni sobrescribirla en <ph name="PRODUCT_NAME"/>.
+
+          Si inhabilitas esta opción de configuración, será como si no la configuraras, y el usuario podrá cambiarla en <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Permite establecer los valores de configuración de proxy de <ph name="PRODUCT_NAME"/>.
 
       Esta política aún no está lista para su uso, así que no debes utilizarla.</translation>
@@ -538,6 +571,7 @@
 
       Si se selecciona la opción de modo de incógnito forzado, SOLO se podrán abrir páginas en modo incógnito.</translation>
 <translation id="5085647276663819155">Inhabilitar vista previa de impresión</translation>
+<translation id="8672321184841719703">Versión de destino de actualizaciones automáticas</translation>
 <translation id="2030905906517501646">Palabra clave de proveedor de búsquedas predeterminadas</translation>
 <translation id="3072045631333522102">Protector de pantalla a utilizar en la pantalla de inicio de sesión del modo de venta</translation>
 <translation id="7393895128271703858">Esta política está obsoleta. Te recomendamos que uses DefaultJavaScriptSetting en su lugar.
@@ -764,6 +798,7 @@
 <translation id="2299220924812062390">Especificar una lista de complementos habilitados</translation>
 <translation id="924557436754151212">Importar las contraseñas guardadas desde el navegador predeterminado en la primera ejecución</translation>
 <translation id="1897365952389968758">Permitir que todos los sitios ejecuten JavaScript</translation>
+<translation id="7323896582714668701">Parámetros de línea de comandos adicionales para <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Inhabilitar sincronización de datos con Google</translation>
 <translation id="36674322972891584">Permite habilitar la predicción de red en <ph name="PRODUCT_NAME"/> e impide que los usuarios modifiquen esta configuración.
 
@@ -789,6 +824,7 @@
 
           Puedes consultar ejemplos de patrones en la página http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Seleccionar la forma de especificar la configuración del servidor proxy</translation>
+<translation id="1803646570632580723">Lista de aplicaciones fijadas que deben aparecer en la barra de aplicaciones</translation>
 <translation id="7774768074957326919">Utilizar configuración de proxy del sistema</translation>
 <translation id="3891357445869647828">Habilitar JavaScript</translation>
 <translation id="868187325500643455">Permitir que todos los sitios ejecuten complementos automáticamentej</translation>
@@ -984,16 +1020,4 @@
       Si esta opción está habilitada o no se ha configurado, los usuarios pueden imprimir en <ph name="CLOUD_PRINT_NAME"/> desde el cuadro de diálogo de impresión de <ph name="PRODUCT_NAME"/>.
 
       Si esta opción no está habilitada, los usuarios no pueden imprimir en <ph name="CLOUD_PRINT_NAME"/> desde el cuadro de diálogo de impresión de <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2339225390014743328">Permite especificar el comportamiento del navegador al iniciarlo.
-
-          Si seleccionas Abrir la página principal, la página de inicio se abrirá cada vez que inicies <ph name="PRODUCT_NAME"/>.
-
-          Si seleccionas Restaurar la última sesión, se volverán a abrir las URL que estaban abiertas cuando cerraste <ph name="PRODUCT_NAME"/> y se restaurará la sesión de navegación tal y como la dejaste.
-          Al seleccionar esta opción, se inhabilitarán algunos ajustes que dependen de las sesiones o que  realizan acciones al cerrar el navegador (como borrar los datos de navegación al salir o las cookies de sesión).
-
-          Si seleccionas Abrir una lista de URL, se abrirá la lista de URL que se deben abrir al inicio cuando un usuario inicie <ph name="PRODUCT_NAME"/>.
-
-          Si habilitas esta opción, los usuarios no podrán cambiarla ni anularla en <ph name="PRODUCT_NAME"/>.
-
-          Si inhabilitas esta opción, se considerará que no la has configurado y el usuario podrá cambiarla en <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

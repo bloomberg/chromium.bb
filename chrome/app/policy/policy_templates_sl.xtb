@@ -146,6 +146,9 @@
       Če ta pravilnik nastavite, bo <ph name="PRODUCT_FRAME_NAME"/> uporabil določen imenik.
 
       Če nastavitev ni nastavljena, bo uporabljen privzeti imenik profila.</translation>
+<translation id="8818173863808665831">Prijava zemljepisne lokacije naprave.
+
+      Če pravilnik ni nastavljen ali je nastavljen na »False«, lokacija ne bo prijavljena.</translation>
 <translation id="4899708173828500852">Omogoči varno brskanje</translation>
 <translation id="7719251660743813569">Nadzira, ali so podatki o uporabi poslani Googlu. Če je pravilnik omogočen, <ph name="PRODUCT_OS_NAME"/> pošlje podatke o uporabi. Če ni nastavljen ali je onemogočen, podatkov ne pošilja.</translation>
 <translation id="3570008976476035109">Blokiraj vtičnike na teh mestih</translation>
@@ -266,9 +269,9 @@
 
       Če ni nastavljen, bo uporabnik morda vprašan, ali naj jo uvozi, ali pa bo uvoz izveden samodejno.</translation>
 <translation id="6786747875388722282">Razširitve</translation>
+<translation id="8947415621777543415">Prijava lokacije naprave</translation>
 <translation id="1655229863189977773">Nastavi velikost predpomnilnika diska v bajtih</translation>
 <translation id="6899705656741990703">Samodejno zaznavanje nastavitev proxyja</translation>
-<translation id="4101772068965291327">Odpri domačo stran</translation>
 <translation id="7003334574344702284">Če je pravilnik omogočen, se shranjena gesla uvozijo iz prejšnjega privzetega brskalnika. Če je pravilnik omogočen, vpliva tudi na pogovorno okno za uvoz.
 
       Če je onemogočen, se shranjena gesla ne uvozijo.
@@ -354,6 +357,20 @@
       Če ta pravilnik ni nastavljen, lahko uporabnik izbere, ali bo za odklepanje naprave moral vnesti geslo ali ne.</translation>
 <translation id="6022948604095165524">Dejanje ob zagonu</translation>
 <translation id="9042911395677044526">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja glede na uporabnika, v napravo s sistemom <ph name="PRODUCT_OS_NAME"/>. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisane na <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Prikaže identifikatorje aplikacij, ki jih <ph name="PRODUCT_OS_NAME"/> pokaže kot pripete aplikacije v vrstici zaganjalnika.
+
+      Če je pravilnik nastavljen, je seznam aplikacij fiksen in ga uporabnik ne more spreminjati.
+
+      Če pravilnik ni nastavljen, lahko uporabnik spremeni seznam pripetih aplikacij v zaganjalniku.</translation>
+<translation id="6177482277304066047">Nastavi ciljno različico za samodejne posodobitve.
+
+      Določi predpono ciljne različice, na katero se posodobi sistem <ph name="PRODUCT_OS_NAME"/>. Če je v napravi različica sistema, ki je starejša od določene predpone, se posodobi na najnovejšo različico z določeno predpono. Če je v napravi novejša različica, se ne zgodi nič (ne uporabi se prejšnja različica) in v napravi je še naprej nameščena trenutna različica. Oblika predpone je odvisna od komponente, kot je prikazano v tem primeru:
+
+      »« (ali ni nastavljeno): posodobitev na najnovejšo razpoložljivo različico.
+      »1412.«: posodobitev na podrazličico različice 1412 (npr. 1412.24.34 ali 1412.60.2)
+      »1412.2.«: posodobitev na podrazličico različice 1412.2 (npr. 1412.2.34 ali 1412.2.2)
+      »1412.24.34«: posodobitev samo na to različico
+      </translation>
 <translation id="7625444193696794922">Določa kanal za izdajo, na katerega naj bo zaklenjena ta naprava.</translation>
 <translation id="2240879329269430151">Omogoča nastavitev, ali je spletnim mestom dovoljeno prikazovati pojavna okna. Prikazovanje pojavnih oken je mogoče dovoliti ali zavrniti za vsa spletna mesta.
 
@@ -387,6 +404,9 @@
 
       Če pravilnik ni nastavljen, je način izvajanja v ozadju na začetku onemogočen in ga lahko uporabnik lahko v nastavitvah brskalnika.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ali novejši</translation>
+<translation id="5148753489738115745">Določite lahko dodatne parametre, ki so uporabljeni, ko <ph name="PRODUCT_FRAME_NAME"/> zažene <ph name="PRODUCT_NAME"/>.
+
+          Če ta pravilnik ni nastavljen, je uporabljena privzeta ukazna vrstica.</translation>
 <translation id="2646290749315461919">Omogoča nastavitev, ali lahko spletna mesta sledijo uporabnikovi fizični lokaciji. Sledenje uporabnikovi fizični lokaciji je lahko privzeto dovoljeno, privzeto zavrnjeno ali pa je lahko uporabnik vprašan vsakič, ko spletno mesto zahteva fizično lokacijo.
 
           Če ta pravilnik ni nastavljen, bo uporabljen pravilnik »AskGeolocation« in uporabnik ga bo lahko spremenil.</translation>
@@ -518,6 +538,19 @@
       Če nastavite ta pravilnik, bo <ph name="PRODUCT_NAME"/> uporabljal navedeni imenik ne glede na to, ali je uporabnik določil ali omogočil zastavico za poziv k navedbi lokacije pri vsakem prenosu.
 
       Če ta pravilnik ni nastavljen, bo uporabljen privzeti imenik in uporabnik bo lahko to spremenil.</translation>
+<translation id="7750991880413385988">Odpri stran »Nov zavihek«</translation>
+<translation id="741903087521737762">Določite lahko delovanje ob zagonu.
+
+          Če izberete »Odpri stran 'Nov zavihek'«, se stran »Nov zavihek« odpre vsakič, ko zaženete <ph name="PRODUCT_NAME"/>.
+
+          Če izberete »Obnovi zadnjo sejo«, se znova odprejo URL-ji, ki so bili odprti, ko ste nazadnje zaprli <ph name="PRODUCT_NAME"/>, in obnovi se seja brskanja.
+          Ta možnost onemogoči nekatere nastavitve, ki so odvisne od sej ali ki izvedejo dejanja, ko zaprete brskalnik (na primer brisanje podatkov o brskanju ali piškotkov seje).
+
+          Če izberete »Odpri seznam URL-jev«, se odpre seznam URL-jev, ki se odprejo ob zagonu, ko uporabnik zažene <ph name="PRODUCT_NAME"/>.
+
+          Če omogočite to možnost, je uporabniki ne morejo spremeniti ali preglasiti v storitvi <ph name="PRODUCT_NAME"/>.
+
+          Če to nastavitev onemogočite, je enako, kot če je ne nastavite. Uporabnik jo lahko spremeni v storitvi <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Določi nastavitve proxyja za <ph name="PRODUCT_NAME"/>.
 
       Ta pravilnik še ni primeren za uporabo, zato ga ne uporabljajte.</translation>
@@ -531,6 +564,7 @@
 
       Če je izbrano »Vsiljeno«, je mogoče strani odpirati SAMO v načinu brez beleženja zgodovine.</translation>
 <translation id="5085647276663819155">Onemogoči predogled tiskanja</translation>
+<translation id="8672321184841719703">Ciljna različica za samodejne posodobitve</translation>
 <translation id="2030905906517501646">Privzeta ključna beseda iskalnika</translation>
 <translation id="3072045631333522102">Ohranjevalnik zaslona na zaslonu za prijavo v maloprodajnem načinu</translation>
 <translation id="7393895128271703858">Ta pravilnik je zastarel, namesto tega uporabite pravilnik »DefaultJavaScriptSetting«.
@@ -757,6 +791,7 @@
 <translation id="2299220924812062390">Določi seznam omogočenih vtičnikov</translation>
 <translation id="924557436754151212">Uvoz shranjenih gesel privzetega brskalnika pri prvem zagonu</translation>
 <translation id="1897365952389968758">Dovoli izvajanje JavaScripta vsem mestom</translation>
+<translation id="7323896582714668701">Dodatni parametri ukazne vrstice za <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Onemogoči sinhroniziranje podatkov z Googlom</translation>
 <translation id="36674322972891584">Omogoča omrežno predvidevanje v <ph name="PRODUCT_NAME"/> in uporabnikom preprečuje spreminjanje te nastavitve.
 
@@ -782,6 +817,7 @@
 
           Primere vzorcev si lahko ogledate na http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Izberite, kako določiti nastavitve strežnika proxy</translation>
+<translation id="1803646570632580723">Seznam pripetih aplikacij v zaganjalniku</translation>
 <translation id="7774768074957326919">Uporaba sistemskih nastavitev proxyja</translation>
 <translation id="3891357445869647828">Omogoči JavaScript</translation>
 <translation id="868187325500643455">Dovoli samodejno izvajanje vtičnikov vsem mestom</translation>
@@ -975,16 +1011,4 @@
       Če je ta nastavitev omogočena ali ni konfigurirana, lahko uporabniki tiskajo v storitvi <ph name="CLOUD_PRINT_NAME"/> iz pogovornega okna za tiskanje v programu <ph name="PRODUCT_NAME"/>.
 
       Če je ta nastavitev onemogočena, uporabniki ne morejo tiskati v storitvi <ph name="CLOUD_PRINT_NAME"/> iz pogovornega okna za tiskanje v programu <ph name="PRODUCT_NAME"/></translation>
-<translation id="2339225390014743328">Omogoča določanje dejanj ob zagonu.
-
-          Če izberete »Odpri domačo stran«, se odpre domača stran, ko zaženete <ph name="PRODUCT_NAME"/>.
-
-          Če izberete »Obnovi zadnjo sejo«, se znova odprejo spletna mesta, ki so bila odprta, ko ste nazadnje zaprli <ph name="PRODUCT_NAME"/>, in zadnja seja brskanja se obnovi.
-          Če izberete to možnost, so onemogočene nekatere nastavitve, ki so odvisne od sej ali ki ob zaprtju izvedejo dejanja (na primer brisanje podatkov o brskanju ali piškotkov seje ob zaprtju).
-
-          Če izberete »Odpri seznam URL-jev«, se odpre seznam URL-jev, ki se odprejo ob zagonu, ko uporabnik zažene <ph name="PRODUCT_NAME"/>.
-
-          Če omogočite to nastavitev, je uporabniki v brskalniku <ph name="PRODUCT_NAME"/> ne morejo spremeniti ali preglasiti.
-
-          Če nastavitev onemogočite, je enako, kot če je ne nastavite. Uporabnik jo lahko kadar koli spremeni v brskalniku <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

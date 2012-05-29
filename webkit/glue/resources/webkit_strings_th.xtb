@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="248395913932153421">วัน</translation>
+<translation id="6015796118275082299">ปี</translation>
 <translation id="9186171386827445984">กำลังโหลดเอกสาร: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> หน้า...</translation>
 <translation id="1235745349614807883">ลบการค้นหาล่าสุด</translation>
 <translation id="1171774979989969504">โปรดป้อนที่อยู่อีเมล</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">ลิงก์</translation>
 <translation id="4522570452068850558">รายละเอียด</translation>
 <translation id="8451268428117625855">โปรดเลือกไฟล์</translation>
+<translation id="2674318244760992338">ส่วนท้าย</translation>
+<translation id="8987927404178983737">เดือน</translation>
 <translation id="7364796246159120393">เลือกไฟล์</translation>
 <translation id="2761667185364618470">โปรดเลือกช่องนี้หากคุณต้องการดำเนินการต่อ</translation>
 <translation id="8964020114565522021">ลากไฟล์มาที่นี่</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024 (เกรดปานกลาง)</translation>
 <translation id="1637811476055996098">เลือกไฟล์</translation>
 <translation id="5476505524087279545">ยกเลิกการทำเครื่องหมาย</translation>
+<translation id="2148716181193084225">วันนี้</translation>
 <translation id="2507943997699731163">โปรดกรอกฟิลด์นี้</translation>
 <translation id="5919473608089529604">ไม่สามารถโหลดปลั๊กอิน</translation>
 <translation id="6663448176199120256">การค้นหาล่าสุด</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">ค่าต้องน้อยกว่าหรือเท่ากับ <ph name="MAXIMUM"/></translation>
 <translation id="6119846243427417423">เปิดใช้งาน</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ไฟล์</translation>
+<translation id="6643016212128521049">ล้าง</translation>
 <translation id="3934680773876859118">โหลดเอกสาร PDF ล้มเหลว</translation>
 <translation id="8597182159515967513">ส่วนหัว</translation>
 <translation id="2653659639078652383">ส่ง</translation>

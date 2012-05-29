@@ -2,50 +2,67 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="3595596368722241419">Aku on täis</translation>
-<translation id="908313544993743941">Keela mobiilne andmeside</translation>
+<translation id="5250713215130379958">Peida käiviti automaatselt</translation>
 <translation id="30155388420722288">Ülevoolunupp</translation>
 <translation id="5571066253365925590">Bluetooth on lubatud</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth on keelatud</translation>
+<translation id="370649949373421643">Luba WiFi</translation>
 <translation id="3626281679859535460">Eredus</translation>
 <translation id="7982789257301363584">Võrk</translation>
+<translation id="5565793151875479467">Puhverserver ...</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Olekusalv</translation>
 <translation id="2946640296642327832">Luba Bluetooth</translation>
 <translation id="6596816719288285829">IP-aadress</translation>
-<translation id="289426338439836048">Muu mobiilsidevõrk ...</translation>
 <translation id="5233638681132016545">Uus vaheleht</translation>
+<translation id="3846575436967432996">Võrguteave ei ole saadaval</translation>
+<translation id="3026237328237090306">Seadista mobiilne andmeside</translation>
 <translation id="785750925697875037">Kuva mobiilikonto</translation>
+<translation id="8121288016949447968">Tõst+Otsing</translation>
 <translation id="7864539943188674973">Keela Bluetooth</translation>
 <translation id="3126069444801937830">Taaskäivitage värskendamiseks</translation>
+<translation id="1525975890706558596">SUURTÄHELUKK on sees.
+Tühistamiseks vajutage korraga tõstuklahvi Shift ja otsinguklahvi.</translation>
 <translation id="8190698733819146287">Keelte ja sisendi kohandamine...</translation>
-<translation id="7911992579061465928">Aku on tühjenemas</translation>
 <translation id="598295083618286569">Bluetooth on ühendatud</translation>
 <translation id="5222676887888702881">Logi välja</translation>
+<translation id="2091132388437059185">Peida maksimeeritud käiviti automaatselt</translation>
+<translation id="425878420164891689">Laadimiseks kuluva aja arvutamine</translation>
+<translation id="2964193600955408481">Keela WiFi</translation>
 <translation id="811680302244032017">Lisa seade ...</translation>
+<translation id="2509468283778169019">SUURTÄHELUKK on sisse lülitatud</translation>
+<translation id="6426039856985689743">Keela mobiilne andmeside</translation>
 <translation id="3232695630852378748">Bluetoothi seaded</translation>
 <translation id="1480041086352807611">Demorežiim</translation>
 <translation id="4186384497305035875">See kuva on tahtlikult tühjaks jäetud</translation>
 <translation id="9089416786594320554">Sisestusviisid</translation>
-<translation id="7706302027196209560">Luba WiFi</translation>
 <translation id="4430019312045809116">Helitugevus</translation>
+<translation id="1383876407941801731">Otsing</translation>
 <translation id="3557139239102318020">Minimeerimiseks tõmmake allapoole, paanide loomiseks vasakule või paremale</translation>
 <translation id="5980301590375426705">Välju külastajaseansist</translation>
 <translation id="8308637677604853869">Eelmine menüü</translation>
+<translation id="8528322925433439945">Mobiil ...</translation>
 <translation id="3595065677684516080">Seaded ja abi</translation>
 <translation id="4479639480957787382">Ethernet</translation>
+<translation id="7573721444069009535">WiFi ...</translation>
+<translation id="6223565363550976998">Aku: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">WiFi</translation>
 <translation id="3784455785234192852">Lukusta</translation>
-<translation id="5836819469861742634">Muuda puhverserveri seadeid ...</translation>
+<translation id="2805756323405976993">Rakendused</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
-<translation id="8735871257195921372">Muu WiFi-võrk ...</translation>
-<translation id="2152495481414285304">Rakendused</translation>
-<translation id="1690310444231390462">Keela WiFi</translation>
-<translation id="77565731175229781">Võrguseaded ...</translation>
+<translation id="7052914147756339792">Määra taustapilt ...</translation>
+<translation id="1602076796624386989">Luba mobiilne andmeside</translation>
+<translation id="8573351908869164327"><ph name="HOUR"/> h <ph name="MINUTE"/> min jäänud</translation>
 <translation id="7029814467594812963">Välju seansist</translation>
-<translation id="7908019422099334890">Vali taustapilt ...</translation>
+<translation id="2983818520079887040">Seaded...</translation>
+<translation id="8660803626959853127"><ph name="COUNT"/> faili sünkroonimine</translation>
+<translation id="639644700271529076">SUURTÄHELUKK on välja lülitatud</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7841796031898165175">Luba mobiilivõrgud</translation>
-<translation id="9072667645353666975">Aku: <ph name="PERCENTAGE"/>%
-<ph name="HOUR"/> h <ph name="MINUTE"/> m</translation>
+<translation id="5045002648206642691">Google Drive'i seaded ...</translation>
 <translation id="48607902311828362">Lennurežiim</translation>
+<translation id="5361734574074701223">Järelejäänud aja arvutamine</translation>
+<translation id="9169585155162064169">SUURTÄHELUKK on sisse lülitatud.
+Tühistamiseks vajutage otsinguklahvi.</translation>
+<translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min aku täitumiseni</translation>
 </translationbundle>

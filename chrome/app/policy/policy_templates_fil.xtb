@@ -141,6 +141,9 @@
       Kung itatakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_FRAME_NAME"/> ang ibinigay na direktoryo.
 
       Kung iniwang hindi nakatakda ang setting na ito, gagamitin ang default na direktoryo ng profile.</translation>
+<translation id="8818173863808665831">I-ulat ang heyograpikong lokasyon ng device.
+
+      Kung hindi naitakda ang patakaran, o naitakda sa false, hindi ma-uulat ang lokasyon.</translation>
 <translation id="4899708173828500852">Paganahin ang Ligtas na Pagba-browse</translation>
 <translation id="7719251660743813569">Kinokontrol kung iniuulat pabalik sa Google ang mga sukatan ng paggamit. Kung nakatakda sa true, mag-uulat ng mga sukatan ng paggamit ang <ph name="PRODUCT_OS_NAME"/>. Kung hindi naka-configure o nakatakda sa false, hindi papaganahin ang pag-uulat ng mga sukatan.</translation>
 <translation id="3570008976476035109">I-block ang mga plugin sa mga site na ito</translation>
@@ -262,9 +265,9 @@
 
       Kung hindi ito nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
 <translation id="6786747875388722282">Mga Extension</translation>
+<translation id="8947415621777543415">I-ulat ang lokasyon ng device</translation>
 <translation id="1655229863189977773">Itakda ang laki ng cache ng disk sa bytes</translation>
 <translation id="6899705656741990703">I-auto detect ang mga setting ng proxy</translation>
-<translation id="4101772068965291327">Buksan ang home page</translation>
 <translation id="7003334574344702284">Pinupwersa ng patakarang ito na ma-import mula sa nakaraang default na browser ang mga naka-save na password kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng import.
 
       Kung hindi pinagana, hindi ini-import ang mga naka-save na password.
@@ -346,6 +349,20 @@
       Kung hindi nakatakda ang patakaran, makakapili ang user kung nais niyang mahingan ng password upang i-unlock ang device o hindi.</translation>
 <translation id="6022948604095165524">Pagkilos sa startup</translation>
 <translation id="9042911395677044526">Nagbibigay-daan na malapat sa bawat user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME"/> na device. Ang configuration ng network ay isang naka-format sa JSON  na string tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Nililista ang mga tagatukoy ng application na ipinapakita ng <ph name="PRODUCT_OS_NAME"/> bilang mga na-pin na app sa bar ng launcher
+
+      Kung na-configure ang patakarang ito, permanente at hindi mababago ng user ang hanay ng mga application.
+
+      Kung hindi naitakda ang patakarang ito, maaaring baguhin ng user ang listahan ng mga na-pin na app sa launcher.</translation>
+<translation id="6177482277304066047">Nagtatakda ng target na bersyon para sa mga Auto Update.
+
+      Tinutukoy ang prefix ng target na bersyon na dapat i-update ng <ph name="PRODUCT_OS_NAME"/>. Kung ang device ay napapatakbo ng isang bersyong mas nauna kaysa sa tinukoy na prefix, mag-a-update ito sa pinakabagong bersyon gamit ang binigay na prefix. Kung ang device ay nasa mas bago nang bersyon, walang magiging epekto (hal. walang isasagawang pag-downgrade) at mananatili ang device sa pinakabagong bersyon. Gumagana ang format ng prefix ayon sa bahagi tulad ng ipinapakita sa mga susunod na halimbawa:
+
+      &quot;&quot; (o hindi na-configure): i-update sa pinakabagong available na bersyon.
+      &quot;1412.&quot;: i-update sa anumang minor na bersyon ng 1412 (e.g. 1412.24.34 or 1412.60.2)
+      &quot;1412.2.&quot;: i-update sa anumang minor na bersyon ng 1412.2 (e.g. 1412.2.34 or 1412.2.2)
+      &quot;1412.24.34&quot;: sa tukoy na bersyong ito lang i-update
+      </translation>
 <translation id="7625444193696794922">Tinutukoy ang channel ng paglabas kung saan dapat naka-lock ang device.</translation>
 <translation id="2240879329269430151">Binibigyang-daan kang magtakda kung pinapayagan o hindi ang mga website na magpakita ng mga pop-up. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagpapakita ng mga popup.
 
@@ -381,6 +398,9 @@
 
       Kung iniwang hindi nakatakda ang patakarang ito, inisyal na hindi papaganahin ang mode ng background at makokontrol ito ng user sa mga setting ng browser.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o mas bago</translation>
+<translation id="5148753489738115745">Binibigyang-daan kang tukuyin ang mga karagdagang parameter na ginagamit kapag nilunsad ng <ph name="PRODUCT_FRAME_NAME"/> ang <ph name="PRODUCT_NAME"/>.
+
+          Kung hindi naitakda ang patakarang ito, ang default na command line ang gagamitin.</translation>
 <translation id="2646290749315461919">Binibigyang-daan kang itakda kung pinapayagan o hindi ang mga website na subaybayan ang pisikal na lokasyon ng mga user. Maaaring payagan bilang default, tanggihan bilang ang pagsubaybay sa pisikal na lokasyon ng mga user, o maaaring tanungin ang user sa bawat pagkakataong humiling ng pisikal na lokasyon ang isang website.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AskGeolocation' at magagawa itong baguhin ng user.</translation>
@@ -503,6 +523,19 @@
       Kung itinakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME"/> ang ibinigay ng direktoryo nang tumukoy man ang user ng isa o pinagana ang flag na ipo-prompt para sa lokasyon ng download sa bawat pagkakataon.
 
       Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang default na direktoryo ng download at magagawa ng user na baguhin ito.</translation>
+<translation id="7750991880413385988">Buksan ang Pahina ng Bagong Tab</translation>
+<translation id="741903087521737762">Binibigyang-daan kang tukuyin ang pagkilos sa startup.
+
+          Kung pinili mo ang 'Buksan ang Pahina ng Bagong Tab' magiging laging nakabukas ang Pahina ng Bagong Tab sa tuwing magsisimula ka <ph name="PRODUCT_NAME"/>.
+
+          Kung pinili mo ang 'Ibalik ang huling session,' ang mga URL na nakabukas noong nakasara ang <ph name="PRODUCT_NAME"/> ay muling bubuksan at ibabalik ang session ng pag-browse kung saan ito naiwan.
+          Hindi papaganahin ng pagpili sa opsyong ito ang ilang mga setting na nakaasa sa mga session o mga setting na gumaganap ng mga pagkilos sa paglabas (gaya ng Pag-clear ng data mula sa pagba-browse sa paglabas o session-only na cookies).
+
+          Kung pinili mo ang 'Buksan ang isang listahan ng mga URL', ang listahan ng 'mga URL na magbubukas sa startup' ay mabubuksan kapag sinimulan ng user ang <ph name="PRODUCT_NAME"/>.
+
+          Kung pinagana mo ang setting na ito, hindi ito mababago o mapapalitan ng mga user sa <ph name="PRODUCT_NAME"/>.
+
+          Ang hindi pagpapagana sa setting na ito ay katumbas sa pagpapanatili ditong hindi na-configure. Maaari pa rin itong mabago ng user sa <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Kino-configure ang mga proxy setting para sa <ph name="PRODUCT_NAME"/>. Hindi pa handang gamitin ang patakarang ito, mangyaring huwag itong gamitin.</translation>
 <translation id="8344454543174932833">Mag-import ng mga bookmark mula sa default na browser sa unang pagtakbo</translation>
 <translation id="1019101089073227242">Itakda ang direktoryo ng data ng user</translation>
@@ -514,6 +547,7 @@
 
       Kung pinili ang 'Ipinilit', maaari LAMANG buksan ang mga pahina sa mode na Incognito.</translation>
 <translation id="5085647276663819155">Huwag paganahin ang Preview ng Pag-print</translation>
+<translation id="8672321184841719703">Target Auto Update Na Bersyon</translation>
 <translation id="2030905906517501646">Default na keyword ng provider ng paghahanap</translation>
 <translation id="3072045631333522102">Screen saver na gagamitin sa screen sa pag-sign-in sa mode ng retail</translation>
 <translation id="7393895128271703858">Hindi na ginagamit ang patakarang ito, sa halip ay mangyaring piliin ang DefaultJavaScriptSetting.
@@ -731,6 +765,7 @@
 <translation id="2299220924812062390">Tukuyin ang isang listahan ng mga pinapaganang plugin</translation>
 <translation id="924557436754151212">Mag-import ng mga naka-save na password mula sa default na browser sa unang pagtakbo</translation>
 <translation id="1897365952389968758">Pinapayagang magpatakbo ng JavaScript ang lahat ng mga site</translation>
+<translation id="7323896582714668701">Mga karagdagang command line na parameter para sa <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Huwag paganahin pag-synchronize ng data sa Google</translation>
 <translation id="36674322972891584">Pinapagana ang hula ng network sa <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user na baguhin ang setting na ito.
 
@@ -756,6 +791,7 @@
 
           Para sa mga halimbawang pattern tingnan ang http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Pumili kung paano tukuyin ang mga setting ng proxy server</translation>
+<translation id="1803646570632580723">Listahan ng mga na-pin na app na ipapakita sa launcher</translation>
 <translation id="7774768074957326919">Gumamit ng mga setting ng proxy ng system</translation>
 <translation id="3891357445869647828">Paganahin ang JavaScript</translation>
 <translation id="868187325500643455">Payagan ang lahat ng site upang awtomatikong magpatakbo ng mga plugin</translation>
@@ -935,16 +971,4 @@
       Kung hindi pinagana o hindi na-configure ang setting na ito, makakapag-print ang mga user sa <ph name="CLOUD_PRINT_NAME"/> mula sa dialog ng pag-print ng <ph name="PRODUCT_NAME"/>.
 
       Kung hindi pinagana ang setting na ito, hindi makakapag-print ang mga user sa <ph name="CLOUD_PRINT_NAME"/> mula sa <ph name="PRODUCT_NAME"/> na dialog ng pag-print</translation>
-<translation id="2339225390014743328">Binibigyang-daan kang tukuyin ang paggalaw sa startup.
-
-          Kung piliin mo ang 'Buksan ang home page,' palaging magbubukas ang home page kapag sinimulan mo ang <ph name="PRODUCT_NAME"/>.
-
-          Kung piliin mo ang 'Ipanumbalik ang huling session,' ang mga URL na bukas noong huling isinara ang <ph name="PRODUCT_NAME"/> ay muling bubuksan at ipapanumbalik ang session ng pagba-browse tulad ng kung paano ito iniwan.
-          Kapag pinili ang opsyong ito, hindi papaganahin ang ilang setting na nakasalalay sa mga session o nagsasagawa ng mga pagkilos sa panahon ng paglabas (gaya ng I-clear ang data mula sa pagba-browse sa panahon ng paglabas o session-lamang na cookies).
-
-          Kung piliin mo ang 'Magbukas ng listahan ng mga URL, bubuksan ang listahan ng 'Mga URL na bubuksan sa startup' kapag sinimulan ng isang user ang <ph name="PRODUCT_NAME"/>.
-
-          Kung papaganahin mo ang setting na ito, hindi ito mababago o ma-o-override ng mga user sa <ph name="PRODUCT_NAME"/>.
-
-          Ang hindi pagpapagana sa setting na ito ay katumbas ng hindi pag-configure dito. Mababago pa rin ito ng user sa <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

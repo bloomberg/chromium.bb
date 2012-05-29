@@ -140,6 +140,9 @@
       Jika anda menetapkan dasar ini, <ph name="PRODUCT_FRAME_NAME"/> akan menggunakan direktori yang diberikan.
 
       Jika tetapan ini dibiarkan tanpa ditetapkan, direktori profil lalai akan digunakan.</translation>
+<translation id="8818173863808665831">Laporkan lokasi geografi peranti.
+
+      Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, lokasi tersebut tidak akan dilaporkan.</translation>
 <translation id="4899708173828500852">Dayakan Penyemakan Imbas Selamat</translation>
 <translation id="7719251660743813569">Mengawal sama ada metrik penggunaan dilaporkan kembali kepada Google. Jika ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME"/> akan melaporkan metrik penggunaan. Jika tidak dikonfigurasi atau ditetapkan kepada palsu, laporan metrik akan dilumpuhkan.</translation>
 <translation id="3570008976476035109">Sekat pemalam pada tapak ini</translation>
@@ -260,9 +263,9 @@
 
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada hendak mengimport atau import boleh berlaku secara automatik.</translation>
 <translation id="6786747875388722282">Sambungan</translation>
+<translation id="8947415621777543415">Laporkan lokasi peranti</translation>
 <translation id="1655229863189977773">Tetapkan saiz cache cakera dalam bait</translation>
 <translation id="6899705656741990703">Tetapan proksi auto kesan</translation>
-<translation id="4101772068965291327">Buka halaman utama</translation>
 <translation id="7003334574344702284">Dasar ini memaksa kata laluan yang disimpan diimport dari pelayar lalai sebelumnya jika didayakan. Jika didayakan, dasar ini juga memberi kesan pada dialog import.
 
       Jika dilumpuhkan, kata laluan yang disimpan tidak akan diimport.
@@ -348,6 +351,20 @@
       Jika dasar dibiarkan tanpa ditetapkan, pengguna boleh memilih sama ada beliau ingin diminta memberikan kata laluan untuk membuka peranti atau tidak.</translation>
 <translation id="6022948604095165524">Tindakan semasa permulaan</translation>
 <translation id="9042911395677044526">Membenarkan penolakan konfigurasi rangkaian digunakan untuk setiap pengguna pada peranti <ph name="PRODUCT_OS_NAME"/>. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Menyenaraikan pengecam aplikasi <ph name="PRODUCT_OS_NAME"/> yang dipaparkan sebagai apl berpin dalam bar pelancar.
+
+      Jika dasar ini dikonfigurasi, set aplikasi akan ditetapkan dan tidak boleh diubah oleh pengguna.
+
+      Jika dasar ini tidak ditetapkan, pengguna boleh menukar senarai apl berpin dalam pelancar.</translation>
+<translation id="6177482277304066047">Menetapkan versi sasaran untuk Kemas Kini Auto.
+
+      Menetapkan awalan yang <ph name="PRODUCT_OS_NAME"/> versi sasaran harus gunakan untuk pengemaskinian. Jika peranti menjalankan versi sebelum awalan yang dinyatakan, peranti akan mengemas kini kepada versi terkini dengan awalan yang dinyatakan. Jika peranti telah pun menggunakan versi yang lebih baharu, tiada apa-apa akan berlaku (iaitu penurunan taraf tidak akan dilakukan) dan peranti akan kekal menggunakan versi semasa. Format awalan berfungsi dari segi komponen seperti yang ditunjukkan dalam contoh berikut:
+
+      &quot;&quot; (atau tidak dikonfigurasi): kemas kini kepada versi terkini yang tersedia.
+      &quot;1412.&quot;: kemas kini kepada mana-mana versi 1412 yang lebih kecil (cth. 1412.24.34 atau 1412.60.2)
+      &quot;1412.2.&quot;: kemas kini kepada mana-mana versi 1412.2 yang lebih kecil (cth. 1412.2.34 atau 1412.2.2)
+      &quot;1412.24.34&quot;: kemas kini kepada versi khusus ini sahaja
+      </translation>
 <translation id="7625444193696794922">Menetapkan saluran pelepasan yang harus mengunci peranti ini.</translation>
 <translation id="2240879329269430151">Membolehkan anda menetapkan sama ada tapak web dibenarkan untuk memaparkan pop timbul. Memaparkan pop  timbul boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
 
@@ -383,6 +400,9 @@
 
       Jika dasar ini dibiarkan tanpa ditetapkan, mod latar belakang dilumpuhkan pada awalnya dan boleh dikawal oleh pengguna dalam tetapan penyemak imbas.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 atau lebih baharu</translation>
+<translation id="5148753489738115745">Membolehkan anda menentukan parameter tambahan yang digunakan apabila  <ph name="PRODUCT_FRAME_NAME"/> melancarkan <ph name="PRODUCT_NAME"/>.
+
+          Jika dasar ini tidak ditetapkan, baris perintah lalai akan digunakan.</translation>
 <translation id="2646290749315461919">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk mengesan lokasi fizikal pengguna. Penjejakan lokasi fizikal pengguna boleh dibenarkan secara lalai, dinafikan secara lalai atau pengguna boleh ditanya setiap kali tapak web meminta lokasi fizikal. Jika dasar ini tidak ditetapkan, 'AskGeolocation' akan digunakan dan pengguna akan dapat mengubah.</translation>
 <translation id="5770738360657678870">Saluran Dev (mungkin tidak stabil)</translation>
 <translation id="2959898425599642200">Peraturan memintas proksi</translation>
@@ -518,6 +538,19 @@
       Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME"/> akan menggunakan direktori yang disediakan tanpa mengira sama ada pengguna telah menentukan satu direktori atau telah mendayakan bendera supaya digesa untuk setiap kali untuk lokasi muat turun.
 
       Jika dasar ini dibiarkan tanpa ditetapkan, direktori muat turun lalai akan digunakan dan pengguna akan boleh mengubah tetapannya.</translation>
+<translation id="7750991880413385988">Buka Halaman Tab Baharu</translation>
+<translation id="741903087521737762">Membenarkan anda menetapkan kelakuan semasa bermula.
+
+          Jika anda memilih 'Buka Halaman Tab Baharu', Halaman Tab Baharu akan sentiasa dibuka apabila anda bermula <ph name="PRODUCT_NAME"/>.
+
+          Jika anda memilih 'Pulihkan sesi terakhir', URL yang terbuka pada kali terakhir <ph name="PRODUCT_NAME"/> ditutup, akan dibuka semula dan sesi penyemakan imbas akan dipulihkan seperti mana ditinggalkan.
+          Jika anda membuat pilihan ini, beberapa tetapan yang bergantung pada sesi atau yang melaksanakan tindakan semasa keluar (seperti Kosongkan data penyemakan imbas semasa keluar atau kuki sesi sahaja) akan dilumpuhkan.
+
+          Jika anda memilih 'Buka senarai URL', senarai 'URL yang dibuka semasa bermula' akan dibuka apabila pengguna memulakan <ph name="PRODUCT_NAME"/>.
+
+          Jika anda mendayakan tetapan ini, pengguna tidak boleh mengubah atau mengatasinya dalam <ph name="PRODUCT_NAME"/>.
+
+          Melumpuhkan tetapan ini sama seperti membiarkannya tidak dikonfigurasi. Pengguna masih boleh mengubahnya dalam <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Mengkonfigurasi tetapan proksi untuk <ph name="PRODUCT_NAME"/>. Dasar ini belum sedia untuk digunakan lagi, jangan gunakannya.</translation>
 <translation id="8344454543174932833">Import penanda halaman daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
 <translation id="1019101089073227242">Tetapkan direktori data pengguna</translation>
@@ -529,6 +562,7 @@
 
       Jika 'Dipaksa' dipilih, halaman boleh dibuka HANYA dalam mod Inkognito.</translation>
 <translation id="5085647276663819155">Lumpuhkan Pratonton Cetakan</translation>
+<translation id="8672321184841719703">Versi Kemas Kini Auto Sasaran</translation>
 <translation id="2030905906517501646">Kata kunci pembekal carian lalai</translation>
 <translation id="3072045631333522102">Penyelamat skrin untuk digunakan pada skrin log masuk dalam mod runcit</translation>
 <translation id="7393895128271703858">Dasar ini telah dikecam, sebaliknya sila gunakan DefaultJavaScriptSetting.
@@ -750,6 +784,7 @@
 <translation id="2299220924812062390">Tentukan senarai pemalam yang didayakan</translation>
 <translation id="924557436754151212">Import kata laluan yang disimpan daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
 <translation id="1897365952389968758">Benarkan semua tapak untuk menjalankan JavaScript</translation>
+<translation id="7323896582714668701">Parameter baris perintah tambahan untuk <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Lumpuhkan penyegerakan data dengan Google</translation>
 <translation id="36674322972891584">Membolehkan ramalan rangkaian dalam <ph name="PRODUCT_NAME"/> dan menghalang pengguna daripada mengubah tetapan ini.
 
@@ -775,6 +810,7 @@
 
           Untuk melihat contoh pola, lawati http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Pilih cara untuk menentukan tetapan pelayan proksi</translation>
+<translation id="1803646570632580723">Senarai apl berpin untuk dipaparkan dalam pelancar</translation>
 <translation id="7774768074957326919">Gunakan tetapan sistem proksi</translation>
 <translation id="3891357445869647828">Dayakan JavaScript</translation>
 <translation id="868187325500643455">Benarkan semua tapak untuk menjalankan pemalam secara automatik</translation>
@@ -962,16 +998,4 @@
       Jika tetapan ini didayakan atau tidak dikonfigurasi, pengguna boleh mencetak pada <ph name="CLOUD_PRINT_NAME"/> dari dialog cetakan <ph name="PRODUCT_NAME"/>.
 
       Jika tetapan ini dilumpuhkan, pengguna tidak dapat mencetak pada <ph name="CLOUD_PRINT_NAME"/> dari dialog cetakan <ph name="PRODUCT_NAME"/></translation>
-<translation id="2339225390014743328">Membolehkan anda menetapkan gelagat semasa permulaan.
-
-          Jika anda memilih 'Buka halaman utama', halaman utama ini akan sentiasa terbuka apabila anda memulakan <ph name="PRODUCT_NAME"/>.
-
-          Jika anda memilih 'Pulihkan sesi terakhir', URL yang terbuka pada kali terakhir <ph name="PRODUCT_NAME"/> ditutup, akan dibuka semula dan sesi penyemakan akan dipulihkan seperti keadaannya sebelum ditutup.
-          Tindakan memilih piilihan ini akan melumpuhkan beberapa tetapan yang bergantung pada sesi atau yang melaksanakan tindakan semasa keluar (seperti Kosongkan data penyemakan imbas apabila keluar atau kuki sesi sahaja).
-
-          Jika anda memilih 'Buka senarai URL', senarai 'URL untuk dibuka semasa bermula' akan terbuka apabila pengguna memulakan <ph name="PRODUCT_NAME"/>.
-
-          Jika anda mendayakan tetapan ini, pengguna tidak boleh menukar atau mengatasinya dalam <ph name="PRODUCT_NAME"/>.
-
-          Melumpuhkan tetapan ini sama seperti membiarkannya tanpa dikonfigurasi. Pengguna masih boleh menukarnya dalam <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

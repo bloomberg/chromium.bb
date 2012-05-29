@@ -2,49 +2,65 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="3595596368722241419">Batería completa</translation>
-<translation id="908313544993743941">Desactivar teléfono celular</translation>
+<translation id="5250713215130379958">Ocultar automáticamente la barra de aplicaciones</translation>
 <translation id="30155388420722288">Botón de desbordamiento</translation>
 <translation id="5571066253365925590">Bluetooth activado</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth desactivado</translation>
+<translation id="370649949373421643">Habilitar Wi-Fi</translation>
 <translation id="3626281679859535460">Brillo</translation>
 <translation id="7982789257301363584">Red</translation>
+<translation id="5565793151875479467">Proxy...</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Bandeja de estado</translation>
 <translation id="2946640296642327832">Activar Bluetooth</translation>
 <translation id="6596816719288285829">Dirección IP</translation>
-<translation id="289426338439836048">Otra red para celulares...</translation>
 <translation id="5233638681132016545">Nueva pestaña</translation>
+<translation id="3846575436967432996">No hay información de red disponible.</translation>
+<translation id="3026237328237090306">Configurar datos de dispositivos móviles</translation>
 <translation id="785750925697875037">Ver cuenta móvil</translation>
+<translation id="8121288016949447968">Mayús + tecla de búsqueda</translation>
 <translation id="7864539943188674973">Desactivar Bluetooth</translation>
 <translation id="3126069444801937830">Reinicia para actualizar.</translation>
+<translation id="1525975890706558596">BLOQ MAYÚS está activado. Presiona Shift + la tecla de búsqueda para cancelar.</translation>
 <translation id="8190698733819146287">Personalizar idiomas y la entrada de datos</translation>
-<translation id="7911992579061465928">Batería baja</translation>
 <translation id="598295083618286569">Bluetooth conectado</translation>
 <translation id="5222676887888702881">Salir</translation>
+<translation id="2091132388437059185">Ocultar automáticamente la barra de aplicaciones al maximizar</translation>
+<translation id="425878420164891689">Calculando el tiempo hasta completarse</translation>
+<translation id="2964193600955408481">Desactivar Wi-Fi</translation>
 <translation id="811680302244032017">Agregar dispositivo...</translation>
+<translation id="2509468283778169019">BLOQ MAYÚS está activado.</translation>
+<translation id="6426039856985689743">Inhabilitar datos de dispositivos móviles</translation>
 <translation id="3232695630852378748">Configuración de Bluetooth ...</translation>
 <translation id="1480041086352807611">Modo demo</translation>
 <translation id="4186384497305035875">Esta pantalla se dejó en blanco intencionalmente.</translation>
 <translation id="9089416786594320554">Métodos de entrada</translation>
-<translation id="7706302027196209560">Activar Wi-Fi</translation>
 <translation id="4430019312045809116">Volumen</translation>
+<translation id="1383876407941801731">Buscar</translation>
 <translation id="3557139239102318020">Desplázate hacia abajo para minimizar, y a la derecha o a la izquierda para visualizar en mosaicos.</translation>
 <translation id="5980301590375426705">Salir de la sesión de invitado</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
+<translation id="8528322925433439945">Dispositivos móviles...</translation>
 <translation id="3595065677684516080">Configuración y ayuda</translation>
 <translation id="4479639480957787382">Ethernet</translation>
+<translation id="7573721444069009535">Wi-Fi...</translation>
+<translation id="6223565363550976998">Batería: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">Bloquear</translation>
-<translation id="5836819469861742634">Cambiar la configuración de proxy...</translation>
+<translation id="2805756323405976993">Google Apps</translation>
 <translation id="2872961005593481000">Cerrar</translation>
-<translation id="8735871257195921372">Otra red Wi-Fi...</translation>
-<translation id="2152495481414285304">Aplicaciones</translation>
-<translation id="1690310444231390462">Desactivar Wi-Fi</translation>
-<translation id="77565731175229781">Configuración de red...</translation>
+<translation id="7052914147756339792">Establecer fondo de pantalla...</translation>
+<translation id="1602076796624386989">Habilitar datos de dispositivos móviles</translation>
+<translation id="8573351908869164327"><ph name="HOUR"/> h y <ph name="MINUTE"/> min restantes</translation>
 <translation id="7029814467594812963">Salir de la sesión</translation>
-<translation id="7908019422099334890">Establecer fondo de pantalla...</translation>
+<translation id="2983818520079887040">Configuración...</translation>
+<translation id="8660803626959853127">Sincronizando <ph name="COUNT"/> archivo(s)</translation>
+<translation id="639644700271529076">El bloqueo de mayúsculas está desactivado.</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7841796031898165175">Activar celular</translation>
-<translation id="9072667645353666975">Batería: <ph name="PERCENTAGE"/> % <ph name="HOUR"/> h <ph name="MINUTE"/> m</translation>
+<translation id="5045002648206642691">Configuración de Google Drive...</translation>
 <translation id="48607902311828362">Modo de avión</translation>
+<translation id="5361734574074701223">Calculando el tiempo restante</translation>
+<translation id="9169585155162064169">BLOQ MAYÚS está activado. Presiona la tecla Buscar para cancelar.</translation>
+<translation id="412065659894267608"><ph name="HOUR"/>h <ph name="MINUTE"/>min para completar la carga</translation>
 </translationbundle>

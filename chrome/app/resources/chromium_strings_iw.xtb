@@ -3,7 +3,6 @@
 <translationbundle lang="iw">
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
 <translation id="6373523479360886564">האם אתה בטוח שברצונך להסיר את התקנת Chromium?</translation>
-<translation id="8957741245723343544">השינויים ייכנסו לתוקף בפעם הבאה שתפעיל מחדש את מערכת ההפעלה של Chromium‏.</translation>
 <translation id="6510925080656968729">הסר את התקנת Chromium</translation>
 <translation id="6893813176749746474">Chromium עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="2770231113462710648">שנה את דפדפן ברירת המחדל ל:</translation>
@@ -11,7 +10,6 @@
 <translation id="3748537968684000502">אתה מציג דף Chromium מאובטח.</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>
 <translation id="1065672644894730302">לא היתה אפשרות לקרוא את ההעדפות שלך. ייתכן שחלק מהתכונות לא יהיו זמינות ושינויים בהעדפות לא יישמרו.</translation>
-<translation id="2469082501656808441">קיימת גרסה חדשה של Chromium‏</translation>
 <translation id="4222661289444749267">עדכון Chrome Frame.</translation>
 <translation id="2843244238218937196">Chromium Renderer</translation>
 <translation id="7128196614940529818">Chromium Frame כבר מותקן וזמין לכל המשתמשים במחשב זה. אם ברצונך להתקין את Chromium Frame ברמת המשתמש, עליך ראשית להסיר התקנת את הגרסה ברמת המערכת שהותקנה על ידי מנהל המערכת.</translation>
@@ -26,13 +24,12 @@
 <translation id="4285930937574705105">ההתקנה נכשלה בשל שגיאה לא צפויה. אם Chromium  פועל כעת, סגור אותו ונסה שוב.</translation>
 <translation id="2589479092236095792">הגדרות מילוי אוטומטי של Chromium</translation>
 <translation id="3555616473548901994">הסרת ההתקנה הושלמה.</translation>
-<translation id="2940837712536340734">מערכת ההפעלה של Chromium‏ מעודכנת.</translation>
 <translation id="2886012850691518054">אופציונלי: עזור לנו לשפר את Chromium באמצעות שליחת סטטיסטיקת שימוש ודוחות קריסה אל Google באופן אוטומטי.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך האישור שהשרת הציג מכיל שגיאות. Chromium אינו יכול להשתמש באישור שמכיל שגיאות ואינו יכול לאמת את הזהות של האתר שאליו ניסית להתחבר.</translation>
 <translation id="3103660991484857065">המתקין לא הצליח לבטל את דחיסת הארכיון. הורד שוב את Chromium.</translation>
-<translation id="2933983827758164650">אם תסגור את Chromium‏ כעת, הורדה זו תבוטל.</translation>
 <translation id="872034308864968620">אפשר ל-Chromium לפעול ברקע</translation>
+<translation id="5109068449432240255">כן, צא מ-Chromium</translation>
 <translation id="4320129595801648679">הדף 'כרטיסייה חדשה' של Chromium כבר עוצב מחדש. עבור בין הקטעים באמצעות לחיצה על תוויות אלו. Chromium יזכור את ההעדפה שלך בפעם הבאה.</translation>
 <translation id="3032787606318309379">הוספה ל-Chromium</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>אזהרה:<ph name="END_BOLD"/> Chromium‏ לא יכול למנוע מתוספים לתעד את היסטוריית הגלישה שלך. כדי להשבית תוסף זה במצב גלישה בסתר, בטל את הבחירה באפשרות זו.</translation>
@@ -45,10 +42,11 @@
 <translation id="4330585738697551178">מודול זה מתנגש עם Chromium.</translation>
 <translation id="3190315855212034486">וואו! Chromium קרס. להפעיל מחדש עכשיו?</translation>
 <translation id="6714487516757221107">לא נמצאה התקנה של Chromium או Chromium Frame שיש לעדכן.</translation>
+<translation id="3197823471738295152">המכשיר שלך מעודכן.</translation>
+<translation id="8551886023433311834">כמעט מעודכן! הפעל מחדש את המכשיר שלך כדי לסיים את העדכון.</translation>
 <translation id="4124681358536363708">ספריית ההתקנה של Chromium נמצאת בשימוש. אתחל את המחשב מחדש ונסה שוב.</translation>
 <translation id="8770560772173120024">Chromium מייבא כעת מועדפים/סימניות.</translation>
 <translation id="6290315939897260265">אינו משמש ב-Chromium. מציין מיקום שנועד לסנכרון מפות משאבים.</translation>
-<translation id="2977470724722393594">Chromium‏ מעודכן</translation>
 <translation id="9191268552238695869">מנהל המערכת התקין Chromium במערכת זו, והוא זמין לכל המשתמשים. Chromium ברמת המערכת יחליף כעת את ההתקנה שלך ברמת המשתמש.</translation>
 <translation id="3509308970982693815">סגור את כל חלונות Chromium ונסה שוב.</translation>
 <translation id="4077262827416206768">סגור את כל החלונות של Chromium והפעל אותו מחדש כדי שהשינוי ייכנס לתוקף.</translation>
@@ -57,7 +55,6 @@
 <translation id="118298050220780080">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שהונפק על ידי ישות שמערכת ההפעלה של המחשב אינה בוטחת בה. ייתכן שהשרת יצר את פרטי הכניסה בעצמו, ו-Chromium אינו יכול להסתמך עליהם לשם השגת פרטי זיהוי, או שייתכן שתוקף מנסה ליירט את התקשורת שלך.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">המשך הפעלת יישומים ברקע כאשר Chromium סגור</translation>
-<translation id="2918265831258045091">האם ברצונך לצאת מ-Chromium בזמן שמתבצעת הורדה?</translation>
 <translation id="6055895534982063517">גרסה חדשה של Chromium זמינה, והיא מהירה יותר מאי פעם.</translation>
 <translation id="2407806170074302369">מידע על Chromium Frame...</translation>
 <translation id="5405650547142096840">להסיר מ-‏Chromium‏</translation>
@@ -65,6 +62,7 @@
 <translation id="3258596308407688501">Chromium אינו יכול לקרוא ולכתוב בספריית הנתונים שלו: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4932687624772039103">Chromium אינו תומך ב-<ph name="OS_NAME"/> .</translation>
 <translation id="8738921060445980047">גרסה לא ידועה.</translation>
+<translation id="6970811910055250180">מעדכן את המכשיר שלך...</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
 <translation id="85843667276690461">קבלת עזרה באמצעות Chromium</translation>
 <translation id="263863604136125912">הפעל את Chromium</translation>
@@ -82,7 +80,6 @@
 <translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="5820394555380036790">מערכת ההפעלה של Chromium</translation>
 <translation id="6757767188268205357">אל תנדנד לי</translation>
-<translation id="7700951445648533795">האם אתה רוצה לצאת מ-Chromium‏ בזמן ש-<ph name="DOWNLOAD_COUNT"/> הורדות מתבצעות?</translation>
 <translation id="275588974610408078">דיווח על התרסקויות אינו זמין ב-Chromium.</translation>
 <translation id="5909170354645388250">אינו משמש ב-Chromium. מציין מיקום שנועד לסנכרון מפות משאבים. הוא מקבל ארגומנט אחד: $1.</translation>
 <translation id="3582788516608077514">מעדכן את Chromium‏...</translation>
@@ -93,7 +90,6 @@
 <translation id="2648074677641340862">במהלך ההתקנה ארעה שגיאה של מערכת ההפעלה. הורד שוב את Chromium.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> נוסף ל-‏Chromium‏.</translation>
 <translation id="8678787945719392857">האם להשתמש בחשבון Google זה כדי לסנכרן את כל הדברים שלך ב-Chromium?</translation>
-<translation id="5974438302735098483">Chromium‏ עודכן.</translation>
 <translation id="8621669128220841554">ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Chromium.</translation>
 <translation id="6717134281241384636">לא ניתן להשתמש בפרופיל שלך משום שהוא מגיע מגרסה חדשה יותר של Chromium.
 
@@ -103,8 +99,8 @@
 <translation id="6212496753309875659">במחשב זה קיימת כבר גרסה מתקדמת יותר של Chromium. אם התוכנה אינה פועלת, הסר את ההתקנה של Chromium ונסה שוב.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>
 <translation id="1298199220304005244">קבלת עזרה באמצעות מערכת ההפעלה של Chromium</translation>
-<translation id="667672506951335584">אם תסגור את Chromium‏ כעת, הורדות אלו יבוטלו.</translation>
 <translation id="1691304614444223855">Chromium Frame עודכן. הפעל מחדש את הדפדפן. גרסת Chromium‏ : <ph name="TODO_0001"/>, גרסת Chromium Frame‏: <ph name="TODO_0002"/></translation>
+<translation id="130631256467250065">השינויים ייכנסו לתוקף בפעם הבאה שתפעיל מחדש את המכשיר.</translation>
 <translation id="1105130903706696483">Chromium לא נסגר כראוי. לפתיחה מחדש של הדפים שפתחת, לחץ על שחזר.</translation>
 <translation id="1929939181775079593">Chromium אינו מגיב. להפעיל מחדש עכשיו?</translation>
 <translation id="6089587093203430357">Instant</translation>
@@ -118,18 +114,20 @@
 <translation id="8865765905101981392">דפדפן אינטרנט</translation>
 <translation id="2910007522516064972">מידע על &amp;Chromium‏</translation>
 <translation id="8453117565092476964">הארכיון של המתקין פגום או שאינו חוקי. הורד שוב את Chromium.</translation>
-<translation id="309634601461115233">צא ממערכת ההפעלה של Chromium והיכנס שוב כדי שהשינוי ייכנס לתוקף.</translation>
 <translation id="3249425904492147663">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שתוקפו פג. אין מידע זמין שיכול לציין אם האישור נפגע מאז פג תוקפו. פירוש הדבר ש-Chromium אינו יכול להבטיח שאתה מתקשר עם &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ולא עם תוקף. השעון של המחשב מוגדר כעת ל-<ph name="CURRENT_TIME"/>. האם זה נכון? אם לא, עליך לתקן את השגיאה ולרענן את דף.</translation>
 <translation id="7196020411877309443">למה אני רואה את הדף הזה?</translation>
 <translation id="7483335560992089831">לא ניתן להתקין את אותה גרסת Chromium שפועלת כרגע. סגור את Chromium ונסה שוב.</translation>
 <translation id="7641113255207688324">Chromium אינו דפדפן ברירת המחדל שלך.</translation>
+<translation id="4458285410772214805">צא מהמערכת והיכנס שוב כדי שהשינוי ייכנס לתוקף.</translation>
 <translation id="2174090135251659490">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שעדיין אינו תקף. אין מידע זמין שיכול לציין אם ניתן לבטוח באישור. Chromium אינו יכול להבטיח באופן מהימן שאתה מתקשר עם &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ולא עם תוקף. השעון של המחשב מוגדר כעת ל-<ph name="CURRENT_TIME"/>. האם זה נכון? אם לא, עליך לתקן את השגיאה ולרענן את דף.</translation>
 <translation id="2119636228670142020">מידע על &amp;מערכת ההפעלה של Chromium‏</translation>
 <translation id="1708666629004767631">גרסה חדשה ובטוחה יותר של Chromium זמינה כעת.</translation>
 <translation id="5859758987635973787">Chromium‏ מעודכן (<ph name="VERSION"/>)</translation>
 <translation id="8616882682724010661">עיין ב<ph name="BEGIN_LINK"/>יתרונות נוספים<ph name="END_LINK"/> של הכניסה ל-Chromium.</translation>
 <translation id="378917192836375108">Chromium מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
+<translation id="8724049448828509830">הורדה מתבצעת כעת. האם ברצונך לצאת מ-Chromium ולבטל את ההורדה?</translation>
 <translation id="7503101070699687603">מארח הפלאגין של Chromium</translation>
+<translation id="2739631515503418643">הורדות מתבצעות כעת. האם ברצונך לצאת מ-Chromium ולבטל את ההורדות?</translation>
 <translation id="9013262824292842194">להפעלת Chromium יש להשתמש במערכת ההפעלה Windows Vista או Windows XP עם SP2 ואילך.</translation>
 <translation id="1967743265616885482">מודול בעל אותו שם מתנגש עם Chromium.</translation>
 <translation id="4224199872375172890">Chromium‏ מעודכן.</translation>
@@ -142,6 +140,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="7123348595797445166">נסה את זה (מותקן כבר)</translation>
 <translation id="6403826409255603130">Chromium הוא דפדפן אינטרנט שמפעיל דפי אינטרנט ויישומים במהירות הבזק. הוא מהיר, יציב ונוח לשימוש. הוא מאפשר גלישה בטוחה יותר באינטרנט, הודות להגנה מובנית כנגד התחזות ותוכנות זדוניות.</translation>
 <translation id="2927042866129133279">ארגומנטים לא חוקיים. לא ניתן להתקין את Chromium Frame במצב מוכן מבלי להתקין גם את Chromium.</translation>
+<translation id="546394857889685352">המכשיר עודכן לגירסה <ph name="VERSION"/></translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="442817494342774222">Chromium‏ מוגדר באופן אוטומטי לפעול בעת הפעלת המחשב.</translation>
 <translation id="8974095189086268230">מערכת ההפעלה של Chrome התאפשרה באמצעות <ph name="BEGIN_LINK_CROS_OSS"/>תוכנת קוד פתוח<ph name="END_LINK_CROS_OSS"/> נוספת.</translation>

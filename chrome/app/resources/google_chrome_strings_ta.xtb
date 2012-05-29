@@ -8,6 +8,7 @@
 <translation id="573759479754913123">Chrome OS அறிமுகம்</translation>
 <translation id="5453904507266736060">பின்னணியில் Google Chrome ஐ இயக்க அனுமதி</translation>
 <translation id="2383457833405848421">Chrome Frame பற்றி...</translation>
+<translation id="3454512769850953877">ஆம், Chrome இலிருந்து வெளியேறு</translation>
 <translation id="386202838227397562">அனைத்து Google Chrome சாளரங்களையும் மூடி, பின்னர் முயற்சி செய்க.</translation>
 <translation id="2770231113462710648">இயல்புநிலை உலாவியாக இதை அமை:</translation>
 <translation id="7400722733683201933">Google Chrome பற்றி</translation>
@@ -15,7 +16,6 @@
 <translation id="7781002470561365167">Google Chrome இன் புதிய பதிப்பு இருக்கின்றது.</translation>
 <translation id="1484802885942301358">Google Chrome புதுப்பித்த நிலையில் (<ph name="VERSION"/>) உள்ளது</translation>
 <translation id="7101265395643981223">Google Chrome ஐத் தொடங்கு</translation>
-<translation id="4738120821427858478">அடுத்த முறை Google Chrome OS ஐ மீண்டும் தொடங்கினால் உங்கள் மாற்றங்கள் விளைவை ஏற்படுத்தும்.</translation>
 <translation id="4891791193823137474">பின்னணியில் Google Chrome ஐ இயக்கு</translation>
 <translation id="2879385160622431163">Google Chrome விரைவுத்தேடல்</translation>
 <translation id="2370289711218562573">விருப்பங்கள்/புக்மார்க்ஸ் ஐ Google Chrome இப்போது இறக்குமதி செய்கிறது.</translation>
@@ -27,7 +27,6 @@
 <translation id="5339639696978861456">Chrome சட்டகம் புதுப்பிக்கப்பட்டுள்ளது. தயவுசெய்து உங்கள் உலாவியை மீண்டும் தொடங்கவும். Chrome பதிப்பு: <ph name="TODO_0001"/>, Chrome சட்டகம் பதிப்பு: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">சேவை விதிமுறைகள்</translation>
 <translation id="8398145039500709259">உங்கள் எல்லா Chrome விஷயங்களையும் ஒத்திசைக்க இந்த Google கணக்கைப் பயன்படுத்த விரும்புகிறீர்களா?</translation>
-<translation id="6862759394142635932">இப்போது Google Chrome ஐ மூடினால், இந்தப் பதிவிறக்கம் ரத்தாகும்.</translation>
 <translation id="1779550429052479749">Google Chrome அல்லது Google Chrome சட்டகத்தின் முரண்பாடான நிறுவல் கணினியில் கண்டறியப்பட்டுள்ளது. அதை நிறுவல் நீக்கிவிட்டு மீண்டும் முயற்சி செய்க.</translation>
 <translation id="3555616473548901994">நிறுவல் நீக்கம் முடிந்தது.</translation>
 <translation id="8556340503434111824">Google Chrome இன் புதிய பதிப்பு கிடைக்கிறது, அது முன்னெப்போதையும் விட விரைவானது.</translation>
@@ -46,14 +45,15 @@
 <translation id="3487814320513494737">Chrome இன் புதிய தாவல் பக்கம் வேறு உருவம் பெற்றுள்ளது. இந்த லேபிள்களைக் கிளிக் செய்வதன் மூலம் பிரிவுகளின் இடையே மாறலாம். அடுத்த முறை நீங்கள் இதைப் பயன்படுத்தும்போது உங்கள் விருப்பத்தேர்வை Chrome நினைவூட்டும்.</translation>
 <translation id="1697213158865901863">Google Chrome சட்டம்</translation>
 <translation id="6423071462708908582">நீங்கள் &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ஐ அடைய முயற்சித்தீர்கள், ஆனால் சேவையகம் காலாவதியான சான்றிதழை வழங்கியுள்ளது. இந்த சான்றிதழ் காலாவதியானதால், இது ஏற்றுக்கொள்ளப்படுமா என்பதைக் குறிக்கும் வகையில் எந்த தகவலும் இல்லை. இது, நீங்கள் &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; உடன் தான் தொடர்புகொள்கிறீர்கள், மேலும் தீங்கிழைப்பவருடன் அல்ல என்பதை Google Chrome உறுதிப்படுத்தாது என்பதைக் குறிப்பதாகும். உங்கள் கணினியின் கடிகாரம் தற்போது <ph name="CURRENT_TIME"/> நேரத்தில் அமைக்கப்பட்டுள்ளது. இது சரியாக உள்ளதா? இல்லையெனில் பிழையைச் சரிசெய்து பக்கத்தைப் புதுப்பிக்கவும்.</translation>
+<translation id="3197823471738295152">உங்கள் சாதனம் புதுப்பித்த நிலையில் உள்ளது.</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="3889417619312448367">Google Chrome ஐ நிறுவல் நீக்குக</translation>
+<translation id="8551886023433311834">ஏறத்தாழ புதுப்பித்த நிலையில் உள்ளது! புதுப்பித்தலை நிறைவுசெய்ய சாதனத்தை மறுதொடக்கம் செய்க.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3282568296779691940">Chrome இல் உள்நுழைக</translation>
 <translation id="3089968997497233615">புதிய, இன்னும் பாதுகாப்பான Google Chrome பதிப்பு தற்போது கிடைக்கிறது.</translation>
 <translation id="5037239767309817516">இந்த மாற்றம் செயல்பட, எல்லா Google Chrome சாளரங்களையும் மூடி, அதை மீண்டும் தொடங்குக.</translation>
 <translation id="7451721381978275812">செல்லாத பண்புக்கூறுகள். Google Chrome ஐ நிறுவாமல், Google Chrome சட்டகத்தைத் தயார் பயன்முறையில் நிறுவ முடியாது.</translation>
-<translation id="5727432509906037972">பதிவிறக்கத்திலேயே Google Chrome இலிருந்து வெளியேற வேண்டுமா?</translation>
 <translation id="4585888816441913908">Google Chrome மற்றும் Google Chrome சட்டகத்தின் மிகச் சமீபத்திய பதிப்பு இந்தக் கணினியில் ஏற்கனவே உள்ளது. மென்பொருள் பணிபுரியவில்லை என்றால், Google Chrome மற்றும் Google Chrome சட்டகத்தினை நிறுவல்நீக்கம் செய்து, மீண்டும் முயற்சி செய்க.</translation>
 <translation id="6368958679917195344">கூடுதலான <ph name="BEGIN_LINK_CROS_OSS"/>ஓப்பன் சோர்ஸ் மென்பொருள்களால்<ph name="END_LINK_CROS_OSS"/> Chrome OS ஐ உருவாக்குவது சாத்தியமானது.</translation>
 <translation id="7459554271817304652">உங்கள் தனிப்பயனாக்கப்பட்ட உலாவி அம்சங்களை வலையில் சேமிக்க, ஒத்திசைவை அமைத்து, எந்த கணினியில் உள்ள Google Chromium இலிருந்தும் அவற்றை அணுகலாம்.</translation>
@@ -67,24 +67,24 @@
 <translation id="7747138024166251722">தற்காலிக டைரக்டரியை நிறுவியால் உருவாக்க முடியவில்லை. வட்டு இடம் காலியாக உள்ளதா, மென்பொருளை நிறுவுவதற்கு தகுந்த அனுமதி உள்ளதா என்பதை சரிபார்க்கவும்.</translation>
 <translation id="5170938038195470297">Google Chrome இன் புத்தம் புதிய பதிப்பு என்பதால், உங்கள் சுயவிவரத்தைப் பயன்படுத்த முடியாது. சில அம்சங்கள் கிடைக்காமல் போகலாம். வேறு சுயவிவர கோப்பகத்தைக் குறிப்பிடுக அல்லது Chrome இன் புதிய பதிப்பைப் பயன்படுத்துக.</translation>
 <translation id="8738921060445980047">அறியப்படாத பதிப்பு.</translation>
+<translation id="6970811910055250180">உங்கள் சாதனம் புதுப்பிக்கப்படுகிறது...</translation>
 <translation id="2485422356828889247">நிறுவல் நீக்கு</translation>
 <translation id="2748463065602559597">பாதுகாப்பான Google Chrome பக்கத்தைப் பார்வையிடுகிறீர்கள்.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> Chrome இல் சேர்க்கப்பட்டது.</translation>
 <translation id="9073088951656332330">புதுப்பிப்பதற்கு Google Chrome அல்லது Google Chrome Frame இன் நிறுவல் எதுவும் கிடைக்கவில்லை.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>எச்சரிக்கை:<ph name="END_BOLD"/> நீட்டிப்புகள் உங்கள் உலாவல் வரலாற்றைப் பதிவுசெய்வதை Google Chrome ஆல் தடுக்க முடியவில்லை. மறைநிலைப் பயன்முறையில் இந்த நீட்டிப்பை முடக்க, இந்த விருப்பத்தைத் தேர்வுநீக்கம் செய்க.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="3904146009066562368">Google Chrome இன் புதிய பதிப்பு கிடைக்கிறது</translation>
 <translation id="911206726377975832">உங்கள் உலாவுதல் தரவையும் நீக்க வேண்டுமா?</translation>
 <translation id="2044287590254833138">Google Chrome கருவிப்பட்டி</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
 <translation id="8862326446509486874">கணினி-சார்ந்த நிறுவலுக்கான முறையான உரிமைகள் உங்களிடம் இல்லை. அதனால் நிர்வாகியாக மீண்டும் நிறுவலை இயக்க முயற்சி செய்க.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
 <translation id="2874156562296220396"><ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>ஓபன் சோர்ஸ் திட்டப்பணி மற்றும் <ph name="BEGIN_LINK_OSS"/>ஓபன் சோர்ஸ் மென்பொருள்<ph name="END_LINK_OSS"/> இவற்றால் Google Chrome ஐ உருவாக்குவது சாத்தியமானது.</translation>
-<translation id="7855730255114109580">Google Chrome புதுப்பித்த நிலையில் உள்ளது</translation>
 <translation id="3847841918622877581">உங்கள் உலாவுதல் அனுபவத்தை மேம்படுத்த, Google Chrome ஆனது வலைச் சேவைகளைப் பயன்படுத்தக்கூடும்.</translation>
 <translation id="7436949144778751379">Google Chrome க்கு Windows XP அல்லது அதற்கு பிந்தைய இயக்க முறைமை தேவை. சில அம்சங்கள் இயங்காமல் போகக்கூடும்.</translation>
 <translation id="6757767188268205357">என்னை பிழையென அறிவிக்காதே</translation>
 <translation id="2290095356545025170">Google Chrome நிறுவல் நீக்கம் செய்வதில் உறுதியாக உள்ளீர்களா?</translation>
+<translation id="7062966102157262887">பதிவிறக்கம் தற்போது செயலில் உள்ளது. Google Chrome இலிருந்து வெளியேறி, பதிவிறக்கத்தை ரத்து செய்ய விரும்புகிறீர்களா?</translation>
 <translation id="4273752058983339720">உங்கள் கணினியைத் துவக்கும் போது Google Chrome  தானாகவே தொடங்கும்படி உள்ளமைக்கப்பட்டிருக்கிறது.</translation>
 <translation id="1104959162601287462">&amp;Chrome OS அறிமுகம்</translation>
 <translation id="5941830788786076944">Google Chrome ஐ இயல்புநிலை உலாவியாக அமை</translation>
@@ -102,16 +102,14 @@
 <translation id="7161904924553537242">Google Chrome க்கு வருக</translation>
 <translation id="8669527147644353129">Google Chrome உதவி</translation>
 <translation id="870251953148363156">&amp;Google Chrome ஐப் புதுப்பி</translation>
-<translation id="147599965395609989">Google Chrome புதுப்பிக்கப்பட்டது</translation>
+<translation id="130631256467250065">அடுத்த முறை உங்கள் சாதனத்தை மறுதொடக்கம் செய்யும்போது, மாற்றங்கள் செயல்பாட்டிற்கு வரும்.</translation>
 <translation id="1399397803214730675">Google Chrome இன் மிகச் சமீபத்திய பதிப்பு இந்தக் கணினியில் ஏற்கனவே உள்ளது. மென்பொருள் பணிபுரியவில்லை என்றால், Google Chrome சட்டகத்தினை நிறுவல்நீக்கம் செய்துவிட்டு, மீண்டும் முயற்சி செய்க.</translation>
-<translation id="2827900704927383772"><ph name="DOWNLOAD_COUNT"/> பதிவிறக்கங்கள் நடந்து கொண்டிருக்கும்போதே Google Chrome இலிருந்து வெளியேற வேண்டுமா?</translation>
 <translation id="3444832043240812445">நீங்கள் <ph name="BEGIN_LINK"/>செயலிழப்பு புகாரளித்தலை இயக்கியிருந்தால்<ph name="END_LINK"/> மட்டுமே, இந்தப் பக்கம் உங்களுடைய சமீபத்திய செயலிழப்புகளைப் பற்றிய தகவல்களைக் காண்பிக்கும்.</translation>
 <translation id="8614913330719544658">Google Chrome பதிலளிக்கவில்லை. இப்போது மீண்டும் தொடங்கவா?</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
 <translation id="5699533844376998780">&quot;<ph name="EXTENSION_NAME"/>&quot; என்ற நீட்டிப்பு சேர்க்கப்பட்டது.</translation>
 <translation id="6126631249883707068">Google Chrome உங்கள் கடவுச்சொல்லைச் சேமிக்க  வேண்டுமா?</translation>
 <translation id="5046764976540625289">Chrome இலிருந்து வெளியேறு</translation>
-<translation id="2925521875688282191"> Chrome OS இலிருந்து தயவுசெய்து வெளியேறுக மற்றும் இந்த மாற்றம் செயல்பாட்டிற்கு வர மீண்டும் உள்நுழைக.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="2680623880102270805">Google Chrome, பயன்பாட்டுக் குறுக்குவழியை உருவாக்காது, ஏனென்றால் இது நடப்பு டெஸ்க்டாப் சூழலை தீர்மானிக்காது.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
@@ -119,14 +117,14 @@
 <translation id="2189123953385179981"><ph name="SCHEME"/> இணைப்புகளைக் கையாள ஒரு வெளி பயன்பாட்டை தொடங்குவதை Google ChromeOS  ஆதரிக்காது. கோரப்பட்ட இணைப்பு <ph name="PROTOLINK"/>.</translation>
 <translation id="711654979569750606">பதிப்புரிமை 2006-2012 Google Inc. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.</translation>
 <translation id="8205111949707227942">விருப்பத்தேர்வு: பயன்பாட்டு புள்ளிவிவரங்களையும், செயலிழப்பு புகார்களையும் தானாகவே Google க்கு அனுப்புவதன் மூலம் Chrome OS ஐ இன்னும் உருவாக்க உதவுக.</translation>
-<translation id="8345657477105118085">Chrome OS புதுப்பித்த நிலையில் உள்ளது.</translation>
+<translation id="7253415505590551024">பதிவிறக்கங்கள் தற்போது செயலில் உள்ளது. Google Chrome இலிருந்து வெளியேறி, பதிவிறக்கங்களை ரத்து செய்ய விரும்புகிறீர்களா?</translation>
 <translation id="7196020411877309443">நான் ஏன் இதைக் காண்கிறேன்?</translation>
 <translation id="2769762047821873045">Google Chrome உங்கள் இயல்பு உலாவி அல்ல.</translation>
 <translation id="7825851276765848807">குறிப்பிடப்படாத பிழையின் காரணமாக, நிறுவல் தோல்வியடைந்தது. தயவுசெய்து Google Chrome ஐ மீண்டும் பதிவிறக்குக.</translation>
 <translation id="3335672657969596251">Google Chrome <ph name="OS_NAME"/> ஐ ஆதரிப்பதில்லை.</translation>
+<translation id="4458285410772214805">இந்த மாற்றம் செயல்பாட்டிற்கு வர, வெளியேறி, மீண்டும் உள்நுழைக.</translation>
 <translation id="2666187591945638709">Google Chrome, <ph name="VERSION"/> க்கு புதுப்பிக்கப்பட்டது</translation>
 <translation id="5334545119300433702">இந்த தொகுதிக்கூறு Google Chrome இல் சிக்கலைச் சந்திப்பதாக அறியப்பட்டுள்ளது.</translation>
-<translation id="4892299120052124303">இப்போது Google Chrome ஐ மூடினால், இந்த பதிவிறக்கங்கள் ரத்தாகும்.</translation>
 <translation id="6634887557811630702">Google Chrome புதுப்பித்த நிலையில் உள்ளது.</translation>
 <translation id="2084710999043359739">Chrome இல் சேர்</translation>
 <translation id="4084877369264707540">Google Chrome Frame ஆனது ஏற்கனவே நிறுவப்பட்டு, இந்தக் கணினியைப் பயன்படுத்தும் அனைவருக்கும் கிடைக்கும்படி இருக்கும். பயனர் நிலையில் Google Chrome Frame ஐ நிறுவ வேண்டுமென்றால், நிர்வாகியால் நிறுவப்பட்ட கணினி-நிலைப் பதிப்பை முதலில் நீங்கள் நிறுவல்நீக்கம் செய்யவேண்டும்.</translation>
@@ -136,7 +134,7 @@
 <translation id="2246246234298806438">உள்ளமைக்கப்பட்ட PDF வியூவர் இல்லையென்றால், Google Chrome அச்சிடல் மாதிரிக்காட்சியைக் காண்பிக்காது.</translation>
 <translation id="6626317981028933585">துரதிருஷ்டவசமாக, உங்கள் Mozilla Firefox அமைப்புகள், உலாவி இயக்கத்தில் உள்ளபோது கிடைக்காது. அந்த அமைப்புகளை Google Chrome க்கு இறக்குமதி செய்ய, உங்கள் பணியைச் சேமித்து அனைத்து Firefox சாளரங்களையும் மூடுக. பின்னர், Continue என்பதைக் கிளிக் செய்க.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="1698376642261615901">Google Chrome என்ற வலை உலாவியானது, வலைப்பக்கங்களையும் பயன்பாடுகளையும் மின்னல் வேகத்தில் இயக்கும் திறன் கொண்டது. இது வேகமானது, நிலையானது மற்றும் பயன்படுத்துவதற்கு எளிதானது. Google Chrome இல் அமையப்பெற்றுள்ள தீம்பொருள் மற்றும் ஃபிஷிங் பாதுகாப்பைக் கொண்டு பாதுகாப்பாக வலையில் உலாவ முடியும்.</translation>
+<translation id="1698376642261615901">Google Chrome என்ற வலை உலாவியானது, வலைப்பக்கங்களையும் பயன்பாடுகளையும் மின்னல் வேகத்தில் இயக்கும் திறன் கொண்டது. இது வேகமானது, நிலையானது மற்றும் பயன்படுத்துவதற்கு எளிதானது. Google Chrome இல் அமையப்பெற்றுள்ள தீப்பொருள் மற்றும் ஃபிஷிங் பாதுகாப்பைக் கொண்டு பாதுகாப்பாக வலையில் உலாவ முடியும்.</translation>
 <translation id="3419750618886995598">Chrome Frame புதுப்பிப்பு.</translation>
 <translation id="3336524238463733095">சீரற்ற Google Update குழுக் கொள்கை அமைப்புகளின் காரணமாக, Google Chrome அல்லது Google Chrome Frame ஐப் புதுப்பிக்க முடியாது. Google Chrome Binaries பயன்பாட்டிற்குப் புதுப்பிப்புக் கொள்கை மேலெழுதுவதை அமைக்க, குழுக் கொள்கைத் திருத்தியைப் பயன்படுத்தி மீண்டும் முயலவும்; விவரங்களுக்கு http://goo.gl/uJ9gV தளத்தைப் பார்வையிடுக.</translation>
 <translation id="6049075767726609708">நிர்வாகி, இந்த கணினியில் Google Chrome ஐ நிறுவிட்டார். அதனால் அனைத்துப் பயனர்களையும் அதனைப் பயன்படுத்தலாம். கணினி-நிலை Google Chrome ஆனது, உங்கள் பயனர்-நிலை நிறுவலை இப்போது இடமாற்றும்.</translation>
@@ -145,6 +143,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Chrome தானியங்கு நிரப்பு அமைப்புகள்</translation>
 <translation id="3836351788193713666">புதுப்பித்த நிலையில்! புதுப்பித்தலை முடிக்க Google Chrome ஐ மீண்டும் தொடங்குக.</translation>
+<translation id="546394857889685352"><ph name="VERSION"/> க்கு உங்கள் சாதனம் புதுப்பிக்கப்பட்டது</translation>
 <translation id="7106741999175697885">பணி நிர்வாகி - Google Chrome</translation>
 <translation id="1826482739472655104">நீங்கள் &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ஐ அடைய முயற்சித்தீர்கள், ஆனால் சேவையகம் இதுவரை செல்லுபடியாகத சான்றிதழை வழங்கியுள்ளது. இந்தச் சான்றிதழை நம்பகமானதா என்பதைக் குறிக்கும் வகையில் எந்த தகவலும் இல்லை. நீங்கள் நம்பத்தக்க &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; உடன் தான் தொடர்புகொள்கிறீர்கள், மேலும் தீங்கிழைப்பவருடன் அல்ல என்பதை Google Chrome உறுதிப்படுத்தாது. உங்கள் கணினியின் கடிகாரம் தற்போது <ph name="CURRENT_TIME"/> நேரத்தில் அமைக்கப்பட்டுள்ளது. இது சரியா? இல்லையெனில் பிழையைச் சரிசெய்து பக்கத்தைப் புதுப்பிக்கவும்.</translation>
 <translation id="8449380764213232436">Google Chrome இப்போது பின்வருபவற்றை <ph name="BROWSER_COMPONENT"/> இலிருந்து இறக்குமதி செய்கிறது:</translation>

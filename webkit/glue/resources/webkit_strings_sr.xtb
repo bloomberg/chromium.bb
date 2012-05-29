@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="248395913932153421">Дан</translation>
+<translation id="6015796118275082299">Година</translation>
 <translation id="9186171386827445984">Учитавање документа: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> странице(а)...</translation>
 <translation id="1235745349614807883">Обриши недавне претраге</translation>
 <translation id="1171774979989969504">Унесите адресу е-поште.</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">веза</translation>
 <translation id="4522570452068850558">Детаљи</translation>
 <translation id="8451268428117625855">Изаберите датотеку.</translation>
+<translation id="2674318244760992338">подножје</translation>
+<translation id="8987927404178983737">Месец</translation>
 <translation id="7364796246159120393">Одабери датотеку</translation>
 <translation id="2761667185364618470">Потврдите избор у овом пољу за потврду уколико желите да наставите.</translation>
 <translation id="8964020114565522021">Превуците датотеку овде</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024 (средњи степен)</translation>
 <translation id="1637811476055996098">Избор датотека</translation>
 <translation id="5476505524087279545">опозови избор</translation>
+<translation id="2148716181193084225">Данас</translation>
 <translation id="2507943997699731163">Попуните ово поље.</translation>
 <translation id="5919473608089529604">Није могуће учитати додатну компоненту.</translation>
 <translation id="6663448176199120256">Недавне претраге</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">Вредност сме да буде највише <ph name="MAXIMUM"/>.</translation>
 <translation id="6119846243427417423">активирај</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> датотеке(а)</translation>
+<translation id="6643016212128521049">Обриши</translation>
 <translation id="3934680773876859118">Учитавање PDF документа није успело</translation>
 <translation id="8597182159515967513">наслов</translation>
 <translation id="2653659639078652383">Пошаљи</translation>

@@ -3,7 +3,6 @@
 <translationbundle lang="fil">
 <translation id="6676384891291319759">I-access ang Internet</translation>
 <translation id="6373523479360886564">Sigurado ka bang nais mong i-uninstall ang Chromium?</translation>
-<translation id="8957741245723343544">Magkakabisa ang iyong mga pagbabago sa susunod na pagkakataong i-restart mo ang Chromium OS.</translation>
 <translation id="6510925080656968729">I-uninstall ang Chromium</translation>
 <translation id="6893813176749746474">Na-update na ang Chromium, ngunit hindi mo pa ito nagagamit sa loob ng hindi bababa sa 30 araw.</translation>
 <translation id="2770231113462710648">Baguhin ang default na browser sa:</translation>
@@ -13,7 +12,6 @@
 <translation id="1065672644894730302">Hindi mabasa ang iyong mga kagustuhan.
 
 Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago sa mga kagustuhan.</translation>
-<translation id="2469082501656808441">May available na isang bagong bersyon ng Chronium</translation>
 <translation id="4222661289444749267">Update sa Chromium Frame.</translation>
 <translation id="2843244238218937196">Renderer ng Chromium</translation>
 <translation id="7128196614940529818">Naka-install at available na ang Chromium Frame sa lahat ng user ng computer na ito. Kung nais mong i-install ang Chromium Frame sa antas ng user, dapat mo munang i-uninstall ang bersyon sa antas ng system na na-install ng administrator.</translation>
@@ -28,13 +26,12 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4285930937574705105">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Chromium, pakisara ito at subukang muli.</translation>
 <translation id="2589479092236095792">Mga setting ng Autofill ng Chromium</translation>
 <translation id="3555616473548901994">Kumpleto na ang pag-uninstall.</translation>
-<translation id="2940837712536340734">Napapanahon ang Chromium OS.</translation>
 <translation id="2886012850691518054">Opsyonal: Tumulong na pahusayin ang Chromium sa pamamagitan ng awtomatikong pagpapadala sa Google ng mga istatistika ng paggamit at mga ulat ng pag-crash.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">Tinangka mong marating ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit ang certificate na ipinakita ng server ay naglalaman ng mga error. Hindi makakagamit ang Chromium ng certificate na may mga error at hindi nito mapapatunayan ang pagkakakilanlan ng site kung saan ka nagtangkang kumonekta.</translation>
 <translation id="3103660991484857065">Nabigong i-uncompress ng installer ang archive. Mangyaring i-download muli ang Chromium.</translation>
-<translation id="2933983827758164650">Kung isasara mo ang Chromium ngayon, makakansela ang pag-download na ito.</translation>
 <translation id="872034308864968620">Hayaang Tumakbo ang Chromium sa Background</translation>
+<translation id="5109068449432240255">Oo, lumabas sa Chromium</translation>
 <translation id="4320129595801648679">Binago ang disenyo ng pahina ng Bagong Tab ng Chromium. Magpalipat-lipat sa mga seksyon sa pamamagitan ng pag-click sa mga label na ito. Tatandaan ng Chromium ang iyong kagustuhan para sa susunod na pagkakataon.</translation>
 <translation id="3032787606318309379">Idinaragdag sa Chromium...</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Babala:<ph name="END_BOLD"/> Hindi mapipigilan ng Google Chrome ang pagtatala ng mga extension ng iyong kasaysayan sa pagba-browse. Upang huwag paganahin ang extension na ito sa mode na incognito, alisin ang pagkakapili sa opsyong ito.</translation>
@@ -47,10 +44,11 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4330585738697551178">Natuklasang sumasalungat sa Chromium ang module na ito.</translation>
 <translation id="3190315855212034486">Whoa! Nag-crash ang Chromium. Muling ilunsad ngayon?</translation>
 <translation id="6714487516757221107">Walang natagpuang pag-install ng Chromium o Chromium Frame na i-a-update.</translation>
+<translation id="3197823471738295152">Napapanahon ang iyong device.</translation>
+<translation id="8551886023433311834">Halos napapanahon na! I-restart ang iyong device upang tapusin ang pag-update.</translation>
 <translation id="4124681358536363708">Mukhang ginagamit ang direktoryo ng pag-install ng Chromium. Mangyaring i-reboot ang iyong computer at subukan muli.</translation>
 <translation id="8770560772173120024">Ini-import na ngayon ng Chromium ang Mga Paborito/Bookmark.</translation>
 <translation id="6290315939897260265">Hindi ginagamit sa Chromium. Placeholder na nagpapanatiling naka-sync ang mga mapa ng mapagkukunan.</translation>
-<translation id="2977470724722393594">Napapanahon ang Chromium</translation>
 <translation id="9191268552238695869">Nag-install ang administrator ng Chromium sa system na ito, at available ito para sa lahat ng user. Papalitan ng Chromium sa antas ng system ang iyong pag-install sa antas ng user ngayon.</translation>
 <translation id="3509308970982693815">Pakisara ang lahat ng window sa Chromium at subukang muli.</translation>
 <translation id="4077262827416206768">Pakisara ang lahat ng window sa Chromium at muling ilunsad ang Chromium upang magkabisa ang pagbabagong ito.</translation>
@@ -59,7 +57,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="118298050220780080">Tinangka mong marating ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit nagpakita ang server ng certificate na mula sa entity na hindi pinagkakatiwalaan ng operating system ng iyong computer. Maaari itong mangahulugan na bumuo ang server ng sarili nitong mga panseguridad na kredensyal, na hindi maaasahan ng Chromium para sa impormasyon ng pagkakakilanlan, o maaaring may isang umaatake na sinusubukang humadlang sa iyong mga pakikipag-ugnayan.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Patuloy na magpatakbo ng background na apps kapag nakasara ang Chromium</translation>
-<translation id="2918265831258045091">Nais mo bang lumabas sa Chromium habang kasalukuyang may dina-download?</translation>
 <translation id="6055895534982063517">May available na bagong bersyon ng Chromium, at mas mabilis ito kaysa sa dati.</translation>
 <translation id="2407806170074302369">Tungkol sa Chromium Frame...</translation>
 <translation id="5405650547142096840">Alisin mula sa Chromium</translation>
@@ -69,6 +66,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4932687624772039103">Hindi sinusuportahan ng Chromium ang <ph name="OS_NAME"/>.</translation>
 <translation id="8738921060445980047">Hindi kilalang bersyon.</translation>
+<translation id="6970811910055250180">Ina-update ang iyong device...</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
 <translation id="85843667276690461">Kumuha ng tulong sa paggamit ng Chromium</translation>
 <translation id="263863604136125912">Simulan ang Chromium</translation>
@@ -86,7 +84,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="3069161343438701711">Worker ng Chromium</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">Huwag akong istorbohin</translation>
-<translation id="7700951445648533795">Nais mo bang lumabas sa Chromium habang may kasalukuyang <ph name="DOWNLOAD_COUNT"/> (na) pag-download?</translation>
 <translation id="275588974610408078">Hindi available ang pag-uulat ng crash sa Chromium.</translation>
 <translation id="5909170354645388250">Hindi ginagamit sa Chromium. Placeholder na nagpapanatiling naka-sync ang mga mapa ng mapagkukunan. Umaasa ito ng isang argumento: $1.</translation>
 <translation id="3582788516608077514">Ina-update ang Chromium...</translation>
@@ -97,7 +94,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2648074677641340862">May naganap na error sa operating system sa panahon ng pag-install. Mangyaring i-download muli ang Chromium.</translation>
 <translation id="5942520288919337908">Naidagdag na sa Chromium ang <ph name="EXTENSION_NAME"/>.</translation>
 <translation id="8678787945719392857">Gamitin ang Google Account na ito upang i-sync ang lahat ng iyong bagay sa Chromium?</translation>
-<translation id="5974438302735098483">Na-update na ang Chromium</translation>
 <translation id="8621669128220841554">Nabigo ang pag-install dahil sa hindi natukoy na error. Mangyaring i-download muli ang Chromium.</translation>
 <translation id="6717134281241384636">Hindi maaaring gamitin ang iyong profile dahil mula ito sa isang mas bagong bersyon ng Chromium.
 
@@ -107,8 +103,8 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="6212496753309875659">May mas bagong bersyon ng Chromium na ang computer na ito. Kung hindi gumagana ang software, mangyaring i-uninstall ang Chromium at subukang muli.</translation>
 <translation id="3014684866565908571">Utility ng Chromium</translation>
 <translation id="1298199220304005244">Kumuha ng tulong sa paggamit ng Chromium OS</translation>
-<translation id="667672506951335584">Kung isasara mo ang Chromium ngayon, makakansela ang mga pag-download na ito.</translation>
 <translation id="1691304614444223855">Na-update na ang Chromium Frame. Pakilunsad muli ang iyong browser. Bersyon ng Chromium: <ph name="TODO_0001"/>, bersyon ng Chromium Frame: <ph name="TODO_0002"/></translation>
+<translation id="130631256467250065">Magkakabisa ang iyong mga pagbabago sa susunod na i-restart ang iyong device.</translation>
 <translation id="1105130903706696483">Hindi nag-shut down nang tama ang Chromium. Upang muling buksan ang mga pahinang nabuksan mo, i-click ang Ipanumbalik.</translation>
 <translation id="1929939181775079593">Hindi gumagana ang Chromium. Muling ilunsad ngayon?</translation>
 <translation id="6089587093203430357">Instant</translation>
@@ -122,18 +118,20 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="8865765905101981392">Internet Browser</translation>
 <translation id="2910007522516064972">Tungkol sa &amp;Chromium</translation>
 <translation id="8453117565092476964">Sira o di-wasto ang archive ng installer. Mangyaring i-download muli ang Chromium.</translation>
-<translation id="309634601461115233">Mangyaring mag-sign out sa Chromium OS at mag-sign in muli upang magkabisa ang pagbabagong ito.</translation>
 <translation id="3249425904492147663">Tinangka mong marating ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit nagpakita ng na-expire nang certificate ang server. Walang available na impormasyon upang isaad kung nakompromiso ang certificate simula noong pag-expire nito. Hindi magagarantiya ng Chromium na nakikipag-ugnayan ka sa &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; at hindi sa isang umaatake. Kasalukuyang nakatakda sa <ph name="CURRENT_TIME"/> ang orasan ng iyong computer. Mukha ba itong tama? Kung hindi, dapat mong iwasto ang error at i-refresh ang pahinang ito.</translation>
 <translation id="7196020411877309443">Bakit ko nakikita ito?</translation>
 <translation id="7483335560992089831">Hindi ma-install ang parehong Bersyon ng Chromium na kasalukuyang tumatakbo. Pakisara ang Chromium at subukang muli.</translation>
 <translation id="7641113255207688324">Hindi Chromium ang iyong default na browser.</translation>
+<translation id="4458285410772214805">Mangyaring mag-sign out at mag-sign in muli upang magkabisa ang pagbabagong ito.</translation>
 <translation id="2174090135251659490">Tinangka mong marating ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit nagpakita ng hindi pa wastong certificate ang server. Walang available na impormasyon upang isaad kung mapagkakatiwalaan ang certificate. Hindi magagarantiya ng Chromium na nakikipag-ugnayan ka sa &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; at hindi sa isang umaatake. Kasalukuyang nakatakda sa <ph name="CURRENT_TIME"/> ang orasan ng iyong computer. Mukha ba itong tama? Kung hindi, dapat mong iwasto ang error at i-refresh ang pahinang ito.</translation>
 <translation id="2119636228670142020">Tungkol sa &amp;Chromium OS</translation>
 <translation id="1708666629004767631">May available na bago at mas ligtas na bersyon ng Chromium.</translation>
 <translation id="5859758987635973787">Napapanahon ang Chromium (<ph name="VERSION"/>)</translation>
 <translation id="8616882682724010661">Tingnan ang <ph name="BEGIN_LINK"/>higit pang mga pakinabang<ph name="END_LINK"/> ng pag-sign in sa Chromium.</translation>
 <translation id="378917192836375108">Pinapayagan ka ng Google Chrome na mag-click sa isang numero ng telepono sa web at tawagan ito gamit ang Skype!</translation>
+<translation id="8724049448828509830">Kasalukuyang ginagawa ang pag-download. Gusto mo bang lumabas ng Chromium at kanselahin ang pag-download?</translation>
 <translation id="7503101070699687603">Host ng Plug-In ng Chromium</translation>
+<translation id="2739631515503418643">Kasalukuyang ginagawa ang mga pag-download. Gusto mo bang lumabas ng Chromium at kanselahin ang mga pag-download?</translation>
 <translation id="9013262824292842194">Kinakailangan ng Chromium ang Windows Vista o Windows XP na may SP2 o mas mataas.</translation>
 <translation id="1967743265616885482">May module na may kaparehong pangalan ang natuklasang sumasalungat sa Chromium.</translation>
 <translation id="4224199872375172890">Napapanahon ang Chromium.</translation>
@@ -146,6 +144,7 @@ Hindi mabawi ng Chromium ang iyong mga setting.</translation>
 <translation id="7123348595797445166">Subukan ito (naka-install na)</translation>
 <translation id="6403826409255603130">Ang Chromium ay isang web browser na nagpapatakbo ng mga webpage at application sa bilis ng kidlat. Ito ay mabilis, maaasahan, at madaling gamitin. Mas maingat na mag-browse sa web gamit ang proteksyon ng Chromium laban sa malware at phishing.</translation>
 <translation id="2927042866129133279">Mga di-wastong argument. Hindi maaaring i-install ang Chromium Frame sa mode ng paghahanda nang hindi rin ini-install ang Chromium.</translation>
+<translation id="546394857889685352">Na-update ang iyong device sa <ph name="VERSION"/></translation>
 <translation id="2572494885440352020">Helper ng Chromium</translation>
 <translation id="442817494342774222">Naka-configure ang Chromium upang awtomatikong malunsad kapag binuksan mo ang iyong computer.</translation>
 <translation id="8974095189086268230">Nagiging posible ang Chromium OS sa pamamagitan ng karagdagang <ph name="BEGIN_LINK_CROS_OSS"/>open source na software<ph name="END_LINK_CROS_OSS"/>.</translation>

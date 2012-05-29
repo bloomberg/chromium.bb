@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
+<translation id="248395913932153421">દિવસ</translation>
+<translation id="6015796118275082299">વર્ષ</translation>
 <translation id="9186171386827445984">દસ્તાવેજ લોડ કરી રહ્યું છે: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> પૃષ્ઠ...</translation>
 <translation id="1235745349614807883">હાલની શોધને સાફ કરો</translation>
 <translation id="1171774979989969504">કૃપા કરી કોઈ ઇમેઇલ સરનામું દાખલ કરો.</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">લિંક</translation>
 <translation id="4522570452068850558">વિગતો</translation>
 <translation id="8451268428117625855">કૃપા કરીને કોઈ ફાઇલ પસંદ કરો.</translation>
+<translation id="2674318244760992338">ફૂટર</translation>
+<translation id="8987927404178983737">મહિનો</translation>
 <translation id="7364796246159120393">ફાઇલ પસંદ કરો</translation>
 <translation id="2761667185364618470">જો તમે આગળ વધવા માંગતા હો તો કૃપા કરીને આ બૉક્સને ચેક કરો.</translation>
 <translation id="8964020114565522021">ફાઇલને અહીં ખેંચો</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024 (મધ્યમ ગ્રેડ)</translation>
 <translation id="1637811476055996098">ફાઇલો પસંદ કરો</translation>
 <translation id="5476505524087279545">અનચેક કરો</translation>
+<translation id="2148716181193084225">આજે</translation>
 <translation id="2507943997699731163">કૃપા કરીને આ ફીલ્ડ ભરો.</translation>
 <translation id="5919473608089529604">પ્લગ-ઇન લોડ કરી શકાયુ નથી.</translation>
 <translation id="6663448176199120256">તાજેતરની શોધ</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">મૂલ્ય <ph name="MAXIMUM"/> જેટલું અથવા આનાથી ઓછું હોવું આવશ્યક છે.</translation>
 <translation id="6119846243427417423">સક્રિય કરો</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ફાઇલો</translation>
+<translation id="6643016212128521049">સાફ કરો</translation>
 <translation id="3934680773876859118">PDF દસ્તાવેજ લોડ કરવામાં નિષ્ફળ રહ્યા</translation>
 <translation id="8597182159515967513">મથાળું</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>

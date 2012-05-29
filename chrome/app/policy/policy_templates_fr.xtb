@@ -146,6 +146,9 @@ Si cette règle n'est pas configurée, Google Sync est disponible et l'utilisate
        Si vous définissez cette règle, <ph name="PRODUCT_FRAME_NAME"/> utilise le répertoire fourni.
 
        Si ce paramètre n'est pas défini, le répertoire de profil par défaut est utilisé.</translation>
+<translation id="8818173863808665831">Permet d'indiquer l'emplacement géographique de l'appareil.
+
+      Si cette règle n'est pas définie, ou si la valeur &quot;false&quot; lui est attribuée, l'emplacement n'est pas indiqué.</translation>
 <translation id="4899708173828500852">Activer la navigation sécurisée</translation>
 <translation id="7719251660743813569">Détermine si les statistiques d'utilisation doivent être envoyées à Google. Si cette règle est définie sur &quot;true&quot;, <ph name="PRODUCT_OS_NAME"/> elles le sont. Si cette règle n'est pas configurée ou si elle est définie sur &quot;false&quot;, les rapports sur les statistiques ne sont pas envoyés.</translation>
 <translation id="3570008976476035109">Bloquer les plug-ins sur ces sites</translation>
@@ -265,9 +268,9 @@ Si elle est désactivée, aucun historique de navigation n'est importé.
 
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="6786747875388722282">Extensions</translation>
+<translation id="8947415621777543415">Indiquer l'emplacement de l'appareil</translation>
 <translation id="1655229863189977773">Définir la taille du cache du disque en octets</translation>
 <translation id="6899705656741990703">Détecter automatiquement les paramètres de proxy</translation>
-<translation id="4101772068965291327">Ouvrir la page d'accueil</translation>
 <translation id="7003334574344702284">Lorsqu'elle est activée, cette règle force l'importation des mots de passe enregistrés à partir du navigateur par défaut précédent. Si elle est activée, cette politique affecte également la boîte de dialogue d'importation. 
 
 Si elle est désactivée, les mots de passe enregistrés ne sont pas importés. 
@@ -349,6 +352,20 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
        Si cette règle n'est pas définie, l'utilisateur peut décider s'il souhaite être invité à saisir un mot de passe pour déverrouiller l'appareil ou non.</translation>
 <translation id="6022948604095165524">Action au démarrage</translation>
 <translation id="9042911395677044526">Permet de transférer l'application de la configuration réseau par utilisateur vers un appareil utilisant <ph name="PRODUCT_OS_NAME"/>. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert, décrit sous <ph name="ONC_SPEC_URL"/>.</translation>
+<translation id="7128918109610518786">Permet de répertorier les identifiants des applications épinglées que <ph name="PRODUCT_OS_NAME"/> affiche dans la barre du lanceur d'applications.
+
+      Si cette règle est configurée, le groupe d'applications est figé et ne peut plus être modifié par l'utilisateur.
+
+      Si cette règle n'est pas configurée, l'utilisateur a la possibilité de modifier la liste des applications épinglées dans le lanceur d'applications.</translation>
+<translation id="6177482277304066047">Permet de définir une version cible pour les mises à jour automatiques.
+
+      Cette règle spécifie le préfixe de la version cible que <ph name="PRODUCT_OS_NAME"/> doit installer. Si la version installée sur l'appareil est antérieure au préfixe spécifié, la dernière version associée à ce préfixe est installée. Si l'appareil dispose déjà de la dernière version, aucune opération n'est effectuée (aucun passage à la version antérieure n'est réalisé), et la version actuellement installée est conservée. Le format du préfixe tient compte des composants, comme illustré dans l'exemple ci-dessous :
+
+      &quot;&quot; (ou non configuré) : installation de la dernière version à jour
+      &quot;1412.&quot; : installation d'une version 1412 mineure (1412.24.34 ou 1412.60.2, par exemple)
+      &quot;1412.2.&quot; : installation d'une version 1412.2 mineure (1412.2.34 ou 1412.2.2, par exemple)
+      &quot;1412.24.34&quot; : installation de cette version seulement
+      </translation>
 <translation id="7625444193696794922">Indique le canal de distribution sur lequel cet appareil devrait être verrouillé.</translation>
 <translation id="2240879329269430151">Permet de définir si les sites Web sont autorisés à afficher les pop-ups. L'affichage des pop-ups peut être soit autorisé pour tous les sites, soit refusé pour tous les sites. 
 
@@ -384,6 +401,9 @@ Si cette règle n'est pas configurée, la valeur par défaut de 32 est utilisée
 
        Si cette règle n'est pas définie, le mode arrière-plan est désactivé initialement et peut être contrôlé par l'utilisateur dans les paramètres de votre navigateur.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou version ultérieure</translation>
+<translation id="5148753489738115745">Permet de spécifier les paramètres supplémentaires utilisés lorsque <ph name="PRODUCT_FRAME_NAME"/> lance <ph name="PRODUCT_NAME"/>.
+
+          Si cette règle n'est pas configurée, la ligne de commande par défaut est utilisée.</translation>
 <translation id="2646290749315461919">Permet de définir si les sites Web sont autorisés à suivre la position géographique des utilisateurs. Ce suivi peut être autorisé par défaut, refusée par défaut, ou l'utilisateur peut recevoir un message chaque fois qu'un site Web demande sa position géographique. 
 
 Si cette règle n'est pas configurée, le paramètre &quot;AskGeolocation&quot; est utilisé et l'utilisateur est en mesure de le modifier.</translation>
@@ -514,6 +534,19 @@ Si cette règle n'est pas configurée, le répertoire de cache par défaut sera 
 Si vous définissez cette règle, <ph name="PRODUCT_NAME"/> utilisera le répertoire indiqué, que l'utilisateur ait ou non spécifié un répertoire ou qu'il ait ou non activé l'option d'invite systématique à indiquer un emplacement de téléchargement. 
 
 Si cette règle n'est pas configurée, le répertoire de téléchargement par défaut sera utilisé et l'utilisateur sera en mesure de le modifier.</translation>
+<translation id="7750991880413385988">Ouvrir la page Nouvel onglet</translation>
+<translation id="741903087521737762">Permet de définir le comportement du navigateur au démarrage.
+
+          Si vous sélectionnez l'option &quot;Ouvrir la page Nouvel onglet&quot;, celle-ci s'affiche à chaque fois que vous lancez <ph name="PRODUCT_NAME"/>.
+
+          Si vous sélectionnez l'option &quot;Restaurer la dernière session&quot;, les pages restées ouvertes lorsque <ph name="PRODUCT_NAME"/> a été fermé pour la dernière fois s'affichent de nouveau. La session de navigation est restaurée telle que vous l'avez laissée.
+          La sélection de cette option entraîne la désactivation de certains paramètres basés sur les sessions de navigation ou qui effectuent des actions lors de la fermeture du navigateur (telles que la suppression des données de navigation ou des cookies d'une session).
+
+          Si vous sélectionnez l'option &quot;Ouvrir les pages suivantes&quot;, les pages à charger au démarrage s'ouvrent lorsque utilisateur lance <ph name="PRODUCT_NAME"/>.
+
+          Si vous activez ce paramètre, les utilisateurs ne pourront pas le modifier ni le remplacer dans <ph name="PRODUCT_NAME"/>.
+
+          La désactivation de ce paramètre équivaut à ne pas le configurer. L'utilisateur pourra toujours le modifier dans <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Configurer les paramètres de proxy pour <ph name="PRODUCT_NAME"/>. Cette règle n'est pas encore prête, veuillez donc ne pas l'utiliser pour le moment.</translation>
 <translation id="8344454543174932833">Importer les favoris du navigateur par défaut à la première exécution</translation>
 <translation id="1019101089073227242">Définir le répertoire de données utilisateur</translation>
@@ -525,6 +558,7 @@ Si l'option &quot;Désactivé&quot; est sélectionnée, les pages ne peuvent pas
 
 Si l'option &quot;Forcé&quot; est sélectionnée, les pages peuvent être ouvertes UNIQUEMENT en mode navigation privée.</translation>
 <translation id="5085647276663819155">Désactiver l'aperçu avant impression</translation>
+<translation id="8672321184841719703">Cibler une version pour les mises à jour automatiques</translation>
 <translation id="2030905906517501646">Mot clé du moteur de recherche par défaut</translation>
 <translation id="3072045631333522102">Economiseur d'écran à utiliser sur l'écran de connexion en mode Point de vente</translation>
 <translation id="7393895128271703858">Cette règle est obsolète. Veuillez utiliser plutôt la règle &quot;DefaultJavaScriptSetting&quot;.
@@ -748,6 +782,7 @@ Si cette règle n'est pas configurée, tous les serveurs seront acceptés pour l
 <translation id="2299220924812062390">Indiquer une liste de plug-ins activés</translation>
 <translation id="924557436754151212">Importer les mots de passe enregistrés du navigateur par défaut à la première exécution</translation>
 <translation id="1897365952389968758">Autoriser tous les sites à exécuter JavaScript</translation>
+<translation id="7323896582714668701">Paramètres de ligne de commande supplémentaires pour <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Désactiver la synchronisation des données avec Google</translation>
 <translation id="36674322972891584">Active la prédiction de réseau dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ce paramètre. 
 
@@ -773,6 +808,7 @@ Si cette règle n'est pas configurée, le moteur de rendu par défaut est utilis
 
 Pour voir des exemples de formats, accédez à l'adresse http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Sélectionner le mode de spécification des paramètres de serveur proxy</translation>
+<translation id="1803646570632580723">Liste des applications épinglées à afficher dans le lanceur d'applications</translation>
 <translation id="7774768074957326919">Utiliser les paramètres proxy du système</translation>
 <translation id="3891357445869647828">Activer JavaScript</translation>
 <translation id="868187325500643455">Autoriser tous les sites à exécuter automatiquement les plug-ins</translation>
@@ -960,17 +996,4 @@ Si cette règle n'est pas configurée, la taille par défaut sera utilisée et l
 Si ce paramètre est activé ou non configuré, les utilisateurs peuvent imprimer sur <ph name="CLOUD_PRINT_NAME"/> depuis la boîte de dialogue d'impression de <ph name="PRODUCT_NAME"/>. 
 
 Si ce paramètre est désactivé, les utilisateurs ne peuvent pas imprimer sur <ph name="CLOUD_PRINT_NAME"/> depuis la boîte de dialogue d'impression de <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2339225390014743328">Vous permet de spécifier le comportement au démarrage.
-
-           Si vous sélectionnez l'option &quot;Ouvrir la page d'accueil&quot;, celle-ci s'ouvre à chaque fois que vous démarrez <ph name="PRODUCT_NAME"/>.
-
-           Si vous choisissez &quot;Restaurer la dernière session&quot;, les URL qui étaient restées ouvertes lors de la dernière fermeture de <ph name="PRODUCT_NAME"/> sont rouvertes. La session de navigation est restaurée telle qu'elle avait été laissée.
-
-           La sélection de cette option désactive certains paramètres qui dépendent de certaines sessions ou qui effectuent certaines actions à la fermeture (telles que la suppression des données de navigation ou des cookies de la session correspondante).
-
-           Si vous sélectionnez l'option &quot;Ouvrir une liste d'URL&quot;, la liste d'URL à ouvrir au démarrage s'ouvre lorsqu'un utilisateur démarre <ph name="PRODUCT_NAME"/>.
-
-           Si vous activez ce paramètre, les utilisateurs ne peuvent pas le modifier ou le remplacer dans <ph name="PRODUCT_NAME"/>.
-
-           La désactivation de ce paramètre équivaut à ne pas le configurer. L'utilisateur sera toujours en mesure de le modifier dans <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

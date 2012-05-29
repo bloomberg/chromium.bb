@@ -8,6 +8,7 @@
 <translation id="573759479754913123">Over Chrome OS</translation>
 <translation id="5453904507266736060">Google Chrome op de achtergrond laten uitvoeren</translation>
 <translation id="2383457833405848421">Over Chrome Frame...</translation>
+<translation id="3454512769850953877">Ja, Chrome afsluiten</translation>
 <translation id="386202838227397562">Sluit alle Google Chrome-vensters en probeer het opnieuw.</translation>
 <translation id="2770231113462710648">Standaardbrowser wijzigen in:</translation>
 <translation id="7400722733683201933">Over Google Chrome</translation>
@@ -17,7 +18,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="7781002470561365167">Er is een nieuwe versie van Google Chrome beschikbaar.</translation>
 <translation id="1484802885942301358">Google Chrome is bijgewerkt (<ph name="VERSION"/>)</translation>
 <translation id="7101265395643981223">Start Google Chrome</translation>
-<translation id="4738120821427858478">Uw wijzigingen worden toegepast als u Google Chrome OS opnieuw start.</translation>
 <translation id="4891791193823137474">Google Chrome op de achtergrond laten uitvoeren</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome importeert momenteel favorieten/bladwijzers.</translation>
@@ -29,7 +29,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5339639696978861456">Chrome Frame is bijgewerkt. Start uw browser opnieuw. Chrome-versie: <ph name="TODO_0001"/>, Chrome Frame-versie: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Servicevoorwaarden</translation>
 <translation id="8398145039500709259">Wilt u dit Google-account gebruiken voor het synchroniseren van al uw Chrome-gegevens?</translation>
-<translation id="6862759394142635932">Als u Google Chrome nu sluit, wordt deze download geannuleerd.</translation>
 <translation id="1779550429052479749">Er is een conflicterende installatie van Google Chrome of Google Chrome Frame op het systeem gevonden. Verwijder deze en probeer het opnieuw.</translation>
 <translation id="3555616473548901994">Verwijdering voltooid.</translation>
 <translation id="8556340503434111824">Er is een nieuwe versie van Google Chrome en deze is sneller dan ooit.</translation>
@@ -50,14 +49,15 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3487814320513494737">De pagina 'Nieuw tabblad' van Chrome heeft een nieuw ontwerp. Schakel tussen secties door op deze labels te klikken. Chrome onthoudt uw voorkeur voor de volgende keer.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="6423071462708908582">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een verlopen certificaat gepresenteerd. Er is geen informatie beschikbaar om te bepalen of er inbreuk is gemaakt op dit certificaat sinds het is verlopen. Dit betekent dat Google Chrome niet kan garanderen dat u communiceert met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; en niet met een aanvaller. De klok van uw computer staat momenteel ingesteld op <ph name="CURRENT_TIME"/>. Is dit de correcte tijd? Als dit niet zo is, moet u de fout herstellen en deze pagina vernieuwen.</translation>
+<translation id="3197823471738295152">Het apparaat is bijgewerkt.</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="3889417619312448367">Google Chrome verwijderen</translation>
+<translation id="8551886023433311834">Bijna bijgewerkt! Start uw apparaat opnieuw op om de update te voltooien.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3282568296779691940">Aanmelden bij Chrome</translation>
 <translation id="3089968997497233615">Er is een nieuwere, veiligere versie van Google Chrome beschikbaar.</translation>
 <translation id="5037239767309817516">Sluit alle Google Chrome-vensters en start Google Chrome opnieuw om deze wijziging door te voeren.</translation>
 <translation id="7451721381978275812">Ongeldige argumenten. Google Chrome Frame kan niet in de ready-modus worden geïnstalleerd zonder dat Google Chrome wordt geïnstalleerd.</translation>
-<translation id="5727432509906037972">Wilt u Google Chrome sluiten tijdens een download?</translation>
 <translation id="4585888816441913908">Deze computer beschikt al over een nieuwere versie van Google Chrome en Google Chrome Frame. Als de software niet werkt, verwijdert u Google Chrome en Google Chrome Frame en probeert u het opnieuw.</translation>
 <translation id="6368958679917195344">Chrome OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS"/>open source-software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Stel synchronisatie in om uw persoonlijke browserfuncties online op te slaan en toegang te krijgen tot deze functies via Google Chrome, vanaf elke computer.</translation>
@@ -73,24 +73,24 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 
 Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirectory op of gebruik een nieuwere versie van Chrome.</translation>
 <translation id="8738921060445980047">Onbekende versie.</translation>
+<translation id="6970811910055250180">Uw apparaat bijwerken...</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
 <translation id="2748463065602559597">U bekijkt een veilige Google Chrome-pagina.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> is toegevoegd aan Chrome.</translation>
 <translation id="9073088951656332330">Geen installatie van Google Chrome of Google Chrome Frame gevonden om bij te werken.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Waarschuwing:<ph name="END_BOLD"/> Google Chrome kan niet voorkomen dat extensies uw browsegeschiedenis registreren. Als u deze extensie in de incognitomodus wilt uitschakelen, verwijdert u het vinkje bij deze optie.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="3904146009066562368">Er is een nieuwe versie van Google Chrome beschikbaar.</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="5074344184765391290">Invoegtoepassingshost van Chrome</translation>
 <translation id="8862326446509486874">U heeft geen rechten om op systeemniveau te installeren. Meld u aan als beheerder en voer het installatieprogramma opnieuw uit.</translation>
 <translation id="595871952790078940">Chrome</translation>
 <translation id="2874156562296220396">Google Chrome wordt mogelijk gemaakt door het open-source project <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> en andere <ph name="BEGIN_LINK_OSS"/>open-source software<ph name="END_LINK_OSS"/>.</translation>
-<translation id="7855730255114109580">Google Chrome is bijgewerkt</translation>
 <translation id="3847841918622877581">Google Chrome kan webservices gebruiken om uw internetervaring te verbeteren.</translation>
 <translation id="7436949144778751379">Voor Google Chrome is Windows XP of hoger vereist. Het is mogelijk dat sommige functies niet werken.</translation>
 <translation id="6757767188268205357">Vraag me niet meer</translation>
 <translation id="2290095356545025170">Weet u zeker dat u Google Chrome wilt verwijderen?</translation>
+<translation id="7062966102157262887">Er wordt momenteel een download uitgevoerd. Wilt u Google Chrome afsluiten en de download annuleren?</translation>
 <translation id="4273752058983339720">Google Chrome is geconfigureerd om automatisch te worden gestart als u uw computer opstart.</translation>
 <translation id="1104959162601287462">Over &amp;Chrome OS</translation>
 <translation id="5941830788786076944">Google Chrome instellen als mijn standaardbrowser</translation>
@@ -108,16 +108,14 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7161904924553537242">Welkom bij Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">&amp;Google Chrome bijwerken</translation>
-<translation id="147599965395609989">Google Chrome is bijgewerkt</translation>
+<translation id="130631256467250065">Uw wijzigingen worden doorgevoerd wanneer u het apparaat opnieuw opstart.</translation>
 <translation id="1399397803214730675">Deze computer beschikt al over een nieuwere versie van Google Chrome. Als de software niet werkt, verwijdert u Google Chrome en probeert u het opnieuw.</translation>
-<translation id="2827900704927383772">Wilt u Google Chrome sluiten terwijl er <ph name="DOWNLOAD_COUNT"/> downloads worden uitgevoerd?</translation>
 <translation id="3444832043240812445">Deze pagina bevat alleen informatie over recente crashes als u <ph name="BEGIN_LINK"/>crashrapportage inschakelt<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome reageert niet meer. Nu opnieuw starten?</translation>
 <translation id="5318056482164160049">Invoegtoepassingshost van Google Chrome</translation>
 <translation id="5699533844376998780">De extensie '<ph name="EXTENSION_NAME"/>' is toegevoegd.</translation>
 <translation id="6126631249883707068">Wilt u dat Google Chrome uw wachtwoord opslaat?</translation>
 <translation id="5046764976540625289">Chrome sluiten</translation>
-<translation id="2925521875688282191">Meld u af bij Chrome OS en meld u weer aan om deze wijziging door te voeren.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="2680623880102270805">Google Chrome kan geen app-snelkoppeling maken omdat de huidige desktopomgeving niet kan worden bepaald.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
@@ -125,14 +123,14 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="2189123953385179981">Google Chrome OS biedt geen ondersteuning voor het starten van een externe applicatie om links van <ph name="SCHEME"/> te verwerken. De opgevraagde link is <ph name="PROTOLINK"/>.</translation>
 <translation id="711654979569750606">Copyright © 2006-2012 Google Inc. Alle rechten voorbehouden.</translation>
 <translation id="8205111949707227942">Optioneel: help Chrome OS beter te maken door Google automatisch gebruiksstatistieken en crashmeldingen te sturen.</translation>
-<translation id="8345657477105118085">Chrome OS is bijgewerkt.</translation>
+<translation id="7253415505590551024">Er worden momenteel downloads uitgevoerd. Wilt u Google Chrome afsluiten en de downloads annuleren?</translation>
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
 <translation id="2769762047821873045">Google Chrome is niet uw standaardbrowser.</translation>
 <translation id="7825851276765848807">De installatie is mislukt vanwege een onbekende fout. Download Google Chrome opnieuw.</translation>
 <translation id="3335672657969596251">Google Chrome ondersteunt <ph name="OS_NAME"/> niet.</translation>
+<translation id="4458285410772214805">Meld u af en weer aan om deze wijziging door te voeren.</translation>
 <translation id="2666187591945638709">Google Chrome is bijgewerkt naar <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">Van deze module is bekend dat deze conflicteert met Google Chrome.</translation>
-<translation id="4892299120052124303">Als u Google Chrome nu sluit, worden deze downloads geannuleerd.</translation>
 <translation id="6634887557811630702">Google Chrome is bijgewerkt.</translation>
 <translation id="2084710999043359739">Toevoegen aan Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame is al geïnstalleerd en beschikbaar voor alle gebruikers van deze computer. Als u Google Chrome Frame op gebruikersniveau wilt installeren, moet u eerst de versie op systeemniveau verwijderen die door een beheerder is geïnstalleerd.</translation>
@@ -151,6 +149,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Instellingen voor Automatisch aanvullen in Chrome beheren...</translation>
 <translation id="3836351788193713666">Bijwerken bijna voltooid. Start Google Chrome opnieuw om de update te voltooien.</translation>
+<translation id="546394857889685352">Uw apparaat is bijgewerkt naar <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Taakbeheer - Google Chrome</translation>
 <translation id="1826482739472655104">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat gepresenteerd dat nog niet geldig is. Er is geen informatie beschikbaar om te bepalen of dat certificaat betrouwbaar is. Google Chrome kan niet volledig garanderen dat u communiceert met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; en niet met een aanvaller. De klok van uw computer staat momenteel ingesteld op <ph name="CURRENT_TIME"/>. Is dit de correcte tijd? Als dit niet zo is, moet u de fout herstellen en deze pagina vernieuwen.</translation>
 <translation id="8449380764213232436">Google Chrome importeert de volgende onderdelen van <ph name="BROWSER_COMPONENT"/>:</translation>

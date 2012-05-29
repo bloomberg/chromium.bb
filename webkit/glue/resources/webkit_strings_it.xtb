@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="248395913932153421">Giorno</translation>
+<translation id="6015796118275082299">Anno</translation>
 <translation id="9186171386827445984">Caricamento del documento in corso: pagine <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/>...</translation>
 <translation id="1235745349614807883">Cancella ricerche recenti</translation>
 <translation id="1171774979989969504">Inserisci un indirizzo email.</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">link</translation>
 <translation id="4522570452068850558">Dettagli</translation>
 <translation id="8451268428117625855">Seleziona un file.</translation>
+<translation id="2674318244760992338">piè di pagina</translation>
+<translation id="8987927404178983737">Mese</translation>
 <translation id="7364796246159120393">Scegli file</translation>
 <translation id="2761667185364618470">Seleziona questa casella se intendi procedere.</translation>
 <translation id="8964020114565522021">Trascina il file qui</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024 (Medium Grade)</translation>
 <translation id="1637811476055996098">Scegli file</translation>
 <translation id="5476505524087279545">deseleziona</translation>
+<translation id="2148716181193084225">Oggi</translation>
 <translation id="2507943997699731163">Compila questo campo.</translation>
 <translation id="5919473608089529604">Impossibile caricare il plug-in.</translation>
 <translation id="6663448176199120256">Ricerche recenti</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">Il valore deve essere inferiore o uguale a <ph name="MAXIMUM"/>.</translation>
 <translation id="6119846243427417423">attiva</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> file</translation>
+<translation id="6643016212128521049">Cancella</translation>
 <translation id="3934680773876859118">Caricamento del documento PDF non riuscito</translation>
 <translation id="8597182159515967513">intestazione</translation>
 <translation id="2653659639078652383">Invia</translation>

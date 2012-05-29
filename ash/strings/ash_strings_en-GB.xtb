@@ -2,50 +2,67 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="3595596368722241419">Battery full</translation>
-<translation id="908313544993743941">Disable mobile network</translation>
+<translation id="5250713215130379958">Auto-hide launcher</translation>
 <translation id="30155388420722288">Overflow Button</translation>
 <translation id="5571066253365925590">Bluetooth enabled</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth disabled</translation>
+<translation id="370649949373421643">Enable Wi-Fi</translation>
 <translation id="3626281679859535460">Brightness</translation>
 <translation id="7982789257301363584">Network</translation>
+<translation id="5565793151875479467">Proxy...</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Status tray</translation>
 <translation id="2946640296642327832">Enable Bluetooth</translation>
 <translation id="6596816719288285829">IP Address</translation>
-<translation id="289426338439836048">Other mobile network...</translation>
 <translation id="5233638681132016545">New tab</translation>
+<translation id="3846575436967432996">No network information available</translation>
+<translation id="3026237328237090306">Set up mobile data</translation>
 <translation id="785750925697875037">View mobile account</translation>
+<translation id="8121288016949447968">Shift+Search</translation>
 <translation id="7864539943188674973">Disable Bluetooth</translation>
 <translation id="3126069444801937830">Restart to update</translation>
+<translation id="1525975890706558596">CAPS LOCK is on.
+Press the Shift + Search key to cancel</translation>
 <translation id="8190698733819146287">Customise languages and input...</translation>
-<translation id="7911992579061465928">Battery low</translation>
 <translation id="598295083618286569">Bluetooth connected</translation>
 <translation id="5222676887888702881">Sign out</translation>
+<translation id="2091132388437059185">Auto-hide launcher when maximised</translation>
+<translation id="425878420164891689">Calculating time until full</translation>
+<translation id="2964193600955408481">Disable Wi-Fi</translation>
 <translation id="811680302244032017">Add device ...</translation>
+<translation id="2509468283778169019">CAPS LOCK is on</translation>
+<translation id="6426039856985689743">Disable mobile data</translation>
 <translation id="3232695630852378748">Bluetooth settings ...</translation>
 <translation id="1480041086352807611">Demo mode</translation>
 <translation id="4186384497305035875">This screen intentionally left blank</translation>
 <translation id="9089416786594320554">Input methods</translation>
-<translation id="7706302027196209560">Enable Wi-fi</translation>
 <translation id="4430019312045809116">volume</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="3557139239102318020">Pull down to minimise, left or right to tile</translation>
 <translation id="5980301590375426705">Exit guest</translation>
 <translation id="8308637677604853869">Previous menu</translation>
+<translation id="8528322925433439945">Mobile ...</translation>
 <translation id="3595065677684516080">Settings and help</translation>
 <translation id="4479639480957787382">Ethernet</translation>
+<translation id="7573721444069009535">Wi-Fi...</translation>
+<translation id="6223565363550976998">Battery: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">Lock</translation>
-<translation id="5836819469861742634">Change Proxy Settings ...</translation>
+<translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Shut down</translation>
-<translation id="8735871257195921372">Other Wi-fi network ...</translation>
-<translation id="2152495481414285304">Applications</translation>
-<translation id="1690310444231390462">Disable Wi-fi</translation>
-<translation id="77565731175229781">Network settings ...</translation>
+<translation id="7052914147756339792">Set wallpaper...</translation>
+<translation id="1602076796624386989">Enable mobile data</translation>
+<translation id="8573351908869164327"><ph name="HOUR"/>h <ph name="MINUTE"/>m remaining</translation>
 <translation id="7029814467594812963">Exit session</translation>
-<translation id="7908019422099334890">Set wallpaper</translation>
+<translation id="2983818520079887040">Settings...</translation>
+<translation id="8660803626959853127">Syncing <ph name="COUNT"/> file(s)</translation>
+<translation id="639644700271529076">CAPS LOCK is off</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7841796031898165175">Enable mobile network</translation>
-<translation id="9072667645353666975">Battery: <ph name="PERCENTAGE"/>%
-<ph name="HOUR"/>h <ph name="MINUTE"/>m</translation>
+<translation id="5045002648206642691">Google Drive settings</translation>
 <translation id="48607902311828362">Flight mode</translation>
+<translation id="5361734574074701223">Calculating remaining time</translation>
+<translation id="9169585155162064169">CAPS LOCK is on.
+Press the Search key to cancel</translation>
+<translation id="412065659894267608"><ph name="HOUR"/>h <ph name="MINUTE"/>m until full</translation>
 </translationbundle>

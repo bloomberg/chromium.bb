@@ -84,6 +84,9 @@
       Wenn Sie diese Richtlinie konfigurieren, nutzt <ph name="PRODUCT_FRAME_NAME"/> das angegebene Verzeichnis.
 
       Ist die Einstellung nicht konfiguriert, kommt der Standardprofilpfad zum Einsatz.</translation>
+<translation id="8818173863808665831">Meldet den geografischen Standort des Geräts.
+
+      Wenn die Richtlinie nicht oder auf &quot;False&quot; festgelegt wird, wird der Standort nicht gemeldet.</translation>
 <translation id="4899708173828500852">Safe Browsing aktivieren</translation>
 <translation id="7719251660743813569">Legt fest, ob Nutzungsdaten an Google gesendet werden. Bei Einstellung auf &quot;true&quot; werden Nutzungsdatenberichte von <ph name="PRODUCT_OS_NAME"/> gesendet. Ist die Richtlinie nicht konfiguriert oder auf &quot;false&quot; gesetzt, ist das Senden von Datenberichten deaktiviert.</translation>
 <translation id="3570008976476035109">Plug-ins auf diesen Websites blockieren</translation>
@@ -143,9 +146,9 @@
 <translation id="5776485039795852974">Nachfragen, wenn eine Website Desktop-Benachrichtigungen anzeigen will</translation>
 <translation id="5052081091120171147">Diese Richtlinie erzwingt, sofern aktiv, den Import des Browserverlaufs aus dem aktuellen Standardbrowser. Ist die Richtlinie aktiviert, wirkt sie sich auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import des Browserverlaufs. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="6786747875388722282">Erweiterungen</translation>
+<translation id="8947415621777543415">Gerätestandort melden</translation>
 <translation id="1655229863189977773">Cache-Größe für Datenträger in Byte festlegen</translation>
 <translation id="6899705656741990703">Proxy-Einstellungen automatisch erkennen</translation>
-<translation id="4101772068965291327">Startseite öffnen</translation>
 <translation id="7003334574344702284">Diese Richtlinie erzwingt, sofern aktiv, den Import von gespeicherten Passwörtern aus dem vorherigen Standardbrowser. Bei einer Aktivierung wirkt sich die Richtlinie auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import der gespeicherten Passwörter. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="6258193603492867656">Gibt an, ob der generierte Kerberos-SPN einen Nicht-Standard-Port umfassen soll. Falls Sie diese Einstellung aktivieren und ein Nicht-Standard-Port (ein anderer Port als 80 oder 443) eingegeben wird, wird dieser in den generierten Kerberos-SPN aufgenommen. Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, umfasst der generierte Kerberos-SPN in keinem Fall einen Port.</translation>
 <translation id="8992176907758534924">Anzeige von Bildern für alle Websites blockieren</translation>
@@ -189,6 +192,20 @@
       Ist die Richtlinie nicht konfiguriert, kann der Nutzer bestimmen, ob eine Passwortabfrage zum Reaktivieren des Geräts notwendig sein soll.</translation>
 <translation id="6022948604095165524">Aktion beim Start</translation>
 <translation id="9042911395677044526">Ermöglicht das Übernehmen einer per Push übertragenen Netzwerkkonfiguration pro Nutzer für ein <ph name="PRODUCT_OS_NAME"/>-Gerät. Die Netzwerkkonfiguration ist eine JSON-formatierte Zeichenfolge, die den Open Network Configuration-Vorgaben unter <ph name="ONC_SPEC_URL"/> entspricht.</translation>
+<translation id="7128918109610518786">Listet die App-IDs auf, die unter <ph name="PRODUCT_OS_NAME"/> in der Übersichtsleiste als in der Übersicht angezeigte Apps erscheinen.
+
+      Wenn diese Richtlinie konfiguriert wird, werden diese Anwendungen festgelegt und können von Nutzern nicht geändert werden.
+
+      Wird diese Richtlinie nicht konfiguriert, können Nutzer die Liste der in der Übersicht angezeigten Apps ändern.</translation>
+<translation id="6177482277304066047">Legt eine Zielversion für automatische Aktualisierungen fest.
+
+      Legt das Präfix einer Zielversion fest, auf die <ph name="PRODUCT_OS_NAME"/> aktualisiert werden soll. Wenn das Gerät eine niedrigere Version als im Präfix festgelegt ausführt, wird mit diesem Präfix eine Aktualisierung auf die neueste Version durchgeführt. Sollte das Gerät bereits die neueste Version ausführen, hat diese Richtlinie keine Auswirkungen, d. h., es werden keine Downgrades ausgeführt, und das Gerät verwendet weiterhin die momentan installierte Version. Das Format des Präfixes bezieht sich auf die jeweilige Komponente, wie im folgenden Beispiel dargestellt:
+
+      &quot;&quot; oder nicht konfiguriert: Aktualisierung auf die neueste Version möglich
+      &quot;1412.&quot;: Aktualisierung auf eine Nebenversion von 1412, z. B. 1412.24.34 oder 1412.60.2
+      &quot;1412.2.&quot;: Aktualisierung auf eine Nebenversion von 1412.2, z. B. 1412.2.34 oder 1412.2.2
+      &quot;1412.24.34&quot;: nur Aktualisierung auf diese Version
+      </translation>
 <translation id="7625444193696794922">Gibt den Release-Kanal an, an den dieses Gerät gebunden werden soll.</translation>
 <translation id="2240879329269430151">Ermöglicht Ihnen zu bestimmen, ob Websites Pop-ups anzeigen dürfen. Das Anzeigen von Pop-ups kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt &quot;BlockPopups&quot; zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
 <translation id="5289914968905023866">Blockiert den Zugriff auf die gelisteten URLs. Diese Richtlinie verhindert, dass Nutzer Webseiten von URLs von der schwarzen Listen laden. Eine URL weist das Format &quot;schema://host:port/pfad&quot; auf. Das optionale Schema kann HTTP, HTTPS und FTP sein. Nur dieses Schema wird blockiert. Wurde kein Schema festgelegt, werden alle blockiert. Beim Host kann es sich um einen Hostnamen oder eine IP-Adresse handeln. Die Sub-Domains eines Hostnamens werden ebenfalls blockiert. Fügen Sie vor dem Hostnamen einen Punkt (&quot;.&quot;) ein, damit keine Sub-Domains blockiert werden. Der Hostname &quot;*&quot; blockiert alle Domains. Der optionale Port besteht aus einer gültigen Portnummer zwischen 1 und 65535. Wurde kein Port ausgewählt, werden alle blockiert. Wenn der optionale Pfad festgelegt wurde, werden nur Pfade mit diesem Präfix blockiert. Ausnahmen können in der Richtlinie für die weiße URL-Liste festgelegt werden. Diese Richtlinien sind auf 100 Einträge begrenzt. Darüber hinausgehende Einträge werden ignoriert. Sollte diese Richtlinie nicht konfiguriert sein, so werden im Browser keine URLs zur schwarzen Liste hinzugefügt.</translation>
@@ -202,6 +219,9 @@
 
       Ist die Richtlinie nicht konfiguriert, ist der Hintergrundmodus zunächst deaktiviert, kann aber vom Nutzer in den Browsereinstellungen geändert werden.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 oder höher</translation>
+<translation id="5148753489738115745">Ermöglicht die Verwendung zusätzlicher Parameter, die beim Start von <ph name="PRODUCT_NAME"/> durch <ph name="PRODUCT_FRAME_NAME"/> eingesetzt werden.
+
+          Wenn diese Richtlinie nicht festgelegt wird, wird die Standardbefehlszeile verwendet.</translation>
 <translation id="2646290749315461919">Ermöglicht Ihnen festzulegen, ob Websites den Standort des Nutzers mitverfolgen dürfen. Die Mitverfolgung des Standorts kann standardmäßig gestattet oder nicht gestattet sein oder auf Anfrage beim Nutzer erfolgen. Wenn diese Richtlinie nicht konfiguriert ist, so kommt &quot;AskGeolocation&quot; zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
 <translation id="5770738360657678870">Entwicklerkanal (möglicherweise nicht stabil)</translation>
 <translation id="2959898425599642200">Proxy-Umgehungsregeln</translation>
@@ -262,11 +282,25 @@
 <translation id="717221064259627503">Konfiguriert das Verzeichnis, das <ph name="PRODUCT_NAME"/> dazu verwendet, zwischengespeicherte Dateien auf dem Datenträger zu speichern. Wenn Sie diese Richtlinie konfigurieren, so nutzt <ph name="PRODUCT_NAME"/> das angegebene Verzeichnis unabhängig davon, ob der Nutzer den Parameter &quot;--disk-cache-dir&quot; angegeben hat. Sollte die Richtlinie nicht konfiguriert sein, so kommt das Standard-Cache-Verzeichnis zum Einsatz, wobei der Nutzer dies mithilfe des Befehlszeilenparameters &quot;--disk-cache-dir&quot; ändern kann.</translation>
 <translation id="2312134445771258233">Mit dieser Richtlinie können Sie konfigurieren, welche Seiten beim Start geladen werden. Der Inhalt der Liste &quot;Beim Start zu öffnende URLs&quot; wird ignoriert, sofern die Option &quot;URL-Liste öffnen&quot; unter &quot;Aktion beim Start&quot; nicht ausgewählt ist.</translation>
 <translation id="2538628396238281971">Konfiguriert das Verzeichnis, das <ph name="PRODUCT_NAME"/> für heruntergeladene Dateien verwenden soll. Wenn Sie diese Richtlinie konfigurieren, so verwendet <ph name="PRODUCT_NAME"/> das angegebene Verzeichnis unabhängig davon, ob der Nutzer eines angegeben oder festgelegt hat, dass er das Download-Verzeichnis jedes Mal selbst angeben möchte. Sollte die Richtlinie nicht konfiguriert sein, so kommt das Standard-Download-Verzeichnis zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
+<translation id="7750991880413385988">&quot;Neuer Tab&quot;-Seite öffnen</translation>
+<translation id="741903087521737762">Hier können Sie das Startverhalten festlegen.
+
+          Wenn Sie &quot;'Neuer Tab'-Seite öffnen&quot; wählen, wird die &quot;Neuer Tab&quot;-Seite bei jedem Start von <ph name="PRODUCT_NAME"/> geöffnet.
+
+          Wenn Sie &quot;Letzte Sitzung wiederherstellen&quot; wählen, werden die URLs, die beim letzten Schließen von <ph name="PRODUCT_NAME"/> geöffnet waren, erneut geöffnet und die Browsersitzung wird wiederhergestellt.
+          Mit dieser Option werden einige Einstellungen deaktiviert, die während oder beim Beenden einer Sitzung ausgeführt werden, wie das Löschen von Browserdaten beim Schließen oder Sitzungs-Cookies für bestimmte Sitzungen.
+
+          Wenn Sie &quot;Liste der URLs öffnen&quot; wählen, wird die Liste &quot;Beim Start zu öffnende URLs&quot; geöffnet, sobald ein Nutzer <ph name="PRODUCT_NAME"/> startet.
+
+          Sollten Sie diese Einstellung aktivieren, kann sie nicht von Nutzern in <ph name="PRODUCT_NAME"/> geändert oder überschrieben werden.
+
+          Die Deaktivierung dieser Einstellung entspricht einer nicht konfigurierten Option. Ein Nutzer kann sie dann in <ph name="PRODUCT_NAME"/> ändern.</translation>
 <translation id="5761030451068906335">Hiermit werden die Proxy-Einstellungen für <ph name="PRODUCT_NAME"/> konfiguriert. Diese Richtlinie ist noch nicht einsatzbereit und sollte daher nicht verwendet werden.</translation>
 <translation id="8344454543174932833">Lesezeichen bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="1019101089073227242">Verzeichnis für Nutzerdaten festlegen</translation>
 <translation id="5826047473100157858">Gibt an, ob der Nutzer Seiten in <ph name="PRODUCT_NAME"/> im Inkognito-Modus öffnen kann. Ist diese Richtlinie aktiviert oder nicht konfiguriert, so können Seiten im Inkognito-Modus geöffnet werden. Wenn sie deaktiviert ist, so können Seiten nicht im Inkognito-Modus geöffnet werden. Mit dem Wert &quot;Forced&quot; können Seiten ausschließlich im Inkognito-Modus geöffnet werden.</translation>
 <translation id="5085647276663819155">Druckvorschau deaktivieren</translation>
+<translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
 <translation id="2030905906517501646">Suchbegriff der Standardsuchmaschine</translation>
 <translation id="3072045631333522102">Bildschirmschoner für die Anmeldeseite im Händlermodus</translation>
 <translation id="7393895128271703858">Diese Richtlinie ist veraltet. Bitte verwenden Sie stattdessen &quot;DefaultJavaScriptSetting&quot;. Aktiviert JavaScript in <ph name="PRODUCT_NAME"/> und verhindert, dass Nutzer diese Einstellung ändern. Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, können Webseiten JavaScript verwenden. Sollte die Einstellung deaktiviert sein, können Webseiten JavaScript nicht verwenden. Wird diese Richtlinie nicht konfiguriert, so kommt der Standardwert zum Einsatz und sie ist aktiviert, wobei der Nutzer dies ändern kann. Wird diese Richtlinie nicht konfiguriert, wird JavaScript aktiviert, wobei der Nutzer dies ändern kann.</translation>
@@ -373,6 +407,7 @@
 <translation id="2299220924812062390">Liste der aktivierten Plug-ins angeben</translation>
 <translation id="924557436754151212">Gespeicherte Passwörter bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="1897365952389968758">Ausführung von JavaScript für alle Websites zulassen</translation>
+<translation id="7323896582714668701">Zusätzliche Befehlszeilenparameter für <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Synchronisierung der Daten mit Google deaktivieren</translation>
 <translation id="36674322972891584">Aktiviert die Netzwerkvervollständigung in <ph name="PRODUCT_NAME"/> und verhindert, dass Nutzer diese Einstellung ändern. Ist diese Einstellung aktiviert oder deaktiviert, können Nutzer sie in <ph name="PRODUCT_NAME"/> nicht ändern oder außer Kraft setzen. Wenn die Richtlinie nicht konfiguriert ist, wird die Funktion aktiviert, wobei der Nutzer dies ändern kann.</translation>
 <translation id="7006788746334555276">Inhaltseinstellungen</translation>
@@ -384,6 +419,7 @@
 <translation id="187819629719252111">Ermöglicht den Zugriff auf lokale Dateien auf dem Computer, indem <ph name="PRODUCT_NAME"/> gestattet wird, Dialogfelder zur Dateiauswahl anzuzeigen. Wenn Sie diese Einstellung aktivieren, können Nutzer Dateiauswahl-Dialogfelder wie gewohnt öffnen. Ist diese Einstellung deaktiviert, wird bei jeder Nutzeraktion, bei der ein Dialogfeld zur Dateiauswahl angezeigt werden würde, etwa beim Importieren von Lesezeichen, beim Hochladen von Dateien oder beim Speichern von Links, stattdessen eine Meldung angezeigt. Außerdem wird davon ausgegangen, dass der Nutzer im Dialogfeld zur Dateiauswahl auf &quot;Abbrechen&quot; geklickt hat. Wenn diese Einstellung nicht konfiguriert ist, so können Nutzer Dateiauswahl-Dialogfelder wie gewohnt öffnen.</translation>
 <translation id="4507081891926866240">Passt die Liste mit URL-Mustern an, die immer von <ph name="PRODUCT_FRAME_NAME"/> gerendert werden müssen. Wenn diese Richtlinie nicht konfiguriert ist, kommt der über die Richtlinie &quot;ChromeFrameRendererSettings&quot; festgelegte Standard-Renderer zum Einsatz. Beispielmuster finden Sie unter http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Auswählen, wie Proxy-Server-Einstellungen angegeben werden</translation>
+<translation id="1803646570632580723">Liste der in der Übersicht angezeigten Apps ansehen</translation>
 <translation id="7774768074957326919">System-Proxy-Einstellungen verwenden</translation>
 <translation id="3891357445869647828">JavaScript aktivieren</translation>
 <translation id="868187325500643455">Automatische Ausführung von Plug-ins für alle Websites zulassen</translation>
@@ -463,16 +499,4 @@
 <translation id="5645779841392247734">Cookies auf diesen Websites zulassen</translation>
 <translation id="8220342550735772883">Konfiguriert die Cache-Größe, die <ph name="PRODUCT_NAME"/> zum Speichern von zwischengespeicherten Mediendateien auf dem Datenträger verwendet. Wenn Sie diese Richtlinie konfigurieren, nutzt <ph name="PRODUCT_NAME"/> die angegebene Cache-Größe unabhängig davon, ob der Nutzer den Parameter &quot;--media-cache-size&quot; angegeben hat. Sollte der Wert der Richtlinie &quot;0&quot; betragen, kommt die Standard-Cache-Größe zum Einsatz, wobei der Nutzer dies ändern kann. Ist die Richtlinie nicht konfiguriert, wird ebenfalls die Standardgröße verwendet, und der Nutzer kann sie mithilfe des Parameters &quot;--media-cache-size&quot; außer Kraft setzen.</translation>
 <translation id="7049373494483449255">Ermöglicht es <ph name="PRODUCT_NAME"/>, Dokumente zum Drucken an <ph name="CLOUD_PRINT_NAME"/> zu senden. Hinweis: Dies wirkt sich nur auf die <ph name="CLOUD_PRINT_NAME"/>-Unterstützung in <ph name="PRODUCT_NAME"/> aus. Die Richtlinie verhindert nicht, dass Nutzer Druckaufträge auf Websites geben. Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, können Nutzer im <ph name="PRODUCT_NAME"/>-Druckdialog über <ph name="CLOUD_PRINT_NAME"/> drucken. Sollte die Einstellung deaktiviert sein, können Nutzer im <ph name="PRODUCT_NAME"/>-Druckdialog über <ph name="CLOUD_PRINT_NAME"/> nicht drucken.</translation>
-<translation id="2339225390014743328">Mit dieser Richtlinie können Sie das Verhalten beim Start festlegen.
-
-          Wenn Sie &quot;Startseite öffnen&quot; auswählen, wird bei jedem Start von <ph name="PRODUCT_NAME"/> die Startseite geöffnet.
-
-          Wenn Sie die Option &quot;Letzte Sitzung wiederherstellen&quot; auswählen, werden die URLs erneut aufgerufen, die beim letzten Schließen von <ph name="PRODUCT_NAME"/> geöffnet waren, und die Browsersitzung wird so wiederhergestellt, wie Sie sie verlassen haben.
-          Mit der Auswahl dieser Option werden einige Einstellungen deaktiviert, die auf Sitzungen basieren oder Aktionen beim Beenden ausführen, zum Beispiel Sitzungscookies oder die Funktion &quot;Browserdaten löschen&quot;.
-
-          Bei Auswahl von &quot;URL-Liste öffnen&quot; werden beim Start von <ph name="PRODUCT_NAME"/> die URLs aufgerufen, die in der Liste &quot;Beim Start zu öffnende URLs&quot; aufgeführt sind.
-
-          Wenn Sie diese Einstellung aktivieren, kann sie in <ph name="PRODUCT_NAME"/> nicht von Nutzern geändert oder außer Kraft gesetzt werden.
-
-          Ist diese Einstellung deaktiviert, entspricht dies einer nicht erfolgten Konfiguration der Einstellung. Der Nutzer kann sie dann in <ph name="PRODUCT_NAME"/> ändern.</translation>
 </translationbundle>

@@ -14,12 +14,14 @@
 <translation id="4480627574828695486">Odpojiť tento účet...</translation>
 <translation id="7040807039050164757">&amp;Skontrolovať pravopis v tomto poli</translation>
 <translation id="778579833039460630">Neboli prijaté žiadne údaje</translation>
+<translation id="32279126412636473">Znova načítať (⌘R)</translation>
 <translation id="1852799913675865625">Pri čítaní súboru sa vyskytla chyba: <ph name="ERROR_TEXT"/>.</translation>
 <translation id="3828924085048779000">Prístupová fráza nemôže byť prázdna.</translation>
 <translation id="2709516037105925701">Automatické dopĺňanie</translation>
 <translation id="3916445069167113093">Tento typ súboru môže poškodiť váš počítač. Chcete súbor <ph name="FILE_NAME"/> aj napriek tomu uložiť?</translation>
 <translation id="3162291187491210183">Povoľuje v nastaveniach synchronizácie históriu všeobecného poľa. Umožní vám to synchronizovať históriu zadávaných adries URL s inými klientskymi programami, čo napomáha pri automatickom dopĺňaní textu vo všeobecnom poli.</translation>
 <translation id="250599269244456932">Spustiť automaticky (odporúčané)</translation>
+<translation id="8099771777867258638">Zaostriť spúšťač</translation>
 <translation id="3581034179710640788">Skončila sa platnosť bezpečnostného certifikátu stránky!</translation>
 <translation id="2825758591930162672">Verejný kľúč subjektu</translation>
 <translation id="8306243285620593545">Prejsť na ikonu stavu</translation>
@@ -33,9 +35,21 @@
 <translation id="2010799328026760191">Klávesy modifikátora...</translation>
 <translation id="6610610633807698299">Zadajte adresu URL...</translation>
 <translation id="5037435837196003000">Nastavenia kurzora...</translation>
+<translation id="6993406027274804611">Server, ktorý hostí webovú stránku, bol pravdepodobne preťažený alebo sa na ňom vyskytla chyba.
+	Z dôvodu zabránenia rozšíreniam vo zvyšovaní návštevnosti a v spôsobovaní ďalších ťažkostí aplikácia
+        <ph name="PRODUCT_NAME"/>
+	dočasne zastavila žiadosti rozšírení na danú adresu URL.
+        <ph name="LINE_BREAK"/>
+        Ak sa domnievate, že je toto správanie nežiaduce, napríklad pri ladení vlastných webových stránok, navštívte
+        adresu <ph name="URL_FOR_MORE_INFO"/>,
+        na ktorej nájdete viac informácií vrátane návodu na zakázanie tejto funkcie.</translation>
 <translation id="5172758083709347301">Počítač</translation>
+<translation id="5412117152358827401">Naozaj chcete tieto stránky vymazať z histórie?
+
+Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY"/>).</translation>
 <translation id="3300394989536077382">Podpis:</translation>
 <translation id="654233263479157500">Použiť webovú službu na riešenie chýb navigácie</translation>
+<translation id="3792890930871100565">Odpojiť tlačiarne</translation>
 <translation id="7234539422479817884">Náhodne</translation>
 <translation id="4940047036413029306">Úvodzovky</translation>
 <translation id="1526811905352917883">Pokus o pripojenie pomocou protokolu SSL 3.0 musel prebehnúť opakovane. Obvykle to znamená, že server používa zastaraný softvér a môže mať iné problémy so zabezpečením.</translation>
@@ -70,12 +84,13 @@
 <translation id="1358267447825621237">Zmeniť domovskú stránku</translation>
 <translation id="1156689104822061371">Rozloženie klávesnice:</translation>
 <translation id="4764776831041365478">Webové stránky na adrese <ph name="URL"/> môžu byť dočasne nedostupné alebo sa mohli natrvalo premiestniť na novú webovú adresu.</translation>
+<translation id="21426568240411732"><ph name="TITLE"/> používa vašu kameru.</translation>
 <translation id="6156863943908443225">Vyrovnávacia pamäť skriptov</translation>
-<translation id="908313544993743941">Zakázať mobilnú sieť</translation>
 <translation id="4274187853770964845">Chyba synchronizácie: Zastavte a reštartujte synchronizáciu.</translation>
 <translation id="4610656722473172270">Panel s nástrojmi Google</translation>
 <translation id="7845201717638045845">Údaje, ktoré skopírujete a vložíte</translation>
 <translation id="656293578423618167">Názov súboru alebo cesta má veľa znakov. Uložte súbor pod kratším názvom alebo inde.</translation>
+<translation id="3484869148456018791">Získať nový certifikát</translation>
 <translation id="151501797353681931">Importované z prehliadača Safari</translation>
 <translation id="7880025619322806991">Stav portálu</translation>
 <translation id="586567932979200359">Prehliadač <ph name="PRODUCT_NAME"/> je spustený z jeho obrazu disku. Inštalácia do počítača vám umožní spustiť ho bez obrazu disku a zabezpečí jeho aktualizáciu.</translation>
@@ -117,6 +132,7 @@
 <translation id="8530339740589765688">Vybrať podľa domény</translation>
 <translation id="8677212948402625567">Zbaliť všetky...</translation>
 <translation id="7600965453749440009">Nikdy neprekladať jazyk <ph name="LANGUAGE"/></translation>
+<translation id="8325686877472580346">Povoliť asynchrónnu kontrolu pravopisu</translation>
 <translation id="3208703785962634733">Nepotvrdené</translation>
 <translation id="620329680124578183">Nenačítať (odporúčané)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -125,6 +141,7 @@
 <translation id="4422428420715047158">Doména:</translation>
 <translation id="7788444488075094252">Jazyky a vstup</translation>
 <translation id="3602290021589620013">Ukážka</translation>
+<translation id="800602641363855389"><ph name="TITLE"/> používa váš mikrofón.</translation>
 <translation id="7082055294850503883">Ignorovať stav klávesu CapsLock a vkladať iba malé písmená</translation>
 <translation id="4744603770635761495">Spustiteľná cesta</translation>
 <translation id="1800124151523561876">Nebola zaznamenaná žiadna reč.</translation>
@@ -151,6 +168,7 @@
 <translation id="7624154074265342755">Bezdrôtové siete</translation>
 <translation id="3315158641124845231">Skryť <ph name="PRODUCT_NAME"/></translation>
 <translation id="1993139350008738849">Upozornenia aplikácií</translation>
+<translation id="1374844444528092021">Certifikát vyžadovaný sieťou <ph name="NETWORK_NAME"/> nie je nainštalovaný alebo je neplatný. Nainštalujte nový certifikát a skúste sa pripojiť znova.</translation>
 <translation id="3496213124478423963">Oddialiť</translation>
 <translation id="2296019197782308739">Metóda EAP:</translation>
 <translation id="42981349822642051">Rozbaliť</translation>
@@ -158,28 +176,33 @@
 <translation id="1587966997152302992">Zmeniť nastavenie vyhľadávania</translation>
 <translation id="8479177330099037753">Ach nie, kým prehliadač Chrome preberal súbor, niečo sa pokazilo.</translation>
 <translation id="7693221960936265065">všetko</translation>
+<translation id="3635850706692228477">Hľadať na celom disku <ph name="DRIVE_NAME"/></translation>
 <translation id="1763138995382273070">Disable HTML5 interactive form validation</translation>
+<translation id="4135919689343081631">Zakáže ukladanie stránok vo formáte „iba HTML“ alebo „úplná stránka HTML“ a povolí ukladanie stránok iba vo formáte MHTML, tj. do jedného textového súboru s kódom HTML a všetkými čiastkovými zdrojmi.</translation>
 <translation id="4920887663447894854">Tieto webové stránky majú zablokované sledovanie vašej polohy na tejto stránke:</translation>
 <translation id="8133676275609324831">&amp;Zobraziť v priečinku</translation>
 <translation id="26224892172169984">Nepovoliť žiadnym stránkam obsluhovať protokoly</translation>
 <translation id="645705751491738698">Pokračovať v blokovaní jazyka JavaScript</translation>
+<translation id="2465741694701051172">Povolí experimentálny panel s nástrojmi používateľského rozhrania Pole akcií.</translation>
 <translation id="4780321648949301421">Uložiť stránku ako...</translation>
 <translation id="3866863539038222107">Skontrolovať</translation>
 <translation id="3011284594919057757">O formáte Flash</translation>
 <translation id="7377169924702866686">Kláves Caps Lock je zapnutý.</translation>
+<translation id="2565670301826831948">Rýchlosť touchpadu:</translation>
 <translation id="7348093485538360975">Klávesnica na obrazovke</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="8178665534778830238">Obsah:</translation>
 <translation id="2610260699262139870">S&amp;kutočná veľkosť</translation>
 <translation id="4535734014498033861">Pripojenie servera proxy zlyhalo.</translation>
 <translation id="558170650521898289">Overovanie ovládačov hardvéru systému Microsoft Windows</translation>
-<translation id="362142075831964626">Odhlásenie nastane o <ph name="LOGOUT_TIME_LEFT"/> s.</translation>
 <translation id="98515147261107953">Na šírku</translation>
 <translation id="8974161578568356045">Zistiť automaticky</translation>
 <translation id="1818606096021558659">Stránka</translation>
+<translation id="1549045574060481141">Potvrdenie preberania</translation>
 <translation id="5388588172257446328">Používateľské meno:</translation>
 <translation id="1657406563541664238">Pomôžte zlepšiť aplikáciu <ph name="PRODUCT_NAME"/> aktivovaním automatického odosielania štatistických údajov o používaní prehliadača a správ o chybách spoločnosti Google.</translation>
 <translation id="7982789257301363584">Sieť</translation>
+<translation id="2271281383664374369">Žiadosti rozšírenia na túto adresu URL boli dočasne pozastavené.</translation>
 <translation id="8528962588711550376">Prebieha prihlásenie.</translation>
 <translation id="1339601241726513588">Doména registrácie:</translation>
 <translation id="2336228925368920074">Všetky karty uložiť ako záložky...</translation>
@@ -201,12 +224,14 @@
 <translation id="8289982954746764694">Povoliť prvok sledovania (zatiaľ nie je plne funkčný) pre titulky, kapitoly a zvukové popisy prvkov videa.</translation>
 <translation id="9213479837033539041">Počet zvyšných sekúnd: <ph name="NUMBER_MANY"/></translation>
 <translation id="7740287852186792672">Výsledky vyhľadávania</translation>
-<translation id="560442828508350263">Položku „$1“ sa nepodarilo presunúť: $2</translation>
+<translation id="218492098606937156">Povoliť udalosti dotyku</translation>
 <translation id="7298195798382681320">Odporúčané</translation>
 <translation id="300544934591011246">Predchádzajúce heslo</translation>
+<translation id="6450820871403446130">Rozšírenie <ph name="EXTENSION_NAME"/> (ID rozšírenia „<ph name="EXTENSION_ID"/>“) bolo správcom zablokované.</translation>
 <translation id="6015796118275082299">Rok</translation>
 <translation id="8106242143503688092">Nenačítať (odporúčané)</translation>
 <translation id="4058922952496707368">Kľúč <ph name="SUBKEY"/>: <ph name="ERROR"/></translation>
+<translation id="2647434099613338025">Pridať jazyk</translation>
 <translation id="5078796286268621944">Nesprávny kód PIN</translation>
 <translation id="8487678622945914333">Priblížiť</translation>
 <translation id="2972557485845626008">Firmvér</translation>
@@ -276,6 +301,7 @@
 <translation id="7531238562312180404">Vzhľadom na to, že služba <ph name="PRODUCT_NAME"/> nemá kontrolu nad spôsobom, akým zaobchádzajú rozšírenia s vašimi osobnými údajmi, boli všetky rozšírenia pre okná inkognito zakázané. V individuálnych prípadoch ich môžete povoliť v 
         <ph name="BEGIN_LINK"/>správcovi rozšírení<ph name="END_LINK"/>.</translation>
 <translation id="5667293444945855280">Škodlivý softvér</translation>
+<translation id="8927781249247589497">Vitajte v aplikácii <ph name="PRODUCT_NAME"/>!</translation>
 <translation id="8707481173455612936">Oficiálna webová stránka zdroja zvuku</translation>
 <translation id="6831043979455480757">Preložiť</translation>
 <translation id="2856203831666278378">Odpoveď zo servera obsahovala duplicitné hlavičky. Tento problém často spôsobuje nesprávna konfigurácia webových stránok alebo servera proxy. Môže ho vyriešiť len správca.</translation>
@@ -289,6 +315,7 @@
 <translation id="6943836128787782965">Príkaz get protokolu HTTP zlyhal</translation>
 <translation id="5516565854418269276">&amp;Vždy zobraziť panel so záložkami</translation>
 <translation id="6426222199977479699">Chyba protokolu SSL</translation>
+<translation id="667115622929458276">Prebieha niekoľko preberaní inkognito. Chcete režim inkognito ukončiť a preberanie zrušiť?</translation>
 <translation id="1528372117901087631">Pripojenie k internetu</translation>
 <translation id="1788636309517085411">Použiť predvolenú pozíciu</translation>
 <translation id="1661867754829461514">Chýba kód PIN</translation>
@@ -301,13 +328,16 @@
 <translation id="2721687379934343312">Na počítačoch Mac sú heslá uložené v aplikácii Keychain. Ostatní používatelia prehliadača Chrome, ktorí zdieľajú tento účet systému OS X, k nim preto budú môcť pristupovať a budú ich môcť synchronizovať.</translation>
 <translation id="6066742401428748382">Prístup k danej webovej stránke bol odmietnutý</translation>
 <translation id="5111692334209731439">&amp;Správca záložiek</translation>
+<translation id="906458777597946297">Maximalizovať okno</translation>
 <translation id="8295070100601117548">Chyba servera</translation>
 <translation id="8060695457992179083">Zakáže panel Uber Tray pre panel Ash. Namiesto toho sa použije staré zobrazenie stavu.</translation>
+<translation id="3084548735795614657">Nainštalujte presunutím</translation>
 <translation id="5661272705528507004">Karta SIM je zakázaná a nedá sa používať. Kontaktujte svojho poskytovateľa služieb a požiadajte o náhradu.</translation>
 <translation id="443008484043213881">Nástroje</translation>
 <translation id="2529657954821696995">holandská klávesnica</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="6337534724793800597">Filtrovať pravidlá podľa mena</translation>
+<translation id="3583413473134066075">...a je to!</translation>
 <translation id="6585234750898046415">Vyberte si obrázok pre svoj účet, ktorý sa zobrazí na obrazovke prihlásenia.</translation>
 <translation id="7957054228628133943">Spravovať blokovanie kontextových okien...</translation>
 <translation id="179767530217573436">posledné 4 týždne</translation>
@@ -361,6 +391,7 @@
 <translation id="206683469794463668">Jednoduchý režim Zhuyin. Automatický výber kandidátov a súvisiace možnosti sú zakázané alebo sa ignorujú.</translation>
 <translation id="5191625995327478163">&amp;Nastavenia jazyka...</translation>
 <translation id="734651947642430719">Metóda vstupu tamilčiny (InScript)</translation>
+<translation id="3649256019230929621">Minimalizovať okno</translation>
 <translation id="2927876755690964312">Niečo sa pokúsilo ovládnuť vaše nastavenia.</translation>
 <translation id="8833054222610756741">Webové aplikácie CRX-less</translation>
 <translation id="3809280248639369696">Mesačný lúč</translation>
@@ -412,6 +443,7 @@ ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
 <translation id="6518014396551869914">&amp;Kopírovať obrázok</translation>
 <translation id="3236997602556743698">Súprava 3 (390)</translation>
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
+<translation id="4928351909437667303">Zakázať v tomto zariadení službu Disk Google.</translation>
 <translation id="6315723398663634808">Certifikát servera obsahuje slabý kryptografický kľúč.</translation>
 <translation id="2887525882758501333">Dokument PDF</translation>
 <translation id="289426338439836048">Iná mobilná sieť...</translation>
@@ -475,8 +507,8 @@ ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
 <translation id="3053013834507634016">Použitie kľúča certifikátu</translation>
 <translation id="4487088045714738411">belgická klávesnica</translation>
 <translation id="7511635910912978956">Počet zvyšných hodín: <ph name="NUMBER_FEW"/></translation>
+<translation id="871588952425749541"><ph name="PRODUCT_NAME"/> sa už v tomto počítači nebude aktualizovať, pretože používa systém Mac OS X 10.5.</translation>
 <translation id="2152580633399033274">Zobraziť všetky obrázky (odporúča sa)</translation>
-<translation id="2116364690062294218">B</translation>
 <translation id="2934952234745269935">Menovka zväzku</translation>
 <translation id="6272247697534482847">Disable GPU VSync</translation>
 <translation id="6431347207794742960">Prehliadač <ph name="PRODUCT_NAME"/> nastaví automatické aktualizácie pre všetkých používateľov tohto počítača.</translation>
@@ -491,7 +523,6 @@ ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
 <translation id="5374359983950678924">Zmeniť obrázok</translation>
 <translation id="2859738163554174612">Nikdy neponúkať prihlásenie</translation>
 <translation id="5158548125608505876">Nesynchronizovať moje heslá</translation>
-<translation id="3303888410359696136">Povolí rozhrania API MediaStream, GetUserMedia a PeerConnection pre funkciu WebRTC. Viac informácií nájdete na stránke webrtc.org.</translation>
 <translation id="3717485073527618485">Opýtať sa, keď sa webová stránka pokúsi zakázať kurzor myši (odporúčané)</translation>
 <translation id="3273410961255278341">Odoslať na:</translation>
 <translation id="6974306300279582256">Povoliť upozornenia zo stránok <ph name="SITE"/></translation>
@@ -520,7 +551,6 @@ ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
 <translation id="1103523840287552314">Vždy preložiť nasledujúci jazyk: <ph name="LANGUAGE"/></translation>
 <translation id="2263497240924215535">(Zakázané)</translation>
 <translation id="773426152488311044">Momentálne ste jediným používateľom prehliadača <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="5761014727617364449">Zachovať originál</translation>
 <translation id="2042078858148122628">Server <ph name="HOST_NAME"/> sa nepodarilo nájsť, pretože vyhľadanie DNS zlyhalo. DNS je webová služba, ktorá prevádza názov webových stránok na ich internetovú adresu. Táto chyba je najčastejšie spôsobená tým, že neexistuje pripojenie k Internetu alebo je nesprávna konfigurácia siete. Môže byť tiež spôsobená nereagujúcim serverom DNS alebo bránou firewall, ktorá programu <ph name="PRODUCT_NAME"/> bráni v prístupe ku sieti.</translation>
 <translation id="2159087636560291862">V tomto prípade nebol certifikát overený treťou stranou, ktorá je pre počítač dôveryhodná. Certifikát môže vytvoriť ktokoľvek. Tak isto ho môže vydávať za akékoľvek webové stránky. Práve z tohto dôvodu musí byť verifikovaný dôveryhodnou treťou stranou. Bez overenia sú informácie o identite v certifikáte bezcenné. Preto nie je možné overiť, že komunikujete s webom <ph name="DOMAIN"/> a nie s útočníkom s vlastným certifikátom, ktorý prehlasuje, že patrí webu <ph name="DOMAIN2"/>. Nemali by ste pokračovať.</translation>
 <translation id="58625595078799656">Prehliadač <ph name="PRODUCT_NAME"/> vyžaduje šifrovanie údajov pomocou hesla Google alebo vlastnej prístupovej frázy.</translation>
@@ -530,9 +560,9 @@ ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
 <translation id="144518587530125858">Súbor „<ph name="IMAGE_PATH"/>“ sa pre motív nepodarilo načítať.</translation>
 <translation id="7925285046818567682">Čakanie na <ph name="HOST_NAME"/>...</translation>
 <translation id="5203089724477865811">Zakázať upozornenia</translation>
+<translation id="5952256601775839173">Povoliť klepnutie na touchpad troma prstami.</translation>
 <translation id="2510511949439212170">Vitajte v spravovanom Chromebooku. Ak chcete dokončiť nastavenie tohto Chromebooku, prihláste sa pomocou používateľského mena, ktoré vám poskytla vaša organizácia. Kontaktujte vášho správcu systému, ktorý vám poskytne viac informácií. Ak toto zariadenie vašej organizácii nepatrí a ide o vaše súkromné zariadenie, môžete použiť odkaz uvedený nižšie a kliknutím naň sa vrátiť na obrazovku prihlásenia, na ktorej registráciu tohto zariadenia zrušíte.</translation>
 <translation id="3280237271814976245">Uložiť &amp;ako...</translation>
-<translation id="8301162128839682420">Pridať jazyk:</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="8695825812785969222">Otvoriť &amp;umiestnenie...</translation>
 <translation id="4538417792467843292">Odstrániť slovo</translation>
@@ -542,15 +572,19 @@ ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
 <translation id="6292030868006209076">Metóda vstupu tamilčiny (ITRANS)</translation>
 <translation id="3435896845095436175">Povoliť</translation>
 <translation id="5849294688757445020">GPU compositing on all pages (Kompozícia pomocou grafickej karty na všetkých stránkach)</translation>
+<translation id="7990518165999225399">Súbor už nie je možné použiť.</translation>
 <translation id="1891668193654680795">Dôverovať tomuto certifikátu na identifikáciu tvorcov softvéru.</translation>
+<translation id="8427933533533814946">Autor fotografie:</translation>
 <translation id="5078638979202084724">Uložiť všetky karty ako záložky</translation>
 <translation id="5585118885427931890">Nepodarilo sa vytvoriť adresár záložiek.</translation>
 <translation id="2154710561487035718">Kopírovať adresu URL</translation>
 <translation id="6019169947004469866">Orezať</translation>
+<translation id="6455348477571378046">Typ certifikátu:</translation>
 <translation id="3241680850019875542">Vyberte koreňový adresár rozšírenia, ktoré chcete zbaliť. Ak chcete rozšírenie aktualizovať, vyberte tiež súbor súkromného kľúča, ktorý sa má znova použiť.</translation>
 <translation id="6921397030881236880">Povolí experimentálny protokol SPDY/3.</translation>
 <translation id="9189669987942139609">TB</translation>
 <translation id="1957645559900501730">Nastavenia klávesnice na obrazovke </translation>
+<translation id="3610527301719027775">Globálne predvolené nastavenia</translation>
 <translation id="2149850907588596975">Heslá a formuláre</translation>
 <translation id="1445572445564823378">Toto rozšírenie spomaľuje prehliadač <ph name="PRODUCT_NAME"/>. Ak chcete obnoviť výkonnosť prehliadača <ph name="PRODUCT_NAME"/>, zakážte ho.</translation>
 <translation id="7500424997253660722">Obmedzená skupina:</translation>
@@ -564,6 +598,7 @@ ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
           <ph name="LINE_BREAK"/>
           <ph name="BEGIN_LINK"/>Prečítajte si viac informácií<ph name="END_LINK"/> o hosťovskom prehliadaní.</translation>
 <translation id="9106577689055281370">Zostávajúca výdrž batérie: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="5524517123096967210">Súbor sa nepodarilo prečítať.</translation>
 <translation id="8426519927982004547">HTTPS/SSL</translation>
 <translation id="8216781342946147825">Všetky údaje vo vašom počítači a webové stránky, ktoré navštívite</translation>
 <translation id="5548207786079516019">Toto je sekundárna inštalácia prehliadača <ph name="PRODUCT_NAME"/> – nemôže byť nastavený ako váš predvolený prehliadač.</translation>
@@ -611,7 +646,6 @@ ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
 <translation id="1617097702943948177">Dočasný ukladací priestor:</translation>
 <translation id="1202290638211552064">Počas čakania na odpoveď od nadradeného servera vypršala platnosť brány alebo servera proxy.</translation>
 <translation id="6095934445851029429">Inštalovať chýbajúci doplnok</translation>
-<translation id="7765158879357617694">Presunúť</translation>
 <translation id="5731751937436428514">Vietnamská metóda vstupu (VIQR)</translation>
 <translation id="8412144371993786373">Pridať aktuálnu stránku medzi záložky</translation>
 <translation id="7615851733760445951">&lt;žiadny vybratý súbor cookie&gt;</translation>
@@ -631,6 +665,7 @@ ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
 <translation id="68541483639528434">Zatvoriť ostatné karty</translation>
 <translation id="941543339607623937">Neplatný súkromný kľúč.</translation>
 <translation id="6499058468232888609">Pri komunikácii so službou správy zariadenia sa vyskytla chyba siete.</translation>
+<translation id="2704283930420550640">Hodnota nezodpovedá formátu.</translation>
 <translation id="6039651071822577588">Slovník sieťového vlastníctva je v nesprávnom tvare</translation>
 <translation id="8772559521634908780">Potvrdiť nové rozšírenie</translation>
 <translation id="4022426551683927403">Prid&amp;ať do slovníka</translation>
@@ -639,7 +674,6 @@ ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
 <translation id="312759608736432009">Výrobca zariadenia:</translation>
 <translation id="4814834690657896884"><ph name="CLIENT_NAME"/> ladí túto kartu.</translation>
 <translation id="362276910939193118">Zobraziť celú históriu</translation>
-<translation id="6884857397393975446">Povoliť Dynamický režim pre rýchlejšie vyhľadávanie?</translation>
 <translation id="5821565227679781414">Vytvoriť odkaz</translation>
 <translation id="6079696972035130497">Bez obmedzenia</translation>
 <translation id="4365411729367255048">nemecká klávesnica s rozložením klávesov Neo 2</translation>
@@ -660,9 +694,11 @@ ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
 <translation id="6353618411602605519">chorvátska klávesnica</translation>
 <translation id="7986039047000333986">Práve bola použitá mimoriadna bezpečnostná aktualizácia pre prehliadač <ph name="PRODUCT_NAME"/>. Zmeny sa prejavia až po jeho reštartovaní (vaše karty sa automaticky obnovia).</translation>
 <translation id="5515810278159179124">Nepovoliť žiadnym webovým stránkam sledovať moju fyzickú polohu</translation>
+<translation id="5426933462917464707">Povolí akcie prehliadača pre všetky rozšírenia. Vytvorí akcie prehliadača pre rozšírenia, ktoré ich nedeklarujú.</translation>
 <translation id="5999606216064768721">Použiť záhlavie okna systému a orámovanie</translation>
 <translation id="904752364881701675">Vľavo dole</translation>
 <translation id="3398951731874728419">Informácie o chybe:</translation>
+<translation id="5701636028491571982">Povoliť prihlásenie do synchronizácie</translation>
 <translation id="8943805475239098364">Hľadať pomocou novej stránky <ph name="NEW_GOOGLE_HOST"/> namiesto súčasnej stránky <ph name="CURRENT_GOOGLE_HOST"/>?</translation>
 <translation id="3813510441224209252">Čaká sa na formátovanie</translation>
 <translation id="8026684114486203427">Ak chcete používať službu Chrome Web Store, musíte sa prihlásiť pomocou účtu Google.</translation>
@@ -682,6 +718,7 @@ ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
 <translation id="5920618722884262402">Blokovať urážlivé slová</translation>
 <translation id="242006861730551700">Zakazuje policu prevzatých súborov. Používateľské rozhranie nových prevzatých súborov sa zobrazí tak, ako je implementované.</translation>
 <translation id="7782102568078991263">Žiadne ďalšie návrhy od spoločnosti Google</translation>
+<translation id="8038111231936746805">(predvolená)</translation>
 <translation id="5120247199412907247">Rozšírená konfigurácia</translation>
 <translation id="4807405039827563763">Môžu pristupovať:</translation>
 <translation id="567881659373499783">Verzia <ph name="PRODUCT_VERSION"/></translation>
@@ -693,8 +730,6 @@ ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
 <translation id="2019718679933488176">&amp;Otvoriť zvuk na novej karte</translation>
 <translation id="1031362278801463162">Načítava sa ukážka</translation>
 <translation id="4409697491990005945">Okraje</translation>
-<translation id="1525975890706558596">Funkcia CAPS LOCK je zapnutá.
-Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</translation>
 <translation id="4138267921960073861">Zobraziť používateľské mená a fotografie na prihlasovacej obrazovke</translation>
 <translation id="7465778193084373987">Netscape – adresa URL pre zrušenie certifikátu</translation>
 <translation id="5976690834266782200">Pridá položky do kontextovej ponuky karty na zoskupovanie kariet.</translation>
@@ -714,10 +749,8 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="8366694425498033255">Kľúče výberu</translation>
 <translation id="5608669887400696928">Počet hodín: <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="2624449429763181457">Stlačením klávesov Ctrl, Alt alebo Shift zobrazíte klávesové skratky pre tieto modifikátory.</translation>
-<translation id="6645984541666123347">Zobrazuje množstvo voľnej pamäte v stavovej oblasti. Kliknutím na ponuku získate viac informácií o systémovej pamäti.</translation>
 <translation id="6535758682390046055">Preberanie doplnku <ph name="PLUGIN_NAME"/> bolo zrušené.</translation>
-<translation id="3936877246852975078">Žiadosti na tento server boli dočasne pozastavené.</translation>
-<translation id="1065396214847176776">Tento počítač je momentálne nečinný, a preto dôjde k odhláseniu a vymazaniu údajov všetkých používateľov. Ak chcete pokračovať v prehliadaní, stlačte ľubovoľný kláves.</translation>
+<translation id="7267955541478798371">Povoliť synchronizáciu ikon „favicon“ kariet.</translation>
 <translation id="2738771556149464852">Nie po</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -741,7 +774,6 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="4684427112815847243">Synchronizovať všetko</translation>
 <translation id="1125520545229165057">Dvorak (Hsu)</translation>
 <translation id="8940229512486821554">Spustiť príkaz rozšírenia <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
-<translation id="3754444754453844563">Zakáže zobrazenie ukážky tlače na karte a namiesto nej použije systémové dialógové okno tlače. Tento príznak bude zo stránky v ďalšej verzii odstránený.</translation>
 <translation id="7799329977874311193">Dokument HTML</translation>
 <translation id="2232876851878324699">Súbor obsahoval jeden certifikát, ktorý nebol importovaný:</translation>
 <translation id="2441392884867482684">Táto stránka je teraz zobrazená na celú obrazovku a chce zakázať kurzor myši.</translation>
@@ -751,7 +783,6 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="3380365263193509176">Neznáma chyba</translation>
 <translation id="1273135602584709125">Zrušiť registráciu podniku</translation>
 <translation id="2686759344028411998">Nenašli sa žiadne načítané moduly.</translation>
-<translation id="1795067157225646652">Tipy na prístup k tejto sieti</translation>
 <translation id="572525680133754531">Vykreslí orámovanie okolo zložených vrstiev vykresľovania, čím pomôže ladiť a študovať kompozíciu vrstiev.</translation>
 <translation id="2778346081696727092">Overenie totožnosti pomocou zadaného používateľského mena a hesla zlyhalo</translation>
 <translation id="37613671848467444">Otvoriť v &amp;okne inkognito</translation>
@@ -764,6 +795,7 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="7340431621085453413">Stránka <ph name="FULLSCREEN_ORIGIN"/> sa teraz zobrazuje na celú obrazovku.</translation>
 <translation id="7939072571348579137">Spustiť synchronizáciu</translation>
 <translation id="8494979374722910010">Zlyhal pokus o pripojenie k serveru.</translation>
+<translation id="1864756863218646478">Súbor sa nepodarilo nájsť.</translation>
 <translation id="7810202088502699111">Na tejto stránke boli zablokované kontextové okná.</translation>
 <translation id="8190698733819146287">Prebieha prispôsobenie jazykov a vstupu...</translation>
 <translation id="3808873045540128170">Karta je zrušená!</translation>
@@ -771,7 +803,9 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="646727171725540434">HTTP proxy</translation>
 <translation id="7576690715254076113">Kompletovať</translation>
 <translation id="4594569381978438382">Nainštalovať tieto aplikácie?</translation>
+<translation id="2528717896136935886">Povoliť rozhrania API MediaStream a GetUserMedia pre fnkciu WebRTC. Viac informácií nájdete na adrese webrtc.org.</translation>
 <translation id="4256417349781072758">Ktorá služba sa má používať na zdieľanie?</translation>
+<translation id="5894596978268630370">Naďalej používať stránku Nová karta</translation>
 <translation id="1006316751839332762">Prístupová fráza šifrovania</translation>
 <translation id="409504436206021213">Nenačítať</translation>
 <translation id="8795916974678578410">Nové okno</translation>
@@ -796,7 +830,6 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="3096212521773120572">Aktivovať okno 6</translation>
 <translation id="2164938406766990399">Viac informácií o registrácii podniku</translation>
 <translation id="5746169159649715125">Uložiť ako PDF</translation>
-<translation id="1225544122210684390">Zariadenie s pevným diskom</translation>
 <translation id="939736085109172342">Nový priečinok</translation>
 <translation id="4933484234309072027">vložené do <ph name="URL"/></translation>
 <translation id="5554720593229208774">E-mailová certifikačná autorita</translation>
@@ -806,12 +839,14 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="7968982339740310781">Zobraziť podrobnosti</translation>
 <translation id="2832519330402637498">Vľavo hore</translation>
 <translation id="6204994989617056362">Pri zabezpečenom „podaní rúk“ chýbalo rozšírenie opätovného vyjednávania SSL. Pri niektorých webových stránkach, ktoré podporujú takéto rozšírenie, vyžaduje prehliadač Chrome bezpečnejšie „podanie rúk“, aby tak zabránil skupine známych útokov. Vynechanie tohto rozšírenia naznačuje, že do vášho pripojenia niekto počas prenosu zasiahol a bolo zmanipulované.</translation>
+<translation id="1238150413700645698">Chránený obsah</translation>
 <translation id="6679492495854441399">Hops! Pri registrácii tohto zariadenia sa vyskytla chyba sieťovej komunikácie. Skontrolujte svoje internetové pripojenie a skúste to znova.</translation>
 <translation id="5823933238730612365">PPAPI (neuložené v karanténe)</translation>
 <translation id="2879755071890315043">Počkajte, kým nastavíme mobilnú sieť.</translation>
 <translation id="5301751748813680278">Vstupujete ako hosť.</translation>
 <translation id="121827551500866099">Zobraziť všetky prevzaté súbory...</translation>
 <translation id="5949910269212525572">Adresu DNS servera nie je možné rozpoznať.</translation>
+<translation id="8024070220939817459">Pole akcií</translation>
 <translation id="3115147772012638511">Čakanie na vyrovnávaciu pamäť...</translation>
 <translation id="257088987046510401">Motívy</translation>
 <translation id="6771079623344431310">K serveru proxy sa nepodarilo pripojiť</translation>
@@ -826,9 +861,11 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="6513615899227776181">Doplnok: <ph name="PLUGIN_NAME"/></translation>
 <translation id="6198252989419008588">Zmeniť PIN</translation>
 <translation id="5749483996735055937">Počas kopírovania obrazu na obnovenie do zariadenia sa vyskytol problém.</translation>
+<translation id="1618462107699370293">Prichytiť okno vpravo</translation>
 <translation id="3520476450377425184">Počet zvyšných dní: <ph name="NUMBER_MANY"/></translation>
 <translation id="7643817847124207232">Prerušilo sa pripojenie na internet.</translation>
 <translation id="932327136139879170">Home</translation>
+<translation id="3561204836318837461">BSSID:</translation>
 <translation id="2560794850818211873">K&amp;opírovať adresu URL videa</translation>
 <translation id="412730574613779332">Spandex</translation>
 <translation id="6042708169578999844">Vaše údaje na webových stránkach <ph name="WEBSITE_1"/> a <ph name="WEBSITE_2"/></translation>
@@ -840,6 +877,7 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="5600907569873192868">Počet zvyšných minút: <ph name="NUMBER_MANY"/></translation>
 <translation id="1519704592140256923">Vybrať pozíciu</translation>
 <translation id="1275018677838892971">Webové stránky na adrese <ph name="HOST_NAME"/> obsahujú prvky z webových stránok, ktoré sú nahlásené ako „phishingové“ stránky. Takéto webové stránky predstierajú, že reprezentujú dôveryhodné inštitúcie (napr. banky), a navádzajú používateľov, aby zadali svoje osobné alebo finančné údaje.</translation>
+<translation id="7570477672765183">Začnite kliknutím tu</translation>
 <translation id="702455272205692181"><ph name="EXTENSION_NAME"/></translation>
 <translation id="7170041865419449892">Mimo rozsah</translation>
 <translation id="908263542783690259">Vyčistiť históriu prehľadávania</translation>
@@ -857,6 +895,7 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="2955913368246107853">Zatvoriť panel pre vyhľadávanie</translation>
 <translation id="8864170386249720785">Nastavenia protokolu SSL v mobilnom zariadení:</translation>
 <translation id="5642508497713047">Podpisovateľ CRL</translation>
+<translation id="7612302739128412469">Toto rozšírenie aktivujete kliknutím na túto ikonu.</translation>
 <translation id="813082847718468539">Zobraziť informácie o stránkach</translation>
 <translation id="127353061808977798">Písma a kódovanie</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -874,6 +913,7 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="7206693748120342859">Preberanie doplnku <ph name="PLUGIN_NAME"/>...</translation>
 <translation id="2872754556057097683">Bolo prijatých viacero rozdielnych hlavičiek typu obsah-dĺžka. Je to zakázané z dôvodu ochrany proti útokom rozdeľujúcim odpoveď HTTP.</translation>
 <translation id="4804818685124855865">Odpojiť</translation>
+<translation id="1645228020260124617"><ph name="PRECENTAGE"/> %</translation>
 <translation id="2585300050980572691">Predvolené nastavenia vyhľadávania</translation>
 <translation id="2617919205928008385">Nedostatok priestoru</translation>
 <translation id="1608306110678187802">Tlačiť &amp;rám...</translation>
@@ -929,7 +969,6 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="6368046945223687609">Oneskorenie zoznamu skladieb</translation>
 <translation id="8811462119186190367">Po synchronizácii vašich nastavení bol zmenený jazyk prehliadača Chrome z jazyka „<ph name="FROM_LOCALE"/>“ na jazyk „<ph name="TO_LOCALE"/>“.</translation>
 <translation id="1087119889335281750">&amp;Žiadne pravopisné návrhy</translation>
-<translation id="8605123881798382939">Súbor $1 je iba na čítanie. Upravené obrázky budú uložené v priečinku Prevzaté súbory.</translation>
 <translation id="7252348743704726645">Prihlásiť sa</translation>
 <translation id="5228309736894624122">Chyba protokolu SSL.</translation>
 <translation id="8216170236829567922">Thajská vstupná metóda (rozloženie klávesnice Pattachote)</translation>
@@ -937,7 +976,6 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME"/> sa nepodarilo spustiť v mene používateľa root.</translation>
 <translation id="5076340679995252485">&amp;Vložiť</translation>
 <translation id="1055216403268280980">Rozmery obrázka</translation>
-<translation id="7032947513385578725">Zariadenie flash</translation>
 <translation id="14171126816530869">Identita spoločnosti <ph name="ORGANIZATION"/> so sídlom <ph name="LOCALITY"/> bola overená spoločnosťou <ph name="ISSUER"/>.</translation>
 <translation id="824902718516184009">Chýbajú údaje certifikátu</translation>
 <translation id="7314327919567192532">Obmedziť rýchlosť zmeny veľkosti okna.</translation>
@@ -1006,14 +1044,12 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="1389297115360905376">Dá sa pridať iba zo služby <ph name="CHROME_WEB_STORE"/>.</translation>
 <translation id="5474139872592516422">Po dokončení aktualizácie doplnku <ph name="PLUGIN_NAME"/> ho aktivujete opätovným načítaním stránky.</translation>
 <translation id="6514771739083339959">Domovská stránka:</translation>
-<translation id="4421917670248123270">Zatvoriť a zrušiť preberania</translation>
 <translation id="315116470104423982">Mobilné dátové prenosy</translation>
 <translation id="5428850089342283580"><ph name="ACCNAME_APP"/> (K dispozícií je aktualizácia)</translation>
 <translation id="5605623530403479164">Ostatné vyhľadávacie mechanizmy</translation>
 <translation id="8887243200615092733">Prehliadač <ph name="PRODUCT_NAME"/> teraz môže synchronizovať vaše heslá. Z bezpečnostných dôvodov musíte potvrdiť informácie o svojom účte.</translation>
 <translation id="657064425229075395">Nepodarilo sa načítať skript na pozadí „<ph name="BACKGROUND_SCRIPT"/>“.</translation>
 <translation id="5710435578057952990">Identita tejto webovej stránky nebola overená.</translation>
-<translation id="3452884066206827415">Vopred načítať predvolený vyhľadávací nástroj pre Dynamický režim.</translation>
 <translation id="495170559598752135">Akcie</translation>
 <translation id="1661245713600520330">Na tejto stránke je uvedený zoznam všetkých modulov, ktoré boli načítané v hlavnom procese, a modulov, ktoré boli zaregistrované, aby sa načítali neskôr.</translation>
 <translation id="2760297631986865803">Prispôsobiť používateľa...</translation>
@@ -1037,12 +1073,6 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="4679639996443646335">Systém Google zistil, že ak budete pokračovať, môže byť do vášho mobilného zariadenia nainštalovaný škodlivý softvér. Ak ste tieto stránky navštívili v minulosti alebo im dôverujete, je možné, že boli nedávno cieľom hackerského útoku. Nemali by ste pokračovať. Skúste to znova napríklad zajtra alebo prejdite na iné stránky.</translation>
 <translation id="7223775956298141902">Hm... Nemáte žiadne rozšírenia :-(</translation>
 <translation id="3118046075435288765">Server neočakávane ukončil spojenie.</translation>
-<translation id="8041140688818013446">Server hostiaci webovú stránku bol pravdepodobne preťažený alebo zaznamenal chybu. Prehliadač
-        <ph name="PRODUCT_NAME"/> dočasne zakázal požiadavky na tento server, aby nezvyšoval zaťaženie servera, ktoré by mohlo situáciu ešte zhoršiť.
-        <ph name="LINE_BREAK"/>
-        Ak si myslíte, že takéto správanie je nežiaduce (napríklad v prípade, že ladíte vlastné webové stránky),
-        navštívte stránku <ph name="NET_INTERNALS_PAGE"/>,
-        kde získate viac informácií, alebo funkciu zakážte.</translation>
 <translation id="1725068750138367834">&amp;Správca súborov</translation>
 <translation id="4697214168136963651">Adresa <ph name="URL"/> bola zablokovaná</translation>
 <translation id="7791543448312431591">Pridať</translation>
@@ -1066,18 +1096,18 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="3242765319725186192">Predzdieľaný kľúč:</translation>
 <translation id="8089798106823170468">Zdieľajte svoje tlačiarne a ovládajte prístup k nim z akéhokoľvek účtu Google.</translation>
 <translation id="5426597273899159431">Rozšírené nastavenie...</translation>
-<translation id="5984992849064510607">Pridá do kontextovej ponuky prúžka karty položku „Použiť bočné karty“. Pomocou tejto možnosti môžete prepínať medzi kartami v hornej časti obrazovky (predvolené nastavenie) a po stranách. Táto funkcia je užitočná na širokouhlých monitoroch.</translation>
+<translation id="1105608846356399385">Navštíviť webové stránky</translation>
 <translation id="7218608093942361839"><ph name="PRODUCT_NAME"/> <ph name="PRODUCT_VERSION"/> (Platforma <ph name="PLATFORM_VERSION"/>)</translation>
 <translation id="8802118086535024031">Ktorá služba sa má používať na úpravy?</translation>
 <translation id="709124733394457802">Server je nedostupný</translation>
 <translation id="839736845446313156">Registrovať sa</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="6282005501778863460">Povolí riadenie toku pomocou experimentálneho protokolu SPDY/2.1.</translation>
 <translation id="7190628580647372897">Povolí rôzne upozornenia na zmeny v stave rozšírenia.</translation>
 <translation id="2409527877874991071">Zadajte nový názov</translation>
 <translation id="4240069395079660403">Aplikáciu <ph name="PRODUCT_NAME"/> nie je možné zobraziť v tomto jazyku</translation>
 <translation id="747114903913869239">Chyba: Nepodarilo sa dekódovať rozšírenie</translation>
 <translation id="5412637665001827670">bulharská klávesnica</translation>
+<translation id="8806240026292811588">Povoliť rozhranie PeerConnection.</translation>
 <translation id="3574210789297084292">prihlásiť sa</translation>
 <translation id="1146204723345436916">Importovať záložky zo súboru HTML ...</translation>
 <translation id="2113921862428609753">Prístup k informáciám certifikačnej autority</translation>
@@ -1149,10 +1179,13 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="601858197474825353">História všeob. poľa</translation>
 <translation id="6957887021205513506">Zdá sa, že certifikát servera je falošný.</translation>
 <translation id="7309459761865060639">Skontrolujte svoje tlačové úlohy a stav tlačiarne online.</translation>
+<translation id="1227224963052638717">Neznáme pravidlo.</translation>
 <translation id="4803909571878637176">Odinštalovanie</translation>
 <translation id="5209518306177824490">Odtlačok SHA-1</translation>
 <translation id="2546283357679194313">Súbory cookie a údaje stránok</translation>
 <translation id="7447657194129453603">Stav siete:</translation>
+<translation id="1279578457864817142">Vypne funkciu zahadzovania kariet, ktorá pri nedostatku pamäte zahodí zriedka používané karty.</translation>
+<translation id="4958444002117714549">Rozbaliť zoznam</translation>
 <translation id="8375667793438132385">Povoliť službe <ph name="INTENT_HANDLE_TITLE"/> (<ph name="INTENT_HANDLE_HOSTNAME"/>) spracovanie zámeru?</translation>
 <translation id="1553538517812678578">bez obmedzenia</translation>
 <translation id="7947315300197525319">(Vybrať inú snímku obrazovky)</translation>
@@ -1162,6 +1195,7 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="189210018541388520">Otvoriť zobrazenie na celú obrazovku</translation>
 <translation id="8795668016723474529">Pridať kreditnú kartu</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
+<translation id="7547317915858803630">Upozornenie: Vaše nastavenia aplikácie <ph name="PRODUCT_NAME"/> sú uložené na sieťovom disku. Môže to viesť ku spomaleniu, chybám alebo strate údajov.</translation>
 <translation id="3956882961292411849">Prebieha načítavanie informácií o mobilnom dátovom programe, čakajte...</translation>
 <translation id="689050928053557380">Kúpiť dátový program...</translation>
 <translation id="4235618124995926194">Zahrnúť túto e-mailovú adresu:</translation>
@@ -1172,6 +1206,7 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="4600958291864306415">prebieha generovanie...</translation>
 <translation id="263325223718984101">Inštaláciu prehliadača <ph name="PRODUCT_NAME"/> sa nepodarilo dokončiť, ale bude sa naďalej spúšťať z jeho obrazu disku.</translation>
 <translation id="6186893483313227582">Ikona <ph name="VALUE"/></translation>
+<translation id="4726710629007580002">Pri pokuse o inštaláciu tohto rozšírenia sa zobrazili upozornenia:</translation>
 <translation id="7025190659207909717">Správa mobilnej dátovej služby</translation>
 <translation id="1685944703056982650">Výnimky kurzoru myši</translation>
 <translation id="8265096285667890932">Použiť bočné karty</translation>
@@ -1179,11 +1214,15 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="2347476388323331511">Nie je možné synchronizovať</translation>
 <translation id="4465171033222053147">Stránky <ph name="URL"/> chcú natrvalo ukladať veľké množstvo údajov vo vašom mobilnom zariadení.</translation>
 <translation id="6986605181115043220">Hops, synchronizácia prestala pracovať. <ph name="BEGIN_LINK"/>Viac informácií<ph name="END_LINK"/></translation>
+<translation id="5379268888377976432">Vrátiť späť odstránenie</translation>
 <translation id="7416362041876611053">Neznáma chyba siete</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="5109044022078737958">Mia</translation>
 <translation id="6291953229176937411">&amp;Zobraziť v aplikácii Finder</translation>
 <translation id="8598687241883907630">Odpojiť účet Google...</translation>
+<translation id="2556718757702023317">Ak chcete súbor <ph name="FILE_NAME"/> uložiť offline, musíte uvoľniť ďalších <ph name="TOTAL_FILE_SIZE"/> miesta:<ph name="MARKUP_1"/>
+        <ph name="MARKUP_2"/>zrušte pripnutie súborov, ku ktorým už nepotrebujete pristupovať v režime offline<ph name="MARKUP_3"/>
+        <ph name="MARKUP_4"/>odstráňte súbory z priečinka Prevzaté súbory<ph name="MARKUP_5"/></translation>
 <translation id="4781649528196590732">Prejsť na predchádzajúci panel</translation>
 <translation id="9187827965378254003">Zdá sa, že momentálne nie sú k dispozícii žiadne experimenty.</translation>
 <translation id="6022526133015258832">Otvoriť v režime celej obrazovky</translation>
@@ -1192,6 +1231,7 @@ Ak ju chcete vypnúť, stlačte kláves Shift + kláves vyhľadávania.</transla
 <translation id="3009779501245596802">Indexované databázy</translation>
 <translation id="3041612393474885105">Informácie o certifikáte</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="6426039856985689743">Zakázať mobilné dátové pripojenie</translation>
 <translation id="539643935609409426">Ak chcete skryť prístup k tomuto programu, musíte ho odinštalovať pomocou apletu <ph name="CONTROL_PANEL_APPLET_NAME"/> v Ovládacom paneli.
 
 Chcete spustiť aplet <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
@@ -1201,7 +1241,6 @@ Chcete spustiť aplet <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="3733127536501031542">Server SSL s prestupom na vyššiu edíciu</translation>
 <translation id="954586097957006897">Priezvisko</translation>
 <translation id="7473891865547856676">Nie, ďakujem</translation>
-<translation id="7284769627050473402">Povoliť jednoduchý smer posúvania</translation>
 <translation id="49896407730300355">Otočiť &amp;proti smeru hodinových ručičiek</translation>
 <translation id="5166184058188456766">Naďalej používať stránku <ph name="PREV_HOMEPAGE"/></translation>
 <translation id="4366553784388256545">Registrácia zariadenia. Čakajte prosím...</translation>
@@ -1243,6 +1282,7 @@ Chcete spustiť aplet <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="1397674396541164684">Zakázať akcelerované animácie jazyka CSS</translation>
 <translation id="7124398136655728606">Stlačením klávesu Esc vymažete celú vyrovnávaciu pamäť pred úpravou</translation>
 <translation id="3344786168130157628">Názov prístupového bodu:</translation>
+<translation id="712569541284281624">Pri generovaní kópie offline sa vyskytla chyba</translation>
 <translation id="2592884116796016067">Časť tejto webovej stránky (HTML WebWorker) zlyhala, takže nemusí pracovať správne.</translation>
 <translation id="3721404503715743274">Povolí experimentálne reťazené spracovanie žiadostí protokolu HTTP.</translation>
 <translation id="2529133382850673012">americká klávesnica</translation>
@@ -1256,6 +1296,12 @@ Keďže sa výsledky vyhľadávania vyžadujú už počas zadávania dopytu, vá
 <translation id="8425755597197517046">Vložiť a &amp;hľadať</translation>
 <translation id="1093148655619282731">Podrobnosti vybratého certifikátu:</translation>
 <translation id="3003623123441819449">Vyrovnávacia pamäť CSS</translation>
+<translation id="5260830961180197290"><ph name="MARKUP_1"/>Pristupujte k súborom odkiaľkoľvek, dokonca aj keď ste offline.<ph name="MARKUP_2"/>
+        Súbory v službe <ph name="PRODUCT_NAME"/> sú vždy aktuálne a dostupné, z ktoréhokoľvek zariadenia.<ph name="MARKUP_3"/>
+        <ph name="MARKUP_4"/>Zaistite bezpečnosť svojich súborov.<ph name="MARKUP_5"/>
+        Súbory budú bezpečne uložené v službe <ph name="PRODUCT_NAME"/> bez ohľadu na to, čo sa stane s vaším zariadením.<ph name="MARKUP_6"/>
+        <ph name="MARKUP_7"/>Zdieľajte, tvorte a spolupracujte<ph name="MARKUP_8"/>
+        na súboroch s ostatnými, to všetko na jednom mieste.<ph name="MARKUP_9"/></translation>
 <translation id="2743322561779022895">Aktivácia:</translation>
 <translation id="4181898366589410653">V certifikáte servera sa nenašiel žiadny mechanizmus rušenia certifikátov.</translation>
 <translation id="6914291514448387591">Doplnok <ph name="PLUGIN_NAME"/> potrebuje vaše povolenie na spustenie.</translation>
@@ -1275,10 +1321,8 @@ Keďže sa výsledky vyhľadávania vyžadujú už počas zadávania dopytu, vá
           <ph name="LINE_BREAK"/>
           <ph name="BEGIN_LINK"/>Prečítajte si viac informácií<ph name="END_LINK"/> o prehliadaní v režime inkognito.</translation>
 <translation id="2335122562899522968">Táto stránka nastavila súbory cookie.</translation>
-<translation id="3786100282288846904">Položku „$1“ sa nepodarilo odstrániť: $2</translation>
 <translation id="4628757576491864469">Zariadenia</translation>
 <translation id="8461914792118322307">Server proxy</translation>
-<translation id="4656525291320872047">Zobraziť stav pamäte</translation>
 <translation id="4089521618207933045">Obsahuje podradenú ponuku</translation>
 <translation id="1936157145127842922">Zobraziť v priečinku</translation>
 <translation id="2367567093518048410">Úroveň</translation>
@@ -1305,6 +1349,7 @@ Keďže sa výsledky vyhľadávania vyžadujú už počas zadávania dopytu, vá
 <translation id="2251809247798634662">Nové okno inkognito</translation>
 <translation id="7610193165460212391">Hodnota (<ph name="VALUE"/>) presahuje povolený rozsah.</translation>
 <translation id="4540154706690252107">Uvoľniť od spúšťača</translation>
+<translation id="1883255238294161206">Zbaliť zoznam</translation>
 <translation id="3100472813537288234">Skryť pravopis a gramatiku</translation>
 <translation id="358344266898797651">Keltské</translation>
 <translation id="3625870480639975468">Obnoviť nastavenie priblíženia</translation>
@@ -1358,6 +1403,7 @@ Keďže sa výsledky vyhľadávania vyžadujú už počas zadávania dopytu, vá
 <translation id="612559053506910276">Zakázať „skratky“ vo všeobecnom poli.</translation>
 <translation id="1201402288615127009">Ďalej</translation>
 <translation id="1335588927966684346">Pomocný program:</translation>
+<translation id="2710582058364740604">Prepíše rozlíšenie obrazovky a vynúti použitie režimu vysokej hodnoty DPI a zodpovedajúcich prostriedkov.</translation>
 <translation id="2220529011494928058">Nahlásiť problém</translation>
 <translation id="7857823885309308051">Môže to trvať minútu...</translation>
 <translation id="662870454757950142">Formát hesla je nesprávny.</translation>
@@ -1372,6 +1418,7 @@ Keďže sa výsledky vyhľadávania vyžadujú už počas zadávania dopytu, vá
 <translation id="8807632654848257479">Stabilné</translation>
 <translation id="4209092469652827314">Veľké</translation>
 <translation id="4222982218026733335">Neplatný certifikát servera</translation>
+<translation id="7501330106833014351">Gamepad (<ph name="ADDRESS"/>)</translation>
 <translation id="5600599436595580114">Táto stránka bola predbežne vykreslená.</translation>
 <translation id="8494214181322051417">Novinka!</translation>
 <translation id="2386255080630008482">Certifikát servera bol zrušený.</translation>
@@ -1389,8 +1436,10 @@ Keďže sa výsledky vyhľadávania vyžadujú už počas zadávania dopytu, vá
 <translation id="219008588003277019">Modul miestneho klienta: <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446">Prehľadať webovú stránku <ph name="SITE_NAME"/>:</translation>
 <translation id="3800764353337460026">Štýl symbolov</translation>
+<translation id="1278049586634282054">Skontrolovať zobrazenia:</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="2096368010154057602">Oddelenie</translation>
+<translation id="3254434849914415189">Zvoľte pre súbory <ph name="FILE_TYPE"/> predvolenú aplikáciu:</translation>
 <translation id="5275799318132317934">V tomto prípade bol certifikát predložený vášmu prehliadaču zrušený vydavateľom. Zvyčajne to znamená, že sa narušila integrita certifikátu. Tento certifikát by ste preto nemali považovať za dôveryhodný.</translation>
 <translation id="8730621377337864115">Hotovo</translation>
 <translation id="4932733599132424254">Dátum</translation>
@@ -1420,7 +1469,6 @@ Keďže sa výsledky vyhľadávania vyžadujú už počas zadávania dopytu, vá
 <translation id="6810193446027958860">Citlivosť kurzora:</translation>
 <translation id="5015344424288992913">Určenie proxy...</translation>
 <translation id="4389091756366370506">Používateľ <ph name="VALUE"/></translation>
-<translation id="687415494920143404">Pri odosielaní stránky došlo k chybe.</translation>
 <translation id="4724168406730866204">Eten 26</translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="4479812471636796472">americká klávesnica s rozložením klávesov Dvorak</translation>
@@ -1452,7 +1500,9 @@ Keďže sa výsledky vyhľadávania vyžadujú už počas zadávania dopytu, vá
 <translation id="6162656142027440299">Zakázať bluetooth</translation>
 <translation id="8525306231823319788">Celá obrazovka</translation>
 <translation id="5892507820957994680">Prepíše zabudovaný zoznam softvérového vykresľovania a povolí akceleráciu pomocou grafickej karty v systémoch s nepodporovanými konfiguráciami.</translation>
+<translation id="4765322846143433260">Dátum poslednej aktualizácie</translation>
 <translation id="9054208318010838">Povoliť všetkým webovým stránkam sledovanie mojej polohy</translation>
+<translation id="62979832459998306">Certifikáty zviazané s doménou</translation>
 <translation id="3058212636943679650">Ak budete niekedy musieť obnoviť operačný systém počítača, budete potrebovať kartu SD na obnovenie alebo pamäťový kľúč USB.</translation>
 <translation id="2815382244540487333">Boli zablokované nasledujúce súbory cookie:</translation>
 <translation id="8882395288517865445">Zahrnúť adresy z mojej karty adresára</translation>
@@ -1486,8 +1536,9 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="6975147921678461939">Nabíjanie batérie: <ph name="PRECENTAGE"/> %</translation>
 <translation id="5453632173748266363">Cyrilika</translation>
 <translation id="1008557486741366299">Teraz nie</translation>
-<translation id="8415351664471761088">Počkať na dokončenie preberania</translation>
+<translation id="6437213622978068772">Znova načítať (Ctrl+R)</translation>
 <translation id="6442051556415866605">Aktivovať okno 3</translation>
+<translation id="5350480486488078311">NaCl Socket API.</translation>
 <translation id="5329858601952122676">&amp;Odstrániť</translation>
 <translation id="6100736666660498114">Ponuka Štart</translation>
 <translation id="6275297011664564181">Momentálne nie sú aktívne žiadne pravidlá.</translation>
@@ -1495,7 +1546,6 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="9009369504041480176">Odovzdávanie (<ph name="PROGRESS_PERCENT"/>%)...</translation>
 <translation id="8995603266996330174">Spravované doménou <ph name="DOMAIN"/></translation>
 <translation id="5602600725402519729">Znova &amp;načítať</translation>
-<translation id="6955446738988643816">Preskúmať kontextové okná</translation>
 <translation id="172612876728038702">Prebieha nastavenie modulu TPM. Buďte trpezliví, môže to trvať niekoľko minút.</translation>
 <translation id="1362165759943288856">Dňa <ph name="DATE"/> ste si zakúpili program bez dátového obmedzenia.</translation>
 <translation id="2078019350989722914">Upozorniť pred ukončením (<ph name="KEY_EQUIVALENT"/>)</translation>
@@ -1504,8 +1554,8 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="8323232699731382745">heslo siete</translation>
 <translation id="2750306679399709583">$1 x $2</translation>
 <translation id="6588399906604251380">Povoliť kontrolu pravopisu</translation>
+<translation id="4572815280350369984">Súbor <ph name="FILE_TYPE"/></translation>
 <translation id="7053983685419859001">Blokovať</translation>
-<translation id="2878975913555084194">Prísne hodnotenie zhôd s históriou zadávaných adries URL</translation>
 <translation id="2485056306054380289">Certifikát CA servera:</translation>
 <translation id="6462109140674788769">grécka klávesnica</translation>
 <translation id="2727712005121231835">Skutočná veľkosť</translation>
@@ -1521,7 +1571,6 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, platí do <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="7866522434127619318">Povolí možnosť „kliknutím prehrať“ v nastaveniach obsahu doplnku.</translation>
 <translation id="6466988389784393586">&amp;Otvoriť všetky záložky</translation>
-<translation id="8860923508273563464">Počkať na dokončenie preberaní</translation>
 <translation id="6406506848690869874">Synchronizácia</translation>
 <translation id="5288678174502918605">Znova o&amp;tvoriť zatvorenú kartu</translation>
 <translation id="7238461040709361198">Od vášho posledného prihlásenia z tohto počítača došlo k zmene hesla vášho účtu Google.</translation>
@@ -1534,8 +1583,13 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="6624687053722465643">Sladkosť</translation>
 <translation id="3021256392995617989">Opýtať sa, keď sa webové stránky pokúšajú sledovať moju fyzickú polohu (odporúčané)</translation>
 <translation id="271083069174183365">Nastavenia japonského vstupu</translation>
+<translation id="1257595095755619623">Ak používate server proxy, skontrolujte jeho nastavenia alebo
+        kontaktujte správcu siete a uistite sa,
+        že server funguje. Ak sa domnievate, že by ste server proxy
+        používať nemali, upravte svoje <ph name="LINK_START"/>nastavenia servera proxy<ph name="LINK_END"/>.</translation>
 <translation id="1640672724030957280">Prebieha preberanie...</translation>
 <translation id="5185386675596372454">Najnovšia verzia doplnku „<ph name="EXTENSION_NAME"/>“ bola zakázaná, pretože vyžaduje viac povolení.</translation>
+<translation id="4147376274874979956">K súboru nie je možné pristupovať.</translation>
 <translation id="4285669636069255873">ruská fonetická klávesnica</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="3579358906104462249">Niektoré nastavenia boli zakázané správcom a ostatné sú spravované pomocou rozšírenia.</translation>
@@ -1547,6 +1601,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="6295228342562451544">Keď sa pripojíte k zabezpečenej webovej stránke, server hosťujúci stránku vášmu prehliadaču poskytne informácie nazývané „certifikát“. Certifikát slúži na overenie identity servera. Certifikát obsahuje informácie o identite (napríklad adresa webovej stránky), overené treťou stranou, ktorej váš počítač dôveruje. Kontrolou zhody adresy v certifikáte s adresou webovej stránky sa dá určiť, či naozaj bezpečne komunikujete s požadovanou webovou stránkou, a nie s treťou stranou (napríklad s útočníkom na vašu sieť).</translation>
 <translation id="6342069812937806050">Práve teraz</translation>
 <translation id="5605716740717446121">Ak nezadáte správny kľuč na odomknutie kódu PIN, bude vaša karta SIM natrvalo zakázaná. Počet zostávajúcich pokusov: <ph name="TRIES_COUNT"/></translation>
+<translation id="6960978892882306894">Povolí nový postup prihlásenia do synchronizácie, kedy je celé používateľské rozhranie presmerované na adresu chrome:signin.</translation>
 <translation id="8836712291807476944"><ph name="SAVED_BYTES"/> / <ph name="TOTAL_BYTES"/> bajtov, Prerušené</translation>
 <translation id="6773455881569219915">Odoslať túto stránku do zariadenia <ph name="DEVICE_NAME"/>.</translation>
 <translation id="5502500733115278303">Importované z prehliadača Firefox</translation>
@@ -1557,8 +1612,10 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="8494234776635784157">Obsah webu</translation>
 <translation id="2681441671465314329">Vyprázdniť vyrovnávaciu pamäť</translation>
 <translation id="3646789916214779970">Obnoviť predvolený motív</translation>
+<translation id="7816949580378764503">Identita je overená</translation>
 <translation id="1679068421605151609">Nástroje pre vývojárov</translation>
 <translation id="7014051144917845222">Pokus o pripojenie aplikácie <ph name="PRODUCT_NAME"/> k stránkam <ph name="HOST_NAME"/> bol zamietnutý. Webové stránky možno nie sú v prevádzke alebo nie je správne nakonfigurovaná sieť.</translation>
+<translation id="1708338024780164500">(Neaktívne)</translation>
 <translation id="6896758677409633944">Kopírovať</translation>
 <translation id="8986362086234534611">Odstrániť</translation>
 <translation id="5260508466980570042">Vašu e-mailovú adresu alebo vaše heslo sa nepodarilo overiť. Skúste to znova.</translation>
@@ -1583,10 +1640,10 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="74354239584446316">Váš účet webového obchodu je <ph name="EMAIL_ADDRESS"/> – prihlásenie a synchronizácia pomocou iného účtu bude viesť k nekompatibilite.</translation>
 <translation id="3712897371525859903">Uložiť stránku &amp;ako...</translation>
 <translation id="1321877377111404845">Prebehol pokus o zmenu domovskej stránky</translation>
-<translation id="2995424237826337217">Kliknutím spustíte ukážku</translation>
 <translation id="7926251226597967072">Aplikácia <ph name="PRODUCT_NAME"/> teraz importuje nasledujúce položky z prehliadača <ph name="IMPORT_BROWSER_NAME"/>:</translation>
 <translation id="4442424173763614572">Vyhľadanie DNS zlyhalo</translation>
 <translation id="4315903906955301944">Oficiálna webová stránka zvukového súboru</translation>
+<translation id="225207911366869382">Táto hodnota už pre toto pravidlo nie je podporovaná.</translation>
 <translation id="2398753653077538650">Povolí na stránke akciu Chrome To Mobile, ktorá umožňuje odoslať adresy URL stránok a kópie offline do prehliadača Chrome na mobilnom zariadení.</translation>
 <translation id="2767649238005085901">Ak chcete prejsť ďalej, stlačte kláves Enter. Ak chcete zobraziť históriu, stlačte kláves kontextovej ponuky.</translation>
 <translation id="8580634710208701824">Znova načítať rámec</translation>
@@ -1603,6 +1660,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="1666788816626221136">V súbore máte certifikáty, ktoré sa nedajú zaradiť do žiadnej z iných kategórií:</translation>
 <translation id="5698727907125761952">Oficiálny interpret</translation>
 <translation id="4821935166599369261">&amp;Profilovanie povolené</translation>
+<translation id="1429740407920618615">Sila signálu:</translation>
 <translation id="1603914832182249871">(Inkognito)</translation>
 <translation id="701632062700541306">Chcete na tomto stretnutí spustiť prezentáciu celej obrazovky?</translation>
 <translation id="7910768399700579500">&amp;Nový priečinok</translation>
@@ -1627,6 +1685,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="3776667127601582921">V tomto prípade je certifikát servera alebo certifikát CA prostredníka predložený vášmu prehliadaču neplatný. Môže to znamenať, že certifikát je poškodený, obsahuje neplatné polia alebo nie je podporovaný.</translation>
 <translation id="440265548246666650">Stránka skryla kurzor myši. Ak ho chcete obnoviť, stlačte kláves „Esc“.</translation>
 <translation id="2412835451908901523">Zadajte 8-ciferný kľúč na odomknutie kódu PIN poskytnutý operátorom <ph name="CARRIER_ID"/>.</translation>
+<translation id="7548916768233393626">Vynútenie režimu vysokej hodnoty DPI</translation>
 <translation id="6979448128170032817">Výnimky...</translation>
 <translation id="7019805045859631636">Rýchle</translation>
 <translation id="4880520557730313061">Automatická oprava</translation>
@@ -1646,6 +1705,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="9115675100829699941">&amp;Záložky</translation>
 <translation id="1731589410171062430">Celkom: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
 <translation id="7461924472993315131">Pripnúť</translation>
+<translation id="7668371797822494537">Vloženie zlyhalo. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="7279701417129455881">Spravovať blokovanie súborov cookie...</translation>
 <translation id="665061930738760572">Otvoriť v &amp;novom okne</translation>
 <translation id="6561519562679424969">Spravovať uložené heslá</translation>
@@ -1680,9 +1740,9 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="5268606875983318825">PPAPI (mimo proces)</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> nemôže určiť alebo nastaviť predvolený prehliadač.</translation>
 <translation id="8898786835233784856">Vybrať ďalšiu kartu</translation>
-<translation id="2674170444375937751">Naozaj chcete odstrániť tieto stránky zo svojej histórie?</translation>
 <translation id="9111102763498581341">Odomknúť</translation>
 <translation id="289695669188700754">Identifikácia kľúča: <ph name="KEY_ID"/></translation>
+<translation id="8183644773978894558">Prebieha preberanie inkognito. Chcete režim inkognito ukončiť a preberanie zrušiť?</translation>
 <translation id="2181821976797666341">Pravidlá</translation>
 <translation id="8767072502252310690">Používatelia</translation>
 <translation id="683526731807555621">Pridať nový vyhľadávací nástroj</translation>
@@ -1699,10 +1759,11 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="9114223350847410618">Pred odstránením tohto jazyka pridajte iný jazyk.</translation>
 <translation id="4408427661507229495">názov siete</translation>
 <translation id="5258266922137542658">PPAPI (v procese)</translation>
+<translation id="1093369689648505397">Povoliť prihlásenie ClientOAuth</translation>
 <translation id="8028993641010258682">Veľkosť</translation>
 <translation id="7942403573416827914">Spustiť prehliadač <ph name="PRODUCT_NAME"/> automaticky pri zapnutí počítača</translation>
 <translation id="8329978297633540474">Obyčajný text</translation>
-<translation id="5031603669928715570">Povoliť...</translation>
+<translation id="7704305437604973648">Úloha</translation>
 <translation id="532340483382036194">Povolí podporu pre inštaláciu aplikácií prehliadača Chrome, ktoré sú nasadené pomocou súboru manifestu na webovej stránke. Manifest a ikony nebudú zabalené do súboru CRX.</translation>
 <translation id="4041408658944722952">Povolí v automatickom dopĺňaní do všeobecného poľa vkladanie zhôd zo služby HistoryQuickProvider.</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
@@ -1774,7 +1835,9 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="8273972836055206582">Stránka <ph name="FULLSCREEN_ORIGIN"/> je teraz zobrazená na celú obrazovku a chce zakázať kurzor myši.</translation>
 <translation id="5916084858004523819">Zakázané</translation>
+<translation id="1497522201463361063">Súbor <ph name="FILE_NAME"/> sa nepodarilo premenovať. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="8226742006292257240">Nižšie je uvedené náhodne vygenerované heslo modulu TPM, ktoré bolo priradené k vášmu počítaču:</translation>
+<translation id="5010043101506446253">Certifikačná autorita</translation>
 <translation id="2050524657923939561">Webové zámery</translation>
 <translation id="8487693399751278191">Importovať záložky...</translation>
 <translation id="7615602087246926389">Už máte údaje, ktoré sú šifrované pomocou inej verzie vášho hesla účtu Google. Zadajte ho nižšie.</translation>
@@ -1793,7 +1856,6 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="8315720913203253727">Na správne zobrazenie tejto stránky sú potrebné údaje, ktoré ste zadali predtým. Ak údaje odošlete znova, zopakuje sa každá akcia, ktorú stránka predtým vykonala. Ak chcete znova odoslať údaje a zobraziť stránku, stlačte tlačidlo Znova načítať.</translation>
 <translation id="4419409365248380979">Vždy povoliť prehliadaču <ph name="HOST"/> nastavovať súbory cookie</translation>
 <translation id="8069732954367771603">Na túto akciu nie sú zaregistrované žiadne služby.</translation>
-<translation id="1805520545536844220">Viditeľnosť police</translation>
 <translation id="917450738466192189">Certifikát servera je neplatný.</translation>
 <translation id="2649045351178520408">ASCII s kódovaním Base64, certifikačná reťaz</translation>
 <translation id="2615569600992945508">Nepovoliť žiadnej webovej stránke zakázať kurzor myši</translation>
@@ -1816,6 +1878,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="2773223079752808209">Podpora zákazníka</translation>
 <translation id="4821695613281243046">Webové stránky na adrese <ph name="HOST_NAME"/> obsahujú prvky zo stránok, ktoré zrejme hostia škodlivý softvér. Takýto softvér môže poškodiť vaše mobilné zariadenie alebo vykonávať rôzne operácie bez vášho vedomia. Mobilné zariadenie sa môže infikovať už pri návšteve webových stránok, ktoré tento škodlivý softvér obsahujú.</translation>
 <translation id="4647175434312795566">Súhlasiť so zmluvou</translation>
+<translation id="2169299909102766683">S cieľom autorizácie prístupu ku chránenému obsahu môžu byť na vašu jedinečnú identifikáciu použité identifkátory prístroja.</translation>
 <translation id="1084824384139382525">Kopírovať adre&amp;su odkazu</translation>
 <translation id="1221462285898798023">Spusťte službu <ph name="PRODUCT_NAME"/> ako bežný používateľ. Ak ju chcete spustiť ako používateľ root, musíte určiť iný adresár používateľských údajov na uloženie informácií profilu.</translation>
 <translation id="7658008455977046314">Vykresľovanie akcelerované jednotkou GPU</translation>
@@ -1847,6 +1910,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="4624768044135598934">Úspech!</translation>
 <translation id="5582768900447355629">Šifrovať všetky moje údaje</translation>
 <translation id="1974043046396539880">Distribučné body CRL</translation>
+<translation id="6088825445911044104">Karty sa nezmenšujú, no namiesto toho sa pri nedostatku priestoru naukladajú na seba.</translation>
 <translation id="7049357003967926684">Asociácia</translation>
 <translation id="3024374909719388945">Použiť 24-hodinový režim hodín</translation>
 <translation id="1867780286110144690">Aplikácia <ph name="PRODUCT_NAME"/> je pripravená dokončiť inštaláciu</translation>
@@ -1866,6 +1930,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="1373074393717692190">Prihláste sa do prehliadača <ph name="PRODUCT_NAME"/> pomocou vášho účtu Google a uložte si prispôsobené funkcie prehliadača na webe, aby ste k nim mali prístup z prehliadača <ph name="PRODUCT_NAME"/> v ktoromkoľvek mobilnom zariadení. Automaticky tiež dôjde k prihláseniu do vašich obľúbených služieb Google.</translation>
 <translation id="7222232353993864120">E-mailová adresa</translation>
 <translation id="2128531968068887769">Native Client</translation>
+<translation id="2749720227918911728">Ikona sa zobrazí, keď bude možné rozšírenie použiť na aktuálnej stránke. Rozšírenie aktivujete kliknutím na ikonu alebo klávesovú skratku <ph name="EXTENSION_SHORTCUT"/>.</translation>
 <translation id="7175353351958621980">Načítané z:</translation>
 <translation id="7186367841673660872">Táto stránka bola preložená z jazyka<ph name="ORIGINAL_LANGUAGE"/>do jazyka<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Vaše šifrované údaje si môže prečítať len osoba, ktorá pozná vašu prístupovú frázu. Prístupová fráza sa spoločnosti Google neodosiela ani ju spoločnosť Google neuchováva. Ak prístupovú frázu zabudnete, budete musieť</translation>
@@ -1889,6 +1954,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="4375848860086443985">Skladateľ</translation>
 <translation id="4988273303304146523">Pred <ph name="NUMBER_DEFAULT"/> dňami</translation>
 <translation id="2527591341887670429">Zostávajúca výdrž batérie: <ph name="PRECENTAGE"/> %</translation>
+<translation id="3112378005171663295">Zbaliť</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="1588343679702972132">Tieto webové stránky vyžadujú, aby ste sa identifikovali prostredníctvom certifikátu:</translation>
 <translation id="7211994749225247711">Odstrániť...</translation>
@@ -1901,6 +1967,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="3808504580859735057">Webovú stránku sa nepodarilo načítať, pretože vaše mobilné zariadenie prešlo do režimu spánku alebo dlhodobého spánku. V tomto režime totiž dôjde k vypnutiu sieťových pripojení a všetky nové sieťové žiadosti zlyhajú. Túto záležitosť by mohlo vyriešiť opätovné načítanie stránky.</translation>
 <translation id="7139724024395191329">Emirát</translation>
 <translation id="895586998699996576">Obrázok vo formáte $1</translation>
+<translation id="4534166495582787863">Povolí klepnutie na touchpad troma prstami namiesto prostredného tlačidla.</translation>
 <translation id="2190469909648452501">Znížiť</translation>
 <translation id="7754704193130578113">Pred každým preberaním sa spýtať, kam uložiť súbor</translation>
 <translation id="7654941827281939388">Tento účet sa už v počítači používa.</translation>
@@ -1926,12 +1993,12 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> sekunda</translation>
 <translation id="1077946062898560804">Nastaviť automatické aktualizácie pre všetkých používateľov</translation>
 <translation id="3122496702278727796">Nedal sa vytvoriť údajový adresár</translation>
-<translation id="4517036173149081027">Zatvoriť a zrušiť preberanie</translation>
 <translation id="6990081529015358884">Nemáte dostatok miesta</translation>
 <translation id="7150146631451105528"><ph name="DATE"/></translation>
 <translation id="350945665292790777">Použije zobrazovanie akcelerované jednotkou GPU na všetkých stránkach, nielen na tých, ktoré obsahujú vrstvy akcelerované jednotkou GPU.</translation>
-<translation id="3166547286524371413">Adresa:</translation>
+<translation id="4360991150548211679">Prebieha niekoľko preberaní</translation>
 <translation id="7027974841476899679">Povolí v prvkoch &amp;lt;style&amp;gt; atribút „scoped“.</translation>
+<translation id="180035236176489073">Ak chcete pristupovať k týmto súborom, musíte byť online.</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="1091767800771861448">Ak chcete preskočiť aktualizáciu, stlačte kláves Escape (len pre neoficiálne zostavy).</translation>
 <translation id="59659456909144943">Upozornenie: <ph name="NOTIFICATION_NAME"/></translation>
@@ -1946,13 +2013,13 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="7716781361494605745">Adresa URL pre pravidlá certifikačnej autority služby Netscape</translation>
 <translation id="9148058034647219655">Ukončiť</translation>
 <translation id="2881966438216424900">Dátum posledného prístupu:</translation>
-<translation id="4136196711831568812">Zakázať konektor služby <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="630065524203833229">U&amp;končiť</translation>
 <translation id="4647090755847581616">&amp;Zavrieť kartu</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
 <translation id="7886758531743562066">Webové stránky na adrese <ph name="HOST_NAME"/> obsahujú prvky zo stránok, ktoré zrejme hostia škodlivý softvér. Takýto softvér môže poškodiť váš počítač alebo vykonávať rôzne operácie bez vášho vedomia. Počítač sa môže infikovať už pri návšteve webových stránok, ktoré tento škodlivý softvér obsahujú.</translation>
 <translation id="7538227655922918841">Súbory cookie z viacerých webových stránok sú povolené len pre reláciu.</translation>
 <translation id="2385700042425247848">Názov služby:</translation>
+<translation id="2787047795752739979">Prepísať originál</translation>
 <translation id="3128628928070793746">Prejdite na <ph name="BEGIN_BOLD"/> ponuku nástrojov &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> &gt; <ph name="PROXIES_TITLE"/> <ph name="END_BOLD"/> a uistite sa, že je vaša konfigurácia nastavená na možnosť „žiadny server proxy“ alebo „priame“.</translation>
 <translation id="7751005832163144684">Vytlačiť skúšobnú stranu</translation>
 <translation id="2853916256216444076">Video vo formáte $1</translation>
@@ -1971,10 +2038,10 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="586940690534897885">Ponechať moje nastavenia</translation>
 <translation id="10614374240317010">Neuložené</translation>
 <translation id="5116300307302421503">Súbor nie je možné analyzovať.</translation>
-<translation id="1907054602291213374">Prísnejšie hodnotenie zhôd od poskytovateľa histórie zadávaných adries URL v hodnotení automatického dopĺňania textu vo všeobecnom poli.</translation>
 <translation id="2745080116229976798">Oprávnené podriadenie od spoločnosti Microsoft</translation>
 <translation id="8474378002946546633">Povoliť upozornenia</translation>
 <translation id="6374830905869502056">Zakódované používateľom</translation>
+<translation id="2230062665678605299">Priečinok <ph name="FOLDER_NAME"/> sa nepodarilo vytvoriť. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="2526590354069164005">Pracovná plocha</translation>
 <translation id="4165738236481494247">Spustiť tento doplnok</translation>
 <translation id="7983301409776629893">Vždy preložiť jazyk <ph name="ORIGINAL_LANGUAGE"/> do jazyka <ph name="TARGET_LANGUAGE"/></translation>
@@ -1997,6 +2064,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="5148652308299789060">Zakázať softvérový rasterizér 3D</translation>
 <translation id="8382913212082956454">Kopírovať &amp;e-mailovú adresu</translation>
 <translation id="7447930227192971403">Aktivovať kartu 3</translation>
+<translation id="3010559122411665027">Položka zoznamu „<ph name="ENTRY_INDEX"/>“: <ph name="ERROR"/></translation>
 <translation id="2903493209154104877">Adresy</translation>
 <translation id="3479552764303398839">Teraz nie</translation>
 <translation id="3714633008798122362">webový kalendár</translation>
@@ -2049,8 +2117,8 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="7806513705704909664">Povoliť funkciu Automatické dopĺňanie, ktorá umožňuje vyplňovanie webových formulárov jediným kliknutím.</translation>
 <translation id="7846634333498149051">Klávesnica</translation>
 <translation id="8026334261755873520">Vymazať údaje prehliadania</translation>
+<translation id="605011065011551813">Doplnok (<ph name="PLUGIN_NAME"/>) neodpovedá.</translation>
 <translation id="1467432559032391204">Doľava</translation>
-<translation id="2717361709448355148">Položku „$1“ sa nepodarilo premenovať: $2</translation>
 <translation id="1769104665586091481">Otvoriť odkaz v novom &amp;okne</translation>
 <translation id="8503813439785031346">Meno používateľa</translation>
 <translation id="5319782540886810524">lotyšská klávesnica</translation>
@@ -2059,13 +2127,10 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="1361655923249334273">Nepoužitý</translation>
 <translation id="290555789621781773">Počet minút: <ph name="NUMBER_TWO"/></translation>
 <translation id="5434065355175441495">Štandard PKCS #1 so šifrovaním RSA</translation>
-<translation id="5591764445111619506">Ak chcete tento súbor uložiť offline, musíte najskôr uvoľniť ďalšie miesto s veľkosťou <ph name="TOTAL_FILE_SIZE"/>:<ph name="MARKUP_1"/>
-        <ph name="MARKUP_2"/>odopnite súbory, ku ktorým už nepotrebujete pristupovať offline<ph name="MARKUP_3"/>
-        <ph name="MARKUP_4"/>odstráňte súbory z priečinka Prevzaté súbory<ph name="MARKUP_5"/></translation>
 <translation id="7073704676847768330">Toto pravdepodobne nie je stránka, ktorú hľadáte!</translation>
 <translation id="8477384620836102176">&amp;Všeobecné</translation>
-<translation id="5780097224025632978">Odhlásenie nastane o 1 s.</translation>
 <translation id="3391392691301057522">Starý kód PIN:</translation>
+<translation id="96421021576709873">Sieť Wi-Fi</translation>
 <translation id="1344519653668879001">Zakázať kontrolu hypertextových odkazov</translation>
 <translation id="6463795194797719782">&amp;Upraviť</translation>
 <translation id="4262113024799883061">čínština</translation>
@@ -2073,6 +2138,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="4188026131102273494">Kľúčové slovo:</translation>
 <translation id="8004512796067398576">Zvýšenie</translation>
 <translation id="2930644991850369934">Pri preberaní obrazu na obnovenie sa vyskytol problém. Sieťové pripojenie bolo prerušené.</translation>
+<translation id="8150722005171944719">Súbor na adrese <ph name="URL"/> nie je možné prečítať. Je možné, že bol odstránený, presunutý alebo môžu v prístupe brániť povolenia súboru.</translation>
 <translation id="5750053751252005701">Bez údajov siete <ph name="NETWORK"/></translation>
 <translation id="1720318856472900922">Overenie WWW servera protokolom TLS</translation>
 <translation id="7853202427316060426">Aktivita</translation>
@@ -2123,10 +2189,10 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="1128554891575825309">Odstrániť používateľa <ph name="USER_EMAIL_ADDRESS"/></translation>
 <translation id="8410619858754994443">Potvrďte heslo:</translation>
 <translation id="3377251335797762771">Režim okna</translation>
-<translation id="2210840298541351314">Ukážka tlače</translation>
 <translation id="3858678421048828670">talianska klávesnica</translation>
 <translation id="1436784010935106834">Odstránené</translation>
 <translation id="4103674824110719308">Spúšťa sa ukážka.</translation>
+<translation id="2384957700754631501">http://support.google.com/chrome/bin/answer.py?answer=185277&amp;hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4938277090904056629">Kvôli antivírusovému programu ESET nie je možné nadviazať zabezpečené pripojenie</translation>
 <translation id="4521805507184738876">(platnosť vypršala)</translation>
 <translation id="111844081046043029">Naozaj chcete odísť z tejto stránky?</translation>
@@ -2135,6 +2201,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="4154664944169082762">Odtlačky</translation>
 <translation id="3202578601642193415">Najnovšie</translation>
 <translation id="8112886015144590373">Počet hodín: <ph name="NUMBER_FEW"/></translation>
+<translation id="5774295353725270860">Otvoriť aplikáciu Súbory</translation>
 <translation id="1398853756734560583">Maximalizovať</translation>
 <translation id="8988255471271407508">Stránka sa nenašla vo vyrovnávacej pamäti. Určité zdroje môžu byť bezpečne načítané len z vyrovnávacej pamäte, napr. stránky vytvorené z odoslaných údajov. <ph name="LINE_BREAK"/> Táto chyba môže byť spôsobená aj poškodením vyrovnávacej pamäte nesprávnym vypnutím. <ph name="LINE_BREAK"/> Ak problém pretrváva, skúste vyrovnávaciu pamäť vymazať.</translation>
 <translation id="1653828314016431939">OK — reštartovať</translation>
@@ -2142,12 +2209,12 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="2138262541062800200">Zakázať synchronizovanie upozornení aplikácií</translation>
 <translation id="2790759706655765283">Oficiálna webová stránka vlastníka</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
+<translation id="8342318071240498787">Súbor alebo priečinok s daným názvom už existuje.</translation>
 <translation id="7469237359338869056">Hľadať text znova</translation>
 <translation id="6690744523875189208">Počet hodín: <ph name="NUMBER_TWO"/></translation>
 <translation id="8053390638574070785">Obnoviť túto stránku</translation>
 <translation id="5507756662695126555">Zrušenie zamietnutia</translation>
 <translation id="3678156199662914018">Rozšírenie: <ph name="EXTENSION_NAME"/></translation>
-<translation id="7951780829309373534">Položku „$1“ sa nepodarilo vložiť: $2</translation>
 <translation id="3531250013160506608">Textové pole hesla</translation>
 <translation id="506228266759207354">Zakáže ponuku na stránke Nová karta, ktorá umožňuje pristupovať k ostatným zariadeniam.</translation>
 <translation id="4421660074164639811">Rozšírenie „<ph name="EXTENSION_NAME"/>“ prehliadača <ph name="PRODUCT_NAME"/> spustilo zaznamenávanie zvuku na účely rozpoznávania reči. V prípade, keď sa to bude opakovať, hľadajte ikonu mikrofónu.</translation>
@@ -2173,8 +2240,6 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="7143207342074048698">Pripája sa</translation>
 <translation id="4212084985543581100">Server proxy je server, ktorý pôsobí ako sprostredkovateľ medzi mobilným zariadením a inými servermi. Váš systém je momentálne nakonfigurovaný tak, aby používal server proxy, ale prehliadač <ph name="PRODUCT_NAME"/> sa k nemu nemôže pripojiť.</translation>
 <translation id="671928215901716392">Uzamknúť obrazovku</translation>
-<translation id="1843187317472788812">Vždy viditeľné</translation>
-<translation id="3727187387656390258">Kontrola kontextovej ponuky</translation>
 <translation id="569068482611873351">Importovať...</translation>
 <translation id="6571070086367343653">Upraviť kreditnú kartu</translation>
 <translation id="1204242529756846967">Tento jazyk sa používa na kontrolu pravopisu</translation>
@@ -2191,7 +2256,6 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="2850961597638370327">Vydané pre: <ph name="NAME"/></translation>
 <translation id="2168039046890040389">Page Up</translation>
 <translation id="1767519210550978135">Hsu</translation>
-<translation id="5508282018086013138">Toto rozšírenie je zakázané pravidlom správcu.</translation>
 <translation id="2498539833203011245">Minimalizovať</translation>
 <translation id="3031417829280473749">Agent X</translation>
 <translation id="2893168226686371498">Predvolený prehliadač</translation>
@@ -2200,9 +2264,9 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="132101382710394432">Preferované siete...</translation>
 <translation id="532360961509278431">Súbor „$1“ sa nepodarilo otvoriť: $2</translation>
 <translation id="5438653034651341183">Zahrnúť aktuálnu snímku obrazovky:</translation>
-<translation id="4215305022043086376">Webové stránky sú zobrazené v invertovaných farbách, pretože ste povolili režim Vysoký kontrast a používate farebnú schému „svetlé na tmavom pozadí“.</translation>
 <translation id="8096505003078145654">Server proxy je server, ktorý funguje ako sprostredkovateľ medzi počítačom a ďalšími servermi. Váš systém je momentálne nakonfigurovaný tak, aby používal server proxy, ale aplikácia <ph name="PRODUCT_NAME"/> sa k nemu nemôže pripojiť.</translation>
 <translation id="1899708097738826574"><ph name="OPTIONS_TITLE"/> - <ph name="SUBPAGE_TITLE"/></translation>
+<translation id="6862635236584086457">Všetky súbory uložené v tomto priečinku sa automaticky zálohujú online</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="4027804175521224372">(Chýbate nám — <ph name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK"/>)</translation>
 <translation id="1600303675170688467">Zámery</translation>
@@ -2213,6 +2277,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="8256319818471787266">Rexo</translation>
 <translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="7568790562536448087">Prebieha aktualizácia</translation>
+<translation id="5315873049536339193">Identita</translation>
 <translation id="5487982064049856365">Nedávno ste si zmenili heslo. Prihláste sa pomocou nového hesla.</translation>
 <translation id="3814646623917811954">http://support.google.com/chrome/bin/answer.py?answer=95440&amp;hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="438503109373656455">Saratoga</translation>
@@ -2230,10 +2295,10 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="7805768142964895445">Stav</translation>
 <translation id="872451400847464257">Upraviť vyhľadávací mechanizmus</translation>
 <translation id="6463061331681402734">Počet minút: <ph name="NUMBER_MANY"/></translation>
-<translation id="5085647276663819155">Zakázať ukážku pred tlačou</translation>
 <translation id="5512653252560939721">Certifikát používateľa musí byť hardvérový.</translation>
 <translation id="3881435075661337013">Blíži sa vypršanie platnosti siete <ph name="NETWORK"/></translation>
 <translation id="5681833099441553262">Aktivovať predchádzajúcu kartu</translation>
+<translation id="4842203649457204927">V službe <ph name="PRODUCT_NAME"/> nemáte na uloženie súboru <ph name="FILE_NAME"/> dostatok miesta. Odstráňte niektoré súbory alebo si <ph name="BEGIN_LINK"/>kúpte ďalší ukladací priestor<ph name="END_LINK"/>.</translation>
 <translation id="1681614449735360921">Zobraziť nekompatibilné položky</translation>
 <translation id="6227235786875481728">Tento súbor nie je možné prehrať.</translation>
 <translation id="3121147067826817533"><ph name="BEGIN_BOLD"/>Ste v režime inkognito<ph name="END_BOLD"/>. Stránky, ktoré zobrazíte v tomto okne, sa nezobrazia v histórii prehliadača ani v histórii vyhľadávania a po zatvorení &lt;strong&gt;všetkých&lt;/strong&gt; otvorených okien v režime inkognito nezanechajú vo vašom počítači žiadne stopy (ako napríklad súbory cookie). Všetky súbory, ktoré prevezmete, a záložky, ktoré vytvoríte, však zostanú zachované.
@@ -2260,10 +2325,11 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="3388026114049080752">Vaše karty a aktivita pri prehliadaní</translation>
 <translation id="7525067979554623046">Vytvoriť</translation>
 <translation id="4853020600495124913">Otvoriť v &amp;novom okne</translation>
-<translation id="7700022328096883877">Bezdrôtová sieť</translation>
+<translation id="6847758263950452722">Uložiť stránku vo formáte MHTML</translation>
 <translation id="4711094779914110278">Turecké</translation>
 <translation id="5121130586824819730">Pevný disk je plný. Uložte inde alebo uvoľnite viac miesta na pevnom disku. </translation>
 <translation id="1031460590482534116">Pri pokuse o uchovanie certifikátu klienta sa vyskytla chyba. Chyba <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>).</translation>
+<translation id="25597840138324075">Prebieha preberanie inkognito</translation>
 <translation id="7136984461011502314">Vitajte v aplikácii <ph name="PRODUCT_NAME"/></translation>
 <translation id="204497730941176055">Názov šablóny certifikátu od spoločnosti Microsoft</translation>
 <translation id="4002066346123236978">Názov</translation>
@@ -2271,6 +2337,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="4087089424473531098">Bolo vytvorené rozšírenie:
 
 <ph name="EXTENSION_FILE"/></translation>
+<translation id="430326050669417502">Joystick (<ph name="ADDRESS"/>)</translation>
 <translation id="1241100329754769291">Služba <ph name="CLOUD_PRINT_NAME"/> vám umožňuje pristupovať k tlačiarňam pripojeným k tomuto počítaču z ktoréhokoľvek miesta. Kliknutím túto službu povolíte.</translation>
 <translation id="16620462294541761">Vaše heslo sa nepodarilo overiť. Skúste to znova.</translation>
 <translation id="7912438424092011072">Služba <ph name="PRODUCT_NAME"/> momentálne nie je k dispozícii.</translation>
@@ -2280,7 +2347,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="2498765460639677199">Obrovské</translation>
 <translation id="2378982052244864789">Vybrať adresár rozšírenia.</translation>
 <translation id="7861215335140947162">&amp;Preberanie</translation>
-<translation id="4778630024246633221">Správca certifikátov</translation>
+<translation id="5046082698497143371">Prichytiť okno vľavo</translation>
 <translation id="3144135466825225871">Súbor crx sa nepodarilo nahradiť. Skontrolujte, či je súbor používaný.</translation>
 <translation id="2744221223678373668">Zdieľané</translation>
 <translation id="9064142312330104323">Profilová fotografia Google (prebieha načítavanie)</translation>
@@ -2293,7 +2360,6 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="8691686986795184760">(Povolené pravidlami pre podniky)</translation>
 <translation id="1911483096198679472">Čo je to?</translation>
 <translation id="1976323404609382849">Boli zablokované súbory cookie z viacerých webových stránok.</translation>
-<translation id="916322872615955950">Sieť, ku ktorej sa snažíte pripojiť, vyžaduje bezpečnostný certifikát, ktorý ešte nie je nainštalovaný alebo je neplatný. Nižšie môžete získať nový certifikát a pokračovať v pripájaní.</translation>
 <translation id="2523966157338854187">Otvoriť konkrétnu stránku alebo súpravu stránok.</translation>
 <translation id="4176463684765177261">Zakázané</translation>
 <translation id="154603084978752493">Pridať ako vyhľadávací &amp;mechanizmus...</translation>
@@ -2315,6 +2381,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="5097002363526479830">K sieti „<ph name="NAME"/>“ sa nepodarilo pripojiť: <ph name="DETAILS"/></translation>
 <translation id="3437994698969764647">Exportovať všetko...</translation>
 <translation id="4958202758642732872">Výnimky režimu celej obrazovky</translation>
+<translation id="6990778048354947307">Tmavý motív</translation>
 <translation id="8119631488458759651">odstrániť tieto stránky</translation>
 <translation id="8349305172487531364">Panel so záložkami</translation>
 <translation id="8153607920959057464">Tento súbor nie je možné zobraziť.</translation>
@@ -2324,7 +2391,6 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="7208899522964477531">Na stránke <ph name="SITE_NAME"/> hľadať text <ph name="SEARCH_TERMS"/></translation>
 <translation id="8960795431111723921">Momentálne tento problém prešetrujeme.</translation>
 <translation id="2482878487686419369">Upozornenia</translation>
-<translation id="7190422832934811958">Prebieha odhlasovanie.</translation>
 <translation id="8004582292198964060">Prehliadač</translation>
 <translation id="695755122858488207">Nevybratý prepínač</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
@@ -2379,7 +2445,6 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="7779140087128114262">Vaše šifrované údaje si môže prečítať len osoba, ktorá pozná vašu prístupovú frázu. Prístupová fráza sa spoločnosti Google neodosiela ani ju spoločnosť Google neuchováva. Ak prístupovú frázu zabudnete, budete musieť obnoviť synchronizáciu.</translation>
 <translation id="13356285923490863">Názov pravidla</translation>
 <translation id="8241040075392580210">Polojasný</translation>
-<translation id="6030946405726632495">Nebolo možné vytvoriť priečinok „$1“: $2</translation>
 <translation id="8690155203172212841">Spravovať nastavenia povolení</translation>
 <translation id="7466861475611330213">Štýl interpunkcie</translation>
 <translation id="2496180316473517155">História prehľadávania</translation>
@@ -2453,7 +2518,6 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="3286538390144397061">Reštartovať</translation>
 <translation id="2114841414352855701">Ignorované, pretože bolo prepísané pravidlom <ph name="POLICY_NAME"/>.</translation>
 <translation id="163309982320328737">Úvodná šírka znaku: plná</translation>
-<translation id="6865719912789641501">Vloženie zlyhalo, chyba systému súborov: $1</translation>
 <translation id="5072212169848991075">Zmeniť na stránku <ph name="NEW_HOMEPAGE"/></translation>
 <translation id="4841055638263130507">Nastavenia mikrofónu</translation>
 <translation id="6965648386495488594">Port</translation>
@@ -2465,6 +2529,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="889901481107108152">Je nám ľúto, ale tento experiment nie je na vašej platforme k dispozícii.</translation>
 <translation id="3228969707346345236">Prekladanie zlyhalo, pretože stránka už je v jazyku: <ph name="LANGUAGE"/></translation>
 <translation id="1873879463550486830">Karanténa SUID</translation>
+<translation id="7678367816388362479">Pri odosielaní stránky sa vyskytla chyba</translation>
 <translation id="2190355936436201913">(prázdne)</translation>
 <translation id="8515737884867295000">Overenie pomocou certifikátu zlyhalo</translation>
 <translation id="5818003990515275822">Kórejčina</translation>
@@ -2478,6 +2543,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="8755376271068075440">&amp;Väčší</translation>
 <translation id="8132793192354020517">Pripojené k stránke <ph name="NAME"/></translation>
 <translation id="8187473050234053012">Bezpečnostný certifikát servera je zrušený!</translation>
+<translation id="7052914147756339792">Nastavenie tapety...</translation>
 <translation id="2702540957532124911">Klávesnica:</translation>
 <translation id="7444983668544353857">Zakázať zariadenie <ph name="NETWORKDEVICE"/></translation>
 <translation id="6003177993629630467">Prehliadač <ph name="PRODUCT_NAME"/> sa sám nemusí pravidelne aktualizovať.</translation>
@@ -2542,6 +2608,7 @@ Verejný exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bitov):
 <translation id="5917011688104426363">Zamerať adresovú lištu pri vyhľadávaní</translation>
 <translation id="3269101346657272573">Zadajte kód PIN.</translation>
 <translation id="2822854841007275488">Arabské</translation>
+<translation id="8491549146879925763">Povoliť v prvkoch videa <ph name="VIDEO_HTML"/> rozšírenia pre šifrované médiá.</translation>
 <translation id="5857090052475505287">Nový priečinok</translation>
 <translation id="7450732239874446337">Vstupné a výstupné funkcie siete boli pozastavené.</translation>
 <translation id="5178667623289523808">Nájsť predchádzajúce</translation>
@@ -2584,7 +2651,10 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="1881456419707551346">Podrobnosti pripojenia</translation>
 <translation id="1064912851688322329">Odpojenie účtu Google</translation>
 <translation id="1294298200424241932">Upraviť nastavenia dôveryhodnosti:</translation>
+<translation id="1407135791313364759">Otvoriť všetko</translation>
 <translation id="331915893283195714">Všetkým webovým stránkam povoliť zakázanie kurzora myši</translation>
+<translation id="5959471481388474538">Sieť je nedostupná</translation>
+<translation id="637665833966686027">Certifikát zviazaný s doménou</translation>
 <translation id="1384617406392001144">vašej histórii prehliadania</translation>
 <translation id="1119447706177454957">Interná chyba</translation>
 <translation id="3831099738707437457">&amp;Skryť panel kontroly pravopisu</translation>
@@ -2599,7 +2669,6 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="3127919023693423797">Overovanie...</translation>
 <translation id="8030169304546394654">Odpojené</translation>
 <translation id="4010065515774514159">Akcia prehliadača</translation>
-<translation id="5244403939744861887">Skryť, keď je okno maximalizované</translation>
 <translation id="267285457822962309">Zmení nastavenia špecifické pre vaše zariadenie a periférne zariadenia.</translation>
 <translation id="1154228249304313899">Otvoriť túto stránku:</translation>
 <translation id="9074348188580488499">Naozaj chcete odstrániť všetky heslá?</translation>
@@ -2616,7 +2685,6 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="869884720829132584">Ponuka Aplikácie</translation>
 <translation id="8240697550402899963">Použiť klasický motív</translation>
 <translation id="7764209408768029281">Ná&amp;stroje</translation>
-<translation id="1139892513581762545">Bočné karty</translation>
 <translation id="2890624088306605051">Načítať iba synchronizované nastavenia a údaje</translation>
 <translation id="4779083564647765204">Lupa</translation>
 <translation id="6397363302884558537">Prestať hovoriť</translation>
@@ -2626,11 +2694,13 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="7819857487979277519">PSK (WPA alebo RSN)</translation>
 <translation id="5538307496474303926">Čistí sa...</translation>
 <translation id="4367133129601245178">K&amp;opírovať adresu URL obrázka</translation>
+<translation id="3977947486213138975">Povolí v prvkoch videa experimentálne rozšírenie pre šifrované médiá.</translation>
 <translation id="7542995811387359312">Automatické dopĺňanie údajov o kreditnej karte je zakázané, pretože tento formulár nepoužíva zabezpečené pripojenie.</translation>
 <translation id="3494444535872870968">Uložiť &amp;rámec ako...</translation>
 <translation id="987264212798334818">Všeobecné</translation>
 <translation id="7005812687360380971">Zlyhanie</translation>
 <translation id="1000219486641369544">Zmeniť na nástroj <ph name="NEW_ENGINE"/></translation>
+<translation id="7496327459896094472">Používateľské rozhranie optimalizované pre dotyk</translation>
 <translation id="2356070529366658676">Opýtať sa</translation>
 <translation id="5731247495086897348">Vložiť a prej&amp;sť na adresu</translation>
 <translation id="5435695951839423913">Problém so serverom.</translation>
@@ -2639,7 +2709,6 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="5271247532544265821">Prepínať medzi režimami zjednodušenej a tradičnej čínštiny</translation>
 <translation id="2052610617971448509">Nie ste v adekvátnej karanténe!</translation>
 <translation id="6417515091412812850">Nie je možné skontrolovať, či bol certifikát odmietnutý.</translation>
-<translation id="3363332416643747536"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, Prerušené</translation>
 <translation id="7347702518873971555">Kúpiť program</translation>
 <translation id="5285267187067365830">Inštalovať doplnkový modul...</translation>
 <translation id="5334844597069022743">Zobraziť zdrojový kód</translation>
@@ -2659,6 +2728,8 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="2195729137168608510">Ochrana e-mailu</translation>
 <translation id="1425734930786274278">Nasledujúce súbory cookie boli zablokované (súbory cookie tretej strany sú blokované bez výnimky):</translation>
 <translation id="6805647936811177813">Ak chcete importovať certifikát klienta z adresy <ph name="HOST_NAME"/>, prihláste sa do <ph name="TOKEN_NAME"/>.</translation>
+<translation id="6412931879992742813">Nové okno inkognito</translation>
+<translation id="1673103856845176271">Súbor je z bezpečnostných dôvodov nedostupný.</translation>
 <translation id="1199232041627643649">Stlačením tlačidla <ph name="KEY_EQUIVALENT"/> proces ukončíte.</translation>
 <translation id="5428562714029661924">Skryť tento doplnok</translation>
 <translation id="7907591526440419938">Otvoriť súbor</translation>
@@ -2772,7 +2843,7 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="8151639108075998630">Povoliť hosťovské prehliadanie</translation>
 <translation id="2608770217409477136">Použiť predvolené nastavenia</translation>
 <translation id="3157931365184549694">Obnoviť</translation>
-<translation id="3091684859007218205">Povoliť konektor služby <ph name="CLOUD_PRINT_NAME"/></translation>
+<translation id="3717920555848846520">Akcie prehliadača pre všetky rozšírenia</translation>
 <translation id="2318625572303095424">Povoliť rozhranie Bluetooth</translation>
 <translation id="996250603853062861">Prebieha nadväzovanie zabezpečeného spojenia...</translation>
 <translation id="6059232451013891645">Priečinok:</translation>
@@ -2796,6 +2867,7 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="5604324414379907186">Vždy zobraziť panel so záložkami</translation>
 <translation id="3220630151624181591">Aktivovať kartu 2</translation>
 <translation id="249113932447298600">Je nám ľúto, ale zariadenie <ph name="DEVICE_LABEL"/> nie je momentálne podporované.</translation>
+<translation id="2351520734632194850"><ph name="MHZ"/> MHz</translation>
 <translation id="8898139864468905752">Prehľad kariet</translation>
 <translation id="2799223571221894425">Znova spustiť</translation>
 <translation id="5771816112378578655">Prebieha inštalácia...</translation>
@@ -2827,6 +2899,7 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="6663792236418322902">Zvolené heslo budete neskôr potrebovať na obnovenie tohto súboru. Zapíšte si ho na bezpečné miesto.</translation>
 <translation id="3834911756107486551">Prihlásený používateľ <ph name="USER_NAME"/></translation>
 <translation id="6321196148033717308">O rozpoznávaní hlasu</translation>
+<translation id="3649575649644677164">Povolí experimentálnu asynchrónnu kontrolu pravopisu, ktorá umožňuje prehliadaču Chrome používať na získavanie výsledkov kontroly pravopisu webové služby.</translation>
 <translation id="6582381827060163791">Ste online.</translation>
 <translation id="3412265149091626468">Prejsť na výber</translation>
 <translation id="8167737133281862792">Pridať certifikát</translation>
@@ -2845,6 +2918,7 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="8205932077017940719">Stránky <ph name="URL"/> chcú natrvalo ukladať údaje do vášho mobilného zariadenia.</translation>
 <translation id="5979421442488174909">&amp;Preložiť do jazyka <ph name="LANGUAGE"/></translation>
 <translation id="2662876636500006917">Internetový obchod Chrome</translation>
+<translation id="1233795125351481151">Vyhľadávaniu dopytu <ph name="SEARCH_STRING"/> nezodpovedajú žiadne súbory</translation>
 <translation id="6069671174561668781">Nastavenie tapety</translation>
 <translation id="952992212772159698">Neaktivované</translation>
 <translation id="8299269255470343364">Japonské</translation>
@@ -2858,13 +2932,13 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="6893165711706297716">Povoliť upozornenia</translation>
 <translation id="8962083179518285172">Skryť podrobnosti</translation>
 <translation id="2359808026110333948">Pokračovať</translation>
+<translation id="4946853241059750718">Skontrolovať povolenia...</translation>
 <translation id="5951823343679007761">Žiadna batéria</translation>
 <translation id="1618661679583408047">Bezpečnostný certifikát servera ešte nie je platný!</translation>
 <translation id="4880261670356410858">Miestna chyba</translation>
 <translation id="7039912931802252762">Karta Smart Card – prihlásenie</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="6224481128663248237">Formátovanie bolo úspešne dokončené.</translation>
-<translation id="2062873666041460278">Sieť, ku ktorej sa snažíte pripojiť, vyžaduje bezpečnostný certifikát, ktorý ešte nie je nainštalovaný alebo je neplatný. Kliknutím na tlačidlo OK prejdete na webové stránky, pomocou ktorých je možné získať nový certifikát. Keď získate nový certifikát, skúste sa pripojiť znova.</translation>
 <translation id="3065140616557457172">Zadajte text na vyhľadávanie alebo adresu URL – funguje všetko.</translation>
 <translation id="3643454140968246241">Prebieha synchronizácia <ph name="COUNT"/> súborov...</translation>
 <translation id="977224059380370527">MB</translation>
@@ -2892,6 +2966,7 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="7800518121066352902">Otočiť &amp;proti smeru hodinových ručičiek</translation>
 <translation id="345693547134384690">Otvoriť &amp;obrázok na novej karte</translation>
 <translation id="7422192691352527311">Predvoľby...</translation>
+<translation id="3264704006769917751">Povoliť jednoduché posúvanie <ph name="BEGIN_LINK"/>Viac informácií<ph name="END_LINK"/></translation>
 <translation id="3911824782900911339">Stránka Nová karta</translation>
 <translation id="4545759655004063573">Uloženie nie je možné z dôvodu nedostatočných oprávnení. Uložte položku inde.</translation>
 <translation id="1799205928600649930">Poskytnutý režim registrácie v tejto verzii operačného systému už nie je podporovaný. Uistite sa, že používate najnovšiu verziu a skúste to znova.</translation>
@@ -2912,13 +2987,13 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="3527085408025491307">Priečinok</translation>
 <translation id="3665842570601375360">Zabezpečenie:</translation>
 <translation id="8812832766208874265">Naďalej používať doménu <ph name="CURRENT_GOOGLE_HOST"/></translation>
-<translation id="6853995060616197846">Načítavanie služby <ph name="PRODUCT_NAME"/></translation>
 <translation id="1430915738399379752">Tlačiť</translation>
 <translation id="7999087758969799248">Štandardná metóda vstupu</translation>
 <translation id="2635276683026132559">Podpísanie</translation>
 <translation id="4835836146030131423">Chyba prihlásenia.</translation>
 <translation id="7489517910697905073">Zakázať upozornenia</translation>
 <translation id="7715454002193035316">Iba relácia</translation>
+<translation id="1306606229401759371">Zmeniť nastavenia</translation>
 <translation id="2475982808118771221">Vyskytla sa chyba</translation>
 <translation id="3324684065575061611">(Zakázané podnikovými pravidlami)</translation>
 <translation id="7385854874724088939">Pri pokuse o tlač sa vyskytla chyba. Skontrolujte svoju tlačiareň a skúste to znova.</translation>
@@ -2936,12 +3011,14 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="945522503751344254">Poslať pripomienky</translation>
 <translation id="1215411991991485844">Bola pridaná nová aplikácia na pozadí</translation>
 <translation id="4539401194496451708">Používa sa profil prehliadača Chrome <ph name="USER_EMAIL_ADDRESS"/>. Posledná synchronizácia: <ph name="LAST_SYNC_TIME"/></translation>
+<translation id="476208468043838292">Zmeniť na stránku <ph name="NEW_SETTING_NAME"/></translation>
 <translation id="4726672564094551039">Znova načítať pravidlá</translation>
 <translation id="4647697156028544508">Zadajte kód PIN pre zariadenie <ph name="DEVICE_NAME"/>:</translation>
 <translation id="7369847606959702983">Kreditná karta (iná)</translation>
 <translation id="7671130400130574146">Použiť záhlavie a orámovanie okna systému</translation>
 <translation id="9170848237812810038">&amp;Naspäť</translation>
 <translation id="284970761985428403"><ph name="ASCII_NAME"/> (<ph name="UNICODE_NAME"/>)</translation>
+<translation id="8113289351604509907"><ph name="TITLE"/> používa vašu kameru alebo mikrofón.</translation>
 <translation id="3903912596042358459">Server odmietol splniť žiadosť.</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/> kB</translation>
 <translation id="5819890516935349394">Prehliadač obsahu</translation>
@@ -2951,6 +3028,7 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="1254593899333212300">Priame pripojenie k Internetu</translation>
 <translation id="6107012941649240045">Vydané pre</translation>
 <translation id="6483805311199035658">Otváranie súboru <ph name="FILE"/>...</translation>
+<translation id="254976969142774079">Bolo načítaných <ph name="FILE_COUNT"/> súborov</translation>
 <translation id="940425055435005472">Veľkosť písma:</translation>
 <translation id="494286511941020793">Pomocník konfigurácie servera proxy</translation>
 <translation id="2765217105034171413">Malé</translation>
@@ -2980,8 +3058,8 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="73307164865957919">Odosiela sa..</translation>
 <translation id="523299859570409035">Výnimky upozornení</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> secs ago</translation>
+<translation id="162177343906927099">Nezahadzovať karty.</translation>
 <translation id="5423849171846380976">Aktivované</translation>
-<translation id="8279918208320642483">Pri generovaní kópie offline došlo k chybe</translation>
 <translation id="7323391064335160098">Podpora siete VPN</translation>
 <translation id="3929673387302322681">Výv. – Nestabilné</translation>
 <translation id="4251486191409116828">Vytvorenie odkazu na aplikáciu zlyhalo</translation>
@@ -2994,7 +3072,6 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="8018281414848451770">Tlačiť pomocou služby <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="1400709102841174216">Chýba certifikát GUID</translation>
 <translation id="5689774203269256801">Pred použitím siete <ph name="NETWORK_ID"/>, bude možno potrebné najskôr <ph name="LINK_START"/>prejsť na prihlasovaciu stránku siete<ph name="LINK_END"/>, ktorá sa otvorí automaticky v priebehu niekoľkých sekúnd. Ak k tomu nedošlo, danú sieť nie je možné použiť na pripojenie k internetu.</translation>
-<translation id="1398871098198323645">Získanie certifikátu siete</translation>
 <translation id="1122988962988799712">Zakázať funkciu WebGL</translation>
 <translation id="5190835502935405962">Panel so záložkami</translation>
 <translation id="7828272290962178636">Server obsahuje funkciu potrebnú na splnenie tejto žiadosti.</translation>
@@ -3045,6 +3122,7 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="2983818520079887040">Nastavenia...</translation>
 <translation id="1465619815762735808">Kliknutím prehrať</translation>
 <translation id="6941937518557314510">Ak chcete vykonať overenie pre hostiteľa <ph name="HOST_NAME"/> pomocou svojho certifikátu, prihláste sa do <ph name="TOKEN_NAME"/>.</translation>
+<translation id="7361824946268431273">Rýchlejší, jednoduchší a bezpečnejší počítač</translation>
 <translation id="2099686503067610784">Odstrániť certifikát servera „<ph name="CERTIFICATE_NAME"/>“?</translation>
 <translation id="6873213799448839504">Automaticky odoslať reťazec</translation>
 <translation id="7238585580608191973">Odtlačok SHA-256</translation>
@@ -3076,12 +3154,14 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="2712866615167520691">Funkcie zjednodušenia ovládania sú povolené.
 Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="6845383723252244143">Vybrať priečinok</translation>
+<translation id="1514298457297359873">Umožňuje aplikáciám používať rozhranie NaCl Socket API. Slúži iba na testovanie doplnkov NaCl.</translation>
 <translation id="8263231521757761563">Aktívne obslužné programy protokolov</translation>
 <translation id="7359657277149375382">Typ súboru</translation>
 <translation id="2749756011735116528">Prihlásiť sa do služby <ph name="PRODUCT_NAME"/></translation>
 <translation id="2653131220478186612">Môže vám to ublížiť. Nehovorte, že sme vás nevarovali...</translation>
 <translation id="8925458182817574960">&amp;Nastavenia</translation>
 <translation id="6361850914223837199">Podrobnosti chyby:</translation>
+<translation id="7463946387631958595">Máte povolený režim Vysoký kontrast. Chcete nainštalovať rozšírenie Vysoký kontrast a tmavý motív?</translation>
 <translation id="8948393169621400698">Vždy povoliť doplnky na stránkach <ph name="HOST"/></translation>
 <translation id="6527303717912515753">Zdieľať</translation>
 <translation id="4285498937028063278">Uvoľniť</translation>
@@ -3093,6 +3173,7 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="5436492226391861498">Čaká sa na tunelové prepojenie servera proxy...</translation>
 <translation id="3803991353670408298">Pred odstránením tohto spôsobu zadávania pridajte iný spôsob zadávania.</translation>
 <translation id="1095623615273566396">Počet sekúnd: <ph name="NUMBER_FEW"/></translation>
+<translation id="4209267054566995313">Myš ani touchpad neboli rozpoznané.</translation>
 <translation id="1366692873603881933">Zmeny ešte neboli uložené.</translation>
 <translation id="3369521687965833290">Rozšírenie sa nepodarilo rozbaliť. Aby bolo rozbalenie rozšírenia bezpečné, musíte zadať cestu k profilovému adresáru, ktorá začína písmenom jednotky a neobsahuje žiadny styčný bod, bod prepojenia ani odkaz symlink. Pre váš profil nie je k dispozícii žiadna takáto cesta.</translation>
 <translation id="337920581046691015">Nainštaluje sa <ph name="PRODUCT_NAME"/>.</translation>
@@ -3104,7 +3185,6 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="443673843213245140">Použitie servera proxy je zakázané, ale je určená explicitná konfigurácia servera proxy.</translation>
 <translation id="4643612240819915418">&amp;Otvoriť video na novej karte</translation>
 <translation id="7997479212858899587">Identita:</translation>
-<translation id="4444956462837310372">Automaticky skryť</translation>
 <translation id="8300849813060516376">Zlyhanie služby OTASP</translation>
 <translation id="2213819743710253654">Akcia stránky</translation>
 <translation id="1317130519471511503">Upraviť položky...</translation>
@@ -3118,7 +3198,6 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="2441192698565541088">Po odpojení účtu Google z prehliadača <ph name="PRODUCT_NAME"/> sa zmeny vašich údajov v tomto počítači nebudú naďalej synchronizovať s účtom Google. Údaje, ktoré sú už uložené v účte Google, v ňom zostanú, pokým ich neodstránite pomocou <ph name="BEGIN_LINK"/>Informačného panela Google<ph name="END_LINK"/>.</translation>
 <translation id="5294529402252479912">Aktualizovať program Adobe Reader</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> days ago</translation>
-<translation id="8039201516055467126">Uvedenie autora:</translation>
 <translation id="7461850476009326849">Zakázať jednotlivé doplnky...</translation>
 <translation id="4097411759948332224">Odoslať aktuálnu snímku stránky</translation>
 <translation id="2231990265377706070">Výkričník</translation>
@@ -3175,7 +3254,6 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="5064044884033187473">Vlastník súboru</translation>
 <translation id="1177863135347784049">Vlastné</translation>
 <translation id="4881695831933465202">Otvoriť</translation>
-<translation id="5988520580879236902">Skontrolovať aktívne zobrazenia:</translation>
 <translation id="3593965109698325041">Obmedzenia názvu certifikátu</translation>
 <translation id="4358697938732213860">Pridať adresu</translation>
 <translation id="8396532978067103567">Nesprávne heslo.</translation>
@@ -3194,7 +3272,6 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="1812514023095547458">Vyberte farbu</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="7047998246166230966">Kurzor</translation>
-<translation id="7908019422099334890">Nastaviť tapetu...</translation>
 <translation id="2665717534925640469">Táto stránka je zobrazená na celú obrazovku a zakázala kurzor myši.</translation>
 <translation id="3414952576877147120">Veľkosť:</translation>
 <translation id="9098468523912235228">Pred <ph name="NUMBER_DEFAULT"/> s</translation>
@@ -3246,6 +3323,8 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="4111534450840609205">tieto návrhy</translation>
 <translation id="2587203970400270934">Kód operátora:</translation>
 <translation id="3355936511340229503">Chyba pripojenia</translation>
+<translation id="736108944194701898">Rýchlosť myši:</translation>
+<translation id="2246713242813102142">Adresa IP:</translation>
 <translation id="3092040396860056776">Skúste stránku napriek tomu načítať</translation>
 <translation id="4350711002179453268">Nepodarilo sa vytvoriť zabezpečené pripojenie k serveru. Táto situácia mohla vzniknúť v dôsledku problému so severom alebo nutnosti predložiť certifikát overenia klienta, ktorý nemáte.</translation>
 <translation id="750509436279396091">Otvorte priečinok prevzatých súborov</translation>
@@ -3262,6 +3341,7 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="3974195870082915331">Kliknutím zobrazíte heslo</translation>
 <translation id="7861805612256278846">nie ste prihlásený/-á</translation>
 <translation id="1753905327828125965">Najviac navšt.</translation>
+<translation id="4543778593405494224">Správca certifikátov</translation>
 <translation id="8116972784401310538">&amp;Správca záložiek</translation>
 <translation id="3591607774768458617">Tento jazyk sa momentálne používa na zobrazenie aplikácie <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="621638399744152264"><ph name="VALUE"/>%</translation>
@@ -3280,7 +3360,6 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="2024918351532495204">Vaše zariadenie je v režime offline</translation>
 <translation id="6040143037577758943">Zatvoriť</translation>
 <translation id="5607923769356613853">Prejdite na <ph name="BEGIN_BOLD"/> ponuku nástrojov &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> &gt; <ph name="PROXIES_TITLE"/> &gt; Nastavenia LAN <ph name="END_BOLD"/> a zrušte začiarknutie políčka „Použiť server proxy pre LAN“.</translation>
-<translation id="7522312030875244365">Vopred načítať dynamické vyhľadávanie</translation>
 <translation id="5787146423283493983">Odsúhlasenie kľúča</translation>
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> mins ago</translation>
 <translation id="4265682251887479829">Nemôžete nájsť, čo ste hľadali?</translation>
@@ -3295,6 +3374,7 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="5105855035535475848">Pripnutie kariet</translation>
 <translation id="3228708416890095647">Používa jednotku GPU na akceleráciu vykresľovania filtrov SVG a CSS.</translation>
 <translation id="5707604204219538797">Ďalšie slovo</translation>
+<translation id="5896465938181668686">Ukončiť doplnok</translation>
 <translation id="6892450194319317066">Vybrať pomocou premennej Opener</translation>
 <translation id="2752805177271551234">Použiť históriu vstupov</translation>
 <translation id="7268365133021434339">Zavrieť karty</translation>
@@ -3302,6 +3382,7 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="9131598836763251128">Vyberte jeden alebo viac súborov</translation>
 <translation id="5489059749897101717">&amp;Zobraziť panel kontroly pravopisu</translation>
 <translation id="4180252021974366101">Spravovať rozšírenia...</translation>
+<translation id="421017592316736757">Ak chcete pristupovať k tomuto súboru, musíte byť online.</translation>
 <translation id="3423858849633684918">Reštartujte <ph name="PRODUCT_NAME"/></translation>
 <translation id="1232569758102978740">Bez názvu</translation>
 <translation id="2479410451996844060">Neplatná adresa URL vyhľadávania.</translation>
@@ -3310,7 +3391,7 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="4362187533051781987">Mesto</translation>
 <translation id="9149866541089851383">Upraviť...</translation>
 <translation id="2182565278866468413">Aplikácia <ph name="PRODUCT_NAME"/> zistila, že softvér NetNanny prerušuje zabezpečené pripojenia. Spravidla nejde o bezpečnostný problém, pretože softvér NetNanny býva spustený na rovnakom počítači. Z dôvodu nekompatibility s určitými vlastnosťami zabezpečených pripojení prehliadača Chrome však musí byť softvér NetNanny nakonfigurovaný tak, aby pripojenie neprerušoval. Kliknutím na odkaz „Viac informácií“ zobrazíte príslušné pokyny.</translation>
-<translation id="4305993105159184143">Povoliť riadenie toku a protokol SPDY/2.1</translation>
+<translation id="7939412583708276221">Aj tak ponechať</translation>
 <translation id="1065245965611933814">Zahrnúť uložené snímky obrazovky:</translation>
 <translation id="7876243839304621966">Odstrániť všetko</translation>
 <translation id="5663459693447872156">Automaticky prepnúť na polovičnú šírku</translation>
@@ -3320,9 +3401,9 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="3978267865113951599">(Zlyhanie)</translation>
 <translation id="1049926623896334335">Dokument aplikácie Word</translation>
 <translation id="8412145213513410671">Zlyhania (<ph name="CRASH_COUNT"/>)</translation>
+<translation id="7003257528951459794">Frekvencia:</translation>
 <translation id="3467267818798281173">Žiadať návrhy od spoločnosti Google</translation>
 <translation id="560602183358579978">Prebieha počítanie výberu...</translation>
-<translation id="5495984885367316038">V službe <ph name="PRODUCT_NAME"/> nemáte dostatok miesta na uloženie tohto súboru. Odstráňte súbory alebo <ph name="BEGIN_LINK"/>zakúpte viac ukladacieho priestoru<ph name="END_LINK"/>.</translation>
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="858637041960032120">Pridať telefónne číslo</translation>
 <translation id="3210492393564338011">Odstránenie používateľa</translation>
@@ -3356,6 +3437,7 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="8518865679229538285">Metóda vstupu tamilčiny (písací stroj)</translation>
 <translation id="4557136421275541763">Upozornenie:</translation>
 <translation id="2604243255129603442">Rozšírenie <ph name="NAME_OF_EXTENSION"/> bolo zakázané. Ak zastavíte synchronizáciu záložiek, na stránke rozšírení ho budete môcť opätovne povoliť. Na stránku rozšírení sa dostanete prostredníctvom ponuky Nástroje.</translation>
+<translation id="5923417893962158855">Prebieha niekoľko preberaní inkognito</translation>
 <translation id="7136694880210472378">Nastaviť ako predvolený</translation>
 <translation id="3274763671541996799">Prepli ste na režim celej obrazovky.</translation>
 <translation id="7681202901521675750">Karta SIM je uzamknutá, zadajte kód PIN. Počet zostávajúcich pokusov: <ph name="TRIES_COUNT"/></translation>
@@ -3408,7 +3490,9 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="6807906590218483700">Pokúsili ste sa o prístup do domény <ph name="DOMAIN"/>. Namiesto toho ste sa však dostali na server, ktorý sám seba označuje ako <ph name="DOMAIN2"/>. Príčinou môže byť nesprávna konfigurácia servera alebo niečo omnoho vážnejšie. Útočník vo vašej sieti sa vás môže pokúšať dostať na falošnú (a potenciálne nebezpečnú) verziu stránok <ph name="DOMAIN3"/>.</translation>
 <translation id="2383066183457571563">Potvrďte, že to nie je zariadenie podniku. Registrácia podniku bude zrušená.</translation>
 <translation id="8045462269890919536">Rumunské</translation>
+<translation id="4973307593867026061">Pridať tlačiarne</translation>
 <translation id="6320286250305104236">Nastavenia siete...</translation>
+<translation id="3603622770190368340">Získanie certifkátu siete</translation>
 <translation id="5973229212631512780">Zdá sa, že súbor <ph name="FILE_NAME"/> obsahuje škodlivý softvér.</translation>
 <translation id="2927657246008729253">Zmeniť...</translation>
 <translation id="7586781939132793422">Zakázať hlasovú odozvu</translation>
@@ -3426,6 +3510,7 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="1902576642799138955">Doba platnosti</translation>
 <translation id="2634682188025601075">Uvedomujem si, že návšteva týchto stránok môže poškodiť moje mobilné zariadenie.</translation>
 <translation id="4910021444507283344">WebGL</translation>
+<translation id="4613715577666190902">Toto rozšírenie aktivujete kliknutím na túto ikonu alebo klávesovú skratku <ph name="EXTENSION_SHORTCUT"/>.</translation>
 <translation id="7988324688042446538">Záložky plochy</translation>
 <translation id="6692173217867674490">Zlá prístupová fráza</translation>
 <translation id="5550431144454300634">Automaticky opraviť vstup</translation>
@@ -3437,11 +3522,13 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="6318501022818228039">Zakáže v nastaveniach synchronizácie upozornenia aplikácií. Vypnete tým synchronizáciu upozornení, ktoré dostávajú z vašich aplikácií ostatné klientske programy.</translation>
 <translation id="4074900173531346617">Certifikát podpisovateľa e-mailu</translation>
 <translation id="6165508094623778733">Viac informácií</translation>
+<translation id="8584344723284138472">Pri synchronizácii otvorených kariet synchronizovať aj ich ikony „favicon“.</translation>
 <translation id="9052208328806230490">Tlačiarne ste zaregistrovali v službe <ph name="CLOUD_PRINT_NAME"/> prostredníctvom účtu <ph name="EMAIL"/></translation>
 <translation id="2577777710869989646">Hups, pri automatickej registrácii zariadenia sa niečo pokazilo.  Skúste to znova (na prihlasovacej obrazovke stlačte klávesy Ctrl+Alt+E) alebo sa obráťte na zástupcu podpory.</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> days ago</translation>
 <translation id="7568593326407688803">Táto stránka je v jazyku<ph name="ORIGINAL_LANGUAGE"/>Chceli by ste ju preložiť?</translation>
 <translation id="563969276220951735">Automatické dopĺňanie formulára</translation>
+<translation id="1913382186391762486">Periférne zariadenia USB</translation>
 <translation id="6870130893560916279">ukrajinská klávesnica</translation>
 <translation id="766592070029747268">Šifrovaný súbor ONC sa nedá dešifrovať.</translation>
 <translation id="1543766961885680449">Zaznamenávanie zvuku bolo spustené.</translation>
@@ -3462,6 +3549,7 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="1963692530539281474">Počet zvyšných dní: <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="4470270245053809099">Vydavateľ: <ph name="NAME"/></translation>
 <translation id="6268747994388690914">Importovať záložky zo súboru HTML...</translation>
+<translation id="6096047740730590436">Otvoriť maximalizované</translation>
 <translation id="5365539031341696497">Thajská metóda vstupu (rozloženie klávesnice Kesmanee)</translation>
 <translation id="2403091441537561402">Brána:</translation>
 <translation id="668171684555832681">Iný...</translation>
@@ -3471,6 +3559,7 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="1932098463447129402">Nie pred</translation>
 <translation id="7845920762538502375">Prehliadač <ph name="PRODUCT_NAME"/> nemohol synchronizovať vaše údaje, pretože sa mu nepodarilo pripojiť k synchronizačnému serveru. Prebieha ďalší pokus...</translation>
 <translation id="6137946187038918690">Nastavenia myši a touchpadu</translation>
+<translation id="7325437708553334317">Rozšírenie Vysoký kontrast</translation>
 <translation id="2192664328428693215">Opýtať sa, keď chcú webové stránky zobraziť upozornenie na pracovnej ploche (odporúčané)</translation>
 <translation id="6708242697268981054">Pôvod:</translation>
 <translation id="4786993863723020412">Chyba pri čítaní vyrovnávacej pamäte</translation>
@@ -3482,6 +3571,7 @@ Ak ich chcete zrušiť, stlačte kombináciu klávesov Ctrl+Alt+Z.</translation>
 <translation id="830868413617744215">Beta</translation>
 <translation id="2679392804024228530">Šifrovať všetky synchronizované dáta</translation>
 <translation id="5925147183566400388">Ukazovateľ na Prehlásenie o procese certifikácie</translation>
+<translation id="8119381715954636144">Identita nie je overená</translation>
 <translation id="1497270430858433901">Dňa <ph name="DATE"/> ste získali <ph name="DATA_AMOUNT"/> zadarmo</translation>
 <translation id="1779652936965200207">Zadajte tento prístupový kľúč v zariadení <ph name="DEVICE_NAME"/>:</translation>
 <translation id="8307376264102990850">Nabíjanie
@@ -3491,6 +3581,7 @@ Prebieha výpočet času do úplného nabitia</translation>
           <ph name="BEGIN_LINK"/>Prečítajte si viac informácií<ph name="END_LINK"/> o hosťovskom prehliadaní.</translation>
 <translation id="636850387210749493">Registrácia podniku</translation>
 <translation id="1947424002851288782">nemecká klávesnica</translation>
+<translation id="2799046819183570437">Povolí experimentálne vylepšenia rozloženia, ktoré uľahčujú ovládanie s dotykovými obrazovkami.</translation>
 <translation id="932508678520956232">Nepodarilo sa spustiť tlač.</translation>
 <translation id="4861833787540810454">&amp;Prehrať</translation>
 <translation id="2552545117464357659">Novšie</translation>
@@ -3527,6 +3618,7 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="7493310265090961755">Kapela</translation>
 <translation id="3695919544155087829">Zadajte heslo, ktoré bolo použité na zašifrovanie tohto súboru certifikátu.</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="809599680914869814"><ph name="PRODUCT_NAME"/> používa vašu kameru alebo mikrofón.</translation>
 <translation id="2509857212037838238">Nainštalovať doplnok <ph name="PLUGIN_NAME"/></translation>
 <translation id="6308937455967653460">Uložiť &amp;odkaz ako...</translation>
 <translation id="5828633471261496623">Prebieha tlač...</translation>
@@ -3547,6 +3639,7 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="1255964530203229794">Synchronizované ako adresa <ph name="USER_EMAIL_ADDRESS"/>. Posledná synchronizácia: <ph name="LAST_SYNC_TIME"/></translation>
 <translation id="6697308399043041614">Chrome To Mobile</translation>
 <translation id="1122198203221319518">&amp;Nástroje</translation>
+<translation id="5957357845649266893">Spúšťať chránený obsah</translation>
 <translation id="2760009672169282879">bulharská fonetická klávesnica</translation>
 <translation id="6608140561353073361">Všetky súbory cookie a údaje stránok...</translation>
 <translation id="2596602318381383954">Dokončiť akciu pomocou aplikácie:</translation>
@@ -3569,6 +3662,7 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="3258281577757096226">Súprava 3 (konečná)</translation>
 <translation id="6906268095242253962">Ak chcete pokračovať, pripojte sa na Internet.</translation>
 <translation id="1908748899139377733">Zobraziť informácie o &amp;ráme</translation>
+<translation id="8775404590947523323">Úpravy sa ukladajú automaticky.<ph name="BREAKS"/>Ak chcete zachovať kópiu pôvodného obrázka, zrušte začiarknutie políčka Prepísať originál</translation>
 <translation id="8551526551737765270">Konfiguráciu siete sa nepodarilo analyzovať: <ph name="PARSE_ERROR_MESSAGE"/></translation>
 <translation id="803771048473350947">Súbor</translation>
 <translation id="6206311232642889873">&amp;Kopírovať obrázok</translation>
@@ -3638,6 +3732,7 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="2635102990349508383">Prihlasovacie údaje účtu zatiaľ neboli zadané.</translation>
 <translation id="6653661802708479588">Povoliť synchronizáciu vyhľadávacích nástrojov</translation>
 <translation id="6902055721023340732">Adresa URL automatickej konfigurácie</translation>
+<translation id="5461512418490148136">Chvíľku vydržte. Vaše súbory práve načítavame.</translation>
 <translation id="4268574628540273656">Adresa URL:</translation>
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="3759876923365568382">Počet zvyšných dní: <ph name="NUMBER_FEW"/></translation>
@@ -3648,7 +3743,6 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="878069093594050299">Tento certifikát bol overený pre nasledujúce typy použitia:</translation>
 <translation id="2991701592828182965">Povolenie hlasovej odozvy.</translation>
 <translation id="5852112051279473187">Hops! Pri registrácii tohto zariadenia sa vyskytla závažná chyba. Skúste to znova alebo kontaktujte svojho zástupcu podpory.</translation>
-<translation id="6894066781028910720">Otvoriť správcu súborov</translation>
 <translation id="7088418943933034707">Spravovať certifikáty...</translation>
 <translation id="497421865427891073">Ďalej</translation>
 <translation id="2453576648990281505">Súbor už existuje</translation>
@@ -3657,6 +3751,8 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="3668823961463113931">Obslužné nástroje</translation>
 <translation id="8808478386290700967">Web Store</translation>
 <translation id="1732215134274276513">Uvoľniť karty</translation>
+<translation id="4785040501822872973">Počítač sa o <ph name="LOGOUT_TIME_LEFT"/> sekúnd reštartuje.
+Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="4084682180776658562">Záložka</translation>
 <translation id="8859057652521303089">Vyberte svoj jazyk:</translation>
 <translation id="3030138564564344289">Znova skúsiť prevziať</translation>
@@ -3668,6 +3764,7 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="8114439576766120195">vašim súkromným údajom na všetkých webových stránkach</translation>
 <translation id="5209320130288484488">Nenašli sa žiadne zariadenia</translation>
 <translation id="8364627913115013041">Nenastavené.</translation>
+<translation id="7759743828338447136">Došlo k chybe (kód: <ph name="ERROR_CODE"/>).</translation>
 <translation id="4668954208278016290">Pri extrahovaní obrazu do zariadenia sa vyskytol problém.</translation>
 <translation id="5822838715583768518">Spustiť aplikáciu</translation>
 <translation id="3942974664341190312">Súprava 2</translation>
@@ -3685,11 +3782,14 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="6756161853376828318">Nastaviť prehliadač <ph name="PRODUCT_NAME"/> ako predvolený</translation>
 <translation id="3046910703532196514">Webová stránka, Úplné</translation>
 <translation id="9112614144067920641">Zvoľte nový kód PIN.</translation>
+<translation id="7109926893210135223">Prebieha preberanie</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="7773726648746946405">Ukladací priestor relácie</translation>
 <translation id="9147392381910171771">&amp;Možnosti</translation>
 <translation id="1803557475693955505">Nepodarilo sa načítať stránku na pozadí „<ph name="BACKGROUND_PAGE"/>“.</translation>
 <translation id="3633997706330212530">Tieto služby je možné zakázať.</translation>
+<translation id="4335713051520279344">Tento počítač sa o 1 sekundu reštartuje.
+Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="2929033900046795715">V tomto prípade obsahuje certifikát servera alebo sprostredkovateľský certifikát CA predložený prehliadaču slabý kľúč, ako napríklad kľúč RSA menší než 1024 bitov. Keďže odvodenie korešpondujúceho súkromného kľúča pre slabý verejný kľúč je pomerne ľahké, útočník by mohol sfalšovať totožnosť pravého servera.</translation>
 <translation id="6264485186158353794">Naspäť do bezpečného režimu</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -3709,8 +3809,10 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="2574102660421949343">Boli povolené súbory cookie zo stránok <ph name="DOMAIN"/>.</translation>
 <translation id="2773948261276885771">Súprava stránok</translation>
 <translation id="8279030405537691301">Ak je povolené postupné skladanie v samostatnom vlákne, budú na akcelerované animácie jazyka CSS spúšťať vo vlákne skladania. Spustenie akcelerovaných animácií jazyka CSS však môže mať vyšší výkon aj bez vlákna kompozitora.</translation>
+<translation id="5321358819363475476">Alebo vyberte inú sieť:</translation>
 <translation id="2157875535253991059">Táto stránka je teraz zobrazená na celú obrazovku.</translation>
 <translation id="20817612488360358">Používanie systémových nastavení servera proxy je nastavené, avšak je určená aj explicitná konfigurácia servera proxy.</translation>
+<translation id="8917483683073496289">Povolí experimentálnu podporu dotykových obrazoviek.</translation>
 <translation id="471800408830181311">Výstup súkromného kľúča zlyhal.</translation>
 <translation id="2262505173081785042">Pridať disk</translation>
 <translation id="1177437665183591855">Neznáma chyba spôsobená certifikátom servera</translation>
@@ -3724,8 +3826,10 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="1653672595398823009">Mobilné zariadenie</translation>
 <translation id="48607902311828362">Režim V lietadle</translation>
 <translation id="7462271052380869725">Sieť je odpojená</translation>
+<translation id="2907183286345808511">Povoliť rozhranie API PeerConnection pre funkciu WebRTC. Viac informácií nájdete na adrese webrtc.org.</translation>
 <translation id="8142699993796781067">Súkromná sieť</translation>
 <translation id="5906065664303289925">Hardvérová adresa:</translation>
+<translation id="1190144681599273207">Načítanie tohto súboru spotrebuje približne <ph name="FILE_SIZE"/> mobilných dát.</translation>
 <translation id="3178000186192127858">Iba na čítanie</translation>
 <translation id="4236660184841105427">Zobraziť všetky súbory</translation>
 <translation id="2187895286714876935">Chyba importovania certifikátu servera</translation>
@@ -3757,6 +3861,7 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="8776285424728638733">GB</translation>
 <translation id="73289266812733869">Nevybraté</translation>
 <translation id="8639963783467694461">Nastavenia automatického dopĺňania</translation>
+<translation id="2951247061394563839">Vycentrovať okno</translation>
 <translation id="3435738964857648380">Bezpečnosť</translation>
 <translation id="9112987648460918699">Nájsť...</translation>
 <translation id="2231233239095101917">Skript na stránke zabral príliš veľa pamäte. Ak chcete znova povoliť skripty, znova načítajte stránku.</translation>
@@ -3769,6 +3874,7 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="385051799172605136">Naspäť</translation>
 <translation id="1832546148887467272">Prepnúť na doménu <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="2670965183549957348">Metóda vstupu Chewing</translation>
+<translation id="7839804798877833423">Načítanie týchto súborov spotrebuje približne <ph name="FILE_SIZE"/> mobilných dát.</translation>
 <translation id="3268451620468152448">Otvorené karty</translation>
 <translation id="4918086044614829423">Prijať</translation>
 <translation id="5095208057601539847">Provincia</translation>
@@ -3784,6 +3890,7 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="475088594373173692">Prvý používateľ</translation>
 <translation id="1731911755844941020">Posielanie požiadavky...</translation>
 <translation id="8371695176452482769">Začnite hovoriť</translation>
+<translation id="7622116780510618781">Karty v stohu</translation>
 <translation id="2988488679308982380">Nepodarilo sa nainštalovať balík: <ph name="ERROR_CODE"/></translation>
 <translation id="2904079386864173492">Model:</translation>
 <translation id="728836202927797241">Ponúkať možnosť automatického prihlásenia na stránky Google pomocou tohto účtu</translation>
@@ -3799,11 +3906,14 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="2150661552845026580">Pridať rozšírenie <ph name="EXTENSION_NAME"/>?</translation>
 <translation id="5553784454066145694">Voľba nového kódu PIN</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION"/> [<ph name="COUNTRY"/>]</translation>
+<translation id="6845038076637626672">Otvoriť maximalizované</translation>
 <translation id="4443989740666919835">Prebehol pokus o zmenu predvoleného vyhľadávania</translation>
+<translation id="3184560914950696195">Do priečinka $1 nie je možné ukladať. Upravené obrázky sa uložia do priečinka Prevzaté súbory</translation>
 <translation id="4664482161435122549">Chyba exportovania súborov PKCS #12</translation>
 <translation id="2445081178310039857">Požaduje sa koreňový adresár rozšírenia.</translation>
 <translation id="8251578425305135684">Miniatúra odstránená.</translation>
 <translation id="6163522313638838258">Rozbaliť všetko...</translation>
+<translation id="8042809739168319366"><ph name="TITLE"/></translation>
 <translation id="3037605927509011580">Základy</translation>
 <translation id="5803531701633845775">Vybrať frázy zozadu bez pohnutia kurzorom</translation>
 <translation id="7883944954927542760">Zakázať panel Uber Tray.</translation>
@@ -3816,13 +3926,16 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="8000066093800657092">Žiadna sieť</translation>
 <translation id="4481249487722541506">Načítať rozbalené rozšírenie...</translation>
 <translation id="8180239481735238521">strana</translation>
+<translation id="1665611772925418501">Súbor sa nepodarilo upraviť.</translation>
 <translation id="2963783323012015985">turecká klávesnica</translation>
+<translation id="2843806747483486897">Zmeniť predvolenú akciu...</translation>
 <translation id="1007233996198401083">Nedá sa pripojiť.</translation>
 <translation id="2149973817440762519">Upraviť záložku</translation>
 <translation id="5431318178759467895">Farebne</translation>
 <translation id="7064842770504520784">Prispôsobiť nastavenia synchronizácie...</translation>
 <translation id="2784407158394623927">Aktivácia mobilnej dátovej služby</translation>
 <translation id="3679848754951088761"><ph name="SOURCE_ORIGIN"/></translation>
+<translation id="4393744079468921084">Áno, ukončiť režim inkognito</translation>
 <translation id="6920989436227028121">Otvoriť ako bežnú kartu</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> – <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="2050339315714019657">Na výšku</translation>
@@ -3852,8 +3965,6 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="335985608243443814">Prehliadať...</translation>
 <translation id="7802488492289385605">Japonská metóda vstupu Google (pre americkú klávesnicu s rozložením Dvorak)</translation>
 <translation id="3876481682997626897">Podpisy sa nezhodujú</translation>
-<translation id="9169585155162064169">Funkcia CAPS LOCK je zapnutá.
-Vypnete ju stlačením klávesu vyhľadávania.</translation>
 <translation id="8892992092192084762">Bol nainštalovaný motív „<ph name="THEME_NAME"/>“</translation>
 <translation id="7427348830195639090">Stránka na pozadí: <ph name="BACKGROUND_PAGE_URL"/></translation>
 <translation id="5898154795085152510">Server vrátil neplatný certifikát klienta. Chyba <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>).</translation>
@@ -3874,7 +3985,6 @@ Vypnete ju stlačením klávesu vyhľadávania.</translation>
 <translation id="747459581954555080">Obnoviť všetko</translation>
 <translation id="5130217514988682057">Údaje certifikátu sú v nesprávnom tvare</translation>
 <translation id="7167486101654761064">&amp;Vždy otvoriť súbory tohto typu</translation>
-<translation id="4283623729247862189">Optické zariadenie</translation>
 <translation id="5826507051599432481">Bežný názov (CN)</translation>
 <translation id="8914326144705007149">Veľmi veľké</translation>
 <translation id="4215444178533108414">Odstraňovanie položiek dokončené</translation>
@@ -3882,7 +3992,6 @@ Vypnete ju stlačením klávesu vyhľadávania.</translation>
 <translation id="2575379921941782763">Funkcie zjednodušenia ovládania sú povolené.</translation>
 <translation id="2273562597641264981">Operátor:</translation>
 <translation id="122082903575839559">Algoritmus podpisu certifikátu</translation>
-<translation id="2181257377760181418">Povolí zobrazenie ukážky operácie tlače na karte</translation>
 <translation id="5613166402967092338">Stránky <ph name="HOST_NAME"/> obsahujú obsah zo stránok <ph name="ELEMENTS_HOST_NAME"/>, ktoré sú známe šírením škodlivého softvéru. Ak tieto stránky navštívite, vaše mobilné zariadenie môže byť infikované vírusom.</translation>
 <translation id="4575703660920788003">Podržaním klávesov Shift a Alt zmeníte rozloženie klávesnice.</translation>
 <translation id="7240120331469437312">Alternatívny názov subjektu certifikátu</translation>
@@ -3907,7 +4016,6 @@ Vypnete ju stlačením klávesu vyhľadávania.</translation>
 <translation id="4394049700291259645">Zakázať</translation>
 <translation id="969892804517981540">Oficiálne zostavenie</translation>
 <translation id="445923051607553918">Pripojiť sa k sieti Wi-Fi</translation>
-<translation id="100242374795662595">Neznáme zariadenie</translation>
 <translation id="9087725134750123268">Odstrániť súbory cookie a ďalšie údaje webových stránok</translation>
 <translation id="756631359159530168">Povolí vykresľovanie obsahu na stránke po dlaždiciach (ak je povolené skladanie).</translation>
 <translation id="3349155901412833452">V zozname kandidátov sa môžete posúvať pomocou klávesov , a .</translation>
@@ -3951,6 +4059,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="4508765956121923607">&amp;Zobraziť zdrojový kód</translation>
 <translation id="5975083100439434680">Oddialiť</translation>
 <translation id="8080048886850452639">K&amp;opírovať adresu URL zvuku</translation>
+<translation id="1684614760089639291">Zmeniť na stránku Nová karta</translation>
 <translation id="2817109084437064140">Importovať a spojiť so zariadením...</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET"/>) <ph name="LONGTZNAME"/> (<ph name="EXEMPLARCITY"/>)</translation>
 <translation id="6388512460244695397">Odoslať túto stránku do:</translation>
@@ -3970,6 +4079,10 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="1559528461873125649">Neexistuje žiadny takýto súbor ani priečinok</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="1244147615850840081">Operátor</translation>
+<translation id="2650446666397867134">Prístup k súboru bol odmietnutý</translation>
+<translation id="8041157312638268894">Keď je možnosť povolená, použije sa na pripojenie profilu k účtu Google funkcia ClientOAuth. V opačnom prípade sa použije funkcia ClientLogin.
+      ClientOAuth umožňuje použiť na overenie totožnosti jednorazové heslá (namiesto hesiel pre konkrétne aplikácie).</translation>
+<translation id="5780498354378986900">Súbor <ph name="FILE_NAME"/> sa nepodarilo odstrániť. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="5832830184511718549">Na skladanie webových stránok využíva sekundárne vlákno. To umožňuje plynulé posúvanie aj v prípade, keď hlavné vlákno neodpovedá.</translation>
 <translation id="3346457130337124365">Stránky <ph name="HOST_NAME"/> obsahujú škodlivý softvér. Ak tieto stránky navštívite, vaše mobilné zariadenie môže byť infikované vírusom.</translation>
 <translation id="8203365863660628138">Potvrdiť inštaláciu</translation>

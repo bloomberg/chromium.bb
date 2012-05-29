@@ -78,6 +78,9 @@
       Se definir esta política, o <ph name="PRODUCT_FRAME_NAME"/> irá utilizar o diretório fornecido.
 
       Se esta política for deixada por definir, será utilizado o diretório de perfil predefinido.</translation>
+<translation id="8818173863808665831">Comunique a localização geográfica do dispositivo.
+
+      Se a política não estiver definida, ou estiver definida como falsa, a localização não será comunicada.</translation>
 <translation id="4899708173828500852">Ativar Navegação Segura</translation>
 <translation id="7719251660743813569">Controla se as métricas de utilização são comunicadas à Google. Se a política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME"/> irá comunicar as métricas de utilização. Se não for configurada ou for definida como falsa, o relatório de métricas será desativado.</translation>
 <translation id="3570008976476035109">Bloquear plug-ins nestes sites</translation>
@@ -139,9 +142,9 @@
 <translation id="5776485039795852974">Perguntar sempre quando um site pretender mostrar notificações de ambiente de trabalho</translation>
 <translation id="5052081091120171147">Se esta política estiver ativada, força a importação do histórico de navegação a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, o histórico de navegação não é importado. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-lo ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="6786747875388722282">Extensões</translation>
+<translation id="8947415621777543415">Comunicar localização do dispositivo</translation>
 <translation id="1655229863189977773">Definir o tamanho da cache do disco em bytes</translation>
 <translation id="6899705656741990703">Detetar automaticamente definições do proxy</translation>
-<translation id="4101772068965291327">Abrir página inicial</translation>
 <translation id="7003334574344702284">Se esta política estiver ativada, força a importação de palavras-passe guardadas a partir do anterior navegador predefinido e também afeta a caixa de diálogo de importação. Se estiver desativada, as palavras-passe não são importadas. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-las ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="6258193603492867656">Especifica se o SPN do Kerberos gerado deverá incluir uma porta não padrão. Se ativar esta definição e for introduzida uma porta não padrão (ou seja, outra porta que não a 80 ou a 443), essa porta será incluída no SPN do Kerberos gerado. Se desativar esta definição ou não a definir, o SPN do Kerberos gerado não incluirá uma porta em circunstância alguma.</translation>
 <translation id="8992176907758534924">Não permitir que os sites mostrem imagens</translation>
@@ -185,6 +188,20 @@
       Se deixar esta política por definir, o utilizador pode decidir se pretende ou não que lhe seja solicitada a introdução de uma palavra-passe para desbloquear o aparelho.</translation>
 <translation id="6022948604095165524">Ação no arranque</translation>
 <translation id="9042911395677044526">Permite que a configuração de rede seja aplicada por utilizador para um aparelho <ph name="PRODUCT_OS_NAME"/>. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Lista os identificadores das aplicações que o <ph name="PRODUCT_OS_NAME"/> mostra como aplicações fixadas na barra do iniciador.
+
+      Se esta política estiver configurada, o conjunto de aplicações está fixado e não pode ser alterado pelo utilizador.
+
+      Se esta política não for configurada, o utilizador pode alterar a lista de aplicações fixadas no iniciador.</translation>
+<translation id="6177482277304066047">Define uma versão de destino para Atualizações Automáticas.
+
+      Especifica o prefixo de uma versão de destino para a qual o <ph name="PRODUCT_OS_NAME"/> deverá ser atualizado. Se o dispositivo estiver a executar uma versão anterior ao prefixo especificado, este será atualizado para a versão mais recente com o prefixo fornecido. Se o dispositivo já tiver uma versão posterior, não tem nenhum efeito (ou seja, não são efetuadas alterações para a versão anterior) e este permanecerá na versão atual. O formato do prefixo funciona ao nível do componente, conforme demonstrado no seguinte exemplo:
+
+      &quot;&quot; (ou não configurado): atualização para a versão mais recente disponível.
+      &quot;1412.&quot;: atualização para qualquer versão secundária da 1412 (por exemplo, 1412.24.34 ou 1412.60.2)
+      &quot;1412.2.&quot;: atualização para qualquer versão secundária da 1412.2 (por exemplo, 1412.2.34 ou 1412.2.2)
+      &quot;1412.24.34&quot;: atualização apenas para esta versão específica
+      </translation>
 <translation id="7625444193696794922">Especifica o canal de lançamento ao qual este aparelho deve estar bloqueado.</translation>
 <translation id="2240879329269430151">Permite definir se os Web sites estão autorizados a apresentar janelas de pop-up. A apresentação de janelas de pop-up pode ser permitida para todos os Web sites ou negada para todos os Web sites. Se esta política não for definida, será utilizada a definição &quot;BlockPopups&quot; e o utilizador poderá alterá-la.</translation>
 <translation id="5289914968905023866">Bloqueia o acesso aos URLs listados. Esta política impede que o utilizador carregue páginas Web a partir de URLs incluídos na lista negra. Um URL tem o formato &quot;esquema://anfitrião:porta/caminho&quot;. O esquema opcional pode ser http, https ou ftp. Só este esquema será bloqueado; se não tiver sido especificado nenhum esquema, todos serão bloqueados. O anfitrião pode ser um nome de anfitrião ou um endereço IP. Os subdomínios de um nome de anfitrião também serão bloqueados. Para evitar o bloqueio de subdomínios, inclua um &quot;.&quot; antes do nome do anfitrião. O nome de anfitrião &quot;*&quot; bloqueará todos os domínios. A porta opcional é um número de porta válido entre 1 e 65535. Se não tiver sido especificado nenhum número, todas as portas serão bloqueadas. Se o caminho opcional for especificado, apenas os caminhos com esse prefixo serão bloqueados. É possível definir exceções na política de lista de autorizações de URLs. Estas políticas estão limitadas a 100 entradas; as entradas subsequentes serão ignoradas. Se esta política não for definida, a lista negra do navegador não incluirá qualquer URL.</translation>
@@ -198,6 +215,9 @@
 
       Se esta política não for definida, o modo de segundo plano está inicialmente desativado e pode ser controlado pelo utilizador nas definições do navegador.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou posterior</translation>
+<translation id="5148753489738115745">Permite especificar parâmetros adicionais utilizados quando o <ph name="PRODUCT_FRAME_NAME"/> iniciar o <ph name="PRODUCT_NAME"/>.
+
+          Se esta política não estiver definida, será utilizada a linha de comandos predefinida.</translation>
 <translation id="2646290749315461919">Permite definir se os Web sites têm permissão para monitorizar a localização física dos utilizadores. A monitorização da localização física dos utilizadores pode ser permitida por predefinição, negada por predefinição ou o utilizador pode ser questionado sempre que um Web site solicitar a localização física. Se esta política não for definida, será utilizada a definição &quot;AskGeolocation&quot; e o utilizador poderá alterá-la.</translation>
 <translation id="5770738360657678870">Canal para programadores (pode ser instável)</translation>
 <translation id="2959898425599642200">Regras para ignorar o proxy</translation>
@@ -258,11 +278,25 @@
 <translation id="717221064259627503">Configura o diretório que será utilizado pelo <ph name="PRODUCT_NAME"/> para armazenar ficheiros em cache no disco. Se definir esta política, o <ph name="PRODUCT_NAME"/> utilizará o diretório indicado, independentemente de o utilizador ter ou não especificado o sinalizador &quot;--disk-cache-dir&quot;. Se deixar esta política por definir, será utilizado o diretório de cache predefinido e o utilizador poderá substituí-lo pelo sinalizador de linha de comandos &quot;--disk-cache-dir&quot;.</translation>
 <translation id="2312134445771258233">Permite-lhe configurar as páginas que são carregadas no arranque. O conteúdo da lista &quot;URLs a abrir no aranque&quot; é ignorado, a menos que selecione &quot;Abrir uma lista de URLs&quot; em &quot;Ação no arranque&quot;.</translation>
 <translation id="2538628396238281971">Configura o diretório que será utilizado pelo <ph name="PRODUCT_NAME"/> para transferir ficheiros. Se definir esta política, o <ph name="PRODUCT_NAME"/> utilizará o diretório indicado, independentemente de o utilizador ter especificado um ou ter ativado o sinalizador para confirmar sempre a localização das transferências. Se deixar esta política por definir, será utilizado o diretório de transferências predefinido e o utilizador poderá alterá-lo.</translation>
+<translation id="7750991880413385988">Abrir Página Novo Separador</translation>
+<translation id="741903087521737762">Permite especificar o comportamento no arranque.
+
+          Se escolher &quot;Abrir Página Novo Separador&quot;, a Página Novo Separador será sempre aberta quando iniciar o <ph name="PRODUCT_NAME"/>.
+
+          Se escolher &quot;Restaurar a última sessão&quot;, os URLs abertos da última vez que o <ph name="PRODUCT_NAME"/> foi fechado serão reabertos e a sessão de navegação será restaurada como estava.
+          A escolha desta opção desativa algumas definições que dependem das sessões ou que efetuam ações ao sair (como Limpar dados de navegação ao sair ou cookies só de sessões).
+
+          Se escolher &quot;Abrir uma lista de URLs&quot;, a lista de &quot;URLs a abrir no arranque&quot; será aberta quando um utilizador iniciar o <ph name="PRODUCT_NAME"/>.
+
+          Se ativar esta definição, os utilizadores não poderão alterá-la ou substituí-la no <ph name="PRODUCT_NAME"/>.
+
+          A desativação desta definição é o equivalente a deixá-la não configurada. O utilizador continuará a poder alterá-la no <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Configura as definições de proxy para <ph name="PRODUCT_NAME"/>. Esta política ainda não está pronta para ser utilizada, por isso, não a utilize.</translation>
 <translation id="8344454543174932833">Importar marcadores a partir do navegador predefinido na primeira execução</translation>
 <translation id="1019101089073227242">Definir diretório de dados do utilizador</translation>
 <translation id="5826047473100157858">Especifica se o utilizador pode abrir páginas em modo de Navegação Anónima no <ph name="PRODUCT_NAME"/>. Se selecionar &quot;Ativada&quot; ou deixar a política por definir, as páginas podem ser abertas no modo de Navegação Anónima. Se selecionar &quot;Desativada&quot;, as páginas não podem ser abertas no modo de Navegação Anónima. Se selecionar &quot;Forçada&quot;, as páginas APENAS podem ser abertas no modo de Navegação Anónima.</translation>
 <translation id="5085647276663819155">Desativar Pré-visualização de Impressão</translation>
+<translation id="8672321184841719703">Versão de Atualização Automática de Destino</translation>
 <translation id="2030905906517501646">Palavra-chave do fornecedor de pesquisas predefinido</translation>
 <translation id="3072045631333522102">Proteção de ecrã a utilizar no ecrã de início de sessão no modo de retalho</translation>
 <translation id="7393895128271703858">Esta política está obsoleta. Em alternativa, utilize DefaultJavaScriptSetting. Ativa o JavaScript no <ph name="PRODUCT_NAME"/> e impede que os utilizadores alterem esta definição. Se esta definição estiver ativada ou não estiver configurada, as páginas Web podem utilizar JavaScript. Se esta definição estiver desativada, as páginas Web não podem utilizar JavaScript. Se esta política não for definida, a definição será ativada e o utilizador poderá alterá-la.</translation>
@@ -369,6 +403,7 @@
 <translation id="2299220924812062390">Especificar uma lista de plug-ins ativados</translation>
 <translation id="924557436754151212">Importar palavras-passe guardadas a partir do navegador predefinido na primeira execução</translation>
 <translation id="1897365952389968758">Permitir que todos os sites executem JavaScript</translation>
+<translation id="7323896582714668701">Parâmetros da linha de comandos adicionais para <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Desativar a sincronização de dados com o Google</translation>
 <translation id="36674322972891584">Ativa a sugestão de redes no <ph name="PRODUCT_NAME"/> e impede que os utilizadores alterem esta definição. Se ativar ou desativar esta definição, os utilizadores não a poderão alterar ou substituir no <ph name="PRODUCT_NAME"/>. Se deixar esta política por definir, a definição será ativada e o utilizador poderá alterá-la.</translation>
 <translation id="7006788746334555276">Definições de Conteúdo</translation>
@@ -380,6 +415,7 @@
 <translation id="187819629719252111">Permite aceder a ficheiros locais no computador, ao permitir que o <ph name="PRODUCT_NAME"/> apresente caixas de diálogo de seleção de ficheiros. Se ativar esta definição, os utilizadores poderão abrir caixas de diálogo de seleção de ficheiros normalmente. Se desativar esta definição, sempre que os utilizadores efetuarem uma ação que origine uma caixa de diálogo de seleção de ficheiros (como importar marcadores, carregar ficheiros, guardar links, etc.), aparecerá uma mensagem e assume-se que os utilizadores clicaram em Cancelar na caixa de diálogo. Se esta definição não for definida, os utilizadores poderão abrir as caixas de diálogo de seleção de ficheiros normalmente.</translation>
 <translation id="4507081891926866240">Personaliza a lista de padrões de URL que devem ser sempre processados pelo <ph name="PRODUCT_FRAME_NAME"/>. Se esta política não for definida, será utilizado o processador predefinido para todos os Web sites, conforme especificado pela política &quot;ChromeFrameRendererSettings&quot;. Para obter exemplos de padrões, consulte http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Escolher como indicar as definições do servidor proxy</translation>
+<translation id="1803646570632580723">Lista de aplicações fixadas a mostrar no iniciador</translation>
 <translation id="7774768074957326919">Utilizar definições de proxy do sistema</translation>
 <translation id="3891357445869647828">Ativar JavaScript</translation>
 <translation id="868187325500643455">Permitir que todos os sites executem plug-ins automaticamente</translation>
@@ -466,16 +502,4 @@
 <translation id="5645779841392247734">Permitir cookies nestes sites</translation>
 <translation id="8220342550735772883">Configura o tamanho da cache que será utilizado pelo <ph name="PRODUCT_NAME"/> para armazenar ficheiros multimédia em cache no disco. Se definir esta política, o <ph name="PRODUCT_NAME"/> utilizará o tamanho de cache indicado, independentemente do utilizador ter ou não especificado o sinalizador &quot;--media-cache-size&quot;. Se o valor desta política for 0, será utilizado o tamanho de cache predefinido e o utilizador não poderá alterá-lo. Se deixar esta política por definir, será utilizado o tamanho predefinido e o utilizador poderá substituí-lo pelo sinalizador &quot;--media-cache-size&quot;.</translation>
 <translation id="7049373494483449255">Permite que o <ph name="PRODUCT_NAME"/> envie documentos para o <ph name="CLOUD_PRINT_NAME"/> para impressão. NOTA: isto apenas afeta o suporte do <ph name="CLOUD_PRINT_NAME"/> no <ph name="PRODUCT_NAME"/>. Não impede que os utilizadores enviem tarefas de impressão a partir de Web sites. Se esta definição estiver ativada ou não estiver configurada, os utilizadores poderão imprimir para o <ph name="CLOUD_PRINT_NAME"/> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME"/>. Se esta definição estiver desativada, os utilizadores não poderão imprimir para o <ph name="CLOUD_PRINT_NAME"/> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2339225390014743328">Permite-lhe especificar o comportamento no arranque.
-
-          Se escolher &quot;Abrir página inicial&quot;, a página inicial será sempre aberta ao iniciar o <ph name="PRODUCT_NAME"/>.
-
-          Se escolher &quot;Restaurar a última sessão&quot;, os URLs que foram abertos da última vez que o <ph name="PRODUCT_NAME"/> foi fechado serão reabertos e a sessão de navegação será restaurada como foi deixada.
-          Escolher esta opção desativa algumas definições que dependem de sessões ou que realizam ações à saída (como Limpar dados de navegação à saída ou cookies apenas da sessão).
-
-          Se escolher &quot;Abrir uma lista de URLs&quot;, a lista de &quot;URLs a abrir no arranque&quot; será aberta quando um utilizador iniciar o <ph name="PRODUCT_NAME"/>.
-
-          Se ativar esta definição, os utilizadores não podem alterá-la ou substituí-la no <ph name="PRODUCT_NAME"/>.
-
-          Desativar esta definição equivale a deixá-la por configurar. O utilizador continuará a poder alterá-la no <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

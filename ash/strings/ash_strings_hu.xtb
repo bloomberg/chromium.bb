@@ -2,49 +2,66 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="3595596368722241419">Akkumulátor feltöltve</translation>
-<translation id="908313544993743941">Mobilhálózat letiltása</translation>
+<translation id="5250713215130379958">Indító automatikus elrejtése</translation>
 <translation id="30155388420722288">Túlcsordulás gomb</translation>
 <translation id="5571066253365925590">Bluetooth engedélyezve</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth letiltva</translation>
+<translation id="370649949373421643">Wi-Fi engedélyezése</translation>
 <translation id="3626281679859535460">Fényerő</translation>
 <translation id="7982789257301363584">Hálózat</translation>
+<translation id="5565793151875479467">Proxy...</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Állapottálca</translation>
 <translation id="2946640296642327832">Bluetooth engedélyezése</translation>
 <translation id="6596816719288285829">IP-cím</translation>
-<translation id="289426338439836048">Egyéb mobilhálózat...</translation>
 <translation id="5233638681132016545">Új lap</translation>
+<translation id="3846575436967432996">Nem áll rendelkezésre hálózati információ</translation>
+<translation id="3026237328237090306">Mobiladatok beállítása</translation>
 <translation id="785750925697875037">Mobil fiók megtekintése</translation>
+<translation id="8121288016949447968">Shift+Keresés</translation>
 <translation id="7864539943188674973">Bluetooth letiltása</translation>
 <translation id="3126069444801937830">Indítsa újra a frissítéshez</translation>
+<translation id="1525975890706558596">A CAPS LOCK be van kapcsolva. A kikapcsoláshoz nyomja meg a SHIFT+keresőgomb billentyűkombinációt.</translation>
 <translation id="8190698733819146287">Nyelvek és beviteli módok személyre szabása...</translation>
-<translation id="7911992579061465928">Alacsony töltöttségi szint</translation>
 <translation id="598295083618286569">Bluetooth csatlakoztatva</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
+<translation id="2091132388437059185">Indító automatikus elrejtése teljes méretben</translation>
+<translation id="425878420164891689">Idő számítása, amíg meg nem telik</translation>
+<translation id="2964193600955408481">Wi-Fi letiltása</translation>
 <translation id="811680302244032017">Eszköz hozzáadása...</translation>
+<translation id="2509468283778169019">A CAPS LOCK be van kapcsolva</translation>
+<translation id="6426039856985689743">Mobiladatok letiltása</translation>
 <translation id="3232695630852378748">Bluetooth-beállítások...</translation>
 <translation id="1480041086352807611">Demó üzemmód</translation>
 <translation id="4186384497305035875">Ez a képernyő szándékosan maradt üresen</translation>
 <translation id="9089416786594320554">Beviteli módszerek</translation>
-<translation id="7706302027196209560">Wi-Fi engedélyezése</translation>
 <translation id="4430019312045809116">Hangerő</translation>
+<translation id="1383876407941801731">Keresés</translation>
 <translation id="3557139239102318020">Húzza le a kis mérethez, balra vagy jobbra a mozaikhoz</translation>
 <translation id="5980301590375426705">Kilépés a vendég munkamenetből</translation>
 <translation id="8308637677604853869">Előző menü</translation>
+<translation id="8528322925433439945">Mobil...</translation>
 <translation id="3595065677684516080">Beállítások és Súgó</translation>
 <translation id="4479639480957787382">Ethernet</translation>
+<translation id="7573721444069009535">Wi-Fi...</translation>
+<translation id="6223565363550976998">Akkumulátor: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">Zárolás</translation>
-<translation id="5836819469861742634">Proxybeállítások módosítása...</translation>
+<translation id="2805756323405976993">Programok</translation>
 <translation id="2872961005593481000">Leállítás</translation>
-<translation id="8735871257195921372">Más Wi-Fi hálózat...</translation>
-<translation id="2152495481414285304">Alkalmazások</translation>
-<translation id="1690310444231390462">Wi-Fi letiltása</translation>
-<translation id="77565731175229781">Hálózati beállítások...</translation>
+<translation id="7052914147756339792">Háttérkép beállítása...</translation>
+<translation id="1602076796624386989">Mobiladatok engedélyezése</translation>
+<translation id="8573351908869164327"><ph name="HOUR"/> ó <ph name="MINUTE"/> p a lemerülésig</translation>
 <translation id="7029814467594812963">Kilépés a munkamenetből</translation>
-<translation id="7908019422099334890">Háttérkép kiválasztása...</translation>
+<translation id="2983818520079887040">Beállítások...</translation>
+<translation id="8660803626959853127"><ph name="COUNT"/> fájl szinkronizálása</translation>
+<translation id="639644700271529076">A CAPS LOCK ki van kapcsolva</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7841796031898165175">Mobilhálózatok engedélyezése</translation>
-<translation id="9072667645353666975">Akkumulátor: <ph name="PERCENTAGE"/>% (<ph name="HOUR"/> óra <ph name="MINUTE"/> perc)</translation>
+<translation id="5045002648206642691">A Google Drive beállításai...</translation>
 <translation id="48607902311828362">Repülőgép üzemmód</translation>
+<translation id="5361734574074701223">A hátralévő idő kiszámítása</translation>
+<translation id="9169585155162064169">A CAPS LOCK be van kapcsolva.
+A kikapcsoláshoz nyomja meg a keresőgombot.</translation>
+<translation id="412065659894267608"><ph name="HOUR"/> ó <ph name="MINUTE"/> p a teljes feltöltésig</translation>
 </translationbundle>

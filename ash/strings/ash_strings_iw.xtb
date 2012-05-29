@@ -2,50 +2,67 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="3595596368722241419">סוללה מלאה</translation>
-<translation id="908313544993743941">בטל רשת סלולרית</translation>
+<translation id="5250713215130379958">הסתר אוטומטית את המפעיל</translation>
 <translation id="30155388420722288">לחצן גלישה</translation>
 <translation id="5571066253365925590">Bluetooth מופעל</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth מושבת</translation>
+<translation id="370649949373421643">הפעל Wi-Fi</translation>
 <translation id="3626281679859535460">בהירות</translation>
 <translation id="7982789257301363584">רשת</translation>
+<translation id="5565793151875479467">שרת proxy...</translation>
+<translation id="6979158407327259162">כונן Google</translation>
 <translation id="2297568595583585744">מגש סטטוס</translation>
 <translation id="2946640296642327832">הפעל Bluetooth</translation>
 <translation id="6596816719288285829">כתובת IP</translation>
-<translation id="289426338439836048">רשת אחרת לנייד...</translation>
 <translation id="5233638681132016545">כרטיסייה חדשה</translation>
+<translation id="3846575436967432996">אין מידע רשת זמין</translation>
+<translation id="3026237328237090306">הגדר נתונים לנייד</translation>
 <translation id="785750925697875037">הצג את חשבון הנייד</translation>
+<translation id="8121288016949447968">Shift+חיפוש</translation>
 <translation id="7864539943188674973">השבת Bluetooth</translation>
 <translation id="3126069444801937830">הפעל מחדש כדי לעדכן</translation>
+<translation id="1525975890706558596">CAPS LOCK מופעל.
+הקש על Shift + מקש החיפוש כדי לבטל.</translation>
 <translation id="8190698733819146287">התאם אישית שפה וקלט...</translation>
-<translation id="7911992579061465928">הסוללה חלשה</translation>
 <translation id="598295083618286569">Bluetooth מחובר</translation>
 <translation id="5222676887888702881">יציאה</translation>
+<translation id="2091132388437059185">הסתר אוטומטית את המפעיל בעת הגדלה</translation>
+<translation id="425878420164891689">מחשב זמן עד שמתמלא</translation>
+<translation id="2964193600955408481">השבת Wi-Fi</translation>
 <translation id="811680302244032017">הוסף את המכשיר...</translation>
+<translation id="2509468283778169019">CAPS LOCK מופעל</translation>
+<translation id="6426039856985689743">השבת נתונים לנייד</translation>
 <translation id="3232695630852378748">הגדרות Bluetooth...</translation>
 <translation id="1480041086352807611">מצב הדגמה</translation>
 <translation id="4186384497305035875">מסך זה נשאר ריק במכוון</translation>
 <translation id="9089416786594320554">שיטות קלט</translation>
-<translation id="7706302027196209560">הפעל Wi-Fi</translation>
 <translation id="4430019312045809116">עוצמת קול</translation>
+<translation id="1383876407941801731">חיפוש</translation>
 <translation id="3557139239102318020">משוך כלפי מטה כדי למזער, שמאלה או ימינה כדי לפרוס</translation>
 <translation id="5980301590375426705">צא מהפעלת אורח</translation>
 <translation id="8308637677604853869">התפריט הקודם</translation>
+<translation id="8528322925433439945">נייד ...</translation>
 <translation id="3595065677684516080">הגדרות ועזרה</translation>
 <translation id="4479639480957787382">אתרנט</translation>
+<translation id="7573721444069009535">Wi-Fi...</translation>
+<translation id="6223565363550976998">סוללה: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">נעילה</translation>
-<translation id="5836819469861742634">שנה הגדרות שרת Proxy ...</translation>
+<translation id="2805756323405976993">יישומים</translation>
 <translation id="2872961005593481000">כיבוי</translation>
-<translation id="8735871257195921372">רשת Wi-Fi אחרת...</translation>
-<translation id="2152495481414285304">יישומים</translation>
-<translation id="1690310444231390462">השבת Wi-Fi</translation>
-<translation id="77565731175229781">הגדרות רשת ...</translation>
+<translation id="7052914147756339792">הגדר טפט...</translation>
+<translation id="1602076796624386989">הפעל נתונים לנייד</translation>
+<translation id="8573351908869164327">נותרו <ph name="HOUR"/> שעות ו-<ph name="MINUTE"/> דקות</translation>
 <translation id="7029814467594812963">צא מההפעלה</translation>
-<translation id="7908019422099334890">הגדר טפט...</translation>
+<translation id="2983818520079887040">הגדרות...</translation>
+<translation id="8660803626959853127">מסנכרן <ph name="COUNT"/> קבצים</translation>
+<translation id="639644700271529076">CAPS LOCK כבוי</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7841796031898165175">הפעל רשת סלולרית</translation>
-<translation id="9072667645353666975">סוללה: %<ph name="PERCENTAGE"/>
-<ph name="HOUR"/> שעות <ph name="MINUTE"/> דקות</translation>
+<translation id="5045002648206642691">הגדרות כונן Google...</translation>
 <translation id="48607902311828362">מצב טיסה</translation>
+<translation id="5361734574074701223">מחשב זמן שנותר</translation>
+<translation id="9169585155162064169">CAPS LOCK מופעל. 
+הקש על מקש החיפוש כדי לבטל.</translation>
+<translation id="412065659894267608"><ph name="HOUR"/> שעות ו-<ph name="MINUTE"/> דקות עד לטעינה מלאה</translation>
 </translationbundle>

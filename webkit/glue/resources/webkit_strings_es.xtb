@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
+<translation id="248395913932153421">Día</translation>
+<translation id="6015796118275082299">Año</translation>
 <translation id="9186171386827445984">Cargando documento: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> páginas...</translation>
 <translation id="1235745349614807883">Eliminar búsquedas recientes</translation>
 <translation id="1171774979989969504">Introduce una dirección de correo electrónico</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">enlace</translation>
 <translation id="4522570452068850558">Detalles</translation>
 <translation id="8451268428117625855">Selecciona un archivo</translation>
+<translation id="2674318244760992338">pie de página</translation>
+<translation id="8987927404178983737">Mes</translation>
 <translation id="7364796246159120393">Seleccionar archivo</translation>
 <translation id="2761667185364618470">Selecciona esta casilla de verificación si quieres continuar</translation>
 <translation id="8964020114565522021">Arrastrar archivo hasta aquí</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024 (Mediano)</translation>
 <translation id="1637811476055996098">Elegir archivos</translation>
 <translation id="5476505524087279545">desmarcar</translation>
+<translation id="2148716181193084225">Hoy</translation>
 <translation id="2507943997699731163">Completa este campo</translation>
 <translation id="5919473608089529604">No se ha podido cargar el complemento.</translation>
 <translation id="6663448176199120256">Búsquedas recientes</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">El valor debe inferior o igual a <ph name="MAXIMUM"/></translation>
 <translation id="6119846243427417423">activar</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> archivos</translation>
+<translation id="6643016212128521049">Eliminar</translation>
 <translation id="3934680773876859118">Se ha producido un error al cargar el documento PDF.</translation>
 <translation id="8597182159515967513">cabecera</translation>
 <translation id="2653659639078652383">Enviar</translation>

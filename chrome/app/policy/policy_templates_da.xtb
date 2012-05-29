@@ -119,6 +119,9 @@
       Hvis du indstiller denne politik, anvender <ph name="PRODUCT_FRAME_NAME"/> den medfølgende mappe.
 
       Hvis denne indstilling ikke angives, anvendes standardprofilmappen.</translation>
+<translation id="8818173863808665831">Rapportér enhedens geografiske placering.
+
+      Hvis politikken ikke er angivet eller angivet til falsk, rapporteres placeringen ikke.</translation>
 <translation id="4899708173828500852">Aktiver Beskyttet browsing</translation>
 <translation id="7719251660743813569">Kontrollerer, om brugsdata rapporteres tilbage til Google. Hvis den er indstillet til sand, vil <ph name="PRODUCT_OS_NAME"/> rapportere brugsdata. Hvis den ikke er konfigureret eller er angivet til falsk, deaktiveres datarapportering. </translation>
 <translation id="3570008976476035109">Bloker plugins på disse websites</translation>
@@ -190,9 +193,9 @@
 <translation id="5776485039795852974">Spørg hver gang et website vil vise skrivebordsmeddelelser</translation>
 <translation id="5052081091120171147">Denne politik tvinger import af browserhistorikken fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres der ikke nogen browserdata. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="6786747875388722282">Udvidelser</translation>
+<translation id="8947415621777543415">Rapportér enhedens placering</translation>
 <translation id="1655229863189977773">Angiv diskcache i bytes</translation>
 <translation id="6899705656741990703">Registrer proxyindstillinger automatisk</translation>
-<translation id="4101772068965291327">Åbn startsiden</translation>
 <translation id="7003334574344702284">Denne politik tvinger import af gemte adgangskoder fra den tidligere standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres de gemte adgangskoder ikke. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="6258193603492867656">Angiver, om den genererede Kerberos-SPN skal omfatte en port, der ikke er standard. Hvis du aktiverer denne indstilling, og en port, der ikke er standard (dvs. en anden port end 80 eller 443), angives, vil den indgå i den genererede Kerberos-SPN. Hvis du deaktiverer denne indstilling, vil den genererede Kerberos-SPN aldrig omfatte en port.</translation>
 <translation id="8992176907758534924">Tillad ikke, at websites viser billeder</translation>
@@ -236,6 +239,20 @@
       Hvis politikken ikke indstilles, kan brugeren vælge, om der skal bedes om en adgangskode for at låse enheden op.</translation>
 <translation id="6022948604095165524">Handling ved opstart</translation>
 <translation id="9042911395677044526">Tillader, at netværkskonfigurationen gøres gældende pr. bruger til en <ph name="PRODUCT_OS_NAME"/>-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Angiver applikationsid'er på en liste, som <ph name="PRODUCT_OS_NAME"/> viser som fastgjorte apps på applikationslisten.
+
+      Hvis denne politik er konfigureret, er applikationssættet fast og kan ikke ændres af brugeren.
+
+      Hvis politikken ikke er angivet, kan brugeren ændre listen over fastgjorte apps på applikationslisten.</translation>
+<translation id="6177482277304066047">Angiver en målversion for automatiske opdateringer.
+
+      Angiver præfikset for en målversion, som <ph name="PRODUCT_OS_NAME"/> skal opdateres til. Hvis enheden kører en version, som er ældre end det angivne præfiks, opdateres den til den seneste udgave med det givne præfiks. Hvis enheden allerede kører en senere udgave, har dette ingen konsekvenser (dvs. der foretages ingen nedjusteringer), og enheden forbliver på den nuværende version. Præfiksformatet fungerer som en komponent, som det fremgår af følgende eksempel:
+
+      &quot;&quot; (eller ikke konfigureret): opdater til den senest tilgængelige version.
+      &quot;1412.&quot;: opdater til en mindre version af 1412 (f.eks. 1412.24.34 eller 1412.60.2)
+      &quot;1412.2.&quot;: opdater til en mindre version af 1412.2 (.f.eks. 1412.2.34 eller 1412.2.2)
+      &quot;1412.24.34&quot;: opdater kun til denne specifikke version
+      </translation>
 <translation id="7625444193696794922">Angiver den udgivelseskanal, som denne enhed skal være låst til.</translation>
 <translation id="2240879329269430151">Giver dig mulighed for at bestemme, om websites må vise pop op-vinduer. Visning af pop op-vinduer kan enten være tilladt for alle websites eller nægtet for alle websites. Hvis denne politik ikke angives, anvendes &quot;BlockPopups&quot;, og brugeren vil kunne ændre den.</translation>
 <translation id="5289914968905023866">Blokerer adgangen til de angivne webadresser. Denne politik forhindrer brugeren i at indlæse websider fra sortlistede webadresser. En webadresse har formatet &quot;netværk://vært:port/sti&quot;. Det valgfrie netværk kan være http, https eller ftp. Kun dette netværk blokeres. Hvis ingen er angivet, blokeres alle netværk. Værten kan være et værtsnavn eller en IP-adresse. Underdomæner af et værtsnavn vil også blive blokeret. Medtag et &quot;.&quot; før værtsnavnet for at forhindre blokering af underdomæner. Det særlige værtsnavn &quot;*&quot; vil blokere alle domæner. Den valgfrie port består af et gyldigt portnummer mellem 1 og 65.535. Hvis intet nummer angives, blokeres alle porte. Hvis den valgfrie sti er angivet, blokeres kun stier med det pågældende præfiks. Undtagelser kan defineres i webadressens politik om hvidlister. Disse politikker er begrænset til 100 adgange. Efterfølgende adgange ignoreres.</translation>
@@ -249,6 +266,9 @@
 
       Hvis denne politik ikke indstilles, er baggrundstilstanden i første omgang deaktiveret og kan kontrolleres af brugeren i browserindstillingerne.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
+<translation id="5148753489738115745">Giver dig mulighed for at angive yderligere parametre, som bruges, når <ph name="PRODUCT_FRAME_NAME"/> starter <ph name="PRODUCT_NAME"/>.
+
+          Hvis denne politik ikke er angivet, bruges standardkommandolinjen.</translation>
 <translation id="2646290749315461919">Giver dig mulighed for at angive, om websites skal have tilladelse til at spore brugernes fysiske placering. Sporing af brugernes fysiske placering kan tillades som standard, nægtes som standard, eller brugeren kan blive spurgt, hver gang et website anmoder om den fysiske placering. Hvis denne politik ikke angives, anvendes &quot;AskGeolocation&quot;, og brugeren vil kunne ændre den.</translation>
 <translation id="5770738360657678870">Udviklerkanal (kan være ustabil)</translation>
 <translation id="2959898425599642200">Regler for omgåelse af proxy</translation>
@@ -309,11 +329,25 @@
 <translation id="717221064259627503">Konfigurerer det bibliotek, som <ph name="PRODUCT_NAME"/> bruger til lagring af cachelagrede filer på disken. Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME"/> bruge det medfølgende bibliotek, uanset om brugeren har angivet flaget &quot;--disk-cache-dir&quot; eller ej. Hvis denne politik ikke angives, anvendes standardcachemappen, og brugeren vil kunne tilsidesætte det med kommandolinjeflaget &quot;--disk-cache-dir&quot;.</translation>
 <translation id="2312134445771258233">Giver dig mulighed for at konfigurere de sider, der indlæses ved opstart. Indholdet af listen &quot;Webadresser, der skal åbnes ved opstart&quot; ignoreres, medmindre du vælger &quot;Åbn en liste over webadresser&quot; i &quot;Handling ved opstart&quot;.</translation>
 <translation id="2538628396238281971">Konfigurerer det bibliotek, som <ph name="PRODUCT_NAME"/> bruger til at downloade filer. Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME"/> bruge det medfølgende bibliotek, uanset om brugeren har angivet et eller aktiveret flaget for at blive bedt om en downloadplacering hver gang. Hvis denne politik ikke angives, anvendes standardbiblioteket til downloads, og brugeren vil kunne ændre det.</translation>
+<translation id="7750991880413385988">Åbn siden Ny fane</translation>
+<translation id="741903087521737762">Giver dig mulighed for at angive adfærd ved opstart.
+
+          Hvis du vælger &quot;Åbn siden Ny fane&quot;, åbnes siden Ny fane altid, når du starter <ph name="PRODUCT_NAME"/>.
+
+          Hvis du vælger &quot;Gendan sidste session&quot;, genåbnes de webadresser, som var åbne, sidste gang <ph name="PRODUCT_NAME"/> blev lukket, og browsingsessionen genoprettes, som den blev efterladt.
+          Hvis du vælger denne indstilling, deaktiveres nogle af de indstillinger, som afhænger af sessioner, eller som udfører handlinger ved lukning (såsom Ryd browserdata ved lukning eller cookies, der kun bruges i sessioner).
+
+          Hvis du vælger &quot;Åbn en liste over webadresser&quot;, åbnes en liste over &quot;webadresser, der åbnes ved start&quot;, når en bruger starter <ph name="PRODUCT_NAME"/>.
+
+          Hvis du aktiverer denne indstilling, kan brugere ikke ændre eller overskrive den i <ph name="PRODUCT_NAME"/>.
+
+          Hvis du deaktiverer denne indstilling, svarer det til ikke at konfigurere den. Brugeren vil fortsat kunne ændre den i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Konfigurerer proxyindstillinger for <ph name="PRODUCT_NAME"/>. Denne politik er ikke klar til brug endnu, så brug den ikke.</translation>
 <translation id="8344454543174932833">Importer bogmærker fra standardbrowser ved første visning</translation>
 <translation id="1019101089073227242">Angiv brugerdatamappe</translation>
 <translation id="5826047473100157858">Angiver, om brugeren kan åbne sider i inkognitotilstand i <ph name="PRODUCT_NAME"/>. Hvis &quot;Aktiveret&quot; er valgt, eller hvis politikken ikke angives, kan siderne åbnes i inkognitotilstand. Hvis &quot;Deaktiveret&quot; er valgt, kan sider ikke åbnes i inkognitotilstand. Hvis &quot;Tvunget&quot; er valgt, kan siderne kun åbnes i inkognitotilstand.</translation>
 <translation id="5085647276663819155">Deaktiver udskriftsvisning</translation>
+<translation id="8672321184841719703">Målversion for automatiske opdateringer</translation>
 <translation id="2030905906517501646">Søgeord til standardsøgemaskine</translation>
 <translation id="3072045631333522102">Pauseskærm, som skal bruges på loginskærmen i detailtilstand</translation>
 <translation id="7393895128271703858">Denne politik er forældet. Brug DefaultJavaScriptSetting i stedet. Aktiverer JavaScript i <ph name="PRODUCT_NAME"/> og forhindrer brugerne i at ændre denne indstilling. Hvis denne indstilling er aktiveret eller ikke er konfigureret, kan websider bruge JavaScript. Hvis denne indstilling er deaktiveret, kan websider ikke anvende JavaScript. Hvis denne politik ikke angives, anvendes standardværdien, som er aktiveret, og brugeren vil kunne ændre den. Hvis denne politik ikke angives, vil dette blive aktiveret, men brugeren vil kunne ændre det.</translation>
@@ -420,6 +454,7 @@
 <translation id="2299220924812062390">Angiv en liste over aktiverede plugins</translation>
 <translation id="924557436754151212">Importer gemte adgangskoder fra standardbrowser på første visning</translation>
 <translation id="1897365952389968758">Tillad, at alle websites kører JavaScript</translation>
+<translation id="7323896582714668701">Yderligere kommandolinjeparametre for <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Deaktiver synkronisering af data med Google</translation>
 <translation id="36674322972891584">Aktiverer netværksforudsigelse i <ph name="PRODUCT_NAME"/> og forhindrer brugerne i at ændre denne indstilling. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME"/>. Hvis denne politik ikke angives, aktiveres dette, men brugeren vil kunne ændre det.</translation>
 <translation id="7006788746334555276">Indstillinger for indhold</translation>
@@ -431,6 +466,7 @@
 <translation id="187819629719252111">Giver adgang til lokale filer på maskinen ved at lade <ph name="PRODUCT_NAME"/> vise dialogbokse om filvalg. Hvis du aktiverer denne indstilling, kan brugerne åbne dialogbokse om filvalg som normalt. Hvis du deaktiverer denne indstilling, vises der en meddelelse i stedet for en dialogboks om filvalg, hver gang brugeren foretager en handling, der ville have frembragt en dialogboks om filvalg (såsom at importere bogmærker, uploade filer, gemme links osv.), og det antages, at brugeren har trykket på Annuller i dialogboksen om filvalg. Hvis denne indstilling ikke angives, kan brugerne åbne dialogbokse om filvalg som normalt.</translation>
 <translation id="4507081891926866240">Tilpas liste over webadressemønstre, der altid skal gengives af <ph name="PRODUCT_FRAME_NAME"/>. Hvis denne politik ikke er angivet, anvendes standardgengivelsen på alle websites, sådan som det er angivet i politikken &quot;ChromeFrameRendererSettings&quot;. Se eksempler på mønstre på http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Vælg, hvordan du vil angive indstillinger for proxyserveren</translation>
+<translation id="1803646570632580723">Liste over fastgjorte apps, der skal vises på applikationslisten</translation>
 <translation id="7774768074957326919">Brug systemets proxyindstillinger</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
 <translation id="868187325500643455">Tillad, at alle websites automatisk kører plugins</translation>
@@ -510,16 +546,4 @@
 <translation id="5645779841392247734">Tillad cookies på disse websites</translation>
 <translation id="8220342550735772883">Konfigurerer den cachestørrelse, som <ph name="PRODUCT_NAME"/> bruger til lagring af cachelagrede mediefiler på disken. Hvis du angiver denne politik, anvender <ph name="PRODUCT_NAME"/> den angivne cachestørrelse, uanset om brugeren har angivet flaget &quot;--media-cache-size&quot; eller ej. Hvis værdien af ​​denne politik er 0, anvendes standardcachestørrelsen, men brugeren vil ikke kunne ændre det. Hvis denne politik ikke angives, anvendes standardstørrelsen, og brugeren vil kunne tilsidesætte den med flaget --media-cache-size.</translation>
 <translation id="7049373494483449255">Gør det muligt for <ph name="PRODUCT_NAME"/> at sende dokumenter til <ph name="CLOUD_PRINT_NAME"/> til udskrivning. BEMÆRK! Dette påvirker kun understøttelse af <ph name="CLOUD_PRINT_NAME"/> i <ph name="PRODUCT_NAME"/>. Det forhindrer ikke brugerne i at sende udskriftsjob på websites. Hvis denne indstilling er aktiveret eller ikke er konfigureret, kan brugerne udskrive til <ph name="CLOUD_PRINT_NAME"/> via dialogboksen for udskrivning i <ph name="PRODUCT_NAME"/>. Hvis denne indstilling er deaktiveret, kan brugerne ikke udskrive til <ph name="CLOUD_PRINT_NAME"/> via dialogboksen for udskrivning i <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2339225390014743328">Giver dig mulighed for at angive adfærd ved opstart.
-
-          Hvis du vælger &quot;Åbn startside&quot;, åbnes startsiden altid, når du starter <ph name="PRODUCT_NAME"/>.
-
-          Hvis du vælger &quot;Gendan sidste session&quot;, genåbnes de webadresser, der var åbne sidste gang, hvor <ph name="PRODUCT_NAME"/> blev lukket, og browsersessionen gendannes, sådan som den blev efterladt.
-          Hvis du vælger denne valgmulighed, deaktiveres nogle af de indstillinger, der benytter sig af sessioner, eller som udfører handlinger ved nedlukning (f.eks. Ryd browserdata ved nedlukning eller Kun for session-cookies.
-
-          Hvis du vælger &quot;Åbn en liste med webadresser&quot;, åbnes listen med &quot;webadresser, der skal åbnes ved opstart&quot;, når brugeren starter <ph name="PRODUCT_NAME"/>.
-
-          Hvis du aktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte den i <ph name="PRODUCT_NAME"/>.
-
-          Deaktivering af denne indstilling er det samme som ikke at konfigurere den. Brugeren kan stadig ændre den i <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

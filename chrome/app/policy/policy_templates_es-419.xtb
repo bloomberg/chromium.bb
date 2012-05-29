@@ -78,6 +78,9 @@
       Si se establece esta política, <ph name="PRODUCT_FRAME_NAME"/> usará el directorio proporcionado.
 
       Si no se establece esta opción, se utilizará el directorio de perfil predeterminado.</translation>
+<translation id="8818173863808665831">Informa la ubicación geográfica del dispositivo.
+
+     Si no se configura la política, ni se establece como falsa, no se informará la ubicación.</translation>
 <translation id="4899708173828500852">Habilitar la navegación segura</translation>
 <translation id="7719251660743813569">Controla el envío de informes sobre estadísticas de uso a Google. Si el valor se establece en &quot;true&quot;, <ph name="PRODUCT_OS_NAME"/> enviará informes sobre estadísticas de uso. Si no se configura o se establece en &quot;false&quot;, se desactivarán los informes estadísticos.</translation>
 <translation id="3570008976476035109">Bloquear complementos en estos sitios</translation>
@@ -137,9 +140,9 @@
 <translation id="5776485039795852974">Preguntar siempre que un sitio quiera mostrar notificaciones de escritorio.</translation>
 <translation id="5052081091120171147">Esta política, si se habilita, fuerza la importación del historial de navegación del navegador predeterminado actual. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importa ningún historial de navegación. Si no se configura, se le puede preguntar al usuario si desea importar el historial de navegación o la importación puede realizarse de forma automática.</translation>
 <translation id="6786747875388722282">Extensiones</translation>
+<translation id="8947415621777543415">Informar la ubicación del dispositivo</translation>
 <translation id="1655229863189977773">Establecer el tamaño del caché de disco en bytes</translation>
 <translation id="6899705656741990703">Configuración de proxy de detección automática</translation>
-<translation id="4101772068965291327">Abrir página principal</translation>
 <translation id="7003334574344702284">Esta política, si se habilita, fuerza la importación de las contraseñas guardadas del navegador predeterminado anterior. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importan las contraseñas guardadas. Si no se configura, se le puede preguntar al usuario si desea importar las contraseñas guardadas o la importación puede realizarse de forma automática.</translation>
 <translation id="6258193603492867656">Especifica si el SPN de Kerberos generado debe incluir un puerto no estándar. Si se habilita esta configuración y se ingresa un puerto no estándar (es decir, un puerto que no sea 80 ni 443), se incluirá en el SPN de Kerberos generado. Si se inhabilita esta opción o si no se configura, el SPN de Kerberos generado no incluirá un puerto en ningún caso.</translation>
 <translation id="8992176907758534924">No permitir que ningún sitio muestre imágenes.</translation>
@@ -183,6 +186,20 @@
       Si no se establece esta política, el usuario podrá decidir si quiere que sea necesaria una contraseña para volver a activar el dispositivo o no.</translation>
 <translation id="6022948604095165524">Acción al iniciar</translation>
 <translation id="9042911395677044526">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME"/> por usuario. La configuración de red es una cadena escrita en formato JSON, como la define el formato Open Network Configuration que se describe en <ph name="ONC_SPEC_URL"/>.</translation>
+<translation id="7128918109610518786">Muestra la lista de identificadores de las aplicaciones que <ph name="PRODUCT_OS_NAME"/> muestra como aplicaciones fijas en la barra del menú de aplicaciones.
+
+      Si se configura esta política, se fijará el conjunto de aplicaciones y el usuario no podrá cambiarlo.
+
+      Si no se configura esta política, el usuario podrá cambiar la lista de aplicaciones fijas en el menú de aplicaciones.</translation>
+<translation id="6177482277304066047">Establece una versión de destino para las actualizaciones automáticas.
+
+      Especifica el prefijo de la versión de destino a la que <ph name="PRODUCT_OS_NAME"/> debe actualizarse. Si el dispositivo está ejecutando una versión anterior a la que especifica el prefijo, se actualizará a la última versión con el prefijo dado. Si el dispositivo ya posee una versión posterior, no se aplicará ningún cambio (es decir, no se cambiará a una versión anterior) y el dispositivo permanecerá con la versión actual. El formato del prefijo funciona en base a los componentes, como se demuestra en el siguiente ejemplo:
+
+      &quot;&quot; (o no configurado): Actualizar a la última versión disponible.
+      &quot;1412.&quot;: Actualizar a cualquier versión menor a 1412 (por ejemplo, 1412.24.34 o 1412.60.2)
+      &quot;1412.2.&quot;: Actualizar a cualquier versión menor a 1412.2 (por ejemplo, 1412.2.34 o 1412.2.2)
+      &quot;1412.24.34&quot;: Actualizar solo a esta versión específica
+      </translation>
 <translation id="7625444193696794922">Especifica el canal de publicaciones al que debe conectarse este dispositivo.</translation>
 <translation id="2240879329269430151">Te permite configurar si los sitios web pueden mostrar ventanas emergentes. Las ventanas emergentes pueden permitirse para todos los sitios web o denegarse para todos los sitios web. Si esta política no se configura, se usará &quot;BlockPopups&quot; y el usuario podrá cambiarlo.</translation>
 <translation id="5289914968905023866">Bloquea el acceso a las URL del listado. Esta política evita que el usuario cargue páginas web de las direcciones URL incluidas en listas negras. Una URL tiene el siguiente formato: &quot;scheme://host:port/path&quot;. El esquema opcional puede ser http, https o ftp. Solo se bloqueará este esquema y, si no se especifica ninguno, se bloquearán todos los sistemas. El host puede ser un nombre de host o una dirección IP. Los subdominios de un nombre de host también se bloquearán. Para evitar el bloqueo de los subdominios, incluye un &quot;.&quot; antes del nombre de host. El nombre especial de host &quot;*&quot; bloqueará todos los dominios. El puerto opcional es un número de puerto válido de 1 a 65535. Si no se especifica ninguno, se bloquearán todos los puertos. Si se especifica la ruta opcional, solo se bloquearán las rutas que lleven ese prefijo. Las excepciones pueden definirse en la política de la lista blanca de las URL. Estas políticas están limitadas a 100 entradas y las entradas posteriores se ignorarán. Si esta política no se configura, no se incluirá ninguna URL en listas negras en el navegador.</translation>
@@ -196,6 +213,9 @@
 
       Si no se establece esta política, inicialmente se desactivará el modo en segundo plano, pero el usuario podrá controlarlo en la configuración del navegador.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o posterior</translation>
+<translation id="5148753489738115745">Te permite especificar los parámetros adicionales que se utilizan cuando <ph name="PRODUCT_FRAME_NAME"/> inicia <ph name="PRODUCT_NAME"/>.
+
+          Si no se configura esta política, se utilizará la línea de comandos predeterminada.</translation>
 <translation id="2646290749315461919">Te permite establecer si los sitios web pueden rastrear la ubicación física de los usuarios. El rastreo de la ubicación física de los usuarios puede autorizarse en forma predeterminada, puede denegarse en forma predeterminada o se le puede preguntar al usuario cada vez que un sitio web solicita la ubicación física. Si esta política no se configura, se usará &quot;AskGeolocation&quot; y el usuario podrá cambiarla.</translation>
 <translation id="5770738360657678870">Canal para desarrolladores (puede ser inestable)</translation>
 <translation id="2959898425599642200">Reglas de omisión de proxy</translation>
@@ -256,11 +276,25 @@
 <translation id="717221064259627503">Configura el directorio que <ph name="PRODUCT_NAME"/> usará para el almacenamiento de archivos en caché en el disco. Si se configura esta política, <ph name="PRODUCT_NAME"/> usará el directorio proporcionado independientemente de que el usuario haya especificado la marca &quot;--disk-cache-dir&quot; o no. Si esta política no se configura, se usará el directorio de caché predeterminado y el usuario podrá anularlo con la marca de la línea de comandos &quot;--disk-cache-dir&quot;.</translation>
 <translation id="2312134445771258233">Te permite configurar las páginas que se cargan al iniciar. El contenido de la lista &quot;Direcciones URL que se abrirán al iniciar&quot; se ignora a menos que se haya seleccionado &quot;Abrir una lista de direcciones URL en acción al iniciar&quot;.</translation>
 <translation id="2538628396238281971">Configura el directorio que <ph name="PRODUCT_NAME"/> usará para descargar archivos. Si se configura esta política, <ph name="PRODUCT_NAME"/> usará el directorio provisto independientemente de que el usuario haya especificado uno o habilitado la marca para que se le solicite  la ubicación de descarga siempre. Si esta política no se configura, se usará el directorio de descargas predeterminado y el usuario podrá cambiarlo.</translation>
+<translation id="7750991880413385988">Abrir la página Nueva pestaña</translation>
+<translation id="741903087521737762">Te permite especificar el comportamiento en el inicio.
+
+          Si seleccionas la opción Abrir página Nueva pestaña, esta siempre se abrirá al iniciar <ph name="PRODUCT_NAME"/>.
+
+          Si seleccionas la opción Restaurar la última sesión, se volverán a abrir las URL que estaban abiertas la última vez que se cerró <ph name="PRODUCT_NAME"/> y se restaurará la sesión de navegación tal como estaba.
+          Al seleccionar esta opción, se inhabilitan algunas opciones de configuración que se basan en las sesiones o que llevan a cabo acciones al salir, por ejemplo, eliminar los datos de navegación al salir o las cookies de esa sesión.
+
+          Si seleccionas la opción Abrir una lista de URL, se abrirá la lista de URL a abrir en el inicio cuando un usuario inicie <ph name="PRODUCT_NAME"/>.
+
+          Si habilitas esta opción de configuración, los usuarios no podrán cambiarla ni sobrescribirla en <ph name="PRODUCT_NAME"/>.
+
+          Inhabilitar esta opción de configuración equivale a no configurarla. El usuario aún podrá cambiarla en <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Permite establecer los parámetros de configuración de proxy de <ph name="PRODUCT_NAME"/>. Esta política aún no está lista para su uso, así que no debes utilizarla.</translation>
 <translation id="8344454543174932833">Importar marcadores del navegador predeterminado en la primera ejecución</translation>
 <translation id="1019101089073227242">Configurar directorio de datos de usuarios</translation>
 <translation id="5826047473100157858">Especifica si el usuario puede abrir páginas en modo incógnito en <ph name="PRODUCT_NAME"/>. Si se habilita o si  no se configura la política, las páginas podrán abrirse en modo incógnito. Si se inhabilita, las páginas no podrán abrirse en modo incógnito. Si se fuerza el modo incógnito, las páginas podrán abrirse SOLO en modo incógnito.</translation>
 <translation id="5085647276663819155">Inhabilitar vista previa de impresión</translation>
+<translation id="8672321184841719703">Versión de destino para las actualizaciones automáticas</translation>
 <translation id="2030905906517501646">Palabra clave del proveedor de búsqueda predeterminado</translation>
 <translation id="3072045631333522102">Protector de pantalla que se utilizará en la pantalla de inicio de sesión del modo de venta</translation>
 <translation id="7393895128271703858">Esta política no está aprobada; usa DefaultJavaScriptSetting en su lugar. Esto habilita JavaScript en <ph name="PRODUCT_NAME"/> y evita que los usuarios cambien esta configuración. Si se habilita esta configuración o si no se configura, las páginas web podrán usar JavaScript. Si se inhabilita esta configuración, las páginas web no podrán usar JavaScript. Si esta política no se configura, se usará el valor predeterminado que se habilite y el usuario podrá cambiarlo. Si no se configura, se habilitará esta opción, pero el usuario podrá cambiarla.</translation>
@@ -365,6 +399,7 @@
 <translation id="2299220924812062390">Especificar una lista de complementos habilitados</translation>
 <translation id="924557436754151212">Importar las contraseñas guardadas del navegador predeterminado en la primera ejecución</translation>
 <translation id="1897365952389968758">Permitir que todos los sitios ejecuten JavaScript</translation>
+<translation id="7323896582714668701">Parámetros de línea de comandos adicionales para <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Inhabilitar la sincronización de datos con Google</translation>
 <translation id="36674322972891584">Habilita la predicción de red en <ph name="PRODUCT_NAME"/> y evita que los usuarios cambien esta configuración. Si se habilita o inhabilita esta configuración, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME"/>. Si esta política no se configura, se la habilitará, pero el usuario podrá cambiarla.</translation>
 <translation id="7006788746334555276">Configuración de contenido</translation>
@@ -376,6 +411,7 @@
 <translation id="187819629719252111">Permite el acceso a archivos locales en la máquina al permitir que <ph name="PRODUCT_NAME"/> muestre los cuadros de diálogo de selección de archivos. Si se habilita esta configuración, los usuarios podrán abrir los cuadros de diálogo de selección de archivos como de costumbre. Si se inhabilita esta configuración, siempre que el usuario realice una acción que podría provocar un cuadro de diálogo de selección de archivos (como importar marcadores, cargar archivos, guardar enlaces, etc.), se mostrará un mensaje y se asumirá que el usuario ha hecho clic en Cancelar en el cuadro de diálogo de selección de archivos. Si esta opción no se configura, los usuarios podrán abrir cuadros de diálogo de selección de archivos como de costumbre.</translation>
 <translation id="4507081891926866240">Personaliza la lista de los patrones de URL que siempre deben ser procesados por <ph name="PRODUCT_FRAME_NAME"/>. Si esta política no se configura, se usará el procesador predeterminado para todos los sitios, como lo especifica la política &quot;ChromeFrameRendererSettings&quot;. Para ver ejemplos de patrones, visita http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Elegir cómo especificar la configuración del servidor proxy</translation>
+<translation id="1803646570632580723">Lista de aplicaciones fijas para mostrar en el menú de aplicaciones</translation>
 <translation id="7774768074957326919">Usar la configuración del proxy del sistema</translation>
 <translation id="3891357445869647828">Habilitar JavaScript</translation>
 <translation id="868187325500643455">Permitir a todos los sitios que ejecuten automáticamente complementos</translation>
@@ -455,16 +491,4 @@
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
 <translation id="8220342550735772883">Configura el tamaño de caché que <ph name="PRODUCT_NAME"/> usará para el almacenamiento de archivos de medios en caché en el disco. Si se configura esta política, <ph name="PRODUCT_NAME"/> usará el tamaño de caché proporcionado independientemente de que el usuario haya especificado la marca &quot;--media-cache-size&quot; o no. Si el valor de esta política es 0, se usará el tamaño de caché predeterminado y el usuario no podrá cambiarlo. Si esta política no se configura, se usará el tamaño predeterminado y el usuario podrá anularlo con la marca &quot;--media-cache-size&quot;.</translation>
 <translation id="7049373494483449255">Habilita a <ph name="PRODUCT_NAME"/> para enviar documentos a <ph name="CLOUD_PRINT_NAME"/> para la impresión. NOTA: Esto solo afecta el soporte de <ph name="CLOUD_PRINT_NAME"/> en <ph name="PRODUCT_NAME"/>. No evita que los usuarios envíen trabajos de impresión en las páginas web. Si se habilita esta opción o no se configura, los usuarios podrán imprimir en <ph name="CLOUD_PRINT_NAME"/> desde el cuadro de diálogo de impresión de <ph name="PRODUCT_NAME"/>. Si se inhabilita esta configuración, los usuarios no podrán imprimir en <ph name="CLOUD_PRINT_NAME"/> desde el cuadro de diálogo de impresión de <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2339225390014743328">Te permite especificar el comportamiento del navegador al iniciarlo.
-
-          Si seleccionas &quot;Abrir la página principal&quot;, la página principal se abrirá cada vez que inicies <ph name="PRODUCT_NAME"/>.
-
-          Si seleccionas &quot;Restaurar la última sesión&quot;, se volverán a abrir las URL que estaban abiertas cuando cerraste <ph name="PRODUCT_NAME"/> y se restaurará la sesión de navegación tal y como la dejaste.
-          Al seleccionar esta opción, se desactivarán algunos ajustes que dependen de las sesiones o que  realizan acciones al cerrar el navegador (como borrar los datos de navegación al salir o las cookies de sesión).
-
-          Si seleccionas &quot;Abrir una lista de URL&quot;, se abrirá la lista de URL que se deben abrir al inicio cuando un usuario inicie <ph name="PRODUCT_NAME"/>.
-
-          Si activas esta opción, los usuarios no podrán cambiarla ni anularla en <ph name="PRODUCT_NAME"/>.
-
-          Si desactivas esta opción, se considerará que no la has configurado y el usuario podrá cambiarla en <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

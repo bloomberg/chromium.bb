@@ -8,6 +8,7 @@
 <translation id="573759479754913123">Giới thiệu về Chrome OS</translation>
 <translation id="5453904507266736060">Để Google Chrome chạy trên nền</translation>
 <translation id="2383457833405848421">Giới thiệu về Chrome Frame...</translation>
+<translation id="3454512769850953877">Có, thoát Chrome</translation>
 <translation id="386202838227397562">Vui lòng đóng tất cả cửa sổ của Google Chrome và thử lại.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="7400722733683201933">Giới thiệu về Google Chrome</translation>
@@ -15,7 +16,6 @@
 <translation id="7781002470561365167">Hiện đã có phiên bản mới của Google Chrome.</translation>
 <translation id="1484802885942301358">Google Chrome đã được cập nhật (<ph name="VERSION"/>)</translation>
 <translation id="7101265395643981223">Khởi động Google Chrome</translation>
-<translation id="4738120821427858478">Thay đổi của bạn sẽ có hiệu lực vào lần tiếp theo bạn khởi động lại hệ điều hành Google Chrome.</translation>
 <translation id="4891791193823137474">Để Google Chrome chạy trên nền</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome hiện đang nhập Mục ưa thích/Dấu trang.</translation>
@@ -27,7 +27,6 @@
 <translation id="5339639696978861456">Chrome Frame đã được cập nhật. Vui lòng khởi chạy lại trình duyệt của bạn. Phiên bản Chrome: <ph name="TODO_0001"/>, phiên bản Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Điều khoản Dịch vụ</translation>
 <translation id="8398145039500709259">Sử dụng tài khoản Google này để đồng bộ hóa tất cả nội dung trên Chrome của bạn?</translation>
-<translation id="6862759394142635932">Nếu bạn đóng Google Chrome ngay bây giờ, tài nguyên đã tải xuống này sẽ bị hủy.</translation>
 <translation id="1779550429052479749">Đã phát hiện cài đặt Google Chrome hoặc Google Chrome Frame xung đột trên hệ thống. Vui lòng gỡ cài đặt và thử lại.</translation>
 <translation id="3555616473548901994">Quá trình gỡ cài đặt đã hoàn tất.</translation>
 <translation id="8556340503434111824">Hiện đã có phiên bản mới của Google Chrome và phiên bản này nhanh hơn bao giờ hết.</translation>
@@ -48,14 +47,15 @@
 <translation id="3487814320513494737">Trang tab mới của Chrome đã được lập mô hình lại. Chuyển đổi giữa các phần bằng cách nhấp vào các nhãn này. Chrome sẽ ghi nhớ tùy chọn của bạn cho lần tiếp theo.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="6423071462708908582">Bạn đã cố gắng truy cập vào &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; nhưng máy chủ lại đưa ra một chứng chỉ hết hạn. Không có thông tin nào có sẵn cho biết liệu chứng chỉ đó đã bị xâm phạm hay chưa kể từ khi hết hạn. Điều này có nghĩa là Google Chrome không thể đảm bảo rằng bạn đang kết nối với &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; chứ không phải là kẻ tấn công. Đồng hồ trên máy tính của bạn hiện được đặt thành <ph name="CURRENT_TIME"/>. Như vậy có ổn không? Nếu không, bạn phải sửa lỗi và làm mới trang này.</translation>
+<translation id="3197823471738295152">Thiết bị của bạn đã được cập nhật.</translation>
 <translation id="2653935705142821164">Trình kết xuất của Chrome</translation>
 <translation id="3889417619312448367">Gỡ cài đặt Google Chrome</translation>
+<translation id="8551886023433311834">Gần như cập nhật! Khởi động lại thiết bị của bạn để hoàn tất cập nhật.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3282568296779691940">Đăng nhập vào Chrome</translation>
 <translation id="3089968997497233615">Đã có phiên bản Google Chrome mới và an toàn hơn.</translation>
 <translation id="5037239767309817516">Hãy đóng tất cả các cửa sổ Google Chrome và khởi chạy lại Google Chrome để thay đổi này có hiệu lực.</translation>
 <translation id="7451721381978275812">Đối số không hợp lệ. Không thể cài đặt Google Chrome Frame ở chế độ sẵn sàng nếu như không đồng thời cài Google Chrome.</translation>
-<translation id="5727432509906037972">Bạn có muốn thoát khỏi Google Chrome khi đang tải xuống không?</translation>
 <translation id="4585888816441913908">Máy tính này đã có phiên bản mới hơn của Google Chrome và Google Chrome Frame. Nếu phần mềm này không hoạt động, vui lòng gỡ cài đặt cả Google Chrome và Google Chrome Frame rồi thử lại.</translation>
 <translation id="6368958679917195344">Chrome OS trở nên khả thi là nhờ <ph name="BEGIN_LINK_CROS_OSS"/>phần mềm nguồn mở<ph name="END_LINK_CROS_OSS"/> bổ sung.</translation>
 <translation id="7459554271817304652">Thiết lập đồng bộ hóa để lưu các tính năng trình duyệt được cá nhân hóa của bạn vào web và truy cập chúng từ Google Chrome trên bất kỳ máy tính nào.</translation>
@@ -71,24 +71,24 @@
 
 Một số tính năng có thể không khả dụng. Vui lòng chỉ định thư mục tiểu sử khác hoặc sử dụng phiên bản Chrome mới hơn.</translation>
 <translation id="8738921060445980047">Phiên bản không xác định.</translation>
+<translation id="6970811910055250180">Đang cập nhật thiết bị của bạn...</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
 <translation id="2748463065602559597">Bạn đang xem trang Google Chrome an toàn.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> đã được thêm vào Chrome.</translation>
 <translation id="9073088951656332330">Không tìm thấy cài đặt Google Chrome hoặc Google Chrome Frame để cập nhật.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Cảnh báo:<ph name="END_BOLD"/> Google Chrome không thể ngăn các tiện ích mở rộng ghi lại lịch sử duyệt web của bạn. Để tắt tiện ích mở rộng này trong chế độ ẩn danh, hãy bỏ chọn tùy chọn này.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="3904146009066562368">Đã có phiên bản mới của Google Chrome.</translation>
 <translation id="911206726377975832">Bạn cũng muốn xóa dữ liệu duyệt web của mình?</translation>
 <translation id="2044287590254833138">Thanh công cụ Google Chrome</translation>
 <translation id="5074344184765391290">Máy chủ lưu trữ Trình cắm của Chrome</translation>
 <translation id="8862326446509486874">Bạn không có quyền thích hợp để cài đặt cấp hệ thống. Thử chạy lại trình cài đặt với vai trò Quản trị viên.</translation>
 <translation id="595871952790078940">Tiện ích của Chrome</translation>
 <translation id="2874156562296220396">Google Chrome được xây dựng bằng dự án nguồn mở <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> và <ph name="BEGIN_LINK_OSS"/>phần mềm nguồn mở<ph name="END_LINK_OSS"/> khác.</translation>
-<translation id="7855730255114109580">Google Chrome đã được cập nhật</translation>
 <translation id="3847841918622877581">Google Chrome có thể sử dụng dịch vụ web để cải thiện trải nghiệm duyệt web của bạn.</translation>
 <translation id="7436949144778751379">Google Chrome yêu cầu Windows XP hoặc phiên bản mới hơn. Một số tính năng không thể hoạt động.</translation>
 <translation id="6757767188268205357">Đừng hỏi lại</translation>
 <translation id="2290095356545025170">Bạn có chắc chắn muốn gỡ cài đặt Google Chrome không?</translation>
+<translation id="7062966102157262887">Quá trình tải xuống hiện đang diễn ra. Bạn có muốn thoát Google Chrome và hủy tải xuống không?</translation>
 <translation id="4273752058983339720">Google Chrome được định cấu hình để tự động khởi chạy khi bạn khởi động máy tính của mình.</translation>
 <translation id="1104959162601287462">Giới thiệu về &amp;hệ điều hành Chrome</translation>
 <translation id="5941830788786076944">Chọn Google Chrome làm trình duyệt mặc định</translation>
@@ -106,16 +106,14 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7161904924553537242">Chào mừng bạn đến với Google Chrome</translation>
 <translation id="8669527147644353129">Trình trợ giúp của Google Chrome</translation>
 <translation id="870251953148363156">Cập nhật &amp;Google Chrome</translation>
-<translation id="147599965395609989">Google Chrome đã được cập nhật</translation>
+<translation id="130631256467250065">Thay đổi của bạn sẽ có hiệu lực vào lần tiếp theo bạn khởi động lại thiết bị của mình.</translation>
 <translation id="1399397803214730675">Máy tính này đã có phiên bản Google Chrome mới hơn. Nếu phần mềm hiện không hoạt động, vui lòng gỡ cài đặt Google Chrome và thử lại.</translation>
-<translation id="2827900704927383772">Bạn có muốn thoát khỏi Google Chrome khi có <ph name="DOWNLOAD_COUNT"/> tài nguyên đang tải xuống không?</translation>
 <translation id="3444832043240812445">Trang này chỉ hiển thị thông tin về các sự cố gần đây của bạn nếu bạn <ph name="BEGIN_LINK"/>bật báo cáo sự cố<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome không hồi đáp. Khởi chạy lại ngay bây giờ?</translation>
 <translation id="5318056482164160049">Máy chủ lưu trữ Trình cắm của Google Chrome</translation>
 <translation id="5699533844376998780">Đã thêm tiện ích mở rộng &quot;<ph name="EXTENSION_NAME"/>&quot;.</translation>
 <translation id="6126631249883707068">Bạn có muốn Google Chrome lưu mật khẩu không?</translation>
 <translation id="5046764976540625289">Thoát khỏi Chrome</translation>
-<translation id="2925521875688282191">Hãy đăng xuất khỏi Chrome OS và đăng nhập lại để thay đổi này có hiệu lực.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="2680623880102270805">Google Chrome không thể tạo lối tắt ứng dụng do Google Chrome không thể xác định môi trường màn hình hiện tại.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
@@ -123,14 +121,14 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="2189123953385179981">Hệ điều hành Google ChromeOS không hỗ trợ khởi chạy ứng dụng ngoài để xử lý các liên kết <ph name="SCHEME"/>. Liên kết được yêu cầu là <ph name="PROTOLINK"/>.</translation>
 <translation id="711654979569750606">Bản quyền © 2006-2012 Google Inc. Mọi quyền được bảo lưu.</translation>
 <translation id="8205111949707227942">Tùy chọn: Giúp cải thiện Hệ điều hành Chrome bằng cách tự động gửi về Google thống kê sử dụng và báo cáo sự cố.</translation>
-<translation id="8345657477105118085">Chrome OS đã được cập nhật.</translation>
+<translation id="7253415505590551024">Quá trình tải xuống hiện đang diễn ra. Bạn có muốn thoát Google Chrome và hủy tải xuống không?</translation>
 <translation id="7196020411877309443">Tại sao tôi nhìn thấy thông báo này?</translation>
 <translation id="2769762047821873045">Google Chrome không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="7825851276765848807">Không thể cài đặt do lỗi không xác định. Hãy tải xuống lại Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome không hỗ trợ <ph name="OS_NAME"/>.</translation>
+<translation id="4458285410772214805">Vui lòng đăng xuất và đăng nhập lại để thay đổi này có hiệu lực.</translation>
 <translation id="2666187591945638709">Google Chrome đã được cập nhật lên <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">Mô-đun này được xác định là xung đột với Google Chrome.</translation>
-<translation id="4892299120052124303">Nếu bạn đóng Google Chrome ngay bây giờ, các tài nguyên đã tải xuống này sẽ bị hủy.</translation>
 <translation id="6634887557811630702">Google Chrome đã được cập nhật.</translation>
 <translation id="2084710999043359739">Thêm vào Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame đã được cài đặt và khả dụng cho tất cả những người dùng máy tính này. Nếu bạn muốn cài đặt Google Chrome Frame ở cấp độ người dùng, trước tiên bạn phải gỡ cài đặt phiên bản cấp hệ thống đã được quản trị viên cài đặt.</translation>
@@ -149,6 +147,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Cài đặt tự động điền trên Chrome</translation>
 <translation id="3836351788193713666">Gần được cập nhật! Hãy khởi chạy lại Google Chrome để hoàn tất cập nhật.</translation>
+<translation id="546394857889685352">Thiết bị của bạn đã được cập nhật lên <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Trình quản lý Tác vụ - Google Chrome</translation>
 <translation id="1826482739472655104">Bạn đã cố gắng truy cập vào &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; nhưng máy chủ lại đưa ra một chứng chỉ chưa hợp lệ. Không có thông tin nào có sẵn cho biết liệu chứng chỉ có đáng tin cậy hay không. Google Chrome không thể đảm bảo một cách chắc chắn rằng bạn đang kết nối với &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; chứ không phải với kẻ tấn công. Đồng hồ trên máy tính của bạn hiện được đặt thành <ph name="CURRENT_TIME"/>. Như vậy có ổn không? Nếu không, bạn phải sửa lỗi và làm mới trang này.</translation>
 <translation id="8449380764213232436">Hiện tại, Google Chrome đang nhập các mục sau từ <ph name="BROWSER_COMPONENT"/>:</translation>

@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="248395913932153421">Diena</translation>
+<translation id="6015796118275082299">Gads</translation>
 <translation id="9186171386827445984">Notiek dokumenta ielāde: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> lappuses...</translation>
 <translation id="1235745349614807883">Dzēst nesenos meklējumus</translation>
 <translation id="1171774979989969504">Ievadiet e-pasta adresi.</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">saite</translation>
 <translation id="4522570452068850558">Informācija</translation>
 <translation id="8451268428117625855">Lūdzu, atlasiet failu.</translation>
+<translation id="2674318244760992338">kājene</translation>
+<translation id="8987927404178983737">Mēnesis</translation>
 <translation id="7364796246159120393">Izvēlieties failu</translation>
 <translation id="2761667185364618470">Lai turpinātu, atzīmējiet šo izvēles rūtiņu.</translation>
 <translation id="8964020114565522021">Ievelciet failu šeit</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024 (Vidēja Atzīme)</translation>
 <translation id="1637811476055996098">Izvēlēties failus</translation>
 <translation id="5476505524087279545">neprbaudt</translation>
+<translation id="2148716181193084225">Šodien</translation>
 <translation id="2507943997699731163">Aizpildiet šo lauku.</translation>
 <translation id="5919473608089529604">Nevarēja ielādēt spraudni.</translation>
 <translation id="6663448176199120256">Neseni meklējumi</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">Vērtībai ir jābūt mazākai vai vienādai ar <ph name="MAXIMUM"/>.</translation>
 <translation id="6119846243427417423">aktivizt</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> faili</translation>
+<translation id="6643016212128521049">Notīrīt</translation>
 <translation id="3934680773876859118">Neizdevās ielādēt PDF dokumentu</translation>
 <translation id="8597182159515967513">Virsraksts</translation>
 <translation id="2653659639078652383">Iesniegt</translation>

@@ -78,6 +78,9 @@
       Se questa norma viene impostata, in <ph name="PRODUCT_FRAME_NAME"/> verrà utilizzata la directory specificata.
 
       Se questa impostazione non viene impostata, verrà utilizzata la directory del profilo predefinita.</translation>
+<translation id="8818173863808665831">Consente di segnalare la posizione geografica del dispositivo.
+
+Se la norma non viene impostata o viene impostata su false, la posizione non viene segnalata.</translation>
 <translation id="4899708173828500852">Consenti Navigazione sicura</translation>
 <translation id="7719251660743813569">Consente di stabilire se riferire o meno le metriche sull'utilizzo a Google. Se la norma viene impostata su true, <ph name="PRODUCT_OS_NAME"/> riferirà le metriche sull'utilizzo. Se non viene configurata o viene impostata su false, i rapporti sulle metriche verranno disattivati.</translation>
 <translation id="3570008976476035109">Blocca plug-in su questi siti</translation>
@@ -137,9 +140,9 @@
 <translation id="5776485039795852974">Chiedi ogni volta che un sito desidera mostrare le notifiche desktop</translation>
 <translation id="5052081091120171147">Se è attiva, questa norma impone l'importazione della cronologia di navigazione dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, la cronologia di navigazione non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="6786747875388722282">Estensioni</translation>
+<translation id="8947415621777543415">Segnala posizione del dispositivo</translation>
 <translation id="1655229863189977773">Imposta le dimensioni della cache su disco in byte</translation>
 <translation id="6899705656741990703">Rileva automaticamente impostazioni proxy</translation>
-<translation id="4101772068965291327">Apri pagina iniziale</translation>
 <translation id="7003334574344702284">Se è attiva, questa norma impone l'importazione delle password salvate dal browser predefinito precedente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, le password salvate non vengono importate. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="6258193603492867656">Consente di specificare se il Kerberos SPN generato deve includere una porta non standard. Se attivi questa impostazione e specifichi una porta non standard (cioè una porta diversa da 80 o 443), la porta verrà inclusa nel Kerberos SPN generato. Se disattivi l'impostazione o non la imposti, il Kerberos SPN generato non includerà in nessun caso una porta.</translation>
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
@@ -183,6 +186,20 @@
       Se la norma non viene impostata, gli utenti potranno scegliere se impostare o meno la richiesta della password per lo sblocco del dispositivo.</translation>
 <translation id="6022948604095165524">Azione all'avvio</translation>
 <translation id="9042911395677044526">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME"/>. La configurazione di rete è una stringa in formato JSON definita secondo il formato Open Network Configuration descritto all'indirizzo <ph name="ONC_SPEC_URL"/>.</translation>
+<translation id="7128918109610518786">Consente di elencare gli ID delle applicazioni da visualizzare in <ph name="PRODUCT_OS_NAME"/> sotto forma di applicazioni bloccate nella barra Avvio applicazioni.
+
+Se questa norma viene configurata, il gruppo di applicazioni è fisso e non può essere modificato dagli utenti.
+
+Se questa norma non viene impostata gli utenti possono modificare l'elenco di applicazioni bloccate in Avvio applicazioni.</translation>
+<translation id="6177482277304066047">Consente di impostare una versione target relativa agli aggiornamenti automatici.
+
+Consente di specificare il prefisso di una versione target a cui dovrebbe essere aggiornato <ph name="PRODUCT_OS_NAME"/>. Se sul dispositivo è installata una versione precedente al prefisso specificato, il dispositivo viene aggiornato all'ultima versione con il prefisso indicato. Se il dispositivo ha già una versione più recente, la norma non ha alcun effetto (vale a dire che non vengono eseguiti downgrade) e sul dispostivo rimane la versione corrente. Il formato del prefisso funziona in relazione al componente, come mostrato nell'esempio seguente:
+
+&quot;&quot; (o non configurata): aggiornamento all'ultima versione disponibile.
+&quot;1412.&quot;: aggiornamento a qualsiasi versione secondaria di 1412 (ad esempio 1412.24.34 o 1412.60.2)
+&quot;1412.2.&quot;: aggiornamento a qualsiasi versione secondaria di 1412.2 (ad esempio 1412.2.34 o 1412.2.2)
+&quot;1412.24.34&quot;: aggiornamento soltanto a questa versione specifica
+      </translation>
 <translation id="7625444193696794922">Consente di specificare il canale di rilascio su cui deve essere bloccato questo dispositivo.</translation>
 <translation id="2240879329269430151">Permette di stabilire se consentire o meno la visualizzazione dei popup nei siti web. La visualizzazione dei popup può essere consentita o negata per tutti i siti web. Se questa norma non viene impostata, verrà utilizzato il valore &quot;BlockPopups&quot;, che potrà essere modificato dagli utenti.</translation>
 <translation id="5289914968905023866">Consente di bloccare l'accesso agli URL elencati. Questa norma impedisce agli utenti di caricare pagine web degli URL vietati. Un URL ha il formato &quot;schema://host:porta/percorso&quot;. Lo schema facoltativo può essere http, https o ftp. Verrà bloccato soltanto questo schema; se non vengono specificati schemi, vengono bloccati tutti gli schemi. L'host può essere un nome host o un indirizzo IP. Vengono bloccati anche i sottodomini di un nome host. Per impedire il blocco dei sottodomini, inserisci &quot;.&quot; prima del nome host. Il nome host speciale &quot;*&quot; blocca tutti i domini. La porta facoltativa è un numero di porta valido compreso tra 1 e 65535. Se non vengono specificate porte, vengono bloccate tutte le porte. Se viene specificato il percorso facoltativo, vengono bloccati soltanto i percorsi con il prefisso indicato. È possibile definire delle eccezioni nella norma della whitelist di URL. Per queste norme è possibile definire massimo 100 voci; le voci in più vengono ignorate. Se questa norma non viene impostata saranno consentiti tutti gli URL nel browser.</translation>
@@ -196,6 +213,9 @@
 
       Se la norma non viene impostata, la modalità in background viene inzialmente disattivata e può essere controllata dall'utente tramite le impostazioni del browser.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o versione successiva</translation>
+<translation id="5148753489738115745">Consente di specificare dei parametri aggiuntivi da utilizzare quando <ph name="PRODUCT_FRAME_NAME"/> avvia <ph name="PRODUCT_NAME"/>.
+
+Se questa norma non viene impostata viene utilizzata la riga di comando predefinita.</translation>
 <translation id="2646290749315461919">Permette di stabilire se consentire o meno il monitoraggio della posizione fisica degli utenti da parte dei siti web. Il monitoraggio della posizione fisica degli utenti può essere consentito o negato per impostazione predefinita oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera conoscere la posizione fisica. Se questa norma non viene impostata, verrà utilizzato il valore &quot;AskGeolocation&quot;, che potrà essere modificato dagli utenti.</translation>
 <translation id="5770738360657678870">Canale Dev (potrebbe essere instabile)</translation>
 <translation id="2959898425599642200">Regole di bypass proxy</translation>
@@ -256,11 +276,25 @@
 <translation id="717221064259627503">Consente di configurare la directory che verrà utilizzata da <ph name="PRODUCT_NAME"/> per archiviare i file memorizzati nella cache sul disco. Se imposti questa norma, <ph name="PRODUCT_NAME"/> utilizzerà la directory specificata a prescindere dalla specifica o meno da parte dell'utente del flag &quot;--disk-cache-dir&quot;. Se questa norma non viene impostata verrà utilizzata la directory della cache predefinita, che potrà essere sostituita dall'utente con il flag della riga di comando &quot;--disk-cache-dir&quot;.</translation>
 <translation id="2312134445771258233">Consente di configurare le pagine che vengono caricate all'avvio. I contenuti dell'elenco &quot;Pagine da aprire all'avvio&quot; vengono ignorati a meno che non selezioni &quot;Apri un elenco di URL&quot; in &quot;Azione all'avvio&quot;.</translation>
 <translation id="2538628396238281971">Consente di configurare la directory che verrà utilizzata da <ph name="PRODUCT_NAME"/> per scaricare file. Se imposti questa norma, <ph name="PRODUCT_NAME"/> utilizzerà la directory specificata indipendentemente dal fatto che l'utente ne abbia specificata una o abbia attivato il flag in base al quale viene sempre richiesto il percorso di download. Se questa norma non viene impostata verrà utilizzata la directory di download predefinita, che potrà essere modificata dall'utente.</translation>
+<translation id="7750991880413385988">Apri pagina Nuova scheda</translation>
+<translation id="741903087521737762">Consente di specificare il comportamento all'avvio.
+
+Se viene selezionata l'opzione &quot;Apri pagina Nuova scheda&quot;, all'avvio di <ph name="PRODUCT_NAME"/> verrà aperta sempre la pagina Nuova scheda.
+
+Se viene selezionata l'opzione &quot;Ripristina l'ultima sessione&quot;, verranno riaperti gli URL che erano aperti l'ultima volta che è stato chiuso <ph name="PRODUCT_NAME"/> e la sessione di navigazione verrà ripristinata così com'era.
+La selezione di questa opzione comporta la disattivazione di alcune impostazioni che si basano sulle sessioni o che compiono azioni all'uscita (ad esempio la cancellazione dei dati di navigazione alla chiusura o dei cookie della sessione).
+
+Se viene selezionata l'opzione &quot;Apri un elenco di URL&quot;, quando un utente avvia <ph name="PRODUCT_NAME"/> viene aperto l'elenco di &quot;URL da aprire all'avvio&quot;.
+
+Se questa impostazione viene attivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME"/>.
+
+Disattivare questa impostazione equivale a non configurarla. Gli utenti potranno modificarla in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Consente di configurare le impostazioni proxy per <ph name="PRODUCT_NAME"/>. Questa norma non è ancora pronta per essere utilizzata, pertanto invitiamo a non utilizzarla.</translation>
 <translation id="8344454543174932833">Importa Preferiti dal browser predefinito alla prima esecuzione</translation>
 <translation id="1019101089073227242">Imposta directory dati utente</translation>
 <translation id="5826047473100157858">Consente di specificare se l'utente può aprire o meno le pagine in modalità di navigazione in incognito in <ph name="PRODUCT_NAME"/>. Se viene selezionata l'opzione &quot;Attiva&quot; o la norma non viene impostata, le pagine possono essere aperte in modalità di navigazione in incognito. Se viene selezionata l'opzione &quot;Non attiva&quot;, le pagine non possono essere aperte in modalità di navigazione in incognito. Se viene selezionata l'opzione &quot;Forzata&quot;, le pagine possono essere aperte SOLTANTO in modalità di navigazione in incognito.</translation>
 <translation id="5085647276663819155">Disattiva anteprima di stampa</translation>
+<translation id="8672321184841719703">Scegli versione target dell'aggiornamento automatico</translation>
 <translation id="2030905906517501646">Parola chiave del provider di ricerca predefinito</translation>
 <translation id="3072045631333522102">Screensaver da utilizzare nella schermata di accesso in modalità retail</translation>
 <translation id="7393895128271703858">Questa norma è obsoleta. Utilizza DefaultJavaScriptSetting. Consente di attivare JavaScript in <ph name="PRODUCT_NAME"/> e di impedire agli utenti di modificare l'impostazione. Se questa impostazione viene attivata o non viene configurata, le pagine web potranno utilizzare JavaScript. Se l'impostazione viene disattivata, le pagine web non potranno utilizzare JavaScript. Se questa norma non viene impostata verrà utilizzato il valore predefinito, che potrà essere modificato dagli utenti. Se la norma non viene impostata, inoltre, l'impostazione verrà attivata ma gli utenti potranno modificarla.</translation>
@@ -367,6 +401,7 @@
 <translation id="2299220924812062390">Consente di specificare un elenco dei plug-in attivati</translation>
 <translation id="924557436754151212">Importa password salvate dal browser predefinito alla prima esecuzione</translation>
 <translation id="1897365952389968758">Consenti l'esecuzione di JavaScript in tutti i siti</translation>
+<translation id="7323896582714668701">Parametri aggiuntivi della riga di comando per <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Disattiva la sincronizzazione dei dati con Google</translation>
 <translation id="36674322972891584">Consente di attivare la previsione di rete in <ph name="PRODUCT_NAME"/> e di impedire agli utenti di modificare questa impostazione. Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME"/>. Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utenti potranno modificarla.</translation>
 <translation id="7006788746334555276">Impostazioni contenuti</translation>
@@ -378,6 +413,7 @@
 <translation id="187819629719252111">Consente di accedere ai file locali presenti sul computer, permettendo a <ph name="PRODUCT_NAME"/> di visualizzare le finestre di dialogo di selezione dei file. Se attivi questa impostazione, gli utenti potranno aprire le finestre di dialogo di selezione dei file come di consueto. Se disattivi questa impostazione, ogni volta che l'utente eseguirà un'azione che apre una finestra di dialogo di selezione file (ad esempio importazione di Preferiti, caricamento di file, salvataggio di link e così via), verrà visualizzato un messaggio e il sistema presupporrà che l'utente abbia fatto clic sul pulsante Annulla della finestra di dialogo stessa. Se questa impostazione non viene impostata, gli utenti potranno aprire le finestre di dialogo di selezione file come di consueto.</translation>
 <translation id="4507081891926866240">Consente di personalizzare l'elenco di pattern URL per i quali il rendering deve sempre essere eseguito da <ph name="PRODUCT_FRAME_NAME"/>. Se questa norma non viene impostata, verrà utilizzato per tutti i siti il renderer predefinito specificato dalla norma &quot;ChromeFrameRendererSettings&quot;. Per avere dei pattern di esempio, visita il sito all'indirizzo http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Scegli come specificare le impostazioni del server proxy</translation>
+<translation id="1803646570632580723">Elenco di applicazioni bloccate da visualizzare in Avvio applicazioni</translation>
 <translation id="7774768074957326919">Utilizza le impostazioni proxy di sistema</translation>
 <translation id="3891357445869647828">Abilita JavaScript</translation>
 <translation id="868187325500643455">Consenti l'esecuzione automatica dei plug-in in tutti i siti</translation>
@@ -457,16 +493,4 @@
 <translation id="5645779841392247734">Consenti i cookie in questi siti</translation>
 <translation id="8220342550735772883">Consente di configurare le dimensioni della cache che verranno utilizzate da <ph name="PRODUCT_NAME"/> per archiviare i file multimediali memorizzati nella cache sul disco. Se imposti questa norma, <ph name="PRODUCT_NAME"/> utilizzerà le dimensioni della cache specificate a prescindere dalla specifica o meno da parte dell'utente del flag &quot;--media-cache-size&quot;. Se il valore della norma è 0, verranno utilizzate le dimensioni della cache predefinite, che non potranno essere modificate dall'utente. Se questa norma non viene impostata verranno utilizzate le dimensioni predefinite, che potranno essere sostituite dall'utente con il flag &quot;--media-cache-size&quot;.</translation>
 <translation id="7049373494483449255">Permette di consentire a <ph name="PRODUCT_NAME"/> di inviare documenti da stampare a <ph name="CLOUD_PRINT_NAME"/>. NOTA. Questo riguarda soltanto il supporto di <ph name="CLOUD_PRINT_NAME"/> in <ph name="PRODUCT_NAME"/>. Non impedisce agli utenti di inviare processi di stampa su siti web. Se questa impostazione viene attivata o non viene configurata, gli utenti potranno stampare con <ph name="CLOUD_PRINT_NAME"/> utilizzando la finestra di dialogo di stampa di <ph name="PRODUCT_NAME"/>. Se questa impostazione viene disattivata, gli utenti non potranno stampare con <ph name="CLOUD_PRINT_NAME"/> utilizzando la finestra di dialogo di stampa di <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2339225390014743328">Consente di specificare il comportamento all'avvio.
-
-          Se viene selezionata l'opzione &quot;Apri pagina iniziale&quot;, all'avvio di <ph name="PRODUCT_NAME"/> verrà sempre aperta la pagina iniziale.
-
-          Se viene selezionata l'opzione &quot;Ripristina l'ultima sessione&quot;, verranno riaperti gli URL che erano aperti l'ultima volta che è stato chiuso <ph name="PRODUCT_NAME"/> e la sessione di navigazione verrà ripristinata così com'era.
-          La selezione di questa opzione comporta la disattivazione di alcune impostazioni basate sulle sessioni o che compiono azioni all'uscita (ad esempio cancellare i dati di navigazione alla chiusura o i cookie esclusivi della sessione).
-
-          Se viene selezionata l'opzione &quot;Apri un elenco di URL&quot;, all'avvio di <ph name="PRODUCT_NAME"/> verrà aperto l'elenco di &quot;URL da aprire all'avvio&quot;.
-
-          Se questa impostazione viene attivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME"/>.
-
-          Disattivare questa impostazione equivale a non configurarla. L'utente potrà comunque modificarla in <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

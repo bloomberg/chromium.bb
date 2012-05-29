@@ -8,6 +8,7 @@
 <translation id="573759479754913123">Про ОС Chrome</translation>
 <translation id="5453904507266736060">Дозволити Google Chrome працювати у фоновому режимі</translation>
 <translation id="2383457833405848421">Про Chrome Frame...</translation>
+<translation id="3454512769850953877">Так, вийти з Chrome</translation>
 <translation id="386202838227397562">Закрийте всі вікна Google Chrome і повторіть спробу.</translation>
 <translation id="2770231113462710648">Змінити веб-переглядач за умовчанням на:</translation>
 <translation id="7400722733683201933">Про Google Chrome</translation>
@@ -15,7 +16,6 @@
 <translation id="7781002470561365167">Доступна нова версія Google Chrome.</translation>
 <translation id="1484802885942301358">У вас остання версія Google Chrome (<ph name="VERSION"/>)</translation>
 <translation id="7101265395643981223">Запустити Google Chrome</translation>
-<translation id="4738120821427858478">Ваші зміни почнуть діяти після наступного перезапуску ОС Google Chrome.</translation>
 <translation id="4891791193823137474">Дозволити Google Chrome працювати у фоновому режимі</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome імпортує &quot;Улюблені/Закладки&quot;.</translation>
@@ -27,7 +27,6 @@
 <translation id="5339639696978861456">Chrome Frame оновлено. Перезапустіть свій веб-переглядач. Версія Chrome: <ph name="TODO_0001"/>, версія Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Умови використання</translation>
 <translation id="8398145039500709259">Використовувати цей обліковий запис Google для синхронізації всіх ваших матеріалів із Chrome?</translation>
-<translation id="6862759394142635932">Якщо закрити Google Chrome зараз, це завантаження буде скасовано.</translation>
 <translation id="1779550429052479749">У системі виявлено конфліктуюче встановлення Google Chrome або Google Chrome Frame. Видаліть його та повторіть спробу.</translation>
 <translation id="3555616473548901994">Видалення завершено.</translation>
 <translation id="8556340503434111824">Доступна нова версія Google Chrome – швидша, ніж будь-коли.</translation>
@@ -46,14 +45,15 @@
 <translation id="3487814320513494737">Сторінку нової вкладки Chrome було перероблено. Переключайтеся між розділами, натискаючи ці мітки. Chrome запам’ятає ваші налаштування.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="6423071462708908582">Ви спробували зв’язатися з доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, але сервер надав сертифікат, термін дії якого закінчився. Немає доступних даних, які б допомогли встановити, чи не привласнено сертифікат після закінчення його терміну дії. Це означає, що Google Chrome не може гарантувати, що ви обмінюєтеся даними з &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не зі зловмисником. Годинник вашого комп’ютера зараз показує такий час: <ph name="CURRENT_TIME"/>. Правильно? Якщо ні, потрібно виправити помилку й оновити цю сторінку.</translation>
+<translation id="3197823471738295152">Пристрій оновлено.</translation>
 <translation id="2653935705142821164">Рендерер Chrome</translation>
 <translation id="3889417619312448367">Видалити Google Chrome</translation>
+<translation id="8551886023433311834">Майже оновлено! Перезапустіть пристрій, щоб завершити оновлення.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3282568296779691940">Вхід у Chrome</translation>
 <translation id="3089968997497233615">Доступна нова, безпечніша версія Google Chrome.</translation>
 <translation id="5037239767309817516">Щоб зміна почала діяти, закрийте всі вікна Google Chrome і перезапустіть веб-переглядач.</translation>
 <translation id="7451721381978275812">Недійсні аргументи. Google Chrome Frame неможливо встановити в режимі готовності, не встановивши при цьому Google Chrome.</translation>
-<translation id="5727432509906037972">Вийти з Google Chrome, коли триває завантаження?</translation>
 <translation id="4585888816441913908">На цьому комп’ютері вже встановлено новішу версію Google Chrome і Google Chrome Frame. Якщо це програмне забезпечення не працює, видаліть Google Chrome і Google Chrome Frame і повторіть спробу.</translation>
 <translation id="6368958679917195344">ОС Chrome стала можливою завдяки додатковому <ph name="BEGIN_LINK_CROS_OSS"/>програмному забезпеченню з відкритим кодом<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Налаштуйте синхронізацію, щоб зберегти свої персоналізовані функції веб-переглядача в Інтернеті й мати до них доступ із Google Chrome на будь-якому комп’ютері.</translation>
@@ -67,24 +67,24 @@
 <translation id="7747138024166251722">Програмі встановлення не вдалося створити тимчасовий каталог. Перевірте наявність вільного простору на диску та дозволу на встановлення програмного забезпечення.</translation>
 <translation id="5170938038195470297">Ваш профіль не можна використати, оскільки його створено в новішій версії Google Chrome. Деякі функції можуть бути недоступними. Укажіть інший каталог профілю чи скористайтеся новішою версією Chrome.</translation>
 <translation id="8738921060445980047">Невідома версія.</translation>
+<translation id="6970811910055250180">Оновлення пристрою...</translation>
 <translation id="2485422356828889247">Видалити</translation>
 <translation id="2748463065602559597">Ви переглядаєте безпечну сторінку Google Chrome.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> додано в Chrome.</translation>
 <translation id="9073088951656332330">Не знайдено встановлення Google Chrome або Google Chrome Frame для оновлення.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Застереження:<ph name="END_BOLD"/> Google Chrome не може заборонити розширенням реєструвати вашу історію веб-перегляду. Щоб вимкнути це розширення в режимі анонімного перегляду, зніміть прапорець поруч із цим параметром.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="3904146009066562368">Доступна нова версія Google Chrome.</translation>
 <translation id="911206726377975832">Також видалити дані веб-перегляду?</translation>
 <translation id="2044287590254833138">Панель інструментів Google Chrome</translation>
 <translation id="5074344184765391290">Хост модуля Chrome</translation>
 <translation id="8862326446509486874">У вас немає відповідних прав для встановлення на рівні системи. Спробуйте запустити програму встановлення, увійшовши з правами адміністратора.</translation>
 <translation id="595871952790078940">Утиліта Chrome</translation>
 <translation id="2874156562296220396">Google Chrome було створено на основі проекту програмного забезпечення з відкритим кодом <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> та іншого <ph name="BEGIN_LINK_OSS"/>програмного забезпечення з відкритим кодом<ph name="END_LINK_OSS"/>.</translation>
-<translation id="7855730255114109580">У вас остання версія Google Chrome</translation>
 <translation id="3847841918622877581">Google Chrome може використовувати веб-послуги для покращення умов перегляду.</translation>
 <translation id="7436949144778751379">Для роботи Google Chrome потрібно мати ОС Windows XP або новішої версії. Деякі функції можуть не працювати.</translation>
 <translation id="6757767188268205357">Не турбувати мене</translation>
 <translation id="2290095356545025170">Ви дійсно хочете видалити Google Chrome?</translation>
+<translation id="7062966102157262887">Триває завантаження. Вийти з Google Chrome і скасувати це завантаження?</translation>
 <translation id="4273752058983339720">Google Chrome налаштовано на автоматичний запуск після ввімкнення комп’ютера.</translation>
 <translation id="1104959162601287462">Про &amp;ОС Chrome</translation>
 <translation id="5941830788786076944">Зробити Google Chrome переглядачем за промовчанням</translation>
@@ -102,16 +102,14 @@
 <translation id="7161904924553537242">Вітаємо у Google Chrome:</translation>
 <translation id="8669527147644353129">Помічник Google Chrome</translation>
 <translation id="870251953148363156">Оновити &amp;Google Chrome</translation>
-<translation id="147599965395609989">Google Chrome оновлено</translation>
+<translation id="130631256467250065">Ваші зміни почнуть діяти під час наступного перезапуску пристрою.</translation>
 <translation id="1399397803214730675">На комп’ютері вже встановлено новішу версію Google Chrome. Якщо програмне забезпечення не працює, видаліть Google Chrome і повторіть спробу.</translation>
-<translation id="2827900704927383772">Вийти з Google Chrome, коли триває така кількість завантажень: <ph name="DOWNLOAD_COUNT"/>?</translation>
 <translation id="3444832043240812445">На цій сторінці відображається інформація лише про останні випадки аварійного завершення роботи, якщо <ph name="BEGIN_LINK"/>ввімкнено повідомлення про аварійне завершення роботи<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome не відповідає. Перезапустити зараз?</translation>
 <translation id="5318056482164160049">Хост модуля Google Chrome</translation>
 <translation id="5699533844376998780">Розширення &quot;<ph name="EXTENSION_NAME"/>&quot; додано.</translation>
 <translation id="6126631249883707068">Зберігати ваш пароль у Google Chrome?</translation>
 <translation id="5046764976540625289">Вийти з Chrome</translation>
-<translation id="2925521875688282191">Щоб зміна почала діяти, вийдіть з ОС Chrome і ввійдіть знову.</translation>
 <translation id="9039578207253536065">Виконавець Google Chrome</translation>
 <translation id="2680623880102270805">Google Chrome не може створити ярлик програми, оскільки не може визначити  поточне середовище робочого столу.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
@@ -119,14 +117,14 @@
 <translation id="2189123953385179981">Google Chrome OS не підтримує запуск зовнішньої програми для роботи з посиланнями типу <ph name="SCHEME"/>. Потрібний тип посилання: <ph name="PROTOLINK"/>.</translation>
 <translation id="711654979569750606">Авторське право © 2006-2012 Google Inc. Усі права захищено.</translation>
 <translation id="8205111949707227942">Додатково. Допоможіть покращити ОС Chrome, автоматично надсилаючи статистику використання та звіти про аварійне завершення роботи до Google.</translation>
-<translation id="8345657477105118085">У вас остання версія ОС Chrome.</translation>
+<translation id="7253415505590551024">Тривають завантаження. Вийти з Google Chrome і скасувати ці завантаження?</translation>
 <translation id="7196020411877309443">Чому відображається це повідомлення?</translation>
 <translation id="2769762047821873045">Google Chrome не є веб-переглядачем за умовчанням.</translation>
 <translation id="7825851276765848807">Програму не вдалося встановити через невизначену помилку. Завантажте Google Chrome ще раз.</translation>
 <translation id="3335672657969596251">Google Chrome не підтримує <ph name="OS_NAME"/>.</translation>
+<translation id="4458285410772214805">Щоб зміна почала діяти, вийдіть і ввійдіть знову.</translation>
 <translation id="2666187591945638709">Google Chrome оновлено до версії <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">Відомо, що цей модуль конфліктує з Google Chrome.</translation>
-<translation id="4892299120052124303">Якщо закрити Google Chrome зараз, ці завантаження буде скасовано.</translation>
 <translation id="6634887557811630702">У вас остання версія Google Chrome.</translation>
 <translation id="2084710999043359739">Додати в Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame уже встановлено на цьому комп’ютері, і всі користувачі мають до нього доступ. Щоб установити Google Chrome Frame на рівні користувача, потрібно спочатку видалити встановлену адміністратором версію на рівні системи.</translation>
@@ -145,6 +143,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Налаштування автозаповнення Chrome</translation>
 <translation id="3836351788193713666">Майже оновлено. Перезапустіть Google Chrome, щоб закінчити оновлення.</translation>
+<translation id="546394857889685352">Версію пристрою оновлено до <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Диспетчер завдань - Google Chrome</translation>
 <translation id="1826482739472655104">Ви спробували зв’язатися з доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, але сервер надав сертифікат, який ще недійсний. Немає доступних даних, які б допомогли встановити, чи можна довіряти цьому сертифікату. Google Chrome не може повністю гарантувати, що ви обмінюєтеся даними з &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не зі зловмисником. Годинник вашого комп’ютера зараз показує такий час: <ph name="CURRENT_TIME"/>. Правильно? Якщо ні, потрібно виправити помилку й оновити цю сторінку.</translation>
 <translation id="8449380764213232436">Google Chrome не імпортує наступні компоненти з <ph name="BROWSER_COMPONENT"/>:</translation>

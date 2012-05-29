@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="248395913932153421">日</translation>
+<translation id="6015796118275082299">年</translation>
 <translation id="9186171386827445984">正在载入文档：已载入 <ph name="PAGE_NUMBER"/> 页，共 <ph name="NUMBER_OF_PAGES"/> 页...</translation>
 <translation id="1235745349614807883">清除最近的搜索</translation>
 <translation id="1171774979989969504">请输入电子邮件地址。</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">链接</translation>
 <translation id="4522570452068850558">详细信息</translation>
 <translation id="8451268428117625855">请选择一个文件。</translation>
+<translation id="2674318244760992338">页脚</translation>
+<translation id="8987927404178983737">月</translation>
 <translation id="7364796246159120393">选择文件</translation>
 <translation id="2761667185364618470">如果要继续，请选中此框。</translation>
 <translation id="8964020114565522021">将文件拖到此处</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024（中等强度）</translation>
 <translation id="1637811476055996098">选择文件</translation>
 <translation id="5476505524087279545">取消选中</translation>
+<translation id="2148716181193084225">今天</translation>
 <translation id="2507943997699731163">请填写此字段。</translation>
 <translation id="5919473608089529604">无法加载插件。</translation>
 <translation id="6663448176199120256">近期搜索</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">值必须小于或等于 <ph name="MAXIMUM"/>。</translation>
 <translation id="6119846243427417423">激活</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> 个文件</translation>
+<translation id="6643016212128521049">清除</translation>
 <translation id="3934680773876859118">无法载入 PDF 文档</translation>
 <translation id="8597182159515967513">标题</translation>
 <translation id="2653659639078652383">提交</translation>

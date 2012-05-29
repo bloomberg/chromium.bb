@@ -2,50 +2,67 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="3595596368722241419">बैटरी पूर्ण</translation>
-<translation id="908313544993743941">सेलुलर अक्षम करें</translation>
+<translation id="5250713215130379958">लॉन्चर को स्वत: छिपाएं</translation>
 <translation id="30155388420722288">ओवरफ़्लो बटन</translation>
 <translation id="5571066253365925590">Bluetooth सक्षम किया गया</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth अक्षम किया गया</translation>
+<translation id="370649949373421643">Wi-Fi सक्षम करें</translation>
 <translation id="3626281679859535460">चमक</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
+<translation id="5565793151875479467">प्रॉक्सी...</translation>
+<translation id="6979158407327259162">Google डिस्क</translation>
 <translation id="2297568595583585744">स्थिति ट्रे</translation>
 <translation id="2946640296642327832">Bluetooth सक्षम करें</translation>
 <translation id="6596816719288285829">IP पता</translation>
-<translation id="289426338439836048">अन्‍य मोबाइल नेटवर्क...</translation>
 <translation id="5233638681132016545">नया टैब</translation>
+<translation id="3846575436967432996">कोई नेटवर्क जानकारी उपलब्ध नहीं</translation>
+<translation id="3026237328237090306">मोबाइल डेटा सेट करें</translation>
 <translation id="785750925697875037">मोबाइल खाते देखें</translation>
+<translation id="8121288016949447968">Shift+Search</translation>
 <translation id="7864539943188674973">Bluetooth अक्षम करें</translation>
 <translation id="3126069444801937830">अपडेट करने के लिए पुनरारंभ करें</translation>
+<translation id="1525975890706558596">CAPS LOCK चालू है.
+रद्द करने के लिए Shift + खोज कुंजी दबाएं.</translation>
 <translation id="8190698733819146287">भाषाएं और इनपुट कस्टमाइज़ करें...</translation>
-<translation id="7911992579061465928">बैटरी कम</translation>
 <translation id="598295083618286569">Bluetooth कनेक्ट किया गया</translation>
 <translation id="5222676887888702881">साइन आउट करें</translation>
+<translation id="2091132388437059185">विस्तृत होने पर लॉन्चर को स्वत: छिपाएं</translation>
+<translation id="425878420164891689">पूर्ण होने तक समय की गणना करना</translation>
+<translation id="2964193600955408481">Wi-Fi अक्षम करें</translation>
 <translation id="811680302244032017">डिवाइस जोड़ें...</translation>
+<translation id="2509468283778169019">CAPS LOCK चालू है</translation>
+<translation id="6426039856985689743">मोबाइल डेटा अक्षम करें</translation>
 <translation id="3232695630852378748">Bluetooth सेटिंग...</translation>
 <translation id="1480041086352807611">डेमो मोड</translation>
 <translation id="4186384497305035875">यह स्क्रीन जानबूझकर खाली छोड़ी गई</translation>
 <translation id="9089416786594320554">इनपुट पद्धतियां</translation>
-<translation id="7706302027196209560">Wi-Fi सक्षम करें</translation>
 <translation id="4430019312045809116">मात्रा</translation>
+<translation id="1383876407941801731">खोज</translation>
 <translation id="3557139239102318020">न्‍सूनतम करने के लिए नीचे खींचें, टाइल करने के लिए दाएं या बाएं</translation>
 <translation id="5980301590375426705">अतिथि सत्र से बाहर निकलें</translation>
 <translation id="8308637677604853869">पिछला मेनू</translation>
+<translation id="8528322925433439945">मोबाइल ...</translation>
 <translation id="3595065677684516080">सेटिंग और सहायता</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
+<translation id="7573721444069009535">Wi-Fi ...</translation>
+<translation id="6223565363550976998">बैटरी: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">लॉक करें</translation>
-<translation id="5836819469861742634">प्रॉक्सी सेटिंग बदलें ...</translation>
+<translation id="2805756323405976993">एप्लिकेशन</translation>
 <translation id="2872961005593481000">शट डाउन करें</translation>
-<translation id="8735871257195921372">अन्‍य Wi-Fi नेटवर्क...</translation>
-<translation id="2152495481414285304">ऐप्‍लिकेशन</translation>
-<translation id="1690310444231390462">Wi-fi अक्षम करें</translation>
-<translation id="77565731175229781">नेटवर्क सेटिंग ...</translation>
+<translation id="7052914147756339792">वॉलपेपर सेट करें...</translation>
+<translation id="1602076796624386989">मोबाइल डेटा सक्षम करें</translation>
+<translation id="8573351908869164327"><ph name="HOUR"/>घं <ph name="MINUTE"/>मि शेष हैं</translation>
 <translation id="7029814467594812963">सत्र से बाहर निकलें</translation>
-<translation id="7908019422099334890">वॉलपेपर सेट करें...</translation>
+<translation id="2983818520079887040">सेटिंग...</translation>
+<translation id="8660803626959853127"><ph name="COUNT"/> फ़ाइल/फ़ाइलें समन्वयित हो रही है/हो रही हैं</translation>
+<translation id="639644700271529076">CAPS LOCK बंद है</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7841796031898165175">सेलुलर सक्षम करें</translation>
-<translation id="9072667645353666975">Battery: <ph name="PERCENTAGE"/>%
-<ph name="HOUR"/>घं <ph name="MINUTE"/>मि</translation>
+<translation id="5045002648206642691">Google डिस्क सेटिंग...</translation>
 <translation id="48607902311828362">हवाई जहाज़ मोड</translation>
+<translation id="5361734574074701223">शेष समय की गणना कर रहा है</translation>
+<translation id="9169585155162064169">CAPS LOCK चालू है.
+रद्द करने के लिए खोज कुंजी दबाएं.</translation>
+<translation id="412065659894267608">पूरी तरह से चार्ज होने में <ph name="HOUR"/>घं <ph name="MINUTE"/>मि शेष</translation>
 </translationbundle>

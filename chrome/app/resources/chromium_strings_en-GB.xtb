@@ -3,7 +3,6 @@
 <translationbundle lang="en-GB">
 <translation id="6676384891291319759">Access the Internet</translation>
 <translation id="6373523479360886564">Are you sure you want to uninstall Chromium?</translation>
-<translation id="8957741245723343544">Your changes will take effect the next time you restart Chromium OS.</translation>
 <translation id="6510925080656968729">Uninstall Chromium</translation>
 <translation id="6893813176749746474">Chromium has been updated, but you haven't used it for 30 days or more.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
@@ -13,7 +12,6 @@
 <translation id="1065672644894730302">Your preferences cannot be read.
 
 Some features may be unavailable and changes to preferences won't be saved.</translation>
-<translation id="2469082501656808441">A new version of AdSense is available!</translation>
 <translation id="4222661289444749267">Chromium Frame Update.</translation>
 <translation id="2843244238218937196">Chromium Renderer</translation>
 <translation id="7128196614940529818">Chromium Frame is already installed and available to all users of this computer. If you want to install Chromium Frame at the user level, you must first uninstall the system-level version installed by an administrator.</translation>
@@ -28,13 +26,12 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4285930937574705105">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="2589479092236095792">Chromium Autofill settings</translation>
 <translation id="3555616473548901994">Uninstallation complete.</translation>
-<translation id="2940837712536340734">Chromium OS is up to date.</translation>
 <translation id="2886012850691518054">Optional: Help make Chrome better by automatically sending usage statistics and crash reports to Google.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the certificate that the server presented contains errors. Chromium cannot use a certificate with errors and cannot validate the identity of the site that you have attempted to connect to.</translation>
 <translation id="3103660991484857065">The installer failed to uncompress archive. Please download Chromium again.</translation>
-<translation id="2933983827758164650">If you close Chromium now, this download will be cancelled.</translation>
 <translation id="872034308864968620">Let Chromium Run In The Background</translation>
+<translation id="5109068449432240255">Yes, exit Chromium</translation>
 <translation id="4320129595801648679">Chromium's New Tab page has been remodelled. Switch between sections by clicking these labels. Chromium will remember your preference for next time.</translation>
 <translation id="3032787606318309379">Adding to Chromium ...</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Warning:<ph name="END_BOLD"/> Chromium cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.</translation>
@@ -47,10 +44,11 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4330585738697551178">This module is known to conflict with Chromium.</translation>
 <translation id="3190315855212034486">Whoa! Chromium has crashed. Relaunch now?</translation>
 <translation id="6714487516757221107">No installation of Chromium or Chromium Frame found to update.</translation>
+<translation id="3197823471738295152">Your device is up to date.</translation>
+<translation id="8551886023433311834">Nearly up to date! Restart your device to finish updating.</translation>
 <translation id="4124681358536363708">The Google Chrome installation directory seems to be in use. Please reboot your computer and try again.</translation>
 <translation id="8770560772173120024">Chromium is now importing Favourites/Bookmarks.</translation>
 <translation id="6290315939897260265">Not used in Chromium. Placeholder to keep resource maps in sync.</translation>
-<translation id="2977470724722393594">Chromium is up to date</translation>
 <translation id="9191268552238695869">An administrator has installed Chromium on this system, and it is available for all users. The system-level Chromium will replace your user-level installation now.</translation>
 <translation id="3509308970982693815">Please close all Chromium windows and try again.</translation>
 <translation id="4077262827416206768">Please close all Chromium windows and relaunch Chromium for this change to take effect.</translation>
@@ -59,7 +57,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="118298050220780080">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate issued by an entity that is not trusted by your computer's operating system. This may mean that the server has generated its own security credentials, which Chromium cannot rely on for identity information, or an attacker may be trying to intercept your communications.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Continue running background apps when Chromium is closed</translation>
-<translation id="2918265831258045091">Do you want to exit Chromium with a download in progress?</translation>
 <translation id="6055895534982063517">There's a new version of Google Chrome available and it's faster than ever.</translation>
 <translation id="2407806170074302369">About Chromium Frame ...</translation>
 <translation id="5405650547142096840">Remove from Chromium</translation>
@@ -69,6 +66,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4932687624772039103">Chromium does not support <ph name="OS_NAME"/>.</translation>
 <translation id="8738921060445980047">Unknown version.</translation>
+<translation id="6970811910055250180">Updating your device...</translation>
 <translation id="2485422356828889247">Uninstall</translation>
 <translation id="85843667276690461">Get help with using Chromium</translation>
 <translation id="263863604136125912">Start Chromium</translation>
@@ -86,7 +84,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">Don't bother me</translation>
-<translation id="7700951445648533795">Do you want to exit Chromium with <ph name="DOWNLOAD_COUNT"/> downloads in progress?</translation>
 <translation id="275588974610408078">Crash reporting is not available in Chromium.</translation>
 <translation id="5909170354645388250">Not used in Chromium. Placeholder to keep resource maps in sync. It expects one argument: $1.</translation>
 <translation id="3582788516608077514">Updating Chromium ...</translation>
@@ -97,7 +94,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2648074677641340862">An operating system error occurred during installation. Please download Chromium again.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> has been added to Chromium.</translation>
 <translation id="8678787945719392857">Use this Google Account to sync all your Chromium stuff?</translation>
-<translation id="5974438302735098483">Chromium has been updated</translation>
 <translation id="8621669128220841554">Installation failed due to unspecified error. Please download Chromium again.</translation>
 <translation id="6717134281241384636">Your profile can not be used because it is from a newer version of Chromium.
 
@@ -107,8 +103,8 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6212496753309875659">This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>
 <translation id="1298199220304005244">Get help with using Chromium OS</translation>
-<translation id="667672506951335584">If you close now, these downloads will be cancelled.</translation>
 <translation id="1691304614444223855">Chromium Frame has been updated. Please relaunch your browser. Chromium version: <ph name="TODO_0001"/>, Chromium Frame version: <ph name="TODO_0002"/></translation>
+<translation id="130631256467250065">Your changes will take effect the next time that you restart your device.</translation>
 <translation id="1105130903706696483">Chromium didn't shut down correctly. To re-open the pages you had open, click Restore.</translation>
 <translation id="1929939181775079593">Chromium is unresponsive. Relaunch now?</translation>
 <translation id="6089587093203430357">Instant</translation>
@@ -122,18 +118,20 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="8865765905101981392">Internet Browser</translation>
 <translation id="2910007522516064972">About &amp;Chromium</translation>
 <translation id="8453117565092476964">The installer archive is corrupted or invalid. Please download Chromium again.</translation>
-<translation id="309634601461115233">Please sign out of Chromium OS and sign in again for this change to take effect.</translation>
 <translation id="3249425904492147663">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented an expired certificate. No information is available to indicate whether that certificate has been compromised since its expiration. This means Chromium cannot guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. Your computer's clock is currently set to <ph name="CURRENT_TIME"/>. Does that look right? If not, you should correct the error and refresh this page.</translation>
 <translation id="7196020411877309443">Why am I seeing this?</translation>
 <translation id="7483335560992089831">Can not install the same Chromium version that is currently running. Please close Chromium and try again.</translation>
 <translation id="7641113255207688324">Chromium isn't your default browser.</translation>
+<translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>
 <translation id="2174090135251659490">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate that is not yet valid. No information is available to indicate whether that certificate can be trusted. Chromium cannot reliably guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. Your computer's clock is currently set to <ph name="CURRENT_TIME"/>. Does that look right? If not, you should correct the error and refresh this page.</translation>
 <translation id="2119636228670142020">About &amp;Chromium OS</translation>
 <translation id="1708666629004767631">There's a new, safer version of Chromium available.</translation>
 <translation id="5859758987635973787">Chromium is up to date (<ph name="VERSION"/>)</translation>
 <translation id="8616882682724010661">See <ph name="BEGIN_LINK"/>more benefits<ph name="END_LINK"/> of signing in to Chromium.</translation>
 <translation id="378917192836375108">Chromium lets you click a phone number on the web and call it with Skype!</translation>
+<translation id="8724049448828509830">A download is currently in progress. Do you want to exit Chromium and cancel the download?</translation>
 <translation id="7503101070699687603">Chromium Plug-In Host</translation>
+<translation id="2739631515503418643">Downloads are currently in progress. Do you want to exit Chromium and cancel the downloads?</translation>
 <translation id="9013262824292842194">Chromium requires Windows Vista or Windows XP with SP2 or higher.</translation>
 <translation id="1967743265616885482">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="4224199872375172890">Chromium is up to date.</translation>
@@ -146,6 +144,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7123348595797445166">Try it (already installed)</translation>
 <translation id="6403826409255603130">Chromium is a web browser that runs webpages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Chromium.</translation>
 <translation id="2927042866129133279">Invalid arguments. Chromium Frame cannot be installed in ready mode without also installing Chromium.</translation>
+<translation id="546394857889685352">Your device has been updated to <ph name="VERSION"/></translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="442817494342774222">Chromium is configured to automatically launch when you start your computer.</translation>
 <translation id="8974095189086268230">Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS"/>open source software<ph name="END_LINK_CROS_OSS"/>.</translation>

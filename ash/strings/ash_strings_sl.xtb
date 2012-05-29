@@ -2,50 +2,67 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
 <translation id="3595596368722241419">Baterija je polna</translation>
-<translation id="908313544993743941">Onemogoči mobilno</translation>
+<translation id="5250713215130379958">Samodejno skrij zaganjalnik</translation>
 <translation id="30155388420722288">Gumb za presežek</translation>
 <translation id="5571066253365925590">Bluetooth omogočen</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth onemogočen</translation>
+<translation id="370649949373421643">Omogoči Wi-Fi</translation>
 <translation id="3626281679859535460">Svetlost</translation>
 <translation id="7982789257301363584">Omrežje</translation>
+<translation id="5565793151875479467">Proxy ...</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Pladenj stanja</translation>
 <translation id="2946640296642327832">Omogoči Bluetooth</translation>
 <translation id="6596816719288285829">Naslov IP</translation>
-<translation id="289426338439836048">Drugo mobilno omrežje ...</translation>
 <translation id="5233638681132016545">Nov zavihek</translation>
+<translation id="3846575436967432996">Ni podatkov o omrežju</translation>
+<translation id="3026237328237090306">Nastavitev mobilne podatkovne povezave</translation>
 <translation id="785750925697875037">Prikaz mobilnega računa</translation>
+<translation id="8121288016949447968">Shift + iskanje</translation>
 <translation id="7864539943188674973">Onemogoči Bluetooth</translation>
 <translation id="3126069444801937830">Znova zaženite za posodobitev</translation>
+<translation id="1525975890706558596">Tipka CAPS LOCK je vklopljena.
+Pritisnite Shift in tipko za iskanje, da jo prekličete.</translation>
 <translation id="8190698733819146287">Prilagajanje jezikov in vnosa ...</translation>
-<translation id="7911992579061465928">Baterija je skoraj prazna</translation>
 <translation id="598295083618286569">Povezava Bluetooth vzpostavljena</translation>
 <translation id="5222676887888702881">Odjava</translation>
+<translation id="2091132388437059185">Ko je okno pomanjšano, samodejno skrij zaganjalnik</translation>
+<translation id="425878420164891689">Izračunavanje časa polnjenja</translation>
+<translation id="2964193600955408481">Onemogoči Wi-Fi</translation>
 <translation id="811680302244032017">Dodaj napravo ...</translation>
+<translation id="2509468283778169019">Tipka CAPS LOCK je vklopljena</translation>
+<translation id="6426039856985689743">Onemogoči mobilno podatkovno povezavo</translation>
 <translation id="3232695630852378748">Nastavitve za Bluetooth ...</translation>
 <translation id="1480041086352807611">Predstavitveni način</translation>
 <translation id="4186384497305035875">Ta zaslon je namenoma prazen</translation>
 <translation id="9089416786594320554">Načini vnosa</translation>
-<translation id="7706302027196209560">Omogoči Wi-Fi</translation>
 <translation id="4430019312045809116">Glasnost</translation>
+<translation id="1383876407941801731">Iskanje</translation>
 <translation id="3557139239102318020">Povlecite dol za pomanjšanje, levo ali desno za razpostavitev</translation>
 <translation id="5980301590375426705">Zapusti sejo gosta</translation>
 <translation id="8308637677604853869">Prejšnji meni</translation>
+<translation id="8528322925433439945">Mobilna ...</translation>
 <translation id="3595065677684516080">Nastavitve in pomoč</translation>
 <translation id="4479639480957787382">Ethernet</translation>
+<translation id="7573721444069009535">Wi-Fi ...</translation>
+<translation id="6223565363550976998">Baterija: <ph name="PERCENTAGE"/> %</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">Zakleni</translation>
-<translation id="5836819469861742634">Spremeni nastavitve proxyja ...</translation>
+<translation id="2805756323405976993">Google Apps</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
-<translation id="8735871257195921372">Drugo omrežje Wi-Fi ...</translation>
-<translation id="2152495481414285304">Aplikacije</translation>
-<translation id="1690310444231390462">Onemogoči Wi-Fi</translation>
-<translation id="77565731175229781">Omrežne nastavitve ...</translation>
+<translation id="7052914147756339792">Nastavi sliko za ozadje ...</translation>
+<translation id="1602076796624386989">Omogoči mobilno podatkovno povezavo</translation>
+<translation id="8573351908869164327">Še <ph name="HOUR"/> h <ph name="MINUTE"/> min</translation>
 <translation id="7029814467594812963">Zapusti sejo</translation>
-<translation id="7908019422099334890">Nastavi sliko za ozadje ...</translation>
+<translation id="2983818520079887040">Nastavitve ...</translation>
+<translation id="8660803626959853127">Sinhroniziranje toliko datotek: <ph name="COUNT"/> ...</translation>
+<translation id="639644700271529076">Tipka CAPS LOCK je izklopljena</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7841796031898165175">Omogoči mobilna</translation>
-<translation id="9072667645353666975">Baterija: <ph name="PERCENTAGE"/> %
-<ph name="HOUR"/> h <ph name="MINUTE"/> min</translation>
+<translation id="5045002648206642691">Nastavitve za Google Drive ...</translation>
 <translation id="48607902311828362">Način za letalo</translation>
+<translation id="5361734574074701223">Računanje preostalega časa</translation>
+<translation id="9169585155162064169">Tipka CAPS LOCK je vklopljena.
+Pritisnite tipko za iskanje, da jo prekličete</translation>
+<translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min do napolnjenosti</translation>
 </translationbundle>

@@ -2,49 +2,65 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
 <translation id="3595596368722241419">ಬ್ಯಾಟರಿ ಪೂರ್ಣವಾಗಿದೆ</translation>
-<translation id="908313544993743941">ಸೆಲ್ಯುಲರ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="5250713215130379958">ಲಾಂಚರ್ ಅನ್ನು ಸ್ವಯಂಮರೆಮಾಡಿ</translation>
 <translation id="30155388420722288">ಅತ್ಯಧಿಕ ಬಟನ್</translation>
 <translation id="5571066253365925590">Bluetooth ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
+<translation id="370649949373421643">Wi-Fi ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="3626281679859535460">ಪ್ರಕಾಶಮಾನ</translation>
 <translation id="7982789257301363584">ನೆಟ್‌ವರ್ಕ್</translation>
+<translation id="5565793151875479467">ಪ್ರಾಕ್ಸಿ...</translation>
+<translation id="6979158407327259162">Google ಡ್ರೈವ್‌‌</translation>
 <translation id="2297568595583585744">ಸ್ಥಿತಿ ಟ್ರೆ</translation>
 <translation id="2946640296642327832">bluetooth ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="6596816719288285829">IP ವಿಳಾಸ</translation>
-<translation id="289426338439836048">ಇತರೆ ಮೊಬೈಲ್ ನೆಟ್‌ವರ್ಕ್...</translation>
 <translation id="5233638681132016545">ಹೊಸ ಟ್ಯಾಬ್</translation>
+<translation id="3846575436967432996">ನೆಟ್‌ವರ್ಕ್ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ</translation>
+<translation id="3026237328237090306">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಹೊಂದಿಸಿ</translation>
 <translation id="785750925697875037">ಮೊಬೈಲ್ ಖಾತೆಯನ್ನು ವೀಕ್ಷಿಸಿ</translation>
+<translation id="8121288016949447968">Shift+ಹುಡುಕಾಟ</translation>
 <translation id="7864539943188674973">bluetooth ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="3126069444801937830">ನವೀಕರಿಸಲು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
+<translation id="1525975890706558596">CAPS LOCK ಆನ್ ಆಗಿದೆ. ರದ್ದುಮಾಡಲು Shift + ಹುಡುಕಾಟ ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="8190698733819146287">ಭಾಷೆಗಳು ಮತ್ತು ಇನ್‌ಪುಟ್ ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ...</translation>
-<translation id="7911992579061465928">ಬ್ಯಾಟರಿ ಕಡಿಮೆ</translation>
 <translation id="598295083618286569">Bluetooth ಸಂಪರ್ಕಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="5222676887888702881">ಸೈನ್ ಔಟ್</translation>
+<translation id="2091132388437059185">ಗರಿಷ್ಟಗೊಳಿಸಿದಾಗ ಲಾಂಚರ್ ಅನ್ನು ಸ್ವಯಂಮರೆಮಾಡಿ</translation>
+<translation id="425878420164891689">ಪೂರ್ಣಗೊಳ್ಳುವವರೆಗೆ ಸಮಯವನ್ನು ಲೆಕ್ಕ ಹಾಕಲಾಗುತ್ತದೆ</translation>
+<translation id="2964193600955408481">Wi-Fi ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="811680302244032017">ಸಾಧನ ಸೇರಿಸಿ...</translation>
+<translation id="2509468283778169019">CAPS LOCK ಆನ್ ಆಗಿದೆ</translation>
+<translation id="6426039856985689743">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="3232695630852378748">Bluetooth ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
 <translation id="1480041086352807611">ಡೆಮೋ ಮೋಡ್</translation>
 <translation id="4186384497305035875">ಈ ಪರದೆಯನ್ನು ಉದ್ದೇಶಪೂರ್ವಕವಾಗಿ ಖಾಲಿ ಬಿಡಲಾಗಿದೆ</translation>
 <translation id="9089416786594320554">ಇನ್‌ಪುಟ್ ವಿಧಾನಗಳು</translation>
-<translation id="7706302027196209560">Wi-fi ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="4430019312045809116">ವಾಲ್ಯೂಮ್</translation>
+<translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
 <translation id="3557139239102318020">ಎಡ ಅಥವಾ ಬಲ ಟೈಲ್‌ಗೆ, ಕಿರಿದಾಗಿಸಲು ಎಳೆಯಿರಿ</translation>
 <translation id="5980301590375426705">ಅತಿಥಿ ಸೆಶೆನ್‌ನಿಂದ ನಿರ್ಗಮಿಸು</translation>
 <translation id="8308637677604853869">ಹಿಂದಿನ ಮೆನು</translation>
+<translation id="8528322925433439945">ಮೊಬೈಲ್...</translation>
 <translation id="3595065677684516080">ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮತ್ತು ಸಹಾಯ</translation>
 <translation id="4479639480957787382">ಈಥರ್ನೆಟ್</translation>
+<translation id="7573721444069009535">Wi-Fi...</translation>
+<translation id="6223565363550976998">ಬ್ಯಾಟರಿ: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">ಲಾಕ್ ಮಾಡಿ</translation>
-<translation id="5836819469861742634">ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಿಸಿ...</translation>
+<translation id="2805756323405976993">ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="2872961005593481000">ಮುಚ್ಚಿಬಿಡಿ </translation>
-<translation id="8735871257195921372">ಇತರೆ Wi-Fi ನೆಟ್‌ವರ್ಕ್...</translation>
-<translation id="2152495481414285304">ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
-<translation id="1690310444231390462">Wi-fi ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
-<translation id="77565731175229781">ನೆಟ್‌ವರ್ಕ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
+<translation id="7052914147756339792">ವಾಲ್‌ಪೇಪರ್ ಅನ್ನು ಹೊಂದಿಸಿ...</translation>
+<translation id="1602076796624386989">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="8573351908869164327"><ph name="HOUR"/>ಗಂ <ph name="MINUTE"/>ನಿ ಉಳಿದಿದೆ</translation>
 <translation id="7029814467594812963">ಸೆಶನ್‌ನಿಂದ ನಿರ್ಗಮಿಸು</translation>
-<translation id="7908019422099334890">ವಾಲ್‌ಪೇಪರ್ ಹೊಂದಿಸಿ...</translation>
+<translation id="2983818520079887040">ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
+<translation id="8660803626959853127"><ph name="COUNT"/> ಫೈಲ್‌(ಗಳ) ಅನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
+<translation id="639644700271529076">CAPS LOCK ಆಫ್ ಆಗಿದೆ</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7841796031898165175">ಸೆಲ್ಯುಲರ್ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
-<translation id="9072667645353666975">ಬ್ಯಾಟರಿ: <ph name="PERCENTAGE"/>% <ph name="HOUR"/>ಗಂ <ph name="MINUTE"/>ನಿ</translation>
+<translation id="5045002648206642691">Google ಡ್ರೈವ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
 <translation id="48607902311828362">ಏರ್‌ಪ್ಲೇನ್ ಮೋಡ್</translation>
+<translation id="5361734574074701223">ಉಳಿದಿರುವ ಸಮಯವನ್ನು ಲೆಕ್ಕಹಾಕುತ್ತಿದೆ</translation>
+<translation id="9169585155162064169">CAPS LOCK ಆನ್ ಆಗಿದೆ. ರದ್ದುಮಾಡಲು ಹುಡುಕಾಟ ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ.</translation>
+<translation id="412065659894267608">ಪೂರ್ಣವಾಗುವವರಗೆ <ph name="HOUR"/>ಗಂ <ph name="MINUTE"/>ನಿ</translation>
 </translationbundle>

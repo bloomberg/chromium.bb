@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="248395913932153421">Dag</translation>
+<translation id="6015796118275082299">År</translation>
 <translation id="9186171386827445984">Läser in dokument: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> sidor...</translation>
 <translation id="1235745349614807883">Rensa senaste sökningar</translation>
 <translation id="1171774979989969504">Ange en e-postadress.</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">länk</translation>
 <translation id="4522570452068850558">Info</translation>
 <translation id="8451268428117625855">Välj en fil.</translation>
+<translation id="2674318244760992338">sidfot</translation>
+<translation id="8987927404178983737">Månad</translation>
 <translation id="7364796246159120393">Välj fil</translation>
 <translation id="2761667185364618470">Markera den här kryssrutan om du vill fortsätta.</translation>
 <translation id="8964020114565522021">Dra filen hit</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024 (medel)</translation>
 <translation id="1637811476055996098">Välj filer</translation>
 <translation id="5476505524087279545">kryssa av</translation>
+<translation id="2148716181193084225">Idag</translation>
 <translation id="2507943997699731163">Fyll i det här fältet.</translation>
 <translation id="5919473608089529604">Det gick inte att läsa in plugin-programmet.</translation>
 <translation id="6663448176199120256">Senaste sökningar</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">Värdet måste vara mindre än eller lika med <ph name="MAXIMUM"/>.</translation>
 <translation id="6119846243427417423">aktivera</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> filer</translation>
+<translation id="6643016212128521049">Rensa</translation>
 <translation id="3934680773876859118">Det gick inte att läsa in PDF-dokumentet</translation>
 <translation id="8597182159515967513">rubrik</translation>
 <translation id="2653659639078652383">Skicka</translation>

@@ -3,7 +3,6 @@
 <translationbundle lang="hr">
 <translation id="6676384891291319759">Pristup Internetu</translation>
 <translation id="6373523479360886564">Jeste li sigurni da želite deinstalirati Chromium?</translation>
-<translation id="8957741245723343544">Promjene će početi vrijediti sljedeći put kad ponovo pokrenete OS Chromium.</translation>
 <translation id="6510925080656968729">Deinstaliranje Chromiuma</translation>
 <translation id="6893813176749746474">Chromium je ažuriran, ali vi ga niste upotrebljavali najmanje 30 dana.</translation>
 <translation id="2770231113462710648">Promijeni zadani preglednik na:</translation>
@@ -11,7 +10,6 @@
 <translation id="3748537968684000502">Gledate sigurnu stranicu preglednika Chromium.</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>
 <translation id="1065672644894730302">Vaše postavke nije moguće čitati. Neke značajke možda nisu dostupne i promjene postavki neće biti spremljene.</translation>
-<translation id="2469082501656808441">Dostupna je nova verzija preglednika Chromium</translation>
 <translation id="4222661289444749267">Ažuriranje aplikacije Chromium Frame.</translation>
 <translation id="2843244238218937196">Chromium Renderer</translation>
 <translation id="7128196614940529818">Chromium Frame već je instaliran i dostupan svim korisnicima ovog računala. Ako želite instalirati Chromium Frame na razini korisnika, prvo morate deinstalirati verziju na razini sustava koju je instalirao administrator.</translation>
@@ -26,13 +24,12 @@
 <translation id="4285930937574705105">Instalacija nije uspjela zbog nepoznate pogreške. Ako je Chromium trenutačno otvoren, zatvorite ga i pokušajte ponovo.</translation>
 <translation id="2589479092236095792">Postavke automatske ispune za Chromium</translation>
 <translation id="3555616473548901994">Deinstalacija dovršena.</translation>
-<translation id="2940837712536340734">OS Chromium ažuran je.</translation>
 <translation id="2886012850691518054">Dodatno: pomognite nam da poboljšamo Chromium automatskim slanjem statistike o upotrebi i izvješća o padu programa Googleu.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> – Chromium</translation>
 <translation id="1989424089625731201">Pokušali ste pristupiti web-lokaciji &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali certifikat koji je poslužitelj ponudio sadrži pogreške. Chromium ne može upotrebljavati certifikat s pogreškama i ne može ovjeriti identitet web-lokacije s kojom ste se pokušali povezati.</translation>
 <translation id="3103660991484857065">Program za instalaciju nije dekomprimirao arhivu. Ponovo preuzmite Chromium.</translation>
-<translation id="2933983827758164650">Ako sad zatvorite Chromium, preuzimanje će se prekinuti.</translation>
 <translation id="872034308864968620">Neka Chromium radi u pozadini</translation>
+<translation id="5109068449432240255">Da, napusti Chromium</translation>
 <translation id="4320129595801648679">Chromiumova stranica Nova kartica dobila je novi izgled. Izmjenjujte odjeljke klikom na ove oznake. Chromium će zapamtiti vaše postavke za sljedeći put.</translation>
 <translation id="3032787606318309379">Dodavanje u preglednik Chromium...</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Upozorenje:<ph name="END_BOLD"/> Chromium ne može spriječiti proširenja da evidentiraju vašu povijest pregledavanja. Da biste onemogućili proširenje u anonimnom načinu, isključite tu opciju.</translation>
@@ -45,10 +42,11 @@
 <translation id="4330585738697551178">Za taj se modul već zna da je u konfliktu s Chromiumom.</translation>
 <translation id="3190315855212034486">Hopa! Chromium je pao. Pokrenuti ponovo sada?</translation>
 <translation id="6714487516757221107">Nije pronađena nijedna instalacija preglednika Chromium ili aplikacije Chromium Frame za ažuriranje.</translation>
+<translation id="3197823471738295152">Uređaj je ažuran.</translation>
+<translation id="8551886023433311834">Gotovo ažurno! Ponovo pokrenite uređaj da biste dovršili ažuriranje.</translation>
 <translation id="4124681358536363708">Čini se da se instalacijski direktorij preglednika Chromium upotrebljava. Ponovo pokrenite računalo i pokušajte još jednom.</translation>
 <translation id="8770560772173120024">Chromium trenutačno uvozi favorite/oznake.</translation>
 <translation id="6290315939897260265">Ne upotrebljava se u Chromiumu. Rezervirano mjesto za održavanje sinkronizacije karata resursa.</translation>
-<translation id="2977470724722393594">Chromium je ažuran</translation>
 <translation id="9191268552238695869">Administrator je instalirao Chromium u ovom sustavu i on je dostupan svim korisnicima. Chromium na razini sustava sada će zamijeniti vašu instalaciju na razini korisnika.</translation>
 <translation id="3509308970982693815">Zatvorite sve prozore preglednika Chromium i pokušajte ponovo.</translation>
 <translation id="4077262827416206768">Zatvorite sve prozore preglednika Chromium i ponovo pokrenite Chromium da bi ta promjena postala aktivna.</translation>
@@ -57,7 +55,6 @@
 <translation id="118298050220780080">Pokušali ste pristupiti web-lokaciji &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali poslužitelj je ponudio certifikat koji je izdao entitet kojemu operativni sustav vašeg računala ne vjeruje. To može značiti da je poslužitelj generirao vlastite sigurnosne vjerodajnice, na koje se Chromium ne može osloniti za informacije o identitetu, ili da napadač pokušava presresti vaše komunikacije.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Nastavi izvršavati ​​pozadinske aplikacije po zatvaranju preglednika Chromium</translation>
-<translation id="2918265831258045091">Želite li izaći iz Chromiuma dok je preuzimanje u tijeku?</translation>
 <translation id="6055895534982063517">Dostupna je nova verzija preglednika Chromium, brža no ikad.</translation>
 <translation id="2407806170074302369">O aplikaciji Chromium Frame...</translation>
 <translation id="5405650547142096840">Uklanjanje iz Chromiuma</translation>
@@ -67,6 +64,7 @@
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4932687624772039103">Chromium ne podržava sustav <ph name="OS_NAME"/>.</translation>
 <translation id="8738921060445980047">Nepoznata verzija.</translation>
+<translation id="6970811910055250180">Ažuriranje uređaja...</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
 <translation id="85843667276690461">Pomoć za upotrebu Chromiuma</translation>
 <translation id="263863604136125912">Pokreni Chromium</translation>
@@ -84,7 +82,6 @@
 <translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="5820394555380036790">OS Chromium</translation>
 <translation id="6757767188268205357">Ne ometaj me</translation>
-<translation id="7700951445648533795">Želite li izaći iz Chromiuma dok je u tijeku ovoliko preuzimanja: <ph name="DOWNLOAD_COUNT"/>?</translation>
 <translation id="275588974610408078">Prijavljivanje padova nije dostupno u pregledniku Chromium.</translation>
 <translation id="5909170354645388250">Ne upotrebljava se u Chromiumu. Rezervirano mjesto za održavanje sinkronizacije karata resursa. Očekuje se jedan argument: $1.</translation>
 <translation id="3582788516608077514">Ažuriranje Chromiuma...</translation>
@@ -95,7 +92,6 @@
 <translation id="2648074677641340862">Došlo je do pogreške operativnog sustava tijekom instalacije. Ponovo preuzmite Chromium.</translation>
 <translation id="5942520288919337908">Proširenje <ph name="EXTENSION_NAME"/> dodano je u Chromium.</translation>
 <translation id="8678787945719392857">Upotrijebiti ovaj Google račun za sinkronizaciju svih vaših stvari na pregledniku Chromium?</translation>
-<translation id="5974438302735098483">Chromium je ažuriran</translation>
 <translation id="8621669128220841554">Instalacija nije uspjela zbog nepoznate pogreške. Ponovo preuzmite Chromium.</translation>
 <translation id="6717134281241384636">Vaš se profil ne može upotrebljavati jer je iz novije verzije Chromiuma.
 
@@ -105,8 +101,8 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="6212496753309875659">Ovo računalo već ima noviju verziju Chromiuma. Ako softver ne funkcionira, deinstalirajte Chromium i pokušajte ponovo.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>
 <translation id="1298199220304005244">Pomoć za upotrebu OS-a Chromium</translation>
-<translation id="667672506951335584">Ako sad zatvorite Chromium, preuzimanja će se prekinuti.</translation>
 <translation id="1691304614444223855">Ažuriran je Chromium Frame. Ponovo pokrenite preglednik. Verzija preglednika Chromium: <ph name="TODO_0001"/>, verzija aplikacije Chromium Frame: <ph name="TODO_0002"/></translation>
+<translation id="130631256467250065">Promjene će početi vrijediti sljedeći put kad ponovo pokrenete uređaj.</translation>
 <translation id="1105130903706696483">Chromium se nije ispravno isključio. Da biste ponovo otvorili stranice koje su bile otvorene, kliknite &quot;Vraćanje&quot;.</translation>
 <translation id="1929939181775079593">Chromium ne reagira. Ponovo pokrenuti sada?</translation>
 <translation id="6089587093203430357">Instant</translation>
@@ -120,18 +116,20 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="8865765905101981392">Internetski preglednik</translation>
 <translation id="2910007522516064972">O pregledniku &amp;Chromium</translation>
 <translation id="8453117565092476964">Arhiva programa za instalaciju oštećena je ili nevažeća. Ponovo preuzmite Chromium.</translation>
-<translation id="309634601461115233">Odjavite se iz OS-a Chromium i prijavite se ponovo da bi ta promjena postala aktivna.</translation>
 <translation id="3249425904492147663">Pokušali ste pristupiti web-lokaciji &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali poslužitelj je ponudio certifikat kojemu je istekao rok. Nisu dostupne informacije o tome je li taj certifikat ugrožen nakon isteka. To znači da Chromium ne može jamčiti da komunicirate s web-lokacijom &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a ne s napadačem. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_TIME"/>. Je li to točno? Ako nije, ispravite pogrešku i osvježite stranicu.</translation>
 <translation id="7196020411877309443">Zašto vidim ovo?</translation>
 <translation id="7483335560992089831">Ne možete instalirati istu verziju Chromiuma koja se trenutačno izvršava. Zatvorite Chromium i pokušajte ponovo.</translation>
 <translation id="7641113255207688324">Chromium nije vaš zadani preglednik.</translation>
+<translation id="4458285410772214805">Odjavite se i prijavite se ponovo da bi ta promjena postala aktivna.</translation>
 <translation id="2174090135251659490">Pokušali ste pristupiti web-lokaciji &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali je poslužitelj ponudio certifikat koji još ne vrijedi. Nema dostupnih informacija o tome može li se taj certifikat smatrati pouzdanim. Chromium ne može pouzdano jamčiti da komunicirate s web-lokacijom &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a ne s napadačem. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_TIME"/>. Je li to točno? Ako nije, ispravite pogrešku i osvježite stranicu.</translation>
 <translation id="2119636228670142020">O OS-u &amp;Chromium</translation>
 <translation id="1708666629004767631">Dostupna je nova, sigurnija verzija preglednika Chromium.</translation>
 <translation id="5859758987635973787">Chromium je ažuran (<ph name="VERSION"/>)</translation>
 <translation id="8616882682724010661">Pogledajte <ph name="BEGIN_LINK"/>još prednosti<ph name="END_LINK"/> prijavljivanja na Chromium.</translation>
 <translation id="378917192836375108">Chromium omogućuje da kliknete telefonski broj na webu i nazovete ga koristeći se Skypeom!</translation>
+<translation id="8724049448828509830">Preuzimanje je u tijeku. Želite li napustiti Chromium i otkazati to preuzimanje?</translation>
 <translation id="7503101070699687603">Chromium Plug-In Host</translation>
+<translation id="2739631515503418643">Preuzimanja su u tijeku. Želite li napustiti Chromium i otkazati ta preuzimanja?</translation>
 <translation id="9013262824292842194">Chromium zahtijeva sustav Windows Vista ili Windows XP sa servisnim paketom SP2 ili novijim.</translation>
 <translation id="1967743265616885482">Modul s tim nazivom već je bio u konfliktu s preglednikom Chromium.</translation>
 <translation id="4224199872375172890">Chromium je ažuran.</translation>
@@ -144,6 +142,7 @@ Chromium ne može oporaviti vaše postavke.</translation>
 <translation id="7123348595797445166">Isprobaj (već je instalirano)</translation>
 <translation id="6403826409255603130">Chromium je web-preglednik koji munjevitom brzinom prikazuje web-stranice i aplikacije. Brz je, stabilan i jednostavan za upotrebu. Pregledavajte web sigurnije jer je zaštita od zlonamjernog softvera i krađe identiteta ugrađena u Chromium.</translation>
 <translation id="2927042866129133279">Nevažeći argumenti. Chromium Frame ne može se instalirati u načinu spremnom za rad, a da se također ne instalira Chromium.</translation>
+<translation id="546394857889685352">Uređaj je ažuriran na verziju <ph name="VERSION"/></translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="442817494342774222">Chromium je konfiguriran za automatsko pokretanje kod pokretanja računala.</translation>
 <translation id="8974095189086268230">OS Chromium omogućuje dodatni <ph name="BEGIN_LINK_CROS_OSS"/>softver utemeljen na otvorenom kôdu<ph name="END_LINK_CROS_OSS"/>.</translation>

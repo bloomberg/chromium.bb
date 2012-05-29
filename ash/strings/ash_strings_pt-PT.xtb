@@ -2,50 +2,65 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="3595596368722241419">Bateria carregada</translation>
-<translation id="908313544993743941">Desativar rede celular</translation>
+<translation id="5250713215130379958">Ocultar automaticamente iniciador</translation>
 <translation id="30155388420722288">Botão de Sobrecarga</translation>
 <translation id="5571066253365925590">Bluetooth ativado</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth desativado</translation>
+<translation id="370649949373421643">Ativar Wi-Fi</translation>
 <translation id="3626281679859535460">Brilho</translation>
 <translation id="7982789257301363584">Rede</translation>
+<translation id="5565793151875479467">Proxy...</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Tabuleiro de estado</translation>
 <translation id="2946640296642327832">Ativar Bluetooth</translation>
 <translation id="6596816719288285829">Endereço IP</translation>
-<translation id="289426338439836048">Outra rede móvel...</translation>
 <translation id="5233638681132016545">Novo separador</translation>
+<translation id="3846575436967432996">Não existem informações de rede disponíveis</translation>
+<translation id="3026237328237090306">Configurar dados móveis</translation>
 <translation id="785750925697875037">Ver conta do telemóvel</translation>
+<translation id="8121288016949447968">Shift+Pesquisar</translation>
 <translation id="7864539943188674973">Desativar Bluetooth</translation>
 <translation id="3126069444801937830">Reiniciar para atualizar</translation>
+<translation id="1525975890706558596">Tecla CAPS LOCK ativada. Prima as teclas Shift + Pesquisar para cancelar.</translation>
 <translation id="8190698733819146287">Personalizar idiomas e introdução...</translation>
-<translation id="7911992579061465928">Bateria fraca</translation>
 <translation id="598295083618286569">Bluetooth ligado</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>
+<translation id="2091132388437059185">Ocultar automaticamente iniciador quando maximizado</translation>
+<translation id="425878420164891689">A calcular tempo até ficar carregada</translation>
+<translation id="2964193600955408481">Desativar Wi-Fi</translation>
 <translation id="811680302244032017">Adicionar aparelho...</translation>
+<translation id="2509468283778169019">CAPS LOCK está ativado</translation>
+<translation id="6426039856985689743">Desativar dados móveis</translation>
 <translation id="3232695630852378748">Definições de Bluetooth...</translation>
 <translation id="1480041086352807611">Modo de demonstração</translation>
 <translation id="4186384497305035875">Este ecrã foi intencionalmente deixado em branco</translation>
 <translation id="9089416786594320554">Métodos de introdução</translation>
-<translation id="7706302027196209560">Ativar Wi-Fi</translation>
 <translation id="4430019312045809116">Volume</translation>
+<translation id="1383876407941801731">Pesquisa</translation>
 <translation id="3557139239102318020">Puxe para baixo para minimizar, para a esquerda ou direita para dividir uma imagem em mosaico</translation>
 <translation id="5980301590375426705">Sair da sessão de convidado</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
+<translation id="8528322925433439945">Telemóvel...</translation>
 <translation id="3595065677684516080">Definições e Ajuda</translation>
 <translation id="4479639480957787382">Ethernet</translation>
+<translation id="7573721444069009535">Wi-Fi...</translation>
+<translation id="6223565363550976998">Bateria: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">Bloquear</translation>
-<translation id="5836819469861742634">Alterar definições de proxy...</translation>
+<translation id="2805756323405976993">Aplicações</translation>
 <translation id="2872961005593481000">Encerrar</translation>
-<translation id="8735871257195921372">Outra rede Wi-Fi...</translation>
-<translation id="2152495481414285304">Aplicações</translation>
-<translation id="1690310444231390462">Desativar Wi-Fi</translation>
-<translation id="77565731175229781">Definições de rede...</translation>
+<translation id="7052914147756339792">Definir imagem de fundo...</translation>
+<translation id="1602076796624386989">Ativar dados móveis</translation>
+<translation id="8573351908869164327"><ph name="HOUR"/>h <ph name="MINUTE"/>m restantes</translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
-<translation id="7908019422099334890">Definir Imagem de Fundo...</translation>
+<translation id="2983818520079887040">Definições...</translation>
+<translation id="8660803626959853127">A sincronizar <ph name="COUNT"/> ficheiro(s)</translation>
+<translation id="639644700271529076">CAPS LOCK está desativado</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7841796031898165175">Ativar rede celular</translation>
-<translation id="9072667645353666975">Bateria: <ph name="PERCENTAGE"/>%
-<ph name="HOUR"/> h <ph name="MINUTE"/> m</translation>
+<translation id="5045002648206642691">Definições do Google Drive...</translation>
 <translation id="48607902311828362">Modo de avião</translation>
+<translation id="5361734574074701223">Calcular tempo restante</translation>
+<translation id="9169585155162064169">Tecla CAPS LOCK ativada. Prima a tecla Pesquisar para cancelar</translation>
+<translation id="412065659894267608"><ph name="HOUR"/>h <ph name="MINUTE"/>m até ficar completa</translation>
 </translationbundle>

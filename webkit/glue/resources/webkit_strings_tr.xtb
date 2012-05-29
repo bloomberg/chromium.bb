@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
+<translation id="248395913932153421">Gün</translation>
+<translation id="6015796118275082299">Yıl</translation>
 <translation id="9186171386827445984">Belge yükleniyor: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> sayfa...</translation>
 <translation id="1235745349614807883">Son Aramaları Temizle</translation>
 <translation id="1171774979989969504">Lütfen e-posta adresi girin.</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">bağlantı</translation>
 <translation id="4522570452068850558">Ayrıntılar</translation>
 <translation id="8451268428117625855">Lütfen bir dosya seçin.</translation>
+<translation id="2674318244760992338">altbilgi</translation>
+<translation id="8987927404178983737">Ay</translation>
 <translation id="7364796246159120393">Dosya Seç</translation>
 <translation id="2761667185364618470">İlerlemek istiyorsanız lütfen bu kutuyu işaretleyin.</translation>
 <translation id="8964020114565522021">Dosyayı buraya sürükleyin</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024 (Orta Düzey)</translation>
 <translation id="1637811476055996098">Dosyaları Seç</translation>
 <translation id="5476505524087279545">işareti kaldır</translation>
+<translation id="2148716181193084225">Bugün</translation>
 <translation id="2507943997699731163">Lütfen bu alanı doldurun.</translation>
 <translation id="5919473608089529604">Eklenti yüklenemedi.</translation>
 <translation id="6663448176199120256">Son Aramalar</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">Değer <ph name="MAXIMUM"/> veya daha küçük olmalıdır.</translation>
 <translation id="6119846243427417423">etkinleştir</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> dosya</translation>
+<translation id="6643016212128521049">Temizle</translation>
 <translation id="3934680773876859118">PDF dokümanı yüklenemedi</translation>
 <translation id="8597182159515967513">başlık</translation>
 <translation id="2653659639078652383">Gönder</translation>

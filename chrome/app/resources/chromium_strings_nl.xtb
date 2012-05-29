@@ -3,7 +3,6 @@
 <translationbundle lang="nl">
 <translation id="6676384891291319759">Verbinding maken met internet</translation>
 <translation id="6373523479360886564">Weet u zeker dat u Chromium wilt verwijderen?</translation>
-<translation id="8957741245723343544">Uw wijzigingen worden toegepast wanneer u Chromium OS opnieuw start.</translation>
 <translation id="6510925080656968729">Chromium verwijderen</translation>
 <translation id="6893813176749746474">Chromium is bijgewerkt, maar u heeft het programma minstens 30 dagen niet gebruikt.</translation>
 <translation id="2770231113462710648">Standaardbrowser wijzigen in:</translation>
@@ -13,7 +12,6 @@
 <translation id="1065672644894730302">Uw voorkeuren kunnen niet worden gelezen.
 
 Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren worden niet opgeslagen.</translation>
-<translation id="2469082501656808441">Er is een nieuwe versie van Chromium beschikbaar</translation>
 <translation id="4222661289444749267">Bijgewerkte versie van Chromium Frame.</translation>
 <translation id="2843244238218937196">Chromium Renderer</translation>
 <translation id="7128196614940529818">Chromium Frame is reeds geïnstalleerd en beschikbaar voor alle gebruikers van deze computer. Als u Chromium Frame op gebruikersniveau wilt installeren, moet u eerst de versie op systeemniveau verwijderen die is geïnstalleerd door een beheerder.</translation>
@@ -28,13 +26,12 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4285930937574705105">De installatie is mislukt wegens een onbekende fout. Als Chromium momenteel actief is, moet u Chromium sluiten en het opnieuw proberen.</translation>
 <translation id="2589479092236095792">Instellingen voor Automatisch aanvullen in Chromium</translation>
 <translation id="3555616473548901994">Verwijdering voltooid.</translation>
-<translation id="2940837712536340734">Chromium OS bijgewerkt.</translation>
 <translation id="2886012850691518054">Optioneel: help Chromium beter te maken door automatisch gebruiksstatistieken en crashmeldingen naar Google te verzenden.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar het door de server gepresenteerde certificaat bevat fouten. Chromium kan geen certificaten met fouten verwerken en kan de identiteit van de site waarmee u verbinding probeerde te maken, niet verifiëren.</translation>
 <translation id="3103660991484857065">Het installatieprogramma kan het archief niet uitpakken. Download Chromium opnieuw.</translation>
-<translation id="2933983827758164650">Als u Chromium nu sluit, wordt deze download geannuleerd.</translation>
 <translation id="872034308864968620">Chromium laten uitvoeren op de achtergrond</translation>
+<translation id="5109068449432240255">Ja, Chromium afsluiten</translation>
 <translation id="4320129595801648679">De pagina 'Nieuw tabblad' van Chromium is opnieuw vormgegeven. U kunt schakelen tussen gedeelten door op deze labels te klikken. Chromium onthoudt uw voorkeur voor de volgende sessie.</translation>
 <translation id="3032787606318309379">Toevoegen aan Chromium...</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Waarschuwing:<ph name="END_BOLD"/> Chromium kan niet voorkomen dat extensies uw browsergeschiedenis vastleggen. Als u deze extensie in de incognitomodus wilt uitschakelen, verwijdert u het vinkje bij deze optie.</translation>
@@ -47,10 +44,11 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4330585738697551178">Van deze module is bekend dat deze conflicteert met  Chromium.</translation>
 <translation id="3190315855212034486">Chromium is gecrasht. Nu opnieuw starten?</translation>
 <translation id="6714487516757221107">Er is geen geïnstalleerde versie van Chromium of Chromium Frame gevonden die kan worden bijgewerkt.</translation>
+<translation id="3197823471738295152">Het apparaat is bijgewerkt.</translation>
+<translation id="8551886023433311834">Bijna bijgewerkt! Start uw apparaat opnieuw op om de update te voltooien.</translation>
 <translation id="4124681358536363708">Het lijkt erop dat de Chromium-installatiedirectory in gebruik is. Start uw computer opnieuw op en probeer het opnieuw.</translation>
 <translation id="8770560772173120024">Chromium importeert momenteel favorieten/bladwijzers.</translation>
 <translation id="6290315939897260265">Niet gebruikt in Chromium. Tijdelijke aanduiding die wordt gebruikt om resource maps gesynchroniseerd te houden.</translation>
-<translation id="2977470724722393594">Chromium is bijgewerkt</translation>
 <translation id="9191268552238695869">Een beheerder heeft Chromium op dit systeem geïnstalleerd. Chromium is beschikbaar voor alle gebruikers. De versie van Chromium op systeemniveau vervangt vanaf dit moment uw installatie op gebruikersniveau.</translation>
 <translation id="3509308970982693815">Sluit alle Chromium-vensters en probeer het opnieuw.</translation>
 <translation id="4077262827416206768">Sluit alle Chromium-vensters en start Chromium opnieuw om de wijziging toe te passen.</translation>
@@ -59,7 +57,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="118298050220780080">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat gepresenteerd dat werd geleverd door een entiteit die niet wordt vertrouwd door het besturingssysteem van uw computer. Dit kan betekenen dat de server eigen aanmeldingsgegevens voor beveiliging heeft gemaakt, waar Chromium niet op kan vertrouwen voor identiteitsinformatie, of dat een aanvaller probeert uw communicatie te onderscheppen.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Achtergrondapps ingeschakeld houden als Chromium is gesloten</translation>
-<translation id="2918265831258045091">Wilt u Chromium sluiten terwijl er een download wordt uitgevoerd?</translation>
 <translation id="6055895534982063517">Er is een nieuwe versie van Chromium beschikbaar, en deze is sneller dan ooit.</translation>
 <translation id="2407806170074302369">Meer informatie over Chromium Frame...</translation>
 <translation id="5405650547142096840">Verwijderen uit Chromium</translation>
@@ -69,6 +66,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4932687624772039103">Chromium ondersteunt <ph name="OS_NAME"/> niet.</translation>
 <translation id="8738921060445980047">Onbekende versie.</translation>
+<translation id="6970811910055250180">Uw apparaat bijwerken...</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
 <translation id="85843667276690461">Hulp bij het gebruik van Chromium</translation>
 <translation id="263863604136125912">Chromium starten</translation>
@@ -86,7 +84,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">Vraag me niet meer</translation>
-<translation id="7700951445648533795">Wilt u Chromium sluiten terwijl er <ph name="DOWNLOAD_COUNT"/> downloads worden uitgevoerd?</translation>
 <translation id="275588974610408078">Crashrapportage is niet beschikbaar in Chromium.</translation>
 <translation id="5909170354645388250">Niet gebruikt in Chromium. Tijdelijke aanduiding die wordt gebruikt om resource maps gesynchroniseerd te houden. De tijdelijke aanduiding verwacht één argument: $1.</translation>
 <translation id="3582788516608077514">Chromium bijwerken...</translation>
@@ -97,7 +94,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2648074677641340862">Er is tijdens de installatie een fout opgetreden in het besturingssysteem. Download Chromium opnieuw.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> is toegevoegd aan Chromium.</translation>
 <translation id="8678787945719392857">Wilt u dit Google-account gebruiken voor het synchroniseren van al uw Chromium-gegevens?</translation>
-<translation id="5974438302735098483">Chromium is bijgewerkt</translation>
 <translation id="8621669128220841554">De installatie is mislukt wegens een onbekende fout. Download Chromium opnieuw.</translation>
 <translation id="6717134281241384636">Uw profiel kan niet worden gebruikt, omdat dit is gemaakt in een recentere versie van Chromium.
 
@@ -107,8 +103,8 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="6212496753309875659">Deze computer beschikt al over een recentere versie van Chromium. Als de software niet werkt, moet u Chromium verwijderen en het opnieuw proberen.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>
 <translation id="1298199220304005244">Hulp bij het gebruik van Chromium OS</translation>
-<translation id="667672506951335584">Als u Chromium nu sluit, worden deze downloads geannuleerd.</translation>
 <translation id="1691304614444223855">Chromium Frame is bijgewerkt. U moet uw browser opnieuw opstarten. Chromium-versie: <ph name="TODO_0001"/>, Chromium Frame-versie: <ph name="TODO_0002"/></translation>
+<translation id="130631256467250065">Uw wijzigingen worden doorgevoerd wanneer u het apparaat opnieuw opstart.</translation>
 <translation id="1105130903706696483">Chromium is niet correct afgesloten. Als u de pagina's die geopend waren opnieuw wilt openen, moet u op 'Herstellen' klikken.</translation>
 <translation id="1929939181775079593">Chromium reageert niet. Nu opnieuw starten?</translation>
 <translation id="6089587093203430357">Instant</translation>
@@ -122,18 +118,20 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="8865765905101981392">Internetbrowser</translation>
 <translation id="2910007522516064972">Over &amp;Chromium</translation>
 <translation id="8453117565092476964">Het archief van het installatieprogramma is beschadigd of ongeldig. Download Chromium opnieuw.</translation>
-<translation id="309634601461115233">Meld u af bij Chromium OS en meld u opnieuw aan om de wijziging toe te passen.</translation>
 <translation id="3249425904492147663">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een verlopen certificaat gepresenteerd. Er is geen informatie beschikbaar om te bepalen of er inbreuk is gemaakt op dit certificaat sinds het is verlopen. Dit betekent dat Chromium niet kan garanderen dat u communiceert met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; en niet met een aanvaller. De klok van uw computer staat momenteel ingesteld op <ph name="CURRENT_TIME"/>. Is dit de correcte tijd? Als dit niet zo is, moet u de fout herstellen en deze pagina vernieuwen.</translation>
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
 <translation id="7483335560992089831">Kan niet dezelfde Chromium-versie installeren, omdat deze versie nu actief is. Sluit Chromium en probeer het opnieuw.</translation>
 <translation id="7641113255207688324">Chromium is niet uw standaardbrowser.</translation>
+<translation id="4458285410772214805">Meld u af en weer aan om deze wijziging door te voeren.</translation>
 <translation id="2174090135251659490">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat gepresenteerd dat nog niet geldig is. Er is geen informatie beschikbaar om te bepalen of dat certificaat betrouwbaar is. Chromium kan niet volledig garanderen dat u communiceert met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; en niet met een aanvaller. De klok van uw computer staat momenteel ingesteld op <ph name="CURRENT_TIME"/>. Is dit de correcte tijd? Als dit niet zo is, moet u de fout herstellen en deze pagina vernieuwen.</translation>
 <translation id="2119636228670142020">Over &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Er is een nieuwe, veiligere versie van Chromium beschikbaar.</translation>
 <translation id="5859758987635973787">Chromium is bijgewerkt (<ph name="VERSION"/>)</translation>
 <translation id="8616882682724010661">Bekijk <ph name="BEGIN_LINK"/>meer voordelen<ph name="END_LINK"/> van aanmelden bij Chromium.</translation>
 <translation id="378917192836375108">Met Chromium kunt u klikken op een telefoonnummer op internet om dit via Skype te bellen!</translation>
+<translation id="8724049448828509830">Er wordt momenteel een download uitgevoerd. Wilt u Chromium afsluiten en de download annuleren?</translation>
 <translation id="7503101070699687603">Chromium Plug-In Host</translation>
+<translation id="2739631515503418643">Er worden momenteel downloads uitgevoerd. Wilt u Chromium afsluiten en de downloads annuleren?</translation>
 <translation id="9013262824292842194">Voor Chromium is Windows Vista of Windows XP met SP2 of hoger vereist.</translation>
 <translation id="1967743265616885482">Van een module met dezelfde naam is bekend dat deze conflicteert met Chromium.</translation>
 <translation id="4224199872375172890">Chromium is bijgewerkt.</translation>
@@ -146,6 +144,7 @@ Chromium kan uw instellingen niet herstellen.</translation>
 <translation id="7123348595797445166">Nu proberen (al geïnstalleerd)</translation>
 <translation id="6403826409255603130">Chromium is een webbrowser die webpagina's en applicaties bliksemsnel uitvoert. Chromium is snel, stabiel en eenvoudig in gebruik. Surf veiliger op internet met de in Chromium ingebouwde beveiliging tegen malware en phishing.</translation>
 <translation id="2927042866129133279">Ongeldige argumenten. Chromium Frame kan niet in ready-modus worden geïnstalleerd zonder ook Chromium te installeren.</translation>
+<translation id="546394857889685352">Uw apparaat is bijgewerkt naar <ph name="VERSION"/></translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="442817494342774222">Chromium is geconfigureerd om automatisch te worden gestart als u uw computer opstart.</translation>
 <translation id="8974095189086268230">Chromium OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS"/>open source-software<ph name="END_LINK_CROS_OSS"/>.</translation>

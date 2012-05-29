@@ -2,50 +2,67 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="3595596368722241419">Baterie încărcată complet</translation>
-<translation id="908313544993743941">Dezactivaţi reţeaua mobilă</translation>
+<translation id="5250713215130379958">Ascundeţi automat lansatorul</translation>
 <translation id="30155388420722288">Butonul Overflow</translation>
 <translation id="5571066253365925590">Bluetooth activat</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth dezactivat</translation>
+<translation id="370649949373421643">Activaţi Wi-Fi</translation>
 <translation id="3626281679859535460">Luminozitate</translation>
 <translation id="7982789257301363584">Rețea</translation>
+<translation id="5565793151875479467">Proxy...</translation>
+<translation id="6979158407327259162">Disc Google</translation>
 <translation id="2297568595583585744">Bara de stare</translation>
 <translation id="2946640296642327832">Activaţi Bluetooth</translation>
 <translation id="6596816719288285829">Adresă IP</translation>
-<translation id="289426338439836048">Alte reţele mobile...</translation>
 <translation id="5233638681132016545">Filă nouă</translation>
+<translation id="3846575436967432996">Nu sunt disponibile informaţii despre reţele</translation>
+<translation id="3026237328237090306">Configuraţi datele mobile</translation>
 <translation id="785750925697875037">Afişaţi contul mobil</translation>
+<translation id="8121288016949447968">Tasta Shift + Tasta de căutare</translation>
 <translation id="7864539943188674973">Dezactivaţi Bluetooth</translation>
 <translation id="3126069444801937830">Reporniţi pentru a actualiza</translation>
+<translation id="1525975890706558596">Tasta CAPS LOCK este activată.
+Apăsaţi pe tasta Shift + tasta de căutare pentru a anula.</translation>
 <translation id="8190698733819146287">Personalizați limbile și modul de introducere...</translation>
-<translation id="7911992579061465928">Baterie descărcată</translation>
 <translation id="598295083618286569">Conectat prin Bluetooth</translation>
 <translation id="5222676887888702881">Deconectați-vă</translation>
+<translation id="2091132388437059185">Ascundeţi automat lansatorul când fereastra este maximizată</translation>
+<translation id="425878420164891689">Se calculează timpul până la finalizare</translation>
+<translation id="2964193600955408481">Dezactivaţi Wi-Fi</translation>
 <translation id="811680302244032017">Adăugaţi un dispozitiv...</translation>
+<translation id="2509468283778169019">Tasta CAPS LOCK este activată</translation>
+<translation id="6426039856985689743">Dezactivaţi datele mobile</translation>
 <translation id="3232695630852378748">Setări Bluetooth...</translation>
 <translation id="1480041086352807611">Modul demonstrativ</translation>
 <translation id="4186384497305035875">Acest ecran a fost lăsat necompletat în mod intenţionat</translation>
 <translation id="9089416786594320554">Metode de introducere</translation>
-<translation id="7706302027196209560">Activaţi Wi-Fi</translation>
 <translation id="4430019312045809116">Volum</translation>
+<translation id="1383876407941801731">Căutați</translation>
 <translation id="3557139239102318020">Trageţi în jos pentru a minimiza şi la stânga sau la dreapta pentru a redimensiona</translation>
 <translation id="5980301590375426705">Ieșiţi din sesiunea pentru invitaţi</translation>
 <translation id="8308637677604853869">Meniul anterior</translation>
+<translation id="8528322925433439945">Reţele mobile...</translation>
 <translation id="3595065677684516080">Setări şi ajutor</translation>
 <translation id="4479639480957787382">Ethernet</translation>
+<translation id="7573721444069009535">Wi-Fi...</translation>
+<translation id="6223565363550976998">Baterie: <ph name="PERCENTAGE"/> %</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">Blocaţi</translation>
-<translation id="5836819469861742634">Modificaţi setările proxy...</translation>
+<translation id="2805756323405976993">Aplicații</translation>
 <translation id="2872961005593481000">Închideţi</translation>
-<translation id="8735871257195921372">Altă reţea Wi-Fi...</translation>
-<translation id="2152495481414285304">Aplicaţii</translation>
-<translation id="1690310444231390462">Dezactivaţi Wi-Fi</translation>
-<translation id="77565731175229781">Setări de reţea...</translation>
+<translation id="7052914147756339792">Setaţi o imagine de fundal...</translation>
+<translation id="1602076796624386989">Activaţi datele mobile</translation>
+<translation id="8573351908869164327">Au mai rămas <ph name="HOUR"/> h. <ph name="MINUTE"/> min.</translation>
 <translation id="7029814467594812963">Ieșiţi din sesiune</translation>
-<translation id="7908019422099334890">Setaţi o imagine de fundal...</translation>
+<translation id="2983818520079887040">Setări...</translation>
+<translation id="8660803626959853127">Se sincronizează <ph name="COUNT"/> (de) fişiere</translation>
+<translation id="639644700271529076">Tasta CAPS LOCK este dezactivată</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7841796031898165175">Activaţi reţeaua mobilă</translation>
-<translation id="9072667645353666975">Baterie: <ph name="PERCENTAGE"/> %
-<ph name="HOUR"/> h. <ph name="MINUTE"/> min.</translation>
+<translation id="5045002648206642691">Setări Disc Google...</translation>
 <translation id="48607902311828362">Mod Avion</translation>
+<translation id="5361734574074701223">Se calculează timpul rămas</translation>
+<translation id="9169585155162064169">Tasta CAPS LOCK este activată.
+Apăsaţi pe tasta de căutare pentru a anula.</translation>
+<translation id="412065659894267608"><ph name="HOUR"/> h. <ph name="MINUTE"/> min. până la încărcare completă</translation>
 </translationbundle>

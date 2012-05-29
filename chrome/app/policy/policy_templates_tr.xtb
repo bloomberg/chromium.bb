@@ -140,6 +140,9 @@
       Bu politikayı ayarlarsanız, <ph name="PRODUCT_FRAME_NAME"/> sağlanan dizini kullanır.
 
       Bu şekilde ayarlanmadan bırakılırsa varsayılan profil dizini kullanılır.</translation>
+<translation id="8818173863808665831">Cihazın coğrafi konumunu bildirin.
+
+      Bu politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa konum bildirilmez.</translation>
 <translation id="4899708173828500852">Güvenli Taramayı etkinleştir</translation>
 <translation id="7719251660743813569">Kullanım ölçümlerinin Google'a bildirilip bildirilmeyeceğini denetler. True olarak ayarlanırsa, <ph name="PRODUCT_OS_NAME"/> kullanım ölçümlerini rapor eder. Hiç ayarlanmazsa veya false değerine ayarlanırsa, ölçüm raporlama devre dışı olur.</translation>
 <translation id="3570008976476035109">Bu sitelerde eklentileri engelle</translation>
@@ -260,9 +263,9 @@
 
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
 <translation id="6786747875388722282">Uzantılar</translation>
+<translation id="8947415621777543415">Cihaz konumunu bildir</translation>
 <translation id="1655229863189977773">Disk önbelleği boyutunu bayt olarak ayarla</translation>
 <translation id="6899705656741990703">Proxy ayarlarını otomatik olarak algıla</translation>
-<translation id="4101772068965291327">Ana sayfayı aç</translation>
 <translation id="7003334574344702284">Bu politika etkinleştirildiyse, kaydedilen şifreleri önceki varsayılan tarayıcıdan içe aktarır. Etkinleştirilirse, içe aktarma iletişim kutusunu da etkiler.
 
       Devre dışı bırakılırsa, kaydedilen şifreler içe aktarılmaz.
@@ -344,6 +347,20 @@
       Politika ayarlanmadan bırakılırsa, kullanıcı cihazın kilidini açmak için şifre sorulup sorulmayacağını belirleyebilir.</translation>
 <translation id="6022948604095165524">Başlangıçtaki işlem</translation>
 <translation id="9042911395677044526">Kullanıcılara ayrı ayrı uygulanacak ağ yapılandırmasını bir <ph name="PRODUCT_OS_NAME"/> cihazına iletmeye olanak verir. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL"/> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
+<translation id="7128918109610518786"><ph name="PRODUCT_OS_NAME"/> tarafından başlatıcı çubuğunda sabitlenmiş uygulamalar olarak gösterilen uygulama tanımlayıcılarını listeler.
+
+      Bu politika yapılandırılırsa, uygulama seti sabittir ve kullanıcı tarafından değiştirilemez.
+
+      Bu politika ayarlanmadan bırakılırsa, kullanıcı başlatıcıdaki sabitlenmiş uygulamalar listesini değiştirebilir.</translation>
+<translation id="6177482277304066047">Otomatik Güncellemeler için bir hedef sürüm ayarlar.
+
+      <ph name="PRODUCT_OS_NAME"/> ürününün güncelleneceği hedef sürüm önekini belirtir. Cihazda çalışan sürüm, belirtilen önekten eskiyse, belirtilen öneke sahip en yeni sürüme güncelleme yapılır. Cihazda zaten daha yeni bir sürüm varsa, herhangi bir etkisi olmaz (yani daha eski sürüme geri döndürme işlemi yapılmaz) ve cihaz geçerli sürümde çalışmaya devam eder. Önek biçimi, aşağıdaki örnekte gösterildiği gibi tamamlayıcı şekilde çalışır:
+
+      &quot;&quot; (veya yapılandırılmamış): Varolan en yeni sürüme güncelle.
+      &quot;1412.&quot;: 1412'li herhangi bir sürüme güncelle (örneğin, 1412.24.34 veya 1412.60.2)
+      &quot;1412.2.&quot;: 1412.2'li herhangi bir sürüme güncelle (örneğin, 1412.2.34 veya 1412.2.2)
+      &quot;1412.24.34&quot;: Sadece bu sürüme güncelle
+      </translation>
 <translation id="7625444193696794922">Bu cihazın kilitlenmesi gereken yayın kanalını belirtir.</translation>
 <translation id="2240879329269430151">Web sitelerinin pop-up göstermesine izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Tüm web siteleri için pop-up'ların gösterilmesine izin verilebilir veya tüm web sitelerinin pop-up göstermesi reddedilebilir.
 
@@ -377,6 +394,9 @@
 
       Bu politika ayarlanmadan bırakılırsa, arka plan modu başlangıçta devre dışı olur ve tarayıcı ayarlarında kullanıcı tarafından denetlenebilir.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 veya sonrası</translation>
+<translation id="5148753489738115745"><ph name="PRODUCT_FRAME_NAME"/> tarafından <ph name="PRODUCT_NAME"/> başlatıldığında kullanılan ek parametreleri belirtmenize olanak verir.
+
+          Bu politika ayarlanmazsa varsayılan komut satırı kullanılır.</translation>
 <translation id="2646290749315461919">Web sitelerinin kullanıcının fiziksel konumunu izlemelerine izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Kullanıcıların fiziksel konumunun izlenmesine varsayılan olarak izin verilebilir, bu varsayılan olarak reddedilebilir veya bir web sitesi her fiziksel konum isteğinde bulunduğunda kullanıcıya sorulabilir.
 
           Bu politika ayarlanmadan bırakılırsa, 'AskGeolocation' kullanılır ve kullanıcı bu ayarı değiştirebilir.</translation>
@@ -503,6 +523,19 @@
       Bu politikayı ayarlarsanız, <ph name="PRODUCT_NAME"/>, kullanıcının bir tane belirtip belirtmediğine veya indirme konumunun her defasında sorulmasına ilişkin işareti etkinleştirip etkinleştirmediğine bakmaksızın sağlanan dizini kullanır.
 
       Bu politika ayarlanmadan bırakılırsa, varsayılan indirme dizini kullanılır ve kullanıcı bu ayarı değiştirebilir.</translation>
+<translation id="7750991880413385988">Yeni Sekme Sayfasını aç</translation>
+<translation id="741903087521737762">Başlangıçtaki çalışma biçimini belirlemenize olanak verir.
+
+          'Yeni Sekme Sayfasını aç'ı seçerseniz, <ph name="PRODUCT_NAME"/> ürününü başlattığınızda her zaman Yeni Sekme Sayfası açılır.
+
+          'Son oturumu geri yükle'yi seçerseniz, <ph name="PRODUCT_NAME"/> en son kapatıldığında açık olan URL'ler tekrar açılır ve göz atma oturumu kaldığı yerden geri yüklenir.
+          Bu seçenek kullanıldığında, oturumlara bağlı olan veya çıkışta çeşitli eylemler gerçekleştiren (örneğin, Çıkışta göz atma verilerini veya oturum çerezlerini temizle) bazı ayarlar devre dışı kalır.
+
+          'URL listesi aç'ı seçerseniz, <ph name="PRODUCT_NAME"/> bir kullanıcı tarafından başlatıldığında 'Başlangıçta açılacak olan URL'ler' listesi açılır.
+
+          Bu ayarı etkinleştirirseniz, kullanıcılar bunu <ph name="PRODUCT_NAME"/> içinden değiştiremez veya geçersiz kılamaz.
+
+          Bu ayar devre dışı bırakıldığında, yapılandırmadan bırakmakla aynı sonucu verir. Kullanıcı tarafından <ph name="PRODUCT_NAME"/> içinden değiştirilebilir.</translation>
 <translation id="5761030451068906335"><ph name="PRODUCT_NAME"/> için proxy ayarlarını yapılandırır. Bu politika henüz kullanıma hazır değildir, lütfen kullanmayın.</translation>
 <translation id="8344454543174932833">İlk çalıştırmada yer işaretlerini varsayılan tarayıcıdan içe aktar</translation>
 <translation id="1019101089073227242">Kullanıcı veri dizinini ayarla</translation>
@@ -514,6 +547,7 @@
 
       'Zorlama' seçeneği belirlenirse, sayfalar YALNIZCA Gizli modda açılabilir.</translation>
 <translation id="5085647276663819155">Baskı Önizlemeyi Devre Dışı Bırak</translation>
+<translation id="8672321184841719703">Hedef Otomatik Güncelleme Sürümü</translation>
 <translation id="2030905906517501646">Varsayılan arama sağlayıcı anahtar kelimesi</translation>
 <translation id="3072045631333522102">Perakende modunda oturum açma ekranında kullanılacak ekran koruyucu</translation>
 <translation id="7393895128271703858">Bu politika uygun bulunmamaktadır, lütfen bunun yerine DefaultJavaScriptSetting politikasını kullanın.
@@ -730,6 +764,7 @@
 <translation id="2299220924812062390">Etkinleştirilmiş eklentilerin listesini belirt</translation>
 <translation id="924557436754151212">İlk çalıştırmada kayıtlı şifreleri varsayılan tarayıcıdan içe aktar</translation>
 <translation id="1897365952389968758">Tüm sitelerin JavaScript çalıştırmasına izin ver</translation>
+<translation id="7323896582714668701"><ph name="PRODUCT_NAME"/> için ek komut satırı parametreleri</translation>
 <translation id="6931242315485576290">Google ile veri senkronizasyonunu devre dışı bırak</translation>
 <translation id="36674322972891584"><ph name="PRODUCT_NAME"/> ürünündeki ağ tahminini etkinleştirir ve kullanıcıların bu ayarı değiştirmesini önler.
 
@@ -755,6 +790,7 @@
 
           Örneğin, kalıplar için bkz. http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Proxy sunucu ayarlarının nasıl belirtileceğini seç</translation>
+<translation id="1803646570632580723">Başlatıcıda gösterilecek sabitlenmiş uygulamalar listesi</translation>
 <translation id="7774768074957326919">Sistem proxy ayarlarını kullan</translation>
 <translation id="3891357445869647828">JavaScript’i Etkinleştir</translation>
 <translation id="868187325500643455">Tüm sitelerin eklentileri otomatik olarak çalıştırmasına izin ver</translation>
@@ -928,16 +964,4 @@
       Bu ayar etkinleştirilirse veya yapılandırılmazsa, kullanıcılar <ph name="PRODUCT_NAME"/> yazdırma iletişim kutusundan <ph name="CLOUD_PRINT_NAME"/> öğesine yazdırma işlemi gerçekleştirebilir.
 
       Bu ayar devre dışı bırakılırsa, kullanıcılar <ph name="PRODUCT_NAME"/> yazdırma iletişim kutusundan <ph name="CLOUD_PRINT_NAME"/> öğesine yazdırma işlemi gerçekleştiremez</translation>
-<translation id="2339225390014743328">Cihaz başladığında olmasını istediğiniz çalışma biçimini belirtmenize olanak verir.
-
-          'Ana sayfayı aç'ı seçerseniz, <ph name="PRODUCT_NAME"/> ürününü her başlattığınızda ana sayfa açılır.
-
-          'Son oturumu geri yükle'yi seçerseniz, <ph name="PRODUCT_NAME"/> en son kapatıldığında açık olan URL'ler yeniden açılır ve göz atma oturumu olduğu gibi geri yüklenir.
-          Bu seçenek belirtildiğinde, oturumlara bağlı olan veya çıkışta bazı işlemler (örneğin, çıkışta Gözatma verilerini veya sadece oturum çerezlerini temizleme) yapan bazı ayarlar devre dışı bırakılır.
-
-          'URL'lerin listesini aç'ı seçerseniz, <ph name="PRODUCT_NAME"/> bir kullanıcı tarafından başlatıldığında 'Başlangıçta açılacak UR'lerin listesi' açılır.
-
-          Bu ayarı etkinleştirirseniz, kullanıcılar bu ayarı <ph name="PRODUCT_NAME"/> üzerinde değiştiremez veya yok sayamaz.
-
-          Bu ayarı devre dışı bırakmak, yapılandırılmamış olarak bırakmakla aynı şeydir. Kullanıcı <ph name="PRODUCT_NAME"/> üzerinde bu ayarı değiştirebilir.</translation>
 </translationbundle>

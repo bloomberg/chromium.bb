@@ -3,7 +3,6 @@
 <translationbundle lang="es">
 <translation id="6676384891291319759">Accede a Internet.</translation>
 <translation id="6373523479360886564">¿Seguro que quieres desinstalar Chromium?</translation>
-<translation id="8957741245723343544">Los cambios se aplicarán la próxima vez que reinicies Chromium OS.</translation>
 <translation id="6510925080656968729">Desinstalar Chromium</translation>
 <translation id="6893813176749746474">Chromium se ha actualizado, pero llevas al menos 30 días sin utilizarlo.</translation>
 <translation id="2770231113462710648">Cambiar navegador predeterminado por:</translation>
@@ -13,7 +12,6 @@
 <translation id="1065672644894730302">No se pueden leer tus preferencias.
 
 Es posible que algunas funciones no estén disponibles y que no se guarden los cambios que hagas en las preferencias.</translation>
-<translation id="2469082501656808441">Hay una nueva versión de Chromium disponible.</translation>
 <translation id="4222661289444749267">Actualización de Chromium Frame</translation>
 <translation id="2843244238218937196">Chromium Renderer</translation>
 <translation id="7128196614940529818">Chromium Frame ya está instalado y disponible para todos los usuarios de este ordenador. Si quieres instalar Chromium Frame a nivel de usuario, primero debes desinstalar la versión a nivel de sistema instalada por un administrador.</translation>
@@ -28,13 +26,12 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4285930937574705105">La instalación ha fallado debido a un error no especificado. Si Chromium se está ejecutando, ciérralo y vuelve a intentarlo.</translation>
 <translation id="2589479092236095792">Configuración de la función Autocompletar de Chromium</translation>
 <translation id="3555616473548901994">Desinstalación completada</translation>
-<translation id="2940837712536340734">Chromium OS está actualizado.</translation>
 <translation id="2886012850691518054">Opcional: ayudar a mejorar Chromium enviando automáticamente a Google estadísticas de uso e informes de errores</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el certificado que presentó el servidor contiene errores. Chromium no puede utilizar un certificado con errores y no se puede validar la identidad del sitio al que intentaste conectarte.</translation>
 <translation id="3103660991484857065">El programa de instalación no ha podido descomprimir el archivo. Vuelve a descargar Chromium.</translation>
-<translation id="2933983827758164650">Si cierras Chromium ahora, esta descarga se cancelará.</translation>
 <translation id="872034308864968620">Permitir que Chromium se ejecute en segundo plano</translation>
+<translation id="5109068449432240255">Sí, salir de Chromium</translation>
 <translation id="4320129595801648679">Se ha cambiado el diseño de la página Nueva pestaña de Chromium. Pasa de una sección a otra haciendo clic en las etiquetas. Chromium recordará tus preferencias la próxima vez.</translation>
 <translation id="3032787606318309379">Añadiendo a Chromium...</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advertencia:<ph name="END_BOLD"/> Chromium no puede evitar que las extensiones registren el historial de búsqueda. Para inhabilitar la ejecución de esta extensión en modo incógnito, desactiva la casilla correspondiente a esta opción.</translation>
@@ -47,10 +44,11 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4330585738697551178">Se ha detectado que este módulo provoca un conflicto con Chromium.</translation>
 <translation id="3190315855212034486">¡Vaya! Se ha producido un fallo en Chromium. ¿Quieres reiniciar el navegador ahora?</translation>
 <translation id="6714487516757221107">No se han encontrado actualizaciones de Chromium ni de Chromium Frame.</translation>
+<translation id="3197823471738295152">El dispositivo está actualizado.</translation>
+<translation id="8551886023433311834">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="4124681358536363708">Parece que el directorio de instalación de Chromium se encuentra en uso. Reinicia el ordenador y vuelve a intentarlo.</translation>
 <translation id="8770560772173120024">Chromium está importando favoritos/marcadores.</translation>
 <translation id="6290315939897260265">No se utiliza en Chromium. Marcador de posición para mantener sincronizados los mapas de recursos.</translation>
-<translation id="2977470724722393594">Chromium está actualizado.</translation>
 <translation id="9191268552238695869">Un administrador ha instalado Chromium en este sistema y está disponible para todos los usuarios. La versión de Chromium a nivel de usuario se sustituirá por la versión a nivel de sistema.</translation>
 <translation id="3509308970982693815">Cierra todas las ventanas de Chromium e inténtalo de nuevo.</translation>
 <translation id="4077262827416206768">Cierra todas las ventanas de Chromium y vuelve a iniciarlo para que se aplique el cambio.</translation>
@@ -60,7 +58,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="118298050220780080">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor presentó un certificado emitido por una entidad que el sistema operativo del ordenador no tiene registrada como entidad de confianza. Esta incidencia se puede deber a que el servidor haya generado sus propias credenciales de seguridad (en las que Chromium no puede confiar para confirmar la autenticidad del sitio) o a que un hacker esté intentando interceptar tus comunicaciones.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Seguir ejecutando aplicaciones en segundo plano al cerrar Chromium</translation>
-<translation id="2918265831258045091">¿Quieres salir de Chromium aunque haya una descarga en curso?</translation>
 <translation id="6055895534982063517">Hay una nueva versión de Chromium disponible que funciona a una velocidad sin precedentes.</translation>
 <translation id="2407806170074302369">Acerca de Chromium Frame...</translation>
 <translation id="5405650547142096840">Eliminar de Chromium</translation>
@@ -70,6 +67,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4932687624772039103">Chromium no es compatible con <ph name="OS_NAME"/>.</translation>
 <translation id="8738921060445980047">Versión desconocida</translation>
+<translation id="6970811910055250180">Actualizando el dispositivo...</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="85843667276690461">Obtener ayuda para utilizar Chromium</translation>
 <translation id="263863604136125912">Iniciar Chromium</translation>
@@ -87,7 +85,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">No volver a preguntarme</translation>
-<translation id="7700951445648533795">¿Quieres salir de Chromium aunque haya <ph name="DOWNLOAD_COUNT"/> descargas en curso?</translation>
 <translation id="275588974610408078">Los informes de errores no se encuentran disponibles en Chromium.</translation>
 <translation id="5909170354645388250">No se utiliza en Chromium. Marcador de posición para mantener sincronizados los mapas de recursos. Se espera un único argumento: $1.</translation>
 <translation id="3582788516608077514">Actualizando Chromium...</translation>
@@ -98,7 +95,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2648074677641340862">Se ha producido un error de sistema operativo durante el proceso de instalación. Vuelve a descargar Chromium.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> se ha añadido a Chromium.</translation>
 <translation id="8678787945719392857">¿Quieres utilizar esta cuenta de Google para sincronizar todos los elementos de Chromium?</translation>
-<translation id="5974438302735098483">Chromium se ha actualizado.</translation>
 <translation id="8621669128220841554">La instalación ha fallado debido a un error no especificado. Vuelve a descargar Chromium.</translation>
 <translation id="6717134281241384636">No se puede utilizar tu perfil porque procede de una versión de Chromium más actualizada.
 
@@ -108,8 +104,8 @@ Es posible que algunas funciones no estén disponibles. Especifica un directorio
 <translation id="6212496753309875659">Este ordenador ya cuenta con una versión más reciente de Chromium. Si el software no funciona, desinstala Chromium y vuelve a intentarlo.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>
 <translation id="1298199220304005244">Obtener ayuda para utilizar Chromium OS</translation>
-<translation id="667672506951335584">Si cierras Chromium ahora, estas descargas se cancelarán.</translation>
 <translation id="1691304614444223855">Se ha actualizado Chromium Frame. Reinicia el navegador. Versión de Chromium: <ph name="TODO_0001"/>; Versión de Chromium Frame: <ph name="TODO_0002"/></translation>
+<translation id="130631256467250065">Los cambios se aplicarán la próxima vez que reinicies el dispositivo.</translation>
 <translation id="1105130903706696483">Chromium no se cerró correctamente. Para volver a abrir las páginas que tenías abiertas, haz clic en Restaurar.</translation>
 <translation id="1929939181775079593">Chromium no responde. ¿Quieres reiniciarlo ahora?</translation>
 <translation id="6089587093203430357">Instant</translation>
@@ -123,18 +119,20 @@ Es posible que algunas funciones no estén disponibles. Especifica un directorio
 <translation id="8865765905101981392">Navegador de Internet</translation>
 <translation id="2910007522516064972">Acerca de &amp;Chromium</translation>
 <translation id="8453117565092476964">El archivo de instalación está dañado o no es válido. Vuelve a descargar Chromium.</translation>
-<translation id="309634601461115233">Sal de Chromium OS y vuelve a iniciar sesión para que se aplique el cambio.</translation>
 <translation id="3249425904492147663">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor ha presentado un certificado caducado. No disponemos de información que indique si el certificado se ha visto vulnerado desde que caducó. Esto significa que Chromium no puede garantizar que estés estableciendo una comunicación con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; y no con un hacker. Actualmente, el reloj de tu ordenador marca las <ph name="CURRENT_TIME"/>. ¿Esta información es correcta? Si no lo es, debes corregir el error y actualizar la página.</translation>
 <translation id="7196020411877309443">¿Por qué aparece este mensaje?</translation>
 <translation id="7483335560992089831">No se puede instalar la misma versión de Chromium que se está ejecutando actualmente. Cierra Chromium y vuelve a intentarlo.</translation>
 <translation id="7641113255207688324">Chromium no es tu navegador predeterminado.</translation>
+<translation id="4458285410772214805">Cierra la sesión y vuelve a iniciarla para que se aplique el cambio.</translation>
 <translation id="2174090135251659490">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor presentó un certificado que ya no es válido. No disponemos de información que indique si el certificado es fiable. Chromium no puede garantizar de manera fiable que estés estableciendo una comunicación con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; y no con un hacker. Actualmente, el reloj de tu ordenador marca las <ph name="CURRENT_TIME"/>. ¿Esta información es correcta? Si no lo es, debes corregir el error y actualizar la página.</translation>
 <translation id="2119636228670142020">Acerca de &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Hay disponible una nueva versión más segura de Chromium.</translation>
 <translation id="5859758987635973787">Chromium está actualizado (<ph name="VERSION"/>).</translation>
 <translation id="8616882682724010661">Conoce <ph name="BEGIN_LINK"/>otras ventajas<ph name="END_LINK"/> de las que puedes disfrutar al iniciar sesión en Chromium.</translation>
 <translation id="378917192836375108">Chromium te permite hacer clic en un número de teléfono en la Web y llamar mediante Skype.</translation>
+<translation id="8724049448828509830">Hay una descarga está en curso. ¿Quieres salir de Chromium y cancelarla?</translation>
 <translation id="7503101070699687603">Chromium Plug-In Host</translation>
+<translation id="2739631515503418643">Actualmente hay descargas en curso. ¿Quieres salir de Chromium y cancelarlas?</translation>
 <translation id="9013262824292842194">Chromium está disponible para Windows Vista o Windows XP con SP2 o superior.</translation>
 <translation id="1967743265616885482">Se ha detectado que un módulo con el mismo nombre provoca un conflicto con Chromium.</translation>
 <translation id="4224199872375172890">Chromium está actualizado.</translation>
@@ -147,6 +145,7 @@ Chromium no puede recuperar tu configuración.</translation>
 <translation id="7123348595797445166">Probarlo (ya instalado)</translation>
 <translation id="6403826409255603130">Chromium es un navegador web que ejecuta páginas web y aplicaciones a gran velocidad. Es rápido, estable y fácil de utilizar. Chromium te permite navegar en la Web de forma más segura, ya que incluye protección contra software malintencionado y phishing.</translation>
 <translation id="2927042866129133279">Los argumentos no son válidos. Chromium Frame no se puede instalar en modo listo sin instalar también Chromium.</translation>
+<translation id="546394857889685352">El dispositivo se ha actualizado a la versión <ph name="VERSION"/>.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="442817494342774222">Chromium está configurado para abrirse automáticamente cuando se inicia el ordenador.</translation>
 <translation id="8974095189086268230">Chromium OS se ha creado gracias a <ph name="BEGIN_LINK_CROS_OSS"/>software libre<ph name="END_LINK_CROS_OSS"/> adicional.</translation>

@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="248395913932153421">Ден</translation>
+<translation id="6015796118275082299">Година</translation>
 <translation id="9186171386827445984">Документът се зарежда: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> страници...</translation>
 <translation id="1235745349614807883">Изчистване на скорошните търсения</translation>
 <translation id="1171774979989969504">Моля, въведете имейл адрес.</translation>
@@ -21,6 +23,8 @@
 <translation id="3040011195152428237">връзка</translation>
 <translation id="4522570452068850558">Подробности</translation>
 <translation id="8451268428117625855">Моля, изберете файл.</translation>
+<translation id="2674318244760992338">долен колонтитул</translation>
+<translation id="8987927404178983737">Месец</translation>
 <translation id="7364796246159120393">Избор на файл</translation>
 <translation id="2761667185364618470">Моля, поставете отметка в това квадратче, ако искате да продължите.</translation>
 <translation id="8964020114565522021">Плъзнете файла тук</translation>
@@ -28,6 +32,7 @@
 <translation id="2846343701378493991">1024 (средна степен на сложност)</translation>
 <translation id="1637811476055996098">Избор на файлове</translation>
 <translation id="5476505524087279545">премахване на отметката</translation>
+<translation id="2148716181193084225">Днес</translation>
 <translation id="2507943997699731163">Моля, попълнете това поле.</translation>
 <translation id="5919473608089529604">Приставката не можа да се зареди.</translation>
 <translation id="6663448176199120256">Скорошни търсения</translation>
@@ -44,6 +49,7 @@
 <translation id="3450233048674729344">Стойността трябва да е по-малка или равна на <ph name="MAXIMUM"/>.</translation>
 <translation id="6119846243427417423">активиране</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> файла</translation>
+<translation id="6643016212128521049">Изчистване</translation>
 <translation id="3934680773876859118">PDF документът не успя да се зареди</translation>
 <translation id="8597182159515967513">заглавие</translation>
 <translation id="2653659639078652383">Изпращане</translation>

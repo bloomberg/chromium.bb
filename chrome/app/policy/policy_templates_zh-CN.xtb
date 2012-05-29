@@ -78,6 +78,9 @@
       如果您设置了此政策，<ph name="PRODUCT_FRAME_NAME"/>将使用提供的目录。
 
       如果未设置此政策，系统将使用默认配置文件目录。</translation>
+<translation id="8818173863808665831">报告设备的地理位置。
+
+      如果未设置此政策或将其设为 false，系统将不会报告相关位置。</translation>
 <translation id="4899708173828500852">启用安全浏览</translation>
 <translation id="7719251660743813569">控制是否要将使用情况指标报告回 Google。如果将此政策设置为 true，<ph name="PRODUCT_OS_NAME"/>将报告使用情况指标。如果未配置此政策或将其设置为 false，指标报告就会停用。</translation>
 <translation id="3570008976476035109">在这些网站上阻止插件</translation>
@@ -137,9 +140,9 @@
 <translation id="5776485039795852974">每次网站尝试显示桌面通知时都询问</translation>
 <translation id="5052081091120171147">如果启用此政策，就会强制从当前默认浏览器导入浏览历史记录，还会影响导入对话框。如果停用此政策，就不会导入浏览历史记录。如果未设置此政策，系统就会询问用户是否导入浏览历史记录，或者系统自动进行导入。</translation>
 <translation id="6786747875388722282">扩展程序</translation>
+<translation id="8947415621777543415">报告设备位置</translation>
 <translation id="1655229863189977773">设置磁盘缓存大小（字节）</translation>
 <translation id="6899705656741990703">自动检测代理设置</translation>
-<translation id="4101772068965291327">打开主页</translation>
 <translation id="7003334574344702284">如果启用此政策，就会强制从先前的默认浏览器导入已保存的密码，还会影响导入对话框。如果停用此政策，就不会导入已保存的密码。如果未设置此政策，系统就会询问用户是否导入已保存的密码，或者系统自动进行导入。</translation>
 <translation id="6258193603492867656">指定生成的 Kerberos SPN 是否应包括非标准端口。如果您启用了此设置，并输入某个非标准端口（即除 80 或 443 以外的端口），该端口就会包括在生成的 Kerberos SPN 中。如果您停用或未配置此设置，生成的 Kerberos SPN 在任何情况下都不会包括端口。</translation>
 <translation id="8992176907758534924">不允许任何网站显示图片</translation>
@@ -187,6 +190,20 @@
       如果未设置此政策，用户就可以选择是否要通过输入密码来解锁设备。</translation>
 <translation id="6022948604095165524">启动时的操作</translation>
 <translation id="9042911395677044526">允许将要按用户应用的网络配置推送到 <ph name="PRODUCT_OS_NAME"/>设备。网络配置是 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL"/> 中的开放网络配置格式所述。</translation>
+<translation id="7128918109610518786">列出 <ph name="PRODUCT_OS_NAME"/>在启动程序栏中显示为固定应用的应用标识符。
+
+      如果配置此政策，系统将会固定该组应用且不允许用户进行更改。
+
+      如果未设置此政策，用户就可以在启动程序中更改固定应用的列表。</translation>
+<translation id="6177482277304066047">设置自动更新的目标版本。
+
+      指定 <ph name="PRODUCT_OS_NAME"/>应更新到的目标版本的前缀。如果设备运行的版本早于指定的前缀，那么该设备将更新到采用指定前缀的最新版本。如果设备运行的已经是较新版本，则不会产生任何效果（即不会执行任何下载操作），并且该设备将继续采用当前版本。前缀格式以组件的方式工作，具体如以下示例所示：
+
+      “”（或未配置）：更新到提供的最新版本。
+      “1412.”：更新到 1412 的任意次要版本（例如 1412.24.34 或 1412.60.2）
+      “1412.2.”：更新到 1412.2 的任意次要版本（例如 1412.2.34 或 1412.2.2）
+      “1412.24.34”：仅更新到此特定版本
+      </translation>
 <translation id="7625444193696794922">指定该设备应锁定到的发布渠道。</translation>
 <translation id="2240879329269430151">可让您设置是否允许网站显示弹出式窗口。可以针对所有网站允许或拒绝显示弹出式窗口。如果未设置此政策，系统将使用“BlockPopups”并允许用户更改此设置。</translation>
 <translation id="5289914968905023866">阻止访问列出的网址。该政策禁止用户从列入黑名单的网址加载网页。网址格式为“scheme://host:port/path”。其中可选的 scheme 部分可以是 HTTP、HTTPS 或 FTP。只有指定的 scheme 会遭到阻止；如果未指定，则会阻止所有 scheme。host 部分可以是主机名，也可以是 IP 地址。主机名的子域也会遭到阻止。如果不想阻止子域，请在主机名前加上“.”。特殊的主机名“*”会阻止所有域。可选的 port 部分是介于 1 与 65535 之间的有效端口号。如果未指定，则会阻止所有端口。如果指定了可选的 path 部分，只会阻止带有相应前缀的路径。您可在网址白名单政策中定义例外。这些政策的条目上限为 100，超出的条目将被忽略。如果未设置此政策，浏览器就不会将任何网址列入黑名单。</translation>
@@ -200,6 +217,9 @@
 
       如果未设置此政策，后台模式会处于初始的停用状态，用户可以在浏览器设置中控制该模式。</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更高版本</translation>
+<translation id="5148753489738115745">可让您指定在 <ph name="PRODUCT_FRAME_NAME"/>启动 <ph name="PRODUCT_NAME"/>时所使用的其他参数。
+
+          如果未设置此政策，系统将会使用默认命令行。</translation>
 <translation id="2646290749315461919">可让您设置是否允许网站跟踪用户的地理位置。默认情况下，可以允许或拒绝跟踪用户的地理位置，也可以在每次网站请求地理位置时询问用户。如果未设置此政策，系统将使用“AskGeolocation”并允许用户更改此设置。</translation>
 <translation id="5770738360657678870">开发人员版（可能不稳定）</translation>
 <translation id="2959898425599642200">代理绕过规则</translation>
@@ -262,6 +282,19 @@
 <translation id="717221064259627503">配置 <ph name="PRODUCT_NAME"/>用于在磁盘上存储缓存文件的目录。如果您设置了此政策，那么无论用户是否指定“--disk-cache-dir”标记，<ph name="PRODUCT_NAME"/>都会使用提供的目录。如果未设置此政策，系统将使用默认缓存目录，并允许用户通过“--disk-cache-dir”命令行标记替换此目录。</translation>
 <translation id="2312134445771258233">允许您配置在启动时载入的页面。除非您在“启动时的操作”中选择“打开网址列表”，否则系统会忽略“启动时打开的网址”列表中的内容。</translation>
 <translation id="2538628396238281971">配置 <ph name="PRODUCT_NAME"/>用于下载文件的目录。如果您设置了此政策，那么无论用户是否指定某个目录，也无论用户是否启用在每次下载时都提示下载位置的标记，<ph name="PRODUCT_NAME"/>都会使用提供的目录。如果未设置此政策，系统将使用默认下载目录，并允许用户更改此目录。</translation>
+<translation id="7750991880413385988">打开新标签页</translation>
+<translation id="741903087521737762">可让您指定启动时的行为。
+
+          如果您选择“打开新标签页”，系统就会始终在您启动 <ph name="PRODUCT_NAME"/>时打开新标签页。
+
+          如果您选择“恢复上次的会话”，系统就会重新打开 <ph name="PRODUCT_NAME"/>上次关闭时已打开的网址并将浏览会话恢复到关闭前的状态。
+          选择此选项会停用某些设置，这些设置依赖于会话或在退出时执行操作（例如，在退出时清除浏览数据，或清除仅在会话期间有效的 Cookie）。
+
+          如果您选择“打开网址列表”，系统就会在用户启动 <ph name="PRODUCT_NAME"/>时打开“启动时打开的网址”列表。
+
+          如果您启用此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中对其进行更改或替换。
+
+          停用此设置与未配置的效果相同。用户仍可以在 <ph name="PRODUCT_NAME"/>中对其进行更改。</translation>
 <translation id="5761030451068906335">配置 <ph name="PRODUCT_NAME"/>的代理设置。
 
       此政策尚未做好投入使用的准备，请勿使用。</translation>
@@ -269,6 +302,7 @@
 <translation id="1019101089073227242">设置用户数据目录</translation>
 <translation id="5826047473100157858">指定用户是否可以在 <ph name="PRODUCT_NAME"/>中以隐身模式打开网页。如果选择“已启用”或未设置此政策，则允许以隐身模式打开网页。如果选择“已停用”，则不能以隐身模式打开网页。如果选择“强制”，则只能以隐身模式打开网页。</translation>
 <translation id="5085647276663819155">停用打印预览</translation>
+<translation id="8672321184841719703">目标自动更新版本</translation>
 <translation id="2030905906517501646">默认搜索服务提供商关键字</translation>
 <translation id="3072045631333522102">用于零售模式登录屏幕的屏幕保护程序</translation>
 <translation id="7393895128271703858">此政策已弃用，请改用 DefaultJavaScriptSetting。在 <ph name="PRODUCT_NAME"/>中启用 JavaScript，并禁止用户更改此设置。如果已启用或未配置此设置，网页就可以使用 JavaScript。如果停用此设置，网页就无法使用 JavaScript。如果未设置此政策，系统将使用默认值（即启用）并允许用户更改此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
@@ -379,6 +413,7 @@
 <translation id="2299220924812062390">指定已启用插件的列表</translation>
 <translation id="924557436754151212">首次运行时，从默认浏览器导入保存的密码</translation>
 <translation id="1897365952389968758">允许所有网站运行 JavaScript</translation>
+<translation id="7323896582714668701">适用于 <ph name="PRODUCT_NAME"/>的其他命令行参数</translation>
 <translation id="6931242315485576290">停用与 Google 同步数据的功能</translation>
 <translation id="36674322972891584">在 <ph name="PRODUCT_NAME"/>中启用网络预测，并禁止用户更改此设置。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
 <translation id="7006788746334555276">内容设置</translation>
@@ -390,6 +425,7 @@
 <translation id="187819629719252111">允许 <ph name="PRODUCT_NAME"/>显示文件选择对话框，从而允许用户访问计算机上的本地文件。如果您启用了此设置，用户就可以正常地打开文件选择对话框。如果您停用了此设置，那么只要用户执行了会触发文件选择对话框的操作（如导入书签、上传文件、保存链接等），系统就会显示一条讯息，并且假定用户已在该文件选择对话框中点击了“取消”。如果您未设定此设置，用户就可以正常地打开文件选择对话框。</translation>
 <translation id="4507081891926866240">自定义应始终由 <ph name="PRODUCT_FRAME_NAME"/>呈现的网址格式的列表。如果未设置此政策，系统将按照“ChromeFrameRendererSettings”政策的规定，对所有网站使用默认呈现器。要查看示例格式，请访问 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="3101501961102569744">选择如何指定代理服务器设置</translation>
+<translation id="1803646570632580723">要在启动程序中显示的固定应用的列表</translation>
 <translation id="7774768074957326919">使用系统代理设置</translation>
 <translation id="3891357445869647828">启用 JavaScript</translation>
 <translation id="868187325500643455">允许所有网站自动运行插件</translation>
@@ -475,16 +511,4 @@
 <translation id="5645779841392247734">在这些网站上允许 Cookie</translation>
 <translation id="8220342550735772883">配置 <ph name="PRODUCT_NAME"/>用于在磁盘上存储缓存媒体文件的缓存大小。如果您设置了此政策，那么无论用户是否指定“--media-cache-size”标记，<ph name="PRODUCT_NAME"/>都会使用提供的缓存大小。如果此政策的值为 0，系统将使用默认缓存大小，但不允许用户更改大小。如果未设置此政策，系统将使用默认缓存大小，并允许用户通过“--media-cache-size”标记替换此大小。</translation>
 <translation id="7049373494483449255">允许 <ph name="PRODUCT_NAME"/>将文档提交到 <ph name="CLOUD_PRINT_NAME"/>进行打印。请注意：这只会影响 <ph name="PRODUCT_NAME"/>中的 <ph name="CLOUD_PRINT_NAME"/>支持，并不会禁止用户在网站上提交打印作业。如果启用或未配置此设置，用户就可以通过 <ph name="PRODUCT_NAME"/>的打印对话框使用 <ph name="CLOUD_PRINT_NAME"/>进行打印。如果停用此设置，用户就无法通过 <ph name="PRODUCT_NAME"/>的打印对话框使用 <ph name="CLOUD_PRINT_NAME"/>进行打印。</translation>
-<translation id="2339225390014743328">可让您指定启动时的行为。
-
-          如果您选择“打开主页”，系统就会始终在您启动 <ph name="PRODUCT_NAME"/>时打开主页。
-
-          如果您选择“恢复上次的会话”，系统就会重新打开 <ph name="PRODUCT_NAME"/>上次关闭时已打开的网址并将浏览会话恢复到关闭前的状态。
-          选择此选项会停用某些设置，这些设置依赖于会话或在退出时执行操作（例如，在退出时清除浏览数据，或仅在会话期间有效的 Cookie）。
-
-          如果您选择“打开网址列表”，系统就会在用户启动 <ph name="PRODUCT_NAME"/>时打开“启动时打开的网址”列表。
-
-          如果您启用此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中对其进行更改或替换了。
-
-          停用此设置与未配置的效果相同。用户仍可以在 <ph name="PRODUCT_NAME"/>中对其进行更改。</translation>
 </translationbundle>

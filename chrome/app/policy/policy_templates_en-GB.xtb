@@ -146,6 +146,9 @@
       If you set this policy, <ph name="PRODUCT_FRAME_NAME"/> will use the provided directory.
 
       If this setting is left not set, the default profile directory will be used.</translation>
+<translation id="8818173863808665831">Report the geographic location of the device.
+
+      If the policy is not set or set to false, the location will not be reported.</translation>
 <translation id="4899708173828500852">Enable Safe Browsing</translation>
 <translation id="7719251660743813569">Controls whether usage metrics are reported back to Google. If set to true, <ph name="PRODUCT_OS_NAME"/> will report usage metrics. If not configured or set to false, metrics reporting will be disabled.</translation>
 <translation id="3570008976476035109">Block plug-ins on these sites</translation>
@@ -266,9 +269,9 @@
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="6786747875388722282">Extensions</translation>
+<translation id="8947415621777543415">Report device location</translation>
 <translation id="1655229863189977773">Set disk cache size in bytes</translation>
 <translation id="6899705656741990703">Auto detect proxy settings</translation>
-<translation id="4101772068965291327">Open home page</translation>
 <translation id="7003334574344702284">This policy forces the saved passwords to be imported from the previous default browser, if enabled. If enabled, this policy also affects the import dialogue.
 
       If disabled, the saved passwords are not imported.
@@ -350,6 +353,20 @@
       If the policy is left not set, the user can choose whether he wants to be asked for password to unlock the device or not.</translation>
 <translation id="6022948604095165524">Action on start-up</translation>
 <translation id="9042911395677044526">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME"/> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Lists the application identifiers <ph name="PRODUCT_OS_NAME"/> shows as pinned apps in the launcher bar.
+
+      If this policy is configured, the set of applications is fixed and can't be changed by the user.
+
+      If this policy is left unset, the user may change the list of pinned apps in the launcher.</translation>
+<translation id="6177482277304066047">Sets a target version for Auto-Updates.
+
+      Specifies the prefix of a target version <ph name="PRODUCT_OS_NAME"/> should update to. If the device is running a version that's before the specified prefix, it will update to the latest version with the given prefix. If the device is already on a later version, there is no effect (i.e. no downgrades are performed) and the device will remain on the current version. The prefix format works component-wise as is demonstrated in the following example:
+
+      &quot;&quot; (or not configured): update to latest version available.
+      &quot;1412.&quot;: update to any minor version of 1412 (e.g. 1412.24.34 or 1412.60.2)
+      &quot;1412.2.&quot;: update to any minor version of 1412.2 (e.g. 1412.2.34 or 1412.2.2)
+      &quot;1412.24.34&quot;: update to this specific version only
+      </translation>
 <translation id="7625444193696794922">Specifies the release channel that this device should be locked to.</translation>
 <translation id="2240879329269430151">Allows you to set whether websites are allowed to show pop-ups. Showing pop-ups can be either allowed for all websites or denied for all websites.
 
@@ -385,6 +402,9 @@
 
       If this policy is left unset, background mode is initially disabled and can be controlled by the user in the browser settings.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 or later</translation>
+<translation id="5148753489738115745">Allows you to specify additional parameters that are used when <ph name="PRODUCT_FRAME_NAME"/> launches <ph name="PRODUCT_NAME"/>.
+
+          If this policy is not set the default command line will be used.</translation>
 <translation id="2646290749315461919">Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.
 
           If this policy is left not set, 'AskGeolocation' will be used and the user will be able to change it.</translation>
@@ -518,6 +538,19 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you set this policy, <ph name="PRODUCT_NAME"/> will use the provided directory regardless whether the user has specified one or enabled the flag to be prompted for download location every time.
 
       If this policy is left unset, the default download directory will be used and the user will be able to change it.</translation>
+<translation id="7750991880413385988">Open New Tab Page</translation>
+<translation id="741903087521737762">Allows you to specify the behaviour on start-up.
+
+          If you choose 'Open New Tab Page' the New Tab Page will always be opened when you start <ph name="PRODUCT_NAME"/>.
+
+          If you choose 'Restore the last session', the URLs that were open last time <ph name="PRODUCT_NAME"/> was closed will be reopened and the browsing session will be restored as it was left.
+          Choosing this option disables some settings that rely on sessions or that perform actions on exit (such as Clear browsing data on exit or session-only cookies).
+
+          If you choose 'Open a list of URLs', the list of 'URLs to open on start-up' will be opened when a user starts <ph name="PRODUCT_NAME"/>.
+
+          If you enable this setting, users cannot change or override it in <ph name="PRODUCT_NAME"/>.
+
+          Disabling this setting is equivalent to leaving it not configured. The user will still be able to change it in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Configures the proxy settings for <ph name="PRODUCT_NAME"/>.
 
       This policy isn't ready for usage yet, please don't use it.</translation>
@@ -531,6 +564,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If 'Forced' is selected, pages may be opened ONLY in Incognito mode.</translation>
 <translation id="5085647276663819155">Disable Print Preview</translation>
+<translation id="8672321184841719703">Target Auto-Update Version</translation>
 <translation id="2030905906517501646">Default search provider keyword</translation>
 <translation id="3072045631333522102">Screen saver to be used on the sign-in screen in retail mode</translation>
 <translation id="7393895128271703858">This policy is deprecated, please use DefaultJavaScriptSetting instead.
@@ -757,6 +791,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="2299220924812062390">Specify a list of enabled plug-ins</translation>
 <translation id="924557436754151212">Import saved passwords from default browser on first run</translation>
 <translation id="1897365952389968758">Allow all sites to run JavaScript (recommended)</translation>
+<translation id="7323896582714668701">Additional command line parameters for <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Disable synchronisation of data with Google</translation>
 <translation id="36674322972891584">Enables network prediction in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
 
@@ -782,6 +817,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Choose how to specify proxy server settings</translation>
+<translation id="1803646570632580723">List of pinned apps to show in the launcher</translation>
 <translation id="7774768074957326919">Use system proxy settings</translation>
 <translation id="3891357445869647828">Enable JavaScript</translation>
 <translation id="868187325500643455">Allow all sites to automatically run plug-ins</translation>
@@ -971,16 +1007,4 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       If this setting is enabled or not configured, users can print to <ph name="CLOUD_PRINT_NAME"/> from the <ph name="PRODUCT_NAME"/> print dialogue.
 
       If this setting is disabled, users cannot print to <ph name="CLOUD_PRINT_NAME"/> from the <ph name="PRODUCT_NAME"/> print dialogue</translation>
-<translation id="2339225390014743328">Allows you to specify the behaviour on startup.
-
-          If you choose 'Open home page', the home page will always be opened when you start <ph name="PRODUCT_NAME"/>.
-
-          If you choose 'Restore the last session', the URLs that were open last time <ph name="PRODUCT_NAME"/> was closed will be reopened, and the browsing session will be restored as it was left.
-          Choosing this option disables some settings that rely on sessions or that perform actions on exit (such as Clear browsing data on exit or session-only cookies).
-
-          If you choose 'Open a list of URLs', the list of 'URLs to open on startup' will be opened when a user starts <ph name="PRODUCT_NAME"/>.
-
-          If you enable this setting, users cannot change or override it in <ph name="PRODUCT_NAME"/>.
-
-          Disabling this setting is equvalent to leaving it not configured. The user will still be able to change it in <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

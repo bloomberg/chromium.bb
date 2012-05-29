@@ -86,6 +86,9 @@
       Ako ga postavite, pravilo <ph name="PRODUCT_FRAME_NAME"/> upotrebljavat će priloženi direktorij.
 
       Ako ne postavite to pravilo, upotrebljavat će se zadani direktorij profila.</translation>
+<translation id="8818173863808665831">Prijavljuje geografsku lokaciju uređaja.
+
+      Ako se to pravilo ne postavi ili ako se postavi na lažno, lokacija se neće prijavljivati.</translation>
 <translation id="4899708173828500852">Omogući Sigurno pregledavanje</translation>
 <translation id="7719251660743813569">Kontrolira hoće li se mjerni podaci upotrebe prijavljivati Googleu. Ako je to pravilo postavljeno na &quot;istinito&quot;, sustav <ph name="PRODUCT_OS_NAME"/> prijavljivat će mjerne podatke o upotrebi. Ako to pravilo nije konfigurirano ili je postavljeno na &quot;lažno&quot;, prijavljivanje mjernih podataka o upotrebi bit će onemogućeno.</translation>
 <translation id="3570008976476035109">Blokiraj dodatke na ovim web-lokacijama</translation>
@@ -145,9 +148,9 @@
 <translation id="5776485039795852974">Pitaj kad god web-lokacija želi prikazati obavijesti radne površine</translation>
 <translation id="5052081091120171147">Ako je omogućeno, ovo pravilo prisilno uvozi povijest pregledavanja iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, povijest pregledavanja se ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti povijest pregledavanja ili do uvoza može doći automatski.</translation>
 <translation id="6786747875388722282">Proširenja</translation>
+<translation id="8947415621777543415">Prijava lokacije uređaja</translation>
 <translation id="1655229863189977773">Postavite veličinu predmemorije diska u bajtovima</translation>
 <translation id="6899705656741990703">Automatski detektiraj proxy postavke</translation>
-<translation id="4101772068965291327">Otvori početnu stranicu</translation>
 <translation id="7003334574344702284">Ako je omogućeno, ovo pravilo prisilno uvozi spremljene zaporke iz prethodno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, spremljene se zaporke ne uvoze. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti zaporke ili do uvoza može doći automatski.</translation>
 <translation id="6258193603492867656">Određuje treba li generirani Kerberos SPN uključivati nestandardni priključak. Ako omogućite ovu postavku, a bude unesen nestandardni priključak (tj. priključak koji nije 80 ili 443), on će biti uključen u generirani Kerberos SPN. Ako onemogućite ovu postavku ili ju ne postavite, generirani Kerberos SPN neće uključivati priključak ni u kojem slučaju.</translation>
 <translation id="8992176907758534924">Ne dopuštaj web-lokacijama prikazivanje slika</translation>
@@ -193,6 +196,20 @@
       Ako je ostavite nepostavljenu, korisnici mogu odabrati žele li unositi zaporku za otključavanje uređaja.</translation>
 <translation id="6022948604095165524">Radnja prilikom pokretanja</translation>
 <translation id="9042911395677044526">Omogućuje nametanje mrežne konfiguracije za primjenu po korisniku na uređaju <ph name="PRODUCT_OS_NAME"/>. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom &quot;Open Network Configuration&quot; koji je opisan na adresi <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Navodi identifikatore aplikacija koje sustav <ph name="PRODUCT_OS_NAME"/> prikazuje kao prikvačene aplikacije u traci pokretača.
+
+      Ako se to pravilo konfigurira, utvrđuje se skupina aplikacija i korisnik ih ne može mijenjati.
+
+      Ako se to pravilo ne postavi, korisnik može mijenjati popis prikvačenih aplikacija u pokretaču.</translation>
+<translation id="6177482277304066047">Postavlja ciljnu verziju za automatska ažuriranja.
+
+      Određuje prefiks ciljne verzije na koju bi se sustav <ph name="PRODUCT_OS_NAME"/> trebao ažurirati. Ako uređaj izvodi verziju koja prethodi navedenom prefiksu, ažurirat će se na najnoviju verziju s navedenim prefiksom. Ako uređaj već izvodi noviju verziju, ništa se neće promijeniti (tj. neće biti vraćanja na stariju verziju) i uređaj će nastaviti izvoditi trenutačnu verziju. Sljedeći primjer prikazuje kako format prefiksa funkcionira prema komponentama:
+
+      &quot;&quot; (ili bez konfiguracije): ažurira na najnoviju dostupnu verziju.
+      &quot;1412.&quot;: ažurira na bilo koju verziju koja pripada pod 1412 (npr., 1412.24.34 ili 1412.60.2)
+      &quot;1412.2.&quot;: ažurira na bilo koju verziju koja pripada pod 1412.2 (npr., 1412.2.34 ili 1412.2.2)
+      &quot;1412.24.34&quot;: ažurira samo na tu konkretnu verziju
+      </translation>
 <translation id="7625444193696794922">Određuje kanal za izdavanje na koji bi ovaj uređaj trebao biti priključen.</translation>
 <translation id="2240879329269430151">Omogućuje da postavite smiju li web-lokacije prikazivati skočne prozore. Prikazivanje skočnih prozora može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije. Ako to pravilo nije postavljeno, upotrebljavat će se pravilo &quot;BlockPopups&quot;, a korisnik će to moći promijeniti.</translation>
 <translation id="5289914968905023866">Blokira pristup navedenim URL-ovima. To pravilo sprječava korisnika da učitava web-stranice s popisa zabranjenih URL-ova. Format URL-a je &quot;scheme://host:port/path&quot;. Izborna shema može biti http, https ili ftp. Blokirana će biti samo ta shema, a ako ništa nije navedeno, blokirane će biti sve sheme. Host može biti naziv hosta ili IP adresa. Poddomene naziva hosta također će biti blokirane. Da biste spriječili blokiranje poddomena, unesite &quot;.&quot; ispred naziva hosta. Posebni naziv hosta &quot;*&quot; blokirat će sve domene. Izborni priključak važeći je broj priključka od 1 do 65535. Ako ništa nije navedeno, blokirani će biti svi priključci. Ako je navedena izborna putanja, blokirane će biti samo putanje s tim prefiksom. Iznimke se mogu definirati putem pravila za dopuštene URL-ove. Ta su pravila ograničena na 100 unosa, a svi se daljnji unosi zanemaruju. Ako to pravilo nije postavljeno, nijedan URL neće biti zabranjen u pregledniku.</translation>
@@ -206,6 +223,9 @@
 
       Ako se to pravilo ne postavi, način rada u pozadini u početku je onemogućen i korisnik ga može kontrolirati u postavkama preglednika.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ili noviji</translation>
+<translation id="5148753489738115745">Omogućuje vam da odredite dodatne parametre koji se upotrebljavaju kada <ph name="PRODUCT_FRAME_NAME"/> pokreće uslugu <ph name="PRODUCT_NAME"/>.
+
+          Ako se to pravilo ne postavi, upotrebljavat će se zadani naredbeni redak.</translation>
 <translation id="2646290749315461919">Omogućuje da postavite smiju li web-lokacije pratiti fizičku lokaciju korisnika. Praćenje fizičke lokacije korisnika može biti dopušteno prema zadanim postavkama, odbijeno prema zadanim postavkama ili se korisniku može postaviti upit svaki puta kada web-lokacija zahtijeva fizičku lokaciju. Ako ovo pravilo nije postavljeno, upotrebljavat će se pravilo &quot;AskGeolocation&quot;, a korisnik će to moći promijeniti.</translation>
 <translation id="5770738360657678870">Razvojni kanal (možda je nestabilan)</translation>
 <translation id="2959898425599642200">Pravila zaobilaženja proxyja</translation>
@@ -266,11 +286,25 @@
 <translation id="717221064259627503">Konfigurira direktorij koji će proizvod <ph name="PRODUCT_NAME"/> upotrebljavati za pohranu predmemoriranih datoteka na disku. Ako postavite ovo pravilo, <ph name="PRODUCT_NAME"/> upotrebljavat će navedeni direktorij neovisno o tome je li korisnik odredio oznaku &quot;--disk-cache-dir&quot;. Ako ovo pravilo nije postavljeno, upotrebljavat će se zadani direktorij za predmemoriju, a korisnik će to moći poništiti oznakom naredbenog retka &quot;--disk-cache-dir&quot;.</translation>
 <translation id="2312134445771258233">Omogućuje konfiguriranje stranica koje se učitavaju prilikom pokretanja. Sadržaj popisa &quot;URL-ovi za otvaranje prilikom pokretanja&quot; zanemaruje se, osim ako odaberete &quot;Otvori popis URL-ova&quot; pod &quot;Radnje prilikom pokretanja&quot;.</translation>
 <translation id="2538628396238281971">Konfigurira direktorij koji će proizvod <ph name="PRODUCT_NAME"/> upotrebljavati za preuzimanje datoteka. Ako postavite ovo pravilo, <ph name="PRODUCT_NAME"/> upotrebljavat će navedeni direktorij neovisno o tome je li korisnik odredio direktorij ili je omogućio oznaku da mu se svaki put postavi upit za lokaciju preuzimanja. Ako ovo pravilo nije postavljeno, upotrebljavat će se zadani direktorij za preuzimanje, a korisnik će to moći promijeniti.</translation>
+<translation id="7750991880413385988">Otvori stranicu Nova kartica</translation>
+<translation id="741903087521737762">Omogućuje vam da odredite ponašanje pri pokretanju.
+
+          Ako odaberete &quot;Otvori stranicu Nova kartica&quot;, ta će se stranica otvarati svaki put kada pokrenete uslugu <ph name="PRODUCT_NAME"/>.
+
+          Ako odaberete &quot;Vrati posljednju sesiju&quot;, URL-ovi koji su bili otvoreni kada je usluga <ph name="PRODUCT_NAME"/> posljednji put zatvorena otvorit će se ponovo i sesija pregledavanja vratit će se na isto mjesto.
+          Biranjem te opcije onemogućit će se neke postavke koje se oslanjaju na sesije ili koje izvršavaju radnje pri izlasku (na primjer, brisanje podataka o pregledavanju pri izlasku ili kolačići koji se odnose samo na sesije).
+
+          Ako odaberete &quot;Otvori popis URL-ova&quot;, popis &quot;URL-ova koji će se otvoriti pri pokretanju&quot; otvorit će se kada korisnik pokrene uslugu <ph name="PRODUCT_NAME"/>.
+
+          Ako omogućite tu postavku, korisnici ju ne mogu promijeniti ili premostiti na usluzi <ph name="PRODUCT_NAME"/>.
+
+          Onemogućavanje te postavke ima jednak učinak kao da ju niste konfigurirali. Korisnik će ju i dalje moći promijeniti na usluzi <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Konfigurira proxy postavke za uslugu <ph name="PRODUCT_NAME"/>. To pravilo nije još spremno za upotrebu, nemojte ga upotrebljavati.</translation>
 <translation id="8344454543174932833">Uvoz oznaka iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="1019101089073227242">Postavi imenik korisničkih podataka</translation>
 <translation id="5826047473100157858">Određuje može li korisnik otvarati stranice u anonimnom načinu u proizvodu <ph name="PRODUCT_NAME"/>. Ako je odabrano &quot;Enabled&quot; (omogućeno) ili pravilo nije postavljeno, stranice se mogu otvarati u anonimnom načinu. Ako je odabrano &quot;Disabled&quot; (onemogućeno), stranice se ne mogu otvarati u anonimnom načinu. Ako je odabrano &quot;Forced&quot; (prisilno), stranice se mogu otvarati SAMO u anonimnom načinu.</translation>
 <translation id="5085647276663819155">Onemogući pregled ispisa</translation>
+<translation id="8672321184841719703">Ciljna verzija automatskog ažuriranja</translation>
 <translation id="2030905906517501646">Zadani davatelj usluga pretraživanja</translation>
 <translation id="3072045631333522102">Čuvar zaslona koji će se upotrebljavati na zaslonu prijave u prodajnom načinu</translation>
 <translation id="7393895128271703858">Ovo je pravilo zastarjelo. Umjesto njega upotrijebite &quot;DefaultJavaScriptSetting&quot;. Omogućuje JavaScript u proizvodu <ph name="PRODUCT_NAME"/> i sprječava korisnike da promijene tu postavku. Ako je ova postavka omogućena ili nije konfigurirana, web-stranice mogu upotrebljavati JavaScript. Ako je ova postavka onemogućena, web-stranice ne mogu upotrebljavati JavaScript. Ako ovo pravilo nije postavljeno, upotrebljavat će se zadana vrijednost koja je omogućena, a korisnici će ju moći promijeniti. Ako ovo pravilo nije postavljeno, to će biti omogućeno, ali korisnici će to moći promijeniti.</translation>
@@ -375,6 +409,7 @@
 <translation id="2299220924812062390">Odredi popis omogućenih dodataka</translation>
 <translation id="924557436754151212">Uvoz spremljenih zaporki iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="1897365952389968758">Dopusti svim web-lokacijama izvođenje JavaScripta</translation>
+<translation id="7323896582714668701">Dodatni parametri naredbenog retka za uslugu <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Onemogući sinkronizaciju podataka s Googleom</translation>
 <translation id="36674322972891584">Omogućuje mrežno predviđanje u proizvodu <ph name="PRODUCT_NAME"/> i sprječava korisnike da promjene tu postavku. Ako omogućite ili onemogućite ovu postavku, korisnici neće moći promijeniti niti poništiti tu postavku u proizvodu <ph name="PRODUCT_NAME"/>. Ako ovo pravilo nije postavljeno, to će biti omogućeno, ali korisnik će to moći promijeniti.</translation>
 <translation id="7006788746334555276">Postavke sadržaja</translation>
@@ -386,6 +421,7 @@
 <translation id="187819629719252111">Omogućuje pristup lokalnim datotekama na računalu tako da dopušta proizvodu <ph name="PRODUCT_NAME"/> prikaz dijaloških okvira za odabir datoteka. Ako omogućite ovu postavku, korisnici mogu otvarati dijaloške okvire za odabir datoteka kao i obično. Ako onemogućite ovu postavku, svaki put kad korisnik napravi neku radnju koja bi dovela do otvaranja dijaloškog okvira za odabir datoteka (poput uvoza knjižnih oznaka, prijenosa datoteka, spremanja veza itd.) umjesto dijaloškog okvira prikazat će se poruka, a za korisnika će se pretpostaviti da je kliknuo &quot;Odustani&quot; u dijaloškom okviru za odabir datoteka. Ako ova postavka nije postavljena, korisnici mogu otvarati dijaloške okvire za odabir datoteka kao i obično.</translation>
 <translation id="4507081891926866240">Prilagođava popis uzoraka URL-ova koje bi <ph name="PRODUCT_FRAME_NAME"/> uvijek trebao prikazivati. Ako ovo pravilo nije postavljeno, zadani prikazivač upotrebljavat će se za sve web-lokacije kako je određeno pravilom &quot;ChromeFrameRendererSettings&quot;. Primjere uzoraka pogledajte na http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Odaberi način određivanja postavki proxy poslužitelja</translation>
+<translation id="1803646570632580723">Popis prikvačenih aplikacija za prikazivanje u pokretaču</translation>
 <translation id="7774768074957326919">Upotrijebi proxy postavke sustava</translation>
 <translation id="3891357445869647828">Omogući JavaScript</translation>
 <translation id="868187325500643455">Dopusti svim web-lokacijama pokretanje dodataka</translation>
@@ -457,16 +493,4 @@
 <translation id="5645779841392247734">Dopusti kolačiće na ovim web-lokacijama</translation>
 <translation id="8220342550735772883">Konfigurira veličinu predmemorije koju će <ph name="PRODUCT_NAME"/> upotrebljavati za pohranu predmemoriranih medijskih datoteka na disku. Ako postavite ovo pravilo, <ph name="PRODUCT_NAME"/> upotrebljavat će navedenu veličinu predmemorije neovisno o tome je li korisnik odredio oznaku &quot;--media-cache-size&quot;. Ako je vrijednost ovog pravila 0, upotrebljavat će se zadana veličina predmemorije, ali korisnik ju neće moći promijeniti. Ako ovo pravilo nije postavljeno, upotrebljavat će se zadana vrijednost, a korisnik će ju moći poništiti pomoću oznake &quot;--media-cache-size&quot;.</translation>
 <translation id="7049373494483449255">Omogućuje proizvodu <ph name="PRODUCT_NAME"/> slanje dokumenata na uslugu <ph name="CLOUD_PRINT_NAME"/> za ispis. NAPOMENA: To se odnosi samo na podršku usluge <ph name="CLOUD_PRINT_NAME"/> u proizvodu <ph name="PRODUCT_NAME"/>. To ne sprječava korisnike da poslove ispisa šalju na web-lokacije. Ako je ova postavka omogućena ili nije konfigurirana, korisnici mogu ispisivati putem usluge <ph name="CLOUD_PRINT_NAME"/> iz dijaloškog okvira za ispis u proizvodu <ph name="PRODUCT_NAME"/>. Ako je ova postavka onemogućena, korisnici ne mogu ispisivati putem usluge <ph name="CLOUD_PRINT_NAME"/> iz dijaloškog okvira za ispis u proizvodu <ph name="PRODUCT_NAME"/></translation>
-<translation id="2339225390014743328">Omogućuje vam da odredite ponašanje pri pokretanju.
-
-          Ako izaberete &quot;Otvori početnu stranicu&quot;, svaki put kada pokrenete uslugu <ph name="PRODUCT_NAME"/>, otvorit će se početna stranica.
-
-          Ako izaberete &quot;Vrati posljednju sesiju&quot;, URL-ovi koji su bili otvoreni posljednji put kada je usluga <ph name="PRODUCT_NAME"/> zatvorena otvorit će se ponovo i sesija pregledavanja bit će vraćena.
-          Odabirom te opcije onemogućuju se neke postavke koje se oslanjaju na sesije ili koje izvršavaju radnje pri izlasku (na primjer, brisanje podataka o pregledavanju pri izlasku ili kolačići koji se upotrebljavaju samo za sesije).
-
-          Ako izaberete &quot;Otvori popis URL-ova&quot;, popis &quot;URL-ova za otvaranje pri pokretanju&quot; otvorit će se kada korisnik pokrene uslugu <ph name="PRODUCT_NAME"/>.
-
-          Ako omogućite tu postavku, korisnici ju ne mogu promijeniti na usluzi <ph name="PRODUCT_NAME"/>.
-
-          Onemogućiti tu postavku isto je kao i ostaviti ju nekonfiguriranu. Korisnik će ju još uvijek moći promijeniti na usluzi <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

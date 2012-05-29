@@ -142,6 +142,9 @@
       Als u dit beleid instelt, gebruikt <ph name="PRODUCT_FRAME_NAME"/> de geconfigureerde directory.
 
       Als deze instelling niet wordt ingesteld, wordt de standaard profieldirectory gebruikt.</translation>
+<translation id="8818173863808665831">De geografische locatie van het apparaat rapporteren.
+
+      Als het beleid niet is ingesteld of is ingesteld op 'False', wordt de locatie niet gerapporteerd.</translation>
 <translation id="4899708173828500852">Safe Browsing inschakelen</translation>
 <translation id="7719251660743813569">Controleert of gebruiksstatistieken worden gerapporteerd aan Google. Als dit is ingesteld op 'true', rapporteert <ph name="PRODUCT_OS_NAME"/> gebruiksstatistieken. Als het niet is geconfigureerd of is ingesteld op 'false', wordt de rapportage van statistieken uitgeschakeld.</translation>
 <translation id="3570008976476035109">Plug-ins blokkeren op deze sites</translation>
@@ -260,9 +263,9 @@
 
       Als dit beleid niet is ingesteld, kan de gebruiker worden gevraagd of deze wil importeren, of wordt er automatisch geïmporteerd.</translation>
 <translation id="6786747875388722282">Extensies</translation>
+<translation id="8947415621777543415">Apparaatlocatie rapporteren</translation>
 <translation id="1655229863189977773">Grootte van schijfcache in bytes instellen</translation>
 <translation id="6899705656741990703">Proxyinstellingen automatisch detecteren</translation>
-<translation id="4101772068965291327">Startpagina openen</translation>
 <translation id="7003334574344702284">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de opgeslagen wachtwoorden worden geïmporteerd uit de vorige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
 
       Als het beleid is uitgeschakeld, worden opgeslagen wachtwoorden niet geïmporteerd.
@@ -345,6 +348,20 @@ Als deze instelling op 'True' wordt ingesteld, melden de aangemelde apparaten re
       Als u het beleid niet instelt, kan de gebruiker kiezen of hij/zij wel of niet wil worden gevraagd een wachtwoord in te voeren om het apparaat te ontgrendelen.</translation>
 <translation id="6022948604095165524">Actie bij starten</translation>
 <translation id="9042911395677044526">Hiermee kunt u een gebruikerspecifieke netwerkconfiguratie toepassen op een <ph name="PRODUCT_OS_NAME"/>-apparaat. De netwerkconfiguratie is een tekenreeks met JSON-indeling, zoals gedefinieerd door de indeling voor open netwerkconfiguratie, beschreven op <ph name="ONC_SPEC_URL"/></translation>
+<translation id="7128918109610518786">Hiermee worden de app-ID's vermeld die <ph name="PRODUCT_OS_NAME"/> weergeeft als vastgezette apps in de balk van het opstartprogramma.
+
+      Als dit beleid is geconfigureerd, staat de reeks apps vast en kan deze niet worden gewijzigd door de gebruiker.
+
+      Als het beleid niet is ingesteld, kan de gebruiker de lijst met vastgezette apps in het opstartprogramma wijzigen.</translation>
+<translation id="6177482277304066047">Hiermee stelt u een doelversie voor automatische updates in.
+
+      Hiermee wordt het voorvoegsel aangegeven van een doelversie waarnaar <ph name="PRODUCT_OS_NAME"/> moet worden bijgewerkt. Als het apparaat een versie uitvoert die eerder is dan het opgegeven voorvoegsel, wordt een update naar de laatste versie met het opgegeven voorvoegsel uitgevoerd. Als het apparaat al een latere versie uitvoert, gebeurt er niets (dat wil zeggen, er worden geen downgrades uitgevoerd) en blijft het apparaat de huidige versie gebruiken. De notatie van het voorvoegsel werkt op basis van componenten, zoals wordt aangetoond in het volgende voorbeeld:
+
+      '' (of niet geconfigureerd): een update uitvoeren naar de laatste versie die beschikbaar is.
+      '1412.': een update uitvoeren naar een subversie van 1412 (bijvoorbeeld 1412.24.34 of 1412.60.2)
+      '1412.2.': een update uitvoeren naar een subversie van 1412.2 (bijvoorbeeld 1412.2.34 of 1412.2.2)
+      '1412.24.34': alleen een update uitvoeren naar deze specifieke versie
+      </translation>
 <translation id="7625444193696794922">Hiermee wordt het releasekanaal gespecificeerd waarmee dit apparaat moet worden vergrendeld.</translation>
 <translation id="2240879329269430151">Hiermee kunt u instellen of websites pop-ups mogen weergeven. Het weergeven van pop-ups kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
 
@@ -378,6 +395,9 @@ Als deze instelling op 'True' wordt ingesteld, melden de aangemelde apparaten re
 
       Als dit beleid niet is ingesteld, is de achtergrondmodus aanvankelijk uitgeschakeld en kan de gebruiker de achtergrondmodus beheren in de browserinstellingen.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 of hoger</translation>
+<translation id="5148753489738115745">Hiermee kunt u extra parameters opgeven die worden gebruikt wanneer <ph name="PRODUCT_FRAME_NAME"/> <ph name="PRODUCT_NAME"/> start.
+
+          Als dit beleid niet is ingesteld, wordt de standaardopdrachtregel gebruikt.</translation>
 <translation id="2646290749315461919">Hiermee kunt u instellen of websites de fysieke locatie van gebruikers mogen bijhouden. Het bijhouden van de fysieke locatie van gebruikers kan standaard worden toegestaan, standaard worden geweigerd of het kan de gebruiker telkens worden gevraagd wanneer een website zijn fysieke locatie opvraagt.
 
           Als dit beleid niet wordt ingesteld, wordt 'AskGeolocation' gebruikt en kan de gebruiker dit wijzigen.</translation>
@@ -514,6 +534,20 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
       Als u dit beleid instelt, gebruikt <ph name="PRODUCT_NAME"/> de opgegeven directory, ongeacht of de gebruiker een directory heeft gespecificeerd of heeft aangegeven telkens te willen worden gevraagd wat de downloadlocatie moet zijn.
 
       Als dit beleid niet wordt ingesteld, wordt de standaarddirectory voor het downloaden van bestanden gebruikt en kan de gebruiker dit wijzigen.</translation>
+<translation id="7750991880413385988">Pagina 'Nieuw tabblad' openen</translation>
+<translation id="741903087521737762">Hiermee kunt u het gedrag tijdens het starten opgeven.
+
+          Als u 'Pagina 'Nieuw tabblad' openen' kiest, wordt de pagina 'Nieuw tabblad' altijd geopend wanneer u <ph name="PRODUCT_NAME"/> start.
+
+          Als u 'De laatste sessie herstellen' kiest, worden de URL's die waren geopend toen <ph name="PRODUCT_NAME"/> de laatste keer werd gesloten, opnieuw geopend en wordt de browsersessie hersteld zoals deze is achtergelaten.
+
+          Als u deze optie kiest, worden bepaalde instellingen uitgeschakeld die gebruikmaken van sessies of die acties uitvoeren tijdens het afsluiten (zoals het wissen van browsergegevens tijdens het afsluiten of het wissen van sessiecookies).
+
+          Als u 'Een lijst met URL's openen' kiest, wordt de lijst 'URL's die worden geopend bij starten' geopend wanneer een gebruiker <ph name="PRODUCT_NAME"/> start.
+
+          Als u deze instelling inschakelt, kunnen gebruikers deze niet wijzigen of negeren in <ph name="PRODUCT_NAME"/>.
+
+          Het uitschakelen van deze instelling staat gelijk aan het niet configureren van de instelling. De gebruiker kan de instelling nog steeds wijzigen in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5761030451068906335">Hiermee configureert u de proxyinstellingen voor <ph name="PRODUCT_NAME"/>. Dit beleid is nog niet klaar voor gebruik, gebruik het dus niet.</translation>
 <translation id="8344454543174932833">Bladwijzers importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="1019101089073227242">Gegevensdirectory voor gebruiker instellen</translation>
@@ -525,6 +559,7 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
 
       Als 'Afgedwongen' is geselecteerd, mogen pagina's ALLEEN worden geopend in de incognitomodus.</translation>
 <translation id="5085647276663819155">Afdrukvoorbeeld uitschakelen</translation>
+<translation id="8672321184841719703">Doelversie voor automatische updates</translation>
 <translation id="2030905906517501646">Zoekwoord voor standaardzoekprovider</translation>
 <translation id="3072045631333522102">Schermbeveiliging voor gebruik in het aanmeldvenster in de winkelmodus</translation>
 <translation id="7393895128271703858">Dit beleid is verouderd. Gebruik in plaats daarvan DefaultJavaScriptSetting.
@@ -748,6 +783,7 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 <translation id="2299220924812062390">Een lijst met ingeschakelde plug-ins specificeren</translation>
 <translation id="924557436754151212">Opgeslagen wachtwoorden importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="1897365952389968758">Alle sites toestaan JavaScript uit te voeren</translation>
+<translation id="7323896582714668701">Extra opdrachtregelparameters voor <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Synchronisatie van gegevens met Google uitschakelen</translation>
 <translation id="36674322972891584">Hiermee wordt netwerkvoorspelling in <ph name="PRODUCT_NAME"/> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -773,6 +809,7 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 
           Ga voor voorbeeldpatronen naar http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Kies hoe u proxyserverinstellingen wilt specificeren</translation>
+<translation id="1803646570632580723">Lijst met vastgezette apps om weer te geven in het opstartprogramma</translation>
 <translation id="7774768074957326919">Proxyinstellingen van het systeem gebruiken</translation>
 <translation id="3891357445869647828">JavaScript inschakelen</translation>
 <translation id="868187325500643455">Alle sites toestaan automatisch plug-ins uit te voeren</translation>
@@ -962,16 +999,4 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
       Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers afdrukken naar <ph name="CLOUD_PRINT_NAME"/> via het dialoogvenster voor afdrukken van <ph name="PRODUCT_NAME"/>.
 
       Als deze instelling is uitgeschakeld, kunnen gebruikers niet afdrukken naar <ph name="CLOUD_PRINT_NAME"/> via het dialoogvenster voor afdrukken van <ph name="PRODUCT_NAME"/></translation>
-<translation id="2339225390014743328">Hiermee kunt u het gedrag bij opstarten specificeren.
-
-         Als u 'Startpagina openen' selecteert, wordt de startpagina elke keer dat u <ph name="PRODUCT_NAME"/> opstart, geopend.
-
-          Als u 'De laatste sessie herstellen' selecteert, worden de URL's die waren geopend de laatste keer dat <ph name="PRODUCT_NAME"/> werd gesloten, opnieuw geopend en wordt de browsersessie hersteld naar de situatie op het moment van afsluiten.
-          Als u deze optie kiest, worden enkele instellingen uitgeschakeld die afhankelijk zijn van sessies of acties uitvoeren bij afsluiten (zoals browsergegevens wissen na afsluiten of sessiecookies).
-
-         Als u 'Een lijst met URLs openen' kiest, wordt de lijst 'URL's die moeten worden geopend bij opstarten' geopend als de gebruiker <ph name="PRODUCT_NAME"/> opstart.
-
-          Als u deze instelling inschakelt, kunnen gebruikers de lijst niet wijzigen of negeren in <ph name="PRODUCT_NAME"/>.
-
-          Het uitschakelen van deze instelling heeft hetzelfde effect als het niet configureren van de instelling. De gebruiker houdt de mogelijkheid om de lijst te wijzigen in <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

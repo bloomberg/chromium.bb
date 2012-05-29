@@ -2,50 +2,66 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="3595596368722241419">Μπαταρία πλήρης</translation>
-<translation id="908313544993743941">Απενεργοποίηση δικτύου κινητής τηλεφωνίας</translation>
+<translation id="5250713215130379958">Αυτόματη απόκρυψη της λειτουργίας εκκίνησης</translation>
 <translation id="30155388420722288">Κουμπί επιπρόσθετης ροής</translation>
 <translation id="5571066253365925590">Το Bluetooth έχει ενεργοποιηθεί</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Το Bluetooth έχει απενεργοποιηθεί</translation>
+<translation id="370649949373421643">Ενεργοποίηση Wi-Fi</translation>
 <translation id="3626281679859535460">Φωτεινότητα</translation>
 <translation id="7982789257301363584">Δίκτυο</translation>
+<translation id="5565793151875479467">Διακομιστής μεσολάβησης...</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Δίσκος κατάστασης</translation>
 <translation id="2946640296642327832">Ενεργοποίηση Bluetooth</translation>
 <translation id="6596816719288285829">Διεύθυνση IP</translation>
-<translation id="289426338439836048">Άλλο δίκτυο κινητής τηλεφωνίας...</translation>
 <translation id="5233638681132016545">Νέα καρτέλα</translation>
+<translation id="3846575436967432996">Δεν υπάρχουν διαθέσιμες πληροφορίες δικτύου</translation>
+<translation id="3026237328237090306">Ρύθμιση δεδομένων κινητής τηλεφωνίας</translation>
 <translation id="785750925697875037">Προβολή λογαριασμού κινητής τηλεφωνίας</translation>
+<translation id="8121288016949447968">Shift+Αναζήτηση</translation>
 <translation id="7864539943188674973">Απενεργοποίηση Bluetooth</translation>
 <translation id="3126069444801937830">Επανεκκίνηση για ενημέρωση</translation>
+<translation id="1525975890706558596">Η λειτουργία CAPS LOCK είναι ενεργοποιημένη.
+Πατήστε Shift + πλήκτρο αναζήτησης για ακύρωση.</translation>
 <translation id="8190698733819146287">Προσαρμογή γλωσσών και εισόδου...</translation>
-<translation id="7911992579061465928">Χαμηλή στάθμη μπαταρίας</translation>
 <translation id="598295083618286569">Το Bluetooth είναι συνδεδεμένο</translation>
 <translation id="5222676887888702881">Έξοδος</translation>
+<translation id="2091132388437059185">Αυτόματη απόκρυψη της λειτουργίας εκκίνησης κατά τη μεγιστοποίηση</translation>
+<translation id="425878420164891689">Υπολογισμός χρόνου μέχρι ολοκλήρωση</translation>
+<translation id="2964193600955408481">Απενεργοποίηση Wi-Fi</translation>
 <translation id="811680302244032017">Προσθήκη συσκευής…</translation>
+<translation id="2509468283778169019">Το CAPS LOCK είναι ενεργοποιημένο</translation>
+<translation id="6426039856985689743">Απενεργοποίηση δεδομένων κινητής τηλεφωνίας</translation>
 <translation id="3232695630852378748">Ρυθμίσεις Bluetooth…</translation>
 <translation id="1480041086352807611">Λειτουργία επίδειξης</translation>
 <translation id="4186384497305035875">Αυτή η οθόνη είναι σκόπιμα κενή</translation>
 <translation id="9089416786594320554">Μέθοδοι εισαγωγής</translation>
-<translation id="7706302027196209560">Ενεργοποίηση Wi-Fi</translation>
 <translation id="4430019312045809116">Ένταση</translation>
+<translation id="1383876407941801731">Αναζήτηση</translation>
 <translation id="3557139239102318020">Σύρετε προς τα κάτω για ελαχιστοποίηση, αριστερά ή δεξιά για μεγιστοποίηση</translation>
 <translation id="5980301590375426705">Έξοδος επισκέπτη</translation>
 <translation id="8308637677604853869">Προηγούμενο μενού</translation>
+<translation id="8528322925433439945">Κινητή τηλεφωνία...</translation>
 <translation id="3595065677684516080">Ρυθμίσεις και Βοήθεια</translation>
 <translation id="4479639480957787382">Ethernet</translation>
+<translation id="7573721444069009535">Wi-Fi...</translation>
+<translation id="6223565363550976998">Μπαταρία: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="3784455785234192852">Κλείδωμα</translation>
-<translation id="5836819469861742634">Αλλαγή ρυθμίσεων διακομιστή μεσολάβησης…</translation>
+<translation id="2805756323405976993">Εφαρμογές</translation>
 <translation id="2872961005593481000">Τερματισμός λειτουργίας</translation>
-<translation id="8735871257195921372">Άλλο δίκτυο Wi-Fi…</translation>
-<translation id="2152495481414285304">Εφαρμογές</translation>
-<translation id="1690310444231390462">Απενεργοποίηση Wi-Fi</translation>
-<translation id="77565731175229781">Ρυθμίσεις δικτύου…</translation>
+<translation id="7052914147756339792">Ορισμός ταπετσαρίας...</translation>
+<translation id="1602076796624386989">Ενεργοποίηση δεδομένων κινητής τηλεφωνίας</translation>
+<translation id="8573351908869164327">Απομένουν <ph name="HOUR"/>ω <ph name="MINUTE"/>λ</translation>
 <translation id="7029814467594812963">Έξοδος από συνεδρία</translation>
-<translation id="7908019422099334890">Ορισμός ταπετσαρίας…</translation>
+<translation id="2983818520079887040">Ρυθμίσεις...</translation>
+<translation id="8660803626959853127">Συγχρονισμός <ph name="COUNT"/> αρχείων</translation>
+<translation id="639644700271529076">Το CAPS LOCK είναι απενεργοποιημένο</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7841796031898165175">Ενεργοποίηση δικτύου κινητής τηλεφωνίας</translation>
-<translation id="9072667645353666975">Μπαταρία: <ph name="PERCENTAGE"/>%
-<ph name="HOUR"/>ώρ. <ph name="MINUTE"/>λεπ.</translation>
+<translation id="5045002648206642691">Ρυθμίσεις Google Drive...</translation>
 <translation id="48607902311828362">Λειτουργία πτήσης</translation>
+<translation id="5361734574074701223">Υπολογισμός χρόνου που απομένει</translation>
+<translation id="9169585155162064169">Η λειτουργία CAPS LOCK είναι ενεργοποιημένη. Πατήστε το πλήκτρο αναζήτησης για ακύρωση.</translation>
+<translation id="412065659894267608"><ph name="HOUR"/>ω <ph name="MINUTE"/>λ μέχρι να ολοκληρωθεί η φόρτιση</translation>
 </translationbundle>
