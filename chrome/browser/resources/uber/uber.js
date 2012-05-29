@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('uber', function() {
-  var localStrings = new LocalStrings();
-
   /**
    * Options for how web history should be handled.
    */
@@ -100,7 +98,7 @@ cr.define('uber', function() {
    * @return {Object} The default iframe container.
    */
   function getDefaultIframe() {
-    return $(localStrings.getString('helpHost'));
+    return $(loadTimeData.getString('helpHost'));
   }
 
   /**

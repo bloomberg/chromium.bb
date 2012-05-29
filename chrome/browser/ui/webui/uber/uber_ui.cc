@@ -62,6 +62,8 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
   source->AddString("settingsHost",
                     ASCIIToUTF16(chrome::kChromeUISettingsHost));
 
+  source->set_use_json_js_format_v2();
+
   return source;
 }
 
