@@ -1178,3 +1178,9 @@ wl_client_new_object(struct wl_client *client,
 				    interface, implementation, id, data);
 
 }
+
+WL_EXPORT void
+wl_log_set_handler_server(wl_log_func_t handler)
+{
+	wl_log_handler = handler;
+}

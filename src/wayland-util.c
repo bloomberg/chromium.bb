@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "wayland-util.h"
 #include "wayland-private.h"
@@ -269,4 +270,21 @@ wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data)
 {
 	for_each_helper(&map->client_entries, func, data);
 	for_each_helper(&map->server_entries, func, data);
+}
+
+static void
+wl_log_noop_handler(const char *fmt, va_list arg)
+{
+}
+
+wl_log_func_t wl_log_handler = wl_log_noop_handler;
+
+void
+wl_log(const char *fmt, ...)
+{
+	va_list argp;
+
+	va_start(argp, fmt);
+	wl_log_handler(fmt, argp);
+	va_end(argp);
 }

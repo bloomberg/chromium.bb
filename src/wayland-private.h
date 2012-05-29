@@ -105,4 +105,8 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 void
 wl_closure_destroy(struct wl_closure *closure);
 
+extern wl_log_func_t wl_log_handler;
+
+void wl_log(const char *fmt, ...);
+
 #endif

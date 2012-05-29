@@ -96,6 +96,8 @@ uint32_t
 wl_display_get_global(struct wl_display *display,
 		      const char *interface, uint32_t version);
 
+void wl_log_set_handler_client(wl_log_func_t handler);
+
 #ifdef  __cplusplus
 }
 #endif

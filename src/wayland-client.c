@@ -589,3 +589,9 @@ wl_proxy_get_id(struct wl_proxy *proxy)
 {
 	return proxy->object.id;
 }
+
+WL_EXPORT void
+wl_log_set_handler_client(wl_log_func_t handler)
+{
+	wl_log_handler = handler;
+}

@@ -418,6 +418,8 @@ wl_buffer_is_shm(struct wl_buffer *buffer);
 int
 wl_display_init_shm(struct wl_display *display);
 
+void wl_log_set_handler_server(wl_log_func_t handler);
+
 #ifdef  __cplusplus
 }
 #endif

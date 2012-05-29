@@ -30,6 +30,7 @@ extern "C" {
 #include <math.h>
 #include <stddef.h>
 #include <inttypes.h>
+#include <stdarg.h>
 
 /* GCC visibility */
 #if defined(__GNUC__) && __GNUC__ >= 4
@@ -202,6 +203,8 @@ static inline wl_fixed_t wl_fixed_from_int(int i)
 {
 	return i * 256;
 }
+
+typedef void (*wl_log_func_t)(const char *, va_list);
 
 #ifdef  __cplusplus
 }
