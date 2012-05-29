@@ -50,20 +50,22 @@ cr.define('options', function() {
     },
 
     /**
-     * Returns the container of the topmost visible page.
-     * @return {Element} The topmost page.
+     * Returns the |<div>| element containing all elements which should be
+     * allowed to receive focus.
+     * @return {Element} The |<div>| containing focusable elements.
      * @private
      */
-    getTopmostPage_: function() {
-      var topmostPage = OptionsPage.getTopmostVisiblePage().pageDiv;
+    getFocusParent_: function() {
+      var focusableDiv = OptionsPage.getTopmostVisiblePage().pageDiv;
 
-      // The default page includes a search field that is a sibling of the
-      // rest of the page instead of a child. Thus, use the parent node to
-      // allow the search field to receive focus.
-      if (topmostPage === OptionsPage.getDefaultPage().pageDiv)
-        return topmostPage.parentNode;
+      // The default page and search page include a search field that is a
+      // sibling of the rest of the page instead of a child. Thus, use the
+      // parent node to allow the search field to receive focus.
+      if (focusableDiv === OptionsPage.getDefaultPage().pageDiv ||
+          focusableDiv.id === 'searchPage')
+        return focusableDiv.parentNode;
 
-      return topmostPage;
+      return focusableDiv;
     },
 
     /**
@@ -71,11 +73,11 @@ cr.define('options', function() {
      * @return {Array.Element} The focusable elements.
      */
     getFocusableElements_: function() {
-      var topmostPage = this.getTopmostPage_();
+      var focusableDiv = this.getFocusParent_();
 
-      // Create a TreeWalker object to traverse the DOM from |topmostPage|.
+      // Create a TreeWalker object to traverse the DOM from |focusableDiv|.
       var treeWalker = document.createTreeWalker(
-          topmostPage,
+          focusableDiv,
           NodeFilter.SHOW_ELEMENT,
           { acceptNode: function(node) {
               // Reject all hidden nodes. FILTER_REJECT also rejects these
@@ -155,7 +157,7 @@ cr.define('options', function() {
     onDocumentFocus_: function(event) {
       // If the element being focused is a descendant of the currently visible
       // page, focus is valid.
-      if (this.isDescendantOf_(this.getTopmostPage_(), event.target))
+      if (this.isDescendantOf_(this.getFocusParent_(), event.target))
         return;
 
       // The target of the focus event is not in the topmost visible page and
