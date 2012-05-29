@@ -125,7 +125,7 @@ for harness in iglob(os.path.join(harness_dir, '*_harness.txt')):
         text = test['txt']
         mode = test.get('mode', 0)
         cursorPos = test.get('cursorPos', 0)
-        expectedBRLCursorPos = test.get('BRLCursorPos', 0)
+        expectedBRLCursorPos = test.get('brlCursorPos', 0)
         expectedBRL = test['brl']
 
         actualBRL, BRL2rawPos, raw2BRLPos, actualBRLCursorPos = translate(tableList, text, mode=mode, cursorPos=cursorPos, typeform=None)

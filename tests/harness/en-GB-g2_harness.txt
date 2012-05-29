@@ -10,7 +10,7 @@
             "txt": "to the moon"
         }, 
         {
-            "BRLCursorPos": 2, 
+            "brlCursorPos": 2, 
             "brl": "y went to", 
             "cursorPos": 4, 
             "mode": "compbrlAtCursor", 

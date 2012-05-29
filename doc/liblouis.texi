@@ -1764,7 +1764,7 @@ cursor behaviour.
 @item brl
 The expected braille output (required). The dots should be encoded in
 the liblouis ascii-braille like encoding.
-@item BRLCursorPos
+@item brlCursorPos
 The expected position of the braille cursor in the braille output
 (optional). Useful when simulating screenreader interaction, to debug
 contraction and cursor behaviour.

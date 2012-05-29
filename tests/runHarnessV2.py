@@ -52,14 +52,14 @@ def showCurPos(length, pos1, marker1="^", pos2=None, marker2="*"):
     return "".join(display)
 
 class BrailleTest():
-    def __init__(self, harnessName, table, txt, brl, mode=0, cursorPos=None, BRLCursorPos=None):
+    def __init__(self, harnessName, table, txt, brl, mode=0, cursorPos=None, brlCursorPos=None, comment=None):
         self.harnessName = harnessName
         self.table = table
         self.txt = txt
         self.expectedBrl = brl
         self.mode = mode if not mode else modes[mode]
         self.cursorPos = cursorPos
-        self.expectedBrlCursorPos = BRLCursorPos
+        self.expectedBrlCursorPos = brlCursorPos
 
     def __str__(self):
         return "%s: %s" % (self.harnessName, self.txt)

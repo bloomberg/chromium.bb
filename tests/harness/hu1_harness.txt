@@ -14,7 +14,7 @@
             "txt": "adósszámla"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$a4agos5erg16", 
             "txt": "Agyagosszergény"
         }, 
@@ -167,7 +167,7 @@
             "txt": "becslésszerűen"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$b1k1s5entandr\"s", 
             "txt": "Békésszentandrás"
         }, 
@@ -528,7 +528,7 @@
             "txt": "farkasszemet "
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$farkas5iget,", 
             "txt": "Farkassziget,"
         }, 
@@ -681,7 +681,7 @@
             "txt": "ginzenggyökér"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$gombos5eg", 
             "txt": "Gombosszeg"
         }, 
@@ -926,7 +926,7 @@
             "txt": "hússzelet"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$h0s5iget", 
             "txt": "Hússziget"
         }, 
@@ -1079,12 +1079,12 @@
             "txt": "kaparásszerű"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$kapos5ek37", 
             "txt": "Kaposszekcső"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$kapos5erdahe", 
             "txt": "Kaposszerdahely"
         }, 
@@ -1141,12 +1141,12 @@
             "txt": "kékesszürke"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$kemenes5entm\"rton", 
             "txt": "Kemenesszentmárton"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$kemenes5entp1ter", 
             "txt": "Kemenesszentpéter"
         }, 
@@ -1207,7 +1207,7 @@
             "txt": "kilincszörgést "
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$kis5\"ll\"s", 
             "txt": "Kisszállás"
         }, 
@@ -1216,7 +1216,7 @@
             "txt": "kisszámú"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$kis5eben", 
             "txt": "Kisszeben"
         }, 
@@ -1229,7 +1229,7 @@
             "txt": "kisszekrény"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$kis5entm\"rton", 
             "txt": "Kisszentmárton"
         }, 
@@ -1238,7 +1238,7 @@
             "txt": "kisszerű"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$kis5iget", 
             "txt": "Kissziget"
         }, 
@@ -1251,7 +1251,7 @@
             "txt": "kisszótár"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$kis2ombor", 
             "txt": "Kiszombor"
         }, 
@@ -1260,7 +1260,7 @@
             "txt": "kiszögellésszerűen"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$kis`id\"6", 
             "txt": "Kiszsidány"
         }, 
@@ -1361,7 +1361,7 @@
             "txt": "körösszakáli "
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$kqrqs2ug", 
             "txt": "Köröszug"
         }, 
@@ -1610,22 +1610,22 @@
             "txt": "mandarinnyelv"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$maros51k", 
             "txt": "Marosszék"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$maros5ent4qr4 ", 
             "txt": "Marosszentgyörgy "
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$maros2ug", 
             "txt": "Maroszug"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$martraver55al", 
             "txt": "Martraversszal"
         }, 
@@ -1670,7 +1670,7 @@
             "txt": "meggyes"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$me44esi", 
             "txt": "Meggyesi"
         }, 
@@ -1767,7 +1767,7 @@
             "txt": "mézsör"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$mikos51plak", 
             "txt": "Mikosszéplak"
         }, 
@@ -1844,12 +1844,12 @@
             "txt": "nehézsúlyú"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$nemes5al9k", 
             "txt": "Nemesszalók"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$nemes5entandr\"s", 
             "txt": "Nemesszentandrás"
         }, 
@@ -2094,12 +2094,12 @@
             "txt": "piaccsarnok"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$pilis5\"nt9,", 
             "txt": "Pilisszántó,"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$pilis5entkere5t", 
             "txt": "Pilisszentkereszt"
         }, 
@@ -2404,7 +2404,7 @@
             "txt": "szalonnyelv, szalonnyelven "
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$5amos5eg", 
             "txt": "Szamosszeg"
         }, 
@@ -2441,7 +2441,7 @@
             "txt": "szentséggyalázás"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$5epes5ombat", 
             "txt": "Szepesszombat"
         }, 
@@ -2462,7 +2462,7 @@
             "txt": "szétosszák "
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$5ilv\"s5entm\"rton", 
             "txt": "Szilvásszentmárton"
         }, 
@@ -2811,7 +2811,7 @@
             "txt": "vállpereccsontjából"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$v\"mos5abadi", 
             "txt": "Vámosszabadi"
         }, 
@@ -2852,12 +2852,12 @@
             "txt": "vasszállítmány"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$va5ar", 
             "txt": "Vaszar"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$v\"`nok", 
             "txt": "Vázsnok"
         }, 
@@ -2906,7 +2906,7 @@
             "txt": "vértesszázadbeli "
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$v1rtes57l7s", 
             "txt": "Vértesszőlős"
         }, 
@@ -3083,17 +3083,17 @@
             "txt": "zsoldosszokás"
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$a telefon5\"mom: #jf-#a-#bef-#bef.", 
             "txt": "A telefonszámom: 06-1-256-256."
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$a fqldreng1s #g,e er7ss1g} volt.", 
             "txt": "A földrengés 7,5 erősségű volt."
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$tam\"s m1g nem tudta, ho4 mi v\"r r\".", 
             "txt": "Tamás még nem tudta, hogy mi vár rá."
         }, 
@@ -3102,12 +3102,12 @@
             "txt": "\"Tamás még nem tudta, hogy mi vár rá.\""
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$i don'.t no why happened this problem.", 
             "txt": "I don't no why happened this problem."
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$a2 #a#v paragrafus alapj\"n a kedve2m16 ig16be vehet7.", 
             "txt": "Az 1§ paragrafus alapján a kedvezmény igénybe vehető."
         }, 
@@ -3116,22 +3116,22 @@
             "txt": "– A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. – Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. – Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban."
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$a v1tel\"r #a <e.", 
             "txt": "A vételár 1 €."
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$de nekem na4on nehe2emre esik a lev1l|r\"s ~n12d el a hees|r\"si hib\"kat 1s a 306a |r\"somatz.", 
             "txt": "De nekem nagyon nehezemre esik a levélírás (nézd el a helyesírási hibákat és a csúnya írásomat)."
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$a ki\"ll|t\"s meg6it9j\"n jelen volt a2 $$mv4o5 elnqke.", 
             "txt": "A kiállítás megnyitóján jelen volt az MVGYOSZ elnöke."
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$a pontos id7 #aa.de perc.", 
             "txt": "A pontos idő 11:45 perc."
         }, 
@@ -3140,12 +3140,12 @@
             "txt": "•A kiadás újdonságai."
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$a hu'-list f\"jl nem l1te2ik.", 
             "txt": "A hu_list fájl nem létezik."
         }, 
         {
-            "BRLCursorPos": 1, 
+            "brlCursorPos": 1, 
             "brl": "$a2 e-mail c|mem: akarmi>akarmi.hu.", 
             "txt": "Az e-mail címem: akarmi@akarmi.hu."
         }
