@@ -315,6 +315,7 @@ struct input_state
     int                   use_i420;
     struct wcap_decoder  *wcap;
     uint32_t              output_msecs;
+    struct vpx_rational   output_framerate;
 };
 
 static inline int rgb_to_yuv(uint32_t format, uint32_t p, int *u, int *v)
@@ -1811,8 +1812,14 @@ void open_input_file(struct input_state *input, struct global_config *global)
         input->file_type = FILE_TYPE_WCAP;
         input->w = input->wcap->width;
         input->h = input->wcap->height;
-        input->framerate = global->framerate;
         input->use_i420 = 0;
+	if (global->have_framerate) {
+	    input->framerate = global->framerate;
+	}
+        else {
+	    input->framerate.num = 30;
+	    input->framerate.den = 1;
+	}
     }
     else
     {
