@@ -172,31 +172,6 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
   return remapped_resolver;
 }
 
-class LoggingNetworkChangeObserver
-    : public net::NetworkChangeNotifier::IPAddressObserver {
- public:
-  // |net_log| must remain valid throughout our lifetime.
-  explicit LoggingNetworkChangeObserver(net::NetLog* net_log)
-      : net_log_(net_log) {
-    net::NetworkChangeNotifier::AddIPAddressObserver(this);
-  }
-
-  ~LoggingNetworkChangeObserver() {
-    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
-  }
-
-  virtual void OnIPAddressChanged() {
-    VLOG(1) << "Observed a change to the network IP addresses";
-
-    net_log_->AddGlobalEntry(net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED,
-                             NULL);
-  }
-
- private:
-  net::NetLog* net_log_;
-  DISALLOW_COPY_AND_ASSIGN(LoggingNetworkChangeObserver);
-};
-
 // TODO(willchan): Remove proxy script fetcher context since it's not necessary
 // now that I got rid of refcounting URLRequestContexts.
 // See IOThread::Globals for details.
@@ -250,6 +225,31 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
 }
 
 }  // namespace
+
+class IOThread::LoggingNetworkChangeObserver
+    : public net::NetworkChangeNotifier::IPAddressObserver {
+ public:
+  // |net_log| must remain valid throughout our lifetime.
+  explicit LoggingNetworkChangeObserver(net::NetLog* net_log)
+      : net_log_(net_log) {
+    net::NetworkChangeNotifier::AddIPAddressObserver(this);
+  }
+
+  ~LoggingNetworkChangeObserver() {
+    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  }
+
+  virtual void OnIPAddressChanged() {
+    VLOG(1) << "Observed a change to the network IP addresses";
+
+    net_log_->AddGlobalEntry(net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED,
+                             NULL);
+  }
+
+ private:
+  net::NetLog* net_log_;
+  DISALLOW_COPY_AND_ASSIGN(LoggingNetworkChangeObserver);
+};
 
 class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
  public:

@@ -184,8 +184,8 @@ class IOThread : public content::BrowserThreadDelegate {
   Globals* globals_;
 
   // Observer that logs network changes to the ChromeNetLog.
-  scoped_ptr<net::NetworkChangeNotifier::IPAddressObserver>
-      network_change_observer_;
+  class LoggingNetworkChangeObserver;
+  scoped_ptr<LoggingNetworkChangeObserver> network_change_observer_;
 
   BooleanPrefMember system_enable_referrers_;
 

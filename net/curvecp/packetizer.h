@@ -27,8 +27,6 @@ class Packetizer {
                            size_t length)  = 0;
   };
 
-  virtual ~Packetizer() {}
-
   // Send a message on a connection.
   virtual int SendMessage(ConnectionKey key,
                           const char* data,
@@ -43,6 +41,9 @@ class Packetizer {
   // Returns the current maximum message size which can be fit into the next
   // message payload to be sent on the packetizer.
   virtual int max_message_payload() const = 0;
+
+ protected:
+  virtual ~Packetizer() {}
 };
 
 }  // namespace net
