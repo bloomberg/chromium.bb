@@ -19,6 +19,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
@@ -154,10 +155,37 @@ class FileSystemOperationWriteTest
 
 namespace {
 
+class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  explicit TestProtocolHandler(
+      webkit_blob::BlobStorageController* blob_storage_controller)
+      : blob_storage_controller_(blob_storage_controller) {}
+
+  virtual ~TestProtocolHandler() {}
+
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request) const OVERRIDE {
+    return new webkit_blob::BlobURLRequestJob(
+        request,
+        blob_storage_controller_->GetBlobDataFromUrl(request->url()),
+        base::MessageLoopProxy::current());
+  }
+
+ private:
+  webkit_blob::BlobStorageController* const blob_storage_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestProtocolHandler);
+};
+
 class TestURLRequestContext : public net::URLRequestContext {
  public:
   TestURLRequestContext()
-      : blob_storage_controller_(new webkit_blob::BlobStorageController) {}
+      : blob_storage_controller_(new webkit_blob::BlobStorageController) {
+    // Job factory owns the protocol handler.
+    job_factory_.SetProtocolHandler(
+        "blob", new TestProtocolHandler(blob_storage_controller_.get()));
+    set_job_factory(&job_factory_);
+  }
 
   virtual ~TestURLRequestContext() {}
 
@@ -166,19 +194,11 @@ class TestURLRequestContext : public net::URLRequestContext {
   }
 
  private:
+  net::URLRequestJobFactory job_factory_;
   scoped_ptr<webkit_blob::BlobStorageController> blob_storage_controller_;
-};
 
-static net::URLRequestJob* BlobURLRequestJobFactory(net::URLRequest* request,
-                                                    const std::string& scheme) {
-  webkit_blob::BlobStorageController* blob_storage_controller =
-      static_cast<const TestURLRequestContext*>(request->context())->
-          blob_storage_controller();
-  return new webkit_blob::BlobURLRequestJob(
-      request,
-      blob_storage_controller->GetBlobDataFromUrl(request->url()),
-      base::MessageLoopProxy::current());
-}
+  DISALLOW_COPY_AND_ASSIGN(TestURLRequestContext);
+};
 
 }  // namespace (anonymous)
 
@@ -196,13 +216,9 @@ void FileSystemOperationWriteTest::SetUp() {
   operation()->CreateFile(
       URLForPath(virtual_path_), true /* exclusive */,
       base::Bind(&AssertStatusEq, base::PLATFORM_FILE_OK));
-
-  net::URLRequest::Deprecated::RegisterProtocolFactory(
-      "blob", &BlobURLRequestJobFactory);
 }
 
 void FileSystemOperationWriteTest::TearDown() {
-  net::URLRequest::Deprecated::RegisterProtocolFactory("blob", NULL);
   quota_manager_ = NULL;
   test_helper_.TearDown();
 }
