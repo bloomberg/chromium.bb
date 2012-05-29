@@ -21,7 +21,7 @@ struct CONTENT_EXPORT SpeechRecognitionGrammar {
       : url(url_value),
         weight(0.0f) {
   }
-  SpeechRecognitionGrammar(std::string url_value, double weight_value)
+  SpeechRecognitionGrammar(const std::string& url_value, double weight_value)
       : url(url_value),
         weight(weight_value) {
   }
