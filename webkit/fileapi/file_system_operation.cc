@@ -149,6 +149,7 @@ void FileSystemOperation::Move(const GURL& src_path_url,
                                const GURL& dest_path_url,
                                const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationMove));
+  scoped_ptr<FileSystemOperation> deleter(this);
 
   base::PlatformFileError result = SetUpFileSystemPath(
       src_path_url, &src_path_, &src_util_, PATH_FOR_WRITE);
@@ -157,14 +158,24 @@ void FileSystemOperation::Move(const GURL& src_path_url,
         dest_path_url, &dest_path_, &dest_util_, PATH_FOR_CREATE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
-    delete this;
+    return;
+  }
+
+  // Temporarily disables cross-filesystem move for sandbox filesystems.
+  // TODO(kinuko,tzik,kinaba): This special handling must be removed once
+  // we support saner cross-filesystem operation.
+  // (See http://crbug.com/130055)
+  if (src_path_.type() != dest_path_.type() &&
+      (src_path_.type() == kFileSystemTypeTemporary ||
+       src_path_.type() == kFileSystemTypePersistent)) {
+    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
   GetUsageAndQuotaThenRunTask(
       dest_path_.origin(), dest_path_.type(),
       base::Bind(&FileSystemOperation::DoMove,
-                 base::Unretained(this), callback),
+                 base::Unretained(deleter.release()), callback),
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
 
