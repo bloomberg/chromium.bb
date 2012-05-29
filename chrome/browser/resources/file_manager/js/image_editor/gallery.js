@@ -281,6 +281,8 @@ Gallery.prototype.initDom_ = function() {
       Gallery.editorModes,
       this.displayStringFunction_);
 
+  this.editor_.getBuffer().addOverlay(new SwipeOverlay(this.ribbon_));
+
   this.imageView_.addContentCallback(this.onImageContentChanged_.bind(this));
 
   this.editor_.trackWindow(doc.defaultView);
@@ -1458,3 +1460,50 @@ ShareMode.prototype.cleanUpUI = function() {
   ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
   this.menu_.hidden = true;
 };
+
+/**
+ * Overlay that handles swipe gestures. Changes to the next or the previus file.
+ * @constructor
+ */
+function SwipeOverlay(ribbon) {
+  this.ribbon_ = ribbon;
+};
+
+SwipeOverlay.prototype.__proto__ = ImageBuffer.Overlay.prototype;
+
+/**
+ * @param {number} x X pointer position.
+ * @param {number} y Y pointer position.
+ * @param {boolean} touch True if dragging caused by touch.
+ * @return {function} The closure to call on drag.
+ */
+SwipeOverlay.prototype.getDragHandler = function(x, y, touch) {
+  if (!touch)
+    return null;
+  var origin = x;
+  var done = false;
+  var self = this;
+  return function(x, y) {
+    if (!done && origin - x > SwipeOverlay.SWIPE_THRESHOLD) {
+      self.handleSwipe_(1);
+      done = true;
+    } else if (!done && x - origin > SwipeOverlay.SWIPE_THRESHOLD) {
+      self.handleSwipe_(-1);
+      done = true;
+    }
+  };
+};
+
+/**
+ * Called when the swipe gesture is recognized.
+ * @param {number} direction 1 means swipe to left, -1 swipe to right.
+ */
+SwipeOverlay.prototype.handleSwipe_ = function(direction) {
+  this.ribbon_.selectNext(direction);
+};
+
+/**
+ * If the user touched the image and moved the finger more than SWIPE_THRESHOLD
+ * horizontally it's considered as a swipe gesture (change the current image).
+ */
+SwipeOverlay.SWIPE_THRESHOLD = 100;
