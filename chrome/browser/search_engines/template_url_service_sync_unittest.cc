@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
@@ -1553,4 +1555,66 @@ TEST_F(TemplateURLServiceSyncTest, PreSyncDeletes) {
   // The set of pre-sync deletes should be cleared so they're not reused if
   // MergeDataAndStartSyncing gets called again.
   EXPECT_TRUE(model()->pre_sync_deletes_.empty());
+}
+
+TEST_F(TemplateURLServiceSyncTest, PreSyncUpdates) {
+  const char* kNewKeyword = "somethingnew";
+  // Fetch the prepopulate search engines so we know what they are.
+  ScopedVector<TemplateURL> prepop_turls;
+  size_t default_search_provider_index = 0;
+  TemplateURLPrepopulateData::GetPrepopulatedEngines(
+      profile_a(), &prepop_turls.get(), &default_search_provider_index);
+
+  // We have to prematurely exit this test if for some reason this machine does
+  // not have any prepopulate TemplateURLs.
+  ASSERT_FALSE(prepop_turls.empty());
+
+  // Create a copy of the first TemplateURL with a really old timestamp and a
+  // new keyword. Add it to the model.
+  TemplateURLData data_copy(prepop_turls[0]->data());
+  data_copy.last_modified = Time::FromTimeT(10);
+  string16 original_keyword = data_copy.keyword();
+  data_copy.SetKeyword(ASCIIToUTF16(kNewKeyword));
+  // Set safe_for_autoreplace to false so our keyword survives.
+  data_copy.safe_for_autoreplace = false;
+  model()->Add(new TemplateURL(prepop_turls[0]->profile(), data_copy));
+
+  // Merge the prepopulate search engines.
+  base::Time pre_merge_time = base::Time::Now();
+  test_util_a_.BlockTillServiceProcessesRequests();
+  test_util_a_.ResetModel(true);
+
+  // The newly added search engine should have been safely merged, with an
+  // updated time.
+  TemplateURL* added_turl = model()->GetTemplateURLForKeyword(
+      ASCIIToUTF16(kNewKeyword));
+  base::Time new_timestamp = added_turl->last_modified();
+  EXPECT_GE(new_timestamp, pre_merge_time);
+  ASSERT_TRUE(added_turl);
+  std::string sync_guid = added_turl->sync_guid();
+
+  // Bring down a copy of the prepopulate engine from Sync with the old values,
+  // including the old timestamp and the same GUID. Ensure that it loses
+  // conflict resolution against the local value, and an update is sent to the
+  // server. The new timestamp should be preserved.
+  SyncDataList initial_data;
+  data_copy.SetKeyword(original_keyword);
+  data_copy.sync_guid = sync_guid;
+  scoped_ptr<TemplateURL> sync_turl(
+      new TemplateURL(prepop_turls[0]->profile(), data_copy));
+  initial_data.push_back(
+      TemplateURLService::CreateSyncDataFromTemplateURL(*sync_turl.get()));
+
+  model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
+      initial_data, PassProcessor(), CreateAndPassSyncErrorFactory());
+
+  ASSERT_EQ(added_turl, model()->GetTemplateURLForKeyword(
+      ASCIIToUTF16(kNewKeyword)));
+  EXPECT_EQ(new_timestamp, added_turl->last_modified());
+  SyncChange change = processor()->change_for_guid(sync_guid);
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
+  EXPECT_EQ(kNewKeyword,
+            change.sync_data().GetSpecifics().search_engine().keyword());
+  EXPECT_EQ(new_timestamp, base::Time::FromInternalValue(
+      change.sync_data().GetSpecifics().search_engine().last_modified()));
 }

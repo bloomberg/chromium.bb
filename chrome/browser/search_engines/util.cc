@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
@@ -187,6 +188,10 @@ void MergeEnginesFromPrepopulateData(
         data.short_name = existing_url->short_name();
       }
       data.id = existing_url->id();
+      // Update last_modified to ensure that if this entry is later merged with
+      // entries from Sync, the conflict resolution logic knows that this was
+      // updated and propagates the new values to the server.
+      data.last_modified = base::Time::Now();
       if (service)
         service->UpdateKeyword(data);
 
