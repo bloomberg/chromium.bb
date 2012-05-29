@@ -45,7 +45,6 @@ include_rules = [
   "-chrome/browser/ui/views",
   # TODO(tfarina): Remove all these. crbug.com/125846.
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
-  "+chrome/browser/ui/views/ash/chrome_shell_delegate.h",
   "+chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h",
   "+chrome/browser/ui/views/ash/panel_view_aura.h",
   "+chrome/browser/ui/views/bookmarks/bookmark_bar_view.h",
