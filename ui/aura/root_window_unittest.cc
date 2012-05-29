@@ -424,6 +424,9 @@ std::string EventTypeToString(ui::EventType type) {
     case ui::ET_GESTURE_TAP_DOWN:
       return "GESTURE_TAP_DOWN";
 
+    case ui::ET_GESTURE_TAP_UP:
+      return "GESTURE_TAP_UP";
+
     case ui::ET_GESTURE_DOUBLE_TAP:
       return "GESTURE_DOUBLE_TAP";
 
@@ -467,7 +470,8 @@ TEST_F(RootWindowTest, GestureToMouseEventTest) {
     root_window()->DispatchTouchEvent(&touch_pressed_event);
     root_window()->DispatchTouchEvent(&touch_released_event);
     EXPECT_EQ("TOUCH_PRESSED GESTURE_TAP_DOWN TOUCH_RELEASED GESTURE_TAP "
-              "MOUSE_ENTERED MOUSE_MOVED MOUSE_PRESSED MOUSE_RELEASED",
+              "MOUSE_ENTERED MOUSE_MOVED MOUSE_PRESSED MOUSE_RELEASED "
+              "GESTURE_TAP_UP",
               EventTypesToString(filter->events()));
     filter->events().clear();
   }
@@ -512,7 +516,8 @@ TEST_F(RootWindowTest, GestureToMouseEventTest) {
     TouchEvent touch_event(ui::ET_TOUCH_RELEASED, gfx::Point(300, 201), 1,
                            base::TimeDelta());
     root_window()->DispatchTouchEvent(&touch_event);
-    EXPECT_EQ("TOUCH_RELEASED GESTURE_SCROLL_END MOUSE_DRAGGED MOUSE_RELEASED",
+    EXPECT_EQ("TOUCH_RELEASED GESTURE_SCROLL_END MOUSE_DRAGGED MOUSE_RELEASED "
+              "GESTURE_TAP_UP",
               EventTypesToString(filter->events()));
     filter->events().clear();
   }
@@ -552,7 +557,7 @@ TEST_F(RootWindowTest, MouseMoveThenTouch) {
     root_window()->DispatchTouchEvent(&touch_released_event);
     EXPECT_EQ("TOUCH_PRESSED GESTURE_TAP_DOWN TOUCH_RELEASED GESTURE_TAP "
               "MOUSE_EXITED MOUSE_ENTERED MOUSE_MOVED MOUSE_PRESSED "
-              "MOUSE_RELEASED",
+              "MOUSE_RELEASED GESTURE_TAP_UP",
               EventTypesToString(filter->events()));
     filter->events().clear();
   }
