@@ -60,7 +60,8 @@ gfx::Size FixedSizedImageView::GetPreferredSize() {
 ////////////////////////////////////////////////////////////////////////////////
 // ActionableView
 
-ActionableView::ActionableView() {
+ActionableView::ActionableView()
+    : has_capture_(false) {
   set_focusable(true);
 }
 
@@ -76,7 +77,18 @@ bool ActionableView::OnKeyPressed(const views::KeyEvent& event) {
 }
 
 bool ActionableView::OnMousePressed(const views::MouseEvent& event) {
-  return PerformAction(event);
+  // Return true so that this view starts capturing the events.
+  has_capture_ = true;
+  return true;
+}
+
+void ActionableView::OnMouseReleased(const views::MouseEvent& event) {
+  if (has_capture_ && GetLocalBounds().Contains(event.location()))
+    PerformAction(event);
+}
+
+void ActionableView::OnMouseCaptureLost() {
+  has_capture_ = false;
 }
 
 void ActionableView::SetAccessibleName(const string16& name) {

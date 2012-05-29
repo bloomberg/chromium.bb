@@ -160,7 +160,6 @@ TimeView::TimeView()
   label_ = CreateLabel();
   UpdateTextInternal(base::Time::Now());
   AddChildView(label_);
-  set_focusable(true);
 }
 
 TimeView::~TimeView() {
@@ -182,6 +181,10 @@ bool TimeView::PerformAction(const views::Event& event) {
   return false;
 }
 
+bool TimeView::OnMousePressed(const views::MouseEvent& event) {
+  // Let the event fall through.
+  return false;
+}
 
 }  // namespace tray
 }  // namespace internal

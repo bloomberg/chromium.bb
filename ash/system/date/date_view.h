@@ -96,6 +96,9 @@ class TimeView : public BaseDateTimeView {
   // Overridden from ActionableView.
   virtual bool PerformAction(const views::Event& event) OVERRIDE;
 
+  // Overridden from views::View.
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+
   views::Label* label_;
 
   base::HourClockType hour_type_;
