@@ -1279,11 +1279,11 @@ class SDKPackageStage(bs.BuilderStage):
   MANIFEST_VERSION = '1'
 
   def _PerformStage(self):
-    tarball_location = os.path.join(self._build_root, 'built-sdk.tbz2')
+    tarball_location = os.path.join(self._build_root, 'built-sdk.tar.xz')
     chroot_location = os.path.join(self._build_root, 'chroot')
     board_location = os.path.join(chroot_location, 'build/amd64-host')
     manifest_location = os.path.join(self._build_root,
-                                     'built-sdk.tbz2.Manifest')
+                                     'built-sdk.tar.xz.Manifest')
 
     # Create a tarball of the latest SDK.
     self.CreateSDKTarball(chroot_location, board_location, tarball_location)
@@ -1303,15 +1303,18 @@ class SDKPackageStage(bs.BuilderStage):
       sdk_path: Path to the root of newly generated SDK image.
       dest_tarball: Path of the tarball that should be created.
     """
-    bzip2 = cros_build_lib.FindCompressor(
-        cros_build_lib.COMP_BZIP2, chroot=chroot)
-    cmd = ['tar', '-I', bzip2, '-cf', dest_tarball]
+    # TODO(zbehan): We cannot use xz from the chroot unless it's
+    # statically linked.
+    compress = cros_build_lib.FindCompressor(cros_build_lib.COMP_XZ)
+    cmd = ['tar', '-c', '-I', compress, '-f', dest_tarball]
     excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
                       'tmp')
-    for path in excluded_paths:
-      cmd.append('--exclude=%s/*' % path)
+    cmd.extend('--exclude=%s/*' % path for path in excluded_paths)
     cmd.append('.')
-    cros_build_lib.SudoRunCommand(cmd, cwd=sdk_path)
+    # Options for maximum compression.
+    extra_env = { 'XZ_OPT' : '-e9' }
+
+    cros_build_lib.SudoRunCommand(cmd, extra_env=extra_env, cwd=sdk_path)
 
   def CreateManifestFromSDK(self, sdk_path, dest_manifest):
     """Creates a manifest from a given source chroot.
