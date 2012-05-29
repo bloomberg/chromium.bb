@@ -657,6 +657,11 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
   // Reenable clicking on other windows and status area.
   login_display_->SetUIEnabled(true);
 
+  if (login_status_consumer_) {
+    login_status_consumer_->OnLoginFailure(LoginFailure(
+          LoginFailure::WHITELIST_CHECK_FAILED));
+  }
+
   display_email_.clear();
 }
 

@@ -6,23 +6,39 @@ import logging
 
 import pyauto_functional  # Must come before pyauto (and thus, policy_base).
 import policy_base
+import pyauto_errors
 
 
 class ChromeosDevicePolicy(policy_base.PolicyTestBase):
   """Tests various ChromeOS device policies."""
 
   def _SetDevicePolicyAndOwner(self, policy):
-    self.SetDevicePolicy(device_policy=policy, owner=self._owner)
+    self.SetDevicePolicy(device_policy=policy, owner=self._usernames[0])
 
-  def Login(self, as_guest):
+  def LoginAsGuest(self):
     self.assertFalse(self.GetLoginInfo()['is_logged_in'],
                      msg='Expected to be logged out.')
-    if as_guest:
-      self.LoginAsGuest()
-    else:
-      policy_base.PolicyTestBase.Login(self, self._owner, self._password)
+    policy_base.PolicyTestBase.LoginAsGuest()
     self.assertTrue(self.GetLoginInfo()['is_logged_in'],
                     msg='Expected to be logged in.')
+
+  def Login(self, user_index, expect_success):
+    self.assertFalse(self.GetLoginInfo()['is_logged_in'],
+                     msg='Expected to be logged out.')
+    if expect_success:
+      policy_base.PolicyTestBase.Login(self,
+                                       self._usernames[user_index],
+                                       self._passwords[user_index])
+      self.assertTrue(self.GetLoginInfo()['is_logged_in'],
+                      msg='Expected to be logged in.')
+    else:
+      self.assertRaises(
+          pyauto_errors.LoginError,
+          lambda: policy_base.PolicyTestBase.Login(self,
+                                                   self._usernames[user_index],
+                                                   self._passwords[user_index]))
+      self.assertFalse(self.GetLoginInfo()['is_logged_in'],
+                       msg='Expected to not be logged in.')
 
   # TODO(bartfab): Remove this after crosbug.com/20709 is fixed.
   def TryToDisableLocalStateAutoClearing(self):
@@ -52,10 +68,13 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self._local_state_auto_clearing = \
         self.IsLocalStateAutoClearingEnabledOnChromeOS()
 
-    # Cache owner credentials for easy lookup.
-    credentials = self.GetPrivateInfo()['prod_enterprise_test_user']
-    self._owner = credentials['username']
-    self._password = credentials['password']
+    # Cache user credentials for easy lookup. The first user will become the
+    # owner.
+    credentials = (self.GetPrivateInfo()['prod_enterprise_test_user'],
+                   self.GetPrivateInfo()['prod_enterprise_executive_user'],
+                   self.GetPrivateInfo()['prod_enterprise_sales_user'])
+    self._usernames = [credential['username'] for credential in credentials]
+    self._passwords = [credential['password'] for credential in credentials]
 
   def tearDown(self):
     # TODO(bartfab): Remove this after crosbug.com/20709 is fixed.
@@ -86,7 +105,7 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self._SetDevicePolicyAndOwner({'guest_mode_enabled': True})
     self.assertTrue(self._CheckGuestModeAvailableInLoginWindow(),
                     msg='Expected guest mode to be available.')
-    self.Login(as_guest=True)
+    self.LoginAsGuest()
     self.Logout()
 
     self._SetDevicePolicyAndOwner({'guest_mode_enabled': False})
@@ -102,13 +121,13 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
 
     # Log in as a regular so that the pod row contains at least one pod and the
     # account picker is shown.
-    self.Login(as_guest=False)
+    self.Login(user_index=0, expect_success=True)
     self.Logout()
 
     self._SetDevicePolicyAndOwner({'guest_mode_enabled': True})
     self.assertTrue(self._CheckGuestModeAvailableInAccountPicker(),
                     msg='Expected guest mode to be available.')
-    self.Login(as_guest=True)
+    self.LoginAsGuest()
     self.Logout()
 
     self._SetDevicePolicyAndOwner({'guest_mode_enabled': False})
@@ -125,7 +144,7 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
 
     # Log in as a regular user so that the pod row contains at least one pod and
     # the account picker can be shown.
-    self.Login(as_guest=False)
+    self.Login(user_index=0, expect_success=True)
     self.Logout()
 
     self._SetDevicePolicyAndOwner({'show_user_names': True})
@@ -137,6 +156,49 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self.assertEquals('gaia-signin',
                      self._GetCurrentLoginScreenId(),
                      msg='Expected the account picker to not be visible.')
+
+  def testUserWhitelistAndAllowNewUsers(self):
+    """Checks that login can be (dis)allowed by whitelist and allow-new-users.
+
+    The test verifies that these two interrelated policies behave as documented
+    in the chrome/browser/policy/proto/chrome_device_policy.proto file. Cases
+    for which the current behavior is marked as "broken" are intentionally
+    ommitted since the broken behavior should be fixed rather than protected by
+    tests.
+    """
+    # No whitelist
+    self._SetDevicePolicyAndOwner({'allow_new_users': True})
+    self.Login(user_index=0, expect_success=True)
+    self.Logout()
+
+    # Empty whitelist
+    self._SetDevicePolicyAndOwner({'user_whitelist': []})
+    self.Login(user_index=0, expect_success=True)
+    self.Logout()
+
+    self._SetDevicePolicyAndOwner({'allow_new_users': True,
+                                   'user_whitelist': []})
+    self.Login(user_index=0, expect_success=True)
+    self.Logout()
+
+    # Populated whitelist
+    self._SetDevicePolicyAndOwner({'user_whitelist': [self._usernames[0]]})
+    self.Login(user_index=0, expect_success=True)
+    self.Logout()
+    self.Login(user_index=1, expect_success=False)
+
+    self._SetDevicePolicyAndOwner({'allow_new_users': True,
+                                   'user_whitelist': [self._usernames[0]]})
+    self.Login(user_index=0, expect_success=True)
+    self.Logout()
+    self.Login(user_index=1, expect_success=True)
+
+    # New users not allowed, populated whitelist
+    self._SetDevicePolicyAndOwner({'allow_new_users': False,
+                                   'user_whitelist': [self._usernames[0]]})
+    self.Login(user_index=0, expect_success=True)
+    self.Logout()
+    self.Login(user_index=1, expect_success=False)
 
 
 if __name__ == '__main__':

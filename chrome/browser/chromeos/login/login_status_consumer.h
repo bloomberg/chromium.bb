@@ -25,12 +25,17 @@ class LoginFailure {
     COULD_NOT_MOUNT_CRYPTOHOME,
     COULD_NOT_MOUNT_TMPFS,
     COULD_NOT_UNMOUNT_CRYPTOHOME,
-    DATA_REMOVAL_FAILED,  // Could not destroy your old data
+    DATA_REMOVAL_FAILED,    // Could not destroy your old data
     LOGIN_TIMED_OUT,
     UNLOCK_FAILED,
-    NETWORK_AUTH_FAILED,  // Could not authenticate against Google
-    OWNER_REQUIRED,       // Only the device owner can log-in.
-    NUM_FAILURE_REASONS,  // This has to be the last item.
+    NETWORK_AUTH_FAILED,    // Could not authenticate against Google
+    OWNER_REQUIRED,         // Only the device owner can log-in.
+    WHITELIST_CHECK_FAILED, // Login attempt blocked by whitelist. This value is
+                            // synthesized by the ExistingUserController and
+                            // passed to the login_status_consumer_ in tests
+                            // only. It is never generated or seen by any of the
+                            // other authenticator classes.
+    NUM_FAILURE_REASONS,    // This has to be the last item.
   };
 
   explicit LoginFailure(FailureReason reason)
@@ -79,6 +84,8 @@ class LoginFailure {
         return "Google authentication failed.";
       case OWNER_REQUIRED:
         return "Login is restricted to the owner's account only.";
+      case WHITELIST_CHECK_FAILED:
+        return "Login attempt blocked by whitelist.";
       default:
         NOTREACHED();
         return std::string();
