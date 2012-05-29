@@ -97,6 +97,8 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
+      # crbug.com/128563
+      '-gtalk.test_basic.BasicTest.testBasicFunctionality',
       # crbug.com/105560
       '-notifications',
       # crbug.com/99506
@@ -345,8 +347,6 @@
       # crbug.com/129498
       '-https.SSLTest.testSSLCertAuthorityOK',
       '-https.SSLTest.testSSLCertOK',
-      # crbug.com/128563
-      '-gtalk.test_basic.BasicTest.testBasicFunctionality',
       # crosbug.com/24496
       '-infobars.InfobarTest.testPluginCrashForMultiTabs',
       # crbug.com/109035
