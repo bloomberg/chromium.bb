@@ -26,7 +26,7 @@
 
   interface Functions {
     static void create(DOMString url,
-                       CreateWindowOptions options,
-                       CreateWindowCallback callback);
+                       optional CreateWindowOptions options,
+                       optional CreateWindowCallback callback);
   };
 };

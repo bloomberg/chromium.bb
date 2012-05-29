@@ -7,13 +7,17 @@
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 var appWindowNatives = requireNative('app_window');
+var GetView = appWindowNatives.GetView;
 
-chromeHidden.registerCustomHook('appWindow', function() {
-  var internal_appWindow_create = chrome.appWindow.create;
-  chrome.appWindow.create = function(url, opts, cb) {
-    internal_appWindow_create(url, opts, function(view_id) {
-      var dom = appWindowNatives.GetView(view_id);
-      cb(dom);
-    });
-  };
+chromeHidden.registerCustomHook('appWindow', function(bindingsAPI) {
+  var apiFunctions = bindingsAPI.apiFunctions;
+  apiFunctions.setCustomCallback('create', function(name, request, view_id) {
+    var view = null;
+    if (view_id)
+      view = GetView(view_id);
+    if (request.callback) {
+      request.callback(view);
+      delete request.callback;
+    }
+  })
 });

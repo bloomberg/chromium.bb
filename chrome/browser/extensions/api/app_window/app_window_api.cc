@@ -17,7 +17,8 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 
-namespace Create = extensions::api::app_window::Create;
+namespace app_window = extensions::api::app_window;
+namespace Create = app_window::Create;
 
 namespace extensions {
 
@@ -29,24 +30,27 @@ bool AppWindowCreateFunction::RunImpl() {
 
   GURL url = GetExtension()->GetResourceURL(params->url);
 
-  bool use_custom_frame = params->options.frame.get() &&
-      *params->options.frame.get() == kCustomFrameOption;
-
   // TODO(jeremya): figure out a way to pass the opening WebContents through to
   // ShellWindow::Create so we can set the opener at create time rather than
   // with a hack in AppWindowCustomBindings::GetView().
   ShellWindow::CreateParams create_params;
-  if (params->options.width.get())
-    create_params.bounds.set_width(*params->options.width.get());
-  if (params->options.height.get())
-    create_params.bounds.set_height(*params->options.height.get());
-  if (params->options.left.get())
-    create_params.bounds.set_x(*params->options.left.get());
-  if (params->options.top.get())
-    create_params.bounds.set_y(*params->options.top.get());
-  create_params.frame = use_custom_frame ?
-      ShellWindow::CreateParams::FRAME_CUSTOM :
-      ShellWindow::CreateParams::FRAME_CHROME;
+  app_window::CreateWindowOptions* options = params->options.get();
+  if (options) {
+    if (options->width.get())
+      create_params.bounds.set_width(*options->width.get());
+    if (options->height.get())
+      create_params.bounds.set_height(*options->height.get());
+    if (options->left.get())
+      create_params.bounds.set_x(*options->left.get());
+    if (options->top.get())
+      create_params.bounds.set_y(*options->top.get());
+
+    if (options->frame.get()) {
+      create_params.frame = *options->frame == kCustomFrameOption ?
+          ShellWindow::CreateParams::FRAME_CUSTOM :
+          ShellWindow::CreateParams::FRAME_CHROME;
+    }
+  }
   ShellWindow* shell_window =
       ShellWindow::Create(profile(), GetExtension(), url, create_params);
   shell_window->Show();
