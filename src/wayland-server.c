@@ -437,7 +437,7 @@ wl_client_destroy(struct wl_client *client)
 {
 	uint32_t serial = 0;
 	
-	printf("disconnect from client %p\n", client);
+	wl_log("disconnect from client %p\n", client);
 
 	wl_signal_emit(&client->destroy_signal, client);
 
@@ -1016,7 +1016,7 @@ socket_data(int fd, uint32_t mask, void *data)
 	client_fd = wl_os_accept_cloexec(fd, (struct sockaddr *) &name,
 					 &length);
 	if (client_fd < 0)
-		fprintf(stderr, "failed to accept, errno: %d\n", errno);
+		wl_log("failed to accept, errno: %d\n", errno);
 	else
 		wl_client_create(display, client_fd);
 
@@ -1036,15 +1036,13 @@ get_socket_lock(struct wl_socket *socket, socklen_t name_size)
 			       (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
 
 	if (socket->fd_lock < 0) {
-		fprintf(stderr,
-			"unable to open lockfile %s check permissions\n",
+		wl_log("unable to open lockfile %s check permissions\n",
 			socket->lock_addr);
 		return -1;
 	}
 
 	if (flock(socket->fd_lock, LOCK_EX | LOCK_NB) < 0) {
-		fprintf(stderr,
-			"unable to lock lockfile %s, maybe another compositor is running\n",
+		wl_log("unable to lock lockfile %s, maybe another compositor is running\n",
 			socket->lock_addr);
 		close(socket->fd_lock);
 		return -1;
@@ -1052,7 +1050,7 @@ get_socket_lock(struct wl_socket *socket, socklen_t name_size)
 
 	if (stat(socket->addr.sun_path, &socket_stat) < 0 ) {
 		if (errno != ENOENT) {
-			fprintf(stderr, "did not manage to stat file %s\n",
+			wl_log("did not manage to stat file %s\n",
 				socket->addr.sun_path);
 			close(socket->fd_lock);
 			return -1;
@@ -1085,8 +1083,7 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	runtime_dir = getenv("XDG_RUNTIME_DIR");
 	if (runtime_dir == NULL) {
 		runtime_dir = ".";
-		fprintf(stderr,
-			"XDG_RUNTIME_DIR not set, falling back to %s\n",
+		wl_log("XDG_RUNTIME_DIR not set, falling back to %s\n",
 			runtime_dir);
 	}
 
@@ -1099,7 +1096,7 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	s->addr.sun_family = AF_LOCAL;
 	name_size = snprintf(s->addr.sun_path, sizeof s->addr.sun_path,
 			     "%s/%s", runtime_dir, name) + 1;
-	fprintf(stderr, "using socket %s\n", s->addr.sun_path);
+	wl_log("using socket %s\n", s->addr.sun_path);
 
 	if (get_socket_lock(s,name_size) < 0) {
 		close(s->fd);
