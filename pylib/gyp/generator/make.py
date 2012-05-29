@@ -1393,8 +1393,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       self.WriteMakeRule(extra_outputs, deps,
                          comment=('Preserve order dependency of '
                                   'special output on deps.'),
-                         order_only = True,
-                         multiple_output_trick = False)
+                         order_only = True)
 
     target_postbuilds = {}
     if self.type != 'none':
@@ -1634,8 +1633,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
 
   def WriteMakeRule(self, outputs, inputs, actions=None, comment=None,
-                    order_only=False, force=False, phony=False,
-                    multiple_output_trick=True):
+                    order_only=False, force=False, phony=False):
     """Write a Makefile rule, with some extra tricks.
 
     outputs: a list of outputs for the rule (note: this is not directly
@@ -1648,8 +1646,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     force: if true, include FORCE_DO_CMD as an order-only dep
     phony: if true, the rule does not actually generate the named output, the
            output is just a name to run the rule
-    multiple_output_trick: if true (the default), perform tricks such as dummy
-           rules to avoid problems with multiple outputs.
     """
     outputs = map(QuoteSpaces, outputs)
     inputs = map(QuoteSpaces, inputs)
@@ -1661,20 +1657,22 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     # TODO(evanm): just make order_only a list of deps instead of these hacks.
     if order_only:
       order_insert = '| '
+      pick_output = ' '.join(outputs)
     else:
       order_insert = ''
+      pick_output = outputs[0]
     if force:
       force_append = ' FORCE_DO_CMD'
     else:
       force_append = ''
     if actions:
       self.WriteLn("%s: TOOLSET := $(TOOLSET)" % outputs[0])
-    self.WriteLn('%s: %s%s%s' % (outputs[0], order_insert, ' '.join(inputs),
+    self.WriteLn('%s: %s%s%s' % (pick_output, order_insert, ' '.join(inputs),
                                  force_append))
     if actions:
       for action in actions:
         self.WriteLn('\t%s' % action)
-    if multiple_output_trick and len(outputs) > 1:
+    if not order_only and len(outputs) > 1:
       # If we have more than one output, a rule like
       #   foo bar: baz
       # that for *each* output we must run the action, potentially
