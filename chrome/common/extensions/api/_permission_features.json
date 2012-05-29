@@ -14,7 +14,7 @@
     "min_manifest_version": 2
   },
   "appWindow": {
-    "channel": "trunk",
+    "channel": "dev",
     "extension_types": ["platform_app"]
   },
   "appNotifications": {
