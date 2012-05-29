@@ -271,6 +271,7 @@ static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_lseek, program);  // Nvidia binary driver.
   EmitAllowSyscall(__NR_shutdown, program);  // Virtual driver.
   EmitAllowSyscall(__NR_rt_sigaction, program);  // Breakpad signal handler.
+  EmitFailSyscall(__NR_socket, EACCES, program);  // Nvidia binary driver.
   EmitAllowSignalSelf(program);  // GPU watchdog.
 
   // Generally, filename-based syscalls will fail with ENOENT to behave
