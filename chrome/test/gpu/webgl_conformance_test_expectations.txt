@@ -113,6 +113,9 @@ UNFILED WIN7 INTEL : conformance_misc_delayed_drawing = FAIL
 UNFILED WIN7 INTEL : conformance_textures_texture_clear = FAIL
 UNFILED WIN7 INTEL : conformance_glsl_samplers_glsl_function_texture2dlod = FAIL
 
+UNFILED WIN7 INTEL : conformance_attribs_gl_disabled_vertex_attrib = FAIL
+UNFILED WIN7 INTEL : conformance_extensions_oes_texture_float_with_image_data = FAIL
+
 UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_asin = FAIL
 UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_dot = FAIL
 UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_faceforward = FAIL
