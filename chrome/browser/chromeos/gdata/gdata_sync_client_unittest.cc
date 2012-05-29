@@ -161,7 +161,7 @@ TEST_F(GDataSyncClientTest, StartInitialScan) {
   SetUpTestFiles();
 
   EXPECT_CALL(*mock_file_system_, GetCacheDirectoryPath(
-      GDataRootDirectory::CACHE_TYPE_PINNED))
+      GDataCache::CACHE_TYPE_PINNED))
       .WillOnce(Return(temp_dir_.path()));
 
   sync_client_->StartInitialScan(

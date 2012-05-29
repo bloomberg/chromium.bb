@@ -19,25 +19,6 @@ namespace {
 const char kSlash[] = "/";
 const char kEscapedSlash[] = "\xE2\x88\x95";
 
-std::string CacheSubDirectoryTypeToString(
-    GDataRootDirectory::CacheSubDirectoryType subdir) {
-  switch (subdir) {
-    case GDataRootDirectory::CACHE_TYPE_META: return "meta";
-    case GDataRootDirectory::CACHE_TYPE_PINNED: return "pinned";
-    case GDataRootDirectory::CACHE_TYPE_OUTGOING: return "outgoing";
-    case GDataRootDirectory::CACHE_TYPE_PERSISTENT: return "persistent";
-    case GDataRootDirectory::CACHE_TYPE_TMP: return "tmp";
-    case GDataRootDirectory::CACHE_TYPE_TMP_DOWNLOADS:
-      return "tmp_downloads";
-    case GDataRootDirectory::CACHE_TYPE_TMP_DOCUMENTS:
-      return "tmp_documents";
-    case GDataRootDirectory::NUM_CACHE_TYPES:
-      NOTREACHED();
-  }
-  NOTREACHED();
-  return "unknown subdir";
-}
-
 // Extracts resource_id out of edit url.
 std::string ExtractResourceId(const GURL& url) {
   return net::UnescapeURLComponent(url.ExtractFileName(),
@@ -411,23 +392,6 @@ void GDataDirectory::RemoveChildDirectories() {
   child_directories_.clear();
 }
 
-// GDataRootDirectory::CacheEntry struct  implementation.
-
-std::string GDataRootDirectory::CacheEntry::ToString() const {
-  std::vector<std::string> cache_states;
-  if (GDataFile::IsCachePresent(cache_state))
-    cache_states.push_back("present");
-  if (GDataFile::IsCachePinned(cache_state))
-    cache_states.push_back("pinned");
-  if (GDataFile::IsCacheDirty(cache_state))
-    cache_states.push_back("dirty");
-
-  return base::StringPrintf("md5=%s, subdir=%s, cache_state=%s",
-                            md5.c_str(),
-                            CacheSubDirectoryTypeToString(sub_dir_type).c_str(),
-                            JoinString(cache_states, ',').c_str());
-}
-
 // GDataRootDirectory class implementation.
 
 GDataRootDirectory::GDataRootDirectory()
@@ -443,9 +407,11 @@ GDataRootDirectory::GDataRootDirectory()
 }
 
 GDataRootDirectory::~GDataRootDirectory() {
-  STLDeleteValues(&cache_map_);
-  cache_map_.clear();
-
+  // Note that children have a reference to root_,
+  // so we need to delete them here.
+  RemoveChildren();
+  RemoveEntryFromResourceMap(this);
+  DCHECK(resource_map_.empty());
   resource_map_.clear();
 }
 
@@ -585,103 +551,6 @@ GDataEntry* GDataRootDirectory::GetEntryByResourceId(
   if (iter == resource_map_.end())
     return NULL;
   return iter->second;
-}
-
-void GDataRootDirectory::SetCacheMap(const CacheMap& new_cache_map)  {
-  // GDataFileSystem has already locked.
-
-  // Delete everything in cache map before copying.
-  STLDeleteValues(&cache_map_);
-  cache_map_ = new_cache_map;
-}
-
-void GDataRootDirectory::UpdateCacheMap(const std::string& resource_id,
-                                        const std::string& md5,
-                                        CacheSubDirectoryType subdir,
-                                        int cache_state) {
-  // GDataFileSystem has already locked.
-
-  CacheMap::iterator iter = cache_map_.find(resource_id);
-  if (iter == cache_map_.end()) {  // New resource, create new entry.
-    // Makes no sense to create new entry if cache state is NONE.
-    DCHECK(cache_state != GDataFile::CACHE_STATE_NONE);
-    if (cache_state != GDataFile::CACHE_STATE_NONE) {
-      CacheEntry* entry = new CacheEntry(md5, subdir, cache_state);
-      cache_map_.insert(std::make_pair(resource_id, entry));
-      DVLOG(1) << "Added res_id=" << resource_id
-               << ", " << entry->ToString();
-    }
-  } else {  // Resource exists.
-    CacheEntry* entry = iter->second;
-    // If cache state is NONE, delete entry from cache map.
-    if (cache_state == GDataFile::CACHE_STATE_NONE) {
-      DVLOG(1) << "Deleting res_id=" << resource_id
-               << ", " << entry->ToString();
-      delete entry;
-      cache_map_.erase(iter);
-    } else {  // Otherwise, update entry in cache map.
-      entry->md5 = md5;
-      entry->sub_dir_type = subdir;
-      entry->cache_state = cache_state;
-      DVLOG(1) << "Updated res_id=" << resource_id
-               << ", " << entry->ToString();
-    }
-  }
-}
-
-void GDataRootDirectory::RemoveFromCacheMap(const std::string& resource_id) {
-  // GDataFileSystem has already locked.
-
-  CacheMap::iterator iter = cache_map_.find(resource_id);
-  if (iter != cache_map_.end()) {
-    // Delete the CacheEntry and remove it from the map.
-    delete iter->second;
-    cache_map_.erase(iter);
-  }
-}
-
-GDataRootDirectory::CacheEntry* GDataRootDirectory::GetCacheEntry(
-    const std::string& resource_id,
-    const std::string& md5) {
-  // GDataFileSystem has already locked.
-
-  CacheMap::iterator iter = cache_map_.find(resource_id);
-  if (iter == cache_map_.end()) {
-    DVLOG(1) << "Can't find " << resource_id << " in cache map";
-    return NULL;
-  }
-
-  CacheEntry* entry = iter->second;
-
-  // If entry is not dirty, it's only valid if matches with non-empty |md5|.
-  // If entry is dirty, its md5 may have been replaced by "local" during cache
-  // initialization, so we don't compare md5.
-  if (!entry->IsDirty() && !md5.empty() && entry->md5 != md5) {
-    DVLOG(1) << "Non-matching md5: want=" << md5
-             << ", found=[res_id=" << resource_id
-             << ", " << entry->ToString()
-             << "]";
-    return NULL;
-  }
-
-  DVLOG(1) << "Found entry for res_id=" << resource_id
-           << ", " << entry->ToString();
-
-  return entry;
-}
-
-void GDataRootDirectory::RemoveTemporaryFilesFromCacheMap() {
-  CacheMap::iterator iter = cache_map_.begin();
-  while (iter != cache_map_.end()) {
-    CacheEntry* entry = iter->second;
-    if (entry->sub_dir_type == CACHE_TYPE_TMP) {
-      delete entry;
-      // Post-increment the iterator to avoid iterator invalidation.
-      cache_map_.erase(iter++);
-    } else {
-      ++iter;
-    }
-  }
 }
 
 // Convert to/from proto.
@@ -824,14 +693,14 @@ void GDataEntry::SerializeToString(std::string* serialized_proto) const {
   const GDataDirectory* dir = AsGDataDirectoryConst();
 
   if (file) {
-    scoped_ptr<GDataFileProto> proto(new GDataFileProto());
-    file->ToProto(proto.get());
-    const bool ok = proto->SerializeToString(serialized_proto);
+    GDataFileProto file_proto;
+    file->ToProto(&file_proto);
+    const bool ok = file_proto.SerializeToString(serialized_proto);
     DCHECK(ok);
   } else if (dir) {
-    scoped_ptr<GDataDirectoryProto> proto(new GDataDirectoryProto());
-    dir->ToProto(proto.get());
-    const bool ok = proto->SerializeToString(serialized_proto);
+    GDataDirectoryProto dir_proto;
+    dir->ToProto(&dir_proto);
+    const bool ok = dir_proto.SerializeToString(serialized_proto);
     DCHECK(ok);
   }
 }
@@ -842,20 +711,20 @@ scoped_ptr<GDataEntry> GDataEntry::FromProtoString(
   // First try to parse as GDataDirectoryProto. Note that this can succeed for
   // a serialized_proto that's really a GDataFileProto - we have to check
   // is_directory to be sure.
-  scoped_ptr<GDataDirectoryProto> dir_proto(new GDataDirectoryProto());
-  bool ok = dir_proto->ParseFromString(serialized_proto);
-  if (ok && dir_proto->gdata_entry().file_info().is_directory()) {
+  GDataDirectoryProto dir_proto;
+  bool ok = dir_proto.ParseFromString(serialized_proto);
+  if (ok && dir_proto.gdata_entry().file_info().is_directory()) {
     GDataDirectory* dir = new GDataDirectory(NULL, NULL);
-    dir->FromProto(*dir_proto);
+    dir->FromProto(dir_proto);
     return scoped_ptr<GDataEntry>(dir);
   }
 
-  scoped_ptr<GDataFileProto> file_proto(new GDataFileProto());
-  ok = file_proto->ParseFromString(serialized_proto);
+  GDataFileProto file_proto;
+  ok = file_proto.ParseFromString(serialized_proto);
   if (ok) {
-    DCHECK(!file_proto->gdata_entry().file_info().is_directory());
+    DCHECK(!file_proto.gdata_entry().file_info().is_directory());
     GDataFile* file = new GDataFile(NULL, NULL);
-    file->FromProto(*file_proto);
+    file->FromProto(file_proto);
     return scoped_ptr<GDataEntry>(file);
   }
   return scoped_ptr<GDataEntry>(NULL);
@@ -863,20 +732,18 @@ scoped_ptr<GDataEntry> GDataEntry::FromProtoString(
 
 void GDataRootDirectory::SerializeToString(
     std::string* serialized_proto) const {
-  scoped_ptr<GDataRootDirectoryProto> proto(
-      new GDataRootDirectoryProto());
-  ToProto(proto.get());
-  const bool ok = proto->SerializeToString(serialized_proto);
+  GDataRootDirectoryProto proto;
+  ToProto(&proto);
+  const bool ok = proto.SerializeToString(serialized_proto);
   DCHECK(ok);
 }
 
 bool GDataRootDirectory::ParseFromString(const std::string& serialized_proto) {
-  scoped_ptr<GDataRootDirectoryProto> proto(
-      new GDataRootDirectoryProto());
-  bool ok = proto->ParseFromString(serialized_proto);
+  GDataRootDirectoryProto proto;
+  const bool ok = proto.ParseFromString(serialized_proto);
   if (ok) {
     const GDataEntryProto& entry_proto =
-        proto->gdata_directory().gdata_entry();
+        proto.gdata_directory().gdata_entry();
     // The title field for the root directory was originally empty, then
     // changed to "gdata", then changed to "drive". Discard the proto data if
     // the older formats are detected. See crbug.com/128133 for details.
@@ -893,7 +760,7 @@ bool GDataRootDirectory::ParseFromString(const std::string& serialized_proto) {
       return false;
     }
 
-    FromProto(*proto.get());
+    FromProto(proto);
     set_origin(FROM_CACHE);
     set_refresh_time(base::Time::Now());
   }

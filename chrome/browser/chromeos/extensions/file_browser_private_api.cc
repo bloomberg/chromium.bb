@@ -212,12 +212,12 @@ void AddGDataMountPoint(
   // operations the file access check is done for drive/ paths.
   GrantFilePermissionsToHost(render_view_host,
                              gdata_file_system->GetCacheDirectoryPath(
-                                 gdata::GDataRootDirectory::CACHE_TYPE_TMP),
+                                 gdata::GDataCache::CACHE_TYPE_TMP),
                              file_handler_util::GetReadOnlyPermissions());
   GrantFilePermissionsToHost(
       render_view_host,
       gdata_file_system->GetCacheDirectoryPath(
-          gdata::GDataRootDirectory::CACHE_TYPE_PERSISTENT),
+          gdata::GDataCache::CACHE_TYPE_PERSISTENT),
       file_handler_util::GetReadOnlyPermissions());
 
   provider->AddRemoteMountPoint(
@@ -1704,15 +1704,15 @@ void GetGDataFilePropertiesFunction::CacheStateReceived(
     int cache_state) {
   property_dict->SetBoolean(
       "isPinned",
-      gdata::GDataFile::IsCachePinned(cache_state));
+      gdata::GDataCache::IsCachePinned(cache_state));
 
   property_dict->SetBoolean(
       "isPresent",
-      gdata::GDataFile::IsCachePresent(cache_state));
+      gdata::GDataCache::IsCachePresent(cache_state));
 
   property_dict->SetBoolean(
       "isDirty",
-      gdata::GDataFile::IsCacheDirty(cache_state));
+      gdata::GDataCache::IsCacheDirty(cache_state));
   CompleteGetFileProperties();
 }
 

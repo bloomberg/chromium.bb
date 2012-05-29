@@ -8,6 +8,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
@@ -119,7 +121,7 @@ void GDataSyncClient::StartInitialScan(const base::Closure& closure) {
           FROM_HERE,
           base::Bind(&ScanPinnedDirectory,
                      file_system_->GetCacheDirectoryPath(
-                         GDataRootDirectory::CACHE_TYPE_PINNED),
+                         GDataCache::CACHE_TYPE_PINNED),
                      resource_ids),
           base::Bind(&GDataSyncClient::OnInitialScanComplete,
                      weak_ptr_factory_.GetWeakPtr(),

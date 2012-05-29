@@ -70,7 +70,7 @@ void DownloadFilePickerChromeOS::FileSelected(const FilePath& selected_path,
 
         const FilePath gdata_tmp_download_dir =
             system_service->file_system()->GetCacheDirectoryPath(
-                gdata::GDataRootDirectory::CACHE_TYPE_TMP_DOWNLOADS);
+                gdata::GDataCache::CACHE_TYPE_TMP_DOWNLOADS);
 
         // Swap the gdata path with a local path. Local path must be created
         // on the IO thread pool.

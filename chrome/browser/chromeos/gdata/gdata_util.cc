@@ -132,7 +132,7 @@ void ModifyGDataFileResourceUrl(Profile* profile,
   // Handle hosted documents. The edit url is in the temporary file, so we
   // read it on a blocking thread.
   if (file_system->GetCacheDirectoryPath(
-          GDataRootDirectory::CACHE_TYPE_TMP_DOCUMENTS).IsParent(
+          GDataCache::CACHE_TYPE_TMP_DOCUMENTS).IsParent(
       gdata_cache_path)) {
     GURL* edit_url = new GURL();
     content::BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
@@ -145,7 +145,7 @@ void ModifyGDataFileResourceUrl(Profile* profile,
 
   // Handle all other gdata files.
   if (file_system->GetCacheDirectoryPath(
-          GDataRootDirectory::CACHE_TYPE_TMP).IsParent(gdata_cache_path)) {
+          GDataCache::CACHE_TYPE_TMP).IsParent(gdata_cache_path)) {
     const std::string resource_id =
         gdata_cache_path.BaseName().RemoveExtension().AsUTF8Unsafe();
     GDataEntry* entry = NULL;
@@ -251,27 +251,26 @@ void InsertGDataCachePathsPermissions(
   // operations the file access check is done for drive/ paths.
   cache_paths->push_back(std::make_pair(
       file_system->GetCacheFilePath(resource_id, file_md5,
-          GDataRootDirectory::CACHE_TYPE_PERSISTENT,
+          GDataCache::CACHE_TYPE_PERSISTENT,
           GDataFileSystem::CACHED_FILE_FROM_SERVER),
       kReadOnlyFilePermissions));
   // TODO(tbarzic): When we start supporting openFile operation, we may have to
   // change permission for localy modified files to match handler's permissions.
   cache_paths->push_back(std::make_pair(
       file_system->GetCacheFilePath(resource_id, file_md5,
-          GDataRootDirectory::CACHE_TYPE_PERSISTENT,
+          GDataCache::CACHE_TYPE_PERSISTENT,
           GDataFileSystem::CACHED_FILE_LOCALLY_MODIFIED),
      kReadOnlyFilePermissions));
   cache_paths->push_back(std::make_pair(
       file_system->GetCacheFilePath(resource_id, file_md5,
-          GDataRootDirectory::CACHE_TYPE_PERSISTENT,
+          GDataCache::CACHE_TYPE_PERSISTENT,
           GDataFileSystem::CACHED_FILE_MOUNTED),
      kReadOnlyFilePermissions));
   cache_paths->push_back(std::make_pair(
       file_system->GetCacheFilePath(resource_id, file_md5,
-          GDataRootDirectory::CACHE_TYPE_TMP,
+          GDataCache::CACHE_TYPE_TMP,
           GDataFileSystem::CACHED_FILE_FROM_SERVER),
       kReadOnlyFilePermissions));
-
 }
 
 bool IsGDataAvailable(Profile* profile) {

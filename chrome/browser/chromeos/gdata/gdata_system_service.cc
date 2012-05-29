@@ -41,6 +41,9 @@ GDataSystemService::~GDataSystemService() {
 void GDataSystemService::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // This order is necessary so the sync_client_ doesn't miss
+  // OnCacheInitialized() notification.
+  sync_client_->Initialize();
   file_system_->Initialize();
 
   content::DownloadManager* download_manager =
@@ -51,9 +54,7 @@ void GDataSystemService::Initialize() {
       uploader_.get(),
       download_manager,
       file_system_->GetCacheDirectoryPath(
-          GDataRootDirectory::CACHE_TYPE_TMP_DOWNLOADS));
-
-  sync_client_->Initialize();
+          GDataCache::CACHE_TYPE_TMP_DOWNLOADS));
 }
 
 void GDataSystemService::Shutdown() {

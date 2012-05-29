@@ -100,7 +100,7 @@ void SavePackageFilePickerChromeOS::FileSelected(
     //       download_created_callback = OnSavePackageDownloadCreated
     FilePath gdata_tmp_download_dir =
         system_service->file_system()->GetCacheDirectoryPath(
-            gdata::GDataRootDirectory::CACHE_TYPE_TMP_DOWNLOADS);
+            gdata::GDataCache::CACHE_TYPE_TMP_DOWNLOADS);
     FilePath* gdata_tmp_download_path(new FilePath());
     content::BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
         base::Bind(&gdata::GDataDownloadObserver::GetGDataTempDownloadPath,

@@ -512,6 +512,8 @@
         'browser/chromeos/gdata/find_entry_callback.h',
         'browser/chromeos/gdata/gdata_auth_service.cc',
         'browser/chromeos/gdata/gdata_auth_service.h',
+        'browser/chromeos/gdata/gdata_cache.cc',
+        'browser/chromeos/gdata/gdata_cache.h',
         'browser/chromeos/gdata/gdata_db.h',
         'browser/chromeos/gdata/gdata_db_factory.cc', 
         'browser/chromeos/gdata/gdata_db_factory.h',

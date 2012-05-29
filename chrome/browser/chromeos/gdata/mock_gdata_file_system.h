@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_FILE_SYSTEM_H_
 #pragma once
 
+#include <string>
+
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -79,11 +81,11 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                                        GDataFileProperties* properties));
   MOCK_CONST_METHOD1(IsUnderGDataCacheDirectory, bool(const FilePath& path));
   MOCK_CONST_METHOD1(GetCacheDirectoryPath, FilePath(
-      GDataRootDirectory::CacheSubDirectoryType));
+      GDataCache::CacheSubDirectoryType));
   MOCK_CONST_METHOD4(GetCacheFilePath, FilePath(
       const std::string&,
       const std::string&,
-      GDataRootDirectory::CacheSubDirectoryType,
+      GDataCache::CacheSubDirectoryType,
       CachedFileOrigin));
   MOCK_METHOD1(GetAvailableSpace,
                void(const GetAvailableSpaceCallback& callback));

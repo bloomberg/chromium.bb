@@ -22,6 +22,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/find_entry_callback.h"
+#include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
@@ -398,13 +399,13 @@ class GDataFileSystemInterface {
   // Returns the sub-directory under gdata cache directory for the given sub
   // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
   virtual FilePath GetCacheDirectoryPath(
-      GDataRootDirectory::CacheSubDirectoryType sub_dir_type) const = 0;
+      GDataCache::CacheSubDirectoryType sub_dir_type) const = 0;
 
   // Returns absolute path of the file if it were cached or to be cached.
   virtual FilePath GetCacheFilePath(
       const std::string& resource_id,
       const std::string& md5,
-      GDataRootDirectory::CacheSubDirectoryType sub_dir_type,
+      GDataCache::CacheSubDirectoryType sub_dir_type,
       CachedFileOrigin file_orign) const = 0;
 
   // Fetches the user's Account Metadata to find out current quota information
@@ -501,11 +502,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                  GDataFileProperties* properties) OVERRIDE;
   virtual bool IsUnderGDataCacheDirectory(const FilePath& path) const OVERRIDE;
   virtual FilePath GetCacheDirectoryPath(
-      GDataRootDirectory::CacheSubDirectoryType sub_dir_type) const OVERRIDE;
+      GDataCache::CacheSubDirectoryType sub_dir_type) const OVERRIDE;
   virtual FilePath GetCacheFilePath(
       const std::string& resource_id,
       const std::string& md5,
-      GDataRootDirectory::CacheSubDirectoryType sub_dir_type,
+      GDataCache::CacheSubDirectoryType sub_dir_type,
       CachedFileOrigin file_orign) const OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
@@ -1135,10 +1136,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void RemoveFromCache(const std::string& resource_id,
                        const CacheOperationCallback& callback);
 
-  // Initializes cache if it hasn't been initialized by posting
-  // InitializeCacheOnIOThreadPool task to IO thread pool.
-  void InitializeCacheIfNecessary();
-
   // Cache tasks that run on IO thread pool, posted from above cache entry
   // points.
 
@@ -1315,8 +1312,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Scans cache subdirectory |sub_dir_type| and build or update |cache_map|
   // with found file blobs or symlinks.
   void ScanCacheDirectory(
-      GDataRootDirectory::CacheSubDirectoryType sub_dir_type,
-      GDataRootDirectory::CacheMap* cache_map);
+      GDataCache::CacheSubDirectoryType sub_dir_type,
+      GDataCache::CacheMap* cache_map);
 
   // Wrapper task around any sequenced task that runs on IO thread pool that
   // makes sure |in_shutdown_| and |on_io_completed_| are handled properly in
@@ -1424,6 +1421,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const SetMountedStateCallback& callback);
 
   scoped_ptr<GDataRootDirectory> root_;
+  scoped_ptr<GDataCache> cache_;
 
   // This guards regular states.
   base::Lock lock_;
@@ -1438,7 +1436,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   FilePath gdata_cache_path_;
 
   // Paths for all subdirectories of GCache, one for each
-  // GDataRootDirectory::CacheSubDirectoryType enum.
+  // GDataCache::CacheSubDirectoryType enum.
   std::vector<FilePath> cache_paths_;
 
   // Waitable events used to block dectructor until all the tasks on blocking
