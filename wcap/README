@@ -1,0 +1,99 @@
+WCAP Tools
+
+WCAP is the video capture format used by Weston (Weston CAPture).
+It's a simple, lossless format, that encodes the difference between
+frames as run-length ecoded rectangles.  It's a variable framerate
+format, that only records new frames along with a timestamp when
+something actually changes.
+
+Recording in Weston is started by pressing MOD+R and stopped by
+pressing MOD+R again.  Currently this leaves a capture.wcap file in
+the cwd of the weston process.  The file format is documented below
+and Weston comes with two tools to convert the wcap file into
+something more usable:
+
+ - wcap-snapshot; a simple tool that will extract a given frame from
+   the capture as a png.  This will produce a lossless screenshot,
+   which is useful if you're trying to screenshot a brief glitch or
+   something like that that's hard to capture with the screenshot tool.
+
+   wcap-snapshot takes a wcap file as its first argument.  Without
+   anything else, it will show the screen size and number of frames in
+   the file.  With an integer second argument, it will extract that
+   frame as a png:
+
+	[krh@minato weston]$ wcap-snapshot capture.wcap 
+	wcap file: size 1024x640, 176 frames
+	[krh@minato weston]$ wcap-snapshot capture.wcap 20
+	wrote wcap-frame-20.png
+	wcap file: size 1024x640, 176 frames
+
+ - wcap-decode; this is a copy of the vpxenc tool from the libvpx
+   repository, with wcap input file support added.  The tool can
+   encode a wcap file into a webm video (http://www.webmproject.org/).
+   The command line arguments are identical to what the vpxenc tool
+   takes and wcap-decode will print them if run without any arguments.
+
+   The minimal command line requires a webm output file and a wcap
+   input file:
+
+	[krh@minato weston]$ wcap-decode -o foo.webm capture.wcap  
+
+   but it's possible to select target bitrate and output framerate and
+   it's typically useful to pass -t 4 to let the tool use multiple
+   threads:
+
+	[krh@minato weston]$ wcap-decode --target-bitrate=1024 \
+		--best -t 4 -o foo.webm capture.wcap  --fps=10/1
+
+
+WCAP File format
+
+The file format has a small header and then just consists of the
+indivial frames.  The header is
+
+	uint32_t	magic
+	uint32_t	format
+	uint32_t	width
+	uint32_t	height
+
+all CPU endian 32 bit words.  The magic number is
+
+	#define WCAP_HEADER_MAGIC	0x57434150
+
+and makes it easy to recognize a wcap file and verify that it's the
+right endian.  There are four supported pixel formats:
+
+	#define WCAP_FORMAT_XRGB8888	0x34325258
+	#define WCAP_FORMAT_XBGR8888	0x34324258
+	#define WCAP_FORMAT_RGBX8888	0x34325852
+	#define WCAP_FORMAT_BGRX8888	0x34325842
+
+Each frame has a header:
+
+	uint32_t	msecs
+	uint32_t	nrects
+
+which specifies a timestamp in ms and the number of rectangles that
+changed since previous frame.  The timestamps are typically just a raw
+system timestamp and the first frame doesn't start from 0ms.
+
+A frame consists of a list of rectangles, each of which represents the
+component-wise different between the previous frame and the current
+using a run-length encoding.  The initial frame is decoded against a
+previous frame of all 0x00000000 pixels.  Each rectangle starts out
+with
+
+	int32_t		x1
+	int32_t		y1
+	int32_t		x2
+	int32_t		y2
+
+followed by (x2 - x1) * (y2 - y1) pixels, run-length encoded.  The
+run-length encoding uses the 'X' channel in the pixel format to encode
+the length of the run.  That is for WCAP_FORMAT_XRGB8888, for example,
+the length of the run is in the upper 8 bits.  For X values 0-0xdf,
+the length is X + 1, for X above or equal to 0xe0, the run length is 1
+<< (X - 0xe0 + 7).  That is, a pixel value of 0xe3000100, means that
+the next 1024 pixels differ by RGB(0x00, 0x01, 0x00) from the previous
+pixels.
