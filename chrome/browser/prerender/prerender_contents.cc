@@ -274,7 +274,8 @@ PrerenderContents::Factory* PrerenderContents::CreateFactory() {
 void PrerenderContents::StartPrerendering(
     int creator_child_id,
     const gfx::Size& size,
-    content::SessionStorageNamespace* session_storage_namespace) {
+    content::SessionStorageNamespace* session_storage_namespace,
+    bool is_control_group) {
   DCHECK(profile_ != NULL);
   DCHECK(!prerendering_has_started_);
   DCHECK(prerender_contents_.get() == NULL);
@@ -307,9 +308,16 @@ void PrerenderContents::StartPrerendering(
 #endif  // !defined(OS_ANDROID)
   }
 
-  prerendering_has_started_ = true;
   InformRenderProcessAboutPrerender(prerender_url_, true,
                                     creator_child_id_);
+
+  // Everything after this point sets up the WebContents object and associated
+  // RenderView for the prerender page. Don't do this for members of the
+  // control group.
+  if (is_control_group)
+    return;
+
+  prerendering_has_started_ = true;
 
   WebContents* new_contents = CreateWebContents(session_storage_namespace);
   prerender_contents_.reset(new TabContentsWrapper(new_contents));

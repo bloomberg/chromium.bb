@@ -46,9 +46,14 @@ class DummyPrerenderContents : public PrerenderContents {
   virtual void StartPrerendering(
       int ALLOW_UNUSED creator_child_id,
       const gfx::Size& ALLOW_UNUSED size,
-      content::SessionStorageNamespace* ALLOW_UNUSED
-          session_storage_namespace) OVERRIDE {
-    prerendering_has_started_ = true;
+      content::SessionStorageNamespace* ALLOW_UNUSED session_storage_namespace,
+      bool is_control_group) OVERRIDE {
+    // In the base PrerenderContents implementation, StartPrerendering will
+    // be called even when the PrerenderManager is part of the control group,
+    // but it will early exit before actually creating a new RenderView if
+    // |is_control_group| is true;
+    if (!is_control_group)
+      prerendering_has_started_ = true;
   }
 
   virtual bool GetChildId(int* child_id) const OVERRIDE {

@@ -306,6 +306,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   class MostVisitedSites;
 
   typedef std::list<PrerenderContentsData> PrerenderContentsDataList;
+  typedef base::hash_map<content::WebContents*, bool> WouldBePrerenderedMap;
 
   // Adds a prerender for |url| from referrer |referrer| initiated from the
   // child process specified by |child_id|. The |origin| specifies how the
@@ -452,9 +453,16 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Set of WebContents which are currently displaying a prerendered page.
   base::hash_set<content::WebContents*> prerendered_tab_contents_set_;
 
-  // Set of WebContents which would be displaying a prerendered page
-  // (for the control group).
-  base::hash_set<content::WebContents*> would_be_prerendered_tab_contents_set_;
+  // WebContents that would have been swapped out for a prerendered WebContents
+  // if the user was not part of the control group for measurement. When the
+  // WebContents gets a provisional load, the WebContents is removed from
+  // the map since the new navigation would not have swapped in a prerender.
+  // However, one complication exists because the first provisional load after
+  // the WebContents is marked as "Would Have Been Prerendered" is actually to
+  // the prerendered location. So, we need to keep a boolean around that does
+  // not clear the item from the map on the first provisional load, but does
+  // for subsequent loads.
+  WouldBePrerenderedMap would_be_prerendered_map_;
 
   scoped_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 

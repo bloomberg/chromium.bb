@@ -715,14 +715,23 @@ void PrerenderManager::MarkWebContentsAsPrerendered(WebContents* web_contents) {
 void PrerenderManager::MarkWebContentsAsWouldBePrerendered(
     WebContents* web_contents) {
   DCHECK(CalledOnValidThread());
-  would_be_prerendered_tab_contents_set_.insert(web_contents);
+  would_be_prerendered_map_[web_contents] = true;
 }
 
 void PrerenderManager::MarkWebContentsAsNotPrerendered(
     WebContents* web_contents) {
   DCHECK(CalledOnValidThread());
   prerendered_tab_contents_set_.erase(web_contents);
-  would_be_prerendered_tab_contents_set_.erase(web_contents);
+  WouldBePrerenderedMap::iterator it =
+      would_be_prerendered_map_.find(web_contents);
+  if (it != would_be_prerendered_map_.end()) {
+    bool first_time = it->second;
+    if (first_time) {
+      it->second = false;
+    } else {
+      would_be_prerendered_map_.erase(it);
+    }
+  }
 }
 
 bool PrerenderManager::IsWebContentsPrerendered(
@@ -734,7 +743,7 @@ bool PrerenderManager::IsWebContentsPrerendered(
 bool PrerenderManager::WouldWebContentsBePrerendered(
     WebContents* web_contents) const {
   DCHECK(CalledOnValidThread());
-  return would_be_prerendered_tab_contents_set_.count(web_contents) > 0;
+  return would_be_prerendered_map_.count(web_contents) > 0;
 }
 
 bool PrerenderManager::HasRecentlyBeenNavigatedTo(const GURL& url) {
@@ -936,10 +945,8 @@ bool PrerenderManager::AddPrerender(
 
   last_prerender_start_time_ = GetCurrentTimeTicks();
 
-  if (!IsControlGroup()) {
-    data.contents_->StartPrerendering(process_id,
-                                      size, session_storage_namespace);
-  }
+  data.contents_->StartPrerendering(process_id, size, session_storage_namespace,
+                                    IsControlGroup());
   while (prerender_list_.size() > config_.max_elements) {
     data = prerender_list_.front();
     prerender_list_.pop_front();
