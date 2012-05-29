@@ -132,7 +132,7 @@ class PatchSeries(object):
       helper_pool = HelperPool.SimpleCreate(internal=True, external=True)
     self._helper_pool = helper_pool
 
-  def IsContentMerging(self, change):
+  def IsContentMerging(self, change, manifest):
     """Discern if the given change has Content Merging enabled in gerrit.
 
     Raises:
@@ -142,10 +142,17 @@ class PatchSeries(object):
       True if the change's project has content merging enabled, False if not.
     """
     helper = self._helper_pool.ForChange(change)
+
+    if not helper.version.startswith('2.1'):
+      return manifest.ProjectIsContentMerging(change.project)
+
+    # Fallback to doing gsql trickery to get it; note this requires admin
+    # access.
     projects = self._content_merging.get(helper)
     if projects is None:
       projects = helper.FindContentMergingProjects()
       self._content_merging[helper] = projects
+
     return change.project in projects
 
   def Apply(self, buildroot, changes, dryrun=False):
@@ -164,6 +171,10 @@ class PatchSeries(object):
     changes_that_failed_to_apply_to_tot = set()
     changes_applied = set()
     changes_list = []
+
+    # Used by content merging checks when we're operating against
+    # >=gerrit-2.2.
+    manifest = cros_build_lib.ManifestCheckout.Cached(buildroot)
 
     # Maps Change numbers to GerritPatch object for lookup of dependent
     # changes.
@@ -253,7 +264,8 @@ class PatchSeries(object):
 
           # If we're in dryrun mode, then 3way is always allowed.
           # Otherwise, allow 3way only if the gerrit project allows it.
-          trivial = False if dryrun else not self.IsContentMerging(change)
+          trivial = False if dryrun else not self.IsContentMerging(change,
+                                                                   manifest)
 
           change.Apply(buildroot, trivial=trivial)
 

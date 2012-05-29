@@ -50,6 +50,7 @@ class GerritHelper():
       self.ssh_url = constants.GERRIT_SSH_URL
 
     self.internal = internal
+    self._version = None
 
   @property
   def ssh_prefix(self):
@@ -308,6 +309,16 @@ class GerritHelper():
 
       yield query, result
       last_patch_id = query
+
+  @property
+  def version(self):
+    obj = self._version
+    if obj is None:
+      obj = cros_build_lib.RunCommandCaptureOutput(
+          self.ssh_prefix + ['gerrit', 'version']).output.strip()
+      obj = obj.replace('gerrit version ', '')
+      self._version = obj
+    return obj
 
   def _SqlQuery(self, query, dryrun=False, is_command=False):
     """Run a gsql query against gerrit.
