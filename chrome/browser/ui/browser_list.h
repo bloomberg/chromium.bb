@@ -116,7 +116,6 @@ class BrowserList {
   friend class GtkThemeService;
   friend class NetworkProfileBubble;
   friend class PrintPreviewHandler;
-  friend class PrintPreviewUnitTestBase;
   friend class QueryTabsFunction;
   friend class SelectFileDialogExtension;
   friend class StartupBrowserCreatorImpl;
@@ -137,10 +136,6 @@ class BrowserList {
   friend content::WebContents* GetActiveWebContents();
 #endif
   friend void browser::internal::NotifyNotDefaultBrowserCallback();
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewTabControllerBrowserTest,
-                           NavigateFromInitiatorTab);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewTabControllerBrowserTest,
-                           ReloadInitiatorTab);
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserTest, ActivateDeactivateMultiple);
   FRIEND_TEST_ALL_PREFIXES(DetachToBrowserTabDragControllerTest,
                            DetachToOwnWindow);
