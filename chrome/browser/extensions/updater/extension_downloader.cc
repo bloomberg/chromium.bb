@@ -150,13 +150,8 @@ bool ExtensionDownloader::AddExtension(const Extension& extension) {
   if (!extension.UpdatesFromGallery())
     update_url_data = delegate_->GetUpdateUrlData(extension.id());
 
-  // Make sure we use SSL for store-hosted extensions.
-  GURL update_url = extension.update_url();
-  if (extension.UpdatesFromGallery() && !update_url.SchemeIsSecure())
-    update_url = extension_urls::GetWebstoreUpdateUrl();
-
   return AddExtensionData(extension.id(), *extension.version(),
-                          extension.GetType(), update_url,
+                          extension.GetType(), extension.update_url(),
                           update_url_data);
 }
 
@@ -211,14 +206,10 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
     return false;
   }
 
-  // Double-check that we're using https for webstore urls.
+  // Make sure we use SSL for store-hosted extensions.
   if (extension_urls::IsWebstoreUpdateUrl(update_url) &&
-      !update_url.SchemeIsSecure() &&
-      extension_urls::GetWebstoreUpdateUrl().SchemeIsSecure()) {
-    NOTREACHED() << "Refusing to send non-secure update check for " << id
-                 << " (" << update_url.spec() << ")";
-    return false;
-  }
+      !update_url.SchemeIsSecure())
+    update_url = extension_urls::GetWebstoreUpdateUrl();
 
   // Skip extensions with empty IDs.
   if (id.empty()) {
