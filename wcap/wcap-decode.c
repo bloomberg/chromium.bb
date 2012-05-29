@@ -42,7 +42,8 @@ wcap_decoder_decode_rectangle(struct wcap_decoder *decoder,
 	uint32_t v, *p = decoder->p, *d;
 	int width = rect->x2 - rect->x1, height = rect->y2 - rect->y1;
 	int x, i, j, k, l, count = width * height;
-	
+	unsigned char r, g, b, dr, dg, db;
+
 	d = decoder->frame + (rect->y2 - 1) * decoder->width;
 	x = rect->x1;
 	i = 0;
@@ -55,8 +56,14 @@ wcap_decoder_decode_rectangle(struct wcap_decoder *decoder,
 			j = 1 << (l - 0xe0 + 7);
 		}
 
+		dr = (v >> 16);
+		dg = (v >>  8);
+		db = (v >>  0);
 		for (k = 0; k < j; k++) {
-			d[x] = (d[x] + v) | 0xff000000;
+			r = (d[x] >> 16) + dr;
+			g = (d[x] >>  8) + dg;
+			b = (d[x] >>  0) + db;
+			d[x] = 0xff000000 | (r << 16) | (g << 8) | b;
 			x++;
 			if (x == rect->x2) {
 				x = rect->x1;

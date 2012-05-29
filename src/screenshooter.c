@@ -240,6 +240,18 @@ output_run(uint32_t *p, uint32_t delta, int run)
 	return p;
 }
 
+static uint32_t
+component_delta(uint32_t next, uint32_t prev)
+{
+	unsigned char dr, dg, db;
+
+	dr = (next >> 16) - (prev >> 16);
+	dg = (next >>  8) - (prev >>  8);
+	db = (next >>  0) - (prev >>  0);
+
+	return (dr << 16) | (dg << 8) | (db << 0);
+}
+
 static void
 weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 {
@@ -295,7 +307,7 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 				stride * (r[i].y2 - j - 1) + r[i].x1;
 			for (k = 0; k < width; k++) {
 				next = *s++;
-				delta = (next - *d) & 0x00ffffff;
+				delta = component_delta(next, *d);
 				*d++ = next;
 				if (run == 0 || delta == prev) {
 					run++;
