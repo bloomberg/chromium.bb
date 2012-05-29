@@ -297,7 +297,7 @@
     "message": "Please enter the same PIN in both boxes."
   },
   "product_description": {
-    "message": "Access other computers or allow another user to access your computer securely over the Internet."
+    "message": "Access your own computer or provide assistance to someone else on their computer securely over the Internet."
   },
   "product_name": {
     "message": "Chrome Remote Desktop BETA"
