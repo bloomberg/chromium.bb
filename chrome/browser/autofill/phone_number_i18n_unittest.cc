@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -287,7 +287,7 @@ TEST_F(PhoneNumberI18NTest, ConstructPhoneNumber) {
                                    "US",
                                    autofill_i18n::RFC3966,
                                    &number));
-  EXPECT_EQ(number, ASCIIToUTF16("+1-650-234-5678"));
+  EXPECT_EQ(number, ASCIIToUTF16("tel:+1-650-234-5678"));
   EXPECT_TRUE(ConstructPhoneNumber(string16(),
                                    ASCIIToUTF16("650"),
                                    ASCIIToUTF16("2345678"),
