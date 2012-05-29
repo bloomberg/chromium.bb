@@ -6948,7 +6948,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_UPGRADE_DISABLED_BY_POLICY" desc="Status label: Upgrades disabled by policy">
         Updates are disabled by the administrator
       </message>
-      <message name="IDS_REPORT_AN_ISSUE " desc="Text of the button which allows the user to report an issue with Chrome.">
+      <message name="IDS_REPORT_AN_ISSUE" desc="Text of the button which allows the user to report an issue with Chrome.">
         Report an issue
       </message>
 
