@@ -15203,6 +15203,12 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_DEVELOPER_TOOLS" desc="The text in the keyboard overlay to explain the shortcut.">
         Developer Tools
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_DOCK_WINDOW_LEFT" desc="The text in the keyboard overlay to explain the shortcut (dock the window to the left).">
+        Dock window left
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_DOCK_WINDOW_RIGHT" desc="The text in the keyboard overlay to explain the shortcut (dock the window to the right).">
+        Dock window right
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_DOM_INSPECTOR" desc="The text in the keyboard overlay to explain the shortcut.">
         DOM Inspector
       </message>
@@ -15358,12 +15364,6 @@ Battery full
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_SIGN_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
         Sign out
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_SNAP_WINDOW_LEFT" desc="The text in the keyboard overlay to explain the shortcut (snap the window to the left).">
-        Snap window left
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_SNAP_WINDOW_RIGHT" desc="The text in the keyboard overlay to explain the shortcut (snap the window to the right).">
-        Snap window right
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_TAKE_SCREENSHOT" desc="The text in the keyboard overlay to explain the shortcut.">
         Take screenshot
