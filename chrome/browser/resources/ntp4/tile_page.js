@@ -92,9 +92,9 @@ cr.define('ntp', function() {
      */
     moveTo: function(x, y) {
       // left overrides right in LTR, and right takes precedence in RTL.
-      this.style.left = x + 'px';
-      this.style.right = x + 'px';
-      this.style.top = y + 'px';
+      this.style.left = toCssPx(x);
+      this.style.right = toCssPx(x);
+      this.style.top = toCssPx(y);
     },
 
     /**
@@ -148,8 +148,8 @@ cr.define('ntp', function() {
       }
 
       this.dragClone.hidden = false;
-      this.dragClone.style.left = (e.x - this.dragOffsetX) + 'px';
-      this.dragClone.style.top = (e.y - this.dragOffsetY) + 'px';
+      this.dragClone.style.left = toCssPx(e.x - this.dragOffsetX);
+      this.dragClone.style.top = toCssPx(e.y - this.dragOffsetY);
     },
 
     /**
@@ -184,11 +184,13 @@ cr.define('ntp', function() {
               this.firstChild.offsetLeft;
           var contentDiffY = this.dragClone.firstChild.offsetTop -
               this.firstChild.offsetTop;
-          this.dragClone.style.left = (this.gridX + this.parentNode.offsetLeft -
-              contentDiffX) + 'px';
+          this.dragClone.style.left =
+              toCssPx(this.gridX + this.parentNode.offsetLeft -
+                         contentDiffX);
           this.dragClone.style.top =
-              (this.gridY + this.parentNode.getBoundingClientRect().top -
-              contentDiffY) + 'px';
+              toCssPx(this.gridY +
+                         this.parentNode.getBoundingClientRect().top -
+                         contentDiffY);
         } else if (this.dragClone.hidden) {
           this.finalizeDrag_();
         } else {
@@ -1006,14 +1008,13 @@ cr.define('ntp', function() {
         this.topMarginIsForWide_ = layout.wide;
       if (this.topMarginIsForWide_ != layout.wide) {
         this.animatedTopMarginPx_ += newMargin - this.topMarginPx_;
-        this.topMargin_.style.marginBottom =
-            this.animatedTopMarginPx_ + 'px';
+        this.topMargin_.style.marginBottom = toCssPx(this.animatedTopMarginPx_);
       }
 
       this.topMarginIsForWide_ = layout.wide;
       this.topMarginPx_ = newMargin;
       this.topMargin_.style.marginTop =
-          (this.topMarginPx_ - this.animatedTopMarginPx_) + 'px';
+          toCssPx(this.topMarginPx_ - this.animatedTopMarginPx_);
     },
 
     /**

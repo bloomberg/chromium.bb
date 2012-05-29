@@ -200,12 +200,12 @@ cr.define('ntp', function() {
      *     animate.
      */
     setBounds: function(size, x, y) {
-      this.style.width = size + 'px';
-      this.style.height = heightForWidth(size) + 'px';
+      this.style.width = toCssPx(size);
+      this.style.height = toCssPx(heightForWidth(size));
 
-      this.style.left = x + 'px';
-      this.style.right = x + 'px';
-      this.style.top = y + 'px';
+      this.style.left = toCssPx(x);
+      this.style.right = toCssPx(x);
+      this.style.top = toCssPx(y);
     },
 
     /**

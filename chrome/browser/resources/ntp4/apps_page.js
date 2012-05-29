@@ -439,7 +439,7 @@ cr.define('ntp', function() {
     setBounds: function(size, x, y) {
       var imgSize = size * APP_IMG_SIZE_FRACTION;
       this.appImgContainer_.style.width = this.appImgContainer_.style.height =
-          this.useSmallIcon_ ? '16px' : imgSize + 'px';
+          toCssPx(this.useSmallIcon_ ? 16 : imgSize);
       if (this.useSmallIcon_) {
         // 3/4 is the ratio of 96px to 128px (the used height and full height
         // of icons in apps).
@@ -447,16 +447,16 @@ cr.define('ntp', function() {
         // The -2 is for the div border to improve the visual alignment for the
         // icon div.
         this.imgDiv_.style.width = this.imgDiv_.style.height =
-            (iconSize - 2) + 'px';
+            toCssPx(iconSize - 2);
         // Margins set to get the icon placement right and the text to line up.
         this.imgDiv_.style.marginTop = this.imgDiv_.style.marginBottom =
-            ((imgSize - iconSize) / 2) + 'px';
+            toCssPx((imgSize - iconSize) / 2);
       }
 
-      this.style.width = this.style.height = size + 'px';
-      this.style.left = x + 'px';
-      this.style.right = x + 'px';
-      this.style.top = y + 'px';
+      this.style.width = this.style.height = toCssPx(size);
+      this.style.left = toCssPx(x);
+      this.style.right = toCssPx(x);
+      this.style.top = toCssPx(y);
 
       if (this.currentBubbleShowing_)
         this.currentBubbleShowing_.resizeAndReposition();

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,9 +153,22 @@ cr.define('cr.ui', function() {
     limit();
   }
 
+  /**
+   * Takes a number and spits out a value CSS will be happy with. To avoid
+   * subpixel layout issues, the value is rounded to the nearest integral value.
+   * @param {number} pixels The number of pixels.
+   * @return {string} e.g. '16px'.
+   */
+  function toCssPx(pixels) {
+    if (!window.isFinite(pixels))
+      console.error('Pixel value is not a number: ' + pixels);
+    return Math.round(pixels) + 'px';
+  }
+
   return {
     decorate: decorate,
     define: define,
-    limitInputWidth: limitInputWidth
+    limitInputWidth: limitInputWidth,
+    toCssPx: toCssPx,
   };
 });

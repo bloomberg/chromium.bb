@@ -612,3 +612,5 @@ cr.define('ntp', function() {
 });
 
 document.addEventListener('DOMContentLoaded', ntp.onLoad);
+
+var toCssPx = cr.ui.toCssPx;
