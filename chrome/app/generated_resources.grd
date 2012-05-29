@@ -4393,6 +4393,9 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_INSTALL_NOT_ENABLED" desc="Error displayed during installation of apps or extensions when installation is not enabled.">
         Installation is not enabled.
       </message>
+      <message name="IDS_EXTENSION_INSTALL_PLUGIN_NOT_SUPPORTED" desc="Error displayed during installation of apps or extensions when the include a plugin that is not supported.">
+        Installation failed because NPAPI plugins are not supported in this environment.
+      </message>
       <message name="IDS_EXTENSION_INSTALL_INCORRECT_APP_CONTENT_TYPE" desc="Error displayed during installation of apps when the app is not served with the correct content-type.">
         Apps must be served with content-type "<ph name="CONTENT_TYPE">$1<ex>application/x-chrome-extension</ex></ph>".
       </message>

@@ -50,6 +50,10 @@
 #include "webkit/glue/image_decoder.h"
 #include "webkit/glue/web_intent_service_data.h"
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif
+
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
@@ -1476,14 +1480,24 @@ bool Extension::LoadPlugins(string16* error) {
       }
     }
 
+#if defined(OS_CHROMEOS)
     // We don't allow extension plugins to run on Chrome OS. We still
     // parse the manifest entry so that error messages are consistently
     // displayed across platforms.
-#if !defined(OS_CHROMEOS)
+#else
+#if defined(OS_WIN)
+  // Like Chrome OS, we don't support NPAPI plugins in Windows 8 metro mode
+  // but in this case we want to fail with an error.
+  if (base::win::GetMetroModule()) {
+    *error = l10n_util::GetStringUTF16(
+        IDS_EXTENSION_INSTALL_PLUGIN_NOT_SUPPORTED);
+    return false;
+  }
+#endif  // defined(OS_WIN).
     plugins_.push_back(PluginInfo());
     plugins_.back().path = path().Append(FilePath::FromUTF8Unsafe(path_str));
     plugins_.back().is_public = is_public;
-#endif
+#endif  // defined(OS_CHROMEOS).
   }
   return true;
 }
