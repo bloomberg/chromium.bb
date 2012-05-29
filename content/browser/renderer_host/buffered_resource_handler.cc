@@ -281,9 +281,11 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
         new X509UserCertResourceHandler(request_,
                                         info->GetChildID(),
                                         info->GetRouteID());
-    if (!UseAlternateResourceHandler(request_id, x509_cert_handler, defer))
-      return false;
-  } else if (info->allow_download() && ShouldDownload(NULL)) {
+
+    return UseAlternateResourceHandler(request_id, x509_cert_handler, defer);
+  }
+
+  if (info->allow_download() && ShouldDownload(NULL)) {
     // Forward the data to the download thread.
 
     if (response_->headers &&  // Can be NULL if FTP.
@@ -310,8 +312,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
             DownloadSaveInfo(),
             DownloadResourceHandler::OnStartedCallback()));
 
-    if (!UseAlternateResourceHandler(request_id, handler, defer))
-      return false;
+    return UseAlternateResourceHandler(request_id, handler, defer);
   }
 
   if (*defer)

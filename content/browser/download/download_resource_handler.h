@@ -138,6 +138,9 @@ class DownloadResourceHandler : public ResourceHandler {
   int pause_count_;
   bool was_deferred_;
 
+  // For DCHECKing
+  bool on_response_started_called_;
+
   static const int kReadBufSize = 32768;  // bytes
   static const int kThrottleTimeMs = 200;  // milliseconds
 

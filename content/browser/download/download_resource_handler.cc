@@ -72,7 +72,8 @@ DownloadResourceHandler::DownloadResourceHandler(
       last_buffer_size_(0),
       bytes_read_(0),
       pause_count_(0),
-      was_deferred_(false) {
+      was_deferred_(false),
+      on_response_started_called_(false) {
   download_stats::RecordDownloadCount(download_stats::UNTHROTTLED_COUNT);
 }
 
@@ -96,6 +97,10 @@ bool DownloadResourceHandler::OnResponseStarted(
     int request_id,
     content::ResourceResponse* response,
     bool* defer) {
+  // There can be only one (call)
+  DCHECK(!on_response_started_called_);
+  on_response_started_called_ = true;
+
   VLOG(20) << __FUNCTION__ << "()" << DebugString()
            << " request_id = " << request_id;
   download_start_time_ = base::TimeTicks::Now();
