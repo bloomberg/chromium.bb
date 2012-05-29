@@ -25,24 +25,19 @@ def main():
   parser.add_option(
       '', '--filter', type='string', default=None,
       help='Filter for specifying what tests to run. E.g., MyClass#testMethod.')
-  parser.add_option(
-      '', '--bot', type='string', default=None,
-      help='Executes the tests for the specified bot type. E.g., fyi')
   options, args = parser.parse_args()
 
   if 'WEBDRIVER_CHECKOUT' not in os.environ:
     raise RuntimeError('WEBDRIVER_CHECKOUT must be defined in the environment')
   webdriver_checkout = os.environ['WEBDRIVER_CHECKOUT']
 
-  if options.bot == 'fyi':
-    return RunFyiTests(options, webdriver_checkout)
-  else:
-    raise RuntimeError('Unrecognized bot: ' + options.bot)
-
-
-def RunFyiTests(options, webdriver_checkout):
-  """Runs tests for the FYI buildbot configuration."""
   print '@@@BUILD_STEP java_continuous_tests@@@'
+  # We use the latest revision in the continuous archive instead of the
+  # extracted build for two reasons:
+  # 1) Builds are only archived if they have passed some set of tests. This
+  #    results in less false failures.
+  # 2) I don't want to add chromedriver to the chromium_builder_tests target in
+  #    all.gyp, since that will probably add a minute or so to every build.
   revision = continuous_archive.GetLatestRevision()
   print '@@@STEP_TEXT@r%s@@@' % revision
   temp_dir = util.MakeTempDir()
