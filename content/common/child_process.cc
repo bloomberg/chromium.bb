@@ -107,10 +107,10 @@ void ChildProcess::WaitForDebugger(const std::string& label) {
   // TODO(playmobil): In the long term, overriding this flag doesn't seem
   // right, either use our own flag or open a dialog we can use.
   // This is just to ease debugging in the interim.
-  DLOG(ERROR) << label
-              << " ("
-              << getpid()
-              << ") paused waiting for debugger to attach @ pid";
+  LOG(ERROR) << label
+             << " ("
+             << getpid()
+             << ") paused waiting for debugger to attach @ pid";
   // Install a signal handler so that pause can be woken.
   struct sigaction sa;
   memset(&sa, 0, sizeof(sa));
