@@ -3,8 +3,7 @@
  * found in the LICENSE file. */
 
 /* This file holds CSS that should be shared, in theory, by all user-visible
- * chrome:// pages. This contrasts chrome_shared.css, which it is meant to
- * replace, but has CSS specific to options and options-like pages. */
+ * chrome:// pages. */
 
 @import url("chrome://resources/css/widgets.css");
 <if expr="pp_ifdef('chromeos')">

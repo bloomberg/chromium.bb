@@ -26,11 +26,11 @@ without changes to the corresponding grd file. -->
       <include name="IDR_SHARED_CSS_MENU_BUTTON"
                file="shared/css/menu_button.css" type="BINDATA"
                flattenhtml="true" />
-      <include name="IDR_SHARED_CSS_CHROME2"
-               file="shared/css/chrome_shared2.css" type="BINDATA"
+      <include name="IDR_SHARED_CSS_CHROME"
+               file="shared/css/chrome_shared.css" type="BINDATA"
                flattenhtml="true" />
-      <include name="IDR_SHARED_CSS_CHROME2_TOUCH"
-               file="shared/css/chrome_shared2_touch.css" type="BINDATA"
+      <include name="IDR_SHARED_CSS_CHROME_TOUCH"
+               file="shared/css/chrome_shared_touch.css" type="BINDATA"
                flattenhtml="true" />
       <include name="IDR_SHARED_CSS_OVERLAY"
                file="shared/css/overlay.css" type="BINDATA"

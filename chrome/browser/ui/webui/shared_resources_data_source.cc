@@ -51,9 +51,9 @@ int PathToIDR(const std::string& path) {
     // In touch layout use some alternate CSS rules.
     // Ideally we'd expose a touch-screen media query operator to the web
     // at large, and then just use that for WebUI instead.  crbug.com/123062
-    if (idr == IDR_SHARED_CSS_CHROME2 &&
+    if (idr == IDR_SHARED_CSS_CHROME &&
         ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
-      idr = IDR_SHARED_CSS_CHROME2_TOUCH;
+      idr = IDR_SHARED_CSS_CHROME_TOUCH;
     }
   }
 
