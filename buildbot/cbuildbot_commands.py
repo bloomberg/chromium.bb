@@ -774,7 +774,7 @@ def UploadPrebuilts(buildroot, board, private_bucket, category,
   if category == 'chroot':
     cmd.extend(['--sync-host',
                 '--upload-board-tarball'])
-    tarball_location = os.path.join(buildroot, 'built-sdk.tbz2')
+    tarball_location = os.path.join(buildroot, 'built-sdk.tar.xz')
     cmd.extend(['--prepackaged-tarball', tarball_location])
 
   if binhost_key is not None:
