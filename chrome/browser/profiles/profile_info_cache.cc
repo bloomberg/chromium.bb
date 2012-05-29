@@ -225,8 +225,12 @@ void ProfileInfoCache::RemoveObserver(ProfileInfoCacheObserver* obs) {
 }
 
 void ProfileInfoCache::DeleteProfileFromCache(const FilePath& profile_path) {
-  string16 name = GetNameOfProfileAtIndex(
-      GetIndexOfProfileWithPath(profile_path));
+  size_t profile_index = GetIndexOfProfileWithPath(profile_path);
+  if (profile_index == std::string::npos) {
+    NOTREACHED();
+    return;
+  }
+  string16 name = GetNameOfProfileAtIndex(profile_index);
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,

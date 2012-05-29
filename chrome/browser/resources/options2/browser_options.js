@@ -978,6 +978,8 @@ cr.define('options', function() {
       // add it to the list, even if the list is hidden so we can access it
       // later.
       $('profiles-list').dataModel = new ArrayDataModel(profiles);
+      // We got new data, close the open overlay if it's open.
+      ManageProfileOverlay.getInstance().visible = false;
       this.setProfileViewButtonsStatus_();
     },
 
