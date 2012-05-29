@@ -251,9 +251,15 @@ bool VariationsService::ValidateStudyAndComputeTotalProbability(
   base::FieldTrial::Probability divisor = 0;
 
   bool found_default_group = false;
+  std::set<std::string> experiment_names;
   for (int i = 0; i < study.experiment_size(); ++i) {
     if (study.experiment(i).name().empty()) {
       DVLOG(1) << study.name() << " is missing experiment " << i << " name";
+      return false;
+    }
+    if (!experiment_names.insert(study.experiment(i).name()).second) {
+      DVLOG(1) << study.name() << " has a repeated experiment name "
+               << study.experiment(i).name();
       return false;
     }
     divisor += study.experiment(i).probability_weight();

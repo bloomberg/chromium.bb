@@ -237,5 +237,15 @@ TEST(VariationsServiceTest, ValidateStudy) {
   valid = VariationsService::ValidateStudyAndComputeTotalProbability(study,
       &total_probability);
   EXPECT_FALSE(valid);
-}
 
+  default_group->set_name("def");
+  valid = VariationsService::ValidateStudyAndComputeTotalProbability(study,
+      &total_probability);
+  ASSERT_TRUE(valid);
+  chrome_variations::Study_Experiment* repeated_group = study.add_experiment();
+  repeated_group->set_name("abc");
+  repeated_group->set_probability_weight(1);
+  valid = VariationsService::ValidateStudyAndComputeTotalProbability(study,
+      &total_probability);
+  EXPECT_FALSE(valid);
+}
