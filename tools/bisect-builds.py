@@ -15,19 +15,25 @@ it will ask you whether it is good or bad before continuing the search.
 # The root URL for storage.
 BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-snapshots'
 
+# The root URL for official builds.
+OFFICIAL_BASE_URL = 'http://chrome4linux.mtv.corp.google.com/archives'
+
 # Changelogs URL.
 CHANGELOG_URL = 'http://build.chromium.org/f/chromium/' \
                 'perf/dashboard/ui/changelog.html?url=/trunk/src&range=%d%%3A%d'
 
+# Official Changelogs URL.
+OFFICIAL_CHANGELOG_URL = 'http://omahaproxy.appspot.com/'\
+                         'changelog?old_version=%s&new_version=%s'
+
 # DEPS file URL.
 DEPS_FILE= 'http://src.chromium.org/viewvc/chrome/trunk/src/DEPS?revision=%d'
-
 # WebKit Changelogs URL.
 WEBKIT_CHANGELOG_URL = 'http://trac.webkit.org/log/' \
                        'trunk/?rev=%d&stop_rev=%d&verbose=on&limit=10000'
 
 DONE_MESSAGE = 'You are probably looking for a change made after ' \
-               '%d (known good), but no later than %d (first known bad).'
+               '%s (known good), but no later than %s (first known bad).'
 
 ###############################################################################
 
@@ -42,6 +48,7 @@ import sys
 import tempfile
 import threading
 import urllib
+from distutils.version import LooseVersion
 from xml.etree import ElementTree
 import zipfile
 
@@ -49,12 +56,13 @@ import zipfile
 class PathContext(object):
   """A PathContext is used to carry the information used to construct URLs and
   paths when dealing with the storage server and archives."""
-  def __init__(self, platform, good_revision, bad_revision):
+  def __init__(self, platform, good_revision, bad_revision, is_official):
     super(PathContext, self).__init__()
     # Store off the input parameters.
     self.platform = platform  # What's passed in to the '-a/--archive' option.
     self.good_revision = good_revision
     self.bad_revision = bad_revision
+    self.is_official = is_official
 
     # The name of the ZIP file in a revision directory on the server.
     self.archive_name = None
@@ -64,25 +72,44 @@ class PathContext(object):
     #   _archive_extract_dir = Uncompressed directory in the archive_name file.
     #   _binary_name = The name of the executable to run.
     if self.platform == 'linux' or self.platform == 'linux64':
-      self._listing_platform_dir = 'Linux/'
-      self.archive_name = 'chrome-linux.zip'
-      self._archive_extract_dir = 'chrome-linux'
       self._binary_name = 'chrome'
-      # Linux and x64 share all the same path data except for the archive dir.
-      if self.platform == 'linux64':
-        self._listing_platform_dir = 'Linux_x64/'
     elif self.platform == 'mac':
-      self._listing_platform_dir = 'Mac/'
       self.archive_name = 'chrome-mac.zip'
       self._archive_extract_dir = 'chrome-mac'
-      self._binary_name = 'Chromium.app/Contents/MacOS/Chromium'
     elif self.platform == 'win':
-      self._listing_platform_dir = 'Win/'
       self.archive_name = 'chrome-win32.zip'
       self._archive_extract_dir = 'chrome-win32'
       self._binary_name = 'chrome.exe'
     else:
       raise Exception('Invalid platform: %s' % self.platform)
+
+    if is_official:
+      if self.platform == 'linux':
+        self._listing_platform_dir = 'lucid32bit/'
+        self.archive_name = 'chrome-lucid32bit.zip'
+        self._archive_extract_dir = 'chrome-lucid32bit'
+      elif self.platform == 'linux64':
+        self._listing_platform_dir = 'lucid64bit/'
+        self.archive_name = 'chrome-lucid64bit.zip'
+        self._archive_extract_dir = 'chrome-lucid64bit'
+      elif self.platform == 'mac':
+        self._listing_platform_dir = 'mac/'
+        self._binary_name = 'Google Chrome.app/Contents/MacOS/Google Chrome'
+      elif self.platform == 'win':
+        self._listing_platform_dir = 'win/'
+    else:
+      if self.platform == 'linux' or self.platform == 'linux64':
+        self.archive_name = 'chrome-linux.zip'
+        self._archive_extract_dir = 'chrome-linux'
+        if self.platform == 'linux':
+          self._listing_platform_dir = 'Linux/'
+        elif self.platform == 'linux64':
+          self._listing_platform_dir = 'Linux_x64/'
+      elif self.platform == 'mac':
+        self._listing_platform_dir = 'Mac/'
+        self._binary_name = 'Chromium.app/Contents/MacOS/Chromium'
+      elif self.platform == 'win':
+        self._listing_platform_dir = 'Win/'
 
   def GetListingURL(self, marker=None):
     """Returns the URL for a directory listing, with an optional marker."""
@@ -94,8 +121,13 @@ class PathContext(object):
 
   def GetDownloadURL(self, revision):
     """Gets the download URL for a build archive of a specific revision."""
-    return "%s/%s%d/%s" % (
-        BASE_URL, self._listing_platform_dir, revision, self.archive_name)
+    if self.is_official:
+      return "%s/%s/%s%s" % (
+          OFFICIAL_BASE_URL, revision, self._listing_platform_dir,
+          self.archive_name)
+    else:
+      return "%s/%s%s/%s" % (
+          BASE_URL, self._listing_platform_dir, revision, self.archive_name)
 
   def GetLastChangeURL(self):
     """Returns a URL to the LAST_CHANGE file."""
@@ -150,7 +182,7 @@ class PathContext(object):
         except ValueError:
           pass
       return (revisions, next_marker)
-
+      
     # Fetch the first list of revisions.
     (revisions, next_marker) = _FetchAndParse(self.GetListingURL())
 
@@ -160,7 +192,6 @@ class PathContext(object):
       next_url = self.GetListingURL(next_marker)
       (new_revisions, next_marker) = _FetchAndParse(next_url)
       revisions.extend(new_revisions)
-
     return revisions
 
   def GetRevList(self):
@@ -170,10 +201,41 @@ class PathContext(object):
     minrev = self.good_revision
     maxrev = self.bad_revision
     revlist = map(int, self.ParseDirectoryIndex())
-    revlist = [x for x in revlist if x >= minrev and x <= maxrev]
+    revlist = [x for x in revlist if x >= int(minrev) and x <= int(maxrev)]
     revlist.sort()
     return revlist
 
+  def GetOfficialBuildsList(self):
+    """Gets the list of official build numbers between self.good_revision and
+    self.bad_revision."""
+    # Download the revlist and filter for just the range between good and bad.
+    minrev = self.good_revision
+    maxrev = self.bad_revision
+    handle = urllib.urlopen(OFFICIAL_BASE_URL)
+    dirindex = handle.read()
+    handle.close()
+    build_numbers = re.findall(r'<a href="([0-9][0-9].*)/">', dirindex)
+    final_list = []
+    start_index = '0'
+    end_index = '0'
+    i = 0
+
+    parsed_build_numbers = [LooseVersion(x) for x in build_numbers]
+    for build_number in sorted(parsed_build_numbers):
+      path = OFFICIAL_BASE_URL + '/' + str(build_number) + '/' + \
+             self._listing_platform_dir + self.archive_name
+      i = i + 1
+      try:
+        connection = urllib.urlopen(path)
+        connection.close()
+        final_list.append(str(build_number))
+        if str(build_number) == minrev:
+          start_index = i
+        if str(build_number) == maxrev:
+          end_index = i
+      except urllib.HTTPError, e:
+        pass
+    return final_list[start_index:end_index]
 
 def UnzipFilenameToDir(filename, dir):
   """Unzip |filename| to directory |dir|."""
@@ -220,7 +282,7 @@ def FetchRevision(context, rev, filename, quit_event=None, progress_event=None):
   """
   def ReportHook(blocknum, blocksize, totalsize):
     if quit_event and quit_event.isSet():
-     raise RuntimeError("Aborting download of revision %d" % rev)
+      raise RuntimeError("Aborting download of revision %s" % str(rev))
     if progress_event and progress_event.isSet():
       size = blocknum * blocksize
       if totalsize == -1:  # Total size not known.
@@ -244,7 +306,7 @@ def FetchRevision(context, rev, filename, quit_event=None, progress_event=None):
 
 def RunRevision(context, revision, zipfile, profile, num_runs, args):
   """Given a zipped revision, unzip it and run the test."""
-  print "Trying revision %d..." % revision
+  print "Trying revision %s..." % str(revision)
 
   # Create a temp directory and unzip the revision into it.
   cwd = os.getcwd()
@@ -254,6 +316,11 @@ def RunRevision(context, revision, zipfile, profile, num_runs, args):
 
   # Run the build as many times as specified.
   testargs = [context.GetLaunchPath(), '--user-data-dir=%s' % profile] + args
+  # The sandbox must be run as root on Official Chrome, so bypass it.
+  if context.is_official and (context.platform == 'linux' or
+      context.platform == 'linux64'):
+    testargs.append('--no-sandbox')
+
   for i in range(0, num_runs):
     subproc = subprocess.Popen(testargs,
                                bufsize=-1,
@@ -270,11 +337,11 @@ def RunRevision(context, revision, zipfile, profile, num_runs, args):
   return (subproc.returncode, stdout, stderr)
 
 
-def AskIsGoodBuild(rev, status, stdout, stderr):
+def AskIsGoodBuild(rev, official_builds, status, stdout, stderr):
   """Ask the user whether build |rev| is good or bad."""
   # Loop until we get a response that we can parse.
   while True:
-    response = raw_input('Revision %d is [(g)ood/(b)ad/(q)uit]: ' % int(rev))
+    response = raw_input('Revision %s is [(g)ood/(b)ad/(q)uit]: ' % str(rev))
     if response and response in ('g', 'b'):
       return response == 'g'
     if response and response == 'q':
@@ -282,6 +349,7 @@ def AskIsGoodBuild(rev, status, stdout, stderr):
 
 
 def Bisect(platform,
+           official_builds,
            good_rev=0,
            bad_rev=0,
            num_runs=1,
@@ -292,6 +360,7 @@ def Bisect(platform,
   archived revisions to determine the last known good revision.
 
   @param platform Which build to download/run ('mac', 'win', 'linux64', etc.).
+  @param official_builds Specify build type (Chromium or Official build).
   @param good_rev Number/tag of the last known good revision.
   @param bad_rev Number/tag of the first known bad revision.
   @param num_runs Number of times to run each build for asking good/bad.
@@ -318,15 +387,18 @@ def Bisect(platform,
   if not profile:
     profile = 'profile'
 
-  context = PathContext(platform, good_rev, bad_rev)
+  context = PathContext(platform, good_rev, bad_rev, official_builds)
   cwd = os.getcwd()
 
-  _GetDownloadPath = lambda rev: os.path.join(cwd,
-      '%d-%s' % (rev, context.archive_name))
+
 
   print "Downloading list of known revisions..."
-
-  revlist = context.GetRevList()
+  _GetDownloadPath = lambda rev: os.path.join(cwd,
+      '%s-%s' % (str(rev), context.archive_name))
+  if official_builds:
+    revlist = context.GetOfficialBuildsList()
+  else:
+    revlist = context.GetRevList()
 
   # Get a list of revisions to bisect across.
   if len(revlist) < 2:  # Don't have enough builds to bisect.
@@ -341,7 +413,7 @@ def Bisect(platform,
   zipfile = _GetDownloadPath(rev)
   progress_event = threading.Event()
   progress_event.set()
-  print "Downloading revision %d..." % rev
+  print "Downloading revision %s..." % str(rev)
   FetchRevision(context, rev, zipfile,
                 quit_event=None, progress_event=progress_event)
 
@@ -400,14 +472,14 @@ def Bisect(platform,
     # On that basis, kill one of the background downloads and complete the
     # other, as described in the comments above.
     try:
-      if predicate(rev, status, stdout, stderr):
+      if predicate(rev, official_builds, status, stdout, stderr):
         good = pivot
         if down_thread:
           down_quit_event.set()  # Kill the download of older revision.
           down_thread.join()
           os.unlink(down_zipfile)
         if up_thread:
-          print "Downloading revision %d..." % up_rev
+          print "Downloading revision %s..." % str(up_rev)
           up_progress_event.set()  # Display progress of download.
           up_thread.join()  # Wait for newer revision to finish downloading.
           pivot = up_pivot
@@ -419,7 +491,7 @@ def Bisect(platform,
           up_thread.join()
           os.unlink(up_zipfile)
         if down_thread:
-          print "Downloading revision %d..." % down_rev
+          print "Downloading revision %s..." % str(down_rev)
           down_progress_event.set()  # Display progress of download.
           down_thread.join()  # Wait for older revision to finish downloading.
           pivot = down_pivot
@@ -466,9 +538,13 @@ def main():
                     choices = choices,
                     help = 'The buildbot archive to bisect [%s].' %
                            '|'.join(choices))
-  parser.add_option('-b', '--bad', type = 'int',
+  parser.add_option('-o', action="store_true", dest='official_builds',
+                    help = 'Bisect across official ' +
+                    'Chrome builds (internal only) instead of ' +
+                    'Chromium archives.')
+  parser.add_option('-b', '--bad', type = 'str',
                     help = 'The bad revision to bisect to.')
-  parser.add_option('-g', '--good', type = 'int',
+  parser.add_option('-g', '--good', type = 'str',
                     help = 'The last known good revision to bisect from.')
   parser.add_option('-p', '--profile', '--user-data-dir', type = 'str',
                     help = 'Profile to use; this will not reset every run. ' +
@@ -492,7 +568,12 @@ def main():
     return 1
 
   # Create the context. Initialize 0 for the revisions as they are set below.
-  context = PathContext(opts.archive, 0, 0)
+  context = PathContext(opts.archive, 0, 0, opts.official_builds)
+
+  if opts.official_builds and opts.bad is None:
+    print >>sys.stderr, 'Bisecting official builds requires a bad build number.'
+    parser.print_help()
+    return 1
 
   # Pick a starting point, try to get HEAD for this.
   if opts.bad:
@@ -529,7 +610,8 @@ def main():
     return 1
 
   (last_known_good_rev, first_known_bad_rev) = Bisect(
-      opts.archive, good_rev, bad_rev, opts.times, args, opts.profile)
+      opts.archive, opts.official_builds, good_rev, bad_rev, opts.times, args,
+      opts.profile)
 
   # Get corresponding webkit revisions.
   try:
@@ -542,13 +624,16 @@ def main():
     last_known_good_webkit_rev, first_known_bad_webkit_rev = 0, 0
 
   # We're done. Let the user know the results in an official manner.
-  print DONE_MESSAGE % (last_known_good_rev, first_known_bad_rev)
-  print 'CHANGELOG URL:'
-  print '  ' + CHANGELOG_URL % (last_known_good_rev, first_known_bad_rev)
+  print DONE_MESSAGE % (str(last_known_good_rev), str(first_known_bad_rev))
   if last_known_good_webkit_rev != first_known_bad_webkit_rev:
     print 'WEBKIT CHANGELOG URL:'
     print '  ' + WEBKIT_CHANGELOG_URL % (first_known_bad_webkit_rev,
                                          last_known_good_webkit_rev)
+  print 'CHANGELOG URL:'
+  if opts.official_builds:
+    print OFFICIAL_CHANGELOG_URL % (last_known_good_rev, first_known_bad_rev)
+  else:
+    print '  ' + CHANGELOG_URL % (last_known_good_rev, first_known_bad_rev)
 
 if __name__ == '__main__':
   sys.exit(main())
