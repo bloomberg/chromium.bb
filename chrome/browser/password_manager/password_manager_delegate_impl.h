@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_DELEGATE_IMPL_H_
-#define CHROME_BROWSER_PASSWORD_MANAGER_DELEGATE_IMPL_H_
+#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_IMPL_H_
+#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_IMPL_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -14,7 +15,7 @@ class TabContentsWrapper;
 class PasswordManagerDelegateImpl : public PasswordManagerDelegate {
  public:
   explicit PasswordManagerDelegateImpl(TabContentsWrapper* contents)
-      : tab_contents_(contents) { }
+      : tab_contents_(contents) {}
 
   // PasswordManagerDelegate implementation.
   virtual void FillPasswordForm(
@@ -23,9 +24,11 @@ class PasswordManagerDelegateImpl : public PasswordManagerDelegate {
       PasswordFormManager* form_to_save) OVERRIDE;
   virtual Profile* GetProfile() OVERRIDE;
   virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE;
+
  private:
   TabContentsWrapper* tab_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDelegateImpl);
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_DELEGATE_IMPL_H_
+#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_IMPL_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager_delegate_impl.h"
+#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
