@@ -180,7 +180,7 @@ drag_grab_focus(struct wl_pointer_grab *grab,
 		struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y)
 {
 	struct wl_seat *seat = container_of(grab, struct wl_seat, drag_grab);
-	struct wl_resource *resource, *offer;
+	struct wl_resource *resource, *offer = NULL;
 	struct wl_display *display;
 	uint32_t serial;
 
@@ -191,26 +191,34 @@ drag_grab_focus(struct wl_pointer_grab *grab,
 		seat->drag_focus = NULL;
 	}
 
-	if (surface)
-		resource = find_resource(&seat->drag_resource_list,
-					 surface->resource.client);
-	if (surface && resource) {
-		display = wl_client_get_display(resource->client);
-		serial = wl_display_next_serial(display);
+	if (!surface)
+		return;
 
+	if (!seat->drag_data_source &&
+	    surface->resource.client != seat->drag_client)
+		return;
+
+	resource = find_resource(&seat->drag_resource_list,
+				 surface->resource.client);
+	if (!resource)
+		return;
+
+	display = wl_client_get_display(resource->client);
+	serial = wl_display_next_serial(display);
+
+	if (seat->drag_data_source)
 		offer = wl_data_source_send_offer(seat->drag_data_source,
 						  resource);
 
-		wl_data_device_send_enter(resource, serial, &surface->resource,
-					  x, y, offer);
+	wl_data_device_send_enter(resource, serial, &surface->resource,
+				  x, y, offer);
 
-		seat->drag_focus = surface;
-		seat->drag_focus_listener.notify = destroy_drag_focus;
-		wl_signal_add(&resource->destroy_signal,
-			      &seat->drag_focus_listener);
-		seat->drag_focus_resource = resource;
-		grab->focus = surface;
-	}
+	seat->drag_focus = surface;
+	seat->drag_focus_listener.notify = destroy_drag_focus;
+	wl_signal_add(&resource->destroy_signal,
+		      &seat->drag_focus_listener);
+	seat->drag_focus_resource = resource;
+	grab->focus = surface;
 }
 
 static void
@@ -247,6 +255,7 @@ data_device_end_drag_grab(struct wl_seat *seat)
 
 	seat->drag_data_source = NULL;
 	seat->drag_surface = NULL;
+	seat->drag_client = NULL;
 }
 
 static void
@@ -261,7 +270,8 @@ drag_grab_button(struct wl_pointer_grab *grab,
 
 	if (seat->pointer->button_count == 0 && state == 0) {
 		data_device_end_drag_grab(seat);
-		wl_list_remove(&seat->drag_data_source_listener.link);
+		if (seat->drag_data_source)
+			wl_list_remove(&seat->drag_data_source_listener.link);
 	}
 }
 
@@ -304,10 +314,16 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 
 	seat->drag_grab.interface = &drag_grab_interface;
 
-	seat->drag_data_source = source_resource->data;
-	seat->drag_data_source_listener.notify = destroy_data_device_source;
-	wl_signal_add(&source_resource->destroy_signal,
-		      &seat->drag_data_source_listener);
+	seat->drag_client = client;
+	seat->drag_data_source = NULL;
+
+	if (source_resource) {
+		seat->drag_data_source = source_resource->data;
+		seat->drag_data_source_listener.notify =
+			destroy_data_device_source;
+		wl_signal_add(&source_resource->destroy_signal,
+			      &seat->drag_data_source_listener);
+	}
 
 	if (icon_resource) {
 		seat->drag_surface = icon_resource->data;

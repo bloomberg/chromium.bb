@@ -297,6 +297,7 @@ struct wl_seat {
 	struct wl_signal selection_signal;
 
 	struct wl_list drag_resource_list;
+	struct wl_client *drag_client;
 	struct wl_data_source *drag_data_source;
 	struct wl_listener drag_data_source_listener;
 	struct wl_surface *drag_focus;

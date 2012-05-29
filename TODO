@@ -78,10 +78,6 @@ EWMH
 
  - window move and resize functionality for kb and touch.
 
- - dnd loose ends: self-dnd: initiate dnd with a null data-source,
-   compositor will not offer to other clients, client has to know
-   internally what's offered and how to transfer data. no fd passing.
-
  - Protocol for specifying title bar rectangle (for moving
    unresponsive apps).  Rectangle for close button, so we can popup
    force-close dialog if application doesn't respond to ping event

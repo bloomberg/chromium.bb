@@ -317,15 +317,23 @@
     <request name="start_drag">
       <description summary="start drag and drop operation">
 	This request asks the compositor to start a drag and drop
-	operation on behalf of the client.  The source argument is the
-	data source that provides the data for the eventual data
-	transfer.  The origin surface is the surface where the drag
-	originates and the client must have an active implicit grab
-	that matches the serial.  The icon surface is an optional
-	(can be nil) surface that provides an icon to be moved around
-	with the cursor.  Initially, the top-left corner of the icon
-	surface is placed at the cursor hotspot, but subsequent
-	surface.attach request can move the relative position.
+	operation on behalf of the client.
+
+	The source argument is the data source that provides the data
+	for the eventual data transfer. If source is NULL, enter, leave
+	and motion events are sent only to the client that initiated the
+	drag and the client is expected to handle the data passing
+	internally.
+
+	The origin surface is the surface where the drag originates and
+	the client must have an active implicit grab that matches the
+	serial.
+
+	The icon surface is an optional (can be nil) surface that
+	provides an icon to be moved around with the cursor.  Initially,
+	the top-left corner of the icon surface is placed at the cursor
+	hotspot, but subsequent surface.attach request can move the
+	relative position.
       </description>
       <arg name="source" type="object" interface="wl_data_source"/>
       <arg name="origin" type="object" interface="wl_surface"/>
