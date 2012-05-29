@@ -176,6 +176,41 @@ Register StoreImmediate::base_address_register(const Instruction i) const {
 }
 
 
+SafetyLevel StrImmediate::safety(const Instruction i) const {
+  // Arm restrictions for this instruction.
+  if (t.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)))) {
+    return UNPREDICTABLE;
+  }
+
+  // Don't let addressing writeback alter PC (NaCl constraint).
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+SafetyLevel StrImmediateDouble::safety(const Instruction i) const {
+  // Arm double width restrictions for this instruction.
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  if (t2.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
+  // Now apply non-double width restrictions for this instruction.
+  return StrImmediate::safety(i);
+}
+
 SafetyLevel StoreRegister::safety(const Instruction i) const {
   if (PreindexingFlag(i)) {
     // Computes base address by adding two registers -- cannot predict!
@@ -278,7 +313,7 @@ SafetyLevel LoadRegister::safety(const Instruction i) const {
 }
 
 RegisterList LoadRegister::defs(const Instruction i) const {
-  return RegisterList(writeback(i) ? Rn(i) : kRegisterNone);
+  return RegisterList(t.reg(i)).Add(writeback(i) ? Rn(i) : kRegisterNone);
 }
 
 Register LoadRegister::base_address_register(const Instruction i) const {
@@ -324,30 +359,69 @@ bool LoadImmediate::offset_is_immediate(Instruction i) const {
   return true;
 }
 
-
-RegisterList LoadDoubleI::defs(const Instruction i) const {
-  return LoadImmediate::defs(i).Add(Rt2(i));
-}
-
-Register LoadDoubleI::base_address_register(const Instruction i) const {
-  return Rn(i);
-}
-
-bool LoadDoubleI::offset_is_immediate(Instruction i) const {
-  UNREFERENCED_PARAMETER(i);
-  return true;
-}
-
-SafetyLevel LoadDoubleR::safety(const Instruction i) const {
-  if (PreindexingFlag(i)) {
-    // If pre_index is set, the address of the load is computed as the sum
-    // of the two register parameters.  We have checked that the first register
-    // is within the sandbox, but this would allow adding an arbitrary value
-    // to it, so it is not safe.
-    return FORBIDDEN;
+SafetyLevel LdrImmediate::safety(const Instruction i) const {
+  // Arm restrictions for this instruction.
+  if (t.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
   }
 
-  // Arm restrictions for this instruction.
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)))) {
+    return UNPREDICTABLE;
+  }
+
+  // Don't let addressing writeback alter PC (NaCl constraint).
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+SafetyLevel LdrImmediateDouble::safety(Instruction i) const {
+  // Arm double width restrictions for this instruction.
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  if (t2.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
+  // Now apply non-double width restrictions for this instruction.
+  return LdrImmediate::safety(i);
+}
+
+RegisterList LdrImmediateDouble::defs(Instruction i) const {
+  return  LdrImmediate::defs(i).Add(t2.reg(i));
+}
+
+SafetyLevel LdrRegisterDouble::safety(const Instruction i) const {
+  // Arm double width restrictions for this instruction.
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  if (RegisterList(t2.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
+  // Now apply non-double width restrictions for this instruction.
+  return LdrRegister::safety(i);
+}
+
+RegisterList LdrRegisterDouble::defs(const Instruction i) const {
+  return LdrRegister::defs(i).Add(t2.reg(i));
+}
+
+SafetyLevel StrRegisterDouble::safety(const Instruction i) const {
+  // Arm double width restrictions for this instruction.
   if (!t.IsEven(i)) {
     return UNDEFINED;
   }
@@ -362,49 +436,8 @@ SafetyLevel LoadDoubleR::safety(const Instruction i) const {
     return UNPREDICTABLE;
   }
 
-  // Don't let addressing writeback alter PC.
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
-
-  return MAY_BE_SAFE;
-}
-
-RegisterList LoadDoubleR::defs(const Instruction i) const {
-  return LoadRegister::defs(i).Add(Rt2(i));
-}
-
-Register LoadDoubleR::base_address_register(const Instruction i) const {
-  // TODO(karl) Decide if this is already covered through inheritance.
-  return Rn(i);
-}
-
-SafetyLevel StoreDoubleR::safety(const Instruction i) const {
-  if (PreindexingFlag(i)) {
-    // If pre_index is set, the address of the load is computed as the sum
-    // of the two register parameters.  We have checked that the first register
-    // is within the sandbox, but this would allow adding an arbitrary value
-    // to it, so it is not safe.
-    return FORBIDDEN;
-  }
-
-  // Arm restrictions for this instruction.
-  if (!t.IsEven(i)) {
-    return UNDEFINED;
-  }
-
-  if (RegisterList(t2.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
-    return UNPREDICTABLE;
-  }
-
-  if (HasWriteBack(i) &&
-      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)) ||
-       n.reg(i).Equals(t2.reg(i)))) {
-    return UNPREDICTABLE;
-  }
-
-  // Don't let addressing writeback alter PC.
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
-
-  return MAY_BE_SAFE;
+  // Now apply non-double width restrictions for this instruction.
+  return StrRegister::safety(i);
 }
 
 Register LoadExclusive::base_address_register(const Instruction i) const {

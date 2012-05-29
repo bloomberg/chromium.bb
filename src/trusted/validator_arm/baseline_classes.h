@@ -323,6 +323,111 @@ class Binary3RegisterOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOp);
 };
 
+// Models a 2-register load/store immediate operation of the forms:
+// Op<c> <Rt>, [<Rn>{, #+/-<imm8>}]
+// Op<c> <Rt>, [<Rn>], #+/-<imm8>
+// Op<c> <Rt>, [<Rn>, #+/-<imm8>]!
+// +--------+------+--+--+--+--+--+--------+--------+--------+--------+--------+
+// |31302928|272625|24|23|22|21|20|19181716|15141312|1110 9 8| 7 6 5 4| 3 2 1 0|
+// +--------+------+--+--+--+--+--+--------+--------+--------+--------+--------+
+// |  cond  |      | P| U|  | W|  |   Rn   |   Rt   |  imm4H |        |  imm4L |
+// +--------+------+--+--+--+--+--+--------+--------+--------+--------+--------+
+// wback = (P=0 || W=1)
+//
+// if P=0 and W=1, should not parse as this instruction.
+// if Rt=15 then Unpredictable
+// if wback && (Rn=15 or Rn=Rt) then unpredictable.
+// NaCl disallows writing to PC.
+class LoadStore2RegisterImmediateOp : public ClassDecoder {
+ public:
+  static const Imm4Bits0To3Interface imm4L;
+  static const Imm4Bits8To11Interface imm4H;
+  static const RegTBits12To15Interface t;
+  static const RegNBits16To19Interface n;
+  static const WritesBit21Interface writes;
+  static const AddOffsetBit23Interface direction;
+  static const PrePostIndexingBit24Interface indexing;
+  static const ConditionBits28To31Interface cond;
+  inline LoadStore2RegisterImmediateOp() : ClassDecoder() {}
+  virtual ~LoadStore2RegisterImmediateOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual Register base_address_register(const Instruction i) const;
+  inline bool HasWriteBack(const Instruction i) const {
+    return indexing.IsPostIndexing(i) || writes.IsDefined(i);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImmediateOp);
+};
+
+// Defines the virtuals for a load immediate instruction.
+class Load2RegisterImmediateOp : public LoadStore2RegisterImmediateOp {
+ public:
+  inline Load2RegisterImmediateOp() : LoadStore2RegisterImmediateOp() {}
+  virtual ~Load2RegisterImmediateOp() {}
+  virtual RegisterList defs(Instruction i) const;
+  virtual bool offset_is_immediate(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Load2RegisterImmediateOp);
+};
+
+// Defines the virtuals for a store immediate instruction.
+class Store2RegisterImmediateOp : public LoadStore2RegisterImmediateOp {
+ public:
+  inline Store2RegisterImmediateOp() : LoadStore2RegisterImmediateOp() {}
+  virtual ~Store2RegisterImmediateOp() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ protected:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImmediateOp);
+};
+
+// Models a 2-register immediate load/store operation where the source/target
+// is double wide (i.e.  Rt and Rt2).
+class LoadStore2RegisterImmediateDoubleOp
+    : public LoadStore2RegisterImmediateOp {
+ public:
+  // Interface for components in the instruction (and not inherited).
+  static const RegT2Bits12To15Interface t2;
+
+  LoadStore2RegisterImmediateDoubleOp()
+      : LoadStore2RegisterImmediateOp() {}
+  virtual ~LoadStore2RegisterImmediateDoubleOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImmediateDoubleOp);
+};
+
+// Defines the virtuals for a load immediate double instruction.
+class Load2RegisterImmediateDoubleOp
+    : public LoadStore2RegisterImmediateDoubleOp {
+ public:
+  inline Load2RegisterImmediateDoubleOp()
+      : LoadStore2RegisterImmediateDoubleOp() {}
+  virtual ~Load2RegisterImmediateDoubleOp() {}
+  virtual RegisterList defs(Instruction i) const;
+  virtual bool offset_is_immediate(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Load2RegisterImmediateDoubleOp);
+};
+
+// Defines the virtuals for a store immediate double instruction.
+class Store2RegisterImmediateDoubleOp
+    : public LoadStore2RegisterImmediateDoubleOp {
+ public:
+  inline Store2RegisterImmediateDoubleOp()
+      : LoadStore2RegisterImmediateDoubleOp() {}
+  virtual ~Store2RegisterImmediateDoubleOp() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ protected:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImmediateDoubleOp);
+};
+
 // Models a 3-register binary operation of the form:
 // Op(S)<c> <Rd>, <Rn>, <Rm>
 // +--------+--------------+--+--------+--------+--------+--------+--------+

@@ -484,6 +484,37 @@ class StoreImmediate : public OldClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(StoreImmediate);
 };
 
+// Added to handle different safety rules, without breaking other
+// instructions that use StoreRegister.
+// TODO(karl): Clean this up once the baseline classes are stable.
+class StrImmediate : public StoreImmediate {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegTBits12To15Interface t;
+  static const RegNBits16To19Interface n;
+  static const WritesBit21Interface writes;
+  static const PrePostIndexingBit24Interface indexing;
+
+  inline StrImmediate() : StoreImmediate() {}
+  virtual ~StrImmediate() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  inline bool HasWriteBack(const Instruction i) const {
+    return indexing.IsPostIndexing(i) || writes.IsDefined(i);
+  }
+};
+
+// Added to handle different safety rules, since the source registers
+// are double wide (i.e. Rt and Rt2).
+class StrImmediateDouble : public StrImmediate {
+ public:
+  // Interface for components in the instruction (and not inherited).
+  static const RegT2Bits12To15Interface t2;
+
+  inline StrImmediateDouble() : StrImmediate() {}
+  virtual ~StrImmediateDouble() {}
+  virtual SafetyLevel safety(Instruction i) const;
+};
+
 // A base+register store, of unspecified width.  (We don't care whether it
 // stores one byte or 64.)  Note that only register-post-indexing will pass
 // safety checks -- register pre-indexing is unpredictable to us.
@@ -587,6 +618,8 @@ class AbstractLoad : public OldClassDecoder {
 // LDRB(register)
 class LoadRegister : public AbstractLoad {
  public:
+  static const RegTBits12To15Interface t;
+
   inline LoadRegister() {}
   virtual ~LoadRegister() {}
 
@@ -609,7 +642,6 @@ class LoadRegister : public AbstractLoad {
 class LdrRegister : public LoadRegister {
  public:
   static const RegMBits0To3Interface m;
-  static const RegTBits12To15Interface t;
   static const RegNBits16To19Interface n;
   static const WritesBit21Interface writes;
   static const PrePostIndexingBit24Interface indexing;
@@ -650,87 +682,80 @@ class LoadImmediate : public AbstractLoad {
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadImmediate);
 };
 
+// Added to handle different safety rules, without breaking other instructions
+// that use LoadImmediate.
+// TODO(karl): Clean this up once the baseline classes for load are stable.
+class LdrImmediate : public LoadImmediate {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegTBits12To15Interface t;
+  static const RegNBits16To19Interface n;
+  static const WritesBit21Interface writes;
+  static const PrePostIndexingBit24Interface indexing;
+
+  inline LdrImmediate() {}
+  virtual ~LdrImmediate() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  inline bool HasWriteBack(const Instruction i) const {
+    return indexing.IsPostIndexing(i) || writes.IsDefined(i);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LdrImmediate);
+};
+
 // Two-register immediate-offset load, which also writes Rt+1.
 //
 // Includes:
 // LDRD(immediate), LDRD(literal)
-class LoadDoubleI : public LoadImmediate {
+class LdrImmediateDouble : public LdrImmediate {
  public:
-  inline LoadDoubleI() {}
-  virtual ~LoadDoubleI() {}
+  // Interface for components in the instruction (and not inherited).
+  static const RegT2Bits12To15Interface t2;
 
+  inline LdrImmediateDouble() : LdrImmediate() {}
+  virtual ~LdrImmediateDouble() {}
+  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual Register base_address_register(Instruction i) const;
-  virtual bool offset_is_immediate(Instruction i) const;
-  // Defines the second destination register.
-  inline Register Rt2(const Instruction& i) const {
-    return Register(Rt(i).number() + 1);
-  }
-  // Defines the base register.
-  inline Register Rn(const Instruction& i) const {
-    return i.Reg(19, 16);
-  }
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadDoubleI);
+  NACL_DISALLOW_COPY_AND_ASSIGN(LdrImmediateDouble);
 };
 
-// Two-register register-offset load, which also writes Rt+1.
+// Two-register register-offset load, which also writes Rt2.
 //
 // Includes:
 // LDRD(register)
 // TODO(karl) Clean this up once baseline is stable.
-class LoadDoubleR : public LoadRegister {
+class LdrRegisterDouble : public LdrRegister {
  public:
-  static const RegMBits0To3Interface m;
-  static const RegTBits12To15Interface t;
   static const RegT2Bits12To15Interface t2;
-  static const RegNBits16To19Interface n;
-  static const WritesBit21Interface writes;
-  static const PrePostIndexingBit24Interface indexing;
 
-  inline LoadDoubleR() {}
-  virtual ~LoadDoubleR() {}
+  inline LdrRegisterDouble() {}
+  virtual ~LdrRegisterDouble() {}
 
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual Register base_address_register(Instruction i) const;
-  // Defines the second destination register.
-  inline Register Rt2(const Instruction& i) const {
-    return Register(Rt(i).number() + 1);
-  }
-  inline bool HasWriteBack(const Instruction i) const {
-    return indexing.IsPostIndexing(i) || writes.IsDefined(i);
-  }
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadDoubleR);
+  NACL_DISALLOW_COPY_AND_ASSIGN(LdrRegisterDouble);
 };
 
-// Two-register register-offset store, which also uses Rt+1.
+// Two-register register-offset store, which also uses Rt2.
 //
 // Includes:
 // STRD(register)
 // TODO(karl) Clean this up once baseline is stable.
-class StoreDoubleR : public StoreRegister {
+class StrRegisterDouble : public StrRegister {
  public:
-  static const RegMBits0To3Interface m;
-  static const RegTBits12To15Interface t;
   static const RegT2Bits12To15Interface t2;
-  static const RegNBits16To19Interface n;
-  static const WritesBit21Interface writes;
-  static const PrePostIndexingBit24Interface indexing;
 
-  inline StoreDoubleR() {}
-  virtual ~StoreDoubleR() {}
-
+  inline StrRegisterDouble() {}
+  virtual ~StrRegisterDouble() {}
   virtual SafetyLevel safety(Instruction i) const;
-  inline bool HasWriteBack(const Instruction i) const {
-    return indexing.IsPostIndexing(i) || writes.IsDefined(i);
-  }
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(StoreDoubleR);
+  NACL_DISALLOW_COPY_AND_ASSIGN(StrRegisterDouble);
 };
 
 

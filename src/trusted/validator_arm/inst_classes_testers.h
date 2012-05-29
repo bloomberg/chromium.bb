@@ -241,20 +241,6 @@ class Binary2RegisterImmediateOpTesterNeitherRdIsPcAndSNorRnIsPcAndNotS
       Binary2RegisterImmediateOpTesterNeitherRdIsPcAndSNorRnIsPcAndNotS);
 };
 
-// Implements a decoder tester for decoder Binary2RegisterImmediateOp,
-// where Rd can be Pc (overriding default NaCl assumptions),
-// and should not parse when Rd=15 and S=1.
-class Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS
-    : public Binary2RegisterImmediateOpTesterNotRdIsPcAndS {
- public:
-  Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS(
-      const NamedClassDecoder& decoder);
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(
-      Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS);
-};
-
 // Implements a decoder tester for decoder Binary3RegisterOp.
 // Op(S)<c> <Rd>, <Rn>, <Rm>
 // +--------+--------------+--+--------+--------+--------+--------+--------+
@@ -418,6 +404,79 @@ class Binary4RegisterDualResultTesterRegsNotPc
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualResultTesterRegsNotPc);
+};
+
+// Models a 2-register load/store immediate operation of the forms:
+// Op<c> <Rt>, [<Rn>{, #+/-<imm8>}]
+// Op<c> <Rt>, [<Rn>], #+/-<imm8>
+// Op<c> <Rt>, [<Rn>, #+/-<imm8>]!
+// +--------+------+--+--+--+--+--+--------+--------+--------+--------+--------+
+// |31302928|272625|24|23|22|21|20|19181716|15141312|1110 9 8| 7 6 5 4| 3 2 1 0|
+// +--------+------+--+--+--+--+--+--------+--------+--------+--------+--------+
+// |  cond  |      | P| U|  | W|  |   Rn   |   Rt   |  imm4H |        |  imm4L |
+// +--------+------+--+--+--+--+--+--------+--------+--------+--------+--------+
+// wback = (P=0 || W=1)
+//
+// if P=0 and W=1, should not parse as this instruction.
+// if Rt=15 then Unpredictable
+// if wback && (Rn=15 or Rn=Rt) then unpredictable.
+// NaCl disallows writing to PC.
+class LoadStore2RegisterImmediateOpTester : public Arm32DecoderTester {
+ public:
+  explicit LoadStore2RegisterImmediateOpTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImmediateOpTester);
+};
+
+// Defines a LoadStore2RegisterImmediateOpTester with the added constraint
+// that it doesn't parse when Rn=15
+class LoadStore2RegisterImmediateOpTesterNotRnIsPc
+    : public LoadStore2RegisterImmediateOpTester {
+ public:
+  LoadStore2RegisterImmediateOpTesterNotRnIsPc(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImmediateOpTesterNotRnIsPc);
+};
+
+// Models a 2-register load/store immediate operation where the source/target
+// is double wide (i.e. Rt and Rt2).
+class LoadStore2RegisterImmediateDoubleOpTester
+    : public LoadStore2RegisterImmediateOpTester {
+ public:
+  explicit LoadStore2RegisterImmediateDoubleOpTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImmediateDoubleOpTester);
+};
+
+// Defines a LoadStore2RegisterImmediateDoubleOpTester with the added constraint
+// that it doesn't parse when Rn=15.
+class LoadStore2RegisterImmediateDoubleOpTesterNotRnIsPc
+    : public LoadStore2RegisterImmediateDoubleOpTester {
+ public:
+  LoadStore2RegisterImmediateDoubleOpTesterNotRnIsPc(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      LoadStore2RegisterImmediateDoubleOpTesterNotRnIsPc);
 };
 
 // Models a 3-register load/store operation of the forms:

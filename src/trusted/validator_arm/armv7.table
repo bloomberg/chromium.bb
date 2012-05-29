@@ -61,12 +61,27 @@
 #   'd'    - Bit(23) Direction (add vs subtract) of offset.
 #   'p'    - Bit(24) defining if pre-indexing should be used.
 #
-# Constraints identifiers used are:
-#    Imm5NotZero - The immediate (5-bit) value must not be zero.
-#    NotRdIsPcAndS - not (Rd is Pc (R15) and S=1 (updates register bit)).
+# Constraints can be broken into two categories:
+#    Parse precondition - Don't test the instruction if the parse
+#        precondition is met.
+#    Safety constraint - Safety should not have allowed the
+#        instruction to be parsed if the given constraint is defined.
+#
+# Parse constraints are only necessary because our pattern language is
+# too simple. In most cases, the decoder tables will chose the
+# appropriate class decoder. However, it will be different than the
+# one being tested. Hence, we add a precondition parse check to
+# make sure we don't test these cases.
+#
+# Parse preconditions:
+#    Imm5NotZero - The immediate (5-bit) value must not be zero
 #    NeitherRdIsPcAndSNorRnIsPcAndNotS - Neither
 #        (1) Rd is Pc and S=1; nor
 #        (2) Rn is Pc ans S=0;
+#    NotRdIsPcAndS - not (Rd is Pc (R15) and S=1 (updates register bit)).
+#    NotRnIsPc - Rn!=Pc.
+#
+# Safety constraints:
 #    RegsNotPc - All register defined by instruction are not Pc (R15).
 #    RdCanBePc - Overrides Nacl Constraint that Rd!=Pc.
 #    RdCanBePcAndNotRdIsPcAndS - Overrides Nacl Constraint that Rd!=Pc,
@@ -84,10 +99,14 @@
 # #############################################################
 
 class ForbiddenCondNop : UnsafeCondNop
+class Load2RegisterImmediateDoubleOp : LoadStore2RegisterImmediateDoubleOp
+class Load2RegisterImmediateOp : LoadStore2RegisterImmediateOp
 class Load3RegisterDoubleOp : LoadStore3RegisterDoubleOp
 class Load3RegisterOp : LoadStore3RegisterOp
 class MaskedBinary2RegisterImmediateOp : Binary2RegisterImmediateOp
 class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
+class Store2RegisterImmediateDoubleOp : LoadStore2RegisterImmediateDoubleOp
+class Store2RegisterImmediateOp : LoadStore2RegisterImmediateOp
 class Store3RegisterDoubleOp : LoadStore3RegisterDoubleOp
 class Store3RegisterOp : LoadStore3RegisterOp
 
@@ -120,10 +139,10 @@ class Store3RegisterOp : LoadStore3RegisterOp
 | "      "          11x1     "
 | 1      ~10xx0     -        ->dp_immed
 | "      10000      -        = Unary1RegisterImmediateOp => Defs12To15
-                                  Mov_Rule_96_A2_P_194
-                                  cccc00110000iiiiddddIIIIIIIIIIII
-                                  RegsNotPc
-                                  (v6T2)
+                               Mov_Rule_96_A2_P_194
+                               cccc00110000iiiiddddIIIIIIIIIIII
+                               RegsNotPc
+                               (v6T2)
 | "      10100      -        =DataProc(v6T2)  # MOVT A8-200
 | "      10x10      -        ->msr_and_hints
 +--
@@ -435,26 +454,51 @@ class Store3RegisterOp : LoadStore3RegisterOp
 | "        xx0x1      -         = Load3RegisterOp => LdrRegister
                                   Ldrh_Rule_76_A1_P156
                                   cccc000pd0w1nnnntttt00001011mmmm
-| "        xx1x0      -         =StoreImmediate     # STRH(immediate) A8-410
-| "        xx1x1      ~1111     =LoadImmediate      # LDRH(immediate) A8=152
-| "        "          1111      =LoadImmediate      # LDRH(literal)   A8-154
-| 10       xx0x0      -         = Load3RegisterDoubleOp => LoadDoubleR
+| "        xx1x0      -         = Store2RegisterImmediateOp => StrImmediate
+                                  Strh_Rule_207_A1_P410
+                                  cccc000pd1w0nnnnttttiiii1011iiii
+| "        xx1x1      ~1111     = Load2RegisterImmediateOp => LdrImmediate
+                                  Ldrh_Rule_74_A1_P152
+                                  cccc000pd1w1nnnnttttiiii1011iiii NotRnIsPc
+| "        "          1111      = Load2RegisterImmediateOp => LdrImmediate
+                                  Ldrh_Rule_75_A1_P154
+                                  cccc0001d1011111ttttiiii1011iiii
+| 10       xx0x0      -         = Load3RegisterDoubleOp => LdrRegisterDouble
                                   Ldrd_Rule_68_A1_P140
                                   cccc000pd0w0nnnntttt00001101mmmm (v5TE)
 | "        xx0x1      -         = Load3RegisterOp => LdrRegister 
                                   Ldrsb_Rule_80_A1_P164
                                   cccc000pd0w1nnnntttt00001101mmmm
-| "        xx1x0      ~1111     =LoadDoubleI(v5TE)  # LDRD(immediate) A8-136
-| "        "          1111      =LoadDoubleI(v5TE)  # LDRD(literal)   A8-138
-| "        xx1x1      ~1111     =LoadImmediate      # LDRSB(immediate)A8-160
-| "        "          1111      =LoadImmediate      # LDRSB(literal)  A8-162
-| 11       xx0x0      -         = Store3RegisterDoubleOp => StoreDoubleR
+| "        xx1x0      ~1111     = Load2RegisterImmediateDoubleOp
+                                  => LdrImmediateDouble
+                                  Ldrd_Rule_66_A1_P136
+                                  cccc000pd1w0nnnnttttiiii1101iiii NotRnIsPc (v5TE)
+| "        "          1111      = Load2RegisterImmediateDoubleOp
+                                  => LdrImmediateDouble
+                                  Ldrd_Rule_67_A1_P138
+                                  cccc0001d1001111ttttiiii1101iiii (v5TE)
+| "        xx1x1      ~1111     = Load2RegisterImmediateOp => LdrImmediate
+                                  Ldrsb_Rule_78_A1_P160
+                                  cccc000pd1w1nnnnttttiiii1101iiii NotRnIsPc
+| "        "          1111      = Load2RegisterImmediateOp => LdrImmediate
+                                  ldrsb_Rule_79_A1_162
+                                  cccc0001d1011111ttttiiii1101iiii
+| 11       xx0x0      -         = Store3RegisterDoubleOp => StrRegisterDouble
                                   Strd_Rule_201_A1_P398
                                   cccc000pd0w0nnnntttt00001111mmmm
-| "        xx0x1      -         =LoadRegister       # LDRSH(register) A8-172
-| "        xx1x0      -         =StoreImmediate     # STRD(immediate) A8-396
-| "        xx1x1      ~1111     =LoadImmediate      # LDRSH(immediate)A8-168
-| "        "          1111      =LoadImmediate      # LDRSH(literal)  A8-170
+| "        xx0x1      -         = Load3RegisterOp => LdrRegister
+                                  Ldrsh_Rule_84_A1_P172
+                                  cccc000pd0w1nnnntttt00001111mmmm
+| "        xx1x0      -         = Store2RegisterImmediateDoubleOp
+                                  => StrImmediateDouble
+                                  Strd_Rule_200_A1_P396
+                                  cccc000pd1w0nnnnttttiiii1111iiii
+| "        xx1x1      ~1111     = Load2RegisterImmediateOp => LdrImmediate
+                                  Ldrsh_Rule_82_A1_P168
+                                  cccc000pd1w1nnnnttttiiii1111iiii NotRnIsPc
+| "        "          1111      = Load2RegisterImmediateOp => LdrImmediate
+                                  Ldrsh_Rule_83_A1_P170
+                                  cccc0001d1011111ttttiiii1111iiii
 +--
 
 # Unprivileged load-store table omitted: modeled as Forbidden.

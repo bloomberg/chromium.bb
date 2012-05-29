@@ -239,6 +239,17 @@ class RegT2Bits12To15Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(RegT2Bits12To15Interface);
 };
 
+// Interface class to pull out an immediate value in bits 0 through 3.
+class Imm4Bits0To3Interface {
+ public:
+  static inline uint32_t value(const Instruction& i) {
+    return i.Bits(3, 0);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm4Bits0To3Interface);
+};
+
 // Interface class to pull out an immediate value in bits 0 through 11.
 class Imm12Bits0To11Interface {
  public:
@@ -260,6 +271,17 @@ class Imm5Bits7To11Interface {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm5Bits7To11Interface);
+};
+
+// Interface class to pull out an immediate value in bits 8 through 11.
+class Imm4Bits8To11Interface {
+ public:
+  static inline uint32_t value(const Instruction& i) {
+    return i.Bits(11, 8);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm4Bits8To11Interface);
 };
 
 // Interface class to pull out an immediate value in bits 16 through 20.

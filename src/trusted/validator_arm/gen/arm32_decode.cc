@@ -34,11 +34,12 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , DontCareInst_instance_()
   , EffectiveNoOp_instance_()
   , Forbidden_instance_()
+  , LdrImmediate_instance_()
+  , LdrImmediateDouble_instance_()
   , LdrRegister_instance_()
+  , LdrRegisterDouble_instance_()
   , LoadCoprocessor_instance_()
   , LoadDoubleExclusive_instance_()
-  , LoadDoubleI_instance_()
-  , LoadDoubleR_instance_()
   , LoadExclusive_instance_()
   , LoadImmediate_instance_()
   , LoadMultiple_instance_()
@@ -53,11 +54,13 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Roadblock_instance_()
   , SatAddSub_instance_()
   , StoreCoprocessor_instance_()
-  , StoreDoubleR_instance_()
   , StoreExclusive_instance_()
   , StoreImmediate_instance_()
   , StoreRegister_instance_()
+  , StrImmediate_instance_()
+  , StrImmediateDouble_instance_()
   , StrRegister_instance_()
+  , StrRegisterDouble_instance_()
   , TestIfAddressMasked_instance_()
   , Unary1RegisterBitRange_instance_()
   , Unary1RegisterImmediateOp_instance_()
@@ -382,12 +385,12 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store(
     return StrRegister_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000020 /* op2(6:5) == 01 */ &&
-      (insn.Bits() & 0x00500000) == 0x00100000 /* op1(24:20) == xx0x1 */)
-    return LdrRegister_instance_;
+      (insn.Bits() & 0x00500000) == 0x00400000 /* op1(24:20) == xx1x0 */)
+    return StrImmediate_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00000000 /* op1(24:20) == xx0x0 */)
-    return LoadDoubleR_instance_;
+    return LdrRegisterDouble_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00100000 /* op1(24:20) == xx0x1 */)
@@ -395,27 +398,27 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store(
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00400000 /* op1(24:20) == xx1x0 */)
-    return LoadDoubleI_instance_;
+    return LdrImmediateDouble_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00500000 /* op1(24:20) == xx1x1 */)
-    return LoadImmediate_instance_;
+    return LdrImmediate_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000060 /* op2(6:5) == 11 */ &&
       (insn.Bits() & 0x00500000) == 0x00000000 /* op1(24:20) == xx0x0 */)
-    return StoreDoubleR_instance_;
+    return StrRegisterDouble_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000060 /* op2(6:5) == 11 */ &&
-      (insn.Bits() & 0x00500000) == 0x00100000 /* op1(24:20) == xx0x1 */)
-    return LoadRegister_instance_;
+      (insn.Bits() & 0x00500000) == 0x00400000 /* op1(24:20) == xx1x0 */)
+    return StrImmediateDouble_instance_;
 
   if ((insn.Bits() & 0x00000020) == 0x00000020 /* op2(6:5) == x1 */ &&
-      (insn.Bits() & 0x00500000) == 0x00400000 /* op1(24:20) == xx1x0 */)
-    return StoreImmediate_instance_;
+      (insn.Bits() & 0x00500000) == 0x00100000 /* op1(24:20) == xx0x1 */)
+    return LdrRegister_instance_;
 
   if ((insn.Bits() & 0x00000020) == 0x00000020 /* op2(6:5) == x1 */ &&
       (insn.Bits() & 0x00500000) == 0x00500000 /* op1(24:20) == xx1x1 */)
-    return LoadImmediate_instance_;
+    return LdrImmediate_instance_;
 
   // Catch any attempt to fall though ...
   fprintf(stderr, "TABLE IS INCOMPLETE: extra_load_store could not parse %08X",
