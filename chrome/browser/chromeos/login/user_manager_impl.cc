@@ -628,7 +628,11 @@ void UserManagerImpl::Observe(int type,
 
 void UserManagerImpl::OnStateChanged() {
   DCHECK(IsUserLoggedIn() && !IsLoggedInAsGuest() && !IsLoggedInAsStub());
-  if (observed_sync_service_->GetAuthError().state() != AuthError::NONE) {
+  AuthError::State state = observed_sync_service_->GetAuthError().state();
+  if (state != AuthError::NONE &&
+      state != AuthError::CONNECTION_FAILED &&
+      state != AuthError::SERVICE_UNAVAILABLE &&
+      state != AuthError::REQUEST_CANCELED) {
       // Invalidate OAuth token to force Gaia sign-in flow. This is needed
       // because sign-out/sign-in solution is suggested to the user.
       // TODO(altimofeev): this code isn't needed after crosbug.com/25978 is
