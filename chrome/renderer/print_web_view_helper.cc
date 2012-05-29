@@ -451,7 +451,11 @@ void PrintHeaderFooterByRenderText(
   int font_size = printing::kSettingHeaderFooterFontSize / webkit_scale_factor;
   render_text->SetFontSize(font_size);
   gfx::Size text_size = render_text->GetStringSize();
-  int text_height = text_size.height();
+  // Text height includes the configured gap between header/footer and the
+  // context, plus the 1 point that we later substracted for ensuring the
+  // overlapping between RenderText rect and the content area.
+  int text_height = text_size.height() + 1 +
+                    printing::kSettingHeaderFooterInterstice;
   SkScalar margin_left = page_layout.margin_left / webkit_scale_factor;
   SkScalar margin_top = page_layout.margin_top / webkit_scale_factor;
   SkScalar content_height = page_layout.content_height / webkit_scale_factor;
@@ -461,22 +465,18 @@ void PrintHeaderFooterByRenderText(
                                           horizontal_position,
                                           vertical_position, offset_to_baseline,
                                           SkScalarToDouble(text_width));
-  point.set(point.x() + margin_left, point.y() + margin_top);
-
-  gfx::Rect rect(point.x(), point.y(), text_width, text_height);
   // Workaround clipping issue of RenderText to make sure that display rect
   // overlaps with content area.
+  int rect_y;
   if (vertical_position == printing::TOP) {
     // Bottom of display rect must overlap with content.
-    const int content_top = margin_top + 1;
-    if (rect.bottom() < content_top)
-      rect.set_y(content_top - rect.height());
+    rect_y = margin_top - text_height + 1;
   } else {  // BOTTOM
     // Top of display rect must overlap with content.
-    const int content_bottom = margin_top + content_height - 1;
-    if (rect.y() > content_bottom)
-      rect.set_y(content_bottom);
+    rect_y = margin_top + content_height - 1;
   }
+
+  gfx::Rect rect(point.x() + margin_left, rect_y, text_width, text_height);
   render_text->SetDisplayRect(rect);
 
   int save_count = canvas->save();
