@@ -29,8 +29,8 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 @implementation OneClickSigninBubbleController
 
 - (id)initWithBrowserWindowController:(BrowserWindowController*)controller
-                    learnMoreCallback:(const base::Closure&)learnMoreCallback
-                     advancedCallback:(const base::Closure&)advancedCallback {
+                  start_sync_callback:(const BrowserWindow::StartSyncCallback&)
+                      start_sync_callback {
   NSWindow* parentWindow = [controller window];
 
   // Set the anchor point to right below the wrench menu.
@@ -43,25 +43,31 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   if (self = [super initWithWindowNibPath:@"OneClickSigninBubble"
                              parentWindow:parentWindow
                                anchoredAt:anchorPoint]) {
-    learnMoreCallback_ = learnMoreCallback;
-    advancedCallback_ = advancedCallback;
-    DCHECK(!learnMoreCallback_.is_null());
-    DCHECK(!advancedCallback_.is_null());
+    start_sync_callback_ = start_sync_callback;
+    DCHECK(!start_sync_callback_.is_null());
   }
   return self;
 }
 
 - (IBAction)ok:(id)sender {
+  start_sync_callback_.Run(
+      OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
   [self close];
 }
 
 - (IBAction)onClickLearnMoreLink:(id)sender {
-  learnMoreCallback_.Run();
+  // TODO(akalin): this method should be removed once the UI elements are
+  // removed.
 }
 
 - (IBAction)onClickAdvancedLink:(id)sender {
-  advancedCallback_.Run();
+  start_sync_callback_.Run(
+      OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
+  [self close];
 }
+
+// TODO(rogerta): if the bubble is closed without interaction, need to call
+// the callback with argument set to SYNC_WITH_DEFAULT_SETTINGS.
 
 - (void)awakeFromNib {
   [super awakeFromNib];

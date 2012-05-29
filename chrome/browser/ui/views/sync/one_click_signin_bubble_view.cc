@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
 
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/google/google_util.h"
@@ -21,11 +22,9 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
-// Minimum width for the fields - they will push out the size of the bubble if
-// necessary. This should be big enough so that the field pushes the right side
-// of the bubble far enough so that the edit button's left edge is to the right
-// of the field's left edge.
-const int kMinimumFieldSize = 240;
+// Minimum width for the mutli-line label.
+const int kMinimumLabelWidth = 240;
+
 
 // BookmarkBubbleView ---------------------------------------------------------
 
@@ -35,14 +34,12 @@ OneClickSigninBubbleView* OneClickSigninBubbleView::bubble_view_ = NULL;
 // static
 void OneClickSigninBubbleView::ShowBubble(
     views::View* anchor_view,
-    const base::Closure& learn_more_callback,
-    const base::Closure& advanced_callback) {
+    const BrowserWindow::StartSyncCallback& start_sync) {
   if (IsShowing())
     return;
 
   bubble_view_ =
-      new OneClickSigninBubbleView(anchor_view, learn_more_callback,
-                                   advanced_callback);
+      new OneClickSigninBubbleView(anchor_view, start_sync);
   views::BubbleDelegateView::CreateBubble(bubble_view_);
   bubble_view_->Show();
 }
@@ -60,17 +57,14 @@ void OneClickSigninBubbleView::Hide() {
 
 OneClickSigninBubbleView::OneClickSigninBubbleView(
     views::View* anchor_view,
-    const base::Closure& learn_more_callback,
-    const base::Closure& advanced_callback)
+    const BrowserWindow::StartSyncCallback& start_sync_callback)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
-      learn_more_link_(NULL),
       advanced_link_(NULL),
-      close_button_(NULL),
-      learn_more_callback_(learn_more_callback),
-      advanced_callback_(advanced_callback),
+      ok_button_(NULL),
+      undo_button_(NULL),
+      start_sync_callback_(start_sync_callback),
       message_loop_for_testing_(NULL) {
-  DCHECK(!learn_more_callback_.is_null());
-  DCHECK(!advanced_callback_.is_null());
+  DCHECK(!start_sync_callback_.is_null());
 }
 
 OneClickSigninBubbleView::~OneClickSigninBubbleView() {
@@ -95,34 +89,27 @@ void OneClickSigninBubbleView::Init() {
   // Column set for descriptive text and link.
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetFillAlign);
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
-                views::GridLayout::USE_PREF, 0, kMinimumFieldSize);
+                views::GridLayout::USE_PREF, 0, kMinimumLabelWidth);
 
   cs = layout->AddColumnSet(kColumnSetControls);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
                 views::GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(1, 0);
+  cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
+  cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
+                views::GridLayout::USE_PREF, 0, 0);
+  cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
   cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
                 views::GridLayout::USE_PREF, 0, 0);
 
   // Add main text description.
   views::Label* label = new views::Label(
-      l10n_util::GetStringFUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+      l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  label->SizeToFit(kMinimumFieldSize);
+  label->SizeToFit(kMinimumLabelWidth);
 
   layout->StartRow(0, kColumnSetFillAlign);
   layout->AddView(label);
-
-  // Add link for user to learn more about sync.
-  learn_more_link_= new views::Link(
-      l10n_util::GetStringUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_LEARN_MORE));
-  learn_more_link_->set_listener(this);
-  learn_more_link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-
-  layout->StartRow(0, kColumnSetFillAlign);
-  layout->AddView(learn_more_link_);
 
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 
@@ -133,13 +120,27 @@ void OneClickSigninBubbleView::Init() {
   advanced_link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   // Add controls at the bottom.
-  close_button_ = new views::NativeTextButton(
-      this, l10n_util::GetStringUTF16(IDS_OK));
-  close_button_->SetIsDefault(true);
+  ok_button_ = new views::NativeTextButton(this);
+  ok_button_->SetIsDefault(true);
+
+  undo_button_ = new views::NativeTextButton(this);
+
+  // The default size of the buttons is too large.  To allow them to be smaller
+  // ignore the minimum default size.  Furthermore, to make sure they are the
+  // same size, SetText() is called with both strings on both buttons.
+  ok_button_->set_ignore_minimum_size(true);
+  undo_button_->set_ignore_minimum_size(true);
+  string16 ok_label = l10n_util::GetStringUTF16(IDS_OK);
+  string16 undo_label = l10n_util::GetStringUTF16(IDS_ONE_CLICK_BUBBLE_UNDO);
+  ok_button_->SetText(undo_label);
+  ok_button_->SetText(ok_label);
+  undo_button_->SetText(ok_label);
+  undo_button_->SetText(undo_label);
 
   layout->StartRow(0, kColumnSetControls);
   layout->AddView(advanced_link_);
-  layout->AddView(close_button_);
+  layout->AddView(ok_button_);
+  layout->AddView(undo_button_);
 
   AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, 0));
 }
@@ -150,13 +151,25 @@ void OneClickSigninBubbleView::WindowClosing() {
   // before then.
   DCHECK(bubble_view_ == this);
   bubble_view_ = NULL;
- }
+
+  if (!start_sync_callback_.is_null()) {
+    base::ResetAndReturn(&start_sync_callback_).Run(
+        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+  }
+}
 
 bool OneClickSigninBubbleView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_RETURN ||
       accelerator.key_code() == ui::VKEY_ESCAPE) {
     StartFade(false);
+    if (accelerator.key_code() == ui::VKEY_RETURN) {
+      base::ResetAndReturn(&start_sync_callback_).Run(
+          OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+    } else {
+      start_sync_callback_.Reset();
+    }
+
     return true;
   }
 
@@ -166,15 +179,17 @@ bool OneClickSigninBubbleView::AcceleratorPressed(
 void OneClickSigninBubbleView::LinkClicked(views::Link* source,
                                            int event_flags) {
   StartFade(false);
-
-  if (source == learn_more_link_)
-    learn_more_callback_.Run();
-  else
-    advanced_callback_.Run();
+  base::ResetAndReturn(&start_sync_callback_).Run(
+      OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
 }
 
 void OneClickSigninBubbleView::ButtonPressed(views::Button* sender,
                                              const views::Event& event) {
-  DCHECK_EQ(close_button_, sender);
   StartFade(false);
+  if (ok_button_ == sender) {
+    base::ResetAndReturn(&start_sync_callback_).Run(
+        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+  } else {
+    start_sync_callback_.Reset();
+  }
 }

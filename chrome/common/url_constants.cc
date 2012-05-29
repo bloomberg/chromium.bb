@@ -295,6 +295,13 @@ const char kChromeHelpURL[] =
     "https://support.google.com/chrome/?p=help";
 #endif
 
+const char kChromeSyncLearnMoreURL[] =
+#if defined(OS_CHROMEOS)
+    "http://support.google.com/chromeos/bin/answer.py?hl=en&answer=165139";
+#else
+    "http://support.google.com/chrome/bin/answer.py?hl=en&answer=165139";
+#endif
+
 const char kSettingsSearchHelpURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromeos/?p=settings_search_help";

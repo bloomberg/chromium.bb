@@ -22,7 +22,6 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/sync/one_click_signin_dialog.h"
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -63,6 +62,8 @@ class OneClickLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
 
@@ -129,47 +130,28 @@ string16 OneClickLoginInfoBarDelegate::GetButtonLabel(
 
 namespace {
 
-void OnLearnMore(Browser* browser) {
-  browser->AddSelectedTabWithURL(
-      GURL(chrome::kSyncLearnMoreURL),
-      content::PAGE_TRANSITION_AUTO_BOOKMARK);
-}
-
-void OnAdvanced(Browser* browser) {
-  browser->AddSelectedTabWithURL(
-      GURL(std::string(chrome::kChromeUISettingsURL) +
-           chrome::kSyncSetupSubPage),
-      content::PAGE_TRANSITION_AUTO_BOOKMARK);
-}
-
 // Start syncing with the given user information.
 void StartSync(content::WebContents* web_contents,
                const std::string& session_index,
                const std::string& email,
                const std::string& password,
-               bool use_default_settings) {
+               OneClickSigninSyncStarter::StartSyncMode start_mode) {
   // The starter deletes itself once its done.
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  ignore_result(
-      new OneClickSigninSyncStarter(
-          profile, session_index, email, password, use_default_settings));
-
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
-  browser->window()->ShowOneClickSigninBubble(
-      base::Bind(&OnLearnMore, base::Unretained(browser)),
-      base::Bind(&OnAdvanced, base::Unretained(browser)));
+  new OneClickSigninSyncStarter(profile, session_index, email, password,
+                                start_mode);
 }
 
 }  // namespace
 
 bool OneClickLoginInfoBarDelegate::Accept() {
   DisableOneClickSignIn();
+  content::WebContents* web_contents = owner()->web_contents();
   RecordHistogramAction(one_click_signin::HISTOGRAM_ACCEPTED);
-  ShowOneClickSigninDialog(
-      owner()->web_contents()->GetView()->GetTopLevelNativeWindow(),
-      base::Bind(&StartSync, owner()->web_contents(), session_index_, email_,
-                 password_));
+  browser::FindBrowserWithWebContents(web_contents)->window()->
+      ShowOneClickSigninBubble(base::Bind(&StartSync, web_contents,
+                                          session_index_, email_, password_));
   button_pressed_ = true;
   return true;
 }
@@ -180,6 +162,21 @@ bool OneClickLoginInfoBarDelegate::Cancel() {
   button_pressed_ = true;
   return true;
 }
+
+string16 OneClickLoginInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+bool OneClickLoginInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  RecordHistogramAction(one_click_signin::HISTOGRAM_LEARN_MORE);
+  content::OpenURLParams params(
+      GURL(chrome::kChromeSyncLearnMoreURL), content::Referrer(), disposition,
+      content::PAGE_TRANSITION_LINK, false);
+  owner()->web_contents()->OpenURL(params);
+  return false;
+}
+
 
 InfoBarDelegate::InfoBarAutomationType
     OneClickLoginInfoBarDelegate::GetInfoBarAutomationType() const {

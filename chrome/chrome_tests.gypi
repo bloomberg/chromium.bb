@@ -1751,6 +1751,7 @@
         'browser/ui/panels/panel_mouse_watcher_unittest.cc',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
         'browser/ui/select_file_dialog_unittest.cc',
+        'browser/ui/sync/one_click_signin_helper_unittest.cc',
         'browser/ui/tab_contents/tab_contents_iterator_unittest.cc',
         'browser/ui/tabs/dock_info_unittest.cc',
         'browser/ui/tabs/pinned_tab_codec_unittest.cc',
@@ -2006,6 +2007,7 @@
             'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
             'browser/ui/cocoa/one_click_signin_dialog_controller_unittest.mm',
             'browser/ui/gtk/one_click_signin_dialog_gtk_unittest.cc',
+            'browser/ui/sync/one_click_signin_helper_unittest.cc',
           ]
         }],
         ['enable_promo_resource_service==0', {

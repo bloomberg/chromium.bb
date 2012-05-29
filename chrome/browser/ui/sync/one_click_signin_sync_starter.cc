@@ -19,14 +19,15 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     const std::string& session_index,
     const std::string& email,
     const std::string& password,
-    bool use_default_settings)
+    StartSyncMode start_mode)
     : profile_(profile),
       signin_tracker_(profile, this),
-      use_default_settings_(use_default_settings) {
+      start_mode_(start_mode) {
   DCHECK(profile_);
 
-  int action = use_default_settings ? one_click_signin::HISTOGRAM_WITH_DEFAULTS
-                                    : one_click_signin::HISTOGRAM_WITH_ADVANCED;
+  int action = start_mode_ == SYNC_WITH_DEFAULT_SETTINGS ?
+      one_click_signin::HISTOGRAM_WITH_DEFAULTS :
+      one_click_signin::HISTOGRAM_WITH_ADVANCED;
   UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse", action,
                             one_click_signin::HISTOGRAM_MAX);
 
@@ -57,7 +58,7 @@ void OneClickSigninSyncStarter::SigninSuccess() {
   ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
 
-  if (use_default_settings_) {
+  if (start_mode_ == SYNC_WITH_DEFAULT_SETTINGS) {
     // Just kick off the sync machine, no need to configure it first.
     profile_sync_service->SetSyncSetupCompleted();
     profile_sync_service->set_setup_in_progress(false);

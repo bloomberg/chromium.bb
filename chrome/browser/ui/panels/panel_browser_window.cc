@@ -295,8 +295,7 @@ void PanelBrowserWindow::ShowChromeToMobileBubble() {
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
 void PanelBrowserWindow::ShowOneClickSigninBubble(
-      const base::Closure& learn_more_callback,
-      const base::Closure& advanced_callback) {
+      const StartSyncCallback& start_sync_callback) {
   NOTIMPLEMENTED();
 }
 #endif

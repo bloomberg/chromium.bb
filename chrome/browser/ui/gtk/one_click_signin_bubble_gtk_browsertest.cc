@@ -11,67 +11,67 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-namespace {
 
 class OneClickSigninBubbleGtkTest : public InProcessBrowserTest {
  public:
   OneClickSigninBubbleGtkTest()
       : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        learn_more_callback_(
-            base::Bind(&OneClickSigninBubbleGtkTest::OnLearnMore,
-                       weak_ptr_factory_.GetWeakPtr())),
-        advanced_callback_(
-            base::Bind(&OneClickSigninBubbleGtkTest::OnAdvanced,
+        start_sync_callback_(
+            base::Bind(&OneClickSigninBubbleGtkTest::OnStartSync,
                        weak_ptr_factory_.GetWeakPtr())),
         bubble_(NULL) {}
 
   virtual OneClickSigninBubbleGtk* MakeBubble() {
     return new OneClickSigninBubbleGtk(
         static_cast<BrowserWindowGtk*>(browser()->window()),
-        learn_more_callback_,
-        advanced_callback_);
+        start_sync_callback_);
   }
 
-  MOCK_METHOD0(OnLearnMore, void());
-  MOCK_METHOD0(OnAdvanced, void());
+  MOCK_METHOD1(OnStartSync, void(OneClickSigninSyncStarter::StartSyncMode));
 
  protected:
   base::WeakPtrFactory<OneClickSigninBubbleGtkTest> weak_ptr_factory_;
-  base::Closure learn_more_callback_;
-  base::Closure advanced_callback_;
+  BrowserWindow::StartSyncCallback start_sync_callback_;
 
   // Owns itself.
   OneClickSigninBubbleGtk* bubble_;
 };
 
-// Test that the dialog doesn't call any callback if the OK button is
-// clicked.
+// Test that the dialog calls the callback if the OK button is clicked.
+// Callback should be called to setup sync with default settings.
 IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, ShowAndOK) {
-  EXPECT_CALL(*this, OnLearnMore()).Times(0);
-  EXPECT_CALL(*this, OnAdvanced()).Times(0);
+  EXPECT_CALL(*this, OnStartSync(
+      OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS)).Times(1);
 
-  MakeBubble()->ClickOKForTest();
+  MakeBubble()->OnClickOK(NULL);
 }
 
-// Test that the learn more callback is run if its corresponding
-// button is clicked.
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, ShowAndClickLearnMore) {
-  EXPECT_CALL(*this, OnLearnMore()).Times(1);
-  EXPECT_CALL(*this, OnAdvanced()).Times(0);
+// Test that the dialog doesn't call the callback if the Undo button is
+// clicked.
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, ShowAndUndo) {
+  EXPECT_CALL(*this, OnStartSync(testing::_)).Times(0);
 
-  MakeBubble()->ClickLearnMoreForTest();
+  MakeBubble()->OnClickUndo(NULL);
 }
 
-// Test that the advanced callback is run if its corresponding button
-// is clicked.
+// Test that the dialog calls the callback if the advanced link is clicked.
+// Callback should be called to configure sync before starting.
 IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, ShowAndClickAdvanced) {
-  EXPECT_CALL(*this, OnLearnMore()).Times(0);
-  EXPECT_CALL(*this, OnAdvanced()).Times(1);
+  EXPECT_CALL(*this,
+              OnStartSync(OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST)).
+      Times(1);
 
-  MakeBubble()->ClickAdvancedForTest();
+  MakeBubble()->OnClickAdvancedLink(NULL);
 }
 
-}  // namespace
+// Test that the dialog calls the callback if the bubble is closed.
+// Callback should be called to setup sync with default settings.
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, ShowAndClose) {
+  EXPECT_CALL(*this, OnStartSync(
+      OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS)).Times(1);
+
+  MakeBubble()->bubble_->Close();
+}

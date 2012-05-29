@@ -17,11 +17,13 @@ class Profile;
 // the job is done.
 class OneClickSigninSyncStarter : public SigninTracker::Observer {
  public:
+  enum StartSyncMode {SYNC_WITH_DEFAULT_SETTINGS, CONFIGURE_SYNC_FIRST };
+
   OneClickSigninSyncStarter(Profile* profile,
                             const std::string& session_index,
                             const std::string& email,
                             const std::string& password,
-                            bool use_default_settings);
+                            StartSyncMode start_mode);
 
  private:
   virtual ~OneClickSigninSyncStarter();
@@ -33,7 +35,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
 
   Profile* const profile_;
   SigninTracker signin_tracker_;
-  bool use_default_settings_;
+  StartSyncMode start_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninSyncStarter);
 };

@@ -271,6 +271,9 @@ extern const char kPasswordManagerLearnMoreURL[];
 // General help link for Chrome.
 extern const char kChromeHelpURL[];
 
+// "Learn more" URL for the one click signin infobar.
+extern const char kChromeSyncLearnMoreURL[];
+
 // Help URL for the settings page's search feature.
 extern const char kSettingsSearchHelpURL[];
 

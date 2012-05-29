@@ -784,6 +784,9 @@ The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been
         <message name="IDS_ONE_CLICK_SIGNIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that the user can connect his profile to a Google account instead of logging in only here.">
           Use this Google Account to sync all your Chromium stuff?
         </message>
+        <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE" desc="The body of the sync promo NTP bubble.">
+          You're now signed in to Chromium! Your bookmarks, history, and other settings will be synced to your Google Account.
+        </message>
         <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_HEADING" desc="The heading of the reverse auto-login dialog.">
           Sign in to Chromium
         </message>

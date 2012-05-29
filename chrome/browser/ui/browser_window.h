@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/common/content_settings_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -221,11 +222,15 @@ class BrowserWindow : public BaseWindow {
   virtual void ShowChromeToMobileBubble() = 0;
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
-  // Shows the one-click sign in bubble.  The given closures are run
-  // when their corresponding links are clicked.
+  // Callback type used with the ShowOneClickSigninBubble() method.  If the
+  // user chooses to accept the sign in, the callback is called to start the
+  // sync process.
+  typedef base::Callback<void(OneClickSigninSyncStarter::StartSyncMode)>
+      StartSyncCallback;
+
+  // Shows the one-click sign in bubble.
   virtual void ShowOneClickSigninBubble(
-      const base::Closure& learn_more_callback,
-      const base::Closure& advanced_callback) = 0;
+      const StartSyncCallback& start_sync_callback) = 0;
 #endif
 
   // Whether or not the shelf view is visible.

@@ -13,25 +13,37 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/events/event.h"
 
-namespace {
-
-void OnClickLink(Browser* browser) {
-  browser->AddSelectedTabWithURL(GURL("http://www.example.com"),
-                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
-}
-
-}  // namespace
-
 class OneClickSigninBubbleViewBrowserTest : public InProcessBrowserTest {
  public:
-  OneClickSigninBubbleViewBrowserTest() {}
-
-  void ShowOneClickSigninBubble() {
-    base::Closure on_click_link_callback =
-        base::Bind(&OnClickLink, base::Unretained(browser()));
-    browser()->window()->ShowOneClickSigninBubble(on_click_link_callback,
-                                                  on_click_link_callback);
+  OneClickSigninBubbleViewBrowserTest()
+      : on_start_sync_called_(false),
+        mode_(OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST) {
   }
+
+  OneClickSigninBubbleView* ShowOneClickSigninBubble() {
+    browser()->window()->ShowOneClickSigninBubble(
+        base::Bind(&OneClickSigninBubbleViewBrowserTest::OnStartSync, this));
+
+    ui_test_utils::RunAllPendingInMessageLoop();
+    EXPECT_TRUE(OneClickSigninBubbleView::IsShowing());
+
+    OneClickSigninBubbleView* view =
+        OneClickSigninBubbleView::view_for_testing();
+    EXPECT_TRUE(view != NULL);
+
+    // Simulate pressing a link in the bubble.  This should open a new tab.
+    view->message_loop_for_testing_ = MessageLoop::current();
+    return view;
+  }
+
+  void OnStartSync(OneClickSigninSyncStarter::StartSyncMode mode) {
+    on_start_sync_called_ = true;
+    mode_ = mode;
+  }
+
+ protected:
+  bool on_start_sync_called_;
+  OneClickSigninSyncStarter::StartSyncMode mode_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninBubbleViewBrowserTest);
@@ -44,51 +56,85 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, Show) {
 
   OneClickSigninBubbleView::Hide();
   ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(on_start_sync_called_);
+  EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, CloseButton) {
-  int initial_tab_count = browser()->tab_count();
-
-  ShowOneClickSigninBubble();
-  ui_test_utils::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(OneClickSigninBubbleView::IsShowing());
-
-  OneClickSigninBubbleView* view = OneClickSigninBubbleView::view_for_testing();
-  EXPECT_TRUE(view != NULL);
-  EXPECT_EQ(initial_tab_count, browser()->tab_count());
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, OkButton) {
+  OneClickSigninBubbleView* view = ShowOneClickSigninBubble();
 
   // Simulate pressing the OK button.  Set the message loop in the bubble
   // view so that it can be quit once the bubble is hidden.
-  view->set_message_loop_for_testing(MessageLoop::current());
   views::ButtonListener* listener = view;
-  views::MouseEvent event(ui::ET_MOUSE_PRESSED, 0, 0, 0);
-  listener->ButtonPressed(view->close_button_for_testing(), event);
+  const views::MouseEvent event(ui::ET_MOUSE_PRESSED, 0, 0, 0);
+  listener->ButtonPressed(view->ok_button_, event);
 
   // View should no longer be showing.  The message loop will exit once the
   // fade animation of the bubble is done.
   ui_test_utils::RunMessageLoop();
+  EXPECT_TRUE(on_start_sync_called_);
+  EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
-  EXPECT_EQ(initial_tab_count, browser()->tab_count());
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, ViewLink) {
-  int initial_tab_count = browser()->tab_count();
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, UndoButton) {
+  OneClickSigninBubbleView* view = ShowOneClickSigninBubble();
 
-  ShowOneClickSigninBubble();
-  ui_test_utils::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(OneClickSigninBubbleView::IsShowing());
+  // Simulate pressing the undo button.  Set the message loop in the bubble
+  // view so that it can be quit once the bubble is hidden.
+  views::ButtonListener* listener = view;
+  const views::MouseEvent event(ui::ET_MOUSE_PRESSED, 0, 0, 0);
+  listener->ButtonPressed(view->undo_button_, event);
 
-  OneClickSigninBubbleView* view = OneClickSigninBubbleView::view_for_testing();
-  EXPECT_TRUE(view != NULL);
-  EXPECT_EQ(initial_tab_count, browser()->tab_count());
+  // View should no longer be showing.  The message loop will exit once the
+  // fade animation of the bubble is done.
+  ui_test_utils::RunMessageLoop();
+  EXPECT_FALSE(on_start_sync_called_);
+  EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
+}
+
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, AdvancedLink) {
+  OneClickSigninBubbleView* view = ShowOneClickSigninBubble();
 
   // Simulate pressing a link in the bubble.  This should open a new tab.
   views::LinkListener* listener = view;
-  listener->LinkClicked(view->learn_more_link_for_testing(), 0);
+  listener->LinkClicked(view->advanced_link_, 0);
 
   // View should no longer be showing and a new tab should be opened.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  ui_test_utils::RunMessageLoop();
+  EXPECT_TRUE(on_start_sync_called_);
+  EXPECT_EQ(OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST, mode_);
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
-  EXPECT_EQ(initial_tab_count + 1, browser()->tab_count());
+}
+
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, PressEnterKey) {
+  OneClickSigninBubbleView* one_click_view = ShowOneClickSigninBubble();
+
+  // Simulate pressing the Enter key.
+  views::View* view = one_click_view;
+  const ui::Accelerator accelerator(ui::VKEY_RETURN, 0);
+  view->AcceleratorPressed(accelerator);
+
+  // View should no longer be showing.  The message loop will exit once the
+  // fade animation of the bubble is done.
+  ui_test_utils::RunMessageLoop();
+  EXPECT_TRUE(on_start_sync_called_);
+  EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
+  EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
+}
+
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, PressEscapeKey) {
+  OneClickSigninBubbleView* one_click_view = ShowOneClickSigninBubble();
+
+  // Simulate pressing the Escape key.
+  views::View* view = one_click_view;
+  const ui::Accelerator accelerator(ui::VKEY_ESCAPE, 0);
+  view->AcceleratorPressed(accelerator);
+
+  // View should no longer be showing.  The message loop will exit once the
+  // fade animation of the bubble is done.
+  ui_test_utils::RunMessageLoop();
+  EXPECT_FALSE(on_start_sync_called_);
+  EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }

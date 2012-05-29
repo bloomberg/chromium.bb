@@ -84,10 +84,6 @@
       'test_pyauto',
       'themes',
 
-      # One-click infobars disabled on M20 by r135749.
-      # Re-enable for M21 after branch point.
-      '-infobars.OneClickInfobarTest',
-
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================

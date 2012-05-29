@@ -9,7 +9,9 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/string16.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -28,11 +30,10 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
                                  public views::ButtonListener {
  public:
   // Show the one-click signin bubble if not already showing.  The bubble
-  // will be placed visually beneath |anchor_view|.  The |browser| is used
-  // to open links.
+  // will be placed visually beneath |anchor_view|.  |start_sync| is called
+  // to start sync.
   static void ShowBubble(views::View* anchor_view,
-                         const base::Closure& learn_more_callback,
-                         const base::Closure& advanced_callback);
+                         const BrowserWindow::StartSyncCallback& start_sync);
 
   static bool IsShowing();
 
@@ -42,19 +43,17 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   // method is meant to be called only from tests.
   static OneClickSigninBubbleView* view_for_testing() { return bubble_view_; }
 
-  // The following accessor message should only be used for testing.
-  views::Link* learn_more_link_for_testing() const { return learn_more_link_; }
-  views::Link* advanced_link_for_testing() const { return advanced_link_; }
-  views::TextButton* close_button_for_testing() const { return close_button_; }
-  void set_message_loop_for_testing(MessageLoop* loop) {
-    message_loop_for_testing_ = loop;
-  }
-
  private:
-  // Creates a BookmarkBubbleView.
-  OneClickSigninBubbleView(views::View* anchor_view,
-                           const base::Closure& learn_more_callback,
-                           const base::Closure& advanced_callback);
+  friend class OneClickSigninBubbleViewBrowserTest;
+
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewBrowserTest, OkButton);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewBrowserTest, UndoButton);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewBrowserTest, AdvancedLink);
+
+  // Creates a OneClickSigninBubbleView.
+  OneClickSigninBubbleView(
+      views::View* anchor_view,
+      const BrowserWindow::StartSyncCallback& start_sync_callback);
 
   virtual ~OneClickSigninBubbleView();
 
@@ -78,18 +77,17 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   // The bubble, if we're showing one.
   static OneClickSigninBubbleView* bubble_view_;
 
-  // Link to web page to learn more about sync.
-  views::Link* learn_more_link_;
-
   // Link to sync setup advanced page.
   views::Link* advanced_link_;
 
-  // Button to close the window.
-  views::TextButton* close_button_;
+  // Controls at bottom of bubble.
+  views::TextButton* ok_button_;
+  views::TextButton* undo_button_;
 
-  // The callbacks for the links.
-  base::Closure learn_more_callback_;
-  base::Closure advanced_callback_;
+  // This callback is nulled once its called, so that it is called only once.
+  // It will be called when the bubble is closed if it has not been called
+  // and nulled earlier.
+  BrowserWindow::StartSyncCallback start_sync_callback_;
 
   // A message loop used only with unit tests.
   MessageLoop* message_loop_for_testing_;

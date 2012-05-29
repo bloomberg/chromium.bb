@@ -9390,6 +9390,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE" desc="The title of the modal dialog window that opens when the user chooses to use one click sign in.">
         Sign in
       </message>
+      <message name="IDS_ONE_CLICK_BUBBLE_UNDO" desc="The text for the undo button in the one click signin bubble.">
+        Undo
+      </message>
       <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE" desc="The message of the one click sign in dialog.">
         Signing in will sync your data with your Google Account so you can access your bookmarks, history, and other settings on any device.
       </message>
