@@ -412,7 +412,7 @@ static int read_frame(struct input_state *input, vpx_image_t *img)
 	    input->output_msecs = input->wcap->msecs;
 	}
 
-	while (input->output_msecs > input->wcap->msecs)
+	while (input->output_msecs - input->wcap->msecs < INT32_MAX)
             if (!wcap_decoder_get_frame(input->wcap))
                 return 0;
 
