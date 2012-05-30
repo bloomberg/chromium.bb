@@ -58,15 +58,16 @@ class Handler : public content::WebContentsObserver {
   }
 
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE {
-    callback_.Run(false, kRendererDestroyed);
+    callback_.Run(false, -1, kRendererDestroyed);
     delete this;
   }
 
  private:
   void OnExecuteCodeFinished(int request_id,
                              bool success,
+                             int32 page_id,
                              const std::string& error) {
-    callback_.Run(success, error);
+    callback_.Run(success, page_id, error);
     delete this;
   }
 

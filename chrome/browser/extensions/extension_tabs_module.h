@@ -128,7 +128,9 @@ class UpdateTabFunction : public AsyncExtensionFunction {
 
  private:
   virtual bool RunImpl() OVERRIDE;
-  void OnExecuteCodeFinished(bool success, const std::string& error);
+  void OnExecuteCodeFinished(bool success,
+                             int32 page_id,
+                             const std::string& error);
 
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.update")
 };

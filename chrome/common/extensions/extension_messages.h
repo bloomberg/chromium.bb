@@ -385,11 +385,21 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ExtensionHostMsg_GetMessageBundle,
                             std::string /* extension id */,
                             SubstitutionMap /* message bundle */)
 
-// Send from the renderer to the browser to return the script running result.
-IPC_MESSAGE_ROUTED3(ExtensionHostMsg_ExecuteCodeFinished,
+// Sent from the renderer to the browser to return the script running result.
+IPC_MESSAGE_ROUTED4(ExtensionHostMsg_ExecuteCodeFinished,
                     int /* request id */,
                     bool /* whether the script ran successfully */,
-                    std::string /* error message */)
+                    int32 /* page_id the code executed on, if successful */,
+                    std::string /* error message, if unsuccessful */)
+
+// Sent from the renderer to the browser to notify that content scripts are
+// running in the renderer that the IPC originated from.
+// Note that the page_id is for the parent (or more accurately the topmost)
+// frame (e.g. if executing in an iframe this is the page ID of the parent,
+// unless the parent is an iframe... etc).
+IPC_MESSAGE_ROUTED2(ExtensionHostMsg_ContentScriptsExecuting,
+                    std::set<std::string> /* extensions that have scripts */,
+                    int32 /* page_id of the _topmost_ frame */)
 
 IPC_MESSAGE_ROUTED2(ExtensionHostMsg_DidGetApplicationInfo,
                     int32 /* page_id */,

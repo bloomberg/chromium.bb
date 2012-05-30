@@ -14,12 +14,14 @@
 #include "base/shared_memory.h"
 #include "base/stringprintf.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
@@ -261,6 +263,8 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
   int num_css = 0;
   int num_scripts = 0;
 
+  std::set<std::string> extensions_executing_scripts;
+
   for (size_t i = 0; i < scripts_.size(); ++i) {
     std::vector<WebScriptSource> sources;
     UserScript* script = scripts_[i];
@@ -321,7 +325,23 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
           isolated_world_id, &sources.front(), sources.size(),
           EXTENSION_GROUP_CONTENT_SCRIPTS);
       UMA_HISTOGRAM_TIMES("Extensions.InjectScriptTime", exec_timer.Elapsed());
+
+      extensions_executing_scripts.insert(extension->id());
     }
+  }
+
+  // Notify the browser if any extensions are now executing scripts.
+  if (!extensions_executing_scripts.empty()) {
+    WebKit::WebFrame* target_frame = frame;
+    while (target_frame->parent())
+      target_frame = target_frame->parent();
+
+    content::RenderView* render_view =
+        content::RenderView::FromWebView(target_frame->view());
+    render_view->Send(new ExtensionHostMsg_ContentScriptsExecuting(
+        render_view->GetRoutingID(),
+        extensions_executing_scripts,
+        render_view->GetPageId()));
   }
 
   // Log debug info.

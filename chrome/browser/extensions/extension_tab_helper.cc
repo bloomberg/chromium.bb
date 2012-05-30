@@ -50,7 +50,7 @@ ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
           extension_function_dispatcher_(wrapper->profile(), this)),
       wrapper_(wrapper) {
   if (extensions::switch_utils::IsActionBoxEnabled()) {
-    script_badge_controller_.reset(new ScriptBadgeController(wrapper));
+    script_badge_controller_ = new ScriptBadgeController(wrapper);
   } else {
     script_executor_.reset(new ScriptExecutorImpl(wrapper->web_contents()));
     location_bar_controller_.reset(new PageActionController(wrapper));

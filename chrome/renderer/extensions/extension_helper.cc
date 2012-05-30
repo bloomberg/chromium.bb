@@ -335,7 +335,7 @@ void ExtensionHelper::OnExecuteCode(
   WebFrame* main_frame = webview->mainFrame();
   if (!main_frame) {
     Send(new ExtensionHostMsg_ExecuteCodeFinished(
-        routing_id(), params.request_id, false, ""));
+        routing_id(), params.request_id, false, -1, ""));
     return;
   }
 

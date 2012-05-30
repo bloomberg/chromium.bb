@@ -42,8 +42,10 @@ class ScriptExecutor {
     ISOLATED_WORLD,
   };
 
-  // Callback from ExecuteScript. The arguments are (success, error).
-  typedef base::Callback<void(bool, const std::string&)> ExecuteScriptCallback;
+  // Callback from ExecuteScript. The arguments are (success, page_id, error).
+  // page_id is only valid on success, error is only valid on !success.
+  typedef base::Callback<void(bool, int32, const std::string&)>
+      ExecuteScriptCallback;
 
   // Executes a script. The arguments match ExtensionMsg_ExecuteCode_Params in
   // extension_messages.h (request_id is populated automatically).

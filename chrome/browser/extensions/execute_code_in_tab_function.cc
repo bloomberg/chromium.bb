@@ -145,6 +145,7 @@ bool ExecuteCodeInTabFunction::RunImpl() {
 }
 
 void ExecuteCodeInTabFunction::OnExecuteCodeFinished(bool success,
+                                                     int32 page_id,
                                                      const std::string& error) {
   if (!error.empty()) {
     CHECK(!success);

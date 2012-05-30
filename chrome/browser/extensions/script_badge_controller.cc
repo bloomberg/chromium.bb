@@ -9,10 +9,15 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "ipc/ipc_message.h"
+#include "ipc/ipc_message_macros.h"
 
 namespace extensions {
 
@@ -32,15 +37,11 @@ ScriptBadgeController::GetCurrentActions() {
   if (!service)
     return current_actions.Pass();
 
-  const GURL& current_url = tab_contents_->web_contents()->GetURL();
-
   for (ExtensionSet::const_iterator it = service->extensions()->begin();
        it != service->extensions()->end(); ++it) {
     const Extension* extension = *it;
-    if (extension->HasContentScriptAtURL(current_url) ||
-        extensions_executing_scripts_.count(extension->id())) {
+    if (extensions_executing_scripts_.count(extension->id()))
       current_actions->push_back(extension->GetScriptBadge());
-    }
   }
   return current_actions.Pass();
 }
@@ -71,16 +72,46 @@ void ScriptBadgeController::ExecuteScript(
     UserScript::RunLocation run_at,
     ScriptExecutor::WorldType world_type,
     const ExecuteScriptCallback& callback) {
+  ExecuteScriptCallback this_callback = base::Bind(
+      &ScriptBadgeController::OnExecuteScriptFinished,
+      this,
+      extension_id,
+      callback);
+
   script_executor_.ExecuteScript(extension_id,
                                  script_type,
                                  code,
                                  frame_scope,
                                  run_at,
                                  world_type,
-                                 callback);
+                                 this_callback);
 
-  // This tab should now show that the extension executing a script.
-  extensions_executing_scripts_.insert(extension_id);
+}
+
+void ScriptBadgeController::OnExecuteScriptFinished(
+    const std::string& extension_id,
+    const ExecuteScriptCallback& callback,
+    bool success,
+    int32 page_id,
+    const std::string& error) {
+  if (success && page_id == GetPageID()) {
+    extensions_executing_scripts_.insert(extension_id);
+    Notify();
+  }
+
+  callback.Run(success, page_id, error);
+}
+
+ExtensionService* ScriptBadgeController::GetExtensionService() {
+  return ExtensionSystem::Get(tab_contents_->profile())->extension_service();
+}
+
+int32 ScriptBadgeController::GetPageID() {
+  return tab_contents_->web_contents()->GetController().GetActiveEntry()->
+      GetPageID();
+}
+
+void ScriptBadgeController::Notify() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
       content::Source<Profile>(tab_contents_->profile()),
@@ -93,8 +124,25 @@ void ScriptBadgeController::DidNavigateMainFrame(
   extensions_executing_scripts_.clear();
 }
 
-ExtensionService* ScriptBadgeController::GetExtensionService() {
-  return ExtensionSystem::Get(tab_contents_->profile())->extension_service();
+bool ScriptBadgeController::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ScriptBadgeController, message)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ContentScriptsExecuting,
+                        OnContentScriptsExecuting)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void ScriptBadgeController::OnContentScriptsExecuting(
+    const std::set<std::string>& extension_ids, int32 page_id) {
+  if (page_id == GetPageID()) {
+    size_t original_size = extensions_executing_scripts_.size();
+    extensions_executing_scripts_.insert(extension_ids.begin(),
+                                         extension_ids.end());
+    if (extensions_executing_scripts_.size() > original_size)
+      Notify();
+  }
 }
 
 }  // namespace extensions

@@ -10,7 +10,9 @@
 #include <set>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/extensions/script_executor_impl.h"
@@ -20,32 +22,35 @@ class ExtensionAction;
 class ExtensionService;
 class TabContentsWrapper;
 
+namespace IPC {
+class Message;
+}
+
 namespace extensions {
 
 class Extension;
 
-// An LocationBarController which displays icons whenever a script is executing
+// A LocationBarController which displays icons whenever a script is executing
 // in a tab. It accomplishes this two different ways:
 //
-// - For content_script declarations, the current URL in the tab is compared to
-//   registered content scripts when GetCurrentActions() is called.
-// - An interface is exposed for programmatically executing scripts. Executed
-//   scripts are recorded and used later to populate GetCurrentActions().
+// - For content_script declarations, this receives IPCs from the renderer
+//   notifying that a content script is running (either on this tab or one of
+//   its frames), which is recorded.
+// - The ScriptExecutor interface is exposed for programmatically executing
+//   scripts. Successfully executed scripts are recorded.
 //
-// TODO(aa): There are some edge cases that need to be thought-through here:
+// When extension IDs are recorded a NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED
+// is sent, and those extensions will be returned from GetCurrentActions until
+// the next page navigation.
 //
-// - Redirects. In this case, I think we may flicker the icons in the url bar
-//   as we bounce from URL to URL, without any script actually being executed.
-// - Frames. This won't show icons for content_scripts running in frames. Should
-//   it?
-// - Possibly other weirdness where the state here doesn't match the state in
-//   the renderer for whatever reason.
-class ScriptBadgeController : public LocationBarController,
-                              public ScriptExecutor,
-                              public content::WebContentsObserver {
+// Ref-counted so that it can be safely bound in a base::Bind.
+class ScriptBadgeController
+    : public base::RefCountedThreadSafe<ScriptBadgeController>,
+      public LocationBarController,
+      public ScriptExecutor,
+      public content::WebContentsObserver {
  public:
   explicit ScriptBadgeController(TabContentsWrapper* tab_contents);
-  virtual ~ScriptBadgeController();
 
   // LocationBarController implementation.
   virtual scoped_ptr<std::vector<ExtensionAction*> > GetCurrentActions()
@@ -62,14 +67,36 @@ class ScriptBadgeController : public LocationBarController,
                              WorldType world_type,
                              const ExecuteScriptCallback& callback) OVERRIDE;
 
+ private:
+  friend class base::RefCountedThreadSafe<ScriptBadgeController>;
+  virtual ~ScriptBadgeController();
+
+  // Callback for ExecuteScript which if successful and for the current URL
+  // records that the script is running, then calls the original callback.
+  void OnExecuteScriptFinished(const std::string& extension_id,
+                               const ExecuteScriptCallback& callback,
+                               bool success,
+                               int32 page_id,
+                               const std::string& error);
+
+  // Gets the ExtensionService for |tab_contents_|.
+  ExtensionService* GetExtensionService();
+
+  // Gets the current page ID.
+  int32 GetPageID();
+
+  // Sends a LOCATION_BAR_UPDATED notification.
+  void Notify();
+
   // content::WebContentsObserver implementation.
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
- private:
-  // Gets the ExtensionService for |tab_contents_|.
-  ExtensionService* GetExtensionService();
+  // IPC::Message handlers.
+  void OnContentScriptsExecuting(const std::set<std::string>& extension_ids,
+                                 int32 page_id);
 
   // Delegate ScriptExecutorImpl for running ExecuteScript.
   ScriptExecutorImpl script_executor_;

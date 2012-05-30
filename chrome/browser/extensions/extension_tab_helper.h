@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_HELPER_H_
 #pragma once
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
@@ -193,7 +194,7 @@ class ExtensionTabHelper
   // box is turned on.
   scoped_ptr<extensions::ScriptExecutor> script_executor_;
   scoped_ptr<extensions::LocationBarController> location_bar_controller_;
-  scoped_ptr<extensions::ScriptBadgeController> script_badge_controller_;
+  scoped_refptr<extensions::ScriptBadgeController> script_badge_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTabHelper);
 };

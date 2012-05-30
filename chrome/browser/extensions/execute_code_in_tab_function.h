@@ -25,7 +25,9 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
 
  private:
   // Message handler.
-  void OnExecuteCodeFinished(bool success, const std::string& error);
+  void OnExecuteCodeFinished(bool success,
+                             int32 page_id,
+                             const std::string& error);
 
   // Called when contents from the file whose path is specified in JSON
   // arguments has been loaded.
