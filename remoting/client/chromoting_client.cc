@@ -11,6 +11,7 @@
 #include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/negotiating_authenticator.h"
+#include "remoting/protocol/v1_authenticator.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/transport.h"
 
@@ -52,9 +53,14 @@ void ChromotingClient::Start(
   DCHECK(message_loop()->BelongsToCurrentThread());
 
   scoped_ptr<protocol::Authenticator> authenticator;
-  authenticator = protocol::NegotiatingAuthenticator::CreateForClient(
-      config_.authentication_tag,
-      config_.shared_secret, config_.authentication_methods);
+  if (config_.use_v1_authenticator) {
+    authenticator.reset(new protocol::V1ClientAuthenticator(
+        config_.local_jid, config_.shared_secret));
+  } else {
+    authenticator = protocol::NegotiatingAuthenticator::CreateForClient(
+        config_.authentication_tag,
+        config_.shared_secret, config_.authentication_methods);
+  }
 
   connection_->Connect(xmpp_proxy, config_.local_jid, config_.host_jid,
                        config_.host_public_key, transport_factory.Pass(),

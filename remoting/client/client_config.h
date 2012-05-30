@@ -23,6 +23,7 @@ struct ClientConfig {
   std::string host_public_key;
 
   std::string shared_secret;
+  bool use_v1_authenticator;
   std::vector<protocol::AuthenticationMethod> authentication_methods;
   std::string authentication_tag;
 };
