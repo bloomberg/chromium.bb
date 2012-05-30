@@ -22,6 +22,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/escape.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -143,7 +144,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
 
   // Be extra paranoid; avoid crashing.
   if (!dropData_.get()) {
-    NOTREACHED() << "No drag-and-drop data available for lazy write.";
+    NOTREACHED();
     return;
   }
 
@@ -157,16 +158,19 @@ void PromiseWriterHelper(const WebDropData& drop_data,
   // URL.
   } else if ([type isEqualToString:NSURLPboardType]) {
     DCHECK(dropData_->url.is_valid());
-    NSString* urlStr = SysUTF8ToNSString(dropData_->url.spec());
-    NSURL* url = [NSURL URLWithString:urlStr];
+    NSURL* url = [NSURL URLWithString:SysUTF8ToNSString(dropData_->url.spec())];
     // If NSURL creation failed, check for a badly-escaped JavaScript URL.
     // Strip out any existing escapes and then re-escape uniformly.
-    if (!url && urlStr && dropData_->url.SchemeIs(chrome::kJavaScriptScheme)) {
-      NSString* unEscapedStr = [urlStr
-          stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-      NSString* escapedStr = [unEscapedStr
-          stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-      url = [NSURL URLWithString:escapedStr];
+    if (!url && dropData_->url.SchemeIs(chrome::kJavaScriptScheme)) {
+      net::UnescapeRule::Type unescapeRules =
+          net::UnescapeRule::SPACES |
+          net::UnescapeRule::URL_SPECIAL_CHARS |
+          net::UnescapeRule::CONTROL_CHARS;
+      std::string unescapedUrlString =
+          net::UnescapeURLComponent(dropData_->url.spec(), unescapeRules);
+      std::string escapedUrlString =
+          net::EscapeUrlEncodedData(unescapedUrlString, false);
+      url = [NSURL URLWithString:SysUTF8ToNSString(escapedUrlString)];
     }
     [url writeToPasteboard:pboard];
   // URL title.
@@ -214,7 +218,8 @@ void PromiseWriterHelper(const WebDropData& drop_data,
 
   // Oops!
   } else {
-    NOTREACHED() << "Asked for a drag pasteboard type we didn't offer.";
+    // Unknown drag pasteboard type.
+    NOTREACHED();
   }
 }
 

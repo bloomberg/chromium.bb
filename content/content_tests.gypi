@@ -275,6 +275,7 @@
         'browser/web_contents/web_contents_impl_unittest.cc',
         'browser/web_contents/web_contents_view_mac_unittest.mm',
         'browser/web_contents/web_drag_dest_mac_unittest.mm',
+        'browser/web_contents/web_drag_source_mac_unittest.mm',
         'browser/webui/web_ui_message_handler_unittest.cc',
         'common/android/address_parser_unittest.cc',
         'common/mac/attributed_string_coder_unittest.mm',
