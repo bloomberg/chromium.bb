@@ -444,6 +444,14 @@ deps_os = {
     "src/third_party/gold":
       "/trunk/deps/third_party/gold@124239",
   },
+  "android": {
+    "src/third_party/freetype":
+      Var("chromium_git") + "/chromium/src/third_party/freetype.git" +
+      "@1f74e4e7ad3ca4163b4578fc30da26a165dd55e7",
+
+    "src/third_party/aosp":
+      "/trunk/deps/third_party/aosp@122156",
+  },
 }
 
 
