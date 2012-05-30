@@ -261,7 +261,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
 }
 
-TEST_F(FileWriterDelegateTest, WriteFailureByQuota) {
+TEST_F(FileWriterDelegateTest, DISABLED_WriteFailureByQuota) {
   const GURL kBlobURL("blob:failure");
   content_ = kData;
   const int64 kAllowedGrowth = kDataSize - 1;
