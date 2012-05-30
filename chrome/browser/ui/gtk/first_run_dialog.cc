@@ -76,16 +76,15 @@ void ShowFirstRunDialog(Profile* profile) {
 
 // static
 bool FirstRunDialog::Show() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if !defined(GOOGLE_CHROME_BUILD)
+  return true;  // Nothing to do
+#else
   // If the metrics reporting is managed, we won't ask.
   const PrefService::Preference* metrics_reporting_pref =
       g_browser_process->local_state()->FindPreference(
           prefs::kMetricsReportingEnabled);
   bool show_reporting_dialog = !metrics_reporting_pref ||
       !metrics_reporting_pref->IsManaged();
-#else
-  bool show_reporting_dialog = false;
-#endif
 
   if (!show_reporting_dialog)
     return true;  // Nothing to do
@@ -102,6 +101,7 @@ bool FirstRunDialog::Show() {
   MessageLoop::current()->Run();
 
   return (response == GTK_RESPONSE_ACCEPT);
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 FirstRunDialog::FirstRunDialog(bool show_reporting_dialog, int* response)
