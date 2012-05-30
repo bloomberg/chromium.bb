@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "grit/generated_resources.h"
@@ -16,11 +17,27 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-ActionBoxButtonView::ActionBoxButtonView()
-    : views::MenuButton(NULL, string16(), this, false) {
+namespace {
+
+// Colors used for button backgrounds.
+const SkColor kNormalBackgroundColor = SkColorSetRGB(255, 255, 255);
+const SkColor kHotBackgroundColor = SkColorSetRGB(239, 239, 239);
+const SkColor kPushedBackgroundColor = SkColorSetRGB(207, 207, 207);
+
+const SkColor kNormalBorderColor = SkColorSetRGB(255, 255, 255);
+const SkColor kHotBorderColor = SkColorSetRGB(223, 223, 223);
+const SkColor kPushedBorderColor = SkColorSetRGB(191, 191, 191);
+
+}  // namespace
+
+
+ActionBoxButtonView::ActionBoxButtonView(ExtensionService* extension_service)
+    : views::MenuButton(NULL, string16(), this, false),
+      extension_service_(extension_service) {
   set_id(VIEW_ID_ACTION_BOX_BUTTON);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_ACTION_BOX_BUTTON));
-  SetImages();
+  SetIcon(*ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_ACTION_BOX_BUTTON));
   set_accessibility_focusable(true);
   set_border(NULL);
 }
@@ -28,13 +45,26 @@ ActionBoxButtonView::ActionBoxButtonView()
 ActionBoxButtonView::~ActionBoxButtonView() {
 }
 
-void ActionBoxButtonView::SetImages() {
-  SetIcon(*ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_ACTION_BOX_BUTTON));
-  SetHoverIcon(*ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_ACTION_BOX_BUTTON_H));
-  SetPushedIcon(*ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_ACTION_BOX_BUTTON_P));
+SkColor ActionBoxButtonView::GetBackgroundColor() {
+  switch (state()) {
+    case BS_PUSHED:
+      return kPushedBackgroundColor;
+    case BS_HOT:
+      return kHotBackgroundColor;
+    default:
+      return kNormalBackgroundColor;
+  }
+}
+
+SkColor ActionBoxButtonView::GetBorderColor() {
+  switch (state()) {
+    case BS_PUSHED:
+      return kPushedBorderColor;
+    case BS_HOT:
+      return kHotBorderColor;
+    default:
+      return kNormalBorderColor;
+  }
 }
 
 void ActionBoxButtonView::GetAccessibleState(ui::AccessibleViewState* state) {
@@ -46,4 +76,3 @@ void ActionBoxButtonView::OnMenuButtonClicked(View* source,
                                               const gfx::Point& point) {
   // TODO(yefim): Implement menu here.
 }
-

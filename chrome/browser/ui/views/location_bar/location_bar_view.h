@@ -394,6 +394,10 @@ class LocationBarView : public LocationBar,
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal();
 
+  // Draw the background and the left border.
+  void PaintActionBoxBackground(gfx::Canvas* canvas,
+                                const gfx::Rect& content_rect);
+
   // The Autocomplete Edit field.
   scoped_ptr<OmniboxView> location_entry_;
 

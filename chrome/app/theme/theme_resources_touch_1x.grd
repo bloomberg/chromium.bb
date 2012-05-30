@@ -168,8 +168,6 @@
       <include name="IDR_STAR" file="touch_100_percent/star.png" type="BINDATA" />
       <include name="IDR_STAR_LIT" file="touch_100_percent/star_lit.png" type="BINDATA" />
       <include name="IDR_ACTION_BOX_BUTTON" file="default_100_percent/action_box_button.png" type="BINDATA" />
-      <include name="IDR_ACTION_BOX_BUTTON_H" file="default_100_percent/action_box_button_hover.png" type="BINDATA" />
-      <include name="IDR_ACTION_BOX_BUTTON_P" file="default_100_percent/action_box_button_pressed.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
         <include name="IDR_STOP" file="touch_100_percent/browser_stop_normal.png" type="BINDATA" />
         <include name="IDR_STOP_D" file="touch_100_percent/browser_stop_disabled.png" type="BINDATA" />

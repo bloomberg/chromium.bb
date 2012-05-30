@@ -18,6 +18,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -235,7 +236,8 @@ void LocationBarView::Init() {
   }
 
   if (extensions::switch_utils::IsActionBoxEnabled()) {
-    action_box_button_view_ = new ActionBoxButtonView();
+    action_box_button_view_ = new ActionBoxButtonView(
+        ExtensionSystem::Get(profile_)->extension_service());
     AddChildView(action_box_button_view_);
   } else if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
     // Note: condition above means that the star and ChromeToMobile icons are
@@ -580,9 +582,9 @@ void LocationBarView::Layout() {
   if (chrome_to_mobile_view_ && chrome_to_mobile_view_->visible())
     entry_width -= chrome_to_mobile_view_->GetPreferredSize().width() +
         GetItemPadding();
+  int action_box_button_width = location_height;
   if (action_box_button_view_)
-    entry_width -= action_box_button_view_->GetPreferredSize().width() +
-        GetItemPadding();
+    entry_width -= action_box_button_width + GetItemPadding();
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->visible())
@@ -643,7 +645,17 @@ void LocationBarView::Layout() {
   }
 
   // Lay out items to the right of the edit field.
-  int offset = width() - kEdgeThickness - GetEdgeItemPadding();
+  int offset = width() - kEdgeThickness;
+  if (action_box_button_view_) {
+    offset -= action_box_button_width;
+    action_box_button_view_->SetBounds(offset, location_y,
+                                       action_box_button_width,
+                                       location_height);
+    offset -= GetItemPadding();
+  } else {
+    offset -= GetEdgeItemPadding();
+  }
+
   if (star_view_ && star_view_->visible()) {
     int star_width = star_view_->GetPreferredSize().width();
     offset -= star_width;
@@ -656,14 +668,6 @@ void LocationBarView::Layout() {
     offset -= icon_width;
     chrome_to_mobile_view_->SetBounds(offset, location_y,
                                       icon_width, location_height);
-    offset -= GetItemPadding();
-  }
-
-  if (action_box_button_view_) {
-    int button_width = action_box_button_view_->GetPreferredSize().width();
-    offset -= button_width;
-    action_box_button_view_->SetBounds(offset, location_y, button_width,
-                                       location_height);
     offset -= GetItemPadding();
   }
 
@@ -804,6 +808,8 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     bounds.Inset(kNormalHorizontalEdgeThickness, 0);
     canvas->sk_canvas()->drawRoundRect(gfx::RectToSkRect(bounds), radius,
                                        radius, paint);
+    if (action_box_button_view_)
+      PaintActionBoxBackground(canvas, bounds);
   } else {
     canvas->FillRect(bounds, color);
   }
@@ -1081,6 +1087,31 @@ void LocationBarView::ShowFirstRunBubbleInternal() {
   // First run bubble doesn't make sense for Chrome OS.
   FirstRunBubble::ShowBubble(profile_, location_icon_view_);
 #endif
+}
+
+void LocationBarView::PaintActionBoxBackground(gfx::Canvas* canvas,
+                                               const gfx::Rect& content_rect) {
+  // Draw action box background here so we can fill it up to the right hand
+  // location bar border without any gap.
+  gfx::Rect bounds(content_rect);
+  // Fill button rectangle.
+  int action_box_button_x = action_box_button_view_->bounds().x();
+  bounds.Inset(action_box_button_x - bounds.x(), 0, 0, 0);
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setAntiAlias(true);
+  paint.setColor(action_box_button_view_->GetBackgroundColor());
+  canvas->DrawRoundRect(bounds, kBorderCornerRadius, paint);
+
+  // Draw over left curved corners.
+  bounds.set_width(kBorderCornerRadius);
+  canvas->DrawRect(bounds, paint);
+
+  // Draw left border.
+  gfx::Point line_end(bounds.origin());
+  line_end.Offset(0, bounds.height());
+  canvas->DrawLine(bounds.origin(), line_end,
+                   action_box_button_view_->GetBorderColor());
 }
 
 std::string LocationBarView::GetClassName() const {

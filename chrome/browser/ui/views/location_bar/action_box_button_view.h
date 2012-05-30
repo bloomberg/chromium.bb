@@ -9,22 +9,27 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 
-// ActionBoxButtonView displays a plus button with assosiated menu.
+class ExtensionService;
+
+// ActionBoxButtonView displays a plus button with associated menu.
 class ActionBoxButtonView : public views::MenuButton,
                             public views::MenuButtonListener {
  public:
-  ActionBoxButtonView();
+  explicit ActionBoxButtonView(ExtensionService* extension_service);
   virtual ~ActionBoxButtonView();
 
- private:
-  void SetImages();
+  SkColor GetBackgroundColor();
+  SkColor GetBorderColor();
 
+ private:
   // CustomButton
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // MenuButtonListener
   virtual void OnMenuButtonClicked(View* source,
                                    const gfx::Point& point) OVERRIDE;
+
+  ExtensionService* extension_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionBoxButtonView);
 };
