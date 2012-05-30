@@ -380,7 +380,8 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
                 extensions_cookie_path, app_path, predictor_,
                 g_browser_process->local_state(),
                 g_browser_process->io_thread(),
-                restore_old_session_cookies);
+                restore_old_session_cookies,
+                GetSpecialStoragePolicy());
 
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
       PluginPrefs::GetForProfile(this),

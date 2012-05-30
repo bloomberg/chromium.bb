@@ -1311,6 +1311,7 @@
         'browser/nacl_host/nacl_validation_cache_unittest.cc',
         'browser/net/chrome_fraudulent_certificate_reporter_unittest.cc',
         'browser/net/chrome_net_log_unittest.cc',
+        'browser/net/clear_on_exit_policy_unittest.cc',
         'browser/net/connection_tester_unittest.cc',
         'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
         'browser/net/http_pipelining_compatibility_client_unittest.cc',
@@ -4222,6 +4223,7 @@
             '../webkit/support/webkit_support.gyp:glue',
           ],
           'sources': [
+            'browser/net/sqlite_persistent_cookie_store_perftest.cc',
             'browser/visitedlink/visitedlink_perftest.cc',
             'common/json_value_serializer_perftest.cc',
             'test/perf/perftests.cc',

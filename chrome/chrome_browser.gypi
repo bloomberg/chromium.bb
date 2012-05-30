@@ -1375,6 +1375,8 @@
         'browser/net/chrome_network_delegate.h',
         'browser/net/chrome_url_request_context.cc',
         'browser/net/chrome_url_request_context.h',
+        'browser/net/clear_on_exit_policy.cc',
+        'browser/net/clear_on_exit_policy.h',
         'browser/net/connect_interceptor.cc',
         'browser/net/connect_interceptor.h',
         'browser/net/connection_tester.cc',

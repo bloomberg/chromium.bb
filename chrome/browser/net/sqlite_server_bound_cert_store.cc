@@ -16,6 +16,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
+#include "chrome/browser/net/clear_on_exit_policy.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/ssl_client_cert_type.h"
 #include "net/base/x509_certificate.h"
@@ -30,11 +31,12 @@ using content::BrowserThread;
 class SQLiteServerBoundCertStore::Backend
     : public base::RefCountedThreadSafe<SQLiteServerBoundCertStore::Backend> {
  public:
-  explicit Backend(const FilePath& path)
+  Backend(const FilePath& path, ClearOnExitPolicy* clear_on_exit_policy)
       : path_(path),
         db_(NULL),
         num_pending_(0),
-        clear_local_state_on_exit_(false) {
+        clear_local_state_on_exit_(false),
+        clear_on_exit_policy_(clear_on_exit_policy) {
   }
 
   // Creates or load the SQLite database.
@@ -102,6 +104,8 @@ class SQLiteServerBoundCertStore::Backend
   // Close() executed on the background thread.
   void InternalBackgroundClose();
 
+  void DeleteCertificatesOnShutdown();
+
   FilePath path_;
   scoped_ptr<sql::Connection> db_;
   sql::MetaTable meta_table_;
@@ -113,6 +117,8 @@ class SQLiteServerBoundCertStore::Backend
   bool clear_local_state_on_exit_;
   // Guard |pending_|, |num_pending_| and |clear_local_state_on_exit_|.
   base::Lock lock_;
+
+  scoped_refptr<ClearOnExitPolicy> clear_on_exit_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
@@ -463,10 +469,63 @@ void SQLiteServerBoundCertStore::Backend::InternalBackgroundClose() {
   // Commit any pending operations
   Commit();
 
+  if (!clear_local_state_on_exit_ && clear_on_exit_policy_.get() &&
+      clear_on_exit_policy_->HasClearOnExitOrigins()) {
+    DeleteCertificatesOnShutdown();
+  }
+
   db_.reset();
 
   if (clear_local_state_on_exit_)
     file_util::Delete(path_, false);
+}
+
+void SQLiteServerBoundCertStore::Backend::DeleteCertificatesOnShutdown() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+
+  if (!db_.get())
+    return;
+
+  sql::Statement select_smt(db_->GetCachedStatement(
+      SQL_FROM_HERE, "SELECT origin FROM origin_bound_certs"));
+  if (!select_smt.is_valid()) {
+    LOG(WARNING) << "Unable to delete certificates on shutdown.";
+    return;
+  }
+
+  std::vector<std::string> origins_to_delete;
+  while (select_smt.Step()) {
+    std::string origin = select_smt.ColumnString(0);
+    if (!clear_on_exit_policy_->ShouldClearOriginOnExit(origin, true))
+      continue;
+    origins_to_delete.push_back(origin);
+  }
+
+  if (origins_to_delete.empty())
+    return;
+
+  sql::Statement del_smt(db_->GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM origin_bound_certs WHERE origin=?"));
+  if (!del_smt.is_valid()) {
+    LOG(WARNING) << "Unable to delete certificates on shutdown.";
+    return;
+  }
+
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin()) {
+    LOG(WARNING) << "Unable to delete certificates on shutdown.";
+    return;
+  }
+
+  for (unsigned i = 0; i < origins_to_delete.size(); ++i) {
+    del_smt.Reset(true);
+    del_smt.BindString(0, origins_to_delete[i]);
+    if (!del_smt.Run())
+      NOTREACHED() << "Could not delete a certificate from the DB.";
+  }
+
+  if (!transaction.Commit())
+    LOG(WARNING) << "Unable to delete certificates on shutdown.";
 }
 
 void SQLiteServerBoundCertStore::Backend::SetClearLocalStateOnExit(
@@ -475,8 +534,10 @@ void SQLiteServerBoundCertStore::Backend::SetClearLocalStateOnExit(
   clear_local_state_on_exit_ = clear_local_state;
 }
 
-SQLiteServerBoundCertStore::SQLiteServerBoundCertStore(const FilePath& path)
-    : backend_(new Backend(path)) {
+SQLiteServerBoundCertStore::SQLiteServerBoundCertStore(
+    const FilePath& path,
+    ClearOnExitPolicy* clear_on_exit_policy)
+    : backend_(new Backend(path, clear_on_exit_policy)) {
 }
 
 bool SQLiteServerBoundCertStore::Load(

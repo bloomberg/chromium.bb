@@ -52,6 +52,11 @@ class HostContentSettingsMap
                          ExtensionService* extension_service,
                          bool incognito);
 
+  // In some cases, the ExtensionService is not available at the time the
+  // HostContentSettingsMap is constructed. In these cases, we register the
+  // service once it's available.
+  void RegisterExtensionService(ExtensionService* extension_service);
+
   static void RegisterUserPrefs(PrefService* prefs);
 
   // Returns the default setting for a particular content type. If |provider_id|

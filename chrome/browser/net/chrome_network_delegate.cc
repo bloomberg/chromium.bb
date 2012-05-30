@@ -303,9 +303,6 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
   bool allow = cookie_settings_->IsSettingCookieAllowed(
       request.url(), request.first_party_for_cookies());
 
-  if (cookie_settings_->IsCookieSessionOnly(request.url()))
-    options->set_force_session();
-
   int render_process_id = -1;
   int render_view_id = -1;
   if (content::ResourceRequestInfo::GetRenderViewForRequest(

@@ -120,6 +120,30 @@ HostContentSettingsMap::HostContentSettingsMap(
   content_settings_providers_[DEFAULT_PROVIDER] = default_provider;
 }
 
+void HostContentSettingsMap::RegisterExtensionService(
+    ExtensionService* extension_service) {
+  DCHECK(extension_service);
+  DCHECK(!content_settings_providers_[PLATFORM_APP_PROVIDER]);
+  DCHECK(!content_settings_providers_[EXTENSION_PROVIDER]);
+
+  content_settings::PlatformAppProvider* platform_app_provider =
+      new content_settings::PlatformAppProvider(extension_service);
+  platform_app_provider->AddObserver(this);
+  content_settings_providers_[PLATFORM_APP_PROVIDER] = platform_app_provider;
+
+  content_settings::ObservableProvider* extension_provider =
+      new content_settings::ExtensionProvider(
+          extension_service->GetContentSettingsStore(),
+          is_off_the_record_);
+  extension_provider->AddObserver(this);
+  content_settings_providers_[EXTENSION_PROVIDER] = extension_provider;
+
+  OnContentSettingChanged(ContentSettingsPattern(),
+                          ContentSettingsPattern(),
+                          CONTENT_SETTINGS_TYPE_DEFAULT,
+                          "");
+}
+
 // static
 void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex,

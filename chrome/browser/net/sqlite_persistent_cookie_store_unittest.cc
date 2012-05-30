@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/thread_test_helper.h"
 #include "base/time.h"
+#include "chrome/browser/net/clear_on_exit_policy.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/test/test_browser_thread.h"
@@ -19,6 +20,7 @@
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/quota/mock_special_storage_policy.h"
 
 using content::BrowserThread;
 
@@ -67,7 +69,8 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
       std::vector<net::CookieMonster::CanonicalCookie*>* cookies) {
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.path().Append(chrome::kCookieFilename),
-        restore_old_session_cookies);
+        restore_old_session_cookies,
+        NULL);
     Load(cookies);
   }
 
@@ -118,7 +121,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
 TEST_F(SQLitePersistentCookieStoreTest, KeepOnDestruction) {
   InitializeStore(false);
   // Put some data - any data - on disk, to have something to keep.
-  AddCookie("A", "B", "http://foo.bar", "/", base::Time::Now());
+  AddCookie("A", "B", "foo.bar", "/", base::Time::Now());
   store_->SetClearLocalStateOnExit(false);
   DestroyStore();
 
@@ -131,7 +134,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeepOnDestruction) {
 TEST_F(SQLitePersistentCookieStoreTest, RemoveOnDestruction) {
   InitializeStore(false);
   // Put some data - any data - on disk, to have something to remove.
-  AddCookie("A", "B", "http://foo.bar", "/", base::Time::Now());
+  AddCookie("A", "B", "foo.bar", "/", base::Time::Now());
   store_->SetClearLocalStateOnExit(true);
   DestroyStore();
 
@@ -141,14 +144,14 @@ TEST_F(SQLitePersistentCookieStoreTest, RemoveOnDestruction) {
 
 TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
   InitializeStore(false);
-  AddCookie("A", "B", "http://foo.bar", "/", base::Time::Now());
+  AddCookie("A", "B", "foo.bar", "/", base::Time::Now());
   DestroyStore();
 
   // Load up the store and verify that it has good data in it.
   std::vector<net::CookieMonster::CanonicalCookie*> cookies;
   CreateAndLoad(false, &cookies);
   ASSERT_EQ(1U, cookies.size());
-  ASSERT_STREQ("http://foo.bar", cookies[0]->Domain().c_str());
+  ASSERT_STREQ("foo.bar", cookies[0]->Domain().c_str());
   ASSERT_STREQ("A", cookies[0]->Name().c_str());
   ASSERT_STREQ("B", cookies[0]->Value().c_str());
   DestroyStore();
@@ -170,11 +173,11 @@ TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
   ASSERT_EQ(0U, cookies.size());
 
   // Verify that, after, recovery, the database persists properly.
-  AddCookie("X", "Y", "http://foo.bar", "/", base::Time::Now());
+  AddCookie("X", "Y", "foo.bar", "/", base::Time::Now());
   DestroyStore();
   CreateAndLoad(false, &cookies);
   ASSERT_EQ(1U, cookies.size());
-  ASSERT_STREQ("http://foo.bar", cookies[0]->Domain().c_str());
+  ASSERT_STREQ("foo.bar", cookies[0]->Domain().c_str());
   ASSERT_STREQ("X", cookies[0]->Name().c_str());
   ASSERT_STREQ("Y", cookies[0]->Value().c_str());
   STLDeleteContainerPointers(cookies.begin(), cookies.end());
@@ -184,7 +187,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
 // Test if data is stored as expected in the SQLite database.
 TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
   InitializeStore(false);
-  AddCookie("A", "B", "http://foo.bar", "/", base::Time::Now());
+  AddCookie("A", "B", "foo.bar", "/", base::Time::Now());
   // Replace the store effectively destroying the current one and forcing it
   // to write its data to disk. Then we can see if after loading it again it
   // is still there.
@@ -193,7 +196,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
   std::vector<net::CookieMonster::CanonicalCookie*> cookies;
   CreateAndLoad(false, &cookies);
   ASSERT_EQ(1U, cookies.size());
-  ASSERT_STREQ("http://foo.bar", cookies[0]->Domain().c_str());
+  ASSERT_STREQ("foo.bar", cookies[0]->Domain().c_str());
   ASSERT_STREQ("A", cookies[0]->Name().c_str());
   ASSERT_STREQ("B", cookies[0]->Value().c_str());
 
@@ -213,7 +216,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
 TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   InitializeStore(false);
   base::Time t = base::Time::Now();
-  AddCookie("A", "B", "http://foo.bar", "/", t);
+  AddCookie("A", "B", "foo.bar", "/", t);
   t += base::TimeDelta::FromInternalValue(10);
   AddCookie("A", "B", "www.aaa.com", "/", t);
   t += base::TimeDelta::FromInternalValue(10);
@@ -223,7 +226,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   DestroyStore();
 
   store_ = new SQLitePersistentCookieStore(
-      temp_dir_.path().Append(chrome::kCookieFilename), false);
+      temp_dir_.path().Append(chrome::kCookieFilename), false, NULL);
   // Posting a blocking task to db_thread_ makes sure that the DB thread waits
   // until both Load and LoadCookiesForKey have been posted to its task queue.
   BrowserThread::PostTask(
@@ -265,7 +268,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
        it = cookies_.begin(); it != cookies_.end(); ++it)
     cookies_loaded.insert((*it)->Domain().c_str());
   ASSERT_EQ(4U, cookies_loaded.size());
-  ASSERT_EQ(cookies_loaded.find("http://foo.bar") != cookies_loaded.end(),
+  ASSERT_EQ(cookies_loaded.find("foo.bar") != cookies_loaded.end(),
             true);
   ASSERT_EQ(cookies_loaded.find("www.bbb.com") != cookies_loaded.end(), true);
 }
@@ -286,7 +289,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
     base::Time t = base::Time::Now() + base::TimeDelta::FromMicroseconds(c);
     std::string name(1, c);
     std::string value(1000, c);
-    AddCookie(name, value, "http://foo.bar", "/", t);
+    AddCookie(name, value, "foo.bar", "/", t);
   }
 
   // Call Flush() and wait until the DB thread is idle.
@@ -325,7 +328,7 @@ class CallbackCounter : public base::RefCountedThreadSafe<CallbackCounter> {
 TEST_F(SQLitePersistentCookieStoreTest, TestFlushCompletionCallback) {
   InitializeStore(false);
   // Put some data - any data - on disk, so that Flush is not a no-op.
-  AddCookie("A", "B", "http://foo.bar", "/", base::Time::Now());
+  AddCookie("A", "B", "foo.bar", "/", base::Time::Now());
 
   scoped_refptr<CallbackCounter> counter(new CallbackCounter());
 
@@ -349,7 +352,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   // Add a session cookie.
   store_->AddCookie(
       net::CookieMonster::CanonicalCookie(
-          GURL(), "C", "D", "http://sessioncookie.com", "/", std::string(),
+          GURL(), "C", "D", "sessioncookie.com", "/", std::string(),
           std::string(), base::Time::Now(), base::Time::Now(),
           base::Time::Now(), false, false, true, false /*is_persistent*/));
 
@@ -362,7 +365,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   CreateAndLoad(true, &cookies);
 
   ASSERT_EQ(1U, cookies.size());
-  ASSERT_STREQ("http://sessioncookie.com", cookies[0]->Domain().c_str());
+  ASSERT_STREQ("sessioncookie.com", cookies[0]->Domain().c_str());
   ASSERT_STREQ("C", cookies[0]->Name().c_str());
   ASSERT_STREQ("D", cookies[0]->Value().c_str());
 
@@ -377,7 +380,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
   // Add a session cookie.
   store_->AddCookie(
       net::CookieMonster::CanonicalCookie(
-          GURL(), "C", "D", "http://sessioncookie.com", "/", std::string(),
+          GURL(), "C", "D", "sessioncookie.com", "/", std::string(),
           std::string(), base::Time::Now(), base::Time::Now(),
           base::Time::Now(), false, false, true, false /*is_persistent*/));
 
@@ -407,14 +410,14 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistHasExpiresAndIsPersistent) {
   // with has_expires = true.
   store_->AddCookie(
       net::CookieMonster::CanonicalCookie(
-          GURL(), "session-hasexpires", "val", "http://sessioncookie.com", "/",
+          GURL(), "session-hasexpires", "val", "sessioncookie.com", "/",
           std::string(), std::string(),
           base::Time::Now() - base::TimeDelta::FromDays(3), base::Time::Now(),
           base::Time::Now(), false, false, true /* has_expires */,
           false /* is_persistent */));
   store_->AddCookie(
       net::CookieMonster::CanonicalCookie(
-          GURL(), "session-noexpires", "val", "http://sessioncookie.com", "/",
+          GURL(), "session-noexpires", "val", "sessioncookie.com", "/",
           std::string(), std::string(),
           base::Time::Now() - base::TimeDelta::FromDays(2), base::Time::Now(),
           base::Time::Now(), false, false, false /* has_expires */,
@@ -422,7 +425,7 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistHasExpiresAndIsPersistent) {
   // Add a persistent cookie.
   store_->AddCookie(
       net::CookieMonster::CanonicalCookie(
-          GURL(), "persistent", "val", "http://sessioncookie.com", "/",
+          GURL(), "persistent", "val", "sessioncookie.com", "/",
           std::string(), std::string(),
           base::Time::Now() - base::TimeDelta::FromDays(1), base::Time::Now(),
           base::Time::Now(), false, false, true /* has_expires */,
@@ -453,4 +456,81 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistHasExpiresAndIsPersistent) {
 
   STLDeleteContainerPointers(cookies.begin(), cookies.end());
   cookies.clear();
+}
+
+namespace {
+
+// True if the given cookie is in the vector.
+bool IsCookiePresent(
+    std::vector<net::CookieMonster::CanonicalCookie*>* cookies,
+    const std::string& domain,
+    const std::string& name,
+    const std::string& value,
+    bool secure) {
+  for (unsigned i = 0; i < cookies->size(); ++i) {
+    if ((*cookies)[i]->Domain() == domain &&
+        (*cookies)[i]->Name() == name &&
+        (*cookies)[i]->Value() == value &&
+        (*cookies)[i]->IsSecure() == secure) {
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
+
+// Test deleting cookies as mandated by the clear on exit policy on shutdown.
+TEST_F(SQLitePersistentCookieStoreTest, TestClearOnExitPolicy) {
+  std::string protected_origin("protected.com");
+  std::string session_origin("session.com");
+  std::string other_origin("other.com");
+  scoped_refptr<quota::MockSpecialStoragePolicy> storage_policy =
+      new quota::MockSpecialStoragePolicy;
+  scoped_refptr<ClearOnExitPolicy> clear_policy =
+      new ClearOnExitPolicy(storage_policy.get());
+  storage_policy->AddProtected(GURL(std::string("http://") + protected_origin));
+  storage_policy->AddSessionOnly(
+      GURL(std::string("http://") + protected_origin));
+  storage_policy->AddSessionOnly(
+      GURL(std::string("http://") + session_origin));
+  std::vector<net::CookieMonster::CanonicalCookie*> cookies;
+  store_ = new SQLitePersistentCookieStore(
+      temp_dir_.path().Append(chrome::kCookieFilename),
+      false,
+      clear_policy.get());
+  Load(&cookies);
+  ASSERT_EQ(0U, cookies.size());
+
+  // Add some cookies.
+  base::Time t = base::Time::Now();
+  AddCookie("A", "1", protected_origin, "/", t);
+  t += base::TimeDelta::FromInternalValue(10);
+  AddCookie("B", "2", session_origin, "/", t);
+  t += base::TimeDelta::FromInternalValue(10);
+  AddCookie("C", "3", other_origin, "/", t);
+  // A secure cookie on session_origin.
+  t += base::TimeDelta::FromInternalValue(10);
+  store_->AddCookie(
+      net::CookieMonster::CanonicalCookie(GURL(), "D", "4", session_origin, "/",
+                                          std::string(), std::string(),
+                                          t, t, t,
+                                          true, false, true, true));
+
+  // Force the store to write its data to the disk.
+  DestroyStore();
+
+  // Create a store test that the cookie on session_origin does not exist.
+  store_ = new SQLitePersistentCookieStore(
+      temp_dir_.path().Append(chrome::kCookieFilename),
+      false,
+      clear_policy.get());
+  Load(&cookies);
+
+  EXPECT_EQ(3U, cookies.size());
+  EXPECT_TRUE(IsCookiePresent(&cookies, protected_origin, "A", "1", false));
+  EXPECT_TRUE(IsCookiePresent(&cookies, other_origin, "C", "3", false));
+  EXPECT_TRUE(IsCookiePresent(&cookies, session_origin, "D", "4", true));
+
+  DestroyStore();
 }

@@ -15,7 +15,7 @@ class CookiesTest(pyauto.PyUITest):
 
   def __init__(self, methodName='runTest'):
     super(CookiesTest, self).__init__(methodName)
-    self.test_host = os.environ.get('COOKIES_TEST_HOST', 'www.google.com')
+    self.test_host = os.environ.get('COOKIES_TEST_HOST', 'google.com')
 
   def setUp(self):
     pyauto.PyUITest.setUp(self);

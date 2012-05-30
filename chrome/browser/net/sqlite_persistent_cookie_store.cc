@@ -24,6 +24,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
+#include "chrome/browser/net/clear_on_exit_policy.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domain.h"
@@ -59,13 +60,16 @@ using content::BrowserThread;
 class SQLitePersistentCookieStore::Backend
     : public base::RefCountedThreadSafe<SQLitePersistentCookieStore::Backend> {
  public:
-  Backend(const FilePath& path, bool restore_old_session_cookies)
+  Backend(const FilePath& path,
+          bool restore_old_session_cookies,
+          ClearOnExitPolicy* clear_on_exit_policy)
       : path_(path),
         db_(NULL),
         num_pending_(0),
         clear_local_state_on_exit_(false),
         initialized_(false),
         restore_old_session_cookies_(restore_old_session_cookies),
+        clear_on_exit_policy_(clear_on_exit_policy),
         num_cookies_read_(0),
         num_priority_waiting_(0),
         total_priority_requests_(0) {
@@ -181,7 +185,9 @@ class SQLitePersistentCookieStore::Backend
   // Close() executed on the background thread.
   void InternalBackgroundClose();
 
-  void DeleteSessionCookies();
+  void DeleteSessionCookiesOnStartup();
+
+  void DeleteSessionCookiesOnShutdown();
 
   FilePath path_;
   scoped_ptr<sql::Connection> db_;
@@ -203,11 +209,20 @@ class SQLitePersistentCookieStore::Backend
   // Map of domain keys(eTLD+1) to domains/hosts that are to be loaded from DB.
   std::map<std::string, std::set<std::string> > keys_to_load_;
 
+  // Map of (domain keys(eTLD+1), is secure cookie) to number of cookies in the
+  // database.
+  typedef std::pair<std::string, bool> CookieOrigin;
+  typedef std::map<CookieOrigin, int> CookiesPerOriginMap;
+  CookiesPerOriginMap cookies_per_origin_;
+
   // Indicates if DB has been initialized.
   bool initialized_;
 
   // If false, we should filter out session cookies when reading the DB.
   bool restore_old_session_cookies_;
+
+  // Policy defining what data is deleted on shutdown.
+  scoped_refptr<ClearOnExitPolicy> clear_on_exit_policy_;
 
   // The cumulative time spent loading the cookies on the DB thread. Incremented
   // and reported from the DB thread.
@@ -565,7 +580,7 @@ void SQLitePersistentCookieStore::Backend::ChainLoadCookies(
       base::Bind(&SQLitePersistentCookieStore::Backend::CompleteLoadOnIOThread,
                  this, loaded_callback, load_success));
     if (load_success && !restore_old_session_cookies_)
-      DeleteSessionCookies();
+      DeleteSessionCookiesOnStartup();
   }
 }
 
@@ -617,6 +632,7 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
               smt.ColumnInt(10) != 0));                       // is_persistent
       DLOG_IF(WARNING,
               cc->CreationDate() > Time::Now()) << L"CreationDate too recent";
+      cookies_per_origin_[CookieOrigin(cc->Domain(), cc->IsSecure())]++;
       cookies.push_back(cc.release());
       ++num_cookies_read_;
     }
@@ -826,6 +842,8 @@ void SQLitePersistentCookieStore::Backend::Commit() {
     scoped_ptr<PendingOperation> po(*it);
     switch (po->op()) {
       case PendingOperation::COOKIE_ADD:
+        cookies_per_origin_[
+            CookieOrigin(po->cc().Domain(), po->cc().IsSecure())]++;
         add_smt.Reset(true);
         add_smt.BindInt64(0, po->cc().CreationDate().ToInternalValue());
         add_smt.BindString(1, po->cc().Domain());
@@ -853,6 +871,8 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         break;
 
       case PendingOperation::COOKIE_DELETE:
+        cookies_per_origin_[
+            CookieOrigin(po->cc().Domain(), po->cc().IsSecure())]--;
         del_smt.Reset(true);
         del_smt.BindInt64(0, po->cc().CreationDate().ToInternalValue());
         if (!del_smt.Run())
@@ -901,10 +921,56 @@ void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
   // Commit any pending operations
   Commit();
 
+  if (!clear_local_state_on_exit_ && clear_on_exit_policy_.get() &&
+      clear_on_exit_policy_->HasClearOnExitOrigins()) {
+    DeleteSessionCookiesOnShutdown();
+  }
+
   db_.reset();
 
   if (clear_local_state_on_exit_)
     file_util::Delete(path_, false);
+}
+
+void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnShutdown() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+
+  if (!db_.get())
+    return;
+
+  sql::Statement del_smt(db_->GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM cookies WHERE host_key=? AND secure=?"));
+  if (!del_smt.is_valid()) {
+    LOG(WARNING) << "Unable to delete cookies on shutdown.";
+    return;
+  }
+
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin()) {
+    LOG(WARNING) << "Unable to delete cookies on shutdown.";
+    return;
+  }
+
+  for (CookiesPerOriginMap::iterator it = cookies_per_origin_.begin();
+       it != cookies_per_origin_.end(); ++it) {
+    if (it->second <= 0) {
+      DCHECK_EQ(0, it->second);
+      continue;
+    }
+    if (!clear_on_exit_policy_->ShouldClearOriginOnExit(it->first.first,
+                                                        it->first.second)) {
+      continue;
+    }
+
+    del_smt.Reset(true);
+    del_smt.BindString(0, it->first.first);
+    del_smt.BindInt(1, it->first.second);
+    if (!del_smt.Run())
+      NOTREACHED() << "Could not delete a cookie from the DB.";
+  }
+
+  if (!transaction.Commit())
+    LOG(WARNING) << "Unable to delete cookies on shutdown.";
 }
 
 void SQLitePersistentCookieStore::Backend::SetClearLocalStateOnExit(
@@ -913,7 +979,7 @@ void SQLitePersistentCookieStore::Backend::SetClearLocalStateOnExit(
   clear_local_state_on_exit_ = clear_local_state;
 }
 
-void SQLitePersistentCookieStore::Backend::DeleteSessionCookies() {
+void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnStartup() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!db_->Execute("DELETE FROM cookies WHERE persistent == 0"))
     LOG(WARNING) << "Unable to delete session cookies.";
@@ -921,8 +987,10 @@ void SQLitePersistentCookieStore::Backend::DeleteSessionCookies() {
 
 SQLitePersistentCookieStore::SQLitePersistentCookieStore(
     const FilePath& path,
-    bool restore_old_session_cookies)
-    : backend_(new Backend(path, restore_old_session_cookies)) {
+    bool restore_old_session_cookies,
+    ClearOnExitPolicy* clear_on_exit_policy)
+    : backend_(
+        new Backend(path, restore_old_session_cookies, clear_on_exit_policy)) {
 }
 
 void SQLitePersistentCookieStore::Load(const LoadedCallback& loaded_callback) {

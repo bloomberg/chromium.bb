@@ -16,17 +16,24 @@
 #include "base/memory/ref_counted.h"
 #include "net/cookies/cookie_monster.h"
 
+class ClearOnExitPolicy;
 class FilePath;
 class Task;
 
 // Implements the PersistentCookieStore interface in terms of a SQLite database.
 // For documentation about the actual member functions consult the documentation
 // of the parent class |net::CookieMonster::PersistentCookieStore|.
+// If provided, a |ClearOnExitPolicy| is consulted when the SQLite database is
+// closed to decide which cookies to keep.
 class SQLitePersistentCookieStore
     : public net::CookieMonster::PersistentCookieStore {
  public:
-  SQLitePersistentCookieStore(const FilePath& path,
-                              bool restore_old_session_cookies);
+  // If non-NULL, SQLitePersistentCookieStore will keep a scoped_refptr to the
+  // |clear_on_exit_policy| throughout its lifetime.
+  SQLitePersistentCookieStore(
+      const FilePath& path,
+      bool restore_old_session_cookies,
+      ClearOnExitPolicy* clear_on_exit_policy);
 
   // net::CookieMonster::PersistentCookieStore:
   virtual void Load(const LoadedCallback& loaded_callback) OVERRIDE;

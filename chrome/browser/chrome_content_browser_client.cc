@@ -902,9 +902,6 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   CookieSettings* cookie_settings = io_data->GetCookieSettings();
   bool allow = cookie_settings->IsSettingCookieAllowed(url, first_party);
 
-  if (cookie_settings->IsCookieSessionOnly(url))
-    options->set_force_session();
-
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TabSpecificContentSettings::CookieChanged, render_process_id,

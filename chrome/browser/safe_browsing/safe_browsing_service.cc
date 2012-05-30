@@ -611,7 +611,7 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
 
   scoped_refptr<net::CookieStore> cookie_store = new net::CookieMonster(
       new SQLitePersistentCookieStore(
-          FilePath(BaseFilename().value() + kCookiesFile), false),
+          FilePath(BaseFilename().value() + kCookiesFile), false, NULL),
       NULL);
 
   url_request_context_.reset(new SafeBrowsingURLRequestContext);

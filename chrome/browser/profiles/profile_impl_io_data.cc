@@ -13,6 +13,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/browser/net/clear_on_exit_policy.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/http_server_properties_manager.h"
 #include "chrome/browser/net/predictor.h"
@@ -30,6 +31,7 @@
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "webkit/quota/special_storage_policy.h"
 
 using content::BrowserThread;
 
@@ -82,7 +84,8 @@ void ProfileImplIOData::Handle::Init(
       chrome_browser_net::Predictor* predictor,
       PrefService* local_state,
       IOThread* io_thread,
-      bool restore_old_session_cookies) {
+      bool restore_old_session_cookies,
+      quota::SpecialStoragePolicy* special_storage_policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!io_data_->lazy_params_.get());
   DCHECK(predictor);
@@ -97,6 +100,7 @@ void ProfileImplIOData::Handle::Init(
   lazy_params->media_cache_max_size = media_cache_max_size;
   lazy_params->extensions_cookie_path = extensions_cookie_path;
   lazy_params->restore_old_session_cookies = restore_old_session_cookies;
+  lazy_params->special_storage_policy = special_storage_policy;
 
   io_data_->lazy_params_.reset(lazy_params);
 
@@ -344,7 +348,8 @@ void ProfileImplIOData::LazyInitializeInternal(
     scoped_refptr<SQLitePersistentCookieStore> cookie_db =
         new SQLitePersistentCookieStore(
             lazy_params_->cookie_path,
-            lazy_params_->restore_old_session_cookies);
+            lazy_params_->restore_old_session_cookies,
+            new ClearOnExitPolicy(lazy_params_->special_storage_policy));
     cookie_db->SetClearLocalStateOnExit(
         profile_params->clear_local_state_on_exit);
     cookie_store =
@@ -358,7 +363,7 @@ void ProfileImplIOData::LazyInitializeInternal(
       new net::CookieMonster(
           new SQLitePersistentCookieStore(
               lazy_params_->extensions_cookie_path,
-              lazy_params_->restore_old_session_cookies), NULL);
+              lazy_params_->restore_old_session_cookies, NULL), NULL);
   // Enable cookies for devtools and extension URLs.
   const char* schemes[] = {chrome::kChromeDevToolsScheme,
                            chrome::kExtensionScheme};
@@ -373,7 +378,9 @@ void ProfileImplIOData::LazyInitializeInternal(
     DCHECK(!lazy_params_->server_bound_cert_path.empty());
 
     scoped_refptr<SQLiteServerBoundCertStore> server_bound_cert_db =
-        new SQLiteServerBoundCertStore(lazy_params_->server_bound_cert_path);
+        new SQLiteServerBoundCertStore(
+            lazy_params_->server_bound_cert_path,
+            new ClearOnExitPolicy(lazy_params_->special_storage_policy));
     server_bound_cert_db->SetClearLocalStateOnExit(
         profile_params->clear_local_state_on_exit);
     server_bound_cert_service = new net::ServerBoundCertService(
@@ -497,7 +504,7 @@ ProfileImplIOData::InitializeAppRequestContext(
     DCHECK(!cookie_path.empty());
 
     scoped_refptr<SQLitePersistentCookieStore> cookie_db =
-        new SQLitePersistentCookieStore(cookie_path, false);
+        new SQLitePersistentCookieStore(cookie_path, false, NULL);
     cookie_db->SetClearLocalStateOnExit(clear_local_state_on_exit_);
     // TODO(creis): We should have a cookie delegate for notifying the cookie
     // extensions API, but we need to update it to understand isolated apps

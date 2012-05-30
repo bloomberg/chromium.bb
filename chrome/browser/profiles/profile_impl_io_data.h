@@ -21,6 +21,10 @@ class HttpServerProperties;
 class HttpTransactionFactory;
 }  // namespace net
 
+namespace quota {
+class SpecialStoragePolicy;
+}  // namespace quota
+
 class ProfileImplIOData : public ProfileIOData {
  public:
   class Handle {
@@ -45,7 +49,8 @@ class ProfileImplIOData : public ProfileIOData {
               chrome_browser_net::Predictor* predictor,
               PrefService* local_state,
               IOThread* io_thread,
-              bool restore_old_session_cookies);
+              bool restore_old_session_cookies,
+              quota::SpecialStoragePolicy* special_storage_policy);
 
     base::Callback<ChromeURLDataManagerBackend*(void)>
         GetChromeURLDataManagerBackendGetter() const;
@@ -115,6 +120,7 @@ class ProfileImplIOData : public ProfileIOData {
     int media_cache_max_size;
     FilePath extensions_cookie_path;
     bool restore_old_session_cookies;
+    scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy;
   };
 
   typedef base::hash_map<std::string, net::HttpTransactionFactory* >

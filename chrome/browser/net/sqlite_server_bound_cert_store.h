@@ -11,16 +11,22 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/default_server_bound_cert_store.h"
 
+class ClearOnExitPolicy;
 class FilePath;
 
 // Implements the net::DefaultServerBoundCertStore::PersistentStore interface
 // in terms of a SQLite database. For documentation about the actual member
 // functions consult the documentation of the parent class
 // |net::DefaultServerBoundCertStore::PersistentCertStore|.
+// If provided, a |ClearOnExitPolicy| is consulted when the SQLite database is
+// closed to decide which certificates to keep.
 class SQLiteServerBoundCertStore
     : public net::DefaultServerBoundCertStore::PersistentStore {
  public:
-  explicit SQLiteServerBoundCertStore(const FilePath& path);
+  // If non-NULL, SQLiteServerBoundCertStore will keep a scoped_refptr to the
+  // |clear_on_exit_policy| throughout its lifetime.
+  SQLiteServerBoundCertStore(const FilePath& path,
+                             ClearOnExitPolicy* clear_on_exit_policy);
 
   // net::DefaultServerBoundCertStore::PersistentStore:
   virtual bool Load(

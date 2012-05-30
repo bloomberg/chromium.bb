@@ -16,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -648,6 +649,12 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
                                             bool go_off_the_record) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   ExtensionSystem::Get(profile)->Init(!go_off_the_record);
+  // During tests, when |profile| is an instance of TestingProfile,
+  // ExtensionSystem might not create an ExtensionService.
+  if (ExtensionSystem::Get(profile)->extension_service()) {
+    profile->GetHostContentSettingsMap()->RegisterExtensionService(
+        ExtensionSystem::Get(profile)->extension_service());
+  }
   if (!command_line.HasSwitch(switches::kDisableWebResources))
     profile->InitPromoResources();
 }
