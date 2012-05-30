@@ -62,6 +62,7 @@
 #include <wayland-client.h>
 #include "../shared/cairo-util.h"
 #include "text-cursor-position-client-protocol.h"
+#include "../shared/os-compatibility.h"
 
 #include "window.h"
 
@@ -3299,7 +3300,7 @@ display_create(int argc, char *argv[])
 		return NULL;
 	}
 
-	d->epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+	d->epoll_fd = os_epoll_create_cloexec();
 	d->display_fd = wl_display_get_fd(d->display, event_mask_update, d);
 	d->display_task.run = handle_display_data;
 	display_watch_fd(d, d->display_fd, EPOLLIN, &d->display_task);

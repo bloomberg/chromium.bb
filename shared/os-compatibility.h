@@ -36,4 +36,7 @@ backtrace(void **buffer, int size)
 int
 os_socketpair_cloexec(int domain, int type, int protocol, int *sv);
 
+int
+os_epoll_create_cloexec(void);
+
 #endif /* OS_COMPATIBILITY_H */

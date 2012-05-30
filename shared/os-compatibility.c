@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/epoll.h>
 
 #include "os-compatibility.h"
 
@@ -76,3 +77,19 @@ os_socketpair_cloexec(int domain, int type, int protocol, int *sv)
 	return -1;
 }
 
+int
+os_epoll_create_cloexec(void)
+{
+	int fd;
+
+#ifdef EPOLL_CLOEXEC
+	fd = epoll_create1(EPOLL_CLOEXEC);
+	if (fd >= 0)
+		return fd;
+	if (errno != EINVAL)
+		return -1;
+#endif
+
+	fd = epoll_create(1);
+	return set_cloexec_or_close(fd);
+}
