@@ -24,6 +24,8 @@ AC_CHECK_FUNC([dlopen], [],
               AC_CHECK_LIB([dl], [dlopen], DLOPEN_LIBS="-ldl"))
 AC_SUBST(DLOPEN_LIBS)
 
+AC_CHECK_HEADERS([execinfo.h])
+
 PKG_CHECK_MODULES(COMPOSITOR,
 		  [wayland-server egl >= 7.10 glesv2 xkbcommon pixman-1])
 

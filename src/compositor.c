@@ -42,7 +42,6 @@
 #include <dlfcn.h>
 #include <signal.h>
 #include <setjmp.h>
-#include <execinfo.h>
 
 #include <wayland-server.h>
 #include "compositor.h"

@@ -23,6 +23,16 @@
 #ifndef OS_COMPATIBILITY_H
 #define OS_COMPATIBILITY_H
 
+#ifdef HAVE_EXECINFO_H
+#include <execinfo.h>
+#else
+static inline int
+backtrace(void **buffer, int size)
+{
+	return 0;
+}
+#endif
+
 int
 os_socketpair_cloexec(int domain, int type, int protocol, int *sv);
 
