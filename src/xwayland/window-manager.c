@@ -443,6 +443,28 @@ our_resource(struct weston_wm *wm, uint32_t id)
 	return (id & ~setup->resource_id_mask) == setup->resource_id_base;
 }
 
+#define ICCCM_WITHDRAWN_STATE	0
+#define ICCCM_NORMAL_STATE	1
+#define ICCCM_ICONIC_STATE	3
+
+static void
+weston_wm_window_set_state(struct weston_wm_window *window, int32_t state)
+{
+	struct weston_wm *wm = window->wm;
+	uint32_t property[2];
+
+	property[0] = state;
+	property[1] = XCB_WINDOW_NONE;
+
+	xcb_change_property(wm->conn,
+			    XCB_PROP_MODE_REPLACE,
+			    window->id,
+			    wm->atom.wm_state,
+			    wm->atom.wm_state,
+			    32, /* format */
+			    2, property);
+}
+
 static void
 weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 {
@@ -498,6 +520,7 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 
 	xcb_map_window(wm->conn, map_request->window);
 	xcb_map_window(wm->conn, window->frame_id);
+	weston_wm_window_set_state(window, ICCCM_NORMAL_STATE);
 
 	window->cairo_surface =
 		cairo_xcb_surface_create_with_xrender_format(wm->conn,
@@ -555,6 +578,8 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 
 	xcb_reparent_window(wm->conn, window->id, wm->wm_window, 0, 0);
 	xcb_destroy_window(wm->conn, window->frame_id);
+	weston_wm_window_set_state(window, ICCCM_WITHDRAWN_STATE);
+
 	window->frame_id = XCB_WINDOW_NONE;
 	if (wm->focus_window == window)
 		wm->focus_window = NULL;
@@ -949,6 +974,7 @@ wxs_wm_get_resources(struct weston_wm *wm)
 		{ "WM_PROTOCOLS",	F(atom.wm_protocols) },
 		{ "WM_TAKE_FOCUS",	F(atom.wm_take_focus) },
 		{ "WM_DELETE_WINDOW",	F(atom.wm_delete_window) },
+		{ "WM_STATE",		F(atom.wm_state) },
 		{ "_NET_WM_NAME",	F(atom.net_wm_name) },
 		{ "_NET_WM_ICON",	F(atom.net_wm_icon) },
 		{ "_NET_WM_STATE",	F(atom.net_wm_state) },
