@@ -40,6 +40,11 @@ $XVFB_PREFIX \
     platform=x86-${BITS}
 python tools/coverage_linux.py ${BITS}
 
+# Stop here and don't archive if on trybots.
+if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
+  exit 0
+fi
+
 echo @@@BUILD_STEP archive_coverage@@@
 export GSUTIL=/b/build/scripts/slave/gsutil
 GSD_URL=http://gsdview.appspot.com/nativeclient-coverage2/revs

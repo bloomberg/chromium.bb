@@ -50,6 +50,10 @@ call scons.bat ^
  -k --verbose --mode=coverage-win,nacl coverage platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
+:: Stop here and don't archive if on trybots.
+if %BUILDBOT_SLAVE_TYPE% equ "" exit /b 0
+if %BUILDBOT_SLAVE_TYPE% equ "Trybot" exit /b 0
+
 echo @@@BUILD_STEP archive_coverage@@@
 set GSUTIL="\b\build\scripts\slave\gsutil.bat"
 set GSD_URL="http://gsdview.appspot.com/nativeclient-coverage2/revs"

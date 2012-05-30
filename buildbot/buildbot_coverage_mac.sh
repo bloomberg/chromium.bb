@@ -32,6 +32,11 @@ echo @@@BUILD_STEP scons_compile@@@
 echo @@@BUILD_STEP coverage@@@
 ./scons -k --verbose --mode=coverage-mac,nacl coverage platform=x86-32
 
+# Stop here and don't archive if on trybots.
+if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
+  exit 0
+fi
+
 echo @@@BUILD_STEP archive_coverage@@@
 export GSUTIL=/b/build/scripts/slave/gsutil
 GSD_URL=http://gsdview.appspot.com/nativeclient-coverage2/revs
