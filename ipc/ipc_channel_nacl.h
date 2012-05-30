@@ -6,17 +6,31 @@
 #define IPC_IPC_CHANNEL_NACL_H_
 #pragma once
 
+#include <deque>
+#include <string>
+
+#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/process.h"
+#include "base/threading/simple_thread.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_reader.h"
 
 namespace IPC {
 
 // Similar to the Posix version of ChannelImpl but for Native Client code.
-// This is somewhat different because NaCl's send/recvmsg is slightly different
-// and we don't need to worry about complicated set up and READWRITE mode for
-// sharing handles.
+// This is somewhat different because sendmsg/recvmsg here do not follow POSIX
+// semantics. Instead, they are implemented by a custom embedding of
+// NaClDescCustom. See NaClIPCAdapter for the trusted-side implementation.
+//
+// We don't need to worry about complicated set up and READWRITE mode for
+// sharing handles. We also currently do not support passing file descriptors or
+// named pipes, and we use background threads to emulate signaling when we can
+// read or write without blocking.
 class Channel::ChannelImpl : public internal::ChannelReader {
  public:
+  // Mirror methods of Channel, see ipc_channel.h for description.
   ChannelImpl(const IPC::ChannelHandle& channel_handle,
               Mode mode,
               Listener* listener);
@@ -26,14 +40,18 @@ class Channel::ChannelImpl : public internal::ChannelReader {
   bool Connect();
   void Close();
   bool Send(Message* message);
-  int GetClientFileDescriptor() const;
-  int TakeClientFileDescriptor();
-  bool AcceptsConnections() const;
-  bool HasAcceptedConnection() const;
-  bool GetClientEuid(uid_t* client_euid) const;
-  void ResetToAcceptingConnectionState();
-  static bool IsNamedServerInitialized(const std::string& channel_id);
 
+  // Posted to the main thread by ReaderThreadRunner.
+  void DidRecvMsg(scoped_ptr<std::vector<char> > buffer);
+  void ReadDidFail();
+
+ private:
+  class ReaderThreadRunner;
+
+  bool CreatePipe(const IPC::ChannelHandle& channel_handle);
+  bool ProcessOutgoingMessages();
+
+  // ChannelReader implementation.
   virtual ReadState ReadData(char* buffer,
                              int buffer_len,
                              int* bytes_read) OVERRIDE;
@@ -41,7 +59,47 @@ class Channel::ChannelImpl : public internal::ChannelReader {
   virtual bool DidEmptyInputBuffers() OVERRIDE;
   virtual void HandleHelloMessage(const Message& msg) OVERRIDE;
 
- private:
+  Mode mode_;
+  bool waiting_connect_;
+
+  // The pipe used for communication.
+  int pipe_;
+
+  // The "name" of our pipe.  On Windows this is the global identifier for
+  // the pipe.  On POSIX it's used as a key in a local map of file descriptors.
+  // For NaCl, we don't actually support looking up file descriptors by name,
+  // and it's only used for debug information.
+  std::string pipe_name_;
+
+  // We use a thread for reading, so that we can simply block on reading and
+  // post the received data back to the main thread to be properly interleaved
+  // with other tasks in the MessagePump.
+  //
+  // imc_recvmsg supports non-blocking reads, but there's no easy way to be
+  // informed when a write or read can be done without blocking (this is handled
+  // by libevent in Posix).
+  scoped_ptr<ReaderThreadRunner> reader_thread_runner_;
+  scoped_ptr<base::DelegateSimpleThread> reader_thread_;
+
+  // IPC::ChannelReader expects to be able to call ReadData on us to
+  // synchronously read data waiting in the pipe's buffer without blocking.
+  // Since we can't do that (see 1 and 2 above), the reader thread does blocking
+  // reads and posts the data over to the main thread in byte vectors. Each byte
+  // vector is the result of one call to "recvmsg". When ReadData is called, it
+  // pulls the bytes out of these vectors in order.
+  // TODO(dmichael): There's probably a more efficient way to emulate this with
+  //                 a circular buffer or something, so we don't have to do so
+  //                 many heap allocations. But it maybe isn't worth
+  //                 the trouble given that we probably want to implement 1 and
+  //                 2 above in NaCl eventually.
+  std::deque<linked_ptr<std::vector<char> > > read_queue_;
+
+  // This queue is used when a message is sent prior to Connect having been
+  // called. Normally after we're connected, the queue is empty.
+  std::deque<linked_ptr<Message> > output_queue_;
+
+  base::WeakPtrFactory<ChannelImpl> weak_ptr_factory_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChannelImpl);
 };
 
