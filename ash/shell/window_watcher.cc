@@ -23,6 +23,7 @@ WindowWatcher::WindowWatcher()
 
 WindowWatcher::~WindowWatcher() {
   window_->RemoveObserver(this);
+  panel_container_->RemoveObserver(this);
 }
 
 aura::Window* WindowWatcher::GetWindowByID(ash::LauncherID id) {
