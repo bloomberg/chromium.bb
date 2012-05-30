@@ -540,6 +540,14 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 		return;
 
 	window = hash_table_lookup(wm->window_hash, unmap_notify->window);
+	if (window->frame_id == XCB_WINDOW_NONE) {
+		/* We already withdrew this window on the real unmap
+		 * notify and this is the synthetic unmap notify from
+		 * the client, or the other way around (ICCCM 4.1.4).
+		 * Either way, we're already done so just return. */
+		return;
+	}
+
 	if (window->repaint_source)
 		wl_event_source_remove(window->repaint_source);
 	if (window->cairo_surface)
@@ -882,7 +890,7 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 			continue;
 		}
 
-		switch (event->response_type) {
+		switch (event->response_type & ~0x80) {
 		case XCB_BUTTON_PRESS:
 		case XCB_BUTTON_RELEASE:
 			weston_wm_handle_button(wm, event);
