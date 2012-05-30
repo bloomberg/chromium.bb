@@ -320,7 +320,7 @@ function startSession_() {
   remoting.clientSession =
       new remoting.ClientSession(
           remoting.hostJid, remoting.hostPublicKey,
-          remoting.accessCode, 'v1_token', '',
+          remoting.accessCode, 'spake2_plain', '',
           /** @type {string} */ (remoting.oauth2.getCachedEmail()),
           remoting.ClientSession.Mode.IT2ME,
           onClientStateChange_);
