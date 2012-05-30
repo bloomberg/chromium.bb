@@ -53,6 +53,20 @@ using content::UserMetricsAction;
 using extensions::Extension;
 using extensions::PermissionsUpdater;
 
+namespace {
+
+// Used in histograms; do not change order.
+enum WebStoreInstallDecision {
+  InstallAllowedBecauseStore,
+  InstallAllowedBecauseTheme,
+  InstallAllowedBecauseAllAllowed,
+  InstallAllowedBecauseThisAllowed,
+  InstallDisallowedBecauseOffStore,
+  NumWebStoreInstallDecision
+};
+
+}  // namespace
+
 // static
 scoped_refptr<CrxInstaller> CrxInstaller::Create(
     ExtensionService* frontend,
@@ -191,10 +205,22 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(error);
 
-  if (!extension->is_theme() &&
-      !extensions::switch_utils::IsOffStoreInstallEnabled() &&
-      !allow_off_store_install_ &&
-      !is_gallery_install()) {
+  const char* kHistogramName = "Extensions.WebStoreInstallDecision";
+  if (is_gallery_install()) {
+    UMA_HISTOGRAM_ENUMERATION(kHistogramName, InstallAllowedBecauseStore,
+                              NumWebStoreInstallDecision);
+  } else if (extension->is_theme()) {
+    UMA_HISTOGRAM_ENUMERATION(kHistogramName, InstallAllowedBecauseTheme,
+                              NumWebStoreInstallDecision);
+  } else if (extensions::switch_utils::IsOffStoreInstallEnabled()) {
+    UMA_HISTOGRAM_ENUMERATION(kHistogramName, InstallAllowedBecauseAllAllowed,
+                              NumWebStoreInstallDecision);
+  } else if (allow_off_store_install_) {
+    UMA_HISTOGRAM_ENUMERATION(kHistogramName, InstallAllowedBecauseThisAllowed,
+                              NumWebStoreInstallDecision);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kHistogramName, InstallDisallowedBecauseOffStore,
+                              NumWebStoreInstallDecision);
     *error = l10n_util::GetStringUTF16(
         IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE);
     return false;
@@ -291,7 +317,6 @@ void CrxInstaller::OnUnpackFailure(const string16& error_message) {
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackFailureInstallSource",
                             install_source(), Extension::NUM_LOCATIONS);
-
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackFailureInstallCause",
                             install_cause(),
