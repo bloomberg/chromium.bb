@@ -190,11 +190,8 @@ void P2PPortAllocatorSession::AllocateRelaySession() {
   WebURLLoaderOptions options;
   options.allowCredentials = false;
 
-  // TODO(sergeyu): Set to CrossOriginRequestPolicyUseAccessControl
-  // when this code can be used by untrusted plugins.
-  // See http://crbug.com/104195 .
   options.crossOriginRequestPolicy =
-      WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
+      WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
 
   relay_session_request_.reset(
       allocator_->web_frame_->createAssociatedURLLoader(options));
@@ -207,18 +204,6 @@ void P2PPortAllocatorSession::AllocateRelaySession() {
       kCreateRelaySessionURL +
       "?username=" + net::EscapeUrlEncodedData(username(), true) +
       "&password=" + net::EscapeUrlEncodedData(password(), true);
-
-  // Use |relay_username| parameter to identify type of client for the
-  // relay session.
-  //
-  // TODO(sergeyu): Username is not used for legacy non-TURN relay
-  // servers, so we reuse it here to identify relay client type. This
-  // is currently used for Chromoting only. This code should be removed
-  // once Chromoting stops using Transport API and the API is removed.
-  if (!allocator_->config_.relay_username.empty()) {
-    url += "&sn=" +
-        net::EscapeUrlEncodedData(allocator_->config_.relay_username, true);
-  }
 
   WebURLRequest request;
   request.initialize();
