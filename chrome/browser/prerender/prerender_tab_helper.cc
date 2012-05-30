@@ -178,6 +178,7 @@ void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
     content::RenderViewHost* render_view_host) {
   if (!is_main_frame)
     return;
+  url_ = validated_url;
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return;

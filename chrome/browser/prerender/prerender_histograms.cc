@@ -283,6 +283,22 @@ void PrerenderHistograms::RecordPageLoadTimeNotSwappedIn(
   RECORD_PLT("PrerenderNotSwappedInPLT", page_load_time);
 }
 
+void PrerenderHistograms::RecordSimulatedLocalBrowsingBaselinePLT(
+    base::TimeDelta page_load_time, const GURL& url) const {
+  // If the URL to be prerendered is not a http[s] URL do not record.
+  if (!IsWebURL(url))
+    return;
+  RECORD_PLT("SimulatedLocalBrowsingBaselinePLT", page_load_time);
+}
+
+void PrerenderHistograms::RecordSimulatedLocalBrowsingPLT(
+    base::TimeDelta page_load_time, const GURL& url) const {
+  // If the URL to be prerendered is not a http[s] URL do not record.
+  if (!IsWebURL(url))
+    return;
+  RECORD_PLT("SimulatedLocalBrowsingPLT", page_load_time);
+}
+
 void PrerenderHistograms::RecordPercentLoadDoneAtSwapin(double fraction)
     const {
   if (fraction < 0.0 || fraction > 1.0)
@@ -380,6 +396,15 @@ bool PrerenderHistograms::IsOriginExperimentWash() const {
   if (!WithinWindow())
     return false;
   return origin_experiment_wash_;
+}
+
+void PrerenderHistograms::RecordLocalPredictorEvent(
+    PrerenderLocalPredictor::Event event) const {
+  UMA_HISTOGRAM_ENUMERATION(
+      ComposeHistogramName("", base::FieldTrial::MakeName(
+          "LocalPredictorEvent", "Prerender")),
+      event,
+      PrerenderLocalPredictor::EVENT_MAX_VALUE);
 }
 
 }  // namespace prerender

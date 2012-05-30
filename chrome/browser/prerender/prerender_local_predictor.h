@@ -21,11 +21,27 @@ class PrerenderManager;
 
 // PrerenderLocalPredictor maintains local browsing history to make prerender
 // predictions.
-// At this point, the class is just illustrating the interface with the
-// Chrome History.
-// TODO(tburkard): Fill in actual prerender prediction logic.
+// At this point, the class is not actually creating prerenders, but just
+// recording timing stats about the effect prerendering would have.
 class PrerenderLocalPredictor : history::VisitDatabaseObserver {
  public:
+  enum Event {
+    EVENT_CONSTRUCTED = 0,
+    EVENT_INIT_SCHEDULED = 1,
+    EVENT_INIT_STARTED = 2,
+    EVENT_INIT_FAILED_NO_HISTORY = 3,
+    EVENT_INIT_SUCCEEDED = 4,
+    EVENT_ADD_VISIT = 5,
+    EVENT_ADD_VISIT_INITIALIZED = 6,
+    EVENT_ADD_VISIT_PRERENDER_IDENTIFIED = 7,
+    EVENT_ADD_VISIT_RELEVANT_TRANSITION = 8,
+    EVENT_ADD_VISIT_IDENTIFIED_PRERENDER_CANDIDATE = 9,
+    EVENT_ADD_VISIT_PRERENDERING = 10,
+    EVENT_GOT_PRERENDER_URL = 11,
+    EVENT_ERROR_NO_PRERENDER_URL_FOR_PLT = 12,
+    EVENT_MAX_VALUE
+  };
+
   // A PrerenderLocalPredictor is owned by the PrerenderManager specified
   // in the constructor.  It will be destoryed at the time its owning
   // PrerenderManager is destroyed.
@@ -40,9 +56,17 @@ class PrerenderLocalPredictor : history::VisitDatabaseObserver {
   void OnGetInitialVisitHistory(
       scoped_ptr<std::vector<history::BriefVisitInfo> > visit_history);
 
+  void OnPLTEventForURL(const GURL& url, base::TimeDelta page_load_time);
+
  private:
+  struct PrerenderData;
   HistoryService* GetHistoryIfExists() const;
   void Init();
+  bool IsPrerenderStillValid(PrerenderData* prerender) const;
+  bool DoesPrerenderMatchPLTRecord(PrerenderData* prerender,
+                                   const GURL& url,
+                                   base::TimeDelta plt) const;
+  void RecordEvent(Event event) const;
 
   PrerenderManager* prerender_manager_;
   base::OneShotTimer<PrerenderLocalPredictor> timer_;
@@ -54,7 +78,6 @@ class PrerenderLocalPredictor : history::VisitDatabaseObserver {
   CancelableRequestConsumer history_db_consumer_;
 
   scoped_ptr<std::vector<history::BriefVisitInfo> > visit_history_;
-  bool visit_history_initialized_;
 
   // We keep a reference to the HistoryService which we registered to
   // observe.  On destruction, we have to remove ourselves from that history
@@ -63,6 +86,9 @@ class PrerenderLocalPredictor : history::VisitDatabaseObserver {
   // in this case may cause crashes, because the HistoryService may outlive the
   // the PrerenderLocalPredictor.
   scoped_refptr<HistoryService> observing_history_service_;
+
+  scoped_ptr<PrerenderData> current_prerender_;
+  scoped_ptr<PrerenderData> last_swapped_in_prerender_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderLocalPredictor);
 };
