@@ -54,6 +54,12 @@ enum weston_keyboard_modifier {
 	MODIFIER_SUPER = (1 << 2),
 };
 
+enum weston_led {
+	LED_NUM_LOCK = (1 << 0),
+	LED_CAPS_LOCK = (1 << 1),
+	LED_SCROLL_LOCK = (1 << 2),
+};
+
 struct weston_mode {
 	uint32_t flags;
 	int32_t width, height;
@@ -180,12 +186,15 @@ struct weston_seat {
 
 	struct wl_listener new_drag_icon_listener;
 
+	void (*led_update)(struct weston_seat *ws, enum weston_led leds);
+
 	struct {
 		struct xkb_state *state;
 		uint32_t mods_depressed;
 		uint32_t mods_latched;
 		uint32_t mods_locked;
 		uint32_t group;
+		enum weston_led leds;
 	} xkb_state;
 };
 
@@ -308,6 +317,9 @@ struct weston_compositor {
 		xkb_mod_index_t ctrl_mod;
 		xkb_mod_index_t alt_mod;
 		xkb_mod_index_t super_mod;
+		xkb_led_index_t num_led;
+		xkb_led_index_t caps_led;
+		xkb_led_index_t scroll_led;
 	} xkb_info;
 };
 

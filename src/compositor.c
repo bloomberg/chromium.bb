@@ -1733,6 +1733,7 @@ update_modifier_state(struct weston_seat *seat, uint32_t key, uint32_t state)
 {
 	uint32_t mods_depressed, mods_latched, mods_locked, group;
 	uint32_t mods_lookup;
+	enum weston_led leds = 0;
 	int ret = 0;
 
 	/* First update the XKB state object with the keypress. */
@@ -1770,6 +1771,20 @@ update_modifier_state(struct weston_seat *seat, uint32_t key, uint32_t state)
 		seat->modifier_state |= MODIFIER_ALT;
 	if ((mods_lookup & seat->compositor->xkb_info.super_mod))
 		seat->modifier_state |= MODIFIER_SUPER;
+
+	/* Finally, notify the compositor that LEDs have changed. */
+	if (xkb_state_led_index_is_active(seat->xkb_state.state,
+					  seat->compositor->xkb_info.num_led))
+		leds |= LED_NUM_LOCK;
+	if (xkb_state_led_index_is_active(seat->xkb_state.state,
+					  seat->compositor->xkb_info.caps_led))
+		leds |= LED_CAPS_LOCK;
+	if (xkb_state_led_index_is_active(seat->xkb_state.state,
+					  seat->compositor->xkb_info.scroll_led))
+		leds |= LED_SCROLL_LOCK;
+	if (leds != seat->xkb_state.leds && seat->led_update)
+		seat->led_update(seat, seat->xkb_state.leds);
+	seat->xkb_state.leds = leds;
 
 	return ret;
 }
@@ -2236,6 +2251,13 @@ static int weston_compositor_xkb_init(struct weston_compositor *ec,
 						     XKB_MOD_NAME_ALT);
 	ec->xkb_info.super_mod = xkb_map_mod_get_index(ec->xkb_info.keymap,
 						       XKB_MOD_NAME_LOGO);
+
+	ec->xkb_info.num_led = xkb_map_led_get_index(ec->xkb_info.keymap,
+						     XKB_LED_NAME_NUM);
+	ec->xkb_info.caps_led = xkb_map_led_get_index(ec->xkb_info.keymap,
+						      XKB_LED_NAME_CAPS);
+	ec->xkb_info.scroll_led = xkb_map_led_get_index(ec->xkb_info.keymap,
+						        XKB_LED_NAME_SCROLL);
 
 	return 0;
 }
