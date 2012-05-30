@@ -3,10 +3,6 @@
 <svg viewBox="0 0 100 100" version="1.1"
   xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <g stroke-opacity="0" transform="translate(50,50)">
-    <animateTransform attributeName="transform" attributeType="XML"
-      additive="sum" type="rotate"
-      calcMode="discrete"  values="30;60;90;120;150;180;210;240;270;300;330;360"
-      begin="0s" dur="1s" fill="freeze" repeatCount="indefinite" />
     <path d="M49.931,-2.617
       a 50,50 0 0,0 -5.381,-20.083
       l -17.82,9.08
