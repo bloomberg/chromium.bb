@@ -375,7 +375,7 @@ touchpad_update_state(struct touchpad_dispatch *touchpad, uint32_t time)
 
 		touchpad->device->rel.dx = wl_fixed_from_double(dx);
 		touchpad->device->rel.dy = wl_fixed_from_double(dy);
-		touchpad->device->type |= EVDEV_RELATIVE_MOTION;
+		touchpad->device->pending_events |= EVDEV_RELATIVE_MOTION;
 	}
 }
 

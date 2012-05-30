@@ -68,7 +68,7 @@ struct evdev_input_device {
 		wl_fixed_t dx, dy;
 	} rel;
 
-	enum evdev_event_type type;
+	enum evdev_event_type pending_events;
 
 	int is_mt;
 };

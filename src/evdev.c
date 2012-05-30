@@ -73,23 +73,23 @@ evdev_process_touch(struct evdev_input_device *device,
 		break;
 	case ABS_MT_TRACKING_ID:
 		if (e->value >= 0)
-			device->type |= EVDEV_ABSOLUTE_MT_DOWN;
+			device->pending_events |= EVDEV_ABSOLUTE_MT_DOWN;
 		else
-			device->type |= EVDEV_ABSOLUTE_MT_UP;
+			device->pending_events |= EVDEV_ABSOLUTE_MT_UP;
 		break;
 	case ABS_MT_POSITION_X:
 		device->mt.x[device->mt.slot] =
 			(e->value - device->abs.min_x) * screen_width /
 			(device->abs.max_x - device->abs.min_x) +
 			device->output->x;
-		device->type |= EVDEV_ABSOLUTE_MT_MOTION;
+		device->pending_events |= EVDEV_ABSOLUTE_MT_MOTION;
 		break;
 	case ABS_MT_POSITION_Y:
 		device->mt.y[device->mt.slot] =
 			(e->value - device->abs.min_y) * screen_height /
 			(device->abs.max_y - device->abs.min_y) +
 			device->output->y;
-		device->type |= EVDEV_ABSOLUTE_MT_MOTION;
+		device->pending_events |= EVDEV_ABSOLUTE_MT_MOTION;
 		break;
 	}
 }
@@ -107,14 +107,14 @@ evdev_process_absolute_motion(struct evdev_input_device *device,
 			(e->value - device->abs.min_x) * screen_width /
 			(device->abs.max_x - device->abs.min_x) +
 			device->output->x;
-		device->type |= EVDEV_ABSOLUTE_MOTION;
+		device->pending_events |= EVDEV_ABSOLUTE_MOTION;
 		break;
 	case ABS_Y:
 		device->abs.y =
 			(e->value - device->abs.min_y) * screen_height /
 			(device->abs.max_y - device->abs.min_y) +
 			device->output->y;
-		device->type |= EVDEV_ABSOLUTE_MOTION;
+		device->pending_events |= EVDEV_ABSOLUTE_MOTION;
 		break;
 	}
 }
@@ -126,11 +126,11 @@ evdev_process_relative(struct evdev_input_device *device,
 	switch (e->code) {
 	case REL_X:
 		device->rel.dx += wl_fixed_from_int(e->value);
-		device->type |= EVDEV_RELATIVE_MOTION;
+		device->pending_events |= EVDEV_RELATIVE_MOTION;
 		break;
 	case REL_Y:
 		device->rel.dy += wl_fixed_from_int(e->value);
-		device->type |= EVDEV_RELATIVE_MOTION;
+		device->pending_events |= EVDEV_RELATIVE_MOTION;
 		break;
 	case REL_WHEEL:
 		notify_axis(&device->master->base.seat,
@@ -184,45 +184,45 @@ evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 {
 	struct weston_seat *master = &device->master->base;
 
-	if (!device->type)
+	if (!device->pending_events)
 		return;
 
-	if (device->type & EVDEV_RELATIVE_MOTION) {
+	if (device->pending_events & EVDEV_RELATIVE_MOTION) {
 		notify_motion(&master->seat, time,
 			      master->seat.pointer->x + device->rel.dx,
 			      master->seat.pointer->y + device->rel.dy);
-		device->type &= ~EVDEV_RELATIVE_MOTION;
+		device->pending_events &= ~EVDEV_RELATIVE_MOTION;
 		device->rel.dx = 0;
 		device->rel.dy = 0;
 	}
-	if (device->type & EVDEV_ABSOLUTE_MT_DOWN) {
+	if (device->pending_events & EVDEV_ABSOLUTE_MT_DOWN) {
 		notify_touch(&master->seat, time,
 			     device->mt.slot,
 			     wl_fixed_from_int(device->mt.x[device->mt.slot]),
 			     wl_fixed_from_int(device->mt.y[device->mt.slot]),
 			     WL_TOUCH_DOWN);
-		device->type &= ~EVDEV_ABSOLUTE_MT_DOWN;
-		device->type &= ~EVDEV_ABSOLUTE_MT_MOTION;
+		device->pending_events &= ~EVDEV_ABSOLUTE_MT_DOWN;
+		device->pending_events &= ~EVDEV_ABSOLUTE_MT_MOTION;
 	}
-	if (device->type & EVDEV_ABSOLUTE_MT_MOTION) {
+	if (device->pending_events & EVDEV_ABSOLUTE_MT_MOTION) {
 		notify_touch(&master->seat, time,
 			     device->mt.slot,
 			     wl_fixed_from_int(device->mt.x[device->mt.slot]),
 			     wl_fixed_from_int(device->mt.y[device->mt.slot]),
 			     WL_TOUCH_MOTION);
-		device->type &= ~EVDEV_ABSOLUTE_MT_DOWN;
-		device->type &= ~EVDEV_ABSOLUTE_MT_MOTION;
+		device->pending_events &= ~EVDEV_ABSOLUTE_MT_DOWN;
+		device->pending_events &= ~EVDEV_ABSOLUTE_MT_MOTION;
 	}
-	if (device->type & EVDEV_ABSOLUTE_MT_UP) {
+	if (device->pending_events & EVDEV_ABSOLUTE_MT_UP) {
 		notify_touch(&master->seat, time, device->mt.slot, 0, 0,
 			     WL_TOUCH_UP);
-		device->type &= ~EVDEV_ABSOLUTE_MT_UP;
+		device->pending_events &= ~EVDEV_ABSOLUTE_MT_UP;
 	}
-	if (device->type & EVDEV_ABSOLUTE_MOTION) {
+	if (device->pending_events & EVDEV_ABSOLUTE_MOTION) {
 		notify_motion(&master->seat, time,
 			      wl_fixed_from_int(device->abs.x),
 			      wl_fixed_from_int(device->abs.y));
-		device->type &= ~EVDEV_ABSOLUTE_MOTION;
+		device->pending_events &= ~EVDEV_ABSOLUTE_MOTION;
 	}
 }
 
@@ -276,7 +276,7 @@ evdev_process_events(struct evdev_input_device *device,
 	struct input_event *e, *end;
 	uint32_t time = 0;
 
-	device->type = 0;
+	device->pending_events = 0;
 
 	e = ev;
 	end = e + count;
