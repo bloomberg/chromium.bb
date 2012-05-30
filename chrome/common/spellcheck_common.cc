@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,10 +100,12 @@ FilePath GetVersionedFileName(const std::string& input_language,
     {"bg-BG", "-2-0"},
     {"sr",    "-2-0"},
     {"uk-UA", "-2-0"},
-    {"en-US", "-2-1"},  // 2-1 (Mar 2011): upgraded dictionaries.
-    {"en-CA", "-2-1"},
     {"pt-BR", "-2-2"},  // 2-2 (Mar 2011): upgraded a dictionary.
     {"sh",    "-2-2"},  // 2-2 (Mar 2011): added a dictionary.
+    {"en-US", "-2-3"},  // 2-3 (May 2012): fixed affixes + more words.
+    {"en-CA", "-2-3"},
+    {"en-GB", "-2-3"},
+    {"en-AU", "-2-3"},
   };
 
   // Generate the bdict file name using default version string or special
