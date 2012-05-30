@@ -215,7 +215,7 @@ incognito behavior.
 <h3 id="intents">intents</h3>
 
 <p>
-A dictionary that specifies all intent handlers provided by this extension or app. Each key in the dictionary specifies the an action verb that is handled by this extension. The following example specifies two handlers for the action verb "<a href="http://webintents.org/share">http://webintents.org/share</a>".
+A dictionary that specifies all intent handlers provided by this extension or app. Each key in the dictionary specifies an action verb that is handled by this extension. The following example specifies two handlers for the action verb "<a href="http://webintents.org/share">http://webintents.org/share</a>".
 </p>
 
 <pre>
@@ -256,6 +256,20 @@ The "disposition" is either "inline" or "window". Intents with "window" disposit
 <p>
 For more information on intents, refer to the <a href="http://dvcs.w3.org/hg/web-intents/raw-file/tip/spec/Overview.html">Web Intents specification</a> and <a href="http://www.webintents.org">webintents.org</a>.
 </p>
+
+<h4>Handling content types via intents</h4>
+
+<p>
+Web Intents can be registered as content type viewers. To do that, the action verb must be <a href="http://webintents.org/view">"http://webintents.org/view"</a>, and the content type must be a white-listed MIME type.
+</p>
+
+<table>
+  <tr>
+    <th>Whitelisted MIME types</th>
+  </tr>
+  <tr><td>application/rss+xml</td></tr>
+  <tr><td>application/atom+xml</td></tr>
+</table>
 
 <h3 id="key">key</h3>
 
