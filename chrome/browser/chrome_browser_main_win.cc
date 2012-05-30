@@ -178,6 +178,10 @@ void ChromeBrowserMainPartsWin::ToolkitInitialized() {
 }
 
 void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
+  // installer_util references strings that are normally compiled into
+  // setup.exe.  In Chrome, these strings are in the locale files.
+  SetupInstallerUtilStrings();
+
   ChromeBrowserMainParts::PreMainMessageLoopStart();
   if (!parameters().ui_task) {
     // Make sure that we know how to handle exceptions from the message loop.

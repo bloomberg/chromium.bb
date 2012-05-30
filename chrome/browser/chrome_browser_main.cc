@@ -1591,10 +1591,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       ChromeBrowserMainPartsWin::CheckMachineLevelInstall()) {
     return chrome::RESULT_CODE_MACHINE_LEVEL_INSTALL_EXISTS;
   }
-
-  // installer_util references strings that are normally compiled into
-  // setup.exe.  In Chrome, these strings are in the locale files.
-  ChromeBrowserMainPartsWin::SetupInstallerUtilStrings();
 #endif
 
   // Create the TranslateManager singleton.
