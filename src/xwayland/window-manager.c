@@ -525,6 +525,39 @@ weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 }
 
 static void
+weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
+{
+	xcb_unmap_notify_event_t *unmap_notify =
+		(xcb_unmap_notify_event_t *) event;
+	struct weston_wm_window *window;
+
+	fprintf(stderr,
+		"XCB_UNMAP_NOTIFY (window %d, event %d%s)\n",
+		unmap_notify->window,
+		unmap_notify->event,
+		our_resource(wm, unmap_notify->window) ? ", ours" : "");
+
+	if (our_resource(wm, unmap_notify->window))
+		return;
+
+	window = hash_table_lookup(wm->window_hash, unmap_notify->window);
+	if (window->repaint_source)
+		wl_event_source_remove(window->repaint_source);
+	if (window->cairo_surface)
+		cairo_surface_destroy(window->cairo_surface);
+
+	xcb_reparent_window(wm->conn, window->id, wm->wm_window, 0, 0);
+	xcb_destroy_window(wm->conn, window->frame_id);
+	window->frame_id = XCB_WINDOW_NONE;
+	if (wm->focus_window == window)
+		wm->focus_window = NULL;
+	hash_table_remove(wm->window_hash, window->frame_id);
+	if (window->surface)
+		wl_list_remove(&window->surface_destroy_listener.link);
+	window->surface = NULL;
+}
+
+static void
 weston_wm_window_draw_decoration(void *data)
 {
 	struct weston_wm_window *window = data;
@@ -679,29 +712,17 @@ weston_wm_handle_destroy_notify(struct weston_wm *wm, xcb_generic_event_t *event
 		(xcb_destroy_notify_event_t *) event;
 	struct weston_wm_window *window;
 
-	if (our_resource(wm, destroy_notify->window)) {
-		fprintf(stderr, "XCB_DESTROY_NOTIFY, win %d (ours)\n",
-			destroy_notify->window);
+	fprintf(stderr, "XCB_DESTROY_NOTIFY, win %d, event %d%s\n",
+		destroy_notify->window,
+		destroy_notify->event,
+		our_resource(wm, destroy_notify->window) ? ", ours" : "");
+
+	if (our_resource(wm, destroy_notify->window))
 		return;
-	}
 
 	window = hash_table_lookup(wm->window_hash, destroy_notify->window);
 
-	fprintf(stderr, "XCB_DESTROY_NOTIFY, win %d (%p)\n",
-		destroy_notify->window, window);
-
-	if (window->repaint_source)
-		wl_event_source_remove(window->repaint_source);
-	if (window->cairo_surface)
-		cairo_surface_destroy(window->cairo_surface);
-
 	hash_table_remove(wm->window_hash, window->id);
-	hash_table_remove(wm->window_hash, window->frame_id);
-	xcb_destroy_window(wm->conn, window->frame_id);
-	if (window->surface)
-		wl_list_remove(&window->surface_destroy_listener.link);
-	if (wm->focus_window == window)
-		wm->focus_window = NULL;
 
 	free(window);
 }
@@ -854,7 +875,7 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 			weston_wm_handle_map_notify(wm, event);
 			break;
 		case XCB_UNMAP_NOTIFY:
-			fprintf(stderr, "XCB_UNMAP_NOTIFY\n");
+			weston_wm_handle_unmap_notify(wm, event);
 			break;
 		case XCB_CONFIGURE_REQUEST:
 			weston_wm_handle_configure_request(wm, event);
