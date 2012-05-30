@@ -22,6 +22,12 @@ bool RenderViewHostDelegate::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
+bool RenderViewHostDelegate::AddMessageToConsole(
+    int32 level, const string16& message, int32 line_no,
+    const string16& source_id) {
+  return false;
+}
+
 const GURL& RenderViewHostDelegate::GetURL() const {
   return GURL::EmptyGURL();
 }

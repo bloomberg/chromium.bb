@@ -11,6 +11,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/bindings_policy.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/web_intent_data.h"
 
@@ -41,6 +42,14 @@ gfx::Rect WebContentsDelegate::GetRootWindowResizerRect() const {
 }
 
 bool WebContentsDelegate::ShouldSuppressDialogs() {
+  return false;
+}
+
+bool WebContentsDelegate::AddMessageToConsole(WebContents* source,
+                                              int32 level,
+                                              const string16& message,
+                                              int32 line_no,
+                                              const string16& source_id) {
   return false;
 }
 

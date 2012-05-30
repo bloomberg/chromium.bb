@@ -341,6 +341,10 @@ class CONTENT_EXPORT WebContentsImpl
                                       const string16& message,
                                       bool is_reload,
                                       IPC::Message* reply_msg) OVERRIDE;
+  virtual bool AddMessageToConsole(int32 level,
+                                   const string16& message,
+                                   int32 line_no,
+                                   const string16& source_id) OVERRIDE;
   virtual content::RendererPreferences GetRendererPrefs(
       content::BrowserContext* browser_context) const OVERRIDE;
   virtual webkit_glue::WebPreferences GetWebkitPrefs() OVERRIDE;

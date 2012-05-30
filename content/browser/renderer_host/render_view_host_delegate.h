@@ -254,6 +254,12 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
                                       bool is_reload,
                                       IPC::Message* reply_msg) {}
 
+  // A message was added to to the console.
+  virtual bool AddMessageToConsole(int32 level,
+                                   const string16& message,
+                                   int32 line_no,
+                                   const string16& source_id);
+
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.
   virtual content::RendererPreferences GetRendererPrefs(

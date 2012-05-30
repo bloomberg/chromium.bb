@@ -180,6 +180,15 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Default is false.
   virtual bool ShouldSuppressDialogs();
 
+  // Add a message to the console. Returning true indicates that the delegate
+  // handled the message. If false is returned the default logging mechanism
+  // will be used for the message.
+  virtual bool AddMessageToConsole(WebContents* soruce,
+                                   int32 level,
+                                   const string16& message,
+                                   int32 line_no,
+                                   const string16& source_id);
+
   // Tells us that we've finished firing this tab's beforeunload event.
   // The proceed bool tells us whether the user chose to proceed closing the
   // tab. Returns true if the tab can continue on firing its unload event.
