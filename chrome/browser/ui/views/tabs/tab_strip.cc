@@ -1035,7 +1035,11 @@ bool TabStrip::ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) {
   if (index == -1)
     return true;  // Tab is closing, paint it all.
 
-  if (index < touch_layout_->active_index()) {
+  int active_index = touch_layout_->active_index();
+  if (active_index == tab_count())
+    active_index--;
+
+  if (index < active_index) {
     if (tab_at(index)->x() == tab_at(index + 1)->x())
       return false;
 
@@ -1045,7 +1049,7 @@ bool TabStrip::ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) {
     clip->SetRect(0, 0, tab_at(index + 1)->x() - tab_at(index)->x() +
                       stacked_tab_left_clip(),
                   tab_at(index)->height());
-  } else if (index > touch_layout_->active_index() && index > 0) {
+  } else if (index > active_index && index > 0) {
     const gfx::Rect& tab_bounds(tab_at(index)->bounds());
     const gfx::Rect& previous_tab_bounds(tab_at(index - 1)->bounds());
     if (tab_bounds.x() == previous_tab_bounds.x())
