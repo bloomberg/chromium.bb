@@ -2279,15 +2279,48 @@ static void weston_compositor_xkb_destroy(struct weston_compositor *ec)
 }
 
 WL_EXPORT void
+weston_seat_init_pointer(struct weston_seat *seat)
+{
+	if (seat->has_pointer)
+		return;
+
+	wl_pointer_init(&seat->pointer);
+	wl_seat_set_pointer(&seat->seat, &seat->pointer);
+
+	seat->has_pointer = 1;
+}
+
+WL_EXPORT void
+weston_seat_init_keyboard(struct weston_seat *seat)
+{
+	if (seat->has_keyboard)
+		return;
+
+	wl_keyboard_init(&seat->keyboard);
+	wl_seat_set_keyboard(&seat->seat, &seat->keyboard);
+
+	seat->has_keyboard = 1;
+}
+
+WL_EXPORT void
+weston_seat_init_touch(struct weston_seat *seat)
+{
+	if (seat->has_touch)
+		return;
+
+	wl_touch_init(&seat->touch);
+	wl_seat_set_touch(&seat->seat, &seat->touch);
+
+	seat->has_touch = 1;
+}
+
+WL_EXPORT void
 weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 {
 	wl_seat_init(&seat->seat);
-	wl_pointer_init(&seat->pointer);
-	wl_seat_set_pointer(&seat->seat, &seat->pointer);
-	wl_keyboard_init(&seat->keyboard);
-	wl_seat_set_keyboard(&seat->seat, &seat->keyboard);
-	wl_touch_init(&seat->touch);
-	wl_seat_set_touch(&seat->seat, &seat->touch);
+	seat->has_pointer = 0;
+	seat->has_keyboard = 0;
+	seat->has_touch = 0;
 
 	wl_display_add_global(ec->wl_display, &wl_seat_interface, seat,
 			      bind_seat);
@@ -2334,7 +2367,8 @@ weston_seat_release(struct weston_seat *seat)
 	if (seat->sprite)
 		destroy_surface(&seat->sprite->surface.resource);
 
-	xkb_state_unref(seat->xkb_state.state);
+	if (seat->xkb_state.state != NULL)
+		xkb_state_unref(seat->xkb_state.state);
 
 	wl_seat_release(&seat->seat);
 }

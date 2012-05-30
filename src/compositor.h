@@ -165,8 +165,12 @@ struct weston_output {
 struct weston_seat {
 	struct wl_seat seat;
 	struct wl_pointer pointer;
+	int has_pointer;
 	struct wl_keyboard keyboard;
+	int has_keyboard;
 	struct wl_touch touch;
+	int has_touch;
+
 	struct weston_compositor *compositor;
 	struct weston_surface *sprite;
 	struct weston_surface *drag_surface;
@@ -636,6 +640,12 @@ weston_output_destroy(struct weston_output *output);
 
 void
 weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec);
+void
+weston_seat_init_pointer(struct weston_seat *seat);
+void
+weston_seat_init_keyboard(struct weston_seat *seat);
+void
+weston_seat_init_touch(struct weston_seat *seat);
 
 void
 weston_seat_release(struct weston_seat *seat);
