@@ -564,7 +564,7 @@ input_handle_axis(void *data, struct wl_pointer *pointer,
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	notify_axis(&c->base.seat->seat, time, axis, value);
+	notify_axis(&c->base.seat->seat, time, axis, wl_fixed_from_int(value));
 }
 
 static const struct wl_pointer_listener pointer_listener = {

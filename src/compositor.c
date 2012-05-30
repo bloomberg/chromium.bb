@@ -1706,7 +1706,8 @@ notify_button(struct wl_seat *seat, uint32_t time, int32_t button,
 }
 
 WL_EXPORT void
-notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis, int32_t value)
+notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis,
+	    wl_fixed_t value)
 {
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *compositor = ws->compositor;
@@ -1721,13 +1722,14 @@ notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis, int32_t value)
 
 	if (value)
 		weston_compositor_run_binding(compositor, ws,
-					      time, 0, 0, axis, value);
+					      time, 0, 0, axis,
+					      wl_fixed_to_int(value));
 	else
 		return;
 
 	if (seat->pointer->focus_resource)
-		wl_resource_post_event(seat->pointer->focus_resource,
-				       WL_POINTER_AXIS, time, axis, value);
+		wl_pointer_send_axis(seat->pointer->focus_resource, time, axis,
+				     wl_fixed_to_int(value));
 }
 
 static int

@@ -168,12 +168,14 @@ evdev_process_relative(struct evdev_input_device *device,
 	case REL_WHEEL:
 		notify_axis(&device->master->base.seat,
 			      time,
-			      WL_POINTER_AXIS_VERTICAL_SCROLL, e->value);
+			      WL_POINTER_AXIS_VERTICAL_SCROLL,
+			      wl_fixed_from_int(e->value));
 		break;
 	case REL_HWHEEL:
 		notify_axis(&device->master->base.seat,
 			      time,
-			      WL_POINTER_AXIS_HORIZONTAL_SCROLL, e->value);
+			      WL_POINTER_AXIS_HORIZONTAL_SCROLL,
+			      wl_fixed_from_int(e->value));
 		break;
 	}
 }

@@ -481,7 +481,7 @@ notify_button(struct wl_seat *seat, uint32_t time, int32_t button,
 	      enum wl_pointer_button_state state);
 void
 notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis,
-	    int32_t value);
+	    wl_fixed_t value);
 void
 notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 	   enum wl_keyboard_key_state state);
