@@ -35,9 +35,7 @@
 #include <assert.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
 #include <linux/input.h>
@@ -48,6 +46,7 @@
 
 #include <wayland-server.h>
 #include "compositor.h"
+#include "../shared/os-compatibility.h"
 
 static struct wl_list child_process_list;
 static jmp_buf segv_jmp_buf;
@@ -134,7 +133,7 @@ weston_client_launch(struct weston_compositor *compositor,
 	pid_t pid;
 	struct wl_client *client;
 
-	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
+	if (os_socketpair_cloexec(AF_UNIX, SOCK_STREAM, 0, sv) < 0) {
 		fprintf(stderr, "weston_client_launch: "
 			"socketpair failed while launching '%s': %m\n",
 			path);

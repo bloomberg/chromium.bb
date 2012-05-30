@@ -9,5 +9,7 @@ libshared_la_SOURCES =				\
 	option-parser.c				\
 	image-loader.c				\
 	config-parser.h				\
+	os-compatibility.c			\
+	os-compatibility.h			\
 	cairo-util.c				\
 	cairo-util.h
