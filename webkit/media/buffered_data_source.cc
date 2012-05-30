@@ -32,9 +32,9 @@ BufferedDataSource::BufferedDataSource(
       frame_(frame),
       loader_(NULL),
       is_downloading_data_(false),
-      read_position_(0),
       read_size_(0),
       read_buffer_(NULL),
+      last_read_start_(0),
       intermediate_read_buffer_(new uint8[kInitialReadBufferSize]),
       intermediate_read_buffer_size_(kInitialReadBufferSize),
       render_loop_(render_loop),
@@ -207,7 +207,7 @@ void BufferedDataSource::ReadTask(
   }
 
   // Saves the read parameters.
-  read_position_ = position;
+  last_read_start_ = position;
   read_size_ = read_size;
   read_buffer_ = buffer;
   cache_miss_retries_left_ = kNumCacheMissRetries;
@@ -239,7 +239,6 @@ void BufferedDataSource::CleanupTask() {
     loader_->Stop();
 
   // Reset the parameters of the current read request.
-  read_position_ = 0;
   read_size_ = 0;
   read_buffer_ = 0;
 }
@@ -256,7 +255,8 @@ void BufferedDataSource::RestartLoadingTask() {
       return;
   }
 
-  loader_.reset(CreateResourceLoader(read_position_, kPositionNotSpecified));
+  loader_.reset(
+      CreateResourceLoader(last_read_start_, kPositionNotSpecified));
   loader_->Start(
       base::Bind(&BufferedDataSource::PartialReadStartCallback, this),
       base::Bind(&BufferedDataSource::NetworkEventCallback, this),
@@ -313,8 +313,9 @@ void BufferedDataSource::ReadInternal() {
   }
 
   // Perform the actual read with BufferedResourceLoader.
-  loader_->Read(read_position_, read_size_, intermediate_read_buffer_.get(),
-                base::Bind(&BufferedDataSource::ReadCallback, this));
+  loader_->Read(
+      last_read_start_, read_size_, intermediate_read_buffer_.get(),
+      base::Bind(&BufferedDataSource::ReadCallback, this));
 }
 
 void BufferedDataSource::DoneRead_Locked(int bytes_read) {
@@ -326,7 +327,6 @@ void BufferedDataSource::DoneRead_Locked(int bytes_read) {
 
   read_cb_.Run(bytes_read);
   read_cb_.Reset();
-  read_position_ = 0;
   read_size_ = 0;
   read_buffer_ = 0;
 }
@@ -526,7 +526,7 @@ void BufferedDataSource::ReadCallback(
 
     if (host() && total_bytes_ != kPositionNotSpecified) {
       host()->SetTotalBytes(total_bytes_);
-      host()->SetBufferedBytes(total_bytes_);
+      host()->AddBufferedByteRange(last_read_start_, total_bytes_);
     }
   }
   DoneRead_Locked(bytes_read);
@@ -542,10 +542,10 @@ void BufferedDataSource::NetworkEventCallback() {
     return;
 
   bool is_downloading_data = loader_->is_downloading_data();
-  int64 buffered_position = loader_->GetBufferedPosition();
+  int64 current_buffered_position = loader_->GetBufferedPosition();
 
   // If we get an unspecified value, return immediately.
-  if (buffered_position == kPositionNotSpecified)
+  if (current_buffered_position == kPositionNotSpecified)
     return;
 
   // We need to prevent calling to filter host and running the callback if
@@ -566,9 +566,8 @@ void BufferedDataSource::NetworkEventCallback() {
       host()->SetNetworkActivity(is_downloading_data);
   }
 
-  buffered_bytes_ = buffered_position + 1;
-  if (host())
-    host()->SetBufferedBytes(buffered_bytes_);
+  if (host() && current_buffered_position > last_read_start_)
+    host()->AddBufferedByteRange(last_read_start_, current_buffered_position);
 }
 
 void BufferedDataSource::UpdateHostState_Locked() {
@@ -580,7 +579,8 @@ void BufferedDataSource::UpdateHostState_Locked() {
 
   if (total_bytes_ != kPositionNotSpecified)
     host()->SetTotalBytes(total_bytes_);
-  host()->SetBufferedBytes(buffered_bytes_);
+  if (buffered_bytes_ > last_read_start_)
+    host()->AddBufferedByteRange(last_read_start_, buffered_bytes_);
 }
 
 }  // namespace webkit_media

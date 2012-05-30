@@ -165,9 +165,10 @@ class BufferedDataSource : public media::DataSource {
 
   // Read parameters received from the Read() method call.
   media::DataSource::ReadCB read_cb_;
-  int64 read_position_;
   int read_size_;
   uint8* read_buffer_;
+  // Retained between reads to make sense of buffering information.
+  int64 last_read_start_;
 
   // This buffer is intermediate, we use it for BufferedResourceLoader to write
   // to. And when read in BufferedResourceLoader is done, we copy data from

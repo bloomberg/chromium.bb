@@ -106,7 +106,6 @@ class BufferedDataSourceTest : public testing::Test {
     Initialize(media::PIPELINE_OK);
 
     EXPECT_CALL(host_, SetTotalBytes(response_generator_.content_length()));
-    EXPECT_CALL(host_, SetBufferedBytes(0));
     Respond(response_generator_.Generate206(0));
   }
 
@@ -197,7 +196,6 @@ TEST_F(BufferedDataSourceTest, Range_Supported) {
   Initialize(media::PIPELINE_OK);
 
   EXPECT_CALL(host_, SetTotalBytes(response_generator_.content_length()));
-  EXPECT_CALL(host_, SetBufferedBytes(0));
   Respond(response_generator_.Generate206(0));
 
   EXPECT_TRUE(data_source_->loading());
@@ -208,7 +206,6 @@ TEST_F(BufferedDataSourceTest, Range_Supported) {
 TEST_F(BufferedDataSourceTest, Range_InstanceSizeUnknown) {
   Initialize(media::PIPELINE_OK);
 
-  EXPECT_CALL(host_, SetBufferedBytes(0));
   Respond(response_generator_.Generate206(
       0, TestResponseGenerator::kNoContentRangeInstanceSize));
 
@@ -228,7 +225,6 @@ TEST_F(BufferedDataSourceTest, Range_NotFound) {
 TEST_F(BufferedDataSourceTest, Range_NotSupported) {
   Initialize(media::PIPELINE_OK);
   EXPECT_CALL(host_, SetTotalBytes(response_generator_.content_length()));
-  EXPECT_CALL(host_, SetBufferedBytes(0));
   Respond(response_generator_.Generate200());
 
   EXPECT_TRUE(data_source_->loading());
@@ -241,7 +237,6 @@ TEST_F(BufferedDataSourceTest, Range_NotSupported) {
 TEST_F(BufferedDataSourceTest, Range_SupportedButReturned200) {
   Initialize(media::PIPELINE_OK);
   EXPECT_CALL(host_, SetTotalBytes(response_generator_.content_length()));
-  EXPECT_CALL(host_, SetBufferedBytes(0));
   WebURLResponse response = response_generator_.Generate200();
   response.setHTTPHeaderField(WebString::fromUTF8("Accept-Ranges"),
                               WebString::fromUTF8("bytes"));
@@ -266,7 +261,6 @@ TEST_F(BufferedDataSourceTest, Range_MissingContentLength) {
 
   // It'll manage without a Content-Length response.
   EXPECT_CALL(host_, SetTotalBytes(response_generator_.content_length()));
-  EXPECT_CALL(host_, SetBufferedBytes(0));
   Respond(response_generator_.Generate206(
       0, TestResponseGenerator::kNoContentLength));
 
@@ -403,9 +397,6 @@ TEST_F(BufferedDataSourceTest, SetBitrate) {
   EXPECT_NE(old_loader, loader());
   EXPECT_EQ(1234, loader_bitrate());
 
-  // During teardown we'll also report our final network status.
-  EXPECT_CALL(host_, SetBufferedBytes(4000000));
-
   EXPECT_TRUE(data_source_->loading());
   EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
   Stop();
@@ -428,9 +419,6 @@ TEST_F(BufferedDataSourceTest, SetPlaybackRate) {
   // Verify loader changed but still has same playback rate.
   EXPECT_NE(old_loader, loader());
 
-  // During teardown we'll also report our final network status.
-  EXPECT_CALL(host_, SetBufferedBytes(4000000));
-
   EXPECT_TRUE(data_source_->loading());
   EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
   Stop();
@@ -442,14 +430,14 @@ TEST_F(BufferedDataSourceTest, Read) {
   ReadAt(0);
 
   // When the read completes we'll update our network status.
-  EXPECT_CALL(host_, SetBufferedBytes(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize - 1));
   EXPECT_CALL(host_, SetNetworkActivity(true));
   EXPECT_CALL(*this, ReadCallback(kDataSize));
   FinishRead();
 
   // During teardown we'll also report our final network status.
   EXPECT_CALL(host_, SetNetworkActivity(false));
-  EXPECT_CALL(host_, SetBufferedBytes(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize - 1));
 
   EXPECT_TRUE(data_source_->loading());
   Stop();

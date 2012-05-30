@@ -477,7 +477,7 @@ TEST_F(PipelineTest, GetBufferedTimeRanges) {
 
   EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
 
-  pipeline_->SetBufferedBytes(kTotalBytes / 8);
+  pipeline_->AddBufferedByteRange(0, kTotalBytes / 8);
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
   EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));
@@ -486,7 +486,8 @@ TEST_F(PipelineTest, GetBufferedTimeRanges) {
   ExpectSeek(kSeekTime);
   DoSeek(kSeekTime);
 
-  pipeline_->SetBufferedBytes(kTotalBytes / 2 + kTotalBytes / 8);
+  pipeline_->AddBufferedByteRange(kTotalBytes / 2,
+                                  kTotalBytes / 2 + kTotalBytes / 8);
   EXPECT_EQ(2u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
   EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));

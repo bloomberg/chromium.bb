@@ -24,6 +24,8 @@
 #include "media/base/video_decoder.h"
 #include "media/base/video_renderer.h"
 
+using base::TimeDelta;
+
 namespace media {
 
 PipelineStatusNotification::PipelineStatusNotification()
@@ -73,7 +75,6 @@ Pipeline::Pipeline(MessageLoop* message_loop, MediaLog* media_log)
       clock_(new Clock(&base::Time::Now)),
       waiting_for_clock_update_(false),
       state_(kCreated),
-      current_bytes_(0),
       creation_time_(base::Time::Now()) {
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
   ResetState();
@@ -114,8 +115,7 @@ void Pipeline::Stop(const base::Closure& stop_cb) {
       &Pipeline::StopTask, this, stop_cb));
 }
 
-void Pipeline::Seek(base::TimeDelta time,
-                    const PipelineStatusCB& seek_cb) {
+void Pipeline::Seek(TimeDelta time, const PipelineStatusCB& seek_cb) {
   base::AutoLock auto_lock(lock_);
   CHECK(running_) << "Media pipeline isn't running";
 
@@ -190,29 +190,43 @@ void Pipeline::SetVolume(float volume) {
   }
 }
 
-base::TimeDelta Pipeline::GetCurrentTime() const {
+TimeDelta Pipeline::GetCurrentTime() const {
   base::AutoLock auto_lock(lock_);
   return GetCurrentTime_Locked();
 }
 
-base::TimeDelta Pipeline::GetCurrentTime_Locked() const {
+TimeDelta Pipeline::GetCurrentTime_Locked() const {
   lock_.AssertAcquired();
   return clock_->Elapsed();
 }
 
-Ranges<base::TimeDelta> Pipeline::GetBufferedTimeRanges() {
+Ranges<TimeDelta> Pipeline::GetBufferedTimeRanges() {
   base::AutoLock auto_lock(lock_);
-  return buffered_time_ranges_;
+  Ranges<TimeDelta> time_ranges;
+  if (clock_->Duration() == TimeDelta() || total_bytes_ == 0)
+    return time_ranges;
+  for (size_t i = 0; i < buffered_byte_ranges_.size(); ++i) {
+    TimeDelta start = TimeForByteOffset_Locked(buffered_byte_ranges_.start(i));
+    TimeDelta end = TimeForByteOffset_Locked(buffered_byte_ranges_.end(i));
+    // Cap approximated buffered time at the length of the video.
+    end = std::min(end, clock_->Duration());
+    time_ranges.Add(start, end);
+  }
+
+  return time_ranges;
 }
 
-base::TimeDelta Pipeline::GetMediaDuration() const {
+TimeDelta Pipeline::GetMediaDuration() const {
   base::AutoLock auto_lock(lock_);
   return clock_->Duration();
 }
 
 int64 Pipeline::GetBufferedBytes() const {
   base::AutoLock auto_lock(lock_);
-  return buffered_bytes_;
+  int64 ret = 0;
+  for (size_t i = 0; i < buffered_byte_ranges_.size(); ++i)
+    ret += buffered_byte_ranges_.end(i) - buffered_byte_ranges_.start(i);
+  return ret;
 }
 
 int64 Pipeline::GetTotalBytes() const {
@@ -235,31 +249,16 @@ void Pipeline::SetClockForTesting(Clock* clock) {
   clock_.reset(clock);
 }
 
-void Pipeline::SetCurrentReadPosition(int64 offset) {
-  base::AutoLock auto_lock(lock_);
-
-  // The current read position should never be ahead of the buffered byte
-  // position but threading issues between BufferedDataSource::DoneRead_Locked()
-  // and BufferedDataSource::NetworkEventCallback() can cause them to be
-  // temporarily out of sync. The easiest fix for this is to cap both
-  // buffered_bytes_ and current_bytes_ to always be legal values in
-  // SetCurrentReadPosition() and in SetBufferedBytes().
-  if (offset > buffered_bytes_)
-    buffered_bytes_ = offset;
-  current_bytes_ = offset;
-}
-
 void Pipeline::ResetState() {
   base::AutoLock auto_lock(lock_);
-  const base::TimeDelta kZero;
+  const TimeDelta kZero;
   running_          = false;
   stop_pending_     = false;
   seek_pending_     = false;
   tearing_down_     = false;
   error_caused_teardown_ = false;
   playback_rate_change_pending_ = false;
-  buffered_bytes_   = 0;
-  buffered_time_ranges_.clear();
+  buffered_byte_ranges_.clear();
   total_bytes_      = 0;
   natural_size_.SetSize(0, 0);
   volume_           = 1.0f;
@@ -378,18 +377,17 @@ void Pipeline::SetError(PipelineStatus error) {
   media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(error));
 }
 
-base::TimeDelta Pipeline::GetTime() const {
+TimeDelta Pipeline::GetTime() const {
   DCHECK(IsRunning());
   return GetCurrentTime();
 }
 
-base::TimeDelta Pipeline::GetDuration() const {
+TimeDelta Pipeline::GetDuration() const {
   DCHECK(IsRunning());
   return GetMediaDuration();
 }
 
-void Pipeline::OnAudioTimeUpdate(base::TimeDelta time,
-                                 base::TimeDelta max_time) {
+void Pipeline::OnAudioTimeUpdate(TimeDelta time, TimeDelta max_time) {
   DCHECK(time <= max_time);
   DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
@@ -403,7 +401,7 @@ void Pipeline::OnAudioTimeUpdate(base::TimeDelta time,
   StartClockIfWaitingForTimeUpdate_Locked();
 }
 
-void Pipeline::OnVideoTimeUpdate(base::TimeDelta max_time) {
+void Pipeline::OnVideoTimeUpdate(TimeDelta max_time) {
   DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
 
@@ -414,7 +412,7 @@ void Pipeline::OnVideoTimeUpdate(base::TimeDelta max_time) {
   clock_->SetMaxTime(max_time);
 }
 
-void Pipeline::SetDuration(base::TimeDelta duration) {
+void Pipeline::SetDuration(TimeDelta duration) {
   DCHECK(IsRunning());
   media_log_->AddEvent(
       media_log_->CreateTimeEvent(
@@ -423,7 +421,6 @@ void Pipeline::SetDuration(base::TimeDelta duration) {
 
   base::AutoLock auto_lock(lock_);
   clock_->SetDuration(duration);
-  UpdateBufferedTimeRanges_Locked();
 }
 
 void Pipeline::SetTotalBytes(int64 total_bytes) {
@@ -441,29 +438,23 @@ void Pipeline::SetTotalBytes(int64 total_bytes) {
   total_bytes_ = total_bytes;
 }
 
-void Pipeline::SetBufferedBytes(int64 buffered_bytes) {
-  DCHECK(IsRunning());
-  base::AutoLock auto_lock(lock_);
-  // See comments in SetCurrentReadPosition() about capping.
-  if (buffered_bytes < current_bytes_)
-    current_bytes_ = buffered_bytes;
-  buffered_bytes_ = buffered_bytes;
-  UpdateBufferedTimeRanges_Locked();
+TimeDelta Pipeline::TimeForByteOffset_Locked(int64 byte_offset) const {
+  lock_.AssertAcquired();
+  TimeDelta time_offset = byte_offset * clock_->Duration() / total_bytes_;
+  // Since the byte->time calculation is approximate, fudge the beginning &
+  // ending areas to look better.
+  TimeDelta epsilon = clock_->Duration() / 100;
+  if (time_offset < epsilon)
+    return TimeDelta();
+  if (time_offset + epsilon > clock_->Duration())
+    return clock_->Duration();
+  return time_offset;
 }
 
-void Pipeline::UpdateBufferedTimeRanges_Locked() {
-  lock_.AssertAcquired();
-  if (total_bytes_ == 0)
-    return;
-  base::TimeDelta buffered_time =
-      clock_->Duration() * buffered_bytes_ / total_bytes_;
-  // Cap approximated buffered time at the length of the video.
-  buffered_time = std::min(buffered_time, clock_->Duration());
-  // Make sure buffered_time is at least the current time and at least the
-  // current seek target.
-  buffered_time = std::max(buffered_time, GetCurrentTime_Locked());
-  buffered_time = std::max(buffered_time, seek_timestamp_);
-  buffered_time_ranges_.Add(seek_timestamp_, buffered_time);
+void Pipeline::AddBufferedByteRange(int64 start, int64 end) {
+  DCHECK(IsRunning());
+  base::AutoLock auto_lock(lock_);
+  buffered_byte_ranges_.Add(start, end);
 }
 
 void Pipeline::SetNaturalVideoSize(const gfx::Size& size) {
@@ -782,8 +773,7 @@ void Pipeline::VolumeChangedTask(float volume) {
     audio_renderer_->SetVolume(volume);
 }
 
-void Pipeline::SeekTask(base::TimeDelta time,
-                        const PipelineStatusCB& seek_cb) {
+void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(!IsPipelineStopPending());
 
@@ -1260,7 +1250,7 @@ void Pipeline::OnDemuxerStopDone(const base::Closure& callback) {
   callback.Run();
 }
 
-void Pipeline::DoSeek(base::TimeDelta seek_timestamp) {
+void Pipeline::DoSeek(TimeDelta seek_timestamp) {
   // TODO(acolwell): We might be able to convert this if (demuxer_) into a
   // DCHECK(). Further investigation is needed to make sure this won't introduce
   // a bug.
@@ -1273,7 +1263,7 @@ void Pipeline::DoSeek(base::TimeDelta seek_timestamp) {
   OnDemuxerSeekDone(seek_timestamp, PIPELINE_OK);
 }
 
-void Pipeline::OnDemuxerSeekDone(base::TimeDelta seek_timestamp,
+void Pipeline::OnDemuxerSeekDone(TimeDelta seek_timestamp,
                                  PipelineStatus status) {
   if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(FROM_HERE, base::Bind(

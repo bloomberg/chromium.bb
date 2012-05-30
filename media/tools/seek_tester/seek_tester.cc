@@ -26,12 +26,11 @@ class DemuxerHostImpl : public media::DemuxerHost {
  public:
   // DataSourceHost implementation.
   virtual void SetTotalBytes(int64 total_bytes) OVERRIDE {}
-  virtual void SetBufferedBytes(int64 buffered_bytes) OVERRIDE {}
+  virtual void AddBufferedByteRange(int64 start, int64 end) OVERRIDE {}
   virtual void SetNetworkActivity(bool is_downloading_data) OVERRIDE {}
 
   // DemuxerHost implementation.
   virtual void SetDuration(base::TimeDelta duration) OVERRIDE {}
-  virtual void SetCurrentReadPosition(int64 offset) OVERRIDE {}
   virtual void OnDemuxerError(media::PipelineStatus error) OVERRIDE {}
 };
 
