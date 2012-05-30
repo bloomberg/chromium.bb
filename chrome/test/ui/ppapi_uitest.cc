@@ -970,7 +970,11 @@ TEST_PPAPI_IN_PROCESS(WebSocket_UtilityGetURL)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityValidConnect)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityInvalidClose)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityValidClose)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityGetProtocol)
+
+// PPAPITest.WebSocket_UtilityGetProtocol times out frequently on all platforms.
+// http://crbug.com/130400
+TEST_PPAPI_IN_PROCESS_WITH_WS(DISABLED_WebSocket_UtilityGetProtocol)
+
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityTextSendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityBinarySendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityBufferedAmount)
