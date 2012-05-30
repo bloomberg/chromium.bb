@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/format_macros.h"
+#include "base/platform_file.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
@@ -332,6 +333,19 @@ struct ParamTraits<double> {
   static void Log(const param_type& p, std::string* l) {
     l->append(StringPrintf("%e", p));
   }
+};
+
+template <>
+struct IPC_EXPORT ParamTraits<base::PlatformFileInfo> {
+  typedef base::PlatformFileInfo param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct SimilarTypeTraits<base::PlatformFileError> {
+  typedef int Type;
 };
 
 template <>

@@ -16,7 +16,6 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "base/platform_file.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/security_style.h"
@@ -106,14 +105,6 @@ struct ParamTraits<net::IPEndPoint> {
   typedef net::IPEndPoint param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<base::PlatformFileInfo> {
-  typedef base::PlatformFileInfo param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -239,11 +230,6 @@ struct CONTENT_EXPORT ParamTraits<SkBitmap> {
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
 
   static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct SimilarTypeTraits<base::PlatformFileError> {
-  typedef int Type;
 };
 
 template <>
