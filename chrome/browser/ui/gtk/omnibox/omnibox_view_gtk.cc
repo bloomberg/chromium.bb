@@ -2251,8 +2251,6 @@ void OmniboxViewGtk::AdjustVerticalAlignmentOfInstantView() {
   PangoLayout* layout = gtk_label_get_layout(GTK_LABEL(instant_view_));
   int height;
   pango_layout_get_size(layout, NULL, &height);
-  PangoLayoutIter* iter = pango_layout_get_iter(layout);
-  int baseline = pango_layout_iter_get_baseline(iter);
-  pango_layout_iter_free(iter);
+  int baseline = pango_layout_get_baseline(layout);
   g_object_set(instant_anchor_tag_, "rise", baseline - height, NULL);
 }
