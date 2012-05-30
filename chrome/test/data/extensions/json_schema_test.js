@@ -214,8 +214,7 @@ function testObject() {
   schema.properties.bar.optional = true;
   assertValid("Object", {foo:"foo", bar:42}, schema);
   assertValid("Object", {foo:"foo"}, schema);
-  assertNotValid("Object", {foo:"foo", bar:null}, schema,
-                 [formatError("invalidType", ["integer", "null"])]);
+  assertValid("Object", {foo:"foo", bar:null}, schema);
   assertValid("Object", {foo:"foo", bar:undefined}, schema);
   assertNotValid("Object", {foo:"foo", bar:"42"}, schema,
                  [formatError("invalidType", ["integer", "string"])]);

@@ -324,3 +324,25 @@ TEST_F(V8ValueConverterImplTest, Prototype) {
   ASSERT_TRUE(result.get());
   EXPECT_EQ(0u, result->size());
 }
+
+TEST_F(V8ValueConverterImplTest, StripNullFromObjects) {
+  v8::Context::Scope context_scope(context_);
+  v8::HandleScope handle_scope;
+
+  const char* source = "(function() {"
+      "return { foo: undefined, bar: null };"
+      "})();";
+
+  v8::Handle<v8::Script> script(v8::Script::New(v8::String::New(source)));
+  v8::Handle<v8::Object> object = script->Run().As<v8::Object>();
+  ASSERT_FALSE(object.IsEmpty());
+
+  V8ValueConverterImpl converter;
+  converter.SetUndefinedAllowed(true);
+  converter.SetStripNullFromObjects(true);
+
+  scoped_ptr<DictionaryValue> result(
+      static_cast<DictionaryValue*>(converter.FromV8Value(object, context_)));
+  ASSERT_TRUE(result.get());
+  EXPECT_EQ(0u, result->size());
+}

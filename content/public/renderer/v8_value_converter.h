@@ -39,6 +39,10 @@ class CONTENT_EXPORT V8ValueConverter {
   virtual bool GetRegexpAllowed() const = 0;
   virtual void SetRegexpAllowed(bool val) = 0;
 
+  // Gets/sets whether to treat undefined or null in objects as nonexistent.
+  virtual bool GetStripNullFromObjects() const = 0;
+  virtual void SetStripNullFromObjects(bool val) = 0;
+
   // Converts Value to v8::Value. Unsupported types are replaced with null.
   // If an array or object throws while setting a value, that property or item
   // is skipped, leaving a hole in the case of arrays.

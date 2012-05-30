@@ -31,7 +31,8 @@ V8ValueConverter* V8ValueConverter::create() {
 V8ValueConverterImpl::V8ValueConverterImpl()
     : undefined_allowed_(false),
       date_allowed_(false),
-      regexp_allowed_(false) {
+      regexp_allowed_(false),
+      strip_null_from_objects_(false) {
 }
 
 bool V8ValueConverterImpl::GetUndefinedAllowed() const {
@@ -56,6 +57,14 @@ bool V8ValueConverterImpl::GetRegexpAllowed() const {
 
 void V8ValueConverterImpl::SetRegexpAllowed(bool val) {
   regexp_allowed_ = val;
+}
+
+bool V8ValueConverterImpl::GetStripNullFromObjects() const {
+  return strip_null_from_objects_;
+}
+
+void V8ValueConverterImpl::SetStripNullFromObjects(bool val) {
+  strip_null_from_objects_ = val;
 }
 
 v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Value(
@@ -292,6 +301,29 @@ DictionaryValue* V8ValueConverterImpl::FromV8Object(
 
     Value* child = FromV8ValueImpl(child_v8);
     CHECK(child);
+
+    // Strip null if asked (and since undefined is turned into null, undefined
+    // too). The use case for supporting this is JSON-schema support,
+    // specifically for extensions, where "optional" JSON properties may be
+    // represented as null, yet due to buggy legacy code elsewhere isn't
+    // treated as such (potentially causing crashes). For example, the
+    // "tabs.create" function takes an object as its first argument with an
+    // optional "windowId" property.
+    //
+    // Given just
+    //
+    //   tabs.create({})
+    //
+    // this will work as expected on code that only checks for the existence of
+    // a "windowId" property (such as that legacy code). However given
+    //
+    //   tabs.create({windowId: null})
+    //
+    // there *is* a "windowId" property, but since it should be an int, code
+    // on the browser which doesn't additionally check for null will fail.
+    // We can avoid all bugs related to this by stripping null.
+    if (strip_null_from_objects_ && child->IsType(Value::TYPE_NULL))
+      continue;
 
     result->SetWithoutPathExpansion(std::string(*name_utf8, name_utf8.length()),
                                     child);

@@ -27,6 +27,8 @@ class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
   virtual void SetDateAllowed(bool val) OVERRIDE;
   virtual bool GetRegexpAllowed() const OVERRIDE;
   virtual void SetRegexpAllowed(bool val) OVERRIDE;
+  virtual bool GetStripNullFromObjects() const OVERRIDE;
+  virtual void SetStripNullFromObjects(bool val) OVERRIDE;
   virtual v8::Handle<v8::Value> ToV8Value(
       const base::Value* value,
       v8::Handle<v8::Context> context) const OVERRIDE;
@@ -59,6 +61,10 @@ class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
 
   // If true, we will convet RegExp JavaScript objects to string.
   bool regexp_allowed_;
+
+  // If true, undefined and null values are ignored when converting v8 objects
+  // into Values.
+  bool strip_null_from_objects_;
 };
 
 #endif  // CONTENT_RENDERER_V8_VALUE_CONVERTER_IMPL_H_
