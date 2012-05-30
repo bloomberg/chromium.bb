@@ -95,13 +95,6 @@ void PhantomWindowController::Show(const gfx::Rect& bounds) {
   animation_->Show();
 }
 
-void PhantomWindowController::SetBounds(const gfx::Rect& bounds) {
-  DCHECK(IsShowing());
-  animation_.reset();
-  bounds_ = bounds;
-  phantom_widget_->SetBounds(bounds_);
-}
-
 void PhantomWindowController::Hide() {
   phantom_widget_.reset();
 }

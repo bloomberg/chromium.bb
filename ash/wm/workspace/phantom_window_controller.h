@@ -40,10 +40,6 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   // parent). This does not immediately show the window.
   void Show(const gfx::Rect& bounds);
 
-  // This is used to set bounds for the phantom window immediately. This should
-  // be called only when the phantom window is already visible.
-  void SetBounds(const gfx::Rect& bounds);
-
   // Hides the phantom.
   void Hide();
 
