@@ -125,6 +125,9 @@ int drop_shadow_height() {
   return value;
 }
 
+// Width of touch tabs.
+static const int kTouchWidth = 180;
+
 static const int kToolbarOverlap = 1;
 static const int kFaviconTitleSpacing = 4;
 #if defined(USE_ASH)
@@ -265,6 +268,11 @@ gfx::Size Tab::GetStandardSize() {
   standard_size.set_width(
       standard_size.width() + kFaviconTitleSpacing + kStandardTitleWidth);
   return standard_size;
+}
+
+// static
+int Tab::GetTouchWidth() {
+  return kTouchWidth;
 }
 
 // static

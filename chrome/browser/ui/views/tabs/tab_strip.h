@@ -452,6 +452,12 @@ class TabStrip : public views::View,
   // Returns the x-coordinates of the tabs.
   std::vector<int> GetTabXCoordinates();
 
+  // Creates/Destroys |touch_layout_| as necessary.
+  void SwapLayoutIfNecessary();
+
+  // Returns true if |touch_layout_| is needed.
+  bool NeedsTouchLayout() const;
+
   // -- Member Variables ------------------------------------------------------
 
   // There is a one-to-one mapping between each of the tabs in the

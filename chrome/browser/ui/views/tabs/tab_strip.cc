@@ -563,18 +563,7 @@ void TabStrip::SetLayoutType(TabStripLayoutType layout_type,
     return;
 
   layout_type_ = layout_type;
-  if (layout_type_ == TAB_STRIP_LAYOUT_SHRINK) {
-    touch_layout_.reset();
-  } else {
-    touch_layout_.reset(new TouchTabStripLayout(
-                            Tab::GetStandardSize(),
-                            tab_h_offset(),
-                            kStackedPadding,
-                            kMaxStackedCount,
-                            &tabs_));
-  }
-  // Force a layout.
-  DoLayout();
+  SwapLayoutIfNecessary();
 }
 
 gfx::Rect TabStrip::GetNewTabButtonBounds() {
@@ -620,6 +609,8 @@ void TabStrip::AddTabAt(int model_index,
     StartInsertTabAnimation(model_index);
   else
     DoLayout();
+
+  SwapLayoutIfNecessary();
 }
 
 void TabStrip::MoveTab(int from_model_index,
@@ -643,6 +634,7 @@ void TabStrip::MoveTab(int from_model_index,
       (last_tab != tab_at(tab_count() - 1) || last_tab->dragging())) {
     newtab_button_->SetVisible(false);
   }
+  SwapLayoutIfNecessary();
 }
 
 void TabStrip::RemoveTabAt(int model_index) {
@@ -661,6 +653,7 @@ void TabStrip::RemoveTabAt(int model_index) {
   } else {
     StartRemoveTabAnimation(model_index);
   }
+  SwapLayoutIfNecessary();
 }
 
 void TabStrip::SetTabData(int model_index, const TabRendererData& data) {
@@ -679,6 +672,7 @@ void TabStrip::SetTabData(int model_index, const TabRendererData& data) {
     else
       DoLayout();
   }
+  SwapLayoutIfNecessary();
 }
 
 void TabStrip::PrepareForCloseAt(int model_index) {
@@ -687,6 +681,17 @@ void TabStrip::PrepareForCloseAt(int model_index) {
     // ideal bounds and we need to know ideal bounds is in a good state.
     StopAnimating(true);
   }
+
+  if (!GetWidget())
+    return;
+
+  // If the user closes the tab from a touch device don't wait for the mouse to
+  // move out of the tab strip (it may never happen).
+  // TODO: maybe we should use a delay on touch devices.
+  const views::Event* event = GetWidget()->GetCurrentEvent();
+  if (event && event->type() == ui::ET_MOUSE_RELEASED &&
+      event->flags() & ui::EF_FROM_TOUCH)
+    return;
 
   int model_count = GetModelCount();
   if (model_index + 1 != model_count && model_count > 1) {
@@ -1092,7 +1097,10 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   std::vector<Tab*> selected_tabs;
   bool is_dragging = false;
   int active_tab_index = -1;
-  bool stacking = touch_layout_.get() != NULL;
+  // Since |touch_layout_| is created based on number of tabs and width we use
+  // the ideal state to determine if we should paint stacked. This minimizes
+  // painting changes as we switch between the two.
+  bool stacking = layout_type_ == TAB_STRIP_LAYOUT_STACKED;
 
   PaintClosingTabs(canvas, tab_count());
 
@@ -1457,6 +1465,8 @@ void TabStrip::DoLayout() {
   last_layout_size_ = size();
 
   StopAnimating(false);
+
+  SwapLayoutIfNecessary();
 
   if (touch_layout_.get())
     touch_layout_->SetWidth(size().width() - new_tab_button_width());
@@ -2211,4 +2221,45 @@ std::vector<int> TabStrip::GetTabXCoordinates() {
   for (int i = 0; i < tab_count(); ++i)
     results.push_back(ideal_bounds(i).x());
   return results;
+}
+
+void TabStrip::SwapLayoutIfNecessary() {
+  bool needs_touch = NeedsTouchLayout();
+  bool using_touch = touch_layout_.get() != NULL;
+  if (needs_touch == using_touch)
+    return;
+
+  if (needs_touch) {
+    gfx::Size tab_size(Tab::GetMinimumSelectedSize());
+    tab_size.set_width(Tab::GetTouchWidth());
+    touch_layout_.reset(new TouchTabStripLayout(
+                            tab_size,
+                            tab_h_offset(),
+                            kStackedPadding,
+                            kMaxStackedCount,
+                            &tabs_));
+    touch_layout_->SetWidth(width() - new_tab_button_width());
+    touch_layout_->SetXAndMiniCount(GetStartXForNormalTabs(),
+                                    GetMiniTabCount());
+    touch_layout_->SetActiveIndex(controller_->GetActiveIndex());
+    GenerateIdealBoundsForMiniTabs(NULL);
+  } else {
+    touch_layout_.reset();
+  }
+  GenerateIdealBounds();
+  AnimateToIdealBounds();
+}
+
+bool TabStrip::NeedsTouchLayout() const {
+  if (layout_type_ == TAB_STRIP_LAYOUT_SHRINK)
+    return false;
+
+  int mini_tab_count = GetMiniTabCount();
+  int normal_count = tab_count() - mini_tab_count;
+  if (normal_count == 0 || normal_count == mini_tab_count)
+    return false;
+  int x = GetStartXForNormalTabs();
+  int available_width = width() - x - new_tab_button_width();
+  return (Tab::GetTouchWidth() * normal_count +
+          tab_h_offset() * (normal_count - 1)) > available_width;
 }

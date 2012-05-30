@@ -51,6 +51,9 @@ class Tab : public BaseTab {
   // available.
   static gfx::Size GetStandardSize();
 
+  // Returns the width for touch tabs.
+  static int GetTouchWidth();
+
   // Returns the width for mini-tabs. Mini-tabs always have this width.
   static int GetMiniWidth();
 
