@@ -749,9 +749,9 @@ x11_compositor_get_keymap(struct x11_compositor *c)
 #define copy_prop_value(to) \
 	length_part = strlen(value_part); \
 	if (value_part + length_part > (value_all + length_all) && \
-	    length_part > 0 && c->base.xkb_info.names.to == NULL) { \
-		free((char *) c->base.xkb_info.names.to);	    \
-		c->base.xkb_info.names.to = strdup(value_part); \
+	    length_part > 0 && c->base.xkb_names.to == NULL) { \
+		free((char *) c->base.xkb_names.to);	    \
+		c->base.xkb_names.to = strdup(value_part); \
 	} \
 	value_part += length_part + 1;
 

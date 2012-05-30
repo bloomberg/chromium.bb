@@ -241,6 +241,16 @@ struct weston_layer {
 	struct wl_list link;
 };
 
+struct weston_xkb_info {
+	struct xkb_keymap *keymap;
+	xkb_mod_index_t ctrl_mod;
+	xkb_mod_index_t alt_mod;
+	xkb_mod_index_t super_mod;
+	xkb_led_index_t num_led;
+	xkb_led_index_t caps_led;
+	xkb_led_index_t scroll_led;
+};
+
 struct weston_compositor {
 	struct wl_shm *shm;
 	struct wl_signal destroy_signal;
@@ -316,17 +326,9 @@ struct weston_compositor {
 
 	uint32_t output_id_pool;
 
-	struct {
-		struct xkb_rule_names names;
-		struct xkb_context *context;
-		struct xkb_keymap *keymap;
-		xkb_mod_index_t ctrl_mod;
-		xkb_mod_index_t alt_mod;
-		xkb_mod_index_t super_mod;
-		xkb_led_index_t num_led;
-		xkb_led_index_t caps_led;
-		xkb_led_index_t scroll_led;
-	} xkb_info;
+	struct xkb_rule_names xkb_names;
+	struct xkb_context *xkb_context;
+	struct weston_xkb_info xkb_info;
 };
 
 enum weston_output_flags {

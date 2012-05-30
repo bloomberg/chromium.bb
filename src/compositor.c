@@ -2227,35 +2227,40 @@ device_handle_new_drag_icon(struct wl_listener *listener, void *data)
 static int weston_compositor_xkb_init(struct weston_compositor *ec,
 				      struct xkb_rule_names *names)
 {
-	ec->xkb_info.context = xkb_context_new(0);
-	if (ec->xkb_info.context == NULL) {
+	ec->xkb_context = xkb_context_new(0);
+	if (ec->xkb_context == NULL) {
 		fprintf(stderr, "failed to create XKB context\n");
 		return -1;
 	}
 
 	if (names)
-		ec->xkb_info.names = *names;
-	if (!ec->xkb_info.names.rules)
-		ec->xkb_info.names.rules = strdup("evdev");
-	if (!ec->xkb_info.names.model)
-		ec->xkb_info.names.model = strdup("pc105");
-	if (!ec->xkb_info.names.layout)
-		ec->xkb_info.names.layout = strdup("us");
+		ec->xkb_names = *names;
+	if (!ec->xkb_names.rules)
+		ec->xkb_names.rules = strdup("evdev");
+	if (!ec->xkb_names.model)
+		ec->xkb_names.model = strdup("pc105");
+	if (!ec->xkb_names.layout)
+		ec->xkb_names.layout = strdup("us");
 
 	return 0;
 }
 
+static void xkb_info_destroy(struct weston_xkb_info *xkb_info)
+{
+        if (xkb_info->keymap)
+                xkb_map_unref(xkb_info->keymap);
+}
+
 static void weston_compositor_xkb_destroy(struct weston_compositor *ec)
 {
-	free((char *) ec->xkb_info.names.rules);
-	free((char *) ec->xkb_info.names.model);
-	free((char *) ec->xkb_info.names.layout);
-	free((char *) ec->xkb_info.names.variant);
-	free((char *) ec->xkb_info.names.options);
+	free((char *) ec->xkb_names.rules);
+	free((char *) ec->xkb_names.model);
+	free((char *) ec->xkb_names.layout);
+	free((char *) ec->xkb_names.variant);
+	free((char *) ec->xkb_names.options);
 
-	if (ec->xkb_info.keymap)
-		xkb_map_unref(ec->xkb_info.keymap);
-	xkb_context_unref(ec->xkb_info.context);
+	xkb_info_destroy(&ec->xkb_info);
+	xkb_context_unref(ec->xkb_context);
 }
 
 static int
@@ -2264,8 +2269,8 @@ weston_compositor_build_global_keymap(struct weston_compositor *ec)
 	if (ec->xkb_info.keymap != NULL)
 		return 0;
 
-	ec->xkb_info.keymap = xkb_map_new_from_names(ec->xkb_info.context,
-	                                             &ec->xkb_info.names, 0);
+	ec->xkb_info.keymap = xkb_map_new_from_names(ec->xkb_context,
+	                                             &ec->xkb_names, 0);
 	if (ec->xkb_info.keymap == NULL) {
 		fprintf(stderr, "failed to compile XKB keymap\n");
 		return -1;
@@ -2356,7 +2361,7 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 	wl_signal_add(&seat->seat.drag_icon_signal,
 		      &seat->new_drag_icon_listener);
 
-	if (!ec->xkb_info.context)
+	if (!ec->xkb_context)
 		weston_compositor_xkb_init(ec, NULL);
 
 	seat->xkb_state.mods_depressed = 0;
