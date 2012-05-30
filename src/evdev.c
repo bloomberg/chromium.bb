@@ -444,7 +444,7 @@ evdev_configure_device(struct evdev_input_device *device)
 	     (EVDEV_MOTION_ABS | EVDEV_MOTION_REL | EVDEV_BUTTON)))
 		weston_seat_init_pointer(&device->master->base);
 	if ((device->caps & EVDEV_KEYBOARD))
-		weston_seat_init_keyboard(&device->master->base);
+		weston_seat_init_keyboard(&device->master->base, NULL);
 	if ((device->caps & EVDEV_TOUCH))
 		weston_seat_init_touch(&device->master->base);
 

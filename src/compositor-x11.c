@@ -99,7 +99,7 @@ x11_input_create(struct x11_compositor *c)
 	memset(input, 0, sizeof *input);
 	weston_seat_init(&input->base, &c->base);
 	weston_seat_init_pointer(&input->base);
-	weston_seat_init_keyboard(&input->base);
+	weston_seat_init_keyboard(&input->base, NULL);
 
 	c->base.seat = &input->base;
 

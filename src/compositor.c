@@ -2224,13 +2224,15 @@ device_handle_new_drag_icon(struct wl_listener *listener, void *data)
 	weston_seat_update_drag_surface(&seat->seat, 0, 0);
 }
 
-static int weston_compositor_xkb_init(struct weston_compositor *ec,
-				      struct xkb_rule_names *names)
+static void weston_compositor_xkb_init(struct weston_compositor *ec,
+				       struct xkb_rule_names *names)
 {
-	ec->xkb_context = xkb_context_new(0);
 	if (ec->xkb_context == NULL) {
-		fprintf(stderr, "failed to create XKB context\n");
-		return -1;
+		ec->xkb_context = xkb_context_new(0);
+		if (ec->xkb_context == NULL) {
+			fprintf(stderr, "failed to create XKB context\n");
+			exit(1);
+		}
 	}
 
 	if (names)
@@ -2241,8 +2243,6 @@ static int weston_compositor_xkb_init(struct weston_compositor *ec,
 		ec->xkb_names.model = strdup("pc105");
 	if (!ec->xkb_names.layout)
 		ec->xkb_names.layout = strdup("us");
-
-	return 0;
 }
 
 static void xkb_info_destroy(struct weston_xkb_info *xkb_info)
@@ -2263,50 +2263,65 @@ static void weston_compositor_xkb_destroy(struct weston_compositor *ec)
 	xkb_context_unref(ec->xkb_context);
 }
 
-static int
+static void
+weston_xkb_info_get_mods(struct weston_xkb_info *xkb_info)
+{
+	xkb_info->ctrl_mod = xkb_map_mod_get_index(xkb_info->keymap,
+						   XKB_MOD_NAME_CTRL);
+	xkb_info->alt_mod = xkb_map_mod_get_index(xkb_info->keymap,
+						  XKB_MOD_NAME_ALT);
+	xkb_info->super_mod = xkb_map_mod_get_index(xkb_info->keymap,
+						    XKB_MOD_NAME_LOGO);
+
+	xkb_info->num_led = xkb_map_led_get_index(xkb_info->keymap,
+						  XKB_LED_NAME_NUM);
+	xkb_info->caps_led = xkb_map_led_get_index(xkb_info->keymap,
+						   XKB_LED_NAME_CAPS);
+	xkb_info->scroll_led = xkb_map_led_get_index(xkb_info->keymap,
+						     XKB_LED_NAME_SCROLL);
+}
+
+static void
 weston_compositor_build_global_keymap(struct weston_compositor *ec)
 {
-	if (!ec->xkb_context)
+	if (ec->xkb_info.keymap != NULL)
+		return;
+
+	if (ec->xkb_names.rules == NULL)
 		weston_compositor_xkb_init(ec, NULL);
 
-	if (ec->xkb_info.keymap != NULL)
-		return 0;
-
 	ec->xkb_info.keymap = xkb_map_new_from_names(ec->xkb_context,
-	                                             &ec->xkb_names, 0);
+						     &ec->xkb_names,
+						     0);
 	if (ec->xkb_info.keymap == NULL) {
-		fprintf(stderr, "failed to compile XKB keymap\n");
-		return -1;
+		fprintf(stderr, "failed to compile global XKB keymap\n");
+		fprintf(stderr,
+			"  tried rules %s, model %s, layout %s, variant %s, "
+			"options %s",
+			ec->xkb_names.rules, ec->xkb_names.model,
+			ec->xkb_names.layout, ec->xkb_names.variant,
+			ec->xkb_names.options);
+		exit(1);
 	}
 
-	ec->xkb_info.ctrl_mod = xkb_map_mod_get_index(ec->xkb_info.keymap,
-						      XKB_MOD_NAME_CTRL);
-	ec->xkb_info.alt_mod = xkb_map_mod_get_index(ec->xkb_info.keymap,
-						     XKB_MOD_NAME_ALT);
-	ec->xkb_info.super_mod = xkb_map_mod_get_index(ec->xkb_info.keymap,
-						       XKB_MOD_NAME_LOGO);
-
-	ec->xkb_info.num_led = xkb_map_led_get_index(ec->xkb_info.keymap,
-						     XKB_LED_NAME_NUM);
-	ec->xkb_info.caps_led = xkb_map_led_get_index(ec->xkb_info.keymap,
-						      XKB_LED_NAME_CAPS);
-	ec->xkb_info.scroll_led = xkb_map_led_get_index(ec->xkb_info.keymap,
-						        XKB_LED_NAME_SCROLL);
-
-	return 0;
+	weston_xkb_info_get_mods(&ec->xkb_info);
 }
 
 WL_EXPORT void
-weston_seat_init_keyboard(struct weston_seat *seat)
+weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 {
 	if (seat->has_keyboard)
 		return;
 
-	if (weston_compositor_build_global_keymap(seat->compositor) == -1)
-		return;
-
-	seat->xkb_info = seat->compositor->xkb_info;
-	seat->xkb_info.keymap = xkb_map_ref(seat->xkb_info.keymap);
+	if (keymap != NULL) {
+		seat->xkb_info.keymap = xkb_map_ref(keymap);
+		weston_xkb_info_get_mods(&seat->xkb_info);
+	}
+	else {
+		weston_compositor_build_global_keymap(seat->compositor);
+		seat->xkb_info = seat->compositor->xkb_info;
+		seat->xkb_info.keymap = xkb_map_ref(seat->xkb_info.keymap);
+	}
 
 	seat->xkb_state.state = xkb_state_new(seat->xkb_info.keymap);
 	if (seat->xkb_state.state == NULL) {
@@ -3115,10 +3130,7 @@ int main(int argc, char *argv[])
 	if (argv[1])
 		exit(EXIT_FAILURE);
 
-	if (weston_compositor_xkb_init(ec, &xkb_names) == -1) {
-		fprintf(stderr, "failed to initialise keyboard support\n");
-		exit(EXIT_FAILURE);
-	}
+	weston_compositor_xkb_init(ec, &xkb_names);
 
 	ec->option_idle_time = idle_time;
 	ec->idle_time = idle_time;
