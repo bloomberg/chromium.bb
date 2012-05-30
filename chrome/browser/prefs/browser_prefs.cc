@@ -103,7 +103,7 @@
 #endif
 
 #if defined(USE_ASH)
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #endif
 
 namespace browser {
@@ -216,7 +216,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
 
 #if defined(USE_ASH)
-  ChromeLauncherController::RegisterUserPrefs(user_prefs);
+  ash::RegisterChromeLauncherUserPrefs(user_prefs);
 #endif
 
 #if !defined(OS_ANDROID)

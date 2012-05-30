@@ -14,7 +14,7 @@
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/pref_value_map.h"
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
@@ -149,8 +149,7 @@ void PinnedLauncherAppsPolicyHandler::ApplyPolicySettings(
       std::string id;
       if ((*entry)->GetAsString(&id)) {
         base::DictionaryValue* app_dict = new base::DictionaryValue();
-        app_dict->SetString(ChromeLauncherController::kPinnedAppsPrefAppIDPath,
-                            id);
+        app_dict->SetString(ash::kPinnedAppsPrefAppIDPath, id);
         pinned_apps_list->Append(app_dict);
       }
     }

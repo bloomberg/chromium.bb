@@ -2301,6 +2301,8 @@
         'browser/ui/app_modal_dialogs/javascript_dialog_creator.cc',
         'browser/ui/app_modal_dialogs/javascript_dialog_creator.h',
         'browser/ui/app_modal_dialogs/native_app_modal_dialog.h',
+        'browser/ui/ash/chrome_launcher_prefs.cc',
+        'browser/ui/ash/chrome_launcher_prefs.h',
         'browser/ui/aura/chrome_browser_main_extra_parts_aura.cc',
         'browser/ui/aura/chrome_browser_main_extra_parts_aura.h',
         'browser/ui/auto_login_info_bar_delegate.cc',

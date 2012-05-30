@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
@@ -98,12 +99,10 @@ TEST_F(ChromeLauncherControllerTest, Policy) {
 
   base::ListValue policy_value;
   base::DictionaryValue* entry1 = new DictionaryValue();
-  entry1->SetString(ChromeLauncherController::kPinnedAppsPrefAppIDPath,
-                    extension1_->id());
+  entry1->SetString(ash::kPinnedAppsPrefAppIDPath, extension1_->id());
   policy_value.Append(entry1);
   base::DictionaryValue* entry2 = new DictionaryValue();
-  entry2->SetString(ChromeLauncherController::kPinnedAppsPrefAppIDPath,
-                    extension2_->id());
+  entry2->SetString(ash::kPinnedAppsPrefAppIDPath, extension2_->id());
   policy_value.Append(entry2);
   profile_.GetTestingPrefService()->SetManagedPref(prefs::kPinnedLauncherApps,
                                                    policy_value.DeepCopy());

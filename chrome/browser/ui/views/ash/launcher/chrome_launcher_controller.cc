@@ -18,6 +18,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -41,38 +42,6 @@
 
 using extensions::Extension;
 
-namespace {
-
-// Values used for prefs::kShelfAutoHideBehavior.
-const char kShelfAutoHideBehaviorAlways[] = "Always";
-const char kShelfAutoHideBehaviorDefault[] = "Default";
-const char kShelfAutoHideBehaviorNever[] = "Never";
-
-// App ID of default pinned apps.
-const char* kDefaultPinnedApps[] = {
-  "pjkljhegncpnkpknbcohdijeoejaedia",  // Gmail
-  "coobgpohoikkiipiblmjeljniedjpjpf",  // Search
-  "apdfllckaahabafndbhieahigkjlhalf",  // Doc
-  "blpcfgokakmgnkcojhhkbfbldkacnbeo",  // YouTube
-};
-
-base::DictionaryValue* CreateAppDict(const std::string& app_id) {
-  scoped_ptr<base::DictionaryValue> app_value(new base::DictionaryValue);
-  app_value->SetString(ChromeLauncherController::kPinnedAppsPrefAppIDPath,
-                       app_id);
-  return app_value.release();
-}
-
-base::ListValue* CreateDefaultPinnedAppsList() {
-  scoped_ptr<base::ListValue> apps(new base::ListValue);
-  for (size_t i = 0; i < arraysize(kDefaultPinnedApps); ++i)
-    apps->Append(CreateAppDict(kDefaultPinnedApps[i]));
-
-  return apps.release();
-}
-
-}  // namespace
-
 // ChromeLauncherController::Item ----------------------------------------------
 
 ChromeLauncherController::Item::Item()
@@ -84,9 +53,6 @@ ChromeLauncherController::Item::~Item() {
 }
 
 // ChromeLauncherController ----------------------------------------------------
-
-// static
-const char ChromeLauncherController::kPinnedAppsPrefAppIDPath[] = "id";
 
 // static
 ChromeLauncherController* ChromeLauncherController::instance_ = NULL;
@@ -159,27 +125,12 @@ void ChromeLauncherController::Init() {
         profile_->GetPrefs()->GetString(prefs::kShelfAutoHideBehavior));
     ash::ShelfAutoHideBehavior behavior =
         ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT;
-    if (behavior_value == kShelfAutoHideBehaviorNever)
+    if (behavior_value == ash::kShelfAutoHideBehaviorNever)
       behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
-    else if (behavior_value == kShelfAutoHideBehaviorAlways)
+    else if (behavior_value == ash::kShelfAutoHideBehaviorAlways)
       behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
     ash::Shell::GetInstance()->SetShelfAutoHideBehavior(behavior);
   }
-}
-
-// static
-void ChromeLauncherController::RegisterUserPrefs(PrefService* user_prefs) {
-  // TODO: If we want to support multiple profiles this will likely need to be
-  // pushed to local state and we'll need to track profile per item.
-  user_prefs->RegisterBooleanPref(prefs::kUseDefaultPinnedApps,
-                                  true,
-                                  PrefService::SYNCABLE_PREF);
-  user_prefs->RegisterListPref(prefs::kPinnedLauncherApps,
-                               CreateDefaultPinnedAppsList(),
-                               PrefService::SYNCABLE_PREF);
-  user_prefs->RegisterStringPref(prefs::kShelfAutoHideBehavior,
-                                 kShelfAutoHideBehaviorDefault,
-                                 PrefService::SYNCABLE_PREF);
 }
 
 ash::LauncherID ChromeLauncherController::CreateTabbedLauncherItem(
@@ -401,13 +352,13 @@ void ChromeLauncherController::SetAutoHideBehavior(
   const char* value = NULL;
   switch (behavior) {
     case ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT:
-      value = kShelfAutoHideBehaviorDefault;
+      value = ash::kShelfAutoHideBehaviorDefault;
       break;
     case ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
-      value = kShelfAutoHideBehaviorAlways;
+      value = ash::kShelfAutoHideBehaviorAlways;
       break;
     case ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
-      value = kShelfAutoHideBehaviorNever;
+      value = ash::kShelfAutoHideBehaviorNever;
       break;
   }
   profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehavior, value);
@@ -608,7 +559,7 @@ void ChromeLauncherController::PersistPinnedState() {
         ash::LauncherID id = model_->items()[i].id;
         if (id_to_item_map_.find(id) != id_to_item_map_.end() &&
             IsPinned(id)) {
-          base::DictionaryValue* app_value = CreateAppDict(
+          base::DictionaryValue* app_value = ash::CreateAppDict(
               id_to_item_map_[id].app_id);
           if (app_value)
             updater->Append(app_value);
@@ -667,7 +618,7 @@ void ChromeLauncherController::CreateAppLaunchersFromPref() {
     DictionaryValue* app = NULL;
     if (pinned_apps->GetDictionary(i, &app)) {
       std::string app_id;
-      if (app->GetString(kPinnedAppsPrefAppIDPath, &app_id)) {
+      if (app->GetString(ash::kPinnedAppsPrefAppIDPath, &app_id)) {
         if (app_icon_loader_->IsValidID(app_id)) {
           CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED);
         } else {

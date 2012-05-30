@@ -7,7 +7,7 @@
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/pref_value_map.h"
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -128,8 +128,7 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
 
   base::StringValue entry1("abcdefghijklmnopabcdefghijklmnop");
   base::DictionaryValue* entry1_dict = new base::DictionaryValue();
-  entry1_dict->Set(ChromeLauncherController::kPinnedAppsPrefAppIDPath,
-                   entry1.DeepCopy());
+  entry1_dict->Set(ash::kPinnedAppsPrefAppIDPath, entry1.DeepCopy());
   expected_pinned_apps.Append(entry1_dict);
   list.Append(entry1.DeepCopy());
   policy_map.Set(key::kPinnedLauncherApps, POLICY_LEVEL_MANDATORY,

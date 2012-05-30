@@ -38,10 +38,6 @@ class ChromeLauncherController : public ash::LauncherDelegate,
                                  public ash::LauncherModelObserver,
                                  public content::NotificationObserver {
  public:
-  // Path within the dictionary entries in the prefs::kPinnedLauncherApps list
-  // specifying the extension ID of the app to be pinned by that entry.
-  static const char kPinnedAppsPrefAppIDPath[];
-
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
     STATE_INCOGNITO,
@@ -75,9 +71,6 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // Returns the single ChromeLauncherController instnace.
   static ChromeLauncherController* instance() { return instance_; }
-
-  // Registers the prefs used by ChromeLauncherController.
-  static void RegisterUserPrefs(PrefService* user_prefs);
 
   // Creates a new tabbed item on the launcher for |updater|.
   ash::LauncherID CreateTabbedLauncherItem(
