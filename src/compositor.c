@@ -2242,6 +2242,28 @@ static int weston_compositor_xkb_init(struct weston_compositor *ec,
 	if (!ec->xkb_info.names.layout)
 		ec->xkb_info.names.layout = strdup("us");
 
+	return 0;
+}
+
+static void weston_compositor_xkb_destroy(struct weston_compositor *ec)
+{
+	free((char *) ec->xkb_info.names.rules);
+	free((char *) ec->xkb_info.names.model);
+	free((char *) ec->xkb_info.names.layout);
+	free((char *) ec->xkb_info.names.variant);
+	free((char *) ec->xkb_info.names.options);
+
+	if (ec->xkb_info.keymap)
+		xkb_map_unref(ec->xkb_info.keymap);
+	xkb_context_unref(ec->xkb_info.context);
+}
+
+static int
+weston_compositor_build_global_keymap(struct weston_compositor *ec)
+{
+	if (ec->xkb_info.keymap != NULL)
+		return 0;
+
 	ec->xkb_info.keymap = xkb_map_new_from_names(ec->xkb_info.context,
 	                                             &ec->xkb_info.names, 0);
 	if (ec->xkb_info.keymap == NULL) {
@@ -2266,16 +2288,19 @@ static int weston_compositor_xkb_init(struct weston_compositor *ec,
 	return 0;
 }
 
-static void weston_compositor_xkb_destroy(struct weston_compositor *ec)
+WL_EXPORT void
+weston_seat_init_keyboard(struct weston_seat *seat)
 {
-	xkb_map_unref(ec->xkb_info.keymap);
-	xkb_context_unref(ec->xkb_info.context);
+	if (seat->has_keyboard)
+		return;
 
-	free((char *) ec->xkb_info.names.rules);
-	free((char *) ec->xkb_info.names.model);
-	free((char *) ec->xkb_info.names.layout);
-	free((char *) ec->xkb_info.names.variant);
-	free((char *) ec->xkb_info.names.options);
+	if (weston_compositor_build_global_keymap(seat->compositor) == -1)
+		return;
+
+	wl_keyboard_init(&seat->keyboard);
+	wl_seat_set_keyboard(&seat->seat, &seat->keyboard);
+
+	seat->has_keyboard = 1;
 }
 
 WL_EXPORT void
@@ -2288,18 +2313,6 @@ weston_seat_init_pointer(struct weston_seat *seat)
 	wl_seat_set_pointer(&seat->seat, &seat->pointer);
 
 	seat->has_pointer = 1;
-}
-
-WL_EXPORT void
-weston_seat_init_keyboard(struct weston_seat *seat)
-{
-	if (seat->has_keyboard)
-		return;
-
-	wl_keyboard_init(&seat->keyboard);
-	wl_seat_set_keyboard(&seat->seat, &seat->keyboard);
-
-	seat->has_keyboard = 1;
 }
 
 WL_EXPORT void
