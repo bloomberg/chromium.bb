@@ -188,6 +188,8 @@
     'browser/android/command_line.h',
     'browser/android/content_jni_registrar.cc',
     'browser/android/content_jni_registrar.h',
+    'browser/android/download_controller.cc',
+    'browser/android/download_controller.h',
     'browser/android/jni_helper.cc',
     'browser/android/jni_helper.h',
     'browser/android/library_loader_hooks.cc',

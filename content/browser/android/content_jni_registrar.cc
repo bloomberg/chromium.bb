@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "content/browser/android/command_line.h"
+#include "content/browser/android/download_controller.h"
 #include "content/browser/android/trace_event_binding.h"
 
 namespace content {
@@ -14,6 +15,7 @@ namespace android {
 
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "CommandLine", RegisterCommandLine },
+  { "DownloadController", DownloadController::RegisterDownloadController },
   { "TraceEvent", RegisterTraceEvent },
 };
 
