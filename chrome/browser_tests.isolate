@@ -14,6 +14,7 @@
     ['OS=="linux"', {
       'variables': {
         'isolate_dependency_tracked': [
+          '../testing/xvfb.py',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
         'command': [
