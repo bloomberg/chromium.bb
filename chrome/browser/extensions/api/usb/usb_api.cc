@@ -73,7 +73,7 @@ bool UsbCloseDeviceFunction::Prepare() {
 }
 
 void UsbCloseDeviceFunction::Work() {
-  controller()->RemoveAPIResource(parameters_->device.handle);
+  controller()->RemoveUsbDeviceResource(parameters_->device.handle);
 }
 
 bool UsbCloseDeviceFunction::Respond() {

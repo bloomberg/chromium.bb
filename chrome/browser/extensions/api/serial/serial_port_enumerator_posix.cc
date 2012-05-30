@@ -81,7 +81,7 @@ SerialPortEnumerator::GenerateValidSerialPortNames() {
     if (next_device.empty())
       break;
 
-    std::set<std::string>::const_iterator i = valid_patterns.begin();
+    StringSet::const_iterator i = valid_patterns.begin();
     for (; i != valid_patterns.end(); ++i) {
       if (MatchPattern(next_device, *i)) {
         name_set.insert(next_device);

@@ -4,50 +4,35 @@
 
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <string>
 #include <termios.h>
-#include <unistd.h>
-
-#include "base/file_path.h"
-#include "base/file_util.h"
-#include "base/string_util.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace extensions {
 
-SerialConnection::SerialConnection(const std::string& port,
-                                   APIResourceEventNotifier* event_notifier)
-    : APIResource(APIResource::SerialConnectionResource, event_notifier),
-      port_(port), fd_(0) {
-}
+bool SerialConnection::PostOpen() {
+  struct termios options;
 
-SerialConnection::~SerialConnection() {
-}
+  // Start with existing options and modify.
+  tcgetattr(file_, &options);
 
-bool SerialConnection::Open() {
-  fd_ = open(port_.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-  return (fd_ > 0);
-}
+  // Bitrate 57,600
+  cfsetispeed(&options, B57600);
+  cfsetospeed(&options, B57600);
 
-void SerialConnection::Close() {
-  if (fd_ > 0) {
-    close(fd_);
-    fd_ = 0;
-  }
-}
+  // 8N1
+  options.c_cflag &= ~PARENB;
+  options.c_cflag &= ~CSTOPB;
+  options.c_cflag &= ~CSIZE;
+  options.c_cflag |= CS8;
+  options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
 
-int SerialConnection::Read(uint8* byte) {
-  return read(fd_, byte, 1);
-}
+  // Enable receiver and set local mode
+  // See http://www.easysw.com/~mike/serial/serial.html to understand.
+  options.c_cflag |= (CLOCAL | CREAD);
 
-int SerialConnection::Write(scoped_refptr<net::IOBuffer> io_buffer,
-                            int byte_count) {
-  return write(fd_, io_buffer.get(), byte_count);
+  // Write the options.
+  tcsetattr(file_, TCSANOW, &options);
+
+  return true;
 }
 
 }  // namespace extensions

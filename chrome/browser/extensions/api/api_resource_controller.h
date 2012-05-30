@@ -32,7 +32,6 @@ class APIResourceController {
 
   // Takes ownership of api_resource.
   int AddAPIResource(APIResource* api_resource);
-  bool RemoveAPIResource(int api_resource_id);
 
   // APIResourceController knows about all classes derived from APIResource.
   // This is intentional to avoid scattering potentially unsafe static_cast<>
@@ -41,20 +40,35 @@ class APIResourceController {
   // Another alternative we considered and rejected was templatizing
   // APIResourceController and scattering specialized versions throughout the
   // codebase.
+
+  bool RemoveSocket(int api_resource_id);
+  bool RemoveSerialConnection(int api_resource_id);
+  bool RemoveUsbDeviceResource(int api_resource_id);
+
   Socket* GetSocket(int api_resource_id) const;
   SerialConnection* GetSerialConnection(int api_resource_id) const;
   UsbDeviceResource* GetUsbDeviceResource(int api_resource_id) const;
 
  private:
-  int next_api_resource_id_;
   typedef std::map<int, linked_ptr<APIResource> > APIResourceMap;
-  APIResourceMap api_resource_map_;
 
   APIResource* GetAPIResource(APIResource::APIResourceType api_resource_type,
                               int api_resource_id) const;
-  APIResource* GetAPIResource(int api_resource_id) const;
+  bool RemoveAPIResource(APIResource::APIResourceType api_resource_type,
+    int api_resource_id);
 
   int GenerateAPIResourceId();
+
+  APIResourceMap* GetResourceMapForType(
+    APIResource::APIResourceType api_resource_type) const;
+
+  int next_api_resource_id_;
+
+  // We need finer-grained control over the lifetime of these instances
+  // than RAII can give us.
+  APIResourceMap* socket_resource_map_;
+  APIResourceMap* serial_connection_resource_map_;
+  APIResourceMap* usb_device_resource_map_;
 
   DISALLOW_COPY_AND_ASSIGN(APIResourceController);
 };

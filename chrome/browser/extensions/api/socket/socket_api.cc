@@ -80,7 +80,7 @@ bool SocketDestroyFunction::Prepare() {
 }
 
 void SocketDestroyFunction::Work() {
-  if (!controller()->RemoveAPIResource(socket_id_))
+  if (!controller()->RemoveSocket(socket_id_))
     error_ = kSocketNotFoundError;
 }
 

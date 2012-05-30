@@ -21,10 +21,8 @@
     // The number of bytes received, or a negative number if an error occurred.
     long bytesRead;
 
-    // The data received. Warning: will probably become a blob or other
-    // appropriate binary-friendly type.
-    // TODO(miket): [instanceOf=ArrayBuffer]object data;
-    long[] data;
+    // The data received.
+    ArrayBuffer data;
   };
 
   callback ReadCallback = void (ReadInfo readInfo);
@@ -66,10 +64,8 @@
     // |connectionId| : The id of the connection.
     // |data| : The string to write.
     // |callback| : Called when the string has been written.
-    //
-    // TODO(miket): [instanceOf=ArrayBuffer]object data;
     static void write(long connectionId,
-                      long[] data,
+                      ArrayBuffer data,
                       WriteCallback callback);
   };
 

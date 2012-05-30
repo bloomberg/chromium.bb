@@ -438,15 +438,6 @@ ExtensionService::~ExtensionService() {
     ExternalExtensionProviderInterface* provider = i->get();
     provider->ServiceShutdown();
   }
-
-  if (api_resource_controller_) {
-    // If this check failed, then a unit test was using an APIResource but
-    // didn't provide the IO thread message loop needed for those resources to
-    // do their job (including destroying themselves at shutdown).
-    DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
-    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
-                              api_resource_controller_);
-  }
 }
 
 void ExtensionService::InitEventRoutersAfterImport() {
@@ -2551,16 +2542,15 @@ ExtensionService::NaClModuleInfoList::iterator
 
 extensions::APIResourceController*
 ExtensionService::api_resource_controller() {
-  // TODO(miket): Find a better place for this thing to live. It needs to be
-  // scoped such that it can be created and destroyed on the IO thread.
-  //
-  // To coexist with certain unit tests that don't have an IO thread message
+  // TODO(miket): Find a better place for this thing to live. Like every other
+  // piece of baggage on ExtensionService, it's scoped along with a Profile.
+
+  // To coexist with certain unit tests that don't have a work-thread message
   // loop available at ExtensionService shutdown, we lazy-initialize this
   // object so that those cases neither create nor destroy an
   // APIResourceController.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!api_resource_controller_) {
-    api_resource_controller_ = new extensions::APIResourceController();
+  if (!api_resource_controller_.get()) {
+    api_resource_controller_.reset(new extensions::APIResourceController());
   }
-  return api_resource_controller_;
+  return api_resource_controller_.get();
 }

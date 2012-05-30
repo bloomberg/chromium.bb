@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/platform_file.h"
 #include "chrome/browser/extensions/api/api_resource.h"
 #include "net/base/io_buffer.h"
 
@@ -33,9 +34,13 @@ class SerialConnection : public APIResource {
   int Read(uint8* byte);
   int Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count);
 
+ protected:
+  // Do platform-specific work after a successful Open().
+  bool PostOpen();
+
  private:
   std::string port_;
-  int fd_;
+  base::PlatformFile file_;
 };
 
 }  // namespace extensions

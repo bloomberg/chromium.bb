@@ -49,8 +49,6 @@ class SerialOpenFunction : public AsyncAPIFunction {
   virtual bool Respond() OVERRIDE;
 
  private:
-  void OpenPortOnIOThread();
-
   int src_id_;
   std::string port_;
 
@@ -106,7 +104,8 @@ class SerialWriteFunction : public AsyncAPIFunction {
 
  private:
   int connection_id_;
-  scoped_refptr<net::IOBufferWithSize> io_buffer_;
+  scoped_refptr<net::IOBuffer> io_buffer_;
+  size_t io_buffer_size_;
 };
 
 }  // namespace extensions

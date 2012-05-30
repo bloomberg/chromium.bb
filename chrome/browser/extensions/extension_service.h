@@ -22,6 +22,7 @@
 #include "base/property_bag.h"
 #include "base/time.h"
 #include "base/tuple.h"
+#include "chrome/browser/extensions/api/api_resource_controller.h"
 #include "chrome/browser/extensions/app_shortcut_manager.h"
 #include "chrome/browser/extensions/app_sync_bundle.h"
 #include "chrome/browser/extensions/apps_promo.h"
@@ -74,7 +75,6 @@ class ExtensionInputMethodEventRouter;
 }
 
 namespace extensions {
-class APIResourceController;
 class AppSyncData;
 class ComponentLoader;
 class ContentSettingsStore;
@@ -837,9 +837,7 @@ class ExtensionService
   // Contains an entry for each warning that shall be currently shown.
   ExtensionWarningSet extension_warnings_;
 
-  // We need to control destruction of this object (it needs to happen on the
-  // IO thread), so we don't get to use any RAII devices with it.
-  extensions::APIResourceController* api_resource_controller_;
+  scoped_ptr<extensions::APIResourceController> api_resource_controller_;
 
   extensions::ProcessMap process_map_;
 
