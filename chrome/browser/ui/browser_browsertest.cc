@@ -1068,8 +1068,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestFullscreenBubbleMouseLockState) {
   ASSERT_FALSE(IsFullscreenBubbleDisplayingButtons());
 }
 
+// BrowserTest.MouseLockThenFullscreen is flaky on linux and win.
+// (http://crbug.com/130358)
+#if defined(OS_WIN) || OS(LINUX)
+#define MAYBE_MouseLockThenFullscreen DISABLED_MouseLockThenFullscreen
+#else
+#define MAYBE_MouseLockThenFullscreen MouseLockThenFullscreen
+#endif
+
 // Tests mouse lock then fullscreen.
-IN_PROC_BROWSER_TEST_F(BrowserTest, MouseLockThenFullscreen) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_MouseLockThenFullscreen) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(kFullscreenMouseLockHTML));
