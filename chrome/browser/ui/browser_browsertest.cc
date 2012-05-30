@@ -510,9 +510,17 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
   alert->native_dialog()->AcceptAppModalDialog();
 }
 
+// BrowserTest.BeforeUnloadVsBeforeReload times out on Windows.
+// http://crbug.com/130411
+#if defined(OS_WIN)
+#define MAYBE_BeforeUnloadVsBeforeReload DISABLED_BeforeUnloadVsBeforeReload
+#else
+#define MAYBE_BeforeUnloadVsBeforeReload BeforeUnloadVsBeforeReload
+#endif
+
 // Test that when a page has an onunload handler, reloading a page shows a
 // different dialog than navigating to a different page.
-IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_BeforeUnloadVsBeforeReload) {
   GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
   ui_test_utils::NavigateToURL(browser(), url);
 
