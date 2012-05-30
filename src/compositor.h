@@ -179,6 +179,14 @@ struct weston_seat {
 	struct wl_listener touch_focus_resource_listener;
 
 	struct wl_listener new_drag_icon_listener;
+
+	struct {
+		struct xkb_state *state;
+		uint32_t mods_depressed;
+		uint32_t mods_latched;
+		uint32_t mods_locked;
+		uint32_t group;
+	} xkb_state;
 };
 
 struct weston_shader {
@@ -297,11 +305,6 @@ struct weston_compositor {
 		struct xkb_rule_names names;
 		struct xkb_context *context;
 		struct xkb_keymap *keymap;
-		struct xkb_state *state;
-		uint32_t mods_depressed;
-		uint32_t mods_latched;
-		uint32_t mods_locked;
-		uint32_t group;
 	} xkb_info;
 };
 

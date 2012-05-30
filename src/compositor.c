@@ -1657,10 +1657,10 @@ weston_surface_activate(struct weston_surface *surface,
 	if (seat->seat.keyboard->focus_resource) {
 		wl_keyboard_send_modifiers(seat->seat.keyboard->focus_resource,
 					   wl_display_next_serial(compositor->wl_display),
-					   compositor->xkb_info.mods_depressed,
-					   compositor->xkb_info.mods_latched,
-					   compositor->xkb_info.mods_locked,
-					   compositor->xkb_info.group);
+					   seat->xkb_state.mods_depressed,
+					   seat->xkb_state.mods_latched,
+					   seat->xkb_state.mods_locked,
+					   seat->xkb_state.group);
 	}
 
 	wl_signal_emit(&compositor->activate_signal, surface);
@@ -1731,36 +1731,32 @@ notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis, int32_t value)
 static int
 update_modifier_state(struct weston_seat *seat, uint32_t key, uint32_t state)
 {
-	struct weston_compositor *compositor = seat->compositor;
 	enum weston_keyboard_modifier modifier;
 	uint32_t mods_depressed, mods_latched, mods_locked, group;
 	int ret = 0;
 
-	xkb_state_update_key(seat->compositor->xkb_info.state, key + 8,
+	xkb_state_update_key(seat->xkb_state.state, key + 8,
 			     state ? XKB_KEY_DOWN : XKB_KEY_UP);
 
-	mods_depressed =
-		xkb_state_serialize_mods(compositor->xkb_info.state,
-					 XKB_STATE_DEPRESSED);
-	mods_latched =
-		xkb_state_serialize_mods(compositor->xkb_info.state,
-					 XKB_STATE_LATCHED);
-	mods_locked =
-		xkb_state_serialize_mods(compositor->xkb_info.state,
-					 XKB_STATE_LOCKED);
-	group = xkb_state_serialize_group(compositor->xkb_info.state,
+	mods_depressed = xkb_state_serialize_mods(seat->xkb_state.state,
+						  XKB_STATE_DEPRESSED);
+	mods_latched = xkb_state_serialize_mods(seat->xkb_state.state,
+						XKB_STATE_LATCHED);
+	mods_locked = xkb_state_serialize_mods(seat->xkb_state.state,
+					       XKB_STATE_LOCKED);
+	group = xkb_state_serialize_group(seat->xkb_state.state,
 					  XKB_STATE_EFFECTIVE);
 
-	if (mods_depressed != compositor->xkb_info.mods_depressed ||
-	    mods_latched != compositor->xkb_info.mods_latched ||
-	    mods_locked != compositor->xkb_info.mods_locked ||
-	    group != compositor->xkb_info.group)
+	if (mods_depressed != seat->xkb_state.mods_depressed ||
+	    mods_latched != seat->xkb_state.mods_latched ||
+	    mods_locked != seat->xkb_state.mods_locked ||
+	    group != seat->xkb_state.group)
 		ret = 1;
 
-	compositor->xkb_info.mods_depressed = mods_depressed;
-	compositor->xkb_info.mods_latched = mods_latched;
-	compositor->xkb_info.mods_locked = mods_locked;
-	compositor->xkb_info.group = group;
+	seat->xkb_state.mods_depressed = mods_depressed;
+	seat->xkb_state.mods_latched = mods_latched;
+	seat->xkb_state.mods_locked = mods_locked;
+	seat->xkb_state.group = group;
 
 	switch (key) {
 	case KEY_LEFTCTRL:
@@ -1834,10 +1830,10 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key, uint32_t state)
 	if (mods)
 		grab->interface->modifiers(grab,
 					   wl_display_get_serial(compositor->wl_display),
-					   compositor->xkb_info.mods_depressed,
-					   compositor->xkb_info.mods_latched,
-					   compositor->xkb_info.mods_locked,
-					   compositor->xkb_info.group);
+					   ws->xkb_state.mods_depressed,
+					   ws->xkb_state.mods_latched,
+					   ws->xkb_state.mods_locked,
+					   ws->xkb_state.group);
 }
 
 WL_EXPORT void
@@ -1898,10 +1894,10 @@ notify_keyboard_focus(struct wl_seat *seat, struct wl_array *keys)
 			if (seat->keyboard->focus_resource) {
 				wl_keyboard_send_modifiers(seat->keyboard->focus_resource,
 							   wl_display_next_serial(compositor->wl_display),
-							   compositor->xkb_info.mods_depressed,
-							   compositor->xkb_info.mods_latched,
-							   compositor->xkb_info.mods_locked,
-							   compositor->xkb_info.group);
+							   ws->xkb_state.mods_depressed,
+							   ws->xkb_state.mods_latched,
+							   ws->xkb_state.mods_locked,
+							   ws->xkb_state.group);
 			}
 			ws->saved_kbd_focus = NULL;
 		}
@@ -2222,6 +2218,46 @@ device_handle_new_drag_icon(struct wl_listener *listener, void *data)
 	weston_seat_update_drag_surface(&seat->seat, 0, 0);
 }
 
+static int weston_compositor_xkb_init(struct weston_compositor *ec,
+				      struct xkb_rule_names *names)
+{
+	ec->xkb_info.context = xkb_context_new(0);
+	if (ec->xkb_info.context == NULL) {
+		fprintf(stderr, "failed to create XKB context\n");
+		return -1;
+	}
+
+	if (names)
+		ec->xkb_info.names = *names;
+	if (!ec->xkb_info.names.rules)
+		ec->xkb_info.names.rules = strdup("evdev");
+	if (!ec->xkb_info.names.model)
+		ec->xkb_info.names.model = strdup("pc105");
+	if (!ec->xkb_info.names.layout)
+		ec->xkb_info.names.layout = strdup("us");
+
+	ec->xkb_info.keymap = xkb_map_new_from_names(ec->xkb_info.context,
+	                                             &ec->xkb_info.names, 0);
+	if (ec->xkb_info.keymap == NULL) {
+		fprintf(stderr, "failed to compile XKB keymap\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static void weston_compositor_xkb_destroy(struct weston_compositor *ec)
+{
+	xkb_map_unref(ec->xkb_info.keymap);
+	xkb_context_unref(ec->xkb_info.context);
+
+	free((char *) ec->xkb_info.names.rules);
+	free((char *) ec->xkb_info.names.model);
+	free((char *) ec->xkb_info.names.layout);
+	free((char *) ec->xkb_info.names.variant);
+	free((char *) ec->xkb_info.names.options);
+}
+
 WL_EXPORT void
 weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 {
@@ -2253,6 +2289,20 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 	seat->new_drag_icon_listener.notify = device_handle_new_drag_icon;
 	wl_signal_add(&seat->seat.drag_icon_signal,
 		      &seat->new_drag_icon_listener);
+
+	if (!ec->xkb_info.context)
+		weston_compositor_xkb_init(ec, NULL);
+
+	seat->xkb_state.mods_depressed = 0;
+	seat->xkb_state.mods_latched = 0;
+	seat->xkb_state.mods_locked = 0;
+	seat->xkb_state.group = 0;
+
+	seat->xkb_state.state = xkb_state_new(ec->xkb_info.keymap);
+	if (seat->xkb_state.state == NULL) {
+		fprintf(stderr, "failed to initialise XKB state\n");
+		exit(1);
+	}
 }
 
 WL_EXPORT void
@@ -2263,6 +2313,8 @@ weston_seat_release(struct weston_seat *seat)
 
 	if (seat->sprite)
 		destroy_surface(&seat->sprite->surface.resource);
+
+	xkb_state_unref(seat->xkb_state.state);
 
 	wl_seat_release(&seat->seat);
 }
@@ -2814,52 +2866,6 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 	wl_array_release(&ec->indices);
 
 	wl_event_loop_destroy(ec->input_loop);
-}
-
-static int weston_compositor_xkb_init(struct weston_compositor *ec,
-				      struct xkb_rule_names *names)
-{
-	ec->xkb_info.context = xkb_context_new(0);
-	if (ec->xkb_info.context == NULL) {
-		fprintf(stderr, "failed to create XKB context\n");
-		return -1;
-	}
-
-	ec->xkb_info.names = *names;
-	if (!ec->xkb_info.names.rules)
-		ec->xkb_info.names.rules = strdup("evdev");
-	if (!ec->xkb_info.names.model)
-		ec->xkb_info.names.model = strdup("pc105");
-	if (!ec->xkb_info.names.layout)
-		ec->xkb_info.names.layout = strdup("us");
-
-	ec->xkb_info.keymap = xkb_map_new_from_names(ec->xkb_info.context,
-	                                             &ec->xkb_info.names, 0);
-	if (ec->xkb_info.keymap == NULL) {
-		fprintf(stderr, "failed to compile XKB keymap\n");
-		return -1;
-	}
-
-	ec->xkb_info.state = xkb_state_new(ec->xkb_info.keymap);
-	if (ec->xkb_info.state == NULL) {
-		fprintf(stderr, "failed to initialise XKB state\n");
-		return -1;
-	}
-
-	return 0;
-}
-
-static void weston_compositor_xkb_destroy(struct weston_compositor *ec)
-{
-	xkb_state_unref(ec->xkb_info.state);
-	xkb_map_unref(ec->xkb_info.keymap);
-	xkb_context_unref(ec->xkb_info.context);
-
-	free((char *) ec->xkb_info.names.rules);
-	free((char *) ec->xkb_info.names.model);
-	free((char *) ec->xkb_info.names.layout);
-	free((char *) ec->xkb_info.names.variant);
-	free((char *) ec->xkb_info.names.options);
 }
 
 static int on_term_signal(int signal_number, void *data)
