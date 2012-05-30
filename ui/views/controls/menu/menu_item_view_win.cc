@@ -8,8 +8,8 @@
 #include <Vssym32.h>
 
 #include "grit/ui_strings.h"
-#include "ui/gfx/canvas.h"
 #include "ui/base/native_theme/native_theme_win.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/submenu_view.h"
 

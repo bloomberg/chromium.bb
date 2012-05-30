@@ -5,11 +5,11 @@
 #include "ui/views/controls/menu/menu_config.h"
 
 #include "grit/ui_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/layout.h"
+#include "ui/base/native_theme/native_theme_aura.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/base/native_theme/native_theme_aura.h"
 
 namespace views {
 

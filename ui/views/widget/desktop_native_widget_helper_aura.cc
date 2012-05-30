@@ -4,11 +4,11 @@
 
 #include "ui/views/widget/desktop_native_widget_helper_aura.h"
 
-#include "ui/aura/root_window.h"
-#include "ui/aura/desktop/desktop_activation_client.h"
-#include "ui/aura/desktop/desktop_dispatcher_client.h"
 #include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/desktop/desktop_activation_client.h"
+#include "ui/aura/desktop/desktop_dispatcher_client.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/aura/shared/root_window_event_filter.h"
 #include "ui/views/widget/native_widget_aura.h"

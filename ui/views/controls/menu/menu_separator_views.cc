@@ -5,8 +5,8 @@
 #include "ui/views/controls/menu/menu_separator.h"
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/canvas.h"
 #include "ui/base/native_theme/native_theme.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/controls/menu/menu_config.h"
 
 namespace {

@@ -10,9 +10,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "ui/gfx/image/image_skia.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/native_theme_delegate.h"

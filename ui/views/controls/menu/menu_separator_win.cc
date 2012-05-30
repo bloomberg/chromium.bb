@@ -8,8 +8,8 @@
 #include <uxtheme.h>
 #include <Vssym32.h>
 
-#include "ui/gfx/canvas.h"
 #include "ui/base/native_theme/native_theme.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_item_view.h"

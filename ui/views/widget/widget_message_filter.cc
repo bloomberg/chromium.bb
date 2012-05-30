@@ -10,9 +10,9 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
-#include "ui/views/window/non_client_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_hwnd_utils.h"
+#include "ui/views/window/non_client_view.h"
 
 namespace views {
 

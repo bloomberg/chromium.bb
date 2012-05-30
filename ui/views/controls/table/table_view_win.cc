@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/win/scoped_gdi_object.h"
 #include "skia/ext/skia_utils_win.h"
-#include "ui/gfx/image/image_skia.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"

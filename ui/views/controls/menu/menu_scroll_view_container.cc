@@ -11,9 +11,9 @@
 #endif
 
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/base/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"

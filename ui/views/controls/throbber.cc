@@ -6,10 +6,10 @@
 
 #include "base/time.h"
 #include "grit/ui_resources.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 using base::Time;
 using base::TimeDelta;

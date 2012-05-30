@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "ui/views/view_model.h"
 #include "ui/views/view.h"
+#include "ui/views/view_model.h"
 
 namespace views {
 
