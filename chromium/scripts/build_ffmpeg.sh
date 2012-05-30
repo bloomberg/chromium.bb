@@ -182,11 +182,6 @@ function build {
     exit 1
   fi
 
-  # TODO(ihf): Remove munge_config_posix_memalign.sh when
-  # DEPLOYMENT_TARGET >= 10.7. Background: If MACOSX_DEPLOYMENT_TARGET < 10.7
-  # we have to disable posix_memalign by hand, as it was introduced somewhere
-  # in OSX 10.6 (configure finds it) but we can't use it yet. Just check
-  # common.gypi for 'mac_deployment_target%': '10.5'.
   if [ $TARGET_OS = "mac" ]; then
     # Required to get Mac ia32 builds compiling with -fno-omit-frame-pointer,
     # which is required for accurate stack traces.  See http://crbug.com/115170.
@@ -195,10 +190,6 @@ function build {
       $FFMPEG_PATH/chromium/scripts/munge_config_optimizations.sh config.h
       $FFMPEG_PATH/chromium/scripts/munge_config_optimizations.sh config.asm
     fi
-
-    echo "Forcing POSIX_MEMALIGN to 0 in config.h and config.asm"
-    $FFMPEG_PATH/chromium/scripts/munge_config_posix_memalign.sh config.h
-    $FFMPEG_PATH/chromium/scripts/munge_config_posix_memalign.sh config.asm
   fi
 
   if [ "$HOST_OS" = "$TARGET_OS" ]; then
@@ -385,6 +376,13 @@ if [ "$TARGET_OS" = "mac" ]; then
   # Configure seems to enable VDA despite --disable-everything if you have
   # XCode installed, so force disable it.
   add_flag_common --disable-vda
+
+  # TODO(ihf): Remove --enable-memalign-hack when
+  # DEPLOYMENT_TARGET >= 10.7. Background: If MACOSX_DEPLOYMENT_TARGET < 10.7
+  # we have to disable posix_memalign by hand, as it was introduced somewhere
+  # in OSX 10.6 (configure finds it) but we can't use it yet. Just check
+  # common.gypi for 'mac_deployment_target%': '10.5'.
+  add_flag_common --enable-memalign-hack
 fi
 
 # Chromium & ChromiumOS specific configuration.
