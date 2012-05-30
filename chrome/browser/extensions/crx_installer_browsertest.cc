@@ -16,6 +16,8 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 class SkBitmap;
 
@@ -26,10 +28,13 @@ namespace {
 class MockInstallUI : public ExtensionInstallUI {
  public:
   explicit MockInstallUI(Profile* profile) :
-      ExtensionInstallUI(profile), confirmation_requested_(false) {}
+      ExtensionInstallUI(profile),
+      did_succeed_(false),
+      confirmation_requested_(false) {}
 
-  // Did the Delegate request confirmation?
-  bool confirmation_requested() { return confirmation_requested_; }
+  bool did_succeed() const { return did_succeed_; }
+  bool confirmation_requested() const { return confirmation_requested_; }
+  const string16& error() const { return error_; }
 
   // Overriding some of the ExtensionInstallUI API.
   void ConfirmInstall(Delegate* delegate,
@@ -39,15 +44,18 @@ class MockInstallUI : public ExtensionInstallUI {
   }
   void OnInstallSuccess(const extensions::Extension* extension,
                         SkBitmap* icon) {
+    did_succeed_ = true;
     MessageLoopForUI::current()->Quit();
   }
   void OnInstallFailure(const string16& error) {
-    ADD_FAILURE() << "install failed";
+    error_ = error;
     MessageLoopForUI::current()->Quit();
   }
 
  private:
+  bool did_succeed_;
   bool confirmation_requested_;
+  string16 error_;
 };
 
 }  // namespace
@@ -84,6 +92,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     installer->InstallCrx(PackExtension(ext_path));
     ui_test_utils::RunMessageLoop();
 
+    EXPECT_TRUE(mock_install_ui->did_succeed());
     return mock_install_ui->confirmation_requested();
   }
 };
@@ -161,4 +170,35 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
   LOG(ERROR) << "PackAndInstallExtension: Extension install";
   EXPECT_TRUE(mock_ui->confirmation_requested());
   LOG(ERROR) << "PackAndInstallExtension: Extension install confirmed";
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, AllowOffStore) {
+#if defined(USE_AURA)
+  // Off-store install cannot yet be disabled on Aura.
+#else
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableOffStoreExtensionInstall, "0");
+
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+  const bool kTestData[] = {false, true};
+
+  for (size_t i = 0; i < arraysize(kTestData); ++i) {
+    MockInstallUI* mock_ui = new MockInstallUI(browser()->profile());
+    scoped_refptr<CrxInstaller> crx_installer(
+        CrxInstaller::Create(service, mock_ui));
+    crx_installer->set_allow_off_store_install(kTestData[i]);
+
+    crx_installer->InstallCrx(test_data_dir_.AppendASCII("good.crx"));
+    EXPECT_EQ(kTestData[i], WaitForExtensionInstall()) << kTestData[i];
+    EXPECT_EQ(kTestData[i], mock_ui->did_succeed());
+    EXPECT_EQ(kTestData[i], mock_ui->confirmation_requested()) << kTestData[i];
+    if (kTestData[i]) {
+      EXPECT_EQ(string16(), mock_ui->error()) << kTestData[i];
+    } else {
+      EXPECT_EQ(l10n_util::GetStringUTF16(
+          IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE),
+          mock_ui->error()) << kTestData[i];
+    }
+  }
+#endif
 }

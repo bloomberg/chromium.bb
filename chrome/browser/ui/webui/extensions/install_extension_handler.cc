@@ -82,6 +82,7 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
       CrxInstaller::Create(
           ExtensionSystem::Get(profile)->extension_service(),
           new ExtensionInstallUI(profile)));
+  crx_installer->set_allow_off_store_install(true);
   crx_installer->InstallCrx(file_to_install_);
 
   file_to_install_.clear();

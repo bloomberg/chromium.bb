@@ -83,7 +83,8 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
       apps_require_extension_mime_type_(false),
       allow_silent_install_(false),
       install_cause_(extension_misc::INSTALL_CAUSE_UNSET),
-      creation_flags_(Extension::NO_FLAGS) {
+      creation_flags_(Extension::NO_FLAGS),
+      allow_off_store_install_(false) {
   if (!approval)
     return;
 
@@ -192,6 +193,7 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
 
   if (!extension->is_theme() &&
       !extensions::switch_utils::IsOffStoreInstallEnabled() &&
+      !allow_off_store_install_ &&
       !is_gallery_install()) {
     *error = l10n_util::GetStringUTF16(
         IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE);

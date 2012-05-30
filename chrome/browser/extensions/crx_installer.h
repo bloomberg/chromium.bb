@@ -142,10 +142,12 @@ class CrxInstaller
   extension_misc::CrxInstallCause install_cause() const {
     return install_cause_;
   }
-
   void set_install_cause(extension_misc::CrxInstallCause install_cause) {
     install_cause_ = install_cause;
   }
+
+  bool allow_off_store_install() const { return allow_off_store_install_; }
+  void set_allow_off_store_install(bool val) { allow_off_store_install_ = val; }
 
   void set_page_ordinal(const StringOrdinal& page_ordinal) {
     page_ordinal_ = page_ordinal;
@@ -308,6 +310,9 @@ class CrxInstaller
   // Creation flags to use for the extension.  These flags will be used
   // when calling Extenion::Create() by the crx installer.
   int creation_flags_;
+
+  // Whether to allow off store installation.
+  bool allow_off_store_install_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };
