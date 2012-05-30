@@ -35,8 +35,6 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
@@ -587,14 +585,15 @@ void PrintPreviewHandler::HandlePrintWithCloudPrint() {
 
 void PrintPreviewHandler::HandleManageCloudPrint(const ListValue* /*args*/) {
   ++manage_cloud_printers_dialog_request_count_;
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser != NULL)
-    browser->OpenURL(OpenURLParams(
-        CloudPrintURL(browser->profile()).GetCloudPrintServiceManageURL(),
-        Referrer(),
-        NEW_FOREGROUND_TAB,
-        content::PAGE_TRANSITION_LINK,
-        false));
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui()->GetWebContents()->GetBrowserContext());
+  web_ui()->GetWebContents()->OpenURL(
+      OpenURLParams(
+          CloudPrintURL(profile).GetCloudPrintServiceManageURL(),
+          Referrer(),
+          NEW_FOREGROUND_TAB,
+          content::PAGE_TRANSITION_LINK,
+          false));
 }
 
 void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* /*args*/) {
@@ -735,15 +734,13 @@ void PrintPreviewHandler::SetupPrinterList(const ListValue& printers) {
 }
 
 void PrintPreviewHandler::SendCloudPrintEnabled() {
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser != NULL) {
-    Profile* profile = browser->profile();
-    PrefService* prefs = profile->GetPrefs();
-    if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled)) {
-      GURL gcp_url(CloudPrintURL(profile).GetCloudPrintServiceURL());
-      base::StringValue gcp_url_value(gcp_url.spec());
-      web_ui()->CallJavascriptFunction("setUseCloudPrint", gcp_url_value);
-    }
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui()->GetWebContents()->GetBrowserContext());
+  PrefService* prefs = profile->GetPrefs();
+  if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled)) {
+    GURL gcp_url(CloudPrintURL(profile).GetCloudPrintServiceURL());
+    base::StringValue gcp_url_value(gcp_url.spec());
+    web_ui()->CallJavascriptFunction("setUseCloudPrint", gcp_url_value);
   }
 }
 
