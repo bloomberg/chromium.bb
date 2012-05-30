@@ -13,6 +13,7 @@ AM_SILENT_RULES([yes])
 
 # Check for programs
 AC_PROG_CC
+AC_PROG_CXX
 
 # Initialize libtool
 LT_PREREQ([2.2])
@@ -94,6 +95,17 @@ if test x$enable_wayland_compositor = xyes; then
 	    [Build the Wayland (nested) compositor])
   PKG_CHECK_MODULES(WAYLAND_COMPOSITOR, [wayland-client wayland-egl])
 fi
+
+
+AC_ARG_ENABLE(android-compositor,
+	      AS_HELP_STRING([--disable-android-compositor],
+	                     [do not build-test the Android 4.0 backend]),,
+	      enable_android_compositor=yes)
+AM_CONDITIONAL(ENABLE_ANDROID_COMPOSITOR, test x$enable_android_compositor = xyes)
+if test x$enable_android_compositor = xyes; then
+  AC_DEFINE([BUILD_ANDROID_COMPOSITOR], [1], [Build the compositor for Android 4.0])
+fi
+
 
 AC_ARG_WITH(cairo-glesv2, AS_HELP_STRING([--with-cairo-glesv2],
               [Use GLESv2 cairo instead of full GL]),

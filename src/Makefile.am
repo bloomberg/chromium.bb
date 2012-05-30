@@ -67,6 +67,10 @@ module_LTLIBRARIES =				\
 	$(wayland_backend)			\
 	$(openwfd_backend)
 
+# Do not install, since the binary produced via autotools is unusable.
+# The real backend is built by the Android build system.
+noinst_LTLIBRARIES = $(android_backend)
+
 if ENABLE_X11_COMPOSITOR
 x11_backend = x11-backend.la
 x11_backend_la_LDFLAGS = -module -avoid-version
@@ -119,6 +123,17 @@ openwfd_backend_la_LDFLAGS = -module -avoid-version
 openwfd_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(OPENWFD_COMPOSITOR_LIBS)
 openwfd_backend_la_CFLAGS = $(OPENWFD_COMPOSITOR_CFLAGS) $(GCC_CFLAGS)
 openwfd_backend_la_SOURCES = compositor-openwfd.c tty.c evdev.c evdev.h
+endif
+
+if ENABLE_ANDROID_COMPOSITOR
+android_backend = android-backend.la
+android_backend_la_LDFLAGS = -module -avoid-version
+android_backend_la_LIBADD = $(COMPOSITOR_LIBS)
+android_backend_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+android_backend_la_SOURCES = \
+	compositor-android.c \
+	android-framebuffer.cpp \
+	android-framebuffer.h
 endif
 
 if ENABLE_DESKTOP_SHELL
