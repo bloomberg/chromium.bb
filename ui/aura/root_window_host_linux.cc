@@ -374,10 +374,8 @@ class RootWindowHostLinux::ImageCursors {
     // of cursors are indeed not 2x size of the 2x images.
     // TODO(oshima): Fix this and enable the following DCHECK.
     // DCHECK_EQ(actual_scale, scale_factor_);
-    XcursorImage* x_image =
-        ui::SkBitmapToXcursorImage(&bitmap, gfx::Point(0, 0));
-    x_image->xhot = hot_x * actual_scale;
-    x_image->yhot = hot_y * actual_scale;
+    XcursorImage* x_image = ui::SkBitmapToXcursorImage(
+        &bitmap, gfx::Point(hot_x * actual_scale, hot_y * actual_scale));
     cursors_[id] = ui::CreateReffedCustomXCursor(x_image);
     // |bitmap| is owned by the resource bundle. So we do not need to free it.
   }

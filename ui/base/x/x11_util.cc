@@ -423,10 +423,10 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap* bitmap,
 
   if (bitmap->width() && bitmap->height()) {
     bitmap->lockPixels();
-    gfx::ConvertSkiaToRGBA(
-        static_cast<const unsigned char*>(bitmap->getPixels()),
-        bitmap->width() * bitmap->height(),
-        reinterpret_cast<unsigned char*>(image->pixels));
+    // The |bitmap| contains ARGB image, so just copy it.
+    memcpy(image->pixels,
+           bitmap->getPixels(),
+           bitmap->width() * bitmap->height() * 4);
     bitmap->unlockPixels();
   }
 
