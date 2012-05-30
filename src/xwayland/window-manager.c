@@ -857,7 +857,7 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 			continue;
 		}
 
-		switch (event->response_type & ~0x80) {
+		switch (event->response_type) {
 		case XCB_BUTTON_PRESS:
 		case XCB_BUTTON_RELEASE:
 			weston_wm_handle_button(wm, event);
