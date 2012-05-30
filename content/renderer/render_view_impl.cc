@@ -1666,8 +1666,14 @@ WebWidget* RenderViewImpl::createPopupMenu(WebKit::WebPopupType popup_type) {
 WebExternalPopupMenu* RenderViewImpl::createExternalPopupMenu(
     const WebPopupMenuInfo& popup_menu_info,
     WebExternalPopupMenuClient* popup_menu_client) {
-  // TODO(jcivelli): http:/b/5793321 Implement a better fix, as detailed in bug.
-  DCHECK(!external_popup_menu_.get());
+  // An IPC message is sent to the browser to build and display the actual
+  // popup.  The user could have time to click a different select by the time
+  // the popup is shown.  In that case external_popup_menu_ is non NULL.
+  // By returning NULL in that case, we instruct WebKit to cancel that new
+  // popup.  So from the user perspective, only the first one will show, and
+  // will have to close the first one before another one can be shown.
+  if (external_popup_menu_.get())
+    return NULL;
   external_popup_menu_.reset(
       new ExternalPopupMenu(this, popup_menu_info, popup_menu_client));
   return external_popup_menu_.get();
