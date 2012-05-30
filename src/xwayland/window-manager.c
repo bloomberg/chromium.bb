@@ -655,12 +655,44 @@ weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *even
 }
 
 static void
+weston_wm_window_create(struct weston_wm *wm,
+			xcb_window_t id, int width, int height)
+{
+	struct weston_wm_window *window;
+	uint32_t values[1];
+
+	window = malloc(sizeof *window);
+	if (window == NULL) {
+		fprintf(stderr, "failed to allocate window\n");
+		return;
+	}
+
+	values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
+	xcb_change_window_attributes(wm->conn, id, XCB_CW_EVENT_MASK, values);
+
+	memset(window, 0, sizeof *window);
+	window->wm = wm;
+	window->id = id;
+	window->properties_dirty = 1;
+
+	window->width = width;
+	window->height = height;
+
+	hash_table_insert(wm->window_hash, id, window);
+}
+
+static void
+weston_wm_window_destroy(struct weston_wm_window *window)
+{
+	hash_table_remove(window->wm->window_hash, window->id);
+	free(window);
+}
+
+static void
 weston_wm_handle_create_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_create_notify_event_t *create_notify =
 		(xcb_create_notify_event_t *) event;
-	struct weston_wm_window *window;
-	uint32_t values[1];
 
 	fprintf(stderr,
 		"XCB_CREATE_NOTIFY (window %d, width %d, height %d%s%s)\n",
@@ -672,25 +704,8 @@ weston_wm_handle_create_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	if (our_resource(wm, create_notify->window))
 		return;
 
-	window = malloc(sizeof *window);
-	if (window == NULL) {
-		fprintf(stderr, "failed to allocate window\n");
-		return;
-	}
-
-	values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
-	xcb_change_window_attributes(wm->conn, create_notify->window,
-				     XCB_CW_EVENT_MASK, values);
-
-	memset(window, 0, sizeof *window);
-	window->wm = wm;
-	window->id = create_notify->window;
-	window->properties_dirty = 1;
-
-	window->width = create_notify->width;
-	window->height = create_notify->height;
-
-	hash_table_insert(wm->window_hash, window->id, window);
+	weston_wm_window_create(wm, create_notify->window,
+				create_notify->width, create_notify->height);
 }
 
 static void
@@ -709,10 +724,29 @@ weston_wm_handle_destroy_notify(struct weston_wm *wm, xcb_generic_event_t *event
 		return;
 
 	window = hash_table_lookup(wm->window_hash, destroy_notify->window);
+	weston_wm_window_destroy(window);
+}
 
-	hash_table_remove(wm->window_hash, window->id);
+static void
+weston_wm_handle_reparent_notify(struct weston_wm *wm, xcb_generic_event_t *event)
+{
+	xcb_reparent_notify_event_t *reparent_notify =
+		(xcb_reparent_notify_event_t *) event;
+	struct weston_wm_window *window;
 
-	free(window);
+	fprintf(stderr,
+		"XCB_REPARENT_NOTIFY (window %d, parent %d, event %d)\n",
+		reparent_notify->window,
+		reparent_notify->parent,
+		reparent_notify->event);
+
+	if (reparent_notify->parent == wm->screen->root) {
+		weston_wm_window_create(wm, reparent_notify->window, 10, 10);
+	} else if (!our_resource(wm, reparent_notify->parent)) {
+		window = hash_table_lookup(wm->window_hash,
+					   reparent_notify->window);
+		weston_wm_window_destroy(window);
+	}
 }
 
 static void
@@ -861,6 +895,9 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 			break;
 		case XCB_UNMAP_NOTIFY:
 			weston_wm_handle_unmap_notify(wm, event);
+			break;
+		case XCB_REPARENT_NOTIFY:
+			weston_wm_handle_reparent_notify(wm, event);
 			break;
 		case XCB_CONFIGURE_REQUEST:
 			weston_wm_handle_configure_request(wm, event);
