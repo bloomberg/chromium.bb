@@ -1070,7 +1070,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestFullscreenBubbleMouseLockState) {
 
 // BrowserTest.MouseLockThenFullscreen is flaky on linux and win.
 // (http://crbug.com/130358)
-#if defined(OS_WIN) || OS(LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_MouseLockThenFullscreen DISABLED_MouseLockThenFullscreen
 #else
 #define MAYBE_MouseLockThenFullscreen MouseLockThenFullscreen
