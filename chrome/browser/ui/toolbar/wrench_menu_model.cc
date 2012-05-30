@@ -286,7 +286,7 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
   switch (command_id) {
     case IDC_UPGRADE_DIALOG: {
       if (UpgradeDetector::GetInstance()->notify_upgrade()) {
-        *icon = *rb.GetImageNamed(
+        *icon = *rb.GetNativeImageNamed(
             UpgradeDetector::GetInstance()->GetIconResourceID(
                 UpgradeDetector::UPGRADE_ICON_TYPE_MENU_ICON)).ToImageSkia();
         return true;
@@ -301,7 +301,7 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
       if (error && error->HasCustomizedSyncMenuItem()) {
         int icon_id = error->MenuItemIconResourceID();
         if (icon_id) {
-          *icon = *rb.GetImageNamed(icon_id).ToImageSkia();
+          *icon = *rb.GetNativeImageNamed(icon_id).ToImageSkia();
           return true;
         }
       }
