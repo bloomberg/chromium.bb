@@ -385,7 +385,7 @@ pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
 
 static void
 pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
-		    uint32_t time, uint32_t axis, int32_t value)
+		    uint32_t time, uint32_t axis, wl_fixed_t value)
 {
 }
 

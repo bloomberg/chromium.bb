@@ -1728,7 +1728,7 @@ notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis,
 
 	if (seat->pointer->focus_resource)
 		wl_pointer_send_axis(seat->pointer->focus_resource, time, axis,
-				     wl_fixed_to_int(value));
+				     value);
 }
 
 static int

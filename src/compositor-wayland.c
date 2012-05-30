@@ -559,12 +559,12 @@ input_handle_button(void *data, struct wl_pointer *pointer,
 
 static void
 input_handle_axis(void *data, struct wl_pointer *pointer,
-		  uint32_t time, uint32_t axis, int32_t value)
+		  uint32_t time, uint32_t axis, wl_fixed_t value)
 {
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	notify_axis(&c->base.seat->seat, time, axis, wl_fixed_from_int(value));
+	notify_axis(&c->base.seat->seat, time, axis, value);
 }
 
 static const struct wl_pointer_listener pointer_listener = {
