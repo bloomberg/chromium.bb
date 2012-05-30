@@ -221,14 +221,6 @@ TimeDelta Pipeline::GetMediaDuration() const {
   return clock_->Duration();
 }
 
-int64 Pipeline::GetBufferedBytes() const {
-  base::AutoLock auto_lock(lock_);
-  int64 ret = 0;
-  for (size_t i = 0; i < buffered_byte_ranges_.size(); ++i)
-    ret += buffered_byte_ranges_.end(i) - buffered_byte_ranges_.start(i);
-  return ret;
-}
-
 int64 Pipeline::GetTotalBytes() const {
   base::AutoLock auto_lock(lock_);
   return total_bytes_;
@@ -238,6 +230,13 @@ void Pipeline::GetNaturalVideoSize(gfx::Size* out_size) const {
   CHECK(out_size);
   base::AutoLock auto_lock(lock_);
   *out_size = natural_size_;
+}
+
+bool Pipeline::DidLoadingProgress() const {
+  base::AutoLock auto_lock(lock_);
+  bool ret = did_loading_progress_;
+  did_loading_progress_ = false;
+  return ret;
 }
 
 PipelineStatistics Pipeline::GetStatistics() const {
@@ -259,6 +258,7 @@ void Pipeline::ResetState() {
   error_caused_teardown_ = false;
   playback_rate_change_pending_ = false;
   buffered_byte_ranges_.clear();
+  did_loading_progress_ = false;
   total_bytes_      = 0;
   natural_size_.SetSize(0, 0);
   volume_           = 1.0f;
@@ -455,6 +455,7 @@ void Pipeline::AddBufferedByteRange(int64 start, int64 end) {
   DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
   buffered_byte_ranges_.Add(start, end);
+  did_loading_progress_ = true;
 }
 
 void Pipeline::SetNaturalVideoSize(const gfx::Size& size) {

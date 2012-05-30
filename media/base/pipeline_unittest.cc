@@ -283,7 +283,6 @@ TEST_F(PipelineTest, NotStarted) {
   EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_TRUE(kZero == pipeline_->GetMediaDuration());
 
-  EXPECT_EQ(0, pipeline_->GetBufferedBytes());
   EXPECT_EQ(0, pipeline_->GetTotalBytes());
 
   // Should always get set to zero.
@@ -459,7 +458,7 @@ TEST_F(PipelineTest, Properties) {
   EXPECT_EQ(kDuration.ToInternalValue(),
             pipeline_->GetMediaDuration().ToInternalValue());
   EXPECT_EQ(kTotalBytes, pipeline_->GetTotalBytes());
-  EXPECT_EQ(0, pipeline_->GetBufferedBytes());
+  EXPECT_FALSE(pipeline_->DidLoadingProgress());
 }
 
 TEST_F(PipelineTest, GetBufferedTimeRanges) {
@@ -477,7 +476,10 @@ TEST_F(PipelineTest, GetBufferedTimeRanges) {
 
   EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
 
+  EXPECT_FALSE(pipeline_->DidLoadingProgress());
   pipeline_->AddBufferedByteRange(0, kTotalBytes / 8);
+  EXPECT_TRUE(pipeline_->DidLoadingProgress());
+  EXPECT_FALSE(pipeline_->DidLoadingProgress());
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
   EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));
@@ -486,8 +488,11 @@ TEST_F(PipelineTest, GetBufferedTimeRanges) {
   ExpectSeek(kSeekTime);
   DoSeek(kSeekTime);
 
+  EXPECT_FALSE(pipeline_->DidLoadingProgress());
   pipeline_->AddBufferedByteRange(kTotalBytes / 2,
                                   kTotalBytes / 2 + kTotalBytes / 8);
+  EXPECT_TRUE(pipeline_->DidLoadingProgress());
+  EXPECT_FALSE(pipeline_->DidLoadingProgress());
   EXPECT_EQ(2u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
   EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));
