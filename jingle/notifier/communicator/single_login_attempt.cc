@@ -41,6 +41,7 @@ SingleLoginAttempt::~SingleLoginAttempt() {}
 
 void SingleLoginAttempt::OnConnect(
     base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
+  DVLOG(1) << "Connected to " << current_settings_->ToString();
   delegate_->OnConnect(base_task);
 }
 

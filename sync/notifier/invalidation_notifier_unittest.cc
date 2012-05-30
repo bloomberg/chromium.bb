@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/base/notifier_options.h"
+#include "jingle/notifier/listener/fake_push_client.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
@@ -33,7 +34,7 @@ class InvalidationNotifierTest : public testing::Test {
         new TestURLRequestContextGetter(message_loop_.message_loop_proxy());
     invalidation_notifier_.reset(
         new InvalidationNotifier(
-            notifier_options,
+            scoped_ptr<notifier::PushClient>(new notifier::FakePushClient()),
             InvalidationVersionMap(),
             browser_sync::MakeWeakHandle(
                 base::WeakPtr<InvalidationStateTracker>()),
@@ -77,16 +78,11 @@ TEST_F(InvalidationNotifierTest, Basic) {
   invalidation_notifier_->SetUniqueId("fake_id");
   invalidation_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
 
-  invalidation_notifier_->OnConnect(fake_base_task_.AsWeakPtr());
   invalidation_notifier_->OnSessionStatusChanged(true);
 
   invalidation_notifier_->WriteState("new_fake_state");
 
   invalidation_notifier_->OnInvalidate(type_payloads);
-
-  // Shouldn't trigger notification state change.
-  invalidation_notifier_->OnDisconnect();
-  invalidation_notifier_->OnConnect(fake_base_task_.AsWeakPtr());
 
   invalidation_notifier_->OnSessionStatusChanged(false);
 }

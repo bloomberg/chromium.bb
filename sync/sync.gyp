@@ -213,8 +213,6 @@
       'conditions': [
         ['OS != "android"', {
           'sources': [
-            'notifier/cache_invalidation_packet_handler.cc',
-            'notifier/cache_invalidation_packet_handler.h',
             'notifier/chrome_invalidation_client.cc',
             'notifier/chrome_invalidation_client.h',
             'notifier/chrome_system_resources.cc',
@@ -228,6 +226,8 @@
             'notifier/non_blocking_invalidation_notifier.cc',
             'notifier/p2p_notifier.h',
             'notifier/p2p_notifier.cc',
+            'notifier/push_client_channel.cc',
+            'notifier/push_client_channel.h',
             'notifier/registration_manager.cc',
             'notifier/registration_manager.h',
             'notifier/state_writer.h',
@@ -586,12 +586,12 @@
         'conditions': [
           ['OS != "android"', {
             'sources': [
-              'notifier/cache_invalidation_packet_handler_unittest.cc',
               'notifier/chrome_invalidation_client_unittest.cc',
               'notifier/chrome_system_resources_unittest.cc',
               'notifier/invalidation_notifier_unittest.cc',
               'notifier/non_blocking_invalidation_notifier_unittest.cc',
               'notifier/p2p_notifier_unittest.cc',
+              'notifier/push_client_channel_unittest.cc',
               'notifier/registration_manager_unittest.cc',
             ],
           }],

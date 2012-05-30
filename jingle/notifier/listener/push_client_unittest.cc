@@ -33,13 +33,13 @@ class PushClientTest : public testing::Test {
 };
 
 // Make sure calling CreateDefault on the IO thread doesn't blow up.
-TEST_F(PushClientTest, OnIOThread) {
+TEST_F(PushClientTest, CreateDefaultOnIOThread) {
   const scoped_ptr<PushClient> push_client(
       PushClient::CreateDefault(notifier_options_));
 }
 
 // Make sure calling CreateDefault on a non-IO thread doesn't blow up.
-TEST_F(PushClientTest, OffIOThread) {
+TEST_F(PushClientTest, CreateDefaultOffIOThread) {
   base::Thread thread("Non-IO thread");
   EXPECT_TRUE(thread.Start());
   thread.message_loop()->PostTask(
@@ -47,6 +47,13 @@ TEST_F(PushClientTest, OffIOThread) {
       base::Bind(base::IgnoreResult(&PushClient::CreateDefault),
                  notifier_options_));
   thread.Stop();
+}
+
+// Make sure calling CreateDefaultOnIOThread on the IO thread doesn't
+// blow up.
+TEST_F(PushClientTest, CreateDefaultOnIOThreadOnIOThread) {
+  const scoped_ptr<PushClient> push_client(
+      PushClient::CreateDefaultOnIOThread(notifier_options_));
 }
 
 }  // namespace

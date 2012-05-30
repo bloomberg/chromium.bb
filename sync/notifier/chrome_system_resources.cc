@@ -15,7 +15,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "sync/notifier/cache_invalidation_packet_handler.h"
+#include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/invalidation_util.h"
 
 namespace sync_notifier {
@@ -192,60 +192,15 @@ void ChromeStorage::RunAndDeleteReadKeyCallback(
   delete callback;
 }
 
-ChromeNetwork::ChromeNetwork()
-    : packet_handler_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
-
-ChromeNetwork::~ChromeNetwork() {
-  STLDeleteElements(&network_status_receivers_);
-}
-
-void ChromeNetwork::SendMessage(const std::string& outgoing_message) {
-  if (packet_handler_) {
-    packet_handler_->SendMessage(outgoing_message);
-  }
-}
-
-void ChromeNetwork::SetMessageReceiver(
-    invalidation::MessageCallback* incoming_receiver) {
-  incoming_receiver_.reset(incoming_receiver);
-}
-
-void ChromeNetwork::AddNetworkStatusReceiver(
-    invalidation::NetworkStatusCallback* network_status_receiver) {
-  network_status_receivers_.push_back(network_status_receiver);
-}
-
-void ChromeNetwork::SetSystemResources(
-    invalidation::SystemResources* resources) {
-  // Do nothing.
-}
-
-void ChromeNetwork::UpdatePacketHandler(
-    CacheInvalidationPacketHandler* packet_handler) {
-  packet_handler_ = packet_handler;
-  if (packet_handler_ != NULL) {
-    packet_handler_->SetMessageReceiver(
-        new invalidation::MessageCallback(
-            base::Bind(&ChromeNetwork::HandleInboundMessage,
-                       weak_factory_.GetWeakPtr())));
-  }
-  packet_handler_->SendSubscriptionRequest();
-}
-
-void ChromeNetwork::HandleInboundMessage(const std::string& incoming_message) {
-  if (incoming_receiver_.get()) {
-    incoming_receiver_->Run(incoming_message);
-  }
-}
-
-ChromeSystemResources::ChromeSystemResources(StateWriter* state_writer)
+ChromeSystemResources::ChromeSystemResources(
+    scoped_ptr<notifier::PushClient> push_client,
+    StateWriter* state_writer)
     : is_started_(false),
       logger_(new ChromeLogger()),
       internal_scheduler_(new ChromeScheduler()),
       listener_scheduler_(new ChromeScheduler()),
       storage_(new ChromeStorage(state_writer, internal_scheduler_.get())),
-      network_(new ChromeNetwork()) {
+      push_client_channel_(push_client.Pass()) {
 }
 
 ChromeSystemResources::~ChromeSystemResources() {
@@ -283,8 +238,8 @@ ChromeStorage* ChromeSystemResources::storage() {
   return storage_.get();
 }
 
-ChromeNetwork* ChromeSystemResources::network() {
-  return network_.get();
+PushClientChannel* ChromeSystemResources::network() {
+  return &push_client_channel_;
 }
 
 ChromeScheduler* ChromeSystemResources::internal_scheduler() {

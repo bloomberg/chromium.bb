@@ -8,7 +8,7 @@
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/v2/types.pb.h"
-#include "jingle/notifier/base/fake_base_task.h"
+#include "jingle/notifier/listener/fake_push_client.h"
 #include "sync/notifier/chrome_invalidation_client.h"
 #include "sync/notifier/state_writer.h"
 #include "sync/syncable/model_type.h"
@@ -65,13 +65,17 @@ class MockStateWriter : public StateWriter {
 
 class ChromeInvalidationClientTest : public testing::Test {
  protected:
+  ChromeInvalidationClientTest()
+      : client_(
+          scoped_ptr<notifier::PushClient>(
+              new notifier::FakePushClient())) {}
+
   virtual void SetUp() {
     client_.Start(kClientId, kClientInfo, kState,
                   InvalidationVersionMap(),
                   browser_sync::MakeWeakHandle(
                       mock_invalidation_state_tracker_.AsWeakPtr()),
-                  &mock_listener_, &mock_state_writer_,
-                  fake_base_task_.AsWeakPtr());
+                  &mock_listener_, &mock_state_writer_);
   }
 
   virtual void TearDown() {
@@ -127,7 +131,6 @@ class ChromeInvalidationClientTest : public testing::Test {
       mock_invalidation_state_tracker_;
   StrictMock<MockStateWriter> mock_state_writer_;
   StrictMock<MockInvalidationClient> mock_invalidation_client_;
-  notifier::FakeBaseTask fake_base_task_;
   ChromeInvalidationClient client_;
 };
 

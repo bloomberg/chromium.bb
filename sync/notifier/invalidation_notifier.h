@@ -20,8 +20,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
-#include "jingle/notifier/base/notifier_options.h"
-#include "jingle/notifier/communicator/login.h"
 #include "sync/notifier/chrome_invalidation_client.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/state_writer.h"
@@ -29,18 +27,21 @@
 #include "sync/syncable/model_type.h"
 #include "sync/util/weak_handle.h"
 
+namespace notifier {
+class PushClient;
+}  // namespace notifier
+
 namespace sync_notifier {
 
 // This class must live on the IO thread.
 class InvalidationNotifier
     : public SyncNotifier,
-      public notifier::LoginDelegate,
       public ChromeInvalidationClient::Listener,
       public StateWriter {
  public:
   // |invalidation_state_tracker| must be initialized.
   InvalidationNotifier(
-      const notifier::NotifierOptions& notifier_options,
+      scoped_ptr<notifier::PushClient> push_client,
       const InvalidationVersionMap& initial_max_invalidation_versions,
       const browser_sync::WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
@@ -59,11 +60,6 @@ class InvalidationNotifier
       syncable::ModelTypeSet enabled_types) OVERRIDE;
   virtual void SendNotification(
       syncable::ModelTypeSet changed_types) OVERRIDE;
-
-  // notifier::LoginDelegate implementation.
-  virtual void OnConnect(
-      base::WeakPtr<buzz::XmppTaskParentInterface> base_task) OVERRIDE;
-  virtual void OnDisconnect() OVERRIDE;
 
   // ChromeInvalidationClient::Listener implementation.
   virtual void OnInvalidate(
@@ -87,9 +83,6 @@ class InvalidationNotifier
   };
   State state_;
 
-  // Used to build parameters for |login_|.
-  const notifier::NotifierOptions notifier_options_;
-
   // Passed to |invalidation_client_|.
   const InvalidationVersionMap initial_max_invalidation_versions_;
 
@@ -108,10 +101,6 @@ class InvalidationNotifier
 
   // The state to pass to |chrome_invalidation_client_|.
   std::string invalidation_state_;
-
-  // The XMPP connection manager.
-  // TODO(akalin): Use PushClient instead.
-  scoped_ptr<notifier::Login> login_;
 
   // The invalidation client.
   ChromeInvalidationClient invalidation_client_;

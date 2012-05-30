@@ -28,11 +28,14 @@ namespace buzz {
 class XmppTaskParentInterface;
 }  // namespace buzz
 
+namespace notifier {
+class PushClient;
+}  // namespace notifier
+
 namespace sync_notifier {
 
 using invalidation::InvalidationListener;
 
-class CacheInvalidationPacketHandler;
 class RegistrationManager;
 
 // ChromeInvalidationClient is not thread-safe and lives on the sync
@@ -51,14 +54,14 @@ class ChromeInvalidationClient
     virtual void OnSessionStatusChanged(bool has_session) = 0;
   };
 
-  ChromeInvalidationClient();
+  explicit ChromeInvalidationClient(
+      scoped_ptr<notifier::PushClient> push_client);
 
   // Calls Stop().
   virtual ~ChromeInvalidationClient();
 
   // Does not take ownership of |listener| or |state_writer|.
   // |invalidation_state_tracker| must be initialized.
-  // |base_task| must still be non-NULL.
   void Start(
       const std::string& client_id, const std::string& client_info,
       const std::string& state,
@@ -66,15 +69,9 @@ class ChromeInvalidationClient
       const browser_sync::WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
       Listener* listener,
-      StateWriter* state_writer,
-      base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
+      StateWriter* state_writer);
 
-  void Stop();
-
-  // Changes the task used to |base_task|, which must still be
-  // non-NULL.  Must only be called between calls to Start() and
-  // Stop().
-  void ChangeBaseTask(base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
+  void UpdateCredentials(const std::string& email, const std::string& token);
 
   // Register the sync types that we're interested in getting
   // notifications for.  May be called at any time.
@@ -116,6 +113,8 @@ class ChromeInvalidationClient
  private:
   friend class ChromeInvalidationClientTest;
 
+  void Stop();
+
   void EmitInvalidation(
       syncable::ModelTypeSet types, const std::string& payload);
 
@@ -127,8 +126,6 @@ class ChromeInvalidationClient
   Listener* listener_;
   StateWriter* state_writer_;
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
-  scoped_ptr<CacheInvalidationPacketHandler>
-      cache_invalidation_packet_handler_;
   scoped_ptr<RegistrationManager> registration_manager_;
   // Stored to pass to |registration_manager_| on start.
   syncable::ModelTypeSet registered_types_;

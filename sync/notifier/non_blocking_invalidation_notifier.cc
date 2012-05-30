@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
+#include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/invalidation_notifier.h"
 
 namespace sync_notifier {
@@ -82,7 +83,7 @@ void NonBlockingInvalidationNotifier::Core::Initialize(
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   invalidation_notifier_.reset(
       new InvalidationNotifier(
-          notifier_options,
+          notifier::PushClient::CreateDefaultOnIOThread(notifier_options),
           initial_max_invalidation_versions,
           invalidation_state_tracker,
           client_info));

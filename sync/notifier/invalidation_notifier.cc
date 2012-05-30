@@ -6,8 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
-#include "jingle/notifier/base/const_communicator.h"
-#include "jingle/notifier/base/notifier_options_util.h"
+#include "jingle/notifier/listener/push_client.h"
 #include "net/url_request/url_request_context.h"
 #include "sync/notifier/sync_notifier_observer.h"
 #include "sync/syncable/model_type_payload_map.h"
@@ -17,22 +16,16 @@
 namespace sync_notifier {
 
 InvalidationNotifier::InvalidationNotifier(
-    const notifier::NotifierOptions& notifier_options,
+    scoped_ptr<notifier::PushClient> push_client,
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const browser_sync::WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     const std::string& client_info)
     : state_(STOPPED),
-      notifier_options_(notifier_options),
       initial_max_invalidation_versions_(initial_max_invalidation_versions),
       invalidation_state_tracker_(invalidation_state_tracker),
-      client_info_(client_info) {
-  DCHECK_EQ(notifier::NOTIFICATION_SERVER,
-            notifier_options.notification_method);
-  DCHECK(notifier_options_.request_context_getter);
-  // TODO(akalin): Replace NonThreadSafe checks with IO thread checks.
-  DCHECK(notifier_options_.request_context_getter->GetIOMessageLoopProxy()->
-      BelongsToCurrentThread());
+      client_info_(client_info),
+      invalidation_client_(push_client.Pass()) {
 }
 
 InvalidationNotifier::~InvalidationNotifier() {
@@ -64,25 +57,16 @@ void InvalidationNotifier::SetState(const std::string& state) {
 
 void InvalidationNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
-  CHECK(!invalidation_client_id_.empty());
-  DVLOG(1) << "Updating credentials for " << email;
-  buzz::XmppClientSettings xmpp_client_settings =
-      notifier::MakeXmppClientSettings(notifier_options_, email, token);
-  if (state_ >= CONNECTING) {
-    login_->UpdateXmppSettings(xmpp_client_settings);
-  } else {
-    DVLOG(1) << "First time updating credentials: connecting";
-    login_.reset(
-        new notifier::Login(this,
-                            xmpp_client_settings,
-                            notifier_options_.request_context_getter,
-                            notifier::GetServerList(notifier_options_),
-                            notifier_options_.try_ssltcp_first,
-                            notifier_options_.auth_mechanism));
-    login_->StartConnection();
-    state_ = CONNECTING;
+  if (state_ == STOPPED) {
+    invalidation_client_.Start(
+        invalidation_client_id_, client_info_, invalidation_state_,
+        initial_max_invalidation_versions_,
+        invalidation_state_tracker_,
+        this, this);
+    invalidation_state_.clear();
+    state_ = STARTED;
   }
+  invalidation_client_.UpdateCredentials(email, token);
 }
 
 void InvalidationNotifier::UpdateEnabledTypes(
@@ -96,31 +80,6 @@ void InvalidationNotifier::SendNotification(
     syncable::ModelTypeSet changed_types) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   // Do nothing.
-}
-
-void InvalidationNotifier::OnConnect(
-    base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
-  DVLOG(1) << "OnConnect";
-  if (state_ >= STARTED) {
-    invalidation_client_.ChangeBaseTask(base_task);
-  } else {
-    DVLOG(1) << "First time connecting: starting invalidation client with id "
-             << invalidation_client_id_ << " and client info "
-             << client_info_;
-    invalidation_client_.Start(
-        invalidation_client_id_, client_info_, invalidation_state_,
-        initial_max_invalidation_versions_,
-        invalidation_state_tracker_,
-        this, this, base_task);
-    invalidation_state_.clear();
-    state_ = STARTED;
-  }
-}
-
-void InvalidationNotifier::OnDisconnect() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
-  DVLOG(1) << "OnDisconnect";
 }
 
 void InvalidationNotifier::OnInvalidate(

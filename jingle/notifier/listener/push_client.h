@@ -27,6 +27,12 @@ class PushClient {
   static scoped_ptr<PushClient> CreateDefault(
       const NotifierOptions& notifier_options);
 
+  // Creates a default blocking PushClient implementation from the
+  // given options.  Must be called from the IO thread (according to
+  // |notifier_options|).
+  static scoped_ptr<PushClient> CreateDefaultOnIOThread(
+      const NotifierOptions& notifier_options);
+
   // Manage the list of observers for incoming notifications.
   virtual void AddObserver(PushClientObserver* observer) = 0;
   virtual void RemoveObserver(PushClientObserver* observer) = 0;

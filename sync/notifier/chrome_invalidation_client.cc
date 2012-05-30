@@ -14,7 +14,7 @@
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/v2/types.pb.h"
-#include "sync/notifier/cache_invalidation_packet_handler.h"
+#include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/registration_manager.h"
 #include "sync/syncable/model_type.h"
@@ -23,14 +23,16 @@ namespace {
 
 const char kApplicationName[] = "chrome-sync";
 
-}  // anonymous namespace
+}  // namespace
 
 namespace sync_notifier {
 
 ChromeInvalidationClient::Listener::~Listener() {}
 
-ChromeInvalidationClient::ChromeInvalidationClient()
-    : chrome_system_resources_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+ChromeInvalidationClient::ChromeInvalidationClient(
+    scoped_ptr<notifier::PushClient> push_client)
+    : chrome_system_resources_(push_client.Pass(),
+                               ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       listener_(NULL),
       state_writer_(NULL),
       ticl_ready_(false) {
@@ -51,8 +53,7 @@ void ChromeInvalidationClient::Start(
     const browser_sync::WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     Listener* listener,
-    StateWriter* state_writer,
-    base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
+    StateWriter* state_writer) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   Stop();
 
@@ -91,32 +92,25 @@ void ChromeInvalidationClient::Start(
       invalidation::CreateInvalidationClient(
           &chrome_system_resources_, client_type, client_id,
           kApplicationName, this));
-  ChangeBaseTask(base_task);
   invalidation_client_->Start();
 
   registration_manager_.reset(
       new RegistrationManager(invalidation_client_.get()));
 }
 
-void ChromeInvalidationClient::ChangeBaseTask(
-    base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
-  DCHECK(invalidation_client_.get());
-  DCHECK(base_task.get());
-  cache_invalidation_packet_handler_.reset(
-      new CacheInvalidationPacketHandler(base_task));
-  chrome_system_resources_.network()->UpdatePacketHandler(
-      cache_invalidation_packet_handler_.get());
+void ChromeInvalidationClient::UpdateCredentials(
+    const std::string& email, const std::string& token) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  chrome_system_resources_.network()->UpdateCredentials(email, token);
 }
 
 void ChromeInvalidationClient::Stop() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   if (!invalidation_client_.get()) {
-    DCHECK(!cache_invalidation_packet_handler_.get());
     return;
   }
 
   registration_manager_.reset();
-  cache_invalidation_packet_handler_.reset();
   chrome_system_resources_.Stop();
   invalidation_client_->Stop();
 

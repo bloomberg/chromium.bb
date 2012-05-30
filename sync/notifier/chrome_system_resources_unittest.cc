@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 
 #include "google/cacheinvalidation/include/types.h"
+#include "jingle/notifier/listener/fake_push_client.h"
 #include "sync/notifier/state_writer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,7 +49,9 @@ class MockStorageCallback {
 class ChromeSystemResourcesTest : public testing::Test {
  protected:
   ChromeSystemResourcesTest()
-      : chrome_system_resources_(&mock_state_writer_) {}
+      : chrome_system_resources_(
+          scoped_ptr<notifier::PushClient>(new notifier::FakePushClient()),
+          &mock_state_writer_) {}
 
   virtual ~ChromeSystemResourcesTest() {}
 

@@ -20,11 +20,14 @@
 #include "base/message_loop.h"
 #include "base/threading/non_thread_safe.h"
 #include "google/cacheinvalidation/include/system-resources.h"
+#include "sync/notifier/push_client_channel.h"
 #include "sync/notifier/state_writer.h"
 
-namespace sync_notifier {
+namespace notifier {
+class PushClient;
+}  // namespace notifier
 
-class CacheInvalidationPacketHandler;
+namespace sync_notifier {
 
 class ChromeLogger : public invalidation::Logger {
  public:
@@ -114,38 +117,10 @@ class ChromeStorage : public invalidation::Storage {
   std::string cached_state_;
 };
 
-class ChromeNetwork : public invalidation::NetworkChannel {
- public:
-  ChromeNetwork();
-
-  virtual ~ChromeNetwork();
-
-  void UpdatePacketHandler(CacheInvalidationPacketHandler* packet_handler);
-
-  // invalidation::NetworkChannel implementation.
-  virtual void SendMessage(const std::string& outgoing_message) OVERRIDE;
-
-  virtual void SetMessageReceiver(
-      invalidation::MessageCallback* incoming_receiver) OVERRIDE;
-
-  virtual void AddNetworkStatusReceiver(
-      invalidation::NetworkStatusCallback* network_status_receiver) OVERRIDE;
-
-  virtual void SetSystemResources(
-      invalidation::SystemResources* resources) OVERRIDE;
-
- private:
-  void HandleInboundMessage(const std::string& incoming_message);
-
-  CacheInvalidationPacketHandler* packet_handler_;
-  scoped_ptr<invalidation::MessageCallback> incoming_receiver_;
-  std::vector<invalidation::NetworkStatusCallback*> network_status_receivers_;
-  base::WeakPtrFactory<ChromeNetwork> weak_factory_;
-};
-
 class ChromeSystemResources : public invalidation::SystemResources {
  public:
-  explicit ChromeSystemResources(StateWriter* state_writer);
+  ChromeSystemResources(scoped_ptr<notifier::PushClient> push_client,
+                        StateWriter* state_writer);
 
   virtual ~ChromeSystemResources();
 
@@ -157,7 +132,7 @@ class ChromeSystemResources : public invalidation::SystemResources {
   virtual std::string platform() const OVERRIDE;
   virtual ChromeLogger* logger() OVERRIDE;
   virtual ChromeStorage* storage() OVERRIDE;
-  virtual ChromeNetwork* network() OVERRIDE;
+  virtual PushClientChannel* network() OVERRIDE;
   virtual ChromeScheduler* internal_scheduler() OVERRIDE;
   virtual ChromeScheduler* listener_scheduler() OVERRIDE;
 
@@ -168,7 +143,7 @@ class ChromeSystemResources : public invalidation::SystemResources {
   scoped_ptr<ChromeScheduler> internal_scheduler_;
   scoped_ptr<ChromeScheduler> listener_scheduler_;
   scoped_ptr<ChromeStorage> storage_;
-  scoped_ptr<ChromeNetwork> network_;
+  PushClientChannel push_client_channel_;
 };
 
 }  // namespace sync_notifier
