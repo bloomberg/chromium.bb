@@ -439,15 +439,17 @@ SkBitmap ThumbnailGenerator::GetClippedBitmap(const SkBitmap& bitmap,
 
 void ThumbnailGenerator::UpdateThumbnailIfNecessary(
     WebContents* web_contents) {
+  content::RenderWidgetHostView* view = web_contents->GetRenderWidgetHostView();
+  if (!view)
+    return;
+  bool surface_available = view->IsSurfaceAvailableForCopy();
+  // Skip if we can't update the thumbnail.
+  if (!surface_available)
+    return;
   const GURL& url = web_contents->GetURL();
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   history::TopSites* top_sites = profile->GetTopSites();
-  bool surface_available =
-      web_contents->GetRenderWidgetHostView()->IsSurfaceAvailableForCopy();
-  // Skip if we can't update the thumbnail.
-  if (!surface_available)
-    return;
   // Skip if we don't need to update the thumbnail.
   if (!ShouldUpdateThumbnail(profile, top_sites, url))
     return;
