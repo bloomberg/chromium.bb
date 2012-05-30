@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/rand_util_c.h"
+#include "base/rand_util.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
@@ -54,9 +54,9 @@ PP_Bool StartPpapiProxy(PP_Instance instance) {
 
 int UrandomFD(void) {
 #if defined(OS_POSIX)
-  return GetUrandomFD();
+  return base::GetUrandomFD();
 #else
-  return 0;
+  return -1;
 #endif
 }
 

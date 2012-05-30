@@ -20,7 +20,7 @@ extern "C" {
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/rand_util_c.h"
+#include "base/rand_util.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
@@ -266,7 +266,7 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
 
   {
     // Allow access to /dev/urandom.
-    GetUrandomFD();
+    base::GetUrandomFD();
   }
 
   // Process-type dependent warm-up.

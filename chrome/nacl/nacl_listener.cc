@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/rand_util_c.h"
+#include "base/rand_util.h"
 #include "chrome/common/nacl_messages.h"
 #include "chrome/nacl/nacl_validation_db.h"
 #include "chrome/nacl/nacl_validation_query.h"
@@ -192,7 +192,7 @@ void NaClListener::OnMsgStart(const nacl::NaClStartParams& params) {
   std::vector<nacl::FileDescriptor> handles = params.handles;
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
-  args->urandom_fd = dup(GetUrandomFD());
+  args->urandom_fd = dup(base::GetUrandomFD());
   if (args->urandom_fd < 0) {
     LOG(ERROR) << "Failed to dup() the urandom FD";
     return;

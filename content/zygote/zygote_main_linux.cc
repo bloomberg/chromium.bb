@@ -22,7 +22,6 @@
 #include "base/pickle.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "base/rand_util_c.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
@@ -340,7 +339,7 @@ FILE* fopen_override(const char* path, const char* mode)  __asm__ ("fopen");
 __attribute__ ((__visibility__("default")))
 FILE* fopen_override(const char* path, const char* mode) {
   if (g_am_zygote_or_renderer && strcmp(path, kUrandomDevPath) == 0) {
-    int fd = HANDLE_EINTR(dup(GetUrandomFD()));
+    int fd = HANDLE_EINTR(dup(base::GetUrandomFD()));
     if (fd < 0) {
       PLOG(ERROR) << "dup() failed.";
       return NULL;
@@ -356,7 +355,7 @@ FILE* fopen_override(const char* path, const char* mode) {
 __attribute__ ((__visibility__("default")))
 FILE* fopen64(const char* path, const char* mode) {
   if (g_am_zygote_or_renderer && strcmp(path, kUrandomDevPath) == 0) {
-    int fd = HANDLE_EINTR(dup(GetUrandomFD()));
+    int fd = HANDLE_EINTR(dup(base::GetUrandomFD()));
     if (fd < 0) {
       PLOG(ERROR) << "dup() failed.";
       return NULL;
@@ -379,7 +378,7 @@ int xstat_override(int version,
 __attribute__ ((__visibility__("default")))
 int xstat_override(int version, const char *path, struct stat *buf) {
   if (g_am_zygote_or_renderer && strcmp(path, kUrandomDevPath) == 0) {
-    int result = __fxstat(version, GetUrandomFD(), buf);
+    int result = __fxstat(version, base::GetUrandomFD(), buf);
     return result;
   } else {
     CHECK_EQ(0, pthread_once(&g_libc_file_io_funcs_guard,
@@ -396,7 +395,7 @@ int xstat64_override(int version,
 __attribute__ ((__visibility__("default")))
 int xstat64_override(int version, const char *path, struct stat64 *buf) {
   if (g_am_zygote_or_renderer && strcmp(path, kUrandomDevPath) == 0) {
-    int result = __fxstat64(version, GetUrandomFD(), buf);
+    int result = __fxstat64(version, base::GetUrandomFD(), buf);
     return result;
   } else {
     CHECK_EQ(0, pthread_once(&g_libc_file_io_funcs_guard,
