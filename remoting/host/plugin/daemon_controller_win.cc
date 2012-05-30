@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/windows_version.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/plugin/daemon_installer_win.h"
@@ -183,6 +184,9 @@ DaemonControllerWin::~DaemonControllerWin() {
 }
 
 remoting::DaemonController::State DaemonControllerWin::GetState() {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    return STATE_NOT_IMPLEMENTED;
+  }
   // TODO(alexeypa): Make the thread alertable, so we can switch to APC
   // notifications rather than polling.
   ScopedScHandle service;

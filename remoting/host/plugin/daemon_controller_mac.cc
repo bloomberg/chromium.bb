@@ -123,6 +123,9 @@ void DaemonControllerMac::DeregisterForPreferencePaneNotifications() {
 }
 
 DaemonController::State DaemonControllerMac::GetState() {
+  if (!base::mac::IsOSSnowLeopardOrLater()) {
+    return DaemonController::STATE_NOT_IMPLEMENTED;
+  }
   pid_t job_pid = base::mac::PIDForJob(kServiceName);
   if (job_pid < 0) {
     return DaemonController::STATE_NOT_INSTALLED;
