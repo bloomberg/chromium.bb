@@ -226,10 +226,10 @@ bool ProtectedPrefsWatcher::HasBackup() const {
 void ProtectedPrefsWatcher::InitBackup() {
   PrefService* prefs = profile_->GetPrefs();
   for (size_t i = 0; i < arraysize(kProtectedPrefNames); ++i) {
-    if (prefs->HasPrefPath(kProtectedPrefNames[i])) {
-      prefs->Set(GetBackupNameFor(kProtectedPrefNames[i]).c_str(),
-                 *prefs->GetUserPrefValue(kProtectedPrefNames[i]));
-    }
+    const base::Value* user_value =
+        prefs->GetUserPrefValue(kProtectedPrefNames[i]);
+    if (user_value)
+      prefs->Set(GetBackupNameFor(kProtectedPrefNames[i]).c_str(), *user_value);
   }
   ListPrefUpdate extension_ids_update(prefs, kBackupExtensionsIDs);
   base::ListValue* extension_ids = extension_ids_update.Get();
