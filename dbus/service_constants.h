@@ -900,6 +900,17 @@ const char kPropertyChangedSignal[] = "PropertyChanged";
 const char kConnectedProperty[] = "Connected";
 }  // namespace bluetooth_input
 
+namespace bluetooth_outofband {
+// Bluetooth OutOfBand service identifiers.
+const char kBluetoothOutOfBandServiceName[] = "org.bluez";
+const char kBluetoothOutOfBandInterface[] = "org.bluez.OutOfBand";
+
+// Bluetooth OutOfBand methods.
+const char kReadLocalData[] = "ReadLocalData";
+const char kAddRemoteData[] = "AddRemoteData";
+const char kRemoveRemoteData[] = "RemoveRemoteData";
+}  // namespace bluetooth_outofband
+
 namespace cros_disks {
 const char kCrosDisksInterface[] = "org.chromium.CrosDisks";
 const char kCrosDisksServicePath[] = "/org/chromium/CrosDisks";
