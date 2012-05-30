@@ -484,7 +484,7 @@ notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis,
 	    int32_t value);
 void
 notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
-	   uint32_t state);
+	   enum wl_keyboard_key_state state);
 
 void
 notify_pointer_focus(struct wl_seat *seat, struct weston_output *output,

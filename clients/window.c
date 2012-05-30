@@ -1819,12 +1819,14 @@ pointer_handle_axis(void *data, struct wl_pointer *pointer,
 
 static void
 keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
-		    uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
+		    uint32_t serial, uint32_t time, uint32_t key,
+		    uint32_t state_w)
 {
 	struct input *input = data;
 	struct window *window = input->keyboard_focus;
 	struct display *d = input->display;
 	uint32_t code, num_syms;
+	enum wl_keyboard_key_state state = state_w;
 	const xkb_keysym_t *syms;
 	xkb_keysym_t sym;
 	xkb_mod_mask_t mask;
@@ -1852,7 +1854,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
 	if (num_syms == 1 && syms[0] == XKB_KEY_F5 &&
 	    input->modifiers == MOD_ALT_MASK) {
-		if (state)
+		if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
 			window_set_maximized(window,
 					     window->type != TYPE_MAXIMIZED);
 	} else if (window->key_handler) {

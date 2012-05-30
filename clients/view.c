@@ -160,11 +160,12 @@ button_handler(struct widget *widget, struct input *input, uint32_t time,
 
 static void
 key_handler(struct window *window, struct input *input, uint32_t time,
-	    uint32_t key, uint32_t unicode, uint32_t state, void *data)
+	    uint32_t key, uint32_t unicode,
+	    enum wl_keyboard_key_state state, void *data)
 {
 	struct view *view = data;
 
-	if(!state)
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
 	        return;
 
 	switch (key) {

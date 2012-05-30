@@ -139,12 +139,13 @@ keyboard_focus_handler(struct window *window,
 
 static void
 key_handler(struct window *window, struct input *input, uint32_t time,
-	    uint32_t key, uint32_t sym, uint32_t state, void *data)
+	    uint32_t key, uint32_t sym, enum wl_keyboard_key_state state,
+	    void *data)
 {
 	struct resizor *resizor = data;
 	struct rectangle allocation;
 
-	if (state == 0)
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
 		return;
 
 	window_get_allocation(resizor->window, &allocation);

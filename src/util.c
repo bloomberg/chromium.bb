@@ -249,17 +249,18 @@ struct binding_keyboard_grab {
 
 static void
 binding_key(struct wl_keyboard_grab *grab,
-	    uint32_t time, uint32_t key, uint32_t state)
+	    uint32_t time, uint32_t key, uint32_t state_w)
 {
 	struct binding_keyboard_grab *b =
 		container_of(grab, struct binding_keyboard_grab, grab);
 	struct wl_resource *resource;
 	struct wl_display *display;
+	enum wl_keyboard_key_state state = state_w;
 	uint32_t serial;
 
 	resource = grab->keyboard->focus_resource;
 	if (key == b->key) {
-		if (!state) {
+		if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
 			wl_keyboard_end_grab(grab->keyboard);
 			free(b);
 		}

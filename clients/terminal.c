@@ -2079,7 +2079,8 @@ handle_bound_key(struct terminal *terminal,
 
 static void
 key_handler(struct window *window, struct input *input, uint32_t time,
-	    uint32_t key, uint32_t sym, uint32_t state, void *data)
+	    uint32_t key, uint32_t sym, enum wl_keyboard_key_state state,
+	    void *data)
 {
 	struct terminal *terminal = data;
 	char ch[MAX_RESPONSE];
@@ -2089,12 +2090,13 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	modifiers = input_get_modifiers(input);
 	if ((modifiers & MOD_CONTROL_MASK) &&
 	    (modifiers & MOD_SHIFT_MASK) &&
-	    state && handle_bound_key(terminal, input, sym, time))
+	    state == WL_KEYBOARD_KEY_STATE_PRESSED &&
+	    handle_bound_key(terminal, input, sym, time))
 		return;
 
 	switch (sym) {
 	case XKB_KEY_F11:
-		if (!state)
+		if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
 			break;
 		terminal->fullscreen ^= 1;
 		window_set_fullscreen(window, terminal->fullscreen);
@@ -2205,7 +2207,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		break;
 	}
 
-	if (state && len > 0)
+	if (state == WL_KEYBOARD_KEY_STATE_PRESSED && len > 0)
 		terminal_write(terminal, ch, len);
 }
 

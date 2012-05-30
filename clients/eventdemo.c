@@ -188,15 +188,19 @@ keyboard_focus_handler(struct window *window,
  */
 static void
 key_handler(struct window *window, struct input *input, uint32_t time,
-            uint32_t key, uint32_t unicode, uint32_t state, void *data)
+            uint32_t key, uint32_t unicode, enum wl_keyboard_key_state state,
+	    void *data)
 {
 	uint32_t modifiers = input_get_modifiers(input);
 
 	if(!log_key)
 		return;
 
-	printf("key key: %d, unicode: %d, state: %d, modifiers: %d\n",
-	       key, unicode, state, modifiers);
+	printf("key key: %d, unicode: %d, state: %s, modifiers: 0x%x\n",
+	       key, unicode,
+	       (state == WL_KEYBOARD_KEY_STATE_PRESSED) ? "pressed" :
+							  "released",
+	       modifiers);
 }
 
 /**

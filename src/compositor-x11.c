@@ -586,7 +586,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				 * event below. */
 				notify_key(&c->base.seat->seat,
 					   weston_compositor_get_time(),
-					   key_release->detail - 8, 0);
+					   key_release->detail - 8,
+					   WL_KEYBOARD_KEY_STATE_RELEASED);
 				free(prev);
 				prev = NULL;
 				break;
@@ -623,7 +624,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			key_press = (xcb_key_press_event_t *) event;
 			notify_key(&c->base.seat->seat,
 				   weston_compositor_get_time(),
-				   key_press->detail - 8, 1);
+				   key_press->detail - 8,
+				   WL_KEYBOARD_KEY_STATE_PRESSED);
 			break;
 		case XCB_KEY_RELEASE:
 			prev = event;
@@ -707,7 +709,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		key_release = (xcb_key_press_event_t *) prev;
 		notify_key(&c->base.seat->seat,
 			   weston_compositor_get_time(),
-			   key_release->detail - 8, 0);
+			   key_release->detail - 8,
+			   WL_KEYBOARD_KEY_STATE_RELEASED);
 		free(prev);
 		prev = NULL;
 		break;

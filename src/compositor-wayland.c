@@ -607,7 +607,9 @@ input_handle_key(void *data, struct wl_keyboard *keyboard,
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	notify_key(&c->base.seat->seat, time, key, state);
+	notify_key(&c->base.seat->seat, time, key,
+		   state ? WL_KEYBOARD_KEY_STATE_PRESSED :
+			   WL_KEYBOARD_KEY_STATE_RELEASED);
 }
 
 static void
