@@ -18,6 +18,12 @@ del path
 from chromite.buildbot import constants
 
 
+def _rindex(haystack, needle):
+  if needle not in haystack:
+    raise ValueError('%s not found' % needle)
+  return len(haystack) - haystack[::-1].index(needle) - 1
+
+
 def FindTarget(target, argv):
   # Compatibility for badly named scripts that can't yet be fixed.
   if target.endswith('.py'):
@@ -25,7 +31,7 @@ def FindTarget(target, argv):
 
   # Turn the path into something we can import from the chromite tree.
   target = target.split(os.sep)
-  target = target[target.index('chromite'):]
+  target = target[_rindex(target, 'chromite'):]
   # Our bin dir is just scripts stuff.
   if target[1] == 'bin':
     target[1] = 'scripts'
