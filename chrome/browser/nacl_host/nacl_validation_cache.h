@@ -22,7 +22,7 @@ class NaClValidationCache {
   }
 
   // Is the validation signature in the database?
-  bool QueryKnownToValidate(const std::string& signature);
+  bool QueryKnownToValidate(const std::string& signature, bool reorder);
 
   // Put the validation signature in the database.
   void SetKnownToValidate(const std::string& signature);

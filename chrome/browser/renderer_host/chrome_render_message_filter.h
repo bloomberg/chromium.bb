@@ -165,6 +165,8 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   // The Profile associated with our renderer process.  This should only be
   // accessed on the UI thread!
   Profile* profile_;
+  // Copied from the profile so that it can be read on the IO thread.
+  bool off_the_record_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   // Used to look up permissions at database creation time.

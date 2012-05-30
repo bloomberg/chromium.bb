@@ -52,8 +52,8 @@ class NaClBrowser {
     return validation_cache_.GetValidationCacheKey();
   }
 
-  bool QueryKnownToValidate(const std::string& signature);
-  void SetKnownToValidate(const std::string& signature);
+  bool QueryKnownToValidate(const std::string& signature, bool off_the_record);
+  void SetKnownToValidate(const std::string& signature, bool off_the_record);
 
  private:
   friend struct DefaultSingletonTraits<NaClBrowser>;
@@ -95,6 +95,7 @@ class NaClBrowser {
   NaClResourceState irt_state_;
 
   NaClValidationCache validation_cache_;
+  NaClValidationCache off_the_record_validation_cache_;
   FilePath validation_cache_file_path_;
   bool validation_cache_is_enabled_;
   bool validation_cache_is_modified_;

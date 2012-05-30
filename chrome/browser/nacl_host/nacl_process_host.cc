@@ -114,7 +114,7 @@ struct NaClProcessHost::NaClInternal {
 
 // -----------------------------------------------------------------------------
 
-NaClProcessHost::NaClProcessHost(const GURL& manifest_url)
+NaClProcessHost::NaClProcessHost(const GURL& manifest_url, bool off_the_record)
     : manifest_url_(manifest_url),
 #if defined(OS_WIN)
       process_launched_by_broker_(false),
@@ -127,7 +127,8 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url)
 #endif
       internal_(new NaClInternal()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      enable_exception_handling_(false) {
+      enable_exception_handling_(false),
+      off_the_record_(off_the_record) {
   process_.reset(content::BrowserChildProcessHost::Create(
       content::PROCESS_TYPE_NACL_LOADER, this));
 
@@ -683,11 +684,11 @@ bool NaClProcessHost::StartWithLaunchedProcess() {
 void NaClProcessHost::OnQueryKnownToValidate(const std::string& signature,
                                              bool* result) {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
-  *result = nacl_browser->QueryKnownToValidate(signature);
+  *result = nacl_browser->QueryKnownToValidate(signature, off_the_record_);
 }
 
 void NaClProcessHost::OnSetKnownToValidate(const std::string& signature) {
-  NaClBrowser::GetInstance()->SetKnownToValidate(signature);
+  NaClBrowser::GetInstance()->SetKnownToValidate(signature, off_the_record_);
 }
 
 #if defined(OS_WIN)

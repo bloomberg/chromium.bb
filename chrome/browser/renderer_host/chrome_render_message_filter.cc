@@ -55,6 +55,7 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     net::URLRequestContextGetter* request_context)
     : render_process_id_(render_process_id),
       profile_(profile),
+      off_the_record_(profile_->IsOffTheRecord()),
       request_context_(request_context),
       extension_info_map_(ExtensionSystem::Get(profile)->info_map()),
       cookie_settings_(CookieSettings::Factory::GetForProfile(profile)),
@@ -157,7 +158,7 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
 void ChromeRenderMessageFilter::OnLaunchNaCl(const GURL& manifest_url,
                                              int socket_count,
                                              IPC::Message* reply_msg) {
-  NaClProcessHost* host = new NaClProcessHost(manifest_url);
+  NaClProcessHost* host = new NaClProcessHost(manifest_url, off_the_record_);
   host->Launch(this, socket_count, reply_msg, extension_info_map_);
 }
 #endif

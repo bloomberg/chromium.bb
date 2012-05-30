@@ -275,20 +275,32 @@ const FilePath& NaClBrowser::GetIrtFilePath() {
   return irt_filepath_;
 }
 
-bool NaClBrowser::QueryKnownToValidate(const std::string& signature) {
-  bool result = validation_cache_.QueryKnownToValidate(signature);
-  LogCacheQuery(result ? CACHE_HIT : CACHE_MISS);
-  // Queries can modify the MRU order of the cache.
-  MarkValidationCacheAsModified();
-  return result;
+bool NaClBrowser::QueryKnownToValidate(const std::string& signature,
+                                       bool off_the_record) {
+  if (off_the_record) {
+    // If we're off the record, don't reorder the main cache.
+    return validation_cache_.QueryKnownToValidate(signature, false) ||
+        off_the_record_validation_cache_.QueryKnownToValidate(signature, true);
+  } else {
+    bool result = validation_cache_.QueryKnownToValidate(signature, true);
+    LogCacheQuery(result ? CACHE_HIT : CACHE_MISS);
+    // Queries can modify the MRU order of the cache.
+    MarkValidationCacheAsModified();
+    return result;
+  }
 }
 
-void NaClBrowser::SetKnownToValidate(const std::string& signature) {
-  validation_cache_.SetKnownToValidate(signature);
-  // The number of sets should be equal to the number of cache misses, minus
-  // validation failures and successful validations where stubout occurs.
-  LogCacheSet(CACHE_HIT);
-  MarkValidationCacheAsModified();
+void NaClBrowser::SetKnownToValidate(const std::string& signature,
+                                     bool off_the_record) {
+  if (off_the_record) {
+    off_the_record_validation_cache_.SetKnownToValidate(signature);
+  } else {
+    validation_cache_.SetKnownToValidate(signature);
+    // The number of sets should be equal to the number of cache misses, minus
+    // validation failures and successful validations where stubout occurs.
+    LogCacheSet(CACHE_HIT);
+    MarkValidationCacheAsModified();
+  }
 }
 
 void NaClBrowser::MarkValidationCacheAsModified() {

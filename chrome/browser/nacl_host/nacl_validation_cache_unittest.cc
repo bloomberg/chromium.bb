@@ -39,37 +39,37 @@ class NaClValidationCacheTest : public ::testing::Test {
 
 TEST_F(NaClValidationCacheTest, Sanity) {
   ASSERT_EQ(0, (int) cache1.size());
-  ASSERT_FALSE(cache1.QueryKnownToValidate(sig1));
-  ASSERT_FALSE(cache1.QueryKnownToValidate(sig2));
+  ASSERT_FALSE(cache1.QueryKnownToValidate(sig1, true));
+  ASSERT_FALSE(cache1.QueryKnownToValidate(sig2, true));
 }
 
 TEST_F(NaClValidationCacheTest, Sig1) {
   cache1.SetKnownToValidate(sig1);
   ASSERT_EQ(1, (int) cache1.size());
-  ASSERT_TRUE(cache1.QueryKnownToValidate(sig1));
-  ASSERT_FALSE(cache1.QueryKnownToValidate(sig2));
+  ASSERT_TRUE(cache1.QueryKnownToValidate(sig1, true));
+  ASSERT_FALSE(cache1.QueryKnownToValidate(sig2, true));
 }
 
 TEST_F(NaClValidationCacheTest, Sig2) {
   cache1.SetKnownToValidate(sig2);
   ASSERT_EQ(1, (int) cache1.size());
-  ASSERT_FALSE(cache1.QueryKnownToValidate(sig1));
-  ASSERT_TRUE(cache1.QueryKnownToValidate(sig2));
+  ASSERT_FALSE(cache1.QueryKnownToValidate(sig1, true));
+  ASSERT_TRUE(cache1.QueryKnownToValidate(sig2, true));
 }
 
 TEST_F(NaClValidationCacheTest, SigBoth) {
   cache1.SetKnownToValidate(sig1);
   cache1.SetKnownToValidate(sig2);
   ASSERT_EQ(2, (int) cache1.size());
-  ASSERT_TRUE(cache1.QueryKnownToValidate(sig1));
-  ASSERT_TRUE(cache1.QueryKnownToValidate(sig2));
+  ASSERT_TRUE(cache1.QueryKnownToValidate(sig1, true));
+  ASSERT_TRUE(cache1.QueryKnownToValidate(sig2, true));
 }
 
 TEST_F(NaClValidationCacheTest, DoubleSet) {
   cache1.SetKnownToValidate(sig1);
   cache1.SetKnownToValidate(sig1);
   ASSERT_EQ(1, (int) cache1.size());
-  ASSERT_TRUE(cache1.QueryKnownToValidate(sig1));
+  ASSERT_TRUE(cache1.QueryKnownToValidate(sig1, true));
 }
 
 TEST_F(NaClValidationCacheTest, EmptyIdentical) {
@@ -115,13 +115,26 @@ TEST_F(NaClValidationCacheTest, InOrderIdentical) {
   ASSERT_TRUE(IsIdentical(cache1, cache2));
 }
 
-TEST_F(NaClValidationCacheTest, OutOfOrderNotIdentical) {
+TEST_F(NaClValidationCacheTest, QueryReorders) {
   cache1.SetKnownToValidate(sig1);
   cache1.SetKnownToValidate(sig2);
 
   cache2.SetKnownToValidate(sig2);
   cache2.SetKnownToValidate(sig1);
 
+  ASSERT_FALSE(IsIdentical(cache1, cache2));
+  cache2.QueryKnownToValidate(sig2, true);
+  ASSERT_TRUE(IsIdentical(cache1, cache2));
+}
+
+TEST_F(NaClValidationCacheTest, ForceNoReorder) {
+  cache1.SetKnownToValidate(sig1);
+  cache1.SetKnownToValidate(sig2);
+
+  cache2.SetKnownToValidate(sig2);
+  cache2.SetKnownToValidate(sig1);
+
+  cache2.QueryKnownToValidate(sig2, false);
   ASSERT_FALSE(IsIdentical(cache1, cache2));
 }
 

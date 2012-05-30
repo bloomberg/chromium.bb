@@ -32,9 +32,15 @@ NaClValidationCache::~NaClValidationCache() {
   // Make clang's style checking happy by adding a destructor.
 }
 
-bool NaClValidationCache::QueryKnownToValidate(const std::string& signature) {
+bool NaClValidationCache::QueryKnownToValidate(const std::string& signature,
+                                               bool reorder) {
   if (signature.length() == kValidationCacheEntrySize) {
-    ValidationCacheType::iterator iter = validation_cache_.Get(signature);
+    ValidationCacheType::iterator iter;
+    if (reorder) {
+      iter = validation_cache_.Get(signature);
+    } else {
+      iter = validation_cache_.Peek(signature);
+    }
     if (iter != validation_cache_.end()) {
       return iter->second;
     }
