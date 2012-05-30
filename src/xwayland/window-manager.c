@@ -497,8 +497,6 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	fprintf(stderr, "XCB_MAP_REQUEST (window %d, %p, frame %d)\n",
 		window->id, window, window->frame_id);
 
-	xcb_change_save_set(wm->conn, XCB_SET_MODE_DELETE, window->id);
-
 	xcb_map_window(wm->conn, map_request->window);
 	xcb_map_window(wm->conn, window->frame_id);
 
