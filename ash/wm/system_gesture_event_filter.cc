@@ -131,6 +131,21 @@ class SystemPinchHandler {
         break;
       }
 
+      case ui::ET_GESTURE_MULTIFINGER_SWIPE: {
+        // Snap for left/right swipes.
+        if (event.delta_x()) {
+          SnapSizer sizer(target_,
+              gfx::Point(),
+              event.delta_x() < 0 ? internal::SnapSizer::LEFT_EDGE :
+                                    internal::SnapSizer::RIGHT_EDGE,
+              Shell::GetInstance()->GetGridSize());
+          target_->SetBounds(sizer.GetSnapBounds(target_->bounds()));
+          phantom_.Hide();
+          pinch_factor_ = 1.0;
+        }
+        break;
+      }
+
       default:
         break;
     }
