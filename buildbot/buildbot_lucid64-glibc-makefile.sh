@@ -108,7 +108,7 @@ else
   echo @@@BUILD_STEP archive_glibc@@@
   rev="$(tools/glibc_revision.sh)"
   wget http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$rev"/glibc_x86.tar.gz -O /dev/null ||
-  $GSUTIL -h Cache-Control:no-cache cp -a public-read \
+  $GSUTIL cp -a public-read \
     tools/glibc.tgz \
     gs://nativeclient-archive2/between_builders/x86_glibc/r"$rev"/glibc_x86.tar.gz
   echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$rev"/@@@
@@ -135,7 +135,7 @@ else
 
   echo @@@BUILD_STEP archive_build@@@
   for suffix in gz gz.sha1hash bz2 bz2.sha1hash xz xz.sha1hash ; do
-    $GSUTIL -h Cache-Control:no-cache cp -a public-read \
+    $GSUTIL cp -a public-read \
       tools/toolchain.tar.$suffix \
       gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_linux_x86.tar.$suffix
   done
@@ -144,7 +144,7 @@ else
       tools/SRC/*.patch* ; do
     filename="${patch#tools/}"
     filename="${filename#SRC/}"
-    $GSUTIL -h Cache-Control:no-cache cp -a public-read \
+    $GSUTIL cp -a public-read \
       $patch \
       gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/$filename
   done

@@ -70,7 +70,7 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
     GS_BASE=gs://nativeclient-archive2/toolchain
     for destrevision in ${BUILDBOT_GOT_REVISION} latest ; do
       for suffix in tgz tgz.sha1hash ; do
-        ${gsutil} -h Cache-Control:no-cache cp -a public-read \
+        ${gsutil} cp -a public-read \
           naclsdk.${suffix} \
           ${GS_BASE}/${destrevision}/naclsdk_${PLATFORM}_x86.${suffix}
       done

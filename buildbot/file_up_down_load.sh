@@ -55,7 +55,7 @@ readonly BASE_BETWEEN_BOTS=nativeclient-archive2/between_builders
 Upload() {
   echo  "uploading: $2"
   echo  @@@STEP_LINK@download@${URL_PREFIX_UI}/$2@@@
-  ${GS_UTIL} -h Cache-Control:no-cache cp -a public-read $1 gs://$2
+  ${GS_UTIL} cp -a public-read $1 gs://$2
 }
 
 

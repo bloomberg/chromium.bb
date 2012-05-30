@@ -78,7 +78,7 @@ else
 
   echo @@@BUILD_STEP archive_build@@@
   for suffix in gz gz.sha1hash bz2 bz2.sha1hash ; do
-    $GSUTIL -h Cache-Control:no-cache cp -a public-read \
+    $GSUTIL cp -a public-read \
       tools/toolchain.tar.$suffix \
       gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_mac_x86.tar.$suffix
   done

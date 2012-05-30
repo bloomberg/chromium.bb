@@ -39,7 +39,7 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   echo @@@BUILD_STEP archive_build@@@
   gsutil=buildbot/gsutil.sh
   GS_BASE=gs://nativeclient-archive2/toolchain
-  ${gsutil} -h Cache-Control:no-cache cp -a public-read \
+  ${gsutil} cp -a public-read \
       arm-trusted.tgz \
       ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_linux_arm-trusted.tgz
   ${gsutil} -h Cache-Control:no-cache cp -a public-read \
