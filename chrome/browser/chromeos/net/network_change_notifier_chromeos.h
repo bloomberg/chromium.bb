@@ -54,8 +54,8 @@ class NetworkChangeNotifierChromeos
                                 const chromeos::Network* network) OVERRIDE;
 
   // Initiate online status change reporting.
-  void ReportOnlineStateChange(bool is_online);
-  void ReportOnlineStateChangeOnUIThread();
+  void ReportConnectionChange(bool is_online);
+  void ReportConnectionChangeOnUIThread();
   // Callback from online_notification_task_ when online state notification
   // is actually scheduled.
   void OnOnlineStateNotificationFired();
@@ -70,10 +70,16 @@ class NetworkChangeNotifierChromeos
   // manager.
   static void UpdateInitialState(NetworkChangeNotifierChromeos* self);
 
+  // Gets connection type for given |network|.
+  static net::NetworkChangeNotifier::ConnectionType GetNetworkConnectionType(
+      const chromeos::Network* network);
+
   // True if we previously had an active network around.
   bool has_active_network_;
   // Current active network's connection state.
   chromeos::ConnectionState connection_state_;
+  // Current active network's connection type.
+  net::NetworkChangeNotifier::ConnectionType connection_type_;
   // Current active network's service path.
   std::string service_path_;
   // Current active network's IP address.
