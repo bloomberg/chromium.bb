@@ -245,7 +245,13 @@ IN_PROC_BROWSER_TEST_F(RecordApiTest, CheckCapture) {
   EXPECT_TRUE(VerifyURLHandling(result.get(), strategy));
 }
 
-IN_PROC_BROWSER_TEST_F(RecordApiTest, CheckPlayback) {
+#if defined(ADDRESS_SANITIZER)
+// Times out under ASan, see http://crbug.com/130267.
+#define MAYBE_CheckPlayback DISABLED_CheckPlayback
+#else
+#define MAYBE_CheckPlayback CheckPlayback
+#endif
+IN_PROC_BROWSER_TEST_F(RecordApiTest, MAYBE_CheckPlayback) {
   ScopedTempDir user_data_dir;
 
   EXPECT_TRUE(user_data_dir.CreateUniqueTempDir());
