@@ -483,6 +483,15 @@
                 'CHROMIUM_STRIP_SAVE_FILE': 'app/app_asan.saves',
               },
             }],
+            ['component=="shared_library"', {
+              'xcode_settings': {
+                'LD_RUNPATH_SEARCH_PATHS': [
+                  # Get back from Chromium.app/Contents/Versions/V/
+                  #                                    Helper.app/Contents/MacOS
+                  '@loader_path/../../../../../../..',
+                ],
+              },
+            }],
           ],
         },  # target helper_app
         {
