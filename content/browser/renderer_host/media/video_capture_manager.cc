@@ -194,6 +194,15 @@ void VideoCaptureManager::OnClose(int capture_session_id) {
   if (device_it != devices_.end()) {
     video_capture_device = device_it->second;
     devices_.erase(device_it);
+
+    Controllers::iterator cit = controllers_.find(video_capture_device);
+    if (cit != controllers_.end()) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&VideoCaptureController::StopSession,
+                     cit->second->controller, capture_session_id));
+    }
+
     if (!DeviceInUse(video_capture_device)) {
       // No other users of this device, deallocate (if not done already) and
       // delete the device. No need to take care of the controller, that is done
@@ -205,14 +214,6 @@ void VideoCaptureManager::OnClose(int capture_session_id) {
         controllers_.erase(cit);
       }
       delete video_capture_device;
-    } else {
-      Controllers::iterator cit = controllers_.find(video_capture_device);
-      if (cit != controllers_.end()) {
-        BrowserThread::PostTask(
-            BrowserThread::IO, FROM_HERE,
-            base::Bind(&VideoCaptureController::StopSession,
-                       cit->second->controller, capture_session_id));
-      }
     }
   }
   PostOnClosed(capture_session_id);

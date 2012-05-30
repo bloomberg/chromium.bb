@@ -215,8 +215,10 @@ void VideoCaptureController::StopSession(
   if (!client)
     client = FindClient(session_id, controller_clients_);
 
-  if (client)
+  if (client) {
     client->session_closed = true;
+    client->event_handler->OnPaused(client->controller_id);
+  }
 }
 
 void VideoCaptureController::ReturnBuffer(

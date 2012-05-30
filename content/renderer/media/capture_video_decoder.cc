@@ -76,12 +76,18 @@ void CaptureVideoDecoder::OnStopped(media::VideoCapture* capture) {
 }
 
 void CaptureVideoDecoder::OnPaused(media::VideoCapture* capture) {
-  NOTIMPLEMENTED();
+  message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&CaptureVideoDecoder::OnPausedOnDecoderThread,
+                 this, capture));
 }
 
 void CaptureVideoDecoder::OnError(media::VideoCapture* capture,
                                   int error_code) {
-  NOTIMPLEMENTED();
+  message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&CaptureVideoDecoder::OnPausedOnDecoderThread,
+                 this, capture));
 }
 
 void CaptureVideoDecoder::OnRemoved(media::VideoCapture* capture) {
@@ -128,6 +134,9 @@ void CaptureVideoDecoder::ReadOnDecoderThread(const ReadCB& read_cb) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   CHECK(read_cb_.is_null());
   read_cb_ = read_cb;
+  if (state_ == kPaused) {
+    DeliverFrame(media::VideoFrame::CreateEmptyFrame());
+  }
 }
 
 void CaptureVideoDecoder::ResetOnDecoderThread(const base::Closure& closure) {
@@ -159,9 +168,20 @@ void CaptureVideoDecoder::OnStoppedOnDecoderThread(
   vc_manager_->RemoveDevice(video_stream_id_, this);
 }
 
+void CaptureVideoDecoder::OnPausedOnDecoderThread(
+    media::VideoCapture* capture) {
+  DVLOG(1) << "OnPausedOnDecoderThread";
+  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  state_ = kPaused;
+  if (!read_cb_.is_null()) {
+    DeliverFrame(media::VideoFrame::CreateEmptyFrame());
+  }
+}
+
 void CaptureVideoDecoder::OnDeviceInfoReceivedOnDecoderThread(
     media::VideoCapture* capture,
     const media::VideoCaptureParams& device_info) {
+  DVLOG(1) << "OnDeviceInfoReceivedOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (device_info.width != natural_size_.width() ||
       device_info.height != natural_size_.height()) {

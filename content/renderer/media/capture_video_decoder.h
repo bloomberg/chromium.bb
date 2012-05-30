@@ -76,6 +76,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
   void StopOnDecoderThread(const base::Closure& closure);
 
   void OnStoppedOnDecoderThread(media::VideoCapture* capture);
+  void OnPausedOnDecoderThread(media::VideoCapture* capture);
   void OnBufferReadyOnDecoderThread(
       media::VideoCapture* capture,
       scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf);

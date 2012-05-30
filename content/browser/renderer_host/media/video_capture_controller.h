@@ -33,7 +33,7 @@ namespace media_stream {
 class VideoCaptureManager;
 }  // namespace media_stream
 
-class VideoCaptureController
+class CONTENT_EXPORT VideoCaptureController
     : public base::RefCountedThreadSafe<VideoCaptureController>,
       public media::VideoCaptureDevice::EventHandler {
  public:
