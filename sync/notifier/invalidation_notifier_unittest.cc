@@ -52,19 +52,13 @@ class InvalidationNotifierTest : public testing::Test {
     invalidation_notifier_.reset();
   }
 
-  MessageLoop message_loop_;
+  MessageLoopForIO message_loop_;
   scoped_ptr<InvalidationNotifier> invalidation_notifier_;
   StrictMock<MockSyncNotifierObserver> mock_observer_;
   notifier::FakeBaseTask fake_base_task_;
 };
 
-// Crashes on Linux and Mac, http://crbug.com/119467
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_Basic DISABLED_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
-TEST_F(InvalidationNotifierTest, MAYBE_Basic) {
+TEST_F(InvalidationNotifierTest, Basic) {
   InSequence dummy;
 
   syncable::ModelTypePayloadMap type_payloads;
