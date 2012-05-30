@@ -49,6 +49,7 @@ class ShellWindow : public content::NotificationObserver,
     // Specify the initial bounds of the window. If empty, the window will be a
     // default size.
     gfx::Rect bounds;
+    gfx::Size minimum_size;
   };
 
   static ShellWindow* Create(Profile* profile,

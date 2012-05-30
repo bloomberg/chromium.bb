@@ -15,6 +15,9 @@
     long? left;
     long? top;
 
+    long? min_width;
+    long? min_height;
+
     // Window type: 'panel' or 'shell' (defaults to 'shell')
     DOMString? type;
 

@@ -34,7 +34,7 @@ static const int kResizeBorderWidth = 5;
 
 class ShellWindowFrameView : public views::NonClientFrameView {
  public:
-  ShellWindowFrameView();
+  explicit ShellWindowFrameView(ShellWindowViews* window);
   virtual ~ShellWindowFrameView();
 
   // views::NonClientFrameView implementation.
@@ -46,12 +46,16 @@ class ShellWindowFrameView : public views::NonClientFrameView {
                              gfx::Path* window_mask) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE {}
   virtual void UpdateWindowIcon() OVERRIDE {}
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellWindowFrameView);
+
+  ShellWindowViews* window_;
 };
 
-ShellWindowFrameView::ShellWindowFrameView() {
+ShellWindowFrameView::ShellWindowFrameView(ShellWindowViews* window)
+  : window_(window) {
 }
 
 ShellWindowFrameView::~ShellWindowFrameView() {
@@ -64,6 +68,10 @@ gfx::Rect ShellWindowFrameView::GetBoundsForClientView() const {
 gfx::Rect ShellWindowFrameView::GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const {
   return client_bounds;
+}
+
+gfx::Size ShellWindowFrameView::GetMinimumSize() {
+  return window_->minimum_size_;
 }
 
 int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
@@ -111,6 +119,7 @@ ShellWindowViews::ShellWindowViews(Profile* profile,
   params.delegate = this;
   params.remove_standard_frame = use_custom_frame_;
   params.bounds = win_params.bounds;
+  minimum_size_ = win_params.minimum_size;
   window_->Init(params);
 #if defined(OS_WIN) && !defined(USE_AURA)
   std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
@@ -235,7 +244,7 @@ views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
   return frame;
 #else
   if (use_custom_frame_)
-    return new ShellWindowFrameView();
+    return new ShellWindowFrameView(this);
   return NULL;
 #endif
 }

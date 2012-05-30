@@ -50,6 +50,16 @@ bool AppWindowCreateFunction::RunImpl() {
           ShellWindow::CreateParams::FRAME_CUSTOM :
           ShellWindow::CreateParams::FRAME_CHROME;
     }
+
+    gfx::Size& minimum_size = create_params.minimum_size;
+    if (options->min_width.get())
+      minimum_size.set_width(*options->min_width);
+    if (options->min_height.get())
+      minimum_size.set_height(*options->min_height);
+    if (create_params.bounds.width() < minimum_size.width())
+      create_params.bounds.set_width(minimum_size.width());
+    if (create_params.bounds.height() < minimum_size.height())
+      create_params.bounds.set_height(minimum_size.height());
   }
   ShellWindow* shell_window =
       ShellWindow::Create(profile(), GetExtension(), url, create_params);

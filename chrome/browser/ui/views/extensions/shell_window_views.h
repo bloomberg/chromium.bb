@@ -71,6 +71,8 @@ class ShellWindowViews : public ShellWindow,
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
  private:
+  friend class ShellWindowFrameView;
+
   virtual ~ShellWindowViews();
 
   void OnViewWasResized();
@@ -81,6 +83,7 @@ class ShellWindowViews : public ShellWindow,
   gfx::ScopedSkRegion caption_region_;
 
   bool use_custom_frame_;
+  gfx::Size minimum_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindowViews);
 };
