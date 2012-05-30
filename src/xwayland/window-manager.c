@@ -474,8 +474,7 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 		XCB_EVENT_MASK_BUTTON_PRESS |
 		XCB_EVENT_MASK_BUTTON_RELEASE |
 		XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
-		XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |
-		XCB_EVENT_MASK_EXPOSURE;
+		XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT;
 
 	window->frame_id = xcb_generate_id(wm->conn);
 	xcb_create_window(wm->conn,
@@ -632,17 +631,6 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 		wl_event_loop_add_idle(wm->server->loop,
 				       weston_wm_window_draw_decoration,
 				       window);
-}
-
-static void
-weston_wm_handle_expose(struct weston_wm *wm, xcb_generic_event_t *event)
-{
-	struct weston_wm_window *window;
-	xcb_expose_event_t *expose = (xcb_expose_event_t *) event;
-
-	window = hash_table_lookup(wm->window_hash, expose->window);
-	fprintf(stderr, "XCB_EXPOSE (window %d, title %s, surface %p)\n",
-		window->id, window->name, window->surface);
 }
 
 static void
@@ -861,9 +849,6 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 		case XCB_BUTTON_PRESS:
 		case XCB_BUTTON_RELEASE:
 			weston_wm_handle_button(wm, event);
-			break;
-		case XCB_EXPOSE:
-			weston_wm_handle_expose(wm, event);
 			break;
 		case XCB_CREATE_NOTIFY:
 			weston_wm_handle_create_notify(wm, event);
