@@ -2043,6 +2043,55 @@ def GetTranslatedNexe(env, pexe):
 
 pre_base_env.AddMethod(GetTranslatedNexe)
 
+
+def ShouldTranslateToNexe(env, pexe):
+  """ Determine when we need to translate a Pexe to a Nexe.
+  """
+  # Check if we started with a pexe, so there is actually a translation step.
+  if not env.Bit('pnacl_generate_pexe'):
+    return False
+
+  # There is no bitcode for trusted code.
+  if env['NACL_BUILD_FAMILY'] == 'TRUSTED':
+    return False
+
+  # Often there is a build step (do_not_run_tests=1) and a test step
+  # (which is run with -j1). Normally we want to translate in the build step
+  # so we can translate in parallel. However when we do sandboxed translation
+  # on arm hw, we do the build step on x86 and translation on arm, so we have
+  # to force the translation to be done in the test step. Hence,
+  # we check the bit 'translate_in_build_step' / check if we are
+  # in the test step.
+  return (
+    env.Bit('translate_in_build_step') or not env.Bit('do_not_run_tests'))
+
+
+def CommandTestFileDumpCheck(env,
+                             name,
+                             target,
+                             check_file,
+                             objdump_flags):
+  """Create a test that disassembles a binary (|target|) and checks for
+  patterns in the |check_file|.  Disassembly is done using |objdump_flags|.
+  """
+  if ShouldTranslateToNexe(env, target):
+    target_obj = GetTranslatedNexe(env, target)
+  else:
+    target_obj = target
+  return CommandTest(env,
+                     name,
+                     ['${PYTHON}',
+                      env.File('${SCONSTRUCT_DIR}/tools/file_check.py'),
+                      '${OBJDUMP}',
+                      objdump_flags,
+                      target_obj,
+                      check_file],
+                     # don't run ${PYTHON} under the emulator.
+                     direct_emulation=False)
+
+pre_base_env.AddMethod(CommandTestFileDumpCheck)
+
+
 def CommandSelLdrTestNacl(env, name, nexe,
                           args = None,
                           log_verbosity=2,
@@ -2064,9 +2113,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
       env['TRUSTED_ENV'].Bit('windows')):
     return []
 
-  if (env.Bit('pnacl_generate_pexe') and
-      env['NACL_BUILD_FAMILY'] != 'TRUSTED' and
-      (env.Bit('translate_in_build_step') or not env.Bit('do_not_run_tests'))):
+  if ShouldTranslateToNexe(env, nexe):
     # The nexe is actually a pexe.  Translate it before we run it.
     nexe = GetTranslatedNexe(env, nexe)
   command = [nexe]

@@ -24,15 +24,10 @@ arm_float_abi_obj = env.ComponentObject('arm_float_abi_obj',
 
 
 # Disassemble the .o file and look for register passing.
-node = env.CommandTest('arm_float_abi_test.out',
-                       ['${PYTHON}',
-                        env.File('file_check.py'),
-                        '${OBJDUMP}',
-                        arm_float_abi_obj,
-                        env.File('arm_float_abi_test.c')],
-                       # don't run ${PYTHON} under the emulator.
-                       direct_emulation=False)
-
+node = env.CommandTestFileDumpCheck('arm_float_abi_test.out',
+                                    arm_float_abi_obj,
+                                    env.File('arm_float_abi_test.c'),
+                                    '-d')
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'nonpexe_tests', 'toolchain_tests'],
                        'run_arm_float_abi_test')

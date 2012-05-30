@@ -229,3 +229,33 @@ env.AddNodeToTestSuite(node,
                        ['toolchain_tests', 'small_tests'],
                        'run_wcstoll_test',
                        is_broken=env.Bit('nacl_glibc'))
+
+
+# Test that local variable dwarf info is preserved with linking and LTO.
+# Force '-g' on in case it was not turned on for some reason, and lower
+# optimization settings to prevent some optimizations that would convert
+# locals from llvm allocas to registers.
+# We may be able to remove this test once LLVM has an upstream regression test.
+debug_env = env.Clone()
+debug_env.Append(CFLAGS=['-g', '-O0'])
+debug_env.Append(CCFLAGS=['-g', '-O0'])
+dwarf_local_var_nexe = debug_env.ComponentProgram('dwarf_local_var',
+                                                  ['dwarf_local_var.c',
+                                                   'dwarf_local_var_dummy.c'],
+                                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
+# Sanity-check -- make sure it runs.
+node = debug_env.CommandSelLdrTestNacl('dwarf_local_var_run.out',
+                                       dwarf_local_var_nexe,
+                                       exit_status=55)
+debug_env.AddNodeToTestSuite(node,
+                             ['toolchain_tests', 'small_tests'],
+                             'run_dwarf_local_var_run_test')
+node = debug_env.CommandTestFileDumpCheck('dwarf_local_var_objdump.out',
+                                          dwarf_local_var_nexe,
+                                          debug_env.File('dwarf_local_var.c'),
+                                          '-W')
+debug_env.AddNodeToTestSuite(node,
+                             ['small_tests', 'toolchain_tests'],
+                             'run_dwarf_local_var_objdump_test',
+                 # http://code.google.com/p/nativeclient/issues/detail?id=2809
+                             is_broken=env.Bit('bitcode'))

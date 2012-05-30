@@ -5,7 +5,9 @@
 # A simple program to run objdump on a file and assert that the expected
 # code is generated.  Like LLVM's FileCheck.
 #
-# usage: %prog <objdump_command> <obj_file> <src_file_with_checks>
+# usage:
+#   %prog <objdump_command> <objdump_flag> <obj_file> <src_file_with_checks>
+# e.g., objdump_flag can be -W to check dwarf info, or -d for disassembly.
 
 import collections
 import re
@@ -22,16 +24,17 @@ def GetChecklist(src_file):
   return collections.deque(check_list)
 
 def Main(args):
-  assert(len(args) == 3)
+  assert(len(args) == 4)
   objdump = args[0]
-  obj_file = args[1]
-  src_file = open(args[2], 'r')
+  objdump_flag = args[1]
+  obj_file = args[2]
+  src_file = open(args[3], 'r')
 
   # Scan the source file for the "CHECK" list.
   check_list = GetChecklist(src_file)
   src_file.close()
 
-  objdump_args = [objdump, '-d', obj_file]
+  objdump_args = [objdump, objdump_flag, obj_file]
   proc = subprocess.Popen(objdump_args,
                           stdout=subprocess.PIPE,
                           bufsize=-1)
