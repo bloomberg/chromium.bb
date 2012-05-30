@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_TRAY_TRAY_BACKGROUND_VIEW_H_
 #pragma once
 
+#include "ash/ash_export.h"
 #include "ash/launcher/background_animator.h"
 #include "ash/system/tray/tray_views.h"
 
@@ -19,8 +20,8 @@ class TrayBackground;
 // his shown/hidden. It also inherits from ActionableView so that the tray
 // items can override PerformAction when clicked on.
 
-class TrayBackgroundView : public internal::ActionableView,
-                           public BackgroundAnimatorDelegate {
+class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
+                                      public BackgroundAnimatorDelegate {
  public:
   TrayBackgroundView();
   virtual ~TrayBackgroundView();
