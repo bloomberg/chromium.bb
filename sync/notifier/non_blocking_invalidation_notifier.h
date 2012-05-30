@@ -30,6 +30,7 @@ namespace sync_notifier {
 
 class NonBlockingInvalidationNotifier
     : public SyncNotifier,
+      // SyncNotifierObserver to "observe" our Core via WeakHandle.
       public SyncNotifierObserver {
  public:
   // |invalidation_state_tracker| must be initialized.

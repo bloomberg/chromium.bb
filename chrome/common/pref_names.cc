@@ -1553,6 +1553,9 @@ const char kSyncMaxInvalidationVersions[] = "sync.max_invalidation_versions";
 // disable/enable events.
 const char kSyncSessionsGUID[] = "sync.session_sync_guid";
 
+// Opaque state from the invalidation subsystem that is persisted via prefs.
+const char kInvalidatorInvalidationState[] = "invalidator.invalidation_state";
+
 // A string that can be used to restore sync encryption infrastructure on
 // startup so that the user doesn't need to provide credentials on each start.
 const char kSyncEncryptionBootstrapToken[] =

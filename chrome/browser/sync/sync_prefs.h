@@ -45,7 +45,6 @@ class SyncPrefObserver {
 //   sync_setup_wizard_unittest.cc
 //   two_client_preferences_sync_test.cc
 class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
-                  public sync_notifier::InvalidationStateTracker,
                   public content::NotificationObserver {
  public:
   // |pref_service| may be NULL (for unit tests), but in that case no
@@ -105,12 +104,6 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
   std::string GetSpareBootstrapToken() const;
   void SetSpareBootstrapToken(const std::string& token);
 #endif
-
-  // InvalidationStateTracker implementation.
-  virtual sync_notifier::InvalidationVersionMap
-      GetAllMaxVersions() const OVERRIDE;
-  virtual void SetMaxVersion(syncable::ModelType model_type,
-                             int64 max_version) OVERRIDE;
 
   // Merges the given set of types with the set of acknowledged types.
   void AcknowledgeSyncedTypes(syncable::ModelTypeSet types);

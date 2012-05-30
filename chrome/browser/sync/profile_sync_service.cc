@@ -117,6 +117,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       profile_(profile),
       // |profile| may be NULL in unit tests.
       sync_prefs_(profile_ ? profile_->GetPrefs() : NULL),
+      invalidator_storage_(profile_ ? profile_->GetPrefs(): NULL),
       sync_service_url_(kDevServerUrl),
       backend_initialized_(false),
       is_auth_in_progress_(false),
@@ -362,7 +363,8 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
 void ProfileSyncService::CreateBackend() {
   backend_.reset(
       new SyncBackendHost(profile_->GetDebugName(),
-                          profile_, sync_prefs_.AsWeakPtr()));
+                          profile_, sync_prefs_.AsWeakPtr(),
+                          invalidator_storage_.AsWeakPtr()));
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
@@ -525,6 +527,7 @@ void ProfileSyncService::DisableForUser() {
   // Clear prefs (including SyncSetupHasCompleted) before shutting down so
   // PSS clients don't think we're set up while we're shutting down.
   sync_prefs_.ClearPreferences();
+  invalidator_storage_.Clear();
   ClearUnrecoverableError();
   ShutdownImpl(true);
 

@@ -39,6 +39,7 @@ namespace browser_sync {
 
 class ChangeProcessor;
 struct Experiments;
+class InvalidatorStorage;
 class JsBackend;
 class JsEventHandler;
 class SyncBackendRegistrar;
@@ -148,10 +149,14 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Create a SyncBackendHost with a reference to the |frontend| that
   // it serves and communicates to via the SyncFrontend interface (on
   // the same thread it used to call the constructor).  Must outlive
-  // |sync_prefs|.
-  SyncBackendHost(const std::string& name,
-                  Profile* profile,
-                  const base::WeakPtr<SyncPrefs>& sync_prefs);
+  // |sync_prefs| and |invalidator_storage|.
+  SyncBackendHost(
+      const std::string& name,
+      Profile* profile,
+      const base::WeakPtr<SyncPrefs>& sync_prefs,
+      // TODO(tim): Temporary, remove when bug 124137 finished.
+      const base::WeakPtr<InvalidatorStorage>& invalidator_storage);
+
   // For testing.
   // TODO(skrul): Extract an interface so this is not needed.
   explicit SyncBackendHost(Profile* profile);

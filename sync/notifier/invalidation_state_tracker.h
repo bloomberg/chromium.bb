@@ -28,6 +28,12 @@ class InvalidationStateTracker {
   virtual void SetMaxVersion(syncable::ModelType model_type,
                              int64 max_version) = 0;
 
+  // Used by InvalidationClient for persistence. |state| is opaque data we can
+  // present back to the client (e.g. after a restart) for it to bootstrap
+  // itself.
+  virtual void SetInvalidationState(const std::string& state) = 0;
+  virtual std::string GetInvalidationState() const = 0;
+
  protected:
   virtual ~InvalidationStateTracker() {}
 };

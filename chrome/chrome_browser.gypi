@@ -2168,6 +2168,8 @@
         'browser/sync/glue/ui_data_type_controller.h',
         'browser/sync/glue/ui_model_worker.cc',
         'browser/sync/glue/ui_model_worker.h',
+        'browser/sync/invalidations/invalidator_storage.cc',
+        'browser/sync/invalidations/invalidator_storage.h',
         'browser/sync/backend_migrator.cc',
         'browser/sync/backend_migrator.h',
         'browser/sync/backend_unrecoverable_error_handler.cc',

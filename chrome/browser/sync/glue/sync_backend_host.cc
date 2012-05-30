@@ -28,6 +28,7 @@
 #include "chrome/browser/sync/glue/chrome_encryptor.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
+#include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -279,9 +280,11 @@ notifier::NotifierOptions ParseNotifierOptions(
 
 }  // namespace
 
-SyncBackendHost::SyncBackendHost(const std::string& name,
-                                 Profile* profile,
-                                 const base::WeakPtr<SyncPrefs>& sync_prefs)
+SyncBackendHost::SyncBackendHost(
+    const std::string& name,
+    Profile* profile,
+    const base::WeakPtr<SyncPrefs>& sync_prefs,
+    const base::WeakPtr<InvalidatorStorage>& invalidator_storage)
     : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
@@ -296,7 +299,7 @@ SyncBackendHost::SyncBackendHost(const std::string& name,
           ParseNotifierOptions(*CommandLine::ForCurrentProcess(),
                                profile_->GetRequestContext()),
           content::GetUserAgent(GURL()),
-          sync_prefs),
+          invalidator_storage),
       frontend_(NULL) {
 }
 

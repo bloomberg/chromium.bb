@@ -1547,6 +1547,7 @@
         'browser/sync/glue/typed_url_model_associator_unittest.cc',
         'browser/sync/glue/ui_data_type_controller_unittest.cc',
         'browser/sync/glue/ui_model_worker_unittest.cc',
+        'browser/sync/invalidations/invalidator_storage_unittest.cc',
         'browser/sync/profile_sync_components_factory_impl_unittest.cc',
         'browser/sync/profile_sync_components_factory_mock.cc',
         'browser/sync/profile_sync_components_factory_mock.h',

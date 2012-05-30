@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -639,6 +640,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // The class that handles getting, setting, and persisting sync
   // preferences.
   browser_sync::SyncPrefs sync_prefs_;
+
+  // TODO(tim): Move this to InvalidationService, once it exists. Bug 124137.
+  browser_sync::InvalidatorStorage invalidator_storage_;
 
   // TODO(ncarter): Put this in a profile, once there is UI for it.
   // This specifies where to find the sync server.

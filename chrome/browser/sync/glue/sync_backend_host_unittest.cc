@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
@@ -93,8 +94,10 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
   profile.CreateRequestContext();
 
   SyncPrefs sync_prefs(profile.GetPrefs());
+  InvalidatorStorage invalidator_storage(profile.GetPrefs());
   SyncBackendHost backend(profile.GetDebugName(),
-                          &profile, sync_prefs.AsWeakPtr());
+                          &profile, sync_prefs.AsWeakPtr(),
+                          invalidator_storage.AsWeakPtr());
 
   MockSyncFrontend mock_frontend;
   sync_api::SyncCredentials credentials;

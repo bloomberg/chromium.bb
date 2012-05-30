@@ -125,29 +125,6 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
   }
 }
 
-TEST_F(SyncPrefsTest, MaxInvalidationVersions) {
-  SyncPrefs sync_prefs(&pref_service_);
-
-  sync_notifier::InvalidationVersionMap expected_max_versions;
-  EXPECT_EQ(expected_max_versions, sync_prefs.GetAllMaxVersions());
-
-  expected_max_versions[syncable::BOOKMARKS] = 2;
-  sync_prefs.SetMaxVersion(syncable::BOOKMARKS, 2);
-  EXPECT_EQ(expected_max_versions, sync_prefs.GetAllMaxVersions());
-
-  expected_max_versions[syncable::PREFERENCES] = 5;
-  sync_prefs.SetMaxVersion(syncable::PREFERENCES, 5);
-  EXPECT_EQ(expected_max_versions, sync_prefs.GetAllMaxVersions());
-
-  expected_max_versions[syncable::APP_NOTIFICATIONS] = 3;
-  sync_prefs.SetMaxVersion(syncable::APP_NOTIFICATIONS, 3);
-  EXPECT_EQ(expected_max_versions, sync_prefs.GetAllMaxVersions());
-
-  expected_max_versions[syncable::APP_NOTIFICATIONS] = 4;
-  sync_prefs.SetMaxVersion(syncable::APP_NOTIFICATIONS, 4);
-  EXPECT_EQ(expected_max_versions, sync_prefs.GetAllMaxVersions());
-}
-
 class MockSyncPrefObserver : public SyncPrefObserver {
  public:
   MOCK_METHOD1(OnSyncManagedPrefChange, void(bool));
@@ -195,7 +172,6 @@ TEST_F(SyncPrefsTest, ClearPreferences) {
   EXPECT_FALSE(sync_prefs.HasSyncSetupCompleted());
   EXPECT_EQ(base::Time(), sync_prefs.GetLastSyncedTime());
   EXPECT_TRUE(sync_prefs.GetEncryptionBootstrapToken().empty());
-  EXPECT_TRUE(sync_prefs.GetAllMaxVersions().empty());
 
   sync_prefs.SetSyncSetupCompleted();
   sync_prefs.SetLastSyncedTime(base::Time::Now());
@@ -204,19 +180,12 @@ TEST_F(SyncPrefsTest, ClearPreferences) {
   EXPECT_TRUE(sync_prefs.HasSyncSetupCompleted());
   EXPECT_NE(base::Time(), sync_prefs.GetLastSyncedTime());
   EXPECT_EQ("token", sync_prefs.GetEncryptionBootstrapToken());
-  {
-    sync_notifier::InvalidationVersionMap expected_max_versions;
-    expected_max_versions[syncable::APP_NOTIFICATIONS] = 3;
-    sync_prefs.SetMaxVersion(syncable::APP_NOTIFICATIONS, 3);
-    EXPECT_EQ(expected_max_versions, sync_prefs.GetAllMaxVersions());
-  }
 
   sync_prefs.ClearPreferences();
 
   EXPECT_FALSE(sync_prefs.HasSyncSetupCompleted());
   EXPECT_EQ(base::Time(), sync_prefs.GetLastSyncedTime());
   EXPECT_TRUE(sync_prefs.GetEncryptionBootstrapToken().empty());
-  EXPECT_TRUE(sync_prefs.GetAllMaxVersions().empty());
 }
 
 TEST_F(SyncPrefsTest, NullPrefService) {
@@ -230,7 +199,6 @@ TEST_F(SyncPrefsTest, NullPrefService) {
   EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(non_passive_types).Empty());
   EXPECT_FALSE(sync_prefs.IsManaged());
   EXPECT_TRUE(sync_prefs.GetEncryptionBootstrapToken().empty());
-  EXPECT_TRUE(sync_prefs.GetAllMaxVersions().empty());
 }
 
 }  // namespace

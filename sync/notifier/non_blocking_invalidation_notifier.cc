@@ -14,6 +14,7 @@ namespace sync_notifier {
 
 class NonBlockingInvalidationNotifier::Core
     : public base::RefCountedThreadSafe<NonBlockingInvalidationNotifier::Core>,
+      // SyncNotifierObserver to observe the InvalidationNotifier we create.
       public SyncNotifierObserver {
  public:
   // Called on parent thread.  |delegate_observer| should be
@@ -35,7 +36,8 @@ class NonBlockingInvalidationNotifier::Core
   void UpdateCredentials(const std::string& email, const std::string& token);
   void UpdateEnabledTypes(syncable::ModelTypeSet enabled_types);
 
-  // SyncNotifierObserver implementation (all called on I/O thread).
+  // SyncNotifierObserver implementation (all called on I/O thread by
+  // InvalidationNotifier).
   virtual void OnIncomingNotification(
       const syncable::ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source);

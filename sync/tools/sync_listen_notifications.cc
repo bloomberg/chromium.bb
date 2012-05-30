@@ -85,6 +85,14 @@ class NullInvalidationStateTracker
               << syncable::ModelTypeToString(model_type) << " to "
               << max_invalidation_version;
   }
+
+  virtual std::string GetInvalidationState() const OVERRIDE {
+    return std::string();
+  }
+
+  virtual void SetInvalidationState(const std::string& state) OVERRIDE {
+    LOG(INFO) << "Setting invalidation state to: " << state;
+  }
 };
 
 const char kEmailSwitch[] = "email";

@@ -576,6 +576,8 @@ extern const char kSyncAcknowledgedSyncTypes[];
 extern const char kSyncMaxInvalidationVersions[];
 extern const char kSyncSessionsGUID[];
 
+extern const char kInvalidatorInvalidationState[];
+
 extern const char kSyncPromoStartupCount[];
 extern const char kSyncPromoViewCount[];
 extern const char kSyncPromoUserSkipped[];
