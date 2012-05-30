@@ -1,8 +1,9 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
+
 #include <assert.h>
 #include <pthread.h>
 #include <semaphore.h>
@@ -47,8 +48,12 @@ void create_and_join_threads(ThreadCallback *callbacks, int n) {
 
 /* Don't let various optimizations (e.g. tail call elimination) to happen. */
 NOINLINE void break_optimization() {
+#if defined(__pnacl__)
   volatile int foo;
   foo = 0;
+#else
+  asm volatile ("");
+#endif
 }
 
 /* -------------------------------------------------------------------------- */

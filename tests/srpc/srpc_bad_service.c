@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <errno.h>
@@ -103,7 +103,6 @@ static void *worker(void *arg) {
  * worker thread that invokes the bad message loop.
  */
 static void *acceptor(void *arg) {
-  int       first = (int) arg;
   int       d;
 
   while (-1 != (d = imc_accept(BOUND_SOCKET))) {
@@ -117,7 +116,6 @@ static void *acceptor(void *arg) {
     state->d = d;
     /* worker thread is responsible for state and d. */
     pthread_create(&worker_tid, NULL, worker, state);
-    first = 0;
   }
   return NULL;
 }
