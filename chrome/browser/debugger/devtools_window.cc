@@ -459,12 +459,8 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
 
 WebContents* DevToolsWindow::OpenURLFromTab(WebContents* source,
                                             const OpenURLParams& params) {
-  if (inspected_tab_) {
-    OpenURLParams forward_params = params;
-    forward_params.disposition = NEW_FOREGROUND_TAB;
-    forward_params.transition = content::PAGE_TRANSITION_LINK;
-    return inspected_tab_->web_contents()->OpenURL(forward_params);
-  }
+  if (inspected_tab_)
+    return inspected_tab_->web_contents()->OpenURL(params);
   return NULL;
 }
 
