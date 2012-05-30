@@ -1114,7 +1114,8 @@ ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
     fling_cancel.type = WebKit::WebInputEvent::GestureFlingCancel;
     host_->ForwardGestureEvent(fling_cancel);
   }
-  host_->ForwardGestureEvent(gesture);
+  if (gesture.type != WebKit::WebInputEvent::Undefined)
+    host_->ForwardGestureEvent(gesture);
 
   // If a gesture is not processed by the webpage, then WebKit processes it
   // (e.g. generates synthetic mouse events). So CONSUMED should be returned

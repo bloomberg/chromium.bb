@@ -365,6 +365,9 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     case ui::ET_GESTURE_LONG_PRESS:
       gesture_event.type = WebKit::WebInputEvent::GestureLongPress;
       break;
+    case ui::ET_GESTURE_TAP_UP:
+    case ui::ET_GESTURE_MULTIFINGER_SWIPE:
+      break;
     default:
       NOTREACHED() << "Unknown gesture type: " << event->type();
   }
