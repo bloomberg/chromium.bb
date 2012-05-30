@@ -44,4 +44,41 @@ ContentClient::ContentClient()
 ContentClient::~ContentClient() {
 }
 
+bool ContentClient::HasWebUIScheme(const GURL& url) const {
+  return false;
+}
+
+bool ContentClient::CanHandleWhileSwappedOut(const IPC::Message& message) {
+  return false;
+}
+
+std::string ContentClient::GetUserAgent() const {
+  return std::string();
+}
+
+string16 ContentClient::GetLocalizedString(int message_id) const {
+  return string16();
+}
+
+base::StringPiece ContentClient::GetDataResource(
+    int resource_id,
+    ui::ScaleFactor scale_factor) const {
+  return base::StringPiece();
+}
+
+#if defined(OS_WIN)
+bool ContentClient::SandboxPlugin(CommandLine* command_line,
+                                  sandbox::TargetPolicy* policy) {
+  return false;
+}
+#endif
+
+#if defined(OS_MACOSX)
+bool ContentClient::GetSandboxProfileForSandboxType(
+    int sandbox_type,
+    int* sandbox_profile_resource_id) const {
+  return false;
+}
+#endif
+
 }  // namespace content

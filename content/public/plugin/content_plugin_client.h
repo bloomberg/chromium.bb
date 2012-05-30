@@ -16,9 +16,11 @@ class CONTENT_EXPORT ContentPluginClient {
  public:
   // Notifies that a plugin process has started.
   virtual void PluginProcessStarted(const string16& plugin_name) {}
+
+ protected:
+  virtual ~ContentPluginClient() {}
 };
 
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_PLUGIN_CONTENT_PLUGIN_CLIENT_H_
-
