@@ -133,7 +133,7 @@ void ContentSearchCallback(MessageLoop* message_loop,
   ASSERT_TRUE(dir_proto.get());
 
   // Search feed contains 2 entries. One file (SubDirectory File 1.txt) and one
-  // directory (Directory 1). Entries generated from the fedd should have names
+  // directory (Directory 1). Entries generated from the feed should have names
   // in format resource_id.actual_file_name.
   ASSERT_EQ(1, dir_proto->child_files_size());
   EXPECT_EQ("file:2_file_resouce_id.SubDirectory File 1.txt",
@@ -146,7 +146,7 @@ void ContentSearchCallback(MessageLoop* message_loop,
   message_loop->Quit();
 }
 
-// Action used to set mock expecteations for GetDocuments.
+// Action used to set mock expectations for GetDocuments.
 ACTION_P2(MockGetDocumentEntryCallback, status, value) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
       base::Bind(arg1, status, base::Passed(value)));
@@ -3466,7 +3466,7 @@ TEST_F(GDataFileSystemTest, ContentSearch_MoveToGData) {
       Eq(GURL("https://dir1_file_link_self/file:2_file_resouce_id")), _))
       .Times(1);
 
-  // Statr the test.
+  // Start the test.
   FilePath source_path_search(FILE_PATH_LITERAL(
       "drive/.search/foo/folder:1_folder_resource_id.Directory 1/"
       "SubDirectory File 1.txt"));

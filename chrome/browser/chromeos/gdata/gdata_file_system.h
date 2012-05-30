@@ -908,7 +908,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       GURL* last_dir_content_url,
       FilePath* first_missing_parent_path);
 
-  // Retreives account metadata and determines from the last change timestamp
+  // Retrieves account metadata and determines from the last change timestamp
   // if the feed content loading from the server needs to be initiated.
   void ReloadFeedFromServerIfNeeded(ContentOrigin initial_origin,
                                     int local_changestamp,
@@ -966,7 +966,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Starts root feed load from the cache. If successful, it will try to find
   // the file upon retrieval completion. In addition to that, it will
-  // initate retrieval of the root feed from the server if
+  // initiate retrieval of the root feed from the server if
   // |should_load_from_server| is set.
   void LoadRootFeedFromCache(bool should_load_from_server,
                              const FilePath& search_file_path,
@@ -1435,7 +1435,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // GDataCache::CacheSubDirectoryType enum.
   std::vector<FilePath> cache_paths_;
 
-  // Waitable events used to block dectructor until all the tasks on blocking
+  // Waitable events used to block destructor until all the tasks on blocking
   // thread pool are run.
   scoped_ptr<base::WaitableEvent> on_io_completed_;
 

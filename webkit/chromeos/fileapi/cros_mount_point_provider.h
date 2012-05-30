@@ -103,7 +103,7 @@ class CrosMountPointProvider
                FileSystemLocation loc,
                fileapi::RemoteFileSystemProxyInterface* proxy);
     virtual ~MountPoint();
-    // Virtual web path, relative to external root in filesytem URLs.
+    // Virtual web path, relative to external root in filesystem URLs.
     // For example, in "filesystem://.../external/foo/bar/" this path would
     // map to "foo/bar/".
     const FilePath web_root_path;

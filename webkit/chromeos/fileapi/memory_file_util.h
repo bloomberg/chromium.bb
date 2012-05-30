@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,6 +145,6 @@ class MemoryFileUtil : public FileUtilAsync {
   DISALLOW_COPY_AND_ASSIGN(MemoryFileUtil);
 };
 
-}  // fileapi
+}  // namespace fileapi
 
 #endif  // WEBKIT_CHROMEOS_FILEAPI_FILE_SYSTEM_FILE_UTIL_ASYNC_H_

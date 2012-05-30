@@ -68,6 +68,6 @@ class RemoteFileSystemProxyInterface :
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
 };
 
-}  // namespace chromeos
+}  // namespace fileapi
 
 #endif  // WEBKIT_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_PROXY_H_
