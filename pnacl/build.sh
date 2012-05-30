@@ -2745,7 +2745,7 @@ binutils-gold-sb-setup() {
   BINUTILS_GOLD_SB_LOG_PREFIX="binutils-gold.sb.${SB_LOG_PREFIX}"
   BINUTILS_GOLD_SB_OBJDIR="${SB_OBJDIR}/binutils-gold-sb"
 
-  local flags="-static -DNACL_SRPC -fno-exceptions"
+  local flags="-static -DNACL_SRPC -fno-exceptions -O3"
 
   BINUTILS_GOLD_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
