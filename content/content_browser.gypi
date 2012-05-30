@@ -777,7 +777,7 @@
         'browser/gamepad/platform_data_fetcher.cc',
       ]
     }],
-    ['p2p_apis==1', {
+    ['enable_webrtc==1', {
       'sources': [
         'browser/renderer_host/p2p/socket_host.cc',
         'browser/renderer_host/p2p/socket_host.h',

@@ -222,24 +222,6 @@
     'renderer/websharedworkerrepository_impl.h',
   ],
   'conditions': [
-    ['p2p_apis==1', {
-      'sources': [
-        'renderer/p2p/host_address_request.cc',
-        'renderer/p2p/host_address_request.h',
-        'renderer/p2p/ipc_network_manager.cc',
-        'renderer/p2p/ipc_network_manager.h',
-        'renderer/p2p/ipc_socket_factory.cc',
-        'renderer/p2p/ipc_socket_factory.h',
-        'renderer/p2p/p2p_transport_impl.cc',
-        'renderer/p2p/p2p_transport_impl.h',
-        'renderer/p2p/port_allocator.cc',
-        'renderer/p2p/port_allocator.h',
-        'renderer/p2p/socket_client.cc',
-        'renderer/p2p/socket_client.h',
-        'renderer/p2p/socket_dispatcher.cc',
-        'renderer/p2p/socket_dispatcher.h',
-      ],
-    }],
     ['toolkit_uses_gtk == 1', {
       'conditions': [
         ['input_speech==0', {
@@ -307,6 +289,20 @@
         'renderer/media/video_capture_module_impl.h',
         'renderer/media/webrtc_audio_device_impl.cc',
         'renderer/media/webrtc_audio_device_impl.h',
+        'renderer/p2p/host_address_request.cc',
+        'renderer/p2p/host_address_request.h',
+        'renderer/p2p/ipc_network_manager.cc',
+        'renderer/p2p/ipc_network_manager.h',
+        'renderer/p2p/ipc_socket_factory.cc',
+        'renderer/p2p/ipc_socket_factory.h',
+        'renderer/p2p/p2p_transport_impl.cc',
+        'renderer/p2p/p2p_transport_impl.h',
+        'renderer/p2p/port_allocator.cc',
+        'renderer/p2p/port_allocator.h',
+        'renderer/p2p/socket_client.cc',
+        'renderer/p2p/socket_client.h',
+        'renderer/p2p/socket_dispatcher.cc',
+        'renderer/p2p/socket_dispatcher.h',
       ],
     }],
     ['java_bridge==1', {

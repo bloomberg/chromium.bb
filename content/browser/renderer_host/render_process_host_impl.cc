@@ -532,7 +532,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       base::Bind(&RenderWidgetHelper::GetNextRoutingID,
                  base::Unretained(widget_helper_.get()))));
 
-#if defined(ENABLE_P2P_APIS)
+#if defined(ENABLE_WEBRTC)
   channel_->AddFilter(new content::P2PSocketDispatcherHost(resource_context));
 #endif
 

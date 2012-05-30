@@ -320,12 +320,17 @@
       'conditions': [
         ['enable_webrtc==1', {
           'sources': [
+            'browser/renderer_host/p2p/socket_host_test_utils.h',
+            'browser/renderer_host/p2p/socket_host_tcp_unittest.cc',
+            'browser/renderer_host/p2p/socket_host_tcp_server_unittest.cc',
+            'browser/renderer_host/p2p/socket_host_udp_unittest.cc',
             'renderer/media/media_stream_dispatcher_unittest.cc',
             'renderer/media/media_stream_impl_unittest.cc',
             'renderer/media/peer_connection_handler_jsep_unittest.cc',
             'renderer/media/peer_connection_handler_unittest.cc',
             'renderer/media/rtc_video_decoder_unittest.cc',
             'renderer/media/webrtc_audio_device_unittest.cc',
+            'renderer/p2p/p2p_transport_impl_unittest.cc',
           ],
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection',
@@ -352,15 +357,6 @@
            'sources!': [
              'renderer/active_notification_tracker_unittest.cc',
            ],
-        }],
-        ['p2p_apis==1', {
-          'sources': [
-            'browser/renderer_host/p2p/socket_host_test_utils.h',
-            'browser/renderer_host/p2p/socket_host_tcp_unittest.cc',
-            'browser/renderer_host/p2p/socket_host_tcp_server_unittest.cc',
-            'browser/renderer_host/p2p/socket_host_udp_unittest.cc',
-            'renderer/p2p/p2p_transport_impl_unittest.cc',
-          ],
         }],
         ['use_x11 == 1', {
           'dependencies': [

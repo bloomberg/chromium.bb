@@ -443,17 +443,4 @@
       'tests/test_var_deprecated.h',
     ],
   },
-  'conditions': [
-    ['p2p_apis==1', {
-      'variables': {
-        'c_source_files': [
-          'c/dev/ppb_transport_dev.h',
-        ],
-        'cpp_source_files': [
-          'cpp/dev/transport_dev.cc',
-          'cpp/dev/transport_dev.h',
-        ],
-      },
-    }],
-  ],
 }

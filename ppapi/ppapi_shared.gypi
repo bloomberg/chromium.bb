@@ -231,8 +231,6 @@
         'thunk/ppb_tcp_socket_private_api.h',
         'thunk/ppb_tcp_socket_private_thunk.cc',
         'thunk/ppb_text_input_thunk.cc',
-        'thunk/ppb_transport_api.h',
-        'thunk/ppb_transport_thunk.cc',
         'thunk/ppb_udp_socket_private_api.h',
         'thunk/ppb_udp_socket_private_thunk.cc',
         'thunk/ppb_url_loader_api.h',

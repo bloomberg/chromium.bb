@@ -30,7 +30,6 @@
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
-#include "webkit/plugins/ppapi/ppb_transport_impl.h"
 #include "webkit/plugins/ppapi/ppb_udp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
@@ -256,16 +255,6 @@ PP_Resource ResourceCreationImpl::CreateTCPServerSocketPrivate(
 
 PP_Resource ResourceCreationImpl::CreateTCPSocketPrivate(PP_Instance instance) {
   return PPB_TCPSocket_Private_Impl::CreateResource(instance);
-}
-
-PP_Resource ResourceCreationImpl::CreateTransport(PP_Instance instance,
-                                                  const char* name,
-                                                  PP_TransportType type) {
-#if defined(ENABLE_P2P_APIS)
-  return PPB_Transport_Impl::Create(instance, name, type);
-#else
-  return 0;
-#endif
 }
 
 PP_Resource ResourceCreationImpl::CreateUDPSocketPrivate(PP_Instance instance) {

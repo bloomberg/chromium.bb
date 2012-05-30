@@ -599,12 +599,9 @@ RenderViewImpl::RenderViewImpl(
 
   host_window_ = parent_hwnd;
 
-#if defined(ENABLE_P2P_APIS)
+#if defined(ENABLE_WEBRTC)
   if (!p2p_socket_dispatcher_)
     p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
-#endif
-
-#if defined(ENABLE_WEBRTC)
   if (!media_stream_dispatcher_)
     media_stream_dispatcher_ = new MediaStreamDispatcher(this);
 #endif
@@ -3442,12 +3439,10 @@ void RenderViewImpl::EnsureMediaStreamImpl() {
   if (!RenderThreadImpl::current())  // Will be NULL during unit tests.
     return;
 
-#if defined(ENABLE_P2P_APIS)
+#if defined(ENABLE_WEBRTC)
   if (!p2p_socket_dispatcher_)
     p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
-#endif
 
-#if defined(ENABLE_WEBRTC)
   if (!media_stream_dispatcher_)
     media_stream_dispatcher_ = new MediaStreamDispatcher(this);
 

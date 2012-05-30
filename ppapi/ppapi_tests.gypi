@@ -94,12 +94,6 @@
           'product_name': 'ppapi_tests',
           'product_extension': 'plugin',
         }],
-        ['p2p_apis==1', {
-          'sources': [
-            'tests/test_transport.cc',
-            'tests/test_transport.h',
-          ],
-        }],
       ],
 # TODO(dmichael):  Figure out what is wrong with the script on Windows and add
 #                  it as an automated action.

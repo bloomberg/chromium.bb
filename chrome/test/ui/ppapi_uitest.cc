@@ -867,17 +867,6 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_DirectoryReader) {
   RunTestViaHTTP("DirectoryReader");
 }
 
-#if defined(ENABLE_P2P_APIS)
-// Flaky. http://crbug.com/84294
-IN_PROC_BROWSER_TEST_F(PPAPITest, DISABLED_Transport) {
-  RunTest("Transport");
-}
-// http://crbug.com/89961
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, DISABLED_Transport) {
-  RunTestViaHTTP("Transport");
-}
-#endif // ENABLE_P2P_APIS
-
 // There is no proxy. This is used for PDF metrics reporting, and PDF only
 // runs in process, so there's currently no need for a proxy.
 TEST_PPAPI_IN_PROCESS(UMA)

@@ -537,12 +537,6 @@
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
           ],
         }],
-        ['p2p_apis==1', {
-          'sources': [
-            '../plugins/ppapi/ppb_transport_impl.cc',
-            '../plugins/ppapi/ppb_transport_impl.h',
-          ],
-        }],
       ],
     },
   ],

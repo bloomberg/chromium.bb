@@ -296,13 +296,6 @@ PP_Resource ResourceCreationProxy::CreateTCPSocketPrivate(
   return PPB_TCPSocket_Private_Proxy::CreateProxyResource(instance);
 }
 
-PP_Resource ResourceCreationProxy::CreateTransport(PP_Instance instance,
-                                                   const char* name,
-                                                   PP_TransportType type) {
-  NOTIMPLEMENTED();  // Not proxied yet.
-  return 0;
-}
-
 PP_Resource ResourceCreationProxy::CreateUDPSocketPrivate(
     PP_Instance instance) {
   return PPB_UDPSocket_Private_Proxy::CreateProxyResource(instance);

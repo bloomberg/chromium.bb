@@ -1159,7 +1159,7 @@ void PepperPluginDelegateImpl::UnregisterHostResolver(uint32 host_resolver_id) {
 
 bool PepperPluginDelegateImpl::AddNetworkListObserver(
     webkit_glue::NetworkListObserver* observer) {
-#if defined(ENABLE_P2P_APIS)
+#if defined(ENABLE_WEBRTC)
   P2PSocketDispatcher* socket_dispatcher =
       render_view_->p2p_socket_dispatcher();
   if (!socket_dispatcher) {
@@ -1174,7 +1174,7 @@ bool PepperPluginDelegateImpl::AddNetworkListObserver(
 
 void PepperPluginDelegateImpl::RemoveNetworkListObserver(
     webkit_glue::NetworkListObserver* observer) {
-#if defined(ENABLE_P2P_APIS)
+#if defined(ENABLE_WEBRTC)
   P2PSocketDispatcher* socket_dispatcher =
       render_view_->p2p_socket_dispatcher();
   if (socket_dispatcher)

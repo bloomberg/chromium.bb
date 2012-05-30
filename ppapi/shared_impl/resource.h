@@ -52,7 +52,6 @@
   F(PPB_Talk_Private_API) \
   F(PPB_TCPServerSocket_Private_API) \
   F(PPB_TCPSocket_Private_API) \
-  F(PPB_Transport_API) \
   F(PPB_UDPSocket_Private_API) \
   F(PPB_URLLoader_API) \
   F(PPB_URLRequestInfo_API) \

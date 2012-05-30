@@ -106,9 +106,6 @@ class ResourceCreationImpl : public ::ppapi::thunk::ResourceCreationAPI {
       PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) OVERRIDE;
 
-  virtual PP_Resource CreateTransport(PP_Instance instance,
-                                      const char* name,
-                                      PP_TransportType type) OVERRIDE;
   virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLRequestInfo(

@@ -135,9 +135,6 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateTCPServerSocketPrivate(
       PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateTransport(PP_Instance instance,
-                                      const char* name,
-                                      PP_TransportType type) OVERRIDE;
   virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateVideoCapture(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateVideoDecoder(

@@ -323,7 +323,6 @@
 #          'thunk/ppb_tcp_server_socket_private_thunk.cc',
 #          'thunk/ppb_tcp_socket_private_thunk.cc',
           'thunk/ppb_text_input_thunk.cc',
-#          'thunk/ppb_transport_thunk.cc',
 #          'thunk/ppb_udp_socket_private_thunk.cc',
           'thunk/ppb_url_loader_thunk.cc',
           'thunk/ppb_url_request_info_thunk.cc',

@@ -19,7 +19,6 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/dev/pp_video_dev.h"
-#include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/c/private/ppb_network_monitor_private.h"
 #include "ppapi/shared_impl/api_id.h"
 
@@ -138,9 +137,6 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateTalk(PP_Instance instance) = 0;
   virtual PP_Resource CreateTCPServerSocketPrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instace) = 0;
-  virtual PP_Resource CreateTransport(PP_Instance instance,
-                                      const char* name,
-                                      PP_TransportType type) = 0;
   virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instace) = 0;
   virtual PP_Resource CreateVideoCapture(PP_Instance instance) = 0;
   virtual PP_Resource CreateVideoDecoder(
