@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_CONFIRM_BUBBLE_VIEW_H_
-#define CHROME_BROWSER_UI_COCOA_CONFIRM_BUBBLE_VIEW_H_
+#ifndef CHROME_BROWSER_UI_COCOA_CONFIRM_BUBBLE_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_CONFIRM_BUBBLE_COCOA_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -33,7 +33,7 @@ class ConfirmBubbleModel;
 //   |          [Cancel] [OK] |
 //   +------------------------+
 //
-@interface ConfirmBubbleView : NSView<NSTextViewDelegate> {
+@interface ConfirmBubbleCocoa : NSView<NSTextViewDelegate> {
  @private
   NSView* parent_;  // weak
   ConfirmBubbleController* controller_;  // weak
@@ -55,10 +55,10 @@ class ConfirmBubbleModel;
 @end
 
 // Exposed only for unit testing.
-@interface ConfirmBubbleView (ExposedForUnitTesting)
+@interface ConfirmBubbleCocoa (ExposedForUnitTesting)
 - (void)clickOk;
 - (void)clickCancel;
 - (void)clickLink;
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_CONFIRM_BUBBLE_VIEW_H_
+#endif  // CHROME_BROWSER_UI_COCOA_CONFIRM_BUBBLE_COCOA_H_

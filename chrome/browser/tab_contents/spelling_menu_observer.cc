@@ -17,6 +17,7 @@
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/tab_contents/spelling_bubble_model.h"
+#include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_result.h"
@@ -232,9 +233,9 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     if (!integrate_spelling_service_) {
       content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
       gfx::Rect rect = rvh->GetView()->GetViewBounds();
-      ConfirmBubbleModel::Show(rvh->GetView()->GetNativeView(),
-                               gfx::Point(rect.CenterPoint().x(), rect.y()),
-                               new SpellingBubbleModel(proxy_->GetProfile()));
+      browser::ShowConfirmBubble(rvh->GetView()->GetNativeView(),
+                                 gfx::Point(rect.CenterPoint().x(), rect.y()),
+                                 new SpellingBubbleModel(proxy_->GetProfile()));
     } else {
       Profile* profile = proxy_->GetProfile();
       if (profile)

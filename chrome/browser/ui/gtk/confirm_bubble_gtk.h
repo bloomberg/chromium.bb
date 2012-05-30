@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_CONFIRM_BUBBLE_VIEW_H_
-#define CHROME_BROWSER_UI_GTK_CONFIRM_BUBBLE_VIEW_H_
+#ifndef CHROME_BROWSER_UI_GTK_CONFIRM_BUBBLE_GTK_H_
+#define CHROME_BROWSER_UI_GTK_CONFIRM_BUBBLE_GTK_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -38,12 +38,12 @@ class CustomDrawButton;
 //   |          [Cancel] [OK] |
 //   +------------------------+
 //
-class ConfirmBubbleView : public BubbleDelegateGtk {
+class ConfirmBubbleGtk : public BubbleDelegateGtk {
  public:
-  ConfirmBubbleView(gfx::NativeView parent,
-                    const gfx::Point& anchor_point,
-                    ConfirmBubbleModel* model);
-  virtual ~ConfirmBubbleView();
+  ConfirmBubbleGtk(gfx::NativeView parent,
+                   const gfx::Point& anchor_point,
+                   ConfirmBubbleModel* model);
+  virtual ~ConfirmBubbleGtk();
 
   // BubbleDelegateGtk implementation.
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
@@ -52,16 +52,16 @@ class ConfirmBubbleView : public BubbleDelegateGtk {
   void Show();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ConfirmBubbleViewTest, ClickCancel);
-  FRIEND_TEST_ALL_PREFIXES(ConfirmBubbleViewTest, ClickOk);
-  FRIEND_TEST_ALL_PREFIXES(ConfirmBubbleViewTest, ClickLink);
+  FRIEND_TEST_ALL_PREFIXES(ConfirmBubbleGtkTest, ClickCancel);
+  FRIEND_TEST_ALL_PREFIXES(ConfirmBubbleGtkTest, ClickOk);
+  FRIEND_TEST_ALL_PREFIXES(ConfirmBubbleGtkTest, ClickLink);
 
   // GTK event handlers.
-  CHROMEGTK_CALLBACK_0(ConfirmBubbleView, void, OnDestroy);
-  CHROMEGTK_CALLBACK_0(ConfirmBubbleView, void, OnCloseButton);
-  CHROMEGTK_CALLBACK_0(ConfirmBubbleView, void, OnOkButton);
-  CHROMEGTK_CALLBACK_0(ConfirmBubbleView, void, OnCancelButton);
-  CHROMEGTK_CALLBACK_0(ConfirmBubbleView, void, OnLinkButton);
+  CHROMEGTK_CALLBACK_0(ConfirmBubbleGtk, void, OnDestroy);
+  CHROMEGTK_CALLBACK_0(ConfirmBubbleGtk, void, OnCloseButton);
+  CHROMEGTK_CALLBACK_0(ConfirmBubbleGtk, void, OnOkButton);
+  CHROMEGTK_CALLBACK_0(ConfirmBubbleGtk, void, OnCancelButton);
+  CHROMEGTK_CALLBACK_0(ConfirmBubbleGtk, void, OnLinkButton);
 
   // The bubble.
   BubbleGtk* bubble_;
@@ -77,7 +77,7 @@ class ConfirmBubbleView : public BubbleDelegateGtk {
   // The x that closes this bubble.
   scoped_ptr<CustomDrawButton> close_button_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConfirmBubbleView);
+  DISALLOW_COPY_AND_ASSIGN(ConfirmBubbleGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_CONFIRM_BUBBLE_VIEW_H_
+#endif  // CHROME_BROWSER_UI_GTK_CONFIRM_BUBBLE_GTK_H_

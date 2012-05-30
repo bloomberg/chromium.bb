@@ -8,8 +8,8 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/confirm_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/confirm_bubble_controller.h"
-#import "chrome/browser/ui/cocoa/confirm_bubble_view.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
 #include "grit/theme_resources.h"
 #import "testing/gtest_mac.h"
@@ -121,8 +121,8 @@ class ConfirmBubbleControllerTest : public CocoaTest {
           relativeTo:nil];
   }
 
-  ConfirmBubbleView* GetBubbleView() const {
-    return (ConfirmBubbleView*)[controller_ view];
+  ConfirmBubbleCocoa* GetBubble() const {
+    return (ConfirmBubbleCocoa*)[controller_ view];
   }
 
   TestConfirmBubbleModel* model() const { return model_; }
@@ -140,19 +140,19 @@ class ConfirmBubbleControllerTest : public CocoaTest {
   bool link_clicked_;
 };
 
-// Verify clicking a button or a link removes the ConfirmBubbleView object and
+// Verify clicking a button or a link removes the ConfirmBubbleCocoa object and
 // calls an appropriate model method.
 TEST_F(ConfirmBubbleControllerTest, ClickOk) {
   NSView* view = [test_window() contentView];
-  ConfirmBubbleView* bubble_view = GetBubbleView();
-  bool contains_bubble_view = [[view subviews] containsObject:bubble_view];
+  ConfirmBubbleCocoa* bubble = GetBubble();
+  bool contains_bubble_view = [[view subviews] containsObject:bubble];
   EXPECT_TRUE(contains_bubble_view);
 
   // Click its OK button and verify this view has been removed from the test
   // window. Also verify TestConfirmBubbleModel::Accept() has been called.
-  [bubble_view clickOk];
+  [bubble clickOk];
 
-  contains_bubble_view = [[view subviews] containsObject:bubble_view];
+  contains_bubble_view = [[view subviews] containsObject:bubble];
   EXPECT_FALSE(contains_bubble_view);
   EXPECT_TRUE(accept_clicked());
   EXPECT_FALSE(cancel_clicked());
@@ -161,15 +161,15 @@ TEST_F(ConfirmBubbleControllerTest, ClickOk) {
 
 TEST_F(ConfirmBubbleControllerTest, ClickCancel) {
   NSView* view = [test_window() contentView];
-  ConfirmBubbleView* bubble_view = GetBubbleView();
-  bool contains_bubble_view = [[view subviews] containsObject:bubble_view];
+  ConfirmBubbleCocoa* bubble = GetBubble();
+  bool contains_bubble_view = [[view subviews] containsObject:bubble];
   EXPECT_TRUE(contains_bubble_view);
 
   // Click its cancel button and verify this view has been removed from the test
   // window. Also verify TestConfirmBubbleModel::Cancel() has been called.
-  [bubble_view clickCancel];
+  [bubble clickCancel];
 
-  contains_bubble_view = [[view subviews] containsObject:bubble_view];
+  contains_bubble_view = [[view subviews] containsObject:bubble];
   EXPECT_FALSE(contains_bubble_view);
   EXPECT_FALSE(accept_clicked());
   EXPECT_TRUE(cancel_clicked());
@@ -178,15 +178,15 @@ TEST_F(ConfirmBubbleControllerTest, ClickCancel) {
 
 TEST_F(ConfirmBubbleControllerTest, ClickLink) {
   NSView* view = [test_window() contentView];
-  ConfirmBubbleView* bubble_view = GetBubbleView();
-  bool contains_bubble_view = [[view subviews] containsObject:bubble_view];
+  ConfirmBubbleCocoa* bubble = GetBubble();
+  bool contains_bubble_view = [[view subviews] containsObject:bubble];
   EXPECT_TRUE(contains_bubble_view);
 
   // Click its link and verify this view has been removed from the test window.
   // Also verify TestConfirmBubbleModel::LinkClicked() has been called.
-  [bubble_view clickLink];
+  [bubble clickLink];
 
-  contains_bubble_view = [[view subviews] containsObject:bubble_view];
+  contains_bubble_view = [[view subviews] containsObject:bubble];
   EXPECT_FALSE(contains_bubble_view);
   EXPECT_FALSE(accept_clicked());
   EXPECT_FALSE(cancel_clicked());

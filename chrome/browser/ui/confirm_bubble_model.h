@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,17 +8,15 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Image;
-class Point;
 }
 
 // An interface implemented by objects wishing to control an ConfirmBubbleView.
 // To use this class to implement a bubble menu, we need two steps:
 // 1. Implement a class derived from this class.
-// 2. Call ConfirmBubbleModel::Show() with the class implemented in 1.
+// 2. Call browser::ShowConfirmBubble() with the class implemented in 1.
 class ConfirmBubbleModel {
  public:
   enum BubbleButton {
@@ -62,13 +60,6 @@ class ConfirmBubbleModel {
 
   // Called when the Link is clicked.
   virtual void LinkClicked();
-
-  // Creates a bubble and shows it with its top center at the specified
-  // |origin|. A bubble created by this function takes ownership of the
-  // specified |model|.
-  static void Show(gfx::NativeView view,
-                   const gfx::Point& origin,
-                   ConfirmBubbleModel* model);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfirmBubbleModel);

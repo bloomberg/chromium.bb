@@ -6,7 +6,7 @@
 
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/ui/cocoa/confirm_bubble_view.h"
+#import "chrome/browser/ui/cocoa/confirm_bubble_cocoa.h"
 #import "chrome/browser/ui/confirm_bubble_model.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
@@ -25,8 +25,8 @@
 }
 
 - (void)loadView {
-  [self setView:[[[ConfirmBubbleView alloc] initWithParent:parent_
-                                                controller:self] autorelease]];
+  [self setView:[[[ConfirmBubbleCocoa alloc] initWithParent:parent_
+                                                 controller:self] autorelease]];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {

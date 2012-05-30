@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_TAB_CONTENTS_SPELLING_BUBBLE_MODEL_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/string16.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
 
 class Profile;
@@ -31,6 +31,8 @@ class SpellingBubbleModel : public ConfirmBubbleModel {
 
  private:
   Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpellingBubbleModel);
 };
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_SPELLING_BUBBLE_MODEL_H_

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/confirm_bubble_view.h"
+#import "chrome/browser/ui/cocoa/confirm_bubble_cocoa.h"
 
-#include "base/string16.h"
 #import "base/mac/cocoa_protocols.h"
+#include "base/string16.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/confirm_bubble_controller.h"
+#include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #include "ui/gfx/image/image.h"
@@ -49,9 +50,11 @@ const int kButtonHEdgeMargin = 7;
 
 }  // namespace
 
-void ConfirmBubbleModel::Show(gfx::NativeView view,
-                              const gfx::Point& origin,
-                              ConfirmBubbleModel* model) {
+namespace browser {
+
+void ShowConfirmBubble(gfx::NativeView view,
+                       const gfx::Point& origin,
+                       ConfirmBubbleModel* model) {
   // Create a custom NSViewController that manages a bubble view, and add it to
   // a child to the specified view. This controller will be automatically
   // deleted when it loses first-responder status.
@@ -65,13 +68,16 @@ void ConfirmBubbleModel::Show(gfx::NativeView view,
   [[view window] makeFirstResponder:[controller view]];
 }
 
+}  // namespace browser
+
 // An interface that is derived from NSTextView and does not accept
 // first-responder status, i.e. a NSTextView-derived class that never becomes
 // the first responder. When we click a NSTextView object, it becomes the first
-// responder. Unfortunately, we delete the ConfirmBubbleView object anytime when
-// it loses first-responder status not to prevent disturbing other responders.
-// To prevent text views in this ConfirmBubbleView object from stealing the
-// first-responder status, we use this view in the ConfirmBubbleView object.
+// responder. Unfortunately, we delete the ConfirmBubbleCocoa object anytime
+// when it loses first-responder status not to prevent disturbing other
+// responders.
+// To prevent text views in this ConfirmBubbleCocoa object from stealing the
+// first-responder status, we use this view in the ConfirmBubbleCocoa object.
 @interface ConfirmBubbleTextView : NSTextView
 @end
 
@@ -84,12 +90,12 @@ void ConfirmBubbleModel::Show(gfx::NativeView view,
 @end
 
 // Private Methods
-@interface ConfirmBubbleView (Private)
+@interface ConfirmBubbleCocoa (Private)
 - (void)performLayout;
 - (void)closeBubble;
 @end
 
-@implementation ConfirmBubbleView
+@implementation ConfirmBubbleCocoa
 
 - (id)initWithParent:(NSView*)parent
           controller:(ConfirmBubbleController*)controller {
@@ -281,7 +287,7 @@ void ConfirmBubbleModel::Show(gfx::NativeView view,
 
 @end
 
-@implementation ConfirmBubbleView (ExposedForUnitTesting)
+@implementation ConfirmBubbleCocoa (ExposedForUnitTesting)
 
 - (void)clickOk {
   [self ok:self];

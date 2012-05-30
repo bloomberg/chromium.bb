@@ -3212,7 +3212,7 @@
           'sources': [
             # BubbleGtk is used only on Linux/GTK.
             'browser/ui/gtk/bubble/bubble_gtk_browsertest.cc',
-            'browser/ui/gtk/confirm_bubble_view_browsertest.cc',
+            'browser/ui/gtk/confirm_bubble_gtk_browsertest.cc',
           ],
         }],
         ['OS=="mac"', {

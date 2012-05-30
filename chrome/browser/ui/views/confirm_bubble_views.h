@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_CONFIRM_BUBBLE_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_CONFIRM_BUBBLE_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_CONFIRM_BUBBLE_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_CONFIRM_BUBBLE_VIEWS_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -33,15 +33,15 @@ class ConfirmBubbleModel;
 //   |          [OK] [Cancel] |
 //   +------------------------+
 //
-class ConfirmBubbleView : public views::BubbleDelegateView,
-                          public views::ButtonListener,
-                          public views::LinkListener {
+class ConfirmBubbleViews : public views::BubbleDelegateView,
+                           public views::ButtonListener,
+                           public views::LinkListener {
  public:
-  explicit ConfirmBubbleView(const gfx::Point& anchor_point,
-                             ConfirmBubbleModel* model);
+  explicit ConfirmBubbleViews(const gfx::Point& anchor_point,
+                              ConfirmBubbleModel* model);
 
  protected:
-  virtual ~ConfirmBubbleView();
+  virtual ~ConfirmBubbleViews();
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
@@ -61,7 +61,7 @@ class ConfirmBubbleView : public views::BubbleDelegateView,
   // The model to customize this bubble view.
   scoped_ptr<ConfirmBubbleModel> model_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConfirmBubbleView);
+  DISALLOW_COPY_AND_ASSIGN(ConfirmBubbleViews);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_CONFIRM_BUBBLE_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_CONFIRM_BUBBLE_VIEWS_H_

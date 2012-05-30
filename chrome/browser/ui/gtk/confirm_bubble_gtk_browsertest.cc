@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/gtk/confirm_bubble_gtk.h"
+
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
@@ -9,7 +11,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
-#include "chrome/browser/ui/gtk/confirm_bubble_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -17,7 +18,7 @@
 namespace {
 
 // The model object used in this test. This model implements all methods and
-// updates its status when ConfirmBubbleView calls its methods.
+// updates its status when ConfirmBubbleGtk calls its methods.
 class TestConfirmBubbleModel : public ConfirmBubbleModel {
  public:
   TestConfirmBubbleModel(bool* model_deleted,
@@ -95,10 +96,10 @@ void TestConfirmBubbleModel::LinkClicked() {
 
 }  // namespace
 
-class ConfirmBubbleViewTest : public InProcessBrowserTest {
+class ConfirmBubbleGtkTest : public InProcessBrowserTest {
  public:
-  ConfirmBubbleViewTest()
-      : view_(NULL),
+  ConfirmBubbleGtkTest()
+      : bubble_(NULL),
         model_deleted_(false),
         accept_clicked_(false),
         cancel_clicked_(false),
@@ -112,19 +113,17 @@ class ConfirmBubbleViewTest : public InProcessBrowserTest {
     link_clicked_ = false;
 
     gfx::Point point(0, 0);
-    view_ = new ConfirmBubbleView(
+    bubble_ = new ConfirmBubbleGtk(
         GTK_WIDGET(browser()->window()->GetNativeHandle()),
         point,
         new TestConfirmBubbleModel(&model_deleted_,
                                    &accept_clicked_,
                                    &cancel_clicked_,
                                    &link_clicked_));
-    view_->Show();
+    bubble_->Show();
   }
 
-  ConfirmBubbleView* view() const {
-    return view_;
-  }
+  ConfirmBubbleGtk* bubble() const { return bubble_; }
 
   bool model_deleted() const {
     return model_deleted_;
@@ -143,7 +142,7 @@ class ConfirmBubbleViewTest : public InProcessBrowserTest {
   }
 
  private:
-  ConfirmBubbleView* view_;
+  ConfirmBubbleGtk* bubble_;
   bool model_deleted_;
   bool accept_clicked_;
   bool cancel_clicked_;
@@ -152,9 +151,9 @@ class ConfirmBubbleViewTest : public InProcessBrowserTest {
 
 // Verifies clicking a button or a link calls an appropriate model method and
 // deletes the model.
-IN_PROC_BROWSER_TEST_F(ConfirmBubbleViewTest, ClickCancel) {
+IN_PROC_BROWSER_TEST_F(ConfirmBubbleGtkTest, ClickCancel) {
   ShowBubble();
-  view()->OnCancelButton(NULL);
+  bubble()->OnCancelButton(NULL);
 
   EXPECT_TRUE(model_deleted());
   EXPECT_FALSE(accept_clicked());
@@ -162,9 +161,9 @@ IN_PROC_BROWSER_TEST_F(ConfirmBubbleViewTest, ClickCancel) {
   EXPECT_FALSE(link_clicked());
 }
 
-IN_PROC_BROWSER_TEST_F(ConfirmBubbleViewTest, ClickLink) {
+IN_PROC_BROWSER_TEST_F(ConfirmBubbleGtkTest, ClickLink) {
   ShowBubble();
-  view()->OnLinkButton(NULL);
+  bubble()->OnLinkButton(NULL);
 
   EXPECT_TRUE(model_deleted());
   EXPECT_FALSE(accept_clicked());
@@ -172,9 +171,9 @@ IN_PROC_BROWSER_TEST_F(ConfirmBubbleViewTest, ClickLink) {
   EXPECT_TRUE(link_clicked());
 }
 
-IN_PROC_BROWSER_TEST_F(ConfirmBubbleViewTest, ClickOk) {
+IN_PROC_BROWSER_TEST_F(ConfirmBubbleGtkTest, ClickOk) {
   ShowBubble();
-  view()->OnOkButton(NULL);
+  bubble()->OnOkButton(NULL);
 
   EXPECT_TRUE(model_deleted());
   EXPECT_TRUE(accept_clicked());

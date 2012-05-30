@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/confirm_bubble_view.h"
+#include "chrome/browser/ui/gtk/confirm_bubble_gtk.h"
 
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
@@ -41,16 +42,9 @@ const int kMaxMessageWidth = 400;
 
 }  // namespace
 
-void ConfirmBubbleModel::Show(gfx::NativeView view,
-                              const gfx::Point& origin,
-                              ConfirmBubbleModel* model) {
-  ConfirmBubbleView* bubble_view = new ConfirmBubbleView(view, origin, model);
-  bubble_view->Show();
-}
-
-ConfirmBubbleView::ConfirmBubbleView(gfx::NativeView anchor,
-                                     const gfx::Point& anchor_point,
-                                     ConfirmBubbleModel* model)
+ConfirmBubbleGtk::ConfirmBubbleGtk(gfx::NativeView anchor,
+                                   const gfx::Point& anchor_point,
+                                   ConfirmBubbleModel* model)
     : bubble_(NULL),
       anchor_(anchor),
       anchor_point_(anchor_point),
@@ -58,14 +52,14 @@ ConfirmBubbleView::ConfirmBubbleView(gfx::NativeView anchor,
   DCHECK(model);
 }
 
-ConfirmBubbleView::~ConfirmBubbleView() {
+ConfirmBubbleGtk::~ConfirmBubbleGtk() {
 }
 
-void ConfirmBubbleView::BubbleClosing(BubbleGtk* bubble,
-                                      bool closed_by_escape) {
+void ConfirmBubbleGtk::BubbleClosing(BubbleGtk* bubble,
+                                     bool closed_by_escape) {
 }
 
-void ConfirmBubbleView::Show() {
+void ConfirmBubbleGtk::Show() {
   GtkWidget* toplevel = gtk_widget_get_toplevel(anchor_);
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(GTK_WINDOW(toplevel));
@@ -153,33 +147,44 @@ void ConfirmBubbleView::Show() {
                             this);  // error
 }
 
-void ConfirmBubbleView::OnDestroy(GtkWidget* sender) {
+void ConfirmBubbleGtk::OnDestroy(GtkWidget* sender) {
   // TODO(hbono): this code prevents the model from updating this view when we
   // click buttons. We should ask the model if we can delete this view.
   delete this;
 }
 
-void ConfirmBubbleView::OnCloseButton(GtkWidget* sender) {
+void ConfirmBubbleGtk::OnCloseButton(GtkWidget* sender) {
   bubble_->Close();
 }
 
-void ConfirmBubbleView::OnOkButton(GtkWidget* sender) {
+void ConfirmBubbleGtk::OnOkButton(GtkWidget* sender) {
   model_->Accept();
   // TODO(hbono): this code prevents the model from updating this view when we
   // click this button. We should ask the model if we can close this view.
   bubble_->Close();
 }
 
-void ConfirmBubbleView::OnCancelButton(GtkWidget* sender) {
+void ConfirmBubbleGtk::OnCancelButton(GtkWidget* sender) {
   model_->Cancel();
   // TODO(hbono): this code prevents the model from updating this view when we
   // click this button. We should ask the model if we can close this view.
   bubble_->Close();
 }
 
-void ConfirmBubbleView::OnLinkButton(GtkWidget* sender) {
+void ConfirmBubbleGtk::OnLinkButton(GtkWidget* sender) {
   model_->LinkClicked();
   // TODO(hbono): this code prevents the model from updating this view when we
   // click this link. We should ask the model if we can close this view.
   bubble_->Close();
 }
+
+namespace browser {
+
+void ShowConfirmBubble(gfx::NativeView view,
+                       const gfx::Point& origin,
+                       ConfirmBubbleModel* model) {
+  ConfirmBubbleGtk* bubble = new ConfirmBubbleGtk(view, origin, model);
+  bubble->Show();
+}
+
+}  // namespace browser

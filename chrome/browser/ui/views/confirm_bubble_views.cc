@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/confirm_bubble_view.h"
+#include "chrome/browser/ui/views/confirm_bubble_views.h"
 
+#include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -24,27 +25,19 @@ const int kMaxMessageWidth = 400;
 
 }  // namespace
 
-void ConfirmBubbleModel::Show(gfx::NativeView view,
-                              const gfx::Point& origin,
-                              ConfirmBubbleModel* model) {
-  ConfirmBubbleView* bubble_view = new ConfirmBubbleView(origin, model);
-  views::BubbleDelegateView::CreateBubble(bubble_view);
-  bubble_view->Show();
-}
-
-ConfirmBubbleView::ConfirmBubbleView(const gfx::Point& anchor_point,
-                                     ConfirmBubbleModel* model)
+ConfirmBubbleViews::ConfirmBubbleViews(const gfx::Point& anchor_point,
+                                       ConfirmBubbleModel* model)
     : BubbleDelegateView(NULL, views::BubbleBorder::NONE),
       anchor_point_(anchor_point),
       model_(model) {
   DCHECK(model);
 }
 
-ConfirmBubbleView::~ConfirmBubbleView() {
+ConfirmBubbleViews::~ConfirmBubbleViews() {
 }
 
-void ConfirmBubbleView::ButtonPressed(views::Button* sender,
-                                      const views::Event& event) {
+void ConfirmBubbleViews::ButtonPressed(views::Button* sender,
+                                       const views::Event& event) {
   if (sender->tag() == ConfirmBubbleModel::BUTTON_OK)
     model_->Accept();
   else if (sender->tag() == ConfirmBubbleModel::BUTTON_CANCEL)
@@ -52,15 +45,15 @@ void ConfirmBubbleView::ButtonPressed(views::Button* sender,
   GetWidget()->Close();
 }
 
-void ConfirmBubbleView::LinkClicked(views::Link* source, int event_flags) {
+void ConfirmBubbleViews::LinkClicked(views::Link* source, int event_flags) {
   model_->LinkClicked();
 }
 
-gfx::Rect ConfirmBubbleView::GetAnchorRect() {
+gfx::Rect ConfirmBubbleViews::GetAnchorRect() {
   return gfx::Rect(anchor_point_, gfx::Size());
 }
 
-void ConfirmBubbleView::Init() {
+void ConfirmBubbleViews::Init() {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
@@ -156,3 +149,15 @@ void ConfirmBubbleView::Init() {
     }
   }
 }
+
+namespace browser {
+
+void ShowConfirmBubble(gfx::NativeView view,
+                       const gfx::Point& origin,
+                       ConfirmBubbleModel* model) {
+  ConfirmBubbleViews* bubble = new ConfirmBubbleViews(origin, model);
+  views::BubbleDelegateView::CreateBubble(bubble);
+  bubble->Show();
+}
+
+}  // namespace browser
