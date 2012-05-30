@@ -21,7 +21,8 @@ from driver_log import Log
 EXTRA_ENV = {
   'INPUTS'   : '',
   'OUTPUT'   : '',
-  'SHM_FILE' : '',
+  # the INPUTS file coming from the llc translation step
+  'LLC_TRANSLATED_FILE' : '',
 
   # Capture some metadata passed from pnacl-translate over to here.
   'SONAME' : '',
@@ -30,7 +31,6 @@ EXTRA_ENV = {
   'SHARED': '0',
   'STATIC': '0',
   'RELOCATABLE': '0',
-  'USE_GOLD' : '0',
 
   # These are used only for the static cases
   # For the shared/dynamic case it does not really make sense
@@ -47,36 +47,32 @@ EXTRA_ENV = {
   #       them besides setting 'USE_GOLD' to '0'.
   # NOTE: -Tdata is used to influence the placement of the ro segment
   #       gold has been adjusted accordingly
-  'LD_GOLD_FLAGS_static': '--rosegment --native-client ' +
-                          '--keep-headers-out-of-load-segment ' +
-                          '-Tdata=${BASE_RODATA} -Ttext=${BASE_TEXT}',
+  'LD_FLAGS_static': '--rosegment --native-client ' +
+                     '--keep-headers-out-of-load-segment ' +
+                     '-Tdata=${BASE_RODATA} -Ttext=${BASE_TEXT}',
 
-  'LD_GOLD_FLAGS_shared': '--rosegment --bsssegment --native-client ' +
-                          '--keep-headers-out-of-load-segment ' +
-                          '-Tdata=0x10000000',
+  'LD_FLAGS_shared': '--rosegment --bsssegment --native-client ' +
+                     '--keep-headers-out-of-load-segment ' +
+                     '-Tdata=0x10000000',
 
-  'LD_GOLD_FLAGS_dynamic': '--rosegment  --bsssegment --native-client ' +
-                           '--keep-headers-out-of-load-segment ' +
-                           '-Tdata=0x11000000 -Ttext=0x1000000',
+  'LD_FLAGS_dynamic': '--rosegment  --bsssegment --native-client ' +
+                      '--keep-headers-out-of-load-segment ' +
+                      '-Tdata=0x11000000 -Ttext=0x1000000',
 
   'LD_EMUL'        : '${LD_EMUL_%ARCH%}',
   'LD_EMUL_ARM'    : 'armelf_nacl',
   'LD_EMUL_X8632'  : 'elf_nacl',
   'LD_EMUL_X8664'  : 'elf64_nacl',
 
-   # Intermediate variable LDMODE is used for delaying evaluation.
-   # LD_SB is the non-srpc sandboxed tool.
-  'LDMODE'      : '${USE_GOLD ? ALT : BFD}',
-  'LD'          : '${LD_%LDMODE%}',
-  'LD_SB'       : '${LD_SB_%LDMODE%}',
   # --eh-frame-hdr asks the linker to generate an .eh_frame_hdr section,
   # which is a presorted list of registered frames. This section is
   # used by libgcc_eh/libgcc_s to avoid doing the sort during runtime.
   # http://www.airs.com/blog/archives/462
   #
-  'LD_FLAGS'    : '${USE_GOLD ? ${LD_GOLD_FLAGS_%EMITMODE%}} ' +
-                  '-nostdlib -m ${LD_EMUL} --eh-frame-hdr ' +
-                  '${#LD_SCRIPT ? -T ${LD_SCRIPT}} ' +
+  'LD_FLAGS'    : '${LD_FLAGS_%EMITMODE%} ' +
+                  '-nostdlib ' +
+                  '-m ${LD_EMUL} ' +
+                  '--eh-frame-hdr ' +
                   '${#SONAME ? -soname=${SONAME}} ' +
                   '${STATIC ? -static} ${SHARED ? -shared} ${RELOCATABLE ? -r}',
 
@@ -88,25 +84,6 @@ EXTRA_ENV = {
   'EMITMODE'         : '${RELOCATABLE ? relocatable : ' +
                        '${STATIC ? static : ' +
                        '${SHARED ? shared : dynamic}}}',
-
-  'LD_SCRIPT': '${STDLIB ? ' +
-               '${LD_SCRIPT_%LIBMODE%_%EMITMODE%} : ' +
-               '${LD_SCRIPT_nostdlib}}',
-
-  'LD_SCRIPT_nostdlib' : '',
-
-  # For newlib, omit the -T flag (the builtin linker script works fine).
-  'LD_SCRIPT_newlib_static': '',
-  'LD_SCRIPT_newlib_shared': '',
-  'LD_SCRIPT_newlib_dynamic': '',
-
-  # For glibc, the linker script is always explicitly specified.
-  'LD_SCRIPT_glibc_static' : '${LD_EMUL}.x.static',
-  'LD_SCRIPT_glibc_shared' : '${LD_EMUL}.xs',
-  'LD_SCRIPT_glibc_dynamic': '${LD_EMUL}.x',
-
-  'LD_SCRIPT_newlib_relocatable': '',
-  'LD_SCRIPT_glibc_relocatable' : '',
 
   'LD_EMUL'        : '${LD_EMUL_%ARCH%}',
   'LD_EMUL_ARM'    : 'armelf_nacl',
@@ -129,10 +106,7 @@ EXTRA_ENV = {
 def PassThrough(*args):
   env.append('LD_FLAGS', *args)
 
-def PassThroughSegment(*args):
-  if not env.getbool('USE_GOLD'):
-      PassThrough(*args)
-      return
+def SetSegment(*args):
   # Note: we conflate '-Ttext' and '--section-start .text=' here
   # This is not quite right but it is the intention of the tests
   # using the flags which want to control the placement of the
@@ -166,15 +140,12 @@ LDPatterns = [
   ( ('-L', '(.*)'),
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
 
-  ( ('(-Ttext)','(.*)'), PassThroughSegment),
-  ( ('(-Ttext=.*)'),     PassThroughSegment),
-
-  # This overrides the builtin linker script.
-  ( ('-T', '(.*)'),      "env.set('LD_SCRIPT', $0)"),
+  ( ('(-Ttext)','(.*)'), SetSegment),
+  ( ('(-Ttext=.*)'),     SetSegment),
 
   ( ('(-e)','(.*)'),              PassThrough),
   ( '(--entry=.*)',               PassThrough),
-  ( ('(--section-start)','(.*)'), PassThroughSegment),
+  ( ('(--section-start)','(.*)'), SetSegment),
   ( '-?-soname=(.*)',             "env.set('SONAME', $0)"),
   ( ('(-?-soname)', '(.*)'),      "env.set('SONAME', $1)"),
   ( '(-M)',                       PassThrough),
@@ -201,9 +172,9 @@ LDPatterns = [
   ( '(--end-group)',       "env.append('INPUTS', $0)"),
   ( '(-Bstatic)',          "env.append('INPUTS', $0)"),
   ( '(-Bdynamic)',         "env.append('INPUTS', $0)"),
-  # This is the file passed using shmem
+  # This is the file passed from llc during translation (used to be via shmem)
   ( ('--shm=(.*)'),        "env.append('INPUTS', $0)\n"
-                           "env.set('SHM_FILE', $0)"),
+                           "env.set('LLC_TRANSLATED_FILE', $0)"),
   ( '(--(no-)?whole-archive)', "env.append('INPUTS', $0)"),
 
   ( '(-l.*)',              "env.append('INPUTS', $0)"),
@@ -212,22 +183,9 @@ LDPatterns = [
   ( '(.*)',                "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
-def MustUseOldLd(argv):
-  # non-static + sandboxed is last use case for old ld
-  if '-static' in argv or env.getbool('STATIC'): return False;
-  if '--pnacl-sb' in argv: return True
-  if env.getbool('SANDBOXED'): return True
-  return False
 
 def main(argv):
   env.update(EXTRA_ENV)
-  # this hack is necessary because arg parsing is influenced by
-  # whether we are using gold or not. It can go away once
-  # we have switched over completely.
-  # Note that main be called from anthor python module
-  # which may have changed the "env"
-  if not MustUseOldLd(argv):
-    env.set('USE_GOLD', '1')
 
   ParseArgs(argv, LDPatterns)
 
@@ -246,23 +204,12 @@ def main(argv):
                                 env.getbool('STATIC'),
                                 ldtools.LibraryTypes.NATIVE)
 
-  # If there's a linker script which needs to be searched for, find it.
-  LocateLinkerScript()
-
   env.push()
   env.set('inputs', *inputs)
   env.set('output', output)
 
-  # Eventually we want to switch to gold for everything:
-  # http://code.google.com/p/nativeclient/issues/detail?id=2707
-  if not MustUseOldLd([]):
-    env.set('USE_GOLD', '1')
-
-  if env.getbool('USE_GOLD'):
-    # We need to disable the linker script more elegantly for Gold.
-    env.set('LD_SCRIPT', '')
-    if GetArch(required=True) == 'X8664':
-      env.append('LD_FLAGS', '--metadata-is64')
+  if GetArch(required=True) == 'X8664':
+    env.append('LD_FLAGS', '--metadata-is64')
 
   if env.getbool('SANDBOXED') and env.getbool('SRPC'):
     RunLDSRPC()
@@ -279,7 +226,7 @@ def RunLDSRPC():
   # The "main" input file is the application's combined object file.
   all_inputs = env.get('inputs')
 
-  main_input = env.getone('SHM_FILE')
+  main_input = env.getone('LLC_TRANSLATED_FILE')
   if not main_input:
     Log.Fatal("Sandboxed LD requires one shm input file")
 
@@ -317,15 +264,6 @@ def MakeSelUniversalScriptForLD(ld_flags,
 
   # Need to include the linker script file as a linker resource for glibc.
   files_to_map = list(files)
-  if (env.getbool('LIBMODE_GLIBC') and
-      env.getbool('STDLIB') and
-      not env.getbool('USE_GOLD')):
-    ld_script = env.getone('LD_SCRIPT')
-    assert(ld_script != '')
-    files_to_map.append(ld_script)
-  else:
-    # Otherwise, use the built-in linker script.
-    assert(env.getone('LD_SCRIPT') == '')
 
   # Create a mapping for each input file and add it to the command line.
   for f in files_to_map:
@@ -392,23 +330,3 @@ def LinkerFiles(args):
       ret.append(f)
   return ret
 
-def LocateLinkerScript():
-  ld_script = env.getone('LD_SCRIPT')
-  if not ld_script:
-    # No linker script specified
-    return
-
-  # See if it's an absolute or relative path
-  path = pathtools.normalize(ld_script)
-  if pathtools.exists(path):
-    env.set('LD_SCRIPT', path)
-    return
-
-  # Search for the script
-  search_dirs = [pathtools.normalize('.')] + env.get('SEARCH_DIRS')
-  path = ldtools.FindFile([ld_script], search_dirs,
-                          ldtools.LibraryTypes.ANY)
-  if not path:
-    Log.Fatal("Unable to find linker script '%s'", ld_script)
-
-  env.set('LD_SCRIPT', path)

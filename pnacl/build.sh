@@ -828,7 +828,6 @@ translator() {
 # Note: for the two binutils cases below we need to force
 # the "setup" which is done by passing through "$@"
 # TODO(robertm): investigate less complicated solutions
-  binutils-sb "$@"
   binutils-gold-sb "$@"
 
   if ${PNACL_PRUNE}; then
@@ -1010,21 +1009,6 @@ glibc-copy() {
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2615
   make-glibc-link all libc_nonshared.a libc_nonshared.a
   make-glibc-link all libpthread_nonshared.a libpthread_nonshared.a
-
-  # Copy linker scripts
-  # We currently only depend on elf[64]_nacl.x,
-  # elf[64]_nacl.xs, and elf[64]_nacl.x.static.
-  # TODO(pdox): Remove the need for these, by making the built-in
-  #             binutils linker script work.
-  local ldscripts="${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/ldscripts"
-  local ext
-  for ext in .x .xs .x.static; do
-    cp -a "${ldscripts}"/elf_nacl${ext}   "${INSTALL_LIB_X8632}"
-    make-glibc-link x86-32 elf_nacl${ext} elf_nacl${ext}
-
-    cp -a "${ldscripts}"/elf64_nacl${ext} "${INSTALL_LIB_X8664}"
-    make-glibc-link x86-64 elf64_nacl${ext} elf64_nacl${ext}
-  done
 
   # ld-nacl have different sonames across 32/64.
   # Create symlinks to make them look the same.
@@ -2424,175 +2408,10 @@ GetTranslatorInstallDir() {
   echo "${INSTALL_TRANSLATOR}"${extra}/${arch}
 }
 
-#---------------------------------------------------------------------
-
-BINUTILS_SB_SETUP=false
-binutils-sb-setup() {
-  sb-setup "$@"
-
-  # TODO(jvoung): investigate if these are only needed by AS or not.
-  local flags="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH"
-  if ${BINUTILS_SB_SETUP} && [ $# -eq 0 ]; then
-    return 0
-  fi
-  BINUTILS_SB_SETUP=true
-  BINUTILS_SB_LOG_PREFIX="binutils.sb.${SB_LOG_PREFIX}"
-  BINUTILS_SB_OBJDIR="${SB_OBJDIR}/binutils-sb"
-
-  if [ ${SB_LIBMODE} == newlib ]; then
-    flags+=" -static"
-  fi
-
-  # we do not support the non-srpc mode anymore
-  flags+=" -DNACL_SRPC"
-
-  if [ ! -f "${TC_BUILD_BINUTILS_LIBERTY}/libiberty/libiberty.a" ] ; then
-    echo "ERROR: Missing lib. Run this script with binutils-liberty option"
-    exit -1
-  fi
-
-  BINUTILS_SB_CONFIGURE_ENV=(
-    AR="${PNACL_AR}" \
-    AS="${PNACL_AS}" \
-    CC="$(GetTool cc ${SB_LIBMODE}) ${flags}" \
-    CXX="$(GetTool cxx ${SB_LIBMODE}) ${flags}" \
-    CC_FOR_BUILD="${CC}" \
-    CXX_FOR_BUILD="${CXX}" \
-    LD="$(GetTool ld ${SB_LIBMODE}) ${flags}" \
-    NM="${PNACL_NM}" \
-    RANLIB="${PNACL_RANLIB}" \
-    LDFLAGS_FOR_BUILD="-L${TC_BUILD_BINUTILS_LIBERTY}/libiberty/" \
-    LDFLAGS="")
-
-
-  case ${SB_ARCH} in
-    i686)      BINUTILS_SB_ELF_TARGETS=i686-pc-nacl ;;
-    x86_64)    BINUTILS_SB_ELF_TARGETS=x86_64-pc-nacl ;;
-    armv7)     BINUTILS_SB_ELF_TARGETS=arm-pc-nacl ;;
-    universal) BINUTILS_SB_ELF_TARGETS=arm-pc-nacl,i686-pc-nacl,x86_64-pc-nacl ;;
-  esac
-}
-
-#+-------------------------------------------------------------------------
-#+ binutils-sb <arch> <mode> - Build and install binutils (sandboxed)
-binutils-sb() {
-  binutils-sb-setup "$@"
-  StepBanner "BINUTILS-SB" "Sandboxed ld [${SB_LABEL}]"
-
-  local srcdir="${TC_SRC_BINUTILS}"
-  assert-dir "${srcdir}" "You need to checkout binutils."
-
-  if binutils-sb-needs-configure ; then
-    binutils-sb-clean
-    binutils-sb-configure
-  else
-    SkipBanner "BINUTILS-SB" "configure ${SB_ARCH}"
-  fi
-
-  if binutils-sb-needs-make; then
-    binutils-sb-make
-  else
-    SkipBanner "BINUTILS-SB" "make"
-  fi
-
-  binutils-sb-install
-}
-
-binutils-sb-needs-configure() {
-  binutils-sb-setup "$@"
-  [ ! -f "${BINUTILS_SB_OBJDIR}/config.status" ]
-  return $?
-}
-
-# binutils-sb-clean - Clean binutils (sandboxed)
-binutils-sb-clean() {
-  binutils-sb-setup "$@"
-  StepBanner "BINUTILS-SB" "Clean"
-  local objdir="${BINUTILS_SB_OBJDIR}"
-
-  rm -rf "${objdir}"
-  mkdir -p "${objdir}"
-}
-
-# binutils-sb-configure - Configure binutils (sandboxed)
-binutils-sb-configure() {
-  binutils-sb-setup "$@"
-
-  StepBanner "BINUTILS-SB" "Configure"
-  local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${BINUTILS_SB_OBJDIR}"
-  local installdir="${SB_INSTALL_DIR}"
-
-  spushd "${objdir}"
-  RunWithLog \
-      ${BINUTILS_SB_LOG_PREFIX}.configure \
-      env -i \
-      PATH="/usr/bin:/bin" \
-      ${srcdir}/binutils-2.20/configure \
-        "${BINUTILS_SB_CONFIGURE_ENV[@]}" \
-        --prefix=${installdir} \
-        --host=nacl \
-        --target=${BINUTILS_TARGET} \
-        --enable-targets=${BINUTILS_SB_ELF_TARGETS} \
-        --disable-nls \
-        --disable-werror \
-        --without-gas \
-        --disable-plugins \
-        --enable-static \
-        --enable-shared=no
-  spopd
-}
-
-binutils-sb-needs-make() {
-  binutils-sb-setup "$@"
-  ts-modified "${TC_SRC_BINUTILS}" "${BINUTILS_SB_OBJDIR}"
-  return $?
-}
-
-# binutils-sb-make - Make binutils (sandboxed)
-binutils-sb-make() {
-  binutils-sb-setup "$@"
-
-  StepBanner "BINUTILS-SB" "Make"
-  local objdir="${BINUTILS_SB_OBJDIR}"
-
-  spushd "${objdir}"
-  ts-touch-open "${objdir}"
-
-  RunWithLog ${BINUTILS_SB_LOG_PREFIX}.make \
-      env -i PATH="/usr/bin:/bin" \
-      NACL_SRPC=1 \
-      make ${MAKE_OPTS} all-ld
-
-  ts-touch-commit "${objdir}"
-
-  spopd
-}
-
-# binutils-sb-install - Install binutils (sandboxed)
-binutils-sb-install() {
-  binutils-sb-setup "$@"
-  local objdir="${BINUTILS_SB_OBJDIR}"
-  local installbin="${SB_INSTALL_DIR}/bin"
-
-  StepBanner "BINUTILS-SB" "Install [${installbin}]"
-
-  mkdir -p "${installbin}"
-  spushd "${installbin}"
-
-  # Install just "ld"
-  cp "${objdir}"/ld/ld-new ld.pexe
-
-  # Translate and install
-  translate-sb-tool ld
-  install-sb-tool ld
-  spopd
-}
-
 #+-------------------------------------------------------------------------
 #+ binutils-gold - Build and install gold (unsandboxed)
-#+                 This is the replacement for the current
-#+                 final linker which is bfd based.
+#+                 This is the replacement for the old
+#+                 final linker which was bfd based.
 #+                 It has nothing to do with the bitcode linker
 #+                 which is also gold based.
 binutils-gold() {
@@ -2703,7 +2522,7 @@ binutils-gold-make() {
 binutils-gold-install() {
   StepBanner "GOLD-NATIVE" "Install [${BINUTILS_INSTALL_DIR}]"
   local src=${TC_BUILD_GOLD}/gold/ld-new
-  local dst=${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-ld.alt
+  local dst=${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-ld
   # Note, the "*" is for windows where ld-new is actually ld-new.exe
   ls -l  ${src}*
   # Note, this does the right thing on windows:
@@ -2715,8 +2534,8 @@ binutils-gold-install() {
 
 #+-------------------------------------------------------------------------
 #+ binutils-gold-sb - Build and install gold (sandboxed)
-#+                 This is the replacement for the current
-#+                 final linker which is bfd based.
+#+                 This is the replacement for the old
+#+                 final sandboxed linker which was bfd based.
 #+                 It has nothing to do with the bitcode linker
 #+                 which is also gold based.
 binutils-gold-sb() {
@@ -2888,11 +2707,11 @@ binutils-gold-sb-install() {
   spushd "${installbin}"
 
   # Install just "ld"
-  cp "${objdir}"/gold/ld-new ld-gold.pexe
+  cp "${objdir}"/gold/ld-new ld.pexe
 
   # Translate and install
-  translate-sb-tool ld-gold
-  install-sb-tool ld-gold
+  translate-sb-tool ld
+  install-sb-tool ld
   spopd
 }
 

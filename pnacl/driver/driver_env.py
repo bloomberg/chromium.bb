@@ -160,10 +160,8 @@ INITIAL_ENV = {
                     '--library-path ${NNACL_LIBDIR}}',
 
   'LLC_SRPC'      : '${TRANSLATOR_BIN}/llc.nexe',
-  # sandboxed linker (bfd based)
-  'LD_SB_BFD'       : '${TRANSLATOR_BIN}/ld.nexe',
   # sandboxed linker (gold based)
-  'LD_SB_ALT'       : '${TRANSLATOR_BIN}/ld-gold.nexe',
+  'LD_SB'       : '${TRANSLATOR_BIN}/ld.nexe',
 
   # Bitcode LLVM tools
   'CLANG'         : '${BASE_LLVM_BIN}/clang${EXEC_EXT}',
@@ -191,10 +189,8 @@ INITIAL_ENV = {
   'STRIP'          : '${BINUTILS_BASE}strip${EXEC_EXT}',
   # bitcode linker
   'LD_GOLD'        : '${BINUTILS_BASE}ld.gold${EXEC_EXT}',
-  # final linker (bfd based)
-  'LD_BFD'         : '${BINUTILS_BASE}ld.bfd${EXEC_EXT}',
-  # alternative final linker (gold based)
-  'LD_ALT'         : '${BINUTILS_BASE}ld.alt${EXEC_EXT}',
+  # final linker (gold based)
+  'LD'         : '${BINUTILS_BASE}ld${EXEC_EXT}',
 
   # Use the default command line arguments to the sandboxed translator.
   'USE_DEFAULT_CMD_LINE': '1',
