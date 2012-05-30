@@ -810,7 +810,16 @@ TEST_PPAPI_NACL_VIA_HTTP(FileRef)
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileSystem)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
-TEST_PPAPI_NACL_VIA_HTTP(FileSystem)
+
+// PPAPINaClTest.FileSystem times out consistently on Windows and Mac.
+// http://crbug.com/130372
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_FileSystem DISABLED_FileSystem
+#else
+#define MAYBE_FileSystem FileSystem
+#endif
+
+TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileSystem)
 
 // Mac/Aura reach NOTIMPLEMENTED/time out.
 // Other systems work in-process, but flake out-of-process because of the
