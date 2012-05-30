@@ -779,114 +779,116 @@ void CopyLocalFileOnIOThreadPool(
       base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-// Relays the given FindEntryCallback to another thread via |replay_proxy|.
-void RelayFindEntryCallback(scoped_refptr<base::MessageLoopProxy> relay_proxy,
-                            const FindEntryCallback& callback,
-                            base::PlatformFileError error,
-                            const FilePath& directory_path,
-                            GDataEntry* entry) {
-  relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error, entry));
+// Runs task on the thread to which |relay_proxy| belongs.
+void RunTaskOnThread(scoped_refptr<base::MessageLoopProxy> relay_proxy,
+                     const base::Closure& task) {
+  if (relay_proxy->BelongsToCurrentThread()) {
+    task.Run();
+  } else {
+    const bool posted = relay_proxy->PostTask(FROM_HERE, task);
+    DCHECK(posted);
+  }
 }
 
-// Ditto for FileOperationCallback.
-void RelayFileOperationCallback(
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    const FileOperationCallback& callback,
-    base::PlatformFileError error) {
-  relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error));
+// Runs task on UI thread.
+void RunTaskOnUIThread(const base::Closure& task) {
+  RunTaskOnThread(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI), task);
 }
 
-// Ditto for GetFileCallback.
-void RelayGetFileCallback(
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    const GetFileCallback& callback,
-    base::PlatformFileError error,
-    const FilePath& file_path,
-    const std::string& mime_type,
-    GDataFileType file_type) {
-  relay_proxy->PostTask(
-      FROM_HERE,
-      base::Bind(callback, error, file_path, mime_type, file_type));
-}
+// RelayCallback relays arguments for callback running on the given thread.
+template<typename CallbackType>
+struct RelayCallback;
 
-// Ditto for GetDownloadDataCallback.
-void RelayGetDownloadDataCallback(
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    const GetDownloadDataCallback& callback,
-    GDataErrorCode error,
-    scoped_ptr<std::string> download_data) {
-  // Unlike other callbacks, GetDownloadDataCallback is optional, hence it
-  // can be null here.
-  if (callback.is_null())
-    return;
-  relay_proxy->PostTask(
-      FROM_HERE,
-      base::Bind(callback, error, base::Passed(&download_data)));
-}
+// RelayCallback for callback with one argument.
+template<typename T1>
+struct RelayCallback<base::Callback<void(T1)> > {
+  static void Run(scoped_refptr<base::MessageLoopProxy> relay_proxy,
+                  const base::Callback<void(T1)>& callback,
+                  T1 arg1) {
+    if (callback.is_null())
+      return;
+    RunTaskOnThread(relay_proxy, base::Bind(callback, arg1));
+  }
+};
 
-// Ditto for GetCacheStateCallback.
-void RelayGetCacheStateCallback(
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    const GetCacheStateCallback& callback,
-    base::PlatformFileError error,
-    int cache_state) {
-  relay_proxy->PostTask(FROM_HERE,
-                        base::Bind(callback, error, cache_state));
-}
+// RelayCallback for callback with two arguments.
+template<typename T1, typename T2>
+struct RelayCallback<base::Callback<void(T1, T2)> > {
+  static void Run(scoped_refptr<base::MessageLoopProxy> relay_proxy,
+                  const base::Callback<void(T1, T2)>& callback,
+                  T1 arg1,
+                  T2 arg2) {
+    if (callback.is_null())
+      return;
+    RunTaskOnThread(relay_proxy, base::Bind(callback, arg1, arg2));
+  }
+};
 
-// Ditto for GetAvailableSpaceCallback.
-void RelayGetAvailableSpaceCallback(
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    const GetAvailableSpaceCallback& callback,
-    base::PlatformFileError error,
-    int64 bytes_total,
-    int64 bytes_used) {
-  relay_proxy->PostTask(FROM_HERE,
-                        base::Bind(callback, error, bytes_total, bytes_used));
-}
+// RelayCallback for callback with two arguments, the last one is scoped_ptr.
+template<typename T1, typename T2>
+struct RelayCallback<base::Callback<void(T1, scoped_ptr<T2>)> > {
+  static void Run(scoped_refptr<base::MessageLoopProxy> relay_proxy,
+                  const base::Callback<void(T1, scoped_ptr<T2>)>& callback,
+                  T1 arg1,
+                  scoped_ptr<T2> arg2) {
+    if (callback.is_null())
+      return;
+    RunTaskOnThread(relay_proxy,
+                    base::Bind(callback, arg1, base::Passed(&arg2)));
+  }
+};
 
-// Ditto for SetMountedStateCallback.
-void RelaySetMountedStateCallback(
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    const SetMountedStateCallback& callback,
-    base::PlatformFileError error,
-    const FilePath& file_path) {
-  relay_proxy->PostTask(FROM_HERE,
-                        base::Bind(callback, error, file_path));
-}
+// RelayCallback for callback with three arguments.
+template<typename T1, typename T2, typename T3>
+struct RelayCallback<base::Callback<void(T1, T2, T3)> > {
+  static void Run(scoped_refptr<base::MessageLoopProxy> relay_proxy,
+                  const base::Callback<void(T1, T2, T3)>& callback,
+                  T1 arg1,
+                  T2 arg2,
+                  T3 arg3) {
+    if (callback.is_null())
+      return;
+    RunTaskOnThread(relay_proxy, base::Bind(callback, arg1, arg2, arg3));
+  }
+};
 
-// Ditto for GetEntryInfoCallback.
-void RelayGetEntryInfoCallback(
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    const GetEntryInfoCallback& callback,
-    base::PlatformFileError error,
-    const FilePath& entry_path,
-    scoped_ptr<GDataEntryProto> entry_proto) {
-  relay_proxy->PostTask(
-      FROM_HERE,
-      base::Bind(callback, error, entry_path, base::Passed(&entry_proto)));
-}
+// RelayCallback for callback with three arguments, the last one is scoped_ptr.
+template<typename T1, typename T2, typename T3>
+struct RelayCallback<base::Callback<void(T1, T2, scoped_ptr<T3>)> > {
+  static void Run(scoped_refptr<base::MessageLoopProxy> relay_proxy,
+                  const base::Callback<void(T1, T2, scoped_ptr<T3>)>& callback,
+                  T1 arg1,
+                  T2 arg2,
+                  scoped_ptr<T3> arg3) {
+    if (callback.is_null())
+      return;
+    RunTaskOnThread(relay_proxy,
+                    base::Bind(callback, arg1, arg2, base::Passed(&arg3)));
+  }
+};
 
-// Ditto for GetFileInfoCallback.
-void RelayGetFileInfoCallback(
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    const GetFileInfoCallback& callback,
-    base::PlatformFileError error,
-    scoped_ptr<GDataFileProto> file_proto) {
-  relay_proxy->PostTask(
-      FROM_HERE,
-      base::Bind(callback, error, base::Passed(&file_proto)));
-}
+// RelayCallback for callback with four arguments.
+template<typename T1, typename T2, typename T3, typename T4>
+struct RelayCallback<base::Callback<void(T1, T2, T3, T4)> > {
+  static void Run(scoped_refptr<base::MessageLoopProxy> relay_proxy,
+                  const base::Callback<void(T1, T2, T3, T4)>& callback,
+                  T1 arg1,
+                  T2 arg2,
+                  T3 arg3,
+                  T4 arg4) {
+    if (callback.is_null())
+      return;
+    RunTaskOnThread(relay_proxy, base::Bind(callback, arg1, arg2, arg3, arg4));
+  }
+};
 
-// Ditto for ReadDirectoryCallback.
-void RelayReadDirectoryCallback(
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    const ReadDirectoryCallback& callback,
-    base::PlatformFileError error,
-    scoped_ptr<GDataDirectoryProto> directory_proto) {
-  relay_proxy->PostTask(
-      FROM_HERE,
-      base::Bind(callback, error, base::Passed(&directory_proto)));
+// Returns callback which runs the given |callback| on the current thread.
+template<typename CallbackType>
+CallbackType CreateRelayCallback(const CallbackType& callback) {
+  return base::Bind(&RelayCallback<CallbackType>::Run,
+                    base::MessageLoopProxy::current(),
+                    callback);
 }
 
 }  // namespace
@@ -1497,23 +1499,13 @@ void GDataFileSystem::OnTransferCompleted(
 void GDataFileSystem::Copy(const FilePath& src_file_path,
                            const FilePath& dest_file_path,
                            const FileOperationCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::CopyOnUIThread,
-                   ui_weak_ptr_,
-                   src_file_path,
-                   dest_file_path,
-                   base::Bind(&RelayFileOperationCallback,
-                              base::MessageLoopProxy::current(),
-                              callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  CopyOnUIThread(src_file_path, dest_file_path, callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(base::Bind(&GDataFileSystem::CopyOnUIThread,
+                               ui_weak_ptr_,
+                               src_file_path,
+                               dest_file_path,
+                               CreateRelayCallback(callback)));
 }
 
 void GDataFileSystem::CopyOnUIThread(const FilePath& original_src_file_path,
@@ -1721,23 +1713,13 @@ void GDataFileSystem::Rename(const FilePath& file_path,
 void GDataFileSystem::Move(const FilePath& src_file_path,
                            const FilePath& dest_file_path,
                            const FileOperationCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::MoveOnUIThread,
-                   ui_weak_ptr_,
-                   src_file_path,
-                   dest_file_path,
-                   base::Bind(&RelayFileOperationCallback,
-                              base::MessageLoopProxy::current(),
-                              callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  MoveOnUIThread(src_file_path, dest_file_path, callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(base::Bind(&GDataFileSystem::MoveOnUIThread,
+                               ui_weak_ptr_,
+                               src_file_path,
+                               dest_file_path,
+                               CreateRelayCallback(callback)));
 }
 
 void GDataFileSystem::MoveOnUIThread(const FilePath& original_src_file_path,
@@ -1916,23 +1898,13 @@ void GDataFileSystem::RemoveEntryFromDirectory(
 void GDataFileSystem::Remove(const FilePath& file_path,
     bool is_recursive,
     const FileOperationCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::RemoveOnUIThread,
-                   ui_weak_ptr_,
-                   file_path,
-                   is_recursive,
-                   base::Bind(&RelayFileOperationCallback,
-                              base::MessageLoopProxy::current(),
-                              callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  RemoveOnUIThread(file_path, is_recursive, callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(base::Bind(&GDataFileSystem::RemoveOnUIThread,
+                               ui_weak_ptr_,
+                               file_path,
+                               is_recursive,
+                               CreateRelayCallback(callback)));
 }
 
 void GDataFileSystem::RemoveOnUIThread(
@@ -1965,25 +1937,14 @@ void GDataFileSystem::CreateDirectory(
     bool is_exclusive,
     bool is_recursive,
     const FileOperationCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::CreateDirectoryOnUIThread,
-                   ui_weak_ptr_,
-                   directory_path,
-                   is_exclusive,
-                   is_recursive,
-                   base::Bind(&RelayFileOperationCallback,
-                              base::MessageLoopProxy::current(),
-                              callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  CreateDirectoryOnUIThread(
-      directory_path, is_exclusive, is_recursive, callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(base::Bind(&GDataFileSystem::CreateDirectoryOnUIThread,
+                               ui_weak_ptr_,
+                               directory_path,
+                               is_exclusive,
+                               is_recursive,
+                               CreateRelayCallback(callback)));
 }
 
 void GDataFileSystem::CreateDirectoryOnUIThread(
@@ -2065,26 +2026,14 @@ void GDataFileSystem::GetFileByPath(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
     const GetDownloadDataCallback& get_download_data_callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::GetFileByPathOnUIThread,
-                   ui_weak_ptr_,
-                   file_path,
-                   base::Bind(&RelayGetFileCallback,
-                              base::MessageLoopProxy::current(),
-                              get_file_callback),
-                   base::Bind(&RelayGetDownloadDataCallback,
-                              base::MessageLoopProxy::current(),
-                              get_download_data_callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  GetFileByPathOnUIThread(file_path, get_file_callback,
-                          get_download_data_callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(
+      base::Bind(&GDataFileSystem::GetFileByPathOnUIThread,
+                 ui_weak_ptr_,
+                 file_path,
+                 CreateRelayCallback(get_file_callback),
+                 CreateRelayCallback(get_download_data_callback)));
 }
 
 void GDataFileSystem::GetFileByPathOnUIThread(
@@ -2162,26 +2111,14 @@ void GDataFileSystem::GetFileByResourceId(
     const std::string& resource_id,
     const GetFileCallback& get_file_callback,
     const GetDownloadDataCallback& get_download_data_callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::GetFileByResourceIdOnUIThread,
-                   ui_weak_ptr_,
-                   resource_id,
-                   base::Bind(&RelayGetFileCallback,
-                              base::MessageLoopProxy::current(),
-                              get_file_callback),
-                   base::Bind(&RelayGetDownloadDataCallback,
-                              base::MessageLoopProxy::current(),
-                              get_download_data_callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  GetFileByResourceIdOnUIThread(resource_id, get_file_callback,
-                                get_download_data_callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(
+      base::Bind(&GDataFileSystem::GetFileByResourceIdOnUIThread,
+                 ui_weak_ptr_,
+                 resource_id,
+                 CreateRelayCallback(get_file_callback),
+                 CreateRelayCallback(get_download_data_callback)));
 }
 
 void GDataFileSystem::GetFileByResourceIdOnUIThread(
@@ -2393,22 +2330,13 @@ void GDataFileSystem::SetCachePaths(const FilePath& root_path) {
 void GDataFileSystem::GetEntryInfoByPathAsync(
     const FilePath& file_path,
     const GetEntryInfoCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::GetEntryInfoByPathAsyncOnUIThread,
-                   ui_weak_ptr_,
-                   file_path,
-                   base::Bind(&RelayGetEntryInfoCallback,
-                              base::MessageLoopProxy::current(),
-                              callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  GetEntryInfoByPathAsyncOnUIThread(file_path, callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(
+      base::Bind(&GDataFileSystem::GetEntryInfoByPathAsyncOnUIThread,
+                 ui_weak_ptr_,
+                 file_path,
+                 CreateRelayCallback(callback)));
 }
 
 void GDataFileSystem::GetEntryInfoByPathAsyncOnUIThread(
@@ -2447,22 +2375,13 @@ void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
 void GDataFileSystem::GetFileInfoByPathAsync(
     const FilePath& file_path,
     const GetFileInfoCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::GetFileInfoByPathAsyncOnUIThread,
-                   ui_weak_ptr_,
-                   file_path,
-                   base::Bind(&RelayGetFileInfoCallback,
-                              base::MessageLoopProxy::current(),
-                              callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  GetFileInfoByPathAsyncOnUIThread(file_path, callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(
+      base::Bind(&GDataFileSystem::GetFileInfoByPathAsyncOnUIThread,
+                 ui_weak_ptr_,
+                 file_path,
+                 CreateRelayCallback(callback)));
 }
 
 void GDataFileSystem::GetFileInfoByPathAsyncOnUIThread(
@@ -2505,22 +2424,13 @@ void GDataFileSystem::OnGetFileInfo(const GetFileInfoCallback& callback,
 void GDataFileSystem::ReadDirectoryByPathAsync(
     const FilePath& file_path,
     const ReadDirectoryCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::ReadDirectoryByPathAsyncOnUIThread,
-                   ui_weak_ptr_,
-                   file_path,
-                   base::Bind(&RelayReadDirectoryCallback,
-                              base::MessageLoopProxy::current(),
-                              callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  ReadDirectoryByPathAsyncOnUIThread(file_path, callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(
+      base::Bind(&GDataFileSystem::ReadDirectoryByPathAsyncOnUIThread,
+                 ui_weak_ptr_,
+                 file_path,
+                 CreateRelayCallback(callback)));
 }
 
 void GDataFileSystem::ReadDirectoryByPathAsyncOnUIThread(
@@ -2562,21 +2472,13 @@ void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
     callback.Run(base::PLATFORM_FILE_OK, directory_proto.Pass());
 }
 
-void GDataFileSystem::RequestDirectoryRefresh(
-    const FilePath& file_path) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::RequestDirectoryRefreshOnUIThread,
-                   ui_weak_ptr_,
-                   file_path));
-    DCHECK(posted);
-    return;
-  }
-
-  RequestDirectoryRefreshOnUIThread(file_path);
+void GDataFileSystem::RequestDirectoryRefresh(const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(
+      base::Bind(&GDataFileSystem::RequestDirectoryRefreshOnUIThread,
+                 ui_weak_ptr_,
+                 file_path));
 }
 
 void GDataFileSystem::RequestDirectoryRefreshOnUIThread(
@@ -2715,9 +2617,7 @@ void GDataFileSystem::GetCacheState(const std::string& resource_id,
                  ui_weak_ptr_,
                  resource_id,
                  md5,
-                 base::Bind(&RelayGetCacheStateCallback,
-                            base::MessageLoopProxy::current(),
-                            callback)));
+                 CreateRelayCallback(callback)));
   DCHECK(posted);
 }
 
@@ -2749,21 +2649,11 @@ void GDataFileSystem::GetCacheStateOnUIThread(
 
 void GDataFileSystem::GetAvailableSpace(
     const GetAvailableSpaceCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::GetAvailableSpaceOnUIThread,
-                   ui_weak_ptr_,
-                   base::Bind(&RelayGetAvailableSpaceCallback,
-                              base::MessageLoopProxy::current(),
-                              callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  GetAvailableSpaceOnUIThread(callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(base::Bind(&GDataFileSystem::GetAvailableSpaceOnUIThread,
+                               ui_weak_ptr_,
+                               CreateRelayCallback(callback)));
 }
 
 void GDataFileSystem::GetAvailableSpaceOnUIThread(
@@ -2779,23 +2669,13 @@ void GDataFileSystem::GetAvailableSpaceOnUIThread(
 void GDataFileSystem::SetPinState(const FilePath& file_path,
                                   bool to_pin,
                                   const FileOperationCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::SetPinStateOnUIThread,
-                   ui_weak_ptr_,
-                   file_path,
-                   to_pin,
-                   base::Bind(&RelayFileOperationCallback,
-                              base::MessageLoopProxy::current(),
-                              callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  SetPinStateOnUIThread(file_path, to_pin, callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(base::Bind(&GDataFileSystem::SetPinStateOnUIThread,
+                               ui_weak_ptr_,
+                               file_path,
+                               to_pin,
+                               CreateRelayCallback(callback)));
 }
 
 void GDataFileSystem::SetPinStateOnUIThread(
@@ -2838,23 +2718,13 @@ void GDataFileSystem::SetPinStateOnUIThread(
 void GDataFileSystem::SetMountedState(const FilePath& file_path,
                                       bool to_mount,
                                       const SetMountedStateCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::SetMountedStateOnUIThread,
-                   ui_weak_ptr_,
-                   file_path,
-                   to_mount,
-                   base::Bind(&RelaySetMountedStateCallback,
-                              base::MessageLoopProxy::current(),
-                              callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  SetMountedStateOnUIThread(file_path, to_mount, callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(base::Bind(&GDataFileSystem::SetMountedStateOnUIThread,
+                               ui_weak_ptr_,
+                               file_path,
+                               to_mount,
+                               CreateRelayCallback(callback)));
 }
 
 
@@ -3080,22 +2950,12 @@ void GDataFileSystem::OnSearch(const ReadDirectoryCallback& callback,
 
 void GDataFileSystem::SearchAsync(const std::string& search_query,
                                   const ReadDirectoryCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::SearchAsyncOnUIThread,
-                   ui_weak_ptr_,
-                   search_query,
-                   base::Bind(&RelayReadDirectoryCallback,
-                              base::MessageLoopProxy::current(),
-                              callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  SearchAsyncOnUIThread(search_query, callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(base::Bind(&GDataFileSystem::SearchAsyncOnUIThread,
+                               ui_weak_ptr_,
+                               search_query,
+                               CreateRelayCallback(callback)));
 }
 
 void GDataFileSystem::SearchAsyncOnUIThread(
