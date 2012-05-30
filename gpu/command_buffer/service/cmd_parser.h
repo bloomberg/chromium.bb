@@ -69,6 +69,7 @@ class GPU_EXPORT CommandParser {
   CommandBufferEntry* buffer_;
   int32 entry_count_;
   AsyncAPIInterface* handler_;
+  bool trace_gl_commands_;
 };
 
 // This class defines the interface for an asynchronous API handler, that

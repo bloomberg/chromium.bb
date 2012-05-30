@@ -4527,6 +4527,7 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
 }
 
 void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoLinkProgram");
   ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
       program, "glLinkProgram");
   if (!info) {
@@ -5597,6 +5598,7 @@ error::Error GLES2DecoderImpl::HandleShaderSourceBucket(
 }
 
 void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCompileShader");
   ShaderManager::ShaderInfo* info = GetShaderInfoNotProgram(
       client_id, "glCompileShader");
   if (!info) {
@@ -6354,6 +6356,7 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
 
 error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
     uint32 immediate_data_size, const gles2::PostSubBufferCHROMIUM& c) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandlePostSubBufferCHROMIUM");
   if (!context_->HasExtension("GL_CHROMIUM_post_sub_buffer")) {
     SetGLError(GL_INVALID_OPERATION,
                "glPostSubBufferCHROMIUM: command not supported by surface");
@@ -6992,6 +6995,7 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
 
 error::Error GLES2DecoderImpl::HandleTexImage2D(
     uint32 immediate_data_size, const gles2::TexImage2D& c) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleTexImage2D");
   tex_image_2d_failed_ = true;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -7355,6 +7359,7 @@ void GLES2DecoderImpl::DoTexSubImage2D(
 
 error::Error GLES2DecoderImpl::HandleTexSubImage2D(
     uint32 immediate_data_size, const gles2::TexSubImage2D& c) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleTexSubImage2D");
   GLboolean internal = static_cast<GLboolean>(c.internal);
   if (internal == GL_TRUE && tex_image_2d_failed_)
     return error::kNoError;
@@ -8625,6 +8630,7 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
     GLenum internal_format,
     GLsizei width,
     GLsizei height) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoTexStorage2DEXT");
   if (!texture_manager()->ValidForTarget(target, 0, width, height, 1) ||
       TextureManager::ComputeMipMapCount(width, height, 1) < levels) {
     SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT: dimensions out of range");

@@ -7,7 +7,9 @@
 #include "gpu/command_buffer/service/cmd_parser.h"
 
 #include "base/logging.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 
 namespace gpu {
 
@@ -16,7 +18,10 @@ CommandParser::CommandParser(AsyncAPIInterface* handler)
       put_(0),
       buffer_(NULL),
       entry_count_(0),
-      handler_(handler) {
+      handler_(handler),
+      trace_gl_commands_(false) {
+  trace_gl_commands_ =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTraceGL);
 }
 
 void CommandParser::SetBuffer(
@@ -60,7 +65,8 @@ error::Error CommandParser::ProcessCommand() {
     return error::kOutOfBounds;
   }
 
-  TRACE_EVENT0("cb_command", handler_->GetCommandName(header.command));
+  if (trace_gl_commands_)
+    TRACE_EVENT_BEGIN0("cb_command", handler_->GetCommandName(header.command));
 
   error::Error result = handler_->DoCommand(
       header.command, header.size - 1, buffer_ + get);
@@ -75,6 +81,9 @@ error::Error CommandParser::ProcessCommand() {
   // If get was not set somewhere else advance it.
   if (get == get_)
     get_ = (get + header.size) % entry_count_;
+
+  if (trace_gl_commands_)
+    TRACE_EVENT_END0("cb_command", handler_->GetCommandName(header.command));
   return result;
 }
 
