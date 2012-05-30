@@ -734,4 +734,63 @@ TEST(SemiMtCorrectingFilterInterpreterTest, WarpOnSwapTest) {
     }
   }
 }
+
+TEST(SemiMtCorrectingFilterInterpreterTest, BigJumpTest) {
+  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
+      new SemiMtCorrectingFilterInterpreterTestInterpreter;
+  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  FingerState fs[] = {
+    // index 0
+    { 0, 0, 0, 0, 66, 0, 4209, 2538, 5979, 0},
+
+    // index 1
+    { 0, 0, 0, 0, 66, 0, 4209, 2557, 5979, 0},
+
+    // index 2
+    { 0, 0, 0, 0, 66, 0, 4210, 2558, 5979, 0},
+
+    // index 3
+    { 0, 0, 0, 0, 66, 0, 4211, 2559, 5979, 0},
+
+    // index 4
+    { 0, 0, 0, 0, 66, 0, 4212, 2560, 5979, 0},
+
+    // index 5
+    { 0, 0, 0, 0, 66, 0, 4213, 2561, 5979, 0},
+
+    // index 6
+    { 0, 0, 0, 0, 51, 0, 3602, 4494, 5979, 0},  // a wild jump
+
+    // index 7
+    { 0, 0, 0, 0, 65, 0, 3564, 4473, 5979, 0},
+  };
+
+  HardwareProperties hwprops = {
+    1217, 5733, 1061, 4798,  // left, top, right, bottom
+    1.0, 1.0, 133, 133,  // x res, y res, x DPI, y DPI
+    2, 3, 0, 1, 1  // max_fingers, max_touch, t5r2, semi_mt, is_button_pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+  interpreter.interpreter_enabled_.val_ = 1;
+
+  const unsigned kWarpFlags = GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y;
+
+  HardwareState hs = { 0.500, 0, 1, 1, &fs[0] };
+
+  for (size_t finger_index = 0; finger_index < arraysize(fs); finger_index++) {
+    hs.timestamp += 0.015;
+    hs.fingers = &fs[finger_index];
+    interpreter.SyncInterpret(&hs, NULL);
+    // Hold the HardwareState if a jump is detected.
+    if (finger_index == 6)
+      EXPECT_EQ(interpreter.hold_hwstate_, true);
+    // And expect the WARP flags set for fingers of prev2_hwstate_ after
+    // processing the next report of jumpy one.
+    if (finger_index == 7)
+      for (size_t j = 0; j < interpreter.prev2_hwstate_.finger_cnt; j++)
+        EXPECT_EQ(interpreter.prev2_fingers_[j].flags & kWarpFlags, kWarpFlags);
+  }
+}
 }  // namespace gestures

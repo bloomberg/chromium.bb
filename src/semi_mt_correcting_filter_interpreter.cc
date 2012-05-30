@@ -16,6 +16,7 @@ namespace gestures {
 SemiMtCorrectingFilterInterpreter::SemiMtCorrectingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
     : last_id_(0),
+      hold_hwstate_(false),
       interpreter_enabled_(prop_reg, "SemiMT Correcting Filter Enable", 0),
       pressure_threshold_(prop_reg, "SemiMT Pressure Threshold", 30),
       hysteresis_pressure_(prop_reg, "SemiMT Hysteresis Pressure", 25),
@@ -23,14 +24,19 @@ SemiMtCorrectingFilterInterpreter::SemiMtCorrectingFilterInterpreter(
       non_linear_top_(prop_reg, "SemiMT Non Linear Area Top", 1250.0),
       non_linear_bottom_(prop_reg, "SemiMT Non Linear Area Bottom", 4570.0),
       non_linear_left_(prop_reg, "SemiMT Non Linear Area Left", 1360.0),
-      non_linear_right_(prop_reg, "SemiMT Non Linear Area Right", 5560.0) {
+      non_linear_right_(prop_reg, "SemiMT Non Linear Area Right", 5560.0),
+      moving_finger_speed_(prop_reg, "SemiMT Moving Finger Speed", 10000.0),
+      one_report_distance_(prop_reg, "SemiMT One-Report Jump Distance", 150.0),
+      two_report_distance_(prop_reg, "SemiMT Two-Report Jump Distance", 300.0),
+      jump_back_distance_(prop_reg, "SemiMT Finger Jump Back Threshold", 50.0),
+      jump_distance_(prop_reg, "SemiMT Finger Jump Distance", 200.0) {
   ClearHistory();
   next_.reset(next);
 }
 
 Gesture* SemiMtCorrectingFilterInterpreter::SyncInterpret(
     HardwareState* hwstate, stime_t* timeout) {
-
+  Gesture *prev_result = NULL;
   if (is_semi_mt_device_) {
     if (interpreter_enabled_.val_) {
       LowPressureFilter(hwstate);
@@ -40,12 +46,25 @@ Gesture* SemiMtCorrectingFilterInterpreter::SyncInterpret(
       SuppressTwoToOneFingerJump(hwstate);
       SuppressOneToTwoFingerJump(hwstate);
       CorrectFingerPosition(hwstate);
+
+      // If prev_hwstate_ was held for jump suppression, check if it should be
+      // dropped or delivered to other interpreters.
+      if (hold_hwstate_ && !SuppressFingerJump(hwstate))
+        prev_result = DeliverPrevHardwareState();
+
+      hold_hwstate_ = DetectFingerJump(hwstate);
       UpdateHistory(hwstate);
+
+      // Hold the current jumpy report, based on the next report to determine
+      // if the jumpy report should be dropped, set the WARP flags or let it
+      // pass to other interpreters.
+      if (hold_hwstate_)
+        return NULL;
     } else {
       ClearHistory();
     }
   }
-  return next_->SyncInterpret(hwstate, timeout);
+  return DeliverHardwareState(hwstate, timeout, prev_result);
 }
 
 Gesture* SemiMtCorrectingFilterInterpreter::HandleTimer(
@@ -57,6 +76,33 @@ void SemiMtCorrectingFilterInterpreter::SetHardwareProperties(
     const HardwareProperties& hw_props) {
   is_semi_mt_device_ = hw_props.support_semi_mt;
   next_->SetHardwareProperties(hw_props);
+}
+
+Gesture* SemiMtCorrectingFilterInterpreter::DeliverPrevHardwareState() {
+  FingerState fingers[kMaxSemiMtFingers];
+  std::copy(prev_fingers_, prev_fingers_ + kMaxSemiMtFingers,
+            fingers);
+  stime_t timeout = -1;
+  Gesture* result = next_->SyncInterpret(&prev_hwstate_, &timeout);
+  // Restore the fingers data as we need it for next jump detection.
+  std::copy(fingers, fingers + kMaxSemiMtFingers,
+            prev_fingers_);
+  return result;
+}
+
+Gesture* SemiMtCorrectingFilterInterpreter::DeliverHardwareState(
+    HardwareState* hwstate, stime_t* timeout, Gesture* prev_result) {
+  Gesture *previous = prev_result;
+  if (previous != NULL)
+    prev_result_ = *previous;
+  Gesture *result = next_->SyncInterpret(hwstate, timeout);
+  if (previous == NULL)
+    return result;
+  if (result == NULL)
+    return &prev_result_;
+  // Combine the result with previous one.
+  CombineGestures(&prev_result_, result);
+  return &prev_result_;
 }
 
 void SemiMtCorrectingFilterInterpreter::UpdateHistory(HardwareState* hwstate) {
@@ -313,5 +359,110 @@ void SemiMtCorrectingFilterInterpreter::LowPressureFilter(
       ((prev_hwstate_.finger_cnt > 0) &&
       (pressure < hysteresis_pressure_.val_)))
     hwstate->finger_cnt = hwstate->touch_cnt = 0;
+}
+
+bool SemiMtCorrectingFilterInterpreter::DetectFingerJump(
+    HardwareState* hwstate) {
+  if (prev_hwstate_.fingers == NULL)
+    return false;
+  bool big_jump = false;
+  stime_t prev_dt = prev_hwstate_.timestamp - prev2_hwstate_.timestamp;
+  for (size_t i = 0; i < hwstate->finger_cnt; i++) {
+    struct FingerState *current = &hwstate->fingers[i];
+    struct FingerState *prev =
+        prev_hwstate_.GetFingerState(current->tracking_id);
+    struct FingerState *prev2 =
+        prev2_hwstate_.GetFingerState(current->tracking_id);
+    if (prev == NULL || prev2 == NULL)
+      continue;
+
+    float prev_xdist = fabsf(prev->position_x - prev2->position_x);
+    float prev_ydist = fabsf(prev->position_y - prev2->position_y);
+    float current_xdist = fabsf(current->position_x - prev->position_x);
+    float current_ydist = fabsf(current->position_y - prev->position_y);
+    if (((prev_xdist < moving_finger_speed_.val_ * prev_dt) &&
+          current_xdist > jump_distance_.val_) ||
+        ((prev_ydist < moving_finger_speed_.val_ * prev_dt) &&
+          current_ydist > jump_distance_.val_)) {
+      big_jump = true;
+    }
+  }
+  return big_jump;
+}
+
+bool SemiMtCorrectingFilterInterpreter::SuppressFingerJump(
+    HardwareState* hwstate) {
+  bool drop_report = false;
+  // The finger cnt for finger(s) which has the continuous X displacement for
+  // consecutive reports, i.e. a moving finger keeps moving instead of a
+  // transient jump.
+  size_t x_moving_finger_cnt = 0;
+  size_t y_moving_finger_cnt = 0;
+  for (size_t i = 0; i < hwstate->finger_cnt; i++) {
+    struct FingerState *current = &hwstate->fingers[i];
+    struct FingerState *prev =
+        prev_hwstate_.GetFingerState(current->tracking_id);
+    struct FingerState *prev2 =
+        prev2_hwstate_.GetFingerState(current->tracking_id);
+    if (prev == NULL || prev2 == NULL)
+      continue;
+    // The distance between reports.
+    float prev_xdist = fabsf(prev->position_x - prev2->position_x);
+    float prev_ydist = fabsf(prev->position_y - prev2->position_y);
+    float current_xdist = fabsf(current->position_x - prev->position_x);
+    float current_ydist = fabsf(current->position_y - prev->position_y);
+    float current_prev2_xdist = fabsf(current->position_x - prev2->position_x);
+    float current_prev2_ydist = fabsf(current->position_y - prev2->position_y);
+
+    // If a finger keeps moving away from the prev2 position for
+    // prev and current, it should be a moving finger.
+    if (current_prev2_xdist > two_report_distance_.val_ &&
+        current_xdist > one_report_distance_.val_) {
+      x_moving_finger_cnt++;
+    }
+    if (current_prev2_ydist > two_report_distance_.val_ &&
+        current_ydist > one_report_distance_.val_) {
+      y_moving_finger_cnt++;
+    }
+
+    // If the finger jumps back, drop the report.
+    if ((prev_xdist > jump_distance_.val_ &&
+         current_prev2_xdist < jump_back_distance_.val_) ||
+        (prev_ydist > jump_distance_.val_ &&
+         current_prev2_ydist < jump_back_distance_.val_)) {
+      drop_report = true;
+    }
+  }
+
+  if (drop_report)
+    return drop_report;
+
+  if (hwstate->finger_cnt < prev_hwstate_.finger_cnt)
+    x_moving_finger_cnt = y_moving_finger_cnt = 2;
+
+  for (size_t i = 0; i < prev_hwstate_.finger_cnt; i++) {
+    struct FingerState* prev_finger = &prev_hwstate_.fingers[i];
+    struct FingerState* finger =
+        hwstate->GetFingerState(prev_finger->tracking_id);
+    if (x_moving_finger_cnt != 2) {
+      prev_finger->flags |= GESTURES_FINGER_WARP_X;
+      // Suppress jump back for slow 2F scrolling.
+      if (hwstate->finger_cnt == 2 && finger)
+        finger->flags |= GESTURES_FINGER_WARP_X;
+    } else {
+      // For both fingers are moving like swipe, clear the warp flag as it may
+      // be flagged by OneToTwoJump.
+      prev_finger->flags &= (~GESTURES_FINGER_WARP_X);
+    }
+    if (y_moving_finger_cnt != 2) {
+      prev_finger->flags |= GESTURES_FINGER_WARP_Y;
+      // Suppress jump back for slow 2F scrolling.
+      if (hwstate->finger_cnt == 2 && finger)
+        finger->flags |= GESTURES_FINGER_WARP_Y;
+    } else {
+      prev_finger->flags &= (~GESTURES_FINGER_WARP_Y);
+    }
+  }
+  return false;
 }
 }  // namespace gestures

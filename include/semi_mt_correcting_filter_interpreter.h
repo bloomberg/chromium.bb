@@ -59,6 +59,7 @@ typedef enum {
 // include low-pressure filtering, hysteresis, finger position correction.
 
 class SemiMtCorrectingFilterInterpreter : public Interpreter {
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, BigJumpTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, CorrectFingerPositionTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest);
@@ -142,11 +143,33 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   // bounding box instead of real finger positions.
   void CorrectFingerPosition(HardwareState* hwstate);
 
+  // Set WARP flags for both fingers if their positions are either unreliable
+  // or jumpy. Return true if prev_hwstate should be dropped, or it should be
+  // delivered to other interpreters.
+  bool SuppressFingerJump(HardwareState* hwstate);
+
   // Set WARP flags for both fingers immediately after 1->2 finger transitions
   void SuppressOneToTwoFingerJump(HardwareState* hwstate);
 
   // Set WARP flags for fingers immediately after 2->1 finger transitions
   void SuppressTwoToOneFingerJump(HardwareState* hwstate);
+
+  // True if finger(s) moves more than the jump threshold. Hold the current
+  // report and lookahead the next one to determine if it is a noise jump.
+  bool DetectFingerJump(HardwareState* hwstate);
+
+  // Deliver the prev_hwstate_ to other interpreters as the report was held to
+  // determine if its finger jump should be suppressed or not. If this report is
+  // not a transient jump to somewhere and back, the report will be delivered.
+  Gesture* DeliverPrevHardwareState();
+
+  // Deliver the current HardwareState and combine the result with previous
+  // gesture with thecurrent one. As the previous report is held and processed
+  // within the processing of current report, i.e. there is two gestures
+  // obtained at the same slot, we need to combine these two gestures into a
+  // single one.
+  Gesture* DeliverHardwareState(HardwareState* hwstate, stime_t* timeout,
+                                Gesture* prev_result);
 
   // Starting finger positions of the two-finger gesture.
   FingerPosition start_pos_[kMaxSemiMtFingers];
@@ -175,6 +198,14 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
 
   bool is_semi_mt_device_;
 
+  // True if we hold a HardwareState which contains a finger jump temporarily
+  // and wait for next report to determine if the held report should be dropped
+  // or delivered.
+  bool hold_hwstate_;
+
+  // Store the returned gesture for prev HardwareState.
+  Gesture prev_result_;
+
   // True if the interpreter is effective in gesture pipeline.
   BoolProperty interpreter_enabled_;
 
@@ -192,6 +223,22 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   DoubleProperty non_linear_bottom_;
   DoubleProperty non_linear_left_;
   DoubleProperty non_linear_right_;
+
+  // Threshold for first moving speed for consecutive moving reports.
+  DoubleProperty moving_finger_speed_;
+
+  // Threshold for jump distance between current and prev HardwareState.
+  DoubleProperty one_report_distance_;
+
+  // Threshold for jump distance between current and prev2 HardwareState.
+  DoubleProperty two_report_distance_;
+
+  // Threshold for jump back distance between current and prev2 HardwareState.
+  DoubleProperty jump_back_distance_;
+
+  // The distance for detecting the first jump.
+  DoubleProperty jump_distance_;
+
   scoped_ptr<Interpreter> next_;
 };
 
