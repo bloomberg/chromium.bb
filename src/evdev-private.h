@@ -44,6 +44,14 @@ enum evdev_event_type {
 	EVDEV_RELATIVE_MOTION = (1 << 4),
 };
 
+enum evdev_device_capability {
+	EVDEV_KEYBOARD = (1 << 0),
+	EVDEV_BUTTON = (1 << 1),
+	EVDEV_MOTION_ABS = (1 << 2),
+	EVDEV_MOTION_REL = (1 << 3),
+	EVDEV_TOUCH = (1 << 4),
+};
+
 struct evdev_input_device {
 	struct evdev_seat *master;
 	struct wl_list link;
@@ -69,6 +77,7 @@ struct evdev_input_device {
 	} rel;
 
 	enum evdev_event_type pending_events;
+	enum evdev_device_capability caps;
 
 	int is_mt;
 };

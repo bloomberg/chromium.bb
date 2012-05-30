@@ -336,11 +336,14 @@ evdev_configure_device(struct evdev_input_device *device)
 	struct input_absinfo absinfo;
 	unsigned long ev_bits[NBITS(EV_MAX)];
 	unsigned long abs_bits[NBITS(ABS_MAX)];
+	unsigned long rel_bits[NBITS(REL_MAX)];
 	unsigned long key_bits[NBITS(KEY_MAX)];
 	int has_key, has_abs;
+	unsigned int i;
 
 	has_key = 0;
 	has_abs = 0;
+	device->caps = 0;
 
 	ioctl(device->fd, EVIOCGBIT(0, sizeof(ev_bits)), ev_bits);
 	if (TEST_BIT(ev_bits, EV_ABS)) {
@@ -352,16 +355,25 @@ evdev_configure_device(struct evdev_input_device *device)
 			ioctl(device->fd, EVIOCGABS(ABS_X), &absinfo);
 			device->abs.min_x = absinfo.minimum;
 			device->abs.max_x = absinfo.maximum;
+			device->caps |= EVDEV_MOTION_ABS;
 		}
 		if (TEST_BIT(abs_bits, ABS_Y)) {
 			ioctl(device->fd, EVIOCGABS(ABS_Y), &absinfo);
 			device->abs.min_y = absinfo.minimum;
 			device->abs.max_y = absinfo.maximum;
+			device->caps |= EVDEV_MOTION_ABS;
 		}
 		if (TEST_BIT(abs_bits, ABS_MT_SLOT)) {
 			device->is_mt = 1;
 			device->mt.slot = 0;
+			device->caps |= EVDEV_TOUCH;
 		}
+	}
+	if (TEST_BIT(ev_bits, EV_REL)) {
+		ioctl(device->fd, EVIOCGBIT(EV_REL, sizeof(rel_bits)),
+		      rel_bits);
+		if (TEST_BIT(rel_bits, REL_X) || TEST_BIT(rel_bits, REL_Y))
+			device->caps |= EVDEV_MOTION_REL;
 	}
 	if (TEST_BIT(ev_bits, EV_KEY)) {
 		has_key = 1;
@@ -371,6 +383,20 @@ evdev_configure_device(struct evdev_input_device *device)
 		    !TEST_BIT(key_bits, BTN_TOOL_PEN) &&
 		    has_abs)
 			device->dispatch = evdev_touchpad_create(device);
+		for (i = KEY_ESC; i < KEY_MAX; i++) {
+			if (i >= BTN_MISC && i < KEY_OK)
+				continue;
+			if (TEST_BIT(key_bits, i)) {
+				device->caps |= EVDEV_KEYBOARD;
+				break;
+			}
+		}
+		for (i = BTN_MISC; i < KEY_OK; i++) {
+			if (TEST_BIT(key_bits, i)) {
+				device->caps |= EVDEV_BUTTON;
+				break;
+			}
+		}
 	}
 
 	/* This rule tries to catch accelerometer devices and opt out. We may
