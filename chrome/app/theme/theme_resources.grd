@@ -187,10 +187,13 @@
       <include name="IDR_PAGEINFO_WARNING_MINOR" file="default_100_percent/pageinfo_warning_minor.png" type="BINDATA" />
       <include name="IDR_PANEL_CLOSE" file="default_100_percent/panel_close.png" type="BINDATA" />
       <include name="IDR_PANEL_CLOSE_H" file="default_100_percent/panel_close_hover.png" type="BINDATA" />
+      <include name="IDR_PANEL_CLOSE_C" file="default_100_percent/panel_close_click.png" type="BINDATA" />
       <include name="IDR_PANEL_MINIMIZE" file="default_100_percent/panel_minimize.png" type="BINDATA" />
       <include name="IDR_PANEL_MINIMIZE_H" file="default_100_percent/panel_minimize_hover.png" type="BINDATA" />
+      <include name="IDR_PANEL_MINIMIZE_C" file="default_100_percent/panel_minimize_click.png" type="BINDATA" />
       <include name="IDR_PANEL_RESTORE" file="default_100_percent/panel_restore.png" type="BINDATA" />
       <include name="IDR_PANEL_RESTORE_H" file="default_100_percent/panel_restore_hover.png" type="BINDATA" />
+      <include name="IDR_PANEL_RESTORE_C" file="default_100_percent/panel_restore_click.png" type="BINDATA" />
       <include name="IDR_PRERENDER" file="default_100_percent/prerender_succeed_icon.png" type="BINDATA" />
       <include name="IDR_PRERENDER_FAIL_ICON" file="default_100_percent/prerender_fail_icon.png" type="BINDATA"/>
       <include name="IDR_PRERENDER_SUCCEED_ICON" file="default_100_percent/prerender_succeed_icon.png" type="BINDATA"/>
