@@ -493,19 +493,21 @@ default_grab_motion(struct wl_pointer_grab *grab,
 
 static void
 default_grab_button(struct wl_pointer_grab *grab,
-		    uint32_t time, uint32_t button, uint32_t state)
+		    uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct wl_pointer *pointer = grab->pointer;
 	struct wl_resource *resource;
 	uint32_t serial;
+	enum wl_pointer_button_state state = state_w;
 
 	resource = pointer->focus_resource;
 	if (resource) {
 		serial = wl_display_next_serial(resource->client->display);
-		wl_pointer_send_button(resource, serial, time, button, state);
+		wl_pointer_send_button(resource, serial, time, button, state_w);
 	}
 
-	if (pointer->button_count == 0 && state == 0)
+	if (pointer->button_count == 0 &&
+	    state == WL_POINTER_BUTTON_STATE_RELEASED)
 		wl_pointer_set_focus(pointer, pointer->current,
 				     pointer->current_x, pointer->current_y);
 }

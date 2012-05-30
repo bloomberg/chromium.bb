@@ -260,15 +260,18 @@ data_device_end_drag_grab(struct wl_seat *seat)
 
 static void
 drag_grab_button(struct wl_pointer_grab *grab,
-		 uint32_t time, uint32_t button, uint32_t state)
+		 uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct wl_seat *seat = container_of(grab, struct wl_seat, drag_grab);
+	enum wl_pointer_button_state state = state_w;
 
 	if (seat->drag_focus_resource &&
-	    seat->pointer->grab_button == button && state == 0)
+	    seat->pointer->grab_button == button &&
+	    state == WL_POINTER_BUTTON_STATE_RELEASED)
 		wl_data_device_send_drop(seat->drag_focus_resource);
 
-	if (seat->pointer->button_count == 0 && state == 0) {
+	if (seat->pointer->button_count == 0 &&
+	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
 		data_device_end_drag_grab(seat);
 		if (seat->drag_data_source)
 			wl_list_remove(&seat->drag_data_source_listener.link);
