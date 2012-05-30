@@ -53,7 +53,10 @@ Layer::Layer()
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
       opacity_(1.0f),
-      inverted_(false),
+      background_blur_radius_(0),
+      layer_saturation_(0.0f),
+      layer_brightness_(0.0f),
+      layer_inverted_(false),
       delegate_(NULL),
       scale_content_(true),
       device_scale_factor_(1.0f) {
@@ -69,7 +72,10 @@ Layer::Layer(LayerType type)
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
       opacity_(1.0f),
-      inverted_(false),
+      background_blur_radius_(0),
+      layer_saturation_(0.0f),
+      layer_brightness_(0.0f),
+      layer_inverted_(false),
       delegate_(NULL),
       scale_content_(true),
       device_scale_factor_(1.0f) {
@@ -199,33 +205,45 @@ void Layer::SetOpacity(float opacity) {
 }
 
 void Layer::SetBackgroundBlur(int blur_radius) {
+  background_blur_radius_ = blur_radius;
+
   WebKit::WebFilterOperations filters;
-  if (blur_radius) {
-#if WEBKIT_HAS_NEW_WEBFILTEROPERATION_API
-    filters.append(WebKit::WebFilterOperation::createBlurFilter(blur_radius));
-#else
-    filters.append(WebKit::WebBlurFilterOperation(blur_radius));
-#endif
+  if (background_blur_radius_) {
+    filters.append(WebKit::WebFilterOperation::createBlurFilter(
+        background_blur_radius_));
   }
   web_layer_.setBackgroundFilters(filters);
-
-  background_blur_radius_ = blur_radius;
 }
 
-void Layer::SetInverted(bool inverted) {
-  WebKit::WebFilterOperations filters;
-  if (inverted) {
-#if WEBKIT_HAS_NEW_WEBFILTEROPERATION_API
-    filters.append(WebKit::WebFilterOperation::createInvertFilter(1.0));
-#else
-    filters.append(WebKit::WebBasicComponentTransferFilterOperation(
-        WebKit::WebBasicComponentTransferFilterOperation::
-            BasicComponentTransferFilterTypeInvert, 1.0));
-#endif
-  }
-  web_layer_.setFilters(filters);
+void Layer::SetLayerSaturation(float saturation) {
+  layer_saturation_ = saturation;
+  SetLayerFilters();
+}
 
-  inverted_ = inverted;
+void Layer::SetLayerBrightness(float brightness) {
+  layer_brightness_ = brightness;
+  SetLayerFilters();
+}
+
+void Layer::SetLayerInverted(bool inverted) {
+  layer_inverted_ = inverted;
+  SetLayerFilters();
+}
+
+void Layer::SetLayerFilters() {
+  WebKit::WebFilterOperations filters;
+  if (layer_saturation_) {
+    filters.append(WebKit::WebFilterOperation::createSaturateFilter(
+        layer_saturation_));
+  }
+  if (layer_brightness_) {
+    filters.append(WebKit::WebFilterOperation::createBrightnessFilter(
+        layer_brightness_));
+  }
+  if (layer_inverted_)
+    filters.append(WebKit::WebFilterOperation::createInvertFilter(1.0));
+
+  web_layer_.setFilters(filters);
 }
 
 float Layer::GetTargetOpacity() const {

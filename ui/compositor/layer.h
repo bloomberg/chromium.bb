@@ -134,9 +134,19 @@ class COMPOSITOR_EXPORT Layer :
   int background_blur() const { return background_blur_radius_; }
   void SetBackgroundBlur(int blur_radius);
 
+  // Saturate all pixels of this layer by this amount.
+  // This effect will get "combined" with the inverted and brightness setting.
+  float layer_saturation() const { return layer_saturation_; }
+  void SetLayerSaturation(float saturation);
+
+  // Change the brightness of all pixels from this layer by this amount.
+  // This effect will get "combined" with the inverted and saturate setting.
+  float layer_brightness() const { return layer_brightness_; }
+  void SetLayerBrightness(float brightness);
+
   // Invert the layer.
-  bool inverted() const { return inverted_; }
-  void SetInverted(bool inverted);
+  bool layer_inverted() const { return layer_inverted_; }
+  void SetLayerInverted(bool inverted);
 
   // Return the target opacity if animator is running, or the current opacity
   // otherwise.
@@ -270,6 +280,9 @@ class COMPOSITOR_EXPORT Layer :
   void RecomputeDrawsContentAndUVRect();
   void RecomputeDebugBorderColor();
 
+  // Set all filters which got applied to the layer.
+  void SetLayerFilters();
+
   const LayerType type_;
 
   Compositor* compositor_;
@@ -301,7 +314,12 @@ class COMPOSITOR_EXPORT Layer :
 
   float opacity_;
   int background_blur_radius_;
-  bool inverted_;
+
+  // Several variables which will change the visible representation of
+  // the layer.
+  float layer_saturation_;
+  float layer_brightness_;
+  bool layer_inverted_;
 
   std::string name_;
 

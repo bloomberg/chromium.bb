@@ -18,7 +18,7 @@ HighContrastController::HighContrastController()
 void HighContrastController::SetEnabled(bool enabled) {
   enabled_ = enabled;
 
-  root_window_->layer()->SetInverted(enabled_);
+  root_window_->layer()->SetLayerInverted(enabled_);
 }
 
 }  // namespace ash
