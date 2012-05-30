@@ -15,7 +15,7 @@ using views::View;
 
 typedef InProcessBrowserTest BrowserViewTest;
 
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, FullscreenClearsFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, DISABLED_FullscreenClearsFocus) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   LocationBarView* location_bar_view = browser_view->GetLocationBarView();
   FocusManager* focus_manager = browser_view->GetFocusManager();
