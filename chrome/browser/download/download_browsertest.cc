@@ -961,13 +961,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   EXPECT_TRUE(EnsureNoPendingDownloads());
 
   // Disable downloads for the tab.
-  content::NavigationController* controller =
-      &browser()->GetSelectedWebContents()->GetController();
+  WebContents* web_contents = browser()->GetSelectedWebContents();
   DownloadRequestLimiter::TabDownloadState* tab_download_state =
       g_browser_process->download_request_limiter()->GetDownloadState(
-          controller,
-          controller,
-          true);
+          web_contents, web_contents, true);
   ASSERT_TRUE(tab_download_state);
   tab_download_state->set_download_status(
       DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
@@ -975,7 +972,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   // Try to start the download via Javascript and wait for the corresponding
   // load stop event.
   TestNavigationObserver observer(
-      content::Source<content::NavigationController>(controller),
+      content::Source<content::NavigationController>(
+          &web_contents->GetController()),
       NULL,
       1);
   bool download_assempted;

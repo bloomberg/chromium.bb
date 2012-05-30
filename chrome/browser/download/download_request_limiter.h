@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class DownloadRequestInfoBarDelegate;
 class TabContentsWrapper;
@@ -68,7 +69,8 @@ class DownloadRequestLimiter
   // TabDownloadState prompts the user with an infobar as necessary.
   // TabDownloadState deletes itself (by invoking
   // DownloadRequestLimiter::Remove) as necessary.
-  class TabDownloadState : public content::NotificationObserver {
+  class TabDownloadState : public content::NotificationObserver,
+                           public content::WebContentsObserver {
    public:
     // Creates a new TabDownloadState. |controller| is the controller the
     // TabDownloadState tracks the state of and is the host for any dialogs that
@@ -77,8 +79,8 @@ class DownloadRequestLimiter
     // is used. |originating_controller| is typically null, but differs from
     // |controller| in the case of a constrained popup requesting the download.
     TabDownloadState(DownloadRequestLimiter* host,
-                     content::NavigationController* controller,
-                     content::NavigationController* originating_controller);
+                     content::WebContents* web_contents,
+                     content::WebContents* originating_web_contents);
     virtual ~TabDownloadState();
 
     // Status of the download.
@@ -97,9 +99,15 @@ class DownloadRequestLimiter
       return download_count_;
     }
 
+    // Promote protected accessor to public.
+    content::WebContents* web_contents() {
+      return content::WebContentsObserver::web_contents();
+    }
+
+    // content::WebContentsObserver overrides.
     // Invoked when a user gesture occurs (mouse click, enter or space). This
     // may result in invoking Remove on DownloadRequestLimiter.
-    void OnUserGesture();
+    virtual void DidGetUserGesture() OVERRIDE;
 
     // Asks the user if they really want to allow the download.
     // See description above CanDownloadOnIOThread for details on lifetime of
@@ -111,9 +119,6 @@ class DownloadRequestLimiter
     // Are we showing a prompt to the user?
     bool is_showing_prompt() const { return (infobar_ != NULL); }
 
-    // NavigationController we're tracking.
-    content::NavigationController* controller() const { return controller_; }
-
     // Invoked from DownloadRequestDialogDelegate. Notifies the delegates and
     // changes the status appropriately. Virtual for testing.
     virtual void Cancel();
@@ -123,7 +128,6 @@ class DownloadRequestLimiter
     // Used for testing.
     TabDownloadState()
         : host_(NULL),
-          controller_(NULL),
           status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
           download_count_(0),
           infobar_(NULL) {
@@ -140,8 +144,6 @@ class DownloadRequestLimiter
     void NotifyCallbacks(bool allow);
 
     DownloadRequestLimiter* host_;
-
-    content::NavigationController* controller_;
 
     // Host of the first page the download started on. This may be empty.
     std::string initial_page_host_;
@@ -179,11 +181,6 @@ class DownloadRequestLimiter
                              const std::string& request_method,
                              const Callback& callback);
 
-  // Invoked when the user presses the mouse, enter key or space bar. This may
-  // change the download status for the page. See the class description for
-  // details.
-  void OnUserGesture(content::WebContents* tab);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(DownloadTest, DownloadResourceThrottleCancels);
   friend class base::RefCountedThreadSafe<DownloadRequestLimiter>;
@@ -210,8 +207,8 @@ class DownloadRequestLimiter
   // The returned TabDownloadState is owned by the DownloadRequestLimiter and
   // deleted when no longer needed (the Remove method is invoked).
   TabDownloadState* GetDownloadState(
-      content::NavigationController* controller,
-      content::NavigationController* originating_controller,
+      content::WebContents* web_contents,
+      content::WebContents* originating_web_contents,
       bool create);
 
   // CanDownloadOnIOThread invokes this on the UI thread. This determines the
@@ -224,7 +221,7 @@ class DownloadRequestLimiter
 
   // Does the work of updating the download status on the UI thread and
   // potentially prompting the user.
-  void CanDownloadImpl(TabContentsWrapper* originating_tab,
+  void CanDownloadImpl(content::WebContents* originating_contents,
                        int request_id,
                        const std::string& request_method,
                        const Callback& callback);
@@ -242,7 +239,7 @@ class DownloadRequestLimiter
   // if the state is other than ALLOW_ONE_DOWNLOAD. Similarly once the state
   // transitions from anything but ALLOW_ONE_DOWNLOAD back to ALLOW_ONE_DOWNLOAD
   // the TabDownloadState is removed and deleted (by way of Remove).
-  typedef std::map<content::NavigationController*, TabDownloadState*> StateMap;
+  typedef std::map<content::WebContents*, TabDownloadState*> StateMap;
   StateMap state_map_;
 
   static TestingDelegate* delegate_;

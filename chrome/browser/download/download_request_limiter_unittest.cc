@@ -4,13 +4,16 @@
 
 #include "base/bind.h"
 #include "chrome/browser/download/download_request_limiter.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 class DownloadRequestLimiterTest : public TabContentsWrapperTestHarness {
  public:
@@ -33,19 +36,37 @@ class DownloadRequestLimiterTest : public TabContentsWrapperTestHarness {
   }
 
   virtual void TearDown() {
-    DownloadRequestLimiter::SetTestingDelegate(NULL);
-
+    UnsetDelegate();
     TabContentsWrapperTestHarness::TearDown();
   }
 
+  virtual void UnsetDelegate() {
+    DownloadRequestLimiter::SetTestingDelegate(NULL);
+  }
+
   void CanDownload() {
+    CanDownloadFor(web_contents());
+  }
+
+  void CanDownloadFor(WebContents* web_contents) {
     download_request_limiter_->CanDownloadImpl(
-        contents_wrapper(),
+        web_contents,
         -1,  // request id
         "GET",  // request method
         base::Bind(&DownloadRequestLimiterTest::ContinueDownload,
                    base::Unretained(this)));
     message_loop_.RunAllPending();
+  }
+
+  void OnUserGesture() {
+    OnUserGestureFor(web_contents());
+  }
+
+  void OnUserGestureFor(WebContents* web_contents) {
+    DownloadRequestLimiter::TabDownloadState* state =
+        download_request_limiter_->GetDownloadState(web_contents, NULL, false);
+    if (state)
+      state->DidGetUserGesture();
   }
 
   bool ShouldAllowDownload() {
@@ -97,7 +118,8 @@ class DownloadRequestLimiterTest : public TabContentsWrapperTestHarness {
   content::TestBrowserThread io_thread_;
 };
 
-TEST_F(DownloadRequestLimiterTest, Allow) {
+TEST_F(DownloadRequestLimiterTest,
+       DownloadRequestLimiter_Allow) {
   // All tabs should initially start at ALLOW_ONE_DOWNLOAD.
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(contents()));
@@ -137,7 +159,8 @@ TEST_F(DownloadRequestLimiterTest, Allow) {
   continue_count_ = 0;
 }
 
-TEST_F(DownloadRequestLimiterTest, ResetOnNavigation) {
+TEST_F(DownloadRequestLimiterTest,
+       DownloadRequestLimiter_ResetOnNavigation) {
   NavigateAndCommit(GURL("http://foo.com/bar"));
 
   // Do two downloads, allowing the second so that we end up with allow all.
@@ -161,7 +184,7 @@ TEST_F(DownloadRequestLimiterTest, ResetOnNavigation) {
 
   // Do a user gesture, because we're at allow all, this shouldn't change the
   // state.
-  download_request_limiter_->OnUserGesture(contents());
+  OnUserGesture();
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
             download_request_limiter_->GetDownloadStatus(contents()));
 
@@ -171,7 +194,8 @@ TEST_F(DownloadRequestLimiterTest, ResetOnNavigation) {
             download_request_limiter_->GetDownloadStatus(contents()));
 }
 
-TEST_F(DownloadRequestLimiterTest, ResetOnUserGesture) {
+TEST_F(DownloadRequestLimiterTest,
+       DownloadRequestLimiter_ResetOnUserGesture) {
   NavigateAndCommit(GURL("http://foo.com/bar"));
 
   // Do one download, which should change to prompt before download.
@@ -181,7 +205,7 @@ TEST_F(DownloadRequestLimiterTest, ResetOnUserGesture) {
             download_request_limiter_->GetDownloadStatus(contents()));
 
   // Do a user gesture, which should reset back to allow one.
-  download_request_limiter_->OnUserGesture(contents());
+  OnUserGesture();
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(contents()));
 
@@ -194,7 +218,7 @@ TEST_F(DownloadRequestLimiterTest, ResetOnUserGesture) {
             download_request_limiter_->GetDownloadStatus(contents()));
 
   // A user gesture now should NOT change the state.
-  download_request_limiter_->OnUserGesture(contents());
+  OnUserGesture();
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(contents()));
   // And make sure we really can't download.
@@ -206,4 +230,50 @@ TEST_F(DownloadRequestLimiterTest, ResetOnUserGesture) {
   // And the state shouldn't have changed.
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(contents()));
+}
+
+TEST_F(DownloadRequestLimiterTest,
+       DownloadRequestLimiter_RawWebContents) {
+  // By-pass TabContentsWrapperTestHarness and use
+  // RenderViewHostTestHarness::CreateTestWebContents() directly so that there
+  // will be no TabContentsWrapper for web_contents.
+  scoped_ptr<WebContents> web_contents(CreateTestWebContents());
+  TabContentsWrapper* tab_wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents.get());
+  ASSERT_TRUE(tab_wrapper == NULL);
+  // DRL won't try to make an infobar if it doesn't have a TCW, and we want to
+  // test that it will Cancel() instead of prompting when it doesn't have a TCW,
+  // so unset the delegate.
+  UnsetDelegate();
+  EXPECT_EQ(0, continue_count_);
+  EXPECT_EQ(0, cancel_count_);
+  EXPECT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents.get()));
+  // You get one freebie.
+  CanDownloadFor(web_contents.get());
+  EXPECT_EQ(1, continue_count_);
+  EXPECT_EQ(0, cancel_count_);
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents.get()));
+  OnUserGestureFor(web_contents.get());
+  EXPECT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents.get()));
+  CanDownloadFor(web_contents.get());
+  EXPECT_EQ(2, continue_count_);
+  EXPECT_EQ(0, cancel_count_);
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents.get()));
+  CanDownloadFor(web_contents.get());
+  EXPECT_EQ(2, continue_count_);
+  EXPECT_EQ(1, cancel_count_);
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
+            download_request_limiter_->GetDownloadStatus(web_contents.get()));
+  OnUserGestureFor(web_contents.get());
+  EXPECT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents.get()));
+  CanDownloadFor(web_contents.get());
+  EXPECT_EQ(3, continue_count_);
+  EXPECT_EQ(1, cancel_count_);
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents.get()));
 }

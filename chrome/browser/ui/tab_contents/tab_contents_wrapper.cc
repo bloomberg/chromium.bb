@@ -11,7 +11,6 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/download/download_request_limiter_observer.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/external_protocol/external_protocol_observer.h"
@@ -126,8 +125,6 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
   // Create the per-tab observers.
   alternate_error_page_tab_observer_.reset(
       new AlternateErrorPageTabObserver(contents, profile()));
-  download_request_limiter_observer_.reset(
-      new DownloadRequestLimiterObserver(contents));
   webnavigation_observer_.reset(
       new extensions::WebNavigationTabObserver(contents));
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));

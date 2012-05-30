@@ -22,7 +22,6 @@ class BlockedContentTabHelper;
 class BookmarkTabHelper;
 class ConstrainedWindowTabHelper;
 class CoreTabHelper;
-class DownloadRequestLimiterObserver;
 class ExtensionTabHelper;
 class ExternalProtocolObserver;
 class FaviconTabHelper;
@@ -74,6 +73,19 @@ class SafeBrowsingTabObserver;
 
 // Wraps WebContents and all of its supporting objects in order to control
 // their ownership and lifetime.
+//
+// WARNING: Not every place where HTML can run has a TabContentsWrapper. This
+// class is *only* used in a visible, actual, tab inside a browser. Examples of
+// things that do not have tab wrappers include:
+// - Extension background pages and popup bubbles
+// - HTML notification bubbles
+// - Screensavers on Chrome OS
+// - Other random places we decide to display HTML over time
+//
+// Consider carefully whether your feature is something that makes sense only
+// when a tab is displayed, or could make sense in other cases we use HTML. It
+// may makes sense to push down into WebContents and make configurable, or at
+// least to make easy for other WebContents hosts to include and support.
 //
 // TODO(avi): Eventually, this class will become TabContents as far as
 // the browser front-end is concerned.
@@ -271,7 +283,6 @@ class TabContentsWrapper : public content::WebContentsObserver {
   // and silently do their thing live here.)
 
   scoped_ptr<AlternateErrorPageTabObserver> alternate_error_page_tab_observer_;
-  scoped_ptr<DownloadRequestLimiterObserver> download_request_limiter_observer_;
   scoped_ptr<extensions::WebNavigationTabObserver> webnavigation_observer_;
   scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
   scoped_ptr<OmniboxSearchHint> omnibox_search_hint_;

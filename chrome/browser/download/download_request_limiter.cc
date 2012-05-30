@@ -29,23 +29,24 @@ using content::WebContents;
 
 DownloadRequestLimiter::TabDownloadState::TabDownloadState(
     DownloadRequestLimiter* host,
-    NavigationController* controller,
-    NavigationController* originating_controller)
-    : host_(host),
-      controller_(controller),
+    WebContents* contents,
+    WebContents* originating_web_contents)
+    : content::WebContentsObserver(contents),
+      host_(host),
       status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
       download_count_(0),
       infobar_(NULL) {
-  content::Source<NavigationController> notification_source(controller);
-  content::Source<content::WebContents> web_contents_source(
-       controller->GetWebContents());
+  content::Source<NavigationController> notification_source(
+      &contents->GetController());
+  content::Source<content::WebContents> web_contents_source(contents);
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  notification_source);
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  web_contents_source);
 
-  NavigationEntry* active_entry = originating_controller ?
-      originating_controller->GetActiveEntry() : controller->GetActiveEntry();
+  NavigationEntry* active_entry = originating_web_contents ?
+      originating_web_contents->GetController().GetActiveEntry() :
+      contents->GetController().GetActiveEntry();
   if (active_entry)
     initial_page_host_ = active_entry->GetURL().host();
 }
@@ -58,23 +59,29 @@ DownloadRequestLimiter::TabDownloadState::~TabDownloadState() {
   DCHECK(!infobar_);
 }
 
-void DownloadRequestLimiter::TabDownloadState::OnUserGesture() {
+void DownloadRequestLimiter::TabDownloadState::DidGetUserGesture() {
   if (is_showing_prompt()) {
     // Don't change the state if the user clicks on the page some where.
     return;
   }
 
-  if (status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS &&
-      status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED) {
+  TabContentsWrapper* tab_wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
+  // See PromptUserForDownload(): if there's no TCW, then DOWNLOADS_NOT_ALLOWED
+  // is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
+  if ((tab_wrapper &&
+       status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS &&
+       status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED) ||
+      (!tab_wrapper &&
+       status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS)) {
     // Revert to default status.
     host_->Remove(this);
     // WARNING: We've been deleted.
-    return;
   }
 }
 
 void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
-    WebContents* tab,
+    WebContents* web_contents,
     const DownloadRequestLimiter::Callback& callback) {
   callbacks_.push_back(callback);
 
@@ -83,13 +90,25 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
 
   if (DownloadRequestLimiter::delegate_) {
     NotifyCallbacks(DownloadRequestLimiter::delegate_->ShouldAllowDownload());
-  } else {
-    InfoBarTabHelper* infobar_helper =
-        TabContentsWrapper::GetCurrentWrapperForContents(tab)->
-            infobar_tab_helper();
-    infobar_ = new DownloadRequestInfoBarDelegate(infobar_helper, this);
-    infobar_helper->AddInfoBar(infobar_);
+    return;
   }
+  TabContentsWrapper* tab_wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
+  if (!tab_wrapper) {
+    // If |web_contents| doesn't have a tab_wrapper, then it isn't what a user
+    // thinks of as a tab, it's actually a "raw" WebContents like those used
+    // for extension popups/bubbles and hosted apps etc.
+    // TODO(benjhayden): If this is an automatic download from an extension,
+    // it would be convenient for the extension author if we send a message to
+    // the extension's DevTools console (as we do for CSP) about how
+    // extensions should use chrome.downloads.download() (requires the
+    // "downloads" permission) to automatically download >1 files.
+    Cancel();
+    return;
+  }
+  InfoBarTabHelper* infobar_helper = tab_wrapper->infobar_tab_helper();
+  infobar_ = new DownloadRequestInfoBarDelegate(infobar_helper, this);
+  infobar_helper->AddInfoBar(infobar_);
 }
 
 void DownloadRequestLimiter::TabDownloadState::Cancel() {
@@ -109,14 +128,15 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
     NOTREACHED();
     return;
   }
+  content::NavigationController* controller = &web_contents()->GetController();
   if (type == content::NOTIFICATION_NAV_ENTRY_PENDING &&
-      content::Source<NavigationController>(source).ptr() != controller_) {
+      content::Source<NavigationController>(source).ptr() != controller) {
     NOTREACHED();
     return;
   }
   if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED &&
       &content::Source<content::WebContents>(source).ptr()->
-          GetController() != controller_) {
+          GetController() != controller) {
     NOTREACHED();
     return;
   }
@@ -129,7 +149,7 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
       // request. If this happens we may let a download through that we
       // shouldn't have. But this is rather rare, and it is difficult to get
       // 100% right, so we don't deal with it.
-      NavigationEntry* entry = controller_->GetPendingEntry();
+      NavigationEntry* entry = controller->GetPendingEntry();
       if (!entry)
         return;
 
@@ -165,9 +185,9 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
 }
 
 void DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
-  status_ = allow ?
+  set_download_status(allow ?
       DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS :
-      DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED;
+      DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
   std::vector<DownloadRequestLimiter::Callback> callbacks;
   bool change_status = false;
 
@@ -195,7 +215,7 @@ void DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
     host_->ScheduleNotification(callbacks[i], allow);
 
   if (change_status)
-    status_ = DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD;
+    set_download_status(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD);
 }
 
 // DownloadRequestLimiter ------------------------------------------------------
@@ -210,8 +230,8 @@ DownloadRequestLimiter::~DownloadRequestLimiter() {
 }
 
 DownloadRequestLimiter::DownloadStatus
-    DownloadRequestLimiter::GetDownloadStatus(WebContents* tab) {
-  TabDownloadState* state = GetDownloadState(&tab->GetController(), NULL, false);
+    DownloadRequestLimiter::GetDownloadStatus(WebContents* web_contents) {
+  TabDownloadState* state = GetDownloadState(web_contents, NULL, false);
   return state ? state->download_status() : ALLOW_ONE_DOWNLOAD;
 }
 
@@ -231,26 +251,18 @@ void DownloadRequestLimiter::CanDownloadOnIOThread(
                  request_method, callback));
 }
 
-void DownloadRequestLimiter::OnUserGesture(WebContents* tab) {
-  TabDownloadState* state =
-      GetDownloadState(&tab->GetController(), NULL, false);
-  if (!state)
-    return;
-
-  state->OnUserGesture();
-}
-
 // static
 void DownloadRequestLimiter::SetTestingDelegate(TestingDelegate* delegate) {
   delegate_ = delegate;
 }
 
-DownloadRequestLimiter::TabDownloadState* DownloadRequestLimiter::
-    GetDownloadState(NavigationController* controller,
-                     NavigationController* originating_controller,
-                     bool create) {
-  DCHECK(controller);
-  StateMap::iterator i = state_map_.find(controller);
+DownloadRequestLimiter::TabDownloadState*
+DownloadRequestLimiter::GetDownloadState(
+    WebContents* web_contents,
+    WebContents* originating_web_contents,
+    bool create) {
+  DCHECK(web_contents);
+  StateMap::iterator i = state_map_.find(web_contents);
   if (i != state_map_.end())
     return i->second;
 
@@ -258,8 +270,8 @@ DownloadRequestLimiter::TabDownloadState* DownloadRequestLimiter::
     return NULL;
 
   TabDownloadState* state =
-      new TabDownloadState(this, controller, originating_controller);
-  state_map_[controller] = state;
+      new TabDownloadState(this, web_contents, originating_web_contents);
+  state_map_[web_contents] = state;
   return state;
 }
 
@@ -270,49 +282,53 @@ void DownloadRequestLimiter::CanDownload(int render_process_host_id,
                                          const Callback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  WebContents* originating_tab =
+  WebContents* originating_contents =
       tab_util::GetWebContentsByID(render_process_host_id, render_view_id);
-  if (!originating_tab) {
-    // The tab was closed, don't allow the download.
+  if (!originating_contents) {
+    // The WebContents was closed, don't allow the download.
     ScheduleNotification(callback, false);
     return;
   }
 
   CanDownloadImpl(
-      TabContentsWrapper::GetCurrentWrapperForContents(originating_tab),
+      originating_contents,
       request_id,
       request_method,
       callback);
 }
 
-void DownloadRequestLimiter::CanDownloadImpl(
-    TabContentsWrapper* originating_tab,
-    int request_id,
-    const std::string& request_method,
-    const Callback& callback) {
-  DCHECK(originating_tab);
+void DownloadRequestLimiter::CanDownloadImpl(WebContents* originating_contents,
+                                             int request_id,
+                                             const std::string& request_method,
+                                             const Callback& callback) {
+  DCHECK(originating_contents);
 
   // FYI: Chrome Frame overrides CanDownload in ExternalTabContainer in order
   // to cancel the download operation in chrome and let the host browser
   // take care of it.
-  WebContents* tab = originating_tab->web_contents();
-  if (tab->GetDelegate() && !tab->GetDelegate()->CanDownload(
-      tab->GetRenderViewHost(), request_id, request_method)) {
+  if (originating_contents->GetDelegate() &&
+      !originating_contents->GetDelegate()->CanDownload(
+          originating_contents->GetRenderViewHost(),
+          request_id,
+          request_method)) {
     ScheduleNotification(callback, false);
     return;
   }
 
   // If the tab requesting the download is a constrained popup that is not
   // shown, treat the request as if it came from the parent.
-  TabContentsWrapper* effective_wrapper = originating_tab;
-  if (effective_wrapper->blocked_content_tab_helper()->delegate()) {
-    effective_wrapper = effective_wrapper->blocked_content_tab_helper()->
-        delegate()->GetConstrainingContentsWrapper(effective_wrapper);
+  WebContents* effective_contents = originating_contents;
+  TabContentsWrapper* originating_wrapper =
+     TabContentsWrapper::GetCurrentWrapperForContents(originating_contents);
+  if (originating_wrapper &&
+      originating_wrapper->blocked_content_tab_helper()->delegate()) {
+    effective_contents = originating_wrapper->blocked_content_tab_helper()->
+        delegate()->GetConstrainingContentsWrapper(originating_wrapper)->
+            web_contents();
   }
 
   TabDownloadState* state = GetDownloadState(
-      &effective_wrapper->web_contents()->GetController(),
-      &tab->GetController(), true);
+      effective_contents, originating_contents, true);
   switch (state->download_status()) {
     case ALLOW_ALL_DOWNLOADS:
       if (state->download_count() && !(state->download_count() %
@@ -332,7 +348,7 @@ void DownloadRequestLimiter::CanDownloadImpl(
       break;
 
     case PROMPT_BEFORE_DOWNLOAD:
-      state->PromptUserForDownload(effective_wrapper->web_contents(), callback);
+      state->PromptUserForDownload(effective_contents, callback);
       state->increment_download_count();
       break;
 
@@ -348,8 +364,8 @@ void DownloadRequestLimiter::ScheduleNotification(const Callback& callback,
 }
 
 void DownloadRequestLimiter::Remove(TabDownloadState* state) {
-  DCHECK(ContainsKey(state_map_, state->controller()));
-  state_map_.erase(state->controller());
+  DCHECK(ContainsKey(state_map_, state->web_contents()));
+  state_map_.erase(state->web_contents());
   delete state;
 }
 
