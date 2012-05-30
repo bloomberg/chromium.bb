@@ -55,8 +55,6 @@ class DownloadItemModelTest : public testing::Test {
     ON_CALL(item_, GetTotalBytes()).WillByDefault(Return(2048));
     ON_CALL(item_, IsInProgress()).WillByDefault(Return(false));
     ON_CALL(item_, TimeRemaining(_)).WillByDefault(Return(false));
-    ON_CALL(item_, PromptUserForSaveLocation())
-        .WillByDefault(Return(false));
     ON_CALL(item_, GetMimeType()).WillByDefault(Return("text/html"));
     ON_CALL(item_, AllDataSaved()).WillByDefault(Return(false));
     ON_CALL(item_, GetOpenWhenComplete()).WillByDefault(Return(false));
@@ -66,6 +64,9 @@ class DownloadItemModelTest : public testing::Test {
     ON_CALL(item_, GetURL()).WillByDefault(ReturnRefOfCopy(url));
     ON_CALL(item_, GetFileNameToReportUser())
         .WillByDefault(Return(FilePath(FILE_PATH_LITERAL("foo.bar"))));
+    ON_CALL(item_, GetTargetDisposition())
+        .WillByDefault(
+            Return(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE));
   }
 
   void SetupInterruptedDownloadItem(content::DownloadInterruptReason reason) {

@@ -5,7 +5,6 @@ include_rules = [
   "+content/browser/worker_host/worker_service_impl.h",
 
   # TODO(jam): remove
-  "+content/browser/download/download_state_info.h",
   "+content/browser/javascript_dialogs.h",
   "+content/browser/web_contents/web_contents_impl.h",
   "+content/browser/webui/web_ui.h",

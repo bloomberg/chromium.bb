@@ -145,13 +145,6 @@ class CONTENT_EXPORT DownloadManager
       const std::string& hash_state,
       DownloadInterruptReason reason) = 0;
 
-  // Called when the download is renamed to its final name.
-  // |uniquifier| is a number used to make unique names for the file.  It is
-  // only valid for the DANGEROUS_BUT_VALIDATED state of the download item.
-  virtual void OnDownloadRenamedToFinalName(int download_id,
-                                    const FilePath& full_path,
-                                    int uniquifier) = 0;
-
   // Remove downloads after remove_begin (inclusive) and before remove_end
   // (exclusive). You may pass in null Time values to do an unbounded delete
   // in either direction.

@@ -259,7 +259,8 @@ void DownloadManagerImpl::GetTemporaryDownloads(
   for (DownloadMap::iterator it = history_downloads_.begin();
        it != history_downloads_.end(); ++it) {
     if (it->second->IsTemporary() &&
-        (dir_path.empty() || it->second->GetFullPath().DirName() == dir_path))
+        (dir_path.empty() ||
+         it->second->GetTargetFilePath().DirName() == dir_path))
       result->push_back(it->second);
   }
 }
@@ -271,7 +272,8 @@ void DownloadManagerImpl::GetAllDownloads(
   for (DownloadMap::iterator it = history_downloads_.begin();
        it != history_downloads_.end(); ++it) {
     if (!it->second->IsTemporary() &&
-        (dir_path.empty() || it->second->GetFullPath().DirName() == dir_path))
+        (dir_path.empty() ||
+         it->second->GetTargetFilePath().DirName() == dir_path))
       result->push_back(it->second);
   }
 }
@@ -377,29 +379,18 @@ void DownloadManagerImpl::RestartDownload(int32 download_id) {
   VLOG(20) << __FUNCTION__ << "()"
            << " download = " << download->DebugString(true);
 
-  FilePath suggested_path = download->GetSuggestedPath();
-
-  if (download->PromptUserForSaveLocation()) {
+  if (download->GetTargetDisposition() ==
+      DownloadItem::TARGET_DISPOSITION_PROMPT) {
     // We must ask the user for the place to put the download.
     WebContents* contents = download->GetWebContents();
 
-    FilePath target_path;
-    // If |download| is a potentially dangerous file, then |suggested_path|
-    // contains the intermediate name instead of the final download
-    // filename. The latter is GetTargetName().
-    if (download->GetDangerType() !=
-            content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
-      target_path = suggested_path.DirName().Append(download->GetTargetName());
-    else
-      target_path = suggested_path;
-
-    delegate_->ChooseDownloadPath(contents, target_path,
+    delegate_->ChooseDownloadPath(contents, download->GetTargetFilePath(),
                                   download_id);
     FOR_EACH_OBSERVER(Observer, observers_,
                       SelectFileDialogDisplayed(this, download_id));
   } else {
-    // No prompting for download, just continue with the suggested name.
-    ContinueDownloadWithPath(download, suggested_path);
+    // No prompting for download, just continue with the current target path.
+    OnTargetPathAvailable(download);
   }
 }
 
@@ -458,13 +449,9 @@ DownloadItem* DownloadManagerImpl::CreateSavePackageDownloadItem(
   return download;
 }
 
-// For non-safe downloads with no prompting, |chosen_file| is the intermediate
-// path for saving the in-progress download. The final target filename for these
-// is |download->GetTargetName()|.  For all other downloads (non-safe downloads
-// for which we have prompted for a save location, and all safe downloads),
-// |chosen_file| is the final target download path.
-void DownloadManagerImpl::ContinueDownloadWithPath(
-    DownloadItem* download, const FilePath& chosen_file) {
+// The target path for the download item is now valid. We proceed with the
+// determination of an intermediate path.
+void DownloadManagerImpl::OnTargetPathAvailable(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(download);
 
@@ -473,46 +460,24 @@ void DownloadManagerImpl::ContinueDownloadWithPath(
   DCHECK(ContainsKey(downloads_, download));
   DCHECK(ContainsKey(active_downloads_, download_id));
 
-  // Make sure the initial file name is set only once.
-  DCHECK(download->GetFullPath().empty());
-  download->OnPathDetermined(chosen_file);
-
   VLOG(20) << __FUNCTION__ << "()"
            << " download = " << download->DebugString(true);
 
   // Rename to intermediate name.
-  FilePath download_path;
-  if (download->GetDangerType() !=
-          content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
-    if (download->PromptUserForSaveLocation()) {
-      // When we prompt the user, we overwrite the FullPath with what the user
-      // wanted to use. Construct a file path using the previously determined
-      // intermediate filename and the new path.
-      // TODO(asanka): This can trample an in-progress download in the new
-      // target directory if it was using the same intermediate name.
-      FilePath file_name = download->GetSuggestedPath().BaseName();
-      download_path = download->GetFullPath().DirName().Append(file_name);
-    } else {
-      // The download's name is already set to an intermediate name, so no need
-      // to override.
-      download_path = download->GetFullPath();
-    }
-  } else {
-    // The download is a safe download.  We need to rename it to its
-    // intermediate path.  The final name after user confirmation will be set
-    // from DownloadItem::OnDownloadCompleting.
-    download_path = delegate_->GetIntermediatePath(download->GetFullPath());
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileManager::RenameInProgressDownloadFile,
-                 file_manager_, download->GetGlobalId(),
-                 download_path));
-
-  download->Rename(download_path);
-
-  delegate_->AddItemToPersistentStore(download);
+  // TODO(asanka): Skip this rename if download->AllDataSaved() is true. This
+  //               avoids a spurious rename when we can just rename to the final
+  //               filename. Unnecessary renames may cause bugs like
+  //               http://crbug.com/74187.
+  bool ok_to_overwrite = true;
+  FilePath intermediate_path =
+      delegate_->GetIntermediatePath(*download, &ok_to_overwrite);
+  // We want the intermediate and target paths to refer to the same directory so
+  // that they are both on the same device and subject to same
+  // space/permission/availability constraints.
+  DCHECK(intermediate_path.DirName() ==
+         download->GetTargetFilePath().DirName());
+  download->OnIntermediatePathDetermined(file_manager_, intermediate_path,
+                                         ok_to_overwrite);
 }
 
 void DownloadManagerImpl::UpdateDownload(int32 download_id,
@@ -650,8 +615,6 @@ void DownloadManagerImpl::MaybeCompleteDownload(DownloadItem* download) {
            << download->DebugString(false);
 
   delegate_->UpdateItemInPersistentStore(download);
-
-  // Finish the download.
   download->OnDownloadCompleting(file_manager_);
 }
 
@@ -667,38 +630,6 @@ void DownloadManagerImpl::DownloadCompleted(DownloadItem* download) {
   delegate_->UpdateItemInPersistentStore(download);
   active_downloads_.erase(download->GetId());
   AssertStateConsistent(download);
-}
-
-void DownloadManagerImpl::OnDownloadRenamedToFinalName(
-    int download_id,
-    const FilePath& full_path,
-    int uniquifier) {
-  VLOG(20) << __FUNCTION__ << "()" << " download_id = " << download_id
-           << " full_path = \"" << full_path.value() << "\""
-           << " uniquifier = " << uniquifier;
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DownloadItem* item = GetDownloadItem(download_id);
-  if (!item)
-    return;
-
-  if (item->GetDangerType() == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
-      item->PromptUserForSaveLocation()) {
-    DCHECK_EQ(0, uniquifier)
-        << "We should not uniquify user supplied filenames or safe filenames "
-           "that have already been uniquified.";
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileManager::CompleteDownload,
-                 file_manager_, item->GetGlobalId()));
-
-  if (uniquifier)
-    item->SetPathUniquifier(uniquifier);
-
-  item->OnDownloadRenamedToFinalName(full_path);
-  delegate_->UpdatePathForItemInPersistentStore(item, full_path);
 }
 
 void DownloadManagerImpl::CancelDownload(int32 download_id) {
@@ -882,20 +813,22 @@ void DownloadManagerImpl::RemoveObserver(Observer* observer) {
 void DownloadManagerImpl::FileSelected(const FilePath& path,
                                        int32 download_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!path.empty());
 
   DownloadItem* download = GetActiveDownloadItem(download_id);
   if (!download)
     return;
   VLOG(20) << __FUNCTION__ << "()" << " path = \"" << path.value() << "\""
-            << " download = " << download->DebugString(true);
+           << " download = " << download->DebugString(true);
 
-  // Retain the last directory that was picked by the user. Exclude temporary
-  // downloads since the path likely points at the location of a temporary file.
-  if (download->PromptUserForSaveLocation() && !download->IsTemporary())
+  // Retain the last directory. Exclude temporary downloads since the path
+  // likely points at the location of a temporary file.
+  if (!download->IsTemporary())
     last_download_path_ = path.DirName();
 
   // Make sure the initial file name is set only once.
-  ContinueDownloadWithPath(download, path);
+  download->OnTargetPathSelected(path);
+  OnTargetPathAvailable(download);
 }
 
 void DownloadManagerImpl::FileSelectionCanceled(int32 download_id) {
@@ -1172,6 +1105,23 @@ void DownloadManagerImpl::DownloadOpened(DownloadItem* download) {
       ++num_unopened;
   }
   download_stats::RecordOpensOutstanding(num_unopened);
+}
+
+void DownloadManagerImpl::DownloadRenamedToIntermediateName(
+    DownloadItem* download) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // If the rename failed, we receive an OnDownloadInterrupted() call before we
+  // receive the DownloadRenamedToIntermediateName() call.
+  delegate_->AddItemToPersistentStore(download);
+}
+
+void DownloadManagerImpl::DownloadRenamedToFinalName(
+    DownloadItem* download) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // If the rename failed, we receive an OnDownloadInterrupted() call before we
+  // receive the DownloadRenamedToFinalName() call.
+  delegate_->UpdatePathForItemInPersistentStore(download,
+                                                download->GetFullPath());
 }
 
 void DownloadManagerImpl::SetFileManagerForTesting(

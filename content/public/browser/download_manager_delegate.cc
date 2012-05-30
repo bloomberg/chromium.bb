@@ -5,6 +5,7 @@
 #include "content/public/browser/download_manager_delegate.h"
 
 #include "content/public/browser/download_id.h"
+#include "content/public/browser/download_item.h"
 
 namespace content {
 
@@ -20,8 +21,10 @@ bool DownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
 }
 
 FilePath DownloadManagerDelegate::GetIntermediatePath(
-    const FilePath& suggested_path) {
-  return suggested_path;
+    const DownloadItem& item,
+    bool* ok_to_overwrite) {
+  *ok_to_overwrite = true;
+  return item.GetTargetFilePath();
 }
 
 WebContents* DownloadManagerDelegate::

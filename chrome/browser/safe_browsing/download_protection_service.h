@@ -94,7 +94,7 @@ class DownloadProtectionService {
 
   // Returns true iff the download specified by |info| should be scanned by
   // CheckClientDownload() for malicious content.
-  bool IsSupportedDownload(const DownloadInfo& info) const;
+  virtual bool IsSupportedDownload(const DownloadInfo& info) const;
 
   // Display more information to the user regarding the download specified by
   // |info|. This method is invoked when the user requests more information

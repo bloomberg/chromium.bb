@@ -50,9 +50,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       int64 size,
       const std::string& hash_state,
       content::DownloadInterruptReason reason) OVERRIDE;
-  virtual void OnDownloadRenamedToFinalName(int download_id,
-                                            const FilePath& full_path,
-                                            int uniquifier) OVERRIDE;
   virtual int RemoveDownloadsBetween(base::Time remove_begin,
                                      base::Time remove_end) OVERRIDE;
   virtual int RemoveDownloads(base::Time remove_begin) OVERRIDE;
@@ -107,6 +104,10 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void DownloadOpened(
       content::DownloadItem* download) OVERRIDE;
   virtual void DownloadRemoved(content::DownloadItem* download) OVERRIDE;
+  virtual void DownloadRenamedToIntermediateName(
+      content::DownloadItem* download) OVERRIDE;
+  virtual void DownloadRenamedToFinalName(
+      content::DownloadItem* download) OVERRIDE;
   virtual void AssertStateConsistent(
       content::DownloadItem* download) const OVERRIDE;
 
@@ -150,8 +151,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Called back after a target path for the file to be downloaded to has been
   // determined, either automatically based on the suggested file name, or by
   // the user in a Save As dialog box.
-  void ContinueDownloadWithPath(content::DownloadItem* download,
-                                const FilePath& chosen_file);
+  void OnTargetPathAvailable(content::DownloadItem* download);
 
   // Retrieves the download from the |download_id|.
   // Returns NULL if the download is not active.

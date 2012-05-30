@@ -88,7 +88,8 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
 }
 
 bool IsExtensionDownload(const DownloadItem& download_item) {
-  if (download_item.PromptUserForSaveLocation())
+  if (download_item.GetTargetDisposition() ==
+      DownloadItem::TARGET_DISPOSITION_PROMPT)
     return false;
 
   if (download_item.GetMimeType() == extensions::Extension::kMimeType ||

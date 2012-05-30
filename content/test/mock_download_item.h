@@ -45,22 +45,27 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta*));
   MOCK_CONST_METHOD0(CurrentSpeed, int64());
   MOCK_CONST_METHOD0(PercentComplete, int());
-  MOCK_METHOD1(OnPathDetermined, void(const FilePath&));
   MOCK_CONST_METHOD0(AllDataSaved, bool());
-  MOCK_METHOD1(SetFileCheckResults, void(const DownloadStateInfo&));
-  MOCK_METHOD1(Rename, void(const FilePath&));
   MOCK_METHOD0(TogglePause, void());
   MOCK_METHOD1(OnDownloadCompleting, void(DownloadFileManager*));
-  MOCK_METHOD1(OnDownloadRenamedToFinalName, void(const FilePath&));
   MOCK_CONST_METHOD1(MatchesQuery, bool(const string16& query));
   MOCK_CONST_METHOD0(IsPartialDownload, bool());
   MOCK_CONST_METHOD0(IsInProgress, bool());
   MOCK_CONST_METHOD0(IsCancelled, bool());
   MOCK_CONST_METHOD0(IsInterrupted, bool());
   MOCK_CONST_METHOD0(IsComplete, bool());
-  MOCK_CONST_METHOD0(GetState, DownloadState());
   MOCK_CONST_METHOD0(GetFullPath, const FilePath&());
-  MOCK_METHOD1(SetPathUniquifier, void(int));
+  MOCK_CONST_METHOD0(GetTargetFilePath, const FilePath&());
+  MOCK_CONST_METHOD0(GetTargetDisposition, TargetDisposition());
+  MOCK_METHOD3(OnTargetPathDetermined, void(const FilePath&,
+                                            TargetDisposition,
+                                            content::DownloadDangerType));
+  MOCK_METHOD1(OnTargetPathSelected, void(const FilePath&));
+  MOCK_METHOD1(OnContentCheckCompleted, void(content::DownloadDangerType));
+  MOCK_METHOD3(OnIntermediatePathDetermined, void(DownloadFileManager*,
+                                                  const FilePath&,
+                                                  bool));
+  MOCK_CONST_METHOD0(GetState, DownloadState());
   MOCK_CONST_METHOD0(GetUrlChain, const std::vector<GURL>&());
   MOCK_METHOD1(SetTotalBytes, void(int64));
   MOCK_CONST_METHOD0(GetURL, const GURL&());
@@ -91,13 +96,13 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD0(GetFileExternallyRemoved, bool());
   MOCK_CONST_METHOD0(GetSafetyState, SafetyState());
   MOCK_CONST_METHOD0(GetDangerType, content::DownloadDangerType());
-  MOCK_METHOD1(SetDangerType, void(content::DownloadDangerType));
   MOCK_CONST_METHOD0(IsDangerous, bool());
   MOCK_METHOD0(GetAutoOpened, bool());
-  MOCK_CONST_METHOD0(GetTargetName, const FilePath&());
-  MOCK_CONST_METHOD0(PromptUserForSaveLocation, bool());
+  MOCK_CONST_METHOD0(GetTargetName, FilePath());
+  MOCK_CONST_METHOD0(GetForcedFilePath, const FilePath&());
+  MOCK_CONST_METHOD0(HasUserGesture, bool());
+  MOCK_CONST_METHOD0(GetTransitionType, content::PageTransition());
   MOCK_CONST_METHOD0(IsOtr, bool());
-  MOCK_CONST_METHOD0(GetSuggestedPath, const FilePath&());
   MOCK_CONST_METHOD0(IsTemporary, bool());
   MOCK_METHOD1(SetIsTemporary, void(bool));
   MOCK_METHOD1(SetOpened, void(bool));
@@ -106,14 +111,11 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD0(GetETag, const std::string&());
   MOCK_CONST_METHOD0(GetLastReason, DownloadInterruptReason());
   MOCK_CONST_METHOD0(GetPersistentStoreInfo, DownloadPersistentStoreInfo());
-  MOCK_CONST_METHOD0(GetStateInfo, DownloadStateInfo());
   MOCK_CONST_METHOD0(GetBrowserContext, content::BrowserContext*());
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
-  MOCK_CONST_METHOD0(GetTargetFilePath, FilePath());
   MOCK_CONST_METHOD0(GetFileNameToReportUser, FilePath());
   MOCK_METHOD1(SetDisplayName, void(const FilePath&));
   MOCK_CONST_METHOD0(GetUserVerifiedFilePath, FilePath());
-  MOCK_CONST_METHOD0(NeedsRename, bool());
   MOCK_METHOD1(OffThreadCancel, void(DownloadFileManager* file_manager));
   MOCK_CONST_METHOD1(DebugString, std::string(bool));
   MOCK_METHOD0(MockDownloadOpenForTesting, void());

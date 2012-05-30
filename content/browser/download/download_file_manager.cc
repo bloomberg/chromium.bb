@@ -335,25 +335,43 @@ void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {
 // There are 2 possible rename cases where this method can be called:
 // 1. tmp -> foo.crdownload (not final, safe)
 // 2. tmp-> Unconfirmed.xxx.crdownload (not final, dangerous)
+// TODO(asanka): Merge with RenameCompletingDownloadFile() and move
+//               uniquification logic into DownloadFile.
 void DownloadFileManager::RenameInProgressDownloadFile(
-    DownloadId global_id, const FilePath& full_path) {
+    DownloadId global_id,
+    const FilePath& full_path,
+    bool overwrite_existing_file,
+    const RenameCompletionCallback& callback) {
   VLOG(20) << __FUNCTION__ << "()" << " id = " << global_id
            << " full_path = \"" << full_path.value() << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   DownloadFile* download_file = GetDownloadFile(global_id);
-  if (!download_file)
+  if (!download_file) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, FilePath()));
     return;
+  }
 
   VLOG(20) << __FUNCTION__ << "()"
            << " download_file = " << download_file->DebugString();
-
-  net::Error rename_error = download_file->Rename(full_path);
-  if (net::OK != rename_error) {
-    // Error. Between the time the UI thread generated 'full_path' to the time
-    // this code runs, something happened that prevents us from renaming.
-    CancelDownloadOnRename(global_id, rename_error);
+  FilePath new_path(full_path);
+  if (!overwrite_existing_file) {
+    int uniquifier =
+        file_util::GetUniquePathNumber(new_path, FILE_PATH_LITERAL(""));
+    if (uniquifier > 0) {
+      new_path = new_path.InsertBeforeExtensionASCII(
+          StringPrintf(" (%d)", uniquifier));
+    }
   }
+
+  net::Error rename_error = download_file->Rename(new_path);
+  if (net::OK != rename_error) {
+    CancelDownloadOnRename(global_id, rename_error);
+    new_path.clear();
+  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, new_path));
 }
 
 // The DownloadManager in the UI thread has provided a final name for the
@@ -366,23 +384,23 @@ void DownloadFileManager::RenameInProgressDownloadFile(
 void DownloadFileManager::RenameCompletingDownloadFile(
     DownloadId global_id,
     const FilePath& full_path,
-    bool overwrite_existing_file) {
+    bool overwrite_existing_file,
+    const RenameCompletionCallback& callback) {
   VLOG(20) << __FUNCTION__ << "()" << " id = " << global_id
            << " overwrite_existing_file = " << overwrite_existing_file
            << " full_path = \"" << full_path.value() << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   DownloadFile* download_file = GetDownloadFile(global_id);
-  if (!download_file)
+  if (!download_file) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, FilePath()));
     return;
-
-  DCHECK(download_file->GetDownloadManager());
-  DownloadManager* download_manager = download_file->GetDownloadManager();
+  }
 
   VLOG(20) << __FUNCTION__ << "()"
            << " download_file = " << download_file->DebugString();
 
-  int uniquifier = 0;
   FilePath new_path = full_path;
   if (!overwrite_existing_file) {
     // Make our name unique at this point, as if a dangerous file is
@@ -392,7 +410,7 @@ void DownloadFileManager::RenameCompletingDownloadFile(
     // not exists yet, so the second file gets the same name.
     // This should not happen in the SAFE case, and we check for that in the UI
     // thread.
-    uniquifier =
+    int uniquifier =
         file_util::GetUniquePathNumber(new_path, FILE_PATH_LITERAL(""));
     if (uniquifier > 0) {
       new_path = new_path.InsertBeforeExtensionASCII(
@@ -406,23 +424,27 @@ void DownloadFileManager::RenameCompletingDownloadFile(
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
     CancelDownloadOnRename(global_id, rename_error);
-    return;
+    new_path.clear();
+  } else {
+#if defined(OS_MACOSX)
+    // Done here because we only want to do this once; see
+    // http://crbug.com/13120 for details.
+    download_file->AnnotateWithSourceInformation();
+#endif
   }
 
-#if defined(OS_MACOSX)
-  // Done here because we only want to do this once; see
-  // http://crbug.com/13120 for details.
-  download_file->AnnotateWithSourceInformation();
-#endif
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, new_path));
+}
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DownloadManager::OnDownloadRenamedToFinalName,
-                 download_manager, global_id.local(), new_path, uniquifier));
+int DownloadFileManager::NumberOfActiveDownloads() const {
+  return downloads_.size();
 }
 
 // Called only from RenameInProgressDownloadFile and
 // RenameCompletingDownloadFile on the FILE thread.
+// TODO(asanka): Use the RenameCompletionCallback instead of a separate
+//               OnDownloadInterrupted call.
 void DownloadFileManager::CancelDownloadOnRename(
     DownloadId global_id, net::Error rename_error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));

@@ -55,7 +55,8 @@ class DownloadExtensionTest : public InProcessBrowserTest {
     // as CANCELLED.
     DownloadItem::DownloadState state;
 
-    // Danger type for the download.
+    // Danger type for the download. Only use DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS
+    // and DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT.
     content::DownloadDangerType danger_type;
   };
 
@@ -113,7 +114,9 @@ class DownloadExtensionTest : public InProcessBrowserTest {
     for (size_t i = 0; i < count; ++i) {
       if (history_info[i].danger_type !=
           content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
-        items->at(i)->SetDangerType(history_info[i].danger_type);
+        EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT,
+                  history_info[i].danger_type);
+        items->at(i)->OnContentCheckCompleted(history_info[i].danger_type);
       }
     }
     return true;

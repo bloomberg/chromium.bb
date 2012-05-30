@@ -35,6 +35,15 @@ using ::testing::StrEq;
 
 namespace {
 
+// MockDownloadManager with the addition of a mock callback used for testing.
+class TestDownloadManager : public MockDownloadManager {
+ public:
+  MOCK_METHOD2(OnDownloadRenamed,
+               void(int download_id, const FilePath& full_path));
+ private:
+  ~TestDownloadManager() {}
+};
+
 class MockDownloadFileFactory :
     public DownloadFileManager::DownloadFileFactory {
 
@@ -136,7 +145,7 @@ class DownloadFileManagerTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    download_manager_ = new MockDownloadManager();
+    download_manager_ = new TestDownloadManager();
     request_handle_.reset(new MockDownloadRequestHandle(download_manager_));
     download_file_factory_ = new MockDownloadFileFactory;
     download_file_manager_ = new DownloadFileManager(download_file_factory_);
@@ -295,32 +304,8 @@ class DownloadFileManagerTest : public testing::Test {
                   net::Error rename_error,
                   RenameFileState state,
                   RenameFileOverwrite should_overwrite) {
-    // Expected call sequence:
-    //  RenameInProgressDownloadFile/RenameCompletingDownloadFile
-    //    GetDownloadFile
-    //    DownloadFile::Rename
-    //
-    //    On Error:
-    //      CancelDownloadOnRename
-    //        GetDownloadFile
-    //        DownloadFile::GetDownloadManager
-    //        No Manager:
-    //          DownloadFile::CancelDownloadRequest/return
-    //        Has Manager:
-    //          DownloadFile::BytesSoFar
-    //  Process one message in the message loop
-    //          DownloadManager::OnDownloadInterrupted
-    //
-    //    On Success, if final rename:
-    //  Process one message in the message loop
-    //    DownloadManager::OnDownloadRenamedToFinalName
     MockDownloadFile* file = download_file_factory_->GetExistingFile(id);
     ASSERT_TRUE(file != NULL);
-
-    if (state == COMPLETE || rename_error != net::OK) {
-      EXPECT_CALL(*file, GetDownloadManager())
-          .Times(AtLeast(1));
-    }
 
     EXPECT_CALL(*file, Rename(unique_path))
         .Times(1)
@@ -332,13 +317,24 @@ class DownloadFileManagerTest : public testing::Test {
           .WillRepeatedly(Return(byte_count_[id]));
       EXPECT_CALL(*file, GetHashState())
           .Times(AtLeast(1));
+      EXPECT_CALL(*file, GetDownloadManager())
+          .Times(AtLeast(1));
+    } else if (state == COMPLETE) {
+#if defined(OS_MACOSX)
+      EXPECT_CALL(*file, AnnotateWithSourceInformation());
+#endif
     }
 
     if (state == IN_PROGRESS) {
-      download_file_manager_->RenameInProgressDownloadFile(id, new_path);
+      download_file_manager_->RenameInProgressDownloadFile(
+          id, new_path, (should_overwrite == OVERWRITE),
+          base::Bind(&TestDownloadManager::OnDownloadRenamed,
+                     download_manager_, id.local()));
     } else {  // state == COMPLETE
       download_file_manager_->RenameCompletingDownloadFile(
-          id, new_path, (should_overwrite == OVERWRITE));
+          id, new_path, (should_overwrite == OVERWRITE),
+          base::Bind(&TestDownloadManager::OnDownloadRenamed,
+                     download_manager_, id.local()));
     }
 
     if (rename_error != net::OK) {
@@ -350,11 +346,13 @@ class DownloadFileManagerTest : public testing::Test {
                       content::ConvertNetErrorToInterruptReason(
                           rename_error,
                           content::DOWNLOAD_INTERRUPT_FROM_DISK)));
+      EXPECT_CALL(*download_manager_,
+                  OnDownloadRenamed(id.local(), FilePath()));
       ProcessAllPendingMessages();
       ++error_count_[id];
-    } else if (state == COMPLETE) {
-      EXPECT_CALL(*download_manager_, OnDownloadRenamedToFinalName(
-          id.local(), unique_path, _));
+    } else {
+      EXPECT_CALL(*download_manager_,
+                  OnDownloadRenamed(id.local(), unique_path));
       ProcessAllPendingMessages();
     }
   }
@@ -438,7 +436,7 @@ class DownloadFileManagerTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<MockDownloadManager> download_manager_;
+  scoped_refptr<TestDownloadManager> download_manager_;
   scoped_ptr<MockDownloadRequestHandle> request_handle_;
   MockDownloadFileFactory* download_file_factory_;
   scoped_refptr<DownloadFileManager> download_file_manager_;
@@ -553,6 +551,28 @@ TEST_F(DownloadFileManagerTest, RenameInProgress) {
   UpdateDownload(dummy_id, kTestData2, strlen(kTestData2), net::OK);
   FilePath foo(download_dir.path().Append(FILE_PATH_LITERAL("foo.txt")));
   RenameFile(dummy_id, foo, foo, net::OK, IN_PROGRESS, OVERWRITE);
+  UpdateDownload(dummy_id, kTestData3, strlen(kTestData3), net::OK);
+
+  OnResponseCompleted(dummy_id, content::DOWNLOAD_INTERRUPT_REASON_NONE, "");
+
+  CleanUp(dummy_id);
+}
+
+TEST_F(DownloadFileManagerTest, RenameInProgressWithUniquification) {
+  // Same as StartDownload, at first.
+  DownloadCreateInfo* info = new DownloadCreateInfo;
+  DownloadId dummy_id(download_manager_.get(), kDummyDownloadId);
+  ScopedTempDir download_dir;
+  ASSERT_TRUE(download_dir.CreateUniqueTempDir());
+
+  StartDownload(info, dummy_id);
+
+  UpdateDownload(dummy_id, kTestData1, strlen(kTestData1), net::OK);
+  UpdateDownload(dummy_id, kTestData2, strlen(kTestData2), net::OK);
+  FilePath foo(download_dir.path().Append(FILE_PATH_LITERAL("foo.txt")));
+  FilePath unique_foo(foo.InsertBeforeExtension(FILE_PATH_LITERAL(" (1)")));
+  ASSERT_EQ(0, file_util::WriteFile(foo, "", 0));
+  RenameFile(dummy_id, foo, unique_foo, net::OK, IN_PROGRESS, DONT_OVERWRITE);
   UpdateDownload(dummy_id, kTestData3, strlen(kTestData3), net::OK);
 
   OnResponseCompleted(dummy_id, content::DOWNLOAD_INTERRUPT_REASON_NONE, "");

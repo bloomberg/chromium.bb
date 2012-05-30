@@ -57,8 +57,12 @@ class CONTENT_EXPORT DownloadManagerDelegate {
                                   int32 download_id) {}
 
   // Allows the embedder to set an intermediate name for the download until it's
-  // complete. If the embedder doesn't want this return the suggested path.
-  virtual FilePath GetIntermediatePath(const FilePath& suggested_path);
+  // complete. The return value is the intermediate path to use. ok_to_overwrite
+  // should be set to true if the intermediate path should be overwritten if it
+  // exists. If the embedder doesn't want to set an intermediate path, it should
+  // return item.GetTargetFilePath().
+  virtual FilePath GetIntermediatePath(const DownloadItem& item,
+                                       bool* ok_to_overwrite);
 
   // Called when the download system wants to alert a WebContents that a
   // download has started, but the TabConetnts has gone away. This lets an

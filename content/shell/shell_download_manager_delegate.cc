@@ -43,10 +43,14 @@ DownloadId ShellDownloadManagerDelegate::GetNextId() {
 bool ShellDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
   DownloadItem* download =
       download_manager_->GetActiveDownloadItem(download_id);
-  DownloadStateInfo state = download->GetStateInfo();
 
-  if (!state.force_file_name.empty())
+  if (!download->GetForcedFilePath().empty()) {
+    download->OnTargetPathDetermined(
+        download->GetForcedFilePath(),
+        DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
     return true;
+  }
 
   FilePath generated_name = net::GenerateFileName(
       download->GetURL(),
@@ -56,47 +60,44 @@ bool ShellDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
       download->GetMimeType(),
       "download");
 
-  // Since we have no download UI, show the user a dialog always.
-  state.prompt_user_for_save_location = true;
-
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
       base::Bind(
           &ShellDownloadManagerDelegate::GenerateFilename,
-          this, download_id, state, generated_name));
+          this, download_id, generated_name));
   return false;
 }
 
 void ShellDownloadManagerDelegate::GenerateFilename(
     int32 download_id,
-    DownloadStateInfo state,
     const FilePath& generated_name) {
-  if (state.suggested_path.empty()) {
-    state.suggested_path = download_manager_->GetBrowserContext()->GetPath().
-        Append(FILE_PATH_LITERAL("Downloads"));
-    if (!file_util::PathExists(state.suggested_path))
-      file_util::CreateDirectory(state.suggested_path);
-  }
+  FilePath suggested_path = download_manager_->GetBrowserContext()->GetPath().
+      Append(FILE_PATH_LITERAL("Downloads"));
+  if (!file_util::PathExists(suggested_path))
+    file_util::CreateDirectory(suggested_path);
 
-  state.suggested_path = state.suggested_path.Append(generated_name);
-
+  suggested_path = suggested_path.Append(generated_name);
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
           &ShellDownloadManagerDelegate::RestartDownload,
-          this, download_id, state));
+          this, download_id, suggested_path));
 }
 
 void ShellDownloadManagerDelegate::RestartDownload(
     int32 download_id,
-    DownloadStateInfo state) {
+    const FilePath& suggested_path) {
   DownloadItem* download =
       download_manager_->GetActiveDownloadItem(download_id);
   if (!download)
     return;
-  download->SetFileCheckResults(state);
+
+  // Since we have no download UI, show the user a dialog always.
+  download->OnTargetPathDetermined(suggested_path,
+                                   DownloadItem::TARGET_DISPOSITION_PROMPT,
+                                   content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   download_manager_->RestartDownload(download_id);
 }
 

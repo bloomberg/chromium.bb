@@ -202,7 +202,7 @@ DownloadProtectionService::DownloadInfo::FromDownloadItem(
   download_info.referrer_url = item.GetReferrerUrl();
   download_info.total_bytes = item.GetTotalBytes();
   download_info.remote_address = item.GetRemoteAddress();
-  download_info.user_initiated = item.GetStateInfo().has_user_gesture;
+  download_info.user_initiated = item.HasUserGesture();
   return download_info;
 }
 

@@ -10,8 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/download_manager_delegate.h"
 
-struct DownloadStateInfo;
-
 namespace content {
 
 class DownloadManager;
@@ -36,10 +34,9 @@ class ShellDownloadManagerDelegate
   virtual ~ShellDownloadManagerDelegate();
 
   void GenerateFilename(int32 download_id,
-                        DownloadStateInfo state,
                         const FilePath& generated_name);
   void RestartDownload(int32 download_id,
-                       DownloadStateInfo state);
+                       const FilePath& suggested_path);
 
   DownloadManager* download_manager_;
 

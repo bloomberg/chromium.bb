@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ class DownloadItem;
 // Interacts with the HistoryService on behalf of the download subsystem.
 class DownloadHistory {
  public:
-  typedef base::Callback<void(int32, bool)> VisitedBeforeDoneCallback;
+  typedef base::Callback<void(bool)> VisitedBeforeDoneCallback;
 
   explicit DownloadHistory(Profile* profile);
   ~DownloadHistory();
@@ -67,8 +67,7 @@ class DownloadHistory {
   int64 GetNextFakeDbHandle();
 
  private:
-  typedef std::map<HistoryService::Handle,
-                   std::pair<int32, VisitedBeforeDoneCallback> >
+  typedef std::map<HistoryService::Handle, VisitedBeforeDoneCallback>
       VisitedBeforeRequestsMap;
 
   void OnGotVisitCountToHost(HistoryService::Handle handle,

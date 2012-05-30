@@ -20,11 +20,13 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
+#include "base/file_path.h"
 #include "base/string16.h"
-#include "content/browser/download/download_state_info.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
+#include "content/public/common/page_transition_types.h"
 
 class DownloadFileManager;
 class FilePath;
@@ -82,6 +84,16 @@ class CONTENT_EXPORT DownloadItem {
   enum DeleteReason {
     DELETE_DUE_TO_BROWSER_SHUTDOWN = 0,
     DELETE_DUE_TO_USER_DISCARD
+  };
+
+  // How the final target path should be used.
+  enum TargetDisposition {
+    TARGET_DISPOSITION_OVERWRITE, // Overwrite if the target already exists.
+    TARGET_DISPOSITION_UNIQUIFY,  // Append a uniquifier if the target already
+                                  // exists. E.g.: "foo.txt" -> "foo (1).txt"
+    TARGET_DISPOSITION_PROMPT     // Prompt the user for the actual
+                                  // target. Implies
+                                  // TARGET_DISPOSITION_OVERWRITE.
   };
 
   // A fake download table ID which represents a download that has started,
@@ -201,20 +213,8 @@ class CONTENT_EXPORT DownloadItem {
   // total size).
   virtual int PercentComplete() const = 0;
 
-  // Called when the final path has been determined.
-  virtual void OnPathDetermined(const FilePath& path) = 0;
-
   // Returns true if this download has saved all of its data.
   virtual bool AllDataSaved() const = 0;
-
-  // Update the fields that may have changed in DownloadStateInfo as a
-  // result of analyzing the file and figuring out its type, location, etc.
-  // May only be called once.
-  virtual void SetFileCheckResults(const DownloadStateInfo& state) = 0;
-
-  // Update the download's path, the actual file is renamed on the download
-  // thread.
-  virtual void Rename(const FilePath& full_path) = 0;
 
   // Allow the user to temporarily pause a download or resume a paused download.
   virtual void TogglePause() = 0;
@@ -223,9 +223,6 @@ class CONTENT_EXPORT DownloadItem {
   // This may perform final rename if necessary and will eventually call
   // DownloadItem::Completed().
   virtual void OnDownloadCompleting(DownloadFileManager* file_manager) = 0;
-
-  // Called when the file name for the download is renamed to its final name.
-  virtual void OnDownloadRenamedToFinalName(const FilePath& full_path) = 0;
 
   // Returns true if this item matches |query|. |query| must be lower-cased.
   virtual bool MatchesQuery(const string16& query) const = 0;
@@ -245,14 +242,51 @@ class CONTENT_EXPORT DownloadItem {
   // Returns true if we have all the data and know the final file name.
   virtual bool IsComplete() const = 0;
 
+  // Full path to the downloaded or downloading file. This is the path to the
+  // physical file, if one exists. Can be empty if the in-progress path hasn't
+  // been determined yet.
+  virtual const FilePath& GetFullPath() const = 0;
+
+  // Target path of an in-progress download. We may be downloading to a
+  // temporary or intermediate file (specified by |current_path_|.  Once the
+  // download completes, we will rename the file to |target_path_|.
+  virtual const FilePath& GetTargetFilePath() const = 0;
+
+  // Get the target disposition.
+  virtual TargetDisposition GetTargetDisposition() const = 0;
+
+  // Called when the target path has been determined. |target_path| is the
+  // suggested target path. |disposition| indicates how the target path should
+  // be used (see TargetDisposition). |danger_type| is the danger level of
+  // |target_path| as determined by the caller. If |disposition| is
+  // TARGET_DISPOSITION_PROMPT, then OnTargetPathSelected() should be called
+  // subsequently with the user's selected target path.
+  virtual void OnTargetPathDetermined(
+      const FilePath& target_path,
+      TargetDisposition disposition,
+      content::DownloadDangerType danger_type) = 0;
+
+  // This method should be called if and only if OnTargetPathDetermined() was
+  // called previously with disposition set to TARGET_DISPOSITION_PROMPT.
+  // |target_path| is the path that the user selected after being prompted for a
+  // target path.
+  virtual void OnTargetPathSelected(const FilePath& target_path) = 0;
+
+  // Called if a check of the download contents was performed and the results of
+  // the test are available. This should only be called after AllDataSaved() is
+  // true.
+  virtual void OnContentCheckCompleted(DownloadDangerType danger_type) = 0;
+
+  virtual void OnIntermediatePathDetermined(DownloadFileManager* file_manager,
+                                            const FilePath& path,
+                                            bool ok_to_overwrite) = 0;
+
   virtual void SetIsPersisted() = 0;
   virtual bool IsPersisted() const = 0;
 
   // Accessors
   virtual const std::string& GetHash() const = 0;
   virtual DownloadState GetState() const = 0;
-  virtual const FilePath& GetFullPath() const = 0;
-  virtual void SetPathUniquifier(int uniquifier) = 0;
   virtual const GURL& GetURL() const = 0;
   virtual const std::vector<GURL>& GetUrlChain() const = 0;
   virtual const GURL& GetOriginalUrl() const = 0;
@@ -280,14 +314,14 @@ class CONTENT_EXPORT DownloadItem {
   virtual SafetyState GetSafetyState() const = 0;
   // Why |safety_state_| is not SAFE.
   virtual DownloadDangerType GetDangerType() const = 0;
-  virtual void SetDangerType(DownloadDangerType danger_type) = 0;
   virtual bool IsDangerous() const = 0;
 
   virtual bool GetAutoOpened() = 0;
-  virtual const FilePath& GetTargetName() const = 0;
-  virtual bool PromptUserForSaveLocation() const = 0;
+  virtual FilePath GetTargetName() const = 0;
+  virtual const FilePath& GetForcedFilePath() const = 0;
+  virtual bool HasUserGesture() const = 0;
+  virtual content::PageTransition GetTransitionType() const = 0;
   virtual bool IsOtr() const = 0;
-  virtual const FilePath& GetSuggestedPath() const = 0;
   virtual bool IsTemporary() const = 0;
   virtual void SetIsTemporary(bool temporary) = 0;
   virtual void SetOpened(bool opened) = 0;
@@ -298,12 +332,8 @@ class CONTENT_EXPORT DownloadItem {
 
   virtual DownloadInterruptReason GetLastReason() const = 0;
   virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const = 0;
-  virtual DownloadStateInfo GetStateInfo() const = 0;
   virtual BrowserContext* GetBrowserContext() const = 0;
   virtual WebContents* GetWebContents() const = 0;
-
-  // Returns the final target file path for the download.
-  virtual FilePath GetTargetFilePath() const = 0;
 
   // Returns the file-name that should be reported to the user. If a display
   // name has been explicitly set using SetDisplayName(), this function returns
@@ -319,9 +349,6 @@ class CONTENT_EXPORT DownloadItem {
   // This returns the same path as GetTargetFilePath() for safe downloads
   // but does not for dangerous downloads until the name is verified.
   virtual FilePath GetUserVerifiedFilePath() const = 0;
-
-  // Returns true if the current file name is not the final target name yet.
-  virtual bool NeedsRename() const = 0;
 
   // Cancels the off-thread aspects of the download.
   // TODO(rdsmith): This should be private and only called from

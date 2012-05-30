@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -69,6 +70,8 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
     virtual void DownloadCompleted(DownloadItem* download) = 0;
     virtual void DownloadOpened(DownloadItem* download) = 0;
     virtual void DownloadRemoved(DownloadItem* download) = 0;
+    virtual void DownloadRenamedToIntermediateName(DownloadItem* download) = 0;
+    virtual void DownloadRenamedToFinalName(DownloadItem* download) = 0;
 
     // Assert consistent state for delgate object at various transitions.
     virtual void AssertStateConsistent(DownloadItem* download) const = 0;
@@ -137,13 +140,9 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual bool TimeRemaining(base::TimeDelta* remaining) const OVERRIDE;
   virtual int64 CurrentSpeed() const OVERRIDE;
   virtual int PercentComplete() const OVERRIDE;
-  virtual void OnPathDetermined(const FilePath& path) OVERRIDE;
   virtual bool AllDataSaved() const OVERRIDE;
-  virtual void SetFileCheckResults(const DownloadStateInfo& state) OVERRIDE;
-  virtual void Rename(const FilePath& full_path) OVERRIDE;
   virtual void TogglePause() OVERRIDE;
   virtual void OnDownloadCompleting(DownloadFileManager* file_manager) OVERRIDE;
-  virtual void OnDownloadRenamedToFinalName(const FilePath& full_path) OVERRIDE;
   virtual bool MatchesQuery(const string16& query) const OVERRIDE;
   virtual bool IsPartialDownload() const OVERRIDE;
   virtual bool IsInProgress() const OVERRIDE;
@@ -152,7 +151,18 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual bool IsComplete() const OVERRIDE;
   virtual DownloadState GetState() const OVERRIDE;
   virtual const FilePath& GetFullPath() const OVERRIDE;
-  virtual void SetPathUniquifier(int uniquifier) OVERRIDE;
+  virtual const FilePath& GetTargetFilePath() const OVERRIDE;
+  virtual TargetDisposition GetTargetDisposition() const OVERRIDE;
+  virtual void OnTargetPathDetermined(
+      const FilePath& target_path,
+      TargetDisposition disposition,
+      content::DownloadDangerType danger_type) OVERRIDE;
+  virtual void OnTargetPathSelected(const FilePath& target_path) OVERRIDE;
+  virtual void OnContentCheckCompleted(
+      content::DownloadDangerType danger_type) OVERRIDE;
+  virtual void OnIntermediatePathDetermined(DownloadFileManager* file_manager,
+                                            const FilePath& path,
+                                            bool ok_to_overwrite) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
   virtual const std::vector<GURL>& GetUrlChain() const OVERRIDE;
   virtual const GURL& GetOriginalUrl() const OVERRIDE;
@@ -182,13 +192,13 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual bool GetFileExternallyRemoved() const OVERRIDE;
   virtual SafetyState GetSafetyState() const OVERRIDE;
   virtual content::DownloadDangerType GetDangerType() const OVERRIDE;
-  virtual void SetDangerType(content::DownloadDangerType danger_type) OVERRIDE;
   virtual bool IsDangerous() const OVERRIDE;
   virtual bool GetAutoOpened() OVERRIDE;
-  virtual const FilePath& GetTargetName() const OVERRIDE;
-  virtual bool PromptUserForSaveLocation() const OVERRIDE;
+  virtual FilePath GetTargetName() const OVERRIDE;
+  virtual const FilePath& GetForcedFilePath() const OVERRIDE;
+  virtual bool HasUserGesture() const OVERRIDE;
+  virtual content::PageTransition GetTransitionType() const OVERRIDE;
   virtual bool IsOtr() const OVERRIDE;
-  virtual const FilePath& GetSuggestedPath() const OVERRIDE;
   virtual bool IsTemporary() const OVERRIDE;
   virtual void SetIsTemporary(bool temporary) OVERRIDE;
   virtual void SetOpened(bool opened) OVERRIDE;
@@ -198,14 +208,11 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual content::DownloadInterruptReason GetLastReason() const OVERRIDE;
   virtual content::DownloadPersistentStoreInfo
       GetPersistentStoreInfo() const OVERRIDE;
-  virtual DownloadStateInfo GetStateInfo() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual FilePath GetTargetFilePath() const OVERRIDE;
   virtual FilePath GetFileNameToReportUser() const OVERRIDE;
   virtual void SetDisplayName(const FilePath& name) OVERRIDE;
   virtual FilePath GetUserVerifiedFilePath() const OVERRIDE;
-  virtual bool NeedsRename() const OVERRIDE;
   virtual void OffThreadCancel(DownloadFileManager* file_manager) OVERRIDE;
   virtual std::string DebugString(bool verbose) const OVERRIDE;
   virtual void MockDownloadOpenForTesting() OVERRIDE;
@@ -219,6 +226,10 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // |download_type| indicates to the net log system what kind of download
   // this is.
   void Init(bool active, download_net_logs::DownloadType download_type);
+
+  // Returns true if the download still needs to be renamed to
+  // GetTargetFilePath().
+  bool NeedsRename() const;
 
   // Internal helper for maintaining consistent received and total sizes, and
   // hash state.
@@ -242,20 +253,19 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // Call to transition state; all state transitions should go through this.
   void TransitionTo(DownloadState new_state);
 
-  // Called when safety_state_ should be recomputed from is_dangerous_file
-  // and is_dangerous_url.
-  void UpdateSafetyState();
+  // Set the |danger_type_| and invoke obserers if necessary.
+  void SetDangerType(content::DownloadDangerType danger_type);
 
-  // Helper function to recompute |state_info_.target_name| when
-  // it may have changed.  (If it's non-null it should be left alone,
-  // otherwise updated from |full_path_|.)
-  void UpdateTarget();
+  // Set the |current_path_| to |new_path|.
+  void SetFullPath(const FilePath& new_path);
 
-  // State information used by the download manager.
-  DownloadStateInfo state_info_;
+  // Callback invoked when the download has been renamed to its final name.
+  void OnDownloadRenamedToFinalName(DownloadFileManager* file_manager,
+                                    const FilePath& full_path);
 
-  // Display name for the download if different from the target filename.
-  FilePath display_name_;
+  // Callback invoked when the download has been renamed to its intermediate
+  // name.
+  void OnDownloadRenamedToIntermediateName(const FilePath& full_path);
 
   // The handle to the request information.  Used for operations outside the
   // download system.
@@ -264,8 +274,23 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // Download ID assigned by DownloadResourceHandler.
   content::DownloadId download_id_;
 
-  // Full path to the downloaded or downloading file.
-  FilePath full_path_;
+  // Display name for the download. If this is empty, then the display name is
+  // considered to be |target_path_.BaseName()|.
+  FilePath display_name_;
+
+  // Full path to the downloaded or downloading file. This is the path to the
+  // physical file, if one exists. The final target path is specified by
+  // |target_path_|. |current_path_| can be empty if the in-progress path hasn't
+  // been determined.
+  FilePath current_path_;
+
+  // Target path of an in-progress download. We may be downloading to a
+  // temporary or intermediate file (specified by |current_path_|.  Once the
+  // download completes, we will rename the file to |target_path_|.
+  FilePath target_path_;
+
+  // Whether the target should be overwritten, uniquified or prompted for.
+  TargetDisposition target_disposition_;
 
   // The chain of redirects that leading up to and including the final URL.
   std::vector<GURL> url_chain_;
@@ -277,6 +302,16 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // suggested filename in 'download' attribute of an anchor. Details:
   // http://www.whatwg.org/specs/web-apps/current-work/#downloading-hyperlinks
   std::string suggested_filename_;
+
+  // If non-empty, contains an externally supplied path that should be used as
+  // the target path.
+  FilePath forced_file_path_;
+
+  // Page transition that triggerred the download.
+  content::PageTransition transition_type_;
+
+  // Whether the download was triggered with a user gesture.
+  bool has_user_gesture_;
 
   // Information from the request.
   // Content-disposition field from the header.
@@ -330,6 +365,9 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
 
   // The current state of this download.
   DownloadState state_;
+
+  // Current danger type for the download.
+  content::DownloadDangerType danger_type_;
 
   // The views of this item in the download shelf and download contents.
   ObserverList<Observer> observers_;
@@ -393,6 +431,8 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
 
   // Net log to use for this download.
   const net::BoundNetLog bound_net_log_;
+
+  base::WeakPtrFactory<DownloadItemImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemImpl);
 };
