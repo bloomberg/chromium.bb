@@ -598,7 +598,7 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
     if (fs.pressure > min_pressure + two_finger_pressure_diff_thresh_.val_ &&
         fs.pressure > min_pressure * two_finger_pressure_diff_factor_.val_ &&
         fs.position_y > min_fs->position_y &&
-        DistanceTravelledSq(fs) < thumb_dist_sq_thresh) {
+        DistanceTravelledSq(fs) <= thumb_dist_sq_thresh) {
       if (!MapContainsKey(thumb_, fs.tracking_id))
         thumb_[fs.tracking_id] = hwstate.timestamp;
     } else if (MapContainsKey(thumb_, fs.tracking_id) &&

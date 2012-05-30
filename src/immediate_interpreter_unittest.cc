@@ -1114,8 +1114,8 @@ TEST(ImmediateInterpreterTest, ThumbRetainTest) {
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
-    10,  // right edge
-    10,  // bottom edge
+    100,  // right edge
+    100,  // bottom edge
     1,  // pixels/TP width
     1,  // pixels/TP height
     1,  // x screen DPI
@@ -1130,11 +1130,11 @@ TEST(ImmediateInterpreterTest, ThumbRetainTest) {
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
     // id 1 = finger, 2 = thumb
-    {0, 0, 0, 0, 24, 0, 3, 3, 1, 0},
-    {0, 0, 0, 0, 58, 0, 3, 5, 2, 0},
+    {0, 0, 0, 0, 24, 0, 30, 30, 1, 0},
+    {0, 0, 0, 0, 58, 0, 30, 50, 2, 0},
 
     // thumb, post-move
-    {0, 0, 0, 0, 58, 0, 5, 5, 2, 0},
+    {0, 0, 0, 0, 58, 0, 50, 50, 2, 0},
   };
   HardwareState hardware_states[] = {
     // time, buttons, finger count, touch count, finger states pointer
