@@ -79,7 +79,7 @@ changed since previous frame.  The timestamps are typically just a raw
 system timestamp and the first frame doesn't start from 0ms.
 
 A frame consists of a list of rectangles, each of which represents the
-component-wise different between the previous frame and the current
+component-wise difference between the previous frame and the current
 using a run-length encoding.  The initial frame is decoded against a
 previous frame of all 0x00000000 pixels.  Each rectangle starts out
 with
