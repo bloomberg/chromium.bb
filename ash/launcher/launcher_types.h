@@ -24,7 +24,7 @@ typedef int LauncherID;
 ASH_EXPORT extern const int kLauncherPreferredSize;
 
 // Type the LauncherItem represents.
-enum ASH_EXPORT LauncherItemType {
+enum LauncherItemType {
   // Represents a tabbed browser.
   TYPE_TABBED,
 
@@ -42,7 +42,7 @@ enum ASH_EXPORT LauncherItemType {
 };
 
 // Represents the status of pinned or running app launcher items.
-enum ASH_EXPORT LauncherItemStatus {
+enum LauncherItemStatus {
   STATUS_CLOSED,
   STATUS_RUNNING,
   STATUS_ACTIVE,
@@ -73,7 +73,7 @@ struct ASH_EXPORT LauncherItem {
 typedef std::vector<LauncherItem> LauncherItems;
 
 // The direction of the focus cycling.
-enum ASH_EXPORT CycleDirection {
+enum CycleDirection {
   CYCLE_FORWARD,
   CYCLE_BACKWARD
 };
