@@ -16,7 +16,7 @@
 
 namespace content {
 
-  class CONTENT_EXPORT UtilityThread : public IPC::Message::Sender {
+class CONTENT_EXPORT UtilityThread : public IPC::Message::Sender {
  public:
   // Returns the one utility thread for this process.  Note that this can only
   // be accessed when running on the utility thread itself.

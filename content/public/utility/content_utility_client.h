@@ -11,13 +11,13 @@
 namespace content {
 
 // Embedder API for participating in renderer logic.
-class ContentUtilityClient {
+class CONTENT_EXPORT ContentUtilityClient {
  public:
   // Notifies us that the UtilityThread has been created.
-  virtual void UtilityThreadStarted() = 0;
+  virtual void UtilityThreadStarted() {}
 
   // Allows the embedder to filter messages.
-  virtual bool OnMessageReceived(const IPC::Message& message) = 0;
+  virtual bool OnMessageReceived(const IPC::Message& message);
 };
 
 }  // namespace content

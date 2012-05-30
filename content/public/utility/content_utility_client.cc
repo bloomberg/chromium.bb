@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/shell_content_plugin_client.h"
+#include "content/public/utility/content_utility_client.h"
 
 namespace content {
 
-ShellContentPluginClient::~ShellContentPluginClient() {
+bool ContentUtilityClient::OnMessageReceived(const IPC::Message& message) {
+  return false;
 }
 
 }  // namespace content

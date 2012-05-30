@@ -14,7 +14,6 @@ namespace content {
 class ShellContentPluginClient : public ContentPluginClient {
  public:
   virtual ~ShellContentPluginClient();
-  virtual void PluginProcessStarted(const string16& plugin_name) OVERRIDE;
 };
 
 }  // namespace content

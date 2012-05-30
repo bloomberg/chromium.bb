@@ -7,6 +7,7 @@
     '../base/base.gyp:base',
   ],
   'sources': [
+    'public/utility/content_utility_client.cc',
     'public/utility/content_utility_client.h',
     'public/utility/utility_thread.cc',
     'public/utility/utility_thread.h',
