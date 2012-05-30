@@ -101,12 +101,12 @@ class UI_EXPORT Transform {
 
   // Applies transformation on the rectangle. Returns true if the transformed
   // rectangle was axis aligned. If it returns false, rect will be the
-  // smallest axis aligned bounding box containg the transformed rect.
+  // smallest axis aligned bounding box containing the transformed rect.
   void TransformRect(gfx::Rect* rect) const;
 
   // Applies the reverse transformation on the rectangle. Returns true if
   // the transformed rectangle was axis aligned. If it returns false,
-  // rect will be the smallest axis aligned bounding box containg the
+  // rect will be the smallest axis aligned bounding box containing the
   // transformed rect.
   bool TransformRectReverse(gfx::Rect* rect) const;
 

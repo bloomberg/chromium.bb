@@ -76,10 +76,6 @@ class ASH_EXPORT WorkspaceManager {
   // Returns the bounds in which a window can be moved/resized.
   gfx::Rect GetDragAreaBounds();
 
-  // Returns the window the layout manager should allow the size to be set for.
-  // TODO: maybe this should be set on WorkspaceLayoutManager.
-  aura::Window* ignored_window() { return ignored_window_; }
-
   // Sets the size of the grid. Newly added windows are forced to align to the
   // size of the grid.
   void set_grid_size(int size) { grid_size_ = size; }
@@ -105,11 +101,6 @@ class ASH_EXPORT WorkspaceManager {
 
   friend class Workspace;
   friend class WorkspaceManagerTest;
-
-  // See description above getter.
-  void set_ignored_window(aura::Window* ignored_window) {
-    ignored_window_ = ignored_window;
-  }
 
   void AddWorkspace(Workspace* workspace);
   void RemoveWorkspace(Workspace* workspace);
@@ -162,8 +153,9 @@ class ASH_EXPORT WorkspaceManager {
 
   std::vector<Workspace*> workspaces_;
 
-  // The window that WorkspaceManager does not set the bounds on.
-  aura::Window* ignored_window_;
+  // Window being maximized or restored during a workspace type change.
+  // It has its own animation and is ignored by workspace show/hide animations.
+  aura::Window* maximize_restore_window_;
 
   // See description above setter.
   int grid_size_;

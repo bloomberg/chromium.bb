@@ -172,21 +172,21 @@ bool HandlePrintLayerHierarchy() {
 
 void PrintWindowHierarchy(aura::Window* window, int indent) {
   std::string indent_str(indent, ' ');
-  VLOG(1) << indent_str << window->name() << " type " << window->type()
+  DLOG(INFO) << indent_str << window->name() << " type " << window->type()
       << (ash::wm::IsActiveWindow(window) ? "active" : "");
   for (size_t i = 0; i < window->children().size(); ++i)
     PrintWindowHierarchy(window->children()[i], indent + 3);
 }
 
 bool HandlePrintWindowHierarchy() {
-  VLOG(1) << "Window hierarchy:";
+  DLOG(INFO) << "Window hierarchy:";
   aura::Window* container = ash::Shell::GetInstance()->GetContainer(
       ash::internal::kShellWindowId_DefaultContainer);
   PrintWindowHierarchy(container, 0);
   return true;
 }
 
-#endif
+#endif  // !defined(NDEBUG)
 
 }  // namespace
 

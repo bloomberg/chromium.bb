@@ -12,12 +12,15 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 
+using aura::Window;
+using ui::Layer;
+
 namespace ash {
 namespace internal {
 
-typedef ash::test::AshTestBase WindowAnimationsWorkspaceTest;
+typedef ash::test::AshTestBase WindowAnimationsTest;
 
-TEST_F(WindowAnimationsWorkspaceTest, HideShow) {
+TEST_F(WindowAnimationsTest, HideShow) {
   aura::Window* default_container =
       ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
@@ -54,7 +57,7 @@ TEST_F(WindowAnimationsWorkspaceTest, HideShow) {
   EXPECT_TRUE(window->layer()->visible());
 }
 
-TEST_F(WindowAnimationsWorkspaceTest, ShowHide) {
+TEST_F(WindowAnimationsTest, ShowHide) {
   aura::Window* default_container =
       ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
@@ -91,7 +94,7 @@ TEST_F(WindowAnimationsWorkspaceTest, ShowHide) {
   EXPECT_FALSE(window->layer()->visible());
 }
 
-TEST_F(WindowAnimationsWorkspaceTest, LayerTargetVisibility) {
+TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
   aura::Window* default_container =
       ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
@@ -105,6 +108,55 @@ TEST_F(WindowAnimationsWorkspaceTest, LayerTargetVisibility) {
   EXPECT_FALSE(window->layer()->GetTargetVisibility());
   window->Show();
   EXPECT_TRUE(window->layer()->GetTargetVisibility());
+}
+
+TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
+  Window* default_container =
+      ash::Shell::GetInstance()->GetContainer(
+          internal::kShellWindowId_DefaultContainer);
+  scoped_ptr<Window> window(
+      aura::test::CreateTestWindowWithId(0, default_container));
+  window->SetBounds(gfx::Rect(5, 10, 320, 240));
+  window->Show();
+
+  Layer* old_layer = window->layer();
+  EXPECT_EQ(1.0f, old_layer->GetTargetOpacity());
+
+  // Cross fade to a larger size, as in a maximize animation.
+  CrossFadeToBounds(window.get(), gfx::Rect(0, 0, 640, 480));
+  // Window's layer has been replaced.
+  EXPECT_NE(old_layer, window->layer());
+  // Original layer stays opaque and stretches to new size.
+  EXPECT_EQ(1.0f, old_layer->GetTargetOpacity());
+  EXPECT_EQ("5,10 320x240", old_layer->bounds().ToString());
+  ui::Transform grow_transform;
+  grow_transform.ConcatScale(640.f / 320.f, 480.f / 240.f);
+  grow_transform.ConcatTranslate(-5.f, -10.f);
+  EXPECT_EQ(grow_transform, old_layer->GetTargetTransform());
+  // New layer animates in to the identity transform.
+  EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
+  EXPECT_EQ(ui::Transform(), window->layer()->GetTargetTransform());
+
+  // Allow the animation observer to delete itself.
+  RunAllPendingInMessageLoop();
+
+  // Cross fade to a smaller size, as in a restore animation.
+  old_layer = window->layer();
+  CrossFadeToBounds(window.get(), gfx::Rect(5, 10, 320, 240));
+  // Again, window layer has been replaced.
+  EXPECT_NE(old_layer, window->layer());
+  // Original layer fades out and stretches down to new size.
+  EXPECT_EQ(0.0f, old_layer->GetTargetOpacity());
+  EXPECT_EQ("0,0 640x480", old_layer->bounds().ToString());
+  ui::Transform shrink_transform;
+  shrink_transform.ConcatScale(320.f / 640.f, 240.f / 480.f);
+  shrink_transform.ConcatTranslate(5.f, 10.f);
+  EXPECT_EQ(shrink_transform, old_layer->GetTargetTransform());
+  // New layer animates in to the identity transform.
+  EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
+  EXPECT_EQ(ui::Transform(), window->layer()->GetTargetTransform());
+
+  RunAllPendingInMessageLoop();
 }
 
 }  // namespace internal

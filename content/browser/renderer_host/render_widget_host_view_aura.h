@@ -185,6 +185,7 @@ class RenderWidgetHostViewAura
   // Overridden from ui::CompositorObserver:
   virtual void OnCompositingStarted(ui::Compositor* compositor) OVERRIDE;
   virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE;
+  virtual void OnCompositingAborted(ui::Compositor* compositor) OVERRIDE;
 
   // Overridden from ImageTransportFactoryObserver:
   virtual void OnLostResources(ui::Compositor* compositor) OVERRIDE;

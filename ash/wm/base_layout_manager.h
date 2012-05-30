@@ -72,7 +72,12 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
 
  private:
   // Update window bounds based on a change in show state.
-  void UpdateBoundsFromShowState(aura::Window* window);
+  void UpdateBoundsFromShowState(aura::Window* window, bool animate);
+
+  // Updates window bounds and animates when requested and possible.
+  void MaybeAnimateToBounds(aura::Window* window,
+                            bool animate,
+                            const gfx::Rect& new_bounds);
 
   // Adjusts the window sizes when the screen changes its size or its
   // work area insets.

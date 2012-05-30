@@ -145,6 +145,33 @@ void Window::Init(ui::LayerType layer_type) {
   Env::GetInstance()->NotifyWindowInitialized(this);
 }
 
+ui::Layer* Window::RecreateLayer() {
+  // Disconnect the old layer, but don't delete it.
+  ui::Layer* old_layer = AcquireLayer();
+  old_layer->set_delegate(NULL);
+  layer_ = new ui::Layer(old_layer->type());
+  layer_owner_.reset(layer_);
+  layer_->SetVisible(old_layer->visible());
+  layer_->set_delegate(this);
+  UpdateLayerName(name_);
+  layer_->SetFillsBoundsOpaquely(!transparent_);
+  // Install new layer as a sibling of the old layer, stacked on top of it.
+  if (old_layer->parent()) {
+    old_layer->parent()->Add(layer_);
+    old_layer->parent()->StackAbove(layer_, old_layer);
+  }
+  // Migrate all the child layers over to the new layer. Copy the list because
+  // the items are removed during iteration.
+  std::vector<ui::Layer*> children_copy = old_layer->children();
+  for (std::vector<ui::Layer*>::const_iterator it = children_copy.begin();
+       it != children_copy.end();
+       ++it) {
+    ui::Layer* child = *it;
+    layer_->Add(child);
+  }
+  return old_layer;
+}
+
 void Window::SetType(client::WindowType type) {
   // Cannot change type after the window is initialized.
   DCHECK(!layer());

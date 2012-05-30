@@ -67,10 +67,6 @@ class ASH_EXPORT Workspace {
   // Sets the bounds of the specified window.
   void SetWindowBounds(aura::Window* window, const gfx::Rect& bounds);
 
-  // Sets the ignore window. See WorkspaceManager::set_ignored_window() for
-  // details.
-  void SetIgnoredWindow(aura::Window* window);
-
   // Returns true if the given |window| can be added to this workspace.
   virtual bool CanAdd(aura::Window* window) const = 0;
 
