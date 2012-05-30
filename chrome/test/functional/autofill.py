@@ -787,8 +787,8 @@ class AutofillTest(pyauto.PyUITest):
     self._driver.find_element_by_id(
         'autofill-edit-credit-card-apply-button').click()
     # Refresh the page to ensure the UI is up-to-date.
-    driver.refresh()
-    list_entry = driver.find_element_by_class_name('autofill-list-item')
+    self._driver.refresh()
+    list_entry = self._driver.find_element_by_class_name('autofill-list-item')
     self.assertTrue(list_entry.is_displayed)
     self.assertEqual('Jane Doe', list_entry.text,
                      msg='Saved CC line item not same as what was entered.')
