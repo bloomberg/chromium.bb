@@ -96,16 +96,6 @@ struct display {
 
 	struct theme *theme;
 
-	struct {
-		struct xkb_rule_names names;
-		struct xkb_keymap *keymap;
-		struct xkb_state *state;
-		struct xkb_context *context;
-		xkb_mod_mask_t control_mask;
-		xkb_mod_mask_t alt_mask;
-		xkb_mod_mask_t shift_mask;
-	} xkb;
-
 	struct wl_cursor_theme *cursor_theme;
 	struct wl_cursor **cursors;
 
@@ -116,6 +106,8 @@ struct display {
 	display_output_handler_t output_configure_handler;
 
 	void *user_data;
+
+	struct xkb_context *xkb_context;
 };
 
 enum {
@@ -210,6 +202,15 @@ struct input {
 	struct wl_data_device *data_device;
 	struct data_offer *drag_offer;
 	struct data_offer *selection_offer;
+
+	struct {
+		struct xkb_rule_names names;
+		struct xkb_keymap *keymap;
+		struct xkb_state *state;
+		xkb_mod_mask_t control_mask;
+		xkb_mod_mask_t alt_mask;
+		xkb_mod_mask_t shift_mask;
+	} xkb;
 };
 
 struct output {
@@ -1824,7 +1825,6 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 {
 	struct input *input = data;
 	struct window *window = input->keyboard_focus;
-	struct display *d = input->display;
 	uint32_t code, num_syms;
 	enum wl_keyboard_key_state state = state_w;
 	const xkb_keysym_t *syms;
@@ -1839,17 +1839,17 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	if (state)
 		window->send_cursor_position = 1;
 
-	num_syms = xkb_key_get_syms(d->xkb.state, code, &syms);
+	num_syms = xkb_key_get_syms(input->xkb.state, code, &syms);
 
-	mask = xkb_state_serialize_mods(d->xkb.state,
+	mask = xkb_state_serialize_mods(input->xkb.state,
 					XKB_STATE_DEPRESSED |
 					XKB_STATE_LATCHED);
 	input->modifiers = 0;
-	if (mask & input->display->xkb.control_mask)
+	if (mask & input->xkb.control_mask)
 		input->modifiers |= MOD_CONTROL_MASK;
-	if (mask & input->display->xkb.alt_mask)
+	if (mask & input->xkb.alt_mask)
 		input->modifiers |= MOD_ALT_MASK;
-	if (mask & input->display->xkb.shift_mask)
+	if (mask & input->xkb.shift_mask)
 		input->modifiers |= MOD_SHIFT_MASK;
 
 	if (num_syms == 1 && syms[0] == XKB_KEY_F5 &&
@@ -1876,7 +1876,7 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 {
 	struct input *input = data;
 
-	xkb_state_update_mask(input->display->xkb.state,
+	xkb_state_update_mask(input->xkb.state,
 			      mods_depressed,
 			      mods_latched,
 			      mods_locked,
@@ -3083,6 +3083,44 @@ output_get_wl_output(struct output *output)
 }
 
 static void
+init_xkb(struct input *input)
+{
+	input->xkb.names.rules = "evdev";
+	input->xkb.names.model = "pc105";
+	input->xkb.names.layout = (char *) option_xkb_layout;
+	input->xkb.names.variant = (char *) option_xkb_variant;
+	input->xkb.names.options = (char *) option_xkb_options;
+
+	input->xkb.keymap = xkb_map_new_from_names(input->display->xkb_context,
+						   &input->xkb.names, 0);
+	if (!input->xkb.keymap) {
+		fprintf(stderr, "Failed to compile keymap\n");
+		exit(1);
+	}
+
+	input->xkb.state = xkb_state_new(input->xkb.keymap);
+	if (!input->xkb.state) {
+		fprintf(stderr, "Failed to create XKB state\n");
+		exit(1);
+	}
+
+	input->xkb.control_mask =
+		1 << xkb_map_mod_get_index(input->xkb.keymap, "Control");
+	input->xkb.alt_mask =
+		1 << xkb_map_mod_get_index(input->xkb.keymap, "Mod1");
+	input->xkb.shift_mask =
+		1 << xkb_map_mod_get_index(input->xkb.keymap, "Shift");
+
+}
+
+static void
+fini_xkb(struct input *input)
+{
+	xkb_state_unref(input->xkb.state);
+	xkb_map_unref(input->xkb.keymap);
+}
+
+static void
 display_add_input(struct display *d, uint32_t id)
 {
 	struct input *input;
@@ -3097,6 +3135,8 @@ display_add_input(struct display *d, uint32_t id)
 	input->pointer_focus = NULL;
 	input->keyboard_focus = NULL;
 	wl_list_insert(d->input_list.prev, &input->link);
+
+	init_xkb(input);
 
 	wl_seat_add_listener(input->seat, &seat_listener, input);
 	wl_seat_set_user_data(input->seat, input);
@@ -3121,6 +3161,8 @@ input_destroy(struct input *input)
 		data_offer_destroy(input->selection_offer);
 
 	wl_data_device_destroy(input->data_device);
+	fini_xkb(input);
+
 	wl_list_remove(&input->link);
 	wl_seat_destroy(input->seat);
 	free(input);
@@ -3152,50 +3194,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 			wl_display_bind(display, id,
 					&text_cursor_position_interface);
 	}
-}
-
-static void
-init_xkb(struct display *d)
-{
-	d->xkb.names.rules = "evdev";
-	d->xkb.names.model = "pc105";
-	d->xkb.names.layout = (char *) option_xkb_layout;
-	d->xkb.names.variant = (char *) option_xkb_variant;
-	d->xkb.names.options = (char *) option_xkb_options;
-
-	d->xkb.context = xkb_context_new(0);
-	if (!d->xkb.context) {
-		fprintf(stderr, "Failed to create XKB context\n");
-		exit(1);
-	}
-
-	d->xkb.keymap = xkb_map_new_from_names(d->xkb.context, &d->xkb.names, 0);
-	if (!d->xkb.keymap) {
-		fprintf(stderr, "Failed to compile keymap\n");
-		exit(1);
-	}
-
-	d->xkb.state = xkb_state_new(d->xkb.keymap);
-	if (!d->xkb.state) {
-		fprintf(stderr, "Failed to create XKB state\n");
-		exit(1);
-	}
-
-	d->xkb.control_mask =
-		1 << xkb_map_mod_get_index(d->xkb.keymap, "Control");
-	d->xkb.alt_mask =
-		1 << xkb_map_mod_get_index(d->xkb.keymap, "Mod1");
-	d->xkb.shift_mask =
-		1 << xkb_map_mod_get_index(d->xkb.keymap, "Shift");
-
-}
-
-static void
-fini_xkb(struct display *display)
-{
-	xkb_state_unref(display->xkb.state);
-	xkb_map_unref(display->xkb.keymap);
-	xkb_context_unref(display->xkb.context);
 }
 
 #ifdef HAVE_CAIRO_EGL
@@ -3336,6 +3334,12 @@ display_create(int argc, char *argv[])
 	wl_list_init(&d->input_list);
 	wl_list_init(&d->output_list);
 
+	d->xkb_context = xkb_context_new(0);
+	if (!d->xkb_context) {
+		fprintf(stderr, "failed to initialize XKB context\n");
+		return NULL;
+	}
+
 	/* Set up listener so we'll catch all events. */
 	wl_display_add_global_listener(d->display,
 				       display_handle_global, d);
@@ -3357,8 +3361,6 @@ display_create(int argc, char *argv[])
 	d->theme = theme_create();
 
 	wl_list_init(&d->window_list);
-
-	init_xkb(d);
 
 	return d;
 }
@@ -3395,7 +3397,7 @@ display_destroy(struct display *display)
 	display_destroy_outputs(display);
 	display_destroy_inputs(display);
 
-	fini_xkb(display);
+	xkb_context_unref(display->xkb_context);
 
 	theme_destroy(display->theme);
 	destroy_cursors(display);
