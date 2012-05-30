@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,7 +78,11 @@ struct LayoutMetrics {
   // Convenience metrics used in multiple functions (carried along here in
   // order to eliminate the need to calculate in multiple places and
   // reduce the possibility of bugs).
+
+  // Bottom of the screen's available area (excluding dock height and padding).
   CGFloat minimumY;
+  // Bottom of the screen.
+  CGFloat screenBottomY;
   CGFloat oldWindowY;
   CGFloat folderY;
   CGFloat folderTop;
@@ -98,6 +102,8 @@ struct LayoutMetrics {
     deltaVisibleY(0.0),
     deltaScrollerHeight(0.0),
     deltaScrollerY(0.0),
+    minimumY(0.0),
+    screenBottomY(0.0),
     oldWindowY(0.0),
     folderY(0.0),
     folderTop(0.0) {}
@@ -564,6 +570,7 @@ struct LayoutMetrics {
 
   metrics.minimumY = NSMinY([[window screen] visibleFrame]) +
                      bookmarks::kScrollWindowVerticalMargin;
+  metrics.screenBottomY = NSMinY([[window screen] frame]);
   metrics.oldWindowY = NSMinY(metrics.windowFrame);
   metrics.folderY =
       metrics.scrollerFrame.origin.y + metrics.visibleFrame.origin.y +
@@ -605,9 +612,9 @@ struct LayoutMetrics {
   if (metrics.canScrollUp) {
     if (!metrics.couldScrollUp) {
       // Couldn't -> Can
-      metrics.deltaWindowY = -metrics.oldWindowY;
+      metrics.deltaWindowY = metrics.screenBottomY - metrics.oldWindowY;
       metrics.deltaWindowHeight = -metrics.deltaWindowY;
-      metrics.deltaVisibleY = metrics.minimumY;
+      metrics.deltaVisibleY = metrics.minimumY - metrics.screenBottomY;
       metrics.deltaVisibleHeight = -metrics.deltaVisibleY;
       metrics.deltaScrollerY = verticalScrollArrowHeight_;
       metrics.deltaScrollerHeight = -metrics.deltaScrollerY;
@@ -615,8 +622,8 @@ struct LayoutMetrics {
       // now scroll-up-able, but don't adjust it if we've
       // scrolled down and it wasn't scroll-up-able but now is.
       if (metrics.canScrollDown == metrics.couldScrollDown) {
-        CGFloat deltaScroll = metrics.deltaWindowY + metrics.deltaScrollerY +
-                              metrics.deltaVisibleY;
+        CGFloat deltaScroll = metrics.deltaWindowY - metrics.screenBottomY +
+                              metrics.deltaScrollerY + metrics.deltaVisibleY;
         metrics.scrollPoint.y += deltaScroll + metrics.windowSize.height;
       }
     } else if (!metrics.canScrollDown && metrics.windowSize.height > 0.0) {
@@ -654,9 +661,8 @@ struct LayoutMetrics {
   } else {
     if (metrics.canScrollDown) {
       // Couldn't -> Can
-      metrics.deltaWindowHeight += (NSMaxY([[[self window] screen]
-                                    visibleFrame]) -
-                                    NSMaxY(metrics.windowFrame));
+      const CGFloat maximumY = NSMaxY([[[self window] screen] visibleFrame]);
+      metrics.deltaWindowHeight += (maximumY - NSMaxY(metrics.windowFrame));
       metrics.deltaVisibleHeight -= bookmarks::kScrollWindowVerticalMargin;
       metrics.deltaScrollerHeight -= verticalScrollArrowHeight_;
     } else {
