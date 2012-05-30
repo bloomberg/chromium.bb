@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_file_util.h"
 
 namespace base {
@@ -19,7 +20,7 @@ namespace fileapi {
 class FileSystemOperationContext;
 class IsolatedContext;
 
-class IsolatedFileUtil : public FileSystemFileUtil {
+class FILEAPI_EXPORT_PRIVATE IsolatedFileUtil : public FileSystemFileUtil {
  public:
   IsolatedFileUtil();
   virtual ~IsolatedFileUtil() {}

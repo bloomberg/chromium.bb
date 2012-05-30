@@ -13,6 +13,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_path.h"
 
@@ -22,7 +23,8 @@ class FileSystemOperationContext;
 class FileSystemQuotaUtil;
 class FileWriter;
 
-class FileWriterDelegate : public net::URLRequest::Delegate {
+class FILEAPI_EXPORT_PRIVATE FileWriterDelegate
+    : public net::URLRequest::Delegate {
  public:
   FileWriterDelegate(
       const FileSystemOperationInterface::WriteCallback& write_callback,

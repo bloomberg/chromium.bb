@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_types.h"
 
 namespace base {
@@ -30,10 +31,10 @@ class FileSystemContext;
 // file_system_quota_client and quota_file_util.
 // All the methods of this class are synchronous and need to be called on
 // the thread that the method name implies.
-class FileSystemQuotaUtil {
+class FILEAPI_EXPORT FileSystemQuotaUtil {
  public:
   // Methods of this class can be called on any thread.
-  class Proxy : public base::RefCountedThreadSafe<Proxy> {
+  class FILEAPI_EXPORT Proxy : public base::RefCountedThreadSafe<Proxy> {
    public:
     void UpdateOriginUsage(quota::QuotaManagerProxy* proxy,
                            const GURL& origin_url,

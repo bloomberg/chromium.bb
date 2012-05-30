@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "net/base/completion_callback.h"
+#include "webkit/fileapi/fileapi_export.h"
 
 namespace net {
 class IOBuffer;
@@ -22,7 +23,7 @@ namespace fileapi {
 // is implemented by WebCore::FileWriter), though this class is used to
 // implement a part of it.  FileWriterDelegate is NOT a delegate of this
 // class either.
-class FileWriter {
+class FILEAPI_EXPORT_PRIVATE FileWriter {
  public:
   // Closes the file. If there's an in-flight operation, it is canceled (i.e.,
   // the callback function associated with the operation is not called).

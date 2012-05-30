@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/special_storage_policy.h"
 
@@ -48,7 +49,7 @@ struct DefaultContextDeleter;
 
 // This class keeps and provides a file system context for FileSystem API.
 // An instance of this class is created and owned by profile.
-class FileSystemContext
+class FILEAPI_EXPORT FileSystemContext
     : public base::RefCountedThreadSafe<FileSystemContext,
                                         DefaultContextDeleter> {
  public:
@@ -144,6 +145,8 @@ class FileSystemContext
  private:
   friend struct DefaultContextDeleter;
   friend class base::DeleteHelper<FileSystemContext>;
+  friend class base::RefCountedThreadSafe<FileSystemContext,
+                                          DefaultContextDeleter>;
   ~FileSystemContext();
 
   void DeleteOnCorrectThread() const;

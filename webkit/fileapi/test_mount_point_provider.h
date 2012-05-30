@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 
 namespace base {
@@ -22,7 +23,8 @@ class FileSystemQuotaUtil;
 // This should be only used for testing.
 // This mount point provider uses LocalFileUtil and stores data file
 // under the given directory.
-class TestMountPointProvider : public FileSystemMountPointProvider {
+class FILEAPI_EXPORT_PRIVATE TestMountPointProvider
+    : public FileSystemMountPointProvider {
  public:
   typedef FileSystemMountPointProvider::ValidateFileSystemCallback
       ValidateFileSystemCallback;

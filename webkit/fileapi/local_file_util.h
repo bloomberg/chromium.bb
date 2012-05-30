@@ -14,6 +14,7 @@
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_types.h"
 
@@ -33,7 +34,7 @@ class FileSystemOperationContext;
 class FileSystemPath;
 
 // An instance of this class is created and owned by *MountPointProvider.
-class LocalFileUtil : public FileSystemFileUtil {
+class FILEAPI_EXPORT_PRIVATE LocalFileUtil : public FileSystemFileUtil {
  public:
   // |underlying_file_util| is owned by the instance.  It will be deleted by
   // the owner instance.  For example, it can be instanciated as follows:

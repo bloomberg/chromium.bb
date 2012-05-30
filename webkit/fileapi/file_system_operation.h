@@ -16,6 +16,7 @@
 #include "base/platform_file.h"
 #include "base/process.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -43,7 +44,8 @@ class FileWriterDelegate;
 class FileSystemOperationTest;
 
 // FileSystemOperation implementation for local file systems.
-class FileSystemOperation : public FileSystemOperationInterface {
+class FILEAPI_EXPORT FileSystemOperation
+    : public NON_EXPORTED_BASE(FileSystemOperationInterface) {
  public:
   virtual ~FileSystemOperation();
 

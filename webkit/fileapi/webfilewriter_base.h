@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileWriter.h"
+#include "webkit/fileapi/fileapi_export.h"
 
 namespace WebKit {
 class WebFileWriterClient;
@@ -16,7 +17,8 @@ class WebURL;
 
 namespace fileapi {
 
-class WebFileWriterBase : public WebKit::WebFileWriter {
+class FILEAPI_EXPORT WebFileWriterBase
+    : public NON_EXPORTED_BASE(WebKit::WebFileWriter) {
  public:
   WebFileWriterBase(
       const GURL& path, WebKit::WebFileWriterClient* client);

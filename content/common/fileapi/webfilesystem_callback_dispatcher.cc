@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFileInfo;
@@ -60,7 +61,7 @@ void WebFileSystemCallbackDispatcher::DidOpenFileSystem(
 void WebFileSystemCallbackDispatcher::DidFail(
     base::PlatformFileError error_code) {
     callbacks_->didFail(
-        webkit_glue::PlatformFileErrorToWebFileError(error_code));
+        fileapi::PlatformFileErrorToWebFileError(error_code));
 }
 
 void WebFileSystemCallbackDispatcher::DidWrite(int64 bytes, bool complete) {

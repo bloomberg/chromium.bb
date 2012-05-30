@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/fileapi_export.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_types.h"
 
@@ -17,9 +19,7 @@ class SequencedTaskRunner;
 
 namespace fileapi {
 
-class FileSystemContext;
-
-class FileSystemOperationContext {
+class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {
  public:
   explicit FileSystemOperationContext(FileSystemContext* context);
   ~FileSystemOperationContext();

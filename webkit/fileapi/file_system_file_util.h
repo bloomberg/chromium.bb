@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_path.h"
 
 namespace base {
@@ -25,7 +26,7 @@ class FileSystemOperationContext;
 //
 // Layering structure of the FileSystemFileUtil was split out.
 // See http://crbug.com/128136 if you need it.
-class FileSystemFileUtil {
+class FILEAPI_EXPORT FileSystemFileUtil {
  public:
   // It will be implemented by each subclass such as FileSystemFileEnumerator.
   class AbstractFileEnumerator {

@@ -8,11 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "webkit/fileapi/fileapi_export.h"
+
 namespace fileapi {
 
 // Provides runtime options that may change FileSystem API behavior.
 // This object is copyable.
-class FileSystemOptions {
+class FILEAPI_EXPORT FileSystemOptions {
  public:
   enum ProfileMode {
     PROFILE_MODE_NORMAL = 0,

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_writer.h"
 #include "webkit/quota/quota_types.h"
@@ -19,7 +20,7 @@ class FileSystemContext;
 class FileSystemQuotaUtil;
 class LocalFileWriter;
 
-class SandboxFileWriter : public FileWriter {
+class FILEAPI_EXPORT_PRIVATE SandboxFileWriter : public FileWriter {
  public:
   SandboxFileWriter(FileSystemContext* file_system_context,
                     const GURL& url,

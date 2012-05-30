@@ -50,13 +50,6 @@
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
           ],
         }],
-        # TODO(dpranke): Figure out why this works at all and/or get
-        # rid of it.
-        ['OS=="win" and component == "shared_library"', {
-          'dependencies': [
-            '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
-          ],
-        }],
       ],
     },
   ],

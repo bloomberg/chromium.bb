@@ -8,7 +8,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileWriterClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
-#include "webkit/glue/webkit_glue.h"
+#include "webkit/fileapi/file_system_util.h"
 
 namespace fileapi {
 
@@ -96,7 +96,7 @@ void WebFileWriterBase::DidFail(base::PlatformFileError error_code) {
       // A write or truncate failed.
       operation_ = kOperationNone;
       client_->didFail(
-          webkit_glue::PlatformFileErrorToWebFileError(error_code));
+          PlatformFileErrorToWebFileError(error_code));
       break;
     case kCancelSent:
       // This is the failure of a write or truncate; the next message should be

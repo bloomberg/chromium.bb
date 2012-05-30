@@ -7,6 +7,8 @@
 
 #include "net/url_request/url_request_job_factory.h"
 
+#include "webkit/fileapi/fileapi_export.h"
+
 namespace base {
 class MessageLoopProxy;
 }  // namespace base
@@ -18,8 +20,8 @@ class FileSystemContext;
 // |context|'s lifetime should exceed the lifetime of the ProtocolHandler.
 // Currently, this is only used by ProfileIOData which owns |context| and the
 // ProtocolHandler.
-net::URLRequestJobFactory::ProtocolHandler*
-CreateFileSystemProtocolHandler(FileSystemContext* context);
+FILEAPI_EXPORT net::URLRequestJobFactory::ProtocolHandler*
+    CreateFileSystemProtocolHandler(FileSystemContext* context);
 
 }  // namespace fileapi
 

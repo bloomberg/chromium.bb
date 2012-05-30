@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "base/lazy_instance.h"
+#include "webkit/fileapi/fileapi_export.h"
 
 namespace fileapi {
 
@@ -23,7 +24,7 @@ namespace fileapi {
 // a singleton and access to the context is thread-safe (protected with a
 // lock).
 // Some methods of this class are virtual just for mocking.
-class IsolatedContext {
+class FILEAPI_EXPORT IsolatedContext {
  public:
   // The instance is lazily created per browser process.
   static IsolatedContext* GetInstance();

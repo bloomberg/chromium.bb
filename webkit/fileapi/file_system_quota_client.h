@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/quota_client.h"
@@ -31,8 +32,9 @@ class FileSystemContext;
 // is called.
 // All of the public methods of this class are called by the quota manager
 // (except for the constructor/destructor).
-class FileSystemQuotaClient : public quota::QuotaClient,
-                              public quota::QuotaTaskObserver {
+class FILEAPI_EXPORT_PRIVATE FileSystemQuotaClient
+    : public NON_EXPORTED_BASE(quota::QuotaClient),
+      public quota::QuotaTaskObserver {
  public:
   FileSystemQuotaClient(
       FileSystemContext* file_system_context,

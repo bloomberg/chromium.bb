@@ -14,6 +14,7 @@
 #include "base/platform_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_writer.h"
 
 namespace net {
@@ -23,7 +24,7 @@ class FileStream;
 namespace fileapi {
 
 // This class is a thin wrapper around net::FileStream for writing local files.
-class LocalFileWriter : public FileWriter {
+class FILEAPI_EXPORT_PRIVATE LocalFileWriter : public FileWriter {
  public:
   // Create a writer for the existing file in the path |file_path| starting from
   // |initial_offset|.

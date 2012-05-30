@@ -54,7 +54,6 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
@@ -2049,7 +2048,7 @@ void TransferFileFunction::OnTransferCompleted(base::PlatformFileError error) {
     SendResponse(true);
   } else {
     error_ = base::StringPrintf("%d", static_cast<int>(
-        webkit_glue::PlatformFileErrorToWebFileError(error)));
+        fileapi::PlatformFileErrorToWebFileError(error)));
     SendResponse(false);
   }
 }

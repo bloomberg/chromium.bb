@@ -15,13 +15,15 @@
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "net/url_request/url_request_job.h"
+#include "webkit/fileapi/fileapi_export.h"
 
 namespace fileapi {
 class FileSystemContext;
 class FileSystemOperationInterface;
 
 // A request job that handles reading filesystem: URLs for directories.
-class FileSystemDirURLRequestJob : public net::URLRequestJob {
+class FILEAPI_EXPORT_PRIVATE FileSystemDirURLRequestJob
+    : public net::URLRequestJob {
  public:
   FileSystemDirURLRequestJob(
       net::URLRequest* request,

@@ -13,6 +13,7 @@
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
 #include "base/timer.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_directory_database.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_origin_database.h"
@@ -38,7 +39,7 @@ class FileSystemOperationContext;
 //
 // This class must be deleted on the FILE thread, because that's where
 // DropDatabases needs to be called.
-class ObfuscatedFileUtil : public FileSystemFileUtil {
+class FILEAPI_EXPORT_PRIVATE ObfuscatedFileUtil : public FileSystemFileUtil {
  public:
   // Origin enumerator interface.
   // An instance of this interface is assumed to be called on the file thread.

@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_types.h"
 
 namespace fileapi {
@@ -21,7 +22,7 @@ class FileSystemFileUtil;
 // NOTE: If we completely get rid of cross-filesystem operations under
 // FileSystemOperation we may end up converting all the FileSystemPath
 // occurences back to a FilePath's.
-class FileSystemPath {
+class FILEAPI_EXPORT_PRIVATE FileSystemPath {
  public:
   FileSystemPath();
   FileSystemPath(const GURL& origin,

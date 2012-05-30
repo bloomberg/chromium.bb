@@ -9,6 +9,7 @@
 
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
+#include "webkit/fileapi/fileapi_export.h"
 
 namespace fileapi {
 
@@ -18,7 +19,7 @@ class FileSystemPath;
 
 // A collection of static methods that are usually called by
 // FileSystemFileUtilProxy.  The method should be called on FILE thread.
-class FileUtilHelper {
+class FILEAPI_EXPORT_PRIVATE FileUtilHelper {
  public:
   static base::PlatformFileError Copy(
       FileSystemOperationContext* context,

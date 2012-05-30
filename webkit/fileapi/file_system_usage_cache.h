@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,11 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "webkit/fileapi/fileapi_export.h"
 
 namespace fileapi {
 
-class FileSystemUsageCache {
+class FILEAPI_EXPORT_PRIVATE FileSystemUsageCache {
  public:
   // Gets the size described in the .usage file even if dirty > 0 or
   // is_valid == false.  Returns less than zero if the .usage file is not

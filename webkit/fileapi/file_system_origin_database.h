@@ -12,6 +12,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "webkit/fileapi/fileapi_export.h"
 
 namespace leveldb {
 class DB;
@@ -26,9 +27,9 @@ namespace fileapi {
 
 // All methods of this class other than the constructor may be used only from
 // the browser's FILE thread.  The constructor may be used on any thread.
-class FileSystemOriginDatabase {
+class FILEAPI_EXPORT_PRIVATE FileSystemOriginDatabase {
  public:
-  struct OriginRecord {
+  struct FILEAPI_EXPORT_PRIVATE OriginRecord {
     std::string origin;
     FilePath path;
 

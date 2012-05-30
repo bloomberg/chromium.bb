@@ -19,7 +19,6 @@
 #include "base/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebReferrerPolicy.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 class GURL;
@@ -140,10 +139,6 @@ WEBKIT_GLUE_EXPORT WebKit::WebString FilePathStringToWebString(
 WEBKIT_GLUE_EXPORT FilePath WebStringToFilePath(const WebKit::WebString& str);
 WEBKIT_GLUE_EXPORT WebKit::WebString FilePathToWebString(
     const FilePath& file_path);
-
-// File error conversion
-WEBKIT_GLUE_EXPORT WebKit::WebFileError PlatformFileErrorToWebFileError(
-    base::PlatformFileError error_code);
 
 // File info conversion
 WEBKIT_GLUE_EXPORT void PlatformFileInfoToWebFileInfo(

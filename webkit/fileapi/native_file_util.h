@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_file_util.h"
 
 namespace base {
@@ -21,7 +22,7 @@ using base::PlatformFileError;
 
 // TODO(dmikurube): Add unit tests for NativeFileUtil.
 // This class handles accessing the OS native filesystem.
-class NativeFileUtil {
+class FILEAPI_EXPORT_PRIVATE NativeFileUtil {
  public:
   static PlatformFileError CreateOrOpen(
       const FilePath& path,
