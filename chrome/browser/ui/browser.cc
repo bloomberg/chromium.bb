@@ -2318,10 +2318,12 @@ bool Browser::IsReservedCommandOrKey(int command_id,
   // crbug.com/127333#c8
   ui::KeyboardCode key_code =
       static_cast<ui::KeyboardCode>(event.windowsKeyCode);
-  if (key_code == ui::VKEY_F1 ||
-      key_code == ui::VKEY_F2 ||
-      key_code == ui::VKEY_F3 ||
-      key_code == ui::VKEY_F4) {
+  if ((key_code == ui::VKEY_F1 ||
+       key_code == ui::VKEY_F2 ||
+       key_code == ui::VKEY_F3 ||
+       key_code == ui::VKEY_F4) &&
+      // Make sure it's a browser shortcut (i.e. not an Ash one like Alt+F4).
+      command_id != -1) {
     return true;
   }
 #endif
