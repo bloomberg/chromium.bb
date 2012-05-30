@@ -382,7 +382,13 @@ TEST_F(CompositeFilterTest, TestAddRemoveFilter) {
   EXPECT_TRUE(filter->host() == NULL);
 }
 
-class CompositeFilterDeathTest : public CompositeFilterTest {};
+class CompositeFilterDeathTest : public CompositeFilterTest {
+ public:
+  virtual void SetUp() {
+    // To avoid googletest warning in "fast" mode.
+    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  }
+};
 
 // Test AddFilter() failure cases.
 TEST_F(CompositeFilterDeathTest, TestAddFilterFailCases) {
