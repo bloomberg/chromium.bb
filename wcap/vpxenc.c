@@ -335,27 +335,29 @@ static inline int rgb_to_yuv(uint32_t format, uint32_t p, int *u, int *v)
 		break;
 	}
 
-	y = 0.299 * r + 0.587 * g + 0.114 * b;
+	y = (19595 * r + 38469 * g + 7472 * b) >> 16;
 	if (y > 255)
 		y = 255;
 
-	*u += 0.713 * (r - y);
-	*v += 0.564 * (b - y);
+	*u += 46727 * (r - y);
+	*v += 36962 * (b - y);
 
 	return y;
 }
 
 static inline int clamp_uv(int u)
 {
-	if (u < -512)
+	int clamp = (u >> 18) + 128;
+
+	if (clamp < 0)
 		return 0;
-	else if (u > 511)
+	else if (clamp > 255)
 		return 255;
 	else
-		return u / 4 + 128;
+		return clamp;
 }
 
-static void convert_to_yv12(struct wcap_decoder *wcap, vpx_image_t *img)
+void convert_to_yv12(struct wcap_decoder *wcap, vpx_image_t *img)
 {
 	unsigned char *y1, *y2, *u, *v;
 	uint32_t *p1, *p2, *end;
