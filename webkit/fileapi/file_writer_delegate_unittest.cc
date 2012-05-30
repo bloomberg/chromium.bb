@@ -250,7 +250,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
 #define MAYBE_WriteSuccessWithJustQuota WriteSuccessWithJustQuota
 #endif
 
-TEST_F(FileWriterDelegateTest, DISABLED_WriteSuccessWithJustQuota) {
+TEST_F(FileWriterDelegateTest, MAYBE_WriteSuccessWithJustQuota) {
   const GURL kBlobURL("blob:just");
   content_ = kData;
   const int64 kAllowedGrowth = kDataSize;
