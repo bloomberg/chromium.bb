@@ -7,9 +7,18 @@
 #include <algorithm>
 #include <iterator>
 
+#include "base/logging.h"
+#include "base/values.h"
+#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
+namespace {
+
+const char kInvalidURLPatternError[] = "Invalid url pattern '*'";
+
+}  // namespace
 
 // static
 void URLPatternSet::CreateDifference(const URLPatternSet& set1,
@@ -113,4 +122,40 @@ bool URLPatternSet::OverlapsWith(const URLPatternSet& other) const {
   }
 
   return false;
+}
+
+scoped_ptr<base::ListValue> URLPatternSet::ToValue() const {
+  scoped_ptr<ListValue> value(new ListValue);
+  for (URLPatternSet::const_iterator i = patterns_.begin();
+       i != patterns_.end(); ++i)
+    value->AppendIfNotPresent(Value::CreateStringValue(i->GetAsString()));
+  return value.Pass();
+}
+
+bool URLPatternSet::Populate(const base::ListValue& value,
+                             int valid_schemes,
+                             bool allow_file_access,
+                             std::string* error) {
+  ClearPatterns();
+  for (size_t i = 0; i < value.GetSize(); ++i) {
+    std::string item;
+    if (!value.GetString(i, &item))
+      return false;
+    URLPattern pattern(valid_schemes);
+    if (pattern.Parse(item) != URLPattern::PARSE_SUCCESS) {
+      if (error) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            kInvalidURLPatternError, item);
+      } else {
+        LOG(ERROR) << "Invalid url pattern: " << item;
+      }
+      return false;
+    }
+    if (!allow_file_access && pattern.MatchesScheme(chrome::kFileScheme)) {
+      pattern.SetValidSchemes(
+          pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
+    }
+    AddPattern(pattern);
+  }
+  return true;
 }

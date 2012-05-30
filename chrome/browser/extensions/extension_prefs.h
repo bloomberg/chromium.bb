@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
+#include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "chrome/common/extensions/extension.h"
@@ -282,6 +283,11 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   void SetOmniboxDefaultSuggestion(
       const std::string& extension_id,
       const extensions::ExtensionOmniboxSuggestion& suggestion);
+
+  // Controls the context menu items for this extension.
+  ExtensionMenuItem::List GetContextMenuItems(const std::string& extension_id);
+  void SetContextMenuItems(const std::string& extension_id,
+                           const ExtensionMenuItem::List& items);
 
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.

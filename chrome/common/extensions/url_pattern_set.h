@@ -8,9 +8,15 @@
 
 #include <set>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/url_pattern.h"
 
 class GURL;
+
+namespace base {
+class ListValue;
+class Value;
+}
 
 // Represents the set of URLs an extension uses for web content.
 class URLPatternSet {
@@ -60,6 +66,13 @@ class URLPatternSet {
 
   // Returns true if there is a single URL that would be in two extents.
   bool OverlapsWith(const URLPatternSet& other) const;
+
+  // Converts to and from Value for serialization to preferences.
+  scoped_ptr<base::ListValue> ToValue() const;
+  bool Populate(const base::ListValue& value,
+                int valid_schemes,
+                bool allow_file_access,
+                std::string* error);
 
  private:
   // The list of URL patterns that comprise the extent.

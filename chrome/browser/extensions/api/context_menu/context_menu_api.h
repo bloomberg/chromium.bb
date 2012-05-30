@@ -41,17 +41,6 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
                     bool default_value,
                     bool* checked);
 
-  // Helper to read in a set of url patterns from a property with the given key
-  // name.
-  bool ParseURLPatterns(const base::DictionaryValue& properties,
-                        const char* key,
-                        URLPatternSet* result);
-
-  // Reads in any document and targetUrl patterns from |properties| and sets
-  // them on |item|.
-  bool SetURLPatterns(const base::DictionaryValue& properties,
-                      ExtensionMenuItem* item);
-
   // Helper to read an ID from the Value*. The ID can be either a string or
   // integer.
   bool ParseID(const Value* value,

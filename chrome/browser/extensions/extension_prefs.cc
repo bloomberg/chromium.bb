@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
+#include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/prefs/pref_notifier.h"
@@ -173,6 +174,9 @@ const char kAlarmScheduledRunTime[] = "scheduled_run_time";
 
 // Persisted value for omnibox.setDefaultSuggestion.
 const char kOmniboxDefaultSuggestion[] = "omnibox_default_suggestion";
+
+// A preference containing context menu items, persisted for event pages.
+const char kPrefContextMenus[] = "context_menus";
 
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
@@ -440,38 +444,15 @@ bool ExtensionPrefs::ReadExtensionPrefURLPatternSet(
   if (!ReadExtensionPrefList(extension_id, pref_key, &value))
     return false;
 
-  result->ClearPatterns();
   bool allow_file_access = AllowFileAccess(extension_id);
-
-  for (size_t i = 0; i < value->GetSize(); ++i) {
-    std::string item;
-    if (!value->GetString(i, &item))
-      return false;
-    URLPattern pattern(valid_schemes);
-    if (pattern.Parse(item) != URLPattern::PARSE_SUCCESS) {
-      LOG(ERROR) << "Invaid permission pattern: " << item;
-      return false;
-    }
-    if (!allow_file_access && pattern.MatchesScheme(chrome::kFileScheme)) {
-      pattern.SetValidSchemes(
-          pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
-    }
-    result->AddPattern(pattern);
-  }
-
-  return true;
+  return result->Populate(*value, valid_schemes, allow_file_access, NULL);
 }
 
 void ExtensionPrefs::SetExtensionPrefURLPatternSet(
     const std::string& extension_id,
     const std::string& pref_key,
     const URLPatternSet& new_value) {
-  ListValue* value = new ListValue();
-  for (URLPatternSet::const_iterator i = new_value.begin();
-       i != new_value.end(); ++i)
-    value->AppendIfNotPresent(Value::CreateStringValue(i->GetAsString()));
-
-  UpdateExtensionPref(extension_id, pref_key, value);
+  UpdateExtensionPref(extension_id, pref_key, new_value.ToValue().release());
 }
 
 ExtensionPermissionSet* ExtensionPrefs::ReadExtensionPrefPermissionSet(
@@ -1032,6 +1013,37 @@ void ExtensionPrefs::SetOmniboxDefaultSuggestion(
   UpdateExtensionPref(extension_id, kOmniboxDefaultSuggestion, dict.release());
 }
 
+ExtensionMenuItem::List ExtensionPrefs::GetContextMenuItems(
+    const std::string& extension_id) {
+  ExtensionMenuItem::List items;
+  const base::ListValue* list = NULL;
+  if (!ReadExtensionPrefList(extension_id, kPrefContextMenus, &list))
+    return items;
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    base::DictionaryValue* dict = NULL;
+    if (!list->GetDictionary(i, &dict))
+      continue;
+    ExtensionMenuItem* item = ExtensionMenuItem::Populate(
+        extension_id, *dict, NULL);
+    if (!item)
+      continue;
+    items.push_back(item);
+  }
+  return items;
+}
+
+void ExtensionPrefs::SetContextMenuItems(
+    const std::string& extension_id,
+    const ExtensionMenuItem::List& items) {
+  base::ListValue* list = NULL;
+  if (items.size() > 0) {
+    list = new base::ListValue;
+    for (size_t i = 0; i < items.size(); ++i)
+      list->Append(items[i]->ToValue().release());
+  }
+  UpdateExtensionPref(extension_id, kPrefContextMenus, list);
+}
+
 bool ExtensionPrefs::IsIncognitoEnabled(const std::string& extension_id) {
   return ReadExtensionPrefBoolean(extension_id, kPrefIncognitoEnabled);
 }
@@ -1227,9 +1239,10 @@ void ExtensionPrefs::OnExtensionInstalled(
                         extension->manifest()->value()->DeepCopy());
   }
 
-  // Clear any events and alarms that may be registered from a previous install.
+  // Clear state that may be registered from a previous install.
   extension_dict->Remove(kRegisteredEvents, NULL);
   extension_dict->Remove(kRegisteredAlarms, NULL);
+  extension_dict->Remove(kPrefContextMenus, NULL);
 
   if (extension->is_app()) {
     StringOrdinal new_page_ordinal = page_ordinal.IsValid() ?

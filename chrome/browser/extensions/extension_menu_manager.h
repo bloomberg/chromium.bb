@@ -16,6 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "content/public/browser/notification_observer.h"
@@ -108,6 +109,18 @@ class ExtensionMenuItem {
       value_ |= context;
     }
 
+    scoped_ptr<Value> ToValue() const {
+      return scoped_ptr<Value>(Value::CreateIntegerValue(value_));
+    }
+
+    bool Populate(const Value& value) {
+      int int_value;
+      if (!value.GetAsInteger(&int_value) || int_value < 0)
+        return false;
+      value_ = int_value;
+      return true;
+    }
+
    private:
     uint32 value_;  // A bitmask of Context values.
   };
@@ -156,8 +169,23 @@ class ExtensionMenuItem {
   string16 TitleWithReplacement(const string16& selection,
                                 size_t max_length) const;
 
-  // Set the checked state to |checked|. Returns true if successful.
+  // Sets the checked state to |checked|. Returns true if successful.
   bool SetChecked(bool checked);
+
+  // Converts to Value for serialization to preferences.
+  scoped_ptr<base::DictionaryValue> ToValue() const;
+
+  // Returns a new ExtensionMenuItem created from |value|, or NULL if there is
+  // an error. The caller takes ownership of the ExtensionMenuItem.
+  static ExtensionMenuItem* Populate(const std::string& extension_id,
+                                     const DictionaryValue& value,
+                                     std::string* error);
+
+  // Sets any document and target URL patterns from |properties|.
+  bool PopulateURLPatterns(const base::DictionaryValue& properties,
+                           const char* document_url_patterns_key,
+                           const char* target_url_patterns_key,
+                           std::string* error);
 
  protected:
   friend class ExtensionMenuManager;
@@ -168,6 +196,10 @@ class ExtensionMenuItem {
   // Takes the child item from this parent. The item is returned and the caller
   // then owns the pointer.
   ExtensionMenuItem* ReleaseChild(const Id& child_id, bool recursive);
+
+  // Recursively appends all descendant items (children, grandchildren, etc.)
+  // to the output |list|.
+  void GetFlattenedSubtree(ExtensionMenuItem::List* list);
 
   // Recursively removes all descendant items (children, grandchildren, etc.),
   // returning the ids of the removed items.
@@ -275,6 +307,13 @@ class ExtensionMenuManager : public content::NotificationObserver {
   virtual void Observe(int type, const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Stores the menu items for the extension in the preferences.
+  void WriteToPrefs(const extensions::Extension* extension);
+
+  // Reads menu items for the extension from the preferences. Any invalid
+  // items are ignored.
+  void ReadFromPrefs(const extensions::Extension* extension);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionMenuManagerTest, DeleteParent);
   FRIEND_TEST_ALL_PREFIXES(ExtensionMenuManagerTest, RemoveOneByOne);
@@ -305,6 +344,8 @@ class ExtensionMenuManager : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
   ExtensionIconManager icon_manager_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMenuManager);
 };

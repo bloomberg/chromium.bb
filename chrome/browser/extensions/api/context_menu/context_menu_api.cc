@@ -13,6 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 
+namespace {
+
 const char kCheckedKey[] = "checked";
 const char kContextsKey[] = "contexts";
 const char kDocumentUrlPatternsKey[] = "documentUrlPatterns";
@@ -31,17 +33,12 @@ const char kDuplicateIDError[] =
     "Cannot create item with duplicate id *";
 const char kIdRequiredError[] = "Extensions using event pages must pass an "
     "id parameter to chrome.contextMenus.create";
-const char kInvalidURLPatternError[] = "Invalid url pattern '*'";
 const char kInvalidValueError[] = "Invalid value for *";
 const char kInvalidTypeStringError[] = "Invalid type string '*'";
 const char kParentsMustBeNormalError[] =
     "Parent items must have type \"normal\"";
 const char kTitleNeededError[] =
     "All menu items except for separators must have a title";
-
-namespace extensions {
-
-namespace {
 
 std::string GetIDString(const ExtensionMenuItem::Id& id) {
   if (id.uid == 0)
@@ -51,6 +48,8 @@ std::string GetIDString(const ExtensionMenuItem::Id& id) {
 }
 
 }  // namespace
+
+namespace extensions {
 
 bool ExtensionContextMenuFunction::ParseContexts(
     const DictionaryValue& properties,
@@ -143,68 +142,11 @@ bool ExtensionContextMenuFunction::ParseChecked(
   return true;
 }
 
-bool ExtensionContextMenuFunction::ParseURLPatterns(
-    const DictionaryValue& properties,
-    const char* key,
-    URLPatternSet* result) {
-  if (!properties.HasKey(key))
-    return true;
-  ListValue* list = NULL;
-  if (!properties.GetList(key, &list))
-    return false;
-  for (ListValue::iterator i = list->begin(); i != list->end(); ++i) {
-    std::string tmp;
-    if (!(*i)->GetAsString(&tmp))
-      return false;
-
-    URLPattern pattern(URLPattern::SCHEME_ALL);
-    // TODO(skerner):  Consider enabling strict pattern parsing
-    // if this extension's location indicates that it is under development.
-    if (URLPattern::PARSE_SUCCESS != pattern.Parse(tmp)) {
-      error_ = ExtensionErrorUtils::FormatErrorMessage(kInvalidURLPatternError,
-                                                       tmp);
-      return false;
-    }
-    result->AddPattern(pattern);
-  }
-  return true;
-}
-
-bool ExtensionContextMenuFunction::SetURLPatterns(
-    const DictionaryValue& properties,
-    ExtensionMenuItem* item) {
-  // Process the documentUrlPattern value.
-  URLPatternSet document_url_patterns;
-  if (!ParseURLPatterns(properties, kDocumentUrlPatternsKey,
-                        &document_url_patterns))
-    return false;
-
-  if (!document_url_patterns.is_empty()) {
-    item->set_document_url_patterns(document_url_patterns);
-  }
-
-  // Process the targetUrlPattern value.
-  URLPatternSet target_url_patterns;
-  if (!ParseURLPatterns(properties, kTargetUrlPatternsKey,
-                        &target_url_patterns))
-    return false;
-
-  if (!target_url_patterns.is_empty()) {
-    item->set_target_url_patterns(target_url_patterns);
-  }
-
-  return true;
-}
-
 bool ExtensionContextMenuFunction::ParseID(
     const Value* value,
     ExtensionMenuItem::Id* result) {
-  if (value->GetAsInteger(&result->uid) ||
-      value->GetAsString(&result->string_uid)) {
-    return true;
-  } else {
-    return false;
-  }
+  return (value->GetAsInteger(&result->uid) ||
+          value->GetAsString(&result->string_uid));
 }
 
 bool ExtensionContextMenuFunction::GetParent(
@@ -289,7 +231,8 @@ bool CreateContextMenuFunction::RunImpl() {
   scoped_ptr<ExtensionMenuItem> item(
       new ExtensionMenuItem(id, title, checked, enabled, type, contexts));
 
-  if (!SetURLPatterns(*properties, item.get()))
+  if (!item->PopulateURLPatterns(
+          *properties, kDocumentUrlPatternsKey, kTargetUrlPatternsKey, &error_))
     return false;
 
   bool success = true;
@@ -305,6 +248,7 @@ bool CreateContextMenuFunction::RunImpl() {
   if (!success)
     return false;
 
+  menu_manager->WriteToPrefs(GetExtension());
   return true;
 }
 
@@ -382,7 +326,8 @@ bool UpdateContextMenuFunction::RunImpl() {
   if (parent && !manager->ChangeParent(item->id(), &parent->id()))
     return false;
 
-  if (!SetURLPatterns(*properties, item))
+  if (!item->PopulateURLPatterns(
+          *properties, kDocumentUrlPatternsKey, kTargetUrlPatternsKey, &error_))
     return false;
 
   // There is no need to call ItemUpdated if ChangeParent is called because
@@ -390,6 +335,7 @@ bool UpdateContextMenuFunction::RunImpl() {
   if (!parent && radioItemUpdated && !manager->ItemUpdated(item->id()))
     return false;
 
+  manager->WriteToPrefs(GetExtension());
   return true;
 }
 
@@ -409,13 +355,17 @@ bool RemoveContextMenuFunction::RunImpl() {
     return false;
   }
 
-  return manager->RemoveContextMenuItem(id);
+  if (!manager->RemoveContextMenuItem(id))
+    return false;
+  manager->WriteToPrefs(GetExtension());
+  return true;
 }
 
 bool RemoveAllContextMenusFunction::RunImpl() {
   ExtensionService* service = profile()->GetExtensionService();
   ExtensionMenuManager* manager = service->menu_manager();
-  manager->RemoveAllContextItems(extension_id());
+  manager->RemoveAllContextItems(GetExtension()->id());
+  manager->WriteToPrefs(GetExtension());
   return true;
 }
 
