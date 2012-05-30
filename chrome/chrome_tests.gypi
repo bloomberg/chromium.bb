@@ -627,7 +627,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
 
             'browser/accessibility/accessibility_win_browsertest.cc',
-            'browser/accessibility/browser_views_accessibility_browsertest.cc',
+            'browser/ui/views/accessibility/browser_views_accessibility_browsertest.cc',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
@@ -638,7 +638,7 @@
             ['use_aura==1', {
               'sources/': [
                 ['exclude', '^browser/accessibility/accessibility_win_browsertest.cc'],
-                ['exclude', '^browser/accessibility/browser_views_accessibility_browsertest.cc'],
+                ['exclude', '^browser/ui/views/accessibility/browser_views_accessibility_browsertest.cc'],
               ],
             }],
           ],
@@ -1771,7 +1771,7 @@
         'browser/ui/toolbar/toolbar_model_unittest.cc',
         'browser/ui/toolbar/wrench_menu_model_unittest.cc',
         'browser/ui/views/accelerator_table_unittest.cc',
-        'browser/ui/views/accessibility_event_router_views_unittest.cc',
+        'browser/ui/views/accessibility/accessibility_event_router_views_unittest.cc',
         'browser/ui/views/ash/app_list/apps_model_builder_unittest.cc',
         'browser/ui/views/ash/key_rewriter_unittest.cc',
         'browser/ui/views/ash/launcher/browser_launcher_item_controller_unittest.cc',

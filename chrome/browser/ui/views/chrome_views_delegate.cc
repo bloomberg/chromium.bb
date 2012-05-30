@@ -11,7 +11,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/views/accessibility_event_router_views.h"
+#include "chrome/browser/ui/views/accessibility/accessibility_event_router_views.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/common/pref_names.h"
 #include "ui/base/clipboard/clipboard.h"
