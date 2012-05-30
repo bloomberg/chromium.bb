@@ -87,7 +87,7 @@ class NetworkMessageNotification : public ash::NetworkTrayDelegate {
     if (system_notification_.get()) {
       system_notification_->Hide();
     } else {
-      ash::Shell::GetInstance()->tray()->network_observer()->
+      ash::Shell::GetInstance()->system_tray()->network_observer()->
           ClearNetworkError(error_type_);
     }
   }
@@ -107,7 +107,7 @@ class NetworkMessageNotification : public ash::NetworkTrayDelegate {
       system_notification_->Show(message, link_text, callback, urgent, sticky);
     } else {
       callback_ = callback;
-      ash::Shell::GetInstance()->tray()->network_observer()->
+      ash::Shell::GetInstance()->system_tray()->network_observer()->
           SetNetworkError(this, error_type_, title_, message, link_text);
     }
   }

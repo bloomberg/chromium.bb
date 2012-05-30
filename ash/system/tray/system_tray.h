@@ -6,8 +6,8 @@
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_H_
 #pragma once
 
-#include "ash/launcher/background_animator.h"
 #include "ash/ash_export.h"
+#include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "ash/system/user/login_status.h"
 #include "ash/wm/shelf_auto_hide_behavior.h"
@@ -39,7 +39,6 @@ class UserObserver;
 class SystemTrayItem;
 
 namespace internal {
-class SystemTrayBackground;
 class SystemTrayBubble;
 class SystemTrayContainer;
 class SystemTrayLayerAnimationObserver;
@@ -51,17 +50,16 @@ enum BubbleCreationType {
   BUBBLE_USE_EXISTING,  // Uses any existing bubble, or creates a new one.
 };
 
-class ASH_EXPORT SystemTray : public internal::ActionableView,
-                              public internal::BackgroundAnimatorDelegate {
+class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
  public:
   SystemTray();
   virtual ~SystemTray();
 
+  // Called after the tray has been added to the widget containing it.
+  void Initialize();
+
   // Creates the default set of items for the sytem tray.
   void CreateItems();
-
-  // Creates the widget for the tray.
-  void CreateWidget();
 
   // Adds a new item in the tray.
   void AddTrayItem(SystemTrayItem* item);
@@ -95,18 +93,10 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   // Updates the items when the login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 
-  // Sets whether the tray paints a background. Default is true, but is set to
-  // false if a window overlaps the shelf.
-  void SetPaintsBackground(
-      bool value,
-      internal::BackgroundAnimator::ChangeType change_type);
-
   // Returns true if the launcher should show.
   bool should_show_launcher() const {
     return bubble_.get() && should_show_launcher_;
   }
-
-  views::Widget* widget() const { return widget_; }
 
   AccessibilityObserver* accessibility_observer() const {
     return accessibility_observer_;
@@ -202,9 +192,6 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
-  // Overridden from internal::BackgroundAnimatorDelegate.
-  virtual void UpdateBackground(int alpha) OVERRIDE;
-
   // Owned items.
   ScopedVector<SystemTrayItem> items_;
 
@@ -233,17 +220,11 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   UpdateObserver* update_observer_;
   UserObserver* user_observer_;
 
-  // The widget hosting the tray.
-  views::Widget* widget_;
-
   // Bubble for default and detailed views.
   scoped_ptr<internal::SystemTrayBubble> bubble_;
 
   // Buble for notifications.
   scoped_ptr<internal::SystemTrayBubble> notification_bubble_;
-
-  // Owned by the view it's installed on.
-  internal::SystemTrayBackground* background_;
 
   // See description agove getter.
   bool should_show_launcher_;
@@ -251,8 +232,6 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   // Shelf alignment.
   ShelfAlignment shelf_alignment_;
 
-  internal::BackgroundAnimator hide_background_animator_;
-  internal::BackgroundAnimator hover_background_animator_;
   scoped_ptr<internal::SystemTrayLayerAnimationObserver>
       layer_animation_observer_;
 

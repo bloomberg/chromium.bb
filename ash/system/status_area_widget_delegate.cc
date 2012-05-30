@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/system_tray_widget_delegate.h"
+#include "ash/system/status_area_widget_delegate.h"
 
 #include "ash/ash_export.h"
 #include "ash/focus_cycler.h"
@@ -15,29 +15,36 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/accessible_pane_view.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+
+int kTraySpacing = 10;
+
+}  // namespace
 
 namespace ash {
 namespace internal {
 
-StatusAreaView::StatusAreaView()
+StatusAreaWidgetDelegate::StatusAreaWidgetDelegate()
     : focus_cycler_for_testing_(NULL) {
-  SetLayoutManager(new views::FillLayout);
+  SetLayout(views::BoxLayout::kHorizontal);
 }
 
-StatusAreaView::~StatusAreaView() {
+StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() {
 }
 
-void StatusAreaView::SetFocusCyclerForTesting(const FocusCycler* focus_cycler) {
+void StatusAreaWidgetDelegate::SetFocusCyclerForTesting(
+    const FocusCycler* focus_cycler) {
   focus_cycler_for_testing_ = focus_cycler;
 }
 
-views::View* StatusAreaView::GetDefaultFocusableChild() {
+views::View* StatusAreaWidgetDelegate::GetDefaultFocusableChild() {
   return child_at(0);
 }
 
-bool StatusAreaView::AcceleratorPressed(const ui::Accelerator& accelerator) {
+bool StatusAreaWidgetDelegate::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_ESCAPE) {
     RemovePaneFocus();
     GetFocusManager()->ClearFocus();
@@ -46,15 +53,15 @@ bool StatusAreaView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return false;
 }
 
-views::Widget* StatusAreaView::GetWidget() {
+views::Widget* StatusAreaWidgetDelegate::GetWidget() {
   return View::GetWidget();
 }
 
-const views::Widget* StatusAreaView::GetWidget() const {
+const views::Widget* StatusAreaWidgetDelegate::GetWidget() const {
   return View::GetWidget();
 }
 
-bool StatusAreaView::CanActivate() const {
+bool StatusAreaWidgetDelegate::CanActivate() const {
   // We don't want mouse clicks to activate us, but we need to allow
   // activation when the user is using the keyboard (FocusCycler).
   const FocusCycler* focus_cycler = focus_cycler_for_testing_ ?
@@ -62,7 +69,13 @@ bool StatusAreaView::CanActivate() const {
   return focus_cycler->widget_activating() == GetWidget();
 }
 
-void StatusAreaView::DeleteDelegate() {
+void StatusAreaWidgetDelegate::DeleteDelegate() {
+}
+
+void StatusAreaWidgetDelegate::SetLayout(
+    views::BoxLayout::Orientation orientation) {
+  SetLayoutManager(new views::BoxLayout(orientation, 0, 0, kTraySpacing));
+  Layout();
 }
 
 }  // namespace internal

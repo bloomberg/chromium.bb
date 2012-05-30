@@ -561,7 +561,7 @@ class NetworkDetailedView : public TrayDetailsView,
     ResetInfoBubble();
 
     if (sender == footer()->content()) {
-      Shell::GetInstance()->tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+      Shell::GetInstance()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
       return;
     }
 

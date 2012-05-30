@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
 #include "base/utf_string_conversions.h"
@@ -21,8 +22,10 @@ namespace {
 
 SystemTray* CreateSystemTray() {
   SystemTray* tray = new SystemTray;
+  internal::StatusAreaWidget* widget = new internal::StatusAreaWidget;
+  widget->AddTray(tray);
   tray->CreateItems();
-  tray->CreateWidget();
+  widget->Show();
   return tray;
 }
 
@@ -95,7 +98,7 @@ typedef AshTestBase SystemTrayTest;
 
 TEST_F(SystemTrayTest, SystemTrayDefaultView) {
   scoped_ptr<SystemTray> tray(CreateSystemTray());
-  ASSERT_TRUE(tray->widget());
+  ASSERT_TRUE(tray->GetWidget());
 
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
 
@@ -107,7 +110,7 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
 
 TEST_F(SystemTrayTest, SystemTrayTestItems) {
   scoped_ptr<SystemTray> tray(CreateSystemTray());
-  ASSERT_TRUE(tray->widget());
+  ASSERT_TRUE(tray->GetWidget());
 
   TestItem* test_item = new TestItem;
   TestItem* detailed_item = new TestItem;
@@ -138,14 +141,14 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
 
 TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
   scoped_ptr<SystemTray> tray(CreateSystemTray());
-  ASSERT_TRUE(tray->widget());
+  ASSERT_TRUE(tray->GetWidget());
 
-  gfx::Size widget_size = tray->widget()->GetWindowScreenBounds().size();
+  gfx::Size widget_size = tray->GetWidget()->GetWindowScreenBounds().size();
 
   TestItem* test_item = new TestItem;
   tray->AddTrayItem(test_item);
 
-  gfx::Size new_size = tray->widget()->GetWindowScreenBounds().size();
+  gfx::Size new_size = tray->GetWidget()->GetWindowScreenBounds().size();
 
   // Adding the new item should change the size of the tray.
   EXPECT_NE(widget_size.ToString(), new_size.ToString());
@@ -154,17 +157,17 @@ TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
   // tray.
   test_item->tray_view()->SetVisible(false);
   EXPECT_EQ(widget_size.ToString(),
-            tray->widget()->GetWindowScreenBounds().size().ToString());
+            tray->GetWidget()->GetWindowScreenBounds().size().ToString());
 
   test_item->tray_view()->SetVisible(true);
   EXPECT_EQ(new_size.ToString(),
-            tray->widget()->GetWindowScreenBounds().size().ToString());
+            tray->GetWidget()->GetWindowScreenBounds().size().ToString());
 }
 
 // Disabled due to a use-after-free, see http://crbug.com/127539.
 TEST_F(SystemTrayTest, DISABLED_SystemTrayNotifications) {
   scoped_ptr<SystemTray> tray(CreateSystemTray());
-  ASSERT_TRUE(tray->widget());
+  ASSERT_TRUE(tray->GetWidget());
 
   TestItem* test_item = new TestItem;
   TestItem* detailed_item = new TestItem;
@@ -199,7 +202,7 @@ TEST_F(SystemTrayTest, DISABLED_SystemTrayNotifications) {
 
 TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
   scoped_ptr<SystemTray> tray(CreateSystemTray());
-  ASSERT_TRUE(tray->widget());
+  ASSERT_TRUE(tray->GetWidget());
 
   TestItem* test_item = new TestItem;
   tray->AddTrayItem(test_item);

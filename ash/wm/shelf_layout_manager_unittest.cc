@@ -509,7 +509,7 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
       launcher_bounds.width(),
       shelf->launcher_widget()->GetContentsView()->GetPreferredSize().width());
   EXPECT_EQ(SHELF_ALIGNMENT_LEFT,
-            Shell::GetInstance()->tray()->shelf_alignment());
+            Shell::GetInstance()->system_tray()->shelf_alignment());
   gfx::Rect status_bounds(shelf->status()->GetWindowScreenBounds());
   EXPECT_GE(status_bounds.width(),
             shelf->status()->GetContentsView()->GetPreferredSize().width());
@@ -532,7 +532,7 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
       launcher_bounds.width(),
       shelf->launcher_widget()->GetContentsView()->GetPreferredSize().width());
   EXPECT_EQ(SHELF_ALIGNMENT_RIGHT,
-            Shell::GetInstance()->tray()->shelf_alignment());
+            Shell::GetInstance()->system_tray()->shelf_alignment());
   status_bounds = gfx::Rect(shelf->status()->GetWindowScreenBounds());
   EXPECT_GE(status_bounds.width(),
             shelf->status()->GetContentsView()->GetPreferredSize().width());

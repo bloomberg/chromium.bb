@@ -45,7 +45,7 @@ void SystemTrayItem::DestroyNotificationView() {
 }
 
 void SystemTrayItem::TransitionDetailedView() {
-  Shell::GetInstance()->tray()->ShowDetailedView(this, 0, true,
+  Shell::GetInstance()->system_tray()->ShowDetailedView(this, 0, true,
       BUBBLE_USE_EXISTING);
 }
 
@@ -53,24 +53,24 @@ void SystemTrayItem::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
 void SystemTrayItem::PopupDetailedView(int for_seconds, bool activate) {
-  Shell::GetInstance()->tray()->ShowDetailedView(this, for_seconds, activate,
-      BUBBLE_CREATE_NEW);
+  Shell::GetInstance()->system_tray()->ShowDetailedView(
+      this, for_seconds, activate, BUBBLE_CREATE_NEW);
 }
 
 void SystemTrayItem::SetDetailedViewCloseDelay(int for_seconds) {
-  Shell::GetInstance()->tray()->SetDetailedViewCloseDelay(for_seconds);
+  Shell::GetInstance()->system_tray()->SetDetailedViewCloseDelay(for_seconds);
 }
 
 void SystemTrayItem::HideDetailedView() {
-  Shell::GetInstance()->tray()->HideDetailedView(this);
+  Shell::GetInstance()->system_tray()->HideDetailedView(this);
 }
 
 void SystemTrayItem::ShowNotificationView() {
-  Shell::GetInstance()->tray()->ShowNotificationView(this);
+  Shell::GetInstance()->system_tray()->ShowNotificationView(this);
 }
 
 void SystemTrayItem::HideNotificationView() {
-  Shell::GetInstance()->tray()->HideNotificationView(this);
+  Shell::GetInstance()->system_tray()->HideNotificationView(this);
 }
 
 }  // namespace ash

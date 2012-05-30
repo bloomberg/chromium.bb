@@ -77,12 +77,12 @@ class UpdateNagger : public ui::LayerAnimationObserver {
   explicit UpdateNagger(SystemTrayItem* owner)
       : owner_(owner) {
     RestartTimer();
-    Shell::GetInstance()->tray()->widget()->GetNativeView()->layer()->
+    Shell::GetInstance()->system_tray()->GetWidget()->GetNativeView()->layer()->
         GetAnimator()->AddObserver(this);
   }
 
   virtual ~UpdateNagger() {
-    Shell::GetInstance()->tray()->widget()->GetNativeView()->layer()->
+    Shell::GetInstance()->system_tray()->GetWidget()->GetNativeView()->layer()->
         GetAnimator()->RemoveObserver(this);
   }
 

@@ -384,9 +384,10 @@ bool AcceleratorController::AcceleratorPressed(
       if (shell->launcher())
         return shell->focus_cycler()->FocusWidget(shell->launcher()->widget());
       break;
-    case FOCUS_TRAY:
-      if (shell->tray())
-        return shell->focus_cycler()->FocusWidget(shell->tray()->GetWidget());
+    case FOCUS_SYSTEM_TRAY:
+      if (shell->system_tray())
+        return shell->focus_cycler()->FocusWidget(
+            shell->system_tray()->GetWidget());
       break;
     case SHOW_KEYBOARD_OVERLAY:
       ash::Shell::GetInstance()->delegate()->ShowKeyboardOverlay();

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_WIDGET_DELEGATE_H_
-#define ASH_SYSTEM_TRAY_SYSTEM_TRAY_WIDGET_DELEGATE_H_
+#ifndef ASH_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_
+#define ASH_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_
 #pragma once
 
 #include "ash/ash_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/views/accessible_pane_view.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
@@ -16,11 +17,11 @@ namespace internal {
 
 class FocusCycler;
 
-class ASH_EXPORT StatusAreaView : public views::WidgetDelegate,
-                                  public views::AccessiblePaneView {
+class ASH_EXPORT StatusAreaWidgetDelegate : public views::WidgetDelegate,
+                                            public views::AccessiblePaneView {
  public:
-  StatusAreaView();
-  virtual ~StatusAreaView();
+  StatusAreaWidgetDelegate();
+  virtual ~StatusAreaWidgetDelegate();
 
   // Sets the focus cycler.
   void SetFocusCyclerForTesting(const FocusCycler* focus_cycler);
@@ -37,13 +38,15 @@ class ASH_EXPORT StatusAreaView : public views::WidgetDelegate,
   virtual bool CanActivate() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
 
+  void SetLayout(views::BoxLayout::Orientation orientation);
+
  private:
   const FocusCycler* focus_cycler_for_testing_;
 
-  DISALLOW_COPY_AND_ASSIGN(StatusAreaView);
+  DISALLOW_COPY_AND_ASSIGN(StatusAreaWidgetDelegate);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_SYSTEM_TRAY_WIDGET_DELEGATE_H_
+#endif  // ASH_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_

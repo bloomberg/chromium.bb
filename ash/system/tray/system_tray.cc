@@ -23,7 +23,6 @@
 #include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
-#include "ash/system/tray/system_tray_widget_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
@@ -48,44 +47,10 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 
-namespace {
-
-const SkColor kTrayBackgroundAlpha = 100;
-const SkColor kTrayBackgroundHoverAlpha = 150;
-
-}  // namespace
-
 namespace internal {
-
-class SystemTrayBackground : public views::Background {
- public:
-  SystemTrayBackground() : alpha_(kTrayBackgroundAlpha) {}
-  virtual ~SystemTrayBackground() {}
-
-  void set_alpha(int alpha) { alpha_ = alpha; }
-
- private:
-  // Overridden from views::Background.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
-    SkPaint paint;
-    paint.setAntiAlias(true);
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(SkColorSetARGB(alpha_, 0, 0, 0));
-    SkPath path;
-    gfx::Rect bounds(view->bounds());
-    SkScalar radius = SkIntToScalar(kTrayRoundedBorderRadius);
-    path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
-    canvas->DrawPath(path, paint);
-  }
-
-  int alpha_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemTrayBackground);
-};
 
 // Container for all the items in the tray. The container auto-resizes the
 // widget when necessary.
@@ -173,32 +138,15 @@ SystemTray::SystemTray()
       power_status_observer_(NULL),
       update_observer_(NULL),
       user_observer_(NULL),
-      widget_(NULL),
-      background_(new internal::SystemTrayBackground),
       should_show_launcher_(false),
       shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
-      ALLOW_THIS_IN_INITIALIZER_LIST(hide_background_animator_(
-          this, 0, kTrayBackgroundAlpha)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(hover_background_animator_(
-          this, 0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha)),
       default_bubble_height_(0) {
   tray_container_ = new internal::SystemTrayContainer;
   tray_container_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, 0));
-  tray_container_->set_background(background_);
   tray_container_->set_border(
       views::Border::CreateEmptyBorder(1, 1, 1, 1));
-  set_border(views::Border::CreateEmptyBorder(0, 0,
-        kPaddingFromBottomOfScreenBottomAlignment,
-        kPaddingFromRightEdgeOfScreenBottomAlignment));
-  set_notify_enter_exit_on_child(true);
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
-  AddChildView(tray_container_);
-
-  // Initially we want to paint the background, but without the hover effect.
-  SetPaintsBackground(true, internal::BackgroundAnimator::CHANGE_IMMEDIATE);
-  hover_background_animator_.SetPaintsBackground(false,
-      internal::BackgroundAnimator::CHANGE_IMMEDIATE);
+  SetContents(tray_container_);
 }
 
 SystemTray::~SystemTray() {
@@ -208,6 +156,12 @@ SystemTray::~SystemTray() {
        ++it) {
     (*it)->DestroyTrayView();
   }
+}
+
+void SystemTray::Initialize() {
+  layer_animation_observer_.reset(new SystemTrayLayerAnimationObserver(this));
+  GetWidget()->GetNativeView()->layer()->GetAnimator()->AddObserver(
+      layer_animation_observer_.get());
 }
 
 void SystemTray::CreateItems() {
@@ -258,31 +212,6 @@ void SystemTray::CreateItems() {
   AddTrayItem(tray_date);
   SetVisible(ash::Shell::GetInstance()->tray_delegate()->
       GetTrayVisibilityOnStartup());
-}
-
-void SystemTray::CreateWidget() {
-  if (widget_)
-    widget_->Close();
-  widget_ = new views::Widget;
-  internal::StatusAreaView* status_area_view = new internal::StatusAreaView;
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  gfx::Size ps = GetPreferredSize();
-  params.bounds = gfx::Rect(0, 0, ps.width(), ps.height());
-  params.delegate = status_area_view;
-  params.parent = Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_StatusContainer);
-  params.transparent = true;
-  widget_->Init(params);
-  widget_->set_focus_on_creation(false);
-  status_area_view->AddChildView(this);
-  widget_->SetContentsView(status_area_view);
-  widget_->Show();
-  widget_->GetNativeView()->SetName("StatusTrayWidget");
-
-  layer_animation_observer_.reset(new SystemTrayLayerAnimationObserver(this));
-  widget_->GetNativeView()->layer()->GetAnimator()->AddObserver(
-      layer_animation_observer_.get());
 }
 
 void SystemTray::AddTrayItem(SystemTrayItem* item) {
@@ -392,12 +321,6 @@ void SystemTray::RemoveBubble(SystemTrayBubble* bubble) {
   } else {
     NOTREACHED();
   }
-}
-
-void SystemTray::SetPaintsBackground(
-      bool value,
-      internal::BackgroundAnimator::ChangeType change_type) {
-  hide_background_animator_.SetPaintsBackground(value, change_type);
 }
 
 int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
@@ -572,17 +495,15 @@ bool SystemTray::PerformAction(const views::Event& event) {
 }
 
 void SystemTray::OnMouseEntered(const views::MouseEvent& event) {
+  TrayBackgroundView::OnMouseEntered(event);
   should_show_launcher_ = true;
-  hover_background_animator_.SetPaintsBackground(true,
-      internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
 
 void SystemTray::OnMouseExited(const views::MouseEvent& event) {
+  TrayBackgroundView::OnMouseExited(event);
   // When the popup closes we'll update |should_show_launcher_|.
   if (!bubble_.get())
     should_show_launcher_ = false;
-  hover_background_animator_.SetPaintsBackground(false,
-      internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
 
 void SystemTray::AboutToRequestFocusFromTabTraversal(bool reverse) {
@@ -603,12 +524,6 @@ void SystemTray::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // should be only around the container.
   if (GetWidget() && GetWidget()->IsActive())
     canvas->DrawFocusRect(tray_container_->bounds());
-}
-
-void SystemTray::UpdateBackground(int alpha) {
-  background_->set_alpha(hide_background_animator_.alpha() +
-                         hover_background_animator_.alpha());
-  SchedulePaint();
 }
 
 }  // namespace ash

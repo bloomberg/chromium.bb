@@ -142,7 +142,7 @@ WebUILoginView::WebUILoginView()
 }
 
 WebUILoginView::~WebUILoginView() {
-  ash::SystemTray* tray = ash::Shell::GetInstance()->tray();
+  ash::SystemTray* tray = ash::Shell::GetInstance()->system_tray();
   if (tray)
     tray->SetNextFocusableView(NULL);
 }
@@ -236,7 +236,7 @@ void WebUILoginView::OpenProxySettings() {
 }
 
 void WebUILoginView::SetStatusAreaVisible(bool visible) {
-  ash::SystemTray* tray = ash::Shell::GetInstance()->tray();
+  ash::SystemTray* tray = ash::Shell::GetInstance()->system_tray();
   if (tray) {
     if (visible)
       tray->GetWidget()->Show();
@@ -338,7 +338,7 @@ bool WebUILoginView::IsPopupOrPanel(const WebContents* source) const {
 }
 
 bool WebUILoginView::TakeFocus(bool reverse) {
-  ash::SystemTray* tray = ash::Shell::GetInstance()->tray();
+  ash::SystemTray* tray = ash::Shell::GetInstance()->system_tray();
   if (tray && tray->GetWidget()->IsVisible()) {
     tray->SetNextFocusableView(this);
     ash::Shell::GetInstance()->RotateFocus(reverse ? ash::Shell::BACKWARD :

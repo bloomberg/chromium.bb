@@ -27,6 +27,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/network/network_observer.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/tooltips/tooltip_controller.h"
@@ -423,7 +424,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ToggleWifi() OVERRIDE {
     wifi_enabled_ = !wifi_enabled_;
     ash::NetworkObserver* observer =
-        ash::Shell::GetInstance()->tray()->network_observer();
+        ash::Shell::GetInstance()->system_tray()->network_observer();
     if (observer) {
       ash::NetworkIconInfo info;
       observer->OnNetworkRefresh(info);
@@ -433,7 +434,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ToggleMobile() OVERRIDE {
     cellular_enabled_ = !cellular_enabled_;
     ash::NetworkObserver* observer =
-        ash::Shell::GetInstance()->tray()->network_observer();
+        ash::Shell::GetInstance()->system_tray()->network_observer();
     if (observer) {
       ash::NetworkIconInfo info;
       observer->OnNetworkRefresh(info);
@@ -443,7 +444,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ToggleBluetooth() OVERRIDE {
     bluetooth_enabled_ = !bluetooth_enabled_;
     ash::BluetoothObserver* observer =
-        ash::Shell::GetInstance()->tray()->bluetooth_observer();
+        ash::Shell::GetInstance()->system_tray()->bluetooth_observer();
     if (observer)
       observer->OnBluetoothRefresh();
   }
@@ -549,7 +550,9 @@ Shell::Shell(ShellDelegate* delegate)
       delegate_(delegate),
       shelf_(NULL),
       panel_layout_manager_(NULL),
-      root_window_layout_(NULL) {
+      root_window_layout_(NULL),
+      status_area_widget_(NULL),
+      browser_context_(NULL) {
   gfx::Screen::SetInstance(screen_);
   ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_.get()));
 }
@@ -581,7 +584,7 @@ Shell::~Shell() {
   workspace_controller_.reset();
 
   // The system tray needs to be reset before all the windows are destroyed.
-  tray_.reset();
+  system_tray_.reset();
   tray_delegate_.reset();
 
   // Desroy secondary monitor's widgets before all the windows are destroyed.
@@ -726,13 +729,22 @@ void Shell::Init() {
 
   event_client_.reset(new internal::EventClientImpl(root_window));
 
-  tray_.reset(new SystemTray());
-  if (delegate_.get())
-    tray_delegate_.reset(delegate_->CreateSystemTrayDelegate(tray_.get()));
+  status_area_widget_ = new internal::StatusAreaWidget;
+
+  system_tray_.reset(new SystemTray());
+  status_area_widget_->AddTray(system_tray_.get());
+  system_tray_->Initialize();
+
+  if (delegate_.get()) {
+    tray_delegate_.reset(delegate_->CreateSystemTrayDelegate(
+        system_tray_.get()));
+  }
   if (!tray_delegate_.get())
     tray_delegate_.reset(new DummySystemTrayDelegate());
-  tray_->CreateItems();
-  tray_->CreateWidget();
+
+  system_tray_->CreateItems();  // Called after delegate is created.
+
+  status_area_widget_->Show();
 
   // This controller needs to be set before SetupManagedWindowMode.
   desktop_background_controller_.reset(new DesktopBackgroundController);
@@ -749,7 +761,7 @@ void Shell::Init() {
   }
 
   focus_cycler_.reset(new internal::FocusCycler());
-  focus_cycler_->AddWidget(tray_->widget());
+  focus_cycler_->AddWidget(status_area_widget_);
 
   if (!delegate_.get() || delegate_->IsUserLoggedIn())
     CreateLauncher();
@@ -951,10 +963,10 @@ void Shell::InitRootWindowForSecondaryMonitor(aura::RootWindow* root) {
 
 void Shell::InitLayoutManagers() {
   DCHECK(root_window_layout_);
-  DCHECK(tray_->widget());
+  DCHECK(status_area_widget_);
 
   internal::ShelfLayoutManager* shelf_layout_manager =
-      new internal::ShelfLayoutManager(tray_->widget());
+      new internal::ShelfLayoutManager(status_area_widget_);
   GetContainer(internal::kShellWindowId_LauncherContainer)->
       SetLayoutManager(shelf_layout_manager);
   shelf_ = shelf_layout_manager;

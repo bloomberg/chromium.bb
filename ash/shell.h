@@ -87,6 +87,7 @@ class ShelfLayoutManager;
 class ShellContextMenu;
 class SystemGestureEventFilter;
 class StackingController;
+class StatusAreaWidget;
 class TooltipController;
 class TouchObserverHUD;
 class VisibilityController;
@@ -279,7 +280,11 @@ class ASH_EXPORT Shell {
   // TODO(sky): don't expose this!
   internal::ShelfLayoutManager* shelf() const { return shelf_; }
 
-  SystemTray* tray() const { return tray_.get(); }
+  internal::StatusAreaWidget* status_area_widget() const {
+    return status_area_widget_;
+  }
+
+  SystemTray* system_tray() const { return system_tray_.get(); }
 
   // Returns the size of the grid.
   int GetGridSize() const;
@@ -412,8 +417,11 @@ class ASH_EXPORT Shell {
   // Owned by aura::RootWindow, cached here for type safety.
   internal::RootWindowLayoutManager* root_window_layout_;
 
+  // Widget containing system tray.
+  internal::StatusAreaWidget* status_area_widget_;
+
   // System tray with clock, Wi-Fi signal, etc.
-  scoped_ptr<SystemTray> tray_;
+  scoped_ptr<SystemTray> system_tray_;
 
   // Used by ash/shell.
   content::BrowserContext* browser_context_;

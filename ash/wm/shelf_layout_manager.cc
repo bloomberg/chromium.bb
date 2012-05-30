@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "base/auto_reset.h"
@@ -195,8 +196,10 @@ bool ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
   alignment_ = alignment;
   if (launcher_)
     launcher_->SetAlignment(alignment);
-  if (Shell::GetInstance()->tray())
-    Shell::GetInstance()->tray()->SetShelfAlignment(alignment);
+  if (Shell::GetInstance()->status_area_widget())
+    Shell::GetInstance()->status_area_widget()->SetShelfAlignment(alignment);
+  if (Shell::GetInstance()->system_tray())
+    Shell::GetInstance()->system_tray()->SetShelfAlignment(alignment);
   LayoutShelf();
   return true;
 }
@@ -492,8 +495,10 @@ void ShelfLayoutManager::UpdateShelfBackground(
     launcher_->SetPaintsBackground(launcher_paints, type);
   // SystemTray normally draws a background, but we don't want it to draw a
   // background when the launcher does.
-  if (Shell::GetInstance()->tray())
-    Shell::GetInstance()->tray()->SetPaintsBackground(!launcher_paints, type);
+  if (Shell::GetInstance()->system_tray()) {
+    Shell::GetInstance()->system_tray()->SetPaintsBackground(
+        !launcher_paints, type);
+  }
 }
 
 bool ShelfLayoutManager::GetLauncherPaintsBackground() const {
@@ -514,7 +519,7 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (shell->GetAppListTargetVisibility())
     return AUTO_HIDE_SHOWN;
 
-  if (shell->tray() && shell->tray()->should_show_launcher())
+  if (shell->system_tray() && shell->system_tray()->should_show_launcher())
     return AUTO_HIDE_SHOWN;
 
   if (launcher_ && launcher_->IsShowingMenu())
