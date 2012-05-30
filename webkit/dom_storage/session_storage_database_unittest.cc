@@ -107,11 +107,13 @@ bool SessionStorageDatabaseTest::IsNamespaceKey(const std::string& key,
     return false;
 
   size_t second_dash = key.find('-', namespace_prefix.length());
-  if (second_dash != std::string::npos)
+  if (second_dash != key.length() - 1)
     return false;
 
-  // Key is of the form "namespace-<namespaceid>".
-  std::string namespace_id_str = key.substr(namespace_prefix.length());
+  // Key is of the form "namespace-<namespaceid>-".
+  std::string namespace_id_str = key.substr(
+      namespace_prefix.length(),
+      second_dash - namespace_prefix.length());
   bool conversion_ok = base::StringToInt64(namespace_id_str, namespace_id);
   EXPECT_TRUE(conversion_ok);
   return true;
@@ -124,13 +126,14 @@ bool SessionStorageDatabaseTest::IsNamespaceOriginKey(const std::string& key,
   if (key.find(namespace_prefix) != 0)
     return false;
   size_t second_dash = key.find('-', namespace_prefix.length());
-  if (second_dash == std::string::npos)
+  if (second_dash == std::string::npos || second_dash == key.length() - 1)
     return false;
+
   // Key is of the form "namespace-<namespaceid>-<origin>", and the value
   // is the map id.
-  std::string namespace_id_str =
-      key.substr(namespace_prefix.length(),
-                 second_dash - namespace_prefix.length());
+  std::string namespace_id_str = key.substr(
+      namespace_prefix.length(),
+      second_dash - namespace_prefix.length());
   bool conversion_ok = base::StringToInt64(namespace_id_str, namespace_id);
   EXPECT_TRUE(conversion_ok);
   return true;
@@ -139,14 +142,15 @@ bool SessionStorageDatabaseTest::IsNamespaceOriginKey(const std::string& key,
 // static
 bool SessionStorageDatabaseTest::IsMapRefCountKey(const std::string& key,
                                                   int64* map_id) {
-  std::string map_prefix = SessionStorageDatabase::MapPrefix();
+  std::string map_prefix = "map-";
   if (key.find(map_prefix) != 0)
     return false;
   size_t second_dash = key.find('-', map_prefix.length());
-  if (second_dash != std::string::npos)
+  if (second_dash != key.length() - 1)
     return false;
-  // Key is of the form "map-<mapid>" and the value is the ref count.
-  std::string map_id_str = key.substr(map_prefix.length(), second_dash);
+  // Key is of the form "map-<mapid>-" and the value is the ref count.
+  std::string map_id_str = key.substr(map_prefix.length(),
+                                      second_dash - map_prefix.length());
   bool conversion_ok = base::StringToInt64(map_id_str, map_id);
   EXPECT_TRUE(conversion_ok);
   return true;
@@ -155,15 +159,15 @@ bool SessionStorageDatabaseTest::IsMapRefCountKey(const std::string& key,
 // static
 bool SessionStorageDatabaseTest::IsMapValueKey(const std::string& key,
                                                int64* map_id) {
-  std::string map_prefix = SessionStorageDatabase::MapPrefix();
+  std::string map_prefix = "map-";
   if (key.find(map_prefix) != 0)
     return false;
   size_t second_dash = key.find('-', map_prefix.length());
-  if (second_dash == std::string::npos)
+  if (second_dash == std::string::npos || second_dash == key.length() - 1)
     return false;
   // Key is of the form "map-<mapid>-key".
-  std::string map_id_str =
-      key.substr(map_prefix.length(), second_dash - map_prefix.length());
+  std::string map_id_str = key.substr(map_prefix.length(),
+                                      second_dash - map_prefix.length());
   bool conversion_ok = base::StringToInt64(map_id_str, map_id);
   EXPECT_TRUE(conversion_ok);
   return true;
@@ -849,6 +853,21 @@ TEST_F(SessionStorageDatabaseTest, NamespaceOffsetDeleteNamespace) {
 
   // The values for the old namespace 1 are still accessible via id -1.
   CheckAreaData(-1, kOrigin1, data1);
+}
+
+TEST_F(SessionStorageDatabaseTest, DeleteNamespaceConfusion) {
+  // Regression test for a bug where a namespace with id 10 prevented deleting
+  // the namespace with id 1.
+
+  // Create namespace with IDs 0 to 10. The real IDs in the DB will correspond
+  // to these IDs.
+  ValuesMap data1;
+  data1[kKey1] = kValue1;
+  for (int i = 0; i <= 10; ++i)
+    ASSERT_TRUE(db_->CommitAreaChanges(i, kOrigin1, false, data1));
+
+  // Delete the namespace with ID 1.
+  EXPECT_TRUE(db_->DeleteNamespace(1));
 }
 
 }  // namespace dom_storage

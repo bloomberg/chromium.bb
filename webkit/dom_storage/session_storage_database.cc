@@ -19,17 +19,17 @@
 // Layout of the database:
 // | key                            | value                              |
 // -----------------------------------------------------------------------
-// | map-1                          | 2 (refcount, start of map-1-* keys)|
+// | map-1-                         | 2 (refcount, start of map-1-* keys)|
 // | map-1-a                        | b (a = b in map 1)                 |
 // | ...                            |                                    |
 // | namespace-                     | dummy (start of namespace-* keys)  |
-// | namespace-1 (1 = namespace id) | dummy (start of namespace-1-* keys)|
+// | namespace-1- (1 = namespace id)| dummy (start of namespace-1-* keys)|
 // | namespace-1-origin1            | 1 (mapid)                          |
 // | namespace-1-origin2            | 2                                  |
-// | namespace-2                    | dummy                              |
+// | namespace-2-                   | dummy                              |
 // | namespace-2-origin1            | 1 (shallow copy)                   |
 // | namespace-2-origin2            | 2 (shallow copy)                   |
-// | namespace-3                    | dummy                              |
+// | namespace-3-                   | dummy                              |
 // | namespace-3-origin1            | 3 (deep copy)                      |
 // | namespace-3-origin2            | 2 (shallow copy)                   |
 // | next-namespace-id              | 4                                  |
@@ -115,17 +115,17 @@ bool SessionStorageDatabase::CloneNamespace(int64 namespace_id,
   // for them in |new_namespace_id|, and associate them with the existing maps.
 
   // Example, data before shallow copy:
-  // | map-1                          | 1 (refcount)        |
+  // | map-1-                         | 1 (refcount)        |
   // | map-1-a                        | b                   |
-  // | namespace-1 (1 = namespace id) | dummy               |
+  // | namespace-1- (1 = namespace id)| dummy               |
   // | namespace-1-origin1            | 1 (mapid)           |
 
   // Example, data after shallow copy:
-  // | map-1                          | 2 (inc. refcount)   |
+  // | map-1-                         | 2 (inc. refcount)   |
   // | map-1-a                        | b                   |
-  // | namespace-1 (1 = namespace id) | dummy               |
+  // | namespace-1-(1 = namespace id) | dummy               |
   // | namespace-1-origin1            | 1 (mapid)           |
-  // | namespace-2                    | dummy               |
+  // | namespace-2-                   | dummy               |
   // | namespace-2-origin1            | 1 (mapid) << references the same map
 
   if (!LazyOpen(true))
@@ -344,17 +344,14 @@ bool SessionStorageDatabase::GetAreasInNamespace(
   if (!DatabaseErrorCheck(it->status().ok()))
     return false;
 
-  // Skip the dummy entry "namespace-<namespaceid>" and iterate the origins.
+  // Skip the dummy entry "namespace-<namespaceid>-" and iterate the origins.
   for (it->Next(); it->Valid(); it->Next()) {
     std::string key = it->key().ToString();
     if (key.find(namespace_start_key) != 0) {
       // Iterated past the origins for this namespace.
       break;
     }
-    size_t second_dash = key.find('-', namespace_start_key.length());
-    if (!ConsistencyCheck(second_dash != std::string::npos))
-      return false;
-    std::string origin = key.substr(second_dash + 1);
+    std::string origin = key.substr(namespace_start_key.length());
     std::string map_id = it->value().ToString();
     (*areas)[origin] = map_id;
   }
@@ -450,18 +447,15 @@ bool SessionStorageDatabase::ReadMap(const std::string& map_id,
     return false;
   if (!DatabaseErrorCheck(it->status().ok()))
     return false;
-  const int kPrefixLength = std::string(MapPrefix()).length();
-  // Skip the dummy entry "map-<mapid>".
+  // Skip the dummy entry "map-<mapid>-".
   for (it->Next(); it->Valid(); it->Next()) {
-    // Key is of the form "map-<mapid>-<key>".
     std::string key = it->key().ToString();
-    size_t second_dash = key.find('-', kPrefixLength);
-    if (second_dash == std::string::npos ||
-        key.substr(kPrefixLength, second_dash - kPrefixLength) != map_id) {
-      // Iterated beyond the keys in this map.
+    if (key.find(map_start_key) != 0) {
+      // Iterated past the keys in this map.
       break;
     }
-    string16 key16 = UTF8ToUTF16(key.substr(second_dash + 1));
+    // Key is of the form "map-<mapid>-<key>".
+    string16 key16 = UTF8ToUTF16(key.substr(map_start_key.length()));
     if (only_keys) {
       (*result)[key16] = NullableString16(true);
     } else {
@@ -551,21 +545,21 @@ bool SessionStorageDatabase::DeepCopyArea(
     int64 namespace_id, const GURL& origin, bool copy_data,
     std::string* map_id, leveldb::WriteBatch* batch) {
   // Example, data before deep copy:
-  // | namespace-1 (1 = namespace id) | dummy               |
+  // | namespace-1- (1 = namespace id)| dummy               |
   // | namespace-1-origin1            | 1 (mapid)           |
-  // | namespace-2                    | dummy               |
+  // | namespace-2-                   | dummy               |
   // | namespace-2-origin1            | 1 (mapid) << references the same map
-  // | map-1                          | 2 (refcount)        |
+  // | map-1-                         | 2 (refcount)        |
   // | map-1-a                        | b                   |
 
   // Example, data after deep copy copy:
-  // | namespace-1 (1 = namespace id) | dummy               |
+  // | namespace-1-(1 = namespace id) | dummy               |
   // | namespace-1-origin1            | 1 (mapid)           |
-  // | namespace-2                    | dummy               |
+  // | namespace-2-                   | dummy               |
   // | namespace-2-origin1            | 2 (mapid) << references the new map
-  // | map-1                          | 1 (dec. refcount)   |
+  // | map-1-                         | 1 (dec. refcount)   |
   // | map-1-a                        | b                   |
-  // | map-2                          | 1 (refcount)        |
+  // | map-2-                         | 1 (refcount)        |
   // | map-2-a                        | b                   |
 
   // Read the values from the old map here. If we don't need to copy the data,
@@ -586,7 +580,7 @@ bool SessionStorageDatabase::DeepCopyArea(
 
 std::string SessionStorageDatabase::NamespaceStartKey(
     const std::string& namespace_id_str) {
-  return base::StringPrintf("namespace-%s", namespace_id_str.c_str());
+  return base::StringPrintf("namespace-%s-", namespace_id_str.c_str());
 }
 
 std::string SessionStorageDatabase::NamespaceStartKey(int64 namespace_id,
@@ -616,16 +610,12 @@ const char* SessionStorageDatabase::NamespacePrefix() {
 }
 
 std::string SessionStorageDatabase::MapRefCountKey(const std::string& map_id) {
-  return base::StringPrintf("map-%s", map_id.c_str());
+  return base::StringPrintf("map-%s-", map_id.c_str());
 }
 
 std::string SessionStorageDatabase::MapKey(const std::string& map_id,
                                            const std::string& key) {
   return base::StringPrintf("map-%s-%s", map_id.c_str(), key.c_str());
-}
-
-const char* SessionStorageDatabase::MapPrefix() {
-  return "map-";
 }
 
 const char* SessionStorageDatabase::NextNamespaceIdKey() {
