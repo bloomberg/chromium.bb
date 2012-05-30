@@ -13,11 +13,9 @@
 #include "content/public/common/content_switches.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
-#include "content/shell/shell_devtools_delegate.h"
 #include "content/shell/shell_switches.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_module.h"
-#include "ui/base/clipboard/clipboard.h"
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/test/test_views_delegate.h"
@@ -49,8 +47,7 @@ class ExamplesViewsDelegate : public views::TestViewsDelegate {
 
 ExamplesBrowserMainParts::ExamplesBrowserMainParts(
     const content::MainFunctionParams& parameters)
-    : BrowserMainParts(),
-      devtools_delegate_(NULL) {
+    : BrowserMainParts() {
 }
 
 ExamplesBrowserMainParts::~ExamplesBrowserMainParts() {
@@ -80,8 +77,6 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
 }
 
 void ExamplesBrowserMainParts::PostMainMessageLoopRun() {
-  if (devtools_delegate_)
-    devtools_delegate_->Stop();
   browser_context_.reset();
   views_delegate_.reset();
 #if defined(USE_AURA)
@@ -99,12 +94,6 @@ bool ExamplesBrowserMainParts::MainMessageLoopRun(int* result_code) {
   MessageLoopForUI::current()->Run();
 #endif
   return true;
-}
-
-ui::Clipboard* ExamplesBrowserMainParts::GetClipboard() {
-  if (!clipboard_.get())
-    clipboard_.reset(new ui::Clipboard());
-  return clipboard_.get();
 }
 
 }  // namespace examples

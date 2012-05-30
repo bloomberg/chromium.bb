@@ -49,11 +49,6 @@ void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
       resource_dispatcher_host_delegate_.get());
 }
 
-ui::Clipboard* ShellContentBrowserClient::GetClipboard() {
-  return shell_browser_main_parts_->GetClipboard();
-}
-
-
 std::string ShellContentBrowserClient::GetDefaultDownloadName() {
   return "download";
 }

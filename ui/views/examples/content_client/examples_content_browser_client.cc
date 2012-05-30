@@ -32,22 +32,6 @@ content::BrowserMainParts* ExamplesContentBrowserClient::CreateBrowserMainParts(
   return examples_browser_main_parts_;
 }
 
-void ExamplesContentBrowserClient::RenderViewHostCreated(
-    content::RenderViewHost* render_view_host) {
-  new content::ShellRenderViewHostObserver(render_view_host);
-}
-
-void ExamplesContentBrowserClient::ResourceDispatcherHostCreated() {
-  resource_dispatcher_host_delegate_.reset(
-      new content::ShellResourceDispatcherHostDelegate);
-  content::ResourceDispatcherHost::Get()->SetDelegate(
-      resource_dispatcher_host_delegate_.get());
-}
-
-ui::Clipboard* ExamplesContentBrowserClient::GetClipboard() {
-  return examples_browser_main_parts_->GetClipboard();
-}
-
 content::ShellBrowserContext* ExamplesContentBrowserClient::browser_context() {
   return examples_browser_main_parts_->browser_context();
 }

@@ -31,7 +31,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,
                                               int child_process_id) OVERRIDE;
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
-  virtual ui::Clipboard* GetClipboard() OVERRIDE;
   virtual std::string GetDefaultDownloadName() OVERRIDE;
 
   ShellBrowserContext* browser_context();

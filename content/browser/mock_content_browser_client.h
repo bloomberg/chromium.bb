@@ -24,7 +24,6 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual WebContentsView* OverrideCreateWebContentsView(
       WebContents* web_contents,
       RenderViewHostDelegateView** render_view_host_delegate_view) OVERRIDE;
-  virtual ui::Clipboard* GetClipboard() OVERRIDE;
   virtual FilePath GetDefaultDownloadDirectory() OVERRIDE;
 
  private:

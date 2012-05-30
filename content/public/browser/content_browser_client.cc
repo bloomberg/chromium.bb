@@ -178,10 +178,6 @@ SpeechRecognitionManagerDelegate*
   return NULL;
 }
 
-ui::Clipboard* ContentBrowserClient::GetClipboard() {
-  return NULL;
-}
-
 net::NetLog* ContentBrowserClient::GetNetLog() {
   return NULL;
 }

@@ -43,10 +43,6 @@ class URLRequestContext;
 class X509Certificate;
 }
 
-namespace ui {
-class Clipboard;
-}
-
 namespace content {
 
 class AccessTokenStore;
@@ -358,7 +354,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       GetSpeechRecognitionManagerDelegate();
 
   // Getters for common objects.
-  virtual ui::Clipboard* GetClipboard();
   virtual net::NetLog* GetNetLog();
 
   // Creates a new AccessTokenStore for gelocation.

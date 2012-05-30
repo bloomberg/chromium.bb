@@ -14,10 +14,6 @@ namespace base {
 class Thread;
 }
 
-namespace ui {
-class Clipboard;
-}
-
 namespace content {
 
 class ShellBrowserContext;
@@ -41,7 +37,6 @@ class ShellBrowserMainParts : public BrowserMainParts {
   virtual void PostMainMessageLoopRun() OVERRIDE;
   virtual void PostDestroyThreads() OVERRIDE {}
 
-  ui::Clipboard* GetClipboard();
   ShellDevToolsDelegate* devtools_delegate() { return devtools_delegate_; }
 
   ShellBrowserContext* browser_context() { return browser_context_.get(); }
@@ -49,7 +44,6 @@ class ShellBrowserMainParts : public BrowserMainParts {
  private:
   scoped_ptr<ShellBrowserContext> browser_context_;
 
-  scoped_ptr<ui::Clipboard> clipboard_;
   ShellDevToolsDelegate* devtools_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);

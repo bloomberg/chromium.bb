@@ -31,10 +31,6 @@ class ExamplesContentBrowserClient : public content::ContentBrowserClient {
   // Overridden from content::ContentBrowserClient:
   virtual content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;
-  virtual void RenderViewHostCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void ResourceDispatcherHostCreated() OVERRIDE;
-  virtual ui::Clipboard* GetClipboard() OVERRIDE;
 
   content::ShellBrowserContext* browser_context();
 

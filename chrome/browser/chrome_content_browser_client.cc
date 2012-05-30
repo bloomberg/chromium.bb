@@ -1308,10 +1308,6 @@ content::SpeechRecognitionManagerDelegate*
 #endif
 }
 
-ui::Clipboard* ChromeContentBrowserClient::GetClipboard() {
-  return g_browser_process->clipboard();
-}
-
 net::NetLog* ChromeContentBrowserClient::GetNetLog() {
   return g_browser_process->net_log();
 }

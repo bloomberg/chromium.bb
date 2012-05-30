@@ -14,7 +14,6 @@
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "content/common/clipboard_messages.h"
-#include "content/public/browser/content_browser_client.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -23,16 +22,22 @@
 
 using content::BrowserThread;
 
+#if defined(OS_WIN)
+
 namespace {
 
-// This helper is needed because content::ContentBrowserClient::GetClipboard()
-// must be called on the UI thread.
+// The write must be performed on the UI thread because the clipboard object
+// from the IO thread cannot create windows so it cannot be the "owner" of the
+// clipboard's contents.  // See http://crbug.com/5823.
 void WriteObjectsHelper(const ui::Clipboard::ObjectMap* objects) {
-  content::GetContentClient()->browser()->GetClipboard()->WriteObjects(
-      ui::Clipboard::BUFFER_STANDARD, *objects);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  static ui::Clipboard* clipboard = new ui::Clipboard;
+  clipboard->WriteObjects(ui::Clipboard::BUFFER_STANDARD, *objects);
 }
 
 }  // namespace
+
+#endif
 
 ClipboardMessageFilter::ClipboardMessageFilter() {
 }

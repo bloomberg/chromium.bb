@@ -29,11 +29,6 @@ WebContentsView* MockContentBrowserClient::OverrideCreateWebContentsView(
   return rv;
 }
 
-ui::Clipboard* MockContentBrowserClient::GetClipboard() {
-  static ui::Clipboard clipboard;
-  return &clipboard;
-}
-
 FilePath MockContentBrowserClient::GetDefaultDownloadDirectory() {
   if (!download_dir_.IsValid()) {
     bool result = download_dir_.CreateUniqueTempDir();
