@@ -67,8 +67,11 @@
           'extra_deps_newlib32': [],
           'extra_deps_glibc64': [],
           'extra_deps_glibc32': [],
-          'lib_dirs': [],
-          'include_dirs': ['<(DEPTH)','<(DEPTH)/ppapi'],
+          'lib_dirs_newlib32': [],
+          'lib_dirs_newlib64': [],
+          'lib_dirs_glibc32': [],
+          'lib_dirs_glibc64': [],
+          'include_dirs': ['<(DEPTH)', '<(DEPTH)/ppapi'],
           'defines': [
             '<@(default_defines)',
             '-DNACL_BUILD_ARCH=x86',
@@ -113,7 +116,7 @@
           'extra_args': [],
           'enable_arm': 1,
           'extra_deps_arm': [],
-          'lib_dirs': [],
+          'lib_dirs_arm': [],
           'include_dirs': ['<(DEPTH)','<(DEPTH)/ppapi'],
           'defines': [
             '<@(default_defines)',
@@ -134,30 +137,30 @@
              '-I<(DEPTH)',
            ],
          },
-      },
+       },
     }],
-    ['target_arch=="x64" or OS=="win"', {
+    ['target_arch!="arm"', {
       'target_defaults': {
         'target_conditions': [
            ['nexe_target!="" and build_newlib!=0 and enable_x86_64!=0', {
              'variables': {
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
-                'out64%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x64.nexe',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-64/>(_target_name)',
+                'out_newlib64%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x64.nexe',
+                'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
              },
              'actions': [
                {
                  'action_name': 'build newlib x86-64 nexe',
                  'msvs_cygwin_shell': 0,
-                 'description': 'building >(out64)',
+                 'description': 'building >(out_newlib64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib64)',
                  ],
-                 'outputs': ['>(out64)'],
+                 'outputs': ['>(out_newlib64)'],
                  'action': [
                    '>(python_exe)',
                    '<(DEPTH)/native_client/build/build_nexe.py',
@@ -165,10 +168,10 @@
                    '--arch', 'x86-64',
                    '--build', 'newlib_nexe',
                    '--root', '<(DEPTH)',
-                   '--name', '>(out64)',
-                   '--objdir', '>(objdir)',
-                   '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
-                   '--lib-dirs', '>(lib_dirs) ',
+                   '--name', '>(out_newlib64)',
+                   '--objdir', '>(objdir_newlib64)',
+                   '--include-dirs', '<(inst_dir)/include >(include_dirs) >(include_dirs)',
+                   '--lib-dirs', '>(lib_dirs_newlib64) ',
                    '--compile_flags', '-m64 >(compile_flags) ',
                    '>@(defines)', '-DNACL_BUILD_SUBARCH=64',
                    '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64 >(link_flags) >(_link_flags)',
@@ -178,31 +181,25 @@
                },
              ],
            }],
-        ],
-      },
-    }],
-    ['target_arch=="x64" or OS=="win"', {
-      'target_defaults': {
-        'target_conditions': [
            ['nlib_target!="" and build_newlib!=0 and enable_x86_64!=0', {
              'variables': {
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-64/>(_target_name)',
-                'out64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
+                'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
+                'out_newlib64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
              },
              'actions': [
                {
                  'action_name': 'build newlib x86-64 nlib',
                  'msvs_cygwin_shell': 0,
-                 'description': 'building >(out64)',
+                 'description': 'building >(out_newlib64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib64)',
                  ],
-                 'outputs': ['>(out64)'],
+                 'outputs': ['>(out_newlib64)'],
                  'action': [
                    '>(python_exe)',
                    '<(DEPTH)/native_client/build/build_nexe.py',
@@ -210,10 +207,10 @@
                    '--arch', 'x86-64',
                    '--build', 'newlib_nlib',
                    '--root', '<(DEPTH)',
-                   '--name', '>(out64)',
-                   '--objdir', '>(objdir)',
-                   '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
-                   '--lib-dirs', '>(lib_dirs) ',
+                   '--name', '>(out_newlib64)',
+                   '--objdir', '>(objdir_newlib64)',
+                   '--include-dirs', '<(inst_dir)/include >(include_dirs) >(include_dirs)',
+                   '--lib-dirs', '>(lib_dirs_newlib64) ',
                    '--compile_flags', '-m64 >(compile_flags)',
                    '>@(defines)', '-DNACL_BUILD_SUBARCH=64',
                    '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64 >(link_flags) >(_link_flags)',
@@ -223,31 +220,25 @@
                },
              ],
            }],
-        ],
-      },
-    }],
-    ['target_arch=="ia32"', {
-      'target_defaults': {
-        'target_conditions': [
            ['nexe_target!="" and build_newlib!=0 and enable_x86_32!=0', {
              'variables': {
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
-                'out32%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x32.nexe',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-32/>(_target_name)',
+                'out_newlib32%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x32.nexe',
+                'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
              },
              'actions': [
                {
                  'action_name': 'build newlib x86-32 nexe',
                  'msvs_cygwin_shell': 0,
-                 'description': 'building >(out32)',
+                 'description': 'building >(out_newlib32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib32)',
                  ],
-                 'outputs': ['>(out32)'],
+                 'outputs': ['>(out_newlib32)'],
                  'action': [
                    '>(python_exe)',
                    '<(DEPTH)/native_client/build/build_nexe.py',
@@ -255,10 +246,10 @@
                    '--arch', 'x86-32',
                    '--build', 'newlib_nexe',
                    '--root', '<(DEPTH)',
-                   '--name', '>(out32)',
-                   '--objdir', '>(objdir)',
-                   '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
-                   '--lib-dirs', '>(lib_dirs)',
+                   '--name', '>(out_newlib32)',
+                   '--objdir', '>(objdir_newlib32)',
+                   '--include-dirs', '<(inst_dir)/include >(include_dirs) >(include_dirs)',
+                   '--lib-dirs', '>(lib_dirs_newlib32)',
                    '--compile_flags', '-m32 >(compile_flags)',
                    '>@(defines)', '-DNACL_BUILD_SUBARCH=32',
                    '--link_flags', '-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32 >(link_flags) >(_link_flags)',
@@ -268,31 +259,25 @@
                },
              ],
            }],
-        ],
-      },
-    }],
-    ['target_arch=="ia32"', {
-      'target_defaults': {
-        'target_conditions': [
            ['nlib_target!="" and build_newlib!=0 and enable_x86_32!=0', {
              'variables': {
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
-                'out32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-32/>(_target_name)',
+                'out_newlib32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
+                'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
              },
              'actions': [
                {
                  'action_name': 'build newlib x86-32 nlib',
                  'msvs_cygwin_shell': 0,
-                 'description': 'building >(out32)',
+                 'description': 'building >(out_newlib32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib32)',
                  ],
-                 'outputs': ['>(out32)'],
+                 'outputs': ['>(out_newlib32)'],
                  'action': [
                    '>(python_exe)',
                    '<(DEPTH)/native_client/build/build_nexe.py',
@@ -300,10 +285,10 @@
                    '--arch', 'x86-32',
                    '--build', 'newlib_nlib',
                    '--root', '<(DEPTH)',
-                   '--name', '>(out32)',
-                   '--objdir', '>(objdir)',
-                   '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
-                   '--lib-dirs', '>(lib_dirs) ',
+                   '--name', '>(out_newlib32)',
+                   '--objdir', '>(objdir_newlib32)',
+                   '--include-dirs', '<(inst_dir)/include >(include_dirs) >(include_dirs)',
+                   '--lib-dirs', '>(lib_dirs_newlib32) ',
                    '--compile_flags', '-m32 >(compile_flags)',
                    '>@(defines)', '-DNACL_BUILD_SUBARCH=32',
                    '--link_flags', '-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32 >(link_flags) >(_link_flags)',
@@ -324,7 +309,7 @@
               'tool_name': 'newlib',
               'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
               'out_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
-              'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-arm/>(_target_name)',
+              'objdir_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
              },
             'actions': [
               {
@@ -346,9 +331,9 @@
                   '--build', 'newlib_nexe',
                   '--root', '<(DEPTH)',
                   '--name', '>(out_arm)',
-                  '--objdir', '>(objdir)',
-                  '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
-                  '--lib-dirs', '>(lib_dirs) ',
+                  '--objdir', '>(objdir_arm)',
+                  '--include-dirs', '<(inst_dir)/include >(include_dirs) >(include_dirs)',
+                  '--lib-dirs', '>(lib_dirs_newlib_arm) ',
                    '--compile_flags', '>(compile_flags)',
                   '>@(defines)', '-DNACL_BUILD_SUBARCH=32',
                   '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm >(link_flags) >(_link_flags)',
@@ -358,18 +343,12 @@
               },
             ],
           }],
-        ],
-      },
-    }],
-    ['target_arch=="arm"', {
-      'target_defaults': {
-        'target_conditions': [
           ['nlib_target!="" and build_newlib!=0', {
             'variables': {
               'tool_name': 'newlib',
               'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
               'out_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
-              'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-arm/>(_target_name)',
+              'objdir_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
             },
             'actions': [
               {
@@ -391,9 +370,9 @@
                   '--build', 'newlib_nlib',
                   '--root', '<(DEPTH)',
                   '--name', '>(out_arm)',
-                  '--objdir', '>(objdir)',
-                  '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
-                  '--lib-dirs', '>(lib_dirs) ',
+                  '--objdir', '>(objdir_arm)',
+                  '--include-dirs', '<(inst_dir)/include >(include_dirs) >(include_dirs)',
+                  '--lib-dirs', '>(lib_dirs_arm) ',
                   '--compile_flags', '>(compile_flags)',
                   '>@(defines)', '-DNACL_BUILD_SUBARCH=32',
                   '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm >(link_flags) >(_link_flags)',
@@ -413,21 +392,21 @@
              'variables': {
                 'tool_name': 'glibc',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',
-                'out64%': '<(PRODUCT_DIR)/>(nexe_target)_glibc_x64.nexe',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-64/>(_target_name)',
+                'out_glibc64%': '<(PRODUCT_DIR)/>(nexe_target)_glibc_x64.nexe',
+                'objdir_glibc64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
              },
              'actions': [
                {
                  'action_name': 'build glibc x86-64 nexe',
                  'msvs_cygwin_shell': 0,
-                 'description': 'building >(out64)',
+                 'description': 'building >(out_glibc64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc64)',
                  ],
-                 'outputs': ['>(out64)'],
+                 'outputs': ['>(out_glibc64)'],
                  'action': [
                    '>(python_exe)',
                    '<(DEPTH)/native_client/build/build_nexe.py',
@@ -435,10 +414,10 @@
                    '--arch', 'x86-64',
                    '--build', 'glibc_nexe',
                    '--root', '<(DEPTH)',
-                   '--name', '>(out64)',
-                   '--objdir', '>(objdir)',
-                   '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
-                   '--lib-dirs', '>(lib_dirs) ',
+                   '--name', '>(out_glibc64)',
+                   '--objdir', '>(objdir_glibc64)',
+                   '--include-dirs', '<(inst_dir)/include >(include_dirs) >(include_dirs)',
+                   '--lib-dirs', '>(lib_dirs_glibc64) ',
                    '--compile_flags', '-m64 >(compile_flags) ',
                    '>@(defines)', '-DNACL_BUILD_SUBARCH=64',
                    '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64 >(link_flags) >(_link_flags)',
@@ -452,21 +431,21 @@
              'variables': {
                 'tool_name': 'glibc',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',
-                'out32%': '<(PRODUCT_DIR)/>(nexe_target)_glibc_x32.nexe',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-32/>(_target_name)',
+                'out_glibc32%': '<(PRODUCT_DIR)/>(nexe_target)_glibc_x32.nexe',
+                'objdir_glibc32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
              },
              'actions': [
                {
                  'action_name': 'build glibc x86-32 nexe',
                  'msvs_cygwin_shell': 0,
-                 'description': 'building >(out32)',
+                 'description': 'building >(out_glibc32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc32)',
                  ],
-                 'outputs': ['>(out32)'],
+                 'outputs': ['>(out_glibc32)'],
                  'action': [
                    '>(python_exe)',
                    '<(DEPTH)/native_client/build/build_nexe.py',
@@ -474,10 +453,10 @@
                    '--arch', 'x86-32',
                    '--build', 'glibc_nexe',
                    '--root', '<(DEPTH)',
-                   '--name', '>(out32)',
-                   '--objdir', '>(objdir)',
-                   '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
-                   '--lib-dirs', '>(lib_dirs) ',
+                   '--name', '>(out_glibc32)',
+                   '--objdir', '>(objdir_glibc32)',
+                   '--include-dirs', '<(inst_dir)/include >(include_dirs) >(include_dirs)',
+                   '--lib-dirs', '>(lib_dirs_glibc32) ',
                    '--compile_flags', '-m32 >(compile_flags)',
                    '>@(defines)', '-DNACL_BUILD_SUBARCH=32',
                    '--link_flags', '-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32 >(link_flags) >(_link_flags)',
@@ -487,31 +466,25 @@
                },
              ],
            }],
-        ],
-      },
-    }],
-    ['target_arch!="arm"', {
-      'target_defaults': {
-        'target_conditions': [
            ['nlib_target!="" and build_glibc!=0 and enable_x86_64!=0 and disable_glibc==0', {
              'variables': {
                 'tool_name': 'glibc',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-64/>(_target_name)',
-                'out64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
+                'objdir_glibc64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
+                'out_glibc64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
              },
              'actions': [
                {
                  'action_name': 'build glibc x86-64 nlib',
                  'msvs_cygwin_shell': 0,
-                 'description': 'building >(out64)',
+                 'description': 'building >(out_glibc64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc64)',
                  ],
-                 'outputs': ['>(out64)'],
+                 'outputs': ['>(out_glibc64)'],
                  'action': [
                    '>(python_exe)',
                    '<(DEPTH)/native_client/build/build_nexe.py',
@@ -519,10 +492,10 @@
                    '--arch', 'x86-64',
                    '--build', 'glibc_nlib',
                    '--root', '<(DEPTH)',
-                   '--name', '>(out64)',
-                   '--objdir', '>(objdir)',
-                   '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
-                   '--lib-dirs', '>(lib_dirs) ',
+                   '--name', '>(out_glibc64)',
+                   '--objdir', '>(objdir_glibc64)',
+                   '--include-dirs', '<(inst_dir)/include >(include_dirs) >(include_dirs)',
+                   '--lib-dirs', '>(lib_dirs_glibc64) ',
                    '--compile_flags', ' -m64 >(compile_flags)',
                    '>@(defines)', '-DNACL_BUILD_SUBARCH=64',
                    '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64 >(link_flags) >(_link_flags)',
@@ -536,21 +509,21 @@
              'variables': {
                 'tool_name': 'glibc',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',
-                'out32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-32/>(_target_name)',
+                'out_glibc32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
+                'objdir_glibc32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
              },
              'actions': [
                {
                  'action_name': 'build glibc x86-32 nlib',
                  'msvs_cygwin_shell': 0,
-                 'description': 'building >(out32)',
+                 'description': 'building >(out_glibc32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc32)',
                  ],
-                 'outputs': ['>(out32)'],
+                 'outputs': ['>(out_glibc32)'],
                  'action': [
                    '>(python_exe)',
                    '<(DEPTH)/native_client/build/build_nexe.py',
@@ -558,10 +531,10 @@
                    '--arch', 'x86-32',
                    '--build', 'glibc_nlib',
                    '--root', '<(DEPTH)',
-                   '--name', '>(out32)',
-                   '--objdir', '>(objdir)',
-                   '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
-                   '--lib-dirs', '>(lib_dirs) ',
+                   '--name', '>(out_glibc32)',
+                   '--objdir', '>(objdir_glibc32)',
+                   '--include-dirs', '<(inst_dir)/include >(include_dirs) >(include_dirs)',
+                   '--lib-dirs', '>(lib_dirs_glibc32) ',
                    '--compile_flags', '-m32 >(compile_flags)',
                    '>@(defines)', '-DNACL_BUILD_SUBARCH=32',
                    '--link_flags', '-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32 >(link_flags) >(_link_flags)',

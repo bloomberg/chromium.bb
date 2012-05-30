@@ -6,14 +6,6 @@
   'includes': [
     '../../../build/common.gypi',
   ],
-  'variables': {
-    'common_sources': [
-      'ppapi_plugin_main.c',
-      'ppapi_plugin_start.c',
-      'plugin_main_irt.c',
-      'thread_creator.c'
-    ]
-  },
   'targets' : [
     {
       'target_name': 'ppapi_stub_lib',
@@ -22,8 +14,13 @@
         'nlib_target': 'libppapi_stub.a',
         'build_glibc': 1,
         'build_newlib': 1,
-        'sources': ['<@(common_sources)']
       },
+      'sources': [
+        'ppapi_plugin_main.c',
+        'ppapi_plugin_start.c',
+        'plugin_main_irt.c',
+        'thread_creator.c'
+      ],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],

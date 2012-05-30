@@ -63,7 +63,6 @@
       'type': 'none',
       'dependencies': [
         'nacl_lib_newlib',
-        'nacl_lib_glibc',
       ],
       'conditions': [
         # NOTE: We do not support glibc on arm yet.

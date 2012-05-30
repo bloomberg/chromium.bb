@@ -13,14 +13,10 @@
       'target_name': 'prep_toolchain',
       'type': 'none',
       'conditions': [
-        ['target_arch=="ia32"', {
+        ['target_arch=="ia32" or target_arch=="x64"', {
           'dependencies': [
             'crt_init_32',
             'crt_fini_32',
-          ],
-        }],
-        ['target_arch=="x64" or OS=="win"', {
-          'dependencies': [
             'crt_init_64',
             'crt_fini_64',
           ],
@@ -115,7 +111,7 @@
   ],
 
   'conditions': [
-    ['target_arch=="x64" or OS=="win"', {
+    ['target_arch=="ia32" or target_arch=="x64"', {
       'targets' : [
         {
           'target_name': 'crt_init_64',
@@ -133,8 +129,10 @@
               '--no-suffix',
               '--strip=_x86_64'
             ],
-            'out64': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crti.o',
-            'objdir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64',
+            'out_newlib64':
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crti.o',
+            'objdir_newlib64':
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64',
           },
           'sources': [
             'src/untrusted/stubs/crti_x86_64.S',
@@ -156,8 +154,10 @@
               '--no-suffix',
               '--strip=_x86_64'
             ],
-            'out64': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crtn.o',
-            'objdir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64',
+            'out_newlib64':
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crtn.o',
+            'objdir_newlib64':
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64',
           },
           'sources': [
             'src/untrusted/stubs/crtn_x86_64.S'
@@ -165,7 +165,7 @@
         }
       ],
     }],
-    ['target_arch=="ia32"', {
+    ['target_arch=="ia32" or target_arch=="x64"', {
       'targets' : [
         {
           'target_name': 'crt_init_32',
@@ -183,8 +183,10 @@
               '--no-suffix',
               '--strip=_x86_32'
             ],
-            'out32': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/crti.o',
-            'objdir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32',
+            'out_newlib32':
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/crti.o',
+            'objdir_newlib32':
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32',
           },
           'sources': [
             'src/untrusted/stubs/crti_x86_32.S',
@@ -206,8 +208,10 @@
               '--no-suffix',
               '--strip=_x86_32'
             ],
-            'out32': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/crtn.o',
-            'objdir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32',
+            'out_newlib32':
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/crtn.o',
+            'objdir_newlib32':
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32',
           },
           'sources': [
             'src/untrusted/stubs/crtn_x86_32.S'

@@ -25,8 +25,8 @@
         'nlib_target': 'libpthread.a',
         'build_glibc': 0,
         'build_newlib': 1,
-        'sources': ['<@(common_sources)']
       },
+      'sources': ['<@(common_sources)'],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],
@@ -38,15 +38,15 @@
         'nlib_target': 'libpthread_private.a',
         'build_glibc': 0,
         'build_newlib': 1,
-        'sources': [
-          '<@(common_sources)',
-          'nc_init_private.c',
-          '../irt/irt_blockhook.c',
-          '../irt/irt_cond.c',
-          '../irt/irt_mutex.c',
-          '../irt/irt_sem.c',
-        ],
       },
+      'sources': [
+        '<@(common_sources)',
+        'nc_init_private.c',
+        '../irt/irt_blockhook.c',
+        '../irt/irt_cond.c',
+        '../irt/irt_mutex.c',
+        '../irt/irt_sem.c',
+      ],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         'pthread_lib'

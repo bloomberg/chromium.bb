@@ -23,13 +23,13 @@
             'nexe_target': 'hello_world',
             'build_glibc': 1,
             'build_newlib': 1,
-            'sources': [
-              'tests/hello_world/hello_world.c',
-            ],
             'extra_args': [
               '--strip-debug',
             ],
           },
+          'sources': [
+            'tests/hello_world/hello_world.c',
+          ],
         },
         {
           'target_name': 'test_hello_world_nexe',
