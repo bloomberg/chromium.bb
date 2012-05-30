@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+  <title>WebRTC PyAuto Test</title>
+  <script type="text/javascript" src="test_functions.js"></script>
+  <script type="text/javascript" src="message_handling.js"></script>
+  <script type="text/javascript" src="getusermedia.js"></script>
+  <script type="text/javascript" src="roap_call.js"></script>
+</head>
+<body>
+  <table border="0">
+    <tr>
+      <td>Local Preview</td>
+      <td>Remote Video</td>
+    </tr>
+    <tr>
+      <td><video width="320" height="240" id="local_view"
+          autoplay="autoplay"></video></td>
+      <td><video width="320" height="240" id="remote_view"
+          autoplay="autoplay"></video></td>
+    </tr>
+  </table>
+  <button id="connect" onclick="connect('http://localhost:8888', Date());">
+      Connect</button><br>
+  <button id="getusermedia" onclick="getUserMedia(true, true);">GetUserMedia
+      </button><br>
+  <button id="call" onclick="call();">Call</button><br>
+  <button id="hangup" onclick="hangUp();">Hang up</button><br>
+</body>
+</html>

@@ -56,16 +56,18 @@ class WebRTCCallTest(pyauto.PyUITest):
 
     pyauto.PyUITest.tearDown(self)
 
-  def testCanBringUpAndTearDownWebRtcCall(self):
-    """Tests we can call and hang up with WebRTC.
+  def _SimpleWebRtcCall(self, test_page):
+    """Tests we can call and hang up with WebRTC using ROAP/JSEP.
 
     This test exercises pretty much the whole happy-case for the WebRTC
     JavaScript API. Currently, it exercises a normal call setup using the API
     defined at http://dev.w3.org/2011/webrtc/editor/webrtc.html. The API is
-    still evolving, but the basic principles of this test should hold true.
+    still evolving.
 
-    The test will bring up webrtc_test.html in two tabs and tell the web pages
-    to start up WebRTC, which will acquire video and audio devices on the
+    The test will load the supplied HTML file, which in turn will load different
+    javascript files depending on if we are running ROAP or JSEP.
+    The supplied HTML file will be loaded in two tabs and tell the web
+    pages to start up WebRTC, which will acquire video and audio devices on the
     system. This will launch a dialog in Chrome which we click past using the
     automation controller. Then, we will order both tabs to connect the server,
     which will make the two tabs aware of each other. Once that is done we order
@@ -73,14 +75,14 @@ class WebRTCCallTest(pyauto.PyUITest):
     the call succeeded, let it run for a while and try to hang up the call
     after that.
     """
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_test.html')
+    url = self.GetFileURLForDataPath('webrtc', test_page)
     self.NavigateToURL(url)
     self.AppendTab(pyauto.GURL(url))
 
     self.assertEquals('ok-got-stream', self._GetUserMedia(tab_index=0))
     self.assertEquals('ok-got-stream', self._GetUserMedia(tab_index=1))
-    self._Connect("user_1", tab_index=0)
-    self._Connect("user_2", tab_index=1)
+    self._Connect('user_1', tab_index=0)
+    self._Connect('user_2', tab_index=1)
 
     self._EstablishCall(from_tab_with_index=0)
 
@@ -94,9 +96,15 @@ class WebRTCCallTest(pyauto.PyUITest):
     # Ensure we didn't miss any errors.
     self._AssertNoFailuresReceivedInTwoTabs()
 
+  def testSimpleWebRtcRoapCall(self):
+    self._SimpleWebRtcCall('webrtc_roap_test.html')
+
+  def testSimpleWebRtcJsepCall(self):
+    self._SimpleWebRtcCall('webrtc_jsep_test.html')
+
   def testHandlesNewGetUserMediaRequestSeparately(self):
     """Ensures WebRTC doesn't allow new requests to piggy-back on old ones."""
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_test.html')
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_roap_test.html')
     self.NavigateToURL(url)
     self.AppendTab(pyauto.GURL(url))
 
