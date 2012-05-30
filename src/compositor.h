@@ -305,6 +305,9 @@ struct weston_compositor {
 		struct xkb_rule_names names;
 		struct xkb_context *context;
 		struct xkb_keymap *keymap;
+		xkb_mod_index_t ctrl_mod;
+		xkb_mod_index_t alt_mod;
+		xkb_mod_index_t super_mod;
 	} xkb_info;
 };
 

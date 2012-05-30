@@ -1731,13 +1731,16 @@ notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis, int32_t value)
 static int
 update_modifier_state(struct weston_seat *seat, uint32_t key, uint32_t state)
 {
-	enum weston_keyboard_modifier modifier;
 	uint32_t mods_depressed, mods_latched, mods_locked, group;
+	uint32_t mods_lookup;
 	int ret = 0;
 
+	/* First update the XKB state object with the keypress. */
 	xkb_state_update_key(seat->xkb_state.state, key + 8,
 			     state ? XKB_KEY_DOWN : XKB_KEY_UP);
 
+	/* Serialize and update our internal state, checking to see if it's
+	 * different to the previous state. */
 	mods_depressed = xkb_state_serialize_mods(seat->xkb_state.state,
 						  XKB_STATE_DEPRESSED);
 	mods_latched = xkb_state_serialize_mods(seat->xkb_state.state,
@@ -1758,31 +1761,15 @@ update_modifier_state(struct weston_seat *seat, uint32_t key, uint32_t state)
 	seat->xkb_state.mods_locked = mods_locked;
 	seat->xkb_state.group = group;
 
-	switch (key) {
-	case KEY_LEFTCTRL:
-	case KEY_RIGHTCTRL:
-		modifier = MODIFIER_CTRL;
-		break;
-
-	case KEY_LEFTALT:
-	case KEY_RIGHTALT:
-		modifier = MODIFIER_ALT;
-		break;
-
-	case KEY_LEFTMETA:
-	case KEY_RIGHTMETA:
-		modifier = MODIFIER_SUPER;
-		break;
-
-	default:
-		modifier = 0;
-		break;
-	}
-
-	if (state)
-		seat->modifier_state |= modifier;
-	else
-		seat->modifier_state &= ~modifier;
+	/* And update the modifier_state for bindings. */
+	mods_lookup = mods_depressed | mods_latched;
+	seat->modifier_state = 0;
+	if ((mods_lookup & seat->compositor->xkb_info.ctrl_mod))
+		seat->modifier_state |= MODIFIER_CTRL;
+	if ((mods_lookup & seat->compositor->xkb_info.alt_mod))
+		seat->modifier_state |= MODIFIER_ALT;
+	if ((mods_lookup & seat->compositor->xkb_info.super_mod))
+		seat->modifier_state |= MODIFIER_SUPER;
 
 	return ret;
 }
@@ -2242,6 +2229,13 @@ static int weston_compositor_xkb_init(struct weston_compositor *ec,
 		fprintf(stderr, "failed to compile XKB keymap\n");
 		return -1;
 	}
+
+	ec->xkb_info.ctrl_mod = xkb_map_mod_get_index(ec->xkb_info.keymap,
+						      XKB_MOD_NAME_CTRL);
+	ec->xkb_info.alt_mod = xkb_map_mod_get_index(ec->xkb_info.keymap,
+						     XKB_MOD_NAME_ALT);
+	ec->xkb_info.super_mod = xkb_map_mod_get_index(ec->xkb_info.keymap,
+						       XKB_MOD_NAME_LOGO);
 
 	return 0;
 }
