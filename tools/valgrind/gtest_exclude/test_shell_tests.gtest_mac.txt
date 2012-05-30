@@ -2,3 +2,4 @@
 ResourceFetcherTests.ResourceFetcherTimeout
 ResourceFetcherTests.ResourceFetcherDeletedInCallback
 PluginTest.DeleteFrameDuringEvent
+PluginTest.ForceReload
