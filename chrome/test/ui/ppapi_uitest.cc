@@ -979,7 +979,11 @@ TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityTextSendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityBinarySendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityBufferedAmount)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_IsWebSocket)
-TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UninitializedPropertiesAccess)
+
+//PPAPINaClTest.WebSocket_UninitializedPropertiesAccess times out frequently on
+//all platforms. http://crbug.com/130414
+TEST_PPAPI_NACL_VIA_HTTP(DISABLED_WebSocket_UninitializedPropertiesAccess)
+
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_InvalidConnect)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_Protocols)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_GetURL)
