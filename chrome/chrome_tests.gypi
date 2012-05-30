@@ -1237,6 +1237,7 @@
         'browser/extensions/webstore_inline_installer_unittest.cc',
         'browser/external_protocol/external_protocol_handler_unittest.cc',
         'browser/favicon/favicon_handler_unittest.cc',
+        'browser/file_select_helper_unittest.cc',
         'browser/first_run/first_run_unittest.cc',
         'browser/geolocation/chrome_geolocation_permission_context_unittest.cc',
         'browser/geolocation/geolocation_settings_state_unittest.cc',

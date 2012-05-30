@@ -115,7 +115,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateFileChooser(
       PP_Instance instance,
       PP_FileChooserMode_Dev mode,
-      const char* accept_mime_types) = 0;
+      const char* accept_types) = 0;
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) = 0;
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) = 0;

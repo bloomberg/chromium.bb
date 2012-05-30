@@ -249,30 +249,31 @@ SelectFileDialog::FileTypeInfo* FileSelectHelper::GetFileTypesFromAcceptType(
   file_type->extensions.resize(1);
   std::vector<FilePath::StringType>* extensions = &file_type->extensions.back();
 
-  // Find the correspondinge extensions.
+  // Find the corresponding extensions.
   int valid_type_count = 0;
   int description_id = 0;
   for (size_t i = 0; i < accept_types.size(); ++i) {
-    std::string ascii_mime_type = UTF16ToASCII(accept_types[i]);
-    // WebKit normalizes MIME types.  See HTMLInputElement::acceptMIMETypes().
-    DCHECK(StringToLowerASCII(ascii_mime_type) == ascii_mime_type)
-        << "A MIME type contains uppercase letter: " << ascii_mime_type;
-    DCHECK(TrimWhitespaceASCII(ascii_mime_type, TRIM_ALL, &ascii_mime_type)
-        == TRIM_NONE)
-        << "A MIME type contains whitespace: '" << ascii_mime_type << "'";
+    std::string ascii_type = UTF16ToASCII(accept_types[i]);
+    if (!IsAcceptTypeValid(ascii_type))
+      continue;
 
     size_t old_extension_size = extensions->size();
-    if (ascii_mime_type == "image/*") {
+    if (ascii_type[0] == '.') {
+      // If the type starts with a period it is assumed to be a file extension
+      // so we just have to add it to the list.
+      FilePath::StringType ext(ascii_type.begin(), ascii_type.end());
+      extensions->push_back(ext.substr(1));
+    } else if (ascii_type == "image/*") {
       description_id = IDS_IMAGE_FILES;
       net::GetImageExtensions(extensions);
-    } else if (ascii_mime_type == "audio/*") {
+    } else if (ascii_type == "audio/*") {
       description_id = IDS_AUDIO_FILES;
       net::GetAudioExtensions(extensions);
-    } else if (ascii_mime_type == "video/*") {
+    } else if (ascii_type == "video/*") {
       description_id = IDS_VIDEO_FILES;
       net::GetVideoExtensions(extensions);
     } else {
-      net::GetExtensionsForMimeType(ascii_mime_type, extensions);
+      net::GetExtensionsForMimeType(ascii_type, extensions);
     }
 
     if (extensions->size() > old_extension_size)
@@ -460,4 +461,18 @@ void FileSelectHelper::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+// static
+bool FileSelectHelper::IsAcceptTypeValid(const std::string& accept_type) {
+  // TODO(raymes): This only does some basic checks, extend to test more cases.
+  // A 1 character accept type will always be invalid (either a "." in the case
+  // of an extension or a "/" in the case of a MIME type).
+  std::string unused;
+  if (accept_type.length() <= 1 ||
+      StringToLowerASCII(accept_type) != accept_type ||
+      TrimWhitespaceASCII(accept_type, TRIM_ALL, &unused) != TRIM_NONE) {
+    return false;
+  }
+  return true;
 }

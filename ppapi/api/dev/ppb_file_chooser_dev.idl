@@ -39,12 +39,14 @@ interface PPB_FileChooser_Dev {
   * of a module.
   * @param[in] mode A <code>PP_FileChooserMode_Dev</code> value that controls
   * the behavior of the file chooser dialog.
-  * @param[in] accept_mime_types A comma-separated list of MIME types such as
-  * "audio/ *,text/plain" (note there should be no space between the '/' and
-  * the '*', but one is added to avoid confusing C++ comments).  The dialog
-  * may restrict selectable files to the specified MIME types. An empty string
-  * or an undefined var may be given to indicate that all types should be
-  * accepted.
+  * @param[in] accept_types A comma-separated list of MIME types and file
+  * extensions such as "audio/ *,text/plain,.html" (note there should be no
+  * space between the '/' and the '*', but one is added to avoid confusing C++
+  * comments). The dialog may restrict selectable files to the specified MIME
+  * types and file extensions. If a string in the comma-separated list begins
+  * with a period (.) then the string is interpreted as a file extension,
+  * otherwise it is interpreted as a MIME-type. An empty string or an undefined
+  * var may be given to indicate that all types should be accepted.
   *
   * @return A <code>PP_Resource</code> containing the file chooser if
   * successful or 0 if it could not be created.
@@ -52,7 +54,7 @@ interface PPB_FileChooser_Dev {
   PP_Resource Create(
       [in] PP_Instance instance,
       [in] PP_FileChooserMode_Dev mode,
-      [in] PP_Var accept_mime_types);
+      [in] PP_Var accept_types);
 
   /**
    * Determines if the provided resource is a file chooser.

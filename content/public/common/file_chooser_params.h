@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,8 +43,8 @@ struct CONTENT_EXPORT FileChooserParams {
   // Default file name to select in the dialog.
   FilePath default_file_name;
 
-  // A list of valid lower-cased MIME types specified in an input element. It is
-  // used to restrict selectable files to such types.
+  // A list of valid lower-cased MIME types or file extensions specified in an
+  // input element. It is used to restrict selectable files to such types.
   std::vector<string16> accept_types;
 };
 

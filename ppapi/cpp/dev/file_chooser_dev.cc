@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,13 +30,13 @@ template <> const char* interface_name<PPB_FileChooser_Dev_0_6>() {
 
 FileChooser_Dev::FileChooser_Dev(const InstanceHandle& instance,
                                  PP_FileChooserMode_Dev mode,
-                                 const Var& accept_mime_types) {
+                                 const Var& accept_types) {
   if (has_interface<PPB_FileChooser_Dev_0_6>()) {
     PassRefFromConstructor(get_interface<PPB_FileChooser_Dev_0_6>()->Create(
-        instance.pp_instance(), mode, accept_mime_types.pp_var()));
+        instance.pp_instance(), mode, accept_types.pp_var()));
   } else if (has_interface<PPB_FileChooser_Dev_0_5>()) {
     PassRefFromConstructor(get_interface<PPB_FileChooser_Dev_0_5>()->Create(
-        instance.pp_instance(), mode, accept_mime_types.pp_var()));
+        instance.pp_instance(), mode, accept_types.pp_var()));
   }
 }
 

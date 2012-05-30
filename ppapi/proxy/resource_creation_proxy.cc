@@ -223,9 +223,9 @@ PP_Resource ResourceCreationProxy::CreateDirectoryReader(
 PP_Resource ResourceCreationProxy::CreateFileChooser(
     PP_Instance instance,
     PP_FileChooserMode_Dev mode,
-    const char* accept_mime_types) {
+    const char* accept_types) {
   return PPB_FileChooser_Proxy::CreateProxyResource(instance, mode,
-                                                    accept_mime_types);
+                                                    accept_types);
 }
 
 PP_Resource ResourceCreationProxy::CreateFlashMenu(

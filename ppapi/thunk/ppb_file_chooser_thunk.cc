@@ -19,12 +19,12 @@ namespace {
 
 PP_Resource Create(PP_Instance instance,
                    PP_FileChooserMode_Dev mode,
-                   struct PP_Var accept_mime_types) {
+                   struct PP_Var accept_types) {
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   scoped_refptr<StringVar> string_var =
-      StringVar::FromPPVar(accept_mime_types);
+      StringVar::FromPPVar(accept_types);
   std::string str = string_var ? string_var->value() : std::string();
   return enter.functions()->CreateFileChooser(instance, mode, str.c_str());
 }

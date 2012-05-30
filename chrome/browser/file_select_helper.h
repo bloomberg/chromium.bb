@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -43,6 +44,7 @@ class FileSelectHelper
 
  private:
   friend class base::RefCountedThreadSafe<FileSelectHelper>;
+  FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, IsAcceptTypeValid);
   explicit FileSelectHelper(Profile* profile);
   virtual ~FileSelectHelper();
 
@@ -123,9 +125,14 @@ class FileSelectHelper
   // Helper method to get allowed extensions for select file dialog from
   // the specified accept types as defined in the spec:
   //   http://whatwg.org/html/number-state.html#attr-input-accept
-  // |accept_types| contains only valid lowercased MIME types.
+  // |accept_types| contains only valid lowercased MIME types or file extensions
+  // beginning with a period (.).
   SelectFileDialog::FileTypeInfo* GetFileTypesFromAcceptType(
       const std::vector<string16>& accept_types);
+
+  // Check the accept type is valid. It is expected to be all lower case with
+  // no whitespace.
+  static bool IsAcceptTypeValid(const std::string& accept_type);
 
   // Profile used to set/retrieve the last used directory.
   Profile* profile_;

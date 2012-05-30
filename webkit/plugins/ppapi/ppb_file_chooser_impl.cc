@@ -81,12 +81,12 @@ class FileChooserCompletionImpl : public WebFileChooserCompletion {
 PPB_FileChooser_Impl::PPB_FileChooser_Impl(
     PP_Instance instance,
     PP_FileChooserMode_Dev mode,
-    const char* accept_mime_types)
+    const char* accept_types)
     : Resource(::ppapi::OBJECT_IS_IMPL, instance),
       mode_(mode),
       next_chosen_file_index_(0) {
-  if (accept_mime_types)
-    accept_mime_types_ = std::string(accept_mime_types);
+  if (accept_types)
+    accept_types_ = std::string(accept_types);
 }
 
 PPB_FileChooser_Impl::~PPB_FileChooser_Impl() {
@@ -96,12 +96,12 @@ PPB_FileChooser_Impl::~PPB_FileChooser_Impl() {
 PP_Resource PPB_FileChooser_Impl::Create(
     PP_Instance instance,
     PP_FileChooserMode_Dev mode,
-    const char* accept_mime_types) {
+    const char* accept_types) {
   if (mode != PP_FILECHOOSERMODE_OPEN &&
       mode != PP_FILECHOOSERMODE_OPENMULTIPLE)
     return 0;
   return (new PPB_FileChooser_Impl(instance, mode,
-                                   accept_mime_types))->GetReference();
+                                   accept_types))->GetReference();
 }
 
 PPB_FileChooser_Impl* PPB_FileChooser_Impl::AsPPB_FileChooser_Impl() {
@@ -225,7 +225,7 @@ int32_t PPB_FileChooser_Impl::ShowWithoutUserGesture0_5(
   } else {
     params.multiSelect = (mode_ == PP_FILECHOOSERMODE_OPENMULTIPLE);
   }
-  params.acceptMIMETypes = ParseAcceptValue(accept_mime_types_);
+  params.acceptTypes = ParseAcceptValue(accept_types_);
   params.directory = false;
 
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
@@ -248,25 +248,29 @@ PP_Resource PPB_FileChooser_Impl::GetNextChosenFile() {
 }
 
 std::vector<WebString> PPB_FileChooser_Impl::ParseAcceptValue(
-    const std::string& accept_mime_types) {
-  if (accept_mime_types.empty())
+    const std::string& accept_types) {
+  if (accept_types.empty())
     return std::vector<WebString>();
-  std::vector<std::string> mime_type_list;
-  base::SplitString(accept_mime_types, ',', &mime_type_list);
-  std::vector<WebString> normalized_mime_type_list;
-  normalized_mime_type_list.reserve(mime_type_list.size());
-  for (size_t i = 0; i < mime_type_list.size(); ++i) {
-    std::string mime_type = mime_type_list[i];
-    TrimWhitespaceASCII(mime_type, TRIM_ALL, &mime_type);
-    if (mime_type.empty())
+  std::vector<std::string> type_list;
+  base::SplitString(accept_types, ',', &type_list);
+  std::vector<WebString> normalized_type_list;
+  normalized_type_list.reserve(type_list.size());
+  for (size_t i = 0; i < type_list.size(); ++i) {
+    std::string type = type_list[i];
+    TrimWhitespaceASCII(type, TRIM_ALL, &type);
+
+    // If the type is a single character, it definitely cannot be valid. In the
+    // case of a file extension it would be a single ".". In the case of a MIME
+    // type it would just be a "/".
+    if (type.length() < 2)
       continue;
-    if (mime_type.find_first_of('/') == std::string::npos)
+    if (type.find_first_of('/') == std::string::npos && type[0] != '.')
       continue;
-    StringToLowerASCII(&mime_type);
-    normalized_mime_type_list.push_back(WebString::fromUTF8(mime_type.data(),
-                                                            mime_type.size()));
+    StringToLowerASCII(&type);
+    normalized_type_list.push_back(WebString::fromUTF8(type.data(),
+                                                       type.size()));
   }
-  return normalized_mime_type_list;
+  return normalized_type_list;
 }
 
 }  // namespace ppapi

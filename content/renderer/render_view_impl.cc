@@ -1910,9 +1910,9 @@ bool RenderViewImpl::runFileChooser(
   ipc_params.title = params.title;
   ipc_params.default_file_name =
       webkit_glue::WebStringToFilePath(params.initialValue);
-  ipc_params.accept_types.reserve(params.acceptMIMETypes.size());
-  for (size_t i = 0; i < params.acceptMIMETypes.size(); ++i)
-    ipc_params.accept_types.push_back(params.acceptMIMETypes[i]);
+  ipc_params.accept_types.reserve(params.acceptTypes.size());
+  for (size_t i = 0; i < params.acceptTypes.size(); ++i)
+    ipc_params.accept_types.push_back(params.acceptTypes[i]);
 
   return ScheduleFileChooser(ipc_params, chooser_completion);
 }

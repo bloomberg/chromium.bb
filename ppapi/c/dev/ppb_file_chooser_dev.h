@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_file_chooser_dev.idl modified Thu Mar 15 09:29:39 2012. */
+/* From dev/ppb_file_chooser_dev.idl modified Thu May 17 09:04:27 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
 #define PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
@@ -64,19 +64,21 @@ struct PPB_FileChooser_Dev_0_6 {
    * of a module.
    * @param[in] mode A <code>PP_FileChooserMode_Dev</code> value that controls
    * the behavior of the file chooser dialog.
-   * @param[in] accept_mime_types A comma-separated list of MIME types such as
-   * "audio/ *,text/plain" (note there should be no space between the '/' and
-   * the '*', but one is added to avoid confusing C++ comments).  The dialog
-   * may restrict selectable files to the specified MIME types. An empty string
-   * or an undefined var may be given to indicate that all types should be
-   * accepted.
+   * @param[in] accept_types A comma-separated list of MIME types and file
+   * extensions such as "audio/ *,text/plain,.html" (note there should be no
+   * space between the '/' and the '*', but one is added to avoid confusing C++
+   * comments). The dialog may restrict selectable files to the specified MIME
+   * types and file extensions. If a string in the comma-separated list begins
+   * with a period (.) then the string is interpreted as a file extension,
+   * otherwise it is interpreted as a MIME-type. An empty string or an undefined
+   * var may be given to indicate that all types should be accepted.
    *
    * @return A <code>PP_Resource</code> containing the file chooser if
    * successful or 0 if it could not be created.
    */
   PP_Resource (*Create)(PP_Instance instance,
                         PP_FileChooserMode_Dev mode,
-                        struct PP_Var accept_mime_types);
+                        struct PP_Var accept_types);
   /**
    * Determines if the provided resource is a file chooser.
    *
@@ -117,7 +119,7 @@ typedef struct PPB_FileChooser_Dev_0_6 PPB_FileChooser_Dev;
 struct PPB_FileChooser_Dev_0_5 {
   PP_Resource (*Create)(PP_Instance instance,
                         PP_FileChooserMode_Dev mode,
-                        struct PP_Var accept_mime_types);
+                        struct PP_Var accept_types);
   PP_Bool (*IsFileChooser)(PP_Resource resource);
   int32_t (*Show)(PP_Resource chooser, struct PP_CompletionCallback callback);
   PP_Resource (*GetNextChosenFile)(PP_Resource chooser);

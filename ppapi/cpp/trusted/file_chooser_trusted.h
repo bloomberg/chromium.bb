@@ -18,7 +18,7 @@ class FileChooser_Trusted : public FileChooser_Dev {
 
   FileChooser_Trusted(const InstanceHandle& instance,
                       PP_FileChooserMode_Dev mode,
-                      const Var& accept_mime_types,
+                      const Var& accept_types,
                       bool save_as,
                       const std::string& suggested_file_name);
 

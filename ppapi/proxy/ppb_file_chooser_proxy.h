@@ -33,7 +33,7 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
   static PP_Resource CreateProxyResource(
       PP_Instance instance,
       PP_FileChooserMode_Dev mode,
-      const char* accept_mime_types);
+      const char* accept_types);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -44,7 +44,7 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
   // Plugin -> host message handlers.
   void OnMsgCreate(PP_Instance instance,
                    int mode,
-                   std::string accept_mime_types,
+                   std::string accept_types,
                    ppapi::HostResource* result);
   void OnMsgShow(const ppapi::HostResource& chooser,
                  PP_Bool save_as,

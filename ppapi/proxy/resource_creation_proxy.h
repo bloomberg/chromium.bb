@@ -110,7 +110,7 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateFileChooser(
       PP_Instance instance,
       PP_FileChooserMode_Dev mode,
-      const char* accept_mime_types) OVERRIDE;
+      const char* accept_types) OVERRIDE;
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) OVERRIDE;
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) OVERRIDE;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,12 +36,12 @@ class PPB_FileChooser_Impl : public ::ppapi::Resource,
  public:
   PPB_FileChooser_Impl(PP_Instance instance,
                        PP_FileChooserMode_Dev mode,
-                       const char* accept_mime_types);
+                       const char* accept_types);
   virtual ~PPB_FileChooser_Impl();
 
   static PP_Resource Create(PP_Instance instance,
                             PP_FileChooserMode_Dev mode,
-                            const char* accept_mime_types);
+                            const char* accept_types);
 
   // Resource overrides.
   virtual PPB_FileChooser_Impl* AsPPB_FileChooser_Impl();
@@ -78,15 +78,15 @@ class PPB_FileChooser_Impl : public ::ppapi::Resource,
       PP_Var suggested_file_name,
       const PP_CompletionCallback& callback) OVERRIDE;
 
-  // Splits a comma-separated MIME type list |accept_mime_types|, trims the
+  // Splits a comma-separated MIME type/extension list |accept_types|, trims the
   // resultant split types, makes them lowercase, and returns them.
   // Though this should be private, this is public for testing.
   WEBKIT_PLUGINS_EXPORT static std::vector<WebKit::WebString> ParseAcceptValue(
-      const std::string& accept_mime_types);
+      const std::string& accept_types);
 
  private:
   PP_FileChooserMode_Dev mode_;
-  std::string accept_mime_types_;
+  std::string accept_types_;
   scoped_refptr< ::ppapi::TrackedCallback> callback_;
 
   // When using the v0.6 of the API, this will contain the output for the

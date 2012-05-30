@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,19 +36,18 @@ class FileChooser_Dev : public Resource {
   /// In order to get the list of files in a directory, the
   /// PPB_DirectoryReader_Dev interface must be used.
   ///
-  /// @param accept_mime_types A comma-separated list of MIME types such as
-  /// "audio/ *,text/plain" (note there should be no space between the '/' and
-  /// the '*', but one is added to avoid confusing C++ comments).  The dialog
-  /// may restrict selectable files to the specified MIME types. An empty string
-  /// or an undefined var may be given to indicate that all types should be
+  /// @param accept_types A comma-separated list of MIME types and file
+  /// extensions such as "audio/ *,text/plain,.html" (note there should be
+  /// no space between the '/' and the '*', but one is added to avoid confusing
+  /// C++ comments). The dialog may restrict selectable files to the specified
+  /// MIME types and file extensions. If a string in the comma-separated list
+  /// begins with a period (.) then the string is interpreted as a file
+  /// extension, otherwise it is interpreted as a MIME-type. An empty string or
+  /// an undefined var may be given to indicate that all types should be
   /// accepted.
-  ///
-  /// TODO(darin): What if the mime type is unknown to the system?  The plugin
-  /// may wish to describe the mime type and provide a matching file extension.
-  /// It is more webby to use mime types here instead of file extensions.
   FileChooser_Dev(const InstanceHandle& instance,
                   PP_FileChooserMode_Dev mode,
-                  const Var& accept_mime_types);
+                  const Var& accept_types);
 
   FileChooser_Dev(const FileChooser_Dev& other);
 

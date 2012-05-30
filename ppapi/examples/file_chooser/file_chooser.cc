@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,9 +46,9 @@ class MyInstance : public pp::InstancePrivate {
     PP_FileChooserMode_Dev mode =
         (multi_select ? PP_FILECHOOSERMODE_OPENMULTIPLE
                       : PP_FILECHOOSERMODE_OPEN);
-    std::string accept_mime_types = (multi_select ? "" : "plain/text");
+    std::string accept_types = (multi_select ? "" : "plain/text");
 
-    chooser_ = pp::FileChooser_Dev(this, mode, accept_mime_types);
+    chooser_ = pp::FileChooser_Dev(this, mode, accept_types);
     chooser_.Show(callback_factory_.NewCallbackWithOutput(
         &MyInstance::ShowSelectedFileNames));
   }

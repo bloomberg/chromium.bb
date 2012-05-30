@@ -1041,7 +1041,7 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFileChooser_Create,
                            PP_Instance /* instance */,
                            int /* mode */,
-                           std::string /* accept_mime_types */,
+                           std::string /* accept_types */,
                            ppapi::HostResource /* result */)
 IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFileChooser_Show,
                     ppapi::HostResource /* file_chooser */,
