@@ -460,6 +460,9 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 
 	window = hash_table_lookup(wm->window_hash, map_request->window);
 
+	if (window->frame_id)
+		return;
+
 	weston_wm_window_read_properties(window);
 
 	weston_wm_window_get_frame_size(window, &width, &height);
