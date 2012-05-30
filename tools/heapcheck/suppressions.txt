@@ -1863,3 +1863,16 @@
    fun:::ChromeTestSuiteInitializer::OnTestStart
    fun:testing::internal::TestEventRepeater::OnTestStart
 }
+{
+   bug_130246
+   Heapcheck:Leak
+   fun:SiteInstanceImpl::GetProcess
+   fun:content::RenderViewHostImpl::RenderViewHostImpl
+   fun:RenderViewHostFactory::Create
+   fun:RenderViewHostManager::Init
+   fun:WebContentsImpl::WebContentsImpl
+   fun:content::TestWebContents::TestWebContents
+   fun:content::WebContentsTester::CreateTestWebContents
+   fun:::OneClickSigninHelperTest::CreateMockWebContents
+   fun:OneClickSigninHelperTest_*
+}
