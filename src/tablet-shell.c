@@ -52,7 +52,6 @@ struct tablet_shell {
 
 	struct weston_compositor *compositor;
 	struct weston_process process;
-	struct weston_seat *seat;
 	struct wl_client *client;
 
 	struct weston_surface *surface;
@@ -469,8 +468,6 @@ home_key_binding(struct wl_seat *seat, uint32_t time,
 
 	if (shell->state == STATE_LOCKED)
 		return;
-
-	shell->seat = (struct weston_seat *) seat;
 
 	if (state) {
 		wl_event_source_timer_update(shell->long_press_source, 500);
