@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
-#include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/shell_content_plugin_client.h"
 #include "content/shell/shell_content_renderer_client.h"
@@ -18,21 +17,6 @@
 
 namespace ash {
 namespace shell {
-namespace {
-
-int ShellBrowserMain(
-    const content::MainFunctionParams& main_function_params) {
-  scoped_ptr<content::BrowserMainRunner> main_runner(
-      content::BrowserMainRunner::Create());
-  int exit_code = main_runner->Initialize(main_function_params);
-  if (exit_code >= 0)
-    return exit_code;
-  exit_code = main_runner->Run();
-  main_runner->Shutdown();
-  return exit_code;
-}
-
-}
 
 ShellMainDelegate::ShellMainDelegate() {
 }
@@ -55,25 +39,7 @@ void ShellMainDelegate::PreSandboxStartup() {
   InitializeResourceBundle();
 }
 
-void ShellMainDelegate::SandboxInitialized(const std::string& process_type) {
-}
-
-int ShellMainDelegate::RunProcess(
-    const std::string& process_type,
-    const content::MainFunctionParams& main_function_params) {
-  if (process_type != "")
-    return -1;
-
-  return ShellBrowserMain(main_function_params);
-}
-
-void ShellMainDelegate::ProcessExiting(const std::string& process_type) {
-}
-
 #if defined(OS_POSIX)
-content::ZygoteForkDelegate* ShellMainDelegate::ZygoteStarting() {
-  return NULL;
-}
 
 void ShellMainDelegate::ZygoteForked() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();

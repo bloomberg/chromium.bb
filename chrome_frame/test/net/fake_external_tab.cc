@@ -158,18 +158,6 @@ class FakeMainDelegate : public content::ContentMainDelegate {
     content::GetContentClient()->set_renderer(&g_renderer_client.Get());
     return false;
   }
-
-  virtual void PreSandboxStartup() OVERRIDE {
-  }
-
-  virtual void SandboxInitialized(const std::string& process_type) OVERRIDE {}
-
-  virtual int RunProcess(
-      const std::string& process_type,
-      const content::MainFunctionParams& main_function_params) OVERRIDE {
-    return -1;
-  }
-  virtual void ProcessExiting(const std::string& process_type) OVERRIDE {}
 };
 
 void FilterDisabledTests() {

@@ -17,6 +17,7 @@
     'app/content_main_runner.cc',
     'app/startup_helper_win.cc',
     'public/app/content_main.h',
+    'public/app/content_main_delegate.cc',
     'public/app/content_main_delegate.h',
     'public/app/content_main_runner.h',
     'public/app/startup_helper_win.h',
