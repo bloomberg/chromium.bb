@@ -78,8 +78,9 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
     return auto_hide_behavior_;
   }
 
-  // Sets the alignment.
-  void SetAlignment(ShelfAlignment alignment);
+  // Sets the alignment. Returns true if the alignment is changed. Otherwise,
+  // returns false.
+  bool SetAlignment(ShelfAlignment alignment);
   ShelfAlignment alignment() const { return alignment_; }
 
   void set_workspace_manager(WorkspaceManager* manager) {
@@ -216,7 +217,7 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
 
   int GetWorkAreaSize(const State& state, int size) const;
 
-  int axis_position(int x, int y) const{
+  int axis_position(int x, int y) const {
     return alignment_ == SHELF_ALIGNMENT_BOTTOM ? y : x;
   }
 

@@ -4,6 +4,8 @@
 
 #include "ash/wm/shelf_layout_manager.h"
 
+#include <algorithm>
+
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
@@ -186,9 +188,9 @@ void ShelfLayoutManager::SetLauncher(Launcher* launcher) {
   LayoutShelf();
 }
 
-void ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
+bool ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
   if (alignment_ == alignment)
-    return;
+    return false;
 
   alignment_ = alignment;
   if (launcher_)
@@ -196,6 +198,7 @@ void ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
   if (Shell::GetInstance()->tray())
     Shell::GetInstance()->tray()->SetShelfAlignment(alignment);
   LayoutShelf();
+  return true;
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {

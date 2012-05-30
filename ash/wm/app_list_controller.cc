@@ -56,6 +56,24 @@ gfx::Rect GetWorkAreaBoundsForWidget(views::Widget* widget) {
       gfx::Screen::GetMonitorNearestWindow(window).work_area();
 }
 
+// Gets arrow location based on shelf alignment.
+views::BubbleBorder::ArrowLocation GetBubbleArrowLocation() {
+  DCHECK(Shell::HasInstance());
+  ash::ShelfAlignment shelf_alignment =
+      Shell::GetInstance()->shelf()->alignment();
+  switch (shelf_alignment) {
+    case ash::SHELF_ALIGNMENT_BOTTOM:
+      return views::BubbleBorder::BOTTOM_RIGHT;
+    case ash::SHELF_ALIGNMENT_LEFT:
+      return views::BubbleBorder::LEFT_BOTTOM;
+    case ash::SHELF_ALIGNMENT_RIGHT:
+      return views::BubbleBorder::RIGHT_BOTTOM;
+    default:
+      NOTREACHED() << "Unknown shelf alignment " << shelf_alignment;
+      return views::BubbleBorder::BOTTOM_RIGHT;
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,11 +81,13 @@ gfx::Rect GetWorkAreaBoundsForWidget(views::Widget* widget) {
 
 AppListController::AppListController() : is_visible_(false), view_(NULL) {
   app_list::IconCache::CreateInstance();
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 AppListController::~AppListController() {
   ResetView();
   app_list::IconCache::DeleteInstance();
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 // static
@@ -96,7 +116,8 @@ void AppListController::SetVisible(bool visible) {
     if (UseAppListV2()) {
       view->InitAsBubble(
           Shell::GetInstance()->GetContainer(kShellWindowId_AppListContainer),
-          Shell::GetInstance()->launcher()->GetAppListButtonView());
+          Shell::GetInstance()->launcher()->GetAppListButtonView(),
+          GetBubbleArrowLocation());
     } else {
       views::Widget* launcher_widget =
           Shell::GetInstance()->launcher()->widget();
@@ -313,6 +334,13 @@ void AppListController::OnWidgetClosing(views::Widget* widget) {
   if (is_visible_)
     SetVisible(false);
   ResetView();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AppListController, ShellObserver implementation:
+void AppListController::OnShelfAlignmentChanged() {
+  if (view_ && view_->bubble_style())
+    view_->SetBubbleArrowLocation(GetBubbleArrowLocation());
 }
 
 }  // namespace internal

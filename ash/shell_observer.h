@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELLOBSERVER_H_
-#define ASH_SHELLOBSERVER_H_
+#ifndef ASH_SHELL_OBSERVER_H_
+#define ASH_SHELL_OBSERVER_H_
 #pragma once
 
 #include "ash/ash_export.h"
@@ -26,10 +26,13 @@ class ASH_EXPORT ShellObserver {
   // unlocked.
   virtual void OnLockStateChanged(bool locked) {}
 
+  // Invoked when the shelf alignment is changed.
+  virtual void OnShelfAlignmentChanged() {}
+
  protected:
   virtual ~ShellObserver() {}
 };
 
 }  // namespace ash
 
-#endif  // ASH_SHELLOBSERVER_H_
+#endif  // ASH_SHELL_OBSERVER_H_

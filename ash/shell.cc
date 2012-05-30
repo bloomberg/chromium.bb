@@ -597,6 +597,7 @@ Shell::~Shell() {
   // delete them before invalidating the instance.
   // Alphabetical.
   activation_controller_.reset();
+  app_list_controller_.reset();
   drag_drop_controller_.reset();
   event_client_.reset();
   magnification_controller_.reset();
@@ -901,7 +902,10 @@ ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior() const {
 }
 
 void Shell::SetShelfAlignment(ShelfAlignment alignment) {
-  shelf_->SetAlignment(alignment);
+  if (!shelf_->SetAlignment(alignment))
+    return;
+  FOR_EACH_OBSERVER(ShellObserver, observers_,
+                    OnShelfAlignmentChanged());
 }
 
 ShelfAlignment Shell::GetShelfAlignment() {

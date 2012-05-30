@@ -103,7 +103,10 @@ void AppListView::InitAsFullscreenWidget(gfx::NativeView parent,
   CreateModel();
 }
 
-void AppListView::InitAsBubble(gfx::NativeView parent, views::View* anchor) {
+void AppListView::InitAsBubble(
+    gfx::NativeView parent,
+    views::View* anchor,
+    views::BubbleBorder::ArrowLocation arrow_location) {
   bubble_style_ = true;
   set_background(NULL);
 
@@ -141,9 +144,16 @@ void AppListView::InitAsBubble(gfx::NativeView parent, views::View* anchor) {
                                            apps_view_,
                                            search_results_view_);
   GetBubbleFrameView()->SetBubbleBorder(bubble_border_);
-  SizeToContents();  // Recalcuates with new border.
+  SetBubbleArrowLocation(arrow_location);
 
   CreateModel();
+}
+
+void AppListView::SetBubbleArrowLocation(
+    views::BubbleBorder::ArrowLocation arrow_location) {
+  DCHECK(bubble_border_);
+  bubble_border_->set_arrow_location(arrow_location);
+  SizeToContents();  // Recalcuates with new border.
 }
 
 void AppListView::AnimateShow(int duration_ms) {
@@ -311,10 +321,10 @@ gfx::Rect AppListView::GetBubbleBounds() {
   if (!bubble_border_)
     return views::BubbleDelegateView::GetBubbleBounds();
 
-  const int old_arrow_offset = bubble_border_->arrow_offset();
+  const gfx::Point old_offset = bubble_border_->offset();
   const gfx::Rect anchor_rect = GetAnchorRect();
 
-  bubble_border_->set_arrow_offset(0);
+  bubble_border_->set_offset(gfx::Point());
   gfx::Rect bubble_rect = GetBubbleFrameView()->GetUpdatedWindowBounds(
       anchor_rect,
       GetPreferredSize(),
@@ -325,21 +335,25 @@ gfx::Rect AppListView::GetBubbleBounds() {
   if (monitor_rect.IsEmpty() || monitor_rect.Contains(bubble_rect))
     return bubble_rect;
 
-  int offset = 0;
-  if (bubble_rect.x() < monitor_rect.x())
-    offset = monitor_rect.x() - bubble_rect.x();
-  else if (bubble_rect.right() > monitor_rect.right())
-    offset = monitor_rect.right() - bubble_rect.right();
+  gfx::Point offset;
 
-  bubble_rect.set_x(bubble_rect.x() + offset);
+  if (bubble_border_->ArrowAtTopOrBottom()) {
+    if (bubble_rect.x() < monitor_rect.x())
+      offset.set_x(monitor_rect.x() - bubble_rect.x());
+    else if (bubble_rect.right() > monitor_rect.right())
+      offset.set_x(monitor_rect.right() - bubble_rect.right());
+  } else if (bubble_border_->ArrowOnLeftOrRight()) {
+    if (bubble_rect.y() < monitor_rect.y())
+      offset.set_y(monitor_rect.y() - bubble_rect.y());
+    else if (bubble_rect.bottom() > monitor_rect.bottom())
+      offset.set_y(monitor_rect.bottom() - bubble_rect.bottom());
+  }
 
-  // Moves bubble arrow in the opposite direction. i.e. If bubble bounds is
-  // moved to right (positive offset), we need to move arrow to left so that
-  // it points to the same position before the move.
-  bubble_border_->set_arrow_offset(-offset);
+  bubble_rect.Offset(offset);
+  bubble_border_->set_offset(offset);
 
   // Repaints border if arrow offset is changed.
-  if (bubble_border_->arrow_offset() != old_arrow_offset)
+  if (bubble_border_->offset() != old_offset)
     GetBubbleFrameView()->SchedulePaint();
 
   return bubble_rect;

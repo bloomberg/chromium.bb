@@ -6,6 +6,7 @@
 #define ASH_WM_APP_LIST_CONTROLLER_H_
 #pragma once
 
+#include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/timer.h"
@@ -28,7 +29,8 @@ namespace internal {
 class AppListController : public aura::EventFilter,
                           public aura::RootWindowObserver,
                           public ui::ImplicitAnimationObserver,
-                          public views::Widget::Observer {
+                          public views::Widget::Observer,
+                          public ShellObserver {
  public:
   AppListController();
   virtual ~AppListController();
@@ -94,6 +96,9 @@ class AppListController : public aura::EventFilter,
 
   // views::Widget::Observer overrides:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+
+  // ShellObserver overrides:
+  virtual void OnShelfAlignmentChanged() OVERRIDE;
 
   // Whether we should show or hide app list widget.
   bool is_visible_;

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/views/bubble/bubble_border.h"
 
 namespace app_list {
@@ -20,10 +21,16 @@ class AppListBubbleBorder : public views::BubbleBorder {
                       views::View* results_view);
   virtual ~AppListBubbleBorder();
 
-  int arrow_offset() const { return arrow_offset_; }
-  void set_arrow_offset(int arrow_offset) { arrow_offset_ = arrow_offset; }
+  bool ArrowAtTopOrBottom() const;
+  bool ArrowOnLeftOrRight() const;
+
+  void set_offset(const gfx::Point& offset) { offset_ = offset; }
+  const gfx::Point& offset() const { return offset_; }
 
  private:
+  // Gets arrow offset based on arrow location and |offset_|.
+  int GetArrowOffset() const;
+
   void PaintSearchBoxBackground(gfx::Canvas* canvas,
                                 const gfx::Rect& bounds) const;
   void PaintSearchResultListBackground(gfx::Canvas* canvas,
@@ -49,7 +56,9 @@ class AppListBubbleBorder : public views::BubbleBorder {
   const views::View* results_view_;
 
   // Offset in pixels relative the default middle position.
-  int arrow_offset_;
+  gfx::Point offset_;
+
+  gfx::ShadowValues shadows_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListBubbleBorder);
 };

@@ -43,15 +43,22 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   void InitAsFullscreenWidget(gfx::NativeView parent,
                               const gfx::Rect& screen_bounds,
                               const gfx::Rect& work_area);
-  void InitAsBubble(gfx::NativeView parent, views::View* anchor);
+  void InitAsBubble(gfx::NativeView parent,
+                    views::View* anchor,
+                    views::BubbleBorder::ArrowLocation arrow_location);
+
+  void SetBubbleArrowLocation(
+      views::BubbleBorder::ArrowLocation arrow_location);
 
   void AnimateShow(int duration_ms);
   void AnimateHide(int duration_ms);
 
   void Close();
+
   void UpdateBounds(const gfx::Rect& screen_bounds,
                     const gfx::Rect& work_area);
 
+  bool bubble_style() const { return bubble_style_; }
   SearchBoxView* search_box() const { return search_box_view_; }
 
  private:
