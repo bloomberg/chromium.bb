@@ -656,20 +656,22 @@ weston_compositor_repick(struct weston_compositor *compositor)
 static void
 weston_surface_unmap(struct weston_surface *surface)
 {
-	struct wl_seat *seat = &surface->compositor->seat->seat;
+	struct weston_seat *seat;
 
 	weston_surface_damage_below(surface);
 	surface->output = NULL;
 	wl_list_remove(&surface->link);
 	wl_list_remove(&surface->layer_link);
 
-	if (seat->keyboard->focus == &surface->surface)
-		wl_keyboard_set_focus(seat->keyboard, NULL);
-	if (seat->pointer->focus == &surface->surface)
-		wl_pointer_set_focus(seat->pointer,
-				     NULL,
-		                     wl_fixed_from_int(0),
-				     wl_fixed_from_int(0));
+	wl_list_for_each(seat, &surface->compositor->seat_list, link) {
+		if (seat->seat.keyboard->focus == &surface->surface)
+			wl_keyboard_set_focus(seat->seat.keyboard, NULL);
+		if (seat->seat.pointer->focus == &surface->surface)
+			wl_pointer_set_focus(seat->seat.pointer,
+					     NULL,
+					     wl_fixed_from_int(0),
+					     wl_fixed_from_int(0));
+	}
 
 	weston_compositor_schedule_repaint(surface->compositor);
 }
@@ -2442,7 +2444,10 @@ weston_seat_update_drag_surface(struct wl_seat *seat,
 WL_EXPORT void
 weston_compositor_update_drag_surfaces(struct weston_compositor *compositor)
 {
-	weston_seat_update_drag_surface(&compositor->seat->seat, 0, 0);
+	struct weston_seat *seat;
+
+	wl_list_for_each(seat, &compositor->seat_list, link)
+		weston_seat_update_drag_surface(&seat->seat, 0, 0);
 }
 
 static void
