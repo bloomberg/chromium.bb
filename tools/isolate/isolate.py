@@ -420,8 +420,8 @@ class CompleteState(object):
       # At that point, variables are not replaced yet in command and infiles.
       # infiles may contain directory entries and is in posix style.
       command, infiles, read_only = load_isolate(f.read(), error)
-    command = [eval_variables(i, variables) for i in command]
-    infiles = [eval_variables(f, variables) for f in infiles]
+    command = [eval_variables(i, self.saved_state.variables) for i in command]
+    infiles = [eval_variables(f, self.saved_state.variables) for f in infiles]
     # root_dir is automatically determined by the deepest root accessed with the
     # form '../../foo/bar'.
     root_dir = determine_root_dir(relative_base_dir, infiles)
