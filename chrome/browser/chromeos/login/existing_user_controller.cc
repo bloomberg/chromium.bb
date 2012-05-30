@@ -715,15 +715,16 @@ void ExistingUserController::InitializeStartUrls() const {
 
   PrefService* prefs = g_browser_process->local_state();
   const base::ListValue *urls;
-  if (UserManager::Get()->IsLoggedInAsDemoUser() &&
-      CrosSettings::Get()->GetList(kStartUpUrls, &urls)) {
-    // the demo user will get its start urls from the special policy if it is
-    // set.
-    for (base::ListValue::const_iterator it = urls->begin();
-         it != urls->end(); ++it) {
-      std::string url;
-      if ((*it)->GetAsString(&url))
-        start_urls.push_back(url);
+  if (UserManager::Get()->IsLoggedInAsDemoUser()) {
+    if (CrosSettings::Get()->GetList(kStartUpUrls, &urls)) {
+      // the demo user will get its start urls from the special policy if it is
+      // set.
+      for (base::ListValue::const_iterator it = urls->begin();
+           it != urls->end(); ++it) {
+        std::string url;
+        if ((*it)->GetAsString(&url))
+          start_urls.push_back(url);
+      }
     }
   } else {
     if (prefs->GetBoolean(prefs::kSpokenFeedbackEnabled)) {
