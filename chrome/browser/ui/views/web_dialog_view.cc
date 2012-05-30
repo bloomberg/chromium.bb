@@ -203,6 +203,12 @@ std::string WebDialogView::GetDialogArgs() const {
   return std::string();
 }
 
+void WebDialogView::OnDialogShown(content::WebUI* webui,
+                                  content::RenderViewHost* render_view_host) {
+  if (delegate_)
+    delegate_->OnDialogShown(webui, render_view_host);
+}
+
 void WebDialogView::OnDialogClosed(const std::string& json_retval) {
   Detach();
   if (delegate_) {
