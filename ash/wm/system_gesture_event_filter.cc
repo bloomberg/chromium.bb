@@ -4,16 +4,100 @@
 
 #include "ash/wm/system_gesture_event_filter.h"
 
-#include "ash/shell.h"
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/shell.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/volume_control_delegate.h"
+#include "ash/wm/window_resizer.h"
+#include "ash/wm/window_util.h"
+#include "ash/wm/workspace/snap_sizer.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
+
+namespace {
+
+const int kSystemPinchPoints = 4;
+
+enum SystemGestureStatus {
+  SYSTEM_GESTURE_PROCESSED,  // The system gesture has been processed.
+  SYSTEM_GESTURE_IGNORED,    // The system gesture was ignored.
+  SYSTEM_GESTURE_END,        // Marks the end of the sytem gesture.
+};
+
+aura::Window* GetTargetForSystemGestureEvent(aura::Window* target) {
+  aura::Window* system_target = target;
+  if (!system_target || system_target == ash::Shell::GetPrimaryRootWindow())
+    system_target = ash::wm::GetActiveWindow();
+  if (system_target)
+    system_target = system_target->GetToplevelWindow();
+  return system_target;
+}
+
+}
 
 namespace ash {
 namespace internal {
+
+class SystemPinchHandler {
+ public:
+  explicit SystemPinchHandler(aura::Window* target)
+      : target_(target) {
+    widget_ = views::Widget::GetWidgetForNativeWindow(target_);
+  }
+
+  ~SystemPinchHandler() {
+  }
+
+  SystemGestureStatus ProcessGestureEvent(const aura::GestureEvent& event) {
+    // The target has changed, somehow. Let's bale.
+    if (!widget_)
+      return SYSTEM_GESTURE_END;
+
+    switch (event.type()) {
+      case ui::ET_GESTURE_TAP_UP:
+        if (event.delta_x() == kSystemPinchPoints) {
+          gfx::Rect bounds = target_->bounds();
+          int grid = Shell::GetInstance()->GetGridSize();
+          bounds.set_x(WindowResizer::AlignToGridRoundUp(bounds.x(), grid));
+          bounds.set_y(WindowResizer::AlignToGridRoundUp(bounds.y(), grid));
+          target_->SetBounds(bounds);
+          return SYSTEM_GESTURE_END;
+        }
+        break;
+
+      case ui::ET_GESTURE_SCROLL_UPDATE: {
+        if (wm::IsWindowFullscreen(target_) ||
+            !widget_->widget_delegate()->CanResize())
+          break;
+
+        gfx::Rect bounds = target_->bounds();
+        bounds.set_x(static_cast<int>(bounds.x() + event.delta_x()));
+        bounds.set_y(static_cast<int>(bounds.y() + event.delta_y()));
+        target_->SetBounds(bounds);
+        break;
+      }
+
+      case ui::ET_GESTURE_PINCH_UPDATE: {
+        // TODO(sad): Process PINCH_UPDATEs too.
+        break;
+      }
+
+      default:
+        break;
+    }
+
+    return SYSTEM_GESTURE_PROCESSED;
+  }
+
+ private:
+  aura::Window* target_;
+  views::Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemPinchHandler);
+};
 
 SystemGestureEventFilter::SystemGestureEventFilter()
     : aura::EventFilter(),
@@ -44,9 +128,6 @@ ui::TouchStatus SystemGestureEventFilter::PreHandleTouchEvent(
 
 ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     aura::Window* target, aura::GestureEvent* event) {
-  // TODO(tdresser) handle system level gesture events
-  if (event->type() == ui::ET_GESTURE_THREE_FINGER_SWIPE)
-    return ui::GESTURE_STATUS_CONSUMED;
   if (!target || target == Shell::GetPrimaryRootWindow()) {
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN: {
@@ -102,7 +183,47 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     }
     return ui::GESTURE_STATUS_CONSUMED;
   }
+
+  aura::Window* system_target = GetTargetForSystemGestureEvent(target);
+  if (!system_target)
+    return ui::GESTURE_STATUS_UNKNOWN;
+
+  WindowPinchHandlerMap::iterator find = pinch_handlers_.find(system_target);
+  if (find != pinch_handlers_.end()) {
+    SystemGestureStatus status =
+        (*find).second->ProcessGestureEvent(*event);
+    if (status == SYSTEM_GESTURE_END)
+      ClearGestureHandlerForWindow(system_target);
+    return ui::GESTURE_STATUS_CONSUMED;
+  } else {
+    if (event->type() == ui::ET_GESTURE_TAP_DOWN &&
+        event->delta_x() >= kSystemPinchPoints) {
+      pinch_handlers_[system_target] = new SystemPinchHandler(system_target);
+      system_target->AddObserver(this);
+      return ui::GESTURE_STATUS_CONSUMED;
+    }
+  }
+
   return ui::GESTURE_STATUS_UNKNOWN;
+}
+
+void SystemGestureEventFilter::OnWindowVisibilityChanged(aura::Window* window,
+                                                         bool visible) {
+  if (!visible)
+    ClearGestureHandlerForWindow(window);
+}
+
+void SystemGestureEventFilter::OnWindowDestroying(aura::Window* window) {
+  ClearGestureHandlerForWindow(window);
+}
+
+void SystemGestureEventFilter::ClearGestureHandlerForWindow(
+    aura::Window* window) {
+  WindowPinchHandlerMap::iterator find = pinch_handlers_.find(window);
+  DCHECK(find != pinch_handlers_.end());
+  delete (*find).second;
+  pinch_handlers_.erase(find);
+  window->RemoveObserver(this);
 }
 
 bool SystemGestureEventFilter::HandleDeviceControl(aura::GestureEvent* event) {

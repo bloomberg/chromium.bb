@@ -53,12 +53,15 @@ enum EventType {
   ET_GESTURE_SCROLL_UPDATE,
   ET_GESTURE_TAP,
   ET_GESTURE_TAP_DOWN,
+  ET_GESTURE_TAP_UP,
   ET_GESTURE_DOUBLE_TAP,
   ET_GESTURE_PINCH_BEGIN,
   ET_GESTURE_PINCH_END,
   ET_GESTURE_PINCH_UPDATE,
   ET_GESTURE_LONG_PRESS,
-  ET_GESTURE_THREE_FINGER_SWIPE,
+  // A SWIPE gesture can happen at the end of a TAP_UP gesture if the
+  // finger(s) were moving quickly before they are released.
+  ET_GESTURE_MULTIFINGER_SWIPE,
 
   // Scroll support.
   // TODO[davemoore] we need to unify these events w/ touch and gestures.

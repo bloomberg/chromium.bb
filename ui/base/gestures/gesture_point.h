@@ -55,6 +55,8 @@ class GesturePoint {
 
   double last_touch_time() const { return last_touch_time_; }
   const gfx::Point& last_touch_position() const { return last_touch_position_; }
+  int x() const { return last_touch_position_.x(); }
+  int y() const { return last_touch_position_.y(); }
 
   // point_id_ is used to drive GestureSequence::ProcessTouchEventForGesture.
   // point_ids are maintained such that the set of point_ids is always
@@ -80,8 +82,6 @@ class GesturePoint {
 
   float XVelocity() { return velocity_calculator_.XVelocity(); }
   float YVelocity() { return velocity_calculator_.YVelocity(); }
-
-  float Distance(const GesturePoint& point) const;
 
   const gfx::Rect& enclosing_rectangle() const { return enclosing_rect_; }
 

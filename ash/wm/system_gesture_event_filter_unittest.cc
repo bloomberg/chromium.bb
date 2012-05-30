@@ -130,33 +130,6 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
   EXPECT_FALSE(consumed);
 }
 
-// Ensure that a three fingered swipe is consumed by the system event handler.
-TEST_F(SystemGestureEventFilterTest, ThreeFingerSwipe) {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-
-  const int kTouchId = 5;
-
-  // Get a target for kTouchId
-  aura::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(100, 100), kTouchId,
-                         base::Time::NowFromSystemTime() - base::Time());
-  root_window->DispatchTouchEvent(&press);
-
-  aura::GestureEvent* event = new aura::GestureEvent(
-      ui::ET_GESTURE_THREE_FINGER_SWIPE, 0, 0, 0, base::Time::Now(),
-      0, 0, 1 << kTouchId);
-  bool consumed = root_window->DispatchGestureEvent(event);
-
-  EXPECT_TRUE(consumed);
-
-  // The system event filter shouldn't filter out events like tap downs.
-  aura::GestureEvent* event2 = new aura::GestureEvent(
-      ui::ET_GESTURE_TAP_DOWN, 0, 0, 0, base::Time::Now(),
-      0, 0, 1 << kTouchId);
-  consumed = root_window->DispatchGestureEvent(event2);
-
-  EXPECT_FALSE(consumed);
-}
-
 // Ensure that the device control operation gets properly handled.
 TEST_F(SystemGestureEventFilterTest, DeviceControl) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
