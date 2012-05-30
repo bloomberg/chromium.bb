@@ -77,18 +77,16 @@ BubbleGtk* BubbleGtk::Show(GtkWidget* anchor_widget,
                            const gfx::Rect* rect,
                            GtkWidget* content,
                            ArrowLocationGtk arrow_location,
-                           int attributeFlags,
+                           int attribute_flags,
                            GtkThemeService* provider,
                            BubbleDelegateGtk* delegate) {
-  BubbleGtk* bubble = new BubbleGtk(provider,
-                                    attributeFlags & MATCH_SYSTEM_THEME);
-  bubble->Init(anchor_widget, rect, content, arrow_location, attributeFlags);
+  BubbleGtk* bubble = new BubbleGtk(provider, attribute_flags);
+  bubble->Init(anchor_widget, rect, content, arrow_location, attribute_flags);
   bubble->set_delegate(delegate);
   return bubble;
 }
 
-BubbleGtk::BubbleGtk(GtkThemeService* provider,
-                     bool match_system_theme)
+BubbleGtk::BubbleGtk(GtkThemeService* provider, int attribute_flags)
     : delegate_(NULL),
       window_(NULL),
       theme_service_(provider),
@@ -98,7 +96,7 @@ BubbleGtk::BubbleGtk(GtkThemeService* provider,
       mask_region_(NULL),
       preferred_arrow_location_(ARROW_LOCATION_TOP_LEFT),
       current_arrow_location_(ARROW_LOCATION_TOP_LEFT),
-      match_system_theme_(match_system_theme),
+      match_system_theme_(attribute_flags & MATCH_SYSTEM_THEME),
       grab_input_(true),
       closed_by_escape_(false) {
 }
@@ -118,7 +116,7 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
                      const gfx::Rect* rect,
                      GtkWidget* content,
                      ArrowLocationGtk arrow_location,
-                     int attributeFlags) {
+                     int attribute_flags) {
   // If there is a current grab widget (menu, other bubble, etc.), hide it.
   GtkWidget* current_grab_widget = gtk_grab_get_current();
   if (current_grab_widget)
@@ -131,10 +129,10 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
   rect_ = rect ? *rect : gtk_util::WidgetBounds(anchor_widget);
   preferred_arrow_location_ = arrow_location;
 
-  grab_input_ = attributeFlags & GRAB_INPUT;
+  grab_input_ = attribute_flags & GRAB_INPUT;
   // Using a TOPLEVEL window may cause placement issues with certain WMs but it
   // is necessary to be able to focus the window.
-  window_ = gtk_window_new(attributeFlags & POPUP_WINDOW ?
+  window_ = gtk_window_new(attribute_flags & POPUP_WINDOW ?
                            GTK_WINDOW_POPUP : GTK_WINDOW_TOPLEVEL);
 
   gtk_widget_set_app_paintable(window_, TRUE);

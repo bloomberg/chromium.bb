@@ -61,7 +61,7 @@ class BubbleGtk : public content::NotificationObserver {
 
   enum BubbleAttribute {
     NONE = 0,
-    MATCH_SYSTEM_THEME = 1, // Matches system colors/themes when possible.
+    MATCH_SYSTEM_THEME = 1 << 0, // Matches system colors/themes when possible.
     POPUP_WINDOW = 1 << 1, // Displays as popup instead of top-level window.
     GRAB_INPUT = 1 << 2, // Causes bubble to grab keyboard/pointer input.
   };
@@ -78,7 +78,7 @@ class BubbleGtk : public content::NotificationObserver {
                          const gfx::Rect* rect,
                          GtkWidget* content,
                          ArrowLocationGtk arrow_location,
-                         int attributeFlags,
+                         int attribute_flags,
                          GtkThemeService* provider,
                          BubbleDelegateGtk* delegate);
 
@@ -116,7 +116,7 @@ class BubbleGtk : public content::NotificationObserver {
     FRAME_STROKE,
   };
 
-  BubbleGtk(GtkThemeService* provider, bool match_system_theme);
+  BubbleGtk(GtkThemeService* provider, int attribute_flags);
   virtual ~BubbleGtk();
 
   // Creates the Bubble.
@@ -124,7 +124,7 @@ class BubbleGtk : public content::NotificationObserver {
             const gfx::Rect* rect,
             GtkWidget* content,
             ArrowLocationGtk arrow_location,
-            int attributeFlags);
+            int attribute_flags);
 
   // Make the points for our polygon frame, either for fill (the mask), or for
   // when we stroke the border.
