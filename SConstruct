@@ -3383,9 +3383,9 @@ nonvariant_tests = ExtendFileList([
     'tests/signal_handler_single_step/nacl.scons',
     'tests/thread_suspension/nacl.scons',
     'tests/translator_size_limits/nacl.scons',
+    'tests/trusted_crash/crash_in_syscall/nacl.scons',
     'tests/trusted_crash/osx_crash_filter/nacl.scons',
     'tests/trusted_crash/osx_crash_forwarding/nacl.scons',
-    'tests/trusted_crash/crash_in_syscall/nacl.scons',
     'tests/unittests/shared/imc/nacl.scons',
     'tests/unittests/shared/srpc/nacl.scons',
     #### ALPHABETICALLY SORTED ####

@@ -4,16 +4,24 @@
  * found in the LICENSE file.
  */
 
-#include <windows.h>
-#include <dbghelp.h>
+#include <string.h>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+
+#if NACL_WINDOWS
+# include <windows.h>
+# include <dbghelp.h>
+#elif NACL_LINUX
+# include <signal.h>
+#endif
 
 /*
  * This test case checks that an exception handler registered via
@@ -25,10 +33,12 @@
  */
 
 
-#define MAX_SYMBOL_NAME_LENGTH 100
-
 static const char *g_crash_type;
 
+
+#if NACL_WINDOWS
+
+#define MAX_SYMBOL_NAME_LENGTH 100
 
 static void PrintSymbolForAddress(DWORD64 addr) {
   /*
@@ -189,6 +199,41 @@ static LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exc_info) {
   return EXCEPTION_CONTINUE_SEARCH;
 }
 
+static void RegisterHandlers(void) {
+  SetUnhandledExceptionFilter(ExceptionHandler);
+}
+
+#else
+
+static const char exit_message[] = "** intended_exit_status=0\n";
+
+static void SignalHandler(int sig) {
+  if (strcmp(g_crash_type, "NACL_TEST_CRASH_MEMORY") == 0) {
+    CHECK(sig == SIGSEGV);
+  } else if (strcmp(g_crash_type, "NACL_TEST_CRASH_LOG_FATAL") == 0 ||
+             strcmp(g_crash_type, "NACL_TEST_CRASH_CHECK_FAILURE") == 0) {
+    CHECK(sig == SIGABRT);
+  } else {
+    NaClLog(LOG_FATAL, "Unknown crash type: \"%s\"\n", g_crash_type);
+  }
+  /* Avoid printf() because it uses a lot of stack space. */
+  if (write(2, exit_message, sizeof(exit_message) - 1) != 0) {
+    /* This conditional suppresses a compiler warning. */
+  }
+  _exit(0);
+}
+
+static void RegisterHandlers(void) {
+  int signals[] = { SIGSEGV, SIGABRT };
+  size_t index;
+  for (index = 0; index < NACL_ARRAY_SIZE(signals); index++) {
+    CHECK(signal(signals[index], SignalHandler) == 0);
+  }
+  NaClSignalHandlerInit();
+}
+
+#endif
+
 int main(int argc, char **argv) {
   struct NaClApp app;
   struct GioMemoryFileSnapshot gio_file;
@@ -213,7 +258,7 @@ int main(int argc, char **argv) {
   NaClAppInitialDescriptorHookup(&app);
   CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
 
-  SetUnhandledExceptionFilter(ExceptionHandler);
+  RegisterHandlers();
 
   CHECK(NaClCreateMainThread(&app, argc - 1, argv + 1, NULL));
   NaClWaitForMainThreadToExit(&app);

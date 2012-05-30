@@ -13,32 +13,37 @@ test_prog = env.ComponentProgram('test_guest', ['test_guest.c'],
 if env.Bit('pnacl_generate_pexe'):
   test_prog = env.GetTranslatedNexe(test_prog)
 
-if not env.Bit('host_windows'):
-  # This test is specifically for Windows: it checks how NaCl
-  # interacts with a Windows API (SetUnhandledExceptionFilter()).
+# This test covers how NaCl interacts with host-OS-specific
+# interfaces, and it is only implemented for Windows and Linux.  On
+# Windows, it tests interaction with Windows'
+# SetUnhandledExceptionFilter() API.  On Linux, it tests interaction
+# with signal handling.
+if not (env.Bit('host_windows') or env.Bit('host_linux')):
   Return()
 
 if 'TRUSTED_ENV' not in env:
   Return()
 trusted_env = env['TRUSTED_ENV']
 
+extra_libs = []
+if trusted_env.Bit('windows'):
+  extra_libs.append('dbghelp.lib')
 runner = trusted_env.ComponentProgram(
     'test_host', ['test_host.c'],
-    EXTRA_LIBS=['sel',
-                'sel_debug_dummy',
-                'dbghelp.lib', # Windows library
-                ])
+    EXTRA_LIBS=['sel', 'sel_debug_dummy'] + extra_libs)
+
+test_command = [runner, test_prog]
+bootstrap, _ = env.GetBootstrap()
+if bootstrap is not None:
+  test_command = [bootstrap] + test_command
 
 crash_types = [
-    ('run_windows_crash_in_syscall_test',
-     'NACL_TEST_CRASH_MEMORY'),
-    ('run_windows_log_fatal_in_syscall_test',
-     'NACL_TEST_CRASH_LOG_FATAL'),
-    ('run_windows_check_failure_in_syscall_test',
-     'NACL_TEST_CRASH_CHECK_FAILURE'),
+    ('run_crash_in_syscall_test', 'NACL_TEST_CRASH_MEMORY'),
+    ('run_log_fatal_in_syscall_test', 'NACL_TEST_CRASH_LOG_FATAL'),
+    ('run_check_failure_in_syscall_test', 'NACL_TEST_CRASH_CHECK_FAILURE'),
     ]
 for name, arg in crash_types:
   node = env.CommandTest(
-      '%s.out' % name, [runner, test_prog, arg], declares_exit_status=True)
+      '%s.out' % name, test_command + [arg], declares_exit_status=True)
   env.AddNodeToTestSuite(node, ['small_tests'], name,
                          is_broken=not env.Bit('nacl_static_link'))

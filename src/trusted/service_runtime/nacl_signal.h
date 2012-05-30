@@ -164,12 +164,6 @@ enum NaClSignalResult NaClSignalHandleNone(int signal_number, void *ctx);
 
 /*
  * A basic handler which will exit with -signal_number when
- * a signal is encountered.
- */
-enum NaClSignalResult NaClSignalHandleAll(int signal_number, void *ctx);
-
-/*
- * A basic handler which will exit with -signal_number when
  * a signal is encountered in the untrusted code, otherwise
  * the signal is passed to the next handler.
  */

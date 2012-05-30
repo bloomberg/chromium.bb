@@ -414,7 +414,7 @@ def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
   if exit_status not in expected_statuses:
     Print(msg)
     failed = True
-  if stderr is not None:
+  if using_nacl_signal_handler and stderr is not None:
     expected_printed = (expected_printed_signum, expected_sigtype)
     actual_printed = GetNaClSignalInfoFromStderr(stderr)
     msg = ('\nERROR: Command printed the signal info %s to stderr '
