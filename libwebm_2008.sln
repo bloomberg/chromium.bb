@@ -8,7 +8,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sample", "sample_2008.vcpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libwebm", "libwebm_2008.vcproj", "{7B1F12CA-0724-430B-B61A-1D357C912CBA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sample_muxer", "sample_muxer\sample_muxer_2008.vcproj", "{B407561F-1F5E-4798-B9C2-81AB09CFBC16}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sample_muxer", "sample_muxer_2008.vcproj", "{B407561F-1F5E-4798-B9C2-81AB09CFBC16}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7B1F12CA-0724-430B-B61A-1D357C912CBA} = {7B1F12CA-0724-430B-B61A-1D357C912CBA}
 	EndProjectSection
