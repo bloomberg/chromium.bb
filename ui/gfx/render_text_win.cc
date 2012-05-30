@@ -115,13 +115,15 @@ void GetFontNamesFromFilename(const std::string& filename,
   if (it == font_map->end())
     return;
 
-  // The family string is in the format "FamilyFoo & FamilyBar (True Type)".
+  // The family string is in the format "FamilyFoo & FamilyBar (TrueType)".
   // Split by '&' and strip off the trailing parenthesized experession.
   base::SplitString(it->second, '&', font_names);
   if (!font_names->empty()) {
     const size_t index = font_names->back().find('(');
-    if (index != std::string::npos)
+    if (index != std::string::npos) {
       font_names->back().resize(index);
+      TrimWhitespace(font_names->back(), TRIM_TRAILING, &font_names->back());
+    }
   }
 }
 
