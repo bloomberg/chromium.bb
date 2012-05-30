@@ -33,6 +33,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -253,6 +254,14 @@ class InstantTest : public InProcessBrowserTest {
                               verbatim ? "true" : "false",
                               selection_start,
                               selection_end);
+  }
+
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    // Do not prelaunch the GPU process for these tests because it will show
+    // up in task manager but whether it appears before or after the new tab
+    // renderer process is not well defined.
+    command_line->AppendSwitch(switches::kDisableGpuProcessPrelaunch);
   }
 };
 

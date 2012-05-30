@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,12 +16,22 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TaskManagerNotificationBrowserTest : public ExtensionBrowserTest {
  public:
   TaskManagerModel* model() const {
     return TaskManager::GetInstance()->model();
+  }
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+
+    // Do not prelaunch the GPU process for these tests because it will show
+    // up in task manager but whether it appears before or after the new tab
+    // renderer process is not well defined.
+    command_line->AppendSwitch(switches::kDisableGpuProcessPrelaunch);
   }
 };
 

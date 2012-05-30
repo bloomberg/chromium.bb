@@ -29,6 +29,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
@@ -55,6 +56,15 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
  public:
   TaskManagerModel* model() const {
     return TaskManager::GetInstance()->model();
+  }
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+
+    // Do not prelaunch the GPU process for these tests because it will show
+    // up in task manager but whether it appears before or after the new tab
+    // renderer process is not well defined.
+    command_line->AppendSwitch(switches::kDisableGpuProcessPrelaunch);
   }
 };
 
