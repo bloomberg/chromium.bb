@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "content/public/browser/browser_context.h"
 #include "ui/views/controls/webview/webview.h"
-#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/webview_test_helper.h"
 
 namespace ash {
@@ -18,7 +17,7 @@ class ScreensaverViewTest : public ash::test::AshTestBase {
  public:
   ScreensaverViewTest() {
     url_ = GURL("http://www.google.com");
-    views_delegate_.reset(new views::TestViewsDelegate);
+    views_delegate_.reset(new AshTestViewsDelegate);
     webview_test_helper_.reset(new views::WebViewTestHelper(message_loop()));
   }
 
@@ -57,7 +56,7 @@ class ScreensaverViewTest : public ash::test::AshTestBase {
   GURL url_;
 
  private:
-  scoped_ptr<views::TestViewsDelegate> views_delegate_;
+  scoped_ptr<AshTestViewsDelegate> views_delegate_;
   scoped_ptr<views::WebViewTestHelper> webview_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreensaverViewTest);

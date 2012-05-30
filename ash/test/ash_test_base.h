@@ -10,9 +10,18 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/test/test_views_delegate.h"
 
 namespace ash {
 namespace test {
+
+class AshTestViewsDelegate : public views::TestViewsDelegate {
+ public:
+  // Overriden from TestViewsDelegate.
+  content::WebContents* CreateWebContents(
+      content::BrowserContext* browser_context,
+      content::SiteInstance* site_instance) OVERRIDE;
+};
 
 class AshTestBase : public testing::Test {
  public:
