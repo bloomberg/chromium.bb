@@ -23,6 +23,21 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
+void NaClDescUnmapUnsafe(struct NaClDesc *desc, void *addr, size_t length) {
+  /*
+   * TODO(mseaborn): Remove the unused effector argument from
+   * UnmapUnsafe().  The argument is unused because, unlike Unmap(),
+   * UnmapUnsafe() does not need to call MapAnonymousMemory().
+   */
+  struct NaClDescEffector *effp = NULL;
+  int rc = (*NACL_VTBL(NaClDesc, desc)->UnmapUnsafe)(desc, effp, addr, length);
+  if (rc != 0) {
+    NaClLog(LOG_FATAL,
+            "NaClDescUnmapUnsafe: UnmapUnsafe() failed, rc %d, error %d\n",
+            rc, GetLastError());
+  }
+}
+
 int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat   *dst,
                                          nacl_host_stat_t const *src) {
   nacl_abi_mode_t m;

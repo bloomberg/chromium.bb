@@ -286,73 +286,6 @@ static uintptr_t NaClDescSysvShmMap(struct NaClDesc         *vself,
   return (uintptr_t) start_addr;
 }
 
-static int NaClDescSysvShmUnmapCommon(struct NaClDesc         *vself,
-                                      struct NaClDescEffector  *effp,
-                                      void                     *start_addr,
-                                      size_t                   len,
-                                      int                      safe_mode) {
-  uintptr_t addr;
-  uintptr_t end_addr;
-
-  UNREFERENCED_PARAMETER(vself);
-  /*
-   * Note: we cannot detach the SysV shared memory since we would be
-   * risking creating a security hole, since doing so would create a
-   * hole in the untrusted address space for library code in other
-   * threads to map data (e.g., heap via mmap) that should not be
-   * accessible to the untrusted code.
-   *
-   * Note that "0 == safe_mode should actually unmap.  This is used by
-   * UnmapUnsafe the callers which are acknowledging that it creates a
-   * squatting timing hole -- for example, the trusted code may be a
-   * different application than the service runtime, or the mapping
-   * may be outside of the untrusted address space.
-   *
-   * Within the service runtime, this mode is currently only used in
-   * NaClApp dtor cleanup on linux, so it's not critical -- We don't
-   * use that code since the service runtime _exit when the NaCl
-   * module exits, but we may in the future need this. A TODO/WARNING
-   * would suffice. Since w/ sysv shm there's no way to unmap, we'd
-   * have to do it by side-effect: mmap anonymous memory on top, then
-   * munmap that."
-   */
-  if (!safe_mode) {
-    /* linux.  make a hole. */
-    if (-1 == munmap(start_addr, len)) {
-      NaClLog(LOG_FATAL, "NaClDescSysvShmUnmapCommon: could not unmap\n");
-    }
-    return 0;
-  }
-
-  for (addr = (uintptr_t) start_addr, end_addr = addr + len;
-       addr < end_addr;
-       addr += NACL_MAP_PAGESIZE) {
-    uintptr_t result = (*effp->vtbl->MapAnonymousMemory)(effp,
-                                                         addr,
-                                                         NACL_MAP_PAGESIZE,
-                                                         PROT_NONE);
-    if (NaClPtrIsNegErrno(&result)) {
-      NaClLog(LOG_ERROR, "NaClDescSysvShmUnmapCommon: could not fill hole\n");
-      return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
-    }
-  }
-  return 0;
-}
-
-static int NaClDescSysvShmUnmapUnsafe(struct NaClDesc         *vself,
-                                      struct NaClDescEffector *effp,
-                                      void                    *start_addr,
-                                      size_t                  len) {
-  return NaClDescSysvShmUnmapCommon(vself, effp, start_addr, len, 0);
-}
-
-static int NaClDescSysvShmUnmap(struct NaClDesc         *vself,
-                                struct NaClDescEffector *effp,
-                                void                    *start_addr,
-                                size_t                  len) {
-  return NaClDescSysvShmUnmapCommon(vself, effp, start_addr, len, 1);
-}
-
 static int NaClDescSysvShmFstat(struct NaClDesc         *vself,
                                 struct nacl_abi_stat    *stbp) {
   struct NaClDescSysvShm  *self = (struct NaClDescSysvShm *) vself;
@@ -409,8 +342,7 @@ struct NaClDescVtbl const kNaClDescSysvShmVtbl = {
     NaClDescSysvShmDtor,
   },
   NaClDescSysvShmMap,
-  NaClDescSysvShmUnmapUnsafe,
-  NaClDescSysvShmUnmap,
+  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,

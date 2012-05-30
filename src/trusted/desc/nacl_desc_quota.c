@@ -72,6 +72,7 @@ uintptr_t NaClDescQuotaMap(struct NaClDesc          *vself,
           Map)(self->desc, effp, start_addr, len, prot, flags, offset);
 }
 
+#if NACL_WINDOWS
 int NaClDescQuotaUnmapUnsafe(struct NaClDesc          *vself,
                              struct NaClDescEffector  *effp,
                              void                     *start_addr,
@@ -91,6 +92,7 @@ int NaClDescQuotaUnmap(struct NaClDesc          *vself,
   return (*NACL_VTBL(NaClDesc, self->desc)->
           Unmap)(self->desc, effp, start_addr, len);
 }
+#endif
 
 ssize_t NaClDescQuotaRead(struct NaClDesc *vself,
                           void            *buf,
@@ -411,8 +413,12 @@ static struct NaClDescVtbl const kNaClDescQuotaVtbl = {
     NaClDescQuotaDtor,
   },
   NaClDescQuotaMap,
+#if NACL_WINDOWS
   NaClDescQuotaUnmapUnsafe,
   NaClDescQuotaUnmap,
+#else
+  NACL_DESC_UNMAP_NOT_IMPLEMENTED
+#endif
   NaClDescQuotaRead,
   NaClDescQuotaWrite,
   NaClDescQuotaSeek,

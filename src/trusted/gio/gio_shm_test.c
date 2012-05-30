@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -322,7 +322,6 @@ int main(int ac,
   uintptr_t addr2;
   size_t nbytes;
   size_t errs;
-  int rv;
   struct NaClGioShm gio_shm;
   size_t map_chunks = NCHUNKS;
 
@@ -413,12 +412,7 @@ int main(int ac,
     printf("FAILED\n");
     return EXIT_FAILURE;
   }
-  if (0 != (rv = (*((struct NaClDescVtbl const *) dp->base.vtbl)->
-                  UnmapUnsafe)(dp, effp, (void *) addr2, nbytes))) {
-    printf("UnmapUnsafe failed, returned %d\n", rv);
-    printf("FAILED\n");
-    return EXIT_FAILURE;
-  }
+  NaClDescUnmapUnsafe(dp, (void *) addr2, nbytes);
 
   if (!NaClGioShmCtor(&gio_shm, dp, nbytes)) {
     printf("NaClGioShmCtor failed\n");

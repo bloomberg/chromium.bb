@@ -105,8 +105,7 @@ static struct NaClDescVtbl const kNaClDescMutexVtbl = {
     NaClDescMutexDtor,
   },
   NaClDescMapNotImplemented,
-  NaClDescUnmapUnsafeNotImplemented,
-  NaClDescUnmapNotImplemented,
+  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,

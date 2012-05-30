@@ -192,6 +192,7 @@ uintptr_t NaClDescMapNotImplemented(struct NaClDesc         *vself,
   return -NACL_ABI_EINVAL;
 }
 
+#if NACL_WINDOWS
 int NaClDescUnmapUnsafeNotImplemented(struct NaClDesc         *vself,
                                       struct NaClDescEffector *effp,
                                       void                    *start_addr,
@@ -221,6 +222,7 @@ int NaClDescUnmapNotImplemented(struct NaClDesc         *vself,
                               vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
+#endif
 
 ssize_t NaClDescReadNotImplemented(struct NaClDesc          *vself,
                                    void                     *buf,
@@ -516,8 +518,7 @@ struct NaClDescVtbl const kNaClDescVtbl = {
     NaClDescDtor,
   },
   NaClDescMapNotImplemented,
-  NaClDescUnmapUnsafeNotImplemented,
-  NaClDescUnmapNotImplemented,
+  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,

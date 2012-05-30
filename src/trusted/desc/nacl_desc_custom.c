@@ -70,8 +70,7 @@ static const struct NaClDescVtbl kNaClDescCustomVtbl = {
     NaClDescCustomDtor,  /* diff */
   },
   NaClDescMapNotImplemented,
-  NaClDescUnmapUnsafeNotImplemented,
-  NaClDescUnmapNotImplemented,
+  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,

@@ -253,6 +253,7 @@ static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
   return (uintptr_t) start_addr;
 }
 
+#if NACL_WINDOWS
 static int NaClDescImcShmUnmapCommon(struct NaClDesc         *vself,
                                      struct NaClDescEffector *effp,
                                      void                    *start_addr,
@@ -271,35 +272,15 @@ static int NaClDescImcShmUnmapCommon(struct NaClDesc         *vself,
        addr += NACL_MAP_PAGESIZE) {
     int       status;
 
-#if NACL_WINDOWS
     /*
      * On windows, we must unmap "properly", since overmapping will
      * not tear down existing page mappings.
      */
-#elif NACL_LINUX || NACL_OSX
-    if (!safe_mode) {
-      /*
-       * unsafe unmap always unmaps, w/o overmapping with anonymous
-       * memory.  this is not necessary (nor desired) in safe_mode,
-       * since overmapping with anonymous memory will atomically tear
-       * down the mappings for these pages without leaving a timing
-       * window open where the untrusted address space has unoccupied
-       * page table entries.
-       */
-#else
-# error "what platform?"
-#endif
-      /*
-       * Do the unmap "properly" through NaClUnmap.
-       */
-      status = NaClUnmap((void *) addr, NACL_MAP_PAGESIZE);
-      if (0 != status) {
-        NaClLog(LOG_FATAL, "NaClDescImcShmUnmapCommon: NaClUnmap failed\n");
-        goto done;
-      }
-#if NACL_LINUX || NACL_OSX
+    status = NaClUnmap((void *) addr, NACL_MAP_PAGESIZE);
+    if (0 != status) {
+      NaClLog(LOG_FATAL, "NaClDescImcShmUnmapCommon: NaClUnmap failed\n");
+      goto done;
     }
-#endif
     /* there's still a race condition */
     if (safe_mode) {
       uintptr_t result = (*effp->vtbl->MapAnonymousMemory)(effp,
@@ -331,6 +312,7 @@ static int NaClDescImcShmUnmap(struct NaClDesc         *vself,
                                size_t                  len) {
   return NaClDescImcShmUnmapCommon(vself, effp, start_addr, len, 1);
 }
+#endif
 
 static int NaClDescImcShmFstat(struct NaClDesc         *vself,
                                struct nacl_abi_stat    *stbp) {
@@ -385,8 +367,12 @@ static struct NaClDescVtbl const kNaClDescImcShmVtbl = {
     NaClDescImcShmDtor,
   },
   NaClDescImcShmMap,
+#if NACL_WINDOWS
   NaClDescImcShmUnmapUnsafe,
   NaClDescImcShmUnmap,
+#else
+  NACL_DESC_UNMAP_NOT_IMPLEMENTED
+#endif
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,

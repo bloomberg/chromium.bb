@@ -110,8 +110,7 @@ static struct NaClDescVtbl const kNaClDescSemaphoreVtbl = {
     (void (*)(struct NaClRefCount *)) NaClDescSemaphoreDtor,
   },
   NaClDescMapNotImplemented,
-  NaClDescUnmapUnsafeNotImplemented,
-  NaClDescUnmapNotImplemented,
+  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,

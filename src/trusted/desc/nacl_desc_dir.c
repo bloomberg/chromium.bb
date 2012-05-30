@@ -159,8 +159,7 @@ static struct NaClDescVtbl const kNaClDescDirDescVtbl = {
     NaClDescDirDescDtor,
   },
   NaClDescMapNotImplemented,
-  NaClDescUnmapUnsafeNotImplemented,
-  NaClDescUnmapNotImplemented,
+  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescDirDescRead,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,

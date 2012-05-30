@@ -517,14 +517,8 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
      * cache miss, first clear the old cache if needed
      */
     if (nap->dynamic_mapcache_size > 0) {
-      if (0 != (*((struct NaClDescVtbl const *) shm->base.vtbl)->
-            UnmapUnsafe)(shm,
-                         (struct NaClDescEffector*) &effector,
-                         (void*)nap->dynamic_mapcache_ret,
-                         nap->dynamic_mapcache_size)) {
-        NaClLog(LOG_FATAL, "CachedMapWritableText: Failed to unmap\n");
-        return -NACL_ABI_EFAULT;
-      }
+      NaClDescUnmapUnsafe(shm, (void *) nap->dynamic_mapcache_ret,
+                          nap->dynamic_mapcache_size);
       nap->dynamic_mapcache_offset = 0;
       nap->dynamic_mapcache_size = 0;
       nap->dynamic_mapcache_ret = 0;

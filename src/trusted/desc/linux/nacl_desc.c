@@ -9,9 +9,11 @@
  * mapping using descriptors.
  */
 
+#include <errno.h>
 #include <limits.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -24,6 +26,15 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+
+void NaClDescUnmapUnsafe(struct NaClDesc *desc, void *addr, size_t length) {
+  UNREFERENCED_PARAMETER(desc);
+
+  if (munmap(addr, length) != 0) {
+    NaClLog(LOG_FATAL, "NaClDescUnmapUnsafe: munmap() failed, errno %d\n",
+            errno);
+  }
+}
 
 /*
  * Not quite a copy ctor.  Call it a translating ctor, since the

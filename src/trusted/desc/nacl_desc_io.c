@@ -192,6 +192,7 @@ uintptr_t NaClDescIoDescMapAnon(struct NaClDescEffector *effp,
                            prot, flags, offset);
 }
 
+#if NACL_WINDOWS
 static int NaClDescIoDescUnmapCommon(struct NaClDesc         *vself,
                                      struct NaClDescEffector *effp,
                                      void                    *start_addr,
@@ -227,6 +228,7 @@ static int NaClDescIoDescUnmap(struct NaClDesc         *vself,
                                size_t                  len) {
   return NaClDescIoDescUnmapCommon(vself, effp, start_addr, len, 1);
 }
+#endif
 
 static ssize_t NaClDescIoDescRead(struct NaClDesc          *vself,
                                   void                     *buf,
@@ -305,8 +307,12 @@ static struct NaClDescVtbl const kNaClDescIoDescVtbl = {
     NaClDescIoDescDtor,
   },
   NaClDescIoDescMap,
+#if NACL_WINDOWS
   NaClDescIoDescUnmapUnsafe,
   NaClDescIoDescUnmap,
+#else
+  NACL_DESC_UNMAP_NOT_IMPLEMENTED
+#endif
   NaClDescIoDescRead,
   NaClDescIoDescWrite,
   NaClDescIoDescSeek,

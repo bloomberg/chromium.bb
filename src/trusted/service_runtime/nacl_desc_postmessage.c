@@ -123,8 +123,7 @@ static struct NaClDescVtbl const kNaClDescPostMessageVtbl = {
     NaClDescPostMessageDtor,
   },
   NaClDescMapNotImplemented,
-  NaClDescUnmapUnsafeNotImplemented,
-  NaClDescUnmapNotImplemented,
+  NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescReadNotImplemented,
   NaClDescPostMessageWrite,
   NaClDescSeekNotImplemented,

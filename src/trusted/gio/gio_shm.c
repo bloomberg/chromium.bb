@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <errno.h>
@@ -38,7 +38,6 @@
  */
 static int NaClGioShmSetWindow(struct NaClGioShm  *self,
                                size_t             new_win_offset) {
-  int       rv;
   uintptr_t map_result;
   size_t    actual_len;
 
@@ -60,16 +59,8 @@ static int NaClGioShmSetWindow(struct NaClGioShm  *self,
   }
 
   if (NULL != self->cur_window) {
-    rv = (*((struct NaClDescVtbl const *) self->shmp->base.vtbl)->
-          UnmapUnsafe)(self->shmp,
-                       (struct NaClDescEffector *) &self->eff,
-                       (void *) self->cur_window,
-                       self->window_size);
-    if (0 != rv) {
-      NaClLog(LOG_FATAL,
-              "NaClGioShmSetWindow: UnmapUnsafe returned %d\n",
-              rv);
-    }
+    NaClDescUnmapUnsafe(self->shmp, (void *) self->cur_window,
+                        self->window_size);
   }
   self->cur_window = NULL;
   self->window_size = 0;
@@ -280,18 +271,10 @@ static int NaClGioShmFlush(struct Gio *vself) {
 
 static int NaClGioShmClose(struct Gio *vself) {
   struct NaClGioShm *self = (struct NaClGioShm *) vself;
-  int               ret;
 
   if (NULL != self->cur_window) {
-    ret = (*((struct NaClDescVtbl const *) self->shmp->base.vtbl)->
-           UnmapUnsafe)(self->shmp,
-                        (struct NaClDescEffector *) &self->eff,
-                        (void *) self->cur_window,
+    NaClDescUnmapUnsafe(self->shmp, (void *) self->cur_window,
                         NACL_MAP_PAGESIZE);
-    if (ret < 0) {
-      errno = EIO;
-      return -1;
-    }
   }
   self->cur_window = NULL;
 
