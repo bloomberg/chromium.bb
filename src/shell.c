@@ -2054,6 +2054,7 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	struct shell_surface *shsurf;
 	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
 	struct weston_surface *parent;
+	struct weston_seat *seat;
 	int panel_height = 0;
 
 	shsurf = get_shell_surface(surface);
@@ -2152,9 +2153,10 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	case SHELL_SURFACE_TOPLEVEL:
 	case SHELL_SURFACE_FULLSCREEN:
 	case SHELL_SURFACE_MAXIMIZED:
-		if (!shell->locked)
-			activate(shell, surface,
-				 (struct weston_seat *) compositor->seat);
+		if (!shell->locked) {
+			wl_list_for_each(seat, &compositor->seat_list, link)
+				activate(shell, surface, seat);
+		}
 		break;
 	default:
 		break;
