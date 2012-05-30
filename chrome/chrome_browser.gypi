@@ -476,8 +476,6 @@
         'browser/chromeos/customization_document.h',
         'browser/chromeos/dbus/cros_dbus_service.cc',
         'browser/chromeos/dbus/cros_dbus_service.h',
-        'browser/chromeos/dbus/introspect_util.cc',
-        'browser/chromeos/dbus/introspect_util.h',
         'browser/chromeos/dbus/proxy_resolution_service_provider.cc',
         'browser/chromeos/dbus/proxy_resolution_service_provider.h',
         'browser/chromeos/disks/disk_mount_manager.cc',

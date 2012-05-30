@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/dbus/introspect_util.h"
+#include "chromeos/dbus/introspectable_client.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,9 +55,9 @@ const char kXmlData[] =
 
 namespace chromeos {
 
-TEST(IntrospectUtilTest, GetInterfacesFromIntrospectResult) {
+TEST(IntrospectableClientTest, GetInterfacesFromIntrospectResult) {
   std::vector<std::string> interfaces =
-      GetInterfacesFromIntrospectResult(kXmlData);
+      IntrospectableClient::GetInterfacesFromIntrospectResult(kXmlData);
 
   ASSERT_EQ(3U, interfaces.size());
   EXPECT_EQ("org.freedesktop.DBus.Introspectable", interfaces[0]);

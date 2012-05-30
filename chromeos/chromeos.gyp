@@ -15,6 +15,7 @@
         '../build/linux/system.gyp:dbus',
         '../dbus/dbus.gyp:dbus',
         '../net/net.gyp:net',
+        '../third_party/libxml/libxml.gyp:libxml',
         'power_state_control_proto',
         'power_supply_properties_proto',
       ],
@@ -193,6 +194,7 @@
         'dbus/ibus/ibus_object_unittest.cc',
         'dbus/ibus/ibus_text_unittest.cc',
         'dbus/ibus/ibus_input_context_client_unittest.cc',
+        'dbus/introspectable_client_unittest.cc',
         'network/network_sms_handler_unittest.cc',
       ],
       'include_dirs': [

@@ -1058,7 +1058,6 @@
         'browser/chromeos/cros_settings_unittest.cc',
         'browser/chromeos/customization_document_unittest.cc',
         'browser/chromeos/dbus/cros_dbus_service_unittest.cc',
-        'browser/chromeos/dbus/introspect_util_unittest.cc',
         'browser/chromeos/dbus/proxy_resolution_service_provider_unittest.cc',
         'browser/chromeos/device_settings_provider_unittest.cc',
         'browser/chromeos/extensions/file_browser_notifications_unittest.cc',

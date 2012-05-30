@@ -42,6 +42,12 @@ class CHROMEOS_EXPORT IntrospectableClient {
                           const dbus::ObjectPath& object_path,
                           const IntrospectCallback& callback) = 0;
 
+  // Parses XML-formatted introspection data returned by
+  // org.freedesktop.DBus.Introspectable.Introspect and returns the list of
+  // interface names declared within.
+  static std::vector<std::string> GetInterfacesFromIntrospectResult(
+      const std::string& xml_data);
+
   // Creates the instance
   static IntrospectableClient* Create(DBusClientImplementationType type,
                                       dbus::Bus* bus);
