@@ -43,6 +43,7 @@
 #include "ui/views/views_delegate.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #endif
 
@@ -353,7 +354,7 @@ void OmniboxViewViews::HandleFocusOut() {
   if (widget) {
     aura::RootWindow* root = widget->GetNativeView()->GetRootWindow();
     if (root)
-      native_view = root->focused_window();
+      native_view = root->GetFocusManager()->GetFocusedWindow();
   }
 #endif
   model_->OnWillKillFocus(native_view);

@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/env_observer.h"
-#include "ui/aura/root_window_observer.h"
+#include "ui/aura/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ash/ash_export.h"
 
@@ -23,7 +23,7 @@ class ASH_EXPORT ActivationController
     : public aura::client::ActivationClient,
       public aura::WindowObserver,
       public aura::EnvObserver,
-      public aura::RootWindowObserver {
+      public aura::FocusChangeObserver {
  public:
   ActivationController();
   virtual ~ActivationController();
@@ -50,7 +50,7 @@ class ASH_EXPORT ActivationController
   // Overridden from aura::EnvObserver:
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
 
-  // Overridden from aura::RootWindowObserver:
+  // Overridden from aura::FocusChangeObserver:
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
  private:
@@ -74,6 +74,8 @@ class ASH_EXPORT ActivationController
   // True inside ActivateWindow(). Used to prevent recursion of focus
   // change notifications causing activation.
   bool updating_activation_;
+
+  aura::Window* active_window_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 

@@ -38,14 +38,11 @@ class Transform;
 namespace aura {
 
 class EventFilter;
+class FocusManager;
 class LayoutManager;
 class RootWindow;
 class WindowDelegate;
 class WindowObserver;
-
-namespace internal {
-class FocusManager;
-}
 
 // Defined in window_property.h (which we do not include)
 template<typename T>
@@ -291,8 +288,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Returns the FocusManager for the Window, which may be attached to a parent
   // Window. Can return NULL if the Window has no FocusManager.
-  virtual internal::FocusManager* GetFocusManager();
-  virtual const internal::FocusManager* GetFocusManager() const;
+  virtual FocusManager* GetFocusManager();
+  virtual const FocusManager* GetFocusManager() const;
 
   // Does a capture on the window. This does nothing if the window isn't showing
   // (VISIBILITY_SHOWN) or isn't contained in a valid window hierarchy.

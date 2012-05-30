@@ -75,6 +75,8 @@
         'event_filter.h',
         'event_mac.mm',
         'event_mac.h',
+        'focus_change_observer.h',
+        'focus_manager.cc',
         'focus_manager.h',
         'layout_manager.cc',
         'layout_manager.h',

@@ -5,13 +5,7 @@
 #include "ash/monitor/monitor_controller.h"
 
 #include "ash/monitor/multi_monitor_manager.h"
-#include "ash/monitor/secondary_monitor_view.h"
 #include "ash/shell.h"
-#include "ash/wm/base_layout_manager.h"
-#include "ash/wm/root_window_layout_manager.h"
-#include "base/bind.h"
-#include "base/stl_util.h"
-#include "base/time.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -19,24 +13,6 @@
 
 namespace ash {
 namespace internal {
-
-namespace {
-
-void SetupAsSecondaryMonitor(aura::RootWindow* root) {
-  root->SetFocusWhenShown(false);
-  root->SetLayoutManager(new internal::RootWindowLayoutManager(root));
-  aura::Window* container = new aura::Window(NULL);
-  container->SetName("SecondaryMonitorContainer");
-  container->Init(ui::LAYER_NOT_DRAWN);
-  root->AddChild(container);
-  container->SetLayoutManager(new internal::BaseLayoutManager(root));
-  CreateSecondaryMonitorWidget(container);
-  container->Show();
-  root->layout_manager()->OnWindowResized();
-  root->ShowRootWindow();
-}
-
-}  // namespace
 
 MonitorController::MonitorController() {
   aura::Env::GetInstance()->monitor_manager()->AddObserver(this);
@@ -66,7 +42,7 @@ void MonitorController::OnMonitorAdded(const gfx::Monitor& monitor) {
   aura::RootWindow* root = aura::Env::GetInstance()->monitor_manager()->
       CreateRootWindowForMonitor(monitor);
   root_windows_[monitor.id()] = root;
-  SetupAsSecondaryMonitor(root);
+  Shell::GetInstance()->InitRootWindowForSecondaryMonitor(root);
 }
 
 void MonitorController::OnMonitorRemoved(const gfx::Monitor& monitor) {
@@ -95,7 +71,7 @@ void MonitorController::Init() {
       aura::RootWindow* root =
           monitor_manager->CreateRootWindowForMonitor(monitor);
       root_windows_[monitor.id()] = root;
-      SetupAsSecondaryMonitor(root);
+      Shell::GetInstance()->InitRootWindowForSecondaryMonitor(root);
     }
   }
 }

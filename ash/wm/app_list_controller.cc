@@ -15,6 +15,7 @@
 #include "ui/app_list/app_list_view.h"
 #include "ui/app_list/icon_cache.h"
 #include "ui/aura/event.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -152,7 +153,7 @@ void AppListController::SetView(app_list::AppListView* view) {
     widget->AddObserver(this);
     Shell::GetInstance()->AddRootWindowEventFilter(this);
     widget->GetNativeView()->GetRootWindow()->AddRootWindowObserver(this);
-
+    widget->GetNativeView()->GetFocusManager()->AddObserver(this);
     widget->SetOpacity(0);
     ScheduleAnimation();
 
@@ -171,6 +172,7 @@ void AppListController::ResetView() {
   GetLayer(widget)->GetAnimator()->RemoveObserver(this);
   Shell::GetInstance()->RemoveRootWindowEventFilter(this);
   widget->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
+  widget->GetNativeView()->GetFocusManager()->RemoveObserver(this);
   view_ = NULL;
 
   app_list::IconCache::GetInstance()->PurgeAllUnused();
@@ -292,17 +294,7 @@ ui::GestureStatus AppListController::PreHandleGestureEvent(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListController,  aura::RootWindowObserver implementation:
-void AppListController::OnRootWindowResized(const aura::RootWindow* root,
-                                            const gfx::Size& old_size) {
-  if (view_ && is_visible_) {
-    views::Widget* launcher_widget =
-        Shell::GetInstance()->launcher()->widget();
-    view_->UpdateBounds(GetFullScreenBoundsForWidget(launcher_widget),
-                        GetWorkAreaBoundsForWidget(launcher_widget));
-  }
-}
-
+// AppListController,  aura::FocusObserver implementation:
 void AppListController::OnWindowFocused(aura::Window* window) {
   if (view_ && is_visible_) {
     aura::Window* applist_container = Shell::GetInstance()->GetContainer(
@@ -313,6 +305,18 @@ void AppListController::OnWindowFocused(aura::Window* window) {
         window->parent() != bubble_container) {
       SetVisible(false);
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AppListController,  aura::RootWindowObserver implementation:
+void AppListController::OnRootWindowResized(const aura::RootWindow* root,
+                                            const gfx::Size& old_size) {
+  if (view_ && is_visible_) {
+    views::Widget* launcher_widget =
+        Shell::GetInstance()->launcher()->widget();
+    view_->UpdateBounds(GetFullScreenBoundsForWidget(launcher_widget),
+                        GetWorkAreaBoundsForWidget(launcher_widget));
   }
 }
 

@@ -16,11 +16,11 @@ DesktopActivationClient::DesktopActivationClient(RootWindow* root_window)
     : root_window_(root_window),
       current_active_(NULL),
       updating_activation_(false) {
-  root_window->AddRootWindowObserver(this);
+  root_window_->GetFocusManager()->AddObserver(this);
 }
 
 DesktopActivationClient::~DesktopActivationClient() {
-  root_window_->RemoveRootWindowObserver(this);
+  root_window_->GetFocusManager()->RemoveObserver(this);
 }
 
 void DesktopActivationClient::ActivateWindow(Window* window) {

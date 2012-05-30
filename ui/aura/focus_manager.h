@@ -7,37 +7,46 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "ui/aura/aura_export.h"
 
 namespace aura {
 
 class Event;
+class FocusChangeObserver;
 class Window;
-
-namespace internal {
 
 // An interface implemented by the Desktop to expose the focused window and
 // allow for it to be changed.
 class AURA_EXPORT FocusManager {
  public:
+  FocusManager();
+  ~FocusManager();
+
+  void AddObserver(FocusChangeObserver* observer);
+  void RemoveObserver(FocusChangeObserver* observer);
+
   // Sets the currently focused window. Before the currently focused window is
   // changed, the previous focused window's delegate is sent a blur
   // notification, and after it is changed the new focused window is sent a
   // focused notification. Nothing happens if |window| and GetFocusedWindow()
   // match.
-  virtual void SetFocusedWindow(Window* window, const Event* event) = 0;
+  void SetFocusedWindow(Window* window, const Event* event);
 
   // Returns the currently focused window or NULL if there is none.
-  virtual Window* GetFocusedWindow() = 0;
+  Window* GetFocusedWindow();
 
   // Returns true if |window| is the focused window.
-  virtual bool IsFocusedWindow(const Window* window) const = 0;
+  bool IsFocusedWindow(const Window* window) const;
 
  protected:
-  virtual ~FocusManager() {}
+  aura::Window* focused_window_;
+
+  ObserverList<FocusChangeObserver> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusManager);
 };
 
-}  // namespace internal
 }  // namespace aura
 
 #endif  // UI_AURA_FOCUS_MANAGER_H_

@@ -16,6 +16,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
@@ -465,7 +466,7 @@ void Window::Blur() {
 }
 
 bool Window::HasFocus() const {
-  const internal::FocusManager* focus_manager = GetFocusManager();
+  const FocusManager* focus_manager = GetFocusManager();
   return focus_manager ? focus_manager->IsFocusedWindow(this) : false;
 }
 
@@ -497,12 +498,12 @@ bool Window::CanReceiveEvents() const {
   return parent_ && IsVisible() && parent_->CanReceiveEvents();
 }
 
-internal::FocusManager* Window::GetFocusManager() {
-  return const_cast<internal::FocusManager*>(
+FocusManager* Window::GetFocusManager() {
+  return const_cast<FocusManager*>(
       static_cast<const Window*>(this)->GetFocusManager());
 }
 
-const internal::FocusManager* Window::GetFocusManager() const {
+const FocusManager* Window::GetFocusManager() const {
   return parent_ ? parent_->GetFocusManager() : NULL;
 }
 

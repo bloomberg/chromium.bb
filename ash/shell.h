@@ -25,6 +25,7 @@ class SkBitmap;
 
 namespace aura {
 class EventFilter;
+class FocusManager;
 class Monitor;
 class RootWindow;
 class Window;
@@ -133,9 +134,19 @@ class ASH_EXPORT Shell {
 
   static void DeleteInstance();
 
-  // Gets the primary RootWindow. The primary RootWindow is the root window
+  // Gets the primary RootWindow. The primary RootWindow is the one
   // that has a launcher.
   static aura::RootWindow* GetPrimaryRootWindow();
+
+  // Gets the active RootWindow. The active RootWindow is the one that
+  // contains the current active window as a decendant child. The active
+  // RootWindow remains the same even when the active window becomes NULL,
+  // until the another window who has a different root window becomes active.
+  static aura::RootWindow* GetActiveRootWindow();
+
+  void set_active_root_window(aura::RootWindow* active_root_window) {
+    active_root_window_ = active_root_window;
+  }
 
   internal::RootWindowLayoutManager* root_window_layout() const {
     return root_window_layout_;
@@ -294,6 +305,9 @@ class ASH_EXPORT Shell {
     browser_context_ = browser_context;
   }
 
+  // Initialize the root window to be used for a secondary monitor.
+  void InitRootWindowForSecondaryMonitor(aura::RootWindow* root);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RootWindowEventFilterTest, MouseEventCursors);
   FRIEND_TEST_ALL_PREFIXES(RootWindowEventFilterTest, TransformActivate);
@@ -319,6 +333,9 @@ class ASH_EXPORT Shell {
 
   scoped_ptr<aura::RootWindow> root_window_;
   ScreenAsh* screen_;
+
+  // Active root window. Never become NULL.
+  aura::RootWindow* active_root_window_;
 
   aura::shared::RootWindowEventFilter* root_filter_;  // not owned
 
@@ -358,6 +375,7 @@ class ASH_EXPORT Shell {
   scoped_ptr<HighContrastController> high_contrast_controller_;
   scoped_ptr<internal::MagnificationController> magnification_controller_;
   scoped_ptr<internal::ScreenDimmer> screen_dimmer_;
+  scoped_ptr<aura::FocusManager> focus_manager_;
 
   // An event filter that rewrites or drops a key event.
   scoped_ptr<internal::KeyRewriterEventFilter> key_rewriter_filter_;

@@ -19,6 +19,7 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/monitor/monitor_controller.h"
 #include "ash/monitor/multi_monitor_manager.h"
+#include "ash/monitor/secondary_monitor_view.h"
 #include "ash/screen_ash.h"
 #include "ash/shell_context_menu.h"
 #include "ash/shell_delegate.h"
@@ -66,6 +67,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
@@ -652,12 +654,21 @@ aura::RootWindow* Shell::GetPrimaryRootWindow() {
   return GetInstance()->root_window_.get();
 }
 
+aura::RootWindow* Shell::GetActiveRootWindow() {
+  return GetInstance()->active_root_window_;
+}
+
 void Shell::Init() {
   // Install the custom factory first so that views::FocusManagers for Tray,
   // Launcher, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
   aura::RootWindow* root_window = GetPrimaryRootWindow();
+  active_root_window_ = root_window;
+
+  focus_manager_.reset(new aura::FocusManager);
+  root_window_->set_focus_manager(focus_manager_.get());
+
   root_filter_ = new aura::shared::RootWindowEventFilter(root_window);
 #if !defined(OS_MACOSX)
   nested_dispatcher_controller_.reset(new NestedDispatcherController);
@@ -665,7 +676,7 @@ void Shell::Init() {
 #endif
   shell_context_menu_.reset(new internal::ShellContextMenu);
   // Pass ownership of the filter to the root window.
-  GetPrimaryRootWindow()->SetEventFilter(root_filter_);
+  root_window->SetEventFilter(root_filter_);
 
   // KeyRewriterEventFilter must be the first one.
   DCHECK(!GetRootWindowEventFilterCount());
@@ -918,6 +929,21 @@ int Shell::GetGridSize() const {
 
 bool Shell::IsInMaximizedMode() const {
   return workspace_controller_->workspace_manager()->IsInMaximizedMode();
+}
+
+void Shell::InitRootWindowForSecondaryMonitor(aura::RootWindow* root) {
+  root->set_focus_manager(focus_manager_.get());
+  root->SetFocusWhenShown(false);
+  root->SetLayoutManager(new internal::RootWindowLayoutManager(root));
+  aura::Window* container = new aura::Window(NULL);
+  container->SetName("SecondaryMonitorContainer");
+  container->Init(ui::LAYER_NOT_DRAWN);
+  root->AddChild(container);
+  container->SetLayoutManager(new internal::BaseLayoutManager(root));
+  CreateSecondaryMonitorWidget(container);
+  container->Show();
+  root->layout_manager()->OnWindowResized();
+  root->ShowRootWindow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/focus_change_observer.h"
 #include "ui/aura/root_window_observer.h"
 
 namespace aura {
@@ -18,7 +19,7 @@ class RootWindow;
 // RootWindow. Used only on the Desktop where there can be multiple RootWindow
 // objects.
 class AURA_EXPORT DesktopActivationClient : public client::ActivationClient,
-                                            public RootWindowObserver {
+                                            public FocusChangeObserver {
  public:
   explicit DesktopActivationClient(RootWindow* root_window);
   virtual ~DesktopActivationClient();
@@ -30,7 +31,7 @@ class AURA_EXPORT DesktopActivationClient : public client::ActivationClient,
   virtual bool OnWillFocusWindow(Window* window, const Event* event) OVERRIDE;
   virtual bool CanActivateWindow(Window* window) const OVERRIDE;
 
-  // RootWindowObserver:
+  // FocusChangeObserver:
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
  protected:

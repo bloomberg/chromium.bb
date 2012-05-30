@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/focus_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/events.h"
@@ -38,15 +37,15 @@ class Transform;
 
 namespace aura {
 
+class FocusManager;
+class GestureEvent;
+class KeyEvent;
+class MouseEvent;
 class RootWindow;
 class RootWindowHost;
 class RootWindowObserver;
-class KeyEvent;
-class MouseEvent;
-class StackingClient;
 class ScrollEvent;
 class TouchEvent;
-class GestureEvent;
 
 // This class represents a lock on the compositor, that can be used to prevent a
 // compositing pass from happening while we're waiting for an asynchronous
@@ -77,7 +76,6 @@ class AURA_EXPORT CompositorLock :
 class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                                public ui::CompositorObserver,
                                public Window,
-                               public internal::FocusManager,
                                public ui::GestureEventHelper,
                                public ui::LayerAnimationObserver {
  public:
@@ -97,7 +95,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   bool cursor_shown() const { return cursor_shown_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* capture_window() { return capture_window_; }
-  Window* focused_window() { return focused_window_; }
+
+  void set_focus_manager(FocusManager* focus_manager) {
+    focus_manager_ = focus_manager;
+  }
 
   // Initializes the root window.
   void Init();
@@ -263,6 +264,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Overridden from ui::LayerDelegate:
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
 
+  // Overridden from Window:
+  virtual bool CanFocus() const OVERRIDE;
+  virtual bool CanReceiveEvents() const OVERRIDE;
+  virtual FocusManager* GetFocusManager() OVERRIDE;
+
  private:
   friend class Window;
   friend class CompositorLock;
@@ -290,11 +296,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // |destroyed| is set to true when the window is being destroyed.
   void OnWindowHidden(Window* invisible, bool destroyed);
 
-  // Overridden from Window:
-  virtual bool CanFocus() const OVERRIDE;
-  virtual bool CanReceiveEvents() const OVERRIDE;
-  virtual internal::FocusManager* GetFocusManager() OVERRIDE;
-
   // Overridden from ui::GestureEventHelper.
   virtual ui::GestureEvent* CreateGestureEvent(
       ui::EventType type,
@@ -321,12 +322,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
       ui::LayerAnimationSequence* animation) OVERRIDE;
   virtual void OnLayerAnimationAborted(
       ui::LayerAnimationSequence* animation) OVERRIDE;
-
-  // Overridden from FocusManager:
-  virtual void SetFocusedWindow(Window* window,
-                                const aura::Event* event) OVERRIDE;
-  virtual Window* GetFocusedWindow() OVERRIDE;
-  virtual bool IsFocusedWindow(const Window* window) const OVERRIDE;
 
   // We hold and aggregate mouse drags as a way of throttling resizes when
   // HoldMouseMoves() is called. The following methods are used to dispatch held
@@ -388,7 +383,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   Window* mouse_pressed_handler_;
   Window* mouse_moved_handler_;
-  Window* focused_window_;
+  FocusManager* focus_manager_;
 
   // The gesture_recognizer_ for this.
   scoped_ptr<ui::GestureRecognizer> gesture_recognizer_;

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "ui/aura/event_filter.h"
+#include "ui/aura/focus_change_observer.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/widget/widget.h"
@@ -27,6 +28,7 @@ namespace internal {
 // While the UI is visible, it monitors things such as app list widget's
 // activation state and desktop mouse click to auto dismiss the UI.
 class AppListController : public aura::EventFilter,
+                          public aura::FocusChangeObserver,
                           public aura::RootWindowObserver,
                           public ui::ImplicitAnimationObserver,
                           public views::Widget::Observer,
@@ -86,10 +88,12 @@ class AppListController : public aura::EventFilter,
       aura::Window* target,
       aura::GestureEvent* event) OVERRIDE;
 
+  // aura::FocusChangeObserver overrides:
+  virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
+
   // aura::RootWindowObserver overrides:
   virtual void OnRootWindowResized(const aura::RootWindow* root,
                                    const gfx::Size& old_size) OVERRIDE;
-  virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
   // ui::ImplicitAnimationObserver overrides:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
@@ -117,4 +121,3 @@ class AppListController : public aura::EventFilter,
 }  // namespace ash
 
 #endif  // ASH_WM_APP_LIST_CONTROLLER_H_
-

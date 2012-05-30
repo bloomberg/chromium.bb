@@ -12,6 +12,7 @@
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -117,15 +118,16 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
 
 ActivationController::ActivationController()
     : updating_activation_(false),
+      active_window_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
   aura::client::SetActivationClient(Shell::GetPrimaryRootWindow(), this);
   aura::Env::GetInstance()->AddObserver(this);
-  Shell::GetPrimaryRootWindow()->AddRootWindowObserver(this);
+  Shell::GetPrimaryRootWindow()->GetFocusManager()->AddObserver(this);
 }
 
 ActivationController::~ActivationController() {
-  Shell::GetPrimaryRootWindow()->RemoveRootWindowObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
+  Shell::GetPrimaryRootWindow()->GetFocusManager()->RemoveObserver(this);
 }
 
 // static
@@ -165,8 +167,7 @@ void ActivationController::DeactivateWindow(aura::Window* window) {
 }
 
 aura::Window* ActivationController::GetActiveWindow() {
-  return Shell::GetPrimaryRootWindow()->GetProperty(
-      aura::client::kRootWindowActiveWindowKey);
+  return active_window_;
 }
 
 bool ActivationController::OnWillFocusWindow(aura::Window* window,
@@ -192,10 +193,15 @@ void ActivationController::OnWindowVisibilityChanged(aura::Window* window,
 }
 
 void ActivationController::OnWindowDestroying(aura::Window* window) {
-  if (wm::IsActiveWindow(window)) {
+  // Don't use wm::IsActiveWidnow in case the |window| has
+  // removed from the root tree.
+  if (active_window_ == window) {
+    active_window_ = NULL;
     // Clear the property before activating something else, since
     // ActivateWindow() will attempt to notify the window stored in this value
     // otherwise.
+    // TODO(oshima): NativeWidgetAura relies on this property now.
+    // Fix NativeWidgetAura not to depend on this and remove this.
     Shell::GetPrimaryRootWindow()->ClearProperty(
         aura::client::kRootWindowActiveWindowKey);
     ActivateWindow(GetTopmostWindowToActivate(window));
@@ -258,8 +264,18 @@ void ActivationController::ActivateWindowWithEvent(aura::Window* window,
       !window->Contains(window->GetFocusManager()->GetFocusedWindow())) {
     window->GetFocusManager()->SetFocusedWindow(window, event);
   }
+
+  active_window_ = window;
+  if (window) {
+    DCHECK(window->GetRootWindow());
+    Shell::GetInstance()->set_active_root_window(window->GetRootWindow());
+  }
+
+  // TODO(oshima): Remove this (see comment in OnWindowDestroying above)
   Shell::GetPrimaryRootWindow()->SetProperty(
-      aura::client::kRootWindowActiveWindowKey, window);
+      aura::client::kRootWindowActiveWindowKey,
+      window);
+
   // Invoke OnLostActive after we've changed the active window. That way if the
   // delegate queries for active state it doesn't think the window is still
   // active.

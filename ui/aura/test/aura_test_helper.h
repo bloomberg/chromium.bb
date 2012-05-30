@@ -20,10 +20,11 @@ class InputMethod;
 }
 
 namespace aura {
+class FocusManager;
 class RootWindow;
 namespace test {
-class TestStackingClient;
 class TestActivationClient;
+class TestStackingClient;
 
 // A helper class owned by tests that does common initialization required for
 // Aura use. This class creates a root window with clients and other objects
@@ -54,6 +55,7 @@ class AuraTestHelper {
   scoped_ptr<TestStackingClient> stacking_client_;
   scoped_ptr<TestActivationClient> test_activation_client_;
   scoped_ptr<ui::InputMethod> test_input_method_;
+  scoped_ptr<FocusManager> focus_manager_;
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;

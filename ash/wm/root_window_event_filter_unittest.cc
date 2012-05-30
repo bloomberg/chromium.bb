@@ -11,6 +11,7 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/event.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/aura/shared/root_window_event_filter.h"
@@ -112,7 +113,7 @@ TEST_F(RootWindowEventFilterTest, Focus) {
                                        w121.get());
   generator.ClickLeftButton();
 
-  aura::internal::FocusManager* focus_manager = w121->GetFocusManager();
+  aura::FocusManager* focus_manager = w121->GetFocusManager();
   EXPECT_EQ(w121.get(), focus_manager->GetFocusedWindow());
 
   // The key press should be sent to the focused sub-window.
@@ -191,7 +192,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
       &wd, -1, gfx::Rect(70, 70, 50, 50), NULL));
   d2.SetWindow(w2.get());
 
-  aura::internal::FocusManager* focus_manager = w1->GetFocusManager();
+  aura::FocusManager* focus_manager = w1->GetFocusManager();
 
   d1.Clear();
   d2.Clear();
@@ -307,7 +308,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
       &wd, -2, gfx::Rect(70, 70, 50, 50), NULL));
   d2.SetWindow(w2.get());
 
-  aura::internal::FocusManager* focus_manager = w1->GetFocusManager();
+  aura::FocusManager* focus_manager = w1->GetFocusManager();
 
   d1.Clear();
   d2.Clear();

@@ -5,18 +5,19 @@
 #include "ui/aura/test/aura_test_helper.h"
 
 #include "base/message_loop.h"
-#include "ui/aura/env.h"
-#include "ui/aura/root_window.h"
-#include "ui/compositor/layer_animator.h"
-#include "ui/gfx/screen.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/single_monitor_manager.h"
+#include "ui/aura/env.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/monitor_manager.h"
-#include "ui/aura/test/test_screen.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/test/test_activation_client.h"
+#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/ui_controls_aura.h"
 #include "ui/base/test/dummy_input_method.h"
+#include "ui/compositor/layer_animator.h"
+#include "ui/gfx/screen.h"
 #include "ui/ui_controls/ui_controls.h"
 
 namespace aura {
@@ -47,6 +48,8 @@ void AuraTestHelper::SetUp() {
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
   ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_.get()));
 
+  focus_manager_.reset(new FocusManager);
+  root_window_->set_focus_manager(focus_manager_.get());
   stacking_client_.reset(new TestStackingClient(root_window_.get()));
   test_activation_client_.reset(
       new aura::test::TestActivationClient(root_window_.get()));
@@ -65,6 +68,7 @@ void AuraTestHelper::TearDown() {
   test_input_method_.reset();
   stacking_client_.reset();
   test_activation_client_.reset();
+  focus_manager_.reset();
   root_window_.reset();
   aura::Env::DeleteInstance();
 }

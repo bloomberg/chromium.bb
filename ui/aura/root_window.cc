@@ -121,7 +121,6 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       capture_window_(NULL),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
-      focused_window_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           gesture_recognizer_(ui::GestureRecognizer::Create(this))),
       synthesize_mouse_move_(false),
@@ -272,11 +271,12 @@ bool RootWindow::DispatchKeyEvent(KeyEvent* event) {
   if (translated_event.key_code() == ui::VKEY_UNKNOWN)
     return false;
   client::EventClient* client = client::GetEventClient(GetRootWindow());
-  if (client && !client->CanProcessEventsWithinSubtree(focused_window_)) {
-    SetFocusedWindow(NULL, NULL);
+  Window* focused_window = focus_manager_->GetFocusedWindow();
+  if (client && !client->CanProcessEventsWithinSubtree(focused_window)) {
+    GetFocusManager()->SetFocusedWindow(NULL, NULL);
     return false;
   }
-  return ProcessKeyEvent(focused_window_, &translated_event);
+  return ProcessKeyEvent(focused_window, &translated_event);
 }
 
 bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
@@ -590,6 +590,7 @@ void RootWindow::OnCompositingAborted(ui::Compositor*) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, ui::LayerDelegate implementation:
+
 void RootWindow::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
   if (cursor_shown_)
@@ -598,6 +599,21 @@ void RootWindow::OnDeviceScaleFactorChanged(
   Window::OnDeviceScaleFactorChanged(device_scale_factor);
   if (cursor_shown_)
     ShowCursor(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RootWindow, overridden from aura::Window:
+
+bool RootWindow::CanFocus() const {
+  return IsVisible();
+}
+
+bool RootWindow::CanReceiveEvents() const {
+  return IsVisible();
+}
+
+FocusManager* RootWindow::GetFocusManager() {
+  return focus_manager_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -817,7 +833,8 @@ void RootWindow::OnWindowRemovedFromRootWindow(Window* detached) {
 void RootWindow::OnWindowHidden(Window* invisible, bool destroyed) {
   // Update the focused window state if the invisible window contains
   // focused_window.
-  if (invisible->Contains(focused_window_)) {
+  Window* focused_window = focus_manager_->GetFocusedWindow();
+  if (invisible->Contains(focused_window)) {
     Window* focus_to = invisible->transient_parent();
     if (focus_to) {
       // Has to be removed from the transient parent before focusing, otherwise
@@ -836,7 +853,7 @@ void RootWindow::OnWindowHidden(Window* invisible, bool destroyed) {
                                                                 NULL)))) {
       focus_to = NULL;
     }
-    SetFocusedWindow(focus_to, NULL);
+    GetFocusManager()->SetFocusedWindow(focus_to, NULL);
   }
   // If the ancestor of the capture window is hidden,
   // release the capture.
@@ -856,18 +873,6 @@ void RootWindow::OnWindowAddedToRootWindow(Window* attached) {
   if (attached->IsVisible() &&
       attached->ContainsPointInRoot(last_mouse_location_))
     PostMouseMoveEventAfterWindowChange();
-}
-
-bool RootWindow::CanFocus() const {
-  return IsVisible();
-}
-
-bool RootWindow::CanReceiveEvents() const {
-  return IsVisible();
-}
-
-internal::FocusManager* RootWindow::GetFocusManager() {
-  return this;
 }
 
 bool RootWindow::DispatchLongPressGestureEvent(ui::GestureEvent* event) {
@@ -907,41 +912,6 @@ void RootWindow::OnLayerAnimationScheduled(
 
 void RootWindow::OnLayerAnimationAborted(
     ui::LayerAnimationSequence* animation) {
-}
-
-void RootWindow::SetFocusedWindow(Window* focused_window,
-                                  const aura::Event* event) {
-  if (focused_window == focused_window_)
-    return;
-  if (focused_window && !focused_window->CanFocus())
-    return;
-  // The NULL-check of |focused_window| is essential here before asking the
-  // activation client, since it is valid to clear the focus by calling
-  // SetFocusedWindow() to NULL.
-  if (focused_window && client::GetActivationClient(this) &&
-      !client::GetActivationClient(this)->OnWillFocusWindow(focused_window,
-                                                            event)) {
-    return;
-  }
-
-  Window* old_focused_window = focused_window_;
-  focused_window_ = focused_window;
-  if (old_focused_window && old_focused_window->delegate())
-    old_focused_window->delegate()->OnBlur();
-  if (focused_window_ && focused_window_->delegate())
-    focused_window_->delegate()->OnFocus();
-  if (focused_window_) {
-    FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                      OnWindowFocused(focused_window_));
-  }
-}
-
-Window* RootWindow::GetFocusedWindow() {
-  return focused_window_;
-}
-
-bool RootWindow::IsFocusedWindow(const Window* window) const {
-  return focused_window_ == window;
 }
 
 bool RootWindow::DispatchMouseEventImpl(MouseEvent* event) {
