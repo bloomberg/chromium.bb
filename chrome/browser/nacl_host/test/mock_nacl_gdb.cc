@@ -14,6 +14,7 @@
 
 static const char kArgs[] = "--args";
 static const char kEvalCommand[] = "--eval-command";
+static const char kCommand[] = "--command";
 static const char kNaClIrt[] = "nacl-irt ";
 static const char kPass[] = "PASS";
 static const char kDump[] = "dump binary value ";
@@ -62,6 +63,15 @@ int main(int argc, char** argv) {
       } else if (strncmp(argv[i - 1], kAttach, sizeof(kAttach) - 1) == 0) {
         has_attach_cmd = true;
       }
+      continue;
+    }
+    if (strcmp(argv[i], kCommand) == 0) {
+      // Command line shouldn't end with --command switch without value.
+      i += 2;
+      CHECK_LE(i, argc);
+      std::string nacl_gdb_script(argv[i - 1]);
+      file_util::WriteFile(FilePath::FromUTF8Unsafe(nacl_gdb_script),
+                           kPass, strlen(kPass));
       continue;
     }
     // Unknown argument.

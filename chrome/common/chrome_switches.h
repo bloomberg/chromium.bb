@@ -226,6 +226,7 @@ extern const char kMessageLoopHistogrammer[];
 extern const char kMetricsRecordingOnly[];
 extern const char kMultiProfiles[];
 extern const char kNaClGdb[];
+extern const char kNaClGdbScript[];
 extern const char kNaClLoaderCmdPrefix[];
 extern const char kNetLogLevel[];
 extern const char kNoDefaultBrowserCheck[];

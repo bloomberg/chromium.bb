@@ -833,6 +833,9 @@ const char kMultiProfiles[]                 = "multi-profiles";
 // flag can't be used.
 const char kNaClGdb[]                       = "nacl-gdb";
 
+// GDB script to pass to the nacl-gdb debugger at startup.
+const char kNaClGdbScript[]                 = "nacl-gdb-script";
+
 // On POSIX only: the contents of this flag are prepended to the nacl-loader
 // command line. Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kNaClLoaderCmdPrefix[]           = "nacl-loader-cmd-prefix";

@@ -29,7 +29,43 @@ class NaClGdbTest : public PPAPINaClTest {
     EXPECT_TRUE(PathService::Get(base::DIR_EXE, &mock_nacl_gdb));
     mock_nacl_gdb = mock_nacl_gdb.Append(kMockNaClGdb);
     command_line->AppendSwitchPath(switches::kNaClGdb, mock_nacl_gdb);
+    EXPECT_TRUE(file_util::CreateTemporaryFile(&script_));
+    command_line->AppendSwitchPath(switches::kNaClGdbScript, script_);
   }
+
+  void RunWithNaClGdb(std::string test_name) {
+    FilePath mock_nacl_gdb_file;
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::string content;
+    // TODO(halyavin): Make this test work on Windows 32-bit. Currently this
+    // is not possible because NaCl doesn't work without sandbox since 1Gb of
+    // space is not reserved. We can't reserve 1Gb of space because
+    // base::LaunchProcess doesn't support creating suspended processes. We need
+    // to either add suspended process support to base::LaunchProcess or use
+    // Win API.
+#if defined(OS_WIN)
+    if (base::win::OSInfo::GetInstance()->wow64_status() ==
+      base::win::OSInfo::WOW64_DISABLED) {
+        return;
+    }
+#endif
+    EXPECT_TRUE(file_util::CreateTemporaryFile(&mock_nacl_gdb_file));
+    env->SetVar("MOCK_NACL_GDB", mock_nacl_gdb_file.AsUTF8Unsafe());
+    RunTestViaHTTP(test_name);
+    env->UnSetVar("MOCK_NACL_GDB");
+
+    EXPECT_TRUE(file_util::ReadFileToString(mock_nacl_gdb_file, &content));
+    EXPECT_STREQ("PASS", content.c_str());
+    EXPECT_TRUE(file_util::Delete(mock_nacl_gdb_file, false));
+
+    content.clear();
+    EXPECT_TRUE(file_util::ReadFileToString(script_, &content));
+    EXPECT_STREQ("PASS", content.c_str());
+    EXPECT_TRUE(file_util::Delete(script_, false));
+  }
+
+ private:
+  FilePath script_;
 };
 
 // Fails on the ASAN test bot. See http://crbug.com/122219
@@ -39,26 +75,5 @@ class NaClGdbTest : public PPAPINaClTest {
 #define MAYBE_Empty Empty
 #endif
 IN_PROC_BROWSER_TEST_F(NaClGdbTest, MAYBE_Empty) {
-  FilePath mock_nacl_gdb_file;
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  std::string content;
-  // TODO(halyavin): Make this test to work on Windows 32-bit. Currently this
-  // is not possible because NaCl doesn't work without sandbox since 1Gb of
-  // space is not reserved. We can't reserve 1Gb of space because
-  // base::LaunchProcess doesn't support creating suspended processes. We need
-  // to either add suspended process support to base::LaunchProcess or use
-  // Win API.
-#if defined(OS_WIN)
-  if (base::win::OSInfo::GetInstance()->wow64_status() ==
-      base::win::OSInfo::WOW64_DISABLED) {
-    return;
-  }
-#endif
-  EXPECT_TRUE(file_util::CreateTemporaryFile(&mock_nacl_gdb_file));
-  env->SetVar("MOCK_NACL_GDB", mock_nacl_gdb_file.AsUTF8Unsafe());
-  RunTestViaHTTP("Empty");
-  env->UnSetVar("MOCK_NACL_GDB");
-  EXPECT_TRUE(file_util::ReadFileToString(mock_nacl_gdb_file, &content));
-  EXPECT_STREQ("PASS", content.c_str());
-  EXPECT_TRUE(file_util::Delete(mock_nacl_gdb_file, false));
+  RunWithNaClGdb("Empty");
 }

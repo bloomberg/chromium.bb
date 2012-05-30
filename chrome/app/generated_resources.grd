@@ -5106,6 +5106,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NACL_GDB_DESCRIPTION" desc="Description of the 'Debug Native Client applications at startup' lab.">
         Set path to nacl-gdb debugger. It will be attached to NaCl applications at startup.
       </message>
+      <message name="IDS_FLAGS_NACL_GDB_SCRIPT_NAME" desc="Name of the 'Script executed by Native Client application debugger at startup' lab.">
+        Script to be executed by nacl-gdb at startup.
+      </message>
+      <message name="IDS_FLAGS_NACL_GDB_SCRIPT_DESCRIPTION" desc="Description of the 'Script executed by Native Client application debugger at startup' lab.">
+        Set path to script with gdb commands which will be executed by nacl-gdb at startup.
+      </message>
       <message name="IDS_FLAGS_DISABLE_SHORTCUTS_PROVIDER" desc="Name of the 'Disable better ranking of previously selected shortcuts in omnibox' lab.">
         Disable 'shortcuts' in the omnibox.
       </message>

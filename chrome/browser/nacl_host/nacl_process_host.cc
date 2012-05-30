@@ -313,6 +313,12 @@ scoped_ptr<CommandLine> NaClProcessHost::GetCommandForLaunchWithGdb(
     cmd_line->AppendArgNative(FILE_PATH_LITERAL("nacl-manifest ") +
                               manifest_path.value());
   }
+  FilePath script = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+      switches::kNaClGdbScript);
+  if (!script.empty()) {
+    cmd_line->AppendArg("--command");
+    cmd_line->AppendArgNative(script.value());
+  }
   cmd_line->AppendArg("--args");
   const CommandLine::StringVector& argv = line->argv();
   for (size_t i = 0; i < argv.size(); i++) {
@@ -386,6 +392,12 @@ bool NaClProcessHost::LaunchNaClGdb(base::ProcessId pid) {
   cmd_line.AppendArg("dump binary value /proc/" +
                      base::IntToString(base::GetCurrentProcId()) +
                      "/fd/" + base::IntToString(fds[1]) + " (char)0");
+  FilePath script = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+      switches::kNaClGdbScript);
+  if (!script.empty()) {
+    cmd_line.AppendArg("--command");
+    cmd_line.AppendArgNative(script.value());
+  }
   // wait on fds[0]
   // If the debugger crashes before attaching to the NaCl process, the user can
   // release resources by terminating the NaCl loader in Chrome Task Manager.
