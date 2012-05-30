@@ -28,6 +28,7 @@
 #include <poll.h>
 #include <wayland-client.h>
 #include <GLES2/gl2.h> /* needed for GLfloat */
+#include <linux/input.h>
 
 struct display {
 	struct wl_display *display;
@@ -96,7 +97,7 @@ pointer_handle_button(void *data, struct wl_pointer *pointer,
 	struct input *input = data;
 	uint32_t bit;
 
-	bit = 1 << (button - 272);
+	bit = 1 << (button - BTN_LEFT);
 	if (state)
 		input->button_mask |= bit;
 	else
