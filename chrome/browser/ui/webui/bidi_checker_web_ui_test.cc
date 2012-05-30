@@ -428,15 +428,9 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
-#if defined(OS_WIN)
-// TestSettings tests are flaky http://crbug.com/95425
-#define MAYBE_TestSettingsFrameSyncSetup DISABLED_TestSettingsFrameSyncSetup
-#else
-#define MAYBE_TestSettingsFrameSyncSetup TestSettingsFrameSyncSetup
-#endif
-
+// TestSettings tests are flaky on all platforms. http://crbug.com/95425
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       MAYBE_TestSettingsFrameSyncSetup) {
+                       DISABLED_TestSettingsFrameSyncSetup) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kSyncSetupSubPage);
   RunBidiCheckerOnPage(url);
