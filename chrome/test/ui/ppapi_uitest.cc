@@ -533,7 +533,10 @@ TEST_PPAPI_NACL_VIA_HTTP(Graphics2D)
 
 TEST_PPAPI_IN_PROCESS(ImageData)
 TEST_PPAPI_OUT_OF_PROCESS(ImageData)
-TEST_PPAPI_NACL_VIA_HTTP(ImageData)
+
+// PPAPINaClTest.ImageData times out consistently on all platforms.
+// http://crbug.com/130377
+TEST_PPAPI_NACL_VIA_HTTP(DISABLED_ImageData)
 
 TEST_PPAPI_IN_PROCESS(BrowserFont)
 TEST_PPAPI_OUT_OF_PROCESS(BrowserFont)
