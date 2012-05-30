@@ -405,7 +405,7 @@ WL_EXPORT void
 weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 				   struct weston_seat *seat,
 				   uint32_t time, uint32_t axis,
-				   int32_t value)
+				   wl_fixed_t value)
 {
 	struct weston_binding *b;
 

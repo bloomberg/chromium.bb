@@ -1722,7 +1722,7 @@ notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis,
 
 	if (value)
 		weston_compositor_run_axis_binding(compositor, ws, time, axis,
-						   wl_fixed_to_int(value));
+						   value);
 	else
 		return;
 

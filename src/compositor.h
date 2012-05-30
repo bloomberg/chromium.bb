@@ -549,7 +549,7 @@ weston_compositor_add_button_binding(struct weston_compositor *compositor,
 
 typedef void (*weston_axis_binding_handler_t)(struct wl_seat *seat,
 					      uint32_t time, uint32_t axis,
-					      int32_t value, void *data);
+					      wl_fixed_t value, void *data);
 struct weston_binding *
 weston_compositor_add_axis_binding(struct weston_compositor *compositor,
 			           uint32_t axis,

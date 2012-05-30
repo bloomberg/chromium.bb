@@ -1617,7 +1617,7 @@ resize_binding(struct wl_seat *seat, uint32_t time, uint32_t button, void *data)
 
 static void
 surface_opacity_binding(struct wl_seat *seat, uint32_t time, uint32_t axis,
-			int32_t value, void *data)
+			wl_fixed_t value, void *data)
 {
 	float step = 0.05;
 	struct shell_surface *shsurf;
@@ -1639,7 +1639,7 @@ surface_opacity_binding(struct wl_seat *seat, uint32_t time, uint32_t axis,
 			break;
 	}
 
-	surface->alpha += value * step;
+	surface->alpha += wl_fixed_to_double(value) * step;
 
 	if (surface->alpha > 1.0)
 		surface->alpha = 1.0;
@@ -1652,7 +1652,7 @@ surface_opacity_binding(struct wl_seat *seat, uint32_t time, uint32_t axis,
 
 static void
 do_zoom(struct wl_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
-	int32_t value)
+	wl_fixed_t value)
 {
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *compositor = ws->compositor;
@@ -1669,7 +1669,8 @@ do_zoom(struct wl_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 			else if (key == KEY_PAGEDOWN)
 				increment = -output->zoom.increment;
 			else if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL)
-				increment = output->zoom.increment * value;
+				increment = output->zoom.increment *
+					    wl_fixed_to_double(value);
 			else
 				increment = 0;
 
@@ -1696,7 +1697,7 @@ do_zoom(struct wl_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 
 static void
 zoom_axis_binding(struct wl_seat *seat, uint32_t time, uint32_t axis,
-		  int32_t value, void *data)
+		  wl_fixed_t value, void *data)
 {
 	do_zoom(seat, time, 0, axis, value);
 }
