@@ -1249,7 +1249,8 @@ def GitCleanAndCheckoutUpstream(git_repo, refresh_upstream=True):
     git_repo: Directory of git repository.
     refresh_upstream: If True, run a remote update prior to checking it out.
   """
-  remote, local_upstream = GetTrackingBranch(git_repo, for_push=True)
+  remote, local_upstream = GetTrackingBranch(git_repo,
+                                             for_push=refresh_upstream)
   RunGitCommand(git_repo, ['am', '--abort'], error_code_ok=True)
   RunGitCommand(git_repo, ['rebase', '--abort'], error_code_ok=True)
   if refresh_upstream:
