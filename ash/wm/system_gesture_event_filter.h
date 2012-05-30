@@ -8,9 +8,6 @@
 
 #include "ash/shell.h"
 #include "ui/aura/event_filter.h"
-#include "ui/aura/window_observer.h"
-
-#include <map>
 
 namespace aura {
 class MouseEvent;
@@ -20,8 +17,6 @@ class Window;
 
 namespace ash {
 namespace internal {
-
-class SystemPinchHandler;
 
 enum BezelStart {
   BEZEL_START_UNSET = 0,
@@ -38,8 +33,7 @@ enum ScrollOrientation {
 };
 
 // An event filter which handles system level gesture events.
-class SystemGestureEventFilter : public aura::EventFilter,
-                                 public aura::WindowObserver {
+class SystemGestureEventFilter : public aura::EventFilter {
  public:
   SystemGestureEventFilter();
   virtual ~SystemGestureEventFilter();
@@ -55,15 +49,7 @@ class SystemGestureEventFilter : public aura::EventFilter,
       aura::Window* target,
       aura::GestureEvent* event) OVERRIDE;
 
-  // Overridden from aura::WindowObserver.
-  virtual void OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visible) OVERRIDE;
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
-
  private:
-  // Removes system-gesture handlers for a window.
-  void ClearGestureHandlerForWindow(aura::Window* window);
-
   // Handle events meant for volume / brightness. Returns true when no further
   // events from this gesture should be sent.
   bool HandleDeviceControl(aura::GestureEvent* event);
@@ -75,11 +61,6 @@ class SystemGestureEventFilter : public aura::EventFilter,
   // Handle events meant to switch through applications. Returns true when no
   // further events from this gesture should be sent.
   bool HandleApplicationControl(aura::GestureEvent* event);
-
-  typedef std::map<aura::Window*, SystemPinchHandler*> WindowPinchHandlerMap;
-  // Created on demand when a system-level pinch gesture is initiated. Destroyed
-  // when the system-level pinch gesture ends for the window.
-  WindowPinchHandlerMap pinch_handlers_;
 
   // The percentage of the screen to the left and right which belongs to
   // device gestures.

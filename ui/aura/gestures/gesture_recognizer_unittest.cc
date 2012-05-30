@@ -44,6 +44,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         pinch_end_(false),
         long_press_(false),
         fling_(false),
+        three_finger_swipe_(false),
         scroll_x_(0),
         scroll_y_(0),
         velocity_x_(0),
@@ -66,6 +67,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     pinch_end_ = false;
     long_press_ = false;
     fling_ = false;
+    three_finger_swipe_ = false;
 
     scroll_begin_position_.SetPoint(0, 0);
     tap_location_.SetPoint(0, 0);
@@ -89,6 +91,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool pinch_end() const { return pinch_end_; }
   bool long_press() const { return long_press_; }
   bool fling() const { return fling_; }
+  bool three_finger_swipe() const { return three_finger_swipe_; }
 
   const gfx::Point scroll_begin_position() const {
     return scroll_begin_position_;
@@ -152,7 +155,10 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         EXPECT_TRUE(velocity_x_ != 0 || velocity_y_ != 0);
         fling_ = true;
         break;
-      case ui::ET_GESTURE_TAP_UP:
+      case ui::ET_GESTURE_THREE_FINGER_SWIPE:
+        three_finger_swipe_ = true;
+        velocity_x_ = gesture->delta_x();
+        velocity_y_ = gesture->delta_y();
         break;
       default:
         NOTREACHED();
@@ -172,6 +178,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool pinch_end_;
   bool long_press_;
   bool fling_;
+  bool three_finger_swipe_;
 
   gfx::Point scroll_begin_position_;
   gfx::Point tap_location_;
@@ -1560,6 +1567,45 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   EXPECT_FALSE(delegate->pinch_update());
 }
 
+TEST_F(GestureRecognizerTest, GestureEventPinchScrollOnlyWhenBothFingersMove) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 1000;
+  const int kWindowHeight = 1000;
+  const int kTouchId1 = 3;
+  const int kTouchId2 = 5;
+  gfx::Rect bounds(0, 0, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  delegate->Reset();
+  TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(100, 100),
+                    kTouchId1, GetTime());
+
+  root_window()->DispatchTouchEvent(&press1);
+
+  delegate->Reset();
+  TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(110, 110),
+                    kTouchId2, GetTime());
+  root_window()->DispatchTouchEvent(&press2);
+
+  SendScrollEvents(root_window(), 100, 100, press1.time_stamp(),
+                   1, 10, kTouchId1, 1,
+                   ui::GestureConfiguration::points_buffered_for_velocity(),
+                   delegate.get());
+
+  SendScrollEvents(root_window(), 110, 110, press1.time_stamp() +
+                   base::TimeDelta::FromMilliseconds(1000),
+                   1, 10, kTouchId2, 1,
+                   ui::GestureConfiguration::points_buffered_for_velocity(),
+                   delegate.get());
+  // At no point were both fingers moving at the same time,
+  // so no scrolling should have occurred
+
+  EXPECT_EQ(0, delegate->scroll_x());
+  EXPECT_EQ(0, delegate->scroll_y());
+}
+
 TEST_F(GestureRecognizerTest, GestureEventIgnoresDisconnectedEvents) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
@@ -1705,6 +1751,190 @@ TEST_F(GestureRecognizerTest, NoTapWithPreventDefaultedRelease) {
   delegate->Reset();
   delegate->ReceivedAckPreventDefaulted();
   EXPECT_FALSE(delegate->tap());
+}
+
+TEST_F(GestureRecognizerTest, GestureEventThreeFingerSwipe) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kTouchId1 = 7;
+  const int kTouchId2 = 2;
+  const int kTouchId3 = 9;
+  gfx::Rect bounds(0, 0, 1000, 1000);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
+                    kTouchId1, GetTime());
+  TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
+                    kTouchId2, GetTime());
+  TouchEvent press3(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
+                    kTouchId3, GetTime());
+
+  TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(0, 0),
+                      kTouchId1, GetTime());
+  TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(0, 0),
+                      kTouchId2, GetTime());
+  TouchEvent release3(ui::ET_TOUCH_RELEASED, gfx::Point(0, 0),
+                      kTouchId3, GetTime());
+
+  root_window()->DispatchTouchEvent(&press1);
+  root_window()->DispatchTouchEvent(&press2);
+  root_window()->DispatchTouchEvent(&press3);
+
+  delegate->Reset();
+
+  // Start by testing all four directions
+
+  int kBufferedPoints =
+    ui::GestureConfiguration::points_buffered_for_velocity();
+
+  // Swipe right
+  SendScrollEvents(root_window(), 1, 1, press1.time_stamp(),
+                   100, 10, kTouchId1, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1, press2.time_stamp(),
+                   100, 10, kTouchId2, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1, press3.time_stamp(),
+                   100, 10, kTouchId3, 1, kBufferedPoints, delegate.get());
+
+  EXPECT_TRUE(delegate->three_finger_swipe());
+  EXPECT_EQ(1, delegate->velocity_x());
+  EXPECT_EQ(0, delegate->velocity_y());
+
+  root_window()->DispatchTouchEvent(&release1);
+  root_window()->DispatchTouchEvent(&release2);
+  root_window()->DispatchTouchEvent(&release3);
+
+  root_window()->DispatchTouchEvent(&press1);
+  root_window()->DispatchTouchEvent(&press2);
+  root_window()->DispatchTouchEvent(&press3);
+
+  delegate->Reset();
+
+  // Swipe left
+  SendScrollEvents(root_window(), 1, 1,
+                   press1.time_stamp(),
+                   -100, 10, kTouchId1, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1,
+                   press2.time_stamp(),
+                   -100, 10, kTouchId2, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1,
+                   press3.time_stamp(),
+                   -100, 10, kTouchId3, 1, kBufferedPoints, delegate.get());
+
+  EXPECT_TRUE(delegate->three_finger_swipe());
+  EXPECT_EQ(-1, delegate->velocity_x());
+  EXPECT_EQ(0, delegate->velocity_y());
+
+  root_window()->DispatchTouchEvent(&release1);
+  root_window()->DispatchTouchEvent(&release2);
+  root_window()->DispatchTouchEvent(&release3);
+
+  root_window()->DispatchTouchEvent(&press1);
+  root_window()->DispatchTouchEvent(&press2);
+  root_window()->DispatchTouchEvent(&press3);
+
+  delegate->Reset();
+
+  // Swipe down
+  SendScrollEvents(root_window(), 1, 1,
+                   press1.time_stamp(),
+                   10, 100, kTouchId1, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1,
+                   press2.time_stamp(),
+                   10, 100, kTouchId2, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1,
+                   press3.time_stamp(),
+                   10, 100, kTouchId3, 1, kBufferedPoints, delegate.get());
+
+  EXPECT_TRUE(delegate->three_finger_swipe());
+  EXPECT_EQ(0, delegate->velocity_x());
+  EXPECT_EQ(1, delegate->velocity_y());
+
+  root_window()->DispatchTouchEvent(&release1);
+  root_window()->DispatchTouchEvent(&release2);
+  root_window()->DispatchTouchEvent(&release3);
+
+  root_window()->DispatchTouchEvent(&press1);
+  root_window()->DispatchTouchEvent(&press2);
+  root_window()->DispatchTouchEvent(&press3);
+
+  delegate->Reset();
+
+  // Swipe up
+  SendScrollEvents(root_window(), 1, 1,
+                   press1.time_stamp(),
+                   10, -100, kTouchId1, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1,
+                   press2.time_stamp(),
+                   10, -100, kTouchId2, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1,
+                   press3.time_stamp(),
+                   10, -100, kTouchId3, 1, kBufferedPoints, delegate.get());
+
+  EXPECT_TRUE(delegate->three_finger_swipe());
+  EXPECT_EQ(0, delegate->velocity_x());
+  EXPECT_EQ(-1, delegate->velocity_y());
+
+  // Only one swipe can occur per press of three fingers
+  delegate->Reset();
+
+  SendScrollEvents(root_window(), 1, 1,
+                   press1.time_stamp(),
+                   10, -100, kTouchId1, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1,
+                   press2.time_stamp(),
+                   10, -100, kTouchId2, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1,
+                   press3.time_stamp(),
+                   10, -100, kTouchId3, 1, kBufferedPoints, delegate.get());
+
+  EXPECT_FALSE(delegate->three_finger_swipe());
+
+  root_window()->DispatchTouchEvent(&release1);
+  root_window()->DispatchTouchEvent(&release2);
+  root_window()->DispatchTouchEvent(&release3);
+
+  root_window()->DispatchTouchEvent(&press1);
+  root_window()->DispatchTouchEvent(&press2);
+  root_window()->DispatchTouchEvent(&press3);
+
+  delegate->Reset();
+
+  // Swiping diagonally doesn't fire an event
+  SendScrollEvents(root_window(), 1, 1,
+                   press1.time_stamp(),
+                   100, -100, kTouchId1, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1,
+                   press2.time_stamp(),
+                   100, -100, kTouchId2, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1,
+                   press3.time_stamp(),
+                   100, -100, kTouchId3, 1, kBufferedPoints, delegate.get());
+
+  EXPECT_FALSE(delegate->three_finger_swipe());
+
+  root_window()->DispatchTouchEvent(&release1);
+  root_window()->DispatchTouchEvent(&release2);
+  root_window()->DispatchTouchEvent(&release3);
+
+  root_window()->DispatchTouchEvent(&press1);
+  root_window()->DispatchTouchEvent(&press2);
+  root_window()->DispatchTouchEvent(&press3);
+
+  delegate->Reset();
+
+  // Have to swipe in a consistent direction
+  SendScrollEvents(root_window(), 1, 1,
+                   press1.time_stamp(),
+                   100, 10, kTouchId1, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1,
+                   press2.time_stamp(),
+                   100, 10, kTouchId2, 1, kBufferedPoints, delegate.get());
+  SendScrollEvents(root_window(), 1, 1,
+                   press3.time_stamp(),
+                   -100, 10, kTouchId3, 1, kBufferedPoints, delegate.get());
+
+  EXPECT_FALSE(delegate->three_finger_swipe());
 }
 
 }  // namespace test

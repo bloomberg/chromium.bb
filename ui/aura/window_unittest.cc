@@ -659,7 +659,7 @@ TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
                      gfx::Point(10, 10), 0, getTime() +
                      base::TimeDelta::FromMilliseconds(50));
   root_window()->DispatchTouchEvent(&release);
-  EXPECT_EQ(2, delegate.gesture_event_count());
+  EXPECT_EQ(1, delegate.gesture_event_count());
 }
 
 // Changes capture while capture is already ongoing.
