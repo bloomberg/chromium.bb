@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/print_preview_unit_test_base.h"
 
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -27,6 +28,10 @@ void PrintPreviewUnitTestBase::SetUp() {
       static_cast<TestingBrowserProcess*>(g_browser_process);
   EXPECT_FALSE(testing_browser_process->local_state());
   testing_browser_process->SetLocalState(testing_local_state_.get());
+
+  ASSERT_TRUE(browser());
+  BrowserList::SetLastActive(browser());
+  ASSERT_TRUE(BrowserList::GetLastActive());
 }
 
 void PrintPreviewUnitTestBase::TearDown() {
