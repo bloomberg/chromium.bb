@@ -435,6 +435,7 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
 
   ::gpu::gles2::DisallowedFeatures disallowed_features;
   disallowed_features.swap_buffer_complete_callback = true;
+  disallowed_features.gpu_memory_manager = true;
   if (!decoder_->Initialize(surface_,
                             context_,
                             true,

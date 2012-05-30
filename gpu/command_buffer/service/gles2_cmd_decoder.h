@@ -32,11 +32,13 @@ class QueryManager;
 struct DisallowedFeatures {
   DisallowedFeatures()
       : multisampling(false),
-        swap_buffer_complete_callback(false) {
+        swap_buffer_complete_callback(false),
+        gpu_memory_manager(false) {
   }
 
   bool multisampling;
   bool swap_buffer_complete_callback;
+  bool gpu_memory_manager;
 };
 
 // This class implements the AsyncAPIInterface interface, decoding GLES2
