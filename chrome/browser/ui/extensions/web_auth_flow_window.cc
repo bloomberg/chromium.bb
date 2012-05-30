@@ -9,17 +9,6 @@
 using content::BrowserContext;
 using content::WebContents;
 
-// TODO(munjal): Remove this once we have mac/linux implementations.
-#if defined(OS_MACOSX)
-// static
-WebAuthFlowWindow* WebAuthFlowWindow::Create(
-    Delegate* delegate,
-    BrowserContext* browser_context,
-    WebContents* contents) {
-  return NULL;
-}
-#endif
-
 WebAuthFlowWindow::~WebAuthFlowWindow() {
 }
 
@@ -31,4 +20,3 @@ WebAuthFlowWindow::WebAuthFlowWindow(
       browser_context_(browser_context),
       contents_(contents) {
 }
-

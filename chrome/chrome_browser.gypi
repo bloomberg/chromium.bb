@@ -2535,6 +2535,8 @@
         'browser/ui/cocoa/extensions/extension_view_mac.mm',
         'browser/ui/cocoa/extensions/shell_window_cocoa.h',
         'browser/ui/cocoa/extensions/shell_window_cocoa.mm',
+        'browser/ui/cocoa/extensions/web_auth_flow_window_cocoa.h',
+        'browser/ui/cocoa/extensions/web_auth_flow_window_cocoa.mm',
         'browser/ui/cocoa/external_protocol_dialog.h',
         'browser/ui/cocoa/external_protocol_dialog.mm',
         'browser/ui/cocoa/fast_resize_view.h',
