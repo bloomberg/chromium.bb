@@ -366,15 +366,20 @@ void UrlFetchOperationBase::NotifyStartToOperationRegistry() {
 
 void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
   RunCallbackOnPrematureFailure(code);
+
+  // Notify authentication failed.
+  NotifyAuthFailed();
+
   // Check if this failed before we even started fetching. If so, register
   // for start so we can properly unregister with finish.
   if (!started_)
     NotifyStart();
 
+  // Note: NotifyFinish() must be invoked at the end, after all other callbacks
+  // and notifications. Once NotifyFinish() is called, the current instance of
+  // gdata operation will be deleted from the GDataOperationRegistry and become
+  // invalid.
   NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
-
-  // Notify authentication failed.
-  NotifyAuthFailed();
 }
 
 std::string UrlFetchOperationBase::GetResponseHeadersAsString(
