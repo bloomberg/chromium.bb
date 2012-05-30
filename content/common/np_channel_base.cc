@@ -35,6 +35,10 @@ NPChannelBase* NPChannelBase::GetChannel(
     channel = factory();
   } else {
     channel = iter->second;
+#if defined(OS_POSIX)
+    // Investigation for crbug.com/97285.
+    CHECK(channel->channel_valid() || channel_handle.socket.fd != -1);
+#endif
   }
 
   DCHECK(channel != NULL);
