@@ -14,17 +14,6 @@
 
 // File utilities messages sent from the renderer to the browser.
 
-// Get file size in bytes. Set result to -1 if failed to get the file size.
-IPC_SYNC_MESSAGE_CONTROL1_1(FileUtilitiesMsg_GetFileSize,
-                            FilePath /* path */,
-                            int64 /* result */)
-
-// Get file modification time in seconds. Set result to 0 if failed to get the
-// file modification time.
-IPC_SYNC_MESSAGE_CONTROL1_1(FileUtilitiesMsg_GetFileModificationTime,
-                            FilePath /* path */,
-                            base::Time /* result */)
-
 IPC_SYNC_MESSAGE_CONTROL1_2(FileUtilitiesMsg_GetFileInfo,
                             FilePath /* path */,
                             base::PlatformFileInfo /* result */,

@@ -114,9 +114,6 @@ class RendererWebKitPlatformSupportImpl::MimeRegistry
 class RendererWebKitPlatformSupportImpl::FileUtilities
     : public webkit_glue::WebFileUtilitiesImpl {
  public:
-  virtual bool getFileSize(const WebKit::WebString& path, long long& result);
-  virtual bool getFileModificationTime(const WebKit::WebString& path,
-                                       double& result);
   virtual bool getFileInfo(const WebString& path, WebFileInfo& result);
   virtual base::PlatformFile openFile(const WebKit::WebString& path,
                                       int mode);
@@ -408,32 +405,6 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::preferredExtensionForMIMEType(
 }
 
 //------------------------------------------------------------------------------
-
-bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileSize(
-    const WebString& path, long long& result) {
-  if (SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileSize(
-          webkit_glue::WebStringToFilePath(path),
-          reinterpret_cast<int64*>(&result)))) {
-    return result >= 0;
-  }
-
-  result = -1;
-  return false;
-}
-
-bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileModificationTime(
-    const WebString& path,
-    double& result) {
-  base::Time time;
-  if (SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileModificationTime(
-          webkit_glue::WebStringToFilePath(path), &time))) {
-    result = time.ToDoubleT();
-    return !time.is_null();
-  }
-
-  result = 0;
-  return false;
-}
 
 bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
     const WebString& path,

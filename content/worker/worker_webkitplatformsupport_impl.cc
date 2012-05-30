@@ -43,9 +43,6 @@ using WebKit::WebURL;
 class WorkerWebKitPlatformSupportImpl::FileUtilities
     : public webkit_glue::WebFileUtilitiesImpl {
  public:
-  virtual bool getFileSize(const WebKit::WebString& path, long long& result);
-  virtual bool getFileModificationTime(const WebKit::WebString& path,
-                                       double& result);
   virtual bool getFileInfo(const WebString& path, WebFileInfo& result);
 };
 
@@ -57,32 +54,6 @@ static bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) {
   scoped_refptr<IPC::SyncMessageFilter> sync_msg_filter(
       ChildThread::current()->sync_message_filter());
   return sync_msg_filter->Send(msg);
-}
-
-bool WorkerWebKitPlatformSupportImpl::FileUtilities::getFileSize(
-    const WebString& path, long long& result) {
-  if (SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileSize(
-          webkit_glue::WebStringToFilePath(path),
-          reinterpret_cast<int64*>(&result)))) {
-    return result >= 0;
-  }
-
-  result = -1;
-  return false;
-}
-
-bool WorkerWebKitPlatformSupportImpl::FileUtilities::getFileModificationTime(
-    const WebString& path,
-    double& result) {
-  base::Time time;
-  if (SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileModificationTime(
-              webkit_glue::WebStringToFilePath(path), &time))) {
-    result = time.ToDoubleT();
-    return !time.is_null();
-  }
-
-  result = 0;
-  return false;
 }
 
 bool WorkerWebKitPlatformSupportImpl::FileUtilities::getFileInfo(

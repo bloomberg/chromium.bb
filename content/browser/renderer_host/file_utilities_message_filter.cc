@@ -28,48 +28,11 @@ bool FileUtilitiesMessageFilter::OnMessageReceived(const IPC::Message& message,
                                                    bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(FileUtilitiesMessageFilter, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(FileUtilitiesMsg_GetFileSize, OnGetFileSize)
-    IPC_MESSAGE_HANDLER(FileUtilitiesMsg_GetFileModificationTime,
-                        OnGetFileModificationTime)
     IPC_MESSAGE_HANDLER(FileUtilitiesMsg_GetFileInfo, OnGetFileInfo)
     IPC_MESSAGE_HANDLER(FileUtilitiesMsg_OpenFile, OnOpenFile)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void FileUtilitiesMessageFilter::OnGetFileSize(const FilePath& path,
-                                               int64* result) {
-  *result = -1;
-
-  // Get file size only when the child process has been granted permission to
-  // upload the file.
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      process_id_, path)) {
-    return;
-  }
-
-  base::PlatformFileInfo file_info;
-  file_info.size = 0;
-  if (file_util::GetFileInfo(path, &file_info))
-    *result = file_info.size;
-}
-
-void FileUtilitiesMessageFilter::OnGetFileModificationTime(
-    const FilePath& path, base::Time* result) {
-  *result = base::Time();
-
-  // Get file modification time only when the child process has been granted
-  // permission to upload the file.
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      process_id_, path)) {
-    return;
-  }
-
-  base::PlatformFileInfo file_info;
-  file_info.size = 0;
-  if (file_util::GetFileInfo(path, &file_info))
-    *result = file_info.last_modified;
 }
 
 void FileUtilitiesMessageFilter::OnGetFileInfo(

@@ -34,8 +34,6 @@ class FileUtilitiesMessageFilter : public content::BrowserMessageFilter {
   typedef void (*FileInfoWriteFunc)(IPC::Message* reply_msg,
                                     const base::PlatformFileInfo& file_info);
 
-  void OnGetFileSize(const FilePath& path, int64* result);
-  void OnGetFileModificationTime(const FilePath& path, base::Time* result);
   void OnGetFileInfo(const FilePath& path,
                      base::PlatformFileInfo* result,
                      base::PlatformFileError* status);

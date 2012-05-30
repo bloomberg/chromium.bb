@@ -22,10 +22,6 @@ class WEBKIT_GLUE_EXPORT WebFileUtilitiesImpl :
   virtual bool fileExists(const WebKit::WebString& path);
   virtual bool deleteFile(const WebKit::WebString& path);
   virtual bool deleteEmptyDirectory(const WebKit::WebString& path);
-  virtual bool getFileSize(const WebKit::WebString& path, long long& result);
-  virtual bool getFileModificationTime(
-      const WebKit::WebString& path,
-      double& result);
   virtual bool getFileInfo(
       const WebKit::WebString& path,
       WebKit::WebFileInfo& result);

@@ -40,29 +40,6 @@ bool WebFileUtilitiesImpl::deleteEmptyDirectory(const WebString& path) {
   return false;
 }
 
-bool WebFileUtilitiesImpl::getFileSize(const WebString& path,
-                                       long long& result) {
-  if (sandbox_enabled_) {
-    NOTREACHED();
-    return false;
-  }
-  return file_util::GetFileSize(WebStringToFilePath(path),
-                                reinterpret_cast<int64*>(&result));
-}
-
-bool WebFileUtilitiesImpl::getFileModificationTime(const WebString& path,
-                                                   double& result) {
-  if (sandbox_enabled_) {
-    NOTREACHED();
-    return false;
-  }
-  base::PlatformFileInfo info;
-  if (!file_util::GetFileInfo(WebStringToFilePath(path), &info))
-    return false;
-  result = info.last_modified.ToDoubleT();
-  return true;
-}
-
 bool WebFileUtilitiesImpl::getFileInfo(const WebString& path,
                                        WebKit::WebFileInfo& web_file_info) {
   if (sandbox_enabled_) {
