@@ -15,7 +15,7 @@ import tempfile
 import time
 
 from chromite.buildbot import constants, repository
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
@@ -46,15 +46,15 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
   """
   reinitialize = True
   if os.path.exists(manifest_dir):
-    result = cros_lib.RunCommand(['git', 'config', 'remote.origin.url'],
-                                 cwd=manifest_dir, print_cmd=False,
-                                 redirect_stdout=True, error_code_ok=True)
+    result = cros_build_lib.RunCommand(['git', 'config', 'remote.origin.url'],
+                                       cwd=manifest_dir, print_cmd=False,
+                                       redirect_stdout=True, error_code_ok=True)
     if (result.returncode == 0 and
         result.output.rstrip() == manifest_repo):
       logging.info('Updating manifest-versions checkout.')
       try:
-        cros_lib.GitCleanAndCheckoutUpstream(manifest_dir)
-      except cros_lib.RunCommandError:
+        cros_build_lib.GitCleanAndCheckoutUpstream(manifest_dir)
+      except cros_build_lib.RunCommandError:
         logging.warning('Could not update manifest-versions checkout.')
       else:
         reinitialize = False
@@ -73,15 +73,15 @@ def _PushGitChanges(git_repo, message, dry_run=True):
     message: Commit message
     dry_run: If true, don't actually push changes to the server
   """
-  remote, push_branch = cros_lib.GetTrackingBranch(
+  remote, push_branch = cros_build_lib.GetTrackingBranch(
       git_repo, for_checkout=False, for_push=True)
-  cros_lib.RunGitCommand(git_repo, ['add', '-A'])
+  cros_build_lib.RunGitCommand(git_repo, ['add', '-A'])
 
   # It's possible that while we are running on dry_run, someone has already
   # committed our change.
   try:
-    cros_lib.RunGitCommand(git_repo, ['commit', '-m', message])
-  except cros_lib.RunCommandError:
+    cros_build_lib.RunGitCommand(git_repo, ['commit', '-m', message])
+  except cros_build_lib.RunCommandError:
     if dry_run:
       return
     raise
@@ -90,7 +90,7 @@ def _PushGitChanges(git_repo, message, dry_run=True):
   if dry_run:
     push_cmd.extend(['--dry-run', '--force'])
 
-  cros_lib.RunGitCommand(git_repo, push_cmd)
+  cros_build_lib.RunGitCommand(git_repo, push_cmd)
 
 
 def _RemoveDirs(dir_name):
@@ -265,7 +265,7 @@ class VersionInfo(object):
     repo_dir = os.path.dirname(self.version_file)
 
     try:
-      cros_lib.CreatePushBranch(PUSH_BRANCH, repo_dir)
+      cros_build_lib.CreatePushBranch(PUSH_BRANCH, repo_dir)
 
       shutil.copyfile(temp_file, self.version_file)
       os.unlink(temp_file)
@@ -274,7 +274,7 @@ class VersionInfo(object):
     finally:
       # Update to the remote version that contains our changes. This is needed
       # to ensure that we don't build a release using a local commit.
-      cros_lib.GitCleanAndCheckoutUpstream(repo_dir)
+      cros_build_lib.GitCleanAndCheckoutUpstream(repo_dir)
 
     return self.VersionString()
 
@@ -383,8 +383,8 @@ class BuildSpecsManager(object):
 
   def _GetSpecAge(self, version):
     cmd = ['git', 'log', '-1', '--format=%ct', '%s.xml' % version]
-    result = cros_lib.RunCommand(cmd, cwd=self.all_specs_dir,
-                                 redirect_stdout=True)
+    result = cros_build_lib.RunCommand(cmd, cwd=self.all_specs_dir,
+                                       redirect_stdout=True)
     return time.time() - int(result.output.strip())
 
   def RefreshManifestCheckout(self):
@@ -458,7 +458,7 @@ class BuildSpecsManager(object):
                  self.build_name, version))
       version = version_info.IncrementVersion(message, dry_run=self.dry_run)
       assert version != self.latest
-      cros_lib.Info('Incremented version number to  %s', version)
+      cros_buil_lib.Info('Incremented version number to  %s', version)
 
     return version
 
@@ -561,7 +561,8 @@ class BuildSpecsManager(object):
         if not self.force and self.HasCheckoutBeenBuilt():
           return None
 
-        cros_lib.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)
+        cros_build_lib.CreatePushBranch(PUSH_BRANCH, self.manifest_dir,
+                                        sync=False)
         if not self.latest_unprocessed:
           version = self.GetNextVersion(version_info)
           new_manifest = self.CreateManifest()
@@ -574,7 +575,7 @@ class BuildSpecsManager(object):
 
         self.current_version = version
         return self.GetLocalManifest(version)
-      except cros_lib.RunCommandError as e:
+      except cros_build_lib.RunCommandError as e:
         last_error = 'Failed to generate buildspec. error: %s' % e
         logging.error(last_error)
         logging.error('Retrying to generate buildspec:  Retry %d/%d', index + 1,
@@ -624,7 +625,8 @@ class BuildSpecsManager(object):
     for index in range(0, retries + 1):
       try:
         self.RefreshManifestCheckout()
-        cros_lib.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)
+        cros_build_lib.CreatePushBranch(PUSH_BRANCH, self.manifest_dir,
+                                        sync=False)
         status = self.STATUS_PASSED if success else self.STATUS_FAILED
         commit_message = ('Automatic checkin: status=%s build_version %s for '
                           '%s' % (status,
@@ -636,7 +638,7 @@ class BuildSpecsManager(object):
           self._SetFailed()
 
         self.PushSpecChanges(commit_message)
-      except cros_lib.RunCommandError as e:
+      except cros_build_lib.RunCommandError as e:
         last_error = ('Failed to update the status for %s with the '
                       'following error %s' % (self.build_name,
                                               e.message))

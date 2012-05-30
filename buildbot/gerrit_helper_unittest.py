@@ -17,7 +17,7 @@ from chromite.buildbot import gerrit_helper
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import patch_unittest as cros_patch_unittest
 from chromite.buildbot import validation_pool
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 
 
 def test_json_data():
@@ -93,11 +93,11 @@ class GerritHelperTest(mox.MoxTestBase):
 
   def testParseFakeResults(self):
     """Parses our own fake gerrit query results to verify we parse correctly."""
-    fake_result = self.mox.CreateMock(cros_lib.CommandResult)
+    fake_result = self.mox.CreateMock(cros_build_lib.CommandResult)
     fake_result.output = self.results
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    cros_lib.RunCommand(mox.In('gerrit.chromium.org'),
-                        redirect_stdout=True).AndReturn(fake_result)
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    cros_build_lib.RunCommand(mox.In('gerrit.chromium.org'),
+                              redirect_stdout=True).AndReturn(fake_result)
     self.mox.ReplayAll()
     helper = gerrit_helper.GerritHelper(False)
     changes = helper.GrabChangesReadyForCommit()
@@ -112,11 +112,11 @@ class GerritHelperTest(mox.MoxTestBase):
 
   def testParseFakeResultsWithInternalURL(self):
     """Parses our own fake gerrit query results but sets internal bit."""
-    fake_result = self.mox.CreateMock(cros_lib.CommandResult)
+    fake_result = self.mox.CreateMock(cros_build_lib.CommandResult)
     fake_result.output = self.results
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    cros_lib.RunCommand(mox.In('gerrit-int.chromium.org'),
-                        redirect_stdout=True).AndReturn(fake_result)
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    cros_build_lib.RunCommand(mox.In('gerrit-int.chromium.org'),
+                              redirect_stdout=True).AndReturn(fake_result)
     self.mox.ReplayAll()
     helper = gerrit_helper.GerritHelper(True)
     changes = helper.GrabChangesReadyForCommit()
@@ -157,11 +157,12 @@ class GerritHelperTest(mox.MoxTestBase):
 
     This test should filter out the tacos/chromite project as its not real.
     """
-    fake_result_from_gerrit = self.mox.CreateMock(cros_lib.CommandResult)
+    fake_result_from_gerrit = self.mox.CreateMock(cros_build_lib.CommandResult)
     fake_result_from_gerrit.output = self.results
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    cros_lib.RunCommand(mox.In('gerrit.chromium.org'),
-                        redirect_stdout=True).AndReturn(fake_result_from_gerrit)
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    cros_build_lib.RunCommand(mox.In('gerrit.chromium.org'),
+                              redirect_stdout=True).AndReturn(
+                                  fake_result_from_gerrit)
     self.mox.ReplayAll()
     helper = gerrit_helper.GerritHelper(False)
     changes = helper.GrabChangesReadyForCommit()
@@ -186,16 +187,18 @@ class GerritHelperTest(mox.MoxTestBase):
     """Tests that we can parse a json to check if a change is committed."""
     changeid = 'Ia6e663415c004bdaa77101a7e3258657598b0468'
     changeid_bad = 'I97663415c004bdaa77101a7e3258657598b0468'
-    fake_result_from_gerrit = self.mox.CreateMock(cros_lib.CommandResult)
+    fake_result_from_gerrit = self.mox.CreateMock(cros_build_lib.CommandResult)
     fake_result_from_gerrit.output = self.merged_change
-    fake_bad_result_from_gerrit = self.mox.CreateMock(cros_lib.CommandResult)
+    fake_bad_result_from_gerrit = self.mox.CreateMock(
+        cros_build_lib.CommandResult)
     fake_bad_result_from_gerrit.output = self.no_results
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    cros_lib.RunCommand(mox.In('change:%s' % changeid),
-                        redirect_stdout=True).AndReturn(fake_result_from_gerrit)
-    cros_lib.RunCommand(mox.In('change:%s' % changeid_bad),
-                        redirect_stdout=True).AndReturn(
-                            fake_bad_result_from_gerrit)
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    cros_build_lib.RunCommand(mox.In('change:%s' % changeid),
+                              redirect_stdout=True).AndReturn(
+                                  fake_result_from_gerrit)
+    cros_build_lib.RunCommand(mox.In('change:%s' % changeid_bad),
+                              redirect_stdout=True).AndReturn(
+                                  fake_bad_result_from_gerrit)
     self.mox.ReplayAll()
     helper = gerrit_helper.GerritHelper(False)
     self.assertTrue(helper.IsChangeCommitted(changeid))
@@ -210,13 +213,13 @@ class GerritHelperTest(mox.MoxTestBase):
 
   def testGetLatestSHA1ForBranch(self):
     """Verifies we can return the correct sha1 from mock data."""
-    self.mox.StubOutWithMock(cros_lib, 'RunCommandWithRetries')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommandWithRetries')
     my_hash = 'sadfjaslfkj2135'
     my_branch = 'master'
-    result = self.mox.CreateMock(cros_lib.CommandResult)
+    result = self.mox.CreateMock(cros_build_lib.CommandResult)
     result.returncode = 0
     result.output = '   '.join([my_hash, my_branch])
-    cros_lib.RunCommandWithRetries(
+    cros_build_lib.RunCommandWithRetries(
         3, ['git', 'ls-remote',
             'ssh://gerrit.chromium.org:29418/tacos/chromite',
             'refs/heads/master'],
@@ -230,9 +233,9 @@ class GerritHelperTest(mox.MoxTestBase):
   def testGetLatestSHA1ForProject4Realz(self):
     """Verify we can check the latest hash from chromite."""
     helper = gerrit_helper.GerritHelper(False)
-    cros_lib.Info('The current sha1 on master for chromite is: %s' %
-                  helper.GetLatestSHA1ForBranch('chromiumos/chromite',
-                                                 'master'))
+    cros_build_lib.Info('The current sha1 on master for chromite is: %s' %
+                        helper.GetLatestSHA1ForBranch('chromiumos/chromite',
+                                                      'master'))
 
 
 # pylint: disable=W0212,R0904
@@ -256,19 +259,19 @@ class GerritQueryTests(mox.MoxTestBase):
     self.good_footer = \
              '{"type":"stats","rowCount":1,"runTimeMilliseconds":4}'
     self.result = raw_json + '\n' + self.good_footer
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
   def testPatchNotFound1(self):
     """Test case where ChangeID isn't found on internal server."""
     patches = ['Icb8e1d315d465a07']
 
-    output_obj = cros_lib.CommandResult()
+    output_obj = cros_build_lib.CommandResult()
     output_obj.returncode = 0
     output_obj.output = ('{"type":"error",'
                          '"message":"Unsupported query:5S2D4D2D4"}')
 
-    cros_lib.RunCommand(mox.In('gerrit.chromium.org'),
-                        redirect_stdout=True).AndReturn(output_obj)
+    cros_build_lib.RunCommand(mox.In('gerrit.chromium.org'),
+                              redirect_stdout=True).AndReturn(output_obj)
 
     self.mox.ReplayAll()
 
@@ -277,12 +280,12 @@ class GerritQueryTests(mox.MoxTestBase):
     self.mox.VerifyAll()
 
   def _test_missing(self, patches):
-    output_obj = cros_lib.CommandResult()
+    output_obj = cros_build_lib.CommandResult()
     output_obj.returncode = 0
     output_obj.output = '%s\n%s\n%s' % \
                         (self.raw_json, self.raw_json, self.good_footer)
-    cros_lib.RunCommand(mox.In('gerrit.chromium.org'),
-                        redirect_stdout=True).AndReturn(output_obj)
+    cros_build_lib.RunCommand(mox.In('gerrit.chromium.org'),
+                              redirect_stdout=True).AndReturn(output_obj)
 
     self.mox.ReplayAll()
 
@@ -315,13 +318,13 @@ class GerritQueryTests(mox.MoxTestBase):
   def _common_test(self, patches, server='gerrit.chromium.org',
     internal=False, calls_allowed=1):
 
-    output_obj = cros_lib.CommandResult()
+    output_obj = cros_build_lib.CommandResult()
     output_obj.returncode = 0
     output_obj.output = self.result
 
     for x in xrange(calls_allowed):
-      cros_lib.RunCommand(mox.In(server),
-                          redirect_stdout=True).AndReturn(output_obj)
+      cros_build_lib.RunCommand(mox.In(server),
+                                redirect_stdout=True).AndReturn(output_obj)
 
     self.mox.ReplayAll()
 
@@ -355,12 +358,12 @@ class GerritQueryTests(mox.MoxTestBase):
     """Test parsing of the JSON results."""
     patches = ['Icb8e1d315d465a07']
 
-    output_obj = cros_lib.CommandResult()
+    output_obj = cros_build_lib.CommandResult()
     output_obj.returncode = 0
     output_obj.output = self.result
 
-    cros_lib.RunCommand(mox.In('gerrit.chromium.org'),
-                        redirect_stdout=True).AndReturn(output_obj)
+    cros_build_lib.RunCommand(mox.In('gerrit.chromium.org'),
+                              redirect_stdout=True).AndReturn(output_obj)
 
     self.mox.ReplayAll()
 

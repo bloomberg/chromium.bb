@@ -20,7 +20,7 @@ if __name__ == '__main__':
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 # pylint: disable=W0212,R0904
@@ -80,9 +80,10 @@ class HelperMethodsTest(unittest.TestCase):
         internal_build=False, read_only=False)
     git_dir = os.path.join(constants.SOURCE_ROOT, 'manifest-versions')
     manifest_version.RefreshManifestCheckout(git_dir, manifest_versions_url)
-    cros_lib.CreatePushBranch(manifest_version.PUSH_BRANCH, git_dir, sync=False)
-    cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
-                        input='TEST USER <test_user@chromium.org>')
+    cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH, git_dir,
+                                    sync=False)
+    cros_build_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
+                              input='TEST USER <test_user@chromium.org>')
     manifest_version._PushGitChanges(git_dir, 'Test appending user.',
                                      dry_run=True)
 
@@ -120,17 +121,17 @@ class VersionInfoTest(mox.MoxTestBase):
   def CommonTestIncrementVersion(self, incr_type, version):
     """Common test increment.  Returns path to new incremented file."""
     message = 'Incrementing cuz I sed so'
-    self.mox.StubOutWithMock(cros_lib, 'CreatePushBranch')
+    self.mox.StubOutWithMock(cros_build_lib, 'CreatePushBranch')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
-    self.mox.StubOutWithMock(cros_lib, 'GitCleanAndCheckoutUpstream')
+    self.mox.StubOutWithMock(cros_build_lib, 'GitCleanAndCheckoutUpstream')
 
-    cros_lib.CreatePushBranch(manifest_version.PUSH_BRANCH, self.tmpdir)
+    cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH, self.tmpdir)
 
     version_file = self.CreateFakeVersionFile(self.tmpdir, version)
 
     manifest_version._PushGitChanges(self.tmpdir, message, dry_run=False)
 
-    cros_lib.GitCleanAndCheckoutUpstream(self.tmpdir)
+    cros_build_lib.GitCleanAndCheckoutUpstream(self.tmpdir)
     self.mox.ReplayAll()
     info = manifest_version.VersionInfo(version_file=version_file,
                                         incr_type=incr_type)

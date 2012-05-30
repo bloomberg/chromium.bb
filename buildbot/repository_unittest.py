@@ -12,7 +12,7 @@ import unittest
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import repository
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 
 # pylint: disable=W0212,R0904,E1101,W0613
 class RepositoryTests(mox.MoxTestBase):
@@ -24,7 +24,7 @@ class RepositoryTests(mox.MoxTestBase):
 
   def testExternalRepoCheckout(self):
     """Test we detect external checkouts properly."""
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     tests = [
         'http//git.chromium.org/chromiumos/manifest.git',
         'ssh://gerrit-int.chromium.org:29419/chromeos/manifest.git',
@@ -34,12 +34,12 @@ class RepositoryTests(mox.MoxTestBase):
      ]
 
     for test in tests:
-      cros_lib.RunCommand = functools.partial(self.RunCommand_Mock, test)
+      cros_build_lib.RunCommand = functools.partial(self.RunCommand_Mock, test)
       self.assertFalse(repository.IsInternalRepoCheckout('.'))
 
   def testInternalRepoCheckout(self):
     """Test we detect internal checkouts properly."""
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     tests = [
         'ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal.git',
         'ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal',
@@ -48,7 +48,7 @@ class RepositoryTests(mox.MoxTestBase):
     ]
 
     for test in tests:
-      cros_lib.RunCommand = functools.partial(self.RunCommand_Mock, test)
+      cros_build_lib.RunCommand = functools.partial(self.RunCommand_Mock, test)
       self.assertTrue(repository.IsInternalRepoCheckout('.'))
 
 

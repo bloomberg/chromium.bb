@@ -15,7 +15,7 @@ import tempfile
 
 from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_config
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import locking
 
 _DEFAULT_RETRIES = 3
@@ -46,11 +46,11 @@ def _GetVMConstants(buildroot):
   """Returns minimum (vdisk_size, statefulfs_size) recommended for VM's."""
   cwd = os.path.join(buildroot, 'src', 'scripts', 'lib')
   source_cmd = 'source %s/cros_vm_constants.sh' % cwd
-  vdisk_size = cros_lib.RunCommandCaptureOutput([
-      '/bin/bash', '-c', '%s && echo $MIN_VDISK_SIZE_FULL' % source_cmd]
+  vdisk_size = cros_build_lib.RunCommandCaptureOutput(
+      ['/bin/bash', '-c', '%s && echo $MIN_VDISK_SIZE_FULL' % source_cmd]
       ).output.strip()
-  statefulfs_size = cros_lib.RunCommandCaptureOutput([
-      '/bin/bash', '-c', '%s && echo $MIN_STATEFUL_FS_SIZE_FULL' % source_cmd],
+  statefulfs_size = cros_build_lib.RunCommandCaptureOutput(
+      ['/bin/bash', '-c', '%s && echo $MIN_STATEFUL_FS_SIZE_FULL' % source_cmd],
        ).output.strip()
   return (vdisk_size, statefulfs_size)
 
@@ -68,13 +68,13 @@ def ValidateClobber(buildroot):
   """
   cwd = os.path.dirname(os.path.realpath(__file__))
   if cwd.startswith(buildroot):
-    cros_lib.Die('You are trying to clobber this chromite checkout!')
+    cros_build_lib.Die('You are trying to clobber this chromite checkout!')
 
   if os.path.exists(buildroot):
     warning = 'This will delete %s' % buildroot
-    response = cros_lib.YesNoPrompt(default=cros_lib.NO, warning=warning,
-                                    full=True)
-    return response == cros_lib.YES
+    response = cros_build_lib.YesNoPrompt(default=cros_build_lib.NO,
+                                          warning=warning, full=True)
+    return response == cros_build_lib.YES
 
 
 # =========================== Main Commands ===================================
@@ -95,8 +95,8 @@ def BuildRootGitCleanup(buildroot, debug_run):
         return
 
       try:
-        cros_lib.GitCleanAndCheckoutUpstream(cwd, False)
-      except cros_lib.RunCommandError, e:
+        cros_build_lib.GitCleanAndCheckoutUpstream(cwd, False)
+      except cros_build_lib.RunCommandError, e:
         result = e.result
         logging.info(result.output)
         print '@@@STEP_WARNINGS@@@'
@@ -117,13 +117,13 @@ def BuildRootGitCleanup(buildroot, debug_run):
         print '@@@STEP_WARNINGS@@@'
         return
 
-      cros_lib.RunGitCommand(
+      cros_build_lib.RunGitCommand(
           cwd, ['branch', '-D'] + list(constants.CREATED_BRANCHES),
           error_code_ok=True)
 
   # Cleanup all of the directories.
   dirs = [[os.path.join(buildroot, attrs['path'])] for attrs in
-          cros_lib.ManifestCheckout.Cached(buildroot).projects.values()]
+          cros_build_lib.ManifestCheckout.Cached(buildroot).projects.values()]
   background.RunTasksInProcessPool(RunCleanupCommands, dirs)
 
 
@@ -144,7 +144,7 @@ def CleanUpMountPoints(buildroot):
         mounts.append(path)
 
   for mount_pt in reversed(mounts):
-    cros_lib.SudoRunCommand(['umount', '-l', mount_pt])
+    cros_build_lib.SudoRunCommand(['umount', '-l', mount_pt])
 
 
 def WipeOldOutput(buildroot):
@@ -155,7 +155,7 @@ def WipeOldOutput(buildroot):
     board: Delete image directories for this board name.
   """
   image_dir = os.path.join('src', 'build', 'images')
-  cros_lib.RunCommand(['rm', '-rf', image_dir], cwd=buildroot)
+  cros_build_lib.RunCommand(['rm', '-rf', image_dir], cwd=buildroot)
 
 
 def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
@@ -172,7 +172,7 @@ def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
   if chrome_root:
     cmd.append('--chrome_root=%s' % chrome_root)
 
-  cros_lib.RunCommand(cmd, cwd=buildroot, extra_env=extra_env)
+  cros_build_lib.RunCommand(cmd, cwd=buildroot, extra_env=extra_env)
 
 
 def RunChrootUpgradeHooks(buildroot, chrome_root=None):
@@ -182,8 +182,8 @@ def RunChrootUpgradeHooks(buildroot, chrome_root=None):
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
 
-  cros_lib.RunCommand(['./run_chroot_version_hooks'], cwd=cwd,
-                      enter_chroot=True, chroot_args=chroot_args)
+  cros_build_lib.RunCommand(['./run_chroot_version_hooks'], cwd=cwd,
+                            enter_chroot=True, chroot_args=chroot_args)
 
 
 def RefreshPackageStatus(buildroot, boards, debug):
@@ -193,7 +193,7 @@ def RefreshPackageStatus(buildroot, boards, debug):
 
   # First run check_gdata_token to validate or refresh auth token.
   cmd = [os.path.join(chromite_bin_dir, 'check_gdata_token')]
-  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=False)
+  cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=False)
 
   # Prepare refresh_package_status command to update the package spreadsheet.
   cmd = [os.path.join(chromite_bin_dir, 'refresh_package_status')]
@@ -207,7 +207,7 @@ def RefreshPackageStatus(buildroot, boards, debug):
     cmd.append('--test-spreadsheet')
 
   # Actually run prepared refresh_package_status command.
-  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
+  cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
 
   # Run sync_package_status to create Tracker issues for outdated
   # packages.  At the moment, this runs only for groups that have opted in.
@@ -221,7 +221,7 @@ def RefreshPackageStatus(buildroot, boards, debug):
 
   for cmdargs in cmdargslist:
     cmd = basecmd + cmdargs
-    cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
+    cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
 
 
 def SetupBoard(buildroot, board, usepkg, latest_toolchain, extra_env=None,
@@ -245,7 +245,8 @@ def SetupBoard(buildroot, board, usepkg, latest_toolchain, extra_env=None,
   if latest_toolchain:
     cmd.append('--latest_toolchain')
 
-  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=extra_env)
+  cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True,
+                            extra_env=extra_env)
 
 
 def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
@@ -272,8 +273,8 @@ def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
 
-  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=env,
-                      chroot_args=chroot_args)
+  cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=env,
+                            chroot_args=chroot_args)
 
 
 def BuildImage(buildroot, board, images_to_build, version='', extra_env=None):
@@ -284,19 +285,17 @@ def BuildImage(buildroot, board, images_to_build, version='', extra_env=None):
 
   cmd = ['./build_image', '--board=%s' % board,
          '--replace', version_str] + images_to_build
-  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=extra_env)
+  cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True,
+                            extra_env=extra_env)
 
 
 def BuildVMImageForTesting(buildroot, board, extra_env=None):
   (vdisk_size, statefulfs_size) = _GetVMConstants(buildroot)
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  cros_lib.RunCommand(['./image_to_vm.sh',
-                       '--board=%s' % board,
-                       '--test_image',
-                       '--full',
-                       '--vdisk_size=%s' % vdisk_size,
-                       '--statefulfs_size=%s' % statefulfs_size,
-                      ], cwd=cwd, enter_chroot=True, extra_env=extra_env)
+  cros_build_lib.RunCommand(
+      ['./image_to_vm.sh', '--board=%s' % board, '--test_image', '--full',
+       '--vdisk_size=%s' % vdisk_size, '--statefulfs_size=%s'
+       % statefulfs_size], cwd=cwd, enter_chroot=True, extra_env=extra_env)
 
 
 def RunUnitTests(buildroot, board, full, nowithdebug):
@@ -311,10 +310,10 @@ def RunUnitTests(buildroot, board, full, nowithdebug):
   #   uprev noticed were changed.
   if not full:
     cmd += ['--package_file=%s' %
-            cros_lib.ReinterpretPathForChroot(_PACKAGE_FILE %
-                                              {'buildroot': buildroot})]
+            cros_build_lib.ReinterpretPathForChroot(_PACKAGE_FILE %
+                                                    {'buildroot': buildroot})]
 
-  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
+  cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
 
 
 def RunChromeSuite(buildroot, board, image_dir, results_dir):
@@ -337,7 +336,7 @@ def RunChromeSuite(buildroot, board, image_dir, results_dir):
          'desktopui_BrowserTest.control.two',
          'desktopui_BrowserTest.control.three',
          'desktopui_PyAutoFunctionalTests.control.vm']
-  cros_lib.RunCommand(cmd, cwd=cwd, error_ok=True, enter_chroot=False)
+  cros_build_lib.RunCommand(cmd, cwd=cwd, error_ok=True, enter_chroot=False)
 
 
 def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
@@ -369,7 +368,7 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
   if whitelist_chrome_crashes:
     cmd.append('--whitelist_chrome_crashes')
 
-  result = cros_lib.RunCommand(cmd, cwd=cwd, error_ok=True)
+  result = cros_build_lib.RunCommand(cmd, cwd=cwd, error_ok=True)
   if result.returncode:
     failed = open(results_dir_in_chroot + '/failed_test_command', 'w')
     failed.write('%s exited with code %d' % (' '.join(cmd), result.returncode))
@@ -394,23 +393,26 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
   try:
     test_results_dir = test_results_dir.lstrip('/')
     results_path = os.path.join(buildroot, 'chroot', test_results_dir)
-    cros_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_path],
-                            print_cmd=False)
+    cros_build_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_path],
+                                  print_cmd=False)
 
     test_tarball = os.path.join(buildroot, '%stest_results.tgz' % prefix)
     if os.path.exists(test_tarball): os.remove(test_tarball)
-    cros_lib.RunCommand(['tar', 'czf', test_tarball,
-                         '--directory=%s' % results_path, '.'],
-                        print_cmd=False)
+    cros_build_lib.RunCommand(
+        ['tar', 'czf', test_tarball, '--directory=%s' % results_path, '.'],
+        print_cmd=False)
     shutil.rmtree(results_path)
 
     return test_tarball
 
   except Exception, e:
-    cros_lib.Warning('========================================================')
-    cros_lib.Warning('------>  We failed to archive test results. <-----------')
-    cros_lib.Warning(str(e))
-    cros_lib.Warning('========================================================')
+    cros_build_lib.Warning(
+        '========================================================')
+    cros_build_lib.Warning(
+        '------>  We failed to archive test results. <-----------')
+    cros_build_lib.Warning(str(e))
+    cros_build_lib.Warning(
+        '========================================================')
 
 
 def RunHWTestSuite(build, suite, board, pool, debug):
@@ -433,9 +435,9 @@ def RunHWTestSuite(build, suite, board, pool, debug):
          '-b', board,
          '-p', pool]
   if debug:
-    cros_lib.Info('RunHWTestSuite would run: %s' % ' '.join(cmd))
+    cros_build_lib.Info('RunHWTestSuite would run: %s' % ' '.join(cmd))
   else:
-    cros_lib.RunCommand(cmd)
+    cros_build_lib.RunCommand(cmd)
 
 
 def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
@@ -457,18 +459,14 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
 
   # We need to unzip the test results tarball first because we cannot update
   # a compressed tarball.
-  cros_lib.RunCommand(['gzip', '-df', gzipped_test_tarball])
+  cros_build_lib.RunCommand(['gzip', '-df', gzipped_test_tarball])
   test_tarball = os.path.splitext(gzipped_test_tarball)[0] + '.tar'
 
   # Do our best to generate the symbols but if we fail, don't break the
   # build process.
-  tar_cmd = cros_lib.RunCommand(['tar',
-                                 'xf',
-                                 test_tarball,
-                                 '--directory=%s' % temp_dir,
-                                 '--wildcards', '*.dmp'],
-                                error_ok=True,
-                                redirect_stderr=True)
+  tar_cmd = cros_build_lib.RunCommand(
+      ['tar', 'xf', test_tarball, '--directory=%s' % temp_dir,
+       '--wildcards', '*.dmp'], error_ok=True, redirect_stderr=True)
   if not tar_cmd.returncode:
     symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug',
                               'breakpad')
@@ -477,26 +475,19 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
         # Skip crash files that were purposely generated.
         if curr_file.find('crasher_nobreakpad') == 0: continue
         full_file_path = os.path.join(curr_dir, curr_file)
-        minidump = cros_lib.ReinterpretPathForChroot(full_file_path)
+        minidump = cros_build_lib.ReinterpretPathForChroot(full_file_path)
         minidump_stack_trace = '%s.txt' % full_file_path
         cwd = os.path.join(buildroot, 'src', 'scripts')
-        cros_lib.RunCommand(['minidump_stackwalk',
-                             minidump,
-                             symbol_dir],
-                            cwd=cwd,
-                            enter_chroot=True,
-                            error_ok=True,
-                            redirect_stderr=True,
-                            log_stdout_to_file=minidump_stack_trace)
+        cros_build_lib.RunCommand(
+            ['minidump_stackwalk', minidump, symbol_dir], cwd=cwd,
+            enter_chroot=True, error_ok=True, redirect_stderr=True,
+            log_stdout_to_file=minidump_stack_trace)
         filename = ArchiveFile(minidump_stack_trace, archive_dir)
         stack_trace_filenames.append(filename)
-    cros_lib.RunCommand(['tar',
-                         'uf',
-                         test_tarball,
-                         '--directory=%s' % temp_dir,
-                         '.'])
-  cros_lib.RunCommand('gzip -c %s > %s' % (test_tarball, gzipped_test_tarball),
-                      shell=True)
+    cros_build_lib.RunCommand(['tar', 'uf', test_tarball,
+                               '--directory=%s' % temp_dir, '.'])
+  cros_build_lib.RunCommand('gzip -c %s > %s'
+                            % (test_tarball, gzipped_test_tarball), shell=True)
   os.unlink(test_tarball)
   shutil.rmtree(temp_dir)
 
@@ -545,7 +536,7 @@ def MarkChromeAsStable(buildroot,
     assert chrome_rev == constants.CHROME_REV_SPEC, (
         'Cannot rev non-spec with a chrome_version')
 
-  portage_atom_string = cros_lib.RunCommand(
+  portage_atom_string = cros_build_lib.RunCommand(
       command + [chrome_rev],
       cwd=cwd,
       redirect_stdout=True,
@@ -553,16 +544,16 @@ def MarkChromeAsStable(buildroot,
       chroot_args=chroot_args,
       extra_env=extra_env).output.rstrip()
   if not portage_atom_string:
-    cros_lib.Info('Found nothing to rev.')
+    cros_build_lib.Info('Found nothing to rev.')
     return None
   else:
     chrome_atom = portage_atom_string.splitlines()[-1].split('=')[1]
     for board in boards:
       keywords_file = CHROME_KEYWORDS_FILE % {'board': board}
-      cros_lib.SudoRunCommand(
+      cros_build_lib.SudoRunCommand(
           ['mkdir', '-p', os.path.dirname(keywords_file)],
           enter_chroot=True, cwd=cwd)
-      cros_lib.SudoRunCommand(
+      cros_build_lib.SudoRunCommand(
           ['tee', keywords_file], input='=%s\n' % chrome_atom,
           enter_chroot=True, cwd=cwd)
     return chrome_atom
@@ -574,19 +565,19 @@ def CleanupChromeKeywordsFile(boards, buildroot):
     keywords_path_in_chroot = CHROME_KEYWORDS_FILE % {'board': board}
     keywords_file = '%s/chroot%s' % (buildroot, keywords_path_in_chroot)
     if os.path.exists(keywords_file):
-      cros_lib.SudoRunCommand(['rm', '-f', keywords_file])
+      cros_build_lib.SudoRunCommand(['rm', '-f', keywords_file])
 
 
 def UprevPackages(buildroot, boards, overlays):
   """Uprevs non-browser chromium os packages that have changed."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   chroot_overlays = [
-      cros_lib.ReinterpretPathForChroot(path) for path in overlays ]
-  cros_lib.RunCommand(
+      cros_build_lib.ReinterpretPathForChroot(path) for path in overlays ]
+  cros_build_lib.RunCommand(
       ['../../chromite/buildbot/cros_mark_as_stable', '--all',
        '--boards=%s' % ':'.join(boards),
        '--overlays=%s' % ':'.join(chroot_overlays),
-       '--drop_file=%s' % cros_lib.ReinterpretPathForChroot(
+       '--drop_file=%s' % cros_build_lib.ReinterpretPathForChroot(
            _PACKAGE_FILE % {'buildroot': buildroot}),
        'commit'], cwd=cwd, enter_chroot=True)
 
@@ -602,7 +593,7 @@ def UprevPush(buildroot, overlays, dryrun):
     cmd.append('--dryrun')
 
   cmd.append('push')
-  cros_lib.RunCommand(cmd, cwd=cwd)
+  cros_build_lib.RunCommand(cmd, cwd=cwd)
 
 
 def AddPackagesForPrebuilt(filename):
@@ -633,9 +624,9 @@ def AddPackagesForPrebuilt(filename):
     package_file.close()
     return cmd
   except IOError as (errno, strerror):
-    cros_lib.Warning('Problem with package file %s' % filename)
-    cros_lib.Warning('Skipping uploading of prebuilts.')
-    cros_lib.Warning('ERROR(%d): %s' % (errno, strerror))
+    cros_build_lib.Warning('Problem with package file %s' % filename)
+    cros_build_lib.Warning('Skipping uploading of prebuilts.')
+    cros_build_lib.Warning('ERROR(%d): %s' % (errno, strerror))
     return None
 
 
@@ -723,7 +714,7 @@ def UploadPrebuilts(buildroot, board, private_bucket, category,
     cmd.extend(['--git-sync'])
 
   cmd.extend(extra_args)
-  cros_lib.RunCommand(cmd, cwd=cwd)
+  cros_build_lib.RunCommand(cmd, cwd=cwd)
 
 
 def GenerateBreakpadSymbols(buildroot, board):
@@ -736,8 +727,8 @@ def GenerateBreakpadSymbols(buildroot, board):
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./cros_generate_breakpad_symbols', '--board=%s' % board]
   max_procs = max([1, multiprocessing.cpu_count() / 2])
-  cros_lib.RunCommandCaptureOutput(cmd, cwd=cwd, enter_chroot=True,
-                                   extra_env={'NUM_JOBS':str(max_procs)})
+  cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd, enter_chroot=True,
+                                         extra_env={'NUM_JOBS':str(max_procs)})
 
 
 def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
@@ -764,7 +755,7 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   else:
     cmd.append('debug/breakpad')
 
-  tar_cmd = cros_lib.SudoRunCommand(cmd, cwd=board_dir, error_ok=True)
+  tar_cmd = cros_build_lib.SudoRunCommand(cmd, cwd=board_dir, error_ok=True)
 
   # Emerging the factory kernel while this is running installs different debug
   # symbols. When tar spots this, it flags this and returns status code 1.
@@ -775,7 +766,7 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
     raise Exception('%r failed with exit code %s' % (cmd, tar_cmd.returncode))
 
   # Fix permissions and ownership on debug tarball.
-  cros_lib.SudoRunCommand(['chown', str(os.getuid()), debug_tgz])
+  cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), debug_tgz])
   os.chmod(debug_tgz, 0644)
 
   return os.path.basename(debug_tgz)
@@ -793,10 +784,10 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug):
   if upload_url and not debug:
     full_filename = os.path.join(archive_path, filename)
     full_url = '%s/%s' % (upload_url, filename)
-    cros_lib.RunCommandCaptureOutput([_GSUTIL_PATH, 'cp', full_filename,
-                                      full_url])
-    cros_lib.RunCommandCaptureOutput([_GSUTIL_PATH, 'setacl', _GS_ACL,
-                                      full_url])
+    cros_build_lib.RunCommandCaptureOutput(
+        [_GSUTIL_PATH, 'cp', full_filename, full_url])
+    cros_build_lib.RunCommandCaptureOutput(
+        [_GSUTIL_PATH, 'setacl', _GS_ACL, full_url])
 
 
 def UploadSymbols(buildroot, board, official):
@@ -811,7 +802,7 @@ def UploadSymbols(buildroot, board, official):
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
 
-  cros_lib.RunCommand(cmd, cwd=cwd, error_ok=True, enter_chroot=True)
+  cros_build_lib.RunCommand(cmd, cwd=cwd, error_ok=True, enter_chroot=True)
 
 
 def PushImages(buildroot, board, branch_name, archive_url, profile):
@@ -826,7 +817,7 @@ def PushImages(buildroot, board, branch_name, archive_url, profile):
 
   cmd.append(archive_url)
 
-  cros_lib.RunCommand(cmd, cwd=os.path.join(buildroot, 'crostools'))
+  cros_build_lib.RunCommand(cmd, cwd=os.path.join(buildroot, 'crostools'))
 
 
 def BuildFactoryTestImage(buildroot, board, extra_env):
@@ -851,8 +842,8 @@ def BuildFactoryTestImage(buildroot, board, extra_env):
          '--symlink=%s' % alias,
          '--build_attempt=2',
          'factory_test']
-  cros_lib.RunCommandCaptureOutput(cmd, enter_chroot=True, extra_env=extra_env,
-                                   cwd=scripts_dir)
+  cros_build_lib.RunCommandCaptureOutput(
+      cmd, enter_chroot=True, extra_env=extra_env, cwd=scripts_dir)
   return alias
 
 
@@ -877,8 +868,8 @@ def BuildFactoryInstallImage(buildroot, board, extra_env):
          '--symlink=%s' % alias,
          '--build_attempt=3',
          'factory_install']
-  cros_lib.RunCommandCaptureOutput(cmd, enter_chroot=True, extra_env=extra_env,
-                                   cwd=scripts_dir)
+  cros_build_lib.RunCommandCaptureOutput(
+      cmd, enter_chroot=True, extra_env=extra_env, cwd=scripts_dir)
   return alias
 
 
@@ -894,8 +885,9 @@ def MakeNetboot(buildroot, board, image_dir):
   image = os.path.join(image_dir, 'factory_install_shim.bin')
   cmd = ['./make_netboot.sh',
          '--board=%s' % board,
-         '--image=%s' % cros_lib.ReinterpretPathForChroot(image)]
-  cros_lib.RunCommandCaptureOutput(cmd, enter_chroot=True, cwd=scripts_dir)
+         '--image=%s' % cros_build_lib.ReinterpretPathForChroot(image)]
+  cros_build_lib.RunCommandCaptureOutput(
+      cmd, enter_chroot=True, cwd=scripts_dir)
 
 
 def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
@@ -911,9 +903,9 @@ def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
   image = os.path.join(image_dir, 'chromiumos_base_image.bin')
   cmd = ['./mod_image_for_recovery.sh',
          '--board=%s' % board,
-         '--image=%s' % cros_lib.ReinterpretPathForChroot(image)]
-  cros_lib.RunCommandCaptureOutput(cmd, enter_chroot=True, extra_env=extra_env,
-                                   cwd=scripts_dir)
+         '--image=%s' % cros_build_lib.ReinterpretPathForChroot(image)]
+  cros_build_lib.RunCommandCaptureOutput(
+      cmd, enter_chroot=True, extra_env=extra_env, cwd=scripts_dir)
 
 
 def BuildTarball(buildroot, input_list, tarball_output, cwd=None):
@@ -930,7 +922,7 @@ def BuildTarball(buildroot, input_list, tarball_output, cwd=None):
          '--use-compress-program=%s' % pbzip2,
          '-cf', tarball_output]
   cmd += input_list
-  cros_lib.RunCommandCaptureOutput(cmd, cwd=cwd)
+  cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd)
 
 
 def BuildAutotestTarballs(buildroot, board, tarball_dir):
@@ -966,7 +958,8 @@ def BuildImageZip(archive_dir, image_dir):
   """
   filename = 'image.zip'
   zipfile = os.path.join(archive_dir, filename)
-  cros_lib.RunCommandCaptureOutput(['zip', zipfile, '-r', '.'], cwd=image_dir)
+  cros_build_lib.RunCommandCaptureOutput(['zip', zipfile, '-r', '.'],
+                                         cwd=image_dir)
   return filename
 
 
@@ -1044,7 +1037,7 @@ def BuildFactoryZip(buildroot, archive_dir, image_root):
   for exclude in excludes_list:
     cmd.extend(['--exclude', exclude])
 
-  cros_lib.RunCommandCaptureOutput(cmd, cwd=temp_dir)
+  cros_build_lib.RunCommandCaptureOutput(cmd, cwd=temp_dir)
   shutil.rmtree(temp_dir)
   return filename
 
@@ -1061,7 +1054,7 @@ def ArchiveHWQual(buildroot, hwqual_name, archive_dir):
   cmd = [os.path.join(scripts_dir, 'archive_hwqual'),
          '--from', archive_dir,
          '--output_tag', hwqual_name]
-  cros_lib.RunCommandCaptureOutput(cmd)
+  cros_build_lib.RunCommandCaptureOutput(cmd)
   return '%s.tar.bz2' % hwqual_name
 
 
@@ -1088,7 +1081,7 @@ def RemoveOldArchives(bot_archive_root, keep_max):
   # TODO(davidjames): Reimplement this in Python.
   # +2 because line numbers start at 1 and need to skip LATEST file
   cmd = 'ls -t1 | tail --lines=+%d | xargs rm -rf' % (keep_max + 2)
-  cros_lib.RunCommandCaptureOutput(cmd, cwd=bot_archive_root, shell=True)
+  cros_build_lib.RunCommandCaptureOutput(cmd, cwd=bot_archive_root, shell=True)
 
 
 def CreateTestRoot(build_root):
@@ -1121,7 +1114,7 @@ def GenerateFullPayload(build_root, target_image_path, archive_dir):
          '--full_payload',
          '--nplus1_archive_dir=%s' % archive_dir,
         ]
-  cros_lib.RunCommandCaptureOutput(cmd)
+  cros_build_lib.RunCommandCaptureOutput(cmd)
 
 
 def GenerateNPlus1Payloads(build_root, build_config, target_image_path,
@@ -1145,4 +1138,4 @@ def GenerateNPlus1Payloads(build_root, build_config, target_image_path,
          '--nplus1',
          '--nplus1_archive_dir=%s' % archive_dir,
         ]
-  cros_lib.RunCommandCaptureOutput(cmd)
+  cros_build_lib.RunCommandCaptureOutput(cmd)

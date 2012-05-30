@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
 from chromite.buildbot import cros_mark_as_stable
 from chromite.buildbot import portage_utilities
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib.cros_build_lib import RunCommand, Info, Warning
 
 BASE_CHROME_SVN_URL = 'http://src.chromium.org/svn'
@@ -492,7 +492,7 @@ def main(argv):
     Info('No stable candidate found.')
 
   tracking_branch = 'remotes/m/%s' % os.path.basename(options.tracking_branch)
-  existing_branch = cros_lib.GetCurrentBranch(overlay_dir)
+  existing_branch = cros_build_lib.GetCurrentBranch(overlay_dir)
   work_branch = cros_mark_as_stable.GitBranch(constants.STABLE_EBUILD_BRANCH,
                                               tracking_branch, overlay_dir)
   work_branch.CreateBranch()

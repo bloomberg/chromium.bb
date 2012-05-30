@@ -8,7 +8,7 @@
 import sys
 from chromite.buildbot import configure_repo
 from chromite.buildbot import repository
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 
 
 def _Usage(handle):
@@ -36,7 +36,7 @@ def main(argv):
     _Usage(sys.stderr)
     return 1
   if not argv:
-    path = cros_lib.FindRepoCheckoutRoot()
+    path = cros_build_lib.FindRepoCheckoutRoot()
     if path is None:
       _Usage(sys.stderr)
       print >>sys.stderr, "We're not in a repo checkout."

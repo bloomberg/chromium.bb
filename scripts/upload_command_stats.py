@@ -11,7 +11,7 @@ import re
 import urllib
 import urllib2
 
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import operation
 
 MODULE = os.path.splitext(os.path.basename(__file__))[0]
@@ -97,13 +97,13 @@ def UploadConditionsMet():
   """Return True if upload conditions are met."""
 
   # Verify that host domain is in golo.chromium.org or corp.google.com.
-  domain = cros_lib.GetHostDomain()
+  domain = cros_build_lib.GetHostDomain()
   if not DOMAIN_RE.search(domain):
     return False
 
   # Verify that git user email is from chromium.org or google.com.
   cwd = os.path.dirname(os.path.realpath(__file__))
-  git_id = cros_lib.GetProjectUserEmail(cwd, quiet=True)
+  git_id = cros_build_lib.GetProjectUserEmail(cwd, quiet=True)
   if not GIT_ID_RE.search(git_id):
     return False
 
@@ -137,8 +137,8 @@ def main(argv):
     stats.LoadFile(args[0])
 
     try:
-      with cros_lib.SubCommandTimeout(UPLOAD_TIMEOUT):
+      with cros_build_lib.SubCommandTimeout(UPLOAD_TIMEOUT):
         stats.Upload(URL)
 
-    except cros_lib.TimeoutError:
+    except cros_build_lib.TimeoutError:
       oper.Die('Timed out during upload - waited %i seconds' % UPLOAD_TIMEOUT)

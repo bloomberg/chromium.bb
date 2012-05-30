@@ -25,7 +25,7 @@ from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.buildbot import manifest_version_unittest
 from chromite.buildbot import patch
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
@@ -126,7 +126,7 @@ class LKGMManagerTest(mox.MoxTestBase):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
-    self.mox.StubOutWithMock(cros_lib, 'CreatePushBranch')
+    self.mox.StubOutWithMock(cros_build_lib, 'CreatePushBranch')
 
     self.tmpdir = tempfile.mkdtemp()
     self.source_repo = 'ssh://source/repo'
@@ -185,7 +185,8 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     # Do manifest refresh work.
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    cros_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
+    cros_build_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(),
+                                    sync=False)
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
@@ -225,7 +226,8 @@ class LKGMManagerTest(mox.MoxTestBase):
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
-    cros_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
+    cros_build_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(),
+                                    sync=False)
 
     # Publish new candidate.
     lkgm_manager.LKGMManager.PublishManifest(new_manifest, version)
@@ -279,7 +281,8 @@ class LKGMManagerTest(mox.MoxTestBase):
     # Do manifest refresh work.
     lkgm_manager.LKGMManager.CheckoutSourceCode()
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    cros_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
+    cros_build_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(),
+                                    sync=False)
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
@@ -313,17 +316,19 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     lkgm_manager.LKGMManager.CheckoutSourceCode()
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    cros_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
+    cros_build_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(),
+                                    sync=False)
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    cros_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
+    cros_build_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(),
+                                    sync=False)
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
-    result = cros_lib.CommandResult(cmd=['git', 'push'], returncode=2)
+    result = cros_build_lib.CommandResult(cmd=['git', 'push'], returncode=2)
     lkgm_manager.LKGMManager.PushSpecChanges(
         mox.StrContains(most_recent_candidate.VersionString())).AndRaise(
-        cros_lib.RunCommandError('Failed to run command', result))
+        cros_build_lib.RunCommandError('Failed to run command', result))
 
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
     lkgm_manager.LKGMManager.PushSpecChanges(
@@ -411,7 +416,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.assertEqual(statuses['build2'], 'pass')
     self.mox.VerifyAll()
 
-  @cros_lib.TimeoutDecorator(10)
+  @cros_build_lib.TimeoutDecorator(10)
   def testGetBuildersStatusWaitForOne(self):
     """Tests GetBuilderStatus where both builds have finished with one delay."""
     fake_version_file = LKGMCandidateInfoTest.CreateFakeVersionFile(self.tmpdir)
@@ -437,7 +442,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.assertEqual(statuses['build2'], 'pass')
     self.mox.VerifyAll()
 
-  @cros_lib.TimeoutDecorator(20)
+  @cros_build_lib.TimeoutDecorator(20)
   def testGetBuildersStatusReachTimeout(self):
     """Tests GetBuilderStatus where one build finishes and one never does."""
     fake_version_file = LKGMCandidateInfoTest.CreateFakeVersionFile(self.tmpdir)
@@ -506,32 +511,33 @@ class LKGMManagerTest(mox.MoxTestBase):
     """
     self.manager.incr_type = 'build'
     self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    self.mox.StubOutWithMock(cros_lib, 'PrintBuildbotLink')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotLink')
 
     fake_revision = '1234567890'
-    fake_project_handler = self.mox.CreateMock(cros_lib.Manifest)
+    fake_project_handler = self.mox.CreateMock(cros_build_lib.Manifest)
     fake_project_handler.projects = { 'fake/repo': { 'name': 'fake/repo',
                                                      'path': 'fake/path',
                                                      'revision': fake_revision,
                                                    }
                                     }
-    fake_result = self.mox.CreateMock(cros_lib.CommandResult)
+    fake_result = self.mox.CreateMock(cros_build_lib.CommandResult)
     fake_result.output = fake_git_log
 
-    self.mox.StubOutWithMock(cros_lib, 'Manifest', use_mock_anything=True)
+    self.mox.StubOutWithMock(cros_build_lib, 'Manifest', use_mock_anything=True)
 
-    cros_lib.Manifest(
+    cros_build_lib.Manifest(
         self.tmpmandir + '/LKGM/lkgm.xml').AndReturn(fake_project_handler)
     os.path.exists(mox.StrContains('fake/path')).AndReturn(True)
-    cros_lib.RunCommand(['git', 'log', '--pretty=full',
-                         '%s..HEAD' % fake_revision],
-                        print_cmd=False, redirect_stdout=True,
-                        cwd=self.tmpdir + '/fake/path').AndReturn(fake_result)
-    cros_lib.PrintBuildbotLink('CHUMP fake:1234',
-                               'http://gerrit.chromium.org/gerrit/1234')
-    cros_lib.PrintBuildbotLink('fake:1235',
-                               'http://gerrit.chromium.org/gerrit/1235')
+    cros_build_lib.RunCommand(['git', 'log', '--pretty=full',
+                               '%s..HEAD' % fake_revision],
+                              print_cmd=False, redirect_stdout=True,
+                              cwd=self.tmpdir + '/fake/path').AndReturn(
+                                  fake_result)
+    cros_build_lib.PrintBuildbotLink('CHUMP fake:1234',
+                                     'http://gerrit.chromium.org/gerrit/1234')
+    cros_build_lib.PrintBuildbotLink('fake:1235',
+                                     'http://gerrit.chromium.org/gerrit/1235')
     self.mox.ReplayAll()
     self.manager._GenerateBlameListSinceLKGM()
     self.mox.VerifyAll()

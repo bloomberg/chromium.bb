@@ -9,7 +9,7 @@ import optparse
 import os
 import shutil
 
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import operation
 
 oper = operation.Operation('refresh_package_status')
@@ -28,7 +28,7 @@ def RunGit(cwd, cmd, args=[]):
   # pylint: disable=W0102
   """Run the git |cmd| with |args| in the |cwd| directory."""
   cmdline = ['git', cmd] + args
-  cros_lib.RunCommand(cmdline, cwd=cwd)
+  cros_build_lib.RunCommand(cmdline, cwd=cwd)
 
 
 def UpdateOriginGentoo():
@@ -63,8 +63,8 @@ def PrepareBoards(boards):
   for board in boards.split(':'):
     if not os.path.isdir('/build/%s' % board):
       oper.Info('Running setup_board for board=%s' % board)
-      cros_lib.RunCommand(['./setup_board', '--board=%s' % board],
-                          cwd=scripts_dir)
+      cros_build_lib.RunCommand(['./setup_board', '--board=%s' % board],
+                                cwd=scripts_dir)
 
 
 def PrepareCSVRoot():
@@ -97,19 +97,19 @@ def RefreshPackageStatus(board, upstream, csv_root, test,
     cpu_cmd_baseline.append('--upstream=%s' % upstream)
 
   cros_csv = '%s/chromeos-boards.csv' % csv_root
-  cros_lib.RunCommand(cpu_cmd_baseline +
-                      ['--to-csv=%s' % cros_csv,
-                       'chromeos'])
+  cros_build_lib.RunCommand(cpu_cmd_baseline +
+                            ['--to-csv=%s' % cros_csv,
+                             'chromeos'])
 
   crosdev_csv = '%s/chromeos-dev-boards.csv' % csv_root
-  cros_lib.RunCommand(cpu_cmd_baseline +
-                      ['--to-csv=%s' % crosdev_csv,
-                       'chromeos', 'chromeos-dev'])
+  cros_build_lib.RunCommand(cpu_cmd_baseline +
+                            ['--to-csv=%s' % crosdev_csv,
+                             'chromeos', 'chromeos-dev'])
 
   crostest_csv = '%s/chromeos-test-boards.csv' % csv_root
-  cros_lib.RunCommand(cpu_cmd_baseline +
-                      ['--to-csv=%s' % crostest_csv,
-                       'chromeos', 'chromeos-dev', 'chromeos-test'])
+  cros_build_lib.RunCommand(cpu_cmd_baseline +
+                            ['--to-csv=%s' % crostest_csv,
+                             'chromeos', 'chromeos-dev', 'chromeos-test'])
 
   # Run all host targets (world, hard-host-depends) for the host.
   oper.Info('Getting package status for all host targets.')
@@ -118,31 +118,31 @@ def RefreshPackageStatus(board, upstream, csv_root, test,
     cpu_host_baseline.append('--upstream=%s' % upstream)
 
   hostworld_csv = '%s/world-host.csv' % csv_root
-  cros_lib.RunCommand(cpu_host_baseline +
-                      ['--to-csv=%s' % hostworld_csv,
-                       'world'])
+  cros_build_lib.RunCommand(cpu_host_baseline +
+                            ['--to-csv=%s' % hostworld_csv,
+                             'world'])
 
   hosthhd_csv = '%s/hhd-host.csv' % csv_root
-  cros_lib.RunCommand(cpu_host_baseline +
-                      ['--to-csv=%s' % hosthhd_csv,
-                       'hard-host-depends'])
+  cros_build_lib.RunCommand(cpu_host_baseline +
+                            ['--to-csv=%s' % hosthhd_csv,
+                             'hard-host-depends'])
 
   # Merge all csv tables into one.
   oper.Info('Merging all package status files into one.')
   allboards_csv = '%s/all-boards.csv' % csv_root
-  cros_lib.RunCommand(['merge_package_status',
-                       '--out=%s' % allboards_csv,
-                       cros_csv, crosdev_csv, crostest_csv])
+  cros_build_lib.RunCommand(['merge_package_status',
+                             '--out=%s' % allboards_csv,
+                             cros_csv, crosdev_csv, crostest_csv])
 
   allhost_csv = '%s/all-host.csv' % csv_root
-  cros_lib.RunCommand(['merge_package_status',
-                       '--out=%s' % allhost_csv,
-                       hostworld_csv, hosthhd_csv])
+  cros_build_lib.RunCommand(['merge_package_status',
+                             '--out=%s' % allhost_csv,
+                             hostworld_csv, hosthhd_csv])
 
   allfinal_csv = '%s/all-final.csv' % csv_root
-  cros_lib.RunCommand(['merge_package_status',
-                       '--out=%s' % allfinal_csv,
-                       allboards_csv, allhost_csv])
+  cros_build_lib.RunCommand(['merge_package_status',
+                             '--out=%s' % allfinal_csv,
+                             allboards_csv, allhost_csv])
 
   # Upload the final csv file to the online spreadsheet.
   oper.Info('Uploading package status to online spreadsheet.')
@@ -153,7 +153,7 @@ def RefreshPackageStatus(board, upstream, csv_root, test,
     upload_cmdline.append('--test-spreadsheet')
 
   upload_cmdline.append(allfinal_csv)
-  cros_lib.RunCommand(upload_cmdline)
+  cros_build_lib.RunCommand(upload_cmdline)
 
 
 def main(argv):

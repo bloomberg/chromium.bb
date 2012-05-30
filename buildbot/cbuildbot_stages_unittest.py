@@ -26,7 +26,7 @@ from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.buildbot import portage_utilities
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.scripts import cbuildbot
@@ -104,13 +104,13 @@ class BuilderStageTest(AbstractStageTest):
 
   def testGetPortageEnvVar(self):
     """Basic test case for _GetPortageEnvVar function."""
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     envvar = 'EXAMPLE'
     obj = cros_test_lib.EasyAttr(output='RESULT\n')
-    cros_lib.RunCommand(mox.And(mox.IsA(list), mox.In(envvar)),
-                        cwd='%s/src/scripts' % self.build_root,
-                        redirect_stdout=True, enter_chroot=True,
-                        error_ok=True).AndReturn(obj)
+    cros_build_lib.RunCommand(mox.And(mox.IsA(list), mox.In(envvar)),
+                              cwd='%s/src/scripts' % self.build_root,
+                              redirect_stdout=True, enter_chroot=True,
+                              error_ok=True).AndReturn(obj)
     self.mox.ReplayAll()
     stage = self.ConstructStage()
     board = self._current_board
@@ -670,8 +670,8 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(bs.BuilderStage, '_HandleExceptionAsWarning')
     build = '%s/%s' % (self.bot_id,
                        self.archive_stage_mock.GetVersion().AndReturn('ver'))
-    result = cros_lib.CommandResult(cmd='run_hw_tests', returncode=2)
-    error = cros_lib.RunCommandError('HWTests failed', result)
+    result = cros_build_lib.CommandResult(cmd='run_hw_tests', returncode=2)
+    error = cros_build_lib.RunCommandError('HWTests failed', result)
     commands.RunHWTestSuite(build,
                             self.suite,
                             self._current_board,
@@ -1296,11 +1296,11 @@ class BuildStagesResultsTest(unittest.TestCase):
     results_lib.Results.Record('Pass', results_lib.Results.SUCCESS, time=1)
     results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS, time=2)
     results_lib.Results.Record('Fail', self.failException, time=3)
-    result = cros_lib.CommandResult(cmd=['/bin/false', '/nosuchdir'],
-                                    returncode=2)
+    result = cros_build_lib.CommandResult(cmd=['/bin/false', '/nosuchdir'],
+                                          returncode=2)
     results_lib.Results.Record(
         'FailRunCommand',
-        cros_lib.RunCommandError(
+        cros_build_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
             result), time=4)
 
@@ -1340,11 +1340,11 @@ class BuildStagesResultsTest(unittest.TestCase):
     results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS, time=2)
     results_lib.Results.Record('Fail', self.failException,
                                'failException Msg\nLine 2', time=3)
-    result = cros_lib.CommandResult(cmd=['/bin/false', '/nosuchdir'],
-                                    returncode=2)
+    result = cros_build_lib.CommandResult(cmd=['/bin/false', '/nosuchdir'],
+                                          returncode=2)
     results_lib.Results.Record(
         'FailRunCommand',
-        cros_lib.RunCommandError(
+        cros_build_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
             result),
         'FailRunCommand msg', time=4)

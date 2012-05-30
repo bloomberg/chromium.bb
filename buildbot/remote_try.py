@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
 from chromite.buildbot import repository
 from chromite.buildbot import manifest_version
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 
 class RemoteTryJob(object):
   """Remote Tryjob that is submitted through a Git repo."""
@@ -42,8 +42,8 @@ class RemoteTryJob(object):
     self.options = options
     self.user = getpass.getuser()
     cwd = os.path.dirname(os.path.realpath(__file__))
-    self.user_email = cros_lib.GetProjectUserEmail(cwd)
-    cros_lib.Info('Using email:%s', self.user_email)
+    self.user_email = cros_build_lib.GetProjectUserEmail(cwd)
+    cros_build_lib.Info('Using email:%s', self.user_email)
     # Name of the job that appears on the waterfall.
     patch_list = options.gerrit_patches + options.local_patches
     self.name = ','.join(patch_list)
@@ -60,7 +60,7 @@ class RemoteTryJob(object):
     self.ssh_url = self.EXT_SSH_URL
     self.manifest = None
     if repository.IsARepoRoot(options.sourceroot):
-      self.manifest = cros_lib.ManifestCheckout.Cached(options.sourceroot)
+      self.manifest = cros_build_lib.ManifestCheckout.Cached(options.sourceroot)
       if repository.IsInternalRepoCheckout(options.sourceroot):
         self.ssh_url = self.INT_SSH_URL
 
@@ -83,7 +83,7 @@ class RemoteTryJob(object):
       sha1 = patch.Sha1Hash()[:8]
       # Isolate the name; if it's a tag or a remote, let through.
       # Else if it's a branch, get the full branch name minus refs/heads.
-      local_branch = cros_lib.StripLeadingRefsHeads(patch.ref, False)
+      local_branch = cros_build_lib.StripLeadingRefsHeads(patch.ref, False)
       ref_final = os.path.join(ref_base, local_branch, sha1)
 
       data = self.manifest.projects[patch.project]
@@ -101,8 +101,8 @@ class RemoteTryJob(object):
     repository.CloneGitRepo(self.tryjob_repo, self.ssh_url)
     push_branch = manifest_version.PUSH_BRANCH
     remote_branch = ('origin', 'test') if testjob else None
-    cros_lib.CreatePushBranch(push_branch, self.tryjob_repo, sync=False,
-                              remote_push_branch=remote_branch)
+    cros_build_lib.CreatePushBranch(push_branch, self.tryjob_repo, sync=False,
+                                    remote_push_branch=remote_branch)
 
     file_name = '%s.%s' % (self.user,
                            current_time)
@@ -114,7 +114,7 @@ class RemoteTryJob(object):
     with open(fullpath, 'w+') as job_desc_file:
       json.dump(self.values, job_desc_file)
 
-    cros_lib.RunCommand(['git', 'add', fullpath], cwd=self.tryjob_repo)
+    cros_build_lib.RunCommand(['git', 'add', fullpath], cwd=self.tryjob_repo)
     extra_env = {
       # The committer field makes sure the creds match what the remote
       # gerrit instance expects while the author field allows lookup
@@ -122,15 +122,16 @@ class RemoteTryJob(object):
       'GIT_COMMITTER_EMAIL' : self.user_email,
       'GIT_AUTHOR_EMAIL'    : self.user_email,
     }
-    cros_lib.RunCommand(['git', 'commit', '-m', self.description],
-                        cwd=self.tryjob_repo, extra_env=extra_env)
+    cros_build_lib.RunCommand(['git', 'commit', '-m', self.description],
+                              cwd=self.tryjob_repo, extra_env=extra_env)
 
     try:
-      cros_lib.GitPushWithRetry(push_branch, self.tryjob_repo, retries=3,
-                                dryrun=dryrun)
-    except cros_lib.RunCommandError:
-      cros_lib.Error('Failed to submit tryjob.  This could be due to too many '
-                     'submission requests by users.  Please try again.')
+      cros_build_lib.GitPushWithRetry(
+          push_branch, self.tryjob_repo, retries=3, dryrun=dryrun)
+    except cros_build_lib.RunCommandError:
+      cros_build_lib.Error(
+          'Failed to submit tryjob.  This could be due to too many '
+          'submission requests by users.  Please try again.')
       raise
 
   def Submit(self, workdir=None, testjob=False, dryrun=False):

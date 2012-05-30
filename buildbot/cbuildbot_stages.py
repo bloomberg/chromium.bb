@@ -25,7 +25,7 @@ from chromite.buildbot import manifest_version
 from chromite.buildbot import portage_utilities
 from chromite.buildbot import repository
 from chromite.buildbot import validation_pool
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 _FULL_BINHOST = 'FULL_BINHOST'
@@ -86,17 +86,17 @@ class CleanUpStage(bs.BuilderStage):
                                        self._build_root)
     chroot_tmpdir = os.path.join(self._build_root, 'chroot', 'tmp')
     if os.path.exists(chroot_tmpdir):
-      cros_lib.SudoRunCommand(['rm', '-rf', chroot_tmpdir],
-                          print_cmd=False)
-      cros_lib.SudoRunCommand(['mkdir', '--mode', '1777', chroot_tmpdir],
-                          print_cmd=False)
+      cros_build_lib.SudoRunCommand(['rm', '-rf', chroot_tmpdir],
+                                    print_cmd=False)
+      cros_build_lib.SudoRunCommand(['mkdir', '--mode', '1777', chroot_tmpdir],
+                                    print_cmd=False)
 
   def _DeleteChroot(self):
     chroot = os.path.join(self._build_root, 'chroot')
     if os.path.exists(chroot):
-      cros_lib.RunCommand(['cros_sdk', '--delete', '--chroot=%s' % chroot],
-                          self._build_root,
-                          cwd=self._build_root)
+      cros_build_lib.RunCommand(['cros_sdk', '--delete', '--chroot', chroot],
+                                self._build_root,
+                                cwd=self._build_root)
 
   def _DeleteArchivedTrybotImages(self):
     """For trybots, clear all previus archive images to save space."""
@@ -153,11 +153,11 @@ class PatchChangesStage(bs.BuilderStage):
       apply_func(patch)
 
     for patch in self.patch_pool.remote_patches:
-      cros_lib.PrintBuildbotStepText(str(patch))
+      cros_build_lib.PrintBuildbotStepText(str(patch))
       apply_func(patch)
 
     for patch in self.patch_pool.gerrit_patches:
-      cros_lib.PrintBuildbotLink(str(patch), patch.url)
+      cros_build_lib.PrintBuildbotLink(str(patch), patch.url)
       apply_func(patch)
 
   def _PerformStage(self):
@@ -200,7 +200,8 @@ class BootstrapStage(PatchChangesStage):
     reference_repo = os.path.join(constants.SOURCE_ROOT, 'chromite', '.git')
     repository.CloneGitRepo(chromite_dir, constants.CHROMITE_URL,
                             reference=reference_repo)
-    cros_lib.RunCommand(['git', 'checkout', filter_branch], cwd=chromite_dir)
+    cros_build_lib.RunCommand(['git', 'checkout', filter_branch],
+                              cwd=chromite_dir)
     self._ApplyPatches(apply_func)
 
     extra_params = ['--sourceroot=%s' % self._options.sourceroot]
@@ -219,8 +220,8 @@ class BootstrapStage(PatchChangesStage):
       cbuildbot_path = 'chromite/buildbot/cbuildbot'
 
     cmd = [cbuildbot_path] + argv + extra_params
-    result_obj = cros_lib.RunCommand(cmd, cwd=self.tempdir, kill_timeout=30,
-                                     error_code_ok=True)
+    result_obj = cros_build_lib.RunCommand(
+        cmd, cwd=self.tempdir, kill_timeout=30, error_code_ok=True)
     self.returncode = result_obj.returncode
 
 
@@ -370,7 +371,7 @@ class ManifestVersionedSyncStage(SyncStage):
       if ManifestVersionedSyncStage.manifest_manager.DidLastBuildSucceed():
         sys.exit(0)
       else:
-        cros_lib.Die('Last build status was non-passing.')
+        cros_build_lib.Die('Last build status was non-passing.')
 
     # Log this early on for the release team to grep out before we finish.
     if ManifestVersionedSyncStage.manifest_manager:
@@ -520,12 +521,12 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
           # let that stop us from continuing the build.
           pool.SubmitNonManifestChanges()
         except validation_pool.FailedToSubmitAllChangesException as e:
-          cros_lib.Warning(str(e))
+          cros_build_lib.Warning(str(e))
 
         CommitQueueSyncStage.pool = pool
 
       except validation_pool.TreeIsClosedException as e:
-        cros_lib.Warning(str(e))
+        cros_build_lib.Warning(str(e))
         return None
 
       manifest = self.manifest_manager.CreateNewCandidate(validation_pool=pool)
@@ -981,7 +982,7 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
   # pylint: disable=W0212
   def _HandleStageException(self, exception):
     """Override and don't set status to FAIL but FORGIVEN instead."""
-    if (isinstance(exception, cros_lib.RunCommandError) and
+    if (isinstance(exception, cros_build_lib.RunCommandError) and
         exception.result.returncode == 2):
       return self._HandleExceptionAsWarning(exception)
     else:
@@ -994,12 +995,12 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
     build = '%s/%s' % (self._bot_id, self._archive_stage.GetVersion())
 
     try:
-      with cros_lib.SubCommandTimeout(HWTestStage.INFRASTRUCTURE_TIMEOUT):
+      with cros_build_lib.SubCommandTimeout(HWTestStage.INFRASTRUCTURE_TIMEOUT):
         commands.RunHWTestSuite(build, self._suite, self._current_board,
                                 self._build_config['hw_tests_pool'],
                                 self._options.debug)
 
-    except cros_lib.TimeoutError as exception:
+    except cros_build_lib.TimeoutError as exception:
       return self._HandleExceptionAsWarning(exception)
 
 
@@ -1016,25 +1017,25 @@ class SDKTestStage(bs.BuilderStage):
     for path in excluded_paths:
       cmd.append('--exclude=%s/*' % path)
     cmd.append('.')
-    cros_lib.SudoRunCommand(cmd, cwd=board_location)
+    cros_build_lib.SudoRunCommand(cmd, cwd=board_location)
 
     # Make sure the regular user has the permission to read.
     cmd = ['chmod', 'a+r', tarball_location]
-    cros_lib.SudoRunCommand(cmd, cwd=board_location)
+    cros_build_lib.SudoRunCommand(cmd, cwd=board_location)
 
     new_chroot_cmd = ['cros_sdk', '--chroot', 'new-sdk-chroot']
     # Build a new SDK using the tarball.
     cmd = new_chroot_cmd + ['--download', '--replace',
         '--url', 'file://' + tarball_location]
-    cros_lib.RunCommand(cmd, cwd=self._build_root)
+    cros_build_lib.RunCommand(cmd, cwd=self._build_root)
 
     for board in cbuildbot_config.SDK_TEST_BOARDS:
       cmd = new_chroot_cmd + ['--', './setup_board',
           '--board', board, '--skip_chroot_upgrade']
-      cros_lib.RunCommand(cmd, cwd=self._build_root)
+      cros_build_lib.RunCommand(cmd, cwd=self._build_root)
       cmd = new_chroot_cmd + ['--', './build_packages',
           '--board', board, '--nousepkg', '--skip_chroot_upgrade']
-      cros_lib.RunCommand(cmd, cwd=self._build_root)
+      cros_build_lib.RunCommand(cmd, cwd=self._build_root)
 
 
 class NothingToArchiveException(Exception):
@@ -1126,7 +1127,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       True if artifacts uploaded successfully.
       False otherswise.
     """
-    cros_lib.Info('Waiting for uploads...')
+    cros_build_lib.Info('Waiting for uploads...')
     status = self._hw_test_uploads_status_queue.get()
     # Put the status back so other HWTestStage instances don't starve.
     self._hw_test_uploads_status_queue.put(status)
@@ -1152,8 +1153,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
       # TODO: Clean this up so that we no longer rely on a timeout
       success = self._breakpad_symbols_queue.get(True, 1200)
     except Queue.Empty:
-      cros_lib.Warning('Breakpad symbols were not generated within timeout '
-                       'period.')
+      cros_build_lib.Warning(
+          'Breakpad symbols were not generated within timeout period.')
     return success
 
   def GetDownloadUrl(self):
@@ -1198,25 +1199,27 @@ class ArchiveStage(BoardSpecificBuilderStage):
     """Get the paths of the autotest tarballs."""
     autotest_tarballs = None
     if self._options.build:
-      cros_lib.Info('Waiting for autotest tarballs ...')
+      cros_build_lib.Info('Waiting for autotest tarballs ...')
       autotest_tarballs = self._autotest_tarballs_queue.get()
       if autotest_tarballs:
-        cros_lib.Info('Found autotest tarballs %r ...' % autotest_tarballs)
+        cros_build_lib.Info('Found autotest tarballs %r ...'
+                            % autotest_tarballs)
       else:
-        cros_lib.Info('No autotest tarballs found.')
+        cros_build_lib.Info('No autotest tarballs found.')
 
     return autotest_tarballs
 
   def _GetTestResults(self):
     """Get the path to the test results tarball."""
     for _ in range(2):
-      cros_lib.Info('Waiting for test results dir...')
+      cros_build_lib.Info('Waiting for test results dir...')
       test_tarball = self._test_results_queue.get()
       if test_tarball:
-        cros_lib.Info('Found test results tarball at %s...' % test_tarball)
+        cros_build_lib.Info('Found test results tarball at %s...'
+                            % test_tarball)
         yield test_tarball
       else:
-        cros_lib.Info('No test results.')
+        cros_build_lib.Info('No test results.')
 
   def _SetupArchivePath(self):
     """Create a fresh directory for archiving a build."""

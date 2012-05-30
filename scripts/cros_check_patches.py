@@ -13,7 +13,7 @@ import sys
 import tempfile
 import functools
 
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
@@ -45,9 +45,9 @@ class PatchReporter(object):
     self.overlay_dir = os.path.realpath(overlay_dir)
     self.ebuild_cmd = ebuild_cmd
     self.equery_cmd = equery_cmd
-    self._invoke_command = cros_lib.RunCommand
+    self._invoke_command = cros_build_lib.RunCommand
     if sudo:
-      self._invoke_command = functools.partial(cros_lib.SudoRunCommand,
+      self._invoke_command = functools.partial(cros_build_lib.SudoRunCommand,
                                                strict=False)
     self.ignored_packages = config['ignored_packages']
     self.package_count = 0
@@ -114,8 +114,9 @@ class PatchReporter(object):
     # "various patches (bugfixes/updates)", which isn't very useful for us.
     # So, if you noticed these omissions, it was intentional, not a bug. :-)
     patch_regex = r'^ [*] Applying ([^ ]*) [.][.][.].*'
-    output = cros_lib.RunCommand(['egrep', '-r', patch_regex, temp_space],
-                                 print_cmd=False, redirect_stdout=True).output
+    output = cros_build_lib.RunCommand(
+        ['egrep', '-r', patch_regex, temp_space], print_cmd=False,
+        redirect_stdout=True).output
     lines = output.splitlines()
     patches = []
     patch_regex = re.compile(patch_regex)

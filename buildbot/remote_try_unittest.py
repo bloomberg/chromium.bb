@@ -14,7 +14,7 @@ import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.buildbot import remote_try
 from chromite.buildbot import repository
@@ -62,9 +62,9 @@ class RemoteTryTests(mox.MoxTestBase):
 
     self.assertTrue(set(self.BOTS).issubset(values['bot']))
 
-    remote_url = cros_lib.RunCommand(['git', 'config', 'remote.origin.url'],
-                                     redirect_stdout=True,
-                                     cwd=self.tempdir).output.strip()
+    remote_url = cros_build_lib.RunCommand(
+        ['git', 'config', 'remote.origin.url'], redirect_stdout=True,
+        cwd=self.tempdir).output.strip()
     self.assertTrue(remote_url == remote_try.RemoteTryJob.EXT_SSH_URL)
 
   @osutils.TempDirDecorator
@@ -79,9 +79,9 @@ class RemoteTryTests(mox.MoxTestBase):
     job = remote_try.RemoteTryJob(self.options, self.BOTS, [])
     job.Submit(workdir=self.tempdir, dryrun=True)
 
-    remote_url = cros_lib.RunCommand(['git', 'config', 'remote.origin.url'],
-                                     redirect_stdout=True,
-                                     cwd=self.tempdir).output.strip()
+    remote_url = cros_build_lib.RunCommand(
+        ['git', 'config', 'remote.origin.url'], redirect_stdout=True,
+        cwd=self.tempdir).output.strip()
     self.assertTrue(remote_url == remote_try.RemoteTryJob.INT_SSH_URL)
 
   def testBareTryJob(self):

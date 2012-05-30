@@ -11,6 +11,7 @@ full and pre-flight-queue builds.
 """
 
 import distutils.version
+import errno
 import glob
 import logging
 import multiprocessing
@@ -35,12 +36,12 @@ from chromite.buildbot import trybot_patch_pool
 
 from chromite.lib import cgroups
 from chromite.lib import cleanup
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import sudo
 
 
-cros_lib.STRICT_SUDO = True
+cros_build_lib.STRICT_SUDO = True
 
 _DEFAULT_LOG_DIR = 'cbuildbot_logs'
 _BUILDBOT_LOG_FILE = 'cbuildbot.log'
@@ -103,18 +104,19 @@ def _GetConfig(config_name):
 def _GetChromiteTrackingBranch():
   """Returns the remote branch associated with chromite."""
   cwd = os.path.dirname(os.path.realpath(__file__))
-  result = cros_lib.GetTrackingBranch(cwd, for_checkout=False, fallback=False)
+  result = cros_build_lib.GetTrackingBranch(cwd, for_checkout=False,
+                                            fallback=False)
   if result is not None:
     remote, branch = result
     if branch.startswith("refs/heads/"):
       # Normal scenario.
-      return cros_lib.StripLeadingRefsHeads(branch)
+      return cros_build_lib.StripLeadingRefsHeads(branch)
     # Reaching here means it was refs/remotes/m/blah, or just plain invalid,
     # or that we're on a detached head in a repo not managed by chromite.
 
   # Manually try the manifest next.
   try:
-    manifest = cros_lib.ManifestCheckout.Cached(cwd)
+    manifest = cros_build_lib.ManifestCheckout.Cached(cwd)
     # Ensure the manifest knows of this checkout.
     if manifest.FindProjectFromPath(cwd) is not None:
       return manifest.manifest_branch
@@ -122,7 +124,7 @@ def _GetChromiteTrackingBranch():
     if e.errno != errno.ENOENT:
       raise
   # Not a manifest checkout.
-  cros_lib.Warning(
+  cros_build_lib.Warning(
       "Chromite checkout at %s isn't controlled by repo, nor is it on a "
       "branch (or if it is, the tracking configuration is missing or broken).  "
       "Falling back to assuming the chromite checkout is derived from "
@@ -151,10 +153,10 @@ def AcquirePoolFromOptions(options):
         options.gerrit_patches)
     for patch in gerrit_patches:
       if patch.IsAlreadyMerged():
-        cros_lib.Warning('Patch %s has already been merged.' % str(patch))
+        cros_build_lib.Warning('Patch %s has already been merged.' % str(patch))
 
   if options.local_patches:
-    manifest = cros_lib.ManifestCheckout.Cached(options.sourceroot)
+    manifest = cros_build_lib.ManifestCheckout.Cached(options.sourceroot)
     local_patches = cros_patch.PrepareLocalPatches(manifest,
                                                    options.local_patches)
 
@@ -260,7 +262,7 @@ class Builder(object):
 
     # Get the re-exec API version of the target chromite; if it's incompatible
     # with us, bail now.
-    api = cros_lib.RunCommandCaptureOutput(
+    api = cros_build_lib.RunCommandCaptureOutput(
         [constants.PATH_TO_CBUILDBOT] + ['--reexec-api-version'],
         cwd=self.options.buildroot, error_code_ok=True)
     # If the command failed, then we're targeting a cbuildbot that lacks the
@@ -270,7 +272,7 @@ class Builder(object):
       major, minor = map(int, api.output.strip().split('.', 1))
 
     if major != _REEXEC_API_MAJOR:
-      cros_lib.Die(
+      cros_build_lib.Die(
           'The targeted version of chromite in buildroot %s requires '
           'api version %i, but we are api version %i.  We cannot proceed.'
           % (self.options.buildroot, major, _REEXEC_API_MAJOR))
@@ -297,7 +299,7 @@ class Builder(object):
     # Finally, be generous and give the invoked cbuildbot 30s to shutdown
     # when something occurs.  It should exit quicker, but the sigterm may
     # hit while the system is particularly busy.
-    return_obj = cros_lib.RunCommand(
+    return_obj = cros_build_lib.RunCommand(
         [constants.PATH_TO_CBUILDBOT] + sys.argv[1:] + args_to_append,
         cwd=self.options.buildroot, error_code_ok=True, kill_timeout=30)
     return return_obj.returncode == 0
@@ -519,9 +521,9 @@ class DistributedBuilder(SimpleBuilder):
 def _ConfirmBuildRoot(buildroot):
   """Confirm with user the inferred buildroot, and mark it as confirmed."""
   warning = 'Using default directory %s as buildroot' % buildroot
-  response = cros_lib.YesNoPrompt(default=cros_lib.NO, warning=warning,
-                                  full=True)
-  if response == cros_lib.NO:
+  response = cros_build_lib.YesNoPrompt(
+      default=cros_build_lib.NO, warning=warning, full=True)
+  if response == cros_build_lib.NO:
     print('Please specify a buildroot with the --buildroot option.')
     sys.exit(0)
 
@@ -535,10 +537,10 @@ def _ConfirmRemoteBuildbotRun():
   """Confirm user wants to run with --buildbot --remote."""
   warning = ('You are about to launch a PRODUCTION job!  This is *NOT* a '
              'trybot run! Are you sure?')
-  response = cros_lib.YesNoPrompt(default=cros_lib.NO, warning=warning,
-                                  full=True)
+  response = cros_build_lib.YesNoPrompt(
+      default=cros_build_lib.NO, warning=warning, full=True)
 
-  if response == cros_lib.NO:
+  if response == cros_build_lib.NO:
     print('Please specify --pass-through="--debug".')
     sys.exit(0)
 
@@ -551,8 +553,9 @@ def _DetermineDefaultBuildRoot(sourceroot, internal_build):
     sourceroot: Use specified sourceroot.
   """
   if not repository.IsARepoRoot(sourceroot):
-    cros_lib.Die('Could not find root of local checkout at %s.  Please specify '
-                 'using the --sourceroot option.' % sourceroot)
+    cros_build_lib.Die(
+        'Could not find root of local checkout at %s.  Please specify '
+        'using the --sourceroot option.' % sourceroot)
 
   # Place trybot buildroot under the directory containing current checkout.
   top_level = os.path.dirname(os.path.realpath(sourceroot))
@@ -601,8 +604,8 @@ def _RunBuildStagesWrapper(options, build_config):
 
     return False
 
-  cros_lib.Info("cbuildbot executed with args %s"
-                % ' '.join(map(repr, sys.argv)))
+  cros_build_lib.Info("cbuildbot executed with args %s"
+                      % ' '.join(map(repr, sys.argv)))
 
   target = DistributedBuilder if IsDistributedBuilder() else SimpleBuilder
   buildbot = target(options, build_config)
@@ -621,12 +624,12 @@ def _CheckLocalPatches(sourceroot, local_patches):
     sourceroot: The checkout where patches are coming from.
   """
   verified_patches = []
-  manifest = cros_lib.ManifestCheckout.Cached(sourceroot)
+  manifest = cros_build_lib.ManifestCheckout.Cached(sourceroot)
   for patch in local_patches:
     components = patch.split(':')
     if len(components) > 2:
-      cros_lib.Die('Specify local patches in project[:branch] format.  Got %s'
-                   % patch)
+      cros_build_lib.Die(
+          'Specify local patches in project[:branch] format.  Got %s' % patch)
 
     # validate project
     project = components[0]
@@ -634,17 +637,18 @@ def _CheckLocalPatches(sourceroot, local_patches):
     try:
       project_dir = manifest.GetProjectPath(project, True)
     except KeyError:
-      cros_lib.Die('Project %s does not exist.' % project)
+      cros_build_lib.Die('Project %s does not exist.' % project)
 
     # If no branch was specified, we use the project's current branch.
     if len(components) == 1:
-      branch = cros_lib.GetCurrentBranch(project_dir)
+      branch = cros_build_lib.GetCurrentBranch(project_dir)
       if not branch:
-        cros_lib.Die('Project %s is not on a branch!' % project)
+        cros_build_lib.Die('Project %s is not on a branch!' % project)
     else:
       branch = components[1]
-      if not cros_lib.DoesLocalBranchExist(project_dir, branch):
-        cros_lib.Die('Project %s does not have branch %s' % (project, branch))
+      if not cros_build_lib.DoesLocalBranchExist(project_dir, branch):
+        cros_build_lib.Die('Project %s does not have branch %s'
+                           % (project, branch))
 
     verified_patches.append('%s:%s' % (project, branch))
 
@@ -933,40 +937,41 @@ def _FinishParsing(options, args):
 
   if options.chrome_root:
     if options.chrome_rev != constants.CHROME_REV_LOCAL:
-      cros_lib.Die('Chrome rev must be %s if chrome_root is set.' %
-                   constants.CHROME_REV_LOCAL)
+      cros_build_lib.Die('Chrome rev must be %s if chrome_root is set.' %
+                         constants.CHROME_REV_LOCAL)
   else:
     if options.chrome_rev == constants.CHROME_REV_LOCAL:
-      cros_lib.Die('Chrome root must be set if chrome_rev is %s.' %
-                   constants.CHROME_REV_LOCAL)
+      cros_build_lib.Die('Chrome root must be set if chrome_rev is %s.' %
+                         constants.CHROME_REV_LOCAL)
 
   if options.chrome_version:
     if options.chrome_rev != constants.CHROME_REV_SPEC:
-      cros_lib.Die('Chrome rev must be %s if chrome_version is set.' %
-                   constants.CHROME_REV_SPEC)
+      cros_build_lib.Die('Chrome rev must be %s if chrome_version is set.' %
+                         constants.CHROME_REV_SPEC)
   else:
     if options.chrome_rev == constants.CHROME_REV_SPEC:
-      cros_lib.Die('Chrome rev must not be %s if chrome_version is not set.' %
-                   constants.CHROME_REV_SPEC)
+      cros_build_lib.Die(
+          'Chrome rev must not be %s if chrome_version is not set.'
+          % constants.CHROME_REV_SPEC)
 
   patches = bool(options.gerrit_patches or options.local_patches)
   if options.remote:
     if options.local:
-      cros_lib.Die('Cannot specify both --remote and --local')
+      cros_build_lib.Die('Cannot specify both --remote and --local')
 
     if not options.buildbot and not patches:
-      cros_lib.Die('Must provide patches when running with --remote.')
+      cros_build_lib.Die('Must provide patches when running with --remote.')
 
     # --debug needs to be explicitly passed through for remote invocations.
     release_mode_with_patches = (options.buildbot and patches and
                                  '--debug' not in options.pass_through_args)
   else:
     if len(args) > 1:
-      cros_lib.Die('Multiple configs not supported if not running with '
-                   '--remote.')
+      cros_build_lib.Die('Multiple configs not supported if not running with '
+                         '--remote.')
 
     if options.slaves:
-      cros_lib.Die('Cannot use --slaves if not running with --remote.')
+      cros_build_lib.Die('Cannot use --slaves if not running with --remote.')
 
     release_mode_with_patches = (options.buildbot and patches and
                                  not options.debug)
@@ -975,10 +980,12 @@ def _FinishParsing(options, args):
   # We want checked-in cbuildbot/scripts to prevent errors, and we want to build
   # a release image with checked-in code for CrOS packages.
   if release_mode_with_patches:
-    cros_lib.Die('Cannot provide patches when running with --buildbot!')
+    cros_build_lib.Die(
+        'Cannot provide patches when running with --buildbot!')
 
   if options.buildbot and options.remote_trybot:
-    cros_lib.Die('--buildbot and --remote-trybot cannot be used together.')
+    cros_build_lib.Die(
+        '--buildbot and --remote-trybot cannot be used together.')
 
   # Record whether --debug was set explicitly vs. it was inferred.
   options.debug_forced = False
@@ -1013,8 +1020,8 @@ def _PostParseCheck(options, args):
   default = os.environ.get('CBUILDBOT_DEFAULT_MODE')
   if (default and not any([options.local, options.buildbot,
                            options.remote, options.remote_trybot])):
-    cros_lib.Info("CBUILDBOT_DEFAULT_MODE=%s env var detected, using it."
-                  % default)
+    cros_build_lib.Info("CBUILDBOT_DEFAULT_MODE=%s env var detected, using it."
+                        % default)
     default = default.lower()
     if default == 'local':
       options.local = True
@@ -1023,8 +1030,8 @@ def _PostParseCheck(options, args):
     elif default == 'buildbot':
       options.buildbot = True
     else:
-      cros_lib.Die("CBUILDBOT_DEFAULT_MODE value %s isn't supported. "
-                   % default)
+      cros_build_lib.Die("CBUILDBOT_DEFAULT_MODE value %s isn't supported. "
+                         % default)
 
 
 def _ParseCommandLine(parser, argv):
@@ -1054,8 +1061,8 @@ def main(argv):
   # Set umask to 022 so files created by buildbot are readable.
   os.umask(022)
 
-  if cros_lib.IsInsideChroot():
-    cros_lib.Die('Please run cbuildbot from outside the chroot.')
+  if cros_build_lib.IsInsideChroot():
+    cros_build_lib.Die('Please run cbuildbot from outside the chroot.')
 
   parser = _CreateParser()
   (options, args) = _ParseCommandLine(parser, argv)
@@ -1063,7 +1070,7 @@ def main(argv):
   _PostParseCheck(options, args)
 
   if options.remote:
-    cros_lib.logger.setLevel(logging.WARNING)
+    cros_build_lib.logger.setLevel(logging.WARNING)
 
     # Verify configs are valid.
     for bot in args:
@@ -1090,10 +1097,12 @@ def main(argv):
     sys.exit(0)
   elif (not options.buildbot and not options.remote_trybot
         and not options.resume and not options.local):
-    cros_lib.Warning('Running in LOCAL TRYBOT mode!  Use --remote to submit '
-                     'REMOTE tryjobs.  Use --local to suppress this message.')
-    cros_lib.Warning('Starting April 30th, --local will be required to run the '
-                     'local trybot.')
+    cros_build_lib.Warning(
+        'Running in LOCAL TRYBOT mode!  Use --remote to submit REMOTE '
+        'tryjobs.  Use --local to suppress this message.')
+    cros_build_lib.Warning(
+        'Starting April 30th, --local will be required to run the local '
+        'trybot.')
     time.sleep(5)
 
   # Only expecting one config
@@ -1126,9 +1135,9 @@ def main(argv):
 
     missing = []
     for program in _BUILDBOT_REQUIRED_BINARIES:
-      ret = cros_lib.RunCommand('which %s' % program, shell=True,
-                                redirect_stderr=True, redirect_stdout=True,
-                                error_code_ok=True, print_cmd=False)
+      ret = cros_build_lib.RunCommand(
+          'which %s' % program, shell=True, redirect_stderr=True,
+          redirect_stdout=True, error_code_ok=True, print_cmd=False)
       if ret.returncode != 0:
         missing.append(program)
 
@@ -1175,7 +1184,7 @@ def main(argv):
     osutils.SafeMakedirs(dirname)
     _BackupPreviousLog(log_file)
 
-  with cros_lib.ContextManagerStack() as stack:
+  with cros_build_lib.ContextManagerStack() as stack:
     critical_section = stack.Add(cleanup.EnforcedCleanupSection)
     stack.Add(sudo.SudoKeepAlive)
 
@@ -1199,7 +1208,7 @@ def main(argv):
     critical_section.ForkWatchdog()
 
     if options.timeout > 0:
-      stack.Add(cros_lib.Timeout, options.timeout)
+      stack.Add(cros_build_lib.Timeout, options.timeout)
 
     if not options.buildbot:
       build_config = cbuildbot_config.OverrideConfigForTrybot(

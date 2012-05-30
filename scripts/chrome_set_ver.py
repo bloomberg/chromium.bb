@@ -11,7 +11,7 @@ import os
 import re
 
 from chromite.buildbot import repository
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
@@ -67,7 +67,7 @@ def _CreateCrosSymlink(repo_root):
   for rel_path, project in mappings.iteritems():
     link_dir = os.path.join(chromium_root, rel_path)
     target_dir = os.path.join(repo_root,
-                              cros_lib.GetProjectDir(repo_root, project))
+                              cros_build_lib.GetProjectDir(repo_root, project))
     path_to_target = os.path.relpath(target_dir, os.path.dirname(link_dir))
     if not os.path.exists(link_dir):
       os.symlink(path_to_target, link_dir)
@@ -119,7 +119,7 @@ def _IsGitStoreInRepo(path):
   repo can actually use it (the git repo must be in the manifest for
   that to be true).
   """
-  repo_dir = os.path.realpath(cros_lib.FindRepoDir(path))
+  repo_dir = os.path.realpath(cros_build_lib.FindRepoDir(path))
   git_objects_dir = os.path.realpath(os.path.join(path, '.git/objects'))
   return git_objects_dir.startswith(repo_dir)
 
@@ -145,42 +145,44 @@ class Project(object):
 
   def _ResetProject(self, commit_hash):
     """Actually pin project to the specified commit hash."""
-    if not cros_lib.DoesCommitExistInRepo(self.abs_path, commit_hash):
-      cros_lib.Die('Commit %s not found in %s.\n'
-                   "You probably need to run 'repo sync --jobs=<jobs>' "
-                   'to update your checkout.'
-                   % (commit_hash, self.abs_path))
+    if not cros_build_lib.DoesCommitExistInRepo(self.abs_path, commit_hash):
+      cros_build_lib.Die(
+          'Commit %s not found in %s.\n'
+          "You probably need to run 'repo sync --jobs=<jobs>' "
+          'to update your checkout.'
+          % (commit_hash, self.abs_path))
 
-    result = cros_lib.RunCommand(['git', 'checkout', commit_hash],
-                                 error_code_ok=True, cwd=self.abs_path)
+    result = cros_build_lib.RunCommand(['git', 'checkout', commit_hash],
+                                       error_code_ok=True, cwd=self.abs_path)
     if result.returncode != 0:
-      cros_lib.Warning('Failed to pin project %s.\n'
-                       'You probably have uncommited local changes.'
-                       % self.abs_path)
+      cros_build_lib.Warning('Failed to pin project %s.\n'
+                             'You probably have uncommited local changes.'
+                             % self.abs_path)
 
   def _PrepareProject(self):
     """Make sure the project is synced properly and is ready for pinning."""
-    handler = cros_lib.ManifestCheckout.Cached(self.repo_root)
+    handler = cros_build_lib.ManifestCheckout.Cached(self.repo_root)
     path_to_project_dict = dict(([attrs['path'], project]) for project, attrs
                                 in handler.projects.iteritems())
 
     # TODO(rcui): Handle case where a dependency never makes it to the manifest
     # (i.e., dep path added as double checkout, and then gets deleted). We need
     # to delete those.  crosbug/22123.
-    if not cros_lib.IsDirectoryAGitRepoRoot(self.abs_path):
+    if not cros_build_lib.IsDirectoryAGitRepoRoot(self.abs_path):
       if self.manifest_rel_path in path_to_project_dict:
         raise ProjectException('%s in full layout manifest but not in working '
                                "tree. Please run 'repo sync %s'"
                                % (self.manifest_rel_path,
                                   path_to_project_dict[self.manifest_rel_path]))
       else:
-        cros_lib.Warning('Project %s is not in the manifest.  Automatically '
-                         'checking out to %s.\n'
-                         % (self.project_url, self.abs_path))
+        cros_build_lib.Warning(
+            'Project %s is not in the manifest.  Automatically checking out '
+            'to %s.\n' % (self.project_url, self.abs_path))
         repository.CloneGitRepo(self.abs_path, self.project_url)
-        cros_lib.RunCommand(['git', 'checkout',
-                            cros_lib.GetGitRepoRevision(self.abs_path)],
-                            cwd=self.abs_path)
+        cros_build_lib.RunCommand(
+            ['git', 'checkout',
+             cros_build_lib.GetGitRepoRevision(self.abs_path)],
+            cwd=self.abs_path)
     elif not _IsGitStoreInRepo(self.abs_path):
       if self.manifest_rel_path in path_to_project_dict:
         # If path is now in the manifest, tell user to manually delete our
@@ -191,8 +193,8 @@ class Project(object):
                                   path_to_project_dict[self.manifest_rel_path]))
       else:
         # If not managed by Repo we need to perform sync.
-        cros_lib.RunCommand(['git', 'pull', '--rebase', self.project_url],
-                            cwd=self.abs_path)
+        cros_build_lib.RunCommand(['git', 'pull', '--rebase', self.project_url],
+                                  cwd=self.abs_path)
     elif not os.path.islink(self.abs_path):
       # Skip symlinks - we don't want to error out for the cros.DEPS projects.
       if self.manifest_rel_path not in path_to_project_dict:
@@ -202,10 +204,11 @@ class Project(object):
                                'changes.  Please remove and try again.'
                                % self.manifest_rel_path)
       elif self.project_name != path_to_project_dict[self.manifest_rel_path]:
-        cros_lib.Die('.DEPS.git for %s conflicts with manifest.xml!  Running '
-                     'with older .DEPS.git files are not yet supported.  '
-                     "Please run'repo sync --jobs=<jobs>' to sync everything "
-                     'up.' % self.manifest_rel_path)
+        cros_build_lib.Die(
+            '.DEPS.git for %s conflicts with manifest.xml!  Running with '
+            'older .DEPS.git files are not yet supported.  '
+            "Please run'repo sync --jobs=<jobs>' to sync everything up."
+            % self.manifest_rel_path)
 
   def Pin(self, commit_hash):
     """Attempt to pin the project to the specified commit hash.
@@ -217,15 +220,16 @@ class Project(object):
       ProjectException when an error occurs.
     """
     self._PrepareProject()
-    if cros_lib.GetCurrentBranch(self.abs_path):
-      cros_lib.Warning("Not pinning project %s that's checked out to a "
-                       'development branch.' % self.rel_path)
+    if cros_build_lib.GetCurrentBranch(self.abs_path):
+      cros_build_lib.Warning("Not pinning project %s that's checked out to a "
+                             'development branch.' % self.rel_path)
     elif (commit_hash and
-          (commit_hash != cros_lib.GetGitRepoRevision(self.abs_path))):
+          (commit_hash != cros_build_lib.GetGitRepoRevision(self.abs_path))):
       print 'Pinning project %s' % self.rel_path
       self._ResetProject(commit_hash)
     else:
-      cros_lib.Debug('Skipping project %s, already pinned' % self.rel_path)
+      cros_build_lib.Debug('Skipping project %s, already pinned'
+                           % self.rel_path)
 
 
 def _ResetGitCheckout(repo_root, deps):
@@ -246,7 +250,7 @@ def _ResetGitCheckout(repo_root, deps):
       errors.append(str(e))
 
   if errors:
-    cros_lib.Die('Errors encountered:\n* ' + '\n* '.join(errors))
+    cros_build_lib.Die('Errors encountered:\n* ' + '\n* '.join(errors))
 
 
 def _RunHooks(chromium_root, hooks):
@@ -259,7 +263,7 @@ def _RunHooks(chromium_root, hooks):
   """
   for hook in hooks:
     print '[running hook] %s' % ' '.join(hook['action'])
-    cros_lib.RunCommand(hook['action'], cwd=chromium_root)
+    cros_build_lib.RunCommand(hook['action'], cwd=chromium_root)
 
 
 def _MergeDeps(dest, update):
@@ -310,22 +314,23 @@ def main(argv):
 
   # Set cros_build_lib debug level to hide RunCommand spew.
   if options.verbose:
-    cros_lib.logger.setLevel(logging.DEBUG)
+    cros_build_lib.logger.setLevel(logging.DEBUG)
   else:
-    cros_lib.logger.setLevel(logging.WARNING)
+    cros_build_lib.logger.setLevel(logging.WARNING)
 
-  if cros_lib.IsInsideChroot():
+  if cros_build_lib.IsInsideChroot():
     ssh_path = '/usr/bin/ssh_no_update'
     if os.path.isfile(ssh_path):
       os.environ['GIT_SSH'] = ssh_path
     else:
-      cros_lib.Warning("Can't find %s.  Run build_packages or setup_board to "
-                       'update your chooot.' % ssh_path)
+      cros_build_lib.Warning(
+          "Can't find %s.  Run build_packages or setup_board to update "
+          "your choot." % ssh_path)
 
-  repo_root = cros_lib.FindRepoCheckoutRoot()
+  repo_root = cros_build_lib.FindRepoCheckoutRoot()
   chromium_src_root = os.path.join(repo_root, _CHROMIUM_SRC_ROOT)
   if not os.path.isdir(chromium_src_root):
-    cros_lib.Die('chromium src/ dir not found')
+    cros_build_lib.Die('chromium src/ dir not found')
 
   # Add DEPS files to parse.
   deps_files_to_parse = []

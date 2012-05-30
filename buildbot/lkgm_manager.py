@@ -17,7 +17,7 @@ from xml.dom import minidom
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import constants
 from chromite.buildbot import manifest_version
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 
 
 # Paladin constants for manifest names.
@@ -43,8 +43,8 @@ def _SyncGitRepo(local_dir):
   Args:
     local_dir: location with repo that should be synced.
   """
-  cros_lib.RunCommand(['git', 'remote', 'update'], cwd=local_dir)
-  cros_lib.RunCommand(['git', 'rebase', 'origin/master'], cwd=local_dir)
+  cros_build_lib.RunCommand(['git', 'remote', 'update'], cwd=local_dir)
+  cros_build_lib.RunCommand(['git', 'rebase', 'origin/master'], cwd=local_dir)
 
 
 class _LKGMCandidateInfo(manifest_version.VersionInfo):
@@ -286,13 +286,13 @@ class LKGMManager(manifest_version.BuildSpecsManager):
               latest, chrome_branch=version_info.chrome_branch,
               incr_type=self.incr_type)
 
-        cros_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
-                                  self.manifest_dir, sync=False)
+        cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
+                                        self.manifest_dir, sync=False)
         version = self.GetNextVersion(version_info)
         self.PublishManifest(new_manifest, version)
         self.current_version = version
         return self.GetLocalManifest(version)
-      except cros_lib.RunCommandError as e:
+      except cros_build_lib.RunCommandError as e:
         err_msg = 'Failed to generate LKGM Candidate. error: %s' % e
         logging.error(err_msg)
         last_error = err_msg
@@ -322,13 +322,13 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         self.RefreshManifestCheckout()
         self.InitializeManifestVariables(version_info)
 
-        cros_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
-                                  self.manifest_dir, sync=False)
+        cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
+                                        self.manifest_dir, sync=False)
         version = os.path.splitext(os.path.basename(manifest))[0]
         self.PublishManifest(new_manifest, version)
         self.current_version = version
         return self.GetLocalManifest(version)
-      except cros_lib.RunCommandError as e:
+      except cros_build_lib.RunCommandError as e:
         err_msg = 'Failed to generate LKGM Candidate. error: %s' % e
         logging.error(err_msg)
         last_error = err_msg
@@ -370,8 +370,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           logging.info('Starting build spec: %s', version_to_build)
           commit_message = 'Automatic: Start %s %s' % (self.build_name,
                                                        version_to_build)
-          cros_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
-                                    self.manifest_dir, sync=False)
+          cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
+                                          self.manifest_dir, sync=False)
           self.SetInFlight(version_to_build)
           self.PushSpecChanges(commit_message)
           self.current_version = version_to_build
@@ -381,7 +381,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           self.cros_source.Sync(manifest)
           self._GenerateBlameListSinceLKGM()
           return manifest
-        except cros_lib.RunCommandError as e:
+        except cros_build_lib.RunCommandError as e:
           err_msg = 'Failed to set LKGM Candidate inflight. error: %s' % e
           logging.error(err_msg)
           last_error = err_msg
@@ -442,16 +442,16 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       try:
         if attempt > 0:
           self.RefreshManifestCheckout()
-        cros_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
-                                  self.manifest_dir, sync=False)
+        cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
+                                        self.manifest_dir, sync=False)
         manifest_version.CreateSymlink(path_to_candidate, self.lkgm_path)
-        cros_lib.RunCommand(['git', 'add', self.LKGM_PATH],
-                            cwd=self.manifest_dir)
+        cros_build_lib.RunCommand(['git', 'add', self.LKGM_PATH],
+                                  cwd=self.manifest_dir)
         self.PushSpecChanges(
             'Automatic: %s promoting %s to LKGM' % (self.build_name,
                                                     self.current_version))
         return
-      except cros_lib.RunCommandError as e:
+      except cros_build_lib.RunCommandError as e:
         last_error = 'Failed to promote manifest. error: %s' % e
         logging.error(last_error)
         logging.error('Retrying to promote manifest:  Retry %d/%d', attempt + 1,
@@ -479,7 +479,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                    'for this build type.')
       return
 
-    handler = cros_lib.Manifest(self.lkgm_path)
+    handler = cros_build_lib.Manifest(self.lkgm_path)
     reviewed_on_re = re.compile('\s*Reviewed-on:\s*(\S+)')
     author_re = re.compile('\s*Author:.*<(\S+)@\S+>\s*')
     committer_re = re.compile('\s*Commit:.*<(\S+)@\S+>\s*')
@@ -493,14 +493,14 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       # Additional case in case the repo has been removed from the manifest.
       src_path = self.cros_source.GetRelativePath(rel_src_path)
       if not os.path.exists(src_path):
-        cros_lib.Info('Detected repo removed from manifest %s' % project)
+        cros_build_lib.Info('Detected repo removed from manifest %s' % project)
         continue
 
       revision = handler.projects[project]['revision']
-      result = cros_lib.RunCommand(['git', 'log', '--pretty=full',
-                                    '%s..HEAD' % revision],
-                                   print_cmd=False, redirect_stdout=True,
-                                   cwd=src_path)
+      result = cros_build_lib.RunCommand(['git', 'log', '--pretty=full',
+                                          '%s..HEAD' % revision],
+                                         print_cmd=False, redirect_stdout=True,
+                                         cwd=src_path)
       current_author = None
       current_committer = None
       for line in result.output.splitlines():
@@ -517,12 +517,12 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           review = review_match.group(1)
           _, _, change_number = review.rpartition('/')
           if current_committer != 'chrome-bot':
-            cros_lib.PrintBuildbotLink(
+            cros_build_lib.PrintBuildbotLink(
                 'CHUMP %s:%s' % (current_author, change_number),
                 review)
           elif self.build_type != constants.PALADIN_TYPE:
             # Suppress re-printing changes we tried ourselves on paladin
             # builders since they are redundant.
-            cros_lib.PrintBuildbotLink(
+            cros_build_lib.PrintBuildbotLink(
                 '%s:%s' % (current_author, change_number),
                 review)

@@ -14,7 +14,7 @@ import os
 import sys
 
 from chromite.buildbot import cbuildbot_config
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 
 def FindCandidateBoards(board):
   """Find candidate local boards to grab prebuilts from."""
@@ -35,8 +35,8 @@ def FindCandidateBoards(board):
 def SummarizeCompatibility(board):
   """Returns a string that will be the same for compatible boards."""
   cmd = ["portageq-%s" % board, "envvar", "ARCH", "CFLAGS"]
-  return cros_lib.RunCommand(cmd, redirect_stdout=True,
-                             print_cmd=False).output.rstrip()
+  return cros_build_lib.RunCommand(cmd, redirect_stdout=True,
+                                   print_cmd=False).output.rstrip()
 
 
 def GenerateBinhostLine(build_root, compatible_boards):

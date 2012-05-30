@@ -20,7 +20,7 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib as test_lib
 from chromite.lib import osutils
 from chromite.lib import upgrade_table as utable
@@ -344,7 +344,7 @@ class ManifestLine(object):
 
 
 class RunCommandResult(object):
-  """Class to simulate result of cros_lib.RunCommand."""
+  """Class to simulate result of cros_build_lib.RunCommand."""
   __slots__ = ['returncode', 'output']
 
   def __init__(self, returncode, output):
@@ -571,8 +571,8 @@ class CopyUpstreamTest(CpuTestBase):
 
         # Recreate the Manifests using the ebuild utility.
         cmd = ['ebuild', ebuild_path, 'manifest']
-        cros_lib.RunCommand(cmd, print_cmd=False, redirect_stdout=True,
-                            combine_stdout_stderr=True)
+        cros_build_lib.RunCommand(cmd, print_cmd=False, redirect_stdout=True,
+                                  combine_stdout_stderr=True)
 
     # If requested, remove the eclass.
     if missing:
@@ -873,14 +873,14 @@ class CopyUpstreamTest(CpuTestBase):
     ebuild_path = os.path.join(current_dir, ebuild)
 
     # Add test-specific mocks/stubs
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
     # Prepare test replay script.
     run_result = RunCommandResult(returncode=0, output='')
-    cros_lib.RunCommand(['ebuild', ebuild_path, 'manifest'],
-                        error_ok=True, print_cmd=False,
-                        redirect_stdout=True, combine_stdout_stderr=True
-                        ).AndReturn(run_result)
+    cros_build_lib.RunCommand(['ebuild', ebuild_path, 'manifest'],
+                              error_ok=True, print_cmd=False,
+                              redirect_stdout=True, combine_stdout_stderr=True
+                              ).AndReturn(run_result)
     self.mox.ReplayAll()
 
     return (upstream_dir, current_dir)
@@ -2454,7 +2454,7 @@ class UpgradePackageTest(CpuTestBase):
     pinfo.upgraded_stable = not unstable_ok
 
     # Add test-specific mocks/stubs
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
     # Replay script
     mocked_upgrader._FindUpstreamCPV(pinfo.package).AndReturn(stable_up)
@@ -2488,9 +2488,10 @@ class UpgradePackageTest(CpuTestBase):
           cmd = ['egencache', '--update', '--repo=portage-stable',
                  pinfo.package]
           run_result = RunCommandResult(returncode=0, output=None)
-          cros_lib.RunCommand(cmd, print_cmd=False,
-                              redirect_stdout=True,
-                              combine_stdout_stderr=True).AndReturn(run_result)
+          cros_build_lib.RunCommand(cmd, print_cmd=False,
+                                    redirect_stdout=True,
+                                    combine_stdout_stderr=True).AndReturn(
+                                        run_result)
           mocked_upgrader._RunGit(mocked_upgrader._stable_repo,
                                   ['add', cache_files])
     self.mox.ReplayAll()
@@ -2696,7 +2697,7 @@ class VerifyPackageTest(CpuTestBase):
                                          )
 
     # Add test-specific mocks/stubs
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
     # Replay script
     envvars = cpu.Upgrader._GenPortageEnvvars(mocked_upgrader,
@@ -2707,11 +2708,11 @@ class VerifyPackageTest(CpuTestBase):
     mocked_upgrader._GetBoardCmd('equery').AndReturn('equery')
     run_result = RunCommandResult(returncode=0,
                                   output=ebuild_path)
-    cros_lib.RunCommand(['equery', 'which', '--include-masked', cpv],
-                        error_ok=True,
-                        extra_env=envvars, print_cmd=False,
-                        redirect_stdout=True, combine_stdout_stderr=True,
-                        ).AndReturn(run_result)
+    cros_build_lib.RunCommand(['equery', 'which', '--include-masked', cpv],
+                              error_ok=True,
+                              extra_env=envvars, print_cmd=False,
+                              redirect_stdout=True, combine_stdout_stderr=True,
+                              ).AndReturn(run_result)
     split_ebuild = cpu.Upgrader._SplitEBuildPath(mocked_upgrader, ebuild_path)
     mocked_upgrader._SplitEBuildPath(ebuild_path).AndReturn(split_ebuild)
     self.mox.ReplayAll()
@@ -2754,7 +2755,7 @@ class VerifyPackageTest(CpuTestBase):
                                          )
 
     # Add test-specific mocks/stubs
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
     # Replay script
     mocked_upgrader._GenPortageEnvvars(mocked_upgrader._curr_arch,
@@ -2762,11 +2763,11 @@ class VerifyPackageTest(CpuTestBase):
     mocked_upgrader._GetBoardCmd('equery').AndReturn('equery')
     run_result = RunCommandResult(returncode=0,
                                   output=output)
-    cros_lib.RunCommand(['equery', '--no-pipe', 'list', '-op', cpv],
-                        error_ok=True,
-                        extra_env='envvars', print_cmd=False,
-                        redirect_stdout=True, combine_stdout_stderr=True,
-                        ).AndReturn(run_result)
+    cros_build_lib.RunCommand(['equery', '--no-pipe', 'list', '-op', cpv],
+                              error_ok=True,
+                              extra_env='envvars', print_cmd=False,
+                              redirect_stdout=True, combine_stdout_stderr=True,
+                              ).AndReturn(run_result)
     self.mox.ReplayAll()
 
     # Verify

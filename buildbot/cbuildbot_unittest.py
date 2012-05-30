@@ -20,7 +20,7 @@ sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config as config
 from chromite.buildbot import cbuildbot_stages as stages
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.scripts import cbuildbot
@@ -81,21 +81,21 @@ class RunBuildStagesTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
     if 'CHROMEOS_OFFICIAL' in os.environ:
       del os.environ['CHROMEOS_OFFICIAL']
 
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
-    api = self.mox.CreateMock(cros_lib.CommandResult)
+    api = self.mox.CreateMock(cros_build_lib.CommandResult)
     api.returncode = 0
     api.output = cbuildbot._REEXEC_API_VERSION
-    cros_lib.RunCommand(
+    cros_build_lib.RunCommand(
         [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
         cwd=self.buildroot, redirect_stderr=True, redirect_stdout=True,
         error_code_ok=True).AndReturn(api)
 
-    result = self.mox.CreateMock(cros_lib.CommandResult)
+    result = self.mox.CreateMock(cros_build_lib.CommandResult)
     result.returncode = 0
-    cros_lib.RunCommand(mox.IgnoreArg(), cwd=self.buildroot,
-                        error_code_ok=True,
-                        kill_timeout=mox.IgnoreArg()).AndReturn(result)
+    cros_build_lib.RunCommand(mox.IgnoreArg(), cwd=self.buildroot,
+                              error_code_ok=True,
+                              kill_timeout=mox.IgnoreArg()).AndReturn(result)
     self.mox.ReplayAll()
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
@@ -119,21 +119,21 @@ class RunBuildStagesTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
     if 'CHROMEOS_OFFICIAL' in os.environ:
       del os.environ['CHROMEOS_OFFICIAL']
 
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
-    api = self.mox.CreateMock(cros_lib.CommandResult)
+    api = self.mox.CreateMock(cros_build_lib.CommandResult)
     api.returncode = 0
     api.output = cbuildbot._REEXEC_API_VERSION
-    cros_lib.RunCommand(
+    cros_build_lib.RunCommand(
         [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
         cwd=self.buildroot, redirect_stderr=True, redirect_stdout=True,
         error_code_ok=True).AndReturn(api)
 
-    result = self.mox.CreateMock(cros_lib.CommandResult)
+    result = self.mox.CreateMock(cros_build_lib.CommandResult)
     result.returncode = 0
-    cros_lib.RunCommand(mox.IgnoreArg(), cwd=self.buildroot,
-                        error_code_ok=True,
-                        kill_timeout=mox.IgnoreArg()).AndReturn(result)
+    cros_build_lib.RunCommand(mox.IgnoreArg(), cwd=self.buildroot,
+                              error_code_ok=True,
+                              kill_timeout=mox.IgnoreArg()).AndReturn(result)
 
     self.mox.ReplayAll()
 
@@ -200,11 +200,11 @@ class InterfaceTest(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     self.parser = cbuildbot._CreateParser()
-    self.mox.StubOutWithMock(cros_lib, 'Die')
+    self.mox.StubOutWithMock(cros_build_lib, 'Die')
 
   # Let this test run for a max of 3s; if it takes longer, then it's
   # likely that there is an exec loop in the pathways.
-  @cros_lib.TimeoutDecorator(3)
+  @cros_build_lib.TimeoutDecorator(3)
   def testDepotTools(self):
     """Test that the entry point used by depot_tools works."""
     path = os.path.join(constants.SOURCE_ROOT, 'chromite', 'buildbot',
@@ -212,16 +212,16 @@ class InterfaceTest(mox.MoxTestBase):
 
     # Verify the tests below actually are testing correct behaviour;
     # specifically that it doesn't always just return 0.
-    self.assertRaises(cros_lib.RunCommandError,
-                      cros_lib.RunCommandCaptureOutput,
+    self.assertRaises(cros_build_lib.RunCommandError,
+                      cros_build_lib.RunCommandCaptureOutput,
                       ['cbuildbot', '--monkeys'], cwd=constants.SOURCE_ROOT)
 
     # Validate depot_tools lookup.
-    cros_lib.RunCommandCaptureOutput(
+    cros_build_lib.RunCommandCaptureOutput(
         ['cbuildbot', '--help'], cwd=constants.SOURCE_ROOT)
 
     # Validate buildbot invocation pathway.
-    cros_lib.RunCommandCaptureOutput(
+    cros_build_lib.RunCommandCaptureOutput(
         [path, '--help'], cwd=constants.SOURCE_ROOT)
 
   def testDebugBuildBotSetByDefault(self):
@@ -250,7 +250,7 @@ class InterfaceTest(mox.MoxTestBase):
     """Test that --buildbot errors out with patches."""
     args = ['-r', self._BUILD_ROOT, '--buildbot', '-g', '1234',
             self._X86_PREFLIGHT]
-    cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
     self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
 
@@ -258,7 +258,7 @@ class InterfaceTest(mox.MoxTestBase):
     """Test that --buildbot and --remote errors out with patches."""
     args = ['-r', self._BUILD_ROOT, '--buildbot', '--remote', '-g', '1234',
             self._X86_PREFLIGHT]
-    cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
     self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
 
@@ -277,10 +277,10 @@ class InterfaceTest(mox.MoxTestBase):
   def testValidateClobberUserDeclines_1(self):
     """Test case where user declines in prompt."""
     self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(cros_lib, 'GetInput')
+    self.mox.StubOutWithMock(cros_build_lib, 'GetInput')
 
     os.path.exists(self._BUILD_ROOT).AndReturn(True)
-    cros_lib.GetInput(mox.IgnoreArg()).AndReturn('No')
+    cros_build_lib.GetInput(mox.IgnoreArg()).AndReturn('No')
 
     self.mox.ReplayAll()
     self.assertFalse(commands.ValidateClobber(self._BUILD_ROOT))
@@ -289,11 +289,11 @@ class InterfaceTest(mox.MoxTestBase):
   def testValidateClobberUserDeclines_2(self):
     """Test case where user does not enter the full 'yes' pattern."""
     self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(cros_lib, 'GetInput')
+    self.mox.StubOutWithMock(cros_build_lib, 'GetInput')
 
     os.path.exists(self._BUILD_ROOT).AndReturn(True)
-    cros_lib.GetInput(mox.IgnoreArg()).AndReturn('y')
-    cros_lib.GetInput(mox.IgnoreArg()).AndReturn('No')
+    cros_build_lib.GetInput(mox.IgnoreArg()).AndReturn('y')
+    cros_build_lib.GetInput(mox.IgnoreArg()).AndReturn('No')
 
     self.mox.ReplayAll()
     self.assertFalse(commands.ValidateClobber(self._BUILD_ROOT))
@@ -303,7 +303,7 @@ class InterfaceTest(mox.MoxTestBase):
     """User should not be clobbering our own source."""
     cwd = os.path.dirname(os.path.realpath(__file__))
     buildroot = os.path.dirname(cwd)
-    cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
     self.assertRaises(Exception, commands.ValidateClobber, buildroot)
     self.mox.VerifyAll()
@@ -315,7 +315,7 @@ class InterfaceTest(mox.MoxTestBase):
         '--chrome_root=.',
         '--chrome_rev=%s' % constants.CHROME_REV_TOT,
         self._X86_PREFLIGHT]
-    cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
     self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
     self.mox.VerifyAll()
@@ -327,7 +327,7 @@ class InterfaceTest(mox.MoxTestBase):
         '--chrome_rev=%s' % constants.CHROME_REV_TOT,
         '--chrome_root=.',
         self._X86_PREFLIGHT]
-    cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
     self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
     self.mox.VerifyAll()
@@ -338,7 +338,7 @@ class InterfaceTest(mox.MoxTestBase):
         '--buildroot=/tmp',
         '--chrome_rev=%s' % constants.CHROME_REV_LOCAL,
         self._X86_PREFLIGHT]
-    cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
     self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
     self.mox.VerifyAll()
@@ -416,14 +416,14 @@ class FullInterfaceTest(cros_test_lib.TempDirMixin, unittest.TestCase):
     # specific test case.  We can do this because we don't run VerifyAll() at
     # the end of every test.
     self.mox.StubOutWithMock(optparse.OptionParser, 'error')
-    self.mox.StubOutWithMock(cros_lib, 'IsInsideChroot')
+    self.mox.StubOutWithMock(cros_build_lib, 'IsInsideChroot')
     self.mox.StubOutWithMock(cbuildbot, '_CreateParser')
     self.mox.StubOutWithMock(sys, 'exit')
-    self.mox.StubOutWithMock(cros_lib, 'GetInput')
+    self.mox.StubOutWithMock(cros_build_lib, 'GetInput')
     self.mox.StubOutWithMock(cbuildbot, '_RunBuildStagesWrapper')
 
     parser.error(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
-    cros_lib.IsInsideChroot().InAnyOrder().AndReturn(False)
+    cros_build_lib.IsInsideChroot().InAnyOrder().AndReturn(False)
     cbuildbot._CreateParser().InAnyOrder().AndReturn(parser)
     sys.exit(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
     cbuildbot._RunBuildStagesWrapper(
@@ -486,7 +486,7 @@ class FullInterfaceTest(cros_test_lib.TempDirMixin, unittest.TestCase):
 
   def testInferBuildRootPromptNo(self):
     """Test that a 'no' answer on the prompt halts execution."""
-    cros_lib.GetInput(mox.IgnoreArg()).InAnyOrder().AndReturn('no')
+    cros_build_lib.GetInput(mox.IgnoreArg()).InAnyOrder().AndReturn('no')
 
     self.mox.ReplayAll()
     self.assertRaises(TestExitedException, self.assertMain,
@@ -494,9 +494,9 @@ class FullInterfaceTest(cros_test_lib.TempDirMixin, unittest.TestCase):
 
   def testInferBuildRootExists(self):
     """Test that we don't prompt the user if buildroot already exists."""
-    cros_lib.RunCommandCaptureOutput(['touch', self.external_marker])
+    cros_build_lib.RunCommandCaptureOutput(['touch', self.external_marker])
     os.utime(self.external_marker, None)
-    (cros_lib.GetInput(mox.IgnoreArg()).InAnyOrder()
+    (cros_build_lib.GetInput(mox.IgnoreArg()).InAnyOrder()
         .AndRaise(TestFailedException()))
 
     self.mox.ReplayAll()
@@ -504,12 +504,12 @@ class FullInterfaceTest(cros_test_lib.TempDirMixin, unittest.TestCase):
 
   def testBuildbotDiesInChroot(self):
     """Buildbot should quit if run inside a chroot."""
-    # Need to do this since a cros_lib.IsInsideChroot() call is already queued
-    # up in setup() and we can't Reset() an individual mock.
+    # Need to do this since a cros_build_lib.IsInsideChroot() call is already
+    # queued up in setup() and we can't Reset() an individual mock.
     # pylint: disable=E1102
     new_is_inside_chroot = self.mox.CreateMockAnything()
     new_is_inside_chroot().InAnyOrder().AndReturn(True)
-    cros_lib.IsInsideChroot = new_is_inside_chroot
+    cros_build_lib.IsInsideChroot = new_is_inside_chroot
     self.mox.ReplayAll()
     self.assertRaises(TestExitedException, self.assertMain,
                       ['--local', '-r', self.buildroot, 'x86-generic-paladin'])

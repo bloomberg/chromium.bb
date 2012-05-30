@@ -15,7 +15,7 @@ import shutil
 import tempfile
 
 from chromite.buildbot import configure_repo
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import rewrite_git_alternates
 
@@ -45,7 +45,7 @@ def InARepoRepository(directory, require_project=False):
   else:
     cmd = ['repo']
 
-  output = cros_lib.RunCommand(
+  output = cros_build_lib.RunCommand(
       cmd, error_code_ok=True, redirect_stdout=True, redirect_stderr=True,
       cwd=directory, print_cmd=False)
   return output.returncode == 0
@@ -64,10 +64,8 @@ def IsARepoRoot(directory):
 def IsInternalRepoCheckout(root):
   """Returns whether root houses an internal 'repo' checkout."""
   manifest_dir = os.path.join(root, '.repo', 'manifests')
-  manifest_url = cros_lib.RunCommand(['git', 'config', 'remote.origin.url'],
-                                     redirect_stdout=True,
-                                     print_cmd=False,
-                                     cwd=manifest_dir).output.strip()
+  manifest_url = cros_build_lib.RunGitCommand(
+      manifest_dir, ['config', 'remote.origin.url']).output.strip()
   return (os.path.splitext(os.path.basename(manifest_url))[0]
           == os.path.splitext(os.path.basename(constants.MANIFEST_INT_URL))[0])
 
@@ -85,7 +83,7 @@ def CloneGitRepo(working_dir, repo_url, reference=None):
   cmd = ['git', 'clone', repo_url, working_dir]
   if reference:
     cmd += ['--reference', reference]
-  cros_lib.RunCommandCaptureOutput(cmd, cwd=working_dir)
+  cros_build_lib.RunCommandCaptureOutput(cmd, cwd=working_dir)
 
 
 def GetTrybotMarkerPath(buildroot):
@@ -111,7 +109,7 @@ def ClearBuildRoot(buildroot, preserve_paths=()):
     cmd.extend(ignores)
 
     cmd += ['-exec', 'rm', '-rf', '{}', '+']
-    cros_lib.SudoRunCommand(cmd)
+    cros_build_lib.SudoRunCommand(cmd)
   else:
     os.makedirs(buildroot)
   if trybot_root:
@@ -194,7 +192,7 @@ class RepoRepository(object):
     if self.branch:
       init_cmd.extend(['--manifest-branch', self.branch])
 
-    cros_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
+    cros_build_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
     if local_manifest and local_manifest != self.DEFAULT_MANIFEST:
       self._SwitchToLocalManifest(local_manifest)
 
@@ -231,7 +229,7 @@ class RepoRepository(object):
     if post_sync:
       chroot_path = os.path.join(self._referenced_repo, '.repo', 'chroot',
                                  'external')
-      chroot_path = cros_lib.ReinterpretPathForChroot(chroot_path)
+      chroot_path = cros_build_lib.ReinterpretPathForChroot(chroot_path)
       rewrite_git_alternates.RebuildRepoCheckout(
           self.directory, self._referenced_repo, chroot_path)
 
@@ -241,8 +239,9 @@ class RepoRepository(object):
     # that it was invoked w/out the reference arg.  Note this must be
     # an absolute path to the source repo- enter_chroot uses that to know
     # what to bind mount into the chroot.
-    cros_lib.RunCommand(['git', 'config', '--file', self._ManifestConfig,
-                         'repo.reference', self._referenced_repo])
+    cros_build_lib.RunCommand(
+        ['git', 'config', '--file', self._ManifestConfig, 'repo.reference',
+         self._referenced_repo])
 
   def Sync(self, local_manifest=None, jobs=None, cleanup=True):
     """Sync/update the source.  Changes manifest if specified.
@@ -262,7 +261,7 @@ class RepoRepository(object):
       # selfupdate prior to sync'ing.  Repo's first sync is  the manifest.
       # if we're deploying a new manifest that uses new repo functionality,
       # we have to repo up to date else it would fail.
-      cros_lib.RunCommand(['repo', 'selfupdate'], cwd=self.directory)
+      cros_build_lib.RunCommand(['repo', 'selfupdate'], cwd=self.directory)
 
       if cleanup:
         configure_repo.FixBrokenExistingRepos(self.directory)
@@ -270,7 +269,7 @@ class RepoRepository(object):
       cmd = ['repo', '--time', 'sync']
       if jobs:
         cmd += ['--jobs', str(jobs)]
-      cros_lib.RunCommandWithRetries(2, cmd, cwd=self.directory)
+      cros_build_lib.RunCommandWithRetries(2, cmd, cwd=self.directory)
 
       # Setup gerrit remote for any new repositories.
       configure_repo.SetupGerritRemote(self.directory)
@@ -280,7 +279,7 @@ class RepoRepository(object):
       # same cleanup- we however kick it erring on the side of caution.
       self._EnsureMirroring(True)
 
-    except cros_lib.RunCommandError, e:
+    except cros_build_lib.RunCommandError, e:
       err_msg = 'Failed to sync sources %s' % e.message
       logging.error(err_msg)
       raise SrcCheckOutException(err_msg)
@@ -296,8 +295,8 @@ class RepoRepository(object):
       output_file: Self explanatory.
     """
     DisableInteractiveRepoManifestCommand()
-    cros_lib.RunCommand(['repo', 'manifest', '-r', '-o', output_file],
-                        cwd=self.directory, print_cmd=True)
+    cros_build_lib.RunCommand(['repo', 'manifest', '-r', '-o', output_file],
+                              cwd=self.directory, print_cmd=True)
 
   def IsManifestDifferent(self, other_manifest):
     """Checks whether this manifest is different than another.

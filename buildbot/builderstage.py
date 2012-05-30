@@ -13,7 +13,7 @@ import traceback
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import portage_utilities
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 
 class NonBacktraceBuildException(Exception):
   pass
@@ -113,7 +113,7 @@ class BuilderStage(object):
       portageq = 'portageq-%s' % board
     else:
       portageq = 'portageq'
-    binhost = cros_lib.RunCommand(
+    binhost = cros_build_lib.RunCommand(
         [portageq, 'envvar', envvar], cwd=cwd, redirect_stdout=True,
         enter_chroot=True, error_ok=True)
     return binhost.output.rstrip('\n')

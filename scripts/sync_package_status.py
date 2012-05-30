@@ -9,7 +9,7 @@ import optparse
 import os
 import sys
 
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import gdata_lib
 from chromite.lib import operation
 from chromite.lib import upgrade_table as utable
@@ -475,7 +475,7 @@ def _CheckOptions(options):
     oper.Notice('Without --owner or --team filters this will run for all'
                 ' packages in the spreadsheet (same as --team=all).')
     prompt = 'Are you sure you want to run for all packages?'
-    if 'no' == cros_lib.YesNoPrompt(default='no', prompt=prompt):
+    if 'no' == cros_build_lib.YesNoPrompt(default='no', prompt=prompt):
       sys.exit(0)
 
   if options.team and options.team == 'all':
@@ -534,7 +534,7 @@ def main(argv):
   if options.email and options.cred_file:
     prompt = ('Do you want to save credentials for next time to %r?' %
               options.cred_file)
-    if 'yes' == cros_lib.YesNoPrompt(default='no', prompt=prompt):
+    if 'yes' == cros_build_lib.YesNoPrompt(default='no', prompt=prompt):
       creds.StoreCreds(options.cred_file)
       oper.Notice('Be sure to save the creds file to the same location'
                   ' outside your chroot so it will also be used with'

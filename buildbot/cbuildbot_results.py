@@ -8,7 +8,7 @@ import datetime
 import math
 import os
 
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 
 
 def _GetCheckpointFile(buildroot):
@@ -26,7 +26,8 @@ def LoadCheckpoint(buildroot):
   """Restore completed stage info from checkpoint file."""
   completed_stages_file = _GetCheckpointFile(buildroot)
   if not os.path.exists(completed_stages_file):
-    cros_lib.Warning('Checkpoint file not found in buildroot %s' % buildroot)
+    cros_build_lib.Warning('Checkpoint file not found in buildroot %s'
+                           % buildroot)
     return
 
   with open(completed_stages_file, 'r') as load_file:
@@ -78,11 +79,11 @@ class _Results(object):
 
   def WasStageSuccessful(self, name):
     """Return true stage passed."""
-    cros_lib.Info('Checking for %s' % name)
+    cros_build_lib.Info('Checking for %s' % name)
     for entry in self._results_log:
       entry, result, _, _ = entry
       if entry == name:
-        cros_lib.Info('Found %s' % result)
+        cros_build_lib.Info('Found %s' % result)
         return result == self.SUCCESS
 
     return False
@@ -147,7 +148,8 @@ class _Results(object):
     for line in out:
       record = line.strip().split(self.SPLIT_TOKEN)
       if len(record) != 3:
-        cros_lib.Warning('State file does not match expected format, ignoring.')
+        cros_build_lib.Warning(
+            'State file does not match expected format, ignoring.')
         # Wipe any partial state.
         self._previous = {}
         break
@@ -187,7 +189,7 @@ class _Results(object):
         out.write('%s FAILED BUT FORGIVEN %s (%s)\n' %
                    (edge, name, timestr))
       else:
-        if isinstance(result, cros_lib.RunCommandError):
+        if isinstance(result, cros_build_lib.RunCommandError):
           # If there was a RunCommand error, give just the command that
           # failed, not it's full argument list, since those are usually
           # too long.

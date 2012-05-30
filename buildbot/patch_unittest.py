@@ -19,7 +19,7 @@ import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.buildbot import patch as cros_patch
@@ -132,7 +132,7 @@ I am the first commit.
     # fluke of being invoked from w/in a git repo.
     if cwd is None:
       cwd = self.default_cwd
-    return cros_lib.RunCommandCaptureOutput(
+    return cros_build_lib.RunCommandCaptureOutput(
         cmd, cwd=cwd, print_cmd=False).output.strip()
 
   def _GetSha1(self, cwd, refspec):
@@ -466,10 +466,10 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
 
     self.patches = ['my/project:mybranch']
 
-    self.mox.StubOutWithMock(cros_lib, 'GetProjectDir')
-    self.mox.StubOutWithMock(cros_lib, 'GetCurrentBranch')
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    self.manifest = self.mox.CreateMock(cros_lib.ManifestCheckout)
+    self.mox.StubOutWithMock(cros_build_lib, 'GetProjectDir')
+    self.mox.StubOutWithMock(cros_build_lib, 'GetCurrentBranch')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    self.manifest = self.mox.CreateMock(cros_build_lib.ManifestCheckout)
 
   def VerifyPatchInfo(self, patch_info, project, branch, tracking_branch):
     """Check the returned GitRepoPatchInfo against golden values."""
@@ -479,13 +479,13 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
 
   def testBranchSpecifiedSuccessRun(self):
     """Test success with branch specified by user."""
-    output_obj = self.mox.CreateMock(cros_lib.CommandResult)
+    output_obj = self.mox.CreateMock(cros_build_lib.CommandResult)
     output_obj.output= '12345'
     self.manifest.GetProjectPath('my/project', True).AndReturn('mydir')
     self.manifest.GetProjectsLocalRevision('my/project').AndReturn('m/kernel')
-    cros_lib.RunCommand(mox.In('m/kernel..mybranch'),
-                        redirect_stdout=mox.IgnoreArg(),
-                        cwd='mydir').AndReturn(output_obj)
+    cros_build_lib.RunCommand(mox.In('m/kernel..mybranch'),
+                              redirect_stdout=mox.IgnoreArg(),
+                              cwd='mydir').AndReturn(output_obj)
     self.mox.ReplayAll()
 
     patch_info = cros_patch.PrepareLocalPatches(self.manifest, self.patches)
@@ -494,13 +494,13 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
 
   def testBranchSpecifiedNoChanges(self):
     """Test when no changes on the branch specified by user."""
-    output_obj = self.mox.CreateMock(cros_lib.CommandResult)
+    output_obj = self.mox.CreateMock(cros_build_lib.CommandResult)
     output_obj.output=''
     self.manifest.GetProjectPath('my/project', True).AndReturn('mydir')
     self.manifest.GetProjectsLocalRevision('my/project').AndReturn('m/master')
-    cros_lib.RunCommand(mox.In('m/master..mybranch'),
-                        redirect_stdout=mox.IgnoreArg(),
-                        cwd='mydir').AndReturn(output_obj)
+    cros_build_lib.RunCommand(mox.In('m/master..mybranch'),
+                              redirect_stdout=mox.IgnoreArg(),
+                              cwd='mydir').AndReturn(output_obj)
     self.mox.ReplayAll()
 
     self.assertRaises(

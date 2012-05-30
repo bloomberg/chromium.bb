@@ -10,7 +10,7 @@ import os
 import signal
 import time
 
-from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import signals
 from chromite.lib import sudo
@@ -144,16 +144,16 @@ class Cgroup(object):
     if not _FileContains('/proc/mounts', [cls.MOUNT_ROOT]):
       # Not all distros mount cgroup_root to sysfs.
       osutils.SafeMakedirs(cls.MOUNT_ROOT, sudo=True)
-      cros_lib.SudoRunCommand(['mount', '-t', 'tmpfs', 'cgroup_root',
-                              cls.MOUNT_ROOT], print_cmd=False)
+      cros_build_lib.SudoRunCommand(['mount', '-t', 'tmpfs', 'cgroup_root',
+                                    cls.MOUNT_ROOT], print_cmd=False)
 
     # Mount the root hierarchy.
     if not _FileContains('/proc/mounts', [cls.CGROUP_ROOT]):
       osutils.SafeMakedirs(cls.CGROUP_ROOT, sudo=True)
       opts = ','.join(cls.NEEDED_SUBSYSTEMS)
       # This hierarchy is exclusive to cros, so it probably doesn't exist.
-      cros_lib.SudoRunCommand(['mount', '-t', 'cgroup', '-o', opts,
-                              'cros', cls.CGROUP_ROOT], print_cmd=False)
+      cros_build_lib.SudoRunCommand(['mount', '-t', 'cgroup', '-o', opts,
+                                     'cros', cls.CGROUP_ROOT], print_cmd=False)
     cls._SUPPORTS_AUTOINHERIT = os.path.exists(
         os.path.join(cls.CGROUP_ROOT, 'cgroup.clone_children'))
     return True
@@ -371,7 +371,7 @@ class Cgroup(object):
             if val:
               continue
           self._SudoSet(name, self.parent.GetValue(name, ''))
-      except (EnvironmentError, cros_lib.RunCommandError):
+      except (EnvironmentError, cros_build_lib.RunCommandError):
         # Do not leave half created cgroups hanging around-
         # it makes compatibility a pain since we have to rewrite
         # the cgroup each time.  If instantiation fails, we know
@@ -390,7 +390,7 @@ class Cgroup(object):
     """Set a cgroup file in this namespace to a specific value"""
     try:
       return sudo.SetFileContents(self._LimitName(key, True), value)
-    except cros_lib.RunCommandError, e:
+    except cros_build_lib.RunCommandError, e:
       raise _GroupWasRemoved(self.namespace, e)
 
   def RemoveThisGroup(self, strict=False):
@@ -438,7 +438,7 @@ class Cgroup(object):
                          "strict was %r, sudo_strict was %r"
                          % (path, strict, sudo_strict))
 
-    result = cros_lib.SudoRunCommand(
+    result = cros_build_lib.SudoRunCommand(
         ['find', path, '-depth', '-type', 'd', '-exec', 'rmdir', '{}', '+'],
         redirect_stderr=True, error_ok=not strict,
         print_cmd=False, strict=sudo_strict)
@@ -553,7 +553,7 @@ class Cgroup(object):
     my_pids = set(map(str, self._GetCurrentProcessThreads()))
 
     def _SignalPids(pids, signum):
-      cros_lib.SudoRunCommand(
+      cros_build_lib.SudoRunCommand(
           ['kill', '-%i' % signum] + sorted(pids),
           print_cmd=False, error_code_ok=True, redirect_stdout=True,
           combine_stdout_stderr=True)
@@ -709,7 +709,7 @@ def SimpleContainChildren(process_name, nesting=True):
   if node is not None:
     name = '%s:%i' % (process_name, os.getpid())
     return node.ContainChildren(name)
-  return cros_lib.NoOpContextManager()
+  return cros_build_lib.NoOpContextManager()
 
 # Note that it's fairly important that any module level defined cgroups like
 # this need to be autoclean=False.  If autoclean=True, they can trigger
