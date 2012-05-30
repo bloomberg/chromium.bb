@@ -104,12 +104,14 @@ void PasswordChangeProcessor::Observe(
           if (sync_api::kInvalidId == sync_id) {
             error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Unable to create or retrieve password node");
+            LOG(ERROR) << "Invalid sync id.";
             return;
           }
           if (sync_node.InitByIdLookup(sync_id) !=
                   sync_api::BaseNode::INIT_OK) {
             error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-                "Unable to create or retrieve password node");
+                "Password node lookup failed.");
+            LOG(ERROR) << "Password node lookup failed.";
             return;
           }
           PasswordModelAssociator::WriteToSyncNode(change->form(), &sync_node);
@@ -121,13 +123,15 @@ void PasswordChangeProcessor::Observe(
         int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
         if (sync_api::kInvalidId == sync_id) {
           error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-              "Unexpected notification for: ");
+              "Invalid sync id");
+          LOG(ERROR) << "Invalid sync id.";
           return;
         } else {
           if (sync_node.InitByIdLookup(sync_id) !=
                   sync_api::BaseNode::INIT_OK) {
             error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Password node lookup failed.");
+            LOG(ERROR) << "Password node lookup failed.";
             return;
           }
         }

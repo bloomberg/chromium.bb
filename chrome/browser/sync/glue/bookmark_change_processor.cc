@@ -220,12 +220,15 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
                                                  sync_api::kInvalidId) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Bookmark id not found in model associator on BookmarkNodeChanged");
+      LOG(ERROR) << "Bad id.";
     } else if (!sync_node.GetEntry()->good()) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Could not InitByIdLookup on BookmarkNodeChanged, good() failed");
+      LOG(ERROR) << "Bad entry.";
     } else if (sync_node.GetEntry()->Get(syncable::IS_DEL)) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Could not InitByIdLookup on BookmarkNodeChanged, is_del true");
+      LOG(ERROR) << "Deleted entry.";
     } else {
       Cryptographer* crypto = trans.GetCryptographer();
       syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
@@ -239,21 +242,25 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
             "Could not InitByIdLookup on BookmarkNodeChanged, "
             " Cryptographer thinks bookmarks not encrypted, and CanDecrypt"
             " failed.");
+        LOG(ERROR) << "Case 1.";
       } else if (agreement && can_decrypt) {
         error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
             "Could not InitByIdLookup on BookmarkNodeChanged, "
             " Cryptographer thinks bookmarks are encrypted, and CanDecrypt"
             " succeeded (?!), but DecryptIfNecessary failed.");
+        LOG(ERROR) << "Case 2.";
       } else if (agreement) {
         error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
             "Could not InitByIdLookup on BookmarkNodeChanged, "
             " Cryptographer thinks bookmarks are encrypted, but CanDecrypt"
             " failed.");
+        LOG(ERROR) << "Case 3.";
       } else {
         error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
             "Could not InitByIdLookup on BookmarkNodeChanged, "
             " Cryptographer thinks bookmarks not encrypted, but CanDecrypt"
             " succeeded (super weird, btw)");
+        LOG(ERROR) << "Case 4.";
       }
     }
     return;

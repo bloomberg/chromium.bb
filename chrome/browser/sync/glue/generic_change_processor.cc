@@ -135,44 +135,53 @@ SyncError LogLookupFailure(sync_api::BaseNode::InitByLookupResult lookup_result,
                            const std::string& error_prefix,
                            syncable::ModelType type,
                            DataTypeErrorHandler* error_handler) {
-  SyncError error;
   switch (lookup_result) {
-    case sync_api::BaseNode::INIT_FAILED_ENTRY_NOT_GOOD:
+    case sync_api::BaseNode::INIT_FAILED_ENTRY_NOT_GOOD: {
+      SyncError error;
       error.Reset(from_here,
                   error_prefix +
                       "could not find entry matching the lookup criteria.",
                   type);
       error_handler->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                         error.message());
+      NOTREACHED();
       return error;
-
-    case sync_api::BaseNode::INIT_FAILED_ENTRY_IS_DEL:
+    }
+    case sync_api::BaseNode::INIT_FAILED_ENTRY_IS_DEL: {
+      SyncError error;
       error.Reset(from_here, error_prefix + "entry is already deleted.", type);
       error_handler->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                         error.message());
+      NOTREACHED();
       return error;
-
-    case sync_api::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY:
+    }
+    case sync_api::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY: {
+      SyncError error;
       error.Reset(from_here, error_prefix + "unable to decrypt", type);
       error_handler->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                         error.message());
+      NOTREACHED();
       return error;
-
-    case sync_api::BaseNode::INIT_FAILED_PRECONDITION:
+    }
+    case sync_api::BaseNode::INIT_FAILED_PRECONDITION: {
+      SyncError error;
       error.Reset(from_here,
                   error_prefix + "a precondition was not met for calling init.",
                   type);
       error_handler->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                         error.message());
-      return error;
-
-    default:
-      // Should have listed all the possible error cases above.
       NOTREACHED();
+      return error;
+    }
+    default: {
+      SyncError error;
+      // Should have listed all the possible error cases above.
       error.Reset(from_here, error_prefix + "unknown error", type);
       error_handler->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                         error.message());
+      NOTREACHED();
       return error;
+    }
   }
 }
 
@@ -191,6 +200,7 @@ SyncError AttemptDelete(const SyncChange& change,
           type);
       error_handler->OnSingleDatatypeUnrecoverableError(error.location(),
                                                         error.message());
+      NOTREACHED();
       return error;
     }
 
@@ -246,12 +256,12 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
       if (root_node.InitByTagLookup(
               syncable::ModelTypeToRootTag(change.sync_data().GetDataType())) !=
                   sync_api::BaseNode::INIT_OK) {
-        NOTREACHED();
         SyncError error(FROM_HERE,
                         "Failed to look up root node for type " + type_str,
                         type);
         error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                             error.message());
+        NOTREACHED();
         return error;
       }
       sync_api::WriteNode::InitUniqueByCreationResult result =
@@ -259,37 +269,50 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
                                           root_node,
                                           change.sync_data().GetTag());
       if (result != sync_api::WriteNode::INIT_SUCCESS) {
-        NOTREACHED();
         std::string error_prefix = "Failed to create " + type_str + " node: ";
-        SyncError error;
         switch (result) {
-          case sync_api::WriteNode::INIT_FAILED_EMPTY_TAG:
+          case sync_api::WriteNode::INIT_FAILED_EMPTY_TAG: {
+            SyncError error;
             error.Reset(FROM_HERE, error_prefix + "empty tag", type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
+            NOTREACHED();
             return error;
-          case sync_api::WriteNode::INIT_FAILED_ENTRY_ALREADY_EXISTS:
+          }
+          case sync_api::WriteNode::INIT_FAILED_ENTRY_ALREADY_EXISTS: {
+            SyncError error;
             error.Reset(FROM_HERE, error_prefix + "entry already exists", type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
+            NOTREACHED();
             return error;
-          case sync_api::WriteNode::INIT_FAILED_COULD_NOT_CREATE_ENTRY:
+          }
+          case sync_api::WriteNode::INIT_FAILED_COULD_NOT_CREATE_ENTRY: {
+            SyncError error;
             error.Reset(FROM_HERE, error_prefix + "failed to create entry",
                         type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
+            NOTREACHED();
             return error;
-          case sync_api::WriteNode::INIT_FAILED_SET_PREDECESSOR:
+          }
+          case sync_api::WriteNode::INIT_FAILED_SET_PREDECESSOR: {
+            SyncError error;
             error.Reset(FROM_HERE, error_prefix + "failed to set predecessor",
                         type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
+            NOTREACHED();
             return error;
-          default:
+          }
+          default: {
+            SyncError error;
             error.Reset(FROM_HERE, error_prefix + "unknown error", type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
+            NOTREACHED();
             return error;
+          }
         }
       }
       sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
@@ -299,29 +322,34 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
       sync_api::BaseNode::InitByLookupResult result =
           sync_node.InitByClientTagLookup(change.sync_data().GetDataType(),
                                           change.sync_data().GetTag());
-      SyncError error;
       if (result != sync_api::BaseNode::INIT_OK) {
         if (result == sync_api::BaseNode::INIT_FAILED_PRECONDITION) {
+          SyncError error;
           error.Reset(FROM_HERE,
                       "Failed to load entry w/empty tag for " + type_str + ".",
                       type);
-          NOTREACHED();
           error_handler()->OnSingleDatatypeUnrecoverableError(
               FROM_HERE, error.message());
+          NOTREACHED();
+          return error;
         } else if (result == sync_api::BaseNode::INIT_FAILED_ENTRY_NOT_GOOD) {
+          SyncError error;
           error.Reset(FROM_HERE,
                       "Failed to load bad entry for " + type_str + ".",
                       type);
-          NOTREACHED();
           error_handler()->OnSingleDatatypeUnrecoverableError(
               FROM_HERE, error.message());
+          NOTREACHED();
+          return error;
         } else if (result == sync_api::BaseNode::INIT_FAILED_ENTRY_IS_DEL) {
+          SyncError error;
           error.Reset(FROM_HERE,
                       "Failed to load deleted entry for " + type_str + ".",
                       type);
-          NOTREACHED();
           error_handler()->OnSingleDatatypeUnrecoverableError(
               FROM_HERE, error.message());
+          NOTREACHED();
+          return error;
         } else {
           Cryptographer* crypto = trans.GetCryptographer();
           syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
@@ -331,40 +359,47 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
           const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
           const bool agreement = encrypted_types.Has(type);
           if (!agreement && !can_decrypt) {
+            SyncError error;
             error.Reset(FROM_HERE,
                         "Failed to load encrypted entry, missing key and "
                         "nigori mismatch for " + type_str + ".",
                         type);
-            NOTREACHED();
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
+            NOTREACHED();
+            return error;
           } else if (agreement && can_decrypt) {
+            SyncError error;
             error.Reset(FROM_HERE,
                         "Failed to load encrypted entry, we have the key "
                         "and the nigori matches (?!) for " + type_str + ".",
                         type);
-            NOTREACHED();
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
+            NOTREACHED();
+            return error;
           } else if (agreement) {
+            SyncError error;
             error.Reset(FROM_HERE,
                         "Failed to load encrypted entry, missing key and "
                         "the nigori matches for " + type_str + ".",
                         type);
-            NOTREACHED();
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
+            NOTREACHED();
+            return error;
           } else {
+            SyncError error;
             error.Reset(FROM_HERE,
                         "Failed to load encrypted entry, we have the key"
                         "(?!) and nigori mismatch for " + type_str + ".",
                         type);
-            NOTREACHED();
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
+            NOTREACHED();
+            return error;
           }
         }
-        return error;
       } else {
         sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
         sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
@@ -372,12 +407,12 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
         // successor, parent, etc.).
       }
     } else {
-      NOTREACHED();
       SyncError error(FROM_HERE,
                       "Received unset SyncChange in the change processor.",
                       type);
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                           error.message());
+      NOTREACHED();
       return error;
     }
   }

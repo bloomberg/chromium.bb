@@ -144,21 +144,25 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
           "Could not InitByIdLookup in CreateOrUpdateSyncNode, "
           " Cryptographer thinks typed urls not encrypted, and CanDecrypt"
           " failed.");
+      LOG(ERROR) << "Case 1.";
     } else if (agreement && can_decrypt) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Could not InitByIdLookup on CreateOrUpdateSyncNode, "
           " Cryptographer thinks typed urls are encrypted, and CanDecrypt"
           " succeeded (?!), but DecryptIfNecessary failed.");
+      LOG(ERROR) << "Case 2.";
     } else if (agreement) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Could not InitByIdLookup on CreateOrUpdateSyncNode, "
           " Cryptographer thinks typed urls are encrypted, but CanDecrypt"
           " failed.");
+      LOG(ERROR) << "Case 3.";
     } else {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Could not InitByIdLookup on CreateOrUpdateSyncNode, "
           " Cryptographer thinks typed urls not encrypted, but CanDecrypt"
           " succeeded (super weird, btw)");
+      LOG(ERROR) << "Case 4.";
     }
   } else {
     sync_api::WriteNode create_node(trans);
