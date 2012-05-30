@@ -479,15 +479,9 @@ ProfileImpl::~ProfileImpl() {
       content::NotificationService::NoDetails());
   bool prefs_loaded = prefs_->GetInitializationStatus() !=
       PrefService::INITIALIZATION_STATUS_WAITING;
-  // Honor the "clear local state" setting. If it's not set, keep the session
-  // data if we're going to continue the session upon startup.
-  if (clear_local_state_on_exit_) {
+  // Honor the "clear local state" setting.
+  if (clear_local_state_on_exit_)
     BrowserContext::ClearLocalOnDestruction(this);
-  } else if (session_restore_enabled_ && prefs_loaded) {
-    SessionStartupPref pref = SessionStartupPref::GetStartupPref(this);
-    if (pref.type == SessionStartupPref::LAST)
-      BrowserContext::SaveSessionState(this);
-  }
 
 #if defined(ENABLE_SESSION_SERVICE)
   StopCreateSessionServiceTimer();
