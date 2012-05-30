@@ -389,6 +389,19 @@ void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
   if (!service->HasSyncSetupCompleted())
     return;
 
+  MessageType status = GetStatus(service, signin);
+  if (status == SYNC_ERROR) {
+    const AuthError& auth_error = service->GetAuthError();
+    if (auth_error.state() != AuthError::NONE) {
+      GetStatusLabelsForAuthError(auth_error, *service, NULL, NULL,
+          menu_label, bubble_message, bubble_accept_label);
+      // If we have an actionable auth error, display it.
+      if (!menu_label->empty())
+        return;
+    }
+  }
+
+  // No actionable auth error - display the passphrase error.
   if (service->IsPassphraseRequired() &&
       service->IsPassphraseRequiredForDecryption()) {
     // This is not the first machine so ask user to enter passphrase.
@@ -400,16 +413,6 @@ void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
     *bubble_accept_label = l10n_util::GetStringUTF16(
         IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_ACCEPT);
     return;
-  }
-
-  MessageType status = GetStatus(service, signin);
-  if (status != SYNC_ERROR)
-    return;
-
-  const AuthError& auth_error = service->GetAuthError();
-  if (auth_error.state() != AuthError::NONE) {
-    GetStatusLabelsForAuthError(auth_error, *service, NULL, NULL,
-        menu_label, bubble_message, bubble_accept_label);
   }
 }
 

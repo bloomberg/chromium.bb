@@ -136,6 +136,10 @@ TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {
           profile.get(), BuildMockLoginUIService));
   SyncGlobalError error(&service, signin);
 
+  browser_sync::SyncBackendHost::Status status;
+  EXPECT_CALL(service, QueryDetailedSyncStatus())
+              .WillRepeatedly(Return(status));
+
   EXPECT_CALL(service, IsPassphraseRequired())
               .WillRepeatedly(Return(true));
   EXPECT_CALL(service, IsPassphraseRequiredForDecryption())
