@@ -69,6 +69,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
 
   virtual void TearDown() {
     helper_.set_service(NULL);
+    BrowserWithTestWindowTest::TearDown();
   }
 
   void UpdateNavigation(const SessionID& window_id,

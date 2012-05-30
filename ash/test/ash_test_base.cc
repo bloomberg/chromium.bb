@@ -28,9 +28,8 @@ void AshTestBase::SetUp() {
   // Creates Shell and hook with Desktop.
   TestShellDelegate* delegate = new TestShellDelegate;
   ash::Shell::CreateInstance(delegate);
-
-  helper_.SetUp();
-  helper_.InitRootWindow(Shell::GetPrimaryRootWindow());
+  Shell::GetPrimaryRootWindow()->Show();
+  Shell::GetPrimaryRootWindow()->SetHostSize(gfx::Size(800, 600));
 
   // Disable animations during tests.
   ui::LayerAnimator::set_disable_animations_for_test(true);
@@ -40,10 +39,9 @@ void AshTestBase::TearDown() {
   // Flush the message loop to finish pending release tasks.
   RunAllPendingInMessageLoop();
 
-  helper_.TearDown();
-
   // Tear down the shell.
   Shell::DeleteInstance();
+  aura::Env::DeleteInstance();
 }
 
 void AshTestBase::ChangeMonitorConfig(float scale,
@@ -57,7 +55,10 @@ void AshTestBase::ChangeMonitorConfig(float scale,
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {
-  helper_.RunAllPendingInMessageLoop(Shell::GetPrimaryRootWindow());
+#if !defined(OS_MACOSX)
+  message_loop_.RunAllPendingWithDispatcher(
+      aura::Env::GetInstance()->GetDispatcher());
+#endif
 }
 
 }  // namespace test

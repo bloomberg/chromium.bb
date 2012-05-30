@@ -15,13 +15,7 @@
 #include "content/test/test_render_view_host_factory.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/env.h"
-#include "ui/aura/monitor_manager.h"
-#include "ui/aura/root_window.h"
-#include "ui/aura/single_monitor_manager.h"
-#include "ui/aura/test/test_screen.h"
-#include "ui/aura/test/test_stacking_client.h"
-#include "ui/gfx/screen.h"
+#include "ui/aura/test/aura_test_helper.h"
 #endif
 
 namespace content {
@@ -134,23 +128,17 @@ void RenderViewHostTestHarness::Reload() {
 
 void RenderViewHostTestHarness::SetUp() {
 #if defined(USE_AURA)
-  aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
-  root_window_.reset(aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
-  gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
-  test_stacking_client_.reset(
-      new aura::test::TestStackingClient(root_window_.get()));
-#endif  // USE_AURA
+  aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
+  aura_test_helper_->SetUp();
+#endif
   SetContents(CreateTestWebContents());
 }
 
 void RenderViewHostTestHarness::TearDown() {
   SetContents(NULL);
 #if defined(USE_AURA)
-  test_stacking_client_.reset();
-  root_window_.reset();
-  aura::Env::DeleteInstance();
+  aura_test_helper_->TearDown();
 #endif
-
   // Make sure that we flush any messages related to WebContentsImpl destruction
   // before we destroy the browser context.
   MessageLoop::current()->RunAllPending();

@@ -62,6 +62,10 @@ class SyncGlobalErrorTest : public BrowserWithTestWindowTest {
     browser()->SetWindowForTesting(window());
   }
 
+  virtual void TearDown() OVERRIDE {
+    testing::Test::TearDown();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncGlobalErrorTest);
 };

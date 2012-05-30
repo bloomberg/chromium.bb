@@ -8,13 +8,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/basictypes.h"
+#include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_helper.h"
 
 namespace aura {
 class RootWindow;
 namespace test {
-class TestStackingClient;
 
 // A base class for aura unit tests.
 // TODO(beng): Instances of this test will create and own a RootWindow.
@@ -30,12 +30,11 @@ class AuraTestBase : public testing::Test {
  protected:
   void RunAllPendingInMessageLoop();
 
-  RootWindow* root_window() { return root_window_.get(); }
+  RootWindow* root_window() { return helper_->root_window(); }
 
  private:
-  AuraTestHelper helper_;
-  scoped_ptr<RootWindow> root_window_;
-  scoped_ptr<TestStackingClient> stacking_client_;
+  MessageLoopForUI message_loop_;
+  scoped_ptr<AuraTestHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);
 };

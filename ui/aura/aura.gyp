@@ -136,6 +136,7 @@
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../ui.gyp:ui',
+        '../ui.gyp:ui_test_support',
         'aura',
         'test_support_aura_pak',
       ],

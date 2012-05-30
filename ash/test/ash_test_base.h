@@ -8,8 +8,8 @@
 
 #include "ash/shell.h"
 #include "base/compiler_specific.h"
+#include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/test/aura_test_helper.h"
 
 namespace ash {
 namespace test {
@@ -19,7 +19,7 @@ class AshTestBase : public testing::Test {
   AshTestBase();
   virtual ~AshTestBase();
 
-  MessageLoopForUI* message_loop() { return helper_.message_loop(); }
+  MessageLoopForUI* message_loop() { return &message_loop_; }
 
   // testing::Test:
   virtual void SetUp() OVERRIDE;
@@ -33,7 +33,7 @@ class AshTestBase : public testing::Test {
   void RunAllPendingInMessageLoop();
 
  private:
-  aura::test::AuraTestHelper helper_;
+  MessageLoopForUI message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };

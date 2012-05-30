@@ -22,10 +22,8 @@ class GURL;
 
 #if defined(USE_AURA)
 namespace aura {
-class RootWindow;
 namespace test {
-class TestActivationClient;
-class TestStackingClient;
+class AuraTestHelper;
 }
 }
 #endif
@@ -124,9 +122,7 @@ class BrowserWithTestWindowTest : public testing::Test {
   content::RenderViewHostTestEnabler rvh_test_enabler_;
 
 #if defined(USE_AURA)
-  scoped_ptr<aura::RootWindow> root_window_;
-  scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
-  scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
+  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif
 
 #if defined(OS_WIN)

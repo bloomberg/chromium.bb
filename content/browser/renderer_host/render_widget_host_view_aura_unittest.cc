@@ -14,16 +14,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
-#include "ui/aura/monitor_manager.h"
-#include "ui/aura/root_window.h"
-#include "ui/aura/single_monitor_manager.h"
-#include "ui/aura/test/test_screen.h"
-#include "ui/aura/test/test_stacking_client.h"
+#include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/screen.h"
 
 class MockRenderWidgetHostDelegate : public content::RenderWidgetHostDelegate {
  public:
@@ -67,12 +62,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   RenderWidgetHostViewAuraTest() {}
 
   virtual void SetUp() {
-    aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
-    root_window_.reset(
-        aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
-    gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
-    test_stacking_client_.reset(
-        new aura::test::TestStackingClient(root_window_.get()));
+    aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
+    aura_test_helper_->SetUp();
 
     browser_context_.reset(new TestBrowserContext);
     content::MockRenderProcessHost* process_host =
@@ -89,9 +80,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     delete widget_host_;
 
     browser_context_.reset();
-    test_stacking_client_.reset();
-    root_window_.reset();
-    aura::Env::DeleteInstance();
+    aura_test_helper_->TearDown();
 
     message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
     message_loop_.RunAllPending();
@@ -99,8 +88,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
  protected:
   MessageLoopForUI message_loop_;
-  scoped_ptr<aura::RootWindow> root_window_;
-  scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
+  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   scoped_ptr<content::BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;
 

@@ -18,14 +18,7 @@
 #include "content/test/test_renderer_host.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/env.h"
-#include "ui/aura/monitor_manager.h"
-#include "ui/aura/root_window.h"
-#include "ui/aura/single_monitor_manager.h"
-#include "ui/aura/test/test_activation_client.h"
-#include "ui/aura/test/test_screen.h"
-#include "ui/aura/test/test_stacking_client.h"
-#include "ui/gfx/screen.h"
+#include "ui/aura/test/aura_test_helper.h"
 #endif
 
 using content::BrowserThread;
@@ -51,23 +44,15 @@ void BrowserWithTestWindowTest::SetUp() {
   window_.reset(new TestBrowserWindow(browser()));
   browser_->SetWindowForTesting(window_.get());
 #if defined(USE_AURA)
-  aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
-  root_window_.reset(aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
-  gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
-  test_activation_client_.reset(
-      new aura::test::TestActivationClient(root_window_.get()));
-  test_stacking_client_.reset(
-      new aura::test::TestStackingClient(root_window_.get()));
+  aura_test_helper_.reset(new aura::test::AuraTestHelper(&ui_loop_));
+  aura_test_helper_->SetUp();
 #endif  // USE_AURA
 }
 
 void BrowserWithTestWindowTest::TearDown() {
   testing::Test::TearDown();
 #if defined(USE_AURA)
-  test_activation_client_.reset();
-  test_stacking_client_.reset();
-  root_window_.reset();
-  aura::Env::DeleteInstance();
+  aura_test_helper_->TearDown();
 #endif
 }
 

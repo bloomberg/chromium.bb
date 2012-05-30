@@ -13,8 +13,7 @@
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/single_monitor_manager.h"
-#include "ui/aura/test/test_screen.h"
-#include "ui/aura/test/test_stacking_client.h"
+#include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/root_view.h"
@@ -38,29 +37,22 @@ class NativeWidgetAuraTest : public testing::Test {
 
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
-    aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
-    root_window_.reset(
-        aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
-    gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
-    root_window_->SetBounds(gfx::Rect(0, 0, 640, 480));
-    root_window_->SetHostSize(gfx::Size(640, 480));
-    test_stacking_client_.reset(
-        new aura::test::TestStackingClient(root_window_.get()));
+    aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
+    aura_test_helper_->SetUp();
+    root_window()->SetBounds(gfx::Rect(0, 0, 640, 480));
+    root_window()->SetHostSize(gfx::Size(640, 480));
   }
   virtual void TearDown() OVERRIDE {
     message_loop_.RunAllPending();
-    test_stacking_client_.reset();
-    root_window_.reset();
-    aura::Env::DeleteInstance();
+    aura_test_helper_->TearDown();
   }
 
  protected:
-  aura::RootWindow* root_window() { return root_window_.get(); }
+  aura::RootWindow* root_window() { return aura_test_helper_->root_window(); }
 
  private:
   MessageLoopForUI message_loop_;
-  scoped_ptr<aura::RootWindow> root_window_;
-  scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
+  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAuraTest);
 };

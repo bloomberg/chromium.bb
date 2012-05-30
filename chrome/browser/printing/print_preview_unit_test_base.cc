@@ -39,4 +39,5 @@ void PrintPreviewUnitTestBase::TearDown() {
   TestingBrowserProcess* testing_browser_process =
       static_cast<TestingBrowserProcess*>(g_browser_process);
   testing_browser_process->SetLocalState(NULL);
+  BrowserWithTestWindowTest::TearDown();
 }

@@ -4,16 +4,8 @@
 
 #include "ui/aura/test/aura_test_base.h"
 
-#include "ui/aura/env.h"
-#include "ui/aura/monitor_manager.h"
-#include "ui/aura/root_window.h"
-#include "ui/aura/single_monitor_manager.h"
-#include "ui/aura/test/test_screen.h"
-#include "ui/aura/test/test_stacking_client.h"
-#include "ui/aura/ui_controls_aura.h"
+#include "ui/aura/test/aura_test_helper.h"
 #include "ui/base/gestures/gesture_configuration.h"
-#include "ui/gfx/screen.h"
-#include "ui/ui_controls/ui_controls.h"
 
 namespace aura {
 namespace test {
@@ -47,15 +39,8 @@ void AuraTestBase::SetUp() {
   ui::GestureConfiguration::set_points_buffered_for_velocity(10);
   ui::GestureConfiguration::set_rail_break_proportion(15);
   ui::GestureConfiguration::set_rail_start_proportion(2);
-
-  Env::GetInstance()->SetMonitorManager(new SingleMonitorManager);
-  root_window_.reset(Env::GetInstance()->monitor_manager()->
-                     CreateRootWindowForPrimaryMonitor());
-  gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
-  ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_.get()));
-  helper_.InitRootWindow(root_window());
-  helper_.SetUp();
-  stacking_client_.reset(new TestStackingClient(root_window()));
+  helper_.reset(new AuraTestHelper(&message_loop_));
+  helper_->SetUp();
 }
 
 void AuraTestBase::TearDown() {
@@ -63,14 +48,12 @@ void AuraTestBase::TearDown() {
   // and these tasks if un-executed would upset Valgrind.
   RunAllPendingInMessageLoop();
 
-  stacking_client_.reset();
-  helper_.TearDown();
-  root_window_.reset();
+  helper_->TearDown();
   testing::Test::TearDown();
 }
 
 void AuraTestBase::RunAllPendingInMessageLoop() {
-  helper_.RunAllPendingInMessageLoop(root_window());
+  helper_->RunAllPendingInMessageLoop();
 }
 
 }  // namespace test

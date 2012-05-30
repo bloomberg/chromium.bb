@@ -13,13 +13,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_AURA)
-namespace aura {
-class RootWindow;
-namespace test {
-class TestStackingClient;
-}
-}
+#include "ui/aura/test/aura_test_helper.h"
 #endif
+
+namespace aura {
+namespace test {
+class AuraTestHelper;
+}
+}
 
 namespace content {
 
@@ -154,7 +155,7 @@ class RenderViewHostTestHarness : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
 #if defined(USE_AURA)
-  aura::RootWindow* root_window() const { return root_window_.get(); }
+  aura::RootWindow* root_window() { return aura_test_helper_->root_window(); }
 #endif
 
   // Replaces the RPH being used.
@@ -174,8 +175,7 @@ class RenderViewHostTestHarness : public testing::Test {
   // overridden by subclasses.
   scoped_ptr<WebContents> contents_;
 #if defined(USE_AURA)
-  scoped_ptr<aura::RootWindow> root_window_;
-  scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
+  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif
   RenderViewHostTestEnabler rvh_test_enabler_;
 

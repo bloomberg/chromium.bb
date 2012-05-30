@@ -7,40 +7,53 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/message_loop.h"
+#include "base/memory/scoped_ptr.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
+class MessageLoopForUI;
+
+namespace ui {
+class InputMethod;
+}
+
 namespace aura {
 class RootWindow;
 namespace test {
+class TestStackingClient;
+class TestActivationClient;
 
 // A helper class owned by tests that does common initialization required for
-// Aura use. This class must create no special environment (e.g. no RootWindow)
-// since different users will want their own specific environments and will
-// set that up themselves.
+// Aura use. This class creates a root window with clients and other objects
+// that are necessary to run test on Aura.
 class AuraTestHelper {
  public:
-  AuraTestHelper();
-  virtual ~AuraTestHelper();
+  explicit AuraTestHelper(MessageLoopForUI* message_loop);
+  ~AuraTestHelper();
 
-  // Initializes (shows and sizes) the provided RootWindow for use in tests.
-  void InitRootWindow(RootWindow* root_window);
-
+  // Creates and initializes (shows and sizes) the RootWindow for use in tests.
   void SetUp();
+
+  // Clean up objects that are created for tests. This also delete
+  // aura::Env object.
   void TearDown();
 
   // Flushes message loop.
-  void RunAllPendingInMessageLoop(RootWindow* root_window);
+  void RunAllPendingInMessageLoop();
 
-  MessageLoopForUI* message_loop() { return &message_loop_; }
+  RootWindow* root_window() { return root_window_.get(); }
 
  private:
-  MessageLoopForUI message_loop_;
+  MessageLoopForUI* message_loop_;
   bool setup_called_;
   bool teardown_called_;
+  bool owns_root_window_;
+  scoped_ptr<RootWindow> root_window_;
+  scoped_ptr<TestStackingClient> stacking_client_;
+  scoped_ptr<TestActivationClient> test_activation_client_;
+  scoped_ptr<ui::InputMethod> test_input_method_;
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;
