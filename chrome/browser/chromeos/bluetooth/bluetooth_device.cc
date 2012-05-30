@@ -487,7 +487,7 @@ void BluetoothDevice::ConnectToMatchingService(
           BluetoothSocket::CreateBluetoothSocket(service_record));
       if (socket.get() != NULL) {
         callback.Run(socket);
-        break;
+        return;
       }
     }
   }
