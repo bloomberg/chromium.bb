@@ -370,19 +370,19 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
   WebAccessibility text1;
   text1.id = 11;
   text1.role = WebAccessibility::ROLE_STATIC_TEXT;
-  text1.state = 0;
+  text1.state = 1 << WebAccessibility::STATE_READONLY;
   text1.name = L"One two three.";
 
   WebAccessibility text2;
   text2.id = 12;
   text2.role = WebAccessibility::ROLE_STATIC_TEXT;
-  text2.state = 0;
+  text2.state = 1 << WebAccessibility::STATE_READONLY;
   text2.name = L" Four five six.";
 
   WebAccessibility root;
   root.id = 1;
   root.role = WebAccessibility::ROLE_DOCUMENT;
-  root.state = 0;
+  root.state = 1 << WebAccessibility::STATE_READONLY;
   root.children.push_back(text1);
   root.children.push_back(text2);
 
@@ -434,13 +434,13 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   WebAccessibility text1;
   text1.id = 11;
   text1.role = WebAccessibility::ROLE_STATIC_TEXT;
-  text1.state = 0;
+  text1.state = 1 << WebAccessibility::STATE_READONLY;
   text1.name = L"One two three.";
 
   WebAccessibility text2;
   text2.id = 12;
   text2.role = WebAccessibility::ROLE_STATIC_TEXT;
-  text2.state = 0;
+  text2.state = 1 << WebAccessibility::STATE_READONLY;
   text2.name = L" Four five six.";
 
   WebAccessibility button1, button1_text;
@@ -449,7 +449,8 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   button1_text.name = L"red";
   button1.role = WebAccessibility::ROLE_BUTTON;
   button1_text.role = WebAccessibility::ROLE_STATIC_TEXT;
-  button1.state = 0;
+  button1.state = 1 << WebAccessibility::STATE_READONLY;
+  button1_text.state = 1 << WebAccessibility::STATE_READONLY;
   button1.children.push_back(button1_text);
 
   WebAccessibility link1, link1_text;
@@ -458,13 +459,14 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   link1_text.name = L"blue";
   link1.role = WebAccessibility::ROLE_LINK;
   link1_text.role = WebAccessibility::ROLE_STATIC_TEXT;
-  link1.state = 0;
+  link1.state = 1 << WebAccessibility::STATE_READONLY;
+  link1_text.state = 1 << WebAccessibility::STATE_READONLY;
   link1.children.push_back(link1_text);
 
   WebAccessibility root;
   root.id = 1;
   root.role = WebAccessibility::ROLE_DOCUMENT;
-  root.state = 0;
+  root.state = 1 << WebAccessibility::STATE_READONLY;
   root.children.push_back(text1);
   root.children.push_back(button1);
   root.children.push_back(text2);

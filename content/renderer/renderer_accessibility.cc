@@ -587,8 +587,17 @@ WebDocument RendererAccessibility::GetMainDocument() {
 }
 
 bool RendererAccessibility::IsEditableText(const WebAccessibilityObject& obj) {
+  // If it's disabled, it's not focusable and we don't care about it
+  // for opening the on-screen keyboard.
+  if (!obj.isEnabled())
+    return false;
+
+  // Note: isReadOnly being false means it's either an editable text control,
+  // or it's contentEditable - but we check the roles to make sure we
+  // catch ARIA role=textbox.
   return (obj.roleValue() == WebKit::WebAccessibilityRoleTextArea ||
-          obj.roleValue() == WebKit::WebAccessibilityRoleTextField);
+          obj.roleValue() == WebKit::WebAccessibilityRoleTextField ||
+          !obj.isReadOnly());
 }
 
 void RendererAccessibility::RecursiveAddEditableTextNodesToTree(

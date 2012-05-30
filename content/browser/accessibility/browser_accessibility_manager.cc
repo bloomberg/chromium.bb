@@ -47,7 +47,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::CreateEmptyDocument(
   webkit_glue::WebAccessibility empty_document;
   empty_document.id = 0;
   empty_document.role = WebAccessibility::ROLE_ROOT_WEB_AREA;
-  empty_document.state = state;
+  empty_document.state = state | (1 << WebAccessibility::STATE_READONLY);
   return BrowserAccessibilityManager::Create(
       parent_view, empty_document, delegate, factory);
 }

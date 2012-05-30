@@ -6,202 +6,22 @@
 
 #include <oleacc.h>
 
-#include <map>
 #include <string>
 
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
+#include "content/test/accessibility_test_utils_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 
-namespace {
-std::map<int32, string16> role_string_map;
-std::map<int32, string16> msaa_state_string_map;
-std::map<int32, string16> ia2_state_string_map;
-} // namespace
-
-// Convenience macros for generating readable strings.
-#define ROLE_MAP(x) role_string_map[x] = L#x;
-#define MSAA_STATE_MAP(x) msaa_state_string_map[STATE_SYSTEM_##x] = L#x;
-#define IA2_STATE_MAP(x) ia2_state_string_map[x] = L#x;
-
-void DumpAccessibilityTreeHelper::Initialize() {
-  ROLE_MAP(IA2_ROLE_UNKNOWN)
-  ROLE_MAP(IA2_ROLE_CANVAS)
-  ROLE_MAP(IA2_ROLE_CAPTION)
-  ROLE_MAP(IA2_ROLE_CHECK_MENU_ITEM)
-  ROLE_MAP(IA2_ROLE_COLOR_CHOOSER)
-  ROLE_MAP(IA2_ROLE_DATE_EDITOR)
-  ROLE_MAP(IA2_ROLE_DESKTOP_ICON)
-  ROLE_MAP(IA2_ROLE_DESKTOP_PANE)
-  ROLE_MAP(IA2_ROLE_DIRECTORY_PANE)
-  ROLE_MAP(IA2_ROLE_EDITBAR)
-  ROLE_MAP(IA2_ROLE_EMBEDDED_OBJECT)
-  ROLE_MAP(IA2_ROLE_ENDNOTE)
-  ROLE_MAP(IA2_ROLE_FILE_CHOOSER)
-  ROLE_MAP(IA2_ROLE_FONT_CHOOSER)
-  ROLE_MAP(IA2_ROLE_FOOTER)
-  ROLE_MAP(IA2_ROLE_FOOTNOTE)
-  ROLE_MAP(IA2_ROLE_FORM)
-  ROLE_MAP(IA2_ROLE_FRAME)
-  ROLE_MAP(IA2_ROLE_GLASS_PANE)
-  ROLE_MAP(IA2_ROLE_HEADER)
-  ROLE_MAP(IA2_ROLE_HEADING)
-  ROLE_MAP(IA2_ROLE_ICON)
-  ROLE_MAP(IA2_ROLE_IMAGE_MAP)
-  ROLE_MAP(IA2_ROLE_INPUT_METHOD_WINDOW)
-  ROLE_MAP(IA2_ROLE_INTERNAL_FRAME)
-  ROLE_MAP(IA2_ROLE_LABEL)
-  ROLE_MAP(IA2_ROLE_LAYERED_PANE)
-  ROLE_MAP(IA2_ROLE_NOTE)
-  ROLE_MAP(IA2_ROLE_OPTION_PANE)
-  ROLE_MAP(IA2_ROLE_PAGE)
-  ROLE_MAP(IA2_ROLE_PARAGRAPH)
-  ROLE_MAP(IA2_ROLE_RADIO_MENU_ITEM)
-  ROLE_MAP(IA2_ROLE_REDUNDANT_OBJECT)
-  ROLE_MAP(IA2_ROLE_ROOT_PANE)
-  ROLE_MAP(IA2_ROLE_RULER)
-  ROLE_MAP(IA2_ROLE_SCROLL_PANE)
-  ROLE_MAP(IA2_ROLE_SECTION)
-  ROLE_MAP(IA2_ROLE_SHAPE)
-  ROLE_MAP(IA2_ROLE_SPLIT_PANE)
-  ROLE_MAP(IA2_ROLE_TEAR_OFF_MENU)
-  ROLE_MAP(IA2_ROLE_TERMINAL)
-  ROLE_MAP(IA2_ROLE_TEXT_FRAME)
-  ROLE_MAP(IA2_ROLE_TOGGLE_BUTTON)
-  ROLE_MAP(IA2_ROLE_VIEW_PORT)
-
-  // MSAA roles.
-  ROLE_MAP(ROLE_SYSTEM_TITLEBAR)
-  ROLE_MAP(ROLE_SYSTEM_MENUBAR)
-  ROLE_MAP(ROLE_SYSTEM_SCROLLBAR)
-  ROLE_MAP(ROLE_SYSTEM_GRIP)
-  ROLE_MAP(ROLE_SYSTEM_SOUND)
-  ROLE_MAP(ROLE_SYSTEM_CURSOR)
-  ROLE_MAP(ROLE_SYSTEM_CARET)
-  ROLE_MAP(ROLE_SYSTEM_ALERT)
-  ROLE_MAP(ROLE_SYSTEM_WINDOW)
-  ROLE_MAP(ROLE_SYSTEM_CLIENT)
-  ROLE_MAP(ROLE_SYSTEM_MENUPOPUP)
-  ROLE_MAP(ROLE_SYSTEM_MENUITEM)
-  ROLE_MAP(ROLE_SYSTEM_TOOLTIP)
-  ROLE_MAP(ROLE_SYSTEM_APPLICATION)
-  ROLE_MAP(ROLE_SYSTEM_DOCUMENT)
-  ROLE_MAP(ROLE_SYSTEM_PANE)
-  ROLE_MAP(ROLE_SYSTEM_CHART)
-  ROLE_MAP(ROLE_SYSTEM_DIALOG)
-  ROLE_MAP(ROLE_SYSTEM_BORDER)
-  ROLE_MAP(ROLE_SYSTEM_GROUPING)
-  ROLE_MAP(ROLE_SYSTEM_SEPARATOR)
-  ROLE_MAP(ROLE_SYSTEM_TOOLBAR)
-  ROLE_MAP(ROLE_SYSTEM_STATUSBAR)
-  ROLE_MAP(ROLE_SYSTEM_TABLE)
-  ROLE_MAP(ROLE_SYSTEM_COLUMNHEADER)
-  ROLE_MAP(ROLE_SYSTEM_ROWHEADER)
-  ROLE_MAP(ROLE_SYSTEM_COLUMN)
-  ROLE_MAP(ROLE_SYSTEM_ROW)
-  ROLE_MAP(ROLE_SYSTEM_CELL)
-  ROLE_MAP(ROLE_SYSTEM_LINK)
-  ROLE_MAP(ROLE_SYSTEM_HELPBALLOON)
-  ROLE_MAP(ROLE_SYSTEM_CHARACTER)
-  ROLE_MAP(ROLE_SYSTEM_LIST)
-  ROLE_MAP(ROLE_SYSTEM_LISTITEM)
-  ROLE_MAP(ROLE_SYSTEM_OUTLINE)
-  ROLE_MAP(ROLE_SYSTEM_OUTLINEITEM)
-  ROLE_MAP(ROLE_SYSTEM_PAGETAB)
-  ROLE_MAP(ROLE_SYSTEM_PROPERTYPAGE)
-  ROLE_MAP(ROLE_SYSTEM_INDICATOR)
-  ROLE_MAP(ROLE_SYSTEM_GRAPHIC)
-  ROLE_MAP(ROLE_SYSTEM_STATICTEXT)
-  ROLE_MAP(ROLE_SYSTEM_TEXT)
-  ROLE_MAP(ROLE_SYSTEM_PUSHBUTTON)
-  ROLE_MAP(ROLE_SYSTEM_CHECKBUTTON)
-  ROLE_MAP(ROLE_SYSTEM_RADIOBUTTON)
-  ROLE_MAP(ROLE_SYSTEM_COMBOBOX)
-  ROLE_MAP(ROLE_SYSTEM_DROPLIST)
-  ROLE_MAP(ROLE_SYSTEM_PROGRESSBAR)
-  ROLE_MAP(ROLE_SYSTEM_DIAL)
-  ROLE_MAP(ROLE_SYSTEM_HOTKEYFIELD)
-  ROLE_MAP(ROLE_SYSTEM_SLIDER)
-  ROLE_MAP(ROLE_SYSTEM_SPINBUTTON)
-  ROLE_MAP(ROLE_SYSTEM_DIAGRAM)
-  ROLE_MAP(ROLE_SYSTEM_ANIMATION)
-  ROLE_MAP(ROLE_SYSTEM_EQUATION)
-  ROLE_MAP(ROLE_SYSTEM_BUTTONDROPDOWN)
-  ROLE_MAP(ROLE_SYSTEM_BUTTONMENU)
-  ROLE_MAP(ROLE_SYSTEM_BUTTONDROPDOWNGRID)
-  ROLE_MAP(ROLE_SYSTEM_WHITESPACE)
-  ROLE_MAP(ROLE_SYSTEM_PAGETABLIST)
-  ROLE_MAP(ROLE_SYSTEM_CLOCK)
-  ROLE_MAP(ROLE_SYSTEM_SPLITBUTTON)
-  ROLE_MAP(ROLE_SYSTEM_IPADDRESS)
-  ROLE_MAP(ROLE_SYSTEM_OUTLINEBUTTON)
-
-  // Untested states include those that would be repeated on nearly every node,
-  // or would vary based on window size.
-  MSAA_STATE_MAP(UNAVAILABLE)
-  MSAA_STATE_MAP(SELECTED)
-  MSAA_STATE_MAP(FOCUSED)
-  MSAA_STATE_MAP(PRESSED)
-  MSAA_STATE_MAP(CHECKED)
-  MSAA_STATE_MAP(MIXED)
-  MSAA_STATE_MAP(READONLY)
-  MSAA_STATE_MAP(HOTTRACKED)
-  MSAA_STATE_MAP(DEFAULT)
-  MSAA_STATE_MAP(EXPANDED)
-  MSAA_STATE_MAP(COLLAPSED)
-  MSAA_STATE_MAP(BUSY)
-  MSAA_STATE_MAP(FLOATING)
-  MSAA_STATE_MAP(MARQUEED)
-  MSAA_STATE_MAP(ANIMATED)
-  MSAA_STATE_MAP(INVISIBLE)
-  // MSAA_STATE_MAP(OFFSCREEN) // Untested.
-  MSAA_STATE_MAP(SIZEABLE)
-  MSAA_STATE_MAP(MOVEABLE)
-  MSAA_STATE_MAP(SELFVOICING)
-  MSAA_STATE_MAP(FOCUSABLE)
-  MSAA_STATE_MAP(SELECTABLE)
-  MSAA_STATE_MAP(LINKED)
-  MSAA_STATE_MAP(TRAVERSED)
-  MSAA_STATE_MAP(MULTISELECTABLE)
-  MSAA_STATE_MAP(EXTSELECTABLE)
-  MSAA_STATE_MAP(ALERT_LOW)
-  MSAA_STATE_MAP(ALERT_MEDIUM)
-  MSAA_STATE_MAP(ALERT_HIGH)
-  MSAA_STATE_MAP(PROTECTED)
-  MSAA_STATE_MAP(HASPOPUP)
-  IA2_STATE_MAP(IA2_STATE_ACTIVE)
-  IA2_STATE_MAP(IA2_STATE_ARMED)
-  IA2_STATE_MAP(IA2_STATE_DEFUNCT)
-  IA2_STATE_MAP(IA2_STATE_EDITABLE)
-  // IA2_STATE_MAP(IA2_STATE_HORIZONTAL) // Untested.
-  IA2_STATE_MAP(IA2_STATE_ICONIFIED)
-  IA2_STATE_MAP(IA2_STATE_INVALID_ENTRY)
-  IA2_STATE_MAP(IA2_STATE_MANAGES_DESCENDANTS)
-  IA2_STATE_MAP(IA2_STATE_MODAL)
-  IA2_STATE_MAP(IA2_STATE_MULTI_LINE)
-  // IA2_STATE_MAP(IA2_STATE_OPAQUE) // Untested.
-  IA2_STATE_MAP(IA2_STATE_REQUIRED)
-  IA2_STATE_MAP(IA2_STATE_SELECTABLE_TEXT)
-  IA2_STATE_MAP(IA2_STATE_SINGLE_LINE)
-  IA2_STATE_MAP(IA2_STATE_STALE)
-  IA2_STATE_MAP(IA2_STATE_SUPPORTS_AUTOCOMPLETION)
-  IA2_STATE_MAP(IA2_STATE_TRANSIENT)
-  // IA2_STATE_MAP(IA2_STATE_VERTICAL) // Untested.
-}
 
 string16 DumpAccessibilityTreeHelper::ToString(
     BrowserAccessibility* node, char* prefix) {
-  if (role_string_map.empty())
-    Initialize();
-
   BrowserAccessibilityWin* acc_obj = node->ToBrowserAccessibilityWin();
-  string16 state;
-  std::map<int32, string16>::iterator it;
 
-  // MSAA states:
+  // Get state string.
   VARIANT variant_self;
   variant_self.vt = VT_I4;
   variant_self.lVal = CHILDID_SELF;
@@ -209,31 +29,21 @@ string16 DumpAccessibilityTreeHelper::ToString(
   HRESULT hresult = acc_obj->get_accState(variant_self, &msaa_state_variant);
   EXPECT_EQ(S_OK, hresult);
   EXPECT_EQ(VT_I4, msaa_state_variant.vt);
-  for (it = msaa_state_string_map.begin();
-       it != msaa_state_string_map.end();
-       ++it) {
-    if (it->first & msaa_state_variant.lVal) {
-      if (!state.empty())
-        state += L",";
-      state += it->second;
-    }
+  string16 state_str = IAccessibleStateToString(msaa_state_variant.lVal);
+  string16 state2_str = IAccessible2StateToString(acc_obj->ia2_state());
+  if (!state2_str.empty()) {
+    if (!state_str.empty())
+      state_str += L",";
+    state_str += state2_str;
   }
 
-  // IA2 states:
-  for (it = ia2_state_string_map.begin();
-       it != ia2_state_string_map.end();
-       ++it) {
-    if (it->first & acc_obj->ia2_state()) {
-      if (!state.empty())
-        state += L",";
-      state += it->second;
-    }
-  }
+  // Get role string.
+  string16 role_str = IAccessible2RoleToString(acc_obj->ia2_role());
 
   return UTF8ToUTF16(prefix) +
-         role_string_map[acc_obj->ia2_role()] +
+         role_str +
          L" name='" + acc_obj->name() +
-         L"' state=" + state + L"\n";
+         L"' state=" + state_str + L"\n";
 }
 
 const FilePath::StringType DumpAccessibilityTreeHelper::GetActualFileSuffix()

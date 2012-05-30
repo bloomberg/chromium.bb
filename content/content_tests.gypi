@@ -50,6 +50,8 @@
         'gpu/gpu_idirect3d9_mock_win.h',
         'renderer/mock_content_renderer_client.cc',
         'renderer/mock_content_renderer_client.h',
+        'test/accessibility_test_utils_win.cc',
+        'test/accessibility_test_utils_win.h',
         'test/browser_test.h',
         'test/browser_test_base.cc',
         'test/browser_test_base.h',
@@ -158,6 +160,11 @@
           'dependencies': [
             '../ui/aura/aura.gyp:test_support_aura',
             '../ui/compositor/compositor.gyp:compositor',
+          ],
+        }],
+        ['OS=="win"', {
+          'dependencies': [
+            '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
           ],
         }],
       ],

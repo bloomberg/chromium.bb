@@ -296,7 +296,11 @@ bool BrowserAccessibility::HasState(WebAccessibility::State state_enum) const {
 }
 
 bool BrowserAccessibility::IsEditableText() const {
-  return (role_ == WebAccessibility::ROLE_TEXT_FIELD ||
+  // Note: STATE_READONLY being false means it's either a text control,
+  // or contenteditable. We also check for editable text roles to cover
+  // another element that has role=textbox set on it.
+  return (!HasState(WebAccessibility::STATE_READONLY) ||
+          role_ == WebAccessibility::ROLE_TEXT_FIELD ||
           role_ == WebAccessibility::ROLE_TEXTAREA);
 }
 

@@ -589,7 +589,6 @@
           'dependencies': [
             'chrome.gyp:chrome_version_resources',
             '../sandbox/sandbox.gyp:sandbox',
-            '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
             '../ui/ui.gyp:ui_resources',
             '../ui/ui.gyp:ui_resources_standard',
@@ -2256,6 +2255,7 @@
         ['OS=="win"', {
           'dependencies': [
             'chrome_version_resources',
+            'installer_util_strings',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],
@@ -2974,6 +2974,7 @@
         '../content/app/startup_helper_win.cc',
         '../content/browser/accessibility/dump_accessibility_tree_browsertest.cc',
         '../content/browser/accessibility/dump_accessibility_tree_helper.cc',
+        '../content/browser/accessibility/dump_accessibility_tree_helper.h',
         '../content/browser/accessibility/dump_accessibility_tree_helper_mac.mm',
         '../content/browser/accessibility/dump_accessibility_tree_helper_win.cc',
         '../content/browser/accessibility/renderer_accessibility_browsertest.cc',
@@ -3164,7 +3165,6 @@
           'dependencies': [
             'chrome_version_resources',
             'security_tests',  # run time dependency
-            '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'conditions': [

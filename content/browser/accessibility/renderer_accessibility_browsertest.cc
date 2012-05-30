@@ -471,12 +471,16 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
       "<!doctype html>"
       "<h1>Heading</h1>"
       "<input type=text value=text0>"
+      "<input disabled type=text value=skip0>"
       "<textarea>text1</textarea>"
+      "<textarea disabled>skip1</textarea>"
       "<div role=textbox>text2</div>"
+      "<div contentEditable>text3</div>"
       "<ul>"
-      "  <li><input type=text value=text3>"
-      "  <li><textarea>text4</textarea>"
-      "  <li><div role=textbox>text5</div>"
+      "  <li><input type=text value=text4>"
+      "  <li><textarea>text5</textarea>"
+      "  <li><div role=textbox>text6</div>"
+      "  <li><div contentEditable>text7</div>"
       "  <li><button>button</button>"
       "</ul>";
 
@@ -499,16 +503,22 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   EXPECT_STREQ("text2", UTF16ToUTF8(text2.value).c_str());
 
   const WebAccessibility& text3 = tree.children[3];
-  EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, text3.role);
-  EXPECT_STREQ("text3", UTF16ToUTF8(text3.value).c_str());
+  EXPECT_EQ(WebAccessibility::ROLE_GROUP, text3.role);
 
   const WebAccessibility& text4 = tree.children[4];
-  EXPECT_EQ(WebAccessibility::ROLE_TEXTAREA, text4.role);
+  EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, text4.role);
   EXPECT_STREQ("text4", UTF16ToUTF8(text4.value).c_str());
 
   const WebAccessibility& text5 = tree.children[5];
-  EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, text5.role);
+  EXPECT_EQ(WebAccessibility::ROLE_TEXTAREA, text5.role);
   EXPECT_STREQ("text5", UTF16ToUTF8(text5.value).c_str());
+
+  const WebAccessibility& text6 = tree.children[6];
+  EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, text6.role);
+  EXPECT_STREQ("text6", UTF16ToUTF8(text6.value).c_str());
+
+  const WebAccessibility& text7 = tree.children[7];
+  EXPECT_EQ(WebAccessibility::ROLE_GROUP, text7.role);
 }
 
 }  // namespace

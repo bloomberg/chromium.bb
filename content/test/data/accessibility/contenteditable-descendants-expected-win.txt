@@ -1,23 +1,21 @@
-#<skip>
 ROLE_SYSTEM_DOCUMENT name='' state=FOCUSED,READONLY,FOCUSABLE
-    IA2_ROLE_SECTION name='' state=FOCUSABLE,IA2_STATE_SELECTABLE_TEXT,IA2_STATE_EDITABLE
-        IA2_ROLE_PARAGRAPH name='' state=IA2_STATE_SELECTABLE_TEXT,IA2_STATE_EDITABLE
-            ROLE_SYSTEM_TEXT name='Contentditable with ' state=READONLY
-            ROLE_SYSTEM_LINK name='link' state=IA2_STATE_SELECTABLE_TEXT,IA2_STATE_EDITABLE
-                ROLE_SYSTEM_TEXT name='link' state=READONLY,IA2_STATE_EDITABLE
-            ROLE_SYSTEM_TEXT name=' and ' state=READONLY
-            ROLE_SYSTEM_GRAPHIC name='image' state=
-            ROLE_SYSTEM_TEXT name=' and ' state=READONLY
-            ROLE_SYSTEM_PUSHBUTTON name='button' state=FOCUSABLE,READONLY
-                ROLE_SYSTEM_TEXT name='button' state=READONLY
-        ROLE_SYSTEM_TABLE name='' state=READONLY
-            ROLE_SYSTEM_ROW name='Always expose editable tables as tables' state=
-                ROLE_SYSTEM_CELL name='' state=SELECTABLE,IA2_STATE_SELECTABLE_TEXT,IA2_STATE_EDITABLE
-                    ROLE_SYSTEM_TEXT name='Editable table cell' state=READONLY
-            ROLE_SYSTEM_COLUMN name='' state=UNAVAILABLE,READONLY
-        ROLE_SYSTEM_LIST name='' state=IA2_STATE_SELECTABLE_TEXT,IA2_STATE_EDITABLE
-            ROLE_SYSTEM_LISTITEM name='1. Editable list item' state=IA2_STATE_SELECTABLE_TEXT,IA2_STATE_EDITABLE
-                ROLE_SYSTEM_STATIC_TEXT name='1. ' state=READONLY
-                ROLE_SYSTEM_TEXT name='Editable list item' state=READONLY
-    IA2_ROLE_PARAGRAPH name='' state=FOCUSABLE,IA2_STATE_SELECTABLE_TEXT,IA2_STATE_EDITABLE
-        ROLE_SYSTEM_TEXT name='Keep the role, just change the state' state=FOCUSABLE,IA2_STATE_SELECTABLE_TEXT,IA2_STATE_EDITABLE
+    IA2_ROLE_PARAGRAPH name='' state=IA2_STATE_EDITABLE
+        ROLE_SYSTEM_TEXT name='Contentditable with ' state=IA2_STATE_EDITABLE
+        ROLE_SYSTEM_LINK name='link' state=LINKED,IA2_STATE_EDITABLE
+            ROLE_SYSTEM_TEXT name='link' state=IA2_STATE_EDITABLE
+        ROLE_SYSTEM_TEXT name=' and ' state=IA2_STATE_EDITABLE
+        ROLE_SYSTEM_GRAPHIC name='image' state=IA2_STATE_EDITABLE
+        ROLE_SYSTEM_TEXT name=' and ' state=IA2_STATE_EDITABLE
+        ROLE_SYSTEM_PUSHBUTTON name='button' state=FOCUSABLE,IA2_STATE_EDITABLE
+    ROLE_SYSTEM_TABLE name='' state=IA2_STATE_EDITABLE
+        ROLE_SYSTEM_ROW name='' state=IA2_STATE_EDITABLE
+            ROLE_SYSTEM_CELL name='' state=IA2_STATE_EDITABLE
+                ROLE_SYSTEM_TEXT name='Always expose editable tables as tables' state=IA2_STATE_EDITABLE
+        ROLE_SYSTEM_COLUMN name='' state=UNAVAILABLE,IA2_STATE_EDITABLE
+        IA2_ROLE_SECTION name='' state=UNAVAILABLE,IA2_STATE_EDITABLE
+    ROLE_SYSTEM_LIST name='' state=IA2_STATE_EDITABLE
+        ROLE_SYSTEM_LISTITEM name='' state=IA2_STATE_EDITABLE
+            ROLE_SYSTEM_TEXT name='1' state=READONLY
+            ROLE_SYSTEM_TEXT name='Editable list item' state=IA2_STATE_EDITABLE
+    IA2_ROLE_PARAGRAPH name='' state=FOCUSABLE,IA2_STATE_EDITABLE
+        ROLE_SYSTEM_TEXT name='Keep the role, just change the state' state=IA2_STATE_EDITABLE

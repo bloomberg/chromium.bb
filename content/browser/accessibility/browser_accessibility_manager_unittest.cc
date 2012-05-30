@@ -556,11 +556,14 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
 }
 
 TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
-  // Try creating an empty document with busy state.
+  // Try creating an empty document with busy state. Readonly is
+  // set automatically.
+  const int32 busy_state = 1 << WebAccessibility::STATE_BUSY;
+  const int32 readonly_state = 1 << WebAccessibility::STATE_READONLY;
   scoped_ptr<BrowserAccessibilityManager> manager;
   manager.reset(BrowserAccessibilityManager::CreateEmptyDocument(
       NULL,
-      WebAccessibility::STATE_BUSY,
+      static_cast<WebAccessibility::State>(busy_state),
       NULL,
       new CountedBrowserAccessibilityFactory()));
 
@@ -568,7 +571,7 @@ TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
   BrowserAccessibility* root = manager->GetRoot();
   EXPECT_EQ(0, root->renderer_id());
   EXPECT_EQ(WebAccessibility::ROLE_ROOT_WEB_AREA, root->role());
-  EXPECT_EQ(WebAccessibility::STATE_BUSY, root->state());
+  EXPECT_EQ(busy_state | readonly_state, root->state());
 
   // Tree with a child textfield.
   WebAccessibility tree1_1;

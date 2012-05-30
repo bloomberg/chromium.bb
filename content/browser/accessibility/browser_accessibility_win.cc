@@ -2957,72 +2957,68 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   ia2_attributes_.clear();
 
   if (HasState(WebAccessibility::STATE_BUSY))
-    ia_state_|= STATE_SYSTEM_BUSY;
+    ia_state_ |= STATE_SYSTEM_BUSY;
   if (HasState(WebAccessibility::STATE_CHECKED))
     ia_state_ |= STATE_SYSTEM_CHECKED;
   if (HasState(WebAccessibility::STATE_COLLAPSED))
-    ia_state_|= STATE_SYSTEM_COLLAPSED;
+    ia_state_ |= STATE_SYSTEM_COLLAPSED;
   if (HasState(WebAccessibility::STATE_EXPANDED))
-    ia_state_|= STATE_SYSTEM_EXPANDED;
+    ia_state_ |= STATE_SYSTEM_EXPANDED;
   if (HasState(WebAccessibility::STATE_FOCUSABLE))
-    ia_state_|= STATE_SYSTEM_FOCUSABLE;
+    ia_state_ |= STATE_SYSTEM_FOCUSABLE;
   if (HasState(WebAccessibility::STATE_HASPOPUP))
-    ia_state_|= STATE_SYSTEM_HASPOPUP;
+    ia_state_ |= STATE_SYSTEM_HASPOPUP;
   if (HasState(WebAccessibility::STATE_HOTTRACKED))
-    ia_state_|= STATE_SYSTEM_HOTTRACKED;
+    ia_state_ |= STATE_SYSTEM_HOTTRACKED;
   if (HasState(WebAccessibility::STATE_INDETERMINATE))
-    ia_state_|= STATE_SYSTEM_INDETERMINATE;
+    ia_state_ |= STATE_SYSTEM_INDETERMINATE;
   if (HasState(WebAccessibility::STATE_INVISIBLE))
-    ia_state_|= STATE_SYSTEM_INVISIBLE;
+    ia_state_ |= STATE_SYSTEM_INVISIBLE;
   if (HasState(WebAccessibility::STATE_LINKED))
-    ia_state_|= STATE_SYSTEM_LINKED;
+    ia_state_ |= STATE_SYSTEM_LINKED;
   if (HasState(WebAccessibility::STATE_MULTISELECTABLE)) {
-    ia_state_|= STATE_SYSTEM_EXTSELECTABLE;
-    ia_state_|= STATE_SYSTEM_MULTISELECTABLE;
+    ia_state_ |= STATE_SYSTEM_EXTSELECTABLE;
+    ia_state_ |= STATE_SYSTEM_MULTISELECTABLE;
   }
   // TODO(ctguil): Support STATE_SYSTEM_EXTSELECTABLE/accSelect.
   if (HasState(WebAccessibility::STATE_OFFSCREEN))
-    ia_state_|= STATE_SYSTEM_OFFSCREEN;
+    ia_state_ |= STATE_SYSTEM_OFFSCREEN;
   if (HasState(WebAccessibility::STATE_PRESSED))
-    ia_state_|= STATE_SYSTEM_PRESSED;
+    ia_state_ |= STATE_SYSTEM_PRESSED;
   if (HasState(WebAccessibility::STATE_PROTECTED))
-    ia_state_|= STATE_SYSTEM_PROTECTED;
+    ia_state_ |= STATE_SYSTEM_PROTECTED;
   if (HasState(WebAccessibility::STATE_REQUIRED))
-    ia2_state_|= IA2_STATE_REQUIRED;
+    ia2_state_ |= IA2_STATE_REQUIRED;
   if (HasState(WebAccessibility::STATE_SELECTABLE))
-    ia_state_|= STATE_SYSTEM_SELECTABLE;
+    ia_state_ |= STATE_SYSTEM_SELECTABLE;
   if (HasState(WebAccessibility::STATE_SELECTED))
-    ia_state_|= STATE_SYSTEM_SELECTED;
+    ia_state_ |= STATE_SYSTEM_SELECTED;
   if (HasState(WebAccessibility::STATE_TRAVERSED))
-    ia_state_|= STATE_SYSTEM_TRAVERSED;
+    ia_state_ |= STATE_SYSTEM_TRAVERSED;
   if (HasState(WebAccessibility::STATE_UNAVAILABLE))
-    ia_state_|= STATE_SYSTEM_UNAVAILABLE;
+    ia_state_ |= STATE_SYSTEM_UNAVAILABLE;
   if (HasState(WebAccessibility::STATE_VERTICAL)) {
-    ia2_state_|= IA2_STATE_VERTICAL;
+    ia2_state_ |= IA2_STATE_VERTICAL;
   } else {
-    ia2_state_|= IA2_STATE_HORIZONTAL;
+    ia2_state_ |= IA2_STATE_HORIZONTAL;
   }
   if (HasState(WebAccessibility::STATE_VISITED))
-    ia_state_|= STATE_SYSTEM_TRAVERSED;
+    ia_state_ |= STATE_SYSTEM_TRAVERSED;
 
-  // The meaning of the readonly state on Windows is very different from
-  // the meaning of the readonly state in WebKit, so we ignore
-  // WebAccessibility::STATE_READONLY, and instead just check the
-  // aria readonly value, then there's additional logic below to set
-  // the readonly state based on other criteria.
-  bool aria_readonly = false;
-  GetBoolAttribute(WebAccessibility::ATTR_ARIA_READONLY, &aria_readonly);
-  if (aria_readonly)
-    ia_state_|= STATE_SYSTEM_READONLY;
+  // WebKit marks everything as readonly unless it's editable text, so if it's
+  // not readonly, mark it as editable now. The final computation of the
+  // READONLY state for MSAA is below, after the switch.
+  if (!HasState(WebAccessibility::STATE_READONLY))
+    ia2_state_ |= IA2_STATE_EDITABLE;
 
   string16 invalid;
   if (GetHtmlAttribute("aria-invalid", &invalid))
-    ia2_state_|= IA2_STATE_INVALID_ENTRY;
+    ia2_state_ |= IA2_STATE_INVALID_ENTRY;
 
   bool mixed = false;
   GetBoolAttribute(WebAccessibility::ATTR_BUTTON_MIXED, &mixed);
   if (mixed)
-    ia_state_|= STATE_SYSTEM_MIXED;
+    ia_state_ |= STATE_SYSTEM_MIXED;
 
   bool editable = false;
   GetBoolAttribute(WebAccessibility::ATTR_CAN_SET_VALUE, &editable);
@@ -3046,11 +3042,11 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case WebAccessibility::ROLE_ARTICLE:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_BUSY_INDICATOR:
       ia_role_ = ROLE_SYSTEM_ANIMATION;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_BUTTON:
       ia_role_ = ROLE_SYSTEM_PUSHBUTTON;
@@ -3075,11 +3071,11 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case WebAccessibility::ROLE_COLUMN:
       ia_role_ = ROLE_SYSTEM_COLUMN;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_COLUMN_HEADER:
       ia_role_ = ROLE_SYSTEM_COLUMNHEADER;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_COMBO_BOX:
       ia_role_ = ROLE_SYSTEM_COMBOBOX;
@@ -3087,26 +3083,26 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case WebAccessibility::ROLE_DEFINITION_LIST_DEFINITION:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_PARAGRAPH;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_DEFINITION_LIST_TERM:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_DIALOG:
       ia_role_ = ROLE_SYSTEM_DIALOG;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_DISCLOSURE_TRIANGLE:
       ia_role_ = ROLE_SYSTEM_OUTLINEBUTTON;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_DOCUMENT:
     case WebAccessibility::ROLE_ROOT_WEB_AREA:
     case WebAccessibility::ROLE_WEB_AREA:
       ia_role_ = ROLE_SYSTEM_DOCUMENT;
-      ia_state_|= STATE_SYSTEM_READONLY;
-      ia_state_|= STATE_SYSTEM_FOCUSABLE;
+      ia_state_ |= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_FOCUSABLE;
       break;
     case WebAccessibility::ROLE_EDITABLE_TEXT:
       ia_role_ = ROLE_SYSTEM_TEXT;
@@ -3115,11 +3111,11 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case WebAccessibility::ROLE_FOOTER:
       ia_role_ = IA2_ROLE_FOOTER;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_GRID:
       ia_role_ = ROLE_SYSTEM_TABLE;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_GROUP: {
       string16 aria_role;
@@ -3141,31 +3137,31 @@ void BrowserAccessibilityWin::InitRoleAndState() {
           role_name_ = html_tag;
         ia2_role_ = IA2_ROLE_SECTION;
       }
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     }
     case WebAccessibility::ROLE_GROW_AREA:
       ia_role_ = ROLE_SYSTEM_GRIP;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_HEADING:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_HEADING;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_IMAGE:
       ia_role_ = ROLE_SYSTEM_GRAPHIC;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_IMAGE_MAP:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_IMAGE_MAP;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_IMAGE_MAP_LINK:
       ia_role_ = ROLE_SYSTEM_LINK;
-      ia_state_|= STATE_SYSTEM_LINKED;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_LINKED;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_LANDMARK_APPLICATION:
     case WebAccessibility::ROLE_LANDMARK_BANNER:
@@ -3176,16 +3172,16 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case WebAccessibility::ROLE_LANDMARK_SEARCH:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_LINK:
     case WebAccessibility::ROLE_WEBCORE_LINK:
       ia_role_ = ROLE_SYSTEM_LINK;
-      ia_state_|= STATE_SYSTEM_LINKED;
+      ia_state_ |= STATE_SYSTEM_LINKED;
       break;
     case WebAccessibility::ROLE_LIST:
       ia_role_ = ROLE_SYSTEM_LIST;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_LISTBOX:
       ia_role_ = ROLE_SYSTEM_LIST;
@@ -3195,20 +3191,20 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       if (ia_state_ & STATE_SYSTEM_SELECTABLE) {
         ia_state_ |= STATE_SYSTEM_FOCUSABLE;
         if (HasState(WebAccessibility::STATE_FOCUSED))
-          ia_state_|= STATE_SYSTEM_FOCUSED;
+          ia_state_ |= STATE_SYSTEM_FOCUSED;
       }
       break;
     case WebAccessibility::ROLE_LIST_ITEM:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_LIST_MARKER:
       ia_role_ = ROLE_SYSTEM_TEXT;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_MATH:
       ia_role_ = ROLE_SYSTEM_EQUATION;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_MENU:
     case WebAccessibility::ROLE_MENU_BUTTON:
@@ -3228,17 +3224,17 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       if (ia_state_ & STATE_SYSTEM_SELECTABLE) {
         ia_state_ |= STATE_SYSTEM_FOCUSABLE;
         if (HasState(WebAccessibility::STATE_FOCUSED))
-          ia_state_|= STATE_SYSTEM_FOCUSED;
+          ia_state_ |= STATE_SYSTEM_FOCUSED;
       }
       break;
     case WebAccessibility::ROLE_NOTE:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_NOTE;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_OUTLINE:
       ia_role_ = ROLE_SYSTEM_OUTLINE;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_POPUP_BUTTON:
       if (html_tag == L"select") {
@@ -3249,7 +3245,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case WebAccessibility::ROLE_PROGRESS_INDICATOR:
       ia_role_ = ROLE_SYSTEM_PROGRESSBAR;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_RADIO_BUTTON:
       ia_role_ = ROLE_SYSTEM_RADIOBUTTON;
@@ -3261,25 +3257,25 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case WebAccessibility::ROLE_REGION:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_ROW:
       ia_role_ = ROLE_SYSTEM_ROW;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_ROW_HEADER:
       ia_role_ = ROLE_SYSTEM_ROWHEADER;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_RULER:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_RULER;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_SCROLLAREA:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_SCROLL_PANE;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_SCROLLBAR:
       ia_role_ = ROLE_SYSTEM_SCROLLBAR;
@@ -3290,16 +3286,16 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case WebAccessibility::ROLE_SPLIT_GROUP:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_SPLIT_PANE;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_ANNOTATION:
     case WebAccessibility::ROLE_STATIC_TEXT:
       ia_role_ = ROLE_SYSTEM_TEXT;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_STATUS:
       ia_role_ = ROLE_SYSTEM_STATUSBAR;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_SPLITTER:
       ia_role_ = ROLE_SYSTEM_SEPARATOR;
@@ -3309,12 +3305,12 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case WebAccessibility::ROLE_TABLE:
       ia_role_ = ROLE_SYSTEM_TABLE;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_TABLE_HEADER_CONTAINER:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_TAB_GROUP_UNUSED:
       NOTREACHED();
@@ -3340,27 +3336,27 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case WebAccessibility::ROLE_TIMER:
       ia_role_ = ROLE_SYSTEM_CLOCK;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_TOOLBAR:
       ia_role_ = ROLE_SYSTEM_TOOLBAR;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_TOOLTIP:
       ia_role_ = ROLE_SYSTEM_TOOLTIP;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_TREE:
       ia_role_ = ROLE_SYSTEM_OUTLINE;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_TREE_GRID:
       ia_role_ = ROLE_SYSTEM_OUTLINE;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_TREE_ITEM:
       ia_role_ = ROLE_SYSTEM_OUTLINEITEM;
-      ia_state_|= STATE_SYSTEM_READONLY;
+      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_WINDOW:
       ia_role_ = ROLE_SYSTEM_WINDOW;
@@ -3385,6 +3381,23 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_CLIENT;
       break;
   }
+
+  // Compute the final value of READONLY for MSAA.
+  //
+  // We always set the READONLY state for elements that have the
+  // aria-readonly attribute and for a few roles (in the switch above).
+  // We clear the READONLY state on focusable controls and on a document.
+  // Everything else, the majority of objects, do not have this state set.
+  if (HasState(WebAccessibility::STATE_FOCUSABLE) &&
+      ia_role_ != ROLE_SYSTEM_DOCUMENT) {
+    ia_state_ &= ~(STATE_SYSTEM_READONLY);
+  }
+  if (!HasState(WebAccessibility::STATE_READONLY))
+    ia_state_ &= ~(STATE_SYSTEM_READONLY);
+  bool aria_readonly = false;
+  GetBoolAttribute(WebAccessibility::ATTR_ARIA_READONLY, &aria_readonly);
+  if (aria_readonly)
+    ia_state_ |= STATE_SYSTEM_READONLY;
 
   // The role should always be set.
   DCHECK(!role_name_.empty() || ia_role_);
