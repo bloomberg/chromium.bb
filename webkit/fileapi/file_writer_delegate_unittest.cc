@@ -242,7 +242,9 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
 }
 
-TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
+// FileWriterDelegateTest.WriteSuccessWithJustQuota is flakey
+// http://crbug.com/130401
+TEST_F(FileWriterDelegateTest, DISABLED_WriteSuccessWithJustQuota) {
   const GURL kBlobURL("blob:just");
   content_ = kData;
   const int64 kAllowedGrowth = kDataSize;
