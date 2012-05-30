@@ -280,10 +280,20 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   EXPECT_EQ("onunloadCookie=foo", GetCookies(url));
 }
 
+// ResourceDispatcherHostBrowserTest.CrossSiteImmediateLoadOnunloadCookie is
+// flaky on Windows. http://crbug.com/130404
+#if defined (OS_WIN)
+#define MAYBE_CrossSiteImmediateLoadOnunloadCookie \
+    DISABLED_CrossSiteImmediateLoadOnunloadCookie
+#else
+#define MAYBE_CrossSiteImmediateLoadOnunloadCookie \
+    CrossSiteImmediateLoadOnunloadCookie
+#endif
+
 // Tests that onunload is run for cross-site requests to URLs that complete
 // without network loads (e.g., about:blank, data URLs).
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       CrossSiteImmediateLoadOnunloadCookie) {
+                       MAYBE_CrossSiteImmediateLoadOnunloadCookie) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL url = test_server()->GetURL("files/onunload_cookie.html");
