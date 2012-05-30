@@ -917,12 +917,20 @@ TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetScopeID)
   NetAddressPrivateUntrusted_GetPort
 #endif
 
+// PPAPINaClTest.NetAddressPrivateUntrusted_GetFamily timing out frequently on
+// Windows and Mac. http://crbug.com/130380
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_NetAddressPrivateUntrusted_GetFamily DISABLED_NetAddressPrivateUntrusted_GetFamily
+#else
+#define MAYBE_NetAddressPrivateUntrusted_GetFamily NetAddressPrivateUntrusted_GetFamily
+#endif
+
 TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_AreEqual)
 TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_AreHostsEqual)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NetAddressPrivateUntrusted_Describe)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NetAddressPrivateUntrusted_ReplacePort)
 TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetAnyAddress)
-TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetFamily)
+TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NetAddressPrivateUntrusted_GetFamily)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NetAddressPrivateUntrusted_GetPort)
 TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetAddress)
 TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetScopeID)
