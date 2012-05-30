@@ -367,7 +367,7 @@ void ChannelProxy::ClearIPCMessageLoop() {
   context()->ClearIPCMessageLoop();
 }
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_POSIX)
 // See the TODO regarding lazy initialization of the channel in
 // ChannelProxy::Init().
 int ChannelProxy::GetClientFileDescriptor() {

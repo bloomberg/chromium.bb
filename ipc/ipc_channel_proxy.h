@@ -179,7 +179,7 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
   // Returns base::kNullProcessId if the peer is not connected yet.
   base::ProcessId peer_pid() const { return context_->peer_pid_; }
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_POSIX)
   // Calls through to the underlying channel's methods.
   int GetClientFileDescriptor();
   int TakeClientFileDescriptor();

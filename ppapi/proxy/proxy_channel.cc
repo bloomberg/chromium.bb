@@ -40,7 +40,7 @@ void ProxyChannel::OnChannelError() {
   channel_.reset();
 }
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_POSIX)
 int ProxyChannel::TakeRendererFD() {
   DCHECK(channel());
   return channel()->TakeClientFileDescriptor();

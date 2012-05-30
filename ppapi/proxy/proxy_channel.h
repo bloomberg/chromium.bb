@@ -78,7 +78,7 @@ class PPAPI_PROXY_EXPORT ProxyChannel
     return channel_.get();
   }
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_POSIX)
   int TakeRendererFD();
 #endif
 
