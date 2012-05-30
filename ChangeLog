@@ -1,3 +1,13 @@
+2012-05-30  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/tables/letterDefTest_uppercase.ctb:
+	* tests/tables/letterDefTest_uplow.ctb:
+	* tests/tables/letterDefTest_lowercase.ctb:
+	* tests/tables/letterDefTest_letter.ctb:
+	* tests/letterDefTest.c (main): Convert the test so that it
+	returns the result of the test. Also use the \xhhhh notation for
+	unicode so that it works with the c based test framework.
+
 2012-05-11  Christian Egli  <christian.egli@sbs.ch>
 
 	* liblouis/compileTranslationTable.c (doLang2table): Remove an
