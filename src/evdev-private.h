@@ -36,6 +36,14 @@ struct evdev_seat {
 
 #define MAX_SLOTS 16
 
+enum evdev_event_type {
+	EVDEV_ABSOLUTE_MOTION = (1 << 0),
+	EVDEV_ABSOLUTE_MT_DOWN = (1 << 1),
+	EVDEV_ABSOLUTE_MT_MOTION = (1 << 2),
+	EVDEV_ABSOLUTE_MT_UP = (1 << 3),
+	EVDEV_RELATIVE_MOTION = (1 << 4),
+};
+
 struct evdev_input_device {
 	struct evdev_seat *master;
 	struct wl_list link;
@@ -60,17 +68,10 @@ struct evdev_input_device {
 		wl_fixed_t dx, dy;
 	} rel;
 
-	int type; /* event type flags */
+	enum evdev_event_type type;
 
 	int is_mt;
 };
-
-/* event type flags */
-#define EVDEV_ABSOLUTE_MOTION		(1 << 0)
-#define EVDEV_ABSOLUTE_MT_DOWN		(1 << 1)
-#define EVDEV_ABSOLUTE_MT_MOTION	(1 << 2)
-#define EVDEV_ABSOLUTE_MT_UP		(1 << 3)
-#define EVDEV_RELATIVE_MOTION		(1 << 4)
 
 /* copied from udev/extras/input_id/input_id.c */
 /* we must use this kernel-compatible implementation */
