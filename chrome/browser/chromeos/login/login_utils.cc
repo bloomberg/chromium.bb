@@ -95,10 +95,15 @@ namespace chromeos {
 
 namespace {
 
-// OAuth token verification retry count.
+// OAuth token verification max retry count.
 const int kMaxOAuthTokenVerificationAttemptCount = 5;
-// OAuth token verification retry delay.
-const int kOAuthVerificationRestartDelay = 10000;  // ms
+// OAuth token verification retry delay in milliseconds.
+const int kOAuthVerificationRestartDelay = 10000;
+
+// OAuth token request max retry count.
+const int kMaxOAuth1TokenRequestAttemptCount = 5;
+// OAuth token request retry delay in milliseconds.
+const int kOAuth1TokenRequestRestartDelay = 3000;
 
 // Affixes for Auth token received from ClientLogin request.
 const char kAuthPrefix[] = "Auth=";
@@ -186,6 +191,7 @@ void TransferDefaultAuthCacheOnIOThread(
 
 // Verifies OAuth1 access token by performing OAuthLogin. Fetches user cookies
 // on successful OAuth authentication.
+// TODO(kochi): Split this class into another file after M20 merge.
 class OAuthLoginVerifier : public base::SupportsWeakPtr<OAuthLoginVerifier>,
                            public GaiaOAuthConsumer,
                            public GaiaAuthConsumer {
@@ -335,7 +341,7 @@ class OAuthLoginVerifier : public base::SupportsWeakPtr<OAuthLoginVerifier>,
       delegate_->OnOAuthVerificationFailed(username_);
   }
 
-  void OnCookueFetchFailed(const GoogleServiceAuthError& error) {
+  void OnCookieFetchFailed(const GoogleServiceAuthError& error) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!RetryOnError(error))
       delegate_->OnUserCookiesFetchFailed(username_);
@@ -351,7 +357,7 @@ class OAuthLoginVerifier : public base::SupportsWeakPtr<OAuthLoginVerifier>,
       const GoogleServiceAuthError& error) OVERRIDE {
     DVLOG(1) << "Failed IssueAuthToken request,"
              << " error.state=" << error.state();
-    OnCookueFetchFailed(error);
+    OnCookieFetchFailed(error);
   }
 
   virtual void OnMergeSessionSuccess(const std::string& data) OVERRIDE {
@@ -365,7 +371,7 @@ class OAuthLoginVerifier : public base::SupportsWeakPtr<OAuthLoginVerifier>,
       const GoogleServiceAuthError& error) OVERRIDE {
     DVLOG(1) << "Failed MergeSession request,"
              << " error.state=" << error.state();
-    OnCookueFetchFailed(error);
+    OnCookieFetchFailed(error);
   }
 
   OAuthLoginVerifier::Delegate* delegate_;
@@ -388,6 +394,7 @@ class OAuthLoginVerifier : public base::SupportsWeakPtr<OAuthLoginVerifier>,
 // send a (possibly empty) token to the BrowserPolicyConnector, which will then
 // let the policy subsystem proceed and resume Profile creation.
 // Sending the token even when no Profile is pending is also OK.
+// TODO(kochi): Split this class into another file after M20 merge.
 class PolicyOAuthFetcher : public GaiaOAuthConsumer {
  public:
   // Fetches the device management service's oauth token using |oauth1_token|
@@ -536,9 +543,118 @@ class JobRestartRequest
   base::OneShotTimer<JobRestartRequest> timer_;
 };
 
+// Given the authenticated credentials from the cookie jar, try to exchange
+// fetch OAuth1 token and secret. Automatically retries until max retry count is
+// reached.
+// TODO(kochi): Split this class into another file after M20 merge.
+class OAuth1TokenFetcher
+    : public base::SupportsWeakPtr<OAuth1TokenFetcher>,
+      public GaiaOAuthConsumer {
+ public:
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    virtual void OnOAuth1AccessTokenAvailable(const std::string& token,
+                                              const std::string& secret) = 0;
+    virtual void OnOAuth1AccessTokenFetchFailed() = 0;
+  };
+
+  OAuth1TokenFetcher(OAuth1TokenFetcher::Delegate* delegate,
+                     Profile* auth_profile)
+      : delegate_(delegate),
+        auth_profile_(auth_profile),
+        oauth_fetcher_(this,
+                       auth_profile_->GetRequestContext(),
+                       auth_profile_,
+                       kServiceScopeChromeOS),
+        retry_count_(0) {
+    DCHECK(delegate);
+  }
+  virtual ~OAuth1TokenFetcher() {}
+
+  void Start() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (CrosLibrary::Get()->libcros_loaded()) {
+      // Delay the verification if the network is not connected or on a captive
+      // portal.
+      const Network* network =
+          CrosLibrary::Get()->GetNetworkLibrary()->active_network();
+      if (!network || !network->connected() || network->restricted_pool()) {
+        // If network is offline, defer the token fetching until online.
+        VLOG(1) << "Network is offline.  Deferring OAuth1 token fetch.";
+        BrowserThread::PostDelayedTask(
+            BrowserThread::UI, FROM_HERE,
+            base::Bind(&OAuth1TokenFetcher::Start, AsWeakPtr()),
+            base::TimeDelta::FromMilliseconds(kOAuth1TokenRequestRestartDelay));
+        return;
+      }
+    }
+    oauth_fetcher_.SetAutoFetchLimit(GaiaOAuthFetcher::OAUTH1_ALL_ACCESS_TOKEN);
+    oauth_fetcher_.StartGetOAuthTokenRequest();
+  }
+
+ private:
+  // Decides how to proceed on GAIA response and other errors. If the error
+  // looks temporary, retries token fetching until max retry count is reached.
+  // If retry count runs out, or error condition is unrecoverable, returns
+  // false.
+  bool RetryOnError(const GoogleServiceAuthError& error) {
+    if ((error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
+         error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
+         error.state() == GoogleServiceAuthError::REQUEST_CANCELED) &&
+        retry_count_++ < kMaxOAuth1TokenRequestAttemptCount) {
+      BrowserThread::PostDelayedTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&OAuth1TokenFetcher::Start, AsWeakPtr()),
+          base::TimeDelta::FromMilliseconds(kOAuth1TokenRequestRestartDelay));
+      return true;
+    }
+    LOG(WARNING) << "Unrecoverable error or retry count max reached.";
+    return false;
+  }
+
+  // GaiaOAuthConsumer implementation:
+  virtual void OnGetOAuthTokenSuccess(const std::string& oauth_token) OVERRIDE {
+    VLOG(1) << "Got OAuth request token!";
+  }
+
+  virtual void OnGetOAuthTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE {
+    LOG(WARNING) << "Failed to get OAuth1 request token, error: "
+                 << error.state();
+    if (!RetryOnError(error))
+      delegate_->OnOAuth1AccessTokenFetchFailed();
+  }
+
+  virtual void OnOAuthGetAccessTokenSuccess(
+      const std::string& token,
+      const std::string& secret) OVERRIDE {
+    VLOG(1) << "Got OAuth v1 token!";
+    retry_count_ = 0;
+    delegate_->OnOAuth1AccessTokenAvailable(token, secret);
+  }
+
+  virtual void OnOAuthGetAccessTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE {
+    LOG(WARNING) << "Failed fetching OAuth1 access token, error: "
+                 << error.state();
+    if (!RetryOnError(error))
+      delegate_->OnOAuth1AccessTokenFetchFailed();
+  }
+
+  OAuth1TokenFetcher::Delegate* delegate_;
+  Profile* auth_profile_;
+  GaiaOAuthFetcher oauth_fetcher_;
+
+  // The retry counter.  Increment this only when failure happened.
+  int retry_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(OAuth1TokenFetcher);
+};
+
 class LoginUtilsImpl
     : public LoginUtils,
-      public GaiaOAuthConsumer,
+      public OAuth1TokenFetcher::Delegate,
       public OAuthLoginVerifier::Delegate,
       public net::NetworkChangeNotifier::ConnectionTypeObserver,
       public base::SupportsWeakPtr<LoginUtilsImpl> {
@@ -585,14 +701,10 @@ class LoginUtilsImpl
                                         Profile* new_profile) OVERRIDE;
   virtual void StopBackgroundFetchers() OVERRIDE;
 
-  // GaiaOAuthConsumer overrides.
-  virtual void OnGetOAuthTokenSuccess(const std::string& oauth_token) OVERRIDE;
-  virtual void OnGetOAuthTokenFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnOAuthGetAccessTokenSuccess(const std::string& token,
-                                            const std::string& secret) OVERRIDE;
-  virtual void OnOAuthGetAccessTokenFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+  // OAuth1TokenFetcher::Delegate overrides.
+  void OnOAuth1AccessTokenAvailable(const std::string& token,
+                                    const std::string& secret) OVERRIDE;
+  void OnOAuth1AccessTokenFetchFailed() OVERRIDE;
 
   // OAuthLoginVerifier::Delegate overrides.
   virtual void OnOAuthVerificationSucceeded(const std::string& user_name,
@@ -604,10 +716,6 @@ class LoginUtilsImpl
   // net::NetworkChangeNotifier::ConnectionTypeObserver overrides.
   virtual void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
-
-  // Given the authenticated credentials from the cookie jar, try to exchange
-  // fetch OAuth request, v1 and v2 tokens.
-  void FetchOAuth1AccessToken(Profile* auth_profile);
 
  protected:
   virtual std::string GetOffTheRecordCommandLine(
@@ -663,8 +771,8 @@ class LoginUtilsImpl
   bool has_cookies_;
   // Has to be scoped_refptr, see comment for CreateAuthenticator(...).
   scoped_refptr<Authenticator> authenticator_;
-  scoped_ptr<GaiaOAuthFetcher> oauth_fetcher_;
   scoped_ptr<PolicyOAuthFetcher> policy_oauth_fetcher_;
+  scoped_ptr<OAuth1TokenFetcher> oauth1_token_fetcher_;
   scoped_ptr<OAuthLoginVerifier> oauth_login_verifier_;
 
   // Delegate to be fired when the profile will be prepared.
@@ -886,12 +994,17 @@ void LoginUtilsImpl::OnProfileCreated(
       VerifyOAuth1AccessToken(user_profile, oauth1_token, oauth1_secret);
     } else {
       // If we don't have it, fetch OAuth1 access token.
+      // Once we get that, we will kick off individual requests for OAuth2
+      // tokens for all our services.
       // Use off-the-record profile that was used for this step. It should
       // already contain all needed cookies that will let us skip GAIA's user
       // authentication UI.
       //
       // TODO(rickcam) We should use an isolated App here.
-      FetchOAuth1AccessToken(authenticator_->authentication_profile());
+      oauth1_token_fetcher_.reset(
+          new OAuth1TokenFetcher(this,
+                                 authenticator_->authentication_profile()));
+      oauth1_token_fetcher_->Start();
     }
   }
 
@@ -925,18 +1038,6 @@ void LoginUtilsImpl::OnProfileCreated(
   // resolved.
   if (delegate_)
     delegate_->OnProfilePrepared(user_profile);
-}
-
-void LoginUtilsImpl::FetchOAuth1AccessToken(Profile* auth_profile) {
-  oauth_fetcher_.reset(new GaiaOAuthFetcher(this,
-                                            auth_profile->GetRequestContext(),
-                                            auth_profile,
-                                            kServiceScopeChromeOS));
-  // Let's first get the Oauth request token and OAuth1 token+secret.
-  // Once we get that, we will kick off individual requests for OAuth2 tokens
-  // for all our services.
-  oauth_fetcher_->SetAutoFetchLimit(GaiaOAuthFetcher::OAUTH1_ALL_ACCESS_TOKEN);
-  oauth_fetcher_->StartGetOAuthTokenRequest();
 }
 
 void LoginUtilsImpl::StartTokenServices(Profile* user_profile) {
@@ -1270,37 +1371,9 @@ void LoginUtilsImpl::TransferDefaultAuthCache(Profile* default_profile,
 }
 
 void LoginUtilsImpl::StopBackgroundFetchers() {
-  oauth_fetcher_.reset();
   policy_oauth_fetcher_.reset();
+  oauth1_token_fetcher_.reset();
   oauth_login_verifier_.reset();
-}
-
-void LoginUtilsImpl::OnGetOAuthTokenSuccess(const std::string& oauth_token) {
-  VLOG(1) << "Got OAuth request token!";
-}
-
-void LoginUtilsImpl::OnGetOAuthTokenFailure(
-    const GoogleServiceAuthError& error) {
-  // TODO(zelidrag): Pop up sync setup UI here?
-  LOG(WARNING) << "Failed fetching OAuth request token, error: "
-               << error.state();
-}
-
-void LoginUtilsImpl::OnOAuthGetAccessTokenSuccess(const std::string& token,
-                                                  const std::string& secret) {
-  VLOG(1) << "Got OAuth v1 token!";
-  Profile* user_profile = ProfileManager::GetDefaultProfile();
-  StoreOAuth1AccessToken(user_profile, token, secret);
-
-  // Verify OAuth1 token by doing OAuthLogin and fetching credentials.
-  VerifyOAuth1AccessToken(user_profile, token, secret);
-}
-
-void LoginUtilsImpl::OnOAuthGetAccessTokenFailure(
-    const GoogleServiceAuthError& error) {
-  // TODO(zelidrag): Pop up sync setup UI here?
-  LOG(WARNING) << "Failed fetching OAuth request token, error: "
-               << error.state();
 }
 
 void LoginUtilsImpl::FetchSecondaryTokens(Profile* offrecord_profile,
@@ -1417,6 +1490,20 @@ void LoginUtilsImpl::OnOAuthVerificationFailed(const std::string& user_name) {
                                           User::OAUTH_TOKEN_STATUS_INVALID);
 }
 
+void LoginUtilsImpl::OnOAuth1AccessTokenAvailable(const std::string& token,
+                                                  const std::string& secret) {
+  Profile* user_profile = ProfileManager::GetDefaultProfile();
+  StoreOAuth1AccessToken(user_profile, token, secret);
+
+  // Verify OAuth1 token by doing OAuthLogin and fetching credentials.
+  VerifyOAuth1AccessToken(user_profile, token, secret);
+}
+
+void LoginUtilsImpl::OnOAuth1AccessTokenFetchFailed() {
+  // TODO(kochi): Show failure notification UI here?
+  LOG(ERROR) << "Failed to fetch OAuth1 access token.";
+}
+
 void LoginUtilsImpl::OnOAuthVerificationSucceeded(
     const std::string& user_name, const std::string& sid,
     const std::string& lsid, const std::string& auth) {
@@ -1434,7 +1521,7 @@ void LoginUtilsImpl::OnConnectionTypeChanged(
     if (oauth_login_verifier_.get() &&
         !oauth_login_verifier_->is_done()) {
       // If we come online for the first time after successful offline login,
-      // we need to kick of OAuth token verification process again.
+      // we need to kick off OAuth token verification process again.
       oauth_login_verifier_->ContinueVerification();
     } else if (should_restore_auth_session_) {
       should_restore_auth_session_ = false;
