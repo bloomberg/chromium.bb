@@ -704,11 +704,8 @@ wl_pointer_set_focus(struct wl_pointer *pointer, struct wl_surface *surface,
 	struct wl_resource *resource;
 	uint32_t serial;
 
-	if (pointer->focus == surface)
-		return;
-
 	resource = pointer->focus_resource;
-	if (resource) {
+	if (resource && pointer->focus != surface) {
 		serial = wl_display_next_serial(resource->client->display);
 		wl_pointer_send_leave(resource, serial,
 				      &pointer->focus->resource);
@@ -717,7 +714,9 @@ wl_pointer_set_focus(struct wl_pointer *pointer, struct wl_surface *surface,
 
 	resource = find_resource_for_surface(&pointer->resource_list,
 					     surface);
-	if (resource) {
+	if (resource &&
+	    (pointer->focus != surface ||
+	     pointer->focus_resource != resource)) {
 		serial = wl_display_next_serial(resource->client->display);
 		wl_pointer_send_enter(resource, serial, &surface->resource,
 				      sx, sy);
@@ -737,10 +736,7 @@ wl_keyboard_set_focus(struct wl_keyboard *keyboard, struct wl_surface *surface)
 	struct wl_resource *resource;
 	uint32_t serial;
 
-	if (keyboard->focus == surface)
-		return;
-
-	if (keyboard->focus_resource) {
+	if (keyboard->focus_resource && keyboard->focus != surface) {
 		resource = keyboard->focus_resource;
 		serial = wl_display_next_serial(resource->client->display);
 		wl_keyboard_send_leave(resource, serial,
@@ -750,7 +746,9 @@ wl_keyboard_set_focus(struct wl_keyboard *keyboard, struct wl_surface *surface)
 
 	resource = find_resource_for_surface(&keyboard->resource_list,
 					     surface);
-	if (resource) {
+	if (resource &&
+	    (keyboard->focus != surface ||
+	     keyboard->focus_resource != resource)) {
 		serial = wl_display_next_serial(resource->client->display);
 		wl_keyboard_send_enter(resource, serial, &surface->resource,
 				       &keyboard->keys);
