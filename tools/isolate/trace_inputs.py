@@ -383,7 +383,7 @@ class Strace(ApiBase):
 
       # Arguments parsing.
       RE_CHDIR = re.compile(r'^\"(.+?)\"$')
-      RE_EXECVE = re.compile(r'^\"(.+?)\", \[.+?\], \[.+?\]$')
+      RE_EXECVE = re.compile(r'^\"(.+?)\", \[(.+)\], \[\/\* \d\d vars \*\/\]$')
       RE_OPEN2 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+)$')
       RE_OPEN3 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+), (\d+)$')
       RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
@@ -503,13 +503,18 @@ class Strace(ApiBase):
         child.initial_cwd = self.get_cwd()
         assert child.parentid is None
         child.parentid = self.pid
+        # It is necessary because the logs are processed out of order.
+        assert childpid not in self.children
         self.children.append(childpid)
 
       def handle_close(self, _function, _args, _result):
         pass
 
       def handle_execve(self, _function, args, result):
-        self._handle_file(self.RE_EXECVE.match(args).group(1), result)
+        if result != '0':
+          return
+        m = self.RE_EXECVE.match(args)
+        self._handle_file(m.group(1), result)
 
       def handle_exit_group(self, _function, _args, _result):
         """Removes cwd."""
@@ -765,8 +770,8 @@ class Dtrace(ApiBase):
   def code(cls, pid, cwd):
     """Setups the D code to implement child process tracking.
 
-    Injects a fake chdir() trace to simplify parsing. The reason is that the
-    child process is already running at that point so:
+    Injects the pid and the initial cwd into the trace header for context.
+    The reason is that the child process is already running at that point so:
     - no proc_start() is logged for it.
     - there is no way to figure out the absolute path of cwd in kernel on OSX
 
@@ -779,12 +784,9 @@ class Dtrace(ApiBase):
         'dtrace:::BEGIN {\n'
         '  current_processes = 1;\n'
         '  logindex = 0;\n'
-        '  trackedpid[') + pid + ('] = 1;\n'
-        '  printf("%d %d:%d chdir(\\"' + cwd + '\\") = 0\\n",\n'
-        '      logindex, 1, ' + pid + ');\n'
-        '  logindex++;\n'
-        '  printf("%d %d:%d %s_%s() = 0\\n",\n'
-        '      logindex, ppid, pid, probeprov, probename);\n'
+        '  trackedpid[' + pid + '] = 1;\n'
+        '  printf("%d %d:%d %s_%s(\\"' + cwd + '\\") = 0\\n",\n'
+        '      logindex, ppid, ' + pid + ', probeprov, probename);\n'
         '  logindex++;\n'
         '}\n') + cls.D_CODE
 
@@ -793,6 +795,7 @@ class Dtrace(ApiBase):
     RE_HEADER = re.compile(r'^\d+ (\d+):(\d+) ([a-zA-Z_\-]+)\((.*?)\) = (.+)$')
 
     # Arguments parsing.
+    RE_DTRACE_BEGIN = re.compile(r'^\"(.+?)\"$')
     RE_CHDIR = re.compile(r'^\"(.+?)\"$')
     RE_OPEN = re.compile(r'^\"(.+?)\", (\d+), (-?\d+)$')
     RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
@@ -801,6 +804,14 @@ class Dtrace(ApiBase):
 
     class Process(ApiBase.Context.Process):
       pass
+
+    def __init__(self, blacklist):
+      super(Dtrace.Context, self).__init__(blacklist)
+      # Process ID of the trace_child_process.py wrapper script instance.
+      self._tracer_pid = None
+      # First process to be started by self._tracer_pid.
+      self._initial_pid = None
+      self._initial_cwd = None
 
     def on_line(self, line):
       match = self.RE_HEADER.match(line)
@@ -816,23 +827,42 @@ class Dtrace(ApiBase):
           match.group(4),
           match.group(5))
 
-    def handle_dtrace_BEGIN(self, _ppid, _pid, _function, args, _result):
-      pass
+    def handle_dtrace_BEGIN(self, _ppid, pid, _function, args, _result):
+      assert not self._tracer_pid and not self._initial_pid
+      self._tracer_pid = pid
+      self._initial_cwd = self.RE_DTRACE_BEGIN.match(args).group(1)
 
     def handle_proc_start(self, ppid, pid, _function, _args, result):
-      """Transfers cwd."""
+      """Transfers cwd.
+
+      The dtrace script already takes care of only tracing the processes that
+      are child of the traced processes so there is no need to verify the
+      process hierarchy.
+      """
       assert result == '0'
-      cwd = self.processes[ppid].cwd
       assert pid not in self.processes
+      assert (ppid == self._tracer_pid) != bool(self._initial_pid)
+      if not self._initial_pid:
+        self._initial_pid = pid
+        ppid = None
+        cwd = self._initial_cwd
+      else:
+        parent = self.processes[ppid]
+        cwd = parent.cwd
       proc = self.processes[pid] = self.Process(self, pid, cwd, ppid)
       proc.cwd = cwd
+      logging.debug('New child: %s -> %d' % (ppid, pid))
 
     def handle_proc_exit(self, _ppid, pid, _function, _args, _result):
       """Removes cwd."""
-      self.processes[pid].cwd = None
+      if pid != self._tracer_pid:
+        # self._tracer_pid is not traced itself.
+        self.processes[pid].cwd = None
 
-    def handle_chdir(self, ppid, pid, _function, args, result):
+    def handle_chdir(self, _ppid, pid, _function, args, result):
       """Updates cwd."""
+      assert self._tracer_pid
+      assert pid in self.processes
       if result.startswith('0'):
         cwd = self.RE_CHDIR.match(args).group(1)
         if not cwd.startswith('/'):
@@ -841,9 +871,7 @@ class Dtrace(ApiBase):
         else:
           logging.debug('handle_chdir(%d, %s)' % (pid, cwd))
           cwd2 = cwd
-        proc = self.processes.setdefault(
-            pid, self.Process(self, pid, cwd2, ppid))
-        proc.cwd = cwd2
+        self.processes[pid].cwd = cwd2
       else:
         assert False, 'Unexecpected fail: %s' % result
 
@@ -996,6 +1024,8 @@ class Dtrace(ApiBase):
 class LogmanTrace(ApiBase):
   """Uses the native Windows ETW based tracing functionality to trace a child
   process.
+
+  Caveat: this implementations doesn't track cwd or initial_cwd.
   """
   class Context(ApiBase.Context):
     """Processes a ETW log line and keeps the list of existent and non
@@ -1013,20 +1043,28 @@ class LogmanTrace(ApiBase):
     TIMESTAMP = 16
 
     class Process(ApiBase.Context.Process):
-      pass
+      def __init__(self, *args):
+        super(LogmanTrace.Context.Process, self).__init__(*args)
+        # Handle file objects that succeeded.
+        self.file_objects = {}
 
     def __init__(self, blacklist):
       super(LogmanTrace.Context, self).__init__(blacklist)
       self._drive_map = DosDriveMap()
-      self._first_line = False
       # Threads mapping to the corresponding process id.
       self._threads_active = {}
+      # Process ID of the tracer, e.g. tracer_inputs.py
+      self._tracer_pid = None
+      # First process to be started by self._tracer_pid.
+      self._initial_pid = None
+      self._line_number = 0
 
     def on_csv_line(self, line):
       """Processes a CSV Event line."""
       # So much white space!
       line = [i.strip() for i in line]
-      if not self._first_line:
+      self._line_number += 1
+      if self._line_number == 1:
         assert line == [
           u'Event Name',
           u'Type',
@@ -1049,7 +1087,6 @@ class LogmanTrace(ApiBase):
           u'User(ms)',    # pretty much useless.
           u'User Data',
         ]
-        self._first_line = True
         return
 
       # As you can see, the CSV is full of useful non-redundant information:
@@ -1094,6 +1131,11 @@ class LogmanTrace(ApiBase):
       else:
         assert False, '%s_%s' % (line[self.EVENT_NAME], line[self.TYPE])
 
+    def _thread_to_process(self, tid):
+      """Finds the process from the thread id."""
+      tid = int(tid, 16)
+      return self.processes.get(self._threads_active.get(tid))
+
     @staticmethod
     def handle_EventTrace_Header(line):
       """Verifies no event was dropped, e.g. no buffer overrun occured."""
@@ -1124,6 +1166,24 @@ class LogmanTrace(ApiBase):
     def handle_EventTrace_Any(self, line):
       pass
 
+    def handle_FileIo_Cleanup(self, line):
+      """General wisdom: if a file is closed, it's because it was opened.
+
+      Note that FileIo_Close is not used since if a file was opened properly but
+      not closed before the process exits, only Cleanup will be logged.
+      """
+      #IRP = 19
+      TTID = 20  # Thread ID, that's what we want.
+      FILE_OBJECT = 21
+      #FILE_KEY = 22
+      proc = self._thread_to_process(line[TTID])
+      if not proc:
+        # Not a process we care about.
+        return
+      file_object = line[FILE_OBJECT]
+      if file_object in proc.file_objects:
+        proc.add_file(proc.file_objects.pop(file_object))
+
     def handle_FileIo_Create(self, line):
       """Handles a file open.
 
@@ -1133,18 +1193,20 @@ class LogmanTrace(ApiBase):
 
       " (..) process and thread id values of the IO events (..) are not valid "
       http://msdn.microsoft.com/magazine/ee358703.aspx
+
+      The FileIo.Create event doesn't return if the CreateFile() call
+      succeeded, so keep track of the file_object and check that it is
+      eventually closed with FileIo_Cleanup.
       """
       #IRP = 19
       TTID = 20  # Thread ID, that's what we want.
-      #FILE_OBJECT = 21
+      FILE_OBJECT = 21
       #CREATE_OPTIONS = 22
       #FILE_ATTRIBUTES = 23
       #SHARE_ACCESS = 24
       OPEN_PATH = 25
 
-      # Find the process from the thread id.
-      tid = int(line[TTID], 16)
-      proc = self.processes.get(self._threads_active.get(tid))
+      proc = self._thread_to_process(line[TTID])
       if not proc:
         # Not a process we care about.
         return
@@ -1155,10 +1217,13 @@ class LogmanTrace(ApiBase):
       if raw_path.endswith(os.path.sep):
         return
       filename = self._drive_map.to_dos(raw_path)
-      # Ignore bare drive right away.
-      if len(raw_path) == 2:
+      # Ignore bare drive right away. Some may still fall through with format
+      # like '\\?\X:'
+      if len(filename) == 2:
         return
-      proc.add_file(filename)
+      file_object = line[FILE_OBJECT]
+      # Override any stale file object
+      proc.file_objects[file_object] = filename
 
     def handle_FileIo_Rename(self, line):
       # TODO(maruel): Handle?
@@ -1190,8 +1255,8 @@ class LogmanTrace(ApiBase):
       if line[IMAGE_FILE_NAME] == '"logman.exe"':
         # logman's parent is trace_input.py or whatever tool using it as a
         # library. Trace any other children started by it.
-        assert ppid not in self.processes
-        self.processes[ppid] = self.Process(self, ppid, None, None)
+        assert not self._tracer_pid
+        self._tracer_pid = ppid
         logging.info('Found logman\'s parent at %d' % ppid)
 
     def handle_Process_End(self, line):
@@ -1216,12 +1281,19 @@ class LogmanTrace(ApiBase):
 
       ppid = line[self.PID]
       pid = int(line[PROCESS_ID], 16)
-      if ppid in self.processes:
+      if ppid == self._tracer_pid:
         # Need to ignore processes we don't know about because the log is
         # system-wide.
         if line[IMAGE_FILE_NAME] == '"logman.exe"':
           # Skip the shutdown call when "logman.exe stop" is executed.
           return
+        self._initial_pid = self._initial_pid or pid
+        assert pid not in self.processes
+        self.processes[pid] = self.Process(self, pid, None, None)
+        logging.info(
+            'New child: %d -> %d %s' % (ppid, pid, line[IMAGE_FILE_NAME]))
+      elif ppid in self.processes:
+        # Grand-children
         assert pid not in self.processes
         self.processes[pid] = self.Process(self, pid, None, ppid)
         logging.info(
@@ -1289,8 +1361,13 @@ class LogmanTrace(ApiBase):
     for i in list(self.IGNORED):
       self.IGNORED.add(GetShortPathName(i.replace('/', os.path.sep)))
 
-    # Add this one last since it has no short path name equivalent.
+    # Add these last since they have no short path name equivalent.
     self.IGNORED.add('\\SystemRoot')
+    # All the NTFS metadata is in the form x:\$EXTEND or stuff like that.
+    for letter in (chr(l) for l in xrange(ord('C'), ord('Z')+1)):
+      self.IGNORED.add('%s\\\$' % letter)
+      # TODO(maruel): Remove the need to add these.
+      self.IGNORED.add('\\\\?\\%s\\$' % letter)
     self.IGNORED = tuple(sorted(self.IGNORED))
 
   @staticmethod
