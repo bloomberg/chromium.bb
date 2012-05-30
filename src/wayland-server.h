@@ -210,6 +210,9 @@ struct wl_keyboard_grab;
 struct wl_keyboard_grab_interface {
 	void (*key)(struct wl_keyboard_grab *grab, uint32_t time,
 		    uint32_t key, uint32_t state);
+	void (*modifiers)(struct wl_keyboard_grab *grab, uint32_t serial,
+			  uint32_t mods_depressed, uint32_t mods_latched,
+			  uint32_t mods_locked, uint32_t group);
 };
 
 struct wl_keyboard_grab {

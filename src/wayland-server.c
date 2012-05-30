@@ -532,9 +532,26 @@ default_grab_key(struct wl_keyboard_grab *grab,
 	}
 }
 
+static void
+default_grab_modifiers(struct wl_keyboard_grab *grab, uint32_t serial,
+		       uint32_t mods_depressed, uint32_t mods_latched,
+		       uint32_t mods_locked, uint32_t group)
+{
+	struct wl_keyboard *keyboard = grab->keyboard;
+	struct wl_resource *resource;
+
+	resource = keyboard->focus_resource;
+	if (!resource)
+		return;
+
+	wl_keyboard_send_modifiers(resource, serial, mods_depressed,
+				   mods_latched, mods_locked, group);
+}
+
 static const struct wl_keyboard_grab_interface
 				default_keyboard_grab_interface = {
-	default_grab_key
+	default_grab_key,
+	default_grab_modifiers,
 };
 
 WL_EXPORT void

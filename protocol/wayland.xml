@@ -872,6 +872,19 @@
       <arg name="key" type="uint"/>
       <arg name="state" type="uint"/>
     </event>
+
+    <event name="modifiers">
+      <description summary="modifier and group state">
+        Notifies clients that the modifier and/or group state has
+	changed, and it should update its local state.
+      </description>
+
+      <arg name="serial" type="uint"/>
+      <arg name="mods_depressed" type="uint"/>
+      <arg name="mods_latched" type="uint"/>
+      <arg name="mods_locked" type="uint"/>
+      <arg name="group" type="uint"/>
+    </event>
   </interface>
 
   <interface name="wl_touch" version="1">
