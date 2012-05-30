@@ -212,6 +212,8 @@
     "chrome.experimental.socket.read": "experimental.socket.html#method-read",
     "chrome.experimental.socket.recvFrom": "experimental.socket.html#method-recvFrom",
     "chrome.experimental.socket.sendTo": "experimental.socket.html#method-sendTo",
+    "chrome.experimental.socket.setKeepAlive": "experimental.socket.html#method-setKeepAlive",
+    "chrome.experimental.socket.setNoDelay": "experimental.socket.html#method-setNoDelay",
     "chrome.experimental.socket.write": "experimental.socket.html#method-write",
     "chrome.experimental.speechInput.isRecording": "experimental.speechInput.html#method-isRecording",
     "chrome.experimental.speechInput.onError": "experimental.speechInput.html#event-onError",
@@ -1204,11 +1206,15 @@
     },
     {
       "api_calls": [
+        "chrome.experimental.fontSettings.getDefaultFixedFontSize",
         "chrome.experimental.fontSettings.getDefaultFontSize",
         "chrome.experimental.fontSettings.getFont",
         "chrome.experimental.fontSettings.getFontList",
+        "chrome.experimental.fontSettings.getMinimumFontSize",
+        "chrome.experimental.fontSettings.setDefaultFixedFontSize",
         "chrome.experimental.fontSettings.setDefaultFontSize",
-        "chrome.experimental.fontSettings.setFont"
+        "chrome.experimental.fontSettings.setFont",
+        "chrome.experimental.fontSettings.setMinimumFontSize"
       ],
       "crx_path": null,
       "description": "Sample extension for Font Settings API",
@@ -1223,13 +1229,13 @@
       "packaged_app": false,
       "path": "examples/api/fontSettings/",
       "protocols": [],
-      "search_string": "FONT SETTINGS SAMPLE EXTENSION FOR FONT SETTINGS API BROWSER_ACTION EXPERIMENTAL POPUP CHROME.EXPERIMENTAL.FONTSETTINGS.GETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONT CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONTLIST CHROME.EXPERIMENTAL.FONTSETTINGS.SETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.SETFONT",
+      "search_string": "FONT SETTINGS SAMPLE EXTENSION FOR FONT SETTINGS API BROWSER_ACTION EXPERIMENTAL POPUP CHROME.EXPERIMENTAL.FONTSETTINGS.GETDEFAULTFIXEDFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.GETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONT CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONTLIST CHROME.EXPERIMENTAL.FONTSETTINGS.GETMINIMUMFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.SETDEFAULTFIXEDFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.SETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.SETFONT CHROME.EXPERIMENTAL.FONTSETTINGS.SETMINIMUMFONTSIZE",
       "source_files": [
         "manifest.json",
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "5dab5f989ab4e02b4b184f189d1e061102d5add6",
+      "source_hash": "ba59122d1421a59114519890a2040b763e035cd6",
       "zip_path": "examples/api/fontSettings.zip"
     },
     {

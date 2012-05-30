@@ -1,12 +1,22 @@
 <!doctype html>
 <html>
-<head>
+  <head>
+  <meta charset="utf-8">
   <title>Font Settings</title>
   <script src="./popup.js"></script>
+  <style>
+    .font-setting-container {
+      -webkit-box-flex: 1;
+      display: -webkit-box;
+    }
+    .font-input-div {
+      -webkit-margin-end: 3em;
+      margin-left:10px;
+    }
+  </style>
 </head>
-<body>
+<body style="width: 600px">
   <h1>Font Settings</h1>
-  <div>
     <div>Script</div>
     <div>
     <select id="scriptList">
@@ -44,26 +54,57 @@
       <option value="Yiii">Yi</option>
     </select>
     </div>
-    <div style="margin-left:10px">
-    <div>Standard</div>
-    <div>
-    <select id="standardFontList"></select>
+    <div style="margin-left:20px">
+      <div>Standard</div>
+      <div class="font-setting-container">
+        <div class="font-input-div">
+          <select id="standardFontList"></select>
+        </div>
+        <div id="standardFontSample" style="font-family: standard;">
+          Lorem ipsum dolor sit amat.雪を積み重ねた。
+        </div>
+      </div>
+      <div>Serif</div>
+      <div class="font-setting-container">
+        <div class="font-input-div">
+          <select id="serifFontList"></select>
+        </div>
+        <div id="serifFontSample" style="font-family: serif;">
+          Lorem ipsum dolor sit amat.雪を積み重ねた。
+        </div>
+      </div>
+      <div>Sans-Serif</div>
+      <div class="font-setting-container">
+        <div class="font-input-div">
+          <select id="sansSerifFontList"></select>
+        </div>
+        <div id="sansSerifFontSample" style="font-family: sans-serif;">
+          Lorem ipsum dolor sit amat.雪を積み重ねた。
+        </div>
+      </div>
+      <div>Fixed</div>
+      <div class="font-setting-container">
+        <div class="font-input-div">
+          <select id="fixedFontList"></select>
+        </div>
+        <div id="fixedFontSample" style="font-family: monospace;">
+          Lorem ipsum dolor sit amat.雪を積み重ねた。
+        </div>
+      </div>
     </div>
-    <div>Serif</div>
-    <div>
-    <select id="serifFontList"></select>
+    <div class="font-setting-container">Default Font Size</div>
+    <div class="font-input-div"><input type="text" id="defaultFontSize"></div>
+    <div class="font-setting-container">Default Fixed Font Size</div>
+    <div class="font-input-div">
+      <input type="text" id="defaultFixedFontSize">
     </div>
-    <div>Sans-Serif</div>
-    <div>
-    <select id="sansSerifFontList"></select>
+    <div>Minimum Font Size</div>
+    <div class="font-setting-container">
+      <div class="font-input-div"><input type="text" id="minFontSize"></div>
+      <div id="minFontSample" style="font-family: standard; font-size: 1px;">
+        Lorem ipsum dolor sit amat.雪を積み重ねた。
+      </div>
     </div>
-    <div>Fixed</div>
-    <div>
-    <select id="fixedFontList"></select>
-    </div>
-    </div>
-    <div>Font Size</div>
-    <div><input type="text" id="defaultFontSize"></div>
   </div>
 </body>
 </html>

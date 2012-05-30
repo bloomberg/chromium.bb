@@ -44,7 +44,7 @@ function populateLists(fonts) {
     }
   }
 
-  updateListSelections();
+  scriptChanged();
 }
 
 // Returns a function that updates the font setting for |genericFamily|
@@ -89,8 +89,10 @@ function getFontHandler(list) {
   };
 }
 
-// Sets the selected value of each font list to the current font setting.
-function updateListSelections() {
+// Called when the script list selection changes. Sets the selected value of
+// each font list to the current font setting, and updates the document's lang
+// so that the samples are shown in the current font setting.
+function scriptChanged() {
   var script = getSelectedScript();
 
   for (var i = 0; i < genericFamilies.length; i++) {
@@ -99,27 +101,39 @@ function updateListSelections() {
 
     var details = {};
     details.genericFamily = family;
-    if (script != DEFAULT_SCRIPT)
+    if (script != DEFAULT_SCRIPT) {
       details.script = script;
+      // For font selection it's the script code that matters, not language, so
+      // just use en for lang.
+      document.body.lang = 'en-' + script;
+    } else {
+      document.body.lang = '';
+    }
 
-    chrome.experimental.fontSettings.getFont(details,
-                                             getFontHandler(list));
+    chrome.experimental.fontSettings.getFont(details, getFontHandler(list));
   }
 }
 
-function defaultFontSizeChanged() {
-  var defaultFontSizeInput = document.getElementById('defaultFontSize');
-  var pixelSize = parseInt(defaultFontSizeInput.value);
-  if (!isNaN(pixelSize)) {
-    chrome.experimental.fontSettings.setDefaultFontSize({
-      pixelSize: pixelSize
-    });
+function getFontSizeChangedFunc(elem, setter) {
+  return function() {
+    var pixelSize = parseInt(elem.value);
+    if (!isNaN(pixelSize)) {
+      setter({ pixelSize: pixelSize });
+    }
   }
+}
+
+function initFontSizePref(id, getter, setter) {
+  var elem = document.getElementById(id);
+  getter({}, function(details) {
+    elem.value = details.pixelSize;
+  });
+  elem.addEventListener('change', getFontSizeChangedFunc(elem, setter));
 }
 
 function init() {
   scriptList = document.getElementById('scriptList');
-  scriptList.addEventListener('change', updateListSelections);
+  scriptList.addEventListener('change', scriptChanged);
 
   // Populate the font lists.
   chrome.experimental.fontSettings.getFontList(populateLists);
@@ -131,11 +145,15 @@ function init() {
     list.addEventListener('change', handler);
   }
 
-  var defaultFontSizeInput = document.getElementById('defaultFontSize');
-  chrome.experimental.fontSettings.getDefaultFontSize({}, function(details) {
-    defaultFontSizeInput.value = details.pixelSize;
-  });
-  defaultFontSizeInput.addEventListener('change', defaultFontSizeChanged);
+  initFontSizePref('defaultFontSize',
+                   chrome.experimental.fontSettings.getDefaultFontSize,
+                   chrome.experimental.fontSettings.setDefaultFontSize);
+  initFontSizePref('defaultFixedFontSize',
+                   chrome.experimental.fontSettings.getDefaultFixedFontSize,
+                   chrome.experimental.fontSettings.setDefaultFixedFontSize);
+  initFontSizePref('minFontSize',
+                   chrome.experimental.fontSettings.getMinimumFontSize,
+                   chrome.experimental.fontSettings.setMinimumFontSize);
 }
 
 document.addEventListener('DOMContentLoaded', init);
