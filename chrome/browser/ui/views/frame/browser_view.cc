@@ -2415,7 +2415,8 @@ void BrowserView::ShowPasswordGenerationBubble(const gfx::Rect& rect) {
   PasswordGenerationBubbleView* bubble =
       new PasswordGenerationBubbleView(bounds,
                                        this,
-                                       web_contents->GetRenderViewHost());
+                                       web_contents->GetRenderViewHost(),
+                                       browser_.get());
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble->Show();

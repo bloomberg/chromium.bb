@@ -10,9 +10,11 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
 
 namespace content {
+class PageNavigator;
 class RenderViewHost;
 }
 
@@ -26,11 +28,13 @@ class Textfield;
 // If the generated password is accepted by the user, the renderer associated
 // with |render_view_host| is informed.
 class PasswordGenerationBubbleView : public views::BubbleDelegateView,
-                                     public views::ButtonListener {
+                                     public views::ButtonListener,
+                                     public views::LinkListener {
  public:
   PasswordGenerationBubbleView(const gfx::Rect& anchor_rect,
                                views::View* anchor_view,
-                               content::RenderViewHost* render_view_host);
+                               content::RenderViewHost* render_view_host,
+                               content::PageNavigator* navigator);
   virtual ~PasswordGenerationBubbleView();
 
  private:
@@ -42,6 +46,9 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
+  // views::LinkListener overrides:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
   // Subviews
   views::TextButton* accept_button_;
   views::Textfield* text_field_;
@@ -51,6 +58,10 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
 
   // RenderViewHost associated with the button that spawned this bubble.
   content::RenderViewHost* render_view_host_;
+
+  // An object used to handle page loads that originate from link clicks
+  // within this UI.
+  content::PageNavigator* navigator_;
 
   // Class to generate passwords
   autofill::PasswordGenerator password_generator_;
