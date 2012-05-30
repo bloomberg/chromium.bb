@@ -852,7 +852,7 @@
 
       <arg name="time" type="uint"/>
       <arg name="axis" type="uint"/>
-      <arg name="value" type="int"/>
+      <arg name="value" type="fixed"/>
     </event>
   </interface>
 
