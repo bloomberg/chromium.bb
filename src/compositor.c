@@ -1719,10 +1719,39 @@ notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis, int32_t value)
 				       WL_POINTER_AXIS, time, axis, value);
 }
 
-static void
+static int
 update_modifier_state(struct weston_seat *seat, uint32_t key, uint32_t state)
 {
+	struct weston_compositor *compositor = seat->compositor;
 	uint32_t modifier;
+	uint32_t mods_depressed, mods_latched, mods_locked, group;
+	int ret = 0;
+
+	xkb_state_update_key(seat->compositor->xkb_info.state, key + 8,
+			     state ? XKB_KEY_DOWN : XKB_KEY_UP);
+
+	mods_depressed =
+		xkb_state_serialize_mods(compositor->xkb_info.state,
+					 XKB_STATE_DEPRESSED);
+	mods_latched =
+		xkb_state_serialize_mods(compositor->xkb_info.state,
+					 XKB_STATE_LATCHED);
+	mods_locked =
+		xkb_state_serialize_mods(compositor->xkb_info.state,
+					 XKB_STATE_LOCKED);
+	group = xkb_state_serialize_group(compositor->xkb_info.state,
+					  XKB_STATE_EFFECTIVE);
+
+	if (mods_depressed != compositor->xkb_info.mods_depressed ||
+	    mods_latched != compositor->xkb_info.mods_latched ||
+	    mods_locked != compositor->xkb_info.mods_locked ||
+	    group != compositor->xkb_info.group)
+		ret = 1;
+
+	compositor->xkb_info.mods_depressed = mods_depressed;
+	compositor->xkb_info.mods_latched = mods_latched;
+	compositor->xkb_info.mods_locked = mods_locked;
+	compositor->xkb_info.group = group;
 
 	switch (key) {
 	case KEY_LEFTCTRL:
@@ -1749,6 +1778,8 @@ update_modifier_state(struct weston_seat *seat, uint32_t key, uint32_t state)
 		seat->modifier_state |= modifier;
 	else
 		seat->modifier_state &= ~modifier;
+
+	return ret;
 }
 
 WL_EXPORT void
@@ -1758,8 +1789,10 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key, uint32_t state)
 	struct weston_compositor *compositor = ws->compositor;
 	struct weston_surface *focus =
 		(struct weston_surface *) seat->pointer->focus;
+	struct wl_keyboard_grab *grab = seat->keyboard->grab;
 	uint32_t serial = wl_display_next_serial(compositor->wl_display);
 	uint32_t *k, *end;
+	int mods;
 
 	if (state) {
 		if (compositor->ping_handler && focus)
@@ -1772,7 +1805,7 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key, uint32_t state)
 		weston_compositor_idle_release(compositor);
 	}
 
-	update_modifier_state(ws, key, state);
+	mods = update_modifier_state(ws, key, state);
 	end = seat->keyboard->keys.data + seat->keyboard->keys.size;
 	for (k = seat->keyboard->keys.data; k < end; k++) {
 		if (*k == key)
@@ -1784,12 +1817,11 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key, uint32_t state)
 		*k = key;
 	}
 
-	if (seat->keyboard->grab == &seat->keyboard->default_grab)
+	if (grab == &seat->keyboard->default_grab)
 		weston_compositor_run_binding(compositor, ws,
 					      time, key, 0, 0, state);
 
-	seat->keyboard->grab->interface->key(seat->keyboard->grab,
-					     time, key, state);
+	grab->interface->key(grab, time, key, state);
 }
 
 WL_EXPORT void
