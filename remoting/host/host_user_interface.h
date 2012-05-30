@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-
-#include "remoting/base/scoped_thread_proxy.h"
+#include "base/memory/weak_ptr.h"
+#include "base/message_loop_proxy.h"
 #include "remoting/host/host_status_observer.h"
 
 namespace remoting {
@@ -95,7 +95,9 @@ class HostUserInterface : public HostStatusObserver {
 
   bool is_monitoring_local_inputs_;
 
-  ScopedThreadProxy ui_thread_proxy_;
+  // WeakPtr used to avoid tasks accessing the client after it is deleted.
+  base::WeakPtrFactory<HostUserInterface> weak_factory_;
+  base::WeakPtr<HostUserInterface> weak_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(HostUserInterface);
 };

@@ -25,7 +25,6 @@
 #endif
 
 #include "ppapi/cpp/private/instance_private.h"
-#include "remoting/base/scoped_thread_proxy.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/key_event_mapper.h"
 #include "remoting/client/plugin/mac_key_event_processor.h"
@@ -225,7 +224,7 @@ class ChromotingInstance :
   // This wraps a ChromotingScriptableObject in a pp::Var.
   pp::Var instance_object_;
 
-  scoped_ptr<ScopedThreadProxy> thread_proxy_;
+  base::WeakPtrFactory<ChromotingInstance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingInstance);
 };

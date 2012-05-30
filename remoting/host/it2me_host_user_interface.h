@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 
 #include "remoting/host/host_user_interface.h"
 
@@ -67,8 +68,9 @@ class It2MeHostUserInterface : public HostUserInterface {
   // the connection.
   scoped_ptr<ContinueWindow> continue_window_;
 
-  // Timer controlling the "continue session" dialog.
-  scoped_ptr<TimerTask> timer_task_;
+  // Weak pointer factory used to abandon the "continue session" timer when
+  // hiding the "continue session" dialog, or tearing down the IT2Me UI.
+  base::WeakPtrFactory<It2MeHostUserInterface> timer_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(It2MeHostUserInterface);
 };
