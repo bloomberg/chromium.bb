@@ -33,7 +33,6 @@ class URLRequest;
 namespace extensions {
 
 class RulesRegistryService;
-class WebRequestRule;
 
 // The WebRequestRulesRegistry is responsible for managing
 // the internal representation of rules for the Declarative Web Request API.
@@ -76,7 +75,9 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
   // Returns which modifications should be executed on the network request
   // according to the rules registered in this registry.
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
-      net::URLRequest* request, RequestStages request_stage);
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data);
 
   // Implementation of RulesRegistryWithCache:
   virtual std::string AddRulesImpl(

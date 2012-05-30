@@ -20,6 +20,8 @@ const char kUrlKey[] = "url";
 const char kValueKey[] = "value";
 
 // Values of dictionaries, in particular instance types
+const char kAddResponseHeaderType[] =
+    "declarativeWebRequest.AddResponseHeader";
 const char kCancelRequestType[] = "declarativeWebRequest.CancelRequest";
 const char kIgnoreRulesType[] = "declarativeWebRequest.IgnoreRules";
 const char kRedirectRequestType[] = "declarativeWebRequest.RedirectRequest";
@@ -29,6 +31,8 @@ const char kRedirectToTransparentImageType[] =
     "declarativeWebRequest.RedirectToTransparentImage";
 const char kRemoveRequestHeaderType[] =
     "declarativeWebRequest.RemoveRequestHeader";
+const char kRemoveResponseHeaderType[] =
+    "declarativeWebRequest.RemoveResponseHeader";
 const char kRequestMatcherType[] = "declarativeWebRequest.RequestMatcher";
 const char kSetRequestHeaderType[] = "declarativeWebRequest.SetRequestHeader";
 

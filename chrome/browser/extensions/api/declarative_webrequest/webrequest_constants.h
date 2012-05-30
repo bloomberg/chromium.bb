@@ -24,12 +24,14 @@ extern const char kUrlKey[];
 extern const char kValueKey[];
 
 // Values of dictionaries, in particular instance types
+extern const char kAddResponseHeaderType[];
 extern const char kCancelRequestType[];
 extern const char kIgnoreRulesType[];
 extern const char kRedirectRequestType[];
 extern const char kRedirectToEmptyDocumentType[];
 extern const char kRedirectToTransparentImageType[];
 extern const char kRemoveRequestHeaderType[];
+extern const char kRemoveResponseHeaderType[];
 extern const char kRequestMatcherType[];
 extern const char kSetRequestHeaderType[];
 

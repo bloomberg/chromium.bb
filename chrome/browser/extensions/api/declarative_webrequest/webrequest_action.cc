@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
@@ -79,6 +80,30 @@ scoped_ptr<WebRequestAction> CreateRemoveRequestHeaderAction(
       new WebRequestRemoveRequestHeaderAction(name));
 }
 
+scoped_ptr<WebRequestAction> CreateAddResponseHeaderAction(
+    const base::DictionaryValue* dict,
+    std::string* error,
+    bool* bad_message) {
+  std::string name;
+  std::string value;
+  INPUT_FORMAT_VALIDATE(dict->GetString(keys::kNameKey, &name));
+  INPUT_FORMAT_VALIDATE(dict->GetString(keys::kValueKey, &value));
+  return scoped_ptr<WebRequestAction>(
+      new WebRequestAddResponseHeaderAction(name, value));
+}
+
+scoped_ptr<WebRequestAction> CreateRemoveResponseHeaderAction(
+    const base::DictionaryValue* dict,
+    std::string* error,
+    bool* bad_message) {
+  std::string name;
+  std::string value;
+  INPUT_FORMAT_VALIDATE(dict->GetString(keys::kNameKey, &name));
+  bool has_value = dict->GetString(keys::kValueKey, &value);
+  return scoped_ptr<WebRequestAction>(
+      new WebRequestRemoveResponseHeaderAction(name, value, has_value));
+}
+
 scoped_ptr<WebRequestAction> CreateIgnoreRulesAction(
     const base::DictionaryValue* dict,
     std::string* error,
@@ -103,6 +128,8 @@ struct WebRequestActionFactory {
   std::map<std::string, FactoryMethod> factory_methods;
 
   WebRequestActionFactory() {
+    factory_methods[keys::kAddResponseHeaderType] =
+        &CreateAddResponseHeaderAction;
     factory_methods[keys::kCancelRequestType] =
         &CallConstructorFactoryMethod<WebRequestCancelAction>;
     factory_methods[keys::kRedirectRequestType] =
@@ -116,6 +143,8 @@ struct WebRequestActionFactory {
         &CreateSetRequestHeaderAction;
     factory_methods[keys::kRemoveRequestHeaderType] =
         &CreateRemoveRequestHeaderAction;
+    factory_methods[keys::kRemoveResponseHeaderType] =
+        &CreateRemoveResponseHeaderAction;
     factory_methods[keys::kIgnoreRulesType] =
         &CreateIgnoreRulesAction;
   }
@@ -198,13 +227,15 @@ scoped_ptr<WebRequestActionSet> WebRequestActionSet::Create(
 std::list<LinkedPtrEventResponseDelta> WebRequestActionSet::CreateDeltas(
     net::URLRequest* request,
     RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data,
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
   std::list<LinkedPtrEventResponseDelta> result;
   for (Actions::const_iterator i = actions_.begin(); i != actions_.end(); ++i) {
     if ((*i)->GetStages() & request_stage) {
       LinkedPtrEventResponseDelta delta = (*i)->CreateDelta(request,
-          request_stage, extension_id, extension_install_time);
+          request_stage, optional_request_data, extension_id,
+          extension_install_time);
       if (delta.get())
         result.push_back(delta);
     }
@@ -240,6 +271,7 @@ WebRequestAction::Type WebRequestCancelAction::GetType() const {
 LinkedPtrEventResponseDelta WebRequestCancelAction::CreateDelta(
     net::URLRequest* request,
     RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data,
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
@@ -270,6 +302,7 @@ WebRequestAction::Type WebRequestRedirectAction::GetType() const {
 LinkedPtrEventResponseDelta WebRequestRedirectAction::CreateDelta(
     net::URLRequest* request,
     RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data,
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
@@ -305,6 +338,7 @@ LinkedPtrEventResponseDelta
 WebRequestRedirectToTransparentImageAction::CreateDelta(
     net::URLRequest* request,
     RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data,
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
@@ -338,6 +372,7 @@ LinkedPtrEventResponseDelta
 WebRequestRedirectToEmptyDocumentAction::CreateDelta(
     net::URLRequest* request,
     RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data,
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
@@ -374,6 +409,7 @@ LinkedPtrEventResponseDelta
 WebRequestSetRequestHeaderAction::CreateDelta(
     net::URLRequest* request,
     RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data,
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
@@ -408,6 +444,7 @@ LinkedPtrEventResponseDelta
 WebRequestRemoveRequestHeaderAction::CreateDelta(
     net::URLRequest* request,
     RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data,
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
@@ -415,6 +452,107 @@ WebRequestRemoveRequestHeaderAction::CreateDelta(
       new extension_web_request_api_helpers::EventResponseDelta(
           extension_id, extension_install_time));
   result->deleted_request_headers.push_back(name_);
+  return result;
+}
+
+//
+// WebRequestAddResponseHeaderAction
+//
+
+WebRequestAddResponseHeaderAction::WebRequestAddResponseHeaderAction(
+    const std::string& name,
+    const std::string& value)
+    : name_(name),
+      value_(value) {
+}
+
+WebRequestAddResponseHeaderAction::~WebRequestAddResponseHeaderAction() {}
+
+int WebRequestAddResponseHeaderAction::GetStages() const {
+  return ON_HEADERS_RECEIVED;
+}
+
+WebRequestAction::Type
+WebRequestAddResponseHeaderAction::GetType() const {
+  return WebRequestAction::ACTION_ADD_RESPONSE_HEADER;
+}
+
+LinkedPtrEventResponseDelta
+WebRequestAddResponseHeaderAction::CreateDelta(
+    net::URLRequest* request,
+    RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data,
+    const std::string& extension_id,
+    const base::Time& extension_install_time) const {
+  CHECK(request_stage & GetStages());
+  LinkedPtrEventResponseDelta result(
+      new extension_web_request_api_helpers::EventResponseDelta(
+          extension_id, extension_install_time));
+
+  net::HttpResponseHeaders* headers =
+      optional_request_data.original_response_headers;
+  if (!headers)
+    return result;
+
+  // Don't generate the header if it exists already.
+  if (headers->HasHeaderValue(name_, value_))
+    return result;
+
+  result->added_response_headers.push_back(make_pair(name_, value_));
+  return result;
+}
+
+//
+// WebRequestRemoveResponseHeaderAction
+//
+
+WebRequestRemoveResponseHeaderAction::WebRequestRemoveResponseHeaderAction(
+    const std::string& name,
+    const std::string& value,
+    bool has_value)
+    : name_(name),
+      value_(value),
+      has_value_(has_value) {
+}
+
+WebRequestRemoveResponseHeaderAction::~WebRequestRemoveResponseHeaderAction() {}
+
+int WebRequestRemoveResponseHeaderAction::GetStages() const {
+  return ON_HEADERS_RECEIVED;
+}
+
+WebRequestAction::Type
+WebRequestRemoveResponseHeaderAction::GetType() const {
+  return WebRequestAction::ACTION_REMOVE_RESPONSE_HEADER;
+}
+
+LinkedPtrEventResponseDelta
+WebRequestRemoveResponseHeaderAction::CreateDelta(
+    net::URLRequest* request,
+    RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data,
+    const std::string& extension_id,
+    const base::Time& extension_install_time) const {
+  CHECK(request_stage & GetStages());
+  LinkedPtrEventResponseDelta result(
+      new extension_web_request_api_helpers::EventResponseDelta(
+          extension_id, extension_install_time));
+  net::HttpResponseHeaders* headers =
+      optional_request_data.original_response_headers;
+  if (!headers)
+    return result;
+  void* iter = NULL;
+  std::string current_value;
+  while (headers->EnumerateHeader(&iter, name_, &current_value)) {
+    if (has_value_ &&
+           (current_value.size() != value_.size() ||
+            !std::equal(current_value.begin(), current_value.end(),
+                        value_.begin(),
+                        base::CaseInsensitiveCompare<char>()))) {
+      continue;
+    }
+    result->deleted_response_headers.push_back(make_pair(name_, current_value));
+  }
   return result;
 }
 
@@ -445,6 +583,7 @@ int WebRequestIgnoreRulesAction::GetMinimumPriority() const {
 LinkedPtrEventResponseDelta WebRequestIgnoreRulesAction::CreateDelta(
     net::URLRequest* request,
     RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data,
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());

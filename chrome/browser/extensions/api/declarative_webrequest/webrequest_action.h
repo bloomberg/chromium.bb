@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/common/extensions/api/events.h"
 #include "googleurl/src/gurl.h"
 
@@ -48,6 +49,8 @@ class WebRequestAction {
     ACTION_REDIRECT_TO_EMPTY_DOCUMENT,
     ACTION_SET_REQUEST_HEADER,
     ACTION_REMOVE_REQUEST_HEADER,
+    ACTION_ADD_RESPONSE_HEADER,
+    ACTION_REMOVE_RESPONSE_HEADER,
     ACTION_IGNORE_RULES,
   };
 
@@ -80,6 +83,7 @@ class WebRequestAction {
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
       const std::string& extension_id,
       const base::Time& extension_install_time) const = 0;
 };
@@ -109,6 +113,7 @@ class WebRequestActionSet {
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
       net::URLRequest* request,
       RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
       const std::string& extension_id,
       const base::Time& extension_install_time) const;
 
@@ -140,6 +145,7 @@ class WebRequestCancelAction : public WebRequestAction {
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
       const std::string& extension_id,
       const base::Time& extension_install_time) const OVERRIDE;
 
@@ -159,6 +165,7 @@ class WebRequestRedirectAction : public WebRequestAction {
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
       const std::string& extension_id,
       const base::Time& extension_install_time) const OVERRIDE;
 
@@ -180,6 +187,7 @@ class WebRequestRedirectToTransparentImageAction : public WebRequestAction {
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
       const std::string& extension_id,
       const base::Time& extension_install_time) const OVERRIDE;
 
@@ -200,6 +208,7 @@ class WebRequestRedirectToEmptyDocumentAction : public WebRequestAction {
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
       const std::string& extension_id,
       const base::Time& extension_install_time) const OVERRIDE;
 
@@ -220,6 +229,7 @@ class WebRequestSetRequestHeaderAction : public WebRequestAction {
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
       const std::string& extension_id,
       const base::Time& extension_install_time) const OVERRIDE;
 
@@ -241,12 +251,61 @@ class WebRequestRemoveRequestHeaderAction : public WebRequestAction {
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
       const std::string& extension_id,
       const base::Time& extension_install_time) const OVERRIDE;
 
  private:
   std::string name_;
   DISALLOW_COPY_AND_ASSIGN(WebRequestRemoveRequestHeaderAction);
+};
+
+// Action that instructs to add a response header.
+class WebRequestAddResponseHeaderAction : public WebRequestAction {
+ public:
+  WebRequestAddResponseHeaderAction(const std::string& name,
+                                    const std::string& value);
+  virtual ~WebRequestAddResponseHeaderAction();
+
+  // Implementation of WebRequestAction:
+  virtual int GetStages() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const OVERRIDE;
+
+ private:
+  std::string name_;
+  std::string value_;
+  DISALLOW_COPY_AND_ASSIGN(WebRequestAddResponseHeaderAction);
+};
+
+// Action that instructs to remove a response header.
+class WebRequestRemoveResponseHeaderAction : public WebRequestAction {
+ public:
+  explicit WebRequestRemoveResponseHeaderAction(const std::string& name,
+                                                const std::string& value,
+                                                bool has_value);
+  virtual ~WebRequestRemoveResponseHeaderAction();
+
+  // Implementation of WebRequestAction:
+  virtual int GetStages() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const OVERRIDE;
+
+ private:
+  std::string name_;
+  std::string value_;
+  bool has_value_;
+  DISALLOW_COPY_AND_ASSIGN(WebRequestRemoveResponseHeaderAction);
 };
 
 // Action that instructs to ignore rules below a certain priority.
@@ -262,6 +321,7 @@ class WebRequestIgnoreRulesAction : public WebRequestAction {
   virtual LinkedPtrEventResponseDelta CreateDelta(
       net::URLRequest* request,
       RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
       const std::string& extension_id,
       const base::Time& extension_install_time) const OVERRIDE;
 
@@ -271,7 +331,7 @@ class WebRequestIgnoreRulesAction : public WebRequestAction {
 };
 
 // TODO(battre) Implement further actions:
-// Redirect to constant url, Redirect by RegEx, Set header, Remove header, ...
+// Redirect by RegEx, Cookie manipulations, ...
 
 }  // namespace extensions
 

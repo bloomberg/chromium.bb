@@ -336,7 +336,8 @@ TEST_F(WebRequestRulesRegistryTest, Precedences) {
   GURL url("http://www.google.com");
   TestURLRequest request(url, NULL);
   std::list<LinkedPtrEventResponseDelta> deltas =
-      registry->CreateDeltas(&request, ON_BEFORE_REQUEST);
+      registry->CreateDeltas(&request, ON_BEFORE_REQUEST,
+          WebRequestRule::OptionalRequestData());
 
   // The second extension is installed later and will win for this reason
   // in conflict resolution.
@@ -382,7 +383,8 @@ TEST_F(WebRequestRulesRegistryTest, Priorities) {
   GURL url("http://www.google.com/index.html");
   TestURLRequest request(url, NULL);
   std::list<LinkedPtrEventResponseDelta> deltas =
-      registry->CreateDeltas(&request, ON_BEFORE_REQUEST);
+      registry->CreateDeltas(&request, ON_BEFORE_REQUEST,
+          WebRequestRule::OptionalRequestData());
 
   // The redirect by the first extension is ignored due to the ignore rule.
   ASSERT_EQ(1u, deltas.size());

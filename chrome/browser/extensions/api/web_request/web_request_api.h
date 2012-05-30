@@ -330,10 +330,13 @@ class ExtensionWebRequestEventRouter {
 
   // Evaluates the rules of the declarative webrequest API and stores
   // modifications to the request that result from WebRequestActions as
-  // deltas in |blocked_requests_|. Returns whether any deltas were
-  // generated.
-  bool ProcessDeclarativeRules(net::URLRequest* request,
-                               extensions::RequestStages request_stage);
+  // deltas in |blocked_requests_|. |original_response_headers| should only be
+  // set for the OnHeadersReceived stage and NULL otherwise. Returns whether any
+  // deltas were generated.
+  bool ProcessDeclarativeRules(
+      net::URLRequest* request,
+      extensions::RequestStages request_stage,
+      net::HttpResponseHeaders* original_response_headers);
 
   // Sets the flag that |event_type| has been signaled for |request_id|.
   // Returns the value of the flag before setting it.

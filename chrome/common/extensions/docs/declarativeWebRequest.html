@@ -251,6 +251,14 @@
                 <ol>
                 </ol>
               </li><li>
+                <a href="#type-declarativeWebRequest.AddResponseHeader">declarativeWebRequest.AddResponseHeader</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-declarativeWebRequest.RemoveResponseHeader">declarativeWebRequest.RemoveResponseHeader</a>
+                <ol>
+                </ol>
+              </li><li>
                 <a href="#type-declarativeWebRequest.IgnoreRules">declarativeWebRequest.IgnoreRules</a>
                 <ol>
                 </ol>
@@ -420,6 +428,15 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                     <div>
                       <div>
           <dt>
+            <a href="declarativeWebRequest.html#type-declarativeWebRequest.AddResponseHeader">declarativeWebRequest.AddResponseHeader</a>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
             <a>declarativeWebRequest.CancelRequest</a>
           </dt>
         </div>
@@ -460,6 +477,15 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                       <div>
           <dt>
             <a href="declarativeWebRequest.html#type-declarativeWebRequest.RemoveRequestHeader">declarativeWebRequest.RemoveRequestHeader</a>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
+            <a href="declarativeWebRequest.html#type-declarativeWebRequest.RemoveResponseHeader">declarativeWebRequest.RemoveResponseHeader</a>
           </dt>
           <dd class="todo">
             Undocumented.
@@ -902,6 +928,157 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
               </em>
           </dt>
           <dd>HTTP request header name (case-insensitive).</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.AddResponseHeader"></a>
+              <h4>declarativeWebRequest.AddResponseHeader</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Adds the response header to the response of this web request. As multiple response headers may share the same name, you need to first remove and then add a new response header in order to replace one.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>name</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>HTTP response header name.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>value</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>HTTP response header value.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.RemoveResponseHeader"></a>
+              <h4>declarativeWebRequest.RemoveResponseHeader</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Removes all response headers of the specified names and values.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>name</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>HTTP request header name (case-insensitive).</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>value</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>HTTP request header value (case-insensitive).</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

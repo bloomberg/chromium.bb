@@ -25,6 +25,7 @@ struct EventResponseDelta;
 }
 
 namespace net {
+class HttpResponseHeaders;
 class URLRequest;
 }
 
@@ -40,6 +41,13 @@ class WebRequestRule {
   typedef std::string RuleId;
   typedef std::pair<ExtensionId, RuleId> GlobalRuleId;
   typedef int Priority;
+
+  // Container to pass additional information about requests that are not
+  // available in all request stages.
+  struct OptionalRequestData {
+    OptionalRequestData() : original_response_headers(NULL) {}
+    net::HttpResponseHeaders* original_response_headers;
+  };
 
   WebRequestRule(const GlobalRuleId& id,
                  base::Time extension_installation_time,
@@ -64,7 +72,8 @@ class WebRequestRule {
 
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
       net::URLRequest* request,
-      RequestStages request_stage) const;
+      RequestStages request_stage,
+      const OptionalRequestData& optional_request_data) const;
 
   // Returns the minimum priority of rules that may be evaluated after
   // this rule. Defaults to MAX_INT. Only valid if the conditions of this rule

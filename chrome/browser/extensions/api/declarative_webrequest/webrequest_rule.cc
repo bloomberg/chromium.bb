@@ -87,9 +87,10 @@ scoped_ptr<WebRequestRule> WebRequestRule::Create(
 
 std::list<LinkedPtrEventResponseDelta> WebRequestRule::CreateDeltas(
     net::URLRequest* request,
-    RequestStages request_stage) const {
-  return actions_->CreateDeltas(request, request_stage, id_.first,
-      extension_installation_time_);
+    RequestStages request_stage,
+    const OptionalRequestData& optional_request_data) const {
+  return actions_->CreateDeltas(request, request_stage, optional_request_data,
+      id_.first, extension_installation_time_);
 }
 
 int WebRequestRule::GetMinimumPriority() const {

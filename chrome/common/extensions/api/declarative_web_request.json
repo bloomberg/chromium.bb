@@ -100,6 +100,45 @@
         }
       },
       {
+        "id": "declarativeWebRequest.AddResponseHeader",
+        "description": "Adds the response header to the response of this web request. As multiple response headers may share the same name, you need to first remove and then add a new response header in order to replace one.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.AddResponseHeader"],
+            "nodoc": true
+          },
+          "name": {
+            "type": "string",
+            "description": "HTTP response header name."
+          },
+          "value": {
+            "type": "string",
+            "description": "HTTP response header value."
+          }
+        }
+      },
+      {
+        "id": "declarativeWebRequest.RemoveResponseHeader",
+        "description": "Removes all response headers of the specified names and values.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.RemoveResponseHeader"],
+            "nodoc": true
+          },
+          "name": {
+            "type": "string",
+            "description": "HTTP request header name (case-insensitive)."
+          },
+          "value": {
+            "type": "string",
+            "description": "HTTP request header value (case-insensitive).",
+            "optional": true
+          }
+        }
+      },
+      {
         "id": "declarativeWebRequest.IgnoreRules",
         "description": "Masks all rules that match the specified criteria.",
         "type": "object",
@@ -125,12 +164,14 @@
           "supportsRules": true,
           "conditions": ["declarativeWebRequest.RequestMatcher"],
           "actions": [
+            "declarativeWebRequest.AddResponseHeader",
             "declarativeWebRequest.CancelRequest",
             "declarativeWebRequest.RedirectRequest",
             "declarativeWebRequest.RedirectToTransparentImage",
             "declarativeWebRequest.RedirectToEmptyDocument",
             "declarativeWebRequest.SetRequestHeader",
             "declarativeWebRequest.RemoveRequestHeader",
+            "declarativeWebRequest.RemoveResponseHeader",
             "declarativeWebRequest.IgnoreRules"
           ]
         }

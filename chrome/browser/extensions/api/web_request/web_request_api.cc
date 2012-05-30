@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
@@ -488,7 +489,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   bool initialize_blocked_requests = false;
 
   initialize_blocked_requests |=
-      ProcessDeclarativeRules(request, extensions::ON_BEFORE_REQUEST);
+      ProcessDeclarativeRules(request, extensions::ON_BEFORE_REQUEST, NULL);
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
@@ -536,7 +537,8 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   bool initialize_blocked_requests = false;
 
   initialize_blocked_requests |=
-      ProcessDeclarativeRules(request, extensions::ON_BEFORE_SEND_HEADERS);
+      ProcessDeclarativeRules(request, extensions::ON_BEFORE_SEND_HEADERS,
+                              NULL);
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
@@ -616,40 +618,54 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   if (!profile || helpers::HideRequestForURL(request->url()))
     return net::OK;
 
+  bool initialize_blocked_requests = false;
+
+  initialize_blocked_requests |=
+      ProcessDeclarativeRules(request, extensions::ON_HEADERS_RECEIVED,
+                              original_response_headers);
+
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile, extension_info_map,
                            keys::kOnHeadersReceived, request,
                            &extra_info_spec);
 
-  if (listeners.empty())
-    return net::OK;
+  if (!listeners.empty() &&
+      !GetAndSetSignaled(request->identifier(), kOnHeadersReceived)) {
+    ListValue args;
+    DictionaryValue* dict = new DictionaryValue();
+    ExtractRequestInfo(request, dict);
+    dict->SetString(keys::kStatusLineKey,
+        original_response_headers->GetStatusLine());
+    if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
+      dict->Set(keys::kResponseHeadersKey,
+          GetResponseHeadersList(original_response_headers));
+    }
+    args.Append(dict);
 
-  if (GetAndSetSignaled(request->identifier(), kOnHeadersReceived))
-    return net::OK;
-
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
-  ExtractRequestInfo(request, dict);
-  dict->SetString(keys::kStatusLineKey,
-      original_response_headers->GetStatusLine());
-  if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
-    dict->Set(keys::kResponseHeadersKey,
-        GetResponseHeadersList(original_response_headers));
+    initialize_blocked_requests |=
+        DispatchEvent(profile, request, listeners, args);
   }
-  args.Append(dict);
 
-  if (DispatchEvent(profile, request, listeners, args)) {
-    blocked_requests_[request->identifier()].event = kOnHeadersReceived;
-    blocked_requests_[request->identifier()].callback = callback;
-    blocked_requests_[request->identifier()].net_log = &request->net_log();
-    blocked_requests_[request->identifier()].override_response_headers =
-        override_response_headers;
-    blocked_requests_[request->identifier()].original_response_headers =
-        original_response_headers;
+  if (!initialize_blocked_requests)
+    return net::OK;  // Nobody saw a reason for modifying the request.
+
+  blocked_requests_[request->identifier()].event = kOnHeadersReceived;
+  blocked_requests_[request->identifier()].callback = callback;
+  blocked_requests_[request->identifier()].net_log = &request->net_log();
+  blocked_requests_[request->identifier()].override_response_headers =
+      override_response_headers;
+  blocked_requests_[request->identifier()].original_response_headers =
+      original_response_headers;
+
+  if (blocked_requests_[request->identifier()].num_handlers_blocking == 0) {
+    // If there are no blocking handlers, only the declarative rules tried
+    // to modify the request and we can respond synchronously.
+    return ExecuteDeltas(profile, request->identifier(),
+                         false /* call_callback*/);
+  } else {
     return net::ERR_IO_PENDING;
   }
-  return net::OK;
 }
 
 net::NetworkDelegate::AuthRequiredResponse
@@ -1384,7 +1400,8 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
 
 bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     net::URLRequest* request,
-    extensions::RequestStages request_stage) {
+    extensions::RequestStages request_stage,
+    net::HttpResponseHeaders* original_response_headers) {
   if (!rules_registry_.get())
     return false;
 
@@ -1393,8 +1410,12 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
   // TODO(battre): Annotate deltas with extension IDs, so that we can
   // - Sort deltas by precedence
   // - Check whether extensions have host permissions.
+  extensions::WebRequestRule::OptionalRequestData optional_request_data;
+  optional_request_data.original_response_headers =
+      original_response_headers;
   std::list<linked_ptr<helpers::EventResponseDelta> > result =
-      rules_registry_->CreateDeltas(request, request_stage);
+      rules_registry_->CreateDeltas(request, request_stage,
+                                    optional_request_data);
 
   base::TimeDelta elapsed_time = start - base::Time::Now();
   UMA_HISTOGRAM_TIMES("Extensions.DeclarativeWebRequestNetworkDelay",

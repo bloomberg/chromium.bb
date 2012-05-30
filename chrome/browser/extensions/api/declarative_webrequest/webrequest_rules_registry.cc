@@ -43,7 +43,8 @@ WebRequestRulesRegistry::GetMatches(net::URLRequest* request,
 
 std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
     net::URLRequest* request,
-    RequestStages request_stage) {
+    RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data) {
   std::set<WebRequestRule::GlobalRuleId> matches =
       GetMatches(request, request_stage);
 
@@ -93,7 +94,7 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
       continue;
 
     std::list<LinkedPtrEventResponseDelta> rule_result =
-        rule->CreateDeltas(request, request_stage);
+        rule->CreateDeltas(request, request_stage, optional_request_data);
     result.splice(result.begin(), rule_result);
 
     min_priorities[extension_id] = std::max(current_min_priority,

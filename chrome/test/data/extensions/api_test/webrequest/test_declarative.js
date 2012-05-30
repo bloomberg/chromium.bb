@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 var onRequest = chrome.declarativeWebRequest.onRequest;
+var AddResponseHeader =
+    chrome.declarativeWebRequest.AddResponseHeader;
 var RequestMatcher = chrome.declarativeWebRequest.RequestMatcher;
 var CancelRequest = chrome.declarativeWebRequest.CancelRequest;
 var RedirectRequest = chrome.declarativeWebRequest.RedirectRequest;
@@ -14,6 +16,8 @@ var SetRequestHeader =
     chrome.declarativeWebRequest.SetRequestHeader;
 var RemoveRequestHeader =
     chrome.declarativeWebRequest.RemoveRequestHeader;
+var RemoveResponseHeader =
+    chrome.declarativeWebRequest.RemoveResponseHeader;
 var IgnoreRules =
     chrome.declarativeWebRequest.IgnoreRules;
 
@@ -34,6 +38,10 @@ function getURLHttpComplex() {
 function getURLHttpRedirectTest() {
   return getServerURL(
       "files/extensions/api_test/webrequest/declarative/a.html");
+}
+
+function getURLSetCookie() {
+  return getServerURL('set-cookie?Foo=Bar');
 }
 
 runTests([
@@ -217,6 +225,49 @@ runTests([
             {
               code: "chrome.extension.sendRequest(" +
                     "{pass: document.body.innerText.indexOf('Mozilla') == -1});"
+            });
+        });
+      });
+  },
+
+  function testAddResponseHeader() {
+    ignoreUnexpected = true;
+    expect();  // Used for initialization.
+    onRequest.addRules(
+      [{conditions: [new RequestMatcher()],
+        actions: [new AddResponseHeader({name: "Set-Cookie", value: "Bar=baz"})]
+       }],
+      function() {
+        navigateAndWait(getURLEchoUserAgent(), function() {
+          chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
+            chrome.test.assertTrue(request.pass, "Cookie was not added.");
+          });
+          chrome.tabs.executeScript(tabId,
+            {
+              code: "chrome.extension.sendRequest(" +
+                    "{pass: document.cookie.indexOf('Bar') != -1});"
+            });
+        });
+      });
+  },
+
+  function testRemoveResponseHeader() {
+    ignoreUnexpected = true;
+    expect();  // Used for initialization.
+    onRequest.addRules(
+      [{conditions: [new RequestMatcher()],
+        actions: [new RemoveResponseHeader({name: "Set-Cookie",
+                                            value: "FoO=bAR"})]
+       }],
+      function() {
+        navigateAndWait(getURLSetCookie(), function() {
+          chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
+            chrome.test.assertTrue(request.pass, "Cookie was not removed.");
+          });
+          chrome.tabs.executeScript(tabId,
+            {
+              code: "chrome.extension.sendRequest(" +
+                    "{pass: document.cookie.indexOf('Foo') == -1});"
             });
         });
       });

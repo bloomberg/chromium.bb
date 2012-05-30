@@ -48,6 +48,12 @@ chromeHidden.registerCustomHook('declarativeWebRequest', function(api) {
   chrome.declarativeWebRequest.RemoveRequestHeader = function(parameters) {
     setupInstance(this, parameters, 'RemoveRequestHeader');
   };
+  chrome.declarativeWebRequest.AddResponseHeader = function(parameters) {
+    setupInstance(this, parameters, 'AddResponseHeader');
+  };
+  chrome.declarativeWebRequest.RemoveResponseHeader = function(parameters) {
+    setupInstance(this, parameters, 'RemoveResponseHeader');
+  };
   chrome.declarativeWebRequest.RedirectToTransparentImage =
       function(parameters) {
     setupInstance(this, parameters, 'RedirectToTransparentImage');
