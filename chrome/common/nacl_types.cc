@@ -6,7 +6,9 @@
 
 namespace nacl {
 
-NaClStartParams::NaClStartParams() : enable_exception_handling(false) {
+NaClStartParams::NaClStartParams()
+    : validation_cache_enabled(false),
+      enable_exception_handling(false) {
 }
 
 NaClStartParams::~NaClStartParams() {
