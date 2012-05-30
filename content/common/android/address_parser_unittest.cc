@@ -2,26 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/android/address_detector.h"
-
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "content/common/android/address_parser.h"
+#include "content/common/android/address_parser_internal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::AddressDetector;
+using namespace content::address_parser;
+using namespace content::address_parser::internal;
 
-class AddressDetectorTest : public testing::Test {
+class AddressParserTest : public testing::Test {
  public:
-  AddressDetectorTest() {}
+  AddressParserTest() {}
 
-  void TokenizeWords(const string16& content,
-      AddressDetector::WordList* words) const {
-    AddressDetector::String16Tokenizer tokenizer(content.begin(),
-        content.end(), kWhitespaceUTF16);
+  void TokenizeWords(const string16& content, WordList* words) const {
+    String16Tokenizer tokenizer(content.begin(), content.end(),
+                                kWhitespaceUTF16);
     while (tokenizer.GetNext()) {
-      words->push_back(AddressDetector::Word(tokenizer.token_begin(),
-          tokenizer.token_end()));
+      words->push_back(Word(tokenizer.token_begin(), tokenizer.token_end()));
     }
   }
 
@@ -29,8 +28,8 @@ class AddressDetectorTest : public testing::Test {
     string16 content_16 = UTF8ToUTF16(content);
     string16 result;
 
-    AddressDetector::HouseNumberParser parser;
-    AddressDetector::Word word;
+    HouseNumberParser parser;
+    Word word;
     if (parser.Parse(content_16.begin(), content_16.end(), &word))
       result = string16(word.begin, word.end);
     return UTF16ToUTF8(result);
@@ -42,18 +41,16 @@ class AddressDetectorTest : public testing::Test {
 
   bool GetState(const std::string& state, size_t* state_index) const {
     string16 state_16 = UTF8ToUTF16(state);
-    AddressDetector::String16Tokenizer tokenizer(state_16.begin(),
-                                                 state_16.end(),
-                                                 kWhitespaceUTF16);
+    String16Tokenizer tokenizer(state_16.begin(), state_16.end(),
+                                kWhitespaceUTF16);
     if (!tokenizer.GetNext())
       return false;
 
     size_t state_last_word;
-    AddressDetector::WordList words;
-    words.push_back(AddressDetector::Word(tokenizer.token_begin(),
-                                          tokenizer.token_end()));
-    return AddressDetector::FindStateStartingInWord(
-        &words, 0, &state_last_word, &tokenizer, state_index);
+    WordList words;
+    words.push_back(Word(tokenizer.token_begin(), tokenizer.token_end()));
+    return FindStateStartingInWord(&words, 0, &state_last_word, &tokenizer,
+                                   state_index);
   }
 
   bool IsState(const std::string& state) const {
@@ -66,28 +63,25 @@ class AddressDetectorTest : public testing::Test {
     EXPECT_TRUE(GetState(state, &state_index));
 
     string16 zip_16 = UTF8ToUTF16(zip);
-    AddressDetector::WordList words;
+    WordList words;
     TokenizeWords(zip_16, &words);
     EXPECT_TRUE(words.size() == 1);
-    return AddressDetector::IsZipValid(words.front(), state_index);
+    return ::IsZipValid(words.front(), state_index);
   }
 
   bool IsLocationName(const std::string& street) const {
     string16 street_16 = UTF8ToUTF16(street);
-    AddressDetector::WordList words;
+    WordList words;
     TokenizeWords(street_16, &words);
     EXPECT_TRUE(words.size() == 1);
-    return AddressDetector::IsValidLocationName(words.front());
+    return IsValidLocationName(words.front());
   }
 
   std::string FindAddress(const std::string& content) const {
     string16 content_16 = UTF8ToUTF16(content);
     string16 result_16;
     size_t start, end;
-    AddressDetector detector;
-    std::string content_text;
-    if (detector.FindContent(content_16.begin(), content_16.end(),
-                             &start, &end, &content_text))
+    if (::FindAddress(content_16.begin(), content_16.end(), &start, &end))
       result_16 = content_16.substr(start, end - start);
     return UTF16ToUTF8(result_16);
   }
@@ -101,10 +95,10 @@ class AddressDetectorTest : public testing::Test {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AddressDetectorTest);
+  DISALLOW_COPY_AND_ASSIGN(AddressParserTest);
 };
 
-TEST_F(AddressDetectorTest, HouseNumber) {
+TEST_F(AddressParserTest, HouseNumber) {
   // Tests cases with valid home numbers.
   EXPECT_EQ(GetHouseNumber("4 my house"), "4");
   EXPECT_EQ(GetHouseNumber("Something 4 my house"), "4");
@@ -149,7 +143,7 @@ TEST_F(AddressDetectorTest, HouseNumber) {
   EXPECT_FALSE(ContainsHouseNumber(""));
 }
 
-TEST_F(AddressDetectorTest, FindState) {
+TEST_F(AddressParserTest, FindState) {
   // The complete set of state codes and names is tested together with their
   // returned state indices in the zip code test.
   EXPECT_TRUE(IsState("CALIFORNIA"));
@@ -161,7 +155,7 @@ TEST_F(AddressDetectorTest, FindState) {
   EXPECT_FALSE(IsState("zz"));
 }
 
-TEST_F(AddressDetectorTest, ZipCode) {
+TEST_F(AddressParserTest, ZipCode) {
   EXPECT_TRUE(IsZipValid("90000", "CA"));
   EXPECT_TRUE(IsZipValid("01234", "MA"));
   EXPECT_TRUE(IsZipValid("99999-9999", "Alaska"));
@@ -296,7 +290,7 @@ TEST_F(AddressDetectorTest, ZipCode) {
   EXPECT_TRUE(IsZipValid("83000", "Wyoming"));
 }
 
-TEST_F(AddressDetectorTest, LocationName) {
+TEST_F(AddressParserTest, LocationName) {
   EXPECT_FALSE(IsLocationName("str-eet"));
   EXPECT_FALSE(IsLocationName("somewhere"));
 
@@ -515,7 +509,7 @@ TEST_F(AddressDetectorTest, LocationName) {
   EXPECT_TRUE(IsLocationName("xrd"));
 }
 
-TEST_F(AddressDetectorTest, NumberPrefixCases) {
+TEST_F(AddressParserTest, NumberPrefixCases) {
   EXPECT_EQ(FindAddress("Cafe 21\n750 Fifth Ave. San Diego, California 92101"),
       "750 Fifth Ave. San Diego, California 92101");
   EXPECT_EQ(FindAddress(
@@ -526,7 +520,7 @@ TEST_F(AddressDetectorTest, NumberPrefixCases) {
   EXPECT_TRUE(IsAddress("123 4th Avenue, Somewhere in NY 10000"));
 }
 
-TEST_F(AddressDetectorTest, FullAddress) {
+TEST_F(AddressParserTest, FullAddress) {
   // Test US Google corporate addresses. Expects a full string match.
   EXPECT_TRUE(IsAddress("1600 Amphitheatre Parkway Mountain View, CA 94043"));
   EXPECT_TRUE(IsAddress("201 S. Division St. Suite 500 Ann Arbor, MI 48104"));
