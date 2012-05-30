@@ -693,6 +693,16 @@ const char kForceAppsPromoVisible[]         = "force-apps-promo-visible";
 // omitted. The default value is "www.google.com".
 const char kGaiaHost[]                      = "gaia-host";
 
+// Specifies the backend server used for OAuth authentication requests.
+// The https:// prefix and the trailing slash should be
+// omitted. The default value is "www.google.com".
+const char kGaiaOAuthHost[]                 = "gaia-oauth-host";
+
+// Specifies the path prefix for GAIA OAuth URLs. It should be used
+// for testing in cases where authentication path prefix differs from the one
+// used in production.
+const char kGaiaOAuthUrlPath[]              = "gaia-oauth-url-path";
+
 // Specifies the path prefix for GAIA authentication URL. It should be used
 // for testing in cases where authentication path prefix differs from the one
 // used in production.

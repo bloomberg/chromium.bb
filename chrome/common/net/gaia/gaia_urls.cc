@@ -12,6 +12,9 @@ namespace {
 // Gaia service constants
 const char kDefaultGaiaBaseUrl[] = "accounts.google.com";
 
+// Gaia service constants
+const char kDefaultGaiaOAuthBaseUrl[] = "www.google.com";
+
 const char kCaptchaUrlPrefixSuffix[] = "/";
 const char kClientLoginUrlSuffix[] = "/ClientLogin";
 const char kServiceLoginUrlSuffix[] = "/ServiceLogin";
@@ -26,7 +29,8 @@ const char kOAuth1LoginUrlSuffix[] = "/OAuthLogin";
 const char kOAuthRevokeTokenUrlSuffix[] = "/AuthSubRevokeToken";
 
 // Federated login constants
-const char kDefaultFederatedLoginBaseUrl[] = "https://www.google.com/accounts";
+const char kDefaultFederatedLoginHost[] = "www.google.com";
+const char kDefaultFederatedLoginPath[] = "/accounts";
 const char kGetOAuthTokenUrlSuffix[] = "/o8/GetOAuthToken";
 
 // OAuth2 client id for Google Chrome which is registered as an
@@ -83,7 +87,28 @@ GaiaUrls::GaiaUrls() {
   merge_session_url_ = gaia_url_base + kMergeSessionUrlSuffix;
 
   // Federated login is not part of Gaia and has its own endpoints.
-  get_oauth_token_url_ = std::string(kDefaultFederatedLoginBaseUrl) +
+  std::string oauth_host_base;
+  if (command_line->HasSwitch(switches::kGaiaOAuthHost)) {
+    oauth_host_base =
+        command_line->GetSwitchValueASCII(switches::kGaiaOAuthHost);
+  } else {
+    oauth_host_base = kDefaultFederatedLoginHost;
+  }
+
+  std::string gaia_oauth_url_base = "https://"+oauth_host_base;
+  if (command_line->HasSwitch(switches::kGaiaOAuthUrlPath)) {
+    std::string path =
+        command_line->GetSwitchValueASCII(switches::kGaiaOAuthUrlPath);
+    if (!path.empty()) {
+      if (path[0] != '/')
+        gaia_oauth_url_base.append("/");
+
+      gaia_oauth_url_base.append(path);
+    }
+  } else {
+    gaia_oauth_url_base.append(kDefaultFederatedLoginPath);
+  }
+  get_oauth_token_url_ = gaia_oauth_url_base +
                          kGetOAuthTokenUrlSuffix;
 
   oauth_get_access_token_url_ = gaia_url_base +
