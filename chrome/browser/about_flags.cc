@@ -197,11 +197,11 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kThreadedCompositingModeChoices)
   },
   {
-    "disable-threaded-animation",
-    IDS_FLAGS_DISABLE_THREADED_ANIMATION_NAME,
-    IDS_FLAGS_DISABLE_THREADED_ANIMATION_DESCRIPTION,
+    "enable-threaded-animation",
+    IDS_FLAGS_ENABLE_THREADED_ANIMATION_NAME,
+    IDS_FLAGS_ENABLE_THREADED_ANIMATION_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableThreadedAnimation)
+    SINGLE_VALUE_TYPE(switches::kEnableThreadedAnimation)
   },
   {
     "composited-layer-borders",
