@@ -4,7 +4,7 @@
 
 // Constants.
 /** @const */ var FEEDBACK_LANDING_PAGE =
-    'http://www.google.com/support/chrome/go/feedback_confirmation';
+    'https://www.google.com/support/chrome/go/feedback_confirmation';
 
 var selectedThumbnailDivId = '';
 var selectedThumbnailId = '';
