@@ -139,8 +139,8 @@ get_atom_name(xcb_connection_t *c, xcb_atom_t atom)
 }
 
 void
-dump_property(struct weston_wm *wm, xcb_atom_t property,
-	      xcb_get_property_reply_t *reply)
+dump_property(struct weston_wm *wm,
+	      xcb_atom_t property, xcb_get_property_reply_t *reply)
 {
 	int32_t *incr_value;
 	const char *text_value, *name;
@@ -148,14 +148,14 @@ dump_property(struct weston_wm *wm, xcb_atom_t property,
 	int width, len;
 	uint32_t i;
 
-	width = fprintf(stderr, "  %s: ", get_atom_name(wm->conn, property));
+	width = fprintf(stderr, "%s: ", get_atom_name(wm->conn, property));
 	if (reply == NULL) {
 		fprintf(stderr, "(no reply)\n");
 		return;
 	}
 
 	width += fprintf(stderr,
-			 "type %s, format %d, length %d (value_len %d): ",
+			 "%s/%d, length %d (value_len %d): ",
 			 get_atom_name(wm->conn, reply->type),
 			 reply->format,
 			 xcb_get_property_value_length(reply),
@@ -191,42 +191,20 @@ dump_property(struct weston_wm *wm, xcb_atom_t property,
 	}
 }
 
-static void
-dump_window_properties(struct weston_wm *wm, xcb_window_t window)
+void
+read_and_dump_property(struct weston_wm *wm,
+		       xcb_window_t window, xcb_atom_t property)
 {
-	xcb_list_properties_cookie_t list_cookie;
-	xcb_list_properties_reply_t *list_reply;
-	xcb_get_property_cookie_t property_cookie;
-	xcb_get_property_reply_t *property_reply;
-	xcb_atom_t *atoms;
-	int i, length;
+	xcb_get_property_reply_t *reply;
+	xcb_get_property_cookie_t cookie;
 
-	list_cookie = xcb_list_properties(wm->conn, window);
-	list_reply = xcb_list_properties_reply(wm->conn, list_cookie, NULL);
-	if (!list_reply)
-		/* Bad window, typically */
-		return;
+	cookie = xcb_get_property(wm->conn, 0, window,
+				  property, XCB_ATOM_ANY, 0, 2048);
+	reply = xcb_get_property_reply(wm->conn, cookie, NULL);
 
-	length = xcb_list_properties_atoms_length(list_reply);
-	atoms = xcb_list_properties_atoms(list_reply);
+	dump_property(wm, property, reply);
 
-	for (i = 0; i < length; i++) {
-		property_cookie =
-			xcb_get_property(wm->conn,
-					 0, /* delete */
-					 window,
-					 atoms[i],
-					 XCB_ATOM_ANY,
-					 0, 2048);
-
-		property_reply = xcb_get_property_reply(wm->conn,
-							property_cookie, NULL);
-		dump_property(wm, atoms[i], property_reply);
-
-		free(property_reply);
-	}
-
-	free(list_reply);
+	free(reply);
 }
 
 /* We reuse some predefined, but otherwise useles atoms */
@@ -265,8 +243,6 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 	if (!window->properties_dirty)
 		return;
 	window->properties_dirty = 0;
-
-	dump_window_properties(wm, window->id);
 
 	for (i = 0; i < ARRAY_LENGTH(props); i++)
 		cookie[i] = xcb_get_property(wm->conn,
@@ -648,29 +624,14 @@ weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *even
 	if (window)
 		window->properties_dirty = 1;
 
-	if (property_notify->atom == XCB_ATOM_WM_CLASS) {
-		fprintf(stderr, "wm_class changed\n");
-	} else if (property_notify->atom == XCB_ATOM_WM_TRANSIENT_FOR) {
-		fprintf(stderr, "wm_transient_for changed\n");
-	} else if (property_notify->atom == wm->atom.wm_protocols) {
-		fprintf(stderr, "wm_protocols changed\n");
-	} else if (property_notify->atom == wm->atom.net_wm_name) {
-		fprintf(stderr, "_net_wm_name changed\n");
+	fprintf(stderr, "XCB_PROPERTY_NOTIFY: window %d, ",
+		property_notify->window);
+	read_and_dump_property(wm, property_notify->window,
+			       property_notify->atom);
+
+	if (property_notify->atom == wm->atom.net_wm_name ||
+	    property_notify->atom == XCB_ATOM_WM_NAME)
 		weston_wm_window_schedule_repaint(window);
-	} else if (property_notify->atom == wm->atom.net_wm_user_time) {
-		fprintf(stderr, "_net_wm_user_time changed\n");
-	} else if (property_notify->atom == wm->atom.net_wm_icon_name) {
-		fprintf(stderr, "_net_wm_icon_name changed\n");
-	} else if (property_notify->atom == XCB_ATOM_WM_NAME) {
-		fprintf(stderr, "wm_name changed\n");
-		weston_wm_window_schedule_repaint(window);
-	} else if (property_notify->atom == XCB_ATOM_WM_ICON_NAME) {
-		fprintf(stderr, "wm_icon_name changed\n");
-	} else {
-		fprintf(stderr, "XCB_PROPERTY_NOTIFY: "
-			"unhandled property change: %s\n",
-			get_atom_name(wm->conn, property_notify->atom));
-	}
 }
 
 static void

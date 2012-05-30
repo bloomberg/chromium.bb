@@ -122,6 +122,9 @@ struct weston_wm {
 void
 dump_property(struct weston_wm *wm, xcb_atom_t property,
 	      xcb_get_property_reply_t *reply);
+void
+read_and_dump_property(struct weston_wm *wm,
+		       xcb_window_t window, xcb_atom_t property);
 
 const char *
 get_atom_name(xcb_connection_t *c, xcb_atom_t atom);
