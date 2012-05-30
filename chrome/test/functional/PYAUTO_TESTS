@@ -599,6 +599,8 @@
     'all': [
       'perf',
       '-perf.WebPageReplayPageCyclerTest',  # Disable new test until vetted.
+      # Invoked outside of the pyauto_tests framework.
+      '-perf.BenchmarkPerfTest.testSpaceport',
     ],
     'win': [
       '-perf.GPUPerfTest',  # Fails. Discuss with prachij@.

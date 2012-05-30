@@ -54,15 +54,26 @@ import webpagereplay
 from youtube import YoutubeTestHelper
 
 
+def StandardDeviation(values):
+  """Returns the standard deviation of |values|."""
+  avg = Mean(values)
+  if not avg:
+    return None
+  if len(values) < 2:
+    return 0.0
+  temp_vals = [math.pow(x - avg, 2) for x in values]
+  return math.sqrt(sum(temp_vals) / (len(temp_vals) - 1))
+
+
 def Mean(values):
-  """Return the arithmetic mean of |values|."""
+  """Returns the arithmetic mean of |values|."""
   if not values or None in values:
     return None
   return sum(values) / float(len(values))
 
 
 def GeometricMean(values):
-  """Return the geometric mean of |values|."""
+  """Returns the geometric mean of |values|."""
   if not values or None in values or [x for x in values if x < 0.0]:
     return None
   if 0.0 in values:
@@ -224,24 +235,6 @@ class BasePerfTest(pyauto.PyUITest):
     timer = timeit.Timer(stmt=RunCommand)
     return timer.timeit(number=1) * 1000  # Convert seconds to milliseconds.
 
-  def _AvgAndStdDev(self, values):
-    """Computes the average and standard deviation of a set of values.
-
-    Args:
-      values: A list of numeric values.
-
-    Returns:
-      A 2-tuple of floats (average, standard_deviation).
-    """
-    avg = 0.0
-    std_dev = 0.0
-    if values:
-      avg = float(sum(values)) / len(values)
-      if len(values) > 1:
-        temp_vals = [math.pow(x - avg, 2) for x in values]
-        std_dev = math.sqrt(sum(temp_vals) / (len(temp_vals) - 1))
-    return avg, std_dev
-
   def _OutputPerfForStandaloneGraphing(self, graph_name, description, value,
                                        units, units_x):
     """Outputs perf measurement data to a local folder to be graphed.
@@ -368,12 +361,12 @@ class BasePerfTest(pyauto.PyUITest):
     Args:
       description: A string description of the performance value.  Should not
           include spaces.
-      value: Either a single numeric value representing a performance
-          measurement, or a list of (x, y) tuples representing one or more
-          long-running performance measurements, where 'x' is an x-axis value
-          (such as an iteration number) and 'y' is the corresponding performance
-          measurement.  If a list of tuples is given, the |units_x| argument
-          must also be specified.
+      value: Either a numeric value representing a performance measurement, or
+          a list of values to be averaged. Lists may also contain (x, y) tuples
+          representing one or more performance measurements, where 'x' is an
+          x-axis value (such as an iteration number) and 'y' is the
+          corresponding performance measurement.  If a list of tuples is given,
+          the |units_x| argument must also be specified.
       units: A string representing the units of the performance measurement(s).
           Should not include spaces.
       graph_name: A string name for the graph associated with this performance
@@ -383,12 +376,17 @@ class BasePerfTest(pyauto.PyUITest):
           are iteration numbers.  If this argument is specified, then the
           |value| argument must be a list of (x, y) tuples.
     """
-    if isinstance(value, list):
+    if isinstance(value, list) and value[0] and isinstance(value[0], tuple):
       assert units_x
     if units_x:
       assert isinstance(value, list)
 
     if self.IsChromeOS():
+      # ChromeOS results don't support lists.
+      if (isinstance(value, list) and value[0] and
+          not isinstance(value[0], tuple)):
+        value = Mean(value)
+
       if units_x:
         # TODO(dennisjeffrey): Support long-running performance measurements on
         # ChromeOS in a way that can be graphed: crosbug.com/21881.
@@ -533,10 +531,9 @@ class BasePerfTest(pyauto.PyUITest):
     """
     logging.info('Overall results for: %s', description)
     if values:
-      avg, std_dev = self._AvgAndStdDev(values)
-      logging.info('  Average: %f %s', avg, units)
-      logging.info('  Std dev: %f %s', std_dev, units)
-      self._OutputPerfGraphValue(description, avg, units, graph_name)
+      logging.info('  Average: %f %s', Mean(values), units)
+      logging.info('  Std dev: %f %s', StandardDeviation(values), units)
+      self._OutputPerfGraphValue(description, values, units, graph_name)
     else:
       logging.info('No results to report.')
 
@@ -854,6 +851,48 @@ class BenchmarkPerfTest(BasePerfTest):
                                  'dromaeo_individual')
       for benchmark_name, benchmark_score in group['sub_groups'].iteritems():
         logging.info('  Result "%s": %s', benchmark_name, benchmark_score)
+
+  def testSpaceport(self):
+    """Measures results from Spaceport benchmark suite."""
+    url = self.GetFileURLForDataPath('third_party', 'spaceport', 'index.html')
+    self.assertTrue(self.AppendTab(pyauto.GURL(url + '?auto')),
+                    msg='Failed to append tab for Spaceport benchmark suite.')
+
+    # The test reports results to console.log in the format "name: value".
+    # Inject a bit of JS to intercept those.
+    js_collect_console_log = """
+        window.__pyautoresult = {};
+        window.console.log = function(str) {
+            if (!str) return;
+            var key_val = str.split(': ');
+            if (!key_val.length == 2) return;
+            __pyautoresult[key_val[0]] = key_val[1];
+        };
+        window.domAutomationController.send('done');
+    """
+    self.ExecuteJavascript(js_collect_console_log, tab_index=1)
+
+    def _IsDone():
+      expected_num_results = 30  # The number of tests in benchmark.
+      results = eval(self.ExecuteJavascript(js_get_results, tab_index=1))
+      return expected_num_results == len(results)
+
+    js_get_results = """
+        window.domAutomationController.send(
+            JSON.stringify(window.__pyautoresult));
+    """
+    self.assertTrue(
+        self.WaitUntil(_IsDone, timeout=1200, expect_retval=True,
+                       retry_sleep=5),
+        msg='Timed out when waiting for Spaceport benchmark to complete.')
+    results = eval(self.ExecuteJavascript(js_get_results, tab_index=1))
+
+    for key in results:
+      suite, test = key.split('.')
+      value = float(results[key])
+      self._OutputPerfGraphValue(test, value, 'ObjectsAt30FPS', suite)
+    self._PrintSummaryResults('Overall', [float(x) for x in results.values()],
+                              'ObjectsAt30FPS', 'Overall')
 
 
 class LiveWebappLoadTest(BasePerfTest):
@@ -1263,8 +1302,7 @@ class GPUPerfTest(BasePerfTest):
       fps = self.GetFPS(tab_index=tab_index)
       fps_vals.append(fps['fps'])
       time.sleep(1)
-    avg_fps, _ = self._AvgAndStdDev(fps_vals)
-    return avg_fps
+    return Mean(fps_vals)
 
   def _GetStdAvgAndCompare(self, avg_fps, description, ref_dict):
     """Computes the average and compare set of values with reference data.
