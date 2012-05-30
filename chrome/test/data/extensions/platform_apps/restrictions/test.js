@@ -6,14 +6,14 @@ var assertEq = chrome.test.assertEq;
 var fail = chrome.test.fail;
 var succeed = chrome.test.succeed;
 
-var error = "Not available for platform apps.";
+var DEFAULT_EXPECTED_ERROR = "Not available for platform apps.";
 
-function assertThrowsError(method) {
+function assertThrowsError(method, opt_expectedError) {
   try {
     method();
     fail("error not thrown");
   } catch (e) {
-    assertEq(e, error);
+    assertEq(e.message || e, opt_expectedError || DEFAULT_EXPECTED_ERROR);
   }
 }
 
@@ -112,6 +112,14 @@ chrome.test.runTests([
         visible = window[bars[x]].visible;
       });
     }
+    succeed();
+  },
+
+  function testSyncXhr() {
+    var xhr = new XMLHttpRequest();
+    assertThrowsError(function() {
+      xhr.open('GET', 'data:should not load', false);
+    }, 'INVALID_ACCESS_ERR: DOM Exception 15');
     succeed();
   }
 ]);

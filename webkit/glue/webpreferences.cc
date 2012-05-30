@@ -112,7 +112,8 @@ WebPreferences::WebPreferences()
       default_tile_height(256),
       max_untiled_layer_width(512),
       max_untiled_layer_height(512),
-      fixed_position_creates_stacking_context(false) {
+      fixed_position_creates_stacking_context(false),
+      sync_xhr_in_documents_enabled(true) {
   standard_font_family_map[kCommonScript] =
       ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] =
@@ -229,6 +230,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setXSSAuditorEnabled(xss_auditor_enabled);
   settings->setDNSPrefetchingEnabled(dns_prefetching_enabled);
   settings->setLocalStorageEnabled(local_storage_enabled);
+  settings->setSyncXHRInDocumentsEnabled(sync_xhr_in_documents_enabled);
   WebRuntimeFeatures::enableDatabase(databases_enabled);
   settings->setOfflineWebApplicationCacheEnabled(application_cache_enabled);
   settings->setCaretBrowsingEnabled(caret_browsing_enabled);

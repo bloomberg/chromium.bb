@@ -5,7 +5,7 @@
 // A struct for managing webkit's settings.
 //
 // Adding new values to this class probably involves updating
-// WebKit::WebSettings, common/render_messages.cc, browser/tab_contents/
+// WebKit::WebSettings, content/common/view_messages.h, browser/tab_contents/
 // render_view_host_delegate_helper.cc, and browser/profiles/profile.cc.
 
 #ifndef WEBKIT_GLUE_WEBPREFERENCES_H__
@@ -129,6 +129,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   int max_untiled_layer_width;
   int max_untiled_layer_height;
   bool fixed_position_creates_stacking_context;
+  bool sync_xhr_in_documents_enabled;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
