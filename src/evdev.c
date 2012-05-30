@@ -79,7 +79,9 @@ evdev_process_key(struct evdev_input_device *device,
 	case BTN_BACK:
 	case BTN_TASK:
 		notify_button(&device->master->base.seat,
-			      time, e->code, e->value);
+			      time, e->code,
+			      e->value ? WL_POINTER_BUTTON_STATE_PRESSED :
+					 WL_POINTER_BUTTON_STATE_RELEASED);
 		break;
 
 	default:

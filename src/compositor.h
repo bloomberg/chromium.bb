@@ -478,7 +478,7 @@ notify_motion(struct wl_seat *seat, uint32_t time,
 	      wl_fixed_t x, wl_fixed_t y);
 void
 notify_button(struct wl_seat *seat, uint32_t time, int32_t button,
-	      uint32_t state);
+	      enum wl_pointer_button_state state);
 void
 notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis,
 	    int32_t value);

@@ -547,10 +547,12 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 
 static void
 input_handle_button(void *data, struct wl_pointer *pointer,
-		    uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
+		    uint32_t serial, uint32_t time, uint32_t button,
+		    uint32_t state_w)
 {
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
+	enum wl_pointer_button_state state = state_w;
 
 	notify_button(&c->base.seat->seat, time, button, state);
 }

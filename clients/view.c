@@ -138,11 +138,12 @@ view_page_down(struct view *view)
 
 static void
 button_handler(struct widget *widget, struct input *input, uint32_t time,
-               uint32_t button, uint32_t state, void *data)
+               uint32_t button, enum wl_pointer_button_state state,
+	       void *data)
 {
         struct view *view = data;
 
-        if(!state)
+        if (state == WL_POINTER_BUTTON_STATE_RELEASED)
                 return;
 
         switch(button) {

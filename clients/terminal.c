@@ -2222,13 +2222,14 @@ keyboard_focus_handler(struct window *window,
 static void
 button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
-	       uint32_t button, uint32_t state, void *data)
+	       uint32_t button,
+	       enum wl_pointer_button_state state, void *data)
 {
 	struct terminal *terminal = data;
 
 	switch (button) {
 	case 272:
-		if (state) {
+		if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
 			terminal->dragging = 1;
 			input_get_position(input,
 					   &terminal->selection_start_x,

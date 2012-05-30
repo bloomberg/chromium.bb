@@ -139,22 +139,22 @@ motion_handler(struct widget *widget, struct input *input,
 static void
 button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
-	       uint32_t button, uint32_t state, void *data)
+	       uint32_t button, enum wl_pointer_button_state state, void *data)
 {
 	struct flower *flower = data;
 
 	switch (button) {
 	case BTN_LEFT:
-		if (state)
+		if (state == WL_POINTER_BUTTON_STATE_PRESSED)
 			window_move(flower->window, input,
 				    display_get_serial(flower->display));
 		break;
 	case BTN_MIDDLE:
-		if (state)
+		if (state == WL_POINTER_BUTTON_STATE_PRESSED)
 			widget_schedule_redraw(widget);
 		break;
 	case BTN_RIGHT:
-		if (state)
+		if (state == WL_POINTER_BUTTON_STATE_PRESSED)
 			window_show_frame_menu(flower->window, input, time);
 		break;
 	}

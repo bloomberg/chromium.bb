@@ -189,7 +189,8 @@ typedef int (*widget_motion_handler_t)(struct widget *widget,
 				       float x, float y, void *data);
 typedef void (*widget_button_handler_t)(struct widget *widget,
 					struct input *input, uint32_t time,
-					uint32_t button, uint32_t state,
+					uint32_t button,
+					enum wl_pointer_button_state state,
 					void *data);
 
 struct window *

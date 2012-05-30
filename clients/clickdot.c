@@ -197,11 +197,12 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 static void
 button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
-	       uint32_t button, uint32_t state, void *data)
+	       uint32_t button,
+	       enum wl_pointer_button_state state, void *data)
 {
 	struct clickdot *clickdot = data;
 
-	if (state && button == BTN_LEFT)
+	if (state == WL_POINTER_BUTTON_STATE_PRESSED && button == BTN_LEFT)
 		input_get_position(input, &clickdot->dot.x, &clickdot->dot.y);
 
 	widget_schedule_redraw(widget);

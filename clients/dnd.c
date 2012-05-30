@@ -358,7 +358,8 @@ create_drag_cursor(struct dnd_drag *dnd_drag,
 static void
 dnd_button_handler(struct widget *widget,
 		   struct input *input, uint32_t time,
-		   uint32_t button, uint32_t state, void *data)
+		   uint32_t button, enum wl_pointer_button_state state,
+		   void *data)
 {
 	struct dnd *dnd = data;
 	int32_t x, y;
@@ -378,7 +379,7 @@ dnd_button_handler(struct widget *widget,
 	x -= allocation.x;
 	y -= allocation.y;
 
-	if (item && state == 1) {
+	if (item && state == WL_POINTER_BUTTON_STATE_PRESSED) {
 		dnd_drag = malloc(sizeof *dnd_drag);
 		dnd_drag->dnd = dnd;
 		dnd_drag->input = input;

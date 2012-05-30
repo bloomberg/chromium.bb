@@ -1668,7 +1668,7 @@ weston_surface_activate(struct weston_surface *surface,
 
 WL_EXPORT void
 notify_button(struct wl_seat *seat, uint32_t time, int32_t button,
-	      uint32_t state)
+	      enum wl_pointer_button_state state)
 {
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *compositor = ws->compositor;
@@ -1676,7 +1676,7 @@ notify_button(struct wl_seat *seat, uint32_t time, int32_t button,
 		(struct weston_surface *) seat->pointer->focus;
 	uint32_t serial = wl_display_next_serial(compositor->wl_display);
 
-	if (state) {
+	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
 		if (compositor->ping_handler && focus)
 			compositor->ping_handler(focus, serial);
 		weston_compositor_idle_inhibit(compositor);

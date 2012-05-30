@@ -248,12 +248,13 @@ motion_handler(struct widget *widget, struct input *input,
 
 static void
 button_handler(struct widget *widget, struct input *input,
-		uint32_t time, uint32_t button, uint32_t state, void *data)
+		uint32_t time, uint32_t button,
+		enum wl_pointer_button_state state, void *data)
 {
 	struct gears *gears = data;
 
 	if (button == BTN_LEFT) {
-		if (state) {
+		if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
 			gears->button_down = 1;
 			input_get_position(input,
 					&gears->last_x, &gears->last_y);

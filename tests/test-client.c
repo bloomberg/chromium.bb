@@ -92,13 +92,14 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 static void
 pointer_handle_button(void *data, struct wl_pointer *pointer,
 		      uint32_t serial, uint32_t time, uint32_t button,
-		      uint32_t state)
+		      uint32_t state_w)
 {
 	struct input *input = data;
 	uint32_t bit;
+	enum wl_pointer_button_state state = state_w;
 
 	bit = 1 << (button - BTN_LEFT);
-	if (state)
+	if (state == WL_POINTER_BUTTON_STATE_PRESSED)
 		input->button_mask |= bit;
 	else
 		input->button_mask &= ~bit;

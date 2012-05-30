@@ -1352,7 +1352,8 @@ frame_button_leave_handler(struct widget *widget, struct input *input, void *dat
 static void
 frame_button_button_handler(struct widget *widget,
 			    struct input *input, uint32_t time,
-			    uint32_t button, uint32_t state, void *data)
+			    uint32_t button,
+			    enum wl_pointer_button_state state, void *data)
 {
 	struct frame_button *frame_button = data;
 	struct window *window = widget->window;
@@ -1361,14 +1362,14 @@ frame_button_button_handler(struct widget *widget,
 		return;
 
 	switch (state) {
-	case 1:
+	case WL_POINTER_BUTTON_STATE_PRESSED:
 		frame_button->state = FRAME_BUTTON_ACTIVE;
 		widget_schedule_redraw(frame_button->widget);
 
 		if (frame_button->type == FRAME_BUTTON_ICON)
 			window_show_frame_menu(window, input, time);
 		return;
-	case 0:
+	case WL_POINTER_BUTTON_STATE_RELEASED:
 		frame_button->state = FRAME_BUTTON_DEFAULT;
 		widget_schedule_redraw(frame_button->widget);
 		break;
@@ -1593,7 +1594,8 @@ frame_motion_handler(struct widget *widget,
 static void
 frame_button_handler(struct widget *widget,
 		     struct input *input, uint32_t time,
-		     uint32_t button, uint32_t state, void *data)
+		     uint32_t button, enum wl_pointer_button_state state,
+		     void *data)
 
 {
 	struct frame *frame = data;
@@ -1605,7 +1607,8 @@ frame_button_handler(struct widget *widget,
 				      frame->widget->allocation.width,
 				      frame->widget->allocation.height);
 
-	if (window->display->shell && button == BTN_LEFT && state == 1) {
+	if (window->display->shell && button == BTN_LEFT &&
+	    state == WL_POINTER_BUTTON_STATE_PRESSED) {
 		switch (location) {
 		case THEME_LOCATION_TITLEBAR:
 			if (!window->shell_surface)
@@ -1642,7 +1645,8 @@ frame_button_handler(struct widget *widget,
 						display->serial, location);
 			break;
 		}
-	} else if (button == BTN_RIGHT && state == 1) {
+	} else if (button == BTN_RIGHT &&
+		   state == WL_POINTER_BUTTON_STATE_PRESSED) {
 		window_show_frame_menu(window, input, time);
 	}
 }
@@ -1784,13 +1788,15 @@ input_ungrab(struct input *input)
 
 static void
 pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
-		      uint32_t time, uint32_t button, uint32_t state)
+		      uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct input *input = data;
 	struct widget *widget;
+	enum wl_pointer_button_state state = state_w;
 
 	input->display->serial = serial;
-	if (input->focus_widget && input->grab == NULL && state)
+	if (input->focus_widget && input->grab == NULL &&
+	    state == WL_POINTER_BUTTON_STATE_PRESSED)
 		input_grab(input, input->focus_widget, button);
 
 	widget = input->grab;
@@ -1800,7 +1806,8 @@ pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
 					  button, state,
 					  input->grab->user_data);
 
-	if (input->grab && input->grab_button == button && !state)
+	if (input->grab && input->grab_button == button &&
+	    state == WL_POINTER_BUTTON_STATE_RELEASED)
 		input_ungrab(input);
 }
 
@@ -2845,12 +2852,14 @@ menu_leave_handler(struct widget *widget, struct input *input, void *data)
 static void
 menu_button_handler(struct widget *widget,
 		    struct input *input, uint32_t time,
-		    uint32_t button, uint32_t state, void *data)
+		    uint32_t button, enum wl_pointer_button_state state,
+		    void *data)
 
 {
 	struct menu *menu = data;
 
-	if (state == 0 && time - menu->time > 500) {
+	if (state == WL_POINTER_BUTTON_STATE_PRESSED &&
+	    time - menu->time > 500) {
 		/* Either relase after press-drag-release or
 		 * click-motion-click. */
 		menu->func(menu->window->parent, 

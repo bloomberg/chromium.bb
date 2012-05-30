@@ -335,13 +335,15 @@ move_grab_motion(struct wl_pointer_grab *grab,
 
 static void
 move_grab_button(struct wl_pointer_grab *grab,
-		 uint32_t time, uint32_t button, uint32_t state)
+		 uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct shell_grab *shell_grab = container_of(grab, struct shell_grab,
 						    grab);
 	struct wl_pointer *pointer = grab->pointer;
+	enum wl_pointer_button_state state = state_w;
 
-	if (pointer->button_count == 0 && state == 0) {
+	if (pointer->button_count == 0 &&
+	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
 		shell_grab_finish(shell_grab);
 		wl_pointer_end_grab(pointer);
 		free(grab);
@@ -608,12 +610,14 @@ static const struct weston_shell_client shell_client = {
 
 static void
 resize_grab_button(struct wl_pointer_grab *grab,
-		   uint32_t time, uint32_t button, uint32_t state)
+		   uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
 	struct wl_pointer *pointer = grab->pointer;
+	enum wl_pointer_button_state state = state_w;
 
-	if (pointer->button_count == 0 && state == 0) {
+	if (pointer->button_count == 0 &&
+	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
 		shell_grab_finish(&resize->base);
 		wl_pointer_end_grab(pointer);
 		free(grab);
@@ -1097,12 +1101,13 @@ popup_grab_motion(struct wl_pointer_grab *grab,
 
 static void
 popup_grab_button(struct wl_pointer_grab *grab,
-		  uint32_t time, uint32_t button, uint32_t state)
+		  uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct wl_resource *resource;
 	struct shell_surface *shsurf =
 		container_of(grab, struct shell_surface, popup.grab);
 	struct wl_display *display;
+	enum wl_pointer_button_state state = state_w;
 	uint32_t serial;
 
 	resource = grab->pointer->focus_resource;
@@ -1110,7 +1115,7 @@ popup_grab_button(struct wl_pointer_grab *grab,
 		display = wl_client_get_display(resource->client);
 		serial = wl_display_get_serial(display);
 		wl_pointer_send_button(resource, serial, time, button, state);
-	} else if (state == 0 &&
+	} else if (state == WL_POINTER_BUTTON_STATE_RELEASED &&
 		   (shsurf->popup.initial_up ||
 		    time - shsurf->popup.seat->pointer->grab_time > 500)) {
 		wl_shell_surface_send_popup_done(&shsurf->resource);
@@ -1118,7 +1123,7 @@ popup_grab_button(struct wl_pointer_grab *grab,
 		shsurf->popup.grab.pointer = NULL;
 	}
 
-	if (state == 0)
+	if (state == WL_POINTER_BUTTON_STATE_RELEASED)
 		shsurf->popup.initial_up = 1;
 }
 
@@ -1776,14 +1781,16 @@ rotate_grab_motion(struct wl_pointer_grab *grab,
 
 static void
 rotate_grab_button(struct wl_pointer_grab *grab,
-		 uint32_t time, uint32_t button, uint32_t state)
+		 uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct rotate_grab *rotate =
 		container_of(grab, struct rotate_grab, base.grab);
 	struct wl_pointer *pointer = grab->pointer;
 	struct shell_surface *shsurf = rotate->base.shsurf;
+	enum wl_pointer_button_state state = state_w;
 
-	if (pointer->button_count == 0 && state == 0) {
+	if (pointer->button_count == 0 &&
+	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
 		if (shsurf)
 			weston_matrix_multiply(&shsurf->rotation.rotation,
 					       &rotate->rotation);
@@ -1931,12 +1938,14 @@ is_black_surface (struct weston_surface *es, struct weston_surface **fs_surface)
 static void
 click_to_activate_binding(struct wl_seat *seat,
 			  uint32_t time, uint32_t key,
-			  uint32_t button, uint32_t axis, int32_t state, void *data)
+			  uint32_t button, uint32_t axis, int32_t state_w,
+			  void *data)
 {
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct desktop_shell *shell = data;
 	struct weston_surface *focus;
 	struct weston_surface *upper;
+	enum wl_pointer_button_state state = state_w;
 
 	focus = (struct weston_surface *) seat->pointer->focus;
 	if (!focus)
@@ -1945,7 +1954,8 @@ click_to_activate_binding(struct wl_seat *seat,
 	if (is_black_surface(focus, &upper))
 		focus = upper;
 
-	if (state && seat->pointer->grab == &seat->pointer->default_grab)
+	if (state == WL_POINTER_BUTTON_STATE_PRESSED &&
+	    seat->pointer->grab == &seat->pointer->default_grab)
 		activate(shell, focus, ws);
 }
 

@@ -210,7 +210,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
  */
 static void
 button_handler(struct widget *widget, struct input *input, uint32_t time,
-	       uint32_t button, uint32_t state, void *data)
+	       uint32_t button, enum wl_pointer_button_state state, void *data)
 {
 	int32_t x, y;
 
@@ -218,8 +218,11 @@ button_handler(struct widget *widget, struct input *input, uint32_t time,
 		return;
 
 	input_get_position(input, &x, &y);
-	printf("button time: %d, button: %d, state: %d, x: %d, y: %d\n",
-	       time, button, state, x, y);
+	printf("button time: %d, button: %d, state: %s, x: %d, y: %d\n",
+	       time, button,
+	       (state == WL_POINTER_BUTTON_STATE_PRESSED) ? "pressed" :
+							    "released",
+	       x, y);
 }
 
 /**

@@ -217,11 +217,12 @@ lockscreen_draw(struct widget *widget, void *data)
 static void
 lockscreen_button_handler(struct widget *widget,
 			  struct input *input, uint32_t time,
-			  uint32_t button, uint32_t state, void *data)
+			  uint32_t button,
+			  enum wl_pointer_button_state state, void *data)
 {
 	struct lockscreen *lockscreen = data;
 
-	if (state && lockscreen->window) {
+	if (state == WL_POINTER_BUTTON_STATE_PRESSED && lockscreen->window) {
 		window_destroy(lockscreen->window);
 		lockscreen->window = NULL;
 	}
