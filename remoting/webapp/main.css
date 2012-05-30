@@ -233,7 +233,7 @@ h1.icon-label {
   margin-bottom: 60px;
   font-size: 28px;
   font-weight: 300;
-  color: #aaa;
+  color: #999;
   font-family: "Open sans", "Ariel", sans-serif;
   line-height: 24px;
   display: inline-block;
@@ -545,8 +545,7 @@ button {
 }
 
 #webapp-description {
-  color: #666;
-  margin-top: 10px;
+  margin: 10px 0;
 }
 
 #why-is-this-safe {
