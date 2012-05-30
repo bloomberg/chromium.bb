@@ -47,10 +47,9 @@ IPC_MESSAGE_CONTROL1(DOMStorageMsg_Event,
                      DOMStorageMsg_Event_Params)
 
 // Completion notification sent in response to each async
-// set, remove, and clear operation. Used to maintain the integrity
-// of the renderer-side cache.
-IPC_MESSAGE_CONTROL2(DOMStorageMsg_AsyncOperationComplete,
-                     int /* operation_id */,
+// load, set, remove, and clear operation.
+// Used to maintain the integrity  of the renderer-side cache.
+IPC_MESSAGE_CONTROL1(DOMStorageMsg_AsyncOperationComplete,
                      bool /* success */)
 
 // DOM Storage messages sent from the renderer to the browser.
@@ -67,72 +66,30 @@ IPC_MESSAGE_CONTROL1(DOMStorageHostMsg_CloseStorageArea,
                      int /* connection_id */)
 
 // Retrieves the set of key/value pairs for the area. Used to prime
-// the renderer-side cache.
+// the renderer-side cache. A completion notification is sent in response.
 IPC_SYNC_MESSAGE_CONTROL1_1(DOMStorageHostMsg_LoadStorageArea,
                             int /* connection_id */,
                             dom_storage::ValuesMap)
 
-// Get the length of a storage area.
-IPC_SYNC_MESSAGE_CONTROL1_1(DOMStorageHostMsg_Length,
-                            int /* connection_id */,
-                            unsigned /* length */)
-
-// Get a the ith key within a storage area.
-IPC_SYNC_MESSAGE_CONTROL2_1(DOMStorageHostMsg_Key,
-                            int /* connection_id */,
-                            unsigned /* index */,
-                            NullableString16 /* key */)
-
-// Get a value based on a key from a storage area.
-IPC_SYNC_MESSAGE_CONTROL2_1(DOMStorageHostMsg_GetItem,
-                            int /* connection_id */,
-                            string16 /* key */,
-                            NullableString16 /* value */)
-
-// TODO(michaeln): after the old sync IPC message have been deleted,
-// rename the Async ones to no longer have the Async suffix.
-
-// Set a value that's associated with a key in a storage area.
-IPC_SYNC_MESSAGE_CONTROL4_2(DOMStorageHostMsg_SetItem,
-                            int /* connection_id */,
-                            string16 /* key */,
-                            string16 /* value */,
-                            GURL /* page_url */,
-                            WebKit::WebStorageArea::Result /* result */,
-                            NullableString16 /* old_value */)
-
 // Set a value that's associated with a key in a storage area.
 // A completion notification is sent in response.
-IPC_MESSAGE_CONTROL5(DOMStorageHostMsg_SetItemAsync,
+IPC_MESSAGE_CONTROL4(DOMStorageHostMsg_SetItem,
                      int /* connection_id */,
-                     int /* operation_id */,
                      string16 /* key */,
                      string16 /* value */,
                      GURL /* page_url */)
 
 // Remove the value associated with a key in a storage area.
-IPC_SYNC_MESSAGE_CONTROL3_1(DOMStorageHostMsg_RemoveItem,
-                            int /* connection_id */,
-                            string16 /* key */,
-                            GURL /* page_url */,
-                            NullableString16 /* old_value */)
-
-// Remove the value associated with a key in a storage area.
 // A completion notification is sent in response.
-IPC_MESSAGE_CONTROL4(DOMStorageHostMsg_RemoveItemAsync,
+IPC_MESSAGE_CONTROL3(DOMStorageHostMsg_RemoveItem,
                      int /* connection_id */,
-                     int /* operation_id */,
                      string16 /* key */,
                      GURL /* page_url */)
 
-// Clear the storage area.
-IPC_SYNC_MESSAGE_CONTROL2_1(DOMStorageHostMsg_Clear,
-                            int /* connection_id */,
-                            GURL /* page_url */,
-                            bool /* something_cleared */)
-
 // Clear the storage area. A completion notification is sent in response.
-IPC_MESSAGE_CONTROL3(DOMStorageHostMsg_ClearAsync,
+IPC_MESSAGE_CONTROL2(DOMStorageHostMsg_Clear,
                      int /* connection_id */,
-                     int /* operation_id */,
                      GURL /* page_url */)
+
+// Used to flush the ipc message queue.
+IPC_SYNC_MESSAGE_CONTROL0_0(DOMStorageHostMsg_FlushMessages)

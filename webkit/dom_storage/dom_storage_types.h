@@ -15,7 +15,14 @@
 namespace dom_storage {
 
 // The quota for each storage area. Suggested by the spec.
+// This value is enforced in renderer processes.
 const size_t kPerAreaQuota = 5 * 1024 * 1024;
+
+// In the browser process we allow some overage to
+// accomodate concurrent writes from different renderers
+// that were allowed because the limit imposed in the renderer
+// wasn't exceeded.
+const size_t kPerAreaOverQuotaAllowance = 100 * 1024;
 
 // Value to indicate the localstorage namespace vs non-zero
 // values for sessionstorage namespaces.

@@ -7,10 +7,15 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 class GURL;
+
+namespace dom_storage {
+class DomStorageCachedArea;
+}
 
 class WebStorageAreaImpl : public WebKit::WebStorageArea {
  public:
@@ -25,15 +30,14 @@ class WebStorageAreaImpl : public WebKit::WebStorageArea {
   virtual WebKit::WebString getItem(const WebKit::WebString& key);
   virtual void setItem(
       const WebKit::WebString& key, const WebKit::WebString& value,
-      const WebKit::WebURL& url, WebStorageArea::Result& result,
-      WebKit::WebString& old_value);
+      const WebKit::WebURL& page_url, WebStorageArea::Result& result);
   virtual void removeItem(
-      const WebKit::WebString& key, const WebKit::WebURL& url,
-      WebKit::WebString& old_value);
-  virtual void clear(const WebKit::WebURL& url, bool& cleared_something);
+      const WebKit::WebString& key, const WebKit::WebURL& page_url);
+  virtual void clear(const WebKit::WebURL& url);
 
  private:
   int connection_id_;
+  scoped_refptr<dom_storage::DomStorageCachedArea> cached_area_;
 };
 
 #endif  // CONTENT_RENDERER_DOM_STORAGE_WEBSTORAGEAREA_IMPL_H_

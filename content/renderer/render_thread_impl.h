@@ -179,6 +179,10 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
     return appcache_dispatcher_.get();
   }
 
+  DomStorageDispatcher* dom_storage_dispatcher() const {
+    return dom_storage_dispatcher_.get();
+  }
+
   AudioInputMessageFilter* audio_input_message_filter() {
     return audio_input_message_filter_.get();
   }

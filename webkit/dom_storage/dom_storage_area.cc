@@ -58,7 +58,7 @@ DomStorageArea::DomStorageArea(
     : namespace_id_(namespace_id), origin_(origin),
       directory_(directory),
       task_runner_(task_runner),
-      map_(new DomStorageMap(kPerAreaQuota)),
+      map_(new DomStorageMap(kPerAreaQuota + kPerAreaOverQuotaAllowance)),
       is_initial_import_done_(true),
       is_shutdown_(false),
       commit_batches_in_flight_(0) {
@@ -137,7 +137,7 @@ bool DomStorageArea::Clear() {
   if (map_->Length() == 0)
     return false;
 
-  map_ = new DomStorageMap(kPerAreaQuota);
+  map_ = new DomStorageMap(kPerAreaQuota + kPerAreaOverQuotaAllowance);
 
   if (backing_.get()) {
     CommitBatch* commit_batch = CreateCommitBatchIfNeeded();
@@ -176,7 +176,7 @@ void DomStorageArea::DeleteOrigin() {
     Clear();
     return;
   }
-  map_ = new DomStorageMap(kPerAreaQuota);
+  map_ = new DomStorageMap(kPerAreaQuota + kPerAreaOverQuotaAllowance);
   if (backing_.get()) {
     is_initial_import_done_ = false;
     backing_.reset(new DomStorageDatabase(backing_->file_path()));
@@ -195,7 +195,7 @@ void DomStorageArea::PurgeMemory() {
 
   // Drop the in memory cache, we'll reload when needed.
   is_initial_import_done_ = false;
-  map_ = new DomStorageMap(kPerAreaQuota);
+  map_ = new DomStorageMap(kPerAreaQuota + kPerAreaOverQuotaAllowance);
 
   // Recreate the database object, this frees up the open sqlite connection
   // and its page cache.

@@ -50,23 +50,12 @@ class DOMStorageMessageFilter
                          const GURL& origin);
   void OnCloseStorageArea(int connection_id);
   void OnLoadStorageArea(int connection_id, dom_storage::ValuesMap* map);
-  void OnLength(int connection_id, unsigned* length);
-  void OnKey(int connection_id, unsigned index, NullableString16* key);
-  void OnGetItem(int connection_id, const string16& key,
-                 NullableString16* value);
   void OnSetItem(int connection_id, const string16& key,
-                 const string16& value, const GURL& page_url,
-                 WebKit::WebStorageArea::Result* result,
-                 NullableString16* old_value);
-  void OnSetItemAsync(int connection_id, int operation_id, const string16& key,
-                      const string16& value, const GURL& page_url);
-
+                 const string16& value, const GURL& page_url);
   void OnRemoveItem(int connection_id, const string16& key,
-                    const GURL& page_url, NullableString16* old_value);
-  void OnRemoveItemAsync(int connection_id, int operation_id,
-                         const string16& key, const GURL& page_url);
-  void OnClear(int connection_id, const GURL& url, bool* something_cleared);
-  void OnClearAsync(int connection_id, int operation_id, const GURL& page_url);
+                    const GURL& page_url);
+  void OnClear(int connection_id, const GURL& page_url);
+  void OnFlushMessages();
 
   // DomStorageContext::EventObserver implementation which
   // sends events back to our renderer process.
