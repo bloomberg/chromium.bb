@@ -147,13 +147,14 @@ void SpellCheckHostImpl::InitForRenderer(content::RenderProcessHost* process) {
 #if defined(OS_POSIX)
     file = base::FileDescriptor(GetDictionaryFile(), false);
 #elif defined(OS_WIN)
-    ::DuplicateHandle(::GetCurrentProcess(),
-                      GetDictionaryFile(),
-                      process->GetHandle(),
-                      &file,
-                      0,
-                      false,
-                      DUPLICATE_SAME_ACCESS);
+    BOOL ok = ::DuplicateHandle(::GetCurrentProcess(),
+                                GetDictionaryFile(),
+                                process->GetHandle(),
+                                &file,
+                                0,
+                                false,
+                                DUPLICATE_SAME_ACCESS);
+    DCHECK(ok) << ::GetLastError();
 #endif
   }
 
