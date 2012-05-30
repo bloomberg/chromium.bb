@@ -319,7 +319,9 @@ void WebstoreInstaller::StartDownload(const FilePath& file) {
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(
           controller_->GetWebContents(), download_url_, save_info));
-  params->set_referrer(controller_->GetActiveEntry()->GetURL());
+  params->set_referrer(
+      content::Referrer(controller_->GetActiveEntry()->GetURL(),
+                        WebKit::WebReferrerPolicyDefault));
   params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted, this));
   profile_->GetDownloadManager()->DownloadUrl(params.Pass());
 }

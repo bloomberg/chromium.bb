@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_save_info.h"
+#include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 
@@ -64,7 +65,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   void add_request_header(const std::string& name, const std::string& value) {
     request_headers_.push_back(make_pair(name, value));
   }
-  void set_referrer(const GURL& referrer) { referrer_ = referrer; }
+  void set_referrer(const Referrer& referrer) { referrer_ = referrer; }
   void set_referrer_encoding(const std::string& referrer_encoding) {
     referrer_encoding_ = referrer_encoding;
   }
@@ -90,7 +91,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   const std::string& post_body() const { return post_body_; }
   int64 post_id() const { return post_id_; }
   bool prefer_cache() const { return prefer_cache_; }
-  const GURL& referrer() const { return referrer_; }
+  const Referrer& referrer() const { return referrer_; }
   const std::string& referrer_encoding() const { return referrer_encoding_; }
   int render_process_host_id() const { return render_process_host_id_; }
   int render_view_host_routing_id() const {
@@ -120,7 +121,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   std::string post_body_;
   int64 post_id_;
   bool prefer_cache_;
-  GURL referrer_;
+  Referrer referrer_;
   std::string referrer_encoding_;
   int render_process_host_id_;
   int render_view_host_routing_id_;

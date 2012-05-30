@@ -139,7 +139,7 @@ void DragDownloadFile::InitiateDownload() {
       download_stats::INITIATED_BY_DRAG_N_DROP);
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(web_contents_, url_, save_info));
-  params->set_referrer(referrer_.url);
+  params->set_referrer(referrer_);
   params->set_referrer_encoding(referrer_encoding_);
   download_manager_->DownloadUrl(params.Pass());
 }

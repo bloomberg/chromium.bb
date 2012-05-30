@@ -1525,7 +1525,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       scoped_ptr<DownloadUrlParameters> dl_params(
           DownloadUrlParameters::FromWebContents(
             source_web_contents_, url, save_info));
-      dl_params->set_referrer(referrer);
+      dl_params->set_referrer(
+          content::Referrer(referrer, params_.referrer_policy));
       dl_params->set_referrer_encoding(params_.frame_charset);
       dlm->DownloadUrl(dl_params.Pass());
       break;
@@ -1552,7 +1553,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       scoped_ptr<DownloadUrlParameters> dl_params(
           DownloadUrlParameters::FromWebContents(
             source_web_contents_, url, save_info));
-      dl_params->set_referrer(referrer);
+      dl_params->set_referrer(
+          content::Referrer(referrer, params_.referrer_policy));
       dl_params->set_post_id(post_id);
       dl_params->set_prefer_cache(true);
       if (post_id >= 0)

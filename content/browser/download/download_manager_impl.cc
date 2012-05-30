@@ -37,6 +37,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "net/base/load_flags.h"
 #include "net/base/upload_data.h"
+#include "webkit/glue/webkit_glue.h"
 
 using content::BrowserThread;
 using content::DownloadId;
@@ -57,7 +58,9 @@ void BeginDownload(content::DownloadUrlParameters* params) {
         params->resource_dispatcher_host());
   scoped_ptr<net::URLRequest> request(new net::URLRequest(
       params->url(), resource_dispatcher_host));
-  request->set_referrer(params->referrer().spec());
+  request->set_referrer(params->referrer().url.spec());
+  webkit_glue::ConfigureURLRequestForReferrerPolicy(
+      request.get(), params->referrer().policy);
   request->set_load_flags(request->load_flags() | params->load_flags());
   request->set_method(params->method());
   if (!params->post_body().empty())

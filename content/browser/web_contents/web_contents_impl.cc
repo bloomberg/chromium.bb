@@ -3049,8 +3049,7 @@ void WebContentsImpl::SaveURL(const GURL& url,
   save_info.prompt_for_save_location = true;
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(this, url, save_info));
-  // TODO(jochen): Pass in the referrer policy as well.
-  params->set_referrer(referrer.url);
+  params->set_referrer(referrer);
   params->set_post_id(post_id);
   params->set_prefer_cache(true);
   if (post_id >= 0)
