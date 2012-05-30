@@ -98,9 +98,9 @@ deps = {
     'src/third_party/sfntly/cpp/src':
         Var('git_url') + '/external/sfntly/cpp/src.git@127cef2a54a5b6e6777761d550c1ec90e736383f',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@c32c9f7555f458cf69f46fb9f1adbf9030da215a',
+        Var('git_url') + '/external/skia/include.git@2c9fe62392f177d274464b103b6fcf1008f9e06c',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@0c8b8d58b422dd4c10644d832811327f05d8071d',
+        Var('git_url') + '/external/skia/src.git@c695c7b497371f6fcf56bbd2964d459dc5e0782e',
     'src/third_party/smhasher/src':
         Var('git_url') + '/external/smhasher.git@b35e562e2d80bc47a51b53ec92a305eb9a3383b4',
     'src/third_party/snappy/src':
@@ -136,6 +136,13 @@ deps = {
 }
 
 deps_os = {
+    'android':
+    {
+        'src/third_party/aosp':
+            Var('git_url') + '/chromium/deps/aosp.git@1348f2caa089cd4f64c8cc27041cdd640f1d3e89',
+        'src/third_party/freetype':
+            Var('git_url') + '/git/chromium/src/third_party/freetype.git@1f74e4e7ad3ca4163b4578fc30da26a165dd55e7',
+    },
     'mac':
     {
         'src/chrome/installer/mac/third_party/xz/xz':
