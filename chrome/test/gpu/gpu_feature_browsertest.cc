@@ -35,7 +35,7 @@ using trace_analyzer::TraceEventVector;
 namespace {
 
 typedef uint32 GpuResultFlags;
-#define EXPECT_NO_GPU_PROCESS         GpuResultFlags(1<<0)
+#define EXPECT_NO_GPU_SWAP_BUFFERS    GpuResultFlags(1<<0)
 // Expect a SwapBuffers to occur (see gles2_cmd_decoder.cc).
 #define EXPECT_GPU_SWAP_BUFFERS       GpuResultFlags(1<<1)
 
@@ -134,11 +134,10 @@ class GpuFeatureTest : public InProcessBrowserTest {
     analyzer_->AssociateBeginEndEvents();
     TraceEventVector events;
 
-    // This measurement is flaky, because the GPU process is sometimes
-    // started before the test (always with force-compositing-mode on CrOS).
-    if (expectations & EXPECT_NO_GPU_PROCESS) {
-      EXPECT_EQ(0u, analyzer_->FindEvents(
-          Query::MatchBeginName("OnGraphicsInfoCollected"), &events));
+    if (expectations & EXPECT_NO_GPU_SWAP_BUFFERS) {
+      EXPECT_EQ(analyzer_->FindEvents(Query::EventName() ==
+                                      Query::String("SwapBuffers"), &events),
+                size_t(0));
     }
 
     // Check for swap buffers if expected:
@@ -184,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingBlocked) {
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
 
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
-  RunTest(url, EXPECT_NO_GPU_PROCESS);
+  RunTest(url, EXPECT_NO_GPU_SWAP_BUFFERS);
 }
 
 class AcceleratedCompositingTest : public GpuFeatureTest {
@@ -198,7 +197,7 @@ class AcceleratedCompositingTest : public GpuFeatureTest {
 IN_PROC_BROWSER_TEST_F(AcceleratedCompositingTest,
                        AcceleratedCompositingDisabled) {
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
-  RunTest(url, EXPECT_NO_GPU_PROCESS);
+  RunTest(url, EXPECT_NO_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLAllowed) {
@@ -228,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
 
   const FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
-  RunTest(url, EXPECT_NO_GPU_PROCESS);
+  RunTest(url, EXPECT_NO_GPU_SWAP_BUFFERS);
 }
 
 class WebGLTest : public GpuFeatureTest {
@@ -241,7 +240,7 @@ class WebGLTest : public GpuFeatureTest {
 
 IN_PROC_BROWSER_TEST_F(WebGLTest, WebGLDisabled) {
   const FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
-  RunTest(url, EXPECT_NO_GPU_PROCESS);
+  RunTest(url, EXPECT_NO_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
@@ -367,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS);
 
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
-  RunTest(url, EXPECT_NO_GPU_PROCESS);
+  RunTest(url, EXPECT_NO_GPU_SWAP_BUFFERS);
 }
 
 class Canvas2DDisabledTest : public GpuFeatureTest {
@@ -380,7 +379,7 @@ class Canvas2DDisabledTest : public GpuFeatureTest {
 
 IN_PROC_BROWSER_TEST_F(Canvas2DDisabledTest, Canvas2DDisabled) {
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
-  RunTest(url, EXPECT_NO_GPU_PROCESS);
+  RunTest(url, EXPECT_NO_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest,
