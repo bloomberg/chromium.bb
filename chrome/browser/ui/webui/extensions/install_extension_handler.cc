@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/extensions/install_extension_handler.h"
 
 #include "base/bind.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -16,6 +17,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
+#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/webdropdata.h"
 
@@ -83,7 +85,24 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
           ExtensionSystem::Get(profile)->extension_service(),
           new ExtensionInstallUI(profile)));
   crx_installer->set_allow_off_store_install(true);
-  crx_installer->InstallCrx(file_to_install_);
+
+  const bool kCaseSensitive = false;
+
+  // Have to use EndsWith() because FilePath::Extension() would return ".js" for
+  // "foo.user.js".
+  if (EndsWith(file_to_install_.BaseName().value(),
+               FILE_PATH_LITERAL(".user.js"),
+               kCaseSensitive)) {
+    crx_installer->InstallUserScript(
+        file_to_install_,
+        net::FilePathToFileURL(file_to_install_));
+  } else if (EndsWith(file_to_install_.BaseName().value(),
+                      FILE_PATH_LITERAL(".crx"),
+                      kCaseSensitive)) {
+    crx_installer->InstallCrx(file_to_install_);
+  } else {
+    CHECK(false);
+  }
 
   file_to_install_.clear();
 }

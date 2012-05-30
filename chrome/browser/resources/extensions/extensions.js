@@ -44,7 +44,7 @@ cr.define('extensions', function() {
       // Only process files that look like extensions. Other files should
       // navigate the browser normally.
       if (!e.dataTransfer.files.length ||
-          !/\.crx$/.test(e.dataTransfer.files[0].name)) {
+          !/\.(crx|user\.js)$/.test(e.dataTransfer.files[0].name)) {
         return;
       }
 
