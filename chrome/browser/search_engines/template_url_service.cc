@@ -875,7 +875,14 @@ SyncError TemplateURLService::ProcessSyncChanges(
     // need to undergo conflict resolution.
     TemplateURL* existing_keyword_turl =
         FindNonExtensionTemplateURLForKeyword(turl->keyword());
-    if (iter->change_type() == SyncChange::ACTION_DELETE && existing_turl) {
+    if (iter->change_type() == SyncChange::ACTION_DELETE) {
+      if (!existing_turl) {
+        NOTREACHED() << "Unexpected sync change state.";
+        error = sync_error_factory_->CreateAndUploadError(
+            FROM_HERE,
+            "ProcessSyncChanges failed on ChangeType ACTION_DELETE");
+        continue;
+      }
       bool delete_default = (existing_turl == GetDefaultSearchProvider());
 
       if (delete_default && is_default_search_managed_) {
@@ -889,8 +896,14 @@ SyncError TemplateURLService::ProcessSyncChanges(
         if (delete_default)
           SetDefaultSearchProvider(FindNewDefaultSearchProvider());
       }
-    } else if (iter->change_type() == SyncChange::ACTION_ADD &&
-               !existing_turl) {
+    } else if (iter->change_type() == SyncChange::ACTION_ADD) {
+      if (existing_turl) {
+        NOTREACHED() << "Unexpected sync change state.";
+        error = sync_error_factory_->CreateAndUploadError(
+            FROM_HERE,
+            "ProcessSyncChanges failed on ChangeType ACTION_ADD");
+        continue;
+      }
       std::string guid = turl->sync_guid();
       if (existing_keyword_turl) {
         ResolveSyncKeywordConflict(turl.get(), existing_keyword_turl,
@@ -903,8 +916,14 @@ SyncError TemplateURLService::ProcessSyncChanges(
 
       // Possibly set the newly added |turl| as the default search provider.
       SetDefaultSearchProviderIfNewlySynced(guid);
-    } else if (iter->change_type() == SyncChange::ACTION_UPDATE &&
-               existing_turl) {
+    } else if (iter->change_type() == SyncChange::ACTION_UPDATE) {
+      if (!existing_turl) {
+        NOTREACHED() << "Unexpected sync change state.";
+        error = sync_error_factory_->CreateAndUploadError(
+            FROM_HERE,
+            "ProcessSyncChanges failed on ChangeType ACTION_UPDATE");
+        continue;
+      }
       // Possibly resolve a keyword conflict if they have the same keywords but
       // are not the same entry.
       if (existing_keyword_turl && existing_keyword_turl != existing_turl) {
@@ -914,15 +933,11 @@ SyncError TemplateURLService::ProcessSyncChanges(
       if (UpdateNoNotify(existing_turl, *turl))
         NotifyObservers();
     } else {
-      // Something really unexpected happened. Either we received an
-      // ACTION_INVALID, or Sync is in a crazy state:
-      //  . Trying to DELETE or UPDATE a non-existent search engine.
-      //  . Trying to ADD a search engine that already exists.
+      // We've unexpectedly received an ACTION_INVALID.
       NOTREACHED() << "Unexpected sync change state.";
       error = sync_error_factory_->CreateAndUploadError(
           FROM_HERE,
-          "ProcessSyncChanges failed on ChangeType " +
-              SyncChange::ChangeTypeToString(iter->change_type()));
+          "ProcessSyncChanges received an ACTION_INVALID");
     }
   }
 
