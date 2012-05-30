@@ -141,7 +141,6 @@ class BrowserList {
                            NavigateFromInitiatorTab);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewTabControllerBrowserTest,
                            ReloadInitiatorTab);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserTest, ActivateDeactivateMultiple);
   FRIEND_TEST_ALL_PREFIXES(DetachToBrowserTabDragControllerTest,
                            DetachToOwnWindow);
   FRIEND_TEST_ALL_PREFIXES(DetachToBrowserTabDragControllerTest,
