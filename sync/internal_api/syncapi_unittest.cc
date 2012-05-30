@@ -785,7 +785,6 @@ class SyncManagerTest : public testing::Test,
                        new TestHttpPostProviderFactory(), this,
                        &extensions_activity_monitor_, this, "bogus",
                        credentials,
-                       false /* enable_sync_tabs_for_other_clients */,
                        sync_notifier_mock_, "",
                        sync_api::SyncManager::TEST_IN_MEMORY,
                        &encryptor_,
@@ -958,28 +957,6 @@ TEST_F(SyncManagerTest, UpdateEnabledTypes) {
   // Triggers SyncNotifierUpdateEnabledTypes.
   sync_manager_.UpdateEnabledTypes();
   EXPECT_EQ(2, update_enabled_types_call_count_);
-}
-
-TEST_F(SyncManagerTest, DoNotSyncTabsInNigoriNode) {
-  const syncable::ModelTypeSet encrypted_types(syncable::TYPED_URLS);
-  sync_manager_.MaybeSetSyncTabsInNigoriNode(encrypted_types);
-
-  ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-  ReadNode node(&trans);
-  ASSERT_EQ(BaseNode::INIT_OK,
-            node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
-  EXPECT_FALSE(node.GetNigoriSpecifics().sync_tabs());
-}
-
-TEST_F(SyncManagerTest, SyncTabsInNigoriNode) {
-  const syncable::ModelTypeSet encrypted_types(syncable::SESSIONS);
-  sync_manager_.MaybeSetSyncTabsInNigoriNode(encrypted_types);
-
-  ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-  ReadNode node(&trans);
-  ASSERT_EQ(BaseNode::INIT_OK,
-            node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
-  EXPECT_TRUE(node.GetNigoriSpecifics().sync_tabs());
 }
 
 TEST_F(SyncManagerTest, ProcessJsMessage) {

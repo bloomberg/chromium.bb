@@ -198,11 +198,7 @@ void SyncTest::AddTestSwitches(CommandLine* cl) {
     cl->AppendSwitch(switches::kDisableBackgroundNetworking);
 }
 
-void SyncTest::AddOptionalTypesToCommandLine(CommandLine* cl) {
-  // TODO(sync): Remove this once sessions sync is enabled by default.
-  if (!cl->HasSwitch(switches::kEnableSyncTabs))
-    cl->AppendSwitch(switches::kEnableSyncTabs);
-}
+void SyncTest::AddOptionalTypesToCommandLine(CommandLine* cl) {}
 
 // static
 Profile* SyncTest::MakeProfile(const FilePath::StringType name) {
@@ -760,14 +756,6 @@ void SyncTest::TriggerSyncError(const browser_sync::SyncProtocolError& error,
   std::string output = UTF16ToASCII(
       browser()->GetSelectedWebContents()->GetTitle());
   ASSERT_TRUE(output.find("SetError: 200") != string16::npos);
-}
-
-void SyncTest::TriggerSetSyncTabs() {
-  ASSERT_TRUE(ServerSupportsErrorTriggering());
-  std::string path = "chromiumsync/synctabs";
-  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ("Sync Tabs",
-            UTF16ToASCII(browser()->GetSelectedWebContents()->GetTitle()));
 }
 
 void SyncTest::TriggerCreateSyncedBookmarks() {

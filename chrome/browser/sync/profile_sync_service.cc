@@ -585,20 +585,6 @@ std::string ProfileSyncService::GetExperimentNameForDataType(
 void ProfileSyncService::RegisterNewDataType(syncable::ModelType data_type) {
   if (data_type_controllers_.count(data_type) > 0)
     return;
-  switch (data_type) {
-    case syncable::SESSIONS:
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableSyncTabs)) {
-        return;
-      }
-      RegisterDataTypeController(
-          new browser_sync::SessionDataTypeController(factory_.get(),
-                                                      profile_,
-                                                      this));
-      return;
-    default:
-      break;
-  }
   NOTREACHED();
 }
 
@@ -738,8 +724,6 @@ void ProfileSyncService::OnExperimentsChanged(
 
   const syncable::ModelTypeSet registered_types = GetRegisteredDataTypes();
   syncable::ModelTypeSet to_add;
-  if (experiments.sync_tabs)
-    to_add.Put(syncable::SESSIONS);
   const syncable::ModelTypeSet to_register =
       Difference(to_add, registered_types);
   DVLOG(2) << "OnExperimentsChanged called with types: "

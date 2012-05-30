@@ -307,7 +307,6 @@ DictionaryValue* NigoriSpecificsToValue(
   SET_BOOL(encrypt_app_settings);
   SET_BOOL(encrypt_apps);
   SET_BOOL(encrypt_search_engines);
-  SET_BOOL(sync_tabs);
   SET_BOOL(encrypt_everything);
   SET_REP(device_information, DeviceInformationToValue);
   SET_BOOL(sync_tab_favicons);

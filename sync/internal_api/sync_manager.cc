@@ -141,7 +141,6 @@ class SyncManager::SyncInternal
   explicit SyncInternal(const std::string& name)
       : name_(name),
         weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        enable_sync_tabs_for_other_clients_(false),
         registrar_(NULL),
         change_delegate_(NULL),
         initialized_(false),
@@ -204,7 +203,6 @@ class SyncManager::SyncInternal
             ChangeDelegate* change_delegate,
             const std::string& user_agent,
             const SyncCredentials& credentials,
-            bool enable_sync_tabs_for_other_clients,
             sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
             TestingMode testing_mode,
@@ -224,10 +222,6 @@ class SyncManager::SyncInternal
 
   // Called when the user disables or enables a sync type.
   void UpdateEnabledTypes();
-
-  // Conditionally sets the flag in the Nigori node which instructs other
-  // clients to start syncing tabs.
-  void MaybeSetSyncTabsInNigoriNode(ModelTypeSet enabled_types);
 
   // Tell the sync engine to start the syncing process.
   void StartSyncingNormally();
@@ -574,8 +568,6 @@ class SyncManager::SyncInternal
   // Start()ed.
   scoped_ptr<SyncScheduler> scheduler_;
 
-  bool enable_sync_tabs_for_other_clients_;
-
   // The SyncNotifier which notifies us when updates need to be downloaded.
   scoped_ptr<sync_notifier::SyncNotifier> sync_notifier_;
 
@@ -760,7 +752,6 @@ bool SyncManager::Init(
     ChangeDelegate* change_delegate,
     const std::string& user_agent,
     const SyncCredentials& credentials,
-    bool enable_sync_tabs_for_other_clients,
     sync_notifier::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
     TestingMode testing_mode,
@@ -783,7 +774,6 @@ bool SyncManager::Init(
                      change_delegate,
                      user_agent,
                      credentials,
-                     enable_sync_tabs_for_other_clients,
                      sync_notifier,
                      restored_key_for_bootstrapping,
                      testing_mode,
@@ -800,12 +790,6 @@ void SyncManager::UpdateCredentials(const SyncCredentials& credentials) {
 void SyncManager::UpdateEnabledTypes() {
   DCHECK(thread_checker_.CalledOnValidThread());
   data_->UpdateEnabledTypes();
-}
-
-void SyncManager::MaybeSetSyncTabsInNigoriNode(
-    ModelTypeSet enabled_types) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  data_->MaybeSetSyncTabsInNigoriNode(enabled_types);
 }
 
 void SyncManager::ThrowUnrecoverableError() {
@@ -912,7 +896,6 @@ bool SyncManager::SyncInternal::Init(
     ChangeDelegate* change_delegate,
     const std::string& user_agent,
     const SyncCredentials& credentials,
-    bool enable_sync_tabs_for_other_clients,
     sync_notifier::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
     TestingMode testing_mode,
@@ -932,8 +915,6 @@ bool SyncManager::SyncInternal::Init(
   registrar_ = model_safe_worker_registrar;
   change_delegate_ = change_delegate;
   testing_mode_ = testing_mode;
-
-  enable_sync_tabs_for_other_clients_ = enable_sync_tabs_for_other_clients;
 
   sync_notifier_.reset(sync_notifier);
 
@@ -1241,28 +1222,6 @@ void SyncManager::SyncInternal::UpdateEnabledTypes() {
   registrar_->GetModelSafeRoutingInfo(&routes);
   const ModelTypeSet enabled_types = GetRoutingInfoTypes(routes);
   sync_notifier_->UpdateEnabledTypes(enabled_types);
-  if (enable_sync_tabs_for_other_clients_)
-    MaybeSetSyncTabsInNigoriNode(enabled_types);
-}
-
-void SyncManager::SyncInternal::MaybeSetSyncTabsInNigoriNode(
-    const ModelTypeSet enabled_types) {
-  // The initialized_ check is to ensure that we don't CHECK in GetUserShare
-  // when this is called on start-up. It's ok to ignore that case, since
-  // presumably this would've run when the user originally enabled sessions.
-  if (initialized_ && enabled_types.Has(syncable::SESSIONS)) {
-    WriteTransaction trans(FROM_HERE, GetUserShare());
-    WriteNode node(&trans);
-    if (node.InitByTagLookup(kNigoriTag) != sync_api::BaseNode::INIT_OK) {
-      LOG(WARNING) << "Unable to set 'sync_tabs' bit because Nigori node not "
-                   << "found.";
-      return;
-    }
-
-    sync_pb::NigoriSpecifics specifics(node.GetNigoriSpecifics());
-    specifics.set_sync_tabs(true);
-    node.SetNigoriSpecifics(specifics);
-  }
 }
 
 void SyncManager::SyncInternal::SetEncryptionPassphrase(
@@ -2487,10 +2446,6 @@ bool SyncManager::ReceivedExperiment(browser_sync::Experiments* experiments)
     return false;
   }
   bool found_experiment = false;
-  if (node.GetNigoriSpecifics().sync_tabs()) {
-    experiments->sync_tabs = true;
-    found_experiment = true;
-  }
   if (node.GetNigoriSpecifics().sync_tab_favicons()) {
     experiments->sync_tab_favicons = true;
     found_experiment = true;

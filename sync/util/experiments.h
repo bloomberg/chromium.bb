@@ -12,15 +12,11 @@ namespace browser_sync {
 
 // A structure to hold the enable status of experimental sync features.
 struct Experiments {
-  Experiments() : sync_tabs(false), sync_tab_favicons(false) {}
+  Experiments() : sync_tab_favicons(false) {}
 
   bool Matches(const Experiments& rhs) {
-    return (sync_tabs == rhs.sync_tabs) &&
-           (sync_tab_favicons == rhs.sync_tab_favicons);
+    return (sync_tab_favicons == rhs.sync_tab_favicons);
   }
-
-  // Enable the tab sync (SESSIONS) datatype.
-  bool sync_tabs;
 
   // Enable syncing of favicons within tab sync (only has an effect if tab sync
   // is already enabled). This takes effect on the next restart.

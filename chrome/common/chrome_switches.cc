@@ -609,15 +609,8 @@ const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
 // Enables the new Sync Signin flow, i.e., chrome:signin for all signins.
 const char kEnableSyncSignin[]              = "enable-sync-signin";
 
-// Enables syncing browser sessions.
-const char kEnableSyncTabs[]                = "enable-sync-tabs";
-
 // Disables syncing browser sessions. Will override kEnableSyncTabs.
 const char kDisableSyncTabs[]               = "disable-sync-tabs";
-
-// Enables syncing browser sessions for other synced clients.
-const char kEnableSyncTabsForOtherClients[] =
-    "enable-sync-tabs-for-other-clients";
 
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";

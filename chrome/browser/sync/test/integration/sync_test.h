@@ -201,9 +201,6 @@ class SyncTest : public InProcessBrowserTest {
   void TriggerSyncError(const browser_sync::SyncProtocolError& error,
                         SyncErrorFrequency frequency);
 
-  // Triggers setting the sync_tabs field of the nigori node.
-  void TriggerSetSyncTabs();
-
   // Triggers the creation the Synced Bookmarks folder on the server.
   void TriggerCreateSyncedBookmarks();
 

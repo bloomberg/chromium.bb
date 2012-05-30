@@ -1034,10 +1034,9 @@ TEST_F(SyncerTest, ReceiveOldNigori) {
 }
 
 // Resolve a confict between two nigori's with different encrypted types,
-// sync_tabs bits, and encryption keys (remote is explicit). Afterwards, the
-// encrypted types should be unioned, the sync_tab bit should be true, and the
-// cryptographer should have both keys and be encrypting with the remote
-// encryption key by default.
+// and encryption keys (remote is explicit). Afterwards, the encrypted types
+// should be unioned and the cryptographer should have both keys and be
+// encrypting with the remote encryption key by default.
 TEST_F(SyncerTest, NigoriConflicts) {
   KeyParams local_key_params = {"localhost", "dummy", "blargle"};
   KeyParams other_key_params = {"localhost", "dummy", "foobar"};
@@ -1061,7 +1060,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
   SyncShareNudge();
   encrypted_types = syncable::ModelTypeSet::All();
   {
-    // Local changes with different passphrase, different types, and sync_tabs.
+    // Local changes with different passphrase, different types.
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     sync_pb::EntitySpecifics specifics;
     sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
@@ -1072,7 +1071,6 @@ TEST_F(SyncerTest, NigoriConflicts) {
     cryptographer(&wtrans)->GetKeys(
         nigori->mutable_encrypted());
     cryptographer(&wtrans)->UpdateNigoriFromEncryptedTypes(nigori);
-    nigori->set_sync_tabs(true);
     cryptographer(&wtrans)->set_encrypt_everything();
     MutableEntry nigori_entry(&wtrans, GET_BY_SERVER_TAG,
                               syncable::ModelTypeToRootTag(syncable::NIGORI));
@@ -1102,7 +1100,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
   SyncShareNudge();  // Resolve conflict in this cycle.
   SyncShareNudge();  // Commit local change in this cycle.
   {
-    // Ensure the nigori data merged (encrypted types, sync_tabs).
+    // Ensure the nigori data merged (encrypted types).
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     MutableEntry nigori_entry(&wtrans, GET_BY_SERVER_TAG,
                               syncable::ModelTypeToRootTag(syncable::NIGORI));
@@ -1114,7 +1112,6 @@ TEST_F(SyncerTest, NigoriConflicts) {
     EXPECT_TRUE(encrypted_types.Equals(
             cryptographer(&wtrans)->GetEncryptedTypes()));
     EXPECT_TRUE(cryptographer(&wtrans)->encrypt_everything());
-    EXPECT_TRUE(specifics.nigori().sync_tabs());
     EXPECT_TRUE(specifics.nigori().using_explicit_passphrase());
     // Supply the pending keys. Afterwards, we should be able to decrypt both
     // our own encrypted data and data encrypted by the other cryptographer,
@@ -1133,8 +1130,8 @@ TEST_F(SyncerTest, NigoriConflicts) {
   SyncShareNudge();
   {
     // Ensure everything is committed and stable now. The cryptographer
-    // should be able to decrypt both sets of keys, sync_tabs should be true,
-    // and the encrypted types should have been unioned.
+    // should be able to decrypt both sets of keys, and the encrypted types
+    // should have been unioned.
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     MutableEntry nigori_entry(&wtrans, GET_BY_SERVER_TAG,
                               syncable::ModelTypeToRootTag(syncable::NIGORI));
@@ -1149,7 +1146,6 @@ TEST_F(SyncerTest, NigoriConflicts) {
         other_encrypted_specifics.encrypted()));
     EXPECT_TRUE(cryptographer(&wtrans)->
         CanDecryptUsingDefaultKey(other_encrypted_specifics.encrypted()));
-    EXPECT_TRUE(nigori_entry.Get(SPECIFICS).nigori().sync_tabs());
     EXPECT_TRUE(nigori_entry.Get(SPECIFICS).nigori().
         using_explicit_passphrase());
   }

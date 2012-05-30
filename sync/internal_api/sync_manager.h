@@ -453,7 +453,6 @@ class SyncManager {
             ChangeDelegate* change_delegate,
             const std::string& user_agent,
             const SyncCredentials& credentials,
-            bool enable_sync_tabs_for_other_clients,
             sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
             TestingMode testing_mode,
@@ -478,10 +477,6 @@ class SyncManager {
 
   // Called when the user disables or enables a sync type.
   void UpdateEnabledTypes();
-
-  // Conditionally sets the flag in the Nigori node which instructs other
-  // clients to start syncing tabs.
-  void MaybeSetSyncTabsInNigoriNode(syncable::ModelTypeSet enabled_types);
 
   // Put the syncer in normal mode ready to perform nudges and polls.
   void StartSyncingNormally();

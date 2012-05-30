@@ -352,13 +352,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kShowAutofillTypePredictions)
   },
   {
-    "sync-tabs",
-    IDS_FLAGS_SYNC_TABS_NAME,
-    IDS_FLAGS_SYNC_TABS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableSyncTabs)
-  },
-  {
     "sync-tab-favicons",
     IDS_FLAGS_SYNC_TAB_FAVICONS_NAME,
     IDS_FLAGS_SYNC_TAB_FAVICONS_DESCRIPTION,
