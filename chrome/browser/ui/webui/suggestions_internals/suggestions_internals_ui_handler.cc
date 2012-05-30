@@ -17,8 +17,8 @@ const size_t kSuggestionsCount = 100;
 
 }  // namespace
 
-SuggestionsInternalsUIHandler::SuggestionsInternalsUIHandler(Profile* profile) {
-}
+SuggestionsInternalsUIHandler::SuggestionsInternalsUIHandler(Profile* profile)
+    : profile_(profile) {}
 
 SuggestionsInternalsUIHandler::~SuggestionsInternalsUIHandler() {}
 
@@ -31,7 +31,7 @@ void SuggestionsInternalsUIHandler::OnSuggestionsReady() {
 
 void SuggestionsInternalsUIHandler::RegisterMessages() {
   // Setup the suggestions sources.
-  suggestions_combiner_.reset(SuggestionsCombiner::Create(this));
+  suggestions_combiner_.reset(SuggestionsCombiner::Create(this, profile_));
   suggestions_combiner_->SetSuggestionsCount(kSuggestionsCount);
 
   web_ui()->RegisterMessageCallback("getSuggestions",

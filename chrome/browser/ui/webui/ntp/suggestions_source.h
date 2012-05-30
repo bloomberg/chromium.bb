@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_NTP_SUGGESTIONS_SOURCE_H_
 #pragma once
 
+#include "base/basictypes.h"
+
 class Profile;
 class SuggestionsCombiner;
 

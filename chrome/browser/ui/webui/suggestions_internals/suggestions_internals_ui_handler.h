@@ -33,6 +33,8 @@ class SuggestionsInternalsUIHandler : public content::WebUIMessageHandler,
   // Used to combine suggestions from various sources.
   scoped_ptr<SuggestionsCombiner> suggestions_combiner_;
 
+  Profile* profile_;
+
   DISALLOW_COPY_AND_ASSIGN(SuggestionsInternalsUIHandler);
 };
 

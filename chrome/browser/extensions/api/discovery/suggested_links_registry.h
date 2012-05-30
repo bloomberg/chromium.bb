@@ -28,6 +28,9 @@ class SuggestedLinksRegistry : public ProfileKeyedService {
   void Add(const std::string& extension_id,
       scoped_ptr<extensions::SuggestedLink> item);
 
+  // Returns all the extension ids that have at least one suggestion.
+  scoped_ptr<std::vector<std::string> > GetExtensionIds() const;
+
   // Returns all the links suggested by |extension_id|.
   const SuggestedLinkList* GetAll(const std::string& extension_id) const;
 

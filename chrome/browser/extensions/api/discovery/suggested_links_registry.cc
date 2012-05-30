@@ -42,6 +42,16 @@ void SuggestedLinksRegistry::Add(const std::string& extension_id,
     list.push_back(new_item);
 }
 
+scoped_ptr<std::vector<std::string> >
+    SuggestedLinksRegistry::GetExtensionIds() const {
+  scoped_ptr<std::vector<std::string> > result(new std::vector<std::string>());
+  for (SuggestedLinksMap::const_iterator it = suggested_links_.begin();
+       it != suggested_links_.end(); ++it) {
+    result->push_back((*it).first);
+  }
+  return result.Pass();
+}
+
 const SuggestedLinkList* SuggestedLinksRegistry::GetAll(
     const std::string& extension_id) const {
   SuggestedLinksMap::const_iterator found = suggested_links_.find(extension_id);
@@ -53,8 +63,12 @@ const SuggestedLinkList* SuggestedLinksRegistry::GetAll(
 void SuggestedLinksRegistry::Remove(const std::string& extension_id,
     const std::string& link_url) {
   SuggestedLinksMap::iterator found = suggested_links_.find(extension_id);
-  if (found != suggested_links_.end())
+  if (found != suggested_links_.end()) {
     RemoveLinkFromList(link_url, &found->second);
+    if (found->second.empty()) {
+      suggested_links_.erase(found);
+    }
+  }
 }
 
 void SuggestedLinksRegistry::ClearAll(const std::string& extension_id) {

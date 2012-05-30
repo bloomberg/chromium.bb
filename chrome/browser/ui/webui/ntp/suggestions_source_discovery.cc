@@ -10,25 +10,20 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/stl_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/discovery/suggested_link.h"
+#include "chrome/browser/extensions/api/discovery/suggested_links_registry.h"
+#include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
-#include "content/public/common/url_fetcher.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
-#include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_status.h"
 
 namespace {
 
-const char kResponseDataValue[] = "responseData";
-const char kResultsValue[] = "results";
-const char kUnescapedUrlValue[] = "unescapedUrl";
-const char kDiscoveryBackendURL[] =
-    "https://ajax.googleapis.com/ajax/services/search/news?v=1.0&q=a&rsz=8";
+typedef extensions::SuggestedLinksRegistry::SuggestedLinkList SuggestedLinkList;
 
 // The weight used by the combiner to determine which ratio of suggestions
 // should be obtained from this source.
@@ -36,8 +31,10 @@ const int kSuggestionsDiscoveryWeight = 1;
 
 }  // namespace
 
-SuggestionsSourceDiscovery::SuggestionsSourceDiscovery() : combiner_(NULL) {
-}
+SuggestionsSourceDiscovery::SuggestionsSourceDiscovery(
+    const std::string& extension_id)
+    : combiner_(NULL),
+      extension_id_(extension_id) {}
 
 SuggestionsSourceDiscovery::~SuggestionsSourceDiscovery() {
   STLDeleteElements(&items_);
@@ -62,60 +59,24 @@ DictionaryValue* SuggestionsSourceDiscovery::PopItem() {
 void SuggestionsSourceDiscovery::FetchItems(Profile* profile) {
   DCHECK(combiner_);
 
-  // If a fetch is already in progress, we don't have to start a new one.
-  if (recommended_fetcher_ != NULL)
-    return;
+  extensions::SuggestedLinksRegistry* registry =
+      extensions::SuggestedLinksRegistryFactory::GetForProfile(profile);
+  const SuggestedLinkList* list = registry->GetAll(extension_id_);
 
-  // TODO(beaudoin): Extract the URL to some preference. Use a better service.
-  recommended_fetcher_.reset(content::URLFetcher::Create(
-      GURL(kDiscoveryBackendURL), net::URLFetcher::GET, this));
-  recommended_fetcher_->SetRequestContext(
-      g_browser_process->system_request_context());
-  recommended_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-      net::LOAD_DO_NOT_SAVE_COOKIES);
-  recommended_fetcher_->Start();
+  items_.clear();
+  for (SuggestedLinkList::const_iterator it = list->begin();
+       it != list->end(); ++it) {
+    DictionaryValue* page_value = new DictionaryValue();
+    NewTabUI::SetURLTitleAndDirection(page_value,
+                                      ASCIIToUTF16((*it)->link_text()),
+                                      GURL((*it)->link_url()));
+    page_value->SetDouble("score", (*it)->score());
+    items_.push_back(page_value);
+  }
+  combiner_->OnItemsReady();
 }
 
 void SuggestionsSourceDiscovery::SetCombiner(SuggestionsCombiner* combiner) {
   DCHECK(!combiner_);
   combiner_ = combiner;
-}
-
-void SuggestionsSourceDiscovery::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  DCHECK(combiner_);
-  STLDeleteElements(&items_);
-  if (source->GetStatus().status() == net::URLRequestStatus::SUCCESS &&
-      source->GetResponseCode() == net::HTTP_OK) {
-    std::string data;
-    source->GetResponseAsString(&data);
-    scoped_ptr<Value> message_value(base::JSONReader::Read(data, false));
-
-    DictionaryValue* response_dict;
-    DictionaryValue* response_data;
-    ListValue* results;
-    if (message_value.get() &&
-        message_value->GetAsDictionary(&response_dict) &&
-        response_dict->GetDictionary(kResponseDataValue, &response_data) &&
-        response_data->GetList(kResultsValue, &results)) {
-      for (size_t i = 0; i < results->GetSize(); ++i) {
-        DictionaryValue* result;
-        if (!results->GetDictionary(i, &result) || !result)
-          continue;
-
-        string16 unescaped_url;
-        if (!result->GetString(kUnescapedUrlValue, &unescaped_url))
-          continue;
-
-        DictionaryValue* page_value = new DictionaryValue();
-        NewTabUI::SetURLTitleAndDirection(page_value,
-                                          unescaped_url,
-                                          GURL(unescaped_url));
-        items_.push_back(page_value);
-      }
-    }
-  }
-
-  recommended_fetcher_.reset();
-  combiner_->OnItemsReady();
 }

@@ -8,6 +8,7 @@
 
 #include <deque>
 
+#include "base/basictypes.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/visit_filter.h"

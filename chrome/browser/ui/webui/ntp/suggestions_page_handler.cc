@@ -82,7 +82,7 @@ void SuggestionsHandler::RegisterMessages() {
   }
 
   // Setup the suggestions sources.
-  suggestions_combiner_.reset(SuggestionsCombiner::Create(this));
+  suggestions_combiner_.reset(SuggestionsCombiner::Create(this, profile));
 
   // We pre-emptively make a fetch for suggestions so we have the results
   // sooner.

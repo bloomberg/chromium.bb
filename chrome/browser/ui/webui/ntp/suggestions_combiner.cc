@@ -7,6 +7,8 @@
 #include <algorithm>
 
 #include "base/values.h"
+#include "chrome/browser/extensions/api/discovery/suggested_links_registry.h"
+#include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source.h"
@@ -61,10 +63,18 @@ void SuggestionsCombiner::SetSuggestionsCount(size_t suggestions_count) {
 
 // static
 SuggestionsCombiner* SuggestionsCombiner::Create(
-    SuggestionsCombiner::Delegate* delegate) {
+    SuggestionsCombiner::Delegate* delegate, Profile* profile) {
   SuggestionsCombiner* combiner = new SuggestionsCombiner(delegate);
   combiner->AddSource(new SuggestionsSourceTopSites());
-  combiner->AddSource(new SuggestionsSourceDiscovery());
+
+  extensions::SuggestedLinksRegistry* registry =
+      extensions::SuggestedLinksRegistryFactory::GetForProfile(profile);
+  scoped_ptr<std::vector<std::string> > list = registry->GetExtensionIds();
+  for (std::vector<std::string>::iterator it = list->begin();
+      it != list->end(); ++it) {
+    combiner->AddSource(new SuggestionsSourceDiscovery(*it));
+  }
+
   return combiner;
 }
 

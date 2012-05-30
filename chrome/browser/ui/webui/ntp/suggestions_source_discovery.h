@@ -7,11 +7,11 @@
 #pragma once
 
 #include <deque>
+#include <string>
 
-#include "chrome/browser/cancelable_request.h"
-#include "chrome/browser/history/history_types.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 class SuggestionsCombiner;
 class Profile;
@@ -20,19 +20,12 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace net {
-class URLFetcher;
-}
-
-// A source that suggests websites the user might find interesting.
-class SuggestionsSourceDiscovery : public SuggestionsSource,
-                                   public net::URLFetcherDelegate {
+// A source linked to a single extension using the discovery API to suggest
+// websites the user might find interesting.
+class SuggestionsSourceDiscovery : public SuggestionsSource {
  public:
-  SuggestionsSourceDiscovery();
+  explicit SuggestionsSourceDiscovery(const std::string& extension_id);
   virtual ~SuggestionsSourceDiscovery();
-
-  // net::URLFetcherDelegate override and implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  protected:
   // SuggestionsSource overrides:
@@ -49,8 +42,8 @@ class SuggestionsSourceDiscovery : public SuggestionsSource,
   // Keep the results fetched from the discovery service here.
   std::deque<base::DictionaryValue*> items_;
 
-  // Fetcher for the recommended pages.
-  scoped_ptr<net::URLFetcher> recommended_fetcher_;
+  // The extension associated with this source.
+  std::string extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsSourceDiscovery);
 };
