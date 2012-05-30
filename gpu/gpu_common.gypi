@@ -116,12 +116,11 @@
     },
     {
       'target_name': 'gpu_unittests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../testing/gmock.gyp:gmock',
-        '../testing/gmock.gyp:gmock_main',
         '../testing/gtest.gyp:gtest',
         '../third_party/angle/src/build_angle.gyp:translator_glsl',
         '../ui/gl/gl.gyp:gl',
@@ -198,6 +197,13 @@
         'command_buffer/service/transfer_buffer_manager_unittest.cc',
         'command_buffer/service/vertex_attrib_manager_unittest.cc',
       ],
+      'conditions': [
+        ['OS == "android" and gtest_target_type == "shared_library"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'gl_tests',
@@ -255,5 +261,27 @@
         'command_buffer/service/gles2_cmd_decoder_mock.cc',
       ],
     },
+  ],
+  'conditions': [
+    # Special target to wrap a gtest_target_type==shared_library
+    # gpu_unittests into an android apk for execution.
+    ['OS == "android" and gtest_target_type == "shared_library"', {
+      'targets': [
+        {
+          'target_name': 'gpu_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+            'gpu_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'gpu_unittests',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)gpu_unittests<(SHARED_LIB_SUFFIX)',
+            'input_jars_paths': [ '<(PRODUCT_DIR)/lib.java/chromium_base.jar', ],
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
+      ],
+    }],
   ],
 }
