@@ -1053,7 +1053,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kDisableLoginAnimations,
       ::switches::kDisableSeccompFilterSandbox,
       ::switches::kDisableSeccompSandbox,
-      ::switches::kEnableThreadedAnimation,
+      ::switches::kDisableThreadedAnimation,
       ::switches::kEnableDevicePolicy,
       ::switches::kEnableGView,
       ::switches::kEnableLogging,

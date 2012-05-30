@@ -229,7 +229,7 @@ Value* GetFeatureStatus() {
       {
           "css_animation",
           flags & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING,
-          !command_line.HasSwitch(switches::kEnableThreadedAnimation) ||
+          command_line.HasSwitch(switches::kDisableThreadedAnimation) ||
           command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
           "Accelerated CSS animation has been disabled at the command line.",
           true

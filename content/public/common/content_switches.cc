@@ -184,8 +184,8 @@ const char kDisableSpeechInput[]            = "disable-speech-input";
 // Enables scripted speech api.
 const char kEnableScriptedSpeech[]          = "enable-scripted-speech";
 
-// Enables animation on the compositor thread.
-const char kEnableThreadedAnimation[]    = "enable-threaded-animation";
+// Disables animation on the compositor thread.
+const char kDisableThreadedAnimation[]      = "disable-threaded-animation";
 
 // Disable web audio API.
 const char kDisableWebAudio[]               = "disable-webaudio";
