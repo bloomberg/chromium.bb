@@ -267,6 +267,8 @@
         <include name="IDR_TOOLS_H" file="default_100_percent/tools_hover.png" type="BINDATA" />
         <include name="IDR_TOOLS_P" file="default_100_percent/tools_pressed.png" type="BINDATA" />
       </if>
+      <include name="IDR_ZOOM_MINUS" file="touch_100_percent/zoom_minus.png" type="BINDATA" />
+      <include name="IDR_ZOOM_PLUS" file="touch_100_percent/zoom_plus.png" type="BINDATA" />
     </includes>
   </release>
 </grit>
