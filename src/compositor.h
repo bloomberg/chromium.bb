@@ -162,6 +162,16 @@ struct weston_output {
 	void (*set_dpms)(struct weston_output *output, enum dpms_enum level);
 };
 
+struct weston_xkb_info {
+	struct xkb_keymap *keymap;
+	xkb_mod_index_t ctrl_mod;
+	xkb_mod_index_t alt_mod;
+	xkb_mod_index_t super_mod;
+	xkb_led_index_t num_led;
+	xkb_led_index_t caps_led;
+	xkb_led_index_t scroll_led;
+};
+
 struct weston_seat {
 	struct wl_seat seat;
 	struct wl_pointer pointer;
@@ -192,6 +202,7 @@ struct weston_seat {
 
 	void (*led_update)(struct weston_seat *ws, enum weston_led leds);
 
+	struct weston_xkb_info xkb_info;
 	struct {
 		struct xkb_state *state;
 		uint32_t mods_depressed;
@@ -239,16 +250,6 @@ enum {
 struct weston_layer {
 	struct wl_list surface_list;
 	struct wl_list link;
-};
-
-struct weston_xkb_info {
-	struct xkb_keymap *keymap;
-	xkb_mod_index_t ctrl_mod;
-	xkb_mod_index_t alt_mod;
-	xkb_mod_index_t super_mod;
-	xkb_led_index_t num_led;
-	xkb_led_index_t caps_led;
-	xkb_led_index_t scroll_led;
 };
 
 struct weston_compositor {

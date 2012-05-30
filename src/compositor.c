@@ -1768,22 +1768,22 @@ update_modifier_state(struct weston_seat *seat, uint32_t key, uint32_t state)
 	/* And update the modifier_state for bindings. */
 	mods_lookup = mods_depressed | mods_latched;
 	seat->modifier_state = 0;
-	if ((mods_lookup & seat->compositor->xkb_info.ctrl_mod))
+	if ((mods_lookup & seat->xkb_info.ctrl_mod))
 		seat->modifier_state |= MODIFIER_CTRL;
-	if ((mods_lookup & seat->compositor->xkb_info.alt_mod))
+	if ((mods_lookup & seat->xkb_info.alt_mod))
 		seat->modifier_state |= MODIFIER_ALT;
-	if ((mods_lookup & seat->compositor->xkb_info.super_mod))
+	if ((mods_lookup & seat->xkb_info.super_mod))
 		seat->modifier_state |= MODIFIER_SUPER;
 
 	/* Finally, notify the compositor that LEDs have changed. */
 	if (xkb_state_led_index_is_active(seat->xkb_state.state,
-					  seat->compositor->xkb_info.num_led))
+					  seat->xkb_info.num_led))
 		leds |= LED_NUM_LOCK;
 	if (xkb_state_led_index_is_active(seat->xkb_state.state,
-					  seat->compositor->xkb_info.caps_led))
+					  seat->xkb_info.caps_led))
 		leds |= LED_CAPS_LOCK;
 	if (xkb_state_led_index_is_active(seat->xkb_state.state,
-					  seat->compositor->xkb_info.scroll_led))
+					  seat->xkb_info.scroll_led))
 		leds |= LED_SCROLL_LOCK;
 	if (leds != seat->xkb_state.leds && seat->led_update)
 		seat->led_update(seat, seat->xkb_state.leds);
@@ -2266,6 +2266,9 @@ static void weston_compositor_xkb_destroy(struct weston_compositor *ec)
 static int
 weston_compositor_build_global_keymap(struct weston_compositor *ec)
 {
+	if (!ec->xkb_context)
+		weston_compositor_xkb_init(ec, NULL);
+
 	if (ec->xkb_info.keymap != NULL)
 		return 0;
 
@@ -2301,6 +2304,20 @@ weston_seat_init_keyboard(struct weston_seat *seat)
 
 	if (weston_compositor_build_global_keymap(seat->compositor) == -1)
 		return;
+
+	seat->xkb_info = seat->compositor->xkb_info;
+	seat->xkb_info.keymap = xkb_map_ref(seat->xkb_info.keymap);
+
+	seat->xkb_state.state = xkb_state_new(seat->xkb_info.keymap);
+	if (seat->xkb_state.state == NULL) {
+		fprintf(stderr, "failed to initialise XKB state\n");
+		exit(1);
+	}
+
+	seat->xkb_state.mods_depressed = 0;
+	seat->xkb_state.mods_latched = 0;
+	seat->xkb_state.mods_locked = 0;
+	seat->xkb_state.group = 0;
 
 	wl_keyboard_init(&seat->keyboard);
 	wl_seat_set_keyboard(&seat->seat, &seat->keyboard);
@@ -2360,20 +2377,6 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 	seat->new_drag_icon_listener.notify = device_handle_new_drag_icon;
 	wl_signal_add(&seat->seat.drag_icon_signal,
 		      &seat->new_drag_icon_listener);
-
-	if (!ec->xkb_context)
-		weston_compositor_xkb_init(ec, NULL);
-
-	seat->xkb_state.mods_depressed = 0;
-	seat->xkb_state.mods_latched = 0;
-	seat->xkb_state.mods_locked = 0;
-	seat->xkb_state.group = 0;
-
-	seat->xkb_state.state = xkb_state_new(ec->xkb_info.keymap);
-	if (seat->xkb_state.state == NULL) {
-		fprintf(stderr, "failed to initialise XKB state\n");
-		exit(1);
-	}
 }
 
 WL_EXPORT void
@@ -2387,6 +2390,7 @@ weston_seat_release(struct weston_seat *seat)
 
 	if (seat->xkb_state.state != NULL)
 		xkb_state_unref(seat->xkb_state.state);
+	xkb_info_destroy(&seat->xkb_info);
 
 	wl_seat_release(&seat->seat);
 }
