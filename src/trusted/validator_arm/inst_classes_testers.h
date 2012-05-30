@@ -421,54 +421,54 @@ class Binary4RegisterDualResultTesterRegsNotPc
 // if Rt=15 then Unpredictable
 // if wback && (Rn=15 or Rn=Rt) then unpredictable.
 // NaCl disallows writing to PC.
-class LoadStore2RegisterImmediateOpTester : public Arm32DecoderTester {
+class LoadStore2RegisterImm8OpTester : public Arm32DecoderTester {
  public:
-  explicit LoadStore2RegisterImmediateOpTester(
+  explicit LoadStore2RegisterImm8OpTester(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImmediateOpTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImm8OpTester);
 };
 
-// Defines a LoadStore2RegisterImmediateOpTester with the added constraint
+// Defines a LoadStore2RegisterImm8OpTester with the added constraint
 // that it doesn't parse when Rn=15
-class LoadStore2RegisterImmediateOpTesterNotRnIsPc
-    : public LoadStore2RegisterImmediateOpTester {
+class LoadStore2RegisterImm8OpTesterNotRnIsPc
+    : public LoadStore2RegisterImm8OpTester {
  public:
-  LoadStore2RegisterImmediateOpTesterNotRnIsPc(
+  LoadStore2RegisterImm8OpTesterNotRnIsPc(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImmediateOpTesterNotRnIsPc);
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImm8OpTesterNotRnIsPc);
 };
 
 // Models a 2-register load/store immediate operation where the source/target
 // is double wide (i.e. Rt and Rt2).
-class LoadStore2RegisterImmediateDoubleOpTester
-    : public LoadStore2RegisterImmediateOpTester {
+class LoadStore2RegisterImm8DoubleOpTester
+    : public LoadStore2RegisterImm8OpTester {
  public:
-  explicit LoadStore2RegisterImmediateDoubleOpTester(
+  explicit LoadStore2RegisterImm8DoubleOpTester(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImmediateDoubleOpTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImm8DoubleOpTester);
 };
 
-// Defines a LoadStore2RegisterImmediateDoubleOpTester with the added constraint
+// Defines a LoadStore2RegisterImm8DoubleOpTester with the added constraint
 // that it doesn't parse when Rn=15.
-class LoadStore2RegisterImmediateDoubleOpTesterNotRnIsPc
-    : public LoadStore2RegisterImmediateDoubleOpTester {
+class LoadStore2RegisterImm8DoubleOpTesterNotRnIsPc
+    : public LoadStore2RegisterImm8DoubleOpTester {
  public:
-  LoadStore2RegisterImmediateDoubleOpTesterNotRnIsPc(
+  LoadStore2RegisterImm8DoubleOpTesterNotRnIsPc(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
@@ -476,7 +476,55 @@ class LoadStore2RegisterImmediateDoubleOpTesterNotRnIsPc
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
-      LoadStore2RegisterImmediateDoubleOpTesterNotRnIsPc);
+      LoadStore2RegisterImm8DoubleOpTesterNotRnIsPc);
+};
+
+// Models a 2-register load/store 12-bit immediate operation of the forms:
+// Op<c> <Rt>, [<Rn> {, #+/-<imm12>}]
+// Op<c> <Rt>, [<Rn>], #+/-<imm12>
+// Op<c> <Rt>, [<Rn>, #+/-<imm12>]
+// +--------+------+--+--+--+--+--+--------+--------+------------------------+
+// |31302928|272625|24|23|22|21|20|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+------+--+--+--+--+--+--------+--------+------------------------+
+// |  conds |      | P| U|  | w|  |   Rn   |   Rt   |        imm12           |
+// +--------+------+--+--+--+--+--+--------+--------+------------------------+
+// wback = (P=0 || W==1)
+//
+// if P=0 and W=1, should not parse as this instruction.
+// if Rn=Sp && P=1 && U=0 && W=1 && imm12=4, then PUSH
+// if wback && (Rn=15 or Rn=Rt) then unpredictable.
+// NaCl disallows writing to PC.
+//
+// Note: We NaCl disallow Rt=PC for stores (not just loads), even
+// though it isn't a requirement of the corresponding baseline
+// classees. This is done so that StrImmediate (in the actual class
+// decoders) behave the same as instances of this. This simplifies
+// what we need to model in actual classes.
+class LoadStore2RegisterImm12OpTester : public Arm32DecoderTester {
+ public:
+  explicit LoadStore2RegisterImm12OpTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImm12OpTester);
+};
+
+// Defines a LoadStore2RegisterImm12OpTester with the added constraint
+// that it doesn't parse when Rn=15.
+class LoadStore2RegisterImm12OpTesterNotRnIsPc
+    : public LoadStore2RegisterImm12OpTester {
+ public:
+  LoadStore2RegisterImm12OpTesterNotRnIsPc(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImm12OpTesterNotRnIsPc);
 };
 
 // Models a 3-register load/store operation of the forms:
@@ -504,6 +552,40 @@ class LoadStore3RegisterOpTester : public Arm32DecoderTester {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore3RegisterOpTester);
+};
+
+// Models a 3-register with (shifted) immediate 5 load/store operation of
+// the forms:
+// Op<c> <Rt>, [<Rn>, +/-<Rm> {, <shift>}]{!}
+// Op<c> <Rt>, [<Rn>], +-<Rm> {, <shift>}
+// +------+------+--+--+--+--+--+--------+--------+----------+----+--+---------+
+// |31..28|272625|24|23|22|21|20|19181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0 |
+// +------+------+--+--+--+--+--+--------+--------+----------+----+--+---------+
+// | cond |      | P| U|  | W|  |   Rm   |   Rt   |   imm5   |type|  |    Rm   |
+// +------+------+--+--+--+--+--+--------+--------+----------+----+--+---------+
+// wback = (P=0 || W=1)
+//
+// If P=0 and W=1, should not parse as this instruction.
+// If Rm=15 then unpredicatble.
+// If wback && (Rn=15 or Rn=Rt) then unpredictable.
+// if ArchVersion() < 6 && wback && Rm=Rn then unpredictable.
+// NaCl Disallows writing to PC.
+//
+// Note: We NaCl disallow Rt=PC for stores (not just loads), even
+// though it isn't a requirement of the corresponding baseline
+// classes. This is done so that StrRegister (in the actual class
+// decoders) behave the same as this. This simplifies what we need to
+// model in actual classes.
+class LoadStore3RegisterImm5OpTester : public Arm32DecoderTester {
+ public:
+  explicit LoadStore3RegisterImm5OpTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore3RegisterImm5OpTester);
 };
 
 // Models a 3-register load/store operation where the source/target is double

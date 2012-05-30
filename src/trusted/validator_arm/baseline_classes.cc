@@ -189,8 +189,8 @@ RegisterList Binary4RegisterDualResult::defs(const Instruction i) const {
       Add(conditions.conds_if_updated(i));
 }
 
-// LoadStore2RegisterImmediateOp
-SafetyLevel LoadStore2RegisterImmediateOp::safety(const Instruction i) const {
+// LoadStore2RegisterImm8Op
+SafetyLevel LoadStore2RegisterImm8Op::safety(const Instruction i) const {
   // Arm restrictions for this instruction.
   if (t.reg(i).Equals(kRegisterPc)) {
     return UNPREDICTABLE;
@@ -207,33 +207,33 @@ SafetyLevel LoadStore2RegisterImmediateOp::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList LoadStore2RegisterImmediateOp::immediate_addressing_defs(
+RegisterList LoadStore2RegisterImm8Op::immediate_addressing_defs(
     const Instruction i) const {
   return RegisterList(HasWriteBack(i) ? n.reg(i) : kRegisterNone);
 }
 
-Register LoadStore2RegisterImmediateOp::base_address_register(
+Register LoadStore2RegisterImm8Op::base_address_register(
     const Instruction i) const {
   return n.reg(i);
 }
 
-// Load2RegisterImmediateOp
-RegisterList Load2RegisterImmediateOp::defs(Instruction i) const {
+// Load2RegisterImm8Op
+RegisterList Load2RegisterImm8Op::defs(Instruction i) const {
   return immediate_addressing_defs(i).Add(t.reg(i));
 }
 
-bool Load2RegisterImmediateOp::offset_is_immediate(Instruction i) const {
+bool Load2RegisterImm8Op::offset_is_immediate(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return true;
 }
 
-// Store2RegisterImmediateOp
-RegisterList Store2RegisterImmediateOp::defs(Instruction i) const {
+// Store2RegisterImm8Op
+RegisterList Store2RegisterImm8Op::defs(Instruction i) const {
   return immediate_addressing_defs(i);
 }
 
-// LoadStore2RegisterImmediateDoubleOp
-SafetyLevel LoadStore2RegisterImmediateDoubleOp::
+// LoadStore2RegisterImm8DoubleOp
+SafetyLevel LoadStore2RegisterImm8DoubleOp::
 safety(const Instruction i) const {
   // Arm restrictions for this instruction, based on double width.
   if (!t.IsEven(i)) {
@@ -249,21 +249,66 @@ safety(const Instruction i) const {
   }
 
   // Now apply non-double width restrictions for this instruction.
-  return LoadStore2RegisterImmediateOp::safety(i);
+  return LoadStore2RegisterImm8Op::safety(i);
 }
 
-// Load2RegisterImmediateDoubleOp
-RegisterList Load2RegisterImmediateDoubleOp::defs(Instruction i) const {
+// Load2RegisterImm8DoubleOp
+RegisterList Load2RegisterImm8DoubleOp::defs(Instruction i) const {
   return immediate_addressing_defs(i).Add(t.reg(i)).Add(t2.reg(i));
 }
 
-bool Load2RegisterImmediateDoubleOp::offset_is_immediate(Instruction i) const {
+bool Load2RegisterImm8DoubleOp::offset_is_immediate(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return true;
 }
 
-// Store2RegisterImmediateDoubleOp
-RegisterList Store2RegisterImmediateDoubleOp::defs(Instruction i) const {
+// Store2RegisterImm8DoubleOp
+RegisterList Store2RegisterImm8DoubleOp::defs(Instruction i) const {
+  return immediate_addressing_defs(i);
+}
+
+// LoadStore2RegisterImm12Op
+SafetyLevel LoadStore2RegisterImm12Op::safety(const Instruction i) const {
+  // Arm restrictions for this instruction.
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)))) {
+    return UNPREDICTABLE;
+  }
+
+  // Don't allow modification of PC (NaCl constraint).
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  // NaCl special restriction to make all load/store immediates behave
+  // the same.
+  if (t.reg(i).Equals(kRegisterPc)) {
+    return FORBIDDEN_OPERANDS;
+  }
+
+  return MAY_BE_SAFE;
+}
+
+RegisterList LoadStore2RegisterImm12Op::immediate_addressing_defs(
+    const Instruction i) const {
+  return RegisterList(HasWriteBack(i) ? n.reg(i) : kRegisterNone);
+}
+
+Register LoadStore2RegisterImm12Op::base_address_register(
+    const Instruction i) const {
+  return n.reg(i);
+}
+
+// Load2RegisterImm12Op
+RegisterList Load2RegisterImm12Op::defs(Instruction i) const {
+  return immediate_addressing_defs(i).Add(t.reg(i));
+}
+
+bool Load2RegisterImm12Op::offset_is_immediate(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return true;
+}
+
+// Store2RegisterImm12Op
+RegisterList Store2RegisterImm12Op::defs(Instruction i) const {
   return immediate_addressing_defs(i);
 }
 
@@ -347,6 +392,61 @@ RegisterList Load3RegisterDoubleOp::defs(const Instruction i) const {
 
 // Store3RegisterDoubleOp
 RegisterList Store3RegisterDoubleOp::defs(Instruction i) const {
+  RegisterList defines;
+  if (HasWriteBack(i)) {
+    defines.Add(n.reg(i));
+  }
+  return defines;
+}
+
+// LoadStore3RegisterImm5Op
+SafetyLevel LoadStore3RegisterImm5Op::safety(const Instruction i) const {
+  if (indexing.IsPreIndexing(i)) {
+    // If pre-indexing is set, the address of the load is computed as the sum
+    // of the two register parameters.  We have checked that the first register
+    // is within the sandbox, but this would allow adding an arbitrary value
+    // to it, so it is not safe. (NaCl constraint).
+    return FORBIDDEN;
+  }
+
+  // Arm restrictions for this instruction.
+  if (m.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)))) {
+    return UNPREDICTABLE;
+  }
+
+  // Don't let Rt be Pc (NaCl constraint -- See header file for special
+  // note).
+  if (t.reg(i).Equals(kRegisterPc)) {
+    return FORBIDDEN_OPERANDS;
+  }
+
+  // Don't let addressing writeback alter PC (NaCl constraint).
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+Register LoadStore3RegisterImm5Op::base_address_register(
+    const Instruction i) const {
+  return n.reg(i);
+}
+
+// Load3RegisterImm5Op
+RegisterList Load3RegisterImm5Op::defs(const Instruction i) const {
+  RegisterList defines(t.reg(i));
+  if (HasWriteBack(i)) {
+    defines.Add(n.reg(i));
+  }
+  return defines;
+}
+
+// Store3RegisterImm5Op
+RegisterList Store3RegisterImm5Op::defs(Instruction i) const {
   RegisterList defines;
   if (HasWriteBack(i)) {
     defines.Add(n.reg(i));

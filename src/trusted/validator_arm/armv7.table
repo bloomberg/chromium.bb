@@ -99,15 +99,19 @@
 # #############################################################
 
 class ForbiddenCondNop : UnsafeCondNop
-class Load2RegisterImmediateDoubleOp : LoadStore2RegisterImmediateDoubleOp
-class Load2RegisterImmediateOp : LoadStore2RegisterImmediateOp
 class Load3RegisterDoubleOp : LoadStore3RegisterDoubleOp
+class Load2RegisterImm8DoubleOp : LoadStore2RegisterImm8DoubleOp
+class Load2RegisterImm8Op : LoadStore2RegisterImm8Op
+class Load2RegisterImm12Op : LoadStore2RegisterImm12Op
+class Load3RegisterImm5Op : LoadStore3RegisterImm5Op
 class Load3RegisterOp : LoadStore3RegisterOp
 class MaskedBinary2RegisterImmediateOp : Binary2RegisterImmediateOp
 class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
-class Store2RegisterImmediateDoubleOp : LoadStore2RegisterImmediateDoubleOp
-class Store2RegisterImmediateOp : LoadStore2RegisterImmediateOp
 class Store3RegisterDoubleOp : LoadStore3RegisterDoubleOp
+class Store2RegisterImm8DoubleOp : LoadStore2RegisterImm8DoubleOp
+class Store2RegisterImm8Op : LoadStore2RegisterImm8Op
+class Store2RegisterImm12Op : LoadStore2RegisterImm12Op
+class Store3RegisterImm5Op : LoadStore3RegisterImm5Op
 class Store3RegisterOp : LoadStore3RegisterOp
 
 ##############################################################
@@ -454,13 +458,13 @@ class Store3RegisterOp : LoadStore3RegisterOp
 | "        xx0x1      -         = Load3RegisterOp => LdrRegister
                                   Ldrh_Rule_76_A1_P156
                                   cccc000pd0w1nnnntttt00001011mmmm
-| "        xx1x0      -         = Store2RegisterImmediateOp => StrImmediate
+| "        xx1x0      -         = Store2RegisterImm8Op => StrImmediate
                                   Strh_Rule_207_A1_P410
                                   cccc000pd1w0nnnnttttiiii1011iiii
-| "        xx1x1      ~1111     = Load2RegisterImmediateOp => LdrImmediate
+| "        xx1x1      ~1111     = Load2RegisterImm8Op => LdrImmediate
                                   Ldrh_Rule_74_A1_P152
                                   cccc000pd1w1nnnnttttiiii1011iiii NotRnIsPc
-| "        "          1111      = Load2RegisterImmediateOp => LdrImmediate
+| "        "          1111      = Load2RegisterImm8Op => LdrImmediate
                                   Ldrh_Rule_75_A1_P154
                                   cccc0001d1011111ttttiiii1011iiii
 | 10       xx0x0      -         = Load3RegisterDoubleOp => LdrRegisterDouble
@@ -469,18 +473,18 @@ class Store3RegisterOp : LoadStore3RegisterOp
 | "        xx0x1      -         = Load3RegisterOp => LdrRegister 
                                   Ldrsb_Rule_80_A1_P164
                                   cccc000pd0w1nnnntttt00001101mmmm
-| "        xx1x0      ~1111     = Load2RegisterImmediateDoubleOp
+| "        xx1x0      ~1111     = Load2RegisterImm8DoubleOp
                                   => LdrImmediateDouble
                                   Ldrd_Rule_66_A1_P136
                                   cccc000pd1w0nnnnttttiiii1101iiii NotRnIsPc (v5TE)
-| "        "          1111      = Load2RegisterImmediateDoubleOp
+| "        "          1111      = Load2RegisterImm8DoubleOp
                                   => LdrImmediateDouble
                                   Ldrd_Rule_67_A1_P138
                                   cccc0001d1001111ttttiiii1101iiii (v5TE)
-| "        xx1x1      ~1111     = Load2RegisterImmediateOp => LdrImmediate
+| "        xx1x1      ~1111     = Load2RegisterImm8Op => LdrImmediate
                                   Ldrsb_Rule_78_A1_P160
                                   cccc000pd1w1nnnnttttiiii1101iiii NotRnIsPc
-| "        "          1111      = Load2RegisterImmediateOp => LdrImmediate
+| "        "          1111      = Load2RegisterImm8Op => LdrImmediate
                                   ldrsb_Rule_79_A1_162
                                   cccc0001d1011111ttttiiii1101iiii
 | 11       xx0x0      -         = Store3RegisterDoubleOp => StrRegisterDouble
@@ -489,14 +493,14 @@ class Store3RegisterOp : LoadStore3RegisterOp
 | "        xx0x1      -         = Load3RegisterOp => LdrRegister
                                   Ldrsh_Rule_84_A1_P172
                                   cccc000pd0w1nnnntttt00001111mmmm
-| "        xx1x0      -         = Store2RegisterImmediateDoubleOp
+| "        xx1x0      -         = Store2RegisterImm8DoubleOp
                                   => StrImmediateDouble
                                   Strd_Rule_200_A1_P396
                                   cccc000pd1w0nnnnttttiiii1111iiii
-| "        xx1x1      ~1111     = Load2RegisterImmediateOp => LdrImmediate
+| "        xx1x1      ~1111     = Load2RegisterImm8Op => LdrImmediate
                                   Ldrsh_Rule_82_A1_P168
                                   cccc000pd1w1nnnnttttiiii1111iiii NotRnIsPc
-| "        "          1111      = Load2RegisterImmediateOp => LdrImmediate
+| "        "          1111      = Load2RegisterImm8Op => LdrImmediate
                                   Ldrsh_Rule_83_A1_P170
                                   cccc0001d1011111ttttiiii1111iiii
 +--
@@ -586,42 +590,70 @@ class Store3RegisterOp : LoadStore3RegisterOp
 +-- load_store_word_byte (See Section A5.3)
 | A(25) op1(24:20) B(4) Rn(19:16)
 # Following 2 rows implement op1 = xx0x0 & ~0x010
-| 0     1x0x0      -    -        =StoreImmediate  # STR(immediate) A8-384
+| 0     1x0x0      -    -        = Store2RegisterImm12Op => StrImmediate
+                                   Str_Rule_194_A1_P384
+                                   cccc010pd0w0nnnnttttiiiiiiiiiiii
 | "     0x000      "    "        "
 # Following 2 rows implement op1 = xx0x0 & ~0x010
-| 1     1x0x0      0    -        =StoreRegister   # STR(register) A8-386
+| 1     1x0x0      0    -        = Store3RegisterImm5Op => StrRegister
+                                   Str_Rule_195_A1_P386
+                                   cccc011pd0w0nnnnttttiiiiitt0mmmm
 | "     0x000      "    "        "
-| 0     0x010      -    -        =Forbidden       # STRT A8-416
+# STRT (rule 210, A1 and A2, page 416) define unprivledge stores, which
+# NaCl doesn't allow.
+| 0     0x010      -    -        = Forbidden
 | 1     0x010      0    -        "
 # Following 2 rows implement op1 = xx0x1 & ~0x011
-| 0     1x0x1      -    ~1111    =LoadImmediate   # LDR(immediate) A8-120
+| 0     1x0x1      -    ~1111    = Load2RegisterImm12Op => LdrImmediate
+                                   Ldr_Rule_58_A1_P120
+                                   cccc010pd0w1nnnnttttiiiiiiiiiiii NotRnIsPc
 | "     0x001      "    "        "
 # Following 2 rows implement op1 = xx0x1 & ~0x011
-| "     1x0x1      "    1111     =LoadImmediate   # LDR(literal) A8-122
+| "     1x0x1      "    1111     = Load2RegisterImm12Op => LdrImmediate
+                                   Ldr_Rule_59_A1_P122
+                                   cccc0101d0011111ttttiiiiiiiiiiii
 | "     0x001      "    "        "
 # Following 2 rows implement op1 = xx0x1 & ~0x011
-| 1     1x0x1      0    -        =LoadRegister    # LDR(register) A8-124
+| 1     1x0x1      0    -        = Load3RegisterImm5Op => LdrRegister
+                                   Ldr_Rule_60_A1_P124
+                                   cccc011pd0w1nnnnttttiiiiitt0mmmm
 | "     xx001      "    "        "
-| 0     0x011      -    -        =Forbidden       # LDRT A8-176
+# LDRT (rule 86, A1 and A2, page 176) define unprivledge loads, which
+# NaCl doesn't allow.
+| 0     0x011      -    -        = Forbidden
 | 1     0x011      0    -        "
 # Following 2 rows implement op1 = xx1x0 & ~0x110
-| 0     1x1x0      -    -        =StoreImmediate  # STRB(immediate) A8-390
+| 0     1x1x0      -    -        = Store2RegisterImm12Op => StrImmediate
+                                   Strb_Rule_197_A1_P390
+                                   cccc010pd1w0nnnnttttiiiiiiiiiiii
 | "     0x100      "    "        "
 # Following 2 rows implement op1 = xx1x0 & ~0x110
-| 1     1x1x0      0    -        =StoreRegister   # STRB(register) A8-392
+| 1     1x1x0      0    -        = Store3RegisterImm5Op => StrRegister
+                                   Strb_Rule_198_A1_P392
+                                   cccc011pd1w0nnnnttttiiiiitt0mmmm
 | "     0x100      "    "        "
-| 0     0x110      -    -        =Forbidden       # STRBT A8-394
+# Strbt (rule 199, A1 and A2, page 394) define unprivledged stores, which
+# NaCl doesn't allow.
+| 0     0x110      -    -        = Forbidden       # STRBT A8-394
 | 1     0x110      0    -        "
 # Following 2 rows implement op1 = xx1x1 & ~0x111
-| 0     1x1x1      -    ~1111    =LoadImmediate   # LDRB(immediate) A8-128
+| 0     1x1x1      -    ~1111    = Load2RegisterImm12Op => LdrImmediate
+                                   Ldrb_Rule_62_A1_P128
+                                   cccc010pd1w1nnnnttttiiiiiiiiiiii NotRnIsPc
 | "     0x101      "    "        "
 # Following 2 rows implement op1 = xx1x1 & ~0x111
-| "     1x1x1      "    1111     =LoadImmediate   # LDRB(literal) A8-130
+| "     1x1x1      "    1111     = Load2RegisterImm12Op => LdrImmediate
+                                   Ldrb_Rule_63_A1_P130
+                                   cccc0101d1011111ttttiiiiiiiiiiii
 | "     0x101      "    "        "
 # Following 2 rows implement op1 = xx1x1 & ~0x111
-| 1     1x1x1      0    -        =LoadRegister    # LDRB(register) A8-132
+| 1     1x1x1      0    -        = Load3RegisterImm5Op => LdrRegister
+                                   Ldrb_Rule_64_A1_P132
+                                   cccc011pd1w1nnnnttttiiiiitt0mmmm
 | "     0x101      "    "        "
-| 0     0x111      -    -        =Forbidden       # LDRBT          A8-132
+# Ldrbt (rule 65, A1 and A2, page 134) define unprivledged loads, which
+# NaCl doesn't allow.
+| 0     0x111      -    -        = Forbidden
 | 1     0x111      0    -        "
 +--
 

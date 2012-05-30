@@ -506,17 +506,17 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store(
   if ((insn.Bits() & 0x00000060) == 0x00000020 /* op2(6:5) == 01 */ &&
       (insn.Bits() & 0x00500000) == 0x00400000 /* op1(24:20) == xx1x0 */ &&
       true)
-    return Store2RegisterImmediateOp_Strh_Rule_207_A1_P410_instance_;
+    return Store2RegisterImm8Op_Strh_Rule_207_A1_P410_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000020 /* op2(6:5) == 01 */ &&
       (insn.Bits() & 0x00500000) == 0x00500000 /* op1(24:20) == xx1x1 */ &&
       (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
-    return Load2RegisterImmediateOp_Ldrh_Rule_74_A1_P152_instance_;
+    return Load2RegisterImm8Op_Ldrh_Rule_74_A1_P152_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000020 /* op2(6:5) == 01 */ &&
       (insn.Bits() & 0x00500000) == 0x00500000 /* op1(24:20) == xx1x1 */ &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
-    return Load2RegisterImmediateOp_Ldrh_Rule_75_A1_P154_instance_;
+    return Load2RegisterImm8Op_Ldrh_Rule_75_A1_P154_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00000000 /* op1(24:20) == xx0x0 */ &&
@@ -531,22 +531,22 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store(
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00400000 /* op1(24:20) == xx1x0 */ &&
       (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
-    return Load2RegisterImmediateDoubleOp_Ldrd_Rule_66_A1_P136_instance_;
+    return Load2RegisterImm8DoubleOp_Ldrd_Rule_66_A1_P136_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00400000 /* op1(24:20) == xx1x0 */ &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
-    return Load2RegisterImmediateDoubleOp_Ldrd_Rule_67_A1_P138_instance_;
+    return Load2RegisterImm8DoubleOp_Ldrd_Rule_67_A1_P138_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00500000 /* op1(24:20) == xx1x1 */ &&
       (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
-    return Load2RegisterImmediateOp_Ldrsb_Rule_78_A1_P160_instance_;
+    return Load2RegisterImm8Op_Ldrsb_Rule_78_A1_P160_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00500000 /* op1(24:20) == xx1x1 */ &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
-    return Load2RegisterImmediateOp_ldrsb_Rule_79_A1_162_instance_;
+    return Load2RegisterImm8Op_ldrsb_Rule_79_A1_162_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000060 /* op2(6:5) == 11 */ &&
       (insn.Bits() & 0x00500000) == 0x00000000 /* op1(24:20) == xx0x0 */ &&
@@ -561,17 +561,17 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store(
   if ((insn.Bits() & 0x00000060) == 0x00000060 /* op2(6:5) == 11 */ &&
       (insn.Bits() & 0x00500000) == 0x00400000 /* op1(24:20) == xx1x0 */ &&
       true)
-    return Store2RegisterImmediateDoubleOp_Strd_Rule_200_A1_P396_instance_;
+    return Store2RegisterImm8DoubleOp_Strd_Rule_200_A1_P396_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000060 /* op2(6:5) == 11 */ &&
       (insn.Bits() & 0x00500000) == 0x00500000 /* op1(24:20) == xx1x1 */ &&
       (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
-    return Load2RegisterImmediateOp_Ldrsh_Rule_82_A1_P168_instance_;
+    return Load2RegisterImm8Op_Ldrsh_Rule_82_A1_P168_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000060 /* op2(6:5) == 11 */ &&
       (insn.Bits() & 0x00500000) == 0x00500000 /* op1(24:20) == xx1x1 */ &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
-    return Load2RegisterImmediateOp_Ldrsh_Rule_83_A1_P170_instance_;
+    return Load2RegisterImm8Op_Ldrsh_Rule_83_A1_P170_instance_;
 
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: extra_load_store could not parse %08X",
@@ -611,58 +611,135 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_byte(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
-      (insn.Bits() & 0x01300000) == 0x00000000 /* op1(24:20) == 0xx00 */ &&
+      (insn.Bits() & 0x01700000) == 0x00000000 /* op1(24:20) == 0x000 */ &&
+      true &&
       true)
-    return StoreImmediate_None_instance_;
+    return Store2RegisterImm12Op_Str_Rule_194_A1_P384_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
-      (insn.Bits() & 0x01300000) == 0x00100000 /* op1(24:20) == 0xx01 */ &&
-      true)
-    return LoadImmediate_None_instance_;
+      (insn.Bits() & 0x01700000) == 0x00100000 /* op1(24:20) == 0x001 */ &&
+      true &&
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
+    return Load2RegisterImm12Op_Ldr_Rule_58_A1_P120_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
-      (insn.Bits() & 0x01100000) == 0x01000000 /* op1(24:20) == 1xxx0 */ &&
-      true)
-    return StoreImmediate_None_instance_;
+      (insn.Bits() & 0x01700000) == 0x00100000 /* op1(24:20) == 0x001 */ &&
+      true &&
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
+    return Load2RegisterImm12Op_Ldr_Rule_59_A1_P122_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
-      (insn.Bits() & 0x01100000) == 0x01100000 /* op1(24:20) == 1xxx1 */ &&
+      (insn.Bits() & 0x01700000) == 0x00400000 /* op1(24:20) == 0x100 */ &&
+      true &&
       true)
-    return LoadImmediate_None_instance_;
+    return Store2RegisterImm12Op_Strb_Rule_197_A1_P390_instance_;
+
+  if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
+      (insn.Bits() & 0x01700000) == 0x00500000 /* op1(24:20) == 0x101 */ &&
+      true &&
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
+    return Load2RegisterImm12Op_Ldrb_Rule_62_A1_P128_instance_;
+
+  if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
+      (insn.Bits() & 0x01700000) == 0x00500000 /* op1(24:20) == 0x101 */ &&
+      true &&
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
+    return Load2RegisterImm12Op_Ldrb_Rule_63_A1_P130_instance_;
+
+  if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
+      (insn.Bits() & 0x01500000) == 0x01000000 /* op1(24:20) == 1x0x0 */ &&
+      true &&
+      true)
+    return Store2RegisterImm12Op_Str_Rule_194_A1_P384_instance_;
+
+  if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
+      (insn.Bits() & 0x01500000) == 0x01100000 /* op1(24:20) == 1x0x1 */ &&
+      true &&
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
+    return Load2RegisterImm12Op_Ldr_Rule_58_A1_P120_instance_;
+
+  if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
+      (insn.Bits() & 0x01500000) == 0x01100000 /* op1(24:20) == 1x0x1 */ &&
+      true &&
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
+    return Load2RegisterImm12Op_Ldr_Rule_59_A1_P122_instance_;
+
+  if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
+      (insn.Bits() & 0x01500000) == 0x01400000 /* op1(24:20) == 1x1x0 */ &&
+      true &&
+      true)
+    return Store2RegisterImm12Op_Strb_Rule_197_A1_P390_instance_;
+
+  if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
+      (insn.Bits() & 0x01500000) == 0x01500000 /* op1(24:20) == 1x1x1 */ &&
+      true &&
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
+    return Load2RegisterImm12Op_Ldrb_Rule_62_A1_P128_instance_;
+
+  if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
+      (insn.Bits() & 0x01500000) == 0x01500000 /* op1(24:20) == 1x1x1 */ &&
+      true &&
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
+    return Load2RegisterImm12Op_Ldrb_Rule_63_A1_P130_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
       (insn.Bits() & 0x01200000) == 0x00200000 /* op1(24:20) == 0xx1x */ &&
+      true &&
       true)
     return Forbidden_None_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
+      (insn.Bits() & 0x01700000) == 0x00000000 /* op1(24:20) == 0x000 */ &&
+      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
+      true)
+    return Store3RegisterImm5Op_Str_Rule_195_A1_P386_instance_;
+
+  if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
+      (insn.Bits() & 0x01700000) == 0x00400000 /* op1(24:20) == 0x100 */ &&
+      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
+      true)
+    return Store3RegisterImm5Op_Strb_Rule_198_A1_P392_instance_;
+
+  if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x01700000) == 0x00500000 /* op1(24:20) == 0x101 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return LoadRegister_None_instance_;
+      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
+      true)
+    return Load3RegisterImm5Op_Ldrb_Rule_64_A1_P132_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x00700000) == 0x00100000 /* op1(24:20) == xx001 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return LoadRegister_None_instance_;
+      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
+      true)
+    return Load3RegisterImm5Op_Ldr_Rule_60_A1_P124_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
-      (insn.Bits() & 0x01300000) == 0x00000000 /* op1(24:20) == 0xx00 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return StoreRegister_None_instance_;
+      (insn.Bits() & 0x01500000) == 0x01000000 /* op1(24:20) == 1x0x0 */ &&
+      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
+      true)
+    return Store3RegisterImm5Op_Str_Rule_195_A1_P386_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
-      (insn.Bits() & 0x01100000) == 0x01000000 /* op1(24:20) == 1xxx0 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return StoreRegister_None_instance_;
+      (insn.Bits() & 0x01500000) == 0x01100000 /* op1(24:20) == 1x0x1 */ &&
+      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
+      true)
+    return Load3RegisterImm5Op_Ldr_Rule_60_A1_P124_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
-      (insn.Bits() & 0x01100000) == 0x01100000 /* op1(24:20) == 1xxx1 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return LoadRegister_None_instance_;
+      (insn.Bits() & 0x01500000) == 0x01400000 /* op1(24:20) == 1x1x0 */ &&
+      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
+      true)
+    return Store3RegisterImm5Op_Strb_Rule_198_A1_P392_instance_;
+
+  if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
+      (insn.Bits() & 0x01500000) == 0x01500000 /* op1(24:20) == 1x1x1 */ &&
+      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
+      true)
+    return Load3RegisterImm5Op_Ldrb_Rule_64_A1_P132_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x01200000) == 0x00200000 /* op1(24:20) == 0xx1x */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
+      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
+      true)
     return Forbidden_None_instance_;
 
   // Catch any attempt to fall through...
