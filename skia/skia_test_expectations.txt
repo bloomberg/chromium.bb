@@ -48,4 +48,8 @@
 //
 // START OVERRIDES HERE
 
+BUGCR130283 : svg/W3C-SVG-1.1/painting-stroke-04-t.svg = TEXT
+
 // END OVERRIDES HERE (this line ensures that the file is newline-terminated)
+
+
