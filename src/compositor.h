@@ -48,6 +48,12 @@ struct shell_surface;
 struct weston_seat;
 struct weston_output;
 
+enum weston_keyboard_modifier {
+	MODIFIER_CTRL = (1 << 0),
+	MODIFIER_ALT = (1 << 1),
+	MODIFIER_SUPER = (1 << 2),
+};
+
 struct weston_mode {
 	uint32_t flags;
 	int32_t width, height;
@@ -161,7 +167,7 @@ struct weston_seat {
 	struct wl_listener drag_surface_destroy_listener;
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
-	uint32_t modifier_state;
+	enum weston_keyboard_modifier modifier_state;
 	int hw_cursor;
 	struct wl_surface *saved_kbd_focus;
 	struct wl_listener saved_kbd_focus_listener;
@@ -298,10 +304,6 @@ struct weston_compositor {
 		uint32_t group;
 	} xkb_info;
 };
-
-#define MODIFIER_CTRL	(1 << 8)
-#define MODIFIER_ALT	(1 << 9)
-#define MODIFIER_SUPER	(1 << 10)
 
 enum weston_output_flags {
 	WL_OUTPUT_FLIPPED = 0x01
@@ -513,7 +515,7 @@ typedef void (*weston_binding_handler_t)(struct wl_seat *seat,
 struct weston_binding *
 weston_compositor_add_binding(struct weston_compositor *compositor,
 			      uint32_t key, uint32_t button, uint32_t axis,
-			      uint32_t modifier,
+			      enum weston_keyboard_modifier modifier,
 			      weston_binding_handler_t binding, void *data);
 void
 weston_binding_destroy(struct weston_binding *binding);

@@ -242,7 +242,7 @@ static void
 center_on_output(struct weston_surface *surface,
 		 struct weston_output *output);
 
-static uint32_t
+static enum weston_keyboard_modifier
 get_modifier(char *modifier)
 {
 	if (!modifier)

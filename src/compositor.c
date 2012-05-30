@@ -1732,7 +1732,7 @@ static int
 update_modifier_state(struct weston_seat *seat, uint32_t key, uint32_t state)
 {
 	struct weston_compositor *compositor = seat->compositor;
-	uint32_t modifier;
+	enum weston_keyboard_modifier modifier;
 	uint32_t mods_depressed, mods_latched, mods_locked, group;
 	int ret = 0;
 
