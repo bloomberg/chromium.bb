@@ -113,6 +113,11 @@ UNFILED WIN7 INTEL : conformance_attribs_gl_disabled_vertex_attrib = FAIL
 UNFILED WIN7 INTEL : conformance_extensions_oes_texture_float_with_image_data = FAIL
 UNFILED WIN7 INTEL : conformance_glsl_samplers_glsl_function_texture2dproj = FLAKY
 
+UNFILED WIN7 INTEL : conformance_renderbuffers_framebuffer_state_restoration = FAIL
+UNFILED WIN7 INTEL : conformance_textures_tex_image_and_sub_image_2d_with_image_data_rgb565 = FAIL
+UNFILED WIN7 INTEL : conformance_textures_tex_image_and_sub_image_2d_with_image_data_rgba4444 = FAIL
+UNFILED WIN7 INTEL : conformance_textures_tex_image_and_sub_image_2d_with_image_data_rgba5551 = FAIL
+
 UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_asin = FAIL
 UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_dot = FAIL
 UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_faceforward = FAIL
