@@ -65,9 +65,6 @@ class PrintViewManager : public content::NotificationObserver,
   // renderer in the case of scripted print preview.
   void PrintPreviewDone();
 
-  // Handles cancelled preview printing request.
-  void PreviewPrintingRequestCancelled();
-
   // Whether to block scripted printing or not.
   void SetScriptedPrintingBlocked(bool blocked);
 

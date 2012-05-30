@@ -282,9 +282,6 @@ IPC_MESSAGE_ROUTED0(PrintMsg_PrintPages)
 IPC_MESSAGE_ROUTED1(PrintMsg_PrintingDone,
                     bool /* success */)
 
-// Tells the render view that preview printing request has been cancelled.
-IPC_MESSAGE_ROUTED0(PrintMsg_PreviewPrintingRequestCancelled)
-
 // Tells the render view whether scripted printing is blocked or not.
 IPC_MESSAGE_ROUTED1(PrintMsg_SetScriptedPrintingBlocked,
                     bool /* blocked */)

@@ -28,6 +28,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
+#include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_system_task_proxy.h"
@@ -496,17 +497,12 @@ void PrintPreviewHandler::HandleHidePreview(const ListValue* /*args*/) {
 void PrintPreviewHandler::HandleCancelPendingPrintRequest(
     const ListValue* /*args*/) {
   TabContentsWrapper* initiator_tab = GetInitiatorTab();
-  if (initiator_tab) {
-    ClearInitiatorTabDetails();
-  } else {
-    // Initiator tab does not exists. Get the wrapper contents of current tab.
-    Browser* browser = BrowserList::GetLastActive();
-    if (browser)
-      initiator_tab = browser->GetSelectedTabContentsWrapper();
-  }
-
   if (initiator_tab)
-    initiator_tab->print_view_manager()->PreviewPrintingRequestCancelled();
+    ClearInitiatorTabDetails();
+  gfx::NativeWindow parent = initiator_tab ?
+      initiator_tab->web_contents()->GetView()->GetTopLevelNativeWindow() :
+      NULL;
+  browser::ShowPrintErrorDialog(parent);
   delete preview_tab_wrapper();
 }
 

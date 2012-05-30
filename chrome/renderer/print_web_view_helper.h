@@ -349,9 +349,6 @@ class PrintWebViewHelper
   // Scripted printing will be blocked for a limited amount of time.
   void IncrementScriptedPrintCount();
 
-  // Displays the print job error message to the user.
-  void DisplayPrintJobError();
-
   void RequestPrintPreview(PrintPreviewRequestType type);
 
   // Checks whether print preview should continue or not.

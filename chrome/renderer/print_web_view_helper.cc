@@ -830,8 +830,6 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PrintMsg_PrintingDone, OnPrintingDone)
     IPC_MESSAGE_HANDLER(PrintMsg_ResetScriptedPrintCount,
                         ResetScriptedPrintCount)
-    IPC_MESSAGE_HANDLER(PrintMsg_PreviewPrintingRequestCancelled,
-                        DisplayPrintJobError)
     IPC_MESSAGE_HANDLER(PrintMsg_SetScriptedPrintingBlocked,
                         SetScriptedPrintBlocked)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1244,8 +1242,6 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
       break;
 
     case FAIL_PRINT:
-      DisplayPrintJobError();
-
       if (notify_browser_of_print_failure_ && print_pages_params_.get()) {
         int cookie = print_pages_params_->params.document_cookie;
         Send(new PrintHostMsg_PrintingFailed(routing_id(), cookie));
@@ -1646,16 +1642,6 @@ void PrintWebViewHelper::ResetScriptedPrintCount() {
 void PrintWebViewHelper::IncrementScriptedPrintCount() {
   ++user_cancelled_scripted_print_count_;
   last_cancelled_script_print_ = base::Time::Now();
-}
-
-void PrintWebViewHelper::DisplayPrintJobError() {
-  WebView* web_view = print_web_view_;
-  if (!web_view)
-    web_view = render_view()->GetWebView();
-
-  render_view()->RunModalAlertDialog(
-      web_view->mainFrame(),
-      l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
 }
 
 void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {

@@ -12,6 +12,7 @@
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
@@ -26,6 +27,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
@@ -132,10 +134,6 @@ void PrintViewManager::PrintPreviewDone() {
     scripted_print_preview_rph_ = NULL;
   }
   print_preview_state_ = NOT_PREVIEWING;
-}
-
-void PrintViewManager::PreviewPrintingRequestCancelled() {
-  Send(new PrintMsg_PreviewPrintingRequestCancelled(routing_id()));
 }
 
 void PrintViewManager::SetScriptedPrintingBlocked(bool blocked) {
@@ -255,6 +253,10 @@ void PrintViewManager::OnPrintingFailed(int cookie) {
     NOTREACHED();
     return;
   }
+
+  browser::ShowPrintErrorDialog(
+      tab_->web_contents()->GetView()->GetTopLevelNativeWindow());
+
   ReleasePrinterQuery();
 
   content::NotificationService::current()->Notify(

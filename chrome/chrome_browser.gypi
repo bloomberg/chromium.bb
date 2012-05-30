@@ -1754,6 +1754,8 @@
         'browser/printing/print_dialog_cloud.h',
         'browser/printing/print_dialog_gtk.cc',
         'browser/printing/print_dialog_gtk.h',
+        'browser/printing/print_error_dialog.cc',
+        'browser/printing/print_error_dialog.h',
         'browser/printing/print_job.cc',
         'browser/printing/print_job.h',
         'browser/printing/print_job_manager.cc',
