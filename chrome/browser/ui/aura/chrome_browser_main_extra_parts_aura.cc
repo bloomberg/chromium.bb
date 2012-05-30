@@ -17,8 +17,7 @@
 #include "ui/views/widget/native_widget_aura.h"
 #endif  // !USE_ASH
 
-ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura()
-    : ChromeBrowserMainExtraParts() {
+ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura() {
 }
 
 void ChromeBrowserMainExtraPartsAura::PreProfileInit() {

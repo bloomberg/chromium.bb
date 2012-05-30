@@ -33,16 +33,9 @@ class ExamplesBrowserMainParts : public content::BrowserMainParts {
   virtual ~ExamplesBrowserMainParts();
 
   // Overridden from content::BrowserMainParts:
-  virtual void PreEarlyInitialization() OVERRIDE {}
-  virtual void PostEarlyInitialization() OVERRIDE {}
-  virtual void PreMainMessageLoopStart() OVERRIDE;
-  virtual void PostMainMessageLoopStart() OVERRIDE {}
-  virtual void ToolkitInitialized() OVERRIDE {}
-  virtual int PreCreateThreads() OVERRIDE;
   virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
-  virtual void PostDestroyThreads() OVERRIDE {}
 
   content::ShellBrowserContext* browser_context() {
     return browser_context_.get();

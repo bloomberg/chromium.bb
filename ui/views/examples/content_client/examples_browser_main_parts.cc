@@ -46,20 +46,10 @@ class ExamplesViewsDelegate : public views::TestViewsDelegate {
 }  // namespace
 
 ExamplesBrowserMainParts::ExamplesBrowserMainParts(
-    const content::MainFunctionParams& parameters)
-    : BrowserMainParts() {
+    const content::MainFunctionParams& parameters) {
 }
 
 ExamplesBrowserMainParts::~ExamplesBrowserMainParts() {
-}
-
-#if !defined(OS_MACOSX)
-void ExamplesBrowserMainParts::PreMainMessageLoopStart() {
-}
-#endif
-
-int ExamplesBrowserMainParts::PreCreateThreads() {
-  return 0;
 }
 
 void ExamplesBrowserMainParts::PreMainMessageLoopRun() {

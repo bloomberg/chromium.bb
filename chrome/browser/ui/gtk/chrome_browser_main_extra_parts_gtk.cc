@@ -16,8 +16,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 
-ChromeBrowserMainExtraPartsGtk::ChromeBrowserMainExtraPartsGtk()
-    : ChromeBrowserMainExtraParts() {
+ChromeBrowserMainExtraPartsGtk::ChromeBrowserMainExtraPartsGtk() {
 }
 
 void ChromeBrowserMainExtraPartsGtk::PreEarlyInitialization() {

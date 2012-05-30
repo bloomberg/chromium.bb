@@ -17,30 +17,26 @@
 
 class ChromeBrowserMainExtraParts {
  public:
-  ChromeBrowserMainExtraParts();
-  virtual ~ChromeBrowserMainExtraParts();
+  virtual ~ChromeBrowserMainExtraParts() {}
 
   // EarlyInitialization methods.
-  virtual void PreEarlyInitialization();
-  virtual void PostEarlyInitialization();
+  virtual void PreEarlyInitialization() {}
+  virtual void PostEarlyInitialization() {}
 
   // ToolkitInitialized methods.
-  virtual void ToolkitInitialized();
+  virtual void ToolkitInitialized() {}
 
   // MainMessageLoopStart methods.
-  virtual void PreMainMessageLoopStart();
-  virtual void PostMainMessageLoopStart();
+  virtual void PreMainMessageLoopStart() {}
+  virtual void PostMainMessageLoopStart() {}
 
   // MainMessageLoopRun methods.
-  virtual void PreProfileInit();
-  virtual void PostProfileInit();
-  virtual void PreBrowserStart();
-  virtual void PostBrowserStart();
-  virtual void PreMainMessageLoopRun();
-  virtual void PostMainMessageLoopRun();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraParts);
+  virtual void PreProfileInit() {}
+  virtual void PostProfileInit() {}
+  virtual void PreBrowserStart() {}
+  virtual void PostBrowserStart() {}
+  virtual void PreMainMessageLoopRun() {}
+  virtual void PostMainMessageLoopRun() {}
 };
 
 #endif  // CHROME_BROWSER_CHROME_BROWSER_MAIN_EXTRA_PARTS_H_

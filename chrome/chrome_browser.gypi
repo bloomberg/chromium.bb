@@ -367,7 +367,6 @@
         'browser/chrome_browser_application_mac.mm',
         'browser/chrome_browser_main.cc',
         'browser/chrome_browser_main.h',
-        'browser/chrome_browser_main_extra_parts.cc',
         'browser/chrome_browser_main_extra_parts.h',
         'browser/chrome_browser_main_linux.cc',
         'browser/chrome_browser_main_linux.h',

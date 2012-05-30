@@ -57,10 +57,6 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 }
 #endif
 
-int ShellBrowserMainParts::PreCreateThreads() {
-  return 0;
-}
-
 void ShellBrowserMainParts::PreEarlyInitialization() {
 #if defined(OS_ANDROID)
   // TODO(tedchoc): Setup the NetworkChangeNotifier here.
@@ -100,10 +96,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   if (devtools_delegate_)
     devtools_delegate_->Stop();
   browser_context_.reset();
-}
-
-bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
-  return false;
 }
 
 }  // namespace

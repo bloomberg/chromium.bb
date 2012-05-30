@@ -37,8 +37,7 @@
 #include "chrome/browser/ui/views/ash/volume_controller_chromeos.h"
 #endif
 
-ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh()
-    : ChromeBrowserMainExtraParts() {
+ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {
 }
 
 ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {

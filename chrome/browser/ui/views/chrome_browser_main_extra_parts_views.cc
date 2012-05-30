@@ -8,8 +8,7 @@
 #include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 
-ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews()
-    : ChromeBrowserMainExtraParts() {
+ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {
 }
 
 void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
