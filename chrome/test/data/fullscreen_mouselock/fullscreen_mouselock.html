@@ -2,6 +2,16 @@
 <html>
 <head>
 <title>Fullscreen and Mouse Lock Scripts</title>
+<style type="text/css">
+  #HTMLCursor {
+      border: solid black 1px;
+      background: yellow;
+      display: inline;
+      position: absolute;
+      pointer-events: none;
+      z-index: 1;
+  }
+</style>
 <script type="text/javascript">
 
 function enterFullscreen() {
@@ -92,9 +102,74 @@ function lockMouse1AndEnterFullscreen() {
   enterFullscreen();
 }
 
+function moveHTMLCursorTo(x, y) {
+  HTMLCursor.style.left = x + "px";;
+  HTMLCursor.style.top = y + "px";
+}
+
+function moveHTMLCursorToCenter() {
+  moveHTMLCursorTo(window.innerWidth / 2, window.innerHeight / 2);
+}
+
+function moveHTMLCursorBy(x, y) {
+  moveHTMLCursorTo(
+      HTMLCursor.getBoundingClientRect().left + parseInt(x),
+      HTMLCursor.getBoundingClientRect().top + parseInt(y));
+}
+
+var polyFillMouseEventMovementFromVenderPrefix = function (e) {
+  e.movementX = (e.movementX !== undefined ? e.movementX :
+                (e.webkitMovementX !== undefined ? e.webkitMovementX :
+                (e.mozMovementX !== undefined ? e.mozMovementX :
+                (e.oMovementX !== undefined ? e.oMovementX :
+                 e.msMovementY))));
+  e.movementY = (e.movementY !== undefined ? e.movementY :
+                (e.webkitMovementY !== undefined ? e.webkitMovementY :
+                (e.mozMovementY !== undefined ? e.mozMovementY :
+                (e.oMovementY !== undefined ? e.oMovementY :
+                 e.msMovementY))));
+}
+
+function init() {
+  moveHTMLCursorToCenter();
+
+  document.addEventListener("mousemove",
+                            polyFillMouseEventMovementFromVenderPrefix);
+  document.addEventListener("mousemove", function (e) {
+    if (e.movementX !== undefined) {
+      moveHTMLCursorBy(e.movementX, e.movementY);
+      displaytext.innerHTML =
+        "Document mousemove listener:<br>" +
+        "<ul>" +
+        "<li>Raw screen position: " + e.screenX + ", " + e.screenY + "</li>" +
+        "<li>HTMLCursor: "
+        + HTMLCursor.getBoundingClientRect().left + ", "
+        + HTMLCursor.getBoundingClientRect().top + "</li>" +
+        "<li>Movement: " + e.movementX + ", " + e.movementY + "</li>" +
+        "</ul>";
+    } else {
+      displaytext.innerHTML =
+        "<b>You must enable pointer lock in about:flags</b>";
+    }
+  });
+
+  document.addEventListener("keypress", function (e) {
+    switch (String.fromCharCode(e.charCode)) {
+    case "f": enterFullscreen(); break;
+    case "x": exitFullscreen(); break;
+    case "1": lockMouse1(); break;
+    case "2": lockMouse2(); break;
+    case "d": delayedLockMouse1(); break;
+    case "u": unlockMouse(); break;
+    case "b": enterFullscreenAndLockMouse1(); break;
+    case "B": lockMouse1AndEnterFullscreen(); break;
+    default: moveHTMLCursorToCenter(); break;
+    }
+  });
+}
 </script>
 </head>
-<body title="This tooltip should not be shown if the mouse is locked.">
+<body onload="init()" title="This tooltip should not be shown if the mouse is locked.">
   <div id="container">
     <button id="enterFullscreen" onclick="enterFullscreen();">enterFullscreen() [f]</button><br>
     <button id="exitFullscreen" onclick="exitFullscreen();">exitFullscreen() [x]</button><br>
@@ -107,21 +182,9 @@ function lockMouse1AndEnterFullscreen() {
     <button id="lockMouse1AndEnterFullscreen" onclick="lockMouse1AndEnterFullscreen()">lockMouse1AndEnterFullscreen() [B]</button><br>
     <div id="lockTarget1">lockTarget1</div>
     <div id="lockTarget2">lockTarget2</div>
+    <form name="HTMLCursor" id="HTMLCursor">HTMLCursor</form>
+    <form name="displaytext">...</form>
   </div>
   This text is outside of the container that is made fullscreen. This text should not be visible when fullscreen.
 </body>
-<script>
-document.body.onkeypress = function (e) {
-  switch (String.fromCharCode(e.charCode)) {
-  case "f": enterFullscreen(); break;
-  case "x": exitFullscreen(); break;
-  case "1": lockMouse1(); break;
-  case "2": lockMouse2(); break;
-  case "d": delayedLockMouse1(); break;
-  case "u": unlockMouse(); break;
-  case "b": enterFullscreenAndLockMouse1(); break;
-  case "B": lockMouse1AndEnterFullscreen(); break;
-  }
-}
-</script>
 </html>
