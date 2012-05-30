@@ -279,7 +279,7 @@ base::BinaryValue* V8ValueConverterImpl::FromV8Buffer(
 
 DictionaryValue* V8ValueConverterImpl::FromV8Object(
     v8::Handle<v8::Object> val) const {
-  DictionaryValue* result = new DictionaryValue();
+  scoped_ptr<DictionaryValue> result(new DictionaryValue());
   v8::Handle<v8::Array> property_names(val->GetPropertyNames());
   for (uint32 i = 0; i < property_names->Length(); ++i) {
     v8::Handle<v8::String> name(property_names->Get(i).As<v8::String>());
@@ -299,8 +299,8 @@ DictionaryValue* V8ValueConverterImpl::FromV8Object(
       child_v8 = v8::Null();
     }
 
-    Value* child = FromV8ValueImpl(child_v8);
-    CHECK(child);
+    scoped_ptr<Value> child(FromV8ValueImpl(child_v8));
+    CHECK(child.get());
 
     // Strip null if asked (and since undefined is turned into null, undefined
     // too). The use case for supporting this is JSON-schema support,
@@ -326,7 +326,7 @@ DictionaryValue* V8ValueConverterImpl::FromV8Object(
       continue;
 
     result->SetWithoutPathExpansion(std::string(*name_utf8, name_utf8.length()),
-                                    child);
+                                    child.release());
   }
-  return result;
+  return result.release();
 }
