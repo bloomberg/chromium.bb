@@ -33,6 +33,35 @@
 #include "evdev-private.h"
 #include "launcher-util.h"
 
+static void
+evdev_led_update(struct weston_seat *seat_base, enum weston_led leds)
+{
+	static const struct {
+		enum weston_led weston;
+		int evdev;
+	} map[] = {
+		{ LED_NUM_LOCK, LED_NUML },
+		{ LED_CAPS_LOCK, LED_CAPSL },
+		{ LED_SCROLL_LOCK, LED_SCROLLL },
+	};
+	struct evdev_seat *seat = (struct evdev_seat *) seat_base;
+	struct evdev_input_device *device;
+	struct input_event ev[ARRAY_LENGTH(map)];
+	unsigned int i;
+
+	memset(ev, 0, sizeof(ev));
+	for (i = 0; i < ARRAY_LENGTH(map); i++) {
+		ev[i].type = EV_LED;
+		ev[i].code = map[i].evdev;
+		ev[i].value = !!(leds & map[i].weston);
+	}
+
+	wl_list_for_each(device, &seat->devices_list, link) {
+		if (device->caps & EVDEV_KEYBOARD)
+			write(device->fd, ev, sizeof *ev);
+	}
+}
+
 static inline void
 evdev_process_key(struct evdev_input_device *device,
                         struct input_event *e, int time)
@@ -691,6 +720,7 @@ evdev_input_create(struct weston_compositor *c, struct udev *udev,
 
 	memset(seat, 0, sizeof *seat);
 	weston_seat_init(&seat->base, c);
+	seat->base.led_update = evdev_led_update;
 
 	wl_list_init(&seat->devices_list);
 	seat->seat_id = strdup(seat_id);
