@@ -8,7 +8,6 @@
 
 #include "ash/shell.h"
 #include "ash/test/test_shell_delegate.h"
-#include "content/test/web_contents_tester.h"
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
@@ -18,13 +17,6 @@
 
 namespace ash {
 namespace test {
-
-content::WebContents* AshTestViewsDelegate::CreateWebContents(
-    content::BrowserContext* browser_context,
-    content::SiteInstance* site_instance) {
-  return content::WebContentsTester::CreateTestWebContents(browser_context,
-                                                           site_instance);
-}
 
 AshTestBase::AshTestBase() {
 }

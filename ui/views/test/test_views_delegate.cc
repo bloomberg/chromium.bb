@@ -68,7 +68,8 @@ views::NativeWidgetHelperAura* TestViewsDelegate::CreateNativeWidgetHelper(
 content::WebContents* TestViewsDelegate::CreateWebContents(
     content::BrowserContext* browser_context,
     content::SiteInstance* site_instance) {
-  return NULL;
+  return content::WebContentsTester::CreateTestWebContents(browser_context,
+                                                           site_instance);
 }
 
 }  // namespace views
