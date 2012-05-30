@@ -2070,6 +2070,23 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
 				  &pointer_interface, id, seat);
 	wl_list_insert(&seat->seat.pointer->resource_list, &cr->link);
 	cr->destroy = unbind_resource;
+
+	if (seat->seat.pointer->focus &&
+	    seat->seat.pointer->focus->resource.client == client) {
+		struct weston_surface *surface;
+		wl_fixed_t sx, sy;
+
+		surface = (struct weston_surface *) seat->seat.pointer->focus;
+		weston_surface_from_global_fixed(surface,
+						 seat->seat.pointer->x,
+						 seat->seat.pointer->y,
+						 &sx,
+						 &sy);
+		wl_pointer_set_focus(seat->seat.pointer,
+				     seat->seat.pointer->focus,
+				     sx,
+				     sy);
+	}
 }
 
 static void
@@ -2086,6 +2103,12 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 				  seat);
 	wl_list_insert(&seat->seat.keyboard->resource_list, &cr->link);
 	cr->destroy = unbind_resource;
+
+	if (seat->seat.keyboard->focus &&
+	    seat->seat.keyboard->focus->resource.client == client) {
+		wl_keyboard_set_focus(seat->seat.keyboard,
+				      seat->seat.keyboard->focus);
+	}
 }
 
 static void
