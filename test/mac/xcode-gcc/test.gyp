@@ -8,6 +8,17 @@
     },
   },
 
+  'variables': {
+    # Non-failing tests should check that these trivial files in every language
+    # still compile correctly.
+    'valid_sources': [
+      'valid_c.c',
+      'valid_cc.cc',
+      'valid_m.m',
+      'valid_mm.mm',
+    ],
+  },
+
   # Targets come in pairs: 'foo' and 'foo-fail', with the former building with
   # no warnings and the latter not.
   'targets': [
@@ -15,7 +26,10 @@
     {
       'target_name': 'warn_about_invalid_offsetof_macro',
       'type': 'executable',
-      'sources': [ 'warn_about_invalid_offsetof_macro.cc', ],
+      'sources': [
+        'warn_about_invalid_offsetof_macro.cc',
+        '<@(valid_sources)',
+      ],
       'xcode_settings': {
         'GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO': 'NO',
       },
@@ -29,7 +43,10 @@
     {
       'target_name': 'warn_about_missing_newline',
       'type': 'executable',
-      'sources': [ 'warn_about_missing_newline.c', ],
+      'sources': [
+        'warn_about_missing_newline.c',
+        '<@(valid_sources)',
+      ],
     },
     {
       'target_name': 'warn_about_missing_newline-fail',
