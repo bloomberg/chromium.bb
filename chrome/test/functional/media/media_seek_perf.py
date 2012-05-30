@@ -66,7 +66,7 @@ class SeekWorkerThread(worker_thread.WorkerThread):
     # cached seeks to be fast.  Through experimentation an average of 10 secs
     # per seek was found to be adequate.
     if not self.WaitUntil(self.GetDOMValue, args=['endTest', unique_url],
-                          retry_sleep=5, timeout=180, debug=False):
+                          retry_sleep=5, timeout=300, debug=False):
       error_msg = 'Seek tests timed out.'
     else:
       error_msg = self.GetDOMValue('errorMsg', unique_url)
