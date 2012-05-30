@@ -1694,8 +1694,8 @@ notify_button(struct wl_seat *seat, uint32_t time, int32_t button,
 		seat->pointer->button_count--;
 	}
 
-	weston_compositor_run_binding(compositor, ws, time, 0, button, 0,
-				      state);
+	weston_compositor_run_button_binding(compositor, ws, time, button,
+					     state);
 
 	seat->pointer->grab->interface->button(seat->pointer->grab, time,
 					       button, state);
@@ -1721,9 +1721,8 @@ notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis,
 	weston_compositor_activity(compositor);
 
 	if (value)
-		weston_compositor_run_binding(compositor, ws,
-					      time, 0, 0, axis,
-					      wl_fixed_to_int(value));
+		weston_compositor_run_axis_binding(compositor, ws, time, axis,
+						   wl_fixed_to_int(value));
 	else
 		return;
 
@@ -1830,8 +1829,8 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 	}
 
 	if (grab == &seat->keyboard->default_grab)
-		weston_compositor_run_binding(compositor, ws,
-					      time, key, 0, 0, state);
+		weston_compositor_run_key_binding(compositor, ws, time, key,
+						  state);
 
 	grab->interface->key(grab, time, key, state);
 	if (mods)
@@ -2835,7 +2834,9 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 	wl_list_init(&ec->layer_list);
 	wl_list_init(&ec->seat_list);
 	wl_list_init(&ec->output_list);
-	wl_list_init(&ec->binding_list);
+	wl_list_init(&ec->key_binding_list);
+	wl_list_init(&ec->button_binding_list);
+	wl_list_init(&ec->axis_binding_list);
 	wl_list_init(&ec->animation_list);
 	weston_spring_init(&ec->fade.spring, 30.0, 1.0, 1.0);
 	ec->fade.animation.frame = fade_frame;
@@ -2884,7 +2885,9 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 	wl_list_for_each_safe(output, next, &ec->output_list, link)
 		output->destroy(output);
 
-	weston_binding_list_destroy_all(&ec->binding_list);
+	weston_binding_list_destroy_all(&ec->key_binding_list);
+	weston_binding_list_destroy_all(&ec->button_binding_list);
+	weston_binding_list_destroy_all(&ec->axis_binding_list);
 
 	wl_array_release(&ec->vertices);
 	wl_array_release(&ec->indices);

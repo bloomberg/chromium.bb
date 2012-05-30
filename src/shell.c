@@ -1541,9 +1541,7 @@ get_shell_surface_type(struct weston_surface *surface)
 }
 
 static void
-move_binding(struct wl_seat *seat, uint32_t time,
-	     uint32_t key, uint32_t button, uint32_t axis, int32_t value,
-	     void *data)
+move_binding(struct wl_seat *seat, uint32_t time, uint32_t button, void *data)
 {
 	struct weston_surface *surface =
 		(struct weston_surface *) seat->pointer->focus;
@@ -1570,9 +1568,7 @@ move_binding(struct wl_seat *seat, uint32_t time,
 }
 
 static void
-resize_binding(struct wl_seat *seat, uint32_t time,
-	       uint32_t key, uint32_t button, uint32_t axis, int32_t value,
-	       void *data)
+resize_binding(struct wl_seat *seat, uint32_t time, uint32_t button, void *data)
 {
 	struct weston_surface *surface =
 		(struct weston_surface *) seat->pointer->focus;
@@ -1620,8 +1616,7 @@ resize_binding(struct wl_seat *seat, uint32_t time,
 }
 
 static void
-surface_opacity_binding(struct wl_seat *seat, uint32_t time,
-			uint32_t key, uint32_t button, uint32_t axis,
+surface_opacity_binding(struct wl_seat *seat, uint32_t time, uint32_t axis,
 			int32_t value, void *data)
 {
 	float step = 0.05;
@@ -1656,9 +1651,8 @@ surface_opacity_binding(struct wl_seat *seat, uint32_t time,
 }
 
 static void
-zoom_binding(struct wl_seat *seat, uint32_t time,
-	     uint32_t key, uint32_t button, uint32_t axis, int32_t value,
-	     void *data)
+do_zoom(struct wl_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
+	int32_t value)
 {
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *compositor = ws->compositor;
@@ -1670,9 +1664,9 @@ zoom_binding(struct wl_seat *seat, uint32_t time,
 						   wl_fixed_to_double(seat->pointer->x),
 						   wl_fixed_to_double(seat->pointer->y),
 						   NULL)) {
-			if (key == KEY_PAGEUP && value)
+			if (key == KEY_PAGEUP)
 				increment = output->zoom.increment;
-			else if (key == KEY_PAGEDOWN && value)
+			else if (key == KEY_PAGEDOWN)
 				increment = -output->zoom.increment;
 			else if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL)
 				increment = output->zoom.increment * value;
@@ -1701,13 +1695,26 @@ zoom_binding(struct wl_seat *seat, uint32_t time,
 }
 
 static void
-terminate_binding(struct wl_seat *seat, uint32_t time,
-		  uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
+zoom_axis_binding(struct wl_seat *seat, uint32_t time, uint32_t axis,
+		  int32_t value, void *data)
+{
+	do_zoom(seat, time, 0, axis, value);
+}
+
+static void
+zoom_key_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+		 void *data)
+{
+	do_zoom(seat, time, key, 0, 0);
+}
+
+static void
+terminate_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+		  void *data)
 {
 	struct weston_compositor *compositor = data;
 
-	if (state)
-		wl_display_terminate(compositor->wl_display);
+	wl_display_terminate(compositor->wl_display);
 }
 
 static void
@@ -1807,8 +1814,7 @@ static const struct wl_pointer_grab_interface rotate_grab_interface = {
 };
 
 static void
-rotate_binding(struct wl_seat *seat, uint32_t time,
-	       uint32_t key, uint32_t button, uint32_t axis, int32_t value,
+rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 	       void *data)
 {
 	struct weston_surface *base_surface =
@@ -1936,16 +1942,13 @@ is_black_surface (struct weston_surface *es, struct weston_surface **fs_surface)
 }
 
 static void
-click_to_activate_binding(struct wl_seat *seat,
-			  uint32_t time, uint32_t key,
-			  uint32_t button, uint32_t axis, int32_t state_w,
+click_to_activate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 			  void *data)
 {
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct desktop_shell *shell = data;
 	struct weston_surface *focus;
 	struct weston_surface *upper;
-	enum wl_pointer_button_state state = state_w;
 
 	focus = (struct weston_surface *) seat->pointer->focus;
 	if (!focus)
@@ -1954,8 +1957,7 @@ click_to_activate_binding(struct wl_seat *seat,
 	if (is_black_surface(focus, &upper))
 		focus = upper;
 
-	if (state == WL_POINTER_BUTTON_STATE_PRESSED &&
-	    seat->pointer->grab == &seat->pointer->default_grab)
+	if (seat->pointer->grab == &seat->pointer->default_grab)
 		activate(shell, focus, ws);
 }
 
@@ -2511,9 +2513,8 @@ static const struct wl_keyboard_grab_interface switcher_grab = {
 };
 
 static void
-switcher_binding(struct wl_seat *seat, uint32_t time,
-		 uint32_t key, uint32_t button, uint32_t axis,
-		 int32_t value, void *data)
+switcher_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+		 void *data)
 {
 	struct desktop_shell *shell = data;
 	struct switcher *switcher;
@@ -2531,8 +2532,8 @@ switcher_binding(struct wl_seat *seat, uint32_t time,
 }
 
 static void
-backlight_binding(struct wl_seat *seat, uint32_t time,
-		  uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
+backlight_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+		  void *data)
 {
 	struct weston_compositor *compositor = data;
 	struct weston_output *output;
@@ -2564,9 +2565,8 @@ backlight_binding(struct wl_seat *seat, uint32_t time,
 }
 
 static void
-debug_repaint_binding(struct wl_seat *seat, uint32_t time,
-		      uint32_t key, uint32_t button, uint32_t axis,
-		      int32_t value, void *data)
+debug_repaint_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+		      void *data)
 {
 	struct desktop_shell *shell = data;
 	struct weston_compositor *compositor = shell->compositor;
@@ -2599,21 +2599,18 @@ debug_repaint_binding(struct wl_seat *seat, uint32_t time,
 }
 
 static void
-force_kill_binding(struct wl_seat *seat, uint32_t time,
-		   uint32_t key, uint32_t button, uint32_t axis,
-		   int32_t value, void *data)
+force_kill_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+		   void *data)
 {
 	struct wl_client *client;
 	pid_t pid;
 	uid_t uid;
 	gid_t gid;
 
-	if (value == 1) {
-		client = seat->keyboard->focus->resource.client;
-		wl_client_get_credentials(client, &pid, &uid, &gid);
+	client = seat->keyboard->focus->resource.client;
+	wl_client_get_credentials(client, &pid, &uid, &gid);
 
-		kill(pid, SIGKILL);
-	}
+	kill(pid, SIGKILL);
 }
 
 static void
@@ -2638,45 +2635,45 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	uint32_t mod;
 
 	/* fixed bindings */
-	weston_compositor_add_binding(ec, KEY_BACKSPACE, 0, 0,
-				      MODIFIER_CTRL | MODIFIER_ALT,
-				      terminate_binding, ec);
-	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0, 0,
-				      click_to_activate_binding, shell);
-	weston_compositor_add_binding(ec, 0, 0,
-				      WL_POINTER_AXIS_VERTICAL_SCROLL,
-				      MODIFIER_SUPER | MODIFIER_ALT,
-				      surface_opacity_binding, NULL);
-	weston_compositor_add_binding(ec, 0, 0,
-				      WL_POINTER_AXIS_VERTICAL_SCROLL,
-				      MODIFIER_SUPER, zoom_binding, NULL);
+	weston_compositor_add_key_binding(ec, KEY_BACKSPACE,
+				          MODIFIER_CTRL | MODIFIER_ALT,
+				          terminate_binding, ec);
+	weston_compositor_add_button_binding(ec, BTN_LEFT, 0,
+					     click_to_activate_binding,
+					     shell);
+	weston_compositor_add_axis_binding(ec, WL_POINTER_AXIS_VERTICAL_SCROLL,
+				           MODIFIER_SUPER | MODIFIER_ALT,
+				           surface_opacity_binding, NULL);
+	weston_compositor_add_axis_binding(ec, WL_POINTER_AXIS_VERTICAL_SCROLL,
+					   MODIFIER_SUPER, zoom_axis_binding,
+					   NULL);
 
 	/* configurable bindings */
 	mod = shell->binding_modifier;
-	weston_compositor_add_binding(ec, KEY_PAGEUP, 0, 0, mod,
-				      zoom_binding, NULL);
-	weston_compositor_add_binding(ec, KEY_PAGEDOWN, 0, 0, mod,
-				      zoom_binding, NULL);
-	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0, mod,
-				      move_binding, shell);
-	weston_compositor_add_binding(ec, 0, BTN_MIDDLE, 0, mod,
-				      resize_binding, shell);
-	weston_compositor_add_binding(ec, 0, BTN_RIGHT, 0, mod,
-				      rotate_binding, NULL);
-	weston_compositor_add_binding(ec, KEY_TAB, 0, 0, mod,
-				      switcher_binding, shell);
-	weston_compositor_add_binding(ec, KEY_F9, 0, 0, mod,
-				      backlight_binding, ec);
-	weston_compositor_add_binding(ec, KEY_BRIGHTNESSDOWN, 0, 0, 0,
-				      backlight_binding, ec);
-	weston_compositor_add_binding(ec, KEY_F10, 0, 0, mod,
-				      backlight_binding, ec);
-	weston_compositor_add_binding(ec, KEY_BRIGHTNESSUP, 0, 0, 0,
-				      backlight_binding, ec);
-	weston_compositor_add_binding(ec, KEY_SPACE, 0, 0, mod,
-				      debug_repaint_binding, shell);
-	weston_compositor_add_binding(ec, KEY_K, 0, 0, mod,
-				      force_kill_binding, shell);
+	weston_compositor_add_key_binding(ec, KEY_PAGEUP, mod,
+					  zoom_key_binding, NULL);
+	weston_compositor_add_key_binding(ec, KEY_PAGEDOWN, mod,
+					  zoom_key_binding, NULL);
+	weston_compositor_add_button_binding(ec, BTN_LEFT, mod, move_binding,
+					     shell);
+	weston_compositor_add_button_binding(ec, BTN_MIDDLE, mod,
+					     resize_binding, shell);
+	weston_compositor_add_button_binding(ec, BTN_RIGHT, mod,
+					     rotate_binding, NULL);
+	weston_compositor_add_key_binding(ec, KEY_TAB, mod, switcher_binding,
+					  shell);
+	weston_compositor_add_key_binding(ec, KEY_F9, mod, backlight_binding,
+					  ec);
+	weston_compositor_add_key_binding(ec, KEY_BRIGHTNESSDOWN, 0,
+				          backlight_binding, ec);
+	weston_compositor_add_key_binding(ec, KEY_F10, mod, backlight_binding,
+					  ec);
+	weston_compositor_add_key_binding(ec, KEY_BRIGHTNESSUP, 0,
+				          backlight_binding, ec);
+	weston_compositor_add_key_binding(ec, KEY_SPACE, mod,
+				          debug_repaint_binding, shell);
+	weston_compositor_add_key_binding(ec, KEY_K, mod,
+				          force_kill_binding, shell);
 }
 
 int

@@ -447,31 +447,29 @@ long_press_handler(void *data)
 }
 
 static void
-menu_key_binding(struct wl_seat *seat, uint32_t time,
-		 uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
+menu_key_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
 {
 	struct tablet_shell *shell = data;
 
 	if (shell->state == STATE_LOCKED)
 		return;
 
-	if (state)
-		toggle_switcher(shell);
+	toggle_switcher(shell);
 }
 
 static void
-home_key_binding(struct wl_seat *seat, uint32_t time,
-		 uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
+home_key_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
 {
 	struct tablet_shell *shell = data;
 
 	if (shell->state == STATE_LOCKED)
 		return;
 
-	if (state) {
+	if (1) {
 		wl_event_source_timer_update(shell->long_press_source, 500);
 		shell->long_press_active = 1;
 	} else if (shell->long_press_active) {
+		/* This code has never been run ... */
 		wl_event_source_timer_update(shell->long_press_source, 0);
 		shell->long_press_active = 0;
 
@@ -561,16 +559,18 @@ shell_init(struct weston_compositor *compositor)
 	shell->long_press_source =
 		wl_event_loop_add_timer(loop, long_press_handler, shell);
 
-	weston_compositor_add_binding(compositor, KEY_LEFTMETA, 0, 0, 0,
-				    home_key_binding, shell);
-	weston_compositor_add_binding(compositor, KEY_RIGHTMETA, 0, 0, 0,
-				    home_key_binding, shell);
-	weston_compositor_add_binding(compositor, KEY_LEFTMETA, 0, 0,
-				    MODIFIER_SUPER, home_key_binding, shell);
-	weston_compositor_add_binding(compositor, KEY_RIGHTMETA, 0, 0,
-				    MODIFIER_SUPER, home_key_binding, shell);
-	weston_compositor_add_binding(compositor, KEY_COMPOSE, 0, 0, 0,
-				    menu_key_binding, shell);
+	weston_compositor_add_key_binding(compositor, KEY_LEFTMETA, 0,
+					  home_key_binding, shell);
+	weston_compositor_add_key_binding(compositor, KEY_RIGHTMETA, 0,
+					  home_key_binding, shell);
+	weston_compositor_add_key_binding(compositor, KEY_LEFTMETA,
+					  MODIFIER_SUPER, home_key_binding,
+					  shell);
+	weston_compositor_add_key_binding(compositor, KEY_RIGHTMETA,
+					  MODIFIER_SUPER, home_key_binding,
+					  shell);
+	weston_compositor_add_key_binding(compositor, KEY_COMPOSE, 0,
+					  menu_key_binding, shell);
 
 	weston_layer_init(&shell->homescreen_layer,
 			  &compositor->cursor_layer.link);

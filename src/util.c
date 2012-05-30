@@ -199,15 +199,15 @@ struct weston_binding {
 	uint32_t button;
 	uint32_t axis;
 	uint32_t modifier;
-	weston_binding_handler_t handler;
+	void *handler;
 	void *data;
 	struct wl_list link;
 };
 
-WL_EXPORT struct weston_binding *
+static struct weston_binding *
 weston_compositor_add_binding(struct weston_compositor *compositor,
-			    uint32_t key, uint32_t button, uint32_t axis, uint32_t modifier,
-			    weston_binding_handler_t handler, void *data)
+			      uint32_t key, uint32_t button, uint32_t axis,
+			      uint32_t modifier, void *handler, void *data)
 {
 	struct weston_binding *binding;
 
@@ -221,7 +221,60 @@ weston_compositor_add_binding(struct weston_compositor *compositor,
 	binding->modifier = modifier;
 	binding->handler = handler;
 	binding->data = data;
-	wl_list_insert(compositor->binding_list.prev, &binding->link);
+
+	return binding;
+}
+
+WL_EXPORT struct weston_binding *
+weston_compositor_add_key_binding(struct weston_compositor *compositor,
+				  uint32_t key, uint32_t modifier,
+				  weston_key_binding_handler_t handler,
+				  void *data)
+{
+	struct weston_binding *binding;
+
+	binding = weston_compositor_add_binding(compositor, key, 0, 0,
+						modifier, handler, data);
+	if (binding == NULL)
+		return NULL;
+
+	wl_list_insert(compositor->key_binding_list.prev, &binding->link);
+
+	return binding;
+}
+
+WL_EXPORT struct weston_binding *
+weston_compositor_add_button_binding(struct weston_compositor *compositor,
+				     uint32_t button, uint32_t modifier,
+				     weston_button_binding_handler_t handler,
+				     void *data)
+{
+	struct weston_binding *binding;
+
+	binding = weston_compositor_add_binding(compositor, 0, button, 0,
+						modifier, handler, data);
+	if (binding == NULL)
+		return NULL;
+
+	wl_list_insert(compositor->button_binding_list.prev, &binding->link);
+
+	return binding;
+}
+
+WL_EXPORT struct weston_binding *
+weston_compositor_add_axis_binding(struct weston_compositor *compositor,
+				   uint32_t axis, uint32_t modifier,
+				   weston_axis_binding_handler_t handler,
+				   void *data)
+{
+	struct weston_binding *binding;
+
+	binding = weston_compositor_add_binding(compositor, 0, 0, axis,
+						modifier, handler, data);
+	if (binding == NULL)
+		return NULL;
+
+	wl_list_insert(compositor->axis_binding_list.prev, &binding->link);
 
 	return binding;
 }
@@ -304,26 +357,62 @@ install_binding_grab(struct wl_seat *seat,
 }
 
 WL_EXPORT void
-weston_compositor_run_binding(struct weston_compositor *compositor,
-			      struct weston_seat *seat,
-			      uint32_t time, uint32_t key,
-			      uint32_t button, uint32_t axis, int32_t value)
+weston_compositor_run_key_binding(struct weston_compositor *compositor,
+				  struct weston_seat *seat,
+				  uint32_t time, uint32_t key,
+				  enum wl_keyboard_key_state state)
 {
 	struct weston_binding *b;
 
-	wl_list_for_each(b, &compositor->binding_list, link) {
-		if (b->key == key && b->button == button && b->axis == axis &&
-		    b->modifier == seat->modifier_state && value) {
-			b->handler(&seat->seat,
-				   time, key, button, axis, value, b->data);
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
+		return;
+
+	wl_list_for_each(b, &compositor->key_binding_list, link) {
+		if (b->key == key && b->modifier == seat->modifier_state) {
+			weston_key_binding_handler_t handler = b->handler;
+			handler(&seat->seat, time, key, b->data);
 
 			/* If this was a key binding and it didn't
 			 * install a keyboard grab, install one now to
 			 * swallow the key release. */
-			if (b->key &&
-			    seat->seat.keyboard->grab ==
+			if (seat->seat.keyboard->grab ==
 			    &seat->seat.keyboard->default_grab)
 				install_binding_grab(&seat->seat, time, key);
+		}
+	}
+}
+
+WL_EXPORT void
+weston_compositor_run_button_binding(struct weston_compositor *compositor,
+				     struct weston_seat *seat,
+				     uint32_t time, uint32_t button,
+				     enum wl_pointer_button_state state)
+{
+	struct weston_binding *b;
+
+	if (state == WL_POINTER_BUTTON_STATE_RELEASED)
+		return;
+
+	wl_list_for_each(b, &compositor->button_binding_list, link) {
+		if (b->button == button && b->modifier == seat->modifier_state) {
+			weston_button_binding_handler_t handler = b->handler;
+			handler(&seat->seat, time, button, b->data);
+		}
+	}
+}
+
+WL_EXPORT void
+weston_compositor_run_axis_binding(struct weston_compositor *compositor,
+				   struct weston_seat *seat,
+				   uint32_t time, uint32_t axis,
+				   int32_t value)
+{
+	struct weston_binding *b;
+
+	wl_list_for_each(b, &compositor->axis_binding_list, link) {
+		if (b->axis == axis && b->modifier == seat->modifier_state) {
+			weston_axis_binding_handler_t handler = b->handler;
+			handler(&seat->seat, time, axis, value, b->data);
 		}
 	}
 }

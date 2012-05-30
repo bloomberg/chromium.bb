@@ -268,7 +268,9 @@ struct weston_compositor {
 	struct wl_list seat_list;
 	struct wl_list layer_list;
 	struct wl_list surface_list;
-	struct wl_list binding_list;
+	struct wl_list key_binding_list;
+	struct wl_list button_binding_list;
+	struct wl_list axis_binding_list;
 	struct wl_list animation_list;
 	struct {
 		struct weston_spring spring;
@@ -525,16 +527,35 @@ weston_compositor_update_drag_surfaces(struct weston_compositor *compositor);
 
 
 struct weston_binding;
-typedef void (*weston_binding_handler_t)(struct wl_seat *seat,
-					 uint32_t time, uint32_t key,
-					 uint32_t button,
-					 uint32_t axis,
-					 int32_t value, void *data);
+typedef void (*weston_key_binding_handler_t)(struct wl_seat *seat,
+					     uint32_t time, uint32_t key,
+					     void *data);
 struct weston_binding *
-weston_compositor_add_binding(struct weston_compositor *compositor,
-			      uint32_t key, uint32_t button, uint32_t axis,
-			      enum weston_keyboard_modifier modifier,
-			      weston_binding_handler_t binding, void *data);
+weston_compositor_add_key_binding(struct weston_compositor *compositor,
+				  uint32_t key,
+				  enum weston_keyboard_modifier modifier,
+				  weston_key_binding_handler_t binding,
+				  void *data);
+
+typedef void (*weston_button_binding_handler_t)(struct wl_seat *seat,
+						uint32_t time, uint32_t button,
+						void *data);
+struct weston_binding *
+weston_compositor_add_button_binding(struct weston_compositor *compositor,
+				     uint32_t button,
+				     enum weston_keyboard_modifier modifier,
+				     weston_button_binding_handler_t binding,
+				     void *data);
+
+typedef void (*weston_axis_binding_handler_t)(struct wl_seat *seat,
+					      uint32_t time, uint32_t axis,
+					      int32_t value, void *data);
+struct weston_binding *
+weston_compositor_add_axis_binding(struct weston_compositor *compositor,
+			           uint32_t axis,
+			           enum weston_keyboard_modifier modifier,
+			           weston_axis_binding_handler_t binding,
+				   void *data);
 void
 weston_binding_destroy(struct weston_binding *binding);
 
@@ -542,11 +563,20 @@ void
 weston_binding_list_destroy_all(struct wl_list *list);
 
 void
-weston_compositor_run_binding(struct weston_compositor *compositor,
-			      struct weston_seat *seat,
-			      uint32_t time,
-			      uint32_t key, uint32_t button, uint32_t axis,
-			      int32_t value);
+weston_compositor_run_key_binding(struct weston_compositor *compositor,
+				  struct weston_seat *seat, uint32_t time,
+				  uint32_t key,
+				  enum wl_keyboard_key_state state);
+void
+weston_compositor_run_button_binding(struct weston_compositor *compositor,
+				     struct weston_seat *seat, uint32_t time,
+				     uint32_t button,
+				     enum wl_pointer_button_state value);
+void
+weston_compositor_run_axis_binding(struct weston_compositor *compositor,
+				   struct weston_seat *seat, uint32_t time,
+				   uint32_t axis, int32_t value);
+
 int
 weston_environment_get_fd(const char *env);
 

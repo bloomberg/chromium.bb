@@ -199,9 +199,8 @@ screenshooter_sigchld(struct weston_process *process, int status)
 }
 
 static void
-screenshooter_binding(struct wl_seat *seat, uint32_t time,
-		 uint32_t key, uint32_t button, uint32_t axis,
-		 int32_t state, void *data)
+screenshooter_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+		      void *data)
 {
 	struct screenshooter *shooter = data;
 	const char *screenshooter_exe = LIBEXECDIR "/weston-screenshooter";
@@ -390,9 +389,7 @@ weston_recorder_destroy(struct weston_recorder *recorder)
 }
 
 static void
-recorder_binding(struct wl_seat *seat, uint32_t time,
-		 uint32_t key, uint32_t button, uint32_t axis,
-		 int32_t state, void *data)
+recorder_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
 {
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *ec = ws->compositor;
@@ -448,10 +445,10 @@ screenshooter_create(struct weston_compositor *ec)
 	shooter->global = wl_display_add_global(ec->wl_display,
 						&screenshooter_interface,
 						shooter, bind_shooter);
-	weston_compositor_add_binding(ec, KEY_S, 0, 0, MODIFIER_SUPER,
-					screenshooter_binding, shooter);
-	weston_compositor_add_binding(ec, KEY_R, 0, 0, MODIFIER_SUPER,
-					recorder_binding, shooter);
+	weston_compositor_add_key_binding(ec, KEY_S, MODIFIER_SUPER,
+					  screenshooter_binding, shooter);
+	weston_compositor_add_key_binding(ec, KEY_R, MODIFIER_SUPER,
+					  recorder_binding, shooter);
 
 	shooter->destroy_listener.notify = screenshooter_destroy;
 	wl_signal_add(&ec->destroy_signal, &shooter->destroy_listener);
