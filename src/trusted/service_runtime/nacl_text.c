@@ -15,7 +15,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector.h"
-#include "native_client/src/trusted/desc/nacl_desc_effector.h"
+#include "native_client/src/trusted/desc/nacl_desc_effector_trusted_mem.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
@@ -50,65 +50,12 @@ static void BitmapSetBit(uint8_t *bitmap, uint32_t index) {
   bitmap[index / kBitsPerByte] |= 1 << (index % kBitsPerByte);
 }
 
-/*
- * Private subclass of NaClDescEffector, used only in this file.
- */
-struct NaClDescEffectorShm {
-  struct NaClDescEffector   base;
-};
-
-static
-void NaClDescEffectorShmDtor(struct NaClDescEffector *vself) {
-  /* no base class dtor to invoke */
-
-  vself->vtbl = (struct NaClDescEffectorVtbl *) NULL;
-
-  return;
-}
-
-static
-int NaClDescEffectorShmUnmapMemory(struct NaClDescEffector  *vself,
-                                   uintptr_t                sysaddr,
-                                   size_t                   nbytes) {
-  UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(sysaddr);
-  UNREFERENCED_PARAMETER(nbytes);
-  return 0;
-}
-
-static
-uintptr_t NaClDescEffectorShmMapAnonymousMemory(struct NaClDescEffector *vself,
-                                                uintptr_t               sysaddr,
-                                                size_t                  nbytes,
-                                                int                     prot) {
-  UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(sysaddr);
-  UNREFERENCED_PARAMETER(nbytes);
-  UNREFERENCED_PARAMETER(prot);
-
-  NaClLog(LOG_FATAL, "NaClDescEffectorShmMapAnonymousMemory called\n");
-  /* NOTREACHED but gcc doesn't know that */
-  return -NACL_ABI_EINVAL;
-}
-
-static
-struct NaClDescEffectorVtbl kNaClDescEffectorShmVtbl = {
-  NaClDescEffectorShmDtor,
-  NaClDescEffectorShmUnmapMemory,
-  NaClDescEffectorShmMapAnonymousMemory,
-};
-
-int NaClDescEffectorShmCtor(struct NaClDescEffectorShm *self) {
-  self->base.vtbl = &kNaClDescEffectorShmVtbl;
-  return 1;
-}
-
 NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
   enum NaClErrorCode          retval = LOAD_INTERNAL;
   uintptr_t                   dynamic_text_size;
   struct NaClDescImcShm       *shm = NULL;
-  struct NaClDescEffectorShm  shm_effector;
-  int                         shm_effector_initialized = 0;
+  struct NaClDescEffectorTrustedMem effector;
+  int                         effector_initialized = 0;
   uintptr_t                   shm_vaddr_base;
   int                         mmap_protections;
   uintptr_t                   mmap_ret;
@@ -175,14 +122,13 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
     retval = LOAD_NO_MEMORY;
     goto cleanup;
   }
-  if (!NaClDescEffectorShmCtor(&shm_effector)) {
+  if (!NaClDescEffectorTrustedMemCtor(&effector)) {
     NaClLog(4,
-            "NaClMakeDynamicTextShared: shm effector"
-            " initialization failed\n");
+            "NaClMakeDynamicTextShared: effector initialization failed\n");
     retval = LOAD_INTERNAL;
     goto cleanup;
   }
-  shm_effector_initialized = 1;
+  effector_initialized = 1;
 
   text_sysaddr = NaClUserToSys(nap, shm_vaddr_base);
 
@@ -216,7 +162,7 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
           NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED);
   mmap_ret = (*((struct NaClDescVtbl const *) shm->base.base.vtbl)->
               Map)((struct NaClDesc *) shm,
-                   (struct NaClDescEffector *) &shm_effector,
+                   (struct NaClDescEffector *) &effector,
                    (void *) text_sysaddr,
                    dynamic_text_size,
                    mmap_protections,
@@ -257,8 +203,8 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
   retval = LOAD_OK;
 
  cleanup:
-  if (shm_effector_initialized) {
-    (*shm_effector.base.vtbl->Dtor)((struct NaClDescEffector *) &shm_effector);
+  if (effector_initialized) {
+    (*effector.base.vtbl->Dtor)((struct NaClDescEffector *) &effector);
   }
   if (LOAD_OK != retval) {
     NaClDescSafeUnref((struct NaClDesc *) shm);
@@ -556,12 +502,11 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
    *
    * We have a cached mmap result stored, that must be unmapped.
    */
-  struct NaClDescEffectorShm shm_effector;
+  struct NaClDescEffectorTrustedMem effector;
   struct NaClDesc            *shm = nap->text_shm;
-  if (!NaClDescEffectorShmCtor(&shm_effector)) {
+  if (!NaClDescEffectorTrustedMemCtor(&effector)) {
     NaClLog(LOG_FATAL,
-            "NaClTextSysDyncode_Copy: "
-            "shm effector initialization failed\n");
+            "NaClTextSysDyncode_Copy: effector initialization failed\n");
 
     return -NACL_ABI_EFAULT;
   }
@@ -574,7 +519,7 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
     if (nap->dynamic_mapcache_size > 0) {
       if (0 != (*((struct NaClDescVtbl const *) shm->base.vtbl)->
             UnmapUnsafe)(shm,
-                         (struct NaClDescEffector*) &shm_effector,
+                         (struct NaClDescEffector*) &effector,
                          (void*)nap->dynamic_mapcache_ret,
                          nap->dynamic_mapcache_size)) {
         NaClLog(LOG_FATAL, "CachedMapWritableText: Failed to unmap\n");
@@ -596,7 +541,7 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
       uintptr_t mapping = (*((struct NaClDescVtbl const *)
             shm->base.vtbl)->
               Map)(shm,
-                   (struct NaClDescEffector*) &shm_effector,
+                   (struct NaClDescEffector*) &effector,
                    NULL,
                    size,
                    NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
