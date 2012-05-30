@@ -646,8 +646,11 @@ weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *even
 
 	fprintf(stderr, "XCB_PROPERTY_NOTIFY: window %d, ",
 		property_notify->window);
-	read_and_dump_property(wm, property_notify->window,
-			       property_notify->atom);
+	if (property_notify->state == XCB_PROPERTY_DELETE)
+		fprintf(stderr, "deleted\n");
+	else
+		read_and_dump_property(wm, property_notify->window,
+				       property_notify->atom);
 
 	if (property_notify->atom == wm->atom.net_wm_name ||
 	    property_notify->atom == XCB_ATOM_WM_NAME)
