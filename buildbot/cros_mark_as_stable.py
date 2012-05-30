@@ -281,8 +281,12 @@ def main(argv):
         cros_build_lib.Warning("Skipping %s" % overlay)
         continue
 
+      # Note we intentionally work from the non push tracking branch;
+      # everything built thus far has been against it (meaning, http mirrors),
+      # thus we should honor that.  During the actual push, the code switches
+      # to the correct urls, and does an appropriate rebasing.
       tracking_branch = cros_build_lib.GetTrackingBranchViaManifest(
-          overlay, manifest=manifest, for_push=True)[1]
+          overlay, manifest=manifest)[1]
 
       if command == 'push':
         PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
