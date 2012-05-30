@@ -153,26 +153,60 @@ if sys.platform == 'win32':
       return drive + match.group(2)
 
 
-def get_native_path_case(root, relative_path):
-  """Returns the native path case."""
-  if sys.platform == 'win32':
+  def isabs(path):
+    """Accepts X: as an absolute path, unlike python's os.path.isabs()."""
+    return os.path.isabs(path) or len(path) == 2 and path[1] == ':'
+
+
+  def get_native_path_case(path):
+    """Returns the native path case for an existing file.
+
+    On Windows, removes any leading '\\?\'.
+    """
+    assert isabs(path), path
     # Windows used to have an option to turn on case sensitivity on non Win32
     # subsystem but that's out of scope here and isn't supported anymore.
-    # First process root.
-    if root:
-      root = GetLongPathName(GetShortPathName(root)) + os.path.sep
-    path = os.path.join(root, relative_path) if root else relative_path
     # Go figure why GetShortPathName() is needed.
-    return GetLongPathName(GetShortPathName(path))[len(root):]
-  elif sys.platform == 'darwin':
-    # Technically, it's only HFS+ on OSX that is case insensitive. It's
-    # the default setting on HFS+ but can be changed.
-    root_ref, _ = Carbon.File.FSPathMakeRef(root)
-    rel_ref, _ = Carbon.File.FSPathMakeRef(os.path.join(root, relative_path))
-    return rel_ref.FSRefMakePath()[len(root_ref.FSRefMakePath())+1:]
-  else:
+    path = GetLongPathName(GetShortPathName(path))
+    if path.startswith('\\\\?\\'):
+      return path[4:]
+    return path
+
+
+elif sys.platform == 'darwin':
+
+
+  # On non-windows, keep the stdlib behavior.
+  isabs = os.path.isabs
+
+
+  def get_native_path_case(path):
+    """Returns the native path case for an existing file."""
+    assert isabs(path), path
+    # Technically, it's only HFS+ on OSX that is case insensitive. It's the
+    # default setting on HFS+ but can be changed.
+    rel_ref, _ = Carbon.File.FSPathMakeRef(path)
+    return rel_ref.FSRefMakePath()
+
+
+else:  # OSes other than Windows and OSX.
+
+
+  # On non-windows, keep the stdlib behavior.
+  isabs = os.path.isabs
+
+
+  def get_native_path_case(path):
+    """Returns the native path case for an existing file.
+
+    On OSes other than OSX and Windows, assume the file system is
+    case-sensitive.
+
+    TODO(maruel): This is not strictly true. Implement if necessary.
+    """
+    assert isabs(path), path
     # Give up on cygwin, as GetLongPathName() can't be called.
-    return relative_path
+    return path
 
 
 def get_flavor():
@@ -1639,11 +1673,14 @@ def load_trace(logfile, root_dir, api):
               trace or not.
   - api: a tracing api instance.
   """
+  root_dir = get_native_path_case(root_dir)
   files, non_existent, processes = api.parse_log(logfile, get_blacklist(api))
   expected, unexpected = relevant_files(
       files, root_dir.rstrip(os.path.sep) + os.path.sep)
   # In case the file system is case insensitive.
-  expected = sorted(set(get_native_path_case(root_dir, f) for f in expected))
+  expected = sorted(set(
+      get_native_path_case(os.path.join(root_dir, f))[len(root_dir)+1:]
+      for f in expected))
   simplified = extract_directories(expected, root_dir)
   return files, expected, unexpected, non_existent, simplified, processes
 
