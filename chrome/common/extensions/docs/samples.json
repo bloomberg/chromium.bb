@@ -6,6 +6,7 @@
     "chrome.alarms.get": "alarms.html#method-get",
     "chrome.alarms.getAll": "alarms.html#method-getAll",
     "chrome.alarms.onAlarm": "alarms.html#event-onAlarm",
+    "chrome.appWindow.create": "appWindow.html#method-create",
     "chrome.bookmarks.create": "bookmarks.html#method-create",
     "chrome.bookmarks.get": "bookmarks.html#method-get",
     "chrome.bookmarks.getChildren": "bookmarks.html#method-getChildren",
@@ -154,6 +155,7 @@
     "chrome.experimental.fontSettings.setFont": "experimental.fontSettings.html#method-setFont",
     "chrome.experimental.fontSettings.setMinimumFontSize": "experimental.fontSettings.html#method-setMinimumFontSize",
     "chrome.experimental.idltest.getArrayBuffer": "experimental.idltest.html#method-getArrayBuffer",
+    "chrome.experimental.idltest.nocompileFunc": "experimental.idltest.html#method-nocompileFunc",
     "chrome.experimental.idltest.sendArrayBuffer": "experimental.idltest.html#method-sendArrayBuffer",
     "chrome.experimental.idltest.sendArrayBufferView": "experimental.idltest.html#method-sendArrayBufferView",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
@@ -691,14 +693,14 @@
         "style.css",
         "view.js"
       ],
-      "source_hash": "6317b07927fa12ebf02947b9018af0c9d244fccb",
+      "source_hash": "e7718b346a126dd6511553b51056b53732f664cf",
       "zip_path": "examples/extensions/calculator.zip"
     },
     {
       "api_calls": [
         "chrome.webRequest.onBeforeRequest"
       ],
-      "crx_path": "examples/extensions/catblock.crx",
+      "crx_path": null,
       "description": "I can't has cheezburger!",
       "features": [
         "background_page",
@@ -797,7 +799,7 @@
         "chrome.browserAction.setTitle",
         "chrome.extension.getURL"
       ],
-      "crx_path": "examples/extensions/buildbot.crx",
+      "crx_path": null,
       "description": "Displays the status of the Chromium buildbot in the toolbar.  Click to see more detailed status in a popup.",
       "features": [
         "background_page",
@@ -885,6 +887,38 @@
       ],
       "source_hash": "ca3ac66fbffe38050b6d8e0d7ce32c9a89940ee7",
       "zip_path": "examples/api/i18n/cld.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.extension.getViews",
+        "chrome.ttsEngine.onSpeak",
+        "chrome.ttsEngine.onStop",
+        "chrome.windows.create",
+        "chrome.windows.get",
+        "chrome.windows.getCurrent",
+        "chrome.windows.onRemoved"
+      ],
+      "crx_path": null,
+      "description": "A \"silent\" TTS engine that prints text to a small window rather than synthesizing speech.",
+      "features": [
+        "background_page",
+        "tabs",
+        "ttsEngine"
+      ],
+      "icon": null,
+      "id": "1a146c028f79982bdc28497ab263dd2f263aa735",
+      "name": "Console TTS Engine",
+      "packaged_app": false,
+      "path": "examples/api/ttsEngine/console_tts_engine/",
+      "protocols": [],
+      "search_string": "CONSOLE TTS ENGINE A SILENT TTS ENGINE THAT PRINTS TEXT TO A SMALL WINDOW RATHER THAN SYNTHESIZING SPEECH. BACKGROUND_PAGE TABS TTSENGINE CHROME.EXTENSION.GETVIEWS CHROME.TTSENGINE.ONSPEAK CHROME.TTSENGINE.ONSTOP CHROME.WINDOWS.CREATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.ONREMOVED",
+      "source_files": [
+        "console_tts_engine.html",
+        "console_tts_engine.js",
+        "manifest.json"
+      ],
+      "source_hash": "d4d2c72ed1aba603d76c8efec51571020b09fd3d",
+      "zip_path": "examples/api/ttsEngine/console_tts_engine.zip"
     },
     {
       "api_calls": [],
@@ -1293,7 +1327,7 @@
         "chrome.tabs.onUpdated",
         "chrome.tabs.remove"
       ],
-      "crx_path": "examples/extensions/gdocs.crx",
+      "crx_path": null,
       "description": "Demonstrates how to use OAuth to connect the Google Documents List Data API.",
       "features": [
         "background_page",
@@ -1492,7 +1526,7 @@
         "chrome.windows.create",
         "chrome.windows.update"
       ],
-      "crx_path": "examples/extensions/imageinfo.crx",
+      "crx_path": null,
       "description": "Get image info for images, including EXIF data",
       "features": [
         "background_page",
@@ -1629,7 +1663,7 @@
         "chrome.tabs.get",
         "chrome.tabs.onUpdated"
       ],
-      "crx_path": "examples/extensions/mappy.crx",
+      "crx_path": null,
       "description": "Finds addresses in the web page you're on and pops up a map window.",
       "features": [
         "background_page",
@@ -1781,7 +1815,7 @@
         "chrome.i18n.getMessage",
         "chrome.tabs.create"
       ],
-      "crx_path": "examples/extensions/news_i18n.crx",
+      "crx_path": null,
       "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.",
       "features": [
         "browser_action",
@@ -1993,7 +2027,7 @@
         "chrome.windows.get",
         "chrome.windows.getCurrent"
       ],
-      "crx_path": "examples/extensions/benchmark.crx",
+      "crx_path": null,
       "description": "Chromium Page Benchmarker.",
       "features": [
         "background_page",
@@ -2326,7 +2360,7 @@
         "chrome.windows.get",
         "chrome.windows.getAll"
       ],
-      "crx_path": "examples/extensions/speak_selection.crx",
+      "crx_path": null,
       "description": "Speaks the current selection out loud.",
       "features": [
         "<all_urls>",
@@ -2476,7 +2510,7 @@
         "chrome.tts.speak",
         "chrome.tts.stop"
       ],
-      "crx_path": "examples/extensions/talking_alarm_clock.crx",
+      "crx_path": null,
       "description": "A clock with two configurable alarms that will play a sound and speak a phrase of your choice.",
       "features": [
         "background",
@@ -2575,7 +2609,7 @@
         "chrome.tts.speak",
         "chrome.tts.stop"
       ],
-      "crx_path": "examples/extensions/ttsdebug.crx",
+      "crx_path": null,
       "description": "Tool for developers of Chrome TTS engine extensions to help them test their engines are implementing the API correctly.",
       "features": [
         "tts"

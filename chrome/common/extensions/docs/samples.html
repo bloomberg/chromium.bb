@@ -211,6 +211,7 @@
   "0e790e035a4a00b6f1def5ef9a7d7be1bce95ab5": "CHROMIUM BUILDBOT MONITOR DISPLAYS THE STATUS OF THE CHROMIUM BUILDBOT IN THE TOOLBAR.  CLICK TO SEE MORE DETAILED STATUS IN A POPUP. BACKGROUND_PAGE BROWSER_ACTION NOTIFICATIONS OPTIONS_PAGE CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.GETURL",
   "ac31228200b41a87982e386cc90d3a6eee4ad885": "CHROMIUM SEARCH ADD SUPPORT TO THE OMNIBOX TO SEARCH THE CHROMIUM SOURCE CODE. BACKGROUND_PAGE TABS CHROME.OMNIBOX.ONINPUTCANCELLED CHROME.OMNIBOX.ONINPUTCHANGED CHROME.OMNIBOX.ONINPUTENTERED CHROME.OMNIBOX.ONINPUTSTARTED CHROME.OMNIBOX.SETDEFAULTSUGGESTION CHROME.TABS.GET CHROME.TABS.UPDATE",
   "7d5d6cf195bc25480256618e360aa38c6e6fba82": "CLD DISPLAYS THE LANGUAGE OF A TAB BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.SETBADGETEXT CHROME.TABS.DETECTLANGUAGE CHROME.TABS.GET CHROME.TABS.ONUPDATED",
+  "1a146c028f79982bdc28497ab263dd2f263aa735": "CONSOLE TTS ENGINE A SILENT TTS ENGINE THAT PRINTS TEXT TO A SMALL WINDOW RATHER THAN SYNTHESIZING SPEECH. BACKGROUND_PAGE TABS TTSENGINE CHROME.EXTENSION.GETVIEWS CHROME.TTSENGINE.ONSPEAK CHROME.TTSENGINE.ONSTOP CHROME.WINDOWS.CREATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.ONREMOVED",
   "6871d09f4a96bf9d4b6cc724d00e909cee0f3902": "CONTENT SCRIPT CROSS-DOMAIN XMLHTTPREQUEST EXAMPLE DEMONSTRATES MAKING CROSS DOMAIN REQUESTS FROM A CONTENT SCRIPT BY PUTTING TWITTER TRENDS ON GOOGLE NEWS.",
   "e1f97e61e28ff33131d66dd28a4ed70a77874a51": "CONTENT SETTINGS SHOWS THE CONTENT SETTINGS FOR THE CURRENT SITE. BROWSER_ACTION CONTENTSETTINGS TABS CHROME.TABS.GET",
   "5d81304a17cf7ac2887484f730fbd2b01e51e166": "CONTEXT MENUS SAMPLE SHOWS SOME OF THE FEATURES OF THE CONTEXT MENUS API BACKGROUND_PAGE CONTEXTMENUS CHROME.CONTEXTMENUS.CREATE",
@@ -867,9 +868,6 @@
   <div>
     <a href="examples/extensions/catblock.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span>
-    - <a href="examples/extensions/catblock.crx">Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="924f75a201bb0ec8d6c0b1c9c88c679ea211c93d">
   <img class="icon" src="images/sample-default-icon.png">
@@ -1018,9 +1016,6 @@
   <div>
     <a href="examples/extensions/buildbot.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span>
-    - <a href="examples/extensions/buildbot.crx">Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="ac31228200b41a87982e386cc90d3a6eee4ad885">
   <img class="icon" src="images/sample-default-icon.png">
@@ -1108,6 +1103,56 @@
   </div>
   <div>
     <a href="examples/api/i18n/cld.zip">Download source</a>
+    <!-- Only show the Install CRX link if a CRX file is provided -->
+  </div>
+</div><div class="sample" id="1a146c028f79982bdc28497ab263dd2f263aa735">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a href="#1a146c028f79982bdc28497ab263dd2f263aa735">Console TTS Engine</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+    </span><span>
+      <strong>tabs</strong>
+      <span> and</span>
+    </span><span>
+      <strong>ttsEngine</strong>
+    </span>
+  </p>
+  <p>A "silent" TTS engine that prints text to a small window rather than synthesizing speech.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="extension.html#method-getViews">chrome.extension.getViews</a></code>
+      </li><li>
+        <code><a href="ttsEngine.html#event-onSpeak">chrome.ttsEngine.onSpeak</a></code>
+      </li><li>
+        <code><a href="ttsEngine.html#event-onStop">chrome.ttsEngine.onStop</a></code>
+      </li><li>
+        <code><a href="windows.html#method-create">chrome.windows.create</a></code>
+      </li><li>
+        <code><a href="windows.html#method-get">chrome.windows.get</a></code>
+      </li><li>
+        <code><a href="windows.html#method-getCurrent">chrome.windows.getCurrent</a></code>
+      </li><li>
+        <code><a href="windows.html#event-onRemoved">chrome.windows.onRemoved</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="examples/api/ttsEngine/console_tts_engine/console_tts_engine.html">console_tts_engine.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="examples/api/ttsEngine/console_tts_engine/console_tts_engine.js">console_tts_engine.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="examples/api/ttsEngine/console_tts_engine/manifest.json">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a href="examples/api/ttsEngine/console_tts_engine.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
   </div>
 </div><div class="sample" id="6871d09f4a96bf9d4b6cc724d00e909cee0f3902">
@@ -1764,9 +1809,6 @@
   <div>
     <a href="examples/extensions/gdocs.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span>
-    - <a href="examples/extensions/gdocs.crx">Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="bb57f7a0132cbeb36ad7e7bb0ab75c21704234ca">
   <img class="icon" src="examples/extensions/gmail/icon_128.png">
@@ -2065,9 +2107,6 @@
   <div>
     <a href="examples/extensions/imageinfo.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span>
-    - <a href="examples/extensions/imageinfo.crx">Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="8f52a8a59c6fc16cb0d1ed0680b7f005be033d58">
   <img class="icon" src="images/sample-default-icon.png">
@@ -2276,9 +2315,6 @@
   <div>
     <a href="examples/extensions/mappy.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span>
-    - <a href="examples/extensions/mappy.crx">Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="b2f5f8a790e16f091a7e4e0a39b2d0a6d32e3a6d">
   <img class="icon" src="examples/api/windows/merge_windows/merge_windows_128.png">
@@ -2499,9 +2535,6 @@
   <div>
     <a href="examples/extensions/news_i18n.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span>
-    - <a href="examples/extensions/news_i18n.crx">Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="3aea027164cb9b732ba4a8c51cb93708891726ef">
   <img class="icon" src="examples/extensions/news/images/news_icon.png">
@@ -2840,9 +2873,6 @@
   <div>
     <a href="examples/extensions/benchmark.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span>
-    - <a href="examples/extensions/benchmark.crx">Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="579b7b1b54553eb5f2e8e7d2bf21bd61c855952e">
   <img class="icon" src="examples/api/record/page_cycler/page_cycler_icon.png">
@@ -3339,9 +3369,6 @@
   <div>
     <a href="examples/extensions/speak_selection.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span>
-    - <a href="examples/extensions/speak_selection.crx">Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="a942b7626644674b7a56678930d054497b244ee7">
   <img class="icon" src="images/sample-default-icon.png">
@@ -3580,9 +3607,6 @@
   <div>
     <a href="examples/extensions/talking_alarm_clock.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span>
-    - <a href="examples/extensions/talking_alarm_clock.crx">Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="e1697cacebad05218798bf3e8a0f724517f0e8c3">
   <img class="icon" src="images/sample-default-icon.png">
@@ -3728,9 +3752,6 @@
   <div>
     <a href="examples/extensions/ttsdebug.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span>
-    - <a href="examples/extensions/ttsdebug.crx">Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="3a1baf15462bdae4d886c2da4ff8f35f4e8ce02f">
   <img class="icon" src="examples/extensions/ttsdemo/128.png">
