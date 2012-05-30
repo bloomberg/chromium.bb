@@ -84,22 +84,6 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_8, ui::EF_ALT_DOWN, SELECT_WIN_7 },
   { true, ui::VKEY_9, ui::EF_ALT_DOWN, SELECT_LAST_WIN },
 
-  // We need the number keys with and without shift since the French keyboard
-  // does not have explicit number keys. Instead they have to press
-  // 'Shift' + .. to access the keys. If we ever have an overlap of
-  // functionality, we should think about either assembling this table
-  // dynamically - or by decoding the keys properly (which is of course in
-  // conflict with other keyboards since the Shift+ is missing then).
-  { true, ui::VKEY_1, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SELECT_WIN_0 },
-  { true, ui::VKEY_2, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SELECT_WIN_1 },
-  { true, ui::VKEY_3, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SELECT_WIN_2 },
-  { true, ui::VKEY_4, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SELECT_WIN_3 },
-  { true, ui::VKEY_5, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SELECT_WIN_4 },
-  { true, ui::VKEY_6, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SELECT_WIN_5 },
-  { true, ui::VKEY_7, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SELECT_WIN_6 },
-  { true, ui::VKEY_8, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SELECT_WIN_7 },
-  { true, ui::VKEY_9, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SELECT_LAST_WIN },
-
   // Window management shortcuts.
   { true, ui::VKEY_OEM_4, ui::EF_ALT_DOWN, WINDOW_SNAP_LEFT },
   { true, ui::VKEY_OEM_6, ui::EF_ALT_DOWN, WINDOW_SNAP_RIGHT },

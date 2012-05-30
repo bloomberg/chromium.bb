@@ -249,6 +249,10 @@ class DummyImeControlDelegate : public ImeControlDelegate {
   const ui::Accelerator& last_accelerator() const {
     return last_accelerator_;
   }
+  ui::Accelerator RemapAccelerator(
+      const ui::Accelerator& accelerator) {
+    return ui::Accelerator(accelerator);
+  }
 
  private:
   const bool consume_;

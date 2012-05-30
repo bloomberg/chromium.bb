@@ -242,6 +242,10 @@ void AcceleratorController::UnregisterAll(ui::AcceleratorTarget* target) {
 }
 
 bool AcceleratorController::Process(const ui::Accelerator& accelerator) {
+  if (ime_control_delegate_.get()) {
+    return accelerator_manager_->Process(
+        ime_control_delegate_->RemapAccelerator(accelerator));
+  }
   return accelerator_manager_->Process(accelerator);
 }
 
