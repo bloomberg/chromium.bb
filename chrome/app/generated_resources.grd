@@ -758,9 +758,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_CONTENT_CONTEXT_COPY" desc="In Title Case: The name of the Copy command in the content area context menu">
           &amp;Copy
         </message>
-        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="In Title Case: The name of the Paste command in the content area context menu">
-          &amp;Paste
-        </message>
         <message name="IDS_CONTENT_CONTEXT_DELETE" desc="In Title Case: The name of the Delete command in the content area context menu">
           &amp;Delete
         </message>
@@ -832,6 +829,16 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT" desc="In Title Case: The name of the Speech input About command in the content area context menu">
           About Voice Recognition
+        </message>
+      </if>
+      <if expr="is_macosx">
+        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="Mac/In Title Case: The name of the Paste command in the content area context menu">
+          &amp;Paste
+        </message>
+      </if>
+      <if expr="not is_macosx and pp_ifdef('use_titlecase')">
+        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="In Title Case: The name of the Paste command in the content area context menu">
+          &amp;Paste
         </message>
       </if>
       <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
@@ -988,9 +995,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_COPY" desc="In Title Case: The text label of the Copy menu item">
           &amp;Copy
         </message>
-        <message name="IDS_PASTE" desc="In Title Case: The text label of the Paste menu item">
-          &amp;Paste
-        </message>
         <message name="IDS_DELETE" desc="In Title Case: The text label of the Delete menu item (which deletes selected text without copying to clipboard)">
           &amp;Delete
         </message>
@@ -1035,6 +1039,16 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_ENCODING_AUTO_DETECT" desc="In Title Case: The text label of the Auto Detect submenu">
           Auto Detect
+        </message>
+      </if>
+      <if expr="is_macosx">
+        <message name="IDS_PASTE" desc="Mac/In Title Case: The text label of the Paste menu item">
+          &amp;Paste
+        </message>
+      </if>
+      <if expr="not is_macosx and pp_ifdef('use_titlecase')">
+        <message name="IDS_PASTE" desc="In Title Case: The text label of the Paste menu item">
+          &amp;Paste
         </message>
       </if>
       <message name="IDS_ENCODING_DISPLAY_TEMPLATE" desc="The format of encodings in the encoding menu. Encoding categories are Unicode, Western, Turkish, Cyrillic, Chinese Simplified, Thai, Arabic, Hebrew and so forth. Encoding names are UTF-8, ISO-8859-1, Windows-1251, GB2312, etc.">
