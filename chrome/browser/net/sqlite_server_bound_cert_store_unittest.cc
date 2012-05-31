@@ -604,7 +604,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestClearOnExitPolicy) {
       temp_dir_.path().Append(chrome::kOBCertFilename), clear_policy.get());
 
   // Reload and test for persistence
-  certs->clear();
+  certs.reset();
   ASSERT_TRUE(store_->Load(&certs.get()));
   ASSERT_EQ(2U, certs.size());
 

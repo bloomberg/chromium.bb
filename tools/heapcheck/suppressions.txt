@@ -1876,11 +1876,3 @@
    fun:::OneClickSigninHelperTest::CreateMockWebContents
    fun:OneClickSigninHelperTest_*
 }
-{
-   bug_130311
-   Heapcheck:Leak
-   ...
-   fun:SQLiteServerBoundCertStore::Backend::Load
-   fun:SQLiteServerBoundCertStore::Load
-   fun:SQLiteServerBoundCertStoreTest_TestClearOnExitPolicy_Test::TestBody
-}
