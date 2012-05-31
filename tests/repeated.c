@@ -94,9 +94,8 @@ int main(int argc, char **argv)
 
   const int tests2_len = sizeof(tests2)/sizeof(char*);
 
-  for (int i = 0; i < tests2_len; i += 2) {
+  for (int i = 0; i < tests2_len; i += 2)
     result |= check_translation("repeated_with_correct.utb", tests2[i], NULL, tests2[i+1]);
-  }
 
   return result;
 }
