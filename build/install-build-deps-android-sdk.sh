@@ -118,7 +118,7 @@ if [[ "$found" = "0" ]]; then
   fi
   # Updates the SDK to latest version firstly.
     "${ANDROID_SDK_ROOT}"/tools/android update sdk ${update_flag} --no-ui \
-        --filter platform,platform-tool,tool,system-image
+        --filter platform-tool,tool,system-image,${SDK_TARGET_ID}
 fi
 
 # Create a Android Virtual Device named 'buildbot' with default hardware
