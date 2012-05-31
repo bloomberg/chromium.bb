@@ -86,8 +86,9 @@ DesktopEnvironment::DesktopEnvironment(
 DesktopEnvironment::~DesktopEnvironment() {
 }
 
-void DesktopEnvironment::OnSessionStarted() {
-  event_executor_->OnSessionStarted();
+void DesktopEnvironment::OnSessionStarted(
+    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+  event_executor_->OnSessionStarted(client_clipboard.Pass());
 }
 
 void DesktopEnvironment::OnSessionFinished() {

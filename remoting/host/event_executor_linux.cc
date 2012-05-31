@@ -48,7 +48,8 @@ class EventExecutorLinux : public EventExecutor {
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
   // EventExecutor interface.
-  virtual void OnSessionStarted() OVERRIDE;
+  virtual void OnSessionStarted(
+      scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
   virtual void OnSessionFinished() OVERRIDE;
 
  private:
@@ -419,7 +420,8 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
   XFlush(display_);
 }
 
-void EventExecutorLinux::OnSessionStarted() {
+void EventExecutorLinux::OnSessionStarted(
+    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   return;
 }
 

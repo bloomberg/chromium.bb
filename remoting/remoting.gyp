@@ -1476,6 +1476,8 @@
         'protocol/clipboard_echo_filter.h',
         'protocol/clipboard_filter.h',
         'protocol/clipboard_filter.cc',
+        'protocol/clipboard_thread_proxy.cc',
+        'protocol/clipboard_thread_proxy.h',
         'protocol/clipboard_stub.h',
         'protocol/connection_to_client.cc',
         'protocol/connection_to_client.h',

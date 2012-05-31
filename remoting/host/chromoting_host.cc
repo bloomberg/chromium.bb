@@ -229,7 +229,7 @@ void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
   // Immediately add the connection and start the session.
   recorder_->AddConnection(client->connection());
   recorder_->Start();
-  desktop_environment_->OnSessionStarted();
+  desktop_environment_->OnSessionStarted(client->CreateClipboardProxy());
 
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
                     OnClientConnected(client->client_jid()));

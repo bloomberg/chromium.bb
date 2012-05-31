@@ -121,6 +121,9 @@ class ClientSession : public protocol::HostEventStub,
   // keys or mouse buttons pressed then these will be released.
   void SetDisableInputs(bool disable_inputs);
 
+  // Creates a proxy for sending clipboard events to the client.
+  scoped_ptr<protocol::ClipboardStub> CreateClipboardProxy();
+
  private:
   EventHandler* event_handler_;
 
@@ -152,6 +155,11 @@ class ClientSession : public protocol::HostEventStub,
   // Filter to used to stop clipboard items sent from the client being echoed
   // back to it.
   protocol::ClipboardEchoFilter clipboard_echo_filter_;
+
+  // Factory for weak pointers to the client clipboard stub.
+  // This must appear after |clipboard_echo_filter_|, so that it won't outlive
+  // it.
+  base::WeakPtrFactory<ClipboardStub> client_clipboard_factory_;
 
   // Capturer, used to determine current screen size for ensuring injected
   // mouse events fall within the screen area.

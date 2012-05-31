@@ -36,7 +36,8 @@ class SessionEventExecutorWin : public EventExecutor,
   ~SessionEventExecutorWin();
 
   // EventExecutor implementation.
-  virtual void OnSessionStarted() OVERRIDE;
+  virtual void OnSessionStarted(
+      scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
   virtual void OnSessionFinished() OVERRIDE;
 
   // protocol::HostStub implementation.

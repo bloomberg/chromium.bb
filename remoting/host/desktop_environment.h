@@ -8,10 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
-#include "remoting/base/scoped_thread_proxy.h"
 #include "remoting/host/event_executor.h"
 
 namespace remoting {
@@ -20,6 +17,7 @@ class Capturer;
 class ChromotingHostContext;
 
 namespace protocol {
+class ClipboardStub;
 class HostEventStub;
 };
 
@@ -42,7 +40,7 @@ class DesktopEnvironment {
 
   Capturer* capturer() const { return capturer_.get(); }
   EventExecutor* event_executor() const { return event_executor_.get(); }
-  void OnSessionStarted();
+  void OnSessionStarted(scoped_ptr<protocol::ClipboardStub> client_clipboard);
   void OnSessionFinished();
 
  private:

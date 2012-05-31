@@ -13,6 +13,7 @@ namespace remoting {
 
 namespace protocol {
 class ClipboardEvent;
+class ClipboardStub;
 }  // namespace protocol
 
 // All Clipboard methods should be run on the UI thread, so that the Clipboard
@@ -22,7 +23,7 @@ class Clipboard {
   virtual ~Clipboard() {};
 
   // Initialises any objects needed to read from or write to the clipboard.
-  virtual void Start() = 0;
+  virtual void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) = 0;
 
   // Destroys any objects initialised by Start().
   virtual void Stop() = 0;

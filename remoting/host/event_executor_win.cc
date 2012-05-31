@@ -44,7 +44,8 @@ class EventExecutorWin : public EventExecutor {
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
   // EventExecutor interface.
-  virtual void OnSessionStarted() OVERRIDE;
+  virtual void OnSessionStarted(
+      scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
   virtual void OnSessionFinished() OVERRIDE;
 
  private:
@@ -106,16 +107,18 @@ void EventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
   HandleMouse(event);
 }
 
-void EventExecutorWin::OnSessionStarted() {
+void EventExecutorWin::OnSessionStarted(
+    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!ui_loop_->BelongsToCurrentThread()) {
     ui_loop_->PostTask(
         FROM_HERE,
         base::Bind(&EventExecutorWin::OnSessionStarted,
-                   base::Unretained(this)));
+                   base::Unretained(this),
+                   base::Passed(&client_clipboard)));
     return;
   }
 
-  clipboard_->Start();
+  clipboard_->Start(client_clipboard.Pass());
 }
 
 void EventExecutorWin::OnSessionFinished() {

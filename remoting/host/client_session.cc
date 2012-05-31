@@ -11,6 +11,7 @@
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/client_stub.h"
+#include "remoting/protocol/clipboard_thread_proxy.h"
 
 namespace remoting {
 
@@ -27,6 +28,7 @@ ClientSession::ClientSession(
       input_tracker_(host_event_stub_),
       remote_input_filter_(&input_tracker_),
       mouse_input_filter_(&remote_input_filter_),
+      client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
       capturer_(capturer) {
   connection_->SetEventHandler(this);
 
@@ -162,6 +164,15 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
   } else {
     disable_input_filter_.set_input_stub(&mouse_input_filter_);
   }
+}
+
+scoped_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
+  DCHECK(CalledOnValidThread());
+
+  return scoped_ptr<protocol::ClipboardStub>(
+      new protocol::ClipboardThreadProxy(
+          client_clipboard_factory_.GetWeakPtr(),
+          base::MessageLoopProxy::current()));
 }
 
 }  // namespace remoting

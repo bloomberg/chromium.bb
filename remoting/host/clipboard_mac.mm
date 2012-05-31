@@ -13,7 +13,8 @@ class ClipboardMac : public Clipboard {
   ClipboardMac();
 
   // Must be called on the UI thread.
-  virtual void Start() OVERRIDE;
+  virtual void Start(
+      scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
   virtual void InjectClipboardEvent(
       const protocol::ClipboardEvent& event) OVERRIDE;
   virtual void Stop() OVERRIDE;
@@ -22,7 +23,8 @@ class ClipboardMac : public Clipboard {
   DISALLOW_COPY_AND_ASSIGN(ClipboardMac);
 };
 
-void ClipboardMac::Start() {
+void ClipboardMac::Start(
+    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   NOTIMPLEMENTED();
 }
 

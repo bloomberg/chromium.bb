@@ -18,6 +18,7 @@
 #include "base/win/wrapped_window_proc.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/protocol/clipboard_stub.h"
 
 namespace {
 
@@ -104,7 +105,8 @@ class ClipboardWin : public Clipboard {
  public:
   ClipboardWin();
 
-  virtual void Start() OVERRIDE;
+  virtual void Start(
+      scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
   virtual void InjectClipboardEvent(
       const protocol::ClipboardEvent& event) OVERRIDE;
   virtual void Stop() OVERRIDE;
@@ -117,6 +119,7 @@ class ClipboardWin : public Clipboard {
   static LRESULT CALLBACK WndProc(HWND hwmd, UINT msg, WPARAM wParam,
                                   LPARAM lParam);
 
+  scoped_ptr<protocol::ClipboardStub> client_clipboard_;
   HWND hwnd_;
   AddClipboardFormatListenerFn* add_clipboard_format_listener_;
   RemoveClipboardFormatListenerFn* remove_clipboard_format_listener_;
@@ -132,7 +135,10 @@ ClipboardWin::ClipboardWin()
       load_functions_tried_(false) {
 }
 
-void ClipboardWin::Start() {
+void ClipboardWin::Start(
+    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+  client_clipboard_.swap(client_clipboard);
+
   if (!load_functions_tried_) {
     load_functions_tried_ = true;
     HMODULE user32_module = ::GetModuleHandle(L"user32.dll");
@@ -176,6 +182,8 @@ void ClipboardWin::Start() {
 }
 
 void ClipboardWin::Stop() {
+  client_clipboard_.reset();
+
   if (hwnd_) {
     if (HaveClipboardListenerApi()) {
       (*remove_clipboard_format_listener_)(hwnd_);
@@ -253,7 +261,9 @@ void ClipboardWin::OnClipboardUpdate() {
     event.set_mime_type(kMimeTypeTextUtf8);
     event.set_data(UTF16ToUTF8(text));
 
-    // TODO(simonmorris): Send the event to the client.
+    if (client_clipboard_.get()) {
+      client_clipboard_->InjectClipboardEvent(event);
+    }
   }
 }
 

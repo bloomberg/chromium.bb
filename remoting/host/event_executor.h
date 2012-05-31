@@ -6,6 +6,7 @@
 #define REMOTING_HOST_EVENT_EXECUTOR_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/host_event_stub.h"
 
 class MessageLoop;
@@ -28,7 +29,8 @@ class EventExecutor : public protocol::HostEventStub {
                                           Capturer* capturer);
 
   // Initialises any objects needed to execute events.
-  virtual void OnSessionStarted() = 0;
+  virtual void OnSessionStarted(
+      scoped_ptr<protocol::ClipboardStub> client_clipboard) = 0;
 
   // Destroys any objects constructed by Start().
   virtual void OnSessionFinished() = 0;

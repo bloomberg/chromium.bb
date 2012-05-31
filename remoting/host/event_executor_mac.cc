@@ -42,7 +42,8 @@ class EventExecutorMac : public EventExecutor {
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
   // EventExecutor interface.
-  virtual void OnSessionStarted() OVERRIDE;
+  virtual void OnSessionStarted(
+      scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
   virtual void OnSessionFinished() OVERRIDE;
 
  private:
@@ -326,7 +327,8 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
   }
 }
 
-void EventExecutorMac::OnSessionStarted() {
+void EventExecutorMac::OnSessionStarted(
+    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   return;
 }
 

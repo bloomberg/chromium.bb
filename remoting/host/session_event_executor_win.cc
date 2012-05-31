@@ -68,7 +68,8 @@ SessionEventExecutorWin::SessionEventExecutorWin(
 SessionEventExecutorWin::~SessionEventExecutorWin() {
 }
 
-void SessionEventExecutorWin::OnSessionStarted() {
+void SessionEventExecutorWin::OnSessionStarted(
+    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   // TODO(simonmorris): Delegate to the nested executor.
 }
 
