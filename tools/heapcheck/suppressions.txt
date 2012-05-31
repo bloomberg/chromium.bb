@@ -1725,12 +1725,6 @@
    fun:net::MockHostResolverBase::ResolveNow
 }
 {
-   bug_118336
-   Heapcheck:Leak
-   ...
-   fun:SelectFileDialogExtensionTest_SelfDeleting_Test::TestBody
-}
-{
    bug_124758
    Heapcheck:Leak
    fun:sqlite3MemMalloc
