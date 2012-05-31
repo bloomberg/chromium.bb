@@ -8,6 +8,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/aura/shared/root_window_event_filter.h"
@@ -110,6 +111,7 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
   }
   root_window_.reset(new aura::RootWindow(bounds));
   root_window_->Init();
+  root_window_->set_focus_manager(new aura::FocusManager);
 
   root_window_event_filter_ =
       new aura::shared::RootWindowEventFilter(root_window_.get());

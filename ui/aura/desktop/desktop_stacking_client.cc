@@ -4,6 +4,7 @@
 
 #include "ui/aura/desktop/desktop_stacking_client.h"
 
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
@@ -21,6 +22,7 @@ Window* DesktopStackingClient::GetDefaultParent(Window* window) {
   if (!null_parent_.get()) {
     null_parent_.reset(new aura::RootWindow(gfx::Rect(100, 100)));
     null_parent_->Init();
+    null_parent_->set_focus_manager(new FocusManager);
   }
   return null_parent_.get();
 }
