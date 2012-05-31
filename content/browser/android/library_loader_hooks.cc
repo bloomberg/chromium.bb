@@ -72,6 +72,8 @@ jboolean LibraryLoaderEntryHook(JNIEnv* env, jclass clazz,
   return JNI_TRUE;
 }
 
+namespace content {
+
 void LibraryLoaderExitHook() {
   if (g_at_exit_manager) {
     delete g_at_exit_manager;
@@ -98,3 +100,5 @@ bool RegisterLibraryLoaderEntryHook(JNIEnv* env) {
   }
   return true;
 }
+
+}  // namespace content
