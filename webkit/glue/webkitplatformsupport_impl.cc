@@ -669,6 +669,22 @@ WebKit::WebString WebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
   return WebKit::WebString("");
 }
 
+static base::ProcessMetrics* CurrentProcessMetrics() {
+  using base::ProcessMetrics;
+#if defined(OS_MACOSX)
+  static ProcessMetrics* process_metrics =
+      // The default port provider is sufficient to get data for the current
+      // process.
+      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle(),
+                                           NULL);
+#else
+  static ProcessMetrics* process_metrics =
+      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle());
+#endif
+  DCHECK(process_metrics);
+  return process_metrics;
+}
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 static size_t memoryUsageMB() {
   struct mallinfo minfo = mallinfo();
@@ -684,24 +700,9 @@ static size_t memoryUsageMB() {
   v8::V8::GetHeapStatistics(&stat);
   return mem_usage + (static_cast<uint64_t>(stat.total_heap_size()) >> 20);
 }
-#elif defined(OS_MACOSX)
-static size_t memoryUsageMB() {
-  using base::ProcessMetrics;
-  static ProcessMetrics* process_metrics =
-      // The default port provider is sufficient to get data for the current
-      // process.
-      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle(),
-                                           NULL);
-  DCHECK(process_metrics);
-  return process_metrics->GetWorkingSetSize() >> 20;
-}
 #else
 static size_t memoryUsageMB() {
-  using base::ProcessMetrics;
-  static ProcessMetrics* process_metrics =
-      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle());
-  DCHECK(process_metrics);
-  return process_metrics->GetPagefileUsage() >> 20;
+  return CurrentProcessMetrics()->GetPagefileUsage() >> 20;
 }
 #endif
 
@@ -747,6 +748,12 @@ size_t WebKitPlatformSupportImpl::highUsageDeltaMB() {
   return base::SysInfo::DalvikHeapSizeMB() / 8;
 }
 #endif
+
+bool WebKitPlatformSupportImpl::processMemorySizesInBytes(
+    size_t* private_bytes,
+    size_t* shared_bytes) {
+  return CurrentProcessMetrics()->GetMemoryBytes(private_bytes, shared_bytes);
+}
 
 void WebKitPlatformSupportImpl::SuspendSharedTimer() {
   ++shared_timer_suspended_;
