@@ -114,6 +114,9 @@ function scriptChanged() {
   }
 }
 
+// Returns a function to be called when the user changes the font size
+// input element |elem|. The function calls the Font Settings Extension API
+// function |setter| to commit the change.
 function getFontSizeChangedFunc(elem, setter) {
   return function() {
     var pixelSize = parseInt(elem.value);
@@ -123,12 +126,52 @@ function getFontSizeChangedFunc(elem, setter) {
   }
 }
 
-function initFontSizePref(id, getter, setter) {
+function isControllableLevel(levelOfControl) {
+  return levelOfControl == 'controllable_by_this_extension' ||
+      levelOfControl == 'controlled_by_this_extension';
+}
+
+// Returns a function to be used as a listener for font size setting changed
+// events from the Font Settings Extension API. The function updates the
+// input element |elem| to reflect the change.
+function getFontSizeChangedOnBrowserFunc(elem) {
+  return function(details) {
+    elem.value = details.pixelSize.toString();
+    elem.disabled = !isControllableLevel(details.levelOfControl);
+  }
+}
+
+function initFontSizePref(id, getter, setter, apiEvent) {
   var elem = document.getElementById(id);
   getter({}, function(details) {
-    elem.value = details.pixelSize;
+    elem.value = details.pixelSize.toString();
+    elem.disabled = !isControllableLevel(details.levelOfControl);
   });
   elem.addEventListener('change', getFontSizeChangedFunc(elem, setter));
+  apiEvent.addListener(getFontSizeChangedOnBrowserFunc(elem));
+}
+
+function clearAllSettings() {
+  var scripts =
+      ["Arab", "Armn", "Beng", "Cans", "Cher", "Cyrl", "Deva", "Ethi", "Geor",
+       "Grek", "Gujr", "Guru", "Hang", "Hans", "Hant", "Hebr", "Hrkt", "Knda",
+       "Khmr", "Laoo", "Mlym", "Mong", "Mymr", "Orya", "Sinh", "Taml", "Telu",
+       "Thaa", "Thai", "Tibt", "Yiii", "Zyyy"];
+  var families =
+      ["standard", "sansserif", "serif", "fixed", "cursive", "fantasy"];
+  for (var i = 0; i < scripts.length; i++) {
+    for (var j = 0; j < families.length; j++) {
+      chrome.experimental.fontSettings.clearFont({
+        script: scripts[i],
+        genericFamily: families[j]
+      });
+    }
+  }
+
+  chrome.experimental.fontSettings.clearDefaultCharacterSet();
+  chrome.experimental.fontSettings.clearDefaultFixedFontSize();
+  chrome.experimental.fontSettings.clearDefaultFontSize();
+  chrome.experimental.fontSettings.clearMinimumFontSize();
 }
 
 function init() {
@@ -147,13 +190,22 @@ function init() {
 
   initFontSizePref('defaultFontSize',
                    chrome.experimental.fontSettings.getDefaultFontSize,
-                   chrome.experimental.fontSettings.setDefaultFontSize);
-  initFontSizePref('defaultFixedFontSize',
-                   chrome.experimental.fontSettings.getDefaultFixedFontSize,
-                   chrome.experimental.fontSettings.setDefaultFixedFontSize);
+                   chrome.experimental.fontSettings.setDefaultFontSize,
+                   chrome.experimental.fontSettings.onDefaultFontSizeChanged);
+
+  initFontSizePref(
+      'defaultFixedFontSize',
+      chrome.experimental.fontSettings.getDefaultFixedFontSize,
+      chrome.experimental.fontSettings.setDefaultFixedFontSize,
+      chrome.experimental.fontSettings.onDefaultFixedFontSizeChanged);
+
   initFontSizePref('minFontSize',
                    chrome.experimental.fontSettings.getMinimumFontSize,
-                   chrome.experimental.fontSettings.setMinimumFontSize);
+                   chrome.experimental.fontSettings.setMinimumFontSize,
+                   chrome.experimental.fontSettings.onMinimumFontSizeChanged);
+
+  var clearButton = document.getElementById('clearButton');
+  clearButton.addEventListener('click', clearAllSettings);
 }
 
 document.addEventListener('DOMContentLoaded', init);
