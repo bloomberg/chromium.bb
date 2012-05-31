@@ -224,13 +224,14 @@ BOT_ASSIGNMENT = {
     'win7-toolchain_x86': 'buildbot\\buildbot_toolchain_win.bat',
     'mac-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh mac',
     'lucid64-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
-    # Pnacl toolchain builders.
+
+    # Pnacl toolchain builders (second argument indicates trybot).
     'linux-armtools-x86_32':
         'bash buildbot/buildbot_toolchain_arm_trusted.sh',
     'linux-pnacl-x86_32':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 32',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-linux false',
     'linux-pnacl-x86_64':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 64',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux false',
     'mac-pnacl-x86_32':
         'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32',
     # This bots is scheduled to be replaced (split) by the three following it
@@ -257,10 +258,11 @@ BOT_ASSIGNMENT = {
     'nacl-toolchain-win7-glibc':
         'buildbot\\buildbot_windows-glibc-makefile.bat',
 
+     # Pnacl toolchain trybots (second argument indicates trybot).
     'nacl-toolchain-linux-pnacl-x86_32-newlib':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 32',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-linux true',
     'nacl-toolchain-linux-pnacl-x86_64-newlib':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 64',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux true',
     'nacl-toolchain-mac-pnacl-x86_32-newlib':
         'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32',
 

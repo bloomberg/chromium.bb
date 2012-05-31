@@ -17,6 +17,95 @@ RETCODE=0
 
 readonly SCONS_COMMON="./scons --verbose bitcode=1"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
+# This script is used by toolchain bots (i.e. tc-xxx functions)
+readonly PNACL_BUILD="pnacl/build.sh"
+
+tc-clobber() {
+  local label=$1
+  local clobber_translators=$2
+
+  echo @@@BUILD_STEP tc_clobber@@@
+  rm -rf toolchain/${label}
+  rm -rf toolchain/test-log
+  rm -rf pnacl*.tgz pnacl/pnacl*.tgz
+  if ${clobber_translators} ; then
+      rm -rf toolchain/pnacl_translator
+  fi
+}
+
+tc-show-config() {
+  echo @@@BUILD_STEP show_config@@@
+  ${PNACL_BUILD} show-config
+}
+
+tc-compile-toolchain() {
+  echo @@@BUILD_STEP compile_toolchain@@@
+  ${PNACL_BUILD} clean
+  ${PNACL_BUILD} everything
+  ${PNACL_BUILD} tarball pnacl-toolchain.tgz
+  chmod a+r pnacl-toolchain.tgz
+}
+
+tc-untar-toolchain() {
+  local label=$1
+  echo @@@BUILD_STEP untar_toolchain@@@
+  # Untar to ensure we can and to place the toolchain where the main build
+  # expects it to be.
+  rm -rf toolchain/${label}
+  mkdir -p toolchain/${label}
+  pushd toolchain/${label}
+  tar xfz ../../pnacl-toolchain.tgz
+  popd
+}
+
+tc-build-translator() {
+  echo @@@BUILD_STEP compile_translator@@@
+  ${PNACL_BUILD} translator-clean-all
+  ${PNACL_BUILD} translator-all
+}
+
+tc-archive() {
+  local label=$1
+  echo @@@BUILD_STEP archive_toolchain@@@
+  ${UP_DOWN_LOAD} UploadArmUntrustedToolchains ${BUILDBOT_GOT_REVISION} \
+    ${label} pnacl-toolchain.tgz
+}
+
+tc-archive-translator() {
+  echo @@@BUILD_STEP archive_translator@@@
+  ${PNACL_BUILD} translator-tarball pnacl-translator.tgz
+  ${UP_DOWN_LOAD} UploadArmUntrustedToolchains ${BUILDBOT_GOT_REVISION} \
+      pnacl_translator pnacl-translator.tgz
+}
+
+tc-build-all() {
+  local label=$1
+  local is_try=$2
+  local build_translator=$3
+
+  # Tell build.sh and test.sh that we're a bot.
+  export PNACL_BUILDBOT=true
+  # Tells build.sh to prune the install directory (for release).
+  export PNACL_PRUNE=true
+
+  clobber
+  tc-clobber ${label} ${build_translator}
+  tc-show-config
+  tc-compile-toolchain
+  tc-untar-toolchain ${label}
+  if ! ${is_try} ; then
+    tc-archive ${label}
+  fi
+
+  # NOTE: only one bot needs to do this
+  if ${build_translator} ; then
+    tc-build-translator
+    if ! ${is_try} ; then
+      tc-archive-translator
+    fi
+  fi
+}
+
 
 # extract the relevant scons flags for reporting
 relevant() {
@@ -368,6 +457,97 @@ mode-buildbot-arm-hw-try() {
   unarchive-for-hw-bots $(NAME_ARM_TRY_DOWNLOAD)  try
   mode-buildbot-arm-hw "--mode=opt-host,nacl"
 }
+
+readonly TC_TESTS="smoke_tests"
+
+# These are also suitable for local TC sanity testing
+tc-tests-large() {
+  # newlib
+  scons-stage "x86-32" "--mode=opt-host,nacl -j8 -k" "${TC_TESTS}"
+  scons-stage "x86-64" "--mode=opt-host,nacl -j8 -k" "${TC_TESTS}"
+  scons-stage "arm"    "--mode=opt-host,nacl -j8 -k" "${TC_TESTS}"
+
+  # glibc
+  scons-stage "x86-32" \
+              "--mode=opt-host,nacl -j8 -k --nacl_glibc pnacl_generate_pexe=0" \
+              "${TC_TESTS}"
+  scons-stage "x86-64" \
+              "--mode=opt-host,nacl -j8 -k --nacl_glibc pnacl_generate_pexe=0" \
+              "${TC_TESTS}"
+
+  # we run the browser tests last since they tend to be flaky
+  # and will terminate the testing unless  FAIL_FAST=false
+
+  # newlib browser
+  browser-tests "x86-32" "--mode=opt-host,nacl,nacl_irt_test -j8 -k"
+  browser-tests "x86-64" "--mode=opt-host,nacl,nacl_irt_test -j8 -k"
+  browser-tests "arm"    "--mode=opt-host,nacl,nacl_irt_test -j8 -k"
+
+  # glibc browser
+  browser-tests "x86-32" \
+                "--mode=opt-host,nacl,nacl_irt_test -j8 -k --nacl_glibc"
+  browser-tests "x86-64" \
+                "--mode=opt-host,nacl,nacl_irt_test -j8 -k --nacl_glibc"
+}
+
+tc-tests-small() {
+  scons-stage "$1" "--mode=opt-host,nacl -j8 -k" "${TC_TESTS}"
+  browser-tests "$1" "--mode=opt-host,nacl,nacl_irt_test -j8 -k"
+}
+
+mode-buildbot-tc-x8664-linux() {
+  local is_try=$1
+  FAIL_FAST=false
+  TOOLCHAIN_LABEL=pnacl_linux_x86_64
+  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} true
+  tc-tests-large
+}
+
+mode-buildbot-tc-x8632-linux() {
+  local is_try=$1
+  FAIL_FAST=false
+  TOOLCHAIN_LABEL=pnacl_linux_x86_32
+  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false
+  tc-tests-small "x86-32"
+}
+
+mode-buildbot-tc-x8632-mac() {
+  local is_try=$1
+  FAIL_FAST=false
+  TOOLCHAIN_LABEL=pnacl_mac_x86_32
+  # To avoid timing out, since this bot is slow.
+  export PNACL_VERBOSE=true
+  # We can't test ARM because we do not have QEMU for Mac.
+  # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
+  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false
+  tc-tests-small "x86-32"
+}
+
+mode-buildbot-tc-x8632-win() {
+  local is_try=$1
+  FAIL_FAST=false
+  TOOLCHAIN_LABEL=pnacl_win_x86_32
+  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false
+  # We can't test ARM because we do not have QEMU for Win.
+  tc-tests-small "x86-32"
+}
+
+mode-buildbot-tc-x8664-win() {
+  local is_try=$1
+  FAIL_FAST=false
+  TOOLCHAIN_LABEL=pnacl_win_x86_64
+  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false
+
+  # On windows-chrome the plugin is always 32bit even though the nexe
+  # might be 64bit
+  echo @@@BUILD_STEP plugin compile 32@@@
+  ./scons --verbose -k -j8 --mode=opt-host,nacl platform=x86-32 plugin
+
+  # We can't test ARM because we do not have QEMU for Win.
+  tc-tests-small "x86-64"
+}
+
+
 
 mode-test-all() {
   test-all-newlib "$@"
