@@ -41,7 +41,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , LoadCoprocessor_instance_()
   , LoadDoubleExclusive_instance_()
   , LoadExclusive_instance_()
+  , LoadImmediate_instance_()
   , LoadMultiple_instance_()
+  , LoadRegister_instance_()
   , LongMultiply_instance_()
   , MaskAddress_instance_()
   , MoveDoubleFromCoprocessor_instance_()
@@ -54,6 +56,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StoreCoprocessor_instance_()
   , StoreExclusive_instance_()
   , StoreImmediate_instance_()
+  , StoreRegister_instance_()
   , StrImmediate_instance_()
   , StrImmediateDouble_instance_()
   , StrRegister_instance_()
@@ -453,22 +456,22 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_byte(
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
       (insn.Bits() & 0x01300000) == 0x00000000 /* op1(24:20) == 0xx00 */ &&
       true)
-    return StrImmediate_instance_;
+    return StoreImmediate_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
       (insn.Bits() & 0x01300000) == 0x00100000 /* op1(24:20) == 0xx01 */ &&
       true)
-    return LdrImmediate_instance_;
+    return LoadImmediate_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
       (insn.Bits() & 0x01100000) == 0x01000000 /* op1(24:20) == 1xxx0 */ &&
       true)
-    return StrImmediate_instance_;
+    return StoreImmediate_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
       (insn.Bits() & 0x01100000) == 0x01100000 /* op1(24:20) == 1xxx1 */ &&
       true)
-    return LdrImmediate_instance_;
+    return LoadImmediate_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
       (insn.Bits() & 0x01200000) == 0x00200000 /* op1(24:20) == 0xx1x */ &&
@@ -478,27 +481,27 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_byte(
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x01700000) == 0x00500000 /* op1(24:20) == 0x101 */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return LdrRegister_instance_;
+    return LoadRegister_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x00700000) == 0x00100000 /* op1(24:20) == xx001 */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return LdrRegister_instance_;
+    return LoadRegister_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x01300000) == 0x00000000 /* op1(24:20) == 0xx00 */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return StrRegister_instance_;
+    return StoreRegister_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x01100000) == 0x01000000 /* op1(24:20) == 1xxx0 */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return StrRegister_instance_;
+    return StoreRegister_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x01100000) == 0x01100000 /* op1(24:20) == 1xxx1 */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return LdrRegister_instance_;
+    return LoadRegister_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x01200000) == 0x00200000 /* op1(24:20) == 0xx1x */ &&

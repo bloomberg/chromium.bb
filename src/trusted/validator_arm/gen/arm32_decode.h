@@ -160,7 +160,9 @@ class Arm32DecoderState : DecoderState {
   const LoadCoprocessor LoadCoprocessor_instance_;
   const LoadDoubleExclusive LoadDoubleExclusive_instance_;
   const LoadExclusive LoadExclusive_instance_;
+  const LoadImmediate LoadImmediate_instance_;
   const LoadMultiple LoadMultiple_instance_;
+  const LoadRegister LoadRegister_instance_;
   const LongMultiply LongMultiply_instance_;
   const MaskAddress MaskAddress_instance_;
   const MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
@@ -173,6 +175,7 @@ class Arm32DecoderState : DecoderState {
   const StoreCoprocessor StoreCoprocessor_instance_;
   const StoreExclusive StoreExclusive_instance_;
   const StoreImmediate StoreImmediate_instance_;
+  const StoreRegister StoreRegister_instance_;
   const StrImmediate StrImmediate_instance_;
   const StrImmediateDouble StrImmediateDouble_instance_;
   const StrRegister StrRegister_instance_;
