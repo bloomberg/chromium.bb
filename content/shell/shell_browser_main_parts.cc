@@ -52,10 +52,15 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
 #if defined(OS_ANDROID)
   MessageLoopForUI::InitMessagePumpForUIFactory(&CreateMessagePumpForShell);
-  MessageLoopForUI::current()->Start();
 #endif
 }
 #endif
+
+void ShellBrowserMainParts::PostMainMessageLoopStart() {
+#if defined(OS_ANDROID)
+  MessageLoopForUI::current()->Start();
+#endif
+}
 
 void ShellBrowserMainParts::PreEarlyInitialization() {
 #if defined(OS_ANDROID)
