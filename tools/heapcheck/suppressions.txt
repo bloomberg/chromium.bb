@@ -760,12 +760,6 @@
    fun:policy::AsynchronousPolicyTestBase_ProviderRefresh_Test::TestBody
 }
 {
-   bug_66227
-   Heapcheck:Leak
-   ...
-   fun:MalwareDetailsTest_*
-}
-{
    bug_67524
    Heapcheck:Leak
    ...
