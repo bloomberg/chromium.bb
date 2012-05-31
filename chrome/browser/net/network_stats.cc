@@ -555,7 +555,7 @@ void NetworkStats::GetHistogramNames(const ProtocolValue& protocol,
       load_size_string);
 
   // Build "NetConnectivity.<protocol>.PacketLoss.<port>.<load_size>" histogram
-  // name. Total number of histograms are 5 (because we do this test for UDP
+  // name. Total number of histograms are 5*2 (because we do this test for UDP
   // only).
   *packet_loss_histogram_name = base::StringPrintf(
       "NetConnectivity.%s.PacketLoss6.%d.%s",
@@ -884,7 +884,7 @@ void StartNetworkStatsTest(net::HostResolver* host_resolver,
                            const net::HostPortPair& server_address,
                            NetworkStats::HistogramPortSelector histogram_port,
                            bool has_proxy_server) {
-  int experiment_to_run = base::RandInt(1, 5);
+  int experiment_to_run = base::RandInt(1, 6);
   switch (experiment_to_run) {
     case 1:
       {
@@ -928,6 +928,14 @@ void StartNetworkStatsTest(net::HostResolver* host_resolver,
         packet_loss_udp_stats->Start(
             host_resolver, server_address, histogram_port, has_proxy_server,
             kLargeTestBytesToSend, kMaximumPackets, net::CompletionCallback());
+      }
+      break;
+    case 6:
+      {
+        UDPStatsClient* packet_loss_udp_stats = new UDPStatsClient();
+        packet_loss_udp_stats->Start(
+            host_resolver, server_address, histogram_port, has_proxy_server,
+            kSmallTestBytesToSend, kMaximumPackets, net::CompletionCallback());
       }
       break;
   }
