@@ -270,12 +270,6 @@
 # Periodically we should sweep this file and the bug tracker clean by
 # running overnight and removing outdated bugs/suppressions.
 {
-   bug_31643
-   Heapcheck:Leak
-   fun:browser_sync::BookmarkModelWorker::CallDoWorkFromModelSafeThreadAndWait
-   fun:Syncer::SyncShare
-}
-{
    bug_32623
    Heapcheck:Leak
    ...
