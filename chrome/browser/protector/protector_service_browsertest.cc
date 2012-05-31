@@ -108,9 +108,9 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndApply) {
 // ProtectorServiceTest.ShowAndApplyManually is timing out frequently on Win
 // bots. http://crbug.com/130590
 #if defined(OS_WIN)
-#defined MAYBE_ShowAndApplyManually DISABLED_ShowAndApplyManually
+#define MAYBE_ShowAndApplyManually DISABLED_ShowAndApplyManually
 #else
-#defined MAYBE_ShowAndApplyManually ShowAndApplyManually
+#define MAYBE_ShowAndApplyManually ShowAndApplyManually
 #endif
 
 IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, MAYBE_ShowAndApplyManually) {
