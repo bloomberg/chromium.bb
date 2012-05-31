@@ -70,7 +70,6 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://stats': {},
     'chrome://sync': { 'title': 'Sync Internals' },
     'chrome://sync-internals': { 'title': 'Sync Internals' },
-    'chrome://tasks': { 'title': 'Task Manager - Chromium' },
     'chrome://terms': {},
     'chrome://version': { 'title': 'About Version' },
     'chrome://view-http-cache': {},
@@ -131,7 +130,6 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://cryptohome': { 'CSP': False},
     'chrome://mobilesetup': { 'CSP': False },
     'chrome://print': { 'CSP': False },
-    'chrome://tasks': {},
   }
 
   linux_special_url_tabs = {
@@ -159,7 +157,6 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://terms': {
       'title': 'Google Chrome Terms of Service',
     },
-    'chrome://tasks': { 'title': 'Task Manager - Google Chrome' },
   }
   broken_google_special_url_tabs = {}
 
