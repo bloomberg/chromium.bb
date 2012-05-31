@@ -9,7 +9,7 @@
 #include "base/sequenced_task_runner.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "webkit/blob/local_file_reader.h"
+#include "webkit/blob/local_file_stream_reader.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_quota_util.h"
@@ -23,7 +23,7 @@ namespace {
 
 int PlatformFileErrorToNetError(base::PlatformFileError error) {
   // TODO(kinuko): Move this static method to more convenient place.
-  return webkit_blob::LocalFileReader::PlatformFileErrorToNetError(error);
+  return webkit_blob::LocalFileStreamReader::PlatformFileErrorToNetError(error);
 }
 
 // Adjust the |quota| value in overwriting case (i.e. |file_size| > 0 and

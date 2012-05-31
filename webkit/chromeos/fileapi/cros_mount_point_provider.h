@@ -68,7 +68,7 @@ class CrosMountPointProvider
       fileapi::FileSystemType file_system_type,
       const FilePath& virtual_path,
       fileapi::FileSystemContext* context) const OVERRIDE;
-  virtual webkit_blob::FileReader* CreateFileReader(
+  virtual webkit_blob::FileStreamReader* CreateFileStreamReader(
     const GURL& path,
     int64 offset,
     fileapi::FileSystemContext* context) const OVERRIDE;

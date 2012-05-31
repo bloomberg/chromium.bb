@@ -17,7 +17,7 @@
 class GURL;
 
 namespace webkit_blob {
-class FileReader;
+class FileStreamReader;
 }
 
 namespace fileapi {
@@ -92,12 +92,12 @@ class FILEAPI_EXPORT FileSystemMountPointProvider {
       const FilePath& virtual_path,
       FileSystemContext* context) const = 0;
 
-  // Creates a new file reader for a given filesystem URL |url| with a offset
-  // |offset|.
+  // Creates a new file stream reader for a given filesystem URL |url| with an
+  // offset |offset|.
   // The returned object must be owned and managed by the caller.
   // This method itself does *not* check if the given path exists and is a
   // regular file.
-  virtual webkit_blob::FileReader* CreateFileReader(
+  virtual webkit_blob::FileStreamReader* CreateFileStreamReader(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const = 0;

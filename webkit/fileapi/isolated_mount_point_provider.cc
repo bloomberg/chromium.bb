@@ -12,10 +12,10 @@
 #include "base/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/blob/local_file_reader.h"
+#include "webkit/blob/local_file_stream_reader.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_file_reader.h"
+#include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -102,12 +102,13 @@ IsolatedMountPointProvider::CreateFileSystemOperation(
   return new FileSystemOperation(context);
 }
 
-webkit_blob::FileReader* IsolatedMountPointProvider::CreateFileReader(
+webkit_blob::FileStreamReader*
+IsolatedMountPointProvider::CreateFileStreamReader(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const {
   FilePath path = GetPathFromURL(url);
-  return path.empty() ? NULL : new webkit_blob::LocalFileReader(
+  return path.empty() ? NULL : new webkit_blob::LocalFileStreamReader(
       context->file_task_runner(), path, offset, base::Time());
 }
 

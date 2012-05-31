@@ -30,7 +30,7 @@ class QuotaManagerProxy;
 }
 
 namespace webkit_blob {
-class FileReader;
+class FileStreamReader;
 }
 
 namespace fileapi {
@@ -127,13 +127,13 @@ class FILEAPI_EXPORT FileSystemContext
   // depending on the filesystem type pointed by the |url|.
   FileSystemOperationInterface* CreateFileSystemOperation(const GURL& url);
 
-  // Creates new FileReader instance to read a file pointed by the given
+  // Creates new FileStreamReader instance to read a file pointed by the given
   // filesystem URL |url| starting from |offset|.
   // This method internally cracks the |url|, get an appropriate
   // MountPointProvider for the URL and call the provider's CreateFileReader.
   // The resolved MountPointProvider could perform further specialization
   // depending on the filesystem type pointed by the |url|.
-  webkit_blob::FileReader* CreateFileReader(
+  webkit_blob::FileStreamReader* CreateFileStreamReader(
       const GURL& url,
       int64 offset);
 

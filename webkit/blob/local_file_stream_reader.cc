@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/blob/local_file_reader.h"
+#include "webkit/blob/local_file_stream_reader.h"
 
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
@@ -33,7 +33,7 @@ bool VerifySnapshotTime(const base::Time& expected_modification_time,
 }  // namespace
 
 // static
-int LocalFileReader::PlatformFileErrorToNetError(
+int LocalFileStreamReader::PlatformFileErrorToNetError(
     base::PlatformFileError file_error) {
   switch (file_error) {
     case base::PLATFORM_FILE_OK:
@@ -47,7 +47,7 @@ int LocalFileReader::PlatformFileErrorToNetError(
   }
 }
 
-LocalFileReader::LocalFileReader(
+LocalFileStreamReader::LocalFileStreamReader(
     base::TaskRunner* task_runner,
     const FilePath& file_path,
     int64 initial_offset,
@@ -59,40 +59,41 @@ LocalFileReader::LocalFileReader(
       has_pending_open_(false),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
-LocalFileReader::~LocalFileReader() {
+LocalFileStreamReader::~LocalFileStreamReader() {
 }
 
-int LocalFileReader::Read(net::IOBuffer* buf, int buf_len,
+int LocalFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
                           const net::CompletionCallback& callback) {
   DCHECK(!has_pending_open_);
   if (stream_impl_.get())
     return stream_impl_->Read(buf, buf_len, callback);
-  return Open(base::Bind(&LocalFileReader::DidOpenForRead,
+  return Open(base::Bind(&LocalFileStreamReader::DidOpenForRead,
                          weak_factory_.GetWeakPtr(),
                          make_scoped_refptr(buf), buf_len, callback));
 }
 
-int LocalFileReader::GetLength(const net::Int64CompletionCallback& callback) {
+int LocalFileStreamReader::GetLength(
+    const net::Int64CompletionCallback& callback) {
   const bool posted = base::FileUtilProxy::GetFileInfo(
       task_runner_, file_path_,
-      base::Bind(&LocalFileReader::DidGetFileInfoForGetLength,
+      base::Bind(&LocalFileStreamReader::DidGetFileInfoForGetLength,
                  weak_factory_.GetWeakPtr(), callback));
   DCHECK(posted);
   return net::ERR_IO_PENDING;
 }
 
-int LocalFileReader::Open(const net::CompletionCallback& callback) {
+int LocalFileStreamReader::Open(const net::CompletionCallback& callback) {
   DCHECK(!has_pending_open_);
   DCHECK(!stream_impl_.get());
   has_pending_open_ = true;
 
   // Call GetLength first to make it perform last-modified-time verification,
   // and then call DidVerifyForOpen for do the rest.
-  return GetLength(base::Bind(&LocalFileReader::DidVerifyForOpen,
+  return GetLength(base::Bind(&LocalFileStreamReader::DidVerifyForOpen,
                               weak_factory_.GetWeakPtr(), callback));
 }
 
-void LocalFileReader::DidVerifyForOpen(
+void LocalFileStreamReader::DidVerifyForOpen(
     const net::CompletionCallback& callback,
     int64 get_length_result) {
   if (get_length_result < 0) {
@@ -103,30 +104,31 @@ void LocalFileReader::DidVerifyForOpen(
   stream_impl_.reset(new net::FileStream(NULL));
   const int result = stream_impl_->Open(
       file_path_, kOpenFlagsForRead,
-      base::Bind(&LocalFileReader::DidOpenFileStream,
+      base::Bind(&LocalFileStreamReader::DidOpenFileStream,
                  weak_factory_.GetWeakPtr(),
                  callback));
   if (result != net::ERR_IO_PENDING)
     callback.Run(result);
 }
 
-void LocalFileReader::DidOpenFileStream(
+void LocalFileStreamReader::DidOpenFileStream(
     const net::CompletionCallback& callback,
     int result) {
   if (result != net::OK) {
     callback.Run(result);
     return;
   }
-  result = stream_impl_->Seek(net::FROM_BEGIN, initial_offset_,
-                              base::Bind(&LocalFileReader::DidSeekFileStream,
-                                         weak_factory_.GetWeakPtr(),
-                                         callback));
+  result = stream_impl_->Seek(
+      net::FROM_BEGIN, initial_offset_,
+      base::Bind(&LocalFileStreamReader::DidSeekFileStream,
+                 weak_factory_.GetWeakPtr(),
+                 callback));
   if (result != net::ERR_IO_PENDING) {
     callback.Run(result);
   }
 }
 
-void LocalFileReader::DidSeekFileStream(
+void LocalFileStreamReader::DidSeekFileStream(
     const net::CompletionCallback& callback,
     int64 seek_result) {
   if (seek_result < 0) {
@@ -140,10 +142,11 @@ void LocalFileReader::DidSeekFileStream(
   callback.Run(net::OK);
 }
 
-void LocalFileReader::DidOpenForRead(net::IOBuffer* buf,
-                                     int buf_len,
-                                     const net::CompletionCallback& callback,
-                                     int open_result) {
+void LocalFileStreamReader::DidOpenForRead(
+    net::IOBuffer* buf,
+    int buf_len,
+    const net::CompletionCallback& callback,
+    int open_result) {
   DCHECK(has_pending_open_);
   has_pending_open_ = false;
   if (open_result != net::OK) {
@@ -157,7 +160,7 @@ void LocalFileReader::DidOpenForRead(net::IOBuffer* buf,
     callback.Run(read_result);
 }
 
-void LocalFileReader::DidGetFileInfoForGetLength(
+void LocalFileStreamReader::DidGetFileInfoForGetLength(
     const net::Int64CompletionCallback& callback,
     base::PlatformFileError error,
     const base::PlatformFileInfo& file_info) {
@@ -166,7 +169,7 @@ void LocalFileReader::DidGetFileInfoForGetLength(
     return;
   }
   if (error != base::PLATFORM_FILE_OK) {
-    callback.Run(LocalFileReader::PlatformFileErrorToNetError(error));
+    callback.Run(LocalFileStreamReader::PlatformFileErrorToNetError(error));
     return;
   }
   if (!VerifySnapshotTime(expected_modification_time_, file_info)) {

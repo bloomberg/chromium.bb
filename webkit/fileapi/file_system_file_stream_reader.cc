@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/file_system_file_reader.h"
+#include "webkit/fileapi/file_system_file_stream_reader.h"
 
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
@@ -10,17 +10,17 @@
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "webkit/blob/local_file_reader.h"
+#include "webkit/blob/local_file_stream_reader.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_interface.h"
 
-using webkit_blob::LocalFileReader;
+using webkit_blob::LocalFileStreamReader;
 
 namespace fileapi {
 
 namespace {
 
-void ReadAdapter(base::WeakPtr<FileSystemFileReader> reader,
+void ReadAdapter(base::WeakPtr<FileSystemFileStreamReader> reader,
                  net::IOBuffer* buf, int buf_len,
                  const net::CompletionCallback& callback) {
   if (!reader.get())
@@ -32,7 +32,7 @@ void ReadAdapter(base::WeakPtr<FileSystemFileReader> reader,
 
 }
 
-FileSystemFileReader::FileSystemFileReader(
+FileSystemFileStreamReader::FileSystemFileStreamReader(
     FileSystemContext* file_system_context,
     const GURL& url,
     int64 initial_offset)
@@ -43,10 +43,10 @@ FileSystemFileReader::FileSystemFileReader(
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
-FileSystemFileReader::~FileSystemFileReader() {
+FileSystemFileStreamReader::~FileSystemFileStreamReader() {
 }
 
-int FileSystemFileReader::Read(
+int FileSystemFileStreamReader::Read(
     net::IOBuffer* buf, int buf_len,
     const net::CompletionCallback& callback) {
   if (local_file_reader_.get())
@@ -59,7 +59,7 @@ int FileSystemFileReader::Read(
   has_pending_create_snapshot_ = true;
   operation->CreateSnapshotFile(
       url_,
-      base::Bind(&FileSystemFileReader::DidCreateSnapshot,
+      base::Bind(&FileSystemFileStreamReader::DidCreateSnapshot,
                  weak_factory_.GetWeakPtr(),
                  base::Bind(&ReadAdapter, weak_factory_.GetWeakPtr(),
                             make_scoped_refptr(buf), buf_len, callback),
@@ -67,7 +67,7 @@ int FileSystemFileReader::Read(
   return net::ERR_IO_PENDING;
 }
 
-void FileSystemFileReader::DidCreateSnapshot(
+void FileSystemFileStreamReader::DidCreateSnapshot(
     const base::Closure& read_closure,
     const net::CompletionCallback& callback,
     base::PlatformFileError file_error,
@@ -79,7 +79,8 @@ void FileSystemFileReader::DidCreateSnapshot(
   has_pending_create_snapshot_ = false;
 
   if (file_error != base::PLATFORM_FILE_OK) {
-    callback.Run(LocalFileReader::PlatformFileErrorToNetError(file_error));
+    callback.Run(
+        LocalFileStreamReader::PlatformFileErrorToNetError(file_error));
     return;
   }
 
@@ -87,10 +88,10 @@ void FileSystemFileReader::DidCreateSnapshot(
   snapshot_ref_ = file_ref;
 
   local_file_reader_.reset(
-      new LocalFileReader(file_system_context_->file_task_runner(),
-                          platform_path,
-                          initial_offset_,
-                          base::Time()));
+      new LocalFileStreamReader(file_system_context_->file_task_runner(),
+                                platform_path,
+                                initial_offset_,
+                                base::Time()));
 
   read_closure.Run();
 }

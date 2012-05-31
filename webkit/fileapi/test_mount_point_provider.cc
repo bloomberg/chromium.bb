@@ -10,7 +10,7 @@
 
 #include "base/file_util.h"
 #include "base/sequenced_task_runner.h"
-#include "webkit/fileapi/file_system_file_reader.h"
+#include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/local_file_util.h"
@@ -145,11 +145,11 @@ TestMountPointProvider::CreateFileSystemOperation(
   return new FileSystemOperation(context);
 }
 
-webkit_blob::FileReader* TestMountPointProvider::CreateFileReader(
+webkit_blob::FileStreamReader* TestMountPointProvider::CreateFileStreamReader(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  return new FileSystemFileReader(context, url, offset);
+  return new FileSystemFileStreamReader(context, url, offset);
 }
 
 fileapi::FileWriter* TestMountPointProvider::CreateFileWriter(

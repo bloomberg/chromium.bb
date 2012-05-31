@@ -46,7 +46,7 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
       FileSystemType file_system_type,
       const FilePath& virtual_path,
       FileSystemContext* context) const OVERRIDE;
-  virtual webkit_blob::FileReader* CreateFileReader(
+  virtual webkit_blob::FileStreamReader* CreateFileStreamReader(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const OVERRIDE;

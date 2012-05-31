@@ -180,7 +180,7 @@ FileSystemOperationInterface* FileSystemContext::CreateFileSystemOperation(
       origin_url, file_system_type, file_path, this);
 }
 
-webkit_blob::FileReader* FileSystemContext::CreateFileReader(
+webkit_blob::FileStreamReader* FileSystemContext::CreateFileStreamReader(
     const GURL& url,
     int64 offset) {
   GURL origin_url;
@@ -192,7 +192,7 @@ webkit_blob::FileReader* FileSystemContext::CreateFileReader(
       GetMountPointProvider(file_system_type);
   if (!mount_point_provider)
     return NULL;
-  return mount_point_provider->CreateFileReader(url, offset, this);
+  return mount_point_provider->CreateFileStreamReader(url, offset, this);
 }
 
 void FileSystemContext::RegisterMountPointProvider(

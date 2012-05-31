@@ -1986,7 +1986,7 @@
         '../ui/views/test/test_views_delegate.h',
         '../ui/views/test/views_test_base.cc',
         '../ui/views/test/views_test_base.h',
-        '../webkit/blob/local_file_reader_unittest.cc',
+        '../webkit/blob/local_file_stream_reader_unittest.cc',
         '../webkit/fileapi/file_system_dir_url_request_job_unittest.cc',
         '../webkit/fileapi/file_system_operation_write_unittest.cc',
         '../webkit/fileapi/file_system_test_helper.cc',

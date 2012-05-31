@@ -15,7 +15,7 @@
 #include "base/stringprintf.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "webkit/fileapi/file_system_file_reader.h"
+#include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_options.h"
@@ -449,11 +449,12 @@ SandboxMountPointProvider::CreateFileSystemOperation(
   return new FileSystemOperation(context);
 }
 
-webkit_blob::FileReader* SandboxMountPointProvider::CreateFileReader(
+webkit_blob::FileStreamReader*
+SandboxMountPointProvider::CreateFileStreamReader(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  return new FileSystemFileReader(context, url, offset);
+  return new FileSystemFileStreamReader(context, url, offset);
 }
 
 fileapi::FileWriter* SandboxMountPointProvider::CreateFileWriter(

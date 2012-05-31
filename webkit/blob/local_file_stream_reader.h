@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BLOB_LOCAL_FILE_READER_H_
-#define WEBKIT_BLOB_LOCAL_FILE_READER_H_
+#ifndef WEBKIT_BLOB_LOCAL_FILE_STREAM_READER_H_
+#define WEBKIT_BLOB_LOCAL_FILE_STREAM_READER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -13,17 +13,21 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "webkit/blob/blob_export.h"
-#include "webkit/blob/file_reader.h"
+#include "webkit/blob/file_stream_reader.h"
 
 namespace base {
 class TaskRunner;
+}
+
+namespace net {
+class FileStream;
 }
 
 namespace webkit_blob {
 
 // A thin wrapper of net::FileStream with range support for sliced file
 // handling.
-class BLOB_EXPORT LocalFileReader : public FileReader {
+class BLOB_EXPORT LocalFileStreamReader : public FileStreamReader {
  public:
   // A convenient method to translate platform file error to net error code.
   static int PlatformFileErrorToNetError(base::PlatformFileError file_error);
@@ -38,13 +42,13 @@ class BLOB_EXPORT LocalFileReader : public FileReader {
   // actual modification time to see if the file has been modified, and if
   // it does any succeeding read operations should fail with
   // ERR_UPLOAD_FILE_CHANGED error.
-  LocalFileReader(base::TaskRunner* task_runner,
-                  const FilePath& file_path,
-                  int64 initial_offset,
-                  const base::Time& expected_modification_time);
-  virtual ~LocalFileReader();
+  LocalFileStreamReader(base::TaskRunner* task_runner,
+                        const FilePath& file_path,
+                        int64 initial_offset,
+                   const base::Time& expected_modification_time);
+  virtual ~LocalFileStreamReader();
 
-  // FileReader overrides.
+  // FileStreamReader overrides.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    const net::CompletionCallback& callback) OVERRIDE;
 
@@ -81,9 +85,9 @@ class BLOB_EXPORT LocalFileReader : public FileReader {
   const int64 initial_offset_;
   const base::Time expected_modification_time_;
   bool has_pending_open_;
-  base::WeakPtrFactory<LocalFileReader> weak_factory_;
+  base::WeakPtrFactory<LocalFileStreamReader> weak_factory_;
 };
 
 }  // namespace webkit_blob
 
-#endif  // WEBKIT_BLOB_LOCAL_FILE_READER_H_
+#endif  // WEBKIT_BLOB_LOCAL_FILE_STREAM_READER_H_

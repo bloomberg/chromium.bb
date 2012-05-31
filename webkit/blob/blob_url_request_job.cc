@@ -20,7 +20,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_status.h"
-#include "webkit/blob/local_file_reader.h"
+#include "webkit/blob/local_file_stream_reader.h"
 
 namespace webkit_blob {
 
@@ -177,7 +177,7 @@ void BlobURLRequestJob::CountSize() {
     const BlobData::Item& item = blob_data_->items().at(i);
     if (item.type == BlobData::TYPE_FILE) {
       ++pending_get_file_info_count_;
-      GetFileReader(i)->GetLength(
+      GetFileStreamReader(i)->GetLength(
           base::Bind(&BlobURLRequestJob::DidGetFileItemLength,
                      weak_factory_.GetWeakPtr(), i));
       continue;
@@ -269,7 +269,7 @@ void BlobURLRequestJob::Seek(int64 offset) {
   const BlobData::Item& item = blob_data_->items().at(current_item_index_);
   if (item.type == BlobData::TYPE_FILE) {
     DeleteCurrentFileReader();
-    index_to_reader_[current_item_index_] = new LocalFileReader(
+    index_to_reader_[current_item_index_] = new LocalFileStreamReader(
         file_thread_proxy_,
         item.file_path,
         item.offset + offset,
@@ -304,7 +304,8 @@ bool BlobURLRequestJob::ReadItem() {
     case BlobData::TYPE_DATA:
       return ReadBytesItem(item, bytes_to_read);
     case BlobData::TYPE_FILE:
-      return ReadFileItem(GetFileReader(current_item_index_), bytes_to_read);
+      return ReadFileItem(GetFileStreamReader(current_item_index_),
+                          bytes_to_read);
     default:
       DCHECK(false);
       return false;
@@ -349,7 +350,7 @@ bool BlobURLRequestJob::ReadBytesItem(const BlobData::Item& item,
   return true;
 }
 
-bool BlobURLRequestJob::ReadFileItem(LocalFileReader* reader,
+bool BlobURLRequestJob::ReadFileItem(LocalFileStreamReader* reader,
                                      int bytes_to_read) {
   DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
   DCHECK(reader);
@@ -520,13 +521,13 @@ void BlobURLRequestJob::HeadersCompleted(int status_code,
   NotifyHeadersComplete();
 }
 
-LocalFileReader* BlobURLRequestJob::GetFileReader(size_t index) {
+LocalFileStreamReader* BlobURLRequestJob::GetFileStreamReader(size_t index) {
   DCHECK_LT(index, blob_data_->items().size());
   const BlobData::Item& item = blob_data_->items().at(index);
   if (item.type != BlobData::TYPE_FILE)
     return NULL;
   if (index_to_reader_.find(index) == index_to_reader_.end()) {
-    index_to_reader_[index] = new LocalFileReader(
+    index_to_reader_[index] = new LocalFileStreamReader(
         file_thread_proxy_,
         item.file_path,
         item.offset,

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BLOB_FILE_READER_H_
-#define WEBKIT_BLOB_FILE_READER_H_
+#ifndef WEBKIT_BLOB_FILE_STREAM_READER_H_
+#define WEBKIT_BLOB_FILE_STREAM_READER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -12,18 +12,17 @@
 #include "webkit/blob/blob_export.h"
 
 namespace net {
-class FileStream;
 class IOBuffer;
 }
 
 namespace webkit_blob {
 
 // A generic interface for reading a file-like object.
-class BLOB_EXPORT FileReader {
+class BLOB_EXPORT FileStreamReader {
  public:
   // It is valid to delete the reader at any time.  If the stream is deleted
   // while it has a pending read, its callback will not be called.
-  virtual ~FileReader() {}
+  virtual ~FileStreamReader() {}
 
   // Reads from the current cursor position asynchronously.
   //
@@ -44,4 +43,4 @@ class BLOB_EXPORT FileReader {
 
 }  // namespace webkit_blob
 
-#endif  // WEBKIT_BLOB_FILE_READER_H_
+#endif  // WEBKIT_BLOB_FILE_STREAM_READER_H_

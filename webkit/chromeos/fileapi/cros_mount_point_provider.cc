@@ -17,7 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/chromeos/fileapi/file_access_permissions.h"
 #include "webkit/chromeos/fileapi/remote_file_system_operation.h"
-#include "webkit/fileapi/file_system_file_reader.h"
+#include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/glue/webkit_glue.h"
@@ -254,14 +254,14 @@ CrosMountPointProvider::CreateFileSystemOperation(
   return new fileapi::FileSystemOperation(context);
 }
 
-webkit_blob::FileReader* CrosMountPointProvider::CreateFileReader(
+webkit_blob::FileStreamReader* CrosMountPointProvider::CreateFileStreamReader(
     const GURL& url,
     int64 offset,
     fileapi::FileSystemContext* context) const {
   // For now we return a generic Reader implementation which utilizes
   // CreateSnapshotFile internally (i.e. will download everything first).
   // TODO(satorux,zel): implement more efficient reader for remote cases.
-  return new fileapi::FileSystemFileReader(context, url, offset);
+  return new fileapi::FileSystemFileStreamReader(context, url, offset);
 }
 
 fileapi::FileWriter* CrosMountPointProvider::CreateFileWriter(

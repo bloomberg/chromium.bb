@@ -20,7 +20,7 @@ class GURL;
 class FilePath;
 
 namespace webkit_blob {
-class FileReader;
+class FileStreamReader;
 }
 
 namespace fileapi {
@@ -65,7 +65,7 @@ class FILEAPI_EXPORT_PRIVATE FileSystemURLRequestJob
 
   FileSystemContext* file_system_context_;
   base::WeakPtrFactory<FileSystemURLRequestJob> weak_factory_;
-  scoped_ptr<webkit_blob::FileReader> reader_;
+  scoped_ptr<webkit_blob::FileStreamReader> reader_;
   bool is_directory_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
   int64 remaining_bytes_;

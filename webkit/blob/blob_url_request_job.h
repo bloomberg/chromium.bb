@@ -20,13 +20,12 @@ struct PlatformFileInfo;
 
 namespace net {
 class DrainableIOBuffer;
-class FileStream;
 class IOBuffer;
 }
 
 namespace webkit_blob {
 
-class LocalFileReader;
+class LocalFileStreamReader;
 
 // A request job that handles reading blob URLs.
 class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
@@ -51,7 +50,7 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   virtual ~BlobURLRequestJob();
 
  private:
-  typedef std::map<size_t, LocalFileReader*> IndexToReaderMap;
+  typedef std::map<size_t, LocalFileStreamReader*> IndexToReaderMap;
 
   // For preparing for read: get the size, apply the range and perform seek.
   void DidStart();
@@ -66,7 +65,7 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   void AdvanceItem();
   void AdvanceBytesRead(int result);
   bool ReadBytesItem(const BlobData::Item& item, int bytes_to_read);
-  bool ReadFileItem(LocalFileReader* reader, int bytes_to_read);
+  bool ReadFileItem(LocalFileStreamReader* reader, int bytes_to_read);
 
   void DidReadFile(int result);
   void DeleteCurrentFileReader();
@@ -78,9 +77,9 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   void NotifyFailure(int);
   void HeadersCompleted(int status_code, const std::string& status_txt);
 
-  // Returns a LocalFileReader for a blob item at |index|.
+  // Returns a LocalFileStreamReader for a blob item at |index|.
   // If the item at |index| is not of TYPE_FILE this returns NULL.
-  LocalFileReader* GetFileReader(size_t index);
+  LocalFileStreamReader* GetFileStreamReader(size_t index);
 
   base::WeakPtrFactory<BlobURLRequestJob> weak_factory_;
   scoped_refptr<BlobData> blob_data_;

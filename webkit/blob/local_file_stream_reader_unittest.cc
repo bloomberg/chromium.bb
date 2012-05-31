@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/blob/local_file_reader.h"
+#include "webkit/blob/local_file_stream_reader.h"
 
 #include <string>
 
@@ -25,7 +25,7 @@ namespace {
 const char kTestData[] = "0123456789";
 const int kTestDataSize = arraysize(kTestData) - 1;
 
-void ReadFromReader(LocalFileReader* reader,
+void ReadFromReader(LocalFileStreamReader* reader,
                     std::string* data, size_t size,
                     int* result) {
   ASSERT_TRUE(reader != NULL);
@@ -57,9 +57,9 @@ void QuitLoop() {
 
 }  // namespace
 
-class LocalFileReaderTest : public testing::Test {
+class LocalFileStreamReaderTest : public testing::Test {
  public:
-  LocalFileReaderTest()
+  LocalFileStreamReaderTest()
       : message_loop_(MessageLoop::TYPE_IO),
         file_thread_("FileUtilProxyTestFileThread") {}
 
@@ -80,11 +80,11 @@ class LocalFileReaderTest : public testing::Test {
   }
 
  protected:
-  LocalFileReader* CreateFileReader(
+  LocalFileStreamReader* CreateFileReader(
       const FilePath& path,
       int64 initial_offset,
       const base::Time& expected_modification_time) {
-    return new LocalFileReader(
+    return new LocalFileStreamReader(
             file_task_runner(),
             path,
             initial_offset,
@@ -122,9 +122,9 @@ class LocalFileReaderTest : public testing::Test {
   base::Time test_file_modification_time_;
 };
 
-TEST_F(LocalFileReaderTest, NonExistent) {
+TEST_F(LocalFileStreamReaderTest, NonExistent) {
   FilePath nonexistent_path = test_dir().AppendASCII("nonexistent");
-  scoped_ptr<LocalFileReader> reader(
+  scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(nonexistent_path, 0, base::Time()));
   int result = 0;
   std::string data;
@@ -133,7 +133,7 @@ TEST_F(LocalFileReaderTest, NonExistent) {
   ASSERT_EQ(0U, data.size());
 }
 
-TEST_F(LocalFileReaderTest, Empty) {
+TEST_F(LocalFileStreamReaderTest, Empty) {
   FilePath empty_path = test_dir().AppendASCII("empty");
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::PlatformFile file = base::CreatePlatformFile(
@@ -144,7 +144,7 @@ TEST_F(LocalFileReaderTest, Empty) {
   ASSERT_NE(base::kInvalidPlatformFileValue, file);
   base::ClosePlatformFile(file);
 
-  scoped_ptr<LocalFileReader> reader(
+  scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(empty_path, 0, base::Time()));
   int result = 0;
   std::string data;
@@ -159,8 +159,8 @@ TEST_F(LocalFileReaderTest, Empty) {
   ASSERT_EQ(0, result);
 }
 
-TEST_F(LocalFileReaderTest, GetLengthNormal) {
-  scoped_ptr<LocalFileReader> reader(
+TEST_F(LocalFileStreamReaderTest, GetLengthNormal) {
+  scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, test_file_modification_time()));
   net::TestInt64CompletionCallback callback;
   int result = reader->GetLength(callback.callback());
@@ -169,12 +169,12 @@ TEST_F(LocalFileReaderTest, GetLengthNormal) {
   ASSERT_EQ(kTestDataSize, result);
 }
 
-TEST_F(LocalFileReaderTest, GetLengthAfterModified) {
+TEST_F(LocalFileStreamReaderTest, GetLengthAfterModified) {
   // Touch file so that the file's modification time becomes different
   // from what we expect.
   TouchTestFile();
 
-  scoped_ptr<LocalFileReader> reader(
+  scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, test_file_modification_time()));
   net::TestInt64CompletionCallback callback;
   int result = reader->GetLength(callback.callback());
@@ -190,8 +190,8 @@ TEST_F(LocalFileReaderTest, GetLengthAfterModified) {
   ASSERT_EQ(kTestDataSize, result);
 }
 
-TEST_F(LocalFileReaderTest, GetLengthWithOffset) {
-  scoped_ptr<LocalFileReader> reader(
+TEST_F(LocalFileStreamReaderTest, GetLengthWithOffset) {
+  scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 3, base::Time()));
   net::TestInt64CompletionCallback callback;
   int result = reader->GetLength(callback.callback());
@@ -201,8 +201,8 @@ TEST_F(LocalFileReaderTest, GetLengthWithOffset) {
   ASSERT_EQ(kTestDataSize, result);
 }
 
-TEST_F(LocalFileReaderTest, ReadNormal) {
-  scoped_ptr<LocalFileReader> reader(
+TEST_F(LocalFileStreamReaderTest, ReadNormal) {
+  scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, test_file_modification_time()));
   int result = 0;
   std::string data;
@@ -211,12 +211,12 @@ TEST_F(LocalFileReaderTest, ReadNormal) {
   ASSERT_EQ(kTestData, data);
 }
 
-TEST_F(LocalFileReaderTest, ReadAfterModified) {
+TEST_F(LocalFileStreamReaderTest, ReadAfterModified) {
   // Touch file so that the file's modification time becomes different
   // from what we expect.
   TouchTestFile();
 
-  scoped_ptr<LocalFileReader> reader(
+  scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, test_file_modification_time()));
   int result = 0;
   std::string data;
@@ -232,8 +232,8 @@ TEST_F(LocalFileReaderTest, ReadAfterModified) {
   ASSERT_EQ(kTestData, data);
 }
 
-TEST_F(LocalFileReaderTest, ReadWithOffset) {
-  scoped_ptr<LocalFileReader> reader(
+TEST_F(LocalFileStreamReaderTest, ReadWithOffset) {
+  scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 3, base::Time()));
   int result = 0;
   std::string data;
@@ -242,8 +242,8 @@ TEST_F(LocalFileReaderTest, ReadWithOffset) {
   ASSERT_EQ(&kTestData[3], data);
 }
 
-TEST_F(LocalFileReaderTest, DeleteWithUnfinishedRead) {
-  scoped_ptr<LocalFileReader> reader(
+TEST_F(LocalFileStreamReaderTest, DeleteWithUnfinishedRead) {
+  scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, base::Time()));
 
   net::TestCompletionCallback callback;
