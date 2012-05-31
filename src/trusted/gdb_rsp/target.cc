@@ -58,7 +58,7 @@ bool Target::Init() {
   string targ_xml = "l<target><architecture>";
 
   targ_xml += abi_->GetName();
-  targ_xml += "</architecture></target>";
+  targ_xml += "</architecture><osabi>NaCl</osabi></target>";
 
   // Set a more specific result which won't change.
   properties_["target.xml"] = targ_xml;
