@@ -273,7 +273,9 @@ bool RenderViewHostImpl::CreateRenderView(
   // On Windows 8, always enable accessibility for editable text controls
   // so we can show the virtual keyboard when one is enabled.
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      params.accessibility_mode == AccessibilityModeOff) {
+      params.accessibility_mode == AccessibilityModeOff &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRendererAccessibility)) {
     params.accessibility_mode = AccessibilityModeEditableTextOnly;
   }
 #endif
