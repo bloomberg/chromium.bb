@@ -552,7 +552,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_CONTENT_CONTEXT_COPY" desc="The name of the Copy command in the content area context menu">
           &amp;Copy
         </message>
-        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="The name of the Paste command in the content area context menu">
+        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="The name of the Paste command in the content area context menu" meaning="'Paste' menu command in sentence case">
           &amp;Paste
         </message>
         <message name="IDS_CONTENT_CONTEXT_DELETE" desc="The name of the Delete command in the content area context menu">
@@ -832,12 +832,12 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
       </if>
       <if expr="is_macosx">
-        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="Mac/In Title Case: The name of the Paste command in the content area context menu">
+        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="Mac/In Title Case: The name of the Paste command in the content area context menu" meaning="'Paste' menu command for Mac">
           &amp;Paste
         </message>
       </if>
       <if expr="not is_macosx and pp_ifdef('use_titlecase')">
-        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="In Title Case: The name of the Paste command in the content area context menu">
+        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="In Title Case: The name of the Paste command in the content area context menu" meaning="'Paste' menu command in title case">
           &amp;Paste
         </message>
       </if>
@@ -915,7 +915,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_COPY" desc="The text label of the Copy menu item">
           &amp;Copy
         </message>
-        <message name="IDS_PASTE" desc="The text label of the Paste menu item">
+        <message name="IDS_PASTE" desc="The text label of the Paste menu item" meaning="'Paste' menu command in sentence case">
           &amp;Paste
         </message>
         <message name="IDS_DELETE" desc="The text label of the Delete menu item (which deletes selected text without copying to clipboard)">
@@ -1042,12 +1042,12 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
       </if>
       <if expr="is_macosx">
-        <message name="IDS_PASTE" desc="Mac/In Title Case: The text label of the Paste menu item">
+        <message name="IDS_PASTE" desc="Mac/In Title Case: The text label of the Paste menu item" meaning="'Paste' menu command for Mac">
           &amp;Paste
         </message>
       </if>
       <if expr="not is_macosx and pp_ifdef('use_titlecase')">
-        <message name="IDS_PASTE" desc="In Title Case: The text label of the Paste menu item">
+        <message name="IDS_PASTE" desc="In Title Case: The text label of the Paste menu item" meaning="'Paste' menu command in title case">
           &amp;Paste
         </message>
       </if>
