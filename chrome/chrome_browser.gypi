@@ -4491,20 +4491,17 @@
             'third_party/mozilla_security_manager/nsUsageArrayHelper.cpp',
             'third_party/mozilla_security_manager/nsUsageArrayHelper.h',
           ],
-        }, {  # use_nss==0
-          'sources!': [
-            'browser/certificate_manager_model.cc',
-            'browser/certificate_manager_model.h',
-            'browser/ui/webui/options2/certificate_manager_handler2.cc',
-            'browser/ui/webui/options2/certificate_manager_handler2.h',
-          ],
         }],
         ['use_nss==0 and use_openssl==0', {
           'sources!': [
+            'browser/certificate_manager_model.cc',
+            'browser/certificate_manager_model.h',
             'browser/ui/webui/certificate_viewer_webui.cc',
             'browser/ui/webui/certificate_viewer_webui.h',
             'browser/ui/webui/certificate_viewer_ui.cc',
             'browser/ui/webui/certificate_viewer_ui.h',
+            'browser/ui/webui/options2/certificate_manager_handler2.cc',
+            'browser/ui/webui/options2/certificate_manager_handler2.h',
           ],
         }],
         ['toolkit_uses_gtk == 1', {

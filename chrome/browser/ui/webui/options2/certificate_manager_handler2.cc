@@ -810,10 +810,8 @@ void CertificateManagerHandler::ImportServerFileRead(int read_errno,
   }
 
   net::CertDatabase::ImportCertFailureList not_imported;
-  // TODO(mattm): Add UI for trust. http://crbug.com/76274
   bool result = certificate_manager_model_->ImportServerCert(
       selected_cert_list_,
-      net::CertDatabase::TRUST_DEFAULT,
       &not_imported);
   if (!result) {
     ShowError(
@@ -892,8 +890,6 @@ void CertificateManagerHandler::ImportCATrustSelected(const ListValue* args) {
     return;
   }
 
-  // TODO(mattm): add UI for setting explicit distrust, too.
-  // http://crbug.com/128411
   net::CertDatabase::ImportCertFailureList not_imported;
   bool result = certificate_manager_model_->ImportCACerts(
       selected_cert_list_,

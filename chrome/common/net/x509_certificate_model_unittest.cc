@@ -28,8 +28,13 @@ TEST(X509CertificateModelTest, GetTypeCA) {
   // Test that explicitly distrusted CA certs are still returned as CA_CERT
   // type. See http://crbug.com/96654.
   net::CertDatabase cert_db;
-  EXPECT_TRUE(cert_db.SetCertTrust(cert, net::CA_CERT,
-                                   net::CertDatabase::DISTRUSTED_SSL));
+  // TODO(mattm): This depends on the implementation details of SetCertTrust
+  // where calling with SERVER_CERT and UNTRUSTED causes a cert to be explicitly
+  // distrusted (trust set to CERTDB_TERMINAL_RECORD). See
+  // http://crbug.com/116411.  When I fix that bug I'll also add a way to set
+  // this directly.
+  EXPECT_TRUE(cert_db.SetCertTrust(cert, net::SERVER_CERT,
+                                   net::CertDatabase::UNTRUSTED));
 
   EXPECT_EQ(net::CA_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
@@ -47,24 +52,20 @@ TEST(X509CertificateModelTest, GetTypeServer) {
   EXPECT_EQ(net::UNKNOWN_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 #else
-  // Test mozilla_security_manager::GetCertType with server certs and default
-  // trust.  Currently this doesn't work.
-  // TODO(mattm): make mozilla_security_manager::GetCertType smarter so we can
-  // tell server certs even if they have no trust bits set.
+  // TODO(mattm): make GetCertType smarter so we can tell server certs even if
+  // they have no trust bits set.
   EXPECT_EQ(net::UNKNOWN_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 
   net::CertDatabase cert_db;
-  // Test GetCertType with server certs and explicit trust.
   EXPECT_TRUE(cert_db.SetCertTrust(cert, net::SERVER_CERT,
                                    net::CertDatabase::TRUSTED_SSL));
 
   EXPECT_EQ(net::SERVER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 
-  // Test GetCertType with server certs and explicit distrust.
   EXPECT_TRUE(cert_db.SetCertTrust(cert, net::SERVER_CERT,
-                                   net::CertDatabase::DISTRUSTED_SSL));
+                                   net::CertDatabase::UNTRUSTED));
 
   EXPECT_EQ(net::SERVER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));

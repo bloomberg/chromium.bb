@@ -18,15 +18,14 @@ CertificateManagerWebUITest.prototype = {
   browsePreload: 'chrome://settings-frame/certificates',
 };
 
-// Mac and Windows go to native certificate manager, and certificate manager
-// isn't implemented if OpenSSL is used.
-GEN('#if !defined(USE_NSS)');
+// Mac and Windows go to native certificate manager.
+GEN('#if defined(OS_MACOSX) || defined(OS_WIN)');
 GEN('#define MAYBE_testOpenCertificateManager ' +
     'DISABLED_testOpenCertificateManager');
 GEN('#else');
 GEN('#define MAYBE_testOpenCertificateManager ' +
     'testOpenCertificateManager');
-GEN('#endif  // !defined(USE_NSS)');
+GEN('#endif  // defined(OS_MACOSX) || defined(OS_WIN)');
 // Test opening the certificate manager has correct location.
 TEST_F('CertificateManagerWebUITest',
        'MAYBE_testOpenCertificateManager', function() {

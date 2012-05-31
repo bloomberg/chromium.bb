@@ -40,7 +40,6 @@
 
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 
-#include <certdb.h>
 #include <keyhi.h>
 #include <prprf.h>
 #include <unicode/uidna.h>
@@ -54,15 +53,8 @@
 #include "grit/generated_resources.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
+#include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if !defined(CERTDB_TERMINAL_RECORD)
-/* NSS 3.13 renames CERTDB_VALID_PEER to CERTDB_TERMINAL_RECORD
- * and marks CERTDB_VALID_PEER as deprecated.
- * If we're using an older version, rename it ourselves.
- */
-#define CERTDB_TERMINAL_RECORD CERTDB_VALID_PEER
-#endif
 
 namespace {
 
@@ -1046,18 +1038,12 @@ std::string ProcessSubjectPublicKeyInfo(CERTSubjectPublicKeyInfo* spki) {
 }
 
 net::CertType GetCertType(CERTCertificate *cert) {
-  CERTCertTrust trust = {0};
-  CERT_GetCertTrust(cert, &trust);
-
-  unsigned all_flags = trust.sslFlags | trust.emailFlags |
-      trust.objectSigningFlags;
-
-  if (cert->nickname && (all_flags & CERTDB_USER))
+  nsNSSCertTrust trust(cert->trust);
+  if (cert->nickname && trust.HasAnyUser())
     return net::USER_CERT;
-  if ((all_flags & CERTDB_VALID_CA) || CERT_IsCACert(cert, NULL))
+  if (trust.HasAnyCA() || CERT_IsCACert(cert, NULL))
     return net::CA_CERT;
-  // TODO(mattm): http://crbug.com/128633.
-  if (trust.sslFlags & CERTDB_TERMINAL_RECORD)
+  if (trust.HasPeer(PR_TRUE, PR_FALSE, PR_FALSE))
     return net::SERVER_CERT;
   return net::UNKNOWN_CERT;
 }

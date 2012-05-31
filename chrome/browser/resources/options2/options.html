@@ -44,7 +44,7 @@
 <if expr="pp_ifdef('chromeos') and pp_ifdef('use_ash')">
   <link rel="stylesheet" href="chromeos/set_wallpaper_options.css">
 </if>
-<if expr="pp_ifdef('use_nss')">
+<if expr="not is_win and not is_macosx">
   <link rel="stylesheet" href="certificate_manager.css">
   <link rel="stylesheet" href="certificate_tree.css">
 </if>
@@ -102,7 +102,7 @@
   <if expr="pp_ifdef('chromeos') and pp_ifdef('use_ash')">
     <include src="chromeos/set_wallpaper_options.html">
   </if>
-  <if expr="pp_ifdef('use_nss')">
+  <if expr="not is_win and not is_macosx">
     <include src="certificate_manager.html">
   </if>
 </div>
