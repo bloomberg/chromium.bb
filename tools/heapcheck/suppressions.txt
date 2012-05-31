@@ -1174,21 +1174,6 @@
    fun:MakeRequest
 }
 {
-   bug_89684
-   Heapcheck:Leak
-   ...
-   fun:chromeos::NetworkLibraryImplStub::Init
-   fun:chromeos::NetworkLibrary::GetImpl
-   fun:chromeos::CrosLibrary::Library::GetDefaultImpl
-   fun:chromeos::CrosLibrary::GetNetworkLibrary
-   fun:~ProxyConfigServiceImpl
-   fun:base::RefCountedThreadSafe::DeleteInternal
-   fun:base::DefaultRefCountedThreadSafeTraits::Destruct
-   fun:base::RefCountedThreadSafe::Release
-   fun:scoped_refptr::operator=
-   fun:chromeos::ProxyConfigServiceImplTest::CreateConfigService
-}
-{
    bug_90271
    Heapcheck:Leak
    ...
