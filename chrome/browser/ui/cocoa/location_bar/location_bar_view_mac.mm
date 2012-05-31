@@ -20,7 +20,9 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -46,6 +48,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -123,6 +126,9 @@ LocationBarViewMac::LocationBarViewMac(
   registrar_.Add(this,
       chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
       content::NotificationService::AllSources());
+  registrar_.Add(this,
+      chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
+      content::Source<Profile>(browser_->profile()));
 
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                profile_->GetPrefs(), this);
@@ -531,6 +537,15 @@ void LocationBarViewMac::Observe(int type,
       break;
     }
 
+    case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
+      // Only update if the updated action box was for the active tab contents.
+      TabContentsWrapper* target_tab =
+          content::Details<TabContentsWrapper>(details).ptr();
+      if (target_tab == GetTabContentsWrapper())
+        UpdatePageActions();
+      break;
+    }
+
     case chrome::NOTIFICATION_PREF_CHANGED:
       star_decoration_->SetVisible(IsStarEnabled());
       UpdateChromeToMobileEnabled();
@@ -581,17 +596,17 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
     return;
   }
 
-  ExtensionService* service = profile_->GetExtensionService();
-  if (!service)
-    return;
-
-  // Find all the page actions.
   std::vector<ExtensionAction*> page_actions;
-  for (ExtensionSet::const_iterator it = service->extensions()->begin();
-       it != service->extensions()->end(); ++it) {
-    if ((*it)->page_action())
-      page_actions.push_back((*it)->page_action());
+
+  TabContentsWrapper* tab_contents = GetTabContentsWrapper();
+  if (!tab_contents) {
+    DeletePageActionDecorations();  // Necessary?
+    return;
   }
+
+  extensions::LocationBarController* controller =
+      tab_contents->extension_tab_helper()->location_bar_controller();
+  page_actions.swap(*controller->GetCurrentActions());
 
   // On startup we sometimes haven't loaded any extensions. This makes sure
   // we catch up when the extensions (and any Page Actions) load.
@@ -604,17 +619,12 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
     }
   }
 
-  if (page_action_decorations_.empty())
-    return;
-
-  WebContents* contents = GetWebContents();
-  if (!contents)
-    return;
-
   GURL url = GURL(toolbar_model_->GetText());
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
     page_action_decorations_[i]->UpdateVisibility(
-        toolbar_model_->input_in_progress() ? NULL : contents, url);
+        toolbar_model_->input_in_progress() ?
+            NULL : tab_contents->web_contents(),
+        url);
   }
 }
 

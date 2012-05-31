@@ -56,7 +56,11 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
   CHECK(extension);
 
   switch (mouse_button) {
-    case 3: // right
+    case 1:  // left
+    case 2:  // middle
+      // TODO(kalman): decide what to do here.
+      return ACTION_NONE;
+    case 3:  // right
       return extension->ShowConfigureContextMenus() ?
           ACTION_SHOW_CONTEXT_MENU : ACTION_NONE;
   }

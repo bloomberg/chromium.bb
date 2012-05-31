@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,15 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -24,6 +27,7 @@
 
 using content::WebContents;
 using extensions::Extension;
+using extensions::LocationBarController;
 
 namespace {
 
@@ -87,32 +91,45 @@ bool PageActionDecoration::AcceptsMousePress() {
 // Either notify listeners or show a popup depending on the Page
 // Action.
 bool PageActionDecoration::OnMousePressed(NSRect frame) {
-  if (current_tab_id_ < 0) {
-    NOTREACHED() << "No current tab.";
-    // We don't want other code to try and handle this click.  Returning true
+  TabContentsWrapper* tab_contents = owner_->GetTabContentsWrapper();
+  if (!tab_contents) {
+    // We don't want other code to try and handle this click. Returning true
     // prevents this by indicating that we handled it.
     return true;
   }
 
-  if (page_action_->HasPopup(current_tab_id_)) {
-    // Anchor popup at the bottom center of the page action icon.
-    AutocompleteTextField* field = owner_->GetAutocompleteTextField();
-    NSPoint anchor = GetBubblePointInFrame(frame);
-    anchor = [field convertPoint:anchor toView:nil];
+  LocationBarController* controller =
+      tab_contents->extension_tab_helper()->location_bar_controller();
 
-    const GURL popup_url(page_action_->GetPopupUrl(current_tab_id_));
-    [ExtensionPopupController showURL:popup_url
-                            inBrowser:browser::GetLastActiveBrowser()
-                           anchoredAt:anchor
-                        arrowLocation:info_bubble::kTopRight
-                              devMode:NO];
-  } else {
-    ExtensionService* service = profile_->GetExtensionService();
-    service->browser_event_router()->PageActionExecuted(
-        profile_, page_action_->extension_id(), page_action_->id(),
-        current_tab_id_, current_url_.spec(),
-        1);
+  // 1 is left click.
+  switch (controller->OnClicked(page_action_->extension_id(), 1)) {
+    case LocationBarController::ACTION_NONE:
+      break;
+
+    case LocationBarController::ACTION_SHOW_POPUP: {
+      // Anchor popup at the bottom center of the page action icon.
+      AutocompleteTextField* field = owner_->GetAutocompleteTextField();
+      NSPoint anchor = GetBubblePointInFrame(frame);
+      anchor = [field convertPoint:anchor toView:nil];
+
+      const GURL popup_url(page_action_->GetPopupUrl(current_tab_id_));
+      [ExtensionPopupController showURL:popup_url
+                              inBrowser:browser::GetLastActiveBrowser()
+                             anchoredAt:anchor
+                          arrowLocation:info_bubble::kTopRight
+                                devMode:NO];
+      break;
+    }
+
+    case LocationBarController::ACTION_SHOW_CONTEXT_MENU:
+      // We are never passing OnClicked a right-click button, so assume that
+      // we're never going to be asked to show a context menu.
+      // TODO(kalman): if this changes, update this class to pass the real
+      // mouse button through to the LocationBarController.
+      NOTREACHED();
+      break;
   }
+
   return true;
 }
 

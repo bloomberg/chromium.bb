@@ -23,11 +23,15 @@ PageActionController::~PageActionController() {}
 
 scoped_ptr<std::vector<ExtensionAction*> >
 PageActionController::GetCurrentActions() {
-  const ExtensionSet* extensions = GetExtensionService()->extensions();
   scoped_ptr<std::vector<ExtensionAction*> > current_actions(
       new std::vector<ExtensionAction*>());
-  for (ExtensionSet::const_iterator i = extensions->begin();
-       i != extensions->end(); ++i) {
+
+  ExtensionService* service = GetExtensionService();
+  if (!service)
+    return current_actions.Pass();
+
+  for (ExtensionSet::const_iterator i = service->extensions()->begin();
+       i != service->extensions()->end(); ++i) {
     ExtensionAction* action = (*i)->page_action();
     if (action)
       current_actions->push_back(action);
@@ -37,8 +41,11 @@ PageActionController::GetCurrentActions() {
 
 LocationBarController::Action PageActionController::OnClicked(
     const std::string& extension_id, int mouse_button) {
-  const Extension* extension =
-      GetExtensionService()->extensions()->GetByID(extension_id);
+  ExtensionService* service = GetExtensionService();
+  if (!service)
+    return ACTION_NONE;
+
+  const Extension* extension = service->extensions()->GetByID(extension_id);
   CHECK(extension);
   ExtensionAction* page_action = extension->page_action();
   CHECK(page_action);

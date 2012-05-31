@@ -41,6 +41,7 @@ class LocationBarController {
   // Notifies this that the badge for an extension has been clicked with some
   // mouse button (1 for left, 2 for middle, and 3 for right click), and
   // returns the action that should be taken in response (if any).
+  // TODO(kalman): make mouse_button an enum.
   virtual Action OnClicked(const std::string& extension_id,
                            int mouse_button) = 0;
 };
