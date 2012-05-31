@@ -359,6 +359,7 @@ class MsvsSettings(object):
     ld('EnableCOMDATFolding', map={'1': 'NOICF', '2': 'ICF'}, prefix='/OPT:')
     ld('LinkTimeCodeGeneration', map={'1': '/LTCG'})
     ld('IgnoreDefaultLibraryNames', prefix='/NODEFAULTLIB:')
+    ld('ResourceOnlyDLL', map={'true': '/NOENTRY'})
     # TODO(scottmg): This should sort of be somewhere else (not really a flag).
     ld('AdditionalDependencies', prefix='')
     # TODO(scottmg): These too.

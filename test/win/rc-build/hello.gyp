@@ -42,5 +42,17 @@
         'subdir/hello2.rc',
       ],
     },
+    {
+      'target_name': 'resource_only_dll',
+      'type': 'shared_library',
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'ResourceOnlyDLL': 'true',
+        },
+      },
+      'sources': [
+        'hello.rc',
+      ],
+    },
   ],
 }
