@@ -269,6 +269,8 @@
         'common/switch_utils.h',
         'common/thumbnail_score.cc',
         'common/thumbnail_score.h',
+        'common/thumbnail_support.cc',
+        'common/thumbnail_support.h',
         'common/time_format.cc',
         'common/time_format.h',
         'common/url_constants.cc',

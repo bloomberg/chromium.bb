@@ -321,6 +321,11 @@ const char kDisableHistoryURLProvider[]     = "disable-history-url-provider";
 const char kDisableImprovedDownloadProtection[] =
     "disable-improved-download-protection";
 
+// Disables the in-browser thumbnailing, which is more efficient than the
+// in-renderer thumbnailing, as we can use more information to determine if we
+// need to update thumbnails.
+const char kDisableInBrowserThumbnailing[]  = "disable-in-browser-thumbnailing";
+
 // Disable the internal Flash Player.
 const char kDisableInternalFlash[]          = "disable-internal-flash";
 
@@ -517,11 +522,6 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 // try to figure out if pipelining can be used for a given host and request.
 // Without this flag, pipelining will never be used.
 const char kEnableHttpPipelining[]          = "enable-http-pipelining";
-
-// Enables the in-browser thumbnailing, which is more efficient than the
-// in-renderer thumbnailing, as we can use more information to determine if we
-// need to update thumbnails.
-const char kEnableInBrowserThumbnailing[]   = "enable-in-browser-thumbnailing";
 
 // Enables IPv6 support, even if probes suggest that it may not be fully
 // supported. Some probes may require internet connections, and this flag will

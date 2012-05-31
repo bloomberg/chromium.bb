@@ -17,6 +17,7 @@
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/thumbnail_score.h"
+#include "chrome/common/thumbnail_support.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
@@ -832,12 +833,10 @@ void ChromeRenderViewObserver::CapturePageInfo(bool preliminary_capture) {
   }
 
   // Generate the thumbnail here if the in-browser thumbnailing isn't
-  // enabled. TODO(satorux): Remove this and related code once
-  // crbug.com/65936 is complete.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableInBrowserThumbnailing)) {
+  // enabled. TODO(mazda): Remove this and related code once in-browser
+  // thumbnailing is supported on all platforms (http://crbug.com/120003).
+  if (!ShouldEnableInBrowserThumbnailing())
     CaptureThumbnail();
-  }
 
 #if defined(ENABLE_SAFE_BROWSING)
   // Will swap out the string.

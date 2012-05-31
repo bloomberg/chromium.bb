@@ -47,6 +47,7 @@
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/thumbnail_support.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
@@ -148,8 +149,7 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
 #endif
 
   // Start the in-browser thumbnailing if the feature is enabled.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableInBrowserThumbnailing)) {
+  if (ShouldEnableInBrowserThumbnailing()) {
     thumbnail_generator_.reset(new ThumbnailGenerator);
     thumbnail_generator_->StartThumbnailing(web_contents_.get());
   }

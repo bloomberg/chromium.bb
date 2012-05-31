@@ -229,9 +229,6 @@ void LatencyTest::SetUpCommandLine(CommandLine* command_line) {
       HasSwitch(switches::kEnableThreadedCompositing)) {
     command_line->AppendSwitch(switches::kEnableThreadedCompositing);
   }
-  // Default behavior is to thumbnail the tab after 0.5 seconds, causing
-  // a nasty frame hitch and disturbing the latency test. Fix that:
-  command_line->AppendSwitch(switches::kEnableInBrowserThumbnailing);
   command_line->AppendSwitch(switches::kDisableBackgroundNetworking);
 }
 
