@@ -116,7 +116,7 @@ void CloudPrintSetupFlow::Focus() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// WebDialogDelegate implementation.
+// ui::WebDialogDelegate implementation.
 GURL CloudPrintSetupFlow::GetDialogContentURL() const {
   return GURL("chrome://cloudprintsetup/setupflow");
 }

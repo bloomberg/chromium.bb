@@ -224,6 +224,7 @@ using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;
 using extensions::Extension;
+using ui::WebDialogDelegate;
 
 ///////////////////////////////////////////////////////////////////////////////
 

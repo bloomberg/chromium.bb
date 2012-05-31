@@ -57,6 +57,7 @@
 using content::BrowserThread;
 using content::WebContents;
 using content::WebUIMessageHandler;
+using ui::WebDialogUI;
 
 namespace {
 

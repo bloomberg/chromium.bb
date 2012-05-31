@@ -31,6 +31,7 @@
 
 using chromeos::input_method::ModifierKey;
 using content::WebUIMessageHandler;
+using ui::WebDialogUI;
 
 namespace {
 

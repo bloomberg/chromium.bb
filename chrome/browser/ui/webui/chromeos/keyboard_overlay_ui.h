@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_KEYBOARD_OVERLAY_UI_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
-class KeyboardOverlayUI : public WebDialogUI {
+class KeyboardOverlayUI : public ui::WebDialogUI {
  public:
   explicit KeyboardOverlayUI(content::WebUI* web_ui);
 

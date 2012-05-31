@@ -9,13 +9,13 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/size.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 
 namespace test {
 
-class TestWebDialogDelegate : public WebDialogDelegate {
+class TestWebDialogDelegate : public ui::WebDialogDelegate {
  public:
   explicit TestWebDialogDelegate(const GURL& url);
   virtual ~TestWebDialogDelegate();
@@ -24,7 +24,7 @@ class TestWebDialogDelegate : public WebDialogDelegate {
     size_.SetSize(width, height);
   }
 
-  // WebDialogDelegate implementation:
+  // ui::WebDialogDelegate implementation:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;

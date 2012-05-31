@@ -23,6 +23,7 @@
 
 using content::WebContents;
 using testing::Eq;
+using ui::WebDialogDelegate;
 
 namespace {
 

@@ -68,7 +68,6 @@ class StatusBubble;
 class TabNavigation;
 class TabStripModel;
 struct WebApplicationInfo;
-class WebDialogDelegate;
 
 namespace content {
 class NavigationController;
@@ -81,6 +80,10 @@ class Extension;
 
 namespace gfx {
 class Point;
+}
+
+namespace ui {
+class WebDialogDelegate;
 }
 
 class Browser : public TabStripModelDelegate,
@@ -448,7 +451,7 @@ class Browser : public TabStripModelDelegate,
   // is the window that should be parent of the dialog, or NULL for the default.
   // |style| customizes this HTML dialog decoration and layout (X button,
   // throbber, default content padding).
-  gfx::NativeWindow BrowserShowWebDialog(WebDialogDelegate* delegate,
+  gfx::NativeWindow BrowserShowWebDialog(ui::WebDialogDelegate* delegate,
                                          gfx::NativeWindow parent_window);
 
   // Called when a popup select is about to be displayed.

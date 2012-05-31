@@ -41,6 +41,7 @@ using testing::NotNull;
 using testing::Return;
 using testing::StrEq;
 using testing::_;
+using ui::ExternalWebDialogUI;
 
 static const char* const kPDFTestFile = "printing/cloud_print_unittest.pdf";
 static const char* const kEmptyPDFTestFile =

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_UI_H_
-#define CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_UI_H_
+#ifndef UI_WEB_DIALOGS_WEB_DIALOG_UI_H_
+#define UI_WEB_DIALOGS_WEB_DIALOG_UI_H_
 #pragma once
 
 #include <string>
@@ -15,6 +15,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/web_dialogs/web_dialogs_export.h"
 
 
 namespace base {
@@ -32,6 +33,8 @@ namespace gfx {
 class Size;
 }
 
+namespace ui {
+
 class WebDialogDelegate;
 
 // Displays file URL contents inside a modal web dialog.
@@ -44,7 +47,7 @@ class WebDialogDelegate;
 // there and call it back. This is a bit of a hack to allow the dialog to pass
 // its delegate to the Web UI without having nasty accessors on the WebContents.
 // The correct design using RVH directly would avoid all of this.
-class WebDialogUI : public content::WebUIController {
+class WEB_DIALOGS_EXPORT WebDialogUI : public content::WebUIController {
  public:
   struct WebDialogParams {
     // The URL for the content that will be loaded in the dialog.
@@ -84,10 +87,12 @@ class WebDialogUI : public content::WebUIController {
 // Intended to be the place to collect the settings and lockdowns
 // necessary for running external UI components securely (e.g., the
 // cloud print dialog).
-class ExternalWebDialogUI : public WebDialogUI {
+class WEB_DIALOGS_EXPORT ExternalWebDialogUI : public WebDialogUI {
  public:
   explicit ExternalWebDialogUI(content::WebUI* web_ui);
   virtual ~ExternalWebDialogUI();
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_UI_H_
+}  // namespace ui
+
+#endif  // UI_WEB_DIALOGS_WEB_DIALOG_UI_H_

@@ -2,26 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/property_bag.h"
 #include "base/values.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 
 using content::RenderViewHost;
 using content::WebUIMessageHandler;
 
-static base::LazyInstance<base::PropertyAccessor<WebDialogDelegate*> >
+static base::LazyInstance<base::PropertyAccessor<ui::WebDialogDelegate*> >
     g_web_dialog_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
+
+namespace ui {
 
 WebDialogUI::WebDialogUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
@@ -101,31 +103,4 @@ ExternalWebDialogUI::ExternalWebDialogUI(content::WebUI* web_ui)
 ExternalWebDialogUI::~ExternalWebDialogUI() {
 }
 
-std::string WebDialogDelegate::GetDialogName() const {
-  return std::string();
-}
-
-void WebDialogDelegate::GetMinimumDialogSize(gfx::Size* size) const {
-  GetDialogSize(size);
-}
-
-bool WebDialogDelegate::HandleContextMenu(
-    const content::ContextMenuParams& params) {
-  return false;
-}
-
-bool WebDialogDelegate::HandleOpenURLFromTab(
-    content::WebContents* source,
-    const content::OpenURLParams& params,
-    content::WebContents** out_new_contents) {
-  return false;
-}
-
-bool WebDialogDelegate::HandleAddNewContents(
-    content::WebContents* source,
-    content::WebContents* new_contents,
-    WindowOpenDisposition disposition,
-    const gfx::Rect& initial_pos,
-    bool user_gesture) {
-  return false;
-}
+}  // namespace ui

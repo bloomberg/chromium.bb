@@ -31,6 +31,8 @@
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
 using content::WebUIMessageHandler;
+using ui::WebDialogDelegate;
+using ui::WebDialogUI;
 
 namespace browser {
 

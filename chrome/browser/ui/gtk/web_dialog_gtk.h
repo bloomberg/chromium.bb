@@ -11,11 +11,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 
 typedef struct _GtkWidget GtkWidget;
 
@@ -26,18 +26,18 @@ class TabContentsWrapper;
 class WebDialogController;
 
 class WebDialogGtk : public WebDialogWebContentsDelegate,
-                     public WebDialogDelegate {
+                     public ui::WebDialogDelegate {
  public:
   WebDialogGtk(Profile* profile,
                Browser* browser,
-               WebDialogDelegate* delegate,
+               ui::WebDialogDelegate* delegate,
                gfx::NativeWindow parent_window);
   virtual ~WebDialogGtk();
 
   // Initializes the contents of the dialog (the DOMView and the callbacks).
   gfx::NativeWindow InitDialog();
 
-  // Overridden from WebDialogDelegate:
+  // Overridden from ui::WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -72,7 +72,7 @@ class WebDialogGtk : public WebDialogWebContentsDelegate,
   // about when the dialog is closing. For all other actions (besides dialog
   // closing) we delegate to the creator of this view, which we keep track of
   // using this variable.
-  WebDialogDelegate* delegate_;
+  ui::WebDialogDelegate* delegate_;
 
   gfx::NativeWindow parent_window_;
 

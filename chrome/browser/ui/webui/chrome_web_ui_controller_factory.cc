@@ -15,23 +15,20 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/help/help_ui.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
-#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
 #include "chrome/browser/ui/webui/extensions/extension_activity_ui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
-#include "chrome/browser/ui/webui/task_manager/task_manager_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/flash_ui.h"
 #include "chrome/browser/ui/webui/generic_handler.h"
 #include "chrome/browser/ui/webui/gpu_internals_ui.h"
+#include "chrome/browser/ui/webui/help/help_ui.h"
 #include "chrome/browser/ui/webui/history_ui.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/media/media_internals_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
@@ -47,6 +44,7 @@
 #include "chrome/browser/ui/webui/sessions_ui.h"
 #include "chrome/browser/ui/webui/suggestions_internals/suggestions_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
+#include "chrome/browser/ui/webui/task_manager/task_manager_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/tracing_ui.h"
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
@@ -58,6 +56,8 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
+#include "ui/web_dialogs/constrained_web_dialog_ui.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
@@ -85,6 +85,9 @@
 
 using content::WebUI;
 using content::WebUIController;
+using ui::ConstrainedWebDialogUI;
+using ui::ExternalWebDialogUI;
+using ui::WebDialogUI;
 
 namespace {
 

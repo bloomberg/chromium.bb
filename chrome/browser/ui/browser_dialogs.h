@@ -15,7 +15,6 @@ class SkBitmap;
 class TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 class TemplateURL;
-class WebDialogDelegate;
 
 namespace content {
 class WebContents;
@@ -23,6 +22,10 @@ class WebContents;
 
 namespace extensions {
 class Extension;
+}
+
+namespace ui {
+class WebDialogDelegate;
 }
 
 namespace browser {
@@ -47,7 +50,7 @@ void ShowAboutIPCDialog();
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 Profile* profile,
                                 Browser* browser,
-                                WebDialogDelegate* delegate);
+                                ui::WebDialogDelegate* delegate);
 
 // Shows the collected cookies dialog box.
 void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,

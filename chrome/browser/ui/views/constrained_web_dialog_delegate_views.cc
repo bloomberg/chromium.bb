@@ -8,15 +8,18 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
 using content::WebContents;
+using ui::ConstrainedWebDialogDelegate;
+using ui::ConstrainedWebDialogUI;
+using ui::WebDialogDelegate;
 
 namespace {
 
@@ -137,13 +140,11 @@ ConstrainedWebDialogDelegateViewViews::ConstrainedWebDialogDelegateViewViews(
 ConstrainedWebDialogDelegateViewViews::~ConstrainedWebDialogDelegateViewViews() {
 }
 
-// static
-ConstrainedWebDialogDelegate*
-    ConstrainedWebDialogUI::CreateConstrainedWebDialog(
-        Profile* profile,
-        WebDialogDelegate* delegate,
-        WebDialogWebContentsDelegate* tab_delegate,
-        TabContentsWrapper* container) {
+ConstrainedWebDialogDelegate* ui::CreateConstrainedWebDialog(
+    Profile* profile,
+    WebDialogDelegate* delegate,
+    WebDialogWebContentsDelegate* tab_delegate,
+    TabContentsWrapper* container) {
   ConstrainedWebDialogDelegateViewViews* constrained_delegate =
       new ConstrainedWebDialogDelegateViewViews(profile, delegate, tab_delegate);
   ConstrainedWindow* constrained_window =

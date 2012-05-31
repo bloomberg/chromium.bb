@@ -22,7 +22,7 @@ class ProxySettingsDialog : public LoginWebDialog {
   virtual ~ProxySettingsDialog();
 
  protected:
-  // WebDialogDelegate implementation.
+  // ui::WebDialogDelegate implementation.
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
 
  private:

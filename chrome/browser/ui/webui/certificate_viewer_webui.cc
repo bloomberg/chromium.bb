@@ -17,16 +17,17 @@
 #include "chrome/browser/ui/certificate_dialogs.h"
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
-#include "chrome/browser/ui/webui/web_dialog_observer.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/web_dialogs/constrained_web_dialog_ui.h"
+#include "ui/web_dialogs/web_dialog_observer.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;
+using ui::WebDialogObserver;
 
 namespace {
 
@@ -75,7 +76,7 @@ void CertificateViewerDialog::Show(gfx::NativeWindow parent) {
       browser->GetSelectedTabContentsWrapper();
   // TODO(bshe): UI tweaks needed for AURA html Dialog, such as add padding on
   // title for AURA ConstrainedWebDialogUI.
-  window_ = ConstrainedWebDialogUI::CreateConstrainedWebDialog(
+  window_ = ui::CreateConstrainedWebDialog(
       current_wrapper->profile(),
       this,
       NULL,

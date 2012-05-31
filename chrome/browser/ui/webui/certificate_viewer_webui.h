@@ -12,12 +12,14 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "net/base/x509_certificate.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 
+namespace ui {
 class WebDialogObserver;
+}
 
 // Displays the native or WebUI certificate viewer dialog for the given
 // certificate.
@@ -28,7 +30,7 @@ void ShowCertificateViewer(gfx::NativeWindow parent,
 // and chromeos builds to display detailed information in a floating dialog when
 // the user clicks on "Certificate Information" from the lock icon of a web site
 // or "View" from the Certificate Manager.
-class CertificateViewerDialog : private WebDialogDelegate {
+class CertificateViewerDialog : private ui::WebDialogDelegate {
  public:
   // Construct a certificate viewer for the passed in certificate. A reference
   // to the certificate pointer is added for the lifetime of the certificate
@@ -40,13 +42,13 @@ class CertificateViewerDialog : private WebDialogDelegate {
   void Show(gfx::NativeWindow parent);
 
   // Add WebDialogObserver for this dialog.
-  void AddObserver(WebDialogObserver* observer);
+  void AddObserver(ui::WebDialogObserver* observer);
 
   // Remove WebDialogObserver for this dialog.
-  void RemoveObserver(WebDialogObserver* observer);
+  void RemoveObserver(ui::WebDialogObserver* observer);
 
  private:
-  // Overridden from WebDialogDelegate:
+  // Overridden from ui::WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -71,7 +73,7 @@ class CertificateViewerDialog : private WebDialogDelegate {
   // The title of the certificate viewer dialog, Certificate Viewer: CN.
   string16 title_;
 
-  ObserverList<WebDialogObserver> observers_;
+  ObserverList<ui::WebDialogObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateViewerDialog);
 };

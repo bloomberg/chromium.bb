@@ -9,11 +9,13 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/keyboard_overlay_delegate.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
+
+using ui::WebDialogDelegate;
 
 KeyboardOverlayDialogView::KeyboardOverlayDialogView(
     Profile* profile,

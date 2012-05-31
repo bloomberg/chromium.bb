@@ -16,14 +16,15 @@
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/web_dialog_controller.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
 using content::WebUIMessageHandler;
+using ui::WebDialogDelegate;
+using ui::WebDialogUI;
 
 namespace browser {
 

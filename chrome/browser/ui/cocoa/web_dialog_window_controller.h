@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
 class Browser;
 class WebDialogWindowDelegateBridge;
@@ -35,7 +35,7 @@ class TabContentsWrapper;
 //
 // Make sure to use the returned window only when you know it is safe
 // to do so, i.e. before OnDialogClosed() is called on the delegate.
-+ (NSWindow*)showWebDialog:(WebDialogDelegate*)delegate
++ (NSWindow*)showWebDialog:(ui::WebDialogDelegate*)delegate
                    profile:(Profile*)profile
                    browser:(Browser*)browser;
 
@@ -45,7 +45,7 @@ class TabContentsWrapper;
 
 // This is the designated initializer.  However, this is exposed only
 // for testing; use showWebDialog instead.
-- (id)initWithDelegate:(WebDialogDelegate*)delegate
+- (id)initWithDelegate:(ui::WebDialogDelegate*)delegate
                profile:(Profile*)profile
                browser:(Browser*)browser;
 
@@ -57,4 +57,3 @@ class TabContentsWrapper;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_WEB_DIALOG_WINDOW_CONTROLLER_H_
-

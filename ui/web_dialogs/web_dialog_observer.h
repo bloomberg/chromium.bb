@@ -2,17 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_OBSERVER_H_
-#define CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_OBSERVER_H_
+#ifndef UI_WEB_DIALOGS_WEB_DIALOG_OBSERVER_H_
+#define UI_WEB_DIALOGS_WEB_DIALOG_OBSERVER_H_
 #pragma once
+
+#include "ui/web_dialogs/web_dialogs_export.h"
 
 namespace content {
 class RenderViewHost;
 class WebUI;
 }
 
+namespace ui {
+
 // Implement this class to receive notifications.
-class WebDialogObserver {
+class WEB_DIALOGS_EXPORT WebDialogObserver {
  public:
   // Invoked when a web dialog has been shown.
   // |webui| is the WebUI with which the dialog is associated.
@@ -24,4 +28,6 @@ class WebDialogObserver {
   virtual ~WebDialogObserver() {}
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_OBSERVER_H_
+}  // namespace ui
+
+#endif  // UI_WEB_DIALOGS_WEB_DIALOG_OBSERVER_H_

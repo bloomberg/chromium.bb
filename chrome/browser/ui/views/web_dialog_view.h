@@ -12,11 +12,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_render_watcher.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 
 class Browser;
 class WebDialogController;
@@ -30,7 +30,7 @@ class WebView;
 //
 // WebDialogView is a view used to display an web dialog to the user. The
 // content of the dialogs is determined by the delegate
-// (WebDialogDelegate), but is basically a file URL along with a
+// (ui::WebDialogDelegate), but is basically a file URL along with a
 // JSON input string. The HTML is supposed to show a UI to the user and is
 // expected to send back a JSON file as a return value.
 //
@@ -44,13 +44,13 @@ class WebView;
 class WebDialogView
     : public views::ClientView,
       public WebDialogWebContentsDelegate,
-      public WebDialogDelegate,
+      public ui::WebDialogDelegate,
       public views::WidgetDelegate,
       public TabRenderWatcher::Delegate {
  public:
   WebDialogView(Profile* profile,
                 Browser* browser,
-                WebDialogDelegate* delegate);
+                ui::WebDialogDelegate* delegate);
   virtual ~WebDialogView();
 
   // For testing.
@@ -78,7 +78,7 @@ class WebDialogView
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
-  // Overridden from WebDialogDelegate:
+  // Overridden from ui::WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -137,7 +137,7 @@ class WebDialogView
   // about when the dialog is closing. For all other actions (besides dialog
   // closing) we delegate to the creator of this view, which we keep track of
   // using this variable.
-  WebDialogDelegate* delegate_;
+  ui::WebDialogDelegate* delegate_;
 
   // Controls lifetime of dialog.
   scoped_ptr<WebDialogController> dialog_controller_;

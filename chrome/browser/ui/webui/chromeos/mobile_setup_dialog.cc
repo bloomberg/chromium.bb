@@ -11,17 +11,18 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/simple_message_box.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 
 using content::BrowserThread;
 using content::WebContents;
 using content::WebUIMessageHandler;
+using ui::WebDialogDelegate;
 
 class MobileSetupDialogDelegate : public WebDialogDelegate {
  public:

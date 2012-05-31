@@ -7,13 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 
 namespace chromeos {
 
 // SIM unlock dialog displayed in cases when SIM card has to be unlocked.
-class SimDialogDelegate : public WebDialogDelegate {
+class SimDialogDelegate : public ui::WebDialogDelegate {
  public:
   // Type of the SIM dialog that is launched.
   typedef enum SimDialogMode {
@@ -31,7 +31,7 @@ class SimDialogDelegate : public WebDialogDelegate {
  private:
   virtual ~SimDialogDelegate();
 
-  // Overridden from WebDialogDelegate:
+  // Overridden from ui::WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;

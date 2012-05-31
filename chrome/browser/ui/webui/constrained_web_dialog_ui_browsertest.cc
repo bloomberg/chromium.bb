@@ -8,15 +8,17 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/test_web_dialog_delegate.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/web_dialogs/constrained_web_dialog_ui.h"
 
 using content::WebContents;
+using ui::ConstrainedWebDialogDelegate;
+using ui::WebDialogDelegate;
 
 namespace {
 
@@ -60,10 +62,10 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, BasicTest) {
   ASSERT_TRUE(wrapper);
 
   ConstrainedWebDialogDelegate* dialog_delegate =
-      ConstrainedWebDialogUI::CreateConstrainedWebDialog(browser()->profile(),
-                                                         delegate,
-                                                         NULL,
-                                                         wrapper);
+      ui::CreateConstrainedWebDialog(browser()->profile(),
+                                     delegate,
+                                     NULL,
+                                     wrapper);
   ASSERT_TRUE(dialog_delegate);
   EXPECT_TRUE(dialog_delegate->window());
   EXPECT_EQ(1U, GetConstrainedWindowCount(wrapper));
@@ -79,10 +81,10 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   ASSERT_TRUE(wrapper);
 
   ConstrainedWebDialogDelegate* dialog_delegate =
-      ConstrainedWebDialogUI::CreateConstrainedWebDialog(browser()->profile(),
-                                                         delegate,
-                                                         NULL,
-                                                         wrapper);
+      ui::CreateConstrainedWebDialog(browser()->profile(),
+                                     delegate,
+                                     NULL,
+                                     wrapper);
   ASSERT_TRUE(dialog_delegate);
   scoped_ptr<TabContentsWrapper> new_tab(dialog_delegate->tab());
   ASSERT_TRUE(new_tab.get());

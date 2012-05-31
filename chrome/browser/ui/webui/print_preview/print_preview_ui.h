@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
-#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
+#include "ui/web_dialogs/constrained_web_dialog_ui.h"
 
 class PrintPreviewDataService;
 class PrintPreviewHandler;
@@ -30,7 +30,7 @@ namespace printing {
 struct PageSizeMargins;
 }
 
-class PrintPreviewUI : public ConstrainedWebDialogUI {
+class PrintPreviewUI : public ui::ConstrainedWebDialogUI {
  public:
   explicit PrintPreviewUI(content::WebUI* web_ui);
   virtual ~PrintPreviewUI();

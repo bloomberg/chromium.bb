@@ -9,13 +9,15 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/size.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
 using content::WebContents;
+using ui::WebDialogDelegate;
+using ui::ConstrainedWebDialogDelegate;
 
 class ConstrainedWebDialogDelegateMac :
     public ConstrainedWindowMacDelegateCustomSheet,
@@ -114,9 +116,7 @@ ConstrainedWebDialogDelegateMac::ConstrainedWebDialogDelegateMac(
       @selector(sheetDidEnd:returnCode:contextInfo:));
 }
 
-// static
-ConstrainedWebDialogDelegate*
-    ConstrainedWebDialogUI::CreateConstrainedWebDialog(
+ConstrainedWebDialogDelegate* ui::CreateConstrainedWebDialog(
         Profile* profile,
         WebDialogDelegate* delegate,
         WebDialogWebContentsDelegate* tab_delegate,

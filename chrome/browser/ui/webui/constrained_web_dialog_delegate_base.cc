@@ -10,13 +10,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
+using ui::ConstrainedWebDialogUI;
+using ui::WebDialogDelegate;
 
 ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
     Profile* profile,

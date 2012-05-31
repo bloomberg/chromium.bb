@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_DELEGATE_H_
-#define CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_DELEGATE_H_
+#ifndef UI_WEB_DIALOGS_WEB_DIALOG_DELEGATE_H_
+#define UI_WEB_DIALOGS_WEB_DIALOG_DELEGATE_H_
 #pragma once
 
 #include <string>
@@ -11,6 +11,7 @@
 
 #include "base/string16.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/web_dialogs/web_dialogs_export.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class GURL;
@@ -29,11 +30,13 @@ class Rect;
 class Size;
 }
 
+namespace ui {
+
 // Implement this class to receive notifications.
-class WebDialogDelegate {
+class WEB_DIALOGS_EXPORT WebDialogDelegate {
  public:
   // Returns true if the contents needs to be run in a modal dialog.
-  virtual ui::ModalType GetDialogModalType() const = 0;
+  virtual ModalType GetDialogModalType() const = 0;
 
   // Returns the title of the dialog.
   virtual string16 GetDialogTitle() const = 0;
@@ -119,5 +122,6 @@ class WebDialogDelegate {
   virtual ~WebDialogDelegate() {}
 };
 
+}  // namespace ui
 
-#endif  // CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_DELEGATE_H_
+#endif  // UI_WEB_DIALOGS_WEB_DIALOG_DELEGATE_H_

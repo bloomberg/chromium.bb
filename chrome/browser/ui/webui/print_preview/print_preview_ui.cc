@@ -19,8 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_data_source.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/common/print_messages.h"
@@ -28,9 +26,13 @@
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "ui/gfx/rect.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
 using content::WebContents;
 using printing::PageSizeMargins;
+using ui::ConstrainedWebDialogDelegate;
+using ui::ConstrainedWebDialogUI;
 
 namespace {
 

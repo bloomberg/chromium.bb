@@ -112,6 +112,7 @@ using content::NavigationEntry;
 using content::RenderViewHost;
 using content::WebContents;
 using content::WebUIMessageHandler;
+using ui::WebDialogDelegate;
 
 namespace internal_cloud_print_helpers {
 

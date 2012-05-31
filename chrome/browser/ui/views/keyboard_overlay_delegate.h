@@ -7,24 +7,24 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 
 class WebDialogView;
 
-class KeyboardOverlayDelegate : public WebDialogDelegate {
+class KeyboardOverlayDelegate : public ui::WebDialogDelegate {
  public:
   explicit KeyboardOverlayDelegate(const string16& title);
 
   WebDialogView* view() { return view_; }
   void set_view(WebDialogView* view) { view_ = view; }
 
-  // Overridden from WebDialogDelegate:
+  // Overridden from ui::WebDialogDelegate:
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
 
  private:
   virtual ~KeyboardOverlayDelegate();
 
-  // Overridden from WebDialogDelegate:
+  // Overridden from ui::WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;

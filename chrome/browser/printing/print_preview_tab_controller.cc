@@ -21,9 +21,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -38,12 +36,16 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "ui/web_dialogs/constrained_web_dialog_ui.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::WebContents;
 using content::WebUIMessageHandler;
+using ui::ConstrainedWebDialogDelegate;
+using ui::WebDialogDelegate;
 
 namespace {
 
@@ -434,7 +436,7 @@ TabContentsWrapper* PrintPreviewTabController::CreatePrintPreviewTab(
       new PrintPreviewWebContentDelegate(current_browser->profile(),
                                          initiator_tab);
   ConstrainedWebDialogDelegate* constrained_delegate =
-      ConstrainedWebDialogUI::CreateConstrainedWebDialog(
+      ui::CreateConstrainedWebDialog(
           current_browser->profile(),
           web_dialog_delegate,
           pp_wcd,

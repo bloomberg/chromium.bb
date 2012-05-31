@@ -8,9 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/web_dialog_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/web_dialogs/web_dialog_observer.h"
 
 class JsInjectionReadyObserver;
 
@@ -23,7 +23,7 @@ class WebUI;
 // MessageLoop to detect WebDialog creation and quit when the constructed
 // WebUI instance is captured and ready.
 class TestWebDialogObserver : public content::NotificationObserver,
-                              public WebDialogObserver {
+                              public ui::WebDialogObserver {
  public:
   // Create and register a new TestWebDialogObserver. If
   // |js_injection_ready_observer| is non-NULL, notify it as soon as the RVH is

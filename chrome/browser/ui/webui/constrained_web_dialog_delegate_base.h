@@ -8,28 +8,32 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "ui/web_dialogs/constrained_web_dialog_ui.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
+
+namespace ui {
+class WebDialogDelegate;
+}
 
 // Platform-agnostic base implementation of ConstrainedWebDialogDelegate.
 class ConstrainedWebDialogDelegateBase
-    : public ConstrainedWebDialogDelegate,
+    : public ui::ConstrainedWebDialogDelegate,
       public WebDialogWebContentsDelegate {
  public:
   ConstrainedWebDialogDelegateBase(
       Profile* profile,
-      WebDialogDelegate* delegate,
+      ui::WebDialogDelegate* delegate,
       WebDialogWebContentsDelegate* tab_delegate);
   virtual ~ConstrainedWebDialogDelegateBase();
 
   void set_window(ConstrainedWindow* window);
   bool closed_via_webui() const;
 
-  // ConstrainedWebDialogDelegate interface.
-  virtual const WebDialogDelegate*
+  // ui::ConstrainedWebDialogDelegate interface.
+  virtual const ui::WebDialogDelegate*
       GetWebDialogDelegate() const OVERRIDE;
-  virtual WebDialogDelegate* GetWebDialogDelegate() OVERRIDE;
+  virtual ui::WebDialogDelegate* GetWebDialogDelegate() OVERRIDE;
   virtual void OnDialogCloseFromWebUI() OVERRIDE;
   virtual void ReleaseTabContentsOnDialogClose() OVERRIDE;
   virtual ConstrainedWindow* window() OVERRIDE;
@@ -44,7 +48,7 @@ class ConstrainedWebDialogDelegateBase
       WebDialogWebContentsDelegate* override_tab_delegate);
 
  private:
-  WebDialogDelegate* web_dialog_delegate_;
+  ui::WebDialogDelegate* web_dialog_delegate_;
 
   // The constrained window that owns |this|. Saved so we can close it later.
   ConstrainedWindow* window_;

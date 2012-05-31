@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -28,6 +27,7 @@
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/views/widget/widget.h"
@@ -44,6 +44,7 @@ const int kMinimumTaskManagerHeight = 480;
 using content::BrowserThread;
 using content::WebContents;
 using content::WebUIMessageHandler;
+using ui::WebDialogDelegate;
 
 class TaskManagerDialogImpl : public WebDialogDelegate {
  public:

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
 class Browser;
 
@@ -17,7 +17,7 @@ void ShowWebFeedbackView(Browser* browser,
                          const std::string& category_tag);
 }  // namespace browser
 
-class FeedbackUI : public WebDialogUI {
+class FeedbackUI : public ui::WebDialogUI {
  public:
   explicit FeedbackUI(content::WebUI* web_ui);
 

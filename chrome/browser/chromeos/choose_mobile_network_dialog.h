@@ -7,13 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 
 namespace chromeos {
 
 // Dialog for manual selection of cellular network.
-class ChooseMobileNetworkDialog : public WebDialogDelegate {
+class ChooseMobileNetworkDialog : public ui::WebDialogDelegate {
  public:
   // Shows the dialog box.
   static void ShowDialog(gfx::NativeWindow owning_window);
@@ -21,7 +21,7 @@ class ChooseMobileNetworkDialog : public WebDialogDelegate {
  private:
   ChooseMobileNetworkDialog();
 
-  // Overridden from WebDialogDelegate:
+  // Overridden from ui::WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;

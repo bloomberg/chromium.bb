@@ -23,7 +23,7 @@ class TestDialogClosedDelegate : public test::TestWebDialogDelegate {
 
   bool dialog_closed() const { return dialog_closed_; }
 
-  // Overridden from WebDialogDelegate:
+  // Overridden from ui::WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE {
     return ui::MODAL_TYPE_NONE;
   }
