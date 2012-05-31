@@ -929,10 +929,12 @@ class ManifestCheckout(Manifest):
     # check for the merge target; repo writes the ambigious form of the branch
     # target for `repo init -u url -b some-branch` usages (aka, 'master'
     # instead of 'refs/heads/master').
-    _remote, branch = GetTrackingBranchViaGitConfig(
+    result = GetTrackingBranchViaGitConfig(
         os.path.join(root, '.repo', 'manifests'), 'default',
         allow_broken_merge_settings=True, for_checkout=False)
-    return StripLeadingRefsHeads(branch, False)
+    if result is None:
+      raise Exception("Manifest in root %s isn't on a branch" % root)
+    return StripLeadingRefsHeads(result[1], False)
 
   def GetProjectPath(self, project, absolute=False):
     """Returns the path for a project.
