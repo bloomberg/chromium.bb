@@ -539,7 +539,8 @@ hooks = [
     "action": ["python", "src/build/win/setup_cygwin_mount.py", "--win-only"],
   },
   {
-    # Update LASTCHANGE.
+    # Update LASTCHANGE. This is also run by export_tarball.py in
+    # src/tools/export_tarball - please keep them in sync.
     "pattern": ".",
     "action": ["python", "src/build/util/lastchange.py",
                "-o", "src/build/util/LASTCHANGE"],

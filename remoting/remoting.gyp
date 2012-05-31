@@ -587,9 +587,6 @@
         {
           'target_name': 'remoting_version_resources',
           'type': 'none',
-          'dependencies': [
-            '../build/util/build_util.gyp:lastchange#target',
-          ],
           'inputs': [
             'chromium_branding',
             'google_chrome_branding',

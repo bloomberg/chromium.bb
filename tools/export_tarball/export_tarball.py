@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -99,6 +99,12 @@ def main(argv):
 
   if not os.path.exists(GetSourceDirectory()):
     print 'Cannot find the src directory.'
+    return 1
+
+  # This command is from src/DEPS; please keep them in sync.
+  if subprocess.call(['python', 'build/util/lastchange.py', '-o',
+                      'build/util/LASTCHANGE'], cwd=GetSourceDirectory()) != 0:
+    print 'Could not run build/util/lastchange.py to update LASTCHANGE.'
     return 1
 
   output_fullname = args[0] + '.tar.bz2'

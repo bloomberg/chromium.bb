@@ -221,7 +221,6 @@
             'installer_util_strings',
             '../base/base.gyp:base',
             '../build/temp_gyp/googleurl.gyp:googleurl',
-            '../build/util/build_util.gyp:lastchange#target',
             '../chrome_frame/chrome_frame.gyp:chrome_tab_idl',
             '../chrome_frame/chrome_frame.gyp:npchrome_frame',
             '../breakpad/breakpad.gyp:breakpad_handler',
