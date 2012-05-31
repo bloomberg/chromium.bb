@@ -25,6 +25,8 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(int)
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationType)
@@ -132,6 +134,14 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
     DCHECK_EQ(window, window_);
     DCHECK(layers_.empty());
     AcquireAllLayers(window_);
+
+    // If the Widget has views with layers, then it is necessary to take
+    // ownership of those layers too.
+    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window_);
+    const views::Widget* const_widget = widget;
+    if (widget && const_widget->GetRootView() && widget->GetContentsView())
+      AcquireAllViewLayers(widget->GetContentsView());
+
     window_->RemoveObserver(this);
     window_ = NULL;
   }
@@ -146,7 +156,15 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
       AcquireAllLayers(*it);
   }
 
-  ui::Layer* layer() { return window_ ? window_->layer() : layers_[0]; }
+  void AcquireAllViewLayers(views::View* view) {
+    for (int i = 0; i < view->child_count(); ++i)
+      AcquireAllViewLayers(view->child_at(i));
+    if (view->layer()) {
+      ui::Layer* layer = view->RecreateLayer();
+      layer->SuppressPaint();
+      layers_.push_back(layer);
+    }
+  }
 
   aura::Window* window_;
   std::vector<ui::Layer*> layers_;
