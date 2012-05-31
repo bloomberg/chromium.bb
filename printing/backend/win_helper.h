@@ -43,8 +43,7 @@ class PrinterHandleTraits {
 };
 
 typedef base::win::GenericScopedHandle<
-    PrinterHandleTraits, base::win::DummyVerifierTraits> ScopedPrinterHandle;
-
+    PrinterHandleTraits, base::win::VerifierTraits> ScopedPrinterHandle;
 
 // Wrapper class to wrap the XPS APIs (PTxxx APIs). This is needed because these
 // APIs are not available by default on XP. We could delayload prntvpt.dll but
