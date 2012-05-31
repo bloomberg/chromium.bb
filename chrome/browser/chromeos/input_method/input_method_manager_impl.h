@@ -125,6 +125,9 @@ class InputMethodManagerImpl : public InputMethodManager,
       const std::vector<std::string>& input_method_ids,
       const std::string& current_input_method_id);
 
+  void ChangeInputMethodInternal(const std::string& input_method_id,
+                                 bool show_message);
+
   // true when DisableHotkeys() is called to temporarily disable IME hotkeys.
   // EnableHotkeys() resets the flag to the default value, false.
   bool ignore_hotkeys_;

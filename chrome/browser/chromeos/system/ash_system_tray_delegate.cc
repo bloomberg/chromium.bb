@@ -828,10 +828,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       observer->OnBluetoothRefresh();
   }
 
-  void NotifyRefreshIME() {
+  void NotifyRefreshIME(bool show_message) {
     ash::IMEObserver* observer = tray_->ime_observer();
     if (observer)
-      observer->OnIMERefresh();
+      observer->OnIMERefresh(show_message);
   }
 
   void NotifyRefreshDrive(ash::DriveOperationStatusList& list) {
@@ -1039,13 +1039,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   // Overridden from InputMethodManager::Observer.
   virtual void InputMethodChanged(
-      input_method::InputMethodManager* manager) OVERRIDE {
-    NotifyRefreshIME();
+      input_method::InputMethodManager* manager, bool show_message) OVERRIDE {
+    NotifyRefreshIME(show_message);
   }
 
   virtual void InputMethodPropertyChanged(
       input_method::InputMethodManager* manager) OVERRIDE {
-    NotifyRefreshIME();
+    NotifyRefreshIME(false);
   }
 
   // gdata::GDataOperationRegistry::Observer overrides.

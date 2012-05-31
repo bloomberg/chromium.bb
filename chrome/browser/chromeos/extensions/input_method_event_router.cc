@@ -32,7 +32,8 @@ ExtensionInputMethodEventRouter::~ExtensionInputMethodEventRouter() {
 }
 
 void ExtensionInputMethodEventRouter::InputMethodChanged(
-    input_method::InputMethodManager *manager) {
+    input_method::InputMethodManager *manager,
+    bool show_message) {
   Profile *profile = ProfileManager::GetDefaultProfile();
   ExtensionEventRouter *router = profile->GetExtensionEventRouter();
 

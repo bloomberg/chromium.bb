@@ -221,6 +221,12 @@ bool InputMethodManagerImpl::SetInputMethodConfig(
 
 void InputMethodManagerImpl::ChangeInputMethod(
     const std::string& input_method_id) {
+  ChangeInputMethodInternal(input_method_id, false);
+}
+
+void InputMethodManagerImpl::ChangeInputMethodInternal(
+    const std::string& input_method_id,
+    bool show_message) {
   if (state_ == STATE_TERMINATING)
     return;
 
@@ -274,7 +280,7 @@ void InputMethodManagerImpl::ChangeInputMethod(
   // Update input method indicators (e.g. "US", "DV") in Chrome windows.
   FOR_EACH_OBSERVER(InputMethodManager::Observer,
                     observers_,
-                    InputMethodChanged(this));
+                    InputMethodChanged(this, show_message));
 }
 
 void InputMethodManagerImpl::ActivateInputMethodProperty(
@@ -385,7 +391,7 @@ bool InputMethodManagerImpl::SwitchToPreviousInputMethod() {
     // previous_input_method_ is not supported.
     return SwitchToNextInputMethod();
   }
-  ChangeInputMethod(*iter);
+  ChangeInputMethodInternal(*iter, true);
   return true;
 }
 
@@ -459,7 +465,7 @@ void InputMethodManagerImpl::SwitchToNextInputMethodInternal(
     ++iter;
   if (iter == input_method_ids.end())
     iter = input_method_ids.begin();
-  ChangeInputMethod(*iter);
+  ChangeInputMethodInternal(*iter, true);
 }
 
 InputMethodDescriptor InputMethodManagerImpl::GetCurrentInputMethod() const {

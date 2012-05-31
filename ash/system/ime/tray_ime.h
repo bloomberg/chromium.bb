@@ -22,7 +22,8 @@ namespace internal {
 namespace tray {
 class IMEDefaultView;
 class IMEDetailedView;
-};
+class IMENotificationView;
+}
 
 class TrayItemView;
 
@@ -39,17 +40,21 @@ class TrayIME : public SystemTrayItem,
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
+  virtual views::View* CreateNotificationView(
+      user::LoginStatus status) OVERRIDE;
   virtual void DestroyTrayView() OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
+  virtual void DestroyNotificationView() OVERRIDE;
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
 
   // Overridden from IMEObserver.
-  virtual void OnIMERefresh() OVERRIDE;
+  virtual void OnIMERefresh(bool show_message) OVERRIDE;
 
   TrayItemView* tray_label_;
   tray::IMEDefaultView* default_;
   tray::IMEDetailedView* detailed_;
+  tray::IMENotificationView* notification_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayIME);
 };

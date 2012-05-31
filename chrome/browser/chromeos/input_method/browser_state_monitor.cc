@@ -88,7 +88,8 @@ void BrowserStateMonitor::UpdateUserPreferences(
                           current_input_method);
 }
 
-void BrowserStateMonitor::InputMethodChanged(InputMethodManager* manager) {
+void BrowserStateMonitor::InputMethodChanged(InputMethodManager* manager,
+                                             bool show_message) {
   DCHECK_EQ(manager_, manager);
   const std::string current_input_method =
       manager->GetCurrentInputMethod().id();

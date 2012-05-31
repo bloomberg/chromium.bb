@@ -39,7 +39,8 @@ class BrowserStateMonitor : public content::NotificationObserver,
   virtual void UpdateUserPreferences(const std::string& current_input_method);
 
   // InputMethodManager::Observer overrides:
-  virtual void InputMethodChanged(InputMethodManager* manager) OVERRIDE;
+  virtual void InputMethodChanged(InputMethodManager* manager,
+                                  bool show_message) OVERRIDE;
   virtual void InputMethodPropertyChanged(InputMethodManager* manager) OVERRIDE;
 
   // content::NotificationObserver overrides:

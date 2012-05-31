@@ -39,8 +39,10 @@ class InputMethodManager {
   class Observer {
    public:
     virtual ~Observer() {}
-    // Called when the current input method is changed.
-    virtual void InputMethodChanged(InputMethodManager* manager) = 0;
+    // Called when the current input method is changed.  |show_message|
+    // indicates whether the user should be notified of this change.
+    virtual void InputMethodChanged(InputMethodManager* manager,
+                                    bool show_message) = 0;
     // Called when the list of properties is changed.
     virtual void InputMethodPropertyChanged(InputMethodManager* manager) = 0;
   };

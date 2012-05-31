@@ -195,7 +195,7 @@ TEST(BrowserStateMonitorTest, TestObserveScreenLockUnlock) {
   EXPECT_EQ(InputMethodManager::STATE_LOCK_SCREEN, monitor.state());
 
   // When the screen is locked, the monitor should ignore input method changes.
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(0, monitor.update_local_state_count());
   EXPECT_EQ(0, monitor.update_user_pref_count());
 
@@ -207,7 +207,7 @@ TEST(BrowserStateMonitorTest, TestObserveScreenLockUnlock) {
   EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, mock_manager.last_state_);
   EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor.state());
 
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(0, monitor.update_local_state_count());
   EXPECT_EQ(1, monitor.update_user_pref_count());
 }
@@ -232,7 +232,7 @@ TEST(BrowserStateMonitorTest, TestObserveAppTerminating) {
   EXPECT_EQ(InputMethodManager::STATE_TERMINATING, monitor.state());
 
   // In the terminating state, the monitor should ignore input method changes.
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(0, monitor.update_local_state_count());
   EXPECT_EQ(0, monitor.update_user_pref_count());
 }
@@ -261,10 +261,10 @@ TEST(BrowserStateMonitorTest, TestUpdatePrefOnLoginScreen) {
   monitor.SetPrefServiceForTesting(&prefs);
 
   EXPECT_EQ(InputMethodManager::STATE_LOGIN_SCREEN, monitor.state());
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(1, monitor.update_local_state_count());
   EXPECT_EQ(0, monitor.update_user_pref_count());
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(2, monitor.update_local_state_count());
   EXPECT_EQ(0, monitor.update_user_pref_count());
 }
@@ -281,10 +281,10 @@ TEST(BrowserStateMonitorTest, TestUpdatePrefOnBrowserScreen) {
                   content::NotificationService::NoDetails());
   EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor.state());
 
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(0, monitor.update_local_state_count());
   EXPECT_EQ(1, monitor.update_user_pref_count());
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(0, monitor.update_local_state_count());
   EXPECT_EQ(2, monitor.update_user_pref_count());
 
@@ -293,10 +293,10 @@ TEST(BrowserStateMonitorTest, TestUpdatePrefOnBrowserScreen) {
                   content::NotificationService::NoDetails());
   EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor.state());
 
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(0, monitor.update_local_state_count());
   EXPECT_EQ(3, monitor.update_user_pref_count());
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(0, monitor.update_local_state_count());
   EXPECT_EQ(4, monitor.update_user_pref_count());
 }
@@ -311,13 +311,13 @@ TEST(BrowserStateMonitorTest, TestUpdatePrefOnLoginScreenDetails) {
   EXPECT_EQ(InputMethodManager::STATE_LOGIN_SCREEN, monitor.state());
   std::string input_method_id = "xkb:us:dvorak:eng";
   mock_manager.SetCurrentInputMethodId(input_method_id);
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(1, monitor.update_local_state_count());
   EXPECT_EQ(0, monitor.update_user_pref_count());
   EXPECT_EQ(input_method_id, monitor.last_local_state());
   input_method_id = "xkb:us:colemak:eng";
   mock_manager.SetCurrentInputMethodId(input_method_id);
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(2, monitor.update_local_state_count());
   EXPECT_EQ(0, monitor.update_user_pref_count());
   EXPECT_EQ(input_method_id, monitor.last_local_state());
@@ -348,14 +348,14 @@ TEST(BrowserStateMonitorTest, TestUpdatePrefOnBrowserScreenDetails) {
 
   const std::string input_method_id = "xkb:us:dvorak:eng";
   mock_manager.SetCurrentInputMethodId(input_method_id);
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(0, monitor.update_local_state_count());
   EXPECT_EQ(1, monitor.update_user_pref_count());
   EXPECT_EQ(input_method_id, monitor.last_user_pref());
   EXPECT_EQ("", previous.GetValue());
   EXPECT_EQ(input_method_id, current.GetValue());
 
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(0, monitor.update_local_state_count());
   EXPECT_EQ(2, monitor.update_user_pref_count());
   EXPECT_EQ(input_method_id, monitor.last_user_pref());
@@ -364,7 +364,7 @@ TEST(BrowserStateMonitorTest, TestUpdatePrefOnBrowserScreenDetails) {
 
   const std::string input_method_id_2 = "xkb:us:colemak:eng";
   mock_manager.SetCurrentInputMethodId(input_method_id_2);
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(0, monitor.update_local_state_count());
   EXPECT_EQ(3, monitor.update_user_pref_count());
   EXPECT_EQ(input_method_id_2, monitor.last_user_pref());
@@ -373,14 +373,14 @@ TEST(BrowserStateMonitorTest, TestUpdatePrefOnBrowserScreenDetails) {
 
   const std::string input_method_id_3 = "xkb:us::eng";
   mock_manager.SetCurrentInputMethodId(input_method_id_3);
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(0, monitor.update_local_state_count());
   EXPECT_EQ(4, monitor.update_user_pref_count());
   EXPECT_EQ(input_method_id_3, monitor.last_user_pref());
   EXPECT_EQ(input_method_id_2, previous.GetValue());
   EXPECT_EQ(input_method_id_3, current.GetValue());
 
-  monitor.InputMethodChanged(&mock_manager);
+  monitor.InputMethodChanged(&mock_manager, false);
   EXPECT_EQ(0, monitor.update_local_state_count());
   EXPECT_EQ(5, monitor.update_user_pref_count());
   EXPECT_EQ(input_method_id_3, monitor.last_user_pref());

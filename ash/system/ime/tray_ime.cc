@@ -15,6 +15,7 @@
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "base/logging.h"
+#include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
@@ -164,12 +165,61 @@ class IMEDetailedView : public TrayDetailsView,
   DISALLOW_COPY_AND_ASSIGN(IMEDetailedView);
 };
 
+class IMENotificationView : public TrayNotificationView {
+ public:
+  explicit IMENotificationView(TrayIME* tray)
+      : TrayNotificationView(IDR_AURA_UBER_TRAY_IME),
+        tray_(tray) {
+    InitView(new views::Label(
+        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE)));
+  }
+
+  void StartAutoCloseTimer(int seconds) {
+    autoclose_.Stop();
+    autoclose_delay_ = seconds;
+    if (autoclose_delay_) {
+      autoclose_.Start(FROM_HERE,
+                       base::TimeDelta::FromSeconds(autoclose_delay_),
+                       this, &IMENotificationView::Close);
+    }
+  }
+
+  void StopAutoCloseTimer() {
+    autoclose_.Stop();
+  }
+
+  void RestartAutoCloseTimer() {
+    if (autoclose_delay_)
+      StartAutoCloseTimer(autoclose_delay_);
+  }
+
+  // Overridden from TrayNotificationView:
+  virtual void OnClose() OVERRIDE {
+    Close();
+  }
+
+ private:
+  void Close() {
+    tray_->HideNotificationView();
+  }
+
+  TrayIME* tray_;
+
+  int autoclose_delay_;
+  base::OneShotTimer<IMENotificationView> autoclose_;
+
+  DISALLOW_COPY_AND_ASSIGN(IMENotificationView);
+};
+
+
 }  // namespace tray
 
 TrayIME::TrayIME()
     : tray_label_(NULL),
       default_(NULL),
-      detailed_(NULL) {
+      detailed_(NULL),
+      notification_(NULL) {
 }
 
 TrayIME::~TrayIME() {
@@ -211,6 +261,13 @@ views::View* TrayIME::CreateDetailedView(user::LoginStatus status) {
   return detailed_;
 }
 
+views::View* TrayIME::CreateNotificationView(user::LoginStatus status) {
+  DCHECK(notification_ == NULL);
+  notification_ = new tray::IMENotificationView(this);
+  notification_->StartAutoCloseTimer(kTrayPopupAutoCloseDelayForTextInSeconds);
+  return notification_;
+}
+
 void TrayIME::DestroyTrayView() {
   tray_label_ = NULL;
 }
@@ -223,10 +280,14 @@ void TrayIME::DestroyDetailedView() {
   detailed_ = NULL;
 }
 
+void TrayIME::DestroyNotificationView() {
+  notification_ = NULL;
+}
+
 void TrayIME::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
-void TrayIME::OnIMERefresh() {
+void TrayIME::OnIMERefresh(bool show_message) {
   SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
   IMEInfoList list;
   IMEInfo current;
@@ -241,6 +302,13 @@ void TrayIME::OnIMERefresh() {
     default_->UpdateLabel(current);
   if (detailed_)
     detailed_->Update(list, property_list);
+
+  if (show_message) {
+    if (!notification_)
+      ShowNotificationView();
+    else
+      notification_->RestartAutoCloseTimer();
+  }
 }
 
 }  // namespace internal

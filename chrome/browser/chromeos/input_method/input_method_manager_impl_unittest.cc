@@ -67,12 +67,15 @@ class TestObserver : public InputMethodManager::Observer {
  public:
   TestObserver()
       : input_method_changed_count_(0),
-        input_method_property_changed_count_(0) {
+        input_method_property_changed_count_(0),
+        last_show_message_(false) {
   }
   virtual ~TestObserver() {}
 
-  virtual void InputMethodChanged(InputMethodManager* manager) OVERRIDE {
+  virtual void InputMethodChanged(InputMethodManager* manager,
+                                  bool show_message) OVERRIDE {
     ++input_method_changed_count_;
+    last_show_message_ = show_message;
   }
   virtual void InputMethodPropertyChanged(
       InputMethodManager* manager) OVERRIDE {
@@ -81,6 +84,7 @@ class TestObserver : public InputMethodManager::Observer {
 
   int input_method_changed_count_;
   int input_method_property_changed_count_;
+  bool last_show_message_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
@@ -147,9 +151,11 @@ TEST_F(InputMethodManagerImplTest, TestObserver) {
   EXPECT_EQ(1, observer.input_method_changed_count_);
   EXPECT_EQ(1, observer.input_method_property_changed_count_);
   manager_->ChangeInputMethod("xkb:us:dvorak:eng");
+  EXPECT_FALSE(observer.last_show_message_);
   EXPECT_EQ(2, observer.input_method_changed_count_);
   EXPECT_EQ(2, observer.input_method_property_changed_count_);
   manager_->ChangeInputMethod("xkb:us:dvorak:eng");
+  EXPECT_FALSE(observer.last_show_message_);
   // The observer is always notified even when the same input method ID is
   // passed to ChangeInputMethod() more than twice.
   EXPECT_EQ(3, observer.input_method_changed_count_);
@@ -594,45 +600,68 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
 }
 
 TEST_F(InputMethodManagerImplTest, TestNextInputMethod) {
+  TestObserver observer;
+  manager_->AddObserver(&observer);
   // For http://crbug.com/19655#c11 - (1)
   manager_->EnableLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
+  EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
+  EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:altgr-intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
+  EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:dvorak:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
+  EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:colemak:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
+  EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
+
+  manager_->RemoveObserver(&observer);
 }
 
 TEST_F(InputMethodManagerImplTest, TestPreviousInputMethod) {
+  TestObserver observer;
+  manager_->AddObserver(&observer);
   manager_->EnableLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
+  EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
+  EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
+  EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
+  EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
+  EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
+  EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:altgr-intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
+  EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
+  EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:altgr-intl:eng", manager_->GetCurrentInputMethod().id());
+
+  manager_->RemoveObserver(&observer);
 }
 
 TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithUsLayouts) {
+  TestObserver observer;
+  manager_->AddObserver(&observer);
   manager_->EnableLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
@@ -641,6 +670,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithUsLayouts) {
   // and keyboards are enabled.
   EXPECT_FALSE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_CONVERT, ui::EF_NONE)));
+  EXPECT_FALSE(observer.last_show_message_);
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_FALSE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_NONCONVERT, ui::EF_NONE)));
@@ -659,6 +689,8 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithUsLayouts) {
   EXPECT_FALSE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_SPACE, ui::EF_SHIFT_DOWN)));
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
+
+  manager_->RemoveObserver(&observer);
 }
 
 TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpLayout) {

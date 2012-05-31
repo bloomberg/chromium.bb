@@ -19,7 +19,8 @@ class ExtensionInputMethodEventRouter
 
   // Implements input_method::InputMethodManager::Observer:
   virtual void InputMethodChanged(
-      input_method::InputMethodManager* manager) OVERRIDE;
+      input_method::InputMethodManager* manager,
+      bool show_message) OVERRIDE;
   virtual void InputMethodPropertyChanged(
       input_method::InputMethodManager* manager) OVERRIDE {}
 
