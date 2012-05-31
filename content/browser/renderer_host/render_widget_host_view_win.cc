@@ -64,6 +64,9 @@
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
+// From MSDN.
+#define MOUSEEVENTF_FROMTOUCH 0xFF515700
+
 using base::TimeDelta;
 using base::TimeTicks;
 using content::BrowserThread;
@@ -1795,6 +1798,15 @@ LRESULT RenderWidgetHostViewWin::OnImeRequest(
 LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
                                               LPARAM lparam, BOOL& handled) {
   handled = TRUE;
+
+  // Windows sends (fake) mouse messages for touch events.  Ignore these since
+  // we're processing WM_TOUCH elsewhere.
+  if (touch_events_enabled_ &&
+      (message == WM_LBUTTONDOWN || message == WM_LBUTTONUP ||
+       message == WM_RBUTTONDOWN || message == WM_RBUTTONUP) &&
+      (GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) ==
+      MOUSEEVENTF_FROMTOUCH)
+    return 0;
 
   if (message == WM_MOUSELEAVE)
     ignore_mouse_movement_ = true;
