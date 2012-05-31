@@ -643,17 +643,11 @@ GDataProvider.prototype = {
 };
 
 /**
- * Pattern for urls supported by GDataProvider.
- */
-GDataProvider.URL_PATTERN =
-    new RegExp('^filesystem:[^/]*://[^/]*/[^/]*/drive/(.*)');
-
-/**
  * @param {string} url The url.
  * @return {boolean} Whether this provider supports the url.
  */
 GDataProvider.prototype.supportsUrl = function(url) {
-  return GDataProvider.URL_PATTERN.test(url);
+  return FileType.isOnGDrive(url);
 };
 
 /**
@@ -757,7 +751,7 @@ GDataProvider.prototype.convert_ = function(data) {
 
   if ('thumbnailUrl' in data) {
     result.thumbnail = {
-      url: data.thumbnailUrl,
+      url: data.thumbnailUrl.replace(/s220/, 's320'),
       transform: null
     };
   }

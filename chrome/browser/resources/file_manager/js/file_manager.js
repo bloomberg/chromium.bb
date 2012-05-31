@@ -345,15 +345,13 @@ FileManager.prototype = {
 
   /**
    * Ask the GData service to re-fetch the metadata for the current directory.
+   * @param {string} imageURL Image URL
    */
   FileManager.MetadataFileWatcher.prototype.requestMetadataRefresh =
-      function(imageFileEntry) {
-    if (DirectoryModel.getRootType(imageFileEntry.fullPath) !=
-        DirectoryModel.RootType.GDATA) {
+      function(imageURL) {
+    if (!FileType.isOnGDrive(imageURL))
       return;
-    }
     // TODO(kaznacheev) This does not really work with GData search.
-    var imageURL = imageFileEntry.toURL();
     var url = imageURL.substr(0, imageURL.lastIndexOf('/'));
     // Skip if the current directory is now being refreshed.
     if (this.directoriesWithStaleMetadata_[url])
@@ -1725,75 +1723,10 @@ FileManager.prototype = {
   };
 
   /**
-   * Update the thumbnail image style to fit/fill the square container.
-   *
-   * TODO(kaznacheev): Reuse this function in the Gallery.
-   *
-   * Using webkit center packing does not align the image properly, so we need
-   * to wait until the image loads and its proportions are known, then manually
-   * position it at the center.
-   *
-   * @param {HTMLElement} box Containing element.
-   * @param {HTMLImageElement} img Image element.
-   * @param {boolean} fill True: the image should fill the entire container,
-   *                       false: the image should fully fit into the container.
-   * @param {boolean} rotate True if the image should be rotated 90 degrees.
-   * @param {number} fullWidth The width of the full image. Might differ from
-   *   img.width if img contains a thumbnail image.
-   */
-  FileManager.centerImage = function(box, img, fill, rotate, fullWidth) {
-    var imageWidth = img.width;
-    var imageHeight = img.height;
-
-    var fractionX;
-    var fractionY;
-
-    var boxWidth = box.clientWidth;
-    var boxHeight = box.clientHeight;
-
-    if (boxWidth && boxHeight) {
-      // When we know the box size we can position the image correctly even
-      // in a non-square box.
-      var fitScaleX = (rotate ? boxHeight : boxWidth) / imageWidth;
-      var fitScaleY = (rotate ? boxWidth : boxHeight) / imageHeight;
-
-      var scale = fill ?
-          Math.max(fitScaleX, fitScaleY) :
-          Math.min(fitScaleX, fitScaleY);
-
-      // If the full width is known make the image no wider than it.
-      var scaleLimit = fullWidth ? (fullWidth / imageWidth) : 1;
-      scale = Math.min(scale, scaleLimit);
-
-      fractionX = imageWidth * scale / boxWidth;
-      fractionY = imageHeight * scale / boxHeight;
-    } else {
-      // We do not know the box size so we assume it is square.
-      // Compute the image position based only on the image dimensions.
-      // First try vertical fit or horizontal fill.
-      fractionX = imageWidth / imageHeight;
-      fractionY = 1;
-      if ((fractionX < 1) == !!fill) {  // Vertical fill or horizontal fit.
-        fractionY = 1 / fractionX;
-        fractionX = 1;
-      }
-    }
-
-    function percent(fraction) {
-      return (fraction * 100).toFixed(2) + '%';
-    }
-
-    img.style.width = percent(fractionX);
-    img.style.height = percent(fractionY);
-    img.style.left = percent((1 - fractionX) / 2);
-    img.style.top = percent((1 - fractionY) / 2);
-  };
-
-  /**
    * Create a box containing a centered thumbnail image.
    *
    * @param {Entry} entry Entry which thumbnail is generating for.
-   * @param {boolean} True if fill, false if fit.
+   * @param {boolean} fill True if fill, false if fit.
    * @param {function(HTMLElement)} opt_imageLoadCallback Callback called when
    *                                the image has been loaded before inserting
    *                                it into the DOM.
@@ -1811,35 +1744,28 @@ FileManager.prototype = {
       box = this.document_.createElement('div');
       box.className = 'img-container';
     }
-    var img = box.querySelector('img') || this.document_.createElement('img');
 
-    function onThumbnailURL(iconType, url, transform, fullWidth) {
-      img.onload = function() {
-        FileManager.centerImage(box, img, fill,
-            transform && (transform.rotate90 % 2 == 1),
-            fullWidth);
-        if (opt_imageLoadCallback)
-          opt_imageLoadCallback(img, transform);
-        if (img.parentNode != box)
-          box.appendChild(img);
-      };
-      img.onerror = function() {
-        // Use the default icon if we could not fetch the correct one.
-        img.src = FileType.getPreviewArt(iconType);
-        transform = null;
-        util.applyTransform(box, transform);
+    var imageUrl = entry.toURL();
 
-        // Failing to fetch a thumbnail likely means that the thumbnail URL
-        // is now stale. Request a refresh of the current directory, to get
-        // the new thumbnail URLs. Once the directory is refreshed, we'll get
-        // notified via onFileChanged event.
-        self.fileWatcher_.requestMetadataRefresh(entry);
-      };
-      img.src = url;
-      util.applyTransform(box, transform);
-    }
+    // Failing to fetch a thumbnail likely means that the thumbnail URL
+    // is now stale. Request a refresh of the current directory, to get
+    // the new thumbnail URLs. Once the directory is refreshed, we'll get
+    // notified via onFileChanged event.
+    var onImageLoadError = this.fileWatcher_.requestMetadataRefresh.bind(
+        this.fileWatcher_, imageUrl);
 
-    this.getThumbnailURL(entry, onThumbnailURL);
+    var metadataTypes = 'thumbnail|filesystem';
+
+    // TODO(dgozman): If we ask for 'media' for a GDrive file we fall into an
+    // infinite loop.
+    if (!FileType.isOnGDrive(imageUrl))
+      metadataTypes += '|media';
+
+    this.metadataCache_.get(imageUrl, metadataTypes,
+        function(metadata) {
+          new ThumbnailLoader(imageUrl, metadata).
+              load(box, fill, opt_imageLoadCallback, onImageLoadError);
+        });
 
     return box;
   };
@@ -3286,50 +3212,6 @@ FileManager.prototype = {
     currentWidth = Math.min(currentWidth,
                             containerWidth - pathWidth - collapsedWidth);
     bc.lastChild.style.width = (currentWidth - lastCrumbSeparatorWidth) + 'px';
-  };
-
-  FileManager.prototype.getThumbnailURL = function(entry, callback) {
-    if (!entry)
-      return;
-
-    var iconType = FileType.getIcon(entry);
-    var metadataCache = this.metadataCache_;
-
-    function returnStockIcon() {
-      callback(iconType, FileType.getPreviewArt(iconType));
-    }
-
-    function tryUsingImageUrl() {
-      metadataCache.get(entry, 'filesystem|media', function(metadata) {
-        if (FileType.canUseImageUrlForPreview(
-                metadata.media.width,
-                metadata.media.height,
-                metadata.filesystem.size)) {
-          callback(iconType, entry.toURL(), metadata.media.imageTransform);
-        } else {
-          returnStockIcon();
-        }
-      });
-    }
-
-    metadataCache.get(entry, 'thumbnail|media', function(metadata) {
-      if (metadata.thumbnail && metadata.thumbnail.url) {
-        callback(iconType,
-            metadata.thumbnail.url,
-            metadata.thumbnail.transform,
-            (metadata.media && metadata.media.width) ||
-                (DirectoryModel.getRootType(entry.fullPath) ==
-                 DirectoryModel.RootType.GDATA) ? 320 : 0);
-                // HACK(kaznacheev): GDrive thumbnails are <=220px wide/tall
-                // and the full image width is not available. Scaling to 320px
-                // makes for better visual experience. The downside is that we
-                // will overscale small images (which should be rare).
-      } else if (iconType == 'image') {
-        tryUsingImageUrl();
-      } else {
-        returnStockIcon();
-      }
-    });
   };
 
   FileManager.prototype.focusCurrentList_ = function() {

@@ -21,4 +21,5 @@
 //<include src="image_encoder.js"/>
 //<include src="exif_encoder.js"/>
 //<include src="../media/media_controls.js"/>
+//<include src="../media/media_util.js"/>
 //<include src="../metadata/metadata_cache.js"/>

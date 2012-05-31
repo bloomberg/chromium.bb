@@ -56,6 +56,7 @@
 //<include src="file_manager_pyauto.js"/>
 //<include src="file_type.js"/>
 //<include src="file_transfer_controller.js"/>
+//<include src="media/media_util.js"/>
 //<include src="metadata/metadata_cache.js"/>
 //<include src="default_action_dialog.js"/>
 // // For accurate load performance tracking place main.js should be

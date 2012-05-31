@@ -1171,9 +1171,6 @@ Ribbon.Item.decorate = function(self, index, url, selectClosure) {
   wrapper.className = 'image-wrapper';
   self.appendChild(wrapper);
 
-  var img = document.createElement('img');
-  wrapper.appendChild(img);
-
   self.original_ = true;
   self.nameForSaving_ = null;
 };
@@ -1337,71 +1334,8 @@ Ribbon.Item.prototype.hasThumbnail = function() {
 };
 
 Ribbon.Item.prototype.setThumbnail = function(metadata) {
-  var url;
-  var transform;
-
-  var mediaType = FileType.getMediaType(this.url_);
-
-  if (metadata.thumbnail && metadata.thumbnail.url) {
-    url = metadata.thumbnail.url;
-    transform = metadata.thumbnail.transform;
-  } else if (mediaType == 'image' && metadata.media &&
-             FileType.canUseImageUrlForPreview(metadata.media.width,
-                                               metadata.media.height, 0)) {
-    url = this.url_;
-    transform = metadata.media.imageTransform;
-  } else {
-    url = FileType.getPreviewArt(mediaType);
-  }
-
-  function percent(ratio) { return Math.round(ratio * 100) + '%' }
-
-  function resizeToFill(img, aspect) {
-    if ((aspect > 1)) {
-      img.style.height = percent(1);
-      img.style.width = percent(aspect);
-      img.style.marginLeft = percent((1 - aspect) / 2);
-      img.style.marginTop = 0;
-    } else {
-      aspect = 1 / aspect;
-      img.style.width = percent(1);
-      img.style.height = percent(aspect);
-      img.style.marginTop = percent((1 - aspect) / 2);
-      img.style.marginLeft = 0;
-    }
-  }
-
-  var wrapper = this.querySelector('.image-wrapper');
-  util.applyTransform(wrapper, transform);
-
-  var img = this.querySelector('img');
-
-  if (metadata.media && metadata.media.width && metadata.media.height) {
-    var aspect = metadata.media.width / metadata.media.height;
-    if (transform && transform.rotate90) {
-      aspect = 1 / aspect;
-    }
-    resizeToFill(img, aspect);
-  } else {
-    // No metadata available, loading the thumbnail first,
-    // then adjust the size.
-    img.style.maxWidth = '100%';
-    img.style.maxHeight = '100%';
-    img.onload = function (e) {
-      var image = e.target;
-      image.style.maxWidth = '';
-      image.style.maxHeight = '';
-      resizeToFill(image, image.width / image.height);
-    }
-  }
-
-  img.onerror = function() {
-    // Use the default icon if we could not fetch the correct one.
-    util.applyTransform(wrapper, null);
-    img.src = FileType.getPreviewArt(mediaType);
-  };
-
-  img.src = url;
+  new ThumbnailLoader(this.url_, metadata).
+      load(this.querySelector('.image-wrapper'), true /* fill */);
 };
 
 /**

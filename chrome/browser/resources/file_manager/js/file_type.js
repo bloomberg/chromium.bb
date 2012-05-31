@@ -148,6 +148,21 @@ FileType.getType = function(file) {
 };
 
 /**
+ * Pattern for urls pointing to Google Drive files.
+ */
+FileType.GDRIVE_URL_PATTERN =
+    new RegExp('^filesystem:[^/]*://[^/]*/[^/]*/drive/(.*)');
+
+/**
+ * @param {string} url The url.
+ * @return {boolean} Whether this provider supports the url.
+ */
+FileType.isOnGDrive = function(url) {
+  return FileType.GDRIVE_URL_PATTERN.test(url);
+};
+
+
+/**
  * Get the media type for a given url.
  *
  * @param {string} url Reference to the file.
@@ -222,29 +237,4 @@ FileType.getIcon = function(file) {
  */
 FileType.getPreviewArt = function(type) {
   return FileType.previewArt[type] || FileType.previewArt['unknown'];
-};
-
-/**
- * Files with more pixels won't have preview.
- */
-FileType.MAX_PREVIEW_PIXEL_COUNT = 1 << 21; // 2 MPix
-
-/**
- * Files of bigger size won't have preview.
- */
-FileType.MAX_PREVIEW_FILE_SIZE = 1 << 20; // 1 Mb
-
-/**
- * If an image file does not have an embedded thumbnail we might want to use
- * the image itself as a thumbnail. If the image is too large it hurts
- * the performance very much so we allow it only for moderately sized files.
- *
- * @param {number} width Image width.
- * @param {number} height Image height.
- * @param {number} fileSize The file size.
- * @return {boolean} Whether it is OK to use the image url for a preview.
- */
-FileType.canUseImageUrlForPreview = function(width, height, fileSize) {
-  return (fileSize && fileSize <= FileType.MAX_PREVIEW_FILE_SIZE) ||
-      (width && height && width * height <= FileType.MAX_PREVIEW_PIXEL_COUNT);
 };

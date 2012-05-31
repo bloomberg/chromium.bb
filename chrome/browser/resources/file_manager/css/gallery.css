@@ -427,6 +427,10 @@ body {
   width: 45px;
 }
 
+.gallery .image-wrapper > img {
+  position: absolute;
+}
+
 /* Editor buttons */
 
 .gallery .toolbar .edit-bar {
