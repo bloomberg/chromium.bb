@@ -1,0 +1,25 @@
+<div id="destination-search"
+    class="destination-search overlay transparent">
+  <div class="destination-search-page page">
+    <h1 class="destination-search-title"
+        i18n-content="destinationSearchTitle"></h1>
+    <span class="destination-search-user-info" hidden>
+      <span i18n-content="signedInAsPrefix"></span>
+      <span class="destination-search-user-email"></span>
+    </span>
+    <div class="destination-search-close-button close-button"></div>
+    <div class="destination-search-search-box-container">
+      <include src="search_box.html"/>
+    </div>
+    <div class="destination-search-lists">
+      <div class="destination-search-recent-list"></div>
+      <div class="destination-search-local-list"></div>
+      <div class="destination-search-cloud-list" hidden></div>
+    </div>
+    <div class="destination-search-cloudprint-promo" hidden>
+      <div class="destination-search-cloudprint-promo-close-button"></div>
+      <img src="../images/cloud.png" class="destination-search-cloud-icon"/>
+      <span class="destination-search-cloudprint-promo-text"></span>
+    </div>
+  </div>
+</div>

@@ -7,7 +7,7 @@ cr.define('print_preview', function() {
 
   /**
    * Draggable control for setting a page margin.
-   * @param {print_preview.ticket_items.CustomMargins.Orientation} orientation
+   * @param {!print_preview.ticket_items.CustomMargins.Orientation} orientation
    *     Orientation of the margin control that determines where the margin
    *     textbox will be placed.
    * @constructor
@@ -18,7 +18,7 @@ cr.define('print_preview', function() {
 
     /**
      * Determines where the margin textbox will be placed.
-     * @type {print_preview.ticket_items.CustomMargins.Orientation}
+     * @type {!print_preview.ticket_items.CustomMargins.Orientation}
      * @private
      */
     this.orientation_ = orientation;
@@ -67,7 +67,7 @@ cr.define('print_preview', function() {
 
     /**
      * Processing timeout for the textbox.
-     * @type {Object}
+     * @type {?number}
      * @private
      */
     this.textTimeout_ = null;
@@ -140,9 +140,9 @@ cr.define('print_preview', function() {
 
   /**
    * Map from orientation to CSS class name.
-   * @type {object.<
-   *     print_preview.ticket_items.CustomMargins.Orientation,
-   *     MarginControl.Classes_>}
+   * @type {!Object.<
+   *     !print_preview.ticket_items.CustomMargins.Orientation,
+   *     !MarginControl.Classes_>}
    * @private
    */
   MarginControl.OrientationToClass_ = {};
@@ -185,7 +185,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {print_preview.ticket_items.CustomMargins.Orientation}
+     * @return {!print_preview.ticket_items.CustomMargins.Orientation}
      *     Orientation of the margin control.
      */
     getOrientation: function() {

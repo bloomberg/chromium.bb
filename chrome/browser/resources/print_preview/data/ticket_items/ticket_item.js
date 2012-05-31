@@ -38,7 +38,7 @@ cr.define('print_preview.ticket_items', function() {
       throw Error('Abstract method not overridden');
     },
 
-    /** @return {object} The value of the ticket item. */
+    /** @return {!Object} The value of the ticket item. */
     getValue: function() {
       if (this.isCapabilityAvailable()) {
         if (this.value_ == null) {
@@ -64,13 +64,13 @@ cr.define('print_preview.ticket_items', function() {
       return this.wouldValueBeValid(this.value_);
     },
 
-    /** @param {object} Value to set as the value of the ticket item. */
+    /** @param {!Object} Value to set as the value of the ticket item. */
     updateValue: function(value) {
       this.value_ = value;
     },
 
     /**
-     * @return {object} Default value of the ticket item if no value was set by
+     * @return {!Object} Default value of the ticket item if no value was set by
      *     the user.
      * @protected
      */
@@ -79,7 +79,7 @@ cr.define('print_preview.ticket_items', function() {
     },
 
     /**
-     * @return {object} Default value of the ticket item if the capability is
+     * @return {!Object} Default value of the ticket item if the capability is
      *     not available.
      * @protected
      */

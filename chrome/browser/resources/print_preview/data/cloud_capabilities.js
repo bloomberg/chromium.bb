@@ -111,7 +111,7 @@ cr.define('print_preview', function() {
   /**
    * A single print capability of a cloud-based print destination.
    * @param {string} id Identifier of the capability.
-   * @param {print_preview.CloudCapability.Type} type Type of the capability.
+   * @param {!print_preview.CloudCapability.Type} type Type of the capability.
    * @constructor
    */
   function CloudCapability(id, type) {
@@ -124,7 +124,7 @@ cr.define('print_preview', function() {
 
     /**
      * Type of the capability.
-     * @type {print_preview.CloudCapability.Type}
+     * @type {!print_preview.CloudCapability.Type}
      * @private
      */
     this.type_ = type;
@@ -145,7 +145,7 @@ cr.define('print_preview', function() {
       return this.id_;
     },
 
-    /** @return {print_preview.CloudCapability.Type} Type of the capability. */
+    /** @return {!print_preview.CloudCapability.Type} Type of the capability. */
     get type() {
       return this.type_;
     }
@@ -190,7 +190,7 @@ cr.define('print_preview', function() {
 
   /**
    * Mapping of capability formats to an identifier of the collate capability.
-   * @type {object<CloudCapabilities.Format, string>}
+   * @type {!Object.<!CloudCapabilities.Format, string>}
    */
   CollateCapability.Id = {};
   CollateCapability.Id[CloudCapabilities.Format.PPD] = 'Collate';
@@ -264,7 +264,7 @@ cr.define('print_preview', function() {
 
   /**
    * Mapping of capability formats to an identifier of the color capability.
-   * @type {object<CloudCapabilities.Format, string>}
+   * @type {!Object.<!CloudCapabilities.Format, string>}
    */
   ColorCapability.Id = {};
   ColorCapability.Id[CloudCapabilities.Format.HP] = 'ns1:Colors';
@@ -319,7 +319,7 @@ cr.define('print_preview', function() {
 
   /**
    * Mapping of capability formats to an identifier of the copies capability.
-   * @type {object<CloudCapabilities.Format, string>}
+   * @type {!Object.<!CloudCapabilities.Format, string>}
    */
   CopiesCapability.Id = {};
   CopiesCapability.Id[CloudCapabilities.Format.XPS] =
@@ -362,7 +362,7 @@ cr.define('print_preview', function() {
 
   /**
    * Mapping of capability formats to an identifier of the duplex capability.
-   * @type {object<CloudCapabilities.Format, string>}
+   * @type {!Object.<!CloudCapabilities.Format, string>}
    */
   DuplexCapability.Id = {};
   DuplexCapability.Id[CloudCapabilities.Format.PPD] = 'Duplex';

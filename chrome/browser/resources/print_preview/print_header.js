@@ -213,7 +213,9 @@ cr.define('print_preview', function() {
      */
     onDestinationSelect_: function() {
       if (this.destinationStore_.selectedDestination.id ==
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
+              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
+          this.destinationStore_.selectedDestination.id ==
+              print_preview.Destination.GooglePromotedId.DOCS) {
         this.printButton_.textContent = localStrings.getString('saveButton');
       } else {
         this.printButton_.textContent = localStrings.getString('printButton');

@@ -46,7 +46,7 @@ cr.define('print_preview.ticket_items', function() {
 
   /**
    * Mapping of a margin orientation to its opposite.
-   * @type {object.<CustomMargins.Orientation, CustomMargins.Orientation>}
+   * @type {!Object.<!CustomMargins.Orientation, !CustomMargins.Orientation>}
    * @private
    */
   CustomMargins.OppositeOrientation_ = {};
@@ -90,8 +90,8 @@ cr.define('print_preview.ticket_items', function() {
     },
 
     /**
-     * @param {print_preview.ticket_items.CustomMargins.Orientation} orientation
-     *     Specifies the margin to get the maximum value for.
+     * @param {!print_preview.ticket_items.CustomMargins.Orientation}
+     *     orientation Specifies the margin to get the maximum value for.
      * @return {number} Maximum value in points of the specified margin.
      */
     getMarginMax: function(orientation) {
@@ -117,8 +117,8 @@ cr.define('print_preview.ticket_items', function() {
     /**
      * Updates the specified margin in points while keeping the value within
      * a maximum and minimum.
-     * @param {print_preview.ticket_items.CustomMargins.Orientation} orientation
-     *     Specifies the margin to update.
+     * @param {!print_preview.ticket_items.CustomMargins.Orientation}
+     *     orientation Specifies the margin to update.
      * @param {number} value Updated margin value in points.
      */
     updateMargin: function(orientation, value) {
@@ -143,8 +143,8 @@ cr.define('print_preview.ticket_items', function() {
     },
 
     /**
-     * @param {print_preview.ticket_items.CustomMargins.Orientation} orientation
-     *     Specifies which margin to get the maximum value of.
+     * @param {!print_preview.ticket_items.CustomMargins.Orientation}
+     *     orientation Specifies which margin to get the maximum value of.
      * @param {number} oppositeMargin Value of the margin in points
      *     opposite the specified margin.
      * @return {number} Maximum value in points of the specified margin.

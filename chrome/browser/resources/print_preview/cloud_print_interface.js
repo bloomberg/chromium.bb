@@ -103,7 +103,7 @@ cr.define('cloudprint', function() {
      * @param {!print_preview.Destination} destination Destination to print to.
      * @param {!print_preview.PrintTicketStore} printTicketStore Used to create
      *     the state of the print ticket.
-     * @return {object} Google Cloud Print print ticket.
+     * @return {!Object} Google Cloud Print print ticket.
      */
     createPrintTicket: function(destination, printTicketStore) {
       assert(!destination.isLocal,
@@ -247,14 +247,14 @@ cr.define('cloudprint', function() {
     onSearchDone_: function(result) {
       var printerListJson = result['printers'] || [];
       var printerList = [];
-      for (var printerJson, i = 0; printerJson = printerListJson[i]; i++) {
+      printerListJson.forEach(function(printerJson) {
         try {
           printerList.push(
               cloudprint.CloudDestinationParser.parse(printerJson));
         } catch (err) {
           console.error('Unable to parse cloud print destination: ' + err);
         }
-      }
+      });
       var isRecent = result['request']['params']['q'] == '^recent';
       var searchDoneEvent =
           new cr.Event(CloudPrintInterface.EventType.SEARCH_DONE);

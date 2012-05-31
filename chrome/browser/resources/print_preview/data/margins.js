@@ -16,9 +16,8 @@ cr.define('print_preview', function() {
   function Margins(top, right, bottom, left) {
     /**
      * Backing store for the margin values in points.
-     * @type {Object.<
-     *     print_preview.ticket_items.CustomMargins.Orientation,
-     *     number>}
+     * @type {!Object.<
+     *     !print_preview.ticket_items.CustomMargins.Orientation, number>}
      * @private
      */
     this.value_ = {};
@@ -33,8 +32,8 @@ cr.define('print_preview', function() {
 
   Margins.prototype = {
     /**
-     * @param {print_preview.ticket_items.CustomMargins.Orientation} orientation
-     *     Specifies the margin value to get.
+     * @param {!print_preview.ticket_items.CustomMargins.Orientation}
+     *     orientation Specifies the margin value to get.
      * @return {number} Value of the margin of the given orientation.
      */
     get: function(orientation) {
@@ -42,8 +41,8 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @param {print_preview.ticket_items.CustomMargins.Orientation} orientation
-     *     Specifies the margin to set.
+     * @param {!print_preview.ticket_items.CustomMargins.Orientation}
+     *     orientation Specifies the margin to set.
      * @param {number} value Updated value of the margin in points to modify.
      * @return {!print_preview.Margins} A new copy of |this| with the
      *     modification made to the specified margin.

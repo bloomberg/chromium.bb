@@ -15,18 +15,25 @@ function PrintPreviewWebUITest() {
 }
 
 /**
+ * Index of the "Save as PDF" printer.
+ * @type {number}
+ * @const
+ */
+PrintPreviewWebUITest.PDF_INDEX = 0;
+
+/**
  * Index of the Foo printer.
  * @type {number}
  * @const
  */
-PrintPreviewWebUITest.FOO_INDEX = 0;
+PrintPreviewWebUITest.FOO_INDEX = 1;
 
 /**
  * Index of the Bar printer.
  * @type {number}
  * @const
  */
-PrintPreviewWebUITest.BAR_INDEX = 1;
+PrintPreviewWebUITest.BAR_INDEX = 2;
 
 PrintPreviewWebUITest.prototype = {
   __proto__: testing.Test.prototype,
@@ -55,9 +62,11 @@ PrintPreviewWebUITest.prototype = {
         startGetLocalDestinations: function() {},
         startGetLocalDestinationCapabilities: function(destinationId) {}
       };
-
-      this.nativeLayer_ = new NativeLayerStub();
-      printPreview.nativeLayer_ = this.nativeLayer_;
+      var oldNativeLayerEventType = print_preview.NativeLayer.EventType;
+      var oldDuplexMode = print_preview.NativeLayer.DuplexMode;
+      print_preview.NativeLayer = NativeLayerStub;
+      print_preview.NativeLayer.EventType = oldNativeLayerEventType;
+      print_preview.NativeLayer.DuplexMode = oldDuplexMode;
 
       function CloudPrintInterfaceStub() {
         cr.EventTarget.call(this);
@@ -106,6 +115,7 @@ PrintPreviewWebUITest.prototype = {
       { printerName: 'FooName', deviceName: 'FooDevice' },
       { printerName: 'BarName', deviceName: 'BarDevice' }
     ];
+    this.nativeLayer_ = printPreview.nativeLayer_;
   }
 };
 
@@ -123,23 +133,29 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterList', function() {
   localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
   this.nativeLayer_.dispatchEvent(localDestsSetEvent);
 
-  var printerList = $('destination-settings').
-      getElementsByClassName('destination-settings-select')[0];
-  assertNotEquals(null, printerList);
-  assertGE(printerList.options.length, 2);
-  expectEquals(PrintPreviewWebUITest.FOO_INDEX, printerList.selectedIndex);
-  expectEquals('FooName',
-               printerList.options[PrintPreviewWebUITest.FOO_INDEX].text,
-               'fooIndex=' + PrintPreviewWebUITest.FOO_INDEX);
-  expectEquals('FooDevice',
-               printerList.options[PrintPreviewWebUITest.FOO_INDEX].value,
-               'fooIndex=' + PrintPreviewWebUITest.FOO_INDEX);
-  expectEquals('BarName',
-               printerList.options[PrintPreviewWebUITest.BAR_INDEX].text,
-               'barIndex=' + PrintPreviewWebUITest.BAR_INDEX);
-  expectEquals('BarDevice',
-               printerList.options[PrintPreviewWebUITest.BAR_INDEX].value,
-               'barIndex=' + PrintPreviewWebUITest.BAR_INDEX);
+  var recentList = $('destination-search').querySelector(
+      '.destination-search-recent-list ' +
+      '.destination-list-destination-list-item-container');
+  var localList = $('destination-search').querySelector(
+      '.destination-search-local-list ' +
+      '.destination-list-destination-list-item-container');
+  assertNotEquals(null, recentList);
+  assertEquals(1, recentList.childNodes.length);
+  assertEquals('FooName',
+               recentList.childNodes.item(0).querySelector(
+                   '.destination-list-item-name').textContent);
+
+  assertNotEquals(null, localList);
+  assertEquals(3, localList.childNodes.length);
+  assertEquals('Save as PDF',
+               localList.childNodes.item(PrintPreviewWebUITest.PDF_INDEX).
+                   querySelector('.destination-list-item-name').textContent);
+  assertEquals('FooName',
+               localList.childNodes.item(PrintPreviewWebUITest.FOO_INDEX).
+                   querySelector('.destination-list-item-name').textContent);
+  assertEquals('BarName',
+               localList.childNodes.item(PrintPreviewWebUITest.BAR_INDEX).
+                   querySelector('.destination-list-item-name').textContent);
 });
 
 // Test that the printer list is structured correctly after calling
@@ -167,23 +183,36 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloudEmpty', function() {
   searchDoneEvent.email = 'foo@chromium.org';
   printPreview.cloudPrintInterface_.dispatchEvent(searchDoneEvent);
 
-  var printerList = $('destination-settings').
-      getElementsByClassName('destination-settings-select')[0];
-  assertNotEquals(null, printerList);
-  assertGE(printerList.options.length, 2);
-  expectEquals(PrintPreviewWebUITest.FOO_INDEX, printerList.selectedIndex);
-  expectEquals('FooName',
-               printerList.options[PrintPreviewWebUITest.FOO_INDEX].text,
-               'fooIndex=' + PrintPreviewWebUITest.FOO_INDEX);
-  expectEquals('FooDevice',
-               printerList.options[PrintPreviewWebUITest.FOO_INDEX].value,
-               'fooIndex=' + PrintPreviewWebUITest.FOO_INDEX);
-  expectEquals('BarName',
-               printerList.options[PrintPreviewWebUITest.BAR_INDEX].text,
-               'barIndex=' + PrintPreviewWebUITest.BAR_INDEX);
-  expectEquals('BarDevice',
-               printerList.options[PrintPreviewWebUITest.BAR_INDEX].value,
-               'barIndex=' + PrintPreviewWebUITest.BAR_INDEX);
+  var recentList = $('destination-search').querySelector(
+      '.destination-search-recent-list ' +
+      '.destination-list-destination-list-item-container');
+  var localList = $('destination-search').querySelector(
+      '.destination-search-local-list ' +
+      '.destination-list-destination-list-item-container');
+  var cloudList = $('destination-search').querySelector(
+      '.destination-search-cloud-list ' +
+      '.destination-list-destination-list-item-container');
+
+  assertNotEquals(null, recentList);
+  assertEquals(1, recentList.childNodes.length);
+  assertEquals('FooName',
+               recentList.childNodes.item(0).querySelector(
+                   '.destination-list-item-name').textContent);
+
+  assertNotEquals(null, localList);
+  assertEquals(3, localList.childNodes.length);
+  assertEquals('Save as PDF',
+               localList.childNodes.item(PrintPreviewWebUITest.PDF_INDEX).
+                   querySelector('.destination-list-item-name').textContent);
+  assertEquals('FooName',
+               localList.childNodes.item(PrintPreviewWebUITest.FOO_INDEX).
+                   querySelector('.destination-list-item-name').textContent);
+  assertEquals('BarName',
+               localList.childNodes.item(PrintPreviewWebUITest.BAR_INDEX).
+                   querySelector('.destination-list-item-name').textContent);
+
+  assertNotEquals(null, cloudList);
+  assertEquals(0, cloudList.childNodes.length);
 });
 
 /**
@@ -199,7 +228,7 @@ function checkSectionVisible(section, visible) {
 
 function checkElementDisplayed(el, isDisplayed) {
   assertNotEquals(null, el);
-  expectEquals(isDisplayed, el.style.display != 'none');
+  expectEquals(isDisplayed, !el.hidden);
 }
 
 // Test that disabled settings hide the disabled sections.
@@ -725,17 +754,17 @@ TEST_F('PrintPreviewWebUITest', 'TestNoPDFPluginErrorMessage', function() {
 
   var loadingMessageEl =
       previewAreaEl.getElementsByClassName('preview-area-loading-message')[0];
-  expectEquals('none', loadingMessageEl.style.display);
+  expectEquals(true, loadingMessageEl.hidden);
 
   var previewFailedMessageEl = previewAreaEl.getElementsByClassName(
       'preview-area-preview-failed-message')[0];
-  expectEquals('none', previewFailedMessageEl.style.display);
+  expectEquals(true, previewFailedMessageEl.hidden);
 
   var printFailedMessageEl =
       previewAreaEl.getElementsByClassName('preview-area-print-failed')[0];
-  expectEquals('none', printFailedMessageEl.style.display);
+  expectEquals(true, printFailedMessageEl.hidden);
 
   var customMessageEl =
       previewAreaEl.getElementsByClassName('preview-area-custom-message')[0];
-  expectEquals('', customMessageEl.style.display);
+  expectEquals(false, customMessageEl.hidden);
 });

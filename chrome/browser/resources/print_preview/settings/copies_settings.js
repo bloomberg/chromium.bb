@@ -24,7 +24,7 @@ cr.define('print_preview', function() {
 
     /**
      * Timeout used to delay processing of the copies input.
-     * @type {Object}
+     * @type {?number}
      * @private
      */
     this.textfieldTimeout_ = null;

@@ -69,7 +69,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.collate_ =
-          new print_preview.ticket_items.Collate(this.capabilitiesHolder_);
+        new print_preview.ticket_items.Collate(this.capabilitiesHolder_);
 
     /**
      * Color ticket item.
@@ -142,6 +142,15 @@ cr.define('print_preview', function() {
      */
     this.fitToPage_ = new print_preview.ticket_items.FitToPage(
         this.documentInfo_, this.destinationStore_);
+
+    /**
+     * Keeps track of event listeners for the print ticket store.
+     * @type {!EventTracker}
+     * @private
+     */
+    this.tracker_ = new EventTracker();
+
+    this.addEventListeners_();
   };
 
   /**
@@ -243,12 +252,12 @@ cr.define('print_preview', function() {
      *     modifiable (i.e. can be re-flowed by Chromium).
      * @param {?boolean} isDuplexEnabled Previous duplex setting.
      * @param {?boolean} isHeaderFooterEnabled Previous header-footer setting.
-     * @param {?print_preview.ticket_items.MarginsType.Value} marginsType
+     * @param {print_preview.ticket_items.MarginsType.Value} marginsType
      *     Previous margins type.
      * @param {print_preview.Margins} customMargins Previous custom margins.
      * @param {string} thousandsDelimeter Delimeter of the thousands place.
      * @param {string} decimalDelimeter Delimeter of the decimal point.
-     * @param {print_preview.MeasurementSystem.UnitType} unitType Type of unit
+     * @param {!print_preview.MeasurementSystem.UnitType} unitType Type of unit
      *     of the local measurement system.
      */
     initialize: function(
@@ -273,28 +282,6 @@ cr.define('print_preview', function() {
       }
       if (customMargins != null) {
         this.customMargins_.updateValue(customMargins);
-      }
-    },
-
-    /**
-     * Updates the capabilities of the destination the print ticket is for.
-     * Dispatches a CAPABILITIES_CHANGE event.
-     * @param {!print_preview.ChromiumCapabilities} caps New capabilities.
-     */
-    updateDestinationCapabilities: function(caps) {
-      var isFirstUpdate = this.capabilitiesHolder_.get() == null;
-      this.capabilitiesHolder_.set(caps);
-      if (isFirstUpdate) {
-        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.INITIALIZE);
-      } else {
-        this.customMargins_.updateValue(null);
-        if (this.marginsType_.getValue() ==
-            print_preview.ticket_items.MarginsType.Value.CUSTOM) {
-          this.marginsType_.updateValue(
-              print_preview.ticket_items.MarginsType.Value.DEFAULT);
-        }
-        cr.dispatchSimpleEvent(
-            this, PrintTicketStore.EventType.CAPABILITIES_CHANGE);
       }
     },
 
@@ -469,8 +456,8 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {print_preview.ticket_items.MarginsType.Value} Type of predefined
-     *     margins.
+     * @return {!print_preview.ticket_items.MarginsType.Value} Type of
+     *     predefined margins.
      */
     getMarginsType: function() {
       return this.marginsType_.getValue();
@@ -509,8 +496,8 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @param {print_preview.ticket_items.CustomMargins.Orientation} orientation
-     *     Specifies the margin to get the maximum value for.
+     * @param {!print_preview.ticket_items.CustomMargins.Orientation}
+     *     orientation Specifies the margin to get the maximum value for.
      * @return {number} Maximum value in points of the specified margin.
      */
     getCustomMarginMax: function(orientation) {
@@ -533,8 +520,8 @@ cr.define('print_preview', function() {
 
     /**
      * Updates a single custom margin's value in points.
-     * @param {print_preview.ticket_items.CustomMargins.Orientation} orientation
-     *     Specifies the margin to update.
+     * @param {!print_preview.ticket_items.CustomMargins.Orientation}
+     *     orientation Specifies the margin to update.
      * @param {number} value Updated margin in points.
      */
     updateCustomMargin: function(orientation, value) {
@@ -619,6 +606,40 @@ cr.define('print_preview', function() {
               this.getMarginsType() !=
                   print_preview.ticket_items.MarginsType.Value.CUSTOM ||
               this.isCustomMarginsValid());
+    },
+
+    /**
+     * Adds event listeners for the print ticket store.
+     * @private
+     */
+    addEventListeners_: function() {
+      this.tracker_.add(
+          this.destinationStore_,
+          print_preview.DestinationStore.EventType.
+              SELECTED_DESTINATION_CAPABILITIES_READY,
+          this.onSelectedDestinationCapabilitiesReady_.bind(this));
+    },
+
+    /**
+     * Called when the capabilities of the selected destination are ready.
+     * @private
+     */
+    onSelectedDestinationCapabilitiesReady_: function() {
+      var caps = this.destinationStore_.selectedDestination.capabilities;
+      var isFirstUpdate = this.capabilitiesHolder_.get() == null;
+      this.capabilitiesHolder_.set(caps);
+      if (isFirstUpdate) {
+        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.INITIALIZE);
+      } else {
+        this.customMargins_.updateValue(null);
+        if (this.marginsType_.getValue() ==
+            print_preview.ticket_items.MarginsType.Value.CUSTOM) {
+          this.marginsType_.updateValue(
+              print_preview.ticket_items.MarginsType.Value.DEFAULT);
+        }
+        cr.dispatchSimpleEvent(
+            this, PrintTicketStore.EventType.CAPABILITIES_CHANGE);
+      }
     }
   };
 

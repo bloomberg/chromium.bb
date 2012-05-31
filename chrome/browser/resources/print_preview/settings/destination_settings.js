@@ -25,6 +25,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.destinationStore_ = destinationStore;
+
+    /**
+     * Current CSS class of the destination icon.
+     * @type {?DestinationSettings.Classes_}
+     * @private
+     */
+    this.iconClass_ = null;
   };
 
   /**
@@ -32,8 +39,8 @@ cr.define('print_preview', function() {
    * @enum {string}
    */
   DestinationSettings.EventType = {
-    MANAGE_PRINTERS_SELECT:
-        'print_preview.DestinationSettings.MANAGE_PRINTERS_SELECT'
+    CHANGE_BUTTON_ACTIVATE:
+        'print_preview.DestinationSettings.CHANGE_BUTTON_ACTIVATE'
   };
 
   /**
@@ -42,157 +49,91 @@ cr.define('print_preview', function() {
    * @private
    */
   DestinationSettings.Classes_ = {
-    SELECT: 'destination-settings-select'
+    CHANGE_BUTTON: 'destination-settings-change-button',
+    ICON: 'destination-settings-icon',
+    ICON_CLOUD: 'destination-settings-icon-cloud',
+    ICON_CLOUD_SHARED: 'destination-settings-icon-cloud-shared',
+    ICON_GOOGLE_PROMOTED: 'destination-settings-icon-google-promoted',
+    ICON_LOCAL: 'destination-settings-icon-local',
+    ICON_MOBILE: 'destination-settings-icon-mobile',
+    ICON_MOBILE_SHARED: 'destination-settings-icon-mobile-shared',
+    LOCATION: 'destination-settings-location',
+    NAME: 'destination-settings-name'
   };
-
-  /**
-   * Option value of the "Manage Printers..." select option.
-   * @type {string}
-   * @const
-   * @private
-   */
-  DestinationSettings.MANAGE_ID_ = '__manage';
 
   DestinationSettings.prototype = {
     __proto__: print_preview.Component.prototype,
 
+    /** @param {boolean} Whether the component is enabled. */
     set isEnabled(isEnabled) {
-      this.select_.disabled = !isEnabled;
+      var changeButton = this.getElement().getElementsByClassName(
+          DestinationSettings.Classes_.CHANGE_BUTTON)[0];
+      changeButton.disabled = !isEnabled;
     },
 
     /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
+      var changeButton = this.getElement().getElementsByClassName(
+          DestinationSettings.Classes_.CHANGE_BUTTON)[0];
       this.tracker.add(
-          this.select_, 'change', this.onSelectChange_.bind(this));
+          changeButton, 'click', this.onChangeButtonClick_.bind(this));
       this.tracker.add(
           this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SELECT,
           this.onDestinationSelect_.bind(this));
-      this.tracker.add(
-          this.destinationStore_,
-          print_preview.DestinationStore.EventType.DESTINATIONS_INSERTED,
-          this.onDestinationsInserted_.bind(this));
-    },
-
-    get select_() {
-      return this.getElement().getElementsByClassName(
-          DestinationSettings.Classes_.SELECT)[0];
-    },
-
-    renderDestinations_: function() {
-      var select = this.select_;
-      select.innerHTML = '';
-      var destinations = this.destinationStore_.destinations;
-      var selectedDestination = this.destinationStore_.selectedDestination;
-      var saveToPdfDest = null;
-      var printWithCloudPrintDest = null;
-      for (var dest, i = 0; dest = destinations[i]; i++) {
-        if (dest.id == print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
-          saveToPdfDest = dest;
-          continue;
-        }
-        if (dest.isPrintWithCloudPrint) {
-          printWithCloudPrintDest = dest;
-          continue;
-        }
-        var optionEl = document.createElement('option');
-        optionEl.value = dest.id;
-        optionEl.selected =
-            selectedDestination && selectedDestination.id == dest.id;
-        optionEl.textContent = dest.displayName;
-        select.appendChild(optionEl);
-      }
-
-      // Add special destinations.
-      if (saveToPdfDest) {
-        select.appendChild(this.createSeparatorOption_());
-        var printToPdfOptionEl = document.createElement('option');
-        printToPdfOptionEl.value = saveToPdfDest.id;
-        printToPdfOptionEl.selected =
-            selectedDestination && selectedDestination.id == saveToPdfDest.id;
-        printToPdfOptionEl.textContent = saveToPdfDest.displayName;
-        select.appendChild(printToPdfOptionEl);
-      }
-      if (printWithCloudPrintDest) {
-        select.appendChild(this.createSeparatorOption_());
-        var printWithCloudPrintOptionEl = document.createElement('option');
-        printWithCloudPrintOptionEl.value = printWithCloudPrintDest.id;
-        printWithCloudPrintOptionEl.selected =
-            selectedDestination &&
-            selectedDestination.id == printWithCloudPrintDest.id;
-        printWithCloudPrintOptionEl.textContent =
-            printWithCloudPrintDest.displayName;
-        select.appendChild(printWithCloudPrintOptionEl);
-      }
-      select.appendChild(this.createSeparatorOption_());
-      var manageOptionEl = document.createElement('option');
-      manageOptionEl.value = DestinationSettings.MANAGE_ID_;
-      manageOptionEl.textContent = localStrings.getString('managePrinters');
-      select.appendChild(manageOptionEl);
-    },
-
-    createSeparatorOption_: function() {
-      var sep = document.createElement('option');
-      sep.disabled = true;
-      sep.role = 'separator';
-      return sep;
     },
 
     /**
-     * Called when a destination is selected. Selects the corresponding option.
+     * Called when the "Change" button is clicked. Dispatches the
+     * CHANGE_BUTTON_ACTIVATE event.
+     * @private
+     */
+    onChangeButtonClick_: function() {
+      cr.dispatchSimpleEvent(
+          this, DestinationSettings.EventType.CHANGE_BUTTON_ACTIVATE);
+    },
+
+    /**
+     * Called when the destination selection has changed. Updates UI elements.
      * @private
      */
     onDestinationSelect_: function() {
-      var select = this.select_;
-      if (select.options.length > 0) {
-        select.options[select.selectedIndex].selected = false;
+      var destination = this.destinationStore_.selectedDestination;
+      var nameEl = this.getElement().getElementsByClassName(
+          DestinationSettings.Classes_.NAME)[0];
+      nameEl.textContent = destination.displayName;
+
+      var iconEl = this.getElement().getElementsByClassName(
+          DestinationSettings.Classes_.ICON)[0];
+      if (this.iconClass_) {
+        iconEl.classList.remove(this.iconClass_);
       }
-      var selectedDestination = this.destinationStore_.selectedDestination;
-      for (var option, i = 0; option = select.options[i]; i++) {
-        if (selectedDestination.id == option.value) {
-          option.selected = true;
-          break;
-        }
-      }
-    },
-
-    /**
-     * Called when destinations are inserted into the destination store. Updates
-     * the select element.
-     * @private
-     */
-    onDestinationsInserted_: function() {
-      this.renderDestinations_();
-    },
-
-    /**
-     * Called when the select element changes options. Selects the corresponding
-     * print destination.
-     * @private
-     */
-    onSelectChange_: function() {
-      var select = this.select_;
-      var selectedDestId = select.options[select.selectedIndex].value;
-
-      if (selectedDestId == DestinationSettings.MANAGE_ID_) {
-        cr.dispatchSimpleEvent(
-            this, DestinationSettings.EventType.MANAGE_PRINTERS_SELECT);
-        // Select first in the list.
-        this.destinationStore_.selectDestination(
-            this.destinationStore_.destinations[0]);
+      if (destination.isGooglePromoted) {
+        this.iconClass_ = DestinationSettings.Classes_.ICON_GOOGLE_PROMOTED;
+      } else if (destination.isLocal) {
+        this.iconClass_ = DestinationSettings.Classes_.ICON_LOCAL;
+      } else if (destination.type ==
+          print_preview.Destination.Type.MOBILE && destination.isOwned) {
+        this.iconClass_ = DestinationSettings.Classes_.ICON_MOBILE;
+      } else if (destination.type ==
+          print_preview.Destination.Type.MOBILE && !destination.isOwned) {
+        this.iconClass_ = DestinationSettings.Classes_.ICON_MOBILE_SHARED;
+      } else if (destination.type ==
+          print_preview.Destination.Type.GOOGLE && destination.isOwned) {
+        this.iconClass_ = DestinationSettings.Classes_.ICON_CLOUD;
       } else {
-        var destinations = this.destinationStore_.destinations;
-        for (var dest, i = 0; dest = destinations[i]; i++) {
-          if (dest.id == selectedDestId) {
-            this.destinationStore_.selectDestination(dest);
-            break;
-          }
-        }
+        this.iconClass_ = DestinationSettings.Classes_.ICON_CLOUD_SHARED;
       }
+      iconEl.classList.add(this.iconClass_);
+
+      var locationEl = this.getElement().getElementsByClassName(
+          DestinationSettings.Classes_.LOCATION)[0];
+      locationEl.textContent = destination.location;
     }
   };
 
+  // Export
   return {
     DestinationSettings: DestinationSettings
   };

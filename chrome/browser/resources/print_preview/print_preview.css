@@ -83,6 +83,7 @@ header {
   border-bottom: 1px solid #dcdcdc;
   padding-bottom: 10px;
   padding-top: 10px;
+  vertical-align: top;
 }
 
 .two-column:not(.visible) select {

@@ -85,7 +85,7 @@ cr.define('print_preview', function() {
 
     /**
      * Margins type used to generate the last preview.
-     * @type {print_preview.ticket_items.MarginsType.Value}
+     * @type {!print_preview.ticket_items.MarginsType.Value}
      * @private
      */
     this.marginsType_ = print_preview.ticket_items.MarginsType.Value.DEFAULT;

@@ -232,7 +232,7 @@ cr.define('print_preview', function() {
         'fitToPageEnabled': printTicketStore.isFitToPageEnabled()
       };
 
-      if (!destination.isLocal && !destination.isPrintWithCloudPrint) {
+      if (!destination.isLocal) {
         // We can't set cloudPrintID if the destination is "Print with Cloud
         // Print" because the native system will try to print to Google Cloud
         // Print with this ID instead of opening a Google Cloud Print dialog.
@@ -300,17 +300,17 @@ cr.define('print_preview', function() {
     },
 
     /** Navigates the user to the system printer settings interface. */
-    startManageLocalPrinters: function() {
+    startManageLocalDestinations: function() {
       chrome.send('manageLocalPrinters');
     },
 
     /** Navigates the user to the Google Cloud Print management page. */
-    startManageCloudPrinters: function() {
+    startManageCloudDestinations: function() {
       chrome.send('manageCloudPrinters');
     },
 
     /**
-     * @param {object} initialSettings Object containing all initial settings.
+     * @param {!Object} initialSettings Object containing all initial settings.
      */
     onSetInitialSettings_: function(initialSettings) {
       // TODO(rltoscano): Use initialSettings['cloudPrintData'] to prepopulate
@@ -562,11 +562,11 @@ cr.define('print_preview', function() {
    *     in auto-print mode.
    * @param {string} thousandsDelimeter Character delimeter of thousands digits.
    * @param {string} decimalDelimeter Character delimeter of the decimal point.
-   * @param {print_preview.MeasurementSystem.UnitType} unitType Unit type of
+   * @param {!print_preview.MeasurementSystem.UnitType} unitType Unit type of
    *     local machine's measurement system.
    * @param {boolean} isDocumentModifiable Whether the document to print is
    *     modifiable.
-   * @param {?print_preview.ticket_items.MarginsType.Value} marginsType Initial
+   * @param {print_preview.ticket_items.MarginsType.Value} marginsType Initial
    *     margins type.
    * @param {print_preview.Margins} customMargins Initial custom margins.
    * @param {boolean} isDuplexEnabled Whether duplexing is initially enabled.
@@ -625,7 +625,7 @@ cr.define('print_preview', function() {
 
     /**
      * Initial margins type.
-     * @type {?print_preview.ticket_items.MarginsType.Value}
+     * @type {print_preview.ticket_items.MarginsType.Value}
      * @private
      */
     this.marginsType_ = marginsType;
@@ -678,7 +678,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {print_preview.MeasurementSystem.UnitType} Unit type of local
+     * @return {!print_preview.MeasurementSystem.UnitType} Unit type of local
      *     machine's measurement system.
      */
     get unitType() {
@@ -691,7 +691,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {?print_preview.ticket_items.MarginsType.Value} Initial margins
+     * @return {print_preview.ticket_items.MarginsType.Value} Initial margins
      *     type or {@code null} if not initially set.
      */
     get marginsType() {

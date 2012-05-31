@@ -95,7 +95,7 @@ cr.define('print_preview', function() {
     /**
      * Timeout object used to display a loading message if the preview is taking
      * a long time to generate.
-     * @type {Object}
+     * @type {?number}
      * @private
      */
     this.loadingTimeout_ = null;
@@ -352,8 +352,8 @@ cr.define('print_preview', function() {
 
     /**
      * Shows a given message on the overlay.
-     * @param {print_preview.PreviewArea.MessageId_} messageId ID of the message
-     *     to show.
+     * @param {!print_preview.PreviewArea.MessageId_} messageId ID of the
+     *     message to show.
      * @param {string=} opt_message Optional message to show that can be used
      *     by some message IDs.
      * @private

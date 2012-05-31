@@ -25,7 +25,7 @@ cr.define('print_preview', function() {
 
     /**
      * Timeout used to delay processing of the custom page range input.
-     * @type {Object}
+     * @type {?number}
      * @private
      */
     this.customInputTimeout_ = null;

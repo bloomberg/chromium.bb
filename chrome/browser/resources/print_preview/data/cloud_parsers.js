@@ -18,37 +18,61 @@ cr.define('cloudprint', function() {
     DISPLAY_NAME: 'displayName',
     FORMAT: 'capsFormat',
     ID: 'id',
-    TAGS: 'tags'
+    TAGS: 'tags',
+    TYPE: 'type'
   };
 
   /**
    * Special tag that denotes whether the destination has been recently used.
    * @type {string}
+   * @const
    * @private
    */
   CloudDestinationParser.RECENT_TAG_ = '^recent';
 
   /**
+   * Special tag that denotes whether the destination is owned by the user.
+   * @type {string}
+   * @const
+   * @private
+   */
+  CloudDestinationParser.OWNED_TAG_ = '^own';
+
+  /**
+   * Enumeration of cloud destination types that are supported by print preview.
+   * @enum {string}
+   * @private
+   */
+  CloudDestinationParser.CloudType_ = {
+    ANDROID: 'ANDROID_CHROME_SNAPSHOT',
+    DOCS: 'DOCS',
+    IOS: 'IOS_CHROME_SNAPSHOT'
+  };
+
+  /**
    * Parses a destination from JSON from a Google Cloud Print search or printer
    * response.
-   * @param {object} json Object that represents a Google Cloud Print search or
+   * @param {!Object} json Object that represents a Google Cloud Print search or
    *     printer response.
    * @return {!print_preview.Destination} Parsed destination.
    */
   CloudDestinationParser.parse = function(json) {
     if (!json.hasOwnProperty(CloudDestinationParser.Field_.ID) ||
+        !json.hasOwnProperty(CloudDestinationParser.Field_.TYPE) ||
         !json.hasOwnProperty(CloudDestinationParser.Field_.DISPLAY_NAME)) {
       throw Error('Cloud destination does not have an ID or a display name');
     }
-    var isRecent = arrayContains(
-        json[CloudDestinationParser.Field_.TAGS] || [],
-        CloudDestinationParser.RECENT_TAG_);
+    var tags = json[CloudDestinationParser.Field_.TAGS] || [];
+    var isRecent = arrayContains(tags, CloudDestinationParser.RECENT_TAG_);
+    var isOwned = arrayContains(tags, CloudDestinationParser.OWNED_TAG_);
     var cloudDest = new print_preview.Destination(
         json[CloudDestinationParser.Field_.ID],
+        CloudDestinationParser.parseType_(
+            json[CloudDestinationParser.Field_.TYPE]),
         json[CloudDestinationParser.Field_.DISPLAY_NAME],
         isRecent,
-        false /*isLocal*/,
-        json[CloudDestinationParser.Field_.TAGS] || []);
+        tags,
+        isOwned);
     if (json.hasOwnProperty(CloudDestinationParser.Field_.CAPABILITIES) &&
         json.hasOwnProperty(CloudDestinationParser.Field_.FORMAT)) {
       cloudDest.capabilities = CloudCapabilitiesParser.parse(
@@ -56,6 +80,24 @@ cr.define('cloudprint', function() {
           json[CloudDestinationParser.Field_.CAPABILITIES]);
     }
     return cloudDest;
+  };
+
+  /**
+   * Parses the destination type.
+   * @param {string} typeStr Destination type given by the Google Cloud Print
+   *     server.
+   * @return {!print_preview.Destination.Type} Destination type.
+   * @private
+   */
+  CloudDestinationParser.parseType_ = function(typeStr) {
+    if (typeStr == CloudDestinationParser.CloudType_.ANDROID ||
+        typeStr == CloudDestinationParser.CloudType_.IOS) {
+      return print_preview.Destination.Type.MOBILE;
+    } else if (typeStr == CloudDestinationParser.CloudType_.DOCS) {
+      return print_preview.Destination.Type.GOOGLE_PROMOTED;
+    } else {
+      return print_preview.Destination.Type.GOOGLE;
+    }
   };
 
   /**
@@ -81,7 +123,7 @@ cr.define('cloudprint', function() {
    * Parses print capabilities from an object in a given capabilities format.
    * @param {print_preview.CloudCapabilities.Format} capsFormat Format of the
    *     printer capabilities.
-   * @param {object} json Object representing the cloud capabilities.
+   * @param {!Array.<!Object>} json Object representing the cloud capabilities.
    * @return {!print_preview.CloudCapabilities} Parsed print capabilities.
    */
   CloudCapabilitiesParser.parse = function(capsFormat, json) {
@@ -89,7 +131,7 @@ cr.define('cloudprint', function() {
     var duplexCapability = null;
     var copiesCapability = null;
     var collateCapability = null;
-    for (var cap, i = 0; cap = json[i]; i++) {
+    json.forEach(function(cap) {
       var capId = cap[CloudCapabilitiesParser.Field_.CAP_ID];
       if (capId == print_preview.CollateCapability.Id[capsFormat]) {
         collateCapability = CloudCapabilitiesParser.parseCollate(capId, cap);
@@ -100,7 +142,7 @@ cr.define('cloudprint', function() {
       } else if (capId == print_preview.DuplexCapability.Id[capsFormat]) {
         duplexCapability = CloudCapabilitiesParser.parseDuplex(capId, cap);
       }
-    }
+    });
     return new print_preview.CloudCapabilities(
         collateCapability, colorCapability, copiesCapability, duplexCapability);
   };
@@ -108,7 +150,7 @@ cr.define('cloudprint', function() {
   /**
    * Parses a collate capability from the given object.
    * @param {string} capId Native ID of the given capability object.
-   * @param {object} Object that represents the collate capability.
+   * @param {!Object} Object that represents the collate capability.
    * @return {print_preview.CollateCapability} Parsed collate capability or
    *     {@code null} if the given capability object was not a valid collate
    *     capability.
@@ -118,7 +160,7 @@ cr.define('cloudprint', function() {
     var collateOption = null;
     var noCollateOption = null;
     var isCollateDefault = false;
-    for (var option, i = 0; option = options[i]; i++) {
+    options.forEach(function(option) {
       var optionId = option[CloudCapabilitiesParser.Field_.OPTION_ID];
       if (!collateOption &&
           print_preview.CollateCapability.COLLATE_REGEX.test(optionId)) {
@@ -128,7 +170,7 @@ cr.define('cloudprint', function() {
           print_preview.CollateCapability.NO_COLLATE_REGEX.test(optionId)) {
         noCollateOption = optionId;
       }
-    }
+    });
     if (!collateOption || !noCollateOption) {
       return null;
     }
@@ -139,7 +181,7 @@ cr.define('cloudprint', function() {
   /**
    * Parses a color capability from the given object.
    * @param {string} capId Native ID of the given capability object.
-   * @param {object} Object that represents the color capability.
+   * @param {!Object} Object that represents the color capability.
    * @return {print_preview.ColorCapability} Parsed color capability or
    *     {@code null} if the given capability object was not a valid color
    *     capability.
@@ -149,7 +191,7 @@ cr.define('cloudprint', function() {
     var colorOption = null;
     var bwOption = null;
     var isColorDefault = false;
-    for (var option, i = 0; option = options[i]; i++) {
+    options.forEach(function(option) {
       var optionId = option[CloudCapabilitiesParser.Field_.OPTION_ID];
       if (!colorOption &&
           print_preview.ColorCapability.COLOR_REGEX.test(optionId)) {
@@ -159,7 +201,7 @@ cr.define('cloudprint', function() {
           print_preview.ColorCapability.BW_REGEX.test(optionId)) {
         bwOption = optionId;
       }
-    }
+    });
     if (!colorOption || !bwOption) {
       return null;
     }
@@ -170,7 +212,7 @@ cr.define('cloudprint', function() {
   /**
    * Parses a duplex capability from the given object.
    * @param {string} capId Native ID of the given capability object.
-   * @param {object} Object that represents the duplex capability.
+   * @param {!Object} Object that represents the duplex capability.
    * @return {print_preview.DuplexCapability} Parsed duplex capability or
    *     {@code null} if the given capability object was not a valid duplex
    *     capability.
@@ -180,7 +222,7 @@ cr.define('cloudprint', function() {
     var simplexOption = null;
     var longEdgeOption = null;
     var isDuplexDefault = false;
-    for (var option, i = 0; option = options[i]; i++) {
+    options.forEach(function(option) {
       var optionId = option[CloudCapabilitiesParser.Field_.OPTION_ID];
       if (!simplexOption &&
           print_preview.DuplexCapability.SIMPLEX_REGEX.test(optionId)) {
@@ -190,7 +232,7 @@ cr.define('cloudprint', function() {
         longEdgeOption = optionId;
         isDuplexDefault = !!option[CloudCapabilitiesParser.Field_.DEFAULT];
       }
-    }
+    });
     if (!simplexOption || !longEdgeOption) {
       return null;
     }

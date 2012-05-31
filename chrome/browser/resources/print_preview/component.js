@@ -73,20 +73,20 @@ cr.define('print_preview', function() {
      */
     enterDocument: function() {
       this.isInDocument_ = true;
-      for (var child, i = 0; child = this.children_[i]; i++) {
+      this.children_.forEach(function(child) {
         if (!child.isInDocument && child.getElement()) {
           child.enterDocument();
         }
-      }
+      });
     },
 
     /** Removes all event listeners. */
     exitDocument: function() {
-      for (var child, i = 0; child = this.children_[i]; i++) {
+      this.children_.forEach(function(child) {
         if (child.isInDocument) {
           child.exitDocument();
         }
-      }
+      });
       this.tracker_.removeAll();
       this.isInDocument_ = false;
     },

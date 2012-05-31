@@ -1,0 +1,33 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.destination-list-header {
+  -webkit-padding-start: 0;
+  background-color: transparent;
+}
+
+.destination-list-title {
+  -webkit-padding-end: 8px;
+  display: inline;
+}
+
+.destination-list-destination-list-item-container {
+  -webkit-padding-start: 0;
+  list-style-type: none;
+  margin-bottom: 0;
+}
+
+.destination-list-no-destinations-message {
+  -webkit-padding-start: 18px;
+  color: #999;
+}
+
+.destination-list-footer {
+  -webkit-padding-start: 18px;
+  padding-top: 8px;
+}
+
+.destination-list-total {
+  color: #999;
+}

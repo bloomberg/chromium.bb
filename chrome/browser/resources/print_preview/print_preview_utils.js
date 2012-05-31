@@ -192,12 +192,12 @@ function pageSetToPageRanges(pageSet) {
  * @param {boolean} isVisible Whether the element should be visible or not.
  */
 function setIsVisible(element, isVisible) {
-  element.style.display = isVisible ? '' : 'none';
+  element.hidden = !isVisible;
 }
 
 /**
- * @param {Array.<object>} array Array to check for item.
- * @param {object} item Item to look for in array.
+ * @param {!Array} array Array to check for item.
+ * @param {*} item Item to look for in array.
  * @return {boolean} Whether the item is in the array.
  */
 function arrayContains(array, item) {

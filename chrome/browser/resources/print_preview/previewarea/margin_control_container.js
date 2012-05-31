@@ -31,8 +31,8 @@ cr.define('print_preview', function() {
 
     /**
      * Convenience array that contains all of the margin controls.
-     * @type {!Object<
-     *     print_preview.ticket_items.CustomMargins.Orientation,
+     * @type {!Object.<
+     *     !print_preview.ticket_items.CustomMargins.Orientation,
      *     !print_preview.MarginControl>}
      * @private
      */
@@ -90,7 +90,7 @@ cr.define('print_preview', function() {
   };
 
   /**
-   * @param {print_preview.ticket_items.CustomMargins.Orientation} orientation
+   * @param {!print_preview.ticket_items.CustomMargins.Orientation} orientation
    *     Orientation value to test.
    * @return {boolean} Whether the given orientation is TOP or BOTTOM.
    * @private

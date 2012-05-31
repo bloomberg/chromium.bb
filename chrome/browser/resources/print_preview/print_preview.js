@@ -2,16 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(rltoscano): Might be a problem where might be in fetching destinations
-// state, then to file selection state, then cancel, which results in the
-// fetching destinations state being lost.
-
 // TODO(rltoscano): Move data/* into print_preview.data namespace
 
-// TODO(rltoscano): Handle case where cloud print is initial destination, but
-// cloud print is not enabled.
-
-var localStrings = new LocalStrings();
+var localStrings = new LocalStrings(templateData);
 
 <include src="component.js"/>
 
@@ -34,11 +27,19 @@ cr.define('print_preview', function() {
     this.nativeLayer_ = new print_preview.NativeLayer();
 
     /**
+     * Event target that contains information about the logged in user.
+     * @type {!print_preview.UserInfo}
+     * @private
+     */
+    this.userInfo_ = new print_preview.UserInfo();
+
+    /**
      * Data store which holds print destinations.
      * @type {!print_preview.DestinationStore}
      * @private
      */
-    this.destinationStore_ = new print_preview.DestinationStore();
+    this.destinationStore_ = new print_preview.DestinationStore(
+        this.nativeLayer_);
 
     /**
      * Storage of the print ticket used to create the print job.
@@ -56,6 +57,15 @@ cr.define('print_preview', function() {
     this.printHeader_ = new print_preview.PrintHeader(
         this.printTicketStore_, this.destinationStore_);
     this.addChild(this.printHeader_);
+
+    /**
+     * Component used to search for print destinations.
+     * @type {!print_preview.DestinationSearch}
+     * @private
+     */
+    this.destinationSearch_ = new print_preview.DestinationSearch(
+        this.destinationStore_, this.userInfo_);
+    this.addChild(this.destinationSearch_);
 
     /**
      * Component that renders the print destination.
@@ -154,20 +164,11 @@ cr.define('print_preview', function() {
     this.uiState_ = PrintPreview.UiState_.INITIALIZING;
 
     /**
-     * Current state of fetching destinations.
-     * @type {print_preview.PrintPreview.FetchState_}
-     * @private
-     */
-    this.fetchState_ = PrintPreview.FetchState_.READY;
-
-    /**
      * Whether document preview generation is in progress.
      * @type {boolean}
      * @private
      */
     this.isPreviewGenerationInProgress_ = true;
-
-    this.tracker.add(window, 'DOMContentLoaded', this.onWindowLoad_.bind(this));
   };
 
   /**
@@ -186,36 +187,18 @@ cr.define('print_preview', function() {
     ERROR: 'error'
   };
 
-  /**
-   * Bitfield of the states of fetching destinations.
-   * @enum {number}
-   * @private
-   */
-  PrintPreview.FetchState_ = {
-    READY: 1,
-    LOCAL_DESTINATIONS: 2,
-    RECENT_CLOUD_DESTINATIONS: 4,
-    ALL_CLOUD_DESTINATIONS: 8
-  };
-
   PrintPreview.prototype = {
     __proto__: print_preview.Component.prototype,
 
-    /** @override */
-    decorateInternal: function() {
-      this.printHeader_.decorate($('print-header'));
-      this.destinationSettings_.decorate($('destination-settings'));
-      this.pageSettings_.decorate($('page-settings'));
-      this.copiesSettings_.decorate($('copies-settings'));
-      this.layoutSettings_.decorate($('layout-settings'));
-      this.colorSettings_.decorate($('color-settings'));
-      this.marginSettings_.decorate($('margin-settings'));
-      this.otherOptionsSettings_.decorate($('other-options-settings'));
-      this.previewArea_.decorate($('preview-area'));
-
-      setIsVisible($('cloud-print-dialog-link'), cr.isChromeOS);
-      setIsVisible($('system-dialog-link'), !cr.isChromeOS);
-      setIsVisible($('open-pdf-in-preview-link'), cr.isMac);
+    /** Sets up the page and print preview by getting the printer list. */
+    initialize: function() {
+      this.decorate($('print-preview'));
+      i18nTemplate.process(document, templateData);
+      if (!this.previewArea_.hasCompatiblePlugin) {
+        this.setIsEnabled_(false);
+      }
+      this.nativeLayer_.startGetInitialSettings();
+      this.destinationStore_.startLoadLocalDestinations();
     },
 
     /** @override */
@@ -229,18 +212,6 @@ cr.define('print_preview', function() {
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.CLOUD_PRINT_ENABLE,
           this.onCloudPrintEnable_.bind(this));
-      this.tracker.add(
-          this.nativeLayer_,
-          print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET,
-          this.onLocalDestinationsSet_.bind(this));
-      this.tracker.add(
-          this.nativeLayer_,
-          print_preview.NativeLayer.EventType.CAPABILITIES_SET,
-          this.onLocalDestinationCapabilitiesSet_.bind(this));
-      this.tracker.add(
-          this.nativeLayer_,
-          print_preview.NativeLayer.EventType.DESTINATIONS_RELOAD,
-          this.onDestinationsReload_.bind(this));
       this.tracker.add(
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.PRINT_TO_CLOUD,
@@ -294,8 +265,9 @@ cr.define('print_preview', function() {
 
       this.tracker.add(
           this.destinationStore_,
-          print_preview.DestinationStore.EventType.DESTINATION_SELECT,
-          this.onDestinationSelect_.bind(this));
+          print_preview.DestinationStore.EventType.
+              SELECTED_DESTINATION_CAPABILITIES_READY,
+          this.printIfReady_.bind(this));
 
       this.tracker.add(
           this.printHeader_,
@@ -306,12 +278,43 @@ cr.define('print_preview', function() {
           print_preview.PrintHeader.EventType.CANCEL_BUTTON_CLICK,
           this.onCancelButtonClick_.bind(this));
 
+      this.tracker.add(window, 'keydown', this.onKeyDown_.bind(this));
+
       this.tracker.add(
           this.destinationSettings_,
-          print_preview.DestinationSettings.EventType.MANAGE_PRINTERS_SELECT,
-          this.onManagePrinters_.bind(this));
+          print_preview.DestinationSettings.EventType.CHANGE_BUTTON_ACTIVATE,
+          this.onDestinationChangeButtonActivate_.bind(this));
 
-      this.tracker.add(window, 'keydown', this.onKeyDown_.bind(this));
+      this.tracker.add(
+          this.destinationSearch_,
+          print_preview.DestinationSearch.EventType.MANAGE_CLOUD_DESTINATIONS,
+          this.onManageCloudDestinationsActivated_.bind(this));
+      this.tracker.add(
+          this.destinationSearch_,
+          print_preview.DestinationSearch.EventType.MANAGE_LOCAL_DESTINATIONS,
+          this.onManageLocalDestinationsActivated_.bind(this));
+      this.tracker.add(
+          this.destinationSearch_,
+          print_preview.DestinationSearch.EventType.SIGN_IN,
+          this.onCloudPrintSignInActivated_.bind(this));
+    },
+
+    /** @override */
+    decorateInternal: function() {
+      this.printHeader_.decorate($('print-header'));
+      this.destinationSearch_.decorate($('destination-search'));
+      this.destinationSettings_.decorate($('destination-settings'));
+      this.pageSettings_.decorate($('page-settings'));
+      this.copiesSettings_.decorate($('copies-settings'));
+      this.layoutSettings_.decorate($('layout-settings'));
+      this.colorSettings_.decorate($('color-settings'));
+      this.marginSettings_.decorate($('margin-settings'));
+      this.otherOptionsSettings_.decorate($('other-options-settings'));
+      this.previewArea_.decorate($('preview-area'));
+
+      setIsVisible($('cloud-print-dialog-link'), cr.isChromeOS);
+      setIsVisible($('system-dialog-link'), !cr.isChromeOS);
+      setIsVisible($('open-pdf-in-preview-link'), cr.isMac);
     },
 
     /**
@@ -332,58 +335,6 @@ cr.define('print_preview', function() {
       this.colorSettings_.isEnabled = isEnabled;
       this.marginSettings_.isEnabled = isEnabled;
       this.otherOptionsSettings_.isEnabled = isEnabled;
-    },
-
-    /**
-     * Creates a local PDF print destination.
-     * @return {!print_preview.Destination} Created print destination.
-     * @private
-     */
-    createLocalPdfPrintDestination_: function() {
-      var dest = new print_preview.Destination(
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-          localStrings.getString('printToPDF'),
-          false /*isRecent*/,
-          true /*isLocal*/);
-      dest.capabilities = new print_preview.ChromiumCapabilities(
-          false /*hasCopiesCapability*/,
-          '1' /*defaultCopiesStr*/,
-          false /*hasCollateCapability*/,
-          false /*defaultIsCollateEnabled*/,
-          false /*hasDuplexCapability*/,
-          false /*defaultIsDuplexEnabled*/,
-          true /*hasOrientationCapability*/,
-          false /*defaultIsLandscapeEnabled*/,
-          true /*hasColorCapability*/,
-          true /*defaultIsColorEnabled*/);
-      return dest;
-    },
-
-    /**
-     * Creates a new "Print with Cloud Print" print destination. NOTE: this
-     * destination will appear as "Search for additional printers..." on
-     * Chrome OS.
-     * @return {!print_preview.Destination} Created print destination.
-     * @private
-     */
-    createPrintWithCloudPrintDestination_: function() {
-      var dest = new print_preview.Destination(
-          print_preview.Destination.GooglePromotedId.PRINT_WITH_CLOUD_PRINT,
-          localStrings.getString('printWithCloudPrint'),
-          false /*isRecent*/,
-          false /*isLocal*/);
-      dest.capabilities = new print_preview.ChromiumCapabilities(
-          false /*hasCopiesCapability*/,
-          '1' /*defaultCopiesStr*/,
-          false /*hasCollateCapability*/,
-          false /*defaultIsCollateEnabled*/,
-          false /*hasDuplexCapability*/,
-          false /*defaultIsDuplexEnabled*/,
-          true /*hasOrientationCapability*/,
-          false /*defaultIsLandscapeEnabled*/,
-          true /*hasColorCapability*/,
-          true /*defaultIsColorEnabled*/);
-      return dest;
     },
 
     /**
@@ -468,21 +419,6 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Window onload handler, sets up the page and starts print preview by
-     * getting the printer list.
-     * @private
-     */
-    onWindowLoad_: function() {
-      this.decorate($('print-preview'));
-      i18nTemplate.process(document, templateData);
-      if (!this.previewArea_.hasCompatiblePlugin) {
-        this.setIsEnabled_(false);
-      }
-      this.nativeLayer_.startGetInitialSettings();
-      this.nativeLayer_.startGetLocalDestinations();
-    },
-
-    /**
      * Called when the native layer has initial settings to set. Sets the
      * initial settings of the print preview and begins fetching print
      * destinations.
@@ -519,16 +455,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintEnable_: function(event) {
-      this.cloudPrintInterface_ = new cloudprint.CloudPrintInterface(
-          event.baseCloudPrintUrl);
-      this.tracker.add(
-          this.cloudPrintInterface_,
-          cloudprint.CloudPrintInterface.EventType.SEARCH_DONE,
-          this.onCloudPrintSearchDone_.bind(this));
-      this.tracker.add(
-          this.cloudPrintInterface_,
-          cloudprint.CloudPrintInterface.EventType.PRINTER_DONE,
-          this.onCloudPrintPrinterDone_.bind(this));
+      this.cloudPrintInterface_ =
+          new cloudprint.CloudPrintInterface(event.baseCloudPrintUrl);
       this.tracker.add(
           this.cloudPrintInterface_,
           cloudprint.CloudPrintInterface.EventType.SUBMIT_DONE,
@@ -538,75 +466,9 @@ cr.define('print_preview', function() {
           cloudprint.CloudPrintInterface.EventType.ERROR,
           this.onCloudPrintError_.bind(this));
 
-      var printWithCloudPrintDest =
-          this.createPrintWithCloudPrintDestination_();
-      this.destinationStore_.insertDestination(printWithCloudPrintDest);
-
-      if (cr.isChromeOS) {
-        this.cloudPrintInterface_.search(true /*isRecent*/);
-        this.fetchState_ |= PrintPreview.FetchState_.RECENT_CLOUD_DESTINATIONS;
-      }
-    },
-
-    /**
-     * Called when the native layer gets local destinations. Adds local
-     * destination objects received from the operating system to the destination
-     * store. Also adds a save-as-pdf printer.
-     * @param {cr.Event} Contains the local destinations to set.
-     * @private
-     */
-    onLocalDestinationsSet_: function(event) {
-      var localDestinations = [];
-      for (var destInfo, i = 0; destInfo = event.destinationInfos[i]; i++) {
-        localDestinations.push(
-            print_preview.LocalDestinationParser.parse(destInfo));
-      }
-      localDestinations.push(this.createLocalPdfPrintDestination_());
-      this.destinationStore_.insertDestinations(localDestinations);
-      this.fetchState_ &= ~PrintPreview.FetchState_.LOCAL_DESTINATIONS;
-    },
-
-    /**
-     * Called when the native layer retrieves the capabilities for the selected
-     * local destination.
-     * @param {cr.Event} event Contains the capabilities of the local print
-     *     destination.
-     * @private
-     */
-    onLocalDestinationCapabilitiesSet_: function(event) {
-      // TODO(rltoscano): There may be a race condition here. This method is
-      // assumed to return capabilities for the currently selected printer. But
-      // between the time the local printer was selected and the capabilities
-      // were retrieved, the selected printer can change. One way to address
-      // this is to include the destination ID in the settingsInfo parameter.
-      var selectedDestination = this.destinationStore_.selectedDestination;
-      if (selectedDestination.isLocal) {
-        var capabilities = print_preview.LocalCapabilitiesParser.parse(
-            event.settingsInfo);
-        selectedDestination.capabilities = capabilities;
-        this.printTicketStore_.updateDestinationCapabilities(capabilities);
-        this.printIfReady_();
-      }
-    },
-
-    /**
-     * Called from native layer after the user was requested to sign in, and did
-     * so successfully.
-     * @private
-     */
-    onDestinationsReload_: function() {
-      this.destinationStore_.clear();
-      this.nativeLayer_.startGetLocalDestinations();
-      if (this.cloudPrintInterface_) {
-        // Fetch recent printers.
-        this.cloudPrintInterface_.search(true /*isRecent*/);
-        // Fetch the full printer list.
-        this.cloudPrintInterface_.search(false /*isRecent*/);
-      }
-      this.fetchState_ =
-          PrintPreview.FetchState_.LOCAL_DESTINATIONS |
-          PrintPreview.FetchState_.ALL_CLOUD_DESTINATIONS |
-          PrintPreview.FetchState_.RECENT_CLOUD_DESTINATIONS;
+      this.userInfo_.setCloudPrintInterface(this.cloudPrintInterface_);
+      this.destinationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
+      this.destinationStore_.startLoadRecentCloudDestinations();
     },
 
     /**
@@ -650,36 +512,6 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when the Google Cloud Print search API call completes. Adds
-     * destinations to the printer store and selects one if it matches the
-     * initial destination.
-     * @param {cr.Event} event Contains the new cloud destinations.
-     * @private
-     */
-    onCloudPrintSearchDone_: function(event) {
-      this.destinationStore_.insertDestinations(event.printers);
-      if (event.isRecent) {
-        this.fetchState_ &= ~PrintPreview.FetchState_.RECENT_CLOUD_DESTINATIONS;
-      } else {
-        this.fetchState_ &= ~PrintPreview.FetchState_.ALL_CLOUD_DESTINATIONS;
-      }
-    },
-
-    /**
-     * Called when the Google Cloud Print printer API call completes. Updates
-     * the UI with the newly received capabilities.
-     * @param {cr.Event} event Contains the destination returned in the printer
-     *     API call.
-     */
-    onCloudPrintPrinterDone_: function(event) {
-      var dest = this.destinationStore_.updateDestination(event.printer);
-      if (this.destinationStore_.selectedDestination == dest) {
-        this.printTicketStore_.updateDestinationCapabilities(dest.capabilities);
-        this.printIfReady_();
-      }
-    },
-
-    /**
      * Called after successfully submitting a job to Google Cloud Print.
      * @private
      */
@@ -697,41 +529,11 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintError_: function(event) {
-      if (cr.isChromeOS && event.message == '403') {
-        this.nativeLayer_.startCloudPrintSignIn();
+      if (event.message == '403') {
+        this.destinationSearch_.showCloudPrintPromo();
       } else {
         this.printHeader_.setErrorMessage(event.message);
       }
-      this.fetchState_ &=
-            ~PrintPreview.FetchState_.RECENT_CLOUD_DESTINATIONS &
-            ~PrintPreview.FetchState_.ALL_CLOUD_DESTINATIONS;
-    },
-
-    /**
-     * Called when a new destination has been selected. Fetches the
-     * destination's capability list.
-     * @private
-     */
-    onDestinationSelect_: function() {
-      var destination = this.destinationStore_.selectedDestination;
-
-      // Fetch destination capabilities if necessary.
-      if (!destination.capabilities) {
-        if (destination.isLocal) {
-          this.nativeLayer_.startGetLocalDestinationCapabilities(
-              destination.id);
-        } else {
-          assert(this.cloudPrintInterface_ != null,
-                 'Selected destination is a cloud destination, but Google ' +
-                     'Cloud Print is not enabled');
-          this.cloudPrintInterface_.printer(destination.id);
-        }
-      } else {
-        this.printTicketStore_.updateDestinationCapabilities(
-            destination.capabilities);
-      }
-
-      this.printIfReady_();
     },
 
     /**
@@ -807,7 +609,11 @@ cr.define('print_preview', function() {
       // Escape key closes the dialog.
       if (e.keyCode == 27 && !e.shiftKey && !e.ctrlKey && !e.altKey &&
           !e.metaKey) {
-        this.close_();
+        if (this.destinationSearch_.getIsVisible()) {
+          this.destinationSearch_.setIsVisible(false);
+        } else {
+          this.close_();
+        }
         e.preventDefault();
         return;
       }
@@ -837,25 +643,49 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Called when the destination settings' change button is activated.
+     * Displays the destination search component.
+     * @private
+     */
+    onDestinationChangeButtonActivate_: function() {
+      this.destinationSearch_.setIsVisible(true);
+      this.destinationStore_.startLoadAllCloudDestinations();
+    },
+
+    /**
+     * Called when the destination search dispatches manage cloud destinations
+     * event. Calls corresponding native layer method.
+     * @private
+     */
+    onManageCloudDestinationsActivated_: function() {
+      this.nativeLayer_.startManageCloudDestinations();
+    },
+
+    /**
+     * Called when the destination search dispatches manage local destinations
+     * event. Calls corresponding native layer method.
+     * @private
+     */
+    onManageLocalDestinationsActivated_: function() {
+      this.nativeLayer_.startManageLocalDestinations();
+    },
+
+    /**
+     * Called when the user wants to sign in to Google Cloud Print. Calls the
+     * corresponding native layer event.
+     * @private
+     */
+    onCloudPrintSignInActivated_: function() {
+      this.nativeLayer_.startCloudPrintSignIn();
+    },
+
+    /**
      * Called when the native layer dispatches a DISABLE_SCALING event. Updates
      * the print ticket.
      * @private
      */
     onDisableScaling_: function() {
       this.printTicketStore_.updateFitToPage(false);
-    },
-
-    /**
-     * Called when the user selects the "Manage printers..." option in the
-     * destination select.
-     * @private
-     */
-    onManagePrinters_: function() {
-      if (cr.isChromeOS) {
-        this.nativeLayer_.startManageCloudPrinters();
-      } else {
-        this.nativeLayer_.startManageLocalPrinters();
-      }
     }
   };
 
@@ -881,6 +711,7 @@ cr.define('print_preview', function() {
 <include src="data/coordinate2d.js"/>
 <include src="data/size.js"/>
 <include src="data/capabilities_holder.js"/>
+<include src="data/user_info.js"/>
 
 <include src="data/ticket_items/ticket_item.js"/>
 
@@ -914,4 +745,13 @@ cr.define('print_preview', function() {
 <include src="previewarea/preview_area.js"/>
 <include src="preview_generator.js"/>
 
-var printPreview = new print_preview.PrintPreview();
+<include src="search/destination_list.js"/>
+<include src="search/cloud_destination_list.js"/>
+<include src="search/destination_list_item.js"/>
+<include src="search/destination_search.js"/>
+<include src="search/search_box.js"/>
+
+window.addEventListener('DOMContentLoaded', function() {
+  printPreview = new print_preview.PrintPreview();
+  printPreview.initialize();
+});

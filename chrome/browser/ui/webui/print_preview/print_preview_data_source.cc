@@ -42,7 +42,11 @@ PrintPreviewDataSource::PrintPreviewDataSource()
 }
 
 void PrintPreviewDataSource::Init() {
+#if defined(OS_CHROMEOS)
+  AddLocalizedString("title", IDS_PRINT_PREVIEW_GOOGLE_CLOUD_PRINT_TITLE);
+#else
   AddLocalizedString("title", IDS_PRINT_PREVIEW_TITLE);
+#endif
   AddLocalizedString("loading", IDS_PRINT_PREVIEW_LOADING);
   AddLocalizedString("noPlugin", IDS_PRINT_PREVIEW_NO_PLUGIN);
   AddLocalizedString("launchNativeDialog", IDS_PRINT_PREVIEW_NATIVE_DIALOG);
@@ -75,7 +79,6 @@ void PrintPreviewDataSource::Init() {
   AddLocalizedString("pageRangeTextBox", IDS_PRINT_PREVIEW_PAGE_RANGE_TEXT);
   AddLocalizedString("pageRangeRadio", IDS_PRINT_PREVIEW_PAGE_RANGE_RADIO);
   AddLocalizedString("printToPDF", IDS_PRINT_PREVIEW_PRINT_TO_PDF);
-  AddLocalizedString("printPreviewTitleFormat", IDS_PRINT_PREVIEW_TITLE_FORMAT);
   AddLocalizedString("printPreviewSummaryFormatShort",
                      IDS_PRINT_PREVIEW_SUMMARY_FORMAT_SHORT);
   AddLocalizedString("printPreviewSummaryFormatLong",
@@ -94,15 +97,10 @@ void PrintPreviewDataSource::Init() {
       IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION,
       l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT),
       shortcut_text));
-  AddLocalizedString("printWithCloudPrint",
-                     IDS_PRINT_PREVIEW_MORE_PRINTERS);
 #else
   AddString("systemDialogOption", l10n_util::GetStringFUTF16(
       IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION,
       shortcut_text));
-  AddString("printWithCloudPrint", l10n_util::GetStringFUTF16(
-      IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT,
-      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
 #endif
 #if defined(OS_MACOSX)
   AddLocalizedString("openPdfInPreviewOption",
@@ -114,8 +112,6 @@ void PrintPreviewDataSource::Init() {
   AddLocalizedString("pageRangeInstruction",
                      IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION);
   AddLocalizedString("copiesInstruction", IDS_PRINT_PREVIEW_COPIES_INSTRUCTION);
-  AddLocalizedString("signIn", IDS_PRINT_PREVIEW_SIGN_IN);
-  AddLocalizedString("managePrinters", IDS_PRINT_PREVIEW_MANAGE_PRINTERS);
   AddLocalizedString("incrementTitle", IDS_PRINT_PREVIEW_INCREMENT_TITLE);
   AddLocalizedString("decrementTitle", IDS_PRINT_PREVIEW_DECREMENT_TITLE);
   AddLocalizedString("printPagesLabel", IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL);
@@ -133,9 +129,44 @@ void PrintPreviewDataSource::Init() {
   AddLocalizedString("bottom", IDS_PRINT_PREVIEW_BOTTOM_MARGIN_LABEL);
   AddLocalizedString("left", IDS_PRINT_PREVIEW_LEFT_MARGIN_LABEL);
   AddLocalizedString("right", IDS_PRINT_PREVIEW_RIGHT_MARGIN_LABEL);
+  AddLocalizedString("destinationSearchTitle",
+                     IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE);
+  AddLocalizedString("signedInAsPrefix", IDS_PRINT_PREVIEW_SIGNED_IN_AS_PREFIX);
+  AddLocalizedString("cloudPrintPromotion",
+                     IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION);
+  AddLocalizedString("searchBoxPlaceholder",
+                     IDS_PRINT_PREVIEW_SEARCH_BOX_PLACEHOLDER);
+  AddLocalizedString("noDestinationsMessage",
+                     IDS_PRINT_PREVIEW_NO_DESTINATIONS_MESSAGE);
+  AddLocalizedString("showAllButtonText",
+                     IDS_PRINT_PREVIEW_SHOW_ALL_BUTTON_TEXT);
+  AddLocalizedString("destinationCount", IDS_PRINT_PREVIEW_DESTINATION_COUNT);
+  AddLocalizedString("recentDestinationsTitle",
+                     IDS_PRINT_PREVIEW_RECENT_DESTINATIONS_TITLE);
+  AddLocalizedString("localDestinationsTitle",
+                     IDS_PRINT_PREVIEW_LOCAL_DESTINATIONS_TITLE);
+  AddLocalizedString("cloudDestinationsTitle",
+                     IDS_PRINT_PREVIEW_CLOUD_DESTINATIONS_TITLE);
+  AddLocalizedString("manage", IDS_PRINT_PREVIEW_MANAGE);
+  AddLocalizedString("setupCloudPrinters",
+                     IDS_PRINT_PREVIEW_SETUP_CLOUD_PRINTERS);
+  AddLocalizedString("changeDestination",
+                     IDS_PRINT_PREVIEW_CHANGE_DESTINATION);
 
   set_json_path("strings.js");
   add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);
+  add_resource_path("images/classic_printer_32.png",
+                    IDR_PRINT_PREVIEW_IMAGES_CLASSIC_PRINTER_32);
+  add_resource_path("images/cloud_printer_32.png",
+                    IDR_PRINT_PREVIEW_IMAGES_CLOUD_PRINTER_32);
+  add_resource_path("images/cloud_printer_shared_32.png",
+                    IDR_PRINT_PREVIEW_IMAGES_CLOUD_PRINTER_SHARED_32);
+  add_resource_path("images/google_promoted_printer_32.png",
+                    IDR_PRINT_PREVIEW_IMAGES_GOOGLE_PROMOTED_PRINTER_32);
+  add_resource_path("images/mobile_32.png",
+                    IDR_PRINT_PREVIEW_IMAGES_MOBILE_32);
+  add_resource_path("images/mobile_shared_32.png",
+                    IDR_PRINT_PREVIEW_IMAGES_MOBILE_SHARED_32);
   set_default_resource(IDR_PRINT_PREVIEW_HTML);
 }
 

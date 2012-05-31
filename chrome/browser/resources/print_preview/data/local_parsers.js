@@ -10,16 +10,16 @@ cr.define('print_preview', function() {
 
   /**
    * Parses a local print destination.
-   * @param {object} destinationInfo Information describing a local print
+   * @param {!Object} destinationInfo Information describing a local print
    *     destination.
    * @return {!print_preview.Destination} Parsed local print destination.
    */
   LocalDestinationParser.parse = function(destinationInfo) {
     return new print_preview.Destination(
         destinationInfo.deviceName,
+        print_preview.Destination.Type.LOCAL,
         destinationInfo.printerName,
-        false /*isRecent*/,
-        true /*isLocal*/);
+        false /*isRecent*/);
   };
 
   /** Namespace that contains a method to parse local print capabilities. */
@@ -27,7 +27,7 @@ cr.define('print_preview', function() {
 
   /**
    * Parses local print capabilities.
-   * @param {object} settingsInfo Object that describes local print
+   * @param {!Object} settingsInfo Object that describes local print
    *     capabilities.
    * @return {!print_preview.ChromiumCapabilities} Parsed local print
    *     capabilities.

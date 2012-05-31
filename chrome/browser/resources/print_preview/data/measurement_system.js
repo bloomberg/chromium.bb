@@ -10,8 +10,8 @@ cr.define('print_preview', function() {
    * measurements into the system's local units (e.g. millimeters, inches).
    * @param {string} thousandsDelimeter Delimeter between thousands digits.
    * @param {string} decimalDelimeter Delimeter between integers and decimals.
-   * @param {print_preview.MeasurementSystem.UnitType} unitType Measurement unit
-   *     type of the system.
+   * @param {!print_preview.MeasurementSystem.UnitType} unitType Measurement
+   *     unit type of the system.
    * @constructor
    */
   function MeasurementSystem(thousandsDelimeter, decimalDelimeter, unitType) {
@@ -48,7 +48,7 @@ cr.define('print_preview', function() {
 
   /**
    * Maximum resolution of local unit values.
-   * @type {Object.<print_preview.MeasurementSystem.UnitType, number>}
+   * @type {!Object.<!print_preview.MeasurementSystem.UnitType, number>}
    * @private
    */
   MeasurementSystem.Precision_ = {};
@@ -57,7 +57,7 @@ cr.define('print_preview', function() {
 
   /**
    * Maximum number of decimal places to keep for local unit.
-   * @type {Object.<print_preview.MeasurementSystem.UnitType, number>}
+   * @type {!Object.<!print_preview.MeasurementSystem.UnitType, number>}
    * @private
    */
   MeasurementSystem.DecimalPlaces_ = {};

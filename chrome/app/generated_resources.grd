@@ -7047,8 +7047,8 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_PRINT_PREVIEW_TITLE" desc="Fallback title for print preview page.">
         Print
       </message>
-      <message name="IDS_PRINT_PREVIEW_TITLE_FORMAT" desc="The format for the print preview page title.">
-        Print - <ph name="PREVIEW_TAB_TITLE">$1<ex>Google Search</ex></ph>
+      <message name="IDS_PRINT_PREVIEW_GOOGLE_CLOUD_PRINT_TITLE" desc="Fallback title for print preview page on Chrome OS.">
+        Google Cloud Print
       </message>
       <message name="IDS_PRINT_PREVIEW_LOADING" desc="Message to display while the print preview is still loading.">
         Loading preview
@@ -7124,22 +7124,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_PRINT_PREVIEW_PRINT_TO_PDF"
                desc="Option shown on printer drop-down list for saving previewed document as a PDF.">
         Save as PDF
-      </message>
-      <message name="IDS_PRINT_PREVIEW_SIGN_IN"
-          desc="Option shown in printer drop-down list when the user isn't signed in to cloud print.  Choosing it will display a sign in dialog.">
-        Sign in to access cloud printers...
-      </message>
-      <message name="IDS_PRINT_PREVIEW_MORE_PRINTERS"
-          desc="Option shown in printer drop-down list that displays an interface for finding/using additional cloud based printers.">
-         Search for additional printers
-      </message>
-      <message name="IDS_PRINT_PREVIEW_MANAGE_PRINTERS"
-          desc="Option shown in printer drop-down list for managing printers.">
-        Manage printers...
-      </message>
-      <message name="IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT"
-          desc="Option shown in printer drop-down list to allow the user to print using cloud print. Cloud print dialog will open when this option is selected and the user clicks print.">
-        Print with <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
       </message>
       <message name="IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT"
           desc="Message shown in the print preview page after choosing cloud print before the dialog displays">
@@ -7227,6 +7211,45 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
       <message name="IDS_PRINT_PREVIEW_NATIVE_DIALOG" desc="Option offering the user to open the native print dialog, displayed when the PDF viewer is missing or when print preview fails.">
         Print using system dialog…
+      </message>
+      <message name="IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE" desc="Title of the destination search UI component.">
+        Destination
+      </message>
+      <message name="IDS_PRINT_PREVIEW_SIGNED_IN_AS_PREFIX" desc="Prefix before the user's email address.">
+        Signed in as
+      </message>
+      <message name="IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION" desc="Message describing features of Google Cloud Print.">
+        Print to Google Docs and other cloud destinations. <ph name="BEGIN_LINK">$1<ex>&lt;span&gt;</ex></ph>Sign in<ph name="END_LINK">$2<ex>&lt;/span&gt;</ex></ph> to print to Google Cloud Print.
+      </message>
+      <message name="IDS_PRINT_PREVIEW_SEARCH_BOX_PLACEHOLDER" desc="Text to put in a search box when user has not entered a search query.">
+        Search destinations
+      </message>
+      <message name="IDS_PRINT_PREVIEW_NO_DESTINATIONS_MESSAGE" desc="Message to show when no destinations were found.">
+        No destinations found
+      </message>
+      <message name="IDS_PRINT_PREVIEW_SHOW_ALL_BUTTON_TEXT" desc="Label on a button to show all print destinations.">
+        Show All...
+      </message>
+      <message name="IDS_PRINT_PREVIEW_DESTINATION_COUNT" desc="Message to show how many print destinations the user has.">
+        (<ph name="COUNT">$1<ex>154</ex></ph> total)
+      </message>
+      <message name="IDS_PRINT_PREVIEW_RECENT_DESTINATIONS_TITLE" desc="Title of the section of recently used print destinations.">
+        Recent Destinations
+      </message>
+      <message name="IDS_PRINT_PREVIEW_LOCAL_DESTINATIONS_TITLE" desc="Title of the section of local print destinations.">
+        Local Destinations
+      </message>
+      <message name="IDS_PRINT_PREVIEW_CLOUD_DESTINATIONS_TITLE" desc="Title of the section of cloud print destinations.">
+        Google Cloud Print
+      </message>
+      <message name="IDS_PRINT_PREVIEW_MANAGE" desc="Text of link to manage printers.">
+        Manage...
+      </message>
+      <message name="IDS_PRINT_PREVIEW_SETUP_CLOUD_PRINTERS" desc="Text of link to setup cloud printers.">
+        Setup...
+      </message>
+      <message name="IDS_PRINT_PREVIEW_CHANGE_DESTINATION" desc="Label on button to change print destination.">
+        Change...
       </message>
 
       <!-- Load State -->

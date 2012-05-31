@@ -77,7 +77,7 @@ cr.define('print_preview', function() {
     onSelectChange_: function() {
       var select = this.select_;
       var marginsType =
-          /** @type {print_preview.ticket_items.MarginsType.Value} */ (
+          /** @type {!print_preview.ticket_items.MarginsType.Value} */ (
               select.selectedIndex);
       this.printTicketStore_.updateMarginsType(marginsType);
     },
@@ -92,7 +92,7 @@ cr.define('print_preview', function() {
         var select = this.select_;
         var marginsType = this.printTicketStore_.getMarginsType();
         var selectedMarginsType =
-            /** @type {print_preview.ticket_items.MarginsType.Value} */ (
+            /** @type {!print_preview.ticket_items.MarginsType.Value} */ (
                 select.selectedIndex);
         if (marginsType != selectedMarginsType) {
           select.options[selectedMarginsType].selected = false;
