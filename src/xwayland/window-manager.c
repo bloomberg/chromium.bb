@@ -562,15 +562,12 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	if (our_resource(wm, unmap_notify->window))
 		return;
 
-	window = hash_table_lookup(wm->window_hash, unmap_notify->window);
-	if (window->frame_id == XCB_WINDOW_NONE) {
-		/* We already withdrew this window on the real unmap
-		 * notify and this is the synthetic unmap notify from
-		 * the client, or the other way around (ICCCM 4.1.4).
-		 * Either way, we're already done so just return. */
+	if (unmap_notify->response_type & 0x80)
+		/* We just ignore the ICCCM 4.1.4 synthetic unmap notify
+		 * as it may come in after we've destroyed the window. */
 		return;
-	}
 
+	window = hash_table_lookup(wm->window_hash, unmap_notify->window);
 	if (window->repaint_source)
 		wl_event_source_remove(window->repaint_source);
 	if (window->cairo_surface)
