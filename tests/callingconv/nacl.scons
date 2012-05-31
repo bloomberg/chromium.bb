@@ -24,9 +24,10 @@ if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
 #
 # To test toolchain compatibility, some of the modules are built
 # using PNaCl, and some with NNaCl.
-
-import platform
-import random
+#
+# Note: having random tests has been a little controversial,
+# we are also intentionally hiding the randomness from scons, c.f.:
+#  http://codereview.chromium.org/7215028
 
 base_env = env.Clone()
 callingconv_h = base_env.File('callingconv.h').srcnode()
@@ -36,6 +37,10 @@ settings = {
   'num_functions'    : 200,
   'calls_per_func'   : 4,
   'max_args_per_func': 16,
+  # Note: 'seed' is intentionally not mentioned here which results in
+  #       generate.py picking one (see above)
+  # Having a seed here would make the commandline flags random,
+  # which would force scons to always rebuild.
 }
 
 # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2381
