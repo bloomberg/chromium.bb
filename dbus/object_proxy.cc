@@ -82,7 +82,9 @@ Response* ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
                             kSuccessRatioHistogramMaxValue);
 
   if (!response_message) {
-    LogMethodCallFailure(error.is_set() ? error.name() : "unknown error type",
+    LogMethodCallFailure(method_call->GetInterface(),
+                         method_call->GetMember(),
+                         error.is_set() ? error.name() : "unknown error type",
                          error.is_set() ? error.message() : "");
     return NULL;
   }
@@ -99,6 +101,8 @@ void ObjectProxy::CallMethod(MethodCall* method_call,
   CallMethodWithErrorCallback(method_call, timeout_ms, callback,
                               base::Bind(&ObjectProxy::OnCallMethodError,
                                          this,
+                                         method_call->GetInterface(),
+                                         method_call->GetMember(),
                                          callback));
 }
 
@@ -449,22 +453,30 @@ DBusHandlerResult ObjectProxy::HandleMessageThunk(
 }
 
 void ObjectProxy::LogMethodCallFailure(
+    const base::StringPiece& interface_name,
+    const base::StringPiece& method_name,
     const base::StringPiece& error_name,
     const base::StringPiece& error_message) const {
   if (ignore_service_unknown_errors_ && error_name == kErrorServiceUnknown)
     return;
-  LOG(ERROR) << "Failed to call method: " << error_name
-             << ": " << error_message;
+  LOG(ERROR) << "Failed to call method: "
+             << interface_name << "." << method_name
+             << ": " << error_name << ": " << error_message;
 }
 
-void ObjectProxy::OnCallMethodError(ResponseCallback response_callback,
+void ObjectProxy::OnCallMethodError(const std::string& interface_name,
+                                    const std::string& method_name,
+                                    ResponseCallback response_callback,
                                     ErrorResponse* error_response) {
   if (error_response) {
     // Error message may contain the error message as string.
     dbus::MessageReader reader(error_response);
     std::string error_message;
     reader.PopString(&error_message);
-    LogMethodCallFailure(error_response->GetErrorName(), error_message);
+    LogMethodCallFailure(interface_name,
+                         method_name,
+                         error_response->GetErrorName(),
+                         error_message);
   }
   response_callback.Run(NULL);
 }

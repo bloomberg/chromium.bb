@@ -226,11 +226,15 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
                                               void* user_data);
 
   // Helper method for logging response errors appropriately.
-  void LogMethodCallFailure(const base::StringPiece& error_name,
+  void LogMethodCallFailure(const base::StringPiece& interface_name,
+                            const base::StringPiece& method_name,
+                            const base::StringPiece& error_name,
                             const base::StringPiece& error_message) const;
 
   // Used as ErrorCallback by CallMethod().
-  void OnCallMethodError(ResponseCallback response_callback,
+  void OnCallMethodError(const std::string& interface_name,
+                         const std::string& method_name,
+                         ResponseCallback response_callback,
                          ErrorResponse* error_response);
 
   scoped_refptr<Bus> bus_;
