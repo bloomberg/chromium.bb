@@ -5793,15 +5793,6 @@
 }
 
 {
-   bug_130311 
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN26SQLiteServerBoundCertStore7Backend4LoadEPSt6vectorIPN3net20ServerBoundCertStore15ServerBoundCertESaIS5_EE
-   fun:_ZN26SQLiteServerBoundCertStore4LoadEPSt6vectorIPN3net20ServerBoundCertStore15ServerBoundCertESaIS4_EE
-   fun:_ZN57SQLiteServerBoundCertStoreTest_TestClearOnExitPolicy_Test8TestBodyEv
-}
-
-{
    bug_130362
    Memcheck:Leak
    fun:_Znw*
