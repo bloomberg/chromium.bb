@@ -335,7 +335,7 @@ bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
 
 bool BaseTab::OnMouseDragged(const views::MouseEvent& event) {
   if (controller())
-    controller()->ContinueDrag(event);
+    controller()->ContinueDrag(this, event.location());
   return true;
 }
 

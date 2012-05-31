@@ -990,9 +990,12 @@ void TabStrip::MaybeStartDrag(
       selection_model, detach_behavior, move_behavior);
 }
 
-void TabStrip::ContinueDrag(const views::MouseEvent& event) {
-  if (drag_controller_.get())
-    drag_controller_->Drag();
+void TabStrip::ContinueDrag(views::View* view, const gfx::Point& location) {
+  if (drag_controller_.get()) {
+    gfx::Point screen_location(location);
+    views::View::ConvertPointToScreen(view, &screen_location);
+    drag_controller_->Drag(screen_location);
+  }
 }
 
 bool TabStrip::EndDrag(bool canceled) {
@@ -1318,9 +1321,8 @@ bool TabStrip::OnMousePressed(const views::MouseEvent& event) {
   return false;
 }
 
-bool TabStrip::OnMouseDragged(const views::MouseEvent&  event) {
-  if (drag_controller_.get())
-    drag_controller_->Drag();
+bool TabStrip::OnMouseDragged(const views::MouseEvent& event) {
+  ContinueDrag(this, event.location());
   return true;
 }
 

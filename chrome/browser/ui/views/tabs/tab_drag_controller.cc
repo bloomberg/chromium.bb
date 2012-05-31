@@ -389,7 +389,8 @@ void TabDragController::Init(
   DCHECK(std::find(tabs.begin(), tabs.end(), source_tab) != tabs.end());
   source_tabstrip_ = source_tabstrip;
   source_tab_offset_ = source_tab_offset;
-  start_screen_point_ = GetCursorScreenPoint();
+  start_screen_point_ = gfx::Point(source_tab_offset, mouse_offset.y());
+  views::View::ConvertPointToScreen(source_tab, &start_screen_point_);
   mouse_offset_ = mouse_offset;
   detach_behavior_ = detach_behavior;
   move_behavior_ = move_behavior;
@@ -429,7 +430,7 @@ bool TabDragController::IsActive() {
   return instance_ && instance_->active();
 }
 
-void TabDragController::Drag() {
+void TabDragController::Drag(const gfx::Point& screen_point) {
   bring_to_front_timer_.Stop();
   move_stacked_timer_.Stop();
 
@@ -437,7 +438,7 @@ void TabDragController::Drag() {
     return;
 
   if (!started_drag_) {
-    if (!CanStartDrag())
+    if (!CanStartDrag(screen_point))
       return;  // User hasn't dragged far enough yet.
 
     started_drag_ = true;
@@ -450,7 +451,7 @@ void TabDragController::Drag() {
     }
   }
 
-  ContinueDragging();
+  ContinueDragging(screen_point);
 }
 
 void TabDragController::EndDrag(bool canceled) {
@@ -592,7 +593,8 @@ void TabDragController::DidProcessEvent(const base::NativeEvent& event) {
 }
 
 void TabDragController::OnWidgetMoved(views::Widget* widget) {
-  Drag();
+  // TODO: this needs to query event.
+  Drag(gfx::Screen::GetCursorScreenPoint());
 }
 
 void TabDragController::TabStripEmpty() {
@@ -620,29 +622,30 @@ void TabDragController::InitWindowCreatePoint() {
   window_create_point_.Offset(mouse_offset_.x(), mouse_offset_.y());
 }
 
-gfx::Point TabDragController::GetWindowCreatePoint() const {
-  gfx::Point cursor_point = GetCursorScreenPoint();
+gfx::Point TabDragController::GetWindowCreatePoint(
+    const gfx::Point& origin) const {
   if (dock_info_.type() != DockInfo::NONE && dock_info_.in_enable_area()) {
     // If we're going to dock, we need to return the exact coordinate,
     // otherwise we may attempt to maximize on the wrong monitor.
-    return cursor_point;
+    return origin;
   }
+
   // If the cursor is outside the monitor area, move it inside. For example,
   // dropping a tab onto the task bar on Windows produces this situation.
-  gfx::Rect work_area = gfx::Screen::GetMonitorNearestPoint(
-      cursor_point).work_area();
+  gfx::Rect work_area = gfx::Screen::GetMonitorNearestPoint(origin).work_area();
+  gfx::Point create_point(origin);
   if (!work_area.IsEmpty()) {
-    if (cursor_point.x() < work_area.x())
-      cursor_point.set_x(work_area.x());
-    else if (cursor_point.x() > work_area.right())
-      cursor_point.set_x(work_area.right());
-    if (cursor_point.y() < work_area.y())
-      cursor_point.set_y(work_area.y());
-    else if (cursor_point.y() > work_area.bottom())
-      cursor_point.set_y(work_area.bottom());
+    if (create_point.x() < work_area.x())
+      create_point.set_x(work_area.x());
+    else if (create_point.x() > work_area.right())
+      create_point.set_x(work_area.right());
+    if (create_point.y() < work_area.y())
+      create_point.set_y(work_area.y());
+    else if (create_point.y() > work_area.bottom())
+      create_point.set_y(work_area.bottom());
   }
-  return gfx::Point(cursor_point.x() - window_create_point_.x(),
-                    cursor_point.y() - window_create_point_.y());
+  return gfx::Point(create_point.x() - window_create_point_.x(),
+                    create_point.y() - window_create_point_.y());
 }
 
 void TabDragController::UpdateDockInfo(const gfx::Point& screen_point) {
@@ -687,35 +690,31 @@ void TabDragController::RestoreFocus() {
   old_focused_view_ = NULL;
 }
 
-bool TabDragController::CanStartDrag() const {
+bool TabDragController::CanStartDrag(const gfx::Point& screen_point) const {
   // Determine if the mouse has moved beyond a minimum elasticity distance in
   // any direction from the starting point.
   static const int kMinimumDragDistance = 10;
-  gfx::Point screen_point = GetCursorScreenPoint();
   int x_offset = abs(screen_point.x() - start_screen_point_.x());
   int y_offset = abs(screen_point.y() - start_screen_point_.y());
   return sqrt(pow(static_cast<float>(x_offset), 2) +
               pow(static_cast<float>(y_offset), 2)) > kMinimumDragDistance;
 }
 
-void TabDragController::ContinueDragging() {
+void TabDragController::ContinueDragging(const gfx::Point& screen_point) {
   DCHECK(!detach_into_browser_ || attached_tabstrip_);
-
-  // Note that the coordinates given to us by |drag_event| are basically
-  // useless, since they're in source_tab_ coordinates. On the surface, you'd
-  // think we could just convert them to screen coordinates, however in the
-  // situation where we're dragging the last tab in a window when multiple
-  // windows are open, the coordinates of |source_tab_| are way off in
-  // hyperspace since the window was moved there instead of being closed so
-  // that we'd keep receiving events. And our ConvertPointToScreen methods
-  // aren't really multi-screen aware. So really it's just safer to get the
-  // actual position of the mouse cursor directly from Windows here, which is
-  // guaranteed to be correct regardless of monitor config.
-  gfx::Point screen_point = GetCursorScreenPoint();
 
   TabStrip* target_tabstrip = detach_behavior_ == DETACHABLE ?
       GetTabStripForPoint(screen_point) : source_tabstrip_;
   bool tab_strip_changed = (target_tabstrip != attached_tabstrip_);
+
+  if (attached_tabstrip_) {
+    int move_delta = screen_point.x() - last_screen_point_.x();
+    if (move_delta > 0)
+      mouse_move_direction_ |= kMovedMouseRight;
+    else if (move_delta < 0)
+      mouse_move_direction_ |= kMovedMouseLeft;
+  }
+  last_screen_point_ = screen_point;
 
   if (tab_strip_changed) {
     if (detach_into_browser_ &&
@@ -730,9 +729,10 @@ void TabDragController::ContinueDragging() {
     }
   }
   if (view_.get() || is_dragging_window_) {
-    bring_to_front_timer_.Start(FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kBringToFrontDelay), this,
-        &TabDragController::BringWindowUnderMouseToFront);
+    static_cast<base::Timer*>(&bring_to_front_timer_)->Start(FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kBringToFrontDelay),
+        base::Bind(&TabDragController::BringWindowUnderPointToFront,
+                   base::Unretained(this), screen_point));
   }
 
   UpdateDockInfo(screen_point);
@@ -792,7 +792,6 @@ TabDragController::DragBrowserToNewTabStrip(
 #if defined(USE_ASH)
     is_dragging_window_ = false;
     Detach();
-    gfx::Point screen_point(GetCursorScreenPoint());
     Attach(target_tabstrip, screen_point);
     // Move the tabs into position.
     MoveAttached(screen_point);
@@ -820,35 +819,30 @@ void TabDragController::DragActiveTabStacked(
   attached_tabstrip_->DragActiveTab(initial_tab_positions_, delta);
 }
 
-void TabDragController::MoveAttachedToNextStackedIndex() {
+void TabDragController::MoveAttachedToNextStackedIndex(
+    const gfx::Point& screen_point) {
   int index = attached_tabstrip_->touch_layout_->active_index();
   if (index + 1 >= attached_tabstrip_->tab_count())
     return;
 
   GetModel(attached_tabstrip_)->MoveSelectedTabsTo(index + 1);
-  StartMoveStackedTimerIfNecessary(kMoveAttachedSubsequentDelay);
+  StartMoveStackedTimerIfNecessary(screen_point, kMoveAttachedSubsequentDelay);
 }
 
-void TabDragController::MoveAttachedToPreviousStackedIndex() {
+void TabDragController::MoveAttachedToPreviousStackedIndex(
+    const gfx::Point& screen_point) {
   int index = attached_tabstrip_->touch_layout_->active_index();
   if (index <= attached_tabstrip_->GetMiniTabCount())
     return;
 
   GetModel(attached_tabstrip_)->MoveSelectedTabsTo(index - 1);
-  StartMoveStackedTimerIfNecessary(kMoveAttachedSubsequentDelay);
+  StartMoveStackedTimerIfNecessary(screen_point, kMoveAttachedSubsequentDelay);
 }
 
 void TabDragController::MoveAttached(const gfx::Point& screen_point) {
   DCHECK(attached_tabstrip_);
   DCHECK(!view_.get());
   DCHECK(!is_dragging_window_);
-
-  int move_delta = screen_point.x() - last_screen_point_.x();
-  if (move_delta > 0)
-    mouse_move_direction_ |= kMovedMouseRight;
-  else if (move_delta < 0)
-    mouse_move_direction_ |= kMovedMouseLeft;
-  last_screen_point_ = screen_point;
 
   gfx::Point dragged_view_point = GetAttachedDragPoint(screen_point);
 
@@ -907,7 +901,7 @@ void TabDragController::MoveAttached(const gfx::Point& screen_point) {
         initial_move_);
   }
 
-  StartMoveStackedTimerIfNecessary(kMoveAttachedInitialDelay);
+  StartMoveStackedTimerIfNecessary(screen_point, kMoveAttachedInitialDelay);
 
   initial_move_ = false;
 }
@@ -921,27 +915,30 @@ void TabDragController::MoveDetached(const gfx::Point& screen_point) {
   view_->MoveTo(screen_point);
 }
 
-void TabDragController::StartMoveStackedTimerIfNecessary(int delay_ms) {
+void TabDragController::StartMoveStackedTimerIfNecessary(
+    const gfx::Point& screen_point,
+    int delay_ms) {
   DCHECK(attached_tabstrip_);
 
   TouchTabStripLayout* touch_layout = attached_tabstrip_->touch_layout_.get();
   if (!touch_layout)
     return;
 
-  gfx::Point screen_point = GetCursorScreenPoint();
   gfx::Point dragged_view_point = GetAttachedDragPoint(screen_point);
   gfx::Rect bounds = GetDraggedViewTabStripBounds(dragged_view_point);
   int index = touch_layout->active_index();
   if (ShouldDragToNextStackedTab(bounds, index)) {
-    move_stacked_timer_.Start(
+    static_cast<base::Timer*>(&move_stacked_timer_)->Start(
         FROM_HERE,
-        base::TimeDelta::FromMilliseconds(delay_ms), this,
-        &TabDragController::MoveAttachedToNextStackedIndex);
+        base::TimeDelta::FromMilliseconds(delay_ms),
+        base::Bind(&TabDragController::MoveAttachedToNextStackedIndex,
+                   base::Unretained(this), screen_point));
   } else if (ShouldDragToPreviousStackedTab(bounds, index)) {
-    move_stacked_timer_.Start(
+    static_cast<base::Timer*>(&move_stacked_timer_)->Start(
         FROM_HERE,
-        base::TimeDelta::FromMilliseconds(delay_ms), this,
-        &TabDragController::MoveAttachedToPreviousStackedIndex);
+        base::TimeDelta::FromMilliseconds(delay_ms),
+        base::Bind(&TabDragController::MoveAttachedToPreviousStackedIndex,
+                   base::Unretained(this), screen_point));
   }
 }
 
@@ -1278,7 +1275,8 @@ void TabDragController::RunMoveLoop() {
     end_run_loop_behavior_ = END_RUN_LOOP_STOP_DRAGGING;
     if (tab_strip_to_attach_to_after_exit_) {
       Detach();
-      gfx::Point screen_point(GetCursorScreenPoint());
+      // TODO: this needs to query the event.
+      gfx::Point screen_point(gfx::Screen::GetCursorScreenPoint());
       Attach(tab_strip_to_attach_to_after_exit_, screen_point);
       // Move the tabs into position.
       MoveAttached(screen_point);
@@ -1670,7 +1668,7 @@ void TabDragController::CompleteDrag() {
     // Compel the model to construct a new window for the detached WebContents.
     views::Widget* widget = source_tabstrip_->GetWidget();
     gfx::Rect window_bounds(widget->GetRestoredBounds());
-    window_bounds.set_origin(GetWindowCreatePoint());
+    window_bounds.set_origin(GetWindowCreatePoint(last_screen_point_));
     // When modifying the following if statement, please make sure not to
     // introduce issue listed in http://crbug.com/6223 comment #11.
     bool rtl_ui = base::i18n::IsRTL();
@@ -1745,16 +1743,6 @@ void TabDragController::CreateDraggedView(
 #endif
 }
 
-gfx::Point TabDragController::GetCursorScreenPoint() const {
-  // TODO(sky): see if we can convert to using Screen every where.
-#if defined(OS_WIN) && !defined(USE_AURA)
-  DWORD pos = GetMessagePos();
-  return gfx::Point(pos);
-#else
-  return gfx::Screen::GetCursorScreenPoint();
-#endif
-}
-
 gfx::Rect TabDragController::GetViewScreenBounds(
     views::View* view) const {
   gfx::Point view_topleft;
@@ -1808,7 +1796,8 @@ void TabDragController::DockDisplayerDestroyed(
     NOTREACHED();
 }
 
-void TabDragController::BringWindowUnderMouseToFront() {
+void TabDragController::BringWindowUnderPointToFront(
+    const gfx::Point& screen_point) {
   // If we're going to dock to another window, bring it to the front.
   gfx::NativeWindow window = dock_info_.window();
   if (!window) {
@@ -1820,8 +1809,8 @@ void TabDragController::BringWindowUnderMouseToFront() {
     gfx::NativeView dragged_native_view =
         dragged_view->GetWidget()->GetNativeView();
     dock_windows_.insert(dragged_native_view);
-    window = DockInfo::GetLocalProcessWindowAtPoint(GetCursorScreenPoint(),
-                                                    dock_windows_);
+    window =
+        DockInfo::GetLocalProcessWindowAtPoint(screen_point, dock_windows_);
     dock_windows_.erase(dragged_native_view);
   }
   if (window) {

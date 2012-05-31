@@ -62,7 +62,7 @@ class TabController {
       const TabStripSelectionModel& original_selection) = 0;
 
   // Continues dragging a Tab.
-  virtual void ContinueDrag(const views::MouseEvent& event) = 0;
+  virtual void ContinueDrag(views::View* view, const gfx::Point& location) = 0;
 
   // Ends dragging a Tab. |canceled| is true if the drag was aborted in a way
   // other than the user releasing the mouse. Returns whether the tab has been

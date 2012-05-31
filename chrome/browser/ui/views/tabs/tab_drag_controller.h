@@ -105,9 +105,8 @@ class TabDragController : public content::WebContentsDelegate,
   // Returns true if a drag started.
   bool started_drag() const { return started_drag_; }
 
-  // Invoked as the mouse is dragged. If the mouse moves a sufficient distance
-  // before the mouse is released, a drag session is initiated.
-  void Drag();
+  // Invoked to drag to the new location, in screen coordinates.
+  void Drag(const gfx::Point& screen_point);
 
   // Complete the current drag session. If the drag session was canceled
   // because the user pressed escape or something interrupted it, |canceled|
@@ -231,8 +230,8 @@ class TabDragController : public content::WebContentsDelegate,
   void InitWindowCreatePoint();
 
   // Returns the point where a detached window should be created given the
-  // current mouse position.
-  gfx::Point GetWindowCreatePoint() const;
+  // current mouse position |origin|.
+  gfx::Point GetWindowCreatePoint(const gfx::Point& origin) const;
 
   void UpdateDockInfo(const gfx::Point& screen_point);
 
@@ -244,13 +243,13 @@ class TabDragController : public content::WebContentsDelegate,
   // the drag ends within the same Window as it began.
   void RestoreFocus();
 
-  // Tests whether the position of the mouse is past a minimum elasticity
-  // threshold required to start a drag.
-  bool CanStartDrag() const;
+  // Tests whether |screen_point| is past a minimum elasticity threshold
+  // required to start a drag.
+  bool CanStartDrag(const gfx::Point& screen_point) const;
 
   // Move the DraggedTabView according to the current mouse screen position,
   // potentially updating the source and other TabStrips.
-  void ContinueDragging();
+  void ContinueDragging(const gfx::Point& screen_point);
 
   // Transitions dragging from |attached_tabstrip_| to |target_tabstrip|.
   // |target_tabstrip| is NULL if the mouse is not over a valid tab strip.  See
@@ -265,8 +264,8 @@ class TabDragController : public content::WebContentsDelegate,
 
   // Moves the active tab to the next/previous tab. Used when the next/previous
   // tab is stacked.
-  void MoveAttachedToNextStackedIndex();
-  void MoveAttachedToPreviousStackedIndex();
+  void MoveAttachedToNextStackedIndex(const gfx::Point& screen_point);
+  void MoveAttachedToPreviousStackedIndex(const gfx::Point& screen_point);
 
   // Handles dragging tabs while the tabs are attached.
   void MoveAttached(const gfx::Point& screen_point);
@@ -276,7 +275,9 @@ class TabDragController : public content::WebContentsDelegate,
 
   // If necessary starts the |move_stacked_timer_|. The timer is started if
   // close enough to an edge with stacked tabs.
-  void StartMoveStackedTimerIfNecessary(int delay_ms);
+  void StartMoveStackedTimerIfNecessary(
+      const gfx::Point& screen_point,
+      int delay_ms);
 
   // Returns the TabStrip for the specified window, or NULL if one doesn't exist
   // or isn't compatible.
@@ -380,9 +381,6 @@ class TabDragController : public content::WebContentsDelegate,
   void CreateDraggedView(const std::vector<TabRendererData>& data,
                          const std::vector<gfx::Rect>& renderer_bounds);
 
-  // Utility for getting the mouse position in screen coordinates.
-  gfx::Point GetCursorScreenPoint() const;
-
   // Returns the bounds (in screen coordinates) of the specified View.
   gfx::Rect GetViewScreenBounds(views::View* tabstrip) const;
 
@@ -395,7 +393,7 @@ class TabDragController : public content::WebContentsDelegate,
 
   void DockDisplayerDestroyed(DockDisplayer* controller);
 
-  void BringWindowUnderMouseToFront();
+  void BringWindowUnderPointToFront(const gfx::Point& screen_point);
 
   // Convenience for getting the TabDragData corresponding to the tab the user
   // started dragging.
@@ -536,7 +534,7 @@ class TabDragController : public content::WebContentsDelegate,
   // is set to kMovedMouseRight | kMovedMouseLeft.
   int mouse_move_direction_;
 
-  // Coordinate last used in MoveAttached().
+  // Last location used.
   gfx::Point last_screen_point_;
 
   // The following are needed when detaching into a browser
