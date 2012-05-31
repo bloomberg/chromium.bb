@@ -44,55 +44,68 @@ TEST(ValuesUtilTest, PopBasicTypes) {
 
   dbus::MessageReader reader(response.get());
   scoped_ptr<Value> value;
+  scoped_ptr<Value> expected_value;
   // Pop a byte.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateIntegerValue(kByteValue)));
+  expected_value.reset(Value::CreateIntegerValue(kByteValue));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a bool.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateBooleanValue(kBoolValue)));
+  expected_value.reset(Value::CreateBooleanValue(kBoolValue));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop an int16.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateIntegerValue(kInt16Value)));
+  expected_value.reset(Value::CreateIntegerValue(kInt16Value));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a uint16.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateIntegerValue(kUint16Value)));
+  expected_value.reset(Value::CreateIntegerValue(kUint16Value));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop an int32.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateIntegerValue(kInt32Value)));
+  expected_value.reset(Value::CreateIntegerValue(kInt32Value));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a uint32.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateDoubleValue(kUint32Value)));
+  expected_value.reset(Value::CreateDoubleValue(kUint32Value));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop an int64.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateDoubleValue(kInt64Value)));
+  expected_value.reset(Value::CreateDoubleValue(kInt64Value));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a uint64.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateDoubleValue(kUint64Value)));
+  expected_value.reset(Value::CreateDoubleValue(kUint64Value));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a double.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateDoubleValue(kDoubleValue)));
+  expected_value.reset(Value::CreateDoubleValue(kDoubleValue));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a string.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateStringValue(kStringValue)));
+  expected_value.reset(Value::CreateStringValue(kStringValue));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop an empty string.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateStringValue(kEmptyStringValue)));
+  expected_value.reset(Value::CreateStringValue(kEmptyStringValue));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop an object path.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(
-      value->Equals(Value::CreateStringValue(kObjectPathValue.value())));
+  expected_value.reset(Value::CreateStringValue(
+      kObjectPathValue.value()));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
 }
 
 TEST(ValuesUtilTest, PopVariant) {
@@ -110,22 +123,27 @@ TEST(ValuesUtilTest, PopVariant) {
 
   dbus::MessageReader reader(response.get());
   scoped_ptr<Value> value;
+  scoped_ptr<Value> expected_value;
   // Pop a bool.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateBooleanValue(kBoolValue)));
+  expected_value.reset(Value::CreateBooleanValue(kBoolValue));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop an int32.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateIntegerValue(kInt32Value)));
+  expected_value.reset(Value::CreateIntegerValue(kInt32Value));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a double.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateDoubleValue(kDoubleValue)));
+  expected_value.reset(Value::CreateDoubleValue(kDoubleValue));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   // Pop a string.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateStringValue(kStringValue)));
+  expected_value.reset(Value::CreateStringValue(kStringValue));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
 }
 
 // Pop extremely large integers which cannot be precisely represented in
@@ -141,17 +159,20 @@ TEST(ValuesUtilTest, PopExtremelyLargeIntegers) {
 
   dbus::MessageReader reader(response.get());
   scoped_ptr<Value> value;
+  scoped_ptr<Value> expected_value;
   double double_value = 0;
   // Pop an int64.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateDoubleValue(kInt64Value)));
+  expected_value.reset(Value::CreateDoubleValue(kInt64Value));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   ASSERT_TRUE(value->GetAsDouble(&double_value));
   EXPECT_NE(kInt64Value, static_cast<int64>(double_value));
   // Pop a uint64.
   value.reset(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(Value::CreateDoubleValue(kUint64Value)));
+  expected_value.reset(Value::CreateDoubleValue(kUint64Value));
+  EXPECT_TRUE(value->Equals(expected_value.get()));
   ASSERT_TRUE(value->GetAsDouble(&double_value));
   EXPECT_NE(kUint64Value, static_cast<uint64>(double_value));
 }
@@ -171,7 +192,7 @@ TEST(ValuesUtilTest, PopIntArray) {
   writer.CloseContainer(&sub_writer);
 
   // Create the expected value.
-  ListValue* list_value = new ListValue;
+  scoped_ptr<ListValue> list_value(new ListValue);
   for (size_t i = 0; i != data.size(); ++i)
     list_value->Append(Value::CreateIntegerValue(data[i]));
 
@@ -179,7 +200,7 @@ TEST(ValuesUtilTest, PopIntArray) {
   dbus::MessageReader reader(response.get());
   scoped_ptr<Value> value(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(list_value));
+  EXPECT_TRUE(value->Equals(list_value.get()));
 }
 
 TEST(ValuesUtilTest, PopStringArray) {
@@ -194,7 +215,7 @@ TEST(ValuesUtilTest, PopStringArray) {
   writer.AppendArrayOfStrings(data);
 
   // Create the expected value.
-  ListValue* list_value = new ListValue;
+  scoped_ptr<ListValue> list_value(new ListValue);
   for (size_t i = 0; i != data.size(); ++i)
     list_value->Append(Value::CreateStringValue(data[i]));
 
@@ -202,7 +223,7 @@ TEST(ValuesUtilTest, PopStringArray) {
   dbus::MessageReader reader(response.get());
   scoped_ptr<Value> value(dbus::PopDataAsValue(&reader));
   ASSERT_TRUE(value.get() != NULL);
-  EXPECT_TRUE(value->Equals(list_value));
+  EXPECT_TRUE(value->Equals(list_value.get()));
 }
 
 TEST(ValuesUtilTest, PopStruct) {

@@ -76,9 +76,10 @@ class PropertyTest : public testing::Test {
     ASSERT_TRUE(bus_->HasDBusThread());
 
     // Create the properties structure
-    properties_ = new Properties(object_proxy_,
-                                 base::Bind(&PropertyTest::OnPropertyChanged,
-                                            base::Unretained(this)));
+    properties_.reset(new Properties(
+        object_proxy_,
+        base::Bind(&PropertyTest::OnPropertyChanged,
+                   base::Unretained(this))));
     properties_->ConnectSignals();
     properties_->GetAll();
   }
@@ -141,7 +142,7 @@ class PropertyTest : public testing::Test {
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> bus_;
   dbus::ObjectProxy* object_proxy_;
-  Properties* properties_;
+  scoped_ptr<Properties> properties_;
   scoped_ptr<dbus::TestService> test_service_;
   // Properties updated.
   std::vector<std::string> updated_properties_;
