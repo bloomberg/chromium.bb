@@ -1002,17 +1002,6 @@
    fun:URLFetcher::Core::StartURLRequestWhen*
 }
 {
-   bug_80666
-   Heapcheck:Leak
-   ...
-   fun:*basic_string*
-   fun:GURL::ComponentString
-   fun:GURL::HostNoBrackets
-   fun:net::::InitSocketPoolHelper
-   fun:net::*
-   fun:notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
-}
-{
    bug_81575
    Heapcheck:Leak
    ...
