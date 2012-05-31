@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/string_util.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -355,4 +356,49 @@ TEST_F(InstallUtilTest, ValueEquals) {
   EXPECT_FALSE(pred.Evaluate(L"howdy!"));
   EXPECT_FALSE(pred.Evaluate(L"!howdy"));
   EXPECT_TRUE(pred.Evaluate(L"howdy"));
+}
+
+TEST_F(InstallUtilTest, ProgramCompare) {
+  FilePath some_long_dir(test_dir_.path().Append(L"Some Long Directory Name"));
+  FilePath expect(some_long_dir.Append(L"file.txt"));
+  FilePath expect_upcase(some_long_dir.Append(L"FILE.txt"));
+  FilePath other(some_long_dir.Append(L"otherfile.txt"));
+
+  // Tests where the expected file doesn't exist.
+
+  // Paths don't match.
+  EXPECT_FALSE(InstallUtil::ProgramCompare(expect).Evaluate(
+      L"\"" + other.value() + L"\""));
+  // Paths match exactly.
+  EXPECT_TRUE(InstallUtil::ProgramCompare(expect).Evaluate(
+      L"\"" + expect.value() + L"\""));
+  // Paths differ by case.
+  EXPECT_TRUE(InstallUtil::ProgramCompare(expect).Evaluate(
+      L"\"" + expect_upcase.value() + L"\""));
+
+  // Tests where the expected file exists.
+  static const char data[] = "data";
+  ASSERT_TRUE(file_util::CreateDirectory(some_long_dir));
+  ASSERT_NE(-1, file_util::WriteFile(expect, data, arraysize(data) - 1));
+  // Paths don't match.
+  EXPECT_FALSE(InstallUtil::ProgramCompare(expect).Evaluate(
+      L"\"" + other.value() + L"\""));
+  // Paths match exactly.
+  EXPECT_TRUE(InstallUtil::ProgramCompare(expect).Evaluate(
+      L"\"" + expect.value() + L"\""));
+  // Paths differ by case.
+  EXPECT_TRUE(InstallUtil::ProgramCompare(expect).Evaluate(
+      L"\"" + expect_upcase.value() + L"\""));
+
+  // Test where strings don't match, but the same file is indicated.
+  std::wstring short_expect;
+  DWORD short_len = GetShortPathName(expect.value().c_str(),
+                                     WriteInto(&short_expect, MAX_PATH),
+                                     MAX_PATH);
+  ASSERT_NE(static_cast<DWORD>(0), short_len);
+  ASSERT_GT(static_cast<DWORD>(MAX_PATH), short_len);
+  short_expect.resize(short_len);
+  ASSERT_FALSE(FilePath::CompareEqualIgnoreCase(expect.value(), short_expect));
+  EXPECT_TRUE(InstallUtil::ProgramCompare(expect).Evaluate(
+      L"\"" + short_expect + L"\""));
 }

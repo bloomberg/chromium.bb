@@ -12,10 +12,11 @@
 
 #include <tchar.h>
 #include <windows.h>
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/string16.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"
 
@@ -62,17 +63,17 @@ class InstallUtil {
   // app's ClientState key.  See InstallerState::WriteInstallerResult for more
   // details.
   static void AddInstallerResultItems(bool system_install,
-                                      const std::wstring& state_key,
+                                      const string16& state_key,
                                       installer::InstallStatus status,
                                       int string_resource_id,
-                                      const std::wstring* const launch_cmd,
+                                      const string16* const launch_cmd,
                                       WorkItemList* install_list);
 
   // Update the installer stage reported by Google Update.  |state_key_path|
   // should be obtained via the state_key method of an InstallerState instance
   // created before the machine state is modified by the installer.
   static void UpdateInstallerStage(bool system_install,
-                                   const std::wstring& state_key_path,
+                                   const string16& state_key_path,
                                    installer::InstallerStage stage);
 
   // Returns true if this installation path is per user, otherwise returns
@@ -96,19 +97,19 @@ class InstallUtil {
                                         const string16& chrome_exe);
 
   // Deletes the registry key at path key_path under the key given by root_key.
-  static bool DeleteRegistryKey(HKEY root_key, const std::wstring& key_path);
+  static bool DeleteRegistryKey(HKEY root_key, const string16& key_path);
 
   // Deletes the registry value named value_name at path key_path under the key
   // given by reg_root.
-  static bool DeleteRegistryValue(HKEY reg_root, const std::wstring& key_path,
-                                  const std::wstring& value_name);
+  static bool DeleteRegistryValue(HKEY reg_root, const string16& key_path,
+                                  const string16& value_name);
 
   // An interface to a predicate function for use by DeleteRegistryKeyIf and
   // DeleteRegistryValueIf.
   class RegistryValuePredicate {
    public:
     virtual ~RegistryValuePredicate() { }
-    virtual bool Evaluate(const std::wstring& value) const = 0;
+    virtual bool Evaluate(const string16& value) const = 0;
   };
 
   // The result of a conditional delete operation (i.e., DeleteFOOIf).
@@ -124,8 +125,8 @@ class InstallUtil {
   // default value.
   static ConditionalDeleteResult DeleteRegistryKeyIf(
       HKEY root_key,
-      const std::wstring& key_to_delete_path,
-      const std::wstring& key_to_test_path,
+      const string16& key_to_delete_path,
+      const string16& key_to_test_path,
       const wchar_t* value_name,
       const RegistryValuePredicate& predicate);
 
@@ -141,11 +142,11 @@ class InstallUtil {
   // A predicate that performs a case-sensitive string comparison.
   class ValueEquals : public RegistryValuePredicate {
    public:
-    explicit ValueEquals(const std::wstring& value_to_match)
+    explicit ValueEquals(const string16& value_to_match)
         : value_to_match_(value_to_match) { }
-    virtual bool Evaluate(const std::wstring& value) const OVERRIDE;
+    virtual bool Evaluate(const string16& value) const OVERRIDE;
    protected:
-    std::wstring value_to_match_;
+    string16 value_to_match_;
    private:
     DISALLOW_COPY_AND_ASSIGN(ValueEquals);
   };
@@ -154,12 +155,36 @@ class InstallUtil {
   static int GetInstallReturnCode(installer::InstallStatus install_status);
 
   // Composes |program| and |arguments| into |command_line|.
-  static void MakeUninstallCommand(const std::wstring& program,
-                                   const std::wstring& arguments,
+  static void MakeUninstallCommand(const string16& program,
+                                   const string16& arguments,
                                    CommandLine* command_line);
 
   // Returns a string in the form YYYYMMDD of the current date.
-  static std::wstring GetCurrentDate();
+  static string16 GetCurrentDate();
+
+  // A predicate that compares the program portion of a command line with a
+  // given file path.  First, the file paths are compared directly.  If they do
+  // not match, the filesystem is consulted to determine if the paths reference
+  // the same file.
+  class ProgramCompare : public RegistryValuePredicate {
+   public:
+    explicit ProgramCompare(const FilePath& path_to_match);
+    virtual ~ProgramCompare();
+    virtual bool Evaluate(const string16& value) const OVERRIDE;
+
+   protected:
+    static bool OpenForInfo(const FilePath& path,
+                            base::win::ScopedHandle* handle);
+    static bool GetInfo(const base::win::ScopedHandle& handle,
+                        BY_HANDLE_FILE_INFORMATION* info);
+
+    FilePath path_to_match_;
+    base::win::ScopedHandle file_handle_;
+    BY_HANDLE_FILE_INFORMATION file_info_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ProgramCompare);
+  };  // class ProgramCompare
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallUtil);

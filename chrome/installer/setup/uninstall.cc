@@ -226,7 +226,7 @@ void CloseChromeFrameHelperProcess() {
 bool CurrentUserHasDefaultBrowser(const InstallerState& installer_state) {
   using base::win::RegistryKeyIterator;
   const HKEY root = HKEY_LOCAL_MACHINE;
-  ProgramCompare open_command_pred(
+  InstallUtil::ProgramCompare open_command_pred(
       installer_state.target_path().Append(kChromeExe));
   string16 client_open_path;
   RegKey client_open_key;
@@ -566,7 +566,7 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
   // Delete all Start Menu Internet registrations that refer to this Chrome.
   {
     using base::win::RegistryKeyIterator;
-    ProgramCompare open_command_pred(chrome_exe);
+    InstallUtil::ProgramCompare open_command_pred(chrome_exe);
     string16 client_name;
     string16 client_key;
     string16 open_key;
@@ -640,7 +640,7 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
                                browser_entry_suffix));
 
   // Delete each protocol association if it references this Chrome.
-  ProgramCompare open_command_pred(chrome_exe);
+  InstallUtil::ProgramCompare open_command_pred(chrome_exe);
   string16 parent_key(ShellUtil::kRegClasses);
   const string16::size_type base_length = parent_key.size();
   string16 child_key;
