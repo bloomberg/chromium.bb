@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_websocket.idl modified Wed Apr 25 11:48:30 2012. */
+/* From ppb_websocket.idl modified Thu May 31 15:47:38 2012. */
 
 #ifndef PPAPI_C_PPB_WEBSOCKET_H_
 #define PPAPI_C_PPB_WEBSOCKET_H_
@@ -71,6 +71,14 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_WebSocketReadyState, 4);
  * <code>PP_WEBSOCKETSTATUSCODE_USER_PRIVATE_MAX</code> are valid for Close().
  */
 typedef enum {
+  /**
+   * Indicates to request closing connection without status code and reason.
+   *
+   * (Note that the code 1005 is forbidden to send in actual close frames by
+   * the RFC. PP_WebSocket reuses this code internally and the code will never
+   * appear in the actual close frames.)
+   */
+  PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED = 1005,
   /**
    * Status codes in the range 0-999 are not used.
    */
@@ -246,7 +254,8 @@ struct PPB_WebSocket_1_0 {
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
    * WebSocket.
    *
-   * @param[in] code The WebSocket close code. This is ignored if it is 0.
+   * @param[in] code The WebSocket close code. This is ignored if it is
+   * <code>PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED</code>.
    * <code>PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE</code> must be used for the
    * usual case. To indicate some specific error cases, codes in the range
    * <code>PP_WEBSOCKETSTATUSCODE_USER_REGISTERED_MIN</code> to

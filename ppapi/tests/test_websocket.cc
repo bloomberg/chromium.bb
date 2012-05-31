@@ -553,6 +553,16 @@ std::string TestWebSocket::TestValidClose() {
   ASSERT_EQ(PP_OK, callback.result());
   core_interface_->ReleaseResource(ws);
 
+  // Close without code and reason.
+  ws = Connect(GetFullURL(kEchoServerURL), &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  callback.WaitForResult(websocket_interface_->Close(
+      ws, PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED, reason,
+      callback.GetCallback().pp_completion_callback()));
+  ASSERT_EQ(PP_OK, callback.result());
+  core_interface_->ReleaseResource(ws);
+
   // Close with PP_VARTYPE_UNDEFINED.
   ws = Connect(GetFullURL(kEchoServerURL), &result, "");
   ASSERT_TRUE(ws);
