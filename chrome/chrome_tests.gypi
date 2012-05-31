@@ -2710,7 +2710,6 @@
         'browser/extensions/browser_action_test_util.h',
         'browser/extensions/browser_action_test_util_gtk.cc',
         'browser/extensions/browser_action_test_util_mac.mm',
-        'browser/extensions/browser_action_test_util_views.cc',
         'browser/extensions/chrome_app_api_browsertest.cc',
         'browser/extensions/content_script_apitest.cc',
         'browser/extensions/content_security_policy_apitest.cc',
@@ -2880,6 +2879,7 @@
         'browser/ui/views/ash/launcher/launcher_favicon_loader_browsertest.cc',
         'browser/ui/views/ash/launcher/launcher_platform_app_browsertest.cc',
         'browser/ui/views/ash/volume_controller_browsertest_chromeos.cc',
+        'browser/ui/views/browser_action_test_util_views.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/constrained_window_views_browsertest.cc',
         'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
@@ -3291,7 +3291,6 @@
           'sources/': [
             ['exclude', '^browser/ui/views/'],
             ['exclude', '^../ui/views/'],
-            ['exclude', '^browser/extensions/browser_action_test_util_views.cc'],
             ['exclude', '^browser/extensions/extension_input_apitest.cc'],
             ['exclude', '^browser/tab_render_watcher_browsertest.cc'],
             ['exclude', '^browser/ui/panels/panel_browser_view_browsertest.cc'],

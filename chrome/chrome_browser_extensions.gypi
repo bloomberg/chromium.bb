@@ -220,7 +220,6 @@
         'browser/extensions/browser_action_test_util.h',
         'browser/extensions/browser_action_test_util_gtk.cc',
         'browser/extensions/browser_action_test_util_mac.mm',
-        'browser/extensions/browser_action_test_util_views.cc',
         'browser/extensions/browser_extension_window_controller.cc',
         'browser/extensions/browser_extension_window_controller.h',
         'browser/extensions/bundle_installer.cc',
