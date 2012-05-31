@@ -787,8 +787,6 @@
       'sources': [
         'client/plugin/chromoting_instance.cc',
         'client/plugin/chromoting_instance.h',
-        'client/plugin/chromoting_scriptable_object.cc',
-        'client/plugin/chromoting_scriptable_object.h',
         'client/plugin/mac_key_event_processor.cc',
         'client/plugin/mac_key_event_processor.h',
         'client/plugin/pepper_entrypoints.cc',

@@ -31,7 +31,6 @@
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/frame_consumer_proxy.h"
-#include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_port_allocator.h"
 #include "remoting/client/plugin/pepper_view.h"
@@ -134,7 +133,7 @@ bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
 }
 
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
-    : pp::InstancePrivate(pp_instance),
+    : pp::Instance(pp_instance),
       initialized_(false),
       plugin_message_loop_(
           new PluginMessageLoopProxy(&plugin_thread_delegate_)),
@@ -352,26 +351,11 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
   return input_handler_->HandleInputEvent(event);
 }
 
-pp::Var ChromotingInstance::GetInstanceObject() {
-  if (instance_object_.is_undefined()) {
-    ChromotingScriptableObject* object =
-        new ChromotingScriptableObject(this, plugin_message_loop_);
-    object->Init();
-
-    // The pp::Var takes ownership of object here.
-    instance_object_ = pp::VarPrivate(this, object);
-  }
-
-  return instance_object_;
-}
-
 void ChromotingInstance::SetDesktopSize(int width, int height) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetInteger("width", width);
   data->SetInteger("height", height);
   PostChromotingMessage("onDesktopSize", data.Pass());
-
-  GetScriptableObject()->SetDesktopSize(width, height);
 }
 
 void ChromotingInstance::SetConnectionState(
@@ -381,24 +365,11 @@ void ChromotingInstance::SetConnectionState(
   data->SetString("state", ConnectionStateToString(state));
   data->SetString("error", ConnectionErrorToString(error));
   PostChromotingMessage("onConnectionStatus", data.Pass());
-
-  GetScriptableObject()->SetConnectionStatus(state, error);
 }
 
 void ChromotingInstance::OnFirstFrameReceived() {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   PostChromotingMessage("onFirstFrameReceived", data.Pass());
-}
-
-ChromotingScriptableObject* ChromotingInstance::GetScriptableObject() {
-  pp::VarPrivate object = GetInstanceObject();
-  if (!object.is_undefined()) {
-    pp::deprecated::ScriptableObject* so = object.AsScriptableObject();
-    DCHECK(so != NULL);
-    return static_cast<ChromotingScriptableObject*>(so);
-  }
-  LOG(ERROR) << "Unable to get ScriptableObject for Chromoting plugin.";
-  return NULL;
 }
 
 void ChromotingInstance::Connect(const ClientConfig& config) {
@@ -560,8 +531,6 @@ void ChromotingInstance::SendOutgoingIq(const std::string& iq) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetString("iq", iq);
   PostChromotingMessage("sendOutgoingIq", data.Pass());
-
-  GetScriptableObject()->SendIq(iq);
 }
 
 void ChromotingInstance::SendPerfStats() {
@@ -682,14 +651,9 @@ void ChromotingInstance::ProcessLogToUI(const std::string& message) {
   // new tasks while we're in the middle of servicing a LOG call. This can
   // happen if the call to LogDebugInfo tries to LOG anything.
   g_logging_to_plugin = true;
-  ChromotingScriptableObject* scriptable_object = GetScriptableObject();
-  if (scriptable_object) {
-    scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-    data->SetString("message", message);
-    PostChromotingMessage("logDebugMessage", data.Pass());
-
-    scriptable_object->LogDebugInfo(message);
-  }
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  data->SetString("message", message);
+  PostChromotingMessage("logDebugMessage", data.Pass());
   g_logging_to_plugin = false;
 }
 

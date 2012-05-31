@@ -24,7 +24,7 @@
 #undef PostMessage
 #endif
 
-#include "ppapi/cpp/private/instance_private.h"
+#include "ppapi/cpp/instance.h"
 #include "remoting/base/scoped_thread_proxy.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/key_event_mapper.h"
@@ -52,7 +52,6 @@ class MouseInputFilter;
 }  // namespace protocol
 
 class ChromotingClient;
-class ChromotingScriptableObject;
 class ChromotingStats;
 class ClientContext;
 class FrameConsumerProxy;
@@ -65,7 +64,7 @@ struct ClientConfig;
 
 class ChromotingInstance :
       public protocol::ClipboardStub,
-      public pp::InstancePrivate,
+      public pp::Instance,
       public base::SupportsWeakPtr<ChromotingInstance> {
  public:
   // These state values are duplicated in the JS code. Remember to
@@ -105,7 +104,7 @@ class ChromotingInstance :
   // Backward-compatibility version used by for the ScriptableObject
   // interface. Should be updated whenever we remove support for
   // an older version of the API.
-  static const int kApiMinScriptableVersion = 2;
+  static const int kApiMinScriptableVersion = 5;
 
   // Helper method to parse authentication_methods parameter.
   static bool ParseAuthMethods(const std::string& auth_methods,
@@ -122,9 +121,6 @@ class ChromotingInstance :
   virtual void HandleMessage(const pp::Var& message) OVERRIDE;
   virtual bool HandleInputEvent(const pp::InputEvent& event) OVERRIDE;
 
-  // pp::InstancePrivate interface.
-  virtual pp::Var GetInstanceObject() OVERRIDE;
-
   // ClipboardStub implementation.
   virtual void InjectClipboardEvent(const protocol::ClipboardEvent& event)
       OVERRIDE;
@@ -134,11 +130,8 @@ class ChromotingInstance :
   void SetConnectionState(ConnectionState state, ConnectionError error);
   void OnFirstFrameReceived();
 
-  // Convenience wrapper to get the ChromotingScriptableObject.
-  ChromotingScriptableObject* GetScriptableObject();
-
   // Message handlers for messages that come from JavaScript. Called
-  // from HandleMessage() and ChromotingScriptableObject.
+  // from HandleMessage().
   void Connect(const ClientConfig& config);
   void Disconnect();
   void OnIncomingIq(const std::string& iq);
@@ -220,10 +213,6 @@ class ChromotingInstance :
   // jingle_glue objects. This is used when if we start a sandboxed jingle
   // connection.
   scoped_refptr<PepperXmppProxy> xmpp_proxy_;
-
-  // JavaScript interface to control this instance.
-  // This wraps a ChromotingScriptableObject in a pp::Var.
-  pp::Var instance_object_;
 
   scoped_ptr<ScopedThreadProxy> thread_proxy_;
 
