@@ -11,6 +11,7 @@
 #undef RootWindow
 
 #include "base/compiler_specific.h"
+#include "base/message_loop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/x11_atom_cache.h"
@@ -18,14 +19,18 @@
 
 namespace aura {
 class RootWindow;
+class Window;
 }
 
 namespace views {
+class NativeWidgetAura;
 
 // An EventFilter that sets properties on X11 windows.
-class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter {
+class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter,
+                                          public MessageLoop::Dispatcher {
  public:
-  explicit X11WindowEventFilter(aura::RootWindow* root_window);
+  explicit X11WindowEventFilter(aura::RootWindow* root_window,
+                                NativeWidgetAura* widget);
   virtual ~X11WindowEventFilter();
 
   // Changes whether borders are shown on this |root_window|.
@@ -42,13 +47,19 @@ class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter {
       aura::Window* target,
       aura::GestureEvent* event) OVERRIDE;
 
+  // Overridden from MessageLoop::Dispatcher:
+  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+
  private:
   // Dispatches a _NET_WM_MOVERESIZE message to the window manager to tell it
   // to act as if a border or titlebar drag occurred.
   bool DispatchHostWindowDragMovement(int hittest,
                                       const gfx::Point& screen_location);
 
-  aura::RootWindow* root_window_;
+  // Handles changes in activation.
+  void OnActiveWindowChanged(::Window window);
+
+  NativeWidgetAura* widget_;
 
   // The display and the native X window hosting the root window.
   Display* xdisplay_;
@@ -58,6 +69,9 @@ class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter {
   ::Window x_root_window_;
 
   aura::X11AtomCache atom_cache_;
+
+  // True if |xwindow_| is the current _NET_ACTIVE_WINDOW.
+  bool is_active_;
 
   DISALLOW_COPY_AND_ASSIGN(X11WindowEventFilter);
 };

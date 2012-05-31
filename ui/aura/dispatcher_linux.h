@@ -15,11 +15,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "ui/aura/aura_export.h"
 
 namespace aura {
 
-class DispatcherLinux : public MessageLoop::Dispatcher,
-                        public base::MessagePumpObserver {
+class AURA_EXPORT DispatcherLinux : public MessageLoop::Dispatcher,
+                                    public base::MessagePumpObserver {
  public:
   DispatcherLinux();
   virtual ~DispatcherLinux();
