@@ -6,16 +6,65 @@
 
 #include "chrome/browser/extensions/api/media_gallery/media_gallery_api.h"
 
-#include "base/json/json_writer.h"
+#include <string>
+#include <vector>
+
+#include "base/platform_file.h"
 #include "base/values.h"
+#include "chrome/browser/media_gallery/media_file_system_registry.h"
+#include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+
+#if defined(OS_WIN)
+#include "base/sys_string_conversions.h"
+#endif
 
 namespace extensions {
+
+using chrome::MediaFileSystemRegistry;
+using content::ChildProcessSecurityPolicy;
 
 GetMediaFileSystemsFunction::~GetMediaFileSystemsFunction() {}
 
 bool GetMediaFileSystemsFunction::RunImpl() {
-  // TODO(vandebo) Get the list of galleries.
-  result_.reset(new ListValue());
+  chrome::MediaFileSystemRegistry* media_fs_registry =
+      MediaFileSystemRegistry::GetInstance();
+  const std::vector<MediaFileSystemRegistry::MediaFSIDAndPath> filesystems =
+      media_fs_registry->GetMediaFileSystems();
+
+  base::ListValue* list = new base::ListValue();
+  for (size_t i = 0; i < filesystems.size(); i++) {
+    // TODO(thestig) Check permissions to file systems when that capability
+    // exists.
+    const MediaFileSystemRegistry::MediaFSIDAndPath& fsid_and_path =
+        filesystems[i];
+    const std::string& fsid = fsid_and_path.first;
+    const FilePath& path = fsid_and_path.second;
+    const FilePath::StringType basepath = path.BaseName().value();
+#if defined(OS_WIN)
+    // We standardize on UTF8 encoding for |basepath|.
+    const std::string basepath_utf8(base::SysWideToUTF8(basepath));
+#elif defined(OS_POSIX)
+    const std::string basepath_utf8(basepath);
+#endif
+
+    base::DictionaryValue* dict_value = new base::DictionaryValue();
+    dict_value->SetWithoutPathExpansion(
+        "fsid", Value::CreateStringValue(fsid));
+    dict_value->SetWithoutPathExpansion(
+        "dirname", Value::CreateStringValue(basepath_utf8));
+    list->Append(dict_value);
+
+    const int child_id = render_view_host()->GetProcess()->GetID();
+    content::ChildProcessSecurityPolicy* policy =
+        ChildProcessSecurityPolicy::GetInstance();
+    if (!policy->CanReadFile(child_id, path)) {
+      policy->GrantReadFile(child_id, path);
+    }
+  }
+
+  result_.reset(list);
   return true;
 }
 

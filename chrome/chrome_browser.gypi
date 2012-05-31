@@ -1329,6 +1329,8 @@
         'browser/media_gallery/media_device_notifications_linux.h',
         'browser/media_gallery/media_device_notifications_window_win.cc',
         'browser/media_gallery/media_device_notifications_window_win.h',
+        'browser/media_gallery/media_file_system_registry.cc',
+        'browser/media_gallery/media_file_system_registry.h',
         'browser/media_gallery/media_gallery_database.cc',
         'browser/media_gallery/media_gallery_database.h',
         'browser/media_gallery/media_gallery_database_types.cc',

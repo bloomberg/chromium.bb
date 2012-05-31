@@ -3,17 +3,18 @@
 // found in the LICENSE file.
 
 var mediaGalleries = chrome.experimental.mediaGalleries;
-var emptyListCallback = function(results) {
-  chrome.test.assertEq(results, []);
+var mediaFileSystemsListCallback = function(results) {
+  // There should be a "Pictures" directory on all desktop platforms.
+  chrome.test.assertEq(1, results.length);
 };
 var nullCallback = function(result) {
-  chrome.test.assertEq(result, null);
+  chrome.test.assertEq(null, result);
 };
 
 chrome.test.runTests([
   function getGalleries() {
     mediaGalleries.getMediaFileSystems(
-        chrome.test.callbackPass(emptyListCallback));
+        chrome.test.callbackPass(mediaFileSystemsListCallback));
   },
 
   function openMediaGalleryManager() {
@@ -24,7 +25,7 @@ chrome.test.runTests([
 
   function extractEmbeddedThumbnails() {
     var result = mediaGalleries.extractEmbeddedThumbnails({});
-    chrome.test.assertEq(result, null);
+    chrome.test.assertEq(null, result);
     chrome.test.succeed()
   },
 

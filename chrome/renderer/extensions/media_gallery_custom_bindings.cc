@@ -4,9 +4,14 @@
 
 #include "chrome/renderer/extensions/media_gallery_custom_bindings.h"
 
-#include "content/public/renderer/render_view.h"
-#include "grit/renderer_resources.h"
+#include <string>
+
+#include "base/file_path.h"
+#include "base/stringprintf.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
+#include "webkit/fileapi/file_system_util.h"
 
 namespace extensions {
 
@@ -24,7 +29,7 @@ MediaGalleryCustomBindings::MediaGalleryCustomBindings()
 
 v8::Handle<v8::Value> MediaGalleryCustomBindings::GetMediaFileSystemObject(
     const v8::Arguments& args) {
-  if (args.Length() != 1) {
+  if (args.Length() != 2) {
     NOTREACHED();
     return v8::Undefined();
   }
@@ -32,14 +37,37 @@ v8::Handle<v8::Value> MediaGalleryCustomBindings::GetMediaFileSystemObject(
     NOTREACHED();
     return v8::Undefined();
   }
-
-  std::string file_system_url;
-  file_system_url = *v8::String::Utf8Value(args[1]->ToString());
-  if (file_system_url.empty())
+  if (!args[1]->IsString()) {
+    NOTREACHED();
     return v8::Undefined();
+  }
 
-  // TODO(vandebo) Create and return a FileSystem object.
-  return v8::Undefined();
+  std::string fsid(*v8::String::Utf8Value(args[0]));
+  if (fsid.empty()) {
+    NOTREACHED();
+    return v8::Undefined();
+  }
+  std::string dirname(*v8::String::Utf8Value(args[1]));
+  if (dirname.empty()) {
+    NOTREACHED();
+    return v8::Undefined();
+  }
+
+  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
+  const GURL origin = GURL(webframe->document().securityOrigin().toString());
+  const GURL root_url =
+      fileapi::GetFileSystemRootURI(origin, fileapi::kFileSystemTypeIsolated);
+  const std::string fsname_prefix =
+      fileapi::GetFileSystemName(origin, fileapi::kFileSystemTypeIsolated);
+  const std::string fsname =
+      base::StringPrintf("%s_%s", fsname_prefix.c_str(), fsid.c_str());
+  const std::string url = base::StringPrintf("%s%s/%s/",
+                                             root_url.spec().c_str(),
+                                             fsid.c_str(),
+                                             dirname.c_str());
+  return webframe->createFileSystem(WebKit::WebFileSystem::TypeIsolated,
+                                    WebKit::WebString::fromUTF8(fsname),
+                                    WebKit::WebString::fromUTF8(url));
 }
 
 v8::Handle<v8::Value> MediaGalleryCustomBindings::ExtractEmbeddedThumbnails(
