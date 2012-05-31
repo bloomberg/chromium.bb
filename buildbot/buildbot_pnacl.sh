@@ -7,6 +7,9 @@ set -o xtrace
 set -o nounset
 set -o errexit
 
+# Tell build.sh and test.sh that we're a bot.
+export PNACL_BUILDBOT=true
+
 # If true, terminate script when first scons error is encountered.
 FAIL_FAST=${FAIL_FAST:-true}
 # This remembers when any build steps failed, but we ended up continuing.
