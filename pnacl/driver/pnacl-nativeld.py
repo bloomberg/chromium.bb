@@ -59,11 +59,6 @@ EXTRA_ENV = {
                       '--keep-headers-out-of-load-segment ' +
                       '-Tdata=0x11000000 -Ttext=0x1000000',
 
-  'LD_EMUL'        : '${LD_EMUL_%ARCH%}',
-  'LD_EMUL_ARM'    : 'armelf_nacl',
-  'LD_EMUL_X8632'  : 'elf_nacl',
-  'LD_EMUL_X8664'  : 'elf64_nacl',
-
   # --eh-frame-hdr asks the linker to generate an .eh_frame_hdr section,
   # which is a presorted list of registered frames. This section is
   # used by libgcc_eh/libgcc_s to avoid doing the sort during runtime.
@@ -71,6 +66,9 @@ EXTRA_ENV = {
   #
   'LD_FLAGS'    : '${LD_FLAGS_%EMITMODE%} ' +
                   '-nostdlib ' +
+                  # Only relvevant for ARM where it suppresses a warning.
+                  # Ignored for other archs.
+                  '--no-fix-cortex-a8 ' +
                   '-m ${LD_EMUL} ' +
                   '--eh-frame-hdr ' +
                   '${#SONAME ? -soname=${SONAME}} ' +
@@ -106,22 +104,6 @@ EXTRA_ENV = {
 def PassThrough(*args):
   env.append('LD_FLAGS', *args)
 
-def SetSegment(*args):
-  # Note: we conflate '-Ttext' and '--section-start .text=' here
-  # This is not quite right but it is the intention of the tests
-  # using the flags which want to control the placement of the
-  # "rx" and "r" segments
-  if args[0] == '--section-start' and args[1].startswith('.rodata='):
-    env.set('BASE_RODATA', args[1][len('.rodata='):])
-  elif args[0] == '--section-start' and args[1].startswith('.text='):
-    env.set('BASE_TEXT', args[1][len('.text='):])
-  elif args[0].startswith('-Ttext='):
-    env.set('BASE_TEXT', args[0][len('-Ttext='):])
-  elif args[0] == '-Ttext':
-    env.set('BASE_TEXT', args[1])
-  else:
-    Log.Fatal("Bad segment directive '%s'", repr(args))
-
 LDPatterns = [
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
@@ -139,13 +121,17 @@ LDPatterns = [
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
   ( ('-L', '(.*)'),
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
-
-  ( ('(-Ttext)','(.*)'), SetSegment),
-  ( ('(-Ttext=.*)'),     SetSegment),
+  # Note: we conflate '-Ttext' and '--section-start .text=' here
+  # This is not quite right but it is the intention of the tests
+  # using the flags which want to control the placement of the
+  # "rx" and "r" segments
+  ( ('-Ttext','(.*)'),                  "env.set('BASE_TEXT', $0)"),
+  ( ('-Ttext=(.*)'),                    "env.set('BASE_TEXT', $0)"),
+  ( ('--section-start','.text=(.*)'),   "env.set('BASE_TEXT', $0)"),
+  ( ('--section-start','.rodata=(.*)'), "env.set('BASE_RODATA', $0)"),
 
   ( ('(-e)','(.*)'),              PassThrough),
   ( '(--entry=.*)',               PassThrough),
-  ( ('(--section-start)','(.*)'), SetSegment),
   ( '-?-soname=(.*)',             "env.set('SONAME', $0)"),
   ( ('(-?-soname)', '(.*)'),      "env.set('SONAME', $1)"),
   ( '(-M)',                       PassThrough),
@@ -173,8 +159,8 @@ LDPatterns = [
   ( '(-Bstatic)',          "env.append('INPUTS', $0)"),
   ( '(-Bdynamic)',         "env.append('INPUTS', $0)"),
   # This is the file passed from llc during translation (used to be via shmem)
-  ( ('--shm=(.*)'),        "env.append('INPUTS', $0)\n"
-                           "env.set('LLC_TRANSLATED_FILE', $0)"),
+  ( ('--llc-translated-file=(.*)'), "env.append('INPUTS', $0)\n"
+                                    "env.set('LLC_TRANSLATED_FILE', $0)"),
   ( '(--(no-)?whole-archive)', "env.append('INPUTS', $0)"),
 
   ( '(-l.*)',              "env.append('INPUTS', $0)"),

@@ -413,7 +413,9 @@ def UseDefaultCommandlineLLC():
 def RunLD(infile, outfile):
   inputs = env.get('INPUTS')
   if infile:
-    inputs = ListReplace(inputs, '__BITCODE__', '--shm=' + infile)
+    inputs = ListReplace(inputs,
+                         '__BITCODE__',
+                         '--llc-translated-file=' + infile)
   ToggleDefaultCommandlineLD(inputs, infile)
   env.set('ld_inputs', *inputs)
   args = env.get('LD_ARGS') + ['-o', outfile]
