@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ namespace ui {
 // text from the current cursor position to the end of the line.
 // These should be self-explanatory; "line" here refers to the visual
 // line as currently displayed (possibly affected by wrapping).
-enum UI_EXPORT TextBoundaryType {
+enum TextBoundaryType {
   CHAR_BOUNDARY,
   WORD_BOUNDARY,
   LINE_BOUNDARY,
@@ -31,7 +31,7 @@ enum UI_EXPORT TextBoundaryType {
 };
 
 // A direction when searching for the next boundary.
-enum UI_EXPORT TextBoundaryDirection {
+enum TextBoundaryDirection {
   // Search forwards for the next boundary past the starting position.
   FORWARDS_DIRECTION,
   // Search backwards for the previous boundary before the starting position.
@@ -43,12 +43,11 @@ enum UI_EXPORT TextBoundaryDirection {
 // (depending on |direction|) from the given |start_offset| until the
 // given boundary is found, and return the offset of that boundary,
 // using the vector of line break character offsets in |line_breaks|.
-size_t UI_EXPORT FindAccessibleTextBoundary(
-    const string16& text,
-    const std::vector<int>& line_breaks,
-    TextBoundaryType boundary,
-    size_t start_offset,
-    TextBoundaryDirection direction);
+size_t UI_EXPORT FindAccessibleTextBoundary(const string16& text,
+                                            const std::vector<int>& line_breaks,
+                                            TextBoundaryType boundary,
+                                            size_t start_offset,
+                                            TextBoundaryDirection direction);
 
 }  // namespace ui
 
