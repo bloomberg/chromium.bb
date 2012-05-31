@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -10,6 +10,34 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
+
+/*
+ * When we're built into Chromium's "nacl_helper", its main will set this.
+ */
+void *g_nacl_prereserved_sandbox_addr = NULL;
+
+/*
+ * Find sandbox memory pre-reserved by the nacl_helper in chrome. The
+ * nacl_helper, if present, reserves the bottom 1G of the address space
+ * for use by Native Client.
+ *
+ * NOTE: num_bytes is currently ignored. It should be 1GB on Linux and
+ * 1GB plus a few pages on ARM. TODO(bradchen): deal with num_bytes.
+ *
+ * Out parameter p should be either:
+ *   0: reserved memory was not found
+ *   less than 128K: indicates the bottom 1G was reserved.
+ */
+int NaClFindPrereservedSandboxMemory(void **p, size_t num_bytes) {
+  UNREFERENCED_PARAMETER(num_bytes);
+
+  NaClLog(2,
+          "NaClFindPrereservedSandboxMemory(, %#.8"NACL_PRIxPTR") => %p\n",
+          num_bytes, g_nacl_prereserved_sandbox_addr);
+
+  *p = g_nacl_prereserved_sandbox_addr;
+  return g_nacl_prereserved_sandbox_addr != NULL;
+}
 
 /*
  * If we have a soft limit for RLIMIT_AS lower than the hard limit,

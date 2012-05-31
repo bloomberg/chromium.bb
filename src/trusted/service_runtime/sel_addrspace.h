@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -15,6 +15,12 @@
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 struct NaClApp; /* fwd */
+
+#if NACL_LINUX
+extern void *g_nacl_prereserved_sandbox_addr;
+#endif
+
+int NaClFindPrereservedSandboxMemory(void **p, size_t num_bytes);
 
 void NaClAddrSpaceBeforeAlloc(size_t guarded_addrsp_size);
 

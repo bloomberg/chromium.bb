@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -48,7 +48,7 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
    * Look for this pre-reserved block and if found, pass its address to the
    * page allocation function.
    */
-  if (NaCl_find_prereserved_sandbox_memory(mem, addrsp_size)) {
+  if (NaClFindPrereservedSandboxMemory(mem, addrsp_size)) {
     /* Sanity check zero sandbox base address.
      * It should be within a few pages above the 64KB boundary. See
      * chrome/nacl/nacl_helper_bootstrap.c in the Chromium repository

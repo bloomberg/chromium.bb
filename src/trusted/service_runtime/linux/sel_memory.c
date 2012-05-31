@@ -28,35 +28,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
-/*
- * When we're built into Chromium's "nacl_helper", its main will set this.
- */
-void *g_nacl_prereserved_sandbox_addr = NULL;
-
-/*
- * Find sandbox memory pre-reserved by the nacl_helper in chrome. The
- * nacl_helper, if present, reserves the bottom 1G of the address space
- * for use by Native Client.
- *
- * NOTE: num_bytes is currently ignored. It should be 1GB on Linux and
- * 1GB plus a few pages on ARM. TODO(bradchen): deal with num_bytes.
- *
- * Out parameter p should be either:
- *   0: reserved memory was not found
- *   less than 128K: indicates the bottom 1G was reserved.
- */
-int   NaCl_find_prereserved_sandbox_memory(void   **p,
-                                           size_t num_bytes) {
-  UNREFERENCED_PARAMETER(num_bytes);
-
-  NaClLog(2,
-          "NaCl_find_prereserved_sandbox_memory(, %#.8"NACL_PRIxPTR") => %p\n",
-          num_bytes, g_nacl_prereserved_sandbox_addr);
-
-  *p = g_nacl_prereserved_sandbox_addr;
-  return g_nacl_prereserved_sandbox_addr != NULL;
-}
-
 void NaCl_page_free(void     *p,
                     size_t   size) {
   if (p == 0 || size == 0)
