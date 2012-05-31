@@ -19,7 +19,7 @@ using content::RenderViewHostImpl;
 using content::WebContents;
 using net::SSLInfo;
 
-SSLErrorHandler::SSLErrorHandler(base::WeakPtr<Delegate> delegate,
+SSLErrorHandler::SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
                                  const content::GlobalRequestID& id,
                                  ResourceType::Type resource_type,
                                  const GURL& url,

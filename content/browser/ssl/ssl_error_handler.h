@@ -106,7 +106,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   friend class base::RefCountedThreadSafe<SSLErrorHandler>;
 
   // Construct on the IO thread.
-  SSLErrorHandler(base::WeakPtr<Delegate> delegate,
+  SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
                   const content::GlobalRequestID& id,
                   ResourceType::Type resource_type,
                   const GURL& url,

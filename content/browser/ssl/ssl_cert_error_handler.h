@@ -18,7 +18,7 @@
 class SSLCertErrorHandler : public SSLErrorHandler {
  public:
   // Construct on the IO thread.
-  SSLCertErrorHandler(base::WeakPtr<Delegate> delegate,
+  SSLCertErrorHandler(const base::WeakPtr<Delegate>& delegate,
                       const content::GlobalRequestID& id,
                       ResourceType::Type resource_type,
                       const GURL& url,

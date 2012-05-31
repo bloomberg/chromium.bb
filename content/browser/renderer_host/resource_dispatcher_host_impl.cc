@@ -320,8 +320,6 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
     : download_file_manager_(new DownloadFileManager(NULL)),
       save_file_manager_(new SaveFileManager()),
       request_id_(-1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(ssl_delegate_weak_factory_(this)),
       is_shutdown_(false),
       max_outstanding_requests_cost_per_process_(
           kMaxOutstandingRequestsCostPerProcess),
@@ -1517,9 +1515,9 @@ void ResourceDispatcherHostImpl::OnSSLCertificateError(
   int render_view_id;
   if(!info->GetAssociatedRenderView(&render_process_id, &render_view_id))
     NOTREACHED();
-  SSLManager::OnSSLCertificateError(ssl_delegate_weak_factory_.GetWeakPtr(),
-      request_id, info->GetResourceType(), request->url(), render_process_id,
-      render_view_id, ssl_info, is_hsts_host);
+  SSLManager::OnSSLCertificateError(
+      AsWeakPtr(), request_id, info->GetResourceType(), request->url(),
+      render_process_id, render_view_id, ssl_info, is_hsts_host);
 }
 
 void ResourceDispatcherHostImpl::OnResponseStarted(net::URLRequest* request) {
@@ -1801,10 +1799,8 @@ void ResourceDispatcherHostImpl::PauseRequest(int child_id,
   // asynchronously to avoid recursion problems.
   if (info->pause_count() == 0) {
     MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(
-            &ResourceDispatcherHostImpl::ResumeRequest,
-            weak_factory_.GetWeakPtr(),
-            global_id));
+        base::Bind(&ResourceDispatcherHostImpl::ResumeRequest,
+                   AsWeakPtr(), global_id));
   }
 }
 
@@ -1919,9 +1915,8 @@ void ResourceDispatcherHostImpl::OnReadCompleted(net::URLRequest* request,
         GlobalRequestID id(info->GetChildID(), info->GetRequestID());
         MessageLoop::current()->PostTask(
             FROM_HERE,
-            base::Bind(
-                &ResourceDispatcherHostImpl::ResumeRequest,
-                weak_factory_.GetWeakPtr(), id));
+            base::Bind(&ResourceDispatcherHostImpl::ResumeRequest,
+                       AsWeakPtr(), id));
         return;
       }
     }

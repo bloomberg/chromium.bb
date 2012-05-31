@@ -52,7 +52,7 @@ class SSLManager : public content::NotificationObserver {
   //
   // Called on the IO thread.
   static void OnSSLCertificateError(
-      base::WeakPtr<SSLErrorHandler::Delegate> delegate,
+      const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
       const content::GlobalRequestID& id,
       ResourceType::Type resource_type,
       const GURL& url,

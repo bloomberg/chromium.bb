@@ -29,9 +29,11 @@ class SSLInfo;
 // Dispatches ViewHostMsg_SocketStream_* messages sent from renderer.
 // It also acts as SocketStream::Delegate so that it sends
 // ViewMsg_SocketStream_* messages back to renderer.
-class SocketStreamDispatcherHost : public content::BrowserMessageFilter,
-                                   public net::SocketStream::Delegate,
-                                   public SSLErrorHandler::Delegate {
+class SocketStreamDispatcherHost
+    : public content::BrowserMessageFilter,
+      public net::SocketStream::Delegate,
+      public SSLErrorHandler::Delegate,
+      public base::SupportsWeakPtr<SocketStreamDispatcherHost> {
  public:
   SocketStreamDispatcherHost(
       int render_process_id,
@@ -80,9 +82,6 @@ class SocketStreamDispatcherHost : public content::BrowserMessageFilter,
   void DeleteSocketStreamHost(int socket_id);
 
   net::URLRequestContext* GetURLRequestContext();
-
-  // For SSLErrorHandler::Delegate calls from SSLManager.
-  base::WeakPtrFactory<SSLErrorHandler::Delegate> ssl_delegate_weak_factory_;
 
   IDMap<SocketStreamHost> hosts_;
   int render_process_id_;

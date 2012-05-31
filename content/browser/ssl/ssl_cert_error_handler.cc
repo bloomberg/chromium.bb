@@ -13,7 +13,7 @@
 using content::ResourceDispatcherHostImpl;
 
 SSLCertErrorHandler::SSLCertErrorHandler(
-    base::WeakPtr<Delegate> delegate,
+    const base::WeakPtr<Delegate>& delegate,
     const content::GlobalRequestID& id,
     ResourceType::Type resource_type,
     const GURL& url,

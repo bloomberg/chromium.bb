@@ -62,7 +62,8 @@ struct Referrer;
 class CONTENT_EXPORT ResourceDispatcherHostImpl
     : public ResourceDispatcherHost,
       public net::URLRequest::Delegate,
-      public SSLErrorHandler::Delegate {
+      public SSLErrorHandler::Delegate,
+      public base::SupportsWeakPtr<ResourceDispatcherHostImpl> {
  public:
   ResourceDispatcherHostImpl();
   virtual ~ResourceDispatcherHostImpl();
@@ -475,12 +476,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // observed in the real world!) event where we have two requests with the same
   // request_id_.
   int request_id_;
-
-  // For running tasks.
-  base::WeakPtrFactory<ResourceDispatcherHostImpl> weak_factory_;
-
-  // For SSLErrorHandler::Delegate calls from SSLManager.
-  base::WeakPtrFactory<SSLErrorHandler::Delegate> ssl_delegate_weak_factory_;
 
   // True if the resource dispatcher host has been shut down.
   bool is_shutdown_;
