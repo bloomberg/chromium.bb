@@ -639,7 +639,7 @@ const Experiment kExperiments[] = {
     "touch-optimized-ui",
     IDS_FLAGS_TOUCH_OPTIMIZED_UI_NAME,
     IDS_FLAGS_TOUCH_OPTIMIZED_UI_DESCRIPTION,
-    kOsCrOS,
+    kOsWin | kOsCrOS,
     MULTI_VALUE_TYPE(kTouchOptimizedUIChoices)
   },
   {
