@@ -45,6 +45,10 @@ class AURA_EXPORT Env {
     mouse_button_flags_ = mouse_button_flags;
   }
 
+  // Whether any touch device is currently down.
+  bool is_touch_down() const { return is_touch_down_; }
+  void set_touch_down(bool value) { is_touch_down_ = value; }
+
   client::StackingClient* stacking_client() { return stacking_client_; }
   void set_stacking_client(client::StackingClient* stacking_client) {
     stacking_client_ = stacking_client;
@@ -78,6 +82,7 @@ class AURA_EXPORT Env {
 
   static Env* instance_;
   int mouse_button_flags_;
+  bool is_touch_down_;
   client::StackingClient* stacking_client_;
   scoped_ptr<MonitorManager> monitor_manager_;
 

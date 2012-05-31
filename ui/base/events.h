@@ -52,8 +52,8 @@ enum EventType {
   ET_GESTURE_SCROLL_END,
   ET_GESTURE_SCROLL_UPDATE,
   ET_GESTURE_TAP,
-  ET_GESTURE_TAP_DOWN,
-  ET_GESTURE_TAP_UP,
+  ET_GESTURE_TAP_DOWN,  // Sent before any other gesture types.
+  ET_GESTURE_TAP_UP,    // Sent after any other gestures.
   ET_GESTURE_DOUBLE_TAP,
   ET_GESTURE_PINCH_BEGIN,
   ET_GESTURE_PINCH_END,

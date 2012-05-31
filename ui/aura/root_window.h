@@ -369,6 +369,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // ui::EventFlags containing the current state of the mouse buttons.
   int mouse_button_flags_;
 
+  // Touch ids that are currently down.
+  uint32 touch_ids_down_;
+
   // Last cursor set.  Used for testing.
   gfx::NativeCursor last_cursor_;
 

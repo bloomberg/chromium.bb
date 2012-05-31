@@ -33,6 +33,9 @@ enum ScrollType {
 // A GestureSequence recognizes gestures from touch sequences.
 class UI_EXPORT GestureSequence {
  public:
+  // Maximum number of points in a single gesture.
+  static const int kMaxGesturePoints = 12;
+
   explicit GestureSequence(GestureEventHelper* consumer);
   virtual ~GestureSequence();
 
@@ -46,9 +49,6 @@ class UI_EXPORT GestureSequence {
                                                 ui::TouchStatus status);
   const GesturePoint* points() const { return points_; }
   int point_count() const { return point_count_; }
-
-  // Maximum number of points in a single gesture.
-  static const int kMaxGesturePoints = 12;
 
  protected:
   virtual base::OneShotTimer<GestureSequence>* CreateTimer();
@@ -110,7 +110,7 @@ class UI_EXPORT GestureSequence {
                           int swipe_y,
                           Gestures* gestures);
 
-  void set_state(const GestureState state ) { state_ = state; }
+  void set_state(const GestureState state) { state_ = state; }
 
   // Various GestureTransitionFunctions for a signature.
   // There is, 1:many mapping from GestureTransitionFunction to Signature

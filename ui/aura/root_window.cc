@@ -116,6 +116,7 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(event_factory_(this)),
       mouse_button_flags_(0),
+      touch_ids_down_(0),
       last_cursor_(ui::kCursorNull),
       cursor_shown_(true),
       capture_window_(NULL),
@@ -308,6 +309,22 @@ bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
 
 bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
   DispatchHeldMouseMove();
+  switch (event->type()) {
+    case ui::ET_TOUCH_PRESSED:
+      touch_ids_down_ |= (1 << event->touch_id());
+      Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
+      break;
+
+    // Don't handle ET_TOUCH_CANCELLED since we always get a ET_TOUCH_RELEASED.
+    case ui::ET_TOUCH_RELEASED:
+      touch_ids_down_ = (touch_ids_down_ | (1 << event->touch_id())) ^
+                        (1 << event->touch_id());
+      Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
+      break;
+
+    default:
+      break;
+  }
   float scale = ui::GetDeviceScaleFactor(layer());
   ui::Transform transform = layer()->transform();
   transform.ConcatScale(scale, scale);
@@ -743,7 +760,9 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
 
   if (target->delegate())
     status = target->delegate()->OnGestureEvent(event);
-  if (status == ui::GESTURE_STATUS_UNKNOWN) {
+  if (status == ui::GESTURE_STATUS_UNKNOWN &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAuraDisableMouseEventsFromTouch)) {
     // The gesture was unprocessed. Generate corresponding mouse events here
     // (e.g. tap to click).
     const ui::EventType* types = NULL;

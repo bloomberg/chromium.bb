@@ -157,12 +157,13 @@ void GestureRecognizerImpl::CancelNonCapturedTouches(
   std::map<int, GestureConsumer*>::iterator i;
   // Fire touch cancels, and target touch_ids to gesture_consumer_ignorer.
   for (i = touch_id_target_.begin(); i != touch_id_target_.end(); ++i) {
-    if (capturer != i->second) {
-      scoped_ptr<TouchEvent> touchEvent(helper_->CreateTouchEvent(
+    if (capturer != i->second &&
+        touch_id_target_[i->first] != gesture_consumer_ignorer_.get()) {
+      scoped_ptr<TouchEvent> touch_event(helper_->CreateTouchEvent(
             ui::ET_TOUCH_CANCELLED, gfx::Point(0, 0),
             i->first,
             base::Time::NowFromSystemTime() - base::Time()));
-      helper_->DispatchCancelTouchEvent(touchEvent.get());
+      helper_->DispatchCancelTouchEvent(touch_event.get());
       touch_id_target_[i->first] = gesture_consumer_ignorer_.get();
     }
   }
