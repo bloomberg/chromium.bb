@@ -692,7 +692,7 @@
     # The unit test executable for sync tests.
     {
       'target_name': 'sync_unit_tests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:run_all_unittests',
         'sync_tests',
@@ -716,6 +716,11 @@
                 '../chrome/chrome.gyp:browser',
             ],
         }],
+        ['OS == "android" and gtest_target_type == "shared_library"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
       ],
     },
 
@@ -735,5 +740,27 @@
         'tools/sync_listen_notifications.cc',
       ],
     },
+  ],
+  'conditions': [
+    # Special target to wrap a gtest_target_type==shared_library
+    # sync_unit_tests into an android apk for execution.
+    ['OS == "android" and gtest_target_type == "shared_library"', {
+      'targets': [
+        {
+          'target_name': 'sync_unit_tests_apk',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+            'sync_unit_tests',
+          ],
+          'variables': {
+            'test_suite_name': 'sync_unit_tests',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)sync_unit_tests<(SHARED_LIB_SUFFIX)',
+            'input_jars_paths': [ '<(PRODUCT_DIR)/lib.java/chromium_base.jar', ],
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
+      ],
+    }],
   ],
 }
