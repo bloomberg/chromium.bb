@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -98,19 +98,10 @@
             # This avoids stripping debugging symbols from the target, which
             # would fail because there is no binary code here.
             'mac_strip': 0,
-            'strings_path': '<(grit_out_dir)/app/policy/mac/strings',
-            # The reason we are not enumerating all the locales is that
-            # the translations would eat up 3.5MB disk space in the
-            # application bundle:
-            'available_locales': 'en',
           },
           'dependencies': [
              # Provides app-Manifest.plist and its string tables:
             'policy_templates',
-          ],
-          'mac_bundle_resources': [
-            # TODO: remove this helper when we have loops in GYP
-            '>!@(<(apply_locales_cmd) -d \'<(strings_path)/ZZLOCALE.lproj/Localizable.strings\' <(available_locales))',
           ],
           'actions': [
             {
@@ -134,6 +125,36 @@
               ],
               'message':
                 'Copying the MCX policy manifest file to the manifest bundle',
+              'process_outputs_as_mac_bundle_resources': 1,
+            },
+            {
+              'action_name':
+                'Copy Localizable.strings files to manifest bundle',
+              'variables': {
+                'input_path': '<(grit_out_dir)/app/policy/mac/strings',
+                # Directory to collect the Localizable.strings files before
+                # they are copied to the bundle.
+                'output_path': '<(INTERMEDIATE_DIR)/app_manifest',
+                # The reason we are not enumerating all the locales is that
+                # the translations would eat up 3.5MB disk space in the
+                # application bundle:
+                'available_locales': 'en',
+              },
+              'inputs': [
+                # TODO: remove this helper when we have loops in GYP
+                '>!@(<(apply_locales_cmd) -d \'<(input_path)/ZZLOCALE.lproj/Localizable.strings\' <(available_locales))',
+              ],
+              'outputs': [
+                # TODO: remove this helper when we have loops in GYP
+                '>!@(<(apply_locales_cmd) -d \'<(output_path)/ZZLOCALE.lproj/Localizable.strings\' <(available_locales))',
+              ],
+              'action': [
+                'cp', '-R',
+                '<(input_path)/',
+                '<(output_path)',
+              ],
+              'message':
+                'Copy the Localizable.strings files to the manifest bundle',
               'process_outputs_as_mac_bundle_resources': 1,
             },
           ],
