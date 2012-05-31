@@ -793,9 +793,6 @@ BrowserAccessibilityWin
   void IntAttributeToIA2(
       WebAccessibility::IntAttribute attribute, const char* ia2_attr);
 
-  // Escape a string like it would be escaped for a URL or HTML form.
-  string16 Escape(const string16& str);
-
   // Get the text of this node for the purposes of IAccessibleText - it may
   // be the name, it may be the value, etc. depending on the role.
   const string16& TextForIAccessibleText();

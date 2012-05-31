@@ -76,16 +76,15 @@ TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
     const char* url;
     const string16 terms;
     const std::string output;
-    bool valid_url;
   } search_term_cases[] = {
     { "http://foo{searchTerms}", ASCIIToUTF16("sea rch/bar"),
-      "http://foosea%20rch%2Fbar", false },
+      "http://foosea%20rch/bar" },
     { "http://foo{searchTerms}?boo=abc", ASCIIToUTF16("sea rch/bar"),
-      "http://foosea%20rch%2Fbar?boo=abc", false },
+      "http://foosea%20rch/bar?boo=abc" },
     { "http://foo/?boo={searchTerms}", ASCIIToUTF16("sea rch/bar"),
-      "http://foo/?boo=sea+rch%2Fbar", true },
+      "http://foo/?boo=sea+rch%2Fbar" },
     { "http://en.wikipedia.org/{searchTerms}", ASCIIToUTF16("wiki/?"),
-      "http://en.wikipedia.org/wiki%2F%3F", true }
+      "http://en.wikipedia.org/wiki/%3F" }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(search_term_cases); ++i) {
     const SearchTermsCase& value = search_term_cases[i];
@@ -94,11 +93,10 @@ TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
     TemplateURL url(NULL, data);
     EXPECT_TRUE(url.url_ref().IsValid());
     ASSERT_TRUE(url.url_ref().SupportsReplacement());
-    std::string result = url.url_ref().ReplaceSearchTerms(value.terms,
-        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16());
-    EXPECT_EQ(value.output, result);
-    GURL result_url(result);
-    EXPECT_EQ(value.valid_url, result_url.is_valid());
+    GURL result(url.url_ref().ReplaceSearchTerms(value.terms,
+        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+    ASSERT_TRUE(result.is_valid());
+    EXPECT_EQ(value.output, result.spec());
   }
 }
 

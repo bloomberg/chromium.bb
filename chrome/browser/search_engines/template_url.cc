@@ -21,59 +21,89 @@
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
 // The TemplateURLRef has any number of terms that need to be replaced. Each of
 // the terms is enclosed in braces. If the character preceeding the final
 // brace is a ?, it indicates the term is optional and can be replaced with
 // an empty string.
-static const char kStartParameter = '{';
-static const char kEndParameter = '}';
-static const char kOptional = '?';
+const char kStartParameter = '{';
+const char kEndParameter = '}';
+const char kOptional = '?';
 
 // Known parameters found in the URL.
-static const char kSearchTermsParameter[] = "searchTerms";
-static const char kSearchTermsParameterFull[] = "{searchTerms}";
-static const char kCountParameter[] = "count";
-static const char kStartIndexParameter[] = "startIndex";
-static const char kStartPageParameter[] = "startPage";
-static const char kLanguageParameter[] = "language";
-static const char kInputEncodingParameter[] = "inputEncoding";
-static const char kOutputEncodingParameter[] = "outputEncoding";
+const char kSearchTermsParameter[] = "searchTerms";
+const char kSearchTermsParameterFull[] = "{searchTerms}";
+const char kCountParameter[] = "count";
+const char kStartIndexParameter[] = "startIndex";
+const char kStartPageParameter[] = "startPage";
+const char kLanguageParameter[] = "language";
+const char kInputEncodingParameter[] = "inputEncoding";
+const char kOutputEncodingParameter[] = "outputEncoding";
 
-static const char kGoogleAcceptedSuggestionParameter[] =
-    "google:acceptedSuggestion";
+const char kGoogleAcceptedSuggestionParameter[] = "google:acceptedSuggestion";
 // Host/Domain Google searches are relative to.
-static const char kGoogleBaseURLParameter[] = "google:baseURL";
-static const char kGoogleBaseURLParameterFull[] = "{google:baseURL}";
+const char kGoogleBaseURLParameter[] = "google:baseURL";
+const char kGoogleBaseURLParameterFull[] = "{google:baseURL}";
 // Like google:baseURL, but for the Search Suggest capability.
-static const char kGoogleBaseSuggestURLParameter[] =
-    "google:baseSuggestURL";
-static const char kGoogleBaseSuggestURLParameterFull[] =
-    "{google:baseSuggestURL}";
-static const char kGoogleInstantEnabledParameter[] =
-    "google:instantEnabledParameter";
-static const char kGoogleOriginalQueryForSuggestionParameter[] =
+const char kGoogleBaseSuggestURLParameter[] = "google:baseSuggestURL";
+const char kGoogleBaseSuggestURLParameterFull[] = "{google:baseSuggestURL}";
+const char kGoogleInstantEnabledParameter[] = "google:instantEnabledParameter";
+const char kGoogleOriginalQueryForSuggestionParameter[] =
     "google:originalQueryForSuggestion";
-static const char kGoogleRLZParameter[] = "google:RLZ";
+const char kGoogleRLZParameter[] = "google:RLZ";
 // Same as kSearchTermsParameter, with no escaping.
-static const char kGoogleSearchFieldtrialParameter[] =
+const char kGoogleSearchFieldtrialParameter[] =
     "google:searchFieldtrialParameter";
-static const char kGoogleUnescapedSearchTermsParameter[] =
+const char kGoogleUnescapedSearchTermsParameter[] =
     "google:unescapedSearchTerms";
-static const char kGoogleUnescapedSearchTermsParameterFull[] =
+const char kGoogleUnescapedSearchTermsParameterFull[] =
     "{google:unescapedSearchTerms}";
 
 // Display value for kSearchTermsParameter.
-static const char kDisplaySearchTerms[] = "%s";
+const char kDisplaySearchTerms[] = "%s";
 
 // Display value for kGoogleUnescapedSearchTermsParameter.
-static const char kDisplayUnescapedSearchTerms[] = "%S";
+const char kDisplayUnescapedSearchTerms[] = "%S";
 
 // Used if the count parameter is not optional. Indicates we want 10 search
 // results.
-static const char kDefaultCount[] = "10";
+const char kDefaultCount[] = "10";
 
 // Used if the parameter kOutputEncodingParameter is required.
-static const char kOutputEncodingType[] = "UTF-8";
+const char kOutputEncodingType[] = "UTF-8";
+
+// Attempts to encode |terms| and |original_query| in |encoding| and escape
+// them.  |terms| may be escaped as path or query depending on |is_in_query|;
+// |original_query| is always escaped as query.  Returns whether the encoding
+// process succeeded.
+bool TryEncoding(const string16& terms,
+                 const string16& original_query,
+                 const char* encoding,
+                 bool is_in_query,
+                 string16* escaped_terms,
+                 string16* escaped_original_query) {
+  DCHECK(escaped_terms);
+  DCHECK(escaped_original_query);
+  std::string encoded_terms;
+  if (!base::UTF16ToCodepage(terms, encoding,
+      base::OnStringConversionError::SKIP, &encoded_terms))
+    return false;
+  *escaped_terms = UTF8ToUTF16(is_in_query ?
+      net::EscapeQueryParamValue(encoded_terms, true) :
+      net::EscapePath(encoded_terms));
+  if (original_query.empty())
+    return true;
+  std::string encoded_original_query;
+  if (!base::UTF16ToCodepage(original_query, encoding,
+      base::OnStringConversionError::SKIP, &encoded_original_query))
+    return false;
+  *escaped_original_query =
+      UTF8ToUTF16(net::EscapeQueryParamValue(encoded_original_query, true));
+  return true;
+}
+
+}  // namespace
 
 
 // TemplateURLRef -------------------------------------------------------------
@@ -152,23 +182,18 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
   for (std::vector<std::string>::const_iterator i(
            owner_->input_encodings().begin());
        i != owner_->input_encodings().end(); ++i) {
-    if (net::EscapeQueryParamValue(terms, i->c_str(), is_in_query,
-        &encoded_terms)) {
-      if (is_in_query && !original_query_for_suggestion.empty()) {
-        net::EscapeQueryParamValue(original_query_for_suggestion, i->c_str(),
-                                   true, &encoded_original_query);
-      }
+    if (TryEncoding(terms, original_query_for_suggestion, i->c_str(),
+                    is_in_query, &encoded_terms, &encoded_original_query)) {
       input_encoding = *i;
       break;
     }
   }
   if (input_encoding.empty()) {
-    encoded_terms = net::EscapeQueryParamValueUTF8(terms, is_in_query);
-    if (is_in_query && !original_query_for_suggestion.empty()) {
-      encoded_original_query =
-          net::EscapeQueryParamValueUTF8(original_query_for_suggestion, true);
-    }
     input_encoding = "UTF-8";
+    if (!TryEncoding(terms, original_query_for_suggestion,
+                     input_encoding.c_str(), is_in_query, &encoded_terms,
+                     &encoded_original_query))
+      NOTREACHED();
   }
 
   std::string url = parsed_url_;
