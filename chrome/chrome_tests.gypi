@@ -4547,7 +4547,7 @@
             '../sql/sql.gyp:sql_unittests',
             '../content/content.gyp:content_unittests',
             'unit_tests',
-            'sync_unit_tests',
+            #'sync_unit_tests',
           ],  # 'dependencies'
           'conditions': [
             ['OS=="win"', {
