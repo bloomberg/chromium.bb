@@ -60,13 +60,6 @@
  */
 //#define SK_CAN_USE_FLOAT
 
-/*  Temporarily turn on SK_USE_FLOATBITS so critical float->int conversions in Skia
-    are done with saturation.
-    TODO(wjmaclean@chromium.org): Remove this once saturating float->int implemented
-    throughout Skia.
- */
-#define SK_USE_FLOATBITS
-
 /*  For some performance-critical scalar operations, skia will optionally work
     around the standard float operators if it knows that the CPU does not have
     native support for floats. If your environment uses software floating point,
@@ -227,8 +220,9 @@ typedef unsigned uint32_t;
 
 #elif defined(SK_BUILD_FOR_UNIX)
 
-// Prefer FreeType's emboldening algorithm to Skia's (which does a hairline
-// outline and doesn't look very good).
+// Prefer FreeType's emboldening algorithm to Skia's
+// TODO: skia used to just use hairline, but has improved since then, so
+// we should revisit this choice...
 #define SK_USE_FREETYPE_EMBOLDEN
 
 #ifdef SK_CPU_BENDIAN
