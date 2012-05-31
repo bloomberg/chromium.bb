@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/debug/trace_event.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -589,11 +588,7 @@ VisualCursorDirection RenderText::GetVisualDirectionOfLogicalEnd() {
 }
 
 void RenderText::Draw(Canvas* canvas) {
-  TRACE_EVENT0("gfx", "RenderText::Draw");
-  {
-    TRACE_EVENT0("gfx", "RenderText::EnsureLayout");
-    EnsureLayout();
-  }
+  EnsureLayout();
 
   gfx::Rect clip_rect(display_rect());
   clip_rect.Inset(ShadowValue::GetMargin(text_shadows_));
@@ -606,10 +601,8 @@ void RenderText::Draw(Canvas* canvas) {
 
   DrawCursor(canvas);
 
-  if (!text().empty()) {
-    TRACE_EVENT0("gfx", "RenderText::Draw draw text");
+  if (!text().empty())
     DrawVisualText(canvas);
-  }
   canvas->Restore();
 }
 
