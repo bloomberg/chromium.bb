@@ -44,7 +44,7 @@ function populateLists(fonts) {
     }
   }
 
-  scriptChanged();
+  updateFontListsForScript();
 }
 
 // Returns a function that updates the font setting for |genericFamily|
@@ -68,8 +68,8 @@ function getFontChangeHandler(fontList, genericFamily) {
 // Sets the selected value of |fontList| to |fontName|.
 function setSelectedFont(fontList, fontName) {
   var script = getSelectedScript();
-
-  for (var i = 0; i < fontList.length; i++) {
+  var i;
+  for (i = 0; i < fontList.length; i++) {
     if (fontName == fontList.options[i].value) {
       fontList.selectedIndex = i;
       break;
@@ -86,13 +86,14 @@ function setSelectedFont(fontList, fontName) {
 function getFontHandler(list) {
   return function(details) {
     setSelectedFont(list, details.fontName);
+    list.disabled = !isControllableLevel(details.levelOfControl);
   };
 }
 
 // Called when the script list selection changes. Sets the selected value of
 // each font list to the current font setting, and updates the document's lang
 // so that the samples are shown in the current font setting.
-function scriptChanged() {
+function updateFontListsForScript() {
   var script = getSelectedScript();
 
   for (var i = 0; i < genericFamilies.length; i++) {
@@ -141,6 +142,9 @@ function getFontSizeChangedOnBrowserFunc(elem) {
   }
 }
 
+// Maps the text input HTML element with |id| to the extension API accessor
+// functions |getter| and |setter| for a setting and onChange event |apiEvent|
+// for the setting.
 function initFontSizePref(id, getter, setter, apiEvent) {
   var elem = document.getElementById(id);
   getter({}, function(details) {
@@ -149,6 +153,46 @@ function initFontSizePref(id, getter, setter, apiEvent) {
   });
   elem.addEventListener('change', getFontSizeChangedFunc(elem, setter));
   apiEvent.addListener(getFontSizeChangedOnBrowserFunc(elem));
+}
+
+// Updates the encoding list to reflect the browser encoding setting.
+function updateEncoding() {
+  chrome.experimental.fontSettings.getDefaultCharacterSet({},
+                                                          function(details) {
+    var list = document.getElementById('encodingList');
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (details.charset == list.options[i].value) {
+        list.selectedIndex = i;
+        break;
+      }
+    }
+    if (i == list.length) {
+      console.warn("encoding '" + details.charset + "' not found in list.");
+    }
+    list.disabled = !isControllableLevel(details.levelOfControl);
+  });
+}
+
+// Sets browser encoding setting to currently selected value of the encoding
+// list.
+function setEncoding() {
+  var list = document.getElementById('encodingList');
+  chrome.experimental.fontSettings.setDefaultCharacterSet({
+    charset: list.options[list.selectedIndex].value
+  });
+};
+
+// Adds event handlers for encoding and initializes the selected value of
+// the encoding list.
+function initEncoding() {
+  var list = document.getElementById('encodingList');
+
+  list.addEventListener('change', setEncoding);
+  chrome.experimental.fontSettings.onDefaultCharacterSetChanged.addListener(
+      updateEncoding);
+
+  updateEncoding();
 }
 
 function clearAllSettings() {
@@ -176,7 +220,8 @@ function clearAllSettings() {
 
 function init() {
   scriptList = document.getElementById('scriptList');
-  scriptList.addEventListener('change', scriptChanged);
+  scriptList.addEventListener('change',
+                              updateFontListsForScript);
 
   // Populate the font lists.
   chrome.experimental.fontSettings.getFontList(populateLists);
@@ -188,21 +233,23 @@ function init() {
     list.addEventListener('change', handler);
   }
 
+  chrome.experimental.fontSettings.onFontChanged.addListener(
+      updateFontListsForScript);
+
   initFontSizePref('defaultFontSize',
                    chrome.experimental.fontSettings.getDefaultFontSize,
                    chrome.experimental.fontSettings.setDefaultFontSize,
                    chrome.experimental.fontSettings.onDefaultFontSizeChanged);
-
   initFontSizePref(
       'defaultFixedFontSize',
       chrome.experimental.fontSettings.getDefaultFixedFontSize,
       chrome.experimental.fontSettings.setDefaultFixedFontSize,
       chrome.experimental.fontSettings.onDefaultFixedFontSizeChanged);
-
   initFontSizePref('minFontSize',
                    chrome.experimental.fontSettings.getMinimumFontSize,
                    chrome.experimental.fontSettings.setMinimumFontSize,
                    chrome.experimental.fontSettings.onMinimumFontSizeChanged);
+  initEncoding();
 
   var clearButton = document.getElementById('clearButton');
   clearButton.addEventListener('click', clearAllSettings);
