@@ -1299,12 +1299,6 @@
    fun:ResourceDispatcherHostTest_*
 }
 {
-   bug_94195
-   Heapcheck:Leak
-   ...
-   fun:GpuBlacklist::LoadGpuBlacklist
-}
-{
    bug_94764
    Heapcheck:Leak
    fun:remoting::ClientSession::UnpressKeys
