@@ -94,12 +94,6 @@ remoting.ClientPlugin.prototype.connect = function(
     authenticationMethods, authenticationTag) {};
 
 /**
- * @param {boolean} scaleToFit True if scale-to-fit should be enabled.
- */
-remoting.ClientPlugin.prototype.setScaleToFit =
-    function(scaleToFit) {};
-
-/**
  * Release all currently pressed keys.
  */
 remoting.ClientPlugin.prototype.releaseAllKeys = function() {};

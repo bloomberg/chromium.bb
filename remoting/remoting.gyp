@@ -122,7 +122,6 @@
       'resources/icon_warning.png',
       'webapp/client_plugin.js',
       'webapp/client_plugin_async.js',
-      'webapp/client_plugin_v1.js',
       'webapp/client_screen.js',
       'webapp/client_session.js',
       'webapp/clipboard.js',

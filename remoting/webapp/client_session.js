@@ -207,14 +207,7 @@ remoting.ClientSession.prototype.createClientPlugin_ = function(container, id) {
   plugin.tabIndex = 0;  // Required, otherwise focus() doesn't work.
   container.appendChild(plugin);
 
-  // Previous versions of the plugin didn't support messaging-based
-  // interface. They can be identified by presence of apiVersion
-  // property that is less than 5.
-  if (plugin.apiVersion && plugin.apiVersion < 5) {
-    return new remoting.ClientPluginV1(plugin);
-  } else {
-    return new remoting.ClientPluginAsync(plugin);
-  }
+  return new remoting.ClientPluginAsync(plugin);
 };
 
 /**
@@ -614,7 +607,6 @@ remoting.ClientSession.prototype.updateDimensions = function() {
               parentNode.style.left + ',' +
               parentNode.style.top + '-' +
               width + 'x' + height + '.');
-  this.plugin.setScaleToFit(this.getScaleToFit());
 };
 
 /**

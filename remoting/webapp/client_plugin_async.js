@@ -294,16 +294,6 @@ remoting.ClientPluginAsync.prototype.connect = function(
 };
 
 /**
- * @param {boolean} scaleToFit True if scale-to-fit should be enabled.
- */
-remoting.ClientPluginAsync.prototype.setScaleToFit = function(scaleToFit) {
-  // scaleToFit() will be removed in future versions of the plugin.
-  if (this.plugin && typeof this.plugin.setScaleToFit === 'function')
-    this.plugin.setScaleToFit(scaleToFit);
-};
-
-
-/**
  * Release all currently pressed keys.
  */
 remoting.ClientPluginAsync.prototype.releaseAllKeys = function() {
