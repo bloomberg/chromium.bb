@@ -247,21 +247,6 @@ gyp-arm-build() {
   make -C .. -k -j8 V=1 BUILDTYPE=${gypmode}
 }
 
-
-ad-hoc-shared-lib-tests() {
-  local platform=$1
-  # TODO(robertm): make this accessible by the utman script so that this get
-  # http://code.google.com/p/nativeclient/issues/detail?id=1647
-  echo "@@@BUILD_STEP fake_shared_libs@@@"
-  { pushd  tests/pnacl_ld_example/ &&
-    make -f Makefile.pnacl clean &&
-    make -f Makefile.pnacl preparation.${platform} &&
-    make -f Makefile.pnacl run.${platform} &&
-    make -f Makefile.pnacl run2.${platform} &&
-    popd
-  } || handle-error
-}
-
 build-sbtc-prerequisites() {
   local platform=$1
   # Sandboxed translators currently only require irt_core since they do not
@@ -385,10 +370,6 @@ mode-buildbot-arm() {
     "toolchain_tests"
 
   browser-tests "arm" "${scons_mode},nacl_irt_test"
-  # Disabled for now as it broke when we switched to gold for final
-  # linking. We may remove this permanently as it is not doing all that
-  # much anyway.
-  # ad-hoc-shared-lib-tests "arm"
 }
 
 mode-buildbot-arm-hw() {
@@ -586,8 +567,7 @@ test-all-newlib() {
 }
 
 test-all-glibc() {
-  # TODO(pdox): Add GlibC tests
-  ad-hoc-shared-lib-tests "arm"
+  echo "TODO(pdox): Add GlibC tests"
 }
 
 ######################################################################

@@ -139,8 +139,7 @@ TranslatorPatterns = [
   ( '-S',              "env.set('OUTPUT_TYPE', 's')"), # Stop at .s
   ( '-c',              "env.set('OUTPUT_TYPE', 'o')"), # Stop at .o
 
-  # Expose a very limited set of llc flags. Used primarily for
-  # the shared lib ad-hoc tests, c.f. tests/pnacl_ld_example
+  # Expose a very limited set of llc flags.
   ( '(-sfi-.+)',        "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(-mtls-use-call)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '-translate-fast',  "env.append('LLC_FLAGS_EXTRA', '-O0')"),
