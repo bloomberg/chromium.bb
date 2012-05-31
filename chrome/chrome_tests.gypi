@@ -2613,6 +2613,10 @@
         'browser/browsing_data_local_storage_helper_browsertest.cc',
         'browser/chrome_main_browsertest.cc',
         'browser/chrome_switches_browsertest.cc',
+        'browser/chromeos/bluetooth/test/mock_bluetooth_adapter.cc',
+        'browser/chromeos/bluetooth/test/mock_bluetooth_adapter.h',
+        'browser/chromeos/bluetooth/test/mock_bluetooth_device.cc',
+        'browser/chromeos/bluetooth/test/mock_bluetooth_device.h',
         'browser/chromeos/cros/cros_in_process_browser_test.cc',
         'browser/chromeos/cros/cros_in_process_browser_test.h',
         'browser/chromeos/cros/cros_mock.cc',
@@ -2671,6 +2675,7 @@
         'browser/extensions/alert_apitest.cc',
         'browser/extensions/all_urls_apitest.cc',
         'browser/extensions/api/app/app_apitest.cc',
+        'browser/extensions/api/bluetooth/bluetooth_apitest_chromeos.cc',
         'browser/extensions/api/browsing_data/browsing_data_test.cc',
         'browser/extensions/api/cookies/cookies_apitest.cc',
         'browser/extensions/api/context_menu/context_menu_apitest.cc',
@@ -3089,6 +3094,10 @@
             # chromeos does not use cross-platform panels
             'browser/ui/panels/panel_app_browsertest.cc',
             'browser/ui/panels/panel_browser_view_browsertest.cc',
+          ],
+          'dependencies': [
+            '../dbus/dbus.gyp:dbus_test_support',
+            '../build/linux/system.gyp:dbus',
           ],
         }],
         ['file_manager_extension==0', {

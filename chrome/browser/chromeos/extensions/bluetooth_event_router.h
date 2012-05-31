@@ -42,6 +42,11 @@ class ExtensionBluetoothEventRouter
       chromeos::BluetoothAdapter* adapter, bool present) OVERRIDE;
   virtual void AdapterPoweredChanged(
       chromeos::BluetoothAdapter* adapter, bool has_power) OVERRIDE;
+
+  // Exposed for testing.
+  void SetAdapterForTest(chromeos::BluetoothAdapter* adapter) {
+    adapter_.reset(adapter);
+  }
  private:
   void DispatchEvent(const char* event_name, bool value);
 

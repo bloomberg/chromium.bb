@@ -97,10 +97,10 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
 
   // Indicates whether the adapter is actually present on the system, for
   // the default adapter this indicates whether any adapter is present.
-  bool IsPresent() const;
+  virtual bool IsPresent() const;
 
   // Indicates whether the adapter radio is powered.
-  bool IsPowered() const;
+  virtual bool IsPowered() const;
 
   // Requests a change to the adapter radio power, setting |powered| to
   // true will turn on the radio and false will turn it off. |callback|
@@ -122,9 +122,9 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   // including those currently connected and those paired. Use the
   // returned device pointers to determine which they are.
   typedef std::vector<BluetoothDevice*> DeviceList;
-  DeviceList GetDevices();
+  virtual DeviceList GetDevices();
   typedef std::vector<const BluetoothDevice*> ConstDeviceList;
-  ConstDeviceList GetDevices() const;
+  virtual ConstDeviceList GetDevices() const;
 
   // Returns a pointer to the device with the given address |address| or
   // NULL if no such device is known.
@@ -143,6 +143,7 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
 
  private:
   friend class BluetoothDevice;
+  friend class MockBluetoothAdapter;
 
   BluetoothAdapter();
 

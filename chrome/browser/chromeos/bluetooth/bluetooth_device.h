@@ -138,12 +138,12 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
 
   // Returns the Bluetooth of address the device. This should be used as
   // a unique key to identify the device and copied where needed.
-  const std::string& address() const { return address_; }
+  virtual const std::string& address() const;
 
   // Returns the name of the device suitable for displaying, this may
   // be a synthesied string containing the address and localized type name
   // if the device has no obtained name.
-  string16 GetName() const;
+  virtual string16 GetName() const;
 
   // Returns the type of the device, limited to those we support or are
   // aware of, by decoding the bluetooth class information. The returned
@@ -176,7 +176,7 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   const ServiceList& GetServices() const { return service_uuids_; }
 
   // Indicates whether this device provides the given service.
-  bool ProvidesServiceWithUUID(const std::string& uuid) const;
+  virtual bool ProvidesServiceWithUUID(const std::string& uuid) const;
 
   // The ProvidesServiceCallback is used by ProvidesServiceWithName to indicate
   // whether or not a matching service was found.
@@ -269,6 +269,7 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
 
  private:
   friend class BluetoothAdapter;
+  friend class MockBluetoothDevice;
 
   explicit BluetoothDevice(BluetoothAdapter* adapter);
 

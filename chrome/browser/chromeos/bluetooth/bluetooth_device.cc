@@ -76,6 +76,8 @@ void BluetoothDevice::Update(
   }
 }
 
+const std::string& BluetoothDevice::address() const { return address_; }
+
 string16 BluetoothDevice::GetName() const {
   if (!name_.empty()) {
     return UTF8ToUTF16(name_);
