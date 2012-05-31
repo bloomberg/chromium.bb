@@ -13,8 +13,6 @@
 
 namespace gestures {
 
-const size_t kInvalidFinger = static_cast<size_t>(-1);
-
 SemiMtCorrectingFilterInterpreter::SemiMtCorrectingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
     : last_id_(0),
