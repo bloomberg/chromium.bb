@@ -593,7 +593,7 @@ button.settings {
 }
 
 .thumbnail-grid .thumbnail-frame {
-  background-color: rgb(227, 227, 227);
+  background-image: url(../images/hashed_bg.gif);
   border: 1px solid rgb(217, 217, 217);
 }
 
