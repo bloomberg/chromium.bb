@@ -87,7 +87,7 @@ elif [[ "$1" = "--save-config" ]]; then
   echo $$
   cat > "$CONFIG_FILE"
 elif [[ "$1" = "--host-version" ]]; then
-  PlistBuddy -c "Print CFBundleVersion" "$PLIST_FILE"
+  /usr/libexec/PlistBuddy -c "Print CFBundleVersion" "$PLIST_FILE"
 elif [[ "$1" = "--relaunch-prefpane" ]]; then
   # Wait for the parent (System Preferences applet) to die, by reading from
   # stdin until the pipe is broken.
