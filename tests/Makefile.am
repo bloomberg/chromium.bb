@@ -64,6 +64,11 @@ uplow_with_unicode_SOURCES = 	\
 	brl_checks.h		\
 	uplow_with_unicode.c
 
+repeated_SOURCES = 	\
+	brl_checks.c		\
+	brl_checks.h		\
+	repeated.c
+
 check_PROGRAMS =			\
 	pass2				\
 	pass2_inpos			\
@@ -76,7 +81,8 @@ check_PROGRAMS =			\
 	inpos_compbrl			\
 	lastworditalafter		\
 	en_gb_g1_italics		\
-	letterDefTest
+	letterDefTest 			\
+	repeated
 
 dist_check_SCRIPTS =		\
 	check_all_tables.pl	\

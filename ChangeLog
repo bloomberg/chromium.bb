@@ -1,5 +1,13 @@
 2012-05-31  Christian Egli  <christian.egli@sbs.ch>
 
+	* tests/Makefile.am:
+	* tests/repeated.c:
+	* tests/tables/Makefile.am:
+	* tests/tables/repeated.utb:
+	* tests/tables/repeated_with_correct.utb: Added a test for the
+	repeated opcode. Rumors had it that it was buggy, but it does what
+	it is supposed to.
+
 	* doc/liblouis.texi (The correct Opcode): Remove the comment about
 	input and output positions being incorrect. This bug has been fixed.
 
