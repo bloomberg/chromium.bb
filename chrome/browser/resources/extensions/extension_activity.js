@@ -6,8 +6,6 @@ cr.define('extension_activity', function() {
   'use strict';
 
   function initialize() {
-    i18nTemplate.process(document, templateData);
-
     var params = parseQueryParams(location);
     if (params.extensionId)
       chrome.send('requestExtensionData', [params.extensionId]);
@@ -47,4 +45,4 @@ cr.define('extension_activity', function() {
   };
 });
 
-document.addEventListener('DOMContentLoaded', extension_activity.initialize);
+window.addEventListener('load', extension_activity.initialize);

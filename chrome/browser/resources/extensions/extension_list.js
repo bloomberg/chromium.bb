@@ -132,8 +132,18 @@ cr.define('options', function() {
 
       if (extension.allow_activity) {
         var activity = node.querySelector('.activity-link');
-        activity.href = 'chrome://extension-activity?extensionId=' +
-            extension.id;
+        activity.addEventListener('click', function(e) {
+          chrome.send('navigateToUrl', [
+            'chrome://extension-activity?extensionId=' + extension.id,
+            '_blank',
+            e.button,
+            e.altKey,
+            e.ctrlKey,
+            e.metaKey,
+            e.shiftKey
+          ]);
+          e.preventDefault();
+        });
         activity.hidden = false;
       }
 

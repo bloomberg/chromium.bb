@@ -32,20 +32,21 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
                              IDS_EXTENSION_ACTIVITY_API_CALL);
   source->AddLocalizedString("extensionActivityApiBlock",
                              IDS_EXTENSION_ACTIVITY_API_BLOCK);
+  source->set_use_json_js_format_v2();
   source->set_json_path("strings.js");
 
   // Resources.
   source->add_resource_path("extension_activity.js", IDR_EXTENSION_ACTIVITY_JS);
   source->set_default_resource(IDR_EXTENSION_ACTIVITY_HTML);
 
+  Profile* profile = Profile::FromWebUI(web_ui);
+  ChromeURLDataManager::AddDataSource(profile, source);
+  ChromeURLDataManager::AddDataSource(profile, new SharedResourcesDataSource());
+
   // Callback handlers.
   web_ui->RegisterMessageCallback("requestExtensionData",
       base::Bind(&ExtensionActivityUI::HandleRequestExtensionData,
                  base::Unretained(this)));
-
-  Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, source);
-  ChromeURLDataManager::AddDataSource(profile, new SharedResourcesDataSource());
 }
 
 ExtensionActivityUI::~ExtensionActivityUI() {

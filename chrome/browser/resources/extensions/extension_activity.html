@@ -1,32 +1,33 @@
 <!DOCTYPE html>
-<html i18n-values="dir:textdirection;">
+<html i18n-values="dir:textdirection;" class="loading">
 <head>
 <meta charset="utf-8">
 
+<link rel="icon" href="chrome://theme/IDR_EXTENSIONS_FAVICON">
 <link rel="stylesheet" href="extensions.css">
 <link rel="stylesheet" href="extension_activity.css">
 <link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
 
 <script src="chrome://resources/js/cr.js"></script>
-<script src="chrome://resources/js/i18n_template.js"></script>
+<script src="chrome://resources/js/load_time_data.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 
-<script src="chrome://extension-activity/strings.js"></script>
 <script src="chrome://extension-activity/extension_activity.js"></script>
-
 </head>
 
-<body>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
-<div id="extension-activity">
-  <h1 i18n-content="extensionActivity"></h1>
-  <div class="extension-list-item">
-    <div class="extension-details">
-      <div>
-        <span class="extension-title"></span>
-        <span class="extension-version"></span>
+<div class="page" id="extension-settings">
+  <header id="page-header"><h1 i18n-content="extensionActivity"></h1></header>
+  <div class="extension-list-item-wrapper">
+    <div class="extension-list-item">
+      <div class="extension-details">
+        <div>
+          <span class="extension-title"></span>
+          <span class="extension-version"></span>
+        </div>
+        <p class="extension-description"></p>
       </div>
-      <p class="extension-description"></p>
     </div>
   </div>
   <div id="extension-activity-list"></div>
@@ -48,6 +49,9 @@
     <span class="extension-activity-message"></span>
   </div>
 </div>
+
+<script src="chrome://extension-activity/strings.js"></script>
+<script src="chrome://resources/js/i18n_template2.js"></script>
 
 </body>
 </html>
