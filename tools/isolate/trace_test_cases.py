@@ -55,8 +55,7 @@ def trace_test_case(
         continue
       duration = time.time() - start
       try:
-        _, _, _, _, simplified, processes = trace_inputs.load_trace(
-            logname, root_dir, api)
+        results, simplified = trace_inputs.load_trace(logname, root_dir, api)
         break
       except Exception:
         print '\nFailed loading the trace for: %s' % ' '.join(cmd)
@@ -71,6 +70,7 @@ def trace_test_case(
       'processes': processes,
       'result': returncode,
       'variables': variables,
+      'results': results.flatten(),
     }
   finally:
     if f:

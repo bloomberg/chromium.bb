@@ -277,6 +277,41 @@ class ApiBase(object):
         self.initial_cwd = initial_cwd
         self.cwd = None
         self.files = set()
+        self.executable = None
+        self.command = None
+
+        if parentid:
+          self.root().processes[parentid].children.append(pid)
+
+      def to_results_process(self):
+        """Resolves file case sensitivity and or late-bound strings."""
+        children = [
+          self.root().processes[c].to_results_process() for c in self.children
+        ]
+        # When resolving files, it's normal to get dupe because a file could be
+        # opened multiple times with different case. Resolve the deduplication
+        # here.
+        def render_to_string_and_fix_case(x):
+          """Returns the native file path case if the file exists.
+
+          Converts late-bound strings.
+          """
+          if not x:
+            return x
+          # TODO(maruel): Do not upconvert to unicode here, on linux we don't
+          # know the file path encoding so they must be treated as bytes.
+          x = unicode(x)
+          if not os.path.exists(x):
+            return x
+          return get_native_path_case(x)
+
+        return Results.Process(
+            self.pid,
+            set(map(render_to_string_and_fix_case, self.files)),
+            render_to_string_and_fix_case(self.executable),
+            self.command,
+            render_to_string_and_fix_case(self.initial_cwd),
+            children)
 
       def add_file(self, filepath):
         if self.root().blacklist(unicode(filepath)):
@@ -287,23 +322,6 @@ class ApiBase(object):
     def __init__(self, blacklist):
       self.blacklist = blacklist
       self.processes = {}
-
-    def resolve(self):
-      """Resolve all the filenames and returns them."""
-      files = set()
-      non_existent = set()
-      for p in self.processes.itervalues():
-        for filepath in p.files:
-          filepath = unicode(filepath)
-          # For late-bound file paths, it could be blacklisted after all the
-          # processes are processed so it needs to be checked again.
-          if self.blacklist(filepath):
-            break
-          if os.path.isfile(filepath):
-            files.add(filepath)
-          else:
-            non_existent.add(filepath)
-      return files, non_existent
 
   @staticmethod
   def clean_trace(logname):
@@ -331,6 +349,226 @@ class ApiBase(object):
     Returns a tuple (existing files, non existing files, nb_processes_created)
     """
     raise NotImplementedError(cls.__class__.__name__)
+
+
+class Results(object):
+  """Results of a trace session."""
+
+  class File(object):
+    """A file that was accessed."""
+    def __init__(self, root, path):
+      """Represents a file accessed. May not be present anymore."""
+      logging.debug('%s(%s, %s)' % (self.__class__.__name__, root, path))
+      self.root = root
+      self.path = path
+
+      self._size = None
+      # For compatibility with Directory object interface.
+      # Shouldn't be used normally, only exists to simplify algorithms.
+      self.nb_files = 1
+
+      assert path, path
+      assert bool(root) != bool(isabs(path)), (root, path)
+      assert (
+          not os.path.exists(self.full_path) or
+          self.full_path == get_native_path_case(self.full_path))
+
+    @property
+    def existent(self):
+      return self.size != -1
+
+    @property
+    def size(self):
+      """File's size. -1 is not existent."""
+      if self._size is None:
+        try:
+          self._size = os.stat(self.full_path).st_size
+        except OSError:
+          self._size = -1
+      return self._size
+
+    @property
+    def full_path(self):
+      if self.root:
+        return os.path.join(self.root, self.path)
+      return self.path
+
+    def flatten(self):
+      return {
+        'path': self.path,
+        'size': self.size,
+      }
+
+    def strip_root(self, root):
+      """Returns a clone of itself with 'root' stripped off."""
+      assert isabs(root) and root.endswith(os.path.sep), root
+      if not self.full_path.startswith(root):
+        return None
+      out = self.__class__(root, self.full_path[len(root):])
+      # Keep size cache.
+      out._size = self._size
+      return out
+
+  class Directory(File):
+    """A directory of files. Must exist."""
+    def __init__(self, root, path, size, nb_files):
+      """path='.' is a valid value and must be handled appropriately."""
+      super(Results.Directory, self).__init__(root, path)
+      assert not self.path.endswith(os.path.sep)
+      self.path = self.path + os.path.sep
+      self.nb_files = nb_files
+      self._size = size
+
+    def flatten(self):
+      out = super(Results.Directory, self).flatten()
+      out['nb_files'] = self.nb_files
+      return out
+
+  class Process(object):
+    """A process that was traced.
+
+    Contains references to the files accessed by this process and its children.
+    """
+    def __init__(
+        self, pid, files, executable, command, initial_cwd, children):
+      logging.debug('Process(%s, %d, ...)' % (pid, len(files)))
+      self.pid = pid
+      self.files = sorted(
+          (Results.File(None, f) for f in files), key=lambda x: x.path)
+      assert len(set(f.path for f in self.files)) == len(self.files), [
+          f.path for f in self.files]
+      assert isinstance(children, list)
+      assert isinstance(self.files, list)
+      self.children = children
+      self.executable = executable
+      self.command = command
+      self.initial_cwd = initial_cwd
+
+    @property
+    def all(self):
+      for child in self.children:
+        for i in child.all:
+          yield i
+      yield self
+
+    def flatten(self):
+      return {
+        'children': [c.flatten() for c in self.children],
+        'command': self.command,
+        'executable': self.executable,
+        'files': [f.flatten() for f in self.files],
+        'initial_cwd': self.initial_cwd,
+        'pid': self.pid,
+      }
+
+    def strip_root(self, root):
+      assert isabs(root) and root.endswith(os.path.sep), root
+      out = self.__class__(
+          self.pid,
+          [],
+          self.executable,
+          self.command,
+          self.initial_cwd,
+          [c.strip_root(root) for c in self.children])
+      # Override the files property.
+      out.files = filter(None, (f.strip_root(root) for f in self.files))
+      logging.debug(
+          'strip_root(%s) %d -> %d' % (root, len(self.files), len(out.files)))
+      return out
+
+
+  def __init__(self, process):
+    self.process = process
+    # Cache.
+    self._files = None
+
+  def flatten(self):
+    return {
+      'root': self.process.flatten(),
+    }
+
+  @property
+  def files(self):
+    if self._files is None:
+      self._files = sorted(
+          sum((p.files for p in self.process.all), []),
+          key=lambda x: x.path)
+    return self._files
+
+  @property
+  def existent(self):
+    return [f for f in self.files if f.existent]
+
+  @property
+  def non_existent(self):
+    return [f for f in self.files if not f.existent]
+
+  def strip_root(self, root):
+    """Returns a clone with all the files outside the directory |root| removed
+    and converts all the path to be relative paths.
+    """
+    root = get_native_path_case(root).rstrip(os.path.sep) + os.path.sep
+    logging.debug('strip_root(%s)' % root)
+    return Results(self.process.strip_root(root))
+
+
+def extract_directories(files):
+  """Detects if all the files in a directory are in |files| and if so, replace
+  the individual files by a Results.Directory instance.
+
+  Takes an array of Results.File instances and returns an array of
+  Results.File and Results.Directory instances.
+  """
+  assert not any(isinstance(f, Results.Directory) for f in files)
+  # Remove non existent files.
+  files = [f for f in files if f.existent]
+  if not files:
+    return files
+  # All files must share the same root, which can be None.
+  assert len(set(f.root for f in files)) == 1, set(f.root for f in files)
+
+  def blacklist(f):
+    return f in ('.git', '.svn') or f.endswith('.pyc')
+
+  # Creates a {directory: {filename: File}} mapping, up to root.
+  root = files[0].root
+  assert root.endswith(os.path.sep)
+  buckets = {}
+  if root:
+    buckets[root.rstrip(os.path.sep)] = {}
+  for fileobj in files:
+    path = fileobj.full_path
+    directory = os.path.dirname(path)
+    # Do not use os.path.basename() so trailing os.path.sep is kept.
+    basename = path[len(directory)+1:]
+    files_in_directory = buckets.setdefault(directory, {})
+    files_in_directory[basename] = fileobj
+    # Add all the directories recursively up to root.
+    while True:
+      old_d = directory
+      directory = os.path.dirname(directory)
+      if directory + os.path.sep == root or directory == old_d:
+        break
+      buckets.setdefault(directory, {})
+
+  for directory in sorted(buckets, reverse=True):
+    actual = set(f for f in os.listdir(directory) if not blacklist(f))
+    expected = set(buckets[directory])
+    if not (actual - expected):
+      parent = os.path.dirname(directory)
+      buckets[parent][os.path.basename(directory)] = Results.Directory(
+        root,
+        directory[len(root):],
+        sum(f.size for f in buckets[directory].itervalues()),
+        sum(f.nb_files for f in buckets[directory].itervalues()))
+      # Remove the whole bucket.
+      del buckets[directory]
+
+  # Reverse the mapping with what remains. The original instances are returned,
+  # so the cached meta data is kept.
+  return sorted(
+      sum((x.values() for x in buckets.itervalues()), []),
+      key=lambda x: x.path)
 
 
 class Strace(ApiBase):
@@ -563,6 +801,15 @@ class Strace(ApiBase):
     def on_line(self, pid, line):
       self.get_or_set_proc(pid).on_line(line.strip())
 
+    def to_results(self):
+      """Finds back the root process and verify consistency."""
+      # TODO(maruel): Absolutely unecessary, fix me.
+      root = [p for p in self.processes.itervalues() if not p.parentid]
+      assert len(root) == 1
+      process = root[0].to_results_process()
+      assert sorted(self.processes) == sorted(p.pid for p in process.all)
+      return Results(process)
+
     def get_or_set_proc(self, pid):
       """Returns the Context.Process instance for this pid or creates a new one.
       """
@@ -635,12 +882,8 @@ class Strace(ApiBase):
         # TODO(maruel): Load as utf-8
         for line in open(pidfile, 'rb'):
           context.on_line(pid, line)
-    files, non_existent = context.resolve()
-    # Resolve any symlink we hit.
-    return (
-        set(os.path.realpath(f) for f in files),
-        set(os.path.realpath(f) for f in non_existent),
-        len(context.processes))
+
+    return context.to_results()
 
 
 class Dtrace(ApiBase):
@@ -827,6 +1070,13 @@ class Dtrace(ApiBase):
           match.group(4),
           match.group(5))
 
+    def to_results(self):
+      """Uses self._initial_pid to determine the initial process."""
+      process = self.processes[self._initial_pid].to_results_process()
+      assert sorted(self.processes) == sorted(p.pid for p in process.all), (
+          sorted(self.processes), sorted(p.pid for p in process.all))
+      return Results(process)
+
     def handle_dtrace_BEGIN(self, _ppid, pid, _function, args, _result):
       assert not self._tracer_pid and not self._initial_pid
       self._tracer_pid = pid
@@ -1000,12 +1250,7 @@ class Dtrace(ApiBase):
     context = cls.Context(blacklist)
     for line in open(filename, 'rb'):
       context.on_line(line)
-    files, non_existent = context.resolve()
-    # Resolve any symlink we hit.
-    return (
-        set(os.path.realpath(f) for f in files),
-        set(os.path.realpath(f) for f in non_existent),
-        len(context.processes))
+    return context.to_results()
 
   @staticmethod
   def _sort_log(logname):
@@ -1130,6 +1375,13 @@ class LogmanTrace(ApiBase):
         handler(line)
       else:
         assert False, '%s_%s' % (line[self.EVENT_NAME], line[self.TYPE])
+
+    def to_results(self):
+      """Uses self._initial_pid to determine the initial process."""
+      process = self.processes[self._initial_pid].to_results_process()
+      assert sorted(self.processes) == sorted(p.pid for p in process.all), (
+          sorted(self.processes), sorted(p.pid for p in process.all))
+      return Results(process)
 
     def _thread_to_process(self, tid):
       """Finds the process from the thread id."""
@@ -1554,47 +1806,7 @@ class LogmanTrace(ApiBase):
     else:
       raise NotImplementedError('Implement %s' % logformat)
 
-    files, non_existent = context.resolve()
-    # Resolve any symlink we hit.
-    return (
-        set(os.path.realpath(f) for f in files),
-        set(os.path.realpath(f) for f in non_existent),
-        len(context.processes))
-
-
-def relevant_files(files, root):
-  """Trims the list of files to keep the expected files and unexpected files.
-
-  Unexpected files are files that are not based inside the |root| directory.
-  """
-  expected = []
-  unexpected = []
-  for f in files:
-    if f.startswith(root):
-      f = f[len(root):]
-      assert f
-      expected.append(f)
-    else:
-      unexpected.append(f)
-  return sorted(set(expected)), sorted(set(unexpected))
-
-
-def extract_directories(files, root):
-  """Detects if all the files in a directory were loaded and if so, replace the
-  individual files by the directory entry.
-  """
-  directories = set(os.path.dirname(f) for f in files)
-  files = set(files)
-  for directory in sorted(directories, reverse=True):
-    actual = set(
-      os.path.join(directory, f) for f in
-      os.listdir(os.path.join(root, directory))
-      if not f.endswith(('.svn', '.pyc'))
-    )
-    if not (actual - files):
-      files -= actual
-      files.add(directory + os.path.sep)
-  return sorted(files)
+    return context.to_results()
 
 
 def pretty_print(variables, stdout):
@@ -1750,16 +1962,10 @@ def load_trace(logfile, root_dir, api):
               trace or not.
   - api: a tracing api instance.
   """
-  root_dir = get_native_path_case(root_dir)
-  files, non_existent, processes = api.parse_log(logfile, get_blacklist(api))
-  expected, unexpected = relevant_files(
-      files, root_dir.rstrip(os.path.sep) + os.path.sep)
-  # In case the file system is case insensitive.
-  expected = sorted(set(
-      get_native_path_case(os.path.join(root_dir, f))[len(root_dir)+1:]
-      for f in expected))
-  simplified = extract_directories(expected, root_dir)
-  return files, expected, unexpected, non_existent, simplified, processes
+  results = api.parse_log(logfile, get_blacklist(api))
+  results = results.strip_root(root_dir)
+  simplified = extract_directories(results.files)
+  return results, simplified
 
 
 def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
@@ -1806,26 +2012,24 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
       return returncode
 
   print_if('Loading traces... %s' % logfile)
-  files, expected, unexpected, non_existent, simplified, _ = load_trace(
-      logfile, root_dir, api)
+  results, simplified = load_trace(logfile, root_dir, api)
 
-  print_if('Total: %d' % len(files))
-  print_if('Non existent: %d' % len(non_existent))
-  for f in non_existent:
-    print_if('  %s' % f)
-  if unexpected:
-    print_if('Unexpected: %d' % len(unexpected))
-    for f in unexpected:
-      print_if('  %s' % f)
-  print_if('Interesting: %d reduced to %d' % (len(expected), len(simplified)))
+  print_if('Total: %d' % len(results.files))
+  print_if('Non existent: %d' % len(results.non_existent))
+  for f in results.non_existent:
+    print_if('  %s' % f.path)
+  print_if(
+      'Interesting: %d reduced to %d' % (
+          len(results.existent), len(simplified)))
   for f in simplified:
-    print_if('  %s' % f)
+    print_if('  %s' % f.path)
 
   if cwd_dir is not None:
     value = {
       'conditions': [
         ['OS=="%s"' % get_flavor(), {
-          'variables': generate_dict(simplified, cwd_dir, product_dir),
+          'variables': generate_dict(
+              [f.path for f in simplified], cwd_dir, product_dir),
         }],
       ],
     }

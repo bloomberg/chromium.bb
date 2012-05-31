@@ -95,74 +95,254 @@ class TraceInputs(unittest.TestCase):
     self._test(value, expected)
 
 
+def join_norm(*args):
+  """Joins and normalizes path in a single step."""
+  return unicode(os.path.normpath(os.path.join(*args)))
+
+
 if trace_inputs.get_flavor() == 'linux':
   class StraceInputs(unittest.TestCase):
-    def _test_lines(
-        self, lines, initial_cwd, expected_files, expected_non_existent):
+    # Represents the root process pid (an arbitrary number).
+    _ROOT_PID = 27
+    _CHILD_PID = 14
+    _GRAND_CHILD_PID = 70
+
+    @staticmethod
+    def _load_context(lines, initial_cwd):
       context = trace_inputs.Strace.Context(lambda _: False, initial_cwd)
       for line in lines:
         context.on_line(*line)
-      actual_files, actual_non_existent = context.resolve()
-      self.assertEquals(sorted(expected_files), sorted(actual_files))
-      self.assertEquals(
-          sorted(expected_non_existent), sorted(actual_non_existent))
+      return context.to_results().flatten()
+
+    def _test_lines(self, lines, initial_cwd, files, command=None):
+      command = command or ['../out/unittests']
+      expected = {
+        'root': {
+          'children': [],
+          'command': None,
+          'executable': None,
+          'files': files,
+          'initial_cwd': initial_cwd,
+          'pid': self._ROOT_PID,
+        }
+      }
+      if not files:
+        expected['root']['command'] = None
+        expected['root']['executable'] = None
+      self.assertEquals(expected, self._load_context(lines, initial_cwd))
+
+    def test_execve(self):
+      lines = [
+        (self._ROOT_PID,
+          'execve("/home/foo_bar_user/out/unittests", '
+            '["/home/foo_bar_user/out/unittests", '
+            '"--gtest_filter=AtExitTest.Basic"], [/* 44 vars */])         = 0'),
+        (self._ROOT_PID,
+          'open("out/unittests.log", O_WRONLY|O_CREAT|O_APPEND, 0666) = 8'),
+      ]
+      files = [
+        {
+          'path': u'/home/foo_bar_user/out/unittests',
+          'size': -1,
+        },
+        {
+          'path': u'/home/foo_bar_user/src/out/unittests.log',
+          'size': -1,
+        },
+      ]
+      command = [
+        '/home/foo_bar_user/out/unittests', '--gtest_filter=AtExitTest.Basic',
+      ]
+      self._test_lines(lines, '/home/foo_bar_user/src', files, command)
 
     def test_empty(self):
-      self._test_lines([], None, [], [])
+      try:
+        self._load_context([], None)
+        self.fail()
+      except AssertionError:
+        pass
 
     def test_close(self):
       lines = [
-        (90, 'close(7)                          = 0'),
+        (self._ROOT_PID, 'close(7)                          = 0'),
       ]
-      self._test_lines(lines, None, [], [])
+      self._test_lines(lines, '/home/foo_bar_user/src', [])
 
     def test_clone(self):
       # Grand-child with relative directory.
       lines = [
-        (86, 'clone(child_stack=0, flags=CLONE_CHILD_CLEARTID'
-            '|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f5350f829d0) = 14'),
-        (86, ')                                       = ? <unavailable>'),
-        (14, 'clone(child_stack=0, flags=CLONE_CHILD_CLEARTID'
-            '|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f5350f829d0) = 70'),
-        (14, 'close(75)                         = 0'),
-        (70, 'open("%s", O_RDONLY)       = 76' % os.path.basename(FILE_NAME)),
+        (self._ROOT_PID,
+          'clone(child_stack=0, flags=CLONE_CHILD_CLEARTID'
+            '|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f5350f829d0) = %d' %
+            self._CHILD_PID),
+        (self._CHILD_PID,
+          'clone(child_stack=0, flags=CLONE_CHILD_CLEARTID'
+            '|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f5350f829d0) = %d' %
+            self._GRAND_CHILD_PID),
+        (self._GRAND_CHILD_PID,
+          'open("%s", O_RDONLY)       = 76' % os.path.basename(FILE_NAME)),
       ]
-      files = [
-        FILE_NAME,
+      size = os.stat(FILE_NAME).st_size
+      expected = {
+        'root': {
+          'children': [
+            {
+              'children': [
+                {
+                  'children': [],
+                  'command': None,
+                  'executable': None,
+                  'files': [
+                    {
+                      'path': unicode(FILE_NAME),
+                      'size': size,
+                    },
+                  ],
+                  'initial_cwd': ROOT_DIR,
+                  'pid': self._GRAND_CHILD_PID,
+                },
+              ],
+              'command': None,
+              'executable': None,
+              'files': [],
+              'initial_cwd': ROOT_DIR,
+              'pid': self._CHILD_PID,
+            },
+          ],
+          'command': None,
+          'executable': None,
+          'files': [],
+          'initial_cwd': ROOT_DIR,
+          'pid': self._ROOT_PID,
+        },
+      }
+      self.assertEquals(expected, self._load_context(lines, ROOT_DIR))
+
+    def test_clone_chdir(self):
+      # Grand-child with relative directory.
+      lines = [
+        (self._ROOT_PID,
+          'execve("../out/unittests", '
+            '["../out/unittests"...], [/* 44 vars */])         = 0'),
+        (self._ROOT_PID,
+          'clone(child_stack=0, flags=CLONE_CHILD_CLEARTID'
+            '|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f5350f829d0) = %d' %
+            self._CHILD_PID),
+        (self._CHILD_PID,
+          'chdir("/home_foo_bar_user/path1") = 0'),
+        (self._CHILD_PID,
+          'clone(child_stack=0, flags=CLONE_CHILD_CLEARTID'
+            '|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f5350f829d0) = %d' %
+            self._GRAND_CHILD_PID),
+        (self._ROOT_PID, 'chdir("/home_foo_bar_user/path2") = 0'),
+        (self._GRAND_CHILD_PID,
+          'open("random.txt", O_RDONLY)       = 76'),
       ]
-      self._test_lines(lines, ROOT_DIR, files, [])
+      expected = {
+        'root': {
+          'children': [
+            {
+              'children': [
+                {
+                  'children': [],
+                  'command': None,
+                  'executable': None,
+                  'files': [
+                    {
+                      'path': u'/home_foo_bar_user/path1/random.txt',
+                      'size': -1,
+                    },
+                  ],
+                  'initial_cwd': '/home_foo_bar_user/path1',
+                  'pid': self._GRAND_CHILD_PID,
+                },
+              ],
+              'command': None,
+              'executable': None,
+              # This is important, since no execve call was done, it didn't
+              # touch the executable file.
+              'files': [],
+              'initial_cwd': ROOT_DIR,
+              'pid': self._CHILD_PID,
+            },
+          ],
+          'command': None,
+          'executable': None,
+          'files': [
+            {
+              'path': join_norm(ROOT_DIR, '../out/unittests'),
+              'size': -1,
+            },
+          ],
+          'initial_cwd': ROOT_DIR,
+          'pid': self._ROOT_PID,
+        },
+      }
+      self.assertEquals(expected, self._load_context(lines, ROOT_DIR))
 
     def test_open(self):
       lines = [
-        (42, 'execve("../out/unittests", '
+        (self._ROOT_PID,
+          'execve("../out/unittests", '
             '["../out/unittests"...], [/* 44 vars */])         = 0'),
-        (42, 'open("out/unittests.log", O_WRONLY|O_CREAT|O_APPEND, 0666) = 8'),
+        (self._ROOT_PID,
+          'open("out/unittests.log", O_WRONLY|O_CREAT|O_APPEND, 0666) = 8'),
       ]
       files = [
-        u'/home/foo_bar_user/out/unittests',
-        u'/home/foo_bar_user/src/out/unittests.log',
+        {
+          'path': u'/home/foo_bar_user/out/unittests',
+          'size': -1,
+        },
+        {
+          'path': u'/home/foo_bar_user/src/out/unittests.log',
+          'size': -1,
+        },
       ]
-      self._test_lines(lines, '/home/foo_bar_user/src', [], files)
+      self._test_lines(lines, '/home/foo_bar_user/src', files)
 
     def test_open_resumed(self):
       lines = [
-        (42, 'execve("../out/unittests", '
+        (self._ROOT_PID,
+          'execve("../out/unittests", '
             '["../out/unittests"...], [/* 44 vars */])         = 0'),
-        (42, 'open("out/unittests.log", O_WRONLY|O_CREAT|O_APPEND '
-          '<unfinished ...>'),
-        (42, '<... open resumed> )              = 3'),
+        (self._ROOT_PID,
+          'open("out/unittests.log", O_WRONLY|O_CREAT|O_APPEND '
+            '<unfinished ...>'),
+        (self._ROOT_PID, '<... open resumed> )              = 3'),
       ]
       files = [
-        u'/home/foo_bar_user/out/unittests',
-        u'/home/foo_bar_user/src/out/unittests.log',
+        {
+          'path': u'/home/foo_bar_user/out/unittests',
+          'size': -1,
+        },
+        {
+          'path': u'/home/foo_bar_user/src/out/unittests.log',
+          'size': -1,
+        },
       ]
-      self._test_lines(lines, '/home/foo_bar_user/src', [], files)
+      self._test_lines(lines, '/home/foo_bar_user/src', files)
 
     def test_sig_unexpected(self):
       lines = [
-        (27, 'exit_group(0)                     = ?'),
+        (self._ROOT_PID, 'exit_group(0)                     = ?'),
       ]
-      self._test_lines(lines, ROOT_DIR, [], [])
+      self._test_lines(lines, '/home/foo_bar_user/src', [])
+
+    def test_stray(self):
+      lines = [
+        (self._ROOT_PID,
+          'execve("../out/unittests", '
+            '["../out/unittests"...], [/* 44 vars */])         = 0'),
+        (self._ROOT_PID,
+          ')                                       = ? <unavailable>'),
+      ]
+      files = [
+        {
+          'path': u'/home/foo_bar_user/out/unittests',
+          'size': -1,
+        },
+      ]
+      self._test_lines(lines, '/home/foo_bar_user/src', files)
 
 
 if __name__ == '__main__':
