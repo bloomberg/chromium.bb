@@ -4947,20 +4947,6 @@
    fun:_ZN10extensionsL33UnlimitedLocalStorageTestCallbackEPNS_15SettingsStorageE
 }
 {
-   bug_111317
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:PORT_Alloc_Util
-   fun:sec_asn1e_allocate_item
-   fun:SEC_ASN1EncodeItem_Util
-   fun:common_EncodeDerSig
-   ...
-   fun:_ZN6crypto12_GLOBAL__N_18SignDataEP11PLArenaPoolP10SECItemStrS4_P19SECKEYPrivateKeyStr13HASH_HashType
-   fun:_ZN6crypto18ECSignatureCreator4SignEPKhiPSt6vectorIhSaIhEE
-   fun:_ZN37ECSignatureCreatorTest_BasicTest_Test8TestBodyEv
-}
-{
    bug_111341
    Memcheck:Leak
    fun:malloc
