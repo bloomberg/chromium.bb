@@ -1,7 +1,3 @@
-# This test has been failing on our heapchecker bot since circa Build 5778.
-# http://crbug.com/79000
-RendererMainTest.CreateDestroy
-
 # Disable JavaScript tests that cause V8 to install a SIGPROF handler that
 # times out the subsequent fork() calls.
 # http://crbug.com/79320
