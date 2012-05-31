@@ -1612,10 +1612,6 @@ Place the cursor after the replaced text
 continue loop
 @end enumerate
 
-Note that if any multipass opcode or the @opcoderef{correct} is used
-and the @code{pass1Only} mode bit (@pxref{lou_translateString}) is not
-set, input and output positions may be incorrect.
-
 @node The correct Opcode, Miscellaneous Opcodes, The Context and Multipass Opcodes, How to Write Translation Tables
 @section The correct Opcode
 
@@ -1640,10 +1636,6 @@ correct "*" ? Get rid of stray asterisks
 correct "|" ? ditto for vertical bars
 correct "\s?" "?" drop space before question mark
 @end example
-
-Note that if the @code{correct} opcode is used and the
-@code{pass1Only} mode bit (@pxref{lou_translateString}) is not set,
-input and output positions may be incorrect.
 
 @end table
 
