@@ -1380,6 +1380,7 @@ void Browser::Stop() {
   GetSelectedWebContents()->Stop();
 }
 
+#if !defined(OS_WIN)
 void Browser::NewWindow() {
   NewEmptyWindow(profile_->GetOriginalProfile());
 }
@@ -1387,6 +1388,7 @@ void Browser::NewWindow() {
 void Browser::NewIncognitoWindow() {
   NewEmptyWindow(profile_->GetOffTheRecordProfile());
 }
+#endif  // OS_WIN
 
 void Browser::CloseWindow() {
   content::RecordAction(UserMetricsAction("CloseWindow"));
