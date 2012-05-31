@@ -17,6 +17,7 @@ class PanelBrowserView;
 class SkPaint;
 namespace gfx {
 class Font;
+class ImageSkia;
 }
 namespace ui {
 class LinearAnimation;
@@ -91,6 +92,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
     NOT_PAINTED,
     PAINT_AS_INACTIVE,
     PAINT_AS_ACTIVE,
+    PAINT_AS_MINIMIZED,
     PAINT_FOR_ATTENTION
   };
 
@@ -107,11 +109,16 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // Custom draw the frame.
   void PaintFrameBackground(gfx::Canvas* canvas);
   void PaintFrameEdge(gfx::Canvas* canvas);
-  void PaintClientEdge(gfx::Canvas* canvas);
+  void PaintDivider(gfx::Canvas* canvas);
 
   // Retrieves the drawing metrics based on the current painting state.
   SkColor GetTitleColor(PaintState paint_state) const;
-  SkBitmap* GetFrameTheme(PaintState paint_state) const;
+  SkColor GetDefaultTitleColor(PaintState paint_state) const;
+  SkColor GetThemedTitleColor(PaintState paint_state) const;
+
+  const gfx::ImageSkia* GetFrameBackground(PaintState paint_state) const;
+  const gfx::ImageSkia* GetDefaultFrameBackground(PaintState paint_state) const;
+  const gfx::ImageSkia* GetThemedFrameBackground(PaintState paint_state) const;
 
   bool UsingDefaultTheme(PaintState paint_state) const;
 
