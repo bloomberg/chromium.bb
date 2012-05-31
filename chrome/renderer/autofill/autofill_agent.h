@@ -193,6 +193,9 @@ class AutofillAgent : public content::RenderViewObserver,
   // currently editing?  Used to keep track of state for metrics logging.
   bool has_shown_autofill_popup_for_current_edit_;
 
+  // If true we just set the node text so we shouldn't show the popup.
+  bool did_set_node_text_;
+
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
 
   friend class PasswordAutofillManagerTest;
