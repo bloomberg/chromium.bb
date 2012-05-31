@@ -1831,11 +1831,9 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 		window->send_cursor_position = 1;
 
 	num_syms = xkb_key_get_syms(d->xkb.state, code, &syms);
-	xkb_state_update_key(d->xkb.state, code,
-			     state ? XKB_KEY_DOWN : XKB_KEY_UP);
 
-	mask = xkb_state_serialize_mods(d->xkb.state, 
-					XKB_STATE_DEPRESSED | 
+	mask = xkb_state_serialize_mods(d->xkb.state,
+					XKB_STATE_DEPRESSED |
 					XKB_STATE_LATCHED);
 	input->modifiers = 0;
 	if (mask & input->display->xkb.control_mask)
@@ -1859,6 +1857,23 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 		(*window->key_handler)(window, input, time, key,
 				       sym, state, window->user_data);
 	}
+}
+
+static void
+keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+			  uint32_t serial, uint32_t mods_depressed,
+			  uint32_t mods_latched, uint32_t mods_locked,
+			  uint32_t group)
+{
+	struct input *input = data;
+
+	xkb_state_update_mask(input->display->xkb.state,
+			      mods_depressed,
+			      mods_latched,
+			      mods_locked,
+			      0,
+			      0,
+			      group);
 }
 
 static void
@@ -1977,6 +1992,7 @@ static const struct wl_keyboard_listener keyboard_listener = {
 	keyboard_handle_enter,
 	keyboard_handle_leave,
 	keyboard_handle_key,
+	keyboard_handle_modifiers,
 };
 
 static void

@@ -1654,6 +1654,15 @@ weston_surface_activate(struct weston_surface *surface,
 	wl_keyboard_set_focus(seat->seat.keyboard, &surface->surface);
 	wl_data_device_set_keyboard_focus(&seat->seat);
 
+	if (seat->seat.keyboard->focus_resource) {
+		wl_keyboard_send_modifiers(seat->seat.keyboard->focus_resource,
+					   wl_display_next_serial(compositor->wl_display),
+					   compositor->xkb_info.mods_depressed,
+					   compositor->xkb_info.mods_latched,
+					   compositor->xkb_info.mods_locked,
+					   compositor->xkb_info.group);
+	}
+
 	wl_signal_emit(&compositor->activate_signal, surface);
 }
 
@@ -1822,6 +1831,13 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key, uint32_t state)
 					      time, key, 0, 0, state);
 
 	grab->interface->key(grab, time, key, state);
+	if (mods)
+		grab->interface->modifiers(grab,
+					   wl_display_get_serial(compositor->wl_display),
+					   compositor->xkb_info.mods_depressed,
+					   compositor->xkb_info.mods_latched,
+					   compositor->xkb_info.mods_locked,
+					   compositor->xkb_info.group);
 }
 
 WL_EXPORT void
@@ -1878,6 +1894,15 @@ notify_keyboard_focus(struct wl_seat *seat, struct wl_array *keys)
 		if (surface) {
 			wl_list_remove(&ws->saved_kbd_focus_listener.link);
 			wl_keyboard_set_focus(ws->seat.keyboard, surface);
+
+			if (seat->keyboard->focus_resource) {
+				wl_keyboard_send_modifiers(seat->keyboard->focus_resource,
+							   wl_display_next_serial(compositor->wl_display),
+							   compositor->xkb_info.mods_depressed,
+							   compositor->xkb_info.mods_latched,
+							   compositor->xkb_info.mods_locked,
+							   compositor->xkb_info.group);
+			}
 			ws->saved_kbd_focus = NULL;
 		}
 	} else {

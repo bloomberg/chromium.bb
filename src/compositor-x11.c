@@ -568,6 +568,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		case XCB_KEY_RELEASE:
 			key_release = (xcb_key_press_event_t *) prev;
 			key_press = (xcb_key_press_event_t *) event;
+			/* XXX use XkbSetDetectableAutoRepeat */
 			if ((event->response_type & ~0x80) == XCB_KEY_PRESS &&
 			    key_release->time == key_press->time &&
 			    key_release->detail == key_press->detail) {
@@ -654,6 +655,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			output = x11_compositor_find_output(c, enter_notify->event);
 			x = wl_fixed_from_int(output->base.x + enter_notify->event_x);
 			y = wl_fixed_from_int(output->base.y + enter_notify->event_y);
+			/* XXX notify_modifiers() */
 
 			notify_pointer_focus(&c->base.seat->seat,
 					     &output->base, x, y);

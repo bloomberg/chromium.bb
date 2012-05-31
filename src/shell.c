@@ -2451,7 +2451,7 @@ switcher_handle_surface_destroy(struct wl_listener *listener, void *data)
 }
 
 static void
-switcher_destroy(struct switcher *switcher, uint32_t time)
+switcher_destroy(struct switcher *switcher)
 {
 	struct weston_compositor *compositor = switcher->shell->compositor;
 	struct weston_surface *surface;
@@ -2475,17 +2475,26 @@ switcher_key(struct wl_keyboard_grab *grab,
 	     uint32_t time, uint32_t key, uint32_t state)
 {
 	struct switcher *switcher = container_of(grab, struct switcher, grab);
+
+	if (key == KEY_TAB && state)
+		switcher_next(switcher);
+}
+
+static void
+switcher_modifier(struct wl_keyboard_grab *grab, uint32_t serial,
+		  uint32_t mods_depressed, uint32_t mods_latched,
+		  uint32_t mods_locked, uint32_t group)
+{
+	struct switcher *switcher = container_of(grab, struct switcher, grab);
 	struct weston_seat *seat = (struct weston_seat *) grab->keyboard->seat;
 
-	if ((seat->modifier_state & switcher->shell->binding_modifier) == 0) {
-		switcher_destroy(switcher, time);
-	} else if (key == KEY_TAB && state) {
-		switcher_next(switcher);
-	}
+	if ((seat->modifier_state & switcher->shell->binding_modifier) == 0)
+		switcher_destroy(switcher);
 }
 
 static const struct wl_keyboard_grab_interface switcher_grab = {
-	switcher_key
+	switcher_key,
+	switcher_modifier,
 };
 
 static void

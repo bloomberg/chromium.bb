@@ -608,10 +608,20 @@ input_handle_key(void *data, struct wl_keyboard *keyboard,
 	notify_key(&c->base.seat->seat, time, key, state);
 }
 
+static void
+input_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+		       uint32_t serial, uint32_t mods_depressed,
+		       uint32_t mods_latched, uint32_t mods_locked,
+		       uint32_t group)
+{
+	/* XXX notify_modifiers(); */
+}
+
 static const struct wl_keyboard_listener keyboard_listener = {
 	input_handle_keyboard_enter,
 	input_handle_keyboard_leave,
 	input_handle_key,
+	input_handle_modifiers,
 };
 
 static void

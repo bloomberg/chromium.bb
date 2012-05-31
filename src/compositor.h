@@ -292,6 +292,10 @@ struct weston_compositor {
 		struct xkb_context *context;
 		struct xkb_keymap *keymap;
 		struct xkb_state *state;
+		uint32_t mods_depressed;
+		uint32_t mods_latched;
+		uint32_t mods_locked;
+		uint32_t group;
 	} xkb_info;
 };
 
