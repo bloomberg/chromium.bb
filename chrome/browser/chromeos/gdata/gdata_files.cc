@@ -543,6 +543,21 @@ void GDataRootDirectory::FindEntryByPath(const FilePath& file_path,
   callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, NULL);
 }
 
+void GDataRootDirectory::RefreshFile(scoped_ptr<GDataFile> fresh_file) {
+  DCHECK(fresh_file.get());
+
+  GDataEntry* old_entry = GetEntryByResourceId(fresh_file->resource_id());
+  GDataDirectory* entry_parent = old_entry ? old_entry->parent() : NULL;
+
+  if (entry_parent) {
+    DCHECK_EQ(fresh_file->resource_id(), old_entry->resource_id());
+    DCHECK(old_entry->AsGDataFile());
+
+    entry_parent->RemoveEntry(old_entry);
+    entry_parent->AddEntry(fresh_file.release());
+  }
+}
+
 GDataEntry* GDataRootDirectory::GetEntryByResourceId(
     const std::string& resource) {
   // GDataFileSystem has already locked.

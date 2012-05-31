@@ -379,6 +379,10 @@ class GDataRootDirectory : public GDataDirectory {
   // Returns the GDataEntry* with the corresponding |resource_id|.
   GDataEntry* GetEntryByResourceId(const std::string& resource_id);
 
+  // Replaces file entry with the same resource id as |fresh_file| with its
+  // fresh value |fresh_file|.
+  void RefreshFile(scoped_ptr<GDataFile> fresh_file);
+
   // Serializes/Parses to/from string via proto classes.
   void SerializeToString(std::string* serialized_proto) const;
   bool ParseFromString(const std::string& serialized_proto);

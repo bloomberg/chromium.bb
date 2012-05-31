@@ -71,6 +71,41 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadResourceID) {
   EXPECT_EQ(kGDataRootDirectoryResourceId, root.resource_id());
 }
 
+TEST(GDataRootDirectoryTest, RefreshFile) {
+  GDataRootDirectory root;
+  // Add a directory to the file system.
+  GDataDirectory* directory_entry = new GDataDirectory(&root, &root);
+  directory_entry->set_resource_id("folder:directory_resource_id");
+  root.AddEntry(directory_entry);
+
+  // Add a new file to the directory.
+  GDataFile* initial_file_entry = new GDataFile(NULL, &root);
+  initial_file_entry->set_resource_id("file:file_resource_id");
+  directory_entry->AddEntry(initial_file_entry);
+  ASSERT_EQ(directory_entry, initial_file_entry->parent());
+
+  // Initial file system state set, let's try refreshing entries.
+
+  // New value for the entry with resource id "file:file_resource_id".
+  GDataFile* new_file_entry = new GDataFile(NULL, &root);
+  new_file_entry->set_resource_id("file:file_resource_id");
+  root.RefreshFile(scoped_ptr<GDataFile>(new_file_entry).Pass());
+  // Root should have |new_file_entry|, not |initial_file_entry|.
+  // If this is not true, |new_file_entry| has probably been destroyed, hence
+  // ASSERT (we're trying to access |new_file_entry| later on).
+  ASSERT_EQ(new_file_entry, root.GetEntryByResourceId("file:file_resource_id"));
+  // We have just verified new_file_entry exists inside root, so accessing
+  // |new_file_entry->parent()| should be safe.
+  EXPECT_EQ(directory_entry, new_file_entry->parent());
+
+  // Let's try refreshing file that didn't prviously exist.
+  GDataFile* non_existent_entry = new GDataFile(NULL, &root);
+  non_existent_entry->set_resource_id("file:does_not_exist");
+  root.RefreshFile(scoped_ptr<GDataFile>(non_existent_entry).Pass());
+  // File with non existent resource id should not be added.
+  EXPECT_FALSE(root.GetEntryByResourceId("file:does_not_exist"));
+}
+
 TEST(GDataRootDirectoryTest, GetEntryByResourceId_RootDirectory) {
   GDataRootDirectory root;
   // Look up the root directory by its resource ID.
