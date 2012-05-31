@@ -131,31 +131,7 @@ void UITestBase::TearDown() {
   if (launcher_.get())
     launcher_->TerminateConnection();
 
-  // Make sure that we didn't encounter any assertion failures
-  logging::AssertionList assertions;
-  logging::GetFatalAssertions(&assertions);
-
-  // If there were errors, get all the error strings for display.
-  std::wstring failures =
-    L"The following error(s) occurred in the application during this test:";
-  if (assertions.size() > expected_errors_) {
-    logging::AssertionList::const_iterator iter = assertions.begin();
-    for (; iter != assertions.end(); ++iter) {
-      failures.append(L"\n\n");
-      failures.append(*iter);
-    }
-  }
-  EXPECT_EQ(expected_errors_, assertions.size()) << failures;
-
-  int actual_crashes = GetCrashCount();
-
-  std::wstring error_msg =
-      L"Encountered an unexpected crash in the program during this test.";
-  if (expected_crashes_ > 0 && actual_crashes == 0) {
-    error_msg += L"  ";
-    error_msg += kFailedNoCrashService;
-  }
-  EXPECT_EQ(expected_crashes_, actual_crashes) << error_msg;
+  CheckErrorsAndCrashes();
 }
 
 AutomationProxy* UITestBase::automation() const {
@@ -477,7 +453,7 @@ FilePath UITestBase::ComputeTypicalUserDataSource(
   return source_history_file;
 }
 
-int UITestBase::GetCrashCount() {
+int UITestBase::GetCrashCount() const {
   FilePath crash_dump_path;
   PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_path);
   int actual_crashes = file_util::CountFilesCreatedAfter(
@@ -489,6 +465,44 @@ int UITestBase::GetCrashCount() {
 #endif
 
   return actual_crashes;
+}
+
+std::string UITestBase::CheckErrorsAndCrashes() const {
+  // Make sure that we didn't encounter any assertion failures
+  logging::AssertionList assertions;
+  logging::GetFatalAssertions(&assertions);
+
+  // If there were errors, get all the error strings for display.
+  std::wstring failures =
+      L"The following error(s) occurred in the application during this test:";
+  if (assertions.size() > expected_errors_) {
+    logging::AssertionList::const_iterator iter = assertions.begin();
+    for (; iter != assertions.end(); ++iter) {
+      failures += L"\n\n";
+      failures += *iter;
+    }
+  }
+  EXPECT_EQ(expected_errors_, assertions.size()) << failures;
+
+  int actual_crashes = GetCrashCount();
+
+  std::wstring error_msg =
+      L"Encountered an unexpected crash in the program during this test.";
+  if (expected_crashes_ > 0 && actual_crashes == 0) {
+    error_msg += L"  ";
+    error_msg += kFailedNoCrashService;
+  }
+  EXPECT_EQ(expected_crashes_, actual_crashes) << error_msg;
+
+  std::wstring wide_result;
+  if (expected_errors_ != assertions.size()) {
+    wide_result += failures;
+    wide_result += L"\n\n";
+  }
+  if (expected_crashes_ != actual_crashes)
+    wide_result += error_msg;
+
+  return std::string(wide_result.begin(), wide_result.end());
 }
 
 void UITestBase::SetBrowserDirectory(const FilePath& dir) {

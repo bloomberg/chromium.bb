@@ -226,7 +226,12 @@ class UITestBase {
   }
 
   // Get the number of crash dumps we've logged since the test started.
-  int GetCrashCount();
+  int GetCrashCount() const;
+
+  // Returns empty string if there were no unexpected Chrome asserts or crashes,
+  // a string describing the failures otherwise. As a side effect, it will fail
+  // with EXPECT_EQ macros if this code runs within a gtest harness.
+  std::string CheckErrorsAndCrashes() const;
 
   // Use Chromium binaries from the given directory.
   void SetBrowserDirectory(const FilePath& dir);

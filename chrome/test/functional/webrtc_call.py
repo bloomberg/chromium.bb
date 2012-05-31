@@ -55,6 +55,7 @@ class WebRTCCallTest(pyauto.PyUITest):
     self._server_process.kill()
 
     pyauto.PyUITest.tearDown(self)
+    self.assertEquals('', self.CheckErrorsAndCrashes())
 
   def _SimpleWebRtcCall(self, test_page):
     """Tests we can call and hang up with WebRTC using ROAP/JSEP.

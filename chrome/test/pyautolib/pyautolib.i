@@ -427,6 +427,12 @@ class PyUITestBase {
            "Returns true on success.") ResetToDefaultTheme;
   bool ResetToDefaultTheme();
 
+  %feature("docstring",
+           "Returns empty string if there were no unexpected Chrome asserts or "
+           "crashes, a string describing the failures otherwise. As a side "
+           "effect, it will fail with EXPECT_EQ macros if this code runs "
+           "within a gtest harness.") GetErrorsAndCrashes;
+  std::string CheckErrorsAndCrashes() const;
 };
 
 namespace net {
