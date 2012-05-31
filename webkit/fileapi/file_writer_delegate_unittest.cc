@@ -230,7 +230,7 @@ void FileWriterDelegateTest::TearDown() {
 #else
 #define MAYBE_WriteSuccessWithoutQuotaLimit WriteSuccessWithoutQuotaLimit
 #endif
-TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
+TEST_F(FileWriterDelegateTest, MAYBE_WriteSuccessWithoutQuotaLimit) {
   const GURL kBlobURL("blob:nolimit");
   content_ = kData;
 
