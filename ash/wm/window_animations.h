@@ -63,6 +63,10 @@ ASH_EXPORT void SetWindowVisibilityAnimationDuration(
     aura::Window* window,
     const base::TimeDelta& duration);
 
+ASH_EXPORT void SetWindowVisibilityAnimationVerticalPosition(
+    aura::Window* window,
+    float position);
+
 // Creates an ImplicitAnimationObserver that takes ownership of the layers
 // associated with a Window so that the animation can continue after the Window
 // has been destroyed.

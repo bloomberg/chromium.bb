@@ -31,6 +31,7 @@
 DECLARE_WINDOW_PROPERTY_TYPE(int)
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationType)
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationTransition)
+DECLARE_WINDOW_PROPERTY_TYPE(float)
 
 using aura::Window;
 using base::TimeDelta;
@@ -38,6 +39,9 @@ using ui::Layer;
 
 namespace ash {
 namespace internal {
+namespace {
+const float kWindowAnimation_Vertical_TranslateY = 15.f;
+}
 
 DEFINE_WINDOW_PROPERTY_KEY(WindowVisibilityAnimationType,
                            kWindowVisibilityAnimationTypeKey,
@@ -46,6 +50,9 @@ DEFINE_WINDOW_PROPERTY_KEY(int, kWindowVisibilityAnimationDurationKey, 0);
 DEFINE_WINDOW_PROPERTY_KEY(WindowVisibilityAnimationTransition,
                            kWindowVisibilityAnimationTransitionKey,
                            ANIMATE_BOTH);
+DEFINE_WINDOW_PROPERTY_KEY(float,
+                           kWindowVisibilityAnimationVerticalPositionKey,
+                           kWindowAnimation_Vertical_TranslateY);
 
 namespace {
 
@@ -60,14 +67,12 @@ const float kWindowAnimation_TranslateFactor = -0.025f;
 const float kWindowAnimation_ScaleFactor = 1.05f;
 const float kWindowAnimation_MinimizeRotate = -5.f;
 
-const float kWindowAnimation_Vertical_TranslateY = 15.f;
-
 // Amount windows are scaled during workspace animations.
 const float kWorkspaceScale = .95f;
 
 base::TimeDelta GetWindowVisibilityAnimationDuration(aura::Window* window) {
   int duration =
-      window->GetProperty(internal::kWindowVisibilityAnimationDurationKey);
+      window->GetProperty(kWindowVisibilityAnimationDurationKey);
   if (duration == 0 && window->type() == aura::client::WINDOW_TYPE_MENU) {
     return base::TimeDelta::FromMilliseconds(
         kDefaultAnimationDurationForMenuMS);
@@ -79,7 +84,7 @@ bool HasWindowVisibilityAnimationTransition(
     aura::Window* window,
     WindowVisibilityAnimationTransition transition) {
   WindowVisibilityAnimationTransition prop = window->GetProperty(
-      internal::kWindowVisibilityAnimationTransitionKey);
+      kWindowVisibilityAnimationTransitionKey);
   return (prop & transition) != 0;
 }
 
@@ -266,13 +271,15 @@ void AnimateHideWindow_Drop(aura::Window* window) {
 // Show/Hide windows using a vertical Glenimation.
 void AnimateShowWindow_Vertical(aura::Window* window) {
   ui::Transform transform;
-  transform.ConcatTranslate(0, kWindowAnimation_Vertical_TranslateY);
+  transform.ConcatTranslate(0, window->GetProperty(
+      kWindowVisibilityAnimationVerticalPositionKey));
   AnimateShowWindowCommon(window, transform, ui::Transform());
 }
 
 void AnimateHideWindow_Vertical(aura::Window* window) {
   ui::Transform transform;
-  transform.ConcatTranslate(0, kWindowAnimation_Vertical_TranslateY);
+  transform.ConcatTranslate(0, window->GetProperty(
+      kWindowVisibilityAnimationVerticalPositionKey));
   AnimateHideWindowCommon(window, transform);
 }
 
@@ -619,6 +626,12 @@ void SetWindowVisibilityAnimationDuration(aura::Window* window,
                                           const TimeDelta& duration) {
   window->SetProperty(internal::kWindowVisibilityAnimationDurationKey,
                       static_cast<int>(duration.ToInternalValue()));
+}
+
+void SetWindowVisibilityAnimationVerticalPosition(aura::Window* window,
+                                                  float position) {
+  window->SetProperty(internal::kWindowVisibilityAnimationVerticalPositionKey,
+                      position);
 }
 
 ui::ImplicitAnimationObserver* CreateHidingWindowAnimationObserver(

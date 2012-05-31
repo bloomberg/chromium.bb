@@ -23,6 +23,10 @@
 #include "ui/aura/window.h"
 #endif
 
+#if defined(USE_ASH)
+#include "ash/wm/window_animations.h"
+#endif
+
 using content::RenderViewHost;
 using content::WebContents;
 
@@ -176,6 +180,16 @@ ExtensionPopup* ExtensionPopup::ShowPopup(
   ExtensionPopup* popup = new ExtensionPopup(browser, host, anchor_view,
       arrow_location);
   views::BubbleDelegateView::CreateBubble(popup);
+
+#if defined(USE_ASH)
+  gfx::NativeView native_view = popup->GetWidget()->GetNativeView();
+  ash::SetWindowVisibilityAnimationType(
+      native_view,
+      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+  ash::SetWindowVisibilityAnimationVerticalPosition(
+      native_view,
+      -3.0f);
+#endif
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.
