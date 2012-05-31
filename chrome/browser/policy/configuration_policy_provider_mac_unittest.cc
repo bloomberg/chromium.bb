@@ -158,9 +158,7 @@ void TestHarness::SetUp() {}
 AsynchronousPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
   prefs_ = new MockPreferences();
-  return new ConfigurationPolicyProviderMac(policy_definition_list,
-                                            POLICY_LEVEL_MANDATORY,
-                                            prefs_);
+  return new ConfigurationPolicyProviderMac(policy_definition_list, prefs_);
 }
 
 void TestHarness::InstallEmptyPolicy() {}
@@ -224,20 +222,12 @@ INSTANTIATE_TEST_CASE_P(
 class ConfigurationPolicyProviderMacTest : public AsynchronousPolicyTestBase {
  protected:
   ConfigurationPolicyProviderMacTest()
-      : mandatory_prefs_(new MockPreferences()),
-        recommended_prefs_(new MockPreferences()),
-        mandatory_provider_(&test_policy_definitions::kList,
-                            POLICY_LEVEL_MANDATORY,
-                            mandatory_prefs_),
-        recommended_provider_(&test_policy_definitions::kList,
-                              POLICY_LEVEL_RECOMMENDED,
-                              recommended_prefs_) {}
+      : prefs_(new MockPreferences()),
+        provider_(&test_policy_definitions::kList, prefs_) {}
   virtual ~ConfigurationPolicyProviderMacTest() {}
 
-  MockPreferences* mandatory_prefs_;
-  MockPreferences* recommended_prefs_;
-  ConfigurationPolicyProviderMac mandatory_provider_;
-  ConfigurationPolicyProviderMac recommended_provider_;
+  MockPreferences* prefs_;
+  ConfigurationPolicyProviderMac provider_;
 };
 
 TEST_F(ConfigurationPolicyProviderMacTest, Invalid) {
@@ -249,16 +239,14 @@ TEST_F(ConfigurationPolicyProviderMacTest, Invalid) {
                    reinterpret_cast<const UInt8 *>(buffer),
                    arraysize(buffer)));
   ASSERT_TRUE(invalid_data);
-  mandatory_prefs_->AddTestItem(name, invalid_data.get(), true);
-  recommended_prefs_->AddTestItem(name, invalid_data.get(), false);
+  prefs_->AddTestItem(name, invalid_data.get(), true);
+  prefs_->AddTestItem(name, invalid_data.get(), false);
 
-  // Create the provider and have it read |mandatory_prefs_|.
-  mandatory_provider_.RefreshPolicies();
-  recommended_provider_.RefreshPolicies();
+  // Make the provider read the updated |prefs_|.
+  provider_.RefreshPolicies();
   loop_.RunAllPending();
   const PolicyBundle kEmptyBundle;
-  EXPECT_TRUE(mandatory_provider_.policies().Equals(kEmptyBundle));
-  EXPECT_TRUE(recommended_provider_.policies().Equals(kEmptyBundle));
+  EXPECT_TRUE(provider_.policies().Equals(kEmptyBundle));
 }
 
 TEST_F(ConfigurationPolicyProviderMacTest, TestNonForcedValue) {
@@ -267,19 +255,16 @@ TEST_F(ConfigurationPolicyProviderMacTest, TestNonForcedValue) {
   ScopedCFTypeRef<CFPropertyListRef> test_value(
       base::SysUTF8ToCFStringRef("string value"));
   ASSERT_TRUE(test_value.get());
-  mandatory_prefs_->AddTestItem(name, test_value.get(), false);
-  recommended_prefs_->AddTestItem(name, test_value.get(), false);
+  prefs_->AddTestItem(name, test_value.get(), false);
 
-  // Create the provider and have it read |mandatory_prefs_|.
-  mandatory_provider_.RefreshPolicies();
-  recommended_provider_.RefreshPolicies();
+  // Make the provider read the updated |prefs_|.
+  provider_.RefreshPolicies();
   loop_.RunAllPending();
   PolicyBundle expected_bundle;
-  EXPECT_TRUE(mandatory_provider_.policies().Equals(expected_bundle));
   expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
       .Set(test_policy_definitions::kKeyString, POLICY_LEVEL_RECOMMENDED,
            POLICY_SCOPE_USER, base::Value::CreateStringValue("string value"));
-  EXPECT_TRUE(recommended_provider_.policies().Equals(expected_bundle));
+  EXPECT_TRUE(provider_.policies().Equals(expected_bundle));
 }
 
 TEST_F(ConfigurationPolicyProviderMacTest, TestConversions) {

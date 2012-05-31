@@ -26,8 +26,7 @@ class MacPreferencesPolicyProviderDelegate
   // Takes ownership of |preferences|.
   MacPreferencesPolicyProviderDelegate(
       MacPreferences* preferences,
-      const PolicyDefinitionList* policy_list,
-      PolicyLevel level);
+      const PolicyDefinitionList* policy_list);
   virtual ~MacPreferencesPolicyProviderDelegate();
 
   // FileBasedPolicyLoader::Delegate implementation.
@@ -50,12 +49,6 @@ class MacPreferencesPolicyProviderDelegate
 
   scoped_ptr<MacPreferences> preferences_;
 
-  // Determines the level of policies that this provider should load. This is
-  // a temporary restriction, until the policy system is ready to have providers
-  // loading policy at different levels.
-  // TODO(joaodasilva): remove this.
-  PolicyLevel level_;
-
   DISALLOW_COPY_AND_ASSIGN(MacPreferencesPolicyProviderDelegate);
 };
 
@@ -63,12 +56,11 @@ class MacPreferencesPolicyProviderDelegate
 // provided by Mac OS X's managed preferences.
 class ConfigurationPolicyProviderMac : public FileBasedPolicyProvider {
  public:
-  ConfigurationPolicyProviderMac(const PolicyDefinitionList* policy_list,
-                                 PolicyLevel level);
+  explicit ConfigurationPolicyProviderMac(
+      const PolicyDefinitionList* policy_list);
 
   // For testing; takes ownership of |preferences|.
   ConfigurationPolicyProviderMac(const PolicyDefinitionList* policy_list,
-                                 PolicyLevel level,
                                  MacPreferences* preferences);
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderMac);
