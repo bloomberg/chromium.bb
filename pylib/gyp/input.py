@@ -1073,10 +1073,8 @@ def ProcessVariablesAndConditionsInList(the_list, phase, variables,
       if isinstance(expanded, str) or isinstance(expanded, int):
         the_list[index] = expanded
       elif isinstance(expanded, list):
-        del the_list[index]
-        for expanded_item in expanded:
-          the_list.insert(index, expanded_item)
-          index = index + 1
+        the_list[index:index+1] = expanded
+        index += len(expanded)
 
         # index now identifies the next item to examine.  Continue right now
         # without falling into the index increment below.
