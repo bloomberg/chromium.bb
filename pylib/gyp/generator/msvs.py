@@ -489,6 +489,9 @@ def _GenerateNativeRulesForMSVS(p, rules, output_dir, spec, options):
     rule_ext = r['extension']
     inputs = _FixPaths(r.get('inputs', []))
     outputs = _FixPaths(r.get('outputs', []))
+    # Skip a rule with no action and no inputs.
+    if 'action' not in r and not r.get('rule_sources', []):
+      continue
     cmd = _BuildCommandLineForRule(spec, r, has_input_path=True,
                                    do_setup_env=True)
     rules_file.AddCustomBuildRule(name=rule_name,
@@ -1942,6 +1945,9 @@ def _GenerateRulesForMSBuild(output_dir, options, spec,
 
   msbuild_rules = []
   for rule in rules_native:
+    # Skip a rule with no action and no inputs.
+    if 'action' not in rule and not rule.get('rule_sources', []):
+      continue
     msbuild_rule = MSBuildRule(rule, spec)
     msbuild_rules.append(msbuild_rule)
     extension_to_rule_name[msbuild_rule.extension] = msbuild_rule.rule_name

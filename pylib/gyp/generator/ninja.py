@@ -543,6 +543,9 @@ class NinjaWriter:
     for rule in rules:
       # First write out a rule for the rule action.
       name = rule['rule_name']
+      # Skip a rule with no action and no inputs.
+      if 'action' not in rule and not rule.get('rule_sources', []):
+        continue
       args = rule['action']
       description = self.GenerateDescription(
           'RULE',
