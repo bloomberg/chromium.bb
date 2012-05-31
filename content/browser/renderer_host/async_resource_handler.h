@@ -25,6 +25,7 @@ class AsyncResourceHandler : public ResourceHandler {
                        int routing_id,
                        const GURL& url,
                        ResourceDispatcherHostImpl* rdh);
+  virtual ~AsyncResourceHandler();
 
   // ResourceHandler implementation:
   virtual bool OnUploadProgress(int request_id,
@@ -50,15 +51,12 @@ class AsyncResourceHandler : public ResourceHandler {
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info) OVERRIDE;
-  virtual void OnRequestClosed() OVERRIDE;
   virtual void OnDataDownloaded(int request_id,
                                 int bytes_downloaded) OVERRIDE;
 
   static void GlobalCleanup();
 
  private:
-  virtual ~AsyncResourceHandler();
-
   scoped_refptr<SharedIOBuffer> read_buffer_;
   scoped_refptr<ResourceMessageFilter> filter_;
   int routing_id_;

@@ -16,6 +16,7 @@
 #include <string>
 
 #include "base/message_loop_helpers.h"
+#include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -30,13 +31,14 @@ class IOBuffer;
 class URLRequestStatus;
 }  // namespace net
 
-// The resource dispatcher host uses this interface to push load events to the
-// renderer, allowing for differences in the types of IPC messages generated.
-// See the implementations of this interface defined below.
+// The resource dispatcher host uses this interface to process network events
+// for an URLRequest instance.  A ResourceHandler's lifetime is bound to its
+// associated URLRequest.
 class CONTENT_EXPORT ResourceHandler
-    : public base::RefCountedThreadSafe<
-            ResourceHandler, content::BrowserThread::DeleteOnIOThread> {
+    : public NON_EXPORTED_BASE(base::NonThreadSafe) {
  public:
+  virtual ~ResourceHandler() {}
+
   // Called as upload progress is made.  The return value is ignored.
   virtual bool OnUploadProgress(int request_id,
                                 uint64 position,
@@ -95,23 +97,11 @@ class CONTENT_EXPORT ResourceHandler
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info) = 0;
 
-  // Signals that the request is closed (i.e. about to be deleted).  This is a
-  // signal that the associated net::URLRequest isn't valid anymore.
-  virtual void OnRequestClosed() = 0;
-
   // This notification is synthesized by the RedirectToFileResourceHandler
   // to indicate progress of 'download_to_file' requests. OnReadCompleted
   // calls are consumed by the RedirectToFileResourceHandler and replaced
   // with OnDataDownloaded calls.
   virtual void OnDataDownloaded(int request_id, int bytes_downloaded) {}
-
- protected:
-  friend class content::BrowserThread;
-  friend class base::RefCountedThreadSafe<
-      ResourceHandler, content::BrowserThread::DeleteOnIOThread>;
-  friend class base::DeleteHelper<ResourceHandler>;
-
-  virtual ~ResourceHandler() {}
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RESOURCE_HANDLER_H_

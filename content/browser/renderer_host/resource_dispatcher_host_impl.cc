@@ -35,7 +35,6 @@
 #include "content/browser/renderer_host/async_resource_handler.h"
 #include "content/browser/renderer_host/buffered_resource_handler.h"
 #include "content/browser/renderer_host/cross_site_resource_handler.h"
-#include "content/browser/renderer_host/doomed_resource_handler.h"
 #include "content/browser/renderer_host/redirect_to_file_resource_handler.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -522,7 +521,7 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
 
   // From this point forward, the |DownloadResourceHandler| is responsible for
   // |started_callback|.
-  scoped_refptr<ResourceHandler> handler(
+  scoped_ptr<ResourceHandler> handler(
       CreateResourceHandlerForDownload(request.get(), context, child_id,
                                        route_id, request_id_,
                                        is_content_initiated, save_info,
@@ -535,7 +534,7 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
   }
 
   ResourceRequestInfoImpl* extra_info =
-      CreateRequestInfo(handler, child_id, route_id, true, context);
+      CreateRequestInfo(handler.Pass(), child_id, route_id, true, context);
   extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
 
   request->set_delegate(this);
@@ -559,7 +558,7 @@ void ResourceDispatcherHostImpl::Shutdown() {
                                      base::Unretained(this)));
 }
 
-scoped_refptr<ResourceHandler>
+scoped_ptr<ResourceHandler>
 ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     net::URLRequest* request,
     ResourceContext* context,
@@ -569,7 +568,7 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     bool is_content_initiated,
     const DownloadSaveInfo& save_info,
     const DownloadResourceHandler::OnStartedCallback& started_cb) {
-  scoped_refptr<ResourceHandler> handler(
+  scoped_ptr<ResourceHandler> handler(
       new DownloadResourceHandler(child_id, route_id, request_id,
                                   request->url(), download_file_manager_.get(),
                                   request, started_cb, save_info));
@@ -578,11 +577,12 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     delegate_->DownloadStarting(request, context, child_id, route_id,
                                 request_id, is_content_initiated, &throttles);
     if (!throttles.empty()) {
-      handler = new ThrottlingResourceHandler(this, handler, child_id,
-                                              request_id, throttles.Pass());
+      handler.reset(
+          new ThrottlingResourceHandler(this, handler.Pass(), child_id,
+                                        request_id, throttles.Pass()));
     }
   }
-  return handler;
+  return handler.Pass();
 }
 
 // static
@@ -775,23 +775,26 @@ void ResourceDispatcherHostImpl::BeginRequest(
   }
 
   // Construct the event handler.
-  scoped_refptr<ResourceHandler> handler;
+  scoped_ptr<ResourceHandler> handler;
   if (sync_result) {
-    handler = new SyncResourceHandler(
-        filter_, request_data.url, sync_result, this);
+    handler.reset(new SyncResourceHandler(
+        filter_, request_data.url, sync_result, this));
   } else {
-    handler = new AsyncResourceHandler(
-        filter_, route_id, request_data.url, this);
+    handler.reset(new AsyncResourceHandler(
+        filter_, route_id, request_data.url, this));
   }
 
   // The RedirectToFileResourceHandler depends on being next in the chain.
-  if (request_data.download_to_file)
-    handler = new RedirectToFileResourceHandler(handler, child_id, this);
+  if (request_data.download_to_file) {
+    handler.reset(
+        new RedirectToFileResourceHandler(handler.Pass(), child_id, this));
+  }
 
   if (HandleExternalProtocol(
-      request_id, child_id, route_id, request_data.url,
-      request_data.resource_type,
-      *resource_context->GetRequestContext()->job_factory(), handler)) {
+          request_id, child_id, route_id, request_data.url,
+          request_data.resource_type,
+          *resource_context->GetRequestContext()->job_factory(),
+          handler.get())) {
     return;
   }
 
@@ -870,11 +873,12 @@ void ResourceDispatcherHostImpl::BeginRequest(
           HasPendingCrossSiteRequest(child_id, route_id)) {
     // Wrap the event handler to be sure the current page's onunload handler
     // has a chance to run before we render the new page.
-    handler = new CrossSiteResourceHandler(handler, child_id, route_id, this);
+    handler.reset(
+        new CrossSiteResourceHandler(handler.Pass(), child_id, route_id, this));
   }
 
   // Insert a buffered event handler before the actual one.
-  handler = new BufferedResourceHandler(handler, this, request);
+  handler.reset(new BufferedResourceHandler(handler.Pass(), this, request));
 
   ScopedVector<ResourceThrottle> throttles;
   if (delegate_) {
@@ -896,8 +900,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
   }
 
   if (!throttles.empty()) {
-    handler = new ThrottlingResourceHandler(this, handler, child_id, request_id,
-                                            throttles.Pass());
+    handler.reset(
+        new ThrottlingResourceHandler(this, handler.Pass(), child_id,
+                                      request_id, throttles.Pass()));
   }
 
   bool allow_download = request_data.allow_download &&
@@ -905,7 +910,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Make extra info and read footer (contains request ID).
   ResourceRequestInfoImpl* extra_info =
       new ResourceRequestInfoImpl(
-          handler,
+          handler.Pass(),
           process_type,
           child_id,
           route_id,
@@ -1072,13 +1077,13 @@ void ResourceDispatcherHostImpl::OnFollowRedirect(
 }
 
 ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
-    ResourceHandler* handler,
+    scoped_ptr<ResourceHandler> handler,
     int child_id,
     int route_id,
     bool download,
     ResourceContext* context) {
   return new ResourceRequestInfoImpl(
-      handler,
+      handler.Pass(),
       PROCESS_TYPE_RENDERER,
       child_id,
       route_id,
@@ -1150,7 +1155,7 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
   base::debug::Alias(url_buf);
   CHECK(ContainsKey(active_resource_contexts_, context));
 
-  scoped_refptr<ResourceHandler> handler(
+  scoped_ptr<ResourceHandler> handler(
       new SaveFileResourceHandler(child_id,
                                   route_id,
                                   url,
@@ -1179,7 +1184,7 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
 
   // Since we're just saving some resources we need, disallow downloading.
   ResourceRequestInfoImpl* extra_info =
-      CreateRequestInfo(handler, child_id, route_id, false, context);
+      CreateRequestInfo(handler.Pass(), child_id, route_id, false, context);
   extra_info->AssociateWithRequest(request);  // Request takes ownership.
 
   BeginRequestInternal(request);
@@ -1257,16 +1262,14 @@ void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
                                          info->GetRequestID());
   transferred_navigations_[transferred_request_id] = transferred_request;
 
-  // If a URLRequest is transferred to a new RenderViewHost, its
+  // If an URLRequest is transferred to a new RenderViewHost, its
   // ResourceHandler should not receive any notifications because it may
   // depend on the state of the old RVH. We set a ResourceHandler that only
   // allows canceling requests, because on shutdown of the RDH all pending
   // requests are canceled. The RVH of requests that are being transferred may
   // be gone by that time. If the request is resumed, the ResoureHandlers are
   // substituted again.
-  scoped_refptr<ResourceHandler> transferred_resource_handler(
-      new DoomedResourceHandler(info->resource_handler()));
-  info->set_resource_handler(transferred_resource_handler.get());
+  info->InsertDoomedResourceHandler();
 }
 
 int ResourceDispatcherHostImpl::GetOutstandingRequestsMemoryCost(

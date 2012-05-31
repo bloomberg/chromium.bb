@@ -27,10 +27,10 @@ namespace content {
 static const int kReadBufSize = 32768;
 
 RedirectToFileResourceHandler::RedirectToFileResourceHandler(
-    ResourceHandler* next_handler,
+    scoped_ptr<ResourceHandler> next_handler,
     int process_id,
     ResourceDispatcherHostImpl* host)
-    : LayeredResourceHandler(next_handler),
+    : LayeredResourceHandler(next_handler.Pass()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       host_(host),
       process_id_(process_id),
@@ -39,8 +39,20 @@ RedirectToFileResourceHandler::RedirectToFileResourceHandler(
       buf_write_pending_(false),
       write_cursor_(0),
       write_callback_pending_(false),
-      request_was_closed_(false),
       completed_during_write_(false) {
+}
+
+RedirectToFileResourceHandler::~RedirectToFileResourceHandler() {
+  // It is possible for |file_stream_| to be NULL if the URLRequest was closed
+  // before the temporary file creation finished.
+  if (file_stream_.get()) {
+    // We require this explicit call to Close since file_stream_ was constructed
+    // directly from a PlatformFile.
+    // Close() performs file IO. crbug.com/112474.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    file_stream_->CloseSync();
+    file_stream_.reset();
+  }
 }
 
 bool RedirectToFileResourceHandler::OnResponseStarted(
@@ -133,37 +145,10 @@ bool RedirectToFileResourceHandler::OnResponseCompleted(
   return next_handler_->OnResponseCompleted(request_id, status, security_info);
 }
 
-void RedirectToFileResourceHandler::OnRequestClosed() {
-  DCHECK(!request_was_closed_);
-  request_was_closed_ = true;
-
-  // It is possible for |file_stream_| to be NULL if the request was closed
-  // before the temporary file creation finished.
-  if (file_stream_.get()) {
-    // We require this explicit call to Close since file_stream_ was constructed
-    // directly from a PlatformFile.
-    // Close() performs file IO. crbug.com/112474.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    file_stream_->CloseSync();
-    file_stream_.reset();
-  }
-  deletable_file_ = NULL;
-  next_handler_->OnRequestClosed();
-}
-
-RedirectToFileResourceHandler::~RedirectToFileResourceHandler() {
-  DCHECK(!file_stream_.get());
-}
-
 void RedirectToFileResourceHandler::DidCreateTemporaryFile(
     base::PlatformFileError /*error_code*/,
     base::PassPlatformFile file_handle,
     const FilePath& file_path) {
-  if (request_was_closed_) {
-    // If the request was already closed, then don't bother allocating the
-    // file_stream_ (otherwise we will leak it).
-    return;
-  }
   deletable_file_ = ShareableFileReference::GetOrCreate(
       file_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));

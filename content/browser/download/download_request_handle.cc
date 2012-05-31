@@ -24,10 +24,11 @@ DownloadRequestHandle::DownloadRequestHandle()
       request_id_(-1) {
 }
 
-DownloadRequestHandle::DownloadRequestHandle(DownloadResourceHandler* handler,
-                                             int child_id,
-                                             int render_view_id,
-                                             int request_id)
+DownloadRequestHandle::DownloadRequestHandle(
+    const base::WeakPtr<DownloadResourceHandler>& handler,
+    int child_id,
+    int render_view_id,
+    int request_id)
     : handler_(handler),
       child_id_(child_id),
       render_view_id_(render_view_id),
@@ -59,27 +60,21 @@ DownloadManager* DownloadRequestHandle::GetDownloadManager() const {
 }
 
 void DownloadRequestHandle::PauseRequest() const {
-  if (handler_) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&DownloadResourceHandler::PauseRequest, handler_));
-  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&DownloadResourceHandler::PauseRequest, handler_));
 }
 
 void DownloadRequestHandle::ResumeRequest() const {
-  if (handler_) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&DownloadResourceHandler::ResumeRequest, handler_));
-  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&DownloadResourceHandler::ResumeRequest, handler_));
 }
 
 void DownloadRequestHandle::CancelRequest() const {
-  if (handler_) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&DownloadResourceHandler::CancelRequest, handler_));
-  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&DownloadResourceHandler::CancelRequest, handler_));
 }
 
 std::string DownloadRequestHandle::DebugString() const {

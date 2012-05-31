@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "base/time.h"
 #include "content/public/browser/resource_request_info.h"
@@ -47,7 +48,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   // This will take a reference to the handler.
   CONTENT_EXPORT ResourceRequestInfoImpl(
-      ResourceHandler* handler,
+      scoped_ptr<ResourceHandler> handler,
       ProcessType process_type,
       int child_id,
       int route_id,
@@ -87,7 +88,9 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   // Top-level ResourceHandler servicing this request.
   ResourceHandler* resource_handler() { return resource_handler_.get(); }
-  void set_resource_handler(ResourceHandler* resource_handler);
+
+  // Inserts a DoomedResourceHandler in front of the existing ResourceHandler.
+  void InsertDoomedResourceHandler();
 
   // CrossSiteResourceHandler for this request, if it is a cross-site request.
   // (NULL otherwise.) This handler is part of the chain of ResourceHandlers
@@ -210,7 +213,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int paused_read_bytes() const { return paused_read_bytes_; }
   void set_paused_read_bytes(int bytes) { paused_read_bytes_ = bytes; }
 
-  scoped_refptr<ResourceHandler> resource_handler_;
+  scoped_ptr<ResourceHandler> resource_handler_;
 
   // Non-owning, may be NULL.
   CrossSiteResourceHandler* cross_site_handler_;

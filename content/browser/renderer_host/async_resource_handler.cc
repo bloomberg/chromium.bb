@@ -275,9 +275,6 @@ bool AsyncResourceHandler::OnResponseCompleted(
   return true;
 }
 
-void AsyncResourceHandler::OnRequestClosed() {
-}
-
 // static
 void AsyncResourceHandler::GlobalCleanup() {
   if (g_spare_read_buffer) {

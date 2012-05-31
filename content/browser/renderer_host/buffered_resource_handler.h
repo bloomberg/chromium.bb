@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/layered_resource_handler.h"
 
 namespace net {
@@ -23,11 +24,14 @@ namespace content {
 class ResourceDispatcherHostImpl;
 
 // Used to buffer a request until enough data has been received.
-class BufferedResourceHandler : public LayeredResourceHandler {
+class BufferedResourceHandler
+    : public LayeredResourceHandler,
+      public base::SupportsWeakPtr<BufferedResourceHandler> {
  public:
-  BufferedResourceHandler(ResourceHandler* handler,
+  BufferedResourceHandler(scoped_ptr<ResourceHandler> next_handler,
                           ResourceDispatcherHostImpl* host,
                           net::URLRequest* request);
+  virtual ~BufferedResourceHandler();
 
   // ResourceHandler implementation:
   virtual bool OnResponseStarted(int request_id,
@@ -39,11 +43,8 @@ class BufferedResourceHandler : public LayeredResourceHandler {
                           int min_size) OVERRIDE;
   virtual bool OnReadCompleted(int request_id, int* bytes_read,
                                bool* defer) OVERRIDE;
-  virtual void OnRequestClosed() OVERRIDE;
 
  private:
-  virtual ~BufferedResourceHandler();
-
   // Returns true if we should delay OnResponseStarted forwarding.
   bool DelayResponse();
 
@@ -70,7 +71,8 @@ class BufferedResourceHandler : public LayeredResourceHandler {
   // will be handled entirely by the new ResourceHandler |handler|.  A
   // reference to |handler| is acquired.  Returns false to indicate an error,
   // which will result in the request being cancelled.
-  bool UseAlternateResourceHandler(int request_id, ResourceHandler* handler,
+  bool UseAlternateResourceHandler(int request_id,
+                                   scoped_ptr<ResourceHandler> handler,
                                    bool* defer);
 
   // Forwards any queued events to |next_handler_|.  Returns false to indicate

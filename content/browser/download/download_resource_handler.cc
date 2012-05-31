@@ -44,9 +44,41 @@ void CallStartedCBOnUIThread(
     DownloadId id,
     net::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (started_cb.is_null())
     return;
   started_cb.Run(id, error);
+}
+
+void StartDownloadOnUIThread(
+    const scoped_refptr<DownloadFileManager>& download_file_manager,
+    scoped_ptr<DownloadCreateInfo> info,
+    const DownloadRequestHandle& handle,
+    const base::Callback<void(DownloadId)>& set_download_id_callback) {
+  DownloadId download_id;
+
+  DownloadManager* download_manager = handle.GetDownloadManager();
+  if (download_manager) {
+    // The download manager may be NULL in unittests or if the page closed
+    // right after starting the download.
+    download_id = download_manager->delegate()->GetNextId();
+    info->download_id = download_id;
+
+    // NOTE: StartDownload triggers creation of the download destination file
+    // that will hold the downloaded data.  The set_download_id_callback
+    // unblocks the DownloadResourceHandler to begin forwarding network data to
+    // the download destination file.  The sequence of these two steps is
+    // critical as creation of the downloaded destination file has to happen
+    // before we attempt to append data to it.  Both of those operations happen
+    // on the FILE thread.
+
+    download_file_manager->StartDownload(info.release(), handle);
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(set_download_id_callback, download_id));
 }
 
 }  // namespace
@@ -60,8 +92,7 @@ DownloadResourceHandler::DownloadResourceHandler(
     net::URLRequest* request,
     const DownloadResourceHandler::OnStartedCallback& started_cb,
     const content::DownloadSaveInfo& save_info)
-    : download_id_(DownloadId::Invalid()),
-      global_id_(render_process_host_id, request_id),
+    : global_id_(render_process_host_id, request_id),
       render_view_id_(render_view_id),
       content_length_(0),
       download_file_manager_(download_file_manager),
@@ -134,7 +165,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->remote_address = request_->GetSocketAddress().host();
   download_stats::RecordDownloadMimeType(info->mime_type);
 
-  DownloadRequestHandle request_handle(this, global_id_.child_id,
+  DownloadRequestHandle request_handle(AsWeakPtr(), global_id_.child_id,
                                        render_view_id_, global_id_.request_id);
 
   // Get the last modified time and etag.
@@ -167,9 +198,14 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->save_info = save_info_;
 
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DownloadResourceHandler::StartOnUIThread, this,
-                 base::Passed(&info), request_handle));
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(
+          &StartDownloadOnUIThread,
+          download_file_manager_,
+          base::Passed(&info),
+          request_handle,
+          base::Bind(&DownloadResourceHandler::SetDownloadID, AsWeakPtr())));
 
   return true;
 }
@@ -219,7 +255,7 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
     return true;
   }
 
-  if (download_id_ == DownloadId::Invalid()) {
+  if (!download_id_.IsValid()) {
     // We can't start saving the data before we create the file on disk and
     // have a download id. The request will be un-paused in
     // DownloadFileManager::CreateDownloadFile.
@@ -286,8 +322,8 @@ bool DownloadResourceHandler::OnResponseCompleted(
     BrowserThread::PostTaskAndReply(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&base::DoNothing),
-        base::Bind(&DownloadResourceHandler::OnResponseCompletedInternal, this,
-                   request_id, status, security_info, response));
+        base::Bind(&DownloadResourceHandler::OnResponseCompletedInternal,
+                   AsWeakPtr(), request_id, status, security_info, response));
   }
   // Can't trust request_ being value after this point.
   request_ = NULL;
@@ -361,46 +397,15 @@ void DownloadResourceHandler::OnResponseCompletedInternal(
   read_buffer_ = NULL;
 }
 
-void DownloadResourceHandler::OnRequestClosed() {
-  UMA_HISTOGRAM_TIMES("SB2.DownloadDuration",
-                      base::TimeTicks::Now() - download_start_time_);
-}
-
-void DownloadResourceHandler::StartOnUIThread(
-    scoped_ptr<DownloadCreateInfo> info,
-    const DownloadRequestHandle& handle) {
-  DownloadManager* download_manager = handle.GetDownloadManager();
-  if (!download_manager) {
-    // NULL in unittests or if the page closed right after starting the
-    // download.
-    CallStartedCB(download_id_, net::ERR_ACCESS_DENIED);
-    return;
-  }
-  DownloadId download_id = download_manager->delegate()->GetNextId();
-  info->download_id = download_id;
-
-  // NOTE: StartDownload triggers creation of the download destination file
-  // that will hold the downloaded data.  SetDownloadID unblocks the
-  // DownloadResourceHandler to begin forwarding network data to the download
-  // destination file.  The sequence of these two steps is critical as creation
-  // of the downloaded destination file has to happen before we attempt to
-  // append data to it.  Both of those operations happen on the FILE thread.
-
-  download_file_manager_->StartDownload(info.release(), handle);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&DownloadResourceHandler::SetDownloadID, this,
-                 download_id));
-
-  CallStartedCB(download_id, net::OK);
-}
-
-void DownloadResourceHandler::SetDownloadID(content::DownloadId id) {
+void DownloadResourceHandler::SetDownloadID(DownloadId id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   download_id_ = id;
   MaybeResumeRequest();
+
+  CallStartedCB(
+      download_id_,
+      download_id_.IsValid() ? net::OK : net::ERR_ACCESS_DENIED);
 }
 
 // If the content-length header is not present (or contains something other
@@ -479,6 +484,9 @@ DownloadResourceHandler::~DownloadResourceHandler() {
   // If it goes through, it will likely be because OnWillStart() returned
   // false somewhere in the chain of resource handlers.
   CallStartedCB(download_id_, net::ERR_ACCESS_DENIED);
+
+  UMA_HISTOGRAM_TIMES("SB2.DownloadDuration",
+                      base::TimeTicks::Now() - download_start_time_);
 }
 
 void DownloadResourceHandler::CheckWriteProgressLater() {
@@ -497,7 +505,7 @@ void DownloadResourceHandler::MaybeResumeRequest() {
 
   if (pause_count_ > 0)
     return;
-  if (download_id_ == DownloadId::Invalid())
+  if (!download_id_.IsValid())
     return;
   if (buffer_.get() && (buffer_->size() > kLoadsToWrite))
     return;

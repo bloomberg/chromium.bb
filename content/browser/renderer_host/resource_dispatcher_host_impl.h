@@ -258,7 +258,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
     return delegate_;
   }
 
-  scoped_refptr<ResourceHandler> CreateResourceHandlerForDownload(
+  scoped_ptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
       ResourceContext* context,
       int child_id,
@@ -411,7 +411,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Creates ResourceRequestInfoImpl for a download or page save.
   // |download| should be true if the request is a file download.
   ResourceRequestInfoImpl* CreateRequestInfo(
-      ResourceHandler* handler,
+      scoped_ptr<ResourceHandler> handler,
       int child_id,
       int route_id,
       bool download,

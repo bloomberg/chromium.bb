@@ -29,6 +29,10 @@ SyncResourceHandler::SyncResourceHandler(
 }
 
 SyncResourceHandler::~SyncResourceHandler() {
+  if (result_message_) {
+    result_message_->set_reply_error();
+    filter_->Send(result_message_);
+  }
 }
 
 bool SyncResourceHandler::OnUploadProgress(int request_id,
@@ -121,14 +125,6 @@ bool SyncResourceHandler::OnResponseCompleted(
   filter_->Send(result_message_);
   result_message_ = NULL;
   return true;
-}
-
-void SyncResourceHandler::OnRequestClosed() {
-  if (!result_message_)
-    return;
-
-  result_message_->set_reply_error();
-  filter_->Send(result_message_);
 }
 
 }  // namespace content

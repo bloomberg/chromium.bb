@@ -30,9 +30,10 @@ class ResourceDispatcherHostImpl;
 class RedirectToFileResourceHandler : public LayeredResourceHandler {
  public:
   RedirectToFileResourceHandler(
-      ResourceHandler* next_handler,
+      scoped_ptr<ResourceHandler> next_handler,
       int process_id,
       ResourceDispatcherHostImpl* resource_dispatcher_host);
+  virtual ~RedirectToFileResourceHandler();
 
   // ResourceHandler implementation:
   virtual bool OnResponseStarted(int request_id,
@@ -51,10 +52,8 @@ class RedirectToFileResourceHandler : public LayeredResourceHandler {
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info) OVERRIDE;
-  virtual void OnRequestClosed() OVERRIDE;
 
  private:
-  virtual ~RedirectToFileResourceHandler();
   void DidCreateTemporaryFile(base::PlatformFileError error_code,
                               base::PassPlatformFile file_handle,
                               const FilePath& file_path);

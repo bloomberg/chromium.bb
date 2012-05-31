@@ -4,10 +4,11 @@
 
 #include "content/browser/renderer_host/doomed_resource_handler.h"
 
-#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_status.h"
 
-DoomedResourceHandler::DoomedResourceHandler(ResourceHandler* old_handler)
-    : old_handler_(old_handler) {
+DoomedResourceHandler::DoomedResourceHandler(
+    scoped_ptr<ResourceHandler> old_handler)
+    : old_handler_(old_handler.Pass()) {
 }
 
 DoomedResourceHandler::~DoomedResourceHandler() {
@@ -65,9 +66,6 @@ bool DoomedResourceHandler::OnResponseCompleted(
   DCHECK(status.status() == net::URLRequestStatus::CANCELED ||
          status.status() == net::URLRequestStatus::FAILED);
   return true;
-}
-
-void DoomedResourceHandler::OnRequestClosed() {
 }
 
 void DoomedResourceHandler::OnDataDownloaded(int request_id,

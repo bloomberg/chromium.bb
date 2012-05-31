@@ -27,6 +27,9 @@ SaveFileResourceHandler::SaveFileResourceHandler(int render_process_host_id,
       save_manager_(manager) {
 }
 
+SaveFileResourceHandler::~SaveFileResourceHandler() {
+}
+
 bool SaveFileResourceHandler::OnUploadProgress(int request_id,
                                                uint64 position,
                                                uint64 size) {
@@ -106,12 +109,7 @@ bool SaveFileResourceHandler::OnResponseCompleted(
   return true;
 }
 
-void SaveFileResourceHandler::OnRequestClosed() {
-}
-
 void SaveFileResourceHandler::set_content_length(
     const std::string& content_length) {
   base::StringToInt64(content_length, &content_length_);
 }
-
-SaveFileResourceHandler::~SaveFileResourceHandler() {}

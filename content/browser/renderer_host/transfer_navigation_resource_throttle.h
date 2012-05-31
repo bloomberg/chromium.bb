@@ -21,13 +21,12 @@ class URLRequest;
 class TransferNavigationResourceThrottle : public content::ResourceThrottle {
  public:
   explicit TransferNavigationResourceThrottle(net::URLRequest* request);
+  virtual ~TransferNavigationResourceThrottle();
 
   // content::ResourceThrottle implementation:
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
 
  private:
-  virtual ~TransferNavigationResourceThrottle();
-
   net::URLRequest* request_;
 
   DISALLOW_COPY_AND_ASSIGN(TransferNavigationResourceThrottle);

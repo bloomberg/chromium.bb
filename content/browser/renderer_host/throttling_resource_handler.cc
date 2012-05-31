@@ -12,11 +12,11 @@ namespace content {
 
 ThrottlingResourceHandler::ThrottlingResourceHandler(
     ResourceDispatcherHostImpl* host,
-    ResourceHandler* next_handler,
+    scoped_ptr<ResourceHandler> next_handler,
     int child_id,
     int request_id,
     ScopedVector<ResourceThrottle> throttles)
-    : LayeredResourceHandler(next_handler),
+    : LayeredResourceHandler(next_handler.Pass()),
       deferred_stage_(DEFERRED_NONE),
       host_(host),
       child_id_(child_id),
@@ -25,6 +25,9 @@ ThrottlingResourceHandler::ThrottlingResourceHandler(
       index_(0) {
   for (size_t i = 0; i < throttles_.size(); ++i)
     throttles_[i]->set_controller(this);
+}
+
+ThrottlingResourceHandler::~ThrottlingResourceHandler() {
 }
 
 bool ThrottlingResourceHandler::OnRequestRedirected(int request_id,
@@ -93,11 +96,6 @@ bool ThrottlingResourceHandler::OnResponseStarted(
   return next_handler_->OnResponseStarted(request_id, response, defer);
 }
 
-void ThrottlingResourceHandler::OnRequestClosed() {
-  throttles_.reset();
-  next_handler_->OnRequestClosed();
-}
-
 void ThrottlingResourceHandler::Cancel() {
   host_->CancelRequest(child_id_, request_id_, false);
 }
@@ -118,9 +116,6 @@ void ThrottlingResourceHandler::Resume() {
       break;
   }
   deferred_stage_ = DEFERRED_NONE;
-}
-
-ThrottlingResourceHandler::~ThrottlingResourceHandler() {
 }
 
 void ThrottlingResourceHandler::ResumeStart() {

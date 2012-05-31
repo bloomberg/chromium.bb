@@ -32,7 +32,9 @@ class URLRequest;
 }  // namespace net
 
 // Forwards data to the download thread.
-class DownloadResourceHandler : public ResourceHandler {
+class DownloadResourceHandler
+    : public ResourceHandler,
+      public base::SupportsWeakPtr<DownloadResourceHandler> {
  public:
   typedef content::DownloadUrlParameters::OnStartedCallback OnStartedCallback;
 
@@ -81,7 +83,6 @@ class DownloadResourceHandler : public ResourceHandler {
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info) OVERRIDE;
-  virtual void OnRequestClosed() OVERRIDE;
 
   void PauseRequest();
   void ResumeRequest();
@@ -102,9 +103,6 @@ class DownloadResourceHandler : public ResourceHandler {
   void MaybeResumeRequest();
   void CallStartedCB(content::DownloadId id, net::Error error);
 
-  // Generates a DownloadId and calls DownloadFileManager.
-  void StartOnUIThread(scoped_ptr<DownloadCreateInfo> info,
-                       const DownloadRequestHandle& handle);
   void SetDownloadID(content::DownloadId id);
 
   // If the content-length header is not present (or contains something other
@@ -120,7 +118,7 @@ class DownloadResourceHandler : public ResourceHandler {
   scoped_refptr<net::IOBuffer> read_buffer_;
   std::string content_disposition_;
   int64 content_length_;
-  DownloadFileManager* download_file_manager_;
+  scoped_refptr<DownloadFileManager> download_file_manager_;
   net::URLRequest* request_;
   // This is used only on the UI thread.
   OnStartedCallback started_cb_;

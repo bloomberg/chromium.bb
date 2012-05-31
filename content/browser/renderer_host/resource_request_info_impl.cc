@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 
-#include "content/browser/renderer_host/resource_handler.h"
+#include "content/browser/renderer_host/doomed_resource_handler.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/net/url_request_user_data.h"
@@ -30,7 +30,7 @@ void ResourceRequestInfo::AllocateForTesting(
     ResourceContext* context) {
   ResourceRequestInfoImpl* info =
       new ResourceRequestInfoImpl(
-          NULL,                              // handler
+          scoped_ptr<ResourceHandler>(),     // handler
           PROCESS_TYPE_RENDERER,             // process_type
           -1,                                // child_id
           MSG_ROUTING_NONE,                  // route_id
@@ -81,7 +81,7 @@ const ResourceRequestInfoImpl* ResourceRequestInfoImpl::ForRequest(
 }
 
 ResourceRequestInfoImpl::ResourceRequestInfoImpl(
-    ResourceHandler* handler,
+    scoped_ptr<ResourceHandler> handler,
     ProcessType process_type,
     int child_id,
     int route_id,
@@ -99,7 +99,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool has_user_gesture,
     WebKit::WebReferrerPolicy referrer_policy,
     ResourceContext* context)
-    : resource_handler_(handler),
+    : resource_handler_(handler.Pass()),
       cross_site_handler_(NULL),
       process_type_(process_type),
       child_id_(child_id),
@@ -130,8 +130,9 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
 }
 
 ResourceRequestInfoImpl::~ResourceRequestInfoImpl() {
-  if (resource_handler_)
-    resource_handler_->OnRequestClosed();
+  // Run ResourceHandler destructor before we tear-down the rest of our state
+  // as the ResourceHandler may want to inspect some of our other members.
+  resource_handler_.reset();
 }
 
 ResourceContext* ResourceRequestInfoImpl::GetContext() const {
@@ -214,9 +215,9 @@ void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {
   }
 }
 
-void ResourceRequestInfoImpl::set_resource_handler(
-    ResourceHandler* resource_handler) {
-  resource_handler_ = resource_handler;
+void ResourceRequestInfoImpl::InsertDoomedResourceHandler() {
+  resource_handler_.reset(
+      new DoomedResourceHandler(resource_handler_.Pass()));
 }
 
 void ResourceRequestInfoImpl::set_login_delegate(

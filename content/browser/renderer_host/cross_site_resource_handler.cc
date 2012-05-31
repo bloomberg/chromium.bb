@@ -36,11 +36,11 @@ void OnCrossSiteResponseHelper(int render_process_id,
 }  // namespace
 
 CrossSiteResourceHandler::CrossSiteResourceHandler(
-    ResourceHandler* handler,
+    scoped_ptr<ResourceHandler> next_handler,
     int render_process_host_id,
     int render_view_id,
     ResourceDispatcherHostImpl* rdh)
-    : LayeredResourceHandler(handler),
+    : LayeredResourceHandler(next_handler.Pass()),
       render_process_host_id_(render_process_host_id),
       render_view_id_(render_view_id),
       has_started_response_(false),
@@ -50,6 +50,9 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
       completed_status_(),
       response_(NULL),
       rdh_(rdh) {
+}
+
+CrossSiteResourceHandler::~CrossSiteResourceHandler() {
 }
 
 bool CrossSiteResourceHandler::OnRequestRedirected(
@@ -190,8 +193,6 @@ void CrossSiteResourceHandler::ResumeResponse() {
     rdh_->RemovePendingRequest(render_process_host_id_, request_id_);
   }
 }
-
-CrossSiteResourceHandler::~CrossSiteResourceHandler() {}
 
 // Prepare to render the cross-site response in a new RenderViewHost, by
 // telling the old RenderViewHost to run its onunload handler.

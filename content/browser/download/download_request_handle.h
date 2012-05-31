@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/common/content_export.h"
 
@@ -59,7 +59,7 @@ class CONTENT_EXPORT DownloadRequestHandle
   DownloadRequestHandle();
 
   // Note that |rdh| is required to be non-null.
-  DownloadRequestHandle(DownloadResourceHandler* handler,
+  DownloadRequestHandle(const base::WeakPtr<DownloadResourceHandler>& handler,
                         int child_id,
                         int render_view_id,
                         int request_id);
@@ -73,7 +73,7 @@ class CONTENT_EXPORT DownloadRequestHandle
   virtual std::string DebugString() const OVERRIDE;
 
  private:
-  scoped_refptr<DownloadResourceHandler> handler_;
+  base::WeakPtr<DownloadResourceHandler> handler_;
 
   // The ID of the child process that started the download.
   int child_id_;

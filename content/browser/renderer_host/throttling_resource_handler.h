@@ -24,10 +24,11 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
  public:
   // Takes ownership of the ResourceThrottle instances.
   ThrottlingResourceHandler(ResourceDispatcherHostImpl* host,
-                            ResourceHandler* next_handler,
+                            scoped_ptr<ResourceHandler> next_handler,
                             int child_id,
                             int request_id,
                             ScopedVector<ResourceThrottle> throttles);
+  virtual ~ThrottlingResourceHandler();
 
   // LayeredResourceHandler overrides:
   virtual bool OnRequestRedirected(int request_id, const GURL& url,
@@ -38,15 +39,12 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
                                  bool* defer) OVERRIDE;
   virtual bool OnWillStart(int request_id, const GURL& url,
                            bool* defer) OVERRIDE;
-  virtual void OnRequestClosed() OVERRIDE;
 
   // ResourceThrottleController implementation:
   virtual void Cancel() OVERRIDE;
   virtual void Resume() OVERRIDE;
 
  private:
-  virtual ~ThrottlingResourceHandler();
-
   void ResumeStart();
   void ResumeRedirect();
   void ResumeResponse();

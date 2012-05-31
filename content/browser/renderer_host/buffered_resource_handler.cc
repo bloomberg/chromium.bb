@@ -62,10 +62,10 @@ void RecordSnifferMetrics(bool sniffing_blocked,
 }  // namespace
 
 BufferedResourceHandler::BufferedResourceHandler(
-    ResourceHandler* handler,
+    scoped_ptr<ResourceHandler> next_handler,
     ResourceDispatcherHostImpl* host,
     net::URLRequest* request)
-    : LayeredResourceHandler(handler),
+    : LayeredResourceHandler(next_handler.Pass()),
       host_(host),
       request_(request),
       read_buffer_size_(0),
@@ -93,11 +93,6 @@ bool BufferedResourceHandler::OnResponseStarted(
     *defer = true;
   }
   return true;
-}
-
-void BufferedResourceHandler::OnRequestClosed() {
-  request_ = NULL;
-  next_handler_->OnRequestClosed();
 }
 
 // We'll let the original event handler provide a buffer, and reuse it for
@@ -277,12 +272,12 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
       return false;
     }
 
-    X509UserCertResourceHandler* x509_cert_handler =
+    scoped_ptr<ResourceHandler> handler(
         new X509UserCertResourceHandler(request_,
                                         info->GetChildID(),
-                                        info->GetRouteID());
+                                        info->GetRouteID()));
 
-    return UseAlternateResourceHandler(request_id, x509_cert_handler, defer);
+    return UseAlternateResourceHandler(request_id, handler.Pass(), defer);
   }
 
   if (info->allow_download() && ShouldDownload(NULL)) {
@@ -301,7 +296,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
 
     info->set_is_download(true);
 
-    scoped_refptr<ResourceHandler> handler(
+    scoped_ptr<ResourceHandler> handler(
         host_->CreateResourceHandlerForDownload(
             request_,
             info->GetContext(),
@@ -312,7 +307,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
             DownloadSaveInfo(),
             DownloadResourceHandler::OnStartedCallback()));
 
-    return UseAlternateResourceHandler(request_id, handler, defer);
+    return UseAlternateResourceHandler(request_id, handler.Pass(), defer);
   }
 
   if (*defer)
@@ -328,7 +323,7 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
 
   // Get the plugins asynchronously.
   PluginServiceImpl::GetInstance()->GetPlugins(
-      base::Bind(&BufferedResourceHandler::OnPluginsLoaded, this));
+      base::Bind(&BufferedResourceHandler::OnPluginsLoaded, AsWeakPtr()));
   return true;
 }
 
@@ -381,7 +376,7 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
 
 bool BufferedResourceHandler::UseAlternateResourceHandler(
     int request_id,
-    ResourceHandler* handler,
+    scoped_ptr<ResourceHandler> handler,
     bool* defer) {
   // Inform the original ResourceHandler that this will be handled entirely by
   // the new ResourceHandler.
@@ -401,7 +396,7 @@ bool BufferedResourceHandler::UseAlternateResourceHandler(
 
   // This is handled entirely within the new ResourceHandler, so just reset the
   // original ResourceHandler.
-  next_handler_ = handler;
+  next_handler_ = handler.Pass();
 
   next_handler_needs_response_started_ = true;
   next_handler_needs_will_read_ = true;

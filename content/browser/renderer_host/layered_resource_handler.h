@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_LAYERED_RESOURCE_HANDLER_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/resource_handler.h"
 #include "content/common/content_export.h"
 
@@ -15,7 +16,8 @@ namespace content {
 // class is intended to be subclassed.
 class CONTENT_EXPORT LayeredResourceHandler : public ResourceHandler {
  public:
-  LayeredResourceHandler(ResourceHandler* next_handler);
+  explicit LayeredResourceHandler(scoped_ptr<ResourceHandler> next_handler);
+  virtual ~LayeredResourceHandler();
 
   // ResourceHandler implementation:
   virtual bool OnUploadProgress(int request_id, uint64 position,
@@ -35,13 +37,9 @@ class CONTENT_EXPORT LayeredResourceHandler : public ResourceHandler {
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info) OVERRIDE;
-  virtual void OnRequestClosed() OVERRIDE;
   virtual void OnDataDownloaded(int request_id, int bytes_downloaded) OVERRIDE;
 
- protected:
-  virtual ~LayeredResourceHandler();
-
-  scoped_refptr<ResourceHandler> next_handler_;
+  scoped_ptr<ResourceHandler> next_handler_;
 };
 
 }  // namespace content

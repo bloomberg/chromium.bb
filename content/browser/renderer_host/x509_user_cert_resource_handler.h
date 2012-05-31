@@ -29,6 +29,7 @@ class X509UserCertResourceHandler : public ResourceHandler {
   X509UserCertResourceHandler(net::URLRequest* request,
                               int render_process_host_id,
                               int render_view_id);
+  virtual ~X509UserCertResourceHandler();
 
   virtual bool OnUploadProgress(int request_id,
                                 uint64 position,
@@ -66,11 +67,7 @@ class X509UserCertResourceHandler : public ResourceHandler {
                                    const net::URLRequestStatus& urs,
                                    const std::string& sec_info) OVERRIDE;
 
-  virtual void OnRequestClosed() OVERRIDE;
-
  private:
-  virtual ~X509UserCertResourceHandler();
-
   void AssembleResource();
 
   GURL url_;

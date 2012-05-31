@@ -28,6 +28,9 @@ X509UserCertResourceHandler::X509UserCertResourceHandler(
       render_view_id_(render_view_id) {
 }
 
+X509UserCertResourceHandler::~X509UserCertResourceHandler() {
+}
+
 bool X509UserCertResourceHandler::OnUploadProgress(int request_id,
                                                    uint64 position,
                                                    uint64 size) {
@@ -109,12 +112,6 @@ bool X509UserCertResourceHandler::OnResponseCompleted(
   content::GetContentClient()->browser()->AddNewCertificate(
       request_, cert, render_process_host_id_, render_view_id_);
   return true;
-}
-
-void X509UserCertResourceHandler::OnRequestClosed() {
-}
-
-X509UserCertResourceHandler::~X509UserCertResourceHandler() {
 }
 
 void X509UserCertResourceHandler::AssembleResource() {

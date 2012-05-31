@@ -20,10 +20,11 @@ struct GlobalRequestID;
 // after we determine that a response is safe and not a download.
 class CrossSiteResourceHandler : public LayeredResourceHandler {
  public:
-  CrossSiteResourceHandler(ResourceHandler* handler,
+  CrossSiteResourceHandler(scoped_ptr<ResourceHandler> next_handler,
                            int render_process_host_id,
                            int render_view_id,
                            ResourceDispatcherHostImpl* rdh);
+  virtual ~CrossSiteResourceHandler();
 
   // ResourceHandler implementation:
   virtual bool OnRequestRedirected(int request_id,
@@ -45,8 +46,6 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   void ResumeResponse();
 
  private:
-  virtual ~CrossSiteResourceHandler();
-
   // Prepare to render the cross-site response in a new RenderViewHost, by
   // telling the old RenderViewHost to run its onunload handler.
   void StartCrossSiteTransition(

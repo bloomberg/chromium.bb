@@ -32,6 +32,7 @@ class SyncResourceHandler : public ResourceHandler {
                       const GURL& url,
                       IPC::Message* result_message,
                       ResourceDispatcherHostImpl* resource_dispatcher_host);
+  virtual ~SyncResourceHandler();
 
   virtual bool OnUploadProgress(int request_id,
                                 uint64 position,
@@ -56,12 +57,9 @@ class SyncResourceHandler : public ResourceHandler {
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info) OVERRIDE;
-  virtual void OnRequestClosed() OVERRIDE;
 
  private:
   enum { kReadBufSize = 3840 };
-
-  virtual ~SyncResourceHandler();
 
   scoped_refptr<net::IOBuffer> read_buffer_;
 

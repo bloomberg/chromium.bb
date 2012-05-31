@@ -20,6 +20,7 @@ class SaveFileResourceHandler : public ResourceHandler {
                           int render_view_id,
                           const GURL& url,
                           SaveFileManager* manager);
+  virtual ~SaveFileResourceHandler();
 
   // ResourceHandler Implementation:
   virtual bool OnUploadProgress(int request_id,
@@ -58,8 +59,6 @@ class SaveFileResourceHandler : public ResourceHandler {
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info) OVERRIDE;
 
-  virtual void OnRequestClosed() OVERRIDE;
-
   // If the content-length header is not present (or contains something other
   // than numbers), StringToInt64 returns 0, which indicates 'unknown size' and
   // is handled correctly by the SaveManager.
@@ -70,8 +69,6 @@ class SaveFileResourceHandler : public ResourceHandler {
   }
 
  private:
-  virtual ~SaveFileResourceHandler();
-
   int save_id_;
   int render_process_id_;
   int render_view_id_;
