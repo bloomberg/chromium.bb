@@ -4,13 +4,11 @@
 
 #include "chrome/browser/chromeos/login/version_info_updater.h"
 
-#include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/chromeos/chromeos_version.h"
-#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -19,14 +17,11 @@
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
-#include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -53,6 +48,8 @@ VersionInfoUpdater::VersionInfoUpdater(Delegate* delegate)
 }
 
 VersionInfoUpdater::~VersionInfoUpdater() {
+  for (unsigned int i = 0; i < arraysize(kReportingFlags); ++i)
+    cros_settings_->RemoveSettingsObserver(kReportingFlags[i], this);
 }
 
 void VersionInfoUpdater::StartUpdate(bool is_official_build) {
