@@ -21,6 +21,7 @@
           'events.json',
           'experimental_font_settings.json',
           'experimental_record.json',
+          'file_browser_handler.json',
           'permissions.json',
           'storage.json',
           'tabs.json',
@@ -44,6 +45,11 @@
         ['OS=="android"', {
           'idl_schema_files!': [
             'experimental_usb.idl',
+          ],
+        }],
+        ['OS!="chromeos"', {
+          'json_schema_files!': [
+            'file_browser_handler.json',
           ],
         }],
       ],

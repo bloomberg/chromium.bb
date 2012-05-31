@@ -4088,6 +4088,8 @@
             'browser/bookmarks/bookmark_extension_api.h',
             'browser/chromeos/extensions/echo_private_api.cc',
             'browser/chromeos/extensions/echo_private_api.h',
+            'browser/chromeos/extensions/file_browser_handler_api.cc',
+            'browser/chromeos/extensions/file_browser_handler_api.h',
             'browser/chromeos/extensions/file_browser_private_api.cc',
             'browser/chromeos/extensions/file_browser_private_api.h',
             'browser/chromeos/media/media_player_extension_api.cc',
@@ -4334,6 +4336,8 @@
           'sources/': [
             ['exclude', 'browser/chromeos/media/media_player_extension_api.cc'],
             ['exclude', 'browser/chromeos/media/media_player_extension_api.h'],
+            ['exclude', 'browser/chromeos/extensions/file_browser_handler_api.cc'],
+            ['exclude', 'browser/chromeos/extensions/file_browser_handler_api.h'],
             ['exclude', 'browser/chromeos/extensions/file_browser_private_api.cc'],
             ['exclude', 'browser/chromeos/extensions/file_browser_private_api.h'],
             ['exclude', 'browser/chromeos/extensions/file_handler_util.h'],
@@ -4929,6 +4933,7 @@
             # Build Aura on desktop linux
             ['OS=="linux" and use_aura==1 and chromeos==0', {
               'sources/': [
+                ['exclude', '^browser/chromeos/extensions/file_browser_handler_api'],
                 ['exclude', '^browser/chromeos/extensions/file_browser_private_api'],
                 ['exclude', '^browser/ui/views/keyboard_overlay_delegate.cc'],
                 ['exclude', '^browser/ui/views/keyboard_overlay_delegate.h'],

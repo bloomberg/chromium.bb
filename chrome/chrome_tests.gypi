@@ -2623,6 +2623,7 @@
         'browser/chromeos/cros/cros_mock.h',
         'browser/chromeos/disks/mock_disk_mount_manager.cc',
         'browser/chromeos/disks/mock_disk_mount_manager.h',
+        'browser/chromeos/extensions/file_browser_handler_api_test.cc',
         'browser/chromeos/extensions/file_browser_notifications_browsertest.cc',
         'browser/chromeos/extensions/file_browser_private_apitest.cc',
         'browser/chromeos/extensions/echo_private_apitest.cc',

@@ -60,8 +60,9 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
+#include "chrome/browser/chromeos/extensions/file_browser_handler_api.h"
+#include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 #include "chrome/browser/chromeos/media/media_player_extension_api.h"
 #include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
 #include "chrome/browser/extensions/extension_info_private_api_chromeos.h"
@@ -367,6 +368,9 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<GetPathForDriveSearchResultFunction>();
   RegisterFunction<GetNetworkConnectionStateFunction>();
   RegisterFunction<RequestDirectoryRefreshFunction>();
+
+  // FileBrowserHandler.
+  RegisterFunction<FileHandlerSelectFileFunction>();
 
   // Mediaplayer
   RegisterFunction<PlayMediaplayerFunction>();
