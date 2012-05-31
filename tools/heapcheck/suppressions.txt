@@ -1797,14 +1797,6 @@
    fun:*_*_Test::TestBody
 }
 {
-   bug_127716
-   Heapcheck:Leak
-   fun:*Image
-   fun:BrowserThemePack::LoadRawBitmapsTo
-   fun:BrowserThemePack::BuildFromExtension
-   fun:BrowserThemePackTest_CanBuildAndReadPack_Test::TestBody
-}
-{
    bug_127717
    Heapcheck:Leak
    ...
