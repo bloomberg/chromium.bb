@@ -121,13 +121,13 @@ void CustomFrameViewAsh::Layout() {
 
 void CustomFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   bool paint_as_active = ShouldPaintAsActive();
-  int theme_image_id = paint_as_active ? IDR_AURA_WINDOW_HEADER_BASE_ACTIVE :
+  int theme_bitmap_id = paint_as_active ? IDR_AURA_WINDOW_HEADER_BASE_ACTIVE :
       IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
   frame_painter_->PaintHeader(
       this,
       canvas,
       paint_as_active ? FramePainter::ACTIVE : FramePainter::INACTIVE,
-      theme_image_id,
+      theme_bitmap_id,
       NULL);
   frame_painter_->PaintTitleBar(this, canvas, GetTitleFont());
   frame_painter_->PaintHeaderContentSeparator(this, canvas);

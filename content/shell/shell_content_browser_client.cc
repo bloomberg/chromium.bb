@@ -14,6 +14,7 @@
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/shell_switches.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
 

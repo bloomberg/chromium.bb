@@ -76,7 +76,7 @@ const int kButtonOverlap = 1;
 // we need to copy the theme image for the window header from a few pixels
 // inset to preserve alignment with the NTP image, or else we'll break a bunch
 // of existing themes.  We do something similar on OS X for the same reason.
-const int kThemeFrameImageOffsetX = 5;
+const int kThemeFrameBitmapOffsetX = 5;
 // Duration of crossfade animation for activating and deactivating frame.
 const int kActivationCrossfadeDurationMs = 200;
 // Alpha/opacity value for fully-opaque headers.
@@ -87,14 +87,14 @@ const int kFullyOpaque = 255;
 void TileRoundRect(gfx::Canvas* canvas,
                    int x, int y, int w, int h,
                    SkPaint* paint,
-                   const gfx::ImageSkia& image,
+                   const SkBitmap& bitmap,
                    int corner_radius,
-                   int image_offset_x) {
+                   int bitmap_offset_x) {
   // To get the shader to sample the image |inset_y| pixels in but tile across
   // the whole image, we adjust the target rectangle for the shader to the right
   // and translate the canvas left to compensate.
   SkRect rect;
-  rect.iset(x + image_offset_x, y, x + image_offset_x + w, y + h);
+  rect.iset(x + bitmap_offset_x, y, x + bitmap_offset_x + w, y + h);
   const SkScalar kRadius = SkIntToScalar(corner_radius);
   SkScalar radii[8] = {
       kRadius, kRadius,  // top-left
@@ -104,7 +104,7 @@ void TileRoundRect(gfx::Canvas* canvas,
   SkPath path;
   path.addRoundRect(rect, radii, SkPath::kCW_Direction);
 
-  SkShader* shader = SkShader::CreateBitmapShader(image,
+  SkShader* shader = SkShader::CreateBitmapShader(bitmap,
                                                   SkShader::kRepeat_TileMode,
                                                   SkShader::kRepeat_TileMode);
   paint->setShader(shader);
@@ -113,9 +113,9 @@ void TileRoundRect(gfx::Canvas* canvas,
   shader->unref();
   // Adjust canvas to compensate for image sampling offset, draw, then adjust
   // back. This is cheaper than pushing/popping the entire canvas state.
-  canvas->sk_canvas()->translate(SkIntToScalar(-image_offset_x), 0);
+  canvas->sk_canvas()->translate(SkIntToScalar(-bitmap_offset_x), 0);
   canvas->DrawPath(path, *paint);
-  canvas->sk_canvas()->translate(SkIntToScalar(image_offset_x), 0);
+  canvas->sk_canvas()->translate(SkIntToScalar(bitmap_offset_x), 0);
 }
 
 // Returns true if |window| is a visible, normal window.
@@ -189,17 +189,17 @@ void FramePainter::Init(views::Widget* frame,
   // Window frame image parts.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   button_separator_ =
-      rb.GetImageNamed(IDR_AURA_WINDOW_BUTTON_SEPARATOR).ToImageSkia();
+      rb.GetImageNamed(IDR_AURA_WINDOW_BUTTON_SEPARATOR).ToSkBitmap();
   top_left_corner_ =
-      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT).ToImageSkia();
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT).ToSkBitmap();
   top_edge_ =
-      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP).ToImageSkia();
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP).ToSkBitmap();
   top_right_corner_ =
-      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT).ToImageSkia();
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT).ToSkBitmap();
   header_left_edge_ =
-      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_LEFT).ToImageSkia();
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_LEFT).ToSkBitmap();
   header_right_edge_ =
-      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_RIGHT).ToImageSkia();
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_RIGHT).ToSkBitmap();
 
   window_ = frame->GetNativeWindow();
   // Ensure we get resize cursors for a few pixels outside our bounds.
@@ -306,7 +306,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                                gfx::Canvas* canvas,
                                HeaderMode header_mode,
                                int theme_frame_id,
-                               const gfx::ImageSkia* theme_frame_overlay) {
+                               const SkBitmap* theme_frame_overlay) {
   if (previous_theme_frame_id_ != 0 &&
       previous_theme_frame_id_ != theme_frame_id) {
     crossfade_animation_.reset(new ui::SlideAnimation(this));
@@ -319,16 +319,15 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
   int opacity =
       GetHeaderOpacity(header_mode, theme_frame_id, theme_frame_overlay);
   ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
-  gfx::ImageSkia* theme_frame = theme_provider->GetImageSkiaNamed(
-      theme_frame_id);
+  SkBitmap* theme_frame = theme_provider->GetBitmapNamed(theme_frame_id);
   header_frame_bounds_ = gfx::Rect(0, 0, view->width(), theme_frame->height());
 
   const int kCornerRadius = 2;
   SkPaint paint;
 
   if (crossfade_animation_.get() && crossfade_animation_->is_animating()) {
-    gfx::ImageSkia* crossfade_theme_frame =
-        theme_provider->GetImageSkiaNamed(crossfade_theme_frame_id_);
+    SkBitmap* crossfade_theme_frame =
+        theme_provider->GetBitmapNamed(crossfade_theme_frame_id_);
     if (crossfade_theme_frame) {
       double current_value = crossfade_animation_->GetCurrentValue();
       int old_alpha = (1 - current_value) * crossfade_opacity_;
@@ -342,7 +341,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                     &paint,
                     *crossfade_theme_frame,
                     kCornerRadius,
-                    kThemeFrameImageOffsetX);
+                    kThemeFrameBitmapOffsetX);
 
       paint.setAlpha(new_alpha);
     } else {
@@ -359,7 +358,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                 &paint,
                 *theme_frame,
                 kCornerRadius,
-                kThemeFrameImageOffsetX);
+                kThemeFrameBitmapOffsetX);
 
   previous_theme_frame_id_ = theme_frame_id;
   previous_opacity_ = opacity;
@@ -565,16 +564,16 @@ void FramePainter::AnimationProgressed(const ui::Animation* animation) {
 // FramePainter, private:
 
 void FramePainter::SetButtonImages(views::ImageButton* button,
-                                   int normal_image_id,
-                                   int hot_image_id,
-                                   int pushed_image_id) {
+                                   int normal_bitmap_id,
+                                   int hot_bitmap_id,
+                                   int pushed_bitmap_id) {
   ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
   button->SetImage(views::CustomButton::BS_NORMAL,
-                   theme_provider->GetImageSkiaNamed(normal_image_id));
+                   theme_provider->GetImageSkiaNamed(normal_bitmap_id));
   button->SetImage(views::CustomButton::BS_HOT,
-                   theme_provider->GetImageSkiaNamed(hot_image_id));
+                   theme_provider->GetImageSkiaNamed(hot_bitmap_id));
   button->SetImage(views::CustomButton::BS_PUSHED,
-                   theme_provider->GetImageSkiaNamed(pushed_image_id));
+                   theme_provider->GetImageSkiaNamed(pushed_bitmap_id));
 }
 
 int FramePainter::GetTitleOffsetX() const {
@@ -585,7 +584,7 @@ int FramePainter::GetTitleOffsetX() const {
 
 int FramePainter::GetHeaderOpacity(HeaderMode header_mode,
                                    int theme_frame_id,
-                                   const gfx::ImageSkia* theme_frame_overlay) {
+                                   const SkBitmap* theme_frame_overlay) {
   // User-provided themes are painted fully opaque.
   if (frame_->GetThemeProvider()->HasCustomImage(theme_frame_id))
     return kFullyOpaque;

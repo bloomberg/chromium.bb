@@ -60,10 +60,11 @@ static int RoundPositive(double x) {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopBackgroundView, public:
 
-DesktopBackgroundView::DesktopBackgroundView(const gfx::ImageSkia& wallpaper,
+DesktopBackgroundView::DesktopBackgroundView(const SkBitmap& wallpaper,
                                              WallpaperLayout wallpaper_layout) {
   wallpaper_ = wallpaper;
   wallpaper_layout_ = wallpaper_layout;
+  wallpaper_.buildMipMap(false);
 }
 
 DesktopBackgroundView::~DesktopBackgroundView() {
@@ -126,7 +127,7 @@ void DesktopBackgroundView::OnMouseReleased(const views::MouseEvent& event) {
     Shell::GetInstance()->ShowBackgroundMenu(GetWidget(), event.location());
 }
 
-void CreateDesktopBackground(const gfx::ImageSkia& wallpaper,
+void CreateDesktopBackground(const SkBitmap& wallpaper,
                              WallpaperLayout wallpaper_layout) {
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(

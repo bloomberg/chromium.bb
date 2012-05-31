@@ -15,10 +15,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
-
-namespace gfx {
-class ImageSkia;
-}
+class SkBitmap;
 
 namespace views {
 class WidgetDelegate;

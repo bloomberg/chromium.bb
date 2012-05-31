@@ -11,9 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 
-namespace gfx {
-class ImageSkia;
-}
+class SkBitmap;
 
 namespace ash {
 
@@ -55,8 +53,7 @@ class ASH_EXPORT DesktopBackgroundController {
 
   // Sets the user selected custom wallpaper. Called when user selected a file
   // from file system or changed the layout of wallpaper.
-  void SetCustomWallpaper(const gfx::ImageSkia& wallpaper,
-                          WallpaperLayout layout);
+  void SetCustomWallpaper(const SkBitmap& wallpaper, WallpaperLayout layout);
 
   // Cancels the current wallpaper loading operation.
   void CancelPendingWallpaperOperation();

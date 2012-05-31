@@ -81,10 +81,10 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // above the content area.
   void PaintContentEdge(gfx::Canvas* canvas);
 
-  // Returns the correct image id for the frame header based on activation
+  // Returns the correct bitmap id for the frame header based on activation
   // state and incognito mode.
-  int GetThemeFrameImageId() const;
-  const gfx::ImageSkia* GetThemeFrameOverlayImage() const;
+  int GetThemeFrameBitmapId() const;
+  const SkBitmap* GetThemeFrameOverlayBitmap() const;
 
   // Window controls. The |size_button_| either toggles maximized or toggles
   // minimized. The exact behavior is determined by |size_button_minimizes_|.

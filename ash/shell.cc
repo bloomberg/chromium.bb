@@ -65,6 +65,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "grit/ui_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
@@ -77,7 +78,6 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/monitor.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
@@ -276,7 +276,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     return "über@tray";
   }
 
-  virtual const gfx::ImageSkia& GetUserImage() const OVERRIDE {
+  virtual const SkBitmap& GetUserImage() const OVERRIDE {
     return null_image_;
   }
 
@@ -505,7 +505,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   bool bluetooth_enabled_;
   float volume_;
   bool caps_lock_enabled_;
-  gfx::ImageSkia null_image_;
+  SkBitmap null_image_;
 
   DISALLOW_COPY_AND_ASSIGN(DummySystemTrayDelegate);
 };

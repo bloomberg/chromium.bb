@@ -90,7 +90,7 @@ ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network,
                                            NetworkMenu* network_menu) {
   ash::NetworkIconInfo info;
   info.name = UTF8ToUTF16(network->name());
-  info.image = network_icon->GetImage(network, NetworkMenuIcon::COLOR_DARK);
+  info.image = network_icon->GetBitmap(network, NetworkMenuIcon::COLOR_DARK);
   info.service_path = network->service_path();
   info.highlight = network_menu->ShouldHighlightNetwork(network);
   info.tray_icon_visible = ShouldShowNetworkIconInTray(network);
@@ -244,7 +244,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return UserManager::Get()->GetLoggedInUser().display_email();
   }
 
-  virtual const gfx::ImageSkia& GetUserImage() const OVERRIDE {
+  virtual const SkBitmap& GetUserImage() const OVERRIDE {
     return UserManager::Get()->GetLoggedInUser().image();
   }
 

@@ -15,12 +15,12 @@ class SkBitmap;
 
 namespace gfx {
 class ImageSkia;
-}
+}  // namespace gfx
 
 namespace views {
 class ImageButton;
 class Label;
-}
+}  // namespace views
 
 namespace chromeos {
 
@@ -60,7 +60,7 @@ class TakePhotoView : public views::View,
   void ShowCameraError();
 
   // Returns the currently selected image.
-  const gfx::ImageSkia& GetImage() const;
+  const SkBitmap& GetImage() const;
 
   // Sets the image indicating that the view is used only for image preview.
   void SetImage(gfx::ImageSkia* image);

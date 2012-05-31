@@ -149,10 +149,10 @@ void NetworkDropdown::NetworkMenuIconChanged() {
 
 void NetworkDropdown::SetNetworkIconAndText() {
   string16 text;
-  const gfx::ImageSkia icon_image = network_icon_->GetIconAndText(&text);
+  const SkBitmap icon_bitmap = network_icon_->GetIconAndText(&text);
   std::string icon_str =
-      icon_image.empty() ?
-          std::string() : web_ui_util::GetImageDataUrl(icon_image);
+      icon_bitmap.empty() ?
+          std::string() : web_ui_util::GetImageDataUrl(icon_bitmap);
   base::StringValue title(text);
   base::StringValue icon(icon_str);
   web_ui_->CallJavascriptFunction("cr.ui.DropDown.updateNetworkTitle",

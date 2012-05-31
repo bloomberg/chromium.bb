@@ -203,8 +203,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
     mobile_data_bubble_ = new MessageBubble(
         host,
         views::BubbleBorder::TOP_RIGHT,
-        ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_NOTIFICATION_3G),
+        ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_NOTIFICATION_3G),
         message,
         links);
     mobile_data_bubble_->set_link_listener(listener);

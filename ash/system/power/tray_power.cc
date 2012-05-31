@@ -17,12 +17,12 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/size.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
@@ -58,9 +58,9 @@ enum IconSet {
   ICON_DARK
 };
 
-gfx::ImageSkia GetBatteryImage(const PowerSupplyStatus& supply_status,
+SkBitmap GetBatteryImage(const PowerSupplyStatus& supply_status,
                          IconSet icon_set) {
-  gfx::ImageSkia image;
+  SkBitmap image;
   gfx::Image all = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       icon_set == ICON_DARK ?
       IDR_AURA_UBER_TRAY_POWER_SMALL_DARK : IDR_AURA_UBER_TRAY_POWER_SMALL);
@@ -83,7 +83,7 @@ gfx::ImageSkia GetBatteryImage(const PowerSupplyStatus& supply_status,
       (supply_status.line_power_on ? kBatteryImageWidth : 0) + 2,
       image_index * kBatteryImageHeight,
       kBatteryImageWidth - 2, kBatteryImageHeight);
-  all.ToImageSkia()->extractSubset(&image, region);
+  all.ToSkBitmap()->extractSubset(&image, region);
   return image;
 }
 

@@ -42,13 +42,13 @@ User::User(const std::string& email, bool is_guest)
   } else {
     is_demo_user_ = true;
   }
-  image_ = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
       kDefaultImageResources[0]);
 }
 
 User::~User() {}
 
-void User::SetImage(const gfx::ImageSkia& image, int image_index) {
+void User::SetImage(const SkBitmap& image, int image_index) {
   image_ = image;
   image_index_ = image_index;
   image_is_stub_ = false;
@@ -56,7 +56,7 @@ void User::SetImage(const gfx::ImageSkia& image, int image_index) {
 
 void User::SetStubImage(int image_index) {
   image_ = *ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(kStubImageResourceID);
+      GetBitmapNamed(kStubImageResourceID);
   image_index_ = image_index;
   image_is_stub_ = true;
 }

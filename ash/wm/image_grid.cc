@@ -6,12 +6,12 @@
 
 #include <algorithm>
 
-#include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 
 using std::max;
 using std::min;
@@ -227,7 +227,7 @@ void ImageGrid::ImagePainter::SetClipRect(const gfx::Rect& clip_rect,
 void ImageGrid::ImagePainter::OnPaintLayer(gfx::Canvas* canvas) {
   if (!clip_rect_.IsEmpty())
     canvas->ClipRect(clip_rect_);
-  canvas->DrawBitmapInt(*(image_->ToImageSkia()), 0, 0);
+  canvas->DrawBitmapInt(*(image_->ToSkBitmap()), 0, 0);
 }
 
 void ImageGrid::ImagePainter::OnDeviceScaleFactorChanged(
@@ -238,7 +238,7 @@ void ImageGrid::ImagePainter::OnDeviceScaleFactorChanged(
 // static
 gfx::Size ImageGrid::GetImageSize(const gfx::Image* image) {
   return image ?
-      gfx::Size(image->ToImageSkia()->width(), image->ToImageSkia()->height()) :
+      gfx::Size(image->ToSkBitmap()->width(), image->ToSkBitmap()->height()) :
       gfx::Size();
 }
 

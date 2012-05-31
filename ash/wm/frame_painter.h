@@ -13,17 +13,17 @@
 #include "base/compiler_specific.h"  // OVERRIDE
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/window_observer.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/rect.h"
+#include "ui/aura/window_observer.h"
 
+class SkBitmap;
 namespace aura {
 class Window;
 }
 namespace gfx {
 class Canvas;
 class Font;
-class ImageSkia;
 class Point;
 class Size;
 }
@@ -86,7 +86,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
                    gfx::Canvas* canvas,
                    HeaderMode header_mode,
                    int theme_frame_id,
-                   const gfx::ImageSkia* theme_frame_overlay);
+                   const SkBitmap* theme_frame_overlay);
 
   // Paints the header/content separator line.  Exists as a separate function
   // because some windows with complex headers (e.g. browsers with tab strips)
@@ -124,9 +124,9 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
 
   // Sets the images for a button base on IDs from the |frame_| theme provider.
   void SetButtonImages(views::ImageButton* button,
-                       int normal_image_id,
-                       int hot_image_id,
-                       int pushed_image_id);
+                       int normal_bitmap_id,
+                       int hot_bitmap_id,
+                       int pushed_bitmap_id);
 
   // Returns the offset between window left edge and title string.
   int GetTitleOffsetX() const;
@@ -134,7 +134,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // Returns the opacity value used to paint the header.
   int GetHeaderOpacity(HeaderMode header_mode,
                        int theme_frame_id,
-                       const gfx::ImageSkia* theme_frame_overlay);
+                       const SkBitmap* theme_frame_overlay);
 
   // Returns true if there is exactly one visible, normal-type window using
   // a header painted by this class, in which case we should paint a transparent
@@ -156,18 +156,18 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   aura::Window* window_;
 
   // Window frame header/caption parts.
-  const gfx::ImageSkia* button_separator_;
-  const gfx::ImageSkia* top_left_corner_;
-  const gfx::ImageSkia* top_edge_;
-  const gfx::ImageSkia* top_right_corner_;
-  const gfx::ImageSkia* header_left_edge_;
-  const gfx::ImageSkia* header_right_edge_;
+  const SkBitmap* button_separator_;
+  const SkBitmap* top_left_corner_;
+  const SkBitmap* top_edge_;
+  const SkBitmap* top_right_corner_;
+  const SkBitmap* header_left_edge_;
+  const SkBitmap* header_right_edge_;
 
-  // Image id and opacity last used for painting header.
+  // Bitmap id and opacity last used for painting header.
   int previous_theme_frame_id_;
   int previous_opacity_;
 
-  // Image id and opacity we are crossfading from.
+  // Bitmap id and opacity we are crossfading from.
   int crossfade_theme_frame_id_;
   int crossfade_opacity_;
 

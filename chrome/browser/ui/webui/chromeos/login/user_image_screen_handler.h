@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -47,14 +46,14 @@ class UserImageScreenHandler : public UserImageScreenActor,
   virtual void ShowCameraInitializing() OVERRIDE;
   virtual void CheckCameraPresence() OVERRIDE;
   virtual bool IsCapturing() const OVERRIDE;
-  virtual void AddProfileImage(const gfx::ImageSkia& image) OVERRIDE;
+  virtual void AddProfileImage(const SkBitmap& image) OVERRIDE;
   virtual void OnProfileImageAbsent() OVERRIDE;
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;
 
   // TakePhotoDialog::Delegate implementation.
-  virtual void OnPhotoAccepted(const gfx::ImageSkia& photo) OVERRIDE;
+  virtual void OnPhotoAccepted(const SkBitmap& photo) OVERRIDE;
 
  private:
   // Sends profile image as a data URL to the page.
@@ -84,7 +83,7 @@ class UserImageScreenHandler : public UserImageScreenActor,
   int selected_image_;
 
   // Last user photo, if taken.
-  gfx::ImageSkia user_photo_;
+  SkBitmap user_photo_;
 
   // Data URL for |user_photo_|.
   std::string user_photo_data_url_;

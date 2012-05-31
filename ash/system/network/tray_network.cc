@@ -448,7 +448,7 @@ class NetworkDetailedView : public TrayDetailsView,
     HoverHighlightView* container = new HoverHighlightView(this);
     container->set_fixed_height(kTrayPopupItemHeight);
     container->AddIconAndLabel(
-        *rb.GetImageNamed(IDR_AURA_UBER_TRAY_NETWORK_AIRPLANE).ToImageSkia(),
+        *rb.GetImageNamed(IDR_AURA_UBER_TRAY_NETWORK_AIRPLANE).ToSkBitmap(),
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_AIRPLANE_MODE),
         gfx::Font::NORMAL);
     AddChildView(container);

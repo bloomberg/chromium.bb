@@ -29,7 +29,7 @@ namespace chromeos {
 
 MessageBubble::MessageBubble(views::View* anchor_view,
                              views::BubbleBorder::ArrowLocation arrow_location,
-                             gfx::ImageSkia* image,
+                             SkBitmap* image,
                              const string16& text,
                              const std::vector<string16>& links)
     : BubbleDelegateView(anchor_view, arrow_location),

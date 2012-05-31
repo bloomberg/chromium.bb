@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ash/desktop_background/desktop_background_resources.h"
-#include "ui/gfx/image/image_skia.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -16,7 +16,7 @@ namespace internal {
 
 class DesktopBackgroundView : public views::WidgetDelegateView {
  public:
-  DesktopBackgroundView(const gfx::ImageSkia& wallpaper,
+  DesktopBackgroundView(const SkBitmap& wallpaper,
                         WallpaperLayout wallpaper_layout);
   virtual ~DesktopBackgroundView();
 
@@ -26,7 +26,7 @@ class DesktopBackgroundView : public views::WidgetDelegateView {
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
 
-  gfx::ImageSkia wallpaper_;
+  SkBitmap wallpaper_;
   WallpaperLayout wallpaper_layout_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundView);

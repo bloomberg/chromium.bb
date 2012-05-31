@@ -164,7 +164,7 @@ TEST_F(FramePainterTest, GetHeaderOpacity) {
                                 NULL));
 
   // Custom overlay image is drawn completely opaque.
-  gfx::ImageSkia custom_overlay;
+  SkBitmap custom_overlay;
   EXPECT_EQ(255,
             p1.GetHeaderOpacity(FramePainter::ACTIVE,
                                 IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,

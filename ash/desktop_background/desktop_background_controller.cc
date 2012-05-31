@@ -42,7 +42,7 @@ class DesktopBackgroundController::WallpaperOperation
     if (cancel_flag_.IsSet())
       return;
     wallpaper_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      GetWallpaperInfo(index_).id).ToImageSkia();
+      GetWallpaperInfo(index_).id).ToSkBitmap();
     if (cancel_flag_.IsSet())
       return;
     layout_ = GetWallpaperInfo(index_).layout;
@@ -52,7 +52,7 @@ class DesktopBackgroundController::WallpaperOperation
     cancel_flag_.Set();
   }
 
-  const gfx::ImageSkia* wallpaper() {
+  const SkBitmap* wallpaper() {
     return wallpaper_;
   }
 
@@ -70,7 +70,7 @@ class DesktopBackgroundController::WallpaperOperation
 
   base::CancellationFlag cancel_flag_;
 
-  const gfx::ImageSkia* wallpaper_;
+  const SkBitmap* wallpaper_;
   WallpaperLayout layout_;
   int index_;
 
@@ -103,9 +103,8 @@ void DesktopBackgroundController::SetDefaultWallpaper(int index) {
       true /* task_is_slow */);
 }
 
-void DesktopBackgroundController::SetCustomWallpaper(
-    const gfx::ImageSkia& wallpaper,
-    WallpaperLayout layout) {
+void DesktopBackgroundController::SetCustomWallpaper(const SkBitmap& wallpaper,
+                                                     WallpaperLayout layout) {
   internal::RootWindowLayoutManager* root_window_layout =
       Shell::GetInstance()->root_window_layout();
   root_window_layout->SetBackgroundLayer(NULL);
@@ -171,7 +170,7 @@ void DesktopBackgroundController::OnWallpaperLoadCompleted(
 }
 
 void DesktopBackgroundController::CreateEmptyWallpaper() {
-  gfx::ImageSkia dummy;
+  SkBitmap dummy;
   internal::CreateDesktopBackground(dummy, CENTER);
   desktop_background_mode_ = BACKGROUND_IMAGE;
 }

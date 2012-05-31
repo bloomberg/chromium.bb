@@ -36,7 +36,7 @@ class UserImageScreen: public WizardScreen,
   // UserImageScreenActor::Delegate implementation:
   virtual void StartCamera() OVERRIDE;
   virtual void StopCamera() OVERRIDE;
-  virtual void OnPhotoTaken(const gfx::ImageSkia& image) OVERRIDE;
+  virtual void OnPhotoTaken(const SkBitmap& image) OVERRIDE;
   virtual void OnProfileImageSelected() OVERRIDE;
   virtual void OnDefaultImageSelected(int index) OVERRIDE;
   virtual void OnActorDestroyed(UserImageScreenActor* actor) OVERRIDE;

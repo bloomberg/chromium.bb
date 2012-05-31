@@ -67,7 +67,7 @@ class MultiWindowResizeController::ResizeView : public views::View {
     int image_id =
         direction == TOP_BOTTOM ? IDR_AURA_MULTI_WINDOW_RESIZE_H :
                                   IDR_AURA_MULTI_WINDOW_RESIZE_V;
-    image_ = rb.GetImageNamed(image_id).ToImageSkia();
+    image_ = rb.GetImageNamed(image_id).ToSkBitmap();
   }
 
   // views::View overrides:
@@ -105,7 +105,7 @@ class MultiWindowResizeController::ResizeView : public views::View {
  private:
   MultiWindowResizeController* controller_;
   const Direction direction_;
-  const gfx::ImageSkia* image_;
+  const SkBitmap* image_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizeView);
 };

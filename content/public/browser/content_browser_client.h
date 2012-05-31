@@ -21,6 +21,7 @@ class FilePath;
 class GURL;
 class PluginProcessHost;
 class ResourceDispatcherHost;
+class SkBitmap;
 
 namespace webkit_glue {
 struct WebPreferences;
@@ -28,10 +29,6 @@ struct WebPreferences;
 
 namespace crypto {
 class CryptoModuleBlockingPasswordDelegate;
-}
-
-namespace gfx {
-class ImageSkia;
 }
 
 namespace net {
@@ -177,7 +174,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::string GetAcceptLangs(BrowserContext* context);
 
   // Returns the default favicon.  The callee doesn't own the given bitmap.
-  virtual gfx::ImageSkia* GetDefaultFavicon();
+  virtual SkBitmap* GetDefaultFavicon();
 
   // Allow the embedder to control if an AppCache can be used for the given url.
   // This is called on the IO thread.

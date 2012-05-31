@@ -151,7 +151,7 @@ void UserImageScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void UserImageScreenHandler::AddProfileImage(const gfx::ImageSkia& image) {
+void UserImageScreenHandler::AddProfileImage(const SkBitmap& image) {
   profile_picture_data_url_ = web_ui_util::GetImageDataUrl(image);
   SendProfileImage(profile_picture_data_url_);
 }
@@ -173,7 +173,7 @@ void UserImageScreenHandler::OnProfileImageAbsent() {
   }
 }
 
-void UserImageScreenHandler::OnPhotoAccepted(const gfx::ImageSkia& photo) {
+void UserImageScreenHandler::OnPhotoAccepted(const SkBitmap& photo) {
   user_photo_ = photo;
   user_photo_data_url_ = web_ui_util::GetImageDataUrl(user_photo_);
   selected_image_ = User::kExternalImageIndex;

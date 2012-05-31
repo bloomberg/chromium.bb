@@ -9,9 +9,7 @@
 #include "ash/ash_export.h"
 #include "ash/desktop_background/desktop_background_resources.h"
 
-namespace gfx {
-class ImageSkia;
-}
+class SkBitmap;
 
 namespace views {
 class View;
@@ -23,7 +21,7 @@ class Widget;
 namespace ash {
 
 namespace internal {
-void CreateDesktopBackground(const gfx::ImageSkia& wallpaper,
+void CreateDesktopBackground(const SkBitmap& wallpaper,
                              WallpaperLayout wallpaper_layout);
 ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents);
 }  // namespace internal
