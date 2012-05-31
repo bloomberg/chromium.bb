@@ -4114,6 +4114,16 @@
    fun:_ZN7WebCore16v8ExternalStringERKN3WTF6String*
 }
 {
+   bug_101145d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCoreL18makeExternalStringERKN3WTF6StringE
+   fun:_ZN7WebCore11StringCache20v8ExternalStringSlowEPN3WTF10StringImplEPN2v87IsolateE
+   fun:_ZN7WebCore11StringCache16v8ExternalStringEPN3WTF10StringImplEPN2v87IsolateE
+   fun:_ZN7WebCore16v8ExternalStringERKN3WTF6StringEPN2v87IsolateE
+   fun:_ZN7WebCore8v8StringERKN3WTF6StringEPN2v87IsolateE
+}
+{
    bug_101146a
    Memcheck:Leak
    fun:_Znw*
