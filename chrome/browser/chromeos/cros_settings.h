@@ -104,7 +104,8 @@ class CrosSettings : public base::NonThreadSafe {
 
   // A map from settings names to a list of observers. Observers get fired in
   // the order they are added.
-  typedef ObserverList<content::NotificationObserver> NotificationObserverList;
+  typedef ObserverList<content::NotificationObserver, true>
+      NotificationObserverList;
   typedef base::hash_map<std::string, NotificationObserverList*>
       SettingsObserverMap;
   SettingsObserverMap settings_observers_;

@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/cros_mock.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
@@ -106,11 +105,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     return ExistingUserController::current_controller();
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
-    CrosInProcessBrowserTest::CleanUpOnMainThread();
-    testing_profile_.reset(NULL);
-  }
-
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     MockDBusThreadManager* mock_dbus_thread_manager =
         new MockDBusThreadManager;
@@ -142,7 +136,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     EXPECT_CALL(*mock_login_utils_, StopBackgroundFetchers())
         .Times(AnyNumber());
 
-    mock_login_display_.reset(new MockLoginDisplay());
     mock_login_display_host_.reset(new MockLoginDisplayHost());
 
     EXPECT_CALL(*mock_user_manager_.user_manager(), IsKnownUser(kUsername))
@@ -164,25 +157,34 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
         .Times(AnyNumber())
         .WillRepeatedly(Return(false));
 
+    // |mock_login_display_| is owned by the ExistingUserController, which calls
+    // CreateLoginDisplay() on the |mock_login_display_host_| to get it.
+    mock_login_display_ = new MockLoginDisplay();
     EXPECT_CALL(*mock_login_display_host_.get(), CreateLoginDisplay(_))
         .Times(1)
-        .WillOnce(Return(mock_login_display_.get()));
+        .WillOnce(Return(mock_login_display_));
     EXPECT_CALL(*mock_login_display_host_.get(), GetNativeWindow())
         .Times(1)
         .WillOnce(ReturnNull());
-    EXPECT_CALL(*mock_login_display_.get(), Init(_, false, true, true))
+    EXPECT_CALL(*mock_login_display_, Init(_, false, true, true))
         .Times(1);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
     testing_profile_.reset(new TestingProfile());
-    ExistingUserController* controller =
-        new ExistingUserController(mock_login_display_host_.get());
-    controller->Init(UserList());
+    existing_user_controller_.reset(
+        new ExistingUserController(mock_login_display_host_.get()));
+    ASSERT_EQ(existing_user_controller(), existing_user_controller_.get());
+    existing_user_controller_->Init(UserList());
     profile_prepared_cb_ =
         base::Bind(&ExistingUserController::OnProfilePrepared,
                    base::Unretained(existing_user_controller()),
                    testing_profile_.get());
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    CrosInProcessBrowserTest::CleanUpOnMainThread();
+    testing_profile_.reset(NULL);
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
@@ -190,11 +192,13 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     DBusThreadManager::Shutdown();
   }
 
+  scoped_ptr<ExistingUserController> existing_user_controller_;
+
   // These mocks are owned by CrosLibrary class.
   MockCryptohomeLibrary* mock_cryptohome_library_;
   MockNetworkLibrary* mock_network_library_;
 
-  scoped_ptr<MockLoginDisplay> mock_login_display_;
+  MockLoginDisplay* mock_login_display_;
   scoped_ptr<MockLoginDisplayHost> mock_login_display_host_;
 
   ScopedMockUserManagerEnabler mock_user_manager_;
@@ -250,9 +254,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, MAYBE_ExistingUserLogin) {
               DoBrowserLaunch(testing_profile_.get(),
                               mock_login_display_host_.get()))
       .Times(1);
-  EXPECT_CALL(*mock_login_display_.get(), OnLoginSuccess(kUsername))
+  EXPECT_CALL(*mock_login_display_, OnLoginSuccess(kUsername))
       .Times(1);
-  EXPECT_CALL(*mock_login_display_.get(), OnFadeOut())
+  EXPECT_CALL(*mock_login_display_, OnFadeOut())
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kUserImageScreenName, NULL))
@@ -266,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kEnterpriseEnrollmentScreenName, _))
       .Times(1);
-  EXPECT_CALL(*mock_login_display_.get(), OnFadeOut())
+  EXPECT_CALL(*mock_login_display_, OnFadeOut())
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_.get(), OnCompleteLogin())
       .Times(1);
@@ -294,9 +298,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                   &base::Callback<void(void)>::Run));
-  EXPECT_CALL(*mock_login_display_.get(), OnLoginSuccess(kNewUsername))
+  EXPECT_CALL(*mock_login_display_, OnLoginSuccess(kNewUsername))
       .Times(1);
-  EXPECT_CALL(*mock_login_display_.get(), OnFadeOut())
+  EXPECT_CALL(*mock_login_display_, OnFadeOut())
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_.get(), OnCompleteLogin())
       .Times(1);
