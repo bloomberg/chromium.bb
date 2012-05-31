@@ -880,6 +880,12 @@ void SyncSetupHandler::CloseSyncSetup() {
     }
   }
 
+  // Reset the attempted email address and error, otherwise the sync setup
+  // overlay in the settings page will stay in whatever error state it was last
+  // when it is reopened.
+  last_attempted_user_email_.clear();
+  last_signin_error_ = GoogleServiceAuthError::None();
+
   configuring_sync_ = false;
   signin_tracker_.reset();
 }
