@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 
@@ -21,25 +21,25 @@ class UserImage {
 
   // Constructs UserImage from bitmap. Should be used where only
   // static image is needed (e.g. wallpapers).
-  explicit UserImage(const SkBitmap& image);
+  explicit UserImage(const gfx::ImageSkia& image);
 
   // Constructs UserImage from raw image and bitmap that should
   // represent single frame from that one. Can be used for wrapping
   // animated images.
-  UserImage(const SkBitmap& image, const RawImage& raw_image);
+  UserImage(const gfx::ImageSkia& image, const RawImage& raw_image);
 
   virtual ~UserImage();
 
   // Replaces already stored image to new |image|. Note, that
   // |raw_image| will be reset after that operation.
-  void SetImage(const SkBitmap& image);
-  const SkBitmap& image() const { return image_; }
+  void SetImage(const gfx::ImageSkia& image);
+  const gfx::ImageSkia& image() const { return image_; }
   bool has_raw_image() const { return has_raw_image_; }
   bool has_animated_image() const { return has_animated_image_; }
   const RawImage& raw_image() const { return raw_image_; }
 
  private:
-  SkBitmap image_;
+  gfx::ImageSkia image_;
   bool has_raw_image_;
   bool has_animated_image_;
   RawImage raw_image_;

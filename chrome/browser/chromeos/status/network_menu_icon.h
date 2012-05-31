@@ -13,7 +13,7 @@
 //   class MyIconDelegate : public NetworkMenuIcon::Delegate {
 //     virtual void NetworkMenuIconChanged() OVERRIDE {
 //       string16 tooltip;
-//       const SkBitmap* bitmap = network_icon_->GetIconAndText(&tooltip);
+//       const ImageSkia* image = network_icon_->GetIconAndText(&tooltip);
 //       SetIcon(*bitmap);
 //       SetTooltip(tooltip);
 //       SchedulePaint();
@@ -22,7 +22,7 @@
 //   MyIconDelegate my_delegate;
 //   NetworkMenuIcon icon(&my_delegate, NetworkMenuIcon::MENU_MODE);
 //
-// NetworkMenuIcon also provides static functions for fetching network bitmaps
+// NetworkMenuIcon also provides static functions for fetching network images
 // (e.g. for network entries in the menu or settings).
 // Example usage:
 //   Network* network = network_library->FindNetworkByPath(my_network_path_);
@@ -36,9 +36,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 
@@ -57,7 +57,7 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   };
 
   // Used for calls to GetBitmap() and GetNumBitmaps() below.
-  enum BitmapType {
+  enum ImageType {
     ARCS = 0,
     BARS
   };
@@ -66,8 +66,8 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
    public:
     Delegate() {}
     virtual ~Delegate() {}
-    // Called when the bitmap has changed due to animation. The callback should
-    // trigger a call to GetIconAndText() to generate and retrieve the bitmap.
+    // Called when the image has changed due to animation. The callback should
+    // trigger a call to GetIconAndText() to generate and retrieve the image.
     virtual void NetworkMenuIconChanged() = 0;
 
    private:
@@ -87,52 +87,52 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   // Sets the resource color theme (e.g. light or dark icons).
   void SetResourceColorTheme(ResourceColorTheme color);
 
-  // Generates and returns the icon bitmap. If |text| is not NULL, sets it to
+  // Generates and returns the icon image. If |text| is not NULL, sets it to
   // the tooltip or display text to show, based on the value of mode_.
-  const SkBitmap GetIconAndText(string16* text);
+  const gfx::ImageSkia GetIconAndText(string16* text);
 
   // ui::AnimationDelegate implementation.
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
-  // Static functions for generating network icon bitmaps:
+  // Static functions for generating network icon images:
 
-  // Composites the bitmaps to generate a network icon. Input parameters are
+  // Composites the images to generate a network icon. Input parameters are
   // the icon and badges that are composited to generate |result|. Public
   // primarily for unit tests.
-  static const SkBitmap GenerateBitmapFromComponents(
-      const SkBitmap& icon,
-      const SkBitmap* top_left_badge,
-      const SkBitmap* top_right_badge,
-      const SkBitmap* bottom_left_badge,
-      const SkBitmap* bottom_right_badge);
+  static const gfx::ImageSkia GenerateImageFromComponents(
+      const gfx::ImageSkia& icon,
+      const gfx::ImageSkia* top_left_badge,
+      const gfx::ImageSkia* top_right_badge,
+      const gfx::ImageSkia* bottom_left_badge,
+      const gfx::ImageSkia* bottom_right_badge);
 
   // Returns a modified version of |source| representing the connecting state
   // of a network. Public for unit tests.
-  static const SkBitmap GenerateConnectingBitmap(const SkBitmap& source);
+  static const SkBitmap GenerateConnectingBitmap(const gfx::ImageSkia& source);
 
-  // Returns a bitmap associated with |network|, reflecting its current state.
-  static const SkBitmap GetBitmap(const Network* network,
-                                  ResourceColorTheme color);
+  // Returns an image associated with |network|, reflecting its current state.
+  static const gfx::ImageSkia GetImage(const Network* network,
+                                       ResourceColorTheme color);
 
-  // Returns a bitmap representing an unconnected VPN.
-  static const SkBitmap GetVpnBitmap();
+  // Returns an image representing an unconnected VPN.
+  static const gfx::ImageSkia GetVpnImage();
 
-  // Access a specific bitmap of the specified color theme. If index is out of
-  // range, an empty bitmap will be returned.
-  static const SkBitmap GetBitmap(BitmapType type,
-                                  int index,
-                                  ResourceColorTheme color);
+  // Access a specific image of the specified color theme. If index is out of
+  // range, an empty image will be returned.
+  static const gfx::ImageSkia GetImage(ImageType type,
+                                       int index,
+                                       ResourceColorTheme color);
 
-  // Gets the disconnected bitmap for given type.
-  static const SkBitmap GetDisconnectedBitmap(BitmapType type,
-                                              ResourceColorTheme color);
+  // Gets the disconnected image for given type.
+  static const gfx::ImageSkia GetDisconnectedImage(ImageType type,
+                                                   ResourceColorTheme color);
 
-  // Gets the connected bitmap for given type.
-  static const SkBitmap GetConnectedBitmap(BitmapType type,
-                                           ResourceColorTheme color);
+  // Gets the connected image for given type.
+  static const gfx::ImageSkia GetConnectedImage(ImageType type,
+                                                ResourceColorTheme color);
 
-  // Returns total number of bitmaps for given type.
-  static int NumBitmaps(BitmapType type);
+  // Returns total number of images for given type.
+  static int NumImages(ImageType type);
 
  protected:
   // Starts the connection animation if necessary and returns its current value.
@@ -158,8 +158,8 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   Mode mode_;
   // A delegate may be specified to receive notifications when this animates.
   Delegate* delegate_;
-  // Generated bitmap for connecting to a VPN.
-  SkBitmap vpn_connecting_badge_;
+  // Generated image for connecting to a VPN.
+  gfx::ImageSkia vpn_connecting_badge_;
   ResourceColorTheme resource_color_theme_;
   // Animation throbber for animating the icon while conencting.
   ui::ThrobAnimation animation_connecting_;

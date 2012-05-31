@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget_delegate.h"

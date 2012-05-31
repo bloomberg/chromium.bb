@@ -67,9 +67,9 @@
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
-#include "chrome/browser/view_type_utils.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -855,9 +855,9 @@ std::string ChromeContentBrowserClient::GetAcceptLangs(
   return profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
 }
 
-SkBitmap* ChromeContentBrowserClient::GetDefaultFavicon() {
+gfx::ImageSkia* ChromeContentBrowserClient::GetDefaultFavicon() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
+  return rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
 }
 
 bool ChromeContentBrowserClient::AllowAppCache(

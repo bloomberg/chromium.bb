@@ -16,8 +16,11 @@
 #include "ui/views/controls/slider.h"
 #include "ui/views/view.h"
 
-class SkBitmap;
 typedef unsigned int SkColor;
+
+namespace gfx {
+class ImageSkia;
+}
 
 namespace views {
 class Label;
@@ -96,7 +99,7 @@ class HoverHighlightView : public ActionableView {
 
   // Convenience function for adding an icon and a label.  This also sets the
   // accessible name.
-  void AddIconAndLabel(const SkBitmap& image,
+  void AddIconAndLabel(const gfx::ImageSkia& image,
                        const string16& text,
                        gfx::Font::FontStyle style);
 
@@ -266,13 +269,14 @@ class TrayNotificationView : public views::View,
   void InitView(views::View* contents);
 
   // Sets/updates the icon image.
-  void SetIconImage(const SkBitmap& image);
+  void SetIconImage(const gfx::ImageSkia& image);
 
   // Replaces the contents view.
   void UpdateView(views::View* new_contents);
 
   // Replaces the contents view and updates the icon image.
-  void UpdateViewAndImage(views::View* new_contents, const SkBitmap& image);
+  void UpdateViewAndImage(views::View* new_contents,
+                          const gfx::ImageSkia& image);
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,

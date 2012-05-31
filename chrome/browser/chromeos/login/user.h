@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 // The demo user is represented by a domainless username.
 const char kDemoUser[] = "demouser";
@@ -63,7 +64,7 @@ class User {
   bool NeedsNameTooltip() const;
 
   // The image for this user.
-  const SkBitmap& image() const { return user_image_.image(); }
+  const gfx::ImageSkia& image() const { return user_image_.image(); }
   int image_index() const { return image_index_; }
   bool has_animated_image() const { return user_image_.has_animated_image(); }
 

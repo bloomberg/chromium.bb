@@ -11,8 +11,8 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 
@@ -96,10 +96,10 @@ bool IsDefaultImageUrl(const std::string url, int* image_id) {
   return IsDefaultImageString(url, kDefaultUrlPrefix, image_id);
 }
 
-const SkBitmap& GetDefaultImage(int index) {
+const gfx::ImageSkia& GetDefaultImage(int index) {
   DCHECK(index >= 0 && index < kDefaultImagesCount);
   return *ResourceBundle::GetSharedInstance().
-      GetBitmapNamed(kDefaultImageResources[index]);
+      GetImageSkiaNamed(kDefaultImageResources[index]);
 }
 
 // Resource IDs of default user images.

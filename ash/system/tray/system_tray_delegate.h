@@ -10,12 +10,11 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/system/user/login_status.h"
 #include "ash/system/power/power_supply_status.h"
+#include "ash/system/user/login_status.h"
 #include "base/file_path.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string16.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
@@ -107,7 +106,7 @@ class SystemTrayDelegate {
   // Gets information about the logged in user.
   virtual const std::string GetUserDisplayName() const = 0;
   virtual const std::string GetUserEmail() const = 0;
-  virtual const SkBitmap& GetUserImage() const = 0;
+  virtual const gfx::ImageSkia& GetUserImage() const = 0;
   virtual user::LoginStatus GetUserLoginStatus() const = 0;
 
   // Returns whether a system upgrade is available.

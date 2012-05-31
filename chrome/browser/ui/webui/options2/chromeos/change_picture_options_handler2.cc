@@ -28,7 +28,6 @@
 #include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/widget/widget.h"
@@ -218,7 +217,7 @@ void ChangePictureOptionsHandler::SendSelectedImage() {
   }
 }
 
-void ChangePictureOptionsHandler::SendProfileImage(const SkBitmap& image,
+void ChangePictureOptionsHandler::SendProfileImage(const gfx::ImageSkia& image,
                                                    bool should_select) {
   base::StringValue data_url(web_ui_util::GetImageDataUrl(image));
   base::FundamentalValue select(should_select);
@@ -303,7 +302,7 @@ void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
                             kHistogramImagesCount);
 }
 
-void ChangePictureOptionsHandler::OnPhotoAccepted(const SkBitmap& photo) {
+void ChangePictureOptionsHandler::OnPhotoAccepted(const gfx::ImageSkia& photo) {
   UserManager* user_manager = UserManager::Get();
   user_manager->SaveUserImage(user_manager->GetLoggedInUser().email(),
                               chromeos::UserImage(photo));
@@ -336,7 +335,8 @@ void ChangePictureOptionsHandler::Observe(
   OptionsPageUIHandler::Observe(type, source, details);
   if (type == chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED) {
     // User profile image has been updated.
-    SendProfileImage(*content::Details<const SkBitmap>(details).ptr(), false);
+    SendProfileImage(*content::Details<const gfx::ImageSkia>(details).ptr(),
+                     false);
   }
 }
 

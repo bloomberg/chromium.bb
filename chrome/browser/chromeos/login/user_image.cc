@@ -21,13 +21,13 @@ bool IsAnimatedImage(const UserImage::RawImage& data) {
 
 }  // namespace
 
-UserImage::UserImage(const SkBitmap& image)
+UserImage::UserImage(const gfx::ImageSkia& image)
     : image_(image),
       has_raw_image_(false),
       has_animated_image_(false) {
 }
 
-UserImage::UserImage(const SkBitmap& image,
+UserImage::UserImage(const gfx::ImageSkia& image,
                      const RawImage& raw_image)
     : image_(image),
       has_raw_image_(true),
@@ -37,7 +37,7 @@ UserImage::UserImage(const SkBitmap& image,
 
 UserImage::~UserImage() {}
 
-void UserImage::SetImage(const SkBitmap& image) {
+void UserImage::SetImage(const gfx::ImageSkia& image) {
   image_ = image;
   has_raw_image_ = false;
   has_animated_image_ = false;

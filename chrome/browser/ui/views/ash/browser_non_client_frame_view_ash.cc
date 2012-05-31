@@ -256,8 +256,8 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
       canvas,
       ShouldPaintAsActive() ?
           ash::FramePainter::ACTIVE : ash::FramePainter::INACTIVE,
-      GetThemeFrameBitmapId(),
-      GetThemeFrameOverlayBitmap());
+      GetThemeFrameImageId(),
+      GetThemeFrameOverlayImage());
   if (browser_view()->ShouldShowWindowTitle())
     frame_painter_->PaintTitleBar(this, canvas, BrowserFrame::GetTitleFont());
   if (browser_view()->IsToolbarVisible())
@@ -344,7 +344,7 @@ bool BrowserNonClientFrameViewAsh::ShouldTabIconViewAnimate() const {
 gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
   views::WidgetDelegate* delegate = frame()->widget_delegate();
   if (!delegate)
-    return SkBitmap();
+    return gfx::ImageSkia();
   return delegate->GetWindowIcon();
 }
 
@@ -395,7 +395,7 @@ bool BrowserNonClientFrameViewAsh::UseShortHeader() const {
 
 void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   DCHECK(avatar_button());
-  SkBitmap incognito_icon = browser_view()->GetOTRAvatarIcon();
+  gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
 
   int avatar_bottom = GetHorizontalTabStripVerticalOffset(false) +
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
@@ -441,7 +441,7 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(
   // source y position.  If you have to debug this code use an image editor
   // to paint a diagonal line through the toolbar image and ensure it lines up
   // across the tab and toolbar.
-  SkBitmap* theme_toolbar = tp->GetBitmapNamed(IDR_THEME_TOOLBAR);
+  gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
   canvas->TileImageInt(
       *theme_toolbar,
       x, bottom_y - GetHorizontalTabStripVerticalOffset(false),
@@ -451,21 +451,22 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(
   // The content area line has a shadow that extends a couple of pixels above
   // the toolbar bounds.
   const int kContentShadowHeight = 2;
-  SkBitmap* toolbar_top =
-      tp->GetBitmapNamed(IDR_TOOLBAR_SHADE_TOP);
+  gfx::ImageSkia* toolbar_top =
+      tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_TOP);
   canvas->TileImageInt(*toolbar_top,
                        0, 0,
                        x, y - kContentShadowHeight,
                        w, split_point + kContentShadowHeight + 1);
 
   // Draw the "lightening" shade line around the edges of the toolbar.
-  SkBitmap* toolbar_left = tp->GetBitmapNamed(IDR_TOOLBAR_SHADE_LEFT);
+  gfx::ImageSkia* toolbar_left = tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_LEFT);
   canvas->TileImageInt(*toolbar_left,
                        0, 0,
                        x + kClientEdgeThickness,
                        y + kClientEdgeThickness + kContentShadowHeight,
                        toolbar_left->width(), theme_toolbar->height());
-  SkBitmap* toolbar_right = tp->GetBitmapNamed(IDR_TOOLBAR_SHADE_RIGHT);
+  gfx::ImageSkia* toolbar_right =
+      tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_RIGHT);
   canvas->TileImageInt(*toolbar_right,
                        0, 0,
                        w - toolbar_right->width() - 2 * kClientEdgeThickness,
@@ -486,7 +487,7 @@ void BrowserNonClientFrameViewAsh::PaintContentEdge(gfx::Canvas* canvas) {
       ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
 }
 
-int BrowserNonClientFrameViewAsh::GetThemeFrameBitmapId() const {
+int BrowserNonClientFrameViewAsh::GetThemeFrameImageId() const {
   bool is_incognito = browser_view()->IsOffTheRecord();
   if (browser_view()->IsBrowserTypeNormal()) {
     // Use the standard resource ids to allow users to theme the frames.
@@ -508,13 +509,13 @@ int BrowserNonClientFrameViewAsh::GetThemeFrameBitmapId() const {
       IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
 }
 
-const SkBitmap*
-BrowserNonClientFrameViewAsh::GetThemeFrameOverlayBitmap() const {
+const gfx::ImageSkia*
+BrowserNonClientFrameViewAsh::GetThemeFrameOverlayImage() const {
   ui::ThemeProvider* tp = GetThemeProvider();
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       browser_view()->IsBrowserTypeNormal() &&
       !browser_view()->IsOffTheRecord()) {
-    return tp->GetBitmapNamed(ShouldPaintAsActive() ?
+    return tp->GetImageSkiaNamed(ShouldPaintAsActive() ?
         IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE);
   }
   return NULL;

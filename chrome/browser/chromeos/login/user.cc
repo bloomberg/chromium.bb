@@ -30,7 +30,7 @@ std::string GetUserName(const std::string& email) {
 
 User::User(const std::string& email, bool is_guest)
     : email_(email),
-      user_image_(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      user_image_(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           kDefaultImageResources[0])),
       oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
       image_index_(kInvalidImageIndex),
@@ -55,7 +55,7 @@ void User::SetImage(const UserImage& user_image, int image_index) {
 }
 
 void User::SetStubImage(int image_index) {
-  user_image_.SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  user_image_.SetImage(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       kStubImageResourceID));
   image_index_ = image_index;
   image_is_stub_ = true;

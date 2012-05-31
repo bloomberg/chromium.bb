@@ -7,8 +7,6 @@
 
 #include "ash/ash_export.h"
 
-class SkBitmap;
-
 namespace ash {
 
 enum WallpaperLayout {

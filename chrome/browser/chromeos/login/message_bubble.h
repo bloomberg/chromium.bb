@@ -15,7 +15,9 @@
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
 
-class SkBitmap;
+namespace gfx {
+class ImageSkia;
+}
 
 namespace views {
 class ImageButton;
@@ -37,7 +39,7 @@ class MessageBubble : public views::BubbleDelegateView,
  public:
   MessageBubble(views::View* anchor_view,
                 views::BubbleBorder::ArrowLocation arrow_location,
-                SkBitmap* image,
+                gfx::ImageSkia* image,
                 const string16& text,
                 const std::vector<string16>& links);
 
@@ -60,7 +62,7 @@ class MessageBubble : public views::BubbleDelegateView,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
-  SkBitmap* image_;
+  gfx::ImageSkia* image_;
   string16 text_;
   views::ImageButton* close_button_;
   std::vector<views::Link*> help_links_;

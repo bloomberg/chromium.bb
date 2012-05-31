@@ -53,10 +53,10 @@ class RoundedImageView : public views::View {
   virtual ~RoundedImageView() {
   }
 
-  // Set the bitmap that should be displayed from a pointer. The pointer
-  // contents is copied in the receiver's bitmap.
-  void SetImage(const SkBitmap& bm, const gfx::Size& size) {
-    image_ = bm;
+  // Set the image that should be displayed from a pointer. The pointer
+  // contents is copied in the receiver's image.
+  void SetImage(const gfx::ImageSkia& img, const gfx::Size& size) {
+    image_ = img;
     image_size_ = size;
 
     // Try to get the best image quality for the avatar.
@@ -99,8 +99,8 @@ class RoundedImageView : public views::View {
   }
 
  private:
-  SkBitmap image_;
-  SkBitmap resized_;
+  gfx::ImageSkia image_;
+  gfx::ImageSkia resized_;
   gfx::Size image_size_;
   int corner_radius_;
 

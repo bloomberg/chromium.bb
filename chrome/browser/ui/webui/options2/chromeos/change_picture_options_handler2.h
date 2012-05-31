@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -44,7 +45,7 @@ class ChangePictureOptionsHandler : public ::options2::OptionsPageUIHandler,
 
   // Sends the profile image to the page. If |should_select| is true then
   // the profile image element is selected.
-  void SendProfileImage(const SkBitmap& image, bool should_select);
+  void SendProfileImage(const gfx::ImageSkia& image, bool should_select);
 
   // Starts profile image update and shows the last downloaded profile image,
   // if any, on the page. Shouldn't be called before |SendProfileImage|.
@@ -80,7 +81,7 @@ class ChangePictureOptionsHandler : public ::options2::OptionsPageUIHandler,
       int index, void* params) OVERRIDE;
 
   // TakePhotoDialog::Delegate implementation.
-  virtual void OnPhotoAccepted(const SkBitmap& photo) OVERRIDE;
+  virtual void OnPhotoAccepted(const gfx::ImageSkia& photo) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -96,7 +97,7 @@ class ChangePictureOptionsHandler : public ::options2::OptionsPageUIHandler,
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 
   // Previous user image from camera/file and its data URL.
-  SkBitmap previous_image_;
+  gfx::ImageSkia previous_image_;
   std::string previous_image_data_url_;
 
   // Index of the previous user image.
