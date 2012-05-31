@@ -9,7 +9,9 @@
 #include <cstddef>  // for size_t
 #include <string>
 
-class SkBitmap;
+namespace gfx {
+class ImageSkia;
+}
 
 namespace chromeos {
 
@@ -31,7 +33,7 @@ std::string GetDefaultImageUrl(int index);
 bool IsDefaultImageUrl(const std::string url, int* image_id);
 
 // Returns bitmap of default user image with specified index.
-const SkBitmap& GetDefaultImage(int index);
+const gfx::ImageSkia& GetDefaultImage(int index);
 
 // Resource IDs of default user images.
 extern const int kDefaultImageResources[];

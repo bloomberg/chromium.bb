@@ -9,7 +9,6 @@
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 

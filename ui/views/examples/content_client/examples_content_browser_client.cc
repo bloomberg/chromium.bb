@@ -13,7 +13,6 @@
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/shell_switches.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/views/examples/content_client/examples_browser_main_parts.h"
 
 namespace views {

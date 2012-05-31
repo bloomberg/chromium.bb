@@ -5,9 +5,9 @@
 #include <string>
 
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
+#include "ash/shell_delegate.h"
 #include "base/basictypes.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
@@ -46,7 +46,7 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
     SetTitle(GetTitle(type));
   }
 
-  static SkBitmap GetIcon(Type type) {
+  static gfx::ImageSkia GetIcon(Type type) {
     static const SkColor kColors[] = {
         SK_ColorRED,
         SK_ColorGREEN,
@@ -60,7 +60,7 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
     icon.setConfig(SkBitmap::kARGB_8888_Config, kIconSize, kIconSize);
     icon.allocPixels();
     icon.eraseColor(kColors[static_cast<int>(type) % arraysize(kColors)]);
-    return icon;
+    return gfx::ImageSkia(icon);
   }
 
   // The text below is not localized as this is an example code.
@@ -199,7 +199,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     }
   }
 
-  SkBitmap CreateSearchBoxIcon() {
+  gfx::ImageSkia CreateSearchBoxIcon() {
     const string16 icon_text = ASCIIToUTF16("ash");
     const gfx::Size icon_size(32, 32);
 
@@ -212,7 +212,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
                              gfx::Canvas::TEXT_VALIGN_MIDDLE |
                              gfx::Canvas::NO_SUBPIXEL_RENDERING);
 
-    return canvas.ExtractBitmap();
+    return gfx::ImageSkia(canvas.ExtractBitmap());
   }
 
   void DecorateSearchBox(app_list::SearchBoxModel* search_box_model) {

@@ -256,7 +256,7 @@ void TakePhotoView::ShowCameraError() {
   user_image_->SetErrorState();
 }
 
-const SkBitmap& TakePhotoView::GetImage() const {
+const gfx::ImageSkia& TakePhotoView::GetImage() const {
   return user_image_->GetImage();
 }
 

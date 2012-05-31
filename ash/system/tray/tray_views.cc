@@ -5,7 +5,6 @@
 #include "ash/system/tray/tray_views.h"
 
 #include "ash/system/tray/tray_constants.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_resources_standard.h"
@@ -13,6 +12,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -125,7 +125,7 @@ HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
 HoverHighlightView::~HoverHighlightView() {
 }
 
-void HoverHighlightView::AddIconAndLabel(const SkBitmap& image,
+void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
                                          const string16& text,
                                          gfx::Font::FontStyle style) {
   SetLayoutManager(new views::BoxLayout(
@@ -412,7 +412,7 @@ void SpecialPopupRow::SetTextLabel(int string_id, ViewClickListener* listener) {
   container->set_text_default_color(kHeaderTextColorNormal);
 
   container->AddIconAndLabel(
-      *rb.GetImageNamed(IDR_AURA_UBER_TRAY_LESS).ToSkBitmap(),
+      *rb.GetImageNamed(IDR_AURA_UBER_TRAY_LESS).ToImageSkia(),
       rb.GetLocalizedString(string_id),
       gfx::Font::BOLD);
 
@@ -528,7 +528,7 @@ void TrayNotificationView::InitView(views::View* contents) {
   layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
 }
 
-void TrayNotificationView::SetIconImage(const SkBitmap& image) {
+void TrayNotificationView::SetIconImage(const gfx::ImageSkia& image) {
   icon_->SetImage(image);
   SchedulePaint();
 }
@@ -542,7 +542,7 @@ void TrayNotificationView::UpdateView(views::View* new_contents) {
 }
 
 void TrayNotificationView::UpdateViewAndImage(views::View* new_contents,
-                                              const SkBitmap& image) {
+                                              const gfx::ImageSkia& image) {
   RemoveAllChildViews(true);
   InitView(new_contents);
   icon_->SetImage(image);

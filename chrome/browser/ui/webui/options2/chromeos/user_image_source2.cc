@@ -24,7 +24,7 @@ std::vector<unsigned char> UserImageSource::GetUserImage(
     return user_image;
   }
   gfx::PNGCodec::EncodeBGRASkBitmap(
-      *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_LOGIN_DEFAULT_USER),
       false,
       &user_image);

@@ -5,7 +5,7 @@
 #include "content/public/browser/content_browser_client.h"
 
 #include "base/file_path.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace content {
 
@@ -78,8 +78,8 @@ std::string ContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
   return std::string();
 }
 
-SkBitmap* ContentBrowserClient::GetDefaultFavicon() {
-  static SkBitmap* empty = new SkBitmap();
+gfx::ImageSkia* ContentBrowserClient::GetDefaultFavicon() {
+  static gfx::ImageSkia* empty = new gfx::ImageSkia();
   return empty;
 }
 

@@ -52,9 +52,9 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -98,7 +98,7 @@ class NetworkInfoDictionary {
   void set_service_path(const std::string& service_path) {
     service_path_ = service_path;
   }
-  void set_icon(const SkBitmap& icon) {
+  void set_icon(const gfx::ImageSkia& icon) {
     icon_url_ = icon.isNull() ? "" : web_ui_util::GetImageDataUrl(icon);
   }
   void set_name(const std::string& name) {
@@ -167,7 +167,7 @@ NetworkInfoDictionary::NetworkInfoDictionary() {
 
 NetworkInfoDictionary::NetworkInfoDictionary(const chromeos::Network* network) {
   set_service_path(network->service_path());
-  set_icon(chromeos::NetworkMenuIcon::GetBitmap(network,
+  set_icon(chromeos::NetworkMenuIcon::GetImage(network,
       chromeos::NetworkMenuIcon::COLOR_DARK));
   set_name(network->name());
   set_connecting(network->connecting());
@@ -184,7 +184,7 @@ NetworkInfoDictionary::NetworkInfoDictionary(
     const chromeos::Network* network,
     const chromeos::Network* remembered) {
   set_service_path(remembered->service_path());
-  set_icon(chromeos::NetworkMenuIcon::GetBitmap(
+  set_icon(chromeos::NetworkMenuIcon::GetImage(
       network ? network : remembered, chromeos::NetworkMenuIcon::COLOR_DARK));
   set_name(remembered->name());
   set_connecting(network ? network->connecting() : false);
@@ -1351,7 +1351,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
     NetworkInfoDictionary network_dict;
     network_dict.set_service_path(kOtherNetworksFakePath);
     network_dict.set_icon(
-        chromeos::NetworkMenuIcon::GetDisconnectedBitmap(
+        chromeos::NetworkMenuIcon::GetDisconnectedImage(
             chromeos::NetworkMenuIcon::BARS,
             chromeos::NetworkMenuIcon::COLOR_DARK));
     network_dict.set_name(

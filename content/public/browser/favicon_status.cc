@@ -5,11 +5,12 @@
 #include "content/public/browser/favicon_status.h"
 
 #include "content/public/browser/content_browser_client.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace content {
 
 FaviconStatus::FaviconStatus() : valid(false) {
-  bitmap = *GetContentClient()->browser()->GetDefaultFavicon();
+  bitmap = *GetContentClient()->browser()->GetDefaultFavicon()->bitmap();
 }
 
 }  // namespace content

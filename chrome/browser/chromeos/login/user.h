@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 // The demo user is represented by a domainless username.
 const char kDemoUser[] = "demouser";
@@ -62,11 +63,13 @@ class User {
   bool NeedsNameTooltip() const;
 
   // The image for this user.
-  const SkBitmap& image() const { return image_; }
+  const gfx::ImageSkia& image() const { return image_; }
   int image_index() const { return image_index_; }
 
   // The thumbnail of user custom wallpaper.
-  const SkBitmap& wallpaper_thumbnail() const { return wallpaper_thumbnail_; }
+  const SkBitmap& wallpaper_thumbnail() const {
+    return wallpaper_thumbnail_;
+  }
 
   // True if user image is a stub (while real image is being loaded from file).
   bool image_is_stub() const { return image_is_stub_; }
@@ -90,7 +93,7 @@ class User {
   ~User();
 
   // Setters are private so only UserManager can call them.
-  void SetImage(const SkBitmap& image, int image_index);
+  void SetImage(const gfx::ImageSkia& image, int image_index);
   // Sets a stub image until the next |SetImage| call. |image_index| may be
   // one of |kExternalImageIndex| or |kProfileImageIndex|.
   void SetStubImage(int image_index);
@@ -109,7 +112,7 @@ class User {
   std::string email_;
   // The displayed user email, defaults to |email_|.
   std::string display_email_;
-  SkBitmap image_;
+  gfx::ImageSkia image_;
   OAuthTokenStatus oauth_token_status_;
   SkBitmap wallpaper_thumbnail_;
 

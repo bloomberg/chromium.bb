@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 
@@ -107,7 +108,7 @@ void UserImageScreen::StopCamera() {
   camera_controller_.Stop();
 }
 
-void UserImageScreen::OnPhotoTaken(const SkBitmap& image) {
+void UserImageScreen::OnPhotoTaken(const gfx::ImageSkia& image) {
   UserManager* user_manager = UserManager::Get();
   user_manager->SaveUserImage(user_manager->GetLoggedInUser().email(), image);
 
@@ -163,7 +164,7 @@ void UserImageScreen::Observe(int type,
       // We've got a new profile image.
       if (actor_)
         actor_->AddProfileImage(
-            *content::Details<const SkBitmap>(details).ptr());
+            *content::Details<const gfx::ImageSkia>(details).ptr());
       break;
     }
     case chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED: {

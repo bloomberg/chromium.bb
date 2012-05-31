@@ -31,7 +31,7 @@ class TakePhotoDialog : public views::DialogDelegateView,
     virtual ~Delegate() {}
 
     // Called when user accepts the photo.
-    virtual void OnPhotoAccepted(const SkBitmap& photo) = 0;
+    virtual void OnPhotoAccepted(const gfx::ImageSkia& photo) = 0;
   };
 
   explicit TakePhotoDialog(Delegate* delegate);

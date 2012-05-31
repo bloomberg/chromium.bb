@@ -4,10 +4,10 @@
 
 #include "ash/wm/workspace/frame_maximize_button.h"
 
+#include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
-#include "ash/launcher/launcher.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "grit/ash_strings.h"
@@ -217,7 +217,7 @@ gfx::ImageSkia FrameMaximizeButton::GetImageToPaint() {
           NOTREACHED();
       }
     }
-    return *ResourceBundle::GetSharedInstance().GetImageNamed(id).ToSkBitmap();
+    return *ResourceBundle::GetSharedInstance().GetImageNamed(id).ToImageSkia();
   }
   // Hot and pressed states handled by regular ImageButton.
   return ImageButton::GetImageToPaint();

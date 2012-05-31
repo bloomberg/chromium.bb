@@ -17,11 +17,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "ui/gfx/size.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/size.h"
 
 class CommandLine;
-class SkBitmap;
 
 namespace aura {
 class EventFilter;
@@ -39,6 +38,7 @@ class BrowserContext;
 }
 
 namespace gfx {
+class ImageSkia;
 class Point;
 class Rect;
 }

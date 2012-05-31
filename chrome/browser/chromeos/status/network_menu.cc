@@ -31,11 +31,11 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -118,7 +118,7 @@ class NetworkMenuModel : public ui::MenuModel {
           sub_menu_model(NULL),
           flags(0) {
     }
-    MenuItem(ui::MenuModel::ItemType type, string16 label, SkBitmap icon,
+    MenuItem(ui::MenuModel::ItemType type, string16 label, gfx::ImageSkia icon,
              const std::string& service_path, int flags)
         : type(type),
           label(label),
@@ -127,7 +127,7 @@ class NetworkMenuModel : public ui::MenuModel {
           sub_menu_model(NULL),
           flags(flags) {
     }
-    MenuItem(ui::MenuModel::ItemType type, string16 label, SkBitmap icon,
+    MenuItem(ui::MenuModel::ItemType type, string16 label, gfx::ImageSkia icon,
              NetworkMenuModel* sub_menu_model, int flags)
         : type(type),
           label(label),
@@ -138,7 +138,7 @@ class NetworkMenuModel : public ui::MenuModel {
 
     ui::MenuModel::ItemType type;
     string16 label;
-    SkBitmap icon;
+    gfx::ImageSkia icon;
     std::string service_path;
     NetworkMenuModel* sub_menu_model;  // Weak ptr.
     int flags;
@@ -578,7 +578,7 @@ void MainMenuModel::AddWirelessNetworkMenuItem(
     flag |= FLAG_DISABLED;
   if (ShouldHighlightNetwork(wifi_network))
     flag |= FLAG_ASSOCIATED;
-  const SkBitmap icon = NetworkMenuIcon::GetBitmap(wifi_network,
+  const gfx::ImageSkia icon = NetworkMenuIcon::GetImage(wifi_network,
       NetworkMenuIcon::COLOR_DARK);
   menu_items_.push_back(
       MenuItem(ui::MenuModel::TYPE_COMMAND,
@@ -596,7 +596,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
     menu_items_.push_back(
         MenuItem(ui::MenuModel::TYPE_COMMAND,
                  l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_LOCKED),
-                 SkBitmap(), std::string(), FLAG_DISABLED));
+                 gfx::ImageSkia(), std::string(), FLAG_DISABLED));
     return;
   }
 
@@ -622,9 +622,9 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
     int flag = FLAG_ETHERNET;
     if (ShouldHighlightNetwork(ethernet_network))
       flag |= FLAG_ASSOCIATED;
-    SkBitmap icon;
-    icon = NetworkMenuIcon::GetBitmap(ethernet_network,
-                                      NetworkMenuIcon::COLOR_DARK);
+    gfx::ImageSkia icon;
+    icon = NetworkMenuIcon::GetImage(ethernet_network,
+                                     NetworkMenuIcon::COLOR_DARK);
     menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
                                    label, icon, std::string(), flag));
   }
@@ -646,8 +646,8 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
     menu_items_.push_back(MenuItem(
         ui::MenuModel::TYPE_COMMAND,
         l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS),
-        NetworkMenuIcon::GetConnectedBitmap(NetworkMenuIcon::ARCS,
-                                            NetworkMenuIcon::COLOR_DARK),
+        NetworkMenuIcon::GetConnectedImage(NetworkMenuIcon::ARCS,
+                                           NetworkMenuIcon::COLOR_DARK),
         std::string(), FLAG_ADD_WIFI));
   }
 
@@ -722,7 +722,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
           active_cellular && active_cellular->SupportsDataPlan();
       if (isActive)
         flag |= FLAG_ASSOCIATED;
-      const SkBitmap icon = NetworkMenuIcon::GetBitmap(cell_networks[i],
+      const gfx::ImageSkia icon = NetworkMenuIcon::GetImage(cell_networks[i],
           NetworkMenuIcon::COLOR_DARK);
       menu_items_.push_back(
           MenuItem(ui::MenuModel::TYPE_COMMAND,
@@ -740,7 +740,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
         if (label.length()) {
           menu_items_.push_back(
               MenuItem(ui::MenuModel::TYPE_COMMAND,
-                       label, SkBitmap(),
+                       label, gfx::ImageSkia(),
                        std::string(), FLAG_DISABLED));
         }
       }
@@ -759,8 +759,8 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
             ui::MenuModel::TYPE_COMMAND,
             l10n_util::GetStringUTF16(
                 IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS),
-            NetworkMenuIcon::GetDisconnectedBitmap(NetworkMenuIcon::BARS,
-                                                   NetworkMenuIcon::COLOR_DARK),
+            NetworkMenuIcon::GetDisconnectedImage(NetworkMenuIcon::BARS,
+                                                  NetworkMenuIcon::COLOR_DARK),
             std::string(), FLAG_ADD_CELLULAR));
       }
     }
@@ -771,7 +771,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
     label = l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
                 l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
     menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
-        SkBitmap(), std::string(), FLAG_DISABLED));
+        gfx::ImageSkia(), std::string(), FLAG_DISABLED));
   }
 
   bool show_wifi_scanning = wifi_available && cros->wifi_scanning();
@@ -789,7 +789,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       // Add 'Scanning...'
       label = l10n_util::GetStringUTF16(IDS_STATUSBAR_WIFI_SCANNING_MESSAGE);
       menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
-          SkBitmap(), std::string(), FLAG_DISABLED));
+          gfx::ImageSkia(), std::string(), FLAG_DISABLED));
     }
 
     if (show_toggle_wifi) {
@@ -801,7 +801,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       if (cros->wifi_busy())
         flag |= FLAG_DISABLED;
       menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
-          SkBitmap(), std::string(), flag));
+          gfx::ImageSkia(), std::string(), flag));
     }
 
     if (show_toggle_mobile) {
@@ -821,9 +821,9 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
         id = IDS_STATUSBAR_NETWORK_DEVICE_ENABLE;
       label = l10n_util::GetStringFUTF16(id,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
-      SkBitmap icon;
+      gfx::ImageSkia icon;
       if (is_locked) {
-        icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE);
+        icon = *rb.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_SECURE);
       }
       int flag = FLAG_TOGGLE_MOBILE;
       if (cros->mobile_busy())
@@ -838,7 +838,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
   // menu_items_.push_back(MenuItem(cros->offline_mode() ?
   //     ui::MenuModel::TYPE_CHECK : ui::MenuModel::TYPE_COMMAND,
   //     l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_OFFLINE_MODE),
-  //     SkBitmap(), std::string(), FLAG_TOGGLE_OFFLINE));
+  //     ImageSkia(), std::string(), FLAG_TOGGLE_OFFLINE));
 
   // Additional links like:
   // * Network settings;
@@ -850,7 +850,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
     menu_items_.push_back(MenuItem(
         ui::MenuModel::TYPE_SUBMENU,
         l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_MORE),
-        SkBitmap(), more_menu_model_.get(), FLAG_NONE));
+        gfx::ImageSkia(), more_menu_model_.get(), FLAG_NONE));
   }
 }
 
@@ -890,7 +890,7 @@ void VPNMenuModel::InitMenuItems(bool should_open_button_options) {
       flag |= FLAG_DISABLED;
     if (ShouldHighlightNetwork(vpn))
       flag |= FLAG_ASSOCIATED;
-    const SkBitmap icon = NetworkMenuIcon::GetBitmap(vpn,
+    const gfx::ImageSkia icon = NetworkMenuIcon::GetImage(vpn,
         NetworkMenuIcon::COLOR_DARK);
     menu_items_.push_back(
         MenuItem(ui::MenuModel::TYPE_COMMAND,
@@ -906,14 +906,14 @@ void VPNMenuModel::InitMenuItems(bool should_open_button_options) {
     menu_items_.push_back(MenuItem(
         ui::MenuModel::TYPE_COMMAND,
         l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_ADD_VPN),
-        SkBitmap(), std::string(), FLAG_ADD_VPN));
+        gfx::ImageSkia(), std::string(), FLAG_ADD_VPN));
   }
   // Show disconnect if we have an active VPN.
   if (active_vpn) {
     menu_items_.push_back(MenuItem(
         ui::MenuModel::TYPE_COMMAND,
         l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DISCONNECT_VPN),
-        SkBitmap(), std::string(), FLAG_DISCONNECT_VPN));
+        gfx::ImageSkia(), std::string(), FLAG_DISCONNECT_VPN));
   }
 }
 
@@ -941,14 +941,16 @@ void MoreMenuModel::InitMenuItems(bool should_open_button_options) {
   if (message_id != -1) {
     link_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
                                   l10n_util::GetStringUTF16(message_id),
-                                  SkBitmap(), std::string(), FLAG_OPTIONS));
+                                  gfx::ImageSkia(),
+                                  std::string(),
+                                  FLAG_OPTIONS));
   }
 
   if (connected) {
     std::string ip_address = cros->IPAddress();
     if (!ip_address.empty()) {
       address_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
-          ASCIIToUTF16(cros->IPAddress()), SkBitmap(), std::string(),
+          ASCIIToUTF16(cros->IPAddress()), gfx::ImageSkia(), std::string(),
                        FLAG_DISABLED));
     }
   }
@@ -962,7 +964,7 @@ void MoreMenuModel::InitMenuItems(bool should_open_button_options) {
       std::string label = l10n_util::GetStringUTF8(
           IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET) + " " + hardware_address;
       address_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
-          UTF8ToUTF16(label), SkBitmap(), std::string(), FLAG_DISABLED));
+          UTF8ToUTF16(label), gfx::ImageSkia(), std::string(), FLAG_DISABLED));
     }
   }
 
@@ -976,7 +978,8 @@ void MoreMenuModel::InitMenuItems(bool should_open_button_options) {
         std::string label = l10n_util::GetStringUTF8(
             IDS_STATUSBAR_NETWORK_DEVICE_WIFI) + " " + hardware_address;
         address_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
-            UTF8ToUTF16(label), SkBitmap(), std::string(), FLAG_DISABLED));
+            UTF8ToUTF16(label), gfx::ImageSkia(), std::string(),
+            FLAG_DISABLED));
       }
     }
   }
