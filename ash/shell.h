@@ -28,6 +28,9 @@ class FocusManager;
 class Monitor;
 class RootWindow;
 class Window;
+namespace client {
+class UserActionClient;
+}
 namespace shared {
 class InputMethodEventFilter;
 class RootWindowEventFilter;
@@ -381,6 +384,7 @@ class ASH_EXPORT Shell {
   scoped_ptr<internal::MagnificationController> magnification_controller_;
   scoped_ptr<internal::ScreenDimmer> screen_dimmer_;
   scoped_ptr<aura::FocusManager> focus_manager_;
+  scoped_ptr<aura::client::UserActionClient> user_action_client_;
 
   // An event filter that rewrites or drops a key event.
   scoped_ptr<internal::KeyRewriterEventFilter> key_rewriter_filter_;

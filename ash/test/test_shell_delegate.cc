@@ -103,5 +103,9 @@ UserWallpaperDelegate* TestShellDelegate::CreateUserWallpaperDelegate() {
   return NULL;
 }
 
+aura::client::UserActionClient* TestShellDelegate::CreateUserActionClient() {
+  return NULL;
+}
+
 }  // namespace test
 }  // namespace ash

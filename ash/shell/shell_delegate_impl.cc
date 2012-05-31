@@ -117,6 +117,9 @@ ash::SystemTrayDelegate* ShellDelegateImpl::CreateSystemTrayDelegate(
 ash::UserWallpaperDelegate* ShellDelegateImpl::CreateUserWallpaperDelegate() {
   return NULL;
 }
+aura::client::UserActionClient* ShellDelegateImpl::CreateUserActionClient() {
+  return NULL;
+}
 
 }  // namespace shell
 }  // namespace ash

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/user_gesture_handler.h"
+#include "chrome/browser/ui/views/ash/user_action_handler.h"
 
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,14 +26,14 @@ content::WebContents* GetActiveWebContents() {
   return wrapper->web_contents();
 }
 
-UserGestureHandler::UserGestureHandler() {}
+UserActionHandler::UserActionHandler() {}
 
-UserGestureHandler::~UserGestureHandler() {}
+UserActionHandler::~UserActionHandler() {}
 
-bool UserGestureHandler::OnUserGesture(
-    aura::client::UserGestureClient::Gesture gesture) {
-  switch (gesture) {
-    case aura::client::UserGestureClient::GESTURE_BACK: {
+bool UserActionHandler::OnUserAction(
+    aura::client::UserActionClient::Command command) {
+  switch (command) {
+    case aura::client::UserActionClient::BACK: {
       content::WebContents* contents = GetActiveWebContents();
       if (contents && contents->GetController().CanGoBack()) {
         contents->GetController().GoBack();
@@ -41,7 +41,7 @@ bool UserGestureHandler::OnUserGesture(
       }
       break;
     }
-    case aura::client::UserGestureClient::GESTURE_FORWARD: {
+    case aura::client::UserActionClient::FORWARD: {
       content::WebContents* contents = GetActiveWebContents();
       if (contents && contents->GetController().CanGoForward()) {
         contents->GetController().GoForward();

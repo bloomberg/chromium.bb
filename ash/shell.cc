@@ -66,6 +66,7 @@
 #include "base/command_line.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/user_action_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
@@ -752,6 +753,11 @@ void Shell::Init() {
     user_wallpaper_delegate_.reset(delegate_->CreateUserWallpaperDelegate());
   if (!user_wallpaper_delegate_.get())
     user_wallpaper_delegate_.reset(new DummyUserWallpaperDelegate());
+
+  if (delegate_.get())
+    user_action_client_.reset(delegate_->CreateUserActionClient());
+  if (user_action_client_.get())
+    aura::client::SetUserActionClient(root_window, user_action_client_.get());
 
   InitLayoutManagers();
 

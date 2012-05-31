@@ -19,6 +19,9 @@ class AppListViewDelegate;
 
 namespace aura {
 class Window;
+namespace client {
+class UserActionClient;
+}
 }
 
 namespace views {
@@ -111,6 +114,9 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a user wallpaper delegate. Shell takes ownership of the delegate.
   virtual UserWallpaperDelegate* CreateUserWallpaperDelegate() = 0;
+
+  // Creates a user action client. Shell takes ownership of the object.
+  virtual aura::client::UserActionClient* CreateUserActionClient() = 0;
 };
 
 }  // namespace ash

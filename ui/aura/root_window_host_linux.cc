@@ -18,7 +18,7 @@
 #include "base/stringprintf.h"
 #include "grit/ui_resources_standard.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/aura/client/user_gesture_client.h"
+#include "ui/aura/client/user_action_client.h"
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
@@ -529,13 +529,13 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
     case ButtonPress: {
       if (static_cast<int>(xev->xbutton.button) == kBackMouseButton ||
           static_cast<int>(xev->xbutton.button) == kForwardMouseButton) {
-        client::UserGestureClient* gesture_client =
-            client::GetUserGestureClient(root_window_);
+        client::UserActionClient* gesture_client =
+            client::GetUserActionClient(root_window_);
         if (gesture_client) {
-          gesture_client->OnUserGesture(
+          gesture_client->OnUserAction(
               static_cast<int>(xev->xbutton.button) == kBackMouseButton ?
-              client::UserGestureClient::GESTURE_BACK :
-              client::UserGestureClient::GESTURE_FORWARD);
+              client::UserActionClient::BACK :
+              client::UserActionClient::FORWARD);
         }
         break;
       }
@@ -606,16 +606,16 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
                 static_cast<XIDeviceEvent*>(xev->xcookie.data);
             int button = xievent->detail;
             if (button == kBackMouseButton || button == kForwardMouseButton) {
-              client::UserGestureClient* gesture_client =
-                  client::GetUserGestureClient(root_window_);
+              client::UserActionClient* gesture_client =
+                  client::GetUserActionClient(root_window_);
               if (gesture_client) {
                 bool reverse_direction =
                     ui::IsTouchpadEvent(xev) && ui::IsNaturalScrollEnabled();
-                gesture_client->OnUserGesture(
+                gesture_client->OnUserAction(
                     (button == kBackMouseButton && !reverse_direction) ||
                     (button == kForwardMouseButton && reverse_direction) ?
-                    client::UserGestureClient::GESTURE_BACK :
-                    client::UserGestureClient::GESTURE_FORWARD);
+                    client::UserActionClient::BACK :
+                    client::UserActionClient::FORWARD);
               }
               break;
             }

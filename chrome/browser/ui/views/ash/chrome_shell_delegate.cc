@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/ash/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/views/ash/user_action_handler.h"
 #include "chrome/browser/ui/views/ash/window_positioner.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -29,6 +30,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
+#include "ui/aura/client/user_action_client.h"
 #include "ui/aura/window.h"
 
 #if defined(OS_CHROMEOS)
@@ -286,6 +288,10 @@ ash::UserWallpaperDelegate* ChromeShellDelegate::CreateUserWallpaperDelegate() {
 #else
   return NULL;
 #endif
+}
+
+aura::client::UserActionClient* ChromeShellDelegate::CreateUserActionClient() {
+  return new UserActionHandler;
 }
 
 void ChromeShellDelegate::Observe(int type,

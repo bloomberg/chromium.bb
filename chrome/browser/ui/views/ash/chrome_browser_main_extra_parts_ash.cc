@@ -19,10 +19,8 @@
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/ash/key_rewriter.h"
 #include "chrome/browser/ui/views/ash/screenshot_taker.h"
-#include "chrome/browser/ui/views/ash/user_gesture_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/aura_switches.h"
-#include "ui/aura/client/user_gesture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
@@ -87,9 +85,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
     browser::StartKeepAlive();
   }
 #endif
-  gesture_handler_.reset(new UserGestureHandler);
-  aura::client::SetUserGestureClient(
-      ash::Shell::GetPrimaryRootWindow(), gesture_handler_.get());
   ash::Shell::GetPrimaryRootWindow()->ShowRootWindow();
 }
 
