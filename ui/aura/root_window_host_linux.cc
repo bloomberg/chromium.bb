@@ -334,6 +334,26 @@ class RootWindowHostLinux::ImageCursors {
     LoadImageCursor(ui::kCursorEastResize, IDR_AURA_CURSOR_EAST_RESIZE, 11, 11);
     LoadImageCursor(ui::kCursorWestResize, IDR_AURA_CURSOR_WEST_RESIZE, 11, 11);
     LoadImageCursor(ui::kCursorIBeam, IDR_AURA_CURSOR_IBEAM, 12, 11);
+    LoadImageCursor(ui::kCursorAlias, IDR_AURA_CURSOR_ALIAS, 8, 7);
+    LoadImageCursor(ui::kCursorCell, IDR_AURA_CURSOR_CELL, 16, 15);
+    LoadImageCursor(ui::kCursorContextMenu, IDR_AURA_CURSOR_CONTEXT_MENU, 5, 5);
+    LoadImageCursor(ui::kCursorCross, IDR_AURA_CURSOR_CROSSHAIR, 15, 15);
+    LoadImageCursor(ui::kCursorHelp, IDR_AURA_CURSOR_HELP, 5, 5);
+    LoadImageCursor(ui::kCursorVerticalText,
+                    IDR_AURA_CURSOR_XTERM_HORIZ, 10, 12);
+    LoadImageCursor(ui::kCursorZoomIn, IDR_AURA_CURSOR_ZOOM_IN, 14, 13);
+    LoadImageCursor(ui::kCursorZoomOut, IDR_AURA_CURSOR_ZOOM_OUT, 15, 14);
+    LoadImageCursor(ui::kCursorRowResize, IDR_AURA_CURSOR_ROW_RESIZE, 11, 11);
+    LoadImageCursor(ui::kCursorColumnResize,
+                    IDR_AURA_CURSOR_COL_RESIZE, 11, 10);
+    LoadImageCursor(ui::kCursorEastWestResize,
+                    IDR_AURA_CURSOR_EAST_WEST_RESIZE, 11, 11);
+    LoadImageCursor(ui::kCursorNorthSouthResize,
+                    IDR_AURA_CURSOR_NORTH_SOUTH_RESIZE, 11, 10);
+    LoadImageCursor(ui::kCursorNorthEastSouthWestResize,
+                    IDR_AURA_CURSOR_NORTH_EAST_SOUTH_WEST_RESIZE, 12, 11);
+    LoadImageCursor(ui::kCursorNorthWestSouthEastResize,
+                    IDR_AURA_CURSOR_NORTH_WEST_SOUTH_EAST_RESIZE, 11, 11);
 
     // TODO (varunjain): add more cursors once we have assets.
   }

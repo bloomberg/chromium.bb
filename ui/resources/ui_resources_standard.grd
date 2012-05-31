@@ -83,7 +83,7 @@
         <include name="IDR_AURA_CURSOR_NO_DROP" file="default_100_percent/aura/nodrop.png" type="BINDATA" />
         <include name="IDR_AURA_CURSOR_COPY" file="default_100_percent/aura/copy.png" type="BINDATA" />
         <include name="IDR_AURA_CURSOR_HAND" file="default_100_percent/aura/hand2.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_MOVE" file="default_100_percent/aura/fleur.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_FLEUR" file="default_100_percent/aura/fleur.png" type="BINDATA" />
         <include name="IDR_AURA_CURSOR_IBEAM" file="default_100_percent/aura/xterm.png" type="BINDATA" />
         <include name="IDR_AURA_CURSOR_NORTH_WEST_RESIZE" file="default_100_percent/aura/top_left_corner.png" type="BINDATA" />
         <include name="IDR_AURA_CURSOR_SOUTH_EAST_RESIZE" file="default_100_percent/aura/top_left_corner.png" type="BINDATA" />
@@ -93,6 +93,21 @@
         <include name="IDR_AURA_CURSOR_EAST_RESIZE" file="default_100_percent/aura/sb_h_double_arrow.png" type="BINDATA" />
         <include name="IDR_AURA_CURSOR_SOUTH_RESIZE" file="default_100_percent/aura/sb_v_double_arrow.png" type="BINDATA" />
         <include name="IDR_AURA_CURSOR_WEST_RESIZE" file="default_100_percent/aura/sb_h_double_arrow.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_ALIAS" file="default_100_percent/aura/alias.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_CELL" file="default_100_percent/aura/cell.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_CONTEXT_MENU" file="default_100_percent/aura/context_menu.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_CROSSHAIR" file="default_100_percent/aura/crosshair.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_HELP" file="default_100_percent/aura/help.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_MOVE" file="default_100_percent/aura/move.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_XTERM_HORIZ" file="default_100_percent/aura/xterm_horiz.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_ZOOM_IN" file="default_100_percent/aura/zoom_in.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_ZOOM_OUT" file="default_100_percent/aura/zoom_out.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_ROW_RESIZE" file="default_100_percent/aura/sb_v_double_arrow.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_COL_RESIZE" file="default_100_percent/aura/sb_h_double_arrow.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_NORTH_WEST_SOUTH_EAST_RESIZE" file="default_100_percent/aura/top_left_corner.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_NORTH_EAST_SOUTH_WEST_RESIZE" file="default_100_percent/aura/top_right_corner.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_NORTH_SOUTH_RESIZE" file="default_100_percent/aura/sb_v_double_arrow.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_EAST_WEST_RESIZE" file="default_100_percent/aura/sb_h_double_arrow.png" type="BINDATA" />
       </if>
 
       <if expr="is_posix and not is_macosx and not pp_ifdef('use_aura')">
