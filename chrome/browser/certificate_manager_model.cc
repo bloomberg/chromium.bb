@@ -131,8 +131,10 @@ bool CertificateManagerModel::ImportCACerts(
 
 bool CertificateManagerModel::ImportServerCert(
     const net::CertificateList& certificates,
+    net::CertDatabase::TrustBits trust_bits,
     net::CertDatabase::ImportCertFailureList* not_imported) {
-  bool result = cert_db_.ImportServerCert(certificates, not_imported);
+  bool result = cert_db_.ImportServerCert(certificates, trust_bits,
+                                          not_imported);
   if (result && not_imported->size() != certificates.size())
     Refresh();
   return result;

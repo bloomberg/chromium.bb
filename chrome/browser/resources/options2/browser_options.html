@@ -431,10 +431,12 @@
   <section>
       <h3 i18n-content="advancedSectionTitleSecurity"></h3>
       <div>
+<if expr="pp_ifdef('use_nss') or is_win or is_macosx">
         <div class="settings-row">
           <button id="certificatesManageButton"
               i18n-content="certificatesManageButton"></button>
         </div>
+</if>
         <div class="checkbox">
           <label>
             <input id="sslCheckRevocation" type="checkbox">

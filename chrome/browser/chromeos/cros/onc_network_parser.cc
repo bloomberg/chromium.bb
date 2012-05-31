@@ -829,6 +829,8 @@ OncNetworkParser::ParseServerOrCaCertificate(
         return NULL;
       }
       if (trust_type == "Web") {
+        // "Web" implies that the certificate is to be trusted for SSL
+        // identification.
         web_trust = true;
       } else {
         LOG(WARNING) << "ONC File: certificate contains unknown "
@@ -929,12 +931,12 @@ OncNetworkParser::ParseServerOrCaCertificate(
   cert_list.push_back(x509_cert);
   net::CertDatabase::ImportCertFailureList failures;
   bool success = false;
+  net::CertDatabase::TrustBits trust = web_trust ?
+                                       net::CertDatabase::TRUSTED_SSL :
+                                       net::CertDatabase::TRUST_DEFAULT;
   if (cert_type == "Server") {
-    success = cert_database.ImportServerCert(cert_list, &failures);
+    success = cert_database.ImportServerCert(cert_list, trust, &failures);
   } else {  // Authority cert
-    net::CertDatabase::TrustBits trust = web_trust ?
-                                         net::CertDatabase::TRUSTED_SSL :
-                                         net::CertDatabase::UNTRUSTED;
     success = cert_database.ImportCACerts(cert_list, trust, &failures);
   }
   if (!failures.empty()) {

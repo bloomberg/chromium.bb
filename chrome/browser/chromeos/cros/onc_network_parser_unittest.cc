@@ -33,14 +33,12 @@
 #include "net/base/crypto_module.h"
 #include "net/base/x509_certificate.h"
 #include "net/proxy/proxy_config.h"
-#include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using ::testing::AnyNumber;
 using ::testing::Return;
 
-namespace msm = mozilla_security_manager;
 namespace chromeos {
 
 namespace {
