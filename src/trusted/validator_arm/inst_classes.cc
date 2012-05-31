@@ -14,6 +14,24 @@
 
 namespace nacl_arm_dec {
 
+
+static const nacl_arm_dec::SafetyLevel kSafetyLevel[] = {
+  UNKNOWN,
+  UNDEFINED,
+  UNPREDICTABLE,
+  DEPRECATED,
+  FORBIDDEN,
+  FORBIDDEN_OPERANDS,
+  MAY_BE_SAFE,
+};
+
+SafetyLevel Int2SafetyLevel(uint32_t i) {
+  if (i <= nacl_arm_dec::MAY_BE_SAFE) {
+    return kSafetyLevel[i];
+  }
+  return UNKNOWN;
+}
+
 uint32_t ShiftTypeBits5To6Interface::ComputeDecodeImmShift(
     uint32_t shift_type, uint32_t imm5_value) {
   switch (shift_type) {

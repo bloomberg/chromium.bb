@@ -29,20 +29,22 @@ class EarlyExitProblemSink : public nacl_arm_val::ProblemSink {
 
  public:
   EarlyExitProblemSink() : nacl_arm_val::ProblemSink(), problems_(false) {}
-
-  virtual void report_problem(uint32_t vaddr,
-                              nacl_arm_dec::SafetyLevel safety,
-                              const nacl::string &problem_code,
-                              uint32_t ref_vaddr) {
-    UNREFERENCED_PARAMETER(vaddr);
-    UNREFERENCED_PARAMETER(safety);
-    UNREFERENCED_PARAMETER(problem_code);
-    UNREFERENCED_PARAMETER(ref_vaddr);
-
-    problems_ = true;
-  }
   virtual bool should_continue() {
     return !problems_;
+  }
+
+ protected:
+  virtual void ReportProblemInternal(
+      uint32_t vaddr,
+      nacl_arm_val::ValidatorProblem problem,
+      nacl_arm_val::ValidatorProblemMethod method,
+      nacl_arm_val::ValidatorProblemUserData user_data) {
+    UNREFERENCED_PARAMETER(vaddr);
+    UNREFERENCED_PARAMETER(problem);
+    UNREFERENCED_PARAMETER(method);
+    UNREFERENCED_PARAMETER(user_data);
+
+    problems_ = true;
   }
 };
 

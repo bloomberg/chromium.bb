@@ -1,4 +1,4 @@
-ncval: 00020000 6 kProblemUnsafeLoadStore 00000000
-ncval: 0002001C 6 kProblemUnsafeDataWrite 00000000
-ncval: 00020028 6 kProblemUnsafeDataWrite 00000000
-ncval: 0002002C 6 kProblemUnsafeDataWrite 00000000
+ncval: 00020000 Load/store base r0 is not properly masked.
+ncval: 0002001c Updating sp without masking in following instruction.
+ncval: 00020028 Updating sp without masking in following instruction.
+ncval: 0002002c Updating sp without masking in following instruction.

@@ -1,10 +1,10 @@
-ncval: 00020014 6 kProblemUnsafeLoadStore 00000000
-ncval: 0002001C 6 kProblemUnsafeLoadStore 00000000
-ncval: 0002002C 6 kProblemPatternCrossesBundle 00000000
-ncval: 00020044 6 kProblemUnsafeLoadStore 00000000
-ncval: 0002005C 6 kProblemUnsafeLoadStore 00000000
-ncval: 00020064 6 kProblemUnsafeDataWrite 00000000
-ncval: 0002006C 4 kProblemUnsafe 00000000
-ncval: 0002007C 6 kProblemUnsafeLoadStore 00000000
-ncval: 00020084 6 kProblemUnsafeLoadStore 00000000
-ncval: 0002008C 6 kProblemUnsafeLoadStore 00000000
+ncval: 00020014 Load/store base r1 is not properly masked.
+ncval: 0002001c Load/store base r1 is not properly masked.
+ncval: 0002002c Instruction pair [0002002c, 00020030] crossses bundle boundary.
+ncval: 00020044 Load/store base r2 is not properly masked.
+ncval: 0002005c Load/store base r0 is not properly masked.
+ncval: 00020064 Updating sp without masking in following instruction.
+ncval: 0002006c Instruction not allowed by Native Client.
+ncval: 0002007c Load/store base r0 is not properly masked.
+ncval: 00020084 Load/store base r0 is not properly masked.
+ncval: 0002008c Load/store base r0 is not properly masked.

@@ -1,2 +1,2 @@
-ncval: 00020000 4 kProblemUnsafe 00000000
-ncval: 00020008 4 kProblemUnsafe 00000000
+ncval: 00020000 Instruction not allowed by Native Client.
+ncval: 00020008 Instruction not allowed by Native Client.

@@ -29,11 +29,13 @@
 
 #include <vector>
 #include <string>
+#include <cstring>
 #include <sstream>
 
 #include "gtest/gtest.h"
 #include "native_client/src/include/nacl_macros.h"
 
+#include "native_client/src/trusted/validator_arm/problem_reporter.h"
 #include "native_client/src/trusted/validator_arm/validator.h"
 
 using std::vector;
@@ -45,8 +47,12 @@ using nacl_arm_dec::RegisterList;
 using nacl_arm_dec::Instruction;
 
 using nacl_arm_val::SfiValidator;
-using nacl_arm_val::ProblemSink;
 using nacl_arm_val::CodeSegment;
+using nacl_arm_val::ProblemReporter;
+using nacl_arm_val::ProblemSink;
+using nacl_arm_val::ValidatorProblem;
+using nacl_arm_val::ValidatorProblemMethod;
+using nacl_arm_val::ValidatorProblemUserData;
 
 namespace {
 
@@ -82,23 +88,97 @@ static const RegisterList kAbiDataAddrRegisters(nacl_arm_dec::kRegisterStack);
  * Support code
  */
 
-// Simply records the arguments given to report_problem, below.
-struct ProblemRecord {
-  uint32_t vaddr;
-  nacl_arm_dec::SafetyLevel safety;
-  nacl::string problem_code;
-  uint32_t ref_vaddr;
-};
+static const size_t kBufferSize = 256;
 
-// A ProblemSink that records all calls (implementation of the Spy pattern)
-class ProblemSpy : public ProblemSink {
+// Simply records the arguments given to ReportProblem, below.
+class ProblemRecord {
  public:
-  virtual void report_problem(uint32_t vaddr, nacl_arm_dec::SafetyLevel safety,
-      const nacl::string &problem_code, uint32_t ref_vaddr = 0) {
-    _problems.push_back(
-        (ProblemRecord) { vaddr, safety, problem_code, ref_vaddr });
+  ProblemRecord(uint32_t vaddr,
+                nacl_arm_dec::SafetyLevel safety,
+                ValidatorProblem problem,
+                ValidatorProblemMethod method,
+                ValidatorProblemUserData user_data,
+                char error_message[kBufferSize]);
+
+  ProblemRecord(const ProblemRecord& r);
+  ~ProblemRecord() {}
+
+  ProblemRecord& operator=(const ProblemRecord& r);
+
+  inline uint32_t vaddr() const {
+    return vaddr_;
   }
 
+  inline ValidatorProblem problem() const {
+    return problem_;
+  }
+
+  inline ValidatorProblemMethod method() const {
+    return method_;
+  }
+
+  inline const char* error_message() const {
+    return error_message_;
+  }
+
+  // Returns the safety associated with the problem.
+  nacl_arm_dec::SafetyLevel safety() const {
+    return safety_;
+  }
+
+ private:
+  void Init(const ValidatorProblemUserData user_data,
+            const char error_message[kBufferSize]);
+
+  uint32_t vaddr_;
+  nacl_arm_dec::SafetyLevel safety_;
+  ValidatorProblem problem_;
+  ValidatorProblemMethod method_;
+  ValidatorProblemUserData user_data_;
+  char error_message_[kBufferSize];
+};
+
+ProblemRecord::ProblemRecord(uint32_t vaddr,
+                             nacl_arm_dec::SafetyLevel safety,
+                             ValidatorProblem problem,
+                             ValidatorProblemMethod method,
+                             ValidatorProblemUserData user_data,
+                             char error_message[kBufferSize])
+    : vaddr_(vaddr),
+      safety_(safety),
+      problem_(problem),
+      method_(method) {
+  Init(user_data, error_message);
+}
+
+ProblemRecord::ProblemRecord(const ProblemRecord& r)
+    : vaddr_(r.vaddr_),
+      safety_(r.safety_),
+      problem_(r.problem_),
+      method_(r.method_) {
+  Init(r.user_data_, r.error_message_);
+}
+
+ProblemRecord& ProblemRecord::operator=(const ProblemRecord& r) {
+  vaddr_ = r.vaddr_;
+  safety_ = r.safety_;
+  problem_ = r.problem_;
+  method_ = r.method_;
+  Init(r.user_data_, r.error_message_);
+  return *this;
+}
+
+void ProblemRecord::Init(const ValidatorProblemUserData user_data,
+                         const char error_message[kBufferSize]) {
+  for (size_t i = 0; i < nacl_arm_val::ValidatorProblemUserDataSize; ++i) {
+    user_data_[i] = user_data[i];
+  }
+  strcpy(error_message_, error_message);
+}
+
+// A ProblemSink that records all calls (implementation of the Spy pattern)
+class ProblemSpy : public ProblemReporter {
+ public:
   /*
    * We want *all* the errors that the validator produces.  Note that this means
    * we're not testing the should_continue functionality.  This is probably
@@ -106,11 +186,32 @@ class ProblemSpy : public ProblemSink {
    */
   virtual bool should_continue() { return true; }
 
-  vector<ProblemRecord> &get_problems() { return _problems; }
+  vector<ProblemRecord> &get_problems() { return problems_; }
+
+ protected:
+  virtual void ReportProblemInternal(uint32_t vaddr,
+                                     ValidatorProblem problem,
+                                     ValidatorProblemMethod method,
+                                     ValidatorProblemUserData user_data);
 
  private:
-  vector<ProblemRecord> _problems;
+  vector<ProblemRecord> problems_;
 };
+
+void ProblemSpy::ReportProblemInternal(uint32_t vaddr,
+                                       ValidatorProblem problem,
+                                       ValidatorProblemMethod method,
+                                       ValidatorProblemUserData user_data) {
+  char buffer[kBufferSize];
+  ToText(buffer, kBufferSize, vaddr, problem, method, user_data);
+  nacl_arm_dec::SafetyLevel safety = nacl_arm_dec::MAY_BE_SAFE;
+  if (method == nacl_arm_val::kReportProblemSafety) {
+    ExtractProblemSafety(user_data, &safety);
+  }
+  ProblemRecord prob(vaddr, safety, problem, method, user_data, buffer);
+  problems_.push_back(prob);
+}
+
 
 /*
  * Coordinates the fixture objects used by test cases below.  This is
@@ -397,14 +498,13 @@ TEST_F(ValidatorTests, InvalidMasksOnSafeStores) {
         if (problems.size() != 1) continue;
 
         ProblemRecord first = problems[0];
-        EXPECT_EQ(kDefaultBaseAddr + 4, first.vaddr)
+        EXPECT_EQ(kDefaultBaseAddr + 4, first.vaddr())
             << "Problem report must point to the store: "
             << message.str();
-        EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, first.safety)
+        EXPECT_NE(nacl_arm_val::kReportProblemSafety, first.method())
             << "Store should not be unsafe even though mask is bogus: "
             << message.str();
-        EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafeLoadStore),
-                  first.problem_code)
+        EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, first.problem())
             << message;
       }
     }
@@ -449,14 +549,13 @@ TEST_F(ValidatorTests, InvalidGuardsOnSafeStores) {
       if (problems.size() != 1) continue;
 
       ProblemRecord first = problems[0];
-      EXPECT_EQ(kDefaultBaseAddr + 4, first.vaddr)
+      EXPECT_EQ(kDefaultBaseAddr + 4, first.vaddr())
           << "Problem report must point to the store: "
           << message.str();
-      EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, first.safety)
+      EXPECT_NE(nacl_arm_val::kReportProblemSafety, first.method())
           << "Store should not be unsafe even though guard is bogus: "
           << message.str();
-      EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafeLoadStore),
-                first.problem_code)
+      EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, first.problem())
           << message;
     }
   }
@@ -498,20 +597,13 @@ TEST_F(ValidatorTests, ValidMasksOnUnsafeStores) {
         if (problems.size() != 1) continue;
 
         ProblemRecord first = problems[0];
-        EXPECT_EQ(kDefaultBaseAddr + 4, first.vaddr)
+        EXPECT_EQ(kDefaultBaseAddr + 4, first.vaddr())
             << "Problem report must point to the store: "
             << message.str();
-        EXPECT_NE(nacl_arm_dec::MAY_BE_SAFE, first.safety)
+        EXPECT_EQ(nacl_arm_val::kReportProblemSafety, first.method())
             << "Store must be flagged by the decoder as unsafe: "
             << message.str();
-
-        // Note that we expect kProblemUnsafe, *not* kProblemUnsafeLoadStore.
-        // This is because the load/store instructions themselves, in
-        // isolation, are unsafe to appear anywhere in a Native Client
-        // program -- whereas kProblemUnsafeLoadStore indicates a legitimate
-        // load/store used in an unsafe manner.
-        EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafe),
-                  first.problem_code)
+        EXPECT_EQ(nacl_arm_val::kProblemUnsafe, first.problem())
             << message;
       }
     }
@@ -538,15 +630,16 @@ TEST_F(ValidatorTests, ScaryUndefinedInstructions) {
     if (problems.size() != 1) continue;
 
     ProblemRecord first = problems[0];
-    EXPECT_EQ(kDefaultBaseAddr, first.vaddr)
+    EXPECT_EQ(kDefaultBaseAddr, first.vaddr())
         << "Problem report must point to the only instruction: "
         << undefined_insts[i].about;
-    EXPECT_EQ(nacl_arm_dec::UNDEFINED, first.safety)
+    EXPECT_EQ(nacl_arm_val::kReportProblemSafety, first.method())
+        << "Store must be flagged by the decoder as unsafe: "
+        << undefined_insts[i].about;
+    EXPECT_EQ(nacl_arm_dec::UNDEFINED, first.safety())
         << "Instruction must be flagged as UNDEFINED: "
         << undefined_insts[i].about;
-
-    EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafe),
-              first.problem_code)
+    EXPECT_EQ(nacl_arm_val::kProblemUnsafe, first.problem())
         << "Instruction must be marked unsafe: "
         << undefined_insts[i].about;
   }
@@ -626,11 +719,11 @@ TEST_F(ValidatorTests, ConditionalBicsLdrTest) {
   if (problems.size() == 0) return;
 
   ProblemRecord problem = problems[0];
-  EXPECT_EQ(kDefaultBaseAddr + 4, problem.vaddr)
+  EXPECT_EQ(kDefaultBaseAddr + 4, problem.vaddr())
       << "Problem report should point to the ldr instruction.";
-  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, problem.safety);
-  EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafeLoadStore),
-            problem.problem_code);
+  EXPECT_NE(nacl_arm_val::kReportProblemSafety, problem.method());
+  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, problem.safety());
+  EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, problem.problem());
 }
 
 TEST_F(ValidatorTests, DifferentConditionsBicLdrTest) {
@@ -649,11 +742,11 @@ TEST_F(ValidatorTests, DifferentConditionsBicLdrTest) {
   if (problems.size() == 0) return;
 
   ProblemRecord problem = problems[0];
-  EXPECT_EQ(kDefaultBaseAddr + 4, problem.vaddr)
+  EXPECT_EQ(kDefaultBaseAddr + 4, problem.vaddr())
       << "Problem report should point to the ldr instruction.";
-  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, problem.safety);
-  EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafeLoadStore),
-            problem.problem_code);
+  EXPECT_NE(nacl_arm_val::kReportProblemSafety, problem.method());
+  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, problem.safety());
+  EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, problem.problem());
 }
 
 TEST_F(ValidatorTests, BfcLdrInstGoodTest) {
@@ -859,15 +952,17 @@ void ValidatorTests::validation_should_pass2(const arm_inst *pattern,
       << msg << " should have 1 problem at overlapping address " << last_addr;
 
   ProblemRecord first = problems[0];
-  EXPECT_EQ(last_addr, first.vaddr)
+  EXPECT_EQ(last_addr, first.vaddr())
       << "Problem in valid but mis-aligned pseudo-instruction ("
       << msg
       << ") must be reported at end of bundle";
-  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, first.safety)
+  EXPECT_NE(nacl_arm_val::kReportProblemSafety, first.method())
       << "Just crossing a bundle should not make a safe instruction unsafe: "
       << msg;
-  EXPECT_EQ(nacl::string(nacl_arm_val::kProblemPatternCrossesBundle),
-            first.problem_code);
+  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, first.safety())
+      << "Just crossing a bundle should not make a safe instruction unsafe: "
+      << msg;
+  EXPECT_EQ(nacl_arm_val::kProblemPatternCrossesBundle, first.problem());
 }
 
 vector<ProblemRecord> ValidatorTests::validation_should_fail(

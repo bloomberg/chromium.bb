@@ -41,6 +41,10 @@ enum SafetyLevel {
   MAY_BE_SAFE
 };
 
+// Returns the safety level associated with i (or UNKNOWN if no such safety
+// level exists).
+SafetyLevel Int2SafetyLevel(uint32_t i);
+
 // ------------------------------------------------------------------
 // The following list of Interface classes are "mixed" into the class
 // decoders as static constant fields. The point of these interfaces

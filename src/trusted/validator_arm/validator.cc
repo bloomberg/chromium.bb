@@ -23,6 +23,141 @@ using std::vector;
 
 namespace nacl_arm_val {
 
+// Note: When updating the code on ProblemSink, be sure to update
+// file problem_reporter.cc appropriately. Both files must maintain
+// user_data consistently for the code to work.
+
+static const size_t kUserDataSize[] = {
+  1,  // kReportProblemSafety,
+  0,  // kReportProblem,
+  1,  // kReportProblemAddress,
+  5,  // kReportProblemInstructionPair,
+  1,  // kReportProblemRegister,
+  6,  // kReportProblemRegisterInstructionPair,
+  1,  // kReportProblemRegisterList,
+  6,  // kReportProblemRegisterListInstructionPair
+};
+
+size_t ProblemSink::UserDataSize(ValidatorProblemMethod method) {
+  size_t index = static_cast<size_t>(method);
+  return (index < NACL_ARRAY_SIZE(kUserDataSize)) ? kUserDataSize[index] : 0;
+}
+
+void ProblemSink::ReportProblemInternal(uint32_t vaddr,
+                                        ValidatorProblem problem,
+                                        ValidatorProblemMethod method,
+                                        ValidatorProblemUserData user_data) {
+  UNREFERENCED_PARAMETER(vaddr);
+  UNREFERENCED_PARAMETER(problem);
+  UNREFERENCED_PARAMETER(method);
+  UNREFERENCED_PARAMETER(user_data);
+
+  // Before returning, be sure unused fields in user data are set to zero.
+  // This way, we don't need to fill in each ReportProblem... method.
+  for (size_t i = UserDataSize(method); i < ValidatorProblemUserDataSize; ++i) {
+    user_data[i] = 0;
+  };
+}
+
+void ProblemSink::ReportProblemSafety(
+    uint32_t vaddr, nacl_arm_dec::SafetyLevel safety) {
+  ValidatorProblemUserData user_data = {
+    static_cast<uint32_t>(safety),
+  };
+  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, kProblemUnsafe,
+                        kReportProblemSafety, user_data);;
+}
+
+void ProblemSink::ReportProblem(uint32_t vaddr, ValidatorProblem problem) {
+  ValidatorProblemUserData user_data = {
+  };
+  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem, kReportProblem, user_data);
+}
+
+void ProblemSink::ReportProblemAddress(
+    uint32_t vaddr, ValidatorProblem problem, uint32_t problem_vaddr) {
+  ValidatorProblemUserData user_data = {
+    problem_vaddr
+  };
+  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem, kReportProblemAddress, user_data);
+}
+
+void ProblemSink::ReportProblemInstructionPair(
+    uint32_t vaddr, ValidatorProblem problem,
+    ValidatorInstructionPairProblem pair_problem,
+    const DecodedInstruction& first, const DecodedInstruction& second) {
+  ValidatorProblemUserData user_data = {
+    static_cast<uint32_t>(pair_problem),
+    first.addr(),
+    first.inst().Bits(),
+    second.addr(),
+    second.inst().Bits()
+  };
+  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem,
+                        kReportProblemInstructionPair, user_data);
+}
+
+void ProblemSink::ReportProblemRegister(
+    uint32_t vaddr, ValidatorProblem problem,
+    nacl_arm_dec::Register reg) {
+  ValidatorProblemUserData user_data = {
+    reg.number()
+  };
+  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem, kReportProblemRegister, user_data);
+}
+
+void ProblemSink::ReportProblemRegisterInstructionPair(
+    uint32_t vaddr, ValidatorProblem problem,
+    ValidatorInstructionPairProblem pair_problem,
+    nacl_arm_dec::Register reg,
+    const DecodedInstruction& first, const DecodedInstruction& second) {
+  ValidatorProblemUserData user_data = {
+    static_cast<uint32_t>(pair_problem),
+    reg.number(),
+    first.addr(),
+    first.inst().Bits(),
+    second.addr(),
+    second.inst().Bits()
+  };
+  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem,
+                        kReportProblemRegisterInstructionPair, user_data);
+}
+
+void ProblemSink::ReportProblemRegisterList(
+    uint32_t vaddr, ValidatorProblem problem,
+    nacl_arm_dec::RegisterList registers) {
+  ValidatorProblemUserData user_data = {
+    registers.bits()
+  };
+  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem,
+                        kReportProblemRegisterList, user_data);
+}
+
+void ProblemSink::ReportProblemRegisterListInstructionPair(
+    uint32_t vaddr, ValidatorProblem problem,
+    ValidatorInstructionPairProblem pair_problem,
+    nacl_arm_dec::RegisterList registers,
+    const DecodedInstruction& first, const DecodedInstruction& second) {
+  ValidatorProblemUserData user_data = {
+    static_cast<uint32_t>(pair_problem),
+    registers.bits(),
+    first.addr(),
+    first.inst().Bits(),
+    second.addr(),
+    second.inst().Bits()
+  };
+  assert(NACL_ARRAY_SIZE(user_data) <= ValidatorProblemUserDataSize);
+  ReportProblemInternal(vaddr, problem,
+                        kReportProblemRegisterListInstructionPair, user_data);
+}
+
 /*********************************************************
  * Implementations of patterns used in the first pass.
  *
@@ -42,6 +177,29 @@ enum PatternMatch {
   // The pattern matches, and has detected a problem.
   PATTERN_UNSAFE
 };
+
+// Looks at the conditions associated with a pair of instructions
+// associated with a validator pattern, and determines what problems
+// the conditions may have played in not allowing the instruction
+// pair to be atomic.
+// Parameters:
+//    first: The first instruction in the pair wrt the direction being
+//        tested (not the order the instructions appear).
+//    second: The second instruction in the pair wrt to the direction
+//        being tested. Hence, we check if the conditions of the first
+//        instruction implies the conditions of the second.
+static ValidatorInstructionPairProblem GetPairConditionProblem(
+    const DecodedInstruction& first,
+    const DecodedInstruction& second) {
+  UNREFERENCED_PARAMETER(second);
+  if (first.defines(nacl_arm_dec::kCondsDontCareFlag)) {
+    return kFirstNotAllowsInInstructionPairs;
+  } else if (first.defines(kConditions)) {
+    return kFirstSetsConditionFlags;
+  } else {
+    return kConditionsOnPairNotSafe;
+  }
+}
 
 /*
  * Ensures that all loads/stores use a safe base address.  A base address is
@@ -81,7 +239,35 @@ static PatternMatch check_loadstore_mask(const SfiValidator &sfi,
     return PATTERN_SAFE_2;
   }
 
-  out->report_problem(second.addr(), second.safety(), kProblemUnsafeLoadStore);
+  // If reached, there is a problem!
+  // Try to best categorize the problem and report.
+  if (first.defines(second.base_address_register())) {
+    if (first.clears_bits(sfi.data_address_mask())) {
+      out->ReportProblemRegisterInstructionPair(
+          second.addr(),
+          kProblemUnsafeLoadStore,
+          GetPairConditionProblem(first, second),
+          second.base_address_register(),
+          first, second);
+    } else {
+      out->ReportProblemRegister(second.addr(),
+                                 kProblemUnsafeLoadStore,
+                                 second.base_address_register());
+    }
+  } else if (first.sets_Z_if_bits_clear(second.base_address_register(),
+                                        sfi.data_address_mask())) {
+    out->ReportProblemRegisterInstructionPair(
+        second.addr(),
+        kProblemUnsafeLoadStore,
+        GetPairConditionProblem(first, second),
+        second.base_address_register(), first, second);
+  } else if (second.base_address_register().Equals(kRegisterPc)) {
+    out->ReportProblem(second.addr(), kProblemIllegalPcLoadStore);
+  } else {
+    out->ReportProblemRegister(second.addr(),
+                               kProblemUnsafeLoadStore,
+                               second.base_address_register());
+  }
   return PATTERN_UNSAFE;
 }
 
@@ -103,7 +289,23 @@ static PatternMatch check_branch_mask(const SfiValidator &sfi,
     return PATTERN_SAFE_2;
   }
 
-  out->report_problem(second.addr(), second.safety(), kProblemUnsafeBranch);
+  // If reached, there is a problem!
+  // Try to better diagnose the problem being reported.
+  if (first.defines(second.branch_target_register())) {
+    if (first.clears_bits(sfi.code_address_mask())) {
+      out->ReportProblemRegisterInstructionPair(
+          second.addr(),
+          kProblemUnsafeBranch,
+          GetPairConditionProblem(first, second),
+          second.branch_target_register(), first, second);
+    } else {
+      out->ReportProblemRegister(
+          second.addr(), kProblemUnsafeBranch, second.branch_target_register());
+    }
+  } else {
+    out->ReportProblemRegister(second.addr(), kProblemUnsafeBranch,
+                               second.branch_target_register());
+  }
   return PATTERN_UNSAFE;
 }
 
@@ -123,6 +325,7 @@ static PatternMatch check_data_register_update(const SfiValidator &sfi,
   // Exempt updates due to writeback
   RegisterList data_addr_defs(first.defs().
                               Intersect(sfi.data_address_registers()));
+
   if (first.immediate_addressing_defs().
       Intersect(sfi.data_address_registers()).Equals(data_addr_defs)) {
     return NO_MATCH;
@@ -130,12 +333,24 @@ static PatternMatch check_data_register_update(const SfiValidator &sfi,
 
   if (second.defines_all(data_addr_defs)
       && second.clears_bits(sfi.data_address_mask())
-      && second.provably_follows(first)
-      ) {
+      && second.provably_follows(first)) {
     return PATTERN_SAFE_2;
   }
 
-  out->report_problem(first.addr(), first.safety(), kProblemUnsafeDataWrite);
+  // If reached, there is a problem!
+  // Try to better diagnose the problem being reported.
+  if (second.defines_all(data_addr_defs) &&
+      second.clears_bits(sfi.data_address_mask())) {
+    out->ReportProblemRegisterListInstructionPair(
+        first.addr(),
+        kProblemUnsafeDataWrite,
+        GetPairConditionProblem(first, second),
+        data_addr_defs, first, second);
+  } else {
+    out->ReportProblemRegisterList(first.addr(),
+                                   kProblemUnsafeDataWrite,
+                                   data_addr_defs);
+  }
   return PATTERN_UNSAFE;
 }
 
@@ -153,7 +368,7 @@ static PatternMatch check_call_position(const SfiValidator &sfi,
   if (inst.defines_all(RegisterList(kRegisterPc).Add(kRegisterLink))) {
     uint32_t last_slot = sfi.bundle_for_address(inst.addr()).end_addr() - 4;
     if (inst.addr() != last_slot) {
-      out->report_problem(inst.addr(), inst.safety(), kProblemMisalignedCall);
+      out->ReportProblem(inst.addr(), kProblemMisalignedCall);
       return PATTERN_UNSAFE;
     }
   }
@@ -167,7 +382,9 @@ static PatternMatch check_read_only(const SfiValidator &sfi,
                                     const DecodedInstruction &inst,
                                     ProblemSink *out) {
   if (inst.defines_any(sfi.read_only_registers())) {
-    out->report_problem(inst.addr(), inst.safety(), kProblemReadOnlyRegister);
+    out->ReportProblemRegisterList(
+        inst.addr(), kProblemReadOnlyRegister,
+        inst.defs().Intersect(sfi.read_only_registers()));
     return PATTERN_UNSAFE;
   }
 
@@ -192,7 +409,7 @@ static PatternMatch check_pc_writes(const SfiValidator &sfi,
   if (inst.clears_bits(sfi.code_address_mask())) {
     return PATTERN_SAFE;
   } else {
-    out->report_problem(inst.addr(), inst.safety(), kProblemUnsafeBranch);
+    out->ReportProblemRegister(inst.addr(), kProblemUnsafeBranch, kRegisterPc);
     return PATTERN_UNSAFE;
   }
 }
@@ -394,7 +611,7 @@ bool SfiValidator::validate_fallthrough(const CodeSegment &segment,
                             decode_state_.decode(segment[va]));
 
     if (inst.safety() != nacl_arm_dec::MAY_BE_SAFE) {
-      out->report_problem(va, inst.safety(), kProblemUnsafe);
+      out->ReportProblemSafety(va, inst.safety());
       if (!out->should_continue()) {
         return false;
       }
@@ -464,8 +681,7 @@ bool SfiValidator::validate_branches(const vector<CodeSegment> &segments,
     uint32_t target_va = inst.branch_target();
     if (address_contained(target_va, segments)) {
       if (critical.contains(target_va)) {
-        out->report_problem(va, inst.safety(), kProblemBranchSplitsPattern,
-                            target_va);
+        out->ReportProblemAddress(va, kProblemBranchSplitsPattern, target_va);
         if (!out->should_continue()) {
           return false;
         }
@@ -474,8 +690,7 @@ bool SfiValidator::validate_branches(const vector<CodeSegment> &segments,
     } else if ((target_va & code_address_mask()) == 0) {
       // Allow bundle-aligned, in-range direct jump.
     } else {
-      out->report_problem(va, inst.safety(), kProblemBranchInvalidDest,
-                          target_va);
+      out->ReportProblemAddress(va, kProblemBranchInvalidDest, target_va);
       if (!out->should_continue()) {
         return false;
       }
@@ -561,8 +776,10 @@ bool SfiValidator::apply_patterns(const DecodedInstruction &first,
         if (bundle_for_address(first.addr())
             != bundle_for_address(second.addr())) {
           complete_success = false;
-          out->report_problem(first.addr(), first.safety(),
-                              kProblemPatternCrossesBundle);
+          out->ReportProblemInstructionPair(
+              first.addr(), kProblemPatternCrossesBundle,
+              kNoSpecificPairProblem,
+              first, second);
         } else {
           critical->add(second.addr());
         }

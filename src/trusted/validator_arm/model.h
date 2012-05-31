@@ -39,11 +39,14 @@ namespace nacl_arm_dec {
 
 class RegisterList;
 
+static const uint32_t kRegisterNoneNumber = 31;
+
 // A (POD) value class that names a single register.  We could use a typedef
 // for this, but it introduces some ambiguity problems because of the
 // implicit conversion to/from int.
 class Register {
  public:
+  inline Register() : number_(kRegisterNoneNumber) {}
   explicit inline Register(uint32_t number) : number_(number) {}
 
   // Note: can't make explicit without introducing compile-time errors
@@ -66,6 +69,12 @@ class Register {
     return number_ == r.number_;
   }
 
+  // Changes the value of a register.
+  inline Register& Copy(const Register& r) {
+    number_ = r.number_;
+    return *this;
+  }
+
  private:
   uint32_t number_;
 
@@ -78,7 +87,7 @@ class Register {
 // it can be added to any RegisterList with no effect.
 // Note that -1 or 32 can't be used here because C++ doesn't define a portable
 // meaning for such shift distances.
-static const Register kRegisterNone(31);
+static const Register kRegisterNone(kRegisterNoneNumber);
 
 // The conditions (i.e. APSR N, Z, C, and V) are collectively modeled as r16.
 // These bits of the APSR register are separately tracked, so we can
@@ -178,6 +187,15 @@ class RegisterList {
     return bits_;
   }
 
+  // Returns the number of elements in the register list.
+  inline uint32_t size(uint32_t limit = 32) const {
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < limit;  ++i) {
+      if (bits_ & (1 << i)) ++count;
+    }
+    return count;
+  }
+
  private:
   uint32_t bits_;
 
@@ -218,6 +236,8 @@ class Instruction {
   // ****************************
   // Arm 32-bit instruction API *
   // ****************************
+
+  inline Instruction() : bits_(0) {}
 
   inline Instruction(const Instruction& inst) : bits_(inst.bits_) {}
 

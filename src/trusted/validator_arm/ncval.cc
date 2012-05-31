@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -15,13 +16,19 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/validator/ncfileutil.h"
 #include "native_client/src/trusted/validator_arm/model.h"
+#include "native_client/src/trusted/validator_arm/problem_reporter.h"
 #include "native_client/src/trusted/validator_arm/validator.h"
 
 using nacl_arm_val::SfiValidator;
 using nacl_arm_val::CodeSegment;
+using nacl_arm_val::ProblemReporter;
+using nacl_arm_val::ValidatorProblem;
+using nacl_arm_val::kValidatorProblemSize;
+using nacl_arm_dec::MAY_BE_SAFE;
 
 using std::string;
 using std::vector;
+
 
 /*
  * Reports problems in an easily-parsed textual format, for consumption by a
@@ -34,20 +41,32 @@ using std::vector;
  *
  * For possible problem ID strings, see validator.h.
  */
-class CommandLineProblemSink : public nacl_arm_val::ProblemSink {
+class NcvalProblemReporter : public ProblemReporter {
  public:
-  virtual void report_problem(uint32_t vaddr,
-                              nacl_arm_dec::SafetyLevel safety,
-                              const nacl::string &problem_code,
-                              uint32_t ref_vaddr) {
-    fprintf(stderr, "ncval: %08X %d %s %08X\n", vaddr, safety,
-        problem_code.c_str(), ref_vaddr);
-  }
   virtual bool should_continue() {
     // Collect *all* problems before returning!
     return true;
   }
+
+ protected:
+  virtual void ReportProblemInternal(
+      uint32_t vaddr,
+      nacl_arm_val::ValidatorProblem problem,
+      nacl_arm_val::ValidatorProblemMethod method,
+      nacl_arm_val::ValidatorProblemUserData user_data);
 };
+
+static const size_t kBufferSize = 256;
+
+void NcvalProblemReporter::
+ReportProblemInternal(uint32_t vaddr,
+                      nacl_arm_val::ValidatorProblem problem,
+                      nacl_arm_val::ValidatorProblemMethod method,
+                      nacl_arm_val::ValidatorProblemUserData user_data) {
+  char buffer[kBufferSize];
+  ToText(buffer, kBufferSize, vaddr, problem, method, user_data);
+  fprintf(stderr, "%s\n", buffer);
+}
 
 const uint32_t kOneGig = 1U * 1024 * 1024 * 1024;
 
@@ -65,7 +84,7 @@ int validate(const ncfile *ncf, bool use_zero_masks) {
     validator.change_masks(0, 0);
   }
 
-  CommandLineProblemSink sink;
+  NcvalProblemReporter reporter;
 
   Elf_Shdr *shdr = ncf->sheaders;
 
@@ -82,7 +101,7 @@ int validate(const ncfile *ncf, bool use_zero_masks) {
 
   std::sort(segments.begin(), segments.end());
 
-  bool success = validator.validate(segments, &sink);
+  bool success = validator.validate(segments, &reporter);
   if (!success) return 1;
   return 0;
 }

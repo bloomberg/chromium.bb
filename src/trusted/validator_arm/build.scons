@@ -92,10 +92,14 @@ env.ComponentLibrary('ncvalidate_arm_v2',
                      LIBS=['arm_validator_core',
                            '${OPTIONAL_COVERAGE_LIBS}'])
 
+env.ComponentLibrary('arm_validator_reporters',
+                     ['problem_reporter.cc'])
+
 ncval = env.ComponentProgram(
     'arm-ncval-core',
     ['ncval.cc'],
     LIBS=['arm_validator_core',
+          'arm_validator_reporters',
           env.NaClTargetArchSuffix('ncfileutils'),
           '${OPTIONAL_COVERAGE_LIBS}'])
 
@@ -153,7 +157,8 @@ gtest_env.ComponentLibrary('decoder_test_tools',
 # a program of the same name.
 validator_tests_exe = gtest_env.ComponentProgram('arm_validator_tests',
                                ['validator_tests.cc'],
-                               EXTRA_LIBS=['arm_validator_core'])
+                               EXTRA_LIBS=['arm_validator_core',
+                                           'arm_validator_reporters'])
 
 test_node = gtest_env.CommandTest(
     'validator_tests.out',

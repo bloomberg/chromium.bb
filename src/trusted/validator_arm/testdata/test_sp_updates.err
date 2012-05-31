@@ -1,9 +1,9 @@
-ncval: 00020018 6 kProblemUnsafeDataWrite 00000000
-ncval: 00020028 6 kProblemUnsafeDataWrite 00000000
-ncval: 0002002C 6 kProblemPatternCrossesBundle 00000000
-ncval: 0002003C 6 kProblemPatternCrossesBundle 00000000
-ncval: 00020050 6 kProblemUnsafeDataWrite 00000000
-ncval: 00020060 6 kProblemUnsafeDataWrite 00000000
-ncval: 00020070 6 kProblemUnsafeDataWrite 00000000
-ncval: 00020078 6 kProblemUnsafeDataWrite 00000000
-ncval: 00020080 6 kProblemUnsafeDataWrite 00000000
+ncval: 00020018 Updating sp without masking in following instruction.
+ncval: 00020028 Updating sp without masking in following instruction.
+ncval: 0002002c Instruction pair [0002002c, 00020030] crossses bundle boundary.
+ncval: 0002003c Instruction pair [0002003c, 00020040] crossses bundle boundary.
+ncval: 00020050 Updating sp without masking in following instruction.
+ncval: 00020060 Updating sp without masking in following instruction.
+ncval: 00020070 Updating sp without masking in following instruction.
+ncval: 00020078 Updating sp without masking in following instruction.
+ncval: 00020080 Updating sp without masking in following instruction.
