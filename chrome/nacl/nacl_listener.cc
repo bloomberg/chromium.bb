@@ -223,7 +223,6 @@ void NaClListener::OnMsgStart(const nacl::NaClStartParams& params) {
   if (params.validation_cache_enabled) {
     // SHA256 block size.
     CHECK_EQ(params.validation_cache_key.length(), (size_t) 64);
-    LOG(INFO) << "NaCl validation cache enabled.";
     // The cache structure is not freed and exists until the NaCl process exits.
     args->validation_cache = CreateValidationCache(
         new BrowserValidationDBProxy(this), params.validation_cache_key,

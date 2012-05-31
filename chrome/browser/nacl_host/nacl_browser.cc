@@ -92,7 +92,7 @@ NaClBrowser::NaClBrowser()
       irt_filepath_(),
       irt_state_(NaClResourceUninitialized),
       validation_cache_file_path_(),
-      validation_cache_is_enabled_(CheckEnvVar("NACL_VALIDATION_CACHE", false)),
+      validation_cache_is_enabled_(CheckEnvVar("NACL_VALIDATION_CACHE", true)),
       validation_cache_is_modified_(false),
       validation_cache_state_(NaClResourceUninitialized),
       ok_(true) {
