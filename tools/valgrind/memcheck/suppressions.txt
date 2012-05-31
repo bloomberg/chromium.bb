@@ -5827,6 +5827,17 @@
    fun:_ZN13sync_notifier31NonBlockingInvalidationNotifier4Core17UpdateCredentialsERKSsS3_
 }
 
+{
+   bug_130449
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12invalidation20NewPermanentCallbackINS_22InvalidationClientImplES1_St4pairINS_6StatusESsEEEPN4base8CallbackIFvT1_EEEPT_MT0_FvS7_E
+   fun:_ZN12invalidation22InvalidationClientImpl34ScheduleStartAfterReadingStateBlobEv
+   fun:_ZN12invalidation22InvalidationClientImpl5StartEv
+   fun:_ZN13sync_notifier24ChromeInvalidationClient5StartERKSsS2_S2_RKSt3mapIN8syncable9ModelTypeElSt4lessIS5_ESaISt4pairIKS5_lEEERKN12browser_sync10WeakHandleINS_24InvalidationStateTrackerEEEPNS0_8ListenerE
+   fun:_ZN13sync_notifier20InvalidationNotifier17UpdateCredentialsERKSsS2_
+   fun:_ZN13sync_notifier31NonBlockingInvalidationNotifier4Core17UpdateCredentialsERKSsS3_
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
