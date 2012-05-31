@@ -30,6 +30,8 @@ std::string GetUserName(const std::string& email) {
 
 User::User(const std::string& email, bool is_guest)
     : email_(email),
+      user_image_(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          kDefaultImageResources[0])),
       oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
       image_index_(kInvalidImageIndex),
       image_is_stub_(false),
@@ -42,21 +44,19 @@ User::User(const std::string& email, bool is_guest)
   } else {
     is_demo_user_ = true;
   }
-  image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      kDefaultImageResources[0]);
 }
 
 User::~User() {}
 
-void User::SetImage(const SkBitmap& image, int image_index) {
-  image_ = image;
+void User::SetImage(const UserImage& user_image, int image_index) {
+  user_image_ = user_image;
   image_index_ = image_index;
   image_is_stub_ = false;
 }
 
 void User::SetStubImage(int image_index) {
-  image_ = *ResourceBundle::GetSharedInstance().
-      GetBitmapNamed(kStubImageResourceID);
+  user_image_.SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      kStubImageResourceID));
   image_index_ = image_index;
   image_is_stub_ = true;
 }
@@ -75,6 +75,14 @@ std::string User::GetDisplayName() const {
 
 bool User::NeedsNameTooltip() const {
   return !UserManager::Get()->IsDisplayNameUnique(GetDisplayName());
+}
+
+bool User::GetAnimatedImage(UserImage::RawImage* raw_image) const {
+  if (raw_image && has_animated_image()) {
+    *raw_image = user_image_.raw_image();
+    return true;
+  }
+  return false;
 }
 
 std::string User::GetNameTooltip() const {

@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
+#include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -109,7 +110,8 @@ void UserImageScreen::StopCamera() {
 
 void UserImageScreen::OnPhotoTaken(const SkBitmap& image) {
   UserManager* user_manager = UserManager::Get();
-  user_manager->SaveUserImage(user_manager->GetLoggedInUser().email(), image);
+  user_manager->SaveUserImage(user_manager->GetLoggedInUser().email(),
+                              UserImage(image));
 
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 
