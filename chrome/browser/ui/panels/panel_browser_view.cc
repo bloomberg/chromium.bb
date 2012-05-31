@@ -648,23 +648,14 @@ void NativePanelTestingWin::FinishDragTitlebar() {
 }
 
 bool NativePanelTestingWin::VerifyDrawingAttention() const {
-  PanelBrowserFrameView* frame_view = panel_browser_view_->GetFrameView();
-  SkColor attention_color = frame_view->GetTitleColor(
-      PanelBrowserFrameView::PAINT_FOR_ATTENTION);
-  return attention_color == frame_view->title_label_->enabled_color();
+  return panel_browser_view_->GetFrameView()->paint_state_ ==
+         PanelBrowserFrameView::PAINT_FOR_ATTENTION;
 }
 
 bool NativePanelTestingWin::VerifyActiveState(bool is_active) {
-  PanelBrowserFrameView* frame_view = panel_browser_view_->GetFrameView();
-
-  PanelBrowserFrameView::PaintState expected_paint_state =
-      is_active ? PanelBrowserFrameView::PAINT_AS_ACTIVE
-                : PanelBrowserFrameView::PAINT_AS_INACTIVE;
-  if (frame_view->paint_state_ != expected_paint_state)
-    return false;
-
-  SkColor expected_color = frame_view->GetTitleColor(expected_paint_state);
-  return expected_color == frame_view->title_label_->enabled_color();
+  return panel_browser_view_->GetFrameView()->paint_state_ ==
+         (is_active ? PanelBrowserFrameView::PAINT_AS_ACTIVE
+                    : PanelBrowserFrameView::PAINT_AS_INACTIVE);
 }
 
 bool NativePanelTestingWin::IsWindowSizeKnown() const {

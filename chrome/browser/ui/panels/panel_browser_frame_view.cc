@@ -19,7 +19,6 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -27,10 +26,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/painter.h"
 #include "ui/views/widget/widget_delegate.h"
 
 #if defined(USE_AURA) && defined(USE_X11)
@@ -41,9 +38,6 @@ using content::WebContents;
 
 namespace {
 
-// The height in pixels of the titlebar.
-const int kTitlebarHeight = 24;
-
 // The thickness in pixels of the border.
 #if defined(USE_AURA)
 // No border inside the window frame; see comment in PaintFrameBorder().
@@ -53,10 +47,6 @@ const int kNonResizableBorderThickness = 0;
 const int kResizableBorderThickness = 4;
 const int kNonResizableBorderThickness = 1;
 #endif
-
-// Client edge is only present on thick border when the panel is resizable.
-const int kResizableClientEdgeThickness = 1;
-const int kNonResizableClientEdgeThickness = 0;
 
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
@@ -72,67 +62,69 @@ const int kIconAndBorderSpacing = 4;
 // The height and width in pixels of the icon.
 const int kIconSize = 16;
 
+// The font to use to draw the title.
+const char* kTitleFontName = "Arial";
+const int kTitleFontSize = 14;
+
 // The spacing in pixels between the title and the icon on the left, or the
 // button on the right.
-const int kTitleSpacing = 8;
+const int kTitleSpacing = 13;
 
 // The spacing in pixels between the close button and the right border.
-const int kCloseButtonAndBorderSpacing = 8;
+const int kCloseButtonAndBorderSpacing = 13;
 
 // The spacing in pixels between the close button and the minimize/restore
 // button.
-const int kMinimizeButtonAndCloseButtonSpacing = 8;
+const int kMinimizeButtonAndCloseButtonSpacing = 13;
 
-// Colors used to draw active titlebar under default theme.
-const SkColor kActiveTitleTextDefaultColor = SK_ColorBLACK;
-const SkColor kActiveBackgroundDefaultColorStart = 0xfff0f8fa;
-const SkColor kActiveBackgroundDefaultColorEnd = 0xffc1d2dd;
+// Colors used to draw titlebar background under default theme.
+const SkColor kActiveBackgroundDefaultColor = SkColorSetRGB(0x3a, 0x3c, 0x3c);
+const SkColor kInactiveBackgroundDefaultColor = SkColorSetRGB(0x7a, 0x7c, 0x7c);
+const SkColor kAttentionBackgroundDefaultColor =
+    SkColorSetRGB(0xff, 0xab, 0x57);
 
-// Colors used to draw inactive titlebar under default theme.
-const SkColor kInactiveTitleTextDefaultColor = 0x80888888;
-const SkColor kInactiveBackgroundDefaultColorStart = 0xffffffff;
-const SkColor kInactiveBackgroundDefaultColorEnd = 0xffe7edf1;
+// Color used to draw the minimized panel.
+const SkColor kMinimizeBackgroundDefaultColor = SkColorSetRGB(0xf5, 0xf4, 0xf0);
+const SkColor kMinimizeBorderDefaultColor = SkColorSetRGB(0xc9, 0xc9, 0xc9);
 
-// Alpha value used in drawing inactive titlebar under default theme.
-const U8CPU kInactiveAlphaBlending = 0x80;
-
-// Colors used to draw titlebar for drawing attention under default theme.
-// It is also used in non-default theme since attention color is not defined
-// in the theme.
-const SkColor kAttentionTitleTextDefaultColor = SK_ColorWHITE;
-const SkColor kAttentionBackgroundDefaultColorStart = 0xffffab57;
-const SkColor kAttentionBackgroundDefaultColorEnd = 0xfff59338;
-
-// Color used to draw the border.
-const SkColor kBorderColor = 0xc0000000;
+// Color used to draw the title text under default theme.
+const SkColor kTitleTextDefaultColor = SkColorSetRGB(0xf9, 0xf9, 0xf9);
 
 // Color used to draw the divider line between the titlebar and the client area.
-const SkColor kDividerColor = 0xffb5b5b5;
+#if defined(USE_AURA)
+const SkColor kDividerColor = SkColorSetRGB(0xb5, 0xb5, 0xb5);
+#else
+const SkColor kDividerColor = SkColorSetRGB(0x5a, 0x5c, 0x5c);
+#endif
 
 struct ButtonResources {
   gfx::ImageSkia* normal_image;
   gfx::ImageSkia* hover_image;
+  gfx::ImageSkia* push_image;
   string16 tooltip_text;
 
-  ButtonResources(int normal_image_id, int hover_image_id, int tooltip_id)
+  ButtonResources(int normal_image_id, int hover_image_id, int push_image_id,
+                  int tooltip_id)
       : normal_image(NULL),
-        hover_image(NULL) {
+        hover_image(NULL),
+        push_image(NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     normal_image = rb.GetImageSkiaNamed(normal_image_id);
     hover_image = rb.GetImageSkiaNamed(hover_image_id);
+    push_image = rb.GetImageSkiaNamed(push_image_id);
     tooltip_text = l10n_util::GetStringUTF16(tooltip_id);
   }
 };
 
 struct EdgeResources {
-  SkBitmap* top_left;
-  SkBitmap* top;
-  SkBitmap* top_right;
-  SkBitmap* right;
-  SkBitmap* bottom_right;
-  SkBitmap* bottom;
-  SkBitmap* bottom_left;
-  SkBitmap* left;
+  gfx::ImageSkia* top_left;
+  gfx::ImageSkia* top;
+  gfx::ImageSkia* top_right;
+  gfx::ImageSkia* right;
+  gfx::ImageSkia* bottom_right;
+  gfx::ImageSkia* bottom;
+  gfx::ImageSkia* bottom_left;
+  gfx::ImageSkia* left;
 
   EdgeResources(int top_left_id, int top_id, int top_right_id, int right_id,
                 int bottom_right_id, int bottom_id, int bottom_left_id,
@@ -146,30 +138,21 @@ struct EdgeResources {
         bottom_left(NULL),
         left(NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    top_left = rb.GetBitmapNamed(top_left_id);
-    top = rb.GetBitmapNamed(top_id);
-    top_right = rb.GetBitmapNamed(top_right_id);
-    right = rb.GetBitmapNamed(right_id);
-    bottom_right = rb.GetBitmapNamed(bottom_right_id);
-    bottom = rb.GetBitmapNamed(bottom_id);
-    bottom_left = rb.GetBitmapNamed(bottom_left_id);
-    left = rb.GetBitmapNamed(left_id);
+    top_left = rb.GetImageSkiaNamed(top_left_id);
+    top = rb.GetImageSkiaNamed(top_id);
+    top_right = rb.GetImageSkiaNamed(top_right_id);
+    right = rb.GetImageSkiaNamed(right_id);
+    bottom_right = rb.GetImageSkiaNamed(bottom_right_id);
+    bottom = rb.GetImageSkiaNamed(bottom_id);
+    bottom_left = rb.GetImageSkiaNamed(bottom_left_id);
+    left = rb.GetImageSkiaNamed(left_id);
   }
 };
 
-SkBitmap* CreateGradientBitmap(SkColor start_color, SkColor end_color) {
-  int gradient_size = kResizableBorderThickness +
-      kResizableClientEdgeThickness + kTitlebarHeight;
-  SkShader* shader = gfx::CreateGradientShader(
-      0, gradient_size, start_color, end_color);
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setAntiAlias(true);
-  paint.setShader(shader);
-  shader->unref();
-  gfx::Canvas canvas(gfx::Size(1, gradient_size), true);
-  canvas.DrawRect(gfx::Rect(0, 0, 1, gradient_size), paint);
-  return new SkBitmap(canvas.ExtractBitmap());
+gfx::ImageSkia* CreateImageForColor(SkColor color) {
+  gfx::Canvas canvas(gfx::Size(1, 1), true);
+  canvas.DrawColor(color);
+  return new gfx::ImageSkia(canvas.ExtractBitmap());
 }
 
 const ButtonResources& GetCloseButtonResources() {
@@ -177,6 +160,7 @@ const ButtonResources& GetCloseButtonResources() {
   if (!buttons) {
     buttons = new ButtonResources(IDR_PANEL_CLOSE,
                                   IDR_PANEL_CLOSE_H,
+                                  IDR_PANEL_CLOSE_C,
                                   IDS_PANEL_CLOSE_TOOLTIP);
   }
   return *buttons;
@@ -187,6 +171,7 @@ const ButtonResources& GetMinimizeButtonResources() {
   if (!buttons) {
     buttons = new ButtonResources(IDR_PANEL_MINIMIZE,
                                   IDR_PANEL_MINIMIZE_H,
+                                  IDR_PANEL_MINIMIZE_C,
                                   IDS_PANEL_MINIMIZE_TOOLTIP);
   }
   return *buttons;
@@ -197,6 +182,7 @@ const ButtonResources& GetRestoreButtonResources() {
   if (!buttons) {
     buttons = new ButtonResources(IDR_PANEL_RESTORE,
                                   IDR_PANEL_RESTORE_H,
+                                  IDR_PANEL_RESTORE_C,
                                   IDS_PANEL_RESTORE_TOOLTIP);
   }
   return *buttons;
@@ -228,38 +214,37 @@ const EdgeResources& GetClientEdges() {
 
 const gfx::Font& GetTitleFont() {
   static gfx::Font* font = NULL;
-  if (!font) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    font = new gfx::Font(rb.GetFont(ResourceBundle::BoldFont));
-  }
+  if (!font)
+    font = new gfx::Font(kTitleFontName, kTitleFontSize);
   return *font;
 }
 
-SkBitmap* GetActiveBackgroundDefaultBitmap() {
-  static SkBitmap* bitmap = NULL;
-  if (!bitmap) {
-    bitmap = CreateGradientBitmap(kActiveBackgroundDefaultColorStart,
-                                  kActiveBackgroundDefaultColorEnd);
-  }
-  return bitmap;
+const gfx::ImageSkia* GetActiveBackgroundDefaultImage() {
+  static gfx::ImageSkia* image = NULL;
+  if (!image)
+    image = CreateImageForColor(kActiveBackgroundDefaultColor);
+  return image;
 }
 
-SkBitmap* GetInactiveBackgroundDefaultBitmap() {
-  static SkBitmap* bitmap = NULL;
-  if (!bitmap) {
-    bitmap = CreateGradientBitmap(kInactiveBackgroundDefaultColorStart,
-                                  kInactiveBackgroundDefaultColorEnd);
-  }
-  return bitmap;
+const gfx::ImageSkia* GetInactiveBackgroundDefaultImage() {
+  static gfx::ImageSkia* image = NULL;
+  if (!image)
+    image = CreateImageForColor(kInactiveBackgroundDefaultColor);
+  return image;
 }
 
-SkBitmap* GetAttentionBackgroundDefaultBitmap() {
-  static SkBitmap* bitmap = NULL;
-  if (!bitmap) {
-    bitmap = CreateGradientBitmap(kAttentionBackgroundDefaultColorStart,
-                                  kAttentionBackgroundDefaultColorEnd);
-  }
-  return bitmap;
+const gfx::ImageSkia* GetAttentionBackgroundDefaultImage() {
+  static gfx::ImageSkia* image = NULL;
+  if (!image)
+    image = CreateImageForColor(kAttentionBackgroundDefaultColor);
+  return image;
+}
+
+const gfx::ImageSkia* GetMinimizeBackgroundDefaultImage() {
+  static gfx::ImageSkia* image = NULL;
+  if (!image)
+    image = CreateImageForColor(kMinimizeBackgroundDefaultColor);
+  return image;
 }
 
 bool IsHitTestValueForResizing(int hc) {
@@ -288,6 +273,8 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
                           close_button_resources.normal_image);
   close_button_->SetImage(views::CustomButton::BS_HOT,
                           close_button_resources.hover_image);
+  close_button_->SetImage(views::CustomButton::BS_PUSHED,
+                          close_button_resources.push_image);
   close_button_->SetTooltipText(close_button_resources.tooltip_text);
   close_button_->SetAccessibleName(close_button_resources.tooltip_text);
   AddChildView(close_button_);
@@ -299,6 +286,8 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
                              minimize_button_resources.normal_image);
   minimize_button_->SetImage(views::CustomButton::BS_HOT,
                              minimize_button_resources.hover_image);
+  minimize_button_->SetImage(views::CustomButton::BS_PUSHED,
+                             minimize_button_resources.push_image);
   minimize_button_->SetTooltipText(minimize_button_resources.tooltip_text);
   minimize_button_->SetAccessibleName(minimize_button_resources.tooltip_text);
   AddChildView(minimize_button_);
@@ -310,6 +299,8 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
                             restore_button_resources.normal_image);
   restore_button_->SetImage(views::CustomButton::BS_HOT,
                             restore_button_resources.hover_image);
+  restore_button_->SetImage(views::CustomButton::BS_PUSHED,
+                            restore_button_resources.push_image);
   restore_button_->SetTooltipText(restore_button_resources.tooltip_text);
   restore_button_->SetAccessibleName(restore_button_resources.tooltip_text);
   restore_button_->SetVisible(false);  // only visible when panel is minimized
@@ -437,6 +428,8 @@ void PanelBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   PaintState paint_state;
   if (panel_browser_view_->panel()->IsDrawingAttention())
     paint_state = PAINT_FOR_ATTENTION;
+  else if (bounds().height() <= panel::kMinimizedPanelHeight)
+    paint_state = PAINT_AS_MINIMIZED;
   else if (panel_browser_view_->focused() &&
            !panel_browser_view_->force_to_paint_as_inactive())
     paint_state = PAINT_AS_ACTIVE;
@@ -446,7 +439,7 @@ void PanelBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   UpdateControlStyles(paint_state);
   PaintFrameBackground(canvas);
   PaintFrameEdge(canvas);
-  PaintClientEdge(canvas);
+  PaintDivider(canvas);
 }
 
 void PanelBrowserFrameView::OnThemeChanged() {
@@ -500,7 +493,7 @@ void PanelBrowserFrameView::Layout() {
 
   // Layout the title.
   int title_x = title_icon_->bounds().right() + kTitleSpacing;
-  int title_height = BrowserFrame::GetTitleFont().GetHeight();
+  int title_height = GetTitleFont().GetHeight();
   title_label_->SetBounds(
       title_x,
       icon_y + ((kIconSize - title_height - 1) / 2),
@@ -591,13 +584,13 @@ gfx::ImageSkia PanelBrowserFrameView::GetFaviconForTabIconView() {
 
 int PanelBrowserFrameView::NonClientBorderThickness() const {
   if (CanResize())
-    return kResizableBorderThickness + kResizableClientEdgeThickness;
+    return kResizableBorderThickness;
   else
-    return kNonResizableBorderThickness + kNonResizableClientEdgeThickness;
+    return kNonResizableBorderThickness;
 }
 
 int PanelBrowserFrameView::NonClientTopBorderHeight() const {
-  return NonClientBorderThickness() + kTitlebarHeight;
+  return panel::kTitlebarHeight;
 }
 
 gfx::Size PanelBrowserFrameView::NonClientAreaSize() const {
@@ -620,37 +613,50 @@ bool PanelBrowserFrameView::UsingDefaultTheme(PaintState paint_state) const {
 }
 
 SkColor PanelBrowserFrameView::GetTitleColor(PaintState paint_state) const {
-  bool use_default = UsingDefaultTheme(paint_state);
+  return UsingDefaultTheme(paint_state) ?
+      GetDefaultTitleColor(paint_state) :
+      GetThemedTitleColor(paint_state);
+}
+
+SkColor PanelBrowserFrameView::GetDefaultTitleColor(
+    PaintState paint_state) const {
+  return kTitleTextDefaultColor;
+}
+
+SkColor PanelBrowserFrameView::GetThemedTitleColor(
+    PaintState paint_state) const {
+  return GetThemeProvider()->GetColor(paint_state == PAINT_AS_ACTIVE ?
+      ThemeService::COLOR_TAB_TEXT : ThemeService::COLOR_BACKGROUND_TAB_TEXT);
+}
+
+const gfx::ImageSkia* PanelBrowserFrameView::GetFrameBackground(
+    PaintState paint_state) const {
+  return UsingDefaultTheme(paint_state) ?
+      GetDefaultFrameBackground(paint_state) :
+      GetThemedFrameBackground(paint_state);
+}
+
+const gfx::ImageSkia* PanelBrowserFrameView::GetDefaultFrameBackground(
+    PaintState paint_state) const {
   switch (paint_state) {
     case PAINT_AS_INACTIVE:
-      return use_default ? kActiveTitleTextDefaultColor: SkColorSetA(
-          GetThemeProvider()->GetColor(ThemeService::COLOR_BACKGROUND_TAB_TEXT),
-          kInactiveAlphaBlending);
+      return GetInactiveBackgroundDefaultImage();
     case PAINT_AS_ACTIVE:
-      return use_default ? kActiveTitleTextDefaultColor :
-          GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT);
+      return GetActiveBackgroundDefaultImage();
+    case PAINT_AS_MINIMIZED:
+      return GetMinimizeBackgroundDefaultImage();
     case PAINT_FOR_ATTENTION:
-      return kAttentionTitleTextDefaultColor;
+      return GetAttentionBackgroundDefaultImage();
     default:
       NOTREACHED();
-      return SkColor();
+      return GetInactiveBackgroundDefaultImage();
   }
 }
 
-SkBitmap* PanelBrowserFrameView::GetFrameTheme(PaintState paint_state) const {
-  bool use_default = UsingDefaultTheme(paint_state);
-  switch (paint_state) {
-    case PAINT_AS_INACTIVE:
-      return use_default ? GetInactiveBackgroundDefaultBitmap() :
-          GetThemeProvider()->GetBitmapNamed(IDR_THEME_TAB_BACKGROUND);
-    case PAINT_AS_ACTIVE:
-      return use_default ? GetActiveBackgroundDefaultBitmap() :
-          GetThemeProvider()->GetBitmapNamed(IDR_THEME_TOOLBAR);
-    case PAINT_FOR_ATTENTION:
-      return GetAttentionBackgroundDefaultBitmap();
-    default:
-      return GetInactiveBackgroundDefaultBitmap();
-  }
+const gfx::ImageSkia* PanelBrowserFrameView::GetThemedFrameBackground(
+    PaintState paint_state) const {
+  return GetThemeProvider()->GetImageSkiaNamed(paint_state == PAINT_AS_ACTIVE ?
+      IDR_THEME_TOOLBAR : IDR_THEME_TAB_BACKGROUND);
 }
 
 void PanelBrowserFrameView::UpdateControlStyles(PaintState paint_state) {
@@ -680,43 +686,38 @@ void PanelBrowserFrameView::UpdateControlStyles(PaintState paint_state) {
 void PanelBrowserFrameView::PaintFrameBackground(gfx::Canvas* canvas) {
   int top_area_height = NonClientTopBorderHeight();
   int thickness = NonClientBorderThickness();
-  SkBitmap* bitmap = GetFrameTheme(paint_state_);
+  const gfx::ImageSkia* image = GetFrameBackground(paint_state_);
 
   // Top area, including title-bar.
-  canvas->TileImageInt(*bitmap, 0, 0, width(), top_area_height);
+  canvas->TileImageInt(*image, 0, 0, width(), top_area_height);
 
   // For all the non-client area below titlebar, we paint it by using the last
-  // line from the theme bitmap, instead of using the frame color provided
+  // line from the theme image, instead of using the frame color provided
   // in the theme because the frame color in some themes is very different from
   // the tab colors we use to render the titlebar and it can produce abrupt
   // transition which looks bad.
 
   // Left border, below title-bar.
-  canvas->DrawBitmapInt(*bitmap, 0, top_area_height - 1, thickness, 1,
+  canvas->DrawBitmapInt(*image, 0, top_area_height - 1, thickness, 1,
       0, top_area_height, thickness, height() - top_area_height, false);
 
   // Right border, below title-bar.
-  canvas->DrawBitmapInt(*bitmap, (width() % bitmap->width()) - thickness,
+  canvas->DrawBitmapInt(*image, (width() % image->width()) - thickness,
       top_area_height - 1, thickness, 1,
       width() - thickness, top_area_height,
       thickness, height() - top_area_height, false);
 
   // Bottom border.
-  canvas->DrawBitmapInt(*bitmap, 0, top_area_height - 1, bitmap->width(), 1,
+  canvas->DrawBitmapInt(*image, 0, top_area_height - 1, image->width(), 1,
       0, height() - thickness, width(), thickness, false);
 }
 
 void PanelBrowserFrameView::PaintFrameEdge(gfx::Canvas* canvas) {
-#if defined(USE_AURA)
-  // Aura recognizes aura::client::WINDOW_TYPE_PANEL and will draw the
-  // appropriate frame and shadow. See ash/wm/shadow_controller.h.
+#if !defined(USE_AURA)
+  // Border is not needed when panel is not shown as minimized.
+  if (paint_state_ != PAINT_AS_MINIMIZED)
+    return;
 
-  // Draw the divider between the titlebar and the client area.
-  if (!IsShowingTitlebarOnly()) {
-    canvas->DrawRect(gfx::Rect(0, kTitlebarHeight, width() - 1, 1),
-                     kDividerColor);
-  }
-#else
   // Draw the top border.
   const EdgeResources& frame_edges = GetFrameEdges();
   canvas->DrawBitmapInt(*(frame_edges.top_left), 0, 0);
@@ -755,31 +756,26 @@ void PanelBrowserFrameView::PaintFrameEdge(gfx::Canvas* canvas) {
       frame_edges.left->width(),
       height() - frame_edges.top_left->height() -
           frame_edges.bottom_left->height());
-
-  // Draw the divider between the titlebar and the client area.
-  if (!IsShowingTitlebarOnly() && !CanResize()) {
-    canvas->DrawRect(gfx::Rect(NonClientBorderThickness(), kTitlebarHeight,
-                               width() - 1 - 2 * NonClientBorderThickness(),
-                               NonClientBorderThickness()), kDividerColor);
-  }
 #endif  // !defined(USE_AURA)
 }
 
-void PanelBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
-#if !defined(USE_AURA)
-  // No need to draw client edges when a non-resizable panel that has thin
-  // border.
-  if (!CanResize())
-    return;
+void PanelBrowserFrameView::PaintDivider(gfx::Canvas* canvas) {
+#if defined(USE_AURA)
+  // Aura recognizes aura::client::WINDOW_TYPE_PANEL and will draw the
+  // appropriate frame and shadow. See ash/wm/shadow_controller.h.
 
-  gfx::Rect client_edge_bounds(client_view_bounds_);
-  client_edge_bounds.Inset(-kResizableClientEdgeThickness,
-                           -kResizableClientEdgeThickness);
-  gfx::Rect frame_shadow_bounds(client_edge_bounds);
-  frame_shadow_bounds.Inset(-kFrameShadowThickness, -kFrameShadowThickness);
-
-  canvas->FillRect(frame_shadow_bounds, kContentsBorderShadow);
-  canvas->FillRect(client_edge_bounds, kClientEdgeColor);
+  // Draw the divider between the titlebar and the client area.
+  if (!IsShowingTitlebarOnly()) {
+    canvas->DrawRect(gfx::Rect(0, panel::kTitlebarHeight, width() - 1, 1),
+                     kDividerColor);
+  }
+#else
+  // Draw the divider between the titlebar and the client area.
+  if (!IsShowingTitlebarOnly()) {
+    canvas->DrawLine(gfx::Point(0, panel::kTitlebarHeight - 1),
+                     gfx::Point(width() - 1, panel::kTitlebarHeight - 1),
+                     kDividerColor);
+  }
 #endif  // !defined(USE_AURA)
 }
 
@@ -795,6 +791,11 @@ void PanelBrowserFrameView::UpdateTitleBarMinimizeRestoreButtonVisibility() {
   Panel* panel = panel_browser_view_->panel();
   minimize_button_->SetVisible(panel->CanMinimize());
   restore_button_->SetVisible(panel->CanRestore());
+
+  // Reset the button states in case that the hover states are not cleared when
+  // mouse is clicked but not moved.
+  minimize_button_->SetState(views::CustomButton::BS_NORMAL);
+  restore_button_->SetState(views::CustomButton::BS_NORMAL);
 }
 
 bool PanelBrowserFrameView::CanResize() const {
@@ -803,5 +804,5 @@ bool PanelBrowserFrameView::CanResize() const {
 }
 
 bool PanelBrowserFrameView::IsShowingTitlebarOnly() const {
-  return height() <= kTitlebarHeight;
+  return height() <= panel::kTitlebarHeight;
 }

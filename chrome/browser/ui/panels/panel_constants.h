@@ -22,6 +22,9 @@ const int kPanelMinHeight = 20;
 // The panel can be minimized to 4-pixel lines.
 static const int kMinimizedPanelHeight = 4;
 
+// The height in pixels of the titlebar.
+static const int kTitlebarHeight = 32;
+
 // Different platforms use different modifier keys to change the behavior
 // of a mouse click. This enum captures the meaning of the modifier rather
 // than the actual modifier key to generalize across platforms.
