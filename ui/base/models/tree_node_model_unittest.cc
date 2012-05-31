@@ -1,14 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "ui/base/models/tree_node_model.h"
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/models/tree_node_model.h"
 
 namespace ui {
 
@@ -18,20 +20,18 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
       : added_count_(0),
         removed_count_(0),
         changed_count_(0) {}
+  virtual ~TreeNodeModelTest() {}
 
-  void ExpectCountsEqual(int added_count,
-                         int removed_count,
-                         int changed_count) {
-    EXPECT_EQ(added_count, added_count_);
-    EXPECT_EQ(removed_count, removed_count_);
-    EXPECT_EQ(changed_count, changed_count_);
-  }
-
-  void ClearCounts() {
+ protected:
+  std::string GetObserverCountStateAndClear() {
+    std::string result(base::StringPrintf("added=%d removed=%d changed=%d",
+        added_count_, removed_count_, changed_count_));
     added_count_ = removed_count_ = changed_count_ = 0;
+    return result;
   }
 
-  // Begin TreeModelObserver implementation.
+ private:
+  // Overridden from TreeModelObserver:
   virtual void TreeNodesAdded(TreeModel* model,
                               TreeModelNode* parent,
                               int start,
@@ -47,9 +47,7 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
   virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) OVERRIDE {
     changed_count_++;
   }
-  // End TreeModelObserver implementation.
 
- private:
   int added_count_;
   int removed_count_;
   int changed_count_;
@@ -71,12 +69,11 @@ TEST_F(TreeNodeModelTest, AddNode) {
   TestNode* root = new TestNode;
   TreeNodeModel<TestNode > model(root);
   model.AddObserver(this);
-  ClearCounts();
 
   TestNode* child1 = new TestNode;
   model.Add(root, child1, 0);
 
-  ExpectCountsEqual(1, 0, 0);
+  EXPECT_EQ("added=1 removed=0 changed=0", GetObserverCountStateAndClear());
 
   for (int i = 0; i < 2; ++i)
     child1->Add(new TestNode, i);
@@ -84,7 +81,7 @@ TEST_F(TreeNodeModelTest, AddNode) {
   TestNode* child2 = new TestNode;
   model.Add(root, child2, 1);
 
-  ExpectCountsEqual(2, 0, 0);
+  EXPECT_EQ("added=1 removed=0 changed=0", GetObserverCountStateAndClear());
 
   EXPECT_EQ(2, root->child_count());
   EXPECT_EQ(2, child1->child_count());
@@ -106,7 +103,7 @@ TEST_F(TreeNodeModelTest, RemoveNode) {
   // Now remove |child1| from |root| and release the memory.
   delete model.Remove(root, child1);
 
-  ExpectCountsEqual(0, 1, 0);
+  EXPECT_EQ("added=0 removed=1 changed=0", GetObserverCountStateAndClear());
 
   EXPECT_EQ(0, model.GetChildCount(root));
 }
@@ -283,11 +280,10 @@ TEST_F(TreeNodeModelTest, SetTitle) {
   TestNode* root = new TestNode(ASCIIToUTF16("root"), 0);
   TreeNodeModel<TestNode > model(root);
   model.AddObserver(this);
-  ClearCounts();
 
   const string16 title(ASCIIToUTF16("root2"));
   model.SetTitle(root, title);
-  ExpectCountsEqual(0, 0, 1);
+  EXPECT_EQ("added=0 removed=0 changed=1", GetObserverCountStateAndClear());
   EXPECT_EQ(title, root->GetTitle());
 }
 
