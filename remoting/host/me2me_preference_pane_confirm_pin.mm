@@ -30,6 +30,8 @@
 - (void)setEnabled:(BOOL)enabled {
   [apply_button_ setEnabled:enabled];
   [pin_ setEnabled:enabled];
+  [[[self view] window] makeFirstResponder:pin_];
+  [apply_button_ setKeyEquivalent:@"\r"];
 }
 
 - (void)resetPin {
