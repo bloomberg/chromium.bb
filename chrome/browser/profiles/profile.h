@@ -74,6 +74,10 @@ namespace net {
 class SSLConfigService;
 }
 
+namespace policy {
+class PolicyService;
+}
+
 class Profile : public content::BrowserContext {
  public:
   // Profile services are accessed with the following parameter. This parameter
@@ -262,10 +266,11 @@ class Profile : public content::BrowserContext {
   // this profile need to be sure they refcount the returned value.
   virtual history::ShortcutsBackend* GetShortcutsBackend() = 0;
 
+  // Returns the PolicyService that provides policies for this profile.
+  virtual policy::PolicyService* GetPolicyService() = 0;
 
   // Retrieves a pointer to the PrefService that manages the preferences
-  // for this user profile.  The PrefService is lazily created the first
-  // time that this method is called.
+  // for this user profile.
   virtual PrefService* GetPrefs() = 0;
 
   // Retrieves a pointer to the PrefService that manages the preferences

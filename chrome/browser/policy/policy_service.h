@@ -32,6 +32,8 @@ enum PolicyDomain {
 // and register for notifications on policy updates.
 //
 // The PolicyService is available from BrowserProcess as a global singleton.
+// There is also a PolicyService for browser-wide policies available from
+// BrowserProcess as a global singleton.
 class PolicyService {
  public:
   class Observer {

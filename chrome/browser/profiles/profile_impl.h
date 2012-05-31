@@ -89,6 +89,7 @@ class ProfileImpl : public Profile,
   virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;
   virtual AutocompleteClassifier* GetAutocompleteClassifier() OVERRIDE;
   virtual history::ShortcutsBackend* GetShortcutsBackend() OVERRIDE;
+  virtual policy::PolicyService* GetPolicyService() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
   virtual net::URLRequestContextGetter*
@@ -191,8 +192,13 @@ class ProfileImpl : public Profile,
   //  that the declaration occurs AFTER things it depends on as destruction
   //  happens in reverse order of declaration.
 
+  // |prefs_| depends on |policy_service_|.
+  // TODO(bauerb): Once |prefs_| is a ProfileKeyedService, |policy_service_|
+  // should become one as well.
+  scoped_ptr<policy::PolicyService> policy_service_;
+
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,
-  // |net_pref_observer_|, |web_resource_service_|, and |io_data_| store
+  // |net_pref_observer_|, |promo_resource_service_|, |io_data_| an others store
   // pointers to |prefs_| and shall be destructed first.
   scoped_ptr<PrefService> prefs_;
   scoped_ptr<PrefService> otr_prefs_;

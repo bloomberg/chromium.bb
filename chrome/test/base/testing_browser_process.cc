@@ -7,8 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/policy_service_impl.h"
-#include "chrome/browser/policy/policy_service_stub.h"
+#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
@@ -19,6 +18,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/policy_service_stub.h"
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
 TestingBrowserProcess::TestingBrowserProcess()
     : notification_service_(content::NotificationService::Create()),
@@ -78,7 +81,8 @@ policy::BrowserPolicyConnector*
 policy::PolicyService* TestingBrowserProcess::policy_service() {
   if (!policy_service_.get()) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-    policy_service_.reset(browser_policy_connector()->CreatePolicyService());
+    policy_service_.reset(
+        browser_policy_connector()->CreatePolicyService(NULL));
 #else
     policy_service_.reset(new policy::PolicyServiceStub());
 #endif

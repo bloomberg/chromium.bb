@@ -5,7 +5,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 
 #include <algorithm>
-#include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -115,9 +114,11 @@ class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
 }  // namespace
 
 // static
-PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
-                                            PrefStore* extension_prefs,
-                                            bool async) {
+PrefService* PrefService::CreatePrefService(
+    const FilePath& pref_filename,
+    policy::PolicyService* policy_service,
+    PrefStore* extension_prefs,
+    bool async) {
   using policy::ConfigurationPolicyPrefStore;
 
 #if defined(OS_LINUX)
@@ -135,9 +136,11 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   ConfigurationPolicyPrefStore* managed =
-      ConfigurationPolicyPrefStore::CreateMandatoryPolicyPrefStore();
+      ConfigurationPolicyPrefStore::CreateMandatoryPolicyPrefStore(
+          policy_service);
   ConfigurationPolicyPrefStore* recommended =
-      ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore();
+      ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore(
+          policy_service);
 #else
   ConfigurationPolicyPrefStore* managed = NULL;
   ConfigurationPolicyPrefStore* recommended = NULL;

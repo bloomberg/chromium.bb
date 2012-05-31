@@ -51,6 +51,7 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -85,13 +86,18 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/browser_policy_connector.h"
+#else
+#include "chrome/browser/policy/policy_service_stub.h"
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)
+
 #if defined(OS_WIN)
 #include "chrome/installer/util/install_util.h"
-#elif defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/enterprise_extension_observer.h"
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/enterprise_extension_observer.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
@@ -249,9 +255,16 @@ ProfileImpl::ProfileImpl(const FilePath& path,
 
   session_restore_enabled_ =
       !command_line->HasSwitch(switches::kDisableRestoreSessionState);
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  policy_service_.reset(
+      g_browser_process->browser_policy_connector()->CreatePolicyService(this));
+#else
+    policy_service_.reset(new policy::PolicyServiceStub());
+#endif
   if (create_mode == CREATE_MODE_ASYNCHRONOUS) {
     prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),
+        policy_service_.get(),
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForProfile(this), false),
         true));
@@ -263,6 +276,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
     // Load prefs synchronously.
     prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),
+        policy_service_.get(),
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForProfile(this), false),
         false));
@@ -671,6 +685,11 @@ bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {
   Version profile_version(ChromeVersionService::GetVersion(prefs_.get()));
   Version arg_version(version);
   return (profile_version.CompareTo(arg_version) >= 0);
+}
+
+policy::PolicyService* ProfileImpl::GetPolicyService() {
+  DCHECK(policy_service_.get());  // Should explicitly be initialized.
+  return policy_service_.get();
 }
 
 PrefService* ProfileImpl::GetPrefs() {

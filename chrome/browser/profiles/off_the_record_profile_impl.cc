@@ -246,6 +246,10 @@ history::ShortcutsBackend* OffTheRecordProfileImpl::GetShortcutsBackend() {
   return NULL;
 }
 
+policy::PolicyService* OffTheRecordProfileImpl::GetPolicyService() {
+  return profile_->GetPolicyService();
+}
+
 PrefService* OffTheRecordProfileImpl::GetPrefs() {
   return prefs_;
 }

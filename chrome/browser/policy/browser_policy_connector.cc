@@ -150,7 +150,8 @@ void BrowserPolicyConnector::Init() {
 #endif
 }
 
-PolicyService* BrowserPolicyConnector::CreatePolicyService() const {
+PolicyService* BrowserPolicyConnector::CreatePolicyService(
+    Profile* profile) const {
   // |providers| in decreasing order of priority.
   PolicyServiceImpl::Providers providers;
   if (managed_platform_provider_.get())

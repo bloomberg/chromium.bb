@@ -15,8 +15,6 @@
 
 namespace policy {
 
-struct PolicyDefinitionList;
-
 // A mapping of policy names to policy values for a given policy namespace.
 class PolicyMap {
  public:

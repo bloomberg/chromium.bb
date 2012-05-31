@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class Profile;
 class TokenService;
 
 namespace policy {
@@ -45,8 +46,9 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // policy system running.
   void Init();
 
-  // Ownership is transferred to the caller.
-  PolicyService* CreatePolicyService() const;
+  // Creates a new policy service for the given profile, or a global one if
+  // it is NULL. Ownership is transferred to the caller.
+  PolicyService* CreatePolicyService(Profile* profile) const;
 
   // Returns a weak pointer to the CloudPolicySubsystem corresponding to the
   // device policy managed by this policy connector, or NULL if no such

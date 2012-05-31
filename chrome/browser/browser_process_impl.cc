@@ -43,8 +43,7 @@
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/policy_service_impl.h"
-#include "chrome/browser/policy/policy_service_stub.h"
+#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
@@ -82,6 +81,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/policy_service_stub.h"
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
 #if defined(OS_WIN)
 #include "ui/views/focus/view_storage.h"
@@ -448,7 +451,8 @@ policy::BrowserPolicyConnector* BrowserProcessImpl::browser_policy_connector() {
 policy::PolicyService* BrowserProcessImpl::policy_service() {
   if (!policy_service_.get()) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-    policy_service_.reset(browser_policy_connector()->CreatePolicyService());
+    policy_service_.reset(
+        browser_policy_connector()->CreatePolicyService(NULL));
 #else
     policy_service_.reset(new policy::PolicyServiceStub());
 #endif
@@ -710,7 +714,8 @@ void BrowserProcessImpl::CreateLocalState() {
   FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   local_state_.reset(
-      PrefService::CreatePrefService(local_state_path, NULL, false));
+      PrefService::CreatePrefService(local_state_path, policy_service(), NULL,
+                                     false));
 
   // Initialize the prefs of the local state.
   browser::RegisterLocalState(local_state_.get());

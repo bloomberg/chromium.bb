@@ -69,30 +69,8 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // Sends policy data to UI.
   void SendDataToUI();
 
-  // Converts a PolicyScope to a string16 representation.
-  static string16 GetPolicyScopeString(policy::PolicyScope scope);
-
-  // Converts a PolicyLevel to a string16 representation.
-  static string16 GetPolicyLevelString(policy::PolicyLevel level);
-
-  // Fills a DictionaryValue with the details of the given policy, in the
-  // format expected by the about:policy webui at
-  // src/chrome/browser/resources/policy.js
-  static base::DictionaryValue* GetPolicyDetails(
-      const policy::PolicyDefinitionList::Entry* policy_definition,
-      const policy::PolicyMap::Entry* policy_value,
-      const string16& error_message);
-
-  // Fills a DictionaryValue with the error status of the given |policy_name|.
-  // If |is_set| is true, this is a policy that was set but is not recognized;
-  // if |is_set| is false, this is a known policy that is not configured.
-  static base::DictionaryValue* GetPolicyErrorDetails(
-      const std::string& policy_name,
-      bool is_set);
-
-  // Returns a status message based on |error_details|.
-  static string16 CreateStatusMessageString(
-      policy::CloudPolicySubsystem::ErrorDetails error_details);
+  // Returns the policy service to use.
+  policy::PolicyService* GetPolicyService();
 
   // Returns a DictionaryValue pointer containing information about the status
   // of the policy system. The caller acquires ownership of the returned

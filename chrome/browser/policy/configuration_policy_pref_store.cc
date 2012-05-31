@@ -94,15 +94,17 @@ void ConfigurationPolicyPrefStore::OnPolicyServiceInitialized() {
 
 // static
 ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateMandatoryPolicyPrefStore() {
-  return new ConfigurationPolicyPrefStore(g_browser_process->policy_service(),
+ConfigurationPolicyPrefStore::CreateMandatoryPolicyPrefStore(
+    PolicyService* policy_service) {
+  return new ConfigurationPolicyPrefStore(policy_service,
                                           POLICY_LEVEL_MANDATORY);
 }
 
 // static
 ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
-  return new ConfigurationPolicyPrefStore(g_browser_process->policy_service(),
+ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore(
+    PolicyService* policy_service) {
+  return new ConfigurationPolicyPrefStore(policy_service,
                                           POLICY_LEVEL_RECOMMENDED);
 }
 

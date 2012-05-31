@@ -176,6 +176,7 @@ class TestingProfile : public Profile {
   net::CookieMonster* GetCookieMonster();
   virtual AutocompleteClassifier* GetAutocompleteClassifier() OVERRIDE;
   virtual history::ShortcutsBackend* GetShortcutsBackend() OVERRIDE;
+  virtual policy::PolicyService* GetPolicyService() OVERRIDE;
   // Sets the profile's PrefService. If a pref service hasn't been explicitly
   // set GetPrefs creates one, so normally you need not invoke this. If you need
   // to set a pref service you must invoke this before GetPrefs.
@@ -282,6 +283,9 @@ class TestingProfile : public Profile {
   // The AutocompleteClassifier.  Only created if CreateAutocompleteClassifier
   // is invoked.
   scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
+
+  // The policy service. Lazily created as a stub.
+  scoped_ptr<policy::PolicyService> policy_service_;
 
   // Internally, this is a TestURLRequestContextGetter that creates a dummy
   // request context. Currently, only the CookieMonster is hooked up.

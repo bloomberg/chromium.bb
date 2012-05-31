@@ -56,6 +56,12 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/policy_service_impl.h"
+#else
+#include "chrome/browser/policy/policy_service_stub.h"
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #endif  // defined(OS_CHROMEOS)
@@ -482,6 +488,18 @@ net::CookieMonster* TestingProfile::GetCookieMonster() {
 
 AutocompleteClassifier* TestingProfile::GetAutocompleteClassifier() {
   return autocomplete_classifier_.get();
+}
+
+policy::PolicyService* TestingProfile::GetPolicyService() {
+  if (!policy_service_.get()) {
+#if defined(ENABLE_CONFIGURATION_POLICY)
+    policy::PolicyServiceImpl::Providers providers;
+    policy_service_.reset(new policy::PolicyServiceImpl(providers));
+#else
+    policy_service_.reset(new policy::PolicyServiceStub());
+#endif
+  }
+  return policy_service_.get();
 }
 
 history::ShortcutsBackend* TestingProfile::GetShortcutsBackend() {

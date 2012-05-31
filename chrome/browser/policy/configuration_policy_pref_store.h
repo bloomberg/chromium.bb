@@ -48,11 +48,13 @@ class ConfigurationPolicyPrefStore
 
   // Creates a ConfigurationPolicyPrefStore that only provides policies that
   // have POLICY_LEVEL_MANDATORY level.
-  static ConfigurationPolicyPrefStore* CreateMandatoryPolicyPrefStore();
+  static ConfigurationPolicyPrefStore* CreateMandatoryPolicyPrefStore(
+      PolicyService* policy_service);
 
   // Creates a ConfigurationPolicyPrefStore that only provides policies that
   // have POLICY_LEVEL_RECOMMENDED level.
-  static ConfigurationPolicyPrefStore* CreateRecommendedPolicyPrefStore();
+  static ConfigurationPolicyPrefStore* CreateRecommendedPolicyPrefStore(
+      PolicyService* policy_service);
 
  private:
   virtual ~ConfigurationPolicyPrefStore();
