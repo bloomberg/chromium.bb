@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_LOCAL_FILE_WRITER_H_
-#define WEBKIT_FILEAPI_LOCAL_FILE_WRITER_H_
+#ifndef WEBKIT_FILEAPI_LOCAL_FILE_STREAM_WRITER_H_
+#define WEBKIT_FILEAPI_LOCAL_FILE_STREAM_WRITER_H_
 #pragma once
 
 #include <utility>
@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/fileapi/fileapi_export.h"
-#include "webkit/fileapi/file_writer.h"
+#include "webkit/fileapi/file_stream_writer.h"
 
 namespace net {
 class FileStream;
@@ -24,14 +24,14 @@ class FileStream;
 namespace fileapi {
 
 // This class is a thin wrapper around net::FileStream for writing local files.
-class FILEAPI_EXPORT_PRIVATE LocalFileWriter : public FileWriter {
+class FILEAPI_EXPORT_PRIVATE LocalFileStreamWriter : public FileStreamWriter {
  public:
   // Create a writer for the existing file in the path |file_path| starting from
   // |initial_offset|.
-  LocalFileWriter(const FilePath& file_path, int64 initial_offset);
-  virtual ~LocalFileWriter();
+  LocalFileStreamWriter(const FilePath& file_path, int64 initial_offset);
+  virtual ~LocalFileStreamWriter();
 
-  // FileWriter overrides.
+  // FileStreamWriteroverrides.
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     const net::CompletionCallback& callback) OVERRIDE;
   virtual int Cancel(const net::CompletionCallback& callback) OVERRIDE;
@@ -75,10 +75,10 @@ class FILEAPI_EXPORT_PRIVATE LocalFileWriter : public FileWriter {
   scoped_ptr<net::FileStream> stream_impl_;
   net::CompletionCallback cancel_callback_;
 
-  base::WeakPtrFactory<LocalFileWriter> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(LocalFileWriter);
+  base::WeakPtrFactory<LocalFileStreamWriter> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(LocalFileStreamWriter);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_LOCAL_FILE_WRITER_H_
+#endif  // WEBKIT_FILEAPI_LOCAL_FILE_STREAM_WRITER_H_

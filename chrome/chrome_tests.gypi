@@ -1993,7 +1993,7 @@
         '../webkit/fileapi/file_system_test_helper.h',
         '../webkit/fileapi/file_system_url_request_job_unittest.cc',
         '../webkit/fileapi/file_writer_delegate_unittest.cc',
-        '../webkit/fileapi/local_file_writer_unittest.cc',
+        '../webkit/fileapi/local_file_stream_writer_unittest.cc',
         '../webkit/fileapi/mock_file_system_options.cc',
         '../webkit/fileapi/mock_file_system_options.h',
         '../webkit/quota/mock_storage_client.cc',

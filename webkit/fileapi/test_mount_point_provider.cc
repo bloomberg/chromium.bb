@@ -13,9 +13,9 @@
 #include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_quota_util.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_util.h"
 #include "webkit/fileapi/native_file_util.h"
-#include "webkit/fileapi/file_system_util.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
@@ -152,7 +152,7 @@ webkit_blob::FileStreamReader* TestMountPointProvider::CreateFileStreamReader(
   return new FileSystemFileStreamReader(context, url, offset);
 }
 
-fileapi::FileWriter* TestMountPointProvider::CreateFileWriter(
+fileapi::FileStreamWriter* TestMountPointProvider::CreateFileStreamWriter(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const {

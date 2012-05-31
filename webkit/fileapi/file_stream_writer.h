@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_WRITER_H_
-#define WEBKIT_FILEAPI_FILE_WRITER_H_
+#ifndef WEBKIT_FILEAPI_FILE_STREAM_WRITER_H_
+#define WEBKIT_FILEAPI_FILE_STREAM_WRITER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -17,17 +17,11 @@ class IOBuffer;
 namespace fileapi {
 
 // A generic interface for writing to a file-like object.
-//
-// TODO(kinuko): Consider better naming. (http://crbug.com/128483)
-// Note: this does not directly correspond to FileWriter in File API (which
-// is implemented by WebCore::FileWriter), though this class is used to
-// implement a part of it.  FileWriterDelegate is NOT a delegate of this
-// class either.
-class FILEAPI_EXPORT_PRIVATE FileWriter {
+class FILEAPI_EXPORT_PRIVATE FileStreamWriter {
  public:
   // Closes the file. If there's an in-flight operation, it is canceled (i.e.,
   // the callback function associated with the operation is not called).
-  virtual ~FileWriter() {}
+  virtual ~FileStreamWriter() {}
 
   // Writes to the current cursor position asynchronously.
   //
@@ -66,4 +60,4 @@ class FILEAPI_EXPORT_PRIVATE FileWriter {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_WRITER_H_
+#endif  // WEBKIT_FILEAPI_FILE_STREAM_WRITER_H_

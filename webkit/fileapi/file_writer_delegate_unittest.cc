@@ -25,7 +25,7 @@
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_writer_delegate.h"
-#include "webkit/fileapi/sandbox_file_writer.h"
+#include "webkit/fileapi/sandbox_file_stream_writer.h"
 
 namespace fileapi {
 
@@ -104,14 +104,14 @@ class FileWriterDelegateTest : public PlatformTest {
       int64 offset,
       int64 allowed_growth,
       Result* result) {
-    SandboxFileWriter* writer = new SandboxFileWriter(
+    SandboxFileStreamWriter* writer = new SandboxFileStreamWriter(
         test_helper_.file_system_context(),
         GetFileSystemURL(test_file_path),
         offset);
     writer->set_default_quota(allowed_growth);
     return new FileWriterDelegate(
         base::Bind(&Result::DidWrite, base::Unretained(result)),
-        scoped_ptr<FileWriter>(writer));
+        scoped_ptr<FileStreamWriter>(writer));
   }
 
   // Creates and sets up a FileWriterDelegate for writing the given |blob_url|,

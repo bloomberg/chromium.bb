@@ -2,32 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_SANDBOX_FILE_WRITER_H_
-#define WEBKIT_FILEAPI_SANDBOX_FILE_WRITER_H_
+#ifndef WEBKIT_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_
+#define WEBKIT_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/fileapi_export.h"
+#include "webkit/fileapi/file_stream_writer.h"
 #include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_writer.h"
 #include "webkit/quota/quota_types.h"
 
 namespace fileapi {
 
 class FileSystemContext;
 class FileSystemQuotaUtil;
-class LocalFileWriter;
+class LocalFileStreamWriter;
 
-class FILEAPI_EXPORT_PRIVATE SandboxFileWriter : public FileWriter {
+class FILEAPI_EXPORT_PRIVATE SandboxFileStreamWriter : public FileStreamWriter {
  public:
-  SandboxFileWriter(FileSystemContext* file_system_context,
-                    const GURL& url,
-                    int64 initial_offset);
-  virtual ~SandboxFileWriter();
+  SandboxFileStreamWriter(FileSystemContext* file_system_context,
+                          const GURL& url,
+                          int64 initial_offset);
+  virtual ~SandboxFileStreamWriter();
 
-  // FileWriter overrides.
+  // FileStreamWriter overrides.
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     const net::CompletionCallback& callback) OVERRIDE;
   virtual int Cancel(const net::CompletionCallback& callback) OVERRIDE;
@@ -66,7 +66,7 @@ class FILEAPI_EXPORT_PRIVATE SandboxFileWriter : public FileWriter {
   scoped_refptr<FileSystemContext> file_system_context_;
   const GURL url_;
   int64 initial_offset_;
-  scoped_ptr<LocalFileWriter> local_file_writer_;
+  scoped_ptr<LocalFileStreamWriter> local_file_writer_;
   net::CompletionCallback cancel_callback_;
 
   GURL origin_;
@@ -81,11 +81,11 @@ class FILEAPI_EXPORT_PRIVATE SandboxFileWriter : public FileWriter {
 
   int64 default_quota_;
 
-  base::WeakPtrFactory<SandboxFileWriter> weak_factory_;
+  base::WeakPtrFactory<SandboxFileStreamWriter> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SandboxFileWriter);
+  DISALLOW_COPY_AND_ASSIGN(SandboxFileStreamWriter);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_SANDBOX_FILE_WRITER_H_
+#endif  // WEBKIT_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_

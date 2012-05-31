@@ -264,7 +264,7 @@ webkit_blob::FileStreamReader* CrosMountPointProvider::CreateFileStreamReader(
   return new fileapi::FileSystemFileStreamReader(context, url, offset);
 }
 
-fileapi::FileWriter* CrosMountPointProvider::CreateFileWriter(
+fileapi::FileStreamWriter* CrosMountPointProvider::CreateFileStreamWriter(
     const GURL& url,
     int64 offset,
     fileapi::FileSystemContext* context) const {

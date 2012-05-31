@@ -21,7 +21,7 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/isolated_file_util.h"
-#include "webkit/fileapi/local_file_writer.h"
+#include "webkit/fileapi/local_file_stream_writer.h"
 #include "webkit/fileapi/native_file_util.h"
 
 namespace fileapi {
@@ -112,12 +112,12 @@ IsolatedMountPointProvider::CreateFileStreamReader(
       context->file_task_runner(), path, offset, base::Time());
 }
 
-FileWriter* IsolatedMountPointProvider::CreateFileWriter(
+FileStreamWriter* IsolatedMountPointProvider::CreateFileStreamWriter(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const {
   FilePath path = GetPathFromURL(url);
-  return path.empty() ? NULL : new LocalFileWriter(path, offset);
+  return path.empty() ? NULL : new LocalFileStreamWriter(path, offset);
 }
 
 FileSystemQuotaUtil* IsolatedMountPointProvider::GetQuotaUtil() {

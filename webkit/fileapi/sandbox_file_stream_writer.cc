@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/sandbox_file_writer.h"
+#include "webkit/fileapi/sandbox_file_stream_writer.h"
 
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
@@ -14,7 +14,7 @@
 #include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/local_file_writer.h"
+#include "webkit/fileapi/local_file_stream_writer.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
@@ -44,7 +44,7 @@ int64 AdjustQuotaForOverlap(int64 quota,
 
 }  // namespace
 
-SandboxFileWriter::SandboxFileWriter(
+SandboxFileStreamWriter::SandboxFileStreamWriter(
     FileSystemContext* file_system_context,
     const GURL& url,
     int64 initial_offset)
@@ -62,12 +62,12 @@ SandboxFileWriter::SandboxFileWriter(
   DCHECK(result);
 }
 
-SandboxFileWriter::~SandboxFileWriter() {
+SandboxFileStreamWriter::~SandboxFileStreamWriter() {
   if (quota_util())
     quota_util()->proxy()->EndUpdateOrigin(origin_, file_system_type_);
 }
 
-int SandboxFileWriter::Write(
+int SandboxFileStreamWriter::Write(
     net::IOBuffer* buf, int buf_len,
     const net::CompletionCallback& callback) {
   has_pending_operation_ = true;
@@ -78,16 +78,16 @@ int SandboxFileWriter::Write(
       file_system_context_->CreateFileSystemOperation(url_);
   DCHECK(operation);
   net::CompletionCallback write_task =
-      base::Bind(&SandboxFileWriter::DidInitializeForWrite,
+      base::Bind(&SandboxFileStreamWriter::DidInitializeForWrite,
                  weak_factory_.GetWeakPtr(),
                  make_scoped_refptr(buf), buf_len, callback);
   operation->GetMetadata(
-      url_, base::Bind(&SandboxFileWriter::DidGetFileInfo,
+      url_, base::Bind(&SandboxFileStreamWriter::DidGetFileInfo,
                        weak_factory_.GetWeakPtr(), write_task));
   return net::ERR_IO_PENDING;
 }
 
-int SandboxFileWriter::Cancel(const net::CompletionCallback& callback) {
+int SandboxFileStreamWriter::Cancel(const net::CompletionCallback& callback) {
   if (!has_pending_operation_)
     return net::ERR_UNEXPECTED;
 
@@ -96,7 +96,7 @@ int SandboxFileWriter::Cancel(const net::CompletionCallback& callback) {
   return net::ERR_IO_PENDING;
 }
 
-int SandboxFileWriter::WriteInternal(
+int SandboxFileStreamWriter::WriteInternal(
     net::IOBuffer* buf, int buf_len,
     const net::CompletionCallback& callback) {
   // allowed_bytes_to_write could be negative if the file size is
@@ -114,14 +114,14 @@ int SandboxFileWriter::WriteInternal(
   DCHECK(local_file_writer_.get());
   const int result = local_file_writer_->Write(
       buf, buf_len,
-      base::Bind(&SandboxFileWriter::DidWrite, weak_factory_.GetWeakPtr(),
+      base::Bind(&SandboxFileStreamWriter::DidWrite, weak_factory_.GetWeakPtr(),
                  callback));
   if (result != net::ERR_IO_PENDING)
     has_pending_operation_ = false;
   return result;
 }
 
-void SandboxFileWriter::DidGetFileInfo(
+void SandboxFileStreamWriter::DidGetFileInfo(
     const net::CompletionCallback& callback,
     base::PlatformFileError file_error,
     const base::PlatformFileInfo& file_info,
@@ -145,7 +145,8 @@ void SandboxFileWriter::DidGetFileInfo(
     initial_offset_ = file_size_;
   }
   DCHECK(!local_file_writer_.get());
-  local_file_writer_.reset(new LocalFileWriter(platform_path, initial_offset_));
+  local_file_writer_.reset(
+      new LocalFileStreamWriter(platform_path, initial_offset_));
 
   quota::QuotaManagerProxy* quota_manager_proxy =
       file_system_context_->quota_manager_proxy();
@@ -162,11 +163,11 @@ void SandboxFileWriter::DidGetFileInfo(
   quota_manager_proxy->quota_manager()->GetUsageAndQuota(
       origin_,
       FileSystemTypeToQuotaStorageType(file_system_type_),
-      base::Bind(&SandboxFileWriter::DidGetUsageAndQuota,
+      base::Bind(&SandboxFileStreamWriter::DidGetUsageAndQuota,
                  weak_factory_.GetWeakPtr(), callback));
 }
 
-void SandboxFileWriter::DidGetUsageAndQuota(
+void SandboxFileStreamWriter::DidGetUsageAndQuota(
     const net::CompletionCallback& callback,
     quota::QuotaStatusCode status,
     int64 usage, int64 quota) {
@@ -182,7 +183,7 @@ void SandboxFileWriter::DidGetUsageAndQuota(
   callback.Run(net::OK);
 }
 
-void SandboxFileWriter::DidInitializeForWrite(
+void SandboxFileStreamWriter::DidInitializeForWrite(
     net::IOBuffer* buf, int buf_len,
     const net::CompletionCallback& callback,
     int init_status) {
@@ -200,7 +201,7 @@ void SandboxFileWriter::DidInitializeForWrite(
     callback.Run(result);
 }
 
-void SandboxFileWriter::DidWrite(
+void SandboxFileStreamWriter::DidWrite(
     const net::CompletionCallback& callback,
     int write_response) {
   DCHECK(has_pending_operation_);
@@ -229,7 +230,7 @@ void SandboxFileWriter::DidWrite(
   callback.Run(write_response);
 }
 
-bool SandboxFileWriter::CancelIfRequested() {
+bool SandboxFileStreamWriter::CancelIfRequested() {
   if (cancel_callback_.is_null())
     return false;
 
@@ -240,7 +241,7 @@ bool SandboxFileWriter::CancelIfRequested() {
   return true;
 }
 
-FileSystemQuotaUtil* SandboxFileWriter::quota_util() const {
+FileSystemQuotaUtil* SandboxFileStreamWriter::quota_util() const {
   DCHECK(file_system_context_.get());
   return file_system_context_->GetQuotaUtil(file_system_type_);
 }

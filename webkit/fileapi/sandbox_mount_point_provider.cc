@@ -457,7 +457,7 @@ SandboxMountPointProvider::CreateFileStreamReader(
   return new FileSystemFileStreamReader(context, url, offset);
 }
 
-fileapi::FileWriter* SandboxMountPointProvider::CreateFileWriter(
+fileapi::FileStreamWriter* SandboxMountPointProvider::CreateFileStreamWriter(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const {

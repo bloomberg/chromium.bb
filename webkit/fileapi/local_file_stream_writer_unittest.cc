@@ -7,7 +7,7 @@
 // instantiate a MessageLoop of type TYPE_IO.  test_shell_tests uses TYPE_UI,
 // which net::TestCompletionCallback doesn't allow.
 
-#include "webkit/fileapi/local_file_writer.h"
+#include "webkit/fileapi/local_file_stream_writer.h"
 
 #include <string>
 
@@ -23,11 +23,11 @@
 
 namespace {
 
-using fileapi::LocalFileWriter;
+using fileapi::LocalFileStreamWriter;
 
-class LocalFileWriterTest : public testing::Test {
+class LocalFileStreamWriterTest : public testing::Test {
  public:
-  LocalFileWriterTest() : message_loop_(MessageLoop::TYPE_IO) {}
+  LocalFileStreamWriterTest() : message_loop_(MessageLoop::TYPE_IO) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -38,7 +38,8 @@ class LocalFileWriterTest : public testing::Test {
     return temp_dir_.path().AppendASCII(name);
   }
 
-  int WriteStringToWriter(LocalFileWriter* writer, const std::string& data) {
+  int WriteStringToWriter(LocalFileStreamWriter* writer,
+                          const std::string& data) {
     scoped_refptr<net::StringIOBuffer> buffer(new net::StringIOBuffer(data));
     scoped_refptr<net::DrainableIOBuffer> drainable(
         new net::DrainableIOBuffer(buffer, buffer->size()));
@@ -80,9 +81,9 @@ void NeverCalled(int) {
 
 }  // namespace
 
-TEST_F(LocalFileWriterTest, Write) {
+TEST_F(LocalFileStreamWriterTest, Write) {
   FilePath path = CreateFileWithContent("file_a", "");
-  scoped_ptr<LocalFileWriter> writer(new LocalFileWriter(path, 0));
+  scoped_ptr<LocalFileStreamWriter> writer(new LocalFileStreamWriter(path, 0));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "foo"));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "bar"));
   writer.reset();
@@ -91,9 +92,9 @@ TEST_F(LocalFileWriterTest, Write) {
   EXPECT_EQ("foobar", GetFileContent(path));
 }
 
-TEST_F(LocalFileWriterTest, WriteMiddle) {
+TEST_F(LocalFileStreamWriterTest, WriteMiddle) {
   FilePath path = CreateFileWithContent("file_a", "foobar");
-  scoped_ptr<LocalFileWriter> writer(new LocalFileWriter(path, 2));
+  scoped_ptr<LocalFileStreamWriter> writer(new LocalFileStreamWriter(path, 2));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "xxx"));
   writer.reset();
   MessageLoop::current()->RunAllPending();
@@ -101,9 +102,9 @@ TEST_F(LocalFileWriterTest, WriteMiddle) {
   EXPECT_EQ("foxxxr", GetFileContent(path));
 }
 
-TEST_F(LocalFileWriterTest, WriteEnd) {
+TEST_F(LocalFileStreamWriterTest, WriteEnd) {
   FilePath path = CreateFileWithContent("file_a", "foobar");
-  scoped_ptr<LocalFileWriter> writer(new LocalFileWriter(path, 6));
+  scoped_ptr<LocalFileStreamWriter> writer(new LocalFileStreamWriter(path, 6));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "xxx"));
   writer.reset();
   MessageLoop::current()->RunAllPending();
@@ -111,27 +112,27 @@ TEST_F(LocalFileWriterTest, WriteEnd) {
   EXPECT_EQ("foobarxxx", GetFileContent(path));
 }
 
-TEST_F(LocalFileWriterTest, WriteFailForNonexistingFile) {
+TEST_F(LocalFileStreamWriterTest, WriteFailForNonexistingFile) {
   FilePath path = Path("file_a");
   ASSERT_FALSE(file_util::PathExists(path));
-  scoped_ptr<LocalFileWriter> writer(new LocalFileWriter(path, 0));
+  scoped_ptr<LocalFileStreamWriter> writer(new LocalFileStreamWriter(path, 0));
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, WriteStringToWriter(writer.get(), "foo"));
   writer.reset();
   MessageLoop::current()->RunAllPending();
   EXPECT_FALSE(file_util::PathExists(path));
 }
 
-TEST_F(LocalFileWriterTest, CancelBeforeOperation) {
+TEST_F(LocalFileStreamWriterTest, CancelBeforeOperation) {
   FilePath path = Path("file_a");
-  scoped_ptr<LocalFileWriter> writer(new LocalFileWriter(path, 0));
+  scoped_ptr<LocalFileStreamWriter> writer(new LocalFileStreamWriter(path, 0));
   // Cancel immediately fails when there's no in-flight operation.
   int cancel_result = writer->Cancel(base::Bind(&NeverCalled));
   EXPECT_EQ(net::ERR_UNEXPECTED, cancel_result);
 }
 
-TEST_F(LocalFileWriterTest, CancelAfterFinishedOperation) {
+TEST_F(LocalFileStreamWriterTest, CancelAfterFinishedOperation) {
   FilePath path = CreateFileWithContent("file_a", "");
-  scoped_ptr<LocalFileWriter> writer(new LocalFileWriter(path, 0));
+  scoped_ptr<LocalFileStreamWriter> writer(new LocalFileStreamWriter(path, 0));
   EXPECT_EQ(net::OK, WriteStringToWriter(writer.get(), "foo"));
 
   // Cancel immediately fails when there's no in-flight operation.
@@ -145,9 +146,9 @@ TEST_F(LocalFileWriterTest, CancelAfterFinishedOperation) {
   EXPECT_EQ("foo", GetFileContent(path));
 }
 
-TEST_F(LocalFileWriterTest, CancelWrite) {
+TEST_F(LocalFileStreamWriterTest, CancelWrite) {
   FilePath path = CreateFileWithContent("file_a", "foobar");
-  scoped_ptr<LocalFileWriter> writer(new LocalFileWriter(path, 0));
+  scoped_ptr<LocalFileStreamWriter> writer(new LocalFileStreamWriter(path, 0));
 
   scoped_refptr<net::StringIOBuffer> buffer(new net::StringIOBuffer("xxx"));
   int result = writer->Write(buffer, buffer->size(), base::Bind(&NeverCalled));

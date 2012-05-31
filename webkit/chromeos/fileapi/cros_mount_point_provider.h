@@ -72,7 +72,7 @@ class CrosMountPointProvider
     const GURL& path,
     int64 offset,
     fileapi::FileSystemContext* context) const OVERRIDE;
-  virtual fileapi::FileWriter* CreateFileWriter(
+  virtual fileapi::FileStreamWriter* CreateFileStreamWriter(
     const GURL& url,
     int64 offset,
     fileapi::FileSystemContext* context) const OVERRIDE;

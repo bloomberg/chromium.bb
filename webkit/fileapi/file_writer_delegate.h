@@ -19,16 +19,16 @@
 
 namespace fileapi {
 
+class FileStreamWriter;
 class FileSystemOperationContext;
 class FileSystemQuotaUtil;
-class FileWriter;
 
 class FILEAPI_EXPORT_PRIVATE FileWriterDelegate
     : public net::URLRequest::Delegate {
  public:
   FileWriterDelegate(
       const FileSystemOperationInterface::WriteCallback& write_callback,
-      scoped_ptr<FileWriter> file_writer);
+      scoped_ptr<FileStreamWriter> file_writer);
   virtual ~FileWriterDelegate();
 
   void Start(scoped_ptr<net::URLRequest> request);
@@ -70,7 +70,7 @@ class FILEAPI_EXPORT_PRIVATE FileWriterDelegate
   FileSystemQuotaUtil* quota_util() const;
 
   FileSystemOperationInterface::WriteCallback write_callback_;
-  scoped_ptr<FileWriter> file_writer_;
+  scoped_ptr<FileStreamWriter> file_stream_writer_;
   base::Time last_progress_event_time_;
   int bytes_written_backlog_;
   int bytes_written_;

@@ -50,7 +50,7 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const OVERRIDE;
-  virtual FileWriter* CreateFileWriter(
+  virtual FileStreamWriter* CreateFileStreamWriter(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const OVERRIDE;

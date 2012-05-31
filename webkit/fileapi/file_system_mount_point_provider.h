@@ -22,11 +22,11 @@ class FileStreamReader;
 
 namespace fileapi {
 
+class FileStreamWriter;
 class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperationInterface;
 class FileSystemQuotaUtil;
-class FileWriter;
 class RemoteFileSystemProxyInterface;
 
 // An interface to provide mount-point-specific path-related utilities
@@ -102,15 +102,15 @@ class FILEAPI_EXPORT FileSystemMountPointProvider {
     int64 offset,
     FileSystemContext* context) const = 0;
 
-  // Creates a new file writer for a given filesystem URL |url| with a offset
-  // |offset|.
+  // Creates a new file stream writer for a given filesystem URL |url| with an
+  // offset |offset|.
   // The returned object must be owned and managed by the caller.
   // This method itself does *not* check if the given path exists and is a
   // regular file.
-  virtual FileWriter* CreateFileWriter(
-    const GURL& url,
-    int64 offset,
-    FileSystemContext* context) const = 0;
+  virtual FileStreamWriter* CreateFileStreamWriter(
+      const GURL& url,
+      int64 offset,
+      FileSystemContext* context) const = 0;
 
   // Returns the specialized FileSystemQuotaUtil for this mount point.
   // This could return NULL if this mount point does not support quota.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/local_file_writer.h"
+#include "webkit/fileapi/local_file_stream_writer.h"
 
 #include "base/callback.h"
 #include "base/message_loop.h"
@@ -20,14 +20,14 @@ const int kOpenFlagsForWrite = base::PLATFORM_FILE_OPEN |
 
 }  // namespace
 
-LocalFileWriter::LocalFileWriter(const FilePath& file_path,
-                                 int64 initial_offset)
+LocalFileStreamWriter::LocalFileStreamWriter(const FilePath& file_path,
+                                             int64 initial_offset)
     : file_path_(file_path),
       initial_offset_(initial_offset),
       has_pending_operation_(false),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
-LocalFileWriter::~LocalFileWriter() {
+LocalFileStreamWriter::~LocalFileStreamWriter() {
   // Invalidate weak pointers so that we won't receive any callbacks from
   // in-flight stream operations, which might be triggered during the file close
   // in the FileStream destructor.
@@ -37,8 +37,8 @@ LocalFileWriter::~LocalFileWriter() {
   // by its Open() method.
 }
 
-int LocalFileWriter::Write(net::IOBuffer* buf, int buf_len,
-                           const net::CompletionCallback& callback) {
+int LocalFileStreamWriter::Write(net::IOBuffer* buf, int buf_len,
+                                 const net::CompletionCallback& callback) {
   DCHECK(!has_pending_operation_);
   DCHECK(cancel_callback_.is_null());
 
@@ -50,12 +50,12 @@ int LocalFileWriter::Write(net::IOBuffer* buf, int buf_len,
     return result;
   }
   return InitiateOpen(callback,
-                      base::Bind(&LocalFileWriter::ReadyToWrite,
+                      base::Bind(&LocalFileStreamWriter::ReadyToWrite,
                                  weak_factory_.GetWeakPtr(),
                                  make_scoped_refptr(buf), buf_len, callback));
 }
 
-int LocalFileWriter::Cancel(const net::CompletionCallback& callback) {
+int LocalFileStreamWriter::Cancel(const net::CompletionCallback& callback) {
   if (!has_pending_operation_)
     return net::ERR_UNEXPECTED;
 
@@ -64,23 +64,25 @@ int LocalFileWriter::Cancel(const net::CompletionCallback& callback) {
   return net::ERR_IO_PENDING;
 }
 
-int LocalFileWriter::InitiateOpen(const net::CompletionCallback& error_callback,
-                                  const base::Closure& main_operation) {
+int LocalFileStreamWriter::InitiateOpen(
+    const net::CompletionCallback& error_callback,
+    const base::Closure& main_operation) {
   DCHECK(has_pending_operation_);
   DCHECK(!stream_impl_.get());
 
   stream_impl_.reset(new net::FileStream(NULL));
   return stream_impl_->Open(file_path_,
                             kOpenFlagsForWrite,
-                            base::Bind(&LocalFileWriter::DidOpen,
+                            base::Bind(&LocalFileStreamWriter::DidOpen,
                                        weak_factory_.GetWeakPtr(),
                                        error_callback,
                                        main_operation));
 }
 
-void LocalFileWriter::DidOpen(const net::CompletionCallback& error_callback,
-                              const base::Closure& main_operation,
-                              int result) {
+void LocalFileStreamWriter::DidOpen(
+    const net::CompletionCallback& error_callback,
+    const base::Closure& main_operation,
+    int result) {
   DCHECK(has_pending_operation_);
   DCHECK(stream_impl_.get());
 
@@ -97,7 +99,7 @@ void LocalFileWriter::DidOpen(const net::CompletionCallback& error_callback,
   InitiateSeek(error_callback, main_operation);
 }
 
-void LocalFileWriter::InitiateSeek(
+void LocalFileStreamWriter::InitiateSeek(
     const net::CompletionCallback& error_callback,
     const base::Closure& main_operation) {
   DCHECK(has_pending_operation_);
@@ -110,7 +112,7 @@ void LocalFileWriter::InitiateSeek(
   }
 
   int result = stream_impl_->Seek(net::FROM_BEGIN, initial_offset_,
-                                  base::Bind(&LocalFileWriter::DidSeek,
+                                  base::Bind(&LocalFileStreamWriter::DidSeek,
                                              weak_factory_.GetWeakPtr(),
                                              error_callback,
                                              main_operation));
@@ -120,9 +122,10 @@ void LocalFileWriter::InitiateSeek(
   }
 }
 
-void LocalFileWriter::DidSeek(const net::CompletionCallback& error_callback,
-                              const base::Closure& main_operation,
-                              int64 result) {
+void LocalFileStreamWriter::DidSeek(
+    const net::CompletionCallback& error_callback,
+    const base::Closure& main_operation,
+    int64 result) {
   DCHECK(has_pending_operation_);
 
   if (CancelIfRequested())
@@ -142,8 +145,9 @@ void LocalFileWriter::DidSeek(const net::CompletionCallback& error_callback,
   main_operation.Run();
 }
 
-void LocalFileWriter::ReadyToWrite(net::IOBuffer* buf, int buf_len,
-                                   const net::CompletionCallback& callback) {
+void LocalFileStreamWriter::ReadyToWrite(
+    net::IOBuffer* buf, int buf_len,
+    const net::CompletionCallback& callback) {
   DCHECK(has_pending_operation_);
 
   int result = InitiateWrite(buf, buf_len, callback);
@@ -153,19 +157,20 @@ void LocalFileWriter::ReadyToWrite(net::IOBuffer* buf, int buf_len,
   }
 }
 
-int LocalFileWriter::InitiateWrite(net::IOBuffer* buf, int buf_len,
-                                   const net::CompletionCallback& callback) {
+int LocalFileStreamWriter::InitiateWrite(
+    net::IOBuffer* buf, int buf_len,
+    const net::CompletionCallback& callback) {
   DCHECK(has_pending_operation_);
   DCHECK(stream_impl_.get());
 
   return stream_impl_->Write(buf, buf_len,
-                             base::Bind(&LocalFileWriter::DidWrite,
+                             base::Bind(&LocalFileStreamWriter::DidWrite,
                                         weak_factory_.GetWeakPtr(),
                                         callback));
 }
 
-void LocalFileWriter::DidWrite(const net::CompletionCallback& callback,
-                               int result) {
+void LocalFileStreamWriter::DidWrite(const net::CompletionCallback& callback,
+                                     int result) {
   DCHECK(has_pending_operation_);
 
   if (CancelIfRequested())
@@ -174,7 +179,7 @@ void LocalFileWriter::DidWrite(const net::CompletionCallback& callback,
   callback.Run(result);
 }
 
-bool LocalFileWriter::CancelIfRequested() {
+bool LocalFileStreamWriter::CancelIfRequested() {
   DCHECK(has_pending_operation_);
 
   if (cancel_callback_.is_null())

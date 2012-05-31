@@ -12,8 +12,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/net_errors.h"
+#include "webkit/fileapi/file_stream_writer.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_writer.h"
 
 namespace fileapi {
 
@@ -39,9 +39,9 @@ base::PlatformFileError NetErrorToPlatformFileError(int error) {
 
 FileWriterDelegate::FileWriterDelegate(
     const FileSystemOperationInterface::WriteCallback& write_callback,
-    scoped_ptr<FileWriter> file_writer)
+    scoped_ptr<FileStreamWriter> file_stream_writer)
     : write_callback_(write_callback),
-      file_writer_(file_writer.Pass()),
+      file_stream_writer_(file_stream_writer.Pass()),
       bytes_written_backlog_(0),
       bytes_written_(0),
       bytes_read_(0),
@@ -64,7 +64,7 @@ bool FileWriterDelegate::Cancel() {
     request_->Cancel();
   }
 
-  const int status = file_writer_->Cancel(
+  const int status = file_stream_writer_->Cancel(
       base::Bind(&FileWriterDelegate::OnWriteCancelled,
                  weak_factory_.GetWeakPtr()));
   // Return true to finish immediately if we have no pending writes.
@@ -147,10 +147,10 @@ void FileWriterDelegate::OnDataReceived(int bytes_read) {
 void FileWriterDelegate::Write() {
   int64 bytes_to_write = bytes_read_ - bytes_written_;
   int write_response =
-      file_writer_->Write(cursor_,
-                          static_cast<int>(bytes_to_write),
-                          base::Bind(&FileWriterDelegate::OnDataWritten,
-                                     weak_factory_.GetWeakPtr()));
+      file_stream_writer_->Write(cursor_,
+                                 static_cast<int>(bytes_to_write),
+                                 base::Bind(&FileWriterDelegate::OnDataWritten,
+                                            weak_factory_.GetWeakPtr()));
   if (write_response > 0)
     MessageLoop::current()->PostTask(
         FROM_HERE,

@@ -19,7 +19,7 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_writer_delegate.h"
-#include "webkit/fileapi/sandbox_file_writer.h"
+#include "webkit/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
 
@@ -290,8 +290,10 @@ void FileSystemOperation::Write(
   DCHECK(blob_url.is_valid());
   file_writer_delegate_.reset(new FileWriterDelegate(
       base::Bind(&FileSystemOperation::DidWrite, weak_factory_.GetWeakPtr()),
-      scoped_ptr<FileWriter>(
-          new SandboxFileWriter(file_system_context(), path_url, offset))));
+      scoped_ptr<FileStreamWriter>(
+          new SandboxFileStreamWriter(file_system_context(),
+                                      path_url,
+                                      offset))));
   set_write_callback(callback);
   scoped_ptr<net::URLRequest> blob_request(
       new net::URLRequest(blob_url, file_writer_delegate_.get()));
