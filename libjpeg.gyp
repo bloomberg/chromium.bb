@@ -5,16 +5,8 @@
 {
   'variables': {
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/libjpeg_turbo',
+    'use_system_libjpeg%': 0,
     'conditions': [
-      [ 'chromeos == 1 or (os_posix == 1 and \
-        OS != "mac" and OS != "linux" and OS != "android")', {
-        # Link to system .so since we already use it due to GTK.
-        # See crbug.com/30288 and 31427 for why we skip OS=="linux" above.
-        'use_system_libjpeg%': 1,
-      }, {  # chromeos != 1 and (os_posix != 1 or
-            # OS == "mac" or OS == "linux" or OS == "android")
-        'use_system_libjpeg%': 0,
-      }],
       [ 'OS=="win"', {
         'object_suffix': 'obj',
       }, {
