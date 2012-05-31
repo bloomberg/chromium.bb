@@ -65,6 +65,7 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
 
   static PpapiPluginProcessHost* CreatePluginHost(
       const content::PepperPluginInfo& info,
+      const FilePath& profile_data_directory,
       net::HostResolver* host_resolver);
   static PpapiPluginProcessHost* CreateBrokerHost(
       const content::PepperPluginInfo& info);
@@ -77,6 +78,8 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
   void OpenChannelToPlugin(Client* client);
 
   const FilePath& plugin_path() const { return plugin_path_; }
+  const FilePath& profile_data_directory() const {
+    return profile_data_directory_; }
 
   // The client pointer must remain valid until its callback is issued.
 
@@ -85,7 +88,8 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
 
   // Constructors for plugin and broker process hosts, respectively.
   // You must call Init before doing anything else.
-  PpapiPluginProcessHost(net::HostResolver* host_resolver);
+  PpapiPluginProcessHost(const FilePath& profile_data_directory,
+                         net::HostResolver* host_resolver);
   PpapiPluginProcessHost();
 
   // Actually launches the process with the given plugin info. Returns true
@@ -121,6 +125,9 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
 
   // Path to the plugin library.
   FilePath plugin_path_;
+
+  // Path to the top-level plugin data directory (differs based upon profile).
+  FilePath profile_data_directory_;
 
   const bool is_broker_;
 

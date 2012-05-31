@@ -72,9 +72,10 @@ PpapiPluginProcessHost::~PpapiPluginProcessHost() {
 
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
     const content::PepperPluginInfo& info,
+    const FilePath& profile_data_directory,
     net::HostResolver* host_resolver) {
   PpapiPluginProcessHost* plugin_host =
-      new PpapiPluginProcessHost(host_resolver);
+      new PpapiPluginProcessHost(profile_data_directory, host_resolver);
   if (plugin_host->Init(info))
     return plugin_host;
 
@@ -110,10 +111,13 @@ void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
   RequestPluginChannel(client);
 }
 
-PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
+PpapiPluginProcessHost::PpapiPluginProcessHost(
+    const FilePath& profile_data_directory,
+    net::HostResolver* host_resolver)
     : filter_(new PepperMessageFilter(PepperMessageFilter::PLUGIN,
                                       host_resolver)),
       network_observer_(new PluginNetworkObserver(this)),
+      profile_data_directory_(profile_data_directory),
       is_broker_(false) {
   process_.reset(new BrowserChildProcessHostImpl(
       content::PROCESS_TYPE_PPAPI_PLUGIN, this));

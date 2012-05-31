@@ -128,6 +128,7 @@ class CONTENT_EXPORT PluginServiceImpl
       const FilePath& plugin_path);
   PpapiPluginProcessHost* FindOrStartPpapiPluginProcess(
       const FilePath& plugin_path,
+      const FilePath& profile_data_directory,
       PpapiPluginProcessHost::PluginClient* client);
   PpapiPluginProcessHost* FindOrStartPpapiBrokerProcess(
       const FilePath& plugin_path);
@@ -141,7 +142,8 @@ class CONTENT_EXPORT PluginServiceImpl
                                 const GURL& page_url,
                                 const std::string& mime_type,
                                 PluginProcessHost::Client* client);
-  void OpenChannelToPpapiPlugin(const FilePath& path,
+  void OpenChannelToPpapiPlugin(const FilePath& plugin_path,
+                                const FilePath& profile_data_directory,
                                 PpapiPluginProcessHost::PluginClient* client);
   void OpenChannelToPpapiBroker(const FilePath& path,
                                 PpapiPluginProcessHost::BrokerClient* client);
@@ -173,7 +175,9 @@ class CONTENT_EXPORT PluginServiceImpl
   // has been started by this service. Returns NULL if no process has been
   // started.
   PluginProcessHost* FindNpapiPluginProcess(const FilePath& plugin_path);
-  PpapiPluginProcessHost* FindPpapiPluginProcess(const FilePath& plugin_path);
+  PpapiPluginProcessHost* FindPpapiPluginProcess(
+      const FilePath& plugin_path,
+      const FilePath& profile_data_directory);
   PpapiPluginProcessHost* FindPpapiBrokerProcess(const FilePath& broker_path);
 
   void RegisterPepperPlugins();

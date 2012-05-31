@@ -240,10 +240,7 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   // by the BrowserProcess, which has a wider scope than we do.
   content::ResourceDispatcherHostImpl* resource_dispatcher_host_;
   PluginServiceImpl* plugin_service_;
-
-  // The browser context associated with our renderer process.  This should only
-  // be accessed on the UI thread!
-  content::BrowserContext* browser_context_;
+  FilePath profile_data_directory_;
 
   // Contextual information to be used for requests created here.
   scoped_refptr<net::URLRequestContextGetter> request_context_;

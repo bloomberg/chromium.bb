@@ -242,12 +242,14 @@ PluginProcessHost* PluginServiceImpl::FindNpapiPluginProcess(
 }
 
 PpapiPluginProcessHost* PluginServiceImpl::FindPpapiPluginProcess(
-    const FilePath& plugin_path) {
+    const FilePath& plugin_path,
+    const FilePath& profile_data_directory) {
   for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
-    if (iter->plugin_path() == plugin_path)
+    if (iter->plugin_path() == plugin_path &&
+        iter->profile_data_directory() == profile_data_directory) {
       return *iter;
+    }
   }
-
   return NULL;
 }
 
@@ -285,10 +287,12 @@ PluginProcessHost* PluginServiceImpl::FindOrStartNpapiPluginProcess(
 
 PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     const FilePath& plugin_path,
+    const FilePath& profile_data_directory,
     PpapiPluginProcessHost::PluginClient* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  PpapiPluginProcessHost* plugin_host = FindPpapiPluginProcess(plugin_path);
+  PpapiPluginProcessHost* plugin_host =
+      FindPpapiPluginProcess(plugin_path, profile_data_directory);
   if (plugin_host)
     return plugin_host;
 
@@ -299,7 +303,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
 
   // This plugin isn't loaded by any plugin process, so create a new process.
   return PpapiPluginProcessHost::CreatePluginHost(
-      *info,
+      *info, profile_data_directory,
       client->GetResourceContext()->GetHostResolver());
 }
 
@@ -347,10 +351,11 @@ void PluginServiceImpl::OpenChannelToNpapiPlugin(
 }
 
 void PluginServiceImpl::OpenChannelToPpapiPlugin(
-    const FilePath& path,
+    const FilePath& plugin_path,
+    const FilePath& profile_data_directory,
     PpapiPluginProcessHost::PluginClient* client) {
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(
-      path, client);
+      plugin_path, profile_data_directory, client);
   if (plugin_host) {
     plugin_host->OpenChannelToPlugin(client);
   } else {

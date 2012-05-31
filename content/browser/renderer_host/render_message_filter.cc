@@ -279,7 +279,7 @@ RenderMessageFilter::RenderMessageFilter(
     content::MediaObserver* media_observer)
     : resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
       plugin_service_(plugin_service),
-      browser_context_(browser_context),
+      profile_data_directory_(browser_context->GetPath()),
       request_context_(request_context),
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
@@ -663,8 +663,7 @@ void RenderMessageFilter::OnOpenChannelToPepperPlugin(
     const FilePath& path,
     IPC::Message* reply_msg) {
   plugin_service_->OpenChannelToPpapiPlugin(
-      path,
-      new OpenChannelToPpapiPluginCallback(
+      path, profile_data_directory_, new OpenChannelToPpapiPluginCallback(
           this, resource_context_, reply_msg));
 }
 
