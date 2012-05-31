@@ -39,7 +39,6 @@ Target::Target(const Abi* abi)
     mutex_(NULL),
     sig_start_(NULL),
     sig_done_(NULL),
-    send_done_(false),
     session_(NULL),
     ctx_(NULL),
     cur_signal_(-1),
@@ -305,10 +304,6 @@ void Target::Run(Session *ses) {
       thread->Resume();
     }
 
-    // Next, wake up the exception thread, if there is one and it needs
-    // to wake up.
-    if (id && send_done_) sig_done_->Signal();
-
     // Now wake up everyone else
     uint32_t curId;
     bool more = GetFirstThreadId(&curId);
@@ -323,9 +318,10 @@ void Target::Run(Session *ses) {
     // Reset the signal value
     cur_signal_ = -1;
 
-    // If we took an exception, let the handler resume and allow
-    // the next exception to come in.
-    if (cur_signal_) {
+    // If there is no signaled thread, then we were interrupted by GDB, and
+    // there is no signal handler waiting.
+    // If there was a signaled thread, let the signal handler resume.
+    if (id != 0) {
       sig_done_->Signal();
       sig_start_->Signal();
     }

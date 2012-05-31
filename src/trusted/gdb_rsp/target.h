@@ -135,9 +135,6 @@ class Target {
   // This event is signalled when the target done processing an exception.
   port::IEvent *sig_done_;
 
-  // This value is set if the exception cather is requesting a continue signal
-  bool send_done_;
-
   Session *session_;
 
   ThreadMap_t threads_;
