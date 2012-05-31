@@ -27,7 +27,7 @@ TEST_F(WebDragSourceMacTest, DragInvalidlyEscapedBookmarklet) {
       [[WebDragSource alloc]
         initWithContents:contentsImpl
                     view:view
-                dropData:dropData.release()
+                dropData:dropData.get()
                    image:nil
                   offset:NSMakePoint(0, 0)
               pasteboard:[NSPasteboard pasteboardWithUniqueName]
