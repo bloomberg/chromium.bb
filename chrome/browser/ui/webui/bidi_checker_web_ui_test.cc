@@ -447,15 +447,10 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
-#if defined(OS_WIN)
-// TestSettings tests are flaky http://crbug.com/95425
-#define MAYBE_TestSettingsFrameStartup DISABLED_TestSettingsFrameStartup
-#else
-#define MAYBE_TestSettingsFrameStartup TestSettingsFrameStartup
-#endif
-
+// TestSettingsFrameStartup test is flaky on all platforms.
+// http://crbug.com/95425
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       MAYBE_TestSettingsFrameStartup) {
+                       DISABLED_TestSettingsFrameStartup) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += "startup";
   RunBidiCheckerOnPage(url);
