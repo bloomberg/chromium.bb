@@ -103,8 +103,8 @@ void PasswordGenerationBubbleView::ButtonPressed(views::Button* sender,
   }
 }
 
-void PasswordGenerationBubbleView::LinkClicked(
-    views::Link* source, int event_flags) {
+void PasswordGenerationBubbleView::LinkClicked(views::Link* source,
+                                               int event_flags) {
   content::OpenURLParams params(
       GURL(chrome::kAutoPasswordGenerationLearnMoreURL), content::Referrer(),
       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false);

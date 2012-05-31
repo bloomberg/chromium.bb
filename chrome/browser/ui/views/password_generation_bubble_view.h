@@ -51,7 +51,7 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  // views::LinkListener overrides:
+  // views::LinkListener
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // Subviews
