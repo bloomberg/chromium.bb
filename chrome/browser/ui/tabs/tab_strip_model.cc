@@ -243,7 +243,7 @@ TabContentsWrapper* TabStripModel::DetachTabContentsAt(int index) {
   TabContentsWrapper* removed_contents = GetContentsAt(index);
   bool was_selected = IsTabSelected(index);
   int next_selected_index = order_controller_->DetermineNewSelectedIndex(index);
-  delete contents_data_.at(index);
+  delete contents_data_[index];
   contents_data_.erase(contents_data_.begin() + index);
   ForgetOpenersAndGroupsReferencing(
       &(removed_contents->web_contents()->GetController()));
@@ -433,7 +433,7 @@ bool TabStripModel::TabsAreLoading() const {
 
 NavigationController* TabStripModel::GetOpenerOfTabContentsAt(int index) {
   DCHECK(ContainsIndex(index));
-  return contents_data_.at(index)->opener;
+  return contents_data_[index]->opener;
 }
 
 void TabStripModel::SetOpenerOfTabContentsAt(
@@ -528,15 +528,15 @@ void TabStripModel::ForgetAllOpeners() {
 void TabStripModel::ForgetGroup(TabContentsWrapper* contents) {
   int index = GetIndexOfTabContents(contents);
   DCHECK(ContainsIndex(index));
-  contents_data_.at(index)->SetGroup(NULL);
-  contents_data_.at(index)->ForgetOpener();
+  contents_data_[index]->SetGroup(NULL);
+  contents_data_[index]->ForgetOpener();
 }
 
 bool TabStripModel::ShouldResetGroupOnSelect(
     TabContentsWrapper* contents) const {
   int index = GetIndexOfTabContents(contents);
   DCHECK(ContainsIndex(index));
-  return contents_data_.at(index)->reset_group_on_select;
+  return contents_data_[index]->reset_group_on_select;
 }
 
 void TabStripModel::SetTabBlocked(int index, bool blocked) {
@@ -715,7 +715,7 @@ void TabStripModel::AddTabContents(TabContentsWrapper* contents,
   index = GetIndexOfTabContents(contents);
 
   if (inherit_group && transition == content::PAGE_TRANSITION_TYPED)
-    contents_data_.at(index)->reset_group_on_select = true;
+    contents_data_[index]->reset_group_on_select = true;
 
   // TODO(sky): figure out why this is here and not in InsertTabContentsAt. When
   // here we seem to get failures in startup perf tests.
@@ -1223,7 +1223,7 @@ void TabStripModel::InternalCloseTab(TabContentsWrapper* contents,
 TabContentsWrapper* TabStripModel::GetContentsAt(int index) const {
   CHECK(ContainsIndex(index)) <<
       "Failed to find: " << index << " in: " << count() << " entries.";
-  return contents_data_.at(index)->contents;
+  return contents_data_[index]->contents;
 }
 
 void TabStripModel::NotifyIfTabDeactivated(TabContentsWrapper* contents) {
@@ -1286,7 +1286,7 @@ void TabStripModel::SelectRelativeTab(bool next) {
 void TabStripModel::MoveTabContentsAtImpl(int index,
                                           int to_position,
                                           bool select_after_move) {
-  TabContentsData* moved_data = contents_data_.at(index);
+  TabContentsData* moved_data = contents_data_[index];
   contents_data_.erase(contents_data_.begin() + index);
   contents_data_.insert(contents_data_.begin() + to_position, moved_data);
 

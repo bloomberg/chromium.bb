@@ -304,7 +304,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 
   State* GetStateAt(int index) const {
     DCHECK(index >= 0 && index < GetStateCount());
-    return states_.at(index);
+    return states_[index];
   }
 
   bool StateEquals(int index, const State& state) {
