@@ -358,14 +358,6 @@
   fun:browser_sync::SyncBackendHost::Core::NotifyFrontend
 }
 {
-  bug_42153
-  Heapcheck:Leak
-  fun:::InitPersonalInfo
-  fun:AutoFillProfile
-  fun:AutoFillProfile::Clone
-  fun:browser_sync::AutofillChangeProcessor::ObserveAutofillProfileChanged
-}
-{
   bug_43387
   Heapcheck:Leak
   ...
