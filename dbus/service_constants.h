@@ -380,8 +380,11 @@ const char kNetworksProperty[] = "Networks";
 const char kScanIntervalProperty[] = "ScanInterval";
 const char kBgscanMethodProperty[] = "BgscanMethod";
 const char kBgscanShortIntervalProperty[] = "BgscanShortInterval";
+// DEPRECATED
+// remove after references are gone from chrome, libcros, and flimflam/shill.
 const char kDBusConnectionProperty[] = "DBus.Connection";
 const char kDBusObjectProperty[] = "DBus.Object";
+const char kDBusServiceProperty[] = "DBus.Service";
 const char kBgscanSignalThresholdProperty[] = "BgscanSignalThreshold";
 // The name of the network interface, ie. wlan0, eth0, etc.
 const char kInterfaceProperty[] = "Interface";
