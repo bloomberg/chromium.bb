@@ -105,7 +105,15 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndApply) {
   EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
 }
 
-IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndApplyManually) {
+// ProtectorServiceTest.ShowAndApplyManually is timing out frequently on Win
+// bots. http://crbug.com/130590
+#if defined(OS_WIN)
+#defined MAYBE_ShowAndApplyManually DISABLED_ShowAndApplyManually
+#else
+#defined MAYBE_ShowAndApplyManually ShowAndApplyManually
+#endif
+
+IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, MAYBE_ShowAndApplyManually) {
   // Show the change and apply it, mimicking a button click.
   EXPECT_CALL(*mock_change_, MockInit(browser()->profile())).
       WillOnce(Return(true));
