@@ -65,8 +65,7 @@ class InfobarTest(pyauto.PyUITest):
     crash_infobar = self._GetTabInfo()['infobars']
     self.assertTrue(crash_infobar)
     self.assertEqual(1, len(crash_infobar))
-    self.assertTrue(re.match('The following plug-in has crashed:',
-                             crash_infobar[0]['text']))
+    self.assertTrue('crashed' in crash_infobar[0]['text'])
     self.assertEqual('confirm_infobar', crash_infobar[0]['type'])
     # Dismiss the infobar
     self.PerformActionOnInfobar('dismiss', infobar_index=0)
