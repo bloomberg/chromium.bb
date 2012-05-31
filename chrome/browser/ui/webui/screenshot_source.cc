@@ -10,9 +10,13 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/string16.h"
+#include "base/string_util.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
+#include "googleurl/src/url_canon.h"
+#include "googleurl/src/url_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "content/public/browser/browser_thread.h"
@@ -88,8 +92,16 @@ void ScreenshotSource::SendSavedScreenshot(const std::string& screenshot_path,
   std::string filename = screenshot_path.substr(
       strlen(kSavedScreenshotsBasePath));
 
+  url_canon::RawCanonOutputT<char16> decoded;
+  url_util::DecodeURLEscapeSequences(
+      filename.data(), filename.size(), &decoded);
+  // Screenshot filenames don't use non-ascii characters.
+  std::string decoded_filename = UTF16ToASCII(string16(
+      decoded.data(), decoded.length()));
+
   int64 file_size = 0;
-  FilePath file = download_util::GetDefaultDownloadDirectory().Append(filename);
+  FilePath file = download_util::GetDefaultDownloadDirectory().Append(
+      decoded_filename);
   if (!file_util::GetFileSize(file, &file_size)) {
     CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
     return;
