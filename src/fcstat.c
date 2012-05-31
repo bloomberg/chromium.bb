@@ -26,6 +26,7 @@
 #include "fcint.h"
 #include "fcarch.h"
 #include <dirent.h>
+#include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -159,16 +160,14 @@ Adler32Finish (struct Adler32 *ctx)
     return ctx->a + (ctx->b << 16);
 }
 
+#ifdef HAVE_STRUCT_DIRENT_D_TYPE
 /* dirent.d_type can be relied upon on FAT filesystem */
 static FcBool
 FcDirChecksumScandirFilter(const struct dirent *entry)
 {
-#ifdef HAVE_STRUCT_DIRENT_D_TYPE
     return entry->d_type != DT_DIR;
-#else
-    return FcFalse;
-#endif
 }
+#endif
 
 static int
 FcDirChecksumScandirSorter(const struct dirent **lhs, const struct dirent **rhs)
@@ -189,7 +188,11 @@ FcDirChecksum (const FcChar8 *dir, time_t *checksum)
     Adler32Init (&ctx);
 
     n = scandir ((const char *)dir, &files,
+#ifdef HAVE_STRUCT_DIRENT_D_TYPE
 		 &FcDirChecksumScandirFilter,
+#else
+		 NULL,
+#endif
 		 &FcDirChecksumScandirSorter);
     if (n == -1)
 	return -1;
@@ -203,14 +206,8 @@ FcDirChecksum (const FcChar8 *dir, time_t *checksum)
 	dtype = files[n]->d_type;
 #else
 	struct stat statb;
-	char *f;
+	char f[PATH_MAX + 1];
 
-	f = malloc (len + 1 + dlen + 1);
-	if (!f)
-	{
-	    ret = -1;
-	    goto bail;
-	}
 	memcpy (f, dir, len);
 	f[len] = FC_DIR_SEPARATOR;
 	memcpy (&f[len + 1], files[n]->d_name, dlen);
@@ -230,8 +227,6 @@ FcDirChecksum (const FcChar8 *dir, time_t *checksum)
 
 #ifndef HAVE_STRUCT_DIRENT_D_TYPE
       bail:
-	if (f)
-	    free (f);
 #endif
 	free (files[n]);
     }
