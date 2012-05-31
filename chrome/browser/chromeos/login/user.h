@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/login/user_image.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -64,11 +63,8 @@ class User {
   bool NeedsNameTooltip() const;
 
   // The image for this user.
-  const gfx::ImageSkia& image() const { return user_image_.image(); }
+  const gfx::ImageSkia& image() const { return image_; }
   int image_index() const { return image_index_; }
-  bool has_animated_image() const { return user_image_.has_animated_image(); }
-
-  bool GetAnimatedImage(UserImage::RawImage* raw_image) const;
 
   // The thumbnail of user custom wallpaper.
   const SkBitmap& wallpaper_thumbnail() const { return wallpaper_thumbnail_; }
@@ -95,8 +91,7 @@ class User {
   ~User();
 
   // Setters are private so only UserManager can call them.
-  void SetImage(const UserImage& user_image, int image_index);
-
+  void SetImage(const gfx::ImageSkia& image, int image_index);
   // Sets a stub image until the next |SetImage| call. |image_index| may be
   // one of |kExternalImageIndex| or |kProfileImageIndex|.
   void SetStubImage(int image_index);
@@ -115,7 +110,7 @@ class User {
   std::string email_;
   // The displayed user email, defaults to |email_|.
   std::string display_email_;
-  UserImage user_image_;
+  gfx::ImageSkia image_;
   OAuthTokenStatus oauth_token_status_;
   SkBitmap wallpaper_thumbnail_;
 

@@ -714,8 +714,6 @@
         'browser/chromeos/login/update_screen_actor.h',
         'browser/chromeos/login/user.cc',
         'browser/chromeos/login/user.h',
-        'browser/chromeos/login/user_image.cc',
-        'browser/chromeos/login/user_image.h',
         'browser/chromeos/login/user_image_loader.cc',
         'browser/chromeos/login/user_image_loader.h',
         'browser/chromeos/login/user_image_screen.cc',

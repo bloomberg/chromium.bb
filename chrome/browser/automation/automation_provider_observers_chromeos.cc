@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
-#include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -451,7 +450,7 @@ void PhotoCaptureObserver::OnCapturingStopped(
 
   // Set up an observer for UserManager (it will delete itself).
   user_manager->AddObserver(this);
-  user_manager->SaveUserImage(user.email(), chromeos::UserImage(photo));
+  user_manager->SaveUserImage(user.email(), photo);
 }
 
 void PhotoCaptureObserver::LocalStateChanged(
