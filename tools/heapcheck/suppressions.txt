@@ -1731,30 +1731,6 @@
    fun:SelectFileDialogExtensionTest_SelfDeleting_Test::TestBody
 }
 {
-   bug_121571_a
-   Heapcheck:Leak
-   ...
-   fun:fileapi::FileSystem*URLRequestJobTest::TestRequestHelper
-   fun:fileapi::FileSystem*URLRequestJobTest::TestRequest
-   fun:fileapi::::FileSystem*URLRequestJobTest_InvalidURL_Test::TestBody
-}
-{
-   bug_121571_b
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:fileapi::FileSystem*URLRequestJobTest::FileSystem*URLRequestJobTest
-   fun:fileapi::::FileSystem*URLRequestJobTest_InvalidURL_Test::FileSystem*URLRequestJobTest_InvalidURL_Test
-   fun:testing::internal::TestFactoryImpl::CreateTest
-}
-{
-   bug_121571_c
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:FileSystem*URLRequestJobTest
-   fun:FileSystem*URLRequestJobTest_InvalidURL_Test
-   fun:testing::internal::TestFactoryImpl::CreateTest
-}
-{
    bug_124758
    Heapcheck:Leak
    fun:sqlite3MemMalloc
