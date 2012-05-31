@@ -235,9 +235,6 @@ GoogleUpdate::GoogleUpdate()
 GoogleUpdate::~GoogleUpdate() {
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// GoogleUpdate, views::DialogDelegate implementation:
-
 void GoogleUpdate::CheckForUpdate(bool install_if_newer,
                                   views::Widget* window) {
   // We need to shunt this request over to InitiateGoogleUpdateCheck and have
