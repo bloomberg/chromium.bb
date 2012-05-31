@@ -213,9 +213,3 @@ void TaskManagerDialog::ShowBackgroundPages() {
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TaskManagerDialogImpl::Show, true));
 }
-
-// static
-bool TaskManagerDialog::UseWebUITaskManager() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kWebUITaskManager);
-}

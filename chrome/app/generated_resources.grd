@@ -5608,12 +5608,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_CSS_REGIONS_DESCRIPTION" desc="Description for the flag to enable CSS Regions.">
         Enable CSS Regions.
       </message>
-      <message name="IDS_FLAGS_WEBUI_TASK_MANAGER_NAME" desc="Title for the flag to use the WebUI task manager.">
-        Enable experimental task manager.
-      </message>
-      <message name="IDS_FLAGS_WEBUI_TASK_MANAGER_DESCRIPTION" desc="Description for the flag to use the WebUI task manager.">
-        Enable experimental HTML implementation of the task manager dialog.
-      </message>
       <message name="IDS_FLAGS_APP_INSTALL_HINT_NAME" desc="Name for the flag to show the app install hint on the NTP.">
         NTP App Install Hint
       </message>

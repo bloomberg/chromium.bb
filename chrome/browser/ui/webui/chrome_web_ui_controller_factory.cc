@@ -281,10 +281,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIPolicyHost)
     return &NewWebUI<PolicyUI>;
 #endif
-#if defined(ENABLE_TASK_MANAGER)
+#if defined(USE_AURA)
   if (url.host() == chrome::kChromeUITaskManagerHost)
     return &NewWebUI<TaskManagerUI>;
-#endif  // defined(ENABLE_TASK_MANAGER)
+#endif  // defined(USE_AURA)
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
   if (url.host() == chrome::kChromeUICollectedCookiesHost ||
@@ -327,7 +327,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       || url.host() == chrome::kChromeUIOSCreditsHost
       || url.host() == chrome::kChromeUITransparencyHost
 #endif
-#if defined(ENABLE_TASK_MANAGER)
+#if defined(WEBUI_TASK_MANAGER)
       || url.host() == chrome::kChromeUITaskManagerHost
 #endif
       ) {

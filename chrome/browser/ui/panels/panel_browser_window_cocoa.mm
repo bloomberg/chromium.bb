@@ -18,7 +18,6 @@
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_source.h"
@@ -184,16 +183,7 @@ void PanelBrowserWindowCocoa::UpdatePanelLoadingAnimations(
 }
 
 void PanelBrowserWindowCocoa::ShowTaskManagerForPanel() {
-#if defined(WEBUI_TASK_MANAGER)
-  TaskManagerDialog::Show();
-#else
-  // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (TaskManagerDialog::UseWebUITaskManager()) {
-    TaskManagerDialog::Show();
-  } else {
-    TaskManagerMac::Show(false);
-  }
-#endif  // defined(WEBUI_TASK_MANAGER)
+  TaskManagerMac::Show(false);
 }
 
 FindBar* PanelBrowserWindowCocoa::CreatePanelFindBar() {

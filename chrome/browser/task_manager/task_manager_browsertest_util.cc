@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,7 +73,7 @@ void TaskManagerBrowserTestUtil::WaitForResourceChange(int target_count) {
 // static
 void TaskManagerBrowserTestUtil::ShowTaskManagerAndWaitForReady(
     Browser* browser) {
-#if defined(WEBUI_TASK_MANAGER)
+#if defined(USE_AURA)
   ui_test_utils::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TASK_MANAGER_WINDOW_READY,
       content::Source<TaskManagerModel>(TaskManager::GetInstance()->model()));
@@ -81,6 +81,6 @@ void TaskManagerBrowserTestUtil::ShowTaskManagerAndWaitForReady(
   observer.Wait();
 #else
   browser->window()->ShowTaskManager();
-#endif  // defined(WEBUI_TASK_MANAGER)
+#endif  // defined(USE_AURA)
 }
 

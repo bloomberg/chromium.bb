@@ -4145,6 +4145,12 @@
           'sources/': [
             ['exclude', '^browser/task_manager/'],
             ['exclude', '^browser/ui/webui/task_manager/'],
+            ['exclude', '^browser/ui/views/task_manager_view.cc'],
+            ['exclude', '^browser/ui/views/task_manager_view.h'],
+            ['exclude', '^browser/ui/cocoa/task_manager_mac.h'],
+            ['exclude', '^browser/ui/cocoa/task_manager_mac.mm'],
+            ['exclude', '^browser/ui/gtk/task_manager_gtk.cc'],
+            ['exclude', '^browser/ui/gtk/task_manager_gtk.h'],
           ],
         }],
         ['disable_nacl==0', {
@@ -4443,6 +4449,10 @@
                 ['include', 'browser/ui/browser_win.cc'],
               ],
             }],
+          ],
+        }, { # else: use_aura==0
+          'sources/': [
+            ['exclude', '^browser/ui/webui/task_manager/'],
           ],
         }],
         ['ui_compositor_image_transport==1', {

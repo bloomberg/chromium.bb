@@ -1246,9 +1246,6 @@ const char kVisitURLs[]                     = "visit-urls";
 // The number of times the PageCycler should iterate through the list of URLs.
 const char kVisitURLsCount[]                = "visit-urls-count";
 
-// Use experimental WebUI task manager dialog.
-const char kWebUITaskManager[]              = "webui-task-manager";
-
 // Adds the given extension ID to all the permission whitelists.
 const char kWhitelistedExtensionID[]        = "whitelisted-extension-id";
 

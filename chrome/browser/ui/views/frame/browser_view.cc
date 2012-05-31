@@ -60,7 +60,6 @@
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
-#include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -118,6 +117,10 @@
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "ui/gfx/screen.h"
+#endif
+
+#if defined(USE_AURA)
+#include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
 #endif
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
@@ -1029,29 +1032,19 @@ void BrowserView::ShowUpdateChromeDialog() {
 }
 
 void BrowserView::ShowTaskManager() {
-#if defined(WEBUI_TASK_MANAGER)
+#if defined(USE_AURA)
   TaskManagerDialog::Show();
 #else
-  // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (TaskManagerDialog::UseWebUITaskManager()) {
-    TaskManagerDialog::Show();
-  } else {
-    browser::ShowTaskManager();
-  }
-#endif  // defined(WEBUI_TASK_MANAGER)
+  browser::ShowTaskManager();
+#endif  // defined(USE_AURA)
 }
 
 void BrowserView::ShowBackgroundPages() {
-#if defined(WEBUI_TASK_MANAGER)
+#if defined(USE_AURA)
   TaskManagerDialog::ShowBackgroundPages();
 #else
-  // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (TaskManagerDialog::UseWebUITaskManager()) {
-    TaskManagerDialog::ShowBackgroundPages();
-  } else {
-    browser::ShowBackgroundPages();
-  }
-#endif  // defined(WEBUI_TASK_MANAGER)
+  browser::ShowBackgroundPages();
+#endif  // defined(USE_AURA)
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {

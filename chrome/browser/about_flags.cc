@@ -583,13 +583,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableExtensionActivityUI)
   },
   {
-    "webui-task-manager",
-    IDS_FLAGS_WEBUI_TASK_MANAGER_NAME,
-    IDS_FLAGS_WEBUI_TASK_MANAGER_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kWebUITaskManager)
-  },
-  {
     "disable-ntp-other-sessions-menu",
     IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_NAME,
     IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_DESCRIPTION,

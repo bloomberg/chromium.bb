@@ -130,16 +130,6 @@
       <include name="IDR_SESSIONS_JS" file="resources\sessions.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SSL_ERROR_HTML" file="resources\ssl_error.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SSL_ROAD_BLOCK_HTML" file="resources\ssl_roadblock.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_TASK_MANAGER_HTML" file="resources\task_manager\main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_TASK_MANAGER_COMMANDS_JS" file="resources\task_manager\commands.js" type="BINDATA" />
-      <!-- The following defines.js uses flattenhtml feature to remove the platform-dependent code at complie-time. -->
-      <include name="IDR_TASK_MANAGER_DEFINES_JS" file="resources\task_manager\defines.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_TASK_MANAGER_INCLUDES_JS" file="resources\task_manager\includes.js" type="BINDATA" />
-      <include name="IDR_TASK_MANAGER_PRELOAD_JS" file="resources\task_manager\preload.js" type="BINDATA" />
-      <!-- The following main.js uses flattenhtml feature to remove the platform-dependent code at complie-time. -->
-      <include name="IDR_TASK_MANAGER_JS" file="resources\task_manager\main.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_TASK_MANAGER_MEASURE_TIME_JS" file="resources\task_manager\measure_time.js" type="BINDATA" /> 
-      <include name="IDR_TASK_MANAGER_MEASURE_TIME_END_JS" file="resources\task_manager\measure_time_end.js" type="BINDATA" /> 
       <include name="IDR_TRACING_HTML" file="resources\tracing.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_TRACING_JS" file="resources\tracing.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRANSLATE_JS" file="resources\translate.js" type="BINDATA" />
@@ -153,6 +143,18 @@
       <include name="IDR_UBER_UTILS_JS" file="resources\uber\uber_utils.js" type="BINDATA" />
       <include name="IDR_WEBSTORE_MANIFEST" file="resources\webstore_app\manifest.json" type="BINDATA" />
       <include name="IDR_ENTERPRISE_WEBSTORE_MANIFEST" file="resources\enterprise_webstore_app\manifest.json" type="BINDATA" />
+      <if expr="pp_ifdef('use_aura')">
+        <include name="IDR_TASK_MANAGER_HTML" file="resources\task_manager\main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_TASK_MANAGER_COMMANDS_JS" file="resources\task_manager\commands.js" type="BINDATA" />
+        <!-- The following defines.js uses flattenhtml feature to remove the platform-dependent code at complie-time. -->
+        <include name="IDR_TASK_MANAGER_DEFINES_JS" file="resources\task_manager\defines.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_TASK_MANAGER_INCLUDES_JS" file="resources\task_manager\includes.js" type="BINDATA" />
+        <include name="IDR_TASK_MANAGER_PRELOAD_JS" file="resources\task_manager\preload.js" type="BINDATA" />
+        <!-- The following main.js uses flattenhtml feature to remove the platform-dependent code at complie-time. -->
+        <include name="IDR_TASK_MANAGER_JS" file="resources\task_manager\main.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_TASK_MANAGER_MEASURE_TIME_JS" file="resources\task_manager\measure_time.js" type="BINDATA" /> 
+        <include name="IDR_TASK_MANAGER_MEASURE_TIME_END_JS" file="resources\task_manager\measure_time_end.js" type="BINDATA" /> 
+      </if>
       <if expr="not pp_ifdef('chromeos')">
         <include name="IDR_SYNC_PROMO_JS" file="resources\sync_promo\sync_promo.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_SYNC_PROMO_HTML" file="resources\sync_promo\sync_promo.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
