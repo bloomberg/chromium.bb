@@ -692,7 +692,7 @@ void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
 bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
   if (window->GetProperty(aura::client::kAnimationsDisabledKey) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAuraWindowAnimationsDisabled)) {
+          switches::kAshWindowAnimationsDisabled)) {
     return false;
   }
   if (visible) {

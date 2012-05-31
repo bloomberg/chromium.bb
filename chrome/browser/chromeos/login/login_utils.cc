@@ -1181,10 +1181,10 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kTouchDevices,
       ::switches::kTouchOptimizedUI,
       ash::switches::kAshTouchHud,
+      ash::switches::kAshWindowAnimationsDisabled,
       ash::switches::kAuraLegacyPowerButton,
       ash::switches::kAuraNoShadows,
       ash::switches::kAuraPanelManager,
-      ash::switches::kAuraWindowAnimationsDisabled,
       ::switches::kUIEnablePartialSwap,
 #if defined(USE_CRAS)
       ::switches::kUseCras,

@@ -53,9 +53,9 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
 
 #if defined(USE_ASH)
-  // Disable window animations under aura as the animations effect the
+  // Disable window animations under Ash as the animations effect the
   // coordinates returned and result in flake.
-  command_line->AppendSwitch(ash::switches::kAuraWindowAnimationsDisabled);
+  command_line->AppendSwitch(ash::switches::kAshWindowAnimationsDisabled);
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

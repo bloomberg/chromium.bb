@@ -16,6 +16,9 @@ const char kAshNotify[] = "ash-notify";
 // Enables the heads-up display for tracking touch points.
 const char kAshTouchHud[] = "ash-touch-hud";
 
+// If present animations are disabled.
+const char kAshWindowAnimationsDisabled[] = "ash-window-animations-disabled";
+
 // Use Google-style dialog box frames.
 const char kAuraGoogleDialogFrames[] = "aura-google-dialog-frames";
 
@@ -30,9 +33,6 @@ const char kAuraNoShadows[] = "aura-no-shadows";
 
 // Use Aura to manage windows of type WINDOW_TYPE_PANEL.
 const char kAuraPanelManager[] = "aura-panels";
-
-// If present animations are disabled.
-const char kAuraWindowAnimationsDisabled[] = "aura-window-animations-disabled";
 
 // Enables applist v2.
 const char kEnableAppListV2[] = "enable-applist-v2";

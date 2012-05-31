@@ -206,7 +206,7 @@ void BaseLayoutManager::MaybeAnimateToBounds(aura::Window* window,
   if (animate &&
       window->TargetVisibility() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAuraWindowAnimationsDisabled)) {
+          ash::switches::kAshWindowAnimationsDisabled)) {
     CrossFadeToBounds(window, new_bounds);
     return;
   }
