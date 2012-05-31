@@ -136,6 +136,16 @@ def get_free_space(path):
   return f.f_bfree * f.f_frsize
 
 
+def fix_python_path(cmd):
+  """Returns the fixed command line to call the right python executable."""
+  out = cmd[:]
+  if out[0] == 'python':
+    out[0] = sys.executable
+  elif out[0].endswith('.py'):
+    out.insert(0, sys.executable)
+  return out
+
+
 class Cache(object):
   """Stateful LRU cache.
 
@@ -267,6 +277,7 @@ def run_tha_test(manifest, cache_dir, remote, max_cache_size, min_free_space):
     cmd = manifest['command']
     # Ensure paths are correctly separated on windows.
     cmd[0] = cmd[0].replace('/', os.path.sep)
+    cmd = fix_python_path(cmd)
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     try:
       return subprocess.call(cmd, cwd=cwd)
