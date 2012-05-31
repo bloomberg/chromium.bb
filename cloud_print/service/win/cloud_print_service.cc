@@ -53,7 +53,8 @@ class ServiceHandleTraits {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceHandleTraits);
 };
 
-typedef base::win::GenericScopedHandle<ServiceHandleTraits> ServiceHandle;
+typedef base::win::GenericScopedHandle<
+    ServiceHandleTraits, base::win::DummyVerifierTraits> ServiceHandle;
 
 HRESULT HResultFromLastError() {
   HRESULT hr = HRESULT_FROM_WIN32(GetLastError());

@@ -42,7 +42,8 @@ class PrinterHandleTraits {
   DISALLOW_IMPLICIT_CONSTRUCTORS(PrinterHandleTraits);
 };
 
-typedef base::win::GenericScopedHandle<PrinterHandleTraits> ScopedPrinterHandle;
+typedef base::win::GenericScopedHandle<
+    PrinterHandleTraits, base::win::DummyVerifierTraits> ScopedPrinterHandle;
 
 
 // Wrapper class to wrap the XPS APIs (PTxxx APIs). This is needed because these

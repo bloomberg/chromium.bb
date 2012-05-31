@@ -34,7 +34,8 @@ class ScHandleTraits {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ScHandleTraits);
 };
 
-typedef base::win::GenericScopedHandle<ScHandleTraits> ScopedScHandle;
+typedef base::win::GenericScopedHandle<
+    ScHandleTraits, base::win::DummyVerifierTraits> ScopedScHandle;
 
 }  // namespace remoting
 

@@ -55,7 +55,8 @@ class PrinterChangeHandleTraits {
   DISALLOW_IMPLICIT_CONSTRUCTORS(PrinterChangeHandleTraits);
 };
 
-typedef base::win::GenericScopedHandle<PrinterChangeHandleTraits>
+typedef base::win::GenericScopedHandle<PrinterChangeHandleTraits,
+                                       base::win::DummyVerifierTraits>
     ScopedPrinterChangeHandle;
 
 class DevMode {
