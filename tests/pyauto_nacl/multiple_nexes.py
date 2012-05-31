@@ -11,7 +11,10 @@ import random
 class NaClTest(pyauto.PyUITest):
   """Tests for NaCl."""
   # (test.html, number of nexes loaded concurrently on page)
-  nexes = [('ppapi_example_audio.html#mute', 1),
+  nexes = [# TODO(nfullagar): reenable audio test
+           # http://code.google.com/p/chromium/issues/detail?id=116169
+           # http://code.google.com/p/nativeclient/issues/detail?id=2668
+           # ('ppapi_example_audio.html#mute', 1),
            # TODO(cstefansen): enable test when bug is fixed
            # http://code.google.com/p/nativeclient/issues/detail?id=1936
            # ('ppapi_example_gles2.html', 1),

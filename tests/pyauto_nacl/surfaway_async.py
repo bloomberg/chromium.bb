@@ -55,7 +55,10 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwayAsyncEvents(self):
     self.surfAwayAsync('ppapi_example_events.html', 'PPAPI')
 
-  def testSurfAwayAsyncExampleAudio(self):
+  # TODO(nfullagar): reenable when less flaky.
+  # http://code.google.com/p/chromium/issues/detail?id=116169
+  # http://code.google.com/p/nativeclient/issues/detail?id=2668
+  def disabledTestSurfAwayAsyncExampleAudio(self):
     self.surfAwayAsync('ppapi_example_audio.html#mute', 'PPAPI')
 
   # TODO(cstefansen): enable test when bug is fixed

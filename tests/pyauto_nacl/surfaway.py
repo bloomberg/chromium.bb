@@ -31,7 +31,10 @@ class NaClTest(pyauto.PyUITest):
     """Navigate multiple times to a sample nexe and then surf away."""
     self.surfAwayMulti(page, title_word, 5)
 
-  def testSurfAwayExampleAudio(self):
+  # TODO(nfullagar): reenable when less flaky.
+  # http://code.google.com/p/chromium/issues/detail?id=116169
+  # http://code.google.com/p/nativeclient/issues/detail?id=2668
+  def disabledTestSurfAwayExampleAudio(self):
     self.surfAway('ppapi_example_audio.html#mute', 'PPAPI')
 
   # TODO(cstefansen): enable test when bug is fixed

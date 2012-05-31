@@ -28,7 +28,10 @@ def SimplePyAutoTester(env, target, test,
 core_tests = ['ppapi_example_events',
               'ppapi_geturl',
               'ppapi_example_2d',
-              'ppapi_example_audio',
+              # Omitting the example_audio_test for now.
+              # http://code.google.com/p/chromium/issues/detail?id=116169
+              # http://code.google.com/p/nativeclient/issues/detail?id=2668
+              # 'ppapi_example_audio',
 # TODO(dspringer): Re-enable this once the 3D ABI has stabilized.  See
 # http://code.google.com/p/nativeclient/issues/detail?id=2060
 #               'ppapi_example_gles2',

@@ -63,7 +63,10 @@ class NaClTest(pyauto.PyUITest):
     self.reloadMulti(page, title_word, 25, 0.0, 2.0)
     print '---> pyauto reload: finished testing', page
 
-  def testReloadExampleAudio(self):
+  # TODO(nfullagar): reenable when test is less flaky.
+  # http://code.google.com/p/chromium/issues/detail?id=116169
+  # http://code.google.com/p/nativeclient/issues/detail?id=2668
+  def disabledTestReloadExampleAudio(self):
     self.reloader('ppapi_example_audio.html#mute', 'PPAPI')
 
   # TODO(cstefansen): enable test when bug is fixed
