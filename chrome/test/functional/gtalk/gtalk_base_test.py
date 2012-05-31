@@ -40,6 +40,11 @@ class GTalkBaseTest(pyauto.PyUITest):
         os.path.exists(extension_path),
         msg='Failed to find GTalk extension: ' + extension_path)
 
+    extension = self.GetGTalkExtensionInfo()
+    if extension:
+      logging.info('Extension already installed. Skipping install...\n')
+      return
+
     self.InstallExtension(extension_path, False)
     extension = self.GetGTalkExtensionInfo()
     self.assertTrue(extension, msg='Failed to install GTalk extension.')
