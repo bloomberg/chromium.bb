@@ -12,6 +12,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/ime/text_input_test_support.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/monitor.h"
 #include "ui/gfx/screen.h"
@@ -33,6 +34,7 @@ AshTestBase::~AshTestBase() {
 }
 
 void AshTestBase::SetUp() {
+  ui::TextInputTestSupport::Initilaize();
   // Creates Shell and hook with Desktop.
   TestShellDelegate* delegate = new TestShellDelegate;
   ash::Shell::CreateInstance(delegate);
@@ -50,6 +52,7 @@ void AshTestBase::TearDown() {
   // Tear down the shell.
   Shell::DeleteInstance();
   aura::Env::DeleteInstance();
+  ui::TextInputTestSupport::Shutdown();
 }
 
 void AshTestBase::ChangeMonitorConfig(float scale,

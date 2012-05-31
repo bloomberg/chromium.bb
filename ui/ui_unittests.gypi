@@ -7,6 +7,9 @@
     {
       'target_name': 'ui_test_support',
       'type': 'static_library',
+      'includes': [
+        'base/ime/ime_test_support.gypi',
+      ],
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
@@ -21,6 +24,14 @@
       ],
       'include_dirs': [
         '../',
+      ],
+      'conditions': [
+        ['chromeos==1', {
+          'dependencies': [
+            '../chromeos/chromeos.gyp:chromeos_test_support',
+            '../skia/skia.gyp:skia',
+          ]
+        }],
       ],
     },
     {

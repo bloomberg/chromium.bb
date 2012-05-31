@@ -262,6 +262,7 @@
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         '../ui.gyp:ui_resources_standard',
+        '../ui.gyp:ui_test_support',
         'test_support_aura',
         'aura',
       ],

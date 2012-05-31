@@ -345,6 +345,7 @@
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../ui/ui.gyp:ui_resources_standard',
+        '../ui/ui.gyp:ui_test_support',
         '../ui/views/views.gyp:views',
         '../ui/views/views.gyp:test_support_views',
         'ash',

@@ -6,6 +6,7 @@
 
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/base/gestures/gesture_configuration.h"
+#include "ui/base/ime/text_input_test_support.h"
 
 namespace aura {
 namespace test {
@@ -18,6 +19,7 @@ AuraTestBase::~AuraTestBase() {
 
 void AuraTestBase::SetUp() {
   testing::Test::SetUp();
+  ui::TextInputTestSupport::Initilaize();
 
   // Changing the parameters for gesture recognition shouldn't cause
   // tests to fail, so we use a separate set of parameters for unit
@@ -49,6 +51,7 @@ void AuraTestBase::TearDown() {
   RunAllPendingInMessageLoop();
 
   helper_->TearDown();
+  ui::TextInputTestSupport::Shutdown();
   testing::Test::TearDown();
 }
 
