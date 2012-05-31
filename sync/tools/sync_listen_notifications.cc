@@ -56,12 +56,6 @@ class NotificationPrinter : public sync_notifier::SyncNotifierObserver {
     LOG(INFO) << "Notifications enabled: " << notifications_enabled;
   }
 
-  virtual void StoreState(const std::string& state) OVERRIDE {
-    std::string base64_state;
-    CHECK(base::Base64Encode(state, &base64_state));
-    LOG(INFO) << "Got state to store: " << base64_state;
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationPrinter);
 };
@@ -226,7 +220,6 @@ int main(int argc, char* argv[]) {
 
   const char kUniqueId[] = "fake_unique_id";
   sync_notifier->SetUniqueId(kUniqueId);
-  sync_notifier->SetState("");
   sync_notifier->UpdateCredentials(email, token);
   // Listen for notifications for all known types.
   sync_notifier->UpdateEnabledTypes(syncable::ModelTypeSet::All());

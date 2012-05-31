@@ -39,6 +39,7 @@ class SyncNotifierFactory {
   const notifier::NotifierOptions notifier_options_;
   const std::string client_info_;
   const InvalidationVersionMap initial_max_invalidation_versions_;
+  const std::string initial_invalidation_state_;
   const browser_sync::WeakHandle<InvalidationStateTracker>
       invalidation_state_tracker_;
 };

@@ -28,12 +28,13 @@ class NonBlockingInvalidationNotifier::Core
   void Initialize(
       const notifier::NotifierOptions& notifier_options,
       const InvalidationVersionMap& initial_max_invalidation_versions,
+      const std::string& initial_invalidation_state,
       const browser_sync::WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
       const std::string& client_info);
   void Teardown();
   void SetUniqueId(const std::string& unique_id);
-  void SetState(const std::string& state);
+  void SetStateDeprecated(const std::string& state);
   void UpdateCredentials(const std::string& email, const std::string& token);
   void UpdateEnabledTypes(syncable::ModelTypeSet enabled_types);
 
@@ -43,7 +44,6 @@ class NonBlockingInvalidationNotifier::Core
       const syncable::ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source);
   virtual void OnNotificationStateChange(bool notifications_enabled);
-  virtual void StoreState(const std::string& state);
 
  private:
   friend class
@@ -72,6 +72,7 @@ NonBlockingInvalidationNotifier::Core::~Core() {
 void NonBlockingInvalidationNotifier::Core::Initialize(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
+    const std::string& initial_invalidation_state,
     const browser_sync::WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     const std::string& client_info) {
@@ -85,6 +86,7 @@ void NonBlockingInvalidationNotifier::Core::Initialize(
       new InvalidationNotifier(
           notifier::PushClient::CreateDefaultOnIOThread(notifier_options),
           initial_max_invalidation_versions,
+          initial_invalidation_state,
           invalidation_state_tracker,
           client_info));
   invalidation_notifier_->AddObserver(this);
@@ -104,10 +106,10 @@ void NonBlockingInvalidationNotifier::Core::SetUniqueId(
   invalidation_notifier_->SetUniqueId(unique_id);
 }
 
-void NonBlockingInvalidationNotifier::Core::SetState(
+void NonBlockingInvalidationNotifier::Core::SetStateDeprecated(
     const std::string& state) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  invalidation_notifier_->SetState(state);
+  invalidation_notifier_->SetStateDeprecated(state);
 }
 
 void NonBlockingInvalidationNotifier::Core::UpdateCredentials(
@@ -140,16 +142,10 @@ void NonBlockingInvalidationNotifier::Core::OnNotificationStateChange(
                           notifications_enabled);
 }
 
-void NonBlockingInvalidationNotifier::Core::StoreState(
-    const std::string& state) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  delegate_observer_.Call(FROM_HERE,
-                          &SyncNotifierObserver::StoreState, state);
-}
-
 NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
+    const std::string& initial_invalidation_state,
     const browser_sync::WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     const std::string& client_info)
@@ -168,6 +164,7 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
               core_.get(),
               notifier_options,
               initial_max_invalidation_versions,
+              initial_invalidation_state,
               invalidation_state_tracker,
               client_info))) {
     NOTREACHED();
@@ -207,12 +204,14 @@ void NonBlockingInvalidationNotifier::SetUniqueId(
   }
 }
 
-void NonBlockingInvalidationNotifier::SetState(const std::string& state) {
+void NonBlockingInvalidationNotifier::SetStateDeprecated(
+    const std::string& state) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   if (!io_message_loop_proxy_->PostTask(
           FROM_HERE,
-          base::Bind(&NonBlockingInvalidationNotifier::Core::SetState,
-                     core_.get(), state))) {
+          base::Bind(
+              &NonBlockingInvalidationNotifier::Core::SetStateDeprecated,
+              core_.get(), state))) {
     NOTREACHED();
   }
 }
@@ -259,13 +258,6 @@ void NonBlockingInvalidationNotifier::OnNotificationStateChange(
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
                     OnNotificationStateChange(notifications_enabled));
-}
-
-void NonBlockingInvalidationNotifier::StoreState(
-    const std::string& state) {
-  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
-  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
-                    StoreState(state));
 }
 
 }  // namespace sync_notifier

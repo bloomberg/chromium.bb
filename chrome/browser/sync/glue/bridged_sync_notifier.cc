@@ -37,9 +37,9 @@ void BridgedSyncNotifier::SetUniqueId(const std::string& unique_id) {
     delegate_->SetUniqueId(unique_id);
 }
 
-void BridgedSyncNotifier::SetState(const std::string& state) {
+void BridgedSyncNotifier::SetStateDeprecated(const std::string& state) {
   if (delegate_.get())
-    delegate_->SetState(state);
+    delegate_->SetStateDeprecated(state);
 }
 
 void BridgedSyncNotifier::UpdateCredentials(

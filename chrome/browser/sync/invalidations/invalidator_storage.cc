@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
 
+#include "base/base64.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
@@ -115,16 +116,19 @@ void InvalidatorStorage::SerializeMap(
 }
 
 std::string InvalidatorStorage::GetInvalidationState() const {
-  DLOG(WARNING) << "TODO(tim): Wire this up. Bug 124140.";
-  return pref_service_ ?
-      pref_service_->GetString(prefs::kInvalidatorInvalidationState) : "";
+  std::string utf8_state(pref_service_ ?
+      pref_service_->GetString(prefs::kInvalidatorInvalidationState) : "");
+  std::string state_data;
+  base::Base64Decode(utf8_state, &state_data);
+  return state_data;
 }
 
 void InvalidatorStorage::SetInvalidationState(const std::string& state) {
-  DLOG(WARNING) << "TODO(tim): Wire this up. Bug 124140.";
   DCHECK(non_thread_safe_.CalledOnValidThread());
+  std::string utf8_state;
+  base::Base64Encode(state, &utf8_state);
   pref_service_->SetString(prefs::kInvalidatorInvalidationState,
-                           state);
+                           utf8_state);
 }
 
 void InvalidatorStorage::Clear() {

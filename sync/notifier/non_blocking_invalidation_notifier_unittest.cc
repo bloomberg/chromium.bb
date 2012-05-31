@@ -42,6 +42,7 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
         new NonBlockingInvalidationNotifier(
             notifier_options,
             InvalidationVersionMap(),
+            std::string(),  // initial_invalidation_state
             browser_sync::MakeWeakHandle(
                 base::WeakPtr<sync_notifier::InvalidationStateTracker>()),
             "fake_client_info"));
@@ -73,18 +74,16 @@ TEST_F(NonBlockingInvalidationNotifierTest, Basic) {
   type_payloads[syncable::AUTOFILL] = "";
 
   EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
-  EXPECT_CALL(mock_observer_, StoreState("new_fake_state"));
   EXPECT_CALL(mock_observer_,
               OnIncomingNotification(type_payloads,
                                      REMOTE_NOTIFICATION));
   EXPECT_CALL(mock_observer_, OnNotificationStateChange(false));
 
-  invalidation_notifier_->SetState("fake_state");
+  invalidation_notifier_->SetStateDeprecated("fake_state");
   invalidation_notifier_->SetUniqueId("fake_id");
   invalidation_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
 
   invalidation_notifier_->OnNotificationStateChange(true);
-  invalidation_notifier_->StoreState("new_fake_state");
   invalidation_notifier_->OnIncomingNotification(type_payloads,
                                                  REMOTE_NOTIFICATION);
   invalidation_notifier_->OnNotificationStateChange(false);

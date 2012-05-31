@@ -22,7 +22,6 @@ class MockSyncNotifierObserver : public SyncNotifierObserver {
                void(const syncable::ModelTypePayloadMap&,
                     IncomingNotificationSource));
   MOCK_METHOD1(OnNotificationStateChange, void(bool));
-  MOCK_METHOD1(StoreState, void(const std::string&));
 };
 
 }  // namespace sync_notifier

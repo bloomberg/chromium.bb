@@ -171,7 +171,7 @@ void P2PNotifier::SetUniqueId(const std::string& unique_id) {
   unique_id_ = unique_id;
 }
 
-void P2PNotifier::SetState(const std::string& state) {
+void P2PNotifier::SetStateDeprecated(const std::string& state) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   // Do nothing.
 }

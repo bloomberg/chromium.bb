@@ -7,6 +7,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "sync/syncable/model_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -124,6 +125,15 @@ TEST_F(InvalidatorStorageTest, DeserializeBasic) {
   EXPECT_EQ(2U, map.size());
   EXPECT_EQ(10, map[syncable::AUTOFILL]);
   EXPECT_EQ(15, map[syncable::BOOKMARKS]);
+}
+
+TEST_F(InvalidatorStorageTest, SetGetInvalidationState) {
+  InvalidatorStorage storage(&pref_service_);
+  const std::string mess("n\0tK\0\0l\344", 8);
+  ASSERT_FALSE(IsStringUTF8(mess));
+
+  storage.SetInvalidationState(mess);
+  EXPECT_EQ(mess, storage.GetInvalidationState());
 }
 
 }  // namespace browser_sync

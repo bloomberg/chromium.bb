@@ -1554,6 +1554,7 @@ const char kSyncMaxInvalidationVersions[] = "sync.max_invalidation_versions";
 const char kSyncSessionsGUID[] = "sync.session_sync_guid";
 
 // Opaque state from the invalidation subsystem that is persisted via prefs.
+// The value is base 64 encoded.
 const char kInvalidatorInvalidationState[] = "invalidator.invalidation_state";
 
 // A string that can be used to restore sync encryption infrastructure on

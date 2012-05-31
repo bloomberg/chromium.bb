@@ -713,7 +713,7 @@ class SyncNotifierMock : public sync_notifier::SyncNotifier {
   MOCK_METHOD1(AddObserver, void(sync_notifier::SyncNotifierObserver*));
   MOCK_METHOD1(RemoveObserver, void(sync_notifier::SyncNotifierObserver*));
   MOCK_METHOD1(SetUniqueId, void(const std::string&));
-  MOCK_METHOD1(SetState, void(const std::string&));
+  MOCK_METHOD1(SetStateDeprecated, void(const std::string&));
   MOCK_METHOD2(UpdateCredentials,
                void(const std::string&, const std::string&));
   MOCK_METHOD1(UpdateEnabledTypes,
@@ -760,7 +760,7 @@ class SyncManagerTest : public testing::Test,
     EXPECT_CALL(*sync_notifier_mock_, AddObserver(_)).
         WillOnce(Invoke(this, &SyncManagerTest::SyncNotifierAddObserver));
     EXPECT_CALL(*sync_notifier_mock_, SetUniqueId(_));
-    EXPECT_CALL(*sync_notifier_mock_, SetState(""));
+    EXPECT_CALL(*sync_notifier_mock_, SetStateDeprecated(""));
     EXPECT_CALL(*sync_notifier_mock_,
                 UpdateCredentials(credentials.email, credentials.sync_token));
     EXPECT_CALL(*sync_notifier_mock_, UpdateEnabledTypes(_)).

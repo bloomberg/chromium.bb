@@ -325,8 +325,6 @@ class SyncManager::SyncInternal
       const syncable::ModelTypePayloadMap& type_payloads,
       sync_notifier::IncomingNotificationSource source) OVERRIDE;
 
-  virtual void StoreState(const std::string& cookie) OVERRIDE;
-
   void AddObserver(SyncManager::Observer* observer);
   void RemoveObserver(SyncManager::Observer* observer);
 
@@ -1191,7 +1189,9 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
   }
   allstatus_.SetUniqueId(unique_id);
   sync_notifier_->SetUniqueId(unique_id);
-  sync_notifier_->SetState(state);
+  // TODO(tim): Remove once invalidation state has been migrated to new
+  // InvalidationStateTracker store. Bug 124140.
+  sync_notifier_->SetStateDeprecated(state);
 
   UpdateCredentials(credentials);
   UpdateEnabledTypes();
@@ -2373,23 +2373,6 @@ void SyncManager::SyncInternal::OnIncomingNotification(
                            "onIncomingNotification",
                            JsEventDetails(&details));
   }
-}
-
-void SyncManager::SyncInternal::StoreState(
-    const std::string& state) {
-  if (!directory()) {
-    LOG(ERROR) << "Could not write notification state";
-    // TODO(akalin): Propagate result callback all the way to this
-    // function and call it with "false" to signal failure.
-    return;
-  }
-  if (VLOG_IS_ON(1)) {
-    std::string encoded_state;
-    base::Base64Encode(state, &encoded_state);
-    DVLOG(1) << "Writing notification state: " << encoded_state;
-  }
-  directory()->SetNotificationState(state);
-  directory()->SaveChanges();
 }
 
 void SyncManager::SyncInternal::AddObserver(

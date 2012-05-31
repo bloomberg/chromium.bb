@@ -18,6 +18,7 @@ namespace {
 SyncNotifier* CreateDefaultSyncNotifier(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
+    const std::string& initial_invalidation_state,
     const browser_sync::WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     const std::string& client_info) {
@@ -33,7 +34,7 @@ SyncNotifier* CreateDefaultSyncNotifier(
 
   return new NonBlockingInvalidationNotifier(
       notifier_options, initial_max_invalidation_versions,
-      invalidation_state_tracker, client_info);
+      initial_invalidation_state, invalidation_state_tracker, client_info);
 }
 
 }  // namespace
@@ -50,6 +51,10 @@ SyncNotifierFactory::SyncNotifierFactory(
           invalidation_state_tracker.get() ?
           invalidation_state_tracker->GetAllMaxVersions() :
           InvalidationVersionMap()),
+      initial_invalidation_state_(
+          invalidation_state_tracker.get() ?
+          invalidation_state_tracker->GetInvalidationState() :
+          std::string()),
       invalidation_state_tracker_(invalidation_state_tracker) {
 }
 
@@ -63,6 +68,7 @@ SyncNotifier* SyncNotifierFactory::CreateSyncNotifier() {
 #else
   return CreateDefaultSyncNotifier(notifier_options_,
                                    initial_max_invalidation_versions_,
+                                   initial_invalidation_state_,
                                    invalidation_state_tracker_,
                                    client_info_);
 #endif

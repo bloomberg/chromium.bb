@@ -68,8 +68,7 @@ class ChromeInvalidationClient
       const InvalidationVersionMap& initial_max_invalidation_versions,
       const browser_sync::WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
-      Listener* listener,
-      StateWriter* state_writer);
+      Listener* listener);
 
   void UpdateCredentials(const std::string& email, const std::string& token);
 
@@ -124,7 +123,6 @@ class ChromeInvalidationClient
   browser_sync::WeakHandle<InvalidationStateTracker>
       invalidation_state_tracker_;
   Listener* listener_;
-  StateWriter* state_writer_;
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
   scoped_ptr<RegistrationManager> registration_manager_;
   // Stored to pass to |registration_manager_| on start.

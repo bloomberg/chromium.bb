@@ -28,10 +28,6 @@ class SyncNotifierObserver {
       const syncable::ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source) = 0;
   virtual void OnNotificationStateChange(bool notifications_enabled) = 0;
-
-  // TODO(nileshagrawal): Find a way to hide state handling inside the
-  // sync notifier implementation.
-  virtual void StoreState(const std::string& state) = 0;
 };
 
 }  // namespace sync_notifier

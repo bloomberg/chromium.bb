@@ -34,7 +34,6 @@ ChromeInvalidationClient::ChromeInvalidationClient(
     : chrome_system_resources_(push_client.Pass(),
                                ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       listener_(NULL),
-      state_writer_(NULL),
       ticl_ready_(false) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
 }
@@ -43,7 +42,6 @@ ChromeInvalidationClient::~ChromeInvalidationClient() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   Stop();
   DCHECK(!listener_);
-  DCHECK(!state_writer_);
 }
 
 void ChromeInvalidationClient::Start(
@@ -52,8 +50,7 @@ void ChromeInvalidationClient::Start(
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const browser_sync::WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
-    Listener* listener,
-    StateWriter* state_writer) {
+    Listener* listener) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   Stop();
 
@@ -83,9 +80,6 @@ void ChromeInvalidationClient::Start(
   DCHECK(!listener_);
   DCHECK(listener);
   listener_ = listener;
-  DCHECK(!state_writer_);
-  DCHECK(state_writer);
-  state_writer_ = state_writer;
 
   int client_type = ipc::invalidation::ClientType::CHROME_SYNC;
   invalidation_client_.reset(
@@ -115,7 +109,6 @@ void ChromeInvalidationClient::Stop() {
   invalidation_client_->Stop();
 
   invalidation_client_.reset();
-  state_writer_ = NULL;
   listener_ = NULL;
 
   invalidation_state_tracker_.Reset();
@@ -300,8 +293,9 @@ void ChromeInvalidationClient::InformError(
 
 void ChromeInvalidationClient::WriteState(const std::string& state) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  CHECK(state_writer_);
-  state_writer_->WriteState(state);
+  DVLOG(1) << "WriteState";
+  invalidation_state_tracker_.Call(
+      FROM_HERE, &InvalidationStateTracker::SetInvalidationState, state);
 }
 
 }  // namespace sync_notifier

@@ -37,6 +37,7 @@ class NonBlockingInvalidationNotifier
   NonBlockingInvalidationNotifier(
       const notifier::NotifierOptions& notifier_options,
       const InvalidationVersionMap& initial_max_invalidation_versions,
+      const std::string& initial_invalidation_state,
       const browser_sync::WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
       const std::string& client_info);
@@ -47,7 +48,7 @@ class NonBlockingInvalidationNotifier
   virtual void AddObserver(SyncNotifierObserver* observer) OVERRIDE;
   virtual void RemoveObserver(SyncNotifierObserver* observer) OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
-  virtual void SetState(const std::string& state) OVERRIDE;
+  virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void UpdateEnabledTypes(
@@ -60,7 +61,6 @@ class NonBlockingInvalidationNotifier
       const syncable::ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source) OVERRIDE;
   virtual void OnNotificationStateChange(bool notifications_enabled) OVERRIDE;
-  virtual void StoreState(const std::string& state) OVERRIDE;
 
  private:
   class Core;

@@ -31,7 +31,8 @@ class SyncNotifier {
 
   // SetState must be called once, before any call to
   // UpdateCredentials.  |state| may be empty.
-  virtual void SetState(const std::string& state) = 0;
+  // Deprecated in favour of InvalidationStateTracker persistence.
+  virtual void SetStateDeprecated(const std::string& state) = 0;
 
   // The observers won't be notified of any notifications until
   // UpdateCredentials is called at least once. It can be called more than
@@ -52,4 +53,3 @@ class SyncNotifier {
 }  // namespace sync_notifier
 
 #endif  // SYNC_NOTIFIER_SYNC_NOTIFIER_H_
-

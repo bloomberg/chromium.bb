@@ -73,9 +73,6 @@ class FakeSyncNotifierObserverIO
   virtual void OnNotificationStateChange(bool notifications_enabled) {
     NOTREACHED();
   }
-  virtual void StoreState(const std::string& state) OVERRIDE {
-    NOTREACHED();
-  }
 
   bool ReceivedProperNotification() const {
     return (notification_count_ == 1) && !received_improper_notification_;

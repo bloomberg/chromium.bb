@@ -11,6 +11,7 @@
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/notifier/invalidation_state_tracker.h"
+#include "sync/notifier/mock_invalidation_state_tracker.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "sync/syncable/model_type.h"
 #include "sync/syncable/model_type_payload_map.h"
@@ -27,7 +28,17 @@ using ::testing::StrictMock;
 
 class InvalidationNotifierTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  virtual void TearDown() {
+    if (invalidation_notifier_.get())
+      ResetNotifier();
+  }
+
+  // Constructs an InvalidationNotifier, places it in
+  // |invalidation_notifier_|, and adds |mock_observer_| as an observer. This
+  // remains in place until either TearDown (automatic) or ResetNotifier
+  // (manual) is called.
+  void CreateAndObserveNotifier(
+      const std::string& initial_invalidation_state) {
     notifier::NotifierOptions notifier_options;
     // Note: URLRequestContextGetters are ref-counted.
     notifier_options.request_context_getter =
@@ -36,13 +47,13 @@ class InvalidationNotifierTest : public testing::Test {
         new InvalidationNotifier(
             scoped_ptr<notifier::PushClient>(new notifier::FakePushClient()),
             InvalidationVersionMap(),
-            browser_sync::MakeWeakHandle(
-                base::WeakPtr<InvalidationStateTracker>()),
+            initial_invalidation_state,
+            browser_sync::MakeWeakHandle(mock_tracker_.AsWeakPtr()),
             "fake_client_info"));
     invalidation_notifier_->AddObserver(&mock_observer_);
   }
 
-  virtual void TearDown() {
+  void ResetNotifier() {
     invalidation_notifier_->RemoveObserver(&mock_observer_);
     // Stopping the invalidation notifier stops its scheduler, which deletes any
     // pending tasks without running them.  Some tasks "run and delete" another
@@ -55,11 +66,13 @@ class InvalidationNotifierTest : public testing::Test {
 
   MessageLoopForIO message_loop_;
   scoped_ptr<InvalidationNotifier> invalidation_notifier_;
+  StrictMock<MockInvalidationStateTracker> mock_tracker_;
   StrictMock<MockSyncNotifierObserver> mock_observer_;
   notifier::FakeBaseTask fake_base_task_;
 };
 
 TEST_F(InvalidationNotifierTest, Basic) {
+  CreateAndObserveNotifier("fake_state");
   InSequence dummy;
 
   syncable::ModelTypePayloadMap type_payloads;
@@ -68,23 +81,42 @@ TEST_F(InvalidationNotifierTest, Basic) {
   type_payloads[syncable::AUTOFILL] = "";
 
   EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
-  EXPECT_CALL(mock_observer_, StoreState("new_fake_state"));
   EXPECT_CALL(mock_observer_,
               OnIncomingNotification(type_payloads,
                                      REMOTE_NOTIFICATION));
   EXPECT_CALL(mock_observer_, OnNotificationStateChange(false));
+  // Note no expectation on mock_tracker_, as we initialized with
+  // non-empty initial_invalidation_state above.
 
-  invalidation_notifier_->SetState("fake_state");
+  // TODO(tim): This call should be a no-op, Remove once bug 124140 and
+  // associated issues are fixed.
+  invalidation_notifier_->SetStateDeprecated("fake_state");
   invalidation_notifier_->SetUniqueId("fake_id");
   invalidation_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
 
   invalidation_notifier_->OnSessionStatusChanged(true);
 
-  invalidation_notifier_->WriteState("new_fake_state");
-
   invalidation_notifier_->OnInvalidate(type_payloads);
 
   invalidation_notifier_->OnSessionStatusChanged(false);
+}
+
+TEST_F(InvalidationNotifierTest, MigrateState) {
+  CreateAndObserveNotifier(std::string());
+  InSequence dummy;
+
+  EXPECT_CALL(mock_tracker_, SetInvalidationState("fake_state"));
+  invalidation_notifier_->SetStateDeprecated("fake_state");
+
+  // Should do nothing.
+  invalidation_notifier_->SetStateDeprecated("spurious_fake_state");
+
+  // Pretend Chrome shut down.
+  ResetNotifier();
+
+  CreateAndObserveNotifier("fake_state");
+  // Should do nothing.
+  invalidation_notifier_->SetStateDeprecated("more_spurious_fake_state");
 }
 
 }  // namespace

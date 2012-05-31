@@ -31,6 +31,7 @@ class InvalidationStateTracker {
   // Used by InvalidationClient for persistence. |state| is opaque data we can
   // present back to the client (e.g. after a restart) for it to bootstrap
   // itself.
+  // |state| is plain old data (not valid UTF8, embedded nulls, etc).
   virtual void SetInvalidationState(const std::string& state) = 0;
   virtual std::string GetInvalidationState() const = 0;
 

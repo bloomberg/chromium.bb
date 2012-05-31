@@ -355,6 +355,8 @@
       'sources': [
         'js/js_test_util.cc',
         'js/js_test_util.h',
+        'notifier/mock_invalidation_state_tracker.cc',
+        'notifier/mock_invalidation_state_tracker.h',
         'sessions/test_util.cc',
         'sessions/test_util.h',
         'syncable/model_type_test_util.cc',

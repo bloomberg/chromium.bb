@@ -10,7 +10,7 @@
 #include "google/cacheinvalidation/v2/types.pb.h"
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "sync/notifier/chrome_invalidation_client.h"
-#include "sync/notifier/state_writer.h"
+#include "sync/notifier/mock_invalidation_state_tracker.h"
 #include "sync/syncable/model_type.h"
 #include "sync/syncable/model_type_payload_map.h"
 #include "sync/util/weak_handle.h"
@@ -28,6 +28,7 @@ namespace {
 const char kClientId[] = "client_id";
 const char kClientInfo[] = "client_info";
 const char kState[] = "state";
+const char kNewState[] = "new_state";
 
 class MockInvalidationClient : public invalidation::InvalidationClient {
  public:
@@ -46,21 +47,6 @@ class MockListener : public ChromeInvalidationClient::Listener {
   MOCK_METHOD1(OnSessionStatusChanged, void(bool));
 };
 
-class MockInvalidationStateTracker
-    : public InvalidationStateTracker,
-      public base::SupportsWeakPtr<MockInvalidationStateTracker> {
- public:
-  MOCK_CONST_METHOD0(GetAllMaxVersions, InvalidationVersionMap());
-  MOCK_METHOD2(SetMaxVersion, void(syncable::ModelType, int64));
-  MOCK_CONST_METHOD0(GetInvalidationState, std::string());
-  MOCK_METHOD1(SetInvalidationState, void(const std::string&));
-};
-
-class MockStateWriter : public StateWriter {
- public:
-  MOCK_METHOD1(WriteState, void(const std::string&));
-};
-
 }  // namespace
 
 class ChromeInvalidationClientTest : public testing::Test {
@@ -75,7 +61,7 @@ class ChromeInvalidationClientTest : public testing::Test {
                   InvalidationVersionMap(),
                   browser_sync::MakeWeakHandle(
                       mock_invalidation_state_tracker_.AsWeakPtr()),
-                  &mock_listener_, &mock_state_writer_);
+                  &mock_listener_);
   }
 
   virtual void TearDown() {
@@ -129,7 +115,6 @@ class ChromeInvalidationClientTest : public testing::Test {
   StrictMock<MockListener> mock_listener_;
   StrictMock<MockInvalidationStateTracker>
       mock_invalidation_state_tracker_;
-  StrictMock<MockStateWriter> mock_state_writer_;
   StrictMock<MockInvalidationClient> mock_invalidation_client_;
   ChromeInvalidationClient client_;
 };
@@ -172,6 +157,12 @@ TEST_F(ChromeInvalidationClientTest, InvalidateWithPayload) {
   EXPECT_CALL(mock_invalidation_state_tracker_,
               SetMaxVersion(syncable::PREFERENCES, 1));
   FireInvalidate("PREFERENCE", 1, "payload");
+}
+
+TEST_F(ChromeInvalidationClientTest, WriteState) {
+  EXPECT_CALL(mock_invalidation_state_tracker_,
+              SetInvalidationState(kNewState));
+  client_.WriteState(kNewState);
 }
 
 TEST_F(ChromeInvalidationClientTest, InvalidateVersion) {

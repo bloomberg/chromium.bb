@@ -47,7 +47,7 @@ class MockSyncNotifier : public sync_notifier::SyncNotifier {
   MOCK_METHOD1(AddObserver, void(sync_notifier::SyncNotifierObserver*));
   MOCK_METHOD1(RemoveObserver, void(sync_notifier::SyncNotifierObserver*));
   MOCK_METHOD1(SetUniqueId, void(const std::string&));
-  MOCK_METHOD1(SetState, void(const std::string&));
+  MOCK_METHOD1(SetStateDeprecated, void(const std::string&));
   MOCK_METHOD2(UpdateCredentials, void(const std::string&, const std::string&));
   MOCK_METHOD1(UpdateEnabledTypes, void(syncable::ModelTypeSet));
   MOCK_METHOD1(SendNotification, void(syncable::ModelTypeSet));
@@ -92,10 +92,10 @@ TEST_F(BridgedSyncNotifierTest, SetUniqueId) {
   bridged_notifier_.SetUniqueId(unique_id);
 }
 
-TEST_F(BridgedSyncNotifierTest, SetState) {
+TEST_F(BridgedSyncNotifierTest, SetStateDeprecated) {
   std::string state = "state";
-  EXPECT_CALL(*mock_delegate_, SetState(state));
-  bridged_notifier_.SetState(state);
+  EXPECT_CALL(*mock_delegate_, SetStateDeprecated(state));
+  bridged_notifier_.SetStateDeprecated(state);
 }
 
 TEST_F(BridgedSyncNotifierTest, UpdateCredentials) {
