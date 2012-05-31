@@ -113,7 +113,7 @@ def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
       suffix='.tmp', prefix='tmp_unpacked_toolchain_',
       dir=toolchain_dir)
   try:
-    tar = cygtar.CygTar(filepath, 'r:*')
+    tar = cygtar.CygTar(filepath, 'r:*', verbose=verbose)
     curdir = os.getcwd()
     os.chdir(untar_dir)
     try:
@@ -163,10 +163,10 @@ def Main(args):
       action='store_true',
       help='Keep the downloaded tarballs.')
   parser.add_option(
-      '-v', '--verbose', dest='verbose',
-      default=False,
-      action='store_true',
-      help='Use verbose output.')
+      '-q', '--quiet', dest='verbose',
+      default=True,
+      action='store_false',
+      help='Produce less output.')
   parser.add_option(
       '--x86-version', dest='x86_version',
       default='latest',
