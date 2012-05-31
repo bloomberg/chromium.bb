@@ -41,7 +41,9 @@ ui::Accelerator ImeController::RemapAccelerator(
       modifiers ^= ui::EF_SHIFT_DOWN;
     }
   }
-  return ui::Accelerator(key, modifiers);
+  ui::Accelerator remapped_accelerator(key, modifiers);
+  remapped_accelerator.set_type(accelerator.type());
+  return remapped_accelerator;
 }
 
 bool ImeController::UsingFrenchInputMethod() const {
