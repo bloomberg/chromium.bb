@@ -172,10 +172,24 @@ TEST_F(PeerConnectionHandlerJsepTest, Basic) {
   EXPECT_EQ(UTF16ToUTF8(sdp), UTF16ToUTF8(description.initialSDP()));
 
   // Set remote description.
-  action = PeerConnectionHandlerJsep::ActionSDPAnswer;
   sdp = "test sdp 2";
   description.reset();
   description.initialize(sdp);
+
+  // PrAnswer
+  action = PeerConnectionHandlerJsep::ActionSDPPRanswer;
+  EXPECT_TRUE(pc_handler_->setRemoteDescription(action, description));
+  EXPECT_EQ(webrtc::PeerConnectionInterface::kPrAnswer,
+            mock_peer_connection_->action());
+  EXPECT_EQ(UTF16ToUTF8(sdp), mock_peer_connection_->description_sdp());
+  // Get remote description.
+  description.reset();
+  description = pc_handler_->remoteDescription();
+  EXPECT_FALSE(description.isNull());
+  EXPECT_EQ(UTF16ToUTF8(sdp), UTF16ToUTF8(description.initialSDP()));
+
+  // Answer
+  action = PeerConnectionHandlerJsep::ActionSDPAnswer;
   EXPECT_TRUE(pc_handler_->setRemoteDescription(action, description));
   EXPECT_EQ(webrtc::PeerConnectionInterface::kAnswer,
             mock_peer_connection_->action());

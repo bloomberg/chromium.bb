@@ -351,8 +351,8 @@ bool PeerConnectionHandlerJsep::GetNativeAction(
       *native_action = webrtc::PeerConnectionInterface::kOffer;
       break;
     case ActionSDPPRanswer:
-      VLOG(1) << "Action PRANSWER not supported yet";
-      return false;
+      *native_action = webrtc::PeerConnectionInterface::kPrAnswer;
+      break;
     case ActionSDPAnswer:
       *native_action = webrtc::PeerConnectionInterface::kAnswer;
       break;
