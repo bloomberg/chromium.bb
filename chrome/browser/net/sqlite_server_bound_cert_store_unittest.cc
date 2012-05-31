@@ -539,7 +539,14 @@ bool CertificateExistsInList(
 }  // namespace
 
 // Tests the interaction with the clear on exit policy.
-TEST_F(SQLiteServerBoundCertStoreTest, TestClearOnExitPolicy) {
+// Crashes periodically on Mac 10.6
+// http://crbug.com/130511
+#if defined(OS_MACOSX)
+#define MAYBE_TestClearOnExitPolicy DISABLED_TestClearOnExitPolicy
+#else
+#define MAYBE_TestClearOnExitPolicy TestClearOnExitPolicy
+#endif
+TEST_F(SQLiteServerBoundCertStoreTest, MAYBE_TestClearOnExitPolicy) {
   // First, delete a possibly existing store.
   store_->SetClearLocalStateOnExit(true);
   store_ = NULL;
