@@ -127,6 +127,7 @@ struct DownloadTestCase {
   TestCaseExpectMarker        expected_marker;
 };
 
+#if defined(ENABLE_SAFE_BROWSING)
 // DownloadProtectionService with mock methods. Since the SafeBrowsingService is
 // set to NULL, it is not safe to call any non-mocked methods other than
 // SetEnabled() and enabled().
@@ -144,19 +145,26 @@ class TestDownloadProtectionService
   MOCK_CONST_METHOD1(IsSupportedDownload,
                      bool(const DownloadProtectionService::DownloadInfo&));
 };
+#endif
 
 // Subclass of the ChromeDownloadManagerDelegate that uses a mock
 // DownloadProtectionService and IsDangerousFile.
 class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
  public:
   explicit TestChromeDownloadManagerDelegate(Profile* profile)
-      : ChromeDownloadManagerDelegate(profile),
-        download_protection_service_(new TestDownloadProtectionService()) {
+      : ChromeDownloadManagerDelegate(profile) {
+#if defined(ENABLE_SAFE_BROWSING)
+    download_protection_service_.reset(new TestDownloadProtectionService());
     download_protection_service_->SetEnabled(true);
+#endif
   }
   virtual safe_browsing::DownloadProtectionService*
       GetDownloadProtectionService() OVERRIDE {
+#if defined(ENABLE_SAFE_BROWSING)
     return download_protection_service_.get();
+#else
+    return NULL;
+#endif
   }
   virtual bool IsDangerousFile(const DownloadItem& download,
                                const FilePath& suggested_path,
@@ -172,13 +180,19 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
         suggested_path.MatchesExtension(FILE_PATH_LITERAL(".exe"));
   }
 
+#if defined(ENABLE_SAFE_BROWSING)
   // A TestDownloadProtectionService* is convenient for setting up mocks.
   TestDownloadProtectionService* test_download_protection_service() {
     return download_protection_service_.get();
   }
+#endif
+
  private:
   ~TestChromeDownloadManagerDelegate() {}
+
+#if defined(ENABLE_SAFE_BROWSING)
   scoped_ptr<TestDownloadProtectionService> download_protection_service_;
+#endif
 };
 
 class ChromeDownloadManagerDelegateTest : public ::testing::Test {
@@ -320,6 +334,7 @@ void ChromeDownloadManagerDelegateTest::RunTestCase(
   EXPECT_CALL(*item, GetMimeType())
       .WillRepeatedly(Return(test_case.mime_type));
 
+#if defined(ENABLE_SAFE_BROWSING)
   // Results of SafeBrowsing URL check.
   DownloadProtectionService::DownloadCheckResult url_check_result =
       (test_case.danger_type == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL) ?
@@ -339,6 +354,13 @@ void ChromeDownloadManagerDelegateTest::RunTestCase(
                 IsSupportedDownload(InfoMatchingURL(download_url)))
         .WillOnce(Return(maybe_dangerous));
   }
+#else // ENABLE_SAFE_BROWSING
+  // If safe browsing is not enabled, then these tests would fail. If such a
+  // test was added, then fail early.
+  EXPECT_NE(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL, test_case.danger_type);
+  EXPECT_NE(content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+            test_case.danger_type);
+#endif // !ENABLE_SAFE_BROWSING
 
   // Expectations for filename determination results.
   FilePath expected_target_path(
@@ -508,7 +530,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
     {
       // 2: Automatic Dangerous
       AUTOMATIC,
-      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+      content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
       "http://example.com/foo.exe", "",
       FILE_PATH_LITERAL(""),
 
@@ -521,23 +543,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
     },
 
     {
-      // 3: Save_As Dangerous. For this test case, .jar is considered to be one
-      // of the file types supported by safe browsing.
-      SAVE_AS,
-      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
-      "http://example.com/foo.exe", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("foo.exe"),
-      DownloadItem::TARGET_DISPOSITION_PROMPT,
-
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
-    },
-
-    {
-      // 4 Forced Safe
+      // 3 Forced Safe
       FORCED,
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       "http://example.com/foo.txt", "",
@@ -551,8 +557,11 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       EXPECT_NO_MARKER
     },
 
+#if defined(ENABLE_SAFE_BROWSING)
+    // These test cases are only applicable if safe browsing is enabled. Without
+    // it, these are equivalent to FORCED/SAFE and SAFE_AS/SAFE respectively.
     {
-      // 5: Forced Dangerous. As above. .jar is considered to be one of the file
+      // 4: Forced Dangerous. As above. .jar is considered to be one of the file
       // types supportred by safe browsing.
       FORCED,
       content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
@@ -566,12 +575,29 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       EXPECT_NO_OVERWRITE,
       EXPECT_NO_MARKER
     },
+
+    {
+      // 5: Save_As Dangerous.
+      SAVE_AS,
+      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+      "http://example.com/foo.exe", "",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("foo.exe"),
+      DownloadItem::TARGET_DISPOSITION_PROMPT,
+
+      EXPECT_UNCONFIRMED,
+      EXPECT_NO_OVERWRITE,
+      EXPECT_NO_MARKER
+    }
+#endif
   };
 
   for (unsigned i = 0; i < arraysize(kBasicTestCases); ++i)
     RunTestCase(kBasicTestCases[i], i);
 }
 
+#if defined(ENABLE_SAFE_BROWSING)
 // The SafeBrowsing URL check is performed early. Make sure that a download item
 // that has been marked as DANGEROUS_URL behaves correctly.
 TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
@@ -671,6 +697,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_DangerousURL) {
   for (unsigned i = 0; i < arraysize(kDangerousURLTestCases); ++i)
     RunTestCase(kDangerousURLTestCases[i], i);
 }
+#endif  // ENABLE_SAFE_BROWSING
 
 // These test cases are run with "Prompt for download" user preference set to
 // true. Even with the preference set, some of these downloads should not cause
@@ -694,23 +721,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
     },
 
     {
-      // 1: Dangerous Automatic - Should prompt due to "Prompt for download"
-      //    preference setting.
-      AUTOMATIC,
-      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
-      "http://example.com/foo.exe", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("foo.exe"),
-      DownloadItem::TARGET_DISPOSITION_PROMPT,
-
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
-    },
-
-    {
-      // 2: Automatic Browser Extension download. - Shouldn't prompt for browser
+      // 1: Automatic Browser Extension download. - Shouldn't prompt for browser
       //    extension downloads even if "Prompt for download" preference is set.
       AUTOMATIC,
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
@@ -727,7 +738,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
     },
 
     {
-      // 3: Automatic User Script - Shouldn't prompt for user script downloads
+      // 2: Automatic User Script - Shouldn't prompt for user script downloads
       //    even if "Prompt for download" preference is set.
       AUTOMATIC,
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
@@ -743,7 +754,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
     },
 
     {
-      // 4: Automatic - The filename extension is marked as one that we will
+      // 3: Automatic - The filename extension is marked as one that we will
       //    open automatically. Shouldn't prompt.
       AUTOMATIC,
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
@@ -757,6 +768,27 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_PromptAlways) {
       EXPECT_OVERWRITE,
       EXPECT_INTERMEDIATE_MARKER
     },
+
+#if defined(ENABLE_SAFE_BROWSING)
+    // If safe browsing is disabled, this case is equivalent to AUTOMATIC/SAFE
+    // since the download isn't marked as dangerous when we are going to prompt
+    // the user.
+    {
+      // 4: Dangerous Automatic - Should prompt due to "Prompt for download"
+      //    preference setting.
+      AUTOMATIC,
+      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+      "http://example.com/foo.exe", "",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("foo.exe"),
+      DownloadItem::TARGET_DISPOSITION_PROMPT,
+
+      EXPECT_UNCONFIRMED,
+      EXPECT_NO_OVERWRITE,
+      EXPECT_NO_MARKER
+    },
+#endif
   };
 
   SetPromptForDownload(true);
@@ -869,52 +901,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_ConflictingFiles) {
     },
 
     {
-      // 3: Save_As Dangerous
-      SAVE_AS,
-      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
-      "http://example.com/exists.exe", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("exists (1).exe"),
-      DownloadItem::TARGET_DISPOSITION_PROMPT,
-
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
-    },
-
-    {
-      // 4: Automatic Maybe_Dangerous
-      AUTOMATIC,
-      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
-      "http://example.com/exists.exe", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("exists.exe"),
-      DownloadItem::TARGET_DISPOSITION_UNIQUIFY,
-
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
-    },
-
-    {
-      // 5: Save_As Maybe_Dangerous
-      SAVE_AS,
-      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
-      "http://example.com/exists.exe", "",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("exists (1).exe"),
-      DownloadItem::TARGET_DISPOSITION_PROMPT,
-
-      EXPECT_UNCONFIRMED,
-      EXPECT_NO_OVERWRITE,
-      EXPECT_NO_MARKER
-    },
-
-    {
-      // 6: Automatic Safe - Intermediate path exists
+      // 3: Automatic Safe - Intermediate path exists
       AUTOMATIC,
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       "http://example.com/exists.png", "",
@@ -929,7 +916,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_ConflictingFiles) {
     },
 
     {
-      // 7: Save_As Safe - Intermediate path exists
+      // 4: Save_As Safe - Intermediate path exists
       SAVE_AS,
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       "http://example.com/exists.png", "",
@@ -942,6 +929,39 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_ConflictingFiles) {
       EXPECT_OVERWRITE,
       EXPECT_NO_MARKER
     },
+
+#if defined(ENABLE_SAFE_BROWSING)
+    // Maybe_Dangerous test cases are only applicable to safe browsing.
+    {
+      // 5: Automatic Maybe_Dangerous
+      AUTOMATIC,
+      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+      "http://example.com/exists.exe", "",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("exists.exe"),
+      DownloadItem::TARGET_DISPOSITION_UNIQUIFY,
+
+      EXPECT_UNCONFIRMED,
+      EXPECT_NO_OVERWRITE,
+      EXPECT_NO_MARKER
+    },
+
+    {
+      // 6: Save_As Maybe_Dangerous
+      SAVE_AS,
+      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+      "http://example.com/exists.exe", "",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("exists (1).exe"),
+      DownloadItem::TARGET_DISPOSITION_PROMPT,
+
+      EXPECT_UNCONFIRMED,
+      EXPECT_NO_OVERWRITE,
+      EXPECT_NO_MARKER
+    },
+#endif
   };
 
   for (unsigned i = 0; i < arraysize(kConflictingFilesTestCases); ++i)
