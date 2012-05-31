@@ -943,15 +943,6 @@
    fun:*
 }
 {
-   bug_79568
-   Heapcheck:Leak
-   ...
-   fun:browser_sync::SyncerThread::HandleConsecutiveContinuationError
-   fun:browser_sync::SyncerThread::ScheduleNextSync
-   fun:browser_sync::SyncerThread::FinishSyncSessionJob
-   fun:browser_sync::SyncerThread::DoSyncSessionJob
-}
-{
    bug_80467
    Heapcheck:Leak
    ...
