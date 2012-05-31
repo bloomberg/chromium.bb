@@ -292,8 +292,6 @@ int InstalledLoader::GetCreationFlags(const ExtensionInfo* info) {
   int flags = Extension::NO_FLAGS;
   if (info->extension_location != Extension::LOAD)
     flags |= Extension::REQUIRE_KEY;
-  if (Extension::ShouldDoStrictErrorChecking(info->extension_location))
-    flags |= Extension::STRICT_ERROR_CHECKS;
   if (extension_prefs_->AllowFileAccess(info->extension_id))
     flags |= Extension::ALLOW_FILE_ACCESS;
   if (extension_prefs_->IsFromWebStore(info->extension_id))

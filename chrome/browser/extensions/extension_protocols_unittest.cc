@@ -35,7 +35,7 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
   std::string error;
   scoped_refptr<Extension> extension(
       Extension::Create(path, Extension::INTERNAL, manifest,
-                        Extension::STRICT_ERROR_CHECKS, &error));
+                        Extension::NO_FLAGS, &error));
   EXPECT_TRUE(extension.get()) << error;
   return extension;
 }

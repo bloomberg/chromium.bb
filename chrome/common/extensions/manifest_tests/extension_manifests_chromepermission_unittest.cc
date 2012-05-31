@@ -20,8 +20,7 @@ TEST_F(ExtensionManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
                      errors::kInvalidPermissionScheme);
   std::string error;
   LoadExtension(Manifest("permission_chrome_resources_url.json"),
-                &error,
-                extensions::Extension::COMPONENT,
-                extensions::Extension::STRICT_ERROR_CHECKS);
+                &error, extensions::Extension::COMPONENT,
+                extensions::Extension::NO_FLAGS);
   EXPECT_EQ("", error);
 }

@@ -72,7 +72,7 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name,
       bogus_file_path().AppendASCII(name),
       Extension::INVALID,
       manifest,
-      Extension::STRICT_ERROR_CHECKS,
+      Extension::NO_FLAGS,
       &error);
   // Cannot ASSERT_* here because that attempts an illegitimate return.
   // Cannot EXPECT_NE here because that assumes non-pointers unlike EXPECT_EQ

@@ -451,8 +451,7 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
 
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
-      full_path,  location, *input_value,
-      Extension::STRICT_ERROR_CHECKS, &error);
+      full_path,  location, *input_value, Extension::NO_FLAGS, &error);
   EXPECT_TRUE(extension.get());
   EXPECT_STREQ("", error.c_str());
   browser()->profile()->GetExtensionService()->

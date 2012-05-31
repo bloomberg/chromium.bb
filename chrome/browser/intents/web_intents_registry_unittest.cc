@@ -45,7 +45,6 @@ DictionaryValue* LoadManifestFile(const FilePath& path,
 scoped_refptr<Extension> LoadExtensionWithLocation(
     const std::string& name,
     Extension::Location location,
-    bool strict_error_checks,
     std::string* error) {
   FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
@@ -55,20 +54,17 @@ scoped_refptr<Extension> LoadExtensionWithLocation(
   scoped_ptr<DictionaryValue> value(LoadManifestFile(path, error));
   if (!value.get())
     return NULL;
-  int flags = Extension::NO_FLAGS;
-  if (strict_error_checks)
-    flags |= Extension::STRICT_ERROR_CHECKS;
   return Extension::Create(path.DirName(),
                            location,
                            *value,
-                           flags,
+                           Extension::NO_FLAGS,
                            Extension::GenerateIdForPath(path),
                            error);
 }
 
 scoped_refptr<Extension> LoadExtension(const std::string& name,
                                        std::string* error) {
-  return LoadExtensionWithLocation(name, Extension::INTERNAL, false, error);
+  return LoadExtensionWithLocation(name, Extension::INTERNAL, error);
 }
 
 scoped_refptr<Extension> LoadAndExpectSuccess(const std::string& name) {

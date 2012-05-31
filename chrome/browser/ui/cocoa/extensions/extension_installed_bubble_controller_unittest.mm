@@ -100,7 +100,7 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
 
     std::string error;
     return Extension::Create(path, Extension::INVALID, extension_input_value,
-                             Extension::STRICT_ERROR_CHECKS, &error);
+                             Extension::NO_FLAGS, &error);
   }
 
   // Required to initialize the extension installed bubble.

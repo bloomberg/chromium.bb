@@ -291,8 +291,8 @@ void GetPermissionWarningsByManifestFunction::OnParseSuccess(
   CHECK(parsed_manifest);
 
   scoped_refptr<Extension> extension = Extension::Create(
-      FilePath(), Extension::INVALID, *parsed_manifest,
-      Extension::STRICT_ERROR_CHECKS, &error_);
+      FilePath(), Extension::INVALID, *parsed_manifest, Extension::NO_FLAGS,
+      &error_);
   if (!extension.get()) {
     OnParseFailure(keys::kExtensionCreateError);
     return;

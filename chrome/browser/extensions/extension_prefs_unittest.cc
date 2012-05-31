@@ -718,8 +718,7 @@ class ExtensionPrefsFlags : public ExtensionPrefsTest {
       dictionary.SetString(extension_manifest_keys::kName, "from_webstore");
       dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
       webstore_extension_ = prefs_.AddExtensionWithManifestAndFlags(
-          dictionary, Extension::INTERNAL,
-          Extension::STRICT_ERROR_CHECKS | Extension::FROM_WEBSTORE);
+          dictionary, Extension::INTERNAL, Extension::FROM_WEBSTORE);
     }
 
     {
@@ -727,8 +726,7 @@ class ExtensionPrefsFlags : public ExtensionPrefsTest {
       dictionary.SetString(extension_manifest_keys::kName, "from_bookmark");
       dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
       bookmark_extension_ = prefs_.AddExtensionWithManifestAndFlags(
-          dictionary, Extension::INTERNAL,
-          Extension::STRICT_ERROR_CHECKS | Extension::FROM_BOOKMARK);
+          dictionary, Extension::INTERNAL, Extension::FROM_BOOKMARK);
     }
   }
 
@@ -763,16 +761,16 @@ ExtensionPrefsPrepopulatedTest::ExtensionPrefsPrepopulatedTest()
 
   ext1_scoped_ = Extension::Create(
       prefs_.temp_dir().AppendASCII("ext1_"), Extension::EXTERNAL_PREF,
-      simple_dict, Extension::STRICT_ERROR_CHECKS, &error);
+      simple_dict, Extension::NO_FLAGS, &error);
   ext2_scoped_ = Extension::Create(
       prefs_.temp_dir().AppendASCII("ext2_"), Extension::EXTERNAL_PREF,
-      simple_dict, Extension::STRICT_ERROR_CHECKS, &error);
+      simple_dict, Extension::NO_FLAGS, &error);
   ext3_scoped_ = Extension::Create(
       prefs_.temp_dir().AppendASCII("ext3_"), Extension::EXTERNAL_PREF,
-      simple_dict, Extension::STRICT_ERROR_CHECKS, &error);
+      simple_dict, Extension::NO_FLAGS, &error);
   ext4_scoped_ = Extension::Create(
       prefs_.temp_dir().AppendASCII("ext4_"), Extension::EXTERNAL_PREF,
-      simple_dict, Extension::STRICT_ERROR_CHECKS, &error);
+      simple_dict, Extension::NO_FLAGS, &error);
 
   ext1_ = ext1_scoped_.get();
   ext2_ = ext2_scoped_.get();

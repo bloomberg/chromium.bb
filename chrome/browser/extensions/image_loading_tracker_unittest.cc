@@ -80,7 +80,7 @@ class ImageLoadingTrackerTest : public testing::Test,
       return NULL;
 
     return Extension::Create(test_file, location, *valid_value,
-        Extension::STRICT_ERROR_CHECKS, &error);
+                             Extension::NO_FLAGS, &error);
   }
 
   gfx::Image image_;

@@ -37,8 +37,8 @@ class ExtensionUITest : public testing::Test {
     EXPECT_EQ("", error);
 
     scoped_refptr<Extension> extension(Extension::Create(
-        extension_path, location, *extension_data,
-        Extension::REQUIRE_KEY | Extension::STRICT_ERROR_CHECKS, &error));
+        extension_path, location, *extension_data, Extension::REQUIRE_KEY,
+        &error));
     EXPECT_TRUE(extension.get());
     EXPECT_EQ("", error);
 
@@ -232,4 +232,3 @@ TEST_F(ExtensionUITest, PathPropagation) {
   EXPECT_TRUE(extension_details->GetString("path", &ui_path));
   EXPECT_EQ(extension_path, FilePath(ui_path));
 }
-

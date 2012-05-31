@@ -125,8 +125,6 @@ void UnpackedInstaller::LoadFromCommandLine(const FilePath& path_in) {
   int flags = Extension::REQUIRE_MODERN_MANIFEST_VERSION;
   if (allow_file_access)
     flags |= Extension::ALLOW_FILE_ACCESS;
-  if (Extension::ShouldDoStrictErrorChecking(Extension::LOAD))
-    flags |= Extension::STRICT_ERROR_CHECKS;
 
   std::string error;
   scoped_refptr<const Extension> extension(extension_file_util::LoadExtension(
@@ -189,8 +187,6 @@ void UnpackedInstaller::LoadWithFileAccess(bool allow_file_access) {
   int flags = Extension::REQUIRE_MODERN_MANIFEST_VERSION;
   if (allow_file_access)
     flags |= Extension::ALLOW_FILE_ACCESS;
-  if (Extension::ShouldDoStrictErrorChecking(Extension::LOAD))
-    flags |= Extension::STRICT_ERROR_CHECKS;
   std::string error;
   scoped_refptr<const Extension> extension(extension_file_util::LoadExtension(
       extension_path_,

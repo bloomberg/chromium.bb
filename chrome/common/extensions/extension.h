@@ -196,35 +196,23 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // manifest version that Chrome understands.
     REQUIRE_MODERN_MANIFEST_VERSION = 1 << 1,
 
-    // |STRICT_ERROR_CHECKS| enables extra error checking, such as
-    // checks that URL patterns do not contain ports.  This error
-    // checking may find an error that a previous version of
-    // Chrome did not flag.  To avoid errors in installed extensions
-    // when Chrome is upgraded, strict error checking is only enabled
-    // when loading extensions as a developer would (such as loading
-    // an unpacked extension), or when loading an extension that is
-    // tied to a specific version of Chrome (such as a component
-    // extension).  Most callers will set the |STRICT_ERROR_CHECKS| bit when
-    // Extension::ShouldDoStrictErrorChecking(location) returns true.
-    STRICT_ERROR_CHECKS = 1 << 2,
-
     // |ALLOW_FILE_ACCESS| indicates that the user is allowing this extension
     // to have file access. If it's not present, then permissions and content
     // scripts that match file:/// URLs will be filtered out.
-    ALLOW_FILE_ACCESS = 1 << 3,
+    ALLOW_FILE_ACCESS = 1 << 2,
 
     // |FROM_WEBSTORE| indicates that the extension was installed from the
     // Chrome Web Store.
-    FROM_WEBSTORE = 1 << 4,
+    FROM_WEBSTORE = 1 << 3,
 
     // |FROM_BOOKMARK| indicates the extension was created using a mock App
     // created from a bookmark.
-    FROM_BOOKMARK = 1 << 5,
+    FROM_BOOKMARK = 1 << 4,
 
     // |FOLLOW_SYMLINKS_ANYWHERE| means that resources can be symlinks to
     // anywhere in the filesystem, rather than being restricted to the
     // extension directory.
-    FOLLOW_SYMLINKS_ANYWHERE = 1 << 6,
+    FOLLOW_SYMLINKS_ANYWHERE = 1 << 5,
   };
 
   static scoped_refptr<Extension> Create(const FilePath& path,
@@ -307,17 +295,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static inline bool UserMayDisable(Location location) {
     return location != Extension::EXTERNAL_POLICY_DOWNLOAD &&
            location != Extension::COMPONENT;
-  }
-
-  // Whether extensions with |location| should be loaded with strict
-  // error checking.  Strict error checks may flag errors older versions
-  // of chrome did not detect.  To avoid breaking installed extensions,
-  // strict checks are disabled unless the location indicates that the
-  // developer is loading the extension, or the extension is a component
-  // of chrome.
-  static inline bool ShouldDoStrictErrorChecking(Location location) {
-    return location == Extension::LOAD ||
-           location == Extension::COMPONENT;
   }
 
   // Unpacked extensions start off with file access since they are a developer

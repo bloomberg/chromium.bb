@@ -55,8 +55,7 @@ scoped_refptr<Extension> MakeThemeExtension(const FilePath& extension_path,
   source.SetString(extension_manifest_keys::kVersion, "0.0.0.0");
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
-      extension_path, Extension::INTERNAL, source,
-      Extension::STRICT_ERROR_CHECKS, &error);
+      extension_path, Extension::INTERNAL, source, Extension::NO_FLAGS, &error);
   EXPECT_TRUE(extension);
   EXPECT_EQ("", error);
   return extension;

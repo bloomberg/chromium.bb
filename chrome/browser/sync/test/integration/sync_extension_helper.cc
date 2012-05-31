@@ -296,8 +296,8 @@ scoped_refptr<Extension> CreateExtension(
   }
   std::string error;
   scoped_refptr<Extension> extension =
-      Extension::Create(extension_dir, Extension::INTERNAL,
-                        source, Extension::STRICT_ERROR_CHECKS, &error);
+      Extension::Create(extension_dir, Extension::INTERNAL, source,
+                        Extension::NO_FLAGS, &error);
   if (!error.empty()) {
     ADD_FAILURE() << error;
     return NULL;

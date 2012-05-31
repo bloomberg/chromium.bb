@@ -145,11 +145,10 @@ void ComponentLoader::Reload(const std::string& extension_id) {
 }
 
 const Extension* ComponentLoader::Load(const ComponentExtensionInfo& info) {
-  int flags = Extension::REQUIRE_KEY;
   // TODO(abarth): We should REQUIRE_MODERN_MANIFEST_VERSION once we've updated
   //               our component extensions to the new manifest version.
-  if (Extension::ShouldDoStrictErrorChecking(Extension::COMPONENT))
-    flags |= Extension::STRICT_ERROR_CHECKS;
+  int flags = Extension::REQUIRE_KEY;
+
   std::string error;
 
   // Get the absolute path to the extension.

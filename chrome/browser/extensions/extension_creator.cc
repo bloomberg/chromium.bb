@@ -107,7 +107,7 @@ bool ExtensionCreator::ValidateManifest(const FilePath& extension_dir,
           extension_dir,
           extension_id,
           Extension::INTERNAL,
-          Extension::STRICT_ERROR_CHECKS | Extension::FOLLOW_SYMLINKS_ANYWHERE,
+          Extension::FOLLOW_SYMLINKS_ANYWHERE,
           &error_message_));
   return !!extension.get();
 }

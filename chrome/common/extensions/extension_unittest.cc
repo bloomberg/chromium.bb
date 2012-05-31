@@ -93,7 +93,7 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
 static scoped_refptr<Extension> LoadManifestStrict(
     const std::string& dir,
     const std::string& test_file) {
-  return LoadManifest(dir, test_file, Extension::STRICT_ERROR_CHECKS);
+  return LoadManifest(dir, test_file, Extension::NO_FLAGS);
 }
 
 static ExtensionAction* LoadAction(const std::string& manifest) {
@@ -459,8 +459,7 @@ TEST(ExtensionTest, ImageCaching) {
   values.SetString(keys::kName, "test");
   values.SetString(keys::kVersion, "0.1");
   scoped_refptr<Extension> extension(Extension::Create(
-      path, Extension::INVALID, values, Extension::STRICT_ERROR_CHECKS,
-      &errors));
+      path, Extension::INVALID, values, Extension::NO_FLAGS, &errors));
   ASSERT_TRUE(extension.get());
 
   // Create an ExtensionResource pointing at an icon.
@@ -763,8 +762,9 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
   // for favicon access, we require the explicit pattern chrome://favicon/*.
   std::string error;
   extension = LoadManifestUnchecked("script_and_capture",
-      "extension_wildcard_chrome.json", Extension::INTERNAL,
-      Extension::NO_FLAGS, &error);
+                                    "extension_wildcard_chrome.json",
+                                    Extension::INTERNAL, Extension::NO_FLAGS,
+                                    &error);
   EXPECT_TRUE(extension == NULL);
   EXPECT_EQ(ExtensionErrorUtils::FormatErrorMessage(
       errors::kInvalidPermissionScheme, base::IntToString(1)), error);
@@ -785,7 +785,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
 
   // Component extensions with <all_urls> should get everything.
   extension = LoadManifest("script_and_capture", "extension_component_all.json",
-      Extension::COMPONENT, Extension::STRICT_ERROR_CHECKS);
+      Extension::COMPONENT, Extension::NO_FLAGS);
   EXPECT_TRUE(Allowed(extension, http_url));
   EXPECT_TRUE(Allowed(extension, https_url));
   EXPECT_TRUE(Allowed(extension, settings_url));
@@ -796,7 +796,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
   // Component extensions should only get access to what they ask for.
   extension = LoadManifest("script_and_capture",
       "extension_component_google.json", Extension::COMPONENT,
-      Extension::STRICT_ERROR_CHECKS);
+      Extension::NO_FLAGS);
   EXPECT_TRUE(Allowed(extension, http_url));
   EXPECT_TRUE(Blocked(extension, https_url));
   EXPECT_TRUE(Blocked(extension, file_url));
@@ -867,7 +867,7 @@ static scoped_refptr<Extension> MakeSyncTestExtension(
 
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
-      extension_path, location, source, Extension::STRICT_ERROR_CHECKS, &error);
+      extension_path, location, source, Extension::NO_FLAGS, &error);
   EXPECT_TRUE(extension);
   EXPECT_EQ("", error);
   return extension;
