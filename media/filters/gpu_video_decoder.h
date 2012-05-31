@@ -22,6 +22,8 @@ class SharedMemory;
 
 namespace media {
 
+class DecoderBuffer;
+
 // GPU-accelerated video decoder implementation.  Relies on
 // AcceleratedVideoDecoderMsg_Decode and friends.
 // All methods internally trampoline to the |message_loop| passed to the ctor.
@@ -98,7 +100,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   void EnsureDemuxOrDecode();
 
   // Callback to pass to demuxer_stream_->Read() for receiving encoded bits.
-  void RequestBufferDecode(const scoped_refptr<Buffer>& buffer);
+  void RequestBufferDecode(const scoped_refptr<DecoderBuffer>& buffer);
 
   // Enqueue a frame for later delivery (or drop it on the floor if a
   // vda->Reset() is in progress) and trigger out-of-line delivery of the oldest
@@ -175,10 +177,10 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // Book-keeping variables.
   struct BufferPair {
-    BufferPair(SHMBuffer* s, const scoped_refptr<Buffer>& b);
+    BufferPair(SHMBuffer* s, const scoped_refptr<DecoderBuffer>& b);
     ~BufferPair();
     SHMBuffer* shm_buffer;
-    scoped_refptr<Buffer> buffer;
+    scoped_refptr<DecoderBuffer> buffer;
   };
   std::map<int32, BufferPair> bitstream_buffers_in_decoder_;
   std::map<int32, PictureBuffer> picture_buffers_in_decoder_;

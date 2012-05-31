@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,7 +91,7 @@ bool FFmpegH264BitstreamConverter::ConvertPacket(AVPacket* packet) {
   }
 
   // At the end we must destroy the old packet.
-  packet->destruct(packet);
+  av_free_packet(packet);
   *packet = dest_packet;  // Finally, replace the values in the input packet.
 
   return true;

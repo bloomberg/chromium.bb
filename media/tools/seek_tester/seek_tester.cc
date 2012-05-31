@@ -41,7 +41,7 @@ void QuitMessageLoop(MessageLoop* loop, media::PipelineStatus status) {
 
 void TimestampExtractor(uint64* timestamp_ms,
                         MessageLoop* loop,
-                        const scoped_refptr<media::Buffer>& buffer) {
+                        const scoped_refptr<media::DecoderBuffer>& buffer) {
   if (buffer->GetTimestamp() == media::kNoTimestamp())
     *timestamp_ms = -1;
   else

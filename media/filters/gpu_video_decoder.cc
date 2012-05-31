@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
+#include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/filter_host.h"
 #include "media/base/pipeline.h"
@@ -29,7 +30,8 @@ GpuVideoDecoder::SHMBuffer::SHMBuffer(base::SharedMemory* m, size_t s)
 GpuVideoDecoder::SHMBuffer::~SHMBuffer() {}
 
 GpuVideoDecoder::BufferPair::BufferPair(
-    SHMBuffer* s, const scoped_refptr<Buffer>& b) : shm_buffer(s), buffer(b) {
+    SHMBuffer* s, const scoped_refptr<DecoderBuffer>& b)
+    : shm_buffer(s), buffer(b) {
 }
 
 GpuVideoDecoder::BufferPair::~BufferPair() {}
@@ -193,7 +195,8 @@ void GpuVideoDecoder::Read(const ReadCB& read_cb) {
   }
 }
 
-void GpuVideoDecoder::RequestBufferDecode(const scoped_refptr<Buffer>& buffer) {
+void GpuVideoDecoder::RequestBufferDecode(
+    const scoped_refptr<DecoderBuffer>& buffer) {
   if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::RequestBufferDecode, this, buffer));
@@ -440,7 +443,7 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
   }
 
   PutSHM(it->second.shm_buffer);
-  const scoped_refptr<Buffer>& buffer = it->second.buffer;
+  const scoped_refptr<DecoderBuffer>& buffer = it->second.buffer;
   if (buffer->GetDataSize()) {
     PipelineStatistics statistics;
     statistics.video_bytes_decoded = buffer->GetDataSize();
