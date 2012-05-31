@@ -26,6 +26,7 @@ PasswordFormManager::PasswordFormManager(Profile* profile,
     : best_matches_deleter_(&best_matches_),
       observed_form_(observed_form),
       is_new_login_(true),
+      has_generated_password_(false),
       password_manager_(password_manager),
       pending_login_query_(0),
       preferred_match_(NULL),
@@ -140,6 +141,17 @@ void PasswordFormManager::PermanentlyBlacklist() {
 bool PasswordFormManager::IsNewLogin() {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
   return is_new_login_;
+}
+
+void PasswordFormManager::SetHasGeneratedPassword() {
+  has_generated_password_ = true;
+}
+
+bool PasswordFormManager::HasGeneratedPassword() {
+  // This check is permissive, as the user may have generated a password and
+  // then edited it in the form itself. However, even in this case the user
+  // has already given consent, so we treat these cases the same.
+  return has_generated_password_;
 }
 
 bool PasswordFormManager::HasValidPasswordForm() {

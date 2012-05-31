@@ -1288,16 +1288,25 @@ void BrowserWindowGtk::ShowAvatarBubbleFromAvatarButton() {
     titlebar_->avatar_button()->ShowAvatarBubble();
 }
 
-void BrowserWindowGtk::ShowPasswordGenerationBubble(const gfx::Rect& rect) {
+void BrowserWindowGtk::ShowPasswordGenerationBubble(
+    const gfx::Rect& rect,
+    const webkit::forms::PasswordForm& form) {
   WebContents* web_contents = browser_->GetSelectedWebContents();
   if (!web_contents || !web_contents->GetContentNativeView()) {
     return;
   }
 
+  TabContentsWrapper* tab_contents =
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
+  if (!tab_contents)
+    return;
+
   new PasswordGenerationBubbleGtk(rect,
+                                  form,
                                   web_contents->GetContentNativeView(),
                                   browser()->profile(),
-                                  web_contents->GetRenderViewHost());
+                                  web_contents->GetRenderViewHost(),
+                                  tab_contents->password_manager());
 }
 
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {

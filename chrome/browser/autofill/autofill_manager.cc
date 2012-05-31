@@ -717,13 +717,15 @@ void AutofillManager::OnHideAutofillPopup() {
     external_delegate_->HideAutofillPopup();
 }
 
-void AutofillManager::OnShowPasswordGenerationPopup(const gfx::Rect& bounds) {
+void AutofillManager::OnShowPasswordGenerationPopup(
+    const gfx::Rect& bounds,
+    const webkit::forms::PasswordForm& form) {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
   Browser* browser = browser::FindLastActiveWithProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-  browser->window()->ShowPasswordGenerationBubble(bounds);
+  browser->window()->ShowPasswordGenerationBubble(bounds, form);
 #endif  // #if defined(OS_ANDROID)
 }
 

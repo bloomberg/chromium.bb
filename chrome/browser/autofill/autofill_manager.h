@@ -56,6 +56,7 @@ namespace webkit {
 namespace forms {
 struct FormData;
 struct FormField;
+struct PasswordForm;
 struct PasswordFormFillData;
 }
 }
@@ -93,7 +94,8 @@ class AutofillManager : public content::NotificationObserver,
   void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
   void OnShowAutofillDialog();
   void OnDidPreviewAutofillFormData();
-  void OnShowPasswordGenerationPopup(const gfx::Rect& bounds);
+  void OnShowPasswordGenerationPopup(const gfx::Rect& bounds,
+                                     const webkit::forms::PasswordForm& form);
 
   // Remove the credit card or Autofill profile that matches |unique_id|
   // from the database.

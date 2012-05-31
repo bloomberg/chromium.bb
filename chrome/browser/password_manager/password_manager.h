@@ -53,6 +53,9 @@ class PasswordManager : public LoginModel,
   // LoginModel implementation.
   virtual void SetObserver(LoginModelObserver* observer) OVERRIDE;
 
+  // Mark this form as having a generated password.
+  void SetFormHasGeneratedPassword(const webkit::forms::PasswordForm& form);
+
   // TODO(isherman): This should not be public, but is currently being used by
   // the LoginPrompt code.
   // When a form is submitted, we prepare to save the password but wait

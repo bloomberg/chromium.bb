@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/password_generator.h"
+#include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/autofill_messages.h"
@@ -27,15 +28,19 @@ using views::GridLayout;
 
 PasswordGenerationBubbleView::PasswordGenerationBubbleView(
     const gfx::Rect& anchor_rect,
+    const webkit::forms::PasswordForm& form,
     views::View* anchor_view,
     content::RenderViewHost* render_view_host,
-    content::PageNavigator* navigator)
+    content::PageNavigator* navigator,
+    PasswordManager* password_manager)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       accept_button_(NULL),
       text_field_(NULL),
       anchor_rect_(anchor_rect),
+      form_(form),
       render_view_host_(render_view_host),
-      navigator_(navigator) {}
+      navigator_(navigator),
+      password_manager_(password_manager) {}
 
 PasswordGenerationBubbleView::~PasswordGenerationBubbleView() {}
 
@@ -93,6 +98,7 @@ void PasswordGenerationBubbleView::ButtonPressed(views::Button* sender,
   if (sender == accept_button_) {
     render_view_host_->Send(new AutofillMsg_GeneratedPasswordAccepted(
         render_view_host_->GetRoutingID(), text_field_->text()));
+    password_manager_->SetFormHasGeneratedPassword(form_);
     StartFade(false);
   }
 }

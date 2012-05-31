@@ -74,6 +74,27 @@ PasswordManager::PasswordManager(WebContents* web_contents,
 PasswordManager::~PasswordManager() {
 }
 
+void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
+  for (ScopedVector<PasswordFormManager>::iterator iter =
+           pending_login_managers_.begin();
+       iter != pending_login_managers_.end(); ++iter) {
+    if ((*iter)->DoesManage(form)) {
+      (*iter)->SetHasGeneratedPassword();
+      return;
+    }
+  }
+  // If there is no corresponding PasswordFormManager, we create one. This is
+  // not the common case, and should only happen when there is a bug in our
+  // ability to detect forms.
+  bool ssl_valid = (form.origin.SchemeIsSecure() &&
+                    !delegate_->DidLastPageLoadEncounterSSLErrors());
+  PasswordFormManager* manager =
+      new PasswordFormManager(delegate_->GetProfile(), this, form, ssl_valid);
+  pending_login_managers_.push_back(manager);
+  manager->SetHasGeneratedPassword();
+  // TODO(gcasto): Add UMA stats to track this.
+}
+
 bool PasswordManager::IsSavingEnabled() const {
   return IsFillingEnabled() && !delegate_->GetProfile()->IsOffTheRecord();
 }
@@ -205,15 +226,16 @@ void PasswordManager::OnPasswordFormsRendered(
     return;
   }
 
-  // Looks like a successful login attempt. Either show an infobar or update
-  // the previously saved login data.
+  // Looks like a successful login attempt. Either show an infobar or
+  // automatically save the login data. We prompt when the user hasn't already
+  // given consent, either through previously accepting the infobar or by having
+  // the browser generate the password.
   provisional_save_manager_->SubmitPassed();
-  if (provisional_save_manager_->IsNewLogin()) {
+  if (provisional_save_manager_->IsNewLogin() &&
+      !provisional_save_manager_->HasGeneratedPassword()) {
     delegate_->AddSavePasswordInfoBarIfPermitted(
         provisional_save_manager_.release());
   } else {
-    // If the save is not a new username entry, then we just want to save this
-    // data (since the user already has related data saved), so don't prompt.
     provisional_save_manager_->Save();
     provisional_save_manager_.reset();
   }

@@ -11,24 +11,28 @@
 #include "chrome/browser/autofill/password_generator.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/rect.h"
+#include "webkit/forms/password_form.h"
 
 namespace content {
 class RenderViewHost;
 }
 
 class BubbleGtk;
+class PasswordManager;
 class Profile;
 
 // PasswordGenerationBubbleGtk is a bubble use to show possible generated
 // passwords to users. It is set in page content, anchored at |anchor_rect|.
 // If the generated password is accepted by the user, the renderer associated
-// with |render_view_host| is informed of this password.
+// with |render_view_host| and the |password_manager| are informed.
 class PasswordGenerationBubbleGtk {
  public:
   PasswordGenerationBubbleGtk(const gfx::Rect& anchor_rect,
+                              const webkit::forms::PasswordForm& form,
                               GtkWidget* anchor_widget,
                               Profile* profile,
-                              content::RenderViewHost* render_view_host);
+                              content::RenderViewHost* render_view_host,
+                              PasswordManager* password_manager);
   virtual ~PasswordGenerationBubbleGtk();
 
  private:
@@ -41,8 +45,15 @@ class PasswordGenerationBubbleGtk {
   GtkWidget* text_field_;
   Profile* profile_;
 
+  // Form that contains the password field that we are generating a password
+  // for. Used by the password_manager_.
+  webkit::forms::PasswordForm form_;
+
   // RenderViewHost associated with the button that spawned this bubble.
   content::RenderViewHost* render_view_host_;
+
+  // PasswordManager for this tab.
+  PasswordManager* password_manager_;
 
   // Class that deals with generating passwords.
   autofill::PasswordGenerator password_generator_;

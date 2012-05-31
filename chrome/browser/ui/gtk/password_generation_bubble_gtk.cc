@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/gtk/password_generation_bubble_gtk.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
@@ -24,10 +25,15 @@ const int kHorizontalSpacing = 4;
 
 PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
     const gfx::Rect& anchor_rect,
+    const webkit::forms::PasswordForm& form,
     GtkWidget* anchor_widget,
     Profile* profile,
-    content::RenderViewHost* render_view_host)
-    : profile_(profile), render_view_host_(render_view_host) {
+    content::RenderViewHost* render_view_host,
+    PasswordManager* password_manager)
+    : profile_(profile),
+      form_(form),
+      render_view_host_(render_view_host),
+      password_manager_(password_manager) {
   // TODO(gcasto): Localize text after we have finalized the UI.
   // crbug.com/118062
   GtkWidget* content = gtk_vbox_new(FALSE, 5);
@@ -87,6 +93,7 @@ void PasswordGenerationBubbleGtk::OnAcceptClicked(GtkWidget* widget) {
   render_view_host_->Send(new AutofillMsg_GeneratedPasswordAccepted(
       render_view_host_->GetRoutingID(),
       UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(text_field_)))));
+  password_manager_->SetFormHasGeneratedPassword(form_);
   bubble_->Close();
 }
 

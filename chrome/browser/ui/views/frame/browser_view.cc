@@ -2401,7 +2401,9 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton() {
     button->ShowAvatarBubble();
 }
 
-void BrowserView::ShowPasswordGenerationBubble(const gfx::Rect& rect) {
+void BrowserView::ShowPasswordGenerationBubble(
+    const gfx::Rect& rect,
+    const webkit::forms::PasswordForm& form) {
   // Create a rect in the content bounds that the bubble will point to.
   gfx::Point origin(rect.origin());
   views::View::ConvertPointToScreen(GetTabContentsContainerView(), &origin);
@@ -2409,14 +2411,18 @@ void BrowserView::ShowPasswordGenerationBubble(const gfx::Rect& rect) {
 
   // Create the bubble.
   WebContents* web_contents = GetSelectedWebContents();
-  if (!web_contents)
+  TabContentsWrapper* wrapper = GetSelectedTabContentsWrapper();
+  if (!web_contents || !wrapper)
     return;
 
   PasswordGenerationBubbleView* bubble =
       new PasswordGenerationBubbleView(bounds,
+                                       form,
                                        this,
                                        web_contents->GetRenderViewHost(),
-                                       browser_.get());
+                                       browser_.get(),
+                                       wrapper->password_manager());
+
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble->Show();

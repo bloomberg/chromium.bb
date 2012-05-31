@@ -136,6 +136,35 @@ TEST_F(PasswordManagerTest, FormSubmitEmptyStore) {
   form_to_save->Save();
 }
 
+TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
+  // This test is the same FormSubmitEmptyStore, except that it simulates the
+  // user generating the password through the browser.
+  std::vector<PasswordForm*> result;  // Empty password store.
+  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(*store_, GetLogins(_,_))
+      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  manager()->OnPasswordFormsParsed(observed);  // The initial load.
+  manager()->OnPasswordFormsRendered(observed);  // The initial layout.
+
+  // Simulate the user generating the password and submitting the form.
+  manager()->SetFormHasGeneratedPassword(form);
+  manager()->ProvisionallySavePassword(form);
+
+  // The user should not be presented with an infobar as they have already given
+  // consent. The form should be saved once navigation occurs.
+  EXPECT_CALL(delegate_,
+              AddSavePasswordInfoBarIfPermitted(_)).Times(Exactly(0));
+  EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
+
+  // Now the password manager waits for the navigation to complete.
+  observed.clear();
+  manager()->OnPasswordFormsParsed(observed);  // The post-navigation load.
+  manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
+}
+
 TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   // Same as above, except with an existing form for the same signon realm,
   // but different origin.  Detailed cases like this are covered by

@@ -317,7 +317,9 @@ class BrowserView : public BrowserWindow,
   virtual void ShowAvatarBubble(content::WebContents* web_contents,
                                 const gfx::Rect& rect) OVERRIDE;
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE;
-  virtual void ShowPasswordGenerationBubble(const gfx::Rect& rect) OVERRIDE;
+  virtual void ShowPasswordGenerationBubble(
+      const gfx::Rect& rect,
+      const webkit::forms::PasswordForm& form) OVERRIDE;
 
   // Overridden from BrowserWindowTesting:
   virtual BookmarkBarView* GetBookmarkBarView() const OVERRIDE;

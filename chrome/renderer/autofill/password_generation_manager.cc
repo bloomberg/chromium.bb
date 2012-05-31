@@ -80,8 +80,15 @@ void PasswordGenerationManager::FocusedNodeChanged(
   if (!input_element.isNull() &&
       account_creation_elements_.first == input_element) {
     gfx::Rect rect(input_element.boundsInViewportSpace());
-    Send(new AutofillHostMsg_ShowPasswordGenerationPopup(routing_id(),
-                                                         rect));
+    webkit::forms::PasswordForm* password_form(
+        webkit::forms::PasswordFormDomManager::CreatePasswordForm(
+            input_element.form()));
+
+    if (password_form) {
+      Send(new AutofillHostMsg_ShowPasswordGenerationPopup(routing_id(),
+                                                           rect,
+                                                           *password_form));
+    }
   }
 }
 

@@ -45,6 +45,11 @@ class Rect;
 class Size;
 }
 
+namespace webkit {
+namespace forms {
+struct PasswordForm;
+}
+}
 
 enum DevToolsDockSide {
   DEVTOOLS_DOCK_SIDE_BOTTOM = 0,
@@ -363,10 +368,13 @@ class BrowserWindow : public BaseWindow {
   // Shows the avatar bubble on the window frame off of the avatar button.
   virtual void ShowAvatarBubbleFromAvatarButton() = 0;
 
-  // Show bubble for password generation positioned relative to |rect|. A stub
-  // implementation is provided since this feature is currently only available
-  // for Windows.
-  virtual void ShowPasswordGenerationBubble(const gfx::Rect& rect) {}
+  // Show bubble for password generation positioned relative to |rect|. |form|
+  // is the form that contains the password field that the bubble will be
+  // associated with. A stub implementation is provided since this feature is
+  // currently not available on mac.
+  virtual void ShowPasswordGenerationBubble(
+      const gfx::Rect& rect,
+      const webkit::forms::PasswordForm& form) {}
 
  protected:
   friend void browser::CloseAllBrowsers();

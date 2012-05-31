@@ -12,6 +12,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
+#include "webkit/forms/password_form.h"
 
 namespace content {
 class PageNavigator;
@@ -23,18 +24,22 @@ class TextButton;
 class Textfield;
 }
 
+class PasswordManager;
+
 // PasswordGenerationBubbleView is a bubble used to show possible generated
 // passwords to users. It is set in the page content, anchored at |anchor_rect|.
 // If the generated password is accepted by the user, the renderer associated
-// with |render_view_host| is informed.
+// with |render_view_host| and the |password_manager| are informed.
 class PasswordGenerationBubbleView : public views::BubbleDelegateView,
                                      public views::ButtonListener,
                                      public views::LinkListener {
  public:
   PasswordGenerationBubbleView(const gfx::Rect& anchor_rect,
+                               const webkit::forms::PasswordForm& form,
                                views::View* anchor_view,
                                content::RenderViewHost* render_view_host,
-                               content::PageNavigator* navigator);
+                               content::PageNavigator* navigator,
+                               PasswordManager* password_manager);
   virtual ~PasswordGenerationBubbleView();
 
  private:
@@ -56,12 +61,18 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
   // Location that the bubble points to
   gfx::Rect anchor_rect_;
 
+  // The form associated with the password field(s) that we are generated.
+  webkit::forms::PasswordForm form_;
+
   // RenderViewHost associated with the button that spawned this bubble.
   content::RenderViewHost* render_view_host_;
 
   // An object used to handle page loads that originate from link clicks
   // within this UI.
   content::PageNavigator* navigator_;
+
+  // PasswordManager associated with this tab.
+  PasswordManager* password_manager_;
 
   // Class to generate passwords
   autofill::PasswordGenerator password_generator_;

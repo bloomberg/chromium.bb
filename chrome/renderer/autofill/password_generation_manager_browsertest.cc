@@ -73,14 +73,14 @@ class PasswordGenerationManagerTest : public ChromeRenderViewTest {
 };
 
 const char kSigninFormHTML[] =
-    "<FORM name = 'blah' action = 'www.random.com/'> "
+    "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'password'/> "
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
 const char kAccountCreationFormHTML[] =
-    "<FORM name = 'blah' action = 'www.random.com/'> "
+    "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password'/> "
     "  <INPUT type = 'password' id = 'second_password'/> "
