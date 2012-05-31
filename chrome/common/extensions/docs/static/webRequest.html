@@ -128,6 +128,25 @@ complete nor stable.
 </ul>
 </p>
 
+<p>
+The webRequest API only exposes requests that the extension has
+permission to see, given its
+<a href="manifest.html#permissions">host permissions</a>.
+Moreover, only the following schemes are accessible:
+<code>http://</code>,
+<code>https://</code>,
+<code>ftp://</code>,
+<code>file://</code>, or
+<code>chrome-extension://</code>.
+In addition, even certain requests with URLs using one of the above schemes
+are hidden, e.g.,
+<code>chrome-extension://other_extension_id</code> where
+<code>other_extension_id</code> is not the ID of the extension to handle
+the request,
+<code>https://www.google.com/chrome</code>,
+and others (this list is not complete).
+</p>
+
 <h2 id="concepts">Concepts</h2>
 
 <p>As the following sections explain, events in the web request API use request
