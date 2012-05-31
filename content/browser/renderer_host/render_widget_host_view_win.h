@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/gestures/gesture_types.h"
+#include "ui/base/win/extra_sdk_defines.h"
 #include "ui/base/win/ime_input.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
@@ -57,21 +58,6 @@ typedef CWinTraits<WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0>
     RenderWidgetHostHWNDTraits;
 
 CONTENT_EXPORT extern const wchar_t kRenderWidgetHostHWNDClass[];
-
-// TODO(ananta)
-// This should be removed once we have the new windows SDK which defines these
-// messages.
-#if !defined(WM_POINTERUPDATE)
-#define WM_POINTERUPDATE 0x0245
-#endif  // WM_POINTERUPDATE
-
-#if !defined(WM_POINTERDOWN)
-#define WM_POINTERDOWN  0x0246
-#endif  // WM_POINTERDOWN
-
-#if !defined(WM_POINTERUP)
-#define WM_POINTERUP    0x0247
-#endif  // WM_POINTERUP
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin

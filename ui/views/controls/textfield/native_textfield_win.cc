@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/metro.h"
 #include "base/win/windows_version.h"
 #include "grit/ui_strings.h"
 #include "skia/ext/skia_utils_win.h"
@@ -123,6 +124,13 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
   ole_interface.Attach(GetOleInterface());
   if (ole_interface)
     text_object_model_.QueryFrom(ole_interface);
+
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      !base::win::GetMetroModule()) {
+    keyboard_.CreateInstance(__uuidof(TextInputPanel), NULL, CLSCTX_INPROC);
+    if (keyboard_ != NULL)
+      keyboard_->put_AttachedEditWindow(m_hWnd);
+  }
 
   InitializeAccessibilityInfo();
 }
@@ -655,6 +663,22 @@ LRESULT NativeTextfieldWin::OnImeEndComposition(UINT message,
   // finished or canceled.
   textfield_->SyncText();
   return DefWindowProc(message, wparam, lparam);
+}
+
+LRESULT NativeTextfieldWin::OnPointerDown(UINT message, WPARAM wparam,
+                                          LPARAM lparam) {
+  SetFocus();
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
+LRESULT NativeTextfieldWin::OnPointerUp(UINT message, WPARAM wparam,
+                                        LPARAM lparam) {
+  // ITextInputPanel is not supported on all platforms.  NULL is fine.
+  if (keyboard_ != NULL)
+    keyboard_->SetInPlaceVisibility(TRUE);
+  SetMsgHandled(FALSE);
+  return 0;
 }
 
 void NativeTextfieldWin::OnKeyDown(TCHAR key, UINT repeat_count, UINT flags) {

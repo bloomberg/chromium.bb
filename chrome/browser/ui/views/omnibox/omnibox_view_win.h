@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/win/extra_sdk_defines.h"
 #include "ui/gfx/font.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -34,26 +35,6 @@ class MenuRunner;
 class NativeViewHost;
 class View;
 }
-
-// TODO(abodenha): This should be removed once we have the new windows SDK
-// which defines these messages.
-#if !defined(WM_POINTERDOWN)
-#define WM_POINTERDOWN  0x0246
-#endif  // WM_POINTERDOWN
-#if !defined(WM_POINTERUP)
-#define WM_POINTERUP    0x0247
-#endif  // WM_POINTERUP
-#ifndef POINTER_MESSAGE_FLAG_FIRSTBUTTON
-#define POINTER_MESSAGE_FLAG_FIRSTBUTTON 0x00000010
-#endif  // POINTER_MESSAGE_FLAG_FIRSTBUTTON
-#ifndef IS_POINTER_FLAG_SET_WPARAM
-#define IS_POINTER_FLAG_SET_WPARAM(wParam, flag) \
-    (((DWORD)HIWORD(wParam) & (flag)) == (flag))
-#endif  // IS_POINTER_FLAG_SET_WPARAM
-#ifndef IS_POINTER_FIRSTBUTTON_WPARAM
-#define IS_POINTER_FIRSTBUTTON_WPARAM(wParam) \
-  IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FIRSTBUTTON)
-#endif  // IS_POINTER_FIRSTBUTTON_WPARAM
 
 // Provides the implementation of an edit control with a drop-down
 // autocomplete box. The box itself is implemented in autocomplete_popup.cc

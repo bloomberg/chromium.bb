@@ -12,6 +12,7 @@
 #include <atlctrls.h>
 #include <atlmisc.h>
 #include <oleacc.h>
+#include <peninputpanel.h>
 #include <tom.h>  // For ITextDocument, a COM interface to CRichEditCtrl
 #include <vsstyle.h>
 
@@ -20,6 +21,7 @@
 #include "base/win/scoped_comptr.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/insets.h"
+#include "ui/base/win/extra_sdk_defines.h"
 #include "ui/views/controls/textfield/native_textfield_wrapper.h"
 
 namespace gfx {
@@ -124,6 +126,8 @@ class NativeTextfieldWin
     MESSAGE_HANDLER_EX(WM_IME_STARTCOMPOSITION, OnImeStartComposition)
     MESSAGE_HANDLER_EX(WM_IME_COMPOSITION, OnImeComposition)
     MESSAGE_HANDLER_EX(WM_IME_ENDCOMPOSITION, OnImeEndComposition)
+    MESSAGE_HANDLER_EX(WM_POINTERDOWN, OnPointerDown)
+    MESSAGE_HANDLER_EX(WM_POINTERUP, OnPointerUp)
     MSG_WM_KEYDOWN(OnKeyDown)
     MSG_WM_LBUTTONDBLCLK(OnLButtonDblClk)
     MSG_WM_LBUTTONDOWN(OnLButtonDown)
@@ -186,6 +190,8 @@ class NativeTextfieldWin
   LRESULT OnImeStartComposition(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeComposition(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeEndComposition(UINT message, WPARAM wparam, LPARAM lparam);
+  LRESULT OnPointerDown(UINT message, WPARAM wparam, LPARAM lparam);
+  LRESULT OnPointerUp(UINT message, WPARAM wparam, LPARAM lparam);
   void OnKeyDown(TCHAR key, UINT repeat_count, UINT flags);
   void OnLButtonDblClk(UINT keys, const CPoint& point);
   void OnLButtonDown(UINT keys, const CPoint& point);
@@ -275,6 +281,9 @@ class NativeTextfieldWin
 
   // This interface is useful for accessing the CRichEditCtrl at a low level.
   mutable base::win::ScopedComPtr<ITextDocument> text_object_model_;
+
+  // To support the Windows virtual keyboard when used with a touch screen.
+  base::win::ScopedComPtr<ITextInputPanel> keyboard_;
 
   // The position and the length of the ongoing composition string.
   // These values are used for removing a composition string from a search
