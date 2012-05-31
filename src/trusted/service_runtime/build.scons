@@ -531,8 +531,6 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
       # TODO(mseaborn): Extend this test to cover the case where the
       # dynamic code segment is present.
       osenv='NACL_DISABLE_DYNAMIC_LOADING=1')
-  # This test fails for arm on 32-bit machines running qemu.
-  # So don't run it there.
   env.AddNodeToTestSuite(node, ['medium_tests'], 'run_trusted_mmap_test')
 
 

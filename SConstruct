@@ -751,7 +751,6 @@ tests_to_disable_qemu = set([
     'run_thread_suspension_test',
     'run_thread_test',
     'run_tool_tests',
-    'run_trusted_mmap_test',
 ])
 
 tests_to_disable = set()
