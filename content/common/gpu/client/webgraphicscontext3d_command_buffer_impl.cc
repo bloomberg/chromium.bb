@@ -45,6 +45,26 @@ void ClearSharedContexts() {
   g_all_shared_contexts.Pointer()->clear();
 }
 
+void ClearSharedContextsIfInShareSet(
+    WebGraphicsContext3DCommandBufferImpl* context) {
+  // If the given context isn't in the share set, that means that it
+  // or another context it was previously sharing with already
+  // provoked a lost context. Other contexts might have since been
+  // successfully created and added to the share set, so do not clear
+  // out the share set unless we know that all the contexts in there
+  // are supposed to be lost simultaneously.
+  base::AutoLock lock(g_all_shared_contexts_lock.Get());
+  std::set<WebGraphicsContext3DCommandBufferImpl*>* share_set =
+      g_all_shared_contexts.Pointer();
+  for (std::set<WebGraphicsContext3DCommandBufferImpl*>::iterator iter =
+           share_set->begin(); iter != share_set->end(); ++iter) {
+    if (context == *iter) {
+      share_set->clear();
+      return;
+    }
+  }
+}
+
 const int32 kCommandBufferSize = 1024 * 1024;
 // TODO(kbr): make the transfer buffer size configurable via context
 // creation attributes.
@@ -140,6 +160,9 @@ WebGraphicsContext3DCommandBufferImpl::
   if (host_) {
     if (host_->WillGpuSwitchOccur(false, gpu_preference_)) {
       host_->ForciblyCloseChannel();
+      TRACE_EVENT0(
+          "gpu",
+          "WebGfxCtx3DCmdBfrImpl::~WebGfxCtx3DCmdBfrImpl closed channel");
       ClearSharedContexts();
     }
   }
@@ -192,6 +215,9 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
       // channel and recreate it.
       if (host_->WillGpuSwitchOccur(true, gpu_preference_)) {
         host_->ForciblyCloseChannel();
+        TRACE_EVENT0(
+            "gpu",
+            "WebGfxCtx3DCmdBfrImpl::Initialize closed channel");
         ClearSharedContexts();
         retry = true;
       }
@@ -1515,7 +1541,7 @@ void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {
     context_lost_callback_->onContextLost();
   }
   if (attributes_.shareResources)
-    ClearSharedContexts();
+    ClearSharedContextsIfInShareSet(this);
   if (ShouldUseSwapClient())
     swap_client_->OnViewContextSwapBuffersAborted();
 }
