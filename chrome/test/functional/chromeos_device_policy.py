@@ -18,7 +18,7 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
   def LoginAsGuest(self):
     self.assertFalse(self.GetLoginInfo()['is_logged_in'],
                      msg='Expected to be logged out.')
-    policy_base.PolicyTestBase.LoginAsGuest()
+    policy_base.PolicyTestBase.LoginAsGuest(self)
     self.assertTrue(self.GetLoginInfo()['is_logged_in'],
                     msg='Expected to be logged in.')
 
