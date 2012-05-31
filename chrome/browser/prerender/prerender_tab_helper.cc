@@ -24,23 +24,6 @@ using content::WebContents;
 
 namespace prerender {
 
-namespace {
-
-enum PAGEVIEW_EVENTS {
-  PAGEVIEW_EVENT_NEW_URL = 0,
-  PAGEVIEW_EVENT_TOP_SITE_NEW_URL = 1,
-  PAGEVIEW_EVENT_LOAD_START = 2,
-  PAGEVIEW_EVENT_TOP_SITE_LOAD_START = 3,
-  PAGEVIEW_EVENT_MAX = 4
-};
-
-void RecordPageviewEvent(PAGEVIEW_EVENTS event) {
-  UMA_HISTOGRAM_ENUMERATION("Prerender.PageviewEvents",
-                            event, PAGEVIEW_EVENT_MAX);
-}
-
-}  // namespace
-
 // Helper class to compute pixel-based stats on the paint progress
 // between when a prerendered page is swapped in and when the onload event
 // fires.
@@ -159,9 +142,6 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
     const GURL& opener_url,
     content::RenderViewHost* render_view_host) {
   url_ = url;
-  RecordPageviewEvent(PAGEVIEW_EVENT_NEW_URL);
-  if (IsTopSite(url))
-    RecordPageviewEvent(PAGEVIEW_EVENT_TOP_SITE_NEW_URL);
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return;
@@ -225,10 +205,6 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
       bool is_error_page,
       content::RenderViewHost* render_view_host) {
   if (is_main_frame) {
-    RecordPageviewEvent(PAGEVIEW_EVENT_LOAD_START);
-    if (IsTopSite(validated_url))
-      RecordPageviewEvent(PAGEVIEW_EVENT_TOP_SITE_LOAD_START);
-
     // Record the beginning of a new PPLT navigation.
     pplt_load_start_ = base::TimeTicks::Now();
     actual_load_start_ = base::TimeTicks();
@@ -271,11 +247,6 @@ void PrerenderTabHelper::PrerenderSwappedIn() {
     pplt_load_start_ = base::TimeTicks::Now();
     pixel_stats_->GetBitmap(PixelStats::BITMAP_SWAP_IN, web_contents());
   }
-}
-
-bool PrerenderTabHelper::IsTopSite(const GURL& url) {
-  PrerenderManager* pm = MaybeGetPrerenderManager();
-  return (pm && pm->IsTopSite(url));
 }
 
 }  // namespace prerender

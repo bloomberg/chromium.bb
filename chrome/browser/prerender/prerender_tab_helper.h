@@ -60,8 +60,6 @@ class PrerenderTabHelper : public content::WebContentsObserver {
   // Returns whether the WebContents being observed was prerendered.
   bool IsPrerendered();
 
-  bool IsTopSite(const GURL& url);
-
   // TabContentsWrapper we're created for.
   TabContentsWrapper* tab_;
 

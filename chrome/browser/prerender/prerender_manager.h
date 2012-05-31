@@ -239,8 +239,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Adds a condition. This is owned by the PrerenderManager.
   void AddCondition(const PrerenderCondition* condition);
 
-  bool IsTopSite(const GURL& url);
-
   bool IsPendingEntry(const GURL& url) const;
 
   // Returns true if |url| matches any URLs being prerendered.
@@ -302,8 +300,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   struct NavigationRecord;
 
   class OnCloseTabContentsDeleter;
-
-  class MostVisitedSites;
 
   typedef std::list<PrerenderContentsData> PrerenderContentsDataList;
   typedef base::hash_map<content::WebContents*, bool> WouldBePrerenderedMap;
@@ -493,8 +489,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   scoped_ptr<PrerenderHistograms> histograms_;
 
   scoped_ptr<PrerenderLocalPredictor> local_predictor_;
-
-  scoped_ptr<MostVisitedSites> most_visited_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

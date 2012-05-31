@@ -20,7 +20,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/prerender/prerender_condition.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -193,60 +192,6 @@ struct PrerenderManager::NavigationRecord {
       : url_(url),
         time_(time) {
   }
-};
-
-class PrerenderManager::MostVisitedSites
-    : public content::NotificationObserver {
- public:
-  explicit MostVisitedSites(Profile* profile) :
-      profile_(profile) {
-    history::TopSites* top_sites = GetTopSites();
-    if (top_sites) {
-      registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
-                     content::Source<history::TopSites>(top_sites));
-    }
-
-    UpdateMostVisited();
-  }
-
-  void UpdateMostVisited() {
-    history::TopSites* top_sites = GetTopSites();
-    if (top_sites) {
-      top_sites->GetMostVisitedURLs(
-          &topsites_consumer_,
-          base::Bind(&prerender::PrerenderManager::MostVisitedSites::
-              OnMostVisitedURLsAvailable, base::Unretained(this)));
-    }
-  }
-
-  void OnMostVisitedURLsAvailable(const history::MostVisitedURLList& data) {
-    urls_.clear();
-    for (int i = 0; i < static_cast<int>(data.size()); i++)
-      urls_.insert(data[i].url);
-  }
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
-    DCHECK_EQ(type, chrome::NOTIFICATION_TOP_SITES_CHANGED);
-    UpdateMostVisited();
-  }
-
-  bool IsTopSite(const GURL& url) const {
-    return (urls_.count(url) > 0);
-  }
-
- private:
-  history::TopSites* GetTopSites() const {
-    if (profile_)
-      return profile_->GetTopSites();
-    return NULL;
-  }
-
-  CancelableRequestConsumer topsites_consumer_;
-  Profile* profile_;
-  content::NotificationRegistrar registrar_;
-  std::set<GURL> urls_;
 };
 
 PrerenderManager::PrerenderManager(Profile* profile,
@@ -823,12 +768,6 @@ void PrerenderManager::RecordFinalStatusWithMatchCompleteStatus(
 
 void PrerenderManager::AddCondition(const PrerenderCondition* condition) {
   prerender_conditions_.push_back(condition);
-}
-
-bool PrerenderManager::IsTopSite(const GURL& url) {
-  if (!most_visited_.get())
-    most_visited_.reset(new MostVisitedSites(profile_));
-  return most_visited_->IsTopSite(url);
 }
 
 bool PrerenderManager::IsPendingEntry(const GURL& url) const {
