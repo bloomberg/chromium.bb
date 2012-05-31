@@ -142,6 +142,9 @@ PluginPlaceholder* PluginPlaceholder::CreateErrorPlugin(
   PluginPlaceholder* plugin = new PluginPlaceholder(
       render_view, NULL, params, html_data, params.mimeType);
 
+  RenderThread::Get()->Send(
+      new ChromeViewHostMsg_CouldNotLoadPlugin(plugin->routing_id(),
+                                               file_path));
   return plugin;
 }
 

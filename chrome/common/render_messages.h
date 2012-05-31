@@ -462,6 +462,10 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_CancelledDownloadingPlugin)
 // chrome:// URLs.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_OpenAboutPlugins)
 
+// Tells the browser that there was an error loading a plug-in.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CouldNotLoadPlugin,
+                    FilePath /* plugin_path */)
+
 // Specifies the URL as the first parameter (a wstring) and thumbnail as
 // binary data as the second parameter.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_Thumbnail,

@@ -10293,7 +10293,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Try again
       </message>
       <message name="IDS_PLUGIN_CRASHED_PROMPT" desc="Info Bar message to notify about a crashed plugin">
-        The following plug-in has crashed: <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex></ph>
+       <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex> has crashed.</ph>
+      </message>
+      <message name="IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT" desc="Info Bar message to notify that we couldn't load a plugin">
+        Could not load <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex>.</ph>
       </message>
       <message name="IDS_WEBWORKER_CRASHED_PROMPT" desc="Info Bar message to notify about a crashed WebWorker">
         A part of this page (HTML WebWorker) has crashed, so it might not function correctly.

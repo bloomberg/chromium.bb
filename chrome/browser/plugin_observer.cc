@@ -202,6 +202,8 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_OpenAboutPlugins,
                         OnOpenAboutPlugins)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CouldNotLoadPlugin,
+                        OnCouldNotLoadPlugin)
 
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
@@ -298,9 +300,23 @@ void PluginObserver::OnRemovePluginPlaceholderHost(int placeholder_id) {
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 void PluginObserver::OnOpenAboutPlugins() {
-    web_contents()->OpenURL(OpenURLParams(
-        GURL(chrome::kAboutPluginsURL),
-        content::Referrer(web_contents()->GetURL(),
-                          WebKit::WebReferrerPolicyDefault),
-        NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED, false));
+  web_contents()->OpenURL(OpenURLParams(
+      GURL(chrome::kAboutPluginsURL),
+      content::Referrer(web_contents()->GetURL(),
+                        WebKit::WebReferrerPolicyDefault),
+      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
 }
+
+void PluginObserver::OnCouldNotLoadPlugin(const FilePath& plugin_path) {
+  string16 plugin_name =
+      PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
+  InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
+  infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
+      infobar_helper,
+      &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_INFOBAR_PLUGIN_CRASHED),
+      l10n_util::GetStringFUTF16(IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT,
+                                 plugin_name),
+      true  /* auto_expire */));
+}
+

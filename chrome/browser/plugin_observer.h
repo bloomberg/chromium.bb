@@ -57,6 +57,7 @@ class PluginObserver : public content::WebContentsObserver {
   void OnRemovePluginPlaceholderHost(int placeholder_id);
 #endif
   void OnOpenAboutPlugins();
+  void OnCouldNotLoadPlugin(const FilePath& plugin_path);
 
   base::WeakPtrFactory<PluginObserver> weak_ptr_factory_;
 
