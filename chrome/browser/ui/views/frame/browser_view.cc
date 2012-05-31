@@ -252,11 +252,10 @@ class ResizeCorner : public views::View {
     if (!widget || (widget->IsMaximized() || widget->IsFullscreen()))
       return;
 
-    SkBitmap* bitmap = ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_TEXTAREA_RESIZER);
-    bitmap->buildMipMap(false);
-    canvas->DrawBitmapInt(*bitmap, width() - bitmap->width(),
-                          height() - bitmap->height());
+    gfx::ImageSkia* image = ui::ResourceBundle::GetSharedInstance().
+        GetImageSkiaNamed(IDR_TEXTAREA_RESIZER);
+    canvas->DrawBitmapInt(*image, width() - image->width(),
+                          height() - image->height());
   }
 
   static gfx::Size GetSize() {
@@ -513,10 +512,10 @@ TabContentsWrapper* BrowserView::GetSelectedTabContentsWrapper() const {
   return browser_->GetSelectedTabContentsWrapper();
 }
 
-SkBitmap BrowserView::GetOTRAvatarIcon() const {
+gfx::ImageSkia BrowserView::GetOTRAvatarIcon() const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const SkBitmap* otr_avatar =
-      rb.GetNativeImageNamed(IDR_OTR_ICON).ToSkBitmap();
+  const gfx::ImageSkia* otr_avatar =
+      rb.GetNativeImageNamed(IDR_OTR_ICON).ToImageSkia();
   return *otr_avatar;
 }
 
@@ -1429,7 +1428,7 @@ bool BrowserView::ShouldShowWindowTitle() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
 }
 
-SkBitmap BrowserView::GetWindowAppIcon() {
+gfx::ImageSkia BrowserView::GetWindowAppIcon() {
   if (browser_->is_app()) {
     TabContentsWrapper* contents = browser_->GetSelectedTabContentsWrapper();
     if (contents && contents->extension_tab_helper()->GetExtensionAppIcon())
@@ -1439,10 +1438,10 @@ SkBitmap BrowserView::GetWindowAppIcon() {
   return GetWindowIcon();
 }
 
-SkBitmap BrowserView::GetWindowIcon() {
+gfx::ImageSkia BrowserView::GetWindowIcon() {
   if (browser_->is_app())
     return browser_->GetCurrentPageIcon();
-  return SkBitmap();
+  return gfx::ImageSkia();
 }
 
 bool BrowserView::ShouldShowWindowIcon() const {

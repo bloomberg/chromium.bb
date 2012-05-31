@@ -12,6 +12,7 @@
 #include "ui/base/native_theme/native_theme.h"
 
 namespace gfx {
+class ImageSkia;
 class Rect;
 class Size;
 }
@@ -127,12 +128,12 @@ class NativeThemeBase : public NativeTheme {
   bool IntersectsClipRectInt(SkCanvas* canvas,
                              int x, int y, int w, int h) const;
 
-  void DrawBitmapInt(SkCanvas* canvas, const SkBitmap& bitmap,
+  void DrawBitmapInt(SkCanvas* canvas, const gfx::ImageSkia& image,
                      int src_x, int src_y, int src_w, int src_h,
                      int dest_x, int dest_y, int dest_w, int dest_h) const;
 
   void DrawTiledImage(SkCanvas* canvas,
-                      const SkBitmap& bitmap,
+                      const gfx::ImageSkia& image,
                       int src_x, int src_y,
                       float tile_scale_x, float tile_scale_y,
                       int dest_x, int dest_y, int w, int h) const;

@@ -4,13 +4,13 @@
 
 #include "ui/oak/oak_window.h"
 
-#include "ui/oak/oak.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/oak/oak.h"
 #include "ui/oak/oak_aura_window_display.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/tree/tree_view.h"
@@ -57,9 +57,9 @@ views::View* OakWindow::GetContentsView() {
   return this;
 }
 
-SkBitmap OakWindow::GetWindowIcon() {
+gfx::ImageSkia OakWindow::GetWindowIcon() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return *rb.GetImageNamed(IDR_OAK).ToSkBitmap();
+  return *rb.GetImageNamed(IDR_OAK).ToImageSkia();
 }
 
 bool OakWindow::ShouldShowWindowIcon() const {

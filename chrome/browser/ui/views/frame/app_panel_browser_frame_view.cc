@@ -247,7 +247,7 @@ bool AppPanelBrowserFrameView::ShouldTabIconViewAnimate() const {
   return current_tab ? current_tab->IsLoading() : false;
 }
 
-SkBitmap AppPanelBrowserFrameView::GetFaviconForTabIconView() {
+gfx::ImageSkia AppPanelBrowserFrameView::GetFaviconForTabIconView() {
   return frame()->widget_delegate()->GetWindowIcon();
 }
 
@@ -311,26 +311,27 @@ gfx::Rect AppPanelBrowserFrameView::IconBounds() const {
 void AppPanelBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  SkBitmap* top_left_corner = rb.GetBitmapNamed(IDR_WINDOW_TOP_LEFT_CORNER);
-  SkBitmap* top_right_corner =
-      rb.GetBitmapNamed(IDR_WINDOW_TOP_RIGHT_CORNER);
-  SkBitmap* top_edge = rb.GetBitmapNamed(IDR_WINDOW_TOP_CENTER);
-  SkBitmap* right_edge = rb.GetBitmapNamed(IDR_WINDOW_RIGHT_SIDE);
-  SkBitmap* left_edge = rb.GetBitmapNamed(IDR_WINDOW_LEFT_SIDE);
-  SkBitmap* bottom_left_corner =
-      rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER);
-  SkBitmap* bottom_right_corner =
-      rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER);
-  SkBitmap* bottom_edge = rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER);
+  gfx::ImageSkia* top_left_corner =
+      rb.GetImageSkiaNamed(IDR_WINDOW_TOP_LEFT_CORNER);
+  gfx::ImageSkia* top_right_corner =
+      rb.GetImageSkiaNamed(IDR_WINDOW_TOP_RIGHT_CORNER);
+  gfx::ImageSkia* top_edge = rb.GetImageSkiaNamed(IDR_WINDOW_TOP_CENTER);
+  gfx::ImageSkia* right_edge = rb.GetImageSkiaNamed(IDR_WINDOW_RIGHT_SIDE);
+  gfx::ImageSkia* left_edge = rb.GetImageSkiaNamed(IDR_WINDOW_LEFT_SIDE);
+  gfx::ImageSkia* bottom_left_corner =
+      rb.GetImageSkiaNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER);
+  gfx::ImageSkia* bottom_right_corner =
+      rb.GetImageSkiaNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER);
+  gfx::ImageSkia* bottom_edge = rb.GetImageSkiaNamed(IDR_WINDOW_BOTTOM_CENTER);
 
   // Window frame mode and color.
-  SkBitmap* theme_frame;
+  gfx::ImageSkia* theme_frame;
   SkColor frame_color;
   if (ShouldPaintAsActive()) {
-    theme_frame = rb.GetBitmapNamed(IDR_FRAME_APP_PANEL);
+    theme_frame = rb.GetImageSkiaNamed(IDR_FRAME_APP_PANEL);
     frame_color = kFrameColorAppPanel;
   } else {
-    theme_frame = rb.GetBitmapNamed(IDR_FRAME_APP_PANEL);
+    theme_frame = rb.GetImageSkiaNamed(IDR_FRAME_APP_PANEL);
     frame_color = kFrameColorAppPanelInactive;
   }
 
@@ -391,13 +392,13 @@ void AppPanelBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 void AppPanelBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  SkBitmap* frame_image = rb.GetBitmapNamed(IDR_FRAME_APP_PANEL);
+  gfx::ImageSkia* frame_image = rb.GetImageSkiaNamed(IDR_FRAME_APP_PANEL);
   canvas->TileImageInt(*frame_image, 0, FrameBorderThickness(), width(),
                        frame_image->height());
 
   // The bottom of the titlebar actually comes from the top of the Client Edge
   // graphic, with the actual client edge clipped off the bottom.
-  SkBitmap* titlebar_bottom = rb.GetBitmapNamed(IDR_APP_TOP_CENTER);
+  gfx::ImageSkia* titlebar_bottom = rb.GetImageSkiaNamed(IDR_APP_TOP_CENTER);
   int edge_height = titlebar_bottom->height() - kClientEdgeThickness;
   canvas->TileImageInt(*titlebar_bottom, 0,
                        frame()->client_view()->y() - edge_height,
@@ -417,16 +418,16 @@ void AppPanelBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   int client_area_top = client_area_bounds.y();
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SkBitmap* top_left = rb.GetBitmapNamed(IDR_APP_TOP_LEFT);
-  SkBitmap* top = rb.GetBitmapNamed(IDR_APP_TOP_CENTER);
-  SkBitmap* top_right = rb.GetBitmapNamed(IDR_APP_TOP_RIGHT);
-  SkBitmap* right = rb.GetBitmapNamed(IDR_CONTENT_RIGHT_SIDE);
-  SkBitmap* bottom_right =
-      rb.GetBitmapNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER);
-  SkBitmap* bottom = rb.GetBitmapNamed(IDR_CONTENT_BOTTOM_CENTER);
-  SkBitmap* bottom_left =
-      rb.GetBitmapNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER);
-  SkBitmap* left = rb.GetBitmapNamed(IDR_CONTENT_LEFT_SIDE);
+  gfx::ImageSkia* top_left = rb.GetImageSkiaNamed(IDR_APP_TOP_LEFT);
+  gfx::ImageSkia* top = rb.GetImageSkiaNamed(IDR_APP_TOP_CENTER);
+  gfx::ImageSkia* top_right = rb.GetImageSkiaNamed(IDR_APP_TOP_RIGHT);
+  gfx::ImageSkia* right = rb.GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
+  gfx::ImageSkia* bottom_right =
+      rb.GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER);
+  gfx::ImageSkia* bottom = rb.GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
+  gfx::ImageSkia* bottom_left =
+      rb.GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER);
+  gfx::ImageSkia* left = rb.GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE);
 
   // Top.
   int top_edge_y = client_area_top - top->height();

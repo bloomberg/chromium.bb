@@ -181,7 +181,7 @@ class BrowserView : public BrowserWindow,
   TabContentsWrapper* GetSelectedTabContentsWrapper() const;
 
   // Retrieves the icon to use in the frame to indicate an OTR window.
-  SkBitmap GetOTRAvatarIcon() const;
+  gfx::ImageSkia GetOTRAvatarIcon() const;
 
   // Returns true if the Browser object associated with this BrowserView is a
   // tabbed-type window (i.e. a browser window, not an app or popup).
@@ -352,8 +352,8 @@ class BrowserView : public BrowserWindow,
   virtual string16 GetAccessibleWindowTitle() const OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
-  virtual SkBitmap GetWindowAppIcon() OVERRIDE;
-  virtual SkBitmap GetWindowIcon() OVERRIDE;
+  virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
+  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
   virtual bool ShouldShowWindowIcon() const OVERRIDE;
   virtual bool ExecuteWindowsCommand(int command_id) OVERRIDE;
   virtual std::string GetWindowName() const OVERRIDE;

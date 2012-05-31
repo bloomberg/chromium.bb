@@ -204,8 +204,8 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
      gfx::Rect* bounds,
      ui::WindowShowState* show_state) const OVERRIDE;
   virtual void SetWindowTitle(const string16& title) OVERRIDE;
-  virtual void SetWindowIcons(const SkBitmap& window_icon,
-                              const SkBitmap& app_icon) OVERRIDE;
+  virtual void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                              const gfx::ImageSkia& app_icon) OVERRIDE;
   virtual void SetAccessibleName(const string16& name) OVERRIDE;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;

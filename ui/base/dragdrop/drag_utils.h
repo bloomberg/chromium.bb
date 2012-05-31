@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,10 @@
 #include "ui/base/ui_export.h"
 
 class GURL;
-class SkBitmap;
 
 namespace gfx {
 class Canvas;
+class ImageSkia;
 class Point;
 class Size;
 }
@@ -32,7 +32,7 @@ namespace drag_utils {
 // the supplied data_object. 'file_name' can be a full path, but the directory
 // portion will be truncated in the drag image.
 UI_EXPORT void CreateDragImageForFile(const FilePath& file_name,
-                                      const SkBitmap* icon,
+                                      const gfx::ImageSkia* icon,
                                       ui::OSExchangeData* data_object);
 
 // Sets the drag image on data_object from the supplied canvas. width/height
@@ -43,10 +43,10 @@ UI_EXPORT void SetDragImageOnDataObject(const gfx::Canvas& canvas,
                                         const gfx::Point& cursor_offset,
                                         ui::OSExchangeData* data_object);
 
-// Sets the drag image on data_object from the supplied bitmap. width/height
+// Sets the drag image on data_object from the supplied ImageSkia. width/height
 // are the size of the image to use, and the offsets give the location of
 // the hotspot for the drag image.
-UI_EXPORT void SetDragImageOnDataObject(const SkBitmap& bitmap,
+UI_EXPORT void SetDragImageOnDataObject(const gfx::ImageSkia& image_skia,
                                         const gfx::Size& size,
                                         const gfx::Point& cursor_offset,
                                         ui::OSExchangeData* data_object);

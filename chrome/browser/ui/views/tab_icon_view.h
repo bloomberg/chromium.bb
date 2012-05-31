@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,9 @@
 #include "base/compiler_specific.h"
 #include "ui/views/view.h"
 
-class SkBitmap;
+namespace gfx {
+class ImageSkia;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -25,7 +27,7 @@ class TabIconView : public views::View {
     virtual bool ShouldTabIconViewAnimate() const = 0;
 
     // Returns the favicon to display in the icon view
-    virtual SkBitmap GetFaviconForTabIconView() = 0;
+    virtual gfx::ImageSkia GetFaviconForTabIconView() = 0;
   };
 
   static void InitializeIfNeeded();

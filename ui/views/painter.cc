@@ -5,11 +5,11 @@
 #include "ui/views/painter.h"
 
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -61,7 +61,7 @@ class GradientPainter : public Painter {
 
 class ImagePainter : public Painter {
  public:
-  ImagePainter(const SkBitmap& image,
+  ImagePainter(const gfx::ImageSkia& image,
                const gfx::Insets& insets,
                bool paint_center)
       : image_(image),
@@ -141,7 +141,7 @@ class ImagePainter : public Painter {
   }
 
  private:
-  const SkBitmap image_;
+  const gfx::ImageSkia image_;
   const gfx::Insets insets_;
   bool paint_center_;
 
@@ -172,7 +172,7 @@ Painter* Painter::CreateVerticalGradient(SkColor c1, SkColor c2) {
 }
 
 // static
-Painter* Painter::CreateImagePainter(const SkBitmap& image,
+Painter* Painter::CreateImagePainter(const gfx::ImageSkia& image,
                                      const gfx::Insets& insets,
                                      bool paint_center) {
   return new ImagePainter(image, insets, paint_center);
@@ -181,7 +181,7 @@ Painter* Painter::CreateImagePainter(const SkBitmap& image,
 HorizontalPainter::HorizontalPainter(const int image_resource_names[]) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   for (int i = 0; i < 3; ++i)
-    images_[i] = rb.GetImageNamed(image_resource_names[i]).ToSkBitmap();
+    images_[i] = rb.GetImageNamed(image_resource_names[i]).ToImageSkia();
   height_ = images_[LEFT]->height();
   DCHECK(images_[LEFT]->height() == images_[RIGHT]->height() &&
          images_[LEFT]->height() == images_[CENTER]->height());

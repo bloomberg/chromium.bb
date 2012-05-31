@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,25 +7,25 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
 namespace drag_utils {
 
-void SetDragImageOnDataObject(const SkBitmap& bitmap,
+void SetDragImageOnDataObject(const gfx::ImageSkia& image_skia,
                               const gfx::Size& size,
                               const gfx::Point& cursor_offset,
                               ui::OSExchangeData* data_object) {
   ui::OSExchangeDataProviderGtk& provider(
       static_cast<ui::OSExchangeDataProviderGtk&>(data_object->provider()));
 
-  // Convert the bitmap into a GdkPixbuf.
-  GdkPixbuf* canvas_pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
+  // Convert the image into a GdkPixbuf.
+  GdkPixbuf* canvas_pixbuf = gfx::GdkPixbufFromSkBitmap(image_skia.bitmap());
 
   // Make a new pixbuf of the requested size and copy it over.
   GdkPixbuf* pixbuf = gdk_pixbuf_new(

@@ -12,9 +12,8 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/views/view.h"
 
-class SkBitmap;
-
 namespace gfx {
+class ImageSkia;
 class Rect;
 }
 
@@ -80,10 +79,10 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // Returns the app icon for the window. On Windows, this is the ICON_BIG used
   // in Alt-Tab list and Win7's taskbar.
-  virtual SkBitmap GetWindowAppIcon();
+  virtual gfx::ImageSkia GetWindowAppIcon();
 
   // Returns the icon to be displayed in the window.
-  virtual SkBitmap GetWindowIcon();
+  virtual gfx::ImageSkia GetWindowIcon();
 
   // Returns true if a window icon should be shown.
   virtual bool ShouldShowWindowIcon() const;

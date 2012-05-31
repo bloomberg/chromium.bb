@@ -578,7 +578,7 @@ bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {
   return current_tab ? current_tab->IsLoading() : false;
 }
 
-SkBitmap PanelBrowserFrameView::GetFaviconForTabIconView() {
+gfx::ImageSkia PanelBrowserFrameView::GetFaviconForTabIconView() {
   return frame()->widget_delegate()->GetWindowIcon();
 }
 

@@ -14,6 +14,7 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/gdi_util.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 namespace drag_utils {
@@ -53,7 +54,7 @@ static HBITMAP CreateHBITMAPFromSkBitmap(const SkBitmap& sk_bitmap) {
   return bitmap;
 }
 
-void SetDragImageOnDataObject(const SkBitmap& sk_bitmap,
+void SetDragImageOnDataObject(const gfx::ImageSkia& image_skia,
                               const gfx::Size& size,
                               const gfx::Point& cursor_offset,
                               ui::OSExchangeData* data_object) {
@@ -62,7 +63,7 @@ void SetDragImageOnDataObject(const SkBitmap& sk_bitmap,
   // by premultiplied colors, so unpremultiply the bitmap.
   // SetDragImageOnDataObject(HBITMAP) takes ownership of the bitmap.
   HBITMAP bitmap = CreateHBITMAPFromSkBitmap(
-      SkBitmapOperations::UnPreMultiply(sk_bitmap));
+      SkBitmapOperations::UnPreMultiply(*image_skia.bitmap()));
 
   // Attach 'bitmap' to the data_object.
   SetDragImageOnDataObject(bitmap, size, cursor_offset,

@@ -74,7 +74,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Overridden from TabIconView::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
-  virtual SkBitmap GetFaviconForTabIconView() OVERRIDE;
+  virtual gfx::ImageSkia GetFaviconForTabIconView() OVERRIDE;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
@@ -84,10 +84,10 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
  private:
   // Creates, adds and returns a new image button with |this| as its listener.
   // Memory is owned by the caller.
-  views::ImageButton* InitWindowCaptionButton(int normal_bitmap_id,
-                                              int hot_bitmap_id,
-                                              int pushed_bitmap_id,
-                                              int mask_bitmap_id,
+  views::ImageButton* InitWindowCaptionButton(int normal_image_id,
+                                              int hot_image_id,
+                                              int pushed_image_id,
+                                              int mask_image_id,
                                               int accessibility_string_id);
 
   // Returns the thickness of the border that makes up the window frame edges.
@@ -131,8 +131,8 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Compute aspects of the frame needed to paint the frame background.
   SkColor GetFrameColor() const;
-  SkBitmap* GetFrameBitmap() const;
-  SkBitmap* GetFrameOverlayBitmap() const;
+  gfx::ImageSkia* GetFrameImage() const;
+  gfx::ImageSkia* GetFrameOverlayImage() const;
   int GetTopAreaHeight() const;
 
   // Layout various sub-components of this view.

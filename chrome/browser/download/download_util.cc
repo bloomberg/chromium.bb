@@ -59,9 +59,9 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #endif
@@ -387,7 +387,7 @@ void DragDownload(const DownloadItem* download,
 
   if (icon) {
     drag_utils::CreateDragImageForFile(
-        download->GetFileNameToReportUser(), icon->ToSkBitmap(), &data);
+        download->GetFileNameToReportUser(), icon->ToImageSkia(), &data);
   }
 
   const FilePath full_path = download->GetFullPath();

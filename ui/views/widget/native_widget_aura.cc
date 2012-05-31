@@ -404,8 +404,8 @@ void NativeWidgetAura::SetWindowTitle(const string16& title) {
   window_->set_title(title);
 }
 
-void NativeWidgetAura::SetWindowIcons(const SkBitmap& window_icon,
-                                     const SkBitmap& app_icon) {
+void NativeWidgetAura::SetWindowIcons(const gfx::ImageSkia& window_icon,
+                                      const gfx::ImageSkia& app_icon) {
   // Aura doesn't have window icons.
 }
 

@@ -13,6 +13,7 @@
 #include "ui/views/widget/native_widget.h"
 
 namespace gfx {
+class ImageSkia;
 class Rect;
 }
 
@@ -150,8 +151,8 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   // Sets the Window icons. |window_icon| is a 16x16 icon suitable for use in
   // a title bar. |app_icon| is a larger size for use in the host environment
   // app switching UI.
-  virtual void SetWindowIcons(const SkBitmap& window_icon,
-                              const SkBitmap& app_icon) = 0;
+  virtual void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                              const gfx::ImageSkia& app_icon) = 0;
 
   // Update native accessibility properties on the native window.
   virtual void SetAccessibleName(const string16& name) = 0;

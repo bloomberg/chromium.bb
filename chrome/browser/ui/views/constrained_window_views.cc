@@ -63,7 +63,7 @@ class ClientView;
 
 // An enumeration of bitmap resources used by this window.
 enum {
-  FRAME_PART_BITMAP_FIRST = 0,  // Must be first.
+  FRAME_PART_IMAGE_FIRST = 0,  // Must be first.
 
   // Window Frame Border.
   FRAME_BOTTOM_EDGE,
@@ -75,7 +75,7 @@ enum {
   FRAME_TOP_LEFT_CORNER,
   FRAME_TOP_RIGHT_CORNER,
 
-  FRAME_PART_BITMAP_COUNT  // Must be last.
+  FRAME_PART_IMAGE_COUNT  // Must be last.
 };
 
 static const int kXPFramePartIDs[] = {
@@ -100,8 +100,8 @@ class XPWindowResources : public views::WindowResources {
   }
   virtual ~XPWindowResources() {}
 
-  virtual SkBitmap* GetPartBitmap(views::FramePartBitmap part_id) const {
-    return bitmaps_[part_id];
+  virtual gfx::ImageSkia* GetPartImage(views::FramePartImage part_id) const {
+    return images_[part_id];
   }
 
  private:
@@ -109,16 +109,16 @@ class XPWindowResources : public views::WindowResources {
     static bool initialized = false;
     if (!initialized) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      for (int i = 0; i < FRAME_PART_BITMAP_COUNT; ++i) {
+      for (int i = 0; i < FRAME_PART_IMAGE_COUNT; ++i) {
         int id = kXPFramePartIDs[i];
         if (id != 0)
-          bitmaps_[i] = rb.GetBitmapNamed(id);
+          images_[i] = rb.GetImageSkiaNamed(id);
       }
       initialized = true;
     }
   }
 
-  static SkBitmap* bitmaps_[FRAME_PART_BITMAP_COUNT];
+  static gfx::ImageSkia* images_[FRAME_PART_IMAGE_COUNT];
 
   DISALLOW_COPY_AND_ASSIGN(XPWindowResources);
 };
@@ -130,8 +130,8 @@ class VistaWindowResources : public views::WindowResources {
   }
   virtual ~VistaWindowResources() {}
 
-  virtual SkBitmap* GetPartBitmap(views::FramePartBitmap part_id) const {
-    return bitmaps_[part_id];
+  virtual gfx::ImageSkia* GetPartImage(views::FramePartImage part_id) const {
+    return images_[part_id];
   }
 
  private:
@@ -139,22 +139,22 @@ class VistaWindowResources : public views::WindowResources {
     static bool initialized = false;
     if (!initialized) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      for (int i = 0; i < FRAME_PART_BITMAP_COUNT; ++i) {
+      for (int i = 0; i < FRAME_PART_IMAGE_COUNT; ++i) {
         int id = kVistaFramePartIDs[i];
         if (id != 0)
-          bitmaps_[i] = rb.GetBitmapNamed(id);
+          images_[i] = rb.GetImageSkiaNamed(id);
       }
       initialized = true;
     }
   }
 
-  static SkBitmap* bitmaps_[FRAME_PART_BITMAP_COUNT];
+  static gfx::ImageSkia* images_[FRAME_PART_IMAGE_COUNT];
 
   DISALLOW_COPY_AND_ASSIGN(VistaWindowResources);
 };
 
-SkBitmap* XPWindowResources::bitmaps_[];
-SkBitmap* VistaWindowResources::bitmaps_[];
+gfx::ImageSkia* XPWindowResources::images_[];
+gfx::ImageSkia* VistaWindowResources::images_[];
 
 ////////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowFrameView
@@ -442,21 +442,21 @@ void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   frame_background_->set_frame_color(ThemeService::GetDefaultColor(
       ThemeService::COLOR_FRAME));
-  SkBitmap* theme_frame = rb.GetBitmapNamed(IDR_THEME_FRAME);
-  frame_background_->set_theme_bitmap(theme_frame);
-  frame_background_->set_theme_overlay_bitmap(NULL);
+  gfx::ImageSkia* theme_frame = rb.GetImageSkiaNamed(IDR_THEME_FRAME);
+  frame_background_->set_theme_image(theme_frame);
+  frame_background_->set_theme_overlay_image(NULL);
   frame_background_->set_top_area_height(theme_frame->height());
 
   frame_background_->SetCornerImages(
-      resources_->GetPartBitmap(FRAME_TOP_LEFT_CORNER),
-      resources_->GetPartBitmap(FRAME_TOP_RIGHT_CORNER),
-      resources_->GetPartBitmap(FRAME_BOTTOM_LEFT_CORNER),
-      resources_->GetPartBitmap(FRAME_BOTTOM_RIGHT_CORNER));
+      resources_->GetPartImage(FRAME_TOP_LEFT_CORNER),
+      resources_->GetPartImage(FRAME_TOP_RIGHT_CORNER),
+      resources_->GetPartImage(FRAME_BOTTOM_LEFT_CORNER),
+      resources_->GetPartImage(FRAME_BOTTOM_RIGHT_CORNER));
   frame_background_->SetSideImages(
-      resources_->GetPartBitmap(FRAME_LEFT_EDGE),
-      resources_->GetPartBitmap(FRAME_TOP_EDGE),
-      resources_->GetPartBitmap(FRAME_RIGHT_EDGE),
-      resources_->GetPartBitmap(FRAME_BOTTOM_EDGE));
+      resources_->GetPartImage(FRAME_LEFT_EDGE),
+      resources_->GetPartImage(FRAME_TOP_EDGE),
+      resources_->GetPartImage(FRAME_RIGHT_EDGE),
+      resources_->GetPartImage(FRAME_BOTTOM_EDGE));
   frame_background_->PaintRestored(canvas, this);
 }
 

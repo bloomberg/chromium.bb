@@ -25,7 +25,7 @@ static const int kFileDragImageMaxWidth = 200;
 static const SkColor kFileDragImageTextColor = SK_ColorBLACK;
 
 void CreateDragImageForFile(const FilePath& file_name,
-                            const SkBitmap* icon,
+                            const gfx::ImageSkia* icon,
                             ui::OSExchangeData* data_object) {
   DCHECK(icon);
   DCHECK(data_object);

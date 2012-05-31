@@ -28,6 +28,7 @@
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_utils.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/webdropdata.h"
 
@@ -297,8 +298,8 @@ void WebContentsDragWin::DoDragging(const WebDropData& drop_data,
 
   // Set drag image.
   if (!image.isNull()) {
-    drag_utils::SetDragImageOnDataObject(
-        image, gfx::Size(image.width(), image.height()), image_offset, &data);
+    drag_utils::SetDragImageOnDataObject(gfx::ImageSkia(image),
+        gfx::Size(image.width(), image.height()), image_offset, &data);
   }
 
   // We need to enable recursive tasks on the message loop so we can get

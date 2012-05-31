@@ -12,6 +12,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -444,19 +445,19 @@ void NativeThemeBase::PaintCheckbox(SkCanvas* canvas,
                                     const gfx::Rect& rect,
                                     const ButtonExtraParams& button) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SkBitmap* image = NULL;
+  gfx::ImageSkia* image = NULL;
   if (button.indeterminate) {
     image = state == kDisabled ?
-        rb.GetBitmapNamed(IDR_CHECKBOX_DISABLED_INDETERMINATE) :
-        rb.GetBitmapNamed(IDR_CHECKBOX_INDETERMINATE);
+        rb.GetImageSkiaNamed(IDR_CHECKBOX_DISABLED_INDETERMINATE) :
+        rb.GetImageSkiaNamed(IDR_CHECKBOX_INDETERMINATE);
   } else if (button.checked) {
     image = state == kDisabled ?
-        rb.GetBitmapNamed(IDR_CHECKBOX_DISABLED_ON) :
-        rb.GetBitmapNamed(IDR_CHECKBOX_ON);
+        rb.GetImageSkiaNamed(IDR_CHECKBOX_DISABLED_ON) :
+        rb.GetImageSkiaNamed(IDR_CHECKBOX_ON);
   } else {
     image = state == kDisabled ?
-        rb.GetBitmapNamed(IDR_CHECKBOX_DISABLED_OFF) :
-        rb.GetBitmapNamed(IDR_CHECKBOX_OFF);
+        rb.GetImageSkiaNamed(IDR_CHECKBOX_DISABLED_OFF) :
+        rb.GetImageSkiaNamed(IDR_CHECKBOX_OFF);
   }
 
   gfx::Rect bounds = rect.Center(gfx::Size(image->width(), image->height()));
@@ -469,15 +470,15 @@ void NativeThemeBase::PaintRadio(SkCanvas* canvas,
                                   const gfx::Rect& rect,
                                   const ButtonExtraParams& button) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SkBitmap* image = NULL;
+  gfx::ImageSkia* image = NULL;
   if (state == kDisabled) {
     image = button.checked ?
-        rb.GetBitmapNamed(IDR_RADIO_DISABLED_ON) :
-        rb.GetBitmapNamed(IDR_RADIO_DISABLED_OFF);
+        rb.GetImageSkiaNamed(IDR_RADIO_DISABLED_ON) :
+        rb.GetImageSkiaNamed(IDR_RADIO_DISABLED_OFF);
   } else {
     image = button.checked ?
-        rb.GetBitmapNamed(IDR_RADIO_ON) :
-        rb.GetBitmapNamed(IDR_RADIO_OFF);
+        rb.GetImageSkiaNamed(IDR_RADIO_ON) :
+        rb.GetImageSkiaNamed(IDR_RADIO_OFF);
   }
 
   gfx::Rect bounds = rect.Center(gfx::Size(image->width(), image->height()));
@@ -759,9 +760,11 @@ void NativeThemeBase::PaintProgressBar(SkCanvas* canvas,
     const gfx::Rect& rect,
     const ProgressBarExtraParams& progress_bar) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SkBitmap* bar_image = rb.GetBitmapNamed(IDR_PROGRESS_BAR);
-  SkBitmap* left_border_image = rb.GetBitmapNamed(IDR_PROGRESS_BORDER_LEFT);
-  SkBitmap* right_border_image = rb.GetBitmapNamed(IDR_PROGRESS_BORDER_RIGHT);
+  gfx::ImageSkia* bar_image = rb.GetImageSkiaNamed(IDR_PROGRESS_BAR);
+  gfx::ImageSkia* left_border_image = rb.GetImageSkiaNamed(
+      IDR_PROGRESS_BORDER_LEFT);
+  gfx::ImageSkia* right_border_image = rb.GetImageSkiaNamed(
+      IDR_PROGRESS_BORDER_RIGHT);
 
   float tile_scale = static_cast<float>(rect.height()) /
       bar_image->height();
@@ -774,7 +777,7 @@ void NativeThemeBase::PaintProgressBar(SkCanvas* canvas,
       rect.x(), rect.y(), rect.width(), rect.height());
 
   if (progress_bar.value_rect_width) {
-    SkBitmap* value_image = rb.GetBitmapNamed(IDR_PROGRESS_VALUE);
+    gfx::ImageSkia* value_image = rb.GetImageSkiaNamed(IDR_PROGRESS_VALUE);
 
     new_tile_width = static_cast<int>(value_image->width() * tile_scale);
     tile_scale_x = static_cast<float>(new_tile_width) /
@@ -789,16 +792,16 @@ void NativeThemeBase::PaintProgressBar(SkCanvas* canvas,
 
   int dest_left_border_width = static_cast<int>(left_border_image->width() *
       tile_scale);
-  SkRect dest_rect;
-  dest_rect.iset(rect.x(), rect.y(), rect.x() + dest_left_border_width,
-                 rect.bottom());
-  canvas->drawBitmapRect(*left_border_image, NULL, dest_rect);
+  DrawBitmapInt(canvas, *left_border_image, 0, 0, left_border_image->width(),
+      left_border_image->height(), rect.x(), rect.y(), dest_left_border_width,
+      rect.height());
 
   int dest_right_border_width = static_cast<int>(right_border_image->width() *
       tile_scale);
-  dest_rect.iset(rect.right() - dest_right_border_width, rect.y(), rect.right(),
-                 rect.bottom());
-  canvas->drawBitmapRect(*right_border_image, NULL, dest_rect);
+  int dest_x = rect.right() - dest_right_border_width;
+  DrawBitmapInt(canvas, *right_border_image, 0, 0, right_border_image->width(),
+                right_border_image->height(), dest_x, rect.y(),
+                dest_right_border_width, rect.height());
 }
 
 bool NativeThemeBase::IntersectsClipRectInt(SkCanvas* canvas,
@@ -810,18 +813,18 @@ bool NativeThemeBase::IntersectsClipRectInt(SkCanvas* canvas,
 }
 
 void NativeThemeBase::DrawBitmapInt(
-    SkCanvas* canvas, const SkBitmap& bitmap,
+    SkCanvas* canvas, const gfx::ImageSkia& image,
     int src_x, int src_y, int src_w, int src_h,
     int dest_x, int dest_y, int dest_w, int dest_h) const {
-  gfx::Canvas(canvas).DrawBitmapInt(bitmap, src_x, src_y, src_w, src_h,
+  gfx::Canvas(canvas).DrawBitmapInt(image, src_x, src_y, src_w, src_h,
       dest_x, dest_y, dest_w, dest_h, true);
 }
 
 void NativeThemeBase::DrawTiledImage(SkCanvas* canvas,
-    const SkBitmap& bitmap,
+    const gfx::ImageSkia& image,
     int src_x, int src_y, float tile_scale_x, float tile_scale_y,
     int dest_x, int dest_y, int w, int h) const {
-  gfx::Canvas(canvas).TileImageInt(bitmap, src_x, src_y, tile_scale_x,
+  gfx::Canvas(canvas).TileImageInt(image, src_x, src_y, tile_scale_x,
       tile_scale_y, dest_x, dest_y, w, h);
 }
 

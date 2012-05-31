@@ -485,7 +485,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // if the UI layout is right-to-left; that is, the canvas will be flipped
   // only if base::i18n::IsRTL() returns true.
   //
-  // Enabling canvas flipping is useful for leaf views that draw a bitmap that
+  // Enabling canvas flipping is useful for leaf views that draw an image that
   // needs to be flipped horizontally when the UI layout is right-to-left
   // (views::Button, for example). This method is helpful for such classes
   // because their drawing logic stays the same and they can become agnostic to

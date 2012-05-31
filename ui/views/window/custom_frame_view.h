@@ -12,7 +12,9 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
-class SkBitmap;
+namespace gfx {
+class ImageSkia;
+}
 
 namespace views {
 
@@ -94,7 +96,7 @@ class CustomFrameView : public NonClientFrameView,
 
   // Compute aspects of the frame needed to paint the frame background.
   SkColor GetFrameColor() const;
-  const SkBitmap* GetFrameBitmap() const;
+  const gfx::ImageSkia* GetFrameImage() const;
 
   // Layout various sub-components of this view.
   void LayoutWindowControls();

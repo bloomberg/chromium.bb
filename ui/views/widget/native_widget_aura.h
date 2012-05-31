@@ -74,8 +74,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
       gfx::Rect* bounds,
       ui::WindowShowState* maximized) const OVERRIDE;
   virtual void SetWindowTitle(const string16& title) OVERRIDE;
-  virtual void SetWindowIcons(const SkBitmap& window_icon,
-                              const SkBitmap& app_icon) OVERRIDE;
+  virtual void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                              const gfx::ImageSkia& app_icon) OVERRIDE;
   virtual void SetAccessibleName(const string16& name) OVERRIDE;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;

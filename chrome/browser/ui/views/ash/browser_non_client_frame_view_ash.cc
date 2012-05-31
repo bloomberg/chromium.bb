@@ -16,8 +16,8 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
-#include "ui/aura/window.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -341,7 +341,7 @@ bool BrowserNonClientFrameViewAsh::ShouldTabIconViewAnimate() const {
   return current_tab ? current_tab->IsLoading() : false;
 }
 
-SkBitmap BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
+gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
   views::WidgetDelegate* delegate = frame()->widget_delegate();
   if (!delegate)
     return SkBitmap();

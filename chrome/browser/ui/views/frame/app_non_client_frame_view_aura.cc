@@ -70,11 +70,11 @@ class AppNonClientFrameViewAura::ControlView
     int control_base_resource_id = owner->browser_view()->IsOffTheRecord() ?
         IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE :
         IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
-    control_base_ = rb.GetImageNamed(control_base_resource_id).ToSkBitmap();
+    control_base_ = rb.GetImageNamed(control_base_resource_id).ToImageSkia();
 
     separator_ =
-        rb.GetImageNamed(IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR).ToSkBitmap();
-    shadow_ = rb.GetImageNamed(IDR_AURA_WINDOW_FULLSCREEN_SHADOW).ToSkBitmap();
+        rb.GetImageNamed(IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR).ToImageSkia();
+    shadow_ = rb.GetImageNamed(IDR_AURA_WINDOW_FULLSCREEN_SHADOW).ToImageSkia();
 
     AddChildView(close_button_);
     AddChildView(restore_button_);
@@ -136,23 +136,23 @@ class AppNonClientFrameViewAura::ControlView
  private:
   // Sets images whose ids are passed in for each of the respective states
   // of |button|.
-  void SetButtonImages(views::ImageButton* button, int normal_bitmap_id,
-                       int hot_bitmap_id, int pushed_bitmap_id) {
+  void SetButtonImages(views::ImageButton* button, int normal_image_id,
+                       int hot_image_id, int pushed_image_id) {
     ui::ThemeProvider* theme_provider = GetThemeProvider();
     button->SetImage(views::CustomButton::BS_NORMAL,
-                     theme_provider->GetImageSkiaNamed(normal_bitmap_id));
+                     theme_provider->GetImageSkiaNamed(normal_image_id));
     button->SetImage(views::CustomButton::BS_HOT,
-                     theme_provider->GetImageSkiaNamed(hot_bitmap_id));
+                     theme_provider->GetImageSkiaNamed(hot_image_id));
     button->SetImage(views::CustomButton::BS_PUSHED,
-                     theme_provider->GetImageSkiaNamed(pushed_bitmap_id));
+                     theme_provider->GetImageSkiaNamed(pushed_image_id));
   }
 
   AppNonClientFrameViewAura* owner_;
   views::ImageButton* close_button_;
   views::ImageButton* restore_button_;
-  const SkBitmap* control_base_;
-  const SkBitmap* separator_;
-  const SkBitmap* shadow_;
+  const gfx::ImageSkia* control_base_;
+  const gfx::ImageSkia* separator_;
+  const gfx::ImageSkia* shadow_;
 
   DISALLOW_COPY_AND_ASSIGN(ControlView);
 };

@@ -60,7 +60,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
 
   // Overridden from TabIconView::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
-  virtual SkBitmap GetFaviconForTabIconView() OVERRIDE;
+  virtual gfx::ImageSkia GetFaviconForTabIconView() OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, UseShortHeader);

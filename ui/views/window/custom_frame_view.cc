@@ -318,29 +318,29 @@ bool CustomFrameView::ShouldShowClientEdge() const {
 
 void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   frame_background_->set_frame_color(GetFrameColor());
-  const SkBitmap* frame_image = GetFrameBitmap();
-  frame_background_->set_theme_bitmap(frame_image);
+  const gfx::ImageSkia* frame_image = GetFrameImage();
+  frame_background_->set_theme_image(frame_image);
   frame_background_->set_top_area_height(frame_image->height());
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   frame_background_->SetCornerImages(
-      rb.GetImageNamed(IDR_WINDOW_TOP_LEFT_CORNER).ToSkBitmap(),
-      rb.GetImageNamed(IDR_WINDOW_TOP_RIGHT_CORNER).ToSkBitmap(),
-      rb.GetImageNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER).ToSkBitmap(),
-      rb.GetImageNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER).ToSkBitmap());
+      rb.GetImageNamed(IDR_WINDOW_TOP_LEFT_CORNER).ToImageSkia(),
+      rb.GetImageNamed(IDR_WINDOW_TOP_RIGHT_CORNER).ToImageSkia(),
+      rb.GetImageNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER).ToImageSkia(),
+      rb.GetImageNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER).ToImageSkia());
   frame_background_->SetSideImages(
-      rb.GetImageNamed(IDR_WINDOW_LEFT_SIDE).ToSkBitmap(),
-      rb.GetImageNamed(IDR_WINDOW_TOP_CENTER).ToSkBitmap(),
-      rb.GetImageNamed(IDR_WINDOW_RIGHT_SIDE).ToSkBitmap(),
-      rb.GetImageNamed(IDR_WINDOW_BOTTOM_CENTER).ToSkBitmap());
+      rb.GetImageNamed(IDR_WINDOW_LEFT_SIDE).ToImageSkia(),
+      rb.GetImageNamed(IDR_WINDOW_TOP_CENTER).ToImageSkia(),
+      rb.GetImageNamed(IDR_WINDOW_RIGHT_SIDE).ToImageSkia(),
+      rb.GetImageNamed(IDR_WINDOW_BOTTOM_CENTER).ToImageSkia());
 
   frame_background_->PaintRestored(canvas, this);
 }
 
 void CustomFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
-  const SkBitmap* frame_image = GetFrameBitmap();
-  frame_background_->set_theme_bitmap(frame_image);
+  const gfx::ImageSkia* frame_image = GetFrameImage();
+  frame_background_->set_theme_image(frame_image);
   frame_background_->set_top_area_height(frame_image->height());
   frame_background_->PaintMaximized(canvas, this);
 
@@ -349,8 +349,8 @@ void CustomFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // TODO(jamescook): Migrate this into FrameBackground.
   // The bottom of the titlebar actually comes from the top of the Client Edge
   // graphic, with the actual client edge clipped off the bottom.
-  const SkBitmap* titlebar_bottom = rb.GetImageNamed(
-      IDR_APP_TOP_CENTER).ToSkBitmap();
+  const gfx::ImageSkia* titlebar_bottom = rb.GetImageNamed(
+      IDR_APP_TOP_CENTER).ToImageSkia();
   int edge_height = titlebar_bottom->height() -
       (ShouldShowClientEdge() ? kClientEdgeThickness : 0);
   canvas->TileImageInt(*titlebar_bottom, 0,
@@ -377,17 +377,22 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   int client_area_top = client_area_bounds.y();
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const SkBitmap* top_left = rb.GetImageNamed(IDR_APP_TOP_LEFT).ToSkBitmap();
-  const SkBitmap* top = rb.GetImageNamed(IDR_APP_TOP_CENTER).ToSkBitmap();
-  const SkBitmap* top_right = rb.GetImageNamed(IDR_APP_TOP_RIGHT).ToSkBitmap();
-  const SkBitmap* right = rb.GetImageNamed(IDR_CONTENT_RIGHT_SIDE).ToSkBitmap();
-  const SkBitmap* bottom_right = rb.GetImageNamed(
-      IDR_CONTENT_BOTTOM_RIGHT_CORNER).ToSkBitmap();
-  const SkBitmap* bottom = rb.GetImageNamed(
-      IDR_CONTENT_BOTTOM_CENTER).ToSkBitmap();
-  const SkBitmap* bottom_left = rb.GetImageNamed(
-      IDR_CONTENT_BOTTOM_LEFT_CORNER).ToSkBitmap();
-  const SkBitmap* left = rb.GetImageNamed(IDR_CONTENT_LEFT_SIDE).ToSkBitmap();
+  const gfx::ImageSkia* top_left = rb.GetImageNamed(
+      IDR_APP_TOP_LEFT).ToImageSkia();
+  const gfx::ImageSkia* top = rb.GetImageNamed(
+      IDR_APP_TOP_CENTER).ToImageSkia();
+  const gfx::ImageSkia* top_right = rb.GetImageNamed(
+      IDR_APP_TOP_RIGHT).ToImageSkia();
+  const gfx::ImageSkia* right = rb.GetImageNamed(
+      IDR_CONTENT_RIGHT_SIDE).ToImageSkia();
+  const gfx::ImageSkia* bottom_right = rb.GetImageNamed(
+      IDR_CONTENT_BOTTOM_RIGHT_CORNER).ToImageSkia();
+  const gfx::ImageSkia* bottom = rb.GetImageNamed(
+      IDR_CONTENT_BOTTOM_CENTER).ToImageSkia();
+  const gfx::ImageSkia* bottom_left = rb.GetImageNamed(
+      IDR_CONTENT_BOTTOM_LEFT_CORNER).ToImageSkia();
+  const gfx::ImageSkia* left = rb.GetImageNamed(
+      IDR_CONTENT_LEFT_SIDE).ToImageSkia();
 
   // Top.
   int top_edge_y = client_area_top - top->height();
@@ -426,9 +431,9 @@ SkColor CustomFrameView::GetFrameColor() const {
   return frame_->IsActive() ? kDefaultColorFrame : kDefaultColorFrameInactive;
 }
 
-const SkBitmap* CustomFrameView::GetFrameBitmap() const {
+const gfx::ImageSkia* CustomFrameView::GetFrameImage() const {
   return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      frame_->IsActive() ? IDR_FRAME : IDR_FRAME_INACTIVE).ToSkBitmap();
+      frame_->IsActive() ? IDR_FRAME : IDR_FRAME_INACTIVE).ToImageSkia();
 }
 
 void CustomFrameView::LayoutWindowControls() {
@@ -456,7 +461,7 @@ void CustomFrameView::LayoutWindowControls() {
 
   ImageButton* visible_button = is_restored ? maximize_button_
                                             : restore_button_;
-  FramePartBitmap normal_part, hot_part, pushed_part;
+  FramePartImage normal_part, hot_part, pushed_part;
   if (should_show_minmax_buttons_) {
     visible_button->SetVisible(true);
     visible_button->SetImageAlignment(ImageButton::ALIGN_LEFT,

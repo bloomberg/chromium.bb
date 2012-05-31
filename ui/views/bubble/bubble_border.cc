@@ -9,9 +9,9 @@
 #include "base/logging.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_resources_standard.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
 
 namespace views {
@@ -33,18 +33,18 @@ struct BubbleBorder::BorderImages {
         border_thickness(0) {
   }
 
-  SkBitmap* left;
-  SkBitmap* top_left;
-  SkBitmap* top;
-  SkBitmap* top_right;
-  SkBitmap* right;
-  SkBitmap* bottom_right;
-  SkBitmap* bottom;
-  SkBitmap* bottom_left;
-  SkBitmap* left_arrow;
-  SkBitmap* top_arrow;
-  SkBitmap* right_arrow;
-  SkBitmap* bottom_arrow;
+  gfx::ImageSkia* left;
+  gfx::ImageSkia* top_left;
+  gfx::ImageSkia* top;
+  gfx::ImageSkia* top_right;
+  gfx::ImageSkia* right;
+  gfx::ImageSkia* bottom_right;
+  gfx::ImageSkia* bottom;
+  gfx::ImageSkia* bottom_left;
+  gfx::ImageSkia* left_arrow;
+  gfx::ImageSkia* top_arrow;
+  gfx::ImageSkia* right_arrow;
+  gfx::ImageSkia* bottom_arrow;
   int border_thickness;
 };
 
@@ -91,7 +91,7 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
 
   // Screen position depends on the arrow location.
   // The arrow should overlap the target by some amount since there is space
-  // for shadow between arrow tip and bitmap bounds.
+  // for shadow between arrow tip and image bounds.
   const int kArrowOverlap = 3;
   int x = position_relative_to.x();
   int y = position_relative_to.y();
@@ -224,34 +224,34 @@ BubbleBorder::BorderImages* BubbleBorder::GetBorderImages(Shadow shadow) {
   if (shadow == SHADOW && shadow_images_ == NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     shadow_images_ = new BorderImages();
-    shadow_images_->left = rb.GetBitmapNamed(IDR_BUBBLE_SHADOW_L);
-    shadow_images_->top_left = rb.GetBitmapNamed(IDR_BUBBLE_SHADOW_TL);
-    shadow_images_->top = rb.GetBitmapNamed(IDR_BUBBLE_SHADOW_T);
-    shadow_images_->top_right = rb.GetBitmapNamed(IDR_BUBBLE_SHADOW_TR);
-    shadow_images_->right = rb.GetBitmapNamed(IDR_BUBBLE_SHADOW_R);
-    shadow_images_->bottom_right = rb.GetBitmapNamed(IDR_BUBBLE_SHADOW_BR);
-    shadow_images_->bottom = rb.GetBitmapNamed(IDR_BUBBLE_SHADOW_B);
-    shadow_images_->bottom_left = rb.GetBitmapNamed(IDR_BUBBLE_SHADOW_BL);
-    shadow_images_->left_arrow = new SkBitmap();
-    shadow_images_->top_arrow = new SkBitmap();
-    shadow_images_->right_arrow = new SkBitmap();
-    shadow_images_->bottom_arrow = new SkBitmap();
+    shadow_images_->left = rb.GetImageSkiaNamed(IDR_BUBBLE_SHADOW_L);
+    shadow_images_->top_left = rb.GetImageSkiaNamed(IDR_BUBBLE_SHADOW_TL);
+    shadow_images_->top = rb.GetImageSkiaNamed(IDR_BUBBLE_SHADOW_T);
+    shadow_images_->top_right = rb.GetImageSkiaNamed(IDR_BUBBLE_SHADOW_TR);
+    shadow_images_->right = rb.GetImageSkiaNamed(IDR_BUBBLE_SHADOW_R);
+    shadow_images_->bottom_right = rb.GetImageSkiaNamed(IDR_BUBBLE_SHADOW_BR);
+    shadow_images_->bottom = rb.GetImageSkiaNamed(IDR_BUBBLE_SHADOW_B);
+    shadow_images_->bottom_left = rb.GetImageSkiaNamed(IDR_BUBBLE_SHADOW_BL);
+    shadow_images_->left_arrow = new gfx::ImageSkia();
+    shadow_images_->top_arrow = new gfx::ImageSkia();
+    shadow_images_->right_arrow = new gfx::ImageSkia();
+    shadow_images_->bottom_arrow = new gfx::ImageSkia();
     shadow_images_->border_thickness = 10;
   } else if (shadow == NO_SHADOW && normal_images_ == NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     normal_images_ = new BorderImages();
-    normal_images_->left = rb.GetBitmapNamed(IDR_BUBBLE_L);
-    normal_images_->top_left = rb.GetBitmapNamed(IDR_BUBBLE_TL);
-    normal_images_->top = rb.GetBitmapNamed(IDR_BUBBLE_T);
-    normal_images_->top_right = rb.GetBitmapNamed(IDR_BUBBLE_TR);
-    normal_images_->right = rb.GetBitmapNamed(IDR_BUBBLE_R);
-    normal_images_->bottom_right = rb.GetBitmapNamed(IDR_BUBBLE_BR);
-    normal_images_->bottom = rb.GetBitmapNamed(IDR_BUBBLE_B);
-    normal_images_->bottom_left = rb.GetBitmapNamed(IDR_BUBBLE_BL);
-    normal_images_->left_arrow = rb.GetBitmapNamed(IDR_BUBBLE_L_ARROW);
-    normal_images_->top_arrow = rb.GetBitmapNamed(IDR_BUBBLE_T_ARROW);
-    normal_images_->right_arrow = rb.GetBitmapNamed(IDR_BUBBLE_R_ARROW);
-    normal_images_->bottom_arrow = rb.GetBitmapNamed(IDR_BUBBLE_B_ARROW);
+    normal_images_->left = rb.GetImageSkiaNamed(IDR_BUBBLE_L);
+    normal_images_->top_left = rb.GetImageSkiaNamed(IDR_BUBBLE_TL);
+    normal_images_->top = rb.GetImageSkiaNamed(IDR_BUBBLE_T);
+    normal_images_->top_right = rb.GetImageSkiaNamed(IDR_BUBBLE_TR);
+    normal_images_->right = rb.GetImageSkiaNamed(IDR_BUBBLE_R);
+    normal_images_->bottom_right = rb.GetImageSkiaNamed(IDR_BUBBLE_BR);
+    normal_images_->bottom = rb.GetImageSkiaNamed(IDR_BUBBLE_B);
+    normal_images_->bottom_left = rb.GetImageSkiaNamed(IDR_BUBBLE_BL);
+    normal_images_->left_arrow = rb.GetImageSkiaNamed(IDR_BUBBLE_L_ARROW);
+    normal_images_->top_arrow = rb.GetImageSkiaNamed(IDR_BUBBLE_T_ARROW);
+    normal_images_->right_arrow = rb.GetImageSkiaNamed(IDR_BUBBLE_R_ARROW);
+    normal_images_->bottom_arrow = rb.GetImageSkiaNamed(IDR_BUBBLE_B_ARROW);
     normal_images_->border_thickness = 0;
   }
   return shadow == SHADOW ? shadow_images_ : normal_images_;
@@ -422,8 +422,8 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
 
 void BubbleBorder::DrawEdgeWithArrow(gfx::Canvas* canvas,
                                      bool is_horizontal,
-                                     SkBitmap* edge,
-                                     SkBitmap* arrow,
+                                     gfx::ImageSkia* edge,
+                                     gfx::ImageSkia* arrow,
                                      int start_x,
                                      int start_y,
                                      int before_arrow,

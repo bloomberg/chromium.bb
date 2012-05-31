@@ -12,6 +12,7 @@
 #include "ui/base/native_theme/native_theme.h"
 
 namespace gfx {
+class ImageSkia;
 class Rect;
 class Size;
 }
@@ -112,10 +113,10 @@ class NativeThemeAndroid : public NativeTheme {
                              int w,
                              int h) const;
 
-  // Draw the dest rectangle with the given bitmap which might be scaled if its
+  // Draw the dest rectangle with the given image which might be scaled if its
   // size is not same as target rectangle.
   void DrawBitmapInt(SkCanvas* canvas,
-                     const SkBitmap& bitmap,
+                     const gfx::ImageSkia& image,
                      int src_x,
                      int src_y,
                      int src_w,
@@ -128,7 +129,7 @@ class NativeThemeAndroid : public NativeTheme {
   // Draw the target rectangle with the |bitmap| accroding the given
   // |tile_scale_x| and |tile_scale_y|
   void DrawTiledImage(SkCanvas* canvas,
-                      const SkBitmap& bitmap,
+                      const gfx::ImageSkia& image,
                       int src_x,
                       int src_y,
                       float tile_scale_x,

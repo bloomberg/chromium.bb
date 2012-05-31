@@ -280,9 +280,11 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   int w = toolbar_bounds.width();
   int left_x = x - kContentEdgeShadowThickness;
 
-  SkBitmap* theme_toolbar = tp->GetBitmapNamed(IDR_THEME_TOOLBAR);
-  SkBitmap* toolbar_left = tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER);
-  SkBitmap* toolbar_center = tp->GetBitmapNamed(IDR_CONTENT_TOP_CENTER);
+  gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
+  gfx::ImageSkia* toolbar_left = tp->GetImageSkiaNamed(
+      IDR_CONTENT_TOP_LEFT_CORNER);
+  gfx::ImageSkia* toolbar_center = tp->GetImageSkiaNamed(
+      IDR_CONTENT_TOP_CENTER);
 
   // Tile the toolbar image starting at the frame edge on the left and where
   // the tabstrip is on the top.
@@ -293,10 +295,10 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                        dest_y, w, theme_toolbar->height());
 
   // Draw rounded corners for the tab.
-  SkBitmap* toolbar_left_mask =
-      tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK);
-  SkBitmap* toolbar_right_mask =
-      tp->GetBitmapNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK);
+  gfx::ImageSkia* toolbar_left_mask =
+      tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK);
+  gfx::ImageSkia* toolbar_right_mask =
+      tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK);
 
   // We mask out the corners by using the DestinationIn transfer mode,
   // which keeps the RGB pixels from the destination and the alpha from
@@ -320,7 +322,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       right_x - (left_x + toolbar_left->width()), toolbar_center->height());
 
   // Right edge.
-  canvas->DrawBitmapInt(*tp->GetBitmapNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
+  canvas->DrawBitmapInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
                         right_x, y);
 
   // Draw the content/toolbar separator.
@@ -339,27 +341,27 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   // of how tall the toolbar itself is.
   int client_area_top = frame()->client_view()->y() +
       browser_view()->GetToolbarBounds().y() +
-      tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER)->height();
+      tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER)->height();
   int client_area_bottom =
       std::max(client_area_top, height() - NonClientBorderThickness());
   int client_area_height = client_area_bottom - client_area_top;
 
   // Draw the client edge images.
-  SkBitmap* right = tp->GetBitmapNamed(IDR_CONTENT_RIGHT_SIDE);
+  gfx::ImageSkia* right = tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
   canvas->TileImageInt(*right, client_area_bounds.right(), client_area_top,
                        right->width(), client_area_height);
   canvas->DrawBitmapInt(
-      *tp->GetBitmapNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
+      *tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
       client_area_bounds.right(), client_area_bottom);
-  SkBitmap* bottom = tp->GetBitmapNamed(IDR_CONTENT_BOTTOM_CENTER);
+  gfx::ImageSkia* bottom = tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
   canvas->TileImageInt(*bottom, client_area_bounds.x(),
       client_area_bottom, client_area_bounds.width(),
       bottom->height());
-  SkBitmap* bottom_left =
-      tp->GetBitmapNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER);
+  gfx::ImageSkia* bottom_left =
+      tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER);
   canvas->DrawBitmapInt(*bottom_left,
       client_area_bounds.x() - bottom_left->width(), client_area_bottom);
-  SkBitmap* left = tp->GetBitmapNamed(IDR_CONTENT_LEFT_SIDE);
+  gfx::ImageSkia* left = tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE);
   canvas->TileImageInt(*left, client_area_bounds.x() - left->width(),
       client_area_top, left->width(), client_area_height);
 
@@ -385,7 +387,7 @@ void GlassBrowserFrameView::LayoutAvatar() {
   // Even though the avatar is used for both incognito and profiles we always
   // use the incognito icon to layout the avatar button. The profile icon
   // can be customized so we can't depend on its size to perform layout.
-  SkBitmap incognito_icon = browser_view()->GetOTRAvatarIcon();
+  gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
 
   int avatar_x = NonClientBorderThickness() + kAvatarLeftSpacing;
   // Move this avatar icon by the size of window controls to prevent it from
@@ -450,7 +452,7 @@ void GlassBrowserFrameView::StopThrobber() {
 
     // Check if hosted BrowserView has a window icon to use.
     if (browser_view()->ShouldShowWindowIcon()) {
-      SkBitmap icon = browser_view()->GetWindowIcon();
+      gfx::ImageSkia icon = browser_view()->GetWindowIcon();
       if (!icon.isNull())
         frame_icon = IconUtil::CreateHICONFromSkBitmap(icon);
     }

@@ -10,7 +10,9 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 
-class SkBitmap;
+namespace gfx {
+class ImageSkia;
+}
 
 namespace views {
 
@@ -133,8 +135,8 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
 
   void DrawEdgeWithArrow(gfx::Canvas* canvas,
                          bool is_horizontal,
-                         SkBitmap* edge,
-                         SkBitmap* arrow,
+                         gfx::ImageSkia* edge,
+                         gfx::ImageSkia* arrow,
                          int start_x,
                          int start_y,
                          int before_arrow,

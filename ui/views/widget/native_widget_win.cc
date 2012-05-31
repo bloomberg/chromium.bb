@@ -719,8 +719,8 @@ void NativeWidgetWin::SetWindowTitle(const string16& title) {
   SetAccessibleName(title);
 }
 
-void NativeWidgetWin::SetWindowIcons(const SkBitmap& window_icon,
-                                     const SkBitmap& app_icon) {
+void NativeWidgetWin::SetWindowIcons(const gfx::ImageSkia& window_icon,
+                                     const gfx::ImageSkia& app_icon) {
   if (!window_icon.isNull()) {
     HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(window_icon);
     // We need to make sure to destroy the previous icon, otherwise we'll leak

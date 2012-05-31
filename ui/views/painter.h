@@ -11,10 +11,9 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/views_export.h"
 
-class SkBitmap;
-
 namespace gfx {
 class Canvas;
+class ImageSkia;
 class Insets;
 class Rect;
 class Size;
@@ -43,7 +42,7 @@ class VIEWS_EXPORT Painter {
   // insets.left()xinsets.right()). The four edges are stretched to fill the
   // destination size.
   // Ownership is passed to the caller.
-  static Painter* CreateImagePainter(const SkBitmap& image,
+  static Painter* CreateImagePainter(const gfx::ImageSkia& image,
                                      const gfx::Insets& insets,
                                      bool paint_center);
 
@@ -82,7 +81,7 @@ class VIEWS_EXPORT HorizontalPainter : public Painter {
   // The height.
   int height_;
   // NOTE: the images are owned by ResourceBundle. Don't free them.
-  const SkBitmap* images_[3];
+  const gfx::ImageSkia* images_[3];
 
   DISALLOW_COPY_AND_ASSIGN(HorizontalPainter);
 };

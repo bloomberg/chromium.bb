@@ -8,6 +8,7 @@
 #include "grit/ui_resources_standard.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -158,7 +159,8 @@ void NativeThemeAura::PaintScrollbarTrack(
       // after updating WebKit so we can draw the entire track in one go instead
       // of as two separate pieces: otherwise, only the portion of the scrollbar
       // that the mouse is over gets the highlighted state.
-      SkBitmap* top = rb.GetBitmapNamed(IDR_SCROLL_BASE_VERTICAL_TOP_H);
+      gfx::ImageSkia* top = rb.GetImageSkiaNamed(
+          IDR_SCROLL_BASE_VERTICAL_TOP_H);
       DrawTiledImage(canvas, *top,
                      0, 0, 1.0, 1.0,
                      rect.x(), rect.y(), top->width(), top->height());
@@ -168,7 +170,8 @@ void NativeThemeAura::PaintScrollbarTrack(
 
     if (rect.y() + rect.height() ==
         extra_params.track_y + extra_params.track_height) {
-      SkBitmap* bottom = rb.GetBitmapNamed(IDR_SCROLL_BASE_VERTICAL_BOTTOM_H);
+      gfx::ImageSkia* bottom = rb.GetImageSkiaNamed(
+          IDR_SCROLL_BASE_VERTICAL_BOTTOM_H);
       DrawTiledImage(canvas, *bottom,
                      0, 0, 1.0, 1.0,
                      rect.x(), rect.y() + rect.height() - bottom->height(),
@@ -177,7 +180,8 @@ void NativeThemeAura::PaintScrollbarTrack(
     }
 
     if (center_height > 0) {
-      SkBitmap* center = rb.GetBitmapNamed(IDR_SCROLL_BASE_VERTICAL_CENTER_H);
+      gfx::ImageSkia* center = rb.GetImageSkiaNamed(
+          IDR_SCROLL_BASE_VERTICAL_CENTER_H);
       DrawTiledImage(canvas, *center,
                      0, 0, 1.0, 1.0,
                      rect.x(), rect.y() + center_offset,
@@ -188,7 +192,8 @@ void NativeThemeAura::PaintScrollbarTrack(
     int center_width = rect.width();
 
     if (rect.x() == extra_params.track_x) {
-      SkBitmap* left = rb.GetBitmapNamed(IDR_SCROLL_BASE_HORIZONTAL_LEFT_H);
+      gfx::ImageSkia* left = rb.GetImageSkiaNamed(
+          IDR_SCROLL_BASE_HORIZONTAL_LEFT_H);
       DrawTiledImage(canvas, *left,
                      0, 0, 1.0, 1.0,
                      rect.x(), rect.y(), left->width(), left->height());
@@ -198,7 +203,8 @@ void NativeThemeAura::PaintScrollbarTrack(
 
     if (rect.x() + rect.width() ==
         extra_params.track_x + extra_params.track_width) {
-      SkBitmap* right = rb.GetBitmapNamed(IDR_SCROLL_BASE_HORIZONTAL_RIGHT_H);
+      gfx::ImageSkia* right = rb.GetImageSkiaNamed(
+          IDR_SCROLL_BASE_HORIZONTAL_RIGHT_H);
       DrawTiledImage(canvas, *right,
                      0, 0, 1.0, 1.0,
                      rect.x() + rect.width() - right->width(), rect.y(),
@@ -207,7 +213,8 @@ void NativeThemeAura::PaintScrollbarTrack(
     }
 
     if (center_width > 0) {
-      SkBitmap* center = rb.GetBitmapNamed(IDR_SCROLL_BASE_HORIZONTAL_CENTER_H);
+      gfx::ImageSkia* center = rb.GetImageSkiaNamed(
+          IDR_SCROLL_BASE_HORIZONTAL_CENTER_H);
       DrawTiledImage(canvas, *center,
                      0, 0, 1.0, 1.0,
                      rect.x() + center_offset, rect.y(),
@@ -233,7 +240,7 @@ void NativeThemeAura::PaintScrollbarThumb(SkCanvas* canvas,
         state == kHovered ? IDR_SCROLL_THUMB_VERTICAL_TOP_H :
         state == kPressed ? IDR_SCROLL_THUMB_VERTICAL_TOP_P :
         IDR_SCROLL_THUMB_VERTICAL_TOP;
-    SkBitmap* top = rb.GetBitmapNamed(top_resource_id);
+    gfx::ImageSkia* top = rb.GetImageSkiaNamed(top_resource_id);
     DrawTiledImage(canvas, *top,
                    0, 0, 1.0, 1.0,
                    rect.x(), rect.y(), top->width(), top->height());
@@ -242,7 +249,7 @@ void NativeThemeAura::PaintScrollbarThumb(SkCanvas* canvas,
         state == kHovered ? IDR_SCROLL_THUMB_VERTICAL_BOTTOM_H :
         state == kPressed ? IDR_SCROLL_THUMB_VERTICAL_BOTTOM_P :
         IDR_SCROLL_THUMB_VERTICAL_BOTTOM;
-    SkBitmap* bottom = rb.GetBitmapNamed(bottom_resource_id);
+    gfx::ImageSkia* bottom = rb.GetImageSkiaNamed(bottom_resource_id);
     DrawTiledImage(canvas, *bottom,
                    0, 0, 1.0, 1.0,
                    rect.x(), rect.y() + rect.height() - bottom->height(),
@@ -253,7 +260,7 @@ void NativeThemeAura::PaintScrollbarThumb(SkCanvas* canvas,
           state == kHovered ? IDR_SCROLL_THUMB_VERTICAL_CENTER_H :
           state == kPressed ? IDR_SCROLL_THUMB_VERTICAL_CENTER_P :
           IDR_SCROLL_THUMB_VERTICAL_CENTER;
-      SkBitmap* center = rb.GetBitmapNamed(center_resource_id);
+      gfx::ImageSkia* center = rb.GetImageSkiaNamed(center_resource_id);
       DrawTiledImage(canvas, *center,
                      0, 0, 1.0, 1.0,
                      rect.x(), rect.y() + top->height(),
@@ -265,7 +272,7 @@ void NativeThemeAura::PaintScrollbarThumb(SkCanvas* canvas,
         state == kHovered ? IDR_SCROLL_THUMB_HORIZONTAL_LEFT_H :
         state == kPressed ? IDR_SCROLL_THUMB_HORIZONTAL_LEFT_P :
         IDR_SCROLL_THUMB_HORIZONTAL_LEFT;
-    SkBitmap* left = rb.GetBitmapNamed(left_resource_id);
+    gfx::ImageSkia* left = rb.GetImageSkiaNamed(left_resource_id);
     DrawTiledImage(canvas, *left,
                    0, 0, 1.0, 1.0,
                    rect.x(), rect.y(), left->width(), left->height());
@@ -274,7 +281,7 @@ void NativeThemeAura::PaintScrollbarThumb(SkCanvas* canvas,
         state == kHovered ? IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_H :
         state == kPressed ? IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_P :
         IDR_SCROLL_THUMB_HORIZONTAL_RIGHT;
-    SkBitmap* right = rb.GetBitmapNamed(right_resource_id);
+    gfx::ImageSkia* right = rb.GetImageSkiaNamed(right_resource_id);
     DrawTiledImage(canvas, *right,
                    0, 0, 1.0, 1.0,
                    rect.x() + rect.width() - right->width(), rect.y(),
@@ -285,7 +292,7 @@ void NativeThemeAura::PaintScrollbarThumb(SkCanvas* canvas,
           state == kHovered ? IDR_SCROLL_THUMB_HORIZONTAL_CENTER_H :
           state == kPressed ? IDR_SCROLL_THUMB_HORIZONTAL_CENTER_P :
           IDR_SCROLL_THUMB_HORIZONTAL_CENTER;
-      SkBitmap* center = rb.GetBitmapNamed(center_resource_id);
+      gfx::ImageSkia* center = rb.GetImageSkiaNamed(center_resource_id);
       DrawTiledImage(canvas, *center,
                      0, 0, 1.0, 1.0,
                      rect.x() + left->width(), rect.y(),

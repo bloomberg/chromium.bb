@@ -33,7 +33,7 @@ class OakWindow : public views::WidgetDelegateView,
   virtual bool CanMaximize() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
-  virtual SkBitmap GetWindowIcon() OVERRIDE;
+  virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
   virtual bool ShouldShowWindowIcon() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
 
