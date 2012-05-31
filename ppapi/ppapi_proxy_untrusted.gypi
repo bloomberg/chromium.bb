@@ -193,6 +193,7 @@
       'type': 'none',
       'dependencies': [
         'base_untrusted',
+        '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:imc_syscalls_lib',
       ],
       'variables': {
         'nlib_target': 'libipc_untrusted.a',
