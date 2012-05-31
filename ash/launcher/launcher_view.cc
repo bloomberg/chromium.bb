@@ -474,6 +474,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
     }
 
     case TYPE_APP_SHORTCUT:
+    case TYPE_PLATFORM_APP:
     case TYPE_APP_PANEL: {
       LauncherButton* button = LauncherButton::Create(this, this);
       button->SetImage(item.image);
@@ -620,6 +621,7 @@ bool LauncherView::SameDragType(LauncherItemType typea,
     case TYPE_APP_SHORTCUT:
     case TYPE_APP_LIST:
     case TYPE_BROWSER_SHORTCUT:
+    case TYPE_PLATFORM_APP:
       return typeb == typea;
   }
   NOTREACHED();
@@ -925,6 +927,7 @@ string16 LauncherView::GetAccessibleName(const views::View* view) {
     case TYPE_TABBED:
     case TYPE_APP_PANEL:
     case TYPE_APP_SHORTCUT:
+    case TYPE_PLATFORM_APP:
       return delegate_->GetTitle(model_->items()[view_index]);
 
     case TYPE_APP_LIST:
@@ -956,6 +959,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
     case TYPE_TABBED:
     case TYPE_APP_PANEL:
     case TYPE_APP_SHORTCUT:
+    case TYPE_PLATFORM_APP:
       delegate_->ItemClicked(model_->items()[view_index], event.flags());
       break;
 

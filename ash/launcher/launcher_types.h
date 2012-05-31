@@ -39,6 +39,9 @@ enum LauncherItemType {
 
   // The browser shortcut button.
   TYPE_BROWSER_SHORTCUT,
+
+  // Represents a platform app.
+  TYPE_PLATFORM_APP,
 };
 
 // Represents the status of pinned or running app launcher items.

@@ -1,0 +1,65 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_EXTENSIONS_PLATFORM_APP_BROWSERTEST_UTIL_H_
+#define CHROME_BROWSER_EXTENSIONS_PLATFORM_APP_BROWSERTEST_UTIL_H_
+#pragma once
+
+
+#include "chrome/browser/extensions/extension_apitest.h"
+
+namespace extensions {
+class Extension;
+}
+
+namespace content {
+class WebContents;
+}
+
+class CommandLine;
+class ShellWindow;
+
+class PlatformAppBrowserTest : public ExtensionApiTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+
+ protected:
+  // Runs the app named |name| out of the platform_apps subdirectory. Waits
+  // until it is launched.
+  const extensions::Extension* LoadAndLaunchPlatformApp(const char* name);
+
+  // Gets the WebContents associated with the first shell window that is found
+  // (most tests only deal with one platform app window, so this is good
+  // enough).
+  content::WebContents* GetFirstShellWindowWebContents();
+
+  // Runs chrome.windows.getAll for the given extension and returns the number
+  // of windows that the function returns.
+  size_t RunGetWindowsFunctionForExtension(
+      const extensions::Extension* extension);
+
+  // Runs chrome.windows.get(|window_id|) for the the given extension and
+  // returns whether or not a window was found.
+  bool RunGetWindowFunctionForExtension(
+      int window_id, const extensions::Extension* extension);
+
+  // Returns the number of shell windows.
+  size_t GetShellWindowCount();
+
+  // The command line already has an argument on it - about:blank, which
+  // is set by InProcessBrowserTest::PrepareTestCommandLine. For platform app
+  // launch tests we need to clear this.
+  void ClearCommandLineArgs();
+
+  // Sets up the command line for running platform apps.
+  void SetCommandLineArg(const std::string& test_file);
+
+  // Creates an empty shell window for |extension|.
+  ShellWindow* CreateShellWindow(const extensions::Extension* extension);
+
+  // Closes |window| and waits until it's gone.
+  void CloseShellWindow(ShellWindow* window);
+};
+
+#endif  // CHROME_BROWSER_EXTENSIONS_PLATFORM_APP_BROWSERTEST_UTIL_H_

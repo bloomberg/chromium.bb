@@ -19,6 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/extensions/shell_window_registry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -36,7 +37,8 @@ class TabContentsWrapper;
 // browsers (BrowserLauncherItemController) and browser shortcuts.
 class ChromeLauncherController : public ash::LauncherDelegate,
                                  public ash::LauncherModelObserver,
-                                 public content::NotificationObserver {
+                                 public content::NotificationObserver,
+                                 public ShellWindowRegistry::Observer {
  public:
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
@@ -180,6 +182,11 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Overridden from ShellWindowRegistry::Observer:
+  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE;
+  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE;
+
  private:
   friend class BrowserLauncherItemControllerTest;
 

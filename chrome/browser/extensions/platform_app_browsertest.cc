@@ -2,36 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
-#include "base/stringprintf.h"
-#include "base/string_util.h"
-#include "base/values.h"
 #include "chrome/browser/automation/automation_util.h"
-#include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/extensions/platform_app_browsertest_util.h"
+#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/common/context_menu_params.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/models/menu_model.h"
 
 using content::WebContents;
 using extensions::Extension;
-
-namespace utils = extension_function_test_utils;
 
 namespace {
 // Non-abstract RenderViewContextMenu class.
@@ -53,103 +34,6 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
 };
 
 }  // namespace
-
-class PlatformAppBrowserTest : public ExtensionApiTest {
- public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnablePlatformApps);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  }
-
- protected:
-  const Extension* LoadAndLaunchPlatformApp(const char* name) {
-    ui_test_utils::WindowedNotificationObserver app_loaded_observer(
-        content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-        content::NotificationService::AllSources());
-
-    const Extension* extension = LoadExtension(
-        test_data_dir_.AppendASCII("platform_apps").AppendASCII(name));
-    EXPECT_TRUE(extension);
-
-    application_launch::OpenApplication(
-        browser()->profile(),
-        extension,
-        extension_misc::LAUNCH_NONE,
-        GURL(),
-        NEW_WINDOW,
-        NULL);
-
-    app_loaded_observer.Wait();
-
-    return extension;
-  }
-
-  // Gets the WebContents associated with the first shell window that is found
-  // (most tests only deal with one platform app window, so this is good
-  // enough).
-  WebContents* GetFirstShellWindowWebContents() {
-    ShellWindowRegistry* app_registry =
-        ShellWindowRegistry::Get(browser()->profile());
-    ShellWindowRegistry::const_iterator iter;
-    ShellWindowRegistry::ShellWindowSet shell_windows =
-        app_registry->shell_windows();
-    for (iter = shell_windows.begin(); iter != shell_windows.end(); ++iter) {
-      return (*iter)->web_contents();
-    }
-
-    return NULL;
-  }
-
-  // Runs chrome.windows.getAll for the given extension and returns the number
-  // of windows that the function returns.
-  size_t RunGetWindowsFunctionForExtension(const Extension* extension) {
-    GetAllWindowsFunction* function = new GetAllWindowsFunction();
-    function->set_extension(extension);
-    scoped_ptr<base::ListValue> result(utils::ToList(
-        utils::RunFunctionAndReturnResult(function, "[]", browser())));
-    return result->GetSize();
-  }
-
-  // Runs chrome.windows.get(|window_id|) for the the given extension and
-  // returns whether or not a window was found.
-  bool RunGetWindowFunctionForExtension(
-      int window_id, const Extension* extension) {
-    GetWindowFunction* function = new GetWindowFunction();
-    function->set_extension(extension);
-    utils::RunFunction(
-            function,
-            base::StringPrintf("[%u]", window_id),
-            browser(),
-            utils::NONE);
-    return function->GetResultValue() != NULL;
-  }
-
-  size_t GetShellWindowCount() {
-    return ShellWindowRegistry::Get(browser()->profile())->
-        shell_windows().size();
-  }
-
-  // The command line already has an argument on it - about:blank, which
-  // is set by InProcessBrowserTest::PrepareTestCommandLine. For platform app
-  // launch tests we need to clear this.
-  void ClearCommandLineArgs() {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    CommandLine::StringVector args = command_line->GetArgs();
-    CommandLine::StringVector argv = command_line->argv();
-    for (size_t i = 0; i < args.size(); i++)
-      argv.pop_back();
-    command_line->InitFromArgv(argv);
-  }
-
-  void SetCommandLineArg(const std::string& test_file) {
-    ClearCommandLineArgs();
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    FilePath test_doc(test_data_dir_.AppendASCII(test_file));
-    test_doc = test_doc.NormalizePathSeparators();
-    command_line->AppendArgPath(test_doc);
-  }
-};
 
 // Tests that platform apps received the "launch" event when launched.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OnLaunchedEvent) {

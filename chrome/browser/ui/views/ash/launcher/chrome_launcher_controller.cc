@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/ash/extension_utils.h"
@@ -68,6 +69,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   }
   instance_ = this;
   model_->AddObserver(this);
+  ShellWindowRegistry::Get(profile_)->AddObserver(this);
   app_icon_loader_.reset(new LauncherAppIconLoader(profile_, this));
 
   notification_registrar_.Add(this,
@@ -84,6 +86,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
 }
 
 ChromeLauncherController::~ChromeLauncherController() {
+  ShellWindowRegistry::Get(profile_)->RemoveObserver(this);
   model_->RemoveObserver(this);
   for (IDToItemMap::iterator i = id_to_item_map_.begin();
        i != id_to_item_map_.end(); ++i) {
@@ -156,7 +159,10 @@ ash::LauncherID ChromeLauncherController::CreateAppLauncherItem(
   ash::LauncherID id = model_->next_id();
   ash::LauncherItem item;
   if (!controller) {
-    item.type = ash::TYPE_APP_SHORTCUT;
+    if (status == ash::STATUS_CLOSED)
+      item.type = ash::TYPE_APP_SHORTCUT;
+    else
+      item.type = ash::TYPE_PLATFORM_APP;
   } else if (controller->type() ==
              BrowserLauncherItemController::TYPE_APP_PANEL ||
              controller->type() ==
@@ -531,6 +537,39 @@ void ChromeLauncherController::Observe(
     }
     default:
       NOTREACHED() << "Unexpected notification type=" << type;
+  }
+}
+
+void ChromeLauncherController::OnShellWindowAdded(ShellWindow* shell_window) {
+  const std::string app_id = shell_window->extension()->id();
+  for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
+       i != id_to_item_map_.end(); ++i) {
+    if (i->second.app_id == app_id) {
+      SetItemStatus(i->first, ash::STATUS_RUNNING);
+      return;
+    }
+  }
+  CreateAppLauncherItem(NULL, app_id, ash::STATUS_RUNNING);
+}
+
+void ChromeLauncherController::OnShellWindowRemoved(ShellWindow* shell_window) {
+  const std::string app_id = shell_window->extension()->id();
+  ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile_);
+  if (registry->GetShellWindowsForApp(app_id).size() > 0)
+    return;
+
+  for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
+       i != id_to_item_map_.end(); ++i) {
+    if (i->second.app_id == app_id) {
+      int index = model_->ItemIndexByID(i->first);
+      DCHECK_GE(index, 0);
+      ash::LauncherItem item = model_->items()[index];
+      if (item.type == ash::TYPE_APP_SHORTCUT)
+        SetItemStatus(i->first, ash::STATUS_CLOSED);
+      else
+        LauncherItemClosed(i->first);
+      return;
+    }
   }
 }
 

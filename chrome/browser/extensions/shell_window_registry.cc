@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/common/extensions/extension.h"
 
 ShellWindowRegistry::ShellWindowRegistry() {}
 
@@ -16,12 +18,32 @@ ShellWindowRegistry* ShellWindowRegistry::Get(Profile* profile) {
 
 void ShellWindowRegistry::AddShellWindow(ShellWindow* shell_window) {
   shell_windows_.insert(shell_window);
+  FOR_EACH_OBSERVER(Observer, observers_, OnShellWindowAdded(shell_window));
 }
 
 void ShellWindowRegistry::RemoveShellWindow(ShellWindow* shell_window) {
   shell_windows_.erase(shell_window);
+  FOR_EACH_OBSERVER(Observer, observers_, OnShellWindowRemoved(shell_window));
 }
 
+void ShellWindowRegistry::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ShellWindowRegistry::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+ShellWindowRegistry::ShellWindowSet ShellWindowRegistry::GetShellWindowsForApp(
+    const std::string app_id) const {
+  ShellWindowSet app_windows;
+  for (ShellWindowSet::const_iterator i = shell_windows_.begin();
+       i != shell_windows_.end(); ++i) {
+    if ((*i)->extension()->id() == app_id)
+      app_windows.insert(*i);
+  }
+  return app_windows;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Factory boilerplate

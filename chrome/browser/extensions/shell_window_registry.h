@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
+#include "base/observer_list.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
@@ -25,6 +26,17 @@ class ShellWindow;
 // page).
 class ShellWindowRegistry : public ProfileKeyedService {
  public:
+  class Observer {
+   public:
+    // Called just after a shell window was added.
+    virtual void OnShellWindowAdded(ShellWindow* shell_window) = 0;
+    // Called just after a shell window was removed.
+    virtual void OnShellWindowRemoved(ShellWindow* shell_window) = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   typedef std::set<ShellWindow*> ShellWindowSet;
   typedef ShellWindowSet::const_iterator const_iterator;
 
@@ -38,6 +50,11 @@ class ShellWindowRegistry : public ProfileKeyedService {
   void AddShellWindow(ShellWindow* shell_window);
   void RemoveShellWindow(ShellWindow* shell_window);
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  // Returns a set of windows owned by the application identified by app_id.
+  ShellWindowSet GetShellWindowsForApp(const std::string app_id) const;
   const ShellWindowSet& shell_windows() const { return shell_windows_; }
 
  private:
@@ -60,6 +77,7 @@ class ShellWindowRegistry : public ProfileKeyedService {
   };
 
   ShellWindowSet shell_windows_;
+  ObserverList<Observer> observers_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_SHELL_WINDOW_REGISTRY_H_
