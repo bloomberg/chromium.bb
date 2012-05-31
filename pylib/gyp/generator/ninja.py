@@ -702,7 +702,8 @@ class NinjaWriter:
     if self.flavor == 'win':
       self.WriteVariableList('rcflags',
           [QuoteShellArgument(self.ExpandSpecial(f), self.flavor)
-           for f in self.msvs_settings.GetRcflags(config_name)])
+           for f in self.msvs_settings.GetRcflags(config_name,
+                                                  self.GypPathToNinja)])
 
     include_dirs = config.get('include_dirs', [])
     if self.flavor == 'win':

@@ -23,5 +23,24 @@
         'hello.rc',
       ],
     },
+    {
+      'target_name': 'with_resources_subdir',
+      'type': 'executable',
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'DebugInformationFormat': '3',
+        },
+        'VCLinkerTool': {
+          'GenerateDebugInformation': 'true',
+        },
+        'VCResourceCompilerTool': {
+          'Culture' : '1033',
+        },
+      },
+      'sources': [
+        'hello.cpp',
+        'subdir/hello2.rc',
+      ],
+    },
   ],
 }

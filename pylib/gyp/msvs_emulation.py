@@ -388,13 +388,14 @@ class MsvsSettings(object):
     uldi = self._Setting(('VCLinkerTool', 'UseLibraryDependencyInputs'), config)
     return uldi == 'true'
 
-  def GetRcflags(self, config):
+  def GetRcflags(self, config, gyp_to_ninja_path):
     """Returns the flags that need to be added to invocations of the resource
     compiler."""
     rcflags = []
     rc = self._GetWrapper(self, self.msvs_settings[config],
         'VCResourceCompilerTool', append=rcflags)
-    rc('AdditionalIncludeDirectories', prefix='/I')
+    rc('AdditionalIncludeDirectories', map=gyp_to_ninja_path, prefix='/I')
+    rcflags.append('/I' + gyp_to_ninja_path('.'))
     rc('PreprocessorDefinitions', prefix='/d')
     # /l arg must be in hex without leading '0x'
     rc('Culture', prefix='/l', map=lambda x: hex(int(x))[2:])
