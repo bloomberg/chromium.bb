@@ -786,15 +786,9 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
-#if defined(OS_WIN)
-// TestSettings tests are flaky http://crbug.com/95425
-#define MAYBE_TestSettingsFramePasswords DISABLED_TestSettingsFramePasswords
-#else
-#define MAYBE_TestSettingsFramePasswords TestSettingsFramePasswords
-#endif
-
+// TestSettingsFramePasswords test is flaky http://crbug.com/95425
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       MAYBE_TestSettingsFramePasswords) {
+                       DISABLED_TestSettingsFramePasswords) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += "passwords";
   RunBidiCheckerOnPage(url);
