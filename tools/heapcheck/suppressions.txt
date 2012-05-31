@@ -1233,12 +1233,6 @@
    fun:gfx::PlatformFontPango::InitPangoMetrics
 }
 {
-   bug_91491
-   Heapcheck:Leak
-   ...
-   fun:CrxUpdateService::ProcessPendingItems
-}
-{
    bug_91845_a
    Heapcheck:Leak
    ...
