@@ -3058,6 +3058,7 @@ nacl_env = MakeArchSpecificEnv().Clone(
 
     # always optimize binaries
     CCFLAGS = ['-O2',
+               '-g',
                '-fomit-frame-pointer',
                '-Wall',
                '-fdiagnostics-show-option',
@@ -3090,13 +3091,6 @@ nacl_env = MakeArchSpecificEnv().Clone(
     PTHREAD_LIBS = ['pthread_private'],
     DYNCODE_LIBS = ['nacl_dyncode_private'],
     )
-
-# This is disabled for PNaCl/ARM because it causes an assertion
-# failure when linking irt.nexe.  See
-# http://code.google.com/p/nativeclient/issues/detail?id=2797.
-# TODO(mseaborn): Enable for PNaCl and move to the Clone() block above.
-if not nacl_env.Bit('bitcode'):
-  nacl_env.Append(CCFLAGS=['-g'])
 
 # Bitcode files are assumed to be x86-32 and that causes
 # problems when (bitcode) linking against native x86-64 libs

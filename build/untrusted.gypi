@@ -24,6 +24,7 @@
     'default_compile_flags': [
       #'-std=gnu99',  Added by build_nexe
       '-O3',
+      '-g',
     ],
   },
   'conditions': [
@@ -78,13 +79,6 @@
           ],
           'compile_flags': [
             '<@(default_compile_flags)',
-            # '-g' (for debugging info) is in the x86-specific section
-            # because '-g' causes an assertion failure in PNaCl/ARM
-            # when linking irt.nexe.  See
-            # http://code.google.com/p/nativeclient/issues/detail?id=2797.
-            # TODO(mseaborn): Enable this for ARM by moving '-g' to
-            # default_compile_flags.
-            '-g',
             '-fomit-frame-pointer',
             '-mtls-use-call'
           ],
