@@ -11775,13 +11775,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Invalid application-specific password.
       </message>
       <message name="IDS_SYNC_ENTER_OTP_LABEL" desc="A message asking the user to enter a one-time-password (aka OTP).">
-        Enter your OTP:
+        Enter your verification code:
       </message>
       <message name="IDS_SYNC_OTP_HELP_LABEL" desc="A help link message for users who don't know what a one-time-password (aka OTP) is">
         What's this?
       </message>
       <message name="IDS_SYNC_INVALID_OTP_LABEL" desc="A message telling the user the one-time-password (aka OTP) they entered is invalid.">
-        Invalid OTP.
+        Invalid verification code.
       </message>
       <message name="IDS_SYNC_SERVICE_UNAVAILABLE" desc="Error message to display when the user domain entered by the user has sync disabled.">
         Sync service is not available for your domain.
@@ -16351,7 +16351,7 @@ Battery full
     </message>
     <message name="IDS_FLAGS_ENABLE_CLIENT_OAUTH_SIGNIN_DESCRIPTION" desc="Description of about:flag option to turn on ClientOAuth sign in">
       When enabled, will use ClientOAuth to connect a profile to a Google account.  Otherwise ClientLogin is used.
-      ClientOAuth permits using OTPs instead of ASPs to during authentication.
+      ClientOAuth permits using verification codes instead of ASPs during authentication.
     </message>
       
     </messages>
