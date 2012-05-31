@@ -1,3 +1,5 @@
+SUBDIRS = moreTables
+
 EXTRA_DIST =					\
 	inpos_match_replace.ctb			\
 	inpos_pass0.ctb				\

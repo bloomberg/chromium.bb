@@ -118,6 +118,7 @@ AC_CONFIG_FILES([
 	liblouis.pc
         tests/Makefile
         tests/tables/Makefile
+        tests/tables/moreTables/Makefile
         tests/doctests/Makefile
         tests/harness/Makefile
 	python/Makefile
