@@ -11,6 +11,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
@@ -29,6 +30,7 @@ using content::BrowserThread;
 using extensions::Extension;
 using testing::_;
 using testing::AtLeast;
+using testing::InSequence;
 using testing::Return;
 using testing::SaveArg;
 
@@ -476,18 +478,28 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
   // Use the magic of googlemock to save a parameter to our mock's
   // DispatchEventToExtension method into event_args.
   std::string event_args;
-  std::string expected_event_name = "contextMenus";
-  EXPECT_CALL(*mock_event_router.get(),
-              DispatchEventToExtension(
-                  item->extension_id(),
-                  expected_event_name,
+  {
+    InSequence s;
+    EXPECT_CALL(*mock_event_router.get(),
+                DispatchEventToExtension(
+                    item->extension_id(),
+                  extension_event_names::kOnContextMenus,
                   _,
                   &profile,
                   GURL(),
                   ExtensionEventRouter::USER_GESTURE_ENABLED))
       .Times(1)
       .WillOnce(SaveArg<2>(&event_args));
-
+  EXPECT_CALL(*mock_event_router.get(),
+              DispatchEventToExtension(
+                  item->extension_id(),
+                  extension_event_names::kOnContextMenuClicked,
+                  _,
+                  &profile,
+                  GURL(),
+                  ExtensionEventRouter::USER_GESTURE_ENABLED))
+      .Times(1);
+  }
   manager_.ExecuteCommand(&profile, NULL /* tab_contents */, params, id);
 
   // Parse the json event_args, which should turn into a 2-element list where

@@ -6,7 +6,6 @@ chrome.experimental.app.onLaunched.addListener(function() {
   chrome.contextMenus.create({
         id: 'id1',
         title: 'Extension Item 1',
-        onclick: function() {}
       },
       function() {
         chrome.windows.create({

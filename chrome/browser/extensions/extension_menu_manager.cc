@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -603,11 +604,14 @@ void ExtensionMenuManager::ExecuteCommand(
 
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
-  std::string event_name = "contextMenus";
   event_router->DispatchEventToExtension(
-      item->extension_id(), event_name, json_args, profile, GURL(),
+      item->extension_id(), extension_event_names::kOnContextMenus,
+      json_args, profile, GURL(),
       ExtensionEventRouter::USER_GESTURE_ENABLED);
-  // TODO(yoz): dispatch another event onClicked.
+  event_router->DispatchEventToExtension(
+      item->extension_id(), extension_event_names::kOnContextMenuClicked,
+      json_args, profile, GURL(),
+      ExtensionEventRouter::USER_GESTURE_ENABLED);
 }
 
 void ExtensionMenuManager::SanitizeRadioList(

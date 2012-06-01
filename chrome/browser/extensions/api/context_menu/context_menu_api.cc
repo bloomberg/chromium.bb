@@ -21,12 +21,16 @@ const char kDocumentUrlPatternsKey[] = "documentUrlPatterns";
 const char kEnabledKey[] = "enabled";
 const char kGeneratedIdKey[] = "generatedId";
 const char kIdKey[] = "id";
+const char kOnclickKey[] = "onclick";
 const char kParentIdKey[] = "parentId";
 const char kTargetUrlPatternsKey[] = "targetUrlPatterns";
 const char kTitleKey[] = "title";
 const char kTypeKey[] = "type";
 
 const char kCannotFindItemError[] = "Cannot find menu item with id *";
+const char kOnclickDisallowedError[] = "Extensions using event pages cannot "
+    "pass an onclick parameter to chrome.contextMenus.create. Instead, use "
+    "the chrome.contextMenus.onClicked event.";
 const char kCheckedError[] =
     "Only items with type \"radio\" or \"checkbox\" can be checked";
 const char kDuplicateIDError[] =
@@ -204,6 +208,12 @@ bool CreateContextMenuFunction::RunImpl() {
   if (menu_manager->GetItemById(id)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(kDuplicateIDError,
                                                      GetIDString(id));
+    return false;
+  }
+
+  if (GetExtension()->has_lazy_background_page() &&
+      properties->HasKey(kOnclickKey)) {
+    error_ = kOnclickDisallowedError;
     return false;
   }
 

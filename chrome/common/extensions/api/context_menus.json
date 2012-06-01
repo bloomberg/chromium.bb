@@ -57,8 +57,18 @@
             "description": "The text for the context selection, if any."
           },
           "editable": {
-            "type": "string",
+            "type": "boolean",
             "description": "A flag indicating whether the element is editable (text input, textarea, etc.)."
+          },
+          "wasChecked": {
+            "type": "boolean",
+            "optional": true,
+            "description": "A flag indicating the state of a checkbox or radio item before it was clicked."
+          },
+          "checked": {
+            "type": "boolean",
+            "optional": true,
+            "description": "A flag indicating the state of a checkbox or radio item after it is clicked."
           }
         }
       }
@@ -114,7 +124,7 @@
               "onclick": {
                 "type": "function",
                 "optional": true,
-                "description": "A function that will be called back when the menu item is clicked.",
+                "description": "A function that will be called back when the menu item is clicked. Event pages cannot use this; instead, they should register a listener for chrome.contextMenus.onClicked.",
                 "parameters": [
                   {
                     "name": "info",
@@ -274,6 +284,25 @@
             "optional": true,
             "parameters": [],
             "description": "Called when removal is complete."
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onClicked",
+        "type": "function",
+        "description": "Fired when a context menu item is clicked.",
+        "parameters": [
+          {
+            "name": "info",
+            "$ref": "OnClickData",
+            "description": "Information about the item clicked and the context where the click happened."
+          },
+          {
+            "name": "tab",
+            "$ref": "tabs.Tab",
+            "description": "The details of the tab where the click took place."
           }
         ]
       }

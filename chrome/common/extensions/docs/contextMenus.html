@@ -218,6 +218,14 @@
             </ol>
           </li>
                   <li>
+            <a href="#global-events">Events</a>
+            <ol>
+              <li>
+                <a href="#event-onClicked">onClicked</a>
+              </li>
+            </ol>
+          </li>
+                  <li>
             <a href="#types">Types</a>
             <ol>
               <li>
@@ -486,7 +494,7 @@ You can find samples of this API on the
                 </div>
               </em>
           </dt>
-          <dd>A function that will be called back when the menu item is clicked.</dd>
+          <dd>A function that will be called back when the menu item is clicked. Event pages cannot use this; instead, they should register a listener for chrome.contextMenus.onClicked.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1234,7 +1242,80 @@ You can find samples of this API on the
             </div>  <!-- /apiItem -->
           </div>  <!-- /apiGroup -->
           <!-- EVENTS -->
-           <!-- /apiGroup -->
+          <div id="eventsTemplate" class="apiGroup">
+            <a name="global-events"></a>
+            <h3>Events</h3>
+            <!-- iterates over all events -->
+            <div class="apiItem">
+              <a name="event-onClicked"></a>
+              <h4>onClicked</h4>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span class="subdued">chrome.contextMenus.</span><span>onClicked</span><span class="subdued">.addListener</span>(function(<span>OnClickData info, tabs.Tab tab</span>) <span class="subdued">{...}</span><span></span>);
+              </div>
+              <div class="description">
+                <p>Fired when a context menu item is clicked.</p>
+                <!-- LISTENER PARAMETERS -->
+                <div>
+                  <h4>Listener parameters</h4>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>info</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="contextMenus.html#type-OnClickData">OnClickData</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Information about the item clicked and the context where the click happened.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
+            <var>tab</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a>tabs.Tab</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The details of the tab where the click took place.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                </div>
+                <!-- EXTRA PARAMETERS -->
+                <!-- LISTENER RETURN VALUE -->
+                <dl>
+                </dl>
+              </div> <!-- /description -->
+               <!-- /description -->
+            </div> <!-- /apiItem -->
+          </div> <!-- /apiGroup -->
           <!-- TYPES -->
           <div class="apiGroup">
             <a name="types"></a>
@@ -1462,7 +1543,7 @@ You can find samples of this API on the
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
+                        <span>boolean</span>
                       </span>
                     </span>
                   )
@@ -1470,6 +1551,54 @@ You can find samples of this API on the
               </em>
           </dt>
           <dd>A flag indicating whether the element is editable (text input, textarea, etc.).</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>wasChecked</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>A flag indicating the state of a checkbox or radio item before it was clicked.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>checked</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>A flag indicating the state of a checkbox or radio item after it is clicked.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
