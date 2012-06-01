@@ -455,6 +455,23 @@ void WriteKCItemAndReauthorizedAccess(
     return;
   }
 
+  // CrSKeychainItemCreateFromContent (SecKeychainItemCreateFromContent)
+  // returns errKCNoSuchAttr (errSecNoSuchAttr) when asked to add an item of
+  // type kSecPrivateKeyItemClass. This would happen after the original
+  // private key was deleted, resulting in data loss. I can't figure out how
+  // SecKeychainItemCreateFromContent wants private keys added. Skip them,
+  // only doing the reauthorization for Keychain item types known to work,
+  // the item types expected to be used by most users and those that are
+  // synced. See http://crbug.com/130738 and
+  // http://lists.apple.com/archives/apple-cdsa/2006/Jan/msg00025.html .
+  switch (old_attributes_and_data.item_class()) {
+    case kSecInternetPasswordItemClass:
+    case kSecGenericPasswordItemClass:
+      break;
+    default:
+      return;
+  }
+
   // SecKeychainItemCreateFromContent fails if any attribute is zero-length,
   // but old_attributes_and_data can contain zero-length attributes. Create
   // a new attribute list devoid of zero-length attributes.
