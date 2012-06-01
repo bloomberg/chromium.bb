@@ -39,6 +39,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
 
+#include <xkbcommon/xkbcommon.h>
+
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
 
@@ -56,6 +58,7 @@ struct x11_compositor {
 	xcb_cursor_t		 null_cursor;
 	struct wl_array		 keys;
 	struct wl_event_source	*xcb_source;
+	struct xkb_keymap	*xkb_keymap;
 	struct {
 		xcb_atom_t		 wm_protocols;
 		xcb_atom_t		 wm_normal_hints;
@@ -86,11 +89,54 @@ struct x11_input {
 	struct weston_seat base;
 };
 
+static struct xkb_keymap *
+x11_compositor_get_keymap(struct x11_compositor *c)
+{
+	xcb_get_property_cookie_t cookie;
+	xcb_get_property_reply_t *reply;
+	xcb_generic_error_t *error;
+	struct xkb_rule_names names;
+	struct xkb_keymap *ret;
+	const char *value_all, *value_part;
+	int length_all, length_part;
+
+	memset(&names, 0, sizeof(names));
+
+	cookie = xcb_get_property(c->conn, 0, c->screen->root,
+				  c->atom.xkb_names, c->atom.string, 0, 1024);
+	reply = xcb_get_property_reply(c->conn, cookie, &error);
+	if (reply == NULL)
+		return NULL;
+
+	value_all = xcb_get_property_value(reply);
+	length_all = xcb_get_property_value_length(reply);
+	value_part = value_all;
+
+#define copy_prop_value(to) \
+	length_part = strlen(value_part); \
+	if (value_part + length_part < (value_all + length_all) && \
+	    length_part > 0) \
+		names.to = value_part; \
+	value_part += length_part + 1;
+
+	copy_prop_value(rules);
+	copy_prop_value(model);
+	copy_prop_value(layout);
+	copy_prop_value(variant);
+	copy_prop_value(options);
+#undef copy_prop_value
+
+	ret = xkb_map_new_from_names(c->base.xkb_context, &names, 0);
+
+	free(reply);
+	return ret;
+}
 
 static int
 x11_input_create(struct x11_compositor *c)
 {
 	struct x11_input *input;
+	struct xkb_keymap *keymap;
 
 	input = malloc(sizeof *input);
 	if (input == NULL)
@@ -99,7 +145,11 @@ x11_input_create(struct x11_compositor *c)
 	memset(input, 0, sizeof *input);
 	weston_seat_init(&input->base, &c->base);
 	weston_seat_init_pointer(&input->base);
-	weston_seat_init_keyboard(&input->base, NULL);
+
+	keymap = x11_compositor_get_keymap(c);
+	weston_seat_init_keyboard(&input->base, keymap);
+	if (keymap)
+		xkb_map_unref(keymap);
 
 	c->base.seat = &input->base;
 
@@ -727,43 +777,6 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	return event != NULL;
 }
 
-static void
-x11_compositor_get_keymap(struct x11_compositor *c)
-{
-	xcb_get_property_cookie_t cookie;
-	xcb_get_property_reply_t *reply;
-	xcb_generic_error_t *error;
-	const char *value_all, *value_part;
-	int length_all, length_part;
-
-	cookie = xcb_get_property(c->conn, 0, c->screen->root,
-				  c->atom.xkb_names, c->atom.string, 0, 1024);
-	reply = xcb_get_property_reply(c->conn, cookie, &error);
-	if (reply == NULL)
-		return;
-
-	value_all = xcb_get_property_value(reply);
-	length_all = xcb_get_property_value_length(reply);
-	value_part = value_all;
-
-#define copy_prop_value(to) \
-	length_part = strlen(value_part); \
-	if (value_part + length_part > (value_all + length_all) && \
-	    length_part > 0 && c->base.xkb_names.to == NULL) { \
-		free((char *) c->base.xkb_names.to);	    \
-		c->base.xkb_names.to = strdup(value_part); \
-	} \
-	value_part += length_part + 1;
-
-	copy_prop_value(rules);
-	copy_prop_value(model);
-	copy_prop_value(layout);
-	copy_prop_value(variant);
-	copy_prop_value(options);
-
-#undef copy_prop_value
-}
-
 #define F(field) offsetof(struct x11_compositor, field)
 
 static void
@@ -814,8 +827,6 @@ x11_compositor_get_resources(struct x11_compositor *c)
 			   pixmap, pixmap, 0, 0, 0,  0, 0, 0,  1, 1);
 	xcb_free_gc(c->conn, gc);
 	xcb_free_pixmap(c->conn, pixmap);
-
-	x11_compositor_get_keymap(c);
 }
 
 static void
