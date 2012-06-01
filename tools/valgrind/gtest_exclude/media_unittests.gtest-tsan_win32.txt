@@ -1,4 +1,5 @@
 # Win TSan disturbs ffmpeg's output, causing hash comparison assertion to fail.
 # http://crbug.com/120396
-PipelineIntegrationTest.BasicPlayback
+# Also still hitting DCHECK(time <= max_time) http://crbug.com/126183
+PipelineIntegrationTest.BasicPlaybackHashed
 PipelineIntegrationTest.EncryptedPlayback
