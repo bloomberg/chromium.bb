@@ -28,11 +28,10 @@ void WebIntentPickerModel::AddInstalledService(const string16& title,
 }
 
 void WebIntentPickerModel::RemoveInstalledServiceAt(size_t index) {
-  DCHECK(index < installed_services_.size());
-  std::vector<InstalledService*>::iterator iter =
-      installed_services_.begin() + index;
-  delete *iter;
-  installed_services_.erase(iter);
+  DCHECK_LT(index, installed_services_.size());
+  InstalledService* service = installed_services_[index];
+  installed_services_.erase(installed_services_.begin() + index);
+  delete service;
   if (observer_)
     observer_->OnModelChanged(this);
 }
@@ -48,7 +47,7 @@ void WebIntentPickerModel::Clear() {
 
 const WebIntentPickerModel::InstalledService&
     WebIntentPickerModel::GetInstalledServiceAt(size_t index) const {
-  DCHECK(index < installed_services_.size());
+  DCHECK_LT(index, installed_services_.size());
   return *installed_services_[index];
 }
 
@@ -68,7 +67,7 @@ size_t WebIntentPickerModel::GetInstalledServiceCount() const {
 
 void WebIntentPickerModel::UpdateFaviconAt(size_t index,
                                            const gfx::Image& image) {
-  DCHECK(index < installed_services_.size());
+  DCHECK_LT(index, installed_services_.size());
   installed_services_[index]->favicon = image;
   if (observer_)
     observer_->OnFaviconChanged(this, index);
@@ -84,18 +83,17 @@ void WebIntentPickerModel::AddSuggestedExtension(const string16& title,
 }
 
 void WebIntentPickerModel::RemoveSuggestedExtensionAt(size_t index) {
-  DCHECK(index < suggested_extensions_.size());
-  std::vector<SuggestedExtension*>::iterator iter =
-      suggested_extensions_.begin() + index;
-  delete *iter;
-  suggested_extensions_.erase(iter);
+  DCHECK_LT(index, suggested_extensions_.size());
+  SuggestedExtension* extension = suggested_extensions_[index];
+  suggested_extensions_.erase(suggested_extensions_.begin() + index);
+  delete extension;
   if (observer_)
     observer_->OnModelChanged(this);
 }
 
 const WebIntentPickerModel::SuggestedExtension&
     WebIntentPickerModel::GetSuggestedExtensionAt(size_t index) const {
-  DCHECK(index < suggested_extensions_.size());
+  DCHECK_LT(index, suggested_extensions_.size());
   return *suggested_extensions_[index];
 }
 
