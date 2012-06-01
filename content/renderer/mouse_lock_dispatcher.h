@@ -76,6 +76,11 @@ class CONTENT_EXPORT MouseLockDispatcher : public content::RenderViewObserver {
   bool pending_lock_request_;
   bool pending_unlock_request_;
 
+  // Used when locking to indicate when a target application has voluntarily
+  // unlocked and desires to relock the mouse. If the mouse is unlocked due
+  // to ESC being pressed by the user, this will be false
+  bool unlocked_by_target_;
+
   // |target_| is the pending or current owner of mouse lock. We retain a non
   // owning reference here that must be cleared by |OnLockTargetDestroyed|
   // when it is destroyed.

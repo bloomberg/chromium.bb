@@ -990,7 +990,8 @@ class Browser : public TabStripModelDelegate,
                          bool final_update) OVERRIDE;
 
   virtual void RequestToLockMouse(content::WebContents* tab,
-                                  bool user_gesture) OVERRIDE;
+                                  bool user_gesture,
+                                  bool last_unlocked_by_target) OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
 
   // Overridden from CoreTabHelperDelegate:

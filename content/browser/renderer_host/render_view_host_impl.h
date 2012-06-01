@@ -443,7 +443,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void NotifyRendererUnresponsive() OVERRIDE;
   virtual void NotifyRendererResponsive() OVERRIDE;
   virtual void OnRenderAutoResized(const gfx::Size& size) OVERRIDE;
-  virtual void RequestToLockMouse(bool user_gesture) OVERRIDE;
+  virtual void RequestToLockMouse(bool user_gesture,
+                                  bool last_unlocked_by_target) OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
   virtual void OnMsgFocus() OVERRIDE;
   virtual void OnMsgBlur() OVERRIDE;

@@ -1460,8 +1460,9 @@ void RenderViewHostImpl::NotifyRendererResponsive() {
   delegate_->RendererResponsive(this);
 }
 
-void RenderViewHostImpl::RequestToLockMouse(bool user_gesture) {
-  delegate_->RequestToLockMouse(user_gesture);
+void RenderViewHostImpl::RequestToLockMouse(bool user_gesture,
+                                            bool last_unlocked_by_target) {
+  delegate_->RequestToLockMouse(user_gesture, last_unlocked_by_target);
 }
 
 bool RenderViewHostImpl::IsFullscreen() const {

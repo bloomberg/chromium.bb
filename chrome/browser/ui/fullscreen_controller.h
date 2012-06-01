@@ -54,7 +54,9 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   bool IsMouseLocked() const;
 
   // Requests.
-  void RequestToLockMouse(content::WebContents* tab, bool user_gesture);
+  void RequestToLockMouse(content::WebContents* tab,
+                          bool user_gesture,
+                          bool last_unlocked_by_target);
   void ToggleFullscreenModeForTab(content::WebContents* tab,
                                   bool enter_fullscreen);
 #if defined(OS_MACOSX)
@@ -87,7 +89,9 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
     // request.
     MOUSELOCK_REQUESTED,
     // Mouse lock has been allowed by the user.
-    MOUSELOCK_ACCEPTED
+    MOUSELOCK_ACCEPTED,
+    // Mouse lock has been silently accepted, no notification to user.
+    MOUSELOCK_ACCEPTED_SILENTLY
   };
 
   virtual ~FullscreenController();

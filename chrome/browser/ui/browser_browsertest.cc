@@ -264,8 +264,11 @@ class BrowserTest : public ExtensionBrowserTest {
     ASSERT_EQ(IsFullscreenForBrowser(), enter_fullscreen);
   }
 
-  void RequestToLockMouse(content::WebContents* tab, bool user_gesture) {
-    browser()->RequestToLockMouse(tab, user_gesture);
+  void RequestToLockMouse(content::WebContents* tab,
+                          bool user_gesture,
+                          bool last_unlocked_by_target) {
+    browser()->RequestToLockMouse(tab, user_gesture,
+        last_unlocked_by_target);
   }
 
   void LostMouseLock() {
@@ -1068,7 +1071,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestFullscreenBubbleMouseLockState) {
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
 
   // Request mouse lock and verify the bubble is waiting for user confirmation.
-  RequestToLockMouse(fullscreen_tab, true);
+  RequestToLockMouse(fullscreen_tab, true, false);
   ASSERT_TRUE(IsMouseLockPermissionRequested());
 
   // Accept mouse lock and verify bubble no longer shows confirmation buttons.
@@ -1302,6 +1305,74 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, EscapingMouseLockAndFullscreen) {
   ASSERT_FALSE(IsMouseLockPermissionRequested());
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserTest, MouseLockSilentAfterTargetUnlock) {
+  ASSERT_TRUE(test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL(kFullscreenMouseLockHTML));
+
+  ASSERT_FALSE(IsFullscreenBubbleDisplayed());
+
+  // Lock the mouse with a user gesture.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      browser(), ui::VKEY_1, false, false, false, false,
+      chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+      content::NotificationService::AllSources()));
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+  ASSERT_TRUE(IsMouseLockPermissionRequested());
+  ASSERT_FALSE(IsMouseLocked());
+
+  // Accept mouse lock.
+  AcceptCurrentFullscreenOrMouseLockRequest();
+  ASSERT_TRUE(IsMouseLocked());
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+
+  // Unlock the mouse from target, make sure it's unloacked
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+        browser(), ui::VKEY_U, false, false, false, false,
+        chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+        content::NotificationService::AllSources()));
+  ASSERT_FALSE(IsMouseLocked());
+  ASSERT_FALSE(IsFullscreenBubbleDisplayed());
+
+  // Lock mouse again, make sure it works with no bubble
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+        browser(), ui::VKEY_1, false, false, false, false,
+        chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+        content::NotificationService::AllSources()));
+  ASSERT_TRUE(IsMouseLocked());
+  ASSERT_FALSE(IsFullscreenBubbleDisplayed());
+
+  // Unlock the mouse again by target
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+        browser(), ui::VKEY_U, false, false, false, false,
+        chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+        content::NotificationService::AllSources()));
+  ASSERT_FALSE(IsMouseLocked());
+
+  // Lock from target, not user gesture, make sure it works
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+        browser(), ui::VKEY_D, false, false, false, false,
+        chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+        content::NotificationService::AllSources()));
+  ASSERT_TRUE(IsMouseLocked());
+  ASSERT_FALSE(IsFullscreenBubbleDisplayed());
+
+  // Unlock by escape
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+          browser(), ui::VKEY_ESCAPE, false, false, false, false,
+          chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+          content::NotificationService::AllSources()));
+  ASSERT_FALSE(IsMouseLocked());
+
+  // Lock the mouse with a user gesture, make sure we see bubble again
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      browser(), ui::VKEY_1, false, false, false, false,
+      chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+      content::NotificationService::AllSources()));
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+  ASSERT_TRUE(IsMouseLocked());
+}
+
 // Helper method to be called by multiple tests.
 // Tests Fullscreen and Mouse Lock with varying content settings ALLOW & BLOCK.
 void BrowserTest::TestFullscreenMouseLockContentSettings() {
@@ -1335,7 +1406,7 @@ void BrowserTest::TestFullscreenMouseLockContentSettings() {
   // Validate that mouse lock defaults to asking permision.
   ASSERT_FALSE(IsMouseLockPermissionRequested());
   ASSERT_FALSE(IsMouseLocked());
-  RequestToLockMouse(tab, true);
+  RequestToLockMouse(tab, true, false);
   ASSERT_TRUE(IsMouseLockPermissionRequested());
   LostMouseLock();
 
@@ -1347,7 +1418,7 @@ void BrowserTest::TestFullscreenMouseLockContentSettings() {
 
   // Now, mouse lock should not prompt for permission.
   ASSERT_FALSE(IsMouseLockPermissionRequested());
-  RequestToLockMouse(tab, true);
+  RequestToLockMouse(tab, true, false);
   ASSERT_FALSE(IsMouseLockPermissionRequested());
   LostMouseLock();
 
@@ -1361,7 +1432,7 @@ void BrowserTest::TestFullscreenMouseLockContentSettings() {
 
   // Now, mouse lock should not be pending.
   ASSERT_FALSE(IsMouseLockPermissionRequested());
-  RequestToLockMouse(tab, true);
+  RequestToLockMouse(tab, true, false);
   ASSERT_FALSE(IsMouseLockPermissionRequested());
 }
 

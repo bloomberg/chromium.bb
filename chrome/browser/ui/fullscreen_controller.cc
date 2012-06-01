@@ -63,20 +63,25 @@ bool FullscreenController::IsMouseLockRequested() const {
 }
 
 bool FullscreenController::IsMouseLocked() const {
-  return mouse_lock_state_ == MOUSELOCK_ACCEPTED;
+  return mouse_lock_state_ == MOUSELOCK_ACCEPTED ||
+         mouse_lock_state_ == MOUSELOCK_ACCEPTED_SILENTLY;
 }
 
 void FullscreenController::RequestToLockMouse(WebContents* tab,
-                                              bool user_gesture) {
+                                              bool user_gesture,
+                                              bool last_unlocked_by_target) {
   DCHECK(!IsMouseLocked());
   NotifyMouseLockChange();
 
-  // Must have a user gesture, or we must already be in tab fullscreen.
-  if (!user_gesture && !IsFullscreenForTabOrPending(tab)) {
+  // Must have a user gesture to prevent misbehaving sites from constantly
+  // re-locking the mouse. Exceptions are when the page has unlocked
+  // (i.e. not the user), or if we're in tab fullscreen (user gesture required
+  // for that)
+  if (!last_unlocked_by_target && !user_gesture &&
+      !IsFullscreenForTabOrPending(tab)) {
     tab->GotResponseToLockMouseRequest(false);
     return;
   }
-
   mouse_lock_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab);
   FullscreenExitBubbleType bubble_type = GetFullscreenExitBubbleType();
 
@@ -89,7 +94,11 @@ void FullscreenController::RequestToLockMouse(WebContents* tab,
       } else {
         // Lock mouse.
         if (tab->GotResponseToLockMouseRequest(true)) {
-          mouse_lock_state_ = MOUSELOCK_ACCEPTED;
+          if (last_unlocked_by_target) {
+            mouse_lock_state_ = MOUSELOCK_ACCEPTED_SILENTLY;
+          } else {
+            mouse_lock_state_ = MOUSELOCK_ACCEPTED;
+          }
         } else {
           mouse_lock_tab_ = NULL;
           mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
@@ -389,6 +398,10 @@ FullscreenExitBubbleType FullscreenController::GetFullscreenExitBubbleType()
 #if !defined(OS_MACOSX)  // Kiosk mode not available on Mac.
   kiosk = CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
 #endif
+
+  if (mouse_lock_state_ == MOUSELOCK_ACCEPTED_SILENTLY) {
+    return FEB_TYPE_NONE;
+  }
 
   if (fullscreened_tab_) {
     if (tab_fullscreen_accepted_) {

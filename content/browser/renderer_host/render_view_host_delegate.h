@@ -333,7 +333,8 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // Requests to lock the mouse. Once the request is approved or rejected,
   // GotResponseToLockMouseRequest() will be called on the requesting render
   // view host.
-  virtual void RequestToLockMouse(bool user_gesture) {}
+  virtual void RequestToLockMouse(bool user_gesture,
+                                  bool last_unlocked_by_target) {}
 
   // Notification that the view has lost the mouse lock.
   virtual void LostMouseLock() {}

@@ -401,7 +401,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   // GotResponseToLockMouseRequest() will be called on the requesting tab
   // contents.
   virtual void RequestToLockMouse(WebContents* web_contents,
-                                  bool user_gesture) {}
+                                  bool user_gesture,
+                                  bool last_unlocked_by_target) {
+  }
 
   // Notification that the page has lost the mouse lock.
   virtual void LostMouseLock() {}

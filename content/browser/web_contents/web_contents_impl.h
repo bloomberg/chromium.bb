@@ -372,7 +372,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool IsFullscreenForCurrentTab() const OVERRIDE;
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
   virtual void ResizeDueToAutoResize(const gfx::Size& new_size) OVERRIDE;
-  virtual void RequestToLockMouse(bool user_gesture) OVERRIDE;
+  virtual void RequestToLockMouse(bool user_gesture,
+                                  bool last_unlocked_by_target) OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
   virtual void CreateNewWindow(
       int route_id,

@@ -16,6 +16,7 @@ MouseLockDispatcher::MouseLockDispatcher(RenderViewImpl* render_view_impl)
       mouse_locked_(false),
       pending_lock_request_(false),
       pending_unlock_request_(false),
+      unlocked_by_target_(false),
       target_(NULL) {
 }
 
@@ -33,14 +34,17 @@ bool MouseLockDispatcher::LockMouse(LockTarget* target) {
       render_view_impl_->webview() &&
       render_view_impl_->webview()->mainFrame() &&
       render_view_impl_->webview()->mainFrame()->isProcessingUserGesture();
-
-  Send(new ViewHostMsg_LockMouse(routing_id(), user_gesture));
+  Send(new ViewHostMsg_LockMouse(routing_id(),
+                                 user_gesture,
+                                 unlocked_by_target_));
+  unlocked_by_target_ = false;
   return true;
 }
 
 void MouseLockDispatcher::UnlockMouse(LockTarget* target) {
   if (target && target == target_ && !pending_unlock_request_) {
     pending_unlock_request_ = true;
+    unlocked_by_target_ = true;
     Send(new ViewHostMsg_UnlockMouse(routing_id()));
   }
 }
@@ -120,4 +124,3 @@ void MouseLockDispatcher::OnMouseLockLost() {
   if (last_target)
     last_target->OnMouseLockLost();
 }
-

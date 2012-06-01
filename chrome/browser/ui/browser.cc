@@ -3649,8 +3649,12 @@ void Browser::FindReply(WebContents* tab,
                   active_match_ordinal, final_update);
 }
 
-void Browser::RequestToLockMouse(WebContents* tab, bool user_gesture) {
-  fullscreen_controller_->RequestToLockMouse(tab, user_gesture);
+void Browser::RequestToLockMouse(WebContents* tab,
+                                 bool user_gesture,
+                                 bool last_unlocked_by_target) {
+  fullscreen_controller_->RequestToLockMouse(tab,
+                                             user_gesture,
+                                             last_unlocked_by_target);
 }
 
 void Browser::LostMouseLock() {
