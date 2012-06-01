@@ -550,6 +550,11 @@ def main(args):
     buildbot_common.Run([sys.executable, CYGTAR, '-C', OUT_DIR, '-cjf', tarfile,
          'pepper_' + pepper_ver], cwd=NACL_DIR)
 
+  # Run build tests
+  buildbot_common.BuildStep('Run build_tools tests')
+  buildbot_common.Run([sys.executable,
+      os.path.join(SDK_SRC_DIR, 'build_tools', 'tests', 'test_all.py')])
+
   # build sdk update
   if not skip_update:
     build_updater.BuildUpdater(OUT_DIR)

@@ -5,7 +5,6 @@
 
 import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -16,8 +15,10 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BUILD_TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
 
 sys.path.append(BUILD_TOOLS_DIR)
+import buildbot_common
 import build_utils
 import build_updater
+import getos
 import manifest_util
 
 
@@ -35,7 +36,7 @@ class TestAutoUpdateSdkTools(unittest.TestCase):
   def tearDown(self):
     if self.server:
       self.server.Shutdown()
-    shutil.rmtree(self.basedir)
+    buildbot_common.RemoveDir(self.basedir)
 
   def _LoadCacheManifest(self):
     """Read the manifest from nacl_sdk/sdk_cache.
@@ -65,7 +66,7 @@ class TestAutoUpdateSdkTools(unittest.TestCase):
     build_updater.BuildUpdater(os.path.join(self.basedir, rel_path), revision)
 
     new_sdk_tools_tgz = os.path.join(self.basedir, rel_path, 'sdk_tools.tgz')
-    with open(new_sdk_tools_tgz, 'r') as sdk_tools_stream:
+    with open(new_sdk_tools_tgz, 'rb') as sdk_tools_stream:
       archive_sha1, archive_size = manifest_util.DownloadAndComputeHash(
           sdk_tools_stream)
 
@@ -77,6 +78,8 @@ class TestAutoUpdateSdkTools(unittest.TestCase):
 
   def _Run(self, args):
     naclsdk_shell_script = os.path.join(self.basedir, 'nacl_sdk', 'naclsdk')
+    if getos.GetPlatform() == 'win':
+      naclsdk_shell_script += '.bat'
     cmd = [naclsdk_shell_script, '-U', self.server.GetURL(MANIFEST_BASENAME)]
     cmd.extend(args)
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)

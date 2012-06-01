@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 from sdk_update_common import *
+import sys
 import tempfile
 
 """Shim script for the SDK updater, to allow automatic updating.
@@ -24,6 +25,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SDK_UPDATE_MAIN = os.path.join(SCRIPT_DIR, 'sdk_update_main.py')
 SDK_ROOT_DIR = os.path.dirname(SCRIPT_DIR)
 NACLSDK_SHELL_SCRIPT = os.path.join(SDK_ROOT_DIR, 'naclsdk')
+if sys.platform.startswith('win'):
+  NACLSDK_SHELL_SCRIPT += '.bat'
 SDK_TOOLS_DIR = os.path.join(SDK_ROOT_DIR, 'sdk_tools')
 SDK_TOOLS_UPDATE_DIR = os.path.join(SDK_ROOT_DIR, 'sdk_tools_update')
 
