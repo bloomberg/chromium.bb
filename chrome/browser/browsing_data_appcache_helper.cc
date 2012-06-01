@@ -71,7 +71,7 @@ void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
          origin != origin_map.end();) {
       InfoByOrigin::iterator current = origin;
       ++origin;
-      if (!BrowsingDataHelper::HasValidScheme(current->first))
+      if (!BrowsingDataHelper::HasWebScheme(current->first))
         origin_map.erase(current);
     }
 
@@ -105,7 +105,7 @@ CannedBrowsingDataAppCacheHelper* CannedBrowsingDataAppCacheHelper::Clone() {
 }
 
 void CannedBrowsingDataAppCacheHelper::AddAppCache(const GURL& manifest_url) {
-  if (!BrowsingDataHelper::HasValidScheme(manifest_url))
+  if (!BrowsingDataHelper::HasWebScheme(manifest_url))
     return;  // Ignore non-websafe schemes.
 
   OriginAppCacheInfoMap& origin_map = info_collection_->infos_by_origin;

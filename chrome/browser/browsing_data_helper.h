@@ -24,9 +24,14 @@ class BrowsingDataHelper {
   // for treatment as "browsing data". This relies on the definition of web safe
   // in ChildProcessSecurityPolicy, but excluding schemes like
   // `chrome-extension`.
-  static bool IsValidScheme(const std::string& scheme);
-  static bool IsValidScheme(const WebKit::WebString& scheme);
-  static bool HasValidScheme(const GURL& origin);
+  static bool IsWebScheme(const std::string& scheme);
+  static bool IsWebScheme(const WebKit::WebString& scheme);
+  static bool HasWebScheme(const GURL& origin);
+
+  // Returns true iff the provided scheme is an extension.
+  static bool IsExtensionScheme(const std::string& scheme);
+  static bool IsExtensionScheme(const WebKit::WebString& scheme);
+  static bool HasExtensionScheme(const GURL& origin);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(BrowsingDataHelper);

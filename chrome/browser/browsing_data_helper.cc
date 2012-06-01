@@ -13,7 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 // Static
-bool BrowsingDataHelper::IsValidScheme(const std::string& scheme) {
+bool BrowsingDataHelper::IsWebScheme(const std::string& scheme) {
   // Special-case `file://` scheme iff cookies and site data are enabled via
   // the `--allow-file-cookies` CLI flag.
   if (scheme == chrome::kFileScheme) {
@@ -26,17 +26,32 @@ bool BrowsingDataHelper::IsValidScheme(const std::string& scheme) {
     content::ChildProcessSecurityPolicy* policy =
         content::ChildProcessSecurityPolicy::GetInstance();
     return (policy->IsWebSafeScheme(scheme) &&
-            scheme != chrome::kChromeDevToolsScheme &&
-            scheme != chrome::kExtensionScheme);
+            !BrowsingDataHelper::IsExtensionScheme(scheme) &&
+            scheme != chrome::kChromeDevToolsScheme);
   }
 }
 
 // Static
-bool BrowsingDataHelper::IsValidScheme(const WebKit::WebString& scheme) {
-  return BrowsingDataHelper::IsValidScheme(UTF16ToUTF8(scheme));
+bool BrowsingDataHelper::IsWebScheme(const WebKit::WebString& scheme) {
+  return BrowsingDataHelper::IsWebScheme(UTF16ToUTF8(scheme));
 }
 
 // Static
-bool BrowsingDataHelper::HasValidScheme(const GURL& origin) {
-  return BrowsingDataHelper::IsValidScheme(origin.scheme());
+bool BrowsingDataHelper::HasWebScheme(const GURL& origin) {
+  return BrowsingDataHelper::IsWebScheme(origin.scheme());
+}
+
+// Static
+bool BrowsingDataHelper::IsExtensionScheme(const std::string& scheme) {
+  return scheme == chrome::kExtensionScheme;
+}
+
+// Static
+bool BrowsingDataHelper::IsExtensionScheme(const WebKit::WebString& scheme) {
+  return BrowsingDataHelper::IsExtensionScheme(UTF16ToUTF8(scheme));
+}
+
+// Static
+bool BrowsingDataHelper::HasExtensionScheme(const GURL& origin) {
+  return BrowsingDataHelper::IsExtensionScheme(origin.scheme());
 }

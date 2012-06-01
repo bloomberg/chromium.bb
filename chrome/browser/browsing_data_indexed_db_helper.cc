@@ -108,7 +108,7 @@ void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
   for (std::vector<GURL>::const_iterator iter = origins.begin();
        iter != origins.end(); ++iter) {
     const GURL& origin = *iter;
-    if (!BrowsingDataHelper::HasValidScheme(origin))
+    if (!BrowsingDataHelper::HasWebScheme(origin))
       continue;  // Non-websafe state is not considered browsing data.
 
     indexed_db_info_.push_back(IndexedDBInfo(
@@ -192,7 +192,7 @@ CannedBrowsingDataIndexedDBHelper* CannedBrowsingDataIndexedDBHelper::Clone() {
 
 void CannedBrowsingDataIndexedDBHelper::AddIndexedDB(
     const GURL& origin, const string16& name) {
-  if (!BrowsingDataHelper::HasValidScheme(origin))
+  if (!BrowsingDataHelper::HasWebScheme(origin))
     return;  // Non-websafe state is not considered browsing data.
 
   base::AutoLock auto_lock(lock_);

@@ -80,7 +80,7 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
     for (std::vector<webkit_database::OriginInfo>::const_iterator ori =
          origins_info.begin(); ori != origins_info.end(); ++ori) {
       const GURL origin(UTF16ToUTF8(ori->GetOrigin()));
-      if (!BrowsingDataHelper::HasValidScheme(origin)) {
+      if (!BrowsingDataHelper::HasWebScheme(origin)) {
         // Non-websafe state is not considered browsing data.
         continue;
       }
@@ -171,7 +171,7 @@ void CannedBrowsingDataDatabaseHelper::AddDatabase(
     const std::string& description) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock auto_lock(lock_);
-  if (BrowsingDataHelper::HasValidScheme(origin)) {
+  if (BrowsingDataHelper::HasWebScheme(origin)) {
     pending_database_info_.insert(PendingDatabaseInfo(
           origin, name, description));
   }

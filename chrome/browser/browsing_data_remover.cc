@@ -634,7 +634,7 @@ void BrowsingDataRemover::OnGotQuotaManagedOrigins(
   // isn't protected.
   std::set<GURL>::const_iterator origin;
   for (origin = origins.begin(); origin != origins.end(); ++origin) {
-    if (!BrowsingDataHelper::IsValidScheme(origin->scheme()))
+    if (!BrowsingDataHelper::IsWebScheme(origin->scheme()))
       continue;
     if (special_storage_policy_->IsStorageProtected(origin->GetOrigin()))
       continue;

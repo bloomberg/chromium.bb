@@ -127,7 +127,7 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
   GURL current;
 
   while (!(current = origin_enumerator->Next()).is_empty()) {
-    if (!BrowsingDataHelper::HasValidScheme(current))
+    if (!BrowsingDataHelper::HasWebScheme(current))
       continue; // Non-websafe state is not considered browsing data.
 
     // We can call these synchronous methods as we've already verified that
@@ -241,7 +241,7 @@ void CannedBrowsingDataFileSystemHelper::AddFileSystem(
   if (duplicate_origin)
     return;
 
-  if (!BrowsingDataHelper::HasValidScheme(origin))
+  if (!BrowsingDataHelper::HasWebScheme(origin))
     return; // Non-websafe state is not considered browsing data.
 
   file_system_info_.push_back(FileSystemInfo(

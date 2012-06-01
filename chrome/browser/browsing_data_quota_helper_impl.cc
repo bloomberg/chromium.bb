@@ -85,7 +85,7 @@ void BrowsingDataQuotaHelperImpl::GotOrigins(
   for (std::set<GURL>::const_iterator itr = origins.begin();
        itr != origins.end();
        ++itr)
-    if (BrowsingDataHelper::HasValidScheme(*itr))
+    if (BrowsingDataHelper::HasWebScheme(*itr))
       pending_hosts_.insert(std::make_pair(itr->host(), type));
 
   DCHECK(type == quota::kStorageTypeTemporary ||

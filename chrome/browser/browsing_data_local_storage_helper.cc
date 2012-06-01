@@ -92,7 +92,7 @@ void BrowsingDataLocalStorageHelper::FetchLocalStorageInfo(
     WebSecurityOrigin web_security_origin =
         WebSecurityOrigin::createFromDatabaseIdentifier(
             webkit_glue::FilePathToWebString(file_path.BaseName()));
-    if (!BrowsingDataHelper::IsValidScheme(web_security_origin.protocol()))
+    if (!BrowsingDataHelper::IsWebScheme(web_security_origin.protocol()))
       continue;  // Non-websafe state is not considered browsing data.
 
     base::PlatformFileInfo file_info;
@@ -145,7 +145,7 @@ CannedBrowsingDataLocalStorageHelper::Clone() {
 
 void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(
     const GURL& origin) {
-  if (BrowsingDataHelper::HasValidScheme(origin))
+  if (BrowsingDataHelper::HasWebScheme(origin))
     pending_local_storage_info_.insert(origin);
 }
 
