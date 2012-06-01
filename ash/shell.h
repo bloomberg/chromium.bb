@@ -36,6 +36,9 @@ class InputMethodEventFilter;
 class RootWindowEventFilter;
 }
 }
+namespace chromeos {
+class OutputConfigurator;
+}
 namespace content {
 class BrowserContext;
 }
@@ -317,6 +320,12 @@ class ASH_EXPORT Shell {
   // Initialize the root window to be used for a secondary monitor.
   void InitRootWindowForSecondaryMonitor(aura::RootWindow* root);
 
+#if defined(OS_CHROMEOS)
+  chromeos::OutputConfigurator* output_configurator() {
+    return output_configurator_.get();
+  }
+#endif  // defined(OS_CHROMEOS)
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RootWindowEventFilterTest, MouseEventCursors);
   FRIEND_TEST_ALL_PREFIXES(RootWindowEventFilterTest, TransformActivate);
@@ -412,6 +421,11 @@ class ASH_EXPORT Shell {
   // An event filter that looks for modifier keypresses and triggers a slowdown
   // of layer animations for visual debugging.
   scoped_ptr<internal::SlowAnimationEventFilter> slow_animation_filter_;
+
+#if defined(OS_CHROMEOS)
+  // Controls video output device state.
+  scoped_ptr<chromeos::OutputConfigurator> output_configurator_;
+#endif  // defined(OS_CHROMEOS)
 
   // The shelf for managing the launcher and the status widget in non-compact
   // mode. Shell does not own the shelf. Instead, it is owned by container of

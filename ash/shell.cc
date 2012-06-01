@@ -94,6 +94,11 @@
 #include "ash/accelerators/nested_dispatcher_controller.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/monitor/output_configurator.h"
+#include "ui/aura/dispatcher_linux.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace ash {
 
 namespace {
@@ -546,6 +551,9 @@ Shell::Shell(ShellDelegate* delegate)
       screen_(new ScreenAsh(root_window_.get())),
       root_filter_(NULL),
       delegate_(delegate),
+#if defined(OS_CHROMEOS)
+      output_configurator_(new chromeos::OutputConfigurator()),
+#endif  // defined(OS_CHROMEOS)
       shelf_(NULL),
       panel_layout_manager_(NULL),
       root_window_layout_(NULL),
@@ -553,6 +561,12 @@ Shell::Shell(ShellDelegate* delegate)
       browser_context_(NULL) {
   gfx::Screen::SetInstance(screen_);
   ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_.get()));
+#if defined(OS_CHROMEOS)
+  // OutputConfigurator needs to get events regarding added/removed outputs.
+  static_cast<aura::DispatcherLinux*>(
+      aura::Env::GetInstance()->GetDispatcher())->AddDispatcherForRootWindow(
+          output_configurator());
+#endif  // defined(OS_CHROMEOS)
 }
 
 Shell::~Shell() {
@@ -623,6 +637,13 @@ Shell::~Shell() {
 
   DCHECK(instance_ == this);
   instance_ = NULL;
+
+#if defined(OS_CHROMEOS)
+  // Remove OutputConfigurator from Dispatcher.
+  static_cast<aura::DispatcherLinux*>(
+      aura::Env::GetInstance()->GetDispatcher())->RemoveDispatcherForRootWindow(
+          output_configurator());
+#endif  // defined(OS_CHROMEOS)
 }
 
 // static
