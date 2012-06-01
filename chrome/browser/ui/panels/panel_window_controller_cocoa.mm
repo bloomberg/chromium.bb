@@ -29,6 +29,7 @@
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
+#include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
@@ -511,8 +512,14 @@ enum {
   DCHECK([controllerView autoresizingMask] & NSViewHeightSizable);
   DCHECK([controllerView autoresizingMask] & NSViewWidthSizable);
 
-  // Parent's bounds is child's frame.
-  [controllerView setFrame:[contentView bounds]];
+  // Compute the size of the controller view. Don't assume it's similar to the
+  // size of the contentView, because the contentView is managed by the Cocoa
+  // to be (window - standard titlebar), while we have taller custom titlebar
+  // instead. In coordinate system of window's contentView.
+  NSRect contentFrame = [self contentRectForFrameRect:[[self window] frame]];
+  contentFrame.origin = NSZeroPoint;
+
+  [controllerView setFrame:contentFrame];
   [contentView setAutoresizesSubviews:YES];
   [contentsController_ ensureContentsVisible];
 }
@@ -1015,6 +1022,26 @@ enum {
   if (![self isWindowLoaded])
     return;
   [[self window] invalidateCursorRectsForView:overlayView_];
+}
+
+// We have custom implementation of these because our titlebar height is custom
+// and does not match the standard one.
+- (NSRect)frameRectForContentRect:(NSRect)contentRect {
+  // contentRect is in contentView coord system. We should add a titlebar on top
+  // and then convert to the windows coord system.
+  contentRect.size.height += panel::kTitlebarHeight;
+  NSRect frameRect = [[[self window] contentView] convertRect:contentRect
+                                                       toView:nil];
+  return frameRect;
+}
+
+- (NSRect)contentRectForFrameRect:(NSRect)frameRect {
+  NSRect contentRect = [[[self window] contentView] convertRect:frameRect
+                                                       fromView:nil];
+  contentRect.size.height -= panel::kTitlebarHeight;
+  if (contentRect.size.height < 0)
+    contentRect.size.height = 0;
+  return contentRect;
 }
 
 @end

@@ -306,18 +306,16 @@ void PanelBrowserWindowCocoa::DidCloseNativeWindow() {
 
 gfx::Size PanelBrowserWindowCocoa::WindowSizeFromContentSize(
     const gfx::Size& content_size) const {
-  NSWindow* window = [controller_ window];
   NSRect content = NSMakeRect(0, 0,
                               content_size.width(), content_size.height());
-  NSRect frame = [window frameRectForContentRect:content];
+  NSRect frame = [controller_ frameRectForContentRect:content];
   return gfx::Size(NSWidth(frame), NSHeight(frame));
 }
 
 gfx::Size PanelBrowserWindowCocoa::ContentSizeFromWindowSize(
     const gfx::Size& window_size) const {
-  NSWindow* window = [controller_ window];
   NSRect frame = NSMakeRect(0, 0, window_size.width(), window_size.height());
-  NSRect content = [window contentRectForFrameRect:frame];
+  NSRect content = [controller_ contentRectForFrameRect:frame];
   return gfx::Size(NSWidth(content), NSHeight(content));
 }
 

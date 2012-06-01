@@ -93,7 +93,6 @@ class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
     // we can compare their frames since they are in the same coordinate system.
     EXPECT_EQ(NSMinX(content_frame), NSMinX(titlebar_frame));
     EXPECT_EQ(NSWidth(content_frame), NSWidth(titlebar_frame));
-    EXPECT_EQ(NSMaxY(content_frame), NSMinY(titlebar_frame));
     EXPECT_EQ(NSHeight([[titlebar superview] bounds]), NSMaxY(titlebar_frame));
   }
 
@@ -280,8 +279,9 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewSizing) {
 
   EXPECT_EQ(newTitleFrame.origin.x - newIconFrame.origin.x,
             oldTitleFrame.origin.x - oldIconFrame.origin.x);
-  EXPECT_NE(newTitleFrame.origin.x, oldTitleFrame.origin.x);
-  EXPECT_NE(newIconFrame.origin.x, oldIconFrame.origin.x);
+  // Icon and Text should remain at the same left-aligned position.
+  EXPECT_EQ(newTitleFrame.origin.x, oldTitleFrame.origin.x);
+  EXPECT_EQ(newIconFrame.origin.x, oldIconFrame.origin.x);
 
   ClosePanelAndWait(panel);
 }

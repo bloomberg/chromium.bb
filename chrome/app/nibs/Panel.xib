@@ -13,7 +13,7 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="1"/>
-			<integer value="6"/>
+			<integer value="38"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -69,6 +69,31 @@
 						<reference key="NSSuperview" ref="304499912"/>
 						<string key="NSClassName">PanelTitlebarOverlayView</string>
 					</object>
+					<object class="NSButton" id="310927414">
+						<reference key="NSNextResponder" ref="304499912"/>
+						<int key="NSvFlags">301</int>
+						<string key="NSFrame">{{5, -5}, {14, 16}}</string>
+						<reference key="NSSuperview" ref="304499912"/>
+						<int key="NSViewLayerContentsRedrawPolicy">2</int>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSButtonCell" key="NSCell" id="846994579">
+							<int key="NSCellFlags">67239424</int>
+							<int key="NSCellFlags2">134217728</int>
+							<string key="NSContents">Close</string>
+							<object class="NSFont" key="NSSupport" id="94110225">
+								<string key="NSName">LucidaGrande</string>
+								<double key="NSSize">13</double>
+								<int key="NSfFlags">1044</int>
+							</object>
+							<reference key="NSControlView" ref="310927414"/>
+							<int key="NSButtonFlags">-2046541569</int>
+							<int key="NSButtonFlags2">134</int>
+							<string key="NSAlternateContents"/>
+							<string key="NSKeyEquivalent"/>
+							<int key="NSPeriodicDelay">200</int>
+							<int key="NSPeriodicInterval">25</int>
+						</object>
+					</object>
 					<object class="NSButton" id="722193969">
 						<reference key="NSNextResponder" ref="304499912"/>
 						<int key="NSvFlags">301</int>
@@ -80,11 +105,7 @@
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">134217728</int>
 							<string key="NSContents">Restore</string>
-							<object class="NSFont" key="NSSupport" id="94110225">
-								<string key="NSName">LucidaGrande</string>
-								<double key="NSSize">13</double>
-								<int key="NSfFlags">1044</int>
-							</object>
+							<reference key="NSSupport" ref="94110225"/>
 							<reference key="NSControlView" ref="722193969"/>
 							<int key="NSButtonFlags">-2042347265</int>
 							<int key="NSButtonFlags2">134</int>
@@ -287,6 +308,22 @@
 					</object>
 					<int key="connectionID">37</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">onCloseButtonClick:</string>
+						<reference key="source" ref="304499912"/>
+						<reference key="destination" ref="310927414"/>
+					</object>
+					<int key="connectionID">41</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">customCloseButton_</string>
+						<reference key="source" ref="304499912"/>
+						<reference key="destination" ref="310927414"/>
+					</object>
+					<int key="connectionID">42</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -339,6 +376,7 @@
 							<reference ref="438255290"/>
 							<reference ref="39067705"/>
 							<reference ref="722193969"/>
+							<reference ref="310927414"/>
 						</object>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">PanelTitlebarView</string>
@@ -404,6 +442,20 @@
 						<reference key="object" ref="107796922"/>
 						<reference key="parent" ref="722193969"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">38</int>
+						<reference key="object" ref="310927414"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="846994579"/>
+						</object>
+						<reference key="parent" ref="304499912"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">39</int>
+						<reference key="object" ref="846994579"/>
+						<reference key="parent" ref="310927414"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -433,6 +485,10 @@
 					<string>32.IBPluginDependency</string>
 					<string>32.IBViewBoundsToFrameTransform</string>
 					<string>33.IBPluginDependency</string>
+					<string>38.CustomClassName</string>
+					<string>38.IBPluginDependency</string>
+					<string>38.IBViewBoundsToFrameTransform</string>
+					<string>39.IBPluginDependency</string>
 					<string>6.IBEditorWindowLastContentRect</string>
 					<string>6.IBPluginDependency</string>
 				</object>
@@ -462,6 +518,12 @@
 					<string>HoverImageButton</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">P4AAAL+AAAAAAAAAwWAAAA</bytes>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>HoverImageButton</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSAffineTransform">
 						<bytes key="NSTransformStruct">P4AAAL+AAABDDgAAwZgAAA</bytes>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -485,7 +547,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">37</int>
+			<int key="maxID">42</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -663,6 +725,7 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>controller_</string>
+							<string>customCloseButton_</string>
 							<string>icon_</string>
 							<string>minimizeButton_</string>
 							<string>overlay_</string>
@@ -672,6 +735,7 @@
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>PanelWindowControllerCocoa</string>
+							<string>HoverImageButton</string>
 							<string>NSView</string>
 							<string>HoverImageButton</string>
 							<string>NSView</string>
@@ -684,6 +748,7 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>controller_</string>
+							<string>customCloseButton_</string>
 							<string>icon_</string>
 							<string>minimizeButton_</string>
 							<string>overlay_</string>
@@ -695,6 +760,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">controller_</string>
 								<string key="candidateClassName">PanelWindowControllerCocoa</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">customCloseButton_</string>
+								<string key="candidateClassName">HoverImageButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">icon_</string>

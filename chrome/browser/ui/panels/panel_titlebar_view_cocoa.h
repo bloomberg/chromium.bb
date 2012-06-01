@@ -59,6 +59,7 @@ enum PanelDragState {
   IBOutlet NSTextField* title_;
   IBOutlet HoverImageButton* minimizeButton_;
   IBOutlet HoverImageButton* restoreButton_;
+  IBOutlet HoverImageButton* customCloseButton_;
   // Transparent view on top of entire titlebar. It catches mouse events to
   // prevent window activation by the system on mouseDown.
   IBOutlet NSView* overlay_;
@@ -95,7 +96,7 @@ enum PanelDragState {
 - (void)setRestoreButtonVisibility:(BOOL)visible;
 
 // Should be called when size of the titlebar changes.
-- (void)updateCloseButtonLayout;
+- (void)updateCustomButtonsLayout;
 - (void)updateIconAndTitleLayout;
 
 // Various events that we'll need to redraw our titlebar for.
