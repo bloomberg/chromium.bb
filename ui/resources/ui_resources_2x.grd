@@ -41,6 +41,7 @@
       <include name="IDR_CLOSE_BAR_H" file="default_200_percent/close_bar_hover.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_MASK" file="default_200_percent/close_bar_mask.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_P" file="default_200_percent/close_bar_pressed.png" type="BINDATA" />
+      <include name="IDR_THROBBER" file="default_200_percent/throbber.png" type="BINDATA" />
 
       <!-- Remaining images only used by Aura. -->
       <!-- TODO(flackr): These are 1x assets, we have to replace these before

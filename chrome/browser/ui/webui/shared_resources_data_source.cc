@@ -17,6 +17,7 @@
 #include "grit/shared_resources_map.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
+#include "grit/ui_resources_standard.h"
 #include "net/base/mime_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"

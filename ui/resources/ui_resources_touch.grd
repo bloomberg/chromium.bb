@@ -41,6 +41,7 @@
       <include name="IDR_CLOSE_BAR_H" file="close_bar_h.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_P" file="close_bar_p.png" type="BINDATA" />
+      <include name="IDR_THROBBER" file="default_100_percent/throbber.png" type="BINDATA" />
 
       <!-- Remaining images only used by Aura. -->
       <if expr="pp_ifdef('use_aura')">

@@ -111,7 +111,6 @@
         <include name="IDR_TEXTBUTTON_TOP_RIGHT_H" file="default_100_percent/textbutton_tr_hover.png" type="BINDATA" />
         <include name="IDR_TEXTBUTTON_TOP_RIGHT_P" file="default_100_percent/textbutton_tr_pressed.png" type="BINDATA" />
       </if>
-      <include name="IDR_THROBBER" file="default_100_percent/throbber.png" type="BINDATA" />
       <include name="IDR_WINDOW_BOTTOM_CENTER" file="default_100_percent/window_bottom_center.png" type="BINDATA" />
       <include name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="default_100_percent/window_bottom_left_corner.png" type="BINDATA" />
       <include name="IDR_WINDOW_BOTTOM_RIGHT_CORNER" file="default_100_percent/window_bottom_right_corner.png" type="BINDATA" />

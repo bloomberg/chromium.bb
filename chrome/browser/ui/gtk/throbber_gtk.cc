@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
-#include "grit/ui_resources.h"
+#include "grit/ui_resources_standard.h"
 #include "ui/base/animation/tween.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
 
