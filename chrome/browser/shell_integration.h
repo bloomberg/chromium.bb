@@ -124,6 +124,11 @@ class ShellIntegration {
   // Migrates existing chrome shortcuts by tagging them with correct app id.
   // see http://crbug.com/28104
   static void MigrateChromiumShortcuts();
+
+  // Activates Chrome in metro-mode on Windows 8.  Returns false if called on
+  // earlier versions of Windows, if called from within metro-mode, if Chrome
+  // is not the default browser, or if an actual error occurs.
+  static bool ActivateMetroChrome();
 #endif  // defined(OS_WIN)
 
   // The current default web client application UI state. This is used when

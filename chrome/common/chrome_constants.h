@@ -39,6 +39,7 @@ extern const FilePath::CharType* const kHelperFlavorSuffixes[];
 #endif  // OS_MACOSX
 extern const wchar_t kBrowserAppName[];
 #if defined(OS_WIN)
+extern const FilePath::CharType kMetroDriverDll[];
 extern const wchar_t kStatusTrayWindowClass[];
 #endif  // defined(OS_WIN)
 extern const wchar_t kMessageWindowClass[];

@@ -109,6 +109,7 @@ const wchar_t kBrowserAppName[] = L"Chromium";
 #endif
 
 #if defined(OS_WIN)
+const FilePath::CharType kMetroDriverDll[] = FPL("metro_driver.dll");
 const wchar_t kStatusTrayWindowClass[] = L"Chrome_StatusTrayWindow";
 #endif  // defined(OS_WIN)
 

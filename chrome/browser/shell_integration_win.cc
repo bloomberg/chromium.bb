@@ -14,10 +14,12 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_native_library.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
@@ -387,6 +389,40 @@ void MigrateChromiumShortcutsCallback() {
   }
 }
 
+// Activates the application with the given AppUserModelId.
+bool ActivateApplication(const string16& app_id) {
+  // Not supported when running in metro mode.
+  // TODO(grt) This should perhaps check that this Chrome isn't in metro mode
+  // or, if it is, that |app_id| doesn't identify this Chrome.
+  if (base::win::GetMetroModule())
+    return false;
+
+  // Delegate to metro_driver, which has the brains to invoke the activation
+  // wizardry.
+  bool success = false;
+  const FilePath metro_driver_path(chrome::kMetroDriverDll);
+  base::ScopedNativeLibrary metro_driver(metro_driver_path);
+  if (!metro_driver.is_valid()) {
+    PLOG(ERROR) << "Failed to load metro_driver.";
+  } else {
+    base::win::ActivateApplicationFn activate_application =
+        reinterpret_cast<base::win::ActivateApplicationFn>(
+            metro_driver.GetFunctionPointer(base::win::kActivateApplication));
+    if (!activate_application) {
+      PLOG(ERROR) << "Failed to find activation method in metro_driver.";
+    } else {
+      HRESULT hr = activate_application(app_id.c_str());
+      if (FAILED(hr)) {
+        LOG(ERROR) << "Failed to activate " << app_id
+                   << "; hr=0x" << std::hex << hr;
+      } else {
+        success = true;
+      }
+    }
+  }
+  return success;
+}
+
 }  // namespace
 
 bool ShellIntegration::CanSetAsDefaultBrowser() {
@@ -536,4 +572,10 @@ void ShellIntegration::MigrateChromiumShortcuts() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&MigrateChromiumShortcutsCallback));
+}
+
+bool ShellIntegration::ActivateMetroChrome() {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  const string16 app_id(dist->GetBrowserAppId());
+  return ActivateApplication(app_id);
 }

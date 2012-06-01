@@ -7,10 +7,9 @@
 #include <string.h>
 
 #include "chrome/app/client_util.h"
+#include "chrome/common/chrome_constants.h"
 
 namespace {
-// The windows 8 metro driver dll name and entry point.
-const wchar_t kMetroDriverDll[] = L"metro_driver.dll";
 // This environment variable controls the loading of the metro driver DLL.
 const char* kMetroModeEnvVar = "CHROME_METRO_DLL";
 
@@ -42,7 +41,7 @@ MetroDriver::MetroDriver() : init_metro_fn_(NULL) {
   // We haven't tried to load the metro driver, this probably means we are the
   // browser. Find it or not we set the environment variable because we don't
   // want to keep trying in the child processes.
-  HMODULE metro_dll = ::LoadLibraryW(kMetroDriverDll);
+  HMODULE metro_dll = ::LoadLibraryW(chrome::kMetroDriverDll);
   if (!metro_dll) {
     // It is not next to the build output, so this must be an actual deployment
     // and in that case we need the mainloader to find the current version
@@ -52,7 +51,7 @@ MetroDriver::MetroDriver() : init_metro_fn_(NULL) {
     delete loader;
     if (!version.empty()) {
       std::wstring exe_path(GetExecutablePath());
-      exe_path.append(version).append(L"\\").append(kMetroDriverDll);
+      exe_path.append(version).append(L"\\").append(chrome::kMetroDriverDll);
       metro_dll = ::LoadLibraryW(exe_path.c_str());
     }
   }
