@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/settings/settings_backend.h"
 #include "chrome/browser/extensions/settings/settings_namespace.h"
-#include "chrome/browser/value_store/value_store.h"
+#include "chrome/browser/extensions/settings/settings_storage.h"
 
 namespace extensions {
 
@@ -35,21 +35,21 @@ class SettingsFunction : public AsyncExtensionFunction {
   //
   // Implementations should fill in args themselves, though (like RunImpl)
   // may return false to imply failure.
-  virtual bool RunWithStorage(ValueStore* storage) = 0;
+  virtual bool RunWithStorage(SettingsStorage* storage) = 0;
 
   // Sets error_ or result_ depending on the value of a storage ReadResult, and
   // returns whether the result implies success (i.e. !error).
-  bool UseReadResult(const ValueStore::ReadResult& result);
+  bool UseReadResult(const SettingsStorage::ReadResult& result);
 
   // Sets error_ depending on the value of a storage WriteResult, sends a
   // change notification if needed, and returns whether the result implies
   // success (i.e. !error).
-  bool UseWriteResult(const ValueStore::WriteResult& result);
+  bool UseWriteResult(const SettingsStorage::WriteResult& result);
 
  private:
   // Called via PostTask from RunImpl.  Calls RunWithStorage and then
   // SendReponse with its success value.
-  void RunWithStorageOnFileThread(ValueStore* storage);
+  void RunWithStorageOnFileThread(SettingsStorage* storage);
 
   // The settings namespace the call was for.  For example, SYNC if the API
   // call was chrome.settings.experimental.sync..., LOCAL if .local, etc.
@@ -67,7 +67,7 @@ class GetSettingsFunction : public SettingsFunction {
   virtual ~GetSettingsFunction() {}
 
   // SettingsFunction:
-  virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
 };
 
 class SetSettingsFunction : public SettingsFunction {
@@ -78,7 +78,7 @@ class SetSettingsFunction : public SettingsFunction {
   virtual ~SetSettingsFunction() {}
 
   // SettingsFunction:
-  virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
 
   // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
@@ -93,7 +93,7 @@ class RemoveSettingsFunction : public SettingsFunction {
   virtual ~RemoveSettingsFunction() {}
 
   // SettingsFunction:
-  virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
 
   // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
@@ -108,7 +108,7 @@ class ClearSettingsFunction : public SettingsFunction {
   virtual ~ClearSettingsFunction() {}
 
   // SettingsFunction:
-  virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
 
   // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
@@ -123,7 +123,7 @@ class GetBytesInUseSettingsFunction : public SettingsFunction {
   virtual ~GetBytesInUseSettingsFunction() {}
 
   // SettingsFunction:
-  virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
 };
 
 }  // namespace extensions

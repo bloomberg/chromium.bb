@@ -20,7 +20,7 @@ SyncableSettingsStorage::SyncableSettingsStorage(
     const scoped_refptr<ObserverListThreadSafe<SettingsObserver> >&
         observers,
     const std::string& extension_id,
-    ValueStore* delegate)
+    SettingsStorage* delegate)
     : observers_(observers),
       extension_id_(extension_id),
       delegate_(delegate) {
@@ -47,24 +47,24 @@ size_t SyncableSettingsStorage::GetBytesInUse() {
   return delegate_->GetBytesInUse();
 }
 
-ValueStore::ReadResult SyncableSettingsStorage::Get(
+SettingsStorage::ReadResult SyncableSettingsStorage::Get(
     const std::string& key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   return delegate_->Get(key);
 }
 
-ValueStore::ReadResult SyncableSettingsStorage::Get(
+SettingsStorage::ReadResult SyncableSettingsStorage::Get(
     const std::vector<std::string>& keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   return delegate_->Get(keys);
 }
 
-ValueStore::ReadResult SyncableSettingsStorage::Get() {
+SettingsStorage::ReadResult SyncableSettingsStorage::Get() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   return delegate_->Get();
 }
 
-ValueStore::WriteResult SyncableSettingsStorage::Set(
+SettingsStorage::WriteResult SyncableSettingsStorage::Set(
     WriteOptions options, const std::string& key, const Value& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   WriteResult result = delegate_->Set(options, key, value);
@@ -75,7 +75,7 @@ ValueStore::WriteResult SyncableSettingsStorage::Set(
   return result;
 }
 
-ValueStore::WriteResult SyncableSettingsStorage::Set(
+SettingsStorage::WriteResult SyncableSettingsStorage::Set(
     WriteOptions options, const DictionaryValue& values) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   WriteResult result = delegate_->Set(options, values);
@@ -86,7 +86,7 @@ ValueStore::WriteResult SyncableSettingsStorage::Set(
   return result;
 }
 
-ValueStore::WriteResult SyncableSettingsStorage::Remove(
+SettingsStorage::WriteResult SyncableSettingsStorage::Remove(
     const std::string& key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   WriteResult result = delegate_->Remove(key);
@@ -97,7 +97,7 @@ ValueStore::WriteResult SyncableSettingsStorage::Remove(
   return result;
 }
 
-ValueStore::WriteResult SyncableSettingsStorage::Remove(
+SettingsStorage::WriteResult SyncableSettingsStorage::Remove(
     const std::vector<std::string>& keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   WriteResult result = delegate_->Remove(keys);
@@ -108,7 +108,7 @@ ValueStore::WriteResult SyncableSettingsStorage::Remove(
   return result;
 }
 
-ValueStore::WriteResult SyncableSettingsStorage::Clear() {
+SettingsStorage::WriteResult SyncableSettingsStorage::Clear() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   WriteResult result = delegate_->Clear();
   if (result.HasError()) {
@@ -119,7 +119,7 @@ ValueStore::WriteResult SyncableSettingsStorage::Clear() {
 }
 
 void SyncableSettingsStorage::SyncResultIfEnabled(
-    ValueStore::WriteResult result) {
+    SettingsStorage::WriteResult result) {
   if (sync_processor_.get() && !result.changes().empty()) {
     SyncError error = sync_processor_->SendChanges(result.changes());
     if (error.IsSet())
@@ -157,9 +157,9 @@ SyncError SyncableSettingsStorage::SendLocalSettingsToSync(
     const DictionaryValue& settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  ValueStoreChangeList changes;
+  SettingChangeList changes;
   for (DictionaryValue::Iterator i(settings); i.HasNext(); i.Advance()) {
-    changes.push_back(ValueStoreChange(i.key(), NULL, i.value().DeepCopy()));
+    changes.push_back(SettingChange(i.key(), NULL, i.value().DeepCopy()));
   }
 
   if (changes.empty())
@@ -244,7 +244,7 @@ SyncError SyncableSettingsStorage::ProcessSyncChanges(
   }
 
   std::vector<SyncError> errors;
-  ValueStoreChangeList changes;
+  SettingChangeList changes;
 
   for (SettingSyncDataList::const_iterator it = sync_changes.begin();
       it != sync_changes.end(); ++it) {
@@ -323,7 +323,7 @@ SyncError SyncableSettingsStorage::ProcessSyncChanges(
       &SettingsObserver::OnSettingsChanged,
       extension_id_,
       settings_namespace::SYNC,
-      ValueStoreChange::ToJson(changes));
+      SettingChange::GetEventJson(changes));
 
   // TODO(kalman): Something sensible with multiple errors.
   return errors.empty() ? SyncError() : errors[0];
@@ -332,7 +332,7 @@ SyncError SyncableSettingsStorage::ProcessSyncChanges(
 SyncError SyncableSettingsStorage::OnSyncAdd(
     const std::string& key,
     Value* new_value,
-    ValueStoreChangeList* changes) {
+    SettingChangeList* changes) {
   DCHECK(new_value);
   WriteResult result = delegate_->Set(IGNORE_QUOTA, key, *new_value);
   if (result.HasError()) {
@@ -342,7 +342,7 @@ SyncError SyncableSettingsStorage::OnSyncAdd(
             result.error(),
         sync_processor_->type());
   }
-  changes->push_back(ValueStoreChange(key, NULL, new_value));
+  changes->push_back(SettingChange(key, NULL, new_value));
   return SyncError();
 }
 
@@ -350,7 +350,7 @@ SyncError SyncableSettingsStorage::OnSyncUpdate(
     const std::string& key,
     Value* old_value,
     Value* new_value,
-    ValueStoreChangeList* changes) {
+    SettingChangeList* changes) {
   DCHECK(old_value);
   DCHECK(new_value);
   WriteResult result = delegate_->Set(IGNORE_QUOTA, key, *new_value);
@@ -361,14 +361,14 @@ SyncError SyncableSettingsStorage::OnSyncUpdate(
             result.error(),
         sync_processor_->type());
   }
-  changes->push_back(ValueStoreChange(key, old_value, new_value));
+  changes->push_back(SettingChange(key, old_value, new_value));
   return SyncError();
 }
 
 SyncError SyncableSettingsStorage::OnSyncDelete(
     const std::string& key,
     Value* old_value,
-    ValueStoreChangeList* changes) {
+    SettingChangeList* changes) {
   DCHECK(old_value);
   WriteResult result = delegate_->Remove(key);
   if (result.HasError()) {
@@ -378,7 +378,7 @@ SyncError SyncableSettingsStorage::OnSyncDelete(
             result.error(),
         sync_processor_->type());
   }
-  changes->push_back(ValueStoreChange(key, old_value, NULL));
+  changes->push_back(SettingChange(key, old_value, NULL));
   return SyncError();
 }
 

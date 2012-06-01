@@ -62,7 +62,7 @@ bool SettingsFunction::RunImpl() {
   return true;
 }
 
-void SettingsFunction::RunWithStorageOnFileThread(ValueStore* storage) {
+void SettingsFunction::RunWithStorageOnFileThread(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   bool success = RunWithStorage(storage);
   BrowserThread::PostTask(
@@ -72,7 +72,7 @@ void SettingsFunction::RunWithStorageOnFileThread(ValueStore* storage) {
 }
 
 bool SettingsFunction::UseReadResult(
-    const ValueStore::ReadResult& result) {
+    const SettingsStorage::ReadResult& result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (result.HasError()) {
     error_ = result.error();
@@ -84,7 +84,7 @@ bool SettingsFunction::UseReadResult(
 }
 
 bool SettingsFunction::UseWriteResult(
-    const ValueStore::WriteResult& result) {
+    const SettingsStorage::WriteResult& result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (result.HasError()) {
     error_ = result.error();
@@ -96,7 +96,7 @@ bool SettingsFunction::UseWriteResult(
         &SettingsObserver::OnSettingsChanged,
         extension_id(),
         settings_namespace_,
-        ValueStoreChange::ToJson(result.changes()));
+        SettingChange::GetEventJson(result.changes()));
   }
 
   return true;
@@ -154,7 +154,7 @@ static void GetModificationQuotaLimitHeuristics(
 
 }  // namespace
 
-bool GetSettingsFunction::RunWithStorage(ValueStore* storage) {
+bool GetSettingsFunction::RunWithStorage(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Value* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
@@ -177,7 +177,7 @@ bool GetSettingsFunction::RunWithStorage(ValueStore* storage) {
 
     case Value::TYPE_DICTIONARY: {
       DictionaryValue* as_dict = static_cast<DictionaryValue*>(input);
-      ValueStore::ReadResult result =
+      SettingsStorage::ReadResult result =
           storage->Get(GetKeys(*as_dict));
       if (result.HasError()) {
         return UseReadResult(result);
@@ -186,16 +186,16 @@ bool GetSettingsFunction::RunWithStorage(ValueStore* storage) {
       DictionaryValue* with_default_values = as_dict->DeepCopy();
       with_default_values->MergeDictionary(&result.settings());
       return UseReadResult(
-          ValueStore::ReadResult(with_default_values));
+          SettingsStorage::ReadResult(with_default_values));
     }
 
     default:
       return UseReadResult(
-          ValueStore::ReadResult(kUnsupportedArgumentType));
+          SettingsStorage::ReadResult(kUnsupportedArgumentType));
   }
 }
 
-bool GetBytesInUseSettingsFunction::RunWithStorage(ValueStore* storage) {
+bool GetBytesInUseSettingsFunction::RunWithStorage(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Value* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
@@ -230,11 +230,11 @@ bool GetBytesInUseSettingsFunction::RunWithStorage(ValueStore* storage) {
   return true;
 }
 
-bool SetSettingsFunction::RunWithStorage(ValueStore* storage) {
+bool SetSettingsFunction::RunWithStorage(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DictionaryValue* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &input));
-  return UseWriteResult(storage->Set(ValueStore::DEFAULTS, *input));
+  return UseWriteResult(storage->Set(SettingsStorage::DEFAULTS, *input));
 }
 
 void SetSettingsFunction::GetQuotaLimitHeuristics(
@@ -242,7 +242,7 @@ void SetSettingsFunction::GetQuotaLimitHeuristics(
   GetModificationQuotaLimitHeuristics(heuristics);
 }
 
-bool RemoveSettingsFunction::RunWithStorage(ValueStore* storage) {
+bool RemoveSettingsFunction::RunWithStorage(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Value* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
@@ -262,7 +262,7 @@ bool RemoveSettingsFunction::RunWithStorage(ValueStore* storage) {
 
     default:
       return UseWriteResult(
-          ValueStore::WriteResult(kUnsupportedArgumentType));
+          SettingsStorage::WriteResult(kUnsupportedArgumentType));
   };
 }
 
@@ -271,7 +271,7 @@ void RemoveSettingsFunction::GetQuotaLimitHeuristics(
   GetModificationQuotaLimitHeuristics(heuristics);
 }
 
-bool ClearSettingsFunction::RunWithStorage(ValueStore* storage) {
+bool ClearSettingsFunction::RunWithStorage(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   return UseWriteResult(storage->Clear());
 }

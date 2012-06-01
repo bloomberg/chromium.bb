@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VALUE_STORE_VALUE_STORE_CHANGE_H_
-#define CHROME_BROWSER_VALUE_STORE_VALUE_STORE_CHANGE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTING_CHANGE_H_
+#define CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTING_CHANGE_H_
 #pragma once
 
 #include <string>
@@ -12,21 +12,23 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
-class ValueStoreChange;
-typedef std::vector<ValueStoreChange> ValueStoreChangeList;
+namespace extensions {
+
+class SettingChange;
+typedef std::vector<SettingChange> SettingChangeList;
 
 // A change to a setting.  Safe/efficient to copy.
-class ValueStoreChange {
+class SettingChange {
  public:
-  // Converts an ValueStoreChangeList into JSON of the form:
+  // Converts an SettingChangeList into JSON of the form:
   // { "foo": { "key": "foo", "oldValue": "bar", "newValue": "baz" } }
-  static std::string ToJson(const ValueStoreChangeList& changes);
+  static std::string GetEventJson(const SettingChangeList& changes);
 
   // Ownership of |old_value| and |new_value| taken.
-  ValueStoreChange(
+  SettingChange(
       const std::string& key, base::Value* old_value, base::Value* new_value);
 
-  ~ValueStoreChange();
+  ~SettingChange();
 
   // Gets the key of the setting which changed.
   const std::string& key() const;
@@ -57,4 +59,6 @@ class ValueStoreChange {
   scoped_refptr<Inner> inner_;
 };
 
-#endif  // CHROME_BROWSER_VALUE_STORE_VALUE_STORE_CHANGE_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTING_CHANGE_H_

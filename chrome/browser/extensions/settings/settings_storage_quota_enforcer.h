@@ -8,13 +8,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/value_store/value_store.h"
+#include "chrome/browser/extensions/settings/settings_storage.h"
 
 namespace extensions {
 
 // Enforces total quota and a per-setting quota in bytes, and a maximum number
 // of setting keys, for a delegate storage area.
-class SettingsStorageQuotaEnforcer : public ValueStore {
+class SettingsStorageQuotaEnforcer : public SettingsStorage {
  public:
   struct Limits {
     // The total quota in bytes.
@@ -27,11 +27,11 @@ class SettingsStorageQuotaEnforcer : public ValueStore {
     size_t max_items;
   };
 
-  SettingsStorageQuotaEnforcer(const Limits& limits, ValueStore* delegate);
+  SettingsStorageQuotaEnforcer(const Limits& limits, SettingsStorage* delegate);
 
   virtual ~SettingsStorageQuotaEnforcer();
 
-  // ValueStore implementation.
+  // SettingsStorage implementation.
   virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;
   virtual size_t GetBytesInUse(const std::vector<std::string>& keys) OVERRIDE;
   virtual size_t GetBytesInUse() OVERRIDE;
@@ -53,7 +53,7 @@ class SettingsStorageQuotaEnforcer : public ValueStore {
   const Limits limits_;
 
   // The delegate storage area.
-  scoped_ptr<ValueStore> const delegate_;
+  scoped_ptr<SettingsStorage> const delegate_;
 
   // Total bytes in used by |delegate_|. Includes both key lengths and
   // JSON-encoded values.

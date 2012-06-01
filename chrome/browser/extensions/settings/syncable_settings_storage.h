@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/settings/setting_sync_data.h"
 #include "chrome/browser/extensions/settings/settings_observer.h"
-#include "chrome/browser/value_store/value_store.h"
+#include "chrome/browser/extensions/settings/settings_storage.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/syncable_service.h"
 
@@ -20,18 +20,18 @@ namespace extensions {
 
 class SettingsSyncProcessor;
 
-// Decorates a ValueStore with sync behaviour.
-class SyncableSettingsStorage : public ValueStore {
+// Decorates an SettingsStorage with sync behaviour.
+class SyncableSettingsStorage : public SettingsStorage {
  public:
   SyncableSettingsStorage(
       const scoped_refptr<ObserverListThreadSafe<SettingsObserver> >& observers,
       const std::string& extension_id,
       // Ownership taken.
-      ValueStore* delegate);
+      SettingsStorage* delegate);
 
   virtual ~SyncableSettingsStorage();
 
-  // ValueStore implementation.
+  // SettingsStorage implementation.
   virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;
   virtual size_t GetBytesInUse(const std::vector<std::string>& keys) OVERRIDE;
   virtual size_t GetBytesInUse() OVERRIDE;
@@ -65,7 +65,7 @@ class SyncableSettingsStorage : public ValueStore {
 
  private:
   // Sends the changes from |result| to sync if it's enabled.
-  void SyncResultIfEnabled(ValueStore::WriteResult result);
+  void SyncResultIfEnabled(SettingsStorage::WriteResult result);
 
   // Sends all local settings to sync (synced settings assumed to be empty).
   SyncError SendLocalSettingsToSync(
@@ -80,16 +80,16 @@ class SyncableSettingsStorage : public ValueStore {
   SyncError OnSyncAdd(
       const std::string& key,
       Value* new_value,
-      ValueStoreChangeList* changes);
+      SettingChangeList* changes);
   SyncError OnSyncUpdate(
       const std::string& key,
       Value* old_value,
       Value* new_value,
-      ValueStoreChangeList* changes);
+      SettingChangeList* changes);
   SyncError OnSyncDelete(
       const std::string& key,
       Value* old_value,
-      ValueStoreChangeList* changes);
+      SettingChangeList* changes);
 
   // List of observers to settings changes.
   const scoped_refptr<ObserverListThreadSafe<SettingsObserver> > observers_;
@@ -98,7 +98,7 @@ class SyncableSettingsStorage : public ValueStore {
   std::string const extension_id_;
 
   // Storage area to sync.
-  const scoped_ptr<ValueStore> delegate_;
+  const scoped_ptr<SettingsStorage> delegate_;
 
   // Object which sends changes to sync.
   scoped_ptr<SettingsSyncProcessor> sync_processor_;

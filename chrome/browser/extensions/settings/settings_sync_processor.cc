@@ -42,8 +42,7 @@ void SettingsSyncProcessor::Init(const DictionaryValue& initial_state) {
   initialized_ = true;
 }
 
-SyncError SettingsSyncProcessor::SendChanges(
-    const ValueStoreChangeList& changes) {
+SyncError SettingsSyncProcessor::SendChanges(const SettingChangeList& changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   CHECK(initialized_) << "Init not called";
 
@@ -51,7 +50,7 @@ SyncError SettingsSyncProcessor::SendChanges(
   std::set<std::string> added_keys;
   std::set<std::string> deleted_keys;
 
-  for (ValueStoreChangeList::const_iterator i = changes.begin();
+  for (SettingChangeList::const_iterator i = changes.begin();
       i != changes.end(); ++i) {
     const std::string& key = i->key();
     const Value* value = i->new_value();
@@ -95,11 +94,11 @@ SyncError SettingsSyncProcessor::SendChanges(
   return SyncError();
 }
 
-void SettingsSyncProcessor::NotifyChanges(const ValueStoreChangeList& changes) {
+void SettingsSyncProcessor::NotifyChanges(const SettingChangeList& changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   CHECK(initialized_) << "Init not called";
 
-  for (ValueStoreChangeList::const_iterator i = changes.begin();
+  for (SettingChangeList::const_iterator i = changes.begin();
       i != changes.end(); ++i) {
     if (i->new_value())
       synced_keys_.insert(i->key());

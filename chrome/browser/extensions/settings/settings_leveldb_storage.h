@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VALUE_STORE_LEVELDB_VALUE_STORE_H_
-#define CHROME_BROWSER_VALUE_STORE_LEVELDB_VALUE_STORE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_LEVELDB_STORAGE_H_
+#define CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_LEVELDB_STORAGE_H_
 #pragma once
 
 #include <string>
@@ -12,20 +12,32 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/value_store/value_store.h"
+#include "chrome/browser/extensions/settings/settings_storage.h"
+#include "chrome/browser/extensions/settings/settings_storage_factory.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
-// Value store area, backed by a leveldb database.
+namespace extensions {
+
+// Extension settings storage object, backed by a leveldb database.
 // All methods must be run on the FILE thread.
-class LeveldbValueStore : public ValueStore {
+class SettingsLeveldbStorage : public SettingsStorage {
  public:
+  // Factory for creating SettingsLeveldbStorage instances.
+  class Factory : public SettingsStorageFactory {
+   public:
+    virtual SettingsStorage* Create(
+        const FilePath& base_path,
+        const std::string& extension_id) OVERRIDE;
+
+   private:
+    // SettingsStorageFactory is refcounted.
+    virtual ~Factory() {}
+  };
+
   // Must be deleted on the FILE thread.
-  virtual ~LeveldbValueStore();
+  virtual ~SettingsLeveldbStorage();
 
-  // Create and open the database at the given path.
-  static LeveldbValueStore* Create(const FilePath& path);
-
-  // ValueStore implementation.
+  // SettingsStorage implementation.
   virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;
   virtual size_t GetBytesInUse(const std::vector<std::string>& keys) OVERRIDE;
   virtual size_t GetBytesInUse() OVERRIDE;
@@ -44,7 +56,8 @@ class LeveldbValueStore : public ValueStore {
 
  private:
   // Ownership of db is taken.
-  LeveldbValueStore(const FilePath& db_path, leveldb::DB* db);
+  explicit SettingsLeveldbStorage(
+      const FilePath& db_path, leveldb::DB* db);
 
   // Reads a setting from the database.  Returns whether the read was
   // successful, in which case |setting| will be reset to the Value read
@@ -64,7 +77,9 @@ class LeveldbValueStore : public ValueStore {
   // leveldb backend.
   scoped_ptr<leveldb::DB> db_;
 
-  DISALLOW_COPY_AND_ASSIGN(LeveldbValueStore);
+  DISALLOW_COPY_AND_ASSIGN(SettingsLeveldbStorage);
 };
 
-#endif  // CHROME_BROWSER_VALUE_STORE_LEVELDB_VALUE_STORE_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_LEVELDB_STORAGE_H_

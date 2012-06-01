@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VALUE_STORE_FAILING_VALUE_STORE_H_
-#define CHROME_BROWSER_VALUE_STORE_FAILING_VALUE_STORE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_SETTINGS_FAILING_SETTINGS_STORAGE_H_
+#define CHROME_BROWSER_EXTENSIONS_SETTINGS_FAILING_SETTINGS_STORAGE_H_
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/value_store/value_store.h"
+#include "chrome/browser/extensions/settings/settings_storage.h"
+
+namespace extensions {
 
 // Settings storage area which fails every request.
-class FailingSettingsStorage : public ValueStore {
+class FailingSettingsStorage : public SettingsStorage {
  public:
   FailingSettingsStorage() {}
 
-  // ValueStore implementation.
+  // SettingsStorage implementation.
   virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;
   virtual size_t GetBytesInUse(const std::vector<std::string>& keys) OVERRIDE;
   virtual size_t GetBytesInUse() OVERRIDE;
@@ -35,4 +37,6 @@ class FailingSettingsStorage : public ValueStore {
   DISALLOW_COPY_AND_ASSIGN(FailingSettingsStorage);
 };
 
-#endif  // CHROME_BROWSER_VALUE_STORE_FAILING_VALUE_STORE_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_SETTINGS_FAILING_SETTINGS_STORAGE_H_

@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/value_store/value_store_change.h"
+#include "chrome/browser/extensions/settings/setting_change.h"
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
 
+namespace extensions {
+
 /* static */
-std::string ValueStoreChange::ToJson(
-    const ValueStoreChangeList& changes) {
+std::string SettingChange::GetEventJson(const SettingChangeList& changes) {
   DictionaryValue changes_value;
-  for (ValueStoreChangeList::const_iterator it = changes.begin();
+  for (SettingChangeList::const_iterator it = changes.begin();
       it != changes.end(); ++it) {
     DictionaryValue* change_value = new DictionaryValue();
     if (it->old_value()) {
@@ -28,29 +29,31 @@ std::string ValueStoreChange::ToJson(
   return json;
 }
 
-ValueStoreChange::ValueStoreChange(
+SettingChange::SettingChange(
     const std::string& key, Value* old_value, Value* new_value)
     : inner_(new Inner(key, old_value, new_value)) {}
 
-ValueStoreChange::~ValueStoreChange() {}
+SettingChange::~SettingChange() {}
 
-const std::string& ValueStoreChange::key() const {
+const std::string& SettingChange::key() const {
   DCHECK(inner_.get());
   return inner_->key_;
 }
 
-const Value* ValueStoreChange::old_value() const {
+const Value* SettingChange::old_value() const {
   DCHECK(inner_.get());
   return inner_->old_value_.get();
 }
 
-const Value* ValueStoreChange::new_value() const {
+const Value* SettingChange::new_value() const {
   DCHECK(inner_.get());
   return inner_->new_value_.get();
 }
 
-ValueStoreChange::Inner::Inner(
+SettingChange::Inner::Inner(
     const std::string& key, base::Value* old_value, base::Value* new_value)
     : key_(key), old_value_(old_value), new_value_(new_value) {}
 
-ValueStoreChange::Inner::~Inner() {}
+SettingChange::Inner::~Inner() {}
+
+}  // namespace extensions

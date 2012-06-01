@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VALUE_STORE_VALUE_STORE_H_
-#define CHROME_BROWSER_VALUE_STORE_VALUE_STORE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_STORAGE_H_
+#define CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_STORAGE_H_
 #pragma once
 
 #include <set>
@@ -11,13 +11,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/value_store/value_store_change.h"
+#include "chrome/browser/extensions/settings/setting_change.h"
 
-// Interface for a storage area for Value objects.
+// Interface for extension settings storage classes.
+//
+namespace extensions {
 
 // All methods *must* be run on the FILE thread, including construction and
 // destruction.
-class ValueStore {
+class SettingsStorage {
  public:
   // The result of a read operation (Get). Safe/efficient to copy.
   class ReadResult {
@@ -27,9 +29,7 @@ class ValueStore {
     explicit ReadResult(const std::string& error);
     ~ReadResult();
 
-    // Gets the settings read from the storage. Note that this represents
-    // the root object. If you request the value for key "foo", that value will
-    // be in |settings.foo|.
+    // Gets the settings read from the storage.
     // Must only be called if HasError() is false.
     const DictionaryValue& settings() const;
 
@@ -59,13 +59,13 @@ class ValueStore {
   class WriteResult {
    public:
     // Ownership of |changes| taken.
-    explicit WriteResult(ValueStoreChangeList* changes);
+    explicit WriteResult(SettingChangeList* changes);
     explicit WriteResult(const std::string& error);
     ~WriteResult();
 
     // Gets the list of changes to the settings which resulted from the write.
     // Must only be called if HasError() is false.
-    const ValueStoreChangeList& changes() const;
+    const SettingChangeList& changes() const;
 
     // Gets whether the operation failed.
     bool HasError() const;
@@ -77,8 +77,8 @@ class ValueStore {
    private:
     class Inner : public base::RefCountedThreadSafe<Inner> {
      public:
-      Inner(ValueStoreChangeList* changes, const std::string& error);
-      const scoped_ptr<ValueStoreChangeList> changes_;
+      Inner(SettingChangeList* changes, const std::string& error);
+      const scoped_ptr<SettingChangeList> changes_;
       const std::string error_;
 
      private:
@@ -98,13 +98,9 @@ class ValueStore {
     IGNORE_QUOTA,
   };
 
-  virtual ~ValueStore() {}
+  virtual ~SettingsStorage() {}
 
   // Gets the amount of space being used by a single value, in bytes.
-  // Note: The GetBytesInUse methods are only used by extension settings at the
-  // moment. If these become more generally useful, the
-  // SettingsStorageQuotaEnforcer and WeakUnlimitedSettingsStorage classes
-  // should be moved to the value_store directory.
   virtual size_t GetBytesInUse(const std::string& key) = 0;
 
   // Gets the total amount of space being used by multiple values, in bytes.
@@ -140,4 +136,6 @@ class ValueStore {
   virtual WriteResult Clear() = 0;
 };
 
-#endif  // CHROME_BROWSER_VALUE_STORE_VALUE_STORE_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_STORAGE_H_

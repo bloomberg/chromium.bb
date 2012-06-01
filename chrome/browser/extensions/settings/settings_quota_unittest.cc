@@ -10,14 +10,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/settings/settings_backend.h"
 #include "chrome/browser/extensions/settings/settings_storage_quota_enforcer.h"
-#include "chrome/browser/value_store/testing_value_store.h"
+#include "chrome/browser/extensions/settings/testing_settings_storage.h"
 
 namespace extensions {
 
-// To save typing ValueStore::DEFAULTS/IGNORE_QUOTA everywhere.
-const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
-const ValueStore::WriteOptions IGNORE_QUOTA =
-    ValueStore::IGNORE_QUOTA;
+// To save typing SettingsStorage::DEFAULTS/IGNORE_QUOTA everywhere.
+const SettingsStorage::WriteOptions DEFAULTS = SettingsStorage::DEFAULTS;
+const SettingsStorage::WriteOptions IGNORE_QUOTA =
+    SettingsStorage::IGNORE_QUOTA;
 
 class ExtensionSettingsQuotaTest : public testing::Test {
  public:

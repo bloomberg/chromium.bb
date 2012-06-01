@@ -10,14 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/value_store/failing_value_store.h"
-#include "chrome/browser/extensions/settings/leveldb_settings_storage_factory.h"
+#include "chrome/browser/extensions/settings/failing_settings_storage.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/extensions/settings/settings_storage_factory.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
 #include "chrome/browser/extensions/settings/settings_test_util.h"
 #include "chrome/browser/extensions/settings/syncable_settings_storage.h"
-#include "chrome/browser/value_store/testing_value_store.h"
+#include "chrome/browser/extensions/settings/testing_settings_storage.h"
 #include "content/test/test_browser_thread.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error_factory.h"
@@ -31,8 +30,8 @@ namespace util = settings_test_util;
 
 namespace {
 
-// To save typing ValueStore::DEFAULTS everywhere.
-const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
+// To save typing SettingsStorage::DEFAULTS everywhere.
+const SettingsStorage::WriteOptions DEFAULTS = SettingsStorage::DEFAULTS;
 
 // Gets the pretty-printed JSON for a value.
 static std::string GetJson(const Value& value) {
@@ -71,7 +70,7 @@ testing::AssertionResult ValuesEq(
 testing::AssertionResult SettingsEq(
     const char* _1, const char* _2,
     const DictionaryValue& expected,
-    const ValueStore::ReadResult& actual) {
+    const SettingsStorage::ReadResult& actual) {
   if (actual.HasError()) {
     return testing::AssertionFailure() <<
         "Expected: " << GetJson(expected) <<
@@ -177,7 +176,7 @@ class TestingSettingsStorageFactory : public SettingsStorageFactory {
   }
 
   // SettingsStorageFactory implementation.
-  virtual ValueStore* Create(
+  virtual SettingsStorage* Create(
       const FilePath& base_path, const std::string& extension_id) OVERRIDE {
     TestingSettingsStorage* new_storage = new TestingSettingsStorage();
     DCHECK(!created_.count(extension_id));
@@ -215,7 +214,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_.reset(new util::MockProfile(temp_dir_.path()));
-    storage_factory_->Reset(new LeveldbSettingsStorageFactory());
+    storage_factory_->Reset(new SettingsLeveldbStorage::Factory());
     frontend_.reset(
         SettingsFrontend::Create(storage_factory_.get(), profile_.get()));
   }
@@ -228,7 +227,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
  protected:
   // Adds a record of an extension or app to the extension service, then returns
   // its storage area.
-  ValueStore* AddExtensionAndGetStorage(
+  SettingsStorage* AddExtensionAndGetStorage(
       const std::string& id, Extension::Type type) {
     profile_->GetMockExtensionService()->AddExtensionWithId(id, type);
     return util::GetStorage(id, frontend_.get());
@@ -304,8 +303,8 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
   ListValue value2;
   value2.Append(StringValue::CreateStringValue("barValue"));
 
-  ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
-  ValueStore* storage2 = AddExtensionAndGetStorage("s2", type);
+  SettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
+  SettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
 
   storage1->Set(DEFAULTS, "foo", value1);
   storage2->Set(DEFAULTS, "bar", value2);
@@ -354,8 +353,8 @@ TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
   ListValue value2;
   value2.Append(StringValue::CreateStringValue("barValue"));
 
-  ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
-  ValueStore* storage2 = AddExtensionAndGetStorage("s2", type);
+  SettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
+  SettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
 
   storage1->Set(DEFAULTS, "foo", value1);
   storage2->Set(DEFAULTS, "bar", value2);
@@ -391,7 +390,7 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
   DictionaryValue expected1, expected2;
 
   // Pre-populate one of the storage areas.
-  ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
+  SettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
   storage1->Set(DEFAULTS, "overwriteMe", value1);
 
   SyncDataList sync_data;
@@ -406,7 +405,7 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
   expected1.Set("foo", value1.DeepCopy());
   expected2.Set("bar", value2.DeepCopy());
 
-  ValueStore* storage2 = AddExtensionAndGetStorage("s2", type);
+  SettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
 
   // All changes should be local, so no sync changes.
   EXPECT_EQ(0u, sync_processor_->changes().size());
@@ -431,8 +430,8 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   DictionaryValue expected1, expected2;
 
   // Make storage1 initialised from local data, storage2 initialised from sync.
-  ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
-  ValueStore* storage2 = AddExtensionAndGetStorage("s2", type);
+  SettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
+  SettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
 
   storage1->Set(DEFAULTS, "foo", value1);
   expected1.Set("foo", value1.DeepCopy());
@@ -501,10 +500,10 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
 
   // Make storage1/2 initialised from local data, storage3/4 initialised from
   // sync.
-  ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
-  ValueStore* storage2 = AddExtensionAndGetStorage("s2", type);
-  ValueStore* storage3 = AddExtensionAndGetStorage("s3", type);
-  ValueStore* storage4 = AddExtensionAndGetStorage("s4", type);
+  SettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
+  SettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
+  SettingsStorage* storage3 = AddExtensionAndGetStorage("s3", type);
+  SettingsStorage* storage4 = AddExtensionAndGetStorage("s4", type);
 
   storage1->Set(DEFAULTS, "foo", value1);
   storage2->Set(DEFAULTS, "foo", value1);
@@ -639,9 +638,9 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
   value2.Append(StringValue::CreateStringValue("barValue"));
 
   // storage1 is an extension, storage2 is an app.
-  ValueStore* storage1 = AddExtensionAndGetStorage(
+  SettingsStorage* storage1 = AddExtensionAndGetStorage(
       "s1", Extension::TYPE_EXTENSION);
-  ValueStore* storage2 = AddExtensionAndGetStorage(
+  SettingsStorage* storage2 = AddExtensionAndGetStorage(
       "s2", Extension::TYPE_PACKAGED_APP);
 
   storage1->Set(DEFAULTS, "foo", value1);
@@ -703,8 +702,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
       new TestingSettingsStorageFactory();
   storage_factory_->Reset(testing_factory);
 
-  ValueStore* good = AddExtensionAndGetStorage("good", type);
-  ValueStore* bad = AddExtensionAndGetStorage("bad", type);
+  SettingsStorage* good = AddExtensionAndGetStorage("good", type);
+  SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
 
   // Make bad fail for incoming sync changes.
   testing_factory->GetExisting("bad")->SetFailAllRequests(true);
@@ -900,8 +899,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
       new TestingSettingsStorageFactory();
   storage_factory_->Reset(testing_factory);
 
-  ValueStore* good = AddExtensionAndGetStorage("good", type);
-  ValueStore* bad = AddExtensionAndGetStorage("bad", type);
+  SettingsStorage* good = AddExtensionAndGetStorage("good", type);
+  SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
 
   // Unlike before, initially succeeding MergeDataAndStartSyncing.
   {
@@ -998,8 +997,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
       new TestingSettingsStorageFactory();
   storage_factory_->Reset(testing_factory);
 
-  ValueStore* good = AddExtensionAndGetStorage("good", type);
-  ValueStore* bad = AddExtensionAndGetStorage("bad", type);
+  SettingsStorage* good = AddExtensionAndGetStorage("good", type);
+  SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
 
   good->Set(DEFAULTS, "foo", fooValue);
   bad->Set(DEFAULTS, "foo", fooValue);
@@ -1054,8 +1053,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
       new TestingSettingsStorageFactory();
   storage_factory_->Reset(testing_factory);
 
-  ValueStore* good = AddExtensionAndGetStorage("good", type);
-  ValueStore* bad = AddExtensionAndGetStorage("bad", type);
+  SettingsStorage* good = AddExtensionAndGetStorage("good", type);
+  SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
 
   good->Set(DEFAULTS, "foo", fooValue);
   bad->Set(DEFAULTS, "foo", fooValue);
@@ -1159,8 +1158,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
       new TestingSettingsStorageFactory();
   storage_factory_->Reset(testing_factory);
 
-  ValueStore* good = AddExtensionAndGetStorage("good", type);
-  ValueStore* bad = AddExtensionAndGetStorage("bad", type);
+  SettingsStorage* good = AddExtensionAndGetStorage("good", type);
+  SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
 
   // Only set bad; setting good will cause it to fail below.
   bad->Set(DEFAULTS, "foo", fooValue);
@@ -1251,8 +1250,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
       new TestingSettingsStorageFactory();
   storage_factory_->Reset(testing_factory);
 
-  ValueStore* good = AddExtensionAndGetStorage("good", type);
-  ValueStore* bad = AddExtensionAndGetStorage("bad", type);
+  SettingsStorage* good = AddExtensionAndGetStorage("good", type);
+  SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
 
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,
@@ -1357,12 +1356,12 @@ TEST_F(ExtensionSettingsSyncTest,
       scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   // Large local change rejected and doesn't get sent out.
-  ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
+  SettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
   EXPECT_TRUE(storage1->Set(DEFAULTS, "large_value", large_value).HasError());
   EXPECT_EQ(0u, sync_processor_->changes().size());
 
   // Large incoming change should still get accepted.
-  ValueStore* storage2 = AddExtensionAndGetStorage("s2", type);
+  SettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
   {
     SyncChangeList change_list;
     change_list.push_back(settings_sync_util::CreateAdd(

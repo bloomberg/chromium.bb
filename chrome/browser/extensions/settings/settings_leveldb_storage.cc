@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/value_store/leveldb_value_store.h"
+#include "chrome/browser/extensions/settings/settings_leveldb_storage.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -15,12 +15,14 @@
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
+namespace extensions {
+
 using content::BrowserThread;
 
 namespace {
 
-// Generic error message on failure.
-const char* kGenericOnFailureMessage = "Failure accessing database";
+// Generic error message sent to extensions on failure.
+const char* kGenericOnFailureMessage = "Extension settings failed";
 
 // Scoped leveldb snapshot which releases the snapshot on destruction.
 class ScopedSnapshot {
@@ -45,9 +47,12 @@ class ScopedSnapshot {
 
 }  // namespace
 
-// static
-LeveldbValueStore* LeveldbValueStore::Create(const FilePath& path) {
+// SettingsLeveldbStorage::Factory
+
+SettingsStorage* SettingsLeveldbStorage::Factory::Create(
+    const FilePath& base_path, const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  FilePath path = base_path.AppendASCII(extension_id);
 
 #if defined(OS_POSIX)
   std::string os_path(path.value());
@@ -61,19 +66,21 @@ LeveldbValueStore* LeveldbValueStore::Create(const FilePath& path) {
   leveldb::Status status = leveldb::DB::Open(options, os_path, &db);
   if (!status.ok()) {
     LOG(WARNING) << "Failed to create leveldb at " << path.value() <<
-        ": " << status.ToString();
+      ": " << status.ToString();
     return NULL;
   }
-  return new LeveldbValueStore(path, db);
+  return new SettingsLeveldbStorage(path, db);
 }
 
-LeveldbValueStore::LeveldbValueStore(
+// SettingsLeveldbStorage
+
+SettingsLeveldbStorage::SettingsLeveldbStorage(
     const FilePath& db_path, leveldb::DB* db)
     : db_path_(db_path), db_(db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-LeveldbValueStore::~LeveldbValueStore() {
+SettingsLeveldbStorage::~SettingsLeveldbStorage() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Delete the database from disk if it's empty.  This is safe on destruction,
@@ -88,26 +95,26 @@ LeveldbValueStore::~LeveldbValueStore() {
   }
 }
 
-size_t LeveldbValueStore::GetBytesInUse(const std::string& key) {
+size_t SettingsLeveldbStorage::GetBytesInUse(const std::string& key) {
   // Let SettingsStorageQuotaEnforcer implement this.
   NOTREACHED() << "Not implemented";
   return 0;
 }
 
-size_t LeveldbValueStore::GetBytesInUse(
+size_t SettingsLeveldbStorage::GetBytesInUse(
     const std::vector<std::string>& keys) {
   // Let SettingsStorageQuotaEnforcer implement this.
   NOTREACHED() << "Not implemented";
   return 0;
 }
 
-size_t LeveldbValueStore::GetBytesInUse() {
+size_t SettingsLeveldbStorage::GetBytesInUse() {
   // Let SettingsStorageQuotaEnforcer implement this.
   NOTREACHED() << "Not implemented";
   return 0;
 }
 
-ValueStore::ReadResult LeveldbValueStore::Get(
+SettingsStorage::ReadResult SettingsLeveldbStorage::Get(
     const std::string& key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<Value> setting;
@@ -121,7 +128,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(
   return ReadResult(settings);
 }
 
-ValueStore::ReadResult LeveldbValueStore::Get(
+SettingsStorage::ReadResult SettingsLeveldbStorage::Get(
     const std::vector<std::string>& keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   leveldb::ReadOptions options;
@@ -145,7 +152,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(
   return ReadResult(settings.release());
 }
 
-ValueStore::ReadResult LeveldbValueStore::Get() {
+SettingsStorage::ReadResult SettingsLeveldbStorage::Get() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::JSONReader json_reader;
   leveldb::ReadOptions options = leveldb::ReadOptions();
@@ -174,7 +181,7 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
   return ReadResult(settings.release());
 }
 
-ValueStore::WriteResult LeveldbValueStore::Set(
+SettingsStorage::WriteResult SettingsLeveldbStorage::Set(
     WriteOptions options, const std::string& key, const Value& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DictionaryValue settings;
@@ -182,13 +189,13 @@ ValueStore::WriteResult LeveldbValueStore::Set(
   return Set(options, settings);
 }
 
-ValueStore::WriteResult LeveldbValueStore::Set(
+SettingsStorage::WriteResult SettingsLeveldbStorage::Set(
     WriteOptions options, const DictionaryValue& settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::string value_as_json;
   leveldb::WriteBatch batch;
-  scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
+  scoped_ptr<SettingChangeList> changes(new SettingChangeList());
 
   for (DictionaryValue::Iterator it(settings); it.HasNext(); it.Advance()) {
     scoped_ptr<Value> old_value;
@@ -198,7 +205,7 @@ ValueStore::WriteResult LeveldbValueStore::Set(
 
     if (!old_value.get() || !old_value->Equals(&it.value())) {
       changes->push_back(
-          ValueStoreChange(
+          SettingChange(
               it.key(), old_value.release(), it.value().DeepCopy()));
       base::JSONWriter::Write(&it.value(), &value_as_json);
       batch.Put(it.key(), value_as_json);
@@ -214,7 +221,7 @@ ValueStore::WriteResult LeveldbValueStore::Set(
   return WriteResult(changes.release());
 }
 
-ValueStore::WriteResult LeveldbValueStore::Remove(
+SettingsStorage::WriteResult SettingsLeveldbStorage::Remove(
     const std::string& key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::vector<std::string> keys;
@@ -222,13 +229,13 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
   return Remove(keys);
 }
 
-ValueStore::WriteResult LeveldbValueStore::Remove(
+SettingsStorage::WriteResult SettingsLeveldbStorage::Remove(
     const std::vector<std::string>& keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   leveldb::WriteBatch batch;
-  scoped_ptr<ValueStoreChangeList> changes(
-      new ValueStoreChangeList());
+  scoped_ptr<SettingChangeList> changes(
+      new SettingChangeList());
 
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
@@ -239,7 +246,7 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
 
     if (old_value.get()) {
       changes->push_back(
-          ValueStoreChange(*it, old_value.release(), NULL));
+          SettingChange(*it, old_value.release(), NULL));
       batch.Delete(*it);
     }
   }
@@ -253,14 +260,14 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
   return WriteResult(changes.release());
 }
 
-ValueStore::WriteResult LeveldbValueStore::Clear() {
+SettingsStorage::WriteResult SettingsLeveldbStorage::Clear() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   leveldb::ReadOptions read_options;
   // All interaction with the db is done on the same thread, so snapshotting
   // isn't strictly necessary.  This is just defensive.
   leveldb::WriteBatch batch;
-  scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
+  scoped_ptr<SettingChangeList> changes(new SettingChangeList());
 
   ScopedSnapshot snapshot(db_.get());
   read_options.snapshot = snapshot.get();
@@ -270,7 +277,7 @@ ValueStore::WriteResult LeveldbValueStore::Clear() {
     const std::string old_value_json = it->value().ToString();
     Value* old_value = base::JSONReader().ReadToValue(old_value_json);
     if (old_value) {
-      changes->push_back(ValueStoreChange(key, old_value, NULL));
+      changes->push_back(SettingChange(key, old_value, NULL));
     } else {
       LOG(ERROR) << "Invalid JSON in database: " << old_value_json;
     }
@@ -291,7 +298,7 @@ ValueStore::WriteResult LeveldbValueStore::Clear() {
   return WriteResult(changes.release());
 }
 
-bool LeveldbValueStore::ReadFromDb(
+bool SettingsLeveldbStorage::ReadFromDb(
     leveldb::ReadOptions options,
     const std::string& key,
     scoped_ptr<Value>* setting) {
@@ -321,7 +328,7 @@ bool LeveldbValueStore::ReadFromDb(
   return true;
 }
 
-bool LeveldbValueStore::IsEmpty() {
+bool SettingsLeveldbStorage::IsEmpty() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<leveldb::Iterator> it(db_->NewIterator(leveldb::ReadOptions()));
 
@@ -333,3 +340,5 @@ bool LeveldbValueStore::IsEmpty() {
   }
   return is_empty;
 }
+
+}  // namespace extensions

@@ -13,15 +13,15 @@ namespace extensions {
 namespace settings_test_util {
 
 // Intended as a StorageCallback from GetStorage.
-static void AssignStorage(ValueStore** dst, ValueStore* src) {
+static void AssignStorage(SettingsStorage** dst, SettingsStorage* src) {
   *dst = src;
 }
 
-ValueStore* GetStorage(
+SettingsStorage* GetStorage(
     const std::string& extension_id,
     settings_namespace::Namespace settings_namespace,
     SettingsFrontend* frontend) {
-  ValueStore* storage = NULL;
+  SettingsStorage* storage = NULL;
   frontend->RunWithStorage(
       extension_id,
       settings_namespace,
@@ -30,7 +30,7 @@ ValueStore* GetStorage(
   return storage;
 }
 
-ValueStore* GetStorage(
+SettingsStorage* GetStorage(
     const std::string& extension_id, SettingsFrontend* frontend) {
   return GetStorage(extension_id, settings_namespace::SYNC, frontend);
 }
@@ -143,7 +143,7 @@ void ScopedSettingsStorageFactory::Reset(
   delegate_ = delegate;
 }
 
-ValueStore* ScopedSettingsStorageFactory::Create(
+SettingsStorage* ScopedSettingsStorageFactory::Create(
     const FilePath& base_path, const std::string& extension_id) {
   DCHECK(delegate_.get());
   return delegate_->Create(base_path, extension_id);

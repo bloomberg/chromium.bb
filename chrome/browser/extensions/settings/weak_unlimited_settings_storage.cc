@@ -7,7 +7,7 @@
 namespace extensions {
 
 WeakUnlimitedSettingsStorage::WeakUnlimitedSettingsStorage(
-    ValueStore* delegate)
+    SettingsStorage* delegate)
     : delegate_(delegate) {}
 
 WeakUnlimitedSettingsStorage::~WeakUnlimitedSettingsStorage() {}
@@ -26,41 +26,41 @@ size_t WeakUnlimitedSettingsStorage::GetBytesInUse() {
   return delegate_->GetBytesInUse();
 }
 
-ValueStore::ReadResult WeakUnlimitedSettingsStorage::Get(
+SettingsStorage::ReadResult WeakUnlimitedSettingsStorage::Get(
     const std::string& key) {
   return delegate_->Get(key);
 }
 
-ValueStore::ReadResult WeakUnlimitedSettingsStorage::Get(
+SettingsStorage::ReadResult WeakUnlimitedSettingsStorage::Get(
     const std::vector<std::string>& keys) {
   return delegate_->Get(keys);
 }
 
-ValueStore::ReadResult WeakUnlimitedSettingsStorage::Get() {
+SettingsStorage::ReadResult WeakUnlimitedSettingsStorage::Get() {
   return delegate_->Get();
 }
 
-ValueStore::WriteResult WeakUnlimitedSettingsStorage::Set(
+SettingsStorage::WriteResult WeakUnlimitedSettingsStorage::Set(
     WriteOptions options, const std::string& key, const Value& value) {
   return delegate_->Set(IGNORE_QUOTA, key, value);
 }
 
-ValueStore::WriteResult WeakUnlimitedSettingsStorage::Set(
+SettingsStorage::WriteResult WeakUnlimitedSettingsStorage::Set(
     WriteOptions options, const DictionaryValue& values) {
   return delegate_->Set(IGNORE_QUOTA, values);
 }
 
-ValueStore::WriteResult WeakUnlimitedSettingsStorage::Remove(
+SettingsStorage::WriteResult WeakUnlimitedSettingsStorage::Remove(
     const std::string& key) {
   return delegate_->Remove(key);
 }
 
-ValueStore::WriteResult WeakUnlimitedSettingsStorage::Remove(
+SettingsStorage::WriteResult WeakUnlimitedSettingsStorage::Remove(
     const std::vector<std::string>& keys) {
   return delegate_->Remove(keys);
 }
 
-ValueStore::WriteResult WeakUnlimitedSettingsStorage::Clear() {
+SettingsStorage::WriteResult WeakUnlimitedSettingsStorage::Clear() {
   return delegate_->Clear();
 }
 
