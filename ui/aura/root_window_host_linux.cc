@@ -45,6 +45,8 @@ namespace {
 const int kBackMouseButton = 8;
 const int kForwardMouseButton = 9;
 
+const int kAnimatedCursorFrameDelayMs = 25;
+
 const char kRootWindowHostLinuxKey[] = "__AURA_ROOT_WINDOW_HOST_LINUX__";
 
 const char* kAtomsToCache[] = {
@@ -354,8 +356,8 @@ class RootWindowHostLinux::ImageCursors {
                     IDR_AURA_CURSOR_NORTH_EAST_SOUTH_WEST_RESIZE, 12, 11);
     LoadImageCursor(ui::kCursorNorthWestSouthEastResize,
                     IDR_AURA_CURSOR_NORTH_WEST_SOUTH_EAST_RESIZE, 11, 11);
-
-    // TODO (varunjain): add more cursors once we have assets.
+    LoadAnimatedCursor(ui::kCursorWait, IDR_THROBBER, 7, 7);
+    LoadAnimatedCursor(ui::kCursorProgress, IDR_THROBBER, 7, 7);
   }
 
   ~ImageCursors() {
@@ -363,20 +365,32 @@ class RootWindowHostLinux::ImageCursors {
   }
 
   void UnloadAll() {
-    std::map<int, Cursor>::const_iterator it;
-    for (it = cursors_.begin(); it != cursors_.end(); ++it)
+    for (std::map<int, Cursor>::const_iterator it = cursors_.begin();
+        it != cursors_.end(); ++it)
       ui::UnrefCustomXCursor(it->second);
+
+    // Free animated cursors and images.
+    for (AnimatedCursorMap::iterator it = animated_cursors_.begin();
+        it != animated_cursors_.end(); ++it) {
+      XcursorImagesDestroy(it->second.second);  // also frees individual frames.
+      XFreeCursor(ui::GetXDisplay(), it->second.first);
+    }
   }
 
   // Returns true if we have an image resource loaded for the |native_cursor|.
   bool IsImageCursor(gfx::NativeCursor native_cursor) {
-    return cursors_.find(native_cursor.native_type()) != cursors_.end();
+    int type = native_cursor.native_type();
+    return cursors_.find(type) != cursors_.end() ||
+        animated_cursors_.find(type) != animated_cursors_.end();
   }
 
   // Gets the X Cursor corresponding to the |native_cursor|.
   ::Cursor ImageCursorFromNative(gfx::NativeCursor native_cursor) {
-    DCHECK(cursors_.find(native_cursor.native_type()) != cursors_.end());
-    return cursors_[native_cursor.native_type()];
+    int type = native_cursor.native_type();
+    if (animated_cursors_.find(type) != animated_cursors_.end())
+      return animated_cursors_[type].first;
+    DCHECK(cursors_.find(type) != cursors_.end());
+    return cursors_[type];
   }
 
  private:
@@ -400,8 +414,56 @@ class RootWindowHostLinux::ImageCursors {
     // |bitmap| is owned by the resource bundle. So we do not need to free it.
   }
 
+  // Creates an animated X Cursor from an image resource and puts it in the
+  // cursor map. The image is assumed to be a concatenation of animation frames.
+  // Also, each frame is assumed to be square (width == height)
+  void LoadAnimatedCursor(int id, int resource_id, int hot_x, int hot_y) {
+    const gfx::ImageSkia* image =
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
+    float actual_scale = 0;
+    const SkBitmap& bitmap = image->GetBitmapForScale(scale_factor_,
+                                                      scale_factor_,
+                                                      &actual_scale);
+    DCHECK_EQ(bitmap.config(), SkBitmap::kARGB_8888_Config);
+    int frame_width = bitmap.height();
+    int frame_height = frame_width;
+    int total_width = bitmap.width();
+    DCHECK_EQ(total_width % frame_width, 0);
+    int frame_count = total_width / frame_width;
+    DCHECK_GT(frame_count, 0);
+    XcursorImages* x_images = XcursorImagesCreate(frame_count);
+    x_images->nimage = frame_count;
+    bitmap.lockPixels();
+    unsigned int* pixels = bitmap.getAddr32(0, 0);
+    // Create each frame.
+    for (int i = 0; i < frame_count; ++i) {
+      XcursorImage* x_image = XcursorImageCreate(frame_width, frame_height);
+      for (int j = 0; j < frame_height; ++j) {
+        // Copy j'th row of i'th frame.
+        memcpy(x_image->pixels + j * frame_width,
+               pixels + i * frame_width + j * total_width,
+               frame_width * 4);
+      }
+      x_image->xhot = hot_x * actual_scale;
+      x_image->yhot = hot_y * actual_scale;
+      x_image->delay = kAnimatedCursorFrameDelayMs;
+      x_images->images[i] = x_image;
+    }
+    bitmap.unlockPixels();
+
+    animated_cursors_[id] = std::make_pair(
+        XcursorImagesLoadCursor(ui::GetXDisplay(), x_images), x_images);
+    // |bitmap| is owned by the resource bundle. So we do not need to free it.
+  }
+
   // A map to hold all image cursors. It maps the cursor ID to the X Cursor.
   std::map<int, Cursor> cursors_;
+
+  // A map to hold all animated cursors. It maps the cursor ID to the pair of
+  // the X Cursor and the corresponding XcursorImages. We need a pointer to the
+  // images so that we can free them on destruction.
+  typedef std::map<int, std::pair<Cursor, XcursorImages*> > AnimatedCursorMap;
+  AnimatedCursorMap animated_cursors_;
 
   float scale_factor_;
 
