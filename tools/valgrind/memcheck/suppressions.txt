@@ -5714,6 +5714,32 @@
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
 {
+   bug_128145
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK21WebDataServiceFactory23BuildServiceInstanceForEP7Profile
+   fun:_ZN36RefcountedProfileKeyedServiceFactory20GetServiceForProfileEP7Profileb
+   fun:_ZN21WebDataServiceFactory13GetForProfileEP7ProfileNS0_17ServiceAccessTypeE
+   fun:_ZN12TokenService10InitializeEPKcP7Profile
+   fun:_ZN13SigninManager10InitializeEP7Profile
+   fun:_ZNK20SigninManagerFactory23BuildServiceInstanceForEP7Profile
+   fun:_ZN26ProfileKeyedServiceFactory20GetServiceForProfileEP7Profileb
+   fun:_ZN20SigninManagerFactory13GetForProfileEP7Profile
+   fun:_ZNK25ProfileSyncServiceFactory23BuildServiceInstanceForEP7Profile
+   fun:_ZN26ProfileKeyedServiceFactory20GetServiceForProfileEP7Profileb
+   fun:_ZN25ProfileSyncServiceFactory13GetForProfileEP7Profile
+   fun:_ZN7BrowserC1ENS_4TypeEP7Profile
+   fun:_ZN7Browser6CreateEP7Profile
+   fun:_ZN25StartupBrowserCreatorImpl17OpenTabsInBrowserEP7BrowserbRKSt6vectorI10StartupTabSaIS3_EE
+   fun:_ZN25StartupBrowserCreatorImpl20ProcessSpecifiedURLsERKSt6vectorI4GURLSaIS1_EE
+   fun:_ZN25StartupBrowserCreatorImpl18ProcessStartupURLsERKSt6vectorI4GURLSaIS1_EE
+   fun:_ZN25StartupBrowserCreatorImpl17ProcessLaunchURLsEbRKSt6vectorI4GURLSaIS1_EE
+   fun:_ZN25StartupBrowserCreatorImpl6LaunchEP7ProfileRKSt6vectorI4GURLSaIS3_EEb
+   fun:_ZN21StartupBrowserCreator13LaunchBrowserERK11CommandLineP7ProfileRK8FilePathN7browser7startup16IsProcessStartupENS9_10IsFirstRunEPi
+   fun:_ZN21StartupBrowserCreator18ProcessCmdLineImplERK11CommandLineRK8FilePathbP7ProfileRKSt6vectorIS7_SaIS7_EEPiPS_
+   fun:_ZN21StartupBrowserCreator5StartERK11CommandLineRK8FilePathP7ProfileRKSt6vectorIS7_SaIS7_EEPi
+}
+{
    bug_130362
    Memcheck:Leak
    fun:_Znw*
