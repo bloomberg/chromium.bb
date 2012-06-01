@@ -41,4 +41,7 @@ void Shell::PlatformResizeSubViews() {
 void Shell::Close() {
 }
 
+void Shell::PlatformSetTitle(const string16& title) {
+}
+
 }  // namespace content

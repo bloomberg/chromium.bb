@@ -217,6 +217,10 @@ void Shell::PlatformResizeSubViews() {
   // Not needed; subviews are bound.
 }
 
+void Shell::PlatformSetTitle(const string16& title) {
+  // Meaningless on the Mac; widgets don't have a "title" attribute
+}
+
 void Shell::Close() {
   [window_ performClose:nil];
 }

@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/string_piece.h"
+#include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
@@ -224,6 +225,11 @@ gboolean Shell::OnHighlightURLView(GtkAccelGroup* accel_group,
                                    GdkModifierType modifier) {
   gtk_widget_grab_focus(GTK_WIDGET(url_edit_view_));
   return TRUE;
+}
+
+void Shell::PlatformSetTitle(const string16& title) {
+  std::string title_utf8 = UTF16ToUTF8(title);
+  gtk_window_set_title(GTK_WINDOW(window_), title_utf8.c_str());
 }
 
 }  // namespace content

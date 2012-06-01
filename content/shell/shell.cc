@@ -9,7 +9,11 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/shell_javascript_dialog_creator.h"
@@ -36,6 +40,8 @@ Shell::Shell(WebContents* web_contents)
       , default_edit_wnd_proc_(0)
 #endif
   {
+    registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
+        Source<WebContents>(web_contents));
     windows_.push_back(this);
 }
 
@@ -176,6 +182,20 @@ void Shell::DidFinishLoad(int64 frame_id,
   render_view_host->Send(
       new ShellViewMsg_CaptureTextDump(render_view_host->GetRoutingID(),
                                        false));
+}
+
+void Shell::Observe(int type,
+                    const NotificationSource& source,
+                    const NotificationDetails& details) {
+  if (type == NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED) {
+    std::pair<NavigationEntry*, bool>* title =
+        Details<std::pair<NavigationEntry*, bool> >(details).ptr();
+
+    if (title->first) {
+      string16 text = title->first->GetTitle();
+      PlatformSetTitle(text);
+    }
+  }
 }
 
 }  // namespace content

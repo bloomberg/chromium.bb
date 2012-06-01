@@ -41,6 +41,10 @@ void Shell::PlatformResizeSubViews() {
   // Not needed; subviews are bound.
 }
 
+void Shell::PlatformSetTitle(const string16& title) {
+  NOTIMPLEMENTED();
+}
+
 void Shell::Close() {
   // TODO(tedchoc): Implement Close method for android shell
   NOTIMPLEMENTED();
