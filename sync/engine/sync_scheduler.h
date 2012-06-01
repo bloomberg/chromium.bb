@@ -54,7 +54,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   // (except for RequestEarlyExit()).
 
   // |name| is a display string to identify the syncer thread.  Takes
-  // |ownership of both |context| and |syncer|.
+  // |ownership of |syncer|.
   SyncScheduler(const std::string& name,
                 sessions::SyncSessionContext* context, Syncer* syncer);
 
@@ -409,7 +409,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   // Invoked to run through the sync cycle.
   scoped_ptr<Syncer> syncer_;
 
-  scoped_ptr<sessions::SyncSessionContext> session_context_;
+  sessions::SyncSessionContext *session_context_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncScheduler);
 };

@@ -32,8 +32,7 @@ class UIModelWorker;
 // A class that keep track of the workers, change processors, and
 // routing info for the enabled sync types, and also routes change
 // events to the right processors.
-class SyncBackendRegistrar : public ModelSafeWorkerRegistrar,
-                             public sync_api::SyncManager::ChangeDelegate {
+class SyncBackendRegistrar : public sync_api::SyncManager::ChangeDelegate {
  public:
   // |initial_types| contains the initial set of types to sync
   // (initially put in the passive group).  |name| is used for
@@ -101,11 +100,8 @@ class SyncBackendRegistrar : public ModelSafeWorkerRegistrar,
       const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
   virtual void OnChangesComplete(syncable::ModelType model_type) OVERRIDE;
 
-  // ModelSafeWorkerRegistrar implementation.  May be called from any
-  // thread.
-  virtual void GetWorkers(
-      std::vector<ModelSafeWorker*>* out) OVERRIDE;
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) OVERRIDE;
+  void GetWorkers(std::vector<ModelSafeWorker*>* out);
+  void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out);
 
  private:
   typedef std::map<ModelSafeGroup,

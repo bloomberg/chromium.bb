@@ -79,7 +79,6 @@ using browser_sync::MockJsEventHandler;
 using browser_sync::MockJsReplyHandler;
 using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::ModelSafeWorker;
-using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::sessions::SyncSessionSnapshot;
 using browser_sync::TestUnrecoverableErrorHandler;
 using browser_sync::WeakHandle;
@@ -724,7 +723,6 @@ class SyncNotifierMock : public sync_notifier::SyncNotifier {
 }  // namespace
 
 class SyncManagerTest : public testing::Test,
-                        public ModelSafeWorkerRegistrar,
                         public SyncManager::ChangeDelegate {
  protected:
   enum NigoriStatus {
@@ -764,9 +762,8 @@ class SyncManagerTest : public testing::Test,
     EXPECT_CALL(*sync_notifier_mock_,
                 UpdateCredentials(credentials.email, credentials.sync_token));
     EXPECT_CALL(*sync_notifier_mock_, UpdateEnabledTypes(_)).
-        Times(AtLeast(1)).
-        WillRepeatedly(
-            Invoke(this, &SyncManagerTest::SyncNotifierUpdateEnabledTypes));
+            WillRepeatedly(
+                Invoke(this, &SyncManagerTest::SyncNotifierUpdateEnabledTypes));
     EXPECT_CALL(*sync_notifier_mock_, RemoveObserver(_)).
         WillOnce(Invoke(this, &SyncManagerTest::SyncNotifierRemoveObserver));
 
@@ -777,12 +774,16 @@ class SyncManagerTest : public testing::Test,
     EXPECT_FALSE(sync_notifier_observer_);
     EXPECT_FALSE(js_backend_.IsInitialized());
 
+    std::vector<ModelSafeWorker*> workers;
+    ModelSafeRoutingInfo routing_info;
+    GetModelSafeRoutingInfo(&routing_info);
+
     // Takes ownership of |sync_notifier_mock_|.
     sync_manager_.Init(temp_dir_.path(),
                        WeakHandle<JsEventHandler>(),
                        "bogus", 0, false,
                        base::MessageLoopProxy::current(),
-                       new TestHttpPostProviderFactory(), this,
+                       new TestHttpPostProviderFactory(), routing_info, workers,
                        &extensions_activity_monitor_, this, "bogus",
                        credentials,
                        sync_notifier_mock_, "",
@@ -794,12 +795,10 @@ class SyncManagerTest : public testing::Test,
     EXPECT_TRUE(sync_notifier_observer_);
     EXPECT_TRUE(js_backend_.IsInitialized());
 
-    EXPECT_EQ(1, update_enabled_types_call_count_);
+    EXPECT_EQ(0, update_enabled_types_call_count_);
 
-    ModelSafeRoutingInfo routes;
-    GetModelSafeRoutingInfo(&routes);
-    for (ModelSafeRoutingInfo::iterator i = routes.begin(); i != routes.end();
-         ++i) {
+    for (ModelSafeRoutingInfo::iterator i = routing_info.begin();
+         i != routing_info.end(); ++i) {
       type_roots_[i->first] = MakeServerNodeForType(
           sync_manager_.GetUserShare(), i->first);
     }
@@ -814,12 +813,7 @@ class SyncManagerTest : public testing::Test,
     PumpLoop();
   }
 
-  // ModelSafeWorkerRegistrar implementation.
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) OVERRIDE {
-    NOTIMPLEMENTED();
-    out->clear();
-  }
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) OVERRIDE {
+  void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
     (*out)[syncable::NIGORI] = browser_sync::GROUP_PASSIVE;
     (*out)[syncable::BOOKMARKS] = browser_sync::GROUP_PASSIVE;
     (*out)[syncable::THEMES] = browser_sync::GROUP_PASSIVE;
@@ -953,10 +947,15 @@ class SyncManagerTest : public testing::Test,
 };
 
 TEST_F(SyncManagerTest, UpdateEnabledTypes) {
+  EXPECT_EQ(0, update_enabled_types_call_count_);
+
+  ModelSafeRoutingInfo routes;
+  GetModelSafeRoutingInfo(&routes);
+  const syncable::ModelTypeSet enabled_types =
+        GetRoutingInfoTypes(routes);
+
+  sync_manager_.UpdateEnabledTypes(enabled_types);
   EXPECT_EQ(1, update_enabled_types_call_count_);
-  // Triggers SyncNotifierUpdateEnabledTypes.
-  sync_manager_.UpdateEnabledTypes();
-  EXPECT_EQ(2, update_enabled_types_call_count_);
 }
 
 TEST_F(SyncManagerTest, ProcessJsMessage) {

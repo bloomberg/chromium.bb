@@ -294,6 +294,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     DoInitializeOptions(
         MessageLoop* sync_loop,
         SyncBackendRegistrar* registrar,
+        const ModelSafeRoutingInfo& routing_info,
+        const std::vector<ModelSafeWorker*>& workers,
         ExtensionsActivityMonitor* extensions_activity_monitor,
         const WeakHandle<JsEventHandler>& event_handler,
         const GURL& service_url,
@@ -310,6 +312,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
     MessageLoop* sync_loop;
     SyncBackendRegistrar* registrar;
+    ModelSafeRoutingInfo routing_info;
+    std::vector<ModelSafeWorker*> workers;
     ExtensionsActivityMonitor* extensions_activity_monitor;
     WeakHandle<JsEventHandler> event_handler;
     GURL service_url;

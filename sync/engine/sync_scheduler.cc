@@ -266,7 +266,7 @@ void SyncScheduler::Start(Mode mode, const base::Closure& callback) {
 
 void SyncScheduler::SendInitialSnapshot() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  scoped_ptr<SyncSession> dummy(new SyncSession(session_context_.get(), this,
+  scoped_ptr<SyncSession> dummy(new SyncSession(session_context_, this,
       SyncSourceInfo(), ModelSafeRoutingInfo(),
       std::vector<ModelSafeWorker*>()));
   SyncEngineEvent event(SyncEngineEvent::STATUS_CHANGED);
@@ -439,8 +439,8 @@ void SyncScheduler::SaveJob(const SyncSessionJob& job) {
     DCHECK(mode_ == CONFIGURATION_MODE);
 
     SyncSession* old = job.session.get();
-    SyncSession* s(new SyncSession(session_context_.get(), this,
-        old->source(), old->routing_info(), old->workers()));
+    SyncSession* s(new SyncSession(session_context_, this, old->source(),
+                                   old->routing_info(), old->workers()));
     SyncSessionJob new_job(job.purpose, TimeTicks::Now(),
                            make_linked_ptr(s), false, job.from_here);
     wait_interval_->pending_configure_job.reset(new SyncSessionJob(new_job));
@@ -582,32 +582,33 @@ void SyncScheduler::ScheduleNudgeImpl(
 }
 
 // Helper to extract the routing info and workers corresponding to types in
-// |types| from |registrar|.
+// |types| from |current_routes| and |current_workers|.
 void GetModelSafeParamsForTypes(ModelTypeSet types,
-    ModelSafeWorkerRegistrar* registrar, ModelSafeRoutingInfo* routes,
-    std::vector<ModelSafeWorker*>* workers) {
-  ModelSafeRoutingInfo r_tmp;
-  std::vector<ModelSafeWorker*> w_tmp;
-  registrar->GetModelSafeRoutingInfo(&r_tmp);
-  registrar->GetWorkers(&w_tmp);
-
+    const ModelSafeRoutingInfo& current_routes,
+    const std::vector<ModelSafeWorker*>& current_workers,
+    ModelSafeRoutingInfo* result_routes,
+    std::vector<ModelSafeWorker*>* result_workers) {
   bool passive_group_added = false;
 
   typedef std::vector<ModelSafeWorker*>::const_iterator iter;
   for (ModelTypeSet::Iterator it = types.First();
        it.Good(); it.Inc()) {
     const syncable::ModelType t = it.Get();
-    DCHECK_EQ(1U, r_tmp.count(t));
-    (*routes)[t] = r_tmp[t];
-    iter w_tmp_it = std::find_if(w_tmp.begin(), w_tmp.end(),
-                                 ModelSafeWorkerGroupIs(r_tmp[t]));
-    if (w_tmp_it != w_tmp.end()) {
-      iter workers_it = std::find_if(workers->begin(), workers->end(),
-                                     ModelSafeWorkerGroupIs(r_tmp[t]));
-      if (workers_it == workers->end())
-        workers->push_back(*w_tmp_it);
+    ModelSafeRoutingInfo::const_iterator route = current_routes.find(t);
+    DCHECK(route != current_routes.end());
+    ModelSafeGroup group = route->second;
 
-      if (r_tmp[t] == GROUP_PASSIVE)
+    (*result_routes)[t] = group;
+    iter w_tmp_it = std::find_if(current_workers.begin(), current_workers.end(),
+                                 ModelSafeWorkerGroupIs(group));
+    if (w_tmp_it != current_workers.end()) {
+      iter result_workers_it = std::find_if(
+          result_workers->begin(), result_workers->end(),
+          ModelSafeWorkerGroupIs(group));
+      if (result_workers_it == result_workers->end())
+        result_workers->push_back(*w_tmp_it);
+
+      if (group == GROUP_PASSIVE)
         passive_group_added = true;
     } else {
         NOTREACHED();
@@ -616,10 +617,10 @@ void GetModelSafeParamsForTypes(ModelTypeSet types,
 
   // Always add group passive.
   if (passive_group_added == false) {
-    iter it = std::find_if(w_tmp.begin(), w_tmp.end(),
+    iter it = std::find_if(current_workers.begin(), current_workers.end(),
                            ModelSafeWorkerGroupIs(GROUP_PASSIVE));
-    if (it != w_tmp.end())
-      workers->push_back(*it);
+    if (it != current_workers.end())
+      result_workers->push_back(*it);
     else
       NOTREACHED();
   }
@@ -631,9 +632,12 @@ void SyncScheduler::ScheduleConfig(
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(IsConfigRelatedUpdateSourceValue(source));
   SDVLOG(2) << "Scheduling a config";
+
   ModelSafeRoutingInfo routes;
   std::vector<ModelSafeWorker*> workers;
-  GetModelSafeParamsForTypes(types, session_context_->registrar(),
+  GetModelSafeParamsForTypes(types,
+                             session_context_->routing_info(),
+                             session_context_->workers(),
                              &routes, &workers);
 
   PostTask(FROM_HERE, "ScheduleConfigImpl",
@@ -652,7 +656,7 @@ void SyncScheduler::ScheduleConfigImpl(
 
   SDVLOG(2) << "In ScheduleConfigImpl";
   // TODO(tim): config-specific GetUpdatesCallerInfo value?
-  SyncSession* session = new SyncSession(session_context_.get(), this,
+  SyncSession* session = new SyncSession(session_context_, this,
       SyncSourceInfo(source,
           syncable::ModelTypePayloadMapFromRoutingInfo(
               routing_info, std::string())),
@@ -971,7 +975,7 @@ void SyncScheduler::HandleContinuationError(
                                         length));
   if (old_job.purpose == SyncSessionJob::CONFIGURATION) {
     SyncSession* old = old_job.session.get();
-    SyncSession* s(new SyncSession(session_context_.get(), this,
+    SyncSession* s(new SyncSession(session_context_, this,
         old->source(), old->routing_info(), old->workers()));
     SyncSessionJob job(old_job.purpose, TimeTicks::Now() + length,
                         make_linked_ptr(s), false, FROM_HERE);
@@ -1075,16 +1079,12 @@ void SyncScheduler::DoPendingJobIfPossible(bool is_canary_job) {
 
 SyncSession* SyncScheduler::CreateSyncSession(const SyncSourceInfo& source) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  ModelSafeRoutingInfo routes;
-  std::vector<ModelSafeWorker*> workers;
-  session_context_->registrar()->GetModelSafeRoutingInfo(&routes);
   DVLOG(2) << "Creating sync session with routes "
-           << ModelSafeRoutingInfoToString(routes);
-  session_context_->registrar()->GetWorkers(&workers);
-  SyncSourceInfo info(source);
+           << ModelSafeRoutingInfoToString(session_context_->routing_info());
 
-  SyncSession* session(new SyncSession(session_context_.get(), this, info,
-      routes, workers));
+  SyncSourceInfo info(source);
+  SyncSession* session(new SyncSession(session_context_, this, info,
+      session_context_->routing_info(), session_context_->workers()));
 
   return session;
 }

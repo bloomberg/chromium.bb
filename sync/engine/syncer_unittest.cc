@@ -113,7 +113,6 @@ using sessions::SyncSession;
 
 class SyncerTest : public testing::Test,
                    public SyncSession::Delegate,
-                   public ModelSafeWorkerRegistrar,
                    public SyncEngineEventListener {
  protected:
   SyncerTest()
@@ -147,12 +146,11 @@ class SyncerTest : public testing::Test,
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE {
   }
 
-  // ModelSafeWorkerRegistrar implementation.
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) OVERRIDE {
+  void GetWorkers(std::vector<ModelSafeWorker*>* out) {
     out->push_back(worker_.get());
   }
 
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) OVERRIDE {
+  void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
     // We're just testing the sync engine here, so we shunt everything to
     // the SyncerThread.  Datatypes which aren't enabled aren't in the map.
     for (syncable::ModelTypeSet::Iterator it = enabled_datatypes_.First();
@@ -227,9 +225,16 @@ class SyncerTest : public testing::Test,
     worker_ = new FakeModelWorker(GROUP_PASSIVE);
     std::vector<SyncEngineEventListener*> listeners;
     listeners.push_back(this);
+
+    ModelSafeRoutingInfo routing_info;
+    std::vector<ModelSafeWorker*> workers;
+
+    GetModelSafeRoutingInfo(&routing_info);
+    GetWorkers(&workers);
+
     context_.reset(
         new SyncSessionContext(
-            mock_server_.get(), directory(), this,
+            mock_server_.get(), directory(), routing_info, workers,
             &extensions_activity_monitor_, listeners, NULL,
             &traffic_recorder_));
     ASSERT_FALSE(context_->resolver());
@@ -453,11 +458,27 @@ class SyncerTest : public testing::Test,
 
   void EnableDatatype(syncable::ModelType model_type) {
     enabled_datatypes_.Put(model_type);
+
+    ModelSafeRoutingInfo routing_info;
+    GetModelSafeRoutingInfo(&routing_info);
+
+    if (context_.get()) {
+      context_->set_routing_info(routing_info);
+    }
+
     mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
   }
 
   void DisableDatatype(syncable::ModelType model_type) {
     enabled_datatypes_.Remove(model_type);
+
+    ModelSafeRoutingInfo routing_info;
+    GetModelSafeRoutingInfo(&routing_info);
+
+    if (context_.get()) {
+      context_->set_routing_info(routing_info);
+    }
+
     mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
   }
 

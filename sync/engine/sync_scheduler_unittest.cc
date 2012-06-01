@@ -11,7 +11,7 @@
 #include "sync/engine/sync_scheduler.h"
 #include "sync/engine/syncer.h"
 #include "sync/sessions/test_util.h"
-#include "sync/test/engine/fake_model_safe_worker_registrar.h"
+#include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/mock_connection_manager.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
 #include "sync/test/fake_extensions_activity_monitor.h"
@@ -87,16 +87,27 @@ class SyncSchedulerTest : public testing::Test {
     dir_maker_.SetUp();
     syncer_ = new MockSyncer();
     delay_ = NULL;
+
     ModelSafeRoutingInfo routing_info;
     routing_info[syncable::BOOKMARKS] = GROUP_UI;
     routing_info[syncable::AUTOFILL] = GROUP_DB;
     routing_info[syncable::THEMES] = GROUP_UI;
     routing_info[syncable::NIGORI] = GROUP_PASSIVE;
-    registrar_.reset(new FakeModelSafeWorkerRegistrar(routing_info));
+
+    workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
+    workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_DB)));
+    workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_PASSIVE)));
+
+    std::vector<ModelSafeWorker*> workers;
+    for (std::vector<scoped_refptr<FakeModelWorker> >::iterator it =
+         workers_.begin(); it != workers_.end(); ++it) {
+      workers.push_back(it->get());
+    }
+
     connection_.reset(new MockConnectionManager(directory()));
     connection_->SetServerReachable();
     context_ = new SyncSessionContext(
-        connection_.get(), directory(), registrar_.get(),
+        connection_.get(), directory(), routing_info, workers,
         &extensions_activity_monitor_,
         std::vector<SyncEngineEventListener*>(), NULL, NULL);
     context_->set_notifications_enabled(true);
@@ -200,7 +211,7 @@ class SyncSchedulerTest : public testing::Test {
   SyncSessionContext* context_;
   MockSyncer* syncer_;
   MockDelayProvider* delay_;
-  scoped_ptr<FakeModelSafeWorkerRegistrar> registrar_;
+  std::vector<scoped_refptr<FakeModelWorker> > workers_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
 };
 
@@ -1142,8 +1153,7 @@ TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
 TEST_F(SyncSchedulerTest, SetsPreviousRoutingInfo) {
   ModelSafeRoutingInfo info;
   EXPECT_TRUE(info == context()->previous_session_routing_info());
-  ModelSafeRoutingInfo expected;
-  context()->registrar()->GetModelSafeRoutingInfo(&expected);
+  ModelSafeRoutingInfo expected(context()->routing_info());
   ASSERT_FALSE(expected.empty());
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(1);
 

@@ -42,8 +42,7 @@ class MockDebugInfoGetter : public browser_sync::sessions::DebugInfoGetter {
 // SyncerCommands, providing convenient access to a test directory
 // and a syncer session.
 class SyncerCommandTestBase : public testing::Test,
-                              public sessions::SyncSession::Delegate,
-                              public ModelSafeWorkerRegistrar {
+                              public sessions::SyncSession::Delegate {
  public:
   enum UseMockDirectory {
     USE_MOCK_DIRECTORY
@@ -77,13 +76,14 @@ class SyncerCommandTestBase : public testing::Test,
     return;
   }
 
-  // ModelSafeWorkerRegistrar implementation.
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) OVERRIDE {
+  std::vector<ModelSafeWorker*> GetWorkers() {
+    std::vector<ModelSafeWorker*> workers;
     std::vector<scoped_refptr<ModelSafeWorker> >::iterator it;
     for (it = workers_.begin(); it != workers_.end(); ++it)
-      out->push_back(*it);
+      workers.push_back(*it);
+    return workers;
   }
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) OVERRIDE {
+  void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
     ModelSafeRoutingInfo copy(routing_info_);
     out->swap(copy);
   }
@@ -97,7 +97,6 @@ class SyncerCommandTestBase : public testing::Test,
 
   sessions::SyncSessionContext* context() const { return context_.get(); }
   sessions::SyncSession::Delegate* delegate() { return this; }
-  ModelSafeWorkerRegistrar* registrar() { return this; }
 
   // Lazily create a session requesting all datatypes with no payload.
   sessions::SyncSession* session() {
@@ -110,8 +109,7 @@ class SyncerCommandTestBase : public testing::Test,
   // Create a session with the provided source.
   sessions::SyncSession* session(const sessions::SyncSourceInfo& source) {
     if (!session_.get()) {
-      std::vector<ModelSafeWorker*> workers;
-      GetWorkers(&workers);
+      std::vector<ModelSafeWorker*> workers = GetWorkers();
       session_.reset(new sessions::SyncSession(context(), delegate(), source,
                      routing_info_, workers));
     }
@@ -125,7 +123,7 @@ class SyncerCommandTestBase : public testing::Test,
   void ResetContext() {
     context_.reset(new sessions::SyncSessionContext(
             mock_server_.get(), directory(),
-            registrar(), &extensions_activity_monitor_,
+            routing_info_, GetWorkers(), &extensions_activity_monitor_,
             std::vector<SyncEngineEventListener*>(),
             &mock_debug_info_getter_,
             &traffic_recorder_));

@@ -15,6 +15,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time.h"
+#include "sync/engine/model_safe_worker.h"
 #include "sync/internal_api/change_record.h"
 #include "sync/internal_api/configure_reason.h"
 #include "sync/protocol/sync_protocol_error.h"
@@ -29,7 +30,6 @@ struct Experiments;
 class ExtensionsActivityMonitor;
 class JsBackend;
 class JsEventHandler;
-class ModelSafeWorkerRegistrar;
 
 namespace sessions {
 class SyncSessionSnapshot;
@@ -447,7 +447,8 @@ class SyncManager {
             bool use_ssl,
             const scoped_refptr<base::TaskRunner>& blocking_task_runner,
             HttpPostProviderFactory* post_factory,
-            browser_sync::ModelSafeWorkerRegistrar* registrar,
+            const browser_sync::ModelSafeRoutingInfo& model_safe_routing_info,
+            const std::vector<browser_sync::ModelSafeWorker*>& workers,
             browser_sync::ExtensionsActivityMonitor*
                 extensions_activity_monitor,
             ChangeDelegate* change_delegate,
@@ -466,20 +467,18 @@ class SyncManager {
   // testing).
   void ThrowUnrecoverableError();
 
-  // Check if the database has been populated with a full "initial" download of
-  // sync items for each data type currently present in the routing info.
-  // Prerequisite for calling this is that OnInitializationComplete has been
-  // called.  May be called from any thread.
-  bool InitialSyncEndedForAllEnabledTypes();
+  // Returns the set of types for which we have stored some sync data.
+  syncable::ModelTypeSet InitialSyncEndedTypes();
 
   // Update tokens that we're using in Sync. Email must stay the same.
   void UpdateCredentials(const SyncCredentials& credentials);
 
   // Called when the user disables or enables a sync type.
-  void UpdateEnabledTypes();
+  void UpdateEnabledTypes(const syncable::ModelTypeSet& enabled_types);
 
   // Put the syncer in normal mode ready to perform nudges and polls.
-  void StartSyncingNormally();
+  void StartSyncingNormally(
+      const browser_sync::ModelSafeRoutingInfo& routing_info);
 
   // Attempts to re-encrypt encrypted data types using the passphrase provided.
   // Notifies observers of the result of the operation via OnPassphraseAccepted
@@ -506,10 +505,12 @@ class SyncManager {
 
   // Switches the mode of operation to CONFIGURATION_MODE and
   // schedules a config task to fetch updates for |types|.
-  void RequestConfig(syncable::ModelTypeSet types,
+  void RequestConfig(const browser_sync::ModelSafeRoutingInfo& routing_info,
+                     const syncable::ModelTypeSet& types,
                      sync_api::ConfigureReason reason);
 
-  void RequestCleanupDisabledTypes();
+  void RequestCleanupDisabledTypes(
+      const browser_sync::ModelSafeRoutingInfo& routing_info);
 
   // Request a clearing of all data on the server
   void RequestClearServerData();

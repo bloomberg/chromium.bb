@@ -373,8 +373,6 @@
         'test/null_transaction_observer.h',
         'test/engine/test_directory_setter_upper.cc',
         'test/engine/test_directory_setter_upper.h',
-        'test/engine/fake_model_safe_worker_registrar.cc',
-        'test/engine/fake_model_safe_worker_registrar.h',
         'test/engine/fake_model_worker.cc',
         'test/engine/fake_model_worker.h',
         'test/engine/mock_connection_manager.cc',

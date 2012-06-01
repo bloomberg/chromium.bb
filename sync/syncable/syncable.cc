@@ -1020,6 +1020,11 @@ void Directory::SetDownloadProgress(
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
+ModelTypeSet Directory::initial_sync_ended_types() const {
+  ScopedKernelLock lock(this);
+  return kernel_->persisted_info.initial_sync_ended;
+}
+
 bool Directory::initial_sync_ended_for_type(ModelType type) const {
   ScopedKernelLock lock(this);
   return kernel_->persisted_info.initial_sync_ended.Has(type);

@@ -82,31 +82,6 @@ syncable::ModelTypeSet GetRoutingInfoTypes(
 ModelSafeGroup GetGroupForModelType(const syncable::ModelType type,
                                     const ModelSafeRoutingInfo& routes);
 
-// Maintain the up-to-date state regarding which ModelSafeWorkers exist and
-// which types get routed to which worker.  When a sync session begins, it will
-// snapshot the state at that instant, and will use that for the entire
-// session.  This means if a model becomes synced (or unsynced) by the user
-// during a sync session, that session will complete and be unaware of this
-// change -- it will only get picked up for the next session.
-// TODO(tim): That's really the only way I can make sense of it in the Syncer
-// HOWEVER, it is awkward for running ModelAssociation. We need to make sure
-// we don't run such a thing until an active session wraps up.
-class ModelSafeWorkerRegistrar {
- public:
-  ModelSafeWorkerRegistrar() { }
-  // Get the current list of active ModelSafeWorkers.  Should be threadsafe.
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) = 0;
-
-  // Get the current routing information for all enabled model types.
-  // If a model type is not enabled (that is, if the syncer should not
-  // be trying to sync it), it is not in this map.
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) = 0;
- protected:
-  virtual ~ModelSafeWorkerRegistrar() {}
- private:
-  DISALLOW_COPY_AND_ASSIGN(ModelSafeWorkerRegistrar);
-};
-
 }  // namespace browser_sync
 
 #endif  // SYNC_ENGINE_MODEL_SAFE_WORKER_H_

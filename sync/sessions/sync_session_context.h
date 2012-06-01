@@ -39,7 +39,6 @@ namespace browser_sync {
 
 class ConflictResolver;
 class ExtensionsActivityMonitor;
-class ModelSafeWorkerRegistrar;
 class ServerConnectionManager;
 
 // Default number of items a client can commit in a single message.
@@ -53,7 +52,8 @@ class SyncSessionContext {
  public:
   SyncSessionContext(ServerConnectionManager* connection_manager,
                      syncable::Directory* directory,
-                     ModelSafeWorkerRegistrar* model_safe_worker_registrar,
+                     const ModelSafeRoutingInfo& model_safe_routing_info,
+                     const std::vector<ModelSafeWorker*>& workers,
                      ExtensionsActivityMonitor* extensions_activity_monitor,
                      const std::vector<SyncEngineEventListener*>& listeners,
                      DebugInfoGetter* debug_info_getter,
@@ -71,9 +71,18 @@ class SyncSessionContext {
     return directory_;
   }
 
-  ModelSafeWorkerRegistrar* registrar() {
-    return registrar_;
+  const ModelSafeRoutingInfo& routing_info() const {
+    return routing_info_;
   }
+
+  void set_routing_info(const ModelSafeRoutingInfo& routing_info) {
+    routing_info_ = routing_info;
+  }
+
+  const std::vector<ModelSafeWorker*> workers() const {
+    return workers_;
+  }
+
   ExtensionsActivityMonitor* extensions_monitor() {
     return extensions_activity_monitor_;
   }
@@ -150,9 +159,12 @@ class SyncSessionContext {
   ServerConnectionManager* const connection_manager_;
   syncable::Directory* const directory_;
 
-  // A registrar of workers capable of processing work closures on a thread
-  // that is guaranteed to be safe for model modifications.
-  ModelSafeWorkerRegistrar* registrar_;
+  // A cached copy of SyncBackendRegistrar's routing info.
+  // Must be updated manually when SBR's state is modified.
+  ModelSafeRoutingInfo routing_info_;
+
+  // The set of ModelSafeWorkers.  Used to execute tasks of various threads.
+  const std::vector<ModelSafeWorker*> workers_;
 
   // We use this to stuff extensions activity into CommitMessages so the server
   // can correlate commit traffic with extension-related bookmark mutations.

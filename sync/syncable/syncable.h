@@ -868,6 +868,7 @@ class Directory {
       ModelType type,
       const sync_pb::DataTypeProgressMarker& value);
 
+  ModelTypeSet initial_sync_ended_types() const;
   bool initial_sync_ended_for_type(ModelType type) const;
   void set_initial_sync_ended_for_type(ModelType type, bool value);
 

@@ -27,8 +27,7 @@ namespace sessions {
 namespace {
 
 class SyncSessionTest : public testing::Test,
-                        public SyncSession::Delegate,
-                        public ModelSafeWorkerRegistrar {
+                        public SyncSession::Delegate {
  public:
   SyncSessionTest() : controller_invocations_allowed_(false) {}
 
@@ -40,9 +39,15 @@ class SyncSessionTest : public testing::Test,
   }
 
   virtual void SetUp() {
+    ModelSafeRoutingInfo routing_info;
+    std::vector<ModelSafeWorker*> workers;
+
+    GetModelSafeRoutingInfo(&routing_info);
+    GetWorkers(&workers);
+
     context_.reset(
         new SyncSessionContext(
-            NULL, NULL, this, &extensions_activity_monitor_,
+            NULL, NULL, routing_info, workers, &extensions_activity_monitor_,
             std::vector<SyncEngineEventListener*>(), NULL, NULL));
     routes_.clear();
     routes_[syncable::BOOKMARKS] = GROUP_UI;
@@ -91,15 +96,14 @@ class SyncSessionTest : public testing::Test,
     FailControllerInvocationIfDisabled("SyncProtocolError");
   }
 
-  // ModelSafeWorkerRegistrar implementation.
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) OVERRIDE {
+  void GetWorkers(std::vector<ModelSafeWorker*>* out) const {
     out->clear();
     for (std::vector<scoped_refptr<ModelSafeWorker> >::const_iterator it =
              workers_.begin(); it != workers_.end(); ++it) {
       out->push_back(it->get());
     }
   }
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) OVERRIDE {
+  void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const {
     *out = routes_;
   }
 
