@@ -120,20 +120,23 @@ void RootDidAddSubview(id self, SEL _cmd, NSView* subview) {
         NSView* rootView = [[self contentView] superview];
         const NSRect rootBounds = [rootView bounds];
 
-        const CGFloat kEdgeInset = 16;
+        // On 10.7/8, the bottom corners of the window are rounded by magic at a
+        // deeper level than the NSThemeFrame, so it is OK to have the opaques
+        // go all the way to the bottom.
+        const CGFloat kTopEdgeInset = 16;
         const CGFloat kAlphaValueJustOpaqueEnough = 0.002;
 
         scoped_nsobject<NSView> leftOpaque([[OpaqueView alloc] initWithFrame:
-            NSMakeRect(NSMinX(rootBounds), NSMinY(rootBounds) + kEdgeInset,
-                       1, NSHeight(rootBounds) - 2 * kEdgeInset)]);
+            NSMakeRect(NSMinX(rootBounds), NSMinY(rootBounds),
+                       1, NSHeight(rootBounds) - kTopEdgeInset)]);
         [leftOpaque setAutoresizingMask:NSViewMaxXMargin |
                                         NSViewHeightSizable];
         [leftOpaque setAlphaValue:kAlphaValueJustOpaqueEnough];
         [rootView addSubview:leftOpaque];
 
         scoped_nsobject<NSView> rightOpaque([[OpaqueView alloc] initWithFrame:
-            NSMakeRect(NSMaxX(rootBounds) - 1, NSMinY(rootBounds) + kEdgeInset,
-                       1, NSHeight(rootBounds) - 2 * kEdgeInset)]);
+            NSMakeRect(NSMaxX(rootBounds) - 1, NSMinY(rootBounds),
+                       1, NSHeight(rootBounds) - kTopEdgeInset)]);
         [rightOpaque setAutoresizingMask:NSViewMinXMargin |
                                          NSViewHeightSizable];
         [rightOpaque setAlphaValue:kAlphaValueJustOpaqueEnough];
