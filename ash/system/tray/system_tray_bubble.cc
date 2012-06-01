@@ -668,11 +668,23 @@ void SystemTrayBubble::CreateItemViews(user::LoginStatus login_status) {
   }
 }
 
-void SystemTrayBubble::ProcessLocatedEvent(const aura::LocatedEvent& event) {
+bool SystemTrayBubble::ProcessLocatedEvent(const aura::LocatedEvent& event) {
   DCHECK_NE(BUBBLE_TYPE_NOTIFICATION, bubble_type_);
   gfx::Rect bounds = bubble_widget_->GetNativeWindow()->GetBoundsInRootWindow();
-  if (!bounds.Contains(event.root_location()))
-    bubble_widget_->Close();
+  if (bounds.Contains(event.root_location()))
+    return false;
+
+  bubble_widget_->Close();
+
+  // If the user clicks on the tray while the bubble is up, then the bubble will
+  // close. But after the mouse-up event on the tray, the bubble will show up
+  // again. To prevent this from happening, if this mouse-press event that
+  // closed the bubble is on the system tray, then do not let the event reach
+  // the tray.
+  bounds = tray_->GetWidget()->GetNativeWindow()->GetBoundsInRootWindow();
+  if (bounds.Contains(event.root_location()))
+    return true;
+  return false;
 }
 
 bool SystemTrayBubble::PreHandleKeyEvent(aura::Window* target,
@@ -683,14 +695,14 @@ bool SystemTrayBubble::PreHandleKeyEvent(aura::Window* target,
 bool SystemTrayBubble::PreHandleMouseEvent(aura::Window* target,
                                            aura::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
-    ProcessLocatedEvent(*event);
+    return ProcessLocatedEvent(*event);
   return false;
 }
 
 ui::TouchStatus SystemTrayBubble::PreHandleTouchEvent(aura::Window* target,
                                                       aura::TouchEvent* event) {
-  if (event->type() == ui::ET_TOUCH_PRESSED)
-    ProcessLocatedEvent(*event);
+  if (event->type() == ui::ET_TOUCH_PRESSED && ProcessLocatedEvent(*event))
+    return ui::TOUCH_STATUS_END;
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 

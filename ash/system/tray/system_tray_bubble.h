@@ -124,7 +124,8 @@ class SystemTrayBubble : public aura::EventFilter,
   void CreateItemViews(user::LoginStatus login_status);
 
   // Closes the bubble if the event happened outside the bounds.
-  void ProcessLocatedEvent(const aura::LocatedEvent& event);
+  // Returns true if the event should be stopped from being propagated farther.
+  bool ProcessLocatedEvent(const aura::LocatedEvent& event);
 
   // Overridden from aura::EventFilter.
   virtual bool PreHandleKeyEvent(aura::Window* target,
