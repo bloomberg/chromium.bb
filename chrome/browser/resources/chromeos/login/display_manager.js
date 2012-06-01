@@ -104,13 +104,18 @@ cr.define('cr.ui.login', function() {
     /**
      * Appends buttons to the button strip.
      * @param {Array} buttons Array with the buttons to append.
+     * @param {string} screenId Id of the screen that buttons belong to.
      */
-    appendButtons_: function(buttons) {
+    appendButtons_: function(buttons, screenId) {
       if (buttons) {
-        var buttonStrip = $('button-strip');
-        for (var i = 0; i < buttons.length; ++i) {
-          var button = buttons[i];
-          buttonStrip.appendChild(button);
+        var buttonStrip = null;
+        if (this.isNewOobe())
+          buttonStrip = $(screenId + '-controls');
+        else
+          buttonStrip = $('button-strip');
+        if (buttonStrip) {
+          for (var i = 0; i < buttons.length; ++i)
+            buttonStrip.appendChild(buttons[i]);
         }
       }
     },
@@ -173,6 +178,8 @@ cr.define('cr.ui.login', function() {
 
       // Adjust inner container height based on new step's height.
       $('inner-container').style.height = newStep.offsetHeight + 'px';
+      if (this.isNewOobe())
+        $('inner-container').style.width = newStep.offsetWidth + 'px';
 
       if (this.currentStep_ != nextStepIndex &&
           !oldStep.classList.contains('hidden')) {
@@ -248,7 +255,7 @@ cr.define('cr.ui.login', function() {
       dot.className = 'progdot';
       $('progress').appendChild(dot);
 
-      this.appendButtons_(el.buttons);
+      this.appendButtons_(el.buttons, screenId);
     },
 
     /**
@@ -260,7 +267,7 @@ cr.define('cr.ui.login', function() {
       for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
         var screen = $(screenId);
         $('header-' + screenId).textContent = screen.header;
-        this.appendButtons_(screen.buttons);
+        this.appendButtons_(screen.buttons, screenId);
         if (screen.updateLocalizedContent)
           screen.updateLocalizedContent();
       }
@@ -292,6 +299,13 @@ cr.define('cr.ui.login', function() {
      */
     isOobeUI: function() {
       return !document.body.classList.contains('login-display');
+    },
+
+    /**
+     * Returns true if new OOBE design is used.
+     */
+    isNewOobe: function() {
+      return document.documentElement.getAttribute('oobe') == 'new';
     }
   };
 

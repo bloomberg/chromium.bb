@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-#gaia-signin {
+html[oobe=old] #gaia-signin {
   -webkit-box-align: center;
   -webkit-box-pack: center;
   display: -webkit-box;
@@ -12,9 +12,12 @@
 
 #signin-right {
   font-size: 12px;
-  position: absolute;
   top: 60px;
   width: 200px;
+}
+
+html[oobe=old] #signin-right {
+  position: absolute;
 }
 
 /*  For touch-optimized UI, make the links bigger. */
@@ -22,15 +25,20 @@ html[touch-optimized] #signin-right {
   font-size: 14px;
 }
 
-html[dir=ltr] #signin-right {
+html[dir=ltr][oobe=old] #signin-right {
   right: -150px;  /* ('gaia-sign'.width - 'signin-frame'.width) / 2 -
                      desiredGap - 'signin-right'.width =
                      (640 - 340) / 2 - 100 - 200 = -150
                    */
 }
 
-html[dir=rtl] #signin-right {
+html[dir=rtl][oobe=old] #signin-right {
   left: -150px;
+}
+
+html[oobe=new] #signin-right {
+  -webkit-margin-before: 80px;
+  -webkit-margin-start: 30px;
 }
 
 .signin-text {
@@ -45,17 +53,18 @@ html[dir=rtl] #signin-right {
 }
 
 #signin-frame {
-  background-color: #fefefe;
-  border: 1px solid lightgray;
   height: 100%;
   width: 340px;
 }
 
+html[oobe=old] #signin-frame {
+  background-color: #fefefe;
+  border: 1px solid lightgray;
+}
+
 html[oobe=new] #signin-frame {
   background-color: transparent;
-  background-image: -webkit-linear-gradient(top,
-                                            rgba(255, 255, 255, 0.988281),
-                                            rgba(255, 255, 255, 0.949219));
+  border-right: 1px solid lightgray;
 }
 
 #gaia-loading {

@@ -13,11 +13,14 @@ body {
 }
 
 body {
-  background-color: #fefefe;
   font-size: 14px;
   margin: 0;
   overflow: hidden;
   padding: 0;
+}
+
+html[oobe=old] body {
+  background-color: #fefefe;
 }
 
 html[oobe=new]:not([screen=lock]) body {
@@ -63,18 +66,32 @@ button.custom-appearance:focus {
   top: 0;
 }
 
-#oobe {
+html[oobe=old] #oobe {
   margin-top: 20px;  /* Compensate bottom header to center content. */
 }
 
+html[oobe=new] #oobe {
+  margin-top: 40px;  /* Compensate bottom header to center content. */
+}
+
 #inner-container {
+  /* Height/width of each step is set manually,
+     see DisplayManager.toggleStep_() */
   height: 294px;
-  padding: 20px;
   position: relative;
   width: 640px;
 }
 
+html[oobe=old] #inner-container {
+  padding: 20px;
+}
+
+html[oobe=new] #inner-container {
+  padding: 0;
+}
+
 #security-info a,
+#security-tpm a,
 #eula a {
   color: rgb(0, 102, 104);
   text-decoration: none;
@@ -117,6 +134,11 @@ hr.bottom {
   height: 47px;
   line-height: 45px;
   padding-top: 1px;
+}
+
+/* TODO(nkostylev): Remove all #header, #header-sections related rules. */
+html[oobe=new] #header {
+  display: none;
 }
 
 #header span {
@@ -170,19 +192,78 @@ html[dir=rtl]  .header-section.left {
   right: -20px;
 }
 
-.step {
+html[oobe=old] .step-logo {
+  display: none;
+}
+
+.step-logo {
+  position: absolute;
+  top: 15px;
+}
+
+html[dir=ltr] .step-logo {
+  left: 17px;
+}
+
+html[dir=rtl] .step-logo {
+  right: 17px;
+}
+
+html[oobe=new] #connect .step-contents {
+  /* TODO(nkostylev): Update after content layout changes. */
+  -webkit-margin-after: 82px;
+  -webkit-margin-before: 82px;
+  -webkit-margin-start: 145px;
+}
+
+html[oobe=new] #eula .step-contents {
+  -webkit-margin-after: 30px;
+  -webkit-margin-start: 32px;
+}
+
+html[oobe=new] #gaia-signin .step-contents {
+  -webkit-box-pack: center;
+  display: -webkit-box;
+}
+
+html[oobe=new] #user-image .step-contents {
+  -webkit-margin-after: 30px;
+  -webkit-margin-start: 31px;
+}
+
+html[oobe=new] #user-image-screen-curtain {
+  -webkit-margin-start: 8px;
+}
+
+html[oobe=new] #user-image-screen-description {
+  -webkit-margin-before: 0;
+}
+
+html[oobe=old] .step {
   min-height: 294px;
   opacity: 1;
   position: absolute;
   width: 640px;
 }
 
+html[oobe=new] .step {
+  background: -webkit-linear-gradient(rgba(255,255,255,0.99),
+                                      rgba(255,255,255,0.95));
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
+              0 4px 23px 5px rgba(0, 0, 0, 0.2),
+              0 2px 6px rgba(0, 0, 0, 0.15);
+  position: absolute;
+}
+
 html[dir=ltr] .step {
+  /* TODO(nkostylev): Change to new transitions. */
   -webkit-transition: left 200ms, opacity 200ms, visibility 200ms ease-in-out;
   left: 0;
 }
 
 html[dir=rtl] .step {
+  /* TODO(nkostylev): Change to new transitions. */
   -webkit-transition: right 200ms, opacity 200ms, visibility 200ms ease-in-out;
   right: 0;
 }
@@ -195,11 +276,11 @@ html[dir=rtl] .step {
   left: -50px;
 }
 
-html[dir=rtl]  .step.right {
+html[dir=rtl] .step.right {
   right: 100px;
 }
 
-html[dir=rtl]  .step.left {
+html[dir=rtl] .step.left {
   right: -50px;
 }
 
@@ -207,15 +288,28 @@ html[dir=rtl]  .step.left {
   visibility: hidden;
 }
 
-.faded,
-.left,
-.right {
+/* Have to add attribute selector here otherwise style html[oobe=old] .step
+   has more points. */
+html[oobe=old] .faded,
+html[oobe=old] .left,
+html[oobe=old] .right {
+  opacity: 0;
+}
+
+html[oobe=new] .faded,
+html[oobe=new] .left,
+html[oobe=new] .right {
   opacity: 0;
 }
 
 #footer {
   -webkit-box-align: center;
   display: -webkit-box;
+}
+
+/* TODO(nkostylev): Remove all #footer related rules. */
+html[oobe=new] #footer {
+  display: none;
 }
 
 #progress {
@@ -268,9 +362,41 @@ html[dir=rtl]  .step.left {
   max-width: 250px;
 }
 
-#connect {
+html[oobe=old] #connect {
   box-sizing: border-box;
   padding: 60px 0 0 145px;
+}
+
+/* Padding for header and buttons. */
+/* TODO(nkostylev): Extract common style for OOBE steps. */
+html[oobe=new] #connect {
+  min-height: 304px;
+  padding: 70px 17px 21px 17px;
+  width: 688px;
+}
+
+html[oobe=new] #eula {
+  min-height: 304px;
+  padding: 70px 17px 21px 17px;
+  width: 688px;
+}
+
+html[oobe=new] #update {
+  min-height: 284px;
+  padding: 70px 17px 69px 17px;    /* Screen has no controls. */
+  width: 688px;
+}
+
+html[oobe=new] #gaia-signin {
+  height: 470px;
+  padding: 70px 17px 69px 17px;    /* Screen has no controls. */
+  width: 688px;
+}
+
+html[oobe=new] #user-image {
+  min-height: 352px;
+  padding: 70px 17px 21px 17px;
+  width: 688px;
 }
 
 #logging {
@@ -278,6 +404,10 @@ html[dir=rtl]  .step.left {
   font-size: small;
   margin-top: 20px;
   width: 500px;
+}
+
+html[oobe=new] #logging {
+  width: 620px;
 }
 
 #logging div {
@@ -289,7 +419,7 @@ html[dir=rtl]  .step.left {
   -webkit-margin-end: 10px;
 }
 
-#user-image {
+html[oobe=old] #user-image {
   margin: 0 20px;
 }
 
@@ -376,6 +506,7 @@ html[dir=rtl] #user-image-preview {
   margin: 8px 4px;
 }
 
+/* TODO(nkostylev): Remove footer, button-strip styles. */
 #footer {
   height: 28px;  /* Same as button height */
 }
@@ -390,6 +521,16 @@ html[dir=rtl] #user-image-preview {
   -webkit-box-flex: 1;
   -webkit-box-pack: end;
   display: -webkit-box;
+}
+
+.step-controls {
+  -webkit-box-pack: end;
+  display: -webkit-box;
+  height: 28px
+}
+
+html[oobe=old] .step-controls {
+  display: none;
 }
 
 #oobe.connect #continue-button,
@@ -427,6 +568,8 @@ html[dir=rtl] #user-image-preview {
   margin: 7em auto;
 }
 
+/* TODO(nkostylev): Cleanup, security-info - old design,
+   security-tpm - new design. */
 #security-info {
   bottom: 10px;
   left: 0;
@@ -446,12 +589,39 @@ html[dir=rtl] #user-image-preview {
   visibility: visible;
 }
 
-#update div,
+html[oobe=new] #security-info {
+  display: none;
+}
+
+/* TODO(nkostylev): Remove #security-tpm element and rules. */
+html[oobe=old] #security-tpm {
+  display: none;
+}
+
+#security-tpm a {
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+#security-tpm {
+  bottom: 21px;
+  position: absolute;
+}
+
+html[dir=ltr] #security-tpm {
+  left: 49px;
+}
+
+html[dir=rtl] #security-tpm {
+  right: 49px;
+}
+
+html[oobe=old] #update div,
 #update #update-screen-curtain {
   width: 32em;
 }
 
-#update div {
+html[oobe=old] #update div {
   margin: 6em auto;
 }
 
@@ -463,7 +633,21 @@ html[dir=rtl] #user-image-preview {
   -webkit-box-align: start;
   -webkit-box-pack: center;
   display: -webkit-box;
+}
+
+html[oobe=old] #update #update-screen-curtain {
   margin: 9em auto;
+}
+
+html[oobe=new] #update #update-screen-curtain {
+  margin: 120px auto;
+}
+
+html[oobe=new] #update-screen-main {
+  /* TODO(nkostylev): Update after strings are updated. */
+  margin: 85px auto;
+  min-height: 114px;
+  width: 448px;
 }
 
 #update #update-checking-ellipsis {
@@ -478,11 +662,25 @@ html[dir=rtl] #update #update-checking-ellipsis {
   text-align: right;
 }
 
-#update #update-cancel-hint {
+html[oobe=old] #update #update-cancel-hint {
   color: rgb(170, 0, 0);
   left: 50%;
   margin: 1em -16em;
   position: absolute;
+}
+
+html[oobe=new] #update #update-cancel-hint {
+  color: rgb(170, 0, 0);
+  position: absolute;
+  top: 80px;
+}
+
+html[oobe=new][dir=ltr] #update #update-cancel-hint {
+  left: 137px;
+}
+
+html[oobe=new][dir=rtl] #update #update-cancel-hint {
+  right: 137px;
 }
 
 #update #update-upper-label {
@@ -531,7 +729,13 @@ button {
 #cros-eula,
 #oem-eula {
   border: 1px solid #d9d9d9;
-  height: 200px
+  height: 200px;
+}
+
+html[oobe=new] .eula-frame,
+html[oobe=new] #cros-eula,
+html[oobe=new] #oem-eula {
+  height: 222px;
 }
 
 #oem-eula {
@@ -773,6 +977,11 @@ body.login-display #oobe hr.shadow {
                      from 640px to full width. */
 }
 
+/* TODO(nkostylev): Remove hr element and rules. */
+html[oobe=new] #oobe hr {
+  display: none;
+}
+
 body.login-display #oobe.signin hr,
 body.login-display #oobe.gaia-signin hr {
   opacity: 0;
@@ -784,7 +993,7 @@ body.login-display #inner-container {
   width: 1100px;
 }
 
-body.login-display .step {
+html[oobe=old] body.login-display .step {
   left: 230px;  /* (1100px - 640px) / 2, make it center in oobe div */
 }
 

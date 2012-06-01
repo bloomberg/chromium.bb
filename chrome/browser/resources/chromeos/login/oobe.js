@@ -77,7 +77,13 @@ cr.define('cr.ui', function() {
     cr.ui.Bubble.decorate($('bubble'));
     login.HeaderBar.decorate($('login-header-bar'));
 
+    // TODO: Cleanup with old OOBE style removal.
     $('security-link').addEventListener('click', function(event) {
+      chrome.send('eulaOnTpmPopupOpened');
+      $('popup-overlay').hidden = false;
+      $('security-ok-button').focus();
+    });
+    $('security-tpm-link').addEventListener('click', function(event) {
       chrome.send('eulaOnTpmPopupOpened');
       $('popup-overlay').hidden = false;
       $('security-ok-button').focus();

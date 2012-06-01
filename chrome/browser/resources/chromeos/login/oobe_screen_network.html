@@ -1,25 +1,31 @@
 <div class="step hidden" id="connect">
-  <div class="control-with-label">
-    <label for="language-select" i18n-content="selectLanguage"
-           class="label menu-control"></label>
-    <div class="menu-area">
-      <select id="language-select" class="menu-control"></select>
+  <div class="step-logo">
+    <img src="chrome://theme/IDR_PRODUCT_LOGO">
+  </div>
+  <div class="step-contents">
+    <div class="control-with-label">
+      <label for="language-select" i18n-content="selectLanguage"
+             class="label menu-control"></label>
+      <div class="menu-area">
+        <select id="language-select" class="menu-control"></select>
+      </div>
+    </div>
+    <div class="control-with-label">
+      <label for="keyboard-select" i18n-content="selectKeyboard"
+             class="label menu-control"></label>
+      <div class="menu-area">
+        <select id="keyboard-select" class="menu-control"></select>
+      </div>
+    </div>
+    <div class="control-with-label">
+      <!-- TODO: This label doesn't select the network list, since the latter is
+           implemented as a div of spans.  Find a way to fix this. -->
+      <label for="networks-list" i18n-content="selectNetwork"
+             class="label menu-control"></label>
+      <div class="menu-area">
+        <div id="networks-list" class="menu-control"></div>
+      </div>
     </div>
   </div>
-  <div class="control-with-label">
-    <label for="keyboard-select" i18n-content="selectKeyboard"
-           class="label menu-control"></label>
-    <div class="menu-area">
-      <select id="keyboard-select" class="menu-control"></select>
-    </div>
-  </div>
-  <div class="control-with-label">
-    <!-- TODO: This label doesn't select the network list, since the latter is
-         implemented as a div of spans.  Find a way to fix this. -->
-    <label for="networks-list" i18n-content="selectNetwork"
-           class="label menu-control"></label>
-    <div class="menu-area">
-      <div id="networks-list" class="menu-control"></div>
-    </div>
-  </div>
+  <div id="connect-controls" class="step-controls"></div>
 </div>

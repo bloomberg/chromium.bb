@@ -1,21 +1,31 @@
 <div class="step right hidden" id="eula">
-  <div id="eulas" class="eula-columns one-column">
-    <div id="cros-eula">
-      <iframe id="cros-eula-frame" class="eula-frame"
-        src="chrome://terms"></iframe>
+  <div class="step-logo">
+    <img src="chrome://theme/IDR_PRODUCT_LOGO">
+  </div>
+  <div class="step-contents">
+    <div id="eulas" class="eula-columns one-column">
+      <div id="cros-eula">
+        <iframe id="cros-eula-frame" class="eula-frame"
+          src="chrome://terms"></iframe>
+      </div>
+      <div id="oem-eula">
+        <iframe id="oem-eula-frame" class="eula-frame"></iframe>
+      </div>
     </div>
-    <div id="oem-eula">
-      <iframe id="oem-eula-frame" class="eula-frame"></iframe>
+    <div id="logging">
+      <div>
+        <input id="usage-stats" type="checkbox">
+      </div>
+      <div>
+        <label for="usage-stats" i18n-content="checkboxLogging"></label>
+        <a id="stats-help-link" href="#" i18n-content="learnMore"></a>
+      </div>
     </div>
   </div>
-  <div id="logging">
-    <div>
-      <input id="usage-stats" type="checkbox">
-    </div>
-    <div>
-      <label for="usage-stats" i18n-content="checkboxLogging"></label>
-      <a id="stats-help-link" href="#" i18n-content="learnMore"></a>
-    </div>
+  <div id="eula-controls" class="step-controls"></div>
+  <div id="security-tpm">
+    <a id="security-tpm-link" href="#" i18n-content="eulaSystemSecuritySetting">
+    </a>
   </div>
 </div>
 
