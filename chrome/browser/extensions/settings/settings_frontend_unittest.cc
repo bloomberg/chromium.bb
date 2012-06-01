@@ -10,10 +10,11 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/extensions/settings/leveldb_settings_storage_factory.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/extensions/settings/settings_namespace.h"
-#include "chrome/browser/extensions/settings/settings_storage.h"
 #include "chrome/browser/extensions/settings/settings_test_util.h"
+#include "chrome/browser/value_store/value_store.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/test/test_browser_thread.h"
 
@@ -26,14 +27,14 @@ namespace util = settings_test_util;
 
 namespace {
 
-// To save typing SettingsStorage::DEFAULTS everywhere.
-const SettingsStorage::WriteOptions DEFAULTS = SettingsStorage::DEFAULTS;
+// To save typing ValueStore::DEFAULTS everywhere.
+const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
 
 // A SettingsStorageFactory which always returns NULL.
 class NullSettingsStorageFactory : public SettingsStorageFactory {
  public:
   // SettingsStorageFactory implementation.
-  virtual SettingsStorage* Create(
+  virtual ValueStore* Create(
       const FilePath& base_path, const std::string& extension_id) OVERRIDE {
     return NULL;
   }
@@ -83,7 +84,7 @@ class ExtensionSettingsFrontendTest : public testing::Test {
 
  protected:
   void ResetFrontend() {
-    storage_factory_->Reset(new SettingsLeveldbStorage::Factory());
+    storage_factory_->Reset(new LeveldbSettingsStorageFactory());
     frontend_.reset(
         SettingsFrontend::Create(storage_factory_.get(), profile_.get()));
   }
@@ -108,18 +109,18 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   profile_->GetMockExtensionService()->AddExtensionWithId(
       id, Extension::TYPE_EXTENSION);
 
-  SettingsStorage* storage = util::GetStorage(id, frontend_.get());
+  ValueStore* storage = util::GetStorage(id, frontend_.get());
 
   // The correctness of Get/Set/Remove/Clear is tested elsewhere so no need to
   // be too rigorous.
   {
     StringValue bar("bar");
-    SettingsStorage::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
+    ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
     ASSERT_FALSE(result.HasError());
   }
 
   {
-    SettingsStorage::ReadResult result = storage->Get();
+    ValueStore::ReadResult result = storage->Get();
     ASSERT_FALSE(result.HasError());
     EXPECT_FALSE(result.settings().empty());
   }
@@ -128,7 +129,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   storage = util::GetStorage(id, frontend_.get());
 
   {
-    SettingsStorage::ReadResult result = storage->Get();
+    ValueStore::ReadResult result = storage->Get();
     ASSERT_FALSE(result.HasError());
     EXPECT_FALSE(result.settings().empty());
   }
@@ -139,11 +140,11 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   profile_->GetMockExtensionService()->AddExtensionWithId(
       id, Extension::TYPE_PACKAGED_APP);
 
-  SettingsStorage* storage = util::GetStorage(id, frontend_.get());
+  ValueStore* storage = util::GetStorage(id, frontend_.get());
 
   {
     StringValue bar("bar");
-    SettingsStorage::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
+    ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
     ASSERT_FALSE(result.HasError());
   }
 
@@ -154,7 +155,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   // The storage area may no longer be valid post-uninstall, so re-request.
   storage = util::GetStorage(id, frontend_.get());
   {
-    SettingsStorage::ReadResult result = storage->Get();
+    ValueStore::ReadResult result = storage->Get();
     ASSERT_FALSE(result.HasError());
     EXPECT_TRUE(result.settings().empty());
   }
@@ -165,11 +166,11 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   profile_->GetMockExtensionService()->AddExtensionWithId(
       id, Extension::TYPE_EXTENSION);
 
-  SettingsStorage* storage = util::GetStorage(id, frontend_.get());
+  ValueStore* storage = util::GetStorage(id, frontend_.get());
 
   {
     StringValue bar("bar");
-    SettingsStorage::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
+    ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
     ASSERT_FALSE(result.HasError());
     EXPECT_TRUE(file_util::PathExists(temp_dir_.path()));
   }
@@ -177,7 +178,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   // Should need to both clear the database and delete the frontend for the
   // leveldb database to be deleted from disk.
   {
-    SettingsStorage::WriteResult result = storage->Clear();
+    ValueStore::WriteResult result = storage->Clear();
     ASSERT_FALSE(result.HasError());
     EXPECT_TRUE(file_util::PathExists(temp_dir_.path()));
   }
@@ -199,7 +200,7 @@ TEST_F(ExtensionSettingsFrontendTest,
 
   storage_factory_->Reset(new NullSettingsStorageFactory());
 
-  SettingsStorage* storage = util::GetStorage(id, frontend_.get());
+  ValueStore* storage = util::GetStorage(id, frontend_.get());
   ASSERT_TRUE(storage != NULL);
 
   EXPECT_TRUE(storage->Get().HasError());
@@ -209,7 +210,7 @@ TEST_F(ExtensionSettingsFrontendTest,
 
   // For simplicity: just always fail those requests, even if the leveldb
   // storage areas start working.
-  storage_factory_->Reset(new SettingsLeveldbStorage::Factory());
+  storage_factory_->Reset(new LeveldbSettingsStorageFactory());
 
   storage = util::GetStorage(id, frontend_.get());
   ASSERT_TRUE(storage != NULL);
@@ -231,39 +232,39 @@ TEST_F(ExtensionSettingsFrontendTest,
   profile_->GetMockExtensionService()->AddExtensionWithId(
       id, Extension::TYPE_EXTENSION);
 
-  SettingsStorage* sync_storage =
+  ValueStore* sync_storage =
       util::GetStorage(id, settings::SYNC, frontend_.get());
-  SettingsStorage* local_storage =
+  ValueStore* local_storage =
       util::GetStorage(id, settings::LOCAL, frontend_.get());
 
   // Sync storage should run out after ~100K.
   scoped_ptr<Value> kilobyte = CreateKilobyte();
   for (int i = 0; i < 100; ++i) {
     sync_storage->Set(
-        SettingsStorage::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
+        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
   }
 
   EXPECT_TRUE(sync_storage->Set(
-      SettingsStorage::DEFAULTS, "WillError", *kilobyte).HasError());
+      ValueStore::DEFAULTS, "WillError", *kilobyte).HasError());
 
   // Local storage shouldn't run out after ~100K.
   for (int i = 0; i < 100; ++i) {
     local_storage->Set(
-        SettingsStorage::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
+        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
   }
 
   EXPECT_FALSE(local_storage->Set(
-      SettingsStorage::DEFAULTS, "WontError", *kilobyte).HasError());
+      ValueStore::DEFAULTS, "WontError", *kilobyte).HasError());
 
   // Local storage should run out after ~5MB.
   scoped_ptr<Value> megabyte = CreateMegabyte();
   for (int i = 0; i < 5; ++i) {
     local_storage->Set(
-        SettingsStorage::DEFAULTS, base::StringPrintf("%d", i), *megabyte);
+        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *megabyte);
   }
 
   EXPECT_TRUE(local_storage->Set(
-      SettingsStorage::DEFAULTS, "WillError", *megabyte).HasError());
+      ValueStore::DEFAULTS, "WillError", *megabyte).HasError());
 }
 
 // In other tests, we assume that the result of GetStorage is a pointer to the
@@ -271,29 +272,29 @@ TEST_F(ExtensionSettingsFrontendTest,
 // might not be true. So, write the tests in a "callback" style.
 // We should really rewrite all tests to be asynchronous in this way.
 
-static void UnlimitedSyncStorageTestCallback(SettingsStorage* sync_storage) {
+static void UnlimitedSyncStorageTestCallback(ValueStore* sync_storage) {
   // Sync storage should still run out after ~100K; the unlimitedStorage
   // permission can't apply to sync.
   scoped_ptr<Value> kilobyte = CreateKilobyte();
   for (int i = 0; i < 100; ++i) {
     sync_storage->Set(
-        SettingsStorage::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
+        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
   }
 
   EXPECT_TRUE(sync_storage->Set(
-      SettingsStorage::DEFAULTS, "WillError", *kilobyte).HasError());
+      ValueStore::DEFAULTS, "WillError", *kilobyte).HasError());
 }
 
-static void UnlimitedLocalStorageTestCallback(SettingsStorage* local_storage) {
+static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
   // Local storage should never run out.
   scoped_ptr<Value> megabyte = CreateMegabyte();
   for (int i = 0; i < 7; ++i) {
     local_storage->Set(
-        SettingsStorage::DEFAULTS, base::StringPrintf("%d", i), *megabyte);
+        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *megabyte);
   }
 
   EXPECT_FALSE(local_storage->Set(
-      SettingsStorage::DEFAULTS, "WontError", *megabyte).HasError());
+      ValueStore::DEFAULTS, "WontError", *megabyte).HasError());
 }
 
 #if defined(OS_WIN)

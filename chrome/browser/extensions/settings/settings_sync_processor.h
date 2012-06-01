@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "chrome/browser/extensions/settings/setting_change.h"
+#include "chrome/browser/value_store/value_store_change.h"
 #include "sync/api/sync_error.h"
 
 class SyncChangeProcessor;
@@ -33,11 +33,11 @@ class SettingsSyncProcessor {
   void Init(const DictionaryValue& initial_state);
 
   // Sends |changes| to sync.
-  SyncError SendChanges(const SettingChangeList& changes);
+  SyncError SendChanges(const ValueStoreChangeList& changes);
 
   // Informs this that |changes| have been receieved from sync. No action will
   // be taken, but this must be notified for internal bookkeeping.
-  void NotifyChanges(const SettingChangeList& changes);
+  void NotifyChanges(const ValueStoreChangeList& changes);
 
   syncable::ModelType type() { return type_; }
 

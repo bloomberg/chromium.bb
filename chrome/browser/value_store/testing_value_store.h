@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_SETTINGS_TESTING_SETTINGS_STORAGE_H_
-#define CHROME_BROWSER_EXTENSIONS_SETTINGS_TESTING_SETTINGS_STORAGE_H_
+#ifndef CHROME_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_
+#define CHROME_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/extensions/settings/settings_storage.h"
+#include "chrome/browser/value_store/value_store.h"
 
-namespace extensions {
-
-// SettingsStorage for testing, with an in-memory storage but the ability to
+// ValueStore for testing, with an in-memory storage but the ability to
 // optionally fail all operations.
-class TestingSettingsStorage : public SettingsStorage {
+class TestingSettingsStorage : public ValueStore {
  public:
   TestingSettingsStorage();
   virtual ~TestingSettingsStorage();
@@ -21,7 +19,7 @@ class TestingSettingsStorage : public SettingsStorage {
   // Sets whether to fail all requests (default is false).
   void SetFailAllRequests(bool fail_all_requests);
 
-  // SettingsStorage implementation.
+  // ValueStore implementation.
   virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;
   virtual size_t GetBytesInUse(const std::vector<std::string>& keys) OVERRIDE;
   virtual size_t GetBytesInUse() OVERRIDE;
@@ -46,6 +44,4 @@ class TestingSettingsStorage : public SettingsStorage {
   DISALLOW_COPY_AND_ASSIGN(TestingSettingsStorage);
 };
 
-}  // namespace extensions
-
-#endif  // CHROME_BROWSER_EXTENSIONS_SETTINGS_TESTING_SETTINGS_STORAGE_H_
+#endif  // CHROME_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_

@@ -13,17 +13,17 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list_threadsafe.h"
-#include "chrome/browser/extensions/settings/settings_leveldb_storage.h"
 #include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_observer.h"
+#include "chrome/browser/extensions/settings/settings_storage_factory.h"
 #include "chrome/browser/extensions/settings/settings_storage_quota_enforcer.h"
+#include "chrome/browser/value_store/leveldb_value_store.h"
 #include "sync/api/syncable_service.h"
 
 class Profile;
+class ValueStore;
 
 namespace extensions {
-
-class SettingsStorage;
 
 // The component of extension settings which runs on the UI thread, as opposed
 // to SettingsBackend which lives on the FILE thread.
@@ -44,7 +44,7 @@ class SettingsFrontend {
   virtual ~SettingsFrontend();
 
   typedef base::Callback<void(SyncableService*)> SyncableServiceCallback;
-  typedef base::Callback<void(SettingsStorage*)> StorageCallback;
+  typedef base::Callback<void(ValueStore*)> StorageCallback;
 
   // Must only be called from the FILE thread. |type| should be either
   // APP_SETTINGS or EXTENSION_SETTINGS.

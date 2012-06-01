@@ -21,23 +21,22 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/testing_profile.h"
 
+class ValueStore;
 
 namespace extensions {
 
 class SettingsFrontend;
-class SettingsStorage;
-
 // Utilities for extension settings API tests.
 namespace settings_test_util {
 
 // Synchronously gets the storage area for an extension from |frontend|.
-SettingsStorage* GetStorage(
+ValueStore* GetStorage(
     const std::string& extension_id,
     settings_namespace::Namespace setting_namespace,
     SettingsFrontend* frontend);
 
 // Synchronously gets the SYNC storage for an extension from |frontend|.
-SettingsStorage* GetStorage(
+ValueStore* GetStorage(
     const std::string& extension_id,
     SettingsFrontend* frontend);
 
@@ -96,7 +95,7 @@ class ScopedSettingsStorageFactory : public SettingsStorageFactory {
   void Reset(const scoped_refptr<SettingsStorageFactory>& delegate);
 
   // SettingsStorageFactory implementation.
-  virtual SettingsStorage* Create(
+  virtual ValueStore* Create(
       const FilePath& base_path, const std::string& extension_id) OVERRIDE;
 
  private:
