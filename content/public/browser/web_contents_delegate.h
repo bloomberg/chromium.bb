@@ -53,6 +53,7 @@ class HistoryAddPageArgs;
 
 namespace webkit_glue {
 struct WebIntentData;
+struct WebIntentServiceData;
 }
 
 namespace content {
@@ -355,18 +356,22 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void JSOutOfMemory(WebContents* web_contents) {}
 
   // Register a new handler for URL requests with the given scheme.
+  // |user_gesture| is true if the registration is made in the context of a user
+  // gesture.
   virtual void RegisterProtocolHandler(WebContents* web_contents,
                                        const std::string& protocol,
                                        const GURL& url,
-                                       const string16& title) {}
+                                       const string16& title,
+                                       bool user_gesture) {}
 
-  // Register a new handler for Intents with the given action and type filter.
-  virtual void RegisterIntentHandler(WebContents* web_contents,
-                                     const string16& action,
-                                     const string16& type,
-                                     const string16& href,
-                                     const string16& title,
-                                     const string16& disposition) {}
+  // Register a new Web Intents service.
+  // |user_gesture| is true if the registration is made in the context of a user
+  // gesture. |web_contents| is the context in which the registration was
+  // performed, and |data| is the service record being registered.
+  virtual void RegisterIntentHandler(
+      WebContents* web_contents,
+      const webkit_glue::WebIntentServiceData& data,
+      bool user_gesture) {}
 
   // Web Intents notification handler. See WebIntentsDispatcher for
   // documentation of callee responsibility for the dispatcher.

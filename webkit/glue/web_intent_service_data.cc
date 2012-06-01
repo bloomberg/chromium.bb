@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <ostream>
 
 #include "base/utf_string_conversions.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentServiceInfo.h"
 #include "webkit/glue/web_intent_service_data.h"
 
 namespace webkit_glue {
@@ -24,6 +25,16 @@ WebIntentServiceData::WebIntentServiceData(const GURL& svc_url,
       type(svc_type),
       title(svc_title),
       disposition(WebIntentServiceData::DISPOSITION_WINDOW) {
+}
+
+WebIntentServiceData::WebIntentServiceData(
+    const WebKit::WebIntentServiceInfo& info)
+    : service_url(info.url()),
+      action(info.action()),
+      type(info.type()),
+      title(info.title()),
+      disposition(WebIntentServiceData::DISPOSITION_WINDOW) {
+  setDisposition(info.disposition());
 }
 
 WebIntentServiceData::~WebIntentServiceData() {}

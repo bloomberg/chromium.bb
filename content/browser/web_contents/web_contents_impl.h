@@ -64,6 +64,7 @@ WebContentsView* CreateWebContentsView(
 
 namespace webkit_glue {
 struct WebIntentData;
+struct WebIntentServiceData;
 }
 
 class CONTENT_EXPORT WebContentsImpl
@@ -466,11 +467,8 @@ class CONTENT_EXPORT WebContentsImpl
                       const string16& user_input);
 
   // IPC message handlers.
-  void OnRegisterIntentService(const string16& action,
-                               const string16& type,
-                               const string16& href,
-                               const string16& title,
-                               const string16& disposition);
+  void OnRegisterIntentService(const webkit_glue::WebIntentServiceData& data,
+                               bool user_gesture);
   void OnWebIntentDispatch(const webkit_glue::WebIntentData& intent,
                            int intent_id);
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
@@ -501,7 +499,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   void OnRegisterProtocolHandler(const std::string& protocol,
                                  const GURL& url,
-                                 const string16& title);
+                                 const string16& title,
+                                 bool user_gesture);
   void OnFindReply(int request_id, int number_of_matches,
                    const gfx::Rect& selection_rect, int active_match_ordinal,
                    bool final_update);

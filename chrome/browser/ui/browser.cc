@@ -186,6 +186,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/point.h"
 #include "webkit/glue/web_intent_data.h"
+#include "webkit/glue/web_intent_service_data.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/window_open_disposition.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -2235,7 +2236,8 @@ void Browser::JSOutOfMemoryHelper(WebContents* tab) {
 void Browser::RegisterProtocolHandlerHelper(WebContents* tab,
                                             const std::string& protocol,
                                             const GURL& url,
-                                            const string16& title) {
+                                            const string16& title,
+                                            bool user_gesture) {
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
       tab);
   if (!tcw || tcw->profile()->IsOffTheRecord())
@@ -3601,17 +3603,16 @@ void Browser::JSOutOfMemory(WebContents* tab) {
 void Browser::RegisterProtocolHandler(WebContents* tab,
                                       const std::string& protocol,
                                       const GURL& url,
-                                      const string16& title) {
-  RegisterProtocolHandlerHelper(tab, protocol, url, title);
+                                      const string16& title,
+                                      bool user_gesture) {
+  RegisterProtocolHandlerHelper(tab, protocol, url, title, user_gesture);
 }
 
-void Browser::RegisterIntentHandler(WebContents* tab,
-                                    const string16& action,
-                                    const string16& type,
-                                    const string16& href,
-                                    const string16& title,
-                                    const string16& disposition) {
-  RegisterIntentHandlerHelper(tab, action, type, href, title, disposition);
+void Browser::RegisterIntentHandler(
+    WebContents* tab,
+    const webkit_glue::WebIntentServiceData& data,
+    bool user_gesture) {
+  RegisterIntentHandlerHelper(tab, data, user_gesture);
 }
 
 void Browser::WebIntentDispatch(

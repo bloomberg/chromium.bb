@@ -1256,16 +1256,13 @@ TEST_F(RenderViewImplTest, FindTitleForIntentsPage) {
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
       IntentsHostMsg_RegisterIntentService::ID);
   ASSERT_TRUE(msg);
-  string16 action;
-  string16 type;
-  string16 href;
-  string16 title;
-  string16 disposition;
-  IntentsHostMsg_RegisterIntentService::Read(
-      msg, &action, &type, &href, &title, &disposition);
-  EXPECT_EQ(ASCIIToUTF16("a"), action);
-  EXPECT_EQ(ASCIIToUTF16("t"), type);
-  EXPECT_EQ(ASCIIToUTF16("title"), title);
+  webkit_glue::WebIntentServiceData service_data;
+  bool user_gesture = true;
+  IntentsHostMsg_RegisterIntentService::Read(msg, &service_data, &user_gesture);
+  EXPECT_EQ(ASCIIToUTF16("a"), service_data.action);
+  EXPECT_EQ(ASCIIToUTF16("t"), service_data.type);
+  EXPECT_EQ(ASCIIToUTF16("title"), service_data.title);
+  EXPECT_FALSE(user_gesture);
 }
 
 TEST_F(RenderViewImplTest, ContextMenu) {

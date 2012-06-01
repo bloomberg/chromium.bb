@@ -736,18 +736,17 @@ void ExternalTabContainer::JSOutOfMemory(WebContents* tab) {
 void ExternalTabContainer::RegisterProtocolHandler(WebContents* tab,
                                                    const std::string& protocol,
                                                    const GURL& url,
-                                                   const string16& title) {
-  Browser::RegisterProtocolHandlerHelper(tab, protocol, url, title);
+                                                   const string16& title,
+                                                   bool user_gesture) {
+  Browser::RegisterProtocolHandlerHelper(tab, protocol, url, title,
+                                         user_gesture);
 }
 
-void ExternalTabContainer::RegisterIntentHandler(WebContents* tab,
-                                                 const string16& action,
-                                                 const string16& type,
-                                                 const string16& href,
-                                                 const string16& title,
-                                                 const string16& disposition) {
-  Browser::RegisterIntentHandlerHelper(
-      tab, action, type, href, title, disposition);
+void ExternalTabContainer::RegisterIntentHandler(
+    WebContents* tab,
+    const webkit_glue::WebIntentServiceData& data,
+    bool user_gesture) {
+  Browser::RegisterIntentHandlerHelper(tab, data, user_gesture);
 }
 
 void ExternalTabContainer::WebIntentDispatch(

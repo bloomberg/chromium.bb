@@ -86,6 +86,10 @@ namespace ui {
 class WebDialogDelegate;
 }
 
+namespace webkit_glue {
+struct WebIntentServiceData;
+}
+
 class Browser : public TabStripModelDelegate,
                 public TabStripModelObserver,
                 public content::WebContentsDelegate,
@@ -649,15 +653,16 @@ class Browser : public TabStripModelDelegate,
   static void RegisterProtocolHandlerHelper(content::WebContents* tab,
                                             const std::string& protocol,
                                             const GURL& url,
-                                            const string16& title);
+                                            const string16& title,
+                                            bool user_gesture);
 
   // Helper function to register an intent handler.
-  static void RegisterIntentHandlerHelper(content::WebContents* tab,
-                                          const string16& action,
-                                          const string16& type,
-                                          const string16& href,
-                                          const string16& title,
-                                          const string16& disposition);
+  // |data| is the registered handler data. |user_gesture| is true if the call
+  // was made in the context of a user gesture.
+  static void RegisterIntentHandlerHelper(
+      content::WebContents* tab,
+      const webkit_glue::WebIntentServiceData& data,
+      bool user_gesture);
 
   // Helper function to handle find results.
   static void FindReplyHelper(content::WebContents* tab,
@@ -967,13 +972,12 @@ class Browser : public TabStripModelDelegate,
   virtual void RegisterProtocolHandler(content::WebContents* tab,
                                        const std::string& protocol,
                                        const GURL& url,
-                                       const string16& title) OVERRIDE;
-  virtual void RegisterIntentHandler(content::WebContents* tab,
-                                     const string16& action,
-                                     const string16& type,
-                                     const string16& href,
-                                     const string16& title,
-                                     const string16& disposition) OVERRIDE;
+                                       const string16& title,
+                                       bool user_gesture) OVERRIDE;
+  virtual void RegisterIntentHandler(
+      content::WebContents* tab,
+      const webkit_glue::WebIntentServiceData& data,
+      bool user_gesture) OVERRIDE;
   virtual void WebIntentDispatch(
       content::WebContents* tab,
       content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;

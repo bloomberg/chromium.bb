@@ -17,14 +17,12 @@
 using content::WebContents;
 
 // static
-void Browser::RegisterIntentHandlerHelper(WebContents* tab,
-                                          const string16& action,
-                                          const string16& type,
-                                          const string16& href,
-                                          const string16& title,
-                                          const string16& disposition) {
-  TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
-      tab);
+void Browser::RegisterIntentHandlerHelper(
+    WebContents* tab,
+    const webkit_glue::WebIntentServiceData& data,
+    bool user_gesture) {
+  TabContentsWrapper* tcw =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
   if (!tcw || tcw->profile()->IsOffTheRecord())
     return;
 
@@ -34,24 +32,10 @@ void Browser::RegisterIntentHandlerHelper(WebContents* tab,
   FaviconService* favicon_service =
       tcw->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
 
-  // |href| can be relative to originating URL. Resolve if necessary.
-  GURL service_url(href);
-  if (!service_url.is_valid()) {
-    const GURL& url = tab->GetURL();
-    service_url = url.Resolve(href);
-  }
-
-  webkit_glue::WebIntentServiceData service;
-  service.service_url = service_url;
-  service.action = action;
-  service.type = type;
-  service.title = title;
-  service.setDisposition(disposition);
-
   RegisterIntentHandlerInfoBarDelegate::MaybeShowIntentInfoBar(
       tcw->infobar_tab_helper(),
       WebIntentsRegistryFactory::GetForProfile(tcw->profile()),
-      service,
+      data,
       favicon_service,
       tab->GetURL());
 }

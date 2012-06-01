@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,15 @@
 #define WEBKIT_GLUE_WEB_INTENT_SERVICE_DATA_H_
 #pragma once
 
+#include <iosfwd>
+
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/webkit_glue_export.h"
-#include <iosfwd>
+
+namespace WebKit {
+class WebIntentServiceInfo;
+}
 
 namespace webkit_glue {
 
@@ -26,6 +31,7 @@ struct WEBKIT_GLUE_EXPORT WebIntentServiceData {
                        const string16& action,
                        const string16& type,
                        const string16& title);
+  explicit WebIntentServiceData(const WebKit::WebIntentServiceInfo& info);
   ~WebIntentServiceData();
 
   bool operator==(const WebIntentServiceData& other) const;

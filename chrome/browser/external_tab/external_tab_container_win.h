@@ -176,13 +176,12 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   virtual void RegisterProtocolHandler(content::WebContents* tab,
                                        const std::string& protocol,
                                        const GURL& url,
-                                       const string16& title) OVERRIDE;
-  virtual void RegisterIntentHandler(content::WebContents* tab,
-                                     const string16& action,
-                                     const string16& type,
-                                     const string16& href,
-                                     const string16& title,
-                                     const string16& disposition) OVERRIDE;
+                                       const string16& title,
+                                       bool user_gesture) OVERRIDE;
+  virtual void RegisterIntentHandler(
+      content::WebContents* tab,
+      const webkit_glue::WebIntentServiceData& data,
+      bool user_gesture) OVERRIDE;
   virtual void WebIntentDispatch(
       content::WebContents* tab,
       content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;

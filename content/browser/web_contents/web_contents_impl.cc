@@ -72,6 +72,7 @@
 #include "ui/gfx/monitor.h"
 #include "ui/gfx/screen.h"
 #include "webkit/glue/web_intent_data.h"
+#include "webkit/glue/web_intent_service_data.h"
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_MACOSX)
@@ -1737,13 +1738,10 @@ void WebContentsImpl::SetFocusToLocationBar(bool select_all) {
     delegate_->SetFocusToLocationBar(select_all);
 }
 
-void WebContentsImpl::OnRegisterIntentService(const string16& action,
-                                              const string16& type,
-                                              const string16& href,
-                                              const string16& title,
-                                              const string16& disposition) {
-  delegate_->RegisterIntentHandler(
-      this, action, type, href, title, disposition);
+void WebContentsImpl::OnRegisterIntentService(
+    const webkit_glue::WebIntentServiceData& data,
+    bool user_gesture) {
+  delegate_->RegisterIntentHandler(this, data, user_gesture);
 }
 
 void WebContentsImpl::OnWebIntentDispatch(
@@ -2038,12 +2036,13 @@ void WebContentsImpl::OnJSOutOfMemory() {
 
 void WebContentsImpl::OnRegisterProtocolHandler(const std::string& protocol,
                                                 const GURL& url,
-                                                const string16& title) {
+                                                const string16& title,
+                                                bool user_gesture) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (policy->IsPseudoScheme(protocol) || policy->IsDisabledScheme(protocol))
     return;
-  delegate_->RegisterProtocolHandler(this, protocol, url, title);
+  delegate_->RegisterProtocolHandler(this, protocol, url, title, user_gesture);
 }
 
 void WebContentsImpl::OnFindReply(int request_id,

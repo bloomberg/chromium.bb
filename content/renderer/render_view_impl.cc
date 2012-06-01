@@ -174,6 +174,7 @@
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webdropdata.h"
+#include "webkit/glue/web_intent_service_data.h"
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/weburlloader_impl.h"
@@ -3618,16 +3619,13 @@ void RenderViewImpl::requestStorageQuota(
 
 void RenderViewImpl::registerIntentService(
     WebFrame* frame, const WebIntentServiceInfo& service) {
-  string16 title = service.title();
-  if (title.empty())
-    title = webview()->mainFrame()->document().title();
-
+  webkit_glue::WebIntentServiceData data(service);
+  if (data.title.empty())
+    data.title = webview()->mainFrame()->document().title();
+  bool user_gesture = frame->isProcessingUserGesture();
   Send(new IntentsHostMsg_RegisterIntentService(routing_id_,
-                                                service.action(),
-                                                service.type(),
-                                                service.url().spec().utf16(),
-                                                title,
-                                                service.disposition()));
+                                                data,
+                                                user_gesture));
 }
 
 void RenderViewImpl::dispatchIntent(
@@ -5453,6 +5451,8 @@ void RenderViewImpl::registerProtocolHandler(const WebString& scheme,
                                              const WebString& base_url,
                                              const WebString& url,
                                              const WebString& title) {
+  bool user_gesture = (webview()->focusedFrame() &&
+                       webview()->focusedFrame()->isProcessingUserGesture());
   GURL base(base_url);
   GURL absolute_url = base.Resolve(UTF16ToUTF8(url));
   if (base.GetOrigin() != absolute_url.GetOrigin()) {
@@ -5461,7 +5461,8 @@ void RenderViewImpl::registerProtocolHandler(const WebString& scheme,
   Send(new ViewHostMsg_RegisterProtocolHandler(routing_id_,
                                                UTF16ToUTF8(scheme),
                                                absolute_url,
-                                               title));
+                                               title,
+                                               user_gesture));
 }
 
 WebKit::WebPageVisibilityState RenderViewImpl::visibilityState() const {

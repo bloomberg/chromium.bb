@@ -2021,10 +2021,11 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_SaveURLAs,
 IPC_MESSAGE_ROUTED0(ViewHostMsg_JSOutOfMemory)
 
 // Register a new handler for URL requests with the given scheme.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_RegisterProtocolHandler,
+IPC_MESSAGE_ROUTED4(ViewHostMsg_RegisterProtocolHandler,
                     std::string /* scheme */,
                     GURL /* url */,
-                    string16 /* title */)
+                    string16 /* title */,
+                    bool /* user_gesture */)
 
 // Stores new inspector setting in the profile.
 // TODO(jam): this should be in the chrome module
