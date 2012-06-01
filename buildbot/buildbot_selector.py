@@ -234,6 +234,11 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux false',
     'mac-pnacl-x86_32':
         'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32',
+    # TODO(pdox): Rename this bot to x86_64
+    'win-pnacl-x86_32':
+        'buildbot\\buildbot_pnacl.bat mode-buildbot-tc-x8664-win false',
+
+    # Pnacl toolchain testers
     # This bots is scheduled to be replaced (split) by the three following it
     'linux-pnacl-x86_64-tests':
         'bash buildbot/buildbot_pnacl_toolchain_tests.sh',
@@ -243,9 +248,6 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl_toolchain_tests.sh tc-test-bot x86-32',
     'linux-pnacl-x86_64-tests-arm':
         'bash buildbot/buildbot_pnacl_toolchain_tests.sh tc-test-bot arm',
-    # TODO(pdox): Rename this bot to x86_64
-    'win-pnacl-x86_32':
-        'buildbot\\buildbot_toolchain_arm_untrusted.bat win 64',
 
     # Toolchain trybots.
     'nacl-toolchain-lucid64-newlib':

@@ -504,15 +504,6 @@ mode-buildbot-tc-x8632-mac() {
   tc-tests-small "x86-32"
 }
 
-mode-buildbot-tc-x8632-win() {
-  local is_try=$1
-  FAIL_FAST=false
-  TOOLCHAIN_LABEL=pnacl_win_x86_32
-  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false
-  # We can't test ARM because we do not have QEMU for Win.
-  tc-tests-small "x86-32"
-}
-
 mode-buildbot-tc-x8664-win() {
   local is_try=$1
   FAIL_FAST=false
@@ -571,6 +562,11 @@ test-all-glibc() {
 }
 
 ######################################################################
+# On Windows, this script is invoked from a batch file.
+# The inherited PWD environmental variable is a Windows-style path.
+# This can cause problems with pwd and bash. This line fixes it.
+cd -P .
+
 # Script assumed to be run in native_client/
 if [[ $(pwd) != */native_client ]]; then
   echo "ERROR: must be run in native_client!"
