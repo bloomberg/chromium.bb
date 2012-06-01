@@ -140,12 +140,15 @@ handle-error() {
   fi
 }
 
+clobber-chrome-tmp() {
+  # Try to clobber /tmp/ contents to clear temporary chrome files.
+  rm -rf /tmp/.org.chromium.Chromium.*
+}
+
 # Clear out object, and temporary directories.
 clobber() {
   echo "@@@BUILD_STEP clobber@@@"
   rm -rf scons-out ../xcodebuild ../sconsbuild ../out
-  # Try to clobber /tmp/ contents to clear temporary chrome files.
-  rm -rf /tmp/.org.chromium.Chromium.*
 }
 
 # Generate filenames for arm bot uploads and downloads
@@ -268,6 +271,11 @@ single-browser-test() {
   local platform=$1
   local extra=$2
   local test=$3
+
+  # if we run mulitple browser test (e.g. on toolchain bots) we
+  # may run out of quota without this
+  clobber-chrome-tmp
+
   # Build in parallel (assume -jN specified in extra), but run sequentially.
   # If we do not run tests sequentially, some may fail. E.g.,
   # http://code.google.com/p/nativeclient/issues/detail?id=2019
