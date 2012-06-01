@@ -202,38 +202,38 @@ void MockPluginDelegate::DidUpdateFile(const GURL& file_path, int64_t delta) {
 }
 
 base::PlatformFileError MockPluginDelegate::OpenFile(
-    const ::ppapi::PepperFilePath& path,
+    const PepperFilePath& path,
     int flags,
     base::PlatformFile* file) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
 base::PlatformFileError MockPluginDelegate::RenameFile(
-    const ::ppapi::PepperFilePath& from_path,
-    const ::ppapi::PepperFilePath& to_path) {
+    const PepperFilePath& from_path,
+    const PepperFilePath& to_path) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
 base::PlatformFileError MockPluginDelegate::DeleteFileOrDir(
-    const ::ppapi::PepperFilePath& path,
+    const PepperFilePath& path,
     bool recursive) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
 base::PlatformFileError MockPluginDelegate::CreateDir(
-    const ::ppapi::PepperFilePath& path) {
+    const PepperFilePath& path) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
 base::PlatformFileError MockPluginDelegate::QueryFile(
-    const ::ppapi::PepperFilePath& path,
+    const PepperFilePath& path,
     base::PlatformFileInfo* info) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
 base::PlatformFileError MockPluginDelegate::GetDirContents(
-    const ::ppapi::PepperFilePath& path,
-    ::ppapi::DirContents* contents) {
+    const PepperFilePath& path,
+    DirContents* contents) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 

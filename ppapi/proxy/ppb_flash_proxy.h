@@ -160,6 +160,30 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
                                    int clipboard_type,
                                    const std::vector<int>& formats,
                                    SerializedVarVectorReceiveInput data_items);
+  void OnHostMsgOpenFile(PP_Instance instance,
+                         const std::string& path,
+                         int32_t mode,
+                         IPC::PlatformFileForTransit* file_handle,
+                         int32_t* result);
+  void OnHostMsgRenameFile(PP_Instance instance,
+                           const std::string& path_from,
+                           const std::string& path_to,
+                           int32_t* result);
+  void OnHostMsgDeleteFileOrDir(PP_Instance instance,
+                                const std::string& path,
+                                PP_Bool recursive,
+                                int32_t* result);
+  void OnHostMsgCreateDir(PP_Instance instance,
+                          const std::string& path,
+                          int32_t* result);
+  void OnHostMsgQueryFile(PP_Instance instance,
+                          const std::string& path,
+                          PP_FileInfo* info,
+                          int32_t* result);
+  void OnHostMsgGetDirContents(PP_Instance instance,
+                               const std::string& path,
+                               std::vector<SerializedDirEntry>* entries,
+                               int32_t* result);
   void OnHostMsgOpenFileRef(PP_Instance instance,
                             const ppapi::HostResource& host_resource,
                             int32_t mode,

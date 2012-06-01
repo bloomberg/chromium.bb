@@ -1,16 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_FILE_PATH_H_
-#define PPAPI_SHARED_IMPL_FILE_PATH_H_
+#ifndef WEBKIT_PLUGINS_PPAPI_FILE_PATH_H_
+#define WEBKIT_PLUGINS_PPAPI_FILE_PATH_H_
 
 #include <string>
 
 #include "base/file_path.h"
-#include "ppapi/shared_impl/ppapi_shared_export.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
+namespace webkit {
 namespace ppapi {
+
+class PluginModule;
 
 // TODO(vtl): Once we put |::FilePath| into the |base| namespace, get rid of the
 // |Pepper| (or |PEPPER_|) prefixes. Right now, it's just too
@@ -27,11 +30,11 @@ class PepperFilePath {
     DOMAIN_MAX_VALID = DOMAIN_MODULE_LOCAL
   };
 
-  PPAPI_SHARED_EXPORT PepperFilePath();
-  PPAPI_SHARED_EXPORT PepperFilePath(Domain d, const FilePath& p);
+  WEBKIT_PLUGINS_EXPORT PepperFilePath();
+  WEBKIT_PLUGINS_EXPORT PepperFilePath(Domain d, const FilePath& p);
 
   static PepperFilePath MakeAbsolute(const FilePath& path);
-  static PepperFilePath MakeModuleLocal(const std::string& name,
+  static PepperFilePath MakeModuleLocal(PluginModule* module,
                                         const char* utf8_path);
 
   Domain domain() const { return domain_; }
@@ -43,5 +46,6 @@ class PepperFilePath {
 };
 
 }  // namespace ppapi
+}  // namespace webkit
 
-#endif  // PPAPI_SHARED_IMPL_FILE_PATH_H_
+#endif  // WEBKIT_PLUGINS_PPAPI_FILE_PATH_H_

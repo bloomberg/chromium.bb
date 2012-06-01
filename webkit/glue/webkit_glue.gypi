@@ -226,6 +226,8 @@
         '../plugins/ppapi/event_conversion.h',
         '../plugins/ppapi/file_callbacks.cc',
         '../plugins/ppapi/file_callbacks.h',
+        '../plugins/ppapi/file_path.cc',
+        '../plugins/ppapi/file_path.h',
         '../plugins/ppapi/fullscreen_container.h',
         '../plugins/ppapi/gfx_conversion.h',
         '../plugins/ppapi/host_array_buffer_var.cc',

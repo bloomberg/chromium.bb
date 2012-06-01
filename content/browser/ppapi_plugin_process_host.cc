@@ -74,8 +74,8 @@ PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
     const content::PepperPluginInfo& info,
     const FilePath& profile_data_directory,
     net::HostResolver* host_resolver) {
-  PpapiPluginProcessHost* plugin_host = new PpapiPluginProcessHost(
-      info.name, profile_data_directory, host_resolver);
+  PpapiPluginProcessHost* plugin_host =
+      new PpapiPluginProcessHost(profile_data_directory, host_resolver);
   if (plugin_host->Init(info))
     return plugin_host;
 
@@ -112,23 +112,16 @@ void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost(
-    const std::string& plugin_name,
     const FilePath& profile_data_directory,
     net::HostResolver* host_resolver)
-    : network_observer_(new PluginNetworkObserver(this)),
+    : filter_(new PepperMessageFilter(PepperMessageFilter::PLUGIN,
+                                      host_resolver)),
+      network_observer_(new PluginNetworkObserver(this)),
       profile_data_directory_(profile_data_directory),
       is_broker_(false) {
   process_.reset(new BrowserChildProcessHostImpl(
       content::PROCESS_TYPE_PPAPI_PLUGIN, this));
-
-  filter_ = new PepperMessageFilter(
-      PepperMessageFilter::PLUGIN, host_resolver);
-
-  file_filter_ = new PepperTrustedFileMessageFilter(
-      process_->GetData().id, plugin_name, profile_data_directory);
-
   process_->GetHost()->AddFilter(filter_.get());
-  process_->GetHost()->AddFilter(file_filter_.get());
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost()

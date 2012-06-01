@@ -41,7 +41,7 @@
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',        
       ],
       'conditions': [
         ['OS=="mac"', {
@@ -57,8 +57,6 @@
         'shared_impl/array_writer.h',
         'shared_impl/callback_tracker.cc',
         'shared_impl/callback_tracker.h',
-        'shared_impl/file_path.cc',
-        'shared_impl/file_path.h',
         'shared_impl/file_type_conversion.cc',
         'shared_impl/file_type_conversion.h',
         'shared_impl/host_resource.h',

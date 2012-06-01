@@ -6,14 +6,12 @@
 #define CONTENT_BROWSER_PPAPI_PLUGIN_PROCESS_HOST_H_
 #pragma once
 
-#include <string>
 #include <queue>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/renderer_host/pepper_file_message_filter.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/pepper_message_filter.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -81,8 +79,7 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
 
   const FilePath& plugin_path() const { return plugin_path_; }
   const FilePath& profile_data_directory() const {
-    return profile_data_directory_;
-  }
+    return profile_data_directory_; }
 
   // The client pointer must remain valid until its callback is issued.
 
@@ -91,8 +88,7 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
 
   // Constructors for plugin and broker process hosts, respectively.
   // You must call Init before doing anything else.
-  PpapiPluginProcessHost(const std::string& plugin_name,
-                         const FilePath& profile_data_directory,
+  PpapiPluginProcessHost(const FilePath& profile_data_directory,
                          net::HostResolver* host_resolver);
   PpapiPluginProcessHost();
 
@@ -115,9 +111,6 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
 
   // Handles most requests from the plugin. May be NULL.
   scoped_refptr<PepperMessageFilter> filter_;
-
-  // Handles filesystem requests from flash plugins. May be NULL.
-  scoped_refptr<PepperFileMessageFilter> file_filter_;
 
   // Observes network changes. May be NULL.
   scoped_ptr<PluginNetworkObserver> network_observer_;

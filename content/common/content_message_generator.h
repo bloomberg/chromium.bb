@@ -30,6 +30,7 @@
 #include "content/common/media/video_capture_messages.h"
 #include "content/common/mime_registry_messages.h"
 #include "content/common/p2p_messages.h"
+#include "content/common/pepper_file_messages.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/quota_messages.h"
