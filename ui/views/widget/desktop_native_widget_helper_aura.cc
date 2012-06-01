@@ -121,18 +121,19 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
       new aura::shared::InputMethodEventFilter(root_window_.get()));
   root_window_event_filter_->AddFilter(input_method_filter_.get());
 
+  aura::DesktopActivationClient* activation_client =
+      new aura::DesktopActivationClient(root_window_.get());
+
 #if defined(USE_X11)
   x11_window_event_filter_.reset(
-      new X11WindowEventFilter(root_window_.get(), widget_));
+      new X11WindowEventFilter(root_window_.get(), activation_client, widget_));
   x11_window_event_filter_->SetUseHostWindowBorders(false);
   root_window_event_filter_->AddFilter(x11_window_event_filter_.get());
 #endif
 
   root_window_->AddRootWindowObserver(this);
 
-  aura::client::SetActivationClient(
-      root_window_.get(),
-      new aura::DesktopActivationClient(root_window_.get()));
+  aura::client::SetActivationClient(root_window_.get(), activation_client);
   aura::client::SetDispatcherClient(root_window_.get(),
                                     new aura::DesktopDispatcherClient);
 

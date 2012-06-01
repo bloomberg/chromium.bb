@@ -18,6 +18,7 @@
 #include "ui/views/views_export.h"
 
 namespace aura {
+class DesktopActivationClient;
 class RootWindow;
 class Window;
 }
@@ -29,8 +30,10 @@ class NativeWidgetAura;
 class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter,
                                           public MessageLoop::Dispatcher {
  public:
-  explicit X11WindowEventFilter(aura::RootWindow* root_window,
-                                NativeWidgetAura* widget);
+  explicit X11WindowEventFilter(
+      aura::RootWindow* root_window,
+      aura::DesktopActivationClient* activation_client,
+      NativeWidgetAura* widget);
   virtual ~X11WindowEventFilter();
 
   // Changes whether borders are shown on this |root_window|.
@@ -60,6 +63,7 @@ class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter,
   void OnActiveWindowChanged(::Window window);
 
   NativeWidgetAura* widget_;
+  aura::DesktopActivationClient* activation_client_;
 
   // The display and the native X window hosting the root window.
   Display* xdisplay_;

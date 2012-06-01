@@ -23,6 +23,11 @@ DesktopActivationClient::~DesktopActivationClient() {
   root_window_->GetFocusManager()->RemoveObserver(this);
 }
 
+void DesktopActivationClient::SetActivateWindowInResponseToSystem(
+    Window* window) {
+  current_active_ = window;
+}
+
 void DesktopActivationClient::ActivateWindow(Window* window) {
   // Prevent recursion when called from focus.
   if (updating_activation_)

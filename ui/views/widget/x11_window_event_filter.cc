@@ -10,6 +10,7 @@
 #include <X11/extensions/XInput2.h>
 
 #include "base/message_pump_aurax11.h"
+#include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -59,9 +60,12 @@ const char* kAtomsToCache[] = {
 
 namespace views {
 
-X11WindowEventFilter::X11WindowEventFilter(aura::RootWindow* root_window,
-                                           NativeWidgetAura* widget)
+X11WindowEventFilter::X11WindowEventFilter(
+    aura::RootWindow* root_window,
+    aura::DesktopActivationClient* activation_client,
+    NativeWidgetAura* widget)
     : widget_(widget),
+      activation_client_(activation_client),
       xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       xwindow_(root_window->GetAcceleratedWidget()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
@@ -238,18 +242,16 @@ void X11WindowEventFilter::OnActiveWindowChanged(::Window window) {
     if (!is_active_) {
       is_active_ = true;
 
-      widget_->Activate();
+      // Update activation client.
+      activation_client_->SetActivateWindowInResponseToSystem(
+          widget_->GetNativeView());
+      widget_->OnActivated();
     }
   } else if (is_active_) {
     is_active_ = false;
 
-    widget_->Deactivate();
-    // TODO(erg): Also tell the activation delegate of |window_| now that
-    // we've deactivated the widget_. This fixes the bubble case, but breaks
-    // menus. Figure out why.
-
-    // Force a redraw to show our inactive state.
-    widget_->GetWidget()->GetRootView()->SchedulePaint();
+    activation_client_->SetActivateWindowInResponseToSystem(NULL);
+    widget_->OnLostActive();
   }
 }
 

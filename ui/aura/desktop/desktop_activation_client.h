@@ -24,6 +24,11 @@ class AURA_EXPORT DesktopActivationClient : public client::ActivationClient,
   explicit DesktopActivationClient(RootWindow* root_window);
   virtual ~DesktopActivationClient();
 
+  // Changes |current_active_| without doing normal activation change. This
+  // should only be used to respond to changes that come from the native
+  // system.
+  void SetActivateWindowInResponseToSystem(Window* window);
+
   // ActivationClient:
   virtual void ActivateWindow(Window* window) OVERRIDE;
   virtual void DeactivateWindow(Window* window) OVERRIDE;
