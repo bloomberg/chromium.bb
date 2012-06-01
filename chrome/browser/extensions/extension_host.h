@@ -163,6 +163,8 @@ class ExtensionHost : public content::WebContentsDelegate,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
   virtual void CloseContents(content::WebContents* contents) OVERRIDE;
+  virtual void OnStartDownload(content::WebContents* source,
+                               content::DownloadItem* download) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,
