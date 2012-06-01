@@ -18,15 +18,11 @@ const int kReloadIntervalMinutes = 15;
 }  // namespace
 
 ConfigurationPolicyProviderWin::ConfigurationPolicyProviderWin(
-    const PolicyDefinitionList* policy_list,
-    const string16& registry_key,
-    PolicyLevel level)
+    const PolicyDefinitionList* policy_list)
     : AsynchronousPolicyProvider(
           policy_list,
           new ConfigurationPolicyLoaderWin(
-              new ConfigurationPolicyProviderDelegateWin(policy_list,
-                                                         registry_key,
-                                                         level),
+              new ConfigurationPolicyProviderDelegateWin(policy_list),
               kReloadIntervalMinutes)) {}
 
 }  // namespace policy

@@ -22,10 +22,68 @@
 
 using base::win::RegKey;
 
+namespace policy {
+
 namespace {
 
-bool ReadRegistryStringValue(RegKey* key, const string16& name,
-                             string16* result) {
+// Determines the registry key with the highest priority that contains
+// the |key_path| key with a |value_name| value inside.
+// |key_path| is a suffix to the Chrome mandatory or recommended registry key,
+// and can be empty to lookup values directly at that key.
+// |value_name| is the name of a value that should exist at that path. If it
+// is empty, then only the existence of the path is verified.
+// Returns true if |key| was updated to point to a key with a |key_path| suffix
+// and optional |value_name| value inside. In that case, |level| and |scope|
+// will contain the appropriate values for the key found.
+// Returns false otherwise.
+bool LoadHighestPriorityKey(const string16& key_path,
+                            const string16& value_name,
+                            RegKey* key,
+                            PolicyLevel* level,
+                            PolicyScope* scope) {
+  // |path| is in decreasing order of priority.
+  static const struct {
+    const wchar_t* path;
+    PolicyLevel level;
+  } key_paths[] = {
+    { kRegistryMandatorySubKey,   POLICY_LEVEL_MANDATORY    },
+    { kRegistryRecommendedSubKey, POLICY_LEVEL_RECOMMENDED  },
+  };
+
+  // |hive| is in decreasing order of priority.
+  static const struct {
+    HKEY hive;
+    PolicyScope scope;
+  } hives[] = {
+    { HKEY_LOCAL_MACHINE,   POLICY_SCOPE_MACHINE  },
+    { HKEY_CURRENT_USER,    POLICY_SCOPE_USER     },
+  };
+
+  // Lookup at the mandatory path for both user and machine policies first, and
+  // then at the recommended path.
+  for (size_t k = 0; k < arraysize(key_paths); ++k) {
+    for (size_t h = 0; h < arraysize(hives); ++h) {
+      string16 path(key_paths[k].path);
+      if (!key_path.empty())
+        path += ASCIIToUTF16("\\") + key_path;
+      key->Open(hives[h].hive, path.c_str(), KEY_READ);
+      if (!key->Valid())
+        continue;
+      if (value_name.empty() || key->HasValue(value_name.c_str())) {
+        *level = key_paths[k].level;
+        *scope = hives[h].scope;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// Reads a REG_SZ string at |key| named |name| into |result|. Returns false if
+// the string could not be read.
+bool ReadRegistryString(RegKey* key,
+                        const string16& name,
+                        string16* result) {
   DWORD value_size = 0;
   DWORD key_type = 0;
   scoped_array<uint8> buffer;
@@ -46,150 +104,152 @@ bool ReadRegistryStringValue(RegKey* key, const string16& name,
   return true;
 }
 
+// Reads a REG_DWORD integer at |key| named |name| into |result|. Returns false
+// if the value could no be read.
+bool ReadRegistryInteger(RegKey* key,
+                         const string16& name,
+                         uint32* result) {
+  DWORD dword;
+  if (key->ReadValueDW(name.c_str(), &dword) != ERROR_SUCCESS)
+    return false;
+  *result = dword;
+  return true;
+}
+
+// Returns the Value for a Chrome string policy named |name|, or NULL if
+// it wasn't found. The caller owns the returned value.
+base::Value* ReadStringValue(const string16& name,
+                             PolicyLevel* level,
+                             PolicyScope* scope) {
+  RegKey key;
+  if (!LoadHighestPriorityKey(string16(), name, &key, level, scope))
+    return NULL;
+  string16 value;
+  if (!ReadRegistryString(&key, name, &value))
+    return NULL;
+  return base::Value::CreateStringValue(value);
+}
+
+// Returns the Value for a Chrome string list policy named |name|,
+// or NULL if it wasn't found. The caller owns the returned value.
+base::Value* ReadStringListValue(const string16& name,
+                                 PolicyLevel* level,
+                                 PolicyScope* scope) {
+  RegKey key;
+  if (!LoadHighestPriorityKey(name, string16(), &key, level, scope))
+    return NULL;
+  base::ListValue* result = new base::ListValue();
+  string16 value;
+  int index = 0;
+  while (ReadRegistryString(&key, base::IntToString16(++index), &value))
+    result->Append(base::Value::CreateStringValue(value));
+  return result;
+}
+
+// Returns the Value for a Chrome boolean policy named |name|,
+// or NULL if it wasn't found. The caller owns the returned value.
+base::Value* ReadBooleanValue(const string16& name,
+                              PolicyLevel* level,
+                              PolicyScope* scope) {
+  RegKey key;
+  if (!LoadHighestPriorityKey(string16(), name, &key, level, scope))
+    return NULL;
+  uint32 value;
+  if (!ReadRegistryInteger(&key, name, &value))
+    return NULL;
+  return base::Value::CreateBooleanValue(value != 0u);
+}
+
+// Returns the Value for a Chrome integer policy named |name|,
+// or NULL if it wasn't found. The caller owns the returned value.
+base::Value* ReadIntegerValue(const string16& name,
+                              PolicyLevel* level,
+                              PolicyScope* scope) {
+  RegKey key;
+  if (!LoadHighestPriorityKey(string16(), name, &key, level, scope))
+    return NULL;
+  uint32 value;
+  if (!ReadRegistryInteger(&key, name, &value))
+    return NULL;
+  return base::Value::CreateIntegerValue(value);
+}
+
+// Returns the Value for a Chrome dictionary policy named |name|,
+// or NULL if it wasn't found. The caller owns the returned value.
+base::Value* ReadDictionaryValue(const string16& name,
+                                 PolicyLevel* level,
+                                 PolicyScope* scope) {
+  // Dictionaries are encoded as JSON strings on Windows.
+  //
+  // A dictionary could be stored as a subkey, with each of its entries
+  // within that subkey. However, it would be impossible to recover the
+  // type for some of those entries:
+  //  - Booleans are stored as DWORDS and are indistinguishable from
+  //    integers;
+  //  - Lists are stored as a subkey, with entries mapping 0 to N-1 to
+  //    their value. This is indistinguishable from a Dictionary with
+  //    integer keys.
+  //
+  // The GPO policy editor also has a limited data entry form that doesn't
+  // support dictionaries.
+  RegKey key;
+  if (!LoadHighestPriorityKey(string16(), name, &key, level, scope))
+    return NULL;
+  string16 value;
+  if (!ReadRegistryString(&key, name, &value))
+    return NULL;
+  return base::JSONReader::Read(UTF16ToUTF8(value));
+}
+
 }  // namespace
 
-namespace policy {
-
 ConfigurationPolicyProviderDelegateWin::ConfigurationPolicyProviderDelegateWin(
-    const PolicyDefinitionList* policy_definition_list,
-    const string16& registry_key,
-    PolicyLevel level)
-    : policy_definition_list_(policy_definition_list),
-      registry_key_(registry_key),
-      level_(level) {}
+    const PolicyDefinitionList* policy_definition_list)
+    : policy_definition_list_(policy_definition_list) {}
 
 scoped_ptr<PolicyBundle> ConfigurationPolicyProviderDelegateWin::Load() {
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
   PolicyMap& chrome_policy = bundle->Get(POLICY_DOMAIN_CHROME, std::string());
+
   const PolicyDefinitionList::Entry* current;
   for (current = policy_definition_list_->begin;
        current != policy_definition_list_->end;
        ++current) {
     const string16 name(ASCIIToUTF16(current->name));
+    PolicyLevel level = POLICY_LEVEL_MANDATORY;
     PolicyScope scope = POLICY_SCOPE_MACHINE;
     Value* value = NULL;
+
     switch (current->value_type) {
-      case Value::TYPE_STRING: {
-        string16 string_value;
-        if (GetRegistryPolicyString(name, &string_value, &scope))
-          value = Value::CreateStringValue(string_value);
+      case Value::TYPE_STRING:
+        value = ReadStringValue(name, &level, &scope);
         break;
-      }
-      case Value::TYPE_LIST: {
-        scoped_ptr<ListValue> list_value(new ListValue);
-        if (GetRegistryPolicyStringList(name, list_value.get(), &scope))
-          value = list_value.release();
+
+      case Value::TYPE_LIST:
+        value = ReadStringListValue(name, &level, &scope);
         break;
-      }
-      case Value::TYPE_BOOLEAN: {
-        bool bool_value;
-        if (GetRegistryPolicyBoolean(name, &bool_value, &scope))
-          value = Value::CreateBooleanValue(bool_value);
+
+      case Value::TYPE_BOOLEAN:
+        value = ReadBooleanValue(name, &level, &scope);
         break;
-      }
-      case Value::TYPE_INTEGER: {
-        uint32 int_value;
-        if (GetRegistryPolicyInteger(name, &int_value, &scope))
-          value = Value::CreateIntegerValue(int_value);
+
+      case Value::TYPE_INTEGER:
+        value = ReadIntegerValue(name, &level, &scope);
         break;
-      }
-      case Value::TYPE_DICTIONARY: {
-        // Dictionaries are encoded as JSON strings on Windows.
-        //
-        // A dictionary could be stored as a subkey, with each of its entries
-        // within that subkey. However, it would be impossible to recover the
-        // type for some of those entries:
-        //  - Booleans are stored as DWORDS and are indistinguishable from
-        //    integers;
-        //  - Lists are stored as a subkey, with entries mapping 0 to N-1 to
-        //    their value. This is indistinguishable from a Dictionary with
-        //    integer keys.
-        //
-        // The GPO policy editor also has a limited data entry form that doesn't
-        // support dictionaries.
-        string16 string_value;
-        if (GetRegistryPolicyString(name, &string_value, &scope))
-          value = base::JSONReader::Read(UTF16ToUTF8(string_value));
+
+      case Value::TYPE_DICTIONARY:
+        value = ReadDictionaryValue(name, &level, &scope);
         break;
-      }
+
       default:
         NOTREACHED();
     }
+
     if (value)
-      chrome_policy.Set(current->name, level_, scope, value);
+      chrome_policy.Set(current->name, level, scope, value);
   }
+
   return bundle.Pass();
-}
-
-bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyString(
-    const string16& name, string16* result, PolicyScope* scope) const {
-  RegKey policy_key(HKEY_LOCAL_MACHINE, registry_key_.c_str(), KEY_READ);
-  // First try the global policy.
-  if (ReadRegistryStringValue(&policy_key, name, result)) {
-    *scope = POLICY_SCOPE_MACHINE;
-    return true;
-  }
-
-  // Fall back on user-specific policy.
-  if (policy_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
-                      KEY_READ) != ERROR_SUCCESS)
-    return false;
-  *scope = POLICY_SCOPE_USER;
-  return ReadRegistryStringValue(&policy_key, name, result);
-}
-
-bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyStringList(
-    const string16& key, ListValue* result, PolicyScope* scope) const {
-  string16 path = registry_key_;
-  path += ASCIIToUTF16("\\") + key;
-  RegKey policy_key;
-  if (policy_key.Open(HKEY_LOCAL_MACHINE, path.c_str(), KEY_READ) ==
-      ERROR_SUCCESS) {
-    *scope = POLICY_SCOPE_MACHINE;
-  } else {
-    // Fall back on user-specific policy.
-    if (policy_key.Open(HKEY_CURRENT_USER, path.c_str(), KEY_READ) !=
-        ERROR_SUCCESS)
-      return false;
-    *scope = POLICY_SCOPE_USER;
-  }
-  string16 policy_string;
-  int index = 0;
-  while (ReadRegistryStringValue(&policy_key, base::IntToString16(++index),
-                                 &policy_string)) {
-    result->Append(Value::CreateStringValue(policy_string));
-  }
-  return true;
-}
-
-bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyBoolean(
-    const string16& value_name, bool* result, PolicyScope* scope) const {
-  uint32 local_result = 0;
-  bool ret = GetRegistryPolicyInteger(value_name, &local_result, scope);
-  if (ret)
-    *result = local_result != 0;
-  return ret;
-}
-
-bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyInteger(
-    const string16& value_name, uint32* result, PolicyScope* scope) const {
-  DWORD value = 0;
-  RegKey policy_key(HKEY_LOCAL_MACHINE, registry_key_.c_str(), KEY_READ);
-  if (policy_key.ReadValueDW(value_name.c_str(), &value) == ERROR_SUCCESS) {
-    *scope = POLICY_SCOPE_MACHINE;
-    *result = value;
-    return true;
-  }
-
-  if (policy_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(), KEY_READ) ==
-      ERROR_SUCCESS) {
-    if (policy_key.ReadValueDW(value_name.c_str(), &value) == ERROR_SUCCESS) {
-      *scope = POLICY_SCOPE_USER;
-      *result = value;
-      return true;
-    }
-  }
-  return false;
 }
 
 }  // namespace policy

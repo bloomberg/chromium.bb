@@ -505,9 +505,7 @@ ConfigurationPolicyProvider*
     BrowserPolicyConnector::CreateManagedPlatformProvider() {
   const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
 #if defined(OS_WIN)
-  return new ConfigurationPolicyProviderWin(policy_list,
-                                            policy::kRegistryMandatorySubKey,
-                                            POLICY_LEVEL_MANDATORY);
+  return new ConfigurationPolicyProviderWin(policy_list);
 #elif defined(OS_MACOSX)
   return new ConfigurationPolicyProviderMac(policy_list);
 #elif defined(OS_POSIX)
@@ -529,12 +527,7 @@ ConfigurationPolicyProvider*
 // static
 ConfigurationPolicyProvider*
     BrowserPolicyConnector::CreateRecommendedPlatformProvider() {
-#if defined(OS_WIN)
-  const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
-  return new ConfigurationPolicyProviderWin(policy_list,
-                                            policy::kRegistryRecommendedSubKey,
-                                            POLICY_LEVEL_RECOMMENDED);
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
   FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {

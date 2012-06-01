@@ -141,9 +141,7 @@ void TestHarness::SetUp() {}
 
 AsynchronousPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
-  return new ConfigurationPolicyProviderWin(policy_definition_list,
-                                            policy::kRegistryMandatorySubKey,
-                                            POLICY_LEVEL_MANDATORY);
+  return new ConfigurationPolicyProviderWin(policy_definition_list);
 }
 
 void TestHarness::InstallEmptyPolicy() {}
@@ -220,9 +218,7 @@ INSTANTIATE_TEST_CASE_P(
 class ConfigurationPolicyProviderWinTest : public AsynchronousPolicyTestBase {
  protected:
   ConfigurationPolicyProviderWinTest()
-      : provider_(&test_policy_definitions::kList,
-                  policy::kRegistryMandatorySubKey,
-                  POLICY_LEVEL_MANDATORY) {}
+      : provider_(&test_policy_definitions::kList) {}
   virtual ~ConfigurationPolicyProviderWinTest() {}
 
   ScopedGroupPolicyRegistrySandbox registry_sandbox_;
