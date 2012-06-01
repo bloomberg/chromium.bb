@@ -352,12 +352,6 @@
   fun:browser_sync::SyncBackendHost::Core::NotifyFrontend
 }
 {
-  bug_43387
-  Heapcheck:Leak
-  ...
-  fun:net::SpdyNetworkTransactionTest_PostWithEarlySynReply_Test::TestBody
-}
-{
    bug_44354
    Heapcheck:Leak
    ...
