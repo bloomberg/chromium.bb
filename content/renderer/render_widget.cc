@@ -72,7 +72,6 @@ using WebKit::WebWidget;
 using content::RenderThread;
 
 RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
-                           const WebKit::WebScreenInfo& screen_info,
                            bool swapped_out)
     : routing_id_(MSG_ROUTING_NONE),
       surface_id_(0),
@@ -104,7 +103,6 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       is_accelerated_compositing_active_(false),
       animation_update_pending_(false),
       invalidation_task_posted_(false),
-      screen_info_(screen_info),
       invert_(false) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
@@ -127,11 +125,10 @@ RenderWidget::~RenderWidget() {
 
 // static
 RenderWidget* RenderWidget::Create(int32 opener_id,
-                                   WebKit::WebPopupType popup_type,
-                                   const WebKit::WebScreenInfo& screen_info) {
+                                   WebKit::WebPopupType popup_type) {
   DCHECK(opener_id != MSG_ROUTING_NONE);
   scoped_refptr<RenderWidget> widget(
-      new RenderWidget(popup_type, screen_info, false));
+      new RenderWidget(popup_type, false));
   widget->Init(opener_id);  // adds reference
   return widget;
 }
@@ -1666,7 +1663,19 @@ bool RenderWidget::CanComposeInline() {
 }
 
 WebScreenInfo RenderWidget::screenInfo() {
-  return screen_info_;
+  WebScreenInfo results;
+  if (host_window_set_)
+    Send(new ViewHostMsg_GetScreenInfo(routing_id_, host_window_, &results));
+  else {
+    DLOG(WARNING) << "Unable to retrieve screen information, no host window";
+#if defined(USE_AURA)
+    // TODO(backer): Remove this a temporary workaround for crbug.com/111929
+    // once we get a proper fix.
+    results.availableRect.width = 1000;
+    results.availableRect.height = 1000;
+#endif
+  }
+  return results;
 }
 
 void RenderWidget::resetInputMethod() {

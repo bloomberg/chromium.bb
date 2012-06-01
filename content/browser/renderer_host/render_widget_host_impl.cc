@@ -281,6 +281,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnMsgLockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnMsgUnlockMouse)
 #if defined(OS_POSIX) || defined(USE_AURA)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnMsgGetScreenInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnMsgGetRootWindowRect)
 #endif
@@ -1506,6 +1507,14 @@ void RenderWidgetHostImpl::OnMsgUnlockMouse() {
 }
 
 #if defined(OS_POSIX) || defined(USE_AURA)
+void RenderWidgetHostImpl::OnMsgGetScreenInfo(gfx::NativeViewId window_id,
+                                              WebKit::WebScreenInfo* results) {
+  if (view_)
+    view_->GetScreenInfo(results);
+  else
+    RenderWidgetHostViewPort::GetDefaultScreenInfo(results);
+}
+
 void RenderWidgetHostImpl::OnMsgGetWindowRect(gfx::NativeViewId window_id,
                                               gfx::Rect* results) {
   if (view_)

@@ -488,6 +488,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnMsgUnlockMouse();
 
 #if defined(OS_POSIX) || defined(USE_AURA)
+  void OnMsgGetScreenInfo(gfx::NativeViewId view,
+                          WebKit::WebScreenInfo* results);
   void OnMsgGetWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);
   void OnMsgGetRootWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);
 #endif

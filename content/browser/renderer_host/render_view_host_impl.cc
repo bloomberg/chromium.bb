@@ -64,7 +64,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
 #endif
@@ -249,19 +248,6 @@ bool RenderViewHostImpl::CreateRenderView(
   params.opener_route_id = opener_route_id;
   params.swapped_out = is_swapped_out_;
   params.next_page_id = next_page_id;
-#if defined(OS_POSIX) || defined(USE_AURA)
-  if (GetView()) {
-    static_cast<content::RenderWidgetHostViewPort*>(
-        GetView())->GetScreenInfo(&params.screen_info);
-  } else {
-    content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
-        &params.screen_info);
-  }
-#else
-  params.screen_info =
-      WebKit::WebScreenInfoFactory::screenInfo(
-          gfx::NativeViewFromId(GetNativeViewId()));
-#endif
   params.embedder_channel_name = embedder_channel_name;
   params.embedder_container_id = embedder_container_id;
   params.accessibility_mode =

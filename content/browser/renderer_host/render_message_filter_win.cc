@@ -49,3 +49,9 @@ void RenderMessageFilter::OnGetRootWindowRect(gfx::NativeViewId window_id,
   *rect = GetVisibleWindowRect(GetAncestor(gfx::NativeViewFromId(window_id),
                                GA_ROOT));
 }
+
+void RenderMessageFilter::OnGetScreenInfo(gfx::NativeViewId view,
+                                          WebKit::WebScreenInfo* results) {
+  *results =
+      WebKit::WebScreenInfoFactory::screenInfo(gfx::NativeViewFromId(view));
+}

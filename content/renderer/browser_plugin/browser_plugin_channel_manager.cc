@@ -60,7 +60,6 @@ void BrowserPluginChannelManager::CreateRenderView(
         false,
         params.swapped_out,
         params.next_page_id,
-        params.screen_info,
         channel,
         params.accessibility_mode);
   ReportChannelToEmbedder(render_view,
