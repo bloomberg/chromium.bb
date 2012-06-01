@@ -225,6 +225,7 @@ enum AVOptionType{
     AV_OPT_TYPE_RATIONAL,
     AV_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
     AV_OPT_TYPE_CONST = 128,
+    AV_OPT_TYPE_IMAGE_SIZE = MKBETAG('S','I','Z','E'), ///< offset must point to two consecutive integers
 #if FF_API_OLD_AVOPTIONS
     FF_OPT_TYPE_FLAGS = 0,
     FF_OPT_TYPE_INT,
@@ -561,6 +562,7 @@ int av_opt_set       (void *obj, const char *name, const char *val, int search_f
 int av_opt_set_int   (void *obj, const char *name, int64_t     val, int search_flags);
 int av_opt_set_double(void *obj, const char *name, double      val, int search_flags);
 int av_opt_set_q     (void *obj, const char *name, AVRational  val, int search_flags);
+int av_opt_set_bin   (void *obj, const char *name, const uint8_t *val, int size, int search_flags);
 /**
  * @}
  */

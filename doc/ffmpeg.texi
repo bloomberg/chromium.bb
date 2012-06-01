@@ -164,7 +164,7 @@ streams are delayed by @var{offset} seconds.
 Set the recording timestamp in the container.
 The syntax for @var{time} is:
 @example
-now|([(YYYY-MM-DD|YYYYMMDD)[T|t| ]]((HH[:MM[:SS[.m...]]])|(HH[MM[SS[.m...]]]))[Z|z])
+now|([(YYYY-MM-DD|YYYYMMDD)[T|t| ]]((HH:MM:SS[.m...])|(HHMMSS[.m...]))[Z|z])
 @end example
 If the value is "now" it takes the current time.
 Time is local time unless 'Z' or 'z' is appended, in which case it is
@@ -282,71 +282,27 @@ attachments.
 @item -vframes @var{number} (@emph{output})
 Set the number of video frames to record. This is an alias for @code{-frames:v}.
 @item -r[:@var{stream_specifier}] @var{fps} (@emph{input/output,per-stream})
-Set frame rate (Hz value, fraction or abbreviation), (default = 25). For output
-streams implies @code{-vsync cfr}.
+Set frame rate (Hz value, fraction or abbreviation).
+
+As an input option, ignore any timestamps stored in the file and instead
+generate timestamps assuming constant frame rate @var{fps}.
+
+As an output option, duplicate or drop input frames to achieve constant output
+frame rate @var{fps} (note that this actually causes the @code{fps} filter to be
+inserted to the end of the corresponding filtergraph).
+
 @item -s[:@var{stream_specifier}] @var{size} (@emph{input/output,per-stream})
-Set frame size. The format is @samp{wxh} (default - same as source).
-The following abbreviations are recognized:
-@table @samp
-@item sqcif
-128x96
-@item qcif
-176x144
-@item cif
-352x288
-@item 4cif
-704x576
-@item 16cif
-1408x1152
-@item qqvga
-160x120
-@item qvga
-320x240
-@item vga
-640x480
-@item svga
-800x600
-@item xga
-1024x768
-@item uxga
-1600x1200
-@item qxga
-2048x1536
-@item sxga
-1280x1024
-@item qsxga
-2560x2048
-@item hsxga
-5120x4096
-@item wvga
-852x480
-@item wxga
-1366x768
-@item wsxga
-1600x1024
-@item wuxga
-1920x1200
-@item woxga
-2560x1600
-@item wqsxga
-3200x2048
-@item wquxga
-3840x2400
-@item whsxga
-6400x4096
-@item whuxga
-7680x4800
-@item cga
-320x200
-@item ega
-640x350
-@item hd480
-852x480
-@item hd720
-1280x720
-@item hd1080
-1920x1080
-@end table
+Set frame size.
+
+As an input option, this is a shortcut for the @option{video_size} private
+option, recognized by some demuxers for which the frame size is either not
+stored in the file or is configurable -- e.g. raw video or video grabbers.
+
+As an output option, this inserts the @code{scale} video filter to the
+@emph{end} of the corresponding filtergraph. Please use the @code{scale} filter
+directly to insert it at the beginning or some other place.
+
+The format is @samp{wxh} (default - same as source).
 
 @item -aspect[:@var{stream_specifier}] @var{aspect} (@emph{output,per-stream})
 Set the video display aspect ratio specified by @var{aspect}.
@@ -418,6 +374,14 @@ also sources and sinks).  This is an alias for @code{-filter:v}.
 @item -pix_fmt[:@var{stream_specifier}] @var{format} (@emph{input/output,per-stream})
 Set pixel format. Use @code{-pix_fmts} to show all the supported
 pixel formats.
+If the selected pixel format can not be selected, ffmpeg will print a
+warning and select the best pixel format supported by the encoder.
+If @var{pix_fmt} is prefixed by a @code{+}, ffmpeg will exit with an error
+if the requested pixel format can not be selected, and automatic conversions
+inside filter graphs are disabled.
+If @var{pix_fmt} is a single @code{+}, ffmpeg selects the same pixel format
+as the input (or graph output) and automatic conversions are disabled.
+
 @item -sws_flags @var{flags} (@emph{input/output})
 Set SwScaler flags.
 @item -vdt @var{n}
@@ -491,6 +455,11 @@ Set the audio codec. This is an alias for @code{-codec:a}.
 @item -sample_fmt[:@var{stream_specifier}] @var{sample_fmt} (@emph{output,per-stream})
 Set the audio sample format. Use @code{-sample_fmts} to get a list
 of supported sample formats.
+@item -af @var{filter_graph} (@emph{output})
+@var{filter_graph} is a description of the filter graph to apply to
+the input audio.
+Use the option "-filters" to show all the available filters (including
+also sources and sinks).  This is an alias for @code{-filter:a}.
 @end table
 
 @section Advanced Audio options:
@@ -773,6 +742,7 @@ Audio sync method. "Stretches/squeezes" the audio stream to match the timestamps
 the parameter is the maximum samples per second by which the audio is changed.
 -async 1 is a special case where only the start of the audio stream is corrected
 without any later correction.
+This option has been deprecated. Use the @code{asyncts} audio filter instead.
 @item -copyts
 Copy timestamps from input to output.
 @item -copytb @var{mode}
@@ -938,7 +908,7 @@ frame rate or decrease the frame size.
 @item
 If your computer is not fast enough, you can speed up the
 compression at the expense of the compression ratio. You can use
-'-me zero' to speed up motion estimation, and '-intra' to disable
+'-me zero' to speed up motion estimation, and '-g 0' to disable
 motion estimation completely (you have only I-frames, which means it
 is about as good as JPEG compression).
 
@@ -1165,6 +1135,7 @@ ffmpeg -i src.ext -lmax 21*QP2LAMBDA dst.ext
 @end itemize
 @c man end EXAMPLES
 
+@include syntax.texi
 @include eval.texi
 @include decoders.texi
 @include encoders.texi

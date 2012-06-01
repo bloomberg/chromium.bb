@@ -26,6 +26,7 @@
 
 #include "avfilter.h"
 #include "avfiltergraph.h"
+#include "formats.h"
 
 #define POOL_SIZE 32
 typedef struct AVFilterPool {
@@ -111,6 +112,16 @@ int ff_parse_pixel_format(enum PixelFormat *ret, const char *arg, void *log_ctx)
 int ff_parse_sample_rate(int *ret, const char *arg, void *log_ctx);
 
 /**
+ * Parse a time base.
+ *
+ * @param ret unsigned AVRational pointer to where the value should be written
+ * @param arg string to parse
+ * @param log_ctx log context
+ * @return 0 in case of success, a negative AVERROR code on error
+ */
+int ff_parse_time_base(AVRational *ret, const char *arg, void *log_ctx);
+
+/**
  * Parse a sample format name or a corresponding integer representation.
  *
  * @param ret integer pointer to where the value should be written
@@ -131,13 +142,22 @@ int ff_parse_sample_format(int *ret, const char *arg, void *log_ctx);
 int ff_parse_channel_layout(int64_t *ret, const char *arg, void *log_ctx);
 
 /**
- * Parse a packing format or a corresponding integer representation.
- *
- * @param ret integer pointer to where the value should be written
- * @param arg string to parse
- * @param log_ctx log context
- * @return 0 in case of success, a negative AVERROR code on error
+ * Pass video frame along and keep an internal reference for later use.
  */
-int ff_parse_packing_format(int *ret, const char *arg, void *log_ctx);
+static inline void ff_null_start_frame_keep_ref(AVFilterLink *inlink,
+                                                AVFilterBufferRef *picref)
+{
+    avfilter_start_frame(inlink->dst->outputs[0], avfilter_ref_buffer(picref, ~0));
+}
+
+void ff_update_link_current_pts(AVFilterLink *link, int64_t pts);
+
+void ff_free_pool(AVFilterPool *pool);
+
+void ff_command_queue_pop(AVFilterContext *filter);
+
+#define FF_DPRINTF_START(ctx, func) av_dlog(NULL, "%-16s: ", #func)
+
+void ff_dlog_link(void *ctx, AVFilterLink *link, int end);
 
 #endif /* AVFILTER_INTERNAL_H */

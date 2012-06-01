@@ -41,6 +41,7 @@
 #include "libavutil/lfg.h"
 #include "avfilter.h"
 #include "drawutils.h"
+#include "video.h"
 
 #undef time
 
@@ -53,23 +54,22 @@
 #endif
 
 static const char *const var_names[] = {
-    "main_w", "w", "W",       ///< width  of the input video
+    "dar",
+    "hsub", "vsub",
+    "line_h", "lh",           ///< line height, same as max_glyph_h
     "main_h", "h", "H",       ///< height of the input video
-    "tw", "text_w",           ///< width  of the rendered text
-    "th", "text_h",           ///< height of the rendered text
-    "max_glyph_w",            ///< max glyph width
-    "max_glyph_h",            ///< max glyph height
+    "main_w", "w", "W",       ///< width  of the input video
     "max_glyph_a", "ascent",  ///< max glyph ascent
     "max_glyph_d", "descent", ///< min glyph descent
-    "line_h", "lh",           ///< line height, same as max_glyph_h
+    "max_glyph_h",            ///< max glyph height
+    "max_glyph_w",            ///< max glyph width
+    "n",                      ///< number of frame
     "sar",
-    "dar",
-    "hsub",
-    "vsub",
+    "t",                      ///< timestamp expressed in seconds
+    "text_h", "th",           ///< height of the rendered text
+    "text_w", "tw",           ///< width  of the rendered text
     "x",
     "y",
-    "n",                      ///< number of frame
-    "t",                      ///< timestamp expressed in seconds
     NULL
 };
 
@@ -90,23 +90,22 @@ static const eval_func2 fun2[] = {
 };
 
 enum var_name {
-    VAR_MAIN_W, VAR_w, VAR_W,
+    VAR_DAR,
+    VAR_HSUB, VAR_VSUB,
+    VAR_LINE_H, VAR_LH,
     VAR_MAIN_H, VAR_h, VAR_H,
-    VAR_TW, VAR_TEXT_W,
-    VAR_TH, VAR_TEXT_H,
-    VAR_MAX_GLYPH_W,
-    VAR_MAX_GLYPH_H,
+    VAR_MAIN_W, VAR_w, VAR_W,
     VAR_MAX_GLYPH_A, VAR_ASCENT,
     VAR_MAX_GLYPH_D, VAR_DESCENT,
-    VAR_LINE_H, VAR_LH,
+    VAR_MAX_GLYPH_H,
+    VAR_MAX_GLYPH_W,
+    VAR_N,
     VAR_SAR,
-    VAR_DAR,
-    VAR_HSUB,
-    VAR_VSUB,
+    VAR_T,
+    VAR_TEXT_H, VAR_TH,
+    VAR_TEXT_W, VAR_TW,
     VAR_X,
     VAR_Y,
-    VAR_N,
-    VAR_T,
     VAR_VARS_NB
 };
 
@@ -149,8 +148,8 @@ typedef struct {
     AVExpr *x_pexpr, *y_pexpr;      ///< parsed expressions for x and y
     int64_t basetime;               ///< base pts time in the real world for display
     double var_values[VAR_VARS_NB];
-    char   *d_expr;
-    AVExpr *d_pexpr;
+    char   *draw_expr;              ///< expression for draw
+    AVExpr *draw_pexpr;             ///< parsed expression for draw
     int draw;                       ///< set to zero to prevent drawing
     AVLFG  prng;                    ///< random
     char       *tc_opt_string;      ///< specified timecode option string
@@ -177,9 +176,10 @@ static const AVOption drawtext_options[]= {
 {"shadowy",  "set y",                OFFSET(shadowy),            AV_OPT_TYPE_INT,    {.dbl=0},     INT_MIN,  INT_MAX  },
 {"tabsize",  "set tab size",         OFFSET(tabsize),            AV_OPT_TYPE_INT,    {.dbl=4},     0,        INT_MAX  },
 {"basetime", "set base time",        OFFSET(basetime),           AV_OPT_TYPE_INT64,  {.dbl=AV_NOPTS_VALUE},     INT64_MIN,        INT64_MAX  },
-{"draw",     "if false do not draw", OFFSET(d_expr),             AV_OPT_TYPE_STRING, {.str="1"},   CHAR_MIN, CHAR_MAX },
+{"draw",     "if false do not draw", OFFSET(draw_expr),          AV_OPT_TYPE_STRING, {.str="1"},   CHAR_MIN, CHAR_MAX },
 {"timecode", "set initial timecode", OFFSET(tc_opt_string),      AV_OPT_TYPE_STRING, {.str=NULL},  CHAR_MIN, CHAR_MAX },
 {"tc24hmax", "set 24 hours max (timecode only)", OFFSET(tc24hmax), AV_OPT_TYPE_INT,  {.dbl=0},            0,        1 },
+{"timecode_rate", "set rate (timecode only)", OFFSET(tc_rate),   AV_OPT_TYPE_RATIONAL, {.dbl=0},          0,  INT_MAX },
 {"r",        "set rate (timecode only)", OFFSET(tc_rate),        AV_OPT_TYPE_RATIONAL, {.dbl=0},          0,  INT_MAX },
 {"rate",     "set rate (timecode only)", OFFSET(tc_rate),        AV_OPT_TYPE_RATIONAL, {.dbl=0},          0,  INT_MAX },
 {"fix_bounds", "if true, check and fix text coords to avoid clipping",
@@ -517,7 +517,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 
     av_expr_free(dtext->x_pexpr); dtext->x_pexpr = NULL;
     av_expr_free(dtext->y_pexpr); dtext->y_pexpr = NULL;
-    av_expr_free(dtext->d_pexpr); dtext->d_pexpr = NULL;
+    av_expr_free(dtext->draw_pexpr); dtext->draw_pexpr = NULL;
 
     av_freep(&dtext->boxcolor_string);
     av_freep(&dtext->expanded_text);
@@ -527,7 +527,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_freep(&dtext->text);
     av_freep(&dtext->x_expr);
     av_freep(&dtext->y_expr);
-    av_freep(&dtext->d_expr);
+    av_freep(&dtext->draw_expr);
 
     av_freep(&dtext->positions);
     dtext->nb_positions = 0;
@@ -574,7 +574,7 @@ static int config_input(AVFilterLink *inlink)
                              NULL, NULL, fun2_names, fun2, 0, ctx)) < 0 ||
         (ret = av_expr_parse(&dtext->y_pexpr, dtext->y_expr, var_names,
                              NULL, NULL, fun2_names, fun2, 0, ctx)) < 0 ||
-        (ret = av_expr_parse(&dtext->d_pexpr, dtext->d_expr, var_names,
+        (ret = av_expr_parse(&dtext->draw_pexpr, dtext->draw_expr, var_names,
                              NULL, NULL, fun2_names, fun2, 0, ctx)) < 0)
 
         return AVERROR(EINVAL);
@@ -769,7 +769,7 @@ static int draw_text(AVFilterContext *ctx, AVFilterBufferRef *picref,
     dtext->x = dtext->var_values[VAR_X] = av_expr_eval(dtext->x_pexpr, dtext->var_values, &dtext->prng);
     dtext->y = dtext->var_values[VAR_Y] = av_expr_eval(dtext->y_pexpr, dtext->var_values, &dtext->prng);
     dtext->x = dtext->var_values[VAR_X] = av_expr_eval(dtext->x_pexpr, dtext->var_values, &dtext->prng);
-    dtext->draw = av_expr_eval(dtext->d_pexpr, dtext->var_values, &dtext->prng);
+    dtext->draw = av_expr_eval(dtext->draw_pexpr, dtext->var_values, &dtext->prng);
 
     if(!dtext->draw)
         return 0;
@@ -831,8 +831,8 @@ AVFilter avfilter_vf_drawtext = {
 
     .inputs    = (const AVFilterPad[]) {{ .name       = "default",
                                     .type             = AVMEDIA_TYPE_VIDEO,
-                                    .get_video_buffer = avfilter_null_get_video_buffer,
-                                    .start_frame      = avfilter_null_start_frame,
+                                    .get_video_buffer = ff_null_get_video_buffer,
+                                    .start_frame      = ff_null_start_frame,
                                     .draw_slice       = null_draw_slice,
                                     .end_frame        = end_frame,
                                     .config_props     = config_input,

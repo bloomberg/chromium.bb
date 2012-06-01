@@ -22,6 +22,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/attributes.h"
 #include "avcodec.h"
 #include "internal.h"
 #include "get_bits.h"
@@ -658,9 +659,9 @@ static void mclms_predict(WmallDecodeCtx *s, int icoef, int *pred)
     int num_channels = s->num_channels;
 
     for (ich = 0; ich < num_channels; ich++) {
+        pred[ich] = 0;
         if (!s->is_channel_coded[ich])
             continue;
-        pred[ich] = 0;
         for (i = 0; i < order * num_channels; i++)
             pred[ich] += s->mclms_prevvalues[i + s->mclms_recent] *
                          s->mclms_coeffs[i + order * num_channels * ich];
@@ -793,7 +794,7 @@ static void revert_inter_ch_decorr(WmallDecodeCtx *s, int tile_size)
 {
     if (s->num_channels != 2)
         return;
-    else if (s->is_channel_coded[0] && s->is_channel_coded[1]) {
+    else if (s->is_channel_coded[0] || s->is_channel_coded[1]) {
         int icoef;
         for (icoef = 0; icoef < tile_size; icoef++) {
             s->channel_residues[0][icoef] -= s->channel_residues[1][icoef] >> 1;
@@ -959,8 +960,9 @@ static int decode_subframe(WmallDecodeCtx *s)
                 else
                     use_normal_update_speed(s, i);
                 revert_cdlms(s, i, 0, subframe_len);
-            } else
-                memset(s->channel_residues[i], 0, sizeof(s->channel_residues[i]));
+            } else {
+                memset(s->channel_residues[i], 0, sizeof(**s->channel_residues) * subframe_len);
+            }
     }
     if (s->do_mclms)
         revert_mclms(s, subframe_len);
@@ -982,10 +984,10 @@ static int decode_subframe(WmallDecodeCtx *s)
 
         for (j = 0; j < subframe_len; j++) {
             if (s->bits_per_sample == 16) {
-                *s->samples_16[c] = (int16_t) s->channel_residues[c][j];
+                *s->samples_16[c] = (int16_t) s->channel_residues[c][j] << padding_zeroes;
                 s->samples_16[c] += s->num_channels;
             } else {
-                *s->samples_32[c] = s->channel_residues[c][j];
+                *s->samples_32[c] = s->channel_residues[c][j] << padding_zeroes;
                 s->samples_32[c] += s->num_channels;
             }
         }
@@ -1044,7 +1046,7 @@ static int decode_frame(WmallDecodeCtx *s)
     /* no idea what these are for, might be the number of samples
        that need to be skipped at the beginning or end of a stream */
     if (get_bits1(gb)) {
-        int skip;
+        int av_unused skip;
 
         /* usually true for the first frame */
         if (get_bits1(gb)) {
@@ -1216,7 +1218,7 @@ static int decode_packet(AVCodecContext *avctx, void *data, int *got_frame_ptr,
             save_bits(s, gb, num_bits_prev_frame, 1);
 
             /* decode the cross packet frame if it is valid */
-            if (!s->packet_loss)
+            if (num_bits_prev_frame < remaining_packet_bits && !s->packet_loss)
                 decode_frame(s);
         } else if (s->num_saved_bits - s->frame_offset) {
             av_dlog(avctx, "ignoring %x previously saved bits\n",

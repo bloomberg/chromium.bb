@@ -480,6 +480,42 @@ av_cold int ff_MPV_encode_init(AVCodecContext *avctx)
                    avctx->sample_aspect_ratio.num,  avctx->sample_aspect_ratio.den, 255);
     }
 
+    if ((s->codec_id == CODEC_ID_H263  ||
+         s->codec_id == CODEC_ID_H263P) &&
+        (avctx->width  > 2048 ||
+         avctx->height > 1152 )) {
+        av_log(avctx, AV_LOG_ERROR, "H.263 does not support resolutions above 2048x1152\n");
+        return -1;
+    }
+    if ((s->codec_id == CODEC_ID_H263  ||
+         s->codec_id == CODEC_ID_H263P) &&
+        ((avctx->width &3) ||
+         (avctx->height&3) )) {
+        av_log(avctx, AV_LOG_ERROR, "w/h must be a multiple of 4\n");
+        return -1;
+    }
+
+    if (s->codec_id == CODEC_ID_MPEG1VIDEO &&
+        (avctx->width  > 4095 ||
+         avctx->height > 4095 )) {
+        av_log(avctx, AV_LOG_ERROR, "MPEG-1 does not support resolutions above 4095x4095\n");
+        return -1;
+    }
+
+    if (s->codec_id == CODEC_ID_MPEG2VIDEO &&
+        (avctx->width  > 16383 ||
+         avctx->height > 16383 )) {
+        av_log(avctx, AV_LOG_ERROR, "MPEG-2 does not support resolutions above 16383x16383\n");
+        return -1;
+    }
+
+    if ((s->codec_id == CODEC_ID_WMV1 ||
+         s->codec_id == CODEC_ID_WMV2) &&
+         avctx->width & 1) {
+         av_log(avctx, AV_LOG_ERROR, "width must be multiple of 2\n");
+         return -1;
+    }
+
     if ((s->flags & (CODEC_FLAG_INTERLACED_DCT | CODEC_FLAG_INTERLACED_ME)) &&
         s->codec_id != CODEC_ID_MPEG4 && s->codec_id != CODEC_ID_MPEG2VIDEO) {
         av_log(avctx, AV_LOG_ERROR, "interlacing not supported by codec\n");
@@ -1791,11 +1827,11 @@ static av_always_inline void encode_mb_internal(MpegEncContext *s,
         ptr_y = ebuf;
         s->dsp.emulated_edge_mc(ebuf + 18 * wrap_y, ptr_cb, wrap_c, 8,
                                 mb_block_height, mb_x * 8, mb_y * 8,
-                                s->width >> 1, s->height >> 1);
+                                (s->width+1) >> 1, (s->height+1) >> 1);
         ptr_cb = ebuf + 18 * wrap_y;
         s->dsp.emulated_edge_mc(ebuf + 18 * wrap_y + 8, ptr_cr, wrap_c, 8,
                                 mb_block_height, mb_x * 8, mb_y * 8,
-                                s->width >> 1, s->height >> 1);
+                                (s->width+1) >> 1, (s->height+1) >> 1);
         ptr_cr = ebuf + 18 * wrap_y + 8;
     }
 

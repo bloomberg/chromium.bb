@@ -2719,19 +2719,19 @@ static void init_scan_tables(H264Context *h)
 #undef T
     }
     if (h->sps.transform_bypass) { // FIXME same ugly
-        h->zigzag_scan_q0          = zigzag_scan;
-        h->zigzag_scan8x8_q0       = ff_zigzag_direct;
-        h->zigzag_scan8x8_cavlc_q0 = zigzag_scan8x8_cavlc;
-        h->field_scan_q0           = field_scan;
-        h->field_scan8x8_q0        = field_scan8x8;
-        h->field_scan8x8_cavlc_q0  = field_scan8x8_cavlc;
+        memcpy(h->zigzag_scan_q0          , zigzag_scan             , sizeof(h->zigzag_scan_q0         ));
+        memcpy(h->zigzag_scan8x8_q0       , ff_zigzag_direct        , sizeof(h->zigzag_scan8x8_q0      ));
+        memcpy(h->zigzag_scan8x8_cavlc_q0 , zigzag_scan8x8_cavlc    , sizeof(h->zigzag_scan8x8_cavlc_q0));
+        memcpy(h->field_scan_q0           , field_scan              , sizeof(h->field_scan_q0          ));
+        memcpy(h->field_scan8x8_q0        , field_scan8x8           , sizeof(h->field_scan8x8_q0       ));
+        memcpy(h->field_scan8x8_cavlc_q0  , field_scan8x8_cavlc     , sizeof(h->field_scan8x8_cavlc_q0 ));
     } else {
-        h->zigzag_scan_q0          = h->zigzag_scan;
-        h->zigzag_scan8x8_q0       = h->zigzag_scan8x8;
-        h->zigzag_scan8x8_cavlc_q0 = h->zigzag_scan8x8_cavlc;
-        h->field_scan_q0           = h->field_scan;
-        h->field_scan8x8_q0        = h->field_scan8x8;
-        h->field_scan8x8_cavlc_q0  = h->field_scan8x8_cavlc;
+        memcpy(h->zigzag_scan_q0          , h->zigzag_scan          , sizeof(h->zigzag_scan_q0         ));
+        memcpy(h->zigzag_scan8x8_q0       , h->zigzag_scan8x8       , sizeof(h->zigzag_scan8x8_q0      ));
+        memcpy(h->zigzag_scan8x8_cavlc_q0 , h->zigzag_scan8x8_cavlc , sizeof(h->zigzag_scan8x8_cavlc_q0));
+        memcpy(h->field_scan_q0           , h->field_scan           , sizeof(h->field_scan_q0          ));
+        memcpy(h->field_scan8x8_q0        , h->field_scan8x8        , sizeof(h->field_scan8x8_q0       ));
+        memcpy(h->field_scan8x8_cavlc_q0  , h->field_scan8x8_cavlc  , sizeof(h->field_scan8x8_cavlc_q0 ));
     }
 }
 
@@ -2956,7 +2956,7 @@ static int decode_slice_header(H264Context *h, H264Context *h0)
     if(must_reinit && (h != h0 || (s->avctx->active_thread_type & FF_THREAD_FRAME))) {
         av_log_missing_feature(s->avctx,
                                 "Width/height/bit depth/chroma idc changing with threads is", 0);
-        return -1;   // width / height changed during parallelized decoding
+        return AVERROR_PATCHWELCOME;   // width / height changed during parallelized decoding
     }
 
     s->mb_width  = h->sps.mb_width;
@@ -4398,6 +4398,9 @@ again:
             case NAL_DPC:
                 init_get_bits(&hx->inter_gb, ptr, bit_length);
                 hx->inter_gb_ptr = &hx->inter_gb;
+
+                av_log(h->s.avctx, AV_LOG_ERROR, "Partitioned H.264 support is incomplete\n");
+                return AVERROR_PATCHWELCOME;
 
                 if (hx->redundant_pic_count == 0 &&
                     hx->intra_gb_ptr &&

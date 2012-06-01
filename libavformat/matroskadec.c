@@ -1746,6 +1746,8 @@ static int matroska_read_header(AVFormatContext *s)
             st->need_parsing = AVSTREAM_PARSE_HEADERS;
         } else if (track->type == MATROSKA_TRACK_TYPE_SUBTITLE) {
             st->codec->codec_type = AVMEDIA_TYPE_SUBTITLE;
+            if (st->codec->codec_id == CODEC_ID_SSA)
+                matroska->contains_ssa = 1;
         }
     }
 
@@ -1861,7 +1863,7 @@ static int matroska_parse_block(MatroskaDemuxContext *matroska, uint8_t *data,
 
     if ((n = matroska_ebmlnum_uint(matroska, data, size, &num)) < 0) {
         av_log(matroska->ctx, AV_LOG_ERROR, "EBML block data error\n");
-        return AVERROR_INVALIDDATA;
+        return n;
     }
     data += n;
     size -= n;
@@ -1876,6 +1878,7 @@ static int matroska_parse_block(MatroskaDemuxContext *matroska, uint8_t *data,
     st = track->stream;
     if (st->discard >= AVDISCARD_ALL)
         return res;
+    av_assert1(duration != AV_NOPTS_VALUE);
     if (!duration)
         duration = track->default_duration / matroska->time_scale;
 
@@ -2165,6 +2168,8 @@ static int matroska_parse_cluster_incremental(MatroskaDemuxContext *matroska)
         i = blocks_list->nb_elem - 1;
         if (blocks[i].bin.size > 0 && blocks[i].bin.data) {
             int is_keyframe = blocks[i].non_simple ? !blocks[i].reference : -1;
+            if (!blocks[i].non_simple)
+                blocks[i].duration = 0;
             res = matroska_parse_block(matroska,
                                        blocks[i].bin.data, blocks[i].bin.size,
                                        blocks[i].bin.pos,

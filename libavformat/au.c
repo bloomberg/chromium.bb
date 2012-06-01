@@ -150,7 +150,7 @@ static int au_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    if (channels <= 0) {
+    if (channels == 0 || channels > 64) {
         av_log(s, AV_LOG_ERROR, "Invalid number of channels %d\n", channels);
         return AVERROR_INVALIDDATA;
     }
@@ -189,10 +189,6 @@ static int au_read_packet(AVFormatContext *s,
         return ret;
     pkt->flags &= ~AV_PKT_FLAG_CORRUPT;
     pkt->stream_index = 0;
-
-    /* note: we need to modify the packet size here to handle the last
-       packet */
-    pkt->size = ret;
     return 0;
 }
 

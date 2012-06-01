@@ -477,6 +477,8 @@ static ChannelElement *get_che(AACContext *ac, int type, int elem_id)
         int layout_map_tags;
         push_output_configuration(ac);
 
+        av_log(ac->avctx, AV_LOG_DEBUG, "mono with CPE\n");
+
         if (set_default_channel_config(ac->avctx, layout_map, &layout_map_tags,
                                        2) < 0)
             return NULL;
@@ -487,10 +489,12 @@ static ChannelElement *get_che(AACContext *ac, int type, int elem_id)
         ac->oc[1].m4ac.chan_config = 2;
     }
     // And vice-versa
-    if (!ac->tags_mapped && type == TYPE_SCE && ac->oc[1].m4ac.chan_config == 2 && 0) {
+    if (!ac->tags_mapped && type == TYPE_SCE && ac->oc[1].m4ac.chan_config == 2) {
         uint8_t layout_map[MAX_ELEM_ID*4][3];
         int layout_map_tags;
         push_output_configuration(ac);
+
+        av_log(ac->avctx, AV_LOG_DEBUG, "stereo with SCE\n");
 
         if (set_default_channel_config(ac->avctx, layout_map, &layout_map_tags,
                                        1) < 0)
@@ -568,6 +572,8 @@ static void decode_channel_map(uint8_t layout_map[][3],
         case AAC_CHANNEL_LFE:
             syn_ele = TYPE_LFE;
             break;
+        default:
+            av_assert0(0);
         }
         layout_map[0][0] = syn_ele;
         layout_map[0][1] = get_bits(gb, 4);
@@ -2552,7 +2558,7 @@ static int aac_decode_frame(AVCodecContext *avctx, void *data,
                                        AV_PKT_DATA_NEW_EXTRADATA,
                                        &new_extradata_size);
 
-    if (new_extradata) {
+    if (new_extradata && 0) {
         av_free(avctx->extradata);
         avctx->extradata = av_mallocz(new_extradata_size +
                                       FF_INPUT_BUFFER_PADDING_SIZE);
@@ -2883,6 +2889,7 @@ AVCodec ff_aac_decoder = {
     },
     .capabilities    = CODEC_CAP_CHANNEL_CONF | CODEC_CAP_DR1,
     .channel_layouts = aac_channel_layout,
+    .flush = flush,
 };
 
 /*

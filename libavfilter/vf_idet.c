@@ -49,7 +49,7 @@ typedef struct {
     AVFilterBufferRef *next;
     AVFilterBufferRef *prev;
     AVFilterBufferRef *out;
-    int (*filter_line)(uint8_t *prev, uint8_t *cur, uint8_t *next, int w);
+    int (*filter_line)(const uint8_t *prev, const uint8_t *cur, const uint8_t *next, int w);
 
     const AVPixFmtDescriptor *csp;
 } IDETContext;
@@ -102,7 +102,6 @@ static void filter(AVFilterContext *ctx)
         int w = idet->cur->video->w;
         int h = idet->cur->video->h;
         int refs = idet->cur->linesize[i];
-        int df = (idet->csp->comp[i].depth_minus1 + 8) / 8;
 
         if (i && i<3) {
             w >>= idet->csp->log2_chroma_w;
@@ -295,7 +294,6 @@ static int query_formats(AVFilterContext *ctx)
 static av_cold int init(AVFilterContext *ctx, const char *args, void *opaque)
 {
     IDETContext *idet = ctx->priv;
-    int cpu_flags = av_get_cpu_flags();
 
     idet->csp = NULL;
 

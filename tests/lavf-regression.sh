@@ -53,7 +53,7 @@ do_image_formats()
     run_avconv $DEC_OPTS -f image2 -vcodec pgmyuv -i $raw_src $2 $ENC_OPTS -t 0.5 -y -qscale 10 $target_path/$file
     do_md5sum ${outfile}02.$1
     do_avconv_crc $file $DEC_OPTS -i $target_path/$file $3
-    wc -c ${outfile}02.$1
+    echo $(wc -c ${outfile}02.$1)
 }
 
 do_audio_only()
@@ -87,7 +87,7 @@ do_lavf_timecode mxf "-ar 48000 -bf 2"
 fi
 
 if [ -n "$do_mxf_d10" ]; then
-do_lavf mxf_d10 "-ar 48000 -ac 2" "-r 25 -s 720x576 -vf pad=720:608:0:32 -vcodec mpeg2video -g 0 -flags +ildct+low_delay -dc 10 -non_linear_quant 1 -intra_vlc 1 -qscale 1 -ps 1 -qmin 1 -rc_max_vbv_use 1 -rc_min_vbv_use 1 -pix_fmt yuv422p -minrate 30000k -maxrate 30000k -b 30000k -bufsize 1200000 -top 1 -rc_init_occupancy 1200000 -qmax 12 -f mxf_d10"
+do_lavf mxf_d10 "-ar 48000 -ac 2" "-r 25 -vf scale=720:576,pad=720:608:0:32 -vcodec mpeg2video -g 0 -flags +ildct+low_delay -dc 10 -non_linear_quant 1 -intra_vlc 1 -qscale 1 -ps 1 -qmin 1 -rc_max_vbv_use 1 -rc_min_vbv_use 1 -pix_fmt yuv422p -minrate 30000k -maxrate 30000k -b 30000k -bufsize 1200000 -top 1 -rc_init_occupancy 1200000 -qmax 12 -f mxf_d10"
 fi
 
 if [ -n "$do_ts" ] ; then
@@ -118,7 +118,7 @@ fi
 if [ -n "$do_dv_fmt" ] ; then
 do_lavf_timecode_nodrop dv "-ar 48000 -r 25 -s pal -ac 2"
 do_lavf_timecode_drop   dv "-ar 48000 -pix_fmt yuv411p -s ntsc -ac 2"
-do_lavf dv "-ar 48000" "-r 25 -s pal -ac 2"
+do_lavf dv "-ar 48000 -channel_layout stereo" "-r 25 -s pal"
 fi
 
 if [ -n "$do_gxf" ] ; then

@@ -198,7 +198,14 @@ static int sdp_parse_rtpmap(AVFormatContext *s,
      * particular servers ("RealServer Version 6.1.3.970", see issue 1658)
      * have a trailing space. */
     get_word_sep(buf, sizeof(buf), "/ ", &p);
-    if (payload_type >= RTP_PT_PRIVATE) {
+    if (payload_type < RTP_PT_PRIVATE) {
+        /* We are in a standard case
+         * (from http://www.iana.org/assignments/rtp-parameters). */
+        /* search into AVRtpPayloadTypes[] */
+        codec->codec_id = ff_rtp_codec_id(buf, codec->codec_type);
+    }
+
+    if (codec->codec_id == CODEC_ID_NONE) {
         RTPDynamicProtocolHandler *handler =
             ff_rtp_handler_find_by_name(buf, codec->codec_type);
         init_rtp_handler(handler, rtsp_st, codec);
@@ -208,11 +215,6 @@ static int sdp_parse_rtpmap(AVFormatContext *s,
          * the format name from the rtpmap line never is passed into rtpdec. */
         if (!rtsp_st->dynamic_handler)
             codec->codec_id = ff_rtp_codec_id(buf, codec->codec_type);
-    } else {
-        /* We are in a standard case
-         * (from http://www.iana.org/assignments/rtp-parameters). */
-        /* search into AVRtpPayloadTypes[] */
-        codec->codec_id = ff_rtp_codec_id(buf, codec->codec_type);
     }
 
     c = avcodec_find_decoder(codec->codec_id);
@@ -606,11 +608,13 @@ static int rtsp_open_transport_ctx(AVFormatContext *s, RTSPStream *rtsp_st)
         s->ctx_flags |= AVFMTCTX_NOHEADER;
 
     if (s->oformat && CONFIG_RTSP_MUXER) {
-        rtsp_st->transport_priv = ff_rtp_chain_mux_open(s, st,
-                                      rtsp_st->rtp_handle,
-                                      RTSP_TCP_MAX_PACKET_SIZE);
+        int ret = ff_rtp_chain_mux_open(&rtsp_st->transport_priv, s, st,
+                                        rtsp_st->rtp_handle,
+                                        RTSP_TCP_MAX_PACKET_SIZE);
         /* Ownership of rtp_handle is passed to the rtp mux context */
         rtsp_st->rtp_handle = NULL;
+        if (ret < 0)
+            return ret;
     } else if (rt->transport == RTSP_TRANSPORT_RDT && CONFIG_RTPDEC)
         rtsp_st->transport_priv = ff_rdt_parse_open(s, st->index,
                                             rtsp_st->dynamic_protocol_context,
@@ -637,16 +641,17 @@ static int rtsp_open_transport_ctx(AVFormatContext *s, RTSPStream *rtsp_st)
 #if CONFIG_RTSP_DEMUXER || CONFIG_RTSP_MUXER
 static void rtsp_parse_range(int *min_ptr, int *max_ptr, const char **pp)
 {
-    const char *p;
+    const char *q;
+    char *p;
     int v;
 
-    p = *pp;
-    p += strspn(p, SPACE_CHARS);
-    v = strtol(p, (char **)&p, 10);
+    q = *pp;
+    q += strspn(q, SPACE_CHARS);
+    v = strtol(q, &p, 10);
     if (*p == '-') {
         p++;
         *min_ptr = v;
-        v = strtol(p, (char **)&p, 10);
+        v = strtol(p, &p, 10);
         *max_ptr = v;
     } else {
         *min_ptr = v;
@@ -869,6 +874,9 @@ void ff_rtsp_parse_line(RTSPMessageHeader *reply, const char *buf,
     } else if (av_stristart(p, "x-Accept-Dynamic-Rate:", &p) && rt) {
         p += strspn(p, SPACE_CHARS);
         rt->accept_dynamic_rate = atoi(p);
+    } else if (av_stristart(p, "Content-Type:", &p)) {
+        p += strspn(p, SPACE_CHARS);
+        av_strlcpy(reply->content_type, p, sizeof(reply->content_type));
     }
 }
 

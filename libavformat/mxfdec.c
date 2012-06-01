@@ -952,7 +952,6 @@ static int mxf_get_sorted_table_segments(MXFContext *mxf, int *nb_sorted_segment
     int i, j, nb_segments = 0;
     MXFIndexTableSegment **unsorted_segments;
     int last_body_sid = -1, last_index_sid = -1, last_index_start = -1;
-    uint64_t last_index_duration = 0;
 
     /* count number of segments, allocate arrays and copy unsorted segments */
     for (i = 0; i < mxf->metadata_sets_count; i++)
@@ -1003,7 +1002,6 @@ static int mxf_get_sorted_table_segments(MXFContext *mxf, int *nb_sorted_segment
         last_body_sid    = best_body_sid;
         last_index_sid   = best_index_sid;
         last_index_start = best_index_start;
-        last_index_duration = best_index_duration;
     }
 
     av_free(unsorted_segments);
@@ -1517,8 +1515,9 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
                     break; /* The correct thing to do here is fall through, but by breaking we might be
                               able to decode some streams at half the vertical resolution, rather than not al all.
                               It's also for compatibility with the old behavior. */
-                case SeparateFields:
                 case MixedFields:
+                    break;
+                case SeparateFields:
                     st->codec->height *= 2; /* Turn field height into frame height. */
                     break;
                 default:

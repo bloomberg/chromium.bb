@@ -1,4 +1,6 @@
 /*
+ * Copyright 2012 Stefano Sabatini <stefasab gmail com>
+ *
  * This file is part of FFmpeg.
  *
  * FFmpeg is free software; you can redistribute it and/or
@@ -24,7 +26,7 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
                   const char *filename, void *log_ctx)
 {
     AVInputFormat *iformat = NULL;
-    AVFormatContext *format_ctx;
+    AVFormatContext *format_ctx = NULL;
     AVCodec *codec;
     AVCodecContext *codec_ctx;
     AVFrame *frame;
@@ -80,7 +82,7 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
         goto end;
     ret = 0;
 
-    av_image_copy(data, linesize, frame->data, frame->linesize, *pix_fmt, *w, *h);
+    av_image_copy(data, linesize, (const uint8_t **)frame->data, frame->linesize, *pix_fmt, *w, *h);
 
 end:
     if (codec_ctx)

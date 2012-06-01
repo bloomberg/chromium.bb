@@ -25,6 +25,7 @@
 //#define DEBUG
 //#define MOV_EXPORT_ALL_METADATA
 
+#include "libavutil/attributes.h"
 #include "libavutil/audioconvert.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/intfloat.h"
@@ -596,11 +597,40 @@ static int mov_read_dac3(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     return 0;
 }
 
+static int mov_read_dec3(MOVContext *c, AVIOContext *pb, MOVAtom atom)
+{
+    AVStream *st;
+    int eac3info, acmod, lfeon, bsmod;
+
+    if (c->fc->nb_streams < 1)
+        return 0;
+    st = c->fc->streams[c->fc->nb_streams-1];
+
+    /* No need to parse fields for additional independent substreams and its
+     * associated dependent substreams since libavcodec's E-AC-3 decoder
+     * does not support them yet. */
+    avio_rb16(pb); /* data_rate and num_ind_sub */
+    eac3info = avio_rb24(pb);
+    bsmod = (eac3info >> 12) & 0x1f;
+    acmod = (eac3info >>  9) & 0x7;
+    lfeon = (eac3info >>  8) & 0x1;
+    st->codec->channel_layout = avpriv_ac3_channel_layout_tab[acmod];
+    if (lfeon)
+        st->codec->channel_layout |= AV_CH_LOW_FREQUENCY;
+    st->codec->channels = av_get_channel_layout_nb_channels(st->codec->channel_layout);
+    st->codec->audio_service_type = bsmod;
+    if (st->codec->channels > 1 && bsmod == 0x7)
+        st->codec->audio_service_type = AV_AUDIO_SERVICE_TYPE_KARAOKE;
+
+    return 0;
+}
+
 static int mov_read_chan(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 {
     AVStream *st;
-    uint8_t version;
-    uint32_t flags, layout_tag, bitmap, num_descr, label_mask;
+    uint8_t av_unused version;
+    uint32_t av_unused flags;
+    uint32_t layout_tag, bitmap, num_descr, label_mask;
     int i;
 
     if (c->fc->nb_streams < 1)
@@ -625,9 +655,9 @@ static int mov_read_chan(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     label_mask = 0;
     for (i = 0; i < num_descr; i++) {
-        uint32_t av_unused label, cflags;
+        uint32_t label;
         label     = avio_rb32(pb);          // mChannelLabel
-        cflags    = avio_rb32(pb);          // mChannelFlags
+        avio_rb32(pb);                      // mChannelFlags
         avio_rl32(pb);                      // mCoordinates[0]
         avio_rl32(pb);                      // mCoordinates[1]
         avio_rl32(pb);                      // mCoordinates[2]
@@ -976,6 +1006,11 @@ static int mov_read_jp2h(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     return mov_read_extradata(c, pb, atom, CODEC_ID_JPEG2000);
 }
 
+static int mov_read_aprg(MOVContext *c, AVIOContext *pb, MOVAtom atom)
+{
+    return mov_read_extradata(c, pb, atom, CODEC_ID_AVUI);
+}
+
 static int mov_read_wave(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 {
     AVStream *st;
@@ -1021,7 +1056,7 @@ static int mov_read_glbl(MOVContext *c, AVIOContext *pb, MOVAtom atom)
         return AVERROR_INVALIDDATA;
 
     if (atom.size >= 10) {
-        // Broken files created by legacy versions of Libav and FFmpeg will
+        // Broken files created by legacy versions of libavformat will
         // wrap a whole fiel atom inside of a glbl atom.
         unsigned size = avio_rb32(pb);
         unsigned type = avio_rl32(pb);
@@ -1519,6 +1554,9 @@ int ff_mov_read_stsd_entries(MOVContext *c, AVIOContext *pb, int entries)
     case CODEC_ID_MPEG1VIDEO:
         st->need_parsing = AVSTREAM_PARSE_FULL;
         break;
+    case CODEC_ID_VC1:
+        st->need_parsing = AVSTREAM_PARSE_FULL;
+        break;
     default:
         break;
     }
@@ -1836,7 +1874,7 @@ static void mov_build_index(MOVContext *mov, AVStream *st)
             sc->empty_duration = av_rescale(sc->empty_duration, sc->time_scale, mov->time_scale);
         sc->time_offset = sc->start_time - sc->empty_duration;
         current_dts = -sc->time_offset;
-        if (sc->ctts_data && sc->stts_data &&
+        if (sc->ctts_count>0 && sc->stts_count>0 &&
             sc->ctts_data[0].duration / FFMAX(sc->stts_data[0].duration, 1) > 16) {
             /* more than 16 frames delay, dts are likely wrong
                this happens with files created by iMovie */
@@ -2555,6 +2593,7 @@ static int mov_read_chan2(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 }
 
 static const MOVParseTableEntry mov_default_parse_table[] = {
+{ MKTAG('A','P','R','G'), mov_read_aprg },
 { MKTAG('a','v','s','s'), mov_read_avss },
 { MKTAG('c','h','p','l'), mov_read_chpl },
 { MKTAG('c','o','6','4'), mov_read_stco },
@@ -2605,6 +2644,7 @@ static const MOVParseTableEntry mov_default_parse_table[] = {
 { MKTAG('w','a','v','e'), mov_read_wave },
 { MKTAG('e','s','d','s'), mov_read_esds },
 { MKTAG('d','a','c','3'), mov_read_dac3 }, /* AC-3 info */
+{ MKTAG('d','e','c','3'), mov_read_dec3 }, /* EAC-3 info */
 { MKTAG('w','i','d','e'), mov_read_wide }, /* place holder */
 { MKTAG('w','f','e','x'), mov_read_wfex },
 { MKTAG('c','m','o','v'), mov_read_cmov },

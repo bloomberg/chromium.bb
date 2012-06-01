@@ -990,7 +990,7 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
     uint8_t *data= NULL;
     MpegTSWrite *ts = s->priv_data;
     MpegTSWriteStream *ts_st = st->priv_data;
-    const uint64_t delay = av_rescale(s->max_delay, 90000, AV_TIME_BASE)*2;
+    const int64_t delay = av_rescale(s->max_delay, 90000, AV_TIME_BASE)*2;
     int64_t dts = AV_NOPTS_VALUE, pts = AV_NOPTS_VALUE;
 
     if (ts->reemit_pat_pmt) {
@@ -1067,6 +1067,21 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
             memcpy(data+ADTS_HEADER_SIZE+adts->pce_size, pkt->data, pkt->size);
             buf = data;
             size = new_size;
+        }
+    }
+
+    if (pkt->dts != AV_NOPTS_VALUE) {
+        int i;
+        for(i=0; i<s->nb_streams; i++){
+            AVStream *st2 = s->streams[i];
+            MpegTSWriteStream *ts_st2 = st2->priv_data;
+            if(   ts_st2->payload_size
+               && ts_st2->payload_dts == AV_NOPTS_VALUE || dts - ts_st2->payload_dts > delay/2){
+                mpegts_write_pes(s, st2, ts_st2->payload, ts_st2->payload_size,
+                                ts_st2->payload_pts, ts_st2->payload_dts,
+                                ts_st2->payload_flags & AV_PKT_FLAG_KEY);
+                ts_st2->payload_size = 0;
+            }
         }
     }
 

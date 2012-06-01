@@ -394,7 +394,11 @@ int av_parse_color(uint8_t *rgba_color, const char *color_string, int slen,
         if (!strncmp(alpha_string, "0x", 2)) {
             alpha = strtoul(alpha_string, &tail, 16);
         } else {
-            alpha = 255 * strtod(alpha_string, &tail);
+            double norm_alpha = strtod(alpha_string, &tail);
+            if (norm_alpha < 0.0 || norm_alpha > 1.0)
+                alpha = 256;
+            else
+                alpha = 255 * norm_alpha;
         }
 
         if (tail == alpha_string || *tail || alpha > 255) {
@@ -719,10 +723,12 @@ int main(void)
 
         for (i = 0; i < FF_ARRAY_ELEMS(rates); i++) {
             int ret;
+            char err[1024];
             AVRational q = (AVRational){0, 0};
-            ret = av_parse_video_rate(&q, rates[i]),
-            printf("'%s' -> %d/%d ret:%d\n",
-                   rates[i], q.num, q.den, ret);
+            ret = av_parse_video_rate(&q, rates[i]);
+            av_strerror(ret, err, sizeof(err));
+            printf("'%s' -> %d/%d ret:%s\n",
+                   rates[i], q.num, q.den, err);
         }
     }
 
@@ -785,6 +791,7 @@ int main(void)
         int64_t tv;
         time_t tvi;
         struct tm *tm;
+        static char tzstr[] = "TZ=CET-1";
         const char *time_string[] = {
             "now",
             "12:35:46",
@@ -800,7 +807,7 @@ int main(void)
         };
 
         av_log_set_level(AV_LOG_DEBUG);
-        setenv("TZ", "CET-1", 1);
+        putenv(tzstr);
         printf("(now is 2012-03-17 09:14:13 +0100, local time is UTC+1)\n");
         for (i = 0;  i < FF_ARRAY_ELEMS(time_string); i++) {
             printf("%-24s -> ", time_string[i]);

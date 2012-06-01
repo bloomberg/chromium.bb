@@ -203,12 +203,12 @@ vorbis_header (AVFormatContext * s, int idx)
     int pkt_type = os->buf[os->pstart];
 
     if (!(pkt_type & 1))
-        return 0;
+        return os->private ? 0 : -1;
 
     if (!os->private) {
         os->private = av_mallocz(sizeof(struct oggvorbis_private));
         if (!os->private)
-            return 0;
+            return -1;
     }
 
     if (os->psize < 1 || pkt_type > 5)
@@ -223,6 +223,8 @@ vorbis_header (AVFormatContext * s, int idx)
 
     priv->len[pkt_type >> 1] = os->psize;
     priv->packet[pkt_type >> 1] = av_mallocz(os->psize);
+    if (!priv->packet[pkt_type >> 1])
+        return AVERROR(ENOMEM);
     memcpy(priv->packet[pkt_type >> 1], os->buf + os->pstart, os->psize);
     if (os->buf[os->pstart] == 1) {
         const uint8_t *p = os->buf + os->pstart + 7; /* skip "\001vorbis" tag */
