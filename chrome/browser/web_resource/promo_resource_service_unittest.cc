@@ -137,7 +137,8 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
         closed_(false),
         build_(PromoResourceService::NO_BUILD),
         platform_(NotificationPromo::PLATFORM_NONE),
-        current_platform_(NotificationPromo::CurrentPlatform()) {
+        current_platform_(NotificationPromo::CurrentPlatform()),
+        gplus_required_(false) {
   }
 
   void Init(NotificationPromo* notification_promo,
@@ -146,7 +147,7 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
             double start, double end,
             int num_groups, int initial_segment, int increment,
             int time_slice, int max_group, int max_views,
-            int build, int platform) {
+            int build, int platform, bool gplus_required) {
     notification_promo_ = notification_promo;
 
     Value* value(base::JSONReader::Read(json));
@@ -171,6 +172,8 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
 
     build_ = build;
     platform_ = platform;
+
+    gplus_required_ = gplus_required;
 
     closed_ = false;
     received_notification_ = false;
@@ -236,6 +239,8 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
 
     EXPECT_EQ(notification_promo_->build_, build_);
     EXPECT_EQ(notification_promo_->platform_, platform_);
+
+    EXPECT_EQ(notification_promo_->gplus_required_, gplus_required_);
   }
 
   void TestPrefs() {
@@ -260,6 +265,9 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
 
     EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoBuild), build_);
     EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoPlatform), platform_);
+
+    EXPECT_EQ(prefs_->GetBoolean(prefs::kNtpPromoGplusRequired),
+        gplus_required_);
   }
 
   // Create a new NotificationPromo from prefs and compare to current
@@ -301,6 +309,8 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
               prefs_notification_promo->build_);
     EXPECT_EQ(notification_promo_->platform_,
               prefs_notification_promo->platform_);
+    EXPECT_EQ(notification_promo_->gplus_required_,
+              prefs_notification_promo->gplus_required_);
   }
 
   void TestGroup() {
@@ -542,6 +552,24 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
     EXPECT_TRUE(notification_promo_->CanShow());
   }
 
+  void TestGplus() {
+    notification_promo_->gplus_required_ = true;
+
+    // Test G+ required.
+    notification_promo_->prefs_->SetBoolean(prefs::kIsGooglePlusUser, true);
+    EXPECT_TRUE(notification_promo_->CanShow());
+    notification_promo_->prefs_->SetBoolean(prefs::kIsGooglePlusUser, false);
+    EXPECT_FALSE(notification_promo_->CanShow());
+
+    notification_promo_->gplus_required_ = false;
+
+    // Test G+ not required.
+    notification_promo_->prefs_->SetBoolean(prefs::kIsGooglePlusUser, true);
+    EXPECT_TRUE(notification_promo_->CanShow());
+    notification_promo_->prefs_->SetBoolean(prefs::kIsGooglePlusUser, false);
+    EXPECT_TRUE(notification_promo_->CanShow());
+  }
+
  private:
   Profile* profile_;
   PrefService* prefs_;
@@ -569,6 +597,8 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
   int build_;
   int platform_;
   int current_platform_;
+
+  bool gplus_required_;
 };
 
 TEST_F(PromoResourceServiceTest, NotificationPromoTestLegacy) {
@@ -605,7 +635,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTestLegacy) {
                 "Eat more pie!",
                 1264899600,  // unix epoch for Jan 31 2010 0100 GMT.
                 1391130000,  // unix epoch for Jan 31 2012 0100 GMT.
-                100, 0, 1, 2, 5, 10, 3, 15);
+                100, 0, 1, 2, 5, 10, 3, 15, false);
 
   delegate.InitPromoFromJson(true, true);
 
@@ -666,7 +696,8 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
                 "      \"payload\":"
                 "        {"
                 "          \"days_active\":7,"
-                "          \"install_age_days\":21"
+                "          \"install_age_days\":21,"
+                "          \"gplus_required\":false"
                 "        },"
                 "      \"max_views\":30"
                 "    }"
@@ -674,7 +705,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
                 "What do you think of Chrome?",
                 1326653485,  // unix epoch for 15 Jan 2012 10:50:85 PST.
                 1357566075,  // unix epoch for 7 Jan 2013 5:40:75 PST.
-                1000, 200, 100, 3600, 400, 30, 15, 15);
+                1000, 200, 100, 3600, 400, 30, 15, 15, false);
 
   delegate.InitPromoFromJson(true, false);
 
@@ -693,6 +724,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
   delegate.TestTime();
   delegate.TestIncrement();
   delegate.TestPlatforms();
+  delegate.TestGplus();
 }
 
 TEST_F(PromoResourceServiceTest, NotificationPromoTestFail) {
@@ -726,7 +758,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTestFail) {
                 "Happy 3rd Birthday!",
                 1284552000,  // unix epoch for Sep 15 2010 0500 PDT.
                 1285848000,  // unix epoch for Sep 30 2010 0500 PDT.
-                100, 0, 1, 8, 10, 20, 12, 15);
+                100, 0, 1, 8, 10, 20, 12, 15, false);
 
   delegate.InitPromoFromJson(true, true);
 

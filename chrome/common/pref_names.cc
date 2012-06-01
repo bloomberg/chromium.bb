@@ -1375,12 +1375,6 @@ const char kNtpPromoResourceCache[] = "ntp.promo_resource_cache";
 const char kNtpPromoResourceCacheUpdate[] = "ntp.promo_resource_cache_update";
 #endif
 
-// Is user logged into G+ (used for G+ extension promo).
-const char kNtpPromoIsLoggedInToPlus[] = "ntp.promo_is_logged_in_to_plus";
-
-// Bit mask used to decide when to show the NTP Promo.
-const char kNtpPromoFeatureMask[] = "ntp.promo_feature_mask";
-
 // Serves promo resources for the NTP.
 const char kNtpPromoResourceServer[] = "ntp.web_resource_server";
 
@@ -1451,6 +1445,9 @@ const char kNtpPromoLine[] = "ntp.promo_line";
 // from the promo server.
 const char kNtpPromoStart[] = "ntp.promo_start";
 const char kNtpPromoEnd[] = "ntp.promo_end";
+
+// True if this promo should only be shown to G+ users.
+const char kNtpPromoGplusRequired[] = "ntp.gplus_required";
 
 // Boolean indicating whether the web store is active for the current locale.
 const char kNtpWebStoreEnabled[] = "ntp.webstore_enabled";

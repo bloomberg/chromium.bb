@@ -113,7 +113,8 @@ NotificationPromo::NotificationPromo(Profile* profile, Delegate* delegate)
       views_(0),
       closed_(false),
       build_(PromoResourceService::ALL_BUILDS),
-      platform_(PLATFORM_ALL) {
+      platform_(PLATFORM_ALL),
+      gplus_required_(false) {
   DCHECK(profile);
   DCHECK(prefs_);
 }
@@ -185,6 +186,14 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
     DVLOG(1) << "increment_ = " << increment_;
     DVLOG(1) << "time_slice_ = " << time_slice_;
     DVLOG(1) << "max_group_ = " << max_group_;
+  }
+
+  // Payload.
+  DictionaryValue* payload;
+  if (root->GetDictionary("payload", &payload)) {
+    payload->GetBoolean("gplus_required", &gplus_required_);
+
+    DVLOG(1) << "gplus_required_ = " << gplus_required_;
   }
 
   root->GetInteger("max_views", &max_views_);
@@ -318,15 +327,9 @@ void NotificationPromo::RegisterUserPrefs(PrefService* prefs) {
                              PLATFORM_NONE,
                              PrefService::UNSYNCABLE_PREF);
 
-  // TODO(achuith): Delete code below in M21. http://crbug.com/125974.
-  prefs->RegisterBooleanPref(prefs::kNtpPromoIsLoggedInToPlus,
+  prefs->RegisterBooleanPref(prefs::kNtpPromoGplusRequired,
                              false,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpPromoFeatureMask,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->ClearPref(prefs::kNtpPromoIsLoggedInToPlus);
-  prefs->ClearPref(prefs::kNtpPromoFeatureMask);
 }
 
 // static
@@ -355,6 +358,8 @@ void NotificationPromo::WritePrefs() {
 
   prefs_->SetInteger(prefs::kNtpPromoBuild, build_);
   prefs_->SetInteger(prefs::kNtpPromoPlatform, platform_);
+
+  prefs_->SetBoolean(prefs::kNtpPromoGplusRequired, gplus_required_);
 }
 
 void NotificationPromo::InitFromPrefs() {
@@ -377,6 +382,8 @@ void NotificationPromo::InitFromPrefs() {
 
   build_ = prefs_->GetInteger(prefs::kNtpPromoBuild);
   platform_ = prefs_->GetInteger(prefs::kNtpPromoPlatform);
+
+  gplus_required_ = prefs_->GetBoolean(prefs::kNtpPromoGplusRequired);
 }
 
 bool NotificationPromo::CanShow() const {
@@ -387,7 +394,8 @@ bool NotificationPromo::CanShow() const {
       base::Time::FromDoubleT(StartTimeForGroup()) < base::Time::Now() &&
       base::Time::FromDoubleT(end_) > base::Time::Now() &&
       IsBuildAllowed(build_) &&
-      IsPlatformAllowed(platform_);
+      IsPlatformAllowed(platform_) &&
+      IsGPlusRequired();
 }
 
 void NotificationPromo::HandleClosed() {
@@ -423,6 +431,10 @@ bool NotificationPromo::IsPlatformAllowed(int target_platform) const {
   const int current_platform = delegate_? delegate_->CurrentPlatform()
                                         : CurrentPlatform();
   return (target_platform & current_platform) != 0;
+}
+
+bool NotificationPromo::IsGPlusRequired() const {
+  return !gplus_required_ || prefs_->GetBoolean(prefs::kIsGooglePlusUser);
 }
 
 // static

@@ -114,6 +114,9 @@ class NotificationPromo
   // Match our platform with the specified platform bitfield.
   bool IsPlatformAllowed(int target_platform) const;
 
+  // True if this promo is not targeted to G+ users, or if this is a G+ user.
+  bool IsGPlusRequired() const;
+
   // Current platform.
   static int CurrentPlatform();
 
@@ -141,6 +144,8 @@ class NotificationPromo
 
   int build_;
   int platform_;
+
+  bool gplus_required_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPromo);
 };
