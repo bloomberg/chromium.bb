@@ -770,7 +770,7 @@
         '../third_party/skia/src/sfnt',
         '../third_party/skia/src/utils',
       ],
-      'msvs_disabled_warnings': [4244, 4267,4345, 4390, 4554, 4800],
+      'msvs_disabled_warnings': [4244, 4267, 4341, 4345, 4390, 4554, 4800],
       'mac_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
