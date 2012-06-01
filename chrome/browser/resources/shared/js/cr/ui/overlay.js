@@ -29,7 +29,7 @@ cr.define('cr.ui.overlay', function() {
       // TODO(khorimoto): Remove this function once FocusManager can be used
       // to manage focus on other pages besides the Settings page.
       // (https://code.google.com/p/chromium/issues/detail?id=127681)
-      var focusManagerExists = options && options.FocusManager;
+      var focusManagerExists = options && options.OptionsFocusManager;
       if (focusManagerExists)
         return;
 

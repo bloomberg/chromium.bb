@@ -13,13 +13,13 @@ var ContentSettings = options.ContentSettings;
 var ContentSettingsExceptionsArea =
     options.contentSettings.ContentSettingsExceptionsArea;
 var CookiesView = options.CookiesView;
-var FocusManager = options.FocusManager;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
 var HomePageOverlay = options.HomePageOverlay;
 var ImportDataOverlay = options.ImportDataOverlay;
 var InstantConfirmOverlay = options.InstantConfirmOverlay;
 var LanguageOptions = options.LanguageOptions;
+var OptionsFocusManager = options.OptionsFocusManager;
 var OptionsPage = options.OptionsPage;
 var PasswordManager = options.PasswordManager;
 var Preferences = options.Preferences;
@@ -179,7 +179,7 @@ function load() {
                                 CertificateManager.getInstance());
   }
 
-  FocusManager.getInstance().initialize();
+  OptionsFocusManager.getInstance().initialize();
   Preferences.getInstance().initialize();
   OptionsPage.initialize();
 

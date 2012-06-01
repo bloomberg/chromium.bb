@@ -70,7 +70,6 @@
 <include src="content_settings_ui.js"></include>
 <include src="cookies_list.js"></include>
 <include src="cookies_view.js"></include>
-<include src="focus_manager.js"></include>
 <include src="font_settings.js"></include>
 <include src="handler_options.js"></include>
 <include src="handler_options_list.js"></include>
@@ -81,6 +80,7 @@
 <include src="language_list.js"></include>
 <include src="language_options.js"></include>
 <include src="manage_profile_overlay.js"></include>
+<include src="options_focus_manager.js"></include>
 <include src="password_manager.js"></include>
 <include src="password_manager_list.js"></include>
 <include src="profiles_icon_grid.js"></include>

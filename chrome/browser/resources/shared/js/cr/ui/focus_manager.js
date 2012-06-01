@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
-
+cr.define('cr.ui', function() {
   /**
    * Constructor for FocusManager singleton. Checks focus of elements to ensure
    * that elements in "background" pages (i.e., those in a dialog that is not
@@ -13,8 +11,6 @@ cr.define('options', function() {
    */
   function FocusManager() {
   }
-
-  cr.addSingletonGetter(FocusManager);
 
   FocusManager.prototype = {
     /**
@@ -50,22 +46,12 @@ cr.define('options', function() {
     },
 
     /**
-     * Returns the |<div>| element containing all elements which should be
+     * Returns the parent element containing all elements which should be
      * allowed to receive focus.
-     * @return {Element} The |<div>| containing focusable elements.
-     * @private
+     * @return {Element} The element containing focusable elements.
      */
-    getFocusParent_: function() {
-      var focusableDiv = OptionsPage.getTopmostVisiblePage().pageDiv;
-
-      // The default page and search page include a search field that is a
-      // sibling of the rest of the page instead of a child. Thus, use the
-      // parent node to allow the search field to receive focus.
-      if (focusableDiv === OptionsPage.getDefaultPage().pageDiv ||
-          focusableDiv.id === 'searchPage')
-        return focusableDiv.parentNode;
-
-      return focusableDiv;
+    getFocusParent: function() {
+      return document.body;
     },
 
     /**
@@ -73,7 +59,7 @@ cr.define('options', function() {
      * @return {Array.Element} The focusable elements.
      */
     getFocusableElements_: function() {
-      var focusableDiv = this.getFocusParent_();
+      var focusableDiv = this.getFocusParent();
 
       // Create a TreeWalker object to traverse the DOM from |focusableDiv|.
       var treeWalker = document.createTreeWalker(
@@ -157,7 +143,7 @@ cr.define('options', function() {
     onDocumentFocus_: function(event) {
       // If the element being focused is a descendant of the currently visible
       // page, focus is valid.
-      if (this.isDescendantOf_(this.getFocusParent_(), event.target))
+      if (this.isDescendantOf_(this.getFocusParent(), event.target))
         return;
 
       // The target of the focus event is not in the topmost visible page and

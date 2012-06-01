@@ -102,6 +102,8 @@ without changes to the corresponding grd file. -->
                file="shared/js/cr/ui/dialogs.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_DRAG_WRAPPER"
                file="shared/js/cr/ui/drag_wrapper.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_FOCUS_MANAGER"
+               file="shared/js/cr/ui/focus_manager.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_FOCUS_OUTLINE_MANAGER"
                file="shared/js/cr/ui/focus_outline_manager.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_LIST"
