@@ -82,11 +82,19 @@ cr.define('options', function() {
         self.toggleSectionWithAnimation_(
             $('advanced-settings'),
             $('advanced-settings-container'));
-        var focusElement = $('advanced-settings-container').querySelector(
-            'button, input, list, select, a');
-        if (focusElement)
-          focusElement.focus();
+
+        // If the link was focused (i.e., it was activated using the keyboard)
+        // and it was used to show the section (rather than hiding it), focus
+        // the first element in the container.
+        if (document.activeElement === $('advanced-settings-expander') &&
+                $('advanced-settings').style.height === '') {
+          var focusElement = $('advanced-settings-container').querySelector(
+              'button, input, list, select, a[href]');
+          if (focusElement)
+            focusElement.focus();
+        }
       }
+
       $('advanced-settings').addEventListener('webkitTransitionEnd',
           this.updateAdvancedSettingsExpander_.bind(this));
 
