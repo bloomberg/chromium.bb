@@ -510,33 +510,31 @@ MetadataCache.prototype.mergeProperties_ = function(url, data) {
 /**
  * Base class for metadata providers.
  * @constructor
- * TODO(dgozman): rename to MetadataProvider (now it conflicts with another
- *     entity).
  */
-function MetadataProvider2() {
+function MetadataProvider() {
 }
 
 /**
  * @param {string} url The url.
  * @return {boolean} Whether this provider supports the url.
  */
-MetadataProvider2.prototype.supportsUrl = function(url) { return false; };
+MetadataProvider.prototype.supportsUrl = function(url) { return false; };
 
 /**
  * @param {string} type The metadata type.
  * @return {boolean} Whether this provider provides this metadata.
  */
-MetadataProvider2.prototype.providesType = function(type) { return false; };
+MetadataProvider.prototype.providesType = function(type) { return false; };
 
 /**
  * @return {string} Unique provider id.
  */
-MetadataProvider2.prototype.getId = function() { return ''; };
+MetadataProvider.prototype.getId = function() { return ''; };
 
 /**
  * @return {boolean} Whether provider is ready.
  */
-MetadataProvider2.prototype.isInitialized = function() { return true; };
+MetadataProvider.prototype.isInitialized = function() { return true; };
 
 /**
  * Fetches the metadata. It's suggested to return all the metadata this provider
@@ -547,7 +545,7 @@ MetadataProvider2.prototype.isInitialized = function() { return true; };
  *     to metadata value.
  * @param {Entry=} opt_entry The file entry if present.
  */
-MetadataProvider2.prototype.fetch = function(url, type, callback, opt_entry) {
+MetadataProvider.prototype.fetch = function(url, type, callback, opt_entry) {
   throw new Error('Default metadata provider cannot fetch.');
 };
 
@@ -559,11 +557,11 @@ MetadataProvider2.prototype.fetch = function(url, type, callback, opt_entry) {
  * @constructor
  */
 function FilesystemProvider() {
-  MetadataProvider2.call(this);
+  MetadataProvider.call(this);
 }
 
 FilesystemProvider.prototype = {
-  __proto__: MetadataProvider2.prototype
+  __proto__: MetadataProvider.prototype
 };
 
 /**
@@ -628,7 +626,7 @@ FilesystemProvider.prototype.fetch = function(url, type, callback, opt_entry) {
  * @constructor
  */
 function GDataProvider() {
-  MetadataProvider2.call(this);
+  MetadataProvider.call(this);
 
   // We batch metadata fetches into single API call.
   this.urls_ = [];
@@ -639,7 +637,7 @@ function GDataProvider() {
 }
 
 GDataProvider.prototype = {
-  __proto__: MetadataProvider2.prototype
+  __proto__: MetadataProvider.prototype
 };
 
 /**
@@ -773,7 +771,7 @@ GDataProvider.prototype.convert_ = function(data) {
  * @constructor
  */
 function ContentProvider() {
-  MetadataProvider2.call(this);
+  MetadataProvider.call(this);
 
   // Pass all URLs to the metadata reader until we have a correct filter.
   this.urlFilter_ = /.*/;
@@ -797,7 +795,7 @@ function ContentProvider() {
 }
 
 ContentProvider.prototype = {
-  __proto__: MetadataProvider2.prototype
+  __proto__: MetadataProvider.prototype
 };
 
 /**
