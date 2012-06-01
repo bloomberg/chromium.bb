@@ -37,73 +37,74 @@ class WebMediaPlayerAndroid :
  public:
   WebMediaPlayerAndroid(WebKit::WebMediaPlayerClient* client,
                         WebKit::WebCookieJar* cookie_jar);
-  virtual ~WebMediaPlayerAndroid() OVERRIDE;
+  virtual ~WebMediaPlayerAndroid();
 
   // Set |incognito_mode_| to true if in incognito mode.
   static void InitIncognito(bool incognito_mode);
 
   // Resource loading.
-  virtual void load(const WebKit::WebURL& url) OVERRIDE;
-  virtual void cancelLoad() OVERRIDE;
+  virtual void load(const WebKit::WebURL& url);
+  virtual void cancelLoad();
 
   // Playback controls.
-  virtual void play() OVERRIDE;
-  virtual void pause() OVERRIDE;
-  virtual void seek(float seconds) OVERRIDE;
-  virtual bool supportsFullscreen() const OVERRIDE;
-  virtual bool supportsSave() const OVERRIDE;
-  virtual void setEndTime(float seconds) OVERRIDE;
-  virtual void setRate(float rate) OVERRIDE;
-  virtual void setVolume(float volume) OVERRIDE;
-  virtual void setVisible(bool visible) OVERRIDE;
-  virtual bool totalBytesKnown() OVERRIDE;
-  virtual const WebKit::WebTimeRanges& buffered() OVERRIDE;
-  virtual float maxTimeSeekable() const OVERRIDE;
+  virtual void play();
+  virtual void pause();
+  virtual void seek(float seconds);
+  virtual bool supportsFullscreen() const;
+  virtual bool supportsSave() const;
+  virtual void setEndTime(float seconds);
+  virtual void setRate(float rate);
+  virtual void setVolume(float volume);
+  virtual void setVisible(bool visible);
+  virtual bool totalBytesKnown();
+  virtual const WebKit::WebTimeRanges& buffered();
+  virtual float maxTimeSeekable() const;
 
   // Methods for painting.
-  virtual void setSize(const WebKit::WebSize& size) OVERRIDE;
+  virtual void setSize(const WebKit::WebSize& size);
   virtual void paint(WebKit::WebCanvas* canvas,
                      const WebKit::WebRect& rect,
-                     uint8_t alpha) OVERRIDE;
+                     uint8_t alpha);
 
   // True if the loaded media has a playable video/audio track.
-  virtual bool hasVideo() const OVERRIDE;
-  virtual bool hasAudio() const OVERRIDE;
+  virtual bool hasVideo() const;
+  virtual bool hasAudio() const;
 
   // Dimensions of the video.
-  virtual WebKit::WebSize naturalSize() const OVERRIDE;
+  virtual WebKit::WebSize naturalSize() const;
 
   // Getters of playback state.
-  virtual bool paused() const OVERRIDE;
-  virtual bool seeking() const OVERRIDE;
-  virtual float duration() const OVERRIDE;
-  virtual float currentTime() const OVERRIDE;
+  virtual bool paused() const;
+  virtual bool seeking() const;
+  virtual float duration() const;
+  virtual float currentTime() const;
 
   // Get rate of loading the resource.
-  virtual int32 dataRate() const OVERRIDE;
+  virtual int32 dataRate() const;
 
-  virtual unsigned long long bytesLoaded() const OVERRIDE;
-  virtual unsigned long long totalBytes() const OVERRIDE;
+  virtual unsigned long long bytesLoaded() const;
+  virtual bool didLoadingProgress() const;
+  virtual unsigned long long totalBytes() const;
 
   // Internal states of loading and network.
-  virtual WebKit::WebMediaPlayer::NetworkState networkState() const OVERRIDE;
-  virtual WebKit::WebMediaPlayer::ReadyState readyState() const OVERRIDE;
+  virtual WebKit::WebMediaPlayer::NetworkState networkState() const;
+  virtual WebKit::WebMediaPlayer::ReadyState readyState() const;
 
-  virtual bool hasSingleSecurityOrigin() const OVERRIDE;
-  virtual WebKit::WebMediaPlayer::MovieLoadType movieLoadType() const OVERRIDE;
+  virtual bool hasSingleSecurityOrigin() const;
+  virtual WebKit::WebMediaPlayer::MovieLoadType movieLoadType() const;
 
-  virtual float mediaTimeForTimeValue(float timeValue) const OVERRIDE;
+  virtual float mediaTimeForTimeValue(float timeValue) const;
 
   // Provide statistics.
-  virtual unsigned decodedFrameCount() const OVERRIDE;
-  virtual unsigned droppedFrameCount() const OVERRIDE;
-  virtual unsigned audioDecodedByteCount() const OVERRIDE;
-  virtual unsigned videoDecodedByteCount() const OVERRIDE;
+  virtual unsigned decodedFrameCount() const;
+  virtual unsigned droppedFrameCount() const;
+  virtual unsigned audioDecodedByteCount() const;
+  virtual unsigned videoDecodedByteCount() const;
 
   // Methods called from VideoLayerChromium. These methods are running on the
   // compositor thread.
-  virtual WebKit::WebVideoFrame* getCurrentFrame() OVERRIDE;
-  virtual void putCurrentFrame(WebKit::WebVideoFrame*) OVERRIDE;
+  virtual WebKit::WebVideoFrame* getCurrentFrame();
+  virtual void putCurrentFrame(WebKit::WebVideoFrame*);
 
   // Media player callback handlers.
   void OnMediaPrepared();
@@ -180,6 +181,9 @@ class WebMediaPlayerAndroid :
 
   // Fake it by self increasing on every OnBufferingUpdate event.
   int64 buffered_bytes_;
+
+  // Whether loading has progressed since the last call to didLoadingProgress.
+  mutable bool did_loading_progress_;
 
   // Pointer to the cookie jar to get the cookie for the media url.
   WebKit::WebCookieJar* cookie_jar_;
