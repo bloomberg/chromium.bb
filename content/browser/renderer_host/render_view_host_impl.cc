@@ -512,12 +512,13 @@ void RenderViewHostImpl::DragTargetDragEnter(
   FilterURL(policy, renderer_id, true, &filtered_data.url);
 
   // The filenames vector, on the other hand, does represent a capability to
-  // read the given files (but not to navigate to any file:// scheme URL),
+  // access the given files.
   std::set<FilePath> filesets;
   for (std::vector<WebDropData::FileInfo>::const_iterator iter(
            filtered_data.filenames.begin());
        iter != filtered_data.filenames.end(); ++iter) {
     FilePath path = FilePath::FromUTF8Unsafe(UTF16ToUTF8(iter->path));
+    policy->GrantRequestURL(renderer_id, net::FilePathToFileURL(path));
 
     // If the renderer already has permission to read these paths, we don't need
     // to re-grant them. This prevents problems with DnD for files in the CrOS
