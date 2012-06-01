@@ -260,7 +260,8 @@ TEST_F(VideoCaptureControllerTest, StopSession) {
   EXPECT_CALL(*controller_handler_,
               DoBufferReady(controller_handler_->controller_id_))
       .Times(0);
-  message_loop_->PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), 1000);
+  message_loop_->PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(), base::TimeDelta::FromSeconds(1));
   message_loop_->Run();
 
   EXPECT_CALL(*vcm_,
