@@ -137,6 +137,10 @@ class UrlFetchOperationBase : public GDataOperationInterface,
   // Overridden from GDataOperationInterface.
   virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE;
 
+  // Returns an appropriate GDataErrorCode based on the HTTP response code and
+  // the status of the URLFetcher.
+  GDataErrorCode GetErrorCode(const net::URLFetcher* source) const;
+
   std::string GetResponseHeadersAsString(
       const net::URLFetcher* url_fetcher);
 

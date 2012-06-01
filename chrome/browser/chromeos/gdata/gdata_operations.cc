@@ -18,6 +18,7 @@
 #include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/http/http_util.h"
+#include "net/url_request/url_request_status.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
 using content::BrowserThread;
@@ -332,9 +333,19 @@ void UrlFetchOperationBase::DoCancel() {
   RunCallbackOnPrematureFailure(GDATA_CANCELLED);
 }
 
+GDataErrorCode UrlFetchOperationBase::GetErrorCode(
+    const net::URLFetcher* source) const {
+  GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
+  if (code == HTTP_SUCCESS && !source->GetStatus().is_success()) {
+    // If the HTTP response code is SUCCESS yet the URL request failed, it is
+    // likely that the failure is due to loss of connection.
+    code = GDATA_NO_CONNECTION;
+  }
+  return code;
+}
+
 void UrlFetchOperationBase::OnURLFetchComplete(const net::URLFetcher* source) {
-  GDataErrorCode code =
-      static_cast<GDataErrorCode>(source->GetResponseCode());
+  GDataErrorCode code = GetErrorCode(source);
   DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
 
   if (code == HTTP_UNAUTHORIZED) {
@@ -421,8 +432,7 @@ GURL EntryActionOperation::GetURL() const {
 bool EntryActionOperation::ProcessURLFetchResults(
     const net::URLFetcher* source) {
   if (!callback_.is_null()) {
-    GDataErrorCode code =
-        static_cast<GDataErrorCode>(source->GetResponseCode());
+    GDataErrorCode code = GetErrorCode(source);
     callback_.Run(code, document_url_);
   }
   return true;
@@ -447,7 +457,7 @@ bool GetDataOperation::ProcessURLFetchResults(const net::URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
   scoped_ptr<base::Value> root_value;
-  GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
+  GDataErrorCode code = GetErrorCode(source);
 
   switch (code) {
     case HTTP_SUCCESS:
@@ -619,7 +629,7 @@ void DownloadFileOperation::OnURLFetchDownloadData(
 
 bool DownloadFileOperation::ProcessURLFetchResults(
     const net::URLFetcher* source) {
-  GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
+  GDataErrorCode code = GetErrorCode(source);
 
   // Take over the ownership of the the downloaded temp file.
   FilePath temp_file;
@@ -907,8 +917,7 @@ GURL InitiateUploadOperation::GetURL() const {
 
 bool InitiateUploadOperation::ProcessURLFetchResults(
     const net::URLFetcher* source) {
-  GDataErrorCode code =
-      static_cast<GDataErrorCode>(source->GetResponseCode());
+  GDataErrorCode code = GetErrorCode(source);
 
   std::string upload_location;
   if (code == HTTP_SUCCESS) {
@@ -993,7 +1002,7 @@ GURL ResumeUploadOperation::GetURL() const {
 
 bool ResumeUploadOperation::ProcessURLFetchResults(
     const net::URLFetcher* source) {
-  GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
+  GDataErrorCode code = GetErrorCode(source);
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
   int64 start_range_received = -1;
   int64 end_range_received = -1;
