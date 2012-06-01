@@ -157,7 +157,9 @@
   },
   "oauth2": {
     "channel": "stable",
-    "extension_types": ["platform_app"]
+    "extension_types": [
+      "extension", "packaged_app", "platform_app"
+    ]
   },
   "page_action": {
     "channel": "stable",
