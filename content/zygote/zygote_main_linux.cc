@@ -482,13 +482,14 @@ static bool CreateInitProcessReaper() {
     (void) HANDLE_EINTR(close(content::kZygoteIdFd));
     // Tell the child to continue
     CHECK(HANDLE_EINTR(send(sync_fds[1], "C", 1, MSG_NOSIGNAL)) == 1);
+    (void) HANDLE_EINTR(close(sync_fds[1]));
 
     for (;;) {
       // Loop until we have reaped our one natural child
       siginfo_t reaped_child_info;
-      pid_t reaped_child =
+      int wait_ret =
         HANDLE_EINTR(waitid(P_ALL, 0, &reaped_child_info, WEXITED));
-      if (reaped_child == -1)
+      if (wait_ret)
         _exit(1);
       if (reaped_child_info.si_pid == child_pid) {
         int exit_code = 0;
@@ -507,7 +508,9 @@ static bool CreateInitProcessReaper() {
     (void) HANDLE_EINTR(close(sync_fds[1]));
     shutdown(sync_fds[0], SHUT_WR);
     char should_continue;
-    if (HANDLE_EINTR(read(sync_fds[0], &should_continue, 1)) == 1)
+    int read_ret = HANDLE_EINTR(read(sync_fds[0], &should_continue, 1));
+    (void) HANDLE_EINTR(close(sync_fds[0]));
+    if (read_ret == 1)
       return true;
     else
       return false;
