@@ -11,7 +11,6 @@ full and pre-flight-queue builds.
 """
 
 import distutils.version
-import errno
 import glob
 import logging
 import multiprocessing
@@ -163,7 +162,7 @@ class Builder(object):
     self.archive_stages = {}
     self.archive_urls = {}
     self.release_tag = None
-    self.patch_pool = trybot_patch_pool.GetEmptyPool()
+    self.patch_pool = trybot_patch_pool.TrybotPatchPool()
 
     bs.BuilderStage.SetManifestBranch(self.options.branch)
 

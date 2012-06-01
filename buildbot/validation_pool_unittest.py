@@ -48,6 +48,20 @@ def GetTestJson(change_id=None):
   return data
 
 
+class MockManifest(object):
+
+  def __init__(self, path):
+    self.root = path
+
+  def GetProjectPath(self, project, absolute=False):
+    if absolute:
+      return os.path.join(self.root, project)
+    return project
+
+  def GetProjectsLocalRevision(self, _project):
+    return 'refs/remotes/cros/master'
+
+
 # pylint: disable=W0212,R0904
 class TestValidationPool(mox.MoxTestBase):
   """Tests methods in validation_pool.ValidationPool."""
@@ -67,7 +81,8 @@ class base_mixin(object):
     self.build_root = 'fakebuildroot'
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
-                project='chromiumos/chromite'):
+                project='chromiumos/chromite',
+                tracking_branch='refs/heads/master'):
     # pylint: disable=W0201
     # We have to use a custom mock class to fix some brain behaviour of
     # pymox where multiple separate mocks can easily equal each other
@@ -83,10 +98,10 @@ class base_mixin(object):
     patch.patch_number = (patch_number if patch_number is not None else
                           _GetNumber())
     patch.url = 'fake_url/%i' % (change_id,)
-    patch.apply_error_message = None
     patch.project = project
     patch.sha1 = 'sha1-%s' % (patch.change_id,)
     patch.IsAlreadyMerged = lambda:is_merged
+    patch.tracking_branch = tracking_branch
     return patch
 
   def GetPatches(self, how_many=1):
@@ -123,17 +138,17 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
   @staticmethod
   def SetContentMergingProjects(series, projects=(), internal=False):
     helper = series._helper_pool.GetHelper(internal)
-    series._content_merging[helper] = frozenset(projects)
+    series._content_merging_projects[helper] = frozenset(projects)
 
   @contextlib.contextmanager
-  def _ValidateTransactionCall(self, build_root, _changes):
-    self.assertEqual(build_root, self.build_root)
+  def _ValidateTransactionCall(self, _changes):
     yield
 
   def GetPatchSeries(self, helper_pool=None, force_content_merging=False):
     if helper_pool is None:
       helper_pool = self.MakeHelper(internal=True, external=True)
-    series = validation_pool.PatchSeries(helper_pool, force_content_merging)
+    series = validation_pool.PatchSeries(self.build_root, helper_pool,
+                                         force_content_merging)
 
     # Suppress transactions.
     series._Transaction = self._ValidateTransactionCall
@@ -141,29 +156,45 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
     return series
 
   def assertPath(self, _patch, return_value, path):
-    self.assertEqual(path, self.build_root)
+    self.assertEqual(path,
+                     os.path.join(self.build_root, _patch.project))
     if isinstance(return_value, Exception):
       raise return_value
     return return_value
 
+  def assertGerritDependencies(self, _patch, return_value, path,
+                               tracking):
+    self.assertEqual(tracking, 'refs/remotes/cros/master')
+    return self.assertPath(_patch, return_value, path)
+
   def SetPatchDeps(self, patch, parents=(), cq=()):
     patch.GerritDependencies = functools.partial(
-        self.assertPath, patch, parents)
+        self.assertGerritDependencies, patch, parents)
     patch.PaladinDependencies = functools.partial(
         self.assertPath, patch, cq)
     patch.Fetch = functools.partial(
         self.assertPath, patch, patch.sha1)
+
+  def _ValidatePatchApplyManifest(self, value):
+    self.assertTrue(isinstance(value, MockManifest))
+    self.assertEqual(value.root, self.build_root)
+    return True
+
+  def SetPatchApply(self, patch, trivial=True):
+    return patch.ApplyAgainstManifest(
+        mox.Func(self._ValidatePatchApplyManifest),
+        trivial=trivial)
 
   def assertResults(self, series, changes, applied=(), failed_tot=(),
                     failed_inflight=(), frozen=True, dryrun=False):
     # Convenience; set the content pool as necessary.
     for internal in set(x.internal for x in changes):
       helper = series._helper_pool.GetHelper(internal)
-      series._content_merging.setdefault(helper, frozenset())
+      series._content_merging_projects.setdefault(helper, frozenset())
 
-    manifest = self.mox.CreateMock(cros_build_lib.ManifestCheckout)
+    manifest = MockManifest(self.build_root)
     manifest.root = self.build_root
-    result = series.Apply(manifest.root, changes, dryrun=dryrun,
+    result = series.Apply(changes, dryrun=dryrun,
                           frozen=frozen, manifest=manifest)
 
     _GetIds = lambda seq:[x.id for x in seq]
@@ -194,8 +225,8 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
     self.SetPatchDeps(patch2)
     self.SetPatchDeps(patch1, [patch2.id])
 
-    patch2.Apply(self.build_root, trivial=True)
-    patch1.Apply(self.build_root, trivial=True)
+    self.SetPatchApply(patch2)
+    self.SetPatchApply(patch1)
 
     self.mox.ReplayAll()
     self.assertResults(series, patches, [patch2, patch1])
@@ -234,7 +265,7 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
     self.SetPatchDeps(patch2, [patch1.id])
     self._SetQuery(series, patch1).AndReturn(patch1)
 
-    patch2.Apply(self.build_root, trivial=True)
+    self.SetPatchApply(patch2)
 
     self.mox.ReplayAll()
     self.assertResults(series, [patch2], [patch2])
@@ -259,11 +290,11 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
     self.SetPatchDeps(patch3)
     self.SetPatchDeps(patch4)
 
-    patch1.Apply(self.build_root, trivial=True).AndRaise(
+    self.SetPatchApply(patch1).AndRaise(
         cros_patch.ApplyPatchException(patch1))
 
-    patch3.Apply(self.build_root, trivial=True)
-    patch4.Apply(self.build_root, trivial=True).AndRaise(
+    self.SetPatchApply(patch3)
+    self.SetPatchApply(patch4).AndRaise(
         cros_patch.ApplyPatchException(patch1, inflight=True))
 
     self.mox.ReplayAll()
@@ -277,11 +308,15 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
 
     patch1, patch2 = patches = self.GetPatches(2)
 
-    patch1.GerritDependencies(self.build_root).AndRaise(
-        cros_patch.BrokenChangeID(patch1, 'Could not find changeid'))
-    self.SetPatchDeps(patch2)
+    git_repo = os.path.join(self.build_root, patch1.project)
+    patch1.Fetch(git_repo)
+    patch1.GerritDependencies(
+        git_repo,
+        'refs/remotes/cros/master').AndRaise(
+            cros_patch.BrokenChangeID(patch1, 'Could not find changeid'))
 
-    patch2.Apply(self.build_root, trivial=True)
+    self.SetPatchDeps(patch2)
+    self.SetPatchApply(patch2)
 
     self.mox.ReplayAll()
     self.assertResults(series, patches, [patch2], [patch1], [])
@@ -309,7 +344,7 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
     self.SetPatchDeps(patch5)
 
     for patch in (patch2, patch1, patch3, patch4, patch5):
-      patch.Apply(self.build_root, trivial=True)
+      self.SetPatchApply(patch)
 
     self.mox.ReplayAll()
     self.assertResults(
@@ -326,7 +361,7 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
       self.SetPatchDeps(patch)
 
     for patch in patches:
-      patch.Apply(self.build_root, trivial=True)
+      self.SetPatchApply(patch)
 
     self.mox.ReplayAll()
     self.assertResults(series, patches, patches)
@@ -351,7 +386,8 @@ class TestCoreLogic(base_mixin, mox.MoxTestBase):
     kwds.setdefault('changes', [])
 
     pool = validation_pool.ValidationPool(
-        overlays, build_number, builder_name, is_master, dryrun, **kwds)
+        overlays, self.build_root, build_number, builder_name, is_master,
+        dryrun, **kwds)
     self.mox.StubOutWithMock(pool, '_SendNotification')
     if handlers:
       self.mox.StubOutWithMock(pool, '_HandleApplySuccess')
@@ -370,7 +406,7 @@ class TestCoreLogic(base_mixin, mox.MoxTestBase):
     tot = [self.MakeFailure(x, inflight=False) for x in tot]
     inflight = [self.MakeFailure(x, inflight=True) for x in inflight]
     pool._patch_series.Apply(
-        self.build_root, changes, dryrun, manifest=mox.IgnoreArg()
+        changes, dryrun=dryrun, manifest=mox.IgnoreArg()
         ).AndReturn((applied, tot, inflight))
 
     for patch in applied:
@@ -388,7 +424,7 @@ class TestCoreLogic(base_mixin, mox.MoxTestBase):
     return pool
 
   def runApply(self, pool, result):
-    self.assertEqual(result, pool.ApplyPoolIntoRepo(self.build_root))
+    self.assertEqual(result, pool.ApplyPoolIntoRepo())
     self.assertEqual(pool.changes, pool._test_data[1])
     failed_inflight = pool.changes_that_failed_to_apply_earlier
     expected_inflight = set(pool._test_data[3])
@@ -396,13 +432,6 @@ class TestCoreLogic(base_mixin, mox.MoxTestBase):
     # results that weren't related to the ApplyPoolIntoRepo call.
     self.assertEqual(set(failed_inflight).intersection(expected_inflight),
                      expected_inflight)
-
-    # Ensure that no old code/pathways are setting apply_error_message.
-    for patch in pool._test_data[0]:
-      if getattr(patch, 'apply_error_message', None) is not None:
-        raise AssertionError(
-            "patch %s has an apply_error_message that is not None: %s"
-            % (patch, patch.apply_error_message))
 
     self.assertEqual(pool.changes, pool._test_data[1])
 
@@ -574,7 +603,7 @@ class TestCoreLogic(base_mixin, mox.MoxTestBase):
     # Suppressed because pylint can't tell that we just replaced Apply via mox.
     # pylint: disable=E1101
     pool._patch_series.Apply(
-        self.build_root, patches, False, manifest=mox.IgnoreArg()).AndRaise(
+        patches, dryrun=False, manifest=mox.IgnoreArg()).AndRaise(
         MyException)
 
     def _ValidateExceptioN(changes):
@@ -586,7 +615,7 @@ class TestCoreLogic(base_mixin, mox.MoxTestBase):
                        set(x.patch for x in changes))
 
     self.mox.ReplayAll()
-    self.assertRaises(MyException, pool.ApplyPoolIntoRepo, self.build_root)
+    self.assertRaises(MyException, pool.ApplyPoolIntoRepo)
     self.mox.VerifyAll()
 
 
@@ -721,7 +750,9 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
     conflicting = [cros_patch.GerritPatch(GetTestJson(ids[2]), True)]
     conflicting = [cros_patch.PatchException(x) for x in conflicting]
     pool = validation_pool.ValidationPool(
-        constants.PUBLIC_OVERLAYS, 1, 'testing', True, True,
+        constants.PUBLIC_OVERLAYS,
+        '/fake/pathway', 1,
+        'testing', True, True,
         changes=changes, non_os_changes=non_os,
         conflicting_changes=conflicting)
     return pickle.dumps([pool, changes, non_os, conflicting])

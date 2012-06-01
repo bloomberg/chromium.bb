@@ -49,27 +49,13 @@ GERRIT_MERGED_CHANGEID = '3'
 GERRIT_ABANDONED_CHANGEID = '1'
 
 
-class _PatchSuppression(object):
-
-  """Mixin to suppress certain behaviour in patch objects for testing."""
-
-  def ProjectDir(self, buildroot):
-    # Short circuit this to not require manifest parsing.
-    return buildroot
-
-  def _GetUpstreamBranch(self, buildroot, force_default=False):
-    # Tests are built around the assumption of this upstream value.
-    return 'refs/remotes/origin/master'
-
-
 class TestGitRepoPatch(cros_test_lib.TempDirMixin, unittest.TestCase):
 
   # No pymox bits are to be used in this class's tests.
   # This needs to actually validate git output, and git behaviour, rather
   # than test our assumptions about git's behaviour/output.
 
-  class patch_kls(_PatchSuppression, cros_patch.GitRepoPatch):
-    pass
+  patch_kls = cros_patch.GitRepoPatch
 
   COMMIT_TEMPLATE = (
 """commit abcdefgh
@@ -88,6 +74,8 @@ I am the first commit.
   # Boolean controlling whether the target class natively knows its
   # ChangeId; only GerritPatches do.
   has_native_change_id = False
+
+  DEFAULT_TRACKING = 'refs/remotes/origin/master'
 
   def _CreateSourceRepo(self, path):
     """Generate a new repo with a single commit."""
@@ -185,15 +173,15 @@ I am the first commit.
     # double apply.  The first lands the change, the second
     # verifies the machinery doesn't scream when we try
     # landing it a second time.
-    patch.Apply(git1)
-    patch.Apply(git1)
+    patch.Apply(git1, self.DEFAULT_TRACKING)
+    patch.Apply(git1, self.DEFAULT_TRACKING)
 
   def testCleanlyApply(self):
     git1, git2, patch = self._CommonGitSetup()
     # Clone git3 before we modify git2; else we'll just wind up
     # cloning it's master.
     git3 = self._MakeRepo('git3', git2)
-    patch.Apply(git2)
+    patch.Apply(git2, self.DEFAULT_TRACKING)
     self.assertEqual(patch.sha1, self._GetSha1(git2, 'HEAD'))
     # Verify reuse; specifically that Fetch doesn't actually run since
     # the object is available in alternates.  testFetch partially
@@ -201,7 +189,7 @@ I am the first commit.
     # ensuring that the attempted Apply goes boom if it can't get the
     # required sha1.
     patch.project_url='/dev/null'
-    patch.Apply(git3)
+    patch.Apply(git3, self.DEFAULT_TRACKING)
     self.assertEqual(patch.sha1, self._GetSha1(git3, 'HEAD'))
 
   def testFailsApply(self):
@@ -209,9 +197,9 @@ I am the first commit.
     patch2 = self.CommitFile(git2, 'monkeys', 'not foon')
     # Note that Apply creates it's own branch, resetting to master
     # thus we have to re-apply (even if it looks stupid, it's right).
-    patch2.Apply(git2)
+    patch2.Apply(git2, self.DEFAULT_TRACKING)
     try:
-      patch1.Apply(git2)
+      patch1.Apply(git2, self.DEFAULT_TRACKING)
     except cros_patch.ApplyPatchException, e:
       self.assertTrue(e.inflight)
     else:
@@ -244,24 +232,33 @@ I am the first commit.
     # Check that we handle the edge case of the first commit in a
     # repo...
     patch = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'))
-    self.assertEqual(patch.GerritDependencies(git1), [])
+    self.assertEqual(
+        patch.GerritDependencies(git1, 'refs/remotes/origin/master'),
+        [])
     cid1, cid2, cid3 = self.MakeChangeId(3)
     patch = self.CommitChangeIdFile(git1, cid1)
     # Since it's parent is ToT, there are no deps.
-    self.assertEqual(patch.GerritDependencies(git1), [])
+    self.assertEqual(
+        patch.GerritDependencies(git1, 'refs/remotes/origin/master'),
+        [])
     patch = self.CommitChangeIdFile(git1, cid2, content='poo')
-    self.assertEqual(patch.GerritDependencies(git1), [cid1])
+    self.assertEqual(
+        patch.GerritDependencies(git1, 'refs/remotes/origin/master'),
+        [cid1])
 
     # Check the behaviour for missing ChangeId in a parent next.
     patch = self.CommitChangeIdFile(git1, cid1, content='thus',
                                     raw_changeid_text='')
 
-    # Note the ordering; leftmost needs to be the nearest child of the commit.
-    self.assertEqual(patch.GerritDependencies(git1), [cid2, cid1])
+    # Verify it returns just the parrent, rather than all parents.
+    self.assertEqual(
+        patch.GerritDependencies(git1, 'refs/remotes/origin/master'),
+        [cid2])
 
     patch = self.CommitChangeIdFile(git1, cid3, content='the glass walls.')
-    self.assertRaises(cros_patch.BrokenChangeID,
-                      patch.GerritDependencies, git1)
+    self.assertRaises(
+        cros_patch.BrokenChangeID,
+        patch.GerritDependencies, git1, 'refs/remotes/origin/master')
 
   def _CheckPaladin(self, repo, master_id, ids, extra):
     patch = self.CommitChangeIdFile(
@@ -309,8 +306,7 @@ I am the first commit.
 
 class TestLocalPatchGit(TestGitRepoPatch):
 
-  class patch_kls(_PatchSuppression, cros_patch.LocalPatch):
-    pass
+  patch_kls = cros_patch.LocalPatch
 
   def setUp(self):
     TestGitRepoPatch.setUp(self)
@@ -368,8 +364,7 @@ class TestUploadedLocalPatch(TestGitRepoPatch):
   ORIGINAL_BRANCH = 'original_branch'
   ORIGINAL_SHA1 = 'ffffffff'
 
-  class patch_kls(_PatchSuppression, cros_patch.UploadedLocalPatch):
-    pass
+  patch_kls = cros_patch.UploadedLocalPatch
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
     return self.patch_kls(source, self.PROJECT, ref,
@@ -387,7 +382,7 @@ class TestGerritPatch(TestGitRepoPatch):
 
   has_native_change_id = True
 
-  class patch_kls(_PatchSuppression, cros_patch.GerritPatch):
+  class patch_kls(cros_patch.GerritPatch):
     # Suppress the behaviour pointing the project url at actual gerrit,
     # instead slaving it back to a local repo for tests.
     def _GetProjectUrl(self, project, internal):
@@ -489,6 +484,11 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
     cros_build_lib.RunCommand(mox.In('m/kernel..mybranch'),
                               redirect_stdout=mox.IgnoreArg(),
                               cwd='mydir').AndReturn(output_obj)
+
+    # Suppress the normal parse machinery.
+    self.mox.StubOutWithMock(cros_patch.LocalPatch, 'Fetch')
+    # pylint: disable=E1120
+    cros_patch.LocalPatch.Fetch('mydir/.git').AndReturn(output_obj)
     self.mox.ReplayAll()
 
     patch_info = cros_patch.PrepareLocalPatches(self.manifest, self.patches)
@@ -520,7 +520,7 @@ class ApplyLocalPatchesTests(mox.MoxTestBase):
     patch = cros_patch.GitRepoPatch('/path/to/my/project.git',
                                     'my/project', 'mybranch',
                                     'master')
-    self.assertRaises(cros_patch.PatchException, patch.ApplyIntoGitRepo,
+    self.assertRaises(cros_patch.PatchException, patch.Apply,
                       '/tmp/notadirectory', 'origin/R19')
 
 if __name__ == '__main__':

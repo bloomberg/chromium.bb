@@ -149,27 +149,11 @@ class GitRepoPatch(object):
     self.ref = ref
     self.tracking_branch = os.path.basename(tracking_branch)
     self.sha1 = sha1
-    # TODO(ferringb): remove this attribute.
-    # apply_error_message is currently used by ValidationPool as a way to
-    # track what changes have failed.  Patch objects shouldn't use this
-    # attribute, instead leaving it purely for validation_pool and friends
-    # to mutate.
-    self.apply_error_message = None
     # change_id must always be a valid Change-Id (local or gerrit), or None.
     # id is an internal value- if change-id exists, we use that.  If not,
     # we make up a fake change-id to keep internal apis happy/simple.
     self.change_id = self.id = change_id
     self._is_fetched = set()
-    self._projectdir_cache = {}
-
-  def ProjectDir(self, checkout_root):
-    """Returns the local directory where this patch will be applied."""
-    checkout_root = os.path.normpath(checkout_root)
-    val = self._projectdir_cache.get(checkout_root)
-    if val is None:
-      val = cros_build_lib.GetProjectDir(checkout_root, self.project)
-      self._projectdir_cache[checkout_root] = val
-    return val
 
   def Fetch(self, target_repo):
     """Fetch this patch into the target repository.
@@ -191,9 +175,9 @@ class GitRepoPatch(object):
       return self.sha1
 
     def _PullData(rev):
-      ret = cros_build_lib.RunCommandCaptureOutput(
-          ['git', 'log', '--format=%H%x00%B', '-n1', rev], print_cmd=False,
-          error_code_ok=True, cwd=target_repo)
+      ret = cros_build_lib.RunGitCommand(
+          target_repo, ['log', '--format=%H%x00%B', '-n1', rev],
+          error_code_ok=True)
       if ret.returncode != 0:
         return None, None
       output = ret.output.split('\0')
@@ -210,8 +194,8 @@ class GitRepoPatch(object):
         self._EnsureId(msg)
         return self.sha1
 
-    cros_build_lib.RunCommand(['git', 'fetch', self.project_url, self.ref],
-                              cwd=target_repo, print_cmd=False)
+    cros_build_lib.RunGitCommand(
+        target_repo, ['fetch', self.project_url, self.ref])
 
     sha1, msg = _PullData('FETCH_HEAD')
 
@@ -296,25 +280,13 @@ class GitRepoPatch(object):
       cros_build_lib.RunCommand(['git', 'checkout', constants.PATCH_BRANCH],
                                 cwd=project_dir, print_cmd=False)
 
-  def _GetUpstreamBranch(self, buildroot, force_default=False):
-    """Get the branch specified in the manifest for this patch."""
-    # TODO(ferringb): remove this via cherry-picking; it's broken
-    # now since it assumes the tracking_branch (which is local
-    # to the originating repo) is what should be used for rebasing
-    # this patch into the current tree).
-    manifest = cros_build_lib.ManifestCheckout.Cached(buildroot)
-    if force_default:
-      return manifest.default_branch
-    return manifest.GetProjectsLocalRevision(self.project)
-
-  def ApplyIntoGitRepo(self, project_dir, upstream, trivial=False,
-                       do_check=True):
+  def Apply(self, git_repo, upstream, trivial=False, do_check=True):
     """Apply patch into a standalone git repo.
 
     The git repo does not need to be part of a repo checkout.
 
     Arguments:
-      project_dir: The directory of the project.
+      git_repo: The git repository to operate upon.
       upstream: The branch to base the patch on.
       trivial: Only allow trivial merges when applying change.
       do_check: Check if tracking is the same as the given upstream.
@@ -328,43 +300,43 @@ class GitRepoPatch(object):
       raise PatchException('branch %s for project %s is not tracking %s'
                            % (self.ref, self.project, branch_base))
 
-    rev = self.Fetch(project_dir)
+    rev = self.Fetch(git_repo)
 
-    if not cros_build_lib.DoesLocalBranchExist(project_dir,
+    if not cros_build_lib.DoesLocalBranchExist(git_repo,
                                                constants.PATCH_BRANCH):
       cmd = ['checkout', '-b', constants.PATCH_BRANCH, '-t', upstream]
-      cros_build_lib.RunGitCommand(project_dir, cmd)
+      cros_build_lib.RunGitCommand(git_repo, cmd)
 
-    self._RebasePatch(upstream, project_dir, rev, trivial)
+    self._RebasePatch(upstream, git_repo, rev, trivial)
 
-  def Apply(self, buildroot, trivial=False):
-    """Applies the patch to specified buildroot.
+  def ApplyAgainstManifest(self, manifest, trivial=False):
+    """Applies the patch against the specified manifest.
 
-      buildroot:  The buildroot.
+      manifest: A ManifestCheckout object which is used to discern which
+        git repo to patch, what the upstream branch should be, etc.
       trivial:  Only allow trivial merges when applying change.
 
     Raises:
       ApplyPatchException: If the patch failed to apply.
     """
     logging.info('Attempting to apply change %s', self)
-    manifest_branch = self._GetUpstreamBranch(buildroot)
+    manifest_branch = manifest.GetProjectsLocalRevision(self.project)
     do_check = manifest_branch.startswith('refs/')
     if not do_check:
       # Revision locked.  Use the manifest default branch which
       # is set to the manifest locked revision, and
       # suppress the tracking/upstream check.
-      manifest_branch = self._GetUpstreamBranch(buildroot, True)
-    project_dir = self.ProjectDir(buildroot)
-    self.ApplyIntoGitRepo(project_dir, manifest_branch, trivial,
-                          do_check=do_check)
+      manifest_branch = manifest.default_branch
+    self.Apply(manifest.GetProjectPath(self.project, True),
+               manifest_branch, trivial, do_check=do_check)
 
-  def GerritDependencies(self, buildroot):
+  def GerritDependencies(self, git_repo, upstream):
     """Returns an ordered list of dependencies from Gerrit.
 
     The list of changes are in order from FETCH_HEAD back to m/master.
 
     Arguments:
-      buildroot: The buildroot.
+      git_repo: The git repository to fetch/access this commit from.
     Returns:
       An ordered list of Gerrit revisions that this patch depends on.
     Raises:
@@ -372,15 +344,13 @@ class GitRepoPatch(object):
     """
     dependencies = []
     logging.info('Checking for Gerrit dependencies for change %s', self)
-    project_dir = self.ProjectDir(buildroot)
 
-    rev = self.Fetch(project_dir)
+    rev = self.Fetch(git_repo)
 
-    tracking_branch = self._GetUpstreamBranch(buildroot)
     try:
       return_obj = cros_build_lib.RunGitCommand(
-          project_dir,
-          ['log', '--format=%B%x00', '%s..%s^' % (tracking_branch, rev)])
+          git_repo, ['log', '-n1', '--format=%B%x00',
+                     '%s..%s^' % (upstream, rev)])
     except cros_build_lib.RunCommandError, e:
       if e.result.returncode != 128:
         raise
@@ -389,7 +359,7 @@ class GitRepoPatch(object):
       # that actual rev, etc), or... this is the first commit in a repository.
       # The following code checks for that, raising the original
       # exception if not.
-      result = cros_build_lib.RunGitCommand(project_dir,
+      result = cros_build_lib.RunGitCommand(git_repo,
                                             ['rev-list', '-n2', rev])
       if len(result.output.split()) != 1:
         raise
@@ -462,7 +432,7 @@ class GitRepoPatch(object):
     # of the hex to lower case.
     return FormatChangeId(change_id_match)
 
-  def PaladinDependencies(self, buildroot):
+  def PaladinDependencies(self, git_repo):
     """Returns an ordered list of dependencies based on the Commit Message.
 
     Parses the Commit message for this change looking for lines that follow
@@ -478,7 +448,9 @@ class GitRepoPatch(object):
     """
     dependencies = []
     logging.info('Checking for CQ-DEPEND dependencies for change %s', self)
-    self.Fetch(self.ProjectDir(buildroot))
+
+    self.Fetch(git_repo)
+
     matches = self._PALADIN_DEPENDENCY_RE.findall(self._commit_message)
     for match in matches:
       chunks = ' '.join(match.split(','))
@@ -510,6 +482,9 @@ class LocalPatch(GitRepoPatch):
   def __init__(self, project_url, project, ref, tracking_branch, sha1):
     GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
                           sha1=sha1)
+    # Initialize our commit message/ChangeId now, since we know we have
+    # access to the data right now.
+    self.Fetch(project_url)
 
   def Sha1Hash(self):
     """Get the Sha1 of the branch."""
@@ -722,17 +697,18 @@ def PrepareLocalPatches(manifest, patches):
     project_dir = manifest.GetProjectPath(project, True)
     tracking_branch = manifest.GetProjectsLocalRevision(project)
 
-    cmd = ['git', 'rev-list', '-n1', '%s..%s' % (tracking_branch, branch)]
+    cmd = ['git', 'rev-list', '%s..%s' % (tracking_branch, branch)]
     result = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
                                        cwd=project_dir)
-    sha1 = result.output.strip()
+    sha1s = result.output.splitlines()
 
-    if not sha1:
+    if not sha1s:
       cros_build_lib.Die('No changes found in %s:%s' % (project, branch))
 
-    patch_info.append(LocalPatch(os.path.join(project_dir, '.git'),
-                                        project, branch, tracking_branch,
-                                        sha1))
+    for sha1 in reversed(sha1s):
+      patch_info.append(LocalPatch(os.path.join(project_dir, '.git'),
+                                   project, branch, tracking_branch,
+                                   sha1))
 
   return patch_info
 
