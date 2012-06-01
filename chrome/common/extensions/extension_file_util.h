@@ -60,9 +60,17 @@ base::DictionaryValue* LoadManifest(const FilePath& extension_root,
                                     std::string* error);
 
 // Returns true if the given extension object is valid and consistent.
-// Otherwise, a description of the error is returned in |error|.
+// May also append a series of warning messages to |warnings|, but they
+// should not prevent the extension from running.
+//
+// Otherwise, returns false, and a description of the error is
+// returned in |error|.
 bool ValidateExtension(const extensions::Extension* extension,
-                       std::string* error);
+                       std::string* error,
+                       std::vector<std::string>* warnings);
+
+// Returns a list of files that contain private keys inside |extension_dir|.
+std::vector<FilePath> FindPrivateKeyFiles(const FilePath& extension_dir);
 
 // Cleans up the extension install directory. It can end up with garbage in it
 // if extensions can't initially be removed when they are uninstalled (eg if a

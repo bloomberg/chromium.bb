@@ -400,6 +400,12 @@ const std::string Extension::VersionString() const {
   return version()->GetString();
 }
 
+void Extension::AddInstallWarnings(
+    const std::vector<std::string>& new_warnings) {
+  install_warnings_.insert(install_warnings_.end(),
+                           new_warnings.begin(), new_warnings.end());
+}
+
 // static
 bool Extension::IsExtension(const FilePath& file_name) {
   return file_name.MatchesExtension(chrome::kExtensionFileExtension);

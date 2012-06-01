@@ -213,6 +213,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // anywhere in the filesystem, rather than being restricted to the
     // extension directory.
     FOLLOW_SYMLINKS_ANYWHERE = 1 << 5,
+
+    // |ERROR_ON_PRIVATE_KEY| means that private keys inside an
+    // extension should be errors rather than warnings.
+    ERROR_ON_PRIVATE_KEY = 1 << 6,
   };
 
   static scoped_refptr<Extension> Create(const FilePath& path,
@@ -592,6 +596,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const ExtensionPermissionSet* required_permission_set() const {
     return required_permission_set_.get();
   }
+  // Appends |new_warnings| to install_warnings().
+  void AddInstallWarnings(const std::vector<std::string>& new_warnings);
   const std::vector<std::string>& install_warnings() const {
     return install_warnings_;
   }

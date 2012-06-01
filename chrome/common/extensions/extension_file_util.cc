@@ -16,6 +16,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -151,8 +152,10 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
   if (!extension.get())
     return NULL;
 
-  if (!ValidateExtension(extension.get(), error))
+  std::vector<std::string> warnings;
+  if (!ValidateExtension(extension.get(), error, &warnings))
     return NULL;
+  extension->AddInstallWarnings(warnings);
 
   return extension;
 }
@@ -191,8 +194,43 @@ DictionaryValue* LoadManifest(const FilePath& extension_path,
   return static_cast<DictionaryValue*>(root.release());
 }
 
+std::vector<FilePath> FindPrivateKeyFiles(const FilePath& extension_dir) {
+  std::vector<FilePath> result;
+  // Pattern matching only works at the root level, so filter manually.
+  file_util::FileEnumerator traversal(extension_dir, /*recursive=*/true,
+                                      file_util::FileEnumerator::FILES);
+  for (FilePath current = traversal.Next(); !current.empty();
+       current = traversal.Next()) {
+    if (!current.MatchesExtension(chrome::kExtensionKeyFileExtension))
+      continue;
+
+    std::string key_contents;
+    if (!file_util::ReadFileToString(current, &key_contents)) {
+      // If we can't read the file, assume it's not a private key.
+      continue;
+    }
+    std::string key_bytes;
+    if (!Extension::ParsePEMKeyBytes(key_contents, &key_bytes)) {
+      // If we can't parse the key, assume it's ok too.
+      continue;
+    }
+
+    // TODO(jyasskin): Use crypto::RSAPrivateKey to get the public key
+    // out of the key file, so the caller can check whether the found
+    // private key is the same one used to sign this extension.  This
+    // requires refactoring the RSAPrivateKey implementation a bit,
+    // since at least on Mac, CSSMInitSingleton accesses some files
+    // that aren't available in the utility process where this check
+    // needs to run.
+
+    result.push_back(current);
+  }
+  return result;
+}
+
 bool ValidateExtension(const Extension* extension,
-                       std::string* error) {
+                       std::string* error,
+                       std::vector<std::string>* warnings) {
   // Validate icons exist.
   for (ExtensionIconSet::IconMap::const_iterator iter =
            extension->icons().map().begin();
@@ -365,6 +403,27 @@ bool ValidateExtension(const Extension* extension,
     return false;
   }
 
+  // Check that extensions don't include private key files.
+  // TODO(jyasskin): When ERROR_ON_PRIVATE_KEY is not set, still block
+  // installing an extension that contains its own private key.
+  std::vector<FilePath> private_keys = FindPrivateKeyFiles(extension->path());
+  if (extension->creation_flags() & Extension::ERROR_ON_PRIVATE_KEY) {
+    if (!private_keys.empty()) {
+      // Only print one of the private keys because l10n_util doesn't have a way
+      // to translate a list of strings.
+      *error = l10n_util::GetStringFUTF8(
+          IDS_EXTENSION_CONTAINS_PRIVATE_KEY,
+          private_keys.front().LossyDisplayName());
+      return false;
+    }
+  } else {
+    for (size_t i = 0; i < private_keys.size(); ++i) {
+      warnings->push_back(l10n_util::GetStringFUTF8(
+          IDS_EXTENSION_CONTAINS_PRIVATE_KEY,
+          private_keys[i].LossyDisplayName()));
+    }
+    // Only warn; don't block loading the extension.
+  }
   return true;
 }
 

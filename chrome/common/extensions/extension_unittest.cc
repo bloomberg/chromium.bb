@@ -189,7 +189,10 @@ TEST(ExtensionTest, GetAbsolutePathNoError) {
       "absolute.json");
   EXPECT_TRUE(extension.get());
   std::string err;
-  EXPECT_TRUE(extension_file_util::ValidateExtension(extension.get(), &err));
+  std::vector<std::string> warnings;
+  EXPECT_TRUE(extension_file_util::ValidateExtension(extension.get(),
+                                                     &err, &warnings));
+  EXPECT_EQ(0U, warnings.size());
 
   EXPECT_EQ(extension->path().AppendASCII("test.html").value(),
             extension->GetResource("test.html").GetFilePath().value());

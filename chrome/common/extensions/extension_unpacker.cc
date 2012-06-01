@@ -190,10 +190,13 @@ bool ExtensionUnpacker::Run() {
     return false;
   }
 
-  if (!extension_file_util::ValidateExtension(extension.get(), &error)) {
+  std::vector<std::string> warnings;
+  if (!extension_file_util::ValidateExtension(extension.get(),
+                                              &error, &warnings)) {
     SetError(error);
     return false;
   }
+  extension->AddInstallWarnings(warnings);
 
   // Decode any images that the browser needs to display.
   std::set<FilePath> image_paths = extension->GetBrowserImages();

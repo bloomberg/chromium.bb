@@ -1750,6 +1750,49 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
   }
 }
 
+TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
+  InitializeEmptyExtensionService();
+
+  ScopedTempDir extension_temp_dir;
+  ASSERT_TRUE(extension_temp_dir.CreateUniqueTempDir());
+  FilePath input_directory = extension_temp_dir.path().AppendASCII("ext");
+  ASSERT_TRUE(file_util::CopyDirectory(
+      data_dir_
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+      .AppendASCII("1.0.0.0"),
+      input_directory,
+      /*recursive=*/true));
+
+  ScopedTempDir output_temp_dir;
+  ASSERT_TRUE(output_temp_dir.CreateUniqueTempDir());
+  FilePath output_directory = output_temp_dir.path();
+
+  FilePath crx_path(output_directory.AppendASCII("ex1.crx"));
+  FilePath privkey_path(output_directory.AppendASCII("privkey.pem"));
+
+  // Pack the extension once to get a private key.
+  scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
+  ASSERT_TRUE(creator->Run(input_directory, crx_path, FilePath(),
+      privkey_path, ExtensionCreator::kNoRunFlags))
+      << creator->error_message();
+  ASSERT_TRUE(file_util::PathExists(crx_path));
+  ASSERT_TRUE(file_util::PathExists(privkey_path));
+
+  file_util::Delete(crx_path, false);
+  // Move the pem file into the extension.
+  file_util::Move(privkey_path,
+                  input_directory.AppendASCII("privkey.pem"));
+
+  // This pack should fail because of the contained private key.
+  EXPECT_FALSE(creator->Run(input_directory, crx_path, FilePath(),
+      privkey_path, ExtensionCreator::kNoRunFlags));
+  EXPECT_THAT(creator->error_message(),
+              testing::ContainsRegex(
+                  "extension includes the key file.*privkey.pem"));
+}
+
 // Test Packaging and installing an extension using an openssl generated key.
 // The openssl is generated with the following:
 // > openssl genrsa -out privkey.pem 1024
