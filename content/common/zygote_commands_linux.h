@@ -20,6 +20,7 @@ const int kZygoteRendererSocketFd = 5;
 // setuid sandbox.
 // It is very important that this file descriptor does not exist in multiple
 // processes.
+// This number must be kept in sync in sandbox/linux/suid/sandbox.c
 const int kZygoteIdFd = 7;
 
 // These are the command codes used on the wire between the browser and the

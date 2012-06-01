@@ -26,6 +26,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/vfs.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "linux_util.h"
@@ -41,11 +42,17 @@
 
 static const char kSandboxDescriptorEnvironmentVarName[] = "SBX_D";
 static const char kSandboxHelperPidEnvironmentVarName[] = "SBX_HELPER_PID";
+// This number must be kept in sync with common/zygote_commands_linux.h
+static const int kZygoteIdFd = 7;
 
 // These are the magic byte values which the sandboxed process uses to request
 // that it be chrooted.
 static const char kMsgChrootMe = 'C';
 static const char kMsgChrootSuccessful = 'O';
+
+static bool DropRoot();
+
+#define HANDLE_EINTR(x) TEMP_FAILURE_RETRY(x)
 
 static void FatalError(const char *msg, ...)
     __attribute__((noreturn, format(printf, 1, 2)));
@@ -57,6 +64,7 @@ static void FatalError(const char *msg, ...) {
   vfprintf(stderr, msg, ap);
   fprintf(stderr, ": %s\n", strerror(errno));
   fflush(stderr);
+  va_end(ap);
   _exit(1);
 }
 
@@ -192,6 +200,25 @@ static bool SpawnChrootHelper() {
   return true;
 }
 
+// Block until child_pid exits, then exit. Try to preserve the exit code.
+static void WaitForChildAndExit(pid_t child_pid) {
+  int exit_code = -1;
+  siginfo_t reaped_child_info;
+
+  int wait_ret =
+    HANDLE_EINTR(waitid(P_PID, child_pid, &reaped_child_info, WEXITED));
+
+  if (!wait_ret && reaped_child_info.si_pid == child_pid) {
+    if (reaped_child_info.si_code == CLD_EXITED) {
+      exit_code = reaped_child_info.si_status;
+    } else {
+      // Exit with code 0 if the child got signaled.
+      exit_code = 0;
+    }
+  }
+  _exit(exit_code);
+}
+
 static bool MoveToNewNamespaces() {
   // These are the sets of flags which we'll try, in order.
   const int kCloneExtraFlags[] = {
@@ -199,15 +226,53 @@ static bool MoveToNewNamespaces() {
     CLONE_NEWPID,
   };
 
+  // We need to close kZygoteIdFd before the child can continue. We use this
+  // socketpair to tell the child when to continue;
+  int sync_fds[2];
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, sync_fds)) {
+    FatalError("Failed to create a socketpair");
+  }
+
   for (size_t i = 0;
        i < sizeof(kCloneExtraFlags) / sizeof(kCloneExtraFlags[0]);
        i++) {
     pid_t pid = syscall(__NR_clone, SIGCHLD | kCloneExtraFlags[i], 0, 0, 0);
 
-    if (pid > 0)
-      _exit(0);
+    if (pid > 0) {
+      if (!DropRoot()) {
+        FatalError("Could not drop privileges");
+      } else {
+        if (close(sync_fds[0]) || shutdown(sync_fds[1], SHUT_RD))
+          FatalError("Could not close socketpair");
+        // The kZygoteIdFd needs to be closed in the parent before
+        // Zygote gets started.
+        if (close(kZygoteIdFd))
+          FatalError("close");
+        // Tell our child to continue
+        if (HANDLE_EINTR(send(sync_fds[1], "C", 1, MSG_NOSIGNAL)) != 1)
+          FatalError("send");
+        if (close(sync_fds[1]))
+          FatalError("close");
+        // We want to keep a full process tree and we don't want our childs to
+        // be reparented to (the outer PID namespace) init. So we wait for it.
+        WaitForChildAndExit(pid);
+      }
+      // NOTREACHED
+      FatalError("Not reached");
+    }
 
     if (pid == 0) {
+      if (close(sync_fds[1]) || shutdown(sync_fds[0], SHUT_WR))
+        FatalError("Could not close socketpair");
+
+      // Wait for the parent to confirm it closed kZygoteIdFd before we
+      // continue
+      char should_continue;
+      if (HANDLE_EINTR(read(sync_fds[0], &should_continue, 1)) != 1)
+        FatalError("Read on socketpair");
+      if (close(sync_fds[0]))
+        FatalError("close");
+
       if (kCloneExtraFlags[i] & CLONE_NEWPID) {
         setenv("SBX_PID_NS", "", 1 /* overwrite */);
       } else {
