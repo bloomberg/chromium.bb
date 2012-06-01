@@ -359,12 +359,6 @@ TEST_F(AudioRendererHostTest, SetVolume) {
   SetVolume(0.5);
   Play();
   Pause();
-
-  // Expect the volume is set.
-  if (IsRunningHeadless()) {
-    EXPECT_EQ(0.5,
-              media::FakeAudioOutputStream::GetCurrentFakeStream()->volume());
-  }
   Close();
 }
 
