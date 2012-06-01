@@ -645,6 +645,12 @@
                 '../webkit/support/webkit_support.gyp:glue',
                 '../content/content.gyp:content_plugin',
               ],
+              'xcode_settings': {
+                'LD_RUNPATH_SEARCH_PATHS': [
+                  # Get back from Chromium.app/Contents/Versions/V
+                  '@loader_path/../../../..',
+                ],
+              },
             }],
           ],
           'sources': [
