@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "content/common/seccomp_sandbox.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/sandbox_init.h"
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
     const content::MainFunctionParams& parameters)
@@ -41,6 +42,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   if (SeccompSandboxEnabled() && SupportsSeccompSandbox(-1))
     StartSeccompSandbox();
 #endif
+  content::InitializeSandbox();
   return true;
 }
 

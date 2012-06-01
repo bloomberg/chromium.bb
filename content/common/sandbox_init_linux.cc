@@ -32,6 +32,10 @@
   #define SYS_SECCOMP 1
 #endif
 
+#ifndef __NR_migrate_pages
+  #define __NR_migrate_pages 256
+#endif
+
 #ifndef __NR_openat
   #define __NR_openat 257
 #endif
@@ -44,8 +48,20 @@
   #define __NR_readlinkat 267
 #endif
 
+#ifndef __NR_move_pages
+  #define __NR_move_pages 279
+#endif
+
 #ifndef __NR_eventfd2
   #define __NR_eventfd2 290
+#endif
+
+#ifndef __NR_process_vm_readv
+  #define __NR_process_vm_readv 310
+#endif
+
+#ifndef __NR_process_vm_writev
+  #define __NR_process_vm_writev 311
 #endif
 
 // Constants from very new header files that we can't yet include.
@@ -165,9 +181,22 @@ static void EmitPreamble(std::vector<struct sock_filter>* program) {
   EmitLoad(0, program);
 }
 
+static void EmitTrap(std::vector<struct sock_filter>* program) {
+  EmitRet(SECCOMP_RET_TRAP, program);
+}
+
+static void EmitAllow(std::vector<struct sock_filter>* program) {
+  EmitRet(SECCOMP_RET_ALLOW, program);
+}
+
 static void EmitAllowSyscall(int nr, std::vector<struct sock_filter>* program) {
   EmitJEQJF(nr, 1, program);
-  EmitRet(SECCOMP_RET_ALLOW, program);
+  EmitAllow(program);
+}
+
+static void EmitDenySyscall(int nr, std::vector<struct sock_filter>* program) {
+  EmitJEQJF(nr, 1, program);
+  EmitTrap(program);
 }
 
 static void EmitAllowSyscallArgN(int nr,
@@ -179,7 +208,7 @@ static void EmitAllowSyscallArgN(int nr,
   EmitJEQJF(nr, 4, program);
   EmitLoadArg(arg_nr, program);
   EmitJEQJF(arg_val, 1, program);
-  EmitRet(SECCOMP_RET_ALLOW, program);
+  EmitAllow(program);
   // We trashed syscall_nr so put it back in the accumulator.
   EmitLoad(0, program);
 }
@@ -188,10 +217,6 @@ static void EmitFailSyscall(int nr, int err,
                             std::vector<struct sock_filter>* program) {
   EmitJEQJF(nr, 1, program);
   EmitRet(SECCOMP_RET_ERRNO | err, program);
-}
-
-static void EmitTrap(std::vector<struct sock_filter>* program) {
-  EmitRet(SECCOMP_RET_TRAP, program);
 }
 
 // TODO(cevans) -- only really works as advertised once we restrict clone()
@@ -333,6 +358,14 @@ static void ApplyFlashPolicy(std::vector<struct sock_filter>* program) {
   EmitSetupEmptyFileSystem(program);
 }
 
+static void ApplyNoPtracePolicy(std::vector<struct sock_filter>* program) {
+  EmitDenySyscall(__NR_ptrace, program);
+  EmitDenySyscall(__NR_process_vm_readv, program);
+  EmitDenySyscall(__NR_process_vm_writev, program);
+  EmitDenySyscall(__NR_migrate_pages, program);
+  EmitDenySyscall(__NR_move_pages, program);
+}
+
 static bool CanUseSeccompFilters() {
   int ret = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, 0, 0, 0);
   if (ret != 0 && errno == EFAULT)
@@ -378,13 +411,17 @@ void InitializeSandbox() {
 
   if (process_type == switches::kGpuProcess) {
     ApplyGPUPolicy(&program);
+    EmitTrap(&program);  // Default deny.
   } else if (process_type == switches::kPpapiPluginProcess) {
     ApplyFlashPolicy(&program);
+    EmitTrap(&program);  // Default deny.
+  } else if (process_type == switches::kRendererProcess ||
+             process_type == switches::kWorkerProcess) {
+    ApplyNoPtracePolicy(&program);
+    EmitAllow(&program);  // Default permit.
   } else {
     NOTREACHED();
   }
-
-  EmitTrap(&program);
 
   InstallSIGSYSHandler();
   InstallFilter(program);
