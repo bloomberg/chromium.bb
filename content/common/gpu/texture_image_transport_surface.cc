@@ -67,33 +67,8 @@ TextureImageTransportSurface::TextureImageTransportSurface(
         stub_destroyed_(false),
         backbuffer_suggested_allocation_(true),
         frontbuffer_suggested_allocation_(true),
+        handle_(handle),
         parent_stub_(NULL) {
-  GpuChannel* parent_channel = manager->LookupChannel(handle.parent_client_id);
-  DCHECK(parent_channel);
-  parent_stub_ = parent_channel->LookupCommandBuffer(handle.parent_context_id);
-  DCHECK(parent_stub_);
-  parent_stub_->AddDestructionObserver(this);
-  TextureManager* texture_manager =
-      parent_stub_->decoder()->GetContextGroup()->texture_manager();
-  DCHECK(texture_manager);
-
-  for (int i = 0; i < 2; ++i) {
-    Texture& texture = textures_[i];
-    texture.client_id = handle.parent_texture_id[i];
-    texture.info = texture_manager->GetTextureInfo(texture.client_id);
-    DCHECK(texture.info);
-    if (!texture.info->target())
-      texture_manager->SetInfoTarget(texture.info, GL_TEXTURE_2D);
-    texture_manager->SetParameter(
-        texture.info, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    texture_manager->SetParameter(
-        texture.info, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    texture_manager->SetParameter(
-        texture.info, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    texture_manager->SetParameter(
-        texture.info, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  }
-
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          stub,
@@ -108,6 +83,39 @@ TextureImageTransportSurface::~TextureImageTransportSurface() {
 }
 
 bool TextureImageTransportSurface::Initialize() {
+  GpuChannelManager* manager = helper_->manager();
+  GpuChannel* parent_channel = manager->LookupChannel(handle_.parent_client_id);
+  if (!parent_channel)
+    return false;
+
+  parent_stub_ = parent_channel->LookupCommandBuffer(handle_.parent_context_id);
+  if (!parent_stub_)
+    return false;
+
+  parent_stub_->AddDestructionObserver(this);
+  TextureManager* texture_manager =
+      parent_stub_->decoder()->GetContextGroup()->texture_manager();
+  DCHECK(texture_manager);
+
+  for (int i = 0; i < 2; ++i) {
+    Texture& texture = textures_[i];
+    texture.client_id = handle_.parent_texture_id[i];
+    texture.info = texture_manager->GetTextureInfo(texture.client_id);
+    if (!texture.info)
+      return false;
+
+    if (!texture.info->target())
+      texture_manager->SetInfoTarget(texture.info, GL_TEXTURE_2D);
+    texture_manager->SetParameter(
+        texture.info, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    texture_manager->SetParameter(
+        texture.info, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    texture_manager->SetParameter(
+        texture.info, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    texture_manager->SetParameter(
+        texture.info, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  }
+
   return helper_->Initialize();
 }
 
@@ -199,11 +207,14 @@ void TextureImageTransportSurface::OnWillDestroyStub(
     ReleaseParentStub();
   } else {
     stub->RemoveDestructionObserver(this);
+
     // We are losing the stub owning us, this is our last chance to clean up the
     // resources we allocated in the stub's context.
-    glDeleteFramebuffersEXT(1, &fbo_id_);
-    CHECK_GL_ERROR();
-    fbo_id_ = 0;
+    if (fbo_id_) {
+      glDeleteFramebuffersEXT(1, &fbo_id_);
+      CHECK_GL_ERROR();
+      fbo_id_ = 0;
+    }
 
     stub_destroyed_ = true;
   }

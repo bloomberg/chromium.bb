@@ -124,6 +124,8 @@ class ImageTransportHelper : public IPC::Channel::Listener {
 
   void Suspend();
 
+  GpuChannelManager* manager() const { return manager_; }
+
  private:
   gpu::GpuScheduler* Scheduler();
   gpu::gles2::GLES2Decoder* Decoder();

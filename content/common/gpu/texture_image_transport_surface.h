@@ -98,6 +98,7 @@ class TextureImageTransportSurface :
   bool frontbuffer_suggested_allocation_;
 
   scoped_ptr<ImageTransportHelper> helper_;
+  gfx::GLSurfaceHandle handle_;
   GpuCommandBufferStub* parent_stub_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureImageTransportSurface);
