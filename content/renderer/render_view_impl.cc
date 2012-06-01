@@ -188,6 +188,7 @@
 
 #if defined(OS_ANDROID)
 #include "webkit/media/android/webmediaplayer_android.h"
+#include "webkit/media/android/webmediaplayer_manager_android.h"
 #elif defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
 //   * theming
@@ -610,6 +611,11 @@ RenderViewImpl::RenderViewImpl(
 #if defined(OS_MACOSX)
   new TextInputClientObserver(this);
 #endif  // defined(OS_MACOSX)
+
+#if defined(OS_ANDROID)
+  media_player_manager_.reset(
+      new webkit_media::WebMediaPlayerManagerAndroid());
+#endif
 
   // The next group of objects all implement RenderViewObserver, so are deleted
   // along with the RenderView automatically.
@@ -2302,8 +2308,10 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 
 #if defined(OS_ANDROID)
+  // TODO(qinmin): upstream the implementation of StreamTextureFactoryImpl
+  // to replace the NULL param here.
   return new webkit_media::WebMediaPlayerAndroid(
-      client, cookieJar(frame));
+      frame, client, cookieJar(frame), media_player_manager_.get(), NULL);
 #endif
 
   media::MessageLoopFactory* message_loop_factory =
@@ -5039,6 +5047,11 @@ void RenderViewImpl::DidHandleTouchEvent(const WebTouchEvent& event) {
 
 void RenderViewImpl::OnWasHidden() {
   RenderWidget::OnWasHidden();
+
+#if defined(OS_ANDROID)
+  // Inform WebMediaPlayerManagerAndroid to release all media player resources.
+  media_player_manager_->ReleaseMediaResources();
+#endif
 
   if (webview()) {
     webview()->settings()->setMinimumTimerInterval(

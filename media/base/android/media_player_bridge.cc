@@ -76,6 +76,7 @@ MediaPlayerBridge::MediaPlayerBridge() {
 }
 
 MediaPlayerBridge::~MediaPlayerBridge() {
+  SetVideoSurface(NULL);
   CallVoidMethod("release");
 }
 

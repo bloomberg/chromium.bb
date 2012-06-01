@@ -4,6 +4,7 @@
 
 #ifndef WEBKIT_MEDIA_ANDROID_WEBMEDIAPLAYER_ANDROID_H_
 #define WEBKIT_MEDIA_ANDROID_WEBMEDIAPLAYER_ANDROID_H_
+#pragma once
 
 #include <jni.h>
 
@@ -18,6 +19,7 @@
 
 namespace WebKit {
 class WebCookieJar;
+class WebFrame;
 }
 
 namespace media {
@@ -26,6 +28,9 @@ class MediaPlayerBridge;
 
 namespace webkit_media {
 
+class StreamTextureFactory;
+class StreamTextureProxy;
+class WebMediaPlayerManagerAndroid;
 class WebMediaPlayerProxyAndroid;
 
 // This class serves as the android implementation of WebKit::WebMediaPlayer.
@@ -35,8 +40,11 @@ class WebMediaPlayerAndroid :
     public WebKit::WebMediaPlayer,
     public base::SupportsWeakPtr<WebMediaPlayerAndroid> {
  public:
-  WebMediaPlayerAndroid(WebKit::WebMediaPlayerClient* client,
-                        WebKit::WebCookieJar* cookie_jar);
+  WebMediaPlayerAndroid(WebKit::WebFrame* frame,
+                        WebKit::WebMediaPlayerClient* client,
+                        WebKit::WebCookieJar* cookie_jar,
+                        webkit_media::WebMediaPlayerManagerAndroid* manager,
+                        webkit_media::StreamTextureFactory* factory);
   virtual ~WebMediaPlayerAndroid();
 
   // Set |incognito_mode_| to true if in incognito mode.
@@ -105,6 +113,8 @@ class WebMediaPlayerAndroid :
   // compositor thread.
   virtual WebKit::WebVideoFrame* getCurrentFrame();
   virtual void putCurrentFrame(WebKit::WebVideoFrame*);
+  virtual void setStreamTextureClient(
+      WebKit::WebStreamTextureClient* client);
 
   // Media player callback handlers.
   void OnMediaPrepared();
@@ -115,8 +125,10 @@ class WebMediaPlayerAndroid :
   void OnMediaInfo(int info_type);
   void OnVideoSizeChanged(int width, int height);
 
-  // Method to set the video surface for android media player.
-  void SetVideoSurface(jobject j_surface);
+  // This function is called by WebMediaPlayerManagerAndroid to pause the video
+  // and release |media_player_| and its surface texture when we switch tabs.
+  // However, the actual GlTexture is not released to keep the video screenshot.
+  void ReleaseMediaResources();
 
  private:
   // Create a media player to load the |url_| and prepare for playback.
@@ -134,8 +146,14 @@ class WebMediaPlayerAndroid :
   void UpdateNetworkState(WebKit::WebMediaPlayer::NetworkState state);
   void UpdateReadyState(WebKit::WebMediaPlayer::ReadyState state);
 
+  // Methods for creation and deletion of stream texture.
+  void CreateStreamTexture();
+  void DestroyStreamTexture();
+
   // whether the current process is incognito mode
   static bool incognito_mode_;
+
+  WebKit::WebFrame* frame_;
 
   WebKit::WebMediaPlayerClient* const client_;
 
@@ -188,6 +206,12 @@ class WebMediaPlayerAndroid :
   // Pointer to the cookie jar to get the cookie for the media url.
   WebKit::WebCookieJar* cookie_jar_;
 
+  // Manager for managing this media player.
+  webkit_media::WebMediaPlayerManagerAndroid* manager_;
+
+  // Player ID assigned by the media player manager.
+  int player_id_;
+
   // Whether the user has clicked the play button while media player
   // is preparing.
   bool pending_play_event_;
@@ -195,6 +219,22 @@ class WebMediaPlayerAndroid :
   // Current player states.
   WebKit::WebMediaPlayer::NetworkState network_state_;
   WebKit::WebMediaPlayer::ReadyState ready_state_;
+
+  // GL texture ID allocated to the video.
+  unsigned int texture_id_;
+
+  // Stream texture ID allocated to the video.
+  unsigned int stream_id_;
+
+  // Whether |media_player_| needs to re-establish the surface texture peer.
+  bool needs_establish_peer_;
+
+  // Object for allocating stream textures.
+  scoped_ptr<webkit_media::StreamTextureFactory> stream_texture_factory_;
+
+  // Object for calling back the compositor thread to repaint the video when a
+  // frame available. It should be initialized on the compositor thread.
+  scoped_ptr<webkit_media::StreamTextureProxy> stream_texture_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerAndroid);
 };

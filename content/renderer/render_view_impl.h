@@ -122,6 +122,12 @@ class ImageResourceFetcher;
 class ResourceFetcher;
 }
 
+#if defined(OS_ANDROID)
+namespace webkit_media {
+class WebMediaPlayerManagerAndroid;
+}
+#endif
+
 namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
@@ -243,6 +249,12 @@ class RenderViewImpl : public RenderWidget,
   MouseLockDispatcher* mouse_lock_dispatcher() {
     return mouse_lock_dispatcher_;
   }
+
+#if defined(OS_ANDROID)
+  webkit_media::WebMediaPlayerManagerAndroid* media_player_manager() {
+    return media_player_manager_.get();
+  }
+#endif
 
   WebKit::WebPeerConnectionHandler* CreatePeerConnectionHandler(
       WebKit::WebPeerConnectionHandlerClient* client);
@@ -1364,6 +1376,11 @@ class RenderViewImpl : public RenderWidget,
 
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
   scoped_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
+
+#if defined(OS_ANDROID)
+  // The media player manager for managing all the media players on this view.
+  scoped_ptr<webkit_media::WebMediaPlayerManagerAndroid> media_player_manager_;
+#endif
 
   // Plugins -------------------------------------------------------------------
 

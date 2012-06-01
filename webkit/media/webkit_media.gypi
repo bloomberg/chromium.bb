@@ -15,8 +15,11 @@
       ],
       'sources': [
         'android/audio_decoder_android.cc',
+        'android/stream_texture_factory_android.h',
         'android/webmediaplayer_android.cc',
         'android/webmediaplayer_android.h',
+        'android/webmediaplayer_manager_android.cc',
+        'android/webmediaplayer_manager_android.h',
         'android/webmediaplayer_proxy_android.cc',
         'android/webmediaplayer_proxy_android.h',
         'active_loader.cc',
