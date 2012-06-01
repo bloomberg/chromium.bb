@@ -69,10 +69,6 @@ class MockWebAuthFlow : public WebAuthFlow {
     return window_;
   }
 
-  WebContents* contents() {
-    return web_contents_;
-  }
-
   WebContentsTester* contents_tester() {
     return WebContentsTester::For(web_contents_);
   }

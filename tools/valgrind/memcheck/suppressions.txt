@@ -5788,21 +5788,6 @@
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
 {
-   bug_130246
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN16SiteInstanceImpl10GetProcessEv
-   fun:_ZN7content18RenderViewHostImplC1EPNS_12SiteInstanceEPNS_22RenderViewHostDelegateEPNS_24RenderWidgetHostDelegateEibPNS_23SessionStorageNamespaceE
-   fun:_ZN21RenderViewHostFactory6CreateEPN7content12SiteInstanceEPNS0_22RenderViewHostDelegateEPNS0_24RenderWidgetHostDelegateEibPNS0_23SessionStorageNamespaceE
-   fun:_ZN21RenderViewHostManager4InitEPN7content14BrowserContextEPNS0_12SiteInstanceEi
-   fun:_ZN15WebContentsImplC2EPN7content14BrowserContextEPNS0_12SiteInstanceEiPKS_PS_P27SessionStorageNamespaceImpl
-   fun:_ZN7content15TestWebContentsC1EPNS_14BrowserContextEPNS_12SiteInstanceE
-   fun:_ZN7content17WebContentsTester21CreateTestWebContentsEPNS_14BrowserContextEPNS_12SiteInstanceE
-   fun:_ZN12_GLOBAL__N_124OneClickSigninHelperTest21CreateMockWebContentsEb
-   fun:_ZN*OneClickSigninHelperTest_*
-}
-
-{
    bug_130362
    Memcheck:Leak
    fun:_Znw*
@@ -5813,7 +5798,6 @@
    fun:_ZN13sync_notifier20InvalidationNotifier17UpdateCredentialsERKSsS2_
    fun:_ZN13sync_notifier31NonBlockingInvalidationNotifier4Core17UpdateCredentialsERKSsS3_
 }
-
 {
    bug_130449
    Memcheck:Leak
@@ -5825,7 +5809,6 @@
    fun:_ZN13sync_notifier20InvalidationNotifier17UpdateCredentialsERKSsS2_
    fun:_ZN13sync_notifier31NonBlockingInvalidationNotifier4Core17UpdateCredentialsERKSsS3_
 }
-
 {
    bug_130619
    Memcheck:Leak

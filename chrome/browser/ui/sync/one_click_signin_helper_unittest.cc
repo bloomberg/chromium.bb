@@ -67,6 +67,7 @@ void OneClickSigninHelperTest::TearDown() {
   web_contents_.reset();
   profile_.reset();
   ui_thread_.reset();
+  MessageLoop::current()->RunAllPending();
 }
 
 void OneClickSigninHelperTest::MarkCurrentThreadAsUIThread() {
