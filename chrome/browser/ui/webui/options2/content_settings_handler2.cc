@@ -18,6 +18,7 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -28,6 +29,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
+#include "chrome/common/extensions/extension_permission_set.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -190,6 +193,52 @@ DictionaryValue* GetNotificationExceptionForPage(
   exception->SetString(kOrigin, pattern.ToString());
   exception->SetString(kSource, provider_name);
   return exception;
+}
+
+// Asks the |profile| for hosted apps which have the |permission| set, and
+// adds their web extent and launch URL to the |exceptions| list.
+void AddExceptionsGrantedByHostedApps(
+    Profile* profile, ExtensionAPIPermission::ID permission,
+    ListValue* exceptions) {
+  const ExtensionService* extension_service = profile->GetExtensionService();
+  // After ExtensionSystem::Init has been called at the browser's start,
+  // GetExtensionService() should not return NULL, so this is safe:
+  const ExtensionSet* extensions = extension_service->extensions();
+
+  for (ExtensionSet::const_iterator extension = extensions->begin();
+       extension != extensions->end(); ++extension) {
+    if (!(*extension)->is_hosted_app() ||
+        !(*extension)->HasAPIPermission(permission))
+      continue;
+
+    URLPatternSet web_extent = (*extension)->web_extent();
+    // Add patterns from web extent.
+    for (URLPatternSet::const_iterator pattern = web_extent.begin();
+         pattern != web_extent.end(); ++pattern) {
+      std::string pattern_string = pattern->GetAsString();
+      DictionaryValue* exception = new DictionaryValue();
+      exception->SetString(kDisplayPattern, pattern_string);
+      exception->SetString(kSetting,
+                           ContentSettingToString(CONTENT_SETTING_ALLOW));
+      exception->SetString(kOrigin, pattern_string);
+      exception->SetString(kEmbeddingOrigin, pattern_string);
+      exception->SetString(kSource, "HostedApp");
+      exceptions->Append(exception);
+    }
+    // Retrieve the launch URL.
+    std::string launch_url_string = (*extension)->launch_web_url();
+    GURL launch_url(launch_url_string);
+    // Skip adding the launch URL if it is part of the web extent.
+    if (web_extent.MatchesURL(launch_url)) continue;
+    DictionaryValue* exception = new DictionaryValue();
+    exception->SetString(kDisplayPattern, launch_url_string);
+    exception->SetString(kSetting,
+                         ContentSettingToString(CONTENT_SETTING_ALLOW));
+    exception->SetString(kOrigin, launch_url_string);
+    exception->SetString(kEmbeddingOrigin, launch_url_string);
+    exception->SetString(kSource, "HostedApp");
+    exceptions->Append(exception);
+  }
 }
 
 }  // namespace
@@ -530,6 +579,9 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
   }
 
   ListValue exceptions;
+  AddExceptionsGrantedByHostedApps(
+      profile, ExtensionAPIPermission::kGeolocation, &exceptions);
+
   for (AllPatternsSettings::iterator i = all_patterns_settings.begin();
        i != all_patterns_settings.end();
        ++i) {
@@ -578,6 +630,9 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
   service->GetNotificationsSettings(&settings);
 
   ListValue exceptions;
+  AddExceptionsGrantedByHostedApps(
+      profile, ExtensionAPIPermission::kNotification, &exceptions);
+
   for (ContentSettingsForOneType::const_iterator i =
            settings.begin();
        i != settings.end();
