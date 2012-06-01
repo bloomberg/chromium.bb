@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -19,6 +19,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
+#include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 /* Based on NaClAppThreadCtor() */
@@ -345,6 +346,8 @@ int main(int argc, char **argv) {
   CheckForGuardRegion(nap->mem_start + ((size_t) 4 << 30),
                       (size_t) 40 << 30);
 #endif
+
+  NaClAddrSpaceFree(nap);
 
   printf("PASS\n");
   return 0;

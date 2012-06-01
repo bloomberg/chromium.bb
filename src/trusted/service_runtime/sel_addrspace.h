@@ -11,10 +11,13 @@
 #ifndef __SEL_ADDRSPACE_H__
 #define __SEL_ADDRSPACE_H__ 1
 
+#include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 struct NaClApp; /* fwd */
+
+EXTERN_C_BEGIN
 
 #if NACL_LINUX
 extern void *g_nacl_prereserved_sandbox_addr;
@@ -51,4 +54,16 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) NACL_WUR;
 NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) NACL_WUR;
 
 NaClErrorCode NaClMprotectGuards(struct NaClApp *nap);
+
+/*
+ * NaClAddrSpaceFree() unmaps all of untrusted address space.  This is
+ * only safe if no untrusted threads are running.
+ *
+ * Note that this does not free any other data structures associated
+ * with the NaClApp.  In particular, it does not free mem_map.
+ */
+void NaClAddrSpaceFree(struct NaClApp *nap);
+
+EXTERN_C_END
+
 #endif

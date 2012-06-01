@@ -107,6 +107,7 @@
                 'linux/sel_memory.c',
                 'linux/x86/sel_segments.c',
                 'osx/outer_sandbox.c',
+                'posix/addrspace_teardown.c',
               ],
               'actions': [
                 {
@@ -135,6 +136,7 @@
             }],
             ['OS=="win"', {
               'sources': [
+                'win/addrspace_teardown.c',
                 'win/debug_exception_handler.c',
                 'win/debug_exception_handler_standalone.c',
                 'win/nacl_ldt.c',
@@ -168,6 +170,7 @@
                 'linux/nacl_thread_nice.c',
                 'linux/r_debug.c',
                 'linux/thread_suspension.c',
+                'posix/addrspace_teardown.c',
               ],
               'conditions': [
                 ['target_arch=="ia32" or target_arch=="x64"', {

@@ -150,6 +150,7 @@ elif env.Bit('build_arm'):
 
 if env.Bit('windows'):
   ldr_inputs += [
+    'win/addrspace_teardown.c',
     'win/nacl_ldt.c',
     'win/nacl_oop_debugger_hooks.c',
     'win/nacl_thread_nice.c',
@@ -171,12 +172,14 @@ elif env.Bit('mac'):
     'linux/sel_memory.c',
     'linux/x86/sel_segments.c',
     'osx/outer_sandbox.c',
+    'posix/addrspace_teardown.c',
   ]
 elif env.Bit('linux'):
   ldr_inputs += [
     'linux/sel_memory.c',
     'linux/nacl_oop_debugger_hooks.c',
     'linux/nacl_thread_nice.c',
+    'posix/addrspace_teardown.c',
   ]
   if env.Bit('build_x86'):
     ldr_inputs += [
@@ -425,6 +428,7 @@ if (env.Bit('linux') and not env.CrossToolsBuild() and
 gtest_env = env.MakeGTestEnv()
 
 unittest_inputs = [
+    'mmap_unittest.cc',
     'unittest_main.cc',
     'sel_memory_unittest.cc',
     # nacl_sync_unittest.cc was testing the wrong (i.e., too low level) API

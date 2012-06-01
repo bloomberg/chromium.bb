@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -9,12 +9,12 @@
 
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
 #define FOURGIG     (((size_t) 1) << 32)
-#define GUARDSIZE   (10 * FOURGIG)
 #define ALIGN_BITS  32
 #define MSGWIDTH    "25"
 
@@ -106,7 +106,9 @@ static void *NaClAllocatePow2AlignedMemory(size_t mem_sz,
 }
 
 NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
-  size_t        mem_sz = 2 * GUARDSIZE + FOURGIG;  /* 40G guard on each side */
+  /* 40G guard on each side */
+  size_t        mem_sz = (NACL_ADDRSPACE_LOWER_GUARD_SIZE + FOURGIG +
+                          NACL_ADDRSPACE_UPPER_GUARD_SIZE);
   size_t        log_align = ALIGN_BITS;
   void          *mem_ptr;
 
@@ -131,7 +133,7 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
    * The module lives in the middle FOURGIG of the allocated region --
    * we skip over an initial 40G guard.
    */
-  *mem = (void *) (((char *) mem_ptr) + GUARDSIZE);
+  *mem = (void *) (((char *) mem_ptr) + NACL_ADDRSPACE_LOWER_GUARD_SIZE);
   NaClLog(4,
           "NaClAllocateSpace: addr space at 0x%016"NACL_PRIxPTR"\n",
           (uintptr_t) *mem);

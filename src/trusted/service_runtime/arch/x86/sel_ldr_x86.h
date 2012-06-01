@@ -22,9 +22,14 @@
 #if NACL_BUILD_SUBARCH == 32
 # define NACL_MAX_ADDR_BITS  (30)
 # define NACL_THREAD_MAX     LDT_ENTRIES  /* cannot be larger */
+/* No guard regions on x86-32 */
+# define NACL_ADDRSPACE_LOWER_GUARD_SIZE 0
+# define NACL_ADDRSPACE_UPPER_GUARD_SIZE 0
 #elif NACL_BUILD_SUBARCH == 64
 # define NACL_MAX_ADDR_BITS  (32)
 # define NACL_THREAD_MAX     LDT_ENTRIES  /* can be larger */
+# define NACL_ADDRSPACE_LOWER_GUARD_SIZE ((size_t) 40 << 30)  /* 40GB guard */
+# define NACL_ADDRSPACE_UPPER_GUARD_SIZE ((size_t) 40 << 30)  /* 40GB guard */
 #else
 # error "Did Intel or AMD introduce the 128-bit x86?"
 #endif

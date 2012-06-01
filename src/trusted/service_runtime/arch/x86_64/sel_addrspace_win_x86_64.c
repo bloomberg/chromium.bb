@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_find_addrsp.h"
+#include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
 #define FOURGIG     (((size_t) 1) << 32)
 #define ALIGN_BITS  32
-#define GUARDSIZE   (10 * FOURGIG)
 
 
 static uintptr_t NaClFindAddressSpacePow2Aligned(size_t mem_sz,
@@ -30,7 +30,9 @@ static uintptr_t NaClFindAddressSpacePow2Aligned(size_t mem_sz,
 }
 
 NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
-  size_t mem_sz = 2 * GUARDSIZE + FOURGIG;  /* 40G guard on each side */
+  /* 40G guard on each side */
+  size_t mem_sz = (NACL_ADDRSPACE_LOWER_GUARD_SIZE + FOURGIG +
+                   NACL_ADDRSPACE_UPPER_GUARD_SIZE);
   uintptr_t rounded_addr;
   void *request_addr;
   void *allocated;
@@ -46,13 +48,16 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
    * inside the guard regions.
    */
   request_addr = (void *) rounded_addr;
-  allocated = VirtualAlloc(request_addr, GUARDSIZE, MEM_RESERVE, PAGE_NOACCESS);
+  allocated = VirtualAlloc(request_addr, NACL_ADDRSPACE_LOWER_GUARD_SIZE,
+                           MEM_RESERVE, PAGE_NOACCESS);
   if (allocated != request_addr) {
     NaClLog(LOG_FATAL,
             "NaClAllocateSpace: Failed to reserve first guard region\n");
   }
-  request_addr = (void *) (rounded_addr + GUARDSIZE + FOURGIG);
-  allocated = VirtualAlloc(request_addr, GUARDSIZE, MEM_RESERVE, PAGE_NOACCESS);
+  request_addr = (void *) (rounded_addr + NACL_ADDRSPACE_LOWER_GUARD_SIZE +
+                           FOURGIG);
+  allocated = VirtualAlloc(request_addr, NACL_ADDRSPACE_UPPER_GUARD_SIZE,
+                           MEM_RESERVE, PAGE_NOACCESS);
   if (allocated != request_addr) {
     NaClLog(LOG_FATAL,
             "NaClAllocateSpace: Failed to reserve second guard region\n");
@@ -62,8 +67,8 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
    * mapped with a separate VirtualAlloc() call so that it can be
    * independently remapped later.
    */
-  for (mem_ptr = rounded_addr + GUARDSIZE;
-       mem_ptr < rounded_addr + GUARDSIZE + FOURGIG;
+  for (mem_ptr = rounded_addr + NACL_ADDRSPACE_LOWER_GUARD_SIZE;
+       mem_ptr < rounded_addr + NACL_ADDRSPACE_LOWER_GUARD_SIZE + FOURGIG;
        mem_ptr += NACL_MAP_PAGESIZE) {
     allocated = VirtualAlloc((void *) mem_ptr,
                              NACL_MAP_PAGESIZE,
@@ -75,6 +80,6 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
               mem_ptr);
     }
   }
-  *mem = (void *) (rounded_addr + GUARDSIZE);
+  *mem = (void *) (rounded_addr + NACL_ADDRSPACE_LOWER_GUARD_SIZE);
   return LOAD_OK;
 }
