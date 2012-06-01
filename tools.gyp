@@ -121,6 +121,7 @@
           ],
           'variables': {
             'nlib_target': 'crt_init_dummy',
+            'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
             'enable_x86_32': 0,
@@ -146,6 +147,7 @@
           ],
           'variables': {
             'nlib_target': 'crt_fini_dummy',
+            'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
             'enable_x86_32': 0,
@@ -175,6 +177,7 @@
           ],
           'variables': {
             'nlib_target': 'crt_init_dummy',
+            'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
             'enable_x86_64': 0,
@@ -200,6 +203,7 @@
           ],
           'variables': {
             'nlib_target': 'crt_fini_dummy',
+            'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
             'enable_x86_64': 0,

@@ -648,33 +648,42 @@
     }],
     ['OS=="win"', {
       'target_defaults': {
-        'rules': [
-        {
-          'rule_name': 'assembler (gnu-compatible)',
-          'msvs_cygwin_shell': 0,
-          'msvs_quote_cmd': 0,
-          'extension': 'S',
-          'inputs': [
-            '<(DEPTH)/native_client/tools/win_as.py',
-            '$(InputPath)'
-          ],
-          'outputs': [
-            '$(IntDir)/$(InputName).obj',
-          ],
-          'action':
-            ['<@(python_exe)',
-              '<(DEPTH)/native_client/tools/win_as.py',
-              # target architecture: Win32 or x64
-              '-a', '$(PlatformName)',
-              # output path
-              '-o', '$(IntDir)/$(InputName).obj',
-              # path to top of tree, e.g. svn/nacl
-              '-p', '<(DEPTH)',
-              # .S file
-              '$(InputPath)'],
-          'message': 'Building assembly language file $(InputPath)',
-          'process_outputs_as_sources': 1,
-        },],
+        'variables': {
+          'windows_asm_rule%': 1,
+        },
+        'target_conditions': [
+          ['windows_asm_rule==1', {
+            'rules': [
+              {
+                'rule_name': 'assembler (gnu-compatible)',
+                'msvs_cygwin_shell': 0,
+                'msvs_quote_cmd': 0,
+                'extension': 'S',
+                'inputs': [
+                  '<(DEPTH)/native_client/tools/win_as.py',
+                  '$(InputPath)'
+                ],
+                'outputs': [
+                  '$(IntDir)/$(InputName).obj',
+                ],
+                'action': [
+                   '<@(python_exe)',
+                   '<(DEPTH)/native_client/tools/win_as.py',
+                   # target architecture: Win32 or x64
+                   '-a', '$(PlatformName)',
+                   # output path
+                   '-o', '$(IntDir)/$(InputName).obj',
+                   # path to top of tree, e.g. svn/nacl
+                   '-p', '<(DEPTH)',
+                   # .S file
+                  '$(InputPath)'
+                ],
+                'message': 'Building assembly language file $(InputPath)',
+                'process_outputs_as_sources': 1,
+              },
+            ],
+          }],
+        ],
         'defines': [
           '_WIN32_WINNT=0x0600',
           'WINVER=0x0600',
