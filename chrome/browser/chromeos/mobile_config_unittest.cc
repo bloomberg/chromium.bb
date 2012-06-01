@@ -169,7 +169,7 @@ TEST(MobileConfigTest, OldDeal) {
   carrier = config.GetCarrier("Carrier (country)");
   EXPECT_TRUE(carrier != NULL);
   // Check default value.
-  EXPECT_EQ(false, carrier->show_portal_button());
+  EXPECT_FALSE(carrier->show_portal_button());
   const MobileConfig::CarrierDeal* deal;
   // TODO(nkostylev): Pass fixed time instead of relying on Time::Now().
   deal = carrier->GetDefaultDeal();

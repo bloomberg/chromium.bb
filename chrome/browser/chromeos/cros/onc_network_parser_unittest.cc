@@ -241,7 +241,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifi) {
   CheckStringProperty(wifi, PROPERTY_INDEX_SECURITY, flimflam::kSecurityWep);
   EXPECT_EQ("ssid", wifi->name());
   CheckStringProperty(wifi, PROPERTY_INDEX_SSID, "ssid");
-  EXPECT_EQ(false, wifi->auto_connect());
+  EXPECT_FALSE(wifi->auto_connect());
   EXPECT_EQ("0x1234567890", wifi->passphrase());
   CheckStringProperty(wifi, PROPERTY_INDEX_PASSPHRASE, "0x1234567890");
 }
@@ -276,7 +276,7 @@ TEST_F(OncNetworkParserTest, TestLoadEncryptedOnc) {
   WifiNetwork* wifi = static_cast<WifiNetwork*>(network.get());
   EXPECT_EQ(chromeos::SECURITY_NONE, wifi->encryption());
   EXPECT_EQ("WirelessNetwork", wifi->name());
-  EXPECT_EQ(false, wifi->auto_connect());
+  EXPECT_FALSE(wifi->auto_connect());
   EXPECT_EQ("", wifi->passphrase());
 }
 
@@ -294,7 +294,7 @@ TEST_F(OncNetworkParserTest, TestLoadWifiCertificatePattern) {
   WifiNetwork* wifi = static_cast<WifiNetwork*>(network.get());
   EXPECT_EQ(chromeos::SECURITY_8021X, wifi->encryption());
   EXPECT_EQ("WirelessNetwork", wifi->name());
-  EXPECT_EQ(false, wifi->auto_connect());
+  EXPECT_FALSE(wifi->auto_connect());
   EXPECT_EQ("", wifi->passphrase());
   EXPECT_EQ(chromeos::EAP_METHOD_TLS, wifi->eap_method());
   EXPECT_EQ(chromeos::CLIENT_CERT_TYPE_PATTERN, wifi->client_cert_type());
@@ -321,7 +321,7 @@ TEST_F(OncNetworkParserTest, TestLoadVPNCertificatePattern) {
   EXPECT_EQ(chromeos::TYPE_VPN, network->type());
   VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network.get());
   EXPECT_EQ("MyVPN", vpn->name());
-  EXPECT_EQ(false, vpn->auto_connect());
+  EXPECT_FALSE(vpn->auto_connect());
   EXPECT_EQ(chromeos::CLIENT_CERT_TYPE_PATTERN, vpn->client_cert_type());
   EXPECT_EQ("Google, Inc.",
             vpn->client_cert_pattern().issuer().organization());
@@ -352,7 +352,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP1) {
   EXPECT_EQ(EAP_METHOD_PEAP, wifi->eap_method());
   CheckStringProperty(wifi, PROPERTY_INDEX_EAP_METHOD,
                       flimflam::kEapMethodPEAP);
-  EXPECT_EQ(false, wifi->eap_use_system_cas());
+  EXPECT_FALSE(wifi->eap_use_system_cas());
 }
 
 TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP2) {
@@ -370,7 +370,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP2) {
   WifiNetwork* wifi = static_cast<WifiNetwork*>(network.get());
   EXPECT_EQ(chromeos::SECURITY_8021X, wifi->encryption());
   EXPECT_EQ("ssid", wifi->name());
-  EXPECT_EQ(false, wifi->auto_connect());
+  EXPECT_FALSE(wifi->auto_connect());
   EXPECT_EQ(EAP_METHOD_LEAP, wifi->eap_method());
   EXPECT_EQ(true, wifi->eap_use_system_cas());
   EXPECT_EQ("user", wifi->eap_identity());

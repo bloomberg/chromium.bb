@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,10 +24,11 @@ class ExternalMetricsTest : public testing::Test {
 static void SendMessage(const char* path, const char* name, const char* value) {
   int fd = open(path, O_CREAT | O_APPEND | O_WRONLY, 0666);
   int32 l = strlen(name) + strlen(value) + 2 + sizeof(l);
-  int num_bytes;
-  num_bytes = write(fd, &l, sizeof(l));
-  num_bytes = write(fd, name, strlen(name) + 1);
-  num_bytes = write(fd, value, strlen(value) + 1);
+  size_t num_bytes = 0;
+  num_bytes += write(fd, &l, sizeof(l));
+  num_bytes += write(fd, name, strlen(name) + 1);
+  num_bytes += write(fd, value, strlen(value) + 1);
+  EXPECT_EQ(num_bytes, sizeof(l) + strlen(name) + strlen(value) + 2);
   close(fd);
 }
 
