@@ -1763,16 +1763,14 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
   bool is_error_page = (url.spec() == content::kUnreachableWebDataURL);
   GURL validated_url(url);
   GURL validated_opener_url(opener_url);
-  RenderViewHostImpl* render_view_host_impl =
-      static_cast<RenderViewHostImpl*>(render_view_host);
   content::RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
-  render_view_host_impl->FilterURL(
+  RenderViewHostImpl::FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
       render_process_host->GetID(),
       false,
       &validated_url);
-  render_view_host_impl->FilterURL(
+  RenderViewHostImpl::FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
       render_process_host->GetID(),
       true,
@@ -1804,21 +1802,19 @@ void WebContentsImpl::DidRedirectProvisionalLoad(
   GURL validated_source_url(source_url);
   GURL validated_target_url(target_url);
   GURL validated_opener_url(opener_url);
-  RenderViewHostImpl* render_view_host_impl =
-      static_cast<RenderViewHostImpl*>(render_view_host);
   content::RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
-  render_view_host_impl->FilterURL(
+  RenderViewHostImpl::FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
       render_process_host->GetID(),
       false,
       &validated_source_url);
-  render_view_host_impl->FilterURL(
+  RenderViewHostImpl::FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
       render_process_host->GetID(),
       false,
       &validated_target_url);
-  render_view_host_impl->FilterURL(
+  RenderViewHostImpl::FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
       render_process_host->GetID(),
       true,
@@ -1851,11 +1847,9 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
             params.showing_repost_interstitial
           << ", frame_id: " << params.frame_id;
   GURL validated_url(params.url);
-  RenderViewHostImpl* render_view_host_impl =
-      static_cast<RenderViewHostImpl*>(render_view_host);
   content::RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
-  render_view_host_impl->FilterURL(
+  RenderViewHostImpl::FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
       render_process_host->GetID(),
       false,
