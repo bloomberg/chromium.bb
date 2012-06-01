@@ -58,7 +58,7 @@ evdev_led_update(struct weston_seat *seat_base, enum weston_led leds)
 
 	wl_list_for_each(device, &seat->devices_list, link) {
 		if (device->caps & EVDEV_KEYBOARD)
-			write(device->fd, ev, sizeof *ev);
+			write(device->fd, ev, sizeof ev);
 	}
 }
 
@@ -433,6 +433,9 @@ evdev_configure_device(struct evdev_input_device *device)
 			}
 		}
 	}
+	if (TEST_BIT(ev_bits, EV_LED)) {
+		device->caps |= EVDEV_KEYBOARD;
+	}
 
 	/* This rule tries to catch accelerometer devices and opt out. We may
 	 * want to adjust the protocol later adding a proper event for dealing
@@ -478,7 +481,7 @@ evdev_input_device_create(struct evdev_seat *master,
 	/* Use non-blocking mode so that we can loop on read on
 	 * evdev_input_device_data() until all events on the fd are
 	 * read.  mtdev_get() also expects this. */
-	device->fd = weston_launcher_open(ec, path, O_RDONLY | O_NONBLOCK);
+	device->fd = weston_launcher_open(ec, path, O_RDWR | O_NONBLOCK);
 	if (device->fd < 0)
 		goto err0;
 
