@@ -1547,6 +1547,16 @@
    fun:*_*_Test::TestBody
 }
 {
+   # Like 125129_b, but for Chromium OS instead of Linux.
+   bug_125129_c
+   Heapcheck:Leak
+   ...
+   fun:RenderProcessHostImpl
+   fun:SiteInstanceImpl::GetProcess
+   ...
+   fun:*_*_Test::TestBody
+}
+{
    bug_127717
    Heapcheck:Leak
    ...
