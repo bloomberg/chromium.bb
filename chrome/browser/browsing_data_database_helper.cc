@@ -79,14 +79,13 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
   if (tracker_.get() && tracker_->GetAllOriginsInfo(&origins_info)) {
     for (std::vector<webkit_database::OriginInfo>::const_iterator ori =
          origins_info.begin(); ori != origins_info.end(); ++ori) {
-      const GURL origin(UTF16ToUTF8(ori->GetOrigin()));
-      if (!BrowsingDataHelper::HasWebScheme(origin)) {
+      WebSecurityOrigin web_security_origin =
+          WebSecurityOrigin::createFromDatabaseIdentifier(ori->GetOrigin());
+      GURL origin_url(web_security_origin.toString().utf8());
+      if (!BrowsingDataHelper::HasWebScheme(origin_url)) {
         // Non-websafe state is not considered browsing data.
         continue;
       }
-      WebSecurityOrigin web_security_origin =
-          WebSecurityOrigin::createFromDatabaseIdentifier(
-              ori->GetOrigin());
       std::vector<string16> databases;
       ori->GetAllDatabaseNames(&databases);
       for (std::vector<string16>::const_iterator db = databases.begin();
@@ -99,7 +98,7 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
                 UTF16ToUTF8(*db),
                 UTF16ToUTF8(ori->GetOrigin()),
                 UTF16ToUTF8(ori->GetDatabaseDescription(*db)),
-                web_security_origin.toString().utf8(),
+                origin_url.spec(),
                 file_info.size,
                 file_info.last_modified));
         }
