@@ -79,11 +79,14 @@ namespace {
 static void CheckSingleThreaded() {
   // Possibly racy, but it's ok because this is more of a debug check to catch
   // new threaded situations arising during development.
-  // It also has to be a DCHECK() because production builds will be running
-  // the suid sandbox, which will prevent /proc access in some contexts.
-  DCHECK_EQ(file_util::CountFilesCreatedAfter(FilePath("/proc/self/task"),
-                                              base::Time::UnixEpoch()),
-            1);
+  int num_threads =
+    file_util::CountFilesCreatedAfter(FilePath("/proc/self/task"),
+                                      base::Time::UnixEpoch());
+
+  // We pass the check if we don't know ( == 0), because the setuid sandbox
+  // will prevent /proc access in some contexts.
+  DCHECK((num_threads == 1 || num_threads == 0)) << "Counted "
+                                                 << num_threads << " threads";
 }
 
 static void SIGSYS_Handler(int signal, siginfo_t* info, void* void_context) {
