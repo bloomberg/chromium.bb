@@ -27,6 +27,7 @@ class ImageSkiaStorage;
 // from ImageSkia::GetBitmapForScale, not on ImageSkia.
 //
 // ImageSkia is cheap to copy and intentionally supports copy semantics.
+// TODO(pkotwicz): Change API to take in ui::DISPLAY_LAYOUT instead of floats.
 class UI_EXPORT ImageSkia {
  public:
   // Creates instance with no bitmaps.
@@ -67,9 +68,22 @@ class UI_EXPORT ImageSkia {
   // DIP width and height are set based on |dip_scale_factor|.
   void AddBitmapForScale(const SkBitmap& bitmap, float dip_scale_factor);
 
+  // Removes component bitmap of |dip_scale_factor| if present.
+  void RemoveBitmapForScale(float dip_scale_factor);
+
+  // Returns true if the object owns a bitmap whose density matches
+  // |dip_scale_factor| exactly.
+  bool HasBitmapForScale(float dip_scale_factor);
+
+  // Returns the bitmap whose density best matches |scale_factor|.
+  // Returns a null bitmap if the object contains no bitmaps.
+  // |bitmap_scale_factor| is set to the scale factor of the returned bitmap.
+  const SkBitmap& GetBitmapForScale(float scale_factor,
+                                    float* bitmap_scale_factor) const;
+
   // Returns the bitmap whose density best matches |x_scale_factor| and
   // |y_scale_factor|.
-  // Returns a null bitmap if object contains no bitmaps.
+  // Returns a null bitmap if the object contains no bitmaps.
   // |bitmap_scale_factor| is set to the scale factor of the returned bitmap.
   const SkBitmap& GetBitmapForScale(float x_scale_factor,
                                     float y_scale_factor,
@@ -101,16 +115,25 @@ class UI_EXPORT ImageSkia {
   const std::vector<SkBitmap> bitmaps() const;
 
  private:
-  // Initialize ImageStorage with passed in parameters.
+  // Initialize ImageSkiaStorage with passed in parameters.
   // If |bitmap.isNull()|, ImageStorage is set to NULL.
   // Scale factor is set based on default scale factor of 1x.
   // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
   // done.
   void Init(const SkBitmap& bitmap);
 
-  // Initialize ImageStorage with passed in parameters.
+  // Initialize ImageSkiaStorage with passed in parameters.
   // If |bitmap.isNull()|, ImageStorage is set to NULL.
   void Init(const SkBitmap& bitmap, float scale_factor);
+
+  // Returns the index of the bitmap whose density best matches
+  // |x_scale_factor| and |y_scale_factor|.
+  // Returns -1 if the object contains no bitmaps.
+  // |bitmap_scale_factor| is set to the scale factor of the bitmap
+  // at the returned index.
+  int GetBitmapIndexForScale(float x_scale_factor,
+                             float y_scale_factor,
+                             float* bitmap_scale_factor) const;
 
   // A null bitmap to return as not to return a temporary.
   static SkBitmap* null_bitmap_;

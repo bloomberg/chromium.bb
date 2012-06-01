@@ -251,14 +251,14 @@ TEST_F(ImageTest, Assign) {
 }
 
 TEST_F(ImageTest, MultiResolutionImage) {
-  const int width1x = 10;
-  const int height1x = 12;
-  const int width2x = 20;
-  const int height2x = 24;
+  const int kWidth1x = 10;
+  const int kHeight1x = 12;
+  const int kWidth2x = 20;
+  const int kHeight2x = 24;
 
   gfx::ImageSkia image_skia;
-  image_skia.AddBitmapForScale(gt::CreateBitmap(width1x, height1x), 1.0f);
-  image_skia.AddBitmapForScale(gt::CreateBitmap(width2x, height2x), 2.0f);
+  image_skia.AddBitmapForScale(gt::CreateBitmap(kWidth1x, kHeight1x), 1.0f);
+  image_skia.AddBitmapForScale(gt::CreateBitmap(kWidth2x, kHeight2x), 2.0f);
 
   EXPECT_EQ(2u, image_skia.bitmaps().size());
 
@@ -267,19 +267,35 @@ TEST_F(ImageTest, MultiResolutionImage) {
                                                           &scale_factor);
   EXPECT_TRUE(!bitmap1x.isNull());
   EXPECT_EQ(1.0f, scale_factor);
-  EXPECT_EQ(width1x, bitmap1x.width());
-  EXPECT_EQ(height1x, bitmap1x.height());
+  EXPECT_EQ(kWidth1x, bitmap1x.width());
+  EXPECT_EQ(kHeight1x, bitmap1x.height());
 
   const SkBitmap& bitmap2x = image_skia.GetBitmapForScale(2.0f, 2.0f,
                                                           &scale_factor);
   EXPECT_TRUE(!bitmap2x.isNull());
   EXPECT_EQ(2.0f, scale_factor);
-  EXPECT_EQ(width2x, bitmap2x.width());
-  EXPECT_EQ(height2x, bitmap2x.height());
+  EXPECT_EQ(kWidth2x, bitmap2x.width());
+  EXPECT_EQ(kHeight2x, bitmap2x.height());
 
   // Check that the image has a single representation.
   gfx::Image image(image_skia);
   EXPECT_EQ(1u, image.RepresentationCount());
+}
+
+TEST_F(ImageTest, RemoveFromMultiResolutionImage) {
+  const int kWidth2x = 20;
+  const int kHeight2x = 24;
+
+  gfx::ImageSkia image_skia;
+
+  image_skia.AddBitmapForScale(gt::CreateBitmap(kWidth2x, kHeight2x), 2.0f);
+  EXPECT_EQ(1u, image_skia.bitmaps().size());
+
+  image_skia.RemoveBitmapForScale(1.0f);
+  EXPECT_EQ(1u, image_skia.bitmaps().size());
+
+  image_skia.RemoveBitmapForScale(2.0f);
+  EXPECT_EQ(0u, image_skia.bitmaps().size());
 }
 
 // Tests that gfx::Image does indeed take ownership of the SkBitmap it is

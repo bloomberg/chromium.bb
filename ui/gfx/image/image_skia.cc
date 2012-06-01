@@ -26,6 +26,12 @@ class ImageSkiaStorage : public base::RefCounted<ImageSkiaStorage> {
     bitmaps_.push_back(bitmap);
   }
 
+  void RemoveBitmap(int position) {
+    DCHECK_GE(position, 0);
+    DCHECK_LT(static_cast<size_t>(position), bitmaps_.size());
+    bitmaps_.erase(bitmaps_.begin() + position);
+  }
+
   const std::vector<SkBitmap>& bitmaps() const { return bitmaps_; }
 
   void set_size(const gfx::Size& size) { size_ = size; }
@@ -97,36 +103,45 @@ void ImageSkia::AddBitmapForScale(const SkBitmap& bitmap,
   }
 }
 
+void ImageSkia::RemoveBitmapForScale(float dip_scale_factor) {
+  float bitmap_scale_factor;
+  int remove_candidate = GetBitmapIndexForScale(dip_scale_factor,
+                                                dip_scale_factor,
+                                                &bitmap_scale_factor);
+  // TODO(pkotwicz): Allow for small errors between scale factors due to
+  // rounding errors in computing |bitmap_scale_factor|.
+  if (remove_candidate >= 0 && dip_scale_factor == bitmap_scale_factor)
+    storage_->RemoveBitmap(remove_candidate);
+}
+
+bool ImageSkia::HasBitmapForScale(float dip_scale_factor) {
+  float bitmap_scale_factor;
+  int candidate = GetBitmapIndexForScale(dip_scale_factor,
+                                         dip_scale_factor,
+                                         &bitmap_scale_factor);
+  // TODO(pkotwicz): Allow for small errors between scale factors due to
+  // rounding errors in computing |bitmap_scale_factor|.
+  return (candidate >= 0 && bitmap_scale_factor == dip_scale_factor);
+}
+
+const SkBitmap& ImageSkia::GetBitmapForScale(float scale_factor,
+                                             float* bitmap_scale_factor) const {
+  return ImageSkia::GetBitmapForScale(scale_factor,
+                                      scale_factor,
+                                      bitmap_scale_factor);
+}
+
 const SkBitmap& ImageSkia::GetBitmapForScale(float x_scale_factor,
                                              float y_scale_factor,
                                              float* bitmap_scale_factor) const {
+  int closest_index = GetBitmapIndexForScale(x_scale_factor, y_scale_factor,
+      bitmap_scale_factor);
 
-  if (empty())
+  if (closest_index < 0)
     return *null_bitmap_;
 
-  // Get the desired bitmap width and height given |x_scale_factor|,
-  // |y_scale_factor| and size at 1x density.
-  float desired_width = width() * x_scale_factor;
-  float desired_height = height() * y_scale_factor;
-
   const std::vector<SkBitmap>& bitmaps = storage_->bitmaps();
-  size_t closest_index = 0;
-  float smallest_diff = std::numeric_limits<float>::max();
-  for (size_t i = 0; i < bitmaps.size(); ++i) {
-    float diff = std::abs(bitmaps[i].width() - desired_width) +
-        std::abs(bitmaps[i].height() - desired_height);
-    if (diff < smallest_diff) {
-      closest_index = i;
-      smallest_diff = diff;
-    }
-  }
-  if (smallest_diff < std::numeric_limits<float>::max()) {
-    *bitmap_scale_factor = static_cast<float>(bitmaps[closest_index].width()) /
-        width();
-    return bitmaps[closest_index];
-  }
-
-  return *null_bitmap_;
+  return bitmaps[closest_index];
 }
 
 bool ImageSkia::empty() const {
@@ -180,6 +195,38 @@ void ImageSkia::Init(const SkBitmap& bitmap, float scale_factor) {
   storage_->set_size(gfx::Size(static_cast<int>(bitmap.width() / scale_factor),
       static_cast<int>(bitmap.height() / scale_factor)));
   storage_->AddBitmap(bitmap);
+}
+
+int ImageSkia::GetBitmapIndexForScale(float x_scale_factor,
+                                      float y_scale_factor,
+                                      float* bitmap_scale_factor) const {
+
+  if (empty())
+    return -1;
+
+  // Get the desired bitmap width and height given |x_scale_factor|,
+  // |y_scale_factor| and size at 1x density.
+  float desired_width = width() * x_scale_factor;
+  float desired_height = height() * y_scale_factor;
+
+  const std::vector<SkBitmap>& bitmaps = storage_->bitmaps();
+  int closest_index = -1;
+  float smallest_diff = std::numeric_limits<float>::max();
+  for (size_t i = 0; i < bitmaps.size(); ++i) {
+    float diff = std::abs(bitmaps[i].width() - desired_width) +
+        std::abs(bitmaps[i].height() - desired_height);
+    if (diff < smallest_diff) {
+      closest_index = static_cast<int>(i);
+      smallest_diff = diff;
+    }
+  }
+
+  if (closest_index >= 0) {
+    *bitmap_scale_factor = static_cast<float>(bitmaps[closest_index].width()) /
+        width();
+  }
+
+  return closest_index;
 }
 
 }  // namespace gfx
