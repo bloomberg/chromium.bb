@@ -113,7 +113,7 @@ def _GetNaclSdkRoot(env, sdk_mode):
     raise Exception('Unknown sdk mode: %r' % sdk_mode)
 
 
-def _SetEnvForX86Sdk(env, sdk_path):
+def _SetEnvForNativeSdk(env, sdk_path):
   """Initialize environment according to target architecture."""
 
   bin_path = os.path.join(sdk_path, 'bin')
@@ -127,6 +127,9 @@ def _SetEnvForX86Sdk(env, sdk_path):
   elif os.path.exists(os.path.join(sdk_path, 'x86_64-nacl')):
     arch = 'x86_64-nacl'
     default_subarch = '64'
+  elif os.path.exists(os.path.join(sdk_path, 'arm-nacl')):
+    arch = 'arm-nacl'
+    default_subarch = env['TARGET_SUBARCH']
   else:
     # This fallback allows the Scons build to work if we have a
     # 32-bit-by-default toolchain that lacks "nacl64" compatibility
@@ -149,7 +152,10 @@ def _SetEnvForX86Sdk(env, sdk_path):
     else:
       ld_mode_flag = ' -melf_nacl'
 
-  cc_mode_flag = '-m%s' % env['TARGET_SUBARCH']
+  if arch == 'arm-nacl':
+    cc_mode_flag = ''
+  else:
+    cc_mode_flag = '-m%s' % env['TARGET_SUBARCH']
 
   env.Replace(# Replace header and lib paths.
               # where to put nacl extra sdk headers
@@ -406,6 +412,7 @@ def PNaClGetNNaClEnv(env):
   # clear the bitcode bit, and then reload naclsdk.py
   native_env = env.Clone()
   native_env.ClearBits('bitcode')
+  native_env.SetBits('native_code')
   native_env = native_env.Clone(tools=['naclsdk'])
   if native_env.Bit('pnacl_generate_pexe'):
     native_env.Replace(CC='NO-NATIVE-CC-INVOCATION-ALLOWED',
@@ -623,11 +630,8 @@ def generate(env):
     # if bitcode=1 use pnacl toolchain
     if env.Bit('bitcode'):
       _SetEnvForPnacl(env, root)
-    elif env.Bit('target_x86'):
-      _SetEnvForX86Sdk(env, root)
     else:
-      raise Exception('ERROR: unknown TARGET_ARCHITECTURE: %s'
-                      % env['TARGET_ARCHITECTURE'])
+      _SetEnvForNativeSdk(env, root)
 
   env.Prepend(LIBPATH='${NACL_SDK_LIB}')
 

@@ -245,6 +245,9 @@ def BitFromArgument(env, name, default, desc, arg_name=None):
 # NOTE This function must be called after all modifications of ARGUMENTS have
 # been performed. See: ExpandArguments
 def SetUpArgumentBits(env):
+  BitFromArgument(env, 'native_code', default=False,
+                  desc='We are building with native-code tools (even for ARM)')
+
   BitFromArgument(env, 'bitcode', default=False,
     desc='We are building bitcode')
 
@@ -973,9 +976,13 @@ def MakeArchSpecificEnv():
 
   env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
 
-  if env.Bit('target_arm') and not env.Bit('bitcode'):
+  if env.Bit('target_arm') and not env.Bit('native_code'):
     # This has always been a silent default on ARM.
     env.SetBits('bitcode')
+
+  # If it's not bitcode, it's native code.
+  if not env.Bit('bitcode'):
+    env.SetBits('native_code')
 
   # Determine where the object files go
   if BUILD_NAME == TARGET_NAME:
@@ -3514,6 +3521,7 @@ nacl_irt_env.ClearBits('pnacl_shared_newlib')
 # the pnacl TC is used otherwise
 if nacl_irt_env.Bit('target_x86_64') or nacl_irt_env.Bit('target_x86_32'):
   nacl_irt_env.ClearBits('bitcode')
+  nacl_irt_env.SetBits('native_code')
 # The irt is not subject to the pexe contraint!
 nacl_irt_env.ClearBits('pnacl_generate_pexe')
 # do not build the irt using the sandboxed translator
@@ -3769,7 +3777,7 @@ MAYBE_RELEVANT_CONFIG = ['BUILD_OS',
 def DumpCompilerVersion(cc, env):
   if 'gcc' in cc:
     env.Execute(env.Action('set'))
-    env.Execute(env.Action('${CC} --v -c'))
+    env.Execute(env.Action('${CC} -v -c'))
     env.Execute(env.Action('${CC} -print-search-dirs'))
     env.Execute(env.Action('${CC} -print-libgcc-file-name'))
   elif cc.startswith('cl'):

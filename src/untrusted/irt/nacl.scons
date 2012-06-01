@@ -68,9 +68,12 @@ irt_support_objs += [
     ]
 
 if env.Bit('target_arm'):
-  blob_env.Append(LINKFLAGS='--pnacl-allow-native')
-  native_env = blob_env.Clone()
-  native_env.PNaClForceNative()
+  if env.Bit('bitcode'):
+    blob_env.Append(LINKFLAGS='--pnacl-allow-native')
+    native_env = blob_env.Clone()
+    native_env.PNaClForceNative()
+  else:
+    native_env = blob_env
   read_tp_obj = native_env.ComponentObject('aeabi_read_tp.o', 'aeabi_read_tp.S')
   irt_support_objs.append(read_tp_obj)
   # Publish the object file for tests/irt_private_pthread to use.

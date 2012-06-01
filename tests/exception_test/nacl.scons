@@ -22,7 +22,9 @@ else:
 # of the test, but it is less strict.  The non-PNaCl version uses
 # assembly code and can check for exact values of the reported
 # instruction pointer and stack pointer.
-if env.Bit('bitcode'):
+if env.Bit('bitcode') or env.Bit('target_arm'):
+  # TODO(mcgrathr): Make this test only 'bitcode' instead (again), and
+  # add ARM-specific assembly code as needed.
   helper_files = []
 else:
   helper_files = ['crash_at_known_address_x86.S',

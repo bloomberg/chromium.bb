@@ -16,7 +16,8 @@ if (not env.Bit('build_arm') or
   Return()
 
 # Force native .o generation and optimization (so that checks are cleaner).
-env.PNaClForceNative()
+if env.Bit('bitcode'):
+  env.PNaClForceNative()
 env.Append(CFLAGS=['-O2'])
 
 arm_float_abi_obj = env.ComponentObject('arm_float_abi_obj',

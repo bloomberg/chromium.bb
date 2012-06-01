@@ -19,7 +19,7 @@ if env.Bit('bitcode'):
 
 def GetPlatformSuffix(env):
   platform = env.get('TARGET_FULLARCH')
-  assert platform in ['x86-32',  'x86-64']
+  assert platform in ['x86-32',  'x86-64', 'arm']
   # we do not like hyphens in file names
   return platform.replace('-', '_')
 
