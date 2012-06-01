@@ -1179,7 +1179,7 @@ void RenderWidgetHostViewAura::OnLostActive() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewAura, ui::CompositorObserver implementation:
+// RenderWidgetHostViewAura, ui::CompositorDelegate implementation:
 
 void RenderWidgetHostViewAura::OnCompositingStarted(
     ui::Compositor* compositor) {
@@ -1189,10 +1189,6 @@ void RenderWidgetHostViewAura::OnCompositingStarted(
 void RenderWidgetHostViewAura::OnCompositingEnded(ui::Compositor* compositor) {
   RunCompositingCallbacks();
   compositor->RemoveObserver(this);
-}
-
-void RenderWidgetHostViewAura::OnCompositingAborted(
-    ui::Compositor* compositor) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

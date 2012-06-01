@@ -7,16 +7,12 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "base/time.h"
 
 namespace aura {
 class Window;
 }
-namespace base {
-class TimeDelta;
-}
-namespace gfx {
-class Rect;
-}
+
 namespace ui {
 class ImplicitAnimationObserver;
 }
@@ -75,10 +71,6 @@ ASH_EXPORT ui::ImplicitAnimationObserver* CreateHidingWindowAnimationObserver(
     aura::Window* window);
 
 namespace internal {
-
-// Animate a cross-fade of |window| from its current bounds to |new_bounds|.
-ASH_EXPORT void CrossFadeToBounds(aura::Window* window,
-                                  const gfx::Rect& new_bounds);
 
 // Returns false if the |window| didn't animate.
 ASH_EXPORT bool AnimateOnChildWindowVisibilityChanged(

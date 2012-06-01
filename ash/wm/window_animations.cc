@@ -17,7 +17,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_property.h"
-#include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -33,9 +32,7 @@ DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationType)
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationTransition)
 DECLARE_WINDOW_PROPERTY_TYPE(float)
 
-using aura::Window;
 using base::TimeDelta;
-using ui::Layer;
 
 namespace ash {
 namespace internal {
@@ -57,9 +54,6 @@ DEFINE_WINDOW_PROPERTY_KEY(float,
 namespace {
 
 const int kDefaultAnimationDurationForMenuMS = 150;
-
-// TODO(jamescook): Shorten the duration if the window doesn't move much.
-const int kCrossFadeAnimationDurationMs = 400;
 
 const float kWindowAnimation_HideOpacity = 0.f;
 const float kWindowAnimation_ShowOpacity = 1.f;
@@ -503,102 +497,6 @@ bool AnimateHideWindow(aura::Window* window) {
   }
 }
 
-// Recreates a fresh layer for |window| and all its child windows. Does not
-// recreate shadows or other non-window layers. Returns the old layer and its
-// children, maintaining the hierarchy.
-Layer* RecreateWindowLayers(Window* window) {
-  Layer* old_layer = window->RecreateLayer();
-  for (Window::Windows::const_iterator it = window->children().begin();
-       it != window->children().end();
-       ++it) {
-    aura::Window* child = *it;
-    Layer* old_child_layer = RecreateWindowLayers(child);
-    // Maintain the hierarchy of the detached layers.
-    old_layer->Add(old_child_layer);
-  }
-  return old_layer;
-}
-
-// Deletes |layer| and all its child layers.
-void DeepDelete(Layer* layer) {
-  std::vector<Layer*> children = layer->children();
-  for (std::vector<Layer*>::const_iterator it = children.begin();
-       it != children.end();
-       ++it) {
-    Layer* child = *it;
-    DeepDelete(child);
-  }
-  delete layer;
-}
-
-// Observer for a window cross-fade animation. If either the window closes or
-// the layer's animation completes or compositing is aborted due to GPU crash,
-// it deletes the layer and removes itself as an observer.
-class CrossFadeObserver : public ui::CompositorObserver,
-                          public aura::WindowObserver,
-                          public ui::ImplicitAnimationObserver {
- public:
-  // Observes |window| for destruction, but does not take ownership.
-  // Takes ownership of |layer| and its child layers.
-  CrossFadeObserver(Window* window, Layer* layer)
-      : window_(window),
-        layer_(layer) {
-    window_->AddObserver(this);
-    layer_->GetCompositor()->AddObserver(this);
-  }
-  virtual ~CrossFadeObserver() {
-    Cleanup();
-  }
-
-  // ui::CompositorObserver overrides:
-  virtual void OnCompositingStarted(ui::Compositor* compositor) OVERRIDE {
-  }
-  virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE {
-  }
-  virtual void OnCompositingAborted(ui::Compositor* compositor) OVERRIDE {
-    // Something went wrong with compositing and our layers are now invalid.
-    if (layer_)
-      layer_->GetAnimator()->StopAnimating();
-    // Delete is scheduled in OnImplicitAnimationsCompleted().
-    Cleanup();
-  }
-
-  // aura::WindowObserver overrides:
-  virtual void OnWindowDestroying(Window* window) OVERRIDE {
-    if (layer_)
-      layer_->GetAnimator()->StopAnimating();
-    // Delete is scheduled in OnImplicitAnimationsCompleted().
-    Cleanup();
-  }
-
-  // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
-    // ImplicitAnimationObserver's base class uses the object after calling
-    // this function, so we cannot delete |this|.
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-  }
-
- private:
-  // Can be called multiple times if the window is closed or the compositor
-  // fails in the middle of the animation.
-  void Cleanup() {
-    if (window_) {
-      window_->RemoveObserver(this);
-      window_ = NULL;
-    }
-    if (layer_) {
-      layer_->GetCompositor()->RemoveObserver(this);
-      DeepDelete(layer_);
-      layer_ = NULL;
-    }
-  }
-
-  Window* window_;  // not owned
-  Layer* layer_;  // owned
-
-  DISALLOW_COPY_AND_ASSIGN(CrossFadeObserver);
-};
-
 }  // namespace
 }  // namespace internal
 
@@ -640,85 +538,6 @@ ui::ImplicitAnimationObserver* CreateHidingWindowAnimationObserver(
 }
 
 namespace internal {
-
-void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
-  DCHECK(window->TargetVisibility());
-  gfx::Rect old_bounds = window->bounds();
-
-  // Create fresh layers for the window and all its children to paint into.
-  // Takes ownership of the old layer and all its children, which will be
-  // cleaned up after the animation completes.
-  ui::Layer* old_layer = RecreateWindowLayers(window);
-  ui::Layer* new_layer = window->layer();
-
-  // Ensure the higher-resolution layer is on top.
-  bool old_on_top = (old_bounds.width() > new_bounds.width());
-  if (old_on_top)
-    old_layer->parent()->StackBelow(new_layer, old_layer);
-  else
-    old_layer->parent()->StackAbove(new_layer, old_layer);
-
-  // Tween types for transform animations must match to keep the window edges
-  // aligned during the animation.
-  const ui::Tween::Type kTransformTween = ui::Tween::EASE_OUT;
-  {
-    // Scale up the old layer while translating to new position.
-    ui::ScopedLayerAnimationSettings settings(old_layer->GetAnimator());
-    // Animation observer owns the old layer and deletes itself.
-    settings.AddObserver(new CrossFadeObserver(window, old_layer));
-    settings.SetTransitionDuration(
-        TimeDelta::FromMilliseconds(kCrossFadeAnimationDurationMs));
-    settings.SetTweenType(kTransformTween);
-    ui::Transform out_transform;
-    float scale_x = static_cast<float>(new_bounds.width()) /
-        static_cast<float>(old_bounds.width());
-    float scale_y = static_cast<float>(new_bounds.height()) /
-        static_cast<float>(old_bounds.height());
-    out_transform.ConcatScale(scale_x, scale_y);
-    out_transform.ConcatTranslate(new_bounds.x() - old_bounds.x(),
-                                  new_bounds.y() - old_bounds.y());
-    old_layer->SetTransform(out_transform);
-    if (old_on_top) {
-      // The old layer is on top, and should fade out.  The new layer below will
-      // stay opaque to block the desktop.
-      old_layer->SetOpacity(0.f);
-    }
-    // In tests |old_layer| is deleted here, as animations have zero duration.
-  }
-
-  // Resize the window to the new size, which will force a layout and paint.
-  window->SetBounds(new_bounds);
-
-  // Set the new layer's current transform, such that the user sees a scaled
-  // version of the window with the original bounds at the original position.
-  ui::Transform in_transform;
-  float scale_x = static_cast<float>(old_bounds.width()) /
-      static_cast<float>(new_bounds.width());
-  float scale_y = static_cast<float>(old_bounds.height()) /
-      static_cast<float>(new_bounds.height());
-  in_transform.ConcatScale(scale_x, scale_y);
-  in_transform.ConcatTranslate(old_bounds.x() - new_bounds.x(),
-                               old_bounds.y() - new_bounds.y());
-  new_layer->SetTransform(in_transform);
-  if (!old_on_top) {
-    // The new layer is on top and should fade in.  The old layer below will
-    // stay opaque and block the desktop.
-    new_layer->SetOpacity(0.f);
-  }
-  {
-    // Animate the new layer to the identity transform, so the window goes to
-    // its newly set bounds.
-    ui::ScopedLayerAnimationSettings settings(new_layer->GetAnimator());
-    settings.SetTransitionDuration(
-        TimeDelta::FromMilliseconds(kCrossFadeAnimationDurationMs));
-    settings.SetTweenType(kTransformTween);
-    new_layer->SetTransform(ui::Transform());
-    if (!old_on_top) {
-      // New layer is on top, fade it in.
-      new_layer->SetOpacity(1.f);
-    }
-  }
-}
 
 bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
   if (window->GetProperty(aura::client::kAnimationsDisabledKey) ||

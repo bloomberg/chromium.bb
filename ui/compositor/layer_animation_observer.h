@@ -83,8 +83,6 @@ class COMPOSITOR_EXPORT ImplicitAnimationObserver
   ImplicitAnimationObserver();
   virtual ~ImplicitAnimationObserver();
 
-  // Do not "delete this" in your implementation.  Consider using something
-  // like MessageLoop::current()->DeleteSoon() instead.
   virtual void OnImplicitAnimationsCompleted() = 0;
 
  protected:

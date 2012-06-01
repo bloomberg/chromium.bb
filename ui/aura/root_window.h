@@ -259,7 +259,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Overridden from ui::CompositorObserver:
   virtual void OnCompositingStarted(ui::Compositor*) OVERRIDE;
   virtual void OnCompositingEnded(ui::Compositor*) OVERRIDE;
-  virtual void OnCompositingAborted(ui::Compositor*) OVERRIDE;
 
   // Overridden from ui::LayerDelegate:
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;

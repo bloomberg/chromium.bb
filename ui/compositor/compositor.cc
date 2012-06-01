@@ -281,9 +281,6 @@ void Compositor::OnSwapBuffersAborted() {
     swap_posted_ = false;
     NotifyEnd();
   }
-  FOR_EACH_OBSERVER(CompositorObserver,
-                    observer_list_,
-                    OnCompositingAborted(this));
 }
 
 void Compositor::updateAnimations(double frameBeginTime) {
