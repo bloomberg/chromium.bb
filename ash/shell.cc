@@ -289,10 +289,6 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     return true;
   }
 
-  virtual int GetSystemUpdateIconResource() const OVERRIDE {
-    return IDR_AURA_UBER_TRAY_UPDATE;
-  }
-
   virtual base::HourClockType GetHourClockType() const OVERRIDE {
     return base::k24HourClock;
   }

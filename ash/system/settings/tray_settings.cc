@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
-#include "grit/ui_resources.h"
+#include "grit/ui_resources_standard.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/resource/resource_bundle.h"

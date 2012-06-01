@@ -9,7 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "base/utf_string_conversions.h"
-#include "grit/ui_resources.h"
+#include "grit/ui_resources_standard.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"

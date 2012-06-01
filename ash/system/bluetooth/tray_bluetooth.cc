@@ -12,7 +12,7 @@
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_views.h"
 #include "grit/ash_strings.h"
-#include "grit/ui_resources.h"
+#include "grit/ui_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"

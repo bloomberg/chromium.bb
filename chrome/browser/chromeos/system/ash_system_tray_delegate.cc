@@ -269,11 +269,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return UpgradeDetector::GetInstance()->notify_upgrade();
   }
 
-  virtual int GetSystemUpdateIconResource() const OVERRIDE {
-    return UpgradeDetector::GetInstance()->GetIconResourceID(
-        UpgradeDetector::UPGRADE_ICON_TYPE_MENU_ICON);
-  }
-
   virtual base::HourClockType GetHourClockType() const OVERRIDE {
     return clock_type_;
   }

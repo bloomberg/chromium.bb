@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "grit/ash_strings.h"
-#include "grit/ui_resources.h"
+#include "grit/ui_resources_standard.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"

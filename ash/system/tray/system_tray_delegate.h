@@ -112,9 +112,6 @@ class SystemTrayDelegate {
   // Returns whether a system upgrade is available.
   virtual bool SystemShouldUpgrade() const = 0;
 
-  // Returns the resource id for the icon to show for the update notification.
-  virtual int GetSystemUpdateIconResource() const = 0;
-
   // Returns the desired hour clock type.
   virtual base::HourClockType GetHourClockType() const = 0;
 

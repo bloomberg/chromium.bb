@@ -10,7 +10,7 @@
 #include "ash/system/tray/tray_views.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
-#include "grit/ui_resources.h"
+#include "grit/ui_resources_standard.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
