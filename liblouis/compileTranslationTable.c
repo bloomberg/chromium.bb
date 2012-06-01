@@ -4434,7 +4434,7 @@ findTable (const char *tableName)
     return NULL;
   strcpy (trialPath, tablePath);
   strcat (trialPath, tableName);
-  if (tableFile = fopen (trialPath, "rb"))
+  if ((tableFile = fopen (trialPath, "rb")))
     return tableFile;
   pathEnd[0] = DIR_SEP;
   pathEnd[1] = 0;
@@ -4455,7 +4455,7 @@ findTable (const char *tableName)
 	    strcpy (trialPath, pathList);
 	    strcat (trialPath, pathEnd);
 	    strcat (trialPath, tableName);
-	    if (tableFile = fopen (trialPath, "rb"))
+	    if ((tableFile = fopen (trialPath, "rb")))
 	      break;
 	  }
 	else
@@ -4465,7 +4465,7 @@ findTable (const char *tableName)
 	    strcat (trialPath, pathEnd);
 	    strcat (trialPath, tableName);
 	    currentListPos = k + 1;
-	    if (tableFile = fopen (trialPath, "rb"))
+	    if ((tableFile = fopen (trialPath, "rb")))
 	      break;
 	    while (currentListPos < listLength)
 	      {
@@ -4477,7 +4477,7 @@ findTable (const char *tableName)
 		trialPath[k - currentListPos] = 0;
 		strcat (trialPath, pathEnd);
 		strcat (trialPath, tableName);
-		if (tableFile = fopen (trialPath, "rb"))
+		if ((tableFile = fopen (trialPath, "rb")))
 		  currentListPos = k + 1;
 		break;
 	      }
@@ -4488,7 +4488,7 @@ findTable (const char *tableName)
     return tableFile;
   /* See if table in current directory or on a path in 
    * the table name*/
-  if (tableFile = fopen (tableName, "rb"))
+  if ((tableFile = fopen (tableName, "rb")))
     return tableFile;
 /* See if table on dataPath. */
   pathList = lou_getDataPath ();
@@ -4502,7 +4502,7 @@ findTable (const char *tableName)
       strcat (trialPath, "liblouis/tables/");
 #endif
       strcat (trialPath, tableName);
-      if (tableFile = fopen (trialPath, "rb"))
+      if ((tableFile = fopen (trialPath, "rb")))
 	return tableFile;
     }
   /* See if table on installed or program path. */
@@ -4514,7 +4514,7 @@ findTable (const char *tableName)
   strcat (trialPath, pathEnd);
 #endif
   strcat (trialPath, tableName);
-  if (tableFile = fopen (trialPath, "rb"))
+  if ((tableFile = fopen (trialPath, "rb")))
     return tableFile;
   return NULL;
 }
