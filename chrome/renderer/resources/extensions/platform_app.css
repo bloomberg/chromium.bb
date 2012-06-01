@@ -8,7 +8,7 @@
 
 @namespace "http://www.w3.org/1999/xhtml";
 
-html {
+body {
   background-color: #cccccf;
   color: #333;
   -webkit-user-select: none;
