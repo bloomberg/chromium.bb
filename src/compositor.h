@@ -624,7 +624,7 @@ weston_compositor_get_time(void);
 
 int
 weston_compositor_init(struct weston_compositor *ec, struct wl_display *display,
-		       int argc, char *argv[]);
+		       int argc, char *argv[], const char *config_file);
 void
 weston_compositor_shutdown(struct weston_compositor *ec);
 void
@@ -722,7 +722,8 @@ void
 weston_surface_destroy(struct weston_surface *surface);
 
 struct weston_compositor *
-backend_init(struct wl_display *display, int argc, char *argv[]);
+backend_init(struct wl_display *display, int argc, char *argv[],
+	     const char *config_file);
 
 int
 weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode);

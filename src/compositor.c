@@ -2841,7 +2841,8 @@ WL_EXPORT int
 weston_compositor_init(struct weston_compositor *ec,
 		       struct wl_display *display,
 		       int argc,
-		       char *argv[])
+		       char *argv[],
+		       const char *config_file)
 {
 	struct wl_event_loop *loop;
 	const char *extensions;
@@ -3041,7 +3042,7 @@ int main(int argc, char *argv[])
 	int (*module_init)(struct weston_compositor *ec);
 	struct weston_compositor
 		*(*backend_init)(struct wl_display *display,
-				 int argc, char *argv[]);
+				 int argc, char *argv[], const char *config_file);
 	int i;
 	char *backend = NULL;
 	char *shell = NULL;
@@ -3116,13 +3117,12 @@ int main(int argc, char *argv[])
 
 	config_file = config_file_path("weston.ini");
 	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
-	free(config_file);
 
 	backend_init = load_module(backend, "backend_init", &backend_module);
 	if (!backend_init)
 		exit(EXIT_FAILURE);
 
-	ec = backend_init(display, argc, argv);
+	ec = backend_init(display, argc, argv, config_file);
 	if (ec == NULL) {
 		fprintf(stderr, "failed to create compositor\n");
 		exit(EXIT_FAILURE);
@@ -3133,7 +3133,7 @@ int main(int argc, char *argv[])
 	if (argv[1])
 		exit(EXIT_FAILURE);
 
-	weston_compositor_xkb_init(ec, &xkb_names);
+	free(config_file);
 
 	ec->option_idle_time = idle_time;
 	ec->idle_time = idle_time;
