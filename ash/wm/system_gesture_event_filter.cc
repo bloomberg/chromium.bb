@@ -36,7 +36,7 @@ enum SystemGestureStatus {
 
 aura::Window* GetTargetForSystemGestureEvent(aura::Window* target) {
   aura::Window* system_target = target;
-  if (!system_target || system_target == ash::Shell::GetPrimaryRootWindow())
+  if (!system_target || system_target == target->GetRootWindow())
     system_target = ash::wm::GetActiveWindow();
   if (system_target)
     system_target = system_target->GetToplevelWindow();
@@ -242,11 +242,11 @@ ui::TouchStatus SystemGestureEventFilter::PreHandleTouchEvent(
 
 ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     aura::Window* target, aura::GestureEvent* event) {
-  if (!target || target == Shell::GetPrimaryRootWindow()) {
+  if (!target || target == target->GetRootWindow()) {
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN: {
           gfx::Rect screen =
-              gfx::Screen::GetPrimaryMonitor().bounds();
+              gfx::Screen::GetMonitorNearestWindow(target).bounds();
           int overlap_area = screen.width() * overlap_percent_ / 100;
           orientation_ = SCROLL_ORIENTATION_UNSET;
 
@@ -284,7 +284,7 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
             if (HandleLauncherControl(event))
               start_location_ = BEZEL_START_UNSET;
           } else {
-            if (HandleDeviceControl(event))
+            if (HandleDeviceControl(target, event))
               start_location_ = BEZEL_START_UNSET;
           }
         }
@@ -340,8 +340,9 @@ void SystemGestureEventFilter::ClearGestureHandlerForWindow(
   window->RemoveObserver(this);
 }
 
-bool SystemGestureEventFilter::HandleDeviceControl(aura::GestureEvent* event) {
-  gfx::Rect screen = gfx::Screen::GetPrimaryMonitor().bounds();
+bool SystemGestureEventFilter::HandleDeviceControl(aura::Window* target,
+                                                   aura::GestureEvent* event) {
+  gfx::Rect screen = gfx::Screen::GetMonitorNearestWindow(target).bounds();
   double percent = 100.0 * (event->y() - screen.y()) / screen.height();
   if (percent > 100.0)
     percent = 100.0;

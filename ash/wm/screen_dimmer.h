@@ -12,6 +12,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window_observer.h"
 
+namespace aura {
+class RootWindow;
+}
+
 namespace ui {
 class Layer;
 }
@@ -19,11 +23,13 @@ class Layer;
 namespace ash {
 namespace internal {
 
-// ScreenDimmer displays a partially-opaque layer above everything else to
-// darken the screen.  It shouldn't be used for long-term brightness adjustments
-// due to performance considerations -- it's only intended for cases where we
-// want to briefly dim the screen (e.g. to indicate to the user that we're about
-// to suspend a machine that lacks an internal backlight that can be adjusted).
+// ScreenDimmer displays a partially-opaque layer above everything
+// else in the root window to darken the monitor.  It shouldn't be used
+// for long-term brightness adjustments due to performance
+// considerations -- it's only intended for cases where we want to
+// briefly dim the screen (e.g. to indicate to the user that we're
+// about to suspend a machine that lacks an internal backlight that
+// can be adjusted).
 class ASH_EXPORT ScreenDimmer : public aura::RootWindowObserver {
  public:
   class TestApi {
@@ -38,7 +44,7 @@ class ASH_EXPORT ScreenDimmer : public aura::RootWindowObserver {
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
-  ScreenDimmer();
+  explicit ScreenDimmer(aura::RootWindow* root_window);
   virtual ~ScreenDimmer();
 
   // Dim or undim the screen.
@@ -50,6 +56,8 @@ class ASH_EXPORT ScreenDimmer : public aura::RootWindowObserver {
 
  private:
   friend class TestApi;
+
+  aura::RootWindow* root_window_;
 
   // Partially-opaque layer that's stacked above all of the root window's
   // children and used to dim the screen.  NULL until the first time we dim.

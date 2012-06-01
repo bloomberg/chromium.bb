@@ -66,7 +66,7 @@ class SystemGestureEventFilter : public aura::EventFilter,
 
   // Handle events meant for volume / brightness. Returns true when no further
   // events from this gesture should be sent.
-  bool HandleDeviceControl(aura::GestureEvent* event);
+  bool HandleDeviceControl(aura::Window* target, aura::GestureEvent* event);
 
   // Handle events meant for showing the launcher. Returns true when no further
   // events from this gesture should be sent.

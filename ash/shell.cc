@@ -795,7 +795,7 @@ void Shell::Init() {
   video_detector_.reset(new VideoDetector);
   window_cycle_controller_.reset(new WindowCycleController);
   monitor_controller_.reset(new internal::MonitorController);
-  screen_dimmer_.reset(new internal::ScreenDimmer);
+  screen_dimmer_.reset(new internal::ScreenDimmer(root_window));
 }
 
 aura::Window* Shell::GetContainer(int container_id) {

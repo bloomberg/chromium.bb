@@ -25,12 +25,14 @@ const int kDimmingTransitionMs = 200;
 
 }  // namespace
 
-ScreenDimmer::ScreenDimmer() : currently_dimming_(false) {
-  Shell::GetPrimaryRootWindow()->AddRootWindowObserver(this);
+ScreenDimmer::ScreenDimmer(aura::RootWindow* root_window)
+    : root_window_(root_window),
+      currently_dimming_(false) {
+  root_window_->AddRootWindowObserver(this);
 }
 
 ScreenDimmer::~ScreenDimmer() {
-  Shell::GetPrimaryRootWindow()->RemoveRootWindowObserver(this);
+  root_window_->RemoveRootWindowObserver(this);
 }
 
 void ScreenDimmer::SetDimming(bool should_dim) {
