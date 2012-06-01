@@ -2218,6 +2218,8 @@ data_device_selection(void *data,
 		input->selection_offer = wl_data_offer_get_user_data(offer);
 		p = wl_array_add(&input->selection_offer->types, sizeof *p);
 		*p = NULL;
+	} else {
+		input->selection_offer = NULL;
 	}
 }
 
@@ -2348,7 +2350,9 @@ int
 input_receive_selection_data_to_fd(struct input *input,
 				   const char *mime_type, int fd)
 {
-	wl_data_offer_receive(input->selection_offer->offer, mime_type, fd);
+	if (input->selection_offer)
+		wl_data_offer_receive(input->selection_offer->offer,
+				      mime_type, fd);
 
 	return 0;
 }
