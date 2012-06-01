@@ -53,9 +53,10 @@ bool ContentBrowserClient::ShouldTryToUseExistingProcessHost(
   return false;
 }
 
-bool ContentBrowserClient::ShouldSwapProcessesForNavigation(
-    const GURL& current_url,
-    const GURL& new_url) {
+bool ContentBrowserClient::ShouldSwapBrowsingInstanceForNavigation(
+      BrowserContext* browser_context,
+      const GURL& current_url,
+      const GURL& new_url) {
   return false;
 }
 
