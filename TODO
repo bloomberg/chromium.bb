@@ -4,7 +4,10 @@ This HACKING file describes the development environment.  	-*- org -*-
 - Fix the problem that it always looks in the standard PATH even if
   that was not in the environment var
 
-* Document the test harness with its use of json
+* [mh] Document the test harness with its use of json
+
+* Mapping between table filenames, human readable names, and translatable strings, needs to be accessible from bindings.
+  Will remove the need of redefining translatable names for the tables in orca, nvda, blaster etc.
 
 * Add java bindings
 It would be nice to have some canonical java bindings. There are
