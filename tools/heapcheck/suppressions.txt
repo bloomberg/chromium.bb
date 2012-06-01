@@ -1685,3 +1685,17 @@
    fun:::OneClickSigninHelperTest::CreateMockWebContents
    fun:OneClickSigninHelperTest_*
 }
+{
+   bug_130765
+   Heapcheck:Leak
+   ...
+   fun:content::RenderProcessHostImpl::RenderProcessHostImpl
+   fun:SiteInstanceImpl::GetProcess
+   fun:content::RenderViewHostImpl::RenderViewHostImpl
+   fun:RenderViewHostFactory::Create
+   fun:RenderViewHostManager::Init
+   fun:WebContentsImpl::WebContentsImpl
+   fun:content::TestWebContents::TestWebContents
+   fun:content::WebContentsTester::CreateTestWebContents
+   fun:::OneClickSigninHelperTest::CreateMockWebContents
+}
