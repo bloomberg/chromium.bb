@@ -152,6 +152,24 @@ class TestProcessStrategy : public ProcessStrategy {
 
 class RecordApiTest : public InProcessBrowserTest {
  public:
+  RecordApiTest() {}
+  virtual ~RecordApiTest() {}
+
+  // Override to scope known temp directories outside the scope of the running
+  // browser test.
+  virtual void SetUp() OVERRIDE {
+    InProcessBrowserTest::SetUp();
+    if (!scoped_temp_user_data_dir_.Set(FilePath(kDummyDirName)))
+      NOTREACHED();
+  }
+
+  // Override to delete temp directories.
+  virtual void TearDown() OVERRIDE {
+    if (!scoped_temp_user_data_dir_.Delete())
+      NOTREACHED();
+    InProcessBrowserTest::TearDown();
+  }
+
   // Override SetUpCommandline to specify a dummy user_data_dir, which
   // should be replaced.  Clear record-mode, playback-mode, visit-urls,
   // record-stats, and load-extension.
@@ -221,6 +239,11 @@ class RecordApiTest : public InProcessBrowserTest {
 
     return true;
   }
+
+ private:
+  ScopedTempDir scoped_temp_user_data_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(RecordApiTest);
 };
 
 
