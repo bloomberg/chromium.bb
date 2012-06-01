@@ -1,5 +1,9 @@
 2012-06-01  Christian Egli  <christian.egli@sbs.ch>
 
+	* tests/brl_checks.c (check_translation): Also print the input
+	string and delimit the strings with single quotes to better see
+	white space.
+
 	* TODO: Added a TODO file to note things that could/should be
 	done.
 

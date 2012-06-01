@@ -21,7 +21,6 @@ print_widechars(widechar * buf, int len)
   int i;
   for (i = 0; i < len; i++)
     printf("%c", buf[i]);
-  printf("\n");
 }
 
 /* Check if a string is translated as expected. Return 0 if the
@@ -66,9 +65,11 @@ check_translation(const char *tableList, const char *str,
     {
       rv = 1;
       outbuf[outlen] = 0;
-      printf("Expected: %s\n", expected);
-      printf("Received: ");
+      printf("Input: '%s'\n", str);
+      printf("Expected: '%s'\n", expected);
+      printf("Received: '");
       print_widechars(outbuf, outlen);
+      printf("'\n");
       if (i < outlen && i < expectedlen) 
 	{
 	  printf("Diff: Expected '%c' but recieved '%c' in index %d\n",
