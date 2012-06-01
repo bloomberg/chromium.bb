@@ -229,12 +229,10 @@ class SearchProvider : public AutocompleteProvider,
       const TemplateURLRef& suggestions_url,
       const string16& text);
 
-  // Parses the results from the Suggest server and stores up to kMaxMatches of
-  // them in |suggest_results|.  Returns whether parsing succeeded.
-  bool ParseSuggestResults(base::Value* root_val,
-                           bool is_keyword,
-                           const string16& input_text,
-                           SuggestResults* suggest_results);
+  // Parses results from the suggest server and updates the appropriate suggest
+  // and navigation result lists, depending on whether |is_keyword| is true.
+  // Returns whether the appropriate result list members were updated.
+  bool ParseSuggestResults(base::Value* root_val, bool is_keyword);
 
   // Converts the parsed results to a set of AutocompleteMatches and adds them
   // to |matches_|.  This also sets |done_| correctly.
@@ -329,11 +327,8 @@ class SearchProvider : public AutocompleteProvider,
   // The time at which we sent a query to the suggest server.
   base::TimeTicks time_suggest_request_sent_;
 
-  // The fetcher that retrieves suggest results for the keyword from the server.
+  // Fetchers used to retrieve results for the keyword and default providers.
   scoped_ptr<net::URLFetcher> keyword_fetcher_;
-
-  // The fetcher that retrieves suggest results for the default engine from the
-  // server.
   scoped_ptr<net::URLFetcher> default_fetcher_;
 
   // Suggestions returned by the Suggest server for the input text.

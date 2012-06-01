@@ -340,20 +340,9 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
     }
   }
 
-  bool is_keyword = (source == keyword_fetcher_.get());
-  SuggestResults* suggest_results =
-      is_keyword ? &keyword_suggest_results_ : &default_suggest_results_;
-
+  const bool is_keyword = (source == keyword_fetcher_.get());
   const bool request_succeeded =
       source->GetStatus().is_success() && source->GetResponseCode() == 200;
-  if (request_succeeded) {
-    JSONStringValueSerializer deserializer(json_data);
-    deserializer.set_allow_trailing_comma(true);
-    scoped_ptr<Value> root_val(deserializer.Deserialize(NULL, NULL));
-    const string16& input = is_keyword ? keyword_input_text_ : input_.text();
-    have_suggest_results_ = root_val.get() &&
-        ParseSuggestResults(root_val.get(), is_keyword, input, suggest_results);
-  }
 
   // Record response time for suggest requests sent to Google.  We care
   // only about the common case: the Google default provider used in
@@ -372,8 +361,17 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
     }
   }
 
+  bool results_updated = false;
+  if (request_succeeded) {
+    JSONStringValueSerializer deserializer(json_data);
+    deserializer.set_allow_trailing_comma(true);
+    scoped_ptr<Value> data(deserializer.Deserialize(NULL, NULL));
+    results_updated = data.get() && ParseSuggestResults(data.get(), is_keyword);
+  }
+
   ConvertResultsToAutocompleteMatches();
-  listener_->OnProviderUpdate(!suggest_results->empty());
+  if (done_ || results_updated)
+    listener_->OnProviderUpdate(results_updated);
 }
 
 SearchProvider::~SearchProvider() {
@@ -545,81 +543,77 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
   return fetcher;
 }
 
-bool SearchProvider::ParseSuggestResults(Value* root_val,
-                                         bool is_keyword,
-                                         const string16& input_text,
-                                         SuggestResults* suggest_results) {
-  if (!root_val->IsType(Value::TYPE_LIST))
-    return false;
-  ListValue* root_list = static_cast<ListValue*>(root_val);
+bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
+  // TODO(pkasting): Fix |have_suggest_results_|; see http://crbug.com/130631
+  have_suggest_results_ = false;
 
-  string16 query_str;
-  ListValue* result_list = NULL;
-  if ((root_list->GetSize() < 2) || !root_list->GetString(0, &query_str) ||
-      (query_str != input_text) || !root_list->GetList(1, &result_list))
+  string16 query;
+  ListValue* root_list = NULL;
+  ListValue* results = NULL;
+  const string16& input_text = is_keyword ? keyword_input_text_ : input_.text();
+  if (!root_val->GetAsList(&root_list) || !root_list->GetString(0, &query) ||
+      (query != input_text) || !root_list->GetList(1, &results))
     return false;
 
   // 3rd element: Description list.
-  ListValue* description_list = NULL;
-  if (root_list->GetSize() > 2)
-    root_list->GetList(2, &description_list);
+  ListValue* descriptions = NULL;
+  root_list->GetList(2, &descriptions);
 
   // 4th element: Disregard the query URL list for now.
 
   // 5th element: Optional key-value pairs from the Suggest server.
+  ListValue* types = NULL;
   DictionaryValue* dict_val = NULL;
-  ListValue* type_list = NULL;
-  if (root_list->GetSize() > 4 && root_list->GetDictionary(4, &dict_val)) {
+  if (root_list->GetDictionary(4, &dict_val)) {
     // Parse Google Suggest specific type extension.
-    const std::string kGoogleSuggestType("google:suggesttype");
-    dict_val->GetList(kGoogleSuggestType, &type_list);
+    dict_val->GetList("google:suggesttype", &types);
   }
 
-  // Add the suggestions in reverse order to assist relevance calculation.
-  for (size_t i = result_list->GetSize(); i > 0; --i) {
-    size_t current_index = i - 1;
-    string16 suggestion;
-    if (!result_list->GetString(current_index, &suggestion))
-      return false;
+  SuggestResults* suggest_results =
+      is_keyword ? &keyword_suggest_results_ : &default_suggest_results_;
+  NavigationResults* navigation_results =
+      is_keyword ? &keyword_navigation_results_ : &default_navigation_results_;
 
+  string16 result;
+  bool results_updated = false;
+  for (size_t index = 0; results->GetString(index, &result); ++index) {
     // Google search may return empty suggestions for weird input characters,
     // they make no sense at all and can cause problems in our code.
-    // See http://crbug.com/56214
-    if (!suggestion.length())
+    if (result.empty())
       continue;
 
     std::string type;
-    if (type_list && type_list->GetString(current_index, &type) &&
-        (type == "NAVIGATION")) {
-      string16 description;
-      NavigationResults& navigation_results = is_keyword ?
-          keyword_navigation_results_ : default_navigation_results_;
-      if ((navigation_results.size() < kMaxMatches) && description_list &&
-          description_list->GetString(current_index, &description)) {
-        // We can't blindly trust the URL coming from the server to be valid.
-        GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(suggestion),
-                                         std::string()));
+    if (types && types->GetString(index, &type) && (type == "NAVIGATION")) {
+      if (navigation_results->size() < kMaxMatches) {
+        // Do not blindly trust the URL coming from the server to be valid.
+        GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(result), std::string()));
         if (url.is_valid()) {
-          // Increment the relevance for successive results to preserve order.
+          string16 description;
+          if (descriptions != NULL)
+            descriptions->GetString(index, &description);
+          // Decrement the relevance for successive results to preserve order.
           int relevance = CalculateRelevanceForNavigation(is_keyword) +
-                          navigation_results.size();
-          navigation_results.push_back(
+                          (kMaxMatches - navigation_results->size() - 1);
+          navigation_results->push_back(
               NavigationResult(url, description, relevance));
+          results_updated = true;
         }
       }
     } else {
       // TODO(kochi): Currently we treat a calculator result as a query, but it
       // is better to have better presentation for caluculator results.
       if (suggest_results->size() < kMaxMatches) {
-        // Increment the relevance for successive results to preserve order.
+        // Decrement the relevance for successive results to preserve order.
         int relevance = CalculateRelevanceForSuggestion(is_keyword) +
-                        suggest_results->size();
-        suggest_results->push_back(SuggestResult(suggestion, relevance));
+                        (kMaxMatches - suggest_results->size() - 1);
+        suggest_results->push_back(SuggestResult(result, relevance));
+        results_updated = true;
       }
     }
   }
 
-  return true;
+  have_suggest_results_ = true;
+  return results_updated;
 }
 
 void SearchProvider::ConvertResultsToAutocompleteMatches() {
@@ -681,8 +675,9 @@ void SearchProvider::AddNavigationResultsToMatches(
   if (!navigation_results.empty()) {
     // TODO(kochi|msw): Add more navigational results if they get more
     //                  meaningful relevance values; see http://b/1170574.
+    // CompareScoredResults sorts by descending relevance; so use min_element.
     NavigationResults::const_iterator result(
-        std::max_element(navigation_results.begin(),
+        std::min_element(navigation_results.begin(),
                          navigation_results.end(),
                          CompareScoredResults()));
     matches_.push_back(NavigationToMatch(*result, is_keyword));
@@ -696,10 +691,9 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
   if (results.empty())
     return;
 
-  bool prevent_inline_autocomplete =
-      (input_.type() == AutocompleteInput::URL) ||
-      input_.prevent_inline_autocomplete();
-  const string16& input_text(is_keyword ? keyword_input_text_ : input_.text());
+  bool prevent_inline_autocomplete = input_.prevent_inline_autocomplete() ||
+      (input_.type() == AutocompleteInput::URL);
+  const string16& input_text = is_keyword ? keyword_input_text_ : input_.text();
   bool input_multiple_words = HasMultipleWords(input_text);
 
   SuggestResults scored_results;
@@ -791,9 +785,9 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
 void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
                                             bool is_keyword,
                                             MatchMap* map) {
-  const string16& text = is_keyword ? keyword_input_text_ : input_.text();
+  const string16& input_text = is_keyword ? keyword_input_text_ : input_.text();
   for (size_t i = 0; i < results.size(); ++i) {
-    AddMatchToMap(results[i].suggestion(), text, results[i].relevance(),
+    AddMatchToMap(results[i].suggestion(), input_text, results[i].relevance(),
                   AutocompleteMatch::SEARCH_SUGGEST, i, is_keyword, map);
   }
 }

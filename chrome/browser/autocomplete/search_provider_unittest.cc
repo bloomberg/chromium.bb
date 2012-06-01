@@ -57,6 +57,11 @@ class SearchProviderTest : public testing::Test,
   // returns the URL for that search.
   GURL AddSearchToHistory(TemplateURL* t_url, string16 term, int visit_count);
 
+  // Looks for a match in |provider_| with |contents| equal to |contents|.
+  // Sets |match| to it if found.  Returns whether |match| was set.
+  bool FindMatchWithContents(const string16& contents,
+                             AutocompleteMatch* match);
+
   // Looks for a match in |provider_| with destination |url|.  Sets |match| to
   // it if found.  Returns whether |match| was set.
   bool FindMatchWithDestination(const GURL& url, AutocompleteMatch* match);
@@ -225,6 +230,18 @@ GURL SearchProviderTest::AddSearchToHistory(TemplateURL* t_url,
       last_added_time, false, history::SOURCE_BROWSED);
   history->SetKeywordSearchTermsForURL(search, t_url->id(), term);
   return search;
+}
+
+bool SearchProviderTest::FindMatchWithContents(const string16& contents,
+                                               AutocompleteMatch* match) {
+  for (ACMatches::const_iterator i = provider_->matches().begin();
+       i != provider_->matches().end(); ++i) {
+    if (i->contents == contents) {
+      *match = *i;
+      return true;
+    }
+  }
+  return false;
 }
 
 bool SearchProviderTest::FindMatchWithDestination(const GURL& url,
@@ -643,7 +660,7 @@ TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
 
 // Verifies Navsuggest results don't set a TemplateURL, which instant relies on.
 // Also verifies that just the *first* navigational result is listed as a match.
-TEST_F(SearchProviderTest, Navsuggest) {
+TEST_F(SearchProviderTest, NavSuggest) {
   QueryForInput(ASCIIToUTF16("a.c"), false);
 
   // Make sure the default providers suggest service was queried.
@@ -654,7 +671,7 @@ TEST_F(SearchProviderTest, Navsuggest) {
   // Tell the SearchProvider the suggest query is done.
   fetcher->set_response_code(200);
   fetcher->SetResponseString(
-      "[\"a.c\",[\"a.com\", \"a.com/b\"],[\"\"],[],"
+      "[\"a.c\",[\"a.com\", \"a.com/b\"],[\"a\", \"b\"],[],"
       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"]}]");
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   fetcher = NULL;
@@ -665,6 +682,36 @@ TEST_F(SearchProviderTest, Navsuggest) {
   // Make sure the only match is 'a.com' and it doesn't have a template_url.
   AutocompleteMatch nav_match;
   EXPECT_TRUE(FindMatchWithDestination(GURL("http://a.com"), &nav_match));
-  EXPECT_FALSE(FindMatchWithDestination(GURL("http://a.com/b"), &nav_match));
   EXPECT_TRUE(nav_match.keyword.empty());
+  EXPECT_FALSE(FindMatchWithDestination(GURL("http://a.com/b"), &nav_match));
+}
+
+// Verifies that the most relevant suggest results are added properly.
+TEST_F(SearchProviderTest, SuggestRelevance) {
+  QueryForInput(ASCIIToUTF16("a"), false);
+
+  // Make sure the default provider's suggest service was queried.
+  TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+      SearchProvider::kDefaultProviderURLFetcherID);
+  ASSERT_TRUE(fetcher);
+
+  // Tell the SearchProvider the suggest query is done.
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString("[\"a\",[\"a1\", \"a2\", \"a3\", \"a4\"]]");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  fetcher = NULL;
+
+  // Run till the history results complete.
+  RunTillProviderDone();
+
+  // Check the expected verbatim and (first 3) suggestions' relative relevances.
+  AutocompleteMatch verbatim, match_a1, match_a2, match_a3, match_a4;
+  EXPECT_TRUE(FindMatchWithContents(ASCIIToUTF16("a"), &verbatim));
+  EXPECT_TRUE(FindMatchWithContents(ASCIIToUTF16("a1"), &match_a1));
+  EXPECT_TRUE(FindMatchWithContents(ASCIIToUTF16("a2"), &match_a2));
+  EXPECT_TRUE(FindMatchWithContents(ASCIIToUTF16("a3"), &match_a3));
+  EXPECT_FALSE(FindMatchWithContents(ASCIIToUTF16("a4"), &match_a4));
+  EXPECT_GT(verbatim.relevance, match_a1.relevance);
+  EXPECT_GT(match_a1.relevance, match_a2.relevance);
+  EXPECT_GT(match_a2.relevance, match_a3.relevance);
 }
