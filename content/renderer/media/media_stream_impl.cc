@@ -267,6 +267,13 @@ void MediaStreamImpl::OnStreamGenerated(
 
   LocalNativeStreamPtr native_stream(CreateNativeLocalMediaStream(
       label, it->second.frame_, audio_source_vector, video_source_vector));
+  if (!native_stream.get()) {
+    DVLOG(1) << "Failed to create native stream in OnStreamGenerated.";
+    media_stream_dispatcher_->StopStream(label);
+    it->second.request_.requestFailed();
+    user_media_requests_.erase(it);
+    return;
+  }
 
   WebKit::WebString webkit_label = UTF8ToUTF16(label);
   WebKit::WebMediaStreamDescriptor description;
