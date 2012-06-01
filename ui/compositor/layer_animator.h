@@ -135,6 +135,11 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   }
   base::TimeTicks last_step_time() const { return last_step_time_; }
 
+  // When set all animations play slowly for visual debugging.
+  static void set_slow_animation_mode(bool slow) {
+    slow_animation_mode_ = slow;
+  }
+
   // When set to true, all animations complete immediately.
   static void set_disable_animations_for_test(bool disable_animations) {
     disable_animations_for_test_ = disable_animations;
@@ -240,6 +245,10 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // starting the animation or adding to the queue.
   void OnScheduled(LayerAnimationSequence* sequence);
 
+  // Returns the default length of animations, including adjustment for slow
+  // animation mode if set.
+  base::TimeDelta GetTransitionDuration() const;
+
   // This is the queue of animations to run.
   AnimationQueue animation_queue_;
 
@@ -270,6 +279,9 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
 
   // This causes all animations to complete immediately.
   static bool disable_animations_for_test_;
+
+  // Slows down all animations for visual debugging.
+  static bool slow_animation_mode_;
 
   // Observers are notified when layer animations end, are scheduled or are
   // aborted.

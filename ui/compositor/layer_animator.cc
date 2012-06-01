@@ -26,7 +26,15 @@ static const base::TimeDelta kDefaultTransitionDuration =
 static const base::TimeDelta kTimerInterval =
     base::TimeDelta::FromMilliseconds(10);
 
-} // namespace;
+// For visual debugging, slow animations down by this factor.
+const int kSlowAnimationScaleFactor = 4;
+
+}  // namespace
+
+// static
+bool LayerAnimator::disable_animations_for_test_ = false;
+// static
+bool LayerAnimator::slow_animation_mode_ = false;
 
 // LayerAnimator public --------------------------------------------------------
 
@@ -46,9 +54,6 @@ LayerAnimator::~LayerAnimator() {
 }
 
 // static
-bool LayerAnimator::disable_animations_for_test_ = false;
-
-// static
 LayerAnimator* LayerAnimator::CreateDefaultAnimator() {
   return new LayerAnimator(base::TimeDelta::FromMilliseconds(0));
 }
@@ -59,7 +64,7 @@ LayerAnimator* LayerAnimator::CreateImplicitAnimator() {
 }
 
 void LayerAnimator::SetTransform(const Transform& transform) {
-  base::TimeDelta duration = transition_duration_;
+  base::TimeDelta duration = GetTransitionDuration();
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateTransformElement(transform, duration));
   element->set_tween_type(tween_type_);
@@ -73,7 +78,7 @@ Transform LayerAnimator::GetTargetTransform() const {
 }
 
 void LayerAnimator::SetBounds(const gfx::Rect& bounds) {
-  base::TimeDelta duration = transition_duration_;
+  base::TimeDelta duration = GetTransitionDuration();
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateBoundsElement(bounds, duration));
   element->set_tween_type(tween_type_);
@@ -87,7 +92,7 @@ gfx::Rect LayerAnimator::GetTargetBounds() const {
 }
 
 void LayerAnimator::SetOpacity(float opacity) {
-  base::TimeDelta duration = transition_duration_;
+  base::TimeDelta duration = GetTransitionDuration();
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateOpacityElement(opacity, duration));
   element->set_tween_type(tween_type_);
@@ -101,7 +106,7 @@ float LayerAnimator::GetTargetOpacity() const {
 }
 
 void LayerAnimator::SetVisibility(bool visibility) {
-  base::TimeDelta duration = transition_duration_;
+  base::TimeDelta duration = GetTransitionDuration();
 
   // Tween type doesn't matter for visibility.
   StartAnimation(new LayerAnimationSequence(
@@ -579,6 +584,12 @@ void LayerAnimator::OnScheduled(LayerAnimationSequence* sequence) {
     }
   }
   sequence->OnScheduled();
+}
+
+base::TimeDelta LayerAnimator::GetTransitionDuration() const {
+  if (slow_animation_mode_)
+    return transition_duration_ * kSlowAnimationScaleFactor;
+  return transition_duration_;
 }
 
 }  // namespace ui

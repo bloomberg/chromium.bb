@@ -88,6 +88,7 @@ class ScreenDimmer;
 class ShadowController;
 class ShelfLayoutManager;
 class ShellContextMenu;
+class SlowAnimationEventFilter;
 class SystemGestureEventFilter;
 class StackingController;
 class StatusAreaWidget;
@@ -407,6 +408,10 @@ class ASH_EXPORT Shell {
   // An event filter that silently keeps track of all touch events and controls
   // a heads-up display. This is enabled only if --ash-touch-hud flag is used.
   scoped_ptr<internal::TouchObserverHUD> touch_observer_hud_;
+
+  // An event filter that looks for modifier keypresses and triggers a slowdown
+  // of layer animations for visual debugging.
+  scoped_ptr<internal::SlowAnimationEventFilter> slow_animation_filter_;
 
   // The shelf for managing the launcher and the status widget in non-compact
   // mode. Shell does not own the shelf. Instead, it is owned by container of

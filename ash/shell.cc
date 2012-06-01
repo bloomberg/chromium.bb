@@ -48,6 +48,7 @@
 #include "ash/wm/screen_dimmer.h"
 #include "ash/wm/shadow_controller.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/slow_animation_event_filter.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/system_gesture_event_filter.h"
@@ -557,11 +558,13 @@ Shell::Shell(ShellDelegate* delegate)
 Shell::~Shell() {
   views::FocusManagerFactory::Install(NULL);
 
+  // Please keep in same order as in Init() because it's easy to miss one.
   RemoveRootWindowEventFilter(key_rewriter_filter_.get());
   RemoveRootWindowEventFilter(partial_screenshot_filter_.get());
   RemoveRootWindowEventFilter(input_method_filter_.get());
   RemoveRootWindowEventFilter(window_modality_controller_.get());
   RemoveRootWindowEventFilter(system_gesture_filter_.get());
+  RemoveRootWindowEventFilter(slow_animation_filter_.get());
 #if !defined(OS_MACOSX)
   RemoveRootWindowEventFilter(accelerator_filter_.get());
 #endif
@@ -584,7 +587,7 @@ Shell::~Shell() {
   system_tray_.reset();
   tray_delegate_.reset();
 
-  // Desroy secondary monitor's widgets before all the windows are destroyed.
+  // Destroy secondary monitor's widgets before all the windows are destroyed.
   monitor_controller_.reset();
 
   // Delete containers now so that child windows does not access
@@ -703,6 +706,9 @@ void Shell::Init() {
 
   system_gesture_filter_.reset(new internal::SystemGestureEventFilter);
   AddRootWindowEventFilter(system_gesture_filter_.get());
+
+  slow_animation_filter_.reset(new internal::SlowAnimationEventFilter);
+  AddRootWindowEventFilter(slow_animation_filter_.get());
 
   root_window->SetCursor(ui::kCursorPointer);
   if (initially_hide_cursor_)

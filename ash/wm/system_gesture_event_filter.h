@@ -44,7 +44,7 @@ class SystemGestureEventFilter : public aura::EventFilter,
   SystemGestureEventFilter();
   virtual ~SystemGestureEventFilter();
 
-  // Overriden from aura::EventFilter:
+  // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
                                  aura::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,

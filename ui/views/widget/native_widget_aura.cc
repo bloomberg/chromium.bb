@@ -724,7 +724,7 @@ void NativeWidgetAura::OnBlur() {
 
 bool NativeWidgetAura::OnKeyEvent(aura::KeyEvent* event) {
   if (event->is_char()) {
-    // If a ui::InputMethod object is attched to the root window, character
+    // If a ui::InputMethod object is attached to the root window, character
     // events are handled inside the object and are not passed to this function.
     // If such object is not attached, character events might be sent (e.g. on
     // Windows). In this case, we just skip these.

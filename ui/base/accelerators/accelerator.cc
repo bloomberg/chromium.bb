@@ -205,10 +205,10 @@ string16 Accelerator::GetShortcutText() const {
   // problem).
   //
   // The only way to solve this problem is to adjust the string if the locale
-  // is RTL so that it is drawn correnctly in an RTL context. Instead of
+  // is RTL so that it is drawn correctly in an RTL context. Instead of
   // returning "Ctrl++" in the above example, we return "++Ctrl". This will
   // cause the text to appear as "Ctrl++" when Windows draws the string in an
-  // RTL context because the punctunation no longer appears at the end of the
+  // RTL context because the punctuation no longer appears at the end of the
   // string.
   //
   // TODO(idana) bug# 1232732: this hack can be avoided if instead of using

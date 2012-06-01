@@ -73,7 +73,7 @@ class UI_EXPORT AcceleratorTarget {
   virtual bool AcceleratorPressed(const Accelerator& accelerator) = 0;
 
   // Should return true if the target can handle the accelerator events. The
-  // AcceleratorPressed method is inovked only for targets for which
+  // AcceleratorPressed method is invoked only for targets for which
   // CanHandleAccelerators returns true.
   virtual bool CanHandleAccelerators() const = 0;
 
@@ -81,7 +81,7 @@ class UI_EXPORT AcceleratorTarget {
   virtual ~AcceleratorTarget() {}
 };
 
-// Since acclerator code is one of the few things that can't be cross platform
+// Since accelerator code is one of the few things that can't be cross platform
 // in the chrome UI, separate out just the GetAcceleratorForCommandId() from
 // the menu delegates.
 class AcceleratorProvider {
