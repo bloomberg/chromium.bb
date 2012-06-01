@@ -1627,7 +1627,7 @@
    bug_125129_a
    Heapcheck:Leak
    ...
-   fun:RenderProcessHostImpl::RenderProcessHostImpl
+   fun:content::RenderProcessHostImpl::RenderProcessHostImpl
    fun:SiteInstanceImpl::GetProcess
    fun:*RenderViewHostImpl
    fun:*TestRenderViewHost
@@ -1637,7 +1637,7 @@
    bug_125129_b
    Heapcheck:Leak
    ...
-   fun:RenderProcessHostImpl::RenderProcessHostImpl
+   fun:content::RenderProcessHostImpl::RenderProcessHostImpl
    fun:SiteInstanceImpl::GetProcess
    ...
    fun:*_*_Test::TestBody
@@ -1684,18 +1684,4 @@
    fun:content::WebContentsTester::CreateTestWebContents
    fun:::OneClickSigninHelperTest::CreateMockWebContents
    fun:OneClickSigninHelperTest_*
-}
-{
-   bug_130765
-   Heapcheck:Leak
-   ...
-   fun:content::RenderProcessHostImpl::RenderProcessHostImpl
-   fun:SiteInstanceImpl::GetProcess
-   fun:content::RenderViewHostImpl::RenderViewHostImpl
-   fun:RenderViewHostFactory::Create
-   fun:RenderViewHostManager::Init
-   fun:WebContentsImpl::WebContentsImpl
-   fun:content::TestWebContents::TestWebContents
-   fun:content::WebContentsTester::CreateTestWebContents
-   fun:::OneClickSigninHelperTest::CreateMockWebContents
 }
