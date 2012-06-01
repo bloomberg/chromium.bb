@@ -54,7 +54,7 @@ class ScopedThreadProxy {
                 const base::Closure& closure);
   void PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& closure,
-                       base::TimeDelta delay);
+                       int64 delay_ms);
 
   // Cancels all tasks posted via this proxy. Must be called on the
   // thread this object belongs to.

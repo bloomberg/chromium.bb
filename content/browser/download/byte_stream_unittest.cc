@@ -33,7 +33,14 @@ class MockTaskRunner : public base::SequencedTaskRunner {
 
   // TaskRunner functions.
   MOCK_METHOD3(PostDelayedTask, bool(const tracked_objects::Location&,
+                                     const base::Closure&, int64));
+  MOCK_METHOD3(PostDelayedTask, bool(const tracked_objects::Location&,
                                      const base::Closure&, base::TimeDelta));
+
+  MOCK_METHOD3(PostNonNestableDelayedTask, bool(
+      const tracked_objects::Location&,
+      const base::Closure&,
+      int64 delay_ms));
 
   MOCK_METHOD3(PostNonNestableDelayedTask, bool(
       const tracked_objects::Location&,
@@ -330,7 +337,7 @@ TEST_F(ByteStreamTest, ByteStream_SinkCallback) {
   int num_callbacks = 0;
   byte_stream_output->RegisterCallback(
       base::Bind(CountCallbacks, &num_callbacks));
-  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, base::TimeDelta()))
+  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, 0))
       .WillOnce(DoAll(SaveArg<1>(&intermediate_callback),
                       Return(true)));
 
@@ -404,7 +411,7 @@ TEST_F(ByteStreamTest, ByteStream_SourceCallback) {
   EXPECT_TRUE(ValidateIOBuffer(output_io_buffer, output_length));
 
   // Setup expectations.
-  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, base::TimeDelta()))
+  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, 0))
       .WillOnce(DoAll(SaveArg<1>(&intermediate_callback),
                       Return(true)));
 
@@ -423,7 +430,7 @@ TEST_F(ByteStreamTest, ByteStream_SourceCallback) {
   EXPECT_EQ(1, num_callbacks);
 
   // Same drill with final buffer.
-  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, base::TimeDelta()))
+  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, 0))
       .WillOnce(DoAll(SaveArg<1>(&intermediate_callback),
                       Return(true)));
   EXPECT_EQ(content::ByteStreamOutput::STREAM_HAS_DATA,
@@ -462,7 +469,7 @@ TEST_F(ByteStreamTest, ByteStream_SinkInterrupt) {
   int num_callbacks = 0;
   byte_stream_output->RegisterCallback(
       base::Bind(CountCallbacks, &num_callbacks));
-  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, base::TimeDelta()))
+  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, 0))
       .WillOnce(DoAll(SaveArg<1>(&intermediate_callback),
                       Return(true)));
 
@@ -528,7 +535,7 @@ TEST_F(ByteStreamTest, ByteStream_SourceInterrupt) {
   message_loop_.RunAllPending();
 
   // Setup expectations.
-  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, base::TimeDelta()))
+  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, 0))
       .WillOnce(DoAll(SaveArg<1>(&intermediate_callback),
                       Return(true)));
 
@@ -549,7 +556,7 @@ TEST_F(ByteStreamTest, ByteStream_SourceInterrupt) {
   EXPECT_EQ(1, num_alt_callbacks);
 
   // Third get should also trigger callback.
-  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, base::TimeDelta()))
+  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, 0))
       .WillOnce(DoAll(SaveArg<1>(&intermediate_callback),
                       Return(true)));
   EXPECT_EQ(content::ByteStreamOutput::STREAM_HAS_DATA,
@@ -581,7 +588,7 @@ TEST_F(ByteStreamTest, ByteStream_ZeroCallback) {
   int num_callbacks = 0;
   byte_stream_output->RegisterCallback(
       base::Bind(CountCallbacks, &num_callbacks));
-  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, base::TimeDelta()))
+  EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, 0))
       .WillOnce(DoAll(SaveArg<1>(&intermediate_callback),
                       Return(true)));
 

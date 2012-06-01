@@ -35,6 +35,12 @@ class TestTaskRunner : public base::TaskRunner {
   TestTaskRunner() {}
 
   virtual bool RunsTasksOnCurrentThread() const OVERRIDE { return true; }
+  virtual bool PostDelayedTask(const tracked_objects::Location&,
+                               const base::Closure&,
+                               int64) OVERRIDE {
+    ADD_FAILURE();
+    return false;
+  }
   MOCK_METHOD3(PostDelayedTask, bool(const tracked_objects::Location&,
                                      const base::Closure&,
                                      base::TimeDelta));
