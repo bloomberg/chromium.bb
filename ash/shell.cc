@@ -748,7 +748,8 @@ void Shell::Init() {
   status_area_widget_->Show();
 
   // This controller needs to be set before SetupManagedWindowMode.
-  desktop_background_controller_.reset(new DesktopBackgroundController);
+  desktop_background_controller_.reset(
+      new DesktopBackgroundController(root_window));
   if (delegate_.get())
     user_wallpaper_delegate_.reset(delegate_->CreateUserWallpaperDelegate());
   if (!user_wallpaper_delegate_.get())

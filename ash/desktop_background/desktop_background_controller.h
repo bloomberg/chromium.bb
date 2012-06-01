@@ -11,6 +11,10 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 
+namespace aura {
+class RootWindow;
+}
+
 namespace gfx {
 class ImageSkia;
 }
@@ -41,7 +45,7 @@ class ASH_EXPORT DesktopBackgroundController {
     BACKGROUND_SOLID_COLOR
   };
 
-  DesktopBackgroundController();
+  explicit DesktopBackgroundController(aura::RootWindow* root_window);
   virtual ~DesktopBackgroundController();
 
   // Gets the desktop background mode.
@@ -89,6 +93,8 @@ class ASH_EXPORT DesktopBackgroundController {
   // creates an empty widget for those tests to prevent crashes. An example test
   // is SystemGestureEventFilterTest.ThreeFingerSwipe.
   void CreateEmptyWallpaper();
+
+  aura::RootWindow* root_window_;
 
   // Can change at runtime.
   BackgroundMode desktop_background_mode_;

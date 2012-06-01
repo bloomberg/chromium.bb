@@ -29,8 +29,10 @@ namespace {
 
 class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver {
  public:
-  explicit ShowWallpaperAnimationObserver(views::Widget* desktop_widget)
-      : desktop_widget_(desktop_widget) {
+  ShowWallpaperAnimationObserver(aura::RootWindow* root_window,
+                                 views::Widget* desktop_widget)
+      : root_window_(root_window),
+        desktop_widget_(desktop_widget) {
   }
 
   virtual ~ShowWallpaperAnimationObserver() {
@@ -40,11 +42,13 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver {
   // Overridden from ui::ImplicitAnimationObserver:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
     internal::RootWindowLayoutManager* root_window_layout =
-      Shell::GetInstance()->root_window_layout();
+        static_cast<internal::RootWindowLayoutManager*>(
+            root_window_->layout_manager());
     root_window_layout->SetBackgroundWidget(desktop_widget_);
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
+  aura::RootWindow* root_window_;
   views::Widget* desktop_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(ShowWallpaperAnimationObserver);
@@ -127,16 +131,16 @@ void DesktopBackgroundView::OnMouseReleased(const views::MouseEvent& event) {
 }
 
 void CreateDesktopBackground(const gfx::ImageSkia& wallpaper,
-                             WallpaperLayout wallpaper_layout) {
+                             WallpaperLayout wallpaper_layout,
+                             aura::RootWindow* root_window) {
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   DesktopBackgroundView* view = new DesktopBackgroundView(wallpaper,
                                                           wallpaper_layout);
   params.delegate = view;
-  params.parent =
-      Shell::GetInstance()->GetContainer(
-          ash::internal::kShellWindowId_DesktopBackgroundContainer);
+  params.parent = root_window->GetChildById(
+      ash::internal::kShellWindowId_DesktopBackgroundContainer);
   desktop_widget->Init(params);
   desktop_widget->SetContentsView(view);
   ash::SetWindowVisibilityAnimationType(
@@ -149,7 +153,8 @@ void CreateDesktopBackground(const gfx::ImageSkia& wallpaper,
   ui::ScopedLayerAnimationSettings settings(desktop_widget->GetNativeView()->
                                             layer()->GetAnimator());
   settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
-  settings.AddObserver(new ShowWallpaperAnimationObserver(desktop_widget));
+  settings.AddObserver(new ShowWallpaperAnimationObserver(root_window,
+                                                          desktop_widget));
   desktop_widget->Show();
   desktop_widget->GetNativeView()->SetName("DesktopBackgroundView");
 }

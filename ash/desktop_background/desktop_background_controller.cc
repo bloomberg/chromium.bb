@@ -14,6 +14,7 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"
 #include "grit/ui_resources.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
@@ -21,6 +22,13 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+namespace {
+internal::RootWindowLayoutManager* GetRootWindowLayoutManager(
+    aura::RootWindow* root_window) {
+  return static_cast<internal::RootWindowLayoutManager*>(
+      root_window->layout_manager());
+}
+}  // namespace
 
 // DesktopBackgroundController::WallpaperOperation wraps background wallpaper
 // loading.
@@ -77,10 +85,13 @@ class DesktopBackgroundController::WallpaperOperation
   DISALLOW_COPY_AND_ASSIGN(WallpaperOperation);
 };
 
-DesktopBackgroundController::DesktopBackgroundController()
-    : desktop_background_mode_(BACKGROUND_IMAGE),
+DesktopBackgroundController::DesktopBackgroundController(
+    aura::RootWindow* root_window)
+    : root_window_(root_window),
+      desktop_background_mode_(BACKGROUND_IMAGE),
       previous_index_(-1),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  DCHECK(root_window_);
 }
 
 DesktopBackgroundController::~DesktopBackgroundController() {
@@ -106,10 +117,8 @@ void DesktopBackgroundController::SetDefaultWallpaper(int index) {
 void DesktopBackgroundController::SetCustomWallpaper(
     const gfx::ImageSkia& wallpaper,
     WallpaperLayout layout) {
-  internal::RootWindowLayoutManager* root_window_layout =
-      Shell::GetInstance()->root_window_layout();
-  root_window_layout->SetBackgroundLayer(NULL);
-  internal::CreateDesktopBackground(wallpaper, layout);
+  GetRootWindowLayoutManager(root_window_)->SetBackgroundLayer(NULL);
+  internal::CreateDesktopBackground(wallpaper, layout, root_window_);
   desktop_background_mode_ = BACKGROUND_IMAGE;
 }
 
@@ -140,23 +149,23 @@ void DesktopBackgroundController::SetDesktopBackgroundSolidColorMode() {
   // TODO(derat): Remove this in favor of having the compositor only clear the
   // viewport when there are regions not covered by a layer:
   // http://crbug.com/113445
-  Shell* shell = Shell::GetInstance();
   ui::Layer* background_layer = new ui::Layer(ui::LAYER_SOLID_COLOR);
   background_layer->SetColor(SK_ColorBLACK);
-  shell->GetContainer(internal::kShellWindowId_DesktopBackgroundContainer)->
+  root_window_->GetChildById(
+      internal::kShellWindowId_DesktopBackgroundContainer)->
       layer()->Add(background_layer);
-  shell->root_window_layout()->SetBackgroundLayer(background_layer);
-  shell->root_window_layout()->SetBackgroundWidget(NULL);
+  GetRootWindowLayoutManager(root_window_)->SetBackgroundLayer(
+      background_layer);
+  GetRootWindowLayoutManager(root_window_)->SetBackgroundWidget(NULL);
   desktop_background_mode_ = BACKGROUND_SOLID_COLOR;
 }
 
 void DesktopBackgroundController::SetDesktopBackgroundImageMode(
     scoped_refptr<WallpaperOperation> wo) {
-  internal::RootWindowLayoutManager* root_window_layout =
-      Shell::GetInstance()->root_window_layout();
-  root_window_layout->SetBackgroundLayer(NULL);
+  GetRootWindowLayoutManager(root_window_)->SetBackgroundLayer(NULL);
   if(wo->wallpaper()) {
-    internal::CreateDesktopBackground(*wo->wallpaper(), wo->wallpaper_layout());
+    internal::CreateDesktopBackground(
+        *wo->wallpaper(), wo->wallpaper_layout(), root_window_);
     desktop_background_mode_ = BACKGROUND_IMAGE;
   }
 }
@@ -172,7 +181,7 @@ void DesktopBackgroundController::OnWallpaperLoadCompleted(
 
 void DesktopBackgroundController::CreateEmptyWallpaper() {
   gfx::ImageSkia dummy;
-  internal::CreateDesktopBackground(dummy, CENTER);
+  internal::CreateDesktopBackground(dummy, CENTER, root_window_);
   desktop_background_mode_ = BACKGROUND_IMAGE;
 }
 

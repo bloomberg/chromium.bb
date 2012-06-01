@@ -9,6 +9,10 @@
 #include "ash/ash_export.h"
 #include "ash/desktop_background/desktop_background_resources.h"
 
+namespace aura {
+class RootWindow;
+}
+
 namespace gfx {
 class ImageSkia;
 }
@@ -24,7 +28,8 @@ namespace ash {
 
 namespace internal {
 void CreateDesktopBackground(const gfx::ImageSkia& wallpaper,
-                             WallpaperLayout wallpaper_layout);
+                             WallpaperLayout wallpaper_layout,
+                             aura::RootWindow* root_window);
 ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents);
 }  // namespace internal
 
