@@ -130,6 +130,10 @@ SyncError GenericChangeProcessor::GetSyncDataForType(
 namespace {
 
 // TODO(isherman): Investigating http://crbug.com/121592
+// WARNING: this code is sensitive to compiler optimizations. Be careful
+// modifying any code around an OnSingleDatatypeUnrecoverableError call, else
+// the compiler attempts to merge it with other calls, losing useful information
+// in breakpad uploads.
 SyncError LogLookupFailure(sync_api::BaseNode::InitByLookupResult lookup_result,
                            const tracked_objects::Location& from_here,
                            const std::string& error_prefix,
@@ -144,7 +148,7 @@ SyncError LogLookupFailure(sync_api::BaseNode::InitByLookupResult lookup_result,
                   type);
       error_handler->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                         error.message());
-      NOTREACHED();
+      LOG(ERROR) << "Delete: Bad entry.";
       return error;
     }
     case sync_api::BaseNode::INIT_FAILED_ENTRY_IS_DEL: {
@@ -152,7 +156,7 @@ SyncError LogLookupFailure(sync_api::BaseNode::InitByLookupResult lookup_result,
       error.Reset(from_here, error_prefix + "entry is already deleted.", type);
       error_handler->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                         error.message());
-      NOTREACHED();
+      LOG(ERROR) << "Delete: Deleted entry.";
       return error;
     }
     case sync_api::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY: {
@@ -160,7 +164,7 @@ SyncError LogLookupFailure(sync_api::BaseNode::InitByLookupResult lookup_result,
       error.Reset(from_here, error_prefix + "unable to decrypt", type);
       error_handler->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                         error.message());
-      NOTREACHED();
+      LOG(ERROR) << "Delete: Undecryptable entry.";
       return error;
     }
     case sync_api::BaseNode::INIT_FAILED_PRECONDITION: {
@@ -170,7 +174,7 @@ SyncError LogLookupFailure(sync_api::BaseNode::InitByLookupResult lookup_result,
                   type);
       error_handler->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                         error.message());
-      NOTREACHED();
+      LOG(ERROR) << "Delete: Failed precondition.";
       return error;
     }
     default: {
@@ -179,7 +183,7 @@ SyncError LogLookupFailure(sync_api::BaseNode::InitByLookupResult lookup_result,
       error.Reset(from_here, error_prefix + "unknown error", type);
       error_handler->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                         error.message());
-      NOTREACHED();
+      LOG(ERROR) << "Delete: Unknown error.";
       return error;
     }
   }
@@ -228,6 +232,10 @@ SyncError AttemptDelete(const SyncChange& change,
 
 }  // namespace
 
+// WARNING: this code is sensitive to compiler optimizations. Be careful
+// modifying any code around an OnSingleDatatypeUnrecoverableError call, else
+// the compiler attempts to merge it with other calls, losing useful information
+// in breakpad uploads.
 SyncError GenericChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const SyncChangeList& list_of_changes) {
@@ -262,6 +270,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
         error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                             error.message());
         NOTREACHED();
+        LOG(ERROR) << "Create: no root node.";
         return error;
       }
       sync_api::WriteNode::InitUniqueByCreationResult result =
@@ -276,7 +285,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
             error.Reset(FROM_HERE, error_prefix + "empty tag", type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
-            NOTREACHED();
+            LOG(ERROR) << "Create: Empty tag.";
             return error;
           }
           case sync_api::WriteNode::INIT_FAILED_ENTRY_ALREADY_EXISTS: {
@@ -284,7 +293,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
             error.Reset(FROM_HERE, error_prefix + "entry already exists", type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
-            NOTREACHED();
+            LOG(ERROR) << "Create: Entry exists.";
             return error;
           }
           case sync_api::WriteNode::INIT_FAILED_COULD_NOT_CREATE_ENTRY: {
@@ -293,7 +302,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
                         type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
-            NOTREACHED();
+            LOG(ERROR) << "Create: Could not create entry.";
             return error;
           }
           case sync_api::WriteNode::INIT_FAILED_SET_PREDECESSOR: {
@@ -302,7 +311,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
                         type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
-            NOTREACHED();
+            LOG(ERROR) << "Create: Bad predecessor.";
             return error;
           }
           default: {
@@ -310,7 +319,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
             error.Reset(FROM_HERE, error_prefix + "unknown error", type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
-            NOTREACHED();
+            LOG(ERROR) << "Create: Unknown error.";
             return error;
           }
         }
@@ -330,7 +339,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
                       type);
           error_handler()->OnSingleDatatypeUnrecoverableError(
               FROM_HERE, error.message());
-          NOTREACHED();
+          LOG(ERROR) << "Update: Empty tag.";
           return error;
         } else if (result == sync_api::BaseNode::INIT_FAILED_ENTRY_NOT_GOOD) {
           SyncError error;
@@ -339,7 +348,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
                       type);
           error_handler()->OnSingleDatatypeUnrecoverableError(
               FROM_HERE, error.message());
-          NOTREACHED();
+          LOG(ERROR) << "Update: bad entry.";
           return error;
         } else if (result == sync_api::BaseNode::INIT_FAILED_ENTRY_IS_DEL) {
           SyncError error;
@@ -348,7 +357,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
                       type);
           error_handler()->OnSingleDatatypeUnrecoverableError(
               FROM_HERE, error.message());
-          NOTREACHED();
+          LOG(ERROR) << "Update: deleted entry.";
           return error;
         } else {
           Cryptographer* crypto = trans.GetCryptographer();
@@ -366,7 +375,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
                         type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
-            NOTREACHED();
+            LOG(ERROR) << "Update: encr case 1.";
             return error;
           } else if (agreement && can_decrypt) {
             SyncError error;
@@ -376,7 +385,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
                         type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
-            NOTREACHED();
+            LOG(ERROR) << "Update: encr case 2.";
             return error;
           } else if (agreement) {
             SyncError error;
@@ -386,7 +395,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
                         type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
-            NOTREACHED();
+            LOG(ERROR) << "Update: encr case 3.";
             return error;
           } else {
             SyncError error;
@@ -396,7 +405,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
                         type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
                 FROM_HERE, error.message());
-            NOTREACHED();
+            LOG(ERROR) << "Update: encr case 4.";
             return error;
           }
         }
@@ -413,6 +422,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                           error.message());
       NOTREACHED();
+      LOG(ERROR) << "Unset sync change.";
       return error;
     }
   }
