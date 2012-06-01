@@ -91,6 +91,37 @@ def CheckTODO(input_api, output_api):
         long_text='\n'.join(todo))]
   return []
 
+# Verify that no CPP wrappers use un-versioned PPB interface name macros.
+RE_UNVERSIONED_PPB = re.compile(r'\bPPB_\w+_INTERFACE\b')
+def CheckUnversionedPPB(input_api, output_api):
+  files = input_api.LocalPaths()
+  todo = []
+
+  for filename in files:
+    name, ext = os.path.splitext(filename)
+    name_parts = name.split(os.sep)
+
+    # Only check C++ sources.
+    if ext not in ['.cc']:
+      continue
+
+    # Only examine the public plugin facing ppapi/cpp directory.
+    if name_parts[0:2] != ['ppapi', 'cpp']:
+      continue
+
+    # Only examine public stable and trusted interfaces.
+    if name_parts[2] in ['dev', 'private']:
+      continue
+
+    filepath = os.path.join('..', filename)
+    if RE_UNVERSIONED_PPB.search(open(filepath, 'rb').read()):
+      todo.append(filename)
+
+  if todo:
+    return [output_api.PresubmitError(
+        'Unversioned PPB interface references found in PPAPI C++ wrappers:',
+        long_text='\n'.join(todo))]
+  return []
 
 def CheckChange(input_api, output_api):
   results = []
@@ -100,6 +131,9 @@ def CheckChange(input_api, output_api):
   results.extend(RunUnittests(input_api, output_api))
 
   results.extend(CheckTODO(input_api, output_api))
+
+  results.extend(CheckUnversionedPPB(input_api, output_api))
+
   # Verify all modified *.idl have a matching *.h
   files = input_api.LocalPaths()
   h_files = []
