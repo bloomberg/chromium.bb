@@ -407,6 +407,10 @@ GLvoid StubGLTexParameteri(GLenum target, GLenum pname, GLint param) {
   glTexParameteri(target, pname, param);
 }
 
+GLvoid StubGLTexParameteriv(GLenum target, GLenum pname, const GLint* params) {
+  glTexParameteriv(target, pname, params);
+}
+
 GLvoid StubGLTexStorage2D(GLenum target, GLsizei levels, GLenum internalFormat,
                           GLsizei width, GLsizei height) {
   glTexStorage2DEXT(target, levels, internalFormat, width, height);
@@ -625,6 +629,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   interface->fStencilOpSeparate = StubGLStencilOpSeparate;
   interface->fTexImage2D = StubGLTexImage2D;
   interface->fTexParameteri = StubGLTexParameteri;
+  interface->fTexParameteriv = StubGLTexParameteriv;
   interface->fTexSubImage2D = StubGLTexSubImage2D;
   interface->fTexStorage2D = StubGLTexStorage2D;
   interface->fUniform1f = StubGLUniform1f;
