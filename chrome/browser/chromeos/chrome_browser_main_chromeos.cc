@@ -41,7 +41,6 @@
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
 #include "chrome/browser/chromeos/oom_priority_manager.h"
 #include "chrome/browser/chromeos/power/brightness_observer.h"
-#include "chrome/browser/chromeos/power/output_observer.h"
 #include "chrome/browser/chromeos/power/power_button_controller_delegate_chromeos.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 #include "chrome/browser/chromeos/power/power_state_override.h"
@@ -410,7 +409,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // Initialize the brightness observer so that we'll display an onscreen
   // indication of brightness changes during login.
   brightness_observer_.reset(new chromeos::BrightnessObserver());
-  output_observer_.reset(new chromeos::OutputObserver());
   resume_observer_.reset(new chromeos::ResumeObserver());
   screen_lock_observer_.reset(new chromeos::ScreenLockObserver());
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
@@ -486,7 +484,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   screen_lock_observer_.reset();
   resume_observer_.reset();
   brightness_observer_.reset();
-  output_observer_.reset();
 
   // The XInput2 event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.

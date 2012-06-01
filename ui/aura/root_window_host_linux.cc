@@ -553,8 +553,6 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
   static int root_window_number = 0;
   std::string name = StringPrintf("aura_root_%d", root_window_number++);
   XStoreName(xdisplay_, xwindow_, name.c_str());
-  XRRSelectInput(xdisplay_, x_root_window_,
-                 RRScreenChangeNotifyMask | RROutputChangeNotifyMask);
 }
 
 RootWindowHostLinux::~RootWindowHostLinux() {

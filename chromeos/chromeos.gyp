@@ -95,16 +95,9 @@
         'dbus/speech_synthesizer_client.h',
         'dbus/update_engine_client.cc',
         'dbus/update_engine_client.h',
-        'monitor/output_configurator.cc',
-        'monitor/output_configurator.h',
         'network/network_sms_handler.cc',
         'network/network_sms_handler.h',
       ],
-      'link_settings': {
-        'libraries': [
-          '-lXext',
-        ],
-      },
     },
     {
       # This target contains mocks that can be used to write unit tests.

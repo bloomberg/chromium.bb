@@ -37,10 +37,6 @@
 #include "ui/compositor/screen_rotation.h"
 #include "ui/oak/oak.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/monitor/output_configurator.h"
-#endif  // defined(OS_CHROMEOS)
-
 namespace {
 
 bool HandleCycleWindowMRU(ash::WindowCycleController::Direction direction,
@@ -333,9 +329,6 @@ bool AcceleratorController::AcceleratorPressed(
       return HandleCrosh();
     case TOGGLE_SPOKEN_FEEDBACK:
       return HandleToggleSpokenFeedback();
-    case CYCLE_DISPLAY_MODE:
-      ash::Shell::GetInstance()->output_configurator()->CycleDisplayMode();
-      return true;
 #endif
     case EXIT:
       return HandleExit();

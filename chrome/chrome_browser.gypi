@@ -786,8 +786,6 @@
         'browser/chromeos/power/brightness_observer.h',
         'browser/chromeos/power/low_battery_observer.cc',
         'browser/chromeos/power/low_battery_observer.h',
-        'browser/chromeos/power/output_observer.cc',
-        'browser/chromeos/power/output_observer.h',
         'browser/chromeos/power/power_button_controller_delegate_chromeos.cc',
         'browser/chromeos/power/power_button_controller_delegate_chromeos.h',
         'browser/chromeos/power/power_button_observer.cc',

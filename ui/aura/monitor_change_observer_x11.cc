@@ -49,6 +49,7 @@ MonitorChangeObserverX11::MonitorChangeObserverX11()
     : xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       xrandr_event_base_(0) {
+  XRRSelectInput(xdisplay_, x_root_window_, RRScreenChangeNotifyMask);
   int error_base_ignored;
   XRRQueryExtension(xdisplay_, &xrandr_event_base_, &error_base_ignored);
   static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
