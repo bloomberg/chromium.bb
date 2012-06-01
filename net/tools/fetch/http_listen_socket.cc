@@ -13,7 +13,7 @@
 #include "net/tools/fetch/http_server_request_info.h"
 #include "net/tools/fetch/http_server_response_info.h"
 
-HttpListenSocket::HttpListenSocket(SOCKET s,
+HttpListenSocket::HttpListenSocket(SocketDescriptor s,
                                    HttpListenSocket::Delegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(net::TCPListenSocket(s, this)),
       delegate_(delegate) {
@@ -23,7 +23,7 @@ HttpListenSocket::~HttpListenSocket() {
 }
 
 void HttpListenSocket::Accept() {
-  SOCKET conn = net::TCPListenSocket::AcceptSocket();
+  SocketDescriptor conn = net::TCPListenSocket::AcceptSocket();
   DCHECK_NE(conn, net::TCPListenSocket::kInvalidSocket);
   if (conn == net::TCPListenSocket::kInvalidSocket) {
     // TODO
@@ -40,7 +40,7 @@ scoped_refptr<HttpListenSocket> HttpListenSocket::CreateAndListen(
     const std::string& ip,
     int port,
     HttpListenSocket::Delegate* delegate) {
-  SOCKET s = net::TCPListenSocket::CreateAndBind(ip, port);
+  SocketDescriptor s = net::TCPListenSocket::CreateAndBind(ip, port);
   if (s == net::TCPListenSocket::kInvalidSocket) {
     // TODO (ibrar): error handling.
   } else {
