@@ -1,3 +1,9 @@
+2012-06-01  Christian Egli  <christian.egli@sbs.ch>
+
+	* tables/de-de-comp8.ctb: Add Symbols such as double quotes,
+	dashes to the German computer braille table. Thanks to
+	Aliminator83@gmail.com
+
 2012-05-31  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/Makefile.am:
