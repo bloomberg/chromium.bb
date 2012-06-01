@@ -6,7 +6,6 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -53,12 +52,7 @@ class TabDestroyedObserver : public content::WebContentsObserver {
 // preview tab for the new tab contents.
 IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
                        NavigateFromInitiatorTab) {
-  ASSERT_TRUE(browser());
-  BrowserList::SetLastActive(browser());
-  ASSERT_TRUE(BrowserList::GetLastActive());
-
-  // Lets start with one window with one tab.
-  EXPECT_EQ(1u, BrowserList::size());
+  // Lets start with one tab.
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a reference to initiator tab contents.
@@ -101,12 +95,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
 // print preview tab.
 IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
                        ReloadInitiatorTab) {
-  ASSERT_TRUE(browser());
-  BrowserList::SetLastActive(browser());
-  ASSERT_TRUE(BrowserList::GetLastActive());
-
-  // Lets start with one window with one tab.
-  EXPECT_EQ(1u, BrowserList::size());
+  // Lets start with one tab.
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a reference to initiator tab contents.
