@@ -45,6 +45,16 @@ enum SearchEngineType {
   SEARCH_ENGINE_YAHOOQC,
   SEARCH_ENGINE_NONE,  // Used by Protector. Putting it at the beginning would
                        // corrupt UMA stats. Add new search engines below.
+  SEARCH_ENGINE_CONDUIT,
+  SEARCH_ENGINE_ALL_BY,
+  SEARCH_ENGINE_APORT,
+  SEARCH_ENGINE_ICQ,
+  SEARCH_ENGINE_METABOT_RU,
+  SEARCH_ENGINE_META_UA,
+  SEARCH_ENGINE_NIGMA,
+  SEARCH_ENGINE_QIP,
+  SEARCH_ENGINE_UKR_NET,
+  SEARCH_ENGINE_WEBALTA,
   SEARCH_ENGINE_MAX  // Bounding max value needed for UMA histogram macro.
 };
 

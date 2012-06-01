@@ -178,6 +178,10 @@ TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeAdvanced) {
     EXPECT_EQ(SEARCH_ENGINE_YAHOO,
               TemplateURLPrepopulateData::GetEngineType(kYahooURLs[i]));
   }
+  // URLs for engines not present in country-specific lists.
+  std::string kNigmaURL = "http://www.nigma.ru/?s={searchTerms}&arg1=value1";
+  EXPECT_EQ(SEARCH_ENGINE_NIGMA,
+            TemplateURLPrepopulateData::GetEngineType(kNigmaURL));
   // Search URL for which no prepopulated search provider exists.
   std::string kExampleSearchURL = "http://example.net/search?q={searchTerms}";
   EXPECT_EQ(SEARCH_ENGINE_OTHER,

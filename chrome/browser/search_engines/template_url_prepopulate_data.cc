@@ -70,9 +70,8 @@ struct PrepopulatedEngine {
   // must use two different unique IDs (and different keywords).
   //
   // The following unique IDs are available:
-  //    33, 34, 36, 39, 40, 42, 43, 47, 48, 49, 50, 52, 53, 56, 58, 60, 61, 64,
-  //    65, 66, 70, 74, 78, 79, 80, 81, 84, 86, 88, 91, 92, 93, 94, 95, 96, 97,
-  //    98, 99, 102+
+  //    50, 52, 53, 56, 58, 60, 61, 64, 65, 66, 70, 74, 78, 79, 80, 81, 84, 86,
+  //    88, 91, 92, 93, 94, 95, 96, 97, 98, 99, 102+
   //
   // IDs > 1000 are reserved for distribution custom engines.
   //
@@ -82,6 +81,11 @@ struct PrepopulatedEngine {
   //       of the current range or it will not be counted in stats.
   const int id;
 };
+
+// Prepopulated engines ////////////////////////////////////////////////////////
+
+// The following engines are included in country lists and are added to the list
+// of search engines on the first run depending on user's country.
 
 const PrepopulatedEngine abcsok = {
   L"ABC S\x00f8k",
@@ -2096,6 +2100,144 @@ const PrepopulatedEngine zoznam = {
   85,
 };
 
+// UMA-only engines ////////////////////////////////////////////////////////////
+
+// The following engines are not included in any of the country lists. They
+// are listed in |kAllEngines|, however, so that GetEngineType can find them
+// for UMA reporting purposes.
+
+const PrepopulatedEngine all_by = {
+  L"ALL.BY",
+  L"all.by",
+  NULL,
+  "http://www.all.by/cgi-bin/search.cgi?mode=by&query={searchTerms}",
+  "UTF-8",
+  NULL,
+  NULL,
+  SEARCH_ENGINE_ALL_BY,
+  33,
+};
+
+const PrepopulatedEngine aport = {
+  L"Aport",
+  L"aport.ru",
+  NULL,
+  "http://www.aport.ru/search/?r={searchTerms}",
+  "UTF-8",
+  NULL,
+  NULL,
+  SEARCH_ENGINE_APORT,
+  34,
+};
+
+const PrepopulatedEngine conduit = {
+  L"Conduit",
+  L"conduit.com",
+  NULL,
+  "http://search.conduit.com/Results.aspx?q={searchTerms}",
+  "UTF-8",
+  NULL,
+  NULL,
+  SEARCH_ENGINE_CONDUIT,
+  36,
+};
+
+const PrepopulatedEngine icq = {
+  L"ICQ",
+  L"icq.com",
+  NULL,
+  "http://search.icq.com/search/results.php?q={searchTerms}",
+  "UTF-8",
+  NULL,
+  NULL,
+  SEARCH_ENGINE_ICQ,
+  39,
+};
+
+const PrepopulatedEngine meta_ua = {
+  L"Meta-Ukraine",
+  L"meta.ua",
+  NULL,
+  "http://meta.ua/search.asp?q={searchTerms}",
+  "UTF-8",
+  NULL,
+  NULL,
+  SEARCH_ENGINE_META_UA,
+  40,
+};
+
+const PrepopulatedEngine metabot_ru = {
+  L"Metabot",
+  L"metabot.ru",
+  NULL,
+  "http://results.metabot.ru/?st={searchTerms}",
+  "UTF-8",
+  NULL,
+  NULL,
+  SEARCH_ENGINE_METABOT_RU,
+  42,
+};
+
+const PrepopulatedEngine nigma = {
+  L"Nigma",
+  L"nigma.ru",
+  NULL,
+  "http://www.nigma.ru/?s={searchTerms}",
+  "UTF-8",
+  NULL,
+  NULL,
+  SEARCH_ENGINE_NIGMA,
+  43,
+};
+
+const PrepopulatedEngine qip = {
+  L"QIP",
+  L"qip.ru",
+  NULL,
+  "http://search.qip.ru/?query={searchTerms}",
+  "UTF-8",
+  NULL,
+  NULL,
+  SEARCH_ENGINE_QIP,
+  47,
+};
+
+const PrepopulatedEngine ukr_net = {
+  L"Ukr.net",
+  L"ukr.net",
+  NULL,
+  "http://search.ukr.net/google/search.php?q={searchTerms}",
+  "UTF-8",
+  NULL,
+  NULL,
+  SEARCH_ENGINE_UKR_NET,
+  48,
+};
+
+const PrepopulatedEngine webalta = {
+  L"Webalta",
+  L"webalta.ru",
+  NULL,
+  "http://webalta.ru/search?q={searchTerms}",
+  "UTF-8",
+  NULL,
+  NULL,
+  SEARCH_ENGINE_WEBALTA,
+  49,
+};
+
+const PrepopulatedEngine yandex_tr = {
+  L"Yandex",
+  L"yandex.com.tr",
+  "http://yandex.com.tr/favicon.ico",
+  "http://yandex.com.tr/yandsearch?text={searchTerms}",
+  "UTF-8",
+  "http://suggest.yandex.net/suggest-ff.cgi?part={searchTerms}",
+  NULL,
+  SEARCH_ENGINE_YANDEX,
+  15,
+};
+
 // Lists of engines per country ////////////////////////////////////////////////
 
 // Put these in order with most interesting/important first.  The default will
@@ -2537,7 +2679,8 @@ const PrepopulatedEngine* engines_ZW[] =
 
 // A list of all the engines that we know about.
 const PrepopulatedEngine* kAllEngines[] =
-    { &abcsok, &altavista, &altavista_ar, &altavista_se, &aol, &araby, &ask,
+    { // Prepopulated engines:
+      &abcsok, &altavista, &altavista_ar, &altavista_se, &aol, &araby, &ask,
       &ask_de, &ask_es, &ask_it, &ask_nl, &ask_uk, &atlas_cz, &atlas_sk, &baidu,
       &bing, &bing_ar_XA, &bing_bg_BG, &bing_cs_CZ, &bing_da_DK, &bing_de_AT,
       &bing_de_CH, &bing_de_DE, &bing_el_GR, &bing_en_AU, &bing_en_CA,
@@ -2563,7 +2706,10 @@ const PrepopulatedEngine* kAllEngines[] =
       &yahoo_jp, &yahoo_kr, &yahoo_malaysia, &yahoo_mx, &yahoo_nl, &yahoo_no,
       &yahoo_nz, &yahoo_pe, &yahoo_ph, &yahoo_qc, &yahoo_ru, &yahoo_se,
       &yahoo_sg, &yahoo_th, &yahoo_tw, &yahoo_uk, &yahoo_ve, &yahoo_vn, &yamli,
-      &yandex_ru, &yandex_ua, &zoznam };
+      &yandex_ru, &yandex_ua, &zoznam,
+      // UMA-only engines:
+      &all_by, &aport, &conduit, &icq, &meta_ua, &metabot_ru, &nigma, &qip,
+      &ukr_net, &webalta, &yandex_tr };
 
 
 // Geographic mappings /////////////////////////////////////////////////////////
@@ -3254,6 +3400,7 @@ TemplateURL* GetPrepopulatedDefaultSearch(Profile* profile) {
   return default_search_provider;
 }
 
+// Finds a prepopulated engine whose origin is the same as |url|'s origin.
 static const PrepopulatedEngine* GetEngineForURL(const std::string& url) {
   // We may get a valid URL, or we may get the Google prepopulate URL which
   // can't be converted to a GURL.  Instead of forcing callers to substitute to
