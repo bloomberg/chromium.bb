@@ -929,6 +929,95 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
   }
 }
 
+// Test for http://crbug.com/130016.
+// Swapping out a render view should update its visiblity state.
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+                       SwappedOutViewHasCorrectVisibilityState) {
+  // Start two servers with different sites.
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS,
+      net::TestServer::kLocalhost,
+      FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  // Load a page with links that open in a new window.
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/click-noreferrer-links.html",
+      https_server.host_port_pair(),
+      &replacement_path));
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL(replacement_path));
+
+  // Open a same-site link in a new tab.
+  ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
+      content::Source<content::WebContentsDelegate>(browser())));
+  bool success = false;
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(clickSameSiteTargetedLink());",
+      &success));
+  EXPECT_TRUE(success);
+  new_tab_observer.Wait();
+
+  // Opens in new tab.
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(1, browser()->active_index());
+
+  // Wait for the navigation in the new tab to finish, if it hasn't.
+  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  EXPECT_EQ("/files/navigate_opener.html",
+            browser()->GetSelectedWebContents()->GetURL().path());
+  EXPECT_EQ(1, browser()->active_index());
+
+  RenderViewHost* rvh =
+      browser()->GetSelectedWebContents()->GetRenderViewHost();
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      rvh, L"",
+      L"window.domAutomationController.send("
+          L"document.webkitVisibilityState == 'visible');",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Now navigate the new tab to a different site. This should swap out the
+  // tab's existing RenderView, causing it become hidden.
+  browser()->ActivateTabAt(1, true);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server.GetURL("files/title1.html"));
+
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      rvh, L"",
+      L"window.domAutomationController.send("
+          L"document.webkitVisibilityState == 'hidden');",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Going back should make the previously swapped-out view to become visible
+  // again.
+  {
+    ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &browser()->GetSelectedWebContents()->GetController()));
+    browser()->GoBack(CURRENT_TAB);
+    back_nav_load_observer.Wait();
+  }
+
+
+  EXPECT_EQ("/files/navigate_opener.html",
+            browser()->GetSelectedWebContents()->GetURL().path());
+
+  EXPECT_EQ(rvh, browser()->GetSelectedWebContents()->GetRenderViewHost());
+
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      rvh, L"",
+      L"window.domAutomationController.send("
+          L"document.webkitVisibilityState == 'visible');",
+      &success));
+  EXPECT_TRUE(success);
+}
+
 // This class holds onto RenderViewHostObservers for as long as their observed
 // RenderViewHosts are alive. This allows us to confirm that all hosts have
 // properly been shutdown.

@@ -999,8 +999,12 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
     return;
 
   // Swap this renderer back in if necessary.
-  if (is_swapped_out_)
+  if (is_swapped_out_) {
+    // We marked the view as hidden when swapping the view out, so be sure to
+    // reset the visibility state before navigating to the new URL.
+    webview()->setVisibilityState(visibilityState(), false);
     SetSwappedOut(false);
+  }
 
   history_list_offset_ = params.current_history_list_offset;
   history_list_length_ = params.current_history_list_length;
@@ -4730,6 +4734,10 @@ void RenderViewImpl::OnSwapOut(const ViewMsg_SwapOut_Params& params) {
     // TODO(creis): Need to add a better way to do this that avoids running the
     // beforeunload handler. For now, we just run it a second time silently.
     NavigateToSwappedOutURL();
+
+    // Let WebKit know that this view is hidden so it can drop resources and
+    // stop compositing.
+    webview()->setVisibilityState(WebKit::WebPageVisibilityStateHidden, false);
   }
 
   // Just echo back the params in the ACK.
