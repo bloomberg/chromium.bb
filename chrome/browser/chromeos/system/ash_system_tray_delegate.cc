@@ -92,7 +92,7 @@ ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network,
   info.name = UTF8ToUTF16(network->name());
   info.image = network_icon->GetImage(network, NetworkMenuIcon::COLOR_DARK);
   info.service_path = network->service_path();
-  info.highlight = network_menu->ShouldHighlightNetwork(network);
+  info.highlight = network->connected() || network->connecting();
   info.tray_icon_visible = ShouldShowNetworkIconInTray(network);
   return info;
 }
@@ -496,6 +496,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       std::vector<ash::NetworkIconInfo>* list) OVERRIDE {
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
 
+    int connected_index = 0;
+
     // Ethernet.
     if (crosnet->ethernet_available() && crosnet->ethernet_enabled()) {
       const EthernetNetwork* ethernet_network = crosnet->ethernet_network();
@@ -514,42 +516,27 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                   IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
         }
         list->push_back(info);
-      }
-    }
-
-    // Wifi.
-    if (crosnet->wifi_available() && crosnet->wifi_enabled()) {
-      const WifiNetworkVector& wifi = crosnet->wifi_networks();
-      for (size_t i = 0; i < wifi.size(); ++i) {
-        ash::NetworkIconInfo info = CreateNetworkIconInfo(wifi[i],
-            network_icon_.get(), network_menu_.get());
-        if (wifi[i]->connecting()) {
-          info.description = l10n_util::GetStringFUTF16(
-            IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-            info.name,
-            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
-        }
-        list->push_back(info);
-      }
-    }
-
-    // Wimax.
-    if (crosnet->wimax_available() && crosnet->wimax_enabled()) {
-      const WimaxNetworkVector& wimax = crosnet->wimax_networks();
-      for (size_t i = 0; i < wimax.size(); ++i) {
-        ash::NetworkIconInfo info = CreateNetworkIconInfo(wimax[i],
-            network_icon_.get(), network_menu_.get());
-        if (wimax[i]->connecting()) {
-          info.description = l10n_util::GetStringFUTF16(
-            IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-            info.name,
-            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
-        }
-        list->push_back(info);
+        if (ethernet_network->connected() || ethernet_network->connecting())
+          ++connected_index;
       }
     }
 
     ash::user::LoginStatus login_status = GetUserLoginStatus();
+
+    // VPN (only if logged in).
+    if (login_status != ash::user::LOGGED_IN_NONE &&
+        (crosnet->connected_network() ||
+         crosnet->virtual_network_connected())) {
+      const VirtualNetworkVector& vpns = crosnet->virtual_networks();
+      for (size_t i = 0; i < vpns.size(); ++i) {
+        ash::NetworkIconInfo info = CreateNetworkIconInfo(vpns[i],
+            network_icon_.get(), network_menu_.get());
+        if (vpns[i]->connected() || vpns[i]->connecting())
+          list->insert(list->begin() + connected_index++, info);
+        else
+          list->push_back(info);
+      }
+    }
 
     // Cellular.
     if (crosnet->cellular_available() && crosnet->cellular_enabled()) {
@@ -580,18 +567,48 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                   IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
         }
 
-        list->push_back(info);
+        if (cell[i]->connected() || cell[i]->connecting())
+          list->insert(list->begin() + connected_index++, info);
+        else
+          list->push_back(info);
       }
     }
 
-    // VPN (only if logged in).
-    if (login_status == ash::user::LOGGED_IN_NONE)
-      return;
-    if (crosnet->connected_network() || crosnet->virtual_network_connected()) {
-      const VirtualNetworkVector& vpns = crosnet->virtual_networks();
-      for (size_t i = 0; i < vpns.size(); ++i) {
-        list->push_back(CreateNetworkIconInfo(vpns[i], network_icon_.get(),
-              network_menu_.get()));
+    // Wimax.
+    if (crosnet->wimax_available() && crosnet->wimax_enabled()) {
+      const WimaxNetworkVector& wimax = crosnet->wimax_networks();
+      for (size_t i = 0; i < wimax.size(); ++i) {
+        ash::NetworkIconInfo info = CreateNetworkIconInfo(wimax[i],
+            network_icon_.get(), network_menu_.get());
+        if (wimax[i]->connecting()) {
+          info.description = l10n_util::GetStringFUTF16(
+            IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
+            info.name,
+            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
+        }
+        if (wimax[i]->connecting() || wimax[i]->connected())
+          list->insert(list->begin() + connected_index++, info);
+        else
+          list->push_back(info);
+      }
+    }
+
+    // Wifi.
+    if (crosnet->wifi_available() && crosnet->wifi_enabled()) {
+      const WifiNetworkVector& wifi = crosnet->wifi_networks();
+      for (size_t i = 0; i < wifi.size(); ++i) {
+        ash::NetworkIconInfo info = CreateNetworkIconInfo(wifi[i],
+            network_icon_.get(), network_menu_.get());
+        if (wifi[i]->connecting()) {
+          info.description = l10n_util::GetStringFUTF16(
+            IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
+            info.name,
+            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
+        }
+        if (wifi[i]->connecting() || wifi[i]->connected())
+          list->insert(list->begin() + connected_index++, info);
+        else
+          list->push_back(info);
       }
     }
   }
