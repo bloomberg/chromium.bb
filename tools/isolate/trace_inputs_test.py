@@ -94,6 +94,16 @@ class TraceInputs(unittest.TestCase):
         "}\n")
     self._test(value, expected)
 
+  def test_process_quoted_arguments(self):
+    test_cases = (
+      ('"foo"', ['foo']),
+      ('"foo", "bar"', ['foo', 'bar']),
+      ('"foo"..., "bar"', ['foo', 'bar']),
+      ('"foo", "bar"...', ['foo', 'bar']),
+    )
+    for actual, expected in test_cases:
+      self.assertEquals(expected, trace_inputs.process_quoted_arguments(actual))
+
 
 def join_norm(*args):
   """Joins and normalizes path in a single step."""
@@ -115,12 +125,13 @@ if trace_inputs.get_flavor() == 'linux':
       return context.to_results().flatten()
 
     def _test_lines(self, lines, initial_cwd, files, command=None):
+      filepath = join_norm(initial_cwd, '../out/unittests')
       command = command or ['../out/unittests']
       expected = {
         'root': {
           'children': [],
-          'command': None,
-          'executable': None,
+          'command': command,
+          'executable': filepath,
           'files': files,
           'initial_cwd': initial_cwd,
           'pid': self._ROOT_PID,
@@ -234,6 +245,9 @@ if trace_inputs.get_flavor() == 'linux':
           'clone(child_stack=0, flags=CLONE_CHILD_CLEARTID'
             '|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f5350f829d0) = %d' %
             self._GRAND_CHILD_PID),
+        (self._GRAND_CHILD_PID,
+          'execve("../out/unittests", '
+            '["../out/unittests"...], [/* 44 vars */])         = 0'),
         (self._ROOT_PID, 'chdir("/home_foo_bar_user/path2") = 0'),
         (self._GRAND_CHILD_PID,
           'open("random.txt", O_RDONLY)       = 76'),
@@ -245,36 +259,42 @@ if trace_inputs.get_flavor() == 'linux':
               'children': [
                 {
                   'children': [],
-                  'command': None,
-                  'executable': None,
+                  'command': ['../out/unittests'],
+                  'executable': '/home_foo_bar_user/out/unittests',
                   'files': [
+                    {
+                      'path': u'/home_foo_bar_user/out/unittests',
+                      'size': -1,
+                    },
                     {
                       'path': u'/home_foo_bar_user/path1/random.txt',
                       'size': -1,
                     },
                   ],
-                  'initial_cwd': '/home_foo_bar_user/path1',
+                  'initial_cwd': u'/home_foo_bar_user/path1',
                   'pid': self._GRAND_CHILD_PID,
                 },
               ],
+              # clone does not carry over the command and executable so it is
+              # clear if an execve() call was done or not.
               'command': None,
               'executable': None,
               # This is important, since no execve call was done, it didn't
               # touch the executable file.
               'files': [],
-              'initial_cwd': ROOT_DIR,
+              'initial_cwd': unicode(ROOT_DIR),
               'pid': self._CHILD_PID,
             },
           ],
-          'command': None,
-          'executable': None,
+          'command': ['../out/unittests'],
+          'executable': join_norm(ROOT_DIR, '../out/unittests'),
           'files': [
             {
               'path': join_norm(ROOT_DIR, '../out/unittests'),
               'size': -1,
             },
           ],
-          'initial_cwd': ROOT_DIR,
+          'initial_cwd': unicode(ROOT_DIR),
           'pid': self._ROOT_PID,
         },
       }

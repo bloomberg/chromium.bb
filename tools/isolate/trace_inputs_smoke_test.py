@@ -136,25 +136,50 @@ class TraceInputs(TraceInputsBase):
 class TraceInputsImport(TraceInputsBase):
   def setUp(self):
     super(TraceInputsImport, self).setUp()
+    import trace_inputs
+    self.trace_inputs = trace_inputs
     self.cwd = os.path.join(ROOT_DIR, u'data')
     self.initial_cwd = self.cwd
     if sys.platform == 'win32':
       # Still not supported on Windows.
       self.initial_cwd = None
+    self.executable = sys.executable
+    if sys.platform == 'darwin':
+      # /usr/bin/python is a thunk executable that decides which version of
+      # python gets executed.
+      suffix = '.'.join(map(str, sys.version_info[0:2]))
+      if os.access(self.executable + suffix, os.X_OK):
+        self.executable += suffix
+    self.real_executable = self.trace_inputs.get_native_path_case(
+        self.executable)
+    if sys.platform == 'darwin':
+      # Interestingly, only OSX does resolve the symlink manually before
+      # starting the executable.
+      if os.path.islink(self.real_executable):
+        self.real_executable = os.path.normpath(
+            os.path.join(
+                os.path.dirname(self.real_executable),
+                os.readlink(self.real_executable)))
+    self.naked_executable = sys.executable
+    if sys.platform == 'win32':
+      self.naked_executable = os.path.basename(sys.executable)
+
+  def tearDown(self):
+    del self.trace_inputs
+    super(TraceInputsImport, self).tearDown()
 
   # Similar to TraceInputs test fixture except that it calls the function
   # directly, so the Results instance can be inspected.
   # Roughly, make sure the API is stable.
   def _execute(self, command):
     # Similar to what trace_test_cases.py does.
-    import trace_inputs
-    api = trace_inputs.get_api()
-    _, _ = trace_inputs.trace(
+    api = self.trace_inputs.get_api()
+    _, _ = self.trace_inputs.trace(
           self.log, command, self.cwd, api, True)
     # TODO(maruel): Check
     #self.assertEquals(0, returncode)
     #self.assertEquals('', output)
-    return trace_inputs.load_trace(self.log, ROOT_DIR, api)
+    return self.trace_inputs.load_trace(self.log, ROOT_DIR, api)
 
   def test_trace_wrong_path(self):
     # Deliberately start the trace from the wrong path. Starts it from the
@@ -164,8 +189,12 @@ class TraceInputsImport(TraceInputsBase):
     expected = {
       'root': {
         'children': [],
-        'command': None,
-        'executable': None,
+        'command': [
+          self.executable,
+          os.path.join('data', 'trace_inputs', 'child1.py'),
+          '--child',
+        ],
+        'executable': self.real_executable,
         'files': [],
         'initial_cwd': self.initial_cwd,
       },
@@ -183,8 +212,8 @@ class TraceInputsImport(TraceInputsBase):
         'children': [
           {
             'children': [],
-            'command': None,
-            'executable': None,
+            'command': ['python', 'child2.py'],
+            'executable': self.naked_executable,
             'files': [
               {
                 'path': os.path.join(u'data', 'trace_inputs', 'child2.py'),
@@ -198,8 +227,12 @@ class TraceInputsImport(TraceInputsBase):
             'initial_cwd': self.initial_cwd,
           },
         ],
-        'command': None,
-        'executable': None,
+        'command': [
+          self.executable,
+          os.path.join('trace_inputs', 'child1.py'),
+          '--child-gyp',
+        ],
+        'executable': self.real_executable,
         'files': [
           {
             'path': os.path.join(u'data', 'trace_inputs', 'child1.py'),

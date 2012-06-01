@@ -33,7 +33,7 @@ import weakref
 ## OS-specific imports
 
 if sys.platform == 'win32':
-  from ctypes.wintypes import create_unicode_buffer
+  from ctypes.wintypes import byref, create_unicode_buffer, c_int, c_wchar_p
   from ctypes.wintypes import windll, FormatError  # pylint: disable=E0611
   from ctypes.wintypes import GetLastError  # pylint: disable=E0611
 elif sys.platform == 'darwin':
@@ -173,6 +173,17 @@ if sys.platform == 'win32':
     return path
 
 
+  def CommandLineToArgvW(command_line):
+    """Splits a commandline into argv using CommandLineToArgvW()."""
+    # http://msdn.microsoft.com/library/windows/desktop/bb776391.aspx
+    size = c_int()
+    ptr = windll.shell32.CommandLineToArgvW(unicode(command_line), byref(size))
+    try:
+      return [arg for arg in (c_wchar_p * size.value).from_address(ptr)]
+    finally:
+      windll.kernel32.LocalFree(ptr)
+
+
 elif sys.platform == 'darwin':
 
 
@@ -253,6 +264,74 @@ def cleanup_path(x):
   if x:
     x += '/'
   return x
+
+
+def process_quoted_arguments(text):
+  """Extracts quoted arguments on a string and return the arguments as a list.
+
+  Implemented as an automaton. Supports incomplete strings in the form
+  '"foo"...'.
+
+  Example:
+    With text = '"foo", "bar"', the function will return ['foo', 'bar']
+
+  TODO(maruel): Implement escaping.
+  """
+  # All the possible states of the DFA.
+  ( NEED_QUOTE,         # Begining of a new arguments.
+    INSIDE_STRING,      # Inside an argument.
+    NEED_COMMA_OR_DOT,  # Right after the closing quote of an argument. Could be
+                        # a serie of 3 dots or a comma.
+    NEED_SPACE,         # Right after a comma
+    NEED_DOT_2,         # Found a dot, need a second one.
+    NEED_DOT_3,         # Found second dot, need a third one.
+    NEED_COMMA,         # Found third dot, need a comma.
+    ) = range(7)
+
+  state = NEED_QUOTE
+  current_argument = ''
+  out = []
+  for i in text:
+    if i == '"':
+      if state == NEED_QUOTE:
+        state = INSIDE_STRING
+      elif state == INSIDE_STRING:
+        # The argument is now closed.
+        out.append(current_argument)
+        current_argument = ''
+        state = NEED_COMMA_OR_DOT
+      else:
+        assert False, text
+    elif i == ',':
+      if state in (NEED_COMMA_OR_DOT, NEED_COMMA):
+        state = NEED_SPACE
+      else:
+        assert False, text
+    elif i == ' ':
+      if state == NEED_SPACE:
+        state = NEED_QUOTE
+      if state == INSIDE_STRING:
+        current_argument += i
+    elif i == '.':
+      if state == NEED_COMMA_OR_DOT:
+        # The string is incomplete, this mean the strace -s flag should be
+        # increased.
+        state = NEED_DOT_2
+      elif state == NEED_DOT_2:
+        state = NEED_DOT_3
+      elif state == NEED_DOT_3:
+        state = NEED_COMMA
+      elif state == INSIDE_STRING:
+        current_argument += i
+      else:
+        assert False, text
+    else:
+      if state == INSIDE_STRING:
+        current_argument += i
+      else:
+        assert False, text
+  assert state in (NEED_COMMA, NEED_COMMA_OR_DOT)
+  return out
 
 
 class ApiBase(object):
@@ -752,7 +831,10 @@ class Strace(ApiBase):
         if result != '0':
           return
         m = self.RE_EXECVE.match(args)
-        self._handle_file(m.group(1), result)
+        filepath = m.group(1)
+        self._handle_file(filepath, result)
+        self.executable = self.RelativePath(self.get_cwd(), filepath)
+        self.command = process_quoted_arguments(m.group(2))
 
       def handle_exit_group(self, _function, _args, _result):
         """Removes cwd."""
@@ -947,6 +1029,115 @@ class Dtrace(ApiBase):
       }
 
       /* Finally what we care about! */
+      syscall::exec*:entry /trackedpid[pid]/ {
+        self->e_arg0 = copyinstr(arg0);
+        /* Incrementally probe for a NULL in the argv parameter of execve() to
+         * figure out argc. */
+        self->argc = 0;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+
+        /* Copy the inputs strings since there is no guarantee they'll be
+         * present after the call completed. */
+        self->args[0] = (self->argc > 0) ? copyinstr(self->argv[0]) : "";
+        self->args[1] = (self->argc > 1) ? copyinstr(self->argv[1]) : "";
+        self->args[2] = (self->argc > 2) ? copyinstr(self->argv[2]) : "";
+        self->args[3] = (self->argc > 3) ? copyinstr(self->argv[3]) : "";
+        self->args[4] = (self->argc > 4) ? copyinstr(self->argv[4]) : "";
+        self->args[5] = (self->argc > 5) ? copyinstr(self->argv[5]) : "";
+        self->args[6] = (self->argc > 6) ? copyinstr(self->argv[6]) : "";
+        self->args[7] = (self->argc > 7) ? copyinstr(self->argv[7]) : "";
+        self->args[8] = (self->argc > 8) ? copyinstr(self->argv[8]) : "";
+        self->args[9] = (self->argc > 9) ? copyinstr(self->argv[9]) : "";
+      }
+      syscall::exec*: /trackedpid[pid] && errno == 0/ {
+        /* We need to join strings here, as using multiple printf() would cause
+         * tearing when multiple threads/processes are traced. */
+        this->args = "";
+        this->args = strjoin(this->args, (self->argc > 0) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 0) ? self->args[0] : "");
+        this->args = strjoin(this->args, (self->argc > 0) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 1) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 1) ? self->args[1] : "");
+        this->args = strjoin(this->args, (self->argc > 1) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 2) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 2) ? self->args[2] : "");
+        this->args = strjoin(this->args, (self->argc > 2) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 3) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 3) ? self->args[3] : "");
+        this->args = strjoin(this->args, (self->argc > 3) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 4) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 4) ? self->args[4] : "");
+        this->args = strjoin(this->args, (self->argc > 4) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 5) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 5) ? self->args[5] : "");
+        this->args = strjoin(this->args, (self->argc > 5) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 6) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 6) ? self->args[6] : "");
+        this->args = strjoin(this->args, (self->argc > 6) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 7) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 7) ? self->args[7] : "");
+        this->args = strjoin(this->args, (self->argc > 7) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 8) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 8) ? self->args[8] : "");
+        this->args = strjoin(this->args, (self->argc > 8) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 9) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 9) ? self->args[9]: "");
+        this->args = strjoin(this->args, (self->argc > 9) ? "\\"" : "");
+
+        /* Prints self->argc to permits verifying the internal consistency since
+         * this code is quite fishy. */
+        printf("%d %d:%d %s(\\"%s\\", [%d%s]) = %d\\n",
+               logindex, ppid, pid, probefunc,
+               self->e_arg0,
+               self->argc,
+               this->args,
+               errno);
+        logindex++;
+
+        /* TODO(maruel): Clean up memory
+        self->e_arg0 = 0;
+        self->argc = 0;
+        self->args[0] = 0;
+        self->args[1] = 0;
+        self->args[2] = 0;
+        self->args[3] = 0;
+        self->args[4] = 0;
+        self->args[5] = 0;
+        self->args[6] = 0;
+        self->args[7] = 0;
+        self->args[8] = 0;
+        self->args[9] = 0;
+        */
+      }
+
       syscall::open*:entry /trackedpid[pid]/ {
         self->arg0 = arg0;
         self->arg1 = arg1;
@@ -1040,6 +1231,7 @@ class Dtrace(ApiBase):
     # Arguments parsing.
     RE_DTRACE_BEGIN = re.compile(r'^\"(.+?)\"$')
     RE_CHDIR = re.compile(r'^\"(.+?)\"$')
+    RE_EXECVE = re.compile(r'^\"(.+?)\", \[(\d+), (.+)\]$')
     RE_OPEN = re.compile(r'^\"(.+?)\", (\d+), (-?\d+)$')
     RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
 
@@ -1108,6 +1300,23 @@ class Dtrace(ApiBase):
       if pid != self._tracer_pid:
         # self._tracer_pid is not traced itself.
         self.processes[pid].cwd = None
+
+    def handle_execve(self, _ppid, pid, _function, args, _result):
+      """Sets the process' executable.
+
+      TODO(maruel): Read command line arguments.  See
+      https://discussions.apple.com/thread/1980539 for an example.
+      https://gist.github.com/1242279
+
+      Will have to put the answer at http://stackoverflow.com/questions/7556249.
+      :)
+      """
+      match = self.RE_EXECVE.match(args)
+      assert match, args
+      proc = self.processes[pid]
+      proc.executable = match.group(1)
+      proc.command = process_quoted_arguments(match.group(3))
+      assert int(match.group(2)) == len(proc.command), args
 
     def handle_chdir(self, _ppid, pid, _function, args, result):
       """Updates cwd."""
@@ -1260,8 +1469,18 @@ class Dtrace(ApiBase):
     CPU.
     """
     with open(logname, 'rb') as logfile:
-      lines = [f for f in logfile.readlines() if f.strip()]
-    lines = sorted(lines, key=lambda l: int(l.split(' ', 1)[0]))
+      lines = [l for l in logfile if l.strip()]
+    errors = [l for l in lines if l.startswith('dtrace:')]
+    if errors:
+      print >> sys.stderr, 'Failed to load: %s' % logname
+      print >> sys.stderr, '\n'.join(errors)
+      assert not errors, errors
+    try:
+      lines = sorted(lines, key=lambda l: int(l.split(' ', 1)[0]))
+    except ValueError:
+      print >> sys.stderr, 'Failed to load: %s' % logname
+      print >> sys.stderr, '\n'.join(lines)
+      raise
     with open(logname, 'wb') as logfile:
       logfile.write(''.join(lines))
 
@@ -1529,7 +1748,7 @@ class LogmanTrace(ApiBase):
       #DIRECTORY_TABLE_BASE = 24
       #USER_SID = 25
       IMAGE_FILE_NAME = 26
-      #COMMAND_LINE = 27
+      COMMAND_LINE = 27
 
       ppid = line[self.PID]
       pid = int(line[PROCESS_ID], 16)
@@ -1540,16 +1759,32 @@ class LogmanTrace(ApiBase):
           # Skip the shutdown call when "logman.exe stop" is executed.
           return
         self._initial_pid = self._initial_pid or pid
-        assert pid not in self.processes
-        self.processes[pid] = self.Process(self, pid, None, None)
-        logging.info(
-            'New child: %d -> %d %s' % (ppid, pid, line[IMAGE_FILE_NAME]))
-      elif ppid in self.processes:
-        # Grand-children
-        assert pid not in self.processes
-        self.processes[pid] = self.Process(self, pid, None, ppid)
-        logging.info(
-            'New child: %d -> %d %s' % (ppid, pid, line[IMAGE_FILE_NAME]))
+        ppid = None
+      elif ppid not in self.processes:
+        # Ignore
+        return
+      assert pid not in self.processes
+      proc = self.processes[pid] = self.Process(self, pid, None, ppid)
+      # TODO(maruel): Process escapes.
+      assert (
+          line[COMMAND_LINE].startswith('"') and
+          line[COMMAND_LINE].endswith('"'))
+      proc.command = CommandLineToArgvW(line[COMMAND_LINE][1:-1])
+      assert (
+          line[IMAGE_FILE_NAME].startswith('"') and
+          line[IMAGE_FILE_NAME].endswith('"'))
+      proc.executable = line[IMAGE_FILE_NAME][1:-1]
+      # proc.command[0] may be the absolute path of 'executable' but it may be
+      # anything else too. If it happens that command[0] ends with executable,
+      # use it, otherwise defaults to the base name.
+      cmd0 = proc.command[0].lower()
+      if not cmd0.endswith('.exe'):
+        # TODO(maruel): That's not strictly true either.
+        cmd0 += '.exe'
+      if cmd0.endswith(proc.executable) and os.path.isfile(cmd0):
+        proc.executable = get_native_path_case(cmd0)
+      logging.info(
+          'New child: %s -> %d %s' % (ppid, pid, proc.executable))
 
     def handle_Thread_End(self, line):
       """Has the same parameters as Thread_Start."""
@@ -1615,11 +1850,6 @@ class LogmanTrace(ApiBase):
 
     # Add these last since they have no short path name equivalent.
     self.IGNORED.add('\\SystemRoot')
-    # All the NTFS metadata is in the form x:\$EXTEND or stuff like that.
-    for letter in (chr(l) for l in xrange(ord('C'), ord('Z')+1)):
-      self.IGNORED.add('%s\\\$' % letter)
-      # TODO(maruel): Remove the need to add these.
-      self.IGNORED.add('\\\\?\\%s\\$' % letter)
     self.IGNORED = tuple(sorted(self.IGNORED))
 
   @staticmethod
@@ -1752,6 +1982,10 @@ class LogmanTrace(ApiBase):
   def parse_log(cls, filename, blacklist):
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
 
+    def blacklist_more(filepath):
+      # All the NTFS metadata is in the form x:\$EXTEND or stuff like that.
+      return blacklist(filepath) or re.match(r'[A-Z]\:\\\$EXTEND', filepath)
+
     # Auto-detect the log format.
     with open(filename, 'rb') as f:
       hdr = f.read(2)
@@ -1765,7 +1999,7 @@ class LogmanTrace(ApiBase):
       else:
         logformat = 'csv'
 
-    context = cls.Context(blacklist)
+    context = cls.Context(blacklist_more)
 
     if logformat == 'csv_utf16':
       def utf_8_encoder(unicode_csv_data):
