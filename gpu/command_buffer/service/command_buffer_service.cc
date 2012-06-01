@@ -16,12 +16,14 @@ using ::base::SharedMemory;
 
 namespace gpu {
 
-CommandBufferService::CommandBufferService()
+CommandBufferService::CommandBufferService(
+    TransferBufferManagerInterface* transfer_buffer_manager)
     : ring_buffer_id_(-1),
       shared_state_(NULL),
       num_entries_(0),
       get_offset_(0),
       put_offset_(0),
+      transfer_buffer_manager_(transfer_buffer_manager),
       token_(0),
       generation_(0),
       error_(error::kNoError),
@@ -32,9 +34,7 @@ CommandBufferService::~CommandBufferService() {
 }
 
 bool CommandBufferService::Initialize() {
-  TransferBufferManager* manager = new TransferBufferManager();
-  transfer_buffer_manager_.reset(manager);
-  return manager->Initialize();
+  return true;
 }
 
 CommandBufferService::State CommandBufferService::GetState() {

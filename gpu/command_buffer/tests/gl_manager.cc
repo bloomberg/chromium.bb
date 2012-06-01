@@ -93,14 +93,17 @@ void GLManager::Setup(
   attribs.push_back(16);
   attribs.push_back(EGL_NONE);
 
-  command_buffer_.reset(new CommandBufferService);
+  if (!context_group) {
+    context_group = new gles2::ContextGroup(
+        mailbox_manager_.get(), kBindGeneratesResource);
+  }
+
+  decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group));
+
+  command_buffer_.reset(new CommandBufferService(
+      decoder_->GetContextGroup()->transfer_buffer_manager()));
   ASSERT_TRUE(command_buffer_->Initialize())
       << "could not create command buffer service";
-
-  decoder_.reset(::gpu::gles2::GLES2Decoder::Create(
-      context_group ? context_group :
-          new gles2::ContextGroup(
-              mailbox_manager_.get(), kBindGeneratesResource)));
 
   gpu_scheduler_.reset(new GpuScheduler(command_buffer_.get(),
                                         decoder_.get(),

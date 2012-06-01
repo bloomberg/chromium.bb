@@ -239,7 +239,8 @@ void GpuCommandBufferStub::OnInitialize(
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnInitialize");
   DCHECK(!command_buffer_.get());
 
-  command_buffer_.reset(new gpu::CommandBufferService);
+  command_buffer_.reset(new gpu::CommandBufferService(
+      context_group_->transfer_buffer_manager()));
 
   if (!command_buffer_->Initialize()) {
     DLOG(ERROR) << "CommandBufferService failed to initialize.\n";

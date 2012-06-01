@@ -19,6 +19,7 @@
 namespace gpu {
 
 class IdAllocatorInterface;
+class TransferBufferManagerInterface;
 
 namespace gles2 {
 
@@ -38,8 +39,9 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
  public:
   typedef scoped_refptr<ContextGroup> Ref;
 
-  explicit ContextGroup(MailboxManager* mailbox_manager,
-                        bool bind_generates_resource);
+  ContextGroup(
+      MailboxManager* mailbox_manager,
+      bool bind_generates_resource);
 
   // This should only be called by GLES2Decoder. This must be paired with a
   // call to destroy if it succeeds.
@@ -114,6 +116,10 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return shader_manager_.get();
   }
 
+  TransferBufferManagerInterface* transfer_buffer_manager() const {
+    return transfer_buffer_manager_.get();
+  }
+
   IdAllocatorInterface* GetIdAllocator(unsigned namespace_id);
 
  private:
@@ -126,6 +132,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   bool QueryGLFeatureU(GLenum pname, GLint min_required, uint32* v);
 
   scoped_refptr<MailboxManager> mailbox_manager_;
+  scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
 
   // Whether or not this context is initialized.
   int num_contexts_;

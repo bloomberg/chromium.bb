@@ -20,6 +20,7 @@ namespace gpu {
 class CommandBufferService;
 class GpuScheduler;
 class TransferBuffer;
+class TransferBufferManagerInterface;
 
 namespace gles2 {
 class GLES2CmdHelper;
@@ -66,6 +67,7 @@ class Display {
   EGLNativeDisplayType display_id_;
 
   bool is_initialized_;
+  scoped_ptr<gpu::TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GpuScheduler> gpu_scheduler_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;

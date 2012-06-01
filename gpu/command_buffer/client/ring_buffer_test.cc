@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX)
@@ -64,8 +65,14 @@ class BaseRingBufferTest : public testing::Test {
         .WillRepeatedly(DoAll(Invoke(api_mock_.get(), &AsyncAPIMock::SetToken),
                               Return(error::kNoError)));
 
-    command_buffer_.reset(new CommandBufferService);
-    command_buffer_->Initialize();
+    {
+      TransferBufferManager* manager = new TransferBufferManager();
+      transfer_buffer_manager_.reset(manager);
+      EXPECT_TRUE(manager->Initialize());
+    }
+    command_buffer_.reset(
+        new CommandBufferService(transfer_buffer_manager_.get()));
+    EXPECT_TRUE(command_buffer_->Initialize());
 
     gpu_scheduler_.reset(new GpuScheduler(
         command_buffer_.get(), api_mock_.get(), NULL));
@@ -93,6 +100,7 @@ class BaseRingBufferTest : public testing::Test {
 #endif
   MessageLoop message_loop_;
   scoped_ptr<AsyncAPIMock> api_mock_;
+  scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   scoped_ptr<CommandBufferHelper> helper_;

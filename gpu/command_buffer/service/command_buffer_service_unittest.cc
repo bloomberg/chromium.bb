@@ -7,6 +7,7 @@
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -22,7 +23,13 @@ namespace gpu {
 class CommandBufferServiceTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    command_buffer_.reset(new CommandBufferService);
+    {
+      TransferBufferManager* manager = new TransferBufferManager();
+      transfer_buffer_manager_.reset(manager);
+      EXPECT_TRUE(manager->Initialize());
+    }
+    command_buffer_.reset(
+        new CommandBufferService(transfer_buffer_manager_.get()));
     EXPECT_TRUE(command_buffer_->Initialize());
   }
 
@@ -49,6 +56,7 @@ class CommandBufferServiceTest : public testing::Test {
     return true;
   }
 
+  scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<CommandBufferService> command_buffer_;
 };
 

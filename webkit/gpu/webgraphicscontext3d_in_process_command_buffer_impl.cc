@@ -30,6 +30,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -46,6 +47,8 @@ using gpu::gles2::GLES2CmdHelper;
 using gpu::gles2::GLES2Implementation;
 using gpu::GpuScheduler;
 using gpu::TransferBuffer;
+using gpu::TransferBufferManager;
+using gpu::TransferBufferManagerInterface;
 
 namespace webkit {
 namespace gpu {
@@ -158,6 +161,7 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   base::WeakPtr<GLInProcessContext> parent_;
   base::Closure context_lost_callback_;
   uint32 parent_texture_id_;
+  scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr< ::gpu::GpuScheduler> gpu_scheduler_;
   scoped_ptr< ::gpu::gles2::GLES2Decoder> decoder_;
@@ -391,7 +395,14 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
     }
   }
 
-  command_buffer_.reset(new CommandBufferService);
+  {
+    TransferBufferManager* manager = new TransferBufferManager();
+    transfer_buffer_manager_.reset(manager);
+    manager->Initialize();
+  }
+
+  command_buffer_.reset(
+      new CommandBufferService(transfer_buffer_manager_.get()));
   if (!command_buffer_->Initialize()) {
     LOG(ERROR) << "Could not initialize command buffer.";
     Destroy();

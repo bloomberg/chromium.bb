@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/demos/framework/demo.h"
 #include "gpu/demos/framework/demo_factory.h"
 
@@ -65,7 +66,13 @@ void Window::OnPaint() {
 }
 
 bool Window::CreateRenderContext(gfx::AcceleratedWidget hwnd) {
-  command_buffer_.reset(new CommandBufferService);
+  {
+    TransferBufferManager* manager = new TransferBufferManager();
+    transfer_buffer_manager_.reset(manager);
+    EXPECT_TRUE(manager->Initialize());
+  }
+  command_buffer_.reset(
+      new CommandBufferService(transfer_buffer_manager_.get()));
   if (!command_buffer_->Initialize()) {
     return false;
   }

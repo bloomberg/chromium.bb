@@ -17,6 +17,7 @@
 namespace gpu {
 
 class TransferBuffer;
+class TransferBufferManagerInterface;
 
 namespace gles2 {
 
@@ -55,6 +56,7 @@ class Window {
   gfx::NativeWindow window_handle_;
   scoped_ptr<Demo> demo_;
 
+  scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GpuScheduler> gpu_scheduler_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;

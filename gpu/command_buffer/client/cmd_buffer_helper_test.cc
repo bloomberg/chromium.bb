@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,8 +66,14 @@ class CommandBufferHelperTest : public testing::Test {
     EXPECT_CALL(*api_mock_, DoCommand(cmd::kNoop, _, _))
         .WillRepeatedly(Return(error::kNoError));
 
-    command_buffer_.reset(new CommandBufferService);
-    command_buffer_->Initialize();
+    {
+      TransferBufferManager* manager = new TransferBufferManager();
+      transfer_buffer_manager_.reset(manager);
+      EXPECT_TRUE(manager->Initialize());
+    }
+    command_buffer_.reset(
+        new CommandBufferService(transfer_buffer_manager_.get()));
+    EXPECT_TRUE(command_buffer_->Initialize());
 
     gpu_scheduler_.reset(new GpuScheduler(
         command_buffer_.get(), api_mock_.get(), NULL));
@@ -160,6 +167,7 @@ class CommandBufferHelperTest : public testing::Test {
 #endif
   MessageLoop message_loop_;
   scoped_ptr<AsyncAPIMock> api_mock_;
+  scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   scoped_ptr<CommandBufferHelper> helper_;

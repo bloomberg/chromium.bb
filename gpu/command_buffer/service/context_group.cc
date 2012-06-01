@@ -18,13 +18,15 @@
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "ui/gl/gl_implementation.h"
 
 namespace gpu {
 namespace gles2 {
 
-ContextGroup::ContextGroup(MailboxManager* mailbox_manager,
-                           bool bind_generates_resource)
+ContextGroup::ContextGroup(
+    MailboxManager* mailbox_manager,
+    bool bind_generates_resource)
     : mailbox_manager_(mailbox_manager ? mailbox_manager : new MailboxManager),
       num_contexts_(0),
       enforce_gl_minimums_(CommandLine::ForCurrentProcess()->HasSwitch(
@@ -38,6 +40,12 @@ ContextGroup::ContextGroup(MailboxManager* mailbox_manager,
       max_varying_vectors_(0u),
       max_vertex_uniform_vectors_(0u),
       feature_info_(new FeatureInfo()) {
+  {
+    TransferBufferManager* manager = new TransferBufferManager();
+    transfer_buffer_manager_.reset(manager);
+    manager->Initialize();
+  }
+
   id_namespaces_[id_namespaces::kBuffers].reset(new IdAllocator);
   id_namespaces_[id_namespaces::kFramebuffers].reset(new IdAllocator);
   id_namespaces_[id_namespaces::kProgramsAndShaders].reset(
