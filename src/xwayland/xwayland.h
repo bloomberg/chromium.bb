@@ -62,6 +62,7 @@ struct weston_wm {
 	struct wl_listener activate_listener;
 
 	xcb_window_t selection_window;
+	xcb_window_t selection_owner;
 	int incr;
 	int data_source_fd;
 	struct wl_event_source *property_source;

@@ -547,9 +547,27 @@ weston_wm_handle_xfixes_selection_notify(struct weston_wm *wm,
 {
 	xcb_xfixes_selection_notify_event_t *xfixes_selection_notify =
 		(xcb_xfixes_selection_notify_event_t *) event;
+	struct weston_compositor *compositor;
+	uint32_t serial;
 
 	printf("xfixes selection notify event: owner %d\n",
 	       xfixes_selection_notify->owner);
+
+	if (xfixes_selection_notify->owner == XCB_WINDOW_NONE) {
+		if (wm->selection_owner != wm->selection_window) {
+			/* A real X client selection went away, not our
+			 * proxy selection.  Clear the wayland selection. */
+			compositor = wm->server->compositor;
+			serial = wl_display_next_serial(compositor->wl_display);
+			wl_seat_set_selection(&compositor->seat->seat, NULL, serial);
+		}
+
+		wm->selection_owner = XCB_WINDOW_NONE;
+
+		return;
+	}
+
+	wm->selection_owner = xfixes_selection_notify->owner;
 
 	/* We have to use XCB_TIME_CURRENT_TIME when we claim the
 	 * selection, so grab the actual timestamp here so we can
@@ -604,10 +622,17 @@ weston_wm_set_selection(struct wl_listener *listener, void *data)
 	const char **p, **end;
 	int has_text_plain = 0;
 
+	if (source == NULL) {
+		if (wm->selection_owner == wm->selection_window)
+			xcb_set_selection_owner(wm->conn,
+						XCB_ATOM_NONE,
+						wm->atom.clipboard,
+						wm->selection_timestamp);
+		return;
+	}
+
 	if (source->offer_interface == &data_offer_interface)
 		return;
-
-	fprintf(stderr, "set selection\n");
 
 	p = source->mime_types.data;
 	end = (const char **)

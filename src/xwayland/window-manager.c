@@ -906,7 +906,6 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 
 	while (event = xcb_poll_for_event(wm->conn), event != NULL) {
 		if (weston_wm_handle_selection_event(wm, event)) {
-			fprintf(stderr, "handled by selection code\n");
 			free(event);
 			count++;
 			continue;
