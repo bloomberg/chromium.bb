@@ -4988,17 +4988,6 @@
    fun:_ZN8appcache17AppCacheDiskCache10ActiveCall17OnAsyncCompletionEi
 }
 {
-   bug_111922
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9first_run8internal15LoadMasterPrefsEP8FilePath
-   fun:_ZN8FirstRun24ProcessMasterPreferencesERK8FilePathPN9first_run11MasterPrefsE
-   fun:_ZN22ChromeBrowserMainParts20PreCreateThreadsImplEv
-   fun:_ZN22ChromeBrowserMainParts16PreCreateThreadsEv
-   fun:_ZN7content15BrowserMainLoop23RunMainMessageLoopPartsEPb
-   fun:_Z11BrowserMainRKN7content18MainFunctionParamsE
-}
-{
    bug_112278
    Memcheck:Uninitialized
    fun:fetch_texel_2d_f_rgba8888
