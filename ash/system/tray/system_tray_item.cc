@@ -52,6 +52,9 @@ void SystemTrayItem::TransitionDetailedView() {
 void SystemTrayItem::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
+void SystemTrayItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+}
+
 void SystemTrayItem::PopupDetailedView(int for_seconds, bool activate) {
   Shell::GetInstance()->system_tray()->ShowDetailedView(
       this, for_seconds, activate, BUBBLE_CREATE_NEW);

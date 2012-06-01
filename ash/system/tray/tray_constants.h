@@ -12,7 +12,8 @@ namespace ash {
 
 extern const int kPaddingFromRightEdgeOfScreenBottomAlignment;
 extern const int kPaddingFromBottomOfScreenBottomAlignment;
-extern const int kPaddingFromLeftEdgeOfScreenLeftAlignment;
+extern const int kPaddingFromEdgeOfScreenVerticalAlignment;
+extern const int kPaddingFromEdgeOfLauncherVerticalAlignment;
 extern const int kPaddingFromRightEdgeOfScreenRightAlignment;
 extern const int kPaddingFromBottomOfScreenVerticalAlignment;
 

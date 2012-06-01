@@ -9,6 +9,10 @@
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 
+namespace views {
+class Label;
+}
+
 namespace ash {
 namespace internal {
 
@@ -19,6 +23,10 @@ class TimeView;
 class TrayDate : public SystemTrayItem,
                  public ClockObserver {
  public:
+  enum ClockLayout {
+   HORIZONTAL_CLOCK,
+   VERTICAL_CLOCK,
+  };
   TrayDate();
   virtual ~TrayDate();
 
@@ -31,10 +39,14 @@ class TrayDate : public SystemTrayItem,
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
+  virtual void UpdateAfterShelfAlignmentChange(
+      ShelfAlignment alignment) OVERRIDE;
 
   // Overridden from ClockObserver.
   virtual void OnDateFormatChanged() OVERRIDE;
   virtual void Refresh() OVERRIDE;
+
+  void SetupLabelForTimeTray(views::Label* label);
 
   tray::TimeView* time_tray_;
 

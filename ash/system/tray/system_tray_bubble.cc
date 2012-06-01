@@ -586,14 +586,14 @@ gfx::Rect SystemTrayBubble::GetAnchorRect() const {
                 0 : kPaddingFromRightEdgeOfScreenBottomAlignment,
             kPaddingFromBottomOfScreenBottomAlignment);
       } else if (tray_->shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
-        rect.Inset(0, 0, kPaddingFromLeftEdgeOfScreenLeftAlignment,
+        rect.Inset(0, 0, kPaddingFromEdgeOfLauncherVerticalAlignment,
                    kPaddingFromBottomOfScreenVerticalAlignment);
       } else {
-        rect.Inset(-kPaddingFromRightEdgeOfScreenRightAlignment,
+        rect.Inset(kPaddingFromEdgeOfLauncherVerticalAlignment + 4,
                    0, 0, kPaddingFromBottomOfScreenVerticalAlignment);
       }
     } else if (anchor_type_ == ANCHOR_TYPE_BUBBLE) {
-      // For notification bubble to be achored with uber tray bubble,
+      // For notification bubble to be anchored with uber tray bubble,
       // the anchor can include arrow on left or right, which should
       // be deducted out from the anchor rect.
       views::View* anchor_view = bubble_view()->anchor_view();

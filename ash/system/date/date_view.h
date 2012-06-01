@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_DATE_DATE_VIEW_H_
 #pragma once
 
+#include "ash/system/date/tray_date.h"
 #include "ash/system/tray/tray_views.h"
 #include "base/i18n/time_formatting.h"
 #include "base/timer.h"
@@ -84,10 +85,15 @@ class TimeView : public BaseDateTimeView {
   TimeView();
   virtual ~TimeView();
 
-  views::Label* label() const { return label_; }
+  views::Label* label() const { return label_.get(); }
+  views::Label* label_hour() const { return label_hour_.get(); }
+  views::Label* label_minute() const { return label_minute_.get(); }
 
   // Updates the format of the displayed time.
   void UpdateTimeFormat();
+
+  // Updates clock layout.
+  void UpdateClockLayout(TrayDate::ClockLayout clock_layout);
 
  private:
   // Overridden from BaseDateTimeView.
@@ -99,7 +105,11 @@ class TimeView : public BaseDateTimeView {
   // Overridden from views::View.
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
 
-  views::Label* label_;
+  void SetBorder(TrayDate::ClockLayout clock_layout);
+
+  scoped_ptr<views::Label> label_;
+  scoped_ptr<views::Label> label_hour_;
+  scoped_ptr<views::Label> label_minute_;
 
   base::HourClockType hour_type_;
 

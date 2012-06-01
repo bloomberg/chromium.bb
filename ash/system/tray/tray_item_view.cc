@@ -4,6 +4,9 @@
 
 #include "ash/system/tray/tray_item_view.h"
 
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/wm/shelf_auto_hide_behavior.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/controls/image_view.h"
@@ -13,6 +16,7 @@
 
 namespace {
 const int kTrayIconHeight = 29;
+const int kTrayIconWidth = 29;
 const int kTrayItemAnimationDurationMS = 200;
 }
 
@@ -72,7 +76,11 @@ int TrayItemView::GetAnimationDurationMS() {
 
 gfx::Size TrayItemView::GetPreferredSize() {
   gfx::Size size = DesiredSize();
-  size.set_height(kTrayIconHeight);
+  if (ash::Shell::GetInstance()->system_tray()->shelf_alignment() ==
+      SHELF_ALIGNMENT_BOTTOM)
+    size.set_height(kTrayIconHeight);
+  else
+    size.set_width(kTrayIconWidth);
   if (!animation_.get() || !animation_->is_animating())
     return size;
   size.set_width(std::max(1,

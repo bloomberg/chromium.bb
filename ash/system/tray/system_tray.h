@@ -93,6 +93,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   // Updates the items when the login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 
+  // Updates the items when the shelf alignment changes.
+  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment);
+
   // Returns true if the launcher should show.
   bool should_show_launcher() const {
     return bubble_.get() && should_show_launcher_;
@@ -181,6 +184,8 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
 
   // Called when the anchor (tray or bubble) may have moved or changed.
   void UpdateNotificationAnchor();
+
+  void SetBorder();
 
   // Overridden from internal::ActionableView.
   virtual bool PerformAction(const views::Event& event) OVERRIDE;

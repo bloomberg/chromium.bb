@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/date/date_view.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"
@@ -130,12 +131,14 @@ TrayDate::~TrayDate() {
 views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
   CHECK(time_tray_ == NULL);
   time_tray_ = new tray::TimeView();
-  time_tray_->set_border(
-      views::Border::CreateEmptyBorder(0, 10, 0, 7));
-  SetupLabelForTray(time_tray_->label());
-  gfx::Font font = time_tray_->label()->font();
-  time_tray_->label()->SetFont(
-      font.DeriveFont(0, font.GetStyle() & ~gfx::Font::BOLD));
+  ClockLayout clock_layout =
+      ash::Shell::GetInstance()->system_tray()->shelf_alignment() ==
+         SHELF_ALIGNMENT_BOTTOM ?
+      HORIZONTAL_CLOCK : VERTICAL_CLOCK;
+  time_tray_->UpdateClockLayout(clock_layout);
+  SetupLabelForTimeTray(time_tray_->label());
+  SetupLabelForTimeTray(time_tray_->label_hour());
+  SetupLabelForTimeTray(time_tray_->label_minute());
 
   views::View* view = new TrayItemView;
   view->AddChildView(time_tray_);
@@ -163,6 +166,14 @@ void TrayDate::DestroyDetailedView() {
 void TrayDate::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
+void TrayDate::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+  if (time_tray_) {
+    ClockLayout clock_layout = alignment == SHELF_ALIGNMENT_BOTTOM ?
+        HORIZONTAL_CLOCK : VERTICAL_CLOCK;
+    time_tray_->UpdateClockLayout(clock_layout);
+  }
+}
+
 void TrayDate::OnDateFormatChanged() {
   if (time_tray_)
     time_tray_->UpdateTimeFormat();
@@ -171,6 +182,12 @@ void TrayDate::OnDateFormatChanged() {
 void TrayDate::Refresh() {
   if (time_tray_)
     time_tray_->UpdateText();
+}
+
+void TrayDate::SetupLabelForTimeTray(views::Label* label) {
+  SetupLabelForTray(label);
+  gfx::Font font = label->font();
+  label->SetFont(font.DeriveFont(0, font.GetStyle() & ~gfx::Font::BOLD));
 }
 
 }  // namespace internal

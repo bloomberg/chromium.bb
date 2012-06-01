@@ -8,6 +8,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/user/login_status.h"
+#include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
@@ -58,6 +59,10 @@ class ASH_EXPORT SystemTrayItem {
   // default/detailed popup is closed when login status changes. The default
   // implementation does nothing.
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status);
+
+  // Updates the tray view (if applicable) when shelf's alignment changes.
+  // The default implementation does nothing.
+  virtual void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment);
 
   // Shows the detailed view for this item. If the main popup for the tray is
   // currently visible, then making this call would use the existing window to

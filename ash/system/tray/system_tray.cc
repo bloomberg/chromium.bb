@@ -147,6 +147,7 @@ SystemTray::SystemTray()
   tray_container_->set_border(
       views::Border::CreateEmptyBorder(1, 1, 1, 1));
   SetContents(tray_container_);
+  SetBorder();
 }
 
 SystemTray::~SystemTray() {
@@ -287,6 +288,14 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
 
   SetVisible(true);
   PreferredSizeChanged();
+}
+
+void SystemTray::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+  for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
+      it != items_.end();
+      ++it) {
+    (*it)->UpdateAfterShelfAlignmentChange(alignment);
+  }
 }
 
 bool SystemTray::CloseBubbleForTest() const {
@@ -463,15 +472,35 @@ void SystemTray::UpdateNotificationAnchor() {
   notification_bubble_->bubble_view()->GetWidget()->StackAtTop();
 }
 
+void SystemTray::SetBorder() {
+  // Change the border padding for different shelf alignment.
+  if (shelf_alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+    set_border(views::Border::CreateEmptyBorder(0, 0,
+        kPaddingFromBottomOfScreenBottomAlignment,
+        kPaddingFromRightEdgeOfScreenBottomAlignment));
+  } else if (shelf_alignment_ == SHELF_ALIGNMENT_LEFT) {
+    set_border(views::Border::CreateEmptyBorder(0,
+        kPaddingFromEdgeOfScreenVerticalAlignment,
+        kPaddingFromBottomOfScreenVerticalAlignment,
+        kPaddingFromEdgeOfLauncherVerticalAlignment));
+  } else {
+    set_border(views::Border::CreateEmptyBorder(0,
+        kPaddingFromEdgeOfLauncherVerticalAlignment,
+        kPaddingFromBottomOfScreenVerticalAlignment,
+        kPaddingFromEdgeOfScreenVerticalAlignment));
+  }
+}
+
 void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment_)
     return;
-
+  shelf_alignment_ = alignment;
+  UpdateAfterShelfAlignmentChange(alignment);
+  SetBorder();
   tray_container_->SetLayoutManager(new views::BoxLayout(
       alignment == SHELF_ALIGNMENT_BOTTOM ?
           views::BoxLayout::kHorizontal : views::BoxLayout::kVertical,
       0, 0, 0));
-  shelf_alignment_ = alignment;
 }
 
 bool SystemTray::PerformAction(const views::Event& event) {
