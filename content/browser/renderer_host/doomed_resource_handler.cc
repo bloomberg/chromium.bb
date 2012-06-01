@@ -6,6 +6,8 @@
 
 #include "net/url_request/url_request_status.h"
 
+namespace content {
+
 DoomedResourceHandler::DoomedResourceHandler(
     scoped_ptr<ResourceHandler> old_handler)
     : old_handler_(old_handler.Pass()) {
@@ -21,18 +23,17 @@ bool DoomedResourceHandler::OnUploadProgress(int request_id,
   return true;
 }
 
-bool DoomedResourceHandler::OnRequestRedirected(
-    int request_id,
-    const GURL& new_url,
-    content::ResourceResponse* response,
-    bool* defer) {
+bool DoomedResourceHandler::OnRequestRedirected(int request_id,
+                                                const GURL& new_url,
+                                                ResourceResponse* response,
+                                                bool* defer) {
   NOTREACHED();
   return true;
 }
 
-bool DoomedResourceHandler::OnResponseStarted(
-    int request_id, content::ResourceResponse* response,
-    bool* defer) {
+bool DoomedResourceHandler::OnResponseStarted(int request_id,
+                                              ResourceResponse* response,
+                                              bool* defer) {
   NOTREACHED();
   return true;
 }
@@ -72,3 +73,5 @@ void DoomedResourceHandler::OnDataDownloaded(int request_id,
                                              int bytes_downloaded) {
   NOTREACHED();
 }
+
+}  // namespace content

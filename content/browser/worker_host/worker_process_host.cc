@@ -56,6 +56,8 @@ using content::ChildProcessData;
 using content::ChildProcessHost;
 using content::RenderViewHostImpl;
 using content::ResourceContext;
+using content::ResourceMessageFilter;
+using content::SocketStreamDispatcherHost;
 using content::UserMetricsAction;
 using content::WorkerDevToolsManager;
 using content::WorkerServiceImpl;

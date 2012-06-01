@@ -22,7 +22,6 @@
 
 class CommandLine;
 class GpuMessageFilter;
-class RendererMainThread;
 class RenderWidgetHelper;
 
 namespace base {
@@ -30,9 +29,9 @@ class WaitableEvent;
 }
 
 namespace content {
+class RendererMainThread;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
-}
 
 // Implements a concrete RenderProcessHost for the browser process for talking
 // to actual renderer processes (as opposed to mocks).
@@ -49,11 +48,11 @@ class RenderWidgetHostImpl;
 // are correlated with IDs. This way, the Views and the corresponding ViewHosts
 // communicate through the two process objects.
 class CONTENT_EXPORT RenderProcessHostImpl
-    : public content::RenderProcessHost,
+    : public RenderProcessHost,
       public ChildProcessLauncher::Client,
       public base::WaitableEventWatcher::Delegate {
  public:
-  explicit RenderProcessHostImpl(content::BrowserContext* browser_context);
+  explicit RenderProcessHostImpl(BrowserContext* browser_context);
   virtual ~RenderProcessHostImpl();
 
   // RenderProcessHost implementation (public portion).
@@ -74,14 +73,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual void DumpHandles() OVERRIDE;
   virtual base::ProcessHandle GetHandle() OVERRIDE;
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) OVERRIDE;
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
+  virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual int GetID() const OVERRIDE;
   virtual bool HasConnection() const OVERRIDE;
-  virtual content::RenderWidgetHost* GetRenderWidgetHostByID(int routing_id)
+  virtual RenderWidgetHost* GetRenderWidgetHostByID(int routing_id)
       OVERRIDE;
   virtual void SetIgnoreInputEvents(bool ignore_input_events) OVERRIDE;
   virtual bool IgnoreInputEvents() const OVERRIDE;
-  virtual void Attach(content::RenderWidgetHost* host, int routing_id)
+  virtual void Attach(RenderWidgetHost* host, int routing_id)
       OVERRIDE;
   virtual void Release(int routing_id) OVERRIDE;
   virtual void Cleanup() OVERRIDE;
@@ -119,13 +118,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Register/unregister the host identified by the host id in the global host
   // list.
-  static void RegisterHost(int host_id, content::RenderProcessHost* host);
+  static void RegisterHost(int host_id, RenderProcessHost* host);
   static void UnregisterHost(int host_id);
 
   // Returns true if the given host is suitable for launching a new view
   // associated with the given browser context.
-  static bool IsSuitableHost(content::RenderProcessHost* host,
-                             content::BrowserContext* browser_context,
+  static bool IsSuitableHost(RenderProcessHost* host,
+                             BrowserContext* browser_context,
                              const GURL& site_url);
 
  protected:
@@ -135,7 +134,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // The registered render widget hosts. When this list is empty or all NULL,
   // we should delete ourselves
-  IDMap<content::RenderWidgetHost> render_widget_hosts_;
+  IDMap<RenderWidgetHost> render_widget_hosts_;
 
   // True if fast shutdown has been performed on this RPH.
   bool fast_shutdown_started_;
@@ -246,7 +245,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The globally-unique identifier for this RPH.
   int id_;
 
-  content::BrowserContext* browser_context_;
+  BrowserContext* browser_context_;
 
   // True if the process can be shut down suddenly.  If this is true, then we're
   // sure that all the RenderViews in the process can be shutdown suddenly.  If
@@ -265,5 +264,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_BROWSER_RENDER_PROCESS_HOST_IMPL_H_

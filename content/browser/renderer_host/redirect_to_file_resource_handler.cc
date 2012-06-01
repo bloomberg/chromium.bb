@@ -57,7 +57,7 @@ RedirectToFileResourceHandler::~RedirectToFileResourceHandler() {
 
 bool RedirectToFileResourceHandler::OnResponseStarted(
     int request_id,
-    content::ResourceResponse* response,
+    ResourceResponse* response,
     bool* defer) {
   if (response->status.is_success()) {
     DCHECK(deletable_file_ && !deletable_file_->path().empty());

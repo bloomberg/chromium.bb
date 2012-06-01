@@ -8,13 +8,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 
-using content::BrowserMessageFilter;
-using content::ResourceDispatcherHostImpl;
+namespace content {
 
 ResourceMessageFilter::ResourceMessageFilter(
     int child_id,
-    content::ProcessType process_type,
-    content::ResourceContext* resource_context,
+    ProcessType process_type,
+    ResourceContext* resource_context,
     URLRequestContextSelector* url_request_context_selector)
     : child_id_(child_id),
       process_type_(process_type),
@@ -45,3 +44,5 @@ net::URLRequestContext* ResourceMessageFilter::GetURLRequestContext(
     ResourceType::Type type) {
   return url_request_context_selector_->GetRequestContext(type);
 }
+
+}  // namespace content

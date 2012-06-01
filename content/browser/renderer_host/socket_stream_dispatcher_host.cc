@@ -17,10 +17,12 @@
 #include "net/websockets/websocket_job.h"
 #include "net/websockets/websocket_throttle.h"
 
+namespace content {
+
 SocketStreamDispatcherHost::SocketStreamDispatcherHost(
     int render_process_id,
     ResourceMessageFilter::URLRequestContextSelector* selector,
-    content::ResourceContext* resource_context)
+    ResourceContext* resource_context)
     : render_process_id_(render_process_id),
       url_request_context_selector_(selector),
       resource_context_(resource_context) {
@@ -46,7 +48,7 @@ void SocketStreamDispatcherHost::OnConnected(net::SocketStream* socket,
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnConnected socket_id=" << socket_id
            << " max_pending_send_allowed=" << max_pending_send_allowed;
-  if (socket_id == content::kNoSocketId) {
+  if (socket_id == kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnConnected";
     return;
   }
@@ -62,7 +64,7 @@ void SocketStreamDispatcherHost::OnSentData(net::SocketStream* socket,
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnSentData socket_id=" << socket_id
            << " amount_sent=" << amount_sent;
-  if (socket_id == content::kNoSocketId) {
+  if (socket_id == kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnSentData";
     return;
   }
@@ -77,7 +79,7 @@ void SocketStreamDispatcherHost::OnReceivedData(
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnReceiveData socket_id="
            << socket_id;
-  if (socket_id == content::kNoSocketId) {
+  if (socket_id == kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnReceivedData";
     return;
   }
@@ -91,7 +93,7 @@ void SocketStreamDispatcherHost::OnReceivedData(
 void SocketStreamDispatcherHost::OnClose(net::SocketStream* socket) {
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnClosed socket_id=" << socket_id;
-  if (socket_id == content::kNoSocketId) {
+  if (socket_id == kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnClose";
     return;
   }
@@ -103,13 +105,13 @@ void SocketStreamDispatcherHost::OnSSLCertificateError(
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnSSLCertificateError socket_id="
            << socket_id;
-  if (socket_id == content::kNoSocketId) {
+  if (socket_id == kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnSSLCertificateError";
     return;
   }
   SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
   DCHECK(socket_stream_host);
-  content::GlobalRequestID request_id(-1, socket_id);
+  GlobalRequestID request_id(-1, socket_id);
   SSLManager::OnSSLCertificateError(
       AsWeakPtr(), request_id, ResourceType::SUB_RESOURCE, socket->url(),
       render_process_id_, socket_stream_host->render_view_id(), ssl_info,
@@ -118,7 +120,7 @@ void SocketStreamDispatcherHost::OnSSLCertificateError(
 
 bool SocketStreamDispatcherHost::CanGetCookies(net::SocketStream* socket,
                                                const GURL& url) {
-  return content::GetContentClient()->browser()->AllowGetCookie(
+  return GetContentClient()->browser()->AllowGetCookie(
       url, url, net::CookieList(), resource_context_, 0, MSG_ROUTING_NONE);
 }
 
@@ -126,18 +128,18 @@ bool SocketStreamDispatcherHost::CanSetCookie(net::SocketStream* request,
                                               const GURL& url,
                                               const std::string& cookie_line,
                                               net::CookieOptions* options) {
-  return content::GetContentClient()->browser()->AllowSetCookie(
+  return GetContentClient()->browser()->AllowSetCookie(
       url, url, cookie_line, resource_context_, 0, MSG_ROUTING_NONE, options);
 }
 
 void SocketStreamDispatcherHost::CancelSSLRequest(
-    const content::GlobalRequestID& id,
+    const GlobalRequestID& id,
     int error,
     const net::SSLInfo* ssl_info) {
   int socket_id = id.request_id;
   DVLOG(1) << "SocketStreamDispatcherHost::CancelSSLRequest socket_id="
            << socket_id;
-  DCHECK_NE(content::kNoSocketId, socket_id);
+  DCHECK_NE(kNoSocketId, socket_id);
   SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
   DCHECK(socket_stream_host);
   if (ssl_info)
@@ -147,11 +149,11 @@ void SocketStreamDispatcherHost::CancelSSLRequest(
 }
 
 void SocketStreamDispatcherHost::ContinueSSLRequest(
-    const content::GlobalRequestID& id) {
+    const GlobalRequestID& id) {
   int socket_id = id.request_id;
   DVLOG(1) << "SocketStreamDispatcherHost::ContinueSSLRequest socket_id="
            << socket_id;
-  DCHECK_NE(content::kNoSocketId, socket_id);
+  DCHECK_NE(kNoSocketId, socket_id);
   SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
   DCHECK(socket_stream_host);
   socket_stream_host->ContinueDespiteError();
@@ -177,7 +179,7 @@ void SocketStreamDispatcherHost::OnConnect(int render_view_id,
            << " render_view_id=" << render_view_id
            << " url=" << url
            << " socket_id=" << socket_id;
-  DCHECK_NE(content::kNoSocketId, socket_id);
+  DCHECK_NE(kNoSocketId, socket_id);
   if (hosts_.Lookup(socket_id)) {
     LOG(ERROR) << "socket_id=" << socket_id << " already registered.";
     return;
@@ -225,3 +227,5 @@ net::URLRequestContext* SocketStreamDispatcherHost::GetURLRequestContext() {
   return url_request_context_selector_->GetRequestContext(
       ResourceType::SUB_RESOURCE);
 }
+
+}  // namespace content

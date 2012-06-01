@@ -9,6 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/resource_handler.h"
 
+namespace content {
+
 // ResourceHandler that DCHECKs on all events but canceling and failing of
 // requests while activated for a URLRequest.
 class DoomedResourceHandler : public ResourceHandler {
@@ -27,10 +29,10 @@ class DoomedResourceHandler : public ResourceHandler {
                                 uint64 size) OVERRIDE;
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& new_url,
-                                   content::ResourceResponse* response,
+                                   ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
-                                 content::ResourceResponse* response,
+                                 ResourceResponse* response,
                                  bool* defer) OVERRIDE;
   virtual bool OnWillStart(int request_id,
                            const GURL& url,
@@ -53,5 +55,7 @@ class DoomedResourceHandler : public ResourceHandler {
 
   DISALLOW_COPY_AND_ASSIGN(DoomedResourceHandler);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_DOOMED_RESOURCE_HANDLER_H_

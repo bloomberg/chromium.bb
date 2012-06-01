@@ -33,7 +33,7 @@ class URLRequest;
 
 // Forwards data to the download thread.
 class DownloadResourceHandler
-    : public ResourceHandler,
+    : public content::ResourceHandler,
       public base::SupportsWeakPtr<DownloadResourceHandler> {
  public:
   typedef content::DownloadUrlParameters::OnStartedCallback OnStartedCallback;

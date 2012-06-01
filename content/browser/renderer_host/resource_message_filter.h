@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,21 +11,19 @@
 #include "content/public/common/process_type.h"
 #include "webkit/glue/resource_type.h"
 
-namespace content {
-class ResourceContext;
-}  // namespace content
-
 namespace net {
 class URLRequestContext;
 }  // namespace net
+
+namespace content {
+class ResourceContext;
 
 // This class filters out incoming IPC messages for network requests and
 // processes them on the IPC thread.  As a result, network requests are not
 // delayed by costly UI processing that may be occuring on the main thread of
 // the browser.  It also means that any hangs in starting a network request
 // will not interfere with browser UI.
-class CONTENT_EXPORT ResourceMessageFilter
-    : public content::BrowserMessageFilter {
+class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
  public:
   // Allows selecting the net::URLRequestContext used to service requests.
   class URLRequestContextSelector {
@@ -42,16 +40,16 @@ class CONTENT_EXPORT ResourceMessageFilter
 
   ResourceMessageFilter(
       int child_id,
-      content::ProcessType process_type,
-      content::ResourceContext* resource_context,
+      ProcessType process_type,
+      ResourceContext* resource_context,
       URLRequestContextSelector* url_request_context_selector);
 
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  content::ResourceContext* resource_context() const {
+  ResourceContext* resource_context() const {
     return resource_context_;
   }
 
@@ -60,7 +58,7 @@ class CONTENT_EXPORT ResourceMessageFilter
       ResourceType::Type request_type);
 
   int child_id() const { return child_id_; }
-  content::ProcessType process_type() const { return process_type_; }
+  ProcessType process_type() const { return process_type_; }
 
  protected:
   // Protected destructor so that we can be overriden in tests.
@@ -70,14 +68,16 @@ class CONTENT_EXPORT ResourceMessageFilter
   // The ID of the child process.
   int child_id_;
 
-  content::ProcessType process_type_;
+  ProcessType process_type_;
 
   // Owned by ProfileIOData* which is guaranteed to outlive us.
-  content::ResourceContext* resource_context_;
+  ResourceContext* resource_context_;
 
   const scoped_ptr<URLRequestContextSelector> url_request_context_selector_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ResourceMessageFilter);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RESOURCE_MESSAGE_FILTER_H_

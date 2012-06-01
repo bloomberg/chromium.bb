@@ -18,19 +18,18 @@
 class GURL;
 class SocketStreamHost;
 
-namespace content {
-class ResourceContext;
-}
-
 namespace net {
 class SSLInfo;
 }
+
+namespace content {
+class ResourceContext;
 
 // Dispatches ViewHostMsg_SocketStream_* messages sent from renderer.
 // It also acts as SocketStream::Delegate so that it sends
 // ViewMsg_SocketStream_* messages back to renderer.
 class SocketStreamDispatcherHost
-    : public content::BrowserMessageFilter,
+    : public BrowserMessageFilter,
       public net::SocketStream::Delegate,
       public SSLErrorHandler::Delegate,
       public base::SupportsWeakPtr<SocketStreamDispatcherHost> {
@@ -38,9 +37,9 @@ class SocketStreamDispatcherHost
   SocketStreamDispatcherHost(
       int render_process_id,
       ResourceMessageFilter::URLRequestContextSelector* selector,
-      content::ResourceContext* resource_context);
+      ResourceContext* resource_context);
 
-  // content::BrowserMessageFilter:
+  // BrowserMessageFilter:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -65,10 +64,10 @@ class SocketStreamDispatcherHost
                             net::CookieOptions* options) OVERRIDE;
 
   // SSLErrorHandler::Delegate methods:
-  virtual void CancelSSLRequest(const content::GlobalRequestID& id,
+  virtual void CancelSSLRequest(const GlobalRequestID& id,
                                 int error,
                                 const net::SSLInfo* ssl_info) OVERRIDE;
-  virtual void ContinueSSLRequest(const content::GlobalRequestID& id) OVERRIDE;
+  virtual void ContinueSSLRequest(const GlobalRequestID& id) OVERRIDE;
 
  protected:
   virtual ~SocketStreamDispatcherHost();
@@ -87,9 +86,11 @@ class SocketStreamDispatcherHost
   int render_process_id_;
   const scoped_ptr<ResourceMessageFilter::URLRequestContextSelector>
       url_request_context_selector_;
-  content::ResourceContext* resource_context_;
+  ResourceContext* resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamDispatcherHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_SOCKET_STREAM_DISPATCHER_HOST_H_

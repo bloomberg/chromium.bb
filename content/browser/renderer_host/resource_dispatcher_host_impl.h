@@ -36,7 +36,6 @@
 
 class DownloadFileManager;
 class ResourceHandler;
-class ResourceMessageFilter;
 class SaveFileManager;
 class WebContentsImpl;
 struct ResourceHostMsg_Request;
@@ -54,6 +53,7 @@ class ShareableFileReference;
 namespace content {
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
+class ResourceMessageFilter;
 class ResourceRequestInfoImpl;
 struct DownloadSaveInfo;
 struct GlobalRequestID;
@@ -110,7 +110,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Initiates a save file from the browser process (as opposed to a resource
   // request from the renderer or another child process).
   void BeginSaveFile(const GURL& url,
-                     const content::Referrer& referrer,
+                     const Referrer& referrer,
                      int child_id,
                      int route_id,
                      ResourceContext* context);
@@ -208,10 +208,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                                int bytes_read) OVERRIDE;
 
   // SSLErrorHandler::Delegate:
-  virtual void CancelSSLRequest(const content::GlobalRequestID& id,
+  virtual void CancelSSLRequest(const GlobalRequestID& id,
                                 int error,
                                 const net::SSLInfo* ssl_info) OVERRIDE;
-  virtual void ContinueSSLRequest(const content::GlobalRequestID& id) OVERRIDE;
+  virtual void ContinueSSLRequest(const GlobalRequestID& id) OVERRIDE;
 
   void OnUserGesture(WebContentsImpl* contents);
 

@@ -14,11 +14,7 @@
 #include "content/public/common/referrer.h"
 #include "net/url_request/url_request.h"
 
-using content::GlobalRequestID;
-using content::Referrer;
-using content::RenderViewHostDelegate;
-using content::ResourceDispatcherHostImpl;
-using content::ResourceRequestInfo;
+namespace content {
 
 namespace {
 
@@ -29,8 +25,8 @@ void RequestTransferURLOnUIThread(int render_process_id,
                                   WindowOpenDisposition window_open_disposition,
                                   int64 frame_id,
                                   const GlobalRequestID& global_request_id) {
-  content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
+  RenderViewHost* rvh =
+      RenderViewHost::FromID(render_process_id, render_view_id);
   if (!rvh)
     return;
 
@@ -62,16 +58,16 @@ void TransferNavigationResourceThrottle::WillRedirectRequest(
   // request once the navigation controller properly assigns the right process
   // to host the new URL.
   // TODO(mpcomplete): handle for cases other than extensions (e.g. WebUI).
-  content::ResourceContext* resource_context = info->GetContext();
-  if (content::GetContentClient()->browser()->ShouldSwapProcessesForRedirect(
+  ResourceContext* resource_context = info->GetContext();
+  if (GetContentClient()->browser()->ShouldSwapProcessesForRedirect(
           resource_context, request_->url(), new_url)) {
     int render_process_id, render_view_id;
     if (info->GetAssociatedRenderView(&render_process_id, &render_view_id)) {
       ResourceDispatcherHostImpl::Get()->MarkAsTransferredNavigation(request_);
 
       GlobalRequestID global_id(info->GetChildID(), info->GetRequestID());
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI,
+      BrowserThread::PostTask(
+          BrowserThread::UI,
           FROM_HERE,
           base::Bind(&RequestTransferURLOnUIThread,
               render_process_id,
@@ -86,3 +82,5 @@ void TransferNavigationResourceThrottle::WillRedirectRequest(
     }
   }
 }
+
+}  // namespace content

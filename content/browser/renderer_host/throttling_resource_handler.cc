@@ -75,10 +75,9 @@ bool ThrottlingResourceHandler::OnWillStart(int request_id,
   return next_handler_->OnWillStart(request_id, url, defer);
 }
 
-bool ThrottlingResourceHandler::OnResponseStarted(
-    int request_id,
-    content::ResourceResponse* response,
-    bool* defer) {
+bool ThrottlingResourceHandler::OnResponseStarted(int request_id,
+                                                  ResourceResponse* response,
+                                                  bool* defer) {
   DCHECK_EQ(request_id_, request_id);
 
   while (index_ < throttles_.size()) {

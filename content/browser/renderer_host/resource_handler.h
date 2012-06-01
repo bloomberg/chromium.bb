@@ -22,14 +22,13 @@
 
 class GURL;
 
-namespace content {
-struct ResourceResponse;
-}
-
 namespace net {
 class IOBuffer;
 class URLRequestStatus;
 }  // namespace net
+
+namespace content {
+struct ResourceResponse;
 
 // The resource dispatcher host uses this interface to process network events
 // for an URLRequest instance.  A ResourceHandler's lifetime is bound to its
@@ -49,7 +48,7 @@ class CONTENT_EXPORT ResourceHandler
   // followed later on via ResourceDispatcherHost::FollowDeferredRedirect.  If
   // the handler returns false, then the request is cancelled.
   virtual bool OnRequestRedirected(int request_id, const GURL& url,
-                                   content::ResourceResponse* response,
+                                   ResourceResponse* response,
                                    bool* defer) = 0;
 
   // Response headers and meta data are available.  If the handler returns
@@ -57,7 +56,7 @@ class CONTENT_EXPORT ResourceHandler
   // processing of the response.  Call ResourceDispatcherHostImpl::
   // ResumeDeferredRequest to continue processing the response.
   virtual bool OnResponseStarted(int request_id,
-                                 content::ResourceResponse* response,
+                                 ResourceResponse* response,
                                  bool* defer) = 0;
 
   // Called before the net::URLRequest for |request_id| (whose url is |url|) is
@@ -103,5 +102,7 @@ class CONTENT_EXPORT ResourceHandler
   // with OnDataDownloaded calls.
   virtual void OnDataDownloaded(int request_id, int bytes_downloaded) {}
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RESOURCE_HANDLER_H_

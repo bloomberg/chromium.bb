@@ -14,7 +14,7 @@
 class SaveFileManager;
 
 // Forwards data to the save thread.
-class SaveFileResourceHandler : public ResourceHandler {
+class SaveFileResourceHandler : public content::ResourceHandler {
  public:
   SaveFileResourceHandler(int render_process_host_id,
                           int render_view_id,

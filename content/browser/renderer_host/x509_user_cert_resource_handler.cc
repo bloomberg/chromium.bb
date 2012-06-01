@@ -16,6 +16,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
+namespace content {
+
 X509UserCertResourceHandler::X509UserCertResourceHandler(
     net::URLRequest* request,
     int render_process_host_id,
@@ -37,19 +39,17 @@ bool X509UserCertResourceHandler::OnUploadProgress(int request_id,
   return true;
 }
 
-bool X509UserCertResourceHandler::OnRequestRedirected(
-    int request_id,
-    const GURL& url,
-    content::ResourceResponse* resp,
-    bool* defer) {
+bool X509UserCertResourceHandler::OnRequestRedirected(int request_id,
+                                                      const GURL& url,
+                                                      ResourceResponse* resp,
+                                                      bool* defer) {
   url_ = url;
   return true;
 }
 
-bool X509UserCertResourceHandler::OnResponseStarted(
-    int request_id,
-    content::ResourceResponse* resp,
-    bool* defer) {
+bool X509UserCertResourceHandler::OnResponseStarted(int request_id,
+                                                    ResourceResponse* resp,
+                                                    bool* defer) {
   return (resp->mime_type == "application/x-x509-user-cert");
 }
 
@@ -109,13 +109,15 @@ bool X509UserCertResourceHandler::OnResponseCompleted(
       cert = net::X509Certificate::CreateFromBytes(resource_buffer_->data(),
                                                    content_length_);
   }
-  content::GetContentClient()->browser()->AddNewCertificate(
+  GetContentClient()->browser()->AddNewCertificate(
       request_, cert, render_process_host_id_, render_view_id_);
   return true;
 }
 
 void X509UserCertResourceHandler::AssembleResource() {
   size_t assembled_bytes = 0;
-  resource_buffer_ = content::AssembleData(buffer_, &assembled_bytes);
+  resource_buffer_ = AssembleData(buffer_, &assembled_bytes);
   DCHECK_EQ(content_length_, assembled_bytes);
 }
+
+}  // namespace content

@@ -11,8 +11,6 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "content/public/common/resource_response.h"
 
-class ResourceMessageFilter;
-
 namespace IPC {
 class Message;
 }
@@ -23,6 +21,7 @@ class IOBuffer;
 
 namespace content {
 class ResourceDispatcherHostImpl;
+class ResourceMessageFilter;
 
 // Used to complete a synchronous resource request in response to resource load
 // events from the resource dispatcher host.

@@ -100,11 +100,10 @@ bool AsyncResourceHandler::OnUploadProgress(int request_id,
                                                       position, size));
 }
 
-bool AsyncResourceHandler::OnRequestRedirected(
-    int request_id,
-    const GURL& new_url,
-    content::ResourceResponse* response,
-    bool* defer) {
+bool AsyncResourceHandler::OnRequestRedirected(int request_id,
+                                               const GURL& new_url,
+                                               ResourceResponse* response,
+                                               bool* defer) {
   *defer = true;
   net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(filter_->child_id(), request_id));
@@ -118,10 +117,9 @@ bool AsyncResourceHandler::OnRequestRedirected(
       routing_id_, request_id, new_url, *response));
 }
 
-bool AsyncResourceHandler::OnResponseStarted(
-    int request_id,
-    content::ResourceResponse* response,
-    bool* defer) {
+bool AsyncResourceHandler::OnResponseStarted(int request_id,
+                                             ResourceResponse* response,
+                                             bool* defer) {
   // For changes to the main frame, inform the renderer of the new URL's
   // per-host settings before the request actually commits.  This way the
   // renderer will be able to set these precisely at the time the
@@ -135,9 +133,9 @@ bool AsyncResourceHandler::OnResponseStarted(
 
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
 
-  content::ResourceContext* resource_context = filter_->resource_context();
-  content::HostZoomMap* host_zoom_map =
-      content::GetHostZoomMapForResourceContext(resource_context);
+  ResourceContext* resource_context = filter_->resource_context();
+  HostZoomMap* host_zoom_map =
+      GetHostZoomMapForResourceContext(resource_context);
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (info->GetResourceType() == ResourceType::MAIN_FRAME && host_zoom_map) {

@@ -14,16 +14,18 @@ namespace net {
 class URLRequest;
 }
 
+namespace content {
+
 // This ResourceThrottle checks whether a navigation redirect will cause a
 // renderer process swap. When that happens, we remember the request so
 // that we can transfer it to be handled by the new renderer. This fixes
 // http://crbug.com/79520
-class TransferNavigationResourceThrottle : public content::ResourceThrottle {
+class TransferNavigationResourceThrottle : public ResourceThrottle {
  public:
   explicit TransferNavigationResourceThrottle(net::URLRequest* request);
   virtual ~TransferNavigationResourceThrottle();
 
-  // content::ResourceThrottle implementation:
+  // ResourceThrottle implementation:
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
 
  private:
@@ -31,5 +33,7 @@ class TransferNavigationResourceThrottle : public content::ResourceThrottle {
 
   DISALLOW_COPY_AND_ASSIGN(TransferNavigationResourceThrottle);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_TRANSFER_NAVIGATION_RESOURCE_THROTTLE_H_

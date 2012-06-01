@@ -11,10 +11,9 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "googleurl/src/gurl.h"
 
-class ResourceMessageFilter;
-
 namespace content {
 class ResourceDispatcherHostImpl;
+class ResourceMessageFilter;
 class SharedIOBuffer;
 
 // Used to complete an asynchronous resource request in response to resource

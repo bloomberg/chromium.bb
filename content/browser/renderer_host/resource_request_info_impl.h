@@ -20,7 +20,6 @@
 #include "net/base/load_states.h"
 #include "webkit/glue/resource_type.h"
 
-class ResourceHandler;
 class SSLClientAuthHandler;
 
 namespace webkit_blob {
@@ -32,6 +31,7 @@ class CrossSiteResourceHandler;
 class ResourceContext;
 class ResourceDispatcherHostImpl;
 class ResourceDispatcherHostLoginDelegate;
+class ResourceHandler;
 
 // Holds the data ResourceDispatcherHost associates with each request.
 // Retrieve this data by calling ResourceDispatcherHost::InfoForRequest.

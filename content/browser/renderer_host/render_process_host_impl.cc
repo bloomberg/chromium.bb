@@ -119,19 +119,9 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 
-using content::BrowserContext;
-using content::BrowserMessageFilter;
-using content::BrowserThread;
-using content::ChildProcessHost;
-using content::ChildProcessHostImpl;
-using content::RenderWidgetHost;
-using content::RenderWidgetHostImpl;
-using content::RenderViewHost;
-using content::RenderViewHostImpl;
-using content::UserMetricsAction;
-using content::WebUIControllerFactory;
-
 extern bool g_exited_main_message_loop;
+
+namespace content {
 
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
@@ -188,7 +178,7 @@ namespace {
 class RendererURLRequestContextSelector
     : public ResourceMessageFilter::URLRequestContextSelector {
  public:
-  RendererURLRequestContextSelector(content::BrowserContext* browser_context,
+  RendererURLRequestContextSelector(BrowserContext* browser_context,
                                     int render_child_id)
       : request_context_(browser_context->GetRequestContextForRenderProcess(
                              render_child_id)),
@@ -214,7 +204,7 @@ class RendererURLRequestContextSelector
 };
 
 // the global list of all renderer processes
-base::LazyInstance<IDMap<content::RenderProcessHost> >::Leaky
+base::LazyInstance<IDMap<RenderProcessHost> >::Leaky
     g_all_hosts = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -224,7 +214,7 @@ base::LazyInstance<IDMap<content::RenderProcessHost> >::Leaky
 static size_t g_max_renderer_count_override = 0;
 
 // static
-size_t content::RenderProcessHost::GetMaxRendererProcessCount() {
+size_t RenderProcessHost::GetMaxRendererProcessCount() {
   if (g_max_renderer_count_override)
     return g_max_renderer_count_override;
 
@@ -257,7 +247,7 @@ size_t content::RenderProcessHost::GetMaxRendererProcessCount() {
 
     const size_t kMinRendererProcessCount = 3;
     max_count = std::max(max_count, kMinRendererProcessCount);
-    max_count = std::min(max_count, content::kMaxRendererProcessCount);
+    max_count = std::min(max_count, kMaxRendererProcessCount);
   }
   return max_count;
 }
@@ -266,12 +256,12 @@ size_t content::RenderProcessHost::GetMaxRendererProcessCount() {
 bool g_run_renderer_in_process_ = false;
 
 // static
-void content::RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
+void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
   g_max_renderer_count_override = count;
 }
 
 RenderProcessHostImpl::RenderProcessHostImpl(
-    content::BrowserContext* browser_context)
+    BrowserContext* browser_context)
         : fast_shutdown_started_(false),
           deleting_soon_(false),
           pending_views_(0),
@@ -389,8 +379,7 @@ bool RenderProcessHostImpl::Init() {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
 
   // Call the embedder first so that their IPC filters have priority.
-  content::GetContentClient()->browser()->RenderProcessHostCreated(
-      this);
+  GetContentClient()->browser()->RenderProcessHostCreated(this);
 
   CreateMessageFilters();
 
@@ -446,8 +435,8 @@ bool RenderProcessHostImpl::Init() {
 }
 
 void RenderProcessHostImpl::CreateMessageFilters() {
-  content::MediaObserver* media_observer =
-      content::GetContentClient()->browser()->GetMediaObserver();
+  MediaObserver* media_observer =
+      GetContentClient()->browser()->GetMediaObserver();
   scoped_refptr<RenderMessageFilter> render_message_filter(
       new RenderMessageFilter(
           GetID(),
@@ -457,20 +446,18 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           widget_helper_,
           media_observer));
   channel_->AddFilter(render_message_filter);
-  content::BrowserContext* browser_context = GetBrowserContext();
-  content::ResourceContext* resource_context =
-      browser_context->GetResourceContext();
+  BrowserContext* browser_context = GetBrowserContext();
+  ResourceContext* resource_context = browser_context->GetResourceContext();
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
-      GetID(), content::PROCESS_TYPE_RENDERER, resource_context,
+      GetID(), PROCESS_TYPE_RENDERER, resource_context,
       new RendererURLRequestContextSelector(browser_context, GetID()));
 
   channel_->AddFilter(resource_message_filter);
 #if !defined(OS_ANDROID)
-  // TODO(dtrainor, klobag): Enable this when content::BrowserMainLoop gets
+  // TODO(dtrainor, klobag): Enable this when BrowserMainLoop gets
   // included in Android builds.  Tracked via 115941.
-  media::AudioManager* audio_manager =
-      content::BrowserMainLoop::GetAudioManager();
+  media::AudioManager* audio_manager = BrowserMainLoop::GetAudioManager();
   channel_->AddFilter(new AudioInputRendererHost(
       resource_context, audio_manager));
   channel_->AddFilter(new AudioRendererHost(audio_manager, media_observer));
@@ -493,7 +480,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(gpu_message_filter_);
 #if defined(ENABLE_WEBRTC)
   channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(
-      resource_context, GetID(), content::BrowserMainLoop::GetAudioManager()));
+      resource_context, GetID(), BrowserMainLoop::GetAudioManager()));
 #endif
   channel_->AddFilter(new PepperFileMessageFilter(GetID(), browser_context));
   channel_->AddFilter(new PepperMessageFilter(PepperMessageFilter::RENDERER,
@@ -533,7 +520,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
                  base::Unretained(widget_helper_.get()))));
 
 #if defined(ENABLE_WEBRTC)
-  channel_->AddFilter(new content::P2PSocketDispatcherHost(resource_context));
+  channel_->AddFilter(new P2PSocketDispatcherHost(resource_context));
 #endif
 
   channel_->AddFilter(new TraceMessageFilter());
@@ -541,11 +528,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       browser_context->GetRequestContextForRenderProcess(GetID())));
   channel_->AddFilter(new QuotaDispatcherHost(
       GetID(),
-      content::BrowserContext::GetQuotaManager(browser_context),
-      content::GetContentClient()->browser()->CreateQuotaPermissionContext()));
-  channel_->AddFilter(new content::GamepadBrowserMessageFilter(this));
-  channel_->AddFilter(new content::ProfilerMessageFilter(
-      content::PROCESS_TYPE_RENDERER));
+      BrowserContext::GetQuotaManager(browser_context),
+      GetContentClient()->browser()->CreateQuotaPermissionContext()));
+  channel_->AddFilter(new GamepadBrowserMessageFilter(this));
+  channel_->AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {
@@ -581,7 +567,7 @@ void RenderProcessHostImpl::ReceivedBadMessage() {
     CHECK(false);
   }
   NOTREACHED();
-  base::KillProcess(GetHandle(), content::RESULT_CODE_KILLED_BAD_MESSAGE,
+  base::KillProcess(GetHandle(), RESULT_CODE_KILLED_BAD_MESSAGE,
                     false);
 }
 
@@ -622,7 +608,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
 
   // Pass on the browser locale.
   const std::string locale =
-      content::GetContentClient()->browser()->GetApplicationLocale();
+      GetContentClient()->browser()->GetApplicationLocale();
   command_line->AppendSwitchASCII(switches::kLang, locale);
 
   // If we run base::FieldTrials, we want to pass to their state to the
@@ -635,7 +621,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
                                     field_trial_states);
   }
 
-  content::GetContentClient()->browser()->AppendExtraCommandLineSwitches(
+  GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       command_line, GetID());
 
   // Appending disable-gpu-feature switches due to software rendering list.
@@ -766,7 +752,7 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
   if (run_renderer_in_process())
     return false;  // Single process mode can't do fast shutdown.
 
-  if (!content::GetContentClient()->browser()->IsFastShutdownPossible())
+  if (!GetContentClient()->browser()->IsFastShutdownPossible())
     return false;
 
   if (!child_process_launcher_.get() ||
@@ -913,7 +899,7 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
       // The message had a handler, but its de-serialization failed.
       // We consider this a capital crime. Kill the renderer if we have one.
       LOG(ERROR) << "bad message " << msg.type() << " terminating renderer.";
-      content::RecordAction(UserMetricsAction("BadMessageTerminate_BRPH"));
+      RecordAction(UserMetricsAction("BadMessageTerminate_BRPH"));
       ReceivedBadMessage();
     }
     return true;
@@ -994,7 +980,7 @@ void RenderProcessHostImpl::OnWaitableEventSignaled(
 #endif
 }
 
-content::BrowserContext* RenderProcessHostImpl::GetBrowserContext() const {
+BrowserContext* RenderProcessHostImpl::GetBrowserContext() const {
   return browser_context_;
 }
 
@@ -1050,10 +1036,10 @@ void RenderProcessHostImpl::Release(int routing_id) {
 void RenderProcessHostImpl::Cleanup() {
   // When no other owners of this object, we can delete ourselves
   if (render_widget_hosts_.IsEmpty()) {
-    content::NotificationService::current()->Notify(
-        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        content::Source<RenderProcessHost>(this),
-        content::NotificationService::NoDetails());
+    NotificationService::current()->Notify(
+        NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+        Source<RenderProcessHost>(this),
+        NotificationService::NoDetails());
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     deleting_soon_ = true;
     // It's important not to wait for the DeleteTask to delete the channel
@@ -1104,7 +1090,7 @@ IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
   return channel_.get();
 }
 
-content::RenderProcessHost::RenderWidgetHostsIterator
+RenderProcessHost::RenderWidgetHostsIterator
     RenderProcessHostImpl::GetRenderWidgetHostsIterator() {
   return RenderWidgetHostsIterator(&render_widget_hosts_);
 }
@@ -1120,8 +1106,7 @@ bool RenderProcessHostImpl::FastShutdownStarted() const {
 }
 
 // static
-void RenderProcessHostImpl::RegisterHost(int host_id,
-                                         content::RenderProcessHost* host) {
+void RenderProcessHostImpl::RegisterHost(int host_id, RenderProcessHost* host) {
   g_all_hosts.Get().AddWithID(host, host_id);
 }
 
@@ -1133,8 +1118,8 @@ void RenderProcessHostImpl::UnregisterHost(int host_id) {
 
 // static
 bool RenderProcessHostImpl::IsSuitableHost(
-    content::RenderProcessHost* host,
-    content::BrowserContext* browser_context,
+    RenderProcessHost* host,
+    BrowserContext* browser_context,
     const GURL& site_url) {
   if (run_renderer_in_process())
     return true;
@@ -1143,7 +1128,7 @@ bool RenderProcessHostImpl::IsSuitableHost(
     return false;
 
   WebUIControllerFactory* factory =
-      content::GetContentClient()->browser()->GetWebUIControllerFactory();
+      GetContentClient()->browser()->GetWebUIControllerFactory();
   if (factory &&
       ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           host->GetID()) !=
@@ -1151,33 +1136,31 @@ bool RenderProcessHostImpl::IsSuitableHost(
     return false;
   }
 
-  return content::GetContentClient()->browser()->IsSuitableHost(host, site_url);
+  return GetContentClient()->browser()->IsSuitableHost(host, site_url);
 }
 
 // static
-bool content::RenderProcessHost::run_renderer_in_process() {
+bool RenderProcessHost::run_renderer_in_process() {
   return g_run_renderer_in_process_;
 }
 
-void content::RenderProcessHost::set_run_renderer_in_process(bool value) {
+void RenderProcessHost::set_run_renderer_in_process(bool value) {
   g_run_renderer_in_process_ = value;
 }
 
-content::RenderProcessHost::iterator
-    content::RenderProcessHost::AllHostsIterator() {
+RenderProcessHost::iterator RenderProcessHost::AllHostsIterator() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return iterator(g_all_hosts.Pointer());
 }
 
 // static
-content::RenderProcessHost* content::RenderProcessHost::FromID(
-    int render_process_id) {
+RenderProcessHost* RenderProcessHost::FromID(int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return g_all_hosts.Get().Lookup(render_process_id);
 }
 
 // static
-bool content::RenderProcessHost::ShouldTryToUseExistingProcessHost(
+bool RenderProcessHost::ShouldTryToUseExistingProcessHost(
     BrowserContext* browser_context, const GURL& url) {
 
   if (run_renderer_in_process())
@@ -1191,17 +1174,16 @@ bool content::RenderProcessHost::ShouldTryToUseExistingProcessHost(
   if (g_all_hosts.Get().size() >= GetMaxRendererProcessCount())
     return true;
 
-  return content::GetContentClient()->browser()->
+  return GetContentClient()->browser()->
       ShouldTryToUseExistingProcessHost(browser_context, url);
 }
 
 // static
-content::RenderProcessHost*
-    content::RenderProcessHost::GetExistingProcessHost(
-        content::BrowserContext* browser_context,
+RenderProcessHost* RenderProcessHost::GetExistingProcessHost(
+    BrowserContext* browser_context,
     const GURL& site_url) {
   // First figure out which existing renderers we can use.
-  std::vector<content::RenderProcessHost*> suitable_renderers;
+  std::vector<RenderProcessHost*> suitable_renderers;
   suitable_renderers.reserve(g_all_hosts.Get().size());
 
   iterator iter(AllHostsIterator());
@@ -1235,10 +1217,10 @@ void RenderProcessHostImpl::ProcessDied(base::ProcessHandle handle,
   // already handled the error.
 
   RendererClosedDetails details(handle, status, exit_code, was_alive);
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-      content::Source<RenderProcessHost>(this),
-      content::Details<RendererClosedDetails>(&details));
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDERER_PROCESS_CLOSED,
+      Source<RenderProcessHost>(this),
+      Details<RendererClosedDetails>(&details));
 
   child_process_launcher_.reset();
   channel_.reset();
@@ -1288,10 +1270,10 @@ void RenderProcessHostImpl::OnShutdownRequest() {
 
   // Notify any contents that might have swapped out renderers from this
   // process. They should not attempt to swap them back in.
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDERER_PROCESS_CLOSING,
-      content::Source<RenderProcessHost>(this),
-      content::NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDERER_PROCESS_CLOSING,
+      Source<RenderProcessHost>(this),
+      NotificationService::NoDetails());
 
   Send(new ChildProcessMsg_Shutdown());
 }
@@ -1350,10 +1332,10 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   // The queued messages contain such things as "navigate". If this notification
   // was after, we can end up executing JavaScript before the initialization
   // happens.
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-      content::Source<RenderProcessHost>(this),
-      content::NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDERER_PROCESS_CREATED,
+      Source<RenderProcessHost>(this),
+      NotificationService::NoDetails());
 
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());
@@ -1363,7 +1345,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 
 void RenderProcessHostImpl::OnUserMetricsRecordAction(
     const std::string& action) {
-  content::RecordComputedAction(action);
+  RecordComputedAction(action);
 }
 
 void RenderProcessHostImpl::OnSavedPageAsMHTML(int job_id, int64 data_size) {
@@ -1380,3 +1362,5 @@ void RenderProcessHostImpl::OnCompositorSurfaceBuffersSwappedNoHost(
   RenderWidgetHostImpl::AcknowledgeSwapBuffers(route_id,
                                                gpu_process_host_id);
 }
+
+}  // namespace content

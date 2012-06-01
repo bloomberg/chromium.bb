@@ -16,6 +16,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domain.h"
 
+using content::RenderProcessHostImpl;
 using content::SiteInstance;
 
 static bool IsURLSameAsAnySiteInstance(const GURL& url) {
