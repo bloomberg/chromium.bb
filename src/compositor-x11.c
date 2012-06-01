@@ -847,7 +847,8 @@ x11_destroy(struct weston_compositor *ec)
 
 static struct weston_compositor *
 x11_compositor_create(struct wl_display *display,
-		      int width, int height, int count, int fullscreen)
+		      int width, int height, int count, int fullscreen,
+		      int argc, char *argv[])
 {
 	struct x11_compositor *c;
 	xcb_screen_iterator_t s;
@@ -882,7 +883,7 @@ x11_compositor_create(struct wl_display *display,
 	c->base.destroy = x11_destroy;
 
 	/* Can't init base class until we have a current egl context */
-	if (weston_compositor_init(&c->base, display) < 0)
+	if (weston_compositor_init(&c->base, display, argc, argv) < 0)
 		return NULL;
 
 	for (i = 0, x = 0; i < count; i++) {
@@ -920,5 +921,6 @@ backend_init(struct wl_display *display, int argc, char *argv[])
 	parse_options(x11_options, ARRAY_LENGTH(x11_options), argc, argv);
 
 	return x11_compositor_create(display,
-				     width, height, count, fullscreen);
+				     width, height, count, fullscreen,
+				     argc, argv);
 }

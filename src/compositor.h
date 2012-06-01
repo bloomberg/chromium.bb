@@ -623,7 +623,8 @@ uint32_t
 weston_compositor_get_time(void);
 
 int
-weston_compositor_init(struct weston_compositor *ec, struct wl_display *display);
+weston_compositor_init(struct weston_compositor *ec, struct wl_display *display,
+		       int argc, char *argv[]);
 void
 weston_compositor_shutdown(struct weston_compositor *ec);
 void

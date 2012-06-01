@@ -2838,7 +2838,10 @@ compositor_bind(struct wl_client *client,
 }
 
 WL_EXPORT int
-weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
+weston_compositor_init(struct weston_compositor *ec,
+		       struct wl_display *display,
+		       int argc,
+		       char *argv[])
 {
 	struct wl_event_loop *loop;
 	const char *extensions;

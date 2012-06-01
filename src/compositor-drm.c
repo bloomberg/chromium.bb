@@ -1738,7 +1738,8 @@ static const char default_seat[] = "seat0";
 
 static struct weston_compositor *
 drm_compositor_create(struct wl_display *display,
-		      int connector, const char *seat, int tty)
+		      int connector, const char *seat, int tty,
+		      int argc, char *argv[])
 {
 	struct drm_compositor *ec;
 	struct udev_enumerate *e;
@@ -1804,7 +1805,7 @@ drm_compositor_create(struct wl_display *display,
 	ec->prev_state = WESTON_COMPOSITOR_ACTIVE;
 
 	/* Can't init base class until we have a current egl context */
-	if (weston_compositor_init(&ec->base, display) < 0)
+	if (weston_compositor_init(&ec->base, display, argc, argv) < 0)
 		return NULL;
 
 	for (key = KEY_F1; key < KEY_F9; key++)
@@ -1865,5 +1866,5 @@ backend_init(struct wl_display *display, int argc, char *argv[])
 
 	parse_options(drm_options, ARRAY_LENGTH(drm_options), argc, argv);
 
-	return drm_compositor_create(display, connector, seat, tty);
+	return drm_compositor_create(display, connector, seat, tty, argc, argv);
 }

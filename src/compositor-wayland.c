@@ -737,7 +737,8 @@ wayland_destroy(struct weston_compositor *ec)
 
 static struct weston_compositor *
 wayland_compositor_create(struct wl_display *display,
-			  int width, int height, const char *display_name)
+			  int width, int height, const char *display_name,
+			  int argc, char *argv[])
 {
 	struct wayland_compositor *c;
 	struct wl_event_loop *loop;
@@ -769,7 +770,7 @@ wayland_compositor_create(struct wl_display *display,
 	c->base.destroy = wayland_destroy;
 
 	/* Can't init base class until we have a current egl context */
-	if (weston_compositor_init(&c->base, display) < 0)
+	if (weston_compositor_init(&c->base, display, argc, argv) < 0)
 		return NULL;
 
 	create_border(c);
@@ -806,5 +807,6 @@ backend_init(struct wl_display *display, int argc, char *argv[])
 	parse_options(wayland_options,
 		      ARRAY_LENGTH(wayland_options), argc, argv);
 
-	return wayland_compositor_create(display, width, height, display_name);
+	return wayland_compositor_create(display, width, height, display_name,
+					 argc, argv);
 }
