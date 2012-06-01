@@ -14,20 +14,12 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/win/scoped_handle.h"
+#include "cloud_print/service/win/chrome_launcher.h"
 #include "cloud_print/service/win/resource.h"
 #include "cloud_print/service/win/service_state.h"
+#include "cloud_print/service/win/service_switches.h"
 
 namespace {
-
-const char kInstallSwitch[] = "install";
-const char kUninstallSwitch[] = "uninstall";
-const char kStartSwitch[] = "start";
-const char kStopSwitch[] = "stop";
-
-const char kServiceSwitch[] = "service";
-
-const char kUserDataDirSwitch[] = "user-data-dir";
-const char kQuietSwitch[] = "quiet";
 
 const wchar_t kServiceStateFileName[] = L"Service State";
 
@@ -156,6 +148,11 @@ class CloudPrintServiceModule
     if (FAILED(hr))
       return hr;
 
+    if (ChromeLauncher::GetChromePath(HKEY_LOCAL_MACHINE).empty()) {
+      LOG(ERROR) << "Found no Chrome installed for all users.";
+      return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+    }
+
     hr = UpdateRegistryAppId(true);
     if (FAILED(hr))
       return hr;
@@ -214,6 +211,7 @@ class CloudPrintServiceModule
 
     LogEvent(_T("Service started/resumed"));
     SetServiceStatus(SERVICE_RUNNING);
+
     return hr;
   }
 
@@ -228,6 +226,7 @@ class CloudPrintServiceModule
       return E_INVALIDARG;
     *is_service = false;
 
+    user_data_dir_ = command_line.GetSwitchValuePath(kUserDataDirSwitch);
     if (command_line.HasSwitch(kStopSwitch))
       return StopService();
 
@@ -240,12 +239,12 @@ class CloudPrintServiceModule
         return S_FALSE;
       }
 
-      FilePath data_dir = command_line.GetSwitchValuePath(kUserDataDirSwitch);
-      HRESULT hr = ProcessServiceState(data_dir,
+      HRESULT hr = ProcessServiceState(user_data_dir_,
                                        command_line.HasSwitch(kQuietSwitch));
       if (FAILED(hr))
         return hr;
-      hr = InstallService(data_dir);
+
+      hr = InstallService(user_data_dir_);
       if (SUCCEEDED(hr) && command_line.HasSwitch(kStartSwitch))
         return StartService();
 
@@ -256,9 +255,15 @@ class CloudPrintServiceModule
       return StartService();
 
     if (command_line.HasSwitch(kServiceSwitch)) {
-      user_data_dir_ = command_line.GetSwitchValuePath(kUserDataDirSwitch);
       *is_service = true;
       return S_OK;
+    }
+
+    if (command_line.HasSwitch(kConsoleSwitch)) {
+      ::SetConsoleCtrlHandler(&ConsoleCtrlHandler, TRUE);
+      HRESULT hr = Run();
+      ::SetConsoleCtrlHandler(NULL, FALSE);
+      return hr;
     }
 
     InvalidUsage();
@@ -372,16 +377,27 @@ class CloudPrintServiceModule
   }
 
   HRESULT StartConnector() {
-    return S_OK;
+    chrome_.reset(new ChromeLauncher(user_data_dir_));
+    return chrome_->Start() ? S_OK : E_FAIL;
   }
 
   void StopConnector() {
+    chrome_->Stop();
+    chrome_.reset();
   }
 
+  static BOOL WINAPI ConsoleCtrlHandler(DWORD type);
+
   FilePath user_data_dir_;
+  scoped_ptr<ChromeLauncher> chrome_;
 };
 
 CloudPrintServiceModule _AtlModule;
+
+BOOL CloudPrintServiceModule::ConsoleCtrlHandler(DWORD type) {
+  PostThreadMessage(_AtlModule.m_dwThreadID, WM_QUIT, 0, 0);
+  return TRUE;
+}
 
 int main() {
   base::AtExitManager at_exit;

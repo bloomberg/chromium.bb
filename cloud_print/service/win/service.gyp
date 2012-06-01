@@ -16,12 +16,16 @@
       'type': 'static_library',
       'dependencies': [
         '../../../base/base.gyp:base', 
-        '../../../net/net.gyp:net',
         '../../../build/temp_gyp/googleurl.gyp:googleurl',
+        '../../../net/net.gyp:net',
       ],
       'sources': [
+        'chrome_launcher.cc',
+        'chrome_launcher.h',
         'service_state.cc',
         'service_state.h',
+        'service_switches.cc',
+        'service_switches.h',
       ]
     },
     {
@@ -34,7 +38,7 @@
         'resource.h',
       ],
       'dependencies': [
-        'cloud_print_service_lib'
+        'cloud_print_service_lib',
       ],
       'msvs_settings': {
         'VCLinkerTool': {
