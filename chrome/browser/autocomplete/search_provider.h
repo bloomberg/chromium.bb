@@ -89,6 +89,10 @@ class SearchProvider : public AutocompleteProvider,
   static const int kKeywordProviderURLFetcherID;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInline);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineSchemeSubstring);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineDomainClassify);
+
   virtual ~SearchProvider();
 
   // Manages the providers (TemplateURLs) used by SearchProvider. Two providers

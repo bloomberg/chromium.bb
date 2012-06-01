@@ -715,3 +715,188 @@ TEST_F(SearchProviderTest, SuggestRelevance) {
   EXPECT_GT(match_a1.relevance, match_a2.relevance);
   EXPECT_GT(match_a2.relevance, match_a3.relevance);
 }
+
+// Verifies inline autocompletion of navigational results.
+TEST_F(SearchProviderTest, NavigationInline) {
+  struct {
+    const std::string input;
+    const std::string url;
+    // Test the expected fill_into_edit, which may drop "http://".
+    // Some cases will not trim "http://" because "www." is not a valid prefix.
+    const std::string fill_into_edit;
+    size_t inline_offset;
+  } cases[] = {
+    // Do not inline matches that do not contain the input; trim http as needed.
+    { "x",                    "http://www.abc.com",
+                                     "www.abc.com",  string16::npos },
+    { "https:",               "http://www.abc.com",
+                                     "www.abc.com",  string16::npos },
+    { "abc.com/",             "http://www.abc.com",
+                                     "www.abc.com",  string16::npos },
+    { "http://www.abc.com/a", "http://www.abc.com",
+                              "http://www.abc.com",  string16::npos },
+    { "http://www.abc.com",   "https://www.abc.com",
+                              "https://www.abc.com", string16::npos },
+    { "http://abc.com",       "ftp://abc.com",
+                              "ftp://abc.com",       string16::npos },
+    { "https://www.abc.com",  "http://www.abc.com",
+                                     "www.abc.com",  string16::npos },
+    { "ftp://abc.com",        "http://abc.com",
+                                     "abc.com",      string16::npos },
+
+    // Do not inline matches with invalid input prefixes; trim http as needed.
+    { "ttp",                  "http://www.abc.com",
+                                     "www.abc.com", string16::npos },
+    { "://w",                 "http://www.abc.com",
+                                     "www.abc.com", string16::npos },
+    { "ww.",                  "http://www.abc.com",
+                                     "www.abc.com", string16::npos },
+    { ".ab",                  "http://www.abc.com",
+                                     "www.abc.com", string16::npos },
+    { "bc",                   "http://www.abc.com",
+                                     "www.abc.com", string16::npos },
+    { ".com",                 "http://www.abc.com",
+                                     "www.abc.com", string16::npos },
+
+    // Do not inline matches that omit input domain labels; trim http as needed.
+    { "www.a",                "http://a.com",
+                                     "a.com",       string16::npos },
+    { "http://www.a",         "http://a.com",
+                              "http://a.com",       string16::npos },
+    { "www.a",                "ftp://a.com",
+                              "ftp://a.com",        string16::npos },
+    { "ftp://www.a",          "ftp://a.com",
+                              "ftp://a.com",        string16::npos },
+
+    // Input matching but with nothing to inline will not yield an offset.
+    { "abc.com",              "http://www.abc.com",
+                                     "www.abc.com", string16::npos },
+    { "http://www.abc.com",   "http://www.abc.com",
+                              "http://www.abc.com", string16::npos },
+
+    // Inline matches when the input is a leading substring of the scheme.
+    { "h",                    "http://www.abc.com",
+                              "http://www.abc.com", 1 },
+    { "http",                 "http://www.abc.com",
+                              "http://www.abc.com", 4 },
+
+    // Inline matches when the input is a leading substring of the full URL.
+    { "http:",                "http://www.abc.com",
+                              "http://www.abc.com", 5 },
+    { "http://w",             "http://www.abc.com",
+                              "http://www.abc.com", 8 },
+    { "http://www.",          "http://www.abc.com",
+                              "http://www.abc.com", 11 },
+    { "http://www.ab",        "http://www.abc.com",
+                              "http://www.abc.com", 13 },
+    { "http://www.abc.com/p", "http://www.abc.com/path/file.htm?q=x#foo",
+                              "http://www.abc.com/path/file.htm?q=x#foo", 20 },
+    { "http://abc.com/p",     "http://abc.com/path/file.htm?q=x#foo",
+                              "http://abc.com/path/file.htm?q=x#foo",     16 },
+
+    // Inline matches with valid URLPrefixes; only trim "http://".
+    { "w",                    "http://www.abc.com",
+                                     "www.abc.com", 1 },
+    { "www.a",                "http://www.abc.com",
+                                     "www.abc.com", 5 },
+    { "abc",                  "http://www.abc.com",
+                                     "www.abc.com", 7 },
+    { "abc.c",                "http://www.abc.com",
+                                     "www.abc.com", 9 },
+    { "abc.com/p",            "http://www.abc.com/path/file.htm?q=x#foo",
+                                     "www.abc.com/path/file.htm?q=x#foo", 13 },
+    { "abc.com/p",            "http://abc.com/path/file.htm?q=x#foo",
+                                     "abc.com/path/file.htm?q=x#foo",     9 },
+
+    // Inline matches using the maximal URLPrefix components.
+    { "h",                    "http://help.com",
+                                     "help.com",     1 },
+    { "http",                 "http://http.com",
+                                     "http.com",     4 },
+    { "h",                    "http://www.help.com",
+                                     "www.help.com", 5 },
+    { "http",                 "http://www.http.com",
+                                     "www.http.com", 8 },
+    { "w",                    "http://www.www.com",
+                                     "www.www.com",  5 },
+
+    // Test similar behavior for the ftp and https schemes.
+    { "ftp://www.ab",         "ftp://www.abc.com/path/file.htm?q=x#foo",
+                              "ftp://www.abc.com/path/file.htm?q=x#foo",   12 },
+    { "www.ab",               "ftp://www.abc.com/path/file.htm?q=x#foo",
+                              "ftp://www.abc.com/path/file.htm?q=x#foo",   12 },
+    { "ab",                   "ftp://www.abc.com/path/file.htm?q=x#foo",
+                              "ftp://www.abc.com/path/file.htm?q=x#foo",   12 },
+    { "ab",                   "ftp://abc.com/path/file.htm?q=x#foo",
+                              "ftp://abc.com/path/file.htm?q=x#foo",       8 },
+    { "https://www.ab",       "https://www.abc.com/path/file.htm?q=x#foo",
+                              "https://www.abc.com/path/file.htm?q=x#foo", 14 },
+    { "www.ab",               "https://www.abc.com/path/file.htm?q=x#foo",
+                              "https://www.abc.com/path/file.htm?q=x#foo", 14 },
+    { "ab",                   "https://www.abc.com/path/file.htm?q=x#foo",
+                              "https://www.abc.com/path/file.htm?q=x#foo", 14 },
+    { "ab",                   "https://abc.com/path/file.htm?q=x#foo",
+                              "https://abc.com/path/file.htm?q=x#foo",     10 },
+
+    // Forced query input should inline and retain the "?" prefix.
+    { "?http://www.ab",       "http://www.abc.com",
+                             "?http://www.abc.com", 14 },
+    { "?www.ab",              "http://www.abc.com",
+                                    "?www.abc.com", 7 },
+    { "?ab",                  "http://www.abc.com",
+                                    "?www.abc.com", 7 },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+    QueryForInput(ASCIIToUTF16(cases[i].input), false);
+    SearchProvider::NavigationResult result(GURL(cases[i].url), string16(), 0);
+    AutocompleteMatch match(provider_->NavigationToMatch(result, false));
+    EXPECT_EQ(cases[i].inline_offset, match.inline_autocomplete_offset);
+    EXPECT_EQ(ASCIIToUTF16(cases[i].fill_into_edit), match.fill_into_edit);
+  }
+}
+
+// Verifies that "http://" is not trimmed for input that is a leading substring.
+TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
+  const string16 input(ASCIIToUTF16("ht"));
+  const string16 url(ASCIIToUTF16("http://a.com"));
+  const SearchProvider::NavigationResult result(GURL(url), string16(), 0);
+
+  // Check the offset and strings when inline autocompletion is allowed.
+  QueryForInput(input, false);
+  AutocompleteMatch match_inline(provider_->NavigationToMatch(result, false));
+  EXPECT_EQ(2U, match_inline.inline_autocomplete_offset);
+  EXPECT_EQ(url, match_inline.fill_into_edit);
+  EXPECT_EQ(url, match_inline.contents);
+
+  // Check the same offset and strings when inline autocompletion is prevented.
+  QueryForInput(input, true);
+  AutocompleteMatch match_prevent(provider_->NavigationToMatch(result, false));
+  EXPECT_EQ(string16::npos, match_prevent.inline_autocomplete_offset);
+  EXPECT_EQ(url, match_prevent.fill_into_edit);
+  EXPECT_EQ(url, match_prevent.contents);
+}
+
+// Verifies that input "w" marks a more significant domain label than "www.".
+TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
+  QueryForInput(ASCIIToUTF16("w"), false);
+  const GURL url("http://www.wow.com");
+  const SearchProvider::NavigationResult result(url, string16(), 0);
+  AutocompleteMatch match(provider_->NavigationToMatch(result, false));
+  EXPECT_EQ(5U, match.inline_autocomplete_offset);
+  EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.fill_into_edit);
+  EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.contents);
+
+  // Ensure that the match for input "w" is marked on "wow" and not "www".
+  ASSERT_EQ(3U, match.contents_class.size());
+  EXPECT_EQ(0U, match.contents_class[0].offset);
+  EXPECT_EQ(AutocompleteMatch::ACMatchClassification::URL,
+            match.contents_class[0].style);
+  EXPECT_EQ(4U, match.contents_class[1].offset);
+  EXPECT_EQ(AutocompleteMatch::ACMatchClassification::URL |
+            AutocompleteMatch::ACMatchClassification::MATCH,
+            match.contents_class[1].style);
+  EXPECT_EQ(5U, match.contents_class[2].offset);
+  EXPECT_EQ(AutocompleteMatch::ACMatchClassification::URL,
+            match.contents_class[2].style);
+}

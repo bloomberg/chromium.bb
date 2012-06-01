@@ -148,20 +148,6 @@ Char16Set Char16SetFromString16(const string16& term) {
   return characters;
 }
 
-bool IsInlineablePrefix(const string16& prefix) {
-  CR_DEFINE_STATIC_LOCAL(std::set<string16>, prefixes, ());
-  if (prefixes.empty()) {
-    prefixes.insert(ASCIIToUTF16("ftp://ftp."));
-    prefixes.insert(ASCIIToUTF16("ftp://www."));
-    prefixes.insert(ASCIIToUTF16("ftp://"));
-    prefixes.insert(ASCIIToUTF16("https://www."));
-    prefixes.insert(ASCIIToUTF16("https://"));
-    prefixes.insert(ASCIIToUTF16("http://www."));
-    prefixes.insert(ASCIIToUTF16("http://"));
-  }
-  return prefixes.count(prefix) != 0;
-}
-
 // RowWordStarts ---------------------------------------------------------------
 
 RowWordStarts::RowWordStarts() {}

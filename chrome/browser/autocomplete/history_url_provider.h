@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/synchronization/cancellation_flag.h"
+#include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
 
@@ -144,7 +145,6 @@ class HistoryURLProvider : public HistoryProvider {
                      Profile* profile,
                      const std::string& languages)
     : HistoryProvider(listener, profile, "History"),
-      prefixes_(GetPrefixes()),
       params_(NULL),
       languages_(languages) {}
 #endif
@@ -184,9 +184,6 @@ class HistoryURLProvider : public HistoryProvider {
 
   ~HistoryURLProvider();
 
-  // Returns the set of prefixes to use for prefixes_.
-  static history::Prefixes GetPrefixes();
-
   // Determines the relevance for a match, given its type.  If
   // |match_type| is NORMAL, |match_number| is a number [0,
   // kMaxSuggestions) indicating the relevance of the match (higher ==
@@ -200,15 +197,6 @@ class HistoryURLProvider : public HistoryProvider {
   // Helper function that actually launches the two autocomplete passes.
   void RunAutocompletePasses(const AutocompleteInput& input,
                              bool fixup_input_and_run_pass_1);
-
-  // Returns the best prefix that begins |text|.  "Best" means "greatest number
-  // of components".  This may return NULL if no prefix begins |text|.
-  //
-  // |prefix_suffix| (which may be empty) is appended to every attempted
-  // prefix.  This is useful when you need to figure out the innermost match
-  // for some user input in a URL.
-  const history::Prefix* BestPrefix(const GURL& text,
-                                    const string16& prefix_suffix) const;
 
   // Returns a match corresponding to exactly what the user has typed.
   AutocompleteMatch SuggestExactInput(const AutocompleteInput& input,
@@ -271,9 +259,6 @@ class HistoryURLProvider : public HistoryProvider {
       const history::HistoryMatch& history_match,
       MatchType match_type,
       int relevance);
-
-  // Prefixes to try appending to user input when looking for a match.
-  const history::Prefixes prefixes_;
 
   // Params for the current query.  The provider should not free this directly;
   // instead, it is passed as a parameter through the history backend, and the

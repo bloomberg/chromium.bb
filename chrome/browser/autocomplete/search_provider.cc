@@ -15,11 +15,13 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string16.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
+#include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/instant/instant_controller.h"
@@ -36,6 +38,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -963,31 +966,62 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
 AutocompleteMatch SearchProvider::NavigationToMatch(
     const NavigationResult& navigation,
     bool is_keyword) {
-  const string16& input_text = is_keyword ? keyword_input_text_ : input_.text();
+  const string16& input = is_keyword ? keyword_input_text_ : input_.text();
   AutocompleteMatch match(this, navigation.relevance(), false,
                           AutocompleteMatch::NAVSUGGEST);
   match.destination_url = navigation.url();
-  match.contents =
-      StringForURLDisplay(navigation.url(), true, !HasHTTPScheme(input_text));
-  AutocompleteMatch::ClassifyMatchInString(input_text, match.contents,
-                                           ACMatchClassification::URL,
-                                           &match.contents_class);
+
+  // First look for the user's input inside the fill_into_edit as it would be
+  // without trimming the scheme, so we can find matches at the beginning of the
+  // scheme.
+  const string16 untrimmed_fill_into_edit(
+      AutocompleteInput::FormattedStringWithEquivalentMeaning(navigation.url(),
+          StringForURLDisplay(navigation.url(), true, false)));
+  const URLPrefix* prefix =
+      URLPrefix::BestURLPrefix(untrimmed_fill_into_edit, input);
+  size_t match_start = (prefix == NULL) ?
+      untrimmed_fill_into_edit.find(input) : prefix->prefix.length();
+  size_t inline_autocomplete_offset = (prefix == NULL) ?
+      string16::npos : (match_start + input.length());
+  bool trim_http = !HasHTTPScheme(input) && (!prefix || (match_start != 0));
+
+  // Preserve the forced query '?' prefix in |match.fill_into_edit|.
+  // Otherwise, user edits to a suggestion would show non-Search results.
+  if (input_.type() == AutocompleteInput::FORCED_QUERY) {
+    match.fill_into_edit = ASCIIToUTF16("?");
+    if (inline_autocomplete_offset != string16::npos)
+      ++inline_autocomplete_offset;
+  }
+
+  const std::string languages(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  const net::FormatUrlTypes format_types =
+      net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP);
+  match.fill_into_edit +=
+      AutocompleteInput::FormattedStringWithEquivalentMeaning(navigation.url(),
+          net::FormatUrl(navigation.url(), languages, format_types,
+                         net::UnescapeRule::SPACES, NULL, NULL,
+                         &inline_autocomplete_offset));
+  if (!input_.prevent_inline_autocomplete())
+    match.inline_autocomplete_offset = inline_autocomplete_offset;
+  DCHECK((match.inline_autocomplete_offset == string16::npos) ||
+         (match.inline_autocomplete_offset <= match.fill_into_edit.length()));
+
+  match.contents = net::FormatUrl(navigation.url(), languages,
+      format_types, net::UnescapeRule::SPACES, NULL, NULL, &match_start);
+  // If the first match in the untrimmed string was inside a scheme that we
+  // trimmed, look for a subsequent match.
+  if (match_start == string16::npos)
+    match_start = match.contents.find(input);
+  // Safe if |match_start| is npos; also safe if the input is longer than the
+  // remaining contents after |match_start|.
+  AutocompleteMatch::ClassifyLocationInString(match_start, input.length(),
+      match.contents.length(), ACMatchClassification::URL,
+      &match.contents_class);
 
   match.description = navigation.description();
-  AutocompleteMatch::ClassifyMatchInString(input_text, match.description,
-                                           ACMatchClassification::NONE,
-                                           &match.description_class);
-
-  // When the user forced a query, we need to make sure all the fill_into_edit
-  // values preserve that property.  Otherwise, if the user starts editing a
-  // suggestion, non-Search results will suddenly appear.
-  if (input_.type() == AutocompleteInput::FORCED_QUERY)
-    match.fill_into_edit.assign(ASCIIToUTF16("?"));
-  match.fill_into_edit.append(
-      AutocompleteInput::FormattedStringWithEquivalentMeaning(navigation.url(),
-                                                              match.contents));
-  // TODO(pkasting|msw): Inline-autocomplete nav results; see http://b/1112879.
-
+  AutocompleteMatch::ClassifyMatchInString(input, match.description,
+      ACMatchClassification::NONE, &match.description_class);
   return match;
 }
 

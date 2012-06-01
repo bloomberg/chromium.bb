@@ -127,9 +127,6 @@ String16Vector String16VectorFromString16(const string16& uni_string,
 // the UI can highlight the matched sections.
 Char16Set Char16SetFromString16(const string16& uni_word);
 
-// Determine if |prefix| is any of the standard 'ftp' or 'http[s]' prefixes.
-bool IsInlineablePrefix(const string16& prefix);
-
 // Support for InMemoryURLIndex Private Data -----------------------------------
 
 // An index into a list of all of the words we have indexed.

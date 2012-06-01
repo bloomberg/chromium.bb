@@ -17,6 +17,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "content/public/browser/notification_details.h"
@@ -632,10 +633,9 @@ ScoredHistoryMatch URLIndexPrivateData::ScoredMatchForURL(
   //  3) AND the search string does not end in whitespace (making it look to
   //     the IMUI as though there is a single search term when actually there
   //     is a second, empty term).
-  match.can_inline = !match.url_matches.empty() &&
-      terms.size() == 1 &&
+  match.can_inline = !match.url_matches.empty() && terms.size() == 1 &&
       (match.url_matches[0].offset == 0 ||
-       IsInlineablePrefix(url.substr(0, match.url_matches[0].offset))) &&
+       URLPrefix::IsURLPrefix(url.substr(0, match.url_matches[0].offset))) &&
       !IsWhitespace(*(lower_string.rbegin()));
   match.match_in_scheme = match.can_inline && match.url_matches[0].offset == 0;
 

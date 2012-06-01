@@ -313,7 +313,6 @@ HistoryURLProviderParams::~HistoryURLProviderParams() {
 HistoryURLProvider::HistoryURLProvider(ACProviderListener* listener,
                                        Profile* profile)
     : HistoryProvider(listener, profile, "HistoryURL"),
-      prefixes_(GetPrefixes()),
       params_(NULL) {
 }
 
@@ -392,8 +391,9 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   history::URLRows url_matches;
   history::HistoryMatches history_matches;
 
-  for (history::Prefixes::const_iterator i(prefixes_.begin());
-       i != prefixes_.end(); ++i) {
+  const URLPrefixes& prefixes = URLPrefix::GetURLPrefixes();
+  for (URLPrefixes::const_iterator i(prefixes.begin()); i != prefixes.end();
+       ++i) {
     if (params->cancel_flag.IsSet())
       return;  // Canceled in the middle of a query, give up.
     // We only need kMaxMatches results in the end, but before we get there we
@@ -406,10 +406,11 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
                               kMaxMatches * 2, (backend == NULL), &url_matches);
     for (history::URLRows::const_iterator j(url_matches.begin());
          j != url_matches.end(); ++j) {
-      const history::Prefix* best_prefix = BestPrefix(j->url(), string16());
+      const URLPrefix* best_prefix =
+          URLPrefix::BestURLPrefix(UTF8ToUTF16(j->url().spec()), string16());
       DCHECK(best_prefix != NULL);
       history_matches.push_back(history::HistoryMatch(*j, i->prefix.length(),
-          !i->num_components,
+          i->num_components == 0,
           i->num_components >= best_prefix->num_components));
     }
   }
@@ -514,23 +515,6 @@ HistoryURLProvider::~HistoryURLProvider() {
   // anything on destruction.
 }
 
-// static
-history::Prefixes HistoryURLProvider::GetPrefixes() {
-  // We'll complete text following these prefixes.
-  // NOTE: There's no requirement that these be in any particular order.
-  history::Prefixes prefixes;
-  prefixes.push_back(history::Prefix(ASCIIToUTF16("https://www."), 2));
-  prefixes.push_back(history::Prefix(ASCIIToUTF16("http://www."), 2));
-  prefixes.push_back(history::Prefix(ASCIIToUTF16("ftp://ftp."), 2));
-  prefixes.push_back(history::Prefix(ASCIIToUTF16("ftp://www."), 2));
-  prefixes.push_back(history::Prefix(ASCIIToUTF16("https://"), 1));
-  prefixes.push_back(history::Prefix(ASCIIToUTF16("http://"), 1));
-  prefixes.push_back(history::Prefix(ASCIIToUTF16("ftp://"), 1));
-  // Empty string catches within-scheme matches as well.
-  prefixes.push_back(history::Prefix(string16(), 0));
-  return prefixes;
-}
-
 int HistoryURLProvider::CalculateRelevance(MatchType match_type,
                                            size_t match_number) const {
   switch (match_type) {
@@ -625,24 +609,6 @@ void HistoryURLProvider::RunAutocompletePasses(
   }
 }
 
-const history::Prefix* HistoryURLProvider::BestPrefix(
-    const GURL& url,
-    const string16& prefix_suffix) const {
-  const history::Prefix* best_prefix = NULL;
-  const string16 text(UTF8ToUTF16(url.spec()));
-  for (history::Prefixes::const_iterator i(prefixes_.begin());
-       i != prefixes_.end(); ++i) {
-    if ((best_prefix == NULL) ||
-        (i->num_components > best_prefix->num_components)) {
-      string16 prefix_with_suffix(i->prefix + prefix_suffix);
-      if ((text.length() >= prefix_with_suffix.length()) &&
-          !text.compare(0, prefix_with_suffix.length(), prefix_with_suffix))
-        best_prefix = &(*i);
-    }
-  }
-  return best_prefix;
-}
-
 AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     const AutocompleteInput& input,
     bool trim_http) {
@@ -672,8 +638,8 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     // This relies on match.destination_url being the non-prefix-trimmed version
     // of match.contents.
     match.contents = display_string;
-    const history::Prefix* best_prefix =
-        BestPrefix(match.destination_url, input.text());
+    const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(
+        UTF8ToUTF16(match.destination_url.spec()), input.text());
     // Because of the vagaries of GURL, it's possible for match.destination_url
     // to not contain the user's input at all.  In this case don't mark anything
     // as a match.
