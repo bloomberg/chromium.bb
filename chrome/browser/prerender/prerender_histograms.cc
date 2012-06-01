@@ -322,7 +322,6 @@ bool PrerenderHistograms::WithinWindow() const {
       base::TimeDelta::FromSeconds(kWindowDurationSeconds);
 }
 
-
 void PrerenderHistograms::RecordTimeUntilUsed(
     base::TimeDelta time_until_used, base::TimeDelta max_age) const {
   PREFIXED_HISTOGRAM(
@@ -405,6 +404,18 @@ void PrerenderHistograms::RecordLocalPredictorEvent(
           "LocalPredictorEvent", "Prerender")),
       event,
       PrerenderLocalPredictor::EVENT_MAX_VALUE);
+}
+
+void PrerenderHistograms::RecordLocalPredictorTimeUntilUsed(
+    base::TimeDelta time_until_used, base::TimeDelta max_age) const {
+  PREFIXED_HISTOGRAM(
+      "LocalPredictorTimeUntilUsed",
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          name,
+          time_until_used,
+          base::TimeDelta::FromMilliseconds(10),
+          max_age,
+          50));
 }
 
 }  // namespace prerender

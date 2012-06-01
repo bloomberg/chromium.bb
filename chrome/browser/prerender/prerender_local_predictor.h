@@ -39,6 +39,7 @@ class PrerenderLocalPredictor : history::VisitDatabaseObserver {
     EVENT_ADD_VISIT_PRERENDERING = 10,
     EVENT_GOT_PRERENDER_URL = 11,
     EVENT_ERROR_NO_PRERENDER_URL_FOR_PLT = 12,
+    EVENT_ADD_VISIT_PRERENDERING_EXTENDED = 13,
     EVENT_MAX_VALUE
   };
 

@@ -121,7 +121,15 @@ base::Time GetCurrentTime() {
 }  // namespace
 
 struct PrerenderLocalPredictor::PrerenderData {
+  // For expiration purposes, this is a synthetic start time consisting either
+  // of the actual start time, or of the last time the page was re-requested
+  // for prerendering - 10 seconds (unless the original request came after
+  // that).  This is to emulate the effect of re-prerendering a page that is
+  // about to expire, because it was re-requested for prerendering a second
+  // time after the actual prerender being kept around.
   base::Time start_time;
+  // The actual time this page was last requested for prerendering.
+  base::Time actual_start_time;
   URLID url_id;
   double priority;
   GURL url;
@@ -159,6 +167,9 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
   if (current_prerender_.get() &&
       current_prerender_->url_id == info.url_id &&
       IsPrerenderStillValid(current_prerender_.get())) {
+    prerender_manager_->histograms()->RecordLocalPredictorTimeUntilUsed(
+        GetCurrentTime() - current_prerender_->actual_start_time,
+        base::TimeDelta::FromMilliseconds(kMaxLocalPredictionTimeMs));
     last_swapped_in_prerender_.reset(current_prerender_.release());
     RecordEvent(EVENT_ADD_VISIT_PRERENDER_IDENTIFIED);
   }
@@ -227,6 +238,7 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
         current_prerender_->priority = priority;
         current_prerender_->start_time = current_time;
       } else {
+        RecordEvent(EVENT_ADD_VISIT_PRERENDERING_EXTENDED);
         if (priority > current_prerender_->priority)
           current_prerender_->priority = priority;
         // If the prerender already existed, we want to extend it.  However,
@@ -241,6 +253,7 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
         if (simulated_new_start_time > current_prerender_->start_time)
           current_prerender_->start_time = simulated_new_start_time;
       }
+      current_prerender_->actual_start_time = current_time;
       if (current_prerender_->url.is_empty()) {
         HistoryService* history = GetHistoryIfExists();
         if (history) {

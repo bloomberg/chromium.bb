@@ -93,6 +93,12 @@ class PrerenderHistograms {
   // Record the occurrence of an event from the local predictor.
   void RecordLocalPredictorEvent(PrerenderLocalPredictor::Event event) const;
 
+  // For the local predictor, records the time from when a page starts
+  // prerendering to when the user navigates to it. This must be called on the
+  // UI thread.
+  void RecordLocalPredictorTimeUntilUsed(base::TimeDelta time_until_used,
+                                         base::TimeDelta max_age) const;
+
  private:
   base::TimeTicks GetCurrentTimeTicks() const;
 
