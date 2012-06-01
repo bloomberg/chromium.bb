@@ -60,7 +60,7 @@ TEST_F(MmapTest, TestFreeingAddressSpace) {
   }
 }
 
-void MapShmFd(struct NaClApp *nap, int32_t addr, size_t shm_size) {
+void MapShmFd(struct NaClApp *nap, uintptr_t addr, size_t shm_size) {
   struct NaClDescImcShm *shm_desc =
       (struct NaClDescImcShm *) malloc(sizeof(*shm_desc));
   ASSERT_TRUE(shm_desc);
@@ -69,14 +69,14 @@ void MapShmFd(struct NaClApp *nap, int32_t addr, size_t shm_size) {
   struct NaClDesc *desc = &shm_desc->base;
   int fd = NaClSetAvail(nap, desc);
 
-  int32_t mapping_addr = NaClCommonSysMmapIntern(
+  uintptr_t mapping_addr = (uint32_t) NaClCommonSysMmapIntern(
       nap, (void *) addr, shm_size,
       NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
       NACL_ABI_MAP_FIXED | NACL_ABI_MAP_SHARED, fd, 0);
   ASSERT_EQ(mapping_addr, addr);
 }
 
-void MapFileFd(struct NaClApp *nap, int32_t addr, size_t file_size) {
+void MapFileFd(struct NaClApp *nap, uintptr_t addr, size_t file_size) {
   int host_fd;
 #if NACL_WINDOWS
   // Open temporary file that is deleted automatically.
@@ -107,14 +107,14 @@ void MapFileFd(struct NaClApp *nap, int32_t addr, size_t file_size) {
 
   int fd = NaClSetAvail(nap, desc);
 
-  int32_t mapping_addr = NaClCommonSysMmapIntern(
+  uintptr_t mapping_addr = (uint32_t) NaClCommonSysMmapIntern(
       nap, (void *) addr, file_size,
       NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
       NACL_ABI_MAP_FIXED | NACL_ABI_MAP_SHARED, fd, 0);
   ASSERT_EQ(mapping_addr, addr);
 }
 
-void UnmapMemory(struct NaClApp *nap, uint32_t addr, size_t size) {
+void UnmapMemory(struct NaClApp *nap, uintptr_t addr, size_t size) {
   // Create dummy NaClAppThread.
   // TODO(mseaborn): Clean up so that this is not necessary.
   struct NaClAppThread thread;
@@ -173,7 +173,7 @@ TEST_F(MmapTest, TestUnmapShmMapping) {
   // TODO(mseaborn): Clean up so that this is not necessary.
   MapShmFd(&app, 0x400000, 0x10000);
 
-  uint32_t addr = 0x200000;
+  uintptr_t addr = 0x200000;
   size_t size = 0x100000;
   MapShmFd(&app, addr, size);
 #if NACL_WINDOWS
@@ -204,7 +204,7 @@ TEST_F(MmapTest, TestUnmapFileMapping) {
   // TODO(mseaborn): Clean up so that this is not necessary.
   MapShmFd(&app, 0x400000, 0x10000);
 
-  uint32_t addr = 0x200000;
+  uintptr_t addr = 0x200000;
   size_t size = 0x100000;
   MapFileFd(&app, addr, size);
 #if NACL_WINDOWS
