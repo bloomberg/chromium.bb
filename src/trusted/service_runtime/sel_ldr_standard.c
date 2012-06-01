@@ -163,11 +163,6 @@ NaClErrorCode NaClCheckAddressSpaceLayoutSanity(struct NaClApp *nap,
     NaClLog(LOG_INFO, "rodata_start not a multiple of allocation size\n");
     return LOAD_BAD_RODATA_ALIGNMENT;
   }
-  if (0 != nap->data_start &&
-      NaClRoundAllocPage(nap->data_start) != nap->data_start) {
-    NaClLog(LOG_INFO, "data_start not a multiple of allocation size\n");
-    return LOAD_BAD_DATA_ALIGNMENT;
-  }
   return LOAD_OK;
 }
 

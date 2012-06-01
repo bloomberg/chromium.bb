@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -240,7 +240,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
    */
 
   if (0 != nap->data_start) {
-    start_addr = NaClUserToSys(nap, nap->data_start);
+    start_addr = NaClUserToSys(nap, nap->data_start & ~(NACL_MAP_PAGESIZE - 1));
     region_size = NaClRoundPage(NaClRoundAllocPage(nap->data_end)
                                 - NaClSysToUser(nap, start_addr));
     NaClLog(3,

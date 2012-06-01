@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -577,6 +577,8 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
 
   for (segnum = 0; segnum < image->ehdr.e_phnum; ++segnum) {
     const Elf_Phdr *php = &image->phdrs[segnum];
+    Elf_Off offset = php->p_offset & ~(NACL_MAP_PAGESIZE - 1);
+    Elf_Off filesz = php->p_offset + php->p_filesz - offset;
 
     /* did we decide that we will load this segment earlier? */
     if (!image->loadable[segnum]) {
@@ -604,26 +606,26 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
       NaClLog(LOG_FATAL, "parameter error should have been detected already\n");
     }
 
-    paddr = mem_start + php->p_vaddr;
+    paddr = mem_start + (php->p_vaddr & ~(NACL_MAP_PAGESIZE - 1));
 
     NaClLog(4,
             "Seek to position %"NACL_PRIdElf_Off" (0x%"NACL_PRIxElf_Off").\n",
-            php->p_offset,
-            php->p_offset);
+            offset,
+            offset);
 
     /*
      * NB: php->p_offset may not be a valid off_t on 64-bit systems, but
      * in that case Seek() will error out.
      */
-    if ((*gp->vtbl->Seek)(gp, (off_t) php->p_offset, SEEK_SET) == (off_t) -1) {
+    if ((*gp->vtbl->Seek)(gp, (off_t) offset, SEEK_SET) == (off_t) -1) {
       NaClLog(LOG_ERROR, "seek failure segment %d", segnum);
       return LOAD_SEGMENT_BAD_PARAM;
     }
     NaClLog(4,
             "Reading %"NACL_PRIdElf_Xword" (0x%"NACL_PRIxElf_Xword") bytes to"
             " address 0x%"NACL_PRIxPTR"\n",
-            php->p_filesz,
-            php->p_filesz,
+            filesz,
+            filesz,
             paddr);
 
     /*
@@ -631,17 +633,16 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
      * details see
      * http://code.google.com/p/nativeclient/wiki/ValgrindMemcheck#Implementation_details
      */
-    NACL_MAKE_MEM_UNDEFINED((void *) paddr, php->p_filesz);
+    NACL_MAKE_MEM_UNDEFINED((void *) paddr, filesz);
 
-    if ((Elf_Word) (*gp->vtbl->Read)(gp, (void *) paddr, php->p_filesz)
-        != php->p_filesz) {
+    if ((Elf_Word) (*gp->vtbl->Read)(gp, (void *) paddr, filesz) != filesz) {
       NaClLog(LOG_ERROR, "load failure segment %d", segnum);
       return LOAD_SEGMENT_BAD_PARAM;
     }
     /* region from p_filesz to p_memsz should already be zero filled */
 
     /* Tell Valgrind that we've mapped a segment of nacl_file. */
-    NaClFileMappingForValgrind(paddr, php->p_filesz, php->p_offset);
+    NaClFileMappingForValgrind(paddr, filesz, offset);
   }
 
   return LOAD_OK;

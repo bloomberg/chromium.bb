@@ -757,6 +757,12 @@ if env.Bit('target_x86'):
   env.AddNodeToTestSuite(node, ['medium_tests', 'validator_tests'],
                          'run_dfa_validator_hello_world_test')
 
+if not env.CrossToolsBuild():
+  node = env.CommandSelLdrTestNacl(
+      'unaligned_data.out',
+      env.File(os.path.join(arch_testdata_dir, 'unaligned_data.nexe')))
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_unaligned_data_test')
+
 # ----------------------------------------------------------
 # Integration Tests
 # ----------------------------------------------------------
