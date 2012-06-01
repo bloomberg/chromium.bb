@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "liblouis.h"
+#include "louis.h"
 #include "brl_checks.h"
 
 void
