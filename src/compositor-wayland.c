@@ -639,7 +639,7 @@ input_handle_capabilities(void *data, struct wl_seat *seat,
 		wl_pointer_set_user_data(input->pointer, input);
 		wl_pointer_add_listener(input->pointer, &pointer_listener,
 					input);
-		weston_seat_init_pointer((struct weston_seat *) seat);
+		weston_seat_init_pointer(input->compositor->base.seat);
 	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
 		wl_pointer_destroy(input->pointer);
 		input->pointer = NULL;
@@ -650,7 +650,7 @@ input_handle_capabilities(void *data, struct wl_seat *seat,
 		wl_keyboard_set_user_data(input->keyboard, input);
 		wl_keyboard_add_listener(input->keyboard, &keyboard_listener,
 					 input);
-		weston_seat_init_keyboard((struct weston_seat *) seat, NULL);
+		weston_seat_init_keyboard(input->compositor->base.seat, NULL);
 	} else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->keyboard) {
 		wl_keyboard_destroy(input->keyboard);
 		input->keyboard = NULL;
