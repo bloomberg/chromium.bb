@@ -477,7 +477,7 @@ remoting.connectMe2Me = function(hostId, retryIfOffline) {
     return;
   }
   var message = document.getElementById('pin-message');
-  l10n.localizeElement(message, host.hostName);
+  l10n.localizeElementToText(message, host.hostName);
   remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
 };
 

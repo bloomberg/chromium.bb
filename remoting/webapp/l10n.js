@@ -37,6 +37,40 @@ l10n.localizeElement = function(element, opt_substitutions) {
   return l10n.localizeElementFromTag(element, tag, opt_substitutions);
 };
 
+// TODO(simonmorris): To simplify a merge, the next two methods were
+// cut-and-pasted from the previous two. Refactor.
+/**
+ * Localize an element by setting its innerText according to the specified tag
+ * and an optional set of substitutions.
+ * @param {Element} element The element to localize.
+ * @param {string} tag The localization tag.
+ * @param {(string|Array)=} opt_substitutions An optional set of substitution
+ *     strings corresponding to the "placeholders" attributes in messages.json.
+ * @return {boolean} True if the localization was successful; false otherwise.
+ */
+l10n.localizeElementToTextFromTag = function(element, tag, opt_substitutions) {
+  var translation = chrome.i18n.getMessage(tag, opt_substitutions);
+  if (translation) {
+    element.innerText = translation;
+  } else {
+    console.error('Missing translation for "' + tag + '":', element);
+  }
+  return translation != null;
+};
+
+/**
+ * Localize an element by setting its innerText according to its i18n-content
+ * attribute, and an optional set of substitutions.
+ * @param {Element} element The element to localize.
+ * @param {(string|Array)=} opt_substitutions An optional set of substitution
+ *     strings corresponding to the "placeholders" attributes in messages.json.
+ * @return {boolean} True if the localization was successful; false otherwise.
+ */
+l10n.localizeElementToText = function(element, opt_substitutions) {
+  var tag = element.getAttribute('i18n-content');
+  return l10n.localizeElementToTextFromTag(element, tag, opt_substitutions);
+};
+
 /**
  * Localize all tags with the i18n-content attribute, using i18n-data-n
  * attributes to specify any placeholder substitutions.
