@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_STORAGE_UNITTEST_H_
-#define CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_STORAGE_UNITTEST_H_
+#ifndef CHROME_BROWSER_VALUE_STORE_VALUE_STORE_UNITTEST_H_
+#define CHROME_BROWSER_VALUE_STORE_VALUE_STORE_UNITTEST_H_
 #pragma once
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,31 +12,26 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/extensions/settings/settings_backend.h"
-#include "chrome/browser/extensions/settings/settings_frontend.h"
+#include "chrome/browser/value_store/value_store.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
 
-namespace extensions {
-
 // Parameter type for the value-parameterized tests.
-typedef SettingsStorage* (*SettingsStorageTestParam)(
-    const FilePath& file_path, const std::string& extension_id);
+typedef ValueStore* (*ValueStoreTestParam)(const FilePath& file_path);
 
-// Test fixture for SettingsStorage tests.  Tests are defined in
+// Test fixture for ValueStore tests.  Tests are defined in
 // settings_storage_unittest.cc with configurations for both cached
 // and non-cached leveldb storage, and cached no-op storage.
-class ExtensionSettingsStorageTest
-  : public testing::TestWithParam<SettingsStorageTestParam> {
+class ValueStoreTest : public testing::TestWithParam<ValueStoreTestParam> {
  public:
-  ExtensionSettingsStorageTest();
-  virtual ~ExtensionSettingsStorageTest();
+  ValueStoreTest();
+  virtual ~ValueStoreTest();
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
  protected:
-  scoped_ptr<SettingsStorage> storage_;
+  scoped_ptr<ValueStore> storage_;
 
   std::string key1_;
   std::string key2_;
@@ -77,6 +72,4 @@ class ExtensionSettingsStorageTest
   content::TestBrowserThread file_thread_;
 };
 
-}  // namespace extensions
-
-#endif  // CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_STORAGE_UNITTEST_H_
+#endif  // CHROME_BROWSER_VALUE_STORE_VALUE_STORE_UNITTEST_H_

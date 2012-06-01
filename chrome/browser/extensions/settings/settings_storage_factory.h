@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,9 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 
-namespace extensions {
+class ValueStore;
 
-class SettingsStorage;
+namespace extensions {
 
 // Factory for creating SettingStorage instances.
 //
@@ -22,9 +22,9 @@ class SettingsStorage;
 class SettingsStorageFactory
     : public base::RefCountedThreadSafe<SettingsStorageFactory> {
  public:
-  // Creates a new SettingsStorage area for an extension under |base_path|.
+  // Creates a new ValueStore area for an extension under |base_path|.
   // Return NULL to indicate failure.  Must be called on the FILE thread.
-  virtual SettingsStorage* Create(
+  virtual ValueStore* Create(
       const FilePath& base_path, const std::string& extension_id) = 0;
 
  protected:

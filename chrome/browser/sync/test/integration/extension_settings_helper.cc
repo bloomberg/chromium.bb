@@ -16,11 +16,11 @@
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
+#include "chrome/browser/value_store/value_store.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 
 using content::BrowserThread;
-using extensions::SettingsStorage;
 using sync_datatype_helper::test;
 
 namespace extension_settings_helper {
@@ -38,7 +38,7 @@ std::string ToJson(const Value& value) {
 void GetAllSettingsOnFileThread(
     scoped_ptr<DictionaryValue>* out,
     base::WaitableEvent* signal,
-    SettingsStorage* storage) {
+    ValueStore* storage) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   out->reset(storage->Get().settings().DeepCopy());
   signal->Signal();
@@ -83,9 +83,9 @@ bool AreSettingsSame(Profile* expected_profile, Profile* actual_profile) {
 void SetSettingsOnFileThread(
     const DictionaryValue* settings,
     base::WaitableEvent* signal,
-    SettingsStorage* storage) {
+    ValueStore* storage) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  storage->Set(SettingsStorage::DEFAULTS, *settings);
+  storage->Set(ValueStore::DEFAULTS, *settings);
   signal->Signal();
 }
 

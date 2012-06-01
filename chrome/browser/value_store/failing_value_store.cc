@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/settings/failing_settings_storage.h"
+#include "chrome/browser/value_store/failing_value_store.h"
 
 #include "base/logging.h"
-
-namespace extensions {
 
 namespace {
 
 const char* kGenericErrorMessage = "Failed to initialize settings";
 
-SettingsStorage::ReadResult ReadResultError() {
-  return SettingsStorage::ReadResult(kGenericErrorMessage);
+ValueStore::ReadResult ReadResultError() {
+  return ValueStore::ReadResult(kGenericErrorMessage);
 }
 
-SettingsStorage::WriteResult WriteResultError() {
-  return SettingsStorage::WriteResult(kGenericErrorMessage);
+ValueStore::WriteResult WriteResultError() {
+  return ValueStore::WriteResult(kGenericErrorMessage);
 }
 
 }  // namespace
@@ -41,42 +39,40 @@ size_t FailingSettingsStorage::GetBytesInUse() {
   return 0;
 }
 
-SettingsStorage::ReadResult FailingSettingsStorage::Get(
+ValueStore::ReadResult FailingSettingsStorage::Get(
     const std::string& key) {
   return ReadResultError();
 }
 
-SettingsStorage::ReadResult FailingSettingsStorage::Get(
+ValueStore::ReadResult FailingSettingsStorage::Get(
     const std::vector<std::string>& keys) {
   return ReadResultError();
 }
 
-SettingsStorage::ReadResult FailingSettingsStorage::Get() {
+ValueStore::ReadResult FailingSettingsStorage::Get() {
   return ReadResultError();
 }
 
-SettingsStorage::WriteResult FailingSettingsStorage::Set(
+ValueStore::WriteResult FailingSettingsStorage::Set(
     WriteOptions options, const std::string& key, const Value& value) {
   return WriteResultError();
 }
 
-SettingsStorage::WriteResult FailingSettingsStorage::Set(
+ValueStore::WriteResult FailingSettingsStorage::Set(
     WriteOptions options, const DictionaryValue& settings) {
   return WriteResultError();
 }
 
-SettingsStorage::WriteResult FailingSettingsStorage::Remove(
+ValueStore::WriteResult FailingSettingsStorage::Remove(
     const std::string& key) {
   return WriteResultError();
 }
 
-SettingsStorage::WriteResult FailingSettingsStorage::Remove(
+ValueStore::WriteResult FailingSettingsStorage::Remove(
     const std::vector<std::string>& keys) {
   return WriteResultError();
 }
 
-SettingsStorage::WriteResult FailingSettingsStorage::Clear() {
+ValueStore::WriteResult FailingSettingsStorage::Clear() {
   return WriteResultError();
 }
-
-}  // namespace extensions

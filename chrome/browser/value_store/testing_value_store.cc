@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/settings/testing_settings_storage.h"
+#include "chrome/browser/value_store/testing_value_store.h"
 
 #include "base/logging.h"
-
-namespace extensions {
 
 namespace {
 
 const char* kGenericErrorMessage = "TestingSettingsStorage configured to error";
 
-SettingsStorage::ReadResult ReadResultError() {
-  return SettingsStorage::ReadResult(kGenericErrorMessage);
+ValueStore::ReadResult ReadResultError() {
+  return ValueStore::ReadResult(kGenericErrorMessage);
 }
 
-SettingsStorage::WriteResult WriteResultError() {
-  return SettingsStorage::WriteResult(kGenericErrorMessage);
+ValueStore::WriteResult WriteResultError() {
+  return ValueStore::WriteResult(kGenericErrorMessage);
 }
 
 std::vector<std::string> CreateVector(const std::string& string) {
@@ -56,12 +54,12 @@ size_t TestingSettingsStorage::GetBytesInUse() {
   return 0;
 }
 
-SettingsStorage::ReadResult TestingSettingsStorage::Get(
+ValueStore::ReadResult TestingSettingsStorage::Get(
     const std::string& key) {
   return Get(CreateVector(key));
 }
 
-SettingsStorage::ReadResult TestingSettingsStorage::Get(
+ValueStore::ReadResult TestingSettingsStorage::Get(
     const std::vector<std::string>& keys) {
   if (fail_all_requests_) {
     return ReadResultError();
@@ -78,33 +76,33 @@ SettingsStorage::ReadResult TestingSettingsStorage::Get(
   return ReadResult(settings);
 }
 
-SettingsStorage::ReadResult TestingSettingsStorage::Get() {
+ValueStore::ReadResult TestingSettingsStorage::Get() {
   if (fail_all_requests_) {
     return ReadResultError();
   }
   return ReadResult(storage_.DeepCopy());
 }
 
-SettingsStorage::WriteResult TestingSettingsStorage::Set(
+ValueStore::WriteResult TestingSettingsStorage::Set(
     WriteOptions options, const std::string& key, const Value& value) {
   DictionaryValue settings;
   settings.SetWithoutPathExpansion(key, value.DeepCopy());
   return Set(options, settings);
 }
 
-SettingsStorage::WriteResult TestingSettingsStorage::Set(
+ValueStore::WriteResult TestingSettingsStorage::Set(
     WriteOptions options, const DictionaryValue& settings) {
   if (fail_all_requests_) {
     return WriteResultError();
   }
 
-  scoped_ptr<SettingChangeList> changes(new SettingChangeList());
+  scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
   for (DictionaryValue::Iterator it(settings); it.HasNext(); it.Advance()) {
     Value* old_value = NULL;
     storage_.GetWithoutPathExpansion(it.key(), &old_value);
     if (!old_value || !old_value->Equals(&it.value())) {
       changes->push_back(
-          SettingChange(
+          ValueStoreChange(
               it.key(),
               old_value ? old_value->DeepCopy() : old_value,
               it.value().DeepCopy()));
@@ -114,30 +112,30 @@ SettingsStorage::WriteResult TestingSettingsStorage::Set(
   return WriteResult(changes.release());
 }
 
-SettingsStorage::WriteResult TestingSettingsStorage::Remove(
+ValueStore::WriteResult TestingSettingsStorage::Remove(
     const std::string& key) {
   return Remove(CreateVector(key));
 }
 
-SettingsStorage::WriteResult TestingSettingsStorage::Remove(
+ValueStore::WriteResult TestingSettingsStorage::Remove(
     const std::vector<std::string>& keys) {
   if (fail_all_requests_) {
     return WriteResultError();
   }
 
-  scoped_ptr<SettingChangeList> changes(
-      new SettingChangeList());
+  scoped_ptr<ValueStoreChangeList> changes(
+      new ValueStoreChangeList());
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
     Value* old_value = NULL;
     if (storage_.RemoveWithoutPathExpansion(*it, &old_value)) {
-      changes->push_back(SettingChange(*it, old_value, NULL));
+      changes->push_back(ValueStoreChange(*it, old_value, NULL));
     }
   }
   return WriteResult(changes.release());
 }
 
-SettingsStorage::WriteResult TestingSettingsStorage::Clear() {
+ValueStore::WriteResult TestingSettingsStorage::Clear() {
   if (fail_all_requests_) {
     return WriteResultError();
   }
@@ -148,5 +146,3 @@ SettingsStorage::WriteResult TestingSettingsStorage::Clear() {
   }
   return Remove(keys);
 }
-
-}  // namespace extensions

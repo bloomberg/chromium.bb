@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/settings/settings_storage_unittest.h"
+#include "chrome/browser/value_store/value_store_unittest.h"
 
 #include "base/json/json_writer.h"
 #include "base/file_util.h"
 #include "base/values.h"
 
-namespace extensions {
-
 using content::BrowserThread;
 
 namespace {
 
-// To save typing SettingsStorage::DEFAULTS everywhere.
-const SettingsStorage::WriteOptions DEFAULTS = SettingsStorage::DEFAULTS;
+// To save typing ValueStore::DEFAULTS everywhere.
+const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
 
 // Gets the pretty-printed JSON for a value.
 std::string GetJSON(const Value& value) {
@@ -70,7 +68,7 @@ bool ValuesEqual(
 testing::AssertionResult SettingsEq(
     const char* _1, const char* _2,
     const DictionaryValue& expected,
-    const SettingsStorage::ReadResult& actual_result) {
+    const ValueStore::ReadResult& actual_result) {
   if (actual_result.HasError()) {
     return testing::AssertionFailure() <<
         "Result has error: " << actual_result.error();
@@ -88,30 +86,30 @@ testing::AssertionResult SettingsEq(
 // changes.
 testing::AssertionResult ChangesEq(
     const char* _1, const char* _2,
-    const SettingChangeList& expected,
-    const SettingsStorage::WriteResult& actual_result) {
+    const ValueStoreChangeList& expected,
+    const ValueStore::WriteResult& actual_result) {
   if (actual_result.HasError()) {
     return testing::AssertionFailure() <<
         "Result has error: " << actual_result.error();
   }
 
-  const SettingChangeList& actual = actual_result.changes();
+  const ValueStoreChangeList& actual = actual_result.changes();
   if (expected.size() != actual.size()) {
     return testing::AssertionFailure() <<
         "Actual has wrong size, expecting " << expected.size() <<
         " but was " << actual.size();
   }
 
-  std::map<std::string, linked_ptr<SettingChange> > expected_as_map;
-  for (SettingChangeList::const_iterator it = expected.begin();
+  std::map<std::string, linked_ptr<ValueStoreChange> > expected_as_map;
+  for (ValueStoreChangeList::const_iterator it = expected.begin();
       it != expected.end(); ++it) {
     expected_as_map[it->key()] =
-        linked_ptr<SettingChange>(new SettingChange(*it));
+        linked_ptr<ValueStoreChange>(new ValueStoreChange(*it));
   }
 
   std::set<std::string> keys_seen;
 
-  for (SettingChangeList::const_iterator it = actual.begin();
+  for (ValueStoreChangeList::const_iterator it = actual.begin();
       it != actual.end(); ++it) {
     if (keys_seen.count(it->key())) {
       return testing::AssertionFailure() <<
@@ -124,7 +122,7 @@ testing::AssertionResult ChangesEq(
           "Actual has unexpected change for key: " << it->key();
     }
 
-    SettingChange expected_change = *expected_as_map[it->key()];
+    ValueStoreChange expected_change = *expected_as_map[it->key()];
     std::string error;
     if (!ValuesEqual(expected_change.new_value(), it->new_value(), &error)) {
       return testing::AssertionFailure() <<
@@ -139,7 +137,7 @@ testing::AssertionResult ChangesEq(
   return testing::AssertionSuccess();
 }
 
-ExtensionSettingsStorageTest::ExtensionSettingsStorageTest()
+ValueStoreTest::ValueStoreTest()
     : key1_("foo"),
       key2_("bar"),
       key3_("baz"),
@@ -181,29 +179,29 @@ ExtensionSettingsStorageTest::ExtensionSettingsStorageTest()
   dict123_->Set(key3_, val3_->DeepCopy());
 }
 
-ExtensionSettingsStorageTest::~ExtensionSettingsStorageTest() {}
+ValueStoreTest::~ValueStoreTest() {}
 
-void ExtensionSettingsStorageTest::SetUp() {
+void ValueStoreTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  storage_.reset((GetParam())(temp_dir_.path(), "fakeExtension"));
+  storage_.reset((GetParam())(temp_dir_.path().AppendASCII("dbName")));
   ASSERT_TRUE(storage_.get());
 }
 
-void ExtensionSettingsStorageTest::TearDown() {
+void ValueStoreTest::TearDown() {
   storage_.reset();
 }
 
-TEST_P(ExtensionSettingsStorageTest, GetWhenEmpty) {
+TEST_P(ValueStoreTest, GetWhenEmpty) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get(key1_));
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get(empty_list_));
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get(list123_));
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get());
 }
 
-TEST_P(ExtensionSettingsStorageTest, GetWithSingleValue) {
+TEST_P(ValueStoreTest, GetWithSingleValue) {
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(key1_, NULL, val1_->DeepCopy()));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(key1_, NULL, val1_->DeepCopy()));
     EXPECT_PRED_FORMAT2(ChangesEq,
         changes, storage_->Set(DEFAULTS, key1_, *val1_));
   }
@@ -216,11 +214,11 @@ TEST_P(ExtensionSettingsStorageTest, GetWithSingleValue) {
   EXPECT_PRED_FORMAT2(SettingsEq, *dict1_, storage_->Get());
 }
 
-TEST_P(ExtensionSettingsStorageTest, GetWithMultipleValues) {
+TEST_P(ValueStoreTest, GetWithMultipleValues) {
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(key1_, NULL, val1_->DeepCopy()));
-    changes.push_back(SettingChange(key2_, NULL, val2_->DeepCopy()));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(key1_, NULL, val1_->DeepCopy()));
+    changes.push_back(ValueStoreChange(key2_, NULL, val2_->DeepCopy()));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Set(DEFAULTS, *dict12_));
   }
 
@@ -231,19 +229,20 @@ TEST_P(ExtensionSettingsStorageTest, GetWithMultipleValues) {
   EXPECT_PRED_FORMAT2(SettingsEq, *dict12_, storage_->Get());
 }
 
-TEST_P(ExtensionSettingsStorageTest, RemoveWhenEmpty) {
-  EXPECT_PRED_FORMAT2(ChangesEq, SettingChangeList(), storage_->Remove(key1_));
+TEST_P(ValueStoreTest, RemoveWhenEmpty) {
+  EXPECT_PRED_FORMAT2(ChangesEq, ValueStoreChangeList(),
+                      storage_->Remove(key1_));
 
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get(key1_));
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get(list1_));
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get());
 }
 
-TEST_P(ExtensionSettingsStorageTest, RemoveWithSingleValue) {
+TEST_P(ValueStoreTest, RemoveWithSingleValue) {
   storage_->Set(DEFAULTS, *dict1_);
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(key1_, val1_->DeepCopy(), NULL));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(key1_, val1_->DeepCopy(), NULL));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Remove(key1_));
   }
 
@@ -254,11 +253,11 @@ TEST_P(ExtensionSettingsStorageTest, RemoveWithSingleValue) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get());
 }
 
-TEST_P(ExtensionSettingsStorageTest, RemoveWithMultipleValues) {
+TEST_P(ValueStoreTest, RemoveWithMultipleValues) {
   storage_->Set(DEFAULTS, *dict123_);
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(key3_, val3_->DeepCopy(), NULL));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(key3_, val3_->DeepCopy(), NULL));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Remove(key3_));
   }
 
@@ -272,9 +271,9 @@ TEST_P(ExtensionSettingsStorageTest, RemoveWithMultipleValues) {
   EXPECT_PRED_FORMAT2(SettingsEq, *dict12_, storage_->Get());
 
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(key1_, val1_->DeepCopy(), NULL));
-    changes.push_back(SettingChange(key2_, val2_->DeepCopy(), NULL));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(key1_, val1_->DeepCopy(), NULL));
+    changes.push_back(ValueStoreChange(key2_, val2_->DeepCopy(), NULL));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Remove(list12_));
   }
 
@@ -288,13 +287,13 @@ TEST_P(ExtensionSettingsStorageTest, RemoveWithMultipleValues) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get());
 }
 
-TEST_P(ExtensionSettingsStorageTest, SetWhenOverwriting) {
+TEST_P(ValueStoreTest, SetWhenOverwriting) {
   storage_->Set(DEFAULTS, key1_, *val2_);
   {
-    SettingChangeList changes;
+    ValueStoreChangeList changes;
     changes.push_back(
-        SettingChange(key1_, val2_->DeepCopy(), val1_->DeepCopy()));
-    changes.push_back(SettingChange(key2_, NULL, val2_->DeepCopy()));
+        ValueStoreChange(key1_, val2_->DeepCopy(), val1_->DeepCopy()));
+    changes.push_back(ValueStoreChange(key2_, NULL, val2_->DeepCopy()));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Set(DEFAULTS, *dict12_));
   }
 
@@ -308,8 +307,8 @@ TEST_P(ExtensionSettingsStorageTest, SetWhenOverwriting) {
   EXPECT_PRED_FORMAT2(SettingsEq, *dict12_, storage_->Get());
 }
 
-TEST_P(ExtensionSettingsStorageTest, ClearWhenEmpty) {
-  EXPECT_PRED_FORMAT2(ChangesEq, SettingChangeList(), storage_->Clear());
+TEST_P(ValueStoreTest, ClearWhenEmpty) {
+  EXPECT_PRED_FORMAT2(ChangesEq, ValueStoreChangeList(), storage_->Clear());
 
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get(key1_));
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get(empty_list_));
@@ -317,12 +316,12 @@ TEST_P(ExtensionSettingsStorageTest, ClearWhenEmpty) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get());
 }
 
-TEST_P(ExtensionSettingsStorageTest, ClearWhenNotEmpty) {
+TEST_P(ValueStoreTest, ClearWhenNotEmpty) {
   storage_->Set(DEFAULTS, *dict12_);
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(key1_, val1_->DeepCopy(), NULL));
-    changes.push_back(SettingChange(key2_, val2_->DeepCopy(), NULL));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(key1_, val1_->DeepCopy(), NULL));
+    changes.push_back(ValueStoreChange(key2_, val2_->DeepCopy(), NULL));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Clear());
   }
 
@@ -334,7 +333,7 @@ TEST_P(ExtensionSettingsStorageTest, ClearWhenNotEmpty) {
 
 // Dots should be allowed in key names; they shouldn't be interpreted as
 // indexing into a dictionary.
-TEST_P(ExtensionSettingsStorageTest, DotsInKeyNames) {
+TEST_P(ValueStoreTest, DotsInKeyNames) {
   std::string dot_key("foo.bar");
   StringValue dot_value("baz.qux");
   std::vector<std::string> dot_list;
@@ -345,29 +344,29 @@ TEST_P(ExtensionSettingsStorageTest, DotsInKeyNames) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get(dot_key));
 
   {
-    SettingChangeList changes;
+    ValueStoreChangeList changes;
     changes.push_back(
-        SettingChange(dot_key, NULL, dot_value.DeepCopy()));
+        ValueStoreChange(dot_key, NULL, dot_value.DeepCopy()));
     EXPECT_PRED_FORMAT2(ChangesEq,
         changes, storage_->Set(DEFAULTS, dot_key, dot_value));
   }
   EXPECT_PRED_FORMAT2(ChangesEq,
-      SettingChangeList(), storage_->Set(DEFAULTS, dot_key, dot_value));
+      ValueStoreChangeList(), storage_->Set(DEFAULTS, dot_key, dot_value));
 
   EXPECT_PRED_FORMAT2(SettingsEq, dot_dict, storage_->Get(dot_key));
 
   {
-    SettingChangeList changes;
+    ValueStoreChangeList changes;
     changes.push_back(
-        SettingChange(dot_key, dot_value.DeepCopy(), NULL));
+        ValueStoreChange(dot_key, dot_value.DeepCopy(), NULL));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Remove(dot_key));
   }
   EXPECT_PRED_FORMAT2(ChangesEq,
-      SettingChangeList(), storage_->Remove(dot_key));
+      ValueStoreChangeList(), storage_->Remove(dot_key));
   {
-    SettingChangeList changes;
+    ValueStoreChangeList changes;
     changes.push_back(
-        SettingChange(dot_key, NULL, dot_value.DeepCopy()));
+        ValueStoreChange(dot_key, NULL, dot_value.DeepCopy()));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Set(DEFAULTS, dot_dict));
   }
 
@@ -375,9 +374,9 @@ TEST_P(ExtensionSettingsStorageTest, DotsInKeyNames) {
   EXPECT_PRED_FORMAT2(SettingsEq, dot_dict, storage_->Get());
 
   {
-    SettingChangeList changes;
+    ValueStoreChangeList changes;
     changes.push_back(
-        SettingChange(dot_key, dot_value.DeepCopy(), NULL));
+        ValueStoreChange(dot_key, dot_value.DeepCopy(), NULL));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Remove(dot_list));
   }
 
@@ -385,16 +384,16 @@ TEST_P(ExtensionSettingsStorageTest, DotsInKeyNames) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get());
 }
 
-TEST_P(ExtensionSettingsStorageTest, DotsInKeyNamesWithDicts) {
+TEST_P(ValueStoreTest, DotsInKeyNamesWithDicts) {
   DictionaryValue outer_dict;
   DictionaryValue* inner_dict = new DictionaryValue();
   outer_dict.Set("foo", inner_dict);
   inner_dict->SetString("bar", "baz");
 
   {
-    SettingChangeList changes;
+    ValueStoreChangeList changes;
     changes.push_back(
-        SettingChange("foo", NULL, inner_dict->DeepCopy()));
+        ValueStoreChange("foo", NULL, inner_dict->DeepCopy()));
     EXPECT_PRED_FORMAT2(ChangesEq,
         changes, storage_->Set(DEFAULTS, outer_dict));
   }
@@ -403,7 +402,7 @@ TEST_P(ExtensionSettingsStorageTest, DotsInKeyNamesWithDicts) {
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get("foo.bar"));
 }
 
-TEST_P(ExtensionSettingsStorageTest, ComplexChangedKeysScenarios) {
+TEST_P(ValueStoreTest, ComplexChangedKeysScenarios) {
   // Test:
   //   - Setting over missing/changed/same keys, combinations.
   //   - Removing over missing and present keys, combinations.
@@ -413,45 +412,45 @@ TEST_P(ExtensionSettingsStorageTest, ComplexChangedKeysScenarios) {
 
   storage_->Set(DEFAULTS, key1_, *val1_);
   EXPECT_PRED_FORMAT2(ChangesEq,
-      SettingChangeList(), storage_->Set(DEFAULTS, key1_, *val1_));
+      ValueStoreChangeList(), storage_->Set(DEFAULTS, key1_, *val1_));
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(
         key1_, val1_->DeepCopy(), val2_->DeepCopy()));
     EXPECT_PRED_FORMAT2(ChangesEq,
         changes, storage_->Set(DEFAULTS, key1_, *val2_));
   }
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(key1_, val2_->DeepCopy(), NULL));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(key1_, val2_->DeepCopy(), NULL));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Remove(key1_));
     EXPECT_PRED_FORMAT2(ChangesEq,
-        SettingChangeList(), storage_->Remove(key1_));
+        ValueStoreChangeList(), storage_->Remove(key1_));
   }
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(key1_, NULL, val1_->DeepCopy()));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(key1_, NULL, val1_->DeepCopy()));
     EXPECT_PRED_FORMAT2(ChangesEq,
         changes, storage_->Set(DEFAULTS, key1_, *val1_));
   }
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(key1_, val1_->DeepCopy(), NULL));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(key1_, val1_->DeepCopy(), NULL));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Clear());
-    EXPECT_PRED_FORMAT2(ChangesEq, SettingChangeList(), storage_->Clear());
+    EXPECT_PRED_FORMAT2(ChangesEq, ValueStoreChangeList(), storage_->Clear());
   }
 
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(key1_, NULL, val1_->DeepCopy()));
-    changes.push_back(SettingChange(key2_, NULL, val2_->DeepCopy()));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(key1_, NULL, val1_->DeepCopy()));
+    changes.push_back(ValueStoreChange(key2_, NULL, val2_->DeepCopy()));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Set(DEFAULTS, *dict12_));
     EXPECT_PRED_FORMAT2(ChangesEq,
-        SettingChangeList(), storage_->Set(DEFAULTS, *dict12_));
+        ValueStoreChangeList(), storage_->Set(DEFAULTS, *dict12_));
   }
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(key3_, NULL, val3_->DeepCopy()));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(key3_, NULL, val3_->DeepCopy()));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Set(DEFAULTS, *dict123_));
   }
   {
@@ -461,18 +460,18 @@ TEST_P(ExtensionSettingsStorageTest, ComplexChangedKeysScenarios) {
     to_set.Set("asdf", val1_->DeepCopy());
     to_set.Set("qwerty", val3_->DeepCopy());
 
-    SettingChangeList changes;
+    ValueStoreChangeList changes;
     changes.push_back(
-        SettingChange(key1_, val1_->DeepCopy(), val2_->DeepCopy()));
-    changes.push_back(SettingChange("asdf", NULL, val1_->DeepCopy()));
+        ValueStoreChange(key1_, val1_->DeepCopy(), val2_->DeepCopy()));
+    changes.push_back(ValueStoreChange("asdf", NULL, val1_->DeepCopy()));
     changes.push_back(
-        SettingChange("qwerty", NULL, val3_->DeepCopy()));
+        ValueStoreChange("qwerty", NULL, val3_->DeepCopy()));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Set(DEFAULTS, to_set));
   }
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(key1_, val2_->DeepCopy(), NULL));
-    changes.push_back(SettingChange(key2_, val2_->DeepCopy(), NULL));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(key1_, val2_->DeepCopy(), NULL));
+    changes.push_back(ValueStoreChange(key2_, val2_->DeepCopy(), NULL));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Remove(list12_));
   }
   {
@@ -480,18 +479,16 @@ TEST_P(ExtensionSettingsStorageTest, ComplexChangedKeysScenarios) {
     to_remove.push_back(key1_);
     to_remove.push_back("asdf");
 
-    SettingChangeList changes;
-    changes.push_back(SettingChange("asdf", val1_->DeepCopy(), NULL));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange("asdf", val1_->DeepCopy(), NULL));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Remove(to_remove));
   }
   {
-    SettingChangeList changes;
-    changes.push_back(SettingChange(key3_, val3_->DeepCopy(), NULL));
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange(key3_, val3_->DeepCopy(), NULL));
     changes.push_back(
-        SettingChange("qwerty", val3_->DeepCopy(), NULL));
+        ValueStoreChange("qwerty", val3_->DeepCopy(), NULL));
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Clear());
-    EXPECT_PRED_FORMAT2(ChangesEq, SettingChangeList(), storage_->Clear());
+    EXPECT_PRED_FORMAT2(ChangesEq, ValueStoreChangeList(), storage_->Clear());
   }
 }
-
-}  // namespace extensions

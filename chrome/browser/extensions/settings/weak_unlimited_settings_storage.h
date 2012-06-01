@@ -7,21 +7,21 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/extensions/settings/settings_storage.h"
+#include "chrome/browser/value_store/value_store.h"
 
 namespace extensions {
 
-// A SettingsStorage decorator which makes calls through |Set| ignore quota.
+// A ValueStore decorator which makes calls through |Set| ignore quota.
 // "Weak" because ownership of the delegate isn't taken; this is designed to be
 // temporarily attached to storage areas.
-class WeakUnlimitedSettingsStorage : public SettingsStorage {
+class WeakUnlimitedSettingsStorage : public ValueStore {
  public:
   // Ownership of |delegate| NOT taken.
-  explicit WeakUnlimitedSettingsStorage(SettingsStorage* delegate);
+  explicit WeakUnlimitedSettingsStorage(ValueStore* delegate);
 
   virtual ~WeakUnlimitedSettingsStorage();
 
-  // SettingsStorage implementation.
+  // ValueStore implementation.
   virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;
   virtual size_t GetBytesInUse(const std::vector<std::string>& keys) OVERRIDE;
   virtual size_t GetBytesInUse() OVERRIDE;
@@ -40,7 +40,7 @@ class WeakUnlimitedSettingsStorage : public SettingsStorage {
 
  private:
   // The delegate storage area, NOT OWNED.
-  SettingsStorage* const delegate_;
+  ValueStore* const delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WeakUnlimitedSettingsStorage);
 };
