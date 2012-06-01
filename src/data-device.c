@@ -359,6 +359,8 @@ destroy_selection_data_source(struct wl_listener *listener, void *data)
 		if (data_device)
 			wl_data_device_send_selection(data_device, NULL);
 	}
+
+	wl_signal_emit(&seat->selection_signal, seat);
 }
 
 WL_EXPORT void
