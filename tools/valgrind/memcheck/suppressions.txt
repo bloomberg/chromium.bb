@@ -5780,6 +5780,7 @@
    fun:_Znw*
    fun:_ZN7WebCore9ClipRects6createERKS0_
    fun:_ZN7WebCore11RenderLayer15updateClipRectsEPKS0_PNS_12RenderRegionENS_13ClipRectsTypeENS_29OverlayScrollbarSizeRelevancyE
+   ...
    fun:_ZNK7WebCore11RenderLayer15parentClipRectsEPKS0_PNS_12RenderRegionENS_13ClipRectsTypeERNS_9ClipRectsENS_29OverlayScrollbarSizeRelevancyE
    fun:_ZNK7WebCore11RenderLayer18backgroundClipRectEPKS0_PNS_12RenderRegionENS_13ClipRectsTypeENS_29OverlayScrollbarSizeRelevancyE
    ...
