@@ -42,7 +42,6 @@ DragDropController::DragDropController()
       drag_drop_in_progress_(false),
       should_block_during_drag_drop_(true) {
   Shell::GetInstance()->AddRootWindowEventFilter(this);
-  aura::client::SetDragDropClient(Shell::GetPrimaryRootWindow(), this);
 }
 
 DragDropController::~DragDropController() {

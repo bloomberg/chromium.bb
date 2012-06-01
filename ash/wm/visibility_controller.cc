@@ -23,7 +23,6 @@ bool GetChildWindowVisibilityChangesAnimated(aura::Window* window) {
 namespace internal {
 
 VisibilityController::VisibilityController() {
-  aura::client::SetVisibilityClient(Shell::GetPrimaryRootWindow(), this);
 }
 
 VisibilityController::~VisibilityController() {

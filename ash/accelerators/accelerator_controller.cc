@@ -342,7 +342,9 @@ bool AcceleratorController::AcceleratorPressed(
       return HandleRestoreTab();
     case TAKE_SCREENSHOT:
       if (screenshot_delegate_.get()) {
-        aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+        // TODO(oshima): Use the active window for now. Use the mouse
+        // location if there is no active window. crbug.com/130718.
+        aura::RootWindow* root_window = Shell::GetActiveRootWindow();
         screenshot_delegate_->HandleTakeScreenshot(root_window);
       }
       // Return true to prevent propagation of the key event.

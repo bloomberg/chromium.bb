@@ -177,8 +177,10 @@ class TooltipController::Tooltip {
 ////////////////////////////////////////////////////////////////////////////////
 // TooltipController public:
 
-TooltipController::TooltipController()
-    : tooltip_window_(NULL),
+TooltipController::TooltipController(
+    aura::client::DragDropClient* drag_drop_client)
+    : drag_drop_client_(drag_drop_client),
+      tooltip_window_(NULL),
       tooltip_window_at_mouse_press_(NULL),
       mouse_pressed_(false),
       tooltip_(new Tooltip),
@@ -186,7 +188,7 @@ TooltipController::TooltipController()
   tooltip_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
       this, &TooltipController::TooltipTimerFired);
-  aura::client::SetTooltipClient(Shell::GetPrimaryRootWindow(), this);
+  DCHECK(drag_drop_client_);
 }
 
 TooltipController::~TooltipController() {
@@ -418,11 +420,7 @@ bool TooltipController::IsTooltipVisible() {
 }
 
 bool TooltipController::IsDragDropInProgress() {
-  aura::client::DragDropClient* client = aura::client::GetDragDropClient(
-      Shell::GetPrimaryRootWindow());
-  if (client)
-    return client->IsDragDropInProgress();
-  return false;
+  return drag_drop_client_->IsDragDropInProgress();
 }
 
 }  // namespace internal

@@ -10,7 +10,6 @@
 namespace ash {
 
 NestedDispatcherController::NestedDispatcherController() {
-  aura::client::SetDispatcherClient(Shell::GetPrimaryRootWindow(), this);
 }
 
 NestedDispatcherController::~NestedDispatcherController() {

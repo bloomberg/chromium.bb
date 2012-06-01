@@ -676,6 +676,8 @@ void Shell::Init() {
   root_filter_ = new aura::shared::RootWindowEventFilter(root_window);
 #if !defined(OS_MACOSX)
   nested_dispatcher_controller_.reset(new NestedDispatcherController);
+  aura::client::SetDispatcherClient(root_window,
+                                    nested_dispatcher_controller_.get());
   accelerator_controller_.reset(new AcceleratorController);
 #endif
   shell_context_menu_.reset(new internal::ShellContextMenu);
@@ -715,7 +717,9 @@ void Shell::Init() {
   if (initially_hide_cursor_)
     root_window->ShowCursor(false);
 
-  activation_controller_.reset(new internal::ActivationController);
+  activation_controller_.reset(
+      new internal::ActivationController(focus_manager_.get()));
+  aura::client::SetActivationClient(root_window, activation_controller_.get());
 
   CreateSpecialContainers(root_window);
 
@@ -787,11 +791,17 @@ void Shell::Init() {
   AddRootWindowEventFilter(window_modality_controller_.get());
 
   visibility_controller_.reset(new internal::VisibilityController);
-
-  tooltip_controller_.reset(new internal::TooltipController);
-  AddRootWindowEventFilter(tooltip_controller_.get());
+  aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
 
   drag_drop_controller_.reset(new internal::DragDropController);
+  aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
+
+  tooltip_controller_.reset(
+      new internal::TooltipController(drag_drop_controller_.get()));
+  aura::client::SetTooltipClient(root_window, tooltip_controller_.get());
+
+  AddRootWindowEventFilter(tooltip_controller_.get());
+
   magnification_controller_.reset(new internal::MagnificationController);
   high_contrast_controller_.reset(new HighContrastController);
   power_button_controller_.reset(new PowerButtonController);

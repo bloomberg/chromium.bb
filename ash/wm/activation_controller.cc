@@ -116,18 +116,18 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // ActivationController, public:
 
-ActivationController::ActivationController()
-    : updating_activation_(false),
+ActivationController::ActivationController(aura::FocusManager* focus_manager)
+    : focus_manager_(focus_manager),
+      updating_activation_(false),
       active_window_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
-  aura::client::SetActivationClient(Shell::GetPrimaryRootWindow(), this);
   aura::Env::GetInstance()->AddObserver(this);
-  Shell::GetPrimaryRootWindow()->GetFocusManager()->AddObserver(this);
+  focus_manager_->AddObserver(this);
 }
 
 ActivationController::~ActivationController() {
   aura::Env::GetInstance()->RemoveObserver(this);
-  Shell::GetPrimaryRootWindow()->GetFocusManager()->RemoveObserver(this);
+  focus_manager_->RemoveObserver(this);
 }
 
 // static

@@ -20,6 +20,9 @@ class KeyEvent;
 class MouseEvent;
 class TouchEvent;
 class Window;
+namespace client {
+class DragDropClient;
+}
 }
 
 namespace ash {
@@ -32,10 +35,10 @@ namespace internal {
 
 // TooltipController provides tooltip functionality for aura shell.
 class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
-                                            public aura::EventFilter,
-                                            public aura::WindowObserver {
+                                     public aura::EventFilter,
+                                     public aura::WindowObserver {
  public:
-  TooltipController();
+  explicit TooltipController(aura::client::DragDropClient* drag_drop_client);
   virtual ~TooltipController();
 
   // Overridden from aura::client::TooltipClient.
@@ -80,6 +83,8 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
   bool IsTooltipVisible();
 
   bool IsDragDropInProgress();
+
+  aura::client::DragDropClient* drag_drop_client_;
 
   aura::Window* tooltip_window_;
   string16 tooltip_text_;

@@ -8,7 +8,6 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 

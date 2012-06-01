@@ -25,7 +25,7 @@ class ASH_EXPORT ActivationController
       public aura::EnvObserver,
       public aura::FocusChangeObserver {
  public:
-  ActivationController();
+  explicit ActivationController(aura::FocusManager* focus_manager);
   virtual ~ActivationController();
 
   // Returns true if |window| exists within a container that supports
@@ -70,6 +70,8 @@ class ASH_EXPORT ActivationController
   aura::Window* GetTopmostWindowToActivateInContainer(
       aura::Window* container,
       aura::Window* ignore) const;
+
+  aura::FocusManager* focus_manager_;
 
   // True inside ActivateWindow(). Used to prevent recursion of focus
   // change notifications causing activation.
