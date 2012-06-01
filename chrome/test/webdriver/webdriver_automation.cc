@@ -24,6 +24,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/automation_constants.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -178,6 +179,147 @@ bool GetDefaultChromeExe(FilePath* browser_exe) {
       CheckForChromeExe(browser_exes, chromium_locations, browser_exe);
 }
 
+// Message that duplicates a given message but uses a different type.
+class MessageWithAlternateType : public IPC::Message {
+ public:
+  MessageWithAlternateType(const IPC::Message& msg, int type)
+      : IPC::Message(msg) {
+    header()->type = type;
+  }
+  virtual ~MessageWithAlternateType() {}
+};
+
+// Filters incoming and outgoing messages on the IO thread. Translates messages
+// from old Chrome versions to the new version. This is needed so that new
+// ChromeDriver releases support the current stable and beta channels of Chrome.
+// TODO(kkania): Delete this when Chrome v21 is stable.
+class BackwardsCompatAutomationMessageFilter
+    : public IPC::ChannelProxy::MessageFilter,
+      public IPC::ChannelProxy::OutgoingMessageFilter {
+ public:
+  explicit BackwardsCompatAutomationMessageFilter(AutomationProxy* server);
+
+  // Overriden from IPC::ChannelProxy::MessageFiler.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // Overriden from IPC::ChannelProxy::OutgoingMessageFiler.
+  virtual IPC::Message* Rewrite(IPC::Message* message) OVERRIDE;
+
+ private:
+  virtual ~BackwardsCompatAutomationMessageFilter();
+
+  AutomationProxy* server_;
+  bool old_version_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackwardsCompatAutomationMessageFilter);
+};
+
+BackwardsCompatAutomationMessageFilter::BackwardsCompatAutomationMessageFilter(
+    AutomationProxy* server)
+    : server_(server), old_version_(false) {
+}
+
+bool BackwardsCompatAutomationMessageFilter::OnMessageReceived(
+    const IPC::Message& message) {
+  const uint32 kOldHelloType = 44,
+               kOldInitialLoadsCompleteType = 47,
+               kOldInitialNewTabUILoadCompleteType = 267;
+  if (message.type() == kOldHelloType) {
+    old_version_ = true;
+    std::string server_version;
+    PickleIterator iter(message);
+    CHECK(message.ReadString(&iter, &server_version));
+    server_->SignalAppLaunch(server_version);
+    return true;
+  }
+  if (!old_version_)
+    return false;
+
+  switch (message.type()) {
+    case kOldInitialLoadsCompleteType:
+      server_->SignalInitialLoads();
+      break;
+    case kOldInitialNewTabUILoadCompleteType:
+      server_->SignalNewTabUITab(-1);
+      break;
+    default:
+      return false;
+  }
+  return true;
+}
+
+IPC::Message* BackwardsCompatAutomationMessageFilter::Rewrite(
+    IPC::Message* message) {
+  // If we're not using an old version, don't rewrite the message.
+  if (!old_version_)
+    return message;
+  const uint32 kOldSetFilteredInetType = 287,
+               kOldSendJSONRequestType = 1301;
+  int type = -1;
+  switch (message->type()) {
+    case AutomationMsg_SetFilteredInet::ID:
+      type = kOldSetFilteredInetType;
+      break;
+    case AutomationMsg_SendJSONRequest::ID:
+      type = kOldSendJSONRequestType;
+      break;
+  }
+  // Just crash here instead of sending a bad message to Chrome.
+  CHECK(type != -1) << "Tried to send unknown message: " << message->type();
+  IPC::Message* new_message = new MessageWithAlternateType(*message, type);
+  delete message;
+  return new_message;
+}
+
+BackwardsCompatAutomationMessageFilter::
+    ~BackwardsCompatAutomationMessageFilter() {
+}
+
+void AddBackwardsCompatFilter(AutomationProxy* proxy) {
+  // The filter is ref-counted in AddFilter.
+  BackwardsCompatAutomationMessageFilter* filter =
+      new BackwardsCompatAutomationMessageFilter(proxy);
+  proxy->channel()->AddFilter(filter);
+  proxy->channel()->set_outgoing_message_filter(filter);
+}
+
+class WebDriverAnonymousProxyLauncher : public AnonymousProxyLauncher {
+ public:
+  WebDriverAnonymousProxyLauncher()
+      : AnonymousProxyLauncher(false) {}
+  virtual ~WebDriverAnonymousProxyLauncher() {}
+
+  virtual AutomationProxy* CreateAutomationProxy(
+      int execution_timeout) OVERRIDE {
+    AutomationProxy* proxy =
+        AnonymousProxyLauncher::CreateAutomationProxy(execution_timeout);
+    AddBackwardsCompatFilter(proxy);
+    return proxy;
+  }
+};
+
+class WebDriverNamedProxyLauncher : public NamedProxyLauncher {
+ public:
+  WebDriverNamedProxyLauncher(const std::string& channel_id,
+                              bool launch_browser)
+      : NamedProxyLauncher(channel_id, launch_browser, false) {}
+  virtual ~WebDriverNamedProxyLauncher() {}
+
+  virtual AutomationProxy* CreateAutomationProxy(
+      int execution_timeout) OVERRIDE {
+    AutomationProxy* proxy =
+        NamedProxyLauncher::CreateAutomationProxy(execution_timeout);
+    // We can only add the filter here if the browser has not already been
+    // started. Otherwise the filter is not guaranteed to receive the
+    // first message. The only occasion where we don't launch the browser is
+    // in PyAuto, in which case the backwards compat filter isn't needed
+    // anyways because ChromeDriver and Chrome are at the same version there.
+    if (launch_browser_)
+      AddBackwardsCompatFilter(proxy);
+    return proxy;
+  }
+};
+
 }  // namespace
 
 namespace webdriver {
@@ -272,10 +414,11 @@ void Automation::Init(
     command_line_str = command.GetCommandLineString();
 #endif
     logger_.Log(kInfoLogLevel, "Launching chrome: " + command_line_str);
-    launcher_.reset(new AnonymousProxyLauncher(false));
+    launcher_.reset(new WebDriverAnonymousProxyLauncher());
   } else {
     logger_.Log(kInfoLogLevel, "Using named testing interface");
-    launcher_.reset(new NamedProxyLauncher(channel_id, launch_browser, false));
+    launcher_.reset(new WebDriverNamedProxyLauncher(
+        channel_id, launch_browser));
   }
   ProxyLauncher::LaunchState launch_props = {
       false,  // clear_profile
