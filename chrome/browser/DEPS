@@ -47,7 +47,6 @@ include_rules = [
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "+chrome/browser/ui/views/ash/panel_view_aura.h",
   "+chrome/browser/ui/views/bookmarks/bookmark_bar_view.h",
-  "+chrome/browser/ui/views/browser_actions_container.h",
   "+chrome/browser/ui/views/constrained_window_views.h",
   "+chrome/browser/ui/views/extensions/extension_popup.h",
   "+chrome/browser/ui/views/extensions/extension_view.h",
