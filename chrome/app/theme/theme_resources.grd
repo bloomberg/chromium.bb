@@ -179,7 +179,6 @@
       <include name="IDR_OMNIBOX_TTS" file="default_100_percent/omnibox_tts.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_TTS_DARK" file="default_100_percent/omnibox_tts_dark.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_TTS_SELECTED" file="default_100_percent/omnibox_tts_selected.png" type="BINDATA" />
-      <include name="IDR_OTR_ICON" file="default_100_percent/otr_icon.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_BAD" file="default_100_percent/pageinfo_bad.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_GOOD" file="default_100_percent/pageinfo_good.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_INFO" file="default_100_percent/pageinfo_info.png" type="BINDATA" />
