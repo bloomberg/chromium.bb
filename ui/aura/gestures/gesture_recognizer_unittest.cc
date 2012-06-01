@@ -130,8 +130,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_y_ += gesture->delta_y();
         break;
       case ui::ET_GESTURE_SCROLL_END:
-        velocity_x_ = gesture->delta_x();
-        velocity_y_ = gesture->delta_y();
+        EXPECT_TRUE(velocity_x_ == 0 && velocity_y_ == 0);
         scroll_end_ = true;
         break;
       case ui::ET_GESTURE_PINCH_BEGIN:
@@ -148,8 +147,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         touch_id_ = gesture->delta_x();
         break;
       case ui::ET_SCROLL_FLING_START:
+        EXPECT_TRUE(gesture->delta_x() != 0 || gesture->delta_y() != 0);
         EXPECT_TRUE(scroll_end_);
-        EXPECT_TRUE(velocity_x_ != 0 || velocity_y_ != 0);
         fling_ = true;
         break;
       case ui::ET_GESTURE_TAP_UP:
@@ -745,7 +744,7 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailFling) {
   root_window()->DispatchTouchEvent(&release);
 
   EXPECT_TRUE(delegate->scroll_end());
-  EXPECT_EQ(100000, delegate->velocity_x());
+  EXPECT_EQ(0, delegate->velocity_x());
   EXPECT_EQ(0, delegate->velocity_y());
 }
 
@@ -782,10 +781,10 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
 
   EXPECT_TRUE(delegate->scroll_end());
   EXPECT_EQ(0, delegate->velocity_x());
-  EXPECT_EQ(100000, delegate->velocity_y());
+  EXPECT_EQ(0, delegate->velocity_y());
 }
 
-// Check Scroll End Events report correct velocities
+// Check Scroll End Events reports zero velocities
 // if the user is not on a rail
 TEST_F(GestureRecognizerTest, GestureEventNonRailFling) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
@@ -815,8 +814,8 @@ TEST_F(GestureRecognizerTest, GestureEventNonRailFling) {
   root_window()->DispatchTouchEvent(&release);
 
   EXPECT_TRUE(delegate->scroll_end());
-  EXPECT_EQ(10000, delegate->velocity_x());
-  EXPECT_EQ(100000, delegate->velocity_y());
+  EXPECT_EQ(0, delegate->velocity_x());
+  EXPECT_EQ(0, delegate->velocity_y());
 }
 
 // Check that appropriate touch events generate long press events

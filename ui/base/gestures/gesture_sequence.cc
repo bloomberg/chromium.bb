@@ -482,25 +482,29 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
   else if (scroll_type_ == ST_VERTICAL)
     railed_x_velocity = 0;
 
+  // TODO(rjkroege): It is conceivable that we could suppress sending the
+  // GestureScrollEnd if it is immediately followed by a GestureFlingStart.
   gestures->push_back(helper_->CreateGestureEvent(
       ui::ET_GESTURE_SCROLL_END,
       location,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      railed_x_velocity, railed_y_velocity, 1 << point.touch_id()));
+      0., 0., 1 << point.touch_id()));
 
   if (railed_x_velocity != 0 || railed_y_velocity != 0) {
     // TODO(sad|rjkroege): fling-curve is currently configured to work well with
     // touchpad scroll-events. This curve needs to be adjusted to work correctly
-    // with both touchpad and touchscreen. Until then, multiply the velocity for
-    // touchscreen with a constant.
+    // with both touchpad and touchscreen. Until then, scale quadratically.
     // http://crbug.com/120154
+    const float velocity_scaling  = 1.f / 900.f;
+
     gestures->push_back(helper_->CreateGestureEvent(
         ui::ET_SCROLL_FLING_START,
         location,
         flags_,
         base::Time::FromDoubleT(point.last_touch_time()),
-        railed_x_velocity * 2.5, railed_y_velocity * 2.5,
+        velocity_scaling * railed_x_velocity * fabsf(railed_x_velocity),
+        velocity_scaling * railed_y_velocity * fabsf(railed_y_velocity),
         1 << point.touch_id()));
   }
 }
