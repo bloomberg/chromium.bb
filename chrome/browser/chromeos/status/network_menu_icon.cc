@@ -40,12 +40,11 @@ const int kNumArcsImages = 5;
 gfx::ImageSkia* kArcsImagesAnimatingDark[kNumArcsImages - 1];
 gfx::ImageSkia* kArcsImagesAnimatingLight[kNumArcsImages - 1];
 
-// Badge offsets.  If a badge is large enough that it won't fit within the icon
-// when using the right or bottom offset, it gets shifted inwards so it will.
+// Badge offsets. The right and bottom offsets are computed based on the size
+// of the network icon and the badge in order to accomodate multiple icon
+// resolutions (ie. standard and high DPI).
 const int kBadgeLeftX = 0;
-const int kBadgeRightX = 14;
 const int kBadgeTopY = 0;
-const int kBadgeBottomY = 14;
 
 // ID for VPN badge. TODO(stevenjb): replace with correct icon when available.
 const int kVpnBadgeId = IDR_STATUSBAR_NETWORK_SECURE;
@@ -172,7 +171,8 @@ const gfx::ImageSkia GetVpnResource(int resource_id) {
       gfx::Size(ethernet_icon->width(), ethernet_icon->height()), false);
   canvas.DrawBitmapInt(*ethernet_icon, 0, 0);
   const gfx::ImageSkia* vpn_badge = rb.GetImageSkiaNamed(kVpnBadgeId);
-  canvas.DrawBitmapInt(*vpn_badge, kBadgeLeftX, kBadgeBottomY);
+  int y = ethernet_icon->height() - vpn_badge->height();
+  canvas.DrawBitmapInt(*vpn_badge, kBadgeLeftX, y);
   return canvas.ExtractBitmap();
 }
 
@@ -739,16 +739,16 @@ const gfx::ImageSkia NetworkMenuIcon::GenerateImageFromComponents(
     canvas.DrawBitmapInt(*top_left_badge, kBadgeLeftX, kBadgeTopY);
   }
   if (top_right_badge) {
-    int x = min(kBadgeRightX, icon.width() - top_right_badge->width());
+    int x = icon.width() - top_right_badge->width();
     canvas.DrawBitmapInt(*top_right_badge, x, kBadgeTopY);
   }
   if (bottom_left_badge) {
-    int y = min(kBadgeBottomY, icon.height() - bottom_left_badge->height());
+    int y = icon.height() - bottom_left_badge->height();
     canvas.DrawBitmapInt(*bottom_left_badge, kBadgeLeftX, y);
   }
   if (bottom_right_badge) {
-    int x = min(kBadgeRightX, icon.width() - bottom_right_badge->width());
-    int y = min(kBadgeBottomY, icon.height() - bottom_right_badge->height());
+    int x = icon.width() - bottom_right_badge->width();
+    int y = icon.height() - bottom_right_badge->height();
     canvas.DrawBitmapInt(*bottom_right_badge, x, y);
   }
 
