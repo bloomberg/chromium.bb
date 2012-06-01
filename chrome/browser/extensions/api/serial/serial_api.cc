@@ -155,7 +155,7 @@ bool SerialReadFunction::Respond() {
 }
 
 SerialWriteFunction::SerialWriteFunction()
-    : connection_id_(-1), io_buffer_(NULL) {
+    : connection_id_(-1), io_buffer_(NULL), io_buffer_size_(0) {
 }
 
 SerialWriteFunction::~SerialWriteFunction() {}
