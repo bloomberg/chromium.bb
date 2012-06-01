@@ -628,14 +628,14 @@ def main(argv):
 
   (options, _remaining_arguments) = parser.parse_args(argv)
 
-  # This has to be always ran as root.
-  if not os.getuid() == 0:
-    print "%s: This script must be run as root!" % sys.argv[0]
-    sys.exit(1)
-
   if options.board_cfg:
     print ','.join(GetToolchainsForBoard(options.board_cfg))
     return 0
+
+  # This has to be always run as root.
+  if not os.getuid() == 0:
+    print "%s: This script must be run as root!" % sys.argv[0]
+    sys.exit(1)
 
   targets = set(options.targets.split(','))
   UpdateToolchains(options.usepkg, options.deleteold, options.hostonly, targets)
