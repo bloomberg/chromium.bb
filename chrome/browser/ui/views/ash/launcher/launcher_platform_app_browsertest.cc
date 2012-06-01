@@ -66,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPinned) {
   ChromeLauncherController* controller =
       static_cast<ChromeLauncherController*>(launcher->delegate());
   ash::LauncherID shortcut_id =
-      controller->CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED);
+      controller->CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED, -1);
   ++item_count;
   ASSERT_EQ(item_count, launcher->model()->item_count());
   ash::LauncherItem item = *launcher->model()->ItemByID(shortcut_id);
