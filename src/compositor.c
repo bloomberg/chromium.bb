@@ -1768,11 +1768,11 @@ update_modifier_state(struct weston_seat *seat, uint32_t key, uint32_t state)
 	/* And update the modifier_state for bindings. */
 	mods_lookup = mods_depressed | mods_latched;
 	seat->modifier_state = 0;
-	if ((mods_lookup & seat->xkb_info.ctrl_mod))
+	if (mods_lookup & (1 << seat->xkb_info.ctrl_mod))
 		seat->modifier_state |= MODIFIER_CTRL;
-	if ((mods_lookup & seat->xkb_info.alt_mod))
+	if (mods_lookup & (1 << seat->xkb_info.alt_mod))
 		seat->modifier_state |= MODIFIER_ALT;
-	if ((mods_lookup & seat->xkb_info.super_mod))
+	if (mods_lookup & (1 << seat->xkb_info.super_mod))
 		seat->modifier_state |= MODIFIER_SUPER;
 
 	/* Finally, notify the compositor that LEDs have changed. */
