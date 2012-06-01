@@ -193,6 +193,34 @@ class ChromeosLogin(pyauto.PyUITest):
     self.assertFalse(info['windows'][1]['incognito'],
         msg='Expected a regular new window.')
 
+  def testProfilePreservedBetweenLogins(self):
+    """Verify that profile is preserved between two login sessions.
+
+    Also verify Local State.
+    """
+    self.testGoodLogin()
+
+    # Build up some history and setup state in "Local State".
+    url = self.GetHttpURLForDataPath('title2.html')
+    self.NavigateToURL(url)
+    open('/home/chronos/__magic__', 'w').close()
+    open('/home/chronos/user/__magic__', 'w').close()
+
+    def _VerifyProfile():
+      history = self.GetHistoryInfo().History()
+      self.assertEqual(1, len(history))
+      self.assertEqual(url, history[0]['url'])
+      self.assertTrue(os.path.exists('/home/chronos/__magic__'),
+          msg='/home/chronos/__magic__ did not persist across login sessions')
+      self.assertTrue(os.path.exists('/home/chronos/user/__magic__'),
+          msg='/home/chronos/user/__magic__ did not persist across '
+              'login sessions')
+
+    _VerifyProfile()
+    self.Logout()
+    self.testGoodLogin()  # Re-login with same account.
+    _VerifyProfile()
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()

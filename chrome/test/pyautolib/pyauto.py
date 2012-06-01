@@ -427,6 +427,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def CleanupBrowserProfileOnChromeOS():
     """Cleanup browser profile dir on ChromeOS.
 
+    This does not clear cryptohome.
+
     Browser should not be running, or else there will be locked files.
     """
     profile_dir = '/home/chronos/user'
@@ -4160,6 +4162,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Should be logged in to work. Re-initializes the automation channel
     after logout.
     """
+    clear_profile_orig = self.get_clear_profile()
+    self.set_clear_profile(False)
     assert self.GetLoginInfo()['is_logged_in'], \
         'Trying to log out when already logged out.'
     def _SignOut():
@@ -4168,6 +4172,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     assert self.WaitForSessionManagerRestart(_SignOut), \
         'Session manager did not restart after logout.'
     self.__SetUp()
+    self.set_clear_profile(clear_profile_orig)
 
   def LockScreen(self):
     """Locks the screen on chromeos.
