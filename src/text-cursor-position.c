@@ -1,5 +1,4 @@
 /*
- * Copyright © 2011 Intel Corporation
  * Copyright © 2012 Scott Moreau
  *
  * Permission to use, copy, modify, distribute, and sell this software and
