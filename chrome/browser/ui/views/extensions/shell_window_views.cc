@@ -11,17 +11,10 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "grit/ui_resources_standard.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/scoped_sk_region.h"
-#include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/webview/webview.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -38,8 +31,6 @@
 // Number of pixels around the edge of the window that can be dragged to
 // resize the window.
 static const int kResizeBorderWidth = 5;
-// Height of the chrome-style caption, in pixels.
-static const int kCaptionHeight = 25;
 
 class ShellWindowFrameView : public views::NonClientFrameView {
  public:
@@ -115,83 +106,20 @@ void ShellWindowFrameView::GetWindowMask(const gfx::Size& size,
   // Don't touch it.
 }
 
-namespace {
-
-class TitleBarBackground : public views::Background {
- public:
-  TitleBarBackground() {}
-  virtual ~TitleBarBackground() {}
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
-    SkPaint paint;
-    paint.setAntiAlias(false);
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(SK_ColorWHITE);
-    gfx::Path path;
-    int radius = 1;
-    int width = view->width();
-    int height = view->height();
-    path.moveTo(0, radius);
-    path.lineTo(radius, 0);
-    path.lineTo(width - radius - 1, 0);
-    path.lineTo(width, radius + 1);
-    path.lineTo(width, height);
-    path.lineTo(0, height);
-    path.close();
-    canvas->DrawPath(path, paint);
-  }
-};
-
-class TitleBarView : public views::View {
- public:
-  explicit TitleBarView(views::ButtonListener* listener);
-  virtual ~TitleBarView();
-};
-
-TitleBarView::TitleBarView(views::ButtonListener* listener) {
-  set_background(new TitleBarBackground());
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  views::ImageButton* close_button = new views::ImageButton(listener);
-  close_button->SetImage(views::CustomButton::BS_NORMAL,
-      rb.GetNativeImageNamed(IDR_CLOSE_BAR).ToImageSkia());
-  close_button->SetImage(views::CustomButton::BS_HOT,
-      rb.GetNativeImageNamed(IDR_CLOSE_BAR_H).ToImageSkia());
-  close_button->SetImage(views::CustomButton::BS_PUSHED,
-      rb.GetNativeImageNamed(IDR_CLOSE_BAR_P).ToImageSkia());
-  views::GridLayout* layout = new views::GridLayout(this);
-  layout->SetInsets(0, 0, 0,
-      (kCaptionHeight - close_button->GetPreferredSize().height()) / 2);
-  SetLayoutManager(layout);
-  views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddPaddingColumn(1, 1);
-  columns->AddColumn(
-      views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
-      views::GridLayout::USE_PREF, 0, 0);
-  layout->StartRow(1, 0);
-  layout->AddView(close_button);
-}
-
-TitleBarView::~TitleBarView() {
-}
-
-};  // namespace
-
 ShellWindowViews::ShellWindowViews(Profile* profile,
                                    const extensions::Extension* extension,
                                    const GURL& url,
                                    const ShellWindow::CreateParams win_params)
     : ShellWindow(profile, extension, url),
-      title_view_(NULL),
-      web_view_(NULL),
+      initialized_(false),
       use_custom_frame_(
           win_params.frame == ShellWindow::CreateParams::FRAME_CUSTOM) {
   window_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;
-  params.remove_standard_frame = true;
+  params.remove_standard_frame = use_custom_frame_;
   params.bounds = win_params.bounds;
   minimum_size_ = win_params.minimum_size;
-  if (!use_custom_frame_)
-    params.bounds.set_height(params.bounds.height() + kCaptionHeight);
   window_->Init(params);
 #if defined(OS_WIN) && !defined(USE_AURA)
   std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
@@ -201,25 +129,13 @@ ShellWindowViews::ShellWindowViews(Profile* profile,
       profile->GetPath()),
       GetWidget()->GetTopLevelWidget()->GetNativeWindow());
 #endif
-  OnViewWasResized();
-
-  window_->Show();
-}
-
-void ShellWindowViews::ViewHierarchyChanged(
-    bool is_add, views::View *parent, views::View *child) {
-  if (is_add && child == this) {
-    if (!use_custom_frame_) {
-      title_view_ = new TitleBarView(this);
-      AddChildView(title_view_);
-    }
-    web_view_ = new views::WebView(NULL);
-    AddChildView(web_view_);
-    web_view_->SetWebContents(web_contents());
-  }
+  SetLayoutManager(new views::FillLayout);
+  Layout();
 }
 
 ShellWindowViews::~ShellWindowViews() {
+  if (initialized_)
+    NativeViewHost::Detach();
 }
 
 bool ShellWindowViews::IsActive() const {
@@ -306,11 +222,6 @@ void ShellWindowViews::DeleteDelegate() {
   delete this;
 }
 
-void ShellWindowViews::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
-  Close();
-}
-
 bool ShellWindowViews::CanResize() const {
   return true;
 }
@@ -332,7 +243,9 @@ views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
   frame->Init(widget);
   return frame;
 #else
-  return new ShellWindowFrameView(this);
+  if (use_custom_frame_)
+    return new ShellWindowFrameView(this);
+  return NULL;
 #endif
 }
 
@@ -352,8 +265,9 @@ void ShellWindowViews::OnViewWasResized() {
   // TODO(jeremya): this doesn't seem like a terribly elegant way to keep the
   // window shape in sync.
 #if defined(OS_WIN) && !defined(USE_AURA)
-  // Set the window shape of the RWHV.
-  gfx::Size sz = web_view_->size();
+  if (!use_custom_frame_)
+    return;
+  gfx::Size sz = size();
   int height = sz.height(), width = sz.width();
   int radius = 1;
   gfx::Path path;
@@ -361,30 +275,23 @@ void ShellWindowViews::OnViewWasResized() {
     // Don't round the corners when the window is maximized.
     path.addRect(0, 0, width, height);
   } else {
-    if (use_custom_frame_) {
-      path.moveTo(0, radius);
-      path.lineTo(radius, 0);
-      path.lineTo(width - radius, 0);
-      path.lineTo(width, radius);
-    } else {
-      // Don't round the top corners in chrome-style frame mode.
-      path.moveTo(0, 0);
-      path.lineTo(width, 0);
-    }
+    path.moveTo(0, radius);
+    path.lineTo(radius, 0);
+    path.lineTo(width - radius, 0);
+    path.lineTo(width, radius);
     path.lineTo(width, height - radius - 1);
     path.lineTo(width - radius - 1, height);
     path.lineTo(radius + 1, height);
     path.lineTo(0, height - radius - 1);
     path.close();
   }
-  SetWindowRgn(web_contents()->GetNativeView(), path.CreateNativeRegion(), 1);
+  SetWindowRgn(native_view(), path.CreateNativeRegion(), 1);
 
   SkRegion* rgn = new SkRegion;
   if (caption_region_.Get())
     rgn->op(*caption_region_.Get(), SkRegion::kUnion_Op);
   if (!GetWidget()->IsMaximized()) {
-    if (use_custom_frame_)
-      rgn->op(0, 0, width, kResizeBorderWidth, SkRegion::kUnion_Op);
+    rgn->op(0, 0, width, kResizeBorderWidth, SkRegion::kUnion_Op);
     rgn->op(0, 0, kResizeBorderWidth, height, SkRegion::kUnion_Op);
     rgn->op(width - kResizeBorderWidth, 0, width, height, SkRegion::kUnion_Op);
     rgn->op(0, height - kResizeBorderWidth, width, height, SkRegion::kUnion_Op);
@@ -393,15 +300,58 @@ void ShellWindowViews::OnViewWasResized() {
 #endif
 }
 
-void ShellWindowViews::Layout() {
-  if (use_custom_frame_) {
-    web_view_->SetBounds(0, 0, width(), height());
-  } else {
-    title_view_->SetBounds(0, 0, width(), kCaptionHeight);
-    web_view_->SetBounds(0, kCaptionHeight,
-        width(), height() - kCaptionHeight);
+gfx::NativeCursor ShellWindowViews::GetCursor(const views::MouseEvent& event) {
+  return gfx::kNullCursor;
+}
+
+void ShellWindowViews::SetVisible(bool is_visible) {
+  if (is_visible != visible()) {
+    NativeViewHost::SetVisible(is_visible);
+
+    // Also tell RenderWidgetHostView the new visibility. Despite its name, it
+    // is not part of the View hierarchy and does not know about the change
+    // unless we tell it.
+    content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
+    if (rvh->GetView()) {
+      if (is_visible)
+        rvh->GetView()->Show();
+      else
+        rvh->GetView()->Hide();
+    }
   }
-  OnViewWasResized();
+}
+
+void ShellWindowViews::ViewHierarchyChanged(bool is_add,
+                                            views::View *parent,
+                                            views::View *child) {
+  NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
+  if (is_add && GetWidget() && !initialized_) {
+    initialized_ = true;
+    NativeViewHost::Attach(web_contents()->GetView()->GetNativeView());
+  }
+}
+
+void ShellWindowViews::PreferredSizeChanged() {
+  View::PreferredSizeChanged();
+}
+
+bool ShellWindowViews::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
+  // Let the tab key event be processed by the renderer (instead of moving the
+  // focus to the next focusable view). Also handle Backspace, since otherwise
+  // (on Windows at least), pressing Backspace, when focus is on a text field
+  // within the ExtensionView, will navigate the page back instead of erasing a
+  // character.
+  return (e.key_code() == ui::VKEY_TAB || e.key_code() == ui::VKEY_BACK);
+}
+
+void ShellWindowViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // Propagate the new size to RenderWidgetHostView.
+  // We can't send size zero because RenderWidget DCHECKs that.
+  content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
+  if (rvh->GetView() && !bounds().IsEmpty()) {
+    rvh->GetView()->SetSize(size());
+    OnViewWasResized();
+  }
 }
 
 // static
