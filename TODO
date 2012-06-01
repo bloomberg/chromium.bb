@@ -1,0 +1,39 @@
+This HACKING file describes the development environment.  	-*- org -*-
+
+* Document the changes to LOUIS_TABLEPATH
+- Fix the problem that it always looks in the standard PATH even if
+  that was not in the environment var
+
+* Document the test harness with its use of json
+
+* Add java bindings
+It would be nice to have some canonical java bindings. There are
+several potential candidates:
+- Bindings by Michael Whapples
+- Minimal jna bindings by SBS
+- port jni bindings from utdml
+- new jna bindings by Bert Frees
+
+* Enhance the API to handle pre-hyphenated text
+This basically just means to port the code which is in the java
+bindings to C so that it can be used from other bindings
+
+* Add readline support to all the tools
+
+* Add Berts fabulous table debugger/tracer
+There is a as yet unannounced tool that allows you to see which
+opcodes have been used for a particular translation. Written in Java
+using Berts new java bindings mentioned above
+
+* Use portable malloc from gnulib 
+to get rid of the windows #ifdefs
+
+* Update gnulib
+
+* Enhance translation table compiler to issue warnings
+
+* Optimize for use with large tables
+When used with dictionary based tables liblouis is very slow. The
+issue is probably that the hash key is not very well suited for this
+use case and there will be tons of collisions, making the lookup
+essentially linear.

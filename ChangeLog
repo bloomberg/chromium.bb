@@ -1,5 +1,8 @@
 2012-06-01  Christian Egli  <christian.egli@sbs.ch>
 
+	* TODO: Added a TODO file to note things that could/should be
+	done.
+
 	* tables/de-de-comp8.ctb: Add Symbols such as double quotes,
 	dashes to the German computer braille table. Thanks to
 	Aliminator83@gmail.com
