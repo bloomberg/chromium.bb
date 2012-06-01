@@ -68,16 +68,18 @@ class Waitable {
   }
 
   base::WaitableEvent waitable_event_;
+
+  DISALLOW_COPY_AND_ASSIGN(Waitable);
 };
 
 // The MessagePumpForUI implementation for test purpose.
 class MessagePumpForUIStub : public base::MessagePumpForUI {
-  void Start(base::MessagePump::Delegate* delegate) {
+  virtual void Start(base::MessagePump::Delegate* delegate) OVERRIDE {
     NOTREACHED() << "The Start() method shouldn't be called in test, using"
         " Run() method should be used.";
   }
 
-  void Run(base::MessagePump::Delegate* delegate) {
+  virtual void Run(base::MessagePump::Delegate* delegate) OVERRIDE {
     // The following was based on message_pump_glib.cc, except we're using a
     // WaitableEvent since there are no native message loop to use.
     RunState state(delegate, g_state ? g_state->run_depth + 1 : 1);
@@ -117,21 +119,26 @@ class MessagePumpForUIStub : public base::MessagePumpForUI {
     g_state = previous_state;
   }
 
-  void Quit() {
+  virtual void Quit() OVERRIDE {
     Waitable::GetInstance()->Quit();
   }
 
-  void ScheduleWork() {
+  virtual void ScheduleWork() OVERRIDE {
     Waitable::GetInstance()->Signal();
   }
 
-  void ScheduleDelayedWork(const base::TimeTicks& delayed_work_time) {
+  virtual void ScheduleDelayedWork(
+      const base::TimeTicks& delayed_work_time) OVERRIDE {
     Waitable::GetInstance()->Signal();
   }
 };
 
+base::MessagePump* CreateMessagePumpForUIStub() {
+  return new MessagePumpForUIStub();
+};
+
 // Provides the test path for DIR_MODULE, DIR_CACHE and DIR_ANDROID_APP_DATA.
-bool PathTestProviderAndroid(int key, FilePath* result) {
+bool GetTestProviderPath(int key, FilePath* result) {
   switch (key) {
     case base::DIR_MODULE: {
       *result = FilePath(kAndroidTestTempDirectory);
@@ -154,21 +161,16 @@ bool PathTestProviderAndroid(int key, FilePath* result) {
   }
 }
 
-// The factory method to create a MessagePumpForUI.
-base::MessagePump* CreateMessagePumpForUIStub() {
-  return new MessagePumpForUIStub();
+void InitPathProvider(int key) {
+  FilePath path;
+  // If failed to override the key, that means the way has not been registered.
+  if (GetTestProviderPath(key, &path) && !PathService::Override(key, path))
+    PathService::RegisterProvider(&GetTestProviderPath, key, key + 1);
 }
 
 }  // namespace
 
-void InitAndroidOSPathStub() {
-  PathService::Override(base::DIR_MODULE, FilePath(kAndroidTestTempDirectory));
-  PathService::Override(base::DIR_CACHE, FilePath(kAndroidTestTempDirectory));
-  PathService::Override(base::DIR_ANDROID_APP_DATA,
-                        FilePath(kAndroidTestTempDirectory));
-}
-
-void InitAndroidTestStub() {
+void InitAndroidTestLogging() {
   logging::InitLogging(NULL,
                        logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
                        logging::DONT_LOCK_LOG_FILE,
@@ -179,13 +181,20 @@ void InitAndroidTestStub() {
                        false,    // Thread ID
                        false,    // Timestamp
                        false);   // Tick count
+}
 
-  PathService::RegisterProvider(&PathTestProviderAndroid, base::DIR_MODULE,
-                                base::DIR_MODULE + 1);
-  PathService::RegisterProvider(&PathTestProviderAndroid, base::DIR_CACHE,
-                                base::DIR_CACHE + 1);
-  PathService::RegisterProvider(&PathTestProviderAndroid,
-      base::DIR_ANDROID_APP_DATA, base::DIR_ANDROID_APP_DATA + 1);
+void InitAndroidTestPaths() {
+  InitPathProvider(base::DIR_MODULE);
+  InitPathProvider(base::DIR_CACHE);
+  InitPathProvider(base::DIR_ANDROID_APP_DATA);
+}
 
+void InitAndroidTestMessageLoop() {
   MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUIStub);
+}
+
+void InitAndroidTest() {
+  InitAndroidTestLogging();
+  InitAndroidTestPaths();
+  InitAndroidTestMessageLoop();
 }

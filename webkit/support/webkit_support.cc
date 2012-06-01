@@ -71,6 +71,10 @@
 #include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
+#if defined(OS_ANDROID)
+#include "base/test/test_support_android.h"
+#endif
+
 using WebKit::WebCString;
 using WebKit::WebDevToolsAgentClient;
 using WebKit::WebFileSystem;
@@ -104,6 +108,10 @@ void InitLogging() {
   }
 #endif
 
+#if defined(OS_ANDROID)
+  // On Android we expect the log to appear in logcat.
+  InitAndroidTestLogging();
+#else
   FilePath log_filename;
   PathService::Get(base::DIR_EXE, &log_filename);
   log_filename = log_filename.AppendASCII("DumpRenderTree.log");
@@ -123,6 +131,7 @@ void InitLogging() {
   const bool kTimestamp = true;
   const bool kTickcount = true;
   logging::SetLogItems(kProcessId, kThreadId, !kTimestamp, kTickcount);
+#endif  // else defined(OS_ANDROID)
 }
 
 class TestEnvironment {
@@ -272,11 +281,15 @@ void SetUpTestEnvironmentImpl(bool unit_test_mode) {
   // at same time.
   url_util::Initialize();
   base::AtExitManager* at_exit_manager = NULL;
+  // In Android DumpRenderTree, AtExitManager is created in
+  // testing/android/native_test_wrapper.cc before main() is called.
+#if !defined(OS_ANDROID)
   // Some initialization code may use a AtExitManager before initializing
   // TestEnvironment, so we create a AtExitManager early and pass its ownership
   // to TestEnvironment.
   if (!unit_test_mode)
     at_exit_manager = new base::AtExitManager;
+#endif
   webkit_support::BeforeInitialize(unit_test_mode);
   test_environment = new TestEnvironment(unit_test_mode, at_exit_manager);
   webkit_support::AfterInitialize(unit_test_mode);
