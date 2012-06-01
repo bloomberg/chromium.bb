@@ -144,7 +144,6 @@ struct window {
 	int resize_needed;
 	int type;
 	int transparent;
-	int send_cursor_position;
 	struct input *keyboard_device;
 	enum window_buffer_type buffer_type;
 
@@ -1835,9 +1834,6 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	if (!window || window->keyboard_device != input || !input->xkb.state)
 		return;
 
-	if (state)
-		window->send_cursor_position = 1;
-
 	num_syms = xkb_key_get_syms(input->xkb.state, code, &syms);
 
 	mask = xkb_state_serialize_mods(input->xkb.state,
@@ -2697,15 +2693,13 @@ window_set_text_cursor_position(struct window *window, int32_t x, int32_t y)
 	struct text_cursor_position *text_cursor_position =
 					window->display->text_cursor_position;
 
-	if (!window->send_cursor_position || !text_cursor_position)
+	if (!text_cursor_position)
 		return;
 
 	text_cursor_position_notify(text_cursor_position,
 						window->surface,
 						wl_fixed_from_int(x),
 						wl_fixed_from_int(y));
-
-	window->send_cursor_position = 0;
 }
 
 void
@@ -2794,7 +2788,6 @@ window_create_internal(struct display *display, struct window *parent)
 	window->allocation.height = 0;
 	window->saved_allocation = window->allocation;
 	window->transparent = 1;
-	window->send_cursor_position = 0;
 	window->type = TYPE_NONE;
 	window->input_region = NULL;
 	window->opaque_region = NULL;
