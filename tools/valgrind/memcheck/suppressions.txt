@@ -3046,34 +3046,6 @@
    fun:_ZN16RenderWidgetHost9WasHiddenEv
 }
 {
-   bug_80654_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN8notifier26ProxyResolvingClientSocketC1E*
-   fun:_ZN8notifier23XmppClientSocketFactory27CreateTransportClientSocketERKN3net12HostPortPairE
-   fun:_ZN8notifier17ChromeAsyncSocket7ConnectERKN9talk_base13SocketAddressE
-   fun:_ZN4buzz10XmppClient21ProcessStartXmppLoginEv
-   fun:_ZN4buzz10XmppClient7ProcessEi
-   fun:_ZN9talk_base4Task4StepEv
-   fun:_ZN9talk_base10TaskRunner16InternalRunTasksEb
-   fun:_ZN9talk_base10TaskRunner8RunTasksEv
-}
-{
-   bug_80654_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN7sigslot7signal0INS_15single_threadedEE7connectIN4buzz10XmppClientEEEvPT_MS6_FvvE
-   fun:_ZN4buzz10XmppClient12ProcessStartEv
-   fun:_ZN9talk_base4Task7ProcessEi
-   fun:_ZN4buzz10XmppClient7ProcessEi
-   fun:_ZN9talk_base4Task4StepEv
-   fun:_ZN9talk_base10TaskRunner16InternalRunTasksEb
-   fun:_ZN9talk_base10TaskRunner8RunTasksEv
-   fun:_ZN8notifier8TaskPump16CheckAndRunTasksEv
-}
-{
    bug_80663
    Memcheck:Leak
    fun:_Znw*

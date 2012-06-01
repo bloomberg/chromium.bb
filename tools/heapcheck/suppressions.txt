@@ -931,19 +931,6 @@
    fun:RenderWidgetHost::WasHidden
 }
 {
-   bug_80654
-   Heapcheck:Leak
-   ...
-   fun:notifier::XmppClientSocketFactory::CreateTransportClientSocket
-   fun:notifier::ChromeAsyncSocket::Connect
-   fun:buzz::XmppClient::ProcessStartXmppLogin
-   fun:buzz::XmppClient::Process
-   fun:talk_base::Task::Step
-   fun:talk_base::TaskRunner::InternalRunTasks
-   fun:talk_base::TaskRunner::RunTasks
-   fun:notifier::TaskPump::CheckAndRunTasks
-}
-{
    bug_80663
    Heapcheck:Leak
    ...
