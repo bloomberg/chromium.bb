@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -17,6 +17,9 @@
 
 /* Keys for auxiliary vector (auxv). */
 #define AT_NULL         0   /* Terminating item in auxv array */
+#define AT_PHDR         3   /* Program headers for program */
+#define AT_PHENT        4   /* Size of program header entry */
+#define AT_PHNUM        5   /* Number of program headers */
 #define AT_ENTRY        9   /* Entry point of the executable */
 #define AT_SYSINFO      32  /* System call entry point */
 

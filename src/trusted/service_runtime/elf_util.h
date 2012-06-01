@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -20,15 +20,22 @@ struct NaClElfImage *NaClElfImageNew(struct Gio *gp, NaClErrorCode *err_code);
 
 NaClErrorCode NaClElfImageValidateElfHeader(struct NaClElfImage *image);
 
+struct NaClElfImageInfo {
+  uintptr_t static_text_end;
+  uintptr_t rodata_start;
+  uintptr_t rodata_end;
+  uintptr_t data_start;
+  uintptr_t data_end;
+  uintptr_t max_vaddr;
+  uintptr_t phdr_addr;
+  int phdr_num;
+  int phdr_size;
+};
+
 NaClErrorCode NaClElfImageValidateProgramHeaders(
   struct NaClElfImage *image,
   uint8_t             addr_bits,
-  uintptr_t           *static_text_end,
-  uintptr_t           *rodata_start,
-  uintptr_t           *rodata_end,
-  uintptr_t           *data_start,
-  uintptr_t           *data_end,
-  uintptr_t           *max_vaddr);
+  struct NaClElfImageInfo *info);
 
 /*
  * Loads an ELF executable before the address space's memory

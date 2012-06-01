@@ -198,6 +198,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   uintptr_t           max_vaddr;
   struct NaClElfImage *image = NULL;
   struct NaClPerfCounter  time_load_file;
+  struct NaClElfImageInfo info;
 
   NaClPerfCounterCtor(&time_load_file, "NaClAppLoadFile");
 
@@ -224,15 +225,27 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
 
   subret = NaClElfImageValidateProgramHeaders(image,
                                               nap->addr_bits,
-                                              &nap->static_text_end,
-                                              &nap->rodata_start,
-                                              &rodata_end,
-                                              &nap->data_start,
-                                              &data_end,
-                                              &max_vaddr);
+                                              &info);
   if (LOAD_OK != subret) {
     ret = subret;
     goto done;
+  }
+
+  nap->static_text_end = info.static_text_end;
+  nap->rodata_start = info.rodata_start;
+  rodata_end = info.rodata_end;
+  nap->data_start = info.data_start;
+  data_end = info.data_end;
+  max_vaddr = info.max_vaddr;
+
+  if (0 == info.phdr_addr) {
+    nap->phdr_addr = 0;
+    nap->phdr_num = 0;
+    nap->phdr_size = 0;
+  } else {
+    nap->phdr_addr = info.phdr_addr;
+    nap->phdr_num = info.phdr_num;
+    nap->phdr_size = info.phdr_size;
   }
 
   if (0 == nap->data_start) {
@@ -270,6 +283,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   NaClLog(4, "data_start   = 0x%08"NACL_PRIxPTR"\n", nap->data_start);
   NaClLog(4, "data_end     = 0x%08"NACL_PRIxPTR"\n", data_end);
   NaClLog(4, "max_vaddr    = 0x%08"NACL_PRIxPTR"\n", max_vaddr);
+  NaClLog(4, "phdr_addr    = 0x%08"NACL_PRIxPTR"\n", nap->phdr_addr);
 
   /* We now support only one bundle size.  */
   nap->bundle_size = NACL_INSTR_BLOCK_SIZE;
@@ -781,6 +795,9 @@ int NaClCreateMainThread(struct NaClApp     *nap,
    * for correctness.
    */
   auxv_entries = 1;
+  if (0 != nap->phdr_addr) {
+    auxv_entries += 3;
+  }
   if (0 != nap->user_entry_pt) {
     auxv_entries++;
   }
@@ -848,6 +865,14 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   *p++ = 0;  /* envp[envc] is NULL.  */
 
   /* Push an auxv */
+  if (0 != nap->phdr_addr) {
+    *p++ = AT_PHDR;
+    *p++ = (uint32_t) nap->phdr_addr;
+    *p++ = AT_PHENT;
+    *p++ = nap->phdr_size;
+    *p++ = AT_PHNUM;
+    *p++ = nap->phdr_num;
+  }
   if (0 != nap->user_entry_pt) {
     *p++ = AT_ENTRY;
     *p++ = (uint32_t) nap->user_entry_pt;
