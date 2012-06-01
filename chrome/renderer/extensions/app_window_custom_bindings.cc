@@ -86,7 +86,10 @@ v8::Handle<v8::Value> AppWindowCustomBindings::GetView(
   // need to make sure the security origin is set up before returning the DOM
   // reference. A better way to do this would be to have the browser pass the
   // opener through so opener_id is set in RenderViewImpl's constructor.
-  WebKit::WebFrame* opener = GetCurrentRenderView()->GetWebView()->mainFrame();
+  content::RenderView* render_view = GetCurrentRenderView();
+  if (!render_view)
+    return v8::Undefined();
+  WebKit::WebFrame* opener = render_view->GetWebView()->mainFrame();
   WebKit::WebFrame* frame = view->GetWebView()->mainFrame();
   frame->setOpener(opener);
 
