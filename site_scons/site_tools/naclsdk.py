@@ -223,7 +223,7 @@ def _SetEnvForPnacl(env, root):
   env.AppendENVPath('PATH', python_dir)
 
   arch = env['TARGET_FULLARCH']
-  assert arch in ['arm', 'arm-thumb2', 'x86-32', 'x86-64']
+  assert arch in ['arm', 'arm-thumb2', 'mips32', 'x86-32', 'x86-64']
 
   arch_flag = ' -arch %s' % arch
   if env.Bit('pnacl_generate_pexe'):
@@ -407,6 +407,7 @@ def PNaClForceNative(env):
 def PNaClGetNNaClEnv(env):
   assert(env.Bit('bitcode'))
   assert(not env.Bit('target_arm'))
+  assert(not env.Bit('target_mips32'))
 
   # This is kind of a hack. We clone the environment,
   # clear the bitcode bit, and then reload naclsdk.py
@@ -432,7 +433,7 @@ def PNaClGetNNaClEnv(env):
 
 # This adds architecture specific defines for the target architecture.
 # These are normally omitted by PNaCl.
-# For example: __i686__, __arm__, __x86_64__
+# For example: __i686__, __arm__, __mips__, __x86_64__
 def AddBiasForPNaCl(env, temporarily_allow=True):
   assert(env.Bit('bitcode'))
   # re: the temporarily_allow flag -- that is for:
@@ -451,6 +452,9 @@ def AddBiasForPNaCl(env, temporarily_allow=True):
   elif env.Bit('target_x86_64'):
     env.AppendUnique(CCFLAGS=['--pnacl-x86_64-bias'],
                      ASPPFLAGS=['--pnacl-x86_64-bias'])
+  elif env.Bit('target_mips32'):
+    env.AppendUnique(CCFLAGS=['--pnacl-mips-bias'],
+                     ASPPFLAGS=['--pnacl-mips-bias'])
   else:
     raise Exception("Unknown architecture!")
 

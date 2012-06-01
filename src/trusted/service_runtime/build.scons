@@ -226,6 +226,9 @@ if env.Bit('linux'):
       ]
   if env.Bit('target_arm'):
     ldr_inputs += ['linux/nacl_signal_arm.c']
+  elif env.Bit('target_mips32'):
+    # TODO(petarj): Add support for MIPS.
+    pass
   elif env.Bit('target_x86_32'):
     ldr_inputs += ['linux/nacl_signal_32.c']
   elif env.Bit('target_x86_64'):

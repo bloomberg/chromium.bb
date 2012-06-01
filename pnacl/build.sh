@@ -1780,6 +1780,27 @@ libstdcpp-install() {
   spopd
 }
 
+build-validator() {
+  arch=$1
+  if [ ${arch} == 'mips' ]; then
+    targetplatform='mips32'
+  else
+    targetplatform=$arch
+  fi
+  ARCH=`echo ${arch} | tr '[:lower:]' '[:upper:]'`
+  TARGETPLATFORM=`echo ${targetplatform} | tr '[:lower:]' '[:upper:]'`
+  StepBanner "MISC-"${ARCH} "Building validator ("${TARGETPLATFORM}")"
+  spushd "${NACL_ROOT}"
+  RunWithLog ${arch}_ncval_core \
+    ./scons MODE=opt-host \
+    targetplatform=${targetplatform} \
+    sysinfo=0 \
+    ${arch}-ncval-core
+  cp ${SCONS_OUT}/opt-linux-x86-32-to-${targetplatform}/obj/src/trusted/\
+validator_${arch}/${arch}-ncval-core ${INSTALL_ROOT}/tools-x86
+  spopd
+}
+
 #+ misc-tools            - Build and install sel_ldr and validator for ARM.
 misc-tools() {
   if ${PNACL_BUILD_ARM} ; then
@@ -1804,20 +1825,15 @@ misc-tools() {
   fi
 
   if ${BUILD_PLATFORM_LINUX} ; then
-    StepBanner "MISC-ARM" "Building validator (ARM)"
-    spushd "${NACL_ROOT}"
-    RunWithLog arm_ncval_core \
-      ./scons MODE=opt-host \
-      targetplatform=arm \
-      sysinfo=0 \
-      arm-ncval-core
     rm -rf  "${INSTALL_ROOT}/tools-x86"
     mkdir "${INSTALL_ROOT}/tools-x86"
-    cp ${SCONS_OUT}/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/\
-arm-ncval-core ${INSTALL_ROOT}/tools-x86
-    spopd
+    for target in arm mips; do
+      build-validator $target
+    done
   else
-    StepBanner "MISC-ARM" "Skipping ARM validator (Not yet supported on Mac)"
+    for target in ARM MIPS; do
+      StepBanner "MISC-"${target} "Skipping " ${target} " validator (Not yet supported on Mac)"
+    done
   fi
 }
 

@@ -878,7 +878,7 @@ pre_base_env.AddMethod(Banner)
 #
 # Various variables in the scons environment are related to this, e.g.
 #
-# BUILD_ARCH: (arm, x86)
+# BUILD_ARCH: (arm, mips, x86)
 # BUILD_SUBARCH: (32, 64)
 #
 # The settings can be controlled using scons command line variables:
@@ -893,6 +893,7 @@ pre_base_env.AddMethod(Banner)
 AVAILABLE_PLATFORMS = {
     'x86-32'      : { 'arch' : 'x86' , 'subarch' : '32' },
     'x86-64'      : { 'arch' : 'x86' , 'subarch' : '64' },
+    'mips32'      : { 'arch' : 'mips', 'subarch' : '32' },
     'arm'         : { 'arch' : 'arm' , 'subarch' : '32' },
     'arm-thumb2'  : { 'arch' : 'arm' , 'subarch' : '32' }
     }
@@ -921,6 +922,8 @@ DeclareBit('build_x86_32', 'Building binaries for the x86-32 architecture',
            exclusive_groups='build_arch')
 DeclareBit('build_x86_64', 'Building binaries for the x86-64 architecture',
            exclusive_groups='build_arch')
+DeclareBit('build_mips32', 'Building binaries for the MIPS architecture',
+           exclusive_groups='build_arch')
 DeclareBit('build_arm_arm', 'Building binaries for the ARM architecture',
            exclusive_groups='build_arch')
 DeclareBit('build_arm_thumb2',
@@ -929,6 +932,8 @@ DeclareBit('build_arm_thumb2',
 DeclareBit('target_x86_32', 'Tools being built will process x86-32 binaries',
            exclusive_groups='target_arch')
 DeclareBit('target_x86_64', 'Tools being built will process x86-36 binaries',
+           exclusive_groups='target_arch')
+DeclareBit('target_mips32', 'Tools being built will process MIPS binaries',
            exclusive_groups='target_arch')
 DeclareBit('target_arm_arm', 'Tools being built will process ARM binaries',
            exclusive_groups='target_arch')
@@ -976,9 +981,10 @@ def MakeArchSpecificEnv():
 
   env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
 
-  if env.Bit('target_arm') and not env.Bit('native_code'):
-    # This has always been a silent default on ARM.
-    env.SetBits('bitcode')
+  if env.Bit('target_arm') or env.Bit('target_mips32'):
+    if not env.Bit('native_code'):
+      # This is a silent default on ARM and MIPS.
+      env.SetBits('bitcode')
 
   # If it's not bitcode, it's native code.
   if not env.Bit('bitcode'):
@@ -1124,6 +1130,8 @@ def GetValidator(env, validator):
   if validator is None:
     if env.Bit('build_arm'):
       validator = 'arm-ncval-core'
+    elif env.Bit('build_mips32'):
+      validator = 'mips-ncval-core'
     else:
       validator = 'ncval'
 
@@ -1756,9 +1764,11 @@ def PPAPIBrowserTester(env,
 pre_base_env.AddMethod(PPAPIBrowserTester)
 
 
-# Disabled for ARM because Chrome binaries for ARM are not available.
+# Disabled for ARM and MIPS because Chrome binaries for ARM and MIPS are not
+# available.
 def PPAPIBrowserTesterIsBroken(env):
-  return env.Bit('target_arm') or env.Bit('target_arm_thumb2')
+  return (env.Bit('target_arm') or env.Bit('target_arm_thumb2')
+          or env.Bit('target_mips32'))
 
 pre_base_env.AddMethod(PPAPIBrowserTesterIsBroken)
 
@@ -1970,7 +1980,7 @@ def SelUniversalTest(env, name, nexe, sel_universal_flags=None, **kwargs):
 
   # When run under qemu, sel_universal must sneak in qemu to the execv
   # call that spawns sel_ldr.
-  if env.Bit('target_arm') and env.UsingEmulator():
+  if env.UsingEmulator():
     sel_universal_flags.append('--command_prefix')
     sel_universal_flags.append(GetEmulator(env))
 
@@ -2614,11 +2624,13 @@ def MakeBaseTrustedEnv():
 
   base_env.AddMethod(SDKInstallBin)
 
-  # The ARM validator can be built for any target that doesn't use ELFCLASS64.
+  # The ARM and MIPS validators can be built for any target that doesn't use
+  # ELFCLASS64.
   if not base_env.Bit('target_x86_64'):
     base_env.Append(
         BUILD_SCONSCRIPTS = [
           'src/trusted/validator_arm/build.scons',
+          'src/trusted/validator_mips/build.scons',
         ])
 
   base_env.Replace(
@@ -3000,6 +3012,9 @@ def MakeLinuxEnv():
       linux_env.FilterOut(LIBPATH=['/usr/lib'])
      # This appears to be needed for sel_universal
     linux_env.Append(LIBS=['dl'])
+  elif linux_env.Bit('build_mips32'):
+    # TODO(petarj): Add support for MIPS.
+    pass
   else:
     Banner('Strange platform: %s' % BUILD_NAME)
 
