@@ -860,6 +860,24 @@
     <description summary="keyboard input device">
     </description>
 
+    <enum name="keymap_format">
+      <description summary="keyboard mapping format">
+        This enum specifies the format of the keymap provided to the client
+	with the wl_keyboard::keymap event.
+      </description>
+      <entry name="xkb_v1" value="1" description="libxkbcommon compatible"/>
+    </enum>
+
+    <event name="keymap">
+      <description summary="keyboard mapping">
+        This event provides a file descriptor to the client which can be
+	memory-mapped to provide a keyboard mapping description.
+      </description>
+      <arg name="format" type="uint"/>
+      <arg name="fd" type="fd"/>
+      <arg name="size" type="uint"/>
+    </event>
+
     <event name="enter">
       <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
