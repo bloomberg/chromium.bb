@@ -59,6 +59,7 @@ JingleThreadWrapper::JingleThreadWrapper(MessageLoop* message_loop)
 }
 
 JingleThreadWrapper::~JingleThreadWrapper() {
+  Clear(NULL, talk_base::MQID_ANY, NULL);
 }
 
 void JingleThreadWrapper::WillDestroyCurrentMessageLoop() {
