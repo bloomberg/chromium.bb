@@ -329,12 +329,6 @@
    fun:v8::internal::Execution::Call
    fun:v8::Function::Call
 }
-{
-  bug_39016
-  Heapcheck:Leak
-  ...
-  fun:::RenderThreadTest::SetUp
-}
 # TODO(glider): sometimes the stacks differ between the bot and the local run,
 # e.g. "base::subtle::RefCountedBase::RefCountedBase" vs. "RefCountedBase".
 {
