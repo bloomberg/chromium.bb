@@ -407,18 +407,11 @@ class GitRepoPatch(object):
     if sha1 is not None:
       sha1 = FormatSha1(sha1, strict=True)
     self.sha1 = sha1
-    # TODO(ferringb): remove this attribute.
-    # apply_error_message is currently used by ValidationPool as a way to
-    # track what changes have failed.  Patch objects shouldn't use this
-    # attribute, instead leaving it purely for validation_pool and friends
-    # to mutate.
-    self.apply_error_message = None
-    # change_id must always be a valid Change-Id (local or gerrit), or None,
+    # change_id must always be a valid Change-Id (strict gerrit), or None,
     # and be in strict gerrit form (aka, external).
     # id can be in our form; internal or external.
     self.change_id = self.id = None
     self._is_fetched = set()
-    self._projectdir_cache = {}
 
     # Do the ChangeId setting now that we have a fully setup instance.
     if change_id:
@@ -431,21 +424,12 @@ class GitRepoPatch(object):
                            force_internal=self.internal)
             for x in l if x is not None]
 
-  def ProjectDir(self, checkout_root):
-    """Returns the local directory where this patch will be applied."""
-    checkout_root = os.path.normpath(checkout_root)
-    val = self._projectdir_cache.get(checkout_root)
-    if val is None:
-      val = cros_build_lib.GetProjectDir(checkout_root, self.project)
-      self._projectdir_cache[checkout_root] = val
-    return val
-
-  def Fetch(self, target_repo):
-    """Fetch this patch into the target repository.
+  def Fetch(self, git_repo):
+    """Fetch this patch into the given git repository.
 
     FETCH_HEAD is implicitly reset by this operation.  Additionally,
     if the sha1 of the patch was not yet known, it is pulled and stored
-    on this object and the target_repo is updated w/ the requested git
+    on this object and the git_repo is updated w/ the requested git
     object.
 
     While doing so, we'll load the commit message and Change-Id if not
@@ -455,14 +439,14 @@ class GitRepoPatch(object):
     repository, this will skip the actual fetch operation (it's unneeded).
     """
 
-    target_repo = os.path.normpath(target_repo)
-    if target_repo in self._is_fetched:
+    git_repo = os.path.normpath(git_repo)
+    if git_repo in self._is_fetched:
       return self.sha1
 
     def _PullData(rev):
-      ret = cros_build_lib.RunCommandCaptureOutput(
-          ['git', 'log', '--format=%H%x00%B', '-n1', rev], print_cmd=False,
-          error_code_ok=True, cwd=target_repo)
+      ret = cros_build_lib.RunGitCommand(
+          git_repo, ['log', '--format=%H%x00%B', '-n1', rev],
+          error_code_ok=True)
       if ret.returncode != 0:
         return None, None
       output = ret.output.split('\0')
@@ -478,10 +462,11 @@ class GitRepoPatch(object):
         assert sha1 == self.sha1
         self._commit_message = msg
         self._EnsureId(msg)
+        self._is_fetched.add(git_repo)
         return self.sha1
 
-    cros_build_lib.RunCommand(['git', 'fetch', self.project_url, self.ref],
-                              cwd=target_repo, print_cmd=False)
+    cros_build_lib.RunGitCommand(
+        git_repo, ['fetch', self.project_url, self.ref])
 
     sha1, msg = _PullData('FETCH_HEAD')
     sha1 = FormatSha1(sha1, strict=True)
@@ -497,7 +482,7 @@ class GitRepoPatch(object):
       self.sha1 = sha1
     self._commit_message = msg
     self._EnsureId(msg)
-    self._is_fetched.add(target_repo)
+    self._is_fetched.add(git_repo)
     return self.sha1
 
   def _RebaseOnto(self, branch, upstream, project_dir, rev, trivial):
@@ -567,24 +552,13 @@ class GitRepoPatch(object):
       cros_build_lib.RunCommand(['git', 'checkout', constants.PATCH_BRANCH],
                                 cwd=project_dir, print_cmd=False)
 
-  def _GetUpstreamBranch(self, buildroot, fallback=True):
-    """Get the branch specified in the manifest for this patch."""
-    # TODO(ferringb): remove this via cherry-picking; it's broken
-    # now since it assumes the tracking_branch (which is local
-    # to the originating repo) is what should be used for rebasing
-    # this patch into the current tree).
-    manifest = cros_build_lib.ManifestCheckout.Cached(buildroot)
-    return manifest.GetProjectsLocalRevision(
-        self.project, fallback=fallback)
-
-  def ApplyIntoGitRepo(self, project_dir, upstream, trivial=False,
-                       do_check=True):
+  def Apply(self, git_repo, upstream, trivial=False, do_check=True):
     """Apply patch into a standalone git repo.
 
     The git repo does not need to be part of a repo checkout.
 
     Arguments:
-      project_dir: The directory of the project.
+      git_repo: The git repository to operate upon.
       upstream: The branch to base the patch on.
       trivial: Only allow trivial merges when applying change.
       do_check: Check if tracking is the same as the given upstream.
@@ -599,59 +573,57 @@ class GitRepoPatch(object):
                            'branch %s for project %s is not tracking %s'
                            % (self.ref, self.project, branch_base))
 
-    rev = self.Fetch(project_dir)
+    rev = self.Fetch(git_repo)
 
-    if not cros_build_lib.DoesLocalBranchExist(project_dir,
+    if not cros_build_lib.DoesLocalBranchExist(git_repo,
                                                constants.PATCH_BRANCH):
       cmd = ['checkout', '-b', constants.PATCH_BRANCH, '-t', upstream]
-      cros_build_lib.RunGitCommand(project_dir, cmd)
+      cros_build_lib.RunGitCommand(git_repo, cmd)
 
-    self._RebasePatch(upstream, project_dir, rev, trivial)
+    self._RebasePatch(upstream, git_repo, rev, trivial)
 
-  def Apply(self, buildroot, trivial=False):
-    """Applies the patch to specified buildroot.
+  def ApplyAgainstManifest(self, manifest, trivial=False):
+    """Applies the patch against the specified manifest.
 
-      buildroot:  The buildroot.
+      manifest: A ManifestCheckout object which is used to discern which
+        git repo to patch, what the upstream branch should be, etc.
       trivial:  Only allow trivial merges when applying change.
 
     Raises:
       ApplyPatchException: If the patch failed to apply.
     """
     logging.info('Attempting to apply change %s', self)
-    manifest_branch = self._GetUpstreamBranch(buildroot, False)
+    manifest_branch = manifest.GetProjectsLocalRevision(self.project,
+                                                        fallback=False)
     do_check = manifest_branch.startswith('refs/')
     if not do_check:
       # Revision locked.  Use the manifest default branch which
       # is set to the manifest locked revision, and
       # suppress the tracking/upstream check.
-      manifest_branch = self._GetUpstreamBranch(buildroot)
-    project_dir = self.ProjectDir(buildroot)
-    self.ApplyIntoGitRepo(project_dir, manifest_branch, trivial,
-                          do_check=do_check)
+      manifest_branch = manifest.default_branch
+    self.Apply(manifest.GetProjectPath(self.project, True),
+               manifest_branch, trivial, do_check=do_check)
 
-  def GerritDependencies(self, buildroot):
+  def GerritDependencies(self, git_repo, upstream):
     """Returns an ordered list of dependencies from Gerrit.
 
     The list of changes are in order from FETCH_HEAD back to m/master.
 
     Arguments:
-      buildroot: The buildroot.
+      git_repo: The git repository to fetch/access this commit from.
     Returns:
       An ordered list of Gerrit ChangeIds that this patch depends on.
       Note that if the commit lacks a ChangeId, the parent's sha1 is returned.
     """
     dependencies = []
     logging.info('Checking for Gerrit dependencies for change %s', self)
-    project_dir = self.ProjectDir(buildroot)
 
-    rev = self.Fetch(project_dir)
+    rev = self.Fetch(git_repo)
 
-    tracking_branch = self._GetUpstreamBranch(buildroot)
     try:
       return_obj = cros_build_lib.RunGitCommand(
-          project_dir,
-          ['log', '-z', '--pretty=format:%H%n%B', '%s..%s^'
-           % (tracking_branch, rev)])
+          git_repo, ['log', '-z', '-n1', '--format=%H\n%B',
+                     '%s..%s^' % (upstream, rev)])
     except cros_build_lib.RunCommandError, e:
       if e.result.returncode != 128:
         raise
@@ -660,7 +632,7 @@ class GitRepoPatch(object):
       # that actual rev, etc), or... this is the first commit in a repository.
       # The following code checks for that, raising the original
       # exception if not.
-      result = cros_build_lib.RunGitCommand(project_dir,
+      result = cros_build_lib.RunGitCommand(git_repo,
                                             ['rev-list', '-n2', rev])
       if len(result.output.split()) != 1:
         raise
@@ -757,7 +729,7 @@ class GitRepoPatch(object):
 
     return change_id_match
 
-  def PaladinDependencies(self, buildroot):
+  def PaladinDependencies(self, git_repo):
     """Returns an ordered list of dependencies based on the Commit Message.
 
     Parses the Commit message for this change looking for lines that follow
@@ -773,7 +745,9 @@ class GitRepoPatch(object):
     """
     dependencies = []
     logging.info('Checking for CQ-DEPEND dependencies for change %s', self)
-    self.Fetch(self.ProjectDir(buildroot))
+
+    self.Fetch(git_repo)
+
     matches = self._PALADIN_DEPENDENCY_RE.findall(self._commit_message)
     for match in matches:
       chunks = ' '.join(match.split(','))
@@ -807,6 +781,9 @@ class LocalPatch(GitRepoPatch):
                sha1):
     GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
                           internal, sha1=sha1)
+    # Initialize our commit message/ChangeId now, since we know we have
+    # access to the data right now.
+    self.Fetch(project_url)
 
   def _GetCarbonCopy(self):
     """Returns a copy of this commit object, with a different sha1.
@@ -1024,6 +1001,28 @@ class GerritPatch(GitRepoPatch):
     return self.id == other.id
 
 
+def GeneratePatchesFromRepo(git_repo, project, tracking_branch, branch,
+                            is_internal, allow_empty=False, starting_ref=None,
+                            single_change=True):
+  if starting_ref is None:
+    starting_ref = branch
+
+  cmd = ['rev-list', '%s..%s' % (tracking_branch, starting_ref)]
+  if single_change:
+    cmd.append('-n1')
+  result = cros_build_lib.RunGitCommand(git_repo, cmd)
+  sha1s = result.output.splitlines()
+  if not sha1s:
+    if not allow_empty:
+      cros_build_lib.Die('No changes found in %s:%s' % (project, branch))
+    return
+
+  for sha1 in sha1s:
+    yield LocalPatch(os.path.join(git_repo, '.git'),
+                     project, branch, tracking_branch,
+                     is_internal, sha1)
+
+
 def PrepareLocalPatches(manifest, patches):
   """Finish validation of parameters, and save patches to a temp folder.
 
@@ -1037,17 +1036,9 @@ def PrepareLocalPatches(manifest, patches):
     project_dir = manifest.GetProjectPath(project, True)
     tracking_branch = manifest.GetProjectsLocalRevision(project)
 
-    cmd = ['git', 'rev-list', '-n1', '%s..%s' % (tracking_branch, branch)]
-    result = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
-                                       cwd=project_dir)
-    sha1 = result.output.strip()
-
-    if not sha1:
-      cros_build_lib.Die('No changes found in %s:%s' % (project, branch))
-
-    patch_info.append(LocalPatch(os.path.join(project_dir, '.git'),
-                                 project, branch, tracking_branch,
-                                 manifest.ProjectIsInternal(project), sha1))
+    patch_info.extend(GeneratePatchesFromRepo(
+        project_dir, project, tracking_branch, branch,
+        manifest.ProjectIsInternal(project)))
 
   return patch_info
 

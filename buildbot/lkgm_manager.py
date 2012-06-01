@@ -254,7 +254,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     if validation_pool:
       # If we have nothing that could apply from the validation pool and
       # we're not also a pfq type, we got nothing to do.
-      if (not validation_pool.ApplyPoolIntoRepo(self.cros_source.directory) and
+      assert self.cros_source.directory == validation_pool.build_root
+      if (not validation_pool.ApplyPoolIntoRepo() and
           not cbuildbot_config.IsPFQType(self.build_type)):
         return None
 
