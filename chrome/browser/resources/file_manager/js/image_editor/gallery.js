@@ -713,6 +713,7 @@ Gallery.prototype.onEdit_ = function() {
     this.cancelFading_();
   } else {
     this.editor_.getPrompt().hide();
+    this.bubble_.hidden = true;
     ImageUtil.setAttribute(this.filenameSpacer_, 'saved', false);
     ImageUtil.setAttribute(this.filenameSpacer_, 'overwrite', false);
     this.initiateFading_();
