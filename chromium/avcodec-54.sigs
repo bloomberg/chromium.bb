@@ -8,6 +8,7 @@ AVCodecContext *avcodec_alloc_context(void);
 AVCodec *avcodec_find_decoder(enum CodecID id);
 AVFrame *avcodec_alloc_frame(void);
 int av_new_packet(AVPacket *pkt, int size);
+int avcodec_decode_audio4(AVCodecContext *avctx, AVFrame *frame, int *got_frame_ptr, const AVPacket *avpkt);
 int avcodec_decode_audio3(AVCodecContext *avctx, int16_t *samples, int *frame_size_ptr, AVPacket *avpkt);
 int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture, int *got_picture_ptr, const AVPacket *avpkt);
 int avcodec_open2(AVCodecContext *avctx, AVCodec *codec, AVDictionary **options);

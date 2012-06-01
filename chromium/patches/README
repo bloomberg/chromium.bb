@@ -3,25 +3,7 @@ Current Status as of Apr 23, 2012
 
 Upstream cherry-picks:
 
-ffa61fc mp3: fix start band index for block type 2 in 8kHz audio
-9894d3a mpegaudidec: 10l forgot buf_size
-ed6e594 mpegaudiodec: skip initial zeros.
-555537f mp3demux: fix id3 discard code
-5ecdf34 mp3demux: fix off by 1 error
-598bd74 mp3decoder: discard ID3 tags
-0c706ac Mark truncated packets as corrupt in av_get_packet.
-45a7b06 oggvorbis: fix the first 2 packets timestamps matching issue
-16db88a vorbis_parser: fix blocksize
-441dce2 oggvorbis: move handling of first packets ts from parser to muxer.
-b18c9f1 oggtheora: Port changes from oggvorbis timestamp handling.
-fe5c5bc oggvorbisdec: Apply timestamp calculation always when timestamps arent known.
-1f95ad4 oggvorbisdec: redesign special handling of first frames timestamp.
-63eb01d oggvorbis: Try to fix pts off by 1 issue.
-231d32c oggtheora: Fix initial pts
-ef32fba oggdec: fix off by one error on pos_limit
-96fb233 oggdec: reset lastpts so that justins vorbis duration correction is not skiped
-5f9f78d oggdec: pass avformat context to ogg_reset()
-8b97ae6 avf: fix faulty check in has_duration
+e0eaf10 oggdec: fix regression that caused reading the whole file during open
 
 Current patches:
 
@@ -39,14 +21,7 @@ ugly/
   want to register protocols.  Chrome requires this to work.  See patch for
   more details.
 
-to_upstream/
 02_compile_with_disabled_features.patch
   dalecurtis: Add CONFIG_* checks to compile out code which we don't use which
-  might be a security risk.  Discuss with cevans before removing.
-
-03_ogg_seek_to_zero.patch
-  dalecurtis: Seeking to zero works now, but frame timestamps don't line up.  A
-  reproducible test case has been sent upstream.  Hopefully remove with M21.
-
-04_oggdec_duration.patch
-  dalecurtis: Upstream tracking bug: https://ffmpeg.org/trac/ffmpeg/ticket/1186
+  might be a security risk.  Discuss with cevans before removing.  Upstream does
+  not want this patch.

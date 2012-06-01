@@ -249,8 +249,6 @@ add_flag_common --disable-network
 add_flag_common --disable-bzlib
 add_flag_common --disable-zlib
 add_flag_common --disable-swscale
-add_flag_common --disable-amd3dnow
-add_flag_common --disable-amd3dnowext
 add_flag_common --enable-shared
 
 # --optflags doesn't append multiple entries, so set all at once.
@@ -262,9 +260,9 @@ fi
 
 # Common codecs.
 add_flag_common --enable-decoder=theora,vorbis,vp8
-add_flag_common --enable-decoder=pcm_u8,pcm_s16le,pcm_f32le
+add_flag_common --enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_f32le
 add_flag_common --enable-demuxer=ogg,matroska,wav
-add_flag_common --enable-parser=vp8
+add_flag_common --enable-parser=vp3,vorbis,vp8
 
 # Linux only.
 if [ "$TARGET_OS" = "linux" ]; then
@@ -391,20 +389,21 @@ fi
 # Google Chrome & ChromeOS specific configuration.
 add_flag_chrome --enable-decoder=aac,h264,mp3
 add_flag_chrome --enable-demuxer=mp3,mov
-add_flag_chrome --enable-parser=mpegaudio
-add_flag_chrome --enable-bsf=h264_mp4toannexb
+add_flag_chrome --enable-parser=aac,h264,mpegaudio
 
 # ChromiumOS specific configuration.
 # Warning: do *NOT* add avi, aac, h264, mp3, mp4, amr*
 # Flac support.
 add_flag_chromiumos --enable-demuxer=flac
 add_flag_chromiumos --enable-decoder=flac
+add_flag_chromiumos --enable-parser=flac
 
 # Google ChromeOS specific configuration.
 # We want to make sure to play everything Android generates and plays.
 # http://developer.android.com/guide/appendix/media-formats.html
 # Enable playing avi files.
 add_flag_chromeos --enable-decoder=mpeg4
+add_flag_chromeos --enable-parser=h263,mpeg4video
 add_flag_chromeos --enable-demuxer=avi
 add_flag_chromeos --enable-bsf=mpeg4video_es
 # Enable playing Android 3gp files.
@@ -413,6 +412,7 @@ add_flag_chromeos --enable-decoder=amrnb,amrwb
 # Flac support.
 add_flag_chromeos --enable-demuxer=flac
 add_flag_chromeos --enable-decoder=flac
+add_flag_chromeos --enable-parser=flac
 # Wav files for playing phone messages.
 # Maybe later: gsm_ms,adpcm_ima_wav
 add_flag_chromeos --enable-decoder=pcm_mulaw

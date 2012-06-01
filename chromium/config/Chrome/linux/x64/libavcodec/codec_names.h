@@ -340,6 +340,8 @@ case CODEC_ID_AVRP:
     return "avrp";
 case CODEC_ID_G2M:
     return "g2m";
+case CODEC_ID_AVUI:
+    return "avui";
 case CODEC_ID_AYUV:
     return "ayuv";
 case CODEC_ID_V308:
@@ -375,7 +377,8 @@ case CODEC_ID_PCM_U32LE:
 case CODEC_ID_PCM_U32BE:
     return "pcm_u32be";
 case CODEC_ID_PCM_S24LE:
-    return "pcm_s24le";
+    { extern AVCodec ff_pcm_s24le_decoder;
+      return ff_pcm_s24le_decoder.name; }
 case CODEC_ID_PCM_S24BE:
     return "pcm_s24be";
 case CODEC_ID_PCM_U24LE:
@@ -634,6 +637,8 @@ case CODEC_ID_MICRODVD:
     return "microdvd";
 case CODEC_ID_EIA_608:
     return "eia_608";
+case CODEC_ID_JACOSUB:
+    return "jacosub";
 case CODEC_ID_TTF:
     return "ttf";
 case CODEC_ID_BINTEXT:

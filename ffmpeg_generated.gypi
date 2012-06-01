@@ -8,6 +8,7 @@
   'conditions': [
     ['((target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS")', {
       'sources': [
+        'libavcodec/arm/aacpsdsp_neon.S',
         'libavcodec/arm/h264cmc_neon.S',
         'libavcodec/arm/h264dsp_neon.S',
         'libavcodec/arm/h264idct_neon.S',
@@ -57,6 +58,7 @@
     }],  # (1) and (ffmpeg_branding == "ChromeOS")
     ['(target_arch == "arm" or (target_arch == "arm" and arm_neon == 1)) and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS")', {
       'sources': [
+        'libavcodec/arm/aacpsdsp_init_arm.c',
         'libavcodec/arm/h264dsp_init_arm.c',
         'libavcodec/arm/mpegaudiodsp_fixed_armv6.S',
         'libavcodec/arm/mpegaudiodsp_init_arm.c',
@@ -78,6 +80,7 @@
         'libavcodec/arm/rdft_neon.S',
         'libavcodec/arm/simple_idct_neon.S',
         'libavcodec/arm/vp3dsp_neon.S',
+        'libavcodec/arm/vp8dsp_init_neon.c',
         'libavcodec/arm/vp8dsp_neon.S',
       ],
     }],  # ((target_arch == "arm" and arm_neon == 1)) and (1)
@@ -88,6 +91,8 @@
         'libavcodec/x86/dsputil_yasm.asm',
         'libavcodec/x86/fdct_mmx.c',
         'libavcodec/x86/fft.c',
+        'libavcodec/x86/fft_3dn.c',
+        'libavcodec/x86/fft_3dn2.c',
         'libavcodec/x86/fft_mmx.asm',
         'libavcodec/x86/fft_sse.c',
         'libavcodec/x86/fmtconvert.asm',
@@ -109,9 +114,12 @@
     }],  # (target_arch == "ia32" or target_arch == "x64") and (1)
     ['(1) and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS")', {
       'sources': [
+        'libavcodec/aac_ac3_parser.c',
+        'libavcodec/aac_parser.c',
         'libavcodec/aacadtsdec.c',
         'libavcodec/aacdec.c',
         'libavcodec/aacps.c',
+        'libavcodec/aacpsdsp.c',
         'libavcodec/aacsbr.c',
         'libavcodec/aactab.c',
         'libavcodec/ac3tab.c',
@@ -125,7 +133,7 @@
         'libavcodec/h264_cavlc.c',
         'libavcodec/h264_direct.c',
         'libavcodec/h264_loopfilter.c',
-        'libavcodec/h264_mp4toannexb_bsf.c',
+        'libavcodec/h264_parser.c',
         'libavcodec/h264_ps.c',
         'libavcodec/h264_refs.c',
         'libavcodec/h264_sei.c',
@@ -179,6 +187,7 @@
         'libavcodec/arm/vp8_armv6.S',
         'libavcodec/arm/vp8dsp_armv6.S',
         'libavcodec/arm/vp8dsp_init_arm.c',
+        'libavcodec/arm/vp8dsp_init_armv6.c',
         'libavutil/arm/cpu.c',
       ],
     }],  # (target_arch == "arm" or (target_arch == "arm" and arm_neon == 1)) and (1)
@@ -222,6 +231,7 @@
         'libavcodec/vorbis_parser.c',
         'libavcodec/vorbisdec.c',
         'libavcodec/vp3.c',
+        'libavcodec/vp3_parser.c',
         'libavcodec/vp3dsp.c',
         'libavcodec/vp56rac.c',
         'libavcodec/vp8.c',
