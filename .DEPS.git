@@ -103,7 +103,7 @@ hooks = [
     '--arm-trusted-version',
     '7004',
     '--pnacl-version',
-    '8741',
+    '8751',
     '--keep'
 ],
     'pattern':
