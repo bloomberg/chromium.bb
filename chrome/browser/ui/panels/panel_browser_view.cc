@@ -257,11 +257,17 @@ void PanelBrowserView::OnWindowBeginUserBoundsChange() {
 }
 
 void PanelBrowserView::OnWindowEndUserBoundsChange() {
-  bounds_ = GetBounds();
+  panel_->OnPanelEndUserResizing();
+
+  // No need to proceed with post-resizing update when there is no size change.
+  gfx::Rect new_bounds = GetBounds();
+  if (bounds_ == new_bounds)
+    return;
+  bounds_ = new_bounds;
+
   panel_->IncreaseMaxSize(bounds_.size());
   panel_->set_full_size(bounds_.size());
 
-  panel_->OnPanelEndUserResizing();
   panel_->panel_strip()->RefreshLayout();
 }
 

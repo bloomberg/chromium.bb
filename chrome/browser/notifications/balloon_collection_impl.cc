@@ -45,11 +45,9 @@ BalloonCollectionImpl::BalloonCollectionImpl()
       added_as_message_loop_observer_(false)
 #endif
 {
-  registrar_.Add(this, chrome::NOTIFICATION_PANEL_ADDED,
+  registrar_.Add(this, chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PANEL_CLOSED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PANEL_CHANGED_BOUNDS,
+  registrar_.Add(this, chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
                  content::NotificationService::AllSources());
 
   SetPositionPreference(BalloonCollection::DEFAULT_POSITION);
@@ -184,13 +182,10 @@ void BalloonCollectionImpl::Observe(
     const content::NotificationDetails& details) {
   gfx::Rect bounds;
   switch (type) {
-    case chrome::NOTIFICATION_PANEL_CHANGED_BOUNDS:
-      bounds = content::Source<Panel>(source).ptr()->GetBounds();
-      // Fall through.
-    case chrome::NOTIFICATION_PANEL_ADDED:
-    case chrome::NOTIFICATION_PANEL_CLOSED:
+    case chrome::NOTIFICATION_PANEL_STRIP_UPDATED:
+    case chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE:
       layout_.enable_computing_panel_offset();
-      if (layout_.ComputeOffsetToMoveAbovePanels(bounds))
+      if (layout_.ComputeOffsetToMoveAbovePanels())
         PositionBalloons(true);
       break;
     default:
@@ -409,8 +404,7 @@ gfx::Size BalloonCollectionImpl::Layout::ConstrainToSizeLimits(
                std::min(max_balloon_height(), size.height())));
 }
 
-bool BalloonCollectionImpl::Layout::ComputeOffsetToMoveAbovePanels(
-    const gfx::Rect& panel_bounds) {
+bool BalloonCollectionImpl::Layout::ComputeOffsetToMoveAbovePanels() {
   // If the offset is not enabled due to that we have not received a
   // notification about panel, don't proceed because we don't want to call
   // PanelManager::GetInstance() to create an instance when panel is not
@@ -425,14 +419,6 @@ bool BalloonCollectionImpl::Layout::ComputeOffsetToMoveAbovePanels(
   // The offset is the maximum height of panels that could overlap with the
   // balloons.
   if (NeedToMoveAboveLeftSidePanels()) {
-    // If the affecting panel does not lie in the balloon area, no need to
-    // update the offset.
-    if (!panel_bounds.IsEmpty() &&
-        (panel_bounds.right() <= work_area_.x() ||
-         panel_bounds.x() >= work_area_.x() + max_balloon_width())) {
-      return false;
-    }
-
     for (DockedPanelStrip::Panels::const_reverse_iterator iter =
              panels.rbegin();
          iter != panels.rend(); ++iter) {
@@ -445,14 +431,6 @@ bool BalloonCollectionImpl::Layout::ComputeOffsetToMoveAbovePanels(
         offset_to_move_above_panels = current_height;
     }
   } else if (NeedToMoveAboveRightSidePanels()) {
-    // If the affecting panel does not lie in the balloon area, no need to
-    // update the offset.
-    if (!panel_bounds.IsEmpty() &&
-        (panel_bounds.right() <= work_area_.right() - max_balloon_width() ||
-         panel_bounds.x() >= work_area_.right())) {
-      return false;
-    }
-
     for (DockedPanelStrip::Panels::const_iterator iter = panels.begin();
          iter != panels.end(); ++iter) {
       // No need to check panels beyond the area occupied by the balloons.

@@ -811,6 +811,11 @@ void DockedPanelStrip::RefreshLayout() {
       }
     }
   }
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
+      content::Source<PanelStrip>(this),
+      content::NotificationService::NoDetails());
 }
 
 int DockedPanelStrip::WidthToDisplayPanelInStrip(bool is_for_active_panel,

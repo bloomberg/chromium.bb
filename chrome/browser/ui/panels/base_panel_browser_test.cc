@@ -243,26 +243,6 @@ void BasePanelBrowserTest::SetUpOnMainThread() {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 }
 
-void BasePanelBrowserTest::WaitForPanelAdded(Panel* panel) {
-  if (ExistsPanel(panel))
-    return;
-  ui_test_utils::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_PANEL_ADDED,
-      content::Source<Panel>(panel));
-  signal.Wait();
-  EXPECT_TRUE(ExistsPanel(panel));
-}
-
-void BasePanelBrowserTest::WaitForPanelRemoved(Panel* panel) {
-  if (!ExistsPanel(panel))
-    return;
-  ui_test_utils::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_PANEL_CLOSED,
-      content::Source<Panel>(panel));
-  signal.Wait();
-  EXPECT_FALSE(ExistsPanel(panel));
-}
-
 void BasePanelBrowserTest::WaitForPanelActiveState(
     Panel* panel, ActiveState expected_state) {
   DCHECK(expected_state == SHOW_AS_ACTIVE ||

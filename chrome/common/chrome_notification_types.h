@@ -1069,19 +1069,13 @@ enum NotificationType {
   // Used only in unit testing.
   NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
 
-  // Sent when panel's bounds get changed.
-  // The source is the Panel, no details.
+  // Sent when panel strip get updated.
+  // The source is the PanelStrip, no details.
   // Used only in coordination with notification balloons.
-  NOTIFICATION_PANEL_CHANGED_BOUNDS,
-
-  // Sent when panel is added into the panel manager.
-  // The source is the Panel, no details.
-  // Used only in coordination with notification balloons.
-  NOTIFICATION_PANEL_ADDED,
+  NOTIFICATION_PANEL_STRIP_UPDATED,
 
   // Sent when panel is closed.
   // The source is the Panel, no details.
-  // Used only in coordination with notification balloons.
   NOTIFICATION_PANEL_CLOSED,
 
   // Sent when a global error has changed and the error UI should update it

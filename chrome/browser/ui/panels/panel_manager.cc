@@ -189,11 +189,6 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   docked_strip_->AddPanel(panel, PanelStrip::DELAY_LAYOUT_REFRESH);
   docked_strip_->UpdatePanelOnStripChange(panel);
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_ADDED,
-      content::Source<Panel>(panel),
-      content::NotificationService::NoDetails());
-
   return panel;
 }
 

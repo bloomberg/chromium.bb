@@ -82,8 +82,6 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   Panel* CreateDockedPanel(const std::string& name, const gfx::Rect& bounds);
   Panel* CreateDetachedPanel(const std::string& name, const gfx::Rect& bounds);
 
-  void WaitForPanelAdded(Panel* panel);
-  void WaitForPanelRemoved(Panel* panel);
   void WaitForPanelActiveState(Panel* panel, ActiveState state);
   void WaitForWindowSizeAvailable(Panel* panel);
   void WaitForBoundsAnimationFinished(Panel* panel);

@@ -146,7 +146,7 @@ class BalloonCollectionImpl : public BalloonCollection,
 
     // Returns true if there is change to the offset that requires the balloons
     // to be repositioned.
-    bool ComputeOffsetToMoveAbovePanels(const gfx::Rect& panel_bounds);
+    bool ComputeOffsetToMoveAbovePanels();
 
     void enable_computing_panel_offset() {
       need_to_compute_panel_offset_ = true;

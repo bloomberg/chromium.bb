@@ -69,7 +69,7 @@ void BalloonCollectionImpl::SetPositionPreference(
   else
     NOTREACHED();
 
-  layout_.ComputeOffsetToMoveAbovePanels(gfx::Rect());
+  layout_.ComputeOffsetToMoveAbovePanels();
   PositionBalloons(true);
 }
 

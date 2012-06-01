@@ -484,6 +484,7 @@
         'browser/ui/omnibox/omnibox_view_browsertest.cc',
         'browser/ui/panels/detached_panel_browsertest.cc',
         'browser/ui/panels/docked_panel_browsertest.cc',
+        'browser/ui/panels/panel_and_desktop_notification_browsertest.cc',
         'browser/ui/panels/panel_browsertest.cc',
         'browser/ui/panels/panel_drag_browsertest.cc',
         'browser/ui/panels/panel_resize_browsertest.cc',
@@ -577,6 +578,7 @@
           'sources!': [
             'browser/ui/panels/detached_panel_browsertest.cc',
             'browser/ui/panels/docked_panel_browsertest.cc',
+            'browser/ui/panels/panel_and_desktop_notification_browsertest.cc',
             'browser/ui/panels/panel_browsertest.cc',
             'browser/ui/panels/panel_drag_browsertest.cc',
             'browser/ui/panels/panel_resize_browsertest.cc',

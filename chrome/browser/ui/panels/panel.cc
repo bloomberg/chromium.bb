@@ -90,20 +90,10 @@ panel::Resizability Panel::CanResizeByMouse() const {
 
 void Panel::SetPanelBounds(const gfx::Rect& bounds) {
   native_panel_->SetPanelBounds(bounds);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_CHANGED_BOUNDS,
-      content::Source<Panel>(this),
-      content::NotificationService::NoDetails());
 }
 
 void Panel::SetPanelBoundsInstantly(const gfx::Rect& bounds) {
   native_panel_->SetPanelBoundsInstantly(bounds);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_CHANGED_BOUNDS,
-      content::Source<Panel>(this),
-      content::NotificationService::NoDetails());
 }
 
 void Panel::LimitSizeToDisplayArea(const gfx::Rect& display_area) {
