@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_CONTENT_JNI_REGISTRAR_H_
-#define CONTENT_BROWSER_ANDROID_CONTENT_JNI_REGISTRAR_H_
+#ifndef CONTENT_APP_ANDROID_CONTENT_JNI_REGISTRAR_H_
+#define CONTENT_APP_ANDROID_CONTENT_JNI_REGISTRAR_H_
 
 #include <jni.h>
 
@@ -16,4 +16,4 @@ bool RegisterJni(JNIEnv* env);
 }  // namespace android
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_CONTENT_JNI_REGISTRAR_H_
+#endif  // CONTENT_APP_ANDROID_CONTENT_JNI_REGISTRAR_H_

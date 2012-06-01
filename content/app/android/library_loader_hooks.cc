@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/android_library_loader_hooks.h"
+#include "content/public/app/android_library_loader_hooks.h"
 
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_registrar.h"
@@ -17,9 +17,9 @@
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/tracked_objects.h"
-#include "content/public/common/content_switches.h"
+#include "content/app/android/content_jni_registrar.h"
 #include "content/browser/android/command_line.h"
-#include "content/browser/android/content_jni_registrar.h"
+#include "content/public/common/content_switches.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 
