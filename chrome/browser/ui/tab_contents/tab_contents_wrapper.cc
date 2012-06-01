@@ -168,6 +168,16 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
 TabContentsWrapper::~TabContentsWrapper() {
   in_destructor_ = true;
 
+  // Need to reset |thumbnail_generator_| here before |web_contents_| is
+  // deleted because destructing |web_contents_| can end up causing the
+  // thumbnailer to generate a thumbnail. Since TabContentsWrapper can be
+  // destructed during shutdown, trying to generate a thumbnail by sending an
+  // IPC message to the GPU process is not safe. Sending
+  // chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED can also cause the thumbnailer
+  // to generate a thumbnail, so this must be placed before sending the
+  // notification.
+  thumbnail_generator_.reset();
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
       content::Source<TabContentsWrapper>(this),
