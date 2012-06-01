@@ -94,6 +94,9 @@ class WebRTCCallTest(pyauto.PyUITest):
     self._HangUp(from_tab_with_index=0)
     self._VerifyHungUp(tab_index=1)
 
+    self._Disconnect(tab_index=0)
+    self._Disconnect(tab_index=1)
+
     # Ensure we didn't miss any errors.
     self._AssertNoFailuresReceivedInTwoTabs()
 
@@ -105,7 +108,7 @@ class WebRTCCallTest(pyauto.PyUITest):
 
   def testHandlesNewGetUserMediaRequestSeparately(self):
     """Ensures WebRTC doesn't allow new requests to piggy-back on old ones."""
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_roap_test.html')
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
     self.NavigateToURL(url)
     self.AppendTab(pyauto.GURL(url))
 
@@ -158,6 +161,10 @@ class WebRTCCallTest(pyauto.PyUITest):
   def _VerifyHungUp(self, tab_index):
     self.assertEquals('no', self.ExecuteJavascript(
         'is_call_active()', tab_index=tab_index))
+
+  def _Disconnect(self, tab_index):
+    self.assertEquals('ok-disconnected', self.ExecuteJavascript(
+        'disconnect()', tab_index=tab_index))
 
   def _AssertNoFailuresReceivedInTwoTabs(self):
     # Make sure both tabs' errors get reported if there is a problem.

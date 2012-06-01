@@ -65,7 +65,7 @@ class MediaStreamInfobarTest(pyauto.PyUITest):
 
   def _TestGetUserMedia(self, with_action):
     """Runs getUserMedia in the test page and returns the result."""
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_test.html')
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
     self.NavigateToURL(url)
 
     self.assertEquals('ok-requested', self.ExecuteJavascript(

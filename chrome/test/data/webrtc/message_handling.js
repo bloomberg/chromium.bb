@@ -114,6 +114,22 @@ function hangUp() {
   returnToPyAuto('ok-call-hung-up');
 }
 
+/**
+ * Disconnects from the peerconnection server. Returns ok-disconnected on
+ * success.
+ */
+function disconnect() {
+  if (gOurPeerId == null)
+    failTest('Disconnecting, but we are not connected.');
+
+  request = new XMLHttpRequest();
+  request.open("GET", gServerUrl + "/sign_out?peer_id=" + gOurPeerId, false);
+  request.send();
+  request = null;
+  gOurPeerId = null;
+  returnToPyAuto('ok-disconnected');
+}
+
 // Internals.
 
 function connectCallback(request) {
@@ -270,15 +286,3 @@ function readResponseHeader(request, key) {
   }
   return parseInt(value);
 }
-
-function disconnect() {
-  if (gOurPeerId != null) {
-    request = new XMLHttpRequest();
-    request.open("GET", gServerUrl + "/sign_out?peer_id=" + gOurPeerId, false);
-    request.send();
-    request = null;
-    gOurPeerId = null;
-  }
-}
-
-window.onbeforeunload = disconnect;
