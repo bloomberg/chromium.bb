@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/scoped_sk_region.h"
-#include "ui/views/controls/native/native_view_host.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget_delegate.h"
 
 class Profile;
@@ -18,9 +18,13 @@ namespace extensions {
 class Extension;
 }
 
+namespace views {
+class WebView;
+};
+
 class ShellWindowViews : public ShellWindow,
-                         public views::NativeViewHost,
-                         public views::WidgetDelegate {
+                         public views::WidgetDelegateView,
+                         public views::ButtonListener {
  public:
   ShellWindowViews(Profile* profile,
                    const extensions::Extension* extension,
@@ -58,17 +62,14 @@ class ShellWindowViews : public ShellWindow,
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
 
-  // Overridden from views::NativeViewHost:
-  virtual gfx::NativeCursor GetCursor(const views::MouseEvent& event) OVERRIDE;
-  virtual void SetVisible(bool is_visible) OVERRIDE;
-  virtual void ViewHierarchyChanged(
-      bool is_add, views::View *parent, views::View *child) OVERRIDE;
+  // views::ButtonListener
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  protected:
   // Overridden from views::View.
-  virtual void PreferredSizeChanged() OVERRIDE;
-  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      bool is_add, views::View *parent, views::View *child) OVERRIDE;
 
  private:
   friend class ShellWindowFrameView;
@@ -77,7 +78,8 @@ class ShellWindowViews : public ShellWindow,
 
   void OnViewWasResized();
 
-  bool initialized_;
+  views::View* title_view_;
+  views::WebView* web_view_;
   views::Widget* window_;
 
   gfx::ScopedSkRegion caption_region_;
