@@ -135,6 +135,7 @@
       <include name="IDR_PDF_PROGRESS_BAR_BACKGROUND" file="resources\pdf_progress_background.png" type="BINDATA" />
       <include name="IDR_PDF_PAGE_INDICATOR_BACKGROUND" file="resources\pdf_page_indicator_background.png" type="BINDATA" />
       <include name="IDR_PDF_PAGE_DROPSHADOW" file="resources\pdf_dropshadow.png" type="BINDATA" />
+      <include name="IDR_PASSWORD_GENERATION_ICON" file="resources\password_generation.png" type="BINDATA" />
     </includes>
   </release>
 </grit>

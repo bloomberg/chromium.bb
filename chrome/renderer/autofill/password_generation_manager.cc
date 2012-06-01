@@ -6,11 +6,14 @@
 
 #include "base/logging.h"
 #include "chrome/common/autofill_messages.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "ui/gfx/rect.h"
@@ -20,7 +23,9 @@ namespace autofill {
 PasswordGenerationManager::PasswordGenerationManager(
     content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
-      enabled_(false) {}
+      enabled_(false) {
+  render_view->GetWebView()->addTextFieldDecoratorClient(this);
+}
 PasswordGenerationManager::~PasswordGenerationManager() {}
 
 void PasswordGenerationManager::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
@@ -29,14 +34,14 @@ void PasswordGenerationManager::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
   if (!enabled_)
     return;
 
-  if (!ShouldAnalyzeFrame(*frame))
+  if (!ShouldAnalyzeDocument(frame->document()))
     return;
 
   WebKit::WebVector<WebKit::WebFormElement> forms;
   frame->document().forms(forms);
   for (size_t i = 0; i < forms.size(); ++i) {
     const WebKit::WebFormElement& web_form = forms[i];
-    if (!web_form.autoComplete())
+    if (web_form.isNull() || !web_form.autoComplete())
       continue;
 
     // Grab all of the passwords for each form.
@@ -50,21 +55,26 @@ void PasswordGenerationManager::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
       if (input_element && input_element->isPasswordField())
         passwords.push_back(*input_element);
     }
+
     // For now, just assume that if there are two password fields in the
-    // form that this is meant for account creation.
+    // form that this is meant for account creation. Also, we assume that there
+    // is only one account creation field per URL.
     // TODO(gcasto): Determine better heauristics for this.
     if (passwords.size() == 2) {
-      account_creation_elements_ = make_pair(passwords[0], passwords);
-      break;
+      passwords_ = passwords;
+      // Make the decoration visible for this element.
+      passwords[0].decorationElementFor(this).setAttribute("style",
+                                                           "display:block");
+      return;
     }
   }
 }
 
-bool PasswordGenerationManager::ShouldAnalyzeFrame(
-    const WebKit::WebFrame& frame) const {
+bool PasswordGenerationManager::ShouldAnalyzeDocument(
+    const WebKit::WebDocument& document) const {
   // Make sure that this security origin is allowed to use password manager.
   // Generating a password that can't be saved is a bad idea.
-  WebKit::WebSecurityOrigin origin = frame.document().securityOrigin();
+  WebKit::WebSecurityOrigin origin = document.securityOrigin();
   if (!origin.canAccessPasswordManager()) {
     DVLOG(1) << "No PasswordManager access";
     return false;
@@ -73,23 +83,42 @@ bool PasswordGenerationManager::ShouldAnalyzeFrame(
   return true;
 }
 
-void PasswordGenerationManager::FocusedNodeChanged(
-    const WebKit::WebNode& node) {
-  WebKit::WebInputElement input_element =
-      node.toConst<WebKit::WebInputElement>();
-  if (!input_element.isNull() &&
-      account_creation_elements_.first == input_element) {
-    gfx::Rect rect(input_element.boundsInViewportSpace());
-    webkit::forms::PasswordForm* password_form(
-        webkit::forms::PasswordFormDomManager::CreatePasswordForm(
-            input_element.form()));
+bool PasswordGenerationManager::shouldAddDecorationTo(
+    const WebKit::WebInputElement& element) {
+  return element.isPasswordField();
+}
 
-    if (password_form) {
-      Send(new AutofillHostMsg_ShowPasswordGenerationPopup(routing_id(),
-                                                           rect,
-                                                           *password_form));
-    }
+bool PasswordGenerationManager::visibleByDefault() {
+  return false;
+}
+
+WebKit::WebCString PasswordGenerationManager::imageNameForNormalState() {
+  return WebKit::WebCString("generatePassword");
+}
+
+WebKit::WebCString PasswordGenerationManager::imageNameForDisabledState() {
+  return imageNameForNormalState();
+}
+
+WebKit::WebCString PasswordGenerationManager::imageNameForReadOnlyState() {
+  return imageNameForNormalState();
+}
+
+void PasswordGenerationManager::handleClick(WebKit::WebInputElement& element) {
+  gfx::Rect rect(element.decorationElementFor(this).boundsInViewportSpace());
+  webkit::forms::PasswordForm* password_form(
+      webkit::forms::PasswordFormDomManager::CreatePasswordForm(
+          element.form()));
+  if (password_form) {
+    Send(new AutofillHostMsg_ShowPasswordGenerationPopup(routing_id(),
+                                                         rect,
+                                                         *password_form));
   }
+}
+
+void PasswordGenerationManager::willDetach(
+    const WebKit::WebInputElement& element) {
+  // No implementation
 }
 
 bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
@@ -105,9 +134,8 @@ bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PasswordGenerationManager::OnPasswordAccepted(const string16& password) {
-  for (std::vector<WebKit::WebInputElement>::iterator it =
-           account_creation_elements_.second.begin();
-       it != account_creation_elements_.second.end(); ++it) {
+  for (std::vector<WebKit::WebInputElement>::iterator it = passwords_.begin();
+       it != passwords_.end(); ++it) {
     it->setValue(password);
     it->setAutofilled(true);
   }

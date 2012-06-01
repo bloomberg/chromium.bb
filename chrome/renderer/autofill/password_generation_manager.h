@@ -12,23 +12,28 @@
 
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextFieldDecoratorClient.h"
+
+namespace WebKit {
+class WebCString;
+class WebDocument;
+}
 
 namespace autofill {
 
 // This class is responsible for controlling communication for password
 // generation between the browser (which shows the popup and generates
-// passwords) and WebKit (determines which fields are for account signup and
-// fills in the generated passwords). Currently the WebKit part is not
-// implemented.
-class PasswordGenerationManager : public content::RenderViewObserver {
+// passwords) and WebKit (shows the generation icon in the password field).
+class PasswordGenerationManager : public content::RenderViewObserver,
+                                  public WebKit::WebTextFieldDecoratorClient {
  public:
   explicit PasswordGenerationManager(content::RenderView* render_view);
   virtual ~PasswordGenerationManager();
 
  protected:
-  // Returns true if this frame is one that we should consider analyzing.
+  // Returns true if this document is one that we should consider analyzing.
   // Virtual so that it can be overriden during testing.
-  virtual bool ShouldAnalyzeFrame(const WebKit::WebFrame& frame) const;
+  virtual bool ShouldAnalyzeDocument(const WebKit::WebDocument& document) const;
 
   // RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -36,7 +41,16 @@ class PasswordGenerationManager : public content::RenderViewObserver {
  private:
   // RenderViewObserver:
   virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
+
+  // WebTextFieldDecoratorClient:
+  virtual bool shouldAddDecorationTo(
+      const WebKit::WebInputElement& element) OVERRIDE;
+  virtual bool visibleByDefault() OVERRIDE;
+  virtual WebKit::WebCString imageNameForNormalState() OVERRIDE;
+  virtual WebKit::WebCString imageNameForDisabledState() OVERRIDE;
+  virtual WebKit::WebCString imageNameForReadOnlyState() OVERRIDE;
+  virtual void handleClick(WebKit::WebInputElement& element) OVERRIDE;
+  virtual void willDetach(const WebKit::WebInputElement&) OVERRIDE;
 
   // Message handlers.
   void OnPasswordAccepted(const string16& password);
@@ -46,8 +60,7 @@ class PasswordGenerationManager : public content::RenderViewObserver {
   // with this renderer.
   bool enabled_;
 
-  std::pair<WebKit::WebInputElement,
-            std::vector<WebKit::WebInputElement> > account_creation_elements_;
+  std::vector<WebKit::WebInputElement> passwords_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationManager);
 };
