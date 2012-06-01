@@ -17,6 +17,11 @@
 
 using ui::WebDialogDelegate;
 
+namespace {
+// Store the pointer to the view currently shown.
+KeyboardOverlayDialogView* g_instance = NULL;
+}
+
 KeyboardOverlayDialogView::KeyboardOverlayDialogView(
     Profile* profile,
     WebDialogDelegate* delegate)
@@ -27,6 +32,9 @@ KeyboardOverlayDialogView::~KeyboardOverlayDialogView() {
 }
 
 void KeyboardOverlayDialogView::ShowDialog() {
+  // Ignore the call if another view is already shown.
+  if (g_instance)
+    return;
 
   KeyboardOverlayDelegate* delegate = new KeyboardOverlayDelegate(
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE));
@@ -51,4 +59,10 @@ void KeyboardOverlayDialogView::ShowDialog() {
                    size.height());
   view->GetWidget()->SetBounds(bounds);
   view->GetWidget()->Show();
+
+  g_instance = view;
+}
+
+void KeyboardOverlayDialogView::WindowClosing() {
+  g_instance = NULL;
 }

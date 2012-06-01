@@ -24,6 +24,10 @@ class KeyboardOverlayDialogView : public WebDialogView {
   // Shows the keyboard overlay.
   static void ShowDialog();
 
+ private:
+  // Overridden from views::WidgetDelegate:
+  virtual void WindowClosing() OVERRIDE;
+
   DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayDialogView);
 };
 
