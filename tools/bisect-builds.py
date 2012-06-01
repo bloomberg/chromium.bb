@@ -341,11 +341,50 @@ def AskIsGoodBuild(rev, official_builds, status, stdout, stderr):
   """Ask the user whether build |rev| is good or bad."""
   # Loop until we get a response that we can parse.
   while True:
-    response = raw_input('Revision %s is [(g)ood/(b)ad/(q)uit]: ' % str(rev))
-    if response and response in ('g', 'b'):
-      return response == 'g'
+    response = raw_input('Revision %s is [(g)ood/(b)ad/(u)nknown/(q)uit]: ' %
+                         str(rev))
+    if response and response in ('g', 'b', 'u'):
+      return response
     if response and response == 'q':
       raise SystemExit()
+
+
+class DownloadJob(object):
+  """DownloadJob represents a task to download a given Chromium revision."""
+  def __init__(self, context, name, rev, zipfile):
+    super(DownloadJob, self).__init__()
+    # Store off the input parameters.
+    self.context = context
+    self.name = name
+    self.rev = rev
+    self.zipfile = zipfile
+    self.quit_event = threading.Event()
+    self.progress_event = threading.Event()
+
+  def Start(self):
+    """Starts the download."""
+    fetchargs = (self.context,
+                 self.rev,
+                 self.zipfile,
+                 self.quit_event,
+                 self.progress_event)
+    self.thread = threading.Thread(target=FetchRevision,
+                                   name=self.name,
+                                   args=fetchargs)
+    self.thread.start()
+
+  def Stop(self):
+    """Stops the download which must have been started previously."""
+    self.quit_event.set()
+    self.thread.join()
+    os.unlink(self.zipfile)
+
+  def WaitFor(self):
+    """Prints a message and waits for the download to complete. The download
+    must have been started previously."""
+    print "Downloading revision %s..." % str(self.rev)
+    self.progress_event.set()  # Display progress of download.
+    self.thread.join()
 
 
 def Bisect(platform,
@@ -355,7 +394,7 @@ def Bisect(platform,
            num_runs=1,
            try_args=(),
            profile=None,
-           predicate=AskIsGoodBuild):
+           evaluate=AskIsGoodBuild):
   """Given known good and known bad revisions, run a binary search on all
   archived revisions to determine the last known good revision.
 
@@ -366,8 +405,8 @@ def Bisect(platform,
   @param num_runs Number of times to run each build for asking good/bad.
   @param try_args A tuple of arguments to pass to the test application.
   @param profile The name of the user profile to run with.
-  @param predicate A predicate function which returns True iff the argument
-                   chromium revision is good.
+  @param evaluate A function which returns 'g' if the argument build is good,
+                  'b' if it's bad or 'u' if unknown.
 
   Threading is used to fetch Chromium revisions in the background, speeding up
   the user's experience. For example, suppose the bounds of the search are
@@ -411,11 +450,9 @@ def Bisect(platform,
   pivot = bad / 2
   rev = revlist[pivot]
   zipfile = _GetDownloadPath(rev)
-  progress_event = threading.Event()
-  progress_event.set()
-  print "Downloading revision %s..." % str(rev)
-  FetchRevision(context, rev, zipfile,
-                quit_event=None, progress_event=progress_event)
+  initial_fetch = DownloadJob(context, 'initial_fetch', rev, zipfile)
+  initial_fetch.Start()
+  initial_fetch.WaitFor()
 
   # Binary search time!
   while zipfile and bad - good > 1:
@@ -425,38 +462,20 @@ def Bisect(platform,
     #   - up_pivot is the next revision to check if the current revision turns
     #     out to be good.
     down_pivot = int((pivot - good) / 2) + good
-    down_thread = None
+    down_fetch = None
     if down_pivot != pivot and down_pivot != good:
       down_rev = revlist[down_pivot]
-      down_zipfile = _GetDownloadPath(down_rev)
-      down_quit_event = threading.Event()
-      down_progress_event = threading.Event()
-      fetchargs = (context,
-                   down_rev,
-                   down_zipfile,
-                   down_quit_event,
-                   down_progress_event)
-      down_thread = threading.Thread(target=FetchRevision,
-                                     name='down_fetch',
-                                     args=fetchargs)
-      down_thread.start()
+      down_fetch = DownloadJob(context, 'down_fetch', down_rev,
+                               _GetDownloadPath(down_rev))
+      down_fetch.Start()
 
     up_pivot = int((bad - pivot) / 2) + pivot
-    up_thread = None
+    up_fetch = None
     if up_pivot != pivot and up_pivot != bad:
       up_rev = revlist[up_pivot]
-      up_zipfile = _GetDownloadPath(up_rev)
-      up_quit_event = threading.Event()
-      up_progress_event = threading.Event()
-      fetchargs = (context,
-                   up_rev,
-                   up_zipfile,
-                   up_quit_event,
-                   up_progress_event)
-      up_thread = threading.Thread(target=FetchRevision,
-                                   name='up_fetch',
-                                   args=fetchargs)
-      up_thread.start()
+      up_fetch = DownloadJob(context, 'up_fetch', up_rev,
+                             _GetDownloadPath(up_rev))
+      up_fetch.Start()
 
     # Run test on the pivot revision.
     (status, stdout, stderr) = RunRevision(context,
@@ -468,34 +487,58 @@ def Bisect(platform,
     os.unlink(zipfile)
     zipfile = None
 
-    # Call the predicate function to see if the current revision is good or bad.
+    # Call the evaluate function to see if the current revision is good or bad.
     # On that basis, kill one of the background downloads and complete the
     # other, as described in the comments above.
     try:
-      if predicate(rev, official_builds, status, stdout, stderr):
+      answer = evaluate(rev, official_builds, status, stdout, stderr)
+      if answer == 'g':
         good = pivot
-        if down_thread:
-          down_quit_event.set()  # Kill the download of older revision.
-          down_thread.join()
-          os.unlink(down_zipfile)
-        if up_thread:
-          print "Downloading revision %s..." % str(up_rev)
-          up_progress_event.set()  # Display progress of download.
-          up_thread.join()  # Wait for newer revision to finish downloading.
+        if down_fetch:
+          down_fetch.Stop()  # Kill the download of the older revision.
+        if up_fetch:
+          up_fetch.WaitFor()
           pivot = up_pivot
-          zipfile = up_zipfile
-      else:
+          zipfile = up_fetch.zipfile
+      elif answer == 'b':
         bad = pivot
-        if up_thread:
-          up_quit_event.set()  # Kill download of newer revision.
-          up_thread.join()
-          os.unlink(up_zipfile)
-        if down_thread:
-          print "Downloading revision %s..." % str(down_rev)
-          down_progress_event.set()  # Display progress of download.
-          down_thread.join()  # Wait for older revision to finish downloading.
+        if up_fetch:
+          up_fetch.Stop()  # Kill the download of the newer revision.
+        if down_fetch:
+          down_fetch.WaitFor()
           pivot = down_pivot
-          zipfile = down_zipfile
+          zipfile = down_fetch.zipfile
+      elif answer == 'u':
+        # Nuke the revision from the revlist and choose a new pivot.
+        revlist.pop(pivot)
+        bad -= 1  # Assumes bad >= pivot.
+
+        fetch = None
+        if bad - good > 1:
+          # Alternate between using down_pivot or up_pivot for the new pivot
+          # point, without affecting the range. Do this instead of setting the
+          # pivot to the midpoint of the new range because adjacent revisions
+          # are likely affected by the same issue that caused the (u)nknown
+          # response.
+          if up_fetch and down_fetch:
+            fetch = [up_fetch, down_fetch][len(revlist) % 2]
+          elif up_fetch:
+            fetch = up_fetch
+          else:
+            fetch = down_fetch
+          fetch.WaitFor()
+          if fetch == up_fetch:
+            pivot = up_pivot - 1  # Subtracts 1 because revlist was resized.
+          else:
+            pivot = down_pivot
+          zipfile = fetch.zipfile
+
+        if down_fetch and fetch != down_fetch:
+          down_fetch.Stop()
+        if up_fetch and fetch != up_fetch:
+          up_fetch.Stop()
+      else:
+        assert False, "Unexpected return value from evaluate(): " + answer
     except SystemExit:
       print "Cleaning up..."
       for f in [_GetDownloadPath(revlist[down_pivot]),
