@@ -39,7 +39,7 @@ TEST(ValuesUtilTest, PopBasicTypes) {
   writer.AppendString(kStringValue);
   const std::string kEmptyStringValue;
   writer.AppendString(kEmptyStringValue);
-  const dbus::ObjectPath kObjectPathValue("ObjectPath");
+  const dbus::ObjectPath kObjectPathValue("/ObjectPath");
   writer.AppendObjectPath(kObjectPathValue);
 
   dbus::MessageReader reader(response.get());
