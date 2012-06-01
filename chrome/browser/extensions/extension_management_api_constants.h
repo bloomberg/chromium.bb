@@ -15,6 +15,7 @@ extern const char kHostPermissionsKey[];
 extern const char kIconsKey[];
 extern const char kIsAppKey[];
 extern const char kPermissionsKey[];
+extern const char kShowConfirmDialogKey[];
 extern const char kSizeKey[];
 extern const char kUpdateUrlKey[];
 extern const char kUrlKey[];
@@ -29,6 +30,7 @@ extern const char kGestureNeededForEscalationError[];
 extern const char kManifestParseError[];
 extern const char kNoExtensionError[];
 extern const char kNotAnAppError[];
+extern const char kUninstallCanceledError[];
 extern const char kUserCantDisableError[];
 extern const char kUserDidNotReEnableError[];
 

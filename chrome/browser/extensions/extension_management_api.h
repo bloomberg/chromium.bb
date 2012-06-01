@@ -9,10 +9,12 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class ExtensionService;
+class ExtensionUninstallDialog;
 
 class ExtensionManagementFunction : public SyncExtensionFunction {
  protected:
@@ -101,7 +103,7 @@ class SetEnabledFunction : public AsyncExtensionManagementFunction,
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
-  // ExtensionInstalUI::Delegate.
+  // ExtensionInstallUI::Delegate.
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
@@ -112,15 +114,30 @@ class SetEnabledFunction : public AsyncExtensionManagementFunction,
   scoped_ptr<ExtensionInstallUI> install_ui_;
 };
 
-class UninstallFunction : public ExtensionManagementFunction {
+class UninstallFunction : public AsyncExtensionManagementFunction,
+                          public ExtensionUninstallDialog::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("management.uninstall");
 
- protected:
-  virtual ~UninstallFunction() {}
+  UninstallFunction();
+  static void SetAutoConfirmForTest(bool should_proceed);
 
-  // ExtensionFunction:
+  // ExtensionUninstallDialog::Delegate implementation.
+  virtual void ExtensionUninstallAccepted() OVERRIDE;
+  virtual void ExtensionUninstallCanceled() OVERRIDE;
+
+ private:
+  virtual ~UninstallFunction();
+
   virtual bool RunImpl() OVERRIDE;
+
+  // If should_uninstall is true, this method does the actual uninstall.
+  // If |show_uninstall_dialog|, then this function will be called by one of the
+  // Accepted/Canceled callbacks. Otherwise, it's called directly from RunImpl.
+  void Finish(bool should_uninstall);
+
+  std::string extension_id_;
+  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 };
 
 class ExtensionManagementEventRouter : public content::NotificationObserver {

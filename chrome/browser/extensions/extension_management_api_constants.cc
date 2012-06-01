@@ -12,6 +12,7 @@ const char kHostPermissionsKey[] = "hostPermissions";
 const char kIconsKey[] = "icons";
 const char kIsAppKey[] = "isApp";
 const char kPermissionsKey[] = "permissions";
+const char kShowConfirmDialogKey[] = "showConfirmDialog";
 const char kSizeKey[] = "size";
 const char kUpdateUrlKey[] = "updateUrl";
 const char kUrlKey[] = "url";
@@ -27,6 +28,7 @@ const char kGestureNeededForEscalationError[] =
 const char kManifestParseError[] = "Failed to parse manifest.";
 const char kNoExtensionError[] = "Failed to find extension with id *";
 const char kNotAnAppError[] = "Extension * is not an App";
+const char kUninstallCanceledError[] = "Extension * uninstall canceled by user";
 const char kUserCantDisableError[] = "Extension * can not be disabled by user";
 const char kUserDidNotReEnableError[] =
     "The user did not accept the re-enable dialog";

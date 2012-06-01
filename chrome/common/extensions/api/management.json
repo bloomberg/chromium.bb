@@ -222,6 +222,18 @@
             "description": "This should be the id from an item of $ref:ExtensionInfo."
           },
           {
+            "type": "object",
+            "name": "options",
+            "optional": "true",
+            "properties": {
+              "showConfirmDialog": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether or not a confirm-uninstall dialog should prompt the user. Defaults to false."
+              }
+            }
+          },
+          {
             "name": "callback",
             "type": "function",
             "optional": "true",

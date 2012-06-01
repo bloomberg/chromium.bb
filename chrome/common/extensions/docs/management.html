@@ -915,7 +915,8 @@ The one method that doesn't require the "management" permission is
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.management.uninstall</span>(<span class="null"><span>string</span>
-                      <var><span>id</span></var></span><span class="optional"><span>, </span><span>function</span>
+                      <var><span>id</span></var></span><span class="optional"><span>, </span><span>object</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Uninstalls a currently installed app or extension.</p>
@@ -941,6 +942,61 @@ The one method that doesn't require the "management" permission is
           </dt>
           <dd>This should be the id from an item of <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>.</dd>
           <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>options</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>showConfirmDialog</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Whether or not a confirm-uninstall dialog should prompt the user. Defaults to false.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
@@ -985,8 +1041,32 @@ The one method that doesn't require the "management" permission is
                     specify a function that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>boolean success</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>success</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Whether the uninstall succeeded or not. An uninstall may fail due to a variety of reasons, including the user canceling the uninstall upon being prompted by a dialog.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
                   </dl>
                   </div>
                 </div>
