@@ -793,6 +793,7 @@ class GClient(Dependency):
     "linux": "unix",
     "linux2": "unix",
     "linux3": "unix",
+    "android": "android",
   }
 
   DEFAULT_CLIENT_FILE_TEXT = ("""\
