@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -54,11 +54,6 @@ class GpuTest(pyauto.PyUITest):
     self.NavigateToURL(url)
     self.assertTrue(self.WaitUntil(
       lambda: self._GetGpuPID() is not None), msg='No process for GPU')
-
-  def testNoGpuProcessOnStart(self):
-    """Verify that no gpu process is spawned when first starting browser."""
-    self.AppendTab(pyauto.GURL('about:blank'))
-    self.assertFalse(self._GetGpuPID())
 
   def test2dCanvas(self):
     """Verify that gpu process is spawned when viewing a 2D canvas."""
