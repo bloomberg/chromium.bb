@@ -3846,20 +3846,6 @@
    fun:_ZN44WebDragDestGtkTest_NoTabContentsWrapper_Test8TestBodyEv
 }
 {
-   bug_98751
-   Memcheck:Uninitialized
-   fun:_ZN7SkIRect9intersectEiiii
-   fun:_ZN7SkIRect9intersectERKS_
-   fun:_ZN8remoting10DecoderVp812ConvertRectsERKSt6vectorI7SkIRectSaIS2_EEPS4_
-   fun:_ZN8remoting10DecoderVp812DecodePacketEPKNS_11VideoPacketE
-   fun:_ZN8remoting13DecoderTester14ReceivedPacketEPNS_11VideoPacketE
-   fun:_ZN8remoting13EncoderTester13DataAvailableEPNS_11VideoPacketE
-   ...
-   fun:_ZN8remotingL17TestEncodingRectsEPNS_7EncoderEPNS_13EncoderTesterEPNS_13DecoderTesterE13scoped_refptrINS_11CaptureDataEEPK7SkIRecti
-   fun:_ZN8remoting18TestEncoderDecoderEPNS_7EncoderEPNS_7DecoderEb
-   fun:_ZN8remoting35DecoderVp8Test_EncodeAndDecode_Test8TestBodyEv
-}
-{
    bug_98867
    Memcheck:Jump
    obj:*
