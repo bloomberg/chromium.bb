@@ -431,7 +431,9 @@ void RenderWidget::OnUpdateRectAck() {
   }
 
   // Notify subclasses that software rendering was flushed to the screen.
-  DidFlushPaint();
+  if (!is_accelerated_compositing_active_) {
+    DidFlushPaint();
+  }
 
   // Continue painting if necessary...
   DoDeferredUpdateAndSendInputAck();
@@ -477,7 +479,7 @@ void RenderWidget::OnSwapBuffersPosted() {
 void RenderWidget::OnSwapBuffersComplete() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersComplete");
 
-  // Notify subclasses that composited rendering got flushed to the screen.
+  // Notify subclasses that composited rendering was flushed to the screen.
   DidFlushPaint();
 
   // When compositing deactivates, we reset the swapbuffers pending count.  The
@@ -1149,6 +1151,9 @@ void RenderWidget::didCommitAndDrawCompositorFrame() {
 }
 
 void RenderWidget::didCompleteSwapBuffers() {
+  TRACE_EVENT0("renderer", "RenderWidget::didCompleteSwapBuffers");
+
+  // Notify subclasses threaded composited rendering was flushed to the screen.
   DidFlushPaint();
 
   if (update_reply_pending_)
