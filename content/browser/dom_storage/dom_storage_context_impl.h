@@ -32,6 +32,10 @@ class CONTENT_EXPORT DOMStorageContextImpl :
                         quota::SpecialStoragePolicy* special_storage_policy);
 
   // DOMStorageContext implementation.
+  virtual void GetUsageInfo(const GetUsageInfoCallback& callback) OVERRIDE;
+  virtual void DeleteOrigin(const GURL& origin) OVERRIDE;
+
+  // DEPRECATED DOMStorageContext implementation.
   virtual void GetAllStorageFiles(
       const GetAllStorageFilesCallback& callback) OVERRIDE;
   virtual FilePath GetFilePath(const string16& origin_id) const OVERRIDE;

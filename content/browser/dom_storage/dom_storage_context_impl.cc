@@ -27,6 +27,25 @@ namespace {
 
 const char kLocalStorageDirectory[] = "Local Storage";
 
+void InvokeUsageInfoCallbackHelper(
+      const DOMStorageContext::GetUsageInfoCallback& callback,
+      const std::vector<DomStorageContext::UsageInfo>* infos) {
+  callback.Run(*infos);
+}
+
+void GetUsageInfoHelper(
+      base::MessageLoopProxy* reply_loop,
+      DomStorageContext* context,
+      const DOMStorageContext::GetUsageInfoCallback& callback) {
+  std::vector<DomStorageContext::UsageInfo>* infos =
+      new std::vector<DomStorageContext::UsageInfo>;
+  context->GetUsageInfo(infos, true);
+  reply_loop->PostTask(
+      FROM_HERE,
+      base::Bind(&InvokeUsageInfoCallbackHelper,
+                 callback, base::Owned(infos)));
+}
+
 // TODO(michaeln): Fix the content layer api, FilePaths and
 // string16 origin_ids are just wrong. Then get rid of
 // this conversion non-sense. Most of the includes are just
@@ -96,6 +115,24 @@ DOMStorageContextImpl::DOMStorageContextImpl(
 }
 
 DOMStorageContextImpl::~DOMStorageContextImpl() {
+}
+
+void DOMStorageContextImpl::GetUsageInfo(const GetUsageInfoCallback& callback) {
+  DCHECK(context_);
+  context_->task_runner()->PostShutdownBlockingTask(
+      FROM_HERE,
+      DomStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::Bind(&GetUsageInfoHelper,
+                 base::MessageLoopProxy::current(),
+                 context_, callback));
+}
+
+void DOMStorageContextImpl::DeleteOrigin(const GURL& origin) {
+  DCHECK(context_);
+  context_->task_runner()->PostShutdownBlockingTask(
+      FROM_HERE,
+      DomStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::Bind(&DomStorageContext::DeleteOrigin, context_, origin));
 }
 
 void DOMStorageContextImpl::GetAllStorageFiles(
