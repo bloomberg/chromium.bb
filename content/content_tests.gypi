@@ -508,9 +508,7 @@
               'dependencies': [
                 '../third_party/angle/src/build_angle.gyp:libEGL',
                 '../third_party/angle/src/build_angle.gyp:libGLESv2',
-                '../media/media.gyp:media',
                 '../ui/gl/gl.gyp:gl',
-                '../ui/ui.gyp:ui',
               ],
               'conditions': [
                 ['win_use_allocator_shim==1', {
@@ -527,6 +525,8 @@
             '../base/base.gyp:base',
             'content',
             '../testing/gtest.gyp:gtest',
+            '../media/media.gyp:media',
+            '../ui/ui.gyp:ui',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/angle/include',

@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
+#include "content/common/content_export.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -36,7 +37,8 @@ class Gles2TextureToEglImageTranslator;
 // thread to maintain this invariant.  The only exception to thread-unsafety is
 // that references can be added from any thread (practically used only by the
 // OMX thread).
-class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
+class CONTENT_EXPORT OmxVideoDecodeAccelerator :
+    public media::VideoDecodeAccelerator {
  public:
   // Does not take ownership of |client| which must outlive |*this|.
   OmxVideoDecodeAccelerator(media::VideoDecodeAccelerator::Client* client);
