@@ -273,6 +273,8 @@ class PolicyPrefsTestCases(object):
     'DeviceAppPack': (None, [], [], ['chromeos']),
     'DeviceAutoUpdateDisabled': (None, True, [], ['chromeos']),
     'DeviceTargetVersionPrefix': (None, '1412.', [], ['chromeos']),
+    'DeviceUpdateScatterFactor': (None, '7200', [], ['chromeos']),
+    'DeviceUpdateAllowedConnectionTypes': (None, [], [], ['chromeos']),
     'ReportDeviceLocation': (None, False, [], ['chromeos']),
 
     # Chrome Frame policies:

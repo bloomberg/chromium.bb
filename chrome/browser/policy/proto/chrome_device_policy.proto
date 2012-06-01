@@ -178,10 +178,26 @@ message AutoUpdateSettingsProto {
   // delay its download of an update from the time the update was first pushed
   // out to the server. The device may wait a portion of this time in terms
   // of wall-clock-time and the remaining portion in terms of the number of
-  // update checks. In any case, the scatter is upper bounded to a constant
+  // update checks. In any case, the scatter is upper bounded by a constant
   // amount of time so that a device does not ever get stuck waiting to download
   // an update forever.
   optional int64 scatter_factor_in_seconds = 4;
+
+  // Enumerates network connection types.
+  enum ConnectionType {
+    CONNECTION_TYPE_ETHERNET = 0;
+    CONNECTION_TYPE_WIFI = 1;
+    CONNECTION_TYPE_WIMAX = 2;
+    CONNECTION_TYPE_BLUETOOTH = 3;
+    CONNECTION_TYPE_CELLULAR = 4;
+  }
+
+  // The types of connections that are OK to use for OS updates. OS updates
+  // potentially put heavy strain on the connection due to their size and may
+  // incur additional cost. Therefore, they are by default not enabled for
+  // connection types that are considered expensive, which include WiMax,
+  // Bluetooth and Cellular at the moment.
+  repeated ConnectionType allowed_connection_types = 5;
 }
 
 message StartUpUrlsProto {

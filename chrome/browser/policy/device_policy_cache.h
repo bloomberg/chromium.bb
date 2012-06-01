@@ -98,6 +98,9 @@ class DevicePolicyCache : public CloudPolicyCacheBase {
   static void DecodeReportingPolicies(
       const enterprise_management::ChromeDeviceSettingsProto& policy,
       PolicyMap* policies);
+  static void DecodeAutoUpdatePolicies(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PolicyMap* policies);
   static void DecodeGenericPolicies(
       const enterprise_management::ChromeDeviceSettingsProto& policy,
       PolicyMap* policies);

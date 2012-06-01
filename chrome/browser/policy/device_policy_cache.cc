@@ -29,7 +29,9 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "policy/policy_constants.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
+using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;
 
 namespace em = enterprise_management;
@@ -110,6 +112,21 @@ Value* DecodeIntegerValue(google::protobuf::int64 value) {
   }
 
   return Value::CreateIntegerValue(static_cast<int>(value));
+}
+
+Value* DecodeConnectionType(int value) {
+  static const char* const kConnectionTypes[] = {
+    flimflam::kTypeEthernet,
+    flimflam::kTypeWifi,
+    flimflam::kTypeWimax,
+    flimflam::kTypeBluetooth,
+    flimflam::kTypeCellular,
+  };
+
+  if (value < 0 || value >= static_cast<int>(arraysize(kConnectionTypes)))
+    return NULL;
+
+  return Value::CreateStringValue(kConnectionTypes[value]);
 }
 
 }  // namespace
@@ -356,6 +373,7 @@ void DevicePolicyCache::DecodeDevicePolicy(
   DecodeKioskPolicies(policy, policies, install_attributes_);
   DecodeNetworkPolicies(policy, policies, install_attributes_);
   DecodeReportingPolicies(policy, policies);
+  DecodeAutoUpdatePolicies(policy, policies);
   DecodeGenericPolicies(policy, policies);
 }
 
@@ -589,30 +607,9 @@ void DevicePolicyCache::DecodeReportingPolicies(
 }
 
 // static
-void DevicePolicyCache::DecodeGenericPolicies(
+void DevicePolicyCache::DecodeAutoUpdatePolicies(
     const em::ChromeDeviceSettingsProto& policy,
     PolicyMap* policies) {
-  if (policy.has_device_policy_refresh_rate()) {
-    const em::DevicePolicyRefreshRateProto& container(
-        policy.device_policy_refresh_rate());
-    if (container.has_device_policy_refresh_rate()) {
-      policies->Set(key::kDevicePolicyRefreshRate,
-                    POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE,
-                    DecodeIntegerValue(container.device_policy_refresh_rate()));
-    }
-  }
-
-  if (policy.has_metrics_enabled()) {
-    const em::MetricsEnabledProto& container(policy.metrics_enabled());
-    if (container.has_metrics_enabled()) {
-      policies->Set(key::kDeviceMetricsReportingEnabled,
-                    POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE,
-                    Value::CreateBooleanValue(container.metrics_enabled()));
-    }
-  }
-
   if (policy.has_release_channel()) {
     const em::ReleaseChannelProto& container(policy.release_channel());
     if (container.has_release_channel()) {
@@ -651,6 +648,59 @@ void DevicePolicyCache::DecodeGenericPolicies(
                     POLICY_SCOPE_MACHINE,
                     Value::CreateStringValue(
                         container.target_version_prefix()));
+    }
+
+    // target_version_display_name is not actually a policy, but a display
+    // string for target_version_prefix, so we ignore it.
+
+    if (container.has_scatter_factor_in_seconds()) {
+      policies->Set(key::kDeviceUpdateScatterFactor,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateIntegerValue(
+                        container.scatter_factor_in_seconds()));
+    }
+
+    if (container.allowed_connection_types_size()) {
+      ListValue* allowed_connection_types = new ListValue();
+      RepeatedField<int>::const_iterator entry;
+      for (entry = container.allowed_connection_types().begin();
+           entry != container.allowed_connection_types().end();
+           ++entry) {
+        base::Value* value = DecodeConnectionType(*entry);
+        if (value)
+          allowed_connection_types->Append(value);
+      }
+      policies->Set(key::kDeviceUpdateAllowedConnectionTypes,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    allowed_connection_types);
+    }
+  }
+}
+
+// static
+void DevicePolicyCache::DecodeGenericPolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PolicyMap* policies) {
+  if (policy.has_device_policy_refresh_rate()) {
+    const em::DevicePolicyRefreshRateProto& container(
+        policy.device_policy_refresh_rate());
+    if (container.has_device_policy_refresh_rate()) {
+      policies->Set(key::kDevicePolicyRefreshRate,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    DecodeIntegerValue(container.device_policy_refresh_rate()));
+    }
+  }
+
+  if (policy.has_metrics_enabled()) {
+    const em::MetricsEnabledProto& container(policy.metrics_enabled());
+    if (container.has_metrics_enabled()) {
+      policies->Set(key::kDeviceMetricsReportingEnabled,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(container.metrics_enabled()));
     }
   }
 

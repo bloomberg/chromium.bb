@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 144
+#   For your editing convenience: highest ID currently used: 146
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2580,6 +2580,31 @@
       "1412.": update to any minor version of 1412 (e.g. 1412.24.34 or 1412.60.2)
       "1412.2.": update to any minor version of 1412.2 (e.g. 1412.2.34 or 1412.2.2)
       "1412.24.34": update to this specific version only
+      '''
+    },
+    {
+      'name': 'DeviceUpdateScatterFactor',
+      'type': 'int',
+      'supported_on': ['chrome_os:20-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': 7200,
+      'id': 145,
+      'caption': '''Auto update scatter factor''',
+      'desc': '''Specifies the number of seconds up to which a device may randomly delay its download of an update from the time the update was first pushed out to the server. The device may wait a portion of this time in terms of wall-clock-time and the remaining portion in terms of the number of update checks. In any case, the scatter is upper bounded to a constant amount of time so that a device does not ever get stuck waiting to download an update forever.'''
+    },
+    {
+      'name': 'DeviceUpdateAllowedConnectionTypes',
+      'type': 'list',
+      'supported_on': ['chrome_os:21-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': [ 'ethernet' ],
+      'id': 146,
+      'caption': '''Connection types allowed for updates''',
+      'desc': ''' The types of connections that are OK to use for OS updates. OS updates potentially put heavy strain on the connection due to their size and may incur additional cost. Therefore, they are by default not enabled for connection types that are considered expensive, which include WiMax, Bluetooth and Cellular at the moment.
+
+      The recognized connection type identifiers are ethernet, wifi, wimax, bluetooth, cellular.
       '''
     },
     {
