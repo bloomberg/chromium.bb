@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/shared_memory.h"
 #include "base/utf_string_conversions.h"
@@ -173,6 +174,27 @@ RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportImpl() {
 
 //------------------------------------------------------------------------------
 
+namespace {
+
+bool SendSyncMessageFromAnyThreadInternal(IPC::SyncMessage* msg) {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  if (render_thread)
+    return render_thread->Send(msg);
+  scoped_refptr<IPC::SyncMessageFilter> sync_msg_filter(
+      ChildThread::current()->sync_message_filter());
+  return sync_msg_filter->Send(msg);
+}
+
+bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) {
+  base::TimeTicks begin = base::TimeTicks::Now();
+  const bool success = SendSyncMessageFromAnyThreadInternal(msg);
+  base::TimeDelta delta = base::TimeTicks::Now() - begin;
+  HISTOGRAM_TIMES("RendererSyncIPC.ElapsedTime", delta);
+  return success;
+}
+
+}  // namespace
+
 WebKit::WebClipboard* RendererWebKitPlatformSupportImpl::clipboard() {
   return clipboard_.get();
 }
@@ -213,17 +235,6 @@ bool RendererWebKitPlatformSupportImpl::sandboxEnabled() {
   // this switch unless absolutely necessary, so hopefully we won't end up
   // with too many code paths being different in single-process mode.
   return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
-}
-
-bool RendererWebKitPlatformSupportImpl::SendSyncMessageFromAnyThread(
-    IPC::SyncMessage* msg) {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (render_thread)
-    return render_thread->Send(msg);
-
-  scoped_refptr<IPC::SyncMessageFilter> sync_msg_filter(
-      ChildThread::current()->sync_message_filter());
-  return sync_msg_filter->Send(msg);
 }
 
 unsigned long long RendererWebKitPlatformSupportImpl::visitedLinkHash(

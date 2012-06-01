@@ -21,10 +21,6 @@ namespace content {
 class GamepadSharedMemoryReader;
 }
 
-namespace IPC {
-class SyncMessage;
-}
-
 namespace webkit_glue {
 class WebClipboardImpl;
 }
@@ -101,9 +97,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
  private:
   bool CheckPreparsedJsCachingEnabled() const;
-
-  // Helper function to send synchronous message from any thread.
-  static bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg);
 
   scoped_ptr<RendererClipboardClient> clipboard_client_;
   scoped_ptr<webkit_glue::WebClipboardImpl> clipboard_;
