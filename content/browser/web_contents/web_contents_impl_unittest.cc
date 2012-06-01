@@ -39,6 +39,7 @@ using content::NavigationEntryImpl;
 using content::SiteInstance;
 using content::RenderViewHost;
 using content::RenderViewHostImplTestHarness;
+using content::TestBrowserThread;
 using content::TestRenderViewHost;
 using content::TestWebContents;
 using content::WebContents;
@@ -272,9 +273,12 @@ class TestInterstitialPageStateGuard : public TestInterstitialPage::Delegate {
 class WebContentsImplTest : public RenderViewHostImplTestHarness {
  public:
   WebContentsImplTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        old_client_(NULL),
-        old_browser_client_(NULL) {
+      : old_client_(NULL),
+        old_browser_client_(NULL),
+        ui_thread_(BrowserThread::UI, &message_loop_),
+        file_user_blocking_thread_(
+            BrowserThread::FILE_USER_BLOCKING, &message_loop_),
+        io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
   virtual void SetUp() {
@@ -298,9 +302,11 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
  private:
   WebContentsImplTestContentClient client_;
   WebContentsImplTestBrowserClient browser_client_;
-  content::TestBrowserThread ui_thread_;
   content::ContentClient* old_client_;
   content::ContentBrowserClient* old_browser_client_;
+  TestBrowserThread ui_thread_;
+  TestBrowserThread file_user_blocking_thread_;
+  TestBrowserThread io_thread_;
 };
 
 }  // namespace

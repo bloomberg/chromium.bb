@@ -21,6 +21,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/test/mock_render_process_host.h"
 #include "content/test/test_browser_context.h"
+#include "content/test/test_browser_thread.h"
 #include "content/test/test_content_client.h"
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -79,7 +80,8 @@ class SiteInstanceTestClient : public TestContentClient {
   }
 };
 
-class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
+class SiteInstanceTestBrowserClient :
+    public content::MockContentBrowserClient {
  public:
   SiteInstanceTestBrowserClient()
       : privileged_process_id_(-1) {
@@ -114,6 +116,9 @@ class SiteInstanceTest : public testing::Test {
  public:
   SiteInstanceTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_user_blocking_thread_(content::BrowserThread::FILE_USER_BLOCKING,
+                                   &message_loop_),
+        io_thread_(content::BrowserThread::IO, &message_loop_),
         old_client_(NULL),
         old_browser_client_(NULL) {
   }
@@ -130,6 +135,8 @@ class SiteInstanceTest : public testing::Test {
   virtual void TearDown() {
     content::GetContentClient()->set_browser(old_browser_client_);
     content::SetContentClient(old_client_);
+    MessageLoop::current()->RunAllPending();
+    message_loop_.RunAllPending();
   }
 
   void set_privileged_process_id(int process_id) {
@@ -138,7 +145,9 @@ class SiteInstanceTest : public testing::Test {
 
  private:
   MessageLoopForUI message_loop_;
-  BrowserThreadImpl ui_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_user_blocking_thread_;
+  content::TestBrowserThread io_thread_;
 
   SiteInstanceTestClient client_;
   SiteInstanceTestBrowserClient browser_client_;
