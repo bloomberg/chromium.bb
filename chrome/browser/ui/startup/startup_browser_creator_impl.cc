@@ -742,14 +742,9 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
 
 void StartupBrowserCreatorImpl::AddStartupURLs(
     std::vector<GURL>* startup_urls) const {
-  // If we have urls specified beforehand (i.e. from command line) use them
-  // and nothing else.
-  if (!startup_urls->empty())
-    return;
-
   // If we have urls specified by the first run master preferences use them
   // and nothing else.
-  if (browser_creator_) {
+  if (browser_creator_ && startup_urls->empty()) {
     if (!browser_creator_->first_run_tabs_.empty()) {
       std::vector<GURL>::iterator it =
           browser_creator_->first_run_tabs_.begin();
