@@ -190,11 +190,7 @@ def GetAllTargets():
 
   returns the list of cross targets for the current tree
   """
-  cmd = [CROS_OVERLAY_LIST_CMD, '--all_boards']
-  overlays = cros_build_lib.RunCommand(cmd, print_cmd=False,
-                                       redirect_stdout=True).output.splitlines()
-
-  targets = GetTuplesForOverlays(overlays)
+  targets = GetToolchainsForBoard('all')
 
   # Remove the host target as that is not a cross-target. Replace with 'host'.
   targets.discard(GetHostTuple())
@@ -206,7 +202,11 @@ def GetToolchainsForBoard(board):
 
   returns the list of toolchain tuples for the given board
   """
-  cmd = [CROS_OVERLAY_LIST_CMD, '--board=' + board]
+  cmd = [CROS_OVERLAY_LIST_CMD]
+  if board == 'all':
+    cmd.append('--all_boards')
+  else:
+    cmd.append('--board=' + board)
   overlays = cros_build_lib.RunCommand(
       cmd, print_cmd=False, redirect_stdout=True).output.splitlines()
 
