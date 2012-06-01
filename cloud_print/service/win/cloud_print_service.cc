@@ -4,6 +4,7 @@
 
 #include "cloud_print/service/win/cloud_print_service.h"
 
+#include <atlsecurity.h>
 #include <iomanip>
 #include <iostream>
 
@@ -22,6 +23,8 @@
 namespace {
 
 const wchar_t kServiceStateFileName[] = L"Service State";
+
+const wchar_t kUserToRunService[] = L"NT AUTHORITY\\LocalService";
 
 // The traits class for Windows Service.
 class ServiceHandleTraits {
@@ -124,6 +127,43 @@ std::string GetOption(const std::string& name, const std::string& default,
   return tmp;
 }
 
+HRESULT WriteFileAsUser(const FilePath& path, const wchar_t* user,
+                        const char* data, int size) {
+    ATL::CAccessToken thread_token;
+    if (!thread_token.OpenThreadToken(TOKEN_DUPLICATE | TOKEN_IMPERSONATE)) {
+      LOG(ERROR) << "Failed to open thread token.";
+      return HResultFromLastError();
+    }
+
+    ATL::CSid local_service;
+    if (!local_service.LoadAccount(user)) {
+      LOG(ERROR) << "Failed create SID.";
+      return HResultFromLastError();
+    }
+
+    ATL::CAccessToken token;
+    ATL::CTokenGroups group;
+    group.Add(local_service, 0);
+
+    const ATL::CTokenGroups empty_group;
+    if (!thread_token.CreateRestrictedToken(&token, empty_group, group)) {
+      LOG(ERROR) << "Failed to create restricted token for " << user << ".";
+      return HResultFromLastError();
+    }
+
+    if (!token.Impersonate()) {
+      LOG(ERROR) << "Failed to impersonate " << user << ".";
+      return HResultFromLastError();
+    }
+
+    ATL::CAutoRevertImpersonation auto_revert(&token);
+    if (file_util::WriteFile(path, data, size) != size) {
+      LOG(ERROR) << "Failed to write file " << path.value() << ".";
+      return HResultFromLastError();
+    }
+    return S_OK;
+}
+
 }  // namespace
 
 class CloudPrintServiceModule
@@ -141,7 +181,7 @@ class CloudPrintServiceModule
     return S_OK;
   }
 
-  HRESULT InstallService(const FilePath& user_data_dir) {
+  HRESULT InstallService() {
     // TODO(vitalybuka): consider "lite" version if we don't want unregister
     // printers here.
     HRESULT hr = UninstallService();
@@ -161,7 +201,7 @@ class CloudPrintServiceModule
     CHECK(PathService::Get(base::FILE_EXE, &service_path));
     CommandLine command_line(service_path);
     command_line.AppendSwitch(kServiceSwitch);
-    command_line.AppendSwitchPath(kUserDataDirSwitch, user_data_dir);
+    command_line.AppendSwitchPath(kUserDataDirSwitch, user_data_dir_);
 
     ServiceHandle scm;
     hr = OpenServiceManager(&scm);
@@ -173,7 +213,7 @@ class CloudPrintServiceModule
             scm, m_szServiceName, m_szServiceName, SERVICE_ALL_ACCESS,
             SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL,
             command_line.GetCommandLineString().c_str(), NULL, NULL, NULL,
-            L"NT AUTHORITY\\LocalService", NULL));
+            kUserToRunService, NULL));
 
     if (!service.IsValid())
       return HResultFromLastError();
@@ -239,12 +279,15 @@ class CloudPrintServiceModule
         return S_FALSE;
       }
 
-      HRESULT hr = ProcessServiceState(user_data_dir_,
-                                       command_line.HasSwitch(kQuietSwitch));
+      HRESULT hr = ValidateUserDataDir();
       if (FAILED(hr))
         return hr;
 
-      hr = InstallService(user_data_dir_);
+      hr = ProcessServiceState(command_line.HasSwitch(kQuietSwitch));
+      if (FAILED(hr))
+        return hr;
+
+      hr = InstallService();
       if (SUCCEEDED(hr) && command_line.HasSwitch(kStartSwitch))
         return StartService();
 
@@ -270,8 +313,24 @@ class CloudPrintServiceModule
     return S_FALSE;
   }
 
-  HRESULT ProcessServiceState(const FilePath& user_data_dir, bool quiet) {
-    FilePath file = user_data_dir.Append(kServiceStateFileName);
+  HRESULT ValidateUserDataDir() {
+    FilePath temp_file;
+    const char some_data[] = "1234";
+    if (!file_util::CreateTemporaryFileInDir(user_data_dir_, &temp_file))
+      return E_FAIL;
+    HRESULT hr = WriteFileAsUser(temp_file, kUserToRunService, some_data,
+                                 sizeof(some_data));
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to write user data. Make sure that account \'" <<
+          kUserToRunService << "\'has full access to \'" <<
+          user_data_dir_.value() << "\'.";
+    }
+    file_util::Delete(temp_file, false);
+    return hr;
+  }
+
+  HRESULT ProcessServiceState(bool quiet) {
+    FilePath file = user_data_dir_.Append(kServiceStateFileName);
 
     for (;;) {
       std::string contents;
@@ -315,10 +374,11 @@ class CloudPrintServiceModule
         if (is_valid) {
           std::string new_contents = service_state.ToString();
           if (new_contents != contents) {
-            if (file_util::WriteFile(file, new_contents.c_str(),
-                                     new_contents.size()) <= 0) {
-              return HResultFromLastError();
-            }
+            HRESULT hr = WriteFileAsUser(file, kUserToRunService,
+                                         new_contents.c_str(),
+                                         new_contents.size());
+            if (FAILED(hr))
+              return hr;
           }
         }
       }
