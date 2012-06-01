@@ -314,8 +314,10 @@ list:not([disabled]) > .network-group[selected] {
   vertical-align: middle;
 }
 
-html[touch-optimized] .network-menu-item {
-  height: 40px;
+@media (pointer:coarse) {
+  network-menu-item {
+    height: 40px;
+  }
 }
 
 .network-menu-item-label {
@@ -329,8 +331,10 @@ html[touch-optimized] .network-menu-item {
   white-space: nowrap;
 }
 
-html[touch-optimized] .network-menu-item-label {
-  padding-top: 14px;
+@media (pointer:coarse) {
+  .network-menu-item-label {
+    padding-top: 14px;
+  }
 }
 
 .network-disabled-control {
@@ -353,8 +357,10 @@ html[touch-optimized] .network-menu-item-label {
     text-overflow: ellipsis;
 }
 
-html[touch-optimized] .network-menu-group {
-  max-height: 200px;
+@media (pointer:coarse) {
+  .network-menu-group {
+    max-height: 200px;
+  }
 }
 
 html[dir=rtl] .network-menu-item {

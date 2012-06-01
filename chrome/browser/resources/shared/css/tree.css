@@ -21,6 +21,12 @@ tree {
   white-space: nowrap;
 }
 
+@media (pointer:coarse) {
+  .tree-item > .tree-row {
+    padding: 4px 3px;
+  }
+}
+
 .expand-icon {
   -webkit-transform: rotate(-90deg);
   -webkit-transition: all 150ms;

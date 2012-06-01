@@ -14,17 +14,6 @@ this.cr = (function() {
   'use strict';
 
   /**
-   * Tags the html element with an attribute that allows touch-specific css
-   * rules.
-   * TODO(rbyers): Switch to a touch-screen media query once we have one.
-   * http://crbug.com/123062
-   */
-  function enableTouchOptimizedCss() {
-    if (cr.isTouchOptimized)
-      cr.doc.documentElement.setAttribute('touch-optimized', '');
-  }
-
-  /**
    * Builds an object structure for the provided namespace path,
    * ensuring that names that already exist are not overwritten. For
    * example:
@@ -363,13 +352,6 @@ this.cr = (function() {
      * Whether this uses the views toolkit or not.
      */
     cr.isViews = /views/.test(chrome.toolkit);
-
-    /**
-     * Whether this window is optimized for touch-based input.
-     */
-    cr.isTouchOptimized = !!chrome.touchOptimized;
-
-    enableTouchOptimizedCss();
   }
 
   return {

@@ -29,9 +29,6 @@ without changes to the corresponding grd file. -->
       <include name="IDR_SHARED_CSS_CHROME"
                file="shared/css/chrome_shared.css" type="BINDATA"
                flattenhtml="true" />
-      <include name="IDR_SHARED_CSS_CHROME_TOUCH"
-               file="shared/css/chrome_shared_touch.css" type="BINDATA"
-               flattenhtml="true" />
       <include name="IDR_SHARED_CSS_OVERLAY"
                file="shared/css/overlay.css" type="BINDATA"
                flattenhtml="true" />

@@ -21,8 +21,10 @@ html[oobe=old] #signin-right {
 }
 
 /*  For touch-optimized UI, make the links bigger. */
-html[touch-optimized] #signin-right {
-  font-size: 14px;
+@media (pointer:coarse) {
+  #signin-right {
+    font-size: 14px;
+  }
 }
 
 html[dir=ltr][oobe=old] #signin-right {

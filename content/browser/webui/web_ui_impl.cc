@@ -21,7 +21,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
-#include "ui/base/layout.h"
 
 using content::RenderViewHostImpl;
 using content::WebContents;
@@ -111,12 +110,6 @@ void WebUIImpl::RenderViewCreated(content::RenderViewHost* render_view_host) {
 #elif defined(TOOLKIT_GTK)
   render_view_host->SetWebUIProperty("toolkit", "GTK");
 #endif  // defined(TOOLKIT_VIEWS)
-
-  // Let the WebUI know if we're looking for UI that's optimized for touch
-  // input.  Note that ideally we'd expose an API through the web platform
-  // indicating this information and use that instead.  See crbug.com/123692.
-  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH)
-    render_view_host->SetWebUIProperty("touchOptimized", "true");
 }
 
 WebContents* WebUIImpl::GetWebContents() const {

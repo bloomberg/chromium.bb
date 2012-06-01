@@ -140,22 +140,20 @@ cr.define('cr.ui', function() {
           'webkitTransitionEnd', this.onWebkitTransitionEnd_.bind(this));
 
       // Also support touch events in case a touch screen happens to be
-      // available.  Ideally we would support touch events whenever they
-      // are fired, but for now restrict this extra code to when we know
-      // we want to support touch input.
-      if (cr.isTouchOptimized) {
-        var TouchHandler = cr.ui.TouchHandler;
-        this.container_.addEventListener(TouchHandler.EventType.TOUCH_START,
-                                         this.onTouchStart_.bind(this));
-        this.container_.addEventListener(TouchHandler.EventType.DRAG_START,
-                                         this.onDragStart_.bind(this));
-        this.container_.addEventListener(TouchHandler.EventType.DRAG_MOVE,
-                                         this.onDragMove_.bind(this));
-        this.container_.addEventListener(TouchHandler.EventType.DRAG_END,
-                                         this.onDragEnd_.bind(this));
+      // available.  Note that this has minimal impact in the common case of
+      // no touch events (eg. we're mainly just adding listeners for events that
+      // will never trigger).
+      var TouchHandler = cr.ui.TouchHandler;
+      this.container_.addEventListener(TouchHandler.EventType.TOUCH_START,
+                                       this.onTouchStart_.bind(this));
+      this.container_.addEventListener(TouchHandler.EventType.DRAG_START,
+                                       this.onDragStart_.bind(this));
+      this.container_.addEventListener(TouchHandler.EventType.DRAG_MOVE,
+                                       this.onDragMove_.bind(this));
+      this.container_.addEventListener(TouchHandler.EventType.DRAG_END,
+                                       this.onDragEnd_.bind(this));
 
-        this.touchHandler_.enable(/* opt_capture */ false);
-      }
+      this.touchHandler_.enable(/* opt_capture */ false);
     },
 
     /**
