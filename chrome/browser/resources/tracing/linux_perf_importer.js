@@ -109,6 +109,21 @@ cr.define('tracing', function() {
   //  workqueue_execute_end: work struct c7a8a89c
   var workqueueExecuteEndRE = /work struct (.+)/;
 
+  // Some kernel trace events are manually classified in slices and
+  // hand-assigned a pseudo PID+TID.
+  var pseudoKernelPID = 0;
+  TestExports.pseudoKernelPID = pseudoKernelPID;
+  var pseudoI915GemObjectTID = 1;
+  TestExports.pseudoI915GemObjectTID = pseudoI915GemObjectTID;
+  var pseudoI915GemRingTID = 2;
+  TestExports.pseudoI915GemRingTID = pseudoI915GemRingTID;
+  var pseudoI915FlipTID = 3;
+  TestExports.pseudoI915FlipTID = pseudoI915FlipTID;
+  var pseudoI915RegTID = 4;
+  TestExports.pseudoI915RegTID = pseudoI915RegTID;
+  var pseudoVblankTID = 5;
+  TestExports.pseudoVblankTID = pseudoVblankTID;
+
   /**
    * Guesses whether the provided events is a Linux perf string.
    * Looks for the magic string "# tracer" at the start of the file,
@@ -386,6 +401,117 @@ cr.define('tracing', function() {
       this.importError('Malformed ' + eventName + ' event');
     },
 
+    cpuStateSlice: function(ts, targetCpuNumber, eventType, cpuState) {
+      var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
+      var powerCounter;
+      if (eventType != '1') {
+        this.importError('Don\'t understand power_start events of type ' +
+            eventType);
+        return;
+      }
+      powerCounter = targetCpu.cpu.getOrCreateCounter('', 'C-State');
+      if (powerCounter.numSeries == 0) {
+        powerCounter.seriesNames.push('state');
+        powerCounter.seriesColors.push(
+            tracing.getStringColorId(powerCounter.name + '.' + 'state'));
+      }
+      powerCounter.timestamps.push(ts);
+      powerCounter.samples.push(cpuState);
+    },
+
+    cpuIdleSlice: function(ts, targetCpuNumber, cpuState) {
+      var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
+      var powerCounter = targetCpu.cpu.getOrCreateCounter('', 'C-State');
+      if (powerCounter.numSeries == 0) {
+        powerCounter.seriesNames.push('state');
+        powerCounter.seriesColors.push(
+            tracing.getStringColorId(powerCounter.name));
+      }
+      // NB: 4294967295/-1 means an exit from the current state
+      if (cpuState != 4294967295)
+        powerCounter.samples.push(cpuState);
+      else
+        powerCounter.samples.push(0);
+      powerCounter.timestamps.push(ts);
+    },
+
+    cpuFrequencySlice: function(ts, targetCpuNumber, powerState) {
+      var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
+      var powerCounter =
+          targetCpu.cpu.getOrCreateCounter('', 'Clock Frequency');
+      if (powerCounter.numSeries == 0) {
+        powerCounter.seriesNames.push('state');
+        powerCounter.seriesColors.push(
+            tracing.getStringColorId(powerCounter.name + '.' + 'state'));
+      }
+      powerCounter.timestamps.push(ts);
+      powerCounter.samples.push(powerState);
+    },
+
+    i915GemObjectSlice: function(ts, eventName, obj, args) {
+      var kthread = this.getOrCreateKernelThread('i915_gem', pseudoKernelPID,
+          pseudoI915GemObjectTID);
+      kthread.openSlice = eventName + ':' + obj;
+      var slice = new tracing.TimelineSlice(kthread.openSlice,
+          tracing.getStringColorId(kthread.openSlice), ts, args, 0);
+
+      kthread.thread.subRows[0].push(slice);
+    },
+
+    i915GemRingSlice: function(ts, eventName, dev, ring, args) {
+      var kthread = this.getOrCreateKernelThread('i915_gem_ring',
+          pseudoKernelPID, pseudoI915GemRingTID);
+      kthread.openSlice = eventName + ':' + dev + '.' + ring;
+      var slice = new tracing.TimelineSlice(kthread.openSlice,
+          tracing.getStringColorId(kthread.openSlice), ts, args, 0);
+
+      kthread.thread.subRows[0].push(slice);
+    },
+
+    i915RegSlice: function(ts, eventName, reg, args) {
+      var kthread = this.getOrCreateKernelThread('i915_reg',
+          pseudoKernelPID, pseudoI915RegTID);
+      kthread.openSlice = eventName + ':' + reg;
+      var slice = new tracing.TimelineSlice(kthread.openSlice,
+          tracing.getStringColorId(kthread.openSlice), ts, args, 0);
+
+      kthread.thread.subRows[0].push(slice);
+    },
+
+    i915OpenFlipSlice: function(ts, obj, plane) {
+      // use i915_obj_plane?
+      var kthread = this.getOrCreateKernelThread('i915_flip',
+          pseudoKernelPID, pseudoI915FlipTID);
+      kthread.openSliceTS = ts;
+      kthread.openSlice = 'flip:' + obj + '/' + plane;
+    },
+
+    i915CloseFlipSlice: function(ts, args) {
+        // use i915_obj_plane?
+        var kthread = this.getOrCreateKernelThread('i915_flip',
+            pseudoKernelPID, pseudoI915FlipTID);
+        if (kthread.openSlice) {
+          var slice = new tracing.TimelineSlice(kthread.openSlice,
+              tracing.getStringColorId(kthread.openSlice),
+              kthread.openSliceTS,
+              args,
+              ts - kthread.openSliceTS);
+
+          kthread.thread.subRows[0].push(slice);
+        }
+        kthread.openSlice = undefined;
+    },
+
+    drmVblankSlice: function(ts, eventName, args) {
+      var kthread = this.getOrCreateKernelThread('drm_vblank',
+          pseudoKernelPID, pseudoVblankTID);
+      kthread.openSlice = eventName;
+      var slice = new tracing.TimelineSlice(kthread.openSlice,
+          tracing.getStringColorId(kthread.openSlice), ts, args, 0);
+
+      kthread.thread.subRows[0].push(slice);
+    },
+
     /**
      * Walks the this.events_ structure and creates TimelineCpu objects.
      */
@@ -443,23 +569,8 @@ cr.define('tracing', function() {
             }
 
             var targetCpuNumber = parseInt(event[3]);
-            var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
-            var powerCounter;
-            if (event[1] == '1') {
-              powerCounter = targetCpu.cpu.getOrCreateCounter('', 'C-State');
-            } else {
-              this.importError('Don\'t understand power_start events of ' +
-                  'type ' + event[1]);
-              continue;
-            }
-            if (powerCounter.numSeries == 0) {
-              powerCounter.seriesNames.push('state');
-              powerCounter.seriesColors.push(
-                  tracing.getStringColorId(powerCounter.name + '.' + 'state'));
-            }
-            var powerState = parseInt(event[2]);
-            powerCounter.timestamps.push(ts);
-            powerCounter.samples.push(powerState);
+            var cpuState = parseInt(event[2]);
+            this.cpuStateSlice(ts, targetCpuNumber, event[1], cpuState);
             break;
           case 'power_frequency':  // NB: old-style power event, deprecated
             var event = /type=(\d+) state=(\d+) cpu_id=(\d)+/.exec(
@@ -470,17 +581,8 @@ cr.define('tracing', function() {
             }
 
             var targetCpuNumber = parseInt(event[3]);
-            var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
-            var powerCounter =
-                targetCpu.cpu.getOrCreateCounter('', 'Power Frequency');
-            if (powerCounter.numSeries == 0) {
-              powerCounter.seriesNames.push('state');
-              powerCounter.seriesColors.push(
-                  tracing.getStringColorId(powerCounter.name + '.' + 'state'));
-            }
             var powerState = parseInt(event[2]);
-            powerCounter.timestamps.push(ts);
-            powerCounter.samples.push(powerState);
+            this.cpuFrequencySlice(ts, targetCpuNumber, powerState);
             break;
           case 'cpu_frequency':
             var event = /state=(\d+) cpu_id=(\d)+/.exec(eventBase[5]);
@@ -490,17 +592,8 @@ cr.define('tracing', function() {
             }
 
             var targetCpuNumber = parseInt(event[2]);
-            var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
-            var powerCounter =
-                targetCpu.cpu.getOrCreateCounter('', 'Clock Frequency');
-            if (powerCounter.numSeries == 0) {
-              powerCounter.seriesNames.push('state');
-              powerCounter.seriesColors.push(
-                  tracing.getStringColorId(powerCounter.name + '.' + 'state'));
-            }
             var powerState = parseInt(event[1]);
-            powerCounter.timestamps.push(ts);
-            powerCounter.samples.push(powerState);
+            this.cpuFrequencySlice(ts, targetCpuNumber, powerState);
             break;
           case 'cpu_idle':
             var event = /state=(\d+) cpu_id=(\d)+/.exec(eventBase[5]);
@@ -510,20 +603,8 @@ cr.define('tracing', function() {
             }
 
             var targetCpuNumber = parseInt(event[2]);
-            var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
-            var powerCounter = targetCpu.cpu.getOrCreateCounter('', 'C-State');
-            if (powerCounter.numSeries == 0) {
-              powerCounter.seriesNames.push('state');
-              powerCounter.seriesColors.push(
-                  tracing.getStringColorId(powerCounter.name));
-            }
-            var powerState = parseInt(event[1]);
-            // NB: 4294967295/-1 means an exit from the current state
-            if (powerState != 4294967295)
-              powerCounter.samples.push(powerState);
-            else
-              powerCounter.samples.push(0);
-            powerCounter.timestamps.push(ts);
+            var cpuState = parseInt(event[1]);
+            this.cpuIdleSlice(ts, targetCpuNumber, cpuState);
             break;
           case 'workqueue_execute_start':
             var event = workqueueExecuteStartRE.exec(eventBase[5]);
@@ -555,6 +636,58 @@ cr.define('tracing', function() {
             }
             kthread.openSlice = undefined;
             break;
+          case 'i915_gem_object_create':
+            var event = /obj=(.+), size=(\d+)/.exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+
+            var obj = event[1];
+            var size = parseInt(event[2]);
+            this.i915GemObjectSlice(ts, eventName, obj,
+                 {
+                   obj: obj,
+                   size: size
+                 });
+            break;
+          case 'i915_gem_object_bind':
+          case 'i915_gem_object_unbind':
+            // TODO(sleffler) mappable
+            var event = /obj=(.+), offset=(.+), size=(\d+)/.exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+
+            var obj = event[1];
+            var offset = event[2];
+            var size = parseInt(event[3]);
+            this.i915ObjectGemSlice(ts, eventName + ':' + obj,
+                {
+                  obj: obj,
+                  offset: offset,
+                  size: size
+                });
+            break;
+          case 'i915_gem_object_change_domain':
+            var event = /obj=(.+), read=(.+), write=(.+)/.exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+
+            var obj = event[1];
+            var read = event[2];
+            var write = event[3];
+            this.i915GemObjectSlice(ts, eventName, obj,
+                {
+                  obj: obj,
+                  read: read,
+                  write: write
+                });
+            break;
+          case 'i915_gem_object_pread':
           case 'i915_gem_object_pwrite':
             var event = /obj=(.+), offset=(\d+), len=(\d+)/.exec(eventBase[5]);
             if (!event) {
@@ -565,18 +698,155 @@ cr.define('tracing', function() {
             var obj = event[1];
             var offset = parseInt(event[2]);
             var len = parseInt(event[3]);
-            var kthread = this.getOrCreateKernelThread('i915_gem', 0, 1);
-            kthread.openSlice = 'pwrite:' + obj;
-            var slice = new tracing.TimelineSlice(kthread.openSlice,
-                tracing.getStringColorId(kthread.openSlice),
-                ts,
+            this.i915GemObjectSlice(ts, eventName, obj,
                 {
                   obj: obj,
                   offset: offset,
                   len: len
-                }, 0);
+                });
+            break;
+          case 'i915_gem_object_fault':
+            // TODO(sleffler) writable
+            var event = /obj=(.+), (.+) index=(\d+)/.exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
 
-            kthread.thread.subRows[0].push(slice);
+            var obj = event[1];
+            var type = event[2];
+            var index = parseInt(event[3]);
+            this.i915GemObjectSlice(ts, eventName, obj,
+                {
+                  obj: obj,
+                  type: type,
+                  index: index
+                });
+            break;
+          case 'i915_gem_object_clflush':
+          case 'i915_gem_object_destroy':
+            var event = /obj=(.+)/.exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+
+            var obj = event[1];
+            this.i915GemObjectSlice(ts, eventName, obj,
+                {
+                  obj: obj,
+                });
+            break;
+          case 'i915_gem_ring_dispatch':
+            var event = /dev=(\d+), ring=(\d+), seqno=(\d+)/.exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+
+            var dev = parseInt(event[1]);
+            var ring = parseInt(event[2]);
+            var seqno = parseInt(event[3]);
+            this.i915GemRingSlice(ts, eventName, dev, ring,
+                {
+                  dev: dev,
+                  ring: ring,
+                  seqno: seqno
+                });
+            break;
+          case 'i915_gem_ring_flush':
+            var event = /dev=(\d+), ring=(\d+), invalidate=(.+), flush=(.+)/.
+                exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+
+            var dev = parseInt(event[1]);
+            var ring = parseInt(event[2]);
+            var invalidate = event[3];
+            var flush = event[4];
+            this.i915GemRingSlice(ts, eventName, dev, ring,
+                {
+                  dev: dev,
+                  ring: ring,
+                  invalidate: invalidate,
+                  flush: flush
+                });
+            break;
+          case 'i915_gem_request':
+          case 'i915_gem_request_add':
+          case 'i915_gem_request_complete':
+          case 'i915_gem_request_retire':
+          case 'i915_gem_request_wait_begin':
+          case 'i915_gem_request_wait_end':
+            var event = /dev=(\d+), ring=(\d+), seqno=(\d+)/.exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+
+            var dev = parseInt(event[1]);
+            var ring = parseInt(event[2]);
+            var seqno = parseInt(event[3]);
+            this.i915GemRingSlice(ts, eventName, dev, ring,
+                {
+                  dev: dev,
+                  ring: ring,
+                  seqno: seqno
+                });
+            break;
+          case 'i915_ring_wait_begin':
+          case 'i915_ring_wait_end':
+            var event = /dev=(\d+), ring=(\d+)/.exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+
+            var dev = parseInt(event[1]);
+            var ring = parseInt(event[2]);
+            this.i915GemRingSlice(ts, eventName, dev, ring,
+                {
+                  dev: dev,
+                  ring: ring
+                });
+            break;
+          case 'i915_gem_object_change_domain':
+            var event = /obj=(.+), read=(.+), write=(.+)/.exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+
+            var obj = event[1];
+            var read = event[2];
+            var write = event[3];
+            this.i915GemObjectSlice(ts, eventName, obj,
+                {
+                  obj: obj,
+                  read: read,
+                  write: write
+                });
+            break;
+          case 'i915_reg_rw':
+            var event = /(.+) reg=(.+), len=(.+), val=(.+)/.exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+
+            var rw = event[1];
+            var reg = event[2];
+            var len = event[3];
+            var data = event[3];
+            this.i915RegSlice(ts, rw, reg,
+                {
+                  rw: rw,
+                  reg: reg,
+                  len: len,
+                  data: data
+                });
             break;
           case 'i915_flip_request':
             var event = /plane=(\d+), obj=(.+)/.exec(eventBase[5]);
@@ -587,10 +857,7 @@ cr.define('tracing', function() {
 
             var plane = parseInt(event[1]);
             var obj = event[2];
-            // use i915_obj_plane?
-            var kthread = this.getOrCreateKernelThread('i915_flip', 0, 2);
-            kthread.openSliceTS = ts;
-            kthread.openSlice = 'flip:' + obj + '/' + plane;
+            this.i915OpenFlipSlice(ts, obj, plane);
             break;
           case 'i915_flip_complete':
             var event = /plane=(\d+), obj=(.+)/.exec(eventBase[5]);
@@ -601,21 +868,11 @@ cr.define('tracing', function() {
 
             var plane = parseInt(event[1]);
             var obj = event[2];
-            // use i915_obj_plane?
-            var kthread = this.getOrCreateKernelThread('i915_flip', 0, 2);
-            if (kthread.openSlice) {
-              var slice = new tracing.TimelineSlice(kthread.openSlice,
-                  tracing.getStringColorId(kthread.openSlice),
-                  kthread.openSliceTS,
+            this.i915CloseFlipSlice(ts,
                   {
                     obj: obj,
                     plane: plane
-                  },
-                  ts - kthread.openSliceTS);
-
-              kthread.thread.subRows[0].push(slice);
-            }
-            kthread.openSlice = undefined;
+                  });
             break;
           case 'drm_vblank_event':
             var event = /crtc=(\d+), seq=(\d+)/.exec(eventBase[5]);
@@ -626,17 +883,11 @@ cr.define('tracing', function() {
 
             var crtc = parseInt(event[1]);
             var seq = parseInt(event[2]);
-            var kthread = this.getOrCreateKernelThread('drm_vblank', 0, 3);
-            kthread.openSlice = 'vblank:' + crtc;
-            var slice = new tracing.TimelineSlice(kthread.openSlice,
-                tracing.getStringColorId(kthread.openSlice),
-                ts,
+            this.drmVblankSlice(ts, 'vblank:' + crtc,
                 {
                   crtc: crtc,
                   seq: seq
-                }, 0);
-
-            kthread.thread.subRows[0].push(slice);
+                });
             break;
           case '0':  // NB: old-style trace markers; deprecated
           case 'tracing_mark_write':
