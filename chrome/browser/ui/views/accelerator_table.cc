@@ -18,108 +18,35 @@ namespace browser {
 const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_LEFT, ui::EF_ALT_DOWN, IDC_BACK },
   { ui::VKEY_BACK, ui::EF_NONE, IDC_BACK },
-#if defined(OS_CHROMEOS)
-  { ui::VKEY_F1, ui::EF_NONE, IDC_BACK },
-#endif
   { ui::VKEY_D, ui::EF_CONTROL_DOWN, IDC_BOOKMARK_PAGE },
   { ui::VKEY_D, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_BOOKMARK_ALL_TABS },
-#if !defined(OS_CHROMEOS)
-  { ui::VKEY_DELETE, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    IDC_CLEAR_BROWSING_DATA },
-#else
-  { ui::VKEY_BACK, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    IDC_CLEAR_BROWSING_DATA },
-#endif
-#if !defined(OS_CHROMEOS)
-  { ui::VKEY_F4, ui::EF_CONTROL_DOWN, IDC_CLOSE_TAB },
-#endif
   { ui::VKEY_W, ui::EF_CONTROL_DOWN, IDC_CLOSE_TAB },
   { ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_CLOSE_WINDOW },
-#if !defined(OS_CHROMEOS)
-  { ui::VKEY_F4, ui::EF_ALT_DOWN, IDC_CLOSE_WINDOW },
-#endif
-#if !defined(USE_ASH)
-  { ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_EXIT },
-#endif
   { ui::VKEY_F, ui::EF_CONTROL_DOWN, IDC_FIND },
   { ui::VKEY_G, ui::EF_CONTROL_DOWN, IDC_FIND_NEXT },
-#if !defined(OS_CHROMEOS)
-  { ui::VKEY_F3, ui::EF_NONE, IDC_FIND_NEXT },
-#endif
   { ui::VKEY_G, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_FIND_PREVIOUS },
-#if !defined(OS_CHROMEOS)
-  { ui::VKEY_F3, ui::EF_SHIFT_DOWN, IDC_FIND_PREVIOUS },
-#endif
   { ui::VKEY_D, ui::EF_ALT_DOWN, IDC_FOCUS_LOCATION },
   { ui::VKEY_L, ui::EF_CONTROL_DOWN, IDC_FOCUS_LOCATION },
-#if !defined(OS_CHROMEOS)
-  { ui::VKEY_F10, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
-  { ui::VKEY_MENU, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
-  { ui::VKEY_F6, ui::EF_NONE, IDC_FOCUS_NEXT_PANE },
-#else
-  { ui::VKEY_F2, ui::EF_CONTROL_DOWN, IDC_FOCUS_NEXT_PANE },
-#endif
-#if !defined(OS_CHROMEOS)
-  { ui::VKEY_F6, ui::EF_SHIFT_DOWN, IDC_FOCUS_PREVIOUS_PANE },
-#else
-  { ui::VKEY_F1, ui::EF_CONTROL_DOWN, IDC_FOCUS_PREVIOUS_PANE },
-#endif
   { ui::VKEY_K, ui::EF_CONTROL_DOWN, IDC_FOCUS_SEARCH },
   { ui::VKEY_E, ui::EF_CONTROL_DOWN, IDC_FOCUS_SEARCH },
-  { ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, IDC_FOCUS_SEARCH },
   { ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FOCUS_TOOLBAR },
   { ui::VKEY_B, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FOCUS_BOOKMARKS },
   { ui::VKEY_RIGHT, ui::EF_ALT_DOWN, IDC_FORWARD },
   { ui::VKEY_BACK, ui::EF_SHIFT_DOWN, IDC_FORWARD },
-#if defined(OS_CHROMEOS)
-  { ui::VKEY_F2, ui::EF_NONE, IDC_FORWARD },
-#endif
-#if !defined(OS_CHROMEOS)
-  { ui::VKEY_F11, ui::EF_NONE, IDC_FULLSCREEN },
-#else
-  { ui::VKEY_F4, ui::EF_NONE, IDC_FULLSCREEN },
-#endif
-#if !defined(OS_CHROMEOS)
-  { ui::VKEY_F1, ui::EF_NONE, IDC_HELP_PAGE },
-#else
-  { ui::VKEY_OEM_2, ui::EF_CONTROL_DOWN, IDC_HELP_PAGE },
-  { ui::VKEY_OEM_2, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_HELP_PAGE },
-#endif
   { ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_DEV_TOOLS },
-#if defined(OS_CHROMEOS)
-  { ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FEEDBACK },
-#endif
   { ui::VKEY_F12, ui::EF_NONE, IDC_DEV_TOOLS },
   { ui::VKEY_J, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_DEV_TOOLS_CONSOLE },
   { ui::VKEY_C, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_DEV_TOOLS_INSPECT },
-#if !defined(USE_ASH)
-  { ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    IDC_NEW_INCOGNITO_WINDOW },
-  { ui::VKEY_T, ui::EF_CONTROL_DOWN, IDC_NEW_TAB },
-  { ui::VKEY_N, ui::EF_CONTROL_DOWN, IDC_NEW_WINDOW },
-#endif
   { ui::VKEY_O, ui::EF_CONTROL_DOWN, IDC_OPEN_FILE },
   { ui::VKEY_P, ui::EF_CONTROL_DOWN, IDC_PRINT},
   { ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_ADVANCED_PRINT},
   { ui::VKEY_R, ui::EF_CONTROL_DOWN, IDC_RELOAD },
   { ui::VKEY_R, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_RELOAD_IGNORING_CACHE },
-#if !defined(OS_CHROMEOS)
-  { ui::VKEY_F5, ui::EF_NONE, IDC_RELOAD },
-  { ui::VKEY_F5, ui::EF_CONTROL_DOWN, IDC_RELOAD_IGNORING_CACHE },
-  { ui::VKEY_F5, ui::EF_SHIFT_DOWN, IDC_RELOAD_IGNORING_CACHE },
-#else
-  { ui::VKEY_F3, ui::EF_NONE, IDC_RELOAD },
-  { ui::VKEY_F3, ui::EF_CONTROL_DOWN, IDC_RELOAD_IGNORING_CACHE },
-  { ui::VKEY_F3, ui::EF_SHIFT_DOWN, IDC_RELOAD_IGNORING_CACHE },
-#endif
   { ui::VKEY_HOME, ui::EF_ALT_DOWN, IDC_HOME },
-#if !defined(USE_ASH)
-  { ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_RESTORE_TAB },
-#endif
   { ui::VKEY_S, ui::EF_CONTROL_DOWN, IDC_SAVE_PAGE },
   { ui::VKEY_9, ui::EF_CONTROL_DOWN, IDC_SELECT_LAST_TAB },
   { ui::VKEY_NUMPAD9, ui::EF_CONTROL_DOWN, IDC_SELECT_LAST_TAB },
@@ -152,13 +79,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_H, ui::EF_CONTROL_DOWN, IDC_SHOW_HISTORY },
   { ui::VKEY_F, ui::EF_ALT_DOWN, IDC_SHOW_APP_MENU},
   { ui::VKEY_E, ui::EF_ALT_DOWN, IDC_SHOW_APP_MENU},
-#if !defined(OS_CHROMEOS)
-  { ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_SHOW_AVATAR_MENU},
-#endif
   { ui::VKEY_ESCAPE, ui::EF_NONE, IDC_STOP },
-#if !defined(USE_ASH)
-  { ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, IDC_TASK_MANAGER },
-#endif
   { ui::VKEY_OEM_PERIOD, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_TOGGLE_SPEECH_INPUT },
   { ui::VKEY_U, ui::EF_CONTROL_DOWN, IDC_VIEW_SOURCE },
@@ -171,6 +92,59 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
   { ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
   { ui::VKEY_ADD, ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
+
+  // Platform-specific key maps.
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, VKEY_BROWSER_SEARCH is handled in Ash.
+  { ui::VKEY_BROWSER_BACK, ui::EF_NONE, IDC_BACK },
+  { ui::VKEY_F1, ui::EF_NONE, IDC_BACK },
+  { ui::VKEY_BACK, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+    IDC_CLEAR_BROWSING_DATA },
+  { ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FEEDBACK },
+  { ui::VKEY_F2, ui::EF_CONTROL_DOWN, IDC_FOCUS_NEXT_PANE },
+  { ui::VKEY_F1, ui::EF_CONTROL_DOWN, IDC_FOCUS_PREVIOUS_PANE },
+  { ui::VKEY_BROWSER_FORWARD, ui::EF_NONE, IDC_FORWARD },
+  { ui::VKEY_F2, ui::EF_NONE, IDC_FORWARD },
+  { ui::VKEY_F4, ui::EF_NONE, IDC_FULLSCREEN },
+  { ui::VKEY_OEM_2, ui::EF_CONTROL_DOWN, IDC_HELP_PAGE },
+  { ui::VKEY_OEM_2, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_HELP_PAGE },
+  { ui::VKEY_BROWSER_HOME, ui::EF_NONE, IDC_HOME },
+  { ui::VKEY_BROWSER_REFRESH, ui::EF_NONE, IDC_RELOAD },
+  { ui::VKEY_F3, ui::EF_NONE, IDC_RELOAD },
+  { ui::VKEY_F3, ui::EF_CONTROL_DOWN, IDC_RELOAD_IGNORING_CACHE },
+  { ui::VKEY_F3, ui::EF_SHIFT_DOWN, IDC_RELOAD_IGNORING_CACHE },
+  { ui::VKEY_BROWSER_FAVORITES, ui::EF_NONE, IDC_SHOW_BOOKMARK_MANAGER },
+  { ui::VKEY_BROWSER_STOP, ui::EF_NONE, IDC_STOP },
+#else  // OS_CHROMEOS
+  { ui::VKEY_DELETE, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+    IDC_CLEAR_BROWSING_DATA },
+  { ui::VKEY_F4, ui::EF_CONTROL_DOWN, IDC_CLOSE_TAB },
+  { ui::VKEY_F4, ui::EF_ALT_DOWN, IDC_CLOSE_WINDOW },
+  { ui::VKEY_F3, ui::EF_NONE, IDC_FIND_NEXT },
+  { ui::VKEY_F3, ui::EF_SHIFT_DOWN, IDC_FIND_PREVIOUS },
+  { ui::VKEY_F10, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
+  { ui::VKEY_MENU, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
+  { ui::VKEY_F6, ui::EF_NONE, IDC_FOCUS_NEXT_PANE },
+  { ui::VKEY_F6, ui::EF_SHIFT_DOWN, IDC_FOCUS_PREVIOUS_PANE },
+  // On Windows, all VKEY_BROWSER_* keys except VKEY_BROWSER_SEARCH are handled
+  // via WM_APPCOMMAND.
+  { ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, IDC_FOCUS_SEARCH },
+  { ui::VKEY_F11, ui::EF_NONE, IDC_FULLSCREEN },
+  { ui::VKEY_F1, ui::EF_NONE, IDC_HELP_PAGE },
+  { ui::VKEY_F5, ui::EF_NONE, IDC_RELOAD },
+  { ui::VKEY_F5, ui::EF_CONTROL_DOWN, IDC_RELOAD_IGNORING_CACHE },
+  { ui::VKEY_F5, ui::EF_SHIFT_DOWN, IDC_RELOAD_IGNORING_CACHE },
+  { ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_SHOW_AVATAR_MENU},
+#endif  // OS_CHROMEOS
+#if !defined(USE_ASH)
+  { ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_EXIT },
+  { ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+    IDC_NEW_INCOGNITO_WINDOW },
+  { ui::VKEY_T, ui::EF_CONTROL_DOWN, IDC_NEW_TAB },
+  { ui::VKEY_N, ui::EF_CONTROL_DOWN, IDC_NEW_WINDOW },
+  { ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_RESTORE_TAB },
+  { ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, IDC_TASK_MANAGER },
+#endif
 };
 
 const size_t kAcceleratorMapLength = arraysize(kAcceleratorMap);

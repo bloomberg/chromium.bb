@@ -55,6 +55,7 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_PRINT, ui::EF_NONE, TAKE_SCREENSHOT },
   // On Chrome OS, Search key is mapped to LWIN.
   { true, ui::VKEY_LWIN, ui::EF_NONE, SEARCH_KEY },
+  { true, ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, SEARCH_KEY },
   { true, ui::VKEY_LWIN, ui::EF_CONTROL_DOWN, TOGGLE_APP_LIST },
   { true, ui::VKEY_LWIN, ui::EF_SHIFT_DOWN, TOGGLE_CAPS_LOCK },
   { true, ui::VKEY_F6, ui::EF_NONE, BRIGHTNESS_DOWN },
@@ -112,6 +113,9 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_HOME, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     MONITOR_TOGGLE_SCALE },
 #endif
+
+  // TODO(yusukes): Handle VKEY_MEDIA_STOP, VKEY_MEDIA_PLAY_PAUSE,
+  // VKEY_MEDIA_LAUNCH_MAIL, and VKEY_MEDIA_LAUNCH_APP2 (aka Calculator button).
 };
 
 const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
