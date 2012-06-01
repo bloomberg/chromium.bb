@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,9 +24,9 @@ class ScopedThreadProxy::Core : public base::RefCountedThreadSafe<Core> {
   void PostDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& closure,
-      int64 delay_ms) {
+      base::TimeDelta delay) {
     if (!canceled_) {
-      message_loop_->PostDelayedTask(from_here, Wrap(closure), delay_ms);
+      message_loop_->PostDelayedTask(from_here, Wrap(closure), delay);
     }
   }
 
@@ -75,8 +75,8 @@ void ScopedThreadProxy::PostTask(const tracked_objects::Location& from_here,
 void ScopedThreadProxy::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& closure,
-    int64 delay_ms) {
-  core_->PostDelayedTask(from_here, closure, delay_ms);
+    base::TimeDelta delay) {
+  core_->PostDelayedTask(from_here, closure, delay);
 }
 
 void ScopedThreadProxy::Detach() {

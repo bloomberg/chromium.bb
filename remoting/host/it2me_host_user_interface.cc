@@ -30,7 +30,8 @@ class It2MeHostUserInterface::TimerTask {
             const base::Closure& task,
             int delay_ms)
       : thread_proxy_(message_loop) {
-    thread_proxy_.PostDelayedTask(FROM_HERE, task, delay_ms);
+    thread_proxy_.PostDelayedTask(
+        FROM_HERE, task, base::TimeDelta::FromMilliseconds(delay_ms));
   }
 
  private:
