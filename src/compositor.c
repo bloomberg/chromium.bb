@@ -2287,9 +2287,6 @@ weston_compositor_build_global_keymap(struct weston_compositor *ec)
 	if (ec->xkb_info.keymap != NULL)
 		return;
 
-	if (ec->xkb_names.rules == NULL)
-		weston_compositor_xkb_init(ec, NULL);
-
 	ec->xkb_info.keymap = xkb_map_new_from_names(ec->xkb_context,
 						     &ec->xkb_names,
 						     0);
@@ -2846,6 +2843,21 @@ weston_compositor_init(struct weston_compositor *ec,
 {
 	struct wl_event_loop *loop;
 	const char *extensions;
+	struct xkb_rule_names xkb_names;
+        const struct config_key keyboard_config_keys[] = {
+		{ "keymap_rules", CONFIG_KEY_STRING, &xkb_names.rules },
+		{ "keymap_model", CONFIG_KEY_STRING, &xkb_names.model },
+		{ "keymap_layout", CONFIG_KEY_STRING, &xkb_names.layout },
+		{ "keymap_variant", CONFIG_KEY_STRING, &xkb_names.variant },
+		{ "keymap_options", CONFIG_KEY_STRING, &xkb_names.options },
+        };
+	const struct config_section cs[] = {
+                { "keyboard",
+                  keyboard_config_keys, ARRAY_LENGTH(keyboard_config_keys) },
+	};
+
+	memset(&xkb_names, 0, sizeof(xkb_names));
+	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), ec);
 
 	ec->wl_display = display;
 	wl_signal_init(&ec->destroy_signal);
@@ -2935,6 +2947,8 @@ weston_compositor_init(struct weston_compositor *ec,
 	if (weston_shader_init(&ec->solid_shader,
 			     vertex_shader, solid_fragment_shader) < 0)
 		return -1;
+
+	weston_compositor_xkb_init(ec, &xkb_names);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
@@ -3051,25 +3065,14 @@ int main(int argc, char *argv[])
 	int32_t xserver = 0;
 	char *socket_name = NULL;
 	char *config_file;
-	struct xkb_rule_names xkb_names;
 
 	const struct config_key shell_config_keys[] = {
 		{ "type", CONFIG_KEY_STRING, &shell },
 	};
 
-        const struct config_key keyboard_config_keys[] = {
-		{ "keymap_rules", CONFIG_KEY_STRING, &xkb_names.rules },
-		{ "keymap_model", CONFIG_KEY_STRING, &xkb_names.model },
-		{ "keymap_layout", CONFIG_KEY_STRING, &xkb_names.layout },
-		{ "keymap_variant", CONFIG_KEY_STRING, &xkb_names.variant },
-		{ "keymap_options", CONFIG_KEY_STRING, &xkb_names.options },
-        };
-
 	const struct config_section cs[] = {
 		{ "shell",
 		  shell_config_keys, ARRAY_LENGTH(shell_config_keys) },
-                { "keyboard",
-                  keyboard_config_keys, ARRAY_LENGTH(keyboard_config_keys) },
 	};
 
 	const struct weston_option core_options[] = {
@@ -3079,8 +3082,6 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_BOOLEAN, "xserver", 0, &xserver },
 		{ WESTON_OPTION_STRING, "module", 0, &module },
 	};
-
-	memset(&xkb_names, 0, sizeof(xkb_names));
 
 	argc = parse_options(core_options,
 			     ARRAY_LENGTH(core_options), argc, argv);
