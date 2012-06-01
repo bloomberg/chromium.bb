@@ -1206,38 +1206,6 @@ IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFlash_WriteClipboardData,
                     int /* clipboard_type */,
                     std::vector<int> /* formats */,
                     std::vector<ppapi::proxy::SerializedVar> /* data */)
-IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBFlash_OpenFile,
-                           PP_Instance /* instance */,
-                           std::string /* path */,
-                           int32_t /* mode */,
-                           IPC::PlatformFileForTransit /* file_handle */,
-                           int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_RenameFile,
-                           PP_Instance /* instance */,
-                           std::string /* path_from */,
-                           std::string /* path_to */,
-                           int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED3_1(
-    PpapiHostMsg_PPBFlash_DeleteFileOrDir,
-    PP_Instance /* instance */,
-    std::string /* path */,
-    PP_Bool /* recursive */,
-    int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_CreateDir,
-                           PP_Instance /* instance */,
-                           std::string /* path */,
-                           int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlash_QueryFile,
-                           PP_Instance /* instance */,
-                           std::string /* path */,
-                           PP_FileInfo /* info */,
-                           int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_2(
-    PpapiHostMsg_PPBFlash_GetDirContents,
-    PP_Instance /* instance */,
-    std::string /* path */,
-    std::vector<ppapi::proxy::SerializedDirEntry> /* entries */,
-    int32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBFlash_OpenFileRef,
                            PP_Instance /* instance */,
                            ppapi::HostResource /* file_ref */,

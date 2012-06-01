@@ -1,15 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_PPAPI_DIR_CONTENTS_H_
-#define WEBKIT_PLUGINS_PPAPI_DIR_CONTENTS_H_
+#ifndef PPAPI_SHARED_IMPL_DIR_CONTENTS_H_
+#define PPAPI_SHARED_IMPL_DIR_CONTENTS_H_
+
 
 #include <vector>
 
 #include "base/file_path.h"
 
-namespace webkit {
 namespace ppapi {
 
 struct DirEntry {
@@ -20,6 +20,5 @@ struct DirEntry {
 typedef std::vector<DirEntry> DirContents;
 
 }  // namespace ppapi
-}  // namespace webkit
 
-#endif  // WEBKIT_PLUGINS_PPAPI_DIR_CONTENTS_H_
+#endif  // PPAPI_SHARED_IMPL_DIR_CONTENTS_H_

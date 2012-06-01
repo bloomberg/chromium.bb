@@ -13,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/shared_impl/var.h"
@@ -30,7 +31,6 @@
 #include "webkit/glue/clipboard_client.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/file_path.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -397,7 +397,8 @@ int32_t PPB_Flash_Impl::OpenFile(PP_Instance pp_instance,
 
   base::PlatformFile base_file;
   base::PlatformFileError result = instance->delegate()->OpenFile(
-      PepperFilePath::MakeModuleLocal(instance->module(), path),
+      ::ppapi::PepperFilePath::MakeModuleLocal(
+          instance->module()->name(), path),
       flags,
       &base_file);
   *file = base_file;
@@ -415,8 +416,10 @@ int32_t PPB_Flash_Impl::RenameFile(PP_Instance pp_instance,
     return PP_ERROR_FAILED;
 
   base::PlatformFileError result = instance->delegate()->RenameFile(
-      PepperFilePath::MakeModuleLocal(instance->module(), path_from),
-      PepperFilePath::MakeModuleLocal(instance->module(), path_to));
+      ::ppapi::PepperFilePath::MakeModuleLocal(
+          instance->module()->name(), path_from),
+      ::ppapi::PepperFilePath::MakeModuleLocal(
+          instance->module()->name(), path_to));
   return ::ppapi::PlatformFileErrorToPepperError(result);
 }
 
@@ -431,7 +434,8 @@ int32_t PPB_Flash_Impl::DeleteFileOrDir(PP_Instance pp_instance,
     return PP_ERROR_FAILED;
 
   base::PlatformFileError result = instance->delegate()->DeleteFileOrDir(
-      PepperFilePath::MakeModuleLocal(instance->module(), path),
+      ::ppapi::PepperFilePath::MakeModuleLocal(
+          instance->module()->name(), path),
       PPBoolToBool(recursive));
   return ::ppapi::PlatformFileErrorToPepperError(result);
 }
@@ -445,7 +449,8 @@ int32_t PPB_Flash_Impl::CreateDir(PP_Instance pp_instance, const char* path) {
     return PP_ERROR_FAILED;
 
   base::PlatformFileError result = instance->delegate()->CreateDir(
-      PepperFilePath::MakeModuleLocal(instance->module(), path));
+      ::ppapi::PepperFilePath::MakeModuleLocal(
+          instance->module()->name(), path));
   return ::ppapi::PlatformFileErrorToPepperError(result);
 }
 
@@ -461,7 +466,8 @@ int32_t PPB_Flash_Impl::QueryFile(PP_Instance pp_instance,
 
   base::PlatformFileInfo file_info;
   base::PlatformFileError result = instance->delegate()->QueryFile(
-      PepperFilePath::MakeModuleLocal(instance->module(), path),
+      ::ppapi::PepperFilePath::MakeModuleLocal(
+          instance->module()->name(), path),
       &file_info);
   if (result == base::PLATFORM_FILE_OK) {
     info->size = file_info.size;
@@ -487,9 +493,10 @@ int32_t PPB_Flash_Impl::GetDirContents(PP_Instance pp_instance,
     return PP_ERROR_FAILED;
 
   *contents = NULL;
-  DirContents pepper_contents;
+  ::ppapi::DirContents pepper_contents;
   base::PlatformFileError result = instance->delegate()->GetDirContents(
-      PepperFilePath::MakeModuleLocal(instance->module(), path),
+      ::ppapi::PepperFilePath::MakeModuleLocal(
+          instance->module()->name(), path),
       &pepper_contents);
 
   if (result != base::PLATFORM_FILE_OK)
@@ -534,7 +541,7 @@ int32_t PPB_Flash_Impl::OpenFileRef(PP_Instance pp_instance,
 
   base::PlatformFile base_file;
   base::PlatformFileError result = instance->delegate()->OpenFile(
-      PepperFilePath::MakeAbsolute(file_ref->GetSystemPath()),
+      ::ppapi::PepperFilePath::MakeAbsolute(file_ref->GetSystemPath()),
       flags,
       &base_file);
   *file = base_file;
@@ -555,7 +562,7 @@ int32_t PPB_Flash_Impl::QueryFileRef(PP_Instance pp_instance,
 
   base::PlatformFileInfo file_info;
   base::PlatformFileError result = instance->delegate()->QueryFile(
-      PepperFilePath::MakeAbsolute(file_ref->GetSystemPath()),
+      ::ppapi::PepperFilePath::MakeAbsolute(file_ref->GetSystemPath()),
       &file_info);
   if (result == base::PLATFORM_FILE_OK) {
     info->size = file_info.size;

@@ -24,7 +24,6 @@
 #include "content/common/fileapi/file_system_dispatcher.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
-#include "content/common/pepper_file_messages.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/quota_dispatcher.h"
@@ -64,7 +63,9 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/proxy/host_dispatcher.h"
+#include "ppapi/proxy/pepper_file_messages.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/platform_file.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
@@ -82,7 +83,6 @@
 #include "ui/gfx/size.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/plugins/npapi/webplugin.h"
-#include "webkit/plugins/ppapi/file_path.h"
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -913,7 +913,7 @@ bool PepperPluginDelegateImpl::AsyncOpenFileSystemURL(
 }
 
 base::PlatformFileError PepperPluginDelegateImpl::OpenFile(
-    const webkit::ppapi::PepperFilePath& path,
+    const ppapi::PepperFilePath& path,
     int flags,
     base::PlatformFile* file) {
   IPC::PlatformFileForTransit transit_file;
@@ -929,8 +929,8 @@ base::PlatformFileError PepperPluginDelegateImpl::OpenFile(
 }
 
 base::PlatformFileError PepperPluginDelegateImpl::RenameFile(
-    const webkit::ppapi::PepperFilePath& from_path,
-    const webkit::ppapi::PepperFilePath& to_path) {
+    const ppapi::PepperFilePath& from_path,
+    const ppapi::PepperFilePath& to_path) {
   base::PlatformFileError error;
   IPC::Message* msg = new PepperFileMsg_RenameFile(from_path, to_path, &error);
   if (!render_view_->Send(msg))
@@ -939,7 +939,7 @@ base::PlatformFileError PepperPluginDelegateImpl::RenameFile(
 }
 
 base::PlatformFileError PepperPluginDelegateImpl::DeleteFileOrDir(
-    const webkit::ppapi::PepperFilePath& path,
+    const ppapi::PepperFilePath& path,
     bool recursive) {
   base::PlatformFileError error;
   IPC::Message* msg = new PepperFileMsg_DeleteFileOrDir(
@@ -950,7 +950,7 @@ base::PlatformFileError PepperPluginDelegateImpl::DeleteFileOrDir(
 }
 
 base::PlatformFileError PepperPluginDelegateImpl::CreateDir(
-    const webkit::ppapi::PepperFilePath& path) {
+    const ppapi::PepperFilePath& path) {
   base::PlatformFileError error;
   IPC::Message* msg = new PepperFileMsg_CreateDir(path, &error);
   if (!render_view_->Send(msg))
@@ -959,7 +959,7 @@ base::PlatformFileError PepperPluginDelegateImpl::CreateDir(
 }
 
 base::PlatformFileError PepperPluginDelegateImpl::QueryFile(
-    const webkit::ppapi::PepperFilePath& path,
+    const ppapi::PepperFilePath& path,
     base::PlatformFileInfo* info) {
   base::PlatformFileError error;
   IPC::Message* msg = new PepperFileMsg_QueryFile(path, info, &error);
@@ -969,8 +969,8 @@ base::PlatformFileError PepperPluginDelegateImpl::QueryFile(
 }
 
 base::PlatformFileError PepperPluginDelegateImpl::GetDirContents(
-    const webkit::ppapi::PepperFilePath& path,
-    webkit::ppapi::DirContents* contents) {
+    const ppapi::PepperFilePath& path,
+    ppapi::DirContents* contents) {
   base::PlatformFileError error;
   IPC::Message* msg = new PepperFileMsg_GetDirContents(path, contents, &error);
   if (!render_view_->Send(msg))

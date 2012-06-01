@@ -1,18 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/ppapi/file_path.h"
+#include "ppapi/shared_impl/file_path.h"
 
 #include <string>
-
-#include "webkit/plugins/ppapi/plugin_module.h"
 
 #if defined(OS_WIN)
 #include "base/utf_string_conversions.h"
 #endif
 
-namespace webkit {
 namespace ppapi {
 
 namespace {
@@ -44,12 +41,11 @@ PepperFilePath PepperFilePath::MakeAbsolute(const FilePath& path) {
 }
 
 // static
-PepperFilePath PepperFilePath::MakeModuleLocal(PluginModule* module,
+PepperFilePath PepperFilePath::MakeModuleLocal(const std::string& name,
                                                const char* utf8_path) {
-  FilePath full_path = GetFilePathFromUTF8(module->name()).Append(
+  FilePath full_path = GetFilePathFromUTF8(name).Append(
       GetFilePathFromUTF8(utf8_path));
   return PepperFilePath(DOMAIN_MODULE_LOCAL, full_path);
 }
 
 }  // namespace ppapi
-}  // namespace webkit
