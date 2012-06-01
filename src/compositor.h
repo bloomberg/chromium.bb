@@ -631,10 +631,12 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display,
 void
 weston_compositor_shutdown(struct weston_compositor *ec);
 void
-weston_output_update_zoom(struct weston_output *output,
-						int x, int y, uint32_t type);
+weston_text_cursor_position_notify(struct weston_surface *surface,
+						wl_fixed_t x, wl_fixed_t y);
 void
-weston_text_cursor_position_notify(struct weston_surface *surface, int x, int y);
+weston_output_update_zoom(struct weston_output *output,
+						wl_fixed_t x, wl_fixed_t y,
+						uint32_t type);
 void
 weston_output_update_matrix(struct weston_output *output);
 void

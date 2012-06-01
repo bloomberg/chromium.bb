@@ -37,7 +37,7 @@ static void
 text_cursor_position_notify(struct wl_client *client,
 			    struct wl_resource *resource,
 			    struct wl_resource *surface_resource,
-			    uint32_t x, uint32_t y)
+			    wl_fixed_t x, wl_fixed_t y)
 {
 	weston_text_cursor_position_notify((struct weston_surface *) surface_resource, x, y);
 }

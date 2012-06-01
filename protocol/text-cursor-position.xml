@@ -3,8 +3,8 @@
   <interface name="text_cursor_position" version="1">
     <request name="notify">
       <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="x" type="uint"/>
-      <arg name="y" type="uint"/>
+      <arg name="x" type="fixed"/>
+      <arg name="y" type="fixed"/>
     </request>
   </interface>
 

@@ -2739,23 +2739,23 @@ weston_output_destroy(struct weston_output *output)
 
 WL_EXPORT void
 weston_text_cursor_position_notify(struct weston_surface *surface,
-						int32_t cur_pos_x,
-						int32_t cur_pos_y)
+						wl_fixed_t cur_pos_x,
+						wl_fixed_t cur_pos_y)
 {
 	struct weston_output *output;
-	int32_t global_x, global_y;
+	wl_fixed_t global_x, global_y;
 
-	weston_surface_to_global(surface, cur_pos_x, cur_pos_y,
+	weston_surface_to_global_fixed(surface, cur_pos_x, cur_pos_y,
 						&global_x, &global_y);
 
 	wl_list_for_each(output, &surface->compositor->output_list, link)
 		if (output->zoom.active &&
 		    pixman_region32_contains_point(&output->region,
-						global_x, global_y, NULL))
-			weston_output_update_zoom(output,
-						wl_fixed_from_int(global_x),
-						wl_fixed_from_int(global_y),
-						ZOOM_TEXT_CURSOR);
+						wl_fixed_to_int(global_x),
+						wl_fixed_to_int(global_y),
+						NULL))
+			weston_output_update_zoom(output, global_x, global_y,
+							  ZOOM_TEXT_CURSOR);
 }
 
 WL_EXPORT void

@@ -2701,7 +2701,9 @@ window_set_text_cursor_position(struct window *window, int32_t x, int32_t y)
 		return;
 
 	text_cursor_position_notify(text_cursor_position,
-						window->surface, x, y);
+						window->surface,
+						wl_fixed_from_int(x),
+						wl_fixed_from_int(y));
 
 	window->send_cursor_position = 0;
 }
