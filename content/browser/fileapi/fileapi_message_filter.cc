@@ -663,34 +663,41 @@ bool FileAPIMessageFilter::HasPermissionsForFile(
   }
 
   FilePath file_path;
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
-  // Special handling for isolated filesystem: its root path is purely
-  // virtual path and we don't have corresponding platform path with which
-  // we can check the permission.  To allow read-access on the virtual root
-  // we always return true if CrackIsolatedPath returns true (i.e. the
-  // isolated filesystem is valid) and the returned path is empty, i.e.
-  // the virtual_path is pointing to the root.
+  // Special handling for isolated filesystem.
+  // (See ChildProcessSecurityPolicy::GrantReadFileSystem for more
+  // details about access permission for isolated filesystem.)
   if (file_system_type == fileapi::kFileSystemTypeIsolated) {
-    std::string fsid;
+    std::string filesystem_id;
     if (!fileapi::IsolatedContext::GetInstance()->CrackIsolatedPath(
-            virtual_path, &fsid, NULL, &file_path)) {
+            virtual_path, &filesystem_id, NULL, &file_path)) {
+      *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
       return false;
     }
-    // The root directory case.  Always allow read access as far as the
+    // The root directory case. Always allow read-only access as far as the
     // filesystem is valid.
     if (file_path.empty())
       return (permissions == kReadFilePermissions);
-  } else {
-    file_path = mount_point_provider->GetPathForPermissionsCheck(virtual_path);
-    if (file_path.empty()) {
+
+    // Access permission to the file system overrides the file permission
+    // (if and only if they accessed via an isolated file system).
+    bool success = policy->HasPermissionsForFileSystem(
+        process_id_, filesystem_id, permissions);
+    if (!success)
       *error = base::PLATFORM_FILE_ERROR_SECURITY;
-      return false;
-    }
+    return success;
   }
 
-  bool success =
-      ChildProcessSecurityPolicyImpl::GetInstance()->HasPermissionsForFile(
-          process_id_, file_path, permissions);
+  file_path = mount_point_provider->GetPathForPermissionsCheck(virtual_path);
+  if (file_path.empty()) {
+    *error = base::PLATFORM_FILE_ERROR_SECURITY;
+    return false;
+  }
+
+  bool success = policy->HasPermissionsForFile(
+      process_id_, file_path, permissions);
   if (!success)
     *error = base::PLATFORM_FILE_ERROR_SECURITY;
   return success;
@@ -706,4 +713,3 @@ FileSystemOperationInterface* FileAPIMessageFilter::GetNewOperation(
   operations_.AddWithID(operation, request_id);
   return operation;
 }
-

@@ -63,9 +63,35 @@ class ChildProcessSecurityPolicy {
   // to upload the file to the web.
   virtual void GrantReadFile(int child_id, const FilePath& file) = 0;
 
-  // Grants access permission to the given filesystem_id.
-  virtual void GrantAccessFileSystem(int child_id,
-                                     const std::string& filesystem_id) = 0;
+  // Grants read access permission to the given isolated file system
+  // identified by |filesystem_id|. An isolated file system can be
+  // created for a set of native files/directories (like dropped files)
+  // using fileapi::IsolatedContext. A child process needs to be granted
+  // permission to the file system to access the files in it using
+  // file system URL.
+  //
+  // Note: to grant read access to the content of files you also need
+  // to give permission directly to the file paths using GrantReadFile.
+  // TODO(kinuko): We should unify this file-level and file-system-level
+  // permission when a file is accessed via a file system.
+  //
+  // Note: files/directories in the same file system share the same
+  // permission as far as they are accessed via the file system, i.e.
+  // using the file system URL (tip: you can create a new file system
+  // to give different permission to part of files).
+  virtual void GrantReadFileSystem(int child_id,
+                                   const std::string& filesystem_id) = 0;
+
+  // Grants write access permission to the given isolated file system
+  // identified by |filesystem_id|.  See comments for GrantReadFileSystem
+  // for more details.  For writing you do NOT need to give direct permission
+  // to individual file paths.
+  //
+  // This must be called with a great care as this gives write permission
+  // to all files/directories included in the file system.  Especially this
+  // should NOT be called if the file system contains directories.
+  virtual void GrantReadWriteFileSystem(int child_id,
+                                        const std::string& filesystem_id) = 0;
 
   // Grants the child process the capability to access URLs of the provided
   // scheme.

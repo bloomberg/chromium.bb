@@ -38,9 +38,13 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                                        const FilePath& file,
                                        int permissions) OVERRIDE;
   virtual void GrantReadFile(int child_id, const FilePath& file) OVERRIDE;
+  virtual void GrantReadFileSystem(
+      int child_id,
+      const std::string& filesystem_id) OVERRIDE;
+  virtual void GrantReadWriteFileSystem(
+      int child_id,
+      const std::string& filesystem_id) OVERRIDE;
   virtual void GrantScheme(int child_id, const std::string& scheme) OVERRIDE;
-  virtual void GrantAccessFileSystem(int child_id,
-                                     const std::string& filesystem_id) OVERRIDE;
   virtual bool CanReadFile(int child_id, const FilePath& file) OVERRIDE;
 
   // Pseudo schemes are treated differently than other schemes because they
@@ -122,6 +126,21 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // given origin.
   // Only used if the very experimental --enable-strict-site-isolation is used.
   void LockToOrigin(int child_id, const GURL& gurl);
+
+  // Grants access permission to the given isolated file system
+  // identified by |filesystem_id|.  See comments for
+  // ChildProcessSecurityPolicy::GrantReadFileSystem() for more details.
+  void GrantPermissionsForFileSystem(
+      int child_id,
+      const std::string& filesystem_id,
+      int permission);
+
+  // Determines if certain permissions were granted for a file fystem.
+  // |permissions| must be a bit-set of base::PlatformFileFlags.
+  bool HasPermissionsForFileSystem(
+      int child_id,
+      const std::string& filesystem_id,
+      int permission);
 
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;

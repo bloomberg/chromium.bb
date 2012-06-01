@@ -21,15 +21,26 @@
 using content::ChildProcessSecurityPolicy;
 using content::SiteInstance;
 
-static const int kReadFilePermissions =
+namespace {
+
+const int kReadFilePermissions =
     base::PLATFORM_FILE_OPEN |
     base::PLATFORM_FILE_READ |
     base::PLATFORM_FILE_EXCLUSIVE_READ |
     base::PLATFORM_FILE_ASYNC;
 
-static const int kEnumerateDirectoryPermissions =
+const int kWriteFilePermissions =
+    base::PLATFORM_FILE_OPEN |
+    base::PLATFORM_FILE_WRITE |
+    base::PLATFORM_FILE_EXCLUSIVE_WRITE |
+    base::PLATFORM_FILE_ASYNC |
+    base::PLATFORM_FILE_WRITE_ATTRIBUTES;
+
+const int kEnumerateDirectoryPermissions =
     kReadFilePermissions |
     base::PLATFORM_FILE_ENUMERATE;
+
+}  // namespace
 
 // The SecurityState class is used to maintain per-child process security state
 // information.
@@ -43,10 +54,10 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     scheme_policy_.clear();
     fileapi::IsolatedContext* isolated_context =
         fileapi::IsolatedContext::GetInstance();
-    for (FileSystemSet::iterator iter = access_granted_filesystems_.begin();
-         iter != access_granted_filesystems_.end();
+    for (FileSystemMap::iterator iter = filesystem_permissions_.begin();
+         iter != filesystem_permissions_.end();
          ++iter) {
-      isolated_context->RevokeIsolatedFileSystem(*iter);
+      isolated_context->RevokeIsolatedFileSystem(iter->first);
     }
     UMA_HISTOGRAM_COUNTS("ChildProcessSecurityPolicy.PerChildFilePermissions",
                          file_permissions_.size());
@@ -76,8 +87,18 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   }
 
   // Grant certain permissions to a file.
-  void GrantAccessFileSystem(const std::string& filesystem_id) {
-    access_granted_filesystems_.insert(filesystem_id);
+  void GrantPermissionsForFileSystem(const std::string& filesystem_id,
+                                     int permissions) {
+    filesystem_permissions_[filesystem_id] = permissions;
+  }
+
+  bool HasPermissionsForFileSystem(const std::string& filesystem_id,
+                                   int permissions) {
+    if (filesystem_permissions_.find(filesystem_id) ==
+        filesystem_permissions_.end())
+      return false;
+    return (filesystem_permissions_[filesystem_id] & permissions) ==
+        permissions;
   }
 
   void GrantBindings(int bindings) {
@@ -138,8 +159,10 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 
  private:
   typedef std::map<std::string, bool> SchemeMap;
-  typedef std::map<FilePath, int> FileMap;  // bit-set of PlatformFileFlags
-  typedef std::set<std::string> FileSystemSet;
+
+  typedef int FilePermissionFlags;  // bit-set of PlatformFileFlags
+  typedef std::map<FilePath, FilePermissionFlags> FileMap;
+  typedef std::map<std::string, FilePermissionFlags> FileSystemMap;
 
   // Maps URL schemes to whether permission has been granted or revoked:
   //   |true| means the scheme has been granted.
@@ -158,7 +181,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   GURL origin_lock_;
 
   // The set of isolated filesystems the child process is permitted to access.
-  FileSystemSet access_granted_filesystems_;
+  FileSystemMap filesystem_permissions_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityState);
 };
@@ -330,15 +353,16 @@ void ChildProcessSecurityPolicyImpl::RevokeAllPermissionsForFile(
   state->second->RevokeAllPermissionsForFile(file);
 }
 
-void ChildProcessSecurityPolicyImpl::GrantAccessFileSystem(
+void ChildProcessSecurityPolicyImpl::GrantReadFileSystem(
     int child_id, const std::string& filesystem_id) {
-  base::AutoLock lock(lock_);
+  GrantPermissionsForFileSystem(child_id, filesystem_id, kReadFilePermissions);
+}
 
-  SecurityStateMap::iterator state = security_state_.find(child_id);
-  if (state == security_state_.end())
-    return;
-
-  state->second->GrantAccessFileSystem(filesystem_id);
+void ChildProcessSecurityPolicyImpl::GrantReadWriteFileSystem(
+    int child_id, const std::string& filesystem_id) {
+  GrantPermissionsForFileSystem(child_id, filesystem_id,
+                                kReadFilePermissions |
+                                kWriteFilePermissions);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantScheme(int child_id,
@@ -523,4 +547,28 @@ void ChildProcessSecurityPolicyImpl::LockToOrigin(int child_id,
   SecurityStateMap::iterator state = security_state_.find(child_id);
   DCHECK(state != security_state_.end());
   state->second->LockToOrigin(gurl);
+}
+
+void ChildProcessSecurityPolicyImpl::GrantPermissionsForFileSystem(
+    int child_id,
+    const std::string& filesystem_id,
+    int permission) {
+  base::AutoLock lock(lock_);
+
+  SecurityStateMap::iterator state = security_state_.find(child_id);
+  if (state == security_state_.end())
+    return;
+  state->second->GrantPermissionsForFileSystem(filesystem_id, permission);
+}
+
+bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystem(
+    int child_id,
+    const std::string& filesystem_id,
+    int permission) {
+  base::AutoLock lock(lock_);
+
+  SecurityStateMap::iterator state = security_state_.find(child_id);
+  if (state == security_state_.end())
+    return false;
+  return state->second->HasPermissionsForFileSystem(filesystem_id, permission);
 }

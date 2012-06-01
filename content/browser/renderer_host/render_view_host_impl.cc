@@ -554,7 +554,7 @@ void RenderViewHostImpl::DragTargetDragEnter(
   DCHECK(isolated_context);
   std::string filesystem_id = isolated_context->RegisterIsolatedFileSystem(
       filesets);
-  policy->GrantAccessFileSystem(renderer_id, filesystem_id);
+  policy->GrantReadFileSystem(renderer_id, filesystem_id);
   filtered_data.filesystem_id = UTF8ToUTF16(filesystem_id);
 
   Send(new DragMsg_TargetDragEnter(GetRoutingID(), filtered_data, client_pt,

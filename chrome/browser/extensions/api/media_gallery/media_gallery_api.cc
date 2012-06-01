@@ -62,6 +62,7 @@ bool GetMediaFileSystemsFunction::RunImpl() {
     if (!policy->CanReadFile(child_id, path)) {
       policy->GrantReadFile(child_id, path);
     }
+    policy->GrantReadFileSystem(child_id, fsid);
   }
 
   result_.reset(list);

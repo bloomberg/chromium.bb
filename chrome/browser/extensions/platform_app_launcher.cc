@@ -153,6 +153,7 @@ class PlatformAppLauncher
         content::ChildProcessSecurityPolicy::GetInstance();
     int renderer_id = host->render_process_host()->GetID();
 
+    // Granting read file permission to allow reading file content.
     // If the renderer already has permission to read these paths, we don't
     // regrant, as this would overwrite any other permissions which the renderer
     // may already have.
@@ -167,7 +168,9 @@ class PlatformAppLauncher
     DCHECK(isolated_context);
     std::string filesystem_id = isolated_context->RegisterIsolatedFileSystem(
         filesets);
-    policy->GrantAccessFileSystem(renderer_id, filesystem_id);
+    // Granting read file system permission as well to allow file-system
+    // read operations.
+    policy->GrantReadFileSystem(renderer_id, filesystem_id);
 
     extensions::AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
         profile_, extension_, ASCIIToUTF16(kViewIntent), filesystem_id,
