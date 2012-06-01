@@ -155,8 +155,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
   ASSERT_STREQ("A", cookies[0]->Name().c_str());
   ASSERT_STREQ("B", cookies[0]->Value().c_str());
   DestroyStore();
-  STLDeleteContainerPointers(cookies.begin(), cookies.end());
-  cookies.clear();
+  STLDeleteElements(&cookies);
 
   // Now corrupt the meta table.
   {
@@ -180,8 +179,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
   ASSERT_STREQ("foo.bar", cookies[0]->Domain().c_str());
   ASSERT_STREQ("X", cookies[0]->Name().c_str());
   ASSERT_STREQ("Y", cookies[0]->Value().c_str());
-  STLDeleteContainerPointers(cookies.begin(), cookies.end());
-  cookies.clear();
+  STLDeleteElements(&cookies);
 }
 
 // Test if data is stored as expected in the SQLite database.
@@ -203,8 +201,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
   // Now delete the cookie and check persistence again.
   store_->DeleteCookie(*cookies[0]);
   DestroyStore();
-  STLDeleteContainerPointers(cookies.begin(), cookies.end());
-  cookies.clear();
+  STLDeleteElements(&cookies);
 
   // Reload and check if the cookie has been removed.
   CreateAndLoad(false, &cookies);
@@ -255,22 +252,26 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   ASSERT_EQ(loaded_event_.IsSignaled(), false);
   std::set<std::string> cookies_loaded;
   for (std::vector<net::CookieMonster::CanonicalCookie*>::iterator
-       it = cookies_.begin(); it != cookies_.end(); ++it)
+       it = cookies_.begin(); it != cookies_.end(); ++it) {
     cookies_loaded.insert((*it)->Domain().c_str());
+  }
+  STLDeleteElements(&cookies_);
   ASSERT_GT(4U, cookies_loaded.size());
-  ASSERT_EQ(cookies_loaded.find("www.aaa.com") != cookies_loaded.end(), true);
-  ASSERT_EQ(cookies_loaded.find("travel.aaa.com") != cookies_loaded.end(),
-            true);
+  ASSERT_EQ(true, cookies_loaded.find("www.aaa.com") != cookies_loaded.end());
+  ASSERT_EQ(true,
+            cookies_loaded.find("travel.aaa.com") != cookies_loaded.end());
 
   db_thread_event_.Signal();
   loaded_event_.Wait();
   for (std::vector<net::CookieMonster::CanonicalCookie*>::iterator
-       it = cookies_.begin(); it != cookies_.end(); ++it)
+       it = cookies_.begin(); it != cookies_.end(); ++it) {
     cookies_loaded.insert((*it)->Domain().c_str());
+  }
   ASSERT_EQ(4U, cookies_loaded.size());
   ASSERT_EQ(cookies_loaded.find("foo.bar") != cookies_loaded.end(),
             true);
   ASSERT_EQ(cookies_loaded.find("www.bbb.com") != cookies_loaded.end(), true);
+  STLDeleteElements(&cookies_);
 }
 
 // Test that we can force the database to be written by calling Flush().
@@ -369,8 +370,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   ASSERT_STREQ("C", cookies[0]->Name().c_str());
   ASSERT_STREQ("D", cookies[0]->Value().c_str());
 
-  STLDeleteContainerPointers(cookies.begin(), cookies.end());
-  cookies.clear();
+  STLDeleteElements(&cookies);
 }
 
 // Test loading old session cookies from the disk.
@@ -454,8 +454,7 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistHasExpiresAndIsPersistent) {
   EXPECT_TRUE(cookie_map["persistent"]->DoesExpire());
   EXPECT_TRUE(cookie_map["persistent"]->IsPersistent());
 
-  STLDeleteContainerPointers(cookies.begin(), cookies.end());
-  cookies.clear();
+  STLDeleteElements(&cookies);
 }
 
 namespace {

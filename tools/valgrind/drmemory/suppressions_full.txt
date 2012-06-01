@@ -1302,12 +1302,6 @@ name=http://crbug.com/117427 b
 *!notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
 *!base::internal::RunnableAdapter<void (__thiscall notifier::ProxyResolvingClientSocket::*)(int)>::Run
 
-LEAK
-name=http://crbug.com/100608
-*!generic_cpp_alloc
-*!operator new
-*!SQLitePersistentCookieStore::Backend::LoadCookiesForDomains
-
 # IE frame possible leak of COM object.
 LEAK
 name=http://crbug.com/122399
