@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,6 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/win/scoped_handle.h"
-#include "base/win/scoped_process_information.h"
 #include "sandbox/src/crosscall_server.h"
 #include "sandbox/src/sandbox_types.h"
 
@@ -36,10 +33,8 @@ class TargetProcess {
   void Release() {}
 
   // Creates the new target process. The process is created suspended.
-  DWORD Create(const wchar_t* exe_path,
-               const wchar_t* command_line,
-               const wchar_t* desktop,
-               base::win::ScopedProcessInformation* target_info);
+  DWORD Create(const wchar_t* exe_path, const wchar_t* command_line,
+               const wchar_t* desktop, PROCESS_INFORMATION* target_info);
 
   // Destroys the target process.
   void Terminate();
@@ -51,7 +46,7 @@ class TargetProcess {
 
   // Returns the handle to the target process.
   HANDLE Process() const {
-    return sandbox_process_info_.process_handle();
+    return sandbox_process_;
   }
 
   // Returns the handle to the job object that the target process belongs to.
@@ -67,43 +62,47 @@ class TargetProcess {
 
   // Returns the name of the executable.
   const wchar_t* Name() const {
-    return exe_name_.get();
+    return exe_name_;
   }
 
   // Returns the process id.
   DWORD ProcessId() const {
-    return sandbox_process_info_.process_id();
+    return sandbox_process_id_;
   }
 
   // Returns the handle to the main thread.
   HANDLE MainThread() const {
-    return sandbox_process_info_.thread_handle();
+    return sandbox_thread_;
   }
 
   // Transfers a 32-bit variable between the broker and the target.
   ResultCode TransferVariable(const char* name, void* address, size_t size);
 
  private:
-  // Details of the target process.
-  base::win::ScopedProcessInformation sandbox_process_info_;
+  // The handle to the target process.
+  HANDLE sandbox_process_;
+  // The handle to the main thread.
+  HANDLE sandbox_thread_;
+  // The process id of the target process.
+  DWORD sandbox_process_id_;
   // The token associated with the process. It provides the core of the
   // sbox security.
-  base::win::ScopedHandle lockdown_token_;
+  HANDLE lockdown_token_;
   // The token given to the initial thread so that the target process can
   // start. It has more powers than the lockdown_token.
-  base::win::ScopedHandle initial_token_;
+  HANDLE initial_token_;
   // Kernel handle to the shared memory used by the IPC server.
-  base::win::ScopedHandle shared_section_;
+  HANDLE shared_section_;
   // Job object containing the target process.
   HANDLE job_;
   // Reference to the IPC subsystem.
-  scoped_ptr<SharedMemIPCServer> ipc_server_;
+  SharedMemIPCServer* ipc_server_;
   // Provides the threads used by the IPC. This class does not own this pointer.
   ThreadProvider* thread_pool_;
   // Base address of the main executable
   void* base_address_;
   // Full name of the target executable.
-  scoped_ptr_malloc<wchar_t> exe_name_;
+  wchar_t* exe_name_;
 
   // Function used for testing.
   friend TargetProcess* MakeTestTargetProcess(HANDLE process,

@@ -15,6 +15,12 @@
 
 namespace {
 
+void TerminateTarget(PROCESS_INFORMATION* pi) {
+  ::CloseHandle(pi->hThread);
+  ::TerminateProcess(pi->hProcess, 0);
+  ::CloseHandle(pi->hProcess);
+}
+
 void CopyPolicyToTarget(const void* source, size_t size, void* dest) {
   if (!source || !size)
     return;
@@ -91,8 +97,14 @@ TargetProcess::TargetProcess(HANDLE initial_token, HANDLE lockdown_token,
     : lockdown_token_(lockdown_token),
       initial_token_(initial_token),
       job_(job),
+      shared_section_(NULL),
+      ipc_server_(NULL),
       thread_pool_(thread_pool),
-      base_address_(NULL) {
+      base_address_(NULL),
+      exe_name_(NULL),
+      sandbox_process_(NULL),
+      sandbox_thread_(NULL),
+      sandbox_process_id_(0) {
 }
 
 TargetProcess::~TargetProcess() {
@@ -105,18 +117,23 @@ TargetProcess::~TargetProcess() {
   // it. http://b/893891
   // For now, this wait is there only to do a best effort to prevent some leaks
   // from showing up in purify.
-  ::WaitForSingleObject(sandbox_process_info_.process_handle(), 50);
-  if (!::GetExitCodeProcess(sandbox_process_info_.process_handle(),
-                            &exit_code) || (STILL_ACTIVE == exit_code)) {
+  ::WaitForSingleObject(sandbox_process_, 50);
+  if (!::GetExitCodeProcess(sandbox_process_, &exit_code) ||
+      (STILL_ACTIVE == exit_code)) {
     // It is an error to destroy this object while the target process is still
     // alive because we need to destroy the IPC subsystem and cannot risk to
     // have an IPC reach us after this point.
     return;
   }
 
-  // ipc_server_ references our process handle, so make sure the former is shut
-  // down before the latter is closed (by ScopedProcessInformation).
-  ipc_server_.reset();
+  delete ipc_server_;
+
+  ::CloseHandle(lockdown_token_);
+  ::CloseHandle(initial_token_);
+  ::CloseHandle(sandbox_process_);
+  if (shared_section_)
+    ::CloseHandle(shared_section_);
+  free(exe_name_);
 }
 
 // Creates the target (child) process suspended and assigns it to the job
@@ -124,8 +141,8 @@ TargetProcess::~TargetProcess() {
 DWORD TargetProcess::Create(const wchar_t* exe_path,
                             const wchar_t* command_line,
                             const wchar_t* desktop,
-                            base::win::ScopedProcessInformation* target_info) {
-  exe_name_.reset(_wcsdup(exe_path));
+                            PROCESS_INFORMATION* target_info) {
+  exe_name_ = _wcsdup(exe_path);
 
   // the command line needs to be writable by CreateProcess().
   scoped_ptr_malloc<wchar_t> cmd_line(_wcsdup(command_line));
@@ -140,7 +157,7 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
     startup_info.lpDesktop = desktop_name.get();
   }
 
-  base::win::ScopedProcessInformation process_info;
+  PROCESS_INFORMATION process_info = {0};
 
   if (!::CreateProcessAsUserW(lockdown_token_,
                               exe_path,
@@ -152,42 +169,43 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
                               NULL,   // Use the environment of the caller.
                               NULL,   // Use current directory of the caller.
                               &startup_info,
-                              process_info.Receive())) {
+                              &process_info)) {
     return ::GetLastError();
   }
 
-  PoisonLowerAddressRange(process_info.process_handle());
+  PoisonLowerAddressRange(process_info.hProcess);
 
   DWORD win_result = ERROR_SUCCESS;
 
   // Assign the suspended target to the windows job object
-  if (!::AssignProcessToJobObject(job_, process_info.process_handle())) {
+  if (!::AssignProcessToJobObject(job_, process_info.hProcess)) {
     win_result = ::GetLastError();
     // It might be a security breach if we let the target run outside the job
     // so kill it before it causes damage
-    ::TerminateProcess(process_info.process_handle(), 0);
+    TerminateTarget(&process_info);
     return win_result;
   }
 
   // Change the token of the main thread of the new process for the
   // impersonation token with more rights. This allows the target to start;
   // otherwise it will crash too early for us to help.
-  {
-    HANDLE temp_thread = process_info.thread_handle();
-    if (!::SetThreadToken(&temp_thread, initial_token_)) {
-      win_result = ::GetLastError();
-      ::TerminateProcess(process_info.process_handle(), 0);
-      return win_result;
-    }
+  if (!SetThreadToken(&process_info.hThread, initial_token_)) {
+    win_result = ::GetLastError();
+    TerminateTarget(&process_info);
+    return win_result;
   }
 
   CONTEXT context;
   context.ContextFlags = CONTEXT_ALL;
-  if (!::GetThreadContext(process_info.thread_handle(), &context)) {
+  if (!::GetThreadContext(process_info.hThread, &context)) {
     win_result = ::GetLastError();
-    ::TerminateProcess(process_info.process_handle(), 0);
+    TerminateTarget(&process_info);
     return win_result;
   }
+
+  sandbox_process_ = process_info.hProcess;
+  sandbox_thread_ = process_info.hThread;
+  sandbox_process_id_ = process_info.dwProcessId;
 
 #if defined(_WIN64)
   void* entry_point = reinterpret_cast<void*>(context.Rcx);
@@ -198,26 +216,20 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
   void* entry_point = reinterpret_cast<void*>(context.Eax);
 #pragma warning(pop)
 #endif  // _WIN64
-
-  if (!target_info->DuplicateFrom(process_info)) {
-    ::TerminateProcess(process_info.process_handle(), 0);
-    return ERROR_INVALID_FUNCTION;
-  }
-
   base_address_ = GetBaseAddress(exe_path, entry_point);
-  sandbox_process_info_.Swap(&process_info);
+  *target_info = process_info;
   return win_result;
 }
 
 ResultCode TargetProcess::TransferVariable(const char* name, void* address,
                                            size_t size) {
-  if (!sandbox_process_info_.IsValid())
+  if (NULL == sandbox_process_)
     return SBOX_ERROR_UNEXPECTED_CALL;
 
   void* child_var = address;
 
 #if SANDBOX_EXPORTS
-  HMODULE module = ::LoadLibrary(exe_name_.get());
+  HMODULE module = ::LoadLibrary(exe_name_);
   if (NULL == module)
     return SBOX_ERROR_GENERIC;
 
@@ -235,8 +247,8 @@ ResultCode TargetProcess::TransferVariable(const char* name, void* address,
 #endif
 
   SIZE_T written;
-  if (!::WriteProcessMemory(sandbox_process_info_.process_handle(),
-                            child_var, address, size, &written))
+  if (!::WriteProcessMemory(sandbox_process_, child_var, address, size,
+                            &written))
     return SBOX_ERROR_GENERIC;
 
   if (written != size)
@@ -258,18 +270,18 @@ DWORD TargetProcess::Init(Dispatcher* ipc_dispatcher, void* policy,
   // We use this single memory pool for IPC and for policy.
   DWORD shared_mem_size = static_cast<DWORD>(shared_IPC_size +
                                              shared_policy_size);
-  shared_section_.Set(::CreateFileMappingW(INVALID_HANDLE_VALUE, NULL,
-                                           PAGE_READWRITE | SEC_COMMIT,
-                                           0, shared_mem_size, NULL));
-  if (!shared_section_.IsValid()) {
+  shared_section_ = ::CreateFileMappingW(INVALID_HANDLE_VALUE, NULL,
+                                         PAGE_READWRITE | SEC_COMMIT,
+                                         0, shared_mem_size, NULL);
+  if (NULL == shared_section_) {
     return ::GetLastError();
   }
 
   DWORD access = FILE_MAP_READ | FILE_MAP_WRITE;
-  base::win::ScopedHandle target_shared_section;
+  HANDLE target_shared_section = NULL;
   if (!::DuplicateHandle(::GetCurrentProcess(), shared_section_,
-                         sandbox_process_info_.process_handle(),
-                         target_shared_section.Receive(), access, FALSE, 0)) {
+                         sandbox_process_, &target_shared_section,
+                         access, FALSE, 0)) {
     return ::GetLastError();
   }
 
@@ -285,7 +297,7 @@ DWORD TargetProcess::Init(Dispatcher* ipc_dispatcher, void* policy,
 
   ResultCode ret;
   // Set the global variables in the target. These are not used on the broker.
-  g_shared_section = target_shared_section.Take();
+  g_shared_section = target_shared_section;
   ret = TransferVariable("g_shared_section", &g_shared_section,
                          sizeof(g_shared_section));
   g_shared_section = NULL;
@@ -310,31 +322,29 @@ DWORD TargetProcess::Init(Dispatcher* ipc_dispatcher, void* policy,
            ::GetLastError() : ERROR_INVALID_FUNCTION;
   }
 
-  ipc_server_.reset(
-      new SharedMemIPCServer(sandbox_process_info_.process_handle(),
-                             sandbox_process_info_.process_id(),
-                             job_, thread_pool_, ipc_dispatcher));
+  ipc_server_ = new SharedMemIPCServer(sandbox_process_, sandbox_process_id_,
+                                       job_, thread_pool_, ipc_dispatcher);
 
   if (!ipc_server_->Init(shared_memory, shared_IPC_size, kIPCChannelSize))
     return ERROR_NOT_ENOUGH_MEMORY;
 
   // After this point we cannot use this handle anymore.
-  ::CloseHandle(sandbox_process_info_.TakeThreadHandle());
+  sandbox_thread_ = NULL;
 
   return ERROR_SUCCESS;
 }
 
 void TargetProcess::Terminate() {
-  if (!sandbox_process_info_.IsValid())
+  if (NULL == sandbox_process_)
     return;
 
-  ::TerminateProcess(sandbox_process_info_.process_handle(), 0);
+  ::TerminateProcess(sandbox_process_, 0);
 }
 
 
 TargetProcess* MakeTestTargetProcess(HANDLE process, HMODULE base_address) {
   TargetProcess* target = new TargetProcess(NULL, NULL, NULL, NULL);
-  target->sandbox_process_info_.Receive()->hProcess = process;
+  target->sandbox_process_ = process;
   target->base_address_ = base_address;
   return target;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 
 #include "base/sys_string_conversions.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/scoped_process_information.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_policy.h"
 #include "sandbox/src/sandbox_factory.h"
@@ -35,7 +34,7 @@ std::wstring MakeFullPathToSystem32(const wchar_t* name) {
 // unicode and ascii version of the api.
 sandbox::SboxTestResult CreateProcessHelper(const std::wstring &exe,
                                             const std::wstring &command) {
-  base::win::ScopedProcessInformation pi;
+  PROCESS_INFORMATION pi;
   STARTUPINFOW si = {sizeof(si)};
 
   const wchar_t *exe_name = NULL;
@@ -49,7 +48,7 @@ sandbox::SboxTestResult CreateProcessHelper(const std::wstring &exe,
   // Create the process with the unicode version of the API.
   sandbox::SboxTestResult ret1 = sandbox::SBOX_TEST_FAILED;
   if (!::CreateProcessW(exe_name, const_cast<wchar_t*>(cmd_line), NULL, NULL,
-                        FALSE, 0, NULL, NULL, &si, pi.Receive())) {
+                        FALSE, 0, NULL, NULL, &si, &pi)) {
     DWORD last_error = GetLastError();
     if ((ERROR_NOT_ENOUGH_QUOTA == last_error) ||
         (ERROR_ACCESS_DENIED == last_error) ||
@@ -62,8 +61,6 @@ sandbox::SboxTestResult CreateProcessHelper(const std::wstring &exe,
     ret1 = sandbox::SBOX_TEST_SUCCEEDED;
   }
 
-  pi.Close();
-
   // Do the same with the ansi version of the api
   STARTUPINFOA sia = {sizeof(sia)};
   sandbox::SboxTestResult ret2 = sandbox::SBOX_TEST_FAILED;
@@ -74,7 +71,7 @@ sandbox::SboxTestResult CreateProcessHelper(const std::wstring &exe,
   if (!::CreateProcessA(
         exe_name ? base::SysWideToMultiByte(exe_name, CP_UTF8).c_str() : NULL,
         cmd_line ? const_cast<char*>(narrow_cmd_line.c_str()) : NULL,
-        NULL, NULL, FALSE, 0, NULL, NULL, &sia, pi.Receive())) {
+        NULL, NULL, FALSE, 0, NULL, NULL, &sia, &pi)) {
     DWORD last_error = GetLastError();
     if ((ERROR_NOT_ENOUGH_QUOTA == last_error) ||
         (ERROR_ACCESS_DENIED == last_error) ||
@@ -173,22 +170,24 @@ SBOX_TESTS_COMMAND int Process_GetChildProcessToken(int argc, wchar_t **argv) {
 
   std::wstring path = MakeFullPathToSystem32(argv[0]);
 
-  base::win::ScopedProcessInformation pi;
+  PROCESS_INFORMATION pi = {0};
   STARTUPINFOW si = {sizeof(si)};
 
   if (!::CreateProcessW(path.c_str(), NULL, NULL, NULL, FALSE, CREATE_SUSPENDED,
-                        NULL, NULL, &si, pi.Receive())) {
+                        NULL, NULL, &si, &pi)) {
       return SBOX_TEST_FAILED;
   }
 
+  base::win::ScopedHandle process(pi.hProcess);
+  base::win::ScopedHandle thread(pi.hThread);
+
   HANDLE token = NULL;
-  BOOL result =
-      ::OpenProcessToken(pi.process_handle(), TOKEN_IMPERSONATE, &token);
+  BOOL result = ::OpenProcessToken(process.Get(), TOKEN_IMPERSONATE, &token);
   DWORD error = ::GetLastError();
 
   base::win::ScopedHandle token_handle(token);
 
-  if (!::TerminateProcess(pi.process_handle(), 0))
+  if (!::TerminateProcess(process.Get(), 0))
     return SBOX_TEST_FAILED;
 
   if (result && token)
