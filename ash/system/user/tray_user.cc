@@ -182,7 +182,7 @@ class UserView : public views::View,
         views::BoxLayout::kVertical, 0, 5, 0));
     ash::SystemTrayDelegate* tray =
         ash::Shell::GetInstance()->tray_delegate();
-    username_ = new views::Label(UTF8ToUTF16(tray->GetUserDisplayName()));
+    username_ = new views::Label(tray->GetUserDisplayName());
     username_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     user->AddChildView(username_);
 

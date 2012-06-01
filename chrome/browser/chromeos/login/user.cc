@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/user.h"
 
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "grit/theme_resources.h"
@@ -69,27 +70,28 @@ std::string User::GetAccountName() const {
   return GetUserName(email_);
 }
 
-std::string User::GetDisplayName() const {
-  return GetUserName(display_email_);
+string16 User::GetDisplayName() const {
+  // TODO(ESL): Returning display_email_ is a stopgap until we get the real
+  // human readable name (aka ProfileDownloader::GetProfileFullName()).
+  return UTF8ToUTF16(GetUserName(display_email_));
 }
 
 bool User::NeedsNameTooltip() const {
   return !UserManager::Get()->IsDisplayNameUnique(GetDisplayName());
 }
 
-std::string User::GetNameTooltip() const {
+string16 User::GetNameTooltip() const {
   const std::string& user_email = display_email_;
   size_t at_pos = user_email.rfind('@');
   if (at_pos == std::string::npos) {
     NOTREACHED();
-    return std::string();
+    return string16();
   }
   size_t domain_start = at_pos + 1;
   std::string domain = user_email.substr(domain_start,
                                          user_email.length() - domain_start);
-  return base::StringPrintf("%s (%s)",
-                            GetDisplayName().c_str(),
-                            domain.c_str());
+  return GetDisplayName() +
+      UTF8ToUTF16(base::StringPrintf(" (%s)", domain.c_str()));
 }
 
 }  // namespace chromeos

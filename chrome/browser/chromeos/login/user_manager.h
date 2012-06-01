@@ -134,7 +134,7 @@ class UserManager {
   virtual User& GetLoggedInUser() = 0;
 
   // Returns true if given display name is unique.
-  virtual bool IsDisplayNameUnique(const std::string& display_name) const = 0;
+  virtual bool IsDisplayNameUnique(const string16& display_name) const = 0;
 
   // Saves user's oauth token status in local state preferences.
   virtual void SaveUserOAuthStatus(

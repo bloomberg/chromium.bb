@@ -438,7 +438,7 @@ User& UserManagerImpl::GetLoggedInUser() {
 }
 
 bool UserManagerImpl::IsDisplayNameUnique(
-    const std::string& display_name) const {
+    const string16& display_name) const {
   return display_name_count_[display_name] < 2;
 }
 

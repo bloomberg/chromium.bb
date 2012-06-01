@@ -104,7 +104,7 @@ class SystemTrayDelegate {
   virtual bool GetTrayVisibilityOnStartup() = 0;
 
   // Gets information about the logged in user.
-  virtual const std::string GetUserDisplayName() const = 0;
+  virtual const string16 GetUserDisplayName() const = 0;
   virtual const std::string GetUserEmail() const = 0;
   virtual const gfx::ImageSkia& GetUserImage() const = 0;
   virtual user::LoginStatus GetUserLoginStatus() const = 0;

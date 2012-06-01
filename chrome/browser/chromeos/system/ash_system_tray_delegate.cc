@@ -236,7 +236,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return !chromeos::KioskModeSettings::Get()->IsKioskModeEnabled();
   }
 
-  virtual const std::string GetUserDisplayName() const OVERRIDE {
+  virtual const string16 GetUserDisplayName() const OVERRIDE {
     return UserManager::Get()->GetLoggedInUser().GetDisplayName();
   }
 

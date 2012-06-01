@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -50,14 +51,15 @@ class User {
   // The email the user used to log in.
   const std::string& email() const { return email_; }
 
-  // Returns the name to display for this user.
-  std::string GetDisplayName() const;
+  // Returns the human name to display for this user.
+  string16 GetDisplayName() const;
+
   // Returns the account name part of the email.
   std::string GetAccountName() const;
 
   // Tooltip contains user's display name and his email domain to distinguish
   // this user from the other one with the same display name.
-  std::string GetNameTooltip() const;
+  string16 GetNameTooltip() const;
 
   // Returns true if some users have same display name.
   bool NeedsNameTooltip() const;

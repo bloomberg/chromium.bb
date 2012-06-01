@@ -57,7 +57,7 @@ class UserManagerImpl : public UserManager,
   virtual const User& GetLoggedInUser() const OVERRIDE;
   virtual User& GetLoggedInUser() OVERRIDE;
   virtual bool IsDisplayNameUnique(
-      const std::string& display_name) const OVERRIDE;
+      const string16& display_name) const OVERRIDE;
   virtual void SaveUserOAuthStatus(
       const std::string& username,
       User::OAuthTokenStatus oauth_token_status) OVERRIDE;
@@ -288,7 +288,7 @@ class UserManagerImpl : public UserManager,
 
   // Map of users' display names used to determine which users have unique
   // display names.
-  mutable base::hash_map<std::string, size_t> display_name_count_;
+  mutable base::hash_map<string16, size_t> display_name_count_;
 
   // The logged-in user. NULL until a user has logged in, then points to one
   // of the User instances in |users_|, the |guest_user_| instance or an

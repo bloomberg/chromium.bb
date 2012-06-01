@@ -65,6 +65,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/user_action_client.h"
@@ -270,8 +271,8 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual bool GetTrayVisibilityOnStartup() OVERRIDE { return true; }
 
   // Overridden from SystemTrayDelegate:
-  virtual const std::string GetUserDisplayName() const OVERRIDE {
-    return "Über tray Über tray Über tray Über tray";
+  virtual const string16 GetUserDisplayName() const OVERRIDE {
+    return UTF8ToUTF16("Über tray Über tray Über tray Über tray");
   }
 
   virtual const std::string GetUserEmail() const OVERRIDE {
