@@ -1,5 +1,17 @@
 2012-06-01  Christian Egli  <christian.egli@sbs.ch>
 
+	* tests/Makefile.am:
+	* tests/repeated.c:
+	* tests/squash_space.c:
+	* tests/tables/Makefile.am:
+	* tests/tables/repeated.utb:
+	* tests/tables/repeated_with_correct.utb:
+	* tests/tables/squash_space_with_context_1.utb:
+	* tests/tables/squash_space_with_context_2.utb:
+	* tests/tables/squash_space_with_correct.utb:
+	* tests/tables/squash_space_with_repeated.utb: More tests for
+	squashing white space. It looks like I found some bugs after all.
+
 	* tests/brl_checks.c (check_translation): Also print the input
 	string and delimit the strings with single quotes to better see
 	white space.

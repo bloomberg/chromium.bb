@@ -64,25 +64,25 @@ uplow_with_unicode_SOURCES = 	\
 	brl_checks.h		\
 	uplow_with_unicode.c
 
-repeated_SOURCES = 	\
-	brl_checks.c		\
-	brl_checks.h		\
-	repeated.c
+squash_space_SOURCES =				\
+	brl_checks.c				\
+	brl_checks.h				\
+	squash_space.c
 
-check_PROGRAMS =			\
-	pass2				\
-	pass2_inpos			\
-	inpos				\
-	inpos_match_replace		\
-	uplow_with_unicode		\
-	present_progressive		\
-	capitalized_word		\
-	capitalized_with_sentance	\
-	inpos_compbrl			\
-	lastworditalafter		\
-	en_gb_g1_italics		\
-	letterDefTest 			\
-	repeated
+check_PROGRAMS =				\
+	pass2					\
+	pass2_inpos				\
+	inpos					\
+	inpos_match_replace			\
+	uplow_with_unicode			\
+	present_progressive			\
+	capitalized_word			\
+	capitalized_with_sentance		\
+	inpos_compbrl				\
+	lastworditalafter			\
+	en_gb_g1_italics			\
+	letterDefTest				\
+	squash_space
 
 dist_check_SCRIPTS =		\
 	check_all_tables.pl	\
@@ -102,10 +102,11 @@ endif
 # The present_progressive should not really fail but for the moment
 # the issue doesn't seem to be critical enough that anybody has enough
 # interest to fix it.
-XFAIL_TESTS =			\
-	present_progressive	\
-	lastworditalafter	\
-	en_gb_g1_italics
+XFAIL_TESTS =					\
+	present_progressive			\
+	lastworditalafter			\
+	en_gb_g1_italics			\
+	squash_space
 
 TESTS =				\
 	$(check_PROGRAMS)	\
