@@ -43,7 +43,7 @@
   <include src="chromeos/set_wallpaper_options.js"></include>
   var SetWallpaperOptions = options.SetWallpaperOptions;
 </if>
-<if expr="not is_win and not is_macosx">
+<if expr="pp_ifdef('use_nss')">
   <include src="certificate_tree.js"></include>
   <include src="certificate_manager.js"></include>
   <include src="certificate_restore_overlay.js"></include>

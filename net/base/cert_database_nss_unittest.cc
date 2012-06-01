@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <cert.h>
+#include <certdb.h>
 #include <pk11pub.h>
 
 #include <algorithm>
@@ -26,11 +27,14 @@
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"
-#include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertificateDB.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace psm = mozilla_security_manager;
+// In NSS 3.13, CERTDB_VALID_PEER was renamed CERTDB_TERMINAL_RECORD. So we use
+// the new name of the macro.
+#if !defined(CERTDB_TERMINAL_RECORD)
+#define CERTDB_TERMINAL_RECORD CERTDB_VALID_PEER
+#endif
 
 namespace net {
 
@@ -111,7 +115,15 @@ class CertDatabaseNSSTest : public testing::Test {
     CertDatabase cert_db;
     bool ok = true;
     CertificateList certs = ListCertsInSlot(slot);
+    CERTCertTrust default_trust = {0};
     for (size_t i = 0; i < certs.size(); ++i) {
+      // Reset cert trust values to defaults before deleting.  Otherwise NSS
+      // somehow seems to remember the trust which can break following tests.
+      SECStatus srv = CERT_ChangeCertTrust(
+          CERT_GetDefaultCertDB(), certs[i]->os_cert_handle(), &default_trust);
+      if (srv != SECSuccess)
+        ok = false;
+
       if (!cert_db.DeleteCertAndKey(certs[i]))
         ok = false;
     }
@@ -275,12 +287,13 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
   EXPECT_EQ(CertDatabase::TRUSTED_SSL,
             cert_db_.GetCertTrust(cert.get(), CA_CERT));
 
-  psm::nsNSSCertTrust trust(cert->os_cert_handle()->trust);
-  EXPECT_TRUE(trust.HasTrustedCA(PR_TRUE, PR_FALSE, PR_FALSE));
-  EXPECT_FALSE(trust.HasTrustedCA(PR_FALSE, PR_TRUE, PR_FALSE));
-  EXPECT_FALSE(trust.HasTrustedCA(PR_FALSE, PR_FALSE, PR_TRUE));
-  EXPECT_FALSE(trust.HasTrustedCA(PR_TRUE, PR_TRUE, PR_TRUE));
-  EXPECT_TRUE(trust.HasCA(PR_TRUE, PR_TRUE, PR_TRUE));
+  EXPECT_EQ(unsigned(CERTDB_VALID_CA | CERTDB_TRUSTED_CA |
+                     CERTDB_TRUSTED_CLIENT_CA),
+            cert->os_cert_handle()->trust->sslFlags);
+  EXPECT_EQ(unsigned(CERTDB_VALID_CA),
+            cert->os_cert_handle()->trust->emailFlags);
+  EXPECT_EQ(unsigned(CERTDB_VALID_CA),
+            cert->os_cert_handle()->trust->objectSigningFlags);
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
@@ -305,11 +318,13 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
   EXPECT_EQ(CertDatabase::TRUSTED_EMAIL,
             cert_db_.GetCertTrust(cert.get(), CA_CERT));
 
-  psm::nsNSSCertTrust trust(cert->os_cert_handle()->trust);
-  EXPECT_FALSE(trust.HasTrustedCA(PR_TRUE, PR_FALSE, PR_FALSE));
-  EXPECT_TRUE(trust.HasTrustedCA(PR_FALSE, PR_TRUE, PR_FALSE));
-  EXPECT_FALSE(trust.HasTrustedCA(PR_FALSE, PR_FALSE, PR_TRUE));
-  EXPECT_TRUE(trust.HasCA(PR_TRUE, PR_TRUE, PR_TRUE));
+  EXPECT_EQ(unsigned(CERTDB_VALID_CA),
+            cert->os_cert_handle()->trust->sslFlags);
+  EXPECT_EQ(unsigned(CERTDB_VALID_CA | CERTDB_TRUSTED_CA |
+                     CERTDB_TRUSTED_CLIENT_CA),
+            cert->os_cert_handle()->trust->emailFlags);
+  EXPECT_EQ(unsigned(CERTDB_VALID_CA),
+            cert->os_cert_handle()->trust->objectSigningFlags);
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
@@ -334,11 +349,13 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
   EXPECT_EQ(CertDatabase::TRUSTED_OBJ_SIGN,
             cert_db_.GetCertTrust(cert.get(), CA_CERT));
 
-  psm::nsNSSCertTrust trust(cert->os_cert_handle()->trust);
-  EXPECT_FALSE(trust.HasTrustedCA(PR_TRUE, PR_FALSE, PR_FALSE));
-  EXPECT_FALSE(trust.HasTrustedCA(PR_FALSE, PR_TRUE, PR_FALSE));
-  EXPECT_TRUE(trust.HasTrustedCA(PR_FALSE, PR_FALSE, PR_TRUE));
-  EXPECT_TRUE(trust.HasCA(PR_TRUE, PR_TRUE, PR_TRUE));
+  EXPECT_EQ(unsigned(CERTDB_VALID_CA),
+            cert->os_cert_handle()->trust->sslFlags);
+  EXPECT_EQ(unsigned(CERTDB_VALID_CA),
+            cert->os_cert_handle()->trust->emailFlags);
+  EXPECT_EQ(unsigned(CERTDB_VALID_CA | CERTDB_TRUSTED_CA |
+                     CERTDB_TRUSTED_CLIENT_CA),
+            cert->os_cert_handle()->trust->objectSigningFlags);
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCA_NotCACert) {
@@ -432,7 +449,8 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyUntrusted) {
 
   // Import it.
   CertDatabase::ImportCertFailureList failed;
-  EXPECT_TRUE(cert_db_.ImportCACerts(certs, CertDatabase::UNTRUSTED, &failed));
+  EXPECT_TRUE(cert_db_.ImportCACerts(certs, CertDatabase::TRUST_DEFAULT,
+                                     &failed));
 
   ASSERT_EQ(1U, failed.size());
   EXPECT_EQ("DOD CA-17", failed[0].certificate->subject().common_name);
@@ -510,7 +528,8 @@ TEST_F(CertDatabaseNSSTest, DISABLED_ImportServerCert) {
   ASSERT_EQ(2U, certs.size());
 
   CertDatabase::ImportCertFailureList failed;
-  EXPECT_TRUE(cert_db_.ImportServerCert(certs, &failed));
+  EXPECT_TRUE(cert_db_.ImportServerCert(certs, CertDatabase::TRUST_DEFAULT,
+                                        &failed));
 
   EXPECT_EQ(0U, failed.size());
 
@@ -521,16 +540,16 @@ TEST_F(CertDatabaseNSSTest, DISABLED_ImportServerCert) {
   EXPECT_EQ("www.google.com", goog_cert->subject().common_name);
   EXPECT_EQ("Thawte SGC CA", thawte_cert->subject().common_name);
 
-  EXPECT_EQ(CertDatabase::UNTRUSTED,
+  EXPECT_EQ(CertDatabase::TRUST_DEFAULT,
             cert_db_.GetCertTrust(goog_cert.get(), SERVER_CERT));
-  psm::nsNSSCertTrust goog_trust(goog_cert->os_cert_handle()->trust);
-  EXPECT_TRUE(goog_trust.HasPeer(PR_TRUE, PR_TRUE, PR_TRUE));
+
+  EXPECT_EQ(0U, goog_cert->os_cert_handle()->trust->sslFlags);
 
   scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
   int flags = 0;
   CertVerifyResult verify_result;
   int error = verify_proc->Verify(goog_cert, "www.google.com", flags,
-                                      NULL, &verify_result);
+                                  NULL, &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 }
@@ -540,7 +559,8 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned) {
   ASSERT_TRUE(ReadCertIntoList("punycodetest.der", &certs));
 
   CertDatabase::ImportCertFailureList failed;
-  EXPECT_TRUE(cert_db_.ImportServerCert(certs, &failed));
+  EXPECT_TRUE(cert_db_.ImportServerCert(certs, CertDatabase::TRUST_DEFAULT,
+                                        &failed));
 
   EXPECT_EQ(0U, failed.size());
 
@@ -548,30 +568,369 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned) {
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> puny_cert(cert_list[0]);
 
-  EXPECT_EQ(CertDatabase::UNTRUSTED,
+  EXPECT_EQ(CertDatabase::TRUST_DEFAULT,
             cert_db_.GetCertTrust(puny_cert.get(), SERVER_CERT));
-  psm::nsNSSCertTrust puny_trust(puny_cert->os_cert_handle()->trust);
-  EXPECT_TRUE(puny_trust.HasPeer(PR_TRUE, PR_TRUE, PR_TRUE));
+  EXPECT_EQ(0U, puny_cert->os_cert_handle()->trust->sslFlags);
 
   scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
   int flags = 0;
   CertVerifyResult verify_result;
   int error = verify_proc->Verify(puny_cert, "xn--wgv71a119e.com", flags,
-                                      NULL, &verify_result);
+                                  NULL, &verify_result);
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result.cert_status);
+}
 
-  // TODO(mattm): this should be SERVER_CERT, not CA_CERT, but that does not
-  // work due to NSS bug: https://bugzilla.mozilla.org/show_bug.cgi?id=531160
-  EXPECT_TRUE(cert_db_.SetCertTrust(
-      puny_cert.get(), CA_CERT,
-      CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL));
+TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned_Trusted) {
+  // When using CERT_PKIXVerifyCert (which we do), server trust only works from
+  // 3.13.4 onwards.  See https://bugzilla.mozilla.org/show_bug.cgi?id=647364.
+  if (!NSS_VersionCheck("3.13.4")) {
+    LOG(INFO) << "test skipped on NSS < 3.13.4";
+    return;
+  }
 
-  verify_result.Reset();
-  error = verify_proc->Verify(puny_cert, "xn--wgv71a119e.com", flags,
+  CertificateList certs;
+  ASSERT_TRUE(ReadCertIntoList("punycodetest.der", &certs));
+
+  CertDatabase::ImportCertFailureList failed;
+  EXPECT_TRUE(cert_db_.ImportServerCert(certs, CertDatabase::TRUSTED_SSL,
+                                        &failed));
+
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  ASSERT_EQ(1U, cert_list.size());
+  scoped_refptr<X509Certificate> puny_cert(cert_list[0]);
+
+  EXPECT_EQ(CertDatabase::TRUSTED_SSL,
+            cert_db_.GetCertTrust(puny_cert.get(), SERVER_CERT));
+  EXPECT_EQ(unsigned(CERTDB_TRUSTED | CERTDB_TERMINAL_RECORD),
+            puny_cert->os_cert_handle()->trust->sslFlags);
+
+  scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = verify_proc->Verify(puny_cert, "xn--wgv71a119e.com", flags,
                                   NULL, &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
+}
+
+TEST_F(CertDatabaseNSSTest, ImportCaAndServerCert) {
+  CertificateList ca_certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "root_ca_cert.crt",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, ca_certs.size());
+
+  // Import CA cert and trust it.
+  CertDatabase::ImportCertFailureList failed;
+  EXPECT_TRUE(cert_db_.ImportCACerts(ca_certs, CertDatabase::TRUSTED_SSL,
+                                     &failed));
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "ok_cert.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs.size());
+
+  // Import server cert with default trust.
+  EXPECT_TRUE(cert_db_.ImportServerCert(certs, CertDatabase::TRUST_DEFAULT,
+                                        &failed));
+  EXPECT_EQ(0U, failed.size());
+
+  // Server cert should verify.
+  scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
+                                  NULL, &verify_result);
+  EXPECT_EQ(OK, error);
+  EXPECT_EQ(0U, verify_result.cert_status);
+}
+
+TEST_F(CertDatabaseNSSTest, ImportCaAndServerCert_DistrustServer) {
+  // Explicit distrust only works starting in NSS 3.13.
+  if (!NSS_VersionCheck("3.13")) {
+    LOG(INFO) << "test skipped on NSS < 3.13";
+    return;
+  }
+
+  CertificateList ca_certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "root_ca_cert.crt",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, ca_certs.size());
+
+  // Import CA cert and trust it.
+  CertDatabase::ImportCertFailureList failed;
+  EXPECT_TRUE(cert_db_.ImportCACerts(ca_certs, CertDatabase::TRUSTED_SSL,
+                                     &failed));
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "ok_cert.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs.size());
+
+  // Import server cert without inheriting trust from issuer (explicit
+  // distrust).
+  EXPECT_TRUE(cert_db_.ImportServerCert(
+      certs, CertDatabase::DISTRUSTED_SSL, &failed));
+  EXPECT_EQ(0U, failed.size());
+  EXPECT_EQ(CertDatabase::DISTRUSTED_SSL,
+            cert_db_.GetCertTrust(certs[0], SERVER_CERT));
+
+  EXPECT_EQ(unsigned(CERTDB_TERMINAL_RECORD),
+            certs[0]->os_cert_handle()->trust->sslFlags);
+
+  // Server cert should fail to verify.
+  scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
+                                  NULL, &verify_result);
+  EXPECT_EQ(ERR_CERT_REVOKED, error);
+  EXPECT_EQ(CERT_STATUS_REVOKED, verify_result.cert_status);
+}
+
+TEST_F(CertDatabaseNSSTest, TrustIntermediateCa) {
+  CertificateList ca_certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "2048-rsa-root.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, ca_certs.size());
+
+  // Import Root CA cert and distrust it.
+  CertDatabase::ImportCertFailureList failed;
+  EXPECT_TRUE(cert_db_.ImportCACerts(ca_certs, CertDatabase::DISTRUSTED_SSL,
+                                     &failed));
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList intermediate_certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "2048-rsa-intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, intermediate_certs.size());
+
+  // Import Intermediate CA cert and trust it.
+  EXPECT_TRUE(cert_db_.ImportCACerts(intermediate_certs,
+                                     CertDatabase::TRUSTED_SSL, &failed));
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "2048-rsa-ee-by-2048-rsa-intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs.size());
+
+  // Import server cert with default trust.
+  EXPECT_TRUE(cert_db_.ImportServerCert(
+      certs, CertDatabase::TRUST_DEFAULT, &failed));
+  EXPECT_EQ(0U, failed.size());
+  EXPECT_EQ(CertDatabase::TRUST_DEFAULT,
+            cert_db_.GetCertTrust(certs[0], SERVER_CERT));
+
+  // Server cert should verify.
+  scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
+                                  NULL, &verify_result);
+  EXPECT_EQ(OK, error);
+  EXPECT_EQ(0U, verify_result.cert_status);
+
+  // Explicit distrust only works starting in NSS 3.13.
+  if (!NSS_VersionCheck("3.13")) {
+    LOG(INFO) << "test partially skipped on NSS < 3.13";
+    return;
+  }
+
+  // Trust the root cert and distrust the intermediate.
+  EXPECT_TRUE(cert_db_.SetCertTrust(
+      ca_certs[0], CA_CERT, CertDatabase::TRUSTED_SSL));
+  EXPECT_TRUE(cert_db_.SetCertTrust(
+      intermediate_certs[0], CA_CERT, CertDatabase::DISTRUSTED_SSL));
+  EXPECT_EQ(
+      unsigned(CERTDB_VALID_CA | CERTDB_TRUSTED_CA | CERTDB_TRUSTED_CLIENT_CA),
+      ca_certs[0]->os_cert_handle()->trust->sslFlags);
+  EXPECT_EQ(unsigned(CERTDB_VALID_CA),
+            ca_certs[0]->os_cert_handle()->trust->emailFlags);
+  EXPECT_EQ(unsigned(CERTDB_VALID_CA),
+            ca_certs[0]->os_cert_handle()->trust->objectSigningFlags);
+  EXPECT_EQ(unsigned(CERTDB_TERMINAL_RECORD),
+            intermediate_certs[0]->os_cert_handle()->trust->sslFlags);
+  EXPECT_EQ(unsigned(CERTDB_VALID_CA),
+            intermediate_certs[0]->os_cert_handle()->trust->emailFlags);
+  EXPECT_EQ(
+      unsigned(CERTDB_VALID_CA),
+      intermediate_certs[0]->os_cert_handle()->trust->objectSigningFlags);
+
+  // Server cert should fail to verify.
+  CertVerifyResult verify_result2;
+  error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
+                              NULL, &verify_result2);
+  EXPECT_EQ(ERR_CERT_REVOKED, error);
+  EXPECT_EQ(CERT_STATUS_REVOKED, verify_result2.cert_status);
+}
+
+TEST_F(CertDatabaseNSSTest, TrustIntermediateCa2) {
+  CertDatabase::ImportCertFailureList failed;
+
+  CertificateList intermediate_certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "2048-rsa-intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, intermediate_certs.size());
+
+  // Import Intermediate CA cert and trust it.
+  EXPECT_TRUE(cert_db_.ImportCACerts(intermediate_certs,
+                                     CertDatabase::TRUSTED_SSL, &failed));
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "2048-rsa-ee-by-2048-rsa-intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs.size());
+
+  // Import server cert with default trust.
+  EXPECT_TRUE(cert_db_.ImportServerCert(
+      certs, CertDatabase::TRUST_DEFAULT, &failed));
+  EXPECT_EQ(0U, failed.size());
+  EXPECT_EQ(CertDatabase::TRUST_DEFAULT,
+            cert_db_.GetCertTrust(certs[0], SERVER_CERT));
+
+  // Server cert should verify.
+  scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
+                                  NULL, &verify_result);
+  EXPECT_EQ(OK, error);
+  EXPECT_EQ(0U, verify_result.cert_status);
+
+  // Without explicit trust of the intermediate, verification should fail.
+  EXPECT_TRUE(cert_db_.SetCertTrust(
+      intermediate_certs[0], CA_CERT, CertDatabase::TRUST_DEFAULT));
+
+  // Server cert should fail to verify.
+  CertVerifyResult verify_result2;
+  error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
+                              NULL, &verify_result2);
+  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
+  EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result2.cert_status);
+}
+
+TEST_F(CertDatabaseNSSTest, TrustIntermediateCa3) {
+  CertDatabase::ImportCertFailureList failed;
+
+  CertificateList ca_certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "2048-rsa-root.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, ca_certs.size());
+
+  // Import Root CA cert and default trust it.
+  EXPECT_TRUE(cert_db_.ImportCACerts(ca_certs, CertDatabase::TRUST_DEFAULT,
+                                     &failed));
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList intermediate_certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "2048-rsa-intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, intermediate_certs.size());
+
+  // Import Intermediate CA cert and trust it.
+  EXPECT_TRUE(cert_db_.ImportCACerts(intermediate_certs,
+                                     CertDatabase::TRUSTED_SSL, &failed));
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "2048-rsa-ee-by-2048-rsa-intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs.size());
+
+  // Import server cert with default trust.
+  EXPECT_TRUE(cert_db_.ImportServerCert(
+      certs, CertDatabase::TRUST_DEFAULT, &failed));
+  EXPECT_EQ(0U, failed.size());
+  EXPECT_EQ(CertDatabase::TRUST_DEFAULT,
+            cert_db_.GetCertTrust(certs[0], SERVER_CERT));
+
+  // Server cert should verify.
+  scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
+                                  NULL, &verify_result);
+  EXPECT_EQ(OK, error);
+  EXPECT_EQ(0U, verify_result.cert_status);
+
+  // Without explicit trust of the intermediate, verification should fail.
+  EXPECT_TRUE(cert_db_.SetCertTrust(
+      intermediate_certs[0], CA_CERT, CertDatabase::TRUST_DEFAULT));
+
+  // Server cert should fail to verify.
+  CertVerifyResult verify_result2;
+  error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
+                              NULL, &verify_result2);
+  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
+  EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result2.cert_status);
+}
+
+TEST_F(CertDatabaseNSSTest, TrustIntermediateCa4) {
+  // Explicit distrust only works starting in NSS 3.13.
+  if (!NSS_VersionCheck("3.13")) {
+    LOG(INFO) << "test skipped on NSS < 3.13";
+    return;
+  }
+
+  CertDatabase::ImportCertFailureList failed;
+
+  CertificateList ca_certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "2048-rsa-root.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, ca_certs.size());
+
+  // Import Root CA cert and trust it.
+  EXPECT_TRUE(cert_db_.ImportCACerts(ca_certs, CertDatabase::TRUSTED_SSL,
+                                     &failed));
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList intermediate_certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "2048-rsa-intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, intermediate_certs.size());
+
+  // Import Intermediate CA cert and distrust it.
+  EXPECT_TRUE(cert_db_.ImportCACerts(intermediate_certs,
+                                     CertDatabase::DISTRUSTED_SSL, &failed));
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "2048-rsa-ee-by-2048-rsa-intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs.size());
+
+  // Import server cert with default trust.
+  EXPECT_TRUE(cert_db_.ImportServerCert(
+      certs, CertDatabase::TRUST_DEFAULT, &failed));
+  EXPECT_EQ(0U, failed.size());
+  EXPECT_EQ(CertDatabase::TRUST_DEFAULT,
+            cert_db_.GetCertTrust(certs[0], SERVER_CERT));
+
+  // Server cert should not verify.
+  scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
+                                  NULL, &verify_result);
+  EXPECT_EQ(ERR_CERT_REVOKED, error);
+  EXPECT_EQ(CERT_STATUS_REVOKED, verify_result.cert_status);
+
+  // Without explicit distrust of the intermediate, verification should succeed.
+  EXPECT_TRUE(cert_db_.SetCertTrust(
+      intermediate_certs[0], CA_CERT, CertDatabase::TRUST_DEFAULT));
+
+  // Server cert should verify.
+  CertVerifyResult verify_result2;
+  error = verify_proc->Verify(certs[0], "127.0.0.1", flags,
+                              NULL, &verify_result2);
+  EXPECT_EQ(OK, error);
+  EXPECT_EQ(0U, verify_result2.cert_status);
 }
 
 }  // namespace net

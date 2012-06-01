@@ -67,8 +67,7 @@ class CertificateManagerModel {
   // Tries to import all the certificates given.  The root will be trusted
   // according to |trust_bits|.  Any certificates that could not be imported
   // will be listed in |not_imported|.
-  // |trust_bits| should be a bit field of TRUST_* values from CertDatabase, or
-  // UNTRUSTED.
+  // |trust_bits| should be a bit field of TRUST* values from CertDatabase.
   // Returns false if there is an internal error, otherwise true is returned and
   // |not_imported| should be checked for any certificates that were not
   // imported.
@@ -81,16 +80,18 @@ class CertificateManagerModel {
   // not given any trust.
   // Any certificates that could not be imported will be listed in
   // |not_imported|.
+  // |trust_bits| can be set to explicitly trust or distrust the certificate, or
+  // use TRUST_DEFAULT to inherit trust as normal.
   // Returns false if there is an internal error, otherwise true is returned and
   // |not_imported| should be checked for any certificates that were not
   // imported.
   bool ImportServerCert(
       const net::CertificateList& certificates,
+      net::CertDatabase::TrustBits trust_bits,
       net::CertDatabase::ImportCertFailureList* not_imported);
 
   // Set trust values for certificate.
-  // |trust_bits| should be a bit field of TRUST_* values from CertDatabase, or
-  // UNTRUSTED.
+  // |trust_bits| should be a bit field of TRUST* values from CertDatabase.
   // Returns true on success or false on failure.
   bool SetCertTrust(const net::X509Certificate* cert,
                     net::CertType type,
