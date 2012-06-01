@@ -206,12 +206,14 @@ AM_CONDITIONAL(HAVE_RSVG_CONVERT, test -n "$RSVG_CONVERT")
 
 
 if test "x$GCC" = "xyes"; then
-	GCC_CFLAGS="-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes \
-		-Wno-unused-parameter -Wno-missing-field-initializers \
-		-g -fvisibility=hidden"
-
+	my_common_gcc_flags="-Wall -Wextra -Wno-unused-parameter \
+		-Wno-missing-field-initializers -g -fvisibility=hidden"
+	GCC_CFLAGS="$my_common_gcc_flags \
+		-Wstrict-prototypes -Wmissing-prototypes"
+	GCC_CXXFLAGS="$my_common_gcc_flags"
 fi
 AC_SUBST(GCC_CFLAGS)
+AC_SUBST(GCC_CXXFLAGS)
 
 WAYLAND_SCANNER_RULES(['$(top_srcdir)/protocol'])
 
