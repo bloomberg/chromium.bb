@@ -5,6 +5,7 @@
 #include "chrome/browser/net/sqlite_server_bound_cert_store.h"
 
 #include <list>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -118,6 +119,9 @@ class SQLiteServerBoundCertStore::Backend
   // Guard |pending_|, |num_pending_| and |clear_local_state_on_exit_|.
   base::Lock lock_;
 
+  // Cache of origins we have certificates stored for.
+  std::set<std::string> cert_origins_;
+
   scoped_refptr<ClearOnExitPolicy> clear_on_exit_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
@@ -202,6 +206,7 @@ bool SQLiteServerBoundCertStore::Backend::Load(
             base::Time::FromInternalValue(smt.ColumnInt64(4)),
             private_key_from_db,
             cert_from_db));
+    cert_origins_.insert(cert->server_identifier());
     certs->push_back(cert.release());
   }
 
@@ -412,6 +417,7 @@ void SQLiteServerBoundCertStore::Backend::Commit() {
     scoped_ptr<PendingOperation> po(*it);
     switch (po->op()) {
       case PendingOperation::CERT_ADD: {
+        cert_origins_.insert(po->cert().server_identifier());
         add_smt.Reset(true);
         add_smt.BindString(0, po->cert().server_identifier());
         const std::string& private_key = po->cert().private_key();
@@ -426,6 +432,7 @@ void SQLiteServerBoundCertStore::Backend::Commit() {
         break;
       }
       case PendingOperation::CERT_DELETE:
+        cert_origins_.erase(po->cert().server_identifier());
         del_smt.Reset(true);
         del_smt.BindString(0, po->cert().server_identifier());
         if (!del_smt.Run())
@@ -486,22 +493,7 @@ void SQLiteServerBoundCertStore::Backend::DeleteCertificatesOnShutdown() {
   if (!db_.get())
     return;
 
-  sql::Statement select_smt(db_->GetCachedStatement(
-      SQL_FROM_HERE, "SELECT origin FROM origin_bound_certs"));
-  if (!select_smt.is_valid()) {
-    LOG(WARNING) << "Unable to delete certificates on shutdown.";
-    return;
-  }
-
-  std::vector<std::string> origins_to_delete;
-  while (select_smt.Step()) {
-    std::string origin = select_smt.ColumnString(0);
-    if (!clear_on_exit_policy_->ShouldClearOriginOnExit(origin, true))
-      continue;
-    origins_to_delete.push_back(origin);
-  }
-
-  if (origins_to_delete.empty())
+  if (cert_origins_.empty())
     return;
 
   sql::Statement del_smt(db_->GetCachedStatement(
@@ -517,9 +509,12 @@ void SQLiteServerBoundCertStore::Backend::DeleteCertificatesOnShutdown() {
     return;
   }
 
-  for (unsigned i = 0; i < origins_to_delete.size(); ++i) {
+  for (std::set<std::string>::iterator it = cert_origins_.begin();
+       it != cert_origins_.end(); ++it) {
+    if (!clear_on_exit_policy_->ShouldClearOriginOnExit(*it, true))
+      continue;
     del_smt.Reset(true);
-    del_smt.BindString(0, origins_to_delete[i]);
+    del_smt.BindString(0, *it);
     if (!del_smt.Run())
       NOTREACHED() << "Could not delete a certificate from the DB.";
   }
