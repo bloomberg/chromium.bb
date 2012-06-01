@@ -31,6 +31,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/mman.h>
 
 #include <wayland-client.h>
 #include <wayland-egl.h>
@@ -576,6 +577,46 @@ static const struct wl_pointer_listener pointer_listener = {
 };
 
 static void
+input_handle_keymap(void *data, struct wl_keyboard *keyboard, uint32_t format,
+		    int fd, uint32_t size)
+{
+	struct wayland_input *input = data;
+	struct xkb_keymap *keymap;
+	char *map_str;
+
+	if (!data) {
+		close(fd);
+		return;
+	}
+
+	if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
+		close(fd);
+		return;
+	}
+
+	map_str = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
+	if (map_str == MAP_FAILED) {
+		close(fd);
+		return;
+	}
+
+	keymap = xkb_map_new_from_string(input->compositor->base.xkb_context,
+					 map_str,
+					 XKB_KEYMAP_FORMAT_TEXT_V1,
+					 0);
+	munmap(map_str, size);
+	close(fd);
+
+	if (!keymap) {
+		fprintf(stderr, "failed to compile keymap\n");
+		return;
+	}
+
+	weston_seat_init_keyboard(input->compositor->base.seat, keymap);
+	xkb_map_unref(keymap);
+}
+
+static void
 input_handle_keyboard_enter(void *data,
 			    struct wl_keyboard *keyboard,
 			    uint32_t serial,
@@ -622,6 +663,7 @@ input_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 }
 
 static const struct wl_keyboard_listener keyboard_listener = {
+	input_handle_keymap,
 	input_handle_keyboard_enter,
 	input_handle_keyboard_leave,
 	input_handle_key,
@@ -650,7 +692,6 @@ input_handle_capabilities(void *data, struct wl_seat *seat,
 		wl_keyboard_set_user_data(input->keyboard, input);
 		wl_keyboard_add_listener(input->keyboard, &keyboard_listener,
 					 input);
-		weston_seat_init_keyboard(input->compositor->base.seat, NULL);
 	} else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->keyboard) {
 		wl_keyboard_destroy(input->keyboard);
 		input->keyboard = NULL;

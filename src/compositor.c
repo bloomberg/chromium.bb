@@ -26,6 +26,7 @@
 
 #include "config.h"
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -34,6 +35,7 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <sys/ioctl.h>
+#include <sys/mman.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -2163,6 +2165,10 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 	wl_list_insert(&seat->seat.keyboard->resource_list, &cr->link);
 	cr->destroy = unbind_resource;
 
+	wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
+				seat->xkb_info.keymap_fd,
+				seat->xkb_info.keymap_size);
+
 	if (seat->seat.keyboard->focus &&
 	    seat->seat.keyboard->focus->resource.client == client) {
 		wl_keyboard_set_focus(seat->seat.keyboard,
@@ -2247,8 +2253,13 @@ static void weston_compositor_xkb_init(struct weston_compositor *ec,
 
 static void xkb_info_destroy(struct weston_xkb_info *xkb_info)
 {
-        if (xkb_info->keymap)
-                xkb_map_unref(xkb_info->keymap);
+	if (xkb_info->keymap)
+		xkb_map_unref(xkb_info->keymap);
+
+	if (xkb_info->keymap_area)
+		munmap(xkb_info->keymap_area, xkb_info->keymap_size);
+	if (xkb_info->keymap_fd >= 0)
+		close(xkb_info->keymap_fd);
 }
 
 static void weston_compositor_xkb_destroy(struct weston_compositor *ec)
@@ -2264,8 +2275,11 @@ static void weston_compositor_xkb_destroy(struct weston_compositor *ec)
 }
 
 static void
-weston_xkb_info_get_mods(struct weston_xkb_info *xkb_info)
+weston_xkb_info_new_keymap(struct weston_xkb_info *xkb_info)
 {
+	char *keymap_str;
+	char *path;
+
 	xkb_info->ctrl_mod = xkb_map_mod_get_index(xkb_info->keymap,
 						   XKB_MOD_NAME_CTRL);
 	xkb_info->alt_mod = xkb_map_mod_get_index(xkb_info->keymap,
@@ -2279,6 +2293,57 @@ weston_xkb_info_get_mods(struct weston_xkb_info *xkb_info)
 						   XKB_LED_NAME_CAPS);
 	xkb_info->scroll_led = xkb_map_led_get_index(xkb_info->keymap,
 						     XKB_LED_NAME_SCROLL);
+
+	keymap_str = xkb_map_get_as_string(xkb_info->keymap);
+	if (keymap_str == NULL) {
+		fprintf(stderr, "failed to get string version of keymap\n");
+		exit(EXIT_FAILURE);
+	}
+	xkb_info->keymap_size = strlen(keymap_str) + 1;
+
+	/* Create a temporary file in /dev/shm to use for mapping the keymap,
+	 * and then unlink it as soon as we can. */
+	path = strdup("/dev/shm/weston-keymap-XXXXXX");
+	if (path == NULL) {
+		fprintf(stderr, "failed to allocate keymap path\n");
+		goto err_keymap_str;
+	}
+
+	xkb_info->keymap_fd = mkostemp(path, O_CLOEXEC);
+	if (xkb_info->keymap_fd < 0) {
+		fprintf(stderr, "failed to create temporary keymap file\n");
+		goto err_path;
+	}
+	unlink(path);
+
+	if (ftruncate(xkb_info->keymap_fd, xkb_info->keymap_size) != 0) {
+		fprintf(stderr, "failed to enlarage temporary keymap file\n");
+		goto err_path;
+	}
+
+	xkb_info->keymap_area = mmap(NULL, xkb_info->keymap_size,
+				     PROT_READ | PROT_WRITE,
+				     MAP_SHARED, xkb_info->keymap_fd, 0);
+	if (xkb_info->keymap_area == MAP_FAILED) {
+		fprintf(stderr, "failed to mmap() %lu bytes on %s\n",
+			(unsigned long) xkb_info->keymap_size,
+			path);
+		goto err_dev_zero;
+	}
+	strcpy(xkb_info->keymap_area, keymap_str);
+	free(keymap_str);
+	free(path);
+
+	return;
+
+err_dev_zero:
+	close(xkb_info->keymap_fd);
+	xkb_info->keymap_fd = -1;
+err_path:
+	free(path);
+err_keymap_str:
+	free(keymap_str);
+	exit(EXIT_FAILURE);
 }
 
 static void
@@ -2301,7 +2366,7 @@ weston_compositor_build_global_keymap(struct weston_compositor *ec)
 		exit(1);
 	}
 
-	weston_xkb_info_get_mods(&ec->xkb_info);
+	weston_xkb_info_new_keymap(&ec->xkb_info);
 }
 
 WL_EXPORT void
@@ -2312,7 +2377,7 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 
 	if (keymap != NULL) {
 		seat->xkb_info.keymap = xkb_map_ref(keymap);
-		weston_xkb_info_get_mods(&seat->xkb_info);
+		weston_xkb_info_new_keymap(&seat->xkb_info);
 	}
 	else {
 		weston_compositor_build_global_keymap(seat->compositor);

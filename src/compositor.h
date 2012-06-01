@@ -164,6 +164,9 @@ struct weston_output {
 
 struct weston_xkb_info {
 	struct xkb_keymap *keymap;
+	int keymap_fd;
+	size_t keymap_size;
+	char *keymap_area;
 	xkb_mod_index_t ctrl_mod;
 	xkb_mod_index_t alt_mod;
 	xkb_mod_index_t super_mod;

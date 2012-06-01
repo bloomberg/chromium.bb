@@ -112,6 +112,13 @@ pointer_handle_axis(void *data, struct wl_pointer *pointer,
 }
 
 static void
+keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
+		       uint32_t format, int fd, uint32_t size)
+{
+	close(fd);
+}
+
+static void
 keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
 		      uint32_t serial, struct wl_surface *surface,
 		      struct wl_array *keys)
@@ -146,6 +153,7 @@ static const struct wl_pointer_listener pointer_listener = {
 };
 
 static const struct wl_keyboard_listener keyboard_listener = {
+	keyboard_handle_keymap,
 	keyboard_handle_enter,
 	keyboard_handle_leave,
 	keyboard_handle_key,

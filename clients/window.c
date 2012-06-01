@@ -204,7 +204,6 @@ struct input {
 	struct data_offer *selection_offer;
 
 	struct {
-		struct xkb_rule_names names;
 		struct xkb_keymap *keymap;
 		struct xkb_state *state;
 		xkb_mod_mask_t control_mask;
@@ -1833,7 +1832,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
 	input->display->serial = serial;
 	code = key + 8;
-	if (!window || window->keyboard_device != input)
+	if (!window || window->keyboard_device != input || !input->xkb.state)
 		return;
 
 	if (state)
@@ -1876,13 +1875,8 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 {
 	struct input *input = data;
 
-	xkb_state_update_mask(input->xkb.state,
-			      mods_depressed,
-			      mods_latched,
-			      mods_locked,
-			      0,
-			      0,
-			      group);
+	xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
+			      mods_locked, 0, 0, group);
 }
 
 static void
@@ -1989,6 +1983,57 @@ keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
 	input_remove_keyboard_focus(input);
 }
 
+static void
+keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
+		       uint32_t format, int fd, uint32_t size)
+{
+	struct input *input = data;
+	char *map_str;
+
+	if (!data) {
+		close(fd);
+		return;
+	}
+
+	if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
+		close(fd);
+		return;
+	}
+
+	map_str = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
+	if (map_str == MAP_FAILED) {
+		close(fd);
+		return;
+	}
+
+	input->xkb.keymap = xkb_map_new_from_string(input->display->xkb_context,
+						    map_str,
+						    XKB_KEYMAP_FORMAT_TEXT_V1,
+						    0);
+	munmap(map_str, size);
+	close(fd);
+
+	if (!input->xkb.keymap) {
+		fprintf(stderr, "failed to compile keymap\n");
+		return;
+	}
+
+	input->xkb.state = xkb_state_new(input->xkb.keymap);
+	if (!input->xkb.state) {
+		fprintf(stderr, "failed to create XKB state\n");
+		xkb_map_unref(input->xkb.keymap);
+		input->xkb.keymap = NULL;
+		return;
+	}
+
+	input->xkb.control_mask =
+		1 << xkb_map_mod_get_index(input->xkb.keymap, "Control");
+	input->xkb.alt_mask =
+		1 << xkb_map_mod_get_index(input->xkb.keymap, "Mod1");
+	input->xkb.shift_mask =
+		1 << xkb_map_mod_get_index(input->xkb.keymap, "Shift");
+}
+
 static const struct wl_pointer_listener pointer_listener = {
 	pointer_handle_enter,
 	pointer_handle_leave,
@@ -1998,6 +2043,7 @@ static const struct wl_pointer_listener pointer_listener = {
 };
 
 static const struct wl_keyboard_listener keyboard_listener = {
+	keyboard_handle_keymap,
 	keyboard_handle_enter,
 	keyboard_handle_leave,
 	keyboard_handle_key,
@@ -3087,37 +3133,6 @@ output_get_wl_output(struct output *output)
 }
 
 static void
-init_xkb(struct input *input)
-{
-	input->xkb.names.rules = "evdev";
-	input->xkb.names.model = "pc105";
-	input->xkb.names.layout = (char *) option_xkb_layout;
-	input->xkb.names.variant = (char *) option_xkb_variant;
-	input->xkb.names.options = (char *) option_xkb_options;
-
-	input->xkb.keymap = xkb_map_new_from_names(input->display->xkb_context,
-						   &input->xkb.names, 0);
-	if (!input->xkb.keymap) {
-		fprintf(stderr, "Failed to compile keymap\n");
-		exit(1);
-	}
-
-	input->xkb.state = xkb_state_new(input->xkb.keymap);
-	if (!input->xkb.state) {
-		fprintf(stderr, "Failed to create XKB state\n");
-		exit(1);
-	}
-
-	input->xkb.control_mask =
-		1 << xkb_map_mod_get_index(input->xkb.keymap, "Control");
-	input->xkb.alt_mask =
-		1 << xkb_map_mod_get_index(input->xkb.keymap, "Mod1");
-	input->xkb.shift_mask =
-		1 << xkb_map_mod_get_index(input->xkb.keymap, "Shift");
-
-}
-
-static void
 fini_xkb(struct input *input)
 {
 	xkb_state_unref(input->xkb.state);
@@ -3140,8 +3155,6 @@ display_add_input(struct display *d, uint32_t id)
 	input->keyboard_focus = NULL;
 	wl_list_insert(d->input_list.prev, &input->link);
 
-	init_xkb(input);
-
 	wl_seat_add_listener(input->seat, &seat_listener, input);
 	wl_seat_set_user_data(input->seat, input);
 
@@ -3157,6 +3170,11 @@ input_destroy(struct input *input)
 {
 	input_remove_keyboard_focus(input);
 	input_remove_pointer_focus(input);
+
+	if (input->xkb.state)
+		xkb_state_unref(input->xkb.state);
+	if (input->xkb.keymap)
+		xkb_map_unref(input->xkb.keymap);
 
 	if (input->drag_offer)
 		data_offer_destroy(input->drag_offer);
@@ -3339,8 +3357,8 @@ display_create(int argc, char *argv[])
 	wl_list_init(&d->output_list);
 
 	d->xkb_context = xkb_context_new(0);
-	if (!d->xkb_context) {
-		fprintf(stderr, "failed to initialize XKB context\n");
+	if (d->xkb_context == NULL) {
+		fprintf(stderr, "Failed to create XKB context\n");
 		return NULL;
 	}
 
