@@ -388,19 +388,23 @@ wl_seat_set_selection(struct wl_seat *seat, struct wl_data_source *source,
 	if (focus) {
 		data_device = find_resource(&seat->drag_resource_list,
 					    focus->client);
-		if (data_device) {
+		if (data_device && source) {
 			offer = wl_data_source_send_offer(seat->selection_data_source,
 							  data_device);
 			wl_data_device_send_selection(data_device, offer);
+		} else if (data_device) {
+			wl_data_device_send_selection(data_device, NULL);
 		}
 	}
 
 	wl_signal_emit(&seat->selection_signal, seat);
 
-	seat->selection_data_source_listener.notify =
-		destroy_selection_data_source;
-	wl_signal_add(&source->resource.destroy_signal,
-		      &seat->selection_data_source_listener);
+	if (source) {
+		seat->selection_data_source_listener.notify =
+			destroy_selection_data_source;
+		wl_signal_add(&source->resource.destroy_signal,
+			      &seat->selection_data_source_listener);
+	}
 }
 
 static void
