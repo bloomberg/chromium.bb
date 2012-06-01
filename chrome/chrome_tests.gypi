@@ -2779,6 +2779,7 @@
         'browser/extensions/extension_websocket_apitest.cc',
         'browser/extensions/isolated_app_browsertest.cc',
         'browser/extensions/lazy_background_page_apitest.cc',
+        'browser/extensions/lazy_background_page_test_util.h',
         'browser/extensions/mutation_observers_apitest.cc',
         'browser/extensions/notifications_apitest.cc',
         'browser/extensions/platform_app_browsertest.cc',

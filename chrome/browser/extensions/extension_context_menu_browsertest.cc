@@ -7,10 +7,12 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/context_menu_params.h"
 #include "net/base/mock_host_resolver.h"
@@ -89,18 +91,6 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     return false;
   }
 
- protected:
-  // These two functions implement pure virtual methods of
-  // RenderViewContextMenu.
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator) {
-    // None of our commands have accelerators, so always return false.
-    return false;
-  }
-  virtual void PlatformInit() {}
-  virtual void PlatformCancel() {}
-
-
   // Given an extension menu item id, tries to find the corresponding command id
   // in the menu.
   bool FindCommandId(const ExtensionMenuItem::Id& id, int* command_id) {
@@ -113,6 +103,17 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     }
     return false;
   }
+
+ protected:
+  // These two functions implement pure virtual methods of
+  // RenderViewContextMenu.
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          ui::Accelerator* accelerator) {
+    // None of our commands have accelerators, so always return false.
+    return false;
+  }
+  virtual void PlatformInit() {}
+  virtual void PlatformCancel() {}
 };
 
 }  // namespace
@@ -121,13 +122,15 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
  public:
   // Helper to load an extension from context_menus/|subdirectory| in the
   // extensions test data dir.
-  bool LoadContextMenuExtension(std::string subdirectory) {
+  const extensions::Extension* LoadContextMenuExtension(
+      std::string subdirectory) {
     FilePath extension_dir =
         test_data_dir_.AppendASCII("context_menus").AppendASCII(subdirectory);
     return LoadExtension(extension_dir);
   }
 
-  bool LoadContextMenuExtensionIncognito(std::string subdirectory) {
+  const extensions::Extension* LoadContextMenuExtensionIncognito(
+      std::string subdirectory) {
     FilePath extension_dir =
         test_data_dir_.AppendASCII("context_menus").AppendASCII(subdirectory);
     return LoadExtensionIncognito(extension_dir);
@@ -507,4 +510,47 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Frames) {
 IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Enabled) {
   TestEnabledContextMenu(true);
   TestEnabledContextMenu(false);
+}
+
+class ExtensionContextMenuBrowserLazyTest :
+    public ExtensionContextMenuBrowserTest {
+  void SetUpCommandLine(CommandLine* command_line) {
+    ExtensionContextMenuBrowserTest::SetUpCommandLine(command_line);
+    // Set shorter delays to prevent test timeouts.
+    command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "0");
+    command_line->AppendSwitchASCII(switches::kEventPageUnloadingTime, "0");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserLazyTest, EventPage) {
+  GURL about_blank("about:blank");
+  LazyBackgroundObserver page_complete;
+  const extensions::Extension* extension = LoadContextMenuExtension(
+      "event_page");
+  ASSERT_TRUE(extension);
+  page_complete.Wait();
+
+  // Test that menu items appear while the page is unloaded.
+  ASSERT_TRUE(MenuHasItemWithLabel(
+      about_blank, GURL(), GURL(), std::string("Item 1")));
+  ASSERT_TRUE(MenuHasItemWithLabel(
+      about_blank, GURL(), GURL(), std::string("Checkbox 1")));
+
+  // Test that checked menu items retain their checkedness.
+  LazyBackgroundObserver checkbox_checked;
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      CreateMenu(browser(), about_blank, GURL(), GURL()));
+  ExtensionMenuItem::Id id(false, extension->id());
+  id.string_uid = "checkbox1";
+  int command_id = -1;
+  ASSERT_TRUE(menu->FindCommandId(id, &command_id));
+  EXPECT_FALSE(menu->IsCommandIdChecked(command_id));
+
+  // Executing the checkbox also fires the onClicked event.
+  ExtensionTestMessageListener listener("onClicked fired for checkbox1", false);
+  menu->ExecuteCommand(command_id);
+  checkbox_checked.WaitUntilClosed();
+
+  EXPECT_TRUE(menu->IsCommandIdChecked(command_id));
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
 }

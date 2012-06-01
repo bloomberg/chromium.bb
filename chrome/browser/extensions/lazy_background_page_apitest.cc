@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -29,37 +30,6 @@
 using extensions::Extension;
 
 namespace {
-// Helper class to wait for a lazy background page to load and close again.
-class LazyBackgroundObserver {
- public:
-  LazyBackgroundObserver()
-      : page_created_(chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-                      content::NotificationService::AllSources()),
-        page_closed_(chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                     content::NotificationService::AllSources()) {
-  }
-  explicit LazyBackgroundObserver(Profile* profile)
-      : page_created_(chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-                      content::NotificationService::AllSources()),
-        page_closed_(chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                     content::Source<Profile>(profile)) {
-  }
-  void Wait() {
-    page_created_.Wait();
-    page_closed_.Wait();
-  }
-
-  void WaitUntilLoaded() {
-    page_created_.Wait();
-  }
-  void WaitUntilClosed() {
-    page_closed_.Wait();
-  }
-
- private:
-  ui_test_utils::WindowedNotificationObserver page_created_;
-  ui_test_utils::WindowedNotificationObserver page_closed_;
-};
 
 // This unfortunate bit of silliness is necessary when loading an extension in
 // incognito. The goal is to load the extension, enable incognito, then wait
@@ -96,7 +66,6 @@ class LoadedIncognitoObserver : public content::NotificationObserver {
   scoped_ptr<LazyBackgroundObserver> original_complete_;
   scoped_ptr<LazyBackgroundObserver> incognito_complete_;
 };
-
 
 }  // namespace
 
@@ -390,4 +359,3 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, OnUnload) {
 
 // TODO: background page with timer.
 // TODO: background page that interacts with popup.
-// TODO: background page with menu.
