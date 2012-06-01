@@ -55,7 +55,7 @@ void BrowserLauncherItemController::Init() {
           ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
   if (type_ != TYPE_TABBED) {
     item_id_ = launcher_controller_->CreateAppLauncherItem(
-        this, app_id_, app_status, -1);
+        this, app_id_, app_status);
   } else {
     item_id_ = launcher_controller_->CreateTabbedLauncherItem(
         this,

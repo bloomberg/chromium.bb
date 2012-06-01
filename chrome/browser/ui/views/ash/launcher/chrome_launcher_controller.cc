@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 
-#include <set>
-
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/shell.h"
@@ -80,6 +78,9 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_EXTENSION_UNLOADED,
                               content::Source<Profile>(profile_));
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                              content::Source<Profile>(profile_));
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(prefs::kPinnedLauncherApps, this);
 }
@@ -119,7 +120,7 @@ void ChromeLauncherController::Init() {
     updater.Get()->Clear();
   }
 
-  UpdateAppLaunchersFromPref();
+  CreateAppLaunchersFromPref();
 
   // TODO(sky): update unit test so that this test isn't necessary.
   if (ash::Shell::HasInstance()) {
@@ -140,29 +141,22 @@ ash::LauncherID ChromeLauncherController::CreateTabbedLauncherItem(
     IncognitoState is_incognito,
     ash::LauncherItemStatus status) {
   ash::LauncherID id = model_->next_id();
-  DCHECK(id_to_item_map_.find(id) == id_to_item_map_.end());
-  id_to_item_map_[id].item_type = TYPE_TABBED_BROWSER;
-  id_to_item_map_[id].controller = controller;
-
   ash::LauncherItem item;
   item.type = ash::TYPE_TABBED;
   item.is_incognito = (is_incognito == STATE_INCOGNITO);
   item.status = status;
   model_->Add(item);
+  DCHECK(id_to_item_map_.find(id) == id_to_item_map_.end());
+  id_to_item_map_[id].item_type = TYPE_TABBED_BROWSER;
+  id_to_item_map_[id].controller = controller;
   return id;
 }
 
 ash::LauncherID ChromeLauncherController::CreateAppLauncherItem(
     BrowserLauncherItemController* controller,
     const std::string& app_id,
-    ash::LauncherItemStatus status,
-    int index) {
+    ash::LauncherItemStatus status) {
   ash::LauncherID id = model_->next_id();
-  DCHECK(id_to_item_map_.find(id) == id_to_item_map_.end());
-  id_to_item_map_[id].item_type = TYPE_APP;
-  id_to_item_map_[id].app_id = app_id;
-  id_to_item_map_[id].controller = controller;
-
   ash::LauncherItem item;
   if (!controller) {
     if (status == ash::STATUS_CLOSED)
@@ -180,10 +174,11 @@ ash::LauncherID ChromeLauncherController::CreateAppLauncherItem(
   item.is_incognito = false;
   item.image = Extension::GetDefaultIcon(true);
   item.status = status;
-  if (index < 0 || index >= model_->item_count())
-    model_->Add(item);
-  else
-    model_->AddAt(index, item);
+  model_->Add(item);
+  DCHECK(id_to_item_map_.find(id) == id_to_item_map_.end());
+  id_to_item_map_[id].item_type = TYPE_APP;
+  id_to_item_map_[id].app_id = app_id;
+  id_to_item_map_[id].controller = controller;
 
   if (!controller || controller->type() !=
       BrowserLauncherItemController::TYPE_EXTENSION_PANEL)
@@ -493,22 +488,48 @@ void ChromeLauncherController::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
-      UpdateAppLaunchersFromPref();
+      ProcessPendingPinnedApps();
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
           content::Details<extensions::UnloadedExtensionInfo>(
               details)->extension;
-      if (IsAppPinned(extension->id()))
+      if (IsAppPinned(extension->id())) {
+        // TODO(dpolukhin): also we need to remember index of the app to show
+        // it on the same place when it gets loaded again.
+        Item pending_item;
+        pending_item.item_type = TYPE_APP;
+        pending_item.app_id = extension->id();
+        pending_pinned_apps_.push_back(pending_item);
         DoUnpinAppsWithID(extension->id());
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+      std::string id = *content::Details<const std::string>(details).ptr();
+      for (std::deque<Item>::iterator it = pending_pinned_apps_.begin();
+           it != pending_pinned_apps_.end(); ++it) {
+        if (it->app_id == id) {
+          pending_pinned_apps_.erase(it);
+          break;
+        }
+      }
       break;
     }
     case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string& pref_name(
           *content::Details<std::string>(details).ptr());
       if (pref_name == prefs::kPinnedLauncherApps) {
-        UpdateAppLaunchersFromPref();
+        // Destroy existing app launchers and reinitialize from the pref.
+        for (size_t i = 0; i < model_->items().size(); ) {
+          const ash::LauncherItem& item(model_->items()[i]);
+          if (item.type == ash::TYPE_APP_SHORTCUT)
+            LauncherItemClosed(item.id);
+          else
+            i++;
+        }
+        CreateAppLaunchersFromPref();
       } else {
         NOTREACHED() << "Unexpected pref change for " << pref_name;
       }
@@ -528,7 +549,7 @@ void ChromeLauncherController::OnShellWindowAdded(ShellWindow* shell_window) {
       return;
     }
   }
-  CreateAppLauncherItem(NULL, app_id, ash::STATUS_RUNNING, -1);
+  CreateAppLauncherItem(NULL, app_id, ash::STATUS_RUNNING);
 }
 
 void ChromeLauncherController::OnShellWindowRemoved(ShellWindow* shell_window) {
@@ -596,13 +617,25 @@ Profile* ChromeLauncherController::GetProfileForNewWindows() {
   return ProfileManager::GetDefaultProfileOrOffTheRecord();
 }
 
+void ChromeLauncherController::ProcessPendingPinnedApps() {
+  while (!pending_pinned_apps_.empty()) {
+    const Item& item = pending_pinned_apps_.front();
+
+    if (!app_icon_loader_->IsValidID(item.app_id))
+      return;
+
+    DoPinAppWithID(item.app_id);
+    pending_pinned_apps_.pop_front();
+  }
+}
+
 void ChromeLauncherController::DoPinAppWithID(const std::string& app_id) {
   // If there is an item, do nothing and return.
   if (IsAppPinned(app_id))
     return;
 
   // Otherwise, create an item for it.
-  CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED, -1);
+  CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED);
   if (CanPin())
     PersistPinnedState();
 }
@@ -617,70 +650,23 @@ void ChromeLauncherController::DoUnpinAppsWithID(const std::string& app_id) {
   }
 }
 
-void ChromeLauncherController::UpdateAppLaunchersFromPref() {
-  // Construct a vector representation of to-be-pinned apps from the pref.
-  std::vector<std::string> pinned_apps;
-  const base::ListValue* pinned_apps_pref =
+void ChromeLauncherController::CreateAppLaunchersFromPref() {
+  const base::ListValue* pinned_apps =
       profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
-  for (base::ListValue::const_iterator it(pinned_apps_pref->begin());
-       it != pinned_apps_pref->end(); ++it) {
+  for (size_t i = 0; i < pinned_apps->GetSize(); ++i) {
     DictionaryValue* app = NULL;
-    std::string app_id;
-    if ((*it)->GetAsDictionary(&app) &&
-        app->GetString(ash::kPinnedAppsPrefAppIDPath, &app_id) &&
-        std::find(pinned_apps.begin(), pinned_apps.end(), app_id) ==
-            pinned_apps.end() &&
-        app_icon_loader_->IsValidID(app_id)) {
-      pinned_apps.push_back(app_id);
-    }
-  }
-
-  // Walk the model and |pinned_apps| from the pref lockstep, adding and
-  // removing items as necessary. NB: This code uses plain old indexing instead
-  // of iterators because of model mutations as part of the loop.
-  std::vector<std::string>::const_iterator pref_app_id(pinned_apps.begin());
-  int index = 0;
-  for (; index < model_->item_count() && pref_app_id != pinned_apps.end();
-       ++index) {
-    // If the next app launcher according to the pref is present in the model,
-    // delete all app launcher entries in between.
-    if (IsAppPinned(*pref_app_id)) {
-      for (; index < model_->item_count(); ++index) {
-        const ash::LauncherItem& item(model_->items()[index]);
-        if (item.type != ash::TYPE_APP_SHORTCUT)
-          continue;
-
-        IDToItemMap::const_iterator entry(id_to_item_map_.find(item.id));
-        if (entry != id_to_item_map_.end() &&
-            entry->second.app_id == *pref_app_id) {
-          ++pref_app_id;
-          break;
+    if (pinned_apps->GetDictionary(i, &app)) {
+      std::string app_id;
+      if (app->GetString(ash::kPinnedAppsPrefAppIDPath, &app_id)) {
+        if (app_icon_loader_->IsValidID(app_id)) {
+          CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED);
         } else {
-          LauncherItemClosed(item.id);
-          --index;
+          Item pending_item;
+          pending_item.item_type = TYPE_APP;
+          pending_item.app_id = app_id;
+          pending_pinned_apps_.push_back(pending_item);
         }
       }
-      // If the item wasn't found, that means id_to_item_map_ is out of sync.
-      DCHECK(index < model_->item_count());
-    } else {
-      // This app wasn't pinned before, insert a new entry.
-      ash::LauncherID id = CreateAppLauncherItem(NULL, *pref_app_id,
-                                                 ash::STATUS_CLOSED, index);
-      index = model_->ItemIndexByID(id);
-      ++pref_app_id;
     }
   }
-
-  // Remove any trailing existing items.
-  while (index < model_->item_count()) {
-    const ash::LauncherItem& item(model_->items()[index]);
-    if (item.type == ash::TYPE_APP_SHORTCUT)
-      LauncherItemClosed(item.id);
-    else
-      ++index;
-  }
-
-  // Append unprocessed items from the pref to the end of the model.
-  for (; pref_app_id != pinned_apps.end(); ++pref_app_id)
-      CreateAppLauncherItem(NULL, *pref_app_id, ash::STATUS_CLOSED, -1);
 }

@@ -8,8 +8,8 @@
 
 #include <vector>
 
-#include "ash/ash_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ash/ash_export.h"
 
 namespace aura {
 class Window;

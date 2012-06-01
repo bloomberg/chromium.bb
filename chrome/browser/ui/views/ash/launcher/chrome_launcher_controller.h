@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_H_
 #pragma once
 
+#include <deque>
 #include <map>
 #include <string>
 
@@ -17,8 +18,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/extensions/shell_window_registry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -81,13 +82,10 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // Creates a new app item on the launcher for |updater|. If there is an
   // existing pinned app that isn't running on the launcher, its id is returned.
-  // |index| indicates the index at which to add the item. Pass -1 to append the
-  // launcher to the existing launchers.
   ash::LauncherID CreateAppLauncherItem(
       BrowserLauncherItemController* controller,
       const std::string& app_id,
-      ash::LauncherItemStatus status,
-      int index);
+      ash::LauncherItemStatus status);
 
   // Updates the running status of an item.
   void SetItemStatus(ash::LauncherID id, ash::LauncherItemStatus status);
@@ -191,7 +189,6 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
  private:
   friend class BrowserLauncherItemControllerTest;
-  friend class ChromeLauncherControllerTest;
 
   enum ItemType {
     TYPE_APP,
@@ -230,13 +227,18 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Returns the profile used for new windows.
   Profile* GetProfileForNewWindows();
 
+  // Checks |pending_pinnned_apps_| list and creates pinned app items for apps
+  // that are ready. To maintain the order, the list is iterated from the
+  // beginning to the end and stops the iteration when hitting a not-ready app.
+  void ProcessPendingPinnedApps();
+
   // Internal helpers for pinning and unpinning that handle both
   // client-triggered and internal pinning operations.
   void DoPinAppWithID(const std::string& app_id);
   void DoUnpinAppsWithID(const std::string& app_id);
 
-  // Re-syncs launcher model with prefs::kPinnedLauncherApps.
-  void UpdateAppLaunchersFromPref();
+  // Creates app launchers as specified in prefs::kPinnedLauncherApps.
+  void CreateAppLaunchersFromPref();
 
   static ChromeLauncherController* instance_;
 
@@ -250,6 +252,12 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // Used to load the image for an app tab.
   scoped_ptr<AppIconLoader> app_icon_loader_;
+
+  // A list of items that are in pinned app list but corresponding apps are
+  // not ready. Keep them in this list and create pinned item when the apps
+  // are installed (via sync or external extension provider.) The order of the
+  // list reflects the original order in pinned app list.
+  std::deque<Item> pending_pinned_apps_;
 
   content::NotificationRegistrar notification_registrar_;
 

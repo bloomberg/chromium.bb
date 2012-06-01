@@ -4,38 +4,10 @@
 
 #include "ash/launcher/launcher_model.h"
 
-#include <algorithm>
-
 #include "ash/launcher/launcher_model_observer.h"
 #include "ui/aura/window.h"
 
 namespace ash {
-
-namespace {
-
-int LauncherItemTypeToWeight(LauncherItemType type) {
-  switch (type) {
-    case TYPE_BROWSER_SHORTCUT:
-      return 0;
-    case TYPE_APP_SHORTCUT:
-    case TYPE_PLATFORM_APP:
-      return 1;
-    case TYPE_TABBED:
-    case TYPE_APP_PANEL:
-      return 2;
-    case TYPE_APP_LIST:
-      return 3;
-  }
-
-  NOTREACHED() << "Invalid type " << type;
-  return 2;
-}
-
-bool CompareByWeight(const LauncherItem& a, const LauncherItem& b) {
-  return LauncherItemTypeToWeight(a.type) < LauncherItemTypeToWeight(b.type);
-}
-
-}  // namespace
 
 LauncherModel::LauncherModel() : next_id_(1) {
   LauncherItem app_list;
@@ -55,15 +27,6 @@ LauncherModel::~LauncherModel() {
 
 int LauncherModel::Add(const LauncherItem& item) {
   return AddAt(GetIndexToAddItemAt(item.type), item);
-}
-
-int LauncherModel::AddAt(int index, const LauncherItem& item) {
-  index = ValidateInsertionIndex(item.type, index);
-  items_.insert(items_.begin() + index, item);
-  items_[index].id = next_id_++;
-  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
-                    LauncherItemAdded(index));
-  return index;
 }
 
 void LauncherModel::RemoveItemAt(int index) {
@@ -120,6 +83,15 @@ void LauncherModel::RemoveObserver(LauncherModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+int LauncherModel::AddAt(int index, const LauncherItem& item) {
+  DCHECK(index >= 0 && index <= item_count());
+  items_.insert(items_.begin() + index, item);
+  items_[index].id = next_id_++;
+  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
+                    LauncherItemAdded(index));
+  return index;
+}
+
 int LauncherModel::GetIndexToAddItemAt(LauncherItemType type) const {
   DCHECK_GE(item_count(), 2);  // APP_LIST and BROWSER_SHORTCUT.
   if (type == TYPE_APP_SHORTCUT) {
@@ -132,23 +104,6 @@ int LauncherModel::GetIndexToAddItemAt(LauncherItemType type) const {
 
   // The rest go before TYPE_APP_LIST.
   return item_count() - 1;
-}
-
-int LauncherModel::ValidateInsertionIndex(LauncherItemType type,
-                                          int index) const {
-  DCHECK(index >= 0 && index <= item_count());
-
-  // Clamp |index| to the allowed range for the type as determined by |weight|.
-  LauncherItem weight_dummy;
-  weight_dummy.type = type;
-  index = std::max(std::lower_bound(items_.begin(), items_.end(), weight_dummy,
-                                    CompareByWeight) - items_.begin(),
-                   static_cast<LauncherItems::difference_type>(index));
-  index = std::min(std::upper_bound(items_.begin(), items_.end(), weight_dummy,
-                                    CompareByWeight) - items_.begin(),
-                   static_cast<LauncherItems::difference_type>(index));
-
-  return index;
 }
 
 }  // namespace ash
