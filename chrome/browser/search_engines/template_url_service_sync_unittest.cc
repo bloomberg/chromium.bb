@@ -1506,6 +1506,36 @@ TEST_F(TemplateURLServiceSyncTest, SyncMergeDeletesDefault) {
             model()->GetTemplateURLForGUID("key1"));
 }
 
+TEST_F(TemplateURLServiceSyncTest, LocalDefaultWinsConflict) {
+  // We expect that the local default always wins keyword conflict resolution.
+  const string16 keyword(ASCIIToUTF16("key1"));
+  TemplateURL* default_turl = CreateTestTemplateURL(keyword,
+      "http://whatever.com/{searchTerms}", "whateverguid", 10);
+  model()->Add(default_turl);
+  model()->SetDefaultSearchProvider(default_turl);
+
+  SyncDataList initial_data = CreateInitialSyncData();
+  // The key1 entry should be different from the default but conflict in the
+  // keyword.
+  scoped_ptr<TemplateURL> turl(CreateTestTemplateURL(keyword,
+      "http://key1.com/{searchTerms}", "key1", 90));
+  initial_data[0] = TemplateURLService::CreateSyncDataFromTemplateURL(*turl);
+
+  model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
+      PassProcessor(), CreateAndPassSyncErrorFactory());
+
+  // The conflicting TemplateURL should be added, but it should have lost
+  // conflict resolution against the default.
+  EXPECT_EQ(4U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
+  const TemplateURL* winner = model()->GetTemplateURLForGUID("whateverguid");
+  ASSERT_TRUE(winner);
+  EXPECT_EQ(model()->GetDefaultSearchProvider(), winner);
+  EXPECT_EQ(keyword, winner->keyword());
+  const TemplateURL* loser = model()->GetTemplateURLForGUID("key1");
+  ASSERT_TRUE(loser);
+  EXPECT_EQ(ASCIIToUTF16("key1.com"), loser->keyword());
+}
+
 TEST_F(TemplateURLServiceSyncTest, DeleteBogusData) {
   // Create a couple of bogus entries to sync.
   SyncDataList initial_data;

@@ -2145,7 +2145,8 @@ void TemplateURLService::ResolveSyncKeywordConflict(
   DCHECK(change_list);
 
   if (local_turl->last_modified() > sync_turl->last_modified() ||
-      local_turl->created_by_policy()) {
+      local_turl->created_by_policy() ||
+      local_turl == GetDefaultSearchProvider()) {
     string16 new_keyword = UniquifyKeyword(*sync_turl);
     DCHECK(!GetTemplateURLForKeyword(new_keyword));
     sync_turl->data_.SetKeyword(new_keyword);
