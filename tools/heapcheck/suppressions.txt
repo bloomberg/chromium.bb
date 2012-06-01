@@ -1441,17 +1441,11 @@
    fun:BookmarkBarGtkUnittest_HidesHelpMessageWithBookmark_Test::TestBody
 }
 {
-   bug_114980
-   Heapcheck:Leak
-   ...
-   fun:BackFwdMenuModelTest_*_Test::TestBody
-}
-{
    bug_114986
    Heapcheck:Leak
    ...
    fun:ThemeServiceFactory::BuildServiceInstanceFor
-   fun:ProfileKeyedBaseFactory::GetBaseForProfile
+   ...
    fun:ProfileKeyedServiceFactory::GetServiceForProfile
    fun:ThemeServiceFactory::GetForProfile
 }
