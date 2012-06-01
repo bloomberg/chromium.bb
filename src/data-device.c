@@ -356,7 +356,8 @@ destroy_selection_data_source(struct wl_listener *listener, void *data)
 	if (focus) {
 		data_device = find_resource(&seat->drag_resource_list,
 					    focus->client);
-		wl_data_device_send_selection(data_device, NULL);
+		if (data_device)
+			wl_data_device_send_selection(data_device, NULL);
 	}
 }
 
