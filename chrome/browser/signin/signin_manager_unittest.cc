@@ -50,6 +50,13 @@ class SigninManagerTest : public TokenServiceTestHarness {
                                     content::Source<Profile>(profile_.get()));
   }
 
+  virtual void TearDown() OVERRIDE {
+    // Destroy the SigninManager here, because it relies on profile_ which is
+    // freed in the base class.
+    manager_.reset(NULL);
+    TokenServiceTestHarness::TearDown();
+  }
+
   void SetupFetcherAndComplete(const std::string& url,
                                int response_code,
                                const net::ResponseCookies& cookies,
@@ -204,6 +211,19 @@ TEST_F(SigninManagerTest, Prohibited) {
   EXPECT_FALSE(manager_->IsAllowedUsername(""));
 }
 
+TEST_F(SigninManagerTest, TestAlternateWildcard) {
+  // Test to make sure we accept "*@google.com" as a pattern (treat it as if
+  // the admin entered ".*@google.com").
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsernamePattern,
+                                  "*@google.com");
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->IsAllowedUsername("test@google.com"));
+  EXPECT_TRUE(manager_->IsAllowedUsername("happy@google.com"));
+  EXPECT_FALSE(manager_->IsAllowedUsername("test@invalid.com"));
+  EXPECT_FALSE(manager_->IsAllowedUsername("test@notgoogle.com"));
+  EXPECT_FALSE(manager_->IsAllowedUsername(""));
+}
+
 TEST_F(SigninManagerTest, ProhibitedAtStartup) {
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   "monkey@invalid.com");
@@ -211,6 +231,17 @@ TEST_F(SigninManagerTest, ProhibitedAtStartup) {
                                   ".*@google.com");
   manager_->Initialize(profile_.get());
   // Currently signed in user is prohibited by policy, so should be signed out.
+  EXPECT_EQ("", manager_->GetAuthenticatedUsername());
+}
+
+TEST_F(SigninManagerTest, ProhibitedAfterStartup) {
+  std::string user("monkey@invalid.com");
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, user);
+  manager_->Initialize(profile_.get());
+  EXPECT_EQ(user, manager_->GetAuthenticatedUsername());
+  // Update the profile - user should be signed out.
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsernamePattern,
+                                  ".*@google.com");
   EXPECT_EQ("", manager_->GetAuthenticatedUsername());
 }
 

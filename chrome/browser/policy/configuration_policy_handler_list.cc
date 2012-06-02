@@ -282,6 +282,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEnableMemoryInfo,
     prefs::kEnableMemoryInfo,
     Value::TYPE_BOOLEAN },
+  { key::kRestrictSigninToPattern,
+    prefs::kGoogleServicesUsernamePattern,
+    Value::TYPE_STRING },
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,

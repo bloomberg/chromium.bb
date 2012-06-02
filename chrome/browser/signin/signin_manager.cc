@@ -60,6 +60,8 @@ void SigninManager::Initialize(Profile* profile) {
   // Should never call Initialize() twice.
   DCHECK(!IsInitialized());
   profile_ = profile;
+  pref_registrar_.Init(profile->GetPrefs());
+  pref_registrar_.Add(prefs::kGoogleServicesUsernamePattern, this);
 
   // If the user is clearing the token service from the command line, then
   // clear their login info also (not valid to be logged in without any
@@ -96,6 +98,13 @@ bool SigninManager::IsAllowedUsername(const std::string& username) const {
       prefs::kGoogleServicesUsernamePattern);
   if (pattern.empty())
     return true;
+
+  // Patterns like "*@foo.com" are not accepted by our regex engine (since they
+  // are not valid regular expressions - they should instead be ".*@foo.com").
+  // For convenience, detect these patterns and insert a "." character at the
+  // front.
+  if (pattern[0] == '*')
+    pattern.insert(0, ".");
 
   // See if the username matches the policy-provided pattern.
   UErrorCode status = U_ZERO_ERROR;
@@ -448,24 +457,43 @@ void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {
 void SigninManager::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_PREF_CHANGED:
+      DCHECK(*content::Details<std::string>(details).ptr() ==
+             prefs::kGoogleServicesUsernamePattern);
+      if (!authenticated_username_.empty() &&
+          !IsAllowedUsername(authenticated_username_)) {
+        // Signed in user is invalid according to the current policy so sign
+        // the user out.
+        SignOut();
+      }
+      break;
+
 #if !defined(OS_CHROMEOS)
-  DCHECK(type == chrome::NOTIFICATION_TOKEN_AVAILABLE);
-  TokenService::TokenAvailableDetails* tok_details =
-      content::Details<TokenService::TokenAvailableDetails>(details).ptr();
+    case chrome::NOTIFICATION_TOKEN_AVAILABLE: {
+      TokenService::TokenAvailableDetails* tok_details =
+          content::Details<TokenService::TokenAvailableDetails>(
+              details).ptr();
 
-  // If a GAIA service token has become available, use it to pre-login the
-  // user to other services that depend on GAIA credentials.
-  if (tok_details->service() == GaiaConstants::kGaiaService) {
-    if (client_login_.get() == NULL) {
-      client_login_.reset(new GaiaAuthFetcher(this,
-                                              GaiaConstants::kChromeSource,
-                                              profile_->GetRequestContext()));
+      // If a GAIA service token has become available, use it to pre-login the
+      // user to other services that depend on GAIA credentials.
+      if (tok_details->service() == GaiaConstants::kGaiaService) {
+        if (client_login_.get() == NULL) {
+          client_login_.reset(
+              new GaiaAuthFetcher(this,
+                                  GaiaConstants::kChromeSource,
+                                  profile_->GetRequestContext()));
+        }
+
+        client_login_->StartMergeSession(tok_details->token());
+
+        // We only want to do this once per sign-in.
+        CleanupNotificationRegistration();
+      }
+      break;
     }
-
-    client_login_->StartMergeSession(tok_details->token());
-
-    // We only want to do this once per sign-in.
-    CleanupNotificationRegistration();
-  }
 #endif
+    default:
+      NOTREACHED();
+  }
 }

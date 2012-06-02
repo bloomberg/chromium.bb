@@ -24,6 +24,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -189,8 +190,11 @@ class SigninManager : public GaiaAuthConsumer,
   // Actual client login handler.
   scoped_ptr<GaiaAuthFetcher> client_login_;
 
-  // Register for notifications from the TokenService.
+  // Registrar for notifications from the TokenService.
   content::NotificationRegistrar registrar_;
+
+  // Helper object to listen for changes to login preferences.
+  PrefChangeRegistrar pref_registrar_;
 
   // Actual username after successful authentication.
   std::string authenticated_username_;

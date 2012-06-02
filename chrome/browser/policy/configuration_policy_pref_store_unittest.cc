@@ -131,6 +131,8 @@ INSTANTIATE_TEST_CASE_P(
     ConfigurationPolicyPrefStoreStringTestInstance,
     ConfigurationPolicyPrefStoreStringTest,
     testing::Values(
+        PolicyAndPref(key::kRestrictSigninToPattern,
+                      prefs::kGoogleServicesUsernamePattern),
         PolicyAndPref(key::kHomepageLocation,
                       prefs::kHomePage),
         PolicyAndPref(key::kApplicationLocaleValue,
