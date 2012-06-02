@@ -10,6 +10,7 @@
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
+#include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/protocol/message_reader.h"
 
 namespace net {
@@ -24,15 +25,19 @@ class HostStub;
 class Session;
 
 // HostControlDispatcher dispatches incoming messages on the control
-// channel to HostStub or ClipboardStub, and also implements ClientStub for
-// outgoing messages.
-class HostControlDispatcher : public ChannelDispatcherBase, public ClientStub {
+// channel to HostStub or ClipboardStub, and also implements ClientStub and
+// CursorShapeStub for outgoing messages.
+class HostControlDispatcher : public ChannelDispatcherBase,
+                              public ClientStub {
  public:
   HostControlDispatcher();
   virtual ~HostControlDispatcher();
 
-  // ClipboardStub implementation.
+  // ClipboardStub implementation for sending clipboard data to client.
   virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
+
+  // CursorShapeStub implementation for sending cursor shape to client.
+  virtual void SetCursorShape(const CursorShapeInfo& cursor_shape) OVERRIDE;
 
   // Sets the ClipboardStub that will be called for each incoming clipboard
   // message. |clipboard_stub| must outlive this object.

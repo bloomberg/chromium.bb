@@ -62,6 +62,8 @@ void ClientControlDispatcher::OnMessageReceived(
 
   if (message->has_clipboard_event()) {
     clipboard_stub_->InjectClipboardEvent(message->clipboard_event());
+  } else if (message->has_cursor_shape()) {
+    client_stub_->SetCursorShape(message->cursor_shape());
   } else {
     LOG(WARNING) << "Unknown control message received.";
   }

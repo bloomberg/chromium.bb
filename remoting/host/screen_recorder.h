@@ -27,6 +27,7 @@ namespace remoting {
 
 namespace protocol {
 class ConnectionToClient;
+class CursorShapeInfo;
 }  // namespace protocol
 
 class CaptureData;
@@ -123,6 +124,8 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
 
   void DoCapture();
   void CaptureDoneCallback(scoped_refptr<CaptureData> capture_data);
+  void CursorShapeChangedCallback(
+      scoped_ptr<protocol::CursorShapeInfo> cursor_data);
   void DoFinishOneRecording();
   void DoInvalidateFullScreen();
 
@@ -139,6 +142,9 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   // Callback for VideoStub::ProcessVideoPacket() that is used for
   // each last packet in a frame.
   void VideoFrameSentCallback();
+
+  // Send updated cursor shape to client.
+  void DoSendCursorShape(scoped_ptr<protocol::CursorShapeInfo> cursor_shape);
 
   // Encoder thread -----------------------------------------------------------
 

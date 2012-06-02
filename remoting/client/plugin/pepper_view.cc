@@ -150,6 +150,10 @@ protocol::ClipboardStub* PepperView::GetClipboardStub() {
   return instance_;
 }
 
+protocol::CursorShapeStub* PepperView::GetCursorShapeStub() {
+  return instance_;
+}
+
 void PepperView::SetView(const SkISize& view_size, const SkIRect& clip_area) {
   bool view_changed = false;
 

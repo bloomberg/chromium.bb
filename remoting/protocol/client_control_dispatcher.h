@@ -9,6 +9,7 @@
 #include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/clipboard_stub.h"
+#include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/message_reader.h"
 
@@ -20,8 +21,8 @@ class ControlMessage;
 class Session;
 
 // ClientControlDispatcher dispatches incoming messages on the control
-// channel to ClientStub or ClipboardStub, and also implements ClipboardStub
-// and HostStub for outgoing messages.
+// channel to ClientStub, ClipboardStub or CursorShapeStub.
+// It also implements ClipboardStub and HostStub for outgoing messages.
 class ClientControlDispatcher : public ChannelDispatcherBase,
                                 public ClipboardStub,
                                 public HostStub {

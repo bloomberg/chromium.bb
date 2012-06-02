@@ -21,7 +21,8 @@ class CapturerFake : public Capturer {
   virtual ~CapturerFake();
 
   // Capturer interface.
-  virtual void Start() OVERRIDE;
+  virtual void Start(
+      const CursorShapeChangedCallback& callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;

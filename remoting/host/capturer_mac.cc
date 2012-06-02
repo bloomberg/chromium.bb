@@ -17,9 +17,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
+#include "remoting/base/capture_data.h"
 #include "remoting/base/util.h"
 #include "remoting/host/capturer_helper.h"
-
+#include "remoting/proto/control.pb.h"
 
 namespace remoting {
 
@@ -158,7 +159,7 @@ class CapturerMac : public Capturer {
   bool Init();
 
   // Capturer interface.
-  virtual void Start() OVERRIDE;
+  virtual void Start(const CursorShapeChangedCallback& callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
@@ -205,6 +206,9 @@ class CapturerMac : public Capturer {
   // A thread-safe list of invalid rectangles, and the size of the most
   // recently captured screen.
   CapturerHelper helper_;
+
+  // Callback notified whenever the cursor shape is changed.
+  CursorShapeChangedCallback cursor_shape_changed_callback_;
 
   // The current buffer with valid data for reading.
   int current_buffer_;
@@ -306,7 +310,10 @@ void CapturerMac::ReleaseBuffers() {
   }
 }
 
-void CapturerMac::Start() {
+void CapturerMac::Start(
+    const CursorShapeChangedCallback& callback) {
+  cursor_shape_changed_callback_ = callback;
+
   // Create power management assertions to wake the display and prevent it from
   // going to sleep on user idle.
   IOPMAssertionCreate(kIOPMAssertionTypeNoDisplaySleep,

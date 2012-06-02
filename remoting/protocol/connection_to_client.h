@@ -83,9 +83,10 @@ class ConnectionToClient : public base::NonThreadSafe {
   // Send encoded update stream data to the viewer.
   virtual VideoStub* video_stub();
 
-  // Return pointer to ClientStub.
+  // Send control data to the viewer/client.
   virtual ClientStub* client_stub();
 
+  // Stubs for receiving data from the client.
   // These three setters should be called before Init().
   virtual void set_clipboard_stub(ClipboardStub* clipboard_stub);
   virtual void set_host_stub(HostStub* host_stub);

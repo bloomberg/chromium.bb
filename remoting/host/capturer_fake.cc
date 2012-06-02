@@ -4,6 +4,8 @@
 
 #include "remoting/host/capturer_fake.h"
 
+#include "remoting/base/capture_data.h"
+
 namespace remoting {
 
 // CapturerFake generates a white picture of size kWidth x kHeight with a
@@ -36,7 +38,8 @@ CapturerFake::CapturerFake()
 CapturerFake::~CapturerFake() {
 }
 
-void CapturerFake::Start() {
+void CapturerFake::Start(
+    const CursorShapeChangedCallback& callback) {
 }
 
 void CapturerFake::Stop() {

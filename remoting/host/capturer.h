@@ -7,10 +7,16 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "remoting/base/capture_data.h"
+#include "media/base/video_frame.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
 namespace remoting {
+
+namespace protocol {
+class CursorShapeInfo;
+}
+
+class CaptureData;
 
 // A class to perform the task of capturing the image of a window.
 // The capture action is asynchronous to allow maximum throughput.
@@ -49,6 +55,10 @@ class Capturer {
   typedef base::Callback<void(scoped_refptr<CaptureData>)>
       CaptureCompletedCallback;
 
+  // CursorShapeChangedCallback is called when the cursor shape has changed.
+  typedef base::Callback<void(scoped_ptr<protocol::CursorShapeInfo>)>
+      CursorShapeChangedCallback;
+
   virtual ~Capturer() {};
 
   // Create platform-specific capturer.
@@ -69,7 +79,8 @@ class Capturer {
 #endif  // defined(OS_LINUX)
 
   // Called at the beginning of a capturing session.
-  virtual void Start() = 0;
+  virtual void Start(
+      const CursorShapeChangedCallback& callback) = 0;
 
   // Called at the end of a capturing session.
   virtual void Stop() = 0;

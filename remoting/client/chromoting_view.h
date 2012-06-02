@@ -12,6 +12,7 @@ namespace remoting {
 
 namespace protocol {
 class ClipboardStub;
+class CursorShapeStub;
 }  // namespace protocol
 
 // ChromotingView defines the behavior of an object that draws a view of the
@@ -33,6 +34,9 @@ class ChromotingView {
 
   // Get the view's ClipboardStub implementation.
   virtual protocol::ClipboardStub* GetClipboardStub() = 0;
+
+  // Get the view's CursorShapeStub implementation.
+  virtual protocol::CursorShapeStub* GetCursorShapeStub() = 0;
 };
 
 }  // namespace remoting

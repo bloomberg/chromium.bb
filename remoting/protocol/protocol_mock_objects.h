@@ -117,7 +117,11 @@ class MockClientStub : public ClientStub {
   MockClientStub();
   virtual ~MockClientStub();
 
+  // ClipboardStub mock implementation.
   MOCK_METHOD1(InjectClipboardEvent, void(const ClipboardEvent& event));
+
+  // CursorShapeStub mock implementation.
+  MOCK_METHOD1(SetCursorShape, void(const CursorShapeInfo& cursor_shape));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientStub);

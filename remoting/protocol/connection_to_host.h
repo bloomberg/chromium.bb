@@ -80,6 +80,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
 
   virtual const SessionConfig& config();
 
+  // Stubs for sending data to the host.
   virtual ClipboardStub* clipboard_stub();
   virtual HostStub* host_stub();
   virtual InputStub* input_stub();

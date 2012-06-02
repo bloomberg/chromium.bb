@@ -18,6 +18,7 @@ package remoting.protocol;
 message ControlMessage {
   optional ClipboardEvent clipboard_event = 1;
   optional ClientDimensions client_dimensions = 2;
+  optional CursorShapeInfo cursor_shape = 4;
   optional VideoControl video_control = 3;
 }
 

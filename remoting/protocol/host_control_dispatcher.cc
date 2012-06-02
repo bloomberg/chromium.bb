@@ -38,6 +38,13 @@ void HostControlDispatcher::InjectClipboardEvent(const ClipboardEvent& event) {
   writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
+void HostControlDispatcher::SetCursorShape(
+    const CursorShapeInfo& cursor_shape) {
+  ControlMessage message;
+  message.mutable_cursor_shape()->CopyFrom(cursor_shape);
+  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
+}
+
 void HostControlDispatcher::OnMessageReceived(
     scoped_ptr<ControlMessage> message, const base::Closure& done_task) {
   DCHECK(clipboard_stub_);

@@ -20,3 +20,16 @@ message VideoControl {
   // Enables the video channel if true, pauses if false.
   optional bool enable = 1;
 }
+
+message CursorShapeInfo {
+  // Width, height (in screen pixels) of the cursor.
+  optional int32 width = 1;
+  optional int32 height = 2;
+
+  // X,Y coordinates (relative to upper-left corner) of the cursor hotspot.
+  optional int32 hotspot_x = 3;
+  optional int32 hotspot_y = 4;
+
+  // Cursor pixmap data in 32-bit BGRA format.
+  optional bytes data = 5;
+}

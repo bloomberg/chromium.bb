@@ -128,7 +128,7 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
     planes.strides[i] = kWidth * 4;
   }
 
-  Expectation capturer_start = EXPECT_CALL(capturer_, Start());
+  Expectation capturer_start = EXPECT_CALL(capturer_, Start(_));
 
   SkISize size(SkISize::Make(kWidth, kHeight));
   scoped_refptr<CaptureData> data(new CaptureData(planes, size, kFormat));

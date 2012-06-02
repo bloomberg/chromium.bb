@@ -32,6 +32,7 @@
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
+#include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/protocol/connection_to_host.h"
 
 namespace base {
@@ -64,6 +65,7 @@ struct ClientConfig;
 
 class ChromotingInstance :
       public protocol::ClipboardStub,
+      public protocol::CursorShapeStub,
       public pp::Instance,
       public base::SupportsWeakPtr<ChromotingInstance> {
  public:
@@ -123,6 +125,10 @@ class ChromotingInstance :
 
   // ClipboardStub implementation.
   virtual void InjectClipboardEvent(const protocol::ClipboardEvent& event)
+      OVERRIDE;
+
+  // CursorShapeStub implementation.
+  virtual void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape)
       OVERRIDE;
 
   // Called by PepperView.

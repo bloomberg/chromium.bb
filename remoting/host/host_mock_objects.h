@@ -24,7 +24,7 @@ class MockCapturer : public Capturer {
   MockCapturer();
   virtual ~MockCapturer();
 
-  MOCK_METHOD0(Start, void());
+  MOCK_METHOD1(Start, void(const CursorShapeChangedCallback& callback));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(ScreenConfigurationChanged, void());
   MOCK_CONST_METHOD0(pixel_format, media::VideoFrame::Format());

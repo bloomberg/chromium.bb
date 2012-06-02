@@ -23,6 +23,7 @@
 #include "media/base/media.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/input_event.h"
+#include "ppapi/cpp/mouse_cursor.h"
 #include "ppapi/cpp/rect.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"
@@ -48,6 +49,9 @@
 namespace remoting {
 
 namespace {
+
+// 32-bit BGRA is 4 bytes per pixel.
+const int kBytesPerPixel = 4;
 
 const int kPerfStatsIntervalMs = 1000;
 
@@ -552,6 +556,52 @@ void ChromotingInstance::InjectClipboardEvent(
   data->SetString("mimeType", event.mime_type());
   data->SetString("item", event.data());
   PostChromotingMessage("injectClipboardItem", data.Pass());
+}
+
+void ChromotingInstance::SetCursorShape(
+    const protocol::CursorShapeInfo& cursor_shape) {
+  if (!cursor_shape.has_data() ||
+      !cursor_shape.has_width() ||
+      !cursor_shape.has_height() ||
+      !cursor_shape.has_hotspot_x() ||
+      !cursor_shape.has_hotspot_y()) {
+    return;
+  }
+
+  if (pp::ImageData::GetNativeImageDataFormat() !=
+      PP_IMAGEDATAFORMAT_BGRA_PREMUL) {
+    VLOG(2) << "Unable to set cursor shape - non-native image format";
+    return;
+  }
+
+  int width = cursor_shape.width();
+  int height = cursor_shape.height();
+
+  if (width > 32 || height > 32) {
+    VLOG(2) << "Cursor too large for SetCursor: "
+            << width << "x" << height << " > 32x32";
+    return;
+  }
+
+  int hotspot_x = cursor_shape.hotspot_x();
+  int hotspot_y = cursor_shape.hotspot_y();
+
+  pp::ImageData cursor_image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                             pp::Size(width, height), false);
+
+  int bytes_per_row = width * kBytesPerPixel;
+  const uint8* src_row_data = reinterpret_cast<const uint8*>(
+      cursor_shape.data().data());
+  uint8* dst_row_data = reinterpret_cast<uint8*>(cursor_image.data());
+  for (int row = 0; row < height; row++) {
+    memcpy(dst_row_data, src_row_data, bytes_per_row);
+    src_row_data += bytes_per_row;
+    dst_row_data += cursor_image.stride();
+  }
+
+  pp::MouseCursor::SetCursor(this, PP_MOUSECURSOR_TYPE_CUSTOM,
+                             cursor_image,
+                             pp::Point(hotspot_x, hotspot_y));
 }
 
 // static

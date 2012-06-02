@@ -12,10 +12,12 @@
 #include "base/native_library.h"
 #include "base/string16.h"
 #include "base/stringize_macros.h"
+#include "remoting/base/capture_data.h"
 #include "remoting/host/capturer_helper.h"
 #include "remoting/host/desktop_win.h"
 #include "remoting/host/differ.h"
 #include "remoting/host/scoped_thread_desktop_win.h"
+#include "remoting/proto/control.pb.h"
 
 namespace remoting {
 
@@ -39,7 +41,7 @@ class CapturerGdi : public Capturer {
   virtual ~CapturerGdi();
 
   // Capturer interface.
-  virtual void Start() OVERRIDE;
+  virtual void Start(const CursorShapeChangedCallback& callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
@@ -95,6 +97,9 @@ class CapturerGdi : public Capturer {
   // A thread-safe list of invalid rectangles, and the size of the most
   // recently captured screen.
   CapturerHelper helper_;
+
+  // Callback notified whenever the cursor shape is changed.
+  CursorShapeChangedCallback cursor_shape_changed_callback_;
 
   // There are two buffers for the screen images, as required by Capturer.
   static const int kNumBuffers = 2;
@@ -214,7 +219,10 @@ void CapturerGdi::ReleaseBuffers() {
   }
 }
 
-void CapturerGdi::Start() {
+void CapturerGdi::Start(
+    const CursorShapeChangedCallback& callback) {
+  cursor_shape_changed_callback_ = callback;
+
   // Load dwmapi.dll dynamically since it is not available on XP.
   if (dwmapi_library_ == NULL) {
     std::string error;

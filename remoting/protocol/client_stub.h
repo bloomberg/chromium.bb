@@ -12,11 +12,13 @@
 
 #include "base/basictypes.h"
 #include "remoting/protocol/clipboard_stub.h"
+#include "remoting/protocol/cursor_shape_stub.h"
 
 namespace remoting {
 namespace protocol {
 
-class ClientStub : public ClipboardStub {
+class ClientStub : public ClipboardStub,
+                   public CursorShapeStub {
  public:
   ClientStub() {}
   virtual ~ClientStub() {}

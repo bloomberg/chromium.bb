@@ -7,15 +7,18 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/Xdamage.h>
+#include <X11/extensions/Xfixes.h>
 
 #include <set>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/base/capture_data.h"
 #include "remoting/host/capturer_helper.h"
 #include "remoting/host/differ.h"
 #include "remoting/host/x_server_pixel_buffer.h"
+#include "remoting/proto/control.pb.h"
 
 namespace remoting {
 
@@ -75,7 +78,7 @@ class CapturerLinux : public Capturer {
   bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
 
   // Capturer interface.
-  virtual void Start() OVERRIDE;
+  virtual void Start(const CursorShapeChangedCallback& callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
@@ -106,6 +109,10 @@ class CapturerLinux : public Capturer {
   // previous capture.
   CaptureData* CaptureFrame();
 
+  // Capture the cursor image and call the CursorShapeChangedCallback if it
+  // has been set (using SetCursorShapeChangedCallback).
+  void CaptureCursor();
+
   // Synchronize the current buffer with |last_buffer_|, by copying pixels from
   // the area of |last_invalid_rects|.
   // Note this only works on the assumption that kNumBuffers == 2, as
@@ -129,6 +136,11 @@ class CapturerLinux : public Capturer {
   GC gc_;
   Window root_window_;
 
+  // XFixes.
+  bool has_xfixes_;
+  int xfixes_event_base_;
+  int xfixes_error_base_;
+
   // XDamage information.
   bool use_damage_;
   Damage damage_handle_;
@@ -142,6 +154,9 @@ class CapturerLinux : public Capturer {
   // A thread-safe list of invalid rectangles, and the size of the most
   // recently captured screen.
   CapturerHelper helper_;
+
+  // Callback notified whenever the cursor shape is changed.
+  CursorShapeChangedCallback cursor_shape_changed_callback_;
 
   // Capture state.
   static const int kNumBuffers = 2;
@@ -168,6 +183,9 @@ CapturerLinux::CapturerLinux()
     : display_(NULL),
       gc_(NULL),
       root_window_(BadValue),
+      has_xfixes_(false),
+      xfixes_event_base_(-1),
+      xfixes_error_base_(-1),
       use_damage_(false),
       damage_handle_(0),
       damage_event_base_(-1),
@@ -208,6 +226,15 @@ bool CapturerLinux::Init() {
     return false;
   }
 
+  // Check for XFixes extension. This is required for cursor shape
+  // notifications, and for our use of XDamage.
+  if (XFixesQueryExtension(display_, &xfixes_event_base_,
+                           &xfixes_error_base_)) {
+    has_xfixes_ = true;
+  } else {
+    LOG(INFO) << "X server does not support XFixes.";
+  }
+
   if (ShouldUseXDamage()) {
     InitXDamage();
   }
@@ -215,18 +242,22 @@ bool CapturerLinux::Init() {
   // Register for changes to the dimensions of the root window.
   XSelectInput(display_, root_window_, StructureNotifyMask);
 
+  if (has_xfixes_) {
+    // Register for changes to the cursor shape.
+    XFixesSelectCursorInput(display_, root_window_,
+                            XFixesDisplayCursorNotifyMask);
+  }
+
   return true;
 }
 
 void CapturerLinux::InitXDamage() {
-  // Check for XFixes and XDamage extensions.  If both are found then use
-  // XDamage to get explicit notifications of on-screen changes.
-  int xfixes_event_base;
-  int xfixes_error_base;
-  if (!XFixesQueryExtension(display_, &xfixes_event_base, &xfixes_error_base)) {
-    LOG(INFO) << "X server does not support XFixes.";
+  // Our use of XDamage requires XFixes.
+  if (!has_xfixes_) {
     return;
   }
+
+  // Check for XDamage extension.
   if (!XDamageQueryExtension(display_, &damage_event_base_,
                              &damage_error_base_)) {
     LOG(INFO) << "X server does not support XDamage.";
@@ -258,7 +289,9 @@ void CapturerLinux::InitXDamage() {
   LOG(INFO) << "Using XDamage extension.";
 }
 
-void CapturerLinux::Start() {
+void CapturerLinux::Start(
+    const CursorShapeChangedCallback& callback) {
+  cursor_shape_changed_callback_ = callback;
 }
 
 void CapturerLinux::Stop() {
@@ -296,8 +329,7 @@ void CapturerLinux::InvalidateFullScreen() {
 
 void CapturerLinux::CaptureInvalidRegion(
     const CaptureCompletedCallback& callback) {
-  // TODO(lambroslambrou): In the non-DAMAGE case, there should be no need
-  // for any X event processing in this class.
+  // Process XEvents for XDamage and cursor shape tracking.
   ProcessPendingXEvents();
 
   // Resize the current buffer if there was a recent change of
@@ -326,14 +358,58 @@ void CapturerLinux::ProcessPendingXEvents() {
   for (int i = 0; i < events_to_process; i++) {
     XNextEvent(display_, &e);
     if (use_damage_ && (e.type == damage_event_base_ + XDamageNotify)) {
-      XDamageNotifyEvent *event = reinterpret_cast<XDamageNotifyEvent*>(&e);
+      XDamageNotifyEvent* event = reinterpret_cast<XDamageNotifyEvent*>(&e);
       DCHECK(event->level == XDamageReportNonEmpty);
     } else if (e.type == ConfigureNotify) {
       ScreenConfigurationChanged();
+    } else if (has_xfixes_ &&
+               e.type == xfixes_event_base_ + XFixesCursorNotify) {
+      XFixesCursorNotifyEvent* cne;
+      cne = reinterpret_cast<XFixesCursorNotifyEvent*>(&e);
+      if (cne->subtype == XFixesDisplayCursorNotify) {
+        CaptureCursor();
+      }
     } else {
       LOG(WARNING) << "Got unknown event type: " << e.type;
     }
   }
+}
+
+void CapturerLinux::CaptureCursor() {
+  DCHECK(has_xfixes_);
+  if (cursor_shape_changed_callback_.is_null())
+    return;
+
+  XFixesCursorImage* img = XFixesGetCursorImage(display_);
+  if (!img) {
+    return;
+  }
+
+  int width = img->width;
+  int height = img->height;
+  int total_bytes = width * height * kBytesPerPixel;
+
+  scoped_ptr<protocol::CursorShapeInfo> cursor_proto(
+      new protocol::CursorShapeInfo());
+  cursor_proto->set_width(width);
+  cursor_proto->set_height(height);
+  cursor_proto->set_hotspot_x(img->xhot);
+  cursor_proto->set_hotspot_y(img->yhot);
+
+  cursor_proto->mutable_data()->resize(total_bytes);
+  uint8* proto_data = const_cast<uint8*>(reinterpret_cast<const uint8*>(
+      cursor_proto->mutable_data()->data()));
+
+  // Xlib stores 32-bit data in longs, even if longs are 64-bits long.
+  unsigned long* src = img->pixels;
+  uint32* dst = reinterpret_cast<uint32*>(proto_data);
+  uint32* dst_end = dst + (width * height);
+  while (dst < dst_end) {
+    *dst++ = static_cast<uint32>(*src++);
+  }
+  XFree(img);
+
+  cursor_shape_changed_callback_.Run(cursor_proto.Pass());
 }
 
 CaptureData* CapturerLinux::CaptureFrame() {

@@ -55,8 +55,12 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   // Return the stats recorded by this client.
   ChromotingStats* GetStats();
 
-  // ClipboardStub implementation.
+  // ClipboardStub implementation for receiving clipboard data from host.
   virtual void InjectClipboardEvent(const protocol::ClipboardEvent& event)
+      OVERRIDE;
+
+  // CursorShapeStub implementation for receiving cursor shape updates.
+  virtual void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape)
       OVERRIDE;
 
   // ConnectionToHost::HostEventCallback implementation.

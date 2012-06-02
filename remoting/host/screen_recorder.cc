@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/proto/control.pb.h"
+#include "remoting/proto/internal.pb.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/connection_to_client.h"
@@ -142,7 +143,9 @@ void ScreenRecorder::DoStart() {
     return;
   }
 
-  capturer()->Start();
+  capturer()->Start(
+      base::Bind(&ScreenRecorder::CursorShapeChangedCallback, this));
+
   capture_timer_.reset(new base::OneShotTimer<ScreenRecorder>());
 
   // Capture first frame immedately.
@@ -214,6 +217,18 @@ void ScreenRecorder::CaptureDoneCallback(
       FROM_HERE, base::Bind(&ScreenRecorder::DoEncode, this, capture_data));
 }
 
+void ScreenRecorder::CursorShapeChangedCallback(
+    scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
+  DCHECK_EQ(capture_loop_, MessageLoop::current());
+
+  if (!is_recording())
+    return;
+
+  network_loop_->PostTask(
+      FROM_HERE, base::Bind(&ScreenRecorder::DoSendCursorShape, this,
+                            base::Passed(cursor_shape.Pass())));
+}
+
 void ScreenRecorder::DoFinishOneRecording() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
@@ -279,6 +294,18 @@ void ScreenRecorder::DoStopOnNetworkThread(const base::Closure& done_task) {
   encode_loop_->PostTask(
       FROM_HERE, base::Bind(&ScreenRecorder::DoStopOnEncodeThread,
                             this, done_task));
+}
+
+void ScreenRecorder::DoSendCursorShape(
+    scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
+  DCHECK(network_loop_->BelongsToCurrentThread());
+
+  if (network_stopped_ || connections_.empty())
+    return;
+
+  // TODO(sergeyu): Currently we send the data only to the first
+  // connection. Send it to all connections if necessary.
+  connections_.front()->client_stub()->SetCursorShape(*cursor_shape);
 }
 
 // Encoder thread --------------------------------------------------------------

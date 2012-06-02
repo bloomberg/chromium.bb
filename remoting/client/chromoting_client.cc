@@ -106,6 +106,11 @@ void ChromotingClient::InjectClipboardEvent(
   view_->GetClipboardStub()->InjectClipboardEvent(event);
 }
 
+void ChromotingClient::SetCursorShape(
+    const protocol::CursorShapeInfo& cursor_shape) {
+  view_->GetCursorShapeStub()->SetCursorShape(cursor_shape);
+}
+
 void ChromotingClient::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                           const base::Closure& done) {
   DCHECK(message_loop()->BelongsToCurrentThread());
