@@ -176,11 +176,15 @@ const FilePath::CharType kPepperFlashPluginFilename[] =
     FPL("libpepflashplayer.so");
 #endif
 
-// Since users could potentially be tricked into running a product in record
-// mode without knowing it, we only run record mode if the visit-urls flag is
-// also present (this check is done elsewhere). Playback mode is allowed always,
+// We don't enable record mode in the released product because users could
+// potentially be tricked into running a product in record mode without
+// knowing it.  Enable in debug builds.  Playback mode is allowed always,
 // because it is useful for testing and not hazardous by itself.
+#ifndef NDEBUG
 const bool kRecordModeEnabled = true;
+#else
+const bool kRecordModeEnabled = false;
+#endif
 
 const int kHistogramSynchronizerReservedSequenceNumber = 0;
 
