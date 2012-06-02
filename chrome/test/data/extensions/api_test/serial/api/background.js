@@ -84,6 +84,11 @@ var testSerial = function() {
     chrome.test.succeed();
   };
 
+  var onFlush = function(result) {
+    chrome.test.assertTrue(result);
+    chrome.experimental.serial.close(connectionId, onClose);
+  }
+
   var doRead = function() {
     chrome.experimental.serial.read(connectionId, onRead);
   }
@@ -93,7 +98,7 @@ var testSerial = function() {
       var messageUint8View = new Uint8Array(readInfo.data);
       chrome.test.assertEq(uint8View[0], messageUint8View[0],
                            'Byte read was not equal to byte written.');
-      chrome.experimental.serial.close(connectionId, onClose);
+      chrome.experimental.serial.flush(connectionId, onFlush);
     } else {
       if (--readTries > 0) {
         setTimeout(doRead, 100);
@@ -150,7 +155,10 @@ var testSerial = function() {
 var onMessageReply = function(message) {
   var tests = [testGetPorts, testMaybeOpenPort];
 
-  if (message == 'echo_device_attached') {
+  // Another way to force the test to run.
+  var runTest = false;
+
+  if (runTest || message == 'echo_device_attached') {
     // We have a specific serial port set up to respond to test traffic. This
     // is a rare situation. TODO(miket): mock to make it testable under any
     // hardware conditions.

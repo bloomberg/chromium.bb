@@ -30,6 +30,7 @@ class SerialConnection : public APIResource {
 
   bool Open();
   void Close();
+  void Flush();
 
   int Read(uint8* byte);
   int Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count);

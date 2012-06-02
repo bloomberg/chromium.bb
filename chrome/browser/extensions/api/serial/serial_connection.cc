@@ -65,4 +65,8 @@ int SerialConnection::Write(scoped_refptr<net::IOBuffer> io_buffer,
                                              io_buffer->data(), byte_count);
 }
 
+void SerialConnection::Flush() {
+  base::FlushPlatformFile(file_);
+}
+
 }  // namespace extensions

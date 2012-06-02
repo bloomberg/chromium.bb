@@ -15,6 +15,7 @@
 
   callback OpenCallback = void (OpenInfo openInfo);
 
+  // Returns true if operation was successful.
   callback CloseCallback = void (boolean result);
 
   dictionary ReadInfo {
@@ -33,6 +34,9 @@
   };
 
   callback WriteCallback = void (WriteInfo writeInfo);
+
+  // Returns true if operation was successful.
+  callback FlushCallback = void (boolean result);
 
   interface Functions {
     // Returns names of valid ports on this machine, each of which is likely to
@@ -67,6 +71,12 @@
     static void write(long connectionId,
                       ArrayBuffer data,
                       WriteCallback callback);
+
+    // Flushes all bytes in the given connection's input and output buffers.
+    // |connectionId| : The id of the connection.
+    // |callback| : Called when the flush is complete.
+    static void flush(long connectionId,
+                      FlushCallback callback);
   };
 
 };

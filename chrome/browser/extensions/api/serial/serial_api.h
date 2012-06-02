@@ -108,6 +108,22 @@ class SerialWriteFunction : public AsyncAPIFunction {
   size_t io_buffer_size_;
 };
 
+class SerialFlushFunction : public AsyncAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.flush")
+
+ protected:
+  virtual ~SerialFlushFunction() {}
+
+  // AsyncAPIFunction:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+
+ private:
+  int connection_id_;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_API_H_

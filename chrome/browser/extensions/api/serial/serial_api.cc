@@ -191,4 +191,27 @@ bool SerialWriteFunction::Respond() {
   return true;
 }
 
+bool SerialFlushFunction::Prepare() {
+  set_work_thread_id(BrowserThread::FILE);
+
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &connection_id_));
+  return true;
+}
+
+void SerialFlushFunction::Work() {
+  bool flush_result = false;
+  SerialConnection* serial_connection =
+      controller()->GetSerialConnection(connection_id_);
+  if (serial_connection) {
+    serial_connection->Flush();
+    flush_result = true;
+  }
+
+  result_.reset(Value::CreateBooleanValue(flush_result));
+}
+
+bool SerialFlushFunction::Respond() {
+  return true;
+}
+
 }  // namespace extensions
