@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_MOCK_DOWNLOAD_ITEM_H_
-#define CONTENT_TEST_MOCK_DOWNLOAD_ITEM_H_
-
-#include <string>
-#include <vector>
+#ifndef CONTENT_PUBLIC_TEST_MOCK_DOWNLOAD_ITEM_H_
+#define CONTENT_PUBLIC_TEST_MOCK_DOWNLOAD_ITEM_H_
 
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -126,4 +123,4 @@ class MockDownloadItem : public content::DownloadItem {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_MOCK_DOWNLOAD_ITEM_H_
+#endif  // CONTENT_PUBLIC_TEST_MOCK_DOWNLOAD_ITEM_H_

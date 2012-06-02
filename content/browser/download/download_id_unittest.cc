@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/test/mock_download_manager.h"
+#include "content/public/test/mock_download_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;

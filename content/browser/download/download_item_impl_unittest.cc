@@ -11,7 +11,7 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
-#include "content/test/mock_download_item.h"
+#include "content/public/test/mock_download_item.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

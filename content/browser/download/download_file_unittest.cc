@@ -11,7 +11,7 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/power_save_blocker.h"
 #include "content/public/browser/download_manager.h"
-#include "content/test/mock_download_manager.h"
+#include "content/public/test/mock_download_manager.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"

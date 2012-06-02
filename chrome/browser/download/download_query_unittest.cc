@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/download/download_query.h"
-#include "content/test/mock_download_item.h"
+#include "content/public/test/mock_download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

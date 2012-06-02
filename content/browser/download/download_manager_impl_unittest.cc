@@ -27,7 +27,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
-#include "content/test/mock_download_manager.h"
+#include "content/public/test/mock_download_manager.h"
 #include "content/test/test_browser_context.h"
 #include "content/test/test_browser_thread.h"
 #include "net/base/io_buffer.h"

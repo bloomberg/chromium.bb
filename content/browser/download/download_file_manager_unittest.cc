@@ -16,7 +16,7 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/mock_download_file.h"
 #include "content/public/browser/download_id.h"
-#include "content/test/mock_download_manager.h"
+#include "content/public/test/mock_download_manager.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"

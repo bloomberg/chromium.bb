@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/mock_download_item.h"
+#include "content/public/test/mock_download_item.h"
 
 namespace content {
 

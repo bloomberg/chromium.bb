@@ -29,6 +29,8 @@
         'public/test/browser_test.h',
         'public/test/content_test_suite_base.h',
         'public/test/js_injection_ready_observer.h',
+        'public/test/mock_download_item.h',
+        'public/test/mock_download_manager.h',
         'public/test/test_navigation_observer.h',
         # TODO(phajdan.jr): All of those files should live in content/test (if
         # they're only used by content) or content/public/test (if they're used
@@ -68,9 +70,7 @@
         'test/gpu/gpu_test_expectations_parser.cc',
         'test/gpu/gpu_test_expectations_parser.h',
         'test/mock_download_item.cc',
-        'test/mock_download_item.h',
         'test/mock_download_manager.cc',
-        'test/mock_download_manager.h',
         'test/mock_keyboard.cc',
         'test/mock_keyboard_driver_win.cc',
         'test/mock_keyboard_driver_win.h',
