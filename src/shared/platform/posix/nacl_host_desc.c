@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -166,27 +166,6 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
           (uintptr_t) start_addr);
 
   return (uintptr_t) start_addr;
-}
-
-int NaClHostDescUnmapUnsafe(void    *start_addr,
-                            size_t  len) {
-  int       retval;
-  return ((-1 == (retval = munmap(start_addr, len)))
-          ? -NaClXlateErrno(errno)
-          : retval);
-}
-
-int NaClHostDescUnmap(void    *start_addr,
-                      size_t  len) {
-  int       retval;
-  return ((-1 == (retval = (uintptr_t) mmap(start_addr,
-                                            len,
-                                            PROT_NONE,
-                                            (MAP_PRIVATE
-                                             | MAP_ANONYMOUS | MAP_FIXED),
-                                            -1,
-                                            (nacl_off64_t) 0)))
-          ? -NaClXlateErrno(errno) : retval);
 }
 
 int NaClHostDescCtor(struct NaClHostDesc  *d,

@@ -207,21 +207,6 @@ int NaClDescUnmapUnsafeNotImplemented(struct NaClDesc         *vself,
                               vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
-
-int NaClDescUnmapNotImplemented(struct NaClDesc         *vself,
-                                struct NaClDescEffector *effp,
-                                void                    *start_addr,
-                                size_t                  len) {
-  UNREFERENCED_PARAMETER(effp);
-  UNREFERENCED_PARAMETER(start_addr);
-  UNREFERENCED_PARAMETER(len);
-
-  NaClLog(LOG_ERROR,
-          "Unmap method is not implemented for object of type %s\n",
-          NaClDescTypeString(((struct NaClDescVtbl const *)
-                              vself->base.vtbl)->typeTag));
-  return -NACL_ABI_EINVAL;
-}
 #endif
 
 ssize_t NaClDescReadNotImplemented(struct NaClDesc          *vself,

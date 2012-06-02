@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -65,16 +65,6 @@ struct NaClDescEffectorVtbl {
   int (*UnmapMemory)(struct NaClDescEffector  *vself,
                      uintptr_t                sysaddr,
                      size_t                   nbytes);
-
-  /*
-   * Map anonymous memory -- from paging space -- into address space
-   * at requested sysaddr of nbytes in length.  prot may be
-   * NACL_ABI_PROT_NONE for address space squatting purposes.
-   */
-  uintptr_t (*MapAnonymousMemory)(struct NaClDescEffector *vself,
-                                  uintptr_t               sysaddr,
-                                  size_t                  nbytes,
-                                  int                     prot);
 };
 
 EXTERN_C_END

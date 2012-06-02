@@ -1595,24 +1595,22 @@ static int32_t MunmapInternal(struct NaClApp *nap,
                 addr, error, error);
       }
     } else {
-      /*
-       * This should invoke a "safe" version of unmap that fills the
-       * memory hole as quickly as possible, and may return
-       * -NACL_ABI_E_MOVE_ADDRESS_SPACE.  The "safe" version just
-       * minimizes the size of the timing hole for any racers, plus
-       * the size of the memory window is only 64KB, rather than
-       * whatever size the user is unmapping.
-       */
-      retval = (*((struct NaClDescVtbl const *) entry->nmop->ndp->base.vtbl)->
-                Unmap)(entry->nmop->ndp,
-                       nap->effp,
-                       (void*) addr,
-                       NACL_MAP_PAGESIZE);
+      struct NaClDesc *desc = entry->nmop->ndp;
+      retval = (*NACL_VTBL(NaClDesc, desc)->UnmapUnsafe)(desc, nap->effp,
+                                                         (void*) addr,
+                                                         NACL_MAP_PAGESIZE);
       if (0 != retval) {
         NaClLog(LOG_FATAL,
                 ("NaClSysMunmap: Could not unmap via ndp->Unmap 0x%08x"
                  " and cannot handle address space move\n"),
                 addr);
+      }
+      /* Fill the address space hole that we opened with UnmapUnsafe(). */
+      if (!VirtualAlloc((void *) addr, NACL_MAP_PAGESIZE, MEM_RESERVE,
+                        PAGE_READWRITE)) {
+        NaClLog(LOG_FATAL, "MunmapInternal: "
+                "failed to fill hole with VirtualAlloc(), error %d\n",
+                GetLastError());
       }
     }
     NaClVmmapUpdate(&nap->mem_map,

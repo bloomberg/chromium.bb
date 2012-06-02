@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -287,9 +287,8 @@ cleanup:
   return retval;
 }
 
-int NaClHostDescUnmapCommon(void    *start_addr,
-                            size_t  len,
-                            int     fill_hole) {
+int NaClHostDescUnmapUnsafe(void    *start_addr,
+                            size_t  len) {
   uintptr_t addr;
   size_t    off;
 
@@ -302,26 +301,8 @@ int NaClHostDescUnmapCommon(void    *start_addr,
               addr + off);
       return -NACL_ABI_EINVAL;
     }
-    if (fill_hole) {
-      if (VirtualAlloc((void *) (addr + off),
-                       NACL_MAP_PAGESIZE,
-                       MEM_RESERVE,
-                       PAGE_READWRITE) == NULL) {
-        return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
-      }
-    }
   }
   return 0;
-}
-
-int NaClHostDescUnmapUnsafe(void    *start_addr,
-                            size_t  len) {
-  return NaClHostDescUnmapCommon(start_addr, len, 0);
-}
-
-int NaClHostDescUnmap(void    *start_addr,
-                      size_t  len) {
-  return NaClHostDescUnmapCommon(start_addr, len, 1);
 }
 
 

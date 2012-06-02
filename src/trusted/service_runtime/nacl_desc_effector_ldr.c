@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* @file
@@ -103,23 +103,7 @@ static int NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
 }
 #endif  /* NACL_WINDOWS */
 
-static uintptr_t NaClDescEffLdrMapAnonMem(struct NaClDescEffector *vself,
-                                          uintptr_t               sysaddr,
-                                          size_t                  nbytes,
-                                          int                     prot) {
-  UNREFERENCED_PARAMETER(vself);
-  return NaClHostDescMap((struct NaClHostDesc *) NULL,
-                         (void *) sysaddr,
-                         nbytes,
-                         prot,
-                         (NACL_ABI_MAP_PRIVATE |
-                          NACL_ABI_MAP_ANONYMOUS |
-                          NACL_ABI_MAP_FIXED),
-                         (off_t) 0);
-}
-
 static struct NaClDescEffectorVtbl const NaClDescEffectorLdrVtbl = {
   NaClDescEffLdrDtor,
   NaClDescEffLdrUnmapMemory,
-  NaClDescEffLdrMapAnonMem,
 };

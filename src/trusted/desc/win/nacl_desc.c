@@ -26,8 +26,7 @@
 void NaClDescUnmapUnsafe(struct NaClDesc *desc, void *addr, size_t length) {
   /*
    * TODO(mseaborn): Remove the unused effector argument from
-   * UnmapUnsafe().  The argument is unused because, unlike Unmap(),
-   * UnmapUnsafe() does not need to call MapAnonymousMemory().
+   * UnmapUnsafe().
    */
   struct NaClDescEffector *effp = NULL;
   int rc = (*NACL_VTBL(NaClDesc, desc)->UnmapUnsafe)(desc, effp, addr, length);

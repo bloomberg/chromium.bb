@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* @file
@@ -36,21 +36,7 @@ static int NaClDescEffTrustedMemUnmapMemory(struct NaClDescEffector  *vself,
   return 0;
 }
 
-static uintptr_t NaClDescEffTrustedMemMapAnonMem(
-    struct NaClDescEffector *vself,
-    uintptr_t               sysaddr,
-    size_t                  nbytes,
-    int                     prot) {
-  UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(sysaddr);
-  UNREFERENCED_PARAMETER(nbytes);
-  UNREFERENCED_PARAMETER(prot);
-  NaClLog(LOG_FATAL, "TrustedMem effector's MapAnonMem called\n");
-  return 0;
-}
-
 static struct NaClDescEffectorVtbl const NaClDescEffectorTrustedMemVtbl = {
   NaClDescEffTrustedMemDtor,
   NaClDescEffTrustedMemUnmapMemory,
-  NaClDescEffTrustedMemMapAnonMem,
 };

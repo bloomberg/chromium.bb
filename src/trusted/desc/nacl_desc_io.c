@@ -193,40 +193,13 @@ uintptr_t NaClDescIoDescMapAnon(struct NaClDescEffector *effp,
 }
 
 #if NACL_WINDOWS
-static int NaClDescIoDescUnmapCommon(struct NaClDesc         *vself,
-                                     struct NaClDescEffector *effp,
-                                     void                    *start_addr,
-                                     size_t                  len,
-                                     int                     safe_mode) {
-  int status;
-
-  UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
-
-  if (safe_mode) {
-    status = NaClHostDescUnmap(start_addr, len);
-  } else {
-    status = NaClHostDescUnmapUnsafe(start_addr, len);
-  }
-
-  return status;
-}
-
-/*
- * NB: User code should never be able to invoke the Unsafe method.
- */
 static int NaClDescIoDescUnmapUnsafe(struct NaClDesc         *vself,
                                      struct NaClDescEffector *effp,
                                      void                    *start_addr,
                                      size_t                  len) {
-  return NaClDescIoDescUnmapCommon(vself, effp, start_addr, len, 0);
-}
-
-static int NaClDescIoDescUnmap(struct NaClDesc         *vself,
-                               struct NaClDescEffector *effp,
-                               void                    *start_addr,
-                               size_t                  len) {
-  return NaClDescIoDescUnmapCommon(vself, effp, start_addr, len, 1);
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(effp);
+  return NaClHostDescUnmapUnsafe(start_addr, len);
 }
 #endif
 
@@ -309,7 +282,6 @@ static struct NaClDescVtbl const kNaClDescIoDescVtbl = {
   NaClDescIoDescMap,
 #if NACL_WINDOWS
   NaClDescIoDescUnmapUnsafe,
-  NaClDescIoDescUnmap,
 #else
   NACL_DESC_UNMAP_NOT_IMPLEMENTED
 #endif

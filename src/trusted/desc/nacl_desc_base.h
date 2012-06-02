@@ -193,16 +193,6 @@ struct NaClDescVtbl {
                      struct NaClDescEffector  *effp,
                      void                     *start_addr,
                      size_t                   len) NACL_WUR;
-
-  /*
-   * Unmap is the version that removes the mapping but continues to
-   * hold the address space in reserve, preventing it from being used
-   * accidentally by other threads.  (Address-space squatting.)
-   */
-  int (*Unmap)(struct NaClDesc          *vself,
-               struct NaClDescEffector  *effp,
-               void                     *start_addr,
-               size_t                   len) NACL_WUR;
 #endif
 
   ssize_t (*Read)(struct NaClDesc *vself,
@@ -411,15 +401,9 @@ int NaClDescUnmapUnsafeNotImplemented(struct NaClDesc         *vself,
                                       struct NaClDescEffector *effp,
                                       void                    *start_addr,
                                       size_t                  len);
-
-int NaClDescUnmapNotImplemented(struct NaClDesc         *vself,
-                                struct NaClDescEffector *effp,
-                                void                    *start_addr,
-                                size_t                  len);
 /* This is an initializer for use when defining NaClDescVtbl structs. */
 # define NACL_DESC_UNMAP_NOT_IMPLEMENTED \
-    NaClDescUnmapUnsafeNotImplemented, \
-    NaClDescUnmapNotImplemented,
+    NaClDescUnmapUnsafeNotImplemented,
 #else
 # define NACL_DESC_UNMAP_NOT_IMPLEMENTED /* empty */
 #endif

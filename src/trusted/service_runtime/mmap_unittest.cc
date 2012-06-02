@@ -114,16 +114,6 @@ void MapFileFd(struct NaClApp *nap, uintptr_t addr, size_t file_size) {
   ASSERT_EQ(mapping_addr, addr);
 }
 
-void UnmapMemory(struct NaClApp *nap, uintptr_t addr, size_t size) {
-  // Create dummy NaClAppThread.
-  // TODO(mseaborn): Clean up so that this is not necessary.
-  struct NaClAppThread thread;
-  memset(&thread, 0xff, sizeof(thread));
-  thread.nap = nap;
-
-  ASSERT_EQ(NaClSysMunmap(&thread, (void *) addr, size), 0);
-}
-
 // TODO(mseaborn): Extend this to check mappings under Linux and Mac OS X.
 // See http://code.google.com/p/nativeclient/issues/detail?id=2824
 #if NACL_WINDOWS
@@ -143,6 +133,19 @@ void CheckMapping(uintptr_t addr, size_t size, int state, int protect,
   }
 }
 #endif
+
+void UnmapMemory(struct NaClApp *nap, uintptr_t addr, size_t size) {
+  // Create dummy NaClAppThread.
+  // TODO(mseaborn): Clean up so that this is not necessary.
+  struct NaClAppThread thread;
+  memset(&thread, 0xff, sizeof(thread));
+  thread.nap = nap;
+
+  ASSERT_EQ(NaClSysMunmap(&thread, (void *) addr, size), 0);
+#if NACL_WINDOWS
+  CheckMapping(NaClUserToSys(nap, addr), size, MEM_RESERVE, 0, MEM_PRIVATE);
+#endif
+}
 
 // Test that shared memory mappings can be unmapped by
 // NaClAddrSpaceFree().  These are different from private memory
@@ -182,12 +185,6 @@ TEST_F(MmapTest, TestUnmapShmMapping) {
 #endif
 
   UnmapMemory(&app, addr, size);
-#if NACL_WINDOWS
-  // Note that this is inconsistent with what we get after unmapping a
-  // file FD.  See the corresponding call in TestUnmapFileMapping.
-  // TODO(mseaborn): Make the two descriptor types behave the same.
-  CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_NOACCESS, MEM_PRIVATE);
-#endif
 
   NaClAddrSpaceFree(&app);
 }
@@ -213,9 +210,6 @@ TEST_F(MmapTest, TestUnmapFileMapping) {
 #endif
 
   UnmapMemory(&app, addr, size);
-#if NACL_WINDOWS
-  CheckMapping(sysaddr, size, MEM_RESERVE, 0, MEM_PRIVATE);
-#endif
 
   NaClAddrSpaceFree(&app);
 }

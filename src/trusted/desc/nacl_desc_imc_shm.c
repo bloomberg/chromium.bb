@@ -254,11 +254,10 @@ static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
 }
 
 #if NACL_WINDOWS
-static int NaClDescImcShmUnmapCommon(struct NaClDesc         *vself,
+static int NaClDescImcShmUnmapUnsafe(struct NaClDesc         *vself,
                                      struct NaClDescEffector *effp,
                                      void                    *start_addr,
-                                     size_t                  len,
-                                     int                     safe_mode) {
+                                     size_t                  len) {
   int       retval;
   uintptr_t addr;
   uintptr_t end_addr;
@@ -281,36 +280,10 @@ static int NaClDescImcShmUnmapCommon(struct NaClDesc         *vself,
       NaClLog(LOG_FATAL, "NaClDescImcShmUnmapCommon: NaClUnmap failed\n");
       goto done;
     }
-    /* there's still a race condition */
-    if (safe_mode) {
-      uintptr_t result = (*effp->vtbl->MapAnonymousMemory)(effp,
-                                                           addr,
-                                                           NACL_MAP_PAGESIZE,
-                                                           PROT_NONE);
-      if (NaClPtrIsNegErrno(&result)) {
-        NaClLog(LOG_ERROR, "NaClDescImcShmUnmapCommon: could not fill hole\n");
-        retval = -NACL_ABI_E_MOVE_ADDRESS_SPACE;
-        goto done;
-      }
-    }
   }
   retval = 0;
 done:
   return retval;
-}
-
-static int NaClDescImcShmUnmapUnsafe(struct NaClDesc         *vself,
-                                     struct NaClDescEffector *effp,
-                                     void                    *start_addr,
-                                     size_t                  len) {
-  return NaClDescImcShmUnmapCommon(vself, effp, start_addr, len, 0);
-}
-
-static int NaClDescImcShmUnmap(struct NaClDesc         *vself,
-                               struct NaClDescEffector *effp,
-                               void                    *start_addr,
-                               size_t                  len) {
-  return NaClDescImcShmUnmapCommon(vself, effp, start_addr, len, 1);
 }
 #endif
 
@@ -369,7 +342,6 @@ static struct NaClDescVtbl const kNaClDescImcShmVtbl = {
   NaClDescImcShmMap,
 #if NACL_WINDOWS
   NaClDescImcShmUnmapUnsafe,
-  NaClDescImcShmUnmap,
 #else
   NACL_DESC_UNMAP_NOT_IMPLEMENTED
 #endif
