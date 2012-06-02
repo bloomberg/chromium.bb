@@ -277,12 +277,40 @@ void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
     scoped_ptr<dbus::ErrorResponse> error_response(
         dbus::ErrorResponse::FromRawMessage(response_message));
     error_callback.Run(error_response.get());
+    // Delete the message  on the D-Bus thread. See below for why.
+    bus_->PostTaskToDBusThread(
+        FROM_HERE,
+        base::Bind(&base::DeletePointer<dbus::ErrorResponse>,
+                   error_response.release()));
   } else {
     // This will take |response_message| and release (unref) it.
     scoped_ptr<dbus::Response> response(
         dbus::Response::FromRawMessage(response_message));
     // The response is successfully received.
     response_callback.Run(response.get());
+    // The message should be deleted on the D-Bus thread for a complicated
+    // reason:
+    //
+    // libdbus keeps track of the number of bytes in the incoming message
+    // queue to ensure that the data size in the queue is manageable. The
+    // bookkeeping is partly done via dbus_message_unref(), and immediately
+    // asks the client code (Chrome) to stop monitoring the underlying
+    // socket, if the number of bytes exceeds a certian number, which is set
+    // to 63MB, per dbus-transport.cc:
+    //
+    //   /* Try to default to something that won't totally hose the system,
+    //    * but doesn't impose too much of a limitation.
+    //    */
+    //   transport->max_live_messages_size = _DBUS_ONE_MEGABYTE * 63;
+    //
+    // The monitoring of the socket is done on the D-Bus thread (see Watch
+    // class in bus.cc), hence we should stop the monitoring from D-Bus
+    // thread, not from the current thread here, which is likely UI thread.
+    bus_->PostTaskToDBusThread(
+        FROM_HERE,
+        base::Bind(&base::DeletePointer<dbus::Response>,
+                   response.release()));
+
     method_call_successful = true;
     // Record time spent for the method call. Don't include failures.
     UMA_HISTOGRAM_TIMES("DBus.AsyncMethodCallTime",
@@ -438,7 +466,12 @@ void ObjectProxy::RunMethod(base::TimeTicks start_time,
   bus_->AssertOnOriginThread();
 
   signal_callback.Run(signal);
-  delete signal;
+  // Delete the message on the D-Bus thread. See comments in
+  // RunResponseCallback().
+  bus_->PostTaskToDBusThread(
+      FROM_HERE,
+      base::Bind(&base::DeletePointer<dbus::Signal>, signal));
+
   // Record time spent for handling the signal.
   UMA_HISTOGRAM_TIMES("DBus.SignalHandleTime",
                       base::TimeTicks::Now() - start_time);

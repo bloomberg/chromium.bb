@@ -20,6 +20,14 @@
 #include "dbus/test_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+// See comments in ObjectProxy::RunResponseCallback() for why the number was
+// chosen.
+const int kHugePayloadSize = 64 << 20;  // 64 MB
+
+}  // namespace
+
 // The end-to-end test exercises the asynchronous APIs in ObjectProxy and
 // ExportedObject.
 class EndToEndAsyncTest : public testing::Test {
@@ -313,6 +321,23 @@ TEST_F(EndToEndAsyncTest, EchoThreeTimes) {
   EXPECT_EQ("foo", response_strings_[2]);
 }
 
+TEST_F(EndToEndAsyncTest, Echo_HugePayload) {
+  const std::string kHugePayload(kHugePayloadSize, 'o');
+
+  // Create the method call with a huge payload.
+  dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendString(kHugePayload);
+
+  // Call the method.
+  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
+  CallMethod(&method_call, timeout_ms);
+
+  // This caused a DCHECK failure before. Ensure that the issue is fixed.
+  WaitForResponses(1);
+  EXPECT_EQ(kHugePayload, response_strings_[0]);
+}
+
 TEST_F(EndToEndAsyncTest, BrokenBus) {
   const char* kHello = "hello";
 
@@ -535,6 +560,16 @@ TEST_F(EndToEndAsyncTest, TestSignalFromRoot) {
   ASSERT_TRUE(test_signal_string_.empty());
   // Verify the string WAS received by the root proxy.
   ASSERT_EQ(kMessage, root_test_signal_string_);
+}
+
+TEST_F(EndToEndAsyncTest, TestHugeSignal) {
+  const std::string kHugeMessage(kHugePayloadSize, 'o');
+
+  // Send the huge signal from the exported object.
+  test_service_->SendTestSignal(kHugeMessage);
+  // This caused a DCHECK failure before. Ensure that the issue is fixed.
+  WaitForTestSignal();
+  ASSERT_EQ(kHugeMessage, test_signal_string_);
 }
 
 class SignalReplacementTest : public EndToEndAsyncTest {
