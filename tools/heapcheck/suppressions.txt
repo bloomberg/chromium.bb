@@ -1359,16 +1359,10 @@
    fun:net::KeygenHandler::GenKeyAndSignChallenge
 }
 {
-   bug_114979_a
+   bug_114979
    Heapcheck:Leak
    ...
    fun:BookmarkBarGtkUnittest::SetUp
-}
-{
-   bug_114979_b
-   Heapcheck:Leak
-   ...
-   fun:BookmarkBarGtkUnittest_HidesHelpMessageWithBookmark_Test::TestBody
 }
 {
    bug_114986
@@ -1516,4 +1510,16 @@
    fun:content::WebContentsTester::CreateTestWebContents
    fun:::OneClickSigninHelperTest::CreateMockWebContents
    fun:OneClickSigninHelperTest_*
+}
+{
+  bug_130640_a
+  Heapcheck:Leak
+  ...
+  fun:GtkThemeService::GetFolderIcon
+}
+{
+  bug_130640_b
+  Heapcheck:Leak
+  ...
+  fun:GtkThemeService::GetDefaultFavicon
 }

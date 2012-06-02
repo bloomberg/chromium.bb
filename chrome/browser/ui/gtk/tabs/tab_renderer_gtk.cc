@@ -871,7 +871,7 @@ void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
     to_display = theme_service_->GetImageNamed(IDR_SAD_FAVICON)->ToCairo();
   } else if (!data_.favicon.isNull()) {
     if (data_.is_default_favicon && theme_service_->UsingNativeTheme()) {
-      to_display = GtkThemeService::GetDefaultFavicon(true)->ToCairo();
+      to_display = GtkThemeService::GetDefaultFavicon(true).ToCairo();
     } else if (data_.cairo_favicon.valid()) {
       to_display = &data_.cairo_favicon;
     }

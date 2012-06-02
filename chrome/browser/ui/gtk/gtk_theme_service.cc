@@ -246,8 +246,10 @@ void GdkColorHSLShift(const color_utils::HSL& shift, GdkColor* frame_color) {
 }  // namespace
 
 GtkWidget* GtkThemeService::icon_widget_ = NULL;
-gfx::Image* GtkThemeService::default_folder_icon_ = NULL;
-gfx::Image* GtkThemeService::default_bookmark_icon_ = NULL;
+base::LazyInstance<gfx::Image> GtkThemeService::default_folder_icon_ =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<gfx::Image> GtkThemeService::default_bookmark_icon_ =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 GtkThemeService* GtkThemeService::GetFrom(Profile* profile) {
@@ -569,42 +571,48 @@ void GtkThemeService::GetScrollbarColors(GdkColor* thumb_active_color,
 }
 
 // static
-gfx::Image* GtkThemeService::GetFolderIcon(bool native) {
+gfx::Image GtkThemeService::GetFolderIcon(bool native) {
   if (native) {
     if (!icon_widget_)
       icon_widget_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    // We never release our ref, so we will leak this on program shutdown.
-    if (!default_folder_icon_) {
+
+    if (default_folder_icon_.Get().IsEmpty()) {
+      // This seems to leak.
       GdkPixbuf* pixbuf = gtk_widget_render_icon(
           icon_widget_, GTK_STOCK_DIRECTORY, GTK_ICON_SIZE_MENU, NULL);
-      if (pixbuf)
-        default_folder_icon_ = new gfx::Image(pixbuf);
+      if (pixbuf) {
+        default_folder_icon_.Get() = gfx::Image(pixbuf);
+        g_object_unref(pixbuf);
+      }
     }
-    if (default_folder_icon_)
-      return default_folder_icon_;
+    if (!default_folder_icon_.Get().IsEmpty())
+      return default_folder_icon_.Get();
   }
 
-  return &ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_BOOKMARK_BAR_FOLDER);
 }
 
 // static
-gfx::Image* GtkThemeService::GetDefaultFavicon(bool native) {
+gfx::Image GtkThemeService::GetDefaultFavicon(bool native) {
   if (native) {
     if (!icon_widget_)
       icon_widget_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    // We never release our ref, so we will leak this on program shutdown.
-    if (!default_bookmark_icon_) {
+
+    if (default_bookmark_icon_.Get().IsEmpty()) {
+      // This seems to leak.
       GdkPixbuf* pixbuf = gtk_widget_render_icon(
           icon_widget_, GTK_STOCK_FILE, GTK_ICON_SIZE_MENU, NULL);
-      if (pixbuf)
-        default_bookmark_icon_ = new gfx::Image(pixbuf);
+      if (pixbuf) {
+        default_bookmark_icon_.Get() = gfx::Image(pixbuf);
+        g_object_unref(pixbuf);
+      }
     }
-    if (default_bookmark_icon_)
-      return default_bookmark_icon_;
+    if (!default_bookmark_icon_.Get().IsEmpty())
+      return default_bookmark_icon_.Get();
   }
 
-  return &ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_DEFAULT_FAVICON);
 }
 
@@ -676,10 +684,8 @@ void GtkThemeService::FreePlatformCaches() {
 
 void GtkThemeService::OnStyleSet(GtkWidget* widget,
                                  GtkStyle* previous_style) {
-  gfx::Image* default_folder_icon = default_folder_icon_;
-  gfx::Image* default_bookmark_icon = default_bookmark_icon_;
-  default_folder_icon_ = NULL;
-  default_bookmark_icon_ = NULL;
+  default_folder_icon_.Get() = gfx::Image();
+  default_bookmark_icon_.Get() = gfx::Image();
 
   if (profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme)) {
     ClearAllThemeData();
@@ -688,13 +694,6 @@ void GtkThemeService::OnStyleSet(GtkWidget* widget,
   }
 
   RebuildMenuIconSets();
-
-  // Free the old icons only after the theme change notification has gone
-  // through.
-  if (default_folder_icon)
-    delete default_folder_icon;
-  if (default_bookmark_icon)
-    delete default_bookmark_icon;
 }
 
 void GtkThemeService::LoadGtkValues() {

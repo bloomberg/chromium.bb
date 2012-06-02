@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -143,8 +144,8 @@ class GtkThemeService : public ThemeService {
   // These functions return an image that is not owned by the caller and should
   // not be deleted. If |native| is true, get the GTK_STOCK version of the
   // icon.
-  static gfx::Image* GetFolderIcon(bool native);
-  static gfx::Image* GetDefaultFavicon(bool native);
+  static gfx::Image GetFolderIcon(bool native);
+  static gfx::Image GetDefaultFavicon(bool native);
 
   // Whether we use the GTK theme by default in the current desktop
   // environment. Returns true when we GTK defaults to on.
@@ -300,8 +301,8 @@ class GtkThemeService : public ThemeService {
   // These are static because the system can only have one theme at a time.
   // They are cached when they are requested the first time, and cleared when
   // the system theme changes.
-  static gfx::Image* default_folder_icon_;
-  static gfx::Image* default_bookmark_icon_;
+  static base::LazyInstance<gfx::Image> default_folder_icon_;
+  static base::LazyInstance<gfx::Image> default_bookmark_icon_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_GTK_THEME_SERVICE_H_

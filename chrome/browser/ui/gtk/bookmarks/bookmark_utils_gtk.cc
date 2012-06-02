@@ -172,11 +172,11 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
     if (model->GetFavicon(node).width() != 0) {
       pixbuf = gfx::GdkPixbufFromSkBitmap(model->GetFavicon(node));
     } else {
-      pixbuf = GtkThemeService::GetDefaultFavicon(native)->ToGdkPixbuf();
+      pixbuf = GtkThemeService::GetDefaultFavicon(native).ToGdkPixbuf();
       g_object_ref(pixbuf);
     }
   } else {
-    pixbuf = GtkThemeService::GetFolderIcon(native)->ToGdkPixbuf();
+    pixbuf = GtkThemeService::GetFolderIcon(native).ToGdkPixbuf();
     g_object_ref(pixbuf);
   }
 

@@ -574,7 +574,7 @@ void BookmarkEditorGtk::AddNewFolder(GtkTreeIter* parent, GtkTreeIter* child) {
   gtk_tree_store_set(
       tree_store_, child,
       bookmark_utils::FOLDER_ICON,
-      GtkThemeService::GetFolderIcon(true)->ToGdkPixbuf(),
+      GtkThemeService::GetFolderIcon(true).ToGdkPixbuf(),
       bookmark_utils::FOLDER_NAME,
           l10n_util::GetStringUTF8(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME).c_str(),
       bookmark_utils::ITEM_ID, static_cast<int64>(0),

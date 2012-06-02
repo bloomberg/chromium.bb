@@ -27,7 +27,7 @@ void AddSingleNodeToTreeStore(GtkTreeStore* store, const BookmarkNode* node,
   // differently).
   gtk_tree_store_set(store, iter,
       bookmark_utils::FOLDER_ICON,
-      GtkThemeService::GetFolderIcon(true)->ToGdkPixbuf(),
+      GtkThemeService::GetFolderIcon(true).ToGdkPixbuf(),
       bookmark_utils::FOLDER_NAME,
       UTF16ToUTF8(node->GetTitle()).c_str(),
       bookmark_utils::ITEM_ID, node->id(),

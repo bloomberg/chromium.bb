@@ -719,7 +719,7 @@ GdkPixbuf* TaskManagerGtk::GetModelIcon(int row) {
       ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_DEFAULT_FAVICON)->pixelRef()) {
     return static_cast<GdkPixbuf*>(g_object_ref(
-        GtkThemeService::GetDefaultFavicon(true)->ToGdkPixbuf()));
+        GtkThemeService::GetDefaultFavicon(true).ToGdkPixbuf()));
   }
 
   return gfx::GdkPixbufFromSkBitmap(icon);
