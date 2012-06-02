@@ -1205,11 +1205,6 @@
    fun:chromeos::::GViewRequestInterceptorTest::SetUp
 }
 {
-   bug_109613
-   Heapcheck:Leak
-   fun:AutofillProfileSyncableServiceTest::SetUp
-}
-{
    bug_111588a
    Heapcheck:Leak
    ...
