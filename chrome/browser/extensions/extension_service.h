@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/property_bag.h"
+#include "base/string16.h"
 #include "base/time.h"
 #include "base/tuple.h"
 #include "chrome/browser/extensions/api/api_resource_controller.h"
@@ -329,7 +330,7 @@ class ExtensionService
   // to ExtensionPrefs some other way.
   virtual bool UninstallExtension(std::string extension_id,
                                   bool external_uninstall,
-                                  std::string* error);
+                                  string16* error);
 
   virtual bool IsExtensionEnabled(
       const std::string& extension_id) const OVERRIDE;
@@ -410,7 +411,7 @@ class ExtensionService
       const std::vector<std::string>& blacklist) OVERRIDE;
 
   // Go through each extension and unload those that the network admin has
-  // put on the blacklist (not to be confused with the Google managed blacklist
+  // put on the blacklist (not to be confused with the Google-managed blacklist)
   // set of extensions.
   virtual void CheckAdminBlacklist() OVERRIDE;
 

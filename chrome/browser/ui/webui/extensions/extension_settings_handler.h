@@ -37,6 +37,7 @@ class ListValue;
 
 namespace extensions {
 class Extension;
+class ManagementPolicy;
 }
 
 // Information about a page running in an extension, for example a popup bubble,
@@ -172,6 +173,9 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   // Our model.  Outlives us since it's owned by our containing profile.
   // Note: This may be NULL in unit tests.
   ExtensionService* extension_service_;
+
+  // A convenience member, filled once the extension_service_ is known.
+  extensions::ManagementPolicy* management_policy_;
 
   // Used to pick the directory when loading an extension.
   scoped_refptr<SelectFileDialog> load_extension_dialog_;

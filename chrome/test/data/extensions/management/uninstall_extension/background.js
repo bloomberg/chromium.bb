@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // The name of the extension to uninstall, from manifest.json.
-var EXPECTED_NAME = "Auto-Update Test";
+var EXPECTED_NAME = 'Auto-Update Test';
 
 chrome.management.getAll(function(items) {
   for (var i = 0; i < items.length; i++) {
@@ -13,9 +13,9 @@ chrome.management.getAll(function(items) {
     chrome.test.assertEq(false, item.mayDisable);
     chrome.management.uninstall(id, function() {
       // Check that the right error occured.
-      var expectedError = "Extension " + id + " can not be disabled by user";
+      var expectedError = 'Extension ' + id + ' cannot be modified by user';
       chrome.test.assertEq(expectedError, chrome.extension.lastError.message);
-      chrome.test.sendMessage("ready");
+      chrome.test.sendMessage('ready');
     });
   }
 });

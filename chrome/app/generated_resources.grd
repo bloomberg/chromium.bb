@@ -4395,6 +4395,9 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_CANT_INSTALL_POLICY_BLACKLIST" desc="Error message when a user tries to install an extension that is blacklisted by administrator policy.">
         <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> (extension ID "<ph name="EXTENSION_ID">$2<ex>nckgahadagoaajjgafhacjanaoiihapd</ex></ph>") is blacklisted by the administrator.
       </message>
+      <message name="IDS_EXTENSION_CANT_MODIFY_POLICY_REQUIRED" desc="Error message when a user tries to remove or change an extension that is required by administrator policy.">
+        The administrator of this machine requires <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> to be installed. It cannot be removed or modified.
+      </message>
       <message name="IDS_EXTENSION_MOVE_DIRECTORY_TO_PROFILE_FAILED" desc="">
         Could not move extension directory into profile.
       </message>
@@ -4657,8 +4660,8 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         </message>
       </if>
 
-      <message name="IDS_EXTENSIONS_POLICY_CONTROLLED" desc="The text informing the user that an extension is policy controlled">
-        (this extension is managed and can not be removed or disabled)
+      <message name="IDS_EXTENSIONS_POLICY_CONTROLLED" desc="The text in the extensions UI informing the user that an extension is policy controlled">
+        (This extension is managed and cannot be removed or disabled.)
       </message>
       <message name="IDS_GET_MORE_EXTENSIONS_DEPRECATED" desc="The link for getting more extensions. Displayed at bottom of extension management page when there is at least one extension installed.">
         <ph name="BEGIN_LINK">&lt;a target="blank_" href="$1"&gt;</ph>Get more extensions<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
@@ -9324,7 +9327,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Apply recommendation
       </message>
 
-      <message name="IDS_OPTIONS_POLICY_MANAGED_PREFS" desc="Banner displayed in case there are policy-managed options the user won't be able to change.">
+      <message name="IDS_OPTIONS_POLICY_MANAGED_PREFS" desc="Banner displayed in the settings UI when there are policy-managed options the user won't be able to change.">
         Some settings are managed by your administrator.
       </message>
       <message name="IDS_OPTIONS_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are extension-managed options the user won't be able to change.">

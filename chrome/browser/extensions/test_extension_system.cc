@@ -64,8 +64,20 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   return extension_service_.get();
 }
 
+extensions::ManagementPolicy* TestExtensionSystem::CreateManagementPolicy() {
+  management_policy_.reset(new extensions::ManagementPolicy());
+  DCHECK(extension_prefs_.get());
+  management_policy_->RegisterProvider(extension_prefs_.get());
+
+  return management_policy();
+}
+
 ExtensionService* TestExtensionSystem::extension_service() {
   return extension_service_.get();
+}
+
+extensions::ManagementPolicy* TestExtensionSystem::management_policy() {
+  return management_policy_.get();
 }
 
 void TestExtensionSystem::SetExtensionService(ExtensionService* service) {

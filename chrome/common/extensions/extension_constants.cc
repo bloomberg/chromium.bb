@@ -103,7 +103,6 @@ namespace extension_info_keys {
   const char kEnabledKey[] = "enabled";
   const char kHomepageUrlKey[] = "homepageUrl";
   const char kIdKey[] = "id";
-  const char kMayDisableKey[] = "mayDisable";
   const char kNameKey[] = "name";
   const char kOfflineEnabledKey[] = "offlineEnabled";
   const char kOptionsUrlKey[] = "optionsUrl";

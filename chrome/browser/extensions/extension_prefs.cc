@@ -22,6 +22,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using extensions::Extension;
 using extensions::ExtensionInfo;
@@ -549,6 +551,24 @@ void ExtensionPrefs::SetExtensionPrefPermissionSet(
   }
 }
 
+bool ExtensionPrefs::ManagementPolicyImpl(const Extension* extension,
+                                          string16* error,
+                                          bool modifiable_value) const {
+  // An extension that is required (by admin policy, for example) cannot be
+  // modified.
+  bool modifiable = !Extension::IsRequired(extension->location());
+  // Some callers equate "no restriction" to true, others to false.
+  if (modifiable)
+    return modifiable_value;
+
+  if (error) {
+    *error = l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_CANT_MODIFY_POLICY_REQUIRED,
+        UTF8ToUTF16(extension->name()));
+  }
+  return !modifiable_value;
+}
+
 // static
 bool ExtensionPrefs::IsBlacklistBitSet(DictionaryValue* ext) {
   return ReadBooleanFromPref(ext, kPrefBlacklist);
@@ -640,15 +660,16 @@ void ExtensionPrefs::SetAppNotificationDisabled(
                       Value::CreateBooleanValue(value));
 }
 
-bool ExtensionPrefs::IsExtensionAllowedByPolicy(
-    const std::string& extension_id,
-    Extension::Location location) const {
-  base::StringValue id_value(extension_id);
+std::string ExtensionPrefs::GetPolicyProviderName() const {
+  return "admin policy black/whitelist, via the ExtensionPrefs";
+}
 
-  if (location == Extension::COMPONENT ||
-      location == Extension::EXTERNAL_POLICY_DOWNLOAD) {
+bool ExtensionPrefs::UserMayLoad(const extensions::Extension* extension,
+                                 string16* error) const {
+  base::StringValue id_value(extension->id());
+
+  if (extensions::Extension::IsRequired(extension->location()))
     return true;
-  }
 
   const base::ListValue* blacklist =
       prefs_->GetList(prefs::kExtensionInstallDenyList);
@@ -662,8 +683,25 @@ bool ExtensionPrefs::IsExtensionAllowedByPolicy(
     return true;
 
   // Then check the blacklist (the admin blacklist, not the Google blacklist).
-  return blacklist->Find(id_value) == blacklist->end() &&
-         !ExtensionsBlacklistedByDefault();
+  bool result = blacklist->Find(id_value) == blacklist->end() &&
+      !ExtensionsBlacklistedByDefault();
+  if (error && !result) {
+    *error = l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_CANT_INSTALL_POLICY_BLACKLIST,
+          UTF8ToUTF16(extension->name()),
+          UTF8ToUTF16(extension->id()));
+  }
+  return result;
+}
+
+bool ExtensionPrefs::UserMayModifySettings(const Extension* extension,
+                                           string16* error) const {
+  return ManagementPolicyImpl(extension, error, true);
+}
+
+bool ExtensionPrefs::MustRemainEnabled(const Extension* extension,
+                                       string16* error) const {
+  return ManagementPolicyImpl(extension, error, false);
 }
 
 bool ExtensionPrefs::ExtensionsBlacklistedByDefault() const {

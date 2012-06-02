@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sorting.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -113,6 +114,10 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   bool enabled = service->IsExtensionEnabled(extension->id()) &&
       !service->GetTerminatedExtension(extension->id());
   extension->GetBasicInfo(enabled, value);
+
+  value->SetBoolean("mayDisable", ExtensionSystem::Get(
+      service->profile())->management_policy()->UserMayModifySettings(
+      extension, NULL));
 
   bool icon_big_exists = true;
   // Instead of setting grayscale here, we do it in apps_page.js.
@@ -605,7 +610,8 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
   if (!extension)
     return;
 
-  if (!Extension::UserMayDisable(extension->location())) {
+  if (!ExtensionSystem::Get(extension_service_->profile())->
+        management_policy()->UserMayModifySettings(extension, NULL)) {
     LOG(ERROR) << "Attempt to uninstall an extension that is non-usermanagable "
                << "was made. Extension id : " << extension->id();
     return;

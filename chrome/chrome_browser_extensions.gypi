@@ -402,6 +402,8 @@
         'browser/extensions/lazy_background_task_queue.cc',
         'browser/extensions/lazy_background_task_queue.h',
         'browser/extensions/location_bar_controller.h',
+        'browser/extensions/management_policy.cc',
+        'browser/extensions/management_policy.h',
         'browser/extensions/pack_extension_job.cc',
         'browser/extensions/pack_extension_job.h',
         'browser/extensions/page_action_controller.cc',

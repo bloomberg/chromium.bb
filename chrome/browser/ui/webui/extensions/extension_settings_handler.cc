@@ -65,6 +65,7 @@ using extensions::ExtensionUpdater;
 
 ExtensionSettingsHandler::ExtensionSettingsHandler()
     : extension_service_(NULL),
+      management_policy_(NULL),
       ignore_notifications_(false),
       deleting_rvh_(NULL),
       registered_for_notifications_(false) {
@@ -95,6 +96,14 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
                  extension_service_->IsExtensionEnabled(extension->id()) :
                  true;
   extension->GetBasicInfo(enabled, extension_data);
+
+  if (management_policy_) {
+    extension_data->SetBoolean("userModifiable",
+        management_policy_->UserMayModifySettings(extension, NULL));
+  } else {
+    // This should only happen in testing.
+    extension_data->SetBoolean("userModifiable", true);
+  }
 
   GURL icon =
       ExtensionIconSource::GetIconURL(extension,
@@ -289,6 +298,11 @@ void ExtensionSettingsHandler::NavigateToPendingEntry(const GURL& url,
 void ExtensionSettingsHandler::RegisterMessages() {
   extension_service_ = Profile::FromWebUI(web_ui())->GetOriginalProfile()->
       GetExtensionService();
+
+  if (extension_service_) {
+    management_policy_ = ExtensionSystem::Get(
+        extension_service_->profile())->management_policy();
+  }
 
   web_ui()->RegisterMessageCallback("extensionSettingsRequestExtensionsData",
       base::Bind(&ExtensionSettingsHandler::HandleRequestExtensionsData,
@@ -570,7 +584,8 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
 
   const Extension* extension =
       extension_service_->GetInstalledExtension(extension_id);
-  if (!extension || !Extension::UserMayDisable(extension->location())) {
+  if (!extension ||
+      !management_policy_->UserMayModifySettings(extension, NULL)) {
     LOG(ERROR) << "Attempt to enable an extension that is non-usermanagable was"
                << "made. Extension id: " << extension->id();
     return;
@@ -628,7 +643,7 @@ void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
   if (!extension)
     return;
 
-  if (!Extension::UserMayDisable(extension->location())) {
+  if (!management_policy_->UserMayModifySettings(extension, NULL)) {
     LOG(ERROR) << "Attempt to change allow file access of an extension that is "
                << "non-usermanagable was made. Extension id : "
                << extension->id();
@@ -647,7 +662,7 @@ void ExtensionSettingsHandler::HandleUninstallMessage(const ListValue* args) {
   if (!extension)
     return;
 
-  if (!Extension::UserMayDisable(extension->location())) {
+  if (!management_policy_->UserMayModifySettings(extension, NULL)) {
     LOG(ERROR) << "Attempt to uninstall an extension that is non-usermanagable "
                << "was made. Extension id : " << extension->id();
     return;

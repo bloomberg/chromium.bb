@@ -1138,3 +1138,70 @@ class ExtensionPrefsDisableExtensions : public ExtensionPrefsPrepopulatedTest {
   int iteration_;
 };
 TEST_F(ExtensionPrefsDisableExtensions, ExtensionPrefsDisableExtensions) {}
+
+// Parent class for testing the ManagementPolicy provider methods.
+class ExtensionPrefsManagementPolicyProvider : public ExtensionPrefsTest {
+ public:
+  virtual void Initialize() {}
+  virtual void Verify() {}
+
+  void InitializeWithLocation(Extension::Location location, bool required) {
+    ASSERT_EQ(required, Extension::IsRequired(location));
+
+    DictionaryValue values;
+    values.SetString(keys::kName, "test");
+    values.SetString(keys::kVersion, "0.1");
+    std::string error;
+    extension_ = Extension::Create(FilePath(), location, values,
+                                   Extension::NO_FLAGS, &error);
+    ASSERT_TRUE(extension_.get());
+  }
+
+ protected:
+  scoped_refptr<Extension> extension_;
+};
+
+// Tests the behavior of the ManagementPolicy provider methods for an
+// extension required by policy.
+class ExtensionPrefsRequiredExtension
+    : public ExtensionPrefsManagementPolicyProvider {
+ public:
+  virtual void Initialize() {
+    InitializeWithLocation(Extension::EXTERNAL_POLICY_DOWNLOAD, true);
+  }
+
+  virtual void Verify() {
+    string16 error16;
+    EXPECT_TRUE(prefs()->UserMayLoad(extension_.get(), &error16));
+    EXPECT_EQ(string16(), error16);
+
+    // We won't check the exact wording of the error, but it should say
+    // something.
+    EXPECT_FALSE(prefs()->UserMayModifySettings(extension_.get(), &error16));
+    EXPECT_NE(string16(), error16);
+    EXPECT_TRUE(prefs()->MustRemainEnabled(extension_.get(), &error16));
+    EXPECT_NE(string16(), error16);
+  }
+};
+TEST_F(ExtensionPrefsRequiredExtension, RequiredExtension) {}
+
+// Tests the behavior of the ManagementPolicy provider methods for an
+// extension required by policy.
+class ExtensionPrefsNotRequiredExtension
+    : public ExtensionPrefsManagementPolicyProvider {
+ public:
+  virtual void Initialize() {
+    InitializeWithLocation(Extension::INTERNAL, false);
+  }
+
+  virtual void Verify() {
+  string16 error16;
+    EXPECT_TRUE(prefs()->UserMayLoad(extension_.get(), &error16));
+    EXPECT_EQ(string16(), error16);
+    EXPECT_TRUE(prefs()->UserMayModifySettings(extension_.get(), &error16));
+    EXPECT_EQ(string16(), error16);
+    EXPECT_FALSE(prefs()->MustRemainEnabled(extension_.get(), &error16));
+    EXPECT_EQ(string16(), error16);
+  }
+};
+TEST_F(ExtensionPrefsNotRequiredExtension, NotRequiredExtension) {}

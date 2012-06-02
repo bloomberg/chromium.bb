@@ -46,6 +46,7 @@
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/extensions/test_management_policy.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/plugin_prefs_factory.h"
@@ -372,6 +373,7 @@ class MockProviderVisitor
 ExtensionServiceTestBase::ExtensionServiceTestBase()
     : loop_(MessageLoop::TYPE_IO),
       service_(NULL),
+      management_policy_(NULL),
       expected_extensions_count_(0),
       ui_thread_(BrowserThread::UI, &loop_),
       db_thread_(BrowserThread::DB, &loop_),
@@ -420,6 +422,9 @@ void ExtensionServiceTestBase::InitializeExtensionService(
           autoupdate_enabled);
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
+
+  management_policy_ = static_cast<TestExtensionSystem*>(
+      ExtensionSystem::Get(profile))->CreateManagementPolicy();
 
   // When we start up, we want to make sure there is no external provider,
   // since the ExtensionService on Windows will use the Registry as a default
@@ -616,6 +621,8 @@ class ExtensionServiceTest
     return PackAndInstallCRX(dir_path, FilePath(), install_state);
   }
 
+  // Attempts to install an extension. Use INSTALL_FAILED if the installation
+  // is expected to fail.
   const Extension* InstallCRX(const FilePath& path,
                               InstallState install_state) {
     StartCRXInstall(path);
@@ -642,7 +649,8 @@ class ExtensionServiceTest
     return WaitForCrxInstall(crx_path, install_state);
   }
 
-  // Wait for a CrxInstaller to finish. Used by InstallCRX.
+  // Wait for a CrxInstaller to finish. Used by InstallCRX. Set the
+  // |install_state| to INSTALL_FAILED if the installation is expected to fail.
   // Returns an Extension pointer if the install succeeded, NULL otherwise.
   const Extension* WaitForCrxInstall(const FilePath& path,
                                      InstallState install_state) {
@@ -2107,7 +2115,6 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageUnlimited(origin1));
 
-
   // Uninstall the other, unlimited storage should be revoked.
   UninstallExtension(id2, false);
   EXPECT_EQ(0u, service_->extensions()->size());
@@ -2945,6 +2952,142 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
   EXPECT_TRUE(service_->GetExtensionById(good_crx, false));
 }
 
+// Tests that extensions cannot be installed if the policy provider prohibits
+// it. This functionality is implemented in CrxInstaller::ConfirmInstall().
+TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsInstall) {
+  InitializeEmptyExtensionService();
+
+  management_policy_->UnregisterAllProviders();
+  extensions::TestManagementPolicyProvider provider_(
+      extensions::TestManagementPolicyProvider::PROHIBIT_LOAD);
+  management_policy_->RegisterProvider(&provider_);
+
+  InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_FAILED);
+  EXPECT_EQ(0u, service_->extensions()->size());
+}
+
+// Tests that extensions cannot be loaded from prefs if the policy provider
+// prohibits it. This functionality is implemented in InstalledLoader::Load().
+TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsLoadFromPrefs) {
+  InitializeEmptyExtensionService();
+
+  // Create a fake extension to be loaded as though it were read from prefs.
+  FilePath path = data_dir_.AppendASCII("management")
+                           .AppendASCII("simple_extension");
+  DictionaryValue manifest;
+  manifest.SetString(keys::kName, "simple_extension");
+  manifest.SetString(keys::kVersion, "1");
+  // LOAD is for extensions loaded from the command line. We use it here, even
+  // though we're testing loading from prefs, so that we don't need to provide
+  // an extension key.
+  extensions::ExtensionInfo extension_info(&manifest, "", path,
+                                           Extension::LOAD);
+
+  // Ensure we can load it with no management policy in place.
+  management_policy_->UnregisterAllProviders();
+  EXPECT_EQ(0u, service_->extensions()->size());
+  extensions::InstalledLoader(service_).Load(extension_info, false);
+  EXPECT_EQ(1u, service_->extensions()->size());
+
+  const Extension* extension = *(service_->extensions()->begin());
+  EXPECT_TRUE(service_->UninstallExtension(extension->id(), false, NULL));
+  EXPECT_EQ(0u, service_->extensions()->size());
+
+  // Ensure we cannot load it if management policy prohibits installation.
+  extensions::TestManagementPolicyProvider provider_(
+      extensions::TestManagementPolicyProvider::PROHIBIT_LOAD);
+  management_policy_->RegisterProvider(&provider_);
+
+  extensions::InstalledLoader(service_).Load(extension_info, false);
+  EXPECT_EQ(0u, service_->extensions()->size());
+}
+
+// Tests disabling an extension when prohibited by the ManagementPolicy.
+TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsDisable) {
+  InitializeEmptyExtensionService();
+
+  InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+
+  management_policy_->UnregisterAllProviders();
+  extensions::TestManagementPolicyProvider provider(
+      extensions::TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS);
+  management_policy_->RegisterProvider(&provider);
+
+  // Attempt to disable it.
+  service_->DisableExtension(good_crx, Extension::DISABLE_USER_ACTION);
+
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_TRUE(service_->GetExtensionById(good_crx, false));
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+}
+
+// Tests uninstalling an extension when prohibited by the ManagementPolicy.
+TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsUninstall) {
+  InitializeEmptyExtensionService();
+
+  InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+
+  management_policy_->UnregisterAllProviders();
+  extensions::TestManagementPolicyProvider provider(
+      extensions::TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS);
+  management_policy_->RegisterProvider(&provider);
+
+  // Attempt to uninstall it.
+  EXPECT_FALSE(service_->UninstallExtension(good_crx, false, NULL));
+
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_TRUE(service_->GetExtensionById(good_crx, false));
+}
+
+// Tests that previously installed extensions that are now prohibited from
+// being installed are removed.
+TEST_F(ExtensionServiceTest, ManagementPolicyUnloadsAllProhibited) {
+  InitializeEmptyExtensionService();
+
+  InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
+  InstallCRX(data_dir_.AppendASCII("page_action.crx"), INSTALL_NEW);
+  EXPECT_EQ(2u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+
+  management_policy_->UnregisterAllProviders();
+  extensions::TestManagementPolicyProvider provider(
+      extensions::TestManagementPolicyProvider::PROHIBIT_LOAD);
+  management_policy_->RegisterProvider(&provider);
+
+  // Run the policy check.
+  service_->CheckAdminBlacklist();
+  EXPECT_EQ(0u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+}
+
+// Tests that previously disabled extensions that are now required to be
+// enabled are re-enabled on reinstall.
+TEST_F(ExtensionServiceTest, ManagementPolicyRequiresEnable) {
+  InitializeEmptyExtensionService();
+
+  // Install, then disable, an extension.
+  InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
+  EXPECT_EQ(1u, service_->extensions()->size());
+  service_->DisableExtension(good_crx, Extension::DISABLE_USER_ACTION);
+  EXPECT_EQ(1u, service_->disabled_extensions()->size());
+
+  // Register an ExtensionMnagementPolicy that requires the extension to remain
+  // enabled.
+  management_policy_->UnregisterAllProviders();
+  extensions::TestManagementPolicyProvider provider(
+      extensions::TestManagementPolicyProvider::MUST_REMAIN_ENABLED);
+  management_policy_->RegisterProvider(&provider);
+
+  // Reinstall the extension.
+  InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_UPDATED);
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+}
+
 TEST_F(ExtensionServiceTest, ExternalExtensionAutoAcknowledgement) {
   InitializeEmptyExtensionService();
   set_extensions_enabled(true);
@@ -3085,7 +3228,9 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
 TEST_F(ExtensionServiceTest, UninstallExtension) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
+  EXPECT_EQ(1u, service_->extensions()->size());
   UninstallExtension(good_crx, false);
+  EXPECT_EQ(0u, service_->extensions()->size());
 }
 
 TEST_F(ExtensionServiceTest, UninstallTerminatedExtension) {
@@ -3468,8 +3613,10 @@ void ExtensionServiceTest::TestExternalProvider(
   loop_.RunAllPending();
 
   FilePath install_path = extensions_install_dir_.AppendASCII(id);
-  // It should not be possible to uninstall a policy controlled extension.
-  if (Extension::UserMayDisable(location)) {
+  if (Extension::IsRequired(location)) {
+    // Policy controlled extensions should not have been touched by uninstall.
+    ASSERT_TRUE(file_util::PathExists(install_path));
+  } else {
     // The extension should also be gone from the install directory.
     ASSERT_FALSE(file_util::PathExists(install_path));
     loaded_.clear();
@@ -3488,15 +3635,14 @@ void ExtensionServiceTest::TestExternalProvider(
     service_->CheckForExternalUpdates();
     loop_.RunAllPending();
     ASSERT_EQ(1u, loaded_.size());
-  } else {
-    // Policy controlled extesions should not have been touched by uninstall.
-    ASSERT_TRUE(file_util::PathExists(install_path));
   }
   ValidatePrefKeyCount(1);
   ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(good_crx, "location", location);
 
-  if (Extension::UserMayDisable(location)) {
+  if (Extension::IsRequired(location)) {
+    EXPECT_EQ(2, provider->visit_count());
+  } else {
     // Now test an externally triggered uninstall (deleting the registry key or
     // the pref entry).
     provider->RemoveExtension(good_crx);
@@ -3536,8 +3682,6 @@ void ExtensionServiceTest::TestExternalProvider(
     ValidatePrefKeyCount(1);
 
     EXPECT_EQ(5, provider->visit_count());
-  } else {
-    EXPECT_EQ(2, provider->visit_count());
   }
 }
 

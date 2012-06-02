@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
+#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/string_ordinal.h"
 
@@ -46,6 +47,7 @@ struct ExtensionOmniboxSuggestion;
 //       PrefValueStore::extension_prefs(), which this class populates and
 //       maintains as the underlying extensions change.
 class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
+                       public extensions::ManagementPolicy::Provider,
                        public ExtensionScopedPrefs {
  public:
   // Key name for a preference that keeps track of per-extension settings. This
@@ -207,10 +209,22 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   bool IsAppNotificationDisabled(const std::string& extension_id) const;
   void SetAppNotificationDisabled(const std::string& extension_id, bool value);
 
-  // Is the extension with |extension_id| allowed by policy (checking both
-  // whitelist and blacklist).
-  bool IsExtensionAllowedByPolicy(const std::string& extension_id,
-      extensions::Extension::Location location) const;
+  // ManagementPolicy::Provider
+  virtual std::string GetPolicyProviderName() const OVERRIDE;
+  // Returns true if the extension is allowed by admin policy white- and
+  // blacklists.
+  virtual bool UserMayLoad(const extensions::Extension* extension,
+                           string16* error) const OVERRIDE;
+  // Returns false if the extension is required to remain running, as determined
+  // by Extension::IsRequired(). In practice this enforces the admin policy
+  // forcelist.
+  virtual bool UserMayModifySettings(const extensions::Extension* extension,
+                                     string16* error) const OVERRIDE;
+  // Returns true if the extension is required to remain running, as determined
+  // by Extension::IsRequired(). In practice this enforces the admin policy
+  // forcelist.
+  virtual bool MustRemainEnabled(const extensions::Extension* extension,
+                                 string16* error) const OVERRIDE;
 
   // Checks if extensions are blacklisted by default, by policy. When true, this
   // means that even extensions without an ID should be blacklisted (e.g.
@@ -513,6 +527,12 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   const base::DictionaryValue* GetExtensionControlledPrefs(
       const std::string& id,
       bool incognito) const;
+
+  // Internal implementation for certain ManagementPolicy::Delegate methods.
+  // Returns |modifiable_value| if the extension can be modified.
+  bool ManagementPolicyImpl(const extensions::Extension* extension,
+                            string16* error,
+                            bool modifiable_value) const;
 
   // Checks if kPrefBlacklist is set to true in the DictionaryValue.
   // Return false if the value is false or kPrefBlacklist does not exist.

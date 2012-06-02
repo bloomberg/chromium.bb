@@ -26,6 +26,10 @@ class TestExtensionSystem : public ExtensionSystem {
                                            const FilePath& install_directory,
                                            bool autoupdate_enabled);
 
+  // Creates and returns a ManagementPolicy with the ExtensionService and
+  // ExtensionPrefs registered. If not invoked, the ManagementPolicy is NULL.
+  extensions::ManagementPolicy* CreateManagementPolicy();
+
   // Creates an ExtensionProcessManager. If not invoked, the
   // ExtensionProcessManager is NULL.
   void CreateExtensionProcessManager();
@@ -35,6 +39,7 @@ class TestExtensionSystem : public ExtensionSystem {
 
   virtual void Init(bool extensions_enabled) OVERRIDE {}
   virtual ExtensionService* extension_service() OVERRIDE;
+  virtual extensions::ManagementPolicy* management_policy() OVERRIDE;
   void SetExtensionService(ExtensionService* service);
   virtual UserScriptMaster* user_script_master() OVERRIDE;
   virtual ExtensionDevToolsManager* devtools_manager() OVERRIDE;
@@ -58,6 +63,7 @@ class TestExtensionSystem : public ExtensionSystem {
   // invoked.
   scoped_ptr<ExtensionPrefs> extension_prefs_;
   scoped_ptr<ExtensionService> extension_service_;
+  scoped_ptr<extensions::ManagementPolicy> management_policy_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_ptr<extensions::AlarmManager> alarm_manager_;
 };

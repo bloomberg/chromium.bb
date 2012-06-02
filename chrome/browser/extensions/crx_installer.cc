@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -254,6 +255,9 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
   }
 
   // The checks below are skipped for themes and external installs.
+  // TODO(pamg): After ManagementPolicy refactoring is complete, remove this
+  // and other uses of install_source_ that are no longer needed now that the
+  // SandboxedExtensionUnpacker sets extension->location.
   if (extension->is_theme() || Extension::IsExternalLocation(install_source_))
     return true;
 
@@ -383,12 +387,10 @@ void CrxInstaller::ConfirmInstall() {
     return;
   }
 
-  if (!frontend_weak_->extension_prefs()->IsExtensionAllowedByPolicy(
-          extension_->id(), install_source_)) {
-    ReportFailureFromUIThread(l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_CANT_INSTALL_POLICY_BLACKLIST,
-        UTF8ToUTF16(extension_->name()),
-        UTF8ToUTF16(extension_->id())));
+  string16 error;
+  if (!ExtensionSystem::Get(profile_)->management_policy()->UserMayLoad(
+      extension_, &error)) {
+    ReportFailureFromUIThread(error);
     return;
   }
 

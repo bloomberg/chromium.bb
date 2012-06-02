@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/extensions/test_management_policy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -12,6 +16,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+
+using extensions::Extension;
 
 namespace {
 
@@ -41,16 +47,16 @@ class ExtensionManagementApiTest : public ExtensionApiTest {
     FilePath basedir = test_data_dir_.AppendASCII("management");
 
     // Load 4 enabled items.
-    ASSERT_TRUE(LoadExtension(basedir.AppendASCII("enabled_extension")));
-    ASSERT_TRUE(LoadExtension(basedir.AppendASCII("enabled_app")));
-    ASSERT_TRUE(LoadExtension(basedir.AppendASCII("description")));
-    ASSERT_TRUE(LoadExtension(basedir.AppendASCII("permissions")));
+    InstallNamedExtension(basedir, "enabled_extension");
+    InstallNamedExtension(basedir, "enabled_app");
+    InstallNamedExtension(basedir, "description");
+    InstallNamedExtension(basedir, "permissions");
 
     // Load 2 disabled items.
-    ASSERT_TRUE(LoadExtension(basedir.AppendASCII("disabled_extension")));
-    DisableExtension(last_loaded_extension_id_);
-    ASSERT_TRUE(LoadExtension(basedir.AppendASCII("disabled_app")));
-    DisableExtension(last_loaded_extension_id_);
+    InstallNamedExtension(basedir, "disabled_extension");
+    DisableExtension(extension_ids_["disabled_extension"]);
+    InstallNamedExtension(basedir, "disabled_app");
+    DisableExtension(extension_ids_["disabled_app"]);
   }
 
   // Load an app, and wait for a message from app "management/launch_on_install"
@@ -65,6 +71,16 @@ class ExtensionManagementApiTest : public ExtensionApiTest {
 
     ASSERT_TRUE(launched_app.WaitUntilSatisfied());
   }
+
+ protected:
+  void InstallNamedExtension(FilePath basedir, std::string name) {
+    const Extension* extension = LoadExtension(basedir.AppendASCII(name));
+    ASSERT_TRUE(extension);
+    extension_ids_[name] = extension->id();
+  }
+
+  // Maps installed extension names to their IDs..
+  std::map<std::string, std::string> extension_ids_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, Basics) {
@@ -75,6 +91,42 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, Basics) {
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, Uninstall) {
   InstallExtensions();
   ASSERT_TRUE(RunExtensionSubtest("management/test", "uninstall.html"));
+}
+
+// Tests actions on extensions when no management policy is in place.
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, ManagementPolicyAllowed) {
+  InstallExtensions();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+  EXPECT_TRUE(service->GetExtensionById(extension_ids_["enabled_extension"],
+                                        false));
+
+  // Ensure that all actions are allowed.
+  ExtensionSystem::Get(
+      browser()->profile())->management_policy()->UnregisterAllProviders();
+
+  ASSERT_TRUE(RunExtensionSubtest("management/management_policy",
+                                  "allowed.html"));
+  // The last thing the test does is uninstall the "enabled_extension".
+  EXPECT_FALSE(service->GetExtensionById(extension_ids_["enabled_extension"],
+                                         true));
+}
+
+// Tests actions on extensions when management policy prohibits those actions.
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, ManagementPolicyProhibited) {
+  InstallExtensions();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+  EXPECT_TRUE(service->GetExtensionById(extension_ids_["enabled_extension"],
+                                        false));
+
+  // Prohibit status changes.
+  extensions::ManagementPolicy* policy =
+      ExtensionSystem::Get(browser()->profile())->management_policy();
+  policy->UnregisterAllProviders();
+  extensions::TestManagementPolicyProvider provider(
+    extensions::TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS);
+  policy->RegisterProvider(&provider);
+  ASSERT_TRUE(RunExtensionSubtest("management/management_policy",
+                                  "prohibited.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {

@@ -2,7 +2,7 @@
   "id": "behllobkkfkfnphdnhnkndlbkcpglgmj",
   "version": "1.0.0.0",
   "name": "__MSG_chrome_extension_name__",
-  "mayDisable": true,
+  "userModifiable": true,
   "enabled": true,
   "terminated": false,
   "description": "__MSG_chrome_extension_description__",

@@ -28,6 +28,7 @@ namespace extensions {
 class AlarmManager;
 class Extension;
 class LazyBackgroundTaskQueue;
+class ManagementPolicy;
 class RulesRegistryService;
 }
 
@@ -55,6 +56,11 @@ class ExtensionSystem : public ProfileKeyedService {
 
   // The ExtensionService is created at startup.
   virtual ExtensionService* extension_service() = 0;
+
+  // The class controlling whether users are permitted to perform certain
+  // actions on extensions (install, uninstall, disable, etc.).
+  // The ManagementPolicy is created at startup.
+  virtual extensions::ManagementPolicy* management_policy() = 0;
 
   //  The ExtensionDevToolsManager is created at startup.
   virtual ExtensionDevToolsManager* devtools_manager() = 0;
@@ -115,6 +121,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual void Init(bool extensions_enabled) OVERRIDE;
 
   virtual ExtensionService* extension_service() OVERRIDE;  // shared
+  virtual extensions::ManagementPolicy* management_policy() OVERRIDE;  // shared
   virtual UserScriptMaster* user_script_master() OVERRIDE;  // shared
   virtual ExtensionDevToolsManager* devtools_manager() OVERRIDE;
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
@@ -147,10 +154,13 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
     // Initialization takes place in phases.
     virtual void InitPrefs();
+    // This must not be called until all the providers have been created.
+    void RegisterManagementPolicyProviders();
     void InitInfoMap();
     void Init(bool extensions_enabled);
 
     ExtensionService* extension_service();
+    extensions::ManagementPolicy* management_policy();
     UserScriptMaster* user_script_master();
     ExtensionInfoMap* info_map();
     extensions::LazyBackgroundTaskQueue* lazy_background_task_queue();
@@ -163,10 +173,11 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
     // The services that are shared between normal and incognito profiles.
 
-    // Keep extension_prefs_ on top of extension_service_ because the latter
-    // maintains a pointer to the first and shall be destructed first.
+    // Keep extension_prefs_ above extension_service_, because the latter
+    // maintains a pointer to the former and must be destructed first.
     scoped_ptr<ExtensionPrefs> extension_prefs_;
     scoped_ptr<ExtensionService> extension_service_;
+    scoped_ptr<extensions::ManagementPolicy> management_policy_;
     scoped_refptr<UserScriptMaster> user_script_master_;
     // extension_info_map_ needs to outlive extension_process_manager_.
     scoped_refptr<ExtensionInfoMap> extension_info_map_;

@@ -7,7 +7,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -222,7 +224,10 @@ bool ExtensionAppItem::IsCommandIdEnabled(int command_id) const {
         !extension->options_url().is_empty();
   } else if (command_id == UNINSTALL) {
     const Extension* extension = GetExtension();
-    return extension && Extension::UserMayDisable(extension->location());
+    const extensions::ManagementPolicy* policy = ExtensionSystem::Get(
+        profile_)->management_policy();
+    return extension &&
+           policy->UserMayModifySettings(extension, NULL);
   }
   return true;
 }

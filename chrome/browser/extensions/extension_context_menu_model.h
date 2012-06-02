@@ -28,6 +28,15 @@ class ExtensionContextMenuModel
       public ui::SimpleMenuModel::Delegate,
       public ExtensionUninstallDialog::Delegate {
  public:
+  enum MenuEntries {
+    NAME = 0,
+    CONFIGURE,
+    HIDE,
+    DISABLE,
+    UNINSTALL,
+    MANAGE
+  };
+
   // Creates a menu model for the given extension action.
   ExtensionContextMenuModel(const extensions::Extension* extension,
                             Browser* browser);

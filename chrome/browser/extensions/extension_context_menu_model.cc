@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,15 +25,6 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
 using extensions::Extension;
-
-enum MenuEntries {
-  NAME = 0,
-  CONFIGURE,
-  HIDE,
-  DISABLE,
-  UNINSTALL,
-  MANAGE
-};
 
 ExtensionContextMenuModel::ExtensionContextMenuModel(
     const Extension* extension,
@@ -65,7 +57,8 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     return extension->GetHomepageURL().is_valid();
   } else if (command_id == DISABLE || command_id == UNINSTALL) {
     // Some extension types can not be disabled or uninstalled.
-    return Extension::UserMayDisable(extension->location());
+    return ExtensionSystem::Get(
+        profile_)->management_policy()->UserMayModifySettings(extension, NULL);
   }
   return true;
 }

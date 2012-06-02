@@ -168,8 +168,6 @@ const char kCannotClaimAllURLsInExtent[] =
     "Cannot claim all URLs in an extent.";
 const char kCannotScriptGallery[] =
     "The extensions gallery cannot be scripted.";
-const char kCannotUninstallManagedExtension[] =
-    "Attempted uninstallation of an extension that is not user-manageable.";
 const char kChromeVersionTooLow[] =
     "This extension requires * version * or greater.";
 const char kDisabledByPolicy[] =

@@ -17,7 +17,9 @@
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_management_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -72,11 +74,17 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
   bool enabled = service->IsExtensionEnabled(extension.id());
   extension.GetBasicInfo(enabled, info);
 
+  const extensions::ManagementPolicy* policy = ExtensionSystem::Get(
+      service->profile())->management_policy();
+  info->SetBoolean(keys::kMayDisableKey,
+                   policy->UserMayModifySettings(&extension, NULL));
+
   info->SetBoolean(keys::kIsAppKey, extension.is_app());
 
   if (!enabled) {
-    bool permissions_escalated = service->extension_prefs()->
-        DidExtensionEscalatePermissions(extension.id());
+    ExtensionPrefs* prefs = service->extension_prefs();
+    bool permissions_escalated =
+        prefs->DidExtensionEscalatePermissions(extension.id());
     const char* reason = permissions_escalated ?
         keys::kDisabledReasonPermissionsIncrease : keys::kDisabledReasonUnknown;
     info->SetString(keys::kDisabledReasonKey, reason);
@@ -183,7 +191,7 @@ bool GetPermissionWarningsByIdFunction::RunImpl() {
   const Extension* extension = service()->GetExtensionById(ext_id, true);
   if (!extension) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
-                                                       ext_id);
+                                                     ext_id);
     return false;
   }
 
@@ -203,7 +211,7 @@ namespace {
 class SafeManifestJSONParser : public UtilityProcessHostClient {
  public:
   SafeManifestJSONParser(GetPermissionWarningsByManifestFunction* client,
-                 const std::string& manifest)
+                         const std::string& manifest)
       : client_(client),
         manifest_(manifest) {}
 
@@ -381,9 +389,11 @@ bool SetEnabledFunction::RunImpl() {
     return false;
   }
 
-  if (!Extension::UserMayDisable(extension->location())) {
+  const extensions::ManagementPolicy* policy = ExtensionSystem::Get(
+      profile())->management_policy();
+  if (!policy->UserMayModifySettings(extension, NULL)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kUserCantDisableError, extension_id_);
+        keys::kUserCantModifyError, extension_id_);
     return false;
   }
 
@@ -454,12 +464,10 @@ bool UninstallFunction::RunImpl() {
     return false;
   }
 
-  ExtensionPrefs* prefs = service()->extension_prefs();
-
-  if (!Extension::UserMayDisable(
-      prefs->GetInstalledExtensionInfo(extension_id_)->extension_location)) {
+  if (!ExtensionSystem::Get(
+      profile())->management_policy()->UserMayModifySettings(extension, NULL)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kUserCantDisableError, extension_id_);
+        keys::kUserCantModifyError, extension_id_);
     return false;
   }
 

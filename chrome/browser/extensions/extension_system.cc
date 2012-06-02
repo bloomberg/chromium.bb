@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
+#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -84,6 +85,11 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
   extension_prefs_->Init(extensions_disabled);
 }
 
+void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
+  DCHECK(extension_prefs_.get());
+  management_policy_->RegisterProvider(extension_prefs_.get());
+}
+
 void ExtensionSystemImpl::Shared::InitInfoMap() {
   // The ExtensionInfoMap needs to be created before the
   // ExtensionProcessManager.
@@ -119,6 +125,11 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       extension_prefs_.get(),
       autoupdate_enabled,
       extensions_enabled));
+
+  // The ManagementPolicy providers msut be registered before the
+  // ExtensionService tries to load any extensions.
+  management_policy_.reset(new extensions::ManagementPolicy);
+  RegisterManagementPolicyProviders();
 
   extension_service_->component_loader()->AddDefaultComponentExtensions();
   if (command_line->HasSwitch(switches::kLoadComponentExtension)) {
@@ -187,6 +198,10 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 
 ExtensionService* ExtensionSystemImpl::Shared::extension_service() {
   return extension_service_.get();
+}
+
+extensions::ManagementPolicy* ExtensionSystemImpl::Shared::management_policy() {
+  return management_policy_.get();
 }
 
 UserScriptMaster* ExtensionSystemImpl::Shared::user_script_master() {
@@ -259,6 +274,10 @@ void ExtensionSystemImpl::Init(bool extensions_enabled) {
 
 ExtensionService* ExtensionSystemImpl::extension_service() {
   return shared_->extension_service();
+}
+
+extensions::ManagementPolicy* ExtensionSystemImpl::management_policy() {
+  return shared_->management_policy();
 }
 
 UserScriptMaster* ExtensionSystemImpl::user_script_master() {

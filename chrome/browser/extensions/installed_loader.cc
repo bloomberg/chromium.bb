@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -68,13 +69,7 @@ InstalledLoader::~InstalledLoader() {
 void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
   std::string error;
   scoped_refptr<const Extension> extension(NULL);
-  // An explicit check against policy is required to behave correctly during
-  // startup.  This is because extensions that were previously OK might have
-  // been blacklisted in policy while Chrome was not running.
-  if (!extension_prefs_->IsExtensionAllowedByPolicy(info.extension_id,
-                                                    info.extension_location)) {
-    error = errors::kDisabledByPolicy;
-  } else if (info.extension_manifest.get()) {
+  if (info.extension_manifest.get()) {
     extension = Extension::Create(
         info.extension_path,
         info.extension_location,
@@ -94,6 +89,18 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
     error = errors::kCannotChangeExtensionID;
     extension = NULL;
     content::RecordAction(UserMetricsAction("Extensions.IDChangedError"));
+  }
+
+  // Check policy on every load in case an extension was blacklisted while
+  // Chrome was not running.
+  const ManagementPolicy* policy = ExtensionSystem::Get(
+      extension_service_->profile())->management_policy();
+  if (extension &&
+      !policy->UserMayLoad(extension, NULL)) {
+    // The error message from UserMayInstall() often contains the extension ID
+    // and is therefore not well suited to this UI.
+    error = errors::kDisabledByPolicy;
+    extension = NULL;
   }
 
   if (!extension) {

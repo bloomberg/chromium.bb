@@ -444,7 +444,6 @@ void Extension::GetBasicInfo(bool enabled,
   info->SetString(info_keys::kIdKey, id());
   info->SetString(info_keys::kNameKey, name());
   info->SetBoolean(info_keys::kEnabledKey, enabled);
-  info->SetBoolean(info_keys::kMayDisableKey, UserMayDisable(location()));
   info->SetBoolean(info_keys::kOfflineEnabledKey, offline_enabled());
   info->SetString(info_keys::kVersionKey, VersionString());
   info->SetString(info_keys::kDescriptionKey, description());

@@ -293,12 +293,14 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
            IsExternalLocation(location);
   }
 
-  // Whether extensions with |location| can be uninstalled or not. Policy
-  // controlled extensions are silently auto-installed and updated, and cannot
-  // be disabled by the user. The same applies for internal components.
-  static inline bool UserMayDisable(Location location) {
-    return location != Extension::EXTERNAL_POLICY_DOWNLOAD &&
-           location != Extension::COMPONENT;
+  // Policy-required extensions are silently auto-installed and updated, and
+  // cannot be disabled or modified by the user in any way. The same applies
+  // to internal components.
+  // This method is not generally called directly; instead, it is accessed
+  // through the ManagementPolicy held by the ExtensionSystem.
+  static inline bool IsRequired(Location location) {
+    return location == Extension::EXTERNAL_POLICY_DOWNLOAD ||
+           location == Extension::COMPONENT;
   }
 
   // Unpacked extensions start off with file access since they are a developer

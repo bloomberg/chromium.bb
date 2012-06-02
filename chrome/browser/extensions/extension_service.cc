@@ -17,7 +17,6 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -105,9 +104,11 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domain.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
 
@@ -304,7 +305,7 @@ bool ExtensionService::UninstallExtensionHelper(
 
   // The following call to UninstallExtension will not allow an uninstall of a
   // policy-controlled extension.
-  std::string error;
+  string16 error;
   if (!extensions_service->UninstallExtension(extension_id, false, &error)) {
     LOG(WARNING) << "Cannot uninstall extension with id " << extension_id
                  << ": " << error;
@@ -678,7 +679,7 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
 bool ExtensionService::UninstallExtension(
     std::string extension_id,
     bool external_uninstall,
-    std::string* error) {
+    string16* error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_refptr<const Extension> extension(GetInstalledExtension(extension_id));
@@ -689,15 +690,13 @@ bool ExtensionService::UninstallExtension(
   // Policy change which triggers an uninstall will always set
   // |external_uninstall| to true so this is the only way to uninstall
   // managed extensions.
-  if (!Extension::UserMayDisable(extension->location()) &&
-      !external_uninstall) {
+  if (!external_uninstall &&
+      !system_->management_policy()->UserMayModifySettings(
+        extension.get(), error)) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension));
-    if (error != NULL) {
-      *error = errors::kCannotUninstallManagedExtension;
-    }
     return false;
   }
 
@@ -848,8 +847,10 @@ void ExtensionService::DisableExtension(
   const Extension* extension = GetInstalledExtension(extension_id);
   // |extension| can be NULL if sync disables an extension that is not
   // installed yet.
-  if (extension && !Extension::UserMayDisable(extension->location()))
+  if (extension &&
+      !system_->management_policy()->UserMayModifySettings(extension, NULL)) {
     return;
+  }
 
   extension_prefs_->SetExtensionState(extension_id, Extension::DISABLED);
   extension_prefs_->SetDisableReason(extension_id, disable_reason);
@@ -1154,8 +1155,7 @@ void ExtensionService::CheckAdminBlacklist() {
   for (ExtensionSet::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     const Extension* extension = (*iter);
-    if (!extension_prefs_->IsExtensionAllowedByPolicy(extension->id(),
-                                                      extension->location())) {
+    if (!system_->management_policy()->UserMayLoad(extension, NULL)) {
       to_be_removed.push_back(extension->id());
     }
   }
@@ -2097,7 +2097,7 @@ void ExtensionService::OnExtensionInstalled(
   // installation disabled the extension, make sure it is now enabled.
   bool initial_enable =
       !extension_prefs_->IsExtensionDisabled(id) ||
-      !Extension::UserMayDisable(extension->location());
+      system_->management_policy()->MustRemainEnabled(extension, NULL);
   PendingExtensionInfo pending_extension_info;
   if (pending_extension_manager()->GetById(id, &pending_extension_info)) {
     pending_extension_manager()->Remove(id);
