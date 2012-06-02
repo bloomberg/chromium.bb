@@ -493,7 +493,7 @@
     },
   ],
   'conditions': [
-    ['target_arch=="arm" or OS=="win"', {
+    ['target_arch=="arm" or OS=="win" or OS=="mac"', {
       'targets': [
         {
           'conditions': [
@@ -501,6 +501,16 @@
               'target_name': 'omx_video_decode_accelerator_unittest',
               'include_dirs': [
                 '<(DEPTH)/third_party/openmax/il',
+              ],
+            }],
+            ['OS=="mac"', {
+              'target_name': 'video_decode_accelerator_unittest',
+              'dependencies': [
+                '../ui/gl/gl.gyp:gl',
+                '../ui/ui.gyp:ui',
+              ],
+              'sources!': [
+                'common/gpu/media/rendering_helper_egl.cc',
               ],
             }],
             ['OS=="win"', {
@@ -532,6 +542,9 @@
             '<(DEPTH)/third_party/angle/include',
           ],
           'sources': [
+            'common/gpu/media/rendering_helper.h',
+            'common/gpu/media/rendering_helper_mac.mm',
+            'common/gpu/media/rendering_helper_egl.cc',
             'common/gpu/media/video_decode_accelerator_unittest.cc',
           ],
         }

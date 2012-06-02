@@ -38,10 +38,10 @@ class UI_EXPORT VideoDecodeAccelerationSupport :
     public base::RefCountedThreadSafe<VideoDecodeAccelerationSupport> {
  public:
   enum Status {
-    VDA_SUCCESS = 0,
-    VDA_LOAD_FRAMEWORK_ERROR,
-    VDA_HARDWARE_NOT_SUPPORTED_ERROR,
-    VDA_OTHER_ERROR,
+    SUCCESS = 0,
+    LOAD_FRAMEWORK_ERROR,
+    HARDWARE_NOT_SUPPORTED_ERROR,
+    OTHER_ERROR,
   };
 
   typedef base::Callback<void(CVImageBufferRef, int status)> FrameReadyCallback;
