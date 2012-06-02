@@ -14,13 +14,8 @@ namespace base {
 class Thread;
 }
 
-namespace ui {
-class Clipboard;
-}
-
 namespace content {
 class ShellBrowserContext;
-class ShellDevToolsDelegate;
 struct MainFunctionParams;
 }
 
@@ -36,21 +31,10 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   virtual ~ShellBrowserMainParts();
 
   // Overridden from content::BrowserMainParts:
-  virtual void PreEarlyInitialization() OVERRIDE {}
-  virtual void PostEarlyInitialization() OVERRIDE {}
   virtual void PreMainMessageLoopStart() OVERRIDE;
-  virtual void PostMainMessageLoopStart() OVERRIDE {}
-  virtual void ToolkitInitialized() OVERRIDE {}
-  virtual int PreCreateThreads() OVERRIDE;
   virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
-  virtual void PostDestroyThreads() OVERRIDE {}
-
-  ui::Clipboard* GetClipboard();
-  content::ShellDevToolsDelegate* devtools_delegate() {
-    return devtools_delegate_;
-  }
 
   content::ShellBrowserContext* browser_context() {
     return browser_context_.get();
@@ -58,9 +42,6 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
 
  private:
   scoped_ptr<content::ShellBrowserContext> browser_context_;
-
-  scoped_ptr<ui::Clipboard> clipboard_;
-  content::ShellDevToolsDelegate* devtools_delegate_;
   scoped_ptr<ash::shell::WindowWatcher> window_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);

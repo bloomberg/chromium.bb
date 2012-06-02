@@ -16,7 +16,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
-#include "content/shell/shell_devtools_delegate.h"
 #include "content/shell/shell_switches.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_module.h"
@@ -24,7 +23,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor.h"
@@ -64,8 +62,7 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
-    : BrowserMainParts(),
-      devtools_delegate_(NULL) {
+    : BrowserMainParts() {
 }
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
@@ -78,10 +75,6 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 #endif
 }
 #endif
-
-int ShellBrowserMainParts::PreCreateThreads() {
-  return 0;
-}
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext);
@@ -103,8 +96,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
-  if (devtools_delegate_)
-    devtools_delegate_->Stop();
   browser_context_.reset();
 
   window_watcher_.reset();
@@ -115,12 +106,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
   MessageLoopForUI::current()->Run();
   return true;
-}
-
-ui::Clipboard* ShellBrowserMainParts::GetClipboard() {
-  if (!clipboard_.get())
-    clipboard_.reset(new ui::Clipboard());
-  return clipboard_.get();
 }
 
 }  // namespace shell
