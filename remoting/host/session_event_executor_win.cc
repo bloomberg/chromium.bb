@@ -70,16 +70,40 @@ SessionEventExecutorWin::~SessionEventExecutorWin() {
 
 void SessionEventExecutorWin::OnSessionStarted(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
-  // TODO(simonmorris): Delegate to the nested executor.
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&SessionEventExecutorWin::OnSessionStarted,
+                   base::Unretained(this), base::Passed(&client_clipboard)));
+    return;
+  }
+
+  nested_executor_->OnSessionStarted(client_clipboard.Pass());
 }
 
 void SessionEventExecutorWin::OnSessionFinished() {
-  // TODO(simonmorris): Delegate to the nested executor.
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&SessionEventExecutorWin::OnSessionFinished,
+                   base::Unretained(this)));
+    return;
+  }
+
+  nested_executor_->OnSessionFinished();
 }
 
 void SessionEventExecutorWin::InjectClipboardEvent(
     const ClipboardEvent& event) {
-  // TODO(simonmorris): Delegate to the nested executor.
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&SessionEventExecutorWin::InjectClipboardEvent,
+                   base::Unretained(this), event));
+    return;
+  }
+
+  nested_executor_->InjectClipboardEvent(event);
 }
 
 void SessionEventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
