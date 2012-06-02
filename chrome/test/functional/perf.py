@@ -2156,7 +2156,7 @@ class WebPageReplayPageCyclerTest(BasePageCyclerTest):
     if self.replay_dir:
       replay_dir = self.replay_dir
     else:
-      self._Path('replay'),
+      replay_dir = self._Path('replay')
     with webpagereplay.ReplayServer(
         replay_dir,
         self._ArchivePath(test_name),
