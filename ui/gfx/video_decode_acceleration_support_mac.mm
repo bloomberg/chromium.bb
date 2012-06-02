@@ -122,7 +122,7 @@ VideoDecodeAccelerationSupport::Status VideoDecodeAccelerationSupport::Create(
     const void* avc_bytes,
     size_t avc_size) {
   if (!InitializeVdaApis())
-    return LOAD_FRAMEWORK_ERROR;
+    return VDA_LOAD_FRAMEWORK_ERROR;
 
   NSData* avc_data = [NSData dataWithBytes:avc_bytes length:avc_size];
   NSDictionary* config = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -150,11 +150,11 @@ VideoDecodeAccelerationSupport::Status VideoDecodeAccelerationSupport::Create(
       &decoder_);
   switch (status) {
     case kVDADecoderNoErr:
-      return SUCCESS;
+      return VDA_SUCCESS;
     case kVDADecoderHardwareNotSupportedErr:
-      return HARDWARE_NOT_SUPPORTED_ERROR;
+      return VDA_HARDWARE_NOT_SUPPORTED_ERROR;
     default:
-      return OTHER_ERROR;
+      return VDA_OTHER_ERROR;
   }
 }
 
@@ -175,9 +175,9 @@ VideoDecodeAccelerationSupport::Status VideoDecodeAccelerationSupport::Decode(
       NSToCFCast(frame_info));
   if (status != kVDADecoderNoErr) {
     frame_ready_callbacks_.erase(frame_id_count_);
-    return OTHER_ERROR;
+    return VDA_OTHER_ERROR;
   }
-  return SUCCESS;
+  return VDA_SUCCESS;
 }
 
 VideoDecodeAccelerationSupport::Status VideoDecodeAccelerationSupport::Flush(
@@ -187,7 +187,7 @@ VideoDecodeAccelerationSupport::Status VideoDecodeAccelerationSupport::Flush(
       decoder_, emit_frames ? kVDADecoderFlush_EmitFrames : 0);
   if (!emit_frames)
     frame_ready_callbacks_.clear();
-  return status == kVDADecoderNoErr ? SUCCESS : OTHER_ERROR;
+  return status == kVDADecoderNoErr ? VDA_SUCCESS : VDA_OTHER_ERROR;
 }
 
 VideoDecodeAccelerationSupport::Status
@@ -195,7 +195,7 @@ VideoDecodeAccelerationSupport::Destroy() {
   DCHECK(decoder_);
   OSStatus status = g_VDADecoderDestroy(decoder_);
   decoder_ = NULL;
-  return status == kVDADecoderNoErr ? SUCCESS : OTHER_ERROR;
+  return status == kVDADecoderNoErr ? VDA_SUCCESS : VDA_OTHER_ERROR;
 }
 
 VideoDecodeAccelerationSupport::~VideoDecodeAccelerationSupport() {
