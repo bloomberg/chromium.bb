@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
-#include "content/test/accessibility_test_utils_win.h"
+#include "content/public/test/accessibility_test_utils_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 

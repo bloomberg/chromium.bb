@@ -25,7 +25,11 @@
         '..',
       ],
       'sources': [
-        # TODO(phajdan.jr): All of those files should live in content/test.
+        'public/test/accessibility_test_utils_win.h',
+        'public/test/browser_test.h',
+        # TODO(phajdan.jr): All of those files should live in content/test (if
+        # they're only used by content) or content/public/test (if they're used
+        # by other embedders).
         'browser/download/mock_download_file.cc',
         'browser/download/mock_download_file.h',
         'browser/geolocation/arbitrator_dependency_factories_for_test.cc',
@@ -51,8 +55,6 @@
         'renderer/mock_content_renderer_client.cc',
         'renderer/mock_content_renderer_client.h',
         'test/accessibility_test_utils_win.cc',
-        'test/accessibility_test_utils_win.h',
-        'test/browser_test.h',
         'test/browser_test_base.cc',
         'test/browser_test_base.h',
         'test/content_test_suite.cc',

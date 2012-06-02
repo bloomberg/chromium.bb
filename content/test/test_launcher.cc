@@ -24,7 +24,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/common/sandbox_init.h"
-#include "content/test/browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

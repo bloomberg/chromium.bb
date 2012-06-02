@@ -10,6 +10,7 @@ include_rules = [
   "+chromeos",
   "+content/plugin/plugin_interpose_util_mac.h",
   "+content/public/browser",
+  "+content/public/test",
   "+google_update",
   "+grit",  # For generated headers
   "+installer_util_strings",  # For generated headers

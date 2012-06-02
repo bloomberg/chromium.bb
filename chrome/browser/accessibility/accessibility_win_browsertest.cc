@@ -19,7 +19,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/accessibility_test_utils_win.h"
+#include "content/public/test/accessibility_test_utils_win.h"
 #include "content/test/test_renderer_host.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "third_party/isimpledom/ISimpleDOMNode.h"

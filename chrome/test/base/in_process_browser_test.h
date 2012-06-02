@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "content/public/common/page_transition_types.h"
-#include "content/test/browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "content/test/browser_test_base.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
