@@ -12,7 +12,7 @@ if [ ! -d /usr/local/autotest/deps/chrome_test ] ; then
   return 1
 fi
 
-if [ ! -d /usr/local/autotest/deps/chrome_test/test_src/data ]; then
-  ln -s /usr/local/autotest/deps/page_cycler_dep/test_src/data \
+if [ ! -e /usr/local/autotest/deps/chrome_test/test_src/data ]; then
+  ln -sf /usr/local/autotest/deps/page_cycler_dep/test_src/data \
       /usr/local/autotest/deps/chrome_test/test_src/data
 fi
