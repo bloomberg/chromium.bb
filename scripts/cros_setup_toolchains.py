@@ -8,6 +8,7 @@
 
 import copy
 import errno
+import json
 import optparse
 import os
 import sys
@@ -170,15 +171,26 @@ def IsPackageDisabled(target, package):
 
 def GetTuplesForOverlays(overlays):
   """Returns a set of tuples for a given set of overlays."""
-  tuples = set()
+  tuples = {}
+  default_settings = {
+      'sdk'      : True,
+      'crossdev' : '',
+  }
 
   for overlay in overlays:
     config = os.path.join(overlay, 'toolchain.conf')
     if os.path.exists(config):
       for line in osutils.ReadFile(config).splitlines():
-        # Split by hash sign so that comments are ignored
-        line = line.split('#', 1)[0]
-        tuples.update(line.split())
+        # Split by hash sign so that comments are ignored.
+        # Then split the line to get the tuple and its options.
+        line = line.split('#', 1)[0].split()
+
+        if len(line) > 0:
+          tuple = line[0]
+          if tuple not in tuples:
+            tuples[tuple] = copy.copy(default_settings)
+          if len(line) > 1:
+            tuples[tuple].update(json.loads(' '.join(line[1:])))
 
   return tuples
 
@@ -193,7 +205,7 @@ def GetAllTargets():
   targets = GetToolchainsForBoard('all')
 
   # Remove the host target as that is not a cross-target. Replace with 'host'.
-  targets.discard(GetHostTuple())
+  del targets[GetHostTuple()]
   return targets
 
 
@@ -424,6 +436,7 @@ def UpdateCrossdevTargets(targets, usepkg, config_only=False):
       version = GetDesiredPackageVersions(target, pkg)[0]
       cmd.extend(['--%s' % pkg, version])
 
+    cmd.extend(targets[target]['crossdev'].split())
     if config_only:
       # In this case we want to just quietly reinit
       cmd.append('--init-target')
@@ -557,42 +570,59 @@ def SelectActiveToolchains(targets, suffixes):
         cros_build_lib.RunCommand(cmd, print_cmd=False)
 
 
-def UpdateToolchains(usepkg, deleteold, hostonly, targets_wanted):
+def UpdateToolchains(usepkg, deleteold, hostonly, targets_wanted,
+                     boards_wanted):
   """Performs all steps to create a synchronized toolchain enviroment.
 
   args:
     arguments correspond to the given commandline flags
   """
-  targets = set()
+  targets = {}
   if not hostonly:
     # For hostonly, we can skip most of the below logic, much of which won't
     # work on bare systems where this is useful.
     alltargets = GetAllTargets()
-    nonexistant = []
+    targets_wanted = set(targets_wanted)
     if targets_wanted == set(['all']):
-      targets = set(alltargets)
+      targets = alltargets
     else:
-      targets = set(targets_wanted)
       # Verify user input.
+      nonexistant = []
       for target in targets_wanted:
         if target not in alltargets:
           nonexistant.append(target)
-    if nonexistant:
-      raise Exception("Invalid targets: " + ','.join(nonexistant))
+        else:
+          targets[target] = alltargets[target]
+      if nonexistant:
+        cros_build_lib.Die('Invalid targets: ' + ','.join(nonexistant))
+
+    # Filter out all the non-sdk toolchains as we don't want to mess
+    # with those in all of our builds.
+    for target in targets.keys():
+      if not targets[target]['sdk']:
+        del targets[target]
+    # Now re-add any targets that might be from this board.  This is
+    # to allow unofficial boards to declare their own toolchains.
+    for board in boards_wanted:
+      targets.update(GetToolchainsForBoard(board))
 
     # First check and initialize all cross targets that need to be.
-    crossdev_targets = \
-        [t for t in targets if not TargetIsInitialized(t)]
+    crossdev_targets = {}
+    reconfig_targets = {}
+    for target in targets:
+      if TargetIsInitialized(target):
+        reconfig_targets[target] = targets[target]
+      else:
+        crossdev_targets[target] = targets[target]
     if crossdev_targets:
       print 'The following targets need to be re-initialized:'
       print crossdev_targets
       UpdateCrossdevTargets(crossdev_targets, usepkg)
     # Those that were not initialized may need a config update.
-    reconfig_targets = targets.difference(set(crossdev_targets))
     UpdateCrossdevTargets(reconfig_targets, usepkg, config_only=True)
 
   # We want host updated.
-  targets.add('host')
+  targets['host'] = {}
 
   # Now update all packages.
   UpdateTargets(targets, usepkg)
@@ -618,6 +648,10 @@ def main(argv):
                     dest='targets', default='all',
                     help=('Comma separated list of tuples. '
                           'Special keyword \'host\' is allowed. Default: all.'))
+  parser.add_option('--include-boards',
+                    dest='include_boards', default='',
+                    help=('Comma separated list of boards whose toolchains we'
+                          ' will always include. Default: none.'))
   parser.add_option('--hostonly',
                     dest='hostonly', default=False, action='store_true',
                     help=('Only setup the host toolchain. '
@@ -638,4 +672,7 @@ def main(argv):
     sys.exit(1)
 
   targets = set(options.targets.split(','))
-  UpdateToolchains(options.usepkg, options.deleteold, options.hostonly, targets)
+  boards = set(options.include_boards.split(',')) if options.include_boards \
+      else set()
+  UpdateToolchains(options.usepkg, options.deleteold, options.hostonly, targets,
+                   boards)
