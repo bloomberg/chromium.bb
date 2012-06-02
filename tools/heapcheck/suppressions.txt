@@ -717,12 +717,6 @@
    fun:GpuProcessHostUIShim::GetForRenderer
 }
 {
-   bug_76644_b
-   Heapcheck:Leak
-   ...
-   fun:UserStyleSheetWatcher::Init
-}
-{
    bug_77376_a
    Heapcheck:Leak
    ...
