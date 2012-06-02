@@ -29,3 +29,6 @@ DnsConfigServiceTest.*GetSystemConfig
 
 # Times out occasionally, http://crbug.com/124452
 HostResolverImplTest.StartWithinCallback
+
+# Fails on most runs. http://crbug.com/130874
+HttpNetworkTransactionSpdy2Test.BasicAuthSpdyProxy
