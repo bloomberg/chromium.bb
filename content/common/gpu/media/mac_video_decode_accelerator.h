@@ -24,8 +24,9 @@ class VideoDecodeAccelerationSupport;
 
 class GpuCommandBufferStub;
 
-class MacVideoDecodeAccelerator : public media::VideoDecodeAccelerator,
-                                  public base::NonThreadSafe {
+class CONTENT_EXPORT MacVideoDecodeAccelerator
+    : public media::VideoDecodeAccelerator,
+      public base::NonThreadSafe {
  public:
   // Does not take ownership of |client| which must outlive |*this|.
   MacVideoDecodeAccelerator(media::VideoDecodeAccelerator::Client* client);
