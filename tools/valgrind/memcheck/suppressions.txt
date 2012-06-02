@@ -4180,30 +4180,6 @@
    fun:_ZN3gfx31JPEGCodec_EncodeDecodeRGBA_Test8TestBodyEv
 }
 {
-   bug_102049_a
-   Memcheck:Leak
-   fun:malloc
-   fun:_Z15sk_malloc_flags*
-   fun:_Z15sk_malloc_throw*
-   fun:_ZN8SkAAClip7RunHead5Alloc*
-   fun:_ZN8SkAAClip7Builder6finishEPS_
-   ...
-   fun:_ZN8SkCanvas8clip*ERK6Sk*N8SkRegion2OpEb
-}
-{
-   bug_102049_b
-   Memcheck:Leak
-   fun:malloc
-   fun:_Z15sk_malloc_flagsjj
-   fun:_Z15sk_malloc_throwj
-   fun:_ZN8SkAAClip7RunHead5AllocEij
-   fun:_ZN8SkAAClip7Builder6finishEPS_
-   ...
-   fun:_ZN8SkCanvas19updateDeviceCMCacheEv
-   fun:_ZN10SkDrawIterC1EP8SkCanvasb
-   fun:_ZN8SkCanvas8draw*ERK6Sk*RK7SkPaint
-}
-{
    bug_102255
    Memcheck:Leak
    fun:_Znw*
