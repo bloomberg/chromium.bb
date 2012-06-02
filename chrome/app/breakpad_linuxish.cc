@@ -62,10 +62,6 @@
 #define FSTAT_FUNC sys_fstat
 #endif
 
-#ifndef PR_SET_PTRACER
-#define PR_SET_PTRACER 0x59616d61
-#endif
-
 // Some versions of gcc are prone to warn about unused return values. In cases
 // where we either a) know the call cannot fail, or b) there is nothing we
 // can do when a call fails, we mark the return code as ignored. This avoids
@@ -1025,17 +1021,6 @@ static bool NonBrowserCrashHandler(const void* crash_context,
     WriteLog(msg, sizeof(msg)-1);
     return false;
   }
-
-  // On kernels with ptrace protection, e.g. Ubuntu 10.10+, the browser cannot
-  // ptrace this crashing process and crash dumping will fail. When using the
-  // SUID sandbox, this crashing process is likely to be in its own PID
-  // namespace, and thus there is no way to permit only the browser process to
-  // ptrace it.
-  // The workaround is to allow all processes to ptrace this process if we
-  // reach this point, by passing -1 as the allowed PID. However, support for
-  // passing -1 as the PID won't reach kernels until around the Ubuntu 12.04
-  // timeframe.
-  sys_prctl(PR_SET_PTRACER, -1);
 
   // Start constructing the message to send to the browser.
   char guid[kGuidSize + 1] = {0};
