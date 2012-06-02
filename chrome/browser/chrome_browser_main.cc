@@ -59,6 +59,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/page_cycler/page_cycler.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -79,6 +80,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/user_data_dir_dialog.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
@@ -1443,10 +1445,36 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 }
 
 void ChromeBrowserMainParts::PostBrowserStart() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kVisitURLs))
+    RunPageCycler();
+
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostBrowserStart();
   // Allow ProcessSingleton to process messages.
   process_singleton_->Unlock();
+}
+
+void ChromeBrowserMainParts::RunPageCycler() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  Browser* browser = browser::FindBrowserWithProfile(profile_);
+  DCHECK(browser);
+  PageCycler* page_cycler = NULL;
+  FilePath input_file =
+      command_line->GetSwitchValuePath(switches::kVisitURLs);
+  page_cycler = new PageCycler(browser, input_file);
+  page_cycler->set_errors_file(
+      input_file.AddExtension(FILE_PATH_LITERAL(".errors")));
+  if (command_line->HasSwitch(switches::kRecordStats)) {
+    page_cycler->set_stats_file(
+        command_line->GetSwitchValuePath(switches::kRecordStats));
+  }
+  int iterations = 1;
+  if (command_line->HasSwitch(switches::kVisitURLsCount)) {
+    CHECK(base::StringToInt(
+            command_line->GetSwitchValueNative(switches::kVisitURLsCount),
+            &iterations));
+  }
+  page_cycler->Run(iterations);
 }
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {

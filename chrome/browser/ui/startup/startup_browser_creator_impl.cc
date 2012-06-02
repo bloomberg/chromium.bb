@@ -351,7 +351,9 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
 
     if (record_mode && chrome::kRecordModeEnabled)
       base::EventRecorder::current()->StartRecording(script_path);
-    if (playback_mode)
+    // Do not enter Playback mode if PageCycler is running; Playback mode does
+    // not work correctly.
+    if (playback_mode && !command_line_.HasSwitch(switches::kVisitURLs))
       base::EventRecorder::current()->StartPlayback(script_path);
   }
 
