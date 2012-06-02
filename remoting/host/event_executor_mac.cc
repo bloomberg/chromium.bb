@@ -57,6 +57,15 @@ class EventExecutorMac : public EventExecutor {
 EventExecutorMac::EventExecutorMac(
     MessageLoop* message_loop)
     : message_loop_(message_loop), mouse_button_state_(0) {
+  // Ensure that local hardware events are not suppressed after injecting
+  // input events.  This allows LocalInputMonitor to detect if the local mouse
+  // is being moved whilst a remote user is connected.
+  // This API is deprecated, but it is needed when using the deprecated
+  // injection APIs.
+  // If the non-deprecated injection APIs were used instead, the equivalent of
+  // this line would not be needed, as OS X defaults to _not_ suppressing local
+  // inputs in that case.
+  CGSetLocalEventsSuppressionInterval(0.0);
 }
 
 // Hard-coded mapping from Virtual Key codes to Mac KeySyms.
