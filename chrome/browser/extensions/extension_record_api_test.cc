@@ -63,7 +63,9 @@ const FilePath::CharType kUserDataDirPrefix[]
 
 class TestProcessStrategy : public ProcessStrategy {
  public:
-  TestProcessStrategy() : command_line_(CommandLine::NO_PROGRAM) {}
+  explicit TestProcessStrategy(std::vector<FilePath>* temp_files)
+      : command_line_(CommandLine::NO_PROGRAM), temp_files_(temp_files) {}
+
   ~TestProcessStrategy() {}
 
   // Pump the blocking pool queue, since this is needed during test.
@@ -89,6 +91,7 @@ class TestProcessStrategy : public ProcessStrategy {
       FilePath url_path =
           command_line.GetSwitchValuePath(switches::kVisitURLs);
 
+      temp_files_->push_back(url_path);
       if (command_line.HasSwitch(switches::kRecordMode) ||
           command_line.HasSwitch(switches::kPlaybackMode)) {
         FilePath url_path_copy = command_line.GetSwitchValuePath(
@@ -126,15 +129,19 @@ class TestProcessStrategy : public ProcessStrategy {
             .Append(url_path.BaseName().value() +
             FilePath::StringType(kURLErrorsSuffix));
         std::string error_content = JoinString(bad_urls, '\n');
+        temp_files_->push_back(url_errors_path);
         file_util::WriteFile(url_errors_path, error_content.c_str(),
             error_content.size());
       }
     }
 
-    if (command_line.HasSwitch(switches::kRecordStats))
-      file_util::WriteFile(command_line.GetSwitchValuePath(
-          switches::kRecordStats), kTestStatistics.c_str(),
+    if (command_line.HasSwitch(switches::kRecordStats)) {
+      FilePath record_stats_path(command_line.GetSwitchValuePath(
+          switches::kRecordStats));
+      temp_files_->push_back(record_stats_path);
+      file_util::WriteFile(record_stats_path, kTestStatistics.c_str(),
           kTestStatistics.size());
+    }
   }
 
   const CommandLine& GetCommandLine() const {
@@ -148,6 +155,7 @@ class TestProcessStrategy : public ProcessStrategy {
  private:
   CommandLine command_line_;
   std::vector<std::string> visited_urls_;
+  std::vector<FilePath>* temp_files_;
 };
 
 class RecordApiTest : public InProcessBrowserTest {
@@ -168,6 +176,16 @@ class RecordApiTest : public InProcessBrowserTest {
     if (!scoped_temp_user_data_dir_.Delete())
       NOTREACHED();
     InProcessBrowserTest::TearDown();
+  }
+
+  // Override to delete temporary files created during execution.
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    InProcessBrowserTest::CleanUpOnMainThread();
+    for (std::vector<FilePath>::const_iterator it = temp_files_.begin();
+        it != temp_files_.end(); ++it) {
+      if (!file_util::Delete(*it, false))
+        NOTREACHED();
+    }
   }
 
   // Override SetUpCommandline to specify a dummy user_data_dir, which
@@ -203,7 +221,7 @@ class RecordApiTest : public InProcessBrowserTest {
       scoped_ptr<base::ListValue>* out_list) {
 
     scoped_refptr<CaptureURLsFunction> capture_function(
-        new CaptureURLsFunction(new TestProcessStrategy()));
+        new CaptureURLsFunction(new TestProcessStrategy(&temp_files_)));
 
     std::string escaped_user_data_dir;
     ReplaceChars(user_data_dir.AsUTF8Unsafe(), "\\", "\\\\",
@@ -239,6 +257,9 @@ class RecordApiTest : public InProcessBrowserTest {
 
     return true;
   }
+
+ protected:
+  std::vector<FilePath> temp_files_;
 
  private:
   ScopedTempDir scoped_temp_user_data_dir_;
@@ -289,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(RecordApiTest, MAYBE_CheckPlayback) {
       &escaped_user_data_dir);
 
   scoped_refptr<ReplayURLsFunction> playback_function(new ReplayURLsFunction(
-      new TestProcessStrategy()));
+      new TestProcessStrategy(&temp_files_)));
   scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
       utils::RunFunctionAndReturnResult(playback_function,
       base::StringPrintf(kPlaybackArgs1, escaped_user_data_dir.c_str()),
