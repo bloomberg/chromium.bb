@@ -3826,20 +3826,6 @@
    fun:_ZN7WebCore21ComplexTextController21setupFontForScriptRunEv
 }
 {
-   bug_96773a
-   Memcheck:Uninitialized
-   ...
-   fun:vorbis_decode_frame
-   fun:avcodec_decode_audio3
-}
-{
-   bug_96773b
-   Memcheck:Uninitialized
-   ...
-   fun:vorbis_decode_frame
-   fun:avcodec_decode_audio3
-}
-{
    bug_98568
    Memcheck:Leak
    ...
