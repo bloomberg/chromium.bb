@@ -5677,13 +5677,6 @@
    fun:_ZN45BrowserThemePackTest_CanBuildAndReadPack_Test8TestBodyEv
 }
 {
-   bug_127718:
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3gfx9JPEGCodec6DecodeEPKhm
-   fun:_ZN7history33HistoryBackendTest_DeleteAll_Test8TestBodyEv
-}
-{
    bug_127931
    Memcheck:Unaddressable
    fun:_ZN4base6Thread10ThreadMainEv
