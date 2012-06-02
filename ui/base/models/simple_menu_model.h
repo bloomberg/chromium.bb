@@ -155,6 +155,9 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
 
   typedef std::vector<Item> ItemVector;
 
+  // Caller needs to call FlipIndex() if necessary. Returns |index|.
+  int ValidateItemIndex(int index) const;
+
   // Functions for inserting items into |items_|.
   void AppendItem(const Item& item);
   void InsertItemAtIndex(const Item& item, int index);

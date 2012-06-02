@@ -185,7 +185,7 @@ void SimpleMenuModel::InsertSubMenuWithStringIdAt(
 }
 
 void SimpleMenuModel::SetIcon(int index, const gfx::ImageSkia& icon) {
-  items_[index].icon = icon;
+  items_[ValidateItemIndex(index)].icon = icon;
 }
 
 void SimpleMenuModel::Clear() {
@@ -194,7 +194,7 @@ void SimpleMenuModel::Clear() {
 
 int SimpleMenuModel::GetIndexOfCommandId(int command_id) {
   for (ItemVector::iterator i = items_.begin(); i != items_.end(); ++i) {
-    if ((*i).command_id == command_id) {
+    if (i->command_id == command_id) {
       return FlipIndex(static_cast<int>(std::distance(items_.begin(), i)));
     }
   }
@@ -218,17 +218,17 @@ int SimpleMenuModel::GetItemCount() const {
 }
 
 MenuModel::ItemType SimpleMenuModel::GetTypeAt(int index) const {
-  return items_.at(FlipIndex(index)).type;
+  return items_[ValidateItemIndex(FlipIndex(index))].type;
 }
 
 int SimpleMenuModel::GetCommandIdAt(int index) const {
-  return items_.at(FlipIndex(index)).command_id;
+  return items_[ValidateItemIndex(FlipIndex(index))].command_id;
 }
 
 string16 SimpleMenuModel::GetLabelAt(int index) const {
   if (IsItemDynamicAt(index))
     return delegate_->GetLabelForCommandId(GetCommandIdAt(index));
-  return items_.at(FlipIndex(index)).label;
+  return items_[ValidateItemIndex(FlipIndex(index))].label;
 }
 
 bool SimpleMenuModel::IsItemDynamicAt(int index) const {
@@ -249,20 +249,20 @@ bool SimpleMenuModel::GetAcceleratorAt(int index,
 bool SimpleMenuModel::IsItemCheckedAt(int index) const {
   if (!delegate_)
     return false;
-  int item_index = FlipIndex(index);
-  MenuModel::ItemType item_type = items_[item_index].type;
+  MenuModel::ItemType item_type = GetTypeAt(index);
   return (item_type == TYPE_CHECK || item_type == TYPE_RADIO) ?
       delegate_->IsCommandIdChecked(GetCommandIdAt(index)) : false;
 }
 
 int SimpleMenuModel::GetGroupIdAt(int index) const {
-  return items_.at(FlipIndex(index)).group_id;
+  return items_[ValidateItemIndex(FlipIndex(index))].group_id;
 }
 
 bool SimpleMenuModel::GetIconAt(int index, gfx::ImageSkia* icon) {
   if (IsItemDynamicAt(index))
     return delegate_->GetIconForCommandId(GetCommandIdAt(index), icon);
 
+  ValidateItemIndex(index);
   if (items_[index].icon.isNull())
     return false;
 
@@ -271,21 +271,19 @@ bool SimpleMenuModel::GetIconAt(int index, gfx::ImageSkia* icon) {
 }
 
 ButtonMenuItemModel* SimpleMenuModel::GetButtonMenuItemAt(int index) const {
-  return items_.at(FlipIndex(index)).button_model;
+  return items_[ValidateItemIndex(FlipIndex(index))].button_model;
 }
 
 bool SimpleMenuModel::IsEnabledAt(int index) const {
   int command_id = GetCommandIdAt(index);
-  if (!delegate_ || command_id == kSeparatorId ||
-      items_.at(FlipIndex(index)).button_model)
+  if (!delegate_ || command_id == kSeparatorId || GetButtonMenuItemAt(index))
     return true;
   return delegate_->IsCommandIdEnabled(command_id);
 }
 
 bool SimpleMenuModel::IsVisibleAt(int index) const {
   int command_id = GetCommandIdAt(index);
-  if (!delegate_ || command_id == kSeparatorId ||
-      items_.at(FlipIndex(index)).button_model)
+  if (!delegate_ || command_id == kSeparatorId || GetButtonMenuItemAt(index))
     return true;
   return delegate_->IsCommandIdVisible(command_id);
 }
@@ -306,7 +304,7 @@ void SimpleMenuModel::ActivatedAt(int index, int event_flags) {
 }
 
 MenuModel* SimpleMenuModel::GetSubmenuModelAt(int index) const {
-  return items_.at(FlipIndex(index)).submenu;
+  return items_[ValidateItemIndex(FlipIndex(index))].submenu;
 }
 
 void SimpleMenuModel::MenuWillShow() {
@@ -339,6 +337,12 @@ int SimpleMenuModel::FlipIndex(int index) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMenuModel, Private:
+
+int SimpleMenuModel::ValidateItemIndex(int index) const {
+  CHECK_GE(index, 0);
+  CHECK_LT(static_cast<size_t>(index), items_.size());
+  return index;
+}
 
 void SimpleMenuModel::AppendItem(const Item& item) {
   ValidateItem(item);
