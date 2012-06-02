@@ -3430,13 +3430,6 @@
    fun:_ZN7history14HistoryBackend11IterateURLsEPN14HistoryService13URLEnumeratorE
 }
 {
-   bug_90964
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN18BrowserProcessImpl21gpu_blacklist_updaterEv
-   fun:_ZN19GpuBlacklistUpdater15SetupOnUIThreadEv
-}
-{
    bug_91199
    Memcheck:Leak
    fun:_Znw*
