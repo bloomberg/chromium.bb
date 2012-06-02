@@ -723,19 +723,6 @@
    fun:GpuProcessHostUIShim::GetForRenderer
 }
 {
-   bug_76354
-   Heapcheck:Leak
-   fun:*ViewHostMsg_ResolveProxy
-   fun:ResolveProxyMsgHelperTest::GenerateReply
-   fun:ResolveProxyMsgHelperTest_*_Test::TestBody
-}
-{
-   bug_76644_a
-   Heapcheck:Leak
-   ...
-   fun:UserStyleSheetWatcherTest_StyleLoad_Test::TestBody
-}
-{
    bug_76644_b
    Heapcheck:Leak
    ...

@@ -2867,14 +2867,6 @@
    fun:_ZN7history22InMemoryHistoryBackend4InitERK8FilePathS3_PNS_11URLDatabaseERKSs
 }
 {
-   bug_76354
-   Memcheck:Leak
-   ...
-   fun:_ZN24ViewHostMsg_ResolveProxyC1ERK4GURLPbPSs
-   fun:_ZN25ResolveProxyMsgHelperTest13GenerateReplyEv
-   fun:*ResolveProxyMsgHelperTest_*_Test8TestBodyEv
-}
-{
    bug_78201
    Memcheck:Leak
    fun:_Znw*
