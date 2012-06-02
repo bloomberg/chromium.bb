@@ -5,6 +5,7 @@
 <include src="../shared/js/cr/ui/drag_wrapper.js"></include>
 <include src="../uber/uber_utils.js"></include>
 <include src="extension_commands_overlay.js"></include>
+<include src="extension_focus_manager.js"></include>
 <include src="extension_list.js"></include>
 <include src="pack_extension_overlay.js"></include>
 
@@ -113,6 +114,8 @@ cr.define('extensions', function() {
       extensionCommandsOverlay.initializePage();
 
       cr.ui.overlay.setupOverlay($('dropTargetOverlay'));
+
+      extensions.ExtensionFocusManager.getInstance().initialize();
     },
 
     /**
@@ -259,14 +262,21 @@ cr.define('extensions', function() {
   }
 
   /**
+   * Returns the current overlay or null if one does not exist.
+   * @return {Element} The overlay element.
+   */
+  ExtensionSettings.getCurrentOverlay = function() {
+    return document.querySelector('#overlay .page.showing');
+  }
+
+  /**
    * Sets the given overlay to show. This hides whatever overlay is currently
    * showing, if any.
    * @param {HTMLElement} node The overlay page to show. If falsey, all overlays
    *     are hidden.
    */
   ExtensionSettings.showOverlay = function(node) {
-    var currentlyShowingOverlay =
-        document.querySelector('#overlay .page.showing');
+    var currentlyShowingOverlay = ExtensionSettings.getCurrentOverlay();
     if (currentlyShowingOverlay)
       currentlyShowingOverlay.classList.remove('showing');
 

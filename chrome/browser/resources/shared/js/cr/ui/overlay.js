@@ -22,27 +22,6 @@ cr.define('cr.ui.overlay', function() {
    * Makes initializations which must hook at the document level.
    */
   function globalInitialization() {
-    // Listen to focus events and make sure focus doesn't move outside of a
-    // visible overlay .page.
-    document.addEventListener('focus', function(e) {
-      // Only run this event handler if there is no FocusManager.
-      // TODO(khorimoto): Remove this function once FocusManager can be used
-      // to manage focus on other pages besides the Settings page.
-      // (https://code.google.com/p/chromium/issues/detail?id=127681)
-      var focusManagerExists = options && options.OptionsFocusManager;
-      if (focusManagerExists)
-        return;
-
-      var overlay = getTopOverlay();
-      var page = overlay ? overlay.querySelector('.page:not([hidden])') : null;
-      if (!page || page.contains(e.target))
-        return;
-
-      var focusElement = page.querySelector('button, input, list, select, a');
-      if (focusElement)
-        focusElement.focus();
-    }, true);
-
     // Close the overlay on escape.
     document.addEventListener('keydown', function(e) {
       if (e.keyCode == 27) {  // Escape
