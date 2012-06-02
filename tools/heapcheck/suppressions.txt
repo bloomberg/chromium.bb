@@ -694,12 +694,6 @@
    fun:ui::TextEliderTest_*_Test::TestBody
 }
 {
-   bug_70782
-   Heapcheck:Leak
-   fun:SyncSetupWizard
-   fun:ProfileSyncService
-}
-{
    bug_71909
    Heapcheck:Leak
    fun:TestingProfile::CreateRequestContext
