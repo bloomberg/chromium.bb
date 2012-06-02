@@ -924,25 +924,6 @@
    fun:MessageLoop::RunHandler
 }
 {
-   bug_83561
-   Heapcheck:Leak
-   ...
-   fun:net::*HostResolver*::Resolve
-   fun:net::SingleRequestHostResolver::Resolve
-   fun:net::TransportConnectJob::DoResolveHost
-   fun:net::TransportConnectJob::DoLoop
-   fun:net::TransportConnectJob::ConnectInternal
-   fun:net::ConnectJob::Connect
-   fun:net::internal::ClientSocketPoolBaseHelper::RequestSocketInternal
-   fun:net::internal::ClientSocketPoolBaseHelper::RequestSocket
-   fun:net::ClientSocketPoolBase::RequestSocket
-   fun:net::TransportClientSocketPool::RequestSocket
-   fun:net::ClientSocketHandle::Init
-   fun:net::::InitSocketPoolHelper
-   ...
-   fun:notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
-}
-{
    bug_88640
    Heapcheck:Leak
    ...

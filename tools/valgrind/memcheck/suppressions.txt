@@ -3064,30 +3064,6 @@
    fun:_ZN15WebContentsImpl15NavigateToEntryERKN7content19NavigationEntryImplENS0_20NavigationController10ReloadTypeE
 }
 {
-   bug_83561
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3net16HostResolverImpl7ResolveERKNS_12HostResolver11RequestInfoEPNS_11AddressListERKN4base8CallbackIFviEEEPPvRKNS_11BoundNetLogE
-   fun:_ZN3net25SingleRequestHostResolver7ResolveERKNS_12HostResolver11RequestInfoEPNS_11AddressListERKN4base8CallbackIFviEEERKNS_11BoundNetLogE
-   fun:_ZN3net19TransportConnectJob13DoResolveHostEv
-   fun:_ZN3net19TransportConnectJob6DoLoopEi
-   fun:_ZN3net19TransportConnectJob15ConnectInternalEv
-   fun:_ZN3net10ConnectJob7ConnectEv
-   fun:_ZN3net8internal26ClientSocketPoolBaseHelper21RequestSocketInternalERKSsPKNS1_7RequestE
-}
-{
-   bug_83561b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base4BindIMN3net19TransportConnectJob*
-   fun:_ZN3net19TransportConnectJob13DoResolveHostEv
-   fun:_ZN3net19TransportConnectJob6DoLoopEi
-   fun:_ZN3net19TransportConnectJob15ConnectInternalEv
-   fun:_ZN3net10ConnectJob7ConnectEv
-   fun:_ZN3net8internal26ClientSocketPoolBaseHelper21RequestSocketInternalERKSsPKNS1_7RequestE
-}
-{
    bug_83566
    Memcheck:Unaddressable
    fun:_ZN7WebCore*V8Entr*Callback11handleEvent*
