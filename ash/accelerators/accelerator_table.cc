@@ -30,6 +30,7 @@ const AcceleratorData kAcceleratorData[] = {
 #if defined(OS_CHROMEOS)
   { true, ui::VKEY_BRIGHTNESS_DOWN, ui::EF_NONE, BRIGHTNESS_DOWN },
   { true, ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE, BRIGHTNESS_UP },
+  { true, ui::VKEY_F4, ui::EF_CONTROL_DOWN, CYCLE_DISPLAY_MODE },
   { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN },
   { true, ui::VKEY_M, ui::EF_CONTROL_DOWN, OPEN_FILE_MANAGER },
   { true, ui::VKEY_T, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, OPEN_CROSH },
@@ -108,7 +109,6 @@ const AcceleratorData kAcceleratorData[] = {
   // For testing on systems where Alt-Tab is already mapped.
   { true, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU },
   { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, CYCLE_BACKWARD_MRU },
-  { true, ui::VKEY_F4, ui::EF_CONTROL_DOWN, MONITOR_ADD_REMOVE },
   { true, ui::VKEY_F4, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, MONITOR_CYCLE },
   { true, ui::VKEY_HOME, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     MONITOR_TOGGLE_SCALE },
@@ -123,6 +123,9 @@ const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
+#if defined(OS_CHROMEOS)
+  CYCLE_DISPLAY_MODE,
+#endif  // defined(OS_CHROMEOS)
   NEXT_IME,
   PREVIOUS_IME,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.

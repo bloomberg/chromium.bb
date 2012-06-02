@@ -630,13 +630,14 @@
    fun:_vgnU_freeres
 }
 
-# XRandRInfo object seems to be leaking inside XRRFindDisplay.
+# XRandRInfo object seems to be leaking inside XRRFindDisplay.  This happens the
+# first time it is called, no matter who the caller is.  We have observed this
+# problem with both XRRSelectInput and XRRQueryExtension.
 {
    bug_119677
    Memcheck:Leak
    fun:malloc
    fun:XRRFindDisplay
-   fun:XRRSelectInput
 }
 {
    Flash Player Leak
