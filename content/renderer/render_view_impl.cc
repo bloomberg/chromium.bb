@@ -2363,7 +2363,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   }
 #endif
 
-  webkit_media::WebMediaPlayerImpl* media_player =
+  WebMediaPlayer* media_player =
       content::GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(
           this, frame, client, AsWeakPtr(), collection, audio_source_provider,
           message_loop_factory, media_stream_impl_, render_media_log);
@@ -3929,7 +3929,7 @@ WebCookieJar* RenderViewImpl::GetCookieJar() {
   return &cookie_jar_;
 }
 
-void RenderViewImpl::DidPlay(webkit_media::WebMediaPlayerImpl* player) {
+void RenderViewImpl::DidPlay(WebKit::WebMediaPlayer* player) {
   Send(new ViewHostMsg_MediaNotification(routing_id_,
                                          reinterpret_cast<int64>(player),
                                          player->hasVideo(),
@@ -3937,7 +3937,7 @@ void RenderViewImpl::DidPlay(webkit_media::WebMediaPlayerImpl* player) {
                                          true));
 }
 
-void RenderViewImpl::DidPause(webkit_media::WebMediaPlayerImpl* player) {
+void RenderViewImpl::DidPause(WebKit::WebMediaPlayer* player) {
   Send(new ViewHostMsg_MediaNotification(routing_id_,
                                          reinterpret_cast<int64>(player),
                                          player->hasVideo(),
@@ -3945,7 +3945,7 @@ void RenderViewImpl::DidPause(webkit_media::WebMediaPlayerImpl* player) {
                                          false));
 }
 
-void RenderViewImpl::PlayerGone(webkit_media::WebMediaPlayerImpl* player) {
+void RenderViewImpl::PlayerGone(WebKit::WebMediaPlayer* player) {
   DidPause(player);
 }
 

@@ -706,9 +706,9 @@ class RenderViewImpl : public RenderWidget,
 
   // webkit_media::WebMediaPlayerDelegate implementation -----------------------
 
-  virtual void DidPlay(webkit_media::WebMediaPlayerImpl* player) OVERRIDE;
-  virtual void DidPause(webkit_media::WebMediaPlayerImpl* player) OVERRIDE;
-  virtual void PlayerGone(webkit_media::WebMediaPlayerImpl* player) OVERRIDE;
+  virtual void DidPlay(WebKit::WebMediaPlayer* player) OVERRIDE;
+  virtual void DidPause(WebKit::WebMediaPlayer* player) OVERRIDE;
+  virtual void PlayerGone(WebKit::WebMediaPlayer* player) OVERRIDE;
 
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions
