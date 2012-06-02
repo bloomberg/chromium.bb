@@ -15,7 +15,6 @@ import unittest
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import cros_test_lib
 from chromite.buildbot import remote_try
 from chromite.buildbot import repository
@@ -47,13 +46,13 @@ class RemoteTryTests(mox.MoxTestBase, cros_test_lib.TempDirMixin):
     mox.MoxTestBase.tearDown(self)
 
   def _RunCommandSingleOutput(self, cmd, cwd):
-    result = cros_lib.RunCommandCaptureOutput(cmd, cwd=cwd)
+    result = cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd)
     out_lines = result.output.split()
     self.assertEqual(len(out_lines), 1)
     return out_lines[0]
 
   def _GetNewestFile(self, dirname, basehash):
-    newhash = cros_lib.GetGitRepoRevision(dirname)
+    newhash = cros_build_lib.GetGitRepoRevision(dirname)
     self.assertNotEqual(basehash, newhash)
     cmd = ['git', 'log', '--format=%H', '%s..' % basehash]
     # Make sure we have a single commit.
@@ -65,7 +64,7 @@ class RemoteTryTests(mox.MoxTestBase, cros_test_lib.TempDirMixin):
   def _SubmitJob(self, checkout_dir, job):
     """Returns the path to the tryjob description."""
     self.assertTrue(isinstance(job, RemoteTryJobMock))
-    basehash = cros_lib.GetGitRepoRevision(job.ssh_url)
+    basehash = cros_build_lib.GetGitRepoRevision(job.ssh_url)
     job.Submit(workdir=checkout_dir, dryrun=True)
     # Get the file that was just created.
     created_file = self._GetNewestFile(checkout_dir, basehash)
