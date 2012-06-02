@@ -81,21 +81,21 @@ TEST_F(VideoDecodeAccelerationSupportTest, Create) {
 
   // We should get an error loading the framework on 10.6.2 and earlier.
   if (!OSShouldHaveFramework()) {
-    EXPECT_EQ(gfx::VideoDecodeAccelerationSupport::VDA_LOAD_FRAMEWORK_ERROR,
+    EXPECT_EQ(gfx::VideoDecodeAccelerationSupport::LOAD_FRAMEWORK_ERROR,
               status);
     return;
   }
 
   // If the hardware is not supported then there's not much we can do.
   if (status ==
-      gfx::VideoDecodeAccelerationSupport::VDA_HARDWARE_NOT_SUPPORTED_ERROR) {
+      gfx::VideoDecodeAccelerationSupport::HARDWARE_NOT_SUPPORTED_ERROR) {
     return;
   }
 
-  EXPECT_EQ(gfx::VideoDecodeAccelerationSupport::VDA_SUCCESS, status);
-  EXPECT_EQ(gfx::VideoDecodeAccelerationSupport::VDA_SUCCESS,
+  EXPECT_EQ(gfx::VideoDecodeAccelerationSupport::SUCCESS, status);
+  EXPECT_EQ(gfx::VideoDecodeAccelerationSupport::SUCCESS,
             vda->Flush(false));
-  EXPECT_EQ(gfx::VideoDecodeAccelerationSupport::VDA_SUCCESS, vda->Destroy());
+  EXPECT_EQ(gfx::VideoDecodeAccelerationSupport::SUCCESS, vda->Destroy());
 }
 
 // Test that callback works.

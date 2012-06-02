@@ -38,29 +38,20 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-
-#if (!defined(OS_CHROMEOS) || !defined(ARCH_CPU_ARMEL)) && !defined(OS_WIN)
-#error The VideoAccelerator tests are only supported on cros/ARM/Windows.
-#endif
+#include "content/common/gpu/media/rendering_helper.h"
 
 #if defined(OS_WIN)
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
-#else  // OS_WIN
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 #include "content/common/gpu/media/omx_video_decode_accelerator.h"
+#elif defined(OS_MACOSX)
+#include "content/common/gpu/media/mac_video_decode_accelerator.h"
+#else
+#error The VideoAccelerator tests are not supported on this platform.
 #endif  // defined(OS_WIN)
 
-#include "third_party/angle/include/EGL/egl.h"
-
-#if defined(OS_WIN)
-#include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
-#include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_surface.h"
-#else  // OS_WIN
-#include "third_party/angle/include/GLES2/gl2.h"
-#endif  // OS_WIN
-
 using media::VideoDecodeAccelerator;
+using video_test_util::RenderingHelper;
 
 namespace {
 
@@ -77,8 +68,24 @@ namespace {
 //   (the latter tests just decode speed).
 // - |profile| is the media::H264Profile set during Initialization.
 // An empty value for a numeric field means "ignore".
+#if defined(OS_MACOSX)
+const FilePath::CharType* test_video_data =
+    FILE_PATH_LITERAL("test-25fps_high.h264:1280:720:249:252:50:175:4");
+#else
 const FilePath::CharType* test_video_data =
     FILE_PATH_LITERAL("test-25fps.h264:320:240:250:258:50:175:1");
+#endif
+
+// AAVC data required to initialize the H.264 video decoder.
+// TODO(sail): Remove this and build the AVC configuration record instead.
+const uint8 MP4_EXTRA_DATA[] = {
+  0x01, 0x64, 0x00, 0x1f,    0xff, 0xe1, 0x00, 0x19,
+  0x67, 0x64, 0x00, 0x1f,    0xac, 0x34, 0xec, 0x05,
+  0x00, 0x5b, 0xa1, 0x00,    0x00, 0x03, 0x00, 0x01,
+  0x00, 0x00, 0x03, 0x00,    0x32, 0x0f, 0x18, 0x31,
+  0x38, 0x01, 0x00, 0x05,    0x68, 0xef, 0xb2, 0xc8,
+  0xb0,
+};
 
 // Parse |data| into its constituent parts and set the various output fields
 // accordingly.  CHECK-fails on unexpected or missing required data.
@@ -114,357 +121,6 @@ void ParseTestVideoData(FilePath::StringType data,
   if (!elements[7].empty())
     CHECK(base::StringToInt(elements[7], profile));
 }
-
-// Provides functionality for managing EGL, GLES2 and UI resources.
-// This class is not thread safe and thus all the methods of this class
-// (except for ctor/dtor) ensure they're being run on a single thread.
-class RenderingHelper {
- public:
-  RenderingHelper();
-  ~RenderingHelper();
-
-  // Initialize all structures to prepare to render to one or more windows of
-  // the specified dimensions.  CHECK-fails if any initialization step fails.
-  // After this returns, texture creation and rendering can be requested.  This
-  // method can be called multiple times, in which case all previously-acquired
-  // resources and initializations are discarded.  If |suppress_swap_to_display|
-  // then all the usual work is done, except for the final swap of the EGL
-  // surface to the display.  This cuts test times over 50% so is worth doing
-  // when testing non-rendering-related aspects.
-  void Initialize(bool suppress_swap_to_display, int num_windows, int width,
-                  int height, base::WaitableEvent* done);
-
-  // Undo the effects of Initialize() and signal |*done|.
-  void UnInitialize(base::WaitableEvent* done);
-
-  // Return a newly-created GLES2 texture id rendering to a specific window, and
-  // signal |*done|.
-  void CreateTexture(int window_id, GLuint* texture_id,
-                     base::WaitableEvent* done);
-
-  // Render |texture_id| to the screen (unless |suppress_swap_to_display_|).
-  void RenderTexture(GLuint texture_id);
-
-  // Delete |texture_id|.
-  void DeleteTexture(GLuint texture_id);
-
-  // Platform specific Init/Uninit.
-  void PlatformInitialize();
-  void PlatformUnInitialize();
-
-  // Platform specific window creation.
-  EGLNativeWindowType PlatformCreateWindow(int top_left_x, int top_left_y);
-
-  // Platform specific display surface returned here.
-  EGLDisplay PlatformGetDisplay();
-
-  EGLDisplay egl_display() { return egl_display_; }
-
-  EGLContext egl_context() { return egl_context_; }
-
-  MessageLoop* message_loop() { return message_loop_; }
-
- protected:
-  void Clear();
-
-  // We ensure all operations are carried out on the same thread by remembering
-  // where we were Initialized.
-  MessageLoop* message_loop_;
-  int width_;
-  int height_;
-  bool suppress_swap_to_display_;
-
-  EGLDisplay egl_display_;
-  EGLContext egl_context_;
-  std::vector<EGLSurface> egl_surfaces_;
-  std::map<GLuint, int> texture_id_to_surface_index_;
-
-#if defined(OS_WIN)
-  std::vector<HWND> windows_;
-#else  // OS_WIN
-  Display* x_display_;
-  std::vector<Window> x_windows_;
-#endif  // OS_WIN
-};
-
-RenderingHelper::RenderingHelper() {
-  Clear();
-}
-
-RenderingHelper::~RenderingHelper() {
-  CHECK_EQ(width_, 0) << "Must call UnInitialize before dtor.";
-  Clear();
-}
-
-// Helper for Shader creation.
-static void CreateShader(
-    GLuint program, GLenum type, const char* source, int size) {
-  GLuint shader = glCreateShader(type);
-  glShaderSource(shader, 1, &source, &size);
-  glCompileShader(shader);
-  int result = GL_FALSE;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-  if (!result) {
-    char log[4096];
-    glGetShaderInfoLog(shader, arraysize(log), NULL, log);
-    LOG(FATAL) << log;
-  }
-  glAttachShader(program, shader);
-  glDeleteShader(shader);
-  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
-}
-
-void RenderingHelper::Initialize(
-    bool suppress_swap_to_display,
-    int num_windows,
-    int width,
-    int height,
-    base::WaitableEvent* done) {
-  // Use width_ != 0 as a proxy for the class having already been
-  // Initialize()'d, and UnInitialize() before continuing.
-  if (width_) {
-    base::WaitableEvent done(false, false);
-    UnInitialize(&done);
-    done.Wait();
-  }
-
-  suppress_swap_to_display_ = suppress_swap_to_display;
-  CHECK_GT(width, 0);
-  CHECK_GT(height, 0);
-  width_ = width;
-  height_ = height;
-  message_loop_ = MessageLoop::current();
-  CHECK_GT(num_windows, 0);
-
-  PlatformInitialize();
-
-  egl_display_ = PlatformGetDisplay();
-
-  EGLint major;
-  EGLint minor;
-  CHECK(eglInitialize(egl_display_, &major, &minor)) << eglGetError();
-  static EGLint rgba8888[] = {
-    EGL_RED_SIZE, 8,
-    EGL_GREEN_SIZE, 8,
-    EGL_BLUE_SIZE, 8,
-    EGL_ALPHA_SIZE, 8,
-    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-    EGL_NONE,
-  };
-  EGLConfig egl_config;
-  int num_configs;
-  CHECK(eglChooseConfig(egl_display_, rgba8888, &egl_config, 1, &num_configs))
-      << eglGetError();
-  CHECK_GE(num_configs, 1);
-  static EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
-  egl_context_ = eglCreateContext(
-      egl_display_, egl_config, EGL_NO_CONTEXT, context_attribs);
-  CHECK_NE(egl_context_, EGL_NO_CONTEXT) << eglGetError();
-
-  // Per-window/surface X11 & EGL initialization.
-  for (int i = 0; i < num_windows; ++i) {
-    // Arrange X windows whimsically, with some padding.
-    int top_left_x = (width + 20) * (i % 4);
-    int top_left_y = (height + 12) * (i % 3);
-
-    EGLNativeWindowType window = PlatformCreateWindow(top_left_x, top_left_y);
-    EGLSurface egl_surface =
-        eglCreateWindowSurface(egl_display_, egl_config, window, NULL);
-    egl_surfaces_.push_back(egl_surface);
-    CHECK_NE(egl_surface, EGL_NO_SURFACE);
-  }
-  CHECK(eglMakeCurrent(egl_display_, egl_surfaces_[0],
-                       egl_surfaces_[0], egl_context_)) << eglGetError();
-
-  static const float kVertices[] =
-      { -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f, -1.f, };
-  static const float kTextureCoordsEgl[] = { 0, 1, 0, 0, 1, 1, 1, 0, };
-  static const char kVertexShader[] = STRINGIZE(
-      varying vec2 interp_tc;
-      attribute vec4 in_pos;
-      attribute vec2 in_tc;
-      void main() {
-        interp_tc = in_tc;
-        gl_Position = in_pos;
-      }
-                                                );
-  static const char kFragmentShaderEgl[] = STRINGIZE(
-      precision mediump float;
-      varying vec2 interp_tc;
-      uniform sampler2D tex;
-      void main() {
-        gl_FragColor = texture2D(tex, interp_tc);
-      }
-                                                     );
-  GLuint program = glCreateProgram();
-  CreateShader(program, GL_VERTEX_SHADER,
-               kVertexShader, arraysize(kVertexShader));
-  CreateShader(program, GL_FRAGMENT_SHADER,
-               kFragmentShaderEgl, arraysize(kFragmentShaderEgl));
-  glLinkProgram(program);
-  int result = GL_FALSE;
-  glGetProgramiv(program, GL_LINK_STATUS, &result);
-  if (!result) {
-    char log[4096];
-    glGetShaderInfoLog(program, arraysize(log), NULL, log);
-    LOG(FATAL) << log;
-  }
-  glUseProgram(program);
-  glDeleteProgram(program);
-
-  glUniform1i(glGetUniformLocation(program, "tex"), 0);
-  int pos_location = glGetAttribLocation(program, "in_pos");
-  glEnableVertexAttribArray(pos_location);
-  glVertexAttribPointer(pos_location, 2, GL_FLOAT, GL_FALSE, 0, kVertices);
-  int tc_location = glGetAttribLocation(program, "in_tc");
-  glEnableVertexAttribArray(tc_location);
-  glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0,
-                        kTextureCoordsEgl);
-  done->Signal();
-}
-
-void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
-  CHECK_EQ(MessageLoop::current(), message_loop_);
-  CHECK(eglMakeCurrent(egl_display_, EGL_NO_SURFACE, EGL_NO_SURFACE,
-                       EGL_NO_CONTEXT)) << eglGetError();
-  CHECK(eglDestroyContext(egl_display_, egl_context_));
-  for (size_t i = 0; i < egl_surfaces_.size(); ++i)
-    CHECK(eglDestroySurface(egl_display_, egl_surfaces_[i]));
-  CHECK(eglTerminate(egl_display_));
-  Clear();
-  done->Signal();
-}
-
-void RenderingHelper::Clear() {
-  suppress_swap_to_display_ = false;
-  width_ = 0;
-  height_ = 0;
-  texture_id_to_surface_index_.clear();
-  message_loop_ = NULL;
-  egl_display_ = EGL_NO_DISPLAY;
-  egl_context_ = EGL_NO_CONTEXT;
-  egl_surfaces_.clear();
-  PlatformUnInitialize();
-}
-
-void RenderingHelper::CreateTexture(int window_id, GLuint* texture_id,
-                                    base::WaitableEvent* done) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&RenderingHelper::CreateTexture, base::Unretained(this),
-                   window_id, texture_id, done));
-    return;
-  }
-  CHECK(eglMakeCurrent(egl_display_, egl_surfaces_[window_id],
-                       egl_surfaces_[window_id], egl_context_))
-      << eglGetError();
-  glGenTextures(1, texture_id);
-  glBindTexture(GL_TEXTURE_2D, *texture_id);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  // OpenGLES2.0.25 section 3.8.2 requires CLAMP_TO_EDGE for NPOT textures.
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
-  CHECK(texture_id_to_surface_index_.insert(
-      std::make_pair(*texture_id, window_id)).second);
-  done->Signal();
-}
-
-void RenderingHelper::RenderTexture(GLuint texture_id) {
-  CHECK_EQ(MessageLoop::current(), message_loop_);
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, texture_id);
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
-  CHECK_EQ(static_cast<int>(eglGetError()), EGL_SUCCESS);
-  if (!suppress_swap_to_display_) {
-    int window_id = texture_id_to_surface_index_[texture_id];
-    CHECK(eglMakeCurrent(egl_display_, egl_surfaces_[window_id],
-                         egl_surfaces_[window_id], egl_context_))
-        << eglGetError();
-    eglSwapBuffers(egl_display_, egl_surfaces_[window_id]);
-  }
-  CHECK_EQ(static_cast<int>(eglGetError()), EGL_SUCCESS);
-}
-
-void RenderingHelper::DeleteTexture(GLuint texture_id) {
-  glDeleteTextures(1, &texture_id);
-  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
-}
-
-#if defined(OS_WIN)
-void RenderingHelper::PlatformInitialize() {}
-
-void RenderingHelper::PlatformUnInitialize() {
-  for (size_t i = 0; i < windows_.size(); ++i) {
-    DestroyWindow(windows_[i]);
-  }
-  windows_.clear();
-}
-
-EGLNativeWindowType RenderingHelper::PlatformCreateWindow(
-    int top_left_x, int top_left_y) {
-  HWND window = CreateWindowEx(0, L"Static", L"VideoDecodeAcceleratorTest",
-                               WS_OVERLAPPEDWINDOW | WS_VISIBLE, top_left_x,
-                               top_left_y, width_, height_, NULL, NULL, NULL,
-                               NULL);
-  CHECK(window != NULL);
-  windows_.push_back(window);
-  return window;
-}
-
-EGLDisplay RenderingHelper::PlatformGetDisplay() {
-  return eglGetDisplay(EGL_DEFAULT_DISPLAY);
-}
-
-#else  // OS_WIN
-
-void RenderingHelper::PlatformInitialize() {
-  CHECK(x_display_ = base::MessagePumpForUI::GetDefaultXDisplay());
-}
-
-void RenderingHelper::PlatformUnInitialize() {
-  // Destroy resources acquired in Initialize, in reverse-acquisition order.
-  for (size_t i = 0; i < x_windows_.size(); ++i) {
-    CHECK(XUnmapWindow(x_display_, x_windows_[i]));
-    CHECK(XDestroyWindow(x_display_, x_windows_[i]));
-  }
-  // Mimic newly created object.
-  x_display_ = NULL;
-  x_windows_.clear();
-}
-
-EGLDisplay RenderingHelper::PlatformGetDisplay() {
-  return eglGetDisplay(x_display_);
-}
-
-EGLNativeWindowType RenderingHelper::PlatformCreateWindow(int top_left_x,
-                                                          int top_left_y) {
-  int depth = DefaultDepth(x_display_, DefaultScreen(x_display_));
-
-  XSetWindowAttributes window_attributes;
-  window_attributes.background_pixel =
-      BlackPixel(x_display_, DefaultScreen(x_display_));
-  window_attributes.override_redirect = true;
-
-  Window x_window = XCreateWindow(
-      x_display_, DefaultRootWindow(x_display_),
-      top_left_x, top_left_y, width_, height_,
-      0 /* border width */,
-      depth, CopyFromParent /* class */, CopyFromParent /* visual */,
-      (CWBackPixel | CWOverrideRedirect), &window_attributes);
-  x_windows_.push_back(x_window);
-  XStoreName(x_display_, x_window, "VideoDecodeAcceleratorTest");
-  XSelectInput(x_display_, x_window, ExposureMask);
-  XMapWindow(x_display_, x_window);
-  return x_window;
-}
-
-#endif  // OS_WIN
 
 // State of the EglRenderingVDAClient below.  Order matters here as the test
 // makes assumptions about it.
@@ -551,6 +207,8 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
                         int num_play_throughs,
                         int reset_after_frame_num,
                         int delete_decoder_state,
+                        int frame_width,
+                        int frame_height,
                         int profile);
   virtual ~EglRenderingVDAClient();
   void CreateDecoder();
@@ -573,8 +231,6 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   ClientState state() { return state_; }
   int num_done_bitstream_buffers() { return num_done_bitstream_buffers_; }
   int num_decoded_frames() { return num_decoded_frames_; }
-  EGLDisplay egl_display() { return rendering_helper_->egl_display(); }
-  EGLContext egl_context() { return rendering_helper_->egl_context(); }
   double frames_per_second();
   bool decoder_deleted() { return !decoder_; }
 
@@ -613,6 +269,8 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   PictureBufferById picture_buffers_by_id_;
   base::TimeTicks initialize_done_ticks_;
   base::TimeTicks last_frame_delivered_ticks_;
+  int frame_width_;
+  int frame_height_;
   int profile_;
 };
 
@@ -626,6 +284,8 @@ EglRenderingVDAClient::EglRenderingVDAClient(
     int num_play_throughs,
     int reset_after_frame_num,
     int delete_decoder_state,
+    int frame_width,
+    int frame_height,
     int profile)
     : rendering_helper_(rendering_helper),
       rendering_window_id_(rendering_window_id),
@@ -638,6 +298,8 @@ EglRenderingVDAClient::EglRenderingVDAClient(
       delete_decoder_state_(delete_decoder_state),
       state_(CS_CREATED),
       num_decoded_frames_(0), num_done_bitstream_buffers_(0),
+      frame_width_(frame_width),
+      frame_height_(frame_height),
       profile_(profile) {
   CHECK_GT(num_NALUs_per_decode, 0);
   CHECK_GT(num_in_flight_decodes, 0);
@@ -656,10 +318,23 @@ void EglRenderingVDAClient::CreateDecoder() {
 #if defined(OS_WIN)
   scoped_refptr<DXVAVideoDecodeAccelerator> decoder =
       new DXVAVideoDecodeAccelerator(this);
-#else  // OS_WIN
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
   scoped_refptr<OmxVideoDecodeAccelerator> decoder =
       new OmxVideoDecodeAccelerator(this);
-  decoder->SetEglState(egl_display(), egl_context());
+  decoder->SetEglState(
+      static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
+      static_cast<EGLContext>(rendering_helper_->GetGLContext()));
+#elif defined(OS_MACOSX)
+  scoped_refptr<MacVideoDecodeAccelerator> decoder =
+      new MacVideoDecodeAccelerator(this);
+  decoder->SetCGLContext(
+      static_cast<CGLContextObj>(rendering_helper_->GetGLContext()));
+  std::vector<uint8> avc_data(MP4_EXTRA_DATA,
+                                MP4_EXTRA_DATA + arraysize(MP4_EXTRA_DATA));
+  if (!decoder->SetConfigInfo(frame_width_, frame_height_, avc_data)) {
+    SetState(CS_ERROR);
+    return;
+  }
 #endif  // OS_WIN
   decoder_ = decoder.release();
   SetState(CS_DECODER_SET);
@@ -682,7 +357,7 @@ void EglRenderingVDAClient::ProvidePictureBuffers(
 
   for (uint32 i = 0; i < requested_num_of_buffers; ++i) {
     uint32 id = picture_buffers_by_id_.size();
-    GLuint texture_id;
+    uint32 texture_id;
     base::WaitableEvent done(false, false);
     rendering_helper_->CreateTexture(rendering_window_id_, &texture_id, &done);
     done.Wait();
@@ -693,8 +368,6 @@ void EglRenderingVDAClient::ProvidePictureBuffers(
     buffers.push_back(*buffer);
   }
   decoder_->AssignPictureBuffers(buffers);
-  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
-  CHECK_EQ(static_cast<int>(eglGetError()), EGL_SUCCESS);
 }
 
 void EglRenderingVDAClient::DismissPictureBuffer(int32 picture_buffer_id) {
@@ -963,13 +636,13 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
 #endif  // OS_WIN
 
   rendering_thread.StartWithOptions(options);
-  RenderingHelper rendering_helper;
+  scoped_ptr<RenderingHelper> rendering_helper(RenderingHelper::Create());
 
   base::WaitableEvent done(false, false);
   rendering_thread.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&RenderingHelper::Initialize,
-                 base::Unretained(&rendering_helper),
+                 base::Unretained(rendering_helper.get()),
                  suppress_swap_to_display, num_concurrent_decoders,
                  frame_width, frame_height, &done));
   done.Wait();
@@ -979,10 +652,9 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
     ClientStateNotification* note = new ClientStateNotification();
     notes[index] = note;
     EglRenderingVDAClient* client = new EglRenderingVDAClient(
-        &rendering_helper, index,
-        note, data_str, num_NALUs_per_decode,
-        num_in_flight_decodes, num_play_throughs,
-        reset_after_frame_num, delete_decoder_state, profile);
+        rendering_helper.get(), index, note, data_str, num_NALUs_per_decode,
+        num_in_flight_decodes, num_play_throughs, reset_after_frame_num,
+        delete_decoder_state, frame_width, frame_height, profile);
     clients[index] = client;
 
     rendering_thread.message_loop()->PostTask(
@@ -1062,7 +734,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   rendering_thread.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&RenderingHelper::UnInitialize,
-                 base::Unretained(&rendering_helper),
+                 base::Unretained(rendering_helper.get()),
                  &done));
   done.Wait();
   rendering_thread.Stop();
@@ -1156,20 +828,13 @@ int main(int argc, char **argv) {
     }
     LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }
-#if defined(OS_WIN)
+
   base::ShadowingAtExitManager at_exit_manager;
-  gfx::InitializeGLBindings(gfx::kGLImplementationEGLGLES2);
-  gfx::GLSurface::InitializeOneOff();
-  {
-    // Hack to ensure that EGL extension function pointers are initialized.
-    scoped_refptr<gfx::GLSurface> surface(
-        gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1)));
-    scoped_refptr<gfx::GLContext> context(
-        gfx::GLContext::CreateGLContext(NULL, surface.get(),
-                                        gfx::PreferIntegratedGpu));
-    context->MakeCurrent(surface.get());
-  }
+  RenderingHelper::InitializePlatform();
+
+#if defined(OS_WIN)
   DXVAVideoDecodeAccelerator::PreSandboxInitialization();
-#endif  // OS_WIN
+#endif
+
   return RUN_ALL_TESTS();
 }

@@ -313,7 +313,7 @@ enum {
   // the cursor will flicker. Disable cursor rects and grab the current cursor
   // so we can set it on mouseDragged: events to avoid flicker.
   [[self window] disableCursorRects];
-  dragCursor_.reset([NSCursor currentCursor], scoped_policy::RETAIN);
+  dragCursor_.reset([NSCursor currentCursor], base::scoped_policy::RETAIN);
 }
 
 -(void)cleanupAfterDrag {
