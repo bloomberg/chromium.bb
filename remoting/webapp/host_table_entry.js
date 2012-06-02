@@ -221,7 +221,7 @@ remoting.HostTableEntry.prototype.beginRename_ = function() {
   var editBox = /** @type {HTMLInputElement} */ document.createElement('input');
   editBox.type = 'text';
   editBox.value = this.host.hostName;
-  this.hostNameCell_.innerHTML = '';
+  this.hostNameCell_.innerText = '';
   this.hostNameCell_.appendChild(editBox);
   editBox.select();
 
@@ -343,7 +343,7 @@ remoting.HostTableEntry.prototype.setHostName_ = function() {
                                                     this.host.hostName);
   }
   hostNameNode.classList.add('host-list-label');
-  this.hostNameCell_.innerHTML = '';  // Remove previous contents (if any).
+  this.hostNameCell_.innerText = '';  // Remove previous contents (if any).
   this.hostNameCell_.appendChild(hostNameNode);
 };
 

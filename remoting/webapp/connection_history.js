@@ -165,7 +165,7 @@ remoting.ConnectionHistory.prototype.load = function() {
   var history = [];
   // Remove existing entries from the DOM and repopulate.
   // TODO(jamiewalch): Enforce the filter.
-  this.historyEntries_.innerHTML = '';
+  this.historyEntries_.innerText = '';
   for (var i in history) {
     var connection = new remoting.ConnectionHistory.Entry(history[i]);
     if (connection.valid) {

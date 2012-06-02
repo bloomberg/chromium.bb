@@ -171,7 +171,7 @@ remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
  * @return {void} Nothing.
  */
 remoting.HostList.prototype.display = function(thisHostId) {
-  this.table_.innerHTML = '';
+  this.table_.innerText = '';
   this.errorDiv_.innerText = '';
   this.hostTableEntries_ = [];
 

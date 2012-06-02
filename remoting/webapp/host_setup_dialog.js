@@ -227,7 +227,7 @@ remoting.HostSetupDialog.prototype.updateState_ = function() {
     if (opt_tag2) {
       l10n.localizeElementFromTag(messageDiv, opt_tag2);
     } else {
-      messageDiv.innerHTML = '';
+      messageDiv.innerText = '';
     }
     remoting.setMode(remoting.AppMode.HOST_SETUP_DONE);
   }
