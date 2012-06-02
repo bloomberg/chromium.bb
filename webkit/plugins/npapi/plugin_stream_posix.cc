@@ -14,9 +14,12 @@
 namespace webkit {
 namespace npapi {
 
-void PluginStream::ResetTempFilenameAndHandle() {
-  temp_file_path_ = FilePath();
+void PluginStream::ResetTempFileHandle() {
   temp_file_ = NULL;
+}
+
+void PluginStream::ResetTempFileName() {
+  temp_file_path_ = FilePath();
 }
 
 void PluginStream::WriteAsFile() {
@@ -38,7 +41,7 @@ bool PluginStream::OpenTempFile() {
 
   if (!temp_file_) {
     file_util::Delete(temp_file_path_, false);
-    temp_file_path_ = FilePath();
+    ResetTempFileName();
     return false;
   }
   return true;
@@ -49,8 +52,7 @@ void PluginStream::CloseTempFile() {
     return;
 
   file_util::CloseFile(temp_file_);
-  file_util::Delete(temp_file_path_, false);
-  ResetTempFilenameAndHandle();
+  ResetTempFileHandle();
 }
 
 bool PluginStream::TempFileIsValid() const {

@@ -94,8 +94,11 @@ class PluginStream : public base::RefCounted<PluginStream> {
   std::string pending_redirect_url_;
 
  private:
-  // Per platform method to reset the temporary file name and handle.
-  void ResetTempFilenameAndHandle();
+  // Per platform method to reset the temporary file handle.
+  void ResetTempFileHandle();
+
+  // Per platform method to reset the temporary file name.
+  void ResetTempFileName();
 
   // Open a temporary file for this stream.
   // If successful, will set temp_file_name_, temp_file_handle_, and

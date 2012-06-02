@@ -36,7 +36,8 @@ PluginStream::PluginStream(
       seekable_stream_(false) {
   memset(&stream_, 0, sizeof(stream_));
   stream_.url = base::strdup(url);
-  ResetTempFilenameAndHandle();
+  ResetTempFileHandle();
+  ResetTempFileName();
 }
 
 PluginStream::~PluginStream() {

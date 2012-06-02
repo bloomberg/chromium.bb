@@ -10,8 +10,11 @@
 namespace webkit {
 namespace npapi {
 
-void PluginStream::ResetTempFilenameAndHandle() {
+void PluginStream::ResetTempFileHandle() {
   temp_file_handle_ = INVALID_HANDLE_VALUE;
+}
+
+void PluginStream::ResetTempFileName() {
   temp_file_name_[0] = '\0';
 }
 
@@ -57,7 +60,7 @@ bool PluginStream::OpenTempFile() {
                                   FILE_ATTRIBUTE_NORMAL,
                                   0);
   if (temp_file_handle_ == INVALID_HANDLE_VALUE) {
-    temp_file_name_[0] = '\0';
+    ResetTempFileName();
     return false;
   }
   return true;
@@ -68,8 +71,7 @@ void PluginStream::CloseTempFile() {
     return;
 
   CloseHandle(temp_file_handle_);
-  DeleteFileA(temp_file_name_);
-  ResetTempFilenameAndHandle();
+  ResetTempFileHandle();
 }
 
 bool PluginStream::TempFileIsValid() const {
