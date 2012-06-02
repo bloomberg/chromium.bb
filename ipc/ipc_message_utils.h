@@ -141,17 +141,6 @@ class MessageIterator {
       NOTREACHED();
     return val;
   }
-  const std::wstring NextWString() const {
-    std::wstring val;
-    if (!iter_.ReadWString(&val))
-      NOTREACHED();
-    return val;
-  }
-  void NextData(const char** data, int* length) const {
-    if (!iter_.ReadData(data, length)) {
-      NOTREACHED();
-    }
-  }
  private:
   mutable PickleIterator iter_;
 };
@@ -737,53 +726,6 @@ struct ParamTraits<HANDLE> {
     l->append(StringPrintf("0x%X", p));
   }
 };
-
-template <>
-struct ParamTraits<HCURSOR> {
-  typedef HCURSOR param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteUInt32(reinterpret_cast<uint32>(p));
-  }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    DCHECK_EQ(sizeof(param_type), sizeof(uint32));
-    return m->ReadUInt32(iter, reinterpret_cast<uint32*>(r));
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append(StringPrintf("0x%X", p));
-  }
-};
-
-template <>
-struct ParamTraits<HACCEL> {
-  typedef HACCEL param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteUInt32(reinterpret_cast<uint32>(p));
-  }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    DCHECK_EQ(sizeof(param_type), sizeof(uint32));
-    return m->ReadUInt32(iter, reinterpret_cast<uint32*>(r));
-  }
-};
-
-template <>
-struct ParamTraits<POINT> {
-  typedef POINT param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p.x);
-    m->WriteInt(p.y);
-  }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    int x, y;
-    if (!m->ReadInt(iter, &x) || !m->ReadInt(iter, &y))
-      return false;
-    r->x = x;
-    r->y = y;
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append(StringPrintf("(%d, %d)", p.x, p.y));
-  }
-};
 #endif  // defined(OS_WIN)
 
 template <>
@@ -829,32 +771,6 @@ struct IPC_EXPORT ParamTraits<IPC::ChannelHandle> {
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
-
-#if defined(OS_WIN)
-template <>
-struct ParamTraits<XFORM> {
-  typedef XFORM param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteData(reinterpret_cast<const char*>(&p), sizeof(XFORM));
-  }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    const char *data;
-    int data_size = 0;
-    bool result = m->ReadData(iter, &data, &data_size);
-    if (result && data_size == sizeof(XFORM)) {
-      memcpy(r, data, sizeof(XFORM));
-    } else {
-      result = false;
-      NOTREACHED();
-    }
-
-    return result;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("<XFORM>");
-  }
-};
-#endif  // defined(OS_WIN)
 
 struct IPC_EXPORT LogData {
   LogData();
