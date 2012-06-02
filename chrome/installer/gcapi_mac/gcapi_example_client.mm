@@ -14,6 +14,7 @@ void Usage() {
 "usage: gcapi_example [options]\n"
 "\n"
 "options:\n"
+"  --criteria-check    exit after criteria check\n"
 "  --force-reinstall   delete Google Chrome from Applications first\n"
 "  --install <path>    copy <path> to /Applications/Google Chrome.app, set up\n"
 "  --brand <CODE>      set brandcode to <CODE> during installation\n"
@@ -34,11 +35,16 @@ int main(int argc, char* argv[]) {
 
   std::string source_path;
   std::string brand_code;
+  bool check_only = false;
   bool reinstall = false;
   bool launch = false;
   int opt;
-  while ((opt = getopt_long(argc, argv, "ri:b:lh", kLongOptions, NULL)) != -1) {
+  while ((opt = getopt_long(argc, argv, "cri:b:lh", kLongOptions, NULL))
+         != -1) {
     switch (opt) {
+      case 'c':
+        check_only = true;
+        break;
       case 'r':
         reinstall = true;
         break;
@@ -66,6 +72,8 @@ int main(int argc, char* argv[]) {
   unsigned reasons;
   int can_install = GoogleChromeCompatibilityCheck(&reasons);
   NSLog(@"can_install: %d, reasons %x", can_install, reasons);
+  if (check_only)
+    return 0;
 
   if (can_install && !source_path.empty()) {
     int install_result = InstallGoogleChrome(
