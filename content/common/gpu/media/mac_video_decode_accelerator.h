@@ -12,6 +12,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
+#include "content/common/content_export.h"
 #include "media/video/video_decode_accelerator.h"
 
 namespace base {
