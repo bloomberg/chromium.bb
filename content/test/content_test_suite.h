@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/win/scoped_com_initializer.h"
-#include "content/test/content_test_suite_base.h"
+#include "content/public/test/content_test_suite_base.h"
 
 #if defined(USE_AURA)
 namespace aura {

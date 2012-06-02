@@ -12,9 +12,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/web_dialogs/web_dialog_observer.h"
 
-class JsInjectionReadyObserver;
 
 namespace content {
+class JsInjectionReadyObserver;
 class RenderViewHost;
 class WebUI;
 }
@@ -29,7 +29,7 @@ class TestWebDialogObserver : public content::NotificationObserver,
   // |js_injection_ready_observer| is non-NULL, notify it as soon as the RVH is
   // available.
   explicit TestWebDialogObserver(
-      JsInjectionReadyObserver* js_injection_ready_observer);
+      content::JsInjectionReadyObserver* js_injection_ready_observer);
   virtual ~TestWebDialogObserver();
 
   // Overridden from WebDialogObserver:
@@ -51,7 +51,7 @@ class TestWebDialogObserver : public content::NotificationObserver,
 
   // Observer to take some action when the dialog is ready for JavaScript
   // injection.
-  JsInjectionReadyObserver* js_injection_ready_observer_;
+  content::JsInjectionReadyObserver* js_injection_ready_observer_;
   content::WebUI* web_ui_;
   bool done_;
   bool running_;

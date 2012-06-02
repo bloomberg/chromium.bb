@@ -10,9 +10,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
-#include "content/test/test_navigation_observer.h"
 #include "net/base/net_errors.h"
 
 using content::BrowserThread;
@@ -87,10 +87,10 @@ class ErrorPageTest : public InProcessBrowserTest {
         browser()->GetSelectedWebContents(),
         ASCIIToUTF16(expected_title));
 
-    TestNavigationObserver test_navigation_observer(
-      content::Source<NavigationController>(
-            &browser()->GetSelectedTabContentsWrapper()->web_contents()->
-                GetController()),
+    content::TestNavigationObserver test_navigation_observer(
+        content::Source<NavigationController>(
+              &browser()->GetSelectedTabContentsWrapper()->web_contents()->
+                  GetController()),
         NULL,
         num_navigations);
     if (direction == HISTORY_NAVIGATE_BACK) {

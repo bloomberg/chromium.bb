@@ -27,6 +27,9 @@
       'sources': [
         'public/test/accessibility_test_utils_win.h',
         'public/test/browser_test.h',
+        'public/test/content_test_suite_base.h',
+        'public/test/js_injection_ready_observer.h',
+        'public/test/test_navigation_observer.h',
         # TODO(phajdan.jr): All of those files should live in content/test (if
         # they're only used by content) or content/public/test (if they're used
         # by other embedders).
@@ -60,12 +63,10 @@
         'test/content_test_suite.cc',
         'test/content_test_suite.h',
         'test/content_test_suite_base.cc',
-        'test/content_test_suite_base.h',
         'test/gpu/gpu_test_config.cc',
         'test/gpu/gpu_test_config.h',
         'test/gpu/gpu_test_expectations_parser.cc',
         'test/gpu/gpu_test_expectations_parser.h',
-        'test/js_injection_ready_observer.h',
         'test/mock_download_item.cc',
         'test/mock_download_item.h',
         'test/mock_download_manager.cc',
@@ -101,7 +102,6 @@
         'test/test_file_error_injector.cc',
         'test/test_file_error_injector.h',
         'test/test_navigation_observer.cc',
-        'test/test_navigation_observer.h',
         'test/test_notification_tracker.cc',
         'test/test_notification_tracker.h',
         'test/test_renderer_host.cc',

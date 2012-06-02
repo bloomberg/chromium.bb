@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/content_test_suite_base.h"
+#include "content/public/test/content_test_suite_base.h"
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

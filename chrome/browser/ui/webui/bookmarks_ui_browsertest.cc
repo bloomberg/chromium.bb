@@ -11,7 +11,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/test_navigation_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 
 class BookmarksTest : public InProcessBrowserTest {
  public:
@@ -20,7 +20,7 @@ class BookmarksTest : public InProcessBrowserTest {
   }
 
   void OpenBookmarksManager() {
-    TestNavigationObserver navigation_observer(
+    content::TestNavigationObserver navigation_observer(
         content::NotificationService::AllSources(), NULL, 2);
 
     // Bring up the bookmarks manager tab.
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(BookmarksTest, CommandAgainGoesBackToBookmarksTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarksTest, TwoCommandsOneTab) {
-  TestNavigationObserver navigation_observer(
+  content::TestNavigationObserver navigation_observer(
       content::NotificationService::AllSources());
   browser()->OpenBookmarkManager();
   browser()->OpenBookmarkManager();

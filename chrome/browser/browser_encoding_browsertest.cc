@@ -19,8 +19,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/test/net/url_request_mock_http_job.h"
-#include "content/test/test_navigation_observer.h"
 
 using content::BrowserThread;
 
@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   // Override the encoding to "gb18030".
   const std::string selected_encoding =
       CharacterEncoding::GetCanonicalEncodingNameByAliasName("gb18030");
-  TestNavigationObserver navigation_observer(
+  content::TestNavigationObserver navigation_observer(
       content::Source<content::NavigationController>(
           &web_contents->GetController()));
   web_contents->SetOverrideEncoding(selected_encoding);
@@ -277,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
     browser()->profile()->GetPrefs()->SetBoolean(
         prefs::kWebKitUsesUniversalDetector, true);
 
-    TestNavigationObserver observer(
+    content::TestNavigationObserver observer(
         content::Source<content::NavigationController>(
             &web_contents->GetController()));
     browser()->Reload(CURRENT_TAB);

@@ -60,7 +60,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/geoposition.h"
-#include "content/test/test_navigation_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "net/test/python_utils.h"
@@ -326,7 +326,7 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title) {
 
 void WaitForNavigations(NavigationController* controller,
                         int number_of_navigations) {
-  TestNavigationObserver observer(
+  content::TestNavigationObserver observer(
       content::Source<NavigationController>(controller), NULL,
       number_of_navigations);
   observer.WaitForObservation(
@@ -386,7 +386,7 @@ void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 }
 
 void NavigateToURL(browser::NavigateParams* params) {
-  TestNavigationObserver observer(
+  content::TestNavigationObserver observer(
       content::NotificationService::AllSources(), NULL, 1);
   browser::Navigate(params);
   observer.WaitForObservation(
@@ -416,7 +416,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
   NavigationController* controller =
       browser->GetSelectedWebContents() ?
       &browser->GetSelectedWebContents()->GetController() : NULL;
-  TestNavigationObserver same_tab_observer(
+  content::TestNavigationObserver same_tab_observer(
       content::Source<NavigationController>(controller),
       NULL,
       number_of_navigations);

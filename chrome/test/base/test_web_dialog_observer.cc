@@ -4,7 +4,6 @@
 
 #include "chrome/test/base/test_web_dialog_observer.h"
 
-#include "content/test/js_injection_ready_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/navigation_controller.h"
@@ -13,11 +12,12 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/test/js_injection_ready_observer.h"
 
 using content::NavigationController;
 
 TestWebDialogObserver::TestWebDialogObserver(
-    JsInjectionReadyObserver* js_injection_ready_observer)
+    content::JsInjectionReadyObserver* js_injection_ready_observer)
     : js_injection_ready_observer_(js_injection_ready_observer),
       web_ui_(NULL),
       done_(false),

@@ -11,7 +11,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/test/test_navigation_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 
 namespace {
 
@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
   ASSERT_TRUE(
       browser()->command_updater()->IsCommandEnabled(IDC_ADVANCED_PRINT));
 
-  TestNavigationObserver reload_observer(
+  content::TestNavigationObserver reload_observer(
       content::NotificationService::AllSources());
   browser()->Reload(CURRENT_TAB);
   reload_observer.Wait();

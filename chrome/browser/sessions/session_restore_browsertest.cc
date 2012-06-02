@@ -31,7 +31,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
-#include "content/test/test_navigation_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -108,7 +108,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
 
     // Create a new window, which should trigger session restore.
     ui_test_utils::BrowserAddedObserver window_observer;
-    TestNavigationObserver navigation_observer(
+    content::TestNavigationObserver navigation_observer(
         content::NotificationService::AllSources(), NULL, expected_tab_count);
     Browser::NewEmptyWindow(profile);
     Browser* new_browser = window_observer.WaitForSingleNewBrowser();

@@ -56,10 +56,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "content/test/net/url_request_slow_download_job.h"
 #include "content/test/test_file_error_injector.h"
-#include "content/test/test_navigation_observer.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -971,7 +971,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
 
   // Try to start the download via Javascript and wait for the corresponding
   // load stop event.
-  TestNavigationObserver observer(
+  content::TestNavigationObserver observer(
       content::Source<content::NavigationController>(
           &web_contents->GetController()),
       NULL,

@@ -23,7 +23,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/test_navigation_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/base/mock_host_resolver.h"
 
 using content::NavigationController;
@@ -481,10 +481,10 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromExtension) {
   // 1. The extension launcher page.
   // 2. The URL that the extension launches, which redirects.
   // 3. The app's URL.
-  TestNavigationObserver test_navigation_observer(
-        content::NotificationService::AllSources(),
-        NULL,
-        3);
+  content::TestNavigationObserver test_navigation_observer(
+      content::NotificationService::AllSources(),
+      NULL,
+      3);
 
   // Load the launcher extension, which should launch the app.
   ui_test_utils::NavigateToURLWithDisposition(

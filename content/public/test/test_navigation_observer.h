@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_TEST_NAVIGATION_OBSERVER_H_
-#define CONTENT_TEST_TEST_NAVIGATION_OBSERVER_H_
+#ifndef CONTENT_PUBLIC_TEST_TEST_NAVIGATION_OBSERVER_H_
+#define CONTENT_PUBLIC_TEST_TEST_NAVIGATION_OBSERVER_H_
 #pragma once
 
 #include "base/callback.h"
@@ -12,6 +12,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace content {
+
 class JsInjectionReadyObserver;
 
 // For browser_tests, which run on the UI thread, run a second
@@ -19,7 +21,7 @@ class JsInjectionReadyObserver;
 // WebUI tests that need to inject javascript, construct with a
 // JsInjectionReadyObserver and this class will call its
 // OnJsInjectionReady() at the appropriate time.
-class TestNavigationObserver : public content::NotificationObserver {
+class TestNavigationObserver : public NotificationObserver {
  public:
   class RVHOSendJS;
 
@@ -28,11 +30,11 @@ class TestNavigationObserver : public content::NotificationObserver {
   // OnEntryCommitted() after |number_of_navigations| navigations.
   // Note: |js_injection_ready_observer| is owned by the caller and should be
   // valid until this class is destroyed.
-  TestNavigationObserver(const content::NotificationSource& source,
+  TestNavigationObserver(const NotificationSource& source,
                          JsInjectionReadyObserver* js_injection_ready_observer,
                          int number_of_navigations);
   // Like above but waits for one navigation.
-  explicit TestNavigationObserver(const content::NotificationSource& source);
+  explicit TestNavigationObserver(const NotificationSource& source);
 
   virtual ~TestNavigationObserver();
 
@@ -51,14 +53,14 @@ class TestNavigationObserver : public content::NotificationObserver {
       int number_of_navigations);
 
   // Register this TestNavigationObserver as an observer of the |source|.
-  void RegisterAsObserver(const content::NotificationSource& source);
+  void RegisterAsObserver(const NotificationSource& source);
 
  private:
-  // content::NotificationObserver:
-  virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // NotificationObserver:
+  virtual void Observe(int type, const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
-  content::NotificationRegistrar registrar_;
+  NotificationRegistrar registrar_;
 
   // If true the navigation has started.
   bool navigation_started_;
@@ -90,4 +92,6 @@ class TestNavigationObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(TestNavigationObserver);
 };
 
-#endif  // CONTENT_TEST_TEST_NAVIGATION_OBSERVER_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_TEST_TEST_NAVIGATION_OBSERVER_H_

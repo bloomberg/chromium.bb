@@ -14,7 +14,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/test_navigation_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/test/test_server.h"
 
 typedef InProcessBrowserTest RepostFormWarningTest;
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
   // because that waits for the current page to stop loading first, which won't
   // happen while the auth dialog is up.
   content::Source<content::NavigationController> source(&controller);
-  TestNavigationObserver navigation_observer(source);
+  content::TestNavigationObserver navigation_observer(source);
   browser()->OpenURL(content::OpenURLParams(
         test_server()->GetURL("bar"), content::Referrer(), CURRENT_TAB,
         content::PAGE_TRANSITION_TYPED, false));

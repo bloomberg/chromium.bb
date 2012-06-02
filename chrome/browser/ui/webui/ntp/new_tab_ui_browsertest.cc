@@ -12,7 +12,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/test_navigation_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "googleurl/src/gurl.h"
 
 using content::OpenURLParams;
@@ -144,7 +144,8 @@ IN_PROC_BROWSER_TEST_F(NewTabUIProcessPerTabTest, NavBeforeNTPCommits) {
 
   // We don't use ui_test_utils::NavigateToURLWithDisposition because that waits
   // for current loading to stop.
-  TestNavigationObserver observer(content::NotificationService::AllSources());
+  content::TestNavigationObserver observer(
+      content::NotificationService::AllSources());
   browser()->OpenURL(OpenURLParams(
       GURL("data:text/html,hello world"), Referrer(), CURRENT_TAB,
       content::PAGE_TRANSITION_TYPED, false));

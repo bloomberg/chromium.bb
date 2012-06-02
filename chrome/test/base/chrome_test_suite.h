@@ -10,7 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/test/content_test_suite_base.h"
+#include "content/public/test/content_test_suite_base.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"

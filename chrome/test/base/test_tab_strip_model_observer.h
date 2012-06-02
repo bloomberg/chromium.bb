@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "content/test/test_navigation_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 
 class TabStripModel;
 
@@ -19,14 +19,14 @@ class TabStripModel;
 // the framework & registration javascript before the webui page loads by
 // calling back through the TestTabStripModelObserver::LoadStartObserver when
 // the new page starts loading.
-class TestTabStripModelObserver : public TestNavigationObserver,
+class TestTabStripModelObserver : public content::TestNavigationObserver,
                                   public TabStripModelObserver {
  public:
   // Observe the |tab_strip_model|, which may not be NULL. If
   // |load_start_observer| is non-NULL, notify when the page load starts.
   TestTabStripModelObserver(
       TabStripModel* tab_strip_model,
-      JsInjectionReadyObserver* js_injection_ready_observer);
+      content::JsInjectionReadyObserver* js_injection_ready_observer);
   virtual ~TestTabStripModelObserver();
 
  private:

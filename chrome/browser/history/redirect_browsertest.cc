@@ -24,7 +24,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/test_navigation_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 #include "ui/base/events.h"
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientCancelled) {
   ui_test_utils::NavigateToURL(browser(), first_url);
 
   content::WebContents* web_contents = browser()->GetSelectedWebContents();
-  TestNavigationObserver navigation_observer(
+  content::TestNavigationObserver navigation_observer(
       content::Source<content::NavigationController>(
           &web_contents->GetController()));
 
@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest,
       "client-redirect?" + slow.spec());
 
   content::WebContents* web_contents = browser()->GetSelectedWebContents();
-  TestNavigationObserver observer(
+  content::TestNavigationObserver observer(
       content::Source<content::NavigationController>(
           &web_contents->GetController()),
       NULL, 2);
