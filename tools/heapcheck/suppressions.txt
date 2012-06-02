@@ -711,12 +711,6 @@
    fun:BackgroundApplicationListModelTest_Load*Extension*_Test::TestBody
 }
 {
-   bug_73828
-   Heapcheck:Leak
-   ...
-   fun:GpuProcessHostUIShim::GetForRenderer
-}
-{
    bug_77376_a
    Heapcheck:Leak
    ...
