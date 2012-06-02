@@ -47,11 +47,6 @@
 #include <signal.h>
 #endif
 
-#if defined(CHROMIUM_SELINUX)
-#include <selinux/selinux.h>
-#include <selinux/context.h>
-#endif
-
 namespace content {
 
 // See http://code.google.com/p/chromium/wiki/LinuxZygote
@@ -62,26 +57,6 @@ static const char kUrandomDevPath[] = "/dev/urandom";
 // over which we can signal that we have completed our startup and can be
 // chrooted.
 static const char kSUIDSandboxVar[] = "SBX_D";
-
-#if defined(CHROMIUM_SELINUX)
-static void SELinuxTransitionToTypeOrDie(const char* type) {
-  security_context_t security_context;
-  if (getcon(&security_context))
-    LOG(FATAL) << "Cannot get SELinux context";
-
-  context_t context = context_new(security_context);
-  context_type_set(context, type);
-  const int r = setcon(context_str(context));
-  context_free(context);
-  freecon(security_context);
-
-  if (r) {
-    LOG(FATAL) << "dynamic transition to type '" << type << "' failed. "
-                  "(this binary has been built with SELinux support, but maybe "
-                  "the policies haven't been loaded into the kernel?)";
-  }
-}
-#endif  // CHROMIUM_SELINUX
 
 // With SELinux we can carve out a precise sandbox, so we don't have to play
 // with intercepting libc calls.

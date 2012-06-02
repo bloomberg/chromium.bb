@@ -31,6 +31,11 @@
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/zygote_commands_linux.h"
 
+#if defined(CHROMIUM_SELINUX)
+#include <selinux/selinux.h>
+#include <selinux/context.h>
+#endif
+
 // See http://code.google.com/p/chromium/wiki/LinuxZygote
 
 namespace content {
@@ -40,6 +45,26 @@ namespace {
 // NOP function. See below where this handler is installed.
 void SIGCHLDHandler(int signal) {
 }
+
+#if defined(CHROMIUM_SELINUX)
+void SELinuxTransitionToTypeOrDie(const char* type) {
+  security_context_t security_context;
+  if (getcon(&security_context))
+    LOG(FATAL) << "Cannot get SELinux context";
+
+  context_t context = context_new(security_context);
+  context_type_set(context, type);
+  const int r = setcon(context_str(context));
+  context_free(context);
+  freecon(security_context);
+
+  if (r) {
+    LOG(FATAL) << "dynamic transition to type '" << type << "' failed. "
+                  "(this binary has been built with SELinux support, but maybe "
+                  "the policies haven't been loaded into the kernel?)";
+  }
+}
+#endif  // CHROMIUM_SELINUX
 
 }  // namespace
 
