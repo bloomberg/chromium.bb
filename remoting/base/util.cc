@@ -265,4 +265,42 @@ void CopyRGB32Rect(const uint8* source_buffer,
            SkIRect::MakeWH(dest_rect.width(), dest_rect.height()));
 }
 
+std::string ReplaceLfByCrLf(const std::string& in) {
+  std::string out;
+  out.resize(2 * in.size());
+  char* out_p_begin = &out[0];
+  char* out_p = out_p_begin;
+  const char* in_p_begin = &in[0];
+  const char* in_p_end = &in[in.size()];
+  for (const char* in_p = in_p_begin; in_p < in_p_end; ++in_p) {
+    char c = *in_p;
+    if (c == '\n') {
+      *out_p++ = '\r';
+    }
+    *out_p++ = c;
+  }
+  out.resize(out_p - out_p_begin);
+  return out;
+}
+
+std::string ReplaceCrLfByLf(const std::string& in) {
+  std::string out;
+  out.resize(in.size());
+  char* out_p_begin = &out[0];
+  char* out_p = out_p_begin;
+  const char* in_p_begin = &in[0];
+  const char* in_p_end = &in[in.size()];
+  for (const char* in_p = in_p_begin; in_p < in_p_end; ++in_p) {
+    char c = *in_p;
+    if ((c == '\r') && (in_p + 1 < in_p_end) && (*(in_p + 1) == '\n')) {
+      *out_p++ = '\n';
+      ++in_p;
+    } else {
+      *out_p++ = c;
+    }
+  }
+  out.resize(out_p - out_p_begin);
+  return out;
+}
+
 }  // namespace remoting

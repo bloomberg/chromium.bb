@@ -17,6 +17,7 @@
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/util.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 
@@ -202,7 +203,7 @@ void ClipboardWin::InjectClipboardEvent(
   if (event.mime_type().compare(kMimeTypeTextUtf8)) {
     return;
   }
-  string16 text = UTF8ToUTF16(event.data());
+  string16 text = UTF8ToUTF16(ReplaceLfByCrLf(event.data()));
 
   ScopedClipboard clipboard;
   if (!clipboard.Init(hwnd_)) {
@@ -259,7 +260,7 @@ void ClipboardWin::OnClipboardUpdate() {
 
     protocol::ClipboardEvent event;
     event.set_mime_type(kMimeTypeTextUtf8);
-    event.set_data(UTF16ToUTF8(text));
+    event.set_data(ReplaceCrLfByLf(UTF16ToUTF8(text)));
 
     if (client_clipboard_.get()) {
       client_clipboard_->InjectClipboardEvent(event);

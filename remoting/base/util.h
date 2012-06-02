@@ -82,6 +82,12 @@ void CopyRGB32Rect(const uint8* source_buffer,
                    const SkIRect& dest_buffer_rect,
                    const SkIRect& dest_rect);
 
+// Replaces every occurrence of "\n" in a string by "\r\n".
+std::string ReplaceLfByCrLf(const std::string& in);
+
+// Replaces every occurrence of "\r\n" in a string by "\n".
+std::string ReplaceCrLfByLf(const std::string& in);
+
 }  // namespace remoting
 
 #endif  // REMOTING_BASE_UTIL_H_
