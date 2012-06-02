@@ -19,7 +19,7 @@ TEST(NetLog, ScopedNetLogEventTest) {
   scoped_ptr<ScopedNetLogEvent> net_log_event(
       new ScopedNetLogEvent(net_log, NetLog::TYPE_REQUEST_ALIVE, NULL));
 
-  CapturingNetLog::EntryList entries;
+  CapturingNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_EQ(1u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0, NetLog::TYPE_REQUEST_ALIVE));
