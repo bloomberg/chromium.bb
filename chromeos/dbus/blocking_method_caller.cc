@@ -13,23 +13,10 @@ namespace chromeos {
 
 namespace {
 
-// A utility class to ensure the WaitableEvent is signaled.
-class WaitableEventSignaler {
- public:
-  explicit WaitableEventSignaler(base::WaitableEvent* event) : event_(event) {}
-
-  ~WaitableEventSignaler() {
-    event_->Signal();
-  }
-
- private:
-  base::WaitableEvent* event_;
-};
-
 // This function is a part of CallMethodAndBlock implementation.
 void CallMethodAndBlockInternal(
     dbus::Response** response,
-    WaitableEventSignaler* signaler,
+    base::ScopedClosureRunner* signaler,
     dbus::ObjectProxy* proxy,
     dbus::MethodCall* method_call) {
   *response = proxy->CallMethodAndBlock(
@@ -51,8 +38,14 @@ BlockingMethodCaller::~BlockingMethodCaller() {
 
 dbus::Response* BlockingMethodCaller::CallMethodAndBlock(
     dbus::MethodCall* method_call) {
-  WaitableEventSignaler* signaler =
-      new WaitableEventSignaler(&on_blocking_method_call_);
+  // on_blocking_method_call_->Signal() will be called when |signaler| is
+  // destroyed.
+  base::Closure signal_task(
+      base::Bind(&base::WaitableEvent::Signal,
+                 base::Unretained(&on_blocking_method_call_)));
+  base::ScopedClosureRunner* signaler =
+      new base::ScopedClosureRunner(signal_task);
+
   dbus::Response* response = NULL;
   bus_->PostTaskToDBusThread(
       FROM_HERE,
