@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_views.h"
+#include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views.h"
 
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
@@ -192,3 +193,12 @@ void ChromeWebContentsViewDelegateViews::SetInitialFocus() {
     web_contents_->GetView()->Focus();
   }
 }
+
+namespace browser {
+
+content::WebContentsViewDelegate* CreateWebContentsViewDelegate(
+    content::WebContents* web_contents) {
+  return new ChromeWebContentsViewDelegateViews(web_contents);
+}
+
+}  // namespace browser

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_MAC_H_
-#define CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_MAC_H_
+#ifndef CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_MAC_H_
+#define CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_MAC_H_
 #pragma once
 
 #if defined(__OBJC__)
@@ -50,15 +50,4 @@ class ChromeWebContentsViewDelegateMac
 
 #endif  // __OBJC__
 
-namespace content {
-class WebContents;
-class WebContentsViewMacDelegate;
-}
-
-namespace chrome_web_contents_view_delegate_mac {
-// Creates a ChromeWebContentsViewDelegateMac.
-content::WebContentsViewDelegate* CreateWebContentsViewDelegateMac(
-    content::WebContents* web_contents);
-}
-
-#endif  // CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_MAC_H_
+#endif  // CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_MAC_H_

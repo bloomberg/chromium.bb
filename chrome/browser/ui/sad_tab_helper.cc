@@ -19,8 +19,8 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 #include "chrome/browser/ui/gtk/sad_tab_gtk.h"
+#include "chrome/browser/ui/gtk/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 #endif
 
 using content::WebContents;

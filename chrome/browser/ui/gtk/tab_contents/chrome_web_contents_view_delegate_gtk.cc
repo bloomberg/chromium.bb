@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_gtk.h"
+#include "chrome/browser/ui/gtk/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 
 #include <map>
 
@@ -11,6 +11,7 @@
 #include "chrome/browser/tab_contents/render_view_context_menu_gtk.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_gtk.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
+#include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -177,3 +178,12 @@ void ChromeWebContentsViewDelegateGtk::OnSetFloatingPosition(
                                    widget, "y", &value);
   g_value_unset(&value);
 }
+
+namespace browser {
+
+content::WebContentsViewDelegate* CreateWebContentsViewDelegate(
+    content::WebContents* web_contents) {
+  return new ChromeWebContentsViewDelegateGtk(web_contents);
+}
+
+}  // namespace browser

@@ -12,14 +12,13 @@
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/gtk/focus_store_gtk.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
-
-#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 
 using content::BrowserThread;
 
@@ -35,7 +34,8 @@ bool ConstrainedWindowGtkDelegate::ShouldHaveBorderPadding() const {
 }
 
 ConstrainedWindowGtk::ConstrainedWindowGtk(
-    TabContentsWrapper* wrapper, ConstrainedWindowGtkDelegate* delegate)
+    TabContentsWrapper* wrapper,
+    ConstrainedWindowGtkDelegate* delegate)
     : wrapper_(wrapper),
       delegate_(delegate),
       visible_(false),

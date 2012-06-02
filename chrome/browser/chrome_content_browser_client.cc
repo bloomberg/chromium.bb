@@ -65,6 +65,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
+#include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
@@ -106,7 +107,6 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
-#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -116,18 +116,11 @@
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
 
-#if defined(USE_AURA) || defined(OS_WIN)
-#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_views.h"
-#endif
-
 #if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_ANDROID)
 #include "base/linux_util.h"
 #include "chrome/browser/crash_handler_host_linuxish.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_gtk.h"
-#endif
 #if defined(USE_NSS)
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #endif
@@ -380,17 +373,7 @@ content::WebContentsView*
 content::WebContentsViewDelegate*
     ChromeContentBrowserClient::GetWebContentsViewDelegate(
         content::WebContents* web_contents) {
-#if defined(USE_AURA) || defined(OS_WIN)
-  return new ChromeWebContentsViewDelegateViews(web_contents);
-#elif defined(TOOLKIT_GTK)
-  return new ChromeWebContentsViewDelegateGtk(web_contents);
-#elif defined(OS_MACOSX)
-  return
-      chrome_web_contents_view_delegate_mac::CreateWebContentsViewDelegateMac(
-          web_contents);
-#else
-  return NULL;
-#endif
+  return browser::CreateWebContentsViewDelegate(web_contents);
 }
 
 void ChromeContentBrowserClient::RenderViewHostCreated(
