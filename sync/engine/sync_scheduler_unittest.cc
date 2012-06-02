@@ -106,14 +106,14 @@ class SyncSchedulerTest : public testing::Test {
 
     connection_.reset(new MockConnectionManager(directory()));
     connection_->SetServerReachable();
-    context_ = new SyncSessionContext(
-        connection_.get(), directory(), routing_info, workers,
-        &extensions_activity_monitor_,
-        std::vector<SyncEngineEventListener*>(), NULL, NULL);
+    context_.reset(new SyncSessionContext(
+            connection_.get(), directory(), routing_info, workers,
+            &extensions_activity_monitor_,
+            std::vector<SyncEngineEventListener*>(), NULL, NULL));
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
     scheduler_.reset(
-        new SyncScheduler("TestSyncScheduler", context_, syncer_));
+        new SyncScheduler("TestSyncScheduler", context(), syncer_));
   }
 
   SyncScheduler* scheduler() { return scheduler_.get(); }
@@ -196,7 +196,7 @@ class SyncSchedulerTest : public testing::Test {
     return true;
   }
 
-  SyncSessionContext* context() { return context_; }
+  SyncSessionContext* context() { return context_.get(); }
 
  private:
   syncable::Directory* directory() {
@@ -206,9 +206,9 @@ class SyncSchedulerTest : public testing::Test {
   base::WeakPtrFactory<SyncSchedulerTest> weak_ptr_factory_;
   MessageLoop message_loop_;
   TestDirectorySetterUpper dir_maker_;
-  scoped_ptr<SyncScheduler> scheduler_;
   scoped_ptr<MockConnectionManager> connection_;
-  SyncSessionContext* context_;
+  scoped_ptr<SyncSessionContext> context_;
+  scoped_ptr<SyncScheduler> scheduler_;
   MockSyncer* syncer_;
   MockDelayProvider* delay_;
   std::vector<scoped_refptr<FakeModelWorker> > workers_;

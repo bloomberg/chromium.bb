@@ -44,15 +44,15 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
     }
 
     connection_.reset(new MockConnectionManager(NULL));
-    context_ =
+    context_.reset(
         new SyncSessionContext(
             connection_.get(), dir_maker_.directory(),
             routes, workers, &extensions_activity_monitor_,
-            std::vector<SyncEngineEventListener*>(), NULL, NULL);
+            std::vector<SyncEngineEventListener*>(), NULL, NULL));
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
     scheduler_.reset(
-        new SyncScheduler("TestSyncSchedulerWhitebox", context_, syncer));
+        new SyncScheduler("TestSyncSchedulerWhitebox", context(), syncer));
   }
 
   virtual void TearDown() {
@@ -108,18 +108,19 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
     return DecideOnJob(job);
   }
 
-  SyncSessionContext* context() { return context_; }
-
- protected:
-  scoped_ptr<SyncScheduler> scheduler_;
+  SyncSessionContext* context() { return context_.get(); }
 
  private:
   MessageLoop message_loop_;
   scoped_ptr<MockConnectionManager> connection_;
-  SyncSessionContext* context_;
+  scoped_ptr<SyncSessionContext> context_;
   std::vector<scoped_refptr<FakeModelWorker> > workers_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
   TestDirectorySetterUpper dir_maker_;
+
+ protected:
+  // Declared here to ensure it is destructed before the objects it references.
+  scoped_ptr<SyncScheduler> scheduler_;
 };
 
 TEST_F(SyncSchedulerWhiteboxTest, SaveNudge) {
