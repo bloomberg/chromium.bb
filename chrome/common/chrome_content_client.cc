@@ -74,10 +74,6 @@ const FilePath::CharType kRemotingViewerPluginPath[] =
 // Use a consistent MIME-type regardless of branding.
 const char kRemotingViewerPluginMimeType[] =
     "application/vnd.chromium.remoting-viewer";
-// TODO(garykac): Remove the old MIME-type once client code no longer needs it.
-// Tracked in crbug.com/112532.
-const char kRemotingViewerPluginOldMimeType[] =
-    "pepper-application/x-chromoting";
 #endif
 
 // Appends the known built-in plugins to the given vector. Some built-in
@@ -181,11 +177,6 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       std::string(),
       std::string());
   info.mime_types.push_back(remoting_mime_type);
-  webkit::WebPluginMimeType old_remoting_mime_type(
-      kRemotingViewerPluginOldMimeType,
-      std::string(),
-      std::string());
-  info.mime_types.push_back(old_remoting_mime_type);
   info.internal_entry_points.get_interface = remoting::PPP_GetInterface;
   info.internal_entry_points.initialize_module =
       remoting::PPP_InitializeModule;

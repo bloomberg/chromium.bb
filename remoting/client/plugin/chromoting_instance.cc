@@ -24,8 +24,6 @@
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/rect.h"
-// TODO(wez): Remove this when crbug.com/86353 is complete.
-#include "ppapi/cpp/private/var_private.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"
 #include "remoting/client/client_config.h"
