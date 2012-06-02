@@ -99,6 +99,12 @@ const char kBlacklistWebGL[]                = "blacklist-webgl";
 // Disable FileSystem API.
 const char kDisableFileSystem[]             = "disable-file-system";
 
+// Disable 3D inside of flapper.
+const char kDisableFlash3d[]                = "disable-flash-3d";
+
+// Disable Stage3D inside of flapper.
+const char kDisableFlashStage3d[]           = "disable-flash-stage3d";
+
 // Suppresses support for the Geolocation javascript API.
 const char kDisableGeolocation[]            = "disable-geolocation";
 

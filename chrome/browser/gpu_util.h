@@ -49,7 +49,9 @@ std::string GpuFeatureTypeToString(content::GpuFeatureType feature);
 //    '3d_css'
 //    'composting',
 //    'webgl',
-//    'multisampling'
+//    'multisampling',
+//    'flash_3d',
+//    'flash_stage3d'
 //
 // Each problems has:
 // {

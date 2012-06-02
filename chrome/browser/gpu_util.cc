@@ -28,6 +28,8 @@ const char kGpuFeatureNameAccelerated2dCanvas[] = "accelerated_2d_canvas";
 const char kGpuFeatureNameAcceleratedCompositing[] = "accelerated_compositing";
 const char kGpuFeatureNameWebgl[] = "webgl";
 const char kGpuFeatureNameMultisampling[] = "multisampling";
+const char kGpuFeatureNameFlash3d[] = "flash_3d";
+const char kGpuFeatureNameFlashStage3d[] = "flash_stage3d";
 const char kGpuFeatureNameAll[] = "all";
 const char kGpuFeatureNameUnknown[] = "unknown";
 
@@ -169,6 +171,10 @@ GpuFeatureType StringToGpuFeatureType(const std::string& feature_string) {
     return content::GPU_FEATURE_TYPE_WEBGL;
   else if (feature_string == kGpuFeatureNameMultisampling)
     return content::GPU_FEATURE_TYPE_MULTISAMPLING;
+  else if (feature_string == kGpuFeatureNameFlash3d)
+    return content::GPU_FEATURE_TYPE_FLASH3D;
+  else if (feature_string == kGpuFeatureNameFlashStage3d)
+    return content::GPU_FEATURE_TYPE_FLASH_STAGE3D;
   else if (feature_string == kGpuFeatureNameAll)
     return content::GPU_FEATURE_TYPE_ALL;
   return content::GPU_FEATURE_TYPE_UNKNOWN;
@@ -187,6 +193,10 @@ std::string GpuFeatureTypeToString(GpuFeatureType type) {
       matches.push_back(kGpuFeatureNameWebgl);
     if (type & content::GPU_FEATURE_TYPE_MULTISAMPLING)
       matches.push_back(kGpuFeatureNameMultisampling);
+    if (type & content::GPU_FEATURE_TYPE_FLASH3D)
+      matches.push_back(kGpuFeatureNameFlash3d);
+    if (type & content::GPU_FEATURE_TYPE_FLASH_STAGE3D)
+      matches.push_back(kGpuFeatureNameFlashStage3d);
     if (!matches.size())
       matches.push_back(kGpuFeatureNameUnknown);
   }
@@ -247,6 +257,22 @@ Value* GetFeatureStatus() {
           command_line.HasSwitch(switches::kDisableGLMultisampling),
           "Multisampling has been disabled, either via about:flags or command"
           " line.",
+          false
+      },
+      {
+          "flash_3d",
+          flags & content::GPU_FEATURE_TYPE_FLASH3D,
+          command_line.HasSwitch(switches::kDisableFlash3d),
+          "Using 3d in flash has been disabled, either via about:flags or"
+          " command line.",
+          false
+      },
+      {
+          "flash_stage3d",
+          flags & content::GPU_FEATURE_TYPE_FLASH_STAGE3D,
+          command_line.HasSwitch(switches::kDisableFlashStage3d),
+          "Using Stage3d in Flash has been disabled, either via about:flags or"
+          " command line.",
           false
       }
   };

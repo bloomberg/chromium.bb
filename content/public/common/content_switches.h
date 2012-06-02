@@ -42,6 +42,8 @@ CONTENT_EXPORT extern const char kDisableExperimentalWebGL[];
 CONTENT_EXPORT extern const char kBlacklistAcceleratedCompositing[];
 CONTENT_EXPORT extern const char kBlacklistWebGL[];
 extern const char kDisableFileSystem[];
+CONTENT_EXPORT extern const char kDisableFlash3d[];
+CONTENT_EXPORT extern const char kDisableFlashStage3d[];
 extern const char kDisableGeolocation[];
 CONTENT_EXPORT extern const char kDisableGLMultisampling[];
 CONTENT_EXPORT extern const char kDisableGpuProcessPrelaunch[];

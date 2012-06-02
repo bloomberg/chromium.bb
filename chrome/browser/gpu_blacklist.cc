@@ -642,6 +642,8 @@ bool GpuBlacklist::GpuBlacklistEntry::SetBlacklistedFeatures(
       case content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING:
       case content::GPU_FEATURE_TYPE_WEBGL:
       case content::GPU_FEATURE_TYPE_MULTISAMPLING:
+      case content::GPU_FEATURE_TYPE_FLASH3D:
+      case content::GPU_FEATURE_TYPE_FLASH_STAGE3D:
       case content::GPU_FEATURE_TYPE_ALL:
         feature_type |= type;
         break;
