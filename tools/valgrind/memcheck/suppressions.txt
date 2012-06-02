@@ -5582,7 +5582,7 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN21RenderProcessHostImplC1EPN7content14BrowserContextE
+   fun:_ZN*RenderProcessHostImplC1EPN*14BrowserContextE
    fun:_ZN16SiteInstanceImpl10GetProcessEv
    ...
    fun:_ZN*_*_Test8TestBodyEv
