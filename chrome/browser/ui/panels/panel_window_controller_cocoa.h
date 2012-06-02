@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 
 @class FindBarCocoaController;
-class PanelBrowserWindowCocoa;
+class NativePanelCocoa;
 @class PanelTitlebarViewCocoa;
 
 @interface PanelWindowCocoaImpl : ChromeBrowserWindow {
@@ -36,7 +36,7 @@ class PanelBrowserWindowCocoa;
                                              BrowserCommandExecutor> {
  @private
   IBOutlet PanelTitlebarViewCocoa* titlebar_view_;
-  scoped_ptr<PanelBrowserWindowCocoa> windowShim_;
+  scoped_ptr<NativePanelCocoa> windowShim_;
   scoped_nsobject<NSString> pendingWindowTitle_;
   scoped_nsobject<TabContentsController> contentsController_;
   NSViewAnimation* boundsAnimation_;  // Lifetime controlled manually, needs
@@ -46,11 +46,16 @@ class PanelBrowserWindowCocoa;
   BOOL playingMinimizeAnimation_;
   float animationStopToShowTitlebarOnly_;
   BOOL canBecomeKeyWindow_;
+  // Allow a panel to become key if activated via Panel logic, as opposed
+  // to by default system selection. The system will prefer a panel
+  // window over other application windows due to panels having a higher
+  // priority NSWindowLevel, so we distinguish between the two scenarios.
+  BOOL activationRequestedByPanel_;
   scoped_nsobject<NSView> overlayView_;
 }
 
-// Load the browser window nib and do any Cocoa-specific initialization.
-- (id)initWithBrowserWindow:(PanelBrowserWindowCocoa*)window;
+// Load the window nib and do any Cocoa-specific initialization.
+- (id)initWithPanel:(NativePanelCocoa*)window;
 
 - (ui::ThemeProvider*)themeProvider;
 - (ThemedWindowStyle)themedWindowStyle;
@@ -123,7 +128,8 @@ class PanelBrowserWindowCocoa;
 
 - (BOOL)isAnimatingBounds;
 
-// Removes the Key status from the panel to some other window.
+// Sets/Removes the Key status from the panel to some other window.
+- (void)activate;
 - (void)deactivate;
 
 // Changes the canBecomeKeyWindow state
@@ -136,8 +142,8 @@ class PanelBrowserWindowCocoa;
 // are not un-minimized when another panel is minimized.
 - (BOOL)canBecomeKeyWindow;
 
-// Returns true if browser window requested activation of the window.
-- (BOOL)activationRequestedByBrowser;
+// Returns true if Panel requested activation of the window.
+- (BOOL)activationRequestedByPanel;
 
 - (void)ensureFullyVisible;
 

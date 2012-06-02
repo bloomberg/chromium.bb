@@ -11,6 +11,7 @@
 #include "base/debug/debugger.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -373,17 +374,20 @@ TEST_F(PanelBrowserWindowCocoaTest, ThemeProvider) {
 }
 
 TEST_F(PanelBrowserWindowCocoaTest, SetTitle) {
-  Panel* panel = CreateTestPanel("Test Panel");
+  NSString *appName = @"Test Panel";
+  Panel* panel = CreateTestPanel(base::SysNSStringToUTF8(appName));
   ASSERT_TRUE(panel);
 
   PanelBrowserWindowCocoa* native_window =
       static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
   ASSERT_TRUE(native_window);
   NSString* previousTitle = [[native_window->controller_ window] title];
+  EXPECT_NSNE(appName, previousTitle);
   [native_window->controller_ updateTitleBar];
   chrome::testing::NSRunLoopRunAllPending();
-  EXPECT_NSEQ(@"Untitled", [[native_window->controller_ window] title]);
-  EXPECT_NSNE([[native_window->controller_ window] title], previousTitle);
+  NSString* currentTitle = [[native_window->controller_ window] title];
+  EXPECT_NSEQ(appName, currentTitle);
+  EXPECT_NSNE(currentTitle, previousTitle);
   ClosePanelAndWait(panel);
 }
 

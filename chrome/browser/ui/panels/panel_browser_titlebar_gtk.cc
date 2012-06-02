@@ -77,8 +77,7 @@ void PanelBrowserTitlebarGtk::UpdateButtonBackground(CustomDrawButton* button) {
 void PanelBrowserTitlebarGtk::UpdateTitleAndIcon() {
   DCHECK(app_mode_title());
 
-  std::string title =
-      UTF16ToUTF8(browser_window_->browser()->GetWindowTitleForCurrentTab());
+  std::string title = UTF16ToUTF8(browser_window_->panel()->GetWindowTitle());
 
   // Add the markup to show the title as bold.
   gchar* escaped_title = g_markup_escape_text(title.c_str(), -1);

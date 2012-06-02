@@ -6,10 +6,9 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/native_panel.h"
-#include "chrome/browser/ui/panels/panel_browser_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -18,12 +17,15 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 
 using content::RenderViewHost;
 
-Panel::Panel(const gfx::Size& min_size, const gfx::Size& max_size)
-    : panel_strip_(NULL),
+Panel::Panel(const std::string& app_name,
+             const gfx::Size& min_size, const gfx::Size& max_size)
+    : app_name_(app_name),
+      panel_strip_(NULL),
       initialized_(false),
       min_size_(min_size),
       max_size_(max_size),
@@ -33,7 +35,8 @@ Panel::Panel(const gfx::Size& min_size, const gfx::Size& max_size)
       in_preview_mode_(false),
       native_panel_(NULL),
       attention_mode_(USE_PANEL_ATTENTION),
-      expansion_state_(EXPANDED) {
+      expansion_state_(EXPANDED),
+      command_updater_(this) {
 }
 
 Panel::~Panel() {
@@ -48,8 +51,6 @@ void Panel::Initialize(const gfx::Rect& bounds, Browser* browser) {
   initialized_ = true;
   full_size_ = bounds.size();
   native_panel_ = CreateNativePanel(browser, this, bounds);
-  panel_browser_window_.reset(
-      new PanelBrowserWindow(browser, this, native_panel_));
 }
 
 void Panel::OnNativePanelClosed() {
@@ -62,15 +63,25 @@ PanelManager* Panel::manager() const {
 }
 
 Browser* Panel::browser() const {
-  return native_panel_->GetPanelBrowser();
+  return NULL;
 }
 
 BrowserWindow* Panel::browser_window() const {
-  return panel_browser_window_.get();
+  return NULL;
+}
+
+CommandUpdater* Panel::command_updater() {
+  return &command_updater_;
+}
+
+Profile* Panel::profile() const {
+  // TODO(jennb): implement.
+  return NULL;
 }
 
 content::WebContents* Panel::WebContents() const {
-  return native_panel_->GetPanelBrowser()->GetSelectedWebContents();
+  // TODO(jennb): implement.
+  return NULL;
 }
 
 bool Panel::CanMinimize() const {
@@ -249,7 +260,7 @@ void Panel::SetBounds(const gfx::Rect& bounds) {
   SetAutoResizable(false);
 }
 
-// Close() may be called multiple times if the browser window is not ready to
+// Close() may be called multiple times if the panel window is not ready to
 // close on the first attempt.
 void Panel::Close() {
   native_panel_->ClosePanel();
@@ -364,6 +375,20 @@ void Panel::EnableWebContentsAutoResize(content::WebContents* web_contents) {
       content::Source<content::WebContents>(web_contents));
 }
 
+void Panel::ExecuteCommandWithDisposition(int id,
+                                          WindowOpenDisposition disposition) {
+  // TODO(jennb): implement.
+}
+
+bool Panel::ExecuteCommandIfEnabled(int id) {
+  if (command_updater()->SupportsCommand(id) &&
+      command_updater()->IsCommandEnabled(id)) {
+    ExecuteCommandWithDisposition(id, CURRENT_TAB);
+    return true;
+  }
+  return false;
+}
+
 void Panel::Observe(int type,
                     const content::NotificationSource& source,
                     const content::NotificationDetails& details) {
@@ -449,3 +474,42 @@ void Panel::OnPanelEndUserResizing() {
   SetPreviewMode(false);
 }
 
+bool Panel::ShouldCloseWindow() {
+  // TODO(jennb): implement
+  return true;
+}
+
+void Panel::OnWindowClosing() {
+  // TODO(jennb): implement
+}
+
+string16 Panel::GetWindowTitle() const {
+  content::WebContents* contents = WebContents();
+  string16 title;
+
+  // |contents| can be NULL during the window's creation.
+  if (contents) {
+    title = contents->GetTitle();
+    FormatTitleForDisplay(&title);
+  }
+
+  if (title.empty())
+    title = UTF8ToUTF16(app_name());
+
+  return title;
+}
+
+// static
+void Panel::FormatTitleForDisplay(string16* title) {
+  size_t current_index = 0;
+  size_t match_index;
+  while ((match_index = title->find(L'\n', current_index)) != string16::npos) {
+    title->replace(match_index, 1, string16());
+    current_index = match_index;
+  }
+}
+
+SkBitmap Panel::GetCurrentPageIcon() const {
+  // TODO(jennb): implement.
+  return SkBitmap();
+}

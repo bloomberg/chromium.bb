@@ -869,7 +869,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
   EXPECT_TRUE(native_panel_testing->VerifyActiveState(true));
 }
 // TODO(jianli): To be enabled for other platforms.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
 #define MAYBE_ActivateDeactivateMultiple ActivateDeactivateMultiple
 #else
 #define MAYBE_ActivateDeactivateMultiple DISABLED_ActivateDeactivateMultiple
@@ -972,17 +972,19 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
   PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
 
-  CreatePanelParams params("Initially Active", gfx::Rect(), SHOW_AS_ACTIVE);
-  Panel* panel = CreatePanelWithParams(params);
-  NativePanel* native_panel = panel->native_panel();
+  // Create 2 panels so we end up with an inactive panel that can
+  // be made to draw attention.
+  Panel* panel = CreatePanel("test panel1");
+  Panel* panel2 = CreatePanel("test panel2");
+  Panel* panel3 = CreatePanel("test panel2");
+
   scoped_ptr<NativePanelTesting> native_panel_testing(
-      NativePanelTesting::Create(native_panel));
+      NativePanelTesting::Create(panel->native_panel()));
 
   // Test that the attention is drawn and the title-bar is brought up when the
   // minimized panel is drawing attention.
-  panel->SetExpansionState(Panel::MINIMIZED);
-  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
-  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+  panel->Minimize();
+  WaitForExpansionStateChanged(panel, Panel::MINIMIZED);
   panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
   EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
@@ -991,9 +993,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
 
   // Test that we cannot bring up other minimized panel if the mouse is over
   // the panel that draws attension.
+  panel2->Minimize();
   gfx::Point hover_point(panel->GetBounds().origin());
   MoveMouse(hover_point);
   EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+  EXPECT_EQ(Panel::MINIMIZED, panel2->expansion_state());
 
   // Test that we cannot bring down the panel that is drawing the attention.
   hover_point.set_y(hover_point.y() - 200);
@@ -1009,6 +1013,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
   panel->Close();
+  panel2->Close();
+  panel3->Close();
 }
 
 // Verify that minimized state of a panel is correct after draw attention
@@ -1100,14 +1106,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnActivate) {
-  CreatePanelParams params("Initially active", gfx::Rect(), SHOW_AS_ACTIVE);
-  Panel* panel = CreatePanelWithParams(params);
+  // Create 2 panels so we end up with an inactive panel that can
+  // be made to draw attention.
+  Panel* panel = CreatePanel("test panel1");
+  Panel* panel2 = CreatePanel("test panel2");
+
   scoped_ptr<NativePanelTesting> native_panel_testing(
       NativePanelTesting::Create(panel->native_panel()));
-
-  // Deactivate the panel.
-  panel->Deactivate();
-  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
 
   panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
@@ -1122,6 +1127,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnActivate) {
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
   panel->Close();
+  panel2->Close();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
@@ -1180,7 +1186,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnClick) {
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
                        MinimizeImmediatelyAfterRestore) {
-  CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_ACTIVE);
+  CreatePanelParams params("Panel Test", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
       NativePanelTesting::Create(panel->native_panel()));
@@ -1190,15 +1196,15 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
   EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
 
-  panel->Activate();
+  panel->Restore();
   MessageLoop::current()->RunAllPending();
-  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
-  EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
+  WaitForExpansionStateChanged(panel, Panel::EXPANDED);
 
   // Verify that minimizing a panel right after expansion works.
   panel->Minimize();
   MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+  WaitForExpansionStateChanged(panel, Panel::MINIMIZED);
+
   panel->Close();
 }
 

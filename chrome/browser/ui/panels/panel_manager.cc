@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/detached_panel_strip.h"
 #include "chrome/browser/ui/panels/docked_panel_strip.h"
+#include "chrome/browser/ui/panels/old_panel.h"
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_resize_controller.h"
@@ -173,7 +174,7 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
                    panel_size);
 
   // Create the (legacy) panel.
-  Panel* panel = new Panel(min_size, max_size);
+  Panel* panel = new OldPanel(browser, min_size, max_size);
   panel->Initialize(bounds, browser);
 
   // Auto resizable feature is enabled only if no initial size is requested.

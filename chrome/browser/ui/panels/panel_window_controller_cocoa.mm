@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
@@ -16,9 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
@@ -27,8 +25,8 @@
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
+#include "chrome/browser/ui/panels/native_panel_cocoa.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
-#include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
@@ -39,6 +37,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/ui_resources_standard.h"
+#include "skia/ext/skia_utils_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
@@ -105,7 +104,7 @@ enum {
   // This prevents the system from always preferring a Panel window due
   // to its higher priority NSWindowLevel when selecting a window to make key.
   return ([app isHandlingSendEvent]  && [[app currentEvent] window] == self) ||
-      [controller activationRequestedByBrowser] ||
+      [controller activationRequestedByPanel] ||
       [app isCyclingWindows] ||
       [app previousKeyWindow] == self ||
       [[app windows] count] == static_cast<NSUInteger>([controller numPanels]);
@@ -430,13 +429,14 @@ enum {
 
 @implementation PanelWindowControllerCocoa
 
-- (id)initWithBrowserWindow:(PanelBrowserWindowCocoa*)window {
+- (id)initWithPanel:(NativePanelCocoa*)window {
   NSString* nibpath =
       [base::mac::FrameworkBundle() pathForResource:@"Panel" ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     windowShim_.reset(window);
     animateOnBoundsChange_ = YES;
     canBecomeKeyWindow_ = YES;
+    activationRequestedByPanel_ = NO;
     contentsController_.reset(
         [[TabContentsController alloc] initWithContents:nil]);
   }
@@ -445,12 +445,12 @@ enum {
 
 - (ui::ThemeProvider*)themeProvider {
   return ThemeServiceFactory::GetForProfile(
-      windowShim_->GetPanelBrowser()->profile());
+      windowShim_->panel()->profile());
 }
 
 - (ThemedWindowStyle)themedWindowStyle {
   ThemedWindowStyle style = THEMED_POPUP;
-  if (windowShim_->GetPanelBrowser()->profile()->IsOffTheRecord())
+  if (windowShim_->panel()->profile()->IsOffTheRecord())
     style |= THEMED_INCOGNITO;
   return style;
 }
@@ -479,7 +479,7 @@ enum {
   // Set initial size of the window to match the size of the panel to give
   // the renderer the proper size to work with earlier, avoiding a resize
   // after the window is revealed.
-  gfx::Rect panelBounds = windowShim_->GetPanelBounds();
+  gfx::Rect panelBounds = windowShim_->panel()->GetBounds();
   NSRect frame = [window frame];
   frame.size.width = panelBounds.width();
   frame.size.height = panelBounds.height();
@@ -555,7 +555,7 @@ enum {
 
 - (void)updateTitleBar {
   NSString* newTitle = base::SysUTF16ToNSString(
-      windowShim_->GetPanelBrowser()->GetWindowTitleForCurrentTab());
+      windowShim_->panel()->GetWindowTitle());
   pendingWindowTitle_.reset(
       [BrowserWindowUtils scheduleReplaceOldTitle:pendingWindowTitle_.get()
                                      withNewTitle:newTitle
@@ -577,10 +577,11 @@ enum {
     icon = [ThrobberView filmstripThrobberViewWithFrame:iconFrame
                                                   image:iconImage];
   } else {
-    NSImage* iconImage = mac::FaviconForTabContents(
-        windowShim_->GetPanelBrowser()->GetSelectedTabContentsWrapper());
-    if (!iconImage)
-      iconImage = gfx::GetCachedImageWithName(@"nav.pdf");
+    SkBitmap bitmap = windowShim_->panel()->GetCurrentPageIcon();
+    NSImage* iconImage = bitmap.isNull() ?
+        gfx::GetCachedImageWithName(@"nav.pdf") :
+        gfx::SkBitmapToNSImageWithColorSpace(bitmap,
+                                             base::mac::GetSystemColorSpace());
     NSImageView* iconView =
         [[[NSImageView alloc] initWithFrame:iconFrame] autorelease];
     [iconView setImage:iconImage];
@@ -644,7 +645,7 @@ enum {
       action == @selector(commandDispatchUsingKeyModifiers:)) {
     NSInteger tag = [item tag];
     CommandUpdater* command_updater =
-        windowShim_->GetPanelBrowser()->command_updater();
+        windowShim_->panel()->command_updater();
     if (command_updater->SupportsCommand(tag)) {
       enable = command_updater->IsCommandEnabled(tag);
       // Disable commands that do not apply to Panels.
@@ -671,12 +672,13 @@ enum {
 }
 
 // Called when the user picks a menu or toolbar item when this window is key.
-// Calls through to the browser object to execute the command. This assumes that
+// Calls through to the panel object to execute the command. This assumes that
 // the command is supported and doesn't check, otherwise it would have been
 // disabled in the UI in validateUserInterfaceItem:.
 - (void)commandDispatch:(id)sender {
   DCHECK(sender);
-  windowShim_->GetPanelBrowser()->ExecuteCommand([sender tag]);
+  windowShim_->panel()->ExecuteCommandWithDisposition([sender tag],
+                                                      CURRENT_TAB);
 }
 
 // Same as |-commandDispatch:|, but executes commands using a disposition
@@ -687,12 +689,12 @@ enum {
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEventWithFlags(
           event, [event modifierFlags]);
-  windowShim_->GetPanelBrowser()->ExecuteCommandWithDisposition(
+  windowShim_->panel()->ExecuteCommandWithDisposition(
       [sender tag], disposition);
 }
 
 - (void)executeCommand:(int)command {
-  windowShim_->GetPanelBrowser()->ExecuteCommandIfEnabled(command);
+  windowShim_->panel()->ExecuteCommandIfEnabled(command);
 }
 
 // Handler for the custom Close button.
@@ -715,40 +717,38 @@ enum {
 }
 
 // Called when the user wants to close the panel or from the shutdown process.
-// The Browser object is in control of whether or not we're allowed to close. It
+// The Panel object is in control of whether or not we're allowed to close. It
 // may defer closing due to several states, such as onbeforeUnload handlers
-// needing to be fired. If closing is deferred, the Browser will handle the
+// needing to be fired. If closing is deferred, the Panel will handle the
 // processing required to get us to the closing state and (by watching for
-// all the tabs going away) will again call to close the window when it's
+// the web content going away) will again call to close the window when it's
 // finally ready.
 // This callback is only called if the standard Close button is enabled in XIB.
 - (BOOL)windowShouldClose:(id)sender {
-  Browser* browser = windowShim_->GetPanelBrowser();
+  Panel* panel = windowShim_->panel();
   // Give beforeunload handlers the chance to cancel the close before we hide
   // the window below.
-  if (!browser->ShouldCloseWindow())
+  if (!panel->ShouldCloseWindow())
     return NO;
 
-  if (!browser->tab_strip_model()->empty()) {
+  if (panel->WebContents()) {
     // Terminate any playing animations.
     [self terminateBoundsAnimation];
     animateOnBoundsChange_ = NO;
-    // Tab strip isn't empty. Make browser to close all the tabs, allowing the
-    // renderer to shut down and call us back again.
-    // The tab strip of Panel is not visible and contains only one tab but
-    // it still has to be closed.
-    browser->OnWindowClosing();
+    // Make panel close the web content, allowing the renderer to shut down
+    // and call us back again.
+    panel->OnWindowClosing();
     return NO;
   }
 
-  // The tab strip is empty, it's ok to close the window.
+  // No web content; it's ok to close the window.
   return YES;
 }
 
 // When windowShouldClose returns YES (or if controller receives direct 'close'
 // signal), window will be unconditionally closed. Clean up.
 - (void)windowWillClose:(NSNotification*)notification {
-  DCHECK(windowShim_->GetPanelBrowser()->tab_strip_model()->empty());
+  DCHECK(!windowShim_->panel()->WebContents());
   // Avoid callbacks from a nonblocking animation in progress, if any.
   [self terminateBoundsAnimation];
   windowShim_->DidCloseNativeWindow();
@@ -833,8 +833,8 @@ enum {
   // method, see below for more details.
   if (distanceY > 0 &&
       windowShim_->panel()->expansion_state() == Panel::MINIMIZED) {
-    animationStopToShowTitlebarOnly_ =
-        1.0 - (windowShim_->TitleOnlyHeight() - NSHeight(frame)) / distanceY;
+    animationStopToShowTitlebarOnly_ = 1.0 -
+        (windowShim_->panel()->TitleOnlyHeight() - NSHeight(frame)) / distanceY;
     if (animationStopToShowTitlebarOnly_ > 0.7) {  // Relatively big movement.
       playingMinimizeAnimation_ = YES;
       duration = 1.5;
@@ -908,8 +908,6 @@ enum {
 // whether it's refactoring more things into BrowserWindowUtils or making a
 // common base controller for browser windows.
 - (void)windowDidBecomeKey:(NSNotification*)notification {
-  BrowserList::SetLastActive(windowShim_->GetPanelBrowser());
-
   // We need to activate the controls (in the "WebView"). To do this, get the
   // selected WebContents's RenderWidgetHostView and tell it to activate.
   if (WebContents* contents = [contentsController_ webContents]) {
@@ -940,17 +938,21 @@ enum {
   windowShim_->panel()->OnActiveStateChanged(false);
 }
 
+- (void)activate {
+  AutoReset<BOOL> pin(&activationRequestedByPanel_, true);
+  [BrowserWindowUtils activateWindowForController:self];
+}
+
 - (void)deactivate {
   if (![[self window] isMainWindow])
     return;
-  BrowserWindow* browser_window =
-      windowShim_->panel()->manager()->GetNextBrowserWindowToActivate(
-          windowShim_->GetPanelBrowser());
 
-  if (browser_window)
-    browser_window->Activate();
-  else
-    [NSApp deactivate];
+  // Cocoa does not support deactivating a window, so we deactivate the app.
+  [NSApp deactivate];
+
+  // Deactivating the app does not trigger windowDidResignKey so the panel
+  // doesn't know it's active status has changed. Let the window know.
+  windowShim_->panel()->OnActiveStateChanged(false);
 }
 
 - (void)preventBecomingKeyWindow:(BOOL)prevent {
@@ -982,8 +984,8 @@ enum {
   return windowShim_->panel()->manager()->num_panels();
 }
 
-- (BOOL)activationRequestedByBrowser {
-  return windowShim_->ActivationRequestedByBrowser();
+- (BOOL)activationRequestedByPanel {
+  return activationRequestedByPanel_;
 }
 
 - (void)updateWindowLevel {

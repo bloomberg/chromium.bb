@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 
-#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -51,9 +50,8 @@ PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
     bounds_(bounds),
     is_shown_(false),
     has_find_bar_(false),
-    attention_request_id_(0),
-    activation_requested_by_browser_(false) {
-  controller_ = [[PanelWindowControllerCocoa alloc] initWithBrowserWindow:this];
+    attention_request_id_(0) {
+  controller_ = [[PanelWindowControllerCocoa alloc] initWithPanel:this];
   browser_->tab_strip_model()->AddObserver(this);
   registrar_.Add(
       this,
@@ -144,8 +142,7 @@ void PanelBrowserWindowCocoa::ActivatePanel() {
   if (!is_shown_)
     return;
 
-  AutoReset<bool> pin(&activation_requested_by_browser_, true);
-  [BrowserWindowUtils activateWindowForController:controller_];
+  [controller_ activate];
 }
 
 void PanelBrowserWindowCocoa::DeactivatePanel() {
@@ -296,6 +293,10 @@ void PanelBrowserWindowCocoa::EnableResizeByMouse(bool enable) {
 
 void PanelBrowserWindowCocoa::UpdatePanelMinimizeRestoreButtonVisibility() {
   [controller_ updateTitleBarMinimizeRestoreButtonVisibility];
+}
+
+Panel* PanelBrowserWindowCocoa::panel() const {
+  return panel_.get();
 }
 
 void PanelBrowserWindowCocoa::DidCloseNativeWindow() {

@@ -86,27 +86,28 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionOnInactive) {
 }
 
 IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionResetOnActivate) {
-  // Create an inactive detached panel.
-  Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
-  panel->Deactivate();
-  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
+  // Create 2 panels so we end up with an inactive panel that can
+  // be made to draw attention.
+  Panel* panel1 = CreatePanel("test panel1");
+  Panel* panel2 = CreatePanel("test panel2");
 
   scoped_ptr<NativePanelTesting> native_panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      NativePanelTesting::Create(panel1->native_panel()));
 
   // Test that the attention is drawn when the detached panel is not in focus.
-  panel->FlashFrame(true);
-  EXPECT_TRUE(panel->IsDrawingAttention());
+  panel1->FlashFrame(true);
+  EXPECT_TRUE(panel1->IsDrawingAttention());
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());
 
   // Test that the attention is cleared when panel gets focus.
-  panel->Activate();
-  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
-  EXPECT_FALSE(panel->IsDrawingAttention());
+  panel1->Activate();
+  WaitForPanelActiveState(panel1, SHOW_AS_ACTIVE);
+  EXPECT_FALSE(panel1->IsDrawingAttention());
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
-  panel->Close();
+  panel1->Close();
+  panel2->Close();
 }
 
 IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, ClickTitlebar) {

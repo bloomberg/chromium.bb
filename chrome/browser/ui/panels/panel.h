@@ -6,8 +6,12 @@
 #define CHROME_BROWSER_UI_PANELS_PANEL_H_
 #pragma once
 
+#include <string>
+
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
+#include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "content/public/browser/notification_observer.h"
@@ -17,9 +21,10 @@
 class Browser;
 class BrowserWindow;
 class NativePanel;
-class PanelBrowserWindow;
 class PanelManager;
 class PanelStrip;
+class Profile;
+class SkBitmap;
 
 namespace content {
 class WebContents;
@@ -35,6 +40,7 @@ class WebContents;
 // - Invoke an appropriate PanelManager function to do stuff that might affect
 //   other Panels. For example deleting a panel would rearrange other panels.
 class Panel : public BaseWindow,
+              public CommandUpdater::CommandUpdaterDelegate,
               public content::NotificationObserver {
  public:
   enum ExpansionState {
@@ -62,9 +68,13 @@ class Panel : public BaseWindow,
   // Returns the PanelManager associated with this panel.
   PanelManager* manager() const;
 
+  const std::string& app_name() const { return app_name_; }
+  virtual CommandUpdater* command_updater();
+  virtual Profile* profile() const;
+
   // Returns web contents of the panel, if any. There may be none if web
   // contents have not been added to the panel yet.
-  content::WebContents* WebContents() const;
+  virtual content::WebContents* WebContents() const;
 
   void SetExpansionState(ExpansionState new_expansion_state);
 
@@ -108,6 +118,11 @@ class Panel : public BaseWindow,
   virtual void FlashFrame(bool flash) OVERRIDE;
   virtual bool IsAlwaysOnTop() const OVERRIDE;
 
+  // Overridden from CommandUpdater::CommandUpdaterDelegate:
+  virtual void ExecuteCommandWithDisposition(
+      int id,
+      WindowOpenDisposition disposition) OVERRIDE;
+
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -118,6 +133,8 @@ class Panel : public BaseWindow,
   static NativePanel* CreateNativePanel(Browser* browser,
                                         Panel* panel,
                                         const gfx::Rect& bounds);
+
+  NativePanel* native_panel() const { return native_panel_; }
 
   // Invoked when the native panel has detected a mouse click on the
   // panel's titlebar, minimize or restore buttons. Behavior of the
@@ -134,9 +151,8 @@ class Panel : public BaseWindow,
   void OnNativePanelClosed();
 
   // Legacy accessors.
-  Browser* browser() const;
-  NativePanel* native_panel() const { return native_panel_; }
-  BrowserWindow* browser_window() const;
+  virtual Browser* browser() const;
+  virtual BrowserWindow* browser_window() const;
 
   // May be NULL if:
   // * panel is newly created and has not been positioned yet.
@@ -169,7 +185,7 @@ class Panel : public BaseWindow,
   // Panel must be initialized to be "fully created" and ready for use.
   // Only called by PanelManager.
   bool initialized() const { return initialized_; }
-  void Initialize(const gfx::Rect& bounds, Browser* browser);
+  virtual void Initialize(const gfx::Rect& bounds, Browser* browser);  // legacy
 
   // This is different from BrowserWindow::SetBounds():
   // * SetPanelBounds() is only called by PanelManager to manage its position.
@@ -238,6 +254,31 @@ class Panel : public BaseWindow,
   void OnPanelStartUserResizing();
   void OnPanelEndUserResizing();
 
+  // Gives beforeunload handlers the chance to cancel the close.
+  virtual bool ShouldCloseWindow();
+
+  // Invoked when the window containing us is closing. Performs the necessary
+  // cleanup.
+  virtual void OnWindowClosing();
+
+  // Executes a command if it's enabled.
+  // Returns true if the command is executed.
+  bool ExecuteCommandIfEnabled(int id);
+
+  // Gets the title of the window from the web contents.
+  string16 GetWindowTitle() const;
+
+  // Gets the Favicon of the web contents.
+  virtual SkBitmap GetCurrentPageIcon() const;
+
+ protected:
+  // Panel can only be created using PanelManager::CreatePanel() or subclass.
+  // |app_name| is the default title for Panels when the page content does not
+  // provide a title. For extensions, this is usually the application name
+  // generated from the extension id.
+  Panel(const std::string& app_name,
+        const gfx::Size& min_size, const gfx::Size& max_size);
+
  private:
   friend class PanelManager;
   friend class PanelBrowserTest;
@@ -249,14 +290,16 @@ class Panel : public BaseWindow,
     CUSTOM_MAX_SIZE
   };
 
-  // Panel can only be created using PanelManager::CreatePanel().
-  explicit Panel(const gfx::Size& min_size, const gfx::Size& max_size);
-
   // Configures the renderer for auto resize (if auto resize is enabled).
   void ConfigureAutoResize(content::WebContents* web_contents);
 
-  // A BrowserWindow for the browser to interact with.
-  scoped_ptr<PanelBrowserWindow> panel_browser_window_;
+  // Prepares a title string for display (removes embedded newlines, etc).
+  static void FormatTitleForDisplay(string16* title);
+
+  // The application name that is also the name of the window when the
+  // page content does not provide a title.
+  // This name should be set when the panel is created.
+  const std::string& app_name_;
 
   // Current collection of panels to which this panel belongs. This determines
   // the panel's screen layout.
@@ -296,6 +339,9 @@ class Panel : public BaseWindow,
   AttentionMode attention_mode_;
 
   ExpansionState expansion_state_;
+
+  // The CommandUpdater manages the window commands.
+  CommandUpdater command_updater_;
 
   content::NotificationRegistrar registrar_;
 

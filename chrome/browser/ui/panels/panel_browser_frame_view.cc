@@ -608,7 +608,7 @@ bool PanelBrowserFrameView::UsingDefaultTheme(PaintState paint_state) const {
     return true;
 
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(
-      panel_browser_view_->browser()->profile());
+      panel_browser_view_->panel()->profile());
   return theme_service->UsingDefaultTheme();
 }
 
