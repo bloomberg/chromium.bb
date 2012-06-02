@@ -48,7 +48,7 @@ DictionaryValue* PluginFinder::LoadPluginList() {
           IDR_PLUGIN_DB_JSON, ui::SCALE_FACTOR_NONE));
   std::string error_str;
   scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-      json_resource.as_string(),
+      json_resource,
       base::JSON_PARSE_RFC,
       NULL,
       &error_str));

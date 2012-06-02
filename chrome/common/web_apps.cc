@@ -218,7 +218,7 @@ bool ParseWebAppFromDefinitionFile(Value* definition_value,
       base::JSONReader::ReadAndReturnError(
           ResourceBundle::GetSharedInstance().GetRawDataResource(
               IDR_WEB_APP_SCHEMA,
-              ui::SCALE_FACTOR_NONE).as_string(),
+              ui::SCALE_FACTOR_NONE),
           base::JSON_PARSE_RFC,  // options
           &error_code,
           &error_message));

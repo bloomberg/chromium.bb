@@ -71,7 +71,7 @@ scoped_ptr<ListValue> LoadSchemaList(const std::string& name,
   std::string error_message;
   scoped_ptr<Value> result(
       base::JSONReader::ReadAndReturnError(
-          schema.as_string(),
+          schema,
           base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN,  // options
           NULL,  // error code
           &error_message));
