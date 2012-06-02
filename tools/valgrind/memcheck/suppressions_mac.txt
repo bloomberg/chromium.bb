@@ -1460,14 +1460,6 @@
    fun:CGLCreateContext
 }
 {
-   bug_80036
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN2ui12_GLOBAL__N_120LoadResourcesDataPakE8FilePath
-   fun:_ZN2ui14ResourceBundle19LoadCommonResourcesEv
-   fun:_ZN2ui14ResourceBundle18InitSharedInstanceERKSs
-}
-{
    bug_80239_a
    Memcheck:Unaddressable
    ...
