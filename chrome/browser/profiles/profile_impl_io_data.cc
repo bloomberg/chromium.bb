@@ -272,8 +272,11 @@ void ProfileImplIOData::LazyInitializeInternal(
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  bool record_mode = chrome::kRecordModeEnabled &&
-                     command_line.HasSwitch(switches::kRecordMode);
+  // Only allow Record Mode if we are in a Debug build or where we are running
+  // a cycle, and the user has limited control.
+  bool record_mode = command_line.HasSwitch(switches::kRecordMode) &&
+                     (chrome::kRecordModeEnabled ||
+                      command_line.HasSwitch(switches::kVisitURLs));
   bool playback_mode = command_line.HasSwitch(switches::kPlaybackMode);
 
   // Initialize context members.
@@ -472,8 +475,11 @@ ProfileImplIOData::InitializeAppRequestContext(
   int cache_max_size = 0;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  bool record_mode = chrome::kRecordModeEnabled &&
-                     command_line.HasSwitch(switches::kRecordMode);
+  // Only allow Record Mode if we are in a Debug build or where we are running
+  // a cycle, and the user has limited control.
+  bool record_mode = command_line.HasSwitch(switches::kRecordMode) &&
+                     (chrome::kRecordModeEnabled ||
+                      command_line.HasSwitch(switches::kVisitURLs));
   bool playback_mode = command_line.HasSwitch(switches::kPlaybackMode);
 
   // Use a separate HTTP disk cache for isolated apps.

@@ -181,10 +181,12 @@ const FilePath::CharType kPepperFlashPluginFilename[] =
 // knowing it.  Enable in debug builds.  Playback mode is allowed always,
 // because it is useful for testing and not hazardous by itself.
 #ifndef NDEBUG
-const bool kRecordModeEnabled = true;
+// const bool kRecordModeEnabled = true;
 #else
-const bool kRecordModeEnabled = false;
+// const bool kRecordModeEnabled = false;
 #endif
+
+const bool kRecordModeEnabled = true;
 
 const int kHistogramSynchronizerReservedSequenceNumber = 0;
 
