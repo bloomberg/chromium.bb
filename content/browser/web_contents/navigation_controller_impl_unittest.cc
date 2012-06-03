@@ -27,7 +27,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/test/mock_render_process_host.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/test/test_browser_context.h"
 #include "content/test/test_notification_tracker.h"
 #include "net/base/net_util.h"

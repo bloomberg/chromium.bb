@@ -19,7 +19,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
-#include "content/test/mock_render_process_host.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/test/test_browser_context.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_content_client.h"

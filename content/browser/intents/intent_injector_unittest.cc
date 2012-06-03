@@ -11,10 +11,8 @@
 #include "content/browser/web_contents/test_web_contents.h"
 #include "content/common/intents_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/test/web_contents_tester.h"
-#include "content/test/mock_render_process_host.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_message.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 

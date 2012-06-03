@@ -15,7 +15,7 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/test/mock_resource_context.h"
+#include "content/public/test/mock_resource_context.h"
 #include "content/test/test_browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"

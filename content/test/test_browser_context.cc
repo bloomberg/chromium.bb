@@ -5,7 +5,7 @@
 #include "content/test/test_browser_context.h"
 
 #include "base/file_path.h"
-#include "content/test/mock_resource_context.h"
+#include "content/public/test/mock_resource_context.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/special_storage_policy.h"

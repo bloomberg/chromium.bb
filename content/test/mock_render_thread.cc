@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/mock_render_thread.h"
+#include "content/public/test/mock_render_thread.h"
 
 #include "base/process_util.h"
 #include "content/common/view_messages.h"

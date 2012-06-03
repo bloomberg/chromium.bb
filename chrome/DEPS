@@ -20,6 +20,7 @@ include_rules = [
   # public headers.
   "+content/common",
   "+content/public/common",
+  "+content/public/test",
   "+content/test",
 
   # TODO(ben): remove this

@@ -31,6 +31,9 @@
         'public/test/js_injection_ready_observer.h',
         'public/test/mock_download_item.h',
         'public/test/mock_download_manager.h',
+        'public/test/mock_render_process_host.h',
+        'public/test/mock_render_thread.h',
+        'public/test/mock_resource_context.h',
         'public/test/test_navigation_observer.h',
         # TODO(phajdan.jr): All of those files should live in content/test (if
         # they're only used by content) or content/public/test (if they're used
@@ -78,11 +81,8 @@
         'test/mock_render_process.cc',
         'test/mock_render_process.h',
         'test/mock_render_process_host.cc',
-        'test/mock_render_process_host.h',
         'test/mock_render_thread.cc',
-        'test/mock_render_thread.h',
         'test/mock_resource_context.cc',
-        'test/mock_resource_context.h',
         'test/mock_web_ui.cc',
         'test/mock_web_ui.h',
         'test/net/url_request_abort_on_end_job.cc',

@@ -16,7 +16,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/page_transition_types.h"
-#include "content/test/mock_render_process_host.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "webkit/forms/password_form.h"
 #include "webkit/glue/webkit_glue.h"
 

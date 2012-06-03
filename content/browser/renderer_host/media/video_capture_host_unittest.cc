@@ -17,7 +17,7 @@
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/video_capture_messages.h"
-#include "content/test/mock_resource_context.h"
+#include "content/public/test/mock_resource_context.h"
 #include "media/audio/audio_manager.h"
 #include "media/video/capture/video_capture_types.h"
 #include "net/url_request/url_request_context.h"

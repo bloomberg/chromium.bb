@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/mock_render_process_host.h"
+#include "content/public/test/mock_render_process_host.h"
 
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"

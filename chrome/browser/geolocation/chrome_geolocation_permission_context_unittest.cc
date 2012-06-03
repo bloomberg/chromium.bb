@@ -24,7 +24,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/mock_render_process_host.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_renderer_host.h"
 #include "content/test/web_contents_tester.h"

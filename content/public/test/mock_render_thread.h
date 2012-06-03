@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_MOCK_RENDER_THREAD_H_
-#define CONTENT_TEST_MOCK_RENDER_THREAD_H_
+#ifndef CONTENT_PUBLIC_TEST_MOCK_RENDER_THREAD_H_
+#define CONTENT_PUBLIC_TEST_MOCK_RENDER_THREAD_H_
 #pragma once
 
 #include "base/shared_memory.h"
@@ -25,7 +25,7 @@ namespace content {
 // ViewHostMsg_CreateWidget : sync message sent by the Widget.
 // ViewHostMsg_CreateWindow : sync message sent by the Widget.
 // ViewMsg_Close : async, send to the Widget.
-class MockRenderThread : public content::RenderThread {
+class MockRenderThread : public RenderThread {
  public:
   MockRenderThread();
   virtual ~MockRenderThread();
@@ -37,7 +37,7 @@ class MockRenderThread : public content::RenderThread {
   // they don't have access to content IPC files.
   void VerifyRunJavaScriptMessageSend(const string16& expected_alert_message);
 
-  // content::RenderThread implementation:
+  // RenderThread implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual MessageLoop* GetMessageLoop() OVERRIDE;
   virtual IPC::SyncChannel* GetChannel() OVERRIDE;
@@ -53,11 +53,10 @@ class MockRenderThread : public content::RenderThread {
   virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
   virtual void SetOutgoingMessageFilter(
       IPC::ChannelProxy::OutgoingMessageFilter* filter) OVERRIDE;
-  virtual void AddObserver(content::RenderProcessObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(
-      content::RenderProcessObserver* observer) OVERRIDE;
+  virtual void AddObserver(RenderProcessObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(RenderProcessObserver* observer) OVERRIDE;
   virtual void SetResourceDispatcherDelegate(
-      content::ResourceDispatcherDelegate* delegate) OVERRIDE;
+      ResourceDispatcherDelegate* delegate) OVERRIDE;
   virtual void WidgetHidden() OVERRIDE;
   virtual void WidgetRestored() OVERRIDE;
   virtual void EnsureWebKitInitialized() OVERRIDE;
@@ -155,4 +154,4 @@ class MockRenderThread : public content::RenderThread {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_MOCK_RENDER_THREAD_H_
+#endif  // CONTENT_PUBLIC_TEST_MOCK_RENDER_THREAD_H_

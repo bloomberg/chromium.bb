@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_MOCK_RENDER_PROCESS_HOST_H_
-#define CONTENT_TEST_MOCK_RENDER_PROCESS_HOST_H_
+#ifndef CONTENT_PUBLIC_TEST_MOCK_RENDER_PROCESS_HOST_H_
+#define CONTENT_PUBLIC_TEST_MOCK_RENDER_PROCESS_HOST_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -56,8 +56,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual bool HasConnection() const OVERRIDE;
   virtual void SetIgnoreInputEvents(bool ignore_input_events) OVERRIDE;
   virtual bool IgnoreInputEvents() const OVERRIDE;
-  virtual void Attach(content::RenderWidgetHost* host,
-                      int routing_id) OVERRIDE;
+  virtual void Attach(RenderWidgetHost* host, int routing_id) OVERRIDE;
   virtual void Release(int routing_id) OVERRIDE;
   virtual void Cleanup() OVERRIDE;
   virtual void AddPendingView() OVERRIDE;
@@ -95,7 +94,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   int id_;
   BrowserContext* browser_context_;
 
-  IDMap<content::RenderWidgetHost> render_widget_hosts_;
+  IDMap<RenderWidgetHost> render_widget_hosts_;
   bool fast_shutdown_started_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
@@ -125,4 +124,4 @@ class MockRenderProcessHostFactory : public RenderProcessHostFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_MOCK_RENDER_PROCESS_HOST_H_
+#endif  // CONTENT_PUBLIC_TEST_MOCK_RENDER_PROCESS_HOST_H_

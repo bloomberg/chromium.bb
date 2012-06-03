@@ -14,7 +14,7 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
-#include "content/test/mock_resource_context.h"
+#include "content/public/test/mock_resource_context.h"
 #include "content/test/test_content_client.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/audio/audio_manager.h"

@@ -14,10 +14,10 @@
 #include "base/string16.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/test/mock_render_thread.h"
 #include "content/renderer/mock_content_renderer_client.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "content/test/mock_keyboard.h"
-#include "content/test/mock_render_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 

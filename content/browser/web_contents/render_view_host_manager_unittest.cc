@@ -21,7 +21,7 @@
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
-#include "content/test/mock_render_process_host.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/test/test_browser_context.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_notification_tracker.h"

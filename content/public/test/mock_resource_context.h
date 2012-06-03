@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_MOCK_RESOURCE_CONTEXT_H_
-#define CONTENT_TEST_MOCK_RESOURCE_CONTEXT_H_
+#ifndef CONTENT_PUBLIC_TEST_MOCK_RESOURCE_CONTEXT_H_
+#define CONTENT_PUBLIC_TEST_MOCK_RESOURCE_CONTEXT_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -30,4 +30,4 @@ class MockResourceContext : public ResourceContext {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_MOCK_RESOURCE_CONTEXT_H_
+#endif  // CONTENT_PUBLIC_TEST_MOCK_RESOURCE_CONTEXT_H_
