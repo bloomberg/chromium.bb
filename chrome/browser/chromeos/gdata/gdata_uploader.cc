@@ -188,13 +188,7 @@ void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
   const GURL destination_directory_url = file_system_->GetUploadUrlForDirectory(
       upload_file_info->gdata_path.DirName());
   if (destination_directory_url.is_empty()) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&GDataUploader::OnUploadLocationReceived,
-                   uploader_factory_.GetWeakPtr(),
-                   upload_file_info->upload_id,
-                   HTTP_BAD_REQUEST,
-                   GURL()));
+    UploadFailed(upload_file_info, base::PLATFORM_FILE_ERROR_ABORT);
     return;
   }
 
