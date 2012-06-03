@@ -553,10 +553,12 @@ void HandleCrashDump(const BreakpadInfo& info) {
     writer.AddPairString("guid", info.guid);
     writer.AddBoundary();
     if (info.pid > 0) {
-      char pid_buf[kUint64StringSize];
-      uint64_t pid_str_len = my_uint64_len(info.pid);
-      my_uint64tos(pid_buf, info.pid, pid_str_len);
-      writer.AddPairString("pid", pid_buf);
+      char pid_value_buf[kUint64StringSize];
+      uint64_t pid_value_len = my_uint64_len(info.pid);
+      my_uint64tos(pid_value_buf, info.pid, pid_value_len);
+      static const char pid_key_name[] = "pid";
+      writer.AddPairData(pid_key_name, sizeof(pid_key_name) - 1,
+                         pid_value_buf, pid_value_len);
       writer.AddBoundary();
     }
 #if defined(OS_ANDROID)
