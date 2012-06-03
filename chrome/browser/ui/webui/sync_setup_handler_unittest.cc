@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "content/test/mock_web_ui.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -204,9 +204,9 @@ void CheckConfigDataTypeArguments(DictionaryValue* dictionary,
 
 }  // namespace
 
-// Test instance of MockWebUI that tracks the data passed to
+// Test instance of WebUI that tracks the data passed to
 // CallJavascriptFunction().
-class TestWebUI : public content::MockWebUI {
+class TestWebUI : public content::WebUI {
  public:
   virtual ~TestWebUI() {
     ClearTrackedCalls();
@@ -245,6 +245,60 @@ class TestWebUI : public content::MockWebUI {
     call_data_.back().arg1 = arg1.DeepCopy();
     call_data_.back().arg2 = arg2.DeepCopy();
   }
+
+  virtual content::WebContents* GetWebContents() const OVERRIDE {
+    return NULL;
+  }
+  virtual content::WebUIController* GetController() const OVERRIDE {
+    return NULL;
+  }
+  virtual void SetController(content::WebUIController* controller) OVERRIDE {}
+  virtual bool ShouldHideFavicon() const OVERRIDE {
+    return false;
+  }
+  virtual void HideFavicon() OVERRIDE {}
+  virtual bool ShouldFocusLocationBarByDefault() const OVERRIDE {
+    return false;
+  }
+  virtual void FocusLocationBarByDefault() OVERRIDE {}
+  virtual bool ShouldHideURL() const OVERRIDE {
+    return false;
+  }
+  virtual void HideURL() OVERRIDE {}
+  virtual const string16& GetOverriddenTitle() const OVERRIDE {
+    return temp_string_;
+  }
+  virtual void OverrideTitle(const string16& title) OVERRIDE {}
+  virtual content::PageTransition GetLinkTransitionType() const OVERRIDE {
+    return content::PAGE_TRANSITION_LINK;
+  }
+  virtual void SetLinkTransitionType(content::PageTransition type) OVERRIDE {}
+  virtual int GetBindings() const OVERRIDE {
+    return 0;
+  }
+  virtual void SetBindings(int bindings) OVERRIDE {}
+  virtual void SetFrameXPath(const std::string& xpath) OVERRIDE {}
+  virtual void AddMessageHandler(
+      content::WebUIMessageHandler* handler) OVERRIDE {}
+  virtual void RegisterMessageCallback(
+      const std::string& message,
+      const MessageCallback& callback) OVERRIDE {}
+  virtual void ProcessWebUIMessage(const GURL& source_url,
+                                   const std::string& message,
+                                   const base::ListValue& args) OVERRIDE {}
+  virtual void CallJavascriptFunction(const std::string& function_name,
+                                      const base::Value& arg1,
+                                      const base::Value& arg2,
+                                      const base::Value& arg3) OVERRIDE {}
+  virtual void CallJavascriptFunction(const std::string& function_name,
+                                      const base::Value& arg1,
+                                      const base::Value& arg2,
+                                      const base::Value& arg3,
+                                      const base::Value& arg4) OVERRIDE {}
+  virtual void CallJavascriptFunction(
+      const std::string& function_name,
+      const std::vector<const base::Value*>& args) OVERRIDE {}
+
   class CallData {
    public:
     CallData() : arg1(NULL), arg2(NULL) {}
@@ -255,6 +309,7 @@ class TestWebUI : public content::MockWebUI {
   const std::vector<CallData>& call_data() { return call_data_; }
  private:
   std::vector<CallData> call_data_;
+  string16 temp_string_;
 };
 
 class TestingSyncSetupHandler : public SyncSetupHandler {
