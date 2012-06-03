@@ -683,4 +683,6 @@ weston_wm_selection_init(struct weston_wm *wm)
 	seat = &wm->server->compositor->seat->seat;
 	wm->selection_listener.notify = weston_wm_set_selection;
 	wl_signal_add(&seat->selection_signal, &wm->selection_listener);
+
+	weston_wm_set_selection(&wm->selection_listener, seat);
 }
