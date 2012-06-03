@@ -233,5 +233,6 @@ def main(argv):
   repdict = GenerateReplacements(testdesc)
   WriteMakefile(srcpath, 'out.make', repdict)
 
+
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))

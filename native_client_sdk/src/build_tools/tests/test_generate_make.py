@@ -17,7 +17,7 @@ BUILD_TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
 sys.path.append(BUILD_TOOLS_DIR)
 import generate_make
 
-BASIC_DESC = { 
+BASIC_DESC = {
   'TOOLS': ['newlib', 'glibc'],
   'TARGETS': [
     {
@@ -112,7 +112,6 @@ class TestValidateFormat(unittest.TestCase):
     self._validate(testdesc, 'Key TOOLS expects LIST not STR.')
 
 # TODO(noelallen):  Add test which generates a real make and runs it.
-# See: 
 
 def main():
   suite = unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__])
