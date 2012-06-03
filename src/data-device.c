@@ -38,8 +38,7 @@ data_offer_accept(struct wl_client *client, struct wl_resource *resource,
 	 * this be a wl_data_device request? */
 
 	if (offer->source)
-		wl_data_source_send_target(&offer->source->resource,
-					   mime_type);
+		offer->source->accept(offer->source, serial, mime_type);
 }
 
 static void
@@ -49,10 +48,9 @@ data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 	struct wl_data_offer *offer = resource->data;
 
 	if (offer->source)
-		wl_data_source_send_send(&offer->source->resource,
-					 mime_type, fd);
-
-	close(fd);
+		offer->source->send(offer->source, mime_type, fd);
+	else
+		close(fd);
 }
 
 static void
@@ -60,6 +58,12 @@ data_offer_destroy(struct wl_client *client, struct wl_resource *resource)
 {
 	wl_resource_destroy(resource);
 }
+
+static const struct wl_data_offer_interface data_offer_interface = {
+	data_offer_accept,
+	data_offer_receive,
+	data_offer_destroy,
+};
 
 static void
 destroy_data_offer(struct wl_resource *resource)
@@ -70,12 +74,6 @@ destroy_data_offer(struct wl_resource *resource)
 	free(offer);
 }
 
-static const struct wl_data_offer_interface data_offer_interface = {
-	data_offer_accept,
-	data_offer_receive,
-	data_offer_destroy,
-};
-
 static void
 destroy_offer_data_source(struct wl_listener *listener, void *data)
 {
@@ -85,12 +83,6 @@ destroy_offer_data_source(struct wl_listener *listener, void *data)
 			     source_destroy_listener);
 
 	offer->source = NULL;
-}
-
-static void
-data_source_cancel(struct wl_data_source *source)
-{
-	wl_data_source_send_cancelled(&source->resource);
 }
 
 static struct wl_resource *
@@ -108,7 +100,7 @@ wl_data_source_send_offer(struct wl_data_source *source,
 	offer->resource.object.id = 0;
 	offer->resource.object.interface = &wl_data_offer_interface;
 	offer->resource.object.implementation =
-		(void (**)(void)) source->offer_interface;
+		(void (**)(void)) &data_offer_interface;
 	offer->resource.data = offer;
 	wl_signal_init(&offer->resource.destroy_signal);
 
@@ -441,6 +433,27 @@ destroy_data_source(struct wl_resource *resource)
 }
 
 static void
+client_source_accept(struct wl_data_source *source,
+		     uint32_t time, const char *mime_type)
+{
+	wl_data_source_send_target(&source->resource, mime_type);
+}
+
+static void
+client_source_send(struct wl_data_source *source,
+		   const char *mime_type, int32_t fd)
+{
+	wl_data_source_send_send(&source->resource, mime_type, fd);
+	close(fd);
+}
+
+static void
+client_source_cancel(struct wl_data_source *source)
+{
+	wl_data_source_send_cancelled(&source->resource);
+}
+
+static void
 create_data_source(struct wl_client *client,
 		   struct wl_resource *resource, uint32_t id)
 {
@@ -460,8 +473,9 @@ create_data_source(struct wl_client *client,
 	source->resource.data = source;
 	wl_signal_init(&source->resource.destroy_signal);
 
-	source->offer_interface = &data_offer_interface;
-	source->cancel = data_source_cancel;
+	source->accept = client_source_accept;
+	source->send = client_source_send;
+	source->cancel = client_source_cancel;
 
 	wl_array_init(&source->mime_types);
 	wl_client_add_resource(client, &source->resource);

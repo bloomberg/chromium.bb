@@ -232,7 +232,10 @@ struct wl_data_source {
 	struct wl_resource resource;
 	struct wl_array mime_types;
 
-	const struct wl_data_offer_interface *offer_interface;
+	void (*accept)(struct wl_data_source *source,
+		       uint32_t serial, const char *mime_type);
+	void (*send)(struct wl_data_source *source,
+		     const char *mime_type, int32_t fd);
 	void (*cancel)(struct wl_data_source *source);
 };
 
