@@ -2064,7 +2064,8 @@ handle_bound_key(struct terminal *terminal,
 				     "text/plain;charset=utf-8");
 		wl_data_source_add_listener(terminal->selection,
 					    &data_source_listener, terminal);
-		input_set_selection(input, terminal->selection, time);
+		input_set_selection(input, terminal->selection,
+				    display_get_serial(terminal->display));
 		return 1;
 	case XKB_KEY_V:
 		input_receive_selection_data_to_fd(input,
