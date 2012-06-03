@@ -239,8 +239,7 @@ class SyncStage(bs.BuilderStage):
   def _GetManifestVersionsRepoUrl(self, read_only=False):
     return cbuildbot_config.GetManifestVersionsRepoUrl(
         self.internal,
-        read_only=read_only,
-        test=self._build_config['unified_manifest_version'])
+        read_only=read_only)
 
   def Initialize(self):
     self._InitializeRepo()
@@ -399,8 +398,7 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
     return lkgm_manager.LKGMManager(
         source_repo=self.repo,
         manifest_repo=cbuildbot_config.GetManifestVersionsRepoUrl(
-            internal, read_only=False,
-            test=self._build_config['unified_manifest_version']),
+            internal, read_only=False),
         build_name=self._bot_id,
         build_type=self._build_config['build_type'],
         incr_type=increment,
@@ -493,8 +491,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
         validation_pool.ValidationPool.AcquirePoolFromManifest(
             manifest, self._build_config['overlays'], self._options.buildnumber,
             self.builder_name, self._build_config['master'],
-            self._options.debug or
-            self._build_config['unified_manifest_version'])
+            self._options.debug)
 
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""
@@ -512,8 +509,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
         pool = validation_pool.ValidationPool.AcquirePool(
             self._build_config['overlays'], self._build_root,
             self._options.buildnumber, self.builder_name,
-            self._options.debug or
-            self._build_config['unified_manifest_version'])
+            self._options.debug)
 
         # We only have work to do if there are changes to try.
         try:
@@ -1605,5 +1601,4 @@ class PublishUprevChangesStage(NonHaltingBuilderStage):
     if push_overlays:
       commands.UprevPush(self._build_root,
                          push_overlays,
-                         self._options.debug or
-                         self._build_config['unified_manifest_version'])
+                         self._options.debug)

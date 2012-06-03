@@ -232,6 +232,7 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
 
     self.build_config['manifest_version'] = True
     self.build_config['build_type'] = self.build_type
+    self.build_config['master'] = True
 
     repo = repository.RepoRepository(
       self.source_repo, self.tmpdir, self.branch)
@@ -358,6 +359,7 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
   def testGetSlavesForMaster(self):
     """Tests that we get the slaves for a fake master configuration."""
     test_config = self._GetTestConfig()
+    self.build_config['unified_manifest_version'] = False
     self.mox.ReplayAll()
     stage = self.ConstructStage()
     important_configs = stage._GetSlavesForMaster(test_config)
@@ -1173,6 +1175,9 @@ class PublishUprevChangesStageTest(AbstractStageTest):
 
   def testPush(self):
     """Test values for PublishUprevChanges."""
+    self.build_config['push_overlays'] = constants.PUBLIC_OVERLAYS
+    self.build_config['master'] = True
+
     commands.UprevPush(
         self.build_root,
         [self.overlay],

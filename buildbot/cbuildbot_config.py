@@ -435,6 +435,7 @@ pfq = _config(
 
 paladin = _config(
   important=True,
+  unified_manifest_version=True,
   build_type=constants.PALADIN_TYPE,
   overlays=constants.PUBLIC_OVERLAYS,
   prebuilts=True,
@@ -498,9 +499,7 @@ incremental.add_config('amd64-generic-incremental',
 
 paladin.add_config('x86-generic-paladin',
   boards=['x86-generic'],
-  master=True,
   paladin_builder_name='x86 generic paladin',
-  push_overlays=constants.PUBLIC_OVERLAYS,
 )
 
 paladin.add_config('arm-tegra2-paladin',
@@ -693,10 +692,12 @@ incremental.add_config('amd64-generic-asan',
 # Internal Builds
 #
 
-internal_pfq = internal.derive(pfq, overlays=constants.PRIVATE_OVERLAYS)
+internal_pfq = internal.derive(pfq, overlays=constants.BOTH_OVERLAYS)
 internal_pfq_branch = internal_pfq.derive(overlays=constants.BOTH_OVERLAYS,
                                           trybot_list=False, branch=True)
-internal_paladin = internal.derive(paladin, overlays=constants.PRIVATE_OVERLAYS)
+internal_paladin = internal.derive(paladin, overlays=constants.BOTH_OVERLAYS,
+                                   vm_tests=None)
+
 internal_incremental = internal.derive(incremental,
                                        overlays=constants.BOTH_OVERLAYS)
 
@@ -710,7 +711,7 @@ internal_arm_paladin = internal_paladin.derive(arm)
 
 internal_paladin.add_config('mario-paladin',
   master=True,
-  push_overlays=constants.PRIVATE_OVERLAYS,
+  push_overlays=constants.BOTH_OVERLAYS,
   boards=['x86-mario'],
   gs_path='gs://chromeos-x86-mario/pre-flight-master',
   paladin_builder_name='mario paladin',
