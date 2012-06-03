@@ -1575,8 +1575,8 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
         // doing this undesirable thing, but that means we need to roll the
         // sys-command handling ourselves.
         // Combine |w_param| with common key state message flags.
-        w_param |= ((GetKeyState(VK_CONTROL) & 0x80) == 0x80)? MK_CONTROL : 0;
-        w_param |= ((GetKeyState(VK_SHIFT) & 0x80) == 0x80)? MK_SHIFT : 0;
+        w_param |= base::win::IsCtrlPressed() ? MK_CONTROL : 0;
+        w_param |= base::win::IsShiftPressed() ? MK_SHIFT : 0;
       }
     }
   } else if (message == WM_NCRBUTTONDOWN &&
@@ -2035,9 +2035,9 @@ void NativeWidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
   // key and released it, so we should focus the menu bar.
   if ((notification_code & sc_mask) == SC_KEYMENU && click.x == 0) {
     int modifiers = ui::EF_NONE;
-    if (!!(GetKeyState(VK_SHIFT) & 0x8000))
+    if (base::win::IsShiftPressed())
       modifiers |= ui::EF_SHIFT_DOWN;
-    if (!!(GetKeyState(VK_CONTROL) & 0x8000))
+    if (base::win::IsCtrlPressed())
       modifiers |= ui::EF_CONTROL_DOWN;
     // Retrieve the status of shift and control keys to prevent consuming
     // shift+alt keys, which are used by Windows to change input languages.

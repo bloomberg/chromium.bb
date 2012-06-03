@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,11 +260,8 @@ LRESULT InputMethodWin::OnChar(
   if (!GetTextInputClient())
     return 0;
 
-  int flags = 0;
-  flags |= (::GetKeyState(VK_MENU) & 0x80)? ui::EF_ALT_DOWN : 0;
-  flags |= (::GetKeyState(VK_SHIFT) & 0x80)? ui::EF_SHIFT_DOWN : 0;
-  flags |= (::GetKeyState(VK_CONTROL) & 0x80)? ui::EF_CONTROL_DOWN : 0;
-  GetTextInputClient()->InsertChar(static_cast<char16>(wparam), flags);
+  GetTextInputClient()->InsertChar(static_cast<char16>(wparam),
+                                   GetModifiersFromKeyState());
   return 0;
 }
 
