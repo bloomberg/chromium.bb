@@ -10,6 +10,7 @@ ready for the commit queue to try.
 
 import json
 import logging
+import sys
 import time
 import urllib
 from xml.dom import minidom
@@ -22,6 +23,13 @@ from chromite.lib import cros_build_lib
 
 _BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
 _BUILD_INT_DASHBOARD = 'http://uberchromegw.corp.google.com/i/chromeos'
+
+# We import mox so that w/in ApplyPoolIntoRepo, if a mox exception is
+# thrown, we don't cover it up.
+try:
+  import mox
+except ImportError:
+  mox = None
 
 
 def _RunCommand(cmd, dryrun):
@@ -607,14 +615,25 @@ class ValidationPool(object):
     except (KeyboardInterrupt, RuntimeError, SystemExit):
       raise
     except Exception, e:
+      if mox is not None and isinstance(e, mox.Error):
+        raise
+
+      # Stash a copy of the tb guts, since the next set of steps can
+      # wipe it.
+      exc = sys.exc_info()
       cros_build_lib.Error(
           "Unhandled Exception occured during CQ's Apply: %s\n"
           "Failing the entire series to prevent CQ from going into an "
           "infinite loop hanging on these CLs.\n"
           "Affected patches: %s"
           % (e, ' '.join(x.change_id for x in self.changes)))
-      self.HandleApplicationFailure(self.changes)
-      raise
+      try:
+        self.HandleApplicationFailure(self.changes)
+      except Exception, e:
+        if mox is None or not isinstance(e, mox.Error):
+          # If it's not a mox error, let it fly.
+          raise
+      raise exc[0], exc[1], exc[2]
 
     if self.is_master:
       for change in applied:
