@@ -2454,6 +2454,8 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 	seat->new_drag_icon_listener.notify = device_handle_new_drag_icon;
 	wl_signal_add(&seat->seat.drag_icon_signal,
 		      &seat->new_drag_icon_listener);
+
+	clipboard_create(seat);
 }
 
 WL_EXPORT void

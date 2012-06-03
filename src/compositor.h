@@ -677,6 +677,9 @@ tty_activate_vt(struct tty *tty, int vt);
 void
 screenshooter_create(struct weston_compositor *ec);
 
+struct clipboard *
+clipboard_create(struct weston_seat *seat);
+
 void
 text_cursor_position_notifier_create(struct weston_compositor *ec);
 
