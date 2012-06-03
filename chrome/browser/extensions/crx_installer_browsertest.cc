@@ -135,7 +135,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
       test_data_dir_.AppendASCII("minimal_platform_app.crx"), 1));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
+// This test is disabled. See bug http://crbug.com/130951
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
+                       DISABLED_PackAndInstallExtension) {
   if (!extensions::switch_utils::IsOffStoreInstallEnabled())
     return;
 
