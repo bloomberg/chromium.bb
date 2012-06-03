@@ -322,6 +322,10 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, ChromeErrorURL) {
 
 // Test that PageCycler will visit all the urls from a cache directory
 // successfully while in playback mode.
+#if defined(OS_CHROMEOS)
+// TODO(rdevlin.cronin): Perhaps page cycler isn't completely implemented on
+// ChromeOS?
+#else
 IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, PlaybackMode) {
   const size_t kNumIterations = 1;
   ScopedTempDir temp;
@@ -379,3 +383,4 @@ IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, URLNotInCache) {
 
   ASSERT_FALSE(errors[0].compare(expected_error));
 }
+#endif
