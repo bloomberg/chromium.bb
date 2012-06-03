@@ -586,7 +586,6 @@
           '<(PRODUCT_DIR)/Chromium Framework.framework/Versions/A/resources/omnibox_http.pdf',
           '<(PRODUCT_DIR)/Chromium Framework.framework/Versions/A/resources/product_logo_32.png',
           '<(PRODUCT_DIR)/Chromium Framework.framework/Versions/A/resources/star.pdf',
-          '<(PRODUCT_DIR)/Chromium Framework.framework/Versions/A/resources/theme_resources_2x.pak',
           '<(PRODUCT_DIR)/Chromium Framework.framework/Versions/A/resources/theme_resources_standard.pak',
           '<(PRODUCT_DIR)/Chromium Framework.framework/Versions/A/resources/ui_resources_standard.pak',
           'test/data/components/flapper/mac/',
