@@ -489,9 +489,9 @@
           'test/data/extensions/api_test/window_update/resize/manifest.json',
           'test/data/extensions/api_test/window_update/show_state/manifest.json',
           'test/data/extensions/api_test/window_update/sizing/manifest.json',
-          'test/data/extensions/good/Extensions/behllobkkfkfnphdnhnkndlbkcpglgmj',
+          'test/data/extensions/good/Extensions/behllobkkfkfnphdnhnkndlbkcpglgmj/',
           'test/data/extensions/good/Extensions/bjafgdebaacbbbecmhlhpofkepfkgcpa/1.0/manifest.json',
-          'test/data/extensions/good/Extensions/hpiknbiabeeppbpihjehijgoemciehgk',
+          'test/data/extensions/good/Extensions/hpiknbiabeeppbpihjehijgoemciehgk/',
         ],
         'isolate_dependency_untracked': [
           '../third_party/WebKit/LayoutTests/http/tests/websocket/tests/handler_map.txt',
