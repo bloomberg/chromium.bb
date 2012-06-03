@@ -16,18 +16,22 @@ namespace shared {
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodEventFilter, public:
 
-InputMethodEventFilter::InputMethodEventFilter(RootWindow* root_window)
+InputMethodEventFilter::InputMethodEventFilter()
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           input_method_(ui::CreateInputMethod(this))),
-      root_window_(root_window) {
+      target_root_window_(NULL) {
   // TODO(yusukes): Check if the root window is currently focused and pass the
   // result to Init().
   input_method_->Init(true);
-  root_window_->SetProperty(aura::client::kRootWindowInputMethodKey,
-                            input_method_.get());
 }
 
 InputMethodEventFilter::~InputMethodEventFilter() {
+}
+
+void InputMethodEventFilter::SetInputMethodPropertyInRootWindow(
+    aura::RootWindow* root_window) {
+  root_window->SetProperty(aura::client::kRootWindowInputMethodKey,
+                           input_method_.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,6 +47,10 @@ bool InputMethodEventFilter::PreHandleKeyEvent(aura::Window* target,
     static_cast<aura::TranslatedKeyEvent*>(event)->ConvertToKeyEvent();
     return false;
   } else {
+    // If the focused window is changed, all requests to IME will be
+    // discarded so it's safe to update the target_root_window_ here.
+    target_root_window_ = target->GetRootWindow();
+    DCHECK(target_root_window_);
     input_method_->DispatchKeyEvent(event->native_event());
     return true;
   }
@@ -74,7 +82,7 @@ void InputMethodEventFilter::DispatchKeyEventPostIME(
   DCHECK(event.message != WM_CHAR);
 #endif
   aura::TranslatedKeyEvent aura_event(event, false /* is_char */);
-  root_window_->DispatchKeyEvent(&aura_event);
+  target_root_window_->DispatchKeyEvent(&aura_event);
 }
 
 void InputMethodEventFilter::DispatchFabricatedKeyEventPostIME(
@@ -83,7 +91,7 @@ void InputMethodEventFilter::DispatchFabricatedKeyEventPostIME(
     int flags) {
   aura::TranslatedKeyEvent aura_event(type == ui::ET_KEY_PRESSED, key_code,
                                       flags);
-  root_window_->DispatchKeyEvent(&aura_event);
+  target_root_window_->DispatchKeyEvent(&aura_event);
 }
 
 }  // namespace shared

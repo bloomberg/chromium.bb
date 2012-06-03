@@ -34,8 +34,7 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodProperty) {
   root_window()->SetEventFilter(root_filter);
 
   // Add the InputMethodEventFilter before the TestEventFilter.
-  aura::shared::InputMethodEventFilter input_method_event_filter(
-      root_window());
+  aura::shared::InputMethodEventFilter input_method_event_filter;
   root_filter->AddFilter(&input_method_event_filter);
 
   // Tests if InputMethodEventFilter adds a window property on its
@@ -57,8 +56,7 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   root_window()->SetEventFilter(root_filter);
 
   // Add the InputMethodEventFilter before the TestEventFilter.
-  aura::shared::InputMethodEventFilter input_method_event_filter(
-      root_window());
+  aura::shared::InputMethodEventFilter input_method_event_filter;
   root_filter->AddFilter(&input_method_event_filter);
 
   // Add TestEventFilter to the RootWindow.

@@ -720,8 +720,8 @@ void Shell::Init() {
   // InputMethodEventFilter must be the third one. It has to be added before
   // AcceleratorFilter.
   DCHECK_EQ(2U, GetRootWindowEventFilterCount());
-  input_method_filter_.reset(
-      new aura::shared::InputMethodEventFilter(root_window));
+  input_method_filter_.reset(new aura::shared::InputMethodEventFilter());
+  input_method_filter_->SetInputMethodPropertyInRootWindow(root_window);
   AddRootWindowEventFilter(input_method_filter_.get());
 #if !defined(OS_MACOSX)
   accelerator_filter_.reset(new internal::AcceleratorFilter);

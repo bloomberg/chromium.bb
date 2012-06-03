@@ -28,8 +28,10 @@ class AURA_EXPORT InputMethodEventFilter
     : public aura::EventFilter,
       public ui::internal::InputMethodDelegate {
  public:
-  explicit InputMethodEventFilter(RootWindow* root_window);
+  InputMethodEventFilter();
   virtual ~InputMethodEventFilter();
+
+  void SetInputMethodPropertyInRootWindow(aura::RootWindow* root_window);
 
  private:
   // Overridden from aura::EventFilter:
@@ -52,7 +54,9 @@ class AURA_EXPORT InputMethodEventFilter
 
   scoped_ptr<ui::InputMethod> input_method_;
 
-  RootWindow* root_window_;
+  // The target root window to which the key event translated by IME will
+  // be dispatched.
+  RootWindow* target_root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodEventFilter);
 };
