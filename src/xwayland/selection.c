@@ -106,18 +106,23 @@ weston_wm_get_incr_chunk(struct weston_wm *wm)
 	}
 }
 
+struct x11_data_source {
+	struct wl_data_source base;
+	struct weston_wm *wm;
+};
+
 static void
-data_offer_accept(struct wl_client *client, struct wl_resource *resource,
-		  uint32_t time, const char *mime_type)
+data_source_accept(struct wl_data_source *source,
+		   uint32_t time, const char *mime_type)
 {
 }
 
 static void
-data_offer_receive(struct wl_client *client, struct wl_resource *resource,
-		   const char *mime_type, int32_t fd)
+data_source_send(struct wl_data_source *base,
+		 const char *mime_type, int32_t fd)
 {
-	struct wl_data_offer *offer = resource->data;
-	struct weston_wm *wm = offer->source->resource.data;
+	struct x11_data_source *source = (struct x11_data_source *) base;
+	struct weston_wm *wm = source->wm;
 
 	if (strcmp(mime_type, "text/plain;charset=utf-8") == 0) {
 		/* Get data for the utf8_string target */
@@ -131,23 +136,9 @@ data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 		xcb_flush(wm->conn);
 
 		fcntl(fd, F_SETFL, O_WRONLY | O_NONBLOCK);
-		wm->data_source_fd = fd;
-	} else {
-		close(fd);
+		wm->data_source_fd = fcntl(fd, F_DUPFD_CLOEXEC, fd);
 	}
 }
-
-static void
-data_offer_destroy(struct wl_client *client, struct wl_resource *resource)
-{
-	wl_resource_destroy(resource);
-}
-
-static const struct wl_data_offer_interface data_offer_interface = {
-	data_offer_accept,
-	data_offer_receive,
-	data_offer_destroy,
-};
 
 static void
 data_source_cancel(struct wl_data_source *source)
@@ -157,7 +148,7 @@ data_source_cancel(struct wl_data_source *source)
 static void
 weston_wm_get_selection_targets(struct weston_wm *wm)
 {
-	struct wl_data_source *source;
+	struct x11_data_source *source;
 	struct weston_compositor *compositor;
 	xcb_get_property_cookie_t cookie;
 	xcb_get_property_reply_t *reply;
@@ -186,23 +177,25 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 	if (source == NULL)
 		return;
 
-	wl_signal_init(&source->resource.destroy_signal);
-	source->offer_interface = &data_offer_interface;
-	source->cancel = data_source_cancel;
-	source->resource.data = wm;
+	wl_signal_init(&source->base.resource.destroy_signal);
+	source->base.accept = data_source_accept;
+	source->base.send = data_source_send;
+	source->base.cancel = data_source_cancel;
+	source->base.resource.data = source;
+	source->wm = wm;
 
-	wl_array_init(&source->mime_types);
+	wl_array_init(&source->base.mime_types);
 	value = xcb_get_property_value(reply);
 	for (i = 0; i < reply->value_len; i++) {
 		if (value[i] == wm->atom.utf8_string) {
-			p = wl_array_add(&source->mime_types, sizeof *p);
+			p = wl_array_add(&source->base.mime_types, sizeof *p);
 			if (p)
 				*p = strdup("text/plain;charset=utf-8");
 		}
 	}
 
 	compositor = wm->server->compositor;
-	wl_seat_set_selection(&compositor->seat->seat, source,
+	wl_seat_set_selection(&compositor->seat->seat, &source->base,
 			      wl_display_next_serial(compositor->wl_display));
 
 	free(reply);
@@ -416,6 +409,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 		}
 		xcb_flush(wm->conn);
 		wl_event_source_remove(wm->property_source);
+		close(wm->data_source_fd);
 		wm->data_source_fd = -1;
 		close(fd);
 	} else {
@@ -428,6 +422,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 static void
 weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_type)
 {
+	struct wl_data_source *source;
 	struct wl_seat *seat = &wm->server->compositor->seat->seat;
 	int p[2];
 
@@ -446,9 +441,8 @@ weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_ty
 						   weston_wm_read_data_source,
 						   wm);
 
-	wl_data_source_send_send(&seat->selection_data_source->resource,
-				 mime_type, p[1]);
-	close(p[1]);
+	source = seat->selection_data_source;
+	source->send(source, mime_type, p[1]);
 }
 
 static void
@@ -631,7 +625,7 @@ weston_wm_set_selection(struct wl_listener *listener, void *data)
 		return;
 	}
 
-	if (source->offer_interface == &data_offer_interface)
+	if (source->send == data_source_send)
 		return;
 
 	p = source->mime_types.data;
