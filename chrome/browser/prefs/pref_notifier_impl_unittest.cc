@@ -11,7 +11,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
-#include "content/test/notification_observer_mock.h"
+#include "content/public/test/mock_notification_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,7 +80,7 @@ TEST_F(PrefNotifierTest, OnPreferenceChanged) {
 
 TEST_F(PrefNotifierTest, OnInitializationCompleted) {
   MockPrefNotifier notifier(&pref_service_);
-  content::NotificationObserverMock observer;
+  content::MockNotificationObserver observer;
   content::NotificationRegistrar registrar;
   registrar.Add(&observer, chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
                 content::Source<PrefService>(&pref_service_));

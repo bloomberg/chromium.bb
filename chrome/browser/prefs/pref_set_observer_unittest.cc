@@ -8,7 +8,7 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/test/notification_observer_mock.h"
+#include "content/public/test/mock_notification_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,7 +72,7 @@ TEST_F(PrefSetObserverTest, Observe) {
   using testing::_;
   using testing::Mock;
 
-  content::NotificationObserverMock observer;
+  content::MockNotificationObserver observer;
   scoped_ptr<PrefSetObserver> pref_set(CreatePrefSetObserver(&observer));
 
   EXPECT_CALL(observer,

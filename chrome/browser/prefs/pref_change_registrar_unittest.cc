@@ -7,7 +7,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/test/notification_observer_mock.h"
+#include "content/public/test/mock_notification_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,12 +43,12 @@ class PrefChangeRegistrarTest : public testing::Test {
 
  private:
   scoped_ptr<MockPrefService> service_;
-  scoped_ptr<content::NotificationObserverMock> observer_;
+  scoped_ptr<content::MockNotificationObserver> observer_;
 };
 
 void PrefChangeRegistrarTest::SetUp() {
   service_.reset(new MockPrefService());
-  observer_.reset(new content::NotificationObserverMock());
+  observer_.reset(new content::MockNotificationObserver());
 }
 
 TEST_F(PrefChangeRegistrarTest, AddAndRemove) {

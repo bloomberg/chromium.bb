@@ -22,7 +22,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/test/notification_observer_mock.h"
+#include "content/public/test/mock_notification_observer.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,7 +88,7 @@ class PersonalDataManagerTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<PersonalDataManager> personal_data_;
   content::NotificationRegistrar registrar_;
-  content::NotificationObserverMock observer_;
+  content::MockNotificationObserver observer_;
   PersonalDataLoadedObserverMock personal_data_observer_;
 };
 

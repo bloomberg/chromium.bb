@@ -264,8 +264,6 @@
         # production code code in libbrowser (in chrome.gyp).
         #'../content/browser/net/url_request_mock_http_job.cc',
         #'../content/browser/net/url_request_mock_http_job.h',
-        '../content/test/notification_observer_mock.cc',
-        '../content/test/notification_observer_mock.h',
         '../ui/gfx/image/image_unittest_util.h',
         '../ui/gfx/image/image_unittest_util.cc',
         '../webkit/fileapi/mock_file_system_options.cc',

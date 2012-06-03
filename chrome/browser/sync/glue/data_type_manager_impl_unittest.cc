@@ -13,7 +13,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/test/notification_observer_mock.h"
+#include "content/public/test/mock_notification_observer.h"
 #include "content/test/test_browser_thread.h"
 #include "sync/internal_api/configure_reason.h"
 #include "sync/syncable/model_type.h"
@@ -160,7 +160,7 @@ class SyncDataTypeManagerImplTest
   content::TestBrowserThread ui_thread_;
   DataTypeController::TypeMap controllers_;
   FakeBackendDataTypeConfigurer configurer_;
-  content::NotificationObserverMock observer_;
+  content::MockNotificationObserver observer_;
   content::NotificationRegistrar registrar_;
 };
 

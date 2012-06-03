@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_NOTIFICATION_OBSERVER_MOCK_H_
-#define CONTENT_TEST_NOTIFICATION_OBSERVER_MOCK_H_
+#ifndef CONTENT_PUBLIC_TEST_MOCK_NOTIFICATION_OBSERVER_MOCK_H_
+#define CONTENT_PUBLIC_TEST_MOCK_NOTIFICATION_OBSERVER_MOCK_H_
 #pragma once
 
 #include "content/public/browser/notification_observer.h"
@@ -14,10 +14,10 @@ namespace content {
 class NotificationDetails;
 class NotificationSource;
 
-class NotificationObserverMock : public NotificationObserver {
+class MockNotificationObserver : public NotificationObserver {
  public:
-  NotificationObserverMock();
-  virtual ~NotificationObserverMock();
+  MockNotificationObserver();
+  virtual ~MockNotificationObserver();
 
   MOCK_METHOD3(Observe, void(int type,
                              const NotificationSource& source,
@@ -26,4 +26,4 @@ class NotificationObserverMock : public NotificationObserver {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_NOTIFICATION_OBSERVER_MOCK_H_
+#endif  // CONTENT_PUBLIC_TEST_MOCK_NOTIFICATION_OBSERVER_MOCK_H_

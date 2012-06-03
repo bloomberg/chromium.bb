@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/notification_observer_mock.h"
+#include "content/public/test/mock_notification_observer.h"
 
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
 namespace content {
 
-NotificationObserverMock::NotificationObserverMock() {}
+MockNotificationObserver::MockNotificationObserver() {}
 
-NotificationObserverMock::~NotificationObserverMock() {}
+MockNotificationObserver::~MockNotificationObserver() {}
 
 }  // namespace content

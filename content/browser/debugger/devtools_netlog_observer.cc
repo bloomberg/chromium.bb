@@ -46,10 +46,6 @@ void DevToolsNetLogObserver::OnAddEntry(net::NetLog::EventType type,
   // The events that the Observer is interested in only occur on the IO thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO))
     return;
-
-  // The events that the Observer is interested in only occur on the IO thread.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO))
-    return;
   if (source.type == net::NetLog::SOURCE_URL_REQUEST)
     OnAddURLRequestEntry(type, time, source, phase, params);
   else if (source.type == net::NetLog::SOURCE_HTTP_STREAM_JOB)

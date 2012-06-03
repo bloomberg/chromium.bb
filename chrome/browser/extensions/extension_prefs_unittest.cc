@@ -20,7 +20,7 @@
 #include "chrome/common/string_ordinal.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/test/notification_observer_mock.h"
+#include "content/public/test/mock_notification_observer.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -967,12 +967,12 @@ class ExtensionPrefsNotifyWhenNeeded : public ExtensionPrefsPrepopulatedTest {
     using testing::Mock;
     using testing::StrEq;
 
-    content::NotificationObserverMock observer;
+    content::MockNotificationObserver observer;
     PrefChangeRegistrar registrar;
     registrar.Init(prefs()->pref_service());
     registrar.Add(kPref1, &observer);
 
-    content::NotificationObserverMock incognito_observer;
+    content::MockNotificationObserver incognito_observer;
     scoped_ptr<PrefService> incog_prefs(prefs_.CreateIncognitoPrefService());
     PrefChangeRegistrar incognito_registrar;
     incognito_registrar.Init(incog_prefs.get());

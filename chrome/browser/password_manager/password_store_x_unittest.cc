@@ -26,7 +26,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
-#include "content/test/notification_observer_mock.h"
+#include "content/public/test/mock_notification_observer.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,7 +70,7 @@ class DBThreadObserverHelper
     done_event_.Wait();
   }
 
-  content::NotificationObserverMock& observer() {
+  content::MockNotificationObserver& observer() {
     return observer_;
   }
 
@@ -93,7 +93,7 @@ class DBThreadObserverHelper
 
   WaitableEvent done_event_;
   content::NotificationRegistrar registrar_;
-  content::NotificationObserverMock observer_;
+  content::MockNotificationObserver observer_;
 };
 
 class FailingBackend : public PasswordStoreX::NativeBackend {
