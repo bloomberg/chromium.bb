@@ -3189,6 +3189,7 @@ compilePassOpcode (FileInfo * nested, TranslationTableOpcode opcode)
 	case pass_not:
 	case pass_startReplace:
 	case pass_endReplace:
+	case pass_first:
 	  passIC++;
 	  break;
 	default:
