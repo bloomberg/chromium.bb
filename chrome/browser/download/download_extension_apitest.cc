@@ -26,7 +26,9 @@ class DownloadsApiTest : public ExtensionApiTest {
   ScopedTempDir tmpdir;
 };
 
-IN_PROC_BROWSER_TEST_F(DownloadsApiTest, DownloadsApiTest) {
+
+// This test is disabled. See bug http://crbug.com/130950
+IN_PROC_BROWSER_TEST_F(DownloadsApiTest, DISABLED_DownloadsApiTest) {
   SetUpTempDownloadsDir();
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("downloads")) << message_;
