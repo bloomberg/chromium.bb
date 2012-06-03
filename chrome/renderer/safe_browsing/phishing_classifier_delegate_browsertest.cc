@@ -15,7 +15,7 @@
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "content/public/renderer/render_view.h"
-#include "content/test/render_view_fake_resources_test.h"
+#include "content/public/test/render_view_fake_resources_test.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -58,15 +58,16 @@ class MockScorer : public Scorer {
 };
 }  // namespace
 
-class PhishingClassifierDelegateTest : public RenderViewFakeResourcesTest {
+class PhishingClassifierDelegateTest
+    : public content::RenderViewFakeResourcesTest {
  protected:
   bool OnMessageReceived(const IPC::Message& message) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PhishingClassifierDelegateTest, message)
         IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_PhishingDetectionDone,
                             OnPhishingDetectionDone)
-      IPC_MESSAGE_UNHANDLED(
-          handled = RenderViewFakeResourcesTest::OnMessageReceived(message))
+      IPC_MESSAGE_UNHANDLED(handled =
+          content::RenderViewFakeResourcesTest::OnMessageReceived(message))
     IPC_END_MESSAGE_MAP()
     return handled;
   }

@@ -21,7 +21,7 @@
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/murmurhash3_util.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
-#include "content/test/render_view_fake_resources_test.h"
+#include "content/public/test/render_view_fake_resources_test.h"
 #include "crypto/sha2.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -32,7 +32,7 @@ using ::testing::Pair;
 
 namespace safe_browsing {
 
-class PhishingClassifierTest : public RenderViewFakeResourcesTest {
+class PhishingClassifierTest : public content::RenderViewFakeResourcesTest {
  protected:
   PhishingClassifierTest()
       : url_tld_token_net_(features::kUrlTldToken + std::string("net")),
@@ -42,7 +42,7 @@ class PhishingClassifierTest : public RenderViewFakeResourcesTest {
 
   virtual void SetUp() {
     // Set up WebKit and the RenderView.
-    RenderViewFakeResourcesTest::SetUp();
+    content::RenderViewFakeResourcesTest::SetUp();
 
     // Construct a model to test with.  We include one feature from each of
     // the feature extractors, which allows us to verify that they all ran.
@@ -85,7 +85,7 @@ class PhishingClassifierTest : public RenderViewFakeResourcesTest {
   }
 
   virtual void TearDown() {
-    RenderViewFakeResourcesTest::TearDown();
+    content::RenderViewFakeResourcesTest::TearDown();
   }
 
   // Helper method to start phishing classification and wait for it to

@@ -39,8 +39,8 @@
 //   ...
 // }
 
-#ifndef CONTENT_TEST_RENDER_VIEW_FAKE_RESOURCES_TEST_H_
-#define CONTENT_TEST_RENDER_VIEW_FAKE_RESOURCES_TEST_H_
+#ifndef CONTENT_PUBLIC_TEST_RENDER_VIEW_FAKE_RESOURCES_TEST_H_
+#define CONTENT_PUBLIC_TEST_RENDER_VIEW_FAKE_RESOURCES_TEST_H_
 
 #include <map>
 #include <string>
@@ -48,13 +48,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "content/renderer/mock_content_renderer_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MockRenderProcess;
 class RenderThreadImpl;
-class RenderView;
 struct ResourceHostMsg_Request;
 
 namespace WebKit {
@@ -62,15 +61,17 @@ class WebFrame;
 class WebHistoryItem;
 }
 
+namespace content {
+
 class RenderViewFakeResourcesTest : public ::testing::Test,
                                     public IPC::Channel::Listener,
-                                    public content::RenderViewVisitor {
+                                    public RenderViewVisitor {
  public:
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // RenderViewVisitor implementation.
-  virtual bool Visit(content::RenderView* render_view) OVERRIDE;
+  virtual bool Visit(RenderView* render_view) OVERRIDE;
 
  protected:
   RenderViewFakeResourcesTest();
@@ -81,7 +82,7 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  content::RenderView* view();
+  RenderView* view();
 
   // Loads |url| into the RenderView, waiting for the load to finish.
   // Before loading the url, add any content that you want to return
@@ -123,13 +124,13 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
   static const int32 kViewId;  // arbitrary id for our testing view
 
   MessageLoopForIO message_loop_;
-  content::MockContentRendererClient content_renderer_client_;
+  ContentRendererClient content_renderer_client_;
   // channel that the renderer uses to talk to the browser.
   // For this test, we will handle the browser end of the channel.
   scoped_ptr<IPC::Channel> channel_;
   RenderThreadImpl* render_thread_;  // owned by mock_process_
   scoped_ptr<MockRenderProcess> mock_process_;
-  content::RenderView* view_;  // not owned, deletes itself on close
+  RenderView* view_;  // not owned, deletes itself on close
 
   // Map of url -> response body for network requests from the renderer.
   // Any urls not in this map are served a 404 error.
@@ -142,4 +143,6 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
   DISALLOW_COPY_AND_ASSIGN(RenderViewFakeResourcesTest);
 };
 
-#endif  // CONTENT_TEST_RENDER_VIEW_FAKE_RESOURCES_TEST_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_TEST_RENDER_VIEW_FAKE_RESOURCES_TEST_H_

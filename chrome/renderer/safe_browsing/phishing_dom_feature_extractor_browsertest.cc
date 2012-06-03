@@ -17,7 +17,7 @@
 #include "base/time.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
-#include "content/test/render_view_fake_resources_test.h"
+#include "content/public/test/render_view_fake_resources_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
@@ -30,7 +30,8 @@ using ::testing::Return;
 
 namespace safe_browsing {
 
-class PhishingDOMFeatureExtractorTest : public RenderViewFakeResourcesTest {
+class PhishingDOMFeatureExtractorTest
+    : public content::RenderViewFakeResourcesTest {
  public:
   // Helper for the SubframeRemoval test that posts a message to remove
   // the iframe "frame1" from the document.
@@ -43,19 +44,19 @@ class PhishingDOMFeatureExtractorTest : public RenderViewFakeResourcesTest {
 
  protected:
   PhishingDOMFeatureExtractorTest()
-      : RenderViewFakeResourcesTest(),
+      : content::RenderViewFakeResourcesTest(),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
   virtual ~PhishingDOMFeatureExtractorTest() {}
 
   virtual void SetUp() {
     // Set up WebKit and the RenderView.
-    RenderViewFakeResourcesTest::SetUp();
+    content::RenderViewFakeResourcesTest::SetUp();
     extractor_.reset(new PhishingDOMFeatureExtractor(view(), &clock_));
   }
 
   virtual void TearDown() {
-    RenderViewFakeResourcesTest::TearDown();
+    content::RenderViewFakeResourcesTest::TearDown();
   }
 
   // Runs the DOMFeatureExtractor on the RenderView, waiting for the
