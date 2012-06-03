@@ -5,8 +5,10 @@
 #ifndef CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
 #define CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/pepper_parent_context_provider.h"
 #include "content/renderer/render_widget_fullscreen.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
@@ -50,6 +52,11 @@ class RenderWidgetFullscreenPepper :
   virtual void DidChangeCursor(const WebKit::WebCursorInfo& cursor) OVERRIDE;
   virtual webkit::ppapi::PluginDelegate::PlatformContext3D*
       CreateContext3D() OVERRIDE;
+  virtual MouseLockDispatcher* GetMouseLockDispatcher() OVERRIDE;
+
+  // IPC::Channel::Listener implementation. This overrides the implementation
+  // in RenderWidgetFullscreen.
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   WebGraphicsContext3DCommandBufferImpl* context() const { return context_; }
   void SwapBuffers();
@@ -109,6 +116,8 @@ class RenderWidgetFullscreenPepper :
   unsigned int program_;
 
   base::WeakPtrFactory<RenderWidgetFullscreenPepper> weak_ptr_factory_;
+
+  scoped_ptr<MouseLockDispatcher> mouse_lock_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetFullscreenPepper);
 };

@@ -15,6 +15,7 @@
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/mouse_lock.h"
+#include "ppapi/cpp/private/flash_fullscreen.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/utility/completion_callback_factory.h"
@@ -30,7 +31,8 @@ class MyInstance : public pp::Instance, public pp::MouseLock {
         pending_paint_(false),
         waiting_for_flush_completion_(false),
         callback_factory_(this),
-        console_(NULL) {
+        console_(NULL),
+        flash_fullscreen_(this) {
   }
   virtual ~MyInstance() {}
 
@@ -66,12 +68,17 @@ class MyInstance : public pp::Instance, public pp::MouseLock {
       }
       case PP_INPUTEVENT_TYPE_KEYDOWN: {
         pp::KeyboardInputEvent key_event(event);
-        // Lock the mouse when the Enter key is pressed.
         if (key_event.GetKeyCode() == 13) {
+          // Lock the mouse when the Enter key is pressed.
           if (mouse_locked_)
             UnlockMouse();
           else
             LockMouse(callback_factory_.NewCallback(&MyInstance::DidLockMouse));
+          return true;
+        } else if (key_event.GetKeyCode() == 70) {
+          // Enter Flash fullscreen mode when the 'f' key is pressed.
+          if (!flash_fullscreen_.IsFullscreen())
+            flash_fullscreen_.SetFullscreen(true);
           return true;
         }
         return false;
@@ -199,7 +206,7 @@ class MyInstance : public pp::Instance, public pp::MouseLock {
               (direction == UP && y < center_y) ||
               (direction == DOWN && y > center_y) ||
               (direction == LEFT && x < center_x) ||
-              (direction == RIGHT && x > center_y);
+              (direction == RIGHT && x > center_x);
 
           if (within_bound_1 && within_bound_2 && within_bound_3) {
             *image.GetAddr32(pp::Point(x, y)) = foreground_color;
@@ -243,6 +250,8 @@ class MyInstance : public pp::Instance, public pp::MouseLock {
   pp::CompletionCallbackFactory<MyInstance> callback_factory_;
 
   const PPB_Console_Dev* console_;
+
+  pp::FlashFullscreen flash_fullscreen_;
 
   pp::Graphics2D device_context_;
 };

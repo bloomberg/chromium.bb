@@ -1250,7 +1250,13 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
   } else {
     widget_host_view->InitAsPopup(GetRenderWidgetHostView(), initial_pos);
   }
-  RenderWidgetHostImpl::From(widget_host_view->GetRenderWidgetHost())->Init();
+
+  RenderWidgetHostImpl* render_widget_host_impl =
+      RenderWidgetHostImpl::From(widget_host_view->GetRenderWidgetHost());
+  render_widget_host_impl->Init();
+  // Only allow privileged mouse lock for fullscreen render widget, which is
+  // used to implement Pepper Flash fullscreen.
+  render_widget_host_impl->set_allow_privileged_mouse_lock(is_fullscreen);
 
 #if defined(OS_MACOSX)
   // A RenderWidgetHostViewMac has lifetime scoped to the view. Now that it's

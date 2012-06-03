@@ -130,6 +130,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       text_direction_canceled_(false),
       suppress_next_char_events_(false),
       pending_mouse_lock_request_(false),
+      allow_privileged_mouse_lock_(false),
       has_touch_handler_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       tap_suppression_controller_(new TapSuppressionController(this)) {
@@ -233,6 +234,8 @@ void RenderWidgetHostImpl::Init() {
 }
 
 void RenderWidgetHostImpl::Shutdown() {
+  RejectMouseLockOrUnlockIfNecessary();
+
   if (process_->HasConnection()) {
     // Tell the renderer object to close.
     bool rv = Send(new ViewMsg_Close(routing_id_));
@@ -1488,7 +1491,8 @@ void RenderWidgetHostImpl::OnMsgDidActivateAcceleratedCompositing(
 }
 
 void RenderWidgetHostImpl::OnMsgLockMouse(bool user_gesture,
-                                          bool last_unlocked_by_target) {
+                                          bool last_unlocked_by_target,
+                                          bool privileged) {
 
   if (pending_mouse_lock_request_) {
     Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
@@ -1499,7 +1503,12 @@ void RenderWidgetHostImpl::OnMsgLockMouse(bool user_gesture,
   }
 
   pending_mouse_lock_request_ = true;
-  RequestToLockMouse(user_gesture, last_unlocked_by_target);
+  if (privileged && allow_privileged_mouse_lock_) {
+    // Directly approve to lock the mouse.
+    GotResponseToLockMouseRequest(true);
+  } else {
+    RequestToLockMouse(user_gesture, last_unlocked_by_target);
+  }
 }
 
 void RenderWidgetHostImpl::OnMsgUnlockMouse() {

@@ -7,25 +7,15 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "content/public/renderer/render_view_observer.h"
-
-class RenderViewImpl;
+#include "content/common/content_export.h"
 
 namespace WebKit {
 class WebMouseEvent;
-class WebWidget;
 }  // namespace WebKit
 
-namespace webkit{
-namespace ppapi {
-class PluginInstance;
-}  // namespace ppapi
-}  // namespace webkit
-
-// MouseLockDispatcher is owned by RenderViewImpl.
-class CONTENT_EXPORT MouseLockDispatcher : public content::RenderViewObserver {
+class CONTENT_EXPORT MouseLockDispatcher {
  public:
-  explicit MouseLockDispatcher(RenderViewImpl* render_view_impl);
+  MouseLockDispatcher();
   virtual ~MouseLockDispatcher();
 
   class LockTarget {
@@ -54,19 +44,21 @@ class CONTENT_EXPORT MouseLockDispatcher : public content::RenderViewObserver {
   // Allow lock target to consumed a mouse event, if it does return true.
   bool WillHandleMouseEvent(const WebKit::WebMouseEvent& event);
 
- private:
-  // RenderView::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  // IPC handlers.
+  // Subclasses or users have to call these methods to report mouse lock events
+  // from the browser.
   void OnLockMouseACK(bool succeeded);
   void OnMouseLockLost();
 
+ protected:
+  // Subclasses must implement these methods to send mouse lock requests to the
+  // browser.
+  virtual void SendLockMouseRequest(bool unlocked_by_target) = 0;
+  virtual void SendUnlockMouseRequest() = 0;
+
+ private:
   bool MouseLockedOrPendingAction() const {
     return mouse_locked_ || pending_lock_request_ || pending_unlock_request_;
   }
-
-  RenderViewImpl* render_view_impl_;
 
   bool mouse_locked_;
   // If both |pending_lock_request_| and |pending_unlock_request_| are true,

@@ -17,18 +17,6 @@
 <body title="This tooltip should not be shown if the mouse is locked.">
 <div id="container">
   <ul>
-    <li>There are two different kinds of fullscreen mode - "tab fullscreen" and
-        "browser fullscreen".
-      <ul>
-        <li>"tab fullscreen" refers to when a tab enters fullscreen mode via the
-            JS or Pepper fullscreen API;</li>
-        <li>"browser fullscreen" refers to the user putting the browser itself
-            into fullscreen mode from the UI (e.g., pressing F11).</li>
-      </ul>
-      <span style="font-weight:bold">
-        NOTE: Mouse lock is only allowed in "tab fullscreen" mode.
-      </span>
-    </li>
     <li>Lock mouse:
       <ul>
         <li>left click in either of the two boxes; or</li>
@@ -46,7 +34,19 @@
       <ul>
         <li>lose focus; or</li>
         <li>press Esc key; or</li>
-        <li>exit from the "tab fullscreen" mode.</li>
+        <li>exit from "tab fullscreen"/"browser fullscreen"/"Flash fullscreen".
+          <ul>
+            <li>"tab fullscreen" refers to when a tab enters fullscreen mode via
+                the JS or Pepper fullscreen API;</li>
+            <li>"browser fullscreen" refers to the user putting the browser
+                itself into fullscreen mode from the UI (e.g., pressing F11).
+            </li>
+            <li>"Flash fullscreen" refers to the fullscreen mode used by Pepper
+                Flash. You could enter Flash fullscreen by pressing 'f' key
+                when either of the boxes is focused, and exit by pressing Esc
+                key.</li>
+          </ul>
+        </li>
       </ul>
     </li>
   </ul>

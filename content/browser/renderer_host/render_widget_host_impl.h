@@ -360,6 +360,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // event.
   void CompositingSurfaceUpdated();
 
+  void set_allow_privileged_mouse_lock(bool allow) {
+    allow_privileged_mouse_lock_ = allow;
+  }
+
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
 
@@ -484,7 +488,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   void OnMsgDidActivateAcceleratedCompositing(bool activated);
 
-  void OnMsgLockMouse(bool user_gesture, bool last_unlocked_by_target);
+  void OnMsgLockMouse(bool user_gesture,
+                      bool last_unlocked_by_target,
+                      bool privileged);
   void OnMsgUnlockMouse();
 
 #if defined(OS_POSIX) || defined(USE_AURA)
@@ -711,6 +717,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   gfx::Point last_scroll_offset_;
 
   bool pending_mouse_lock_request_;
+  bool allow_privileged_mouse_lock_;
 
   // Keeps track of whether the webpage has any touch event handler. If it does,
   // then touch events are sent to the renderer. Otherwise, the touch events are

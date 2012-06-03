@@ -2067,9 +2067,13 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvent,
 
 // Requests to lock the mouse. Will result in a ViewMsg_LockMouse_ACK message
 // being sent back.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_LockMouse,
+// |privileged| is used by Pepper Flash. If this flag is set to true, we won't
+// pop up a bubble to ask for user permission or take mouse lock content into
+// account.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_LockMouse,
                     bool /* user_gesture */,
-                    bool /* last_unlocked_by_target */)
+                    bool /* last_unlocked_by_target */,
+                    bool /* privileged */)
 
 // Requests to unlock the mouse. A ViewMsg_MouseLockLost message will be sent
 // whenever the mouse is unlocked (which may or may not be caused by

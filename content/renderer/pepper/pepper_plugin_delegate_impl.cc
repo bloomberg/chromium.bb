@@ -1363,20 +1363,19 @@ ppapi::Preferences PepperPluginDelegateImpl::GetPreferences() {
 
 bool PepperPluginDelegateImpl::LockMouse(
     webkit::ppapi::PluginInstance* instance) {
-
-  return render_view_->mouse_lock_dispatcher()->LockMouse(
+  return GetMouseLockDispatcher(instance)->LockMouse(
       GetOrCreateLockTargetAdapter(instance));
 }
 
 void PepperPluginDelegateImpl::UnlockMouse(
     webkit::ppapi::PluginInstance* instance) {
-  render_view_->mouse_lock_dispatcher()->UnlockMouse(
+  GetMouseLockDispatcher(instance)->UnlockMouse(
       GetOrCreateLockTargetAdapter(instance));
 }
 
 bool PepperPluginDelegateImpl::IsMouseLocked(
     webkit::ppapi::PluginInstance* instance) {
-  return render_view_->mouse_lock_dispatcher()->IsMouseLockedTo(
+  return GetMouseLockDispatcher(instance)->IsMouseLockedTo(
       GetOrCreateLockTargetAdapter(instance));
 }
 
@@ -1679,10 +1678,18 @@ void PepperPluginDelegateImpl::UnSetAndDeleteLockTargetAdapter(
   LockTargetMap::iterator it = mouse_lock_instances_.find(instance);
   if (it != mouse_lock_instances_.end()) {
     MouseLockDispatcher::LockTarget* target = it->second;
-    render_view_->mouse_lock_dispatcher()->OnLockTargetDestroyed(target);
+    GetMouseLockDispatcher(instance)->OnLockTargetDestroyed(target);
     delete target;
     mouse_lock_instances_.erase(it);
   }
+}
+
+MouseLockDispatcher* PepperPluginDelegateImpl::GetMouseLockDispatcher(
+    webkit::ppapi::PluginInstance* instance) {
+  if (instance->flash_fullscreen())
+    return instance->fullscreen_container()->GetMouseLockDispatcher();
+  else
+    return render_view_->mouse_lock_dispatcher();
 }
 
 webkit_glue::ClipboardClient*

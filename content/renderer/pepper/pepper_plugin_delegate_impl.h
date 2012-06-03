@@ -462,6 +462,9 @@ class PepperPluginDelegateImpl
       webkit::ppapi::PluginInstance* instance);
   void UnSetAndDeleteLockTargetAdapter(webkit::ppapi::PluginInstance* instance);
 
+  MouseLockDispatcher* GetMouseLockDispatcher(
+      webkit::ppapi::PluginInstance* instance);
+
   // Pointer to the RenderView that owns us.
   RenderViewImpl* render_view_;
 

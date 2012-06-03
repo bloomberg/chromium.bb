@@ -4,20 +4,14 @@
 
 #include "content/renderer/mouse_lock_dispatcher.h"
 
-#include "content/common/view_messages.h"
-#include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 
-MouseLockDispatcher::MouseLockDispatcher(RenderViewImpl* render_view_impl)
-    : content::RenderViewObserver(render_view_impl),
-      render_view_impl_(render_view_impl),
-      mouse_locked_(false),
-      pending_lock_request_(false),
-      pending_unlock_request_(false),
-      unlocked_by_target_(false),
-      target_(NULL) {
+MouseLockDispatcher::MouseLockDispatcher() : mouse_locked_(false),
+                                             pending_lock_request_(false),
+                                             pending_unlock_request_(false),
+                                             unlocked_by_target_(false),
+                                             target_(NULL) {
 }
 
 MouseLockDispatcher::~MouseLockDispatcher() {
@@ -30,13 +24,7 @@ bool MouseLockDispatcher::LockMouse(LockTarget* target) {
   pending_lock_request_ = true;
   target_ = target;
 
-  bool user_gesture =
-      render_view_impl_->webview() &&
-      render_view_impl_->webview()->mainFrame() &&
-      render_view_impl_->webview()->mainFrame()->isProcessingUserGesture();
-  Send(new ViewHostMsg_LockMouse(routing_id(),
-                                 user_gesture,
-                                 unlocked_by_target_));
+  SendLockMouseRequest(unlocked_by_target_);
   unlocked_by_target_ = false;
   return true;
 }
@@ -45,7 +33,7 @@ void MouseLockDispatcher::UnlockMouse(LockTarget* target) {
   if (target && target == target_ && !pending_unlock_request_) {
     pending_unlock_request_ = true;
     unlocked_by_target_ = true;
-    Send(new ViewHostMsg_UnlockMouse(routing_id()));
+    SendUnlockMouseRequest();
   }
 }
 
@@ -65,16 +53,6 @@ bool MouseLockDispatcher::WillHandleMouseEvent(
   if (mouse_locked_ && target_)
     return target_->HandleMouseLockedInputEvent(event);
   return false;
-}
-
-bool MouseLockDispatcher::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MouseLockDispatcher, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_LockMouse_ACK, OnLockMouseACK)
-    IPC_MESSAGE_HANDLER(ViewMsg_MouseLockLost, OnMouseLockLost)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void MouseLockDispatcher::OnLockMouseACK(bool succeeded) {
@@ -98,15 +76,6 @@ void MouseLockDispatcher::OnLockMouseACK(bool succeeded) {
 
   if (last_target)
     last_target->OnLockMouseACK(succeeded);
-
-  // Mouse Lock removes the system cursor and provides all mouse motion as
-  // .movementX/Y values on events all sent to a fixed target. This requires
-  // content to specifically request the mode to be entered.
-  // Mouse Capture is implicitly given for the duration of a drag event, and
-  // sends all mouse events to the initial target of the drag.
-  // If Lock is entered it supercedes any in progress Capture.
-  if (succeeded && render_view_impl_->webwidget())
-      render_view_impl_->webwidget()->mouseCaptureLost();
 }
 
 void MouseLockDispatcher::OnMouseLockLost() {

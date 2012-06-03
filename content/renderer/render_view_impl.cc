@@ -79,12 +79,12 @@
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/renderer_gpu_video_decoder_factories.h"
 #include "content/renderer/mhtml_generator.h"
-#include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/render_view_mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_accessibility.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
@@ -621,7 +621,7 @@ RenderViewImpl::RenderViewImpl(
   // along with the RenderView automatically.
   devtools_agent_ = new DevToolsAgent(this);
   renderer_accessibility_ = new RendererAccessibility(this, accessibility_mode);
-  mouse_lock_dispatcher_ = new MouseLockDispatcher(this);
+  mouse_lock_dispatcher_ = new RenderViewMouseLockDispatcher(this);
   intents_host_ = new WebIntentsHost(this);
 
   new IdleUserDetector(this);
