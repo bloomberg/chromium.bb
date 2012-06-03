@@ -651,3 +651,36 @@ weston_wm_set_selection(struct wl_listener *listener, void *data)
 					XCB_TIME_CURRENT_TIME);
 	}
 }
+
+void
+weston_wm_selection_init(struct weston_wm *wm)
+{
+	struct wl_seat *seat;
+	uint32_t values[1], mask;
+
+	wm->selection_request.requestor = XCB_NONE;
+
+	values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
+	wm->selection_window = xcb_generate_id(wm->conn);
+	xcb_create_window(wm->conn,
+			  XCB_COPY_FROM_PARENT,
+			  wm->selection_window,
+			  wm->screen->root,
+			  0, 0,
+			  10, 10,
+			  0,
+			  XCB_WINDOW_CLASS_INPUT_OUTPUT,
+			  wm->screen->root_visual,
+			  XCB_CW_EVENT_MASK, values);
+
+	mask =
+		XCB_XFIXES_SELECTION_EVENT_MASK_SET_SELECTION_OWNER |
+		XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_WINDOW_DESTROY |
+		XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_CLIENT_CLOSE;
+	xcb_xfixes_select_selection_input(wm->conn, wm->selection_window,
+					  wm->atom.clipboard, mask);
+
+	seat = &wm->server->compositor->seat->seat;
+	wm->selection_listener.notify = weston_wm_set_selection;
+	wl_signal_add(&seat->selection_signal, &wm->selection_listener);
+}

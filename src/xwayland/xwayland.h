@@ -131,6 +131,8 @@ read_and_dump_property(struct weston_wm *wm,
 const char *
 get_atom_name(xcb_connection_t *c, xcb_atom_t atom);
 
+void
+weston_wm_selection_init(struct weston_wm *wm);
 int
 weston_wm_handle_selection_event(struct weston_wm *wm,
 				 xcb_generic_event_t *event);

@@ -1114,11 +1114,10 @@ weston_wm_create_wm_window(struct weston_wm *wm)
 struct weston_wm *
 weston_wm_create(struct weston_xserver *wxs)
 {
-	struct wl_seat *seat;
 	struct weston_wm *wm;
 	struct wl_event_loop *loop;
 	xcb_screen_iterator_t s;
-	uint32_t values[1], mask;
+	uint32_t values[1];
 	int sv[2];
 	xcb_atom_t supported[1];
 
@@ -1186,33 +1185,9 @@ weston_wm_create(struct weston_xserver *wxs)
 			    32, /* format */
 			    ARRAY_LENGTH(supported), supported);
 
-	wm->selection_request.requestor = XCB_NONE;
-
-	wm->selection_window = xcb_generate_id(wm->conn);
-	xcb_create_window(wm->conn,
-			  XCB_COPY_FROM_PARENT,
-			  wm->selection_window,
-			  wm->screen->root,
-			  0, 0,
-			  10, 10,
-			  0,
-			  XCB_WINDOW_CLASS_INPUT_OUTPUT,
-			  wm->screen->root_visual,
-			  XCB_CW_EVENT_MASK, values);
-
-	mask =
-		XCB_XFIXES_SELECTION_EVENT_MASK_SET_SELECTION_OWNER |
-		XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_WINDOW_DESTROY |
-		XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_CLIENT_CLOSE;
-
-	xcb_xfixes_select_selection_input(wm->conn, wm->selection_window,
-					  wm->atom.clipboard, mask);
+	weston_wm_selection_init(wm);
 
 	xcb_flush(wm->conn);
-
-	seat = &wxs->compositor->seat->seat;
-	wm->selection_listener.notify = weston_wm_set_selection;
-	wl_signal_add(&seat->selection_signal, &wm->selection_listener);
 
 	wm->activate_listener.notify = weston_wm_window_activate;
 	wl_signal_add(&wxs->compositor->activate_signal,
