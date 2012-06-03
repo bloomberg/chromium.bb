@@ -34,6 +34,13 @@ cr.define('print_preview', function() {
     this.userInfo_ = new print_preview.UserInfo();
 
     /**
+     * Metrics object used to report usage statistics.
+     * @type {!print_preview.Metrics}
+     * @private
+     */
+    this.metrics_ = new print_preview.Metrics();
+
+    /**
      * Data store which holds print destinations.
      * @type {!print_preview.DestinationStore}
      * @private
@@ -64,7 +71,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.destinationSearch_ = new print_preview.DestinationSearch(
-        this.destinationStore_, this.userInfo_);
+        this.destinationStore_, this.userInfo_, this.metrics_);
     this.addChild(this.destinationSearch_);
 
     /**
@@ -611,6 +618,8 @@ cr.define('print_preview', function() {
           !e.metaKey) {
         if (this.destinationSearch_.getIsVisible()) {
           this.destinationSearch_.setIsVisible(false);
+          this.metrics_.increment(
+              print_preview.Metrics.Bucket.DESTINATION_SELECTION_CANCELED);
         } else {
           this.close_();
         }
@@ -650,6 +659,8 @@ cr.define('print_preview', function() {
     onDestinationChangeButtonActivate_: function() {
       this.destinationSearch_.setIsVisible(true);
       this.destinationStore_.startLoadAllCloudDestinations();
+      this.metrics_.increment(
+          print_preview.Metrics.Bucket.DESTINATION_SEARCH_SHOWN);
     },
 
     /**
@@ -731,6 +742,7 @@ cr.define('print_preview', function() {
 <include src="cloud_print_interface.js"/>
 <include src="print_preview_utils.js"/>
 <include src="print_header.js"/>
+<include src="metrics.js"/>
 
 <include src="settings/page_settings.js"/>
 <include src="settings/copies_settings.js"/>

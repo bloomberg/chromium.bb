@@ -14,10 +14,11 @@ cr.define('print_preview', function() {
    *     containing the destinations to search through.
    * @param {!print_preview.UserInfo} userInfo Event target that contains
    *     information about the logged in user.
+   * @param {!print_preview.Metrics} metrics Used to record usage statistics.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function DestinationSearch(destinationStore, userInfo) {
+  function DestinationSearch(destinationStore, userInfo, metrics) {
     print_preview.Component.call(this);
 
     /**
@@ -33,6 +34,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.userInfo_ = userInfo;
+
+    /**
+     * Used to record usage statistics.
+     * @type {!print_preview.Metrics}
+     * @private
+     */
+    this.metrics_ = metrics;
 
     /**
      * Search box used to search through the destination lists.
@@ -136,6 +144,12 @@ cr.define('print_preview', function() {
         this.searchBox_.focus();
         this.getElement().classList.remove(
             DestinationSearch.Classes_.TRANSPARENT);
+        var promoEl = this.getElement().getElementsByClassName(
+            DestinationSearch.Classes_.CLOUDPRINT_PROMO)[0];
+        if (getIsVisible(promoEl)) {
+          this.metrics_.increment(
+              print_preview.Metrics.Bucket.CLOUDPRINT_PROMO_SHOWN);
+        }
       } else {
         this.getElement().classList.add(DestinationSearch.Classes_.TRANSPARENT);
         // Collapse all destination lists
@@ -167,6 +181,10 @@ cr.define('print_preview', function() {
       var promoEl = this.getElement().getElementsByClassName(
           DestinationSearch.Classes_.CLOUDPRINT_PROMO)[0];
       setIsVisible(promoEl, true);
+      if (this.getIsVisible()) {
+        this.metrics_.increment(
+            print_preview.Metrics.Bucket.CLOUDPRINT_PROMO_SHOWN);
+      }
     },
 
     /** @override */
@@ -301,6 +319,8 @@ cr.define('print_preview', function() {
     onCloseClick_: function() {
       this.setIsVisible(false);
       this.resetSearch_();
+      this.metrics_.increment(
+          print_preview.Metrics.Bucket.DESTINATION_SELECTION_CANCELED);
     },
 
     /**
@@ -313,6 +333,8 @@ cr.define('print_preview', function() {
       this.setIsVisible(false);
       this.resetSearch_();
       this.destinationStore_.selectDestination(evt.destination);
+      this.metrics_.increment(
+          print_preview.Metrics.Bucket.DESTINATION_SELECTED);
     },
 
     /**
@@ -382,6 +404,7 @@ cr.define('print_preview', function() {
      */
     onSignInActivated_: function() {
       cr.dispatchSimpleEvent(this, DestinationSearch.EventType.SIGN_IN);
+      this.metrics_.increment(print_preview.Metrics.Bucket.SIGNIN_TRIGGERED);
     },
 
     /**

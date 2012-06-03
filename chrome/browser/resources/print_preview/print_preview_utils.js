@@ -187,8 +187,16 @@ function pageSetToPageRanges(pageSet) {
 }
 
 /**
+ * @param {!HTMLElement} element Element to check for visibility.
+ * @return {boolean} Whether the given element is visible.
+ */
+function getIsVisible(element) {
+  return !element.hidden;
+}
+
+/**
  * Shows or hides an element.
- * @param {Element} element Element to show or hide.
+ * @param {!HTMLElement} element Element to show or hide.
  * @param {boolean} isVisible Whether the element should be visible or not.
  */
 function setIsVisible(element, isVisible) {
