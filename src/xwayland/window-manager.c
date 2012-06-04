@@ -971,6 +971,7 @@ wxs_wm_get_resources(struct weston_wm *wm)
 		{ "WM_TAKE_FOCUS",	F(atom.wm_take_focus) },
 		{ "WM_DELETE_WINDOW",	F(atom.wm_delete_window) },
 		{ "WM_STATE",		F(atom.wm_state) },
+		{ "WM_S0",		F(atom.wm_s0) },
 		{ "_NET_WM_NAME",	F(atom.net_wm_name) },
 		{ "_NET_WM_ICON",	F(atom.net_wm_icon) },
 		{ "_NET_WM_STATE",	F(atom.net_wm_state) },
@@ -1110,6 +1111,12 @@ weston_wm_create_wm_window(struct weston_wm *wm)
 			    32, /* format */
 			    1, &wm->wm_window);
 
+	/* Claim the WM_S0 selection even though we don't suport
+	 * the --replace functionality. */
+	xcb_set_selection_owner(wm->conn,
+				wm->wm_window,
+				wm->atom.wm_s0,
+				XCB_TIME_CURRENT_TIME);
 }
 
 struct weston_wm *
