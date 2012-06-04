@@ -17,6 +17,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
 
 /*
@@ -207,41 +208,4 @@ void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
    * if it actually suspended during the context switch.
    */
   FutexWake(&natp->suspend_state, 1);
-}
-
-/*
- * NaClUntrustedThreadsSuspend() ensures that any untrusted code is
- * temporarily suspended.
- *
- * If a thread is currently executing a NaCl syscall, we tell the
- * thread not to return to untrusted code yet.  If a thread is
- * currently executing untrusted code, we suspend it.
- *
- * This returns with the lock threads_mu held, because we need to pin
- * the list of threads.  NaClUntrustedThreadsResume() must be called
- * to undo this.
- */
-void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers) {
-  size_t index;
-
-  NaClXMutexLock(&nap->threads_mu);
-
-  for (index = 0; index < nap->threads.num_entries; index++) {
-    struct NaClAppThread *natp = NaClGetThreadMu(nap, (int) index);
-    if (natp != NULL) {
-      NaClUntrustedThreadSuspend(natp, save_registers);
-    }
-  }
-}
-
-void NaClUntrustedThreadsResumeAll(struct NaClApp *nap) {
-  size_t index;
-  for (index = 0; index < nap->threads.num_entries; index++) {
-    struct NaClAppThread *natp = NaClGetThreadMu(nap, (int) index);
-    if (natp != NULL) {
-      NaClUntrustedThreadResume(natp);
-    }
-  }
-
-  NaClXMutexUnlock(&nap->threads_mu);
 }

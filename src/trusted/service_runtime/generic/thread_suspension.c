@@ -16,15 +16,16 @@ void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
   UNREFERENCED_PARAMETER(new_state);
 }
 
-void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers) {
-  UNREFERENCED_PARAMETER(nap);
+void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
+                                int save_registers) {
+  UNREFERENCED_PARAMETER(natp);
   UNREFERENCED_PARAMETER(save_registers);
 
-  NaClLog(LOG_FATAL, "NaClUntrustedThreadsSuspendAll: Not implemented\n");
+  NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: Not implemented\n");
 }
 
-void NaClUntrustedThreadsResumeAll(struct NaClApp *nap) {
-  UNREFERENCED_PARAMETER(nap);
+void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
+  UNREFERENCED_PARAMETER(natp);
 
-  NaClLog(LOG_FATAL, "NaClUntrustedThreadsResumeAll: Not implemented\n");
+  NaClLog(LOG_FATAL, "NaClUntrustedThreadResume: Not implemented\n");
 }

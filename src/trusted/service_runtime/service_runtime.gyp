@@ -62,6 +62,7 @@
           'sel_mem.c',
           'sel_qualify.c',
           'sel_validate_image.c',
+          'thread_suspension_common.c',
         ],
         'include_dirs': [
           # For generated header files from the x86-64 validator,

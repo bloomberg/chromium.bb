@@ -769,17 +769,11 @@ void NaClVmIoPendingCheck_mu(struct NaClApp *nap,
 
 void NaClGdbHook(struct NaClApp const *nap);
 
-void NaClUntrustedThreadSuspend(struct NaClAppThread *natp, int save_registers);
-void NaClUntrustedThreadResume(struct NaClAppThread *natp);
 void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers);
 void NaClUntrustedThreadsResumeAll(struct NaClApp *nap);
 
 #if NACL_LINUX
-
-void NaClSuspendSignalHandler(struct NaClSignalContext *regs);
-
 void handle_r_debug(const char *switch_value, char *argv0);
-
 #endif
 
 EXTERN_C_END
