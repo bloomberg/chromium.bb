@@ -6,7 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 
 using content::BrowserThread;
 

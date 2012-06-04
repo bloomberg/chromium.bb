@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;

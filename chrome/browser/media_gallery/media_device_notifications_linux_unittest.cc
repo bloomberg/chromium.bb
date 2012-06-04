@@ -18,7 +18,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome {

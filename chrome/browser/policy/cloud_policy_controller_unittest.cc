@@ -15,7 +15,7 @@
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/user_policy_cache.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 
 #include "base/message_loop.h"
 #include "base/threading/thread.h"

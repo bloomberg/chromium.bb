@@ -13,7 +13,7 @@
 #include "chrome/browser/net/clear_on_exit_policy.h"
 #include "chrome/browser/net/sqlite_server_bound_cert_store.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/cert_test_util.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"

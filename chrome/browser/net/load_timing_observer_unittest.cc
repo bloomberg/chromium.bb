@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_netlog_params.h"
 #include "testing/gtest/include/gtest/gtest.h"

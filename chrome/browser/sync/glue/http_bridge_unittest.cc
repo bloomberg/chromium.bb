@@ -6,7 +6,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/test/test_server.h"
 #include "net/url_request/url_fetcher_delegate.h"

@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/browsing_data_quota_helper_impl.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "webkit/quota/mock_storage_client.h"
 #include "webkit/quota/quota_manager.h"
 

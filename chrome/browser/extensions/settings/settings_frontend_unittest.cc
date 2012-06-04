@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/settings/settings_test_util.h"
 #include "chrome/browser/value_store/value_store.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 
 using content::BrowserThread;
 

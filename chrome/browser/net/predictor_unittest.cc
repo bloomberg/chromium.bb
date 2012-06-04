@@ -16,7 +16,7 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_info.h"
 #include "chrome/common/net/predictor_common.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/address_list.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/winsock_init.h"

@@ -47,7 +47,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/public/browser/notification_source.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "sync/engine/model_changing_syncer_command.h"
 #include "sync/internal_api/read_node.h"
 #include "sync/internal_api/read_transaction.h"

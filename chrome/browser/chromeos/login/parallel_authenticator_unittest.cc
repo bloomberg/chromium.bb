@@ -27,7 +27,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"

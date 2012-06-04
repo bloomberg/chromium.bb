@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "testing/gtest/include/gtest/gtest.h"

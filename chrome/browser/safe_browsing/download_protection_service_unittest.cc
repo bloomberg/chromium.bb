@@ -24,7 +24,7 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/zip.h"
 #include "content/public/browser/download_item.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/x509_certificate.h"

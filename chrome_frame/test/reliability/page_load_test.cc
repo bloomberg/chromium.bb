@@ -54,7 +54,7 @@
 #include "chrome_frame/test/ie_event_sink.h"
 #include "chrome_frame/test/reliability/page_load_test.h"
 #include "chrome_frame/utils.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/net_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

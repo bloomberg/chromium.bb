@@ -14,7 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;

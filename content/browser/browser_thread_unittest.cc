@@ -9,7 +9,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

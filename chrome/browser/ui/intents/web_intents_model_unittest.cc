@@ -11,7 +11,7 @@
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/ui/intents/web_intents_model.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_model.h"
 

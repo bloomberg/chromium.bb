@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/cocoa/notifications/balloon_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 
 using content::BrowserThread;
 

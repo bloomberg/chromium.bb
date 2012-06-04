@@ -11,7 +11,7 @@
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "sql/statement.h"
 
 #include "testing/gtest/include/gtest/gtest.h"

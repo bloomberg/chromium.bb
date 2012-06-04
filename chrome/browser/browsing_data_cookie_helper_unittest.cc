@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

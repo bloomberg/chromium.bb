@@ -16,7 +16,7 @@
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 
 using browser_sync::ThemeDataTypeController;
 using browser_sync::ChangeProcessorMock;

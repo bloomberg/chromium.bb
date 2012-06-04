@@ -23,7 +23,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // This value is used to seed the PRNG at the beginning of a sequence of

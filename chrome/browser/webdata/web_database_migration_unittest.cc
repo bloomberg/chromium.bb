@@ -23,7 +23,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/guid.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

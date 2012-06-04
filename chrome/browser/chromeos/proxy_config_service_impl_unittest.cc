@@ -17,7 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

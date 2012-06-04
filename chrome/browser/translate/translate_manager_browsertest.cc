@@ -37,7 +37,7 @@
 #include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/test/render_view_test.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/test/test_renderer_host.h"
 #include "content/test/test_renderer_host.h"
 #include "content/test/test_url_fetcher_factory.h"

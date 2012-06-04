@@ -20,7 +20,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/browser/notification_service.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

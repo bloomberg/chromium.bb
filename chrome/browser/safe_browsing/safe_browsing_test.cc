@@ -39,7 +39,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/url_fetcher.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_log.h"

@@ -13,7 +13,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestingProfile;

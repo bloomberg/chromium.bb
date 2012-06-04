@@ -11,7 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/time.h"
 #include "chrome/common/metrics/experiments_helper.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

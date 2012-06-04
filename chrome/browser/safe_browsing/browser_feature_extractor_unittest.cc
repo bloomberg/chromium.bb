@@ -24,7 +24,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/test/web_contents_tester.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"

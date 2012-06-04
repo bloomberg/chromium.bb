@@ -23,7 +23,7 @@
 #include "base/test/thread_test_helper.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

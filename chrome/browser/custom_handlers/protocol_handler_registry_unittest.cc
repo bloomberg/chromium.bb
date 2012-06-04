@@ -17,8 +17,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
-#include "content/test/test_browser_thread.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/test/test_renderer_host.h"
 #include "net/url_request/url_request.h"
 

@@ -14,7 +14,7 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/value_store/value_store.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 
 // Parameter type for the value-parameterized tests.
 typedef ValueStore* (*ValueStoreTestParam)(const FilePath& file_path);

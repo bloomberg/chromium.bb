@@ -15,7 +15,7 @@
 #include "chrome/browser/net/clear_on_exit_policy.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"

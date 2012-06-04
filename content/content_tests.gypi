@@ -36,6 +36,7 @@
         'public/test/mock_render_thread.h',
         'public/test/mock_resource_context.h',
         'public/test/render_view_fake_resources_test.h',
+        'public/test/test_browser_thread.h',
         'public/test/test_navigation_observer.h',
         # TODO(phajdan.jr): All of those files should live in content/test (if
         # they're only used by content) or content/public/test (if they're used
@@ -94,7 +95,6 @@
         'test/test_browser_context.cc',
         'test/test_browser_context.h',
         'test/test_browser_thread.cc',
-        'test/test_browser_thread.h',
         'test/test_content_client.cc',
         'test/test_content_client.h',
         'test/test_content_client_initializer.cc',

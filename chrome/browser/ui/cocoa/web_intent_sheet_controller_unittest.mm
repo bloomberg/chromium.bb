@@ -9,7 +9,7 @@
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 

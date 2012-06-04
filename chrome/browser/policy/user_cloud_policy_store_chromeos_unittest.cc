@@ -13,7 +13,7 @@
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "policy/policy_constants.h"
 
 namespace em = enterprise_management;

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 
 #if defined(OS_MACOSX)
 class TabModalConfirmDialogMac;

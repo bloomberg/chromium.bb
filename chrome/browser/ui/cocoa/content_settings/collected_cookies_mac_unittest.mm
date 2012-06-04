@@ -8,8 +8,8 @@
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
-#include "content/test/test_browser_thread.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread.h"
 
 using content::BrowserThread;
 

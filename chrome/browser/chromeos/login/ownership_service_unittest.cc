@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
 #include "chrome/browser/chromeos/login/owner_manager_unittest.h"
 #include "content/public/browser/notification_service.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"

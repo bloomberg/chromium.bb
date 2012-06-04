@@ -17,7 +17,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/ssl_connection_status_flags.h"
 #include "net/base/test_certificate_data.h"

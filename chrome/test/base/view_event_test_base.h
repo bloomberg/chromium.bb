@@ -16,7 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/widget/widget_delegate.h"
 

@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/matcher/url_matcher_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

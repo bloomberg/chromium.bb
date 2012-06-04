@@ -12,7 +12,7 @@
 #include "chrome/browser/policy/mock_device_management_service.h"
 #include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/browser/policy/user_policy_cache.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -11,8 +11,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
-#include "content/test/test_browser_thread.h"
-#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/transport_security_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

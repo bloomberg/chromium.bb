@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/app_notification_storage.h"
 #include "chrome/browser/extensions/app_notification_test_util.h"
 #include "chrome/common/extensions/extension_test_util.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;

@@ -17,7 +17,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"

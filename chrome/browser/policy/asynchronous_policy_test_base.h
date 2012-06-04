@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

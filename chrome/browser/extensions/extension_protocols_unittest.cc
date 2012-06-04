@@ -11,7 +11,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/mock_resource_context.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"

@@ -13,7 +13,7 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -15,7 +15,7 @@
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"

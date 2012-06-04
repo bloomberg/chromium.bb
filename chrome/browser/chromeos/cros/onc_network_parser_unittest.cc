@@ -26,7 +26,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "crypto/nss_util.h"
 #include "net/base/cert_database.h"
 #include "net/base/cert_type.h"

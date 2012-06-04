@@ -72,7 +72,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_constants.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "net/cookies/cookie_monster.h"

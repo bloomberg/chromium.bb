@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/app_notification.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/app_notification_specifics.pb.h"

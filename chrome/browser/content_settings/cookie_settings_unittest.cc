@@ -11,7 +11,7 @@
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/static_cookie_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"

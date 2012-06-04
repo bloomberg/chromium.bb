@@ -19,7 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"

@@ -11,7 +11,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

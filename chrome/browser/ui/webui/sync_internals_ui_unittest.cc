@@ -14,7 +14,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"

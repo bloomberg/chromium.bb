@@ -34,7 +34,7 @@
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/mock_notification_observer.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "sync/internal_api/read_node.h"
 #include "sync/internal_api/read_transaction.h"
 #include "sync/internal_api/write_node.h"

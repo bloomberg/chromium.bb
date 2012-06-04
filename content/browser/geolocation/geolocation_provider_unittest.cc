@@ -17,7 +17,7 @@
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/public/browser/access_token_store.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

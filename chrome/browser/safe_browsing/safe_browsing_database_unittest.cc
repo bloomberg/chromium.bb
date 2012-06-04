@@ -12,7 +12,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "sql/connection.h"

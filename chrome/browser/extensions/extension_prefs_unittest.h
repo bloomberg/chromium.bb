@@ -8,7 +8,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

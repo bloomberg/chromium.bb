@@ -14,7 +14,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/mock_notification_observer.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "sync/internal_api/configure_reason.h"
 #include "sync/syncable/model_type.h"
 #include "testing/gmock/include/gmock/gmock.h"

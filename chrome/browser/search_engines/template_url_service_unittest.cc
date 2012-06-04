@@ -24,7 +24,7 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

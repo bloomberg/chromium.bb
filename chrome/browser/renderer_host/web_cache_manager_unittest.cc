@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

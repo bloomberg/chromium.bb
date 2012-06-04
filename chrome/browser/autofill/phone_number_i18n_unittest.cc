@@ -6,7 +6,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill_i18n::NormalizePhoneNumber;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_TEST_BROWSER_THREAD_H_
-#define CONTENT_TEST_TEST_BROWSER_THREAD_H_
+#ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_H_
+#define CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -20,8 +20,8 @@ namespace content {
 
 class TestBrowserThreadImpl;
 
-// A BrowserThread for unit tests; this lets unit tests in chrome/
-// create BrowserThread instances.
+// A BrowserThread for unit tests; this lets unit tests in chrome/ create
+// BrowserThread instances.
 class TestBrowserThread {
  public:
   explicit TestBrowserThread(BrowserThread::ID identifier);
@@ -61,4 +61,4 @@ class TestBrowserThread {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_TEST_BROWSER_THREAD_H_
+#endif  // CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_H_

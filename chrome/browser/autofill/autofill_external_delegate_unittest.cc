@@ -11,7 +11,7 @@
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"

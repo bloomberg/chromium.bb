@@ -5,7 +5,7 @@
 #include "chrome/browser/net/connection_tester.h"
 
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/mock_cert_verifier.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/ssl_config_service_defaults.h"

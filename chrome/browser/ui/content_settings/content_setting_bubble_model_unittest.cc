@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

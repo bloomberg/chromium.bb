@@ -11,7 +11,7 @@
 #include "chrome/browser/signin/signin_manager_fake.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock-actions.h"
 #include "testing/gmock/include/gmock/gmock.h"

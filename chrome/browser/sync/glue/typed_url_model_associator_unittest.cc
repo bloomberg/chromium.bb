@@ -12,7 +12,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"

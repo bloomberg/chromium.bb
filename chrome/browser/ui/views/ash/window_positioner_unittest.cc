@@ -16,7 +16,7 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/test/render_view_test.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "ui/aura/env.h"

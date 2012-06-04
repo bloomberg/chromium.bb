@@ -28,7 +28,7 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"

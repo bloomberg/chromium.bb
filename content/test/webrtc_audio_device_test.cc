@@ -24,7 +24,7 @@
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

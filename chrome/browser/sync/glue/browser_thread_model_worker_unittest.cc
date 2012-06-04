@@ -11,7 +11,7 @@
 #include "base/threading/thread.h"
 #include "base/timer.h"
 #include "chrome/browser/sync/glue/browser_thread_model_worker.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::OneShotTimer;

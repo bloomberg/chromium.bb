@@ -26,7 +26,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/auth.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"

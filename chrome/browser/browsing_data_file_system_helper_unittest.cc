@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_file_system_helper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"

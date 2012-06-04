@@ -14,7 +14,7 @@
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "sync/notifier/sync_notifier_observer.h"
 #include "sync/syncable/model_type.h"

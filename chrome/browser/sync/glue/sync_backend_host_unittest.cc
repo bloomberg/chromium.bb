@@ -11,7 +11,7 @@
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "sync/engine/model_safe_worker.h"

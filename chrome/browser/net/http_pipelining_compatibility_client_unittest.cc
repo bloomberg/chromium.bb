@@ -13,7 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/url_request/url_request_context_getter.h"

@@ -28,7 +28,7 @@
 #include "chrome/browser/sync/glue/data_type_error_handler_mock.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/change_record.h"
 #include "sync/internal_api/read_node.h"

@@ -17,7 +17,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

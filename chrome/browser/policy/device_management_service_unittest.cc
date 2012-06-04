@@ -11,7 +11,7 @@
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"

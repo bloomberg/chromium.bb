@@ -14,7 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_switches.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 

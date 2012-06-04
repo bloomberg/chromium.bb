@@ -16,7 +16,7 @@
 #include "chrome/browser/password_manager/password_store_mac.h"
 #include "chrome/browser/password_manager/password_store_mac_internal.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "crypto/mock_keychain_mac.h"
 
 using content::BrowserThread;

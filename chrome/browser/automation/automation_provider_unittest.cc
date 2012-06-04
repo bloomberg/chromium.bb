@@ -4,7 +4,7 @@
 
 #include "chrome/browser/automation/chrome_frame_automation_provider.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

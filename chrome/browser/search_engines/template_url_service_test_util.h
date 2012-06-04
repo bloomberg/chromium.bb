@@ -15,7 +15,7 @@
 #include "base/string16.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 
 class GURL;
 class TemplateURLService;

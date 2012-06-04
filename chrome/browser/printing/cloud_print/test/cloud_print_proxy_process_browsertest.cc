@@ -32,7 +32,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"

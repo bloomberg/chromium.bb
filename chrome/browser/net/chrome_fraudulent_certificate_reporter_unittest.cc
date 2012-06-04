@@ -13,7 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/ssl_info.h"
 #include "net/base/transport_security_state.h"
