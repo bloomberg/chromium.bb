@@ -808,23 +808,6 @@
    fun:fileapi::FileSystemOriginDatabase::Init
 }
 {
-   bug_81796_a
-   Heapcheck:Leak
-   fun:base::MessageLoopProxy::current
-   fun:*Context
-   fun:*ChannelProxy
-   fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
-}
-{
-   bug_81796_b
-   Heapcheck:Leak
-   fun:base::MessageLoopProxy::current
-   ...
-   fun:*SyncContext
-   fun:*SyncChannel
-   fun:ChildThread::Init
-}
-{
    bug_82974a
    Heapcheck:Leak
    ...
