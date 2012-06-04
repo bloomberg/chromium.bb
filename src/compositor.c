@@ -620,6 +620,9 @@ weston_device_repick(struct wl_seat *seat)
 	const struct wl_pointer_grab_interface *interface;
 	struct weston_surface *surface, *focus;
 
+	if (!seat->pointer)
+		return;
+
 	surface = weston_compositor_pick_surface(ws->compositor,
 						 seat->pointer->x,
 						 seat->pointer->y,
@@ -666,9 +669,11 @@ weston_surface_unmap(struct weston_surface *surface)
 	wl_list_remove(&surface->layer_link);
 
 	wl_list_for_each(seat, &surface->compositor->seat_list, link) {
-		if (seat->seat.keyboard->focus == &surface->surface)
+		if (seat->seat.keyboard &&
+		    seat->seat.keyboard->focus == &surface->surface)
 			wl_keyboard_set_focus(seat->seat.keyboard, NULL);
-		if (seat->seat.pointer->focus == &surface->surface)
+		if (seat->seat.pointer &&
+		    seat->seat.pointer->focus == &surface->surface)
 			wl_pointer_set_focus(seat->seat.pointer,
 					     NULL,
 					     wl_fixed_from_int(0),
