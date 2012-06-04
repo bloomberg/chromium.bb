@@ -174,13 +174,13 @@ class RepoRepository(object):
       extra_args: Extra args to pass to 'repo init'
     """
     if self._initialized:
-      # Remove .repo/manifests and .repo/manifests.git to work around bug where
-      # during branch switching repo init tries to rebase the manifest branch.
+      # Remove the 'default' branch to work around bug where during branch
+      # switching repo init tries to rebase the 'default' branch.
       # TODO(rcui): crosbug.com/31241 - remove when that's fixed.
       manifests_path = os.path.join(self.directory, '.repo', 'manifests')
-      for path in [manifests_path, '%s.git' % manifests_path]:
-        if os.path.isdir(path):
-          shutil.rmtree(path)
+      cros_build_lib.RunGitCommand(manifests_path, ['checkout', '--detach'])
+      cros_build_lib.RunGitCommand(manifests_path, ['branch', '-D', 'default'],
+                                   error_code_ok=True)
 
     # Base command.
     init_cmd = self._INIT_CMD + ['--manifest-url', self.repo_url]
