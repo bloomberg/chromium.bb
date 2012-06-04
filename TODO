@@ -47,18 +47,6 @@ Core wayland protocol
 
 ICCCM
 
- - clipboard manager interface?  what's needed?  just notification
-   that the selection has gone away.  should the clipboard manager be
-   able to take over the selection "seamlessly", ie, with the same
-   timestamp etc?  Doesn't seem like we need that, the clipboard will
-   have to set a new data_source anyway, with the subset of mimetypes
-   it offers (the clipboad manager may only offer a subset of the
-   types offered by the original data_source)
-
-   The trouble is that when the clipboard manager sets a new data
-   source, we don't want to renew the timestamp and potentially reject
-   a newer "real" data source.
-
  - mime-type guidelines for data_source (ie, both dnd and selection):
    recommended types for text or images, types that a clipboard
    manager must support, mime-types must be listed in preferred order
