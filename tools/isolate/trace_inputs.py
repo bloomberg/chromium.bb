@@ -11,8 +11,9 @@ The implementation uses OS-specific API. The native Kernel logger and the ETL
 interface is used on Windows. Dtrace is used on OSX. Strace is used otherwise.
 The OS-specific implementation is hidden in an 'API' interface.
 
-The list is done in two phases, the first is to do the actual trace and generate
-an technique-specific log file. Then the log file is parsed to extract the
+The results are embedded in a Results instance. The tracing is done in two
+phases, the first is to do the actual trace and generate an
+implementation-specific log file. Then the log file is parsed to extract the
 information, including the individual child processes and the files accessed
 from the log.
 """
@@ -979,7 +980,11 @@ class Dtrace(ApiBase):
   get the absolute path of the 'cwd' dtrace variable from the probe.
 
   Also, OSX doesn't populate curpsinfo->pr_psargs properly, see
-  https://discussions.apple.com/thread/1980539.
+  https://discussions.apple.com/thread/1980539. So resort to handling execve()
+  manually.
+
+  errno is not printed in the log since this implementation currently care only
+  about files that were successfully opened.
   """
   IGNORED = (
     '/.vol',
@@ -994,27 +999,58 @@ class Dtrace(ApiBase):
   )
 
   # pylint: disable=C0301
+  #
   # To understand the following code, you'll want to take a look at:
   # http://developers.sun.com/solaris/articles/dtrace_quickref/dtrace_quickref.html
   # https://wikis.oracle.com/display/DTrace/Variables
   # http://docs.oracle.com/cd/E19205-01/820-4221/
   #
-  # The list of valid probes can be retrieved with:
-  # sudo dtrace -l -P syscall | less
+  # 0. Dump all the valid probes into a text file. It is important, you
+  #    want to redirect into a file and you don't want to constantly 'sudo'.
+  # $ sudo dtrace -l > probes.txt
+  #
+  # 1. Count the number of probes:
+  # $ wc -l probes.txt
+  # 81823  # On OSX 10.7, including 1 header line.
+  #
+  # 2. List providers, intentionally skipping all the 'syspolicy10925' and the
+  #    likes and skipping the header with NR>1:
+  # $ awk 'NR>1 { print $2 }' probes.txt | sort | uniq | grep -v '[[:digit:]]'
+  # dtrace
+  # fbt
+  # io
+  # ip
+  # lockstat
+  # mach_trap
+  # proc
+  # profile
+  # sched
+  # syscall
+  # tcp
+  # vminfo
+  #
+  # 3. List of valid probes:
+  # $ grep syscall probes.txt | less
+  #    or use dtrace directly:
+  # $ sudo dtrace -l -P syscall | less
+
   D_CODE = """
       proc:::start /trackedpid[ppid]/ {
         trackedpid[pid] = 1;
         current_processes += 1;
-        printf("%d %d:%d %s_%s(\\"%s\\", %d) = 0\\n",
-               logindex, ppid, pid, probeprov, probename, execname,
+        printf("%d %d %s_%s(%d, \\"%s\\", %d)\\n",
+               logindex, pid, probeprov, probename,
+               ppid,
+               execname,
                current_processes);
         logindex++;
       }
       proc:::exit /trackedpid[pid] && current_processes == 1/ {
+        /* Last process is exiting. */
         trackedpid[pid] = 0;
         current_processes -= 1;
-        printf("%d %d:%d %s_%s(\\"%s\\", %d) = 0\\n",
-               logindex, ppid, pid, probeprov, probename, execname,
+        printf("%d %d %s_%s(%d)\\n",
+               logindex, pid, probeprov, probename,
                current_processes);
         logindex++;
         exit(0);
@@ -1022,18 +1058,29 @@ class Dtrace(ApiBase):
       proc:::exit /trackedpid[pid]/ {
         trackedpid[pid] = 0;
         current_processes -= 1;
-        printf("%d %d:%d %s_%s(\\"%s\\", %d) = 0\\n",
-               logindex, ppid, pid, probeprov, probename, execname,
+        printf("%d %d %s_%s(%d)\\n",
+               logindex, pid, probeprov, probename,
                current_processes);
         logindex++;
       }
 
       /* Finally what we care about! */
-      syscall::exec*:entry /trackedpid[pid]/ {
+      syscall::exec*:entry /trackedpid[pid] == 1/ {
         self->e_arg0 = copyinstr(arg0);
         /* Incrementally probe for a NULL in the argv parameter of execve() to
          * figure out argc. */
+        /* TODO(maruel): Skip the remaining copyin() when a NULL pointer was
+         * found. */
         self->argc = 0;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
         self->argv = (user_addr_t*)copyin(
             arg1, sizeof(user_addr_t) * (self->argc + 1));
         self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
@@ -1068,7 +1115,7 @@ class Dtrace(ApiBase):
         self->args[8] = (self->argc > 8) ? copyinstr(self->argv[8]) : "";
         self->args[9] = (self->argc > 9) ? copyinstr(self->argv[9]) : "";
       }
-      syscall::exec*: /trackedpid[pid] && errno == 0/ {
+      syscall::exec*:return /trackedpid[pid] == 1 && errno == 0/ {
         /* We need to join strings here, as using multiple printf() would cause
          * tearing when multiple threads/processes are traced. */
         this->args = "";
@@ -1114,15 +1161,14 @@ class Dtrace(ApiBase):
 
         /* Prints self->argc to permits verifying the internal consistency since
          * this code is quite fishy. */
-        printf("%d %d:%d %s(\\"%s\\", [%d%s]) = %d\\n",
-               logindex, ppid, pid, probefunc,
+        printf("%d %d %s(\\"%s\\", [%d%s])\\n",
+               logindex, pid, probefunc,
                self->e_arg0,
                self->argc,
-               this->args,
-               errno);
+               this->args);
         logindex++;
-
-        /* TODO(maruel): Clean up memory
+      }
+      syscall::exec*:return /trackedpid[pid] == 1/ {
         self->e_arg0 = 0;
         self->argc = 0;
         self->args[0] = 0;
@@ -1135,46 +1181,89 @@ class Dtrace(ApiBase):
         self->args[7] = 0;
         self->args[8] = 0;
         self->args[9] = 0;
-        */
       }
 
-      syscall::open*:entry /trackedpid[pid]/ {
-        self->arg0 = arg0;
-        self->arg1 = arg1;
-        self->arg2 = arg2;
-      }
-      syscall::open*:return /trackedpid[pid] && errno == 0/ {
-        printf("%d %d:%d %s(\\"%s\\", %d, %d) = %d\\n",
-               logindex, ppid, pid, probefunc, copyinstr(self->arg0),
-               self->arg1, self->arg2, errno);
+      /* These are a good learning experience, since it traces a lot of things
+       * related to the process and child processes.
+       * Warning: it generates a gigantic log. For example, tracing
+       * "data/trace_inputs/child1.py --child" generates a 2mb log and takes
+       * several minutes to execute.
+       */
+      /*
+      mach_trap::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
+        printf("%d %d %s_%s() = %d\\n",
+                logindex, pid, probeprov, probefunc, errno);
         logindex++;
-        self->arg0 = 0;
-        self->arg1 = 0;
-        self->arg2 = 0;
+      }
+      proc::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
+        printf("%d %d %s_%s() = %d\\n",
+                logindex, pid, probeprov, probefunc, errno);
+        logindex++;
+      }
+      sched::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
+        printf("%d %d %s_%s() = %d\\n",
+                logindex, pid, probeprov, probefunc, errno);
+        logindex++;
+      }
+      syscall::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
+        printf("%d %d %s_%s() = %d\\n",
+                logindex, pid, probeprov, probefunc, errno);
+        logindex++;
+      }
+      vminfo::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
+        printf("%d %d %s_%s() = %d\\n",
+                logindex, pid, probeprov, probefunc, errno);
+        logindex++;
+      }
+      */
+
+      syscall::open*:entry /trackedpid[pid] == 1/ {
+        self->open_arg0 = arg0;
+        self->open_arg1 = arg1;
+        self->open_arg2 = arg2;
+      }
+      syscall::open*:return /trackedpid[pid] == 1 && errno == 0/ {
+        printf("%d %d %s(\\"%s\\", 0x%x, 0x%x)\\n",
+               logindex, pid, probefunc,
+               copyinstr(self->open_arg0),
+               self->open_arg1,
+               self->open_arg2);
+        logindex++;
+      }
+      syscall::open*:return /trackedpid[pid] == 1/ {
+        self->open_arg0 = 0;
+        self->open_arg1 = 0;
+        self->open_arg2 = 0;
       }
 
-      syscall::rename:entry /trackedpid[pid]/ {
-        self->arg0 = arg0;
-        self->arg1 = arg1;
+      syscall::rename:entry /trackedpid[pid] == 1/ {
+        self->rename_arg0 = arg0;
+        self->rename_arg1 = arg1;
       }
-      syscall::rename:return /trackedpid[pid]/ {
-        printf("%d %d:%d %s(\\"%s\\", \\"%s\\") = %d\\n",
-               logindex, ppid, pid, probefunc, copyinstr(self->arg0),
-               copyinstr(self->arg1), errno);
+      syscall::rename:return /trackedpid[pid] == 1 && errno == 0/ {
+        printf("%d %d %s(\\"%s\\", \\"%s\\")\\n",
+               logindex, pid, probefunc,
+               copyinstr(self->rename_arg0),
+               copyinstr(self->rename_arg1));
         logindex++;
-        self->arg0 = 0;
-        self->arg1 = 0;
+      }
+      syscall::rename:return /trackedpid[pid] == 1/ {
+        self->rename_arg0 = 0;
+        self->rename_arg1 = 0;
       }
 
       /* Track chdir, it's painful because it is only receiving relative path */
-      syscall::chdir:entry /trackedpid[pid]/ {
-        self->arg0 = arg0;
+      syscall::chdir:entry /trackedpid[pid] == 1/ {
+        self->chdir_arg0 = arg0;
       }
-      syscall::chdir:return /trackedpid[pid] && errno == 0/ {
-        printf("%d %d:%d %s(\\"%s\\") = %d\\n",
-               logindex, ppid, pid, probefunc, copyinstr(self->arg0), errno);
+      syscall::chdir:return /trackedpid[pid] == 1 && errno == 0/ {
+        printf("%d %d %s(\\"%s\\")\\n",
+               logindex, pid, probefunc,
+               copyinstr(self->chdir_arg0));
         logindex++;
-        self->arg0 = 0;
+      }
+      syscall::chdir:return /trackedpid[pid] == 1/ {
+        self->chdir_arg0 = 0;
       }
       /* TODO(maruel): *stat* functions and friends
         syscall::access:return,
@@ -1205,12 +1294,14 @@ class Dtrace(ApiBase):
     """Setups the D code to implement child process tracking.
 
     Injects the pid and the initial cwd into the trace header for context.
-    The reason is that the child process is already running at that point so:
+    The reason is that the child process trace_child_process.py is already
+    running at that point so:
     - no proc_start() is logged for it.
     - there is no way to figure out the absolute path of cwd in kernel on OSX
 
     Since the child process is already started, initialize current_processes to
     1.
+
     """
     pid = str(pid)
     cwd = os.path.realpath(cwd).replace('\\', '\\\\').replace('%', '%%')
@@ -1218,21 +1309,28 @@ class Dtrace(ApiBase):
         'dtrace:::BEGIN {\n'
         '  current_processes = 1;\n'
         '  logindex = 0;\n'
-        '  trackedpid[' + pid + '] = 1;\n'
-        '  printf("%d %d:%d %s_%s(\\"' + cwd + '\\") = 0\\n",\n'
-        '      logindex, ppid, ' + pid + ', probeprov, probename);\n'
+        # trackedpid is an associative array where its value can be 0, 1 or 2.
+        # 0 is for untracked processes and is the default value for items not
+        #   in the associative array.
+        # 1 is for tracked processes.
+        # 2 is for trace_child_process.py only. It is not tracked itself but
+        #   all its decendants are.
+        '  trackedpid[' + pid + '] = 2;\n'
+        '  printf("%d %d %s_%s(\\"' + cwd + '\\")\\n",\n'
+        '      logindex, ' + pid + ', probeprov, probename);\n'
         '  logindex++;\n'
         '}\n') + cls.D_CODE
 
   class Context(ApiBase.Context):
-    # This is the most common format. index pid function(args) = result
-    RE_HEADER = re.compile(r'^\d+ (\d+):(\d+) ([a-zA-Z_\-]+)\((.*?)\) = (.+)$')
+    # This is the most common format. index pid function(args)
+    RE_HEADER = re.compile(r'^\d+ (\d+) ([a-zA-Z_\-]+)\((.*?)\)$')
 
     # Arguments parsing.
     RE_DTRACE_BEGIN = re.compile(r'^\"(.+?)\"$')
     RE_CHDIR = re.compile(r'^\"(.+?)\"$')
     RE_EXECVE = re.compile(r'^\"(.+?)\", \[(\d+), (.+)\]$')
-    RE_OPEN = re.compile(r'^\"(.+?)\", (\d+), (-?\d+)$')
+    RE_OPEN = re.compile(r'^\"(.+?)\", (0x[0-9a-z]+), (0x[0-9a-z]+)$')
+    RE_PROC_START = re.compile(r'^(\d+), \"(.+?)\", (\d+)$')
     RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
 
     O_DIRECTORY = 0x100000
@@ -1253,14 +1351,11 @@ class Dtrace(ApiBase):
       assert match, line
       fn = getattr(
           self,
-          'handle_%s' % match.group(3).replace('-', '_'),
+          'handle_%s' % match.group(2).replace('-', '_'),
           self._handle_ignored)
       return fn(
           int(match.group(1)),
-          int(match.group(2)),
-          match.group(3),
-          match.group(4),
-          match.group(5))
+          match.group(3))
 
     def to_results(self):
       """Uses self._initial_pid to determine the initial process."""
@@ -1269,20 +1364,21 @@ class Dtrace(ApiBase):
           sorted(self.processes), sorted(p.pid for p in process.all))
       return Results(process)
 
-    def handle_dtrace_BEGIN(self, _ppid, pid, _function, args, _result):
+    def handle_dtrace_BEGIN(self, pid, args):
       assert not self._tracer_pid and not self._initial_pid
       self._tracer_pid = pid
       self._initial_cwd = self.RE_DTRACE_BEGIN.match(args).group(1)
 
-    def handle_proc_start(self, ppid, pid, _function, _args, result):
+    def handle_proc_start(self, pid, args):
       """Transfers cwd.
 
       The dtrace script already takes care of only tracing the processes that
       are child of the traced processes so there is no need to verify the
       process hierarchy.
       """
-      assert result == '0'
       assert pid not in self.processes
+      match = self.RE_PROC_START.match(args)
+      ppid = int(match.group(1))
       assert (ppid == self._tracer_pid) != bool(self._initial_pid)
       if not self._initial_pid:
         self._initial_pid = pid
@@ -1295,13 +1391,13 @@ class Dtrace(ApiBase):
       proc.cwd = cwd
       logging.debug('New child: %s -> %d' % (ppid, pid))
 
-    def handle_proc_exit(self, _ppid, pid, _function, _args, _result):
+    def handle_proc_exit(self, pid, _args):
       """Removes cwd."""
       if pid != self._tracer_pid:
         # self._tracer_pid is not traced itself.
         self.processes[pid].cwd = None
 
-    def handle_execve(self, _ppid, pid, _function, args, _result):
+    def handle_execve(self, pid, args):
       """Sets the process' executable.
 
       TODO(maruel): Read command line arguments.  See
@@ -1318,43 +1414,38 @@ class Dtrace(ApiBase):
       proc.command = process_quoted_arguments(match.group(3))
       assert int(match.group(2)) == len(proc.command), args
 
-    def handle_chdir(self, _ppid, pid, _function, args, result):
+    def handle_chdir(self, pid, args):
       """Updates cwd."""
       assert self._tracer_pid
       assert pid in self.processes
-      if result.startswith('0'):
-        cwd = self.RE_CHDIR.match(args).group(1)
-        if not cwd.startswith('/'):
-          cwd2 = os.path.join(self.processes[pid].cwd, cwd)
-          logging.debug('handle_chdir(%d, %s) -> %s' % (pid, cwd, cwd2))
-        else:
-          logging.debug('handle_chdir(%d, %s)' % (pid, cwd))
-          cwd2 = cwd
-        self.processes[pid].cwd = cwd2
+      cwd = self.RE_CHDIR.match(args).group(1)
+      if not cwd.startswith('/'):
+        cwd2 = os.path.join(self.processes[pid].cwd, cwd)
+        logging.debug('handle_chdir(%d, %s) -> %s' % (pid, cwd, cwd2))
       else:
-        assert False, 'Unexecpected fail: %s' % result
+        logging.debug('handle_chdir(%d, %s)' % (pid, cwd))
+        cwd2 = cwd
+      self.processes[pid].cwd = cwd2
 
-    def handle_open_nocancel(self, ppid, pid, function, args, result):
-      return self.handle_open(ppid, pid, function, args, result)
+    def handle_open_nocancel(self, pid, args):
+      return self.handle_open(pid, args)
 
-    def handle_open(self, _ppid, pid, function, args, result):
+    def handle_open(self, pid, args):
       match = self.RE_OPEN.match(args)
-      assert match, (pid, function, args, result)
-      args = match.groups()
-      flag = int(args[1])
+      assert match, (pid, args)
+      flag = int(match.group(2), 16)
       if self.O_DIRECTORY & flag == self.O_DIRECTORY:
         # Ignore directories.
         return
-      self._handle_file(pid, args[0], result)
+      self._handle_file(pid, match.group(1))
 
-    def handle_rename(self, _ppid, pid, _function, args, result):
-      args = self.RE_RENAME.match(args).groups()
-      self._handle_file(pid, args[0], result)
-      self._handle_file(pid, args[1], result)
+    def handle_rename(self, pid, args):
+      match = self.RE_RENAME.match(args)
+      assert match, (pid, args)
+      self._handle_file(pid, match.group(1))
+      self._handle_file(pid, match.group(2))
 
-    def _handle_file(self, pid, filepath, result):
-      if result.startswith(('-1', '2')):
-        return
+    def _handle_file(self, pid, filepath):
       if not filepath.startswith('/'):
         filepath = os.path.join(self.processes[pid].cwd, filepath)
       # We can get '..' in the path.
@@ -1366,8 +1457,9 @@ class Dtrace(ApiBase):
       self.processes[pid].add_file(filepath)
 
     @staticmethod
-    def _handle_ignored(_ppid, pid, function, args, result):
-      logging.debug('%d %s(%s) = %s' % (pid, function, args, result))
+    def _handle_ignored(pid, args):
+      """Is called for all the event traces that are not handled."""
+      assert False, '%d ??(%s)' % (pid, args)
 
   @staticmethod
   def clean_trace(logname):
