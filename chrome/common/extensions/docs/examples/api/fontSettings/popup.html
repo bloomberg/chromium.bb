@@ -9,18 +9,20 @@
       -webkit-box-flex: 1;
       display: -webkit-box;
     }
+
     .font-input-div {
-      -webkit-margin-end: 3em;
-      margin-left:10px;
+      -webkit-margin-end: 1em;
+      margin-left: 10px;
     }
   </style>
 </head>
-<body style="width: 600px">
-  <h1>Font Settings Sample Extension</h1>
+<body>
+  <div style="min-width: 600px;">
+  <h3>Font Settings Sample Extension</h3>
     <div>Script</div>
     <div>
     <select id="scriptList">
-      <option value="Qaaa">Default</option>
+      <option value="Zyyy">Default</option>
       <option value="Arab">Arabic</option>
       <option value="Armn">Armenian</option>
       <option value="Beng">Bengali</option>
@@ -54,14 +56,14 @@
       <option value="Yiii">Yi</option>
     </select>
     </div>
-    <div style="margin-left:20px">
+    <div style="margin-left: 20px; overflow-x: auto;">
       <div>Standard</div>
       <div class="font-setting-container">
         <div class="font-input-div">
           <select id="standardFontList"></select>
         </div>
         <div id="standardFontSample" style="font-family: standard;">
-          Lorem ipsum dolor sit amat.雪を積み重ねた。
+          Lorem ipsum dolor sit amat.
         </div>
       </div>
       <div>Serif</div>
@@ -70,7 +72,7 @@
           <select id="serifFontList"></select>
         </div>
         <div id="serifFontSample" style="font-family: serif;">
-          Lorem ipsum dolor sit amat.雪を積み重ねた。
+          Lorem ipsum dolor sit amat.
         </div>
       </div>
       <div>Sans-Serif</div>
@@ -79,7 +81,7 @@
           <select id="sansSerifFontList"></select>
         </div>
         <div id="sansSerifFontSample" style="font-family: sans-serif;">
-          Lorem ipsum dolor sit amat.雪を積み重ねた。
+          Lorem ipsum dolor sit amat.
         </div>
       </div>
       <div>Fixed</div>
@@ -88,7 +90,7 @@
           <select id="fixedFontList"></select>
         </div>
         <div id="fixedFontSample" style="font-family: monospace;">
-          Lorem ipsum dolor sit amat.雪を積み重ねた。
+          Lorem ipsum dolor sit amat.
         </div>
       </div>
     </div>
@@ -102,7 +104,7 @@
     <div class="font-setting-container">
       <div class="font-input-div"><input type="text" id="minFontSize"></div>
       <div id="minFontSample" style="font-family: standard; font-size: 1px;">
-        Lorem ipsum dolor sit amat.雪を積み重ねた。
+        Lorem ipsum dolor sit amat.
       </div>
     </div>
     <div>Encoding</div>
@@ -149,5 +151,6 @@
     </div>
     <button id="clearButton">Clear All Settings</button>
   </div>
+</div>
 </body>
 </html>

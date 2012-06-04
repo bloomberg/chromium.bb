@@ -201,6 +201,7 @@
     "chrome.experimental.record.captureURLs": "experimental.record.html#method-captureURLs",
     "chrome.experimental.record.replayURLs": "experimental.record.html#method-replayURLs",
     "chrome.experimental.serial.close": "experimental.serial.html#method-close",
+    "chrome.experimental.serial.flush": "experimental.serial.html#method-flush",
     "chrome.experimental.serial.getPorts": "experimental.serial.html#method-getPorts",
     "chrome.experimental.serial.open": "experimental.serial.html#method-open",
     "chrome.experimental.serial.read": "experimental.serial.html#method-read",
@@ -1249,7 +1250,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "d37a216e8f68ef93a9929653d380dc49db30f02e",
+      "source_hash": "2ddbba4bef345eb3b9631f3dbe27e0b1e50b86bb",
       "zip_path": "examples/api/fontSettings.zip"
     },
     {

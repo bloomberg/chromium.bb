@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var scriptList;
-
 // Mapping between font list ids and the generic family setting they
 // represent.
 var genericFamilies = [
@@ -13,9 +11,28 @@ var genericFamilies = [
   { fontList: 'fixedFontList', name: 'fixed' }
 ];
 
-var DEFAULT_SCRIPT = 'Qaaa';
+// Ids of elements to contain the "Lorem ipsum" sample text.
+var sampleTextDivIds = [
+  'standardFontSample',
+  'serifFontSample',
+  'sansSerifFontSample',
+  'fixedFontSample'
+];
+
+var defaultSampleText = 'Lorem ipsum dolor sit amat.';
+var scriptSpecificSampleText = {
+  // "Cyrllic script".
+  'Cyrl': 'Lorem ipsum Кириллица',
+  'Hang': 'Lorem ipsum 雪海泳 정 참판 양반댁 규수 큰 교자 타고 혼례 치른 날.',
+  'Hans': 'Lorem ipsum 雪海泳 简体字。',
+  'Hant': 'Lorem ipsum 雪海泳 繁體字。',
+  'Hrkt': 'Lorem ipsum 雪海泳 バスを待ち大路の春をうたがはず。',
+   // "Khmer language".
+  'Khmr': 'Lorem ipsum \u1797\u17B6\u179F\u17B6\u1781\u17D2\u1798\u17C2\u179A',
+};
 
 function getSelectedScript() {
+  var scriptList = document.getElementById('scriptList');
   return scriptList.options[scriptList.selectedIndex].value;
 }
 
@@ -58,8 +75,7 @@ function getFontChangeHandler(fontList, genericFamily) {
     var details = {};
     details.genericFamily = genericFamily;
     details.fontName = font;
-    if (script != DEFAULT_SCRIPT)
-      details.script = script;
+    details.script = script;
 
     chrome.experimental.fontSettings.setFont(details);
   };
@@ -102,16 +118,20 @@ function updateFontListsForScript() {
 
     var details = {};
     details.genericFamily = family;
-    if (script != DEFAULT_SCRIPT) {
-      details.script = script;
-      // For font selection it's the script code that matters, not language, so
-      // just use en for lang.
-      document.body.lang = 'en-' + script;
-    } else {
-      document.body.lang = '';
-    }
+    details.script = script;
+    // For font selection it's the script code that matters, not language, so
+    // just use en for lang.
+    document.body.lang = 'en-' + script;
 
     chrome.experimental.fontSettings.getFont(details, getFontHandler(list));
+  }
+
+  if (typeof(scriptSpecificSampleText[script]) != 'undefined')
+    sample = scriptSpecificSampleText[script];
+  else
+    sample = defaultSampleText;
+  for (var i = 0; i < sampleTextDivIds.length; i++) {
+    document.getElementById(sampleTextDivIds[i]).innerText = sample;
   }
 }
 
