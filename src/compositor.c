@@ -1793,7 +1793,7 @@ update_modifier_state(struct weston_seat *seat, uint32_t key, uint32_t state)
 					  seat->xkb_info.scroll_led))
 		leds |= LED_SCROLL_LOCK;
 	if (leds != seat->xkb_state.leds && seat->led_update)
-		seat->led_update(seat, seat->xkb_state.leds);
+		seat->led_update(seat, leds);
 	seat->xkb_state.leds = leds;
 
 	return ret;
