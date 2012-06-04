@@ -56,33 +56,30 @@ bool DisplayAvailable() {
 
 }  // namespace
 
-// Tests CreateFullXkbLayoutName() function.
-TEST_F(XKeyboardTest, TestCreateFullXkbLayoutNameBasic) {
-  // CreateFullXkbLayoutName should not accept non-alphanumeric characters
+// Tests CheckLayoutName() function.
+TEST_F(XKeyboardTest, TestCheckLayoutName) {
+  // CheckLayoutName should not accept non-alphanumeric characters
   // except "()-_".
-  EXPECT_EQ("", xkey_->CreateFullXkbLayoutName("us!"));
-  EXPECT_EQ("", xkey_->CreateFullXkbLayoutName("us; /bin/sh"));
-  EXPECT_EQ("ab-c_12+chromeos(search_leftcontrol_leftalt_keepralt)",
-            xkey_->CreateFullXkbLayoutName("ab-c_12"));
+  EXPECT_FALSE(XKeyboard::CheckLayoutNameForTesting("us!"));
+  EXPECT_FALSE(XKeyboard::CheckLayoutNameForTesting("us; /bin/sh"));
+  EXPECT_TRUE(XKeyboard::CheckLayoutNameForTesting("ab-c_12"));
 
-  // CreateFullXkbLayoutName should not accept upper-case ascii characters.
-  EXPECT_EQ("", xkey_->CreateFullXkbLayoutName("US"));
+  // CheckLayoutName should not accept upper-case ascii characters.
+  EXPECT_FALSE(XKeyboard::CheckLayoutNameForTesting("US"));
 
-  // CreateFullXkbLayoutName should accept lower-case ascii characters.
+  // CheckLayoutName should accept lower-case ascii characters.
   for (int c = 'a'; c <= 'z'; ++c) {
-    EXPECT_NE("", xkey_->CreateFullXkbLayoutName(std::string(3, c)));
+    EXPECT_TRUE(XKeyboard::CheckLayoutNameForTesting(std::string(3, c)));
   }
 
-  // CreateFullXkbLayoutName should accept numbers.
+  // CheckLayoutName should accept numbers.
   for (int c = '0'; c <= '9'; ++c) {
-    EXPECT_NE("", xkey_->CreateFullXkbLayoutName(std::string(3, c)));
+    EXPECT_TRUE(XKeyboard::CheckLayoutNameForTesting(std::string(3, c)));
   }
 
-  // CreateFullXkbLayoutName should accept a layout with a variant name.
-  EXPECT_EQ("us(dvorak)+chromeos(search_leftcontrol_leftalt_keepralt)",
-            xkey_->CreateFullXkbLayoutName("us(dvorak)"));
-  EXPECT_EQ("jp+chromeos(search_leftcontrol_leftalt_keepralt)",
-            xkey_->CreateFullXkbLayoutName("jp"));
+  // CheckLayoutName should accept a layout with a variant name.
+  EXPECT_TRUE(XKeyboard::CheckLayoutNameForTesting("us(dvorak)"));
+  EXPECT_TRUE(XKeyboard::CheckLayoutNameForTesting("jp"));
 }
 
 TEST_F(XKeyboardTest, TestSetCapsLockEnabled) {

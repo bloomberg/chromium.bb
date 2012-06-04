@@ -85,15 +85,6 @@ class XKeyboard {
   // threads.
   virtual bool CapsLockIsEnabled() = 0;
 
-  // Creates a full XKB layout name like
-  //   "gb(extd)+chromeos(leftcontrol_disabled_leftalt),us"
-  // from modifier key mapping and |layout_name|, such as "us", "us(dvorak)",
-  // and "gb(extd)". Returns an empty string on error. Do not call this function
-  // directly: it is public for testability.
-  // TODO(yusukes): Remove this method from the interface class.
-  virtual std::string CreateFullXkbLayoutName(
-      const std::string& layout_name) = 0;
-
   // Returns a mask (e.g. 1U<<4) for Num Lock. On error, returns 0. Do not call
   // the function from non-UI threads.
   // TODO(yusukes): Move this and webdriver::GetXModifierMask() functions in
@@ -125,6 +116,9 @@ class XKeyboard {
   // On success, set current auto repeat rate on |out_rate| and returns true.
   // Returns false otherwise. This function is protected: for testability.
   static bool GetAutoRepeatRateForTesting(AutoRepeatRate* out_rate);
+
+  // Returns false if |layout_name| contains a bad character.
+  static bool CheckLayoutNameForTesting(const std::string& layout_name);
 
   // Note: At this moment, classes other than InputMethodManager should not
   // instantiate the XKeyboard class.

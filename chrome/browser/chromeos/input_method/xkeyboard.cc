@@ -41,6 +41,25 @@ const char kSetxkbmapCommand[] = "/usr/bin/setxkbmap";
 // A string for obtaining a mask value for Num Lock.
 const char kNumLockVirtualModifierString[] = "NumLock";
 
+// Returns false if |layout_name| contains a bad character.
+bool CheckLayoutName(const std::string& layout_name) {
+  static const char kValidLayoutNameCharacters[] =
+      "abcdefghijklmnopqrstuvwxyz0123456789()-_";
+
+  if (layout_name.empty()) {
+    DVLOG(1) << "Invalid layout_name: " << layout_name;
+    return false;
+  }
+
+  if (layout_name.find_first_not_of(kValidLayoutNameCharacters) !=
+      std::string::npos) {
+    DVLOG(1) << "Invalid layout_name: " << layout_name;
+    return false;
+  }
+
+  return true;
+}
+
 class XKeyboardImpl : public XKeyboard {
  public:
   explicit XKeyboardImpl(const InputMethodUtil& util);
@@ -61,8 +80,6 @@ class XKeyboardImpl : public XKeyboard {
   virtual unsigned int GetNumLockMask() OVERRIDE;
   virtual void GetLockedModifiers(bool* out_caps_lock_enabled,
                                   bool* out_num_lock_enabled) OVERRIDE;
-  virtual std::string CreateFullXkbLayoutName(
-      const std::string& layout_name) OVERRIDE;
 
  private:
   // This function is used by SetLayout() and RemapModifierKeys(). Calls
@@ -116,20 +133,15 @@ bool XKeyboardImpl::SetLayoutInternal(const std::string& layout_name,
     return true;
   }
 
-  const std::string layout_to_set = CreateFullXkbLayoutName(layout_name);
-  if (layout_to_set.empty())
+  if (!CheckLayoutName(layout_name))
     return false;
 
-  if (!current_layout_name_.empty()) {
-    const std::string current_layout = CreateFullXkbLayoutName(
-        current_layout_name_);
-    if (!force && (current_layout == layout_to_set)) {
-      DVLOG(1) << "The requested layout is already set: " << layout_to_set;
-      return true;
-    }
+  if (!force && (current_layout_name_ == layout_name)) {
+    DVLOG(1) << "The requested layout is already set: " << layout_name;
+    return true;
   }
 
-  DVLOG(1) << (force ? "Reapply" : "Set") << " layout: " << layout_to_set;
+  DVLOG(1) << (force ? "Reapply" : "Set") << " layout: " << layout_name;
 
   const bool start_execution = execute_queue_.empty();
   // If no setxkbmap command is in flight (i.e. start_execution is true),
@@ -137,7 +149,7 @@ bool XKeyboardImpl::SetLayoutInternal(const std::string& layout_name,
   // If one or more setxkbmap commands are already in flight, just push the
   // layout name to the queue. setxkbmap command for the layout will be called
   // via OnSetLayoutFinish() callback later.
-  execute_queue_.push(layout_to_set);
+  execute_queue_.push(layout_name);
   if (start_execution)
     MaybeExecuteSetLayoutCommand();
 
@@ -237,30 +249,6 @@ void XKeyboardImpl::GetLockedModifiers(bool* out_caps_lock_enabled,
     *out_caps_lock_enabled = status.locked_mods & LockMask;
   if (out_num_lock_enabled)
     *out_num_lock_enabled = status.locked_mods & num_lock_mask_;
-}
-
-std::string XKeyboardImpl::CreateFullXkbLayoutName(
-    const std::string& layout_name) {
-  static const char kValidLayoutNameCharacters[] =
-      "abcdefghijklmnopqrstuvwxyz0123456789()-_";
-
-  if (layout_name.empty()) {
-    DVLOG(1) << "Invalid layout_name: " << layout_name;
-    return "";
-  }
-
-  if (layout_name.find_first_not_of(kValidLayoutNameCharacters) !=
-      std::string::npos) {
-    DVLOG(1) << "Invalid layout_name: " << layout_name;
-    return "";
-  }
-
-  // TODO(yusukes): Remove "+chromeos(...)".
-  std::string full_xkb_layout_name =
-      base::StringPrintf("%s+chromeos(search_leftcontrol_leftalt_keepralt)",
-                         layout_name.c_str());
-
-  return full_xkb_layout_name;
 }
 
 void XKeyboardImpl::SetLockedModifiers(ModifierLockStatus new_caps_lock_status,
@@ -387,6 +375,11 @@ bool XKeyboard::GetAutoRepeatRateForTesting(AutoRepeatRate* out_rate) {
   return XkbGetAutoRepeatRate(ui::GetXDisplay(), XkbUseCoreKbd,
                               &(out_rate->initial_delay_in_ms),
                               &(out_rate->repeat_interval_in_ms)) == True;
+}
+
+// static
+bool XKeyboard::CheckLayoutNameForTesting(const std::string& layout_name) {
+  return CheckLayoutName(layout_name);
 }
 
 // static

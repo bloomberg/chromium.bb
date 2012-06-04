@@ -53,11 +53,6 @@ bool MockXKeyboard::CapsLockIsEnabled() {
   return caps_lock_is_enabled_;
 }
 
-std::string MockXKeyboard::CreateFullXkbLayoutName(
-    const std::string& layout_name) {
-  return "";
-}
-
 unsigned int MockXKeyboard::GetNumLockMask() {
   return 1;
 }
