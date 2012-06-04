@@ -1838,10 +1838,10 @@ class LiveGamePerfTest(BasePerfTest):
 class BasePageCyclerTest(BasePerfTest):
   """Page class for page cycler tests.
 
-  Setting 'PC_NO_AUTO=1' in the environment avoids automatically running
-  through all the pages.
-
   Derived classes must implement StartUrl().
+
+  Environment Variables:
+    PC_NO_AUTO: if set, avoids automatically loading pages.
   """
   MAX_ITERATION_SECONDS = 60
   TRIM_PERCENT = 20
@@ -1992,8 +1992,8 @@ class BasePageCyclerTest(BasePerfTest):
 class PageCyclerTest(BasePageCyclerTest):
   """Tests to run various page cyclers.
 
-  Setting 'PC_NO_AUTO=1' in the environment avoids automatically running
-  through all the pages.
+  Environment Variables:
+    PC_NO_AUTO: if set, avoids automatically loading pages.
   """
 
   def _PreReadDataDir(self, subdir):
@@ -2065,14 +2065,14 @@ class WebPageReplayPageCyclerTest(BasePageCyclerTest):
   performance issues that may result from introducing network delays and
   bandwidth throttling.
 
-  Setting 'PC_NO_AUTO=1' in the environment avoids automatically running
-  through all the pages.
-  Setting 'PC_RECORD=1' puts WPR in record mode.
+  Environment Variables:
+    PC_NO_AUTO: if set, avoids automatically loading pages.
+    PC_RECORD: if set, puts Web Page Replay in record mode instead of replay.
+    PC_REPLAY_DIR: path to alternate Web Page Replay source (for development).
+    PC_ARCHIVE_PATH: path to alternate archive file (e.g. '/tmp/foo.wpr').
   """
   _PATHS = {
-      'archives':   'src/data/page_cycler/webpagereplay',
-      'wpr':        'src/data/page_cycler/webpagereplay/{test_name}.wpr',
-      'wpr_pub':    'src/tools/page_cycler/webpagereplay/tests/{test_name}.wpr',
+      'archive':    'src/data/page_cycler/webpagereplay/{test_name}.wpr',
       'start_page': 'src/tools/page_cycler/webpagereplay/start.html',
       'extension':  'src/tools/page_cycler/webpagereplay/extension',
       'replay':     'src/third_party/webpagereplay',
@@ -2088,6 +2088,7 @@ class WebPageReplayPageCyclerTest(BasePageCyclerTest):
     """Performs necessary setup work before running each test."""
     super(WebPageReplayPageCyclerTest, self).setUp()
     self.replay_dir = os.environ.get('PC_REPLAY_DIR')
+    self.archive_path = os.environ.get('PC_ARCHIVE_PATH')
     self.is_record_mode = 'PC_RECORD' in os.environ
     if self.is_record_mode:
       self._num_iterations = 1
@@ -2098,11 +2099,17 @@ class WebPageReplayPageCyclerTest(BasePageCyclerTest):
     chromium_path = cls._PATHS[key].format(**kwargs)
     return os.path.join(cls._BASE_DIR, *chromium_path.split('/'))
 
-  @classmethod
-  def _ArchivePath(cls, test_name):
-    has_private_archives = os.path.exists(cls._Path('archives'))
-    key = 'wpr' if  has_private_archives else 'wpr_pub'
-    return cls._Path(key, test_name=test_name)
+  def _ArchivePath(self, test_name):
+    archive_path = self.archive_path or self._Path('archive',
+                                                   test_name=test_name)
+    if self.is_record_mode:
+      archive_dir = os.path.dirname(archive_path)
+      self.assertTrue(os.path.exists(archive_dir),
+                      msg='Archive directory does not exist: %s' % archive_dir)
+    else:
+      self.assertTrue(os.path.exists(archive_path),
+                      msg='Archive file path does not exist: %s' % archive_path)
+    return archive_path
 
   def ExtraChromeFlags(self):
     """Ensures Chrome is launched with custom flags.
