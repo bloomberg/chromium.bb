@@ -779,6 +779,7 @@ internal_paladin.add_config('unified-lumpy-paladin',
   hw_tests_pool='cq-bvt',
   hw_tests=['bvt'],
   upload_hw_test_artifacts=True,
+  important=False,
 )
 
 paladin.add_config('unified-x86-generic-paladin',
@@ -787,6 +788,7 @@ paladin.add_config('unified-x86-generic-paladin',
   paladin_builder_name='unified x86-generic paladin',
   vm_tests=None,
   prebuilts=None,
+  important=False,
 )
 
 internal_incremental.add_config('mario-incremental',
