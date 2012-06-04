@@ -246,23 +246,6 @@ create_border(struct wayland_compositor *c)
 }
 
 static int
-wayland_input_create(struct wayland_compositor *c)
-{
-	struct weston_seat *seat;
-
-	seat = malloc(sizeof *seat);
-	if (seat == NULL)
-		return -1;
-
-	memset(seat, 0, sizeof *seat);
-	weston_seat_init(seat, &c->base);
-
-	c->base.seat = seat;
-
-	return 0;
-}
-
-static int
 wayland_compositor_init_egl(struct wayland_compositor *c)
 {
 	EGLint major, minor;
@@ -722,6 +705,22 @@ display_add_seat(struct wayland_compositor *c, uint32_t id)
 	wl_seat_set_user_data(input->seat, input);
 }
 
+/* We can't start adding input devices until weston_compositor_init, but
+ * also can't call weston_compositor_init until we've handled some of the
+ * base display code first.  So, we have a separate global handler for
+ * seats. */
+static void
+display_handle_global_input(struct wl_display *display, uint32_t id,
+			    const char *interface, uint32_t version,
+			    void *data)
+{
+	struct wayland_compositor *c = data;
+
+	if (strcmp(interface, "wl_seat") == 0)
+		display_add_seat(c, id);
+}
+
+
 static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
@@ -735,8 +734,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		c->parent.output =
 			wl_display_bind(display, id, &wl_output_interface);
 		wl_output_add_listener(c->parent.output, &output_listener, c);
-	} else if (strcmp(interface, "wl_seat") == 0) {
-		display_add_seat(c, id);
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		c->parent.shell =
 			wl_display_bind(display, id, &wl_shell_interface);
@@ -766,6 +763,27 @@ wayland_compositor_handle_event(int fd, uint32_t mask, void *data)
 		wl_display_iterate(c->parent.display, WL_DISPLAY_WRITABLE);
 
 	return 1;
+}
+
+static int
+wayland_input_create(struct wayland_compositor *c)
+{
+	struct weston_seat *seat;
+
+	seat = malloc(sizeof *seat);
+	if (seat == NULL)
+		return -1;
+
+	memset(seat, 0, sizeof *seat);
+	weston_seat_init(seat, &c->base);
+
+	c->base.seat = seat;
+
+	wl_display_add_global_listener(c->parent.display,
+				       display_handle_global_input,
+				       c);
+
+	return 0;
 }
 
 static void
