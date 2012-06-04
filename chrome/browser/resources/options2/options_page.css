@@ -138,6 +138,7 @@ div.disabled {
   background-image: url('chrome://theme/IDR_MANAGED');
   background-position: 5px center;
   background-repeat: no-repeat;
+  background-size: 16px;
   display: block;
   line-height: 24px;
   padding-left: 26px;
@@ -451,31 +452,37 @@ html:not([enablePepperFlashSettings]) .pepper-flash-settings {
 .controlled-setting-indicator[controlled-by='policy'] summary {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_GRAY');
+  background-size: 16px;
 }
 
 .controlled-setting-indicator[controlled-by='policy'] summary:hover {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
+  background-size: 16px;
 }
 
 .controlled-setting-indicator[controlled-by='extension'] summary {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION_GRAY');
+  background-size: 16px;
 }
 
 .controlled-setting-indicator[controlled-by='extension'] summary:hover {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION');
+  background-size: 16px;
 }
 
 .controlled-setting-indicator[controlled-by='recommended'] summary {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_RECOMMENDED_GRAY');
+  background-size: 16px;
 }
 
 .controlled-setting-indicator[controlled-by='recommended'] summary:hover {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_RECOMMENDED');
+  background-size: 16px;
 }
 
 .controlled-setting-bubble {
@@ -531,18 +538,21 @@ html[dir='rtl'] .controlled-setting-bubble {
     .controlled-setting-bubble-text {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_LARGE');
+  background-size: 22px;
 }
 
 .controlled-setting-indicator[controlled-by='extension']
     .controlled-setting-bubble-text {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION_LARGE');
+  background-size: 22px;
 }
 
 .controlled-setting-indicator[controlled-by='recommended']
     .controlled-setting-bubble-text {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_RECOMMENDED_LARGE');
+  background-size: 22px;
 }
 
 html[dir='rtl'] .controlled-setting-bubble-text {

@@ -27,6 +27,7 @@
   },
   "chrome/browser/resources/shared_resources.grd": {
     "includes": [2000],
+    "structures": [2200],
   },
   "chrome/common/common_resources.grd": {
     "includes": [2500],
@@ -165,7 +166,7 @@
     "includes": [22000],
   },
   "chrome/browser/resources/options2_resources.grd": {
-    "includes": [22200],
+    "structures": [22200],
   },
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
     "messages": [22500],

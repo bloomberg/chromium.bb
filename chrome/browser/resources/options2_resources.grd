@@ -7,9 +7,9 @@
     <output filename="options2_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
-    <includes>
-      <include name="IDR_OPTIONS2_BUNDLE_JS" file="options2/options_bundle.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_OPTIONS2_HTML" file="options2/options.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-    </includes>
+    <structures>
+      <structure name="IDR_OPTIONS2_BUNDLE_JS" file="options2/options_bundle.js" flattenhtml="true" type="chrome_html" />
+      <structure name="IDR_OPTIONS2_HTML" file="options2/options.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+    </structures>
   </release>
 </grit>

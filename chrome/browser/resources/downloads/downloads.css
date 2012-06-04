@@ -107,10 +107,12 @@ html[dir=rtl] .progress {
 
 .progress.background {
   background: url('chrome://theme/IDR_DOWNLOAD_PROGRESS_BACKGROUND_32');
+  background-size: 48px;
 }
 
 .progress.foreground {
   background: url('chrome://theme/IDR_DOWNLOAD_PROGRESS_FOREGROUND_32');
+  background-size: 48px;
 }
 
 .name {

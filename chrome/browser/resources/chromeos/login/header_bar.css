@@ -31,6 +31,7 @@
   background-image: url('chrome://theme/IDR_DIVIDER_VERT');
   background-position: -2px center;
   background-repeat: no-repeat;
+  background-size: 15px;
   display: inline-block;
   height: 34px;
 }
@@ -58,8 +59,10 @@ html[dir=rtl] #login-header-bar #add-user-button {
 
 #login-header-bar #shutdown-button {
   background-image: url('chrome://theme/IDR_ICON_POWER24');
+  background-size: 24px;
 }
 
 #login-header-bar #add-user-button {
   background-image: url('chrome://theme/IDR_ICON_ADD_USER24');
+  background-size: 24px;
 }

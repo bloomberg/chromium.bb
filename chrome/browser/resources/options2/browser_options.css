@@ -185,18 +185,22 @@ list:not([disabled]) > .network-group[selected] {
 
 .network-wifi {
   background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_ARCS_DARK');
+  background-size: 25px;
 }
 
 .network-wimax {
   background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_BARS_DARK');
+  background-size: 25px;
 }
 
 .network-cellular {
   background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_BARS_DARK');
+  background-size: 25px;
 }
 
 .network-vpn {
   background-image: url('chrome://theme/IDR_STATUSBAR_VPN');
+  background-size: 25px;
 }
 
 .network-add-connection,
@@ -208,6 +212,7 @@ list:not([disabled]) > .network-group[selected] {
 
 .network-add-connection {
   background-image: url('chrome://theme/IDR_SIDETABS_NEW_TAB');
+  background-size: 16px;
 }
 
 .network-control-inactive {
@@ -216,6 +221,7 @@ list:not([disabled]) > .network-group[selected] {
 
 .network-control-active {
   background-image: url('chrome://theme/IDR_PROFILE_SELECTED');
+  background-size: 16px;
 }
 
 .network-options-button {
@@ -231,6 +237,7 @@ list:not([disabled]) > .network-group[selected] {
 
 .network-menu-item:hover .network-options-button {
   background-image: url('chrome://theme/IDR_STATUSBAR_EDIT');
+  background-size: 25px;
 }
 
 .network-group > .controlled-setting-indicator,

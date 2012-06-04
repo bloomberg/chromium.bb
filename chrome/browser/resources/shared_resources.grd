@@ -13,42 +13,6 @@ without changes to the corresponding grd file. -->
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_SHARED_CSS_ABOUT"
-               file="shared/css/about_memory.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_ALERT_OVERLAY"
-               file="shared/css/alert_overlay.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_DIALOGS"
-               file="shared/css/dialogs.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_LIST"
-               file="shared/css/list.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_MENU"
-               file="shared/css/menu.css" type="BINDATA" flattenhtml="true" />
-      <include name="IDR_SHARED_CSS_MENU_BUTTON"
-               file="shared/css/menu_button.css" type="BINDATA"
-               flattenhtml="true" />
-      <include name="IDR_SHARED_CSS_CHROME"
-               file="shared/css/chrome_shared.css" type="BINDATA"
-               flattenhtml="true" />
-      <include name="IDR_SHARED_CSS_OVERLAY"
-               file="shared/css/overlay.css" type="BINDATA"
-               flattenhtml="true" />
-      <include name="IDR_SHARED_CSS_SPINNER"
-               file="shared/css/spinner.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_TABLE"
-               file="shared/css/table.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_TABS"
-               file="shared/css/tabs.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_THROBBER"
-               file="shared/css/throbber.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_TRASH"
-               file="shared/css/trash.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_TREE"
-               file="shared/css/tree.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_TREE_JS"
-               file="shared/css/tree.css.js" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_WIDGETS"
-               file="shared/css/widgets.css" type="BINDATA"
-               flattenhtml="true" />
       <include name="IDR_SHARED_IMAGES_CHECK"
                file="shared/images/check.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_CHECKBOX_BLACK"
@@ -71,117 +35,168 @@ without changes to the corresponding grd file. -->
                file="shared/images/x.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_X_HOVER"
                file="shared/images/x-hover.png" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR"
-               file="shared/js/cr.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_EVENT_TARGET"
-               file="shared/js/cr/event_target.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_LINK_CONTROLLER"
-               file="shared/js/cr/link_controller.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_PROMISE"
-               file="shared/js/cr/promise.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI"
-               file="shared/js/cr/ui.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_ALERT_OVERLAY"
-               file="shared/js/cr/ui/alert_overlay.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_ARRAY_DATA_MODEL"
-               file="shared/js/cr/ui/array_data_model.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_AUTOCOMPLETE_LIST"
-               file="shared/js/cr/ui/autocomplete_list.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_CARD_SLIDER"
-               file="shared/js/cr/ui/card_slider.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_COMMAND"
-               file="shared/js/cr/ui/command.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_CONTEXT_MENU_BUTTON"
-               file="shared/js/cr/ui/context_menu_button.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_CONTEXT_MENU_HANDLER"
-               file="shared/js/cr/ui/context_menu_handler.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_DIALOGS"
-               file="shared/js/cr/ui/dialogs.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_DRAG_WRAPPER"
-               file="shared/js/cr/ui/drag_wrapper.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_FOCUS_MANAGER"
-               file="shared/js/cr/ui/focus_manager.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_FOCUS_OUTLINE_MANAGER"
-               file="shared/js/cr/ui/focus_outline_manager.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_LIST"
-               file="shared/js/cr/ui/list.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_LIST_ITEM"
-               file="shared/js/cr/ui/list_item.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_LIST_SELECTION_CONTROLLER"
-               file="shared/js/cr/ui/list_selection_controller.js"
-               type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_LIST_SELECTION_MODEL"
-               file="shared/js/cr/ui/list_selection_model.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_LIST_SINGLE_SELECTION_MODEL"
-               file="shared/js/cr/ui/list_single_selection_model.js"
-               type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_MENU"
-               file="shared/js/cr/ui/menu.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_MENU_BUTTON"
-               file="shared/js/cr/ui/menu_button.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_MENU_ITEM"
-               file="shared/js/cr/ui/menu_item.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_OVERLAY"
-               file="shared/js/cr/ui/overlay.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_POSITION_UTIL"
-               file="shared/js/cr/ui/position_util.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_SPLITTER"
-               file="shared/js/cr/ui/splitter.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_GRID"
-               file="shared/js/cr/ui/grid.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_REPEATING_BUTTON"
-               file="shared/js/cr/ui/repeating_button.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_TABLE"
-               file="shared/js/cr/ui/table.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_TABLE_COLUMN"
-               file="shared/js/cr/ui/table/table_column.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_TABLE_COLUMN_MODEL"
-               file="shared/js/cr/ui/table/table_column_model.js"
-               type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_TABLE_HEADER"
-               file="shared/js/cr/ui/table/table_header.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_TABLE_LIST"
-               file="shared/js/cr/ui/table/table_list.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_TABLE_SPLITTER"
-               file="shared/js/cr/ui/table/table_splitter.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_TABS"
-               file="shared/js/cr/ui/tabs.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_TREE"
-               file="shared/js/cr/ui/tree.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_UI_TOUCH_HANDLER"
-               file="shared/js/cr/ui/touch_handler.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_EVENT_TRACKER"
-               file="shared/js/event_tracker.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_I18N_PROCESS"
-               file="shared/js/i18n_process.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_I18N_TEMPLATE"
-               file="shared/js/i18n_template.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_I18N_TEMPLATE_NO_PROCESS"
-               file="shared/js/i18n_template_no_process.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_I18N_TEMPLATE2"
-               file="shared/js/i18n_template2.js" type="BINDATA"
-               flattenhtml="true" />
-      <include name="IDR_SHARED_JS_JSTEMPLATE_COMPILED"
-               file="shared/js/jstemplate_compiled.js" type="BINDATA"
-               flattenhtml="true" />
-      <include name="IDR_SHARED_JS_LOAD_TIME_DATA"
-               file="shared/js/load_time_data.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_LOCAL_STRINGS"
-               file="shared/js/local_strings.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_MEDIA_COMMON"
-               file="shared/js/media_common.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_PARSE_HTML_SUBSET"
-               file="shared/js/parse_html_subset.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_UTIL"
-               file="shared/js/util.js" type="BINDATA" />
-      <if expr="pp_ifdef('chromeos')">
-        <include name="IDR_SHARED_CSS_UI_ACCOUNT_TWEAKS"
-                 file="shared/css/chromeos/ui_account_tweaks.css"
-                 type="BINDATA" />
-        <include name="IDR_SHARED_JS_UI_ACCOUNT_TWEAKS"
-                 file="shared/js/chromeos/ui_account_tweaks.js"
-                 type="BINDATA" />
-      </if>
     </includes>
+    <structures>
+      <structure name="IDR_SHARED_CSS_ABOUT"
+                 file="shared/css/about_memory.css" type="chrome_html" />
+      <structure name="IDR_SHARED_CSS_ALERT_OVERLAY"
+                 file="shared/css/alert_overlay.css" type="chrome_html" />
+      <structure name="IDR_SHARED_CSS_DIALOGS"
+                 file="shared/css/dialogs.css" type="chrome_html" />
+      <structure name="IDR_SHARED_CSS_LIST"
+                 file="shared/css/list.css" type="chrome_html" />
+      <structure name="IDR_SHARED_CSS_MENU"
+                 file="shared/css/menu.css" type="chrome_html"
+                 flattenhtml="true" />
+      <structure name="IDR_SHARED_CSS_MENU_BUTTON"
+                 file="shared/css/menu_button.css" type="chrome_html"
+                 flattenhtml="true" />
+      <structure name="IDR_SHARED_CSS_CHROME"
+                 file="shared/css/chrome_shared.css" type="chrome_html"
+                 flattenhtml="true" />
+      <structure name="IDR_SHARED_CSS_OVERLAY"
+                 file="shared/css/overlay.css" type="chrome_html"
+                 flattenhtml="true" />
+      <structure name="IDR_SHARED_CSS_SPINNER"
+                 file="shared/css/spinner.css" type="chrome_html" />
+      <structure name="IDR_SHARED_CSS_TABLE"
+                 file="shared/css/table.css" type="chrome_html" />
+      <structure name="IDR_SHARED_CSS_TABS"
+                 file="shared/css/tabs.css" type="chrome_html" />
+      <structure name="IDR_SHARED_CSS_THROBBER"
+                 file="shared/css/throbber.css" type="chrome_html" />
+      <structure name="IDR_SHARED_CSS_TRASH"
+                 file="shared/css/trash.css" type="chrome_html" />
+      <structure name="IDR_SHARED_CSS_TREE"
+                 file="shared/css/tree.css" type="chrome_html" />
+      <structure name="IDR_SHARED_CSS_TREE_JS"
+                 file="shared/css/tree.css.js" type="chrome_html" />
+      <structure name="IDR_SHARED_CSS_WIDGETS"
+                 file="shared/css/widgets.css" type="chrome_html"
+                 flattenhtml="true" />
+      <structure name="IDR_SHARED_JS_CR"
+                 file="shared/js/cr.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_EVENT_TARGET"
+                 file="shared/js/cr/event_target.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_LINK_CONTROLLER"
+                 file="shared/js/cr/link_controller.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_PROMISE"
+                 file="shared/js/cr/promise.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI"
+                 file="shared/js/cr/ui.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_ALERT_OVERLAY"
+                 file="shared/js/cr/ui/alert_overlay.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_ARRAY_DATA_MODEL"
+                 file="shared/js/cr/ui/array_data_model.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_AUTOCOMPLETE_LIST"
+                 file="shared/js/cr/ui/autocomplete_list.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_CARD_SLIDER"
+                 file="shared/js/cr/ui/card_slider.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_COMMAND"
+                 file="shared/js/cr/ui/command.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_CONTEXT_MENU_BUTTON"
+                 file="shared/js/cr/ui/context_menu_button.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_CONTEXT_MENU_HANDLER"
+                 file="shared/js/cr/ui/context_menu_handler.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_DIALOGS"
+                 file="shared/js/cr/ui/dialogs.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_DRAG_WRAPPER"
+                 file="shared/js/cr/ui/drag_wrapper.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_FOCUS_MANAGER"
+                 file="shared/js/cr/ui/focus_manager.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_FOCUS_OUTLINE_MANAGER"
+                 file="shared/js/cr/ui/focus_outline_manager.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_LIST"
+                 file="shared/js/cr/ui/list.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_LIST_ITEM"
+                 file="shared/js/cr/ui/list_item.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_LIST_SELECTION_CONTROLLER"
+                 file="shared/js/cr/ui/list_selection_controller.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_LIST_SELECTION_MODEL"
+                 file="shared/js/cr/ui/list_selection_model.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_LIST_SINGLE_SELECTION_MODEL"
+                 file="shared/js/cr/ui/list_single_selection_model.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_MENU"
+                 file="shared/js/cr/ui/menu.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_MENU_BUTTON"
+                 file="shared/js/cr/ui/menu_button.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_MENU_ITEM"
+                 file="shared/js/cr/ui/menu_item.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_OVERLAY"
+                 file="shared/js/cr/ui/overlay.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_POSITION_UTIL"
+                 file="shared/js/cr/ui/position_util.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_SPLITTER"
+                 file="shared/js/cr/ui/splitter.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_GRID"
+                 file="shared/js/cr/ui/grid.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_REPEATING_BUTTON"
+                 file="shared/js/cr/ui/repeating_button.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_TABLE"
+                 file="shared/js/cr/ui/table.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_TABLE_COLUMN"
+                 file="shared/js/cr/ui/table/table_column.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_TABLE_COLUMN_MODEL"
+                 file="shared/js/cr/ui/table/table_column_model.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_TABLE_HEADER"
+                 file="shared/js/cr/ui/table/table_header.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_TABLE_LIST"
+                 file="shared/js/cr/ui/table/table_list.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_TABLE_SPLITTER"
+                 file="shared/js/cr/ui/table/table_splitter.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_TABS"
+                 file="shared/js/cr/ui/tabs.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_TREE"
+                 file="shared/js/cr/ui/tree.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_TOUCH_HANDLER"
+                 file="shared/js/cr/ui/touch_handler.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_EVENT_TRACKER"
+                 file="shared/js/event_tracker.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_I18N_PROCESS"
+                 file="shared/js/i18n_process.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_I18N_TEMPLATE"
+                 file="shared/js/i18n_template.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_I18N_TEMPLATE_NO_PROCESS"
+                 file="shared/js/i18n_template_no_process.js"
+                 type="chrome_html" />
+      <structure name="IDR_SHARED_JS_I18N_TEMPLATE2"
+                 file="shared/js/i18n_template2.js" type="chrome_html"
+                 flattenhtml="true" />
+      <structure name="IDR_SHARED_JS_JSTEMPLATE_COMPILED"
+                 file="shared/js/jstemplate_compiled.js" type="chrome_html"
+                 flattenhtml="true" />
+      <structure name="IDR_SHARED_JS_LOAD_TIME_DATA"
+                 file="shared/js/load_time_data.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_LOCAL_STRINGS"
+                 file="shared/js/local_strings.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_MEDIA_COMMON"
+                 file="shared/js/media_common.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_PARSE_HTML_SUBSET"
+                 file="shared/js/parse_html_subset.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_UTIL"
+                 file="shared/js/util.js" type="chrome_html" />
+      <if expr="pp_ifdef('chromeos')">
+        <structure name="IDR_SHARED_CSS_UI_ACCOUNT_TWEAKS"
+                   file="shared/css/chromeos/ui_account_tweaks.css"
+                   type="chrome_html" />
+        <structure name="IDR_SHARED_JS_UI_ACCOUNT_TWEAKS"
+                   file="shared/js/chromeos/ui_account_tweaks.js"
+                   type="chrome_html" />
+      </if>
+    </structures>
   </release>
 </grit>

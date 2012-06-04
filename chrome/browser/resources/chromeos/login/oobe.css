@@ -1020,6 +1020,7 @@ span.bold {
   background-image: url('chrome://theme/IDR_WARNING');
   background-position: left top;
   background-repeat: no-repeat;
+  background-size: 24px;
 }
 
 .error-message-padding {

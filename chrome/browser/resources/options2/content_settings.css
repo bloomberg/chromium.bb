@@ -71,10 +71,12 @@ div[role='listitem'][managedby] {
 
 list div[role='listitem'][managedby='policy'] .close-button {
   background-image: url('chrome://theme/IDR_MANAGED');
+  background-size: 16px;
   opacity: 1;
 }
 
 list div[role='listitem'][managedby='extension'] .close-button {
   background-image: url('chrome://theme/IDR_EXTENSIONS_SECTION_SMALL');
+  background-size: 16px;
   opacity: 1;
 }
