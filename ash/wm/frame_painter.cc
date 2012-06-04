@@ -203,7 +203,7 @@ void FramePainter::Init(views::Widget* frame,
 
   window_ = frame->GetNativeWindow();
   // Ensure we get resize cursors for a few pixels outside our bounds.
-  int outside_bounds = ui::DisplayLayout() == ui::LAYOUT_TOUCH ?
+  int outside_bounds = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ?
       kResizeOutsideBoundsSizeTouch :
       kResizeOutsideBoundsSize;
   window_->set_hit_test_bounds_override_outer(
@@ -242,7 +242,7 @@ gfx::Rect FramePainter::GetWindowBoundsForClientBounds(
 int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
                                    const gfx::Point& point) {
   gfx::Rect expanded_bounds = view->bounds();
-  int outside_bounds = ui::DisplayLayout() == ui::LAYOUT_TOUCH ?
+  int outside_bounds = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ?
       kResizeOutsideBoundsSizeTouch :
       kResizeOutsideBoundsSize;
   expanded_bounds.Inset(-outside_bounds, -outside_bounds);
