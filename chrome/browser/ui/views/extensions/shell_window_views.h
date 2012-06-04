@@ -25,7 +25,7 @@ class ShellWindowViews : public ShellWindow,
   ShellWindowViews(Profile* profile,
                    const extensions::Extension* extension,
                    const GURL& url,
-                   const CreateParams params);
+                   const CreateParams& params);
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;

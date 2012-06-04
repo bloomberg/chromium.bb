@@ -109,7 +109,7 @@ void ShellWindowFrameView::GetWindowMask(const gfx::Size& size,
 ShellWindowViews::ShellWindowViews(Profile* profile,
                                    const extensions::Extension* extension,
                                    const GURL& url,
-                                   const ShellWindow::CreateParams win_params)
+                                   const ShellWindow::CreateParams& win_params)
     : ShellWindow(profile, extension, url),
       initialized_(false),
       use_custom_frame_(
