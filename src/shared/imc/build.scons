@@ -35,14 +35,6 @@ if env.Bit('mac'):
 
 env.DualLibrary('imc', nacl_imc_inputs)
 
-env.ComponentProgram('client',
-                     'nacl_imc_test_client.cc',
-                     EXTRA_LIBS=['imc', 'platform', 'gio'])
-
-env.ComponentProgram('server',
-                     'nacl_imc_test_server.cc',
-                     EXTRA_LIBS=['imc', 'platform', 'gio'])
-
 
 sigpipe_test_exe = env.ComponentProgram(
     'sigpipe_test',
