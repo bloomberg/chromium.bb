@@ -24,6 +24,10 @@ enum PP_FlashSetting {
    * this function returns 1, the 3D system will normally use the native
    * hardware for rendering which will be much faster.
    *
+   * Having this set to 1 only means that 3D should be used to draw 2D and
+   * video elements. PP_FLASHSETTING_STAGE3D_ENABLED should be checked to
+   * determine if it's ok to use 3D for arbitrary content.
+   *
    * In rare cases (depending on the platform) this value will be 1 but a
    * created 3D context will use emulation because context initialization
    * failed.
@@ -34,7 +38,15 @@ enum PP_FlashSetting {
    * Specifies if the given instance is in private/inconito/off-the-record mode
    * (returns 1) or "regular" mode (returns 0). Returns -1 on invalid instance.
    */
-  PP_FLASHSETTING_INCOGNITO = 2
+  PP_FLASHSETTING_INCOGNITO = 2,
+
+  /**
+   * Specifies if arbitrary 3d commands are supported (returns 1), or if 3d
+   * should only be used for drawing 2d and video (returns 0).
+   *
+   * This should only be enabled if PP_FLASHSETTING_3DENABLED is 1.
+   */
+  PP_FLASHSETTING_STAGE3DENABLED = 3
 };
 
 /**

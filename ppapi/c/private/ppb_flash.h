@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Tue May 01 16:01:19 2012. */
+/* From private/ppb_flash.idl modified Mon Jun 04 14:36:17 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -46,6 +46,10 @@ typedef enum {
    * this function returns 1, the 3D system will normally use the native
    * hardware for rendering which will be much faster.
    *
+   * Having this set to 1 only means that 3D should be used to draw 2D and
+   * video elements. PP_FLASHSETTING_STAGE3D_ENABLED should be checked to
+   * determine if it's ok to use 3D for arbitrary content.
+   *
    * In rare cases (depending on the platform) this value will be 1 but a
    * created 3D context will use emulation because context initialization
    * failed.
@@ -55,7 +59,14 @@ typedef enum {
    * Specifies if the given instance is in private/inconito/off-the-record mode
    * (returns 1) or "regular" mode (returns 0). Returns -1 on invalid instance.
    */
-  PP_FLASHSETTING_INCOGNITO = 2
+  PP_FLASHSETTING_INCOGNITO = 2,
+  /**
+   * Specifies if arbitrary 3d commands are supported (returns 1), or if 3d
+   * should only be used for drawing 2d and video (returns 0).
+   *
+   * This should only be enabled if PP_FLASHSETTING_3DENABLED is 1.
+   */
+  PP_FLASHSETTING_STAGE3DENABLED = 3
 } PP_FlashSetting;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FlashSetting, 4);
 /**

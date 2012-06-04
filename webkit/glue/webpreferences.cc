@@ -72,6 +72,8 @@ WebPreferences::WebPreferences()
       allow_file_access_from_file_urls(false),
       webaudio_enabled(false),
       experimental_webgl_enabled(false),
+      flash_3d_enabled(true),
+      flash_stage3d_enabled(false),
       gl_multisampling_enabled(true),
       privileged_webgl_extensions_enabled(false),
       webgl_errors_to_console_enabled(true),

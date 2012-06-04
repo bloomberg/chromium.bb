@@ -28,6 +28,7 @@ struct PPAPI_SHARED_EXPORT Preferences {
   int default_fixed_font_size;
 
   bool is_3d_supported;
+  bool is_stage3d_supported;
 };
 
 }  // namespace ppapi

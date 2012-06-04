@@ -88,6 +88,8 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool allow_file_access_from_file_urls;
   bool webaudio_enabled;
   bool experimental_webgl_enabled;
+  bool flash_3d_enabled;
+  bool flash_stage3d_enabled;
   bool gl_multisampling_enabled;
   bool privileged_webgl_extensions_enabled;
   bool webgl_errors_to_console_enabled;

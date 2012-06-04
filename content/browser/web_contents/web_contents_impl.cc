@@ -428,6 +428,9 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       !command_line.HasSwitch(switches::kDisable3DAPIs) &&
       !command_line.HasSwitch(switches::kDisableExperimentalWebGL);
 
+  prefs.flash_3d_enabled = prefs.flash_stage3d_enabled =
+      GpuProcessHost::gpu_enabled();
+
   prefs.gl_multisampling_enabled =
       !command_line.HasSwitch(switches::kDisableGLMultisampling);
   prefs.privileged_webgl_extensions_enabled =
@@ -509,6 +512,10 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       prefs.accelerated_compositing_enabled = false;
     if (blacklist_type & content::GPU_FEATURE_TYPE_WEBGL)
       prefs.experimental_webgl_enabled = false;
+    if (blacklist_type & content::GPU_FEATURE_TYPE_FLASH3D)
+      prefs.flash_3d_enabled = false;
+    if (blacklist_type & content::GPU_FEATURE_TYPE_FLASH_STAGE3D)
+      prefs.flash_stage3d_enabled = false;
     if (blacklist_type & content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)
       prefs.accelerated_2d_canvas_enabled = false;
     if (blacklist_type & content::GPU_FEATURE_TYPE_MULTISAMPLING)
