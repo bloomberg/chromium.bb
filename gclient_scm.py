@@ -194,6 +194,21 @@ class GitWrapper(SCMWrapper):
         cwd=self.checkout_path,
         filter_fn=GitDiffFilterer(self.relpath).Filter)
 
+  def UpdateSubmoduleConfig(self):
+    submod_cmd = ['git', 'config', '-f', '$toplevel/.git/config',
+                  'submodule.$name.ignore', '||',
+                  'git', 'config', '-f', '$toplevel/.git/config',
+                  'submodule.$name.ignore', 'dirty']
+    cmd = ['git', 'submodule', '--quiet', 'foreach', ' '.join(submod_cmd)]
+    try:
+      gclient_utils.CheckCallAndFilter(
+        cmd, cwd=self.checkout_path, print_stdout=False,
+        filter_fn=lambda x: None)
+    except subprocess2.CalledProcessError:
+      # Not a fatal error, or even very interesting in a non-git-submodule
+      # world.  So just keep it quiet.
+      pass
+
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
 
@@ -254,6 +269,7 @@ class GitWrapper(SCMWrapper):
         not os.listdir(self.checkout_path)):
       gclient_utils.safe_makedirs(os.path.dirname(self.checkout_path))
       self._Clone(revision, url, options)
+      self.UpdateSubmoduleConfig()
       files = self._Capture(['ls-files']).splitlines()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
       if not verbose:
@@ -290,6 +306,7 @@ class GitWrapper(SCMWrapper):
         quiet = ['--quiet']
       self._Run(['fetch', 'origin', '--prune'] + quiet, options)
       self._Run(['reset', '--hard', 'origin/master'] + quiet, options)
+      self.UpdateSubmoduleConfig()
       files = self._Capture(['ls-files']).splitlines()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
       return
@@ -461,6 +478,7 @@ class GitWrapper(SCMWrapper):
             # whitespace between projects when syncing.
             print('')
 
+    self.UpdateSubmoduleConfig()
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
     # If the rebase generated a conflict, abort and ask user to fix

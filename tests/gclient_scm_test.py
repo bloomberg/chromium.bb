@@ -785,6 +785,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
         'cleanup',
         'diff',
         'pack',
+        'UpdateSubmoduleConfig',
         'relpath',
         'revert',
         'revinfo',
