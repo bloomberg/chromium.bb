@@ -840,6 +840,14 @@ gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() {
                    end.y() - origin.y());
 }
 
+bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(uint32 index,
+                                                             gfx::Rect* rect) {
+  // TODO(nona): implement this method. Need patch to WebKit.
+  // https://bugs.webkit.org/show_bug.cgi?id=87911
+  DCHECK(rect);
+  return false;
+}
+
 bool RenderWidgetHostViewAura::HasCompositionText() {
   return has_composition_text_;
 }

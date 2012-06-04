@@ -714,6 +714,31 @@ gfx::Rect NativeTextfieldViews::GetCaretBounds() {
   return GetRenderText()->GetUpdatedCursorBounds();
 }
 
+bool NativeTextfieldViews::GetCompositionCharacterBounds(uint32 index,
+                                                         gfx::Rect* rect) {
+  DCHECK(rect);
+  if (!HasCompositionText())
+    return false;
+  const ui::Range& composition_range = GetRenderText()->GetCompositionRange();
+  const uint32 left_cursor_pos = composition_range.start() + index;
+  const uint32 right_cursor_pos = composition_range.start() + index + 1;
+  DCHECK(!composition_range.is_empty());
+  if (composition_range.end() < right_cursor_pos)
+    return false;
+  const gfx::SelectionModel start_position(left_cursor_pos,
+                                           gfx::CURSOR_BACKWARD);
+  const gfx::SelectionModel end_position(right_cursor_pos,
+                                         gfx::CURSOR_BACKWARD);
+  gfx::Rect start_cursor = GetRenderText()->GetCursorBounds(start_position,
+                                                            false);
+  gfx::Rect end_cursor = GetRenderText()->GetCursorBounds(end_position, false);
+  *rect = gfx::Rect(start_cursor.x(),
+                    start_cursor.y(),
+                    end_cursor.x() - start_cursor.x(),
+                    start_cursor.height());
+  return true;
+}
+
 bool NativeTextfieldViews::HasCompositionText() {
   return model_->HasCompositionText();
 }

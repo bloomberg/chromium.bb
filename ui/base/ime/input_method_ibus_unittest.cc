@@ -93,6 +93,10 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   virtual gfx::Rect GetCaretBounds() OVERRIDE {
     return caret_bounds_;
   }
+  virtual bool GetCompositionCharacterBounds(uint32 index,
+                                             gfx::Rect* rect) OVERRIDE {
+    return false;
+  }
   virtual bool HasCompositionText() OVERRIDE {
     CompositionText empty;
     return composition_text_ != empty;

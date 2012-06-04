@@ -1658,4 +1658,45 @@ TEST_F(NativeTextfieldViewsTest, OverflowInRTLTest) {
   base::i18n::SetICUDefaultLocale(locale);
 }
 
+TEST_F(NativeTextfieldViewsTest, GetCompositionCharacterBoundsTest) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+
+  string16 str;
+  const uint32 char_count = 10UL;
+  ui::CompositionText composition;
+  composition.text = UTF8ToUTF16("0123456789");
+  ui::TextInputClient* client = textfield_->GetTextInputClient();
+
+  // Return false if there is no composition text.
+  gfx::Rect rect;
+  EXPECT_FALSE(client->GetCompositionCharacterBounds(0, &rect));
+
+  // Get each character boundary by cursor.
+  gfx::Rect char_rect[char_count];
+  gfx::Rect prev_cursor = GetCursorBounds();
+  for (uint32 i = 0; i < char_count; ++i) {
+    composition.selection = ui::Range(0, i+1);
+    client->SetCompositionText(composition);
+    EXPECT_TRUE(client->HasCompositionText()) << " i=" << i;
+    gfx::Rect cursor_bounds = GetCursorBounds();
+    char_rect[i] = gfx::Rect(prev_cursor.x(),
+                             prev_cursor.y(),
+                             cursor_bounds.x() - prev_cursor.x(),
+                             prev_cursor.height());
+    prev_cursor = cursor_bounds;
+  }
+
+  for (uint32 i = 0; i < char_count; ++i) {
+    gfx::Rect actual_rect;
+    EXPECT_TRUE(client->GetCompositionCharacterBounds(i, &actual_rect))
+        << " i=" << i;
+    EXPECT_EQ(char_rect[i], actual_rect) << " i=" << i;
+  }
+
+  // Return false if the index is out of range.
+  EXPECT_FALSE(client->GetCompositionCharacterBounds(char_count, &rect));
+  EXPECT_FALSE(client->GetCompositionCharacterBounds(char_count + 1, &rect));
+  EXPECT_FALSE(client->GetCompositionCharacterBounds(char_count + 100, &rect));
+}
+
 }  // namespace views

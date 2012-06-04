@@ -135,6 +135,8 @@ class RenderWidgetHostViewAura
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
   virtual gfx::Rect GetCaretBounds() OVERRIDE;
+  virtual bool GetCompositionCharacterBounds(uint32 index,
+                                             gfx::Rect* rect) OVERRIDE;
   virtual bool HasCompositionText() OVERRIDE;
   virtual bool GetTextRange(ui::Range* range) OVERRIDE;
   virtual bool GetCompositionTextRange(ui::Range* range) OVERRIDE;
