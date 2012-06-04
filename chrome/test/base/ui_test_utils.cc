@@ -892,6 +892,8 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
     LOG(ERROR) << "Unable to create a temporary directory.";
     return false;
   }
+  cmd_line->AppendArgNative(FILE_PATH_LITERAL("--output-dir=") +
+                            temp_dir_.path().value());
   websocket_pid_file_ = temp_dir_.path().AppendASCII("websocket.pid");
   cmd_line->AppendArgNative(FILE_PATH_LITERAL("--pidfile=") +
                             websocket_pid_file_.value());
