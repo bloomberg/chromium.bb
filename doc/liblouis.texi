@@ -1736,7 +1736,7 @@ Having a harness ensures that the table is correct for all the listed tests, and
 showing the error and the actual and expected outputs.
 To ensure complete coverage, you should have at least one test for each contraction rule.
 
-Each harness file is a simple utf8 encoded python file, which has two entries.
+Each harness file is a simple utf8 encoded json file, which has two entries.
 @table @code
 @item table 
 The name of the table which the tests should be run against.
@@ -1753,6 +1753,8 @@ The unicode text to be tested (required).
 The position of the cursor within the given text (optional). Useful
 when simulating screenreader interaction, to debug contraction and
 cursor behaviour.
+@item comment
+A field describing the reason for the test, the transformation rule or any useful info that might be needed in case the test breaks (optional).
 @item brl
 The expected braille output (required). The dots should be encoded in
 the liblouis ascii-braille like encoding.
@@ -1763,9 +1765,12 @@ contraction and cursor behaviour.
 @item mode
 The liblouis translation mode that should be used for this test
 (optional). If not defined defaults to 0.
+@item type
+The optional type field can have three values: "translate" (default if undeclaired), "backtranslate" or "hyphenate".
+Declares what tests should be performed on the test data.
 @end table
 
-For a full example please see @file{en-GB-g2_harness.py} in the
+For examples please see @file{*_harness.txt} in the
 harness directory in the source distribution.
 
 @node  Notes on Back-Translation, Programming with liblouis, How to Write a Translation Table Test Harness, Top
