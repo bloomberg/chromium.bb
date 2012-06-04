@@ -757,14 +757,6 @@
    fun:::AutocompleteProviderTest::RunTest
 }
 {
-   bug_79327
-   Heapcheck:Leak
-   fun:HttpBridgeFactory
-   fun:browser_sync::SyncBackendHost::MakeHttpBridgeFactory
-   fun:browser_sync::SyncBackendHost::Initialize
-   fun:browser_sync::SyncBackendHostTest_InitShutdown_Test::TestBody
-}
-{
    bug_79328
    Heapcheck:Leak
    ...
