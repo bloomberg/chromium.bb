@@ -169,13 +169,45 @@ void ProblemSink::ReportProblemRegisterListInstructionPair(
 enum PatternMatch {
   // The pattern does not apply to the instructions it was given.
   NO_MATCH,
-  // The pattern matches a single instruction, and is safe.
+  // The pattern matches and is safe.
   PATTERN_SAFE,
-  // The pattern matches a double instruction, and is safe;
-  // do not allow jumps to split it.
-  PATTERN_SAFE_2,
   // The pattern matches, and has detected a problem.
   PATTERN_UNSAFE
+};
+
+// Models data collected when matching a pair of instructions to a validator
+// pattern.
+class InstructionPairMatchData {
+ public:
+  explicit inline InstructionPairMatchData(ProblemSink* out)
+      : out_(out),
+        match_(PATTERN_UNSAFE),
+        problem_(kValidatorProblemSize),
+        pair_problem_(kNoSpecificPairProblem),
+        first_is_basis_(false),
+        is_single_instruction_pattern_(false)
+  {}
+
+  // Defines the problem sink to report problems to.
+  ProblemSink* out_;
+
+  // Defines how successful the validator was on matching the given pattern.
+  PatternMatch match_;
+
+  // Defines the validator problem that the pattern is trying to check.
+  ValidatorProblem problem_;
+
+  // Defines any validator problems due to conditions that cross instruction
+  // boundaries.
+  ValidatorInstructionPairProblem pair_problem_;
+
+  // If set, assume the problem is in the first instruction (rather than the
+  // second).
+  bool first_is_basis_;
+
+  // If true, the pattern is for one instruction (defined by first_is_basis)
+  // instead of two.
+  bool is_single_instruction_pattern_;
 };
 
 // Looks at the conditions associated with a pair of instructions
@@ -201,126 +233,142 @@ static ValidatorInstructionPairProblem GetPairConditionProblem(
   }
 }
 
-/*
- * Ensures that all loads/stores use a safe base address.  A base address is
- * safe if it
- *     1. Has specific bits masked off by its immediate predecessor, or
- *     2. Is predicated on those bits being clear, as tested by its immediate
- *        predecessor, or
- *     3. Is in a register defined as always containing a safe address.
- *
- * This pattern concerns itself with case #1, early-exiting if it finds #2.
- */
-static PatternMatch check_loadstore_mask(const SfiValidator &sfi,
-                                         const DecodedInstruction &first,
-                                         const DecodedInstruction &second,
-                                         ProblemSink *out) {
+// Ensures that all loads/stores use a safe base address.  A base address is
+// safe if it
+//     1. Has specific bits masked off by its immediate predecessor, or
+//     2. Is predicated on those bits being clear, as tested by its immediate
+//        predecessor, or
+//     3. Is in a register defined as always containing a safe address.
+//
+// This pattern concerns itself with case #1, early-exiting if it finds #2.
+static void check_loadstore_mask(
+    const SfiValidator& sfi,
+    const DecodedInstruction& first,
+    const DecodedInstruction& second,
+    InstructionPairMatchData* match_data) {
+  match_data->problem_ = kProblemUnsafeLoadStore;
   if (second.base_address_register().
       Equals(kRegisterNone) /* not a load/store */
       || sfi.is_data_address_register(second.base_address_register())) {
-    return NO_MATCH;
+    match_data->match_ = NO_MATCH;
+    return;
   }
 
   if (second.base_address_register().Equals(kRegisterPc)
       && second.offset_is_immediate()) {
-    /* PC + immediate addressing is always safe. */
-    return PATTERN_SAFE;
+    // PC + immediate addressing is always safe.
+    match_data->match_ = PATTERN_SAFE;
+    match_data->is_single_instruction_pattern_ = true;
+    return;
   }
 
   if (first.defines(second.base_address_register())
       && first.clears_bits(sfi.data_address_mask())
       && first.provably_precedes(second)) {
-    return PATTERN_SAFE_2;
+    match_data->match_ = PATTERN_SAFE;
+    return;
   }
 
   if (first.sets_Z_if_bits_clear(second.base_address_register(),
                                  sfi.data_address_mask())
-      && second.is_conditional_on(first)) {
-    return PATTERN_SAFE_2;
+      && second.is_eq_conditional_on(first)) {
+    match_data->match_ = PATTERN_SAFE;
+    return;
   }
 
   // If reached, there is a problem!
   // Try to best categorize the problem and report.
   if (first.defines(second.base_address_register())) {
     if (first.clears_bits(sfi.data_address_mask())) {
-      out->ReportProblemRegisterInstructionPair(
+      match_data->out_->ReportProblemRegisterInstructionPair(
           second.addr(),
           kProblemUnsafeLoadStore,
           GetPairConditionProblem(first, second),
           second.base_address_register(),
           first, second);
     } else {
-      out->ReportProblemRegister(second.addr(),
-                                 kProblemUnsafeLoadStore,
-                                 second.base_address_register());
+      match_data->out_->ReportProblemRegister(
+          second.addr(),
+          kProblemUnsafeLoadStore,
+          second.base_address_register());
     }
   } else if (first.sets_Z_if_bits_clear(second.base_address_register(),
                                         sfi.data_address_mask())) {
-    out->ReportProblemRegisterInstructionPair(
+    match_data->out_->ReportProblemRegisterInstructionPair(
         second.addr(),
         kProblemUnsafeLoadStore,
-        GetPairConditionProblem(first, second),
+        kEqConditionalOn,
         second.base_address_register(), first, second);
   } else if (second.base_address_register().Equals(kRegisterPc)) {
-    out->ReportProblem(second.addr(), kProblemIllegalPcLoadStore);
+    match_data->out_->ReportProblem(second.addr(), kProblemIllegalPcLoadStore);
   } else {
-    out->ReportProblemRegister(second.addr(),
-                               kProblemUnsafeLoadStore,
-                               second.base_address_register());
+    match_data->out_->ReportProblemRegister(second.addr(),
+                                            kProblemUnsafeLoadStore,
+                                            second.base_address_register());
   }
-  return PATTERN_UNSAFE;
+  return;
 }
 
-/*
- * Ensures that all indirect branches use a safe destination address.  A
- * destination address is safe if it has specific bits masked off by its
- * immediate predecessor.
- */
-static PatternMatch check_branch_mask(const SfiValidator &sfi,
-                                      const DecodedInstruction &first,
-                                      const DecodedInstruction &second,
-                                      ProblemSink *out) {
-  if (second.branch_target_register().Equals(kRegisterNone))
-    return NO_MATCH;
+// Ensures that all indirect branches use a safe destination address.  A
+// destination address is safe if it has specific bits masked off by its
+// immediate predecessor.
+static void check_branch_mask(
+    const SfiValidator& sfi,
+    const DecodedInstruction& first,
+    const DecodedInstruction& second,
+    InstructionPairMatchData* match_data) {
+  match_data->problem_ = kProblemUnsafeBranch;
+  if (second.branch_target_register().Equals(kRegisterNone)) {
+    match_data->match_ = NO_MATCH;
+    return;
+  }
 
   if (first.defines(second.branch_target_register())
       && first.clears_bits(sfi.code_address_mask())
       && first.provably_precedes(second)) {
-    return PATTERN_SAFE_2;
+    match_data->match_ = PATTERN_SAFE;
+    return;
   }
 
   // If reached, there is a problem!
   // Try to better diagnose the problem being reported.
   if (first.defines(second.branch_target_register())) {
     if (first.clears_bits(sfi.code_address_mask())) {
-      out->ReportProblemRegisterInstructionPair(
+      match_data->out_->ReportProblemRegisterInstructionPair(
           second.addr(),
           kProblemUnsafeBranch,
           GetPairConditionProblem(first, second),
           second.branch_target_register(), first, second);
     } else {
-      out->ReportProblemRegister(
+      match_data->out_->ReportProblemRegister(
           second.addr(), kProblemUnsafeBranch, second.branch_target_register());
     }
   } else {
-    out->ReportProblemRegister(second.addr(), kProblemUnsafeBranch,
-                               second.branch_target_register());
+    match_data->out_->ReportProblemRegister(second.addr(), kProblemUnsafeBranch,
+                                            second.branch_target_register());
   }
-  return PATTERN_UNSAFE;
+  return;
 }
 
-/*
- * Verifies that any instructions that update a data-address register are
- * immediately followed by a mask.
- */
-static PatternMatch check_data_register_update(const SfiValidator &sfi,
-                                               const DecodedInstruction &first,
-                                               const DecodedInstruction &second,
-                                               ProblemSink *out) {
-  if (!first.defines_any(sfi.data_address_registers())) return NO_MATCH;
+// Verifies that any instructions that update a data-address register are
+// immediately followed by a mask.
+static void check_data_register_update(
+    const SfiValidator& sfi,
+    const DecodedInstruction& first,
+    const DecodedInstruction& second,
+    InstructionPairMatchData* match_data) {
+  match_data->problem_ = kProblemUnsafeDataWrite;
+  match_data->first_is_basis_ = true;
+  if (!first.defines_any(sfi.data_address_registers())) {
+    match_data->match_ = NO_MATCH;
+    return;
+  }
 
   // A single safe data register update doesn't affect control flow.
-  if (first.clears_bits(sfi.data_address_mask())) return NO_MATCH;
+  if (first.clears_bits(sfi.data_address_mask())) {
+    match_data->match_ = NO_MATCH;
+    return;
+  }
 
   // Exempt updates due to writeback
   RegisterList data_addr_defs(first.defs().
@@ -328,42 +376,42 @@ static PatternMatch check_data_register_update(const SfiValidator &sfi,
 
   if (first.immediate_addressing_defs().
       Intersect(sfi.data_address_registers()).Equals(data_addr_defs)) {
-    return NO_MATCH;
+    match_data->match_ = NO_MATCH;
+    return;
   }
 
   if (second.defines_all(data_addr_defs)
       && second.clears_bits(sfi.data_address_mask())
       && second.provably_follows(first)) {
-    return PATTERN_SAFE_2;
+    match_data->match_ = PATTERN_SAFE;
+    return;
   }
 
   // If reached, there is a problem!
   // Try to better diagnose the problem being reported.
   if (second.defines_all(data_addr_defs) &&
       second.clears_bits(sfi.data_address_mask())) {
-    out->ReportProblemRegisterListInstructionPair(
+    match_data->out_->ReportProblemRegisterListInstructionPair(
         first.addr(),
         kProblemUnsafeDataWrite,
         GetPairConditionProblem(first, second),
         data_addr_defs, first, second);
   } else {
-    out->ReportProblemRegisterList(first.addr(),
-                                   kProblemUnsafeDataWrite,
-                                   data_addr_defs);
+    match_data->out_->ReportProblemRegisterList(first.addr(),
+                                                kProblemUnsafeDataWrite,
+                                                data_addr_defs);
   }
-  return PATTERN_UNSAFE;
+  return;
 }
 
-/*
- * Checks the location of linking branches -- to be useful, they must be in
- * the last bundle slot.
- *
- * This is not a security check per se, more of a guard against Stupid Compiler
- * Tricks.
- */
-static PatternMatch check_call_position(const SfiValidator &sfi,
-                                        const DecodedInstruction &inst,
-                                        ProblemSink *out) {
+// Checks the location of linking branches -- to be useful, they must be in
+// the last bundle slot.
+//
+// This is not a security check per se, more of a guard against Stupid Compiler
+// Tricks.
+static PatternMatch check_call_position(const SfiValidator& sfi,
+                                        const DecodedInstruction& inst,
+                                        ProblemSink* out) {
   // Identify linking branches through their definitions:
   if (inst.defines_all(RegisterList(kRegisterPc).Add(kRegisterLink))) {
     uint32_t last_slot = sfi.bundle_for_address(inst.addr()).end_addr() - 4;
@@ -375,28 +423,23 @@ static PatternMatch check_call_position(const SfiValidator &sfi,
   return NO_MATCH;
 }
 
-/*
- * Checks for instructions that alter any read-only register.
- */
-static PatternMatch check_read_only(const SfiValidator &sfi,
-                                    const DecodedInstruction &inst,
-                                    ProblemSink *out) {
+// Checks for instructions that alter any read-only register.
+static PatternMatch check_read_only(const SfiValidator& sfi,
+                                    const DecodedInstruction& inst,
+                                    ProblemSink* out) {
   if (inst.defines_any(sfi.read_only_registers())) {
     out->ReportProblemRegisterList(
         inst.addr(), kProblemReadOnlyRegister,
         inst.defs().Intersect(sfi.read_only_registers()));
     return PATTERN_UNSAFE;
   }
-
   return NO_MATCH;
 }
 
-/*
- * Checks writes to r15 from instructions that aren't branches.
- */
-static PatternMatch check_pc_writes(const SfiValidator &sfi,
-                                    const DecodedInstruction &inst,
-                                    ProblemSink *out) {
+// Checks writes to r15 from instructions that aren't branches.
+static PatternMatch check_pc_writes(const SfiValidator& sfi,
+                                    const DecodedInstruction& inst,
+                                    ProblemSink* out) {
   if (inst.is_relative_branch()
       || !inst.branch_target_register().Equals(kRegisterNone)) {
     // It's a branch.
@@ -570,8 +613,8 @@ SfiValidator& SfiValidator::operator=(const SfiValidator& v) {
   return *this;
 }
 
-bool SfiValidator::validate(const vector<CodeSegment> &segments,
-                            ProblemSink *out) {
+bool SfiValidator::validate(const vector<CodeSegment>& segments,
+                            ProblemSink* out) {
   uint32_t base = segments[0].begin_addr();
   uint32_t size = segments.back().end_addr() - base;
   AddressSet branches(base, size);
@@ -593,10 +636,10 @@ bool SfiValidator::validate(const vector<CodeSegment> &segments,
   return complete_success;
 }
 
-bool SfiValidator::validate_fallthrough(const CodeSegment &segment,
-                                        ProblemSink *out,
-                                        AddressSet *branches,
-                                        AddressSet *critical) {
+bool SfiValidator::validate_fallthrough(const CodeSegment& segment,
+                                        ProblemSink* out,
+                                        AddressSet* branches,
+                                        AddressSet* critical) {
   bool complete_success = true;
 
   nacl_arm_dec::Forbidden initial_decoder;
@@ -647,7 +690,7 @@ bool SfiValidator::validate_fallthrough(const CodeSegment &segment,
   return complete_success;
 }
 
-static bool address_contained(uint32_t va, const vector<CodeSegment> &segs) {
+static bool address_contained(uint32_t va, const vector<CodeSegment>& segs) {
   for (vector<CodeSegment>::const_iterator it = segs.begin(); it != segs.end();
       ++it) {
     if (it->contains_address(va)) return true;
@@ -655,10 +698,10 @@ static bool address_contained(uint32_t va, const vector<CodeSegment> &segs) {
   return false;
 }
 
-bool SfiValidator::validate_branches(const vector<CodeSegment> &segments,
-                                     const AddressSet &branches,
-                                     const AddressSet &critical,
-                                     ProblemSink *out) {
+bool SfiValidator::validate_branches(const vector<CodeSegment>& segments,
+                                     const AddressSet& branches,
+                                     const AddressSet& critical,
+                                     ProblemSink* out) {
   bool complete_success = true;
 
   vector<CodeSegment>::const_iterator seg_it = segments.begin();
@@ -701,13 +744,13 @@ bool SfiValidator::validate_branches(const vector<CodeSegment> &segments,
   return complete_success;
 }
 
-bool SfiValidator::apply_patterns(const DecodedInstruction &inst,
-    ProblemSink *out) {
+bool SfiValidator::apply_patterns(const DecodedInstruction& inst,
+    ProblemSink* out) {
   // Single-instruction patterns. Should return PATTERN_SAFE if the
   // pattern succeeds.
-  typedef PatternMatch (*OneInstPattern)(const SfiValidator &,
-                                         const DecodedInstruction &,
-                                         ProblemSink *out);
+  typedef PatternMatch (*OneInstPattern)(const SfiValidator&,
+                                         const DecodedInstruction&,
+                                         ProblemSink*);
   static const OneInstPattern one_inst_patterns[] = {
     &check_read_only,
     &check_pc_writes,
@@ -726,31 +769,32 @@ bool SfiValidator::apply_patterns(const DecodedInstruction &inst,
       case PATTERN_UNSAFE:
         complete_success = false;
         break;
-
-      case PATTERN_SAFE_2:
-        assert(false);  // This should not happen. All patterns in the
-                        // list are single instruction patterns.
     }
   }
 
   return complete_success;
 }
 
-bool SfiValidator::apply_patterns(const DecodedInstruction &first,
-    const DecodedInstruction &second, AddressSet *critical, ProblemSink *out) {
+bool SfiValidator::apply_patterns(
+    const DecodedInstruction& first, const DecodedInstruction& second,
+    AddressSet* critical, ProblemSink* out) {
   // Type for two-instruction pattern functions.
   //
   // Note: These functions can recognize single instruction patterns,
-  // as well as two instruction patterns. Single instruction patterns
-  // should return PATTERN_SAFE while two instruction patterns should
-  // return PATTERN_SAFE_2. In addition, single instruction patterns
-  // should be applied to the "second" instruction. The main reason for
+  // as well as two instruction patterns. In addition, single instruction
+  // patterns should be applied to the "second" instruction. The main reason for
   // allowing both pattern lengths is so that precondition tests can
   // be shared, and hence more efficient.
-  typedef PatternMatch (*TwoInstPattern)(const SfiValidator &,
-                                         const DecodedInstruction &first,
-                                         const DecodedInstruction &second,
-                                         ProblemSink *out);
+  // Arguments are:
+  //    sfi - The validator that made the request.
+  //    first - The first instruction in the instruction pair.
+  //    second - The second instruction in the instruction pair.
+  //    match_data - The data collected about the pattern being applied.
+  typedef void (*TwoInstPattern)(
+      const SfiValidator& sfi,
+      const DecodedInstruction& first,
+      const DecodedInstruction& second,
+      InstructionPairMatchData* match_data);
 
   // The list of patterns -- defined in static functions up top.
   static const TwoInstPattern two_inst_patterns[] = {
@@ -762,9 +806,9 @@ bool SfiValidator::apply_patterns(const DecodedInstruction &first,
   bool complete_success = true;
 
   for (uint32_t i = 0; i < NACL_ARRAY_SIZE(two_inst_patterns); i++) {
-    PatternMatch r = two_inst_patterns[i](*this, first, second, out);
-    switch (r) {
-      case PATTERN_SAFE:
+    InstructionPairMatchData match_data(out);
+    two_inst_patterns[i](*this, first, second, &match_data);
+    switch (match_data.match_) {
       case NO_MATCH: break;
 
       case PATTERN_UNSAFE:
@@ -772,14 +816,29 @@ bool SfiValidator::apply_patterns(const DecodedInstruction &first,
         complete_success = false;
         break;
 
-      case PATTERN_SAFE_2:
+      case PATTERN_SAFE:
+        if (match_data.is_single_instruction_pattern_) break;
         if (bundle_for_address(first.addr())
             != bundle_for_address(second.addr())) {
           complete_success = false;
-          out->ReportProblemInstructionPair(
-              first.addr(), kProblemPatternCrossesBundle,
-              kNoSpecificPairProblem,
-              first, second);
+          if (match_data.problem_ == kValidatorProblemSize) {
+            // Specific test pattern did not specify what problem was
+            // being worked on. Generate a generic error message.
+            out->ReportProblemInstructionPair(
+                (match_data.first_is_basis_ ? first.addr() : second.addr()),
+                kProblemPatternCrossesBundle,
+                kNoSpecificPairProblem,
+                first, second);
+          } else {
+            // Specific test pattern specified what problem was
+            // being worked on. Generate message to communiate
+            // this.
+            out->ReportProblemInstructionPair(
+                (match_data.first_is_basis_ ? first.addr() : second.addr()),
+                match_data.problem_,
+                kPairCrossesBundle,
+                first, second);
+          }
         } else {
           critical->add(second.addr());
         }
@@ -802,14 +861,11 @@ bool SfiValidator::is_bundle_head(uint32_t address) const {
   return (address % bytes_per_bundle_) == 0;
 }
 
-
-/*
- * We eagerly compute both safety and defs here, because it turns out to be
- * faster by 10% than doing either lazily and memoizing the result.
- */
+// We eagerly compute both safety and defs here, because it turns out to be
+// faster by 10% than doing either lazily and memoizing the result.
 DecodedInstruction::DecodedInstruction(uint32_t vaddr,
                                        Instruction inst,
-                                       const ClassDecoder &decoder)
+                                       const ClassDecoder& decoder)
     : vaddr_(vaddr),
       inst_(inst),
       decoder_(&decoder),

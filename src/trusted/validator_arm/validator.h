@@ -30,7 +30,6 @@ class CodeSegment;
 class DecodedInstruction;
 class ProblemSink;
 
-
 // A simple model of an instruction bundle.  Bundles consist of one or more
 // instructions (two or more, in the useful case); the precise size is
 // controlled by the parameters passed into SfiValidator, below.
@@ -42,7 +41,7 @@ class Bundle {
   uint32_t begin_addr() const { return virtual_base_; }
   uint32_t end_addr() const { return virtual_base_ + size_; }
 
-  bool operator!=(const Bundle &other) const {
+  bool operator!=(const Bundle& other) const {
     // Note that all Bundles are currently assumed to be the same size.
     return virtual_base_ != other.virtual_base_;
   }
@@ -84,7 +83,7 @@ class SfiValidator {
   // ProblemSink.
   //
   // Returns true iff no problems were found.
-  bool validate(const std::vector<CodeSegment> &, ProblemSink *out);
+  bool validate(const std::vector<CodeSegment>& segments, ProblemSink* out);
 
   // A 2-dimensional array, defined on the Condition of two
   // instructions, defining when we can statically prove that the
@@ -140,15 +139,15 @@ class SfiValidator {
   //       because it would split an otherwise-safe pseudo-op.
   //
   // Returns true iff no problems were found.
-  bool validate_fallthrough(const CodeSegment &, ProblemSink *,
-      AddressSet *branches, AddressSet *critical);
+  bool validate_fallthrough(const CodeSegment& segment, ProblemSink* out,
+      AddressSet* branches, AddressSet* critical);
 
   // Factor of validate_fallthrough, above.  Checks a single instruction using
   // the instruction patterns defined in the .cc file, with two possible
   // results:
   //   1. No patterns matched, or all were safe: nothing happens.
   //   2. Patterns matched and were unsafe: problems get sent to 'out'.
-  bool apply_patterns(const DecodedInstruction &, ProblemSink *out);
+  bool apply_patterns(const DecodedInstruction& inst, ProblemSink* out);
 
   // Factor of validate_fallthrough, above.  Checks a pair of instructions using
   // the instruction patterns defined in the .cc file, with three possible
@@ -162,14 +161,15 @@ class SfiValidator {
   // allows precondition checks to be shared. See comments in the implementation
   // of this (in validator.cc) to see specifics on how to implement both single
   // instruction and two instruction pattern testers.
-  bool apply_patterns(const DecodedInstruction &first,
-      const DecodedInstruction &second, AddressSet *critical, ProblemSink *out);
+  bool apply_patterns(const DecodedInstruction& first,
+                      const DecodedInstruction& second, AddressSet* critical,
+                      ProblemSink* out);
 
   // Validates all branches found by a previous pass, checking destinations.
   // Returns true iff no problems were found.
-  bool validate_branches(const std::vector<CodeSegment> &,
-      const AddressSet &branches, const AddressSet &critical,
-      ProblemSink *);
+  bool validate_branches(const std::vector<CodeSegment>& segments,
+      const AddressSet& branches, const AddressSet& critical,
+      ProblemSink* out);
 
 
   uint32_t bytes_per_bundle_;
@@ -197,7 +197,7 @@ class SfiValidator {
 class DecodedInstruction {
  public:
   DecodedInstruction(uint32_t vaddr, nacl_arm_dec::Instruction inst,
-      const nacl_arm_dec::ClassDecoder &decoder);
+      const nacl_arm_dec::ClassDecoder& decoder);
 
   // We permit the default copy ctor and assignment operator.
   uint32_t addr() const { return vaddr_; }
@@ -216,7 +216,7 @@ class DecodedInstruction {
   // Note that this function can't see the bundle size, so this result
   // does not take it into account.  The SfiValidator reasons on this
   // separately.
-  bool provably_precedes(const DecodedInstruction &other) const {
+  bool provably_precedes(const DecodedInstruction& other) const {
     return !defines(nacl_arm_dec::kConditions) &&
         SfiValidator::condition_implies
         [other.inst_.GetCondition()][inst_.GetCondition()];
@@ -237,7 +237,7 @@ class DecodedInstruction {
   // Note that this function can't see the bundle size, so this result
   // does not take it into account.  The SfiValidator reasons on this
   // separately.
-  bool provably_follows(const DecodedInstruction &other) const {
+  bool provably_follows(const DecodedInstruction& other) const {
     return !other.defines(nacl_arm_dec::kConditions) &&
         SfiValidator::condition_implies
         [other.inst_.GetCondition()][inst_.GetCondition()];
@@ -246,7 +246,7 @@ class DecodedInstruction {
   // Checks that the execution of 'this' is conditional on the test result
   // (specifically, the Z flag being set) from 'other' -- which must be
   // adjacent for this simple check to be meaningful.
-  bool is_conditional_on(const DecodedInstruction &other) const {
+  bool is_eq_conditional_on(const DecodedInstruction& other) const {
     return inst_.GetCondition() == nacl_arm_dec::Instruction::EQ
         && other.inst_.GetCondition() == nacl_arm_dec::Instruction::AL
         && other.defines(nacl_arm_dec::kConditions);
@@ -322,7 +322,7 @@ class DecodedInstruction {
  private:
   uint32_t vaddr_;
   nacl_arm_dec::Instruction inst_;
-  const nacl_arm_dec::ClassDecoder *decoder_;
+  const nacl_arm_dec::ClassDecoder* decoder_;
 
   nacl_arm_dec::SafetyLevel safety_;
   nacl_arm_dec::RegisterList defs_;
@@ -334,7 +334,7 @@ class DecodedInstruction {
 // provided start_addr, regardless of where the base pointer actually points.
 class CodeSegment {
  public:
-  CodeSegment(const uint8_t *base, uint32_t start_addr, size_t size)
+  CodeSegment(const uint8_t* base, uint32_t start_addr, size_t size)
       : base_(base), start_addr_(start_addr), size_(size) {}
 
   uint32_t begin_addr() const { return start_addr_; }
@@ -345,21 +345,20 @@ class CodeSegment {
   }
 
   const nacl_arm_dec::Instruction operator[](uint32_t address) const {
-    const uint8_t *element = &base_[address - start_addr_];
+    const uint8_t* element = &base_[address - start_addr_];
     return nacl_arm_dec::Instruction(
         *reinterpret_cast<const uint32_t *>(element));
   }
 
-  bool operator<(const CodeSegment &other) const {
+  bool operator<(const CodeSegment& other) const {
     return start_addr_ < other.start_addr_;
   }
 
  private:
-  const uint8_t *base_;
+  const uint8_t* base_;
   uint32_t start_addr_;
   size_t size_;
 };
-
 
 // Enumerated type of possible problems reported by the validator.
 // Specific problems are identified by this enumerated type, and
@@ -426,7 +425,11 @@ typedef enum {
   kFirstSetsConditionFlags,
   // Conditions on instructions don't guarantee that instructions
   // will run atomically.
-  kConditionsOnPairNotSafe
+  kConditionsOnPairNotSafe,
+  // Second is dependent on eq being set by first instruction.
+  kEqConditionalOn,
+  // Instruction pair crosses bundle boundary.
+  kPairCrossesBundle
 } ValidatorInstructionPairProblem;
 
 // Defines the maximum number of data elements assocated with validator

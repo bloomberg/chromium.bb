@@ -29,7 +29,6 @@
 
 #include <vector>
 #include <string>
-#include <cstring>
 #include <sstream>
 
 #include "gtest/gtest.h"
@@ -50,6 +49,7 @@ using nacl_arm_val::SfiValidator;
 using nacl_arm_val::CodeSegment;
 using nacl_arm_val::ProblemReporter;
 using nacl_arm_val::ProblemSink;
+using nacl_arm_val::ValidatorInstructionPairProblem;
 using nacl_arm_val::ValidatorProblem;
 using nacl_arm_val::ValidatorProblemMethod;
 using nacl_arm_val::ValidatorProblemUserData;
@@ -88,17 +88,17 @@ static const RegisterList kAbiDataAddrRegisters(nacl_arm_dec::kRegisterStack);
  * Support code
  */
 
+// Defines a buffer for error messages.
 static const size_t kBufferSize = 256;
+typedef char ErrorMessage[kBufferSize];
 
 // Simply records the arguments given to ReportProblem, below.
 class ProblemRecord {
  public:
   ProblemRecord(uint32_t vaddr,
-                nacl_arm_dec::SafetyLevel safety,
                 ValidatorProblem problem,
                 ValidatorProblemMethod method,
-                ValidatorProblemUserData user_data,
-                char error_message[kBufferSize]);
+                ValidatorProblemUserData user_data);
 
   ProblemRecord(const ProblemRecord& r);
   ~ProblemRecord() {}
@@ -117,76 +117,77 @@ class ProblemRecord {
     return method_;
   }
 
-  inline const char* error_message() const {
-    return error_message_;
-  }
-
-  // Returns the safety associated with the problem.
-  nacl_arm_dec::SafetyLevel safety() const {
-    return safety_;
+  inline const uint32_t* user_data() const {
+    return user_data_;
   }
 
  private:
-  void Init(const ValidatorProblemUserData user_data,
-            const char error_message[kBufferSize]);
+  void Init(const ValidatorProblemUserData user_data);
 
   uint32_t vaddr_;
-  nacl_arm_dec::SafetyLevel safety_;
   ValidatorProblem problem_;
   ValidatorProblemMethod method_;
   ValidatorProblemUserData user_data_;
-  char error_message_[kBufferSize];
 };
 
 ProblemRecord::ProblemRecord(uint32_t vaddr,
-                             nacl_arm_dec::SafetyLevel safety,
                              ValidatorProblem problem,
                              ValidatorProblemMethod method,
-                             ValidatorProblemUserData user_data,
-                             char error_message[kBufferSize])
+                             ValidatorProblemUserData user_data)
     : vaddr_(vaddr),
-      safety_(safety),
       problem_(problem),
       method_(method) {
-  Init(user_data, error_message);
+  Init(user_data);
 }
 
 ProblemRecord::ProblemRecord(const ProblemRecord& r)
     : vaddr_(r.vaddr_),
-      safety_(r.safety_),
       problem_(r.problem_),
       method_(r.method_) {
-  Init(r.user_data_, r.error_message_);
+  Init(r.user_data_);
 }
 
 ProblemRecord& ProblemRecord::operator=(const ProblemRecord& r) {
   vaddr_ = r.vaddr_;
-  safety_ = r.safety_;
   problem_ = r.problem_;
   method_ = r.method_;
-  Init(r.user_data_, r.error_message_);
+  Init(r.user_data_);
   return *this;
 }
 
-void ProblemRecord::Init(const ValidatorProblemUserData user_data,
-                         const char error_message[kBufferSize]) {
+void ProblemRecord::Init(const ValidatorProblemUserData user_data) {
   for (size_t i = 0; i < nacl_arm_val::ValidatorProblemUserDataSize; ++i) {
     user_data_[i] = user_data[i];
   }
-  strcpy(error_message_, error_message);
 }
 
 // A ProblemSink that records all calls (implementation of the Spy pattern)
 class ProblemSpy : public ProblemReporter {
  public:
-  /*
-   * We want *all* the errors that the validator produces.  Note that this means
-   * we're not testing the should_continue functionality.  This is probably
-   * okay.
-   */
+  // We want *all* the errors that the validator produces.  Note that this means
+  // we're not testing the should_continue functionality.  This is probably
+  // okay.
   virtual bool should_continue() { return true; }
 
+  // Returns the list of found problems.
   vector<ProblemRecord> &get_problems() { return problems_; }
+
+  // Returns the safety level associated with the recorded problem.
+  nacl_arm_dec::SafetyLevel GetSafetyLevel(const ProblemRecord& record);
+
+  // Returns the 2-instruction validator problem with the instruction,
+  // if the problem record is for a two-instruction problem, and
+  // kNoSpecificPairProblem for any single instruction validator problem.
+  ValidatorInstructionPairProblem GetPairProblem(const ProblemRecord& record);
+
+  // Returns true if the first instruction in the instruction pair appears
+  // to be the reporting instruction (returns true for single instruction
+  // problems).
+  bool IsPairProblemAtFirst(const ProblemRecord& record);
+
+  // Generates the corresponding error message into the given character
+  // buffer.
+  void GetErrorMessage(ErrorMessage message, const ProblemRecord& record);
 
  protected:
   virtual void ReportProblemInternal(uint32_t vaddr,
@@ -198,17 +199,62 @@ class ProblemSpy : public ProblemReporter {
   vector<ProblemRecord> problems_;
 };
 
+nacl_arm_dec::SafetyLevel ProblemSpy::GetSafetyLevel(
+    const ProblemRecord& record) {
+  nacl_arm_dec::SafetyLevel safety = nacl_arm_dec::MAY_BE_SAFE;
+  if (record.method() == nacl_arm_val::kReportProblemSafety) {
+    ExtractProblemSafety(record.user_data(), &safety);
+  }
+  return safety;
+}
+
+ValidatorInstructionPairProblem ProblemSpy::GetPairProblem(
+    const ProblemRecord& record) {
+  ValidatorInstructionPairProblem problem =
+      nacl_arm_val::kNoSpecificPairProblem;
+  if (record.method() == nacl_arm_val::kReportProblemInstructionPair) {
+    ExtractProblemInstructionPair(record.user_data(), &problem,
+                                  NULL, NULL, NULL, NULL);
+  } else if (record.method() ==
+             nacl_arm_val::kReportProblemRegisterInstructionPair) {
+    ExtractProblemRegisterInstructionPair(
+        record.user_data(), &problem, NULL, NULL, NULL, NULL, NULL);
+  } else if (record.method() ==
+             nacl_arm_val::kReportProblemRegisterListInstructionPair) {
+    ExtractProblemRegisterListInstructionPair(
+        record.user_data(), &problem, NULL, NULL, NULL, NULL, NULL);
+  }
+  return problem;
+}
+
+bool ProblemSpy::IsPairProblemAtFirst(const ProblemRecord& record) {
+  uint32_t first_address = record.vaddr();  // default to current location.
+  if (record.method() == nacl_arm_val::kReportProblemInstructionPair) {
+    ExtractProblemInstructionPair(record.user_data(), NULL,
+                                  &first_address, NULL, NULL, NULL);
+  } else if (record.method() ==
+             nacl_arm_val::kReportProblemRegisterInstructionPair) {
+    ExtractProblemRegisterInstructionPair(
+        record.user_data(), NULL, NULL, &first_address, NULL, NULL, NULL);
+  } else if (record.method() ==
+             nacl_arm_val::kReportProblemRegisterListInstructionPair) {
+    ExtractProblemRegisterListInstructionPair(
+        record.user_data(), NULL, NULL, &first_address, NULL, NULL, NULL);
+  }
+  return record.vaddr() == first_address;
+}
+
+void ProblemSpy::GetErrorMessage(ErrorMessage message,
+                                 const ProblemRecord& record) {
+  ToText(message, kBufferSize, record.vaddr(), record.problem(),
+         record.method(), record.user_data());
+}
+
 void ProblemSpy::ReportProblemInternal(uint32_t vaddr,
                                        ValidatorProblem problem,
                                        ValidatorProblemMethod method,
                                        ValidatorProblemUserData user_data) {
-  char buffer[kBufferSize];
-  ToText(buffer, kBufferSize, vaddr, problem, method, user_data);
-  nacl_arm_dec::SafetyLevel safety = nacl_arm_dec::MAY_BE_SAFE;
-  if (method == nacl_arm_val::kReportProblemSafety) {
-    ExtractProblemSafety(user_data, &safety);
-  }
-  ProblemRecord prob(vaddr, safety, problem, method, user_data, buffer);
+  ProblemRecord prob(vaddr, problem, method, user_data);
   problems_.push_back(prob);
 }
 
@@ -629,6 +675,7 @@ TEST_F(ValidatorTests, ScaryUndefinedInstructions) {
     EXPECT_EQ(1U, problems.size());
     if (problems.size() != 1) continue;
 
+    ProblemSpy spy;
     ProblemRecord first = problems[0];
     EXPECT_EQ(kDefaultBaseAddr, first.vaddr())
         << "Problem report must point to the only instruction: "
@@ -636,7 +683,7 @@ TEST_F(ValidatorTests, ScaryUndefinedInstructions) {
     EXPECT_EQ(nacl_arm_val::kReportProblemSafety, first.method())
         << "Store must be flagged by the decoder as unsafe: "
         << undefined_insts[i].about;
-    EXPECT_EQ(nacl_arm_dec::UNDEFINED, first.safety())
+    EXPECT_EQ(nacl_arm_dec::UNDEFINED, spy.GetSafetyLevel(first))
         << "Instruction must be flagged as UNDEFINED: "
         << undefined_insts[i].about;
     EXPECT_EQ(nacl_arm_val::kProblemUnsafe, first.problem())
@@ -718,11 +765,12 @@ TEST_F(ValidatorTests, ConditionalBicsLdrTest) {
   EXPECT_EQ(1U, problems.size());
   if (problems.size() == 0) return;
 
+  ProblemSpy spy;
   ProblemRecord problem = problems[0];
   EXPECT_EQ(kDefaultBaseAddr + 4, problem.vaddr())
       << "Problem report should point to the ldr instruction.";
   EXPECT_NE(nacl_arm_val::kReportProblemSafety, problem.method());
-  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, problem.safety());
+  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, spy.GetSafetyLevel(problem));
   EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, problem.problem());
 }
 
@@ -741,11 +789,12 @@ TEST_F(ValidatorTests, DifferentConditionsBicLdrTest) {
   EXPECT_EQ(1U, problems.size());
   if (problems.size() == 0) return;
 
+  ProblemSpy spy;
   ProblemRecord problem = problems[0];
   EXPECT_EQ(kDefaultBaseAddr + 4, problem.vaddr())
       << "Problem report should point to the ldr instruction.";
   EXPECT_NE(nacl_arm_val::kReportProblemSafety, problem.method());
-  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, problem.safety());
+  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, spy.GetSafetyLevel(problem));
   EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, problem.problem());
 }
 
@@ -952,6 +1001,9 @@ void ValidatorTests::validation_should_pass2(const arm_inst *pattern,
       << msg << " should have 1 problem at overlapping address " << last_addr;
 
   ProblemRecord first = problems[0];
+  if (!spy.IsPairProblemAtFirst(first)) {
+    last_addr += 4;
+  }
   EXPECT_EQ(last_addr, first.vaddr())
       << "Problem in valid but mis-aligned pseudo-instruction ("
       << msg
@@ -959,10 +1011,13 @@ void ValidatorTests::validation_should_pass2(const arm_inst *pattern,
   EXPECT_NE(nacl_arm_val::kReportProblemSafety, first.method())
       << "Just crossing a bundle should not make a safe instruction unsafe: "
       << msg;
-  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, first.safety())
+  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, spy.GetSafetyLevel(first))
       << "Just crossing a bundle should not make a safe instruction unsafe: "
       << msg;
-  EXPECT_EQ(nacl_arm_val::kProblemPatternCrossesBundle, first.problem());
+  // Be sure that we get one of the crosses bundle error messages.
+  if (nacl_arm_val::kProblemPatternCrossesBundle != first.problem()) {
+    EXPECT_EQ(nacl_arm_val::kPairCrossesBundle, spy.GetPairProblem(first));
+  }
 }
 
 vector<ProblemRecord> ValidatorTests::validation_should_fail(

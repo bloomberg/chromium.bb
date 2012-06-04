@@ -25,20 +25,20 @@ class ProblemReporter : public ProblemSink {
   // Extracts safety parameter from user data. Assumes that
   // corresponding method is kReportProblemSafety.
   void ExtractProblemSafety(
-      ValidatorProblemUserData user_data,
+      const ValidatorProblemUserData user_data,
       nacl_arm_dec::SafetyLevel* safety);
 
   // Extracts out problem address parameter from user data. Assumes
   // that corrresponding method is kReportProblemAddress.
   void ExtractProblemAddress(
-      ValidatorProblemUserData user_data,
+      const ValidatorProblemUserData user_data,
       uint32_t* problem_vaddr);
 
   // Extracts out problem instruction pair parameters from user data.
   // Assumes corresponding method is kReportProblemInstructionPair.
   // Note: Use NULL for output arguments you are not interested in.
   void ExtractProblemInstructionPair(
-      ValidatorProblemUserData user_data,
+      const ValidatorProblemUserData user_data,
       ValidatorInstructionPairProblem* pair_problem,
       uint32_t* first_address,
       nacl_arm_dec::Instruction* first,
@@ -48,7 +48,7 @@ class ProblemReporter : public ProblemSink {
   // Extracts out problem register parameter from user data.  Assumes
   // corresponding method is kReportProblemRegister.
   void ExtractProblemRegister(
-      ValidatorProblemUserData user_data,
+      const ValidatorProblemUserData user_data,
       nacl_arm_dec::Register* reg);
 
   // Extracts out problem register and instruction pair parameters
@@ -56,7 +56,7 @@ class ProblemReporter : public ProblemSink {
   // kReportProblemRegisterInstructionPair.  Note: Use NULL for output
   // arguments you are not interested in.
   void ExtractProblemRegisterInstructionPair(
-      ValidatorProblemUserData user_data,
+      const ValidatorProblemUserData user_data,
       ValidatorInstructionPairProblem* pair_problem,
       nacl_arm_dec::Register* reg,
       uint32_t* first_address,
@@ -67,7 +67,7 @@ class ProblemReporter : public ProblemSink {
   // Extracts out the problem register list parameter from user data.
   // Assumes corresponding method is kReportProblemRegisterList.
   void ExtractProblemRegisterList(
-      ValidatorProblemUserData user_data,
+      const ValidatorProblemUserData user_data,
       nacl_arm_dec::RegisterList* registers);
 
   // Extracts out the problem register list and instruction pair
@@ -75,7 +75,7 @@ class ProblemReporter : public ProblemSink {
   // ReportProblemRegisterListInstructionPair.  Note: Use NULL for
   // output arguments you are not interested in.
   void ExtractProblemRegisterListInstructionPair(
-      ValidatorProblemUserData user_data,
+      const ValidatorProblemUserData user_data,
       ValidatorInstructionPairProblem* pair_problem,
       nacl_arm_dec::RegisterList* registers,
       uint32_t* first_address,
@@ -96,7 +96,7 @@ class ProblemReporter : public ProblemSink {
               uint32_t vaddr,
               ValidatorProblem problem,
               ValidatorProblemMethod method,
-              ValidatorProblemUserData user_data);
+              const ValidatorProblemUserData user_data);
 
  private:
   // Internal method to convert internal error report data
@@ -116,7 +116,7 @@ class ProblemReporter : public ProblemSink {
               const char* format,
               ValidatorProblem problem,
               ValidatorProblemMethod method,
-              ValidatorProblemUserData user_data);
+              const ValidatorProblemUserData user_data);
 };
 
 }  // namespace

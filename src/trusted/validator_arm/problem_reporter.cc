@@ -36,14 +36,14 @@ static nacl_arm_dec::SafetyLevel Int2SafetyLevel(uint32_t index) {
 }
 
 void ProblemReporter::ExtractProblemSafety(
-    ValidatorProblemUserData user_data,
+    const ValidatorProblemUserData user_data,
     nacl_arm_dec::SafetyLevel* safety) {
   if (safety != NULL)
     *safety = Int2SafetyLevel(user_data[0]);
 }
 
 void ProblemReporter::ExtractProblemAddress(
-    ValidatorProblemUserData user_data,
+    const ValidatorProblemUserData user_data,
     uint32_t* problem_vaddr) {
   if (problem_vaddr != NULL)
     *problem_vaddr = user_data[0];
@@ -56,14 +56,16 @@ static ValidatorInstructionPairProblem Int2InstPairProblem(uint32_t index) {
     kNoSpecificPairProblem,
     kFirstNotAllowsInInstructionPairs,
     kFirstSetsConditionFlags,
-    kConditionsOnPairNotSafe
+    kConditionsOnPairNotSafe,
+    kEqConditionalOn,
+    kPairCrossesBundle,
   };
   return (index < NACL_ARRAY_SIZE(Int2InstPairProblemMap))
       ? Int2InstPairProblemMap[index] : kNoSpecificPairProblem;
 }
 
 void ProblemReporter::ExtractProblemInstructionPair(
-    ValidatorProblemUserData user_data,
+    const ValidatorProblemUserData user_data,
     ValidatorInstructionPairProblem* pair_problem,
     uint32_t* first_address,
     nacl_arm_dec::Instruction* first,
@@ -92,14 +94,14 @@ static nacl_arm_dec::Register Int2Register(uint32_t index) {
 }
 
 void ProblemReporter::ExtractProblemRegister(
-    ValidatorProblemUserData user_data,
+    const ValidatorProblemUserData user_data,
     nacl_arm_dec::Register* reg) {
   if (reg != NULL)
     reg->Copy(Int2Register(user_data[0]));
 }
 
 void ProblemReporter::ExtractProblemRegisterInstructionPair(
-    ValidatorProblemUserData user_data,
+    const ValidatorProblemUserData user_data,
     ValidatorInstructionPairProblem* pair_problem,
     nacl_arm_dec::Register* reg,
     uint32_t* first_address,
@@ -121,14 +123,14 @@ void ProblemReporter::ExtractProblemRegisterInstructionPair(
 }
 
 void ProblemReporter::ExtractProblemRegisterList(
-    ValidatorProblemUserData user_data,
+    const ValidatorProblemUserData user_data,
     nacl_arm_dec::RegisterList* registers) {
   if (registers != NULL)
     registers->Copy(nacl_arm_dec::RegisterList(user_data[0]));
 }
 
 void ProblemReporter::ExtractProblemRegisterListInstructionPair(
-    ValidatorProblemUserData user_data,
+    const ValidatorProblemUserData user_data,
     ValidatorInstructionPairProblem* pair_problem,
     nacl_arm_dec::RegisterList* registers,
     uint32_t* first_address,
@@ -187,16 +189,16 @@ static const char* ValidatorProblemFormatDirective[kValidatorProblemSize] = {
   "Instruction branches to invalid address $a.",
   // kProblemUnsafeLoadStore - An load/store uses an unsafe
   // (non-masked) base address.
-  "Load/store base $r is not properly masked.",
+  "Load/store base $r is not properly masked$R.",
   // kProblemIllegalPcLoadStore - A load/store on PC that doesn't
   // increment with a valid immediate address.
   "Native Client only allows updates on PC of the form 'PC + immediate'.",
   // kProblemUnsafeBranch - A branch uses an unsafe (non-masked)
   // destination address.
-  "Destination branch on $r is not properly masked.",
+  "Destination branch on $r is not properly masked$R.",
   // kProblemUnsafeDataWrite - An instruction updates a data-address
   // register (e.g. SP) without masking.
-  "Updating $r without masking in following instruction.",
+  "Updating $r without masking in following instruction$R.",
   // kProblemReadOnlyRegister - An instruction updates a read-only
   // register (e.g. r9).
   "Updates read-only register(s): $r.",
@@ -206,6 +208,29 @@ static const char* ValidatorProblemFormatDirective[kValidatorProblemSize] = {
   // kProblemMisalignedCall - A linking branch instruction is not in
   // the last bundle slot.
   "Call not last instruction in instruction bundle.",
+};
+
+// Error message to append to ValidatorProblemFormatDirective text (i.e. $R),
+// if there is a corresponding instruction pair problem.
+static const char* kValidatorInstructionPairProblem[] = {
+  // kNoSpecificPairProblem - No specific known reason for instruction pair
+  // failing.
+  "",
+  // kFirstNotAllowsInInstructionPairs - First instruction does not model
+  // conditions flags, and hence, can't be used in multiple instruction
+  // patterns.
+  ", because instruction $F can't be used in patterns",
+  // kFirstSetsConditionFlags - First instruction sets conditions flags, and
+  // hence, can't guarantee that the next instruction will always be executed.
+  ", because instruction $F sets ASPR condition flags",
+  // kConditionsOnPairNotSafe - Conditions on instructions don't guarantee
+  // that instructions will run atomically.
+  ", because the conditions on $p don't guarantee atomicity",
+  // kEqConditionalOn - Second is dependent on eq being set by first
+  // instruction.
+  ", because $S is not conditional on EQ",
+  // kPairCrosssesBundle - Instruction pair crosses bundle boundary.
+  ", because instruction pair$p crosses bundle boundary",
 };
 
 // Returns a printable name for the given register.
@@ -380,13 +405,16 @@ static void RenderRegisterList(nacl_arm_dec::RegisterList registers,
 //    $p - Print the adresses of the two instructions being reported about.
 //    $c - Print the conditions that aren't provably correct.
 //    $r - Print the problem register/register list associated with the problem.
+//    $F - Print the address of the first instruction.
+//    $R - Print the reason (if known) the instruction pair was rejected.
+//    $S - Print the address of the second instruction.
 //    $$ - Print $.
 void ProblemReporter::Render(char** buffer,
                               size_t* buffer_size,
                               const char* format,
                               ValidatorProblem problem,
                               ValidatorProblemMethod method,
-                              ValidatorProblemUserData user_data) {
+                              const ValidatorProblemUserData user_data) {
   while (*format && (*buffer_size > 0)) {
     if (*format == '$') {
       format++;
@@ -495,6 +523,68 @@ void ProblemReporter::Render(char** buffer,
             RenderText("register", buffer, buffer_size);
           }
           break;
+        case 'F':
+          {
+            uint32_t first_address;
+            if (method == kReportProblemInstructionPair) {
+              ExtractProblemInstructionPair(user_data, NULL,
+                                            &first_address, NULL, NULL, NULL);
+            } else if (method == kReportProblemRegisterInstructionPair) {
+              ExtractProblemRegisterInstructionPair(
+                  user_data, NULL, NULL, &first_address, NULL, NULL, NULL);
+            } else if (
+                method == kReportProblemRegisterListInstructionPair) {
+              ExtractProblemRegisterListInstructionPair(
+                  user_data, NULL, NULL, &first_address, NULL, NULL, NULL);
+            }  else {
+              // else don't print anything.
+              break;
+            }
+            RenderInstAddress(first_address, buffer, buffer_size);
+          }
+          break;
+        case 'R':
+          {
+            ValidatorInstructionPairProblem pair_problem;
+            if (method == kReportProblemInstructionPair) {
+              ExtractProblemInstructionPair(user_data, &pair_problem,
+                                            NULL, NULL, NULL, NULL);
+            } else if (method == kReportProblemRegisterInstructionPair) {
+              ExtractProblemRegisterInstructionPair(
+                  user_data, &pair_problem, NULL, NULL, NULL, NULL, NULL);
+            } else if (
+                method == kReportProblemRegisterListInstructionPair) {
+              ExtractProblemRegisterListInstructionPair(
+                  user_data, &pair_problem, NULL, NULL, NULL, NULL, NULL);
+            } else {
+              // else don't print anything.
+              break;
+            }
+            Render(buffer, buffer_size,
+                   kValidatorInstructionPairProblem[pair_problem],
+                   problem, method, user_data);
+          }
+          break;
+        case 'S':
+          {
+            uint32_t second_address;
+            if (method == kReportProblemInstructionPair) {
+              ExtractProblemInstructionPair(user_data, NULL,
+                                            NULL, NULL, &second_address, NULL);
+            } else if (method == kReportProblemRegisterInstructionPair) {
+              ExtractProblemRegisterInstructionPair(
+                  user_data, NULL, NULL, NULL, NULL, &second_address, NULL);
+            } else if (
+                method == kReportProblemRegisterListInstructionPair) {
+              ExtractProblemRegisterListInstructionPair(
+                  user_data, NULL, NULL, NULL, NULL, &second_address, NULL);
+            }  else {
+              // else don't print anything.
+              break;
+            }
+            RenderInstAddress(second_address, buffer, buffer_size);
+          }
+          break;
         default:  // Not directive, print out character.
           RenderChar(*format, buffer, buffer_size);
           break;
@@ -512,7 +602,7 @@ void ProblemReporter::ToText(char* buffer,
                              uint32_t vaddr,
                              ValidatorProblem problem,
                              ValidatorProblemMethod method,
-                             ValidatorProblemUserData user_data) {
+                             const ValidatorProblemUserData user_data) {
   assert(buffer_size > 0);
   buffer[0] = '\0';
   assert(problem < kValidatorProblemSize);
