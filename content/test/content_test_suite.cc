@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "content/browser/mock_content_browser_client.h"
+#include "content/public/test/test_content_client_initializer.h"
 #include "content/test/test_content_client.h"
-#include "content/test/test_content_client_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_AURA)

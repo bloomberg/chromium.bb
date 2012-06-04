@@ -17,7 +17,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
-#include "content/test/test_notification_tracker.h"
+#include "content/public/test/test_notification_tracker.h"
 #include "net/base/mock_host_resolver.h"
 
 using extensions::Extension;
@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
   // Make sure that no BackgroundContentses get deleted (a signal that repeated
   // window.open calls recreate instances, instead of being no-ops).
-  TestNotificationTracker background_deleted_tracker;
+  content::TestNotificationTracker background_deleted_tracker;
   background_deleted_tracker.ListenFor(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
       content::Source<Profile>(browser()->profile()));

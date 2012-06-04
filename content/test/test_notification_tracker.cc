@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/test_notification_tracker.h"
+#include "content/public/test/test_notification_tracker.h"
 
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
+namespace content {
+
 TestNotificationTracker::Event::Event()
-    : type(content::NOTIFICATION_ALL),
-      source(content::NotificationService::AllSources()),
-      details(content::NotificationService::NoDetails()) {
+    : type(NOTIFICATION_ALL),
+      source(NotificationService::AllSources()),
+      details(NotificationService::NoDetails()) {
 }
 TestNotificationTracker::Event::Event(int t,
-                                      content::NotificationSource s,
-                                      content::NotificationDetails d)
+                                      NotificationSource s,
+                                      NotificationDetails d)
     : type(t),
       source(s),
       details(d) {
@@ -28,7 +30,7 @@ TestNotificationTracker::~TestNotificationTracker() {
 
 void TestNotificationTracker::ListenFor(
     int type,
-    const content::NotificationSource& source) {
+    const NotificationSource& source) {
   registrar_.Add(this, type, source);
 }
 
@@ -73,7 +75,9 @@ bool TestNotificationTracker::Check3AndReset(int type1,
 
 void TestNotificationTracker::Observe(
     int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+    const NotificationSource& source,
+    const NotificationDetails& details) {
   events_.push_back(Event(type, source, details));
 }
+
+}  // namespace content

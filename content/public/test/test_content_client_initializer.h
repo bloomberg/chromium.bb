@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_TEST_CONTENT_CLIENT_INITIALIZER_
-#define CONTENT_TEST_TEST_CONTENT_CLIENT_INITIALIZER_
+#ifndef CONTENT_PUBLIC_TEST_TEST_CONTENT_CLIENT_INITIALIZER_
+#define CONTENT_PUBLIC_TEST_TEST_CONTENT_CLIENT_INITIALIZER_
 #pragma once
 
 #include "base/basictypes.h"
@@ -26,7 +26,7 @@ class TestContentClientInitializer {
 
  private:
   scoped_ptr<NotificationServiceImpl> notification_service_;
-  scoped_ptr<content::ContentClient> content_client_;
+  scoped_ptr<ContentClient> content_client_;
   scoped_ptr<MockContentBrowserClient> content_browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentClientInitializer);
@@ -34,4 +34,4 @@ class TestContentClientInitializer {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_TEST_CONTENT_CLIENT_INITIALIZER_
+#endif  // CONTENT_PUBLIC_TEST_TEST_CONTENT_CLIENT_INITIALIZER_

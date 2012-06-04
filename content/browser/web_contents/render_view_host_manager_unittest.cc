@@ -23,8 +23,8 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_notification_tracker.h"
 #include "content/test/test_content_client.h"
-#include "content/test/test_notification_tracker.h"
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"
@@ -407,7 +407,7 @@ TEST_F(RenderViewHostManagerTest, Init) {
 // Tests the Navigate function. We navigate three sites consecutively and check
 // how the pending/committed RenderViewHost are modified.
 TEST_F(RenderViewHostManagerTest, Navigate) {
-  TestNotificationTracker notifications;
+  content::TestNotificationTracker notifications;
 
   SiteInstance* instance = SiteInstance::Create(browser_context());
 
@@ -499,7 +499,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 // has been committed. This is also a regression test for
 // http://crbug.com/104600.
 TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
-  TestNotificationTracker notifications;
+  content::TestNotificationTracker notifications;
 
   SiteInstance* instance = SiteInstance::Create(browser_context());
 

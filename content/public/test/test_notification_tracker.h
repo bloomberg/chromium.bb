@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_TEST_NOTIFICATION_TRACKER_H_
-#define CONTENT_TEST_TEST_NOTIFICATION_TRACKER_H_
+#ifndef CONTENT_PUBLIC_TEST_TEST_NOTIFICATION_TRACKER_H_
+#define CONTENT_PUBLIC_TEST_TEST_NOTIFICATION_TRACKER_H_
 #pragma once
 
 #include <vector>
@@ -14,18 +14,20 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 
+namespace content {
+
 // Provides an easy way for tests to verify that a given set of notifications
 // was received during test execution.
-class TestNotificationTracker : public content::NotificationObserver {
+class TestNotificationTracker : public NotificationObserver {
  public:
   // Records one received notification.
   struct Event {
     Event();
-    Event(int t, content::NotificationSource s, content::NotificationDetails d);
+    Event(int t, NotificationSource s, NotificationDetails d);
 
     int type;
-    content::NotificationSource source;
-    content::NotificationDetails details;
+    NotificationSource source;
+    NotificationDetails details;
   };
 
   // By default, it won't listen for any notifications. You'll need to call
@@ -35,7 +37,7 @@ class TestNotificationTracker : public content::NotificationObserver {
   virtual ~TestNotificationTracker();
 
   // Makes this object listen for the given notification with the given source.
-  void ListenFor(int type, const content::NotificationSource& source);
+  void ListenFor(int type, const NotificationSource& source);
 
   // Makes this object listen for notifications of the given type coming from
   // any source.
@@ -69,10 +71,10 @@ class TestNotificationTracker : public content::NotificationObserver {
 
  protected:
   virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
  private:
-  content::NotificationRegistrar registrar_;
+  NotificationRegistrar registrar_;
 
   // Lists all received since last cleared, in the order they were received.
   std::vector<Event> events_;
@@ -80,4 +82,6 @@ class TestNotificationTracker : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(TestNotificationTracker);
 };
 
-#endif  // CONTENT_TEST_TEST_NOTIFICATION_TRACKER_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_TEST_TEST_NOTIFICATION_TRACKER_H_

@@ -173,8 +173,8 @@ class SigninManagerTest : public TokenServiceTestHarness {
 
   TestURLFetcherFactory factory_;
   scoped_ptr<SigninManager> manager_;
-  TestNotificationTracker google_login_success_;
-  TestNotificationTracker google_login_failure_;
+  content::TestNotificationTracker google_login_success_;
+  content::TestNotificationTracker google_login_failure_;
 };
 
 // NOTE: ClientLogin's "StartSignin" is called after collecting credentials

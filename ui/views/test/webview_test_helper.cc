@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/test/test_content_client_initializer.h"
+#include "content/public/test/test_content_client_initializer.h"
 #include "content/test/test_render_view_host_factory.h"
 #include "ui/views/controls/webview/webview.h"
 

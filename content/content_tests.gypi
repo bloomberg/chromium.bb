@@ -39,7 +39,10 @@
         'public/test/render_view_test.h',
         'public/test/test_browser_context.h',
         'public/test/test_browser_thread.h',
+        'public/test/test_content_client_initializer.h',
+        'public/test/test_file_error_injector.h',
         'public/test/test_navigation_observer.h',
+        'public/test/test_notification_tracker.h',
         # TODO(phajdan.jr): All of those files should live in content/test (if
         # they're only used by content) or content/public/test (if they're used
         # by other embedders).
@@ -98,12 +101,9 @@
         'test/test_content_client.cc',
         'test/test_content_client.h',
         'test/test_content_client_initializer.cc',
-        'test/test_content_client_initializer.h',
         'test/test_file_error_injector.cc',
-        'test/test_file_error_injector.h',
         'test/test_navigation_observer.cc',
         'test/test_notification_tracker.cc',
-        'test/test_notification_tracker.h',
         'test/test_renderer_host.cc',
         'test/test_renderer_host.h',
         'test/test_render_view_host_factory.cc',
@@ -442,11 +442,11 @@
       ],
       'sources': [
         'app/startup_helper_win.cc',
+        'public/test/test_launcher.h',
         'test/content_browser_test.h',
         'test/content_browser_test.cc',
         'test/content_test_launcher.cc',
         'test/test_launcher.cc',
-        'test/test_launcher.h',
       ],
       'conditions': [
         ['OS=="win"', {

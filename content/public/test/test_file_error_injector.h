@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_TEST_FILE_ERROR_INJECTOR_H_
-#define CONTENT_TEST_TEST_FILE_ERROR_INJECTOR_H_
+#ifndef CONTENT_PUBLIC_TEST_TEST_FILE_ERROR_INJECTOR_H_
+#define CONTENT_PUBLIC_TEST_TEST_FILE_ERROR_INJECTOR_H_
 #pragma once
 
 #include <map>
@@ -97,7 +97,7 @@ class TestFileErrorInjector
   bool HadFile(const GURL& url) const;
 
   // Gets the download ID associated with the file matching |url|.
-  const content::DownloadId GetId(const GURL& url) const;
+  const DownloadId GetId(const GURL& url) const;
 
   // Resets the found file list.
   void ClearFoundFiles();
@@ -107,7 +107,7 @@ class TestFileErrorInjector
  private:
   friend class base::RefCountedThreadSafe<TestFileErrorInjector>;
 
-  typedef std::map<GURL, content::DownloadId> FileMap;
+  typedef std::map<GURL, DownloadId> FileMap;
 
   TestFileErrorInjector();
 
@@ -120,11 +120,11 @@ class TestFileErrorInjector
 
   // Callbacks from the download file, to record lifetimes.
   // These may be called on any thread.
-  void RecordDownloadFileConstruction(const GURL& url, content::DownloadId id);
+  void RecordDownloadFileConstruction(const GURL& url, DownloadId id);
   void RecordDownloadFileDestruction(const GURL& url);
 
   // These run on the UI thread.
-  void DownloadFileCreated(GURL url, content::DownloadId id);
+  void DownloadFileCreated(GURL url, DownloadId id);
   void DestroyingDownloadFile(GURL url);
 
   // All the data is used on the UI thread.
@@ -145,4 +145,4 @@ class TestFileErrorInjector
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_TEST_FILE_ERROR_INJECTOR_H_
+#endif  // CONTENT_PUBLIC_TEST_TEST_FILE_ERROR_INJECTOR_H_

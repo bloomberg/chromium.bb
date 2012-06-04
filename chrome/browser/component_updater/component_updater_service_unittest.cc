@@ -18,13 +18,14 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/test/test_notification_tracker.h"
+#include "content/public/test/test_notification_tracker.h"
 #include "googleurl/src/gurl.h"
 #include "libxml/globals.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::TestNotificationTracker;
 
 namespace {
 // Overrides some of the component updater behaviors so it is easier to test

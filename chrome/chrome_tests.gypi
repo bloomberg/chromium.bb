@@ -503,7 +503,6 @@
         '../content/app/startup_helper_win.cc',
         '../content/browser/mouseleave_browsertest.cc',
         '../content/test/test_launcher.cc',
-        '../content/test/test_launcher.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -3028,7 +3027,6 @@
         '../content/test/layout_browsertest.h',
         '../content/test/render_widget_browsertest.cc',
         '../content/test/test_launcher.cc',
-        '../content/test/test_launcher.h',
       ],
       'rules': [
         {
@@ -3421,7 +3419,6 @@
         'test/perf/rendering/throughput_tests.cc',
         '../content/app/startup_helper_win.cc',
         '../content/test/test_launcher.cc',
-        '../content/test/test_launcher.h',
       ],
       'rules': [
         {
@@ -3578,7 +3575,6 @@
         'test/base/chrome_test_launcher.cc',
         '../content/app/startup_helper_win.cc',
         '../content/test/test_launcher.cc',
-        '../content/test/test_launcher.h',
       ],
       'conditions': [
         ['safe_browsing==0', {
@@ -3944,7 +3940,6 @@
         'browser/sync/test/integration/typed_urls_helper.h',
         '../content/app/startup_helper_win.cc',
         '../content/test/test_launcher.cc',
-        '../content/test/test_launcher.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -4068,7 +4063,6 @@
         'test/data/resource.rc',
         '../content/app/startup_helper_win.cc',
         '../content/test/test_launcher.cc',
-        '../content/test/test_launcher.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
