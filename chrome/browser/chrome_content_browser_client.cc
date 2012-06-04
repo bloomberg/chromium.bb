@@ -15,6 +15,7 @@
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_benchmarking_message_filter.h"
@@ -1510,7 +1511,8 @@ void ChromeContentBrowserClient::ClearCache(RenderViewHost* rvh) {
   BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
       BrowsingDataRemover::EVERYTHING,
       base::Time());
-  remover->Remove(BrowsingDataRemover::REMOVE_CACHE);
+  remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
+                  BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover takes care of deleting itself when done.
 }
 
@@ -1521,7 +1523,7 @@ void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
       BrowsingDataRemover::EVERYTHING,
       base::Time());
   int remove_mask = BrowsingDataRemover::REMOVE_SITE_DATA;
-  remover->Remove(remove_mask);
+  remover->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover takes care of deleting itself when done.
 }
 

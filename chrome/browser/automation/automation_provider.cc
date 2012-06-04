@@ -36,6 +36,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -684,7 +685,7 @@ void AutomationProvider::RemoveBrowsingData(int remove_mask) {
   remover = new BrowsingDataRemover(profile(),
       BrowsingDataRemover::EVERYTHING,  // All time periods.
       base::Time());
-  remover->Remove(remove_mask);
+  remover->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover deletes itself.
 }
 

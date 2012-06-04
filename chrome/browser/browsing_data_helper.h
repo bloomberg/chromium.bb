@@ -16,10 +16,17 @@ namespace WebKit {
 class WebString;
 }
 
+class ExtensionSpecialStoragePolicy;
 class GURL;
 
 class BrowsingDataHelper {
  public:
+  enum OriginSetMask {
+    UNPROTECTED_WEB = 1 << 0,  // drive-by web.
+    PROTECTED_WEB = 1 << 1,    // hosted applications.
+    EXTENSION = 1 << 2,        // chrome-extension://*
+  };
+
   // Returns true iff the provided scheme is (really) web safe, and suitable
   // for treatment as "browsing data". This relies on the definition of web safe
   // in ChildProcessSecurityPolicy, but excluding schemes like
@@ -32,6 +39,11 @@ class BrowsingDataHelper {
   static bool IsExtensionScheme(const std::string& scheme);
   static bool IsExtensionScheme(const WebKit::WebString& scheme);
   static bool HasExtensionScheme(const GURL& origin);
+
+  // Returns true if the provided origin matches the provided mask.
+  static bool DoesOriginMatchMask(const GURL& origin,
+                                  int origin_set_mask,
+                                  ExtensionSpecialStoragePolicy* policy);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(BrowsingDataHelper);

@@ -42,6 +42,8 @@
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/browsing_data_helper.h"
+#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -3594,7 +3596,7 @@ void TestingAutomationProvider::ClearBrowsingData(
 
   remover->AddObserver(
       new AutomationProviderBrowsingDataObserver(this, reply_message));
-  remover->Remove(remove_mask);
+  remover->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover deletes itself using DeleteTask.
   // The observer also deletes itself after sending the reply.
 }

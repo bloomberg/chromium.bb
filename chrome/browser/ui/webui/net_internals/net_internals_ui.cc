@@ -30,6 +30,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/io_thread.h"
@@ -730,7 +731,8 @@ void NetInternalsMessageHandler::OnClearBrowserCache(const ListValue* list) {
       new BrowsingDataRemover(Profile::FromWebUI(web_ui()),
                               BrowsingDataRemover::EVERYTHING,
                               base::Time());
-  remover->Remove(BrowsingDataRemover::REMOVE_CACHE);
+  remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
+                  BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover deletes itself.
 }
 

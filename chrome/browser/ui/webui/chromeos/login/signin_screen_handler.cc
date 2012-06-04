@@ -14,6 +14,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/browsing_data_helper.h"
+#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros_settings.h"
@@ -1038,7 +1040,8 @@ void SigninScreenHandler::StartClearingCookies() {
       BrowsingDataRemover::EVERYTHING,
       base::Time());
   cookie_remover_->AddObserver(this);
-  cookie_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA);
+  cookie_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
+                          BrowsingDataHelper::UNPROTECTED_WEB);
 }
 
 void SigninScreenHandler::MaybePreloadAuthExtension() {

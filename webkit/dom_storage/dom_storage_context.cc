@@ -95,20 +95,6 @@ void DomStorageContext::DeleteOrigin(const GURL& origin) {
   local->DeleteOrigin(origin);
 }
 
-void DomStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
-  std::vector<UsageInfo> infos;
-  const bool kIncludeFileInfo = true;
-  GetUsageInfo(&infos, kIncludeFileInfo);
-  for (size_t i = 0; i < infos.size(); ++i) {
-    if (infos[i].last_modified > cutoff) {
-      if (!special_storage_policy_ ||
-          !special_storage_policy_->IsStorageProtected(infos[i].origin)) {
-        DeleteOrigin(infos[i].origin);
-      }
-    }
-  }
-}
-
 void DomStorageContext::PurgeMemory() {
   // We can only purge memory from the local storage namespace
   // which is backed by disk.

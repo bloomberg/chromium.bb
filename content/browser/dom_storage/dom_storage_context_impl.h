@@ -41,7 +41,6 @@ class CONTENT_EXPORT DOMStorageContextImpl :
   virtual FilePath GetFilePath(const string16& origin_id) const OVERRIDE;
   virtual void DeleteForOrigin(const string16& origin_id) OVERRIDE;
   virtual void DeleteLocalStorageFile(const FilePath& file_path) OVERRIDE;
-  virtual void DeleteDataModifiedSince(const base::Time& cutoff) OVERRIDE;
 
   // Called to free up memory that's not strictly needed.
   void PurgeMemory();

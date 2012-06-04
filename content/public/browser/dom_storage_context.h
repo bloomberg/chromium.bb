@@ -40,7 +40,6 @@ class DOMStorageContext {
   virtual FilePath GetFilePath(const string16& origin_id) const = 0;
   virtual void DeleteForOrigin(const string16& origin_id) = 0;
   virtual void DeleteLocalStorageFile(const FilePath& file_path) = 0;
-  virtual void DeleteDataModifiedSince(const base::Time& cutoff) = 0;
 
  protected:
   virtual ~DOMStorageContext() {}

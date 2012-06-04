@@ -10,6 +10,8 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/browsing_data_helper.h"
+#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
@@ -491,7 +493,8 @@ void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
                               BrowsingDataRemover::EVERYTHING,
                               base::Time());
   browsing_data_remover_->AddObserver(this);
-  browsing_data_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA);
+  browsing_data_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
+      BrowsingDataHelper::UNPROTECTED_WEB);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::RevokeTokens() {

@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/values.h"
+#include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/plugin_data_remover_helper.h"
 #include "chrome/browser/plugin_prefs.h"
@@ -176,7 +177,7 @@ void BrowsingDataExtensionFunction::StartRemoving() {
   BrowsingDataRemover* remover = new BrowsingDataRemover(
       GetCurrentBrowser()->profile(), remove_since_, base::Time::Now());
   remover->AddObserver(this);
-  remover->Remove(removal_mask_);
+  remover->Remove(removal_mask_, BrowsingDataHelper::UNPROTECTED_WEB);
 }
 
 int RemoveBrowsingDataFunction::GetRemovalMask() const {

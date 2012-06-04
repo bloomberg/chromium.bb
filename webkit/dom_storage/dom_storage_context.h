@@ -111,7 +111,6 @@ class DomStorageContext
 
   void GetUsageInfo(std::vector<UsageInfo>* infos, bool include_file_info);
   void DeleteOrigin(const GURL& origin);
-  void DeleteDataModifiedSince(const base::Time& cutoff);
   void PurgeMemory();
 
   // Used by content settings to alter the behavior around

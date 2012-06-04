@@ -57,7 +57,7 @@ class DomStorageContextTest : public testing::Test {
         new DomStorageContext(temp_dir_.path(), FilePath(), NULL, NULL);
     std::vector<DomStorageContext::UsageInfo> infos;
     context->GetUsageInfo(&infos, kDontIncludeFileInfo);
-    EXPECT_EQ(1u, infos.size());
+    ASSERT_EQ(1u, infos.size());
     EXPECT_EQ(origin, infos[0].origin);
   }
 
@@ -78,7 +78,6 @@ TEST_F(DomStorageContextTest, Basics) {
   EXPECT_EQ(storage_policy_.get(), context_->special_storage_policy_.get());
   context_->PurgeMemory();
   context_->DeleteOrigin(GURL("http://chromium.org/"));
-  context_->DeleteDataModifiedSince(base::Time::Now());
   const int kFirstSessionStorageNamespaceId = 1;
   EXPECT_TRUE(context_->GetStorageNamespace(kLocalStorageNamespaceId));
   EXPECT_FALSE(context_->GetStorageNamespace(kFirstSessionStorageNamespaceId));

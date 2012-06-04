@@ -17,9 +17,11 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/dom_storage/dom_storage_context.h"
 #include "webkit/quota/quota_types.h"
 
 class ExtensionSpecialStoragePolicy;
@@ -27,7 +29,6 @@ class IOThread;
 class Profile;
 
 namespace content {
-class DOMStorageContext;
 class PluginDataRemover;
 }
 
@@ -122,8 +123,9 @@ class BrowsingDataRemover : public content::NotificationObserver,
   BrowsingDataRemover(Profile* profile, TimePeriod time_period,
                       base::Time delete_end);
 
-  // Removes the specified items related to browsing for all origins.
-  void Remove(int remove_mask);
+  // Removes the specified items related to browsing for all origins that match
+  // the provided |origin_set_mask| (see BrowsingDataHelper::OriginSetMask).
+  void Remove(int remove_mask, int origin_set_mask);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -186,12 +188,12 @@ class BrowsingDataRemover : public content::NotificationObserver,
                                                      bool success) OVERRIDE;
 
   // Removes the specified items related to browsing for a specific host. If the
-  // provided |origin| is empty, data is removed for all origins. If
-  // |remove_protected_origins| is true, then data is removed even if the origin
-  // is otherwise protected (e.g. as an installed application).
+  // provided |origin| is empty, data is removed for all origins. The
+  // |origin_set_mask| parameter defines the set of origins from which data
+  // should be removed (protected, unprotected, or both).
   void RemoveImpl(int remove_mask,
                   const GURL& origin,
-                  bool remove_protected_origins);
+                  int origin_set_mask);
 
   // If we're not waiting on anything, notifies observers and deletes this
   // object.
@@ -213,6 +215,16 @@ class BrowsingDataRemover : public content::NotificationObserver,
 
   // Performs the actual work to delete the cache.
   void DoClearCache(int rv);
+
+  // Invoked on the UI thread to delete local storage.
+  void ClearLocalStorageOnUIThread();
+
+  // Callback to deal with the list gathered in ClearLocalStorageOnUIThread.
+  void OnGotLocalStorageUsageInfo(
+      const std::vector<dom_storage::DomStorageContext::UsageInfo>& infos);
+
+  // Callback on deletion of local storage data. Invokes NotifyAndDeleteIfDone.
+  void OnLocalStorageCleared();
 
   // Invoked on the IO thread to delete all storage types managed by the quota
   // system: AppCache, Databases, FileSystems.
@@ -258,6 +270,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
     return registrar_.IsEmpty() && !waiting_for_clear_cache_ &&
            !waiting_for_clear_cookies_count_&&
            !waiting_for_clear_history_ &&
+           !waiting_for_clear_local_storage_ &&
            !waiting_for_clear_networking_history_ &&
            !waiting_for_clear_server_bound_certs_ &&
            !waiting_for_clear_plugin_data_ &&
@@ -277,6 +290,9 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // The QuotaManager is owned by the profile; we can use a raw pointer here,
   // and rely on the profile to destroy the object whenever it's reasonable.
   quota::QuotaManager* quota_manager_;
+
+  // The DOMStorageContext is owned by the profile; we'll store a raw pointer.
+  content::DOMStorageContext* dom_storage_context_;
 
   // 'Protected' origins are not subject to data removal.
   scoped_refptr<ExtensionSpecialStoragePolicy> special_storage_policy_;
@@ -311,6 +327,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // Non-zero if waiting for cookies to be cleared.
   int waiting_for_clear_cookies_count_;
   bool waiting_for_clear_history_;
+  bool waiting_for_clear_local_storage_;
   bool waiting_for_clear_networking_history_;
   bool waiting_for_clear_server_bound_certs_;
   bool waiting_for_clear_plugin_data_;
@@ -328,8 +345,8 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // The origin for the current removal operation.
   GURL remove_origin_;
 
-  // Should data for protected origins be removed?
-  bool remove_protected_;
+  // From which types of origins should we remove data?
+  int origin_set_mask_;
 
   ObserverList<Observer> observer_list_;
 

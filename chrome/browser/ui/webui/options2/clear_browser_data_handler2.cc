@@ -10,6 +10,8 @@
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data_helper.h"
+#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -135,7 +137,7 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
       static_cast<BrowsingDataRemover::TimePeriod>(period_selected),
       base::Time());
   remover_->AddObserver(this);
-  remover_->Remove(remove_mask);
+  remover_->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
 }
 
 void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {

@@ -11,6 +11,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -93,7 +94,7 @@ void ClearBrowsingData(Browser* browser, int remove_mask) {
       new BrowsingDataRemover(browser->profile(),
                               BrowsingDataRemover::EVERYTHING,
                               base::Time());
-  remover->Remove(remove_mask);
+  remover->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover deletes itself.
 }
 

@@ -170,15 +170,6 @@ void DOMStorageContextImpl::DeleteLocalStorageFile(const FilePath& file_path) {
                  FilePathToOrigin(file_path)));
 }
 
-void DOMStorageContextImpl::DeleteDataModifiedSince(const base::Time& cutoff) {
-  DCHECK(context_);
-  context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE,
-      DomStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DomStorageContext::DeleteDataModifiedSince, context_,
-                 cutoff));
-}
-
 void DOMStorageContextImpl::PurgeMemory() {
   DCHECK(context_);
   context_->task_runner()->PostShutdownBlockingTask(

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -54,4 +55,27 @@ bool BrowsingDataHelper::IsExtensionScheme(const WebKit::WebString& scheme) {
 // Static
 bool BrowsingDataHelper::HasExtensionScheme(const GURL& origin) {
   return BrowsingDataHelper::IsExtensionScheme(origin.scheme());
+}
+
+// Static
+bool BrowsingDataHelper::DoesOriginMatchMask(const GURL& origin,
+    int origin_set_mask, ExtensionSpecialStoragePolicy* policy) {
+  // Packaged apps and extensions match iff EXTENSION.
+  if (BrowsingDataHelper::HasExtensionScheme(origin.GetOrigin()) &&
+      origin_set_mask & EXTENSION)
+    return true;
+
+  // If a websafe origin is unprotected, it matches iff UNPROTECTED_WEB.
+  if (!policy->IsStorageProtected(origin.GetOrigin()) &&
+      BrowsingDataHelper::HasWebScheme(origin.GetOrigin()) &&
+      origin_set_mask & UNPROTECTED_WEB)
+    return true;
+
+  // Hosted applications (protected and websafe origins) iff PROTECTED_WEB.
+  if (policy->IsStorageProtected(origin.GetOrigin()) &&
+      BrowsingDataHelper::HasWebScheme(origin.GetOrigin()) &&
+      origin_set_mask & PROTECTED_WEB)
+    return true;
+
+  return false;
 }
