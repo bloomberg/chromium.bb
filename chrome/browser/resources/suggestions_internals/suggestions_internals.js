@@ -71,8 +71,16 @@ cr.define('suggestionsInternals', function() {
     var columns = [];
     list.forEach(function(entry) {
       for (var column in entry) {
-        if (columns.indexOf(column) < 0)
+        if (typeof(entry[column]) == 'object') {
+          // Expand one level deep
+          for (var sub_column in entry[column]) {
+            var path = column + '.' + sub_column;
+            if (columns.indexOf(path) < 0)
+              columns.push(path);
+          }
+        } else if (columns.indexOf(column) < 0) {
           columns.push(column);
+        }
       }
     });
 
@@ -114,10 +122,18 @@ cr.define('suggestionsInternals', function() {
       var row = document.createElement('tr');
       columns.forEach(function(column_name) {
         var column = document.createElement('td');
+        // Expand the path and find the data if it's there.
+        var path = column_name.split('.');
+        var data = entry;
+        for (var i = 0; i < path.length; ++i) {
+          if (data && data.hasOwnProperty(path[i]))
+            data = data[path[i]];
+          else
+            data = undefined;
+        }
         // Only add the column if the current suggestion has this property
         // (otherwise, leave the cell empty).
-        if (entry.hasOwnProperty(column_name)) {
-          var data = entry[column_name];
+        if (data) {
           // If the text is a URL, make it an anchor element.
           if (/^https?:\/\/.+$/.test(data)) {
             var anchor = document.createElement('a');
@@ -132,7 +148,10 @@ cr.define('suggestionsInternals', function() {
         } else if (column_name == 'screenshot') {
           var thumbnailUrl = 'chrome://thumb/' + entry.url;
           var img = document.createElement('img');
-          img.onload = function() { column.innerText = 'Y'; }
+          img.onload = function() {
+            column.innerText = 'Y';
+            column.classList.add('has-screenshot');
+          }
           img.onerror = function() { column.innerText = 'N'; }
           img.src = thumbnailUrl;
         } else if (column_name == 'favicon') {

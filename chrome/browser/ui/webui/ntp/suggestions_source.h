@@ -27,6 +27,10 @@ class SuggestionsSource {
 
   friend class SuggestionsCombiner;
 
+  // Enables or disables debug mode for the current source. The source is
+  // expected to provide additional data when debug mode is enabled.
+  virtual void SetDebug(bool enable) = 0;
+
   // The source's weight indicates how many items from this source will be
   // selected by the combiner. If a source weight is x and the total weight of
   // all the sources is y, then the combiner will select x/y items from it.

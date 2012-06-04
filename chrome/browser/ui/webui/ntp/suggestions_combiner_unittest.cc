@@ -138,7 +138,8 @@ class SuggestionsSourceStub : public SuggestionsSource {
       : combiner_(NULL),
         weight_(weight),
         source_name_(source_name),
-        number_of_suggestions_(number_of_suggestions) {
+        number_of_suggestions_(number_of_suggestions),
+        debug_(false) {
   }
   virtual ~SuggestionsSourceStub() {
     STLDeleteElements(&items_);
@@ -152,6 +153,9 @@ class SuggestionsSourceStub : public SuggestionsSource {
 
  private:
   // SuggestionsSource Override and implementation.
+  virtual void SetDebug(bool enable) OVERRIDE {
+    debug_ = enable;
+  }
   virtual int GetWeight() OVERRIDE {
     return weight_;
   }
@@ -193,6 +197,7 @@ class SuggestionsSourceStub : public SuggestionsSource {
   int weight_;
   std::string source_name_;
   int number_of_suggestions_;
+  bool debug_;
 
   // Keep the results of the db query here.
   std::deque<base::DictionaryValue*> items_;

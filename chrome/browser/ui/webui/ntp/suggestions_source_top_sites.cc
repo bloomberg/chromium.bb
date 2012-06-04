@@ -26,11 +26,17 @@ const int kSuggestionsTopListWeight = 1;
 
 }  // namespace
 
-SuggestionsSourceTopSites::SuggestionsSourceTopSites() : combiner_(NULL) {
+SuggestionsSourceTopSites::SuggestionsSourceTopSites()
+    : combiner_(NULL),
+      debug_(false) {
 }
 
 SuggestionsSourceTopSites::~SuggestionsSourceTopSites() {
   STLDeleteElements(&items_);
+}
+
+void SuggestionsSourceTopSites::SetDebug(bool enable) {
+  debug_ = enable;
 }
 
 inline int SuggestionsSourceTopSites::GetWeight() {
@@ -64,7 +70,7 @@ void SuggestionsSourceTopSites::FetchItems(Profile* profile) {
     time_filter.SetFilterWidth(GetFilterWidth());
     time_filter.set_sorting_order(GetSortingOrder());
 
-    history->QueryFilteredURLs(0, time_filter, &history_consumer_,
+    history->QueryFilteredURLs(0, time_filter, debug_, &history_consumer_,
         base::Bind(&SuggestionsSourceTopSites::OnSuggestionsURLsAvailable,
                    base::Unretained(this)));
   }
@@ -89,6 +95,26 @@ void SuggestionsSourceTopSites::OnSuggestionsURLsAvailable(
                                       suggested_url.title,
                                       suggested_url.url);
     page_value->SetDouble("score", suggested_url.score);
+    if (debug_) {
+      if (suggested_url.extended_info.total_visits) {
+        page_value->SetInteger("extended_info.total visits",
+                               suggested_url.extended_info.total_visits);
+      }
+      if (suggested_url.extended_info.visits) {
+        page_value->SetInteger("extended_info.visits",
+                               suggested_url.extended_info.visits);
+      }
+      if (suggested_url.extended_info.duration_opened) {
+        page_value->SetInteger("extended_info.duration opened",
+                               suggested_url.extended_info.duration_opened);
+      }
+      if (!suggested_url.extended_info.last_visit_time.is_null()) {
+        base::TimeDelta deltaTime =
+            base::Time::Now() - suggested_url.extended_info.last_visit_time;
+        page_value->SetInteger("extended_info.seconds since last visit",
+                               deltaTime.InSeconds());
+      }
+    }
     items_.push_back(page_value);
   }
 

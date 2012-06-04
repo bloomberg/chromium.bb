@@ -30,6 +30,7 @@ class SuggestionsSourceTopSites : public SuggestionsSource {
 
  protected:
   // SuggestionsSource overrides:
+  virtual void SetDebug(bool enable) OVERRIDE;
   virtual int GetWeight() OVERRIDE;
   virtual int GetItemCount() OVERRIDE;
   virtual base::DictionaryValue* PopItem() OVERRIDE;
@@ -56,6 +57,9 @@ class SuggestionsSourceTopSites : public SuggestionsSource {
 
   // Keep the results of the db query here.
   std::deque<base::DictionaryValue*> items_;
+
+  // Whether the source should provide additional debug information or not.
+  bool debug_;
 
   CancelableRequestConsumer history_consumer_;
 

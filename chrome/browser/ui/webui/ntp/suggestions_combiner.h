@@ -39,6 +39,11 @@ class SuggestionsCombiner {
   // Add a new source. The SuggestionsCombiner takes ownership of |source|.
   void AddSource(SuggestionsSource* source);
 
+  // Enables or disables debug mode. If debug mode is enabled, the sources are
+  // expected to provide additional data, which could be displayed, for example,
+  // in the chrome://suggestions-internals/ page.
+  void EnableDebug(bool enable);
+
   // Fetch a new set of items from the various suggestion sources.
   void FetchItems(Profile* profile);
 
@@ -85,6 +90,10 @@ class SuggestionsCombiner {
 
   // Informations to send to the javascript side.
   scoped_ptr<base::ListValue> page_values_;
+
+  // Whether debug mode is enabled or not (debug mode provides more data in the
+  // results).
+  bool debug_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsCombiner);
 };

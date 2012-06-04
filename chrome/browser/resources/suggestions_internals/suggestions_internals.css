@@ -22,3 +22,7 @@ p {
 .input-section {
   margin-bottom: 1em;
 }
+
+.has-screenshot {
+  background-color: rgb(146, 205, 0);
+}

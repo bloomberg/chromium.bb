@@ -33,6 +33,7 @@ void SuggestionsInternalsUIHandler::RegisterMessages() {
   // Setup the suggestions sources.
   suggestions_combiner_.reset(SuggestionsCombiner::Create(this, profile_));
   suggestions_combiner_->SetSuggestionsCount(kSuggestionsCount);
+  suggestions_combiner_->EnableDebug(true);
 
   web_ui()->RegisterMessageCallback("getSuggestions",
       base::Bind(&SuggestionsInternalsUIHandler::HandleGetSuggestions,

@@ -196,10 +196,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Request the |result_count| URLs and the chain of redirects
   // leading to each of these URLs, filterd and sorted based on the |filter|.
+  // If |debug| is enabled, additional data will be computed and provided.
   void QueryFilteredURLs(
       scoped_refptr<QueryFilteredURLsRequest> request,
       int result_count,
-      const history::VisitFilter& filter);
+      const history::VisitFilter& filter,
+      bool debug);
 
   // QueryMostVisitedURLs without the request.
   void QueryMostVisitedURLsImpl(int result_count,

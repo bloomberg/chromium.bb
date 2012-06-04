@@ -29,6 +29,7 @@ class SuggestionsSourceDiscovery : public SuggestionsSource {
 
  protected:
   // SuggestionsSource overrides:
+  virtual void SetDebug(bool enable) OVERRIDE;
   virtual int GetWeight() OVERRIDE;
   virtual int GetItemCount() OVERRIDE;
   virtual base::DictionaryValue* PopItem() OVERRIDE;
@@ -44,6 +45,9 @@ class SuggestionsSourceDiscovery : public SuggestionsSource {
 
   // The extension associated with this source.
   std::string extension_id_;
+
+  // Whether the source should provide additional debug information or not.
+  bool debug_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsSourceDiscovery);
 };

@@ -34,10 +34,15 @@ const int kSuggestionsDiscoveryWeight = 1;
 SuggestionsSourceDiscovery::SuggestionsSourceDiscovery(
     const std::string& extension_id)
     : combiner_(NULL),
-      extension_id_(extension_id) {}
+      extension_id_(extension_id),
+      debug_(false) {}
 
 SuggestionsSourceDiscovery::~SuggestionsSourceDiscovery() {
   STLDeleteElements(&items_);
+}
+
+void SuggestionsSourceDiscovery::SetDebug(bool enable) {
+  debug_ = enable;
 }
 
 inline int SuggestionsSourceDiscovery::GetWeight() {

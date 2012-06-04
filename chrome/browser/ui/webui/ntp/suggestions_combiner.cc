@@ -26,14 +26,24 @@ SuggestionsCombiner::SuggestionsCombiner(
     : sources_fetching_count_(0),
       delegate_(delegate),
       suggestions_count_(kSuggestionsCount),
-      page_values_(new base::ListValue()) {
+      page_values_(new base::ListValue()),
+      debug_enabled_(false) {
 }
 
 SuggestionsCombiner::~SuggestionsCombiner() {
 }
 
-base::ListValue* SuggestionsCombiner::GetPageValues() {
-  return page_values_.get();
+void SuggestionsCombiner::AddSource(SuggestionsSource* source) {
+  source->SetCombiner(this);
+  source->SetDebug(debug_enabled_);
+  sources_.push_back(source);
+}
+
+void SuggestionsCombiner::EnableDebug(bool enable) {
+  debug_enabled_ = enable;
+  for (size_t i = 0; i < sources_.size(); ++i) {
+    sources_[i]->SetDebug(enable);
+  }
 }
 
 void SuggestionsCombiner::FetchItems(Profile* profile) {
@@ -43,9 +53,8 @@ void SuggestionsCombiner::FetchItems(Profile* profile) {
   }
 }
 
-void SuggestionsCombiner::AddSource(SuggestionsSource* source) {
-  source->SetCombiner(this);
-  sources_.push_back(source);
+base::ListValue* SuggestionsCombiner::GetPageValues() {
+  return page_values_.get();
 }
 
 void SuggestionsCombiner::OnItemsReady() {
@@ -86,7 +95,7 @@ void SuggestionsCombiner::FillPageValues() {
 
   page_values_.reset(new base::ListValue());
 
-  // Evaluate how many items to obtain from each sources. We use error diffusion
+  // Evaluate how many items to obtain from each source. We use error diffusion
   // to ensure that we get the total desired number of items.
   int error = 0;
 

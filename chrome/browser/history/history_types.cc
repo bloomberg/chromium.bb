@@ -340,6 +340,14 @@ FilteredURL::FilteredURL(const PageUsageData& page_data)
 
 FilteredURL::~FilteredURL() {}
 
+// FilteredURL::ExtendedInfo ---------------------------------------------------
+
+FilteredURL::ExtendedInfo::ExtendedInfo()
+    : total_visits(0),
+      visits(0),
+      duration_opened(0) {
+}
+
 // Images ---------------------------------------------------------------------
 
 Images::Images() {}

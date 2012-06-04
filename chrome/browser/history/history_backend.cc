@@ -1460,7 +1460,8 @@ void HistoryBackend::QueryMostVisitedURLs(
 void HistoryBackend::QueryFilteredURLs(
       scoped_refptr<QueryFilteredURLsRequest> request,
       int result_count,
-      const history::VisitFilter& filter)  {
+      const history::VisitFilter& filter,
+      bool extended_info)  {
   if (request->canceled())
     return;
 
@@ -1544,6 +1545,22 @@ void HistoryBackend::QueryFilteredURLs(
   for (size_t i = 0; i < data.size(); ++i) {
     PageUsageData* current_data = data[i];
     FilteredURL url(*current_data);
+
+    if (extended_info) {
+      VisitVector visits;
+      db_->GetVisitsForURL(current_data->GetID(), &visits);
+      if (visits.size() > 0) {
+        url.extended_info.total_visits = visits.size();
+        for (size_t i = 0; i < visits.size(); ++i) {
+          url.extended_info.duration_opened +=
+              visits[i].visit_duration.InSeconds();
+          if (visits[i].visit_time > url.extended_info.last_visit_time) {
+            url.extended_info.last_visit_time = visits[i].visit_time;
+          }
+        }
+        // TODO(macourteau): implement the url.debug.visits stat.
+      }
+    }
     result.push_back(url);
   }
 

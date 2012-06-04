@@ -1323,7 +1323,7 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
   base::TimeDelta three_quarters_of_an_hour = base::TimeDelta::FromMinutes(45);
   filter.SetFilterTime(tested_time);
   filter.SetFilterWidth(three_quarters_of_an_hour);
-  backend_->QueryFilteredURLs(request1, 100, filter);
+  backend_->QueryFilteredURLs(request1, 100, filter, false);
 
   ASSERT_EQ(4U, get_filtered_list().size());
   EXPECT_EQ(std::string(google), get_filtered_list()[0].url.spec());
@@ -1342,7 +1342,7 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
       request2);
   filter.SetFilterTime(tested_time + one_hour);
   filter.SetFilterWidth(one_hour);
-  backend_->QueryFilteredURLs(request2, 100, filter);
+  backend_->QueryFilteredURLs(request2, 100, filter, false);
 
   ASSERT_EQ(3U, get_filtered_list().size());
   EXPECT_EQ(std::string(google), get_filtered_list()[0].url.spec());
@@ -1358,7 +1358,7 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
       request3);
   filter.SetFilterTime(tested_time - one_hour);
   filter.SetFilterWidth(one_hour);
-  backend_->QueryFilteredURLs(request3, 100, filter);
+  backend_->QueryFilteredURLs(request3, 100, filter, false);
 
   ASSERT_EQ(3U, get_filtered_list().size());
   EXPECT_EQ(std::string(google), get_filtered_list()[0].url.spec());
@@ -1379,7 +1379,7 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
       request4);
   filter.SetFilterTime(tested_time);
   filter.SetDayOfTheWeekFilter(static_cast<int>(exploded_time.day_of_week));
-  backend_->QueryFilteredURLs(request4, 100, filter);
+  backend_->QueryFilteredURLs(request4, 100, filter, false);
 
   ASSERT_EQ(2U, get_filtered_list().size());
   EXPECT_EQ(std::string(google), get_filtered_list()[0].url.spec());
@@ -1395,11 +1395,26 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
       request5);
   filter.SetFilterTime(tested_time - base::TimeDelta::FromMinutes(40));
   filter.SetFilterWidth(base::TimeDelta::FromMinutes(20));
-  backend_->QueryFilteredURLs(request5, 100, filter);
+  backend_->QueryFilteredURLs(request5, 100, filter, false);
 
   ASSERT_EQ(1U, get_filtered_list().size());
   EXPECT_EQ(std::string(yahoo_sports_soccer),
             get_filtered_list()[0].url.spec());
+
+  // Make sure we get debug data if we request it.
+  scoped_refptr<QueryFilteredURLsRequest> request6 =
+      new history::QueryFilteredURLsRequest(
+          base::Bind(&HistoryBackendTest::OnQueryFiltered,
+                     base::Unretained(static_cast<HistoryBackendTest*>(this))));
+  cancellable_request.MockScheduleOfRequest<QueryFilteredURLsRequest>(
+      request6);
+  filter.SetFilterTime(tested_time);
+  filter.SetFilterWidth(one_hour);
+  backend_->QueryFilteredURLs(request6, 100, filter, true);
+
+  ASSERT_GE(get_filtered_list().size(), 1U);
+  EXPECT_EQ(std::string(google), get_filtered_list()[0].url.spec());
+  EXPECT_EQ(4U, get_filtered_list()[0].extended_info.total_visits);
 }
 
 TEST_F(HistoryBackendTest, UpdateVisitDuration) {

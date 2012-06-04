@@ -597,6 +597,18 @@ struct MostVisitedURL {
 
 // Holds the per-URL information of the filterd url query.
 struct FilteredURL {
+  struct ExtendedInfo {
+    ExtendedInfo();
+    // The absolute number of visits.
+    unsigned int total_visits;
+    // The number of visits, as seen by the Most Visited NTP pane.
+    unsigned int visits;
+    // The total number of seconds that the page was open.
+    int64 duration_opened;
+    // The time when the page was last visited.
+    base::Time last_visit_time;
+  };
+
   FilteredURL();
   explicit FilteredURL(const PageUsageData& data);
   ~FilteredURL();
@@ -604,6 +616,7 @@ struct FilteredURL {
   GURL url;
   string16 title;
   double score;
+  ExtendedInfo extended_info;
 };
 
 // Navigation -----------------------------------------------------------------
