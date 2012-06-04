@@ -254,8 +254,10 @@ void WebContentsDragWin::PrepareDragForFileContents(
 
 void WebContentsDragWin::PrepareDragForUrl(const WebDropData& drop_data,
                                            ui::OSExchangeData* data) {
-  if (drag_dest_->delegate()->AddDragData(drop_data, data))
+  if (drag_dest_->delegate() &&
+      drag_dest_->delegate()->AddDragData(drop_data, data)) {
     return;
+  }
 
   data->SetURL(drop_data.url, drop_data.url_title);
 }
