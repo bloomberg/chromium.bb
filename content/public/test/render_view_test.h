@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_RENDER_VIEW_TEST_H_
-#define CONTENT_TEST_RENDER_VIEW_TEST_H_
+#ifndef CONTENT_PUBLIC_TEST_RENDER_VIEW_TEST_H_
+#define CONTENT_PUBLIC_TEST_RENDER_VIEW_TEST_H_
 #pragma once
 
 #include <string>
@@ -14,10 +14,8 @@
 #include "base/string16.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/mock_render_thread.h"
-#include "content/renderer/mock_content_renderer_client.h"
-#include "content/renderer/renderer_webkitplatformsupport_impl.h"
-#include "content/test/mock_keyboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
@@ -26,11 +24,8 @@ class RendererMainPlatformDelegate;
 
 namespace WebKit {
 class WebHistoryItem;
+class WebKitPlatformSupport;
 class WebWidget;
-}
-
-namespace content {
-class RenderView;
 }
 
 namespace gfx {
@@ -39,16 +34,21 @@ class Rect;
 
 namespace content {
 
+class RendererWebKitPlatformSupportImplNoSandboxImpl;
+
 class RenderViewTest : public testing::Test {
  public:
   // A special WebKitPlatformSupportImpl class for getting rid off the
   // dependency to the sandbox, which is not available in RenderViewTest.
-  class RendererWebKitPlatformSupportImplNoSandbox :
-      public RendererWebKitPlatformSupportImpl {
+  class RendererWebKitPlatformSupportImplNoSandbox {
    public:
-    virtual WebKit::WebSandboxSupport* sandboxSupport() {
-      return NULL;
-    }
+    RendererWebKitPlatformSupportImplNoSandbox();
+    ~RendererWebKitPlatformSupportImplNoSandbox();
+    WebKit::WebKitPlatformSupport* Get();
+
+   private:
+    scoped_ptr<RendererWebKitPlatformSupportImplNoSandboxImpl>
+        webkit_platform_support_;
   };
 
   RenderViewTest();
@@ -80,12 +80,6 @@ class RenderViewTest : public testing::Test {
   // available from the WebFrame.
   void GoBack(const WebKit::WebHistoryItem& item);
   void GoForward(const WebKit::WebHistoryItem& item);
-
-  // Sends IPC messages that emulates a key-press event.
-  int SendKeyEvent(MockKeyboard::Layout layout,
-                   int key_code,
-                   MockKeyboard::Modifiers key_modifiers,
-                   string16* output);
 
   // Sends one native key event over IPC.
   void SendNativeKeyEvent(const content::NativeWebKeyboardEvent& key_event);
@@ -134,8 +128,7 @@ class RenderViewTest : public testing::Test {
   // the embedder's namespace.
   content::RenderView* view_;
   RendererWebKitPlatformSupportImplNoSandbox webkit_platform_support_;
-  MockContentRendererClient mock_content_renderer_client_;
-  scoped_ptr<MockKeyboard> mock_keyboard_;
+  ContentRendererClient content_renderer_client_;
   scoped_ptr<MockRenderThread> render_thread_;
 
   // Used to setup the process so renderers can run.
@@ -149,4 +142,4 @@ class RenderViewTest : public testing::Test {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_RENDER_VIEW_TEST_H_
+#endif  // CONTENT_PUBLIC_TEST_RENDER_VIEW_TEST_H_

@@ -36,7 +36,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/test/render_view_test.h"
+#include "content/public/test/render_view_test.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/test/test_renderer_host.h"
 #include "content/test/test_renderer_host.h"
@@ -167,7 +167,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 
  protected:
   virtual void SetUp() {
-    WebKit::initialize(&webkit_platform_support_);
+    WebKit::initialize(webkit_platform_support_.Get());
     // Access the TranslateManager singleton so it is created before we call
     // TabContentsWrapperTestHarness::SetUp() to match what's done in Chrome,
     // where the TranslateManager is created before the WebContents.  This

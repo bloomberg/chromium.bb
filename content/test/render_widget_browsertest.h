@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "content/test/render_view_test.h"
+#include "content/public/test/render_view_test.h"
 
 class SkBitmap;
 

@@ -17,7 +17,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/render_view_test.h"
+#include "content/public/test/render_view_test.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

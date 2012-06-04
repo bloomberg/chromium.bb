@@ -4,8 +4,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "content/common/view_messages.h"
+#include "content/public/test/render_view_test.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"

@@ -5,9 +5,9 @@
 #include <string>
 
 #include "content/common/view_messages.h"
+#include "content/public/test/render_view_test.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/test/render_view_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

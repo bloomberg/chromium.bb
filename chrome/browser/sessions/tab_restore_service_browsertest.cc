@@ -21,7 +21,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/test/render_view_test.h"
+#include "content/public/test/render_view_test.h"
 #include "content/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
@@ -62,7 +62,7 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
  protected:
   // testing::Test overrides
   virtual void SetUp() {
-    WebKit::initialize(&webkit_platform_support_);
+    WebKit::initialize(webkit_platform_support_.Get());
     ChromeRenderViewHostTestHarness::SetUp();
     time_factory_ = new TabRestoreTimeFactory();
     service_.reset(new TabRestoreService(profile(), time_factory_));

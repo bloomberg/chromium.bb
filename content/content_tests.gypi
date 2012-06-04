@@ -36,6 +36,7 @@
         'public/test/mock_render_thread.h',
         'public/test/mock_resource_context.h',
         'public/test/render_view_fake_resources_test.h',
+        'public/test/render_view_test.h',
         'public/test/test_browser_thread.h',
         'public/test/test_navigation_observer.h',
         # TODO(phajdan.jr): All of those files should live in content/test (if
@@ -91,7 +92,6 @@
         'test/net/url_request_abort_on_end_job.h',
         'test/render_view_fake_resources_test.cc',
         'test/render_view_test.cc',
-        'test/render_view_test.h',
         'test/test_browser_context.cc',
         'test/test_browser_context.h',
         'test/test_browser_thread.cc',

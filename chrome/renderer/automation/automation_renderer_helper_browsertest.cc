@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/md5.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_events.h"
 #include "chrome/test/base/chrome_render_view_test.h"
