@@ -21,3 +21,5 @@ google.patch
    (https://bugzilla.mozilla.org/show_bug.cgi?id=692922)
 Applied upstream patch:
  - https://bug752254.bugzilla.mozilla.org/attachment.cgi?id=626102
+Applied upstream security patch:
+ - https://bugzilla.mozilla.org/show_bug.cgi?id=761014

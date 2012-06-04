@@ -266,7 +266,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
        if (profile->color_space != RGB_SIGNATURE)
 	       return false;
 
-       if (profile->A2B0 || profile->B2A0)
+       if (qcms_supports_iccv4 && (profile->A2B0 || profile->B2A0))
                return false;
 
        rX = s15Fixed16Number_to_float(profile->redColorant.X);

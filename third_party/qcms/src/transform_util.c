@@ -235,6 +235,21 @@ float u8Fixed8Number_to_float(uint16_t x)
 	return x/256.;
 }
 
+/* The SSE2 code uses min & max which let NaNs pass through.
+   We want to try to prevent that here by ensuring that
+   gamma table is within expected values. */
+void validate_gamma_table(float gamma_table[256])
+{
+	int i;
+	for (i = 0; i < 256; i++) {
+		// Note: we check that the gamma is not in range
+		// instead of out of range so that we catch NaNs
+		if (!(gamma_table[i] > 0.f && gamma_table[i] < 1.f)) {
+			gamma_table[i] = 0.f;
+		}
+	}
+}
+
 float *build_input_gamma_table(struct curveType *TRC)
 {
 	float *gamma_table;
@@ -254,7 +269,10 @@ float *build_input_gamma_table(struct curveType *TRC)
 			}
 		}
 	}
-        return gamma_table;
+
+	validate_gamma_table(gamma_table);
+
+	return gamma_table;
 }
 
 struct matrix build_colorant_matrix(qcms_profile *p)
