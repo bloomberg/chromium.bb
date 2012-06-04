@@ -105,11 +105,11 @@ class IsolateBase(unittest.TestCase):
 
   @staticmethod
   def _fix_file_mode(filename, read_only):
-    """4 modes are supported, 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r)."""
-    min_mode = 0444
+    """4 modes are supported, 0750 (rwx), 0640 (rw), 0550 (rx), 0440 (r)."""
+    min_mode = 0440
     if not read_only:
       min_mode |= 0200
-    return (min_mode | 0111) if filename.endswith('.py') else min_mode
+    return (min_mode | 0110) if filename.endswith('.py') else min_mode
 
   def _gen_files(self, read_only):
     root_dir = ROOT_DIR

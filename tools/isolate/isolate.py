@@ -154,14 +154,14 @@ def process_input(filepath, prevdict, level, read_only):
     filestats = os.stat(filepath)
     if trace_inputs.get_flavor() != 'win':
       filemode = stat.S_IMODE(filestats.st_mode)
-      # Remove write access for non-owner.
-      filemode &= ~(stat.S_IWGRP | stat.S_IWOTH)
+      # Remove write access for group and all access to 'others'.
+      filemode &= ~(stat.S_IWGRP | stat.S_IRWXO)
       if read_only:
         filemode &= ~stat.S_IWUSR
       if filemode & stat.S_IXUSR:
-        filemode |= (stat.S_IXGRP | stat.S_IXOTH)
+        filemode |= stat.S_IXGRP
       else:
-        filemode &= ~(stat.S_IXGRP | stat.S_IXOTH)
+        filemode &= ~stat.S_IXGRP
       out['mode'] = filemode
     out['size'] = filestats.st_size
     # Used to skip recalculating the hash. Use the most recent update time.
