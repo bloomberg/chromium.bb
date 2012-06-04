@@ -8,7 +8,6 @@
 
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -289,7 +288,6 @@ RenderTextWin::RenderTextWin()
 }
 
 RenderTextWin::~RenderTextWin() {
-  STLDeleteContainerPointers(runs_.begin(), runs_.end());
 }
 
 base::i18n::TextDirection RenderTextWin::GetTextDirection() {
@@ -579,8 +577,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
 }
 
 void RenderTextWin::ItemizeLogicalText() {
-  STLDeleteContainerPointers(runs_.begin(), runs_.end());
-  runs_.clear();
+  runs_.reset();
   string_size_ = Size(0, GetFont().GetHeight());
   common_baseline_ = 0;
   if (text().empty())

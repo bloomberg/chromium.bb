@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "ui/gfx/render_text.h"
 
 namespace gfx {
@@ -128,7 +129,7 @@ class RenderTextWin : public RenderText {
   SCRIPT_CONTROL script_control_;
   SCRIPT_STATE script_state_;
 
-  std::vector<internal::TextRun*> runs_;
+  ScopedVector<internal::TextRun> runs_;
   Size string_size_;
 
   // A common vertical baseline for all the text runs. This is computed as the
