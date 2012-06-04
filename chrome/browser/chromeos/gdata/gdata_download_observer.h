@@ -14,6 +14,8 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
+class Profile;
+
 namespace gdata {
 
 class DocumentEntry;
@@ -33,10 +35,17 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
                   content::DownloadManager* download_manager,
                   const FilePath& gdata_tmp_download_path);
 
+  typedef base::Callback<void(const FilePath*)>
+    SubstituteGDataDownloadPathCallback;
+  static void SubstituteGDataDownloadPath(Profile* profile,
+      const FilePath& gdata_path, content::DownloadItem* download,
+      const SubstituteGDataDownloadPathCallback& callback);
+
   // Sets gdata path, for example, '/special/drive/MyFolder/MyFile',
-  // to external data in |download|.
-  static void SetGDataPath(content::DownloadItem* download,
-                           const FilePath& gdata_path);
+  // to external data in |download|. Also sets display name and
+  // makes |download| a temporary.
+  static void SetDownloadParams(const FilePath& gdata_path,
+                                content::DownloadItem* download);
 
   // Checks if there is a GData upload associated with |download|
   static bool IsGDataDownload(content::DownloadItem* download);

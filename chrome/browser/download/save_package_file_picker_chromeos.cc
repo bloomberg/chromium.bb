@@ -24,24 +24,14 @@ namespace {
 // exists only for testing.
 bool g_should_prompt_for_filename = true;
 
-// This method is passed as a callback to SavePackage, which calls it when the
-// DownloadItem is created. SavePackage is in content, so it cannot access gdata
-// concepts. SetGDataPath must be called after the DownloadItem is created.
-void OnSavePackageDownloadCreated(
-    const FilePath& gdata_path,
-    content::DownloadItem* download) {
-  gdata::GDataDownloadObserver::SetGDataPath(download, gdata_path);
-  download->SetDisplayName(gdata_path.BaseName());
-  download->SetIsTemporary(true);
-}
-
 // Trampoline callback between GetGDataTempDownloadPath() and |callback|.
 void ContinueSettingUpGDataDownload(
     const content::SavePackagePathPickedCallback& callback,
-    FilePath* gdata_tmp_download_path,
-    const FilePath& gdata_path) {
+    const FilePath& gdata_path,
+    const FilePath* gdata_tmp_download_path) {
   callback.Run(*gdata_tmp_download_path, content::SAVE_PAGE_TYPE_AS_MHTML,
-               base::Bind(&OnSavePackageDownloadCreated, gdata_path));
+               base::Bind(&gdata::GDataDownloadObserver::SetDownloadParams,
+                          gdata_path));
 }
 
 }  // anonymous namespace
@@ -89,6 +79,7 @@ void SavePackageFilePickerChromeOS::FileSelected(
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
   DCHECK(profile);
+
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile);
   // system_service is NULL in incognito.
@@ -98,18 +89,9 @@ void SavePackageFilePickerChromeOS::FileSelected(
     //   ContinueSettingUpGDataDownload ->
     //     callback_ = SavePackage::OnPathPicked ->
     //       download_created_callback = OnSavePackageDownloadCreated
-    FilePath gdata_tmp_download_dir =
-        system_service->file_system()->GetCacheDirectoryPath(
-            gdata::GDataCache::CACHE_TYPE_TMP_DOWNLOADS);
-    FilePath* gdata_tmp_download_path(new FilePath());
-    content::BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
-        base::Bind(&gdata::GDataDownloadObserver::GetGDataTempDownloadPath,
-                    gdata_tmp_download_dir,
-                    gdata_tmp_download_path),
-        base::Bind(&ContinueSettingUpGDataDownload,
-                    callback_,
-                    base::Owned(gdata_tmp_download_path),
-                    selected_path));
+    gdata::GDataDownloadObserver::SubstituteGDataDownloadPath(
+        profile, selected_path, NULL,
+        base::Bind(&ContinueSettingUpGDataDownload, callback_, selected_path));
   } else {
     callback_.Run(selected_path, content::SAVE_PAGE_TYPE_AS_MHTML,
                   content::SavePackageDownloadCreatedCallback());

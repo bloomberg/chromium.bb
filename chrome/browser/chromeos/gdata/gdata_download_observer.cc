@@ -5,10 +5,12 @@
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 
 #include "base/file_util.h"
+#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/download/download_completion_blocker.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "net/base/net_util.h"
 
 using content::BrowserThread;
@@ -100,11 +102,45 @@ void GDataDownloadObserver::Initialize(
 }
 
 // static
-void GDataDownloadObserver::SetGDataPath(DownloadItem* download,
-                                         const FilePath& path) {
-  if (download)
-      download->SetExternalData(&kGDataPathKey,
-                                new GDataExternalData(path));
+void GDataDownloadObserver::SubstituteGDataDownloadPath(Profile* profile,
+    const FilePath& gdata_path, content::DownloadItem* download,
+    const SubstituteGDataDownloadPathCallback& callback) {
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(
+          profile ? profile : ProfileManager::GetDefaultProfile());
+
+  if (system_service && gdata::util::IsUnderGDataMountPoint(gdata_path)) {
+    // If we're trying to download a file into gdata, save path in external
+    // data.
+    SetDownloadParams(gdata_path, download);
+
+    const FilePath gdata_tmp_download_dir =
+        system_service->file_system()->GetCacheDirectoryPath(
+            gdata::GDataCache::CACHE_TYPE_TMP_DOWNLOADS);
+
+    // Swap the gdata path with a local path. Local path must be created
+    // on the FILE thread.
+    FilePath* gdata_tmp_download_path(new FilePath());
+    BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
+        base::Bind(&gdata::GDataDownloadObserver::GetGDataTempDownloadPath,
+                   gdata_tmp_download_dir,
+                   gdata_tmp_download_path),
+        base::Bind(callback, base::Owned(gdata_tmp_download_path)));
+  } else {
+    callback.Run(&gdata_path);
+  }
+}
+
+// static
+void GDataDownloadObserver::SetDownloadParams(const FilePath& gdata_path,
+                                              DownloadItem* download) {
+  if (!download)
+    return;
+
+  download->SetExternalData(&kGDataPathKey,
+                            new GDataExternalData(gdata_path));
+  download->SetDisplayName(gdata_path.BaseName());
+  download->SetIsTemporary(true);
 }
 
 // static
