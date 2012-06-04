@@ -155,12 +155,10 @@ bool HandleToggleDesktopBackgroundMode() {
   ash::DesktopBackgroundController* desktop_background_controller =
       ash::Shell::GetInstance()->desktop_background_controller();
   if (desktop_background_controller->desktop_background_mode() ==
-      ash::DesktopBackgroundController::BACKGROUND_IMAGE) {
+      ash::DesktopBackgroundController::BACKGROUND_IMAGE)
     desktop_background_controller->SetDesktopBackgroundSolidColorMode();
-  } else {
-    ash::Shell::GetInstance()->user_wallpaper_delegate()->
-        SetLoggedInUserWallpaper();
-  }
+  else
+    desktop_background_controller->SetLoggedInUserWallpaper();
   return true;
 }
 

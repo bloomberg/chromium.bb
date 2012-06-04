@@ -25,9 +25,8 @@ class UserWallpaperDelegate {
  public:
   virtual ~UserWallpaperDelegate() {}
 
-  // Loads logged in user wallpaper asynchronously and sets to current wallpaper
-  // after loaded.
-  virtual void SetLoggedInUserWallpaper() = 0;
+  // Gets the index of user selected wallpaper.
+  virtual const int GetUserWallpaperIndex() = 0;
 
   // Opens the set wallpaper page in the browser.
   virtual void OpenSetWallpaperPage() = 0;
@@ -65,6 +64,10 @@ class ASH_EXPORT DesktopBackgroundController {
 
   // Cancels the current wallpaper loading operation.
   void CancelPendingWallpaperOperation();
+
+  // Loads logged in user wallpaper asynchronously and sets to current wallpaper
+  // after loaded.
+  void SetLoggedInUserWallpaper();
 
   // Sets the desktop background to solid color mode and creates a solid color
   // layout.

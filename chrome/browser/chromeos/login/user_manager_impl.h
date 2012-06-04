@@ -47,7 +47,6 @@ class UserManagerImpl : public UserManager,
   virtual void DemoUserLoggedIn() OVERRIDE;
   virtual void GuestUserLoggedIn() OVERRIDE;
   virtual void EphemeralUserLoggedIn(const std::string& email) OVERRIDE;
-  virtual void SetLoggedInUserWallpaper() OVERRIDE;
   virtual void UserSelected(const std::string& email) OVERRIDE;
   virtual void SessionStarted() OVERRIDE;
   virtual void RemoveUser(const std::string& email,
@@ -66,6 +65,7 @@ class UserManagerImpl : public UserManager,
                                     const std::string& display_email) OVERRIDE;
   virtual std::string GetUserDisplayEmail(
       const std::string& username) const OVERRIDE;
+  virtual int GetLoggedInUserWallpaperIndex() OVERRIDE;
   virtual void GetLoggedInUserWallpaperProperties(User::WallpaperType* type,
                                                   int* index) OVERRIDE;
   virtual void SaveLoggedInUserWallpaperProperties(User::WallpaperType type,
