@@ -61,7 +61,7 @@ class DownloadRequestHandle;
 class FilePath;
 
 namespace content {
-class DownloadBuffer;
+class ByteStreamReader;
 class DownloadFile;
 class DownloadManager;
 }
@@ -86,6 +86,7 @@ class CONTENT_EXPORT DownloadFileManager
 
     virtual content::DownloadFile* CreateFile(
         DownloadCreateInfo* info,
+        scoped_ptr<content::ByteStreamReader> stream,
         const DownloadRequestHandle& request_handle,
         content::DownloadManager* download_manager,
         bool calculate_hash,
@@ -101,22 +102,9 @@ class CONTENT_EXPORT DownloadFileManager
   virtual void Shutdown();
 
   // Called on UI thread to make DownloadFileManager start the download.
-  virtual void StartDownload(DownloadCreateInfo* info,
+  virtual void StartDownload(scoped_ptr<DownloadCreateInfo> info,
+                             scoped_ptr<content::ByteStreamReader> stream,
                              const DownloadRequestHandle& request_handle);
-
-  // Handlers for notifications sent from the IO thread and run on the
-  // FILE thread.
-  virtual void UpdateDownload(content::DownloadId global_id,
-                              content::DownloadBuffer* buffer);
-
-  // |reason| is the reason for interruption, if one occurs.
-  // |security_info| contains SSL information (cert_id, cert_status,
-  // security_bits, ssl_connection_status), which can be used to
-  // fine-tune the error message.  It is empty if the transaction
-  // was not performed securely.
-  virtual void OnResponseCompleted(content::DownloadId global_id,
-                                   content::DownloadInterruptReason reason,
-                                   const std::string& security_info);
 
   // Handlers for notifications sent from the UI thread and run on the
   // FILE thread.  These are both terminal actions with respect to the
@@ -186,7 +174,8 @@ class CONTENT_EXPORT DownloadFileManager
 
   // Creates DownloadFile on FILE thread and continues starting the download
   // process.
-  void CreateDownloadFile(DownloadCreateInfo* info,
+  void CreateDownloadFile(scoped_ptr<DownloadCreateInfo> info,
+                          scoped_ptr<content::ByteStreamReader> stream,
                           const DownloadRequestHandle& request_handle,
                           content::DownloadManager* download_manager,
                           bool hash_needed,

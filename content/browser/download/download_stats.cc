@@ -255,8 +255,7 @@ void RecordDownloadMimeType(const std::string& mime_type_string) {
 void RecordFileThreadReceiveBuffers(size_t num_buffers) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Download.FileThreadReceiveBuffers", num_buffers, 1,
-      DownloadResourceHandler::kLoadsToWrite,
-      DownloadResourceHandler::kLoadsToWrite);
+      100, 100);
 }
 
 void RecordBandwidth(double actual_bandwidth, double potential_bandwidth) {
@@ -301,6 +300,45 @@ void RecordOpensOutstanding(int size) {
                               0/*min*/,
                               (1 << 10)/*max*/,
                               64/*num_buckets*/);
+}
+
+void RecordContiguousWriteTime(base::TimeDelta time_blocked) {
+  UMA_HISTOGRAM_TIMES("Download.FileThreadBlockedTime", time_blocked);
+}
+
+void RecordNetworkBandwidth(size_t length,
+                            base::TimeDelta elapsed_time,
+                            base::TimeDelta paused_time) {
+  size_t non_pause_time_ms = (elapsed_time - paused_time).InMilliseconds();
+  if (0u == non_pause_time_ms)
+    non_pause_time_ms = 1;
+
+  // Note that this will be somewhat higher than sustainable network
+  // bandwidth because of buffering in the kernel during pauses.
+  // Using Bytes/s rather than bits/s so that this value is easily
+  // comparable with BandwidthOverall and BandwidthDisk.
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Download.BandwidthNetworkBytesPerSecond",
+      (1000 * length / non_pause_time_ms),
+      1, 100000000, 50);
+}
+
+void RecordFileBandwidth(size_t length,
+                         base::TimeDelta disk_write_time,
+                         base::TimeDelta elapsed_time) {
+  size_t elapsed_time_ms = elapsed_time.InMilliseconds();
+  if (0u == elapsed_time_ms)
+    elapsed_time_ms = 1;
+  size_t disk_write_time_ms = disk_write_time.InMilliseconds();
+  if (0u == disk_write_time_ms)
+    disk_write_time_ms = 1;
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Download.BandwidthOverallBytesPerSecond",
+      (1000 * length / elapsed_time_ms), 1, 50000000, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Download.BandwidthDiskBytesPerSecond",
+      (1000 * length / disk_write_time_ms), 1, 50000000, 50);
 }
 
 void RecordSavePackageEvent(SavePackageEvent event) {

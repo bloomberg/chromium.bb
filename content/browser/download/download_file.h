@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,11 +30,6 @@ class CONTENT_EXPORT DownloadFile {
   // Returns net::OK on success, or a network error code on failure.
   virtual net::Error Initialize() = 0;
 
-  // Write a new chunk of data to the file.
-  // Returns net::OK on success (all bytes written to the file),
-  // or a network error code on failure.
-  virtual net::Error AppendDataToFile(const char* data, size_t data_len) = 0;
-
   // Rename the download file.
   // Returns net::OK on success, or a network error code on failure.
   virtual net::Error Rename(const FilePath& full_path) = 0;
@@ -44,9 +39,6 @@ class CONTENT_EXPORT DownloadFile {
 
   // Abort the download and automatically close the file.
   virtual void Cancel() = 0;
-
-  // Indicate that the download has finished. No new data will be received.
-  virtual void Finish() = 0;
 
   // Informs the OS that this file came from the internet.
   virtual void AnnotateWithSourceInformation() = 0;

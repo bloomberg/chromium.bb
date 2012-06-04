@@ -17,6 +17,10 @@
 #include "content/public/browser/download_id.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
+class ByteStreamReader;
+}
+
 namespace {
 
 DownloadFileManager* GetDownloadFileManager() {
@@ -35,6 +39,7 @@ class DownloadFileWithErrors: public DownloadFileImpl {
 
   DownloadFileWithErrors(
       const DownloadCreateInfo* info,
+      scoped_ptr<content::ByteStreamReader> stream,
       DownloadRequestHandleInterface* request_handle,
       content::DownloadManager* download_manager,
       bool calculate_hash,
@@ -73,6 +78,7 @@ class DownloadFileWithErrors: public DownloadFileImpl {
 
 DownloadFileWithErrors::DownloadFileWithErrors(
     const DownloadCreateInfo* info,
+    scoped_ptr<content::ByteStreamReader> stream,
     DownloadRequestHandleInterface* request_handle,
     content::DownloadManager* download_manager,
     bool calculate_hash,
@@ -81,6 +87,7 @@ DownloadFileWithErrors::DownloadFileWithErrors(
     const ConstructionCallback& ctor_callback,
     const DestructionCallback& dtor_callback)
         : DownloadFileImpl(info,
+                           stream.Pass(),
                            request_handle,
                            download_manager,
                            calculate_hash,
@@ -157,6 +164,7 @@ class DownloadFileWithErrorsFactory
   // DownloadFileFactory interface.
   virtual content::DownloadFile* CreateFile(
       DownloadCreateInfo* info,
+      scoped_ptr<content::ByteStreamReader> stream,
       const DownloadRequestHandle& request_handle,
       content::DownloadManager* download_manager,
       bool calculate_hash,
@@ -188,6 +196,7 @@ DownloadFileWithErrorsFactory::~DownloadFileWithErrorsFactory() {
 
 content::DownloadFile* DownloadFileWithErrorsFactory::CreateFile(
     DownloadCreateInfo* info,
+    scoped_ptr<content::ByteStreamReader> stream,
     const DownloadRequestHandle& request_handle,
     content::DownloadManager* download_manager,
     bool calculate_hash,
@@ -206,6 +215,7 @@ content::DownloadFile* DownloadFileWithErrorsFactory::CreateFile(
   }
 
   return new DownloadFileWithErrors(info,
+                                    stream.Pass(),
                                     new DownloadRequestHandle(request_handle),
                                     download_manager,
                                     calculate_hash,

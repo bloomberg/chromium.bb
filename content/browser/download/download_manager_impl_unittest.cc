@@ -16,7 +16,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_file_manager.h"
@@ -66,6 +65,10 @@ using ::testing::NiceMock;
 using ::testing::ReturnRef;
 using ::testing::Return;
 
+namespace content {
+class ByteStreamReader;
+}
+
 namespace {
 
 FilePath GetTempDownloadPath(const FilePath& suggested_path) {
@@ -79,6 +82,7 @@ class MockDownloadFileFactory
 
   virtual DownloadFile* CreateFile(
       DownloadCreateInfo* info,
+      scoped_ptr<content::ByteStreamReader> stream,
       const DownloadRequestHandle& request_handle,
       DownloadManager* download_manager,
       bool calculate_hash,
@@ -87,6 +91,7 @@ class MockDownloadFileFactory
 
 DownloadFile* MockDownloadFileFactory::CreateFile(
     DownloadCreateInfo* info,
+    scoped_ptr<content::ByteStreamReader> stream,
     const DownloadRequestHandle& request_handle,
     DownloadManager* download_manager,
     bool calculate_hash,
@@ -261,8 +266,7 @@ class DownloadManagerTest : public testing::Test {
         download_manager_(new DownloadManagerImpl(
             download_manager_delegate_.get(), NULL)),
         ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        download_buffer_(new content::DownloadBuffer) {
+        file_thread_(BrowserThread::FILE, &message_loop_) {
     download_manager_->Init(browser_context.get());
     download_manager_delegate_->set_download_manager(download_manager_);
   }
@@ -313,23 +317,6 @@ class DownloadManagerTest : public testing::Test {
     download_manager_->OnTargetPathAvailable(download);
   }
 
-  void UpdateData(int32 id, const char* data, size_t length) {
-    // We are passing ownership of this buffer to the download file manager.
-    net::IOBuffer* io_buffer = new net::IOBuffer(length);
-    // We need |AddRef()| because we do a |Release()| in |UpdateDownload()|.
-    io_buffer->AddRef();
-    memcpy(io_buffer->data(), data, length);
-
-    download_buffer_->AddData(io_buffer, length);
-
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DownloadFileManager::UpdateDownload, file_manager_.get(),
-                   DownloadId(kValidIdDomain, id), download_buffer_));
-
-    message_loop_.RunAllPending();
-  }
-
   void OnDownloadInterrupted(int32 download_id, int64 size,
                              const std::string& hash_state,
                              content::DownloadInterruptReason reason) {
@@ -356,7 +343,6 @@ class DownloadManagerTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  scoped_refptr<content::DownloadBuffer> download_buffer_;
   ScopedTempDir scoped_download_dir_;
 
   DownloadFileManager* file_manager() {
@@ -378,6 +364,7 @@ const size_t DownloadManagerTest::kTestDataLen =
 class DownloadFileWithErrors : public DownloadFileImpl {
  public:
   DownloadFileWithErrors(DownloadCreateInfo* info,
+                         scoped_ptr<content::ByteStreamReader> stream,
                          DownloadManager* manager,
                          bool calculate_hash);
   virtual ~DownloadFileWithErrors() {}
@@ -406,10 +393,13 @@ class DownloadFileWithErrors : public DownloadFileImpl {
   net::Error forced_error_;
 };
 
-DownloadFileWithErrors::DownloadFileWithErrors(DownloadCreateInfo* info,
-                                               DownloadManager* manager,
-                                               bool calculate_hash)
+DownloadFileWithErrors::DownloadFileWithErrors(
+    DownloadCreateInfo* info,
+    scoped_ptr<content::ByteStreamReader> stream,
+    DownloadManager* manager,
+    bool calculate_hash)
     : DownloadFileImpl(info,
+                       stream.Pass(),
                        new DownloadRequestHandle(),
                        manager,
                        calculate_hash,
@@ -575,8 +565,16 @@ TEST_F(DownloadManagerTest, MAYBE_StartDownload) {
     info->mime_type = kStartDownloadCases[i].mime_type;
     download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
+  scoped_ptr<content::ByteStreamWriter> stream_writer;
+  scoped_ptr<content::ByteStreamReader> stream_reader;
+  content::CreateByteStream(message_loop_.message_loop_proxy(),
+                            message_loop_.message_loop_proxy(),
+                            kTestDataLen, &stream_writer, &stream_reader);
+
     DownloadFile* download_file(
-        new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
+        new DownloadFileImpl(info.get(),
+                             stream_reader.Pass(),
+                             new DownloadRequestHandle(),
                              download_manager_, false,
                              scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
                              net::BoundNetLog()));
@@ -882,6 +880,13 @@ TEST_F(DownloadManagerTest, DownloadFilenameTest) {
   }
 }
 
+void WriteCopyToStream(const char *source,
+                     size_t len, content::ByteStreamWriter* stream) {
+  scoped_refptr<net::IOBuffer> copy(new net::IOBuffer(len));
+  memcpy(copy.get()->data(), source, len);
+  stream->Write(copy, len);
+}
+
 TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   using ::testing::_;
   using ::testing::CreateFunctor;
@@ -900,15 +905,11 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   const FilePath cr_path(GetTempDownloadPath(new_path));
 
   MockDownloadFile* download_file(new NiceMock<MockDownloadFile>());
-  ON_CALL(*download_file, AppendDataToFile(_, _))
-      .WillByDefault(Return(net::OK));
 
   // |download_file| is owned by DownloadFileManager.
   AddMockDownloadToFileManager(info->download_id.local(), download_file);
 
   EXPECT_CALL(*download_file, Rename(cr_path))
-      .WillOnce(Return(net::OK));
-  EXPECT_CALL(*download_file, AppendDataToFile(kTestData, kTestDataLen))
       .WillOnce(Return(net::OK));
   EXPECT_CALL(*download_file, Cancel());
 
@@ -919,7 +920,6 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
 
-  download_file->AppendDataToFile(kTestData, kTestDataLen);
   ContinueDownloadWithPath(download, new_path);
   message_loop_.RunAllPending();
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
@@ -968,6 +968,12 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadFileErrorTest) {
       path,
       base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE));
 
+  // Make sure the DFM exists; we'll need it later.
+  // TODO(rdsmith): This is ugly and should be rewritten, but a large
+  // rewrite of this test is in progress in a different CL, so doing it
+  // the hacky way for now.
+  (void) file_manager();
+
   // Normally, the download system takes ownership of info, and is
   // responsible for deleting it.  In these unit tests, however, we
   // don't call the function that deletes it, so we do so ourselves.
@@ -979,14 +985,17 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadFileErrorTest) {
   info->total_bytes = static_cast<int64>(kTestDataLen * 3);
   info->save_info.file_path = path;
   info->save_info.file_stream.reset(stream);
+  scoped_ptr<content::ByteStreamWriter> stream_input;
+  scoped_ptr<content::ByteStreamReader> stream_output;
+  content::CreateByteStream(message_loop_.message_loop_proxy(),
+                            message_loop_.message_loop_proxy(),
+                            kTestDataLen, &stream_input, &stream_output);
 
   // Create a download file that we can insert errors into.
-  DownloadFileWithErrors* download_file(new DownloadFileWithErrors(
-      info.get(), download_manager_, false));
+  scoped_ptr<DownloadFileWithErrors> download_file(new DownloadFileWithErrors(
+      info.get(), stream_output.Pass(), download_manager_, false));
   download_file->Initialize();
-  AddDownloadToFileManager(local_id, download_file);
 
-  // |download_file| is owned by DownloadFileManager.
   download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
   DownloadItem* download = GetActiveDownloadItem(0);
@@ -996,7 +1005,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadFileErrorTest) {
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
 
   // Add some data before finalizing the file name.
-  UpdateData(local_id, kTestData, kTestDataLen);
+  WriteCopyToStream(kTestData, kTestDataLen, stream_input.get());
 
   // Finalize the file name.
   ContinueDownloadWithPath(download, path);
@@ -1004,11 +1013,12 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadFileErrorTest) {
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
 
   // Add more data.
-  UpdateData(local_id, kTestData, kTestDataLen);
+  WriteCopyToStream(kTestData, kTestDataLen, stream_input.get());
 
   // Add more data, but an error occurs.
   download_file->set_forced_error(net::ERR_FAILED);
-  UpdateData(local_id, kTestData, kTestDataLen);
+  WriteCopyToStream(kTestData, kTestDataLen, stream_input.get());
+  message_loop_.RunAllPending();
 
   // Check the state.  The download should have been interrupted.
   EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);
@@ -1045,14 +1055,10 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   const FilePath cr_path(GetTempDownloadPath(new_path));
 
   MockDownloadFile* download_file(new NiceMock<MockDownloadFile>());
-  ON_CALL(*download_file, AppendDataToFile(_, _))
-      .WillByDefault(Return(net::OK));
   AddMockDownloadToFileManager(info->download_id.local(), download_file);
 
   // |download_file| is owned by DownloadFileManager.
   EXPECT_CALL(*download_file, Rename(cr_path))
-      .WillOnce(Return(net::OK));
-  EXPECT_CALL(*download_file, AppendDataToFile(kTestData, kTestDataLen))
       .WillOnce(Return(net::OK));
   EXPECT_CALL(*download_file, Cancel());
 
@@ -1067,8 +1073,6 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   ContinueDownloadWithPath(download, new_path);
   message_loop_.RunAllPending();
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
-
-  download_file->AppendDataToFile(kTestData, kTestDataLen);
 
   download->Cancel(false);
   message_loop_.RunAllPending();
@@ -1124,6 +1128,11 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
   info->download_id = DownloadId(kValidIdDomain, 0);
   info->prompt_user_for_save_location = true;
   info->url_chain.push_back(GURL());
+  scoped_ptr<content::ByteStreamWriter> stream_input;
+  scoped_ptr<content::ByteStreamReader> stream_output;
+  content::CreateByteStream(message_loop_.message_loop_proxy(),
+                            message_loop_.message_loop_proxy(),
+                            kTestDataLen, &stream_input, &stream_output);
 
   download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
@@ -1138,7 +1147,8 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
   // name has been chosen, so we need to initialize the download file
   // properly.
   DownloadFile* download_file(
-      new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
+      new DownloadFileImpl(info.get(), stream_output.Pass(),
+                           new DownloadRequestHandle(),
                            download_manager_, false,
                            scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
                            net::BoundNetLog()));
@@ -1152,7 +1162,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
   message_loop_.RunAllPending();
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
 
-  download_file->AppendDataToFile(kTestData, kTestDataLen);
+  WriteCopyToStream(kTestData, kTestDataLen, stream_input.get());
 
   // Finish the download.
   OnResponseCompleted(0, kTestDataLen, "");
@@ -1198,6 +1208,11 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
   info->download_id = DownloadId(kValidIdDomain, 0);
   info->prompt_user_for_save_location = true;
   info->url_chain.push_back(GURL());
+  scoped_ptr<content::ByteStreamWriter> stream_input;
+  scoped_ptr<content::ByteStreamReader> stream_output;
+  content::CreateByteStream(message_loop_.message_loop_proxy(),
+                            message_loop_.message_loop_proxy(),
+                            kTestDataLen, &stream_input, &stream_output);
 
   download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
@@ -1212,7 +1227,8 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
   // name has been chosen, so we need to initialize the download file
   // properly.
   DownloadFile* download_file(
-      new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
+      new DownloadFileImpl(info.get(), stream_output.Pass(),
+                           new DownloadRequestHandle(),
                            download_manager_, false,
                            scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
                            net::BoundNetLog()));
@@ -1226,7 +1242,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
   message_loop_.RunAllPending();
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
 
-  download_file->AppendDataToFile(kTestData, kTestDataLen);
+  WriteCopyToStream(kTestData, kTestDataLen, stream_input.get());
 
   // Finish the download.
   OnResponseCompleted(0, kTestDataLen, "");

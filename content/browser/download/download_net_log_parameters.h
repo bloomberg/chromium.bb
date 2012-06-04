@@ -181,6 +181,23 @@ class FileOpenedParameters : public net::NetLog::EventParameters {
   DISALLOW_COPY_AND_ASSIGN(FileOpenedParameters);
 };
 
+// NetLog parameters when a DownloadFile is opened.
+class FileStreamDrainedParameters : public net::NetLog::EventParameters {
+ public:
+  FileStreamDrainedParameters(size_t stream_size,
+                            size_t num_buffers);
+  virtual base::Value* ToValue() const OVERRIDE;
+
+ protected:
+  virtual ~FileStreamDrainedParameters();
+
+ private:
+  const size_t stream_size_;
+  const size_t num_buffers_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileStreamDrainedParameters);
+};
+
 // NetLog parameters when a DownloadFile is renamed.
 class FileRenamedParameters : public net::NetLog::EventParameters {
  public:

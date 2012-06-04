@@ -218,6 +218,22 @@ Value* FileOpenedParameters::ToValue() const {
 
 FileOpenedParameters::~FileOpenedParameters() {}
 
+FileStreamDrainedParameters::FileStreamDrainedParameters(
+    size_t stream_size, size_t num_buffers)
+    : stream_size_(stream_size), num_buffers_(num_buffers) {
+}
+
+Value* FileStreamDrainedParameters::ToValue() const {
+  DictionaryValue* dict = new DictionaryValue();
+
+  dict->SetInteger("stream_size", static_cast<int>(stream_size_));
+  dict->SetInteger("num_buffers", static_cast<int>(num_buffers_));
+
+  return dict;
+}
+
+FileStreamDrainedParameters::~FileStreamDrainedParameters() { }
+
 FileRenamedParameters::FileRenamedParameters(
     const std::string& old_filename, const std::string& new_filename)
         : old_filename_(old_filename), new_filename_(new_filename) {

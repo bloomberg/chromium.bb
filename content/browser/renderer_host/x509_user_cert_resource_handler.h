@@ -7,10 +7,12 @@
 #pragma once
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/download/download_buffer.h"
 #include "content/browser/renderer_host/resource_handler.h"
 #include "googleurl/src/gurl.h"
 
@@ -70,6 +72,9 @@ class X509UserCertResourceHandler : public ResourceHandler {
                                    const std::string& sec_info) OVERRIDE;
 
  private:
+  typedef std::vector<std::pair<scoped_refptr<net::IOBuffer>,
+                                size_t> > ContentVector;
+
   void AssembleResource();
 
   GURL url_;

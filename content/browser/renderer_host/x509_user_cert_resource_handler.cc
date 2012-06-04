@@ -115,9 +115,26 @@ bool X509UserCertResourceHandler::OnResponseCompleted(
 }
 
 void X509UserCertResourceHandler::AssembleResource() {
-  size_t assembled_bytes = 0;
-  resource_buffer_ = AssembleData(buffer_, &assembled_bytes);
-  DCHECK_EQ(content_length_, assembled_bytes);
+  // 0-length IOBuffers are not allowed.
+  if (content_length_ == 0) {
+    resource_buffer_ = NULL;
+    return;
+  }
+
+  // Create the new buffer.
+  resource_buffer_ = new net::IOBuffer(content_length_);
+
+  // Copy the data into it.
+  size_t bytes_copied = 0;
+  for (size_t i = 0; i < buffer_.size(); ++i) {
+    net::IOBuffer* data = buffer_[i].first;
+    size_t data_len = buffer_[i].second;
+    DCHECK(data != NULL);
+    DCHECK_LE(bytes_copied + data_len, content_length_);
+    memcpy(resource_buffer_->data() + bytes_copied, data->data(), data_len);
+    bytes_copied += data_len;
+  }
+  DCHECK_EQ(content_length_, bytes_copied);
 }
 
 }  // namespace content

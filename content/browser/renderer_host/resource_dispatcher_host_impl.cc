@@ -570,7 +570,7 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     const DownloadResourceHandler::OnStartedCallback& started_cb) {
   scoped_ptr<ResourceHandler> handler(
       new DownloadResourceHandler(child_id, route_id, request_id,
-                                  request->url(), download_file_manager_.get(),
+                                  request->url(), download_file_manager_,
                                   request, started_cb, save_info));
   if (delegate_) {
     ScopedVector<ResourceThrottle> throttles;

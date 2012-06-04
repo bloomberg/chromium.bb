@@ -3498,22 +3498,6 @@
    fun:_ZN*DownloadManagerTest_*
 }
 {
-   bug_93006c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN23DownloadResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
-   fun:_ZN23BufferedResourceHandler27UseAlternateResourceHandlerEiP15ResourceHandler
-   fun:_ZN23BufferedResourceHandler23CompleteResponseStartedEib
-   fun:_ZN23BufferedResourceHandler15OnReadCompletedEiPi
-   fun:_ZN22ResourceDispatcherHost12CompleteReadEPN3net10URLRequestEPi
-   fun:_ZN22ResourceDispatcherHost15OnReadCompletedEPN3net10URLRequestEi
-   fun:_ZN3net10URLRequest19NotifyReadCompletedEi
-   fun:_ZN3net13URLRequestJob18NotifyReadCompleteEi
-   fun:_ZN3net17URLRequestTestJob20ProcessNextOperationEv
-   fun:_ZN3net17URLRequestTestJob24ProcessOnePendingMessageEv
-   fun:_ZN56ResourceDispatcherHostTest_*8TestBodyEv
-}
-{
    bug_93250a
    Memcheck:Leak
    fun:_Znw*
@@ -4844,23 +4828,6 @@
    fun:_ZN3WTF10fastMallocEm
    fun:_ZN7WebCore17ClipboardChromiumnwEm
    fun:_ZN7WebCore17ClipboardChromium6createENS_9Clipboard13ClipboardTypeEN3WTF10PassRefPtrINS_18ChromiumDataObjectEEENS_21ClipboardAccessPolicyEPNS_5FrameE
-}
-{
-   bug_111588
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN23DownloadResourceHandler17OnResponseStartedEiPN7content16ResourceResponseE
-   fun:_ZN7content23BufferedResourceHandler33ForwardPendingEventsToNextHandlerEi
-   fun:_ZN7content23BufferedResourceHandler27UseAlternateResourceHandlerEiP15ResourceHandler
-   fun:_ZN7content23BufferedResourceHandler23CompleteResponseStartedEi
-   fun:_ZN7content23BufferedResourceHandler15OnReadCompletedEiPi
-   fun:_ZN22ResourceDispatcherHost12CompleteReadEPN3net10URLRequestEPi
-   fun:_ZN22ResourceDispatcherHost15OnReadCompletedEPN3net10URLRequestEi
-   fun:_ZN3net10URLRequest19NotifyReadCompletedEi
-   fun:_ZN3net13URLRequestJob18NotifyReadCompleteEi
-   fun:_ZN3net17URLRequestTestJob20ProcessNextOperationEv
-   fun:_ZN3net17URLRequestTestJob24ProcessOnePendingMessageEv
-   fun:_ZN56ResourceDispatcherHostTest_*_Test8TestBodyEv
 }
 {
    bug_111669

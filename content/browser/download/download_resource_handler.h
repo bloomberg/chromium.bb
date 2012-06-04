@@ -24,7 +24,8 @@ class DownloadRequestHandle;
 struct DownloadCreateInfo;
 
 namespace content {
-class DownloadBuffer;
+class ByteStreamWriter;
+class ByteStreamReader;
 }
 
 namespace net {
@@ -38,17 +39,16 @@ class DownloadResourceHandler
  public:
   typedef content::DownloadUrlParameters::OnStartedCallback OnStartedCallback;
 
-  static const size_t kLoadsToWrite = 100;  // number of data buffers queued
-
   // started_cb will be called exactly once on the UI thread.
-  DownloadResourceHandler(int render_process_host_id,
-                          int render_view_id,
-                          int request_id,
-                          const GURL& url,
-                          DownloadFileManager* download_file_manager,
-                          net::URLRequest* request,
-                          const OnStartedCallback& started_cb,
-                          const content::DownloadSaveInfo& save_info);
+  DownloadResourceHandler(
+      int render_process_host_id,
+      int render_view_id,
+      int request_id,
+      const GURL& url,
+      scoped_refptr<DownloadFileManager> download_file_manager,
+      net::URLRequest* request,
+      const OnStartedCallback& started_cb,
+      const content::DownloadSaveInfo& save_info);
 
   virtual bool OnUploadProgress(int request_id,
                                 uint64 position,
@@ -93,17 +93,10 @@ class DownloadResourceHandler
  private:
   virtual ~DownloadResourceHandler();
 
-  void OnResponseCompletedInternal(int request_id,
-                                   const net::URLRequestStatus& status,
-                                   const std::string& security_info,
-                                   int response_code);
-
-  void CheckWriteProgressLater();
-  void CheckWriteProgress();
-  void MaybeResumeRequest();
+  // Arrange for started_cb_ to be called on the UI thread with the
+  // below values, nulling out started_cb_.  Should only be called
+  // on the IO thread.
   void CallStartedCB(content::DownloadId id, net::Error error);
-
-  void SetDownloadID(content::DownloadId id);
 
   // If the content-length header is not present (or contains something other
   // than numbers), the incoming content_length is -1 (unknown size).
@@ -112,23 +105,26 @@ class DownloadResourceHandler
 
   void SetContentDisposition(const std::string& content_disposition);
 
-  content::DownloadId download_id_;
   content::GlobalRequestID global_id_;
   int render_view_id_;
-  scoped_refptr<net::IOBuffer> read_buffer_;
   std::string content_disposition_;
   int64 content_length_;
   scoped_refptr<DownloadFileManager> download_file_manager_;
   net::URLRequest* request_;
-  // This is used only on the UI thread.
+  // This is read only on the IO thread, but may only
+  // be called on the UI thread.
   OnStartedCallback started_cb_;
   content::DownloadSaveInfo save_info_;
-  scoped_refptr<content::DownloadBuffer> buffer_;
-  base::OneShotTimer<DownloadResourceHandler> check_write_progress_timer_;
+
+  // Data flow
+  scoped_refptr<net::IOBuffer> read_buffer_;       // From URLRequest.
+  scoped_ptr<content::ByteStreamWriter> stream_writer_; // To rest of system.
 
   // The following are used to collect stats.
   base::TimeTicks download_start_time_;
   base::TimeTicks last_read_time_;
+  base::TimeTicks last_stream_pause_time_;
+  base::TimeDelta total_pause_time_;
   size_t last_buffer_size_;
   int64 bytes_read_;
   std::string accept_ranges_;

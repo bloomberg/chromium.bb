@@ -23,7 +23,7 @@ static const int kFractionBufferBeforeSending = 3;
 // before we update the input window.
 static const int kFractionReadBeforeWindowUpdate = 3;
 
-class ByteStreamOutputImpl;
+class ByteStreamReaderImpl;
 
 // A poor man's weak pointer; a RefCountedThreadSafe boolean that can be
 // cleared in an object destructor and accessed to check for object
@@ -44,30 +44,30 @@ struct LifetimeFlag : public base::RefCountedThreadSafe<LifetimeFlag> {
   DISALLOW_COPY_AND_ASSIGN(LifetimeFlag);
 };
 
-// For both ByteStreamInputImpl and ByteStreamOutputImpl, Construction and
+// For both ByteStreamWriterImpl and ByteStreamReaderImpl, Construction and
 // SetPeer may happen anywhere; all other operations on each class must
 // happen in the context of their SequencedTaskRunner.
-class ByteStreamInputImpl : public content::ByteStreamInput {
+class ByteStreamWriterImpl : public content::ByteStreamWriter {
  public:
-  ByteStreamInputImpl(scoped_refptr<base::SequencedTaskRunner> task_runner,
+  ByteStreamWriterImpl(scoped_refptr<base::SequencedTaskRunner> task_runner,
                       scoped_refptr<LifetimeFlag> lifetime_flag,
                       size_t buffer_size);
-  virtual ~ByteStreamInputImpl();
+  virtual ~ByteStreamWriterImpl();
 
   // Must be called before any operations are performed.
-  void SetPeer(ByteStreamOutputImpl* peer,
+  void SetPeer(ByteStreamReaderImpl* peer,
                scoped_refptr<base::SequencedTaskRunner> peer_task_runner,
                scoped_refptr<LifetimeFlag> peer_lifetime_flag);
 
-  // Overridden from ByteStreamInput.
+  // Overridden from ByteStreamWriter.
   virtual bool Write(scoped_refptr<net::IOBuffer> buffer,
                      size_t byte_count) OVERRIDE;
   virtual void Close(content::DownloadInterruptReason status) OVERRIDE;
   virtual void RegisterCallback(const base::Closure& source_callback) OVERRIDE;
 
-  // PostTask target from |ByteStreamOutputImpl::MaybeUpdateInput|.
+  // PostTask target from |ByteStreamReaderImpl::MaybeUpdateInput|.
   static void UpdateWindow(scoped_refptr<LifetimeFlag> lifetime_flag,
-                           ByteStreamInputImpl* target,
+                           ByteStreamWriterImpl* target,
                            size_t bytes_consumed);
 
  private:
@@ -102,36 +102,36 @@ class ByteStreamInputImpl : public content::ByteStreamInput {
 
   // Only valid to access on peer_task_runner_ if
   // |*peer_lifetime_flag_ == true|
-  ByteStreamOutputImpl* peer_;
+  ByteStreamReaderImpl* peer_;
 };
 
-class ByteStreamOutputImpl : public content::ByteStreamOutput {
+class ByteStreamReaderImpl : public content::ByteStreamReader {
  public:
-  ByteStreamOutputImpl(scoped_refptr<base::SequencedTaskRunner> task_runner,
+  ByteStreamReaderImpl(scoped_refptr<base::SequencedTaskRunner> task_runner,
                        scoped_refptr<LifetimeFlag> lifetime_flag,
                        size_t buffer_size);
-  virtual ~ByteStreamOutputImpl();
+  virtual ~ByteStreamReaderImpl();
 
   // Must be called before any operations are performed.
-  void SetPeer(ByteStreamInputImpl* peer,
+  void SetPeer(ByteStreamWriterImpl* peer,
                scoped_refptr<base::SequencedTaskRunner> peer_task_runner,
                scoped_refptr<LifetimeFlag> peer_lifetime_flag);
 
-  // Overridden from ByteStreamOutput.
+  // Overridden from ByteStreamReader.
   virtual StreamState Read(scoped_refptr<net::IOBuffer>* data,
                            size_t* length) OVERRIDE;
   virtual content::DownloadInterruptReason GetStatus() const OVERRIDE;
   virtual void RegisterCallback(const base::Closure& sink_callback) OVERRIDE;
 
-  // PostTask target from |ByteStreamInputImpl::MaybePostToPeer| and
-  // |ByteStreamInputImpl::Close|.
+  // PostTask target from |ByteStreamWriterImpl::MaybePostToPeer| and
+  // |ByteStreamWriterImpl::Close|.
   // Receive data from our peer.
   // static because it may be called after the object it is targeting
   // has been destroyed.  It may not access |*target|
   // if |*object_lifetime_flag| is false.
   static void TransferData(
       scoped_refptr<LifetimeFlag> object_lifetime_flag,
-      ByteStreamOutputImpl* target,
+      ByteStreamReaderImpl* target,
       scoped_ptr<ContentVector> transfer_buffer,
       size_t transfer_buffer_bytes,
       bool source_complete,
@@ -178,10 +178,10 @@ class ByteStreamOutputImpl : public content::ByteStreamOutput {
 
   // Only valid to access on peer_task_runner_ if
   // |*peer_lifetime_flag_ == true|
-  ByteStreamInputImpl* peer_;
+  ByteStreamWriterImpl* peer_;
 };
 
-ByteStreamInputImpl::ByteStreamInputImpl(
+ByteStreamWriterImpl::ByteStreamWriterImpl(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     scoped_refptr<LifetimeFlag> lifetime_flag,
     size_t buffer_size)
@@ -195,12 +195,12 @@ ByteStreamInputImpl::ByteStreamInputImpl(
   my_lifetime_flag_->is_alive_ = true;
 }
 
-ByteStreamInputImpl::~ByteStreamInputImpl() {
+ByteStreamWriterImpl::~ByteStreamWriterImpl() {
   my_lifetime_flag_->is_alive_ = false;
 }
 
-void ByteStreamInputImpl::SetPeer(
-    ByteStreamOutputImpl* peer,
+void ByteStreamWriterImpl::SetPeer(
+    ByteStreamReaderImpl* peer,
     scoped_refptr<base::SequencedTaskRunner> peer_task_runner,
     scoped_refptr<LifetimeFlag> peer_lifetime_flag) {
   peer_ = peer;
@@ -208,7 +208,7 @@ void ByteStreamInputImpl::SetPeer(
   peer_lifetime_flag_ = peer_lifetime_flag;
 }
 
-bool ByteStreamInputImpl::Write(
+bool ByteStreamWriterImpl::Write(
     scoped_refptr<net::IOBuffer> buffer, size_t byte_count) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
 
@@ -222,21 +222,21 @@ bool ByteStreamInputImpl::Write(
   return (input_contents_size_ + output_size_used_ <= total_buffer_size_);
 }
 
-void ByteStreamInputImpl::Close(
+void ByteStreamWriterImpl::Close(
     content::DownloadInterruptReason status) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
   PostToPeer(true, status);
 }
 
-void ByteStreamInputImpl::RegisterCallback(
+void ByteStreamWriterImpl::RegisterCallback(
     const base::Closure& source_callback) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
   space_available_callback_ = source_callback;
 }
 
 // static
-void ByteStreamInputImpl::UpdateWindow(
-    scoped_refptr<LifetimeFlag> lifetime_flag, ByteStreamInputImpl* target,
+void ByteStreamWriterImpl::UpdateWindow(
+    scoped_refptr<LifetimeFlag> lifetime_flag, ByteStreamWriterImpl* target,
     size_t bytes_consumed) {
   // If the target object isn't alive anymore, we do nothing.
   if (!lifetime_flag->is_alive_) return;
@@ -244,7 +244,7 @@ void ByteStreamInputImpl::UpdateWindow(
   target->UpdateWindowInternal(bytes_consumed);
 }
 
-void ByteStreamInputImpl::UpdateWindowInternal(size_t bytes_consumed) {
+void ByteStreamWriterImpl::UpdateWindowInternal(size_t bytes_consumed) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
   DCHECK_GE(output_size_used_, bytes_consumed);
   output_size_used_ -= bytes_consumed;
@@ -259,7 +259,7 @@ void ByteStreamInputImpl::UpdateWindowInternal(size_t bytes_consumed) {
     space_available_callback_.Run();
 }
 
-void ByteStreamInputImpl::PostToPeer(
+void ByteStreamWriterImpl::PostToPeer(
     bool complete, content::DownloadInterruptReason status) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
   // Valid contexts in which to call.
@@ -276,7 +276,7 @@ void ByteStreamInputImpl::PostToPeer(
   }
   peer_task_runner_->PostTask(
       FROM_HERE, base::Bind(
-          &ByteStreamOutputImpl::TransferData,
+          &ByteStreamReaderImpl::TransferData,
           peer_lifetime_flag_,
           peer_,
           base::Passed(transfer_buffer.Pass()),
@@ -285,7 +285,7 @@ void ByteStreamInputImpl::PostToPeer(
           status));
 }
 
-ByteStreamOutputImpl::ByteStreamOutputImpl(
+ByteStreamReaderImpl::ByteStreamReaderImpl(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     scoped_refptr<LifetimeFlag> lifetime_flag,
     size_t buffer_size)
@@ -300,12 +300,12 @@ ByteStreamOutputImpl::ByteStreamOutputImpl(
   my_lifetime_flag_->is_alive_ = true;
 }
 
-ByteStreamOutputImpl::~ByteStreamOutputImpl() {
+ByteStreamReaderImpl::~ByteStreamReaderImpl() {
   my_lifetime_flag_->is_alive_ = false;
 }
 
-void ByteStreamOutputImpl::SetPeer(
-    ByteStreamInputImpl* peer,
+void ByteStreamReaderImpl::SetPeer(
+    ByteStreamWriterImpl* peer,
     scoped_refptr<base::SequencedTaskRunner> peer_task_runner,
     scoped_refptr<LifetimeFlag> peer_lifetime_flag) {
   peer_ = peer;
@@ -313,8 +313,8 @@ void ByteStreamOutputImpl::SetPeer(
   peer_lifetime_flag_ = peer_lifetime_flag;
 }
 
-ByteStreamOutputImpl::StreamState
-ByteStreamOutputImpl::Read(scoped_refptr<net::IOBuffer>* data,
+ByteStreamReaderImpl::StreamState
+ByteStreamReaderImpl::Read(scoped_refptr<net::IOBuffer>* data,
                            size_t* length) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
 
@@ -334,13 +334,13 @@ ByteStreamOutputImpl::Read(scoped_refptr<net::IOBuffer>* data,
 }
 
 content::DownloadInterruptReason
-ByteStreamOutputImpl::GetStatus() const {
+ByteStreamReaderImpl::GetStatus() const {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(received_status_);
   return status_;
 }
 
-void ByteStreamOutputImpl::RegisterCallback(
+void ByteStreamReaderImpl::RegisterCallback(
     const base::Closure& sink_callback) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
 
@@ -348,9 +348,9 @@ void ByteStreamOutputImpl::RegisterCallback(
 }
 
 // static
-void ByteStreamOutputImpl::TransferData(
+void ByteStreamReaderImpl::TransferData(
     scoped_refptr<LifetimeFlag> object_lifetime_flag,
-    ByteStreamOutputImpl* target,
+    ByteStreamReaderImpl* target,
     scoped_ptr<ContentVector> transfer_buffer,
     size_t buffer_size,
     bool source_complete,
@@ -362,7 +362,7 @@ void ByteStreamOutputImpl::TransferData(
       transfer_buffer.Pass(), buffer_size, source_complete, status);
 }
 
-void ByteStreamOutputImpl::TransferDataInternal(
+void ByteStreamReaderImpl::TransferDataInternal(
     scoped_ptr<ContentVector> transfer_buffer,
     size_t buffer_size,
     bool source_complete,
@@ -393,7 +393,7 @@ void ByteStreamOutputImpl::TransferDataInternal(
 // Decide whether or not to send the input a window update.
 // Currently we do that whenever we've got unreported consumption
 // greater than 1/3 of total size.
-void ByteStreamOutputImpl::MaybeUpdateInput() {
+void ByteStreamReaderImpl::MaybeUpdateInput() {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
 
   if (unreported_consumed_bytes_ <=
@@ -402,7 +402,7 @@ void ByteStreamOutputImpl::MaybeUpdateInput() {
 
   peer_task_runner_->PostTask(
       FROM_HERE, base::Bind(
-          &ByteStreamInputImpl::UpdateWindow,
+          &ByteStreamWriterImpl::UpdateWindow,
           peer_lifetime_flag_,
           peer_,
           unreported_consumed_bytes_));
@@ -413,22 +413,22 @@ void ByteStreamOutputImpl::MaybeUpdateInput() {
 
 namespace content {
 
-ByteStreamOutput::~ByteStreamOutput() { }
+ByteStreamReader::~ByteStreamReader() { }
 
-ByteStreamInput::~ByteStreamInput() { }
+ByteStreamWriter::~ByteStreamWriter() { }
 
 void CreateByteStream(
     scoped_refptr<base::SequencedTaskRunner> input_task_runner,
     scoped_refptr<base::SequencedTaskRunner> output_task_runner,
     size_t buffer_size,
-    scoped_ptr<ByteStreamInput>* input,
-    scoped_ptr<ByteStreamOutput>* output) {
+    scoped_ptr<ByteStreamWriter>* input,
+    scoped_ptr<ByteStreamReader>* output) {
   scoped_refptr<LifetimeFlag> input_flag(new LifetimeFlag());
   scoped_refptr<LifetimeFlag> output_flag(new LifetimeFlag());
 
-  ByteStreamInputImpl* in = new ByteStreamInputImpl(
+  ByteStreamWriterImpl* in = new ByteStreamWriterImpl(
       input_task_runner, input_flag, buffer_size);
-  ByteStreamOutputImpl* out = new ByteStreamOutputImpl(
+  ByteStreamReaderImpl* out = new ByteStreamReaderImpl(
       output_task_runner, output_flag, buffer_size);
 
   in->SetPeer(out, output_task_runner, output_flag);

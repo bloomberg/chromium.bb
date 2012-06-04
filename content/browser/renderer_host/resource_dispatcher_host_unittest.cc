@@ -265,6 +265,31 @@ class URLRequestTestDelayedStartJob : public net::URLRequestTestJob {
 URLRequestTestDelayedStartJob*
 URLRequestTestDelayedStartJob::list_head_ = NULL;
 
+// This class is a variation on URLRequestTestJob in that it
+// returns IO_pending errors before every read, not just the first one.
+class URLRequestTestDelayedCompletionJob : public net::URLRequestTestJob {
+ public:
+  explicit URLRequestTestDelayedCompletionJob(net::URLRequest* request)
+      : net::URLRequestTestJob(request) {}
+  URLRequestTestDelayedCompletionJob(net::URLRequest* request,
+                                     bool auto_advance)
+      : net::URLRequestTestJob(request, auto_advance) {}
+  URLRequestTestDelayedCompletionJob(net::URLRequest* request,
+                                     const std::string& response_headers,
+                                     const std::string& response_data,
+                                     bool auto_advance)
+      : net::URLRequestTestJob(request, response_headers,
+                               response_data, auto_advance) {}
+
+ protected:
+  ~URLRequestTestDelayedCompletionJob() {}
+
+ private:
+  virtual bool NextReadAsync() OVERRIDE { return true; }
+};
+
+
+
 // Associated with an URLRequest to determine if the URLRequest gets deleted.
 class TestUserData : public base::SupportsUserData::Data {
  public:
@@ -378,6 +403,7 @@ class ResourceDispatcherHostTest : public testing::Test,
         &ResourceDispatcherHostTest::Factory);
     EnsureTestSchemeIsAllowed();
     delay_start_ = false;
+    delay_complete_ = false;
   }
 
   virtual void TearDown() {
@@ -455,12 +481,18 @@ class ResourceDispatcherHostTest : public testing::Test,
     if (test_fixture_->response_headers_.empty()) {
       if (delay_start_) {
         return new URLRequestTestDelayedStartJob(request);
+      } else if (delay_complete_) {
+        return new URLRequestTestDelayedCompletionJob(request);
       } else {
         return new net::URLRequestTestJob(request);
       }
     } else {
       if (delay_start_) {
         return new URLRequestTestDelayedStartJob(
+            request, test_fixture_->response_headers_,
+            test_fixture_->response_data_, false);
+      } else if (delay_complete_) {
+        return new URLRequestTestDelayedCompletionJob(
             request, test_fixture_->response_headers_,
             test_fixture_->response_data_, false);
       } else {
@@ -474,6 +506,10 @@ class ResourceDispatcherHostTest : public testing::Test,
 
   void SetDelayedStartJobGeneration(bool delay_job_start) {
     delay_start_ = delay_job_start;
+  }
+
+  void SetDelayedCompleteJobGeneration(bool delay_job_complete) {
+    delay_complete_ = delay_job_complete;
   }
 
   MessageLoopForIO message_loop_;
@@ -492,10 +528,12 @@ class ResourceDispatcherHostTest : public testing::Test,
   ResourceType::Type resource_type_;
   static ResourceDispatcherHostTest* test_fixture_;
   static bool delay_start_;
+  static bool delay_complete_;
 };
 // Static.
 ResourceDispatcherHostTest* ResourceDispatcherHostTest::test_fixture_ = NULL;
 bool ResourceDispatcherHostTest::delay_start_ = false;
+bool ResourceDispatcherHostTest::delay_complete_ = false;
 
 void ResourceDispatcherHostTest::MakeTestRequest(int render_view_id,
                                                  int request_id,
@@ -1245,8 +1283,16 @@ TEST_F(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
                                                             response.size()));
   std::string response_data("01234567890123456789\x01foobar");
 
+  // Get past sniffing metrics in the BufferedResourceHandler.  Note that
+  // if we don't get past the sniffing metrics, the result will be that
+  // the BufferedResourceHandler won't have figured out that it's a download,
+  // won't have constructed a DownloadResourceHandler, and and the request
+  // will be successfully canceled below, failing the test.
+  response_data.resize(1025, ' ');
+
   SetResponse(raw_headers, response_data);
   SetResourceType(ResourceType::MAIN_FRAME);
+  SetDelayedCompleteJobGeneration(true);
   HandleScheme("http");
 
   MakeTestRequest(render_view_id, request_id, GURL("http://example.com/blah"));
@@ -1279,9 +1325,12 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContext) {
   std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
                                                             response.size()));
   std::string response_data("01234567890123456789\x01foobar");
+  // Get past sniffing metrics.
+  response_data.resize(1025, ' ');
 
   SetResponse(raw_headers, response_data);
   SetResourceType(ResourceType::MAIN_FRAME);
+  SetDelayedCompleteJobGeneration(true);
   HandleScheme("http");
 
   MakeTestRequest(render_view_id, request_id, GURL("http://example.com/blah"));

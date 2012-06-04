@@ -272,13 +272,6 @@ net::Error BaseFile::AppendDataToFile(const char* data, size_t data_len) {
         download_stats::APPEND_TO_DETACHED_FILE_COUNT);
   }
 
-  if (bound_net_log_.IsLoggingAllEvents()) {
-    bound_net_log_.AddEvent(
-        net::NetLog::TYPE_DOWNLOAD_FILE_WRITTEN,
-        make_scoped_refptr(new net::NetLogIntegerParameter(
-            "byte_count", data_len)));
-  }
-
   if (!file_stream_.get())
     return LOG_ERROR("get", net::ERR_INVALID_HANDLE);
 

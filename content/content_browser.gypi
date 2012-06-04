@@ -265,8 +265,6 @@
     'browser/download/base_file.h',
     'browser/download/byte_stream.cc',
     'browser/download/byte_stream.h',
-    'browser/download/download_buffer.cc',
-    'browser/download/download_buffer.h',
     'browser/download/download_create_info.cc',
     'browser/download/download_create_info.h',
     'browser/download/download_file.h',

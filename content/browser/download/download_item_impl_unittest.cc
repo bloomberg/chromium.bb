@@ -5,6 +5,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
+#include "content/browser/download/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item_impl.h"
@@ -58,8 +59,21 @@ class MockRequestHandle : public DownloadRequestHandleInterface {
 class MockDownloadFileFactory
     : public DownloadFileManager::DownloadFileFactory {
  public:
-  MOCK_METHOD5(CreateFile,
+  content::DownloadFile* CreateFile(
+      DownloadCreateInfo* info,
+      scoped_ptr<content::ByteStreamReader> stream_reader,
+      const DownloadRequestHandle& request_handle,
+      DownloadManager* mgr,
+      bool calculate_hash,
+      const net::BoundNetLog& bound_net_log) {
+    return MockCreateFile(
+        info, stream_reader.get(), request_handle, mgr, calculate_hash,
+        bound_net_log);
+  }
+
+  MOCK_METHOD6(MockCreateFile,
                content::DownloadFile*(DownloadCreateInfo*,
+                                      content::ByteStreamReader*,
                                       const DownloadRequestHandle&,
                                       DownloadManager*,
                                       bool,
@@ -70,12 +84,15 @@ class MockDownloadFileManager : public DownloadFileManager {
  public:
   MockDownloadFileManager();
   MOCK_METHOD0(Shutdown, void());
-  MOCK_METHOD2(StartDownload,
-               void(DownloadCreateInfo*, const DownloadRequestHandle&));
-  MOCK_METHOD2(UpdateDownload, void(DownloadId, content::DownloadBuffer*));
-  MOCK_METHOD3(OnResponseCompleted,
-               void(DownloadId, content::DownloadInterruptReason,
-                    const std::string&));
+  MOCK_METHOD3(MockStartDownload,
+               void(DownloadCreateInfo*, content::ByteStreamReader*,
+                    const DownloadRequestHandle&));
+  virtual void StartDownload(scoped_ptr<DownloadCreateInfo> info,
+                            scoped_ptr<content::ByteStreamReader> stream,
+                            const DownloadRequestHandle& request_handle) {
+    MockStartDownload(info.release(), stream.release(), request_handle);
+  }
+
   MOCK_METHOD1(CancelDownload, void(DownloadId));
   MOCK_METHOD1(CompleteDownload, void(DownloadId));
   MOCK_METHOD1(OnDownloadManagerShutdown, void(DownloadManager*));

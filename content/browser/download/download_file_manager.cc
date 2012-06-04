@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/base_file.h"
-#include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
@@ -41,6 +40,7 @@ class DownloadFileFactoryImpl
 
   virtual content::DownloadFile* CreateFile(
       DownloadCreateInfo* info,
+      scoped_ptr<content::ByteStreamReader> stream,
       const DownloadRequestHandle& request_handle,
       DownloadManager* download_manager,
       bool calculate_hash,
@@ -49,12 +49,13 @@ class DownloadFileFactoryImpl
 
 DownloadFile* DownloadFileFactoryImpl::CreateFile(
     DownloadCreateInfo* info,
+    scoped_ptr<content::ByteStreamReader> stream,
     const DownloadRequestHandle& request_handle,
     DownloadManager* download_manager,
     bool calculate_hash,
     const net::BoundNetLog& bound_net_log) {
   return new DownloadFileImpl(
-      info, new DownloadRequestHandle(request_handle),
+      info, stream.Pass(), new DownloadRequestHandle(request_handle),
       download_manager, calculate_hash,
       scoped_ptr<PowerSaveBlocker>(
           new PowerSaveBlocker(
@@ -87,19 +88,19 @@ void DownloadFileManager::OnShutdown() {
 }
 
 void DownloadFileManager::CreateDownloadFile(
-    DownloadCreateInfo* info, const DownloadRequestHandle& request_handle,
+    scoped_ptr<DownloadCreateInfo> info,
+    scoped_ptr<content::ByteStreamReader> stream,
+    const DownloadRequestHandle& request_handle,
     DownloadManager* download_manager, bool get_hash,
     const net::BoundNetLog& bound_net_log) {
-  DCHECK(info);
+  DCHECK(info.get());
   VLOG(20) << __FUNCTION__ << "()" << " info = " << info->DebugString();
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  // Life of |info| ends here. No more references to it after this method.
-  scoped_ptr<DownloadCreateInfo> infop(info);
-
   // Create the download file.
   scoped_ptr<DownloadFile> download_file(download_file_factory_->CreateFile(
-      info, request_handle, download_manager, get_hash, bound_net_log));
+      info.get(), stream.Pass(), request_handle, download_manager,
+      get_hash, bound_net_log));
 
   net::Error init_result = download_file->Initialize();
   if (net::OK != init_result) {
@@ -152,9 +153,11 @@ void DownloadFileManager::UpdateInProgressDownloads() {
 }
 
 void DownloadFileManager::StartDownload(
-    DownloadCreateInfo* info, const DownloadRequestHandle& request_handle) {
+    scoped_ptr<DownloadCreateInfo> info,
+    scoped_ptr<content::ByteStreamReader> stream,
+    const DownloadRequestHandle& request_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(info);
+  DCHECK(info.get());
 
   DownloadManager* manager = request_handle.GetDownloadManager();
   DCHECK(manager);  // Checked in |DownloadResourceHandler::StartOnUIThread()|.
@@ -162,112 +165,15 @@ void DownloadFileManager::StartDownload(
   // |bound_net_log| will be used for logging the both the download item's and
   // the download file's events.
   net::BoundNetLog bound_net_log =
-      manager->CreateDownloadItem(info, request_handle);
+      manager->CreateDownloadItem(info.get(), request_handle);
   bool hash_needed = manager->GenerateFileHash();
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&DownloadFileManager::CreateDownloadFile, this,
-                 info, request_handle, make_scoped_refptr(manager),
+                 base::Passed(info.Pass()), base::Passed(stream.Pass()),
+                 request_handle,
+                 make_scoped_refptr(manager),
                  hash_needed, bound_net_log));
-}
-
-// We don't forward an update to the UI thread here, since we want to throttle
-// the UI update rate via a periodic timer. If the user has cancelled the
-// download (in the UI thread), we may receive a few more updates before the IO
-// thread gets the cancel message: we just delete the data since the
-// DownloadFile has been deleted.
-void DownloadFileManager::UpdateDownload(
-    DownloadId global_id, content::DownloadBuffer* buffer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  scoped_ptr<content::ContentVector> contents(buffer->ReleaseContents());
-
-  download_stats::RecordFileThreadReceiveBuffers(contents->size());
-
-  DownloadFile* download_file = GetDownloadFile(global_id);
-  bool had_error = false;
-  for (size_t i = 0; i < contents->size(); ++i) {
-    net::IOBuffer* data = (*contents)[i].first;
-    const int data_len = (*contents)[i].second;
-    if (!had_error && download_file) {
-      net::Error write_result =
-          download_file->AppendDataToFile(data->data(), data_len);
-      if (write_result != net::OK) {
-        // Write failed: interrupt the download.
-        DownloadManager* download_manager =
-            download_file->GetDownloadManager();
-        had_error = true;
-
-        int64 bytes_downloaded = download_file->BytesSoFar();
-        std::string hash_state(download_file->GetHashState());
-
-        // Calling this here in case we get more data, to avoid
-        // processing data after an error.  That could lead to
-        // files that are corrupted if the later processing succeeded.
-        CancelDownload(global_id);
-        download_file = NULL;  // Was deleted in |CancelDownload|.
-
-        if (download_manager) {
-          BrowserThread::PostTask(
-              BrowserThread::UI, FROM_HERE,
-              base::Bind(&DownloadManager::OnDownloadInterrupted,
-                         download_manager,
-                         global_id.local(),
-                         bytes_downloaded,
-                         hash_state,
-                         content::ConvertNetErrorToInterruptReason(
-                             write_result,
-                             content::DOWNLOAD_INTERRUPT_FROM_DISK)));
-        }
-      }
-    }
-    data->Release();
-  }
-}
-
-void DownloadFileManager::OnResponseCompleted(
-    DownloadId global_id,
-    content::DownloadInterruptReason reason,
-    const std::string& security_info) {
-  VLOG(20) << __FUNCTION__ << "()" << " id = " << global_id
-           << " reason = " << InterruptReasonDebugString(reason)
-           << " security_info = \"" << security_info << "\"";
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DownloadFile* download_file = GetDownloadFile(global_id);
-  if (!download_file)
-    return;
-
-  download_file->Finish();
-
-  DownloadManager* download_manager = download_file->GetDownloadManager();
-  if (!download_manager) {
-    CancelDownload(global_id);
-    return;
-  }
-
-  if (reason == content::DOWNLOAD_INTERRUPT_REASON_NONE) {
-    std::string hash;
-    if (!download_file->GetHash(&hash) ||
-        BaseFile::IsEmptyHash(hash)) {
-      hash.clear();
-    }
-
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloadManager::OnResponseCompleted,
-                   download_manager, global_id.local(),
-                   download_file->BytesSoFar(), hash));
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloadManager::OnDownloadInterrupted,
-                   download_manager,
-                   global_id.local(),
-                   download_file->BytesSoFar(),
-                   download_file->GetHashState(),
-                   reason));
-  }
-  // We need to keep the download around until the UI thread has finalized
-  // the name.
 }
 
 // This method will be sent via a user action, or shutdown on the UI thread, and

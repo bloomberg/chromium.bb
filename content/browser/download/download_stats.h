@@ -16,6 +16,7 @@
 
 namespace base {
 class Time;
+class TimeDelta;
 class TimeTicks;
 }
 
@@ -136,6 +137,19 @@ void RecordClearAllSize(int size);
 
 // Record the number of completed unopened downloads when a download is opened.
 void RecordOpensOutstanding(int size);
+
+// Record how long we block the file thread at a time.
+void RecordContiguousWriteTime(base::TimeDelta time_blocked);
+
+// Record overall bandwidth stats at the network end.
+void RecordNetworkBandwidth(size_t length,
+                            base::TimeDelta elapsed_time,
+                            base::TimeDelta paused_time);
+
+// Record overall bandwidth stats at the file end.
+void RecordFileBandwidth(size_t length,
+                         base::TimeDelta disk_write_time,
+                         base::TimeDelta elapsed_time);
 
 enum SavePackageEvent {
   // The user has started to save a page as a package.

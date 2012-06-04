@@ -10,15 +10,20 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "content/browser/download/base_file.h"
+#include "content/browser/download/byte_stream.h"
 #include "content/browser/download/download_request_handle.h"
+#include "net/base/net_log.h"
 
 class PowerSaveBlocker;
 
 struct DownloadCreateInfo;
 
 namespace content {
+class ByteStreamReader;
 class DownloadManager;
 }
 
@@ -27,6 +32,7 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   // Takes ownership of the object pointed to by |request_handle|.
   // |bound_net_log| will be used for logging the download file's events.
   DownloadFileImpl(const DownloadCreateInfo* info,
+                   scoped_ptr<content::ByteStreamReader> stream,
                    DownloadRequestHandleInterface* request_handle,
                    content::DownloadManager* download_manager,
                    bool calculate_hash,
@@ -36,12 +42,9 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
 
   // DownloadFile functions.
   virtual net::Error Initialize() OVERRIDE;
-  virtual net::Error AppendDataToFile(const char* data,
-                                      size_t data_len) OVERRIDE;
   virtual net::Error Rename(const FilePath& full_path) OVERRIDE;
   virtual void Detach() OVERRIDE;
   virtual void Cancel() OVERRIDE;
-  virtual void Finish() OVERRIDE;
   virtual void AnnotateWithSourceInformation() OVERRIDE;
   virtual FilePath FullPath() const OVERRIDE;
   virtual bool InProgress() const OVERRIDE;
@@ -55,12 +58,27 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   virtual const content::DownloadId& GlobalId() const OVERRIDE;
   virtual std::string DebugString() const OVERRIDE;
 
+ protected:
+  // For test class overrides.
+  virtual net::Error AppendDataToFile(const char* data,
+                                      size_t data_len);
+
  private:
+  // Called when there's some activity on stream_reader_ that needs to be
+  // handled.
+  void StreamActive();
+
   // Send updates on our progress.
   void SendUpdate();
 
   // The base file instance.
   BaseFile file_;
+
+  // The stream through which data comes.
+  // TODO(rdsmith): Move this into BaseFile; requires using the same
+  // stream semantics in SavePackage.  Alternatively, replace SaveFile
+  // with DownloadFile and get rid of BaseFile.
+  scoped_ptr<content::ByteStreamReader> stream_reader_;
 
   // The unique identifier for this download, assigned at creation by
   // the DownloadFileManager for its internal record keeping.
@@ -75,6 +93,15 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
 
   // DownloadManager this download belongs to.
   scoped_refptr<content::DownloadManager> download_manager_;
+
+  // Statistics
+  size_t bytes_seen_;
+  base::TimeDelta disk_writes_time_;
+  base::TimeTicks download_start_;
+
+  net::BoundNetLog bound_net_log_;
+
+  base::WeakPtrFactory<DownloadFileImpl> weak_factory_;
 
   // RAII handle to keep the system from sleeping while we're downloading.
   scoped_ptr<PowerSaveBlocker> power_save_blocker_;
