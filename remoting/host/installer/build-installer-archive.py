@@ -190,7 +190,7 @@ def buildHostArchive(temp_dir, zip_path, source_file_roots, source_files,
     (base, ext) = os.path.splitext(f)
     if ext == '.zip':
       copyZipIntoArchive(temp_dir, source_file_roots, f)
-    elif ext in ['.sh', '.packproj', '.plist']:
+    elif ext in ['.packproj', '.pkgproj', '.plist', '.sh']:
       copyFileWithDefs(f, dst_file, defs)
     else:
       shutil.copy2(f, dst_file)

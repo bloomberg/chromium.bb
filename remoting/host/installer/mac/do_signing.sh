@@ -17,6 +17,12 @@ set -e -u
 ME="$(basename "${0}")"
 readonly ME
 
+# Choose which installer package to use:
+# 'true' to use Iceberg, 'false' to use Packages.
+# TODO(garykac) Switch completely to Packages so we can sign for 10.8.
+# (crbug.com/127267)
+USE_ICEBERG=true
+
 declare -a g_cleanup_dirs
 
 # Binaries to sign.
@@ -27,10 +33,16 @@ UNINSTALLER='Applications/@@HOST_UNINSTALLER_NAME@@.app'
 # components:
 #  * Chromoting Host Service package
 #  * Chromoting Host Uninstaller package
-#  * Keystone package(GoogleSoftwareUpdate - for Official builds only)
-PKGPROJ_HOST='ChromotingHost.packproj'
-PKGPROJ_HOST_SERVICE='ChromotingHostService.packproj'
-PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.packproj'
+#  * Keystone package (GoogleSoftwareUpdate - for Official builds only)
+if $USE_ICEBERG ; then
+  PKGPROJ_HOST='ChromotingHost.packproj'
+  PKGPROJ_HOST_SERVICE='ChromotingHostService.packproj'
+  PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.packproj'
+else
+  PKGPROJ_HOST='ChromotingHost.pkgproj'
+  PKGPROJ_HOST_SERVICE='ChromotingHostService.pkgproj'
+  PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.pkgproj'
+fi
 
 # Final (user-visible) mpkg name.
 PKG_FINAL='@@HOST_PKG@@.mpkg'
@@ -108,7 +120,11 @@ sign_binaries() {
 build_package() {
   local pkg="${1}"
   echo "Building .pkg from ${pkg}"
-  freeze "${pkg}"
+  if $USE_ICEBERG ; then
+    freeze "${pkg}"
+  else
+    packagesbuild -v "${pkg}"
+  fi
 }
 
 build_packages() {
@@ -158,7 +174,8 @@ main() {
 
   sign_binaries "${input_dir}" "${codesign_keychain}" "${codesign_id}"
   build_packages "${input_dir}"
-  # TODO(garykac): Sign final .mpkg.
+  # TODO(garykac): Sign final .mpkg once we've switched to Packages.
+  # (crbug.com/127267)
   build_dmg "${input_dir}" "${output_dir}"
 
   cleanup
