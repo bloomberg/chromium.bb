@@ -422,8 +422,6 @@
         '../third_party/skia/src/gpu/effects/GrConvolutionEffect.h',
         '../third_party/skia/src/gpu/effects/GrMorphologyEffect.cpp',
         '../third_party/skia/src/gpu/effects/GrMorphologyEffect.h',
-        '../third_party/skia/src/gpu/effects/GrGradientEffects.cpp',
-        '../third_party/skia/src/gpu/effects/GrGradientEffects.h',
         '../third_party/skia/src/gpu/gl/GrGLCaps.cpp',
         '../third_party/skia/src/gpu/gl/GrGLCaps.h',
         '../third_party/skia/src/gpu/gl/GrGLContextInfo.cpp',
@@ -507,8 +505,6 @@
         '../third_party/skia/src/pdf/SkPDFUtils.h',
 
         '../third_party/skia/src/ports/FontHostConfiguration_android.cpp',
-        '../third_party/skia/src/ports/SkFontDescriptor.cpp',
-        '../third_party/skia/src/ports/SkFontDescriptor.h',
         #'../third_party/skia/src/ports/SkFontHost_FONTPATH.cpp',
         '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
         '../third_party/skia/src/ports/SkFontHost_android.cpp',
