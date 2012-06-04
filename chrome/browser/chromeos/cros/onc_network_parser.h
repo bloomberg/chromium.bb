@@ -70,7 +70,9 @@ class OncNetworkParser : public NetworkParser {
 
   // Call to create the network by parsing network config in the nth position.
   // (0-based). CHECKs if |n| is out of range and returns NULL on parse errors.
-  Network* ParseNetwork(int n);
+  // |removed| is set to true if the network should be removed.  |removed| may
+  // be NULL.
+  Network* ParseNetwork(int n, bool* marked_for_removal);
 
   // Returns the number of certificates in the "Certificates" list.
   int GetCertificatesSize() const;

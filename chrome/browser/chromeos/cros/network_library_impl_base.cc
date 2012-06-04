@@ -1151,9 +1151,11 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
   // Parse all networks. Bail out if that fails.
   NetworkOncMap added_onc_map;
   ScopedVector<Network> networks;
+  std::set<std::string> removal_ids;
   for (int i = 0; i < parser.GetNetworkConfigsSize(); i++) {
     // Parse Open Network Configuration blob into a temporary Network object.
-    Network* network = parser.ParseNetwork(i);
+    bool marked_for_removal = false;
+    Network* network = parser.ParseNetwork(i, &marked_for_removal);
     if (!network) {
       DLOG(WARNING) << "Cannot parse network in ONC file";
       if (error)
@@ -1161,7 +1163,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
       return false;
     }
 
-    // Disallow anything but WiFi and ethernet for device-level policy (which
+    // Disallow anything but WiFi and Ethernet for device-level policy (which
     // corresponds to shared networks). See also http://crosbug.com/28741.
     if (source == NetworkUIData::ONC_SOURCE_DEVICE_POLICY &&
         network->type() != TYPE_WIFI &&
@@ -1173,7 +1175,12 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     }
 
     networks.push_back(network);
-    added_onc_map[network->unique_id()] = parser.GetNetworkConfig(i);
+    if (!(source == NetworkUIData::ONC_SOURCE_USER_IMPORT &&
+          marked_for_removal))
+      added_onc_map[network->unique_id()] = parser.GetNetworkConfig(i);
+
+    if (marked_for_removal)
+      removal_ids.insert(network->unique_id());
   }
 
   // Update the ONC map.
@@ -1194,6 +1201,14 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
   for (std::vector<Network*>::iterator iter(networks.begin());
        iter != networks.end(); ++iter) {
     Network* network = *iter;
+
+    // Don't configure a network that is supposed to be removed. For
+    // policy-managed networks, the "remove" functionality of ONC is ignored.
+    if (source == NetworkUIData::ONC_SOURCE_USER_IMPORT &&
+        removal_ids.find(network->unique_id()) != removal_ids.end()) {
+      continue;
+    }
+
     DictionaryValue dict;
     for (Network::PropertyMap::const_iterator props =
              network->property_map_.begin();
@@ -1210,14 +1225,14 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     if (!profile_path.empty())
       dict.SetString(flimflam::kProfileProperty, profile_path);
 
-    // For ethernet networks, apply them to the current ethernet service.
+    // For Ethernet networks, apply them to the current Ethernet service.
     if (network->type() == TYPE_ETHERNET) {
       const EthernetNetwork* ethernet = ethernet_network();
       if (ethernet) {
         CallConfigureService(ethernet->unique_id(), &dict);
       } else {
-        DLOG(WARNING) << "Tried to import ONC with an ethernet network when "
-                      << "there is no active ethernet connection.";
+        DLOG(WARNING) << "Tried to import ONC with an Ethernet network when "
+                      << "there is no active Ethernet connection.";
       }
     } else {
       CallConfigureService(network->unique_id(), &dict);
@@ -1232,40 +1247,23 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     // networks and clean out the ones that no longer have a definition in the
     // ONC blob. We first collect the networks and do the actual deletion later
     // because ForgetNetwork() changes the remembered network vectors.
-    std::vector<std::string> to_be_deleted;
-    for (WifiNetworkVector::iterator i(remembered_wifi_networks_.begin());
-         i != remembered_wifi_networks_.end(); ++i) {
-      WifiNetwork* network = *i;
-      if (network->ui_data().onc_source() == source &&
-          network_ids.find(network->unique_id()) == network_ids.end()) {
-        to_be_deleted.push_back(network->service_path());
-      }
-    }
-
-    for (VirtualNetworkVector::iterator i(remembered_virtual_networks_.begin());
-         i != remembered_virtual_networks_.end(); ++i) {
-      VirtualNetwork* network = *i;
-      if (network->ui_data().onc_source() == source &&
-          network_ids.find(network->unique_id()) == network_ids.end()) {
-        to_be_deleted.push_back(network->service_path());
-      }
-    }
-
-    for (std::vector<std::string>::const_iterator i(to_be_deleted.begin());
-         i != to_be_deleted.end(); ++i) {
-      ForgetNetwork(*i);
-    }
+    ForgetNetworksById(source, network_ids, false);
   } else if (source == NetworkUIData::ONC_SOURCE_USER_IMPORT) {
     // User-imported files should always contain something.
     if (parser.GetNetworkConfigsSize() == 0 &&
         parser.GetCertificatesSize() == 0) {
-      LOG(ERROR) << "Onc file missing networks and certs.";
+      LOG(ERROR) << "ONC file contains no networks or certificates.";
       if (error) {
         *error = l10n_util::GetStringUTF8(
             IDS_NETWORK_CONFIG_ERROR_NETWORK_IMPORT);
       }
       return false;
     }
+
+    if (removal_ids.empty())
+      return true;
+
+    ForgetNetworksById(source, removal_ids, true);
   }
 
   return true;
@@ -1414,6 +1412,33 @@ void NetworkLibraryImplBase::DeleteNetwork(Network* network) {
     }
   }
   delete network;
+}
+
+void NetworkLibraryImplBase::ForgetNetworksById(
+    NetworkUIData::ONCSource source,
+    std::set<std::string> ids,
+    bool if_found) {
+  std::vector<std::string> to_be_forgotten;
+  for (WifiNetworkVector::iterator i = remembered_wifi_networks_.begin();
+       i != remembered_wifi_networks_.end(); ++i) {
+    WifiNetwork* wifi_network = *i;
+    if (wifi_network->ui_data().onc_source() == source &&
+        if_found == (ids.find(wifi_network->unique_id()) != ids.end()))
+      to_be_forgotten.push_back(wifi_network->service_path());
+  }
+
+  for (VirtualNetworkVector::iterator i = remembered_virtual_networks_.begin();
+       i != remembered_virtual_networks_.end(); ++i) {
+    VirtualNetwork* virtual_network = *i;
+    if (virtual_network->ui_data().onc_source() == source &&
+        if_found == (ids.find(virtual_network->unique_id()) != ids.end()))
+      to_be_forgotten.push_back(virtual_network->service_path());
+  }
+
+  for (std::vector<std::string>::const_iterator i = to_be_forgotten.begin();
+       i != to_be_forgotten.end(); ++i) {
+    ForgetNetwork(*i);
+  }
 }
 
 bool NetworkLibraryImplBase::ValidateRememberedNetwork(Network* network) {

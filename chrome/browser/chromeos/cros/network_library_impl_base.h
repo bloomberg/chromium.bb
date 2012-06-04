@@ -335,6 +335,14 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   void AddNetwork(Network* network);
   void DeleteNetwork(Network* network);
 
+  // Calls ForgetNetwork for remembered wifi and virtual networks based on id.
+  // When |if_found| is true, then it forgets networks that appear in |ids|.
+  // When |if_found| is false, it removes networks that do NOT appear in |ids|.
+  // |source| is the import source of the data.
+  void ForgetNetworksById(NetworkUIData::ONCSource source,
+                          std::set<std::string> ids,
+                          bool if_found);
+
   // Checks whether |network| has meanwhile been pruned by ONC policy. If so,
   // instructs flimflam to remove the network, deletes |network| and returns
   // false.

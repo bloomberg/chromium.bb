@@ -14,6 +14,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/certificate_pattern.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -55,7 +56,6 @@ OncValueSignature network_configuration_signature[] = {
   { onc::kGUID, PROPERTY_INDEX_GUID, TYPE_STRING },
   { onc::kProxySettings, PROPERTY_INDEX_ONC_PROXY_SETTINGS, TYPE_DICTIONARY },
   { onc::kName, PROPERTY_INDEX_NAME, TYPE_STRING },
-  // TODO(crosbug.com/23604): Handle removing networks.
   { onc::kRemove, PROPERTY_INDEX_ONC_REMOVE, TYPE_BOOLEAN },
   { onc::kType, PROPERTY_INDEX_TYPE, TYPE_STRING },
   { onc::kEthernet, PROPERTY_INDEX_ONC_ETHERNET, TYPE_DICTIONARY },
@@ -459,7 +459,7 @@ const base::DictionaryValue* OncNetworkParser::GetNetworkConfig(int n) {
   return info;
 }
 
-Network* OncNetworkParser::ParseNetwork(int n) {
+Network* OncNetworkParser::ParseNetwork(int n, bool* marked_for_removal) {
   const base::DictionaryValue* info = GetNetworkConfig(n);
   if (!info)
     return NULL;
@@ -469,8 +469,12 @@ Network* OncNetworkParser::ParseNetwork(int n) {
     base::JSONWriter::WriteWithOptions(static_cast<const base::Value*>(info),
                                        base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                        &network_json);
-    VLOG(2) << "Parsing network at index " << n
-            << ": " << network_json;
+    VLOG(2) << "Parsing network at index " << n << ": " << network_json;
+  }
+
+  if (marked_for_removal) {
+    if (!info->GetBoolean(onc::kRemove, marked_for_removal))
+      *marked_for_removal = false;
   }
 
   return CreateNetworkFromInfo(std::string(), *info);
@@ -731,17 +735,15 @@ bool OncNetworkParser::ParseNetworkConfigurationValue(
     const base::Value& value,
     Network* network) {
   switch (index) {
-    case PROPERTY_INDEX_ONC_ETHERNET: {
+    case PROPERTY_INDEX_ONC_ETHERNET:
       return parser->ParseNestedObject(network, "Ethernet", value,
           ethernet_signature, OncEthernetNetworkParser::ParseEthernetValue);
-    }
-    case PROPERTY_INDEX_ONC_WIFI: {
+    case PROPERTY_INDEX_ONC_WIFI:
       return parser->ParseNestedObject(network,
                                        onc::kWiFi,
                                        value,
                                        wifi_signature,
                                        OncWifiNetworkParser::ParseWifiValue);
-    }
     case PROPERTY_INDEX_ONC_VPN: {
       if (!CheckNetworkType(network, TYPE_VPN, onc::kVPN))
         return false;
@@ -765,12 +767,11 @@ bool OncNetworkParser::ParseNetworkConfigurationValue(
                                        vpn_signature,
                                        OncVirtualNetworkParser::ParseVPNValue);
     }
-    case PROPERTY_INDEX_ONC_PROXY_SETTINGS: {
-       return ProcessProxySettings(parser, value, network);
-    }
+    case PROPERTY_INDEX_ONC_PROXY_SETTINGS:
+      return ProcessProxySettings(parser, value, network);
     case PROPERTY_INDEX_ONC_REMOVE:
-      VLOG(1) << network->name() << ": Remove field not yet implemented";
-      return false;
+      // Removal is handled in ParseNetwork, and so is ignored here.
+      return true;
     case PROPERTY_INDEX_TYPE: {
       // Update property with native value for type.
       std::string str =

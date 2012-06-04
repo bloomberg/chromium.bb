@@ -355,7 +355,7 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectOncWifi) {
   ASSERT_TRUE(parser.parse_error().empty());
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(2, parser.GetCertificatesSize());
-  scoped_ptr<Network> network(parser.ParseNetwork(0));
+  scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
   ASSERT_TRUE(network.get());
   EXPECT_EQ(CLIENT_CERT_TYPE_PATTERN, network->client_cert_type());
 
@@ -386,7 +386,7 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectOncVPN) {
   ASSERT_TRUE(parser.parse_error().empty());
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(2, parser.GetCertificatesSize());
-  scoped_ptr<Network> network(parser.ParseNetwork(0));
+  scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
   ASSERT_TRUE(network.get());
   EXPECT_EQ(CLIENT_CERT_TYPE_PATTERN, network->client_cert_type());
 
