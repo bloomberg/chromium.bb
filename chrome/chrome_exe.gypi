@@ -526,9 +526,9 @@
             'app/breakpad_win.cc',
             'app/hard_error_handler_win.cc',
             'nacl/nacl_exe_win_64.cc',
+            '../base/hi_res_timer_manager_win.cc',
             '../content/app/startup_helper_win.cc',
             '../content/common/debug_flags.cc',  # Needed for sandbox_policy.cc
-            '../content/common/hi_res_timer_manager_win.cc',
             '../content/common/sandbox_init_win.cc',
             '../content/common/sandbox_policy.cc',
             '../content/public/common/content_switches.cc',
