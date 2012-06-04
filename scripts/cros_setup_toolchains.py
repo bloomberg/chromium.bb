@@ -175,11 +175,15 @@ def GetTuplesForOverlays(overlays):
   default_settings = {
       'sdk'      : True,
       'crossdev' : '',
+      'default'  : False,
   }
 
   for overlay in overlays:
     config = os.path.join(overlay, 'toolchain.conf')
     if os.path.exists(config):
+      first_tuple = None
+      seen_default = False
+
       for line in osutils.ReadFile(config).splitlines():
         # Split by hash sign so that comments are ignored.
         # Then split the line to get the tuple and its options.
@@ -187,10 +191,19 @@ def GetTuplesForOverlays(overlays):
 
         if len(line) > 0:
           tuple = line[0]
+          if not first_tuple:
+            first_tuple = tuple
           if tuple not in tuples:
             tuples[tuple] = copy.copy(default_settings)
           if len(line) > 1:
             tuples[tuple].update(json.loads(' '.join(line[1:])))
+            if tuples[tuple]['default']:
+              seen_default = True
+
+      # If the user has not explicitly marked a toolchain as default,
+      # automatically select the first tuple that we saw in the conf.
+      if not seen_default and first_tuple:
+        tuples[first_tuple]['default'] = True
 
   return tuples
 
@@ -663,7 +676,15 @@ def main(argv):
   (options, _remaining_arguments) = parser.parse_args(argv)
 
   if options.board_cfg:
-    print ','.join(GetToolchainsForBoard(options.board_cfg))
+    toolchains = GetToolchainsForBoard(options.board_cfg)
+    # Make sure we display the default toolchain first.
+    tuples = toolchains.keys()
+    for tuple in tuples:
+      if toolchains[tuple]['default']:
+        tuples.remove(tuple)
+        tuples.insert(0, tuple)
+        break
+    print ','.join(tuples)
     return 0
 
   # This has to be always run as root.
