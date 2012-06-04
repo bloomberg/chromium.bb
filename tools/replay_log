@@ -10,7 +10,8 @@ DEFINE_string out "testlog.txt" "Output log from replay"
 DEFINE_string only_honor "Tap Enable,Sensitivity" \
     "Which properties from the log should be honored"
 
-FLAGS_HELP="usage: replay_log [--out testlog.txt] [--only_honor Props] infile"
+FLAGS_HELP="usage: replay_log [--out testlog.txt] [--only_honor Props] \
+infile|feedback_url"
 
 FLAGS "$@" || exit 1
 eval set -- "${FLAGS_ARGV}"
@@ -23,6 +24,73 @@ infile="${1}"
 if [ $# -ne 1 ]; then
   echo $FLAGS_HELP
   exit 1
+fi
+
+COOKIE_DIR="$(readlink -f "$(dirname "$0")/../cookies")"
+COOKIE_FILE="${COOKIE_DIR}/login.cookie"
+
+setup_login_cookie_dir() {
+  mkdir -p "$COOKIE_DIR"
+  chmod 0700 "$COOKIE_DIR"
+}
+
+login() {
+  setup_login_cookie_dir
+  read -p "Username (without @google.com): " USER
+  read -s -p "Password: " PASS
+  echo
+  read -p "OTP: " OTP
+  LOGIN_POST_FILE="$COOKIE_DIR/login.post"
+  LOGIN_RESULTS_FILE="$COOKIE_DIR/login.results"
+  echo "u=${USER}&pw=${PASS}&otp=${OTP}" > "$LOGIN_POST_FILE"
+  echo "Logging in..."
+  curl -s -c "$COOKIE_FILE" -L -d @"$LOGIN_POST_FILE" \
+    'https://login.corp.google.com/login?ssoformat=CORP_SSO' \
+    > $LOGIN_RESULTS_FILE
+  local should_abort="$FLAGS_FALSE"
+  if grep -i error ${LOGIN_RESULTS_FILE} >/dev/null; then
+    echo Login failure.
+    should_abort="$FLAGS_TRUE"
+  else
+    echo Login success
+  fi
+  rm -f "$LOGIN_POST_FILE"
+  rm -f "$LOGIN_RESULTS_FILE"
+  if [ $should_abort -eq $FLAGS_TRUE ]; then
+    exit 1
+  fi
+}
+
+if [[ "$infile" = "https://"* ]]; then
+  LOG_IDNUM=$(echo "$infile" | sed 's/.*[^0-9]\([0-9][0-9][0-9][0-9]*\).*/\1/')
+  LOG_FILE="report-${LOG_IDNUM}-system_logs.bz2"
+  LOG_URL="https://feedback.corp.googleusercontent.com/\
+binarydata/${LOG_FILE}?id=${LOG_IDNUM}&logIndex=0"
+  if [ -f "${LOG_FILE}" ]; then
+    echo already have file
+    infile=${LOG_FILE}
+  else
+    echo downloading log file
+    TRIES=0
+    while true; do
+      http_proxy=http://cache.corp.google.com:3128/ curl -b "$COOKIE_FILE" \
+        -L -o "$LOG_FILE" "$LOG_URL"
+      TYPE="$(file "$LOG_FILE")"
+      if [[ "$TYPE" = *bzip2* ]]; then
+        # download success
+        break
+      fi
+      rm -f "$LOG_FILE"
+      TRIES=$((TRIES + 1))
+      if [ $TRIES -eq 2 ]; then
+        echo Failed twice. Aborting
+        exit 1
+      fi
+      # login failure
+      echo 'Download failure. Logging in'
+      login
+    done
+  fi
 fi
 
 # Go to the Gestures source root
