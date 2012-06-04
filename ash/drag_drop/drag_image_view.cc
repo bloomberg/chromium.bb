@@ -4,6 +4,7 @@
 
 #include "ash/drag_drop/drag_image_view.h"
 
+#include "ash/wm/shadow_types.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -15,13 +16,14 @@ using views::Widget;
 Widget* CreateDragWidget() {
   Widget* drag_widget = new Widget;
   Widget::InitParams params;
-  params.type = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.type = Widget::InitParams::TYPE_TOOLTIP;
   params.keep_on_top = true;
   params.accept_events = false;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.transparent = true;
   drag_widget->Init(params);
   drag_widget->SetOpacity(0xFF);
+  SetShadowType(drag_widget->GetNativeView(), SHADOW_TYPE_NONE);
   return drag_widget;
 }
 }
