@@ -1019,7 +1019,10 @@ def RietveldUpload(options, args, cl):
     upload_args.extend(['--base_url', remote_url])
 
   try:
-    issue, patchset = upload.RealMain(['upload'] + upload_args + args)
+    # upload uses '-C' by default when generating the diff for upload.
+    # Add another '-C' to trigger --find-copies-harder.
+    issue, patchset = upload.RealMain(['upload'] + upload_args + args +
+                                      ['--', '-C'])
   except KeyboardInterrupt:
     sys.exit(1)
   except:
@@ -1112,7 +1115,7 @@ def CMDupload(parser, args):
   if 'GIT_EXTERNAL_DIFF' in env:
     del env['GIT_EXTERNAL_DIFF']
   subprocess2.call(
-      ['git', 'diff', '--no-ext-diff', '--stat', '-M'] + args, env=env)
+      ['git', 'diff', '--no-ext-diff', '--stat', '-C', '-C'] + args, env=env)
 
   if settings.GetIsGerrit():
     return GerritUpload(options, args, cl)

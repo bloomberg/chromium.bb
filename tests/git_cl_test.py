@@ -114,7 +114,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.master.rietveldpatchset'],), ''),
       ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
       ((['git', 'config', 'user.email'],), 'me@example.com'),
-      ((['git', 'diff', '--no-ext-diff', '--stat', '-M', 'master...'],),
+      ((['git', 'diff', '--no-ext-diff', '--stat', '-C', '-C', 'master...'],),
        '+dat'),
       ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],), 'desc\n'),
     ]
@@ -217,7 +217,7 @@ class TestGitCl(TestCase):
         '--message', description
     ] + args + [
         '--cc', 'joe@example.com',
-        'master...'
+        'master...', '--', '-C',
     ]
 
   def _run_reviewer_test(
@@ -347,7 +347,7 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.master.rietveldpatchset'],), ''),
         ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
         ((['git', 'config', 'user.email'],), 'me@example.com'),
-        ((['git', 'diff', '--no-ext-diff', '--stat', '-M', 'master...'],),
+        ((['git', 'diff', '--no-ext-diff', '--stat', '-C', '-C', 'master...'],),
          '+dat'),
         ]
 
