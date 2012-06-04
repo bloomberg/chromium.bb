@@ -33,7 +33,7 @@ int NaClBrokerMain(const content::MainFunctionParams& parameters) {
   base::PlatformThread::SetName("CrNaClBrokerMain");
 
   base::SystemMonitor system_monitor;
-//HighResolutionTimerManager hi_res_timer_manager;
+  HighResolutionTimerManager hi_res_timer_manager;
 
   NaClBrokerListener listener;
   listener.Listen();
