@@ -12,21 +12,45 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "ipc/ipc_channel_handle.h"
+
 #if defined(OS_POSIX)
 #include "ipc/file_descriptor_set_posix.h"
 #endif
-#include "ipc/ipc_channel_handle.h"
 
 namespace IPC {
 
+namespace {
+
 const int kMaxRecursionDepth = 100;
 
-// Value serialization
+template<typename CharType>
+void LogBytes(const std::vector<CharType>& data, std::string* out) {
+#if defined(OS_WIN)
+  // Windows has a GUI for logging, which can handle arbitrary binary data.
+  for (size_t i = 0; i < data.size(); ++i)
+    out->push_back(data[i]);
+#else
+  // On POSIX, we log to stdout, which we assume can display ASCII.
+  static const size_t kMaxBytesToLog = 100;
+  for (size_t i = 0; i < std::min(data.size(), kMaxBytesToLog); ++i) {
+    if (isprint(data[i]))
+      out->push_back(data[i]);
+    else
+      out->append(StringPrintf("[%02X]", static_cast<unsigned char>(data[i])));
+  }
+  if (data.size() > kMaxBytesToLog) {
+    out->append(
+        StringPrintf(" and %u more bytes",
+                     static_cast<unsigned>(data.size() - kMaxBytesToLog)));
+  }
+#endif
+}
 
-static bool ReadValue(const Message* m, PickleIterator* iter, Value** value,
-                      int recursion);
+bool ReadValue(const Message* m, PickleIterator* iter, Value** value,
+               int recursion);
 
-static void WriteValue(Message* m, const Value* value, int recursion) {
+void WriteValue(Message* m, const Value* value, int recursion) {
   if (recursion > kMaxRecursionDepth) {
     LOG(WARNING) << "Max recursion depth hit in WriteValue.";
     return;
@@ -102,8 +126,8 @@ static void WriteValue(Message* m, const Value* value, int recursion) {
 
 // Helper for ReadValue that reads a DictionaryValue into a pre-allocated
 // object.
-static bool ReadDictionaryValue(const Message* m, PickleIterator* iter,
-                                DictionaryValue* value, int recursion) {
+bool ReadDictionaryValue(const Message* m, PickleIterator* iter,
+                         DictionaryValue* value, int recursion) {
   int size;
   if (!ReadParam(m, iter, &size))
     return false;
@@ -122,8 +146,8 @@ static bool ReadDictionaryValue(const Message* m, PickleIterator* iter,
 
 // Helper for ReadValue that reads a ReadListValue into a pre-allocated
 // object.
-static bool ReadListValue(const Message* m, PickleIterator* iter,
-                          ListValue* value, int recursion) {
+bool ReadListValue(const Message* m, PickleIterator* iter,
+                   ListValue* value, int recursion) {
   int size;
   if (!ReadParam(m, iter, &size))
     return false;
@@ -138,8 +162,8 @@ static bool ReadListValue(const Message* m, PickleIterator* iter,
   return true;
 }
 
-static bool ReadValue(const Message* m, PickleIterator* iter, Value** value,
-                      int recursion) {
+bool ReadValue(const Message* m, PickleIterator* iter, Value** value,
+               int recursion) {
   if (recursion > kMaxRecursionDepth) {
     LOG(WARNING) << "Max recursion depth hit in ReadValue.";
     return false;
@@ -210,6 +234,42 @@ static bool ReadValue(const Message* m, PickleIterator* iter, Value** value,
   return true;
 }
 
+}  // namespace
+
+// -----------------------------------------------------------------------------
+
+LogData::LogData()
+    : routing_id(0),
+      type(0),
+      sent(0),
+      receive(0),
+      dispatch(0) {
+}
+
+LogData::~LogData() {
+}
+
+MessageIterator::MessageIterator(const Message& m) : iter_(m) {
+}
+
+int MessageIterator::NextInt() const {
+  int val = -1;
+  if (!iter_.ReadInt(&val))
+    NOTREACHED();
+  return val;
+}
+
+const std::string MessageIterator::NextString() const {
+  std::string val;
+  if (!iter_.ReadString(&val))
+    NOTREACHED();
+  return val;
+}
+
+void ParamTraits<bool>::Log(const param_type& p, std::string* l) {
+  l->append(p ? "true" : "false");
+}
+
 void ParamTraits<int>::Log(const param_type& p, std::string* l) {
   l->append(base::IntToString(p));
 }
@@ -251,102 +311,145 @@ void ParamTraits<unsigned short>::Log(const param_type& p, std::string* l) {
   l->append(base::UintToString(p));
 }
 
-void ParamTraits<base::PlatformFileInfo>::Write(
-    Message* m, const param_type& p) {
-  WriteParam(m, p.size);
-  WriteParam(m, p.is_directory);
-  WriteParam(m, p.last_modified.ToDoubleT());
-  WriteParam(m, p.last_accessed.ToDoubleT());
-  WriteParam(m, p.creation_time.ToDoubleT());
+void ParamTraits<float>::Write(Message* m, const param_type& p) {
+  m->WriteData(reinterpret_cast<const char*>(&p), sizeof(param_type));
 }
 
-bool ParamTraits<base::PlatformFileInfo>::Read(
-    const Message* m, PickleIterator* iter, param_type* p) {
-  double last_modified;
-  double last_accessed;
-  double creation_time;
-  bool result =
-      ReadParam(m, iter, &p->size) &&
-      ReadParam(m, iter, &p->is_directory) &&
-      ReadParam(m, iter, &last_modified) &&
-      ReadParam(m, iter, &last_accessed) &&
-      ReadParam(m, iter, &creation_time);
-  if (result) {
-    p->last_modified = base::Time::FromDoubleT(last_modified);
-    p->last_accessed = base::Time::FromDoubleT(last_accessed);
-    p->creation_time = base::Time::FromDoubleT(creation_time);
-  }
-  return result;
-}
-
-void ParamTraits<base::PlatformFileInfo>::Log(
-    const param_type& p, std::string* l) {
-  l->append("(");
-  LogParam(p.size, l);
-  l->append(",");
-  LogParam(p.is_directory, l);
-  l->append(",");
-  LogParam(p.last_modified.ToDoubleT(), l);
-  l->append(",");
-  LogParam(p.last_accessed.ToDoubleT(), l);
-  l->append(",");
-  LogParam(p.creation_time.ToDoubleT(), l);
-  l->append(")");
-}
-
-void ParamTraits<base::Time>::Write(Message* m, const param_type& p) {
-  ParamTraits<int64>::Write(m, p.ToInternalValue());
-}
-
-bool ParamTraits<base::Time>::Read(const Message* m, PickleIterator* iter,
-                                   param_type* r) {
-  int64 value;
-  if (!ParamTraits<int64>::Read(m, iter, &value))
+bool ParamTraits<float>::Read(const Message* m, PickleIterator* iter,
+                              param_type* r) {
+  const char *data;
+  int data_size;
+  if (!m->ReadData(iter, &data, &data_size) ||
+      data_size != sizeof(param_type)) {
+    NOTREACHED();
     return false;
-  *r = base::Time::FromInternalValue(value);
+  }
+  memcpy(r, data, sizeof(param_type));
   return true;
 }
 
-void ParamTraits<base::Time>::Log(const param_type& p, std::string* l) {
-  ParamTraits<int64>::Log(p.ToInternalValue(), l);
+void ParamTraits<float>::Log(const param_type& p, std::string* l) {
+  l->append(StringPrintf("%e", p));
 }
 
-void ParamTraits<base::TimeDelta> ::Write(Message* m, const param_type& p) {
-  ParamTraits<int64> ::Write(m, p.ToInternalValue());
+void ParamTraits<double>::Write(Message* m, const param_type& p) {
+  m->WriteData(reinterpret_cast<const char*>(&p), sizeof(param_type));
 }
 
-bool ParamTraits<base::TimeDelta> ::Read(const Message* m,
-                                         PickleIterator* iter,
-                                         param_type* r) {
-  int64 value;
-  bool ret = ParamTraits<int64> ::Read(m, iter, &value);
-  if (ret)
-    *r = base::TimeDelta::FromInternalValue(value);
-
-  return ret;
+bool ParamTraits<double>::Read(const Message* m, PickleIterator* iter,
+                               param_type* r) {
+  const char *data;
+  int data_size;
+  if (!m->ReadData(iter, &data, &data_size) ||
+      data_size != sizeof(param_type)) {
+    NOTREACHED();
+    return false;
+  }
+  memcpy(r, data, sizeof(param_type));
+  return true;
 }
 
-void ParamTraits<base::TimeDelta> ::Log(const param_type& p, std::string* l) {
-  ParamTraits<int64> ::Log(p.ToInternalValue(), l);
+void ParamTraits<double>::Log(const param_type& p, std::string* l) {
+  l->append(StringPrintf("%e", p));
 }
 
-void ParamTraits<base::TimeTicks> ::Write(Message* m, const param_type& p) {
-  ParamTraits<int64> ::Write(m, p.ToInternalValue());
+
+void ParamTraits<std::string>::Log(const param_type& p, std::string* l) {
+  l->append(p);
 }
 
-bool ParamTraits<base::TimeTicks> ::Read(const Message* m,
-                                         PickleIterator* iter,
-                                         param_type* r) {
-  int64 value;
-  bool ret = ParamTraits<int64> ::Read(m, iter, &value);
-  if (ret)
-    *r = base::TimeTicks::FromInternalValue(value);
-
-  return ret;
+void ParamTraits<std::wstring>::Log(const param_type& p, std::string* l) {
+  l->append(WideToUTF8(p));
 }
 
-void ParamTraits<base::TimeTicks> ::Log(const param_type& p, std::string* l) {
-  ParamTraits<int64> ::Log(p.ToInternalValue(), l);
+#if !defined(WCHAR_T_IS_UTF16)
+void ParamTraits<string16>::Log(const param_type& p, std::string* l) {
+  l->append(UTF16ToUTF8(p));
+}
+#endif
+
+void ParamTraits<std::vector<char> >::Write(Message* m, const param_type& p) {
+  if (p.empty()) {
+    m->WriteData(NULL, 0);
+  } else {
+    m->WriteData(&p.front(), static_cast<int>(p.size()));
+  }
+}
+
+bool ParamTraits<std::vector<char> >::Read(const Message* m,
+                                           PickleIterator* iter,
+                                           param_type* r) {
+  const char *data;
+  int data_size = 0;
+  if (!m->ReadData(iter, &data, &data_size) || data_size < 0)
+    return false;
+  r->resize(data_size);
+  if (data_size)
+    memcpy(&r->front(), data, data_size);
+  return true;
+}
+
+void ParamTraits<std::vector<char> >::Log(const param_type& p, std::string* l) {
+  LogBytes(p, l);
+}
+
+void ParamTraits<std::vector<unsigned char> >::Write(Message* m,
+                                                     const param_type& p) {
+  if (p.empty()) {
+    m->WriteData(NULL, 0);
+  } else {
+    m->WriteData(reinterpret_cast<const char*>(&p.front()),
+                 static_cast<int>(p.size()));
+  }
+}
+
+bool ParamTraits<std::vector<unsigned char> >::Read(const Message* m,
+                                                    PickleIterator* iter,
+                                                    param_type* r) {
+  const char *data;
+  int data_size = 0;
+  if (!m->ReadData(iter, &data, &data_size) || data_size < 0)
+    return false;
+  r->resize(data_size);
+  if (data_size)
+    memcpy(&r->front(), data, data_size);
+  return true;
+}
+
+void ParamTraits<std::vector<unsigned char> >::Log(const param_type& p,
+                                                   std::string* l) {
+  LogBytes(p, l);
+}
+
+void ParamTraits<std::vector<bool> >::Write(Message* m, const param_type& p) {
+  WriteParam(m, static_cast<int>(p.size()));
+  for (size_t i = 0; i < p.size(); i++)
+    WriteParam(m, p[i]);
+}
+
+bool ParamTraits<std::vector<bool> >::Read(const Message* m,
+                                           PickleIterator* iter,
+                                           param_type* r) {
+  int size;
+  // ReadLength() checks for < 0 itself.
+  if (!m->ReadLength(iter, &size))
+    return false;
+  r->resize(size);
+  for (int i = 0; i < size; i++) {
+    bool value;
+    if (!ReadParam(m, iter, &value))
+      return false;
+    (*r)[i] = value;
+  }
+  return true;
+}
+
+void ParamTraits<std::vector<bool> >::Log(const param_type& p, std::string* l) {
+  for (size_t i = 0; i < p.size(); ++i) {
+    if (i != 0)
+      l->push_back(' ');
+    LogParam((p[i]), l);
+  }
 }
 
 void ParamTraits<DictionaryValue>::Write(Message* m, const param_type& p) {
@@ -366,79 +469,6 @@ void ParamTraits<DictionaryValue>::Log(const param_type& p, std::string* l) {
   std::string json;
   base::JSONWriter::Write(&p, &json);
   l->append(json);
-}
-
-void ParamTraits<ListValue>::Write(Message* m, const param_type& p) {
-  WriteValue(m, &p, 0);
-}
-
-bool ParamTraits<ListValue>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
-  int type;
-  if (!ReadParam(m, iter, &type) || type != Value::TYPE_LIST)
-    return false;
-
-  return ReadListValue(m, iter, r, 0);
-}
-
-void ParamTraits<ListValue>::Log(const param_type& p, std::string* l) {
-  std::string json;
-  base::JSONWriter::Write(&p, &json);
-  l->append(json);
-}
-
-void ParamTraits<std::wstring>::Log(const param_type& p, std::string* l) {
-  l->append(WideToUTF8(p));
-}
-
-void ParamTraits<NullableString16>::Write(Message* m, const param_type& p) {
-  WriteParam(m, p.string());
-  WriteParam(m, p.is_null());
-}
-
-bool ParamTraits<NullableString16>::Read(const Message* m, PickleIterator* iter,
-                                         param_type* r) {
-  string16 string;
-  if (!ReadParam(m, iter, &string))
-    return false;
-  bool is_null;
-  if (!ReadParam(m, iter, &is_null))
-    return false;
-  *r = NullableString16(string, is_null);
-  return true;
-}
-
-void ParamTraits<NullableString16>::Log(const param_type& p, std::string* l) {
-  l->append("(");
-  LogParam(p.string(), l);
-  l->append(", ");
-  LogParam(p.is_null(), l);
-  l->append(")");
-}
-
-#if !defined(WCHAR_T_IS_UTF16)
-void ParamTraits<string16>::Log(const param_type& p, std::string* l) {
-  l->append(UTF16ToUTF8(p));
-}
-#endif
-
-
-void ParamTraits<FilePath>::Write(Message* m, const param_type& p) {
-  ParamTraits<FilePath::StringType>::Write(m, p.value());
-}
-
-bool ParamTraits<FilePath>::Read(const Message* m,
-                                 PickleIterator* iter,
-                                 param_type* r) {
-  FilePath::StringType value;
-  if (!ParamTraits<FilePath::StringType>::Read(m, iter, &value))
-    return false;
-  *r = FilePath(value);
-  return true;
-}
-
-void ParamTraits<FilePath>::Log(const param_type& p, std::string* l) {
-  ParamTraits<FilePath::StringType>::Log(p.value(), l);
 }
 
 #if defined(OS_POSIX)
@@ -478,6 +508,167 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
 }
 #endif  // defined(OS_POSIX)
 
+void ParamTraits<FilePath>::Write(Message* m, const param_type& p) {
+  ParamTraits<FilePath::StringType>::Write(m, p.value());
+}
+
+bool ParamTraits<FilePath>::Read(const Message* m,
+                                 PickleIterator* iter,
+                                 param_type* r) {
+  FilePath::StringType value;
+  if (!ParamTraits<FilePath::StringType>::Read(m, iter, &value))
+    return false;
+  *r = FilePath(value);
+  return true;
+}
+
+void ParamTraits<FilePath>::Log(const param_type& p, std::string* l) {
+  ParamTraits<FilePath::StringType>::Log(p.value(), l);
+}
+
+void ParamTraits<ListValue>::Write(Message* m, const param_type& p) {
+  WriteValue(m, &p, 0);
+}
+
+bool ParamTraits<ListValue>::Read(
+    const Message* m, PickleIterator* iter, param_type* r) {
+  int type;
+  if (!ReadParam(m, iter, &type) || type != Value::TYPE_LIST)
+    return false;
+
+  return ReadListValue(m, iter, r, 0);
+}
+
+void ParamTraits<ListValue>::Log(const param_type& p, std::string* l) {
+  std::string json;
+  base::JSONWriter::Write(&p, &json);
+  l->append(json);
+}
+
+void ParamTraits<NullableString16>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.string());
+  WriteParam(m, p.is_null());
+}
+
+bool ParamTraits<NullableString16>::Read(const Message* m, PickleIterator* iter,
+                                         param_type* r) {
+  string16 string;
+  if (!ReadParam(m, iter, &string))
+    return false;
+  bool is_null;
+  if (!ReadParam(m, iter, &is_null))
+    return false;
+  *r = NullableString16(string, is_null);
+  return true;
+}
+
+void ParamTraits<NullableString16>::Log(const param_type& p, std::string* l) {
+  l->append("(");
+  LogParam(p.string(), l);
+  l->append(", ");
+  LogParam(p.is_null(), l);
+  l->append(")");
+}
+
+void ParamTraits<base::PlatformFileInfo>::Write(Message* m,
+                                                const param_type& p) {
+  WriteParam(m, p.size);
+  WriteParam(m, p.is_directory);
+  WriteParam(m, p.last_modified.ToDoubleT());
+  WriteParam(m, p.last_accessed.ToDoubleT());
+  WriteParam(m, p.creation_time.ToDoubleT());
+}
+
+bool ParamTraits<base::PlatformFileInfo>::Read(const Message* m,
+                                               PickleIterator* iter,
+                                               param_type* p) {
+  double last_modified;
+  double last_accessed;
+  double creation_time;
+  bool result =
+      ReadParam(m, iter, &p->size) &&
+      ReadParam(m, iter, &p->is_directory) &&
+      ReadParam(m, iter, &last_modified) &&
+      ReadParam(m, iter, &last_accessed) &&
+      ReadParam(m, iter, &creation_time);
+  if (result) {
+    p->last_modified = base::Time::FromDoubleT(last_modified);
+    p->last_accessed = base::Time::FromDoubleT(last_accessed);
+    p->creation_time = base::Time::FromDoubleT(creation_time);
+  }
+  return result;
+}
+
+void ParamTraits<base::PlatformFileInfo>::Log(const param_type& p,
+                                              std::string* l) {
+  l->append("(");
+  LogParam(p.size, l);
+  l->append(",");
+  LogParam(p.is_directory, l);
+  l->append(",");
+  LogParam(p.last_modified.ToDoubleT(), l);
+  l->append(",");
+  LogParam(p.last_accessed.ToDoubleT(), l);
+  l->append(",");
+  LogParam(p.creation_time.ToDoubleT(), l);
+  l->append(")");
+}
+
+void ParamTraits<base::Time>::Write(Message* m, const param_type& p) {
+  ParamTraits<int64>::Write(m, p.ToInternalValue());
+}
+
+bool ParamTraits<base::Time>::Read(const Message* m, PickleIterator* iter,
+                                   param_type* r) {
+  int64 value;
+  if (!ParamTraits<int64>::Read(m, iter, &value))
+    return false;
+  *r = base::Time::FromInternalValue(value);
+  return true;
+}
+
+void ParamTraits<base::Time>::Log(const param_type& p, std::string* l) {
+  ParamTraits<int64>::Log(p.ToInternalValue(), l);
+}
+
+void ParamTraits<base::TimeDelta>::Write(Message* m, const param_type& p) {
+  ParamTraits<int64>::Write(m, p.ToInternalValue());
+}
+
+bool ParamTraits<base::TimeDelta>::Read(const Message* m,
+                                        PickleIterator* iter,
+                                        param_type* r) {
+  int64 value;
+  bool ret = ParamTraits<int64>::Read(m, iter, &value);
+  if (ret)
+    *r = base::TimeDelta::FromInternalValue(value);
+
+  return ret;
+}
+
+void ParamTraits<base::TimeDelta>::Log(const param_type& p, std::string* l) {
+  ParamTraits<int64>::Log(p.ToInternalValue(), l);
+}
+
+void ParamTraits<base::TimeTicks>::Write(Message* m, const param_type& p) {
+  ParamTraits<int64>::Write(m, p.ToInternalValue());
+}
+
+bool ParamTraits<base::TimeTicks>::Read(const Message* m,
+                                        PickleIterator* iter,
+                                        param_type* r) {
+  int64 value;
+  bool ret = ParamTraits<int64>::Read(m, iter, &value);
+  if (ret)
+    *r = base::TimeTicks::FromInternalValue(value);
+
+  return ret;
+}
+
+void ParamTraits<base::TimeTicks>::Log(const param_type& p, std::string* l) {
+  ParamTraits<int64>::Log(p.ToInternalValue(), l);
+}
+
 void ParamTraits<IPC::ChannelHandle>::Write(Message* m, const param_type& p) {
 #if defined(OS_WIN)
   // On Windows marshalling pipe handle is not supported.
@@ -509,17 +700,6 @@ void ParamTraits<IPC::ChannelHandle>::Log(const param_type& p,
   l->append(")");
 }
 
-LogData::LogData()
-    : routing_id(0),
-      type(0),
-      sent(0),
-      receive(0),
-      dispatch(0) {
-}
-
-LogData::~LogData() {
-}
-
 void ParamTraits<LogData>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.channel);
   WriteParam(m, p.routing_id);
@@ -544,5 +724,100 @@ bool ParamTraits<LogData>::Read(const Message* m,
       ReadParam(m, iter, &r->dispatch) &&
       ReadParam(m, iter, &r->params);
 }
+
+void ParamTraits<LogData>::Log(const param_type& p, std::string* l) {
+  // Doesn't make sense to implement this!
+}
+
+void ParamTraits<Message>::Write(Message* m, const Message& p) {
+  DCHECK(p.size() <= INT_MAX);
+  int message_size = static_cast<int>(p.size());
+  m->WriteInt(message_size);
+  m->WriteData(reinterpret_cast<const char*>(p.data()), message_size);
+}
+
+bool ParamTraits<Message>::Read(const Message* m, PickleIterator* iter,
+                                Message* r) {
+  int size;
+  if (!m->ReadInt(iter, &size))
+    return false;
+  const char* data;
+  if (!m->ReadData(iter, &data, &size))
+    return false;
+  *r = Message(data, size);
+  return true;
+}
+
+void ParamTraits<Message>::Log(const Message& p, std::string* l) {
+  l->append("<IPC::Message>");
+}
+
+#if defined(OS_WIN)
+// Note that HWNDs/HANDLE/HCURSOR/HACCEL etc are always 32 bits, even on 64
+// bit systems.
+void ParamTraits<HANDLE>::Write(Message* m, const param_type& p) {
+  m->WriteUInt32(reinterpret_cast<uint32>(p));
+}
+
+bool ParamTraits<HANDLE>::Read(const Message* m, PickleIterator* iter,
+                               param_type* r) {
+  uint32 temp;
+  if (!m->ReadUInt32(iter, &temp))
+    return false;
+  *r = reinterpret_cast<HANDLE>(temp);
+  return true;
+}
+
+void ParamTraits<HANDLE>::Log(const param_type& p, std::string* l) {
+  l->append(StringPrintf("0x%X", p));
+}
+
+void ParamTraits<LOGFONT>::Write(Message* m, const param_type& p) {
+  m->WriteData(reinterpret_cast<const char*>(&p), sizeof(LOGFONT));
+}
+
+bool ParamTraits<LOGFONT>::Read(const Message* m, PickleIterator* iter,
+                                param_type* r) {
+  const char *data;
+  int data_size = 0;
+  bool result = m->ReadData(iter, &data, &data_size);
+  if (result && data_size == sizeof(LOGFONT)) {
+    memcpy(r, data, sizeof(LOGFONT));
+  } else {
+    result = false;
+    NOTREACHED();
+  }
+
+  return result;
+}
+
+void ParamTraits<LOGFONT>::Log(const param_type& p, std::string* l) {
+  l->append(StringPrintf("<LOGFONT>"));
+}
+
+void ParamTraits<MSG>::Write(Message* m, const param_type& p) {
+  m->WriteData(reinterpret_cast<const char*>(&p), sizeof(MSG));
+}
+
+bool ParamTraits<MSG>::Read(const Message* m, PickleIterator* iter,
+                            param_type* r) {
+  const char *data;
+  int data_size = 0;
+  bool result = m->ReadData(iter, &data, &data_size);
+  if (result && data_size == sizeof(MSG)) {
+    memcpy(r, data, sizeof(MSG));
+  } else {
+    result = false;
+    NOTREACHED();
+  }
+
+  return result;
+}
+
+void ParamTraits<MSG>::Log(const param_type& p, std::string* l) {
+  l->append("<MSG>");
+}
+
+#endif  // OS_WIN
 
 }  // namespace IPC
