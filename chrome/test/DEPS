@@ -9,8 +9,8 @@ include_rules = [
   # within content/ and a test within chrome/.
   "+content/public",
 
-  # TODO(joi): Need to remove all of these and use only content/public
-  # and content/test. http://crbug.com/98716
+  # TODO(joi): Need to remove all of these and use only content/public, see
+  # http://crbug.com/98716
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "+content/common/debug_flags.h",
   "+content/common/injection_test_dll.h",

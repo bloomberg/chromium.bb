@@ -1,6 +1,7 @@
 include_rules = [
   "+chrome/test",
   "+content/public/renderer",
+  "+content/public/browser/native_web_keyboard_event.h", # For tests.
   "+jingle/glue",
   "+media",  # For audio input/output and audio/video decoding.
   "+third_party/libjingle",
