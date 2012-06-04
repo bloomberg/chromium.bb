@@ -111,3 +111,7 @@ void PasswordGenerationBubbleView::LinkClicked(views::Link* source,
   navigator_->OpenURL(params);
   StartFade(false);
 }
+
+views::View* PasswordGenerationBubbleView::GetInitiallyFocusedView() {
+  return text_field_;
+}

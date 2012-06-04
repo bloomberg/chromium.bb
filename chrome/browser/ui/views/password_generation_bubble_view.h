@@ -54,6 +54,9 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
   // views::LinkListener
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
+  // views::WidgetDelegate
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+
   // Subviews
   views::TextButton* accept_button_;
   views::Textfield* text_field_;
