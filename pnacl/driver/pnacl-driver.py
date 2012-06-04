@@ -351,7 +351,7 @@ def main(argv):
   # parse the output. In these cases we do not alter the incoming
   # commandline. It is also important to not emit spurious messages.
   if env.getbool('DIAGNOSTIC'):
-    RunWithLog(env.get('CC') + env.get('CC_FLAGS') + real_argv)
+    Run(env.get('CC') + env.get('CC_FLAGS') + real_argv)
     return 0
 
   unmatched = env.get('UNMATCHED')
@@ -612,7 +612,7 @@ def get_help(argv):
   if '--help-full' in argv:
     # To get ${CC}, etc.
     env.update(EXTRA_ENV)
-    _, stdout, _ = Run('"${CC}" --help', echo_stdout=False, return_stdout=True)
+    stdout, _ = Run('"${CC}" --help')
     return stdout
   else:
     return """

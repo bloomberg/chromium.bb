@@ -30,7 +30,7 @@ EXTRA_ENV = {
 
   'STRIP_MODE' : 'none',
 
-  'STRIP_FLAGS'      : '${STRIP_FLAGS_%STRIP_MODE%}',
+  'STRIP_FLAGS'      : '--do-not-wrap ${STRIP_FLAGS_%STRIP_MODE%}',
   'STRIP_FLAGS_all'  : '-s',
   'STRIP_FLAGS_debug': '-S',
 

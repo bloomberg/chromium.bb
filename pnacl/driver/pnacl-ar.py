@@ -21,8 +21,10 @@ def main(argv):
     print get_help(argv)
     return 1
   env.set('ARGS', *argv)
-  retcode, _, _ = driver_tools.RunWithLog('${AR} ${ARGS}', errexit=False)
-  return retcode
+  driver_tools.Run('${AR} ${ARGS}')
+  # only reached in case of no errors
+  return 0
+
 
 def get_help(unused_argv):
   return """

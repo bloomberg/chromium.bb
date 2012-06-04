@@ -53,25 +53,22 @@ def main(argv):
         # Let's instead output to stdout
         env.set('output', '-')
         env.append('FLAGS', '-f')
-      driver_tools.RunWithLog('${LLVM_DIS} ${FLAGS} ${input} -o ${output}',
-                              log_stdout = False)
+      driver_tools.Run('${LLVM_DIS} ${FLAGS} ${input} -o ${output}')
     elif driver_tools.IsELF(infile):
       flags = env.get('FLAGS')
       if len(flags) == 0:
         env.append('FLAGS', '-d')
       if output == '':
         # objdump to stdout
-        driver_tools.RunWithLog('${OBJDUMP} ${FLAGS} ${input}',
-                                log_stdout=False, log_stderr=False)
+        driver_tools.Run('${OBJDUMP} ${FLAGS} ${input}')
       else:
         # objdump always outputs to stdout, and doesn't recognize -o
         # Let's add this feature to be consistent.
         fp = driver_tools.DriverOpen(output, 'w')
-        driver_tools.RunWithLog('${OBJDUMP} ${FLAGS} ${input}',
-                                echo_stdout=False, log_stdout=False,
-                                redirect_stdout = fp)
+        driver_tools.Run('${OBJDUMP} ${FLAGS} ${input}', redirect_stdout=fp)
         driver_tools.DriverClose(fp)
     else:
       Log.Fatal('Unknown file type')
     env.pop()
+  # only reached in case of no errors
   return 0

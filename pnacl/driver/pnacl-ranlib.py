@@ -9,7 +9,7 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import RunWithLog, IsBitcode
+from driver_tools import Run
 from driver_env import env
 from driver_log import Log
 
@@ -18,9 +18,9 @@ def main(argv):
     print get_help(argv)
     return 1
   env.set('ARGS', *argv)
-  retcode, _, _ = RunWithLog('"${RANLIB}" --plugin=LLVMgold ${ARGS}',
-                             errexit=False)
-  return retcode
+  Run('"${RANLIB}" --plugin=LLVMgold ${ARGS}')
+  # only reached in case of no errors
+  return 0
 
 def get_help(unused_argv):
   return """

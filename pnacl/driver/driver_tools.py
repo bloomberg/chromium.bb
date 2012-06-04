@@ -18,8 +18,6 @@ import subprocess
 import struct
 import sys
 import tempfile
-import threading
-import Queue
 
 import artools
 import ldtools
@@ -40,18 +38,15 @@ def ParseError(s, leftpos, rightpos, msg):
   Log.Error('  ' + (' '*leftpos) + ('^'*(rightpos - leftpos + 1)))
   DriverExit(1)
 
+
 # Run a command with extra environment settings
 def RunWithEnv(cmd, **kwargs):
-  RunWithLogArgs = { }
-  if 'RunWithLogArgs' in kwargs:
-    RunWithLogArgs = kwargs['RunWithLogArgs']
-    del kwargs['RunWithLogArgs']
-
   env.push()
   env.setmany(**kwargs)
-  ret = RunWithLog(cmd, **RunWithLogArgs)
+  ret = Run(cmd)
   env.pop()
   return ret
+
 
 def SetExecutableMode(path):
   if os.name == "posix":
@@ -61,6 +56,7 @@ def SetExecutableMode(path):
     umask = os.umask(0)
     os.umask(umask)
     os.chmod(realpath, 0755 & ~umask)
+
 
 def RunDriver(invocation, args, suppress_arch = False):
   if isinstance(args, str):
@@ -72,9 +68,6 @@ def RunDriver(invocation, args, suppress_arch = False):
 
   driver_args = env.get('DRIVER_FLAGS')
 
-  if '--pnacl-driver-recurse' not in driver_args:
-    driver_args.append('--pnacl-driver-recurse')
-
   # Get rid of -arch <arch> in the driver flags.
   if suppress_arch:
     while '-arch' in driver_args:
@@ -83,14 +76,6 @@ def RunDriver(invocation, args, suppress_arch = False):
 
   script = pathtools.tosys(script)
   cmd = [script] + driver_args + args
-
-  # The invoked driver will do it's own logging, so
-  # don't use RunWithLog() for the recursive driver call.
-  # Use Run() so that the subprocess's stdout/stderr
-  # will go directly to the real stdout/stderr.
-  if env.getbool('DEBUG'):
-    print '-' * 60
-    print '\n' + StringifyCommand(cmd)
 
   module = __import__(module_name)
   # Save the environment, reset the environment, run
@@ -218,9 +203,6 @@ def AddPrefix(prefix, varname):
 
 DriverArgPatterns = [
   ( '--pnacl-driver-verbose',             "env.set('LOG_VERBOSE', '1')"),
-  ( '--pnacl-driver-log-to-file',         "env.set('LOG_TO_FILE', '1')"),
-  ( '--pnacl-driver-debug',               "env.set('DEBUG', '1')"),
-  ( '--pnacl-driver-recurse',             "env.set('RECURSE', '1')"),
   ( '--pnacl-driver-set-([^=]+)=(.*)',    "env.set($0, $1)"),
   ( '--pnacl-driver-append-([^=]+)=(.*)', "env.append($0, $1)"),
   ( ('-arch', '(.+)'),                 "SetArch($0)"),
@@ -468,7 +450,7 @@ def GetBitcodeMetadata(filename):
 
   llvm_dis = env.getone('LLVM_DIS')
   args = [ llvm_dis, '-dump-metadata', filename ]
-  _, stdout_contents, _ = Run(args, echo_stdout = False, return_stdout = True)
+  _, stdout_contents, _  = Run(args, redirect_stdout=subprocess.PIPE)
 
   metadata = { 'OutputFormat': '',
                'SOName'      : '',
@@ -639,9 +621,7 @@ def WrapBitcode(output):
     bytes_left -= len(block)
   DriverClose(fd)
   # run bc-wrap
-  retcode,_,_ = Run(' '.join(('${LLVM_BCWRAP}', '-hash',
-                              sha.hexdigest(), output)))
-  return retcode
+  Run(' '.join(('${LLVM_BCWRAP}', '-hash', sha.hexdigest(), output)))
 
 
 ######################################################################
@@ -776,112 +756,6 @@ def SetupSignalHandlers():
     signal.signal(signal.SIGHUP, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-def PipeRecord(sem, f, q):
-  """ Read the output of a subprocess from the file object f one line at a
-      time. Put each line on Queue q and release semaphore sem to wake the
-      parent thread.
-  """
-  while True:
-    line = f.readline()
-    if line:
-      q.put(line)
-      sem.release()
-    else:
-      f.close()
-      break
-  return 0
-
-def ProcessWait(sem, p):
-  """ Wait for the subprocess.Popen object p to finish, and release
-      the semaphore sem to wake the parent thread.
-  """
-  try:
-    p.wait()
-  except BaseException:
-    pass
-  sem.release()
-  return 0
-
-def QueueGetNext(q):
-  """ Return the next line from Queue q, or None if empty.
-  """
-  try:
-    nextline = q.get_nowait()
-  except Queue.Empty:
-    return None
-  except KeyboardInterrupt as e:
-    raise e
-  else:
-    return nextline
-
-def RunWithLog(args, **kwargs):
-  if env.getbool('LOGGING'):
-    kwargs.setdefault('log_command', True)
-    kwargs.setdefault('log_stdout', True)
-    kwargs.setdefault('log_stderr', True)
-  return Run(args, **kwargs)
-
-def truecount(x, y, z):
-  """ Count how many of the arguments are true """
-  count = 0
-  if x: count += 1
-  if y: count += 1
-  if z: count += 1
-  return count
-
-class RunConfig():
-  """ Configuration for Run() function. """
-  def __init__(self):
-    self.stdin = None             # Contents for child's stdin (string)
-    self.echo_stdout = True       # Echo the child's stdout to stdout
-    self.echo_stderr = True       # Echo the child's stderr to stderr
-    self.log_command = False      # Log the command being run
-    self.log_stdout = False       # Log the child's stdout
-    self.log_stderr = False       # Log the child's stderr
-    self.errexit = True           # Exit on failure (errcode != 0)
-    self.return_stdout = False    # Return the contents of stdout
-    self.return_stderr = False    # Return the contents of stderr
-    self.redirect_stdout = None   # Send stdout to a file object
-    self.redirect_stderr = None   # Send stderr to a file object
-    # These are properly set by SetupPipeConfig
-    self.custom_stdout = False   # stdout needs CustomCommunicate
-    self.custom_stderr = False   # stderr needs CustomCommunicate
-    self.pipe_stdout = False      # pipe needs to be setup for stdout
-    self.pipe_stderr = False      # pipe needs to be setup for stderr
-
-  def SetupPipeConfig(self):
-    # De-duplicate echo output in verbose mode
-    if env.getbool('LOG_VERBOSE'):
-      if self.log_stdout:
-        self.echo_stdout = False
-      if self.log_stderr:
-        self.echo_stderr = False
-
-    # If we only need to send the output to one place,
-    # then we can do so directly using subprocess.communicate().
-    #
-    # If there are multiple destinations (e.g. echo & return),
-    # we need to go through the multi-threaded processing
-    # loop in CustomCommunicate().
-    #
-    # If logging is enabled, CustomCommunicate() is always used.
-    self.custom_stdout = (self.log_stdout or
-                          truecount(self.echo_stdout,
-                                    self.return_stdout,
-                                    self.redirect_stdout) > 1)
-    self.custom_stderr = (self.log_stderr or
-                          truecount(self.echo_stderr,
-                                    self.return_stderr,
-                                    self.redirect_stderr) > 1)
-    self.pipe_stdout = self.custom_stdout or self.return_stdout
-    self.pipe_stderr = self.custom_stderr or self.return_stderr
-
-  def update(self, config_overrides):
-    for k,v in config_overrides.iteritems():
-      if not hasattr(self, k):
-        Log.Fatal('Unknown parameter to Run(): %s = %s', k, v)
-      setattr(self, k, v)
-
 
 def ArgsTooLongForWindows(args):
   """ Detect when a command line might be too long for Windows.  """
@@ -889,6 +763,7 @@ def ArgsTooLongForWindows(args):
     return False
   else:
     return len(' '.join(args)) > 8191
+
 
 def ConvertArgsToFile(args):
   fd, outfile = tempfile.mkstemp()
@@ -900,198 +775,92 @@ def ConvertArgsToFile(args):
   os.close(fd)
   return [cmd, '@' + outfile]
 
-def Run(args, **config_overrides):
+# Note:
+# The redirect_stdout and redirect_stderr is only used a handful of times
+#
+# The stdin_contents feature is currently only used by:
+#  sel_universal invocations in the translator
+#
+def Run(args,
+        errexit=True,
+        stdin_contents=None,
+        redirect_stdout=None,
+        redirect_stderr=None):
   """ Run: Run a command.
-      Returns: (exit code, stdout_contents, stderr_contents) """
-  conf = RunConfig()
-  conf.update(config_overrides)
-  conf.SetupPipeConfig()
+      Returns: return_code, stdout, stderr
 
+      stdout and stderr only contain meaningful data if
+          redirect_{stdout,stderr} == subprocess.PIPE
+
+      Run will terminate the program upon failure unless errexit == False
+      TODO(robertm): errexit == True has not been tested and needs more work
+
+      redirect_stdout and redirect_stderr are passed straight
+      to subprocess.Popen
+      stdin_contents is an optional string used as stdin
+  """
+
+  result_stdout = None
+  result_stderr = None
   if isinstance(args, str):
     args = shell.split(env.eval(args))
 
   args = [pathtools.tosys(args[0])] + args[1:]
 
-  if conf.log_command:
-    Log.Info('-' * 60)
-    Log.Info('%s', StringifyCommand(args, conf.stdin))
+  Log.Info('Running: ' + StringifyCommand(args))
+  if stdin_contents:
+    Log.Info('--------------stdin: begin')
+    Log.Info(stdin_contents)
+    Log.Info('--------------stdin: end')
 
   if env.getbool('DRY_RUN'):
-    if conf.return_stdout or conf.return_stderr:
+    if redirect_stderr or redirect_stdout:
       # TODO(pdox): Prevent this from happening, so that
       # dry-run is more useful.
       Log.Fatal("Unhandled dry-run case.")
-    return (0, '', '')
-
-  if conf.stdin is not None:
-    stdin_pipe = subprocess.PIPE
-  else:
-    stdin_pipe = None  # Inherit the parent's stdin
-
-  if conf.pipe_stdout:
-    stdout_pipe = subprocess.PIPE
-  elif conf.redirect_stdout:
-    stdout_pipe = conf.redirect_stdout
-  elif conf.echo_stdout:
-    stdout_pipe = None  # Inherit the parent's stdout
-  else:
-    stdout_pipe = open(os.devnull)
-
-  if conf.pipe_stderr:
-    stderr_pipe = subprocess.PIPE
-  elif conf.redirect_stderr:
-    stderr_pipe = conf.redirect_stderr
-  elif conf.echo_stderr:
-    stderr_pipe = None  # Inherit the parent's stderr
-  else:
-    stderr_pipe = open(os.devnull)
+    return 0, None, None
 
   try:
     # If we have too long of a cmdline on windows, running it would fail.
     # Attempt to use a file with the command line options instead in that case.
     if ArgsTooLongForWindows(args):
       actual_args = ConvertArgsToFile(args)
-      if conf.log_command:
-        Log.Info('Wrote long commandline to file for Windows: ' +
-                 StringifyCommand(actual_args))
+      Log.Info('Wrote long commandline to file for Windows: ' +
+               StringifyCommand(actual_args))
 
     else:
       actual_args = args
+
+    redirect_stdin = None
+    if stdin_contents:
+      redirect_stdin = subprocess.PIPE
+
     p = subprocess.Popen(actual_args,
-                         stdin=stdin_pipe,
-                         stdout=stdout_pipe,
-                         stderr=stderr_pipe)
+                         stdin=redirect_stdin,
+                         stdout=redirect_stdout,
+                         stderr=redirect_stderr)
+    result_stdout, result_stderr = p.communicate(input=stdin_contents)
   except Exception, e:
-    msg =  '%s\nCommand was: %s' % (str(e), StringifyCommand(args, conf.stdin))
-    if conf.log_command:
-      Log.Fatal(msg)
-    else:
-      print msg
-      DriverExit(1)
-  CleanupProcesses.append(p)
+    msg =  '%s\nCommand was: %s' % (str(e),
+                                    StringifyCommand(args, stdin_contents))
+    print msg
+    DriverExit(1)
 
-  if conf.custom_stdout or conf.custom_stderr:
-    (stdout_contents, stderr_contents) = CustomCommunicate(p, conf)
-  else:
-    (stdout_contents, stderr_contents) = p.communicate(input=conf.stdin)
+  Log.Info('Return Code: ' + str(p.returncode))
 
-  CleanupProcesses.pop()
+  if errexit and p.returncode != 0:
+    if redirect_stdout == subprocess.PIPE:
+        Log.Info('--------------stdout: begin')
+        Log.Info(result_stdout)
+        Log.Info('--------------stdout: end')
 
-  if conf.log_command:
-    Log.Info('Return Code: ' + str(p.returncode))
-
-  if conf.errexit and p.returncode != 0:
+    if redirect_stderr == subprocess.PIPE:
+        Log.Info('--------------stderr: begin')
+        Log.Info(result_stderr)
+        Log.Info('--------------stderr: end')
     DriverExit(p.returncode)
 
-  return (p.returncode, stdout_contents, stderr_contents)
-
-def CustomCommunicate(p, conf):
-  """ Communicate w/ process 'p'.
-      Send data to stdin, and process stdout/stderr.
-      This is only used when logging is enabled or there are
-      multiple output streams.
-      Returns (stdout_contents, stderr_contents) """
-  # CustomCommunicate exists so that data can be shuffled from the subprocess's
-  # output streams (stdout and/or stderr) to one or more output streams in a
-  # *non-blocking* manner.
-  #
-  # The non-blocking feature is key. We could use subprocess.communicate() in
-  # these cases, but then we would be blocked while the program runs. There
-  # would be no output in the meantime. This leads to a lags/stalls when
-  # logging or verbose output is enabled and there is a large amount of debug
-  # or error output.
-  stdoutq = Queue.Queue()
-  stderrq = Queue.Queue()
-  IOReady = threading.Semaphore()
-  threads = []
-
-  # Python does not provide a portable way to do asynchronous socket handling.
-  # So in order to process multiple streams simultaneously, we need to spawn
-  # multiple threads.
-  #
-  # There are 4 threads maximum:
-  #   Wait Thread  : Wait for the subprocess to die.
-  #   Stdout Thread: Read stdout line-by-line, pushing to 'stdoutq'
-  #   Stderr Thread: Read stderr line-by-line, pushing to 'stderrq'
-  #   Main Thread  : Pop from stdoutq/stderrq, and send the data out.
-  #
-  # The stdout thread is only launched if stdout is piped.
-  # The stderr thread is only launched if stderr is piped.
-  #
-  # The IOReady semaphore is used by the children threads to signal the main
-  # thread when an event has occurred.
-  wait_thread = threading.Thread(target=ProcessWait, args=(IOReady,p))
-  threads.append(wait_thread)
-  if conf.pipe_stdout:
-    stdout_thread = threading.Thread(target=PipeRecord,
-                                     args=(IOReady, p.stdout, stdoutq))
-    threads.append(stdout_thread)
-  if conf.pipe_stderr:
-    stderr_thread = threading.Thread(target=PipeRecord,
-                                     args=(IOReady, p.stderr, stderrq))
-    threads.append(stderr_thread)
-
-  for t in threads:
-    t.start()
-
-  if conf.stdin is not None:
-    # This blocks while writing stdin.
-    # TODO(pdox): Ideally, stdin would be fed in synchronously.
-    p.stdin.write(conf.stdin)
-    p.stdin.close()
-
-  stdout_contents = ''
-  stderr_contents = ''
-  # Loop while handling I/O on stdout/stderr until the child finishes.
-  # If custom_stderr/stdout are both false, then we just wait for the
-  # ProcessWait thread
-  lastio = False
-  while True:
-    IOReady.acquire()
-    if p.poll() is not None:
-      # Wait for the threads to finish so that the pipes are flushed.
-      for t in threads:
-        t.join()
-      # The threads are now closed, but there might still
-      # be data on the queue.
-      lastio = True
-
-    # For fair queueing, record the size here.
-    stdout_qsize = stdoutq.qsize()
-    stderr_qsize = stderrq.qsize()
-
-    # Flush stdout queue
-    while stdout_qsize > 0:
-      line = QueueGetNext(stdoutq)
-      if line:
-        if conf.echo_stdout:
-          sys.stdout.write(line)
-        if conf.return_stdout:
-          stdout_contents += line
-        if conf.redirect_stdout:
-          conf.redirect_stdout.write(line)
-        if conf.log_stdout:
-          Log.Info('STDOUT: ' + line.rstrip('\n'))
-      stdout_qsize -= 1
-
-    # Flush stderr queue
-    while stderr_qsize > 0:
-      line = QueueGetNext(stderrq)
-      if line:
-        if conf.echo_stderr:
-          sys.stderr.write(line)
-        if conf.return_stderr:
-          stderr_contents += line
-        if conf.redirect_stderr:
-          conf.redirect_stderr.write(line)
-        if conf.log_stderr:
-          Log.Info('STDERR: ' + line.rstrip('\n'))
-      stderr_qsize -= 1
-
-    if lastio:
-      break
-  return (stdout_contents, stderr_contents)
-
+  return p.returncode, result_stdout, result_stderr
 
 
 def FixArch(arch):
@@ -1140,20 +909,13 @@ def GCCTypeToFileType(gcctype):
     Log.Fatal('language "%s" not recognized' % gcctype)
   return FILE_TYPE_MAP[gcctype]
 
-def InitLog():
-  Log.reset()
-  Log.SetScriptName(env.getone('SCRIPT_NAME'))
-  if env.getbool('LOG_VERBOSE'):
-    env.set('LOGGING', '1')
-    Log.LOG_OUT.append(sys.stderr)
-
-  if env.getbool('LOG_TO_FILE'):
-    env.set('LOGGING', '1')
-    log_filename = env.getone('LOG_FILENAME')
-    log_size_limit = int(env.getone('LOG_FILE_SIZE_LIMIT'))
-    Log.AddFile(log_filename, log_size_limit)
 
 def DriverMain(module, argv):
+  # TODO(robertm): this is ugly - try to get rid of this
+  if '--pnacl-driver-verbose' in argv:
+    Log.IncreaseVerbosity()
+    env.set('LOG_VERBOSE', '1')
+
   # driver_path has the form: /foo/bar/pnacl_root/newlib/bin/pnacl-clang
   driver_path = pathtools.abspath(pathtools.normalize(argv[0]))
   driver_bin = pathtools.dirname(driver_path)
@@ -1162,7 +924,8 @@ def DriverMain(module, argv):
   env.set('DRIVER_PATH', driver_path)
   env.set('DRIVER_BIN', driver_bin)
 
-  InitLog()
+  Log.SetScriptName(script_name)
+
   ReadConfig()
 
   if IsWindowsPython():
@@ -1173,12 +936,6 @@ def DriverMain(module, argv):
                                         DriverArgPatterns,
                                         must_match = False)
   env.append('DRIVER_FLAGS', *driver_flags)
-
-  # Reinitialize the log, in case log settings were changed by
-  # command-line arguments.
-  InitLog()
-  if not env.getbool('RECURSE'):
-    Log.Banner(argv)
 
   # Handle help info
   help_func = getattr(module, 'get_help', None)

@@ -18,6 +18,8 @@ EXTRA_ENV = {
   'INPUTS'             : '',
   'OUTPUT'             : '',
   'MODE'               : 'all',
+  'DO_WRAP'            : '1',
+
   'OPT_FLAGS_all'      : '-disable-opt --strip',
   'OPT_FLAGS_debug'    : '-disable-opt --strip-debug',
   'STRIP_FLAGS_all'    : '-s',
@@ -35,6 +37,8 @@ StripPatterns = [
     ( ('-o','(.*)'),     "env.set('OUTPUT', pathtools.normalize($0))"),
     ( '--strip-all',     "env.set('MODE', 'all')"),
     ( '-s',              "env.set('MODE', 'all')"),
+
+    ( '--do-not-wrap',   "env.set('DO_WRAP', '0')"),
 
     ( '--strip-debug',   "env.set('MODE', 'debug')"),
     ( '-S',              "env.set('MODE', 'debug')"),
@@ -58,12 +62,11 @@ def main(argv):
     else:
       f_output = f
     if driver_tools.IsBitcode(f):
-      driver_tools.RunWithEnv('${RUN_OPT}', input = f, output = f_output)
-      if not env.getbool('RECURSE'):
-        # Do not wrap if we are called by some other driver component
+      driver_tools.RunWithEnv('${RUN_OPT}', input=f, output=f_output)
+      if env.getbool('DO_WRAP'):
         driver_tools.WrapBitcode(f_output)
     elif driver_tools.IsELF(f):
-      driver_tools.RunWithEnv('${RUN_STRIP}', input = f, output = f_output)
+      driver_tools.RunWithEnv('${RUN_STRIP}', input=f, output=f_output)
     else:
       Log.Fatal('%s: File is neither ELF nor bitcode', pathtools.touser(f))
   return 0

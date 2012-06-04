@@ -100,11 +100,12 @@ def main(argv):
 
   if output_type == 'po':
     # .ll to .po
-    driver_tools.RunWithLog("${RUN_LLVM_AS}")
+    driver_tools.Run("${RUN_LLVM_AS}")
   else:
     # .s to .o
-    driver_tools.RunWithLog("${RUN_LLVM_MC}")
+    driver_tools.Run("${RUN_LLVM_MC}")
   env.pop()
+  # only reached in case of no errors
   return 0
 
 def get_help(argv):

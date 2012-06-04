@@ -10,7 +10,7 @@
 #
 
 from driver_tools import IsBitcode
-from driver_tools import RunWithLog
+from driver_tools import Run
 from driver_env import env
 
 def main(argv):
@@ -25,8 +25,9 @@ def main(argv):
       print 'INIT_ARRAY'
       return 0
     return 1
-  retcode, _, _ = RunWithLog('${READELF} ${ARGS}', errexit=False)
-  return retcode
+  Run('${READELF} ${ARGS}')
+  # only reached in case of no errors
+  return 0
 
 def get_help(unused_argv):
   return """

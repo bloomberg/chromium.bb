@@ -18,6 +18,8 @@ from driver_tools import *
 from driver_env import env
 from driver_log import Log
 
+import subprocess
+
 EXTRA_ENV = {
   'INPUTS'   : '',
   'OUTPUT'   : '',
@@ -200,8 +202,9 @@ def main(argv):
   if env.getbool('SANDBOXED') and env.getbool('SRPC'):
     RunLDSRPC()
   else:
-    RunWithLog('${RUN_LD}')
+    Run('${RUN_LD}')
   env.pop()
+  # only reached in case of no errors
   return 0
 
 def IsFlag(arg):
@@ -226,15 +229,15 @@ def RunLDSRPC():
                                        files,
                                        outfile)
 
-  retcode, stdout, stderr = RunWithLog(
-      '${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
+
+  Run('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
       '${SEL_UNIVERSAL_FLAGS} -- ${LD_SB}',
-      stdin=script, echo_stdout=False, echo_stderr=False,
-      return_stdout=True, return_stderr=True, errexit=False)
-  if retcode:
-    Log.FatalWithResult(retcode, 'ERROR: Sandboxed LD Failed. stdout:\n' +
-    stdout + '\nstderr:\n' + stderr)
-    driver_tools.DriverExit(retcode)
+      stdin_contents=script,
+      # stdout/stderr will be automatically dumped
+      # upon failure
+      redirect_stderr=subprocess.PIPE,
+      redirect_stdout=subprocess.PIPE)
+
 
 def MakeSelUniversalScriptForLD(ld_flags,
                                 main_input,

@@ -9,13 +9,14 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import RunWithLog
+from driver_tools import Run
 from driver_env import env
 
 def main(argv):
   env.set('ARGS', *argv)
-  retcode, _, _ = RunWithLog('${NM} --plugin=LLVMgold ${ARGS}', errexit=False)
-  return retcode
+  Run('${NM} --plugin=LLVMgold ${ARGS}')
+  # only reached in case of no errors
+  return 0
 
 def get_help(unused_argv):
   return """

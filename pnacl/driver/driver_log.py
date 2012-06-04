@@ -77,71 +77,49 @@ def DriverExit(retcode, is_final_exit=False):
 
 class LogManager(object):
   def __init__(self):
-    self.reset()
+    self._error_out = [sys.stderr]
+    self._debug_out = []
+    self._script_name = ''
 
-  def reset(self):
-    # Lists of streams
-    self.LOG_OUT = []
-    self.ERROR_OUT = [sys.stderr]
-    self.script_name = ''
+  def IncreaseVerbosity(self):
+    self._debug_out = [sys.stderr]
 
   def SetScriptName(self, script_name):
-    self.script_name = script_name
-
-  def AddFile(self, filename, sizelimit):
-    file_too_big = pathtools.isfile(filename) and \
-                   pathtools.getsize(filename) > sizelimit
-    mode = 'a'
-    if file_too_big:
-      mode = 'w'
-    fp = DriverOpen(filename, mode, fail_ok = True)
-    if fp:
-      self.LOG_OUT.append(fp)
-
-  def Banner(self, argv):
-    self.Info('-' * 60)
-    self.Info('PNaCl Driver Invoked With:\n' + StringifyCommand(argv))
+    self._script_name = script_name
 
   def Info(self, m, *args):
-    self.LogPrint(m, *args)
+    self.Print(self._debug_out, m, *args)
 
   def Error(self, m, *args):
-    self.ErrorPrint(m, *args)
+    self.Print(self._error_out, m, *args)
 
   def FatalWithResult(self, ret, msg, *args):
-    if self.script_name:
-      msg = '%s: %s' % (self.script_name, msg)
-    self.LogPrint(msg, *args)
-    self.ErrorPrint(msg, *args)
+    if self._script_name:
+      msg = '%s: %s' % (self._script_name, msg)
+    self.Print(self._error_out, msg, *args)
     DriverExit(ret)
 
   def Warning(self, m, *args):
     m = 'Warning: ' + m
-    self.ErrorPrint(m, *args)
+    self.Print(self._error_out, m, *args)
 
   def Fatal(self, m, *args):
     # Note, using keyword args and arg lists while trying to keep
     # the m and *args parameters next to each other does not work
     self.FatalWithResult(-1, m, *args)
 
-  def LogPrint(self, m, *args):
+  def Print(self, outs, m, *args):
     # NOTE: m may contain '%' if no args are given
     if args:
       m = m % args
-    for o in self.LOG_OUT:
-      print >> o, m
-
-  def ErrorPrint(self, m, *args):
-    # NOTE: m may contain '%' if no args are given
-    if args:
-      m = m % args
-    for o in self.ERROR_OUT:
+    for o in outs:
       print >> o, m
 
 def EscapeEcho(s):
   """ Quick and dirty way of escaping characters that may otherwise be
       interpreted by bash / the echo command (rather than preserved). """
   return s.replace("\\", r"\\").replace("$", r"\$").replace('"', r"\"")
+
 
 def StringifyCommand(cmd, stdin_contents=None):
   """ Return a string for reproducing the command "cmd", which will be
@@ -150,6 +128,7 @@ def StringifyCommand(cmd, stdin_contents=None):
   if stdin_contents:
     stdin_str = "echo \"\"\"" + EscapeEcho(stdin_contents) + "\"\"\" | "
   return stdin_str + PrettyStringify(cmd)
+
 
 def PrettyStringify(args):
   ret = ''

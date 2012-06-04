@@ -11,22 +11,36 @@
 
 import driver_tools
 from driver_env import env
+from driver_log import Log
+
+EXTRA_ENV = {
+  'DO_WRAP': '1',
+}
+
+# Note we are too lazy to enumerate all the opt flags which would
+# just be passed through anyway hence we use two stage args parsing.
+# TODO(robertm): clean this up
+OptNoWrapPattern = [
+  ( '--do-not-wrap',   "env.set('DO_WRAP', '0')"),
+]
 
 OptOutputPatterns = [
-    # This script only cares about the output file (for bitcode wrapping).
-    # The rest of the args are ignored and passed through to llvm opt
-    (('-o','(.*)'), "env.set('OUTPUT', pathtools.normalize($0))"),
-    ('.*', ""),
+  (('-o','(.*)'), "env.set('OUTPUT', pathtools.normalize($0))"),
 ]
 
 def main(argv):
-  retcode = RunOpt(argv)
-  driver_tools.ParseArgs(argv, OptOutputPatterns)
-  if retcode == 0 and not env.getbool('RECURSE') and env.has('OUTPUT'):
-    # Do not wrap if we are called by some other driver component, or
-    # if the output is going to stdout
-    retcode = driver_tools.WrapBitcode(env.getone('OUTPUT'))
-  return retcode
+  env.update(EXTRA_ENV)
+  _, argv = driver_tools.ParseArgs(argv, OptNoWrapPattern, must_match=False)
+  RunOpt(argv)
+  driver_tools.ParseArgs(argv, OptOutputPatterns, must_match=False)
+  if env.getbool('DO_WRAP'):
+    output = env.getone('OUTPUT')
+    if not output:
+       Log.Error("unable to wrap pexe on stdout, use: --do-no-wrap flag")
+    else:
+      driver_tools.WrapBitcode(output)
+  # only reached in case of no errors
+  return 0
 
 def get_help(unused_argv):
   RunOpt(['--help'])
@@ -35,7 +49,5 @@ def get_help(unused_argv):
 def RunOpt(args):
   # Binary output may go to stdout
   env.set('ARGS', *args)
-  retcode, _, _ = driver_tools.RunWithLog('"${LLVM_OPT}" ${ARGS}',
-                                          errexit=False,
-                                          log_stdout=False)
-  return retcode
+  driver_tools.Run('"${LLVM_OPT}" ${ARGS}')
+
