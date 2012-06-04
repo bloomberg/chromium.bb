@@ -294,8 +294,6 @@ class ResourceLoaderBridge {
   // for more information.
   class Peer {
    public:
-    virtual ~Peer() {}
-
     // Called as upload progress is made.
     // note: only for requests with LOAD_ENABLE_UPLOAD_PROGRESS set
     virtual void OnUploadProgress(uint64 position, uint64 size) = 0;
@@ -341,6 +339,9 @@ class ResourceLoaderBridge {
         const net::URLRequestStatus& status,
         const std::string& security_info,
         const base::TimeTicks& completion_time) = 0;
+
+   protected:
+    virtual ~Peer() {}
   };
 
   // use WebKitPlatformSupportImpl::CreateResourceLoader() for construction, but

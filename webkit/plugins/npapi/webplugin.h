@@ -176,6 +176,7 @@ class WebPlugin {
 class WebPluginResourceClient {
  public:
   virtual ~WebPluginResourceClient() {}
+
   virtual void WillSendRequest(const GURL& url, int http_status_code) = 0;
   // The request_is_seekable parameter indicates whether byte range requests
   // can be issued for the underlying stream.

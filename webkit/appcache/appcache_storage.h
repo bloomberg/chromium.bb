@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,8 +36,6 @@ class APPCACHE_EXPORT AppCacheStorage {
 
   class APPCACHE_EXPORT Delegate {
    public:
-    virtual ~Delegate() {}
-
     // If retrieval fails, 'collection' will be NULL.
     virtual void OnAllInfo(AppCacheInfoCollection* collection) {}
 
@@ -70,6 +68,9 @@ class APPCACHE_EXPORT AppCacheStorage {
         const GURL& url, const AppCacheEntry& entry,
         const GURL& namespace_entry_url, const AppCacheEntry& fallback_entry,
         int64 cache_id, int64 group_id, const GURL& mainfest_url) {}
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   explicit AppCacheStorage(AppCacheService* service);

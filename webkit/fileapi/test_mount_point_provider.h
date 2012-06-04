@@ -18,6 +18,7 @@ class SequencedTaskRunner;
 
 namespace fileapi {
 
+class LocalFileUtil;
 class FileSystemQuotaUtil;
 
 // This should be only used for testing.
@@ -70,7 +71,7 @@ class FILEAPI_EXPORT_PRIVATE TestMountPointProvider
 
  private:
   FilePath base_path_;
-  scoped_ptr<FileSystemFileUtil> local_file_util_;
+  scoped_ptr<LocalFileUtil> local_file_util_;
   scoped_ptr<FileSystemQuotaUtil> quota_util_;
 };
 

@@ -60,6 +60,9 @@ class WebPluginPageDelegate {
 
   // The WebCookieJar to use for this plugin.
   virtual WebKit::WebCookieJar* GetCookieJar() = 0;
+
+ protected:
+  virtual ~WebPluginPageDelegate() {}
 };
 
 }  // namespace npapi

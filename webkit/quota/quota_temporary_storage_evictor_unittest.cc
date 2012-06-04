@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -222,7 +222,7 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
         reset_min_available_disk_space_to_start_eviction();
   }
 
-  scoped_ptr<QuotaEvictionHandler> quota_eviction_handler_;
+  scoped_ptr<MockQuotaEvictionHandler> quota_eviction_handler_;
   scoped_ptr<QuotaTemporaryStorageEvictor> temporary_storage_evictor_;
 
   int num_get_usage_and_quota_for_eviction_;

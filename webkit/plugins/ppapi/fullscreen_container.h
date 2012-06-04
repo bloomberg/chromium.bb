@@ -21,8 +21,6 @@ namespace ppapi {
 // plugins, that only handles painting.
 class FullscreenContainer {
  public:
-  virtual ~FullscreenContainer() {}
-
   // Invalidates the full plugin region.
   virtual void Invalidate() = 0;
 
@@ -43,6 +41,9 @@ class FullscreenContainer {
 
   // The returned object is owned by FullscreenContainer.
   virtual MouseLockDispatcher* GetMouseLockDispatcher() = 0;
+
+ protected:
+  virtual ~FullscreenContainer() {}
 };
 
 }  // namespace ppapi

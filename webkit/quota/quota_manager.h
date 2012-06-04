@@ -64,8 +64,6 @@ class QuotaEvictionHandler {
                               const QuotaAndUsage& quota_and_usage)>
       GetUsageAndQuotaForEvictionCallback;
 
-  virtual ~QuotaEvictionHandler() {}
-
   // Returns the least recently used origin.  It might return empty
   // GURL when there are no evictable origins.
   virtual void GetLRUOrigin(
@@ -79,6 +77,9 @@ class QuotaEvictionHandler {
 
   virtual void GetUsageAndQuotaForEviction(
       const GetUsageAndQuotaForEvictionCallback& callback) = 0;
+
+ protected:
+  virtual ~QuotaEvictionHandler() {}
 };
 
 struct UsageInfo {

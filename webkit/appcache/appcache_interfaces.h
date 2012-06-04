@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,6 +152,7 @@ class APPCACHE_EXPORT AppCacheBackend {
   virtual void GetResourceList(
       int host_id, std::vector<AppCacheResourceInfo>* resource_infos) = 0;
 
+ protected:
   virtual ~AppCacheBackend() {}
 };
 

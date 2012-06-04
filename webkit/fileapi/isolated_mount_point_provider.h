@@ -13,6 +13,7 @@
 namespace fileapi {
 
 class IsolatedContext;
+class IsolatedFileUtil;
 
 class IsolatedMountPointProvider : public FileSystemMountPointProvider {
  public:
@@ -60,7 +61,7 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
   IsolatedContext* isolated_context() const;
   FilePath GetPathFromURL(const GURL& url) const;
 
-  scoped_ptr<FileSystemFileUtil> isolated_file_util_;
+  scoped_ptr<IsolatedFileUtil> isolated_file_util_;
 };
 
 }  // namespace fileapi

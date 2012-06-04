@@ -282,10 +282,14 @@ class PluginDelegate {
   class PlatformVideoCapture : public media::VideoCapture,
                                public base::RefCounted<PlatformVideoCapture> {
    public:
-    virtual ~PlatformVideoCapture() {}
-
     // Detaches the event handler and stops sending notifications to it.
     virtual void DetachEventHandler() = 0;
+
+   protected:
+    virtual ~PlatformVideoCapture() {}
+
+   private:
+    friend class base::RefCounted<PlatformVideoCapture>;
   };
 
   // Provides access to the ppapi broker.

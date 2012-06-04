@@ -85,6 +85,8 @@ class DomStorageContext
     virtual void OnDomStorageAreaCleared(
         const DomStorageArea* area,
         const GURL& page_url) = 0;
+
+   protected:
     virtual ~EventObserver() {}
   };
 

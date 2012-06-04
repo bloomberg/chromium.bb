@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner_helpers.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -26,11 +27,11 @@ class QuotaThreadTask;
 // TODO(kinuko): Revise this using base::Callback.
 class QuotaTask {
  public:
-  virtual ~QuotaTask();
   void Start();
 
  protected:
   explicit QuotaTask(QuotaTaskObserver* observer);
+  virtual ~QuotaTask();
 
   // The task body.
   virtual void Run() = 0;
@@ -52,8 +53,10 @@ class QuotaTask {
   }
 
  private:
+  friend class base::DeleteHelper<QuotaTask>;
   friend class QuotaTaskObserver;
   friend class QuotaThreadTask;
+
   void Abort();
   QuotaTaskObserver* observer_;
   scoped_refptr<base::SingleThreadTaskRunner> original_task_runner_;
@@ -96,14 +99,13 @@ class QuotaThreadTask : public QuotaTask,
 };
 
 class QuotaTaskObserver {
- public:
-  virtual ~QuotaTaskObserver();
-
  protected:
   friend class QuotaTask;
   friend class QuotaThreadTask;
 
   QuotaTaskObserver();
+  virtual ~QuotaTaskObserver();
+
   void RegisterTask(QuotaTask* task);
   void UnregisterTask(QuotaTask* task);
 

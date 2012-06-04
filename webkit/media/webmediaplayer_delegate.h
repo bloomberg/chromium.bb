@@ -15,7 +15,6 @@ namespace webkit_media {
 class WebMediaPlayerDelegate {
  public:
   WebMediaPlayerDelegate() {}
-  virtual ~WebMediaPlayerDelegate() {}
 
   // The specified player started playing media.
   virtual void DidPlay(WebKit::WebMediaPlayer* player) {}
@@ -25,6 +24,9 @@ class WebMediaPlayerDelegate {
 
   // The specified player was destroyed. Do not call any methods on it.
   virtual void PlayerGone(WebKit::WebMediaPlayer* player) {}
+
+ protected:
+  virtual ~WebMediaPlayerDelegate() {}
 };
 
 }  // namespace webkit_media
