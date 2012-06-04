@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,26 +54,26 @@ static void gtk_chrome_button_class_init(GtkChromeButtonClass* button_class) {
   widget_class->expose_event = gtk_chrome_button_expose;
 
   g_nine_box_prelight = new NineBox(
-      IDR_TEXTBUTTON_TOP_LEFT_H,
-      IDR_TEXTBUTTON_TOP_H,
-      IDR_TEXTBUTTON_TOP_RIGHT_H,
-      IDR_TEXTBUTTON_LEFT_H,
-      IDR_TEXTBUTTON_CENTER_H,
-      IDR_TEXTBUTTON_RIGHT_H,
-      IDR_TEXTBUTTON_BOTTOM_LEFT_H,
-      IDR_TEXTBUTTON_BOTTOM_H,
-      IDR_TEXTBUTTON_BOTTOM_RIGHT_H);
+      IDR_TEXTBUTTON_HOVER_TOP_LEFT,
+      IDR_TEXTBUTTON_HOVER_TOP,
+      IDR_TEXTBUTTON_HOVER_TOP_RIGHT,
+      IDR_TEXTBUTTON_HOVER_LEFT,
+      IDR_TEXTBUTTON_HOVER_CENTER,
+      IDR_TEXTBUTTON_HOVER_RIGHT,
+      IDR_TEXTBUTTON_HOVER_BOTTOM_LEFT,
+      IDR_TEXTBUTTON_HOVER_BOTTOM,
+      IDR_TEXTBUTTON_HOVER_BOTTOM_RIGHT);
 
   g_nine_box_active = new NineBox(
-      IDR_TEXTBUTTON_TOP_LEFT_P,
-      IDR_TEXTBUTTON_TOP_P,
-      IDR_TEXTBUTTON_TOP_RIGHT_P,
-      IDR_TEXTBUTTON_LEFT_P,
-      IDR_TEXTBUTTON_CENTER_P,
-      IDR_TEXTBUTTON_RIGHT_P,
-      IDR_TEXTBUTTON_BOTTOM_LEFT_P,
-      IDR_TEXTBUTTON_BOTTOM_P,
-      IDR_TEXTBUTTON_BOTTOM_RIGHT_P);
+      IDR_TEXTBUTTON_PRESSED_TOP_LEFT,
+      IDR_TEXTBUTTON_PRESSED_TOP,
+      IDR_TEXTBUTTON_PRESSED_TOP_RIGHT,
+      IDR_TEXTBUTTON_PRESSED_LEFT,
+      IDR_TEXTBUTTON_PRESSED_CENTER,
+      IDR_TEXTBUTTON_PRESSED_RIGHT,
+      IDR_TEXTBUTTON_PRESSED_BOTTOM_LEFT,
+      IDR_TEXTBUTTON_PRESSED_BOTTOM,
+      IDR_TEXTBUTTON_PRESSED_BOTTOM_RIGHT);
 
   GObjectClass* gobject_class = G_OBJECT_CLASS(button_class);
   g_type_class_add_private(gobject_class, sizeof(GtkChromeButtonPrivate));

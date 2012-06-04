@@ -72,44 +72,44 @@
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <!-- TODO(jamescook): Rename the IDR constants to put hot/pressed state before position. -->
-        <include name="IDR_TEXTBUTTON_BOTTOM_H" file="default_100_percent/aura/textbutton_hot_bottom.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_H" file="default_100_percent/aura/textbutton_hot_bottom_left.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_P" file="default_100_percent/aura/textbutton_pressed_bottom_left.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_P" file="default_100_percent/aura/textbutton_pressed_bottom.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_RIGHT_H" file="default_100_percent/aura/textbutton_hot_bottom_right.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_RIGHT_P" file="default_100_percent/aura/textbutton_pressed_bottom_right.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_CENTER_H" file="default_100_percent/aura/textbutton_hot_center.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_CENTER_P" file="default_100_percent/aura/textbutton_pressed_center.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_LEFT_H" file="default_100_percent/aura/textbutton_hot_left.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_LEFT_P" file="default_100_percent/aura/textbutton_pressed_left.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_RIGHT_H" file="default_100_percent/aura/textbutton_hot_right.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_RIGHT_P" file="default_100_percent/aura/textbutton_pressed_right.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_H" file="default_100_percent/aura/textbutton_hot_top.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_LEFT_H" file="default_100_percent/aura/textbutton_hot_top_left.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_LEFT_P" file="default_100_percent/aura/textbutton_pressed_top_left.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_P" file="default_100_percent/aura/textbutton_pressed_top.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_RIGHT_H" file="default_100_percent/aura/textbutton_hot_top_right.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_RIGHT_P" file="default_100_percent/aura/textbutton_pressed_top_right.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_BOTTOM" file="default_100_percent/aura/textbutton_hot_bottom.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_BOTTOM_LEFT" file="default_100_percent/aura/textbutton_hot_bottom_left.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_BOTTOM_LEFT" file="default_100_percent/aura/textbutton_pressed_bottom_left.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_BOTTOM" file="default_100_percent/aura/textbutton_pressed_bottom.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_BOTTOM_RIGHT" file="default_100_percent/aura/textbutton_hot_bottom_right.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_BOTTOM_RIGHT" file="default_100_percent/aura/textbutton_pressed_bottom_right.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_CENTER" file="default_100_percent/aura/textbutton_hot_center.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_CENTER" file="default_100_percent/aura/textbutton_pressed_center.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_LEFT" file="default_100_percent/aura/textbutton_hot_left.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_LEFT" file="default_100_percent/aura/textbutton_pressed_left.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_RIGHT" file="default_100_percent/aura/textbutton_hot_right.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_RIGHT" file="default_100_percent/aura/textbutton_pressed_right.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_TOP" file="default_100_percent/aura/textbutton_hot_top.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_TOP_LEFT" file="default_100_percent/aura/textbutton_hot_top_left.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_TOP_LEFT" file="default_100_percent/aura/textbutton_pressed_top_left.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_TOP" file="default_100_percent/aura/textbutton_pressed_top.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_TOP_RIGHT" file="default_100_percent/aura/textbutton_hot_top_right.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_TOP_RIGHT" file="default_100_percent/aura/textbutton_pressed_top_right.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_TEXTBUTTON_BOTTOM_H" file="default_100_percent/textbutton_b_hover.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_H" file="default_100_percent/textbutton_bl_hover.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_P" file="default_100_percent/textbutton_bl_pressed.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_P" file="default_100_percent/textbutton_b_pressed.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_RIGHT_H" file="default_100_percent/textbutton_br_hover.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_RIGHT_P" file="default_100_percent/textbutton_br_pressed.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_CENTER_H" file="default_100_percent/textbutton_c_hover.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_CENTER_P" file="default_100_percent/textbutton_c_pressed.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_LEFT_H" file="default_100_percent/textbutton_l_hover.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_LEFT_P" file="default_100_percent/textbutton_l_pressed.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_RIGHT_H" file="default_100_percent/textbutton_r_hover.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_RIGHT_P" file="default_100_percent/textbutton_r_pressed.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_H" file="default_100_percent/textbutton_t_hover.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_LEFT_H" file="default_100_percent/textbutton_tl_hover.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_LEFT_P" file="default_100_percent/textbutton_tl_pressed.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_P" file="default_100_percent/textbutton_t_pressed.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_RIGHT_H" file="default_100_percent/textbutton_tr_hover.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_RIGHT_P" file="default_100_percent/textbutton_tr_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_BOTTOM" file="default_100_percent/textbutton_b_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_BOTTOM_LEFT" file="default_100_percent/textbutton_bl_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_BOTTOM_LEFT" file="default_100_percent/textbutton_bl_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_BOTTOM" file="default_100_percent/textbutton_b_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_BOTTOM_RIGHT" file="default_100_percent/textbutton_br_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_BOTTOM_RIGHT" file="default_100_percent/textbutton_br_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_CENTER" file="default_100_percent/textbutton_c_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_CENTER" file="default_100_percent/textbutton_c_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_LEFT" file="default_100_percent/textbutton_l_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_LEFT" file="default_100_percent/textbutton_l_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_RIGHT" file="default_100_percent/textbutton_r_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_RIGHT" file="default_100_percent/textbutton_r_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_TOP" file="default_100_percent/textbutton_t_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_TOP_LEFT" file="default_100_percent/textbutton_tl_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_TOP_LEFT" file="default_100_percent/textbutton_tl_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_TOP" file="default_100_percent/textbutton_t_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_HOVER_TOP_RIGHT" file="default_100_percent/textbutton_tr_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_PRESSED_TOP_RIGHT" file="default_100_percent/textbutton_tr_pressed.png" type="BINDATA" />
       </if>
       <include name="IDR_WINDOW_BOTTOM_CENTER" file="default_100_percent/window_bottom_center.png" type="BINDATA" />
       <include name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="default_100_percent/window_bottom_left_corner.png" type="BINDATA" />

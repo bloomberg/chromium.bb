@@ -90,28 +90,28 @@ TextButtonBorder::TextButtonBorder()
   set_normal_set(normal_set);
 
   BorderImageSet hot_set = {
-    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_LEFT_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_RIGHT_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_LEFT_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_CENTER_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_RIGHT_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_H).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_TOP_LEFT).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_TOP).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_TOP_RIGHT).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_LEFT).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_CENTER).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_RIGHT).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_BOTTOM_LEFT).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_BOTTOM).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_BOTTOM_RIGHT).ToImageSkia(),
   };
   set_hot_set(hot_set);
 
   BorderImageSet pushed_set = {
-    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_LEFT_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_RIGHT_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_LEFT_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_CENTER_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_RIGHT_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_P).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_TOP_LEFT).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_TOP).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_TOP_RIGHT).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_LEFT).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_CENTER).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_RIGHT).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_BOTTOM_LEFT).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_BOTTOM).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_BOTTOM_RIGHT).ToImageSkia(),
   };
   set_pushed_set(pushed_set);
 }
