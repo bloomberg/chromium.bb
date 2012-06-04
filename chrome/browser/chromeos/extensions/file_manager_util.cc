@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/media/media_player.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -46,10 +47,6 @@
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/plugins/webplugininfo.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/media/media_player.h"
-#endif
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -601,7 +598,6 @@ bool ExecuteBuiltinHandler(Profile* profile, const FilePath& path,
   if (IsSupportedBrowserExtension(file_extension.data()) ||
       ShouldBeOpenedWithPdfPlugin(profile, file_extension.data())) {
     GURL page_url = net::FilePathToFileURL(path);
-#if defined(OS_CHROMEOS)
     // Override gdata resource to point to internal handler instead of file:
     // URL.
     if (gdata::util::GetSpecialRemoteRootPath().IsParent(path)) {
@@ -616,7 +612,6 @@ bool ExecuteBuiltinHandler(Profile* profile, const FilePath& path,
           base::Bind(&OnGDataFileFound, profile, path, gdata::REGULAR_FILE));
       return true;
     }
-#endif
     OpenNewTab(page_url, (Profile*)NULL);
     return true;
   }
@@ -642,7 +637,6 @@ bool ExecuteBuiltinHandler(Profile* profile, const FilePath& path,
     return true;
   }
 
-#if defined(OS_CHROMEOS)
   if (internal_task_id == kFileBrowserPlayTaskId) {
     GURL url;
     if (!ConvertFileToFileSystemUrl(profile, path,
@@ -673,7 +667,6 @@ bool ExecuteBuiltinHandler(Profile* profile, const FilePath& path,
         GetVideoPlayerUrl(url), NEW_FOREGROUND_TAB, NULL);
     return true;
   }
-#endif  // OS_CHROMEOS
 
   if (IsCRXFile(file_extension.data())) {
     InstallCRX(profile, path);

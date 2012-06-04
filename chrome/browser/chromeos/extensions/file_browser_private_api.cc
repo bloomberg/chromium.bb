@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
@@ -55,10 +56,6 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/disks/disk_mount_manager.h"
-#endif
-
 using chromeos::disks::DiskMountManager;
 using content::BrowserContext;
 using content::BrowserThread;
@@ -92,7 +89,6 @@ ListValue* URLPatternSetToStringList(const URLPatternSet& patterns) {
   return list;
 }
 
-#if defined(OS_CHROMEOS)
 const DiskMountManager::Disk* GetVolumeAsDisk(const std::string& mount_path) {
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
 
@@ -168,8 +164,6 @@ base::DictionaryValue* CreateValueFromMountPoint(Profile* profile,
 
   return mount_info;
 }
-#endif  // defined(OS_CHROMEOS)
-
 
 // Gives the extension renderer |host| file |permissions| for the given |path|.
 void GrantFilePermissionsToHost(content::RenderViewHost* host,
@@ -481,20 +475,14 @@ bool AddFileWatchBrowserFunction::PerformFileWatchOperation(
     scoped_refptr<FileBrowserEventRouter> event_router,
     const FilePath& local_path, const FilePath& virtual_path,
     const std::string& extension_id) {
-#if defined(OS_CHROMEOS)
   return event_router->AddFileWatch(local_path, virtual_path, extension_id);
-#else
-  return true;
-#endif  // defined(OS_CHROMEOS)
 }
 
 bool RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
     scoped_refptr<FileBrowserEventRouter> event_router,
     const FilePath& local_path, const FilePath& unused,
     const std::string& extension_id) {
-#if defined(OS_CHROMEOS)
   event_router->RemoveFileWatch(local_path, extension_id);
-#endif
   return true;
 }
 
@@ -697,7 +685,6 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
   std::vector<content::SelectedFileInfo> selected_files;
 
   // FilePath(virtual_path) doesn't work on win, so limit this to ChromeOS.
-#if defined(OS_CHROMEOS)
   fileapi::ExternalFileSystemMountPointProvider* provider =
       BrowserContext::GetFileSystemContext(profile_)->external_provider();
   if (!provider) {
@@ -779,7 +766,6 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
           content::SelectedFileInfo(real_path, display_name));
     }
   }
-#endif
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(callback, selected_files));
@@ -938,7 +924,6 @@ bool AddMountFunction::RunImpl() {
   // Set default return source path to the empty string.
   result_.reset(Value::CreateStringValue(""));
 
-#if defined(OS_CHROMEOS)
   chromeos::MountType mount_type =
       DiskMountManager::MountTypeFromString(mount_type_str);
   switch (mount_type) {
@@ -969,7 +954,6 @@ bool AddMountFunction::RunImpl() {
       break;
     }
   }
-#endif  // defined(OS_CHROMEOS)
 
   return true;
 }
@@ -1011,7 +995,6 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-#if defined(OS_CHROMEOS)
   const FilePath& source_path = files[0].path;
   const FilePath::StringType& display_name = files[0].display_name;
   // Check if the source path is under GData cache directory.
@@ -1029,16 +1012,12 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
     OnMountedStateSet(mount_type_str, display_name,
                       base::PLATFORM_FILE_OK, source_path);
   }
-#else
-  SendResponse(true);
-#endif  // defined(OS_CHROMEOS)
 }
 
 void AddMountFunction::OnMountedStateSet(const std::string& mount_type,
                                          const FilePath::StringType& file_name,
                                          base::PlatformFileError error,
                                          const FilePath& file_path) {
-#if defined(OS_CHROMEOS)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   // Pass back the actual source path of the mount point.
@@ -1049,7 +1028,6 @@ void AddMountFunction::OnMountedStateSet(const std::string& mount_type,
                                 FilePath(file_name).Extension(), file_name,
                                 DiskMountManager::MountTypeFromString(
                                     mount_type));
-#endif  // defined(OS_CHROMEOS)
 }
 
 RemoveMountFunction::RemoveMountFunction() {
@@ -1084,10 +1062,7 @@ void RemoveMountFunction::GetLocalPathsResponseOnUIThread(
     SendResponse(false);
     return;
   }
-#if defined(OS_CHROMEOS)
   DiskMountManager::GetInstance()->UnmountPath(files[0].path.value());
-#endif
-
   SendResponse(true);
 }
 
@@ -1104,7 +1079,6 @@ bool GetMountPointsFunction::RunImpl() {
   base::ListValue *mounts = new base::ListValue();
   result_.reset(mounts);
 
-#if defined(OS_CHROMEOS)
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   DiskMountManager::MountPointMap mount_points =
       disk_mount_manager->mount_points();
@@ -1116,7 +1090,6 @@ bool GetMountPointsFunction::RunImpl() {
     mounts->Append(CreateValueFromMountPoint(profile_, it->second,
                    source_url_));
   }
-#endif  // defined(OS_CHROMEOS)
 
   SendResponse(true);
   return true;
@@ -1169,10 +1142,8 @@ void GetSizeStatsFunction::CallGetSizeStatsOnFileThread(
 
   size_t total_size_kb = 0;
   size_t remaining_size_kb = 0;
-#if defined(OS_CHROMEOS)
   DiskMountManager::GetInstance()->
       GetSizeStatsOnFileThread(mount_path, &total_size_kb, &remaining_size_kb);
-#endif
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -1232,10 +1203,7 @@ void FormatDeviceFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-#if defined(OS_CHROMEOS)
   DiskMountManager::GetInstance()->FormatMountedDevice(files[0].path.value());
-#endif
-
   SendResponse(true);
 }
 
@@ -1280,7 +1248,6 @@ void GetVolumeMetadataFunction::GetLocalPathsResponseOnUIThread(
 
   result_.reset();
 
-#if defined(OS_CHROMEOS)
   const DiskMountManager::Disk* volume = GetVolumeAsDisk(
       files[0].path.value());
   if (volume) {
@@ -1288,7 +1255,6 @@ void GetVolumeMetadataFunction::GetLocalPathsResponseOnUIThread(
         CreateValueFromDisk(profile_, volume);
     result_.reset(volume_info);
   }
-#endif
 
   SendResponse(true);
 }
