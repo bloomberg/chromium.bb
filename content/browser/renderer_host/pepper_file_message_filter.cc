@@ -11,11 +11,12 @@
 #include "base/process_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/common/pepper_file_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_constants.h"
 #include "ipc/ipc_platform_file.h"
-#include "ppapi/proxy/pepper_file_messages.h"
-#include "ppapi/shared_impl/file_path.h"
+#include "webkit/plugins/ppapi/file_path.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -37,9 +38,11 @@ const int kWritePermissions = base::PLATFORM_FILE_OPEN |
                               base::PLATFORM_FILE_EXCLUSIVE_WRITE |
                               base::PLATFORM_FILE_WRITE_ATTRIBUTES;
 
-PepperFileMessageFilter::PepperFileMessageFilter(int child_id)
+PepperFileMessageFilter::PepperFileMessageFilter(
+    int child_id, content::BrowserContext* browser_context)
         : child_id_(child_id),
           channel_(NULL) {
+  pepper_path_ = GetDataDirName(browser_context->GetPath());
 }
 
 void PepperFileMessageFilter::OverrideThreadForMessage(
@@ -80,7 +83,7 @@ PepperFileMessageFilter::~PepperFileMessageFilter() {
 
 // Called on the FILE thread:
 void PepperFileMessageFilter::OnOpenFile(
-    const ppapi::PepperFilePath& path,
+    const webkit::ppapi::PepperFilePath& path,
     int flags,
     base::PlatformFileError* error,
     IPC::PlatformFileForTransit* file) {
@@ -125,8 +128,8 @@ void PepperFileMessageFilter::OnOpenFile(
 }
 
 void PepperFileMessageFilter::OnRenameFile(
-    const ppapi::PepperFilePath& from_path,
-    const ppapi::PepperFilePath& to_path,
+    const webkit::ppapi::PepperFilePath& from_path,
+    const webkit::ppapi::PepperFilePath& to_path,
     base::PlatformFileError* error) {
   FilePath from_full_path = ValidateAndConvertPepperFilePath(from_path,
                                                              kWritePermissions);
@@ -143,7 +146,7 @@ void PepperFileMessageFilter::OnRenameFile(
 }
 
 void PepperFileMessageFilter::OnDeleteFileOrDir(
-    const ppapi::PepperFilePath& path,
+    const webkit::ppapi::PepperFilePath& path,
     bool recursive,
     base::PlatformFileError* error) {
   FilePath full_path = ValidateAndConvertPepperFilePath(path,
@@ -159,7 +162,7 @@ void PepperFileMessageFilter::OnDeleteFileOrDir(
 }
 
 void PepperFileMessageFilter::OnCreateDir(
-    const ppapi::PepperFilePath& path,
+    const webkit::ppapi::PepperFilePath& path,
     base::PlatformFileError* error) {
   FilePath full_path = ValidateAndConvertPepperFilePath(path,
                                                         kWritePermissions);
@@ -174,7 +177,7 @@ void PepperFileMessageFilter::OnCreateDir(
 }
 
 void PepperFileMessageFilter::OnQueryFile(
-    const ppapi::PepperFilePath& path,
+    const webkit::ppapi::PepperFilePath& path,
     base::PlatformFileInfo* info,
     base::PlatformFileError* error) {
   FilePath full_path = ValidateAndConvertPepperFilePath(path, kReadPermissions);
@@ -189,8 +192,8 @@ void PepperFileMessageFilter::OnQueryFile(
 }
 
 void PepperFileMessageFilter::OnGetDirContents(
-    const ppapi::PepperFilePath& path,
-    ppapi::DirContents* contents,
+    const webkit::ppapi::PepperFilePath& path,
+    webkit::ppapi::DirContents* contents,
     base::PlatformFileError* error) {
   FilePath full_path = ValidateAndConvertPepperFilePath(path, kReadPermissions);
   if (full_path.empty()) {
@@ -210,7 +213,7 @@ void PepperFileMessageFilter::OnGetDirContents(
   while (!enumerator.Next().empty()) {
     file_util::FileEnumerator::FindInfo info;
     enumerator.GetFindInfo(&info);
-    ppapi::DirEntry entry = {
+    webkit::ppapi::DirEntry entry = {
       file_util::FileEnumerator::GetFilename(info),
       file_util::FileEnumerator::IsDirectory(info)
     };
@@ -221,44 +224,19 @@ void PepperFileMessageFilter::OnGetDirContents(
 }
 
 FilePath PepperFileMessageFilter::ValidateAndConvertPepperFilePath(
-    const ppapi::PepperFilePath& pepper_path, int flags) {
-  FilePath file_path;  // Empty path returned on error.
-  if (pepper_path.domain() == ppapi::PepperFilePath::DOMAIN_ABSOLUTE) {
-    if (pepper_path.path().IsAbsolute() &&
-        ChildProcessSecurityPolicyImpl::GetInstance()->HasPermissionsForFile(
-            child_id(), pepper_path.path(), flags))
-      file_path = pepper_path.path();
-  }
-  return file_path;
-}
-
-PepperTrustedFileMessageFilter::PepperTrustedFileMessageFilter(
-    int child_id,
-    const std::string& plugin_name,
-    const FilePath& profile_data_directory)
-    : PepperFileMessageFilter(child_id) {
-  plugin_data_directory_ = GetDataDirName(profile_data_directory).Append(
-      FilePath::FromUTF8Unsafe(plugin_name));
-}
-
-PepperTrustedFileMessageFilter::~PepperTrustedFileMessageFilter() {
-}
-
-FilePath PepperTrustedFileMessageFilter::ValidateAndConvertPepperFilePath(
-    const ppapi::PepperFilePath& pepper_path,
-    int flags) {
+    const webkit::ppapi::PepperFilePath& pepper_path, int flags) {
   FilePath file_path;  // Empty path returned on error.
   switch(pepper_path.domain()) {
-    case ppapi::PepperFilePath::DOMAIN_ABSOLUTE:
+    case webkit::ppapi::PepperFilePath::DOMAIN_ABSOLUTE:
       if (pepper_path.path().IsAbsolute() &&
           ChildProcessSecurityPolicyImpl::GetInstance()->HasPermissionsForFile(
               child_id(), pepper_path.path(), flags))
         file_path = pepper_path.path();
       break;
-    case ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL:
+    case webkit::ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL:
       if (!pepper_path.path().IsAbsolute() &&
           !pepper_path.path().ReferencesParent())
-        file_path = plugin_data_directory_.Append(pepper_path.path());
+        file_path = pepper_path_.Append(pepper_path.path());
       break;
     default:
       NOTREACHED();

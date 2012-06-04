@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,5 +17,4 @@
 #include "chrome/common/common_message_generator.h"
 #include "chrome/common/nacl_messages.h"
 #include "content/common/content_message_generator.h"
-#include "ppapi/proxy/pepper_file_messages.h"
 #include "ppapi/proxy/ppapi_messages.h"

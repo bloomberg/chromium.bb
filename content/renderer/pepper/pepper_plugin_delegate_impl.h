@@ -42,7 +42,6 @@ struct ChannelHandle;
 }
 
 namespace ppapi {
-class PepperFilePath;
 class PPB_X509Certificate_Fields;
 }
 
@@ -53,6 +52,7 @@ class Range;
 namespace webkit {
 struct WebPluginInfo;
 namespace ppapi {
+class PepperFilePath;
 class PluginInstance;
 class PluginModule;
 }
@@ -251,23 +251,23 @@ class PepperPluginDelegateImpl
   virtual void WillUpdateFile(const GURL& file_path) OVERRIDE;
   virtual void DidUpdateFile(const GURL& file_path, int64_t delta) OVERRIDE;
   virtual base::PlatformFileError OpenFile(
-      const ppapi::PepperFilePath& path,
+      const webkit::ppapi::PepperFilePath& path,
       int flags,
       base::PlatformFile* file) OVERRIDE;
   virtual base::PlatformFileError RenameFile(
-      const ppapi::PepperFilePath& from_path,
-      const ppapi::PepperFilePath& to_path) OVERRIDE;
+      const webkit::ppapi::PepperFilePath& from_path,
+      const webkit::ppapi::PepperFilePath& to_path) OVERRIDE;
   virtual base::PlatformFileError DeleteFileOrDir(
-      const ppapi::PepperFilePath& path,
+      const webkit::ppapi::PepperFilePath& path,
       bool recursive) OVERRIDE;
   virtual base::PlatformFileError CreateDir(
-      const ppapi::PepperFilePath& path) OVERRIDE;
+      const webkit::ppapi::PepperFilePath& path) OVERRIDE;
   virtual base::PlatformFileError QueryFile(
-      const ppapi::PepperFilePath& path,
+      const webkit::ppapi::PepperFilePath& path,
       base::PlatformFileInfo* info) OVERRIDE;
   virtual base::PlatformFileError GetDirContents(
-      const ppapi::PepperFilePath& path,
-      ppapi::DirContents* contents) OVERRIDE;
+      const webkit::ppapi::PepperFilePath& path,
+      webkit::ppapi::DirContents* contents) OVERRIDE;
   virtual void SyncGetFileSystemPlatformPath(
       const GURL& url,
       FilePath* platform_path) OVERRIDE;

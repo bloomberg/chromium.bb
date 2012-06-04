@@ -344,7 +344,6 @@
           'proxy/host_var_serialization_rules.cc',
           'proxy/interface_list.cc',
           'proxy/interface_proxy.cc',
-          'proxy/pepper_file_messages.cc',
           'proxy/plugin_array_buffer_var.cc',
           'proxy/plugin_dispatcher.cc',
           'proxy/plugin_globals.cc',
