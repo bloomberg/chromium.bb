@@ -171,16 +171,20 @@ NAME_ARM_TRY_DOWNLOAD() {
   echo -n "${BUILDBOT_TRIGGERED_BY_BUILDNUMBER}"
 }
 
+
+prune-scons-out() {
+  find scons-out/ \
+    \( -name '*.o' -o -name '*.bc' -o -name 'test_results' \) \
+    -print0 | xargs -0 rm -rf
+}
+
 # Tar up the executables which are shipped to the arm HW bots
 archive-for-hw-bots() {
   local name=$1
   local try=$2
 
   echo "@@@BUILD_STEP tar_generated_binaries@@@"
-  # clean out a bunch of files that are not needed
-  find scons-out/ \
-    \( -name '*.o' -o -name '*.bc' -o -name 'test_results' \) \
-    -print0 | xargs -0 rm -rf
+  prune-scons-out
 
   # delete nexes from pexe mode directories to force translation
   # TODO(dschuff) enable this once we can translate on the hw bots
@@ -449,6 +453,21 @@ mode-buildbot-arm-hw-try() {
 
 readonly TC_TESTS="smoke_tests"
 
+# hackish step to generate pexe for bitcode stability archiving
+tc-generate-and-archive-pexes() {
+  local build_dir="scons-out/nacl-x86-32-pnacl-pexe-clang"
+  local tarball="archived_pexes.tar.bz2"
+  rm -rf ${build_dir}
+  scons-stage "x86-32" \
+              "--mode=opt-host,nacl -j8 pnacl_generate_pexe=1 \
+               do_not_run_tests=1 translate_in_build_step=0 " \
+              "smoke_tests large_tests chrome_browser_tests"
+  prune-scons-out
+  tar cfj ${tarball} --directory ${build_dir} .
+  ls -l ${tarball}
+  UploadArchivedPexes ${BUILDBOT_GOT_REVISION} ${tarball}
+}
+
 # These are also suitable for local TC sanity testing
 tc-tests-large() {
   # newlib
@@ -463,6 +482,8 @@ tc-tests-large() {
   scons-stage "x86-64" \
               "--mode=opt-host,nacl -j8 -k --nacl_glibc pnacl_generate_pexe=0" \
               "${TC_TESTS}"
+
+  tc-generate-and-archive-pexes
 
   # we run the browser tests last since they tend to be flaky
   # and will terminate the testing unless  FAIL_FAST=false

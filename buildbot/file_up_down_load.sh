@@ -155,6 +155,26 @@ ShowRecentArmUntrustedToolchains() {
 }
 
 ######################################################################
+# Pexes for bitcode stability testing
+######################################################################
+
+UploadArchivedPexes() {
+  local rev=$1
+  local tarball=$2
+
+  UploadArmToolchain ${rev} archived_pexes.tar.bz2 ${tarball}
+}
+
+DownloadArchivedPexes() {
+  local rev=$1
+  local tarball=$2
+
+   curl -L \
+     ${URL_PREFIX}/${BASE_ARM_TOOLCHAIN}/${rev}/archived_pexes.tar.bz2 \
+     -o $2
+}
+
+######################################################################
 # ARM BETWEEN BOTS
 ######################################################################
 
