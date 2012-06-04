@@ -200,6 +200,23 @@ def _CheckNoScopedAllowIO(input_api, output_api):
       'instead.\n' + '\n'.join(problems))]
 
 
+def _CheckNoFilePathWatcherDelegate(input_api, output_api):
+  """Make sure that FilePathWatcher::Delegate is not used."""
+  problems = []
+
+  file_filter = lambda f: f.LocalPath().endswith(('.cc', '.h'))
+  for f in input_api.AffectedFiles(file_filter=file_filter):
+    for line_num, line in f.ChangedContents():
+      if 'FilePathWatcher::Delegate' in line:
+        problems.append('    %s:%d' % (f.LocalPath(), line_num))
+
+  if not problems:
+    return []
+  return [output_api.PresubmitPromptWarning('New code should not use '
+      'FilePathWatcher::Delegate. Use the callback interface instead.\n' +
+      '\n'.join(problems))]
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -214,6 +231,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoDEPSGIT(input_api, output_api))
   results.extend(_CheckNoFRIEND_TEST(input_api, output_api))
   results.extend(_CheckNoScopedAllowIO(input_api, output_api))
+  results.extend(_CheckNoFilePathWatcherDelegate(input_api, output_api))
   return results
 
 
