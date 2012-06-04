@@ -233,9 +233,12 @@ BOT_ASSIGNMENT = {
     'linux-pnacl-x86_64':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux false',
     'mac-pnacl-x86_32':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32',
-    # TODO(pdox): Rename this bot to x86_64
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-mac false',
+    # TODO(robertm): Delete this once we are using win-pnacl-x86_64
     'win-pnacl-x86_32':
+        'buildbot\\buildbot_pnacl.bat mode-buildbot-tc-x8664-win false',
+    # TODO(robertm): use this in favor or the misnamed win-pnacl-x86_32
+    'win-pnacl-x86_64':
         'buildbot\\buildbot_pnacl.bat mode-buildbot-tc-x8664-win false',
 
     # Pnacl toolchain testers
@@ -260,13 +263,22 @@ BOT_ASSIGNMENT = {
     'nacl-toolchain-win7-glibc':
         'buildbot\\buildbot_windows-glibc-makefile.bat',
 
-     # Pnacl toolchain trybots (second argument indicates trybot).
+    # Pnacl toolchain trybots (second argument indicates trybot).
+    'nacl-toolchain-linux-pnacl-x86_32':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-linux true',
+    'nacl-toolchain-linux-pnacl-x86_64':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux true',
+    'nacl-toolchain-mac-pnacl-x86_32':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-mac true',
+    'nacl-toolchain-win7-pnacl-x86_64':
+        'buildbot\\buildbot_pnacl.bat mode-buildbot-tc-x8664-win true',
+    # OBSOLETE NAMES: will be delete soon
     'nacl-toolchain-linux-pnacl-x86_32-newlib':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-linux true',
     'nacl-toolchain-linux-pnacl-x86_64-newlib':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux true',
     'nacl-toolchain-mac-pnacl-x86_32-newlib':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-mac true',
 
     # PNaCl LLVM Merging bots
     'llvm':
