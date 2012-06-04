@@ -67,6 +67,19 @@ UploadArmToolchain() {
   Upload ${tarball} ${BASE_ARM_TOOLCHAIN}/${rev}/${name}
 }
 
+ComputeSha1() {
+  # on mac we do not have sha1sum so we fall back to openssl
+  if which sha1sum >/dev/null ; then
+    echo "$(SHA1=$(sha1sum -b $1) ; echo ${SHA1:0:40})"
+  elif which openssl >/dev/null ; then
+    echo "$(SHA1=$(openssl sha1 $1) ; echo ${SHA1/* /})"
+
+  else
+    echo "ERROR: do not know how to compute SHA1"
+    exit 1
+  fi
+}
+
 ######################################################################
 # ARM TRUSTED
 ######################################################################
@@ -107,12 +120,16 @@ ShowRecentArmTrustedToolchains() {
 #@ pnacl_mac_x86_32
 #@ pnacl_win_x86_32
 
+# TODO(robertm): "arm untrusted" should be renamed to pnacl
 UploadArmUntrustedToolchains() {
   local rev=$1
   local label=$2
   local tarball=$3
 
   UploadArmToolchain ${rev} naclsdk_${label}.tgz ${tarball}
+
+  ComputeSha1 ${tarball} > ${tarball}.sha1hash
+  UploadArmToolchain ${rev} naclsdk_${label}.tgz.sha1hash ${tarball}.sha1hash
 }
 
 DownloadArmUntrustedToolchains() {
