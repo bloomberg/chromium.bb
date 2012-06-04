@@ -20,6 +20,9 @@ ClientSocketPoolBaseTest.DisableCleanupTimer
 # Flaky, see http://crbug.com/108422
 SSLClientSocketTest.ConnectMismatched
 
+# Sometimes fails, see http://crbug.com/130874
+HttpNetworkTransactionSpdy2Test.BasicAuthSpdyProxy
+
 ##############################################################################
 # TODO(rnk): The exclusions below should only apply to the full mode
 # DrMemory bot.

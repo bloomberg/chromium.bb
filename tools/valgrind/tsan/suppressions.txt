@@ -938,3 +938,13 @@
   fun:ProcessSingleton::LinuxWatcher::HandleMessage
   fun:base::internal::RunnableAdapter::Run
 }
+{
+  bug_131001
+  ThreadSanitizer:Race
+  ...
+  fun:media::AudioOutputMixer::StopStream
+  fun:media::AudioOutputProxy::Stop
+  fun:media::AudioOutputController::DoStopCloseAndClearStream
+  fun:media::AudioOutputController::DoClose
+  fun:base::internal::RunnableAdapter::Run
+}
