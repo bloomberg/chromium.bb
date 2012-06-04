@@ -1612,7 +1612,7 @@ frame_button_handler(struct widget *widget,
 		case THEME_LOCATION_TITLEBAR:
 			if (!window->shell_surface)
 				break;
-			input_set_pointer_image(input, time, CURSOR_DRAGGING);
+			input_set_pointer_image(input, CURSOR_DRAGGING);
 			input_ungrab(input);
 			wl_shell_surface_move(window->shell_surface,
 					      input_get_seat(input),
@@ -1729,8 +1729,7 @@ input_set_focus_widget(struct input *input, struct widget *focus,
 							widget->user_data);
 		input->focus_widget = focus;
 
-		input_set_pointer_image(input, input->pointer_enter_serial,
-					pointer);
+		input_set_pointer_image(input, pointer);
 	}
 }
 
@@ -1762,7 +1761,7 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 						input, time, sx, sy,
 						widget->user_data);
 
-	input_set_pointer_image(input, time, cursor);
+	input_set_pointer_image(input, cursor);
 }
 
 void
@@ -2275,7 +2274,7 @@ static const struct wl_data_device_listener data_device_listener = {
 };
 
 void
-input_set_pointer_image(struct input *input, uint32_t time, int pointer)
+input_set_pointer_image(struct input *input, int pointer)
 {
 	struct wl_buffer *buffer;
 	struct wl_cursor *cursor;
@@ -2294,8 +2293,8 @@ input_set_pointer_image(struct input *input, uint32_t time, int pointer)
 		return;
 
 	input->current_cursor = pointer;
-	wl_pointer_attach(input->pointer, time, buffer,
-			  image->hotspot_x, image->hotspot_y);
+	wl_pointer_attach(input->pointer, input->pointer_enter_serial,
+			  buffer, image->hotspot_x, image->hotspot_y);
 }
 
 struct wl_data_device *

@@ -364,7 +364,7 @@ struct widget *
 frame_create(struct window *window, void *data);
 
 void
-input_set_pointer_image(struct input *input, uint32_t time, int pointer);
+input_set_pointer_image(struct input *input, int pointer);
 
 void
 input_get_position(struct input *input, int32_t *x, int32_t *y);
