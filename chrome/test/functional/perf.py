@@ -2056,8 +2056,8 @@ class PageCyclerTest(BasePageCyclerTest):
     self.RunPageCyclerTest('moz2', 'Moz2File')
 
 
-class WebPageReplayPageCyclerTest(BasePageCyclerTest):
-  """Tests to run Web Page Replay backed page cycler tests.
+class PageCyclerNetSimTest(BasePageCyclerTest):
+  """Run page cycler tests with network simulation via Web Page Replay.
 
   Web Page Replay is a proxy that can record and "replay" web pages with
   simulated network characteristics -- without having to edit the pages
@@ -2086,7 +2086,7 @@ class WebPageReplayPageCyclerTest(BasePageCyclerTest):
 
   def setUp(self):
     """Performs necessary setup work before running each test."""
-    super(WebPageReplayPageCyclerTest, self).setUp()
+    super(PageCyclerNetSimTest, self).setUp()
     self.replay_dir = os.environ.get('PC_REPLAY_DIR')
     self.archive_path = os.environ.get('PC_ARCHIVE_PATH')
     self.is_record_mode = 'PC_RECORD' in os.environ
@@ -2117,7 +2117,7 @@ class WebPageReplayPageCyclerTest(BasePageCyclerTest):
     Returns:
       A list of extra flags to pass to Chrome when it is launched.
     """
-    flags = super(WebPageReplayPageCyclerTest, self).ExtraChromeFlags()
+    flags = super(PageCyclerNetSimTest, self).ExtraChromeFlags()
     flags.append('--load-extension=%s' % self._Path('extension'))
     if not self._IS_DNS_FORWARDED:
       flags.append('--host-resolver-rules=MAP * %s' % webpagereplay.REPLAY_HOST)
@@ -2169,7 +2169,7 @@ class WebPageReplayPageCyclerTest(BasePageCyclerTest):
         self._ArchivePath(test_name),
         self._Path('logs'),
         replay_options):
-      super_self = super(WebPageReplayPageCyclerTest, self)
+      super_self = super(PageCyclerNetSimTest, self)
       super_self.RunPageCyclerTest(test_name, description)
 
   def test2012Q2(self):

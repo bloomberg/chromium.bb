@@ -601,7 +601,7 @@
   'PERFORMANCE': {
     'all': [
       'perf',
-      '-perf.WebPageReplayPageCyclerTest',  # Disable new test until vetted.
+      '-perf.PageCyclerNetSimTest',  # Disable new test until vetted.
       # Invoked outside of the pyauto_tests framework.
       '-perf.BenchmarkPerfTest.testSpaceport',
     ],
