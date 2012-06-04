@@ -80,8 +80,7 @@ bool GetChromeFrameUserDataDirectory(FilePath* result) {
 }
 
 bool GetUserDocumentsDirectory(FilePath* result) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  *result = base::nix::GetXDGUserDirectory(env.get(), "DOCUMENTS", "Documents");
+  *result = base::nix::GetXDGUserDirectory("DOCUMENTS", "Documents");
   return true;
 }
 
@@ -92,17 +91,14 @@ bool GetUserDownloadsDirectorySafe(FilePath* result) {
 }
 
 bool GetUserDownloadsDirectory(FilePath* result) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  *result = base::nix::GetXDGUserDirectory(env.get(), "DOWNLOAD",
-                                           kDownloadsDir);
+  *result = base::nix::GetXDGUserDirectory("DOWNLOAD", kDownloadsDir);
   return true;
 }
 
 // We respect the user's preferred pictures location, unless it is
 // ~ or their desktop directory, in which case we default to ~/Pictures.
 bool GetUserPicturesDirectory(FilePath* result) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  *result = base::nix::GetXDGUserDirectory(env.get(), "PICTURES", kPicturesDir);
+  *result = base::nix::GetXDGUserDirectory("PICTURES", kPicturesDir);
 
   FilePath home = file_util::GetHomeDir();
   if (*result != home) {
@@ -118,8 +114,7 @@ bool GetUserPicturesDirectory(FilePath* result) {
 }
 
 bool GetUserDesktop(FilePath* result) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  *result = base::nix::GetXDGUserDirectory(env.get(), "DESKTOP", "Desktop");
+  *result = base::nix::GetXDGUserDirectory("DESKTOP", "Desktop");
   return true;
 }
 
