@@ -643,6 +643,7 @@ static const char *cursors[] = {
 	"top_side",
 	"xterm",
 	"hand1",
+	"watch",
 };
 
 static void
