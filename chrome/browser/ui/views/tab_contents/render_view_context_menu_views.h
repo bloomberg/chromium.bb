@@ -24,18 +24,14 @@ class Widget;
 
 class RenderViewContextMenuViews : public RenderViewContextMenu {
  public:
-  RenderViewContextMenuViews(content::WebContents* tab_contents,
-                             const content::ContextMenuParams& params);
-
   virtual ~RenderViewContextMenuViews();
 
-  void RunMenuAt(views::Widget* parent, const gfx::Point& point);
+  // Factory function to create an instance.
+  static RenderViewContextMenuViews* Create(
+      content::WebContents* tab_contents,
+      const content::ContextMenuParams& params);
 
-#if defined(OS_WIN)
-  // Set this menu to show for an external tab contents. This
-  // only has an effect before Init() is called.
-  void SetExternal();
-#endif
+  void RunMenuAt(views::Widget* parent, const gfx::Point& point);
 
   void UpdateMenuItemStates();
 
@@ -46,6 +42,8 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
                               const string16& title) OVERRIDE;
 
  protected:
+  RenderViewContextMenuViews(content::WebContents* tab_contents,
+                             const content::ContextMenuParams& params);
   // RenderViewContextMenu implementation.
   virtual void PlatformInit() OVERRIDE;
   virtual void PlatformCancel() OVERRIDE;

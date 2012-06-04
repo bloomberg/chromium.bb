@@ -125,7 +125,8 @@ void ChromeWebContentsViewDelegateViews::RestoreFocus() {
 
 void ChromeWebContentsViewDelegateViews::ShowContextMenu(
     const content::ContextMenuParams& params) {
-  context_menu_.reset(new RenderViewContextMenuViews(web_contents_, params));
+  context_menu_.reset(
+      RenderViewContextMenuViews::Create(web_contents_, params));
   context_menu_->Init();
 
   // Don't show empty menus.
