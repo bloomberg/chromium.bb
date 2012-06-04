@@ -23,7 +23,7 @@
 namespace {
 
 // Event that is fired when we enter or leave managed mode.
-const char kChangeEventName[] = "experimental.managedMode.onChange";
+const char kChangeEventName[] = "managedModePrivate.onChange";
 
 // Key to report whether the attempt to enter managed mode succeeded.
 const char kEnterSuccessKey[] = "success";

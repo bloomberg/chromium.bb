@@ -126,7 +126,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   bool RunExtensionSubtest(const char* extension_name,
                            const std::string& page_url);
 
-  // Same as RunExtensionSubtest, except run with the specific |flags|.
+  // Same as RunExtensionSubtest, except run with the specific |flags|
+  // (as defined in the Flags enum).
   bool RunExtensionSubtest(const char* extension_name,
                            const std::string& page_url,
                            int flags);

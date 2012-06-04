@@ -55,6 +55,7 @@ class ManagedMode : public BrowserList::Observer,
  private:
   friend struct DefaultSingletonTraits<ManagedMode>;
   friend class Singleton<ManagedMode>;
+  FRIEND_TEST_ALL_PREFIXES(ExtensionApiTest, ManagedModeOnChange);
 
   static ManagedMode* GetInstance();
 
