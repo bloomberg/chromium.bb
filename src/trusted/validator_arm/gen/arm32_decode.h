@@ -80,7 +80,10 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_pack_sat_rev(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_parallel_add_sub(
+  inline const ClassDecoder& decode_parallel_add_sub_signed(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_parallel_add_sub_unsigned(
       const Instruction insn) const;
 
   inline const ClassDecoder& decode_sat_add_sub(
@@ -148,6 +151,7 @@ class Arm32DecoderState : DecoderState {
   const DataProc DataProc_instance_;
   const Defs12To15 Defs12To15_instance_;
   const Defs12To15CondsDontCare Defs12To15CondsDontCare_instance_;
+  const Defs12To15CondsDontCareRnRdRmNotPc Defs12To15CondsDontCareRnRdRmNotPc_instance_;
   const Defs12To15RdRnRsRmNotPc Defs12To15RdRnRsRmNotPc_instance_;
   const Deprecated Deprecated_instance_;
   const DontCareInst DontCareInst_instance_;

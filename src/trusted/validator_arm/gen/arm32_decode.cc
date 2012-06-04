@@ -29,6 +29,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , DataProc_instance_()
   , Defs12To15_instance_()
   , Defs12To15CondsDontCare_instance_()
+  , Defs12To15CondsDontCareRnRdRmNotPc_instance_()
   , Defs12To15RdRnRsRmNotPc_instance_()
   , Deprecated_instance_()
   , DontCareInst_instance_()
@@ -545,10 +546,15 @@ const ClassDecoder& Arm32DecoderState::decode_media(
       true)
     return DataProc_instance_;
 
-  if ((insn.Bits() & 0x01800000) == 0x00000000 /* op1(24:20) == 00xxx */ &&
+  if ((insn.Bits() & 0x01C00000) == 0x00000000 /* op1(24:20) == 000xx */ &&
       true &&
       true)
-    return decode_parallel_add_sub(insn);
+    return decode_parallel_add_sub_signed(insn);
+
+  if ((insn.Bits() & 0x01C00000) == 0x00400000 /* op1(24:20) == 001xx */ &&
+      true &&
+      true)
+    return decode_parallel_add_sub_unsigned(insn);
 
   if ((insn.Bits() & 0x01800000) == 0x00800000 /* op1(24:20) == 01xxx */ &&
       true &&
@@ -894,9 +900,48 @@ const ClassDecoder& Arm32DecoderState::decode_pack_sat_rev(
   return Forbidden_instance_;
 }
 
-// Implementation of table: parallel_add_sub.
-// Specified by: See Sections A5.4.1, A5.4.2
-const ClassDecoder& Arm32DecoderState::decode_parallel_add_sub(
+// Implementation of table: parallel_add_sub_signed.
+// Specified by: See Section A5.4.1
+const ClassDecoder& Arm32DecoderState::decode_parallel_add_sub_signed(
+     const Instruction insn) const
+{
+  UNREFERENCED_PARAMETER(insn);
+  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5) == 100 */)
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
+      (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
+      (insn.Bits() & 0x00000080) == 0x00000000 /* op2(7:5) == 0xx */)
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+
+  if ((insn.Bits() & 0x00100000) == 0x00100000 /* op1(21:20) == x1 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5) == 100 */)
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+
+  if ((insn.Bits() & 0x00100000) == 0x00100000 /* op1(21:20) == x1 */ &&
+      (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+
+  if ((insn.Bits() & 0x00100000) == 0x00100000 /* op1(21:20) == x1 */ &&
+      (insn.Bits() & 0x00000080) == 0x00000000 /* op2(7:5) == 0xx */)
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+
+  if (true)
+    return Undefined_instance_;
+
+  // Catch any attempt to fall though ...
+  fprintf(stderr, "TABLE IS INCOMPLETE: parallel_add_sub_signed could not parse %08X",
+          insn.Bits());
+  return Forbidden_instance_;
+}
+
+// Implementation of table: parallel_add_sub_unsigned.
+// Specified by: See Section A5.4.2
+const ClassDecoder& Arm32DecoderState::decode_parallel_add_sub_unsigned(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
@@ -928,7 +973,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_add_sub(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: parallel_add_sub could not parse %08X",
+  fprintf(stderr, "TABLE IS INCOMPLETE: parallel_add_sub_unsigned could not parse %08X",
           insn.Bits());
   return Forbidden_instance_;
 }

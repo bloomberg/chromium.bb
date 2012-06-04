@@ -70,6 +70,17 @@ SafetyLevel Defs12To15RdRnRsRmNotPc::safety(
   return MAY_BE_SAFE;
 }
 
+SafetyLevel Defs12To15CondsDontCareRnRdRmNotPc::safety(
+    const Instruction i) const {
+  if (RegisterList(n.reg(i)).Add(d.reg(i)).Add(m.reg(i)).
+      Contains(kRegisterPc))
+    return UNPREDICTABLE;
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
 RegisterList TestIfAddressMasked::defs(Instruction i) const {
   return RegisterList(conditions.conds_if_updated(i));
 }

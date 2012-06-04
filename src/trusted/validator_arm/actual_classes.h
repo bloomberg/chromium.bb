@@ -121,7 +121,10 @@ class Defs12To15CondsDontCare : public NoPcAssignCondsDontCare {
   NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15CondsDontCare);
 };
 
-// Defs12To15 where registers Rn, Rd, Rs, and Rm are not Pc.
+// Defs12To15 where registers Rn(16, 19), Rd(12, 15), Rs (11, 8),
+// and Rm(3, 0) are not Pc.
+//
+// Disallows any of Rn, Rd, Rs, or Rm to be PC.
 //
 // Note: Some instructions may use other names for the registers,
 // but they have the same placement within the instruction, and
@@ -142,6 +145,27 @@ class Defs12To15RdRnRsRmNotPc
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15RdRnRsRmNotPc);
+};
+
+// Defs12To15 where registers Rn(16, 19), Rd(12, 15), and Rm(3, 0)
+// are not Pc. We also don't care about tracking condition flags.
+//
+// Disallows any of Rn, Rd, or Rm to be PC.
+class Defs12To15CondsDontCareRnRdRmNotPc : public Defs12To15CondsDontCare {
+ public:
+  // We use the following Rm, Rd, and Rn to capture the registers
+  // that need checking.
+  static const RegMBits0To3Interface m;
+  static const RegDBits12To15Interface d;
+  static const RegNBits16To19Interface n;
+
+  inline Defs12To15CondsDontCareRnRdRmNotPc() : Defs12To15CondsDontCare() {}
+  virtual ~Defs12To15CondsDontCareRnRdRmNotPc() {}
+
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15CondsDontCareRnRdRmNotPc);
 };
 
 // Defines test masking instruction to be used with a

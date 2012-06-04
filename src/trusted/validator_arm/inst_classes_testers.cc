@@ -439,6 +439,7 @@ ApplySanityChecks(Instruction inst,
 
   return true;
 }
+
 // Binary3RegisterOpTesterAltA
 Binary3RegisterOpAltATester::Binary3RegisterOpAltATester(
     const NamedClassDecoder& decoder)
@@ -496,6 +497,106 @@ ApplySanityChecks(Instruction inst,
   EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
   EXPECT_FALSE(expected_decoder.m.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+
+  return true;
+}
+
+// Binary3RegisterOpTesterAltB
+Binary3RegisterOpAltBTester::Binary3RegisterOpAltBTester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder), test_conditions_(true) {}
+
+bool Binary3RegisterOpAltBTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary3RegisterOpAltB expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used in DataProc.
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
+  if (test_conditions_) {
+    if (expected_decoder.conditions.is_updated(inst)) {
+      EXPECT_TRUE(expected_decoder.conditions.conds_if_updated(inst).
+                  Equals(kConditions));
+    } else {
+      EXPECT_TRUE(expected_decoder.conditions.conds_if_updated(inst).
+                  Equals(kRegisterNone));
+    }
+  }
+
+  // Other NaCl constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
+      << "Expected FORBIDDEN_OPERANDS for " << InstContents();
+
+  return true;
+}
+
+// Binary3RegisterOpAltBTesterRegsNotPc
+Binary3RegisterOpAltBTesterRegsNotPc::Binary3RegisterOpAltBTesterRegsNotPc(
+    const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBTester(decoder) {}
+
+bool Binary3RegisterOpAltBTesterRegsNotPc::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary3RegisterOpAltB expected_decoder;
+
+  NC_PRECOND(Binary3RegisterOpAltBTester::ApplySanityChecks(inst, decoder));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.m.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+
+  return true;
+}
+
+// Binary3RegisterOpAltBNoCondUpdatesTester
+Binary3RegisterOpAltBNoCondUpdatesTester::
+Binary3RegisterOpAltBNoCondUpdatesTester(
+    const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBTester(decoder) {
+  test_conditions_ = false;
+}
+
+// Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc
+Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(
+    const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates expected_decoder;
+
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::
+             ApplySanityChecks(inst, decoder));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.m.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
   EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();

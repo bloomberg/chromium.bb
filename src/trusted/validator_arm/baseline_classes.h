@@ -462,16 +462,50 @@ class Binary3RegisterOpAltA : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltA);
 };
 
-// A Binary3RegisterOpAltA where the conditions flags are not set,
-// even though bit S is true.
-class Binary3RegisterOpAltANoCondUpdates : public Binary3RegisterOpAltA {
+// Models a 3-register binary operation of the form:
+// Op(S)<c> <Rd>, <Rn>, <Rm>
+// +--------+--------------+--+--------+--------+----------------+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7 6 5 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+----------------+--------+
+// |  cond  |              | S|   Rn   |   Rd   |                |   Rm   |
+// +--------+--------------+--+--------+--------+----------------+--------+
+// Definitions:
+//    Rd - The destination register.
+//    Rn - The first operand
+//    Rm - The second operand
+//    S - Defines if the flags register is updated.
+//
+// If Rd, Rm, or Rn is R15, the instruction is unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+class Binary3RegisterOpAltB : public ClassDecoder {
  public:
-  inline Binary3RegisterOpAltANoCondUpdates() {}
-  virtual ~Binary3RegisterOpAltANoCondUpdates() {}
+  // Interfaces for components in the instruction.
+  static const RegMBits0To3Interface m;
+  static const RegDBits12To15Interface d;
+  static const RegNBits16To19Interface n;
+  static const UpdatesConditionsBit20Interface conditions;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class.
+  inline Binary3RegisterOpAltB() : ClassDecoder() {}
+  virtual ~Binary3RegisterOpAltB() {}
+  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltANoCondUpdates);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltB);
+};
+
+// A Binary3RegisterOpAltB where the conditions flags are not set,
+// even though bit S is true.
+class Binary3RegisterOpAltBNoCondUpdates : public Binary3RegisterOpAltB {
+ public:
+  inline Binary3RegisterOpAltBNoCondUpdates() {}
+  virtual ~Binary3RegisterOpAltBNoCondUpdates() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltBNoCondUpdates);
 };
 
 // Models a 4-register double binary operation of the form:

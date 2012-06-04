@@ -319,6 +319,78 @@ class Binary3RegisterOpAltATesterRegsNotPc
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltATesterRegsNotPc);
 };
 
+// Models a 3-register binary operation of the form:
+// Op(S)<c> <Rd>, <Rn>, <Rm>
+// +--------+--------------+--+--------+--------+----------------+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7 6 5 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+----------------+--------+
+// |  cond  |              | S|   Rn   |   Rd   |                |   Rm   |
+// +--------+--------------+--+--------+--------+----------------+--------+
+// Definitions:
+//    Rd - The destination register.
+//    Rn - The first operand
+//    Rm - The second operand
+//    S - Defines if the flags regsiter is updated.
+class Binary3RegisterOpAltBTester : public Arm32DecoderTester {
+ public:
+  explicit Binary3RegisterOpAltBTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ protected:
+  // When true, tester should test conditions flag S.
+  bool test_conditions_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltBTester);
+};
+
+// Implements a decoder tester for Binary3RegisterOpAltB with a
+// constraint that if Rd, Rm, or Rn is R15, the instruction is
+// unpredictable.
+class Binary3RegisterOpAltBTesterRegsNotPc
+    : public Binary3RegisterOpAltBTester {
+ public:
+  explicit Binary3RegisterOpAltBTesterRegsNotPc(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltBTesterRegsNotPc);
+};
+
+// Implements a decoder tester for Binary3RegisterOpAltB, except
+// that conditions flags are not checked.
+class Binary3RegisterOpAltBNoCondUpdatesTester
+    : public Binary3RegisterOpAltBTester {
+ public:
+  explicit Binary3RegisterOpAltBNoCondUpdatesTester(
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltBNoCondUpdatesTester);
+};
+
+// Implements a decoder tester for Binary3RegisterOpAltB with a
+// constraint that if Rd, Rm, or Rn is R15, the instruction is
+// unpredictable, and that condition flags are not checked.
+class Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
+ public:
+  explicit Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc);
+};
+
 // Implements a Binary3RegisterOpAltANoCondUpdates tester (i.e.
 // a Binary3RegisterOpAltA above except that S is 1 but ignored).
 // class Binary3RegisterOpAltANoCondUpdates : public

@@ -704,10 +704,15 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media(
       true)
     return DataProc_None_instance_;
 
-  if ((insn.Bits() & 0x01800000) == 0x00000000 /* op1(24:20) == 00xxx */ &&
+  if ((insn.Bits() & 0x01C00000) == 0x00000000 /* op1(24:20) == 000xx */ &&
       true &&
       true)
-    return decode_parallel_add_sub(insn);
+    return decode_parallel_add_sub_signed(insn);
+
+  if ((insn.Bits() & 0x01C00000) == 0x00400000 /* op1(24:20) == 001xx */ &&
+      true &&
+      true)
+    return decode_parallel_add_sub_unsigned(insn);
 
   if ((insn.Bits() & 0x01800000) == 0x00800000 /* op1(24:20) == 01xxx */ &&
       true &&
@@ -1079,10 +1084,99 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_pack_sat_rev(
 
 
 /*
- * Implementation of table parallel_add_sub.
- * Specified by: ('See Sections A5.4.1, A5.4.2',)
+ * Implementation of table parallel_add_sub_signed.
+ * Specified by: ('See Section A5.4.1',)
  */
-const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_add_sub(
+const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_add_sub_signed(
+     const nacl_arm_dec::Instruction insn) const {
+  UNREFERENCED_PARAMETER(insn);
+  if ((insn.Bits() & 0x00300000) == 0x00100000 /* op1(21:20) == 01 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */)
+    return Binary3RegisterOpAltB_Sadd16_Rule_148_A1_P296_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00100000 /* op1(21:20) == 01 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
+    return Binary3RegisterOpAltB_Sasx_Rule_150_A1_P300_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00100000 /* op1(21:20) == 01 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000040 /* op2(7:5) == 010 */)
+    return Binary3RegisterOpAltB_Ssax_Rule_185_A1_P366_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00100000 /* op1(21:20) == 01 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */)
+    return Binary3RegisterOpAltB_Ssub16_Rule_186_A1_P368_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00100000 /* op1(21:20) == 01 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5) == 100 */)
+    return Binary3RegisterOpAltB_Ssad8_Rule_149_A1_P298_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00100000 /* op1(21:20) == 01 */ &&
+      (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
+    return Binary3RegisterOpAltB_Ssub8_Rule_187_A1_P370_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */)
+    return Binary3RegisterOpAltB_Qadd16_Rule_125_A1_P252_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
+    return Binary3RegisterOpAltB_Qasx_Rule_127_A1_P256_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000040 /* op2(7:5) == 010 */)
+    return Binary3RegisterOpAltB_Qsax_Rule_130_A1_P262_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */)
+    return Binary3RegisterOpAltB_Qsub16_Rule_132_A1_P266_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5) == 100 */)
+    return Binary3RegisterOpAltB_Qadd8_Rule_126_A1_P254_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
+      (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
+    return Binary3RegisterOpAltB_Qsub8_Rule_133_A1_P268_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(21:20) == 11 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Shadd16_Rule_159_A1_P318_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(21:20) == 11 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Shasx_Rule_161_A1_P322_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(21:20) == 11 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000040 /* op2(7:5) == 010 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Shsax_Rule_162_A1_P324_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(21:20) == 11 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Shsub16_Rule_163_A1_P326_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(21:20) == 11 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5) == 100 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Shadd8_Rule_160_A1_P320_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(21:20) == 11 */ &&
+      (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Shsub8_Rule_164_A1_P328_instance_;
+
+  if (true)
+    return Undefined_None_instance_;
+
+  // Catch any attempt to fall through...
+  fprintf(stderr, "TABLE IS INCOMPLETE: parallel_add_sub_signed could not parse %08X",
+          insn.Bits());
+  return Forbidden_None_instance_;
+}
+
+
+/*
+ * Implementation of table parallel_add_sub_unsigned.
+ * Specified by: ('See Section A5.4.2',)
+ */
+const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_add_sub_unsigned(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
@@ -1113,7 +1207,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_add_sub(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: parallel_add_sub could not parse %08X",
+  fprintf(stderr, "TABLE IS INCOMPLETE: parallel_add_sub_unsigned could not parse %08X",
           insn.Bits());
   return Forbidden_None_instance_;
 }

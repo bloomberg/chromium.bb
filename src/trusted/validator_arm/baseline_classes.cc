@@ -149,6 +149,30 @@ RegisterList Binary3RegisterOpAltA::defs(const Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
+
+// Binary3RegisterOpAltB
+SafetyLevel Binary3RegisterOpAltB::safety(const Instruction i) const {
+  // Unsafe if any register contains PC (ARM restriction).
+  if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).
+      Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Binary3RegisterOpAltB::defs(const Instruction i) const {
+  return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
+}
+
+// Binary3RegisterOpAltBNoCondUpdates
+RegisterList Binary3RegisterOpAltBNoCondUpdates::
+defs(const Instruction i) const {
+  return RegisterList(d.reg(i));
+}
+
 // Binary4RegisterDualOp
 SafetyLevel Binary4RegisterDualOp::safety(const Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
