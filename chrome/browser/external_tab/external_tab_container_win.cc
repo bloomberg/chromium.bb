@@ -26,7 +26,6 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/repost_form_warning_controller.h"
-#include "chrome/browser/tab_contents/render_view_context_menu_win.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
@@ -35,6 +34,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
+#include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -625,10 +625,9 @@ bool ExternalTabContainer::HandleContextMenu(
     NOTREACHED();
     return false;
   }
-  external_context_menu_.reset(RenderViewContextMenuViews::Create(
-      web_contents(), params));
-  static_cast<RenderViewContextMenuWin*>(
-      external_context_menu_.get())->SetExternal();
+  external_context_menu_.reset(
+      new RenderViewContextMenuViews(web_contents(), params));
+  external_context_menu_->SetExternal();
   external_context_menu_->Init();
   external_context_menu_->UpdateMenuItemStates();
 

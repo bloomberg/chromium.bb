@@ -33,15 +33,6 @@ RenderViewContextMenuViews::RenderViewContextMenuViews(
 RenderViewContextMenuViews::~RenderViewContextMenuViews() {
 }
 
-#if !defined(OS_WIN)
-// static
-RenderViewContextMenuViews* RenderViewContextMenuViews::Create
-    content::WebContents* tab_contents,
-    const content::ContextMenuParams& params) {
-  return new RenderViewContextMenuViews(tab_contents, params);
-}
-#endif  // OS_WIN
-
 void RenderViewContextMenuViews::RunMenuAt(views::Widget* parent,
                                            const gfx::Point& point) {
   if (menu_runner_->RunMenuAt(parent, NULL, gfx::Rect(point, gfx::Size()),
@@ -49,6 +40,12 @@ void RenderViewContextMenuViews::RunMenuAt(views::Widget* parent,
       views::MenuRunner::MENU_DELETED)
     return;
 }
+
+#if defined(OS_WIN)
+void RenderViewContextMenuViews::SetExternal() {
+  external_ = true;
+}
+#endif
 
 void RenderViewContextMenuViews::UpdateMenuItemStates() {
   menu_delegate_->BuildMenu(menu_);
