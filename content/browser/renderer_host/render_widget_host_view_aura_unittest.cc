@@ -10,7 +10,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/test/test_browser_context.h"
+#include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -65,7 +65,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
     aura_test_helper_->SetUp();
 
-    browser_context_.reset(new TestBrowserContext);
+    browser_context_.reset(new content::TestBrowserContext);
     content::MockRenderProcessHost* process_host =
         new content::MockRenderProcessHost(browser_context_.get());
     widget_host_ = new content::RenderWidgetHostImpl(

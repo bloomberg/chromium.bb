@@ -9,7 +9,7 @@
 #include "base/scoped_temp_dir.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/test/test_browser_context.h"
+#include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_storage_impl.h"
@@ -66,7 +66,7 @@ class ChromeAppCacheServiceTest : public testing::Test {
   BrowserThreadImpl file_user_blocking_thread_;
   BrowserThreadImpl cache_thread_;
   BrowserThreadImpl io_thread_;
-  TestBrowserContext browser_context_;
+  content::TestBrowserContext browser_context_;
 };
 
 scoped_refptr<ChromeAppCacheService>

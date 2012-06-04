@@ -13,7 +13,7 @@
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/common/text_input_client_messages.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/test//test_browser_context.h"
+#include "content/public/test//test_browser_context.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -77,7 +77,7 @@ class TextInputClientMacTest : public testing::Test {
   friend class ScopedTestingThread;
 
   MessageLoop message_loop_;
-  TestBrowserContext browser_context_;
+  content::TestBrowserContext browser_context_;
 
   // Gets deleted when the last RWH in the "process" gets destroyed.
   MockRenderProcessHostFactory process_factory_;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_TEST_BROWSER_CONTEXT_H_
-#define CONTENT_TEST_TEST_BROWSER_CONTEXT_H_
+#ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_CONTEXT_H_
+#define CONTENT_PUBLIC_TEST_TEST_BROWSER_CONTEXT_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -16,9 +16,8 @@
 
 namespace content {
 class MockResourceContext;
-}
 
-class TestBrowserContext : public content::BrowserContext {
+class TestBrowserContext : public BrowserContext {
  public:
   TestBrowserContext();
   virtual ~TestBrowserContext();
@@ -31,15 +30,15 @@ class TestBrowserContext : public content::BrowserContext {
 
   virtual FilePath GetPath() OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
-  virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
+  virtual DownloadManager* GetDownloadManager() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() OVERRIDE;
-  virtual content::ResourceContext* GetResourceContext() OVERRIDE;
-  virtual content::GeolocationPermissionContext*
+  virtual ResourceContext* GetResourceContext() OVERRIDE;
+  virtual GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
-  virtual content::SpeechRecognitionPreferences*
+  virtual SpeechRecognitionPreferences*
       GetSpeechRecognitionPreferences() OVERRIDE;
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
@@ -48,11 +47,13 @@ class TestBrowserContext : public content::BrowserContext {
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SessionOnly);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SaveSessionState);
 
-  scoped_ptr<content::MockResourceContext> resource_context_;
+  scoped_ptr<MockResourceContext> resource_context_;
   ScopedTempDir browser_context_dir_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserContext);
 };
 
-#endif  // CONTENT_TEST_TEST_BROWSER_CONTEXT_H_
+}
+
+#endif  // CONTENT_PUBLIC_TEST_TEST_BROWSER_CONTEXT_H_

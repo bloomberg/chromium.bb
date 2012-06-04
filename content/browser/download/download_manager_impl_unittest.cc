@@ -28,7 +28,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/test/mock_download_manager.h"
-#include "content/test/test_browser_context.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_util.h"
@@ -256,7 +256,7 @@ class DownloadManagerTest : public testing::Test {
   static const size_t kTestDataLen;
 
   DownloadManagerTest()
-      : browser_context(new TestBrowserContext()),
+      : browser_context(new content::TestBrowserContext()),
         download_manager_delegate_(new TestDownloadManagerDelegate()),
         download_manager_(new DownloadManagerImpl(
             download_manager_delegate_.get(), NULL)),
@@ -349,7 +349,7 @@ class DownloadManagerTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<TestBrowserContext> browser_context;
+  scoped_ptr<content::TestBrowserContext> browser_context;
   scoped_ptr<TestDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManagerImpl> download_manager_;
   scoped_refptr<DownloadFileManager> file_manager_;

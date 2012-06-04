@@ -20,7 +20,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/test/test_browser_context.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/test/test_content_client.h"
 #include "googleurl/src/url_util.h"
@@ -254,7 +254,8 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
   // browsing_instance is now deleted
 
   // Ensure that instances are deleted when their RenderViewHosts are gone.
-  scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
+  scoped_ptr<content::TestBrowserContext> browser_context(
+      new content::TestBrowserContext());
   instance =
       TestSiteInstance::CreateTestSiteInstance(browser_context.get(),
                                                &site_delete_counter,
@@ -318,7 +319,8 @@ TEST_F(SiteInstanceTest, CloneNavigationEntry) {
 // Test to ensure GetProcess returns and creates processes correctly.
 TEST_F(SiteInstanceTest, GetProcess) {
   // Ensure that GetProcess returns a process.
-  scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
+  scoped_ptr<content::TestBrowserContext> browser_context(
+      new content::TestBrowserContext());
   scoped_ptr<content::RenderProcessHost> host1;
   scoped_refptr<SiteInstanceImpl> instance(static_cast<SiteInstanceImpl*>(
       SiteInstance::Create(browser_context.get())));
@@ -512,7 +514,8 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
 
   // A visit to the original site in a new BrowsingInstance (different browser
   // context) should return a different SiteInstance.
-  scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
+  scoped_ptr<content::TestBrowserContext> browser_context(
+      new content::TestBrowserContext());
   TestBrowsingInstance* browsing_instance3 =
       new TestBrowsingInstance(browser_context.get(), &delete_counter);
   browsing_instance3->set_use_process_per_site(true);
@@ -605,7 +608,8 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
 // Test to ensure that HasWrongProcessForURL behaves properly for different
 // types of URLs.
 TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
-  scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
+  scoped_ptr<content::TestBrowserContext> browser_context(
+      new content::TestBrowserContext());
   scoped_ptr<content::RenderProcessHost> host;
   scoped_refptr<SiteInstanceImpl> instance(static_cast<SiteInstanceImpl*>(
       SiteInstance::Create(browser_context.get())));

@@ -9,7 +9,7 @@
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/test/test_browser_context.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

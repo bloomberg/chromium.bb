@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/renderer/safe_browsing/phishing_thumbnailer.h"
-#include "content/test/render_widget_browsertest.h"
+#include "content/public/test/render_widget_browsertest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
@@ -12,7 +12,7 @@
 
 namespace safe_browsing {
 
-class ThumbnailerTest : public RenderWidgetTest {
+class ThumbnailerTest : public content::RenderWidgetTest {
  public:
   ThumbnailerTest() {}
 

@@ -23,7 +23,7 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_response.h"
-#include "content/test/test_browser_context.h"
+#include "content/public/test/test_browser_context.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_util.h"
@@ -354,7 +354,7 @@ class ResourceDispatcherHostTest : public testing::Test,
         io_thread_(BrowserThread::IO, &message_loop_),
         old_factory_(NULL),
         resource_type_(ResourceType::SUB_RESOURCE) {
-    browser_context_.reset(new TestBrowserContext());
+    browser_context_.reset(new content::TestBrowserContext());
     BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
     message_loop_.RunAllPending();
     filter_ = new ForwardingFilter(
@@ -481,7 +481,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   BrowserThreadImpl file_thread_;
   BrowserThreadImpl cache_thread_;
   BrowserThreadImpl io_thread_;
-  scoped_ptr<TestBrowserContext> browser_context_;
+  scoped_ptr<content::TestBrowserContext> browser_context_;
   scoped_refptr<ForwardingFilter> filter_;
   ResourceDispatcherHostImpl host_;
   ResourceIPCAccumulator accum_;

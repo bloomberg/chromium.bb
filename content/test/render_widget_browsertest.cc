@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/render_widget_browsertest.h"
+#include "content/public/test/render_widget_browsertest.h"
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -18,6 +18,8 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/size.h"
 #include "ui/surface/transport_dib.h"
+
+namespace content {
 
 const int RenderWidgetTest::kNumBytesPerPixel = 4;
 const int RenderWidgetTest::kLargeWidth = 1024;
@@ -149,3 +151,5 @@ void RenderWidgetTest::OutputBitmapToFile(const SkBitmap& bitmap,
 TEST_F(RenderWidgetTest, OnMsgPaintAtSize) {
   TestResizeAndPaint();
 }
+
+}  // namespace content

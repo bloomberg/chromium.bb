@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/test_browser_context.h"
+#include "content/public/test/test_browser_context.h"
 
 #include "base/file_path.h"
 #include "content/public/test/mock_resource_context.h"
@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/special_storage_policy.h"
 
-using content::DownloadManager;
+namespace content {
 
 TestBrowserContext::TestBrowserContext() {
   EXPECT_TRUE(browser_context_dir_.CreateUniqueTempDir());
@@ -53,19 +53,19 @@ net::URLRequestContextGetter* TestBrowserContext::GetRequestContextForMedia() {
   return NULL;
 }
 
-content::ResourceContext* TestBrowserContext::GetResourceContext() {
+ResourceContext* TestBrowserContext::GetResourceContext() {
   if (!resource_context_.get())
-    resource_context_.reset(new content::MockResourceContext());
+    resource_context_.reset(new MockResourceContext());
   return resource_context_.get();
 }
 
-content::GeolocationPermissionContext*
-TestBrowserContext::GetGeolocationPermissionContext() {
+GeolocationPermissionContext*
+    TestBrowserContext::GetGeolocationPermissionContext() {
   return NULL;
 }
 
-content::SpeechRecognitionPreferences*
-TestBrowserContext::GetSpeechRecognitionPreferences() {
+SpeechRecognitionPreferences*
+    TestBrowserContext::GetSpeechRecognitionPreferences() {
   return NULL;
 }
 
@@ -76,3 +76,5 @@ bool TestBrowserContext::DidLastSessionExitCleanly() {
 quota::SpecialStoragePolicy* TestBrowserContext::GetSpecialStoragePolicy() {
   return special_storage_policy_.get();
 }
+
+}  // namespace content

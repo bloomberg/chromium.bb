@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_RENDER_WIDGET_BROWSERTEST_H_
-#define CONTENT_TEST_RENDER_WIDGET_BROWSERTEST_H_
+#ifndef CONTENT_PUBLIC_TEST_RENDER_WIDGET_BROWSERTEST_H_
+#define CONTENT_PUBLIC_TEST_RENDER_WIDGET_BROWSERTEST_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -16,7 +16,9 @@ namespace gfx {
 class Size;
 }
 
-class RenderWidgetTest : public content::RenderViewTest {
+namespace content {
+
+class RenderWidgetTest : public RenderViewTest {
  public:
   RenderWidgetTest();
 
@@ -54,4 +56,6 @@ class RenderWidgetTest : public content::RenderViewTest {
   void OutputBitmapToFile(const SkBitmap& bitmap, const FilePath& file_path);
 };
 
-#endif  // CONTENT_TEST_RENDER_WIDGET_BROWSERTEST_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_TEST_RENDER_WIDGET_BROWSERTEST_H_

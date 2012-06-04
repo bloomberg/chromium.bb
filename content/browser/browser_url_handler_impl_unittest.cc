@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/browser_url_handler_impl.h"
-#include "content/test/test_browser_context.h"
+#include "content/public/test/test_browser_context.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +29,7 @@ static bool BarRewriter(GURL* url, content::BrowserContext* browser_context) {
 }
 
 TEST_F(BrowserURLHandlerImplTest, BasicRewriteAndReverse) {
-  TestBrowserContext browser_context;
+  content::TestBrowserContext browser_context;
   BrowserURLHandlerImpl handler;
 
   handler.AddHandlerPair(FooRewriter, BarRewriter);
@@ -58,7 +58,7 @@ TEST_F(BrowserURLHandlerImplTest, BasicRewriteAndReverse) {
 }
 
 TEST_F(BrowserURLHandlerImplTest, NullHandlerReverse) {
-  TestBrowserContext browser_context;
+  content::TestBrowserContext browser_context;
   BrowserURLHandlerImpl handler;
 
   GURL url("bar://foo");

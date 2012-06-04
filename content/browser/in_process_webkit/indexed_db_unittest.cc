@@ -8,7 +8,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/public/common/url_constants.h"
-#include "content/test/test_browser_context.h"
+#include "content/public/test/test_browser_context.h"
 #include "webkit/database/database_util.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/special_storage_policy.h"
@@ -46,7 +46,7 @@ TEST_F(IndexedDBTest, ClearLocalState) {
   // Create the scope which will ensure we run the destructor of the webkit
   // context which should trigger the clean up.
   {
-    TestBrowserContext browser_context;
+    content::TestBrowserContext browser_context;
 
     // Test our assumptions about what is protected and what is not.
     const GURL kProtectedOrigin("https://foo/");
@@ -95,7 +95,7 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   // Create the scope which will ensure we run the destructor of the webkit
   // context which should trigger the clean up.
   {
-    TestBrowserContext browser_context;
+    content::TestBrowserContext browser_context;
 
     const GURL kNormalOrigin("http://normal/");
     const GURL kSessionOnlyOrigin("http://session-only/");
@@ -138,7 +138,7 @@ TEST_F(IndexedDBTest, SaveSessionState) {
   // Create the scope which will ensure we run the destructor of the webkit
   // context.
   {
-    TestBrowserContext browser_context;
+    content::TestBrowserContext browser_context;
 
     const GURL kNormalOrigin("http://normal/");
     const GURL kSessionOnlyOrigin("http://session-only/");

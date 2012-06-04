@@ -44,6 +44,10 @@ class WebTouchEvent;
 class WebWidget;
 }
 
+namespace content {
+class RenderWidgetTest;
+}
+
 namespace gfx {
 class Point;
 }
@@ -158,7 +162,7 @@ class CONTENT_EXPORT RenderWidget
   // without ref-counting is an error.
   friend class base::RefCounted<RenderWidget>;
   // For unit tests.
-  friend class RenderWidgetTest;
+  friend class content::RenderWidgetTest;
 
   enum ResizeAck {
     SEND_RESIZE_ACK,

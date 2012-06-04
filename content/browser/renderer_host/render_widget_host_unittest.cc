@@ -18,7 +18,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/test/test_browser_context.h"
+#include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -295,7 +295,7 @@ class RenderWidgetHostTest : public testing::Test {
  protected:
   // testing::Test
   void SetUp() {
-    browser_context_.reset(new TestBrowserContext());
+    browser_context_.reset(new content::TestBrowserContext());
     delegate_.reset(new MockRenderWidgetHostDelegate());
     process_ = new RenderWidgetHostProcess(browser_context_.get());
     host_.reset(
@@ -343,7 +343,7 @@ class RenderWidgetHostTest : public testing::Test {
 
   MessageLoopForUI message_loop_;
 
-  scoped_ptr<TestBrowserContext> browser_context_;
+  scoped_ptr<content::TestBrowserContext> browser_context_;
   RenderWidgetHostProcess* process_;  // Deleted automatically by the widget.
   scoped_ptr<MockRenderWidgetHostDelegate> delegate_;
   scoped_ptr<MockRenderWidgetHost> host_;
