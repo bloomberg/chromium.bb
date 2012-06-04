@@ -313,6 +313,7 @@ void Canvas::DrawStringWithShadows(const string16& text,
       rect.set_height(line_height);
 
       ApplyUnderlineStyle(range, render_text.get());
+      render_text->SetDisplayRect(rect);
       render_text->Draw(this);
       rect.Offset(0, line_height);
     }
