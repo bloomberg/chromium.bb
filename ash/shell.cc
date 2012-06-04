@@ -616,7 +616,6 @@ Shell::~Shell() {
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
   // Alphabetical.
-  activation_controller_.reset();
   app_list_controller_.reset();
   drag_drop_controller_.reset();
   event_client_.reset();
@@ -628,6 +627,10 @@ Shell::~Shell() {
   shadow_controller_.reset();
   tooltip_controller_.reset();
   window_cycle_controller_.reset();
+
+  // Delete the activation controller after other controllers
+  // because they might have registered ActivationChangeObserver.
+  activation_controller_.reset();
 
   // Launcher widget has a InputMethodBridge that references to
   // input_method_filter_'s input_method_. So explicitly release launcher_

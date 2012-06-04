@@ -34,12 +34,13 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
   layout_manager_ = new WorkspaceLayoutManager(
       root_window, workspace_manager_.get());
   viewport->SetLayoutManager(layout_manager_);
-  root_window->AddObserver(this);
+  aura::client::GetActivationClient(root_window)->AddObserver(this);
   SetGridSize(kGridSize);
 }
 
 WorkspaceController::~WorkspaceController() {
-  viewport_->GetRootWindow()->RemoveObserver(this);
+  aura::client::GetActivationClient(viewport_->GetRootWindow())->
+      RemoveObserver(this);
   // WorkspaceLayoutManager may attempt to access state from us. Destroy it now.
   if (viewport_->layout_manager() == layout_manager_)
     viewport_->SetLayoutManager(NULL);
@@ -50,11 +51,9 @@ void WorkspaceController::SetGridSize(int grid_size) {
   event_filter_->set_grid_size(grid_size);
 }
 
-void WorkspaceController::OnWindowPropertyChanged(aura::Window* window,
-                                                  const void* key,
-                                                  intptr_t old) {
-  if (key == aura::client::kRootWindowActiveWindowKey)
-    workspace_manager_->SetActiveWorkspaceByWindow(wm::GetActiveWindow());
+void WorkspaceController::OnWindowActivated(aura::Window* window,
+                                            aura::Window* old_active) {
+  workspace_manager_->SetActiveWorkspaceByWindow(window);
 }
 
 }  // namespace internal

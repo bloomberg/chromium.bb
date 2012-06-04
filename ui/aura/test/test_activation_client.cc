@@ -27,6 +27,14 @@ TestActivationClient::~TestActivationClient() {
 ////////////////////////////////////////////////////////////////////////////////
 // TestActivationClient, client::ActivationClient implementation:
 
+void TestActivationClient::AddObserver(
+    client::ActivationChangeObserver* observer) {
+}
+
+void TestActivationClient::RemoveObserver(
+    client::ActivationChangeObserver* observer) {
+}
+
 void TestActivationClient::ActivateWindow(Window* window) {
   Window *last_active = GetActiveWindow();
   if (last_active == window)
@@ -40,7 +48,6 @@ void TestActivationClient::ActivateWindow(Window* window) {
 
   if (last_active && aura::client::GetActivationDelegate(last_active))
     aura::client::GetActivationDelegate(last_active)->OnLostActive();
-
 }
 
 void TestActivationClient::DeactivateWindow(Window* window) {

@@ -13,8 +13,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/timer.h"
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/window_observer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 
@@ -38,9 +38,10 @@ class WorkspaceManager;
 // layout to the status area.
 // To respond to bounds changes in the status area StatusAreaLayoutManager works
 // closely with ShelfLayoutManager.
-class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
-                                      public ash::ShellObserver,
-                                      public aura::WindowObserver {
+class ASH_EXPORT ShelfLayoutManager :
+    public aura::LayoutManager,
+    public ash::ShellObserver,
+    public aura::client::ActivationChangeObserver {
  public:
   enum VisibilityState {
     // Completely visible.
@@ -142,10 +143,9 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   // Overridden from ash::ShellObserver:
   virtual void OnLockStateChanged(bool locked) OVERRIDE;
 
-  // Overriden from aura::WindowObserver:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) OVERRIDE;
+  // Overriden from aura::client::ActivationChangeObserver:
+  virtual void OnWindowActivated(aura::Window* active,
+                                 aura::Window* old_active) OVERRIDE;
 
  private:
   class AutoHideEventFilter;

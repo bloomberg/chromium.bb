@@ -131,12 +131,12 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
       workspace_manager_(NULL),
       window_overlaps_shelf_(false) {
   Shell::GetInstance()->AddShellObserver(this);
-  root_window_->AddObserver(this);
+  aura::client::GetActivationClient(root_window_)->AddObserver(this);
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
-  root_window_->RemoveObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
+  aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
 }
 
 void ShelfLayoutManager::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
@@ -326,11 +326,9 @@ void ShelfLayoutManager::OnLockStateChanged(bool locked) {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnWindowPropertyChanged(aura::Window* window,
-                                                 const void* key,
-                                                 intptr_t old) {
-  if (key == aura::client::kRootWindowActiveWindowKey)
-    UpdateAutoHideStateNow();
+void ShelfLayoutManager::OnWindowActivated(aura::Window* active,
+                                           aura::Window* old_active) {
+  UpdateAutoHideStateNow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

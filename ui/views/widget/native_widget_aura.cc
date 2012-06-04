@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/string_util.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -90,33 +91,29 @@ void AdjustScreenBounds(aura::Window* window, gfx::Rect* bounds) {
 
 // Used when SetInactiveRenderingDisabled() is invoked to track when active
 // status changes in such a way that we should enable inactive rendering.
-class NativeWidgetAura::ActiveWindowObserver : public aura::WindowObserver {
+class NativeWidgetAura::ActiveWindowObserver :
+    public aura::WindowObserver,
+    public aura::client::ActivationChangeObserver {
  public:
   explicit ActiveWindowObserver(NativeWidgetAura* host) : host_(host) {
     host_->GetNativeView()->GetRootWindow()->AddObserver(this);
     host_->GetNativeView()->AddObserver(this);
+    aura::client::GetActivationClient(host_->GetNativeView()->GetRootWindow())->
+        AddObserver(this);
   }
   virtual ~ActiveWindowObserver() {
     CleanUpObservers();
   }
 
-  // Overridden from aura::WindowObserver:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) OVERRIDE {
-    if (window != host_->GetNativeView() ||
-        key != aura::client::kRootWindowActiveWindowKey) {
-      return;
-    }
-    aura::RootWindow* root_window = window->GetRootWindow();
-    aura::Window* active =
-        aura::client::GetActivationClient(root_window)->GetActiveWindow();
-    if (!active || (active != host_->window_ &&
-                    active->transient_parent() != host_->window_)) {
+  // Overridden from aura::client::ActivationChangeObserver:
+  virtual void OnWindowActivated(aura::Window* active,
+                                 aura::Window* old_active) {
+    if (!active || active->transient_parent() != host_->window_) {
       host_->delegate_->EnableInactiveRendering();
     }
   }
 
+  // Overridden from aura::WindowObserver:
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
     if (window != host_->GetNativeView())
       return;
@@ -129,6 +126,8 @@ class NativeWidgetAura::ActiveWindowObserver : public aura::WindowObserver {
       return;
     host_->GetNativeView()->GetRootWindow()->RemoveObserver(this);
     host_->GetNativeView()->RemoveObserver(this);
+    aura::client::GetActivationClient(host_->GetNativeView()->GetRootWindow())->
+        RemoveObserver(this);
     host_ = NULL;
   }
 

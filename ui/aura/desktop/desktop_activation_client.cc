@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "ui/aura/client/activation_delegate.h"
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -23,9 +24,20 @@ DesktopActivationClient::~DesktopActivationClient() {
   root_window_->GetFocusManager()->RemoveObserver(this);
 }
 
+
 void DesktopActivationClient::SetActivateWindowInResponseToSystem(
     Window* window) {
   current_active_ = window;
+}
+
+void DesktopActivationClient::AddObserver(
+    client::ActivationChangeObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DesktopActivationClient::RemoveObserver(
+    client::ActivationChangeObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void DesktopActivationClient::ActivateWindow(Window* window) {
@@ -35,8 +47,7 @@ void DesktopActivationClient::ActivateWindow(Window* window) {
 
   AutoReset<bool> in_activate_window(&updating_activation_, true);
   // Nothing may actually have changed.
-  aura::Window* old_active = GetActiveWindow();
-  if (old_active == window)
+  if (current_active_ == window)
     return;
   // The stacking client may impose rules on what window configurations can be
   // activated or deactivated.
@@ -50,14 +61,18 @@ void DesktopActivationClient::ActivateWindow(Window* window) {
   }
 
   // Send a deactivation to the old window
-  if (current_active_ && aura::client::GetActivationDelegate(current_active_))
-    aura::client::GetActivationDelegate(current_active_)->OnLostActive();
+  if (current_active_ && client::GetActivationDelegate(current_active_))
+    client::GetActivationDelegate(current_active_)->OnLostActive();
 
+  aura::Window* old_active = current_active_;
   current_active_ = window;
+  FOR_EACH_OBSERVER(client::ActivationChangeObserver,
+                    observers_,
+                    OnWindowActivated(window, old_active));
 
   // Send an activation event to the new window
-  if (window && aura::client::GetActivationDelegate(window))
-    aura::client::GetActivationDelegate(window)->OnActivated();
+  if (window && client::GetActivationDelegate(window))
+    client::GetActivationDelegate(window)->OnActivated();
 }
 
 void DesktopActivationClient::DeactivateWindow(Window* window) {
@@ -65,7 +80,7 @@ void DesktopActivationClient::DeactivateWindow(Window* window) {
     current_active_ = NULL;
 }
 
-aura::Window* DesktopActivationClient::GetActiveWindow() {
+Window* DesktopActivationClient::GetActiveWindow() {
   return current_active_;
 }
 

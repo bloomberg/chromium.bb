@@ -10,15 +10,19 @@
 #include "ui/aura/window.h"
 
 namespace aura {
-
 class Event;
 class RootWindow;
 
 namespace client {
+class ActivationChangeObserver;
 
 // An interface implemented by an object that manages window activation.
 class AURA_EXPORT ActivationClient {
  public:
+  // Adds/Removes ActivationChangeObservers.
+  virtual void AddObserver(ActivationChangeObserver* observer) = 0;
+  virtual void RemoveObserver(ActivationChangeObserver* observer) = 0;
+
   // Activates |window|. If |window| is NULL, nothing happens.
   virtual void ActivateWindow(Window* window) = 0;
 
@@ -45,11 +49,6 @@ class AURA_EXPORT ActivationClient {
 AURA_EXPORT void SetActivationClient(RootWindow* root_window,
                                      ActivationClient* client);
 AURA_EXPORT ActivationClient* GetActivationClient(RootWindow* root_window);
-
-// A property key to store what the client defines as the active window on the
-// RootWindow.
-AURA_EXPORT extern const WindowProperty<Window*>* const
-    kRootWindowActiveWindowKey;
 
 // Some types of transient window are only visible when active.
 // The transient parents of these windows may have visual appearance properties

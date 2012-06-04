@@ -13,6 +13,10 @@
 
 namespace aura {
 class RootWindow;
+namespace client {
+class ActivationChangeObserver;
+}
+
 namespace test {
 
 class TestActivationClient : public client::ActivationClient,
@@ -22,6 +26,9 @@ class TestActivationClient : public client::ActivationClient,
   virtual ~TestActivationClient();
 
   // Overridden from client::ActivationClient:
+  virtual void AddObserver(client::ActivationChangeObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      client::ActivationChangeObserver* observer) OVERRIDE;
   virtual void ActivateWindow(Window* window) OVERRIDE;
   virtual void DeactivateWindow(Window* window) OVERRIDE;
   virtual Window* GetActiveWindow() OVERRIDE;
@@ -35,9 +42,9 @@ class TestActivationClient : public client::ActivationClient,
   void RemoveActiveWindow(Window* window);
 
   // This class explicitly does NOT store the active window in a window property
-  // to make sure that storing the active window in a property is not treated as
-  // part of the aura API. Assumptions to that end will cause tests that use
-  // this client to fail.
+  // to make sure that ActivationChangeObserver is not treated as part of the
+  // aura API. Assumptions to that end will cause tests that use this client to
+  // fail.
   std::vector<Window*> active_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(TestActivationClient);

@@ -14,8 +14,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/window_observer.h"
 
 namespace aura {
 class Window;
@@ -43,9 +43,10 @@ namespace internal {
 // its layout manager to this instance, e.g.:
 // panel_container->SetLayoutManager(new PanelLayoutManager(panel_container));
 
-class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager,
-                                      public ash::LauncherIconObserver,
-                                      public aura::WindowObserver {
+class ASH_EXPORT PanelLayoutManager :
+      public aura::LayoutManager,
+      public ash::LauncherIconObserver,
+      public aura::client::ActivationChangeObserver {
  public:
   explicit PanelLayoutManager(aura::Window* panel_container);
   virtual ~PanelLayoutManager();
@@ -70,9 +71,9 @@ class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager,
   // Overridden from ash::LauncherIconObserver
   virtual void OnLauncherIconPositionsChanged() OVERRIDE;
 
-  // Overridden from aura::WindowObserver
-  virtual void OnWindowPropertyChanged(
-      aura::Window* window, const void* key, intptr_t old) OVERRIDE;
+  // Overridden from aura::client::ActivationChangeObserver
+  virtual void OnWindowActivated(aura::Window* active,
+                                 aura::Window* old_active) OVERRIDE;
 
  private:
   friend class PanelLayoutManagerTest;

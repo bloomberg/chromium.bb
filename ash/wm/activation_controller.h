@@ -9,11 +9,18 @@
 #include "ash/wm/scoped_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ash/ash_export.h"
+
+namespace aura {
+namespace client {
+class ActivationChangeObserver;
+}
+}
 
 namespace ash {
 namespace internal {
@@ -35,6 +42,10 @@ class ASH_EXPORT ActivationController
                                             const aura::Event* event);
 
   // Overridden from aura::client::ActivationClient:
+  virtual void AddObserver(
+      aura::client::ActivationChangeObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      aura::client::ActivationChangeObserver* observer) OVERRIDE;
   virtual void ActivateWindow(aura::Window* window) OVERRIDE;
   virtual void DeactivateWindow(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetActiveWindow() OVERRIDE;
@@ -78,6 +89,8 @@ class ASH_EXPORT ActivationController
   bool updating_activation_;
 
   aura::Window* active_window_;
+
+  ObserverList<aura::client::ActivationChangeObserver> observers_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 

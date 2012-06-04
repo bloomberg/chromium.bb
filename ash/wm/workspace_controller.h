@@ -9,7 +9,7 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/window_observer.h"
+#include "ui/aura/client/activation_change_observer.h"
 
 namespace aura {
 class Window;
@@ -27,7 +27,7 @@ class WorkspaceManager;
 // various workspace pieces: WorkspaceManager, WorkspaceLayoutManager and
 // WorkspaceEventFilter.
 class ASH_EXPORT WorkspaceController :
-      public aura::WindowObserver {
+    public aura::client::ActivationChangeObserver {
  public:
   explicit WorkspaceController(aura::Window* viewport);
   virtual ~WorkspaceController();
@@ -40,10 +40,9 @@ class ASH_EXPORT WorkspaceController :
   // Sets the size of the grid.
   void SetGridSize(int grid_size);
 
-  // aura::WindowObserver overrides:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) OVERRIDE;
+  // aura::client::ActivationChangeObserver overrides:
+  virtual void OnWindowActivated(aura::Window* window,
+                                 aura::Window* old_active) OVERRIDE;
 
  private:
   friend class WorkspaceControllerTestHelper;

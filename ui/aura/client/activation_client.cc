@@ -14,7 +14,6 @@ DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, bool);
 namespace aura {
 namespace client {
 
-DEFINE_WINDOW_PROPERTY_KEY(Window*, kRootWindowActiveWindowKey, NULL);
 DEFINE_WINDOW_PROPERTY_KEY(
     ActivationClient*, kRootWindowActivationClientKey, NULL);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kHideOnDeactivate, false);

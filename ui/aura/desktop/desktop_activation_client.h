@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/focus_change_observer.h"
@@ -14,6 +15,9 @@
 
 namespace aura {
 class RootWindow;
+namespace client {
+class ActivationChangeObserver;
+}
 
 // An activation client that handles activation events in a single
 // RootWindow. Used only on the Desktop where there can be multiple RootWindow
@@ -30,6 +34,9 @@ class AURA_EXPORT DesktopActivationClient : public client::ActivationClient,
   void SetActivateWindowInResponseToSystem(Window* window);
 
   // ActivationClient:
+  virtual void AddObserver(client::ActivationChangeObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      client::ActivationChangeObserver* observer) OVERRIDE;
   virtual void ActivateWindow(Window* window) OVERRIDE;
   virtual void DeactivateWindow(Window* window) OVERRIDE;
   virtual aura::Window* GetActiveWindow() OVERRIDE;
@@ -53,6 +60,8 @@ class AURA_EXPORT DesktopActivationClient : public client::ActivationClient,
   // True inside ActivateWindow(). Used to prevent recursion of focus
   // change notifications causing activation.
   bool updating_activation_;
+
+  ObserverList<client::ActivationChangeObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopActivationClient);
 };
