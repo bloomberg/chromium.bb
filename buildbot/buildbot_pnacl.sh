@@ -465,7 +465,7 @@ tc-generate-and-archive-pexes() {
   prune-scons-out
   tar cfj ${tarball} --directory ${build_dir} .
   ls -l ${tarball}
-  UploadArchivedPexes ${BUILDBOT_GOT_REVISION} ${tarball}
+  ${UP_DOWN_LOAD} UploadArchivedPexes ${BUILDBOT_GOT_REVISION} ${tarball}
 }
 
 # These are also suitable for local TC sanity testing
