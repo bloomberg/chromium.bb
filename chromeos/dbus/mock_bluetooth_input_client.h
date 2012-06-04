@@ -20,8 +20,9 @@ class MockBluetoothInputClient : public BluetoothInputClient {
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
   MOCK_METHOD1(GetProperties, Properties*(const dbus::ObjectPath&));
-  MOCK_METHOD2(Connect, void(const dbus::ObjectPath&,
-                             const InputCallback&));
+  MOCK_METHOD3(Connect, void(const dbus::ObjectPath&,
+                             const ConnectCallback&,
+                             const ConnectErrorCallback&));
   MOCK_METHOD2(Disconnect, void(const dbus::ObjectPath&,
                                 const InputCallback&));
 };

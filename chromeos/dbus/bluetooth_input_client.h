@@ -65,14 +65,29 @@ class CHROMEOS_EXPORT BluetoothInputClient {
 
   // The InputCallback is used for input device methods that only return to
   // indicate success. It receives two arguments, the |object_path| of the
-  // input devuce the call was made on and |success| which indicates whether
+  // input device the call was made on and |success| which indicates whether
   // or not the request succeeded.
   typedef base::Callback<void(const dbus::ObjectPath&, bool)> InputCallback;
+
+  // The ConnectCallback is used for the Connect input device method to
+  // indicate success. It receives a single argument, the |object_path| of
+  // the input device the call was made on.
+  typedef base::Callback<void(const dbus::ObjectPath&)> ConnectCallback;
+
+  // The ConnectErrorCallback is used for the Connect input device method
+  // to indicate failure. It receives three arguments, the |object_path| of
+  // the input device the call was made on, the name of the error in
+  // |error_name| and an optional message in |error_message|.
+  typedef base::Callback<void(const dbus::ObjectPath& object_path,
+                              const std::string& error_name,
+                              const std::string& error_message)>
+      ConnectErrorCallback;
 
   // Connects the input subsystem to the device with object path
   // |object_path|, which should already be a known device on the adapter.
   virtual void Connect(const dbus::ObjectPath& object_path,
-                       const InputCallback& callback) = 0;
+                       const ConnectCallback& callback,
+                       const ConnectErrorCallback& error_callback) = 0;
 
   // Disconnects the input subsystem from the device with object path
   // |object_path| without terminating the low-level ACL connection,
@@ -83,6 +98,9 @@ class CHROMEOS_EXPORT BluetoothInputClient {
   static BluetoothInputClient* Create(DBusClientImplementationType type,
                                       dbus::Bus* bus,
                                       BluetoothAdapterClient* adapter_client);
+
+  // Constants used to indicate exceptional error conditions.
+  static const char kNoResponseError[];
 
  protected:
   BluetoothInputClient();

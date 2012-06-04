@@ -20,6 +20,11 @@
 
 namespace chromeos {
 
+const char BluetoothAdapterClient::kNoResponseError[] =
+    "org.chromium.Error.NoResponse";
+const char BluetoothAdapterClient::kBadResponseError[] =
+    "org.chromium.Error.BadResponse";
+
 BluetoothAdapterClient::Properties::Properties(dbus::ObjectProxy* object_proxy,
                                                PropertyChangedCallback callback)
     : BluetoothPropertySet(object_proxy,
@@ -175,7 +180,9 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
   // BluetoothAdapterClient override.
   virtual void CreateDevice(const dbus::ObjectPath& object_path,
                             const std::string& address,
-                            const DeviceCallback& callback) OVERRIDE {
+                            const CreateDeviceCallback& callback,
+                            const CreateDeviceErrorCallback& error_callback)
+      OVERRIDE {
     dbus::MethodCall method_call(
         bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kCreateDevice);
@@ -185,19 +192,23 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
 
     dbus::ObjectProxy* object_proxy = GetObjectProxy(object_path);
 
-    object_proxy->CallMethod(
+    object_proxy->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&BluetoothAdapterClientImpl::OnCreateDevice,
-                   weak_ptr_factory_.GetWeakPtr(), object_path, callback));
+                   weak_ptr_factory_.GetWeakPtr(), object_path,
+                   callback, error_callback),
+        base::Bind(&BluetoothAdapterClientImpl::OnCreateDeviceError,
+                   weak_ptr_factory_.GetWeakPtr(), object_path,
+                   error_callback));
   }
 
   // BluetoothAdapterClient override.
-  virtual void CreatePairedDevice(const dbus::ObjectPath& object_path,
-                                  const std::string& address,
-                                  const dbus::ObjectPath& agent_path,
-                                  const std::string& capability,
-                                  const DeviceCallback& callback) OVERRIDE {
+  virtual void CreatePairedDevice(
+      const dbus::ObjectPath& object_path, const std::string& address,
+      const dbus::ObjectPath& agent_path, const std::string& capability,
+      const CreateDeviceCallback& callback,
+      const CreateDeviceErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(
         bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kCreatePairedDevice);
@@ -209,11 +220,15 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
 
     dbus::ObjectProxy* object_proxy = GetObjectProxy(object_path);
 
-    object_proxy->CallMethod(
+    object_proxy->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&BluetoothAdapterClientImpl::OnCreatePairedDevice,
-                   weak_ptr_factory_.GetWeakPtr(), object_path, callback));
+                   weak_ptr_factory_.GetWeakPtr(), object_path,
+                   callback, error_callback),
+        base::Bind(&BluetoothAdapterClientImpl::OnCreatePairedDeviceError,
+                   weak_ptr_factory_.GetWeakPtr(), object_path,
+                   error_callback));
   }
 
   // BluetoothAdapterClient override.
@@ -294,7 +309,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
     object_proxy->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&BluetoothAdapterClientImpl::OnCreateDevice,
+        base::Bind(&BluetoothAdapterClientImpl::OnUnregisterAgent,
                    weak_ptr_factory_.GetWeakPtr(), object_path, callback));
   }
 
@@ -586,48 +601,79 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
 
   // Called when a response for CreateDevice() is received.
   void OnCreateDevice(const dbus::ObjectPath& object_path,
-                      const DeviceCallback& callback,
+                      const CreateDeviceCallback& callback,
+                      const CreateDeviceErrorCallback& error_callback,
                       dbus::Response* response) {
     // Parse response.
-    bool success = false;
+    DCHECK(response);
     dbus::ObjectPath device_path;
-    if (response != NULL) {
-      dbus::MessageReader reader(response);
-      if (!reader.PopObjectPath(&device_path)) {
-        LOG(WARNING) << "CreateDevice response has incorrect parameters: "
-                     << response->ToString();
-      } else {
-        success = true;
-      }
-    } else {
-      LOG(WARNING) << "Failed to create device.";
+    dbus::MessageReader reader(response);
+    if (!reader.PopObjectPath(&device_path)) {
+      LOG(WARNING) << "CreateDevice response has incorrect parameters: "
+                   << response->ToString();
+      error_callback.Run(kBadResponseError, "");
+      return;
     }
 
     // Notify client.
-    callback.Run(device_path, success);
+    callback.Run(device_path);
+  }
+
+  // Called when an error for CreateDevice() is received.
+  void OnCreateDeviceError(const dbus::ObjectPath& object_path,
+                           const CreateDeviceErrorCallback& error_callback,
+                           dbus::ErrorResponse* response) {
+    // Error response has optional error message argument.
+    std::string error_name;
+    std::string error_message;
+    if (response) {
+      dbus::MessageReader reader(response);
+      error_name = response->GetErrorName();
+      error_message = reader.PopString(&error_message);
+    } else {
+      error_name = kNoResponseError;
+      error_message = "";
+    }
+    error_callback.Run(error_name, error_message);
   }
 
   // Called when a response for CreatePairedDevice() is received.
   void OnCreatePairedDevice(const dbus::ObjectPath& object_path,
-                            const DeviceCallback& callback,
+                            const CreateDeviceCallback& callback,
+                            const CreateDeviceErrorCallback& error_callback,
                             dbus::Response* response) {
     // Parse response.
-    bool success = false;
+    DCHECK(response);
     dbus::ObjectPath device_path;
-    if (response != NULL) {
-      dbus::MessageReader reader(response);
-      if (!reader.PopObjectPath(&device_path)) {
-        LOG(WARNING) << "CreatePairedDevice response has incorrect parameters: "
-                     << response->ToString();
-      } else {
-        success = true;
-      }
-    } else {
-      LOG(WARNING) << "Failed to create paired device.";
+    dbus::MessageReader reader(response);
+    if (!reader.PopObjectPath(&device_path)) {
+      LOG(WARNING) << "CreatePairedDevice response has incorrect parameters: "
+                   << response->ToString();
+      error_callback.Run(kBadResponseError, "");
+      return;
     }
 
     // Notify client.
-    callback.Run(device_path, success);
+    callback.Run(device_path);
+  }
+
+  // Called when an error for CreatePairedDevice() is received.
+  void OnCreatePairedDeviceError(
+      const dbus::ObjectPath& object_path,
+      const CreateDeviceErrorCallback& error_callback,
+      dbus::ErrorResponse* response) {
+    // Error response has optional error message argument.
+    std::string error_name;
+    std::string error_message;
+    if (response) {
+      dbus::MessageReader reader(response);
+      error_name = response->GetErrorName();
+      error_message = reader.PopString(&error_message);
+    } else {
+      error_name = kNoResponseError;
+      error_message = "";
+    }
+    error_callback.Run(error_name, error_message);
   }
 
   // Called when a response for CancelDeviceCreation() is received.
@@ -736,20 +782,22 @@ class BluetoothAdapterClientStubImpl : public BluetoothAdapterClient {
   // BluetoothAdapterClient override.
   virtual void CreateDevice(const dbus::ObjectPath& object_path,
                             const std::string& address,
-                            const DeviceCallback& callback) OVERRIDE {
+                            const CreateDeviceCallback& callback,
+                            const CreateDeviceErrorCallback& error_callback)
+      OVERRIDE {
     VLOG(1) << "CreateDevice: " << object_path.value() << " " << address;
-    callback.Run(dbus::ObjectPath(), false);
+    error_callback.Run("", "");
   }
 
   // BluetoothAdapterClient override.
-  virtual void CreatePairedDevice(const dbus::ObjectPath& object_path,
-                                  const std::string& address,
-                                  const dbus::ObjectPath& agent_path,
-                                  const std::string& capability,
-                                  const DeviceCallback& callback) OVERRIDE {
+  virtual void CreatePairedDevice(
+      const dbus::ObjectPath& object_path, const std::string& address,
+      const dbus::ObjectPath& agent_path, const std::string& capability,
+      const CreateDeviceCallback& callback,
+      const CreateDeviceErrorCallback& error_callback) OVERRIDE {
     VLOG(1) << "CreatePairedDevice: " << object_path.value() << " " << address
             << " " << agent_path.value() << " " << capability;
-    callback.Run(dbus::ObjectPath(), false);
+    error_callback.Run("", "");
   }
 
   // BluetoothAdapterClient override.

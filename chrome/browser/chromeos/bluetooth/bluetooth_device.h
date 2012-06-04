@@ -284,12 +284,19 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
               bool update_state);
 
   // Called by BluetoothAdapterClient when a call to CreateDevice() or
-  // CreatePairedDevice() to provide the new object path for the remote
-  // device in |device_path| and |success| which indicates whether or not
-  // the request succeeded. |error_callback| is the callback provided to
+  // CreatePairedDevice() succeeds, provides the new object path for the remote
+  // device in |device_path|. |error_callback| is the callback provided to
   // Connect().
   void ConnectCallback(ErrorCallback error_callback,
-                       const dbus::ObjectPath& device_path, bool success);
+                       const dbus::ObjectPath& device_path);
+
+  // Called by BluetoothAdapterClient when a call to CreateDevice() or
+  // CreatePairedDevice() fails with the error named |error_name| and
+  // optional message |error_message|, |error_callback| is the callback
+  // provided to Connect().
+  void ConnectErrorCallback(ErrorCallback error_callback,
+                            const std::string& error_name,
+                            const std::string& error_message);
 
   // Called by BluetoothProperty when the call to Set() for the Trusted
   // property completes. |success| indicates whether or not the request
@@ -311,14 +318,23 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
                     const dbus::ObjectPath& device_path,
                     const std::string& xml_data, bool success);
 
-  // Called by BluetoothInputClient when the call to Connect() completes.
-  // |success| indicates whether or not the request succeed, |error_callback|
-  // is the callback provided to ConnectApplications(), |interface_name|
-  // specifies the interface being connect and |device_path| the remote
-  // object path.
-  void OnConnect(ErrorCallback error_callback,
-                 const std::string& interface_name,
-                 const dbus::ObjectPath& device_path, bool success);
+  // Called by BluetoothInputClient when the call to Connect() succeeds.
+  // |error_callback| is the callback provided to ConnectApplications(),
+  // |interface_name| specifies the interface being connected and
+  // |device_path| the remote object path.
+  void OnConnect(const std::string& interface_name,
+                 const dbus::ObjectPath& device_path);
+
+  // Called by BluetoothInputClient when the call to Connect() fails.
+  // |error_callback| is the callback provided to ConnectApplications(),
+  // |interface_name| specifies the interface being connected,
+  // |device_path| the remote object path,
+  // |error_name| the error name and |error_message| the optional message.
+  void OnConnectError(ErrorCallback error_callback,
+                      const std::string& interface_name,
+                      const dbus::ObjectPath& device_path,
+                      const std::string& error_name,
+                      const std::string& error_message);
 
   // Called by BluetoothDeviceClient when a call to Disconnect() completes,
   // |success| indicates whether or not the request succeeded, |error_callback|

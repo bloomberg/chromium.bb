@@ -19,6 +19,9 @@
 
 namespace chromeos {
 
+const char BluetoothInputClient::kNoResponseError[] =
+    "org.chromium.Error.NoResponse";
+
 BluetoothInputClient::Properties::Properties(dbus::ObjectProxy* object_proxy,
                                              PropertyChangedCallback callback)
     : BluetoothPropertySet(object_proxy,
@@ -77,18 +80,23 @@ class BluetoothInputClientImpl: public BluetoothInputClient,
 
   // BluetoothInputClient override.
   virtual void Connect(const dbus::ObjectPath& object_path,
-                       const InputCallback& callback) OVERRIDE {
+                       const ConnectCallback& callback,
+                       const ConnectErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(
         bluetooth_input::kBluetoothInputInterface,
         bluetooth_input::kConnect);
 
     dbus::ObjectProxy* object_proxy = GetObjectProxy(object_path);
 
-    object_proxy->CallMethod(
+    object_proxy->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&BluetoothInputClientImpl::OnConnect,
-                   weak_ptr_factory_.GetWeakPtr(), object_path, callback));
+                   weak_ptr_factory_.GetWeakPtr(), object_path,
+                   callback),
+        base::Bind(&BluetoothInputClientImpl::OnConnectError,
+                   weak_ptr_factory_.GetWeakPtr(), object_path,
+                   error_callback));
   }
 
   // BluetoothInputClient override.
@@ -183,11 +191,28 @@ class BluetoothInputClientImpl: public BluetoothInputClient,
 
   // Called when a response for Connect() is received.
   void OnConnect(const dbus::ObjectPath& object_path,
-                 const InputCallback& callback,
+                 const ConnectCallback& callback,
                  dbus::Response* response) {
-    LOG_IF(WARNING, !response) << object_path.value()
-                               << ": OnConnect: failed.";
-    callback.Run(object_path, response);
+    DCHECK(response);
+    callback.Run(object_path);
+  }
+
+  // Called when an error for Connect() is received.
+  void OnConnectError(const dbus::ObjectPath& object_path,
+                      const ConnectErrorCallback& error_callback,
+                      dbus::ErrorResponse* response) {
+    // Error response has optional error message argument.
+    std::string error_name;
+    std::string error_message;
+    if (response) {
+      dbus::MessageReader reader(response);
+      error_name = response->GetErrorName();
+      error_message = reader.PopString(&error_message);
+    } else {
+      error_name = kNoResponseError;
+      error_message = "";
+    }
+    error_callback.Run(object_path, error_name, error_message);
   }
 
   // Called when a response for Disconnect() is received.
@@ -232,9 +257,10 @@ class BluetoothInputClientStubImpl : public BluetoothInputClient {
 
   // BluetoothInputClient override.
   virtual void Connect(const dbus::ObjectPath& object_path,
-                       const InputCallback& callback) OVERRIDE {
+                       const ConnectCallback& callback,
+                       const ConnectErrorCallback& error_callback) OVERRIDE {
     VLOG(1) << "Connect: " << object_path.value();
-    callback.Run(object_path, false);
+    error_callback.Run(object_path, "", "");
   }
 
   // BluetoothInputClient override.

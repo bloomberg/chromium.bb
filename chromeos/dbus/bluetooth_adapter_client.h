@@ -171,14 +171,30 @@ class CHROMEOS_EXPORT BluetoothAdapterClient {
                           const std::string& address,
                           const DeviceCallback& callback) = 0;
 
+  // The CreateDeviceCallback is used for the CreateDevice and
+  // CreatePairedDevice adapter methods that return a dbus object path for
+  // a remote device on success. It receives a single argument, the
+  // |object_path| of the device returned by the method.
+  typedef base::Callback<void(const dbus::ObjectPath&)> CreateDeviceCallback;
+
+  // The CreateDeviceErrorCallback is used for the CreateDevice and
+  // CreatePairedDevices adapter methods to indicate failure. It receives
+  // two arguments, the name of the error in |error_name| and an optional
+  // message in |error_message|.
+  typedef base::Callback<void(const std::string& error_name,
+                              const std::string& error_message)>
+      CreateDeviceErrorCallback;
+
   // Creates a new dbus object from the adapter with object path |object_path|
   // to the remote device with address |address|, connecting to it and
   // retrieving all SDP records. After a successful call, the device is known
   // and appear's in the adapter's |devices| interface. This is a low-security
   // connection which may not be accepted by the device.
-  virtual void CreateDevice(const dbus::ObjectPath& object_path,
-                            const std::string& address,
-                            const DeviceCallback& callback) = 0;
+  virtual void CreateDevice(
+      const dbus::ObjectPath& object_path,
+      const std::string& address,
+      const CreateDeviceCallback& callback,
+      const CreateDeviceErrorCallback& error_callback) = 0;
 
   // Creates a new dbus object from the adapter with object path |object_path|
   // to the remote device with address |address|, connecting to it, retrieving
@@ -189,11 +205,13 @@ class CHROMEOS_EXPORT BluetoothAdapterClient {
   // must be specified to negotiate the pairing, |capability| specifies the
   // input and display capabilities of that agent and should be one of the
   // constants declared in the bluetooth_agent:: namespace.
-  virtual void CreatePairedDevice(const dbus::ObjectPath& object_path,
-                                  const std::string& address,
-                                  const dbus::ObjectPath& agent_path,
-                                  const std::string& capability,
-                                  const DeviceCallback& callback) = 0;
+  virtual void CreatePairedDevice(
+      const dbus::ObjectPath& object_path,
+      const std::string& address,
+      const dbus::ObjectPath& agent_path,
+      const std::string& capability,
+      const CreateDeviceCallback& callback,
+      const CreateDeviceErrorCallback& error_callback) = 0;
 
   // Cancels the currently in progress call to CreateDevice() or
   // CreatePairedDevice() on the adapter with object path |object_path|
@@ -231,6 +249,10 @@ class CHROMEOS_EXPORT BluetoothAdapterClient {
   static BluetoothAdapterClient* Create(DBusClientImplementationType type,
                                         dbus::Bus* bus,
                                         BluetoothManagerClient* manager_client);
+
+  // Constants used to indicate exceptional error conditions.
+  static const char kNoResponseError[];
+  static const char kBadResponseError[];
 
  protected:
   BluetoothAdapterClient();

@@ -255,6 +255,9 @@ void BluetoothDevice::Connect(PairingDelegate* pairing_delegate,
                      address_,
                      base::Bind(&BluetoothDevice::ConnectCallback,
                                 weak_ptr_factory_.GetWeakPtr(),
+                                error_callback),
+                     base::Bind(&BluetoothDevice::ConnectErrorCallback,
+                                weak_ptr_factory_.GetWeakPtr(),
                                 error_callback));
   } else {
     // Initiate high-security connection with pairing.
@@ -284,42 +287,47 @@ void BluetoothDevice::Connect(PairingDelegate* pairing_delegate,
                            bluetooth_agent::kDisplayYesNoCapability,
                            base::Bind(&BluetoothDevice::ConnectCallback,
                                       weak_ptr_factory_.GetWeakPtr(),
+                                      error_callback),
+                           base::Bind(&BluetoothDevice::ConnectErrorCallback,
+                                      weak_ptr_factory_.GetWeakPtr(),
                                       error_callback));
   }
 }
 
 void BluetoothDevice::ConnectCallback(ErrorCallback error_callback,
-                                      const dbus::ObjectPath& device_path,
-                                      bool success) {
-  if (success) {
-    DVLOG(1) << "Connection successful: " << device_path.value();
-    if (object_path_.value().empty()) {
-      object_path_ = device_path;
-    } else {
-      LOG_IF(WARNING, object_path_ != device_path)
-          << "Conflicting device paths for objects, result gave: "
-          << device_path.value() << " but signal gave: "
-          << object_path_.value();
-    }
-
-    // Mark the device trusted so it can connect to us automatically, and
-    // we can connect after rebooting. This information is part of the
-    // pairing information of the device, and is unique to the combination
-    // of our bluetooth address and the device's bluetooth address. A
-    // different host needs a new pairing, so it's not useful to sync.
-    DBusThreadManager::Get()->GetBluetoothDeviceClient()->
-        GetProperties(object_path_)->trusted.Set(
-            true,
-            base::Bind(&BluetoothDevice::OnSetTrusted,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       error_callback));
-
-    // Connect application-layer protocols.
-    ConnectApplications(error_callback);
+                                      const dbus::ObjectPath& device_path) {
+  DVLOG(1) << "Connection successful: " << device_path.value();
+  if (object_path_.value().empty()) {
+    object_path_ = device_path;
   } else {
-    LOG(WARNING) << "Connection failed: " << address_;
-    error_callback.Run();
+    LOG_IF(WARNING, object_path_ != device_path)
+        << "Conflicting device paths for objects, result gave: "
+        << device_path.value() << " but signal gave: "
+        << object_path_.value();
   }
+
+  // Mark the device trusted so it can connect to us automatically, and
+  // we can connect after rebooting. This information is part of the
+  // pairing information of the device, and is unique to the combination
+  // of our bluetooth address and the device's bluetooth address. A
+  // different host needs a new pairing, so it's not useful to sync.
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+      GetProperties(object_path_)->trusted.Set(
+          true,
+          base::Bind(&BluetoothDevice::OnSetTrusted,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     error_callback));
+
+  // Connect application-layer protocols.
+  ConnectApplications(error_callback);
+}
+
+void BluetoothDevice::ConnectErrorCallback(ErrorCallback error_callback,
+                                           const std::string& error_name,
+                                           const std::string& error_message) {
+  LOG(WARNING) << "Connection failed: " << address_
+               << ": " << error_name << ": " << error_message;
+  error_callback.Run();
 }
 
 void BluetoothDevice::OnSetTrusted(ErrorCallback error_callback, bool success) {
@@ -365,22 +373,28 @@ void BluetoothDevice::OnIntrospect(ErrorCallback error_callback,
           Connect(object_path_,
                   base::Bind(&BluetoothDevice::OnConnect,
                              weak_ptr_factory_.GetWeakPtr(),
+                             *iter),
+                  base::Bind(&BluetoothDevice::OnConnectError,
+                             weak_ptr_factory_.GetWeakPtr(),
                              error_callback, *iter));
     }
   }
 }
 
-void BluetoothDevice::OnConnect(ErrorCallback error_callback,
-                                const std::string& interface_name,
-                                const dbus::ObjectPath& device_path,
-                                bool success) {
-  if (success) {
-    DVLOG(1) << "Application connection successful: " << device_path.value()
-             << ": " << interface_name;
-  } else {
-    LOG(WARNING) << "Connection failed: " << address_ << ": " << interface_name;
-    error_callback.Run();
-  }
+void BluetoothDevice::OnConnect(const std::string& interface_name,
+                                const dbus::ObjectPath& device_path) {
+  DVLOG(1) << "Application connection successful: " << device_path.value()
+           << ": " << interface_name;
+}
+
+void BluetoothDevice::OnConnectError(ErrorCallback error_callback,
+                                     const std::string& interface_name,
+                                     const dbus::ObjectPath& device_path,
+                                     const std::string& error_name,
+                                     const std::string& error_message) {
+  LOG(WARNING) << "Connection failed: " << address_ << ": " << interface_name
+               << ": " << error_name << ": " << error_message;
+  error_callback.Run();
 }
 
 void BluetoothDevice::SetPinCode(const std::string& pincode) {

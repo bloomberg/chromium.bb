@@ -31,14 +31,16 @@ class MockBluetoothAdapterClient : public BluetoothAdapterClient {
   MOCK_METHOD3(FindDevice, void(const dbus::ObjectPath&,
                                 const std::string&,
                                 const DeviceCallback&));
-  MOCK_METHOD3(CreateDevice, void(const dbus::ObjectPath&,
+  MOCK_METHOD4(CreateDevice, void(const dbus::ObjectPath&,
                                   const std::string&,
-                                  const DeviceCallback&));
-  MOCK_METHOD5(CreatePairedDevice, void(const dbus::ObjectPath&,
+                                  const CreateDeviceCallback&,
+                                  const CreateDeviceErrorCallback&));
+  MOCK_METHOD6(CreatePairedDevice, void(const dbus::ObjectPath&,
                                         const std::string&,
                                         const dbus::ObjectPath&,
                                         const std::string&,
-                                        const DeviceCallback&));
+                                        const CreateDeviceCallback&,
+                                        const CreateDeviceErrorCallback&));
   MOCK_METHOD3(CancelDeviceCreation, void(const dbus::ObjectPath&,
                                           const std::string&,
                                           const AdapterCallback&));
