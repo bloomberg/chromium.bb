@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/observer_list.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -264,7 +265,15 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   virtual void NotifyScreenLockRequested() OVERRIDE {
-    SimpleMethodCallToPowerManager(power_manager::kRequestLockScreenMethod);
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kRequestLockScreenMethod);
+    power_manager_proxy_->CallMethodWithErrorCallback(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&PowerManagerClientImpl::OnScreenLockRequested,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::OnScreenLockRequestedError,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   virtual void NotifyScreenLockCompleted() OVERRIDE {
@@ -443,6 +452,22 @@ class PowerManagerClientImpl : public PowerManagerClient {
     }
 
     callback.Run(request_id);
+  }
+
+  void OnScreenLockRequested(dbus::Response* response) {
+    UMA_HISTOGRAM_BOOLEAN("LockScreen.RequestLockScreen", true);
+  }
+
+  void OnScreenLockRequestedError(dbus::ErrorResponse* error_response) {
+    if (error_response) {
+      dbus::MessageReader reader(error_response);
+      std::string error_message;
+      reader.PopString(&error_message);
+      LOG(ERROR) << "Failed to call ScreenLockRequested: "
+                 << error_response->GetErrorName()
+                 << ": " << error_message;
+    }
+    UMA_HISTOGRAM_BOOLEAN("LockScreen.RequestLockScreen", false);
   }
 
   void OnGetScreenBrightnessPercent(
