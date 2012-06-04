@@ -66,16 +66,21 @@ typedef void (*FlipFrameWindows)();
 }
 #endif  // USE_AURA
 
-views::Button* MakeWindowSwitcherButton(views::ButtonListener* listener) {
+views::Button* MakeWindowSwitcherButton(views::ButtonListener* listener,
+                                        bool is_off_the_record) {
   views::ImageButton* switcher_button = new views::ImageButton(listener);
+  // The button in the incognito window has the hot-cold images inverted
+  // with respect to the regular browser window.
   switcher_button->SetImage(
       views::ImageButton::BS_NORMAL,
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_INCOGNITO_SWITCH_OFF));
+          is_off_the_record ? IDR_INCOGNITO_SWITCH_ON :
+                              IDR_INCOGNITO_SWITCH_OFF));
   switcher_button->SetImage(
       views::ImageButton::BS_HOT,
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_INCOGNITO_SWITCH_ON));
+          is_off_the_record ? IDR_INCOGNITO_SWITCH_OFF :
+                              IDR_INCOGNITO_SWITCH_ON));
   switcher_button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                      views::ImageButton::ALIGN_MIDDLE);
   return switcher_button;
@@ -91,8 +96,10 @@ BrowserFrameWin::BrowserFrameWin(BrowserFrame* browser_frame,
       browser_frame_(browser_frame),
       system_menu_delegate_(new SystemMenuModelDelegate(browser_view,
           browser_view->browser())) {
-  if (base::win::GetMetroModule())
-    browser_view->SetWindowSwitcherButton(MakeWindowSwitcherButton(this));
+  if (base::win::GetMetroModule()) {
+    browser_view->SetWindowSwitcherButton(
+        MakeWindowSwitcherButton(this, browser_view->IsOffTheRecord()));
+  }
 }
 
 BrowserFrameWin::~BrowserFrameWin() {

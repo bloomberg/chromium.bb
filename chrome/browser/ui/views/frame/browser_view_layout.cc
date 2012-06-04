@@ -33,7 +33,7 @@ const int kToolbarTabStripVerticalOverlap = 3;
 // spacer is visible.
 const int kSpacerBookmarkBarOverlap = 1;
 // The number of pixels the metro switcher is offset from the right edge.
-const int kWindowSwitcherOffsetX = 5;
+const int kWindowSwitcherOffsetX = 7;
 
 // Combines View::ConvertPointToView and View::HitTest for a given |point|.
 // Converts |point| from |src| to |dst| and hit tests it against |dst|. The
@@ -313,14 +313,28 @@ int BrowserViewLayout::LayoutTabStripRegion() {
   int bottom = tabstrip_bounds.bottom();
 
   // The metro window switcher sits at the far right edge of the tabstrip
-  // a |kWindowSwitcherOffsetY| pixels above the base of the tabstrip.
+  // a |kWindowSwitcherOffsetX| pixels from the right edge.
+  // Only visible if there is an incognito window because switching between
+  // regular and incognito windows is the only use case that works right now.
   views::Button* switcher_button = browser_view_->window_switcher_button_;
   if (switcher_button) {
-    int width = browser_view_->width();
-    gfx::Size ps = switcher_button->GetPreferredSize();
-    if (width > ps.width()) {
-      switcher_button->SetBounds(width - ps.width() - kWindowSwitcherOffsetX, 0,
-                                 ps.width(), ps.height());
+    if (browser_view_->browser()->profile()->HasOffTheRecordProfile()) {
+      switcher_button->SetVisible(true);
+      int width = browser_view_->width();
+      gfx::Size ps = switcher_button->GetPreferredSize();
+      if (width > ps.width()) {
+        switcher_button->SetBounds(width - ps.width() - kWindowSwitcherOffsetX,
+                                   0,
+                                   ps.width(),
+                                   ps.height());
+      }
+    } {
+      // We hide the button if the incognito profile is not alive.
+      // Note that Layout() is not called to all browser windows automatically
+      // when a profile goes away but we rely in the metro_driver.dll to call
+      // ::SetWindowPos( , .. SWP_SHOWWINDOW) which causes this function to
+      // be called again. This works both in showing or hidding the button.
+      switcher_button->SetVisible(false);
     }
   }
 
