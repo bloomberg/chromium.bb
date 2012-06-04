@@ -106,7 +106,7 @@ void AudioMixerCras::Connect() {
   if (cras_client_connect(client_) != 0) {
     thread_->message_loop()->PostDelayedTask(FROM_HERE,
         base::Bind(&AudioMixerCras::Connect, base::Unretained(this)),
-        kConnectionRetrySleepSec * 1000);
+        base::TimeDelta::FromSeconds(kConnectionRetrySleepSec));
     return;
   }
   client_connected_ = true;
