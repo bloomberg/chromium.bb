@@ -7,7 +7,9 @@
 #include "content/browser/mock_content_browser_client.h"
 #include "content/browser/notification_service_impl.h"
 #include "content/public/common/content_client.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/test/test_content_client.h"
+#include "content/test/test_render_view_host_factory.h"
 
 namespace content {
 
@@ -23,6 +25,8 @@ TestContentClientInitializer::TestContentClientInitializer() {
 }
 
 TestContentClientInitializer::~TestContentClientInitializer() {
+  test_render_view_host_factory_.reset();
+  rph_factory_.reset();
   notification_service_.reset();
 
   DCHECK_EQ(content_client_.get(), GetContentClient());
@@ -30,6 +34,12 @@ TestContentClientInitializer::~TestContentClientInitializer() {
   content_client_.reset();
 
   content_browser_client_.reset();
+}
+
+void TestContentClientInitializer::CreateTestRenderViewHosts() {
+  rph_factory_.reset(new content::MockRenderProcessHostFactory());
+  test_render_view_host_factory_.reset(
+      new content::TestRenderViewHostFactory(rph_factory_.get()));
 }
 
 }  // namespace content

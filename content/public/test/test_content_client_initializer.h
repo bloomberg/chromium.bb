@@ -15,6 +15,8 @@ namespace content {
 
 class ContentClient;
 class MockContentBrowserClient;
+class MockRenderProcessHostFactory;
+class TestRenderViewHostFactory;
 
 // Initializes various objects needed to run unit tests that use content::
 // objects. Currently this includes setting up the notification service,
@@ -24,10 +26,17 @@ class TestContentClientInitializer {
   TestContentClientInitializer();
   ~TestContentClientInitializer();
 
+  // Enables switching RenderViewHost creation to use the test version instead
+  // of the real implementation. This will last throughout the lifetime of this
+  // class.
+  void CreateTestRenderViewHosts();
+
  private:
   scoped_ptr<NotificationServiceImpl> notification_service_;
   scoped_ptr<ContentClient> content_client_;
   scoped_ptr<MockContentBrowserClient> content_browser_client_;
+  scoped_ptr<content::MockRenderProcessHostFactory> rph_factory_;
+  scoped_ptr<TestRenderViewHostFactory> test_render_view_host_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentClientInitializer);
 };

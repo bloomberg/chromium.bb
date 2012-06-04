@@ -13,8 +13,6 @@ class MessageLoopForUI;
 namespace content {
 class TestContentClientInitializer;
 class TestBrowserThread;
-class MockRenderProcessHostFactory;
-class TestRenderViewHostFactory;
 }  // namespace content
 
 namespace views {
@@ -29,9 +27,6 @@ class WebViewTestHelper {
       test_content_client_initializer_;
 
   scoped_ptr<content::TestBrowserThread> ui_thread_;
-
-  scoped_ptr<content::MockRenderProcessHostFactory> rph_factory_;
-  scoped_ptr<content::TestRenderViewHostFactory> rvh_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTestHelper);
 };
