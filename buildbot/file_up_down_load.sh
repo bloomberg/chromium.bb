@@ -126,10 +126,11 @@ UploadArmUntrustedToolchains() {
   local label=$2
   local tarball=$3
 
-  UploadArmToolchain ${rev} naclsdk_${label}.tgz ${tarball}
-
   ComputeSha1 ${tarball} > ${tarball}.sha1hash
   UploadArmToolchain ${rev} naclsdk_${label}.tgz.sha1hash ${tarball}.sha1hash
+
+  # NOTE: only the last link is shown on the waterfall so this should come last
+  UploadArmToolchain ${rev} naclsdk_${label}.tgz ${tarball}
 }
 
 DownloadArmUntrustedToolchains() {

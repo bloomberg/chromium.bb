@@ -536,7 +536,8 @@ mode-buildbot-tc-x8632-mac() {
 mode-buildbot-tc-x8664-win() {
   local is_try=$1
   FAIL_FAST=false
-  TOOLCHAIN_LABEL=pnacl_win_x86_64
+  # NOTE: this is a 64bit bot but the TC generated is 32bit
+  TOOLCHAIN_LABEL=pnacl_win_x86_32
   tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false
 
   # On windows-chrome the plugin is always 32bit even though the nexe
