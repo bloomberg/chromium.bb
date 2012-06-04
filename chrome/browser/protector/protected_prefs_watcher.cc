@@ -252,10 +252,13 @@ void ProtectedPrefsWatcher::MigrateOldBackupIfNeeded() {
     return;
 
   switch (current_version) {
-    case 1:
-      // Add pinned tabs backup.
-      prefs->Set(kBackupPinnedTabs,
-                 *prefs->GetUserPrefValue(prefs::kPinnedTabs));
+    case 1: {
+        // Add pinned tabs.
+        const base::Value* pinned_tabs =
+            prefs->GetUserPrefValue(prefs::kPinnedTabs);
+        if (pinned_tabs)
+          prefs->Set(kBackupPinnedTabs, *pinned_tabs);
+      }
       // FALL THROUGH
 
     case 2:
