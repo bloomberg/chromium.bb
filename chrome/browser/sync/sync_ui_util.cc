@@ -661,6 +661,10 @@ void ConstructAboutInformation(ProfileSyncService* service,
         full_status.reflected_updates_received);
 
     sync_ui_util::AddIntSyncDetail(
+        counters, "Successful Commits",
+        full_status.num_commits_total);
+
+    sync_ui_util::AddIntSyncDetail(
         counters, "Conflict Resolved: Client Wins",
         full_status.num_local_overwrites_total);
     sync_ui_util::AddIntSyncDetail(

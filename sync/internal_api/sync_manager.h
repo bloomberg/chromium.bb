@@ -128,9 +128,11 @@ class SyncManager {
     int updates_received;
     // Total updates received that are echoes of our own changes.
     int reflected_updates_received;
-
     // Of updates_received, how many were tombstones.
     int tombstone_updates_received;
+
+    // Total successful commits.
+    int num_commits_total;
 
     // Total number of overwrites due to conflict resolver since browser start.
     int num_local_overwrites_total;
