@@ -653,7 +653,6 @@ void GDataFile::ToProto(GDataFileProto* proto) const {
 void GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
   DCHECK(proto.gdata_entry().file_info().is_directory());
   GDataEntry::FromProto(proto.gdata_entry());
-  refresh_time_ = base::Time::FromInternalValue(proto.refresh_time());
   start_feed_url_ = GURL(proto.start_feed_url());
   next_feed_url_ = GURL(proto.next_feed_url());
   upload_url_ = GURL(proto.upload_url());
@@ -673,7 +672,6 @@ void GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
 void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
   GDataEntry::ToProto(proto->mutable_gdata_entry());
   DCHECK(proto->gdata_entry().file_info().is_directory());
-  proto->set_refresh_time(refresh_time_.ToInternalValue());
   proto->set_start_feed_url(start_feed_url_.spec());
   proto->set_next_feed_url(next_feed_url_.spec());
   proto->set_upload_url(upload_url_.spec());
@@ -776,7 +774,6 @@ bool GDataRootDirectory::ParseFromString(const std::string& serialized_proto) {
 
     FromProto(proto);
     set_origin(FROM_CACHE);
-    set_refresh_time(base::Time::Now());
   }
   return ok;
 }

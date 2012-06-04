@@ -295,9 +295,6 @@ class GDataDirectory : public GDataEntry {
   void RemoveChildFiles();
   void RemoveChildDirectories();
 
-  // Last refresh time.
-  const base::Time& refresh_time() const { return refresh_time_; }
-  void set_refresh_time(const base::Time& time) { refresh_time_ = time; }
   // Url for this feed.
   const GURL& start_feed_url() const { return start_feed_url_; }
   void set_start_feed_url(const GURL& url) { start_feed_url_ = url; }
@@ -325,7 +322,6 @@ class GDataDirectory : public GDataEntry {
   // entry instance.
   bool RemoveChild(GDataEntry* entry);
 
-  base::Time refresh_time_;
   // Url for this feed.
   GURL start_feed_url_;
   // Continuing feed's url.

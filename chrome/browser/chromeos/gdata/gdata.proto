@@ -48,7 +48,6 @@ message GDataFileProto {
 // Represents GDataDirectory.
 message GDataDirectoryProto {
   optional GDataEntryProto gdata_entry = 1;
-  optional int64 refresh_time = 2;
   optional string start_feed_url = 3;
   optional string next_feed_url = 4;
   optional string upload_url = 5;

@@ -1248,7 +1248,6 @@ void GDataFileSystem::OnGetAccountMetadata(
     {
       base::AutoLock lock(lock_);
       root_->set_origin(initial_origin);
-      root_->set_refresh_time(base::Time::Now());
     }
     changes_detected = false;
   }
@@ -3500,7 +3499,6 @@ base::PlatformFileError GDataFileSystem::UpdateFromFeed(
   bool should_notify_initial_load = root_->origin() == INITIALIZING;
 
   root_->set_origin(origin);
-  root_->set_refresh_time(base::Time::Now());
 
   int delta_feed_changestamp = 0;
   int num_regular_files = 0;
