@@ -118,6 +118,7 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
   root_window_->SetEventFilter(root_window_event_filter_);
 
   input_method_filter_.reset(new aura::shared::InputMethodEventFilter());
+  input_method_filter_->SetInputMethodPropertyInRootWindow(root_window_.get());
   root_window_event_filter_->AddFilter(input_method_filter_.get());
 
   aura::DesktopActivationClient* activation_client =
