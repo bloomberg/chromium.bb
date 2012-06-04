@@ -936,11 +936,12 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
       service->title, gfx::Font(), kTitleLinkMaxWidth, ui::ELIDE_AT_END);
   views::Label* title = new views::Label(elided_title);
   grid_layout->AddView(title);
-
-  choose_another_service_link_ = new views::Link(
-      l10n_util::GetStringUTF16(IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE));
-  grid_layout->AddView(choose_another_service_link_);
-  choose_another_service_link_->set_listener(this);
+  if (model_->GetSuggestedExtensionCount()) {
+    choose_another_service_link_ = new views::Link(
+        l10n_util::GetStringUTF16(IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE));
+    grid_layout->AddView(choose_another_service_link_);
+    choose_another_service_link_->set_listener(this);
+  }
 
 #if defined(USE_CLOSE_BUTTON)
   grid_layout->AddView(CreateCloseButton());
