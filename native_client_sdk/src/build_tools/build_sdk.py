@@ -622,6 +622,16 @@ def main(args):
       buildbot_common.Run(['make', '-j8'],
                           cwd=os.path.abspath(example_dir), shell=True)
 
+  # test examples.
+  skip_test_examples = True
+  if not skip_examples:
+    if not skip_test_examples:
+      run_script_path = os.path.join(SRC_DIR, 'chrome', 'test', 'functional')
+      buildbot_common.Run([sys.executable, 'nacl_sdk_example_test.py',
+        'nacl_sdk_example_test.NaClSDKTest.testNaClSDK'], cwd=run_script_path,
+        env=dict(os.environ.items()+{'pepper_ver':pepper_ver,
+        'OUT_DIR':OUT_DIR}.items()))
+
   # Archive on non-trybots.
   buildername = os.environ.get('BUILDBOT_BUILDERNAME', '')
   if options.archive or '-sdk' in buildername:

@@ -28,9 +28,9 @@ import pyauto_utils
 
 class NaClSDKTest(pyauto.PyUITest):
   """Tests for the NaCl SDK."""
+  _isExamplesTest = False
   _extracted_sdk_path = None
   _temp_dir = None
-  _pepper_versions = []
   _updated_pepper_versions = []
   _latest_updated_pepper_versions = []
   _settings = {
@@ -43,7 +43,8 @@ class NaClSDKTest(pyauto.PyUITest):
 
   def tearDown(self):
     pyauto.PyUITest.tearDown(self)
-    self._RemoveDownloadedTestFile()
+    if not self._isExamplesTest:
+      self._RemoveDownloadedTestFile()
 
   def testNaClSDK(self):
     """Verify that NaCl SDK is working properly."""
@@ -56,6 +57,18 @@ class NaClSDKTest(pyauto.PyUITest):
     self._VerifyInstall()
     self._VerifyUpdate()
     self._LaunchServerAndVerifyExamples()
+
+  def NaClSDKExamples(self):
+    """Verify if NaCl SDK examples are working."""
+    self._isExamplesTest = True
+    self._extracted_sdk_path = os.environ.get('OUT_DIR',
+        self._extracted_sdk_path)
+    pepper_ver = os.environ.get('pepper_ver', None)
+    if self._extracted_sdk_path and pepper_ver:
+      self._latest_updated_pepper_versions.append("pepper_" + pepper_ver)
+      self._LaunchServerAndVerifyExamples()
+    else:
+      self.fail(msg='Missing pepper version to be checked or SDK path.')
 
   def _VerifyDownloadLinks(self):
     """Verify the download links.
