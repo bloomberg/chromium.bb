@@ -275,11 +275,6 @@ env.ComponentLibrary('container',
                       ])
 
 
-env.ComponentLibrary('nacl_xdr',
-                     ['fs/xdr.c',
-                      'fs/obj_proxy.c',
-                      ])
-
 # NOTE(robertm): these extra libs were orignially only added to the
 #                sel_ldr binary
 # TODO(robertm): see who really needs them and remove
@@ -778,48 +773,6 @@ if not env.CrossToolsBuild():
   # that the auxv_phdr support enables, so is putting cart before horse.
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_auxv_phdr_test',
                          is_broken=not os.path.exists(str(auxv_nexe)))
-
-# ----------------------------------------------------------
-# Integration Tests
-# ----------------------------------------------------------
-
-# Doesn't work on windows under coverage.
-# TODO(bradnelson): fix this to work on windows under coverage.
-# NOTE: uses validator
-if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
-    not env.CrossToolsBuild()):
-  obj_proxy_test_inputs = [ 'fs/obj_proxy_test.c', ]
-  obj_proxy_test = env.ComponentProgram(
-      'obj_proxy_test',
-      obj_proxy_test_inputs,
-      EXTRA_LIBS=['sel',
-                  'env_cleanser',
-                  'manifest_proxy',
-                  'simple_service',
-                  'thread_interface',
-                  'gio_wrapped_desc',
-                  'nonnacl_srpc',
-                  'nrd_xfer',
-                  'nacl_perf_counter',
-                  'nacl_base',
-                  'imc',
-                  'nacl_fault_inject',
-                  'nacl_interval',
-                  'platform',
-                  'nacl_xdr',
-                  'container',
-                  ] + DEBUG_LIBS)
-
-  node = env.CommandTest(
-      'obj_proxy_test.out',
-      # NOTE: this is run out of obj/ rather than staging/
-      [obj_proxy_test, '-n', '2048'],
-      size='huge')
-  # TODO(bsy): change this test to use less time -- most of it (on windows)
-  # is in the RNG, so with this will inherently speed up when the RNG is
-  # updated.
-
-  env.AddNodeToTestSuite(node, ['small_tests'], 'obj_proxy_tests')
 
 # ----------------------------------------------------------
 # Integration Tests With Canned x86 Binaries

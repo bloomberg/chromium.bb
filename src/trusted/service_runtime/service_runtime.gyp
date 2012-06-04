@@ -265,13 +265,6 @@
         'generic_container/container.c',
       ],
     }, {
-      'target_name': 'nacl_xdr',
-      'type': 'static_library',
-      'sources': [
-        'fs/xdr.c',
-        'fs/obj_proxy.c',
-      ],
-    }, {
       'target_name': 'nacl_error_code',
       'type': 'static_library',
       'sources': [
@@ -357,16 +350,6 @@
           },
           'sources': [
             'generic_container/container.c',
-          ],
-        }, {
-          'target_name': 'nacl_xdr64',
-          'type': 'static_library',
-          'variables': {
-            'win_target': 'x64',
-          },
-          'sources': [
-            'fs/xdr.c',
-            'fs/obj_proxy.c',
           ],
         },
         {
