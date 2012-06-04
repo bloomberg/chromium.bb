@@ -7,7 +7,6 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
