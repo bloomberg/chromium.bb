@@ -10,7 +10,7 @@ module_LTLIBRARIES = xwayland.la
 xwayland = xwayland.la
 xwayland_la_LDFLAGS = -module -avoid-version
 xwayland_la_LIBADD =			\
-	$(XWAYLAND)			\
+	$(XWAYLAND_LIBS)		\
 	$(top_builddir)/shared/libshared.la
 xwayland_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 xwayland_la_SOURCES =			\
