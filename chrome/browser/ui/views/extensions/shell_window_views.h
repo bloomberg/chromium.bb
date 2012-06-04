@@ -70,6 +70,9 @@ class ShellWindowViews : public ShellWindow,
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
+  // Overridden from ShellWindow.
+  virtual void UpdateWindowTitle() OVERRIDE;
+
  private:
   friend class ShellWindowFrameView;
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/extensions/shell_window.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
@@ -20,6 +21,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -159,6 +162,15 @@ ShellWindow::~ShellWindow() {
   browser::EndKeepAlive();
 }
 
+string16 ShellWindow::GetTitle() const {
+  // WebContents::GetTitle() will return the page's URL if there's no <title>
+  // specified. However, we'd prefer to show the name of the extension in that
+  // case, so we directly inspect the NavigationEntry's title.
+  if (web_contents()->GetController().GetActiveEntry()->GetTitle().empty())
+    return UTF8ToUTF16(extension()->name());
+  return web_contents()->GetTitle();
+}
+
 bool ShellWindow::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ShellWindow, message)
@@ -202,6 +214,13 @@ bool ShellWindow::IsPopupOrPanel(const WebContents* source) const {
 void ShellWindow::MoveContents(WebContents* source, const gfx::Rect& pos) {
   DCHECK(source == web_contents_);
   extension_window_controller_->window()->SetBounds(pos);
+}
+
+void ShellWindow::NavigationStateChanged(
+    const content::WebContents* source, unsigned changed_flags) {
+  DCHECK(source == web_contents_);
+  if (changed_flags & content::INVALIDATE_TYPE_TITLE)
+    UpdateWindowTitle();
 }
 
 void ShellWindow::Observe(int type,

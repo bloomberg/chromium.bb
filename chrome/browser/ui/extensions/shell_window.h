@@ -70,6 +70,12 @@ class ShellWindow : public content::NotificationObserver,
               const GURL& url);
   virtual ~ShellWindow();
 
+  // Called when the title of the window changes.
+  virtual void UpdateWindowTitle() {}
+  // Sub-classes should call this to determine what the window's title is on
+  // startup and from within UpdateWindowTitle().
+  virtual string16 GetTitle() const;
+
  private:
   // PlatformAppBrowserTest needs access to web_contents()
   friend class PlatformAppBrowserTest;
@@ -97,6 +103,8 @@ class ShellWindow : public content::NotificationObserver,
       const content::WebContents* source) const OVERRIDE;
   virtual void MoveContents(
       content::WebContents* source, const gfx::Rect& pos) OVERRIDE;
+  virtual void NavigationStateChanged(const content::WebContents* source,
+                                      unsigned changed_flags) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

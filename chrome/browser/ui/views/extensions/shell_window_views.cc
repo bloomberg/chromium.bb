@@ -250,7 +250,7 @@ views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
 }
 
 string16 ShellWindowViews::GetWindowTitle() const {
-  return UTF8ToUTF16(extension()->name());
+  return GetTitle();
 }
 
 views::Widget* ShellWindowViews::GetWidget() {
@@ -352,6 +352,10 @@ void ShellWindowViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     rvh->GetView()->SetSize(size());
     OnViewWasResized();
   }
+}
+
+void ShellWindowViews::UpdateWindowTitle() {
+  window_->UpdateWindowTitle();
 }
 
 // static
