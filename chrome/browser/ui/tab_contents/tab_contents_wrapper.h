@@ -45,6 +45,7 @@ class TabSpecificContentSettings;
 class ThumbnailGenerator;
 class TranslateTabHelper;
 class WebIntentPickerController;
+class ZoomController;
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
 class OneClickSigninHelper;
@@ -221,6 +222,10 @@ class TabContentsWrapper : public content::WebContentsObserver {
     return web_intent_picker_controller_.get();
   }
 
+  ZoomController* zoom_controller() {
+    return zoom_controller_.get();
+  }
+
   // Overrides -----------------------------------------------------------------
 
   // content::WebContentsObserver overrides:
@@ -277,6 +282,8 @@ class TabContentsWrapper : public content::WebContentsObserver {
 
   // Handles displaying a web intents picker to the user.
   scoped_ptr<WebIntentPickerController> web_intent_picker_controller_;
+
+  scoped_ptr<ZoomController> zoom_controller_;
 
   // Per-tab observers ---------------------------------------------------------
   // (These provide no API for callers; objects that need to exist 1:1 with tabs

@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
+#include "chrome/browser/ui/zoom/zoom_observer.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -98,6 +99,7 @@ class Browser : public TabStripModelDelegate,
                 public ConstrainedWindowTabHelperDelegate,
                 public BlockedContentTabHelperDelegate,
                 public BookmarkTabHelperDelegate,
+                public ZoomObserver,
                 public ExtensionTabHelperDelegate,
                 public content::PageNavigator,
                 public CommandUpdater::CommandUpdaterDelegate,
@@ -1020,6 +1022,13 @@ class Browser : public TabStripModelDelegate,
   // Overridden from BookmarkTabHelperDelegate:
   virtual void URLStarredChanged(TabContentsWrapper* source,
                                  bool starred) OVERRIDE;
+
+  // Overridden from ZoomObserver:
+  virtual void OnZoomIconChanged(TabContentsWrapper* source,
+                                 ZoomController::ZoomIconState state) OVERRIDE;
+  virtual void OnZoomChanged(TabContentsWrapper* source,
+                             int zoom_percent,
+                             bool can_show_bubble) OVERRIDE;
 
   // Overridden from ExtensionTabHelperDelegate:
   virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,

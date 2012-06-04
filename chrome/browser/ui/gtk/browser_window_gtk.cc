@@ -886,6 +886,18 @@ void BrowserWindowGtk::SetStarredState(bool is_starred) {
   toolbar_->GetLocationBarView()->SetStarred(is_starred);
 }
 
+void BrowserWindowGtk::SetZoomIconState(ZoomController::ZoomIconState state) {
+  // TODO(khorimoto): Implement this.
+}
+
+void BrowserWindowGtk::SetZoomIconTooltipPercent(int zoom_percent) {
+  // TODO(khorimoto): Implement this.
+}
+
+void BrowserWindowGtk::ShowZoomBubble(int zoom_percent) {
+  // TODO(khorimoto): Implement this.
+}
+
 gfx::Rect BrowserWindowGtk::GetRestoredBounds() const {
   return restored_bounds_;
 }

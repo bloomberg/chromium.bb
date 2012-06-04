@@ -3712,6 +3712,27 @@ void Browser::URLStarredChanged(TabContentsWrapper* source, bool starred) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Browser, ZoomObserver implementation:
+
+void Browser::OnZoomIconChanged(TabContentsWrapper* source,
+                                ZoomController::ZoomIconState state) {
+  if (source == GetSelectedTabContentsWrapper())
+    window_->SetZoomIconState(state);
+}
+
+void Browser::OnZoomChanged(TabContentsWrapper* source,
+                            int zoom_percent,
+                            bool can_show_bubble) {
+  if (source == GetSelectedTabContentsWrapper()) {
+    window_->SetZoomIconTooltipPercent(zoom_percent);
+
+    // Only show the zoom bubble for zoom changes in the active window.
+    if (can_show_bubble && window_->IsActive())
+      window_->ShowZoomBubble(zoom_percent);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Browser, ExtensionTabHelperDelegate implementation:
 
 void Browser::OnDidGetApplicationInfo(TabContentsWrapper* source,
@@ -4195,6 +4216,10 @@ void Browser::UpdateCommandsForTabState() {
   // Page-related commands
   window_->SetStarredState(
       current_tab_wrapper->bookmark_tab_helper()->is_starred());
+  window_->SetZoomIconState(
+      current_tab_wrapper->zoom_controller()->zoom_icon_state());
+  window_->SetZoomIconTooltipPercent(
+      current_tab_wrapper->zoom_controller()->zoom_percent());
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
       current_tab->GetController().CanViewSource());
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
@@ -4691,6 +4716,7 @@ void Browser::SetAsDelegate(TabContentsWrapper* tab, Browser* delegate) {
   // ...and all the helpers.
   tab->blocked_content_tab_helper()->set_delegate(delegate);
   tab->bookmark_tab_helper()->set_delegate(delegate);
+  tab->zoom_controller()->set_observer(delegate);
   tab->constrained_window_tab_helper()->set_delegate(delegate);
   tab->core_tab_helper()->set_delegate(delegate);
   tab->extension_tab_helper()->set_delegate(delegate);

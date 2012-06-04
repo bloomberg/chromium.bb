@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/sync/tab_contents_wrapper_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -117,6 +118,7 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
   content_settings_.reset(new TabSpecificContentSettings(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
   web_intent_picker_controller_.reset(new WebIntentPickerController(this));
+  zoom_controller_.reset(new ZoomController(this));
 
 #if !defined(OS_ANDROID)
   print_view_manager_.reset(new printing::PrintViewManager(this));

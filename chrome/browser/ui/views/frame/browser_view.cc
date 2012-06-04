@@ -724,6 +724,18 @@ void BrowserView::SetStarredState(bool is_starred) {
   GetLocationBarView()->SetStarToggled(is_starred);
 }
 
+void BrowserView::SetZoomIconState(ZoomController::ZoomIconState state) {
+  // TODO(khorimoto): Implement this.
+}
+
+void BrowserView::SetZoomIconTooltipPercent(int zoom_percent) {
+  // TODO(khorimoto): Implement this.
+}
+
+void BrowserView::ShowZoomBubble(int zoom_percent) {
+  // TODO(khorimoto): Implement this.
+}
+
 gfx::Rect BrowserView::GetRestoredBounds() const {
   return frame_->GetRestoredBounds();
 }

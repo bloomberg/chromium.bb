@@ -161,6 +161,19 @@ void PanelBrowserWindow::SetStarredState(bool is_starred) {
   // have starred state.
 }
 
+void PanelBrowserWindow::SetZoomIconState(ZoomController::ZoomIconState state) {
+  // Since panels don't have an Omnibox, they don't have a zoom icon.
+}
+
+void PanelBrowserWindow::SetZoomIconTooltipPercent(int zoom_percent) {
+  // Since panels don't have an Omnibox, they don't have a zoom icon.
+}
+
+void PanelBrowserWindow::ShowZoomBubble(int zoom_percent) {
+  // Since panels don't have an Omnibox, they don't have a zoom icon, so no
+  // bubble will appear from it.
+}
+
 void PanelBrowserWindow::EnterFullscreen(
       const GURL& url, FullscreenExitBubbleType type) {
   NOTIMPLEMENTED();
