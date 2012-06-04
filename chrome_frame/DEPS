@@ -1,6 +1,5 @@
 include_rules = [
-  "-content",
   "+content/public/browser",
   "+content/public/common",
-  "+content/test",
+  "+content/public/test",
 ]

@@ -15,13 +15,14 @@ include_rules = [
   "-chrome",
   "+chrome/common",
   "+chrome/test",
-  "-content",
   # TODO(jam): remove me once chrome only consumes content/common through its
   # public headers.
   "+content/common",
   "+content/public/common",
   "+content/public/test",
-  "+content/test",
+  "+content/test/gpu",
+  "+content/test/net",
+  "+content/test/browser_test_base.h",  # http://crbug.com/90448
 
   # TODO(ben): remove this
   "+content/public/browser/native_web_keyboard_event.h",

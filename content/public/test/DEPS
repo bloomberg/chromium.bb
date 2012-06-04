@@ -1,4 +1,6 @@
 include_rules = [
+  "-content",
+  "+content/public",
   # DO NOT ADD ANY ENTRIES TO INTERNAL CONTENT HEADERS!
   # TODO(jam): remove
   "+content/test/content_browser_test.h",

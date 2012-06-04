@@ -2,23 +2,16 @@ include_rules = [
   # The test directory can do whatever it wants in chrome.
   "+chrome",
 
-  # Tests under chrome/ shouldn't need to access the internals of
-  # content/ and as such are allowed only content/public and
-  # content/test (which is the "public" directory for tests depending
-  # on content/).  If you find yourself wanting to write such a test,
-  # or a test that depends primarily on content, think about whether
-  # the test belongs under content/, or should be split up into a test
+  # Tests under chrome/ shouldn't need to access the internals of content/ and
+  # as such are allowed only content/public. If you find yourself wanting to
+  # write such a test, or a test that depends primarily on content, think about
+  # whether the test belongs under content/, or should be split up into a test
   # within content/ and a test within chrome/.
-  "-content",
   "+content/public",
-  "+content/test",
 
   # TODO(joi): Need to remove all of these and use only content/public
   # and content/test. http://crbug.com/98716
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
-  "+content/browser/net/url_request_mock_http_job.h",
-  "+content/browser/net/url_request_slow_http_job.h",
-  "+content/browser/trace_controller.h",
   "+content/common/debug_flags.h",
   "+content/common/injection_test_dll.h",
   "+content/renderer/mock_content_renderer_client.h",
