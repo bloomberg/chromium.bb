@@ -11,13 +11,12 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_platform_file.h"
 
-#if defined(OS_WIN)
+class CommandLine;
+class FilePath;
+
 namespace sandbox {
 struct SandboxInterfaceInfo;
 }
-#elif defined(OS_MACOSX)
-class FilePath;
-#endif
 
 namespace content {
 
@@ -51,6 +50,12 @@ CONTENT_EXPORT bool BrokerDuplicateHandle(HANDLE source_handle,
 // handles to 64-bit NaCl processes.  This returns true on success,
 // false otherwise.
 CONTENT_EXPORT bool BrokerAddTargetPeer(HANDLE peer_process);
+
+// Starts a sandboxed process with the given directory unsandboxed
+// and returns a handle to it.
+CONTENT_EXPORT base::ProcessHandle StartProcessWithAccess(
+    CommandLine* cmd_line,
+    const FilePath& exposed_dir);
 
 #elif defined(OS_MACOSX)
 

@@ -8,7 +8,6 @@ include_rules = [
   "+chrome/tools/profiles",  # For history unit tests.
   "+chrome/views",
   "+chromeos",
-  "+content/plugin/plugin_interpose_util_mac.h",
   "+content/public/browser",
   "+google_update",
   "+grit",  # For generated headers
@@ -34,13 +33,10 @@ include_rules = [
   "+webkit/quota",
   "+xib_localizers", # For generated mac localization helpers
 
-  "-content/browser",
   # TODO(jam): Need to remove all these and use only content/public. BUG=98716
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "+content/browser/geolocation/wifi_data_provider_common.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
-
-  "-content/common",
 
   "-chrome/browser/ui/views",
   # TODO(tfarina): Remove all these. crbug.com/125846.
@@ -81,7 +77,7 @@ include_rules = [
   "+third_party/sqlite",
   "+third_party/undoview",
 
-  # FIXME: these should probably not be here, we need to find a better
-  # structure for these includes.
-  "+chrome/renderer",
+  # FIXME: this is used by a browser_test. We need to find a better structure
+  # for this include.
+  "+chrome/renderer/visitedlink_slave.h",
 ]

@@ -11,7 +11,7 @@
 #include "net/url_request/url_request.h"
 
 #if defined(OS_WIN)
-#include "content/common/sandbox_policy.h"
+#include "content/public/common/sandbox_init.h"
 #include "sandbox/src/sandbox_types.h"
 #elif defined(OS_MACOSX)
 #include "chrome/service/chrome_service_application_mac.h"
@@ -44,10 +44,7 @@ int ServiceProcessMain(const content::MainFunctionParams& parameters) {
     return 0;
 
 #if defined(OS_WIN)
-  sandbox::BrokerServices* broker_services =
-      parameters.sandbox_info->broker_services;
-  if (broker_services)
-    sandbox::InitBrokerServices(broker_services);
+  content::InitializeSandbox(parameters.sandbox_info);
 #endif  // defined(OS_WIN)
 
   ServiceProcess service_process;

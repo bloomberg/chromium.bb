@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/sandbox_init.h"
 #include "ipc/ipc_switches.h"
 #include "printing/page_range.h"
 #include "ui/base/ui_base_switches.h"
@@ -26,7 +27,6 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
-#include "content/common/sandbox_policy.h"
 #include "printing/emf_win.h"
 #endif
 
@@ -137,7 +137,7 @@ bool ServiceUtilityProcessHost::Launch(CommandLine* cmd_line,
     cmd_line->AppendSwitch(switches::kNoSandbox);
     base::LaunchProcess(*cmd_line, base::LaunchOptions(), &handle_);
   } else {
-    handle_ = sandbox::StartProcessWithAccess(cmd_line, exposed_dir);
+    handle_ = content::StartProcessWithAccess(cmd_line, exposed_dir);
   }
   return (handle_ != base::kNullProcessHandle);
 #endif  // !defined(OS_WIN)

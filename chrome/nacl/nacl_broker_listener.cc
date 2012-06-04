@@ -14,8 +14,8 @@
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_debug_exception_handler_win.h"
 #include "chrome/common/nacl_messages.h"
-#include "content/common/sandbox_policy.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/sandbox_init.h"
 #include "ipc/ipc_switches.h"
 
 namespace {
@@ -86,7 +86,7 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
     cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
                                 loader_channel_id);
 
-    loader_process = sandbox::StartProcessWithAccess(cmd_line, FilePath());
+    loader_process = content::StartProcessWithAccess(cmd_line, FilePath());
     if (loader_process) {
       DuplicateHandle(::GetCurrentProcess(), loader_process,
           browser_handle_, &loader_handle_in_browser,

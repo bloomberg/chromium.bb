@@ -844,4 +844,10 @@ bool BrokerAddTargetPeer(HANDLE peer_process) {
   return g_broker_services->AddTargetPeer(peer_process) == sandbox::SBOX_ALL_OK;
 }
 
+base::ProcessHandle StartProcessWithAccess(
+    CommandLine* cmd_line,
+    const FilePath& exposed_dir) {
+  return sandbox::StartProcessWithAccess(cmd_line, exposed_dir);
+}
+
 }  // namespace content

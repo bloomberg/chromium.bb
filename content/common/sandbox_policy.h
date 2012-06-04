@@ -17,17 +17,14 @@ namespace sandbox {
 class BrokerServices;
 class TargetServices;
 
-CONTENT_EXPORT bool InitBrokerServices(
-    sandbox::BrokerServices* broker_services);
+bool InitBrokerServices(sandbox::BrokerServices* broker_services);
 
-CONTENT_EXPORT bool InitTargetServices(
-    sandbox::TargetServices* target_services);
+bool InitTargetServices(sandbox::TargetServices* target_services);
 
 // Starts a sandboxed process with the given directory unsandboxed
 // and returns a handle to it.
-CONTENT_EXPORT base::ProcessHandle StartProcessWithAccess(
-    CommandLine* cmd_line,
-    const FilePath& exposed_dir);
+base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
+                                           const FilePath& exposed_dir);
 
 }  // namespace sandbox
 
