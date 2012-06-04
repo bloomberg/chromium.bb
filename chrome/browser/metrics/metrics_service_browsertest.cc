@@ -69,7 +69,13 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceTest, CloseRenderersNormally) {
   // exits... it's not clear to me how to test that.
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsServiceTest, CrashRenderers) {
+// Flaky on Linux. See http://crbug.com/131094
+#if defined(OS_LINUX)
+#define MAYBE_CrashRenderers DISABLED_CrashRenderers
+#else
+#define MAYBE_CrashRenderers CrashRenderers
+#endif
+IN_PROC_BROWSER_TEST_F(MetricsServiceTest, MAYBE_CrashRenderers) {
   OpenTabs();
 
   // Kill the process for one of the tabs.
