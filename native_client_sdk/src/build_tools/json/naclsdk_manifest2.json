@@ -89,7 +89,7 @@
     {
       "name": "pepper_17",
       "description": "Chrome 17 bundle, revision 112997",
-      "stability": "stable",
+      "stability": "post_stable",
       "recommended": "no",
       "version": 17,
       "archives": [
@@ -123,8 +123,8 @@
     {
       "name": "pepper_18",
       "description": "Chrome 18 bundle, revision 124251",
-      "stability": "beta",
-      "recommended": "yes",
+      "stability": "post_stable",
+      "recommended": "no",
       "version": 18,
       "repath": "pepper_18",
       "archives": [
@@ -158,7 +158,7 @@
     {
       "name": "pepper_19",
       "description": "Chrome 19 bundle, revision 129248",
-      "stability": "dev",
+      "stability": "stable",
       "recommended": "yes",
       "version": 19,
       "repath": "pepper_19",
@@ -192,14 +192,23 @@
     },
     {
       "name": "pepper_20",
-      "description": "Chrome 20 bundle, revision 133336",
-      "stability": "dev",
+      "description": "Chrome 20 bundle, revision xxxxx",
+      "stability": "beta",
       "recommended": "no",
       "version": 20,
       "repath": "pepper_20",
-      "archives": [
-      ],
-      "revision": 134804
+      "archives": [],
+      "revision": 0
+    },
+    {
+      "name": "pepper_canary",
+      "description": "Chrome Canary",
+      "stability": "canary",
+      "recommended": "no",
+      "version": 0,
+      "repath": "",
+      "archives": [],
+      "revision": 0
     }
   ],
   "manifest_version": 2

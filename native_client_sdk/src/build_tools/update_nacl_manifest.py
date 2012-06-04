@@ -19,14 +19,15 @@ import time
 import urllib2
 
 
-# TODO(binji) handle pushing pepper_trunk
-
-
 MANIFEST_BASENAME = 'naclsdk_manifest2.json'
 SCRIPT_DIR = os.path.dirname(__file__)
 REPO_MANIFEST = os.path.join(SCRIPT_DIR, 'json', MANIFEST_BASENAME)
 GS_BUCKET_PATH = 'gs://nativeclient-mirror/nacl/nacl_sdk/'
 GS_SDK_MANIFEST = GS_BUCKET_PATH + MANIFEST_BASENAME
+GS_MANIFEST_BACKUP_DIR = GS_BUCKET_PATH + 'manifest_backups/'
+
+CANARY_BUNDLE_NAME = 'pepper_canary'
+CANARY='canary'
 
 
 def SplitVersion(version_string):
@@ -114,6 +115,15 @@ class Delegate(object):
       tuple."""
     raise NotImplementedError()
 
+  def GetTrunkRevision(self, version):
+    """Given a Chrome version, get its trunk revision.
+
+    Args:
+      version: A version string of the form '18.0.1025.64'
+    Returns:
+      The revision number for that version, as a string."""
+    raise NotImplementedError()
+
   def GsUtil_ls(self, url):
     """Runs gsutil ls |url|
 
@@ -166,6 +176,11 @@ class RealDelegate(Delegate):
     url_stream = urllib2.urlopen('https://omahaproxy.appspot.com/history')
     return [(platform, channel, version, date)
         for platform, channel, version, date in csv.reader(url_stream)]
+
+  def GetTrunkRevision(self, version):
+    """See Delegate.GetTrunkRevision"""
+    url = 'http://omahaproxy.appspot.com/revision?version=%s' % (version,)
+    return 'trunk.%s' % (urllib2.urlopen(url).read(),)
 
   def GsUtil_ls(self, url):
     """See Delegate.GsUtil_ls"""
@@ -232,26 +247,95 @@ class VersionFinder(object):
       A tuple (version, channel, archives). The version is a string such as
       "19.0.1084.41". The channel is one of ('stable', 'beta', or 'dev').
       |archives| is a list of archive URLs."""
-    shared_version_generator = self._FindNextSharedVersion(major_version,
-                                                          platforms)
+    shared_version_generator = self._FindNextSharedVersion(
+        platforms,
+        lambda platform: self._GetPlatformMajorVersionHistory(major_version,
+                                                              platform))
+    return self._DoGetMostRecentSharedVersion(platforms,
+        shared_version_generator, allow_trunk_revisions=False)
+
+  def GetMostRecentSharedCanary(self, platforms):
+    """Returns the most recent version of a canary pepper bundle that exists on
+    all given platforms.
+
+    Canary is special-cased because we don't care about its major version; we
+    always use the most recent canary, regardless of major version.
+
+    Args:
+      platforms: A sequence of platforms to consider, e.g.
+          ('mac', 'linux', 'win')
+    Returns:
+      A tuple (version, channel, archives). The version is a string such as
+      "19.0.1084.41". The channel is always 'canary'. |archives| is a list of
+      archive URLs."""
+    # We don't ship canary on Linux, so it won't appear in self.history.
+    # Instead, we can use the matching Linux trunk build for that version.
+    shared_version_generator = self._FindNextSharedVersion(
+        set(platforms) - set(('linux',)),
+        self._GetPlatformCanaryHistory)
+    return self._DoGetMostRecentSharedVersion(platforms,
+        shared_version_generator, allow_trunk_revisions=True)
+
+  def _DoGetMostRecentSharedVersion(self, platforms, shared_version_generator,
+      allow_trunk_revisions):
+    """Returns the most recent version of a pepper bundle that exists on all
+    given platforms.
+
+    This function does the real work for the public GetMostRecentShared* above.
+
+    Args:
+      platforms: A sequence of platforms to consider, e.g.
+          ('mac', 'linux', 'win')
+      shared_version_generator: A generator that will yield (version, channel)
+          tuples in order of most recent to least recent.
+      allow_trunk_revisions: If True, will search for archives using the
+            trunk revision that matches the branch version.
+    Returns:
+      A tuple (version, channel, archives). The version is a string such as
+      "19.0.1084.41". The channel is one of ('stable', 'beta', 'dev',
+      'canary'). |archives| is a list of archive URLs."""
     version = None
+    skipped_versions = []
     while True:
       try:
         version, channel = shared_version_generator.next()
       except StopIteration:
-        raise Exception('No shared version for major_version %s, '
-            'platforms: %s. Last version checked = %s' % (
-            major_version, ', '.join(platforms), version))
+        msg = 'No shared version for platforms: %s\n' % (', '.join(platforms))
+        msg += 'Last version checked = %s.\n' % (version,)
+        if skipped_versions:
+          msg += 'Versions skipped due to missing archives:\n'
+          for version, channel, archives in skipped_versions:
+            if archives:
+              archive_msg = '(%s available)' % (', '.join(archives))
+            else:
+              archive_msg = '(none available)'
+          msg += '  %s (%s) %s\n' % (version, channel, archive_msg)
+        raise Exception(msg)
 
       archives = self._GetAvailableNaClSDKArchivesFor(version)
-      archive_platforms = GetPlatformsFromArchives(archives)
-      if set(archive_platforms) == set(platforms):
+      missing_platforms = set(platforms) - \
+          set(GetPlatformsFromArchives(archives))
+      if allow_trunk_revisions and missing_platforms:
+        # Try to find trunk archives for platforms that are missing archives.
+        trunk_version = self.delegate.GetTrunkRevision(version)
+        trunk_archives = self._GetAvailableNaClSDKArchivesFor(trunk_version)
+        for trunk_archive in trunk_archives:
+          trunk_archive_platform = GetPlatformFromArchiveUrl(trunk_archive)
+          if trunk_archive_platform in missing_platforms:
+            archives.append(trunk_archive)
+            missing_platforms.discard(trunk_archive_platform)
+
+      if not missing_platforms:
         return version, channel, archives
+
+      skipped_versions.append((version, channel, archives))
 
   def _GetPlatformMajorVersionHistory(self, with_major_version, with_platform):
     """Yields Chrome history for a given platform and major version.
 
     Args:
+      with_major_version: The major version to filter for. If 0, match all
+          versions.
       with_platform: The name of the platform to filter for.
     Returns:
       A generator that yields a tuple (channel, version) for each version that
@@ -260,10 +344,28 @@ class VersionFinder(object):
     """
     for platform, channel, version, _ in self.history:
       version = SplitVersion(version)
-      if with_platform == platform and with_major_version == version[0]:
+      if (with_platform == platform and
+          (with_major_version == 0 or with_major_version == version[0])):
         yield channel, version
 
-  def _FindNextSharedVersion(self, major_version, platforms):
+  def _GetPlatformCanaryHistory(self, with_platform):
+    """Yields Chrome history for a given platform, but only for canary
+    versions.
+
+    Args:
+      with_platform: The name of the platform to filter for.
+    Returns:
+      A generator that yields a tuple (channel, version) for each version that
+      matches the platform and uses the canary channel. The version returned is
+      a tuple as returned from SplitVersion.
+    """
+    for platform, channel, version, _ in self.history:
+      version = SplitVersion(version)
+      if with_platform == platform and channel==CANARY:
+        yield channel, version
+
+
+  def _FindNextSharedVersion(self, platforms, generator_func):
     """Yields versions of Chrome that exist on all given platforms, in order of
        newest to oldest.
 
@@ -280,8 +382,7 @@ class VersionFinder(object):
     """
     platform_generators = []
     for platform in platforms:
-      platform_generators.append(self._GetPlatformMajorVersionHistory(
-          major_version, platform))
+      platform_generators.append(generator_func(platform))
 
     shared_version = None
     platform_versions = [(tuple(), '')] * len(platforms)
@@ -315,6 +416,7 @@ class VersionFinder(object):
 
       All returned URLs will use the gs:// schema."""
     files = self.delegate.GsUtil_ls(GS_BUCKET_PATH + version_string)
+
     assert all(file.startswith('gs://') for file in files)
 
     archives = [file for file in files if not file.endswith('.json')]
@@ -351,6 +453,10 @@ class Updater(object):
       bundle_recommended = bundle.recommended
       for archive in archives:
         platform_bundle = self._GetPlatformArchiveBundle(archive)
+        # Normally the manifest snippet's bundle name matches our bundle name.
+        # pepper_canary, however is called "pepper_###" in the manifest
+        # snippet.
+        platform_bundle.name = bundle_name
         bundle.MergeWithBundle(platform_bundle)
       bundle.stability = channel
       bundle.recommended = bundle_recommended
@@ -386,7 +492,8 @@ class Updater(object):
     Args:
       manifest: The new manifest to upload.
     """
-    timestamp_manifest_path = GS_BUCKET_PATH + GetTimestampManifestName()
+    timestamp_manifest_path = GS_MANIFEST_BACKUP_DIR + \
+        GetTimestampManifestName()
     self.delegate.GsUtil_cp('-', timestamp_manifest_path,
         stdin=manifest.GetDataAsString())
 
@@ -397,27 +504,30 @@ class Updater(object):
 def Run(delegate, platforms):
   """Entry point for the auto-updater."""
   manifest = delegate.GetRepoManifest()
-  auto_update_major_versions = []
+  auto_update_bundles = []
   for bundle in manifest.GetBundles():
     if not bundle.name.startswith('pepper_'):
       continue
     archives = bundle.GetArchives()
     if not archives:
-      auto_update_major_versions.append(bundle.version)
+      auto_update_bundles.append(bundle)
 
-  if not auto_update_major_versions:
+  if not auto_update_bundles:
     delegate.Print('No versions need auto-updating.')
     return
 
   version_finder = VersionFinder(delegate)
   updater = Updater(delegate)
 
-  for major_version in auto_update_major_versions:
-    version, channel, archives = version_finder.GetMostRecentSharedVersion(
-        major_version, platforms)
+  for bundle in auto_update_bundles:
+    if bundle.name == CANARY_BUNDLE_NAME:
+      version, channel, archives = version_finder.GetMostRecentSharedCanary(
+          platforms)
+    else:
+      version, channel, archives = version_finder.GetMostRecentSharedVersion(
+          bundle.version, platforms)
 
-    bundle_name = 'pepper_' + str(major_version)
-    updater.AddVersionToUpdate(bundle_name, version, channel, archives)
+    updater.AddVersionToUpdate(bundle.name, version, channel, archives)
 
   updater.Update(manifest)
 
