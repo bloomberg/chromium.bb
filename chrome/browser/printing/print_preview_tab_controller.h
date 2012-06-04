@@ -2,14 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// For print preview, a print preview (PP) tab is linked with the initiator tab
-// that initiated the printing operation. If the tab initiates a second
-// printing operation while the first print preview tab is still open, that PP
-// tab is focused/activated. There may be more than one PP tab open. There is a
-// 1:1 relationship between PP tabs and initiating tabs. This class manages PP
-// tabs and initiator tabs.
 #ifndef CHROME_BROWSER_PRINTING_PRINT_PREVIEW_TAB_CONTROLLER_H_
-
 #define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_TAB_CONTROLLER_H_
 #pragma once
 
@@ -30,6 +23,12 @@ class RenderProcessHost;
 
 namespace printing {
 
+// For print preview, a print preview (PP) tab is linked with the initiator tab
+// that initiated the printing operation. If the tab initiates a second
+// printing operation while the first print preview tab is still open, that PP
+// tab is focused/activated. There may be more than one PP tab open. There is a
+// 1:1 relationship between PP tabs and initiating tabs. This class manages PP
+// tabs and initiator tabs.
 class PrintPreviewTabController
     : public base::RefCounted<PrintPreviewTabController>,
       public content::NotificationObserver {
