@@ -186,17 +186,18 @@ class Cache(object):
   def trim(self):
     """Trims anything we don't know, make sure enough free space exists."""
     # Ensure that all files listed in the state still exist.
-    for f in self.state:
-      if not os.path.exists(os.path.join(self.cache_dir, f)):
-        self.state.remove(f)
+    for filename in self.state:
+      if not os.path.exists(self.path(filename)):
+        logging.info('Removing lost file %s' % filename)
+        self.state.remove(filename)
 
-    for f in os.listdir(self.cache_dir):
-      if f == self.STATE_FILE or f in self.state:
+    for filename in os.listdir(self.cache_dir):
+      if filename == self.STATE_FILE or filename in self.state:
         continue
-      logging.warn('Unknown file %s from cache' % f)
+      logging.warn('Unknown file %s from cache' % filename)
       # Insert as the oldest file. It will be deleted eventually if not
       # accessed.
-      self.state.insert(0, f)
+      self.state.insert(0, filename)
 
     # Ensure enough free space.
     while (
@@ -204,17 +205,27 @@ class Cache(object):
         self.state and
         get_free_space(self.cache_dir) < self.min_free_space):
       try:
-        os.remove(self.path(self.state.pop(0)))
+        filename = self.state.pop(0)
+        logging.info('Trimming %s' % filename)
+        os.remove(self.path(filename))
       except OSError as e:
         logging.error('Error attempting to delete a file\n%s' % e)
 
     # Ensure maximum cache size.
     if self.max_cache_size and self.state:
-      sizes = [os.stat(self.path(f)).st_size for f in self.state]
+      try:
+        sizes = [os.stat(self.path(f)).st_size for f in self.state]
+      except OSError:
+        logging.error(
+            'At least one file is missing; %s\n' % '\n'.join(self.state))
+        raise
+
       while sizes and sum(sizes) > self.max_cache_size:
         # Delete the oldest item.
         try:
-          os.remove(self.path(self.state.pop(0)))
+          filename = self.state.pop(0)
+          logging.info('Trimming %s' % filename)
+          os.remove(self.path(filename))
         except OSError as e:
           logging.error('Error attempting to delete a file\n%s' % e)
         sizes.pop(0)
@@ -296,7 +307,7 @@ def main():
   parser = optparse.OptionParser(
       usage='%prog <options>', description=sys.modules[__name__].__doc__)
   parser.add_option(
-      '-v', '--verbose', action='count', default=0, help='Use multiple times')
+      '-v', '--verbose', action='count', default=1, help='Use multiple times')
   parser.add_option(
       '-m', '--manifest',
       metavar='FILE',
