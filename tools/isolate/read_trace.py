@@ -10,6 +10,7 @@ import optparse
 import os
 import sys
 
+import isolate_common
 import trace_inputs
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -21,8 +22,8 @@ def read_trace(logname, root_dir, cwd_dir, product_dir):
   root_dir = os.path.realpath(root_dir)
   api = trace_inputs.get_api()
   _, _, _, _, simplified, _ = trace_inputs.load_trace(logname, root_dir, api)
-  variables = trace_inputs.generate_dict(simplified, cwd_dir, product_dir)
-  trace_inputs.pretty_print(variables, sys.stdout)
+  variables = isolate_common.generate_dict(simplified, cwd_dir, product_dir)
+  isolate_common.pretty_print(variables, sys.stdout)
 
 
 def main():

@@ -18,6 +18,7 @@ import sys
 import tempfile
 import time
 
+import isolate_common
 import list_test_cases
 import trace_inputs
 
@@ -61,7 +62,7 @@ def trace_test_case(
         print >> sys.stderr, '\nTracing failed for: %s' % ' '.join(cmd)
         print >> sys.stderr, str(e)
     if simplified:
-      variables = trace_inputs.generate_dict(simplified, cwd_dir, product_dir)
+      variables = isolate_common.generate_dict(simplified, cwd_dir, product_dir)
     else:
       variables = {}
     return {

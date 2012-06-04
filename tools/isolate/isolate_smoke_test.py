@@ -54,15 +54,20 @@ DEPENDENCIES = {
 
 class CalledProcessError(subprocess.CalledProcessError):
   """Makes 2.6 version act like 2.7"""
-  def __init__(self, returncode, cmd, output, cwd):
+  def __init__(self, returncode, cmd, output, stderr, cwd):
     super(CalledProcessError, self).__init__(returncode, cmd)
     self.output = output
+    self.stderr = stderr
     self.cwd = cwd
 
   def __str__(self):
     return super(CalledProcessError, self).__str__() + (
         '\n'
-        'cwd=%s\n%s') % (self.cwd, self.output)
+        'cwd=%s\n%s\n%s\n%s') % (
+            self.cwd,
+            self.output,
+            self.stderr,
+            ' '.join(self.cmd))
 
 
 def list_files_tree(directory):
@@ -120,7 +125,7 @@ class IsolateBase(unittest.TestCase):
 
     if self.LEVEL >= isolate.STATS_ONLY:
       for k, v in files.iteritems():
-        if isolate.trace_inputs.get_flavor() != 'win':
+        if isolate.isolate_common.get_flavor() != 'win':
           v[u'mode'] = self._fix_file_mode(k, read_only)
         filestats = os.stat(os.path.join(root_dir, k))
         v[u'size'] = filestats.st_size
@@ -148,7 +153,7 @@ class IsolateBase(unittest.TestCase):
     self.assertEquals(expected, json.load(open(self.result, 'r')))
 
   def _expected_saved_state(self, extra_vars):
-    flavor = isolate.trace_inputs.get_flavor()
+    flavor = isolate.isolate_common.get_flavor()
     expected = {
       u'isolate_file': unicode(self.filename()),
       u'variables': {
@@ -189,7 +194,7 @@ class IsolateBase(unittest.TestCase):
 
     if need_output or not VERBOSE:
       stdout = subprocess.PIPE
-      stderr = subprocess.STDOUT
+      stderr = subprocess.PIPE
     else:
       cmd.extend(['-v'] * 3)
       stdout = None
@@ -204,9 +209,13 @@ class IsolateBase(unittest.TestCase):
         cwd=cwd,
         env=env,
         universal_newlines=True)
-    out = p.communicate()[0]
+    out, err = p.communicate()
     if p.returncode:
-      raise CalledProcessError(p.returncode, cmd, out, cwd)
+      raise CalledProcessError(p.returncode, cmd, out, err, cwd)
+
+    # Do not check on Windows since a lot of spew is generated there.
+    if sys.platform != 'win32':
+      self.assertEquals('', err)
     return out
 
   def mode(self):
@@ -463,7 +472,7 @@ class Isolate_trace(IsolateBase):
   @staticmethod
   def _to_string(values):
     buf = cStringIO.StringIO()
-    isolate.trace_inputs.pretty_print(values, buf)
+    isolate.isolate_common.pretty_print(values, buf)
     return buf.getvalue()
 
   def test_fail(self):
@@ -474,22 +483,29 @@ class Isolate_trace(IsolateBase):
       out = e.output
     self._expect_no_tree()
     self._expect_results(['fail.py'], None, None)
-    expected = 'Failing'
+    # Even if it returns an error, isolate.py still prints the trace.
+    expected = self._to_string(
+        {
+          'conditions': [
+            ['OS=="%s"' % isolate.isolate_common.get_flavor(), {
+              'variables': {
+                isolate.isolate_common.KEY_TRACKED: [
+                  'fail.py',
+                ],
+              },
+            }],
+          ],
+        })
     lines = out.strip().splitlines()
-    self.assertTrue(lines.pop(0).startswith('WARNING'))
-    self.assertTrue(lines.pop(0).startswith('WARNING'))
-    if sys.platform == 'win32':
-      # Includes spew from tracerpt.exe.
-      self.assertEquals(expected, lines[0], (lines, expected))
-    else:
-      self.assertEquals([expected], lines)
+    self.assertEquals(expected.splitlines(), lines)
 
   def test_missing_trailing_slash(self):
     try:
       self._execute('trace', 'missing_trailing_slash.isolate', [], True)
       self.fail()
     except subprocess.CalledProcessError, e:
-      out = e.output
+      self.assertEquals('', e.output)
+      out = e.stderr
     self._expect_no_tree()
     self._expect_no_result()
     expected = (
@@ -504,7 +520,8 @@ class Isolate_trace(IsolateBase):
       self._execute('trace', 'non_existent.isolate', [], True)
       self.fail()
     except subprocess.CalledProcessError, e:
-      out = e.output
+      self.assertEquals('', e.output)
+      out = e.stderr
     self._expect_no_tree()
     self._expect_no_result()
     expected = (
@@ -529,19 +546,20 @@ class Isolate_trace(IsolateBase):
     out = self._execute('trace', 'touch_root.isolate', [], True)
     self._expect_no_tree()
     self._expect_results(['touch_root.py'], None, None)
-    expected = {
-      'conditions': [
-        ['OS=="%s"' % isolate.trace_inputs.get_flavor(), {
-          'variables': {
-            isolate.trace_inputs.KEY_TRACKED: [
-              'touch_root.py',
-              '../../isolate.py',
-            ],
-          },
-        }],
-      ],
-    }
-    self.assertEquals(self._to_string(expected), out)
+    expected = self._to_string(
+        {
+          'conditions': [
+            ['OS=="%s"' % isolate.isolate_common.get_flavor(), {
+              'variables': {
+                isolate.isolate_common.KEY_TRACKED: [
+                  'touch_root.py',
+                  '../../isolate.py',
+                ],
+              },
+            }],
+          ],
+        })
+    self.assertEquals(expected, out)
 
   def test_with_flag(self):
     out = self._execute(
@@ -550,12 +568,12 @@ class Isolate_trace(IsolateBase):
     self._expect_results(['with_flag.py', 'trace'], None, {u'FLAG': u'trace'})
     expected = {
       'conditions': [
-        ['OS=="%s"' % isolate.trace_inputs.get_flavor(), {
+        ['OS=="%s"' % isolate.isolate_common.get_flavor(), {
           'variables': {
-            isolate.trace_inputs.KEY_TRACKED: [
+            isolate.isolate_common.KEY_TRACKED: [
               'with_flag.py',
             ],
-            isolate.trace_inputs.KEY_UNTRACKED: [
+            isolate.isolate_common.KEY_UNTRACKED: [
               # Note that .isolate format mandates / and not os.path.sep.
               'files1/',
             ],
@@ -619,9 +637,9 @@ class IsolateNoOutdir(IsolateBase):
         cwd=cwd,
         env=env,
         universal_newlines=True)
-    out = p.communicate()[0]
+    out, err = p.communicate()
     if p.returncode:
-      raise CalledProcessError(p.returncode, cmd, out, cwd)
+      raise CalledProcessError(p.returncode, cmd, out, err, cwd)
     return out
 
   def mode(self):
@@ -655,7 +673,7 @@ class IsolateNoOutdir(IsolateBase):
 
   def test_hashtable(self):
     self._execute('hashtable', 'touch_root.isolate', [], False)
-    files = [
+    files = sorted([
       os.path.join(
           'hashtable', calc_sha1(os.path.join(ROOT_DIR, 'isolate.py'))),
       os.path.join(
@@ -667,7 +685,7 @@ class IsolateNoOutdir(IsolateBase):
       os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
       os.path.join('root', 'data', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
-    ]
+    ])
     self.assertEquals(files, list_files_tree(self.tempdir))
 
   def test_remap(self):

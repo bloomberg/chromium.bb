@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import cStringIO
+import json
 import logging
 import os
 import shutil
@@ -35,7 +35,47 @@ class TraceInputsBase(unittest.TestCase):
   def setUp(self):
     self.tempdir = tempfile.mkdtemp(prefix='trace_smoke_test')
     self.log = os.path.join(self.tempdir, 'log')
-    os.chdir(ROOT_DIR)
+    self.trace_inputs_path = os.path.join(ROOT_DIR, 'trace_inputs.py')
+
+    # Wraps up all the differences between OSes here.
+    # - Windows doesn't track initial_cwd.
+    # - OSX replaces /usr/bin/python with /usr/bin/python2.7.
+    self.cwd = os.path.join(ROOT_DIR, u'data')
+    self.initial_cwd = self.cwd
+    if sys.platform == 'win32':
+      # Not supported on Windows.
+      self.initial_cwd = None
+
+    # There's 3 kinds of references to python, self.executable,
+    # self.real_executable and self.naked_executable. It depends how python was
+    # started.
+    self.executable = sys.executable
+    if sys.platform == 'darwin':
+      # /usr/bin/python is a thunk executable that decides which version of
+      # python gets executed.
+      suffix = '.'.join(map(str, sys.version_info[0:2]))
+      if os.access(self.executable + suffix, os.X_OK):
+        # So it'll look like /usr/bin/python2.7
+        self.executable += suffix
+
+    import trace_inputs
+    self.real_executable = trace_inputs.get_native_path_case(
+        self.executable)
+    trace_inputs = None
+
+    if sys.platform == 'darwin':
+      # Interestingly, only OSX does resolve the symlink manually before
+      # starting the executable.
+      if os.path.islink(self.real_executable):
+        self.real_executable = os.path.normpath(
+            os.path.join(
+                os.path.dirname(self.real_executable),
+                os.readlink(self.real_executable)))
+
+    # self.naked_executable will only be naked on Windows.
+    self.naked_executable = sys.executable
+    if sys.platform == 'win32':
+      self.naked_executable = os.path.basename(sys.executable)
 
   def tearDown(self):
     if VERBOSE:
@@ -44,7 +84,8 @@ class TraceInputsBase(unittest.TestCase):
       shutil.rmtree(self.tempdir)
 
   @staticmethod
-  def command(from_data):
+  def get_child_command(from_data):
+    """Returns command to run the child1.py."""
     cmd = [sys.executable]
     if from_data:
       # When the gyp argument is specified, the command is started from --cwd
@@ -58,22 +99,22 @@ class TraceInputsBase(unittest.TestCase):
 
 
 class TraceInputs(TraceInputsBase):
-  def _execute(self, command):
+  def _execute(self, mode, command, cwd):
     cmd = [
-      sys.executable, os.path.join('..', '..', 'trace_inputs.py'),
+      sys.executable,
+      self.trace_inputs_path,
+      mode,
       '--log', self.log,
-      '--root-dir', ROOT_DIR,
     ]
     if VERBOSE:
       cmd.extend(['-v'] * 3)
     cmd.extend(command)
-    # The current directory doesn't matter, the traced process will be called
-    # from the correct cwd.
-    cwd = os.path.join('data', 'trace_inputs')
-    # Ignore stderr.
     logging.info('Command: %s' % ' '.join(cmd))
     p = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd,
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=cwd,
         universal_newlines=True)
     out, err = p.communicate()
     if VERBOSE:
@@ -82,55 +123,94 @@ class TraceInputs(TraceInputsBase):
       raise CalledProcessError(p.returncode, cmd, out + err, cwd)
     return out or ''
 
+  def _trace(self, from_data):
+    if from_data:
+      cwd = os.path.join(ROOT_DIR, 'data')
+    else:
+      cwd = ROOT_DIR
+    return self._execute('trace', self.get_child_command(from_data), cwd=cwd)
+
   def test_trace(self):
-    expected_end = [
+    expected = '\n'.join((
+      'Total: 5',
+      'Non existent: 0',
       'Interesting: 5 reduced to 3',
       '  data/trace_inputs/'.replace('/', os.path.sep),
       '  trace_inputs.py',
       '  %s' % FILENAME,
-    ]
-    actual = self._execute(self.command(False)).splitlines()
-    self.assertTrue(actual[0].startswith('Tracing... ['), actual)
-    self.assertTrue(actual[1].startswith('Loading traces... '), actual)
-    self.assertTrue(actual[2].startswith('Total: '), actual)
-    if sys.platform == 'win32':
-      # On windows, python searches the current path for python stdlib like
-      # subprocess.py and others, I'm not sure why.
-      self.assertTrue(actual[3].startswith('Non existent: '), actual[3])
-    else:
-      self.assertEquals('Non existent: 0', actual[3])
-    # Ignore any Unexpected part.
-    # TODO(maruel): Make sure there is no Unexpected part, even in the case of
-    # virtualenv usage.
-    self.assertEquals(expected_end, actual[-len(expected_end):])
+    )) + '\n'
+    trace_expected = '\n'.join((
+      'child from %s' % ROOT_DIR,
+      'child2',
+    )) + '\n'
+    trace_actual = self._trace(False)
+    actual = self._execute('read', ['--root-dir', ROOT_DIR], cwd=ROOT_DIR)
+    self.assertEquals(expected, actual)
+    self.assertEquals(trace_expected, trace_actual)
 
-  def test_trace_gyp(self):
-    import trace_inputs
-    expected_value = {
-      'conditions': [
-        ['OS=="%s"' % trace_inputs.get_flavor(), {
-          'variables': {
-            'isolate_dependency_tracked': [
-              # It is run from data/trace_inputs.
-              '../trace_inputs.py',
-              '../%s' % FILENAME,
+  @staticmethod
+  def _size(*args):
+    return os.stat(os.path.join(ROOT_DIR, *args)).st_size
+
+  def test_trace_json(self):
+    expected = {
+      u'root': {
+        u'children': [
+          {
+            u'children': [],
+            u'command': [u'python', u'child2.py'],
+            u'executable': self.naked_executable,
+            u'files': [
+              {
+                u'path': os.path.join(u'data', 'trace_inputs', 'child2.py'),
+                u'size': self._size('data', 'trace_inputs', 'child2.py'),
+              },
+              {
+                u'path': os.path.join(u'data', 'trace_inputs', 'test_file.txt'),
+                u'size': self._size('data', 'trace_inputs', 'test_file.txt'),
+              },
             ],
-            'isolate_dependency_untracked': [
-              'trace_inputs/',
-            ],
+            u'initial_cwd': self.initial_cwd,
+            #u'pid': 123,
           },
-        }],
-      ],
+        ],
+        u'command': [
+          self.executable,
+          os.path.join(u'trace_inputs', 'child1.py'),
+          u'--child-gyp',
+        ],
+        u'executable': self.real_executable,
+        u'files': [
+          {
+            u'path': os.path.join(u'data', 'trace_inputs', 'child1.py'),
+            u'size': self._size('data', 'trace_inputs', 'child1.py'),
+          },
+          {
+            u'path': u'trace_inputs.py',
+            u'size': self._size('trace_inputs.py'),
+          },
+          {
+            u'path': u'trace_inputs_smoke_test.py',
+            u'size': self._size('trace_inputs_smoke_test.py'),
+          },
+        ],
+        u'initial_cwd': self.initial_cwd,
+        #u'pid': 123,
+      },
     }
-    expected_buffer = cStringIO.StringIO()
-    trace_inputs.pretty_print(expected_value, expected_buffer)
-
-    cmd = [
-      '--cwd', 'data',
-      '--product', '.',  # Not tested.
-    ] + self.command(True)
-    actual = self._execute(cmd)
-    self.assertEquals(expected_buffer.getvalue(), actual)
+    trace_expected = '\n'.join((
+      'child_gyp from %s' % os.path.join(ROOT_DIR, 'data'),
+      'child2',
+    )) + '\n'
+    trace_actual = self._trace(True)
+    actual_text = self._execute(
+        'read', ['--root-dir', ROOT_DIR, '--json'], cwd=ROOT_DIR)
+    actual_json = json.loads(actual_text)
+    # Removes the pids.
+    self.assertTrue(actual_json['root'].pop('pid'))
+    self.assertTrue(actual_json['root']['children'][0].pop('pid'))
+    self.assertEquals(expected, actual_json)
+    self.assertEquals(trace_expected, trace_actual)
 
 
 class TraceInputsImport(TraceInputsBase):
@@ -138,31 +218,6 @@ class TraceInputsImport(TraceInputsBase):
     super(TraceInputsImport, self).setUp()
     import trace_inputs
     self.trace_inputs = trace_inputs
-    self.cwd = os.path.join(ROOT_DIR, u'data')
-    self.initial_cwd = self.cwd
-    if sys.platform == 'win32':
-      # Still not supported on Windows.
-      self.initial_cwd = None
-    self.executable = sys.executable
-    if sys.platform == 'darwin':
-      # /usr/bin/python is a thunk executable that decides which version of
-      # python gets executed.
-      suffix = '.'.join(map(str, sys.version_info[0:2]))
-      if os.access(self.executable + suffix, os.X_OK):
-        self.executable += suffix
-    self.real_executable = self.trace_inputs.get_native_path_case(
-        self.executable)
-    if sys.platform == 'darwin':
-      # Interestingly, only OSX does resolve the symlink manually before
-      # starting the executable.
-      if os.path.islink(self.real_executable):
-        self.real_executable = os.path.normpath(
-            os.path.join(
-                os.path.dirname(self.real_executable),
-                os.readlink(self.real_executable)))
-    self.naked_executable = sys.executable
-    if sys.platform == 'win32':
-      self.naked_executable = os.path.basename(sys.executable)
 
   def tearDown(self):
     del self.trace_inputs
@@ -185,7 +240,7 @@ class TraceInputsImport(TraceInputsBase):
     # Deliberately start the trace from the wrong path. Starts it from the
     # directory 'data' so 'data/data/trace_inputs/child1.py' is not accessible,
     # so child2.py process is not started.
-    results, simplified = self._execute(self.command(False))
+    results, simplified = self._execute(self.get_child_command(False))
     expected = {
       'root': {
         'children': [],
@@ -250,7 +305,7 @@ class TraceInputsImport(TraceInputsBase):
         'initial_cwd': self.initial_cwd,
       },
     }
-    results, simplified = self._execute(self.command(True))
+    results, simplified = self._execute(self.get_child_command(True))
     actual = results.flatten()
     self.assertTrue(actual['root'].pop('pid'))
     self.assertTrue(actual['root']['children'][0].pop('pid'))

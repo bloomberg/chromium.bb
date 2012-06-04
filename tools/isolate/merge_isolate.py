@@ -17,9 +17,7 @@ import optparse
 import re
 import sys
 
-import trace_inputs
-# Create shortcuts.
-from trace_inputs import KEY_TRACKED, KEY_UNTRACKED
+from isolate_common import pretty_print, KEY_TRACKED, KEY_UNTRACKED
 
 
 def union(lhs, rhs):
@@ -378,7 +376,7 @@ def main(args=None):
         level=level,
         format='%(levelname)5s %(module)15s(%(lineno)3d):%(message)s')
 
-  trace_inputs.pretty_print(
+  pretty_print(
       convert_map_to_gyp(
           *reduce_inputs(
               *invert_map(

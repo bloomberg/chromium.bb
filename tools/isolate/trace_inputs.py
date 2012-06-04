@@ -20,12 +20,12 @@ from the log.
 
 import codecs
 import csv
+import getpass
 import glob
 import json
 import logging
 import optparse
 import os
-import posixpath
 import re
 import subprocess
 import sys
@@ -43,9 +43,6 @@ elif sys.platform == 'darwin':
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
-
-KEY_TRACKED = 'isolate_dependency_tracked'
-KEY_UNTRACKED = 'isolate_dependency_untracked'
 
 
 class TracingFailure(Exception):
@@ -251,23 +248,6 @@ else:  # OSes other than Windows and OSX.
     return path
 
 
-def get_flavor():
-  """Returns the system default flavor. Copied from gyp/pylib/gyp/common.py."""
-  flavors = {
-    'cygwin': 'win',
-    'win32': 'win',
-    'darwin': 'mac',
-    'sunos5': 'solaris',
-    'freebsd7': 'freebsd',
-    'freebsd8': 'freebsd',
-  }
-  return flavors.get(sys.platform, 'linux')
-
-
-def isEnabledFor(level):
-  return logging.getLogger().isEnabledFor(level)
-
-
 def fix_python_path(cmd):
   """Returns the fixed command line to call the right python executable."""
   out = cmd[:]
@@ -276,25 +256,6 @@ def fix_python_path(cmd):
   elif out[0].endswith('.py'):
     out.insert(0, sys.executable)
   return out
-
-
-def posix_relpath(path, root):
-  """posix.relpath() that keeps trailing slash."""
-  out = posixpath.relpath(path, root)
-  if path.endswith('/'):
-    out += '/'
-  return out
-
-
-def cleanup_path(x):
-  """Cleans up a relative path. Converts any os.path.sep to '/' on Windows."""
-  if x:
-    x = x.rstrip(os.path.sep).replace(os.path.sep, '/')
-  if x == '.':
-    x = ''
-  if x:
-    x += '/'
-  return x
 
 
 def process_quoted_arguments(text):
@@ -637,6 +598,8 @@ class Results(object):
     """Returns a clone with all the files outside the directory |root| removed
     and converts all the path to be relative paths.
     """
+    # Resolve any symlink
+    root = os.path.realpath(root)
     root = get_native_path_case(root).rstrip(os.path.sep) + os.path.sep
     logging.debug('strip_root(%s)' % root)
     return Results(self.process.strip_root(root))
@@ -2191,7 +2154,7 @@ class LogmanTrace(ApiBase):
         stderr=subprocess.STDOUT)
 
   @staticmethod
-  def _convert_log(logname, logformat, stdout, stderr):
+  def _convert_log(logname, logformat):
     """Converts the ETL trace to text representation.
 
     Normally, 'csv' is sufficient. If complex scripts are used (like eastern
@@ -2229,8 +2192,12 @@ class LogmanTrace(ApiBase):
       raise ValueError('Unexpected log format \'%s\'' % logformat)
     logging.debug('Running: %s' % cmd_convert)
     # This can takes tens of minutes for large logs.
+    # Redirects all output to stderr.
     subprocess.check_call(
-        cmd_convert, stdin=subprocess.PIPE, stdout=stdout, stderr=stderr)
+        cmd_convert,
+        stdin=subprocess.PIPE,
+        stdout=sys.stderr,
+        stderr=sys.stderr)
 
   @classmethod
   def gen_trace(cls, cmd, cwd, logname, output):
@@ -2273,7 +2240,7 @@ class LogmanTrace(ApiBase):
       cls._stop_log()
 
     # 4. Convert the traces to text representation.
-    cls._convert_log(logname, 'csv', stdout, stderr)
+    cls._convert_log(logname, 'csv')
 
     # 5. Save metadata.
     json.dump({
@@ -2338,87 +2305,20 @@ class LogmanTrace(ApiBase):
     return context.to_results()
 
 
-def pretty_print(variables, stdout):
-  """Outputs a gyp compatible list from the decoded variables.
-
-  Similar to pprint.print() but with NIH syndrome.
-  """
-  # Order the dictionary keys by these keys in priority.
-  ORDER = (
-      'variables', 'condition', 'command', 'relative_cwd', 'read_only',
-      KEY_TRACKED, KEY_UNTRACKED)
-
-  def sorting_key(x):
-    """Gives priority to 'most important' keys before the others."""
-    if x in ORDER:
-      return str(ORDER.index(x))
-    return x
-
-  def loop_list(indent, items):
-    for item in items:
-      if isinstance(item, basestring):
-        stdout.write('%s\'%s\',\n' % (indent, item))
-      elif isinstance(item, dict):
-        stdout.write('%s{\n' % indent)
-        loop_dict(indent + '  ', item)
-        stdout.write('%s},\n' % indent)
-      elif isinstance(item, list):
-        # A list inside a list will write the first item embedded.
-        stdout.write('%s[' % indent)
-        for index, i in enumerate(item):
-          if isinstance(i, basestring):
-            stdout.write(
-                '\'%s\', ' % i.replace('\\', '\\\\').replace('\'', '\\\''))
-          elif isinstance(i, dict):
-            stdout.write('{\n')
-            loop_dict(indent + '  ', i)
-            if index != len(item) - 1:
-              x = ', '
-            else:
-              x = ''
-            stdout.write('%s}%s' % (indent, x))
-          else:
-            assert False
-        stdout.write('],\n')
-      else:
-        assert False
-
-  def loop_dict(indent, items):
-    for key in sorted(items, key=sorting_key):
-      item = items[key]
-      stdout.write("%s'%s': " % (indent, key))
-      if isinstance(item, dict):
-        stdout.write('{\n')
-        loop_dict(indent + '  ', item)
-        stdout.write(indent + '},\n')
-      elif isinstance(item, list):
-        stdout.write('[\n')
-        loop_list(indent + '  ', item)
-        stdout.write(indent + '],\n')
-      elif isinstance(item, basestring):
-        stdout.write(
-            '\'%s\',\n' % item.replace('\\', '\\\\').replace('\'', '\\\''))
-      elif item in (True, False, None):
-        stdout.write('%s\n' % item)
-      else:
-        assert False, item
-
-  stdout.write('{\n')
-  loop_dict('  ', variables)
-  stdout.write('}\n')
-
-
 def get_api():
-  flavor = get_flavor()
-  if flavor == 'linux':
-    return Strace()
-  elif flavor == 'mac':
-    return Dtrace()
-  elif sys.platform == 'win32':
-    return LogmanTrace()
-  else:
-    print >> sys.stderr, 'Unsupported platform %s' % sys.platform
-    sys.exit(1)
+  """Returns the correct implementation for the current OS."""
+  if sys.platform == 'cygwin':
+    raise NotImplementedError(
+        'Not implemented for cygwin, start the script from Win32 python')
+  flavors = {
+    'win32': LogmanTrace,
+    'darwin': Dtrace,
+    'sunos5': Dtrace,
+    'freebsd7': Dtrace,
+    'freebsd8': Dtrace,
+  }
+  # Defaults to strace.
+  return flavors.get(sys.platform, Strace)()
 
 
 def get_blacklist(api):
@@ -2430,40 +2330,6 @@ def get_blacklist(api):
       f.endswith('.pyc') or
       git_path in f or
       svn_path in f)
-
-
-def generate_dict(files, cwd_dir, product_dir):
-  """Converts the list of files into a .isolate dictionary.
-
-  Arguments:
-  - files: list of files to generate a dictionary out of.
-  - cwd_dir: directory to base all the files from, relative to root_dir.
-  - product_dir: directory to replace with <(PRODUCT_DIR), relative to root_dir.
-  """
-  cwd_dir = cleanup_path(cwd_dir)
-  product_dir = cleanup_path(product_dir)
-
-  def fix(f):
-    """Bases the file on the most restrictive variable."""
-    logging.debug('fix(%s)' % f)
-    # Important, GYP stores the files with / and not \.
-    f = f.replace(os.path.sep, '/')
-    if product_dir and f.startswith(product_dir):
-      return '<(PRODUCT_DIR)/%s' % f[len(product_dir):]
-    else:
-      # cwd_dir is usually the directory containing the gyp file. It may be
-      # empty if the whole directory containing the gyp file is needed.
-      return posix_relpath(f, cwd_dir) or './'
-
-  corrected = [fix(f) for f in files]
-  tracked = [f for f in corrected if not f.endswith('/') and ' ' not in f]
-  untracked = [f for f in corrected if f.endswith('/') or ' ' in f]
-  variables = {}
-  if tracked:
-    variables[KEY_TRACKED] = tracked
-  if untracked:
-    variables[KEY_UNTRACKED] = untracked
-  return variables
 
 
 def trace(logfile, cmd, cwd, api, output):
@@ -2492,130 +2358,161 @@ def load_trace(logfile, root_dir, api):
   - api: a tracing api instance.
   """
   results = api.parse_log(logfile, get_blacklist(api))
-  results = results.strip_root(root_dir)
+  if root_dir:
+    results = results.strip_root(root_dir)
   simplified = extract_directories(results.files)
   return results, simplified
 
 
-def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
-  """Tries to load the logs if available. If not, trace the test.
-
-  Symlinks are not processed at all.
-
-  Arguments:
-  - logfile:     Absolute path to the OS-specific trace.
-  - cmd:         Command list to run.
-  - root_dir:    Base directory where the files we care about live.
-  - cwd_dir:     Cwd to use to start the process, relative to the root_dir
-                 directory.
-  - product_dir: Directory containing the executables built by the build
-                 process, relative to the root_dir directory. It is used to
-                 properly replace paths with <(PRODUCT_DIR) for gyp output.
-  - force_trace: Will force to trace unconditionally even if a trace already
-                 exist.
-  """
-  logging.debug(
-      'trace_inputs(%s, %s, %s, %s, %s, %s)' % (
-        logfile, cmd, root_dir, cwd_dir, product_dir, force_trace))
-
-  def print_if(txt):
-    if cwd_dir is None:
-      print txt
-
-  # It is important to have unambiguous path.
-  assert os.path.isabs(root_dir), root_dir
-  assert os.path.isabs(logfile), logfile
-  assert not cwd_dir or not os.path.isabs(cwd_dir), cwd_dir
-  assert not product_dir or not os.path.isabs(product_dir), product_dir
-
+def CMDclean(parser, args):
+  """Cleans up traces."""
+  options, args = parser.parse_args(args)
   api = get_api()
-  # Resolve any symlink
-  root_dir = os.path.realpath(root_dir)
-  if not os.path.isfile(logfile) or force_trace:
-    print_if('Tracing... %s' % cmd)
-    # Use the proper relative directory.
-    cwd = root_dir if not cwd_dir else os.path.join(root_dir, cwd_dir)
-    silent = not isEnabledFor(logging.WARNING)
-    returncode, _ = trace(logfile, cmd, cwd, api, silent)
-    if returncode and not force_trace:
-      return returncode
-
-  print_if('Loading traces... %s' % logfile)
-  results, simplified = load_trace(logfile, root_dir, api)
-
-  print_if('Total: %d' % len(results.files))
-  print_if('Non existent: %d' % len(results.non_existent))
-  for f in results.non_existent:
-    print_if('  %s' % f.path)
-  print_if(
-      'Interesting: %d reduced to %d' % (
-          len(results.existent), len(simplified)))
-  for f in simplified:
-    print_if('  %s' % f.path)
-
-  if cwd_dir is not None:
-    value = {
-      'conditions': [
-        ['OS=="%s"' % get_flavor(), {
-          'variables': generate_dict(
-              [f.path for f in simplified], cwd_dir, product_dir),
-        }],
-      ],
-    }
-    pretty_print(value, sys.stdout)
+  api.clean_trace(options.log)
   return 0
 
 
-def main():
-  parser = optparse.OptionParser(
-      usage='%prog <options> [cmd line...]')
+def CMDtrace(parser, args):
+  """Traces an executable."""
   parser.allow_interspersed_args = False
   parser.add_option(
-      '-v', '--verbose', action='count', default=0, help='Use multiple times')
-  parser.add_option('-l', '--log', help='Log file')
-  parser.add_option(
-      '-c', '--cwd',
-      help='Signal to start the process from this relative directory. When '
-           'specified, outputs the inputs files in a way compatible for '
-           'gyp processing. Should be set to the relative path containing the '
-           'gyp file, e.g. \'chrome\' or \'net\'')
-  parser.add_option(
-      '-p', '--product-dir', default='out/Release',
-      help='Directory for PRODUCT_DIR. Default: %default')
-  parser.add_option(
-      '--root-dir', default=ROOT_DIR,
-      help='Root directory to base everything off. Default: %default')
-  parser.add_option(
-      '-f', '--force',
-      action='store_true',
-      default=False,
-      help='Force to retrace the file')
+      '-q', '--quiet', action='store_true',
+      help='Redirects traced executable output to /dev/null')
+  options, args = parser.parse_args(args)
 
-  options, args = parser.parse_args()
-  level = [logging.ERROR, logging.INFO, logging.DEBUG][min(2, options.verbose)]
-  logging.basicConfig(
-        level=level,
-        format='%(levelname)5s %(module)15s(%(lineno)3d):%(message)s')
+  api = get_api()
+  try:
+    return trace(options.log, args, os.getcwd(), api, options.quiet)[0]
+  except TracingFailure, e:
+    print >> sys.stderr, 'Failed to trace executable'
+    print >> sys.stderr, e
+    return 1
 
-  if not options.log:
-    parser.error('Must supply a log file with -l')
-  if not args:
-    if not os.path.isfile(options.log) or options.force:
-      parser.error('Must supply a command to run')
-  else:
-    args[0] = os.path.abspath(args[0])
+
+def CMDread(parser, args):
+  """Reads the logs and prints the result."""
+  parser.add_option(
+      '-V', '--variable',
+      nargs=2,
+      action='append',
+      dest='variables',
+      metavar='VAR_NAME directory',
+      help=('Variables to replace relative directories against. Example: '
+            '"-v HOME /home/%s" will replace all occurence of your home dir '
+            'with <(HOME)') % getpass.getuser())
+  parser.add_option(
+      '--root-dir',
+      help='Root directory to base everything off it. Anything outside of this '
+           'this directory will not be reported')
+  parser.add_option(
+      '-j', '--json', action='store_true',
+      help='Outputs raw result data as json')
+  options, args = parser.parse_args(args)
 
   if options.root_dir:
     options.root_dir = os.path.abspath(options.root_dir)
 
-  return trace_inputs(
-      os.path.abspath(options.log),
-      args,
-      options.root_dir,
-      options.cwd,
-      options.product_dir,
-      options.force)
+  api = get_api()
+  try:
+    results, simplified = load_trace(options.log, options.root_dir, api)
+
+    if options.json:
+      json.dump(results.flatten(), sys.stdout)
+    else:
+      print('Total: %d' % len(results.files))
+      print('Non existent: %d' % len(results.non_existent))
+      for f in results.non_existent:
+        print('  %s' % f.path)
+      print(
+          'Interesting: %d reduced to %d' % (
+              len(results.existent), len(simplified)))
+      for f in simplified:
+        print('  %s' % f.path)
+    return 0
+  except TracingFailure, e:
+    print >> sys.stderr, 'Failed to read trace'
+    print >> sys.stderr, e
+    return 1
+
+
+def CMDhelp(parser, args):
+  """Prints list of commands or help for a specific command"""
+  _, args = parser.parse_args(args)
+  if len(args) == 1:
+    # The command was "%prog help command", replaces ourself with
+    # "%prog command --help" so help is correctly printed out.
+    return main(args + ['--help'])
+  parser.print_help()
+  return 0
+
+
+def get_command_handler(name):
+  """Returns the command handler or CMDhelp if it doesn't exist."""
+  return getattr(sys.modules[__name__], 'CMD%s' % name, CMDhelp)
+
+
+def gen_parser(command):
+  """Returns the default OptionParser instance for the corresponding command
+  handler.
+  """
+  more = getattr(command, 'usage_more', '')
+  command_display = command_name = command.__name__[3:]
+  if command_name == 'help':
+    command_display = '<command>'
+    description = None
+  else:
+    # OptParser.description prefer nicely non-formatted strings.
+    description = re.sub('[\r\n ]{2,}', ' ', command.__doc__)
+
+  parser = optparse.OptionParser(
+      usage='usage: %%prog %s [options] %s' % (command_display, more),
+      description=description)
+
+  # Default options.
+  parser.add_option(
+      '-v', '--verbose', action='count', default=0,
+      help='Use multiple times to increase verbosity')
+  if command_name != 'help':
+    parser.add_option(
+        '-l', '--log', help='Log file to generate or read, required')
+
+  old_parser_args = parser.parse_args
+  def parse_args_with_logging(args=None):
+    """Processes the default options.
+
+    Enforces and sets options.log to an absolute path.
+    Configures logging.
+    """
+    options, args = old_parser_args(args)
+    level = [
+      logging.ERROR, logging.INFO, logging.DEBUG,
+    ][min(2, options.verbose)]
+    logging.basicConfig(
+          level=level,
+          format='%(levelname)5s %(module)15s(%(lineno)3d):%(message)s')
+    if command_name != 'help':
+      if not options.log:
+        parser.error('Must supply a log file with -l')
+      options.log = os.path.abspath(options.log)
+    return options, args
+  parser.parse_args = parse_args_with_logging
+  return parser
+
+
+def main(argv):
+  # Generates the command help late so all commands are listed.
+  CMDhelp.usage_more = (
+      '\n\nCommands are:\n' +
+      '\n'.join(
+        '  %-10s %s' % (
+          fn[3:], get_command_handler(fn[3:]).__doc__.split('\n')[0].strip())
+      for fn in dir(sys.modules[__name__])
+      if fn.startswith('CMD')))
+
+  command = get_command_handler(argv[0] if argv else None)
+  parser = gen_parser(command)
+  return command(parser, argv[1:])
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))

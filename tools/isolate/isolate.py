@@ -31,6 +31,7 @@ import subprocess
 import sys
 import tempfile
 
+import isolate_common
 import merge_isolate
 import trace_inputs
 import run_test_from_archive
@@ -123,7 +124,7 @@ def load_isolate(content, error):
   # Load the .isolate file, process its conditions, retrieve the command and
   # dependencies.
   configs = merge_isolate.load_gyp(merge_isolate.eval_content(content))
-  flavor = trace_inputs.get_flavor()
+  flavor = isolate_common.get_flavor()
   config = configs.per_os.get(flavor) or configs.per_os.get(None)
   if not config:
     error('Failed to load configuration for \'%s\'' % flavor)
@@ -152,7 +153,7 @@ def process_input(filepath, prevdict, level, read_only):
   out = {}
   if level >= STATS_ONLY:
     filestats = os.stat(filepath)
-    if trace_inputs.get_flavor() != 'win':
+    if isolate_common.get_flavor() != 'win':
       filemode = stat.S_IMODE(filestats.st_mode)
       # Remove write access for group and all access to 'others'.
       filemode &= ~(stat.S_IWGRP | stat.S_IRWXO)
@@ -588,13 +589,37 @@ def MODEtrace(_outdir, state):
   if not state.result.command:
     print 'No command to run'
     return 1
-  return trace_inputs.trace_inputs(
-      state.result_file + '.log',
-      state.result.command,
-      state.root_dir,
-      state.result.relative_cwd,
-      product_dir,
-      False)
+  api = trace_inputs.get_api()
+  logfile = state.result_file + '.log'
+  try:
+    result = 0
+    if not os.path.isfile(logfile):
+      result, _ = api.gen_trace(
+          state.result.command,
+          os.path.join(state.root_dir, state.result.relative_cwd),
+          logfile,
+          True)
+
+    _, simplified = trace_inputs.load_trace(logfile, state.root_dir, api)
+    variables = isolate_common.generate_dict(
+            (f.path for f in simplified),
+            state.result.relative_cwd,
+            product_dir)
+    # Outputs in a way that is easy to merge with merge_isolate.py.
+    value = {
+      'conditions': [
+        ['OS=="%s"' % isolate_common.get_flavor(), {
+          'variables': variables,
+        }],
+      ],
+    }
+    isolate_common.pretty_print(value, sys.stdout)
+    return result
+  except trace_inputs.TracingFailure, e:
+    print >> sys.stderr, (
+        '\nTracing failed for: %s' % ' '.join(state.result.command))
+    print >> sys.stderr, str(e)
+    return 1
 
 
 # Must be declared after all the functions.
@@ -669,7 +694,7 @@ def isolate(result_file, isolate_file, mode, variables, out_dir, error):
 def main():
   """Handles CLI and normalizes the input arguments to pass them to isolate().
   """
-  default_variables = [('OS', trace_inputs.get_flavor())]
+  default_variables = [('OS', isolate_common.get_flavor())]
   if sys.platform in ('win32', 'cygwin'):
     default_variables.append(('EXECUTABLE_SUFFIX', '.exe'))
   else:
