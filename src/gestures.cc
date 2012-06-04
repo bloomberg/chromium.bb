@@ -330,5 +330,5 @@ std::string GestureInterpreter::EncodeActivityLog() {
 }
 
 const GestureMove kGestureMove = { 0, 0 };
-const GestureScroll kGestureScroll = { 0, 0 };
+const GestureScroll kGestureScroll = { 0, 0, 0 };
 const GestureButtonsChange kGestureButtonsChange = { 0, 0 };

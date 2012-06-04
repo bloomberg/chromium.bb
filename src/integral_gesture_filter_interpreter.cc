@@ -72,8 +72,13 @@ void IntegralGestureFilterInterpreter::HandleGesture(Gesture** ret) {
                                        &hscroll_remainder_);
       gs->details.scroll.dy = Truncate(gs->details.scroll.dy,
                                        &vscroll_remainder_);
-      if (gs->details.scroll.dx == 0.0 && gs->details.scroll.dy == 0.0)
-        *ret = NULL;
+      if (gs->details.scroll.dx == 0.0 && gs->details.scroll.dy == 0.0) {
+        if (gs->details.scroll.stop_fling)
+          *gs = Gesture(kGestureFling, gs->start_time, gs->end_time,
+                        0, 0, GESTURES_FLING_TAP_DOWN);
+        else
+          *ret = NULL;
+      }
       break;
     default:
       break;

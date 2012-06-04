@@ -75,6 +75,11 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
       Gesture(kGestureScroll, 0, 0, -0.8, 2.2));
   base_interpreter->return_values_.push_back(
       Gesture(kGestureScroll, 0, 0, -0.2, 0));
+  base_interpreter->return_values_.push_back(
+      Gesture(kGestureScroll, 0, 0, -0.2, 0));
+
+  base_interpreter->return_values_[base_interpreter->return_values_.size() -
+                                   1].details.scroll.stop_fling = 1;
 
   FingerState fs = { 0, 0, 0, 0, 1, 0, 0, 0, 1, 0 };
   HardwareState hs = { 10000, 0, 1, 1, &fs };
@@ -87,13 +92,14 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
     kGestureTypeScroll,
     kGestureTypeScroll,
     kGestureTypeScroll,
-    kGestureTypeScroll
+    kGestureTypeScroll,
+    kGestureTypeFling
   };
   float expected_x[] = {
-    3, 0, 0, 1, -20, 0, 0, -1
+    3, 0, 0, 1, -20, 0, 0, -1, 0
   };
   float expected_y[] = {
-    1, -1, 0, 0, 4, 1, 3, 0
+    1, -1, 0, 0, 4, 1, 3, 0, 0
   };
 
   ASSERT_EQ(arraysize(expected_types), arraysize(expected_x));
@@ -109,6 +115,9 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
     } else if (out->type == kGestureTypeMove) {
       EXPECT_FLOAT_EQ(expected_x[i], out->details.move.dx) << "i = " << i;
       EXPECT_FLOAT_EQ(expected_y[i], out->details.move.dy) << "i = " << i;
+    } else if (out->type == kGestureTypeFling) {
+      EXPECT_FLOAT_EQ(GESTURES_FLING_TAP_DOWN, out->details.fling.fling_state)
+          << "i = " << i;
     } else {
       EXPECT_FLOAT_EQ(expected_x[i], out->details.scroll.dx) << "i = " << i;
       EXPECT_FLOAT_EQ(expected_y[i], out->details.scroll.dy) << "i = " << i;

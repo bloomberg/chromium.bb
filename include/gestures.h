@@ -120,6 +120,11 @@ typedef struct {
 
 typedef struct{
   float dx, dy;
+  // If set, stop_fling means that this scroll should stop flinging, thus
+  // if an interpreter suppresses it for any reason (e.g., rounds the size
+  // down to 0, thus making it a noop), it will replace it with a Fling
+  // TAP_DOWN gesture
+  unsigned stop_fling:1;
 } GestureScroll;
 
 typedef struct {
@@ -187,6 +192,7 @@ struct Gesture {
       : start_time(start), end_time(end), type(kGestureTypeScroll) {
     details.scroll.dx = dx;
     details.scroll.dy = dy;
+    details.scroll.stop_fling = 0;
   }
   Gesture(const GestureButtonsChange&,
           stime_t start, stime_t end, unsigned down, unsigned up)
