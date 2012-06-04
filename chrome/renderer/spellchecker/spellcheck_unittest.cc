@@ -432,6 +432,11 @@ TEST_F(SpellCheckTest, SpellCheckText) {
     const wchar_t* input;
   } kTestCases[] = {
     {
+      // Afrikaans
+      "af-ZA",
+      L"Google se missie is om die w\x00EAreld se inligting te organiseer en "
+      L"dit bruikbaar en toeganklik te maak."
+    }, {
       // Catalan
       "ca-ES",
       L"La missi\x00F3 de Google \x00E9s organitzar la informaci\x00F3 "
@@ -516,6 +521,11 @@ TEST_F(SpellCheckTest, SpellCheckText) {
       // L"Google'ile " - to be added.
       L"\x00FClesanne on korraldada maailma teavet ja teeb selle "
       L"k\x00F5igile k\x00E4ttesaadavaks ja kasulikuks.",
+    }, {
+      // Faroese
+      "fo-FO",
+      L"Google er at samskipa alla vitan \x00ED heiminum og gera hana alment "
+      L"atkomiliga og n\x00FDtiliga."
     }, {
       // French
       "fr-FR",

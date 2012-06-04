@@ -17,6 +17,7 @@ static const struct {
 } g_supported_spellchecker_languages[] = {
   // Several languages are not to be included in the spellchecker list:
   // th-TH, uk-UA
+  {"af", "af-ZA"},
   {"bg", "bg-BG"},
   {"ca", "ca-ES"},
   {"cs", "cs-CZ"},
@@ -29,6 +30,7 @@ static const struct {
   {"en-US", "en-US"},
   {"es", "es-ES"},
   {"et", "et-EE"},
+  {"fo", "fo-FO"},
   {"fr", "fr-FR"},
   {"he", "he-IL"},
   {"hi", "hi-IN"},
@@ -106,6 +108,10 @@ FilePath GetVersionedFileName(const std::string& input_language,
     {"en-CA", "-2-3"},
     {"en-GB", "-2-3"},
     {"en-AU", "-2-3"},
+    {"ca-ES", "-2-3"},  // 2-3 (May 2012): upgraded a dictionary.
+    {"sv-SE", "-2-3"},  // 2-3 (May 2012): upgraded a dictionary.
+    {"af-ZA", "-2-3"},  // 2-3 (May 2012): added a dictionary.
+    {"fo-FO", "-2-3"},  // 2-3 (May 2012): added a dictionary.
   };
 
   // Generate the bdict file name using default version string or special
