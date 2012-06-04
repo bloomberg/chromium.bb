@@ -15922,7 +15922,10 @@ Battery full
         This device cannot be enrolled in the domain this user account belongs to.
       </message>
       <message name="IDS_ENTERPRISE_ENROLLMENT_MODE_ERROR" desc="Error message to show when the DM Server didn't send or send unsupported enrollment mode to the client.">
-        The supplied enrollment mode is not supported by this version of the operating system. Please make sure you are running the newest version and try again.
+        The supplied enrollment mode is not supported by this version of the operating system.  Please make sure you are running the newest version and try again.
+      </message>
+      <message name="IDS_ENTERPRISE_LOCKBOX_TIMEOUT_ERROR" desc="Error message to show when the initialization of the lockbox is taking too long.">
+        Oops!  The initialization of the installation-time attributes has timed out.  Please contact your support representative.
       </message>
       <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
         Enterprise enrollment

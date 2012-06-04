@@ -49,6 +49,7 @@ class EnterpriseOAuthEnrollmentScreenHandler
   virtual void ShowFatalEnrollmentError() OVERRIDE;
   virtual void ShowAutoEnrollmentError() OVERRIDE;
   virtual void ShowNetworkEnrollmentError() OVERRIDE;
+  virtual void ShowLockboxTimeoutError() OVERRIDE;
   virtual void SubmitTestCredentials(const std::string& email,
                                      const std::string& password) OVERRIDE;
 

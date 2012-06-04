@@ -27,6 +27,8 @@ namespace {
 
 // Retry for InstallAttrs initialization every 500ms.
 const int kLockRetryIntervalMs = 500;
+// Maximum time to retry InstallAttrs initialization before we give up.
+const int kLockRetryTimeoutMs = 10 * 60 * 1000;  // 10 minutes.
 
 }  // namespace
 
@@ -37,6 +39,7 @@ EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
       actor_(actor),
       is_auto_enrollment_(false),
       is_showing_(false),
+      lockbox_init_duration_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   actor_->SetController(this);
   // Init the TPM if it has not been done until now (in debug build we might
@@ -187,14 +190,21 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
       return;
     }
     case policy::EnterpriseInstallAttributes::LOCK_NOT_READY: {
-      // InstallAttributes not ready yet, retry later.
-      LOG(WARNING) << "Install Attributes not ready yet will retry in "
-                   << kLockRetryIntervalMs << "ms.";
-      MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&EnterpriseEnrollmentScreen::WriteInstallAttributesData,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kLockRetryIntervalMs));
+      // We wait up to |kLockRetryTimeoutMs| milliseconds and if it hasn't
+      // succeeded by then show an error to the user and stop the enrollment.
+      if (lockbox_init_duration_ < kLockRetryTimeoutMs) {
+        // InstallAttributes not ready yet, retry later.
+        LOG(WARNING) << "Install Attributes not ready yet will retry in "
+                     << kLockRetryIntervalMs << "ms.";
+        MessageLoop::current()->PostDelayedTask(
+            FROM_HERE,
+            base::Bind(&EnterpriseEnrollmentScreen::WriteInstallAttributesData,
+                       weak_ptr_factory_.GetWeakPtr()),
+            base::TimeDelta::FromMilliseconds(kLockRetryIntervalMs));
+        lockbox_init_duration_ += kLockRetryIntervalMs;
+      } else {
+        actor_->ShowLockboxTimeoutError();
+      }
       return;
     }
     case policy::EnterpriseInstallAttributes::LOCK_BACKEND_ERROR: {

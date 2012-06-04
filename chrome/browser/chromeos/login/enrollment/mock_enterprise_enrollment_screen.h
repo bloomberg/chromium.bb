@@ -40,6 +40,7 @@ class MockEnterpriseEnrollmentScreenActor
   MOCK_METHOD0(ShowFatalEnrollmentError, void());
   MOCK_METHOD0(ShowAutoEnrollmentError, void());
   MOCK_METHOD0(ShowNetworkEnrollmentError, void());
+  MOCK_METHOD0(ShowLockboxTimeoutError, void());
   MOCK_METHOD2(SubmitTestCredentials, void(const std::string& email,
                                            const std::string& password));
 };

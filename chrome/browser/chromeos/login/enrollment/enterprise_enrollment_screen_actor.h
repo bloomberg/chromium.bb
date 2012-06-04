@@ -72,6 +72,7 @@ class EnterpriseEnrollmentScreenActor {
   virtual void ShowFatalEnrollmentError() = 0;
   virtual void ShowAutoEnrollmentError() = 0;
   virtual void ShowNetworkEnrollmentError() = 0;
+  virtual void ShowLockboxTimeoutError() = 0;
 
   // Used for testing only.
   virtual void SubmitTestCredentials(const std::string& email,

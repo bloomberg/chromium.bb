@@ -131,7 +131,7 @@ enum MetricEnrollment {
   kMetricEnrollmentAutoFailed,
   // Auto-enrollment was retried after having failed before.
   kMetricEnrollmentAutoRetried,
-  // Auto-enrollment was cancelled through the opt-out dialog.
+  // Auto-enrollment was canceled through the opt-out dialog.
   kMetricEnrollmentAutoCancelled,
   // Auto-enrollment succeeded.
   kMetricEnrollmentAutoOK,
@@ -141,6 +141,9 @@ enum MetricEnrollment {
   // Auto-enrollment is not supported for the mode supplied by the server.
   // This presently means trying to auto-enroll in kiosk mode.
   kMetricEnrollmentAutoEnrollmentNotSupported,
+  // The lockbox initialization has taken too long to complete and the
+  // enrollment has been canceled because of that.
+  kMetricLockboxTimeoutError,
 
   kMetricEnrollmentSize  // Must be the last.
 };

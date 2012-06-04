@@ -239,6 +239,12 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowNetworkEnrollmentError() {
   NotifyObservers(false);
 }
 
+void EnterpriseOAuthEnrollmentScreenHandler::ShowLockboxTimeoutError() {
+  UMAFailure(policy::kMetricLockboxTimeoutError);
+  ShowError(IDS_ENTERPRISE_LOCKBOX_TIMEOUT_ERROR, true);
+  NotifyObservers(false);
+}
+
 void EnterpriseOAuthEnrollmentScreenHandler::SubmitTestCredentials(
     const std::string& email,
     const std::string& password) {

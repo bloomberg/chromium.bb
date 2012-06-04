@@ -66,6 +66,7 @@ class EnterpriseEnrollmentScreen
   bool is_auto_enrollment_;
   bool is_showing_;
   std::string user_;
+  int lockbox_init_duration_;
   scoped_ptr<policy::CloudPolicySubsystem::ObserverRegistrar> registrar_;
   base::WeakPtrFactory<EnterpriseEnrollmentScreen> weak_ptr_factory_;
 
