@@ -498,6 +498,9 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("openProxySettings",
       base::Bind(&SigninScreenHandler::HandleOpenProxySettings,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("loginVisible",
+      base::Bind(&SigninScreenHandler::HandleLoginVisible,
+                 base::Unretained(this)));
 }
 
 void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
@@ -1015,6 +1018,13 @@ void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {
 
 void SigninScreenHandler::HandleOpenProxySettings(const base::ListValue* args) {
   BaseLoginDisplayHost::default_host()->OpenProxySettings();
+}
+
+void SigninScreenHandler::HandleLoginVisible(const base::ListValue* args) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 void SigninScreenHandler::StartClearingDnsCache() {

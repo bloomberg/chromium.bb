@@ -113,20 +113,9 @@ WebUILoginView::WebUILoginView()
     : webui_login_(NULL),
       login_window_(NULL),
       host_window_frozen_(false),
-      login_page_is_loaded_(false),
       should_emit_login_prompt_visible_(true) {
-
   registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_WEBUI_READY,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
+                 chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
                  content::NotificationService::AllSources());
 
   accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE)] =
@@ -272,35 +261,19 @@ void WebUILoginView::OnRenderHostCreated(RenderViewHost* host) {
 
 void WebUILoginView::OnTabMainFrameLoaded() {
   VLOG(1) << "WebUI login main frame loaded.";
+  tab_watcher_.reset();
 }
 
 void WebUILoginView::OnTabMainFrameRender() {
-  if (!login_page_is_loaded_)
-    return;
-
-  VLOG(1) << "WebUI login main frame rendered.";
-  tab_watcher_.reset();
-
-  if (should_emit_login_prompt_visible_) {
-    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-        EmitLoginPromptVisible();
-  }
-
-  OobeUI* oobe_ui = static_cast<OobeUI*>(GetWebUI()->GetController());
-  // Notify OOBE that the login frame has been rendered. Currently
-  // this is used to start camera presence check.
-  oobe_ui->OnLoginPromptVisible();
 }
 
 void WebUILoginView::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_LOGIN_WEBUI_READY:
-    case chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED:
-    case chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN:
-    case chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN:
-      login_page_is_loaded_ = true;
+    case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE:
+      OnLoginPromptVisible();
+      registrar_.RemoveAll();
       break;
     default:
       NOTREACHED() << "Unexpected notification " << type;
@@ -346,6 +319,18 @@ bool WebUILoginView::TakeFocus(bool reverse) {
   }
 
   return true;
+}
+
+void WebUILoginView::OnLoginPromptVisible() {
+  if (should_emit_login_prompt_visible_) {
+    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+        EmitLoginPromptVisible();
+  }
+
+  OobeUI* oobe_ui = static_cast<OobeUI*>(GetWebUI()->GetController());
+  // Notify OOBE that the login frame has been rendered. Currently
+  // this is used to start camera presence check.
+  oobe_ui->OnLoginPromptVisible();
 }
 
 void WebUILoginView::ReturnFocus(bool reverse) {

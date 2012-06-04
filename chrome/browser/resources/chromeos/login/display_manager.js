@@ -194,6 +194,10 @@ cr.define('cr.ui.login', function() {
       } else {
         // First screen on OOBE launch.
         newHeader.classList.remove('right');
+        // Report back first OOBE screen being painted.
+        window.webkitRequestAnimationFrame(function() {
+          chrome.send('loginVisible');
+        });
       }
       this.currentStep_ = nextStepIndex;
       $('oobe').className = nextStepId;

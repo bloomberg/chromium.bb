@@ -111,6 +111,12 @@ class WebUILoginView : public views::WidgetDelegateView,
       const content::WebContents* source) const OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;
 
+  // Performs series of actions when login prompt is considered
+  // to be ready and visible.
+  // 1. Emits LoginPromptVisible signal if needed
+  // 2. Notifies OOBE/sign classes.
+  void OnLoginPromptVisible();
+
   // Called when focus is returned from status area.
   // |reverse| is true when focus is traversed backwards (using Shift-Tab).
   void ReturnFocus(bool reverse);
@@ -136,11 +142,6 @@ class WebUILoginView : public views::WidgetDelegateView,
 
   // Whether the host window is frozen.
   bool host_window_frozen_;
-
-  // Has the login page told us that it's ready?  This is triggered by either
-  // all of the user images or the GAIA prompt being loaded, whichever comes
-  // first.
-  bool login_page_is_loaded_;
 
   // Should we emit the login-prompt-visible signal when the login page is
   // displayed?

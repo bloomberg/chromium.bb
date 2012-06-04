@@ -891,6 +891,14 @@ enum NotificationType {
   // Sent when the user images on the WebUI login screen have all been loaded.
   NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
 
+  // Sent when the login WebUI is considered to be fully visible.
+  // That momemnt is tracked as the first paint event after one of the:
+  // 1. NOTIFICATION_LOGIN_USER_IMAGES_LOADED
+  // 2. NOTIFICATION_LOGIN_WEBUI_READY
+  // 3. NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN
+  // 4. NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN
+  NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+
   // Sent when proxy dialog is closed.
   NOTIFICATION_LOGIN_PROXY_CHANGED,
 

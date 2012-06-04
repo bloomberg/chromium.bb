@@ -866,6 +866,10 @@ cr.define('login', function() {
       this.podsWithPendingImages_.splice(index, 1);
       if (this.podsWithPendingImages_.length == 0) {
         chrome.send('userImagesLoaded');
+        // Report back user pods being painted.
+        window.webkitRequestAnimationFrame(function() {
+          chrome.send('loginVisible');
+        });
       }
     }
   };

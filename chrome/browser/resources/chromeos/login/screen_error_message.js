@@ -243,6 +243,10 @@ cr.define('login', function() {
             });
         }
         chrome.send('networkErrorShown');
+        // Report back error screen UI being painted.
+        window.webkitRequestAnimationFrame(function() {
+          chrome.send('loginVisible');
+        });
       } else {
         chrome.send('hideCaptivePortal');
 
