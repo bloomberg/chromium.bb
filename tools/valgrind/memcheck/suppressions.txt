@@ -687,6 +687,18 @@
    fun:gdk_init_check
    fun:gdk_init
 }
+{
+   bug_130770_a
+   Memcheck:Unaddressable
+   ...
+   fun:_mesa_glsl_compile_shader
+}
+{
+   bug_130770_b
+   Memcheck:Unaddressable
+   ...
+   fun:_mesa_glsl_link_shader
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -5660,7 +5672,6 @@
    ...
    fun:_ZNK7WebCore11RenderLayer15parentClipRectsEPKS0_PNS_12RenderRegionENS_13ClipRectsTypeERNS_9ClipRectsENS_29OverlayScrollbarSizeRelevancyE
    fun:_ZNK7WebCore11RenderLayer18backgroundClipRectEPKS0_PNS_12RenderRegionENS_13ClipRectsTypeENS_29OverlayScrollbarSizeRelevancyE
-   ...
 }
 
 #-----------------------------------------------------------------------
