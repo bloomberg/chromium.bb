@@ -521,6 +521,15 @@ weston_wm_handle_selection_request(struct weston_wm *wm,
 	wm->incr = 0;
 	wm->flush_property_on_delete = 0;
 
+	if (selection_request->selection == wm->atom.clipboard_manager) {
+		/* The weston clipboard should already have grabbed
+		 * the first target, so just send selection notify
+		 * now.  This isn't synchronized with the clipboard
+		 * finishing getting the data, so there's a race here. */
+		weston_wm_send_selection_notify(wm, wm->selection_request.property);
+		return;
+	}
+
 	if (selection_request->target == wm->atom.targets) {
 		weston_wm_send_targets(wm);
 	} else if (selection_request->target == wm->atom.timestamp) {
@@ -672,6 +681,11 @@ weston_wm_selection_init(struct weston_wm *wm)
 			  XCB_WINDOW_CLASS_INPUT_OUTPUT,
 			  wm->screen->root_visual,
 			  XCB_CW_EVENT_MASK, values);
+
+	xcb_set_selection_owner(wm->conn,
+				wm->selection_window,
+				wm->atom.clipboard_manager,
+				XCB_TIME_CURRENT_TIME);
 
 	mask =
 		XCB_XFIXES_SELECTION_EVENT_MASK_SET_SELECTION_OWNER |

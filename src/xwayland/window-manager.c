@@ -1000,6 +1000,7 @@ wxs_wm_get_resources(struct weston_wm *wm)
 		{ "_NET_SUPPORTED",     F(atom.net_supported) },
 		{ "_MOTIF_WM_HINTS",	F(atom.motif_wm_hints) },
 		{ "CLIPBOARD",		F(atom.clipboard) },
+		{ "CLIPBOARD_MANAGER",	F(atom.clipboard_manager) },
 		{ "TARGETS",		F(atom.targets) },
 		{ "UTF8_STRING",	F(atom.utf8_string) },
 		{ "_WL_SELECTION",	F(atom.wl_selection) },

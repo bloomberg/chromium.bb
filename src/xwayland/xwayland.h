@@ -107,6 +107,7 @@ struct weston_wm {
 		xcb_atom_t		 net_supported;
 		xcb_atom_t		 motif_wm_hints;
 		xcb_atom_t		 clipboard;
+		xcb_atom_t		 clipboard_manager;
 		xcb_atom_t		 targets;
 		xcb_atom_t		 utf8_string;
 		xcb_atom_t		 wl_selection;
