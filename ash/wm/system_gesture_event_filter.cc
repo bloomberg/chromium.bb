@@ -27,6 +27,7 @@ const int kSystemPinchPoints = 4;
 
 const double kPinchThresholdForMaximize = 1.5;
 const double kPinchThresholdForMinimize = 0.7;
+const double kPinchThresholdForResize = 0.1;
 
 enum SystemGestureStatus {
   SYSTEM_GESTURE_PROCESSED,  // The system gesture has been processed.
@@ -54,7 +55,8 @@ class SystemPinchHandler {
       : target_(target),
         phantom_(target),
         phantom_state_(PHANTOM_WINDOW_NORMAL),
-        pinch_factor_(1.) {
+        pinch_factor_(1.),
+        resize_started_(false) {
     widget_ = views::Widget::GetWidgetForNativeWindow(target_);
   }
 
@@ -71,22 +73,24 @@ class SystemPinchHandler {
         if (event.delta_x() > kSystemPinchPoints)
           break;
 
-        if (phantom_state_ == PHANTOM_WINDOW_MAXIMIZED) {
-          wm::MaximizeWindow(target_);
-        } else if (phantom_state_ == PHANTOM_WINDOW_MINIMIZED) {
-          wm::MinimizeWindow(target_);
-        } else {
-          gfx::Rect bounds = phantom_.IsShowing() ?  phantom_.bounds() :
-                                                     target_->bounds();
-          int grid = Shell::GetInstance()->GetGridSize();
-          bounds.set_x(WindowResizer::AlignToGridRoundUp(bounds.x(), grid));
-          bounds.set_y(WindowResizer::AlignToGridRoundUp(bounds.y(), grid));
-          if (wm::IsWindowFullscreen(target_) ||
-              wm::IsWindowMaximized(target_)) {
-            SetRestoreBounds(target_, bounds);
-            wm::RestoreWindow(target_);
+        if (resize_started_) {
+          if (phantom_state_ == PHANTOM_WINDOW_MAXIMIZED) {
+            wm::MaximizeWindow(target_);
+          } else if (phantom_state_ == PHANTOM_WINDOW_MINIMIZED) {
+            wm::MinimizeWindow(target_);
           } else {
-            target_->SetBounds(bounds);
+            gfx::Rect bounds = phantom_.IsShowing() ?  phantom_.bounds() :
+              target_->bounds();
+            int grid = Shell::GetInstance()->GetGridSize();
+            bounds.set_x(WindowResizer::AlignToGridRoundUp(bounds.x(), grid));
+            bounds.set_y(WindowResizer::AlignToGridRoundUp(bounds.y(), grid));
+            if (wm::IsWindowFullscreen(target_) ||
+                wm::IsWindowMaximized(target_)) {
+              SetRestoreBounds(target_, bounds);
+              wm::RestoreWindow(target_);
+            } else {
+              target_->SetBounds(bounds);
+            }
           }
         }
         return SYSTEM_GESTURE_END;
@@ -115,6 +119,12 @@ class SystemPinchHandler {
       case ui::ET_GESTURE_PINCH_UPDATE: {
         // The PINCH_UPDATE events contain incremental scaling updates.
         pinch_factor_ *= event.delta_x();
+        if (!resize_started_) {
+          if (fabs(pinch_factor_ - 1.) < kPinchThresholdForResize)
+            break;
+          resize_started_ = true;
+        }
+
         gfx::Rect bounds = target_->bounds();
 
         if (wm::IsWindowFullscreen(target_) || wm::IsWindowMaximized(target_)) {
@@ -206,9 +216,25 @@ class SystemPinchHandler {
   aura::Window* target_;
   views::Widget* widget_;
 
+  // A phantom window is used to provide visual cues for
+  // pinch-to-resize/maximize/minimize gestures.
   PhantomWindowController phantom_;
+
+  // When the phantom window is in minimized or maximized state, moving the
+  // target window should not move the phantom window. So |phantom_state_| is
+  // used to track the state of the phantom window.
   PhantomWindowState phantom_state_;
+
+  // PINCH_UPDATE events include incremental pinch-amount. But it is necessary
+  // to keep track of the overall pinch-amount. |pinch_factor_| is used for
+  // that.
   double pinch_factor_;
+
+  // Pinch-to-resize starts only after the pinch crosses a certain threshold to
+  // make it easier to move window without accidentally resizing the window at
+  // the same time. |resize_started_| keeps track of whether pinch crossed the
+  // threshold to initiate a window-resize.
+  bool resize_started_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemPinchHandler);
 };
