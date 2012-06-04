@@ -65,6 +65,14 @@ GpuChildThread::GpuChildThread(const std::string& channel_id)
   target_services_ = NULL;
   collecting_dx_diagnostics_ = false;
 #endif
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
+    // For single process and in-process GPU mode, we need to load and
+    // initialize the GL implementation and locate the GL entry points here.
+    if (!gfx::GLSurface::InitializeOneOff()) {
+      VLOG(1) << "gfx::GLSurface::InitializeOneOff()";
+    }
+  }
 }
 
 
@@ -176,9 +184,12 @@ void GpuChildThread::StopWatchdog() {
 
 void GpuChildThread::OnCollectGraphicsInfo() {
   if (!gpu_info_.finalized &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuSandbox)) {
-    // GPU full info collection should only happen on un-sandboxed GPU process.
+      (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuSandbox) ||
+       CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
+       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU))) {
+    // GPU full info collection should only happen on un-sandboxed GPU process
+    // or single process/in-process gpu mode.
 
     if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info_))
       VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
