@@ -16,10 +16,13 @@ namespace app_list {
 
 namespace {
 
-const int kPadding = 9;
+const int kPadding = 14;
 const int kIconDimension = 32;
 const int kPreferredWidth = 360;
 const int kPreferredHeight = 48;
+const int kFontSize = 14;
+
+const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 
 }  // namespace
 
@@ -36,8 +39,10 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate)
   search_box_ = new views::Textfield;
   search_box_->RemoveBorder();
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  search_box_->SetFont(rb.GetFont(ResourceBundle::BaseFont).DeriveFont(
-        2, gfx::Font::BOLD));
+  search_box_->SetFont(gfx::Font(
+      rb.GetFont(ResourceBundle::BaseFont).GetFontName(),
+      kFontSize));
+  search_box_->set_placeholder_text_color(kHintTextColor);
   search_box_->SetController(this);
   AddChildView(search_box_);
 }

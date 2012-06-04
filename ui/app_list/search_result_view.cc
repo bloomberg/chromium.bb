@@ -14,23 +14,22 @@
 namespace {
 
 const int kPreferredWidth = 300;
-const int kPreferredHeight = 48;
-const int kIconViewWidth = 48;
-const int kIconPadding = 8;
+const int kPreferredHeight = 52;
+const int kIconDimension = 32;
+const int kIconPadding = 14;
+const int kIconViewWidth = kIconDimension + 2 * kIconPadding;
 const int kTextTrailPadding = kIconPadding;
 const int kBorderSize = 1;
 
-const SkColor kBorderColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
+const SkColor kBorderColor = SkColorSetARGB(0x0F, 0, 0, 0);
 
 const SkColor kDefaultTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
-const SkColor kDimmedTextColor = SK_ColorGRAY;
+const SkColor kDimmedTextColor = SkColorSetRGB(0x96, 0x96, 0x96);
 const SkColor kURLTextColor = SkColorSetRGB(0x00, 0x99, 0x33);
 
-// rgba(77,144,254,0.2)
-const SkColor kSelectedBorderColor = SkColorSetARGB(51, 77, 144, 254);
-// rgba(77,144,254,0.33)
-const SkColor kSelectedBackgroundColor = SkColorSetARGB(84, 77, 144, 254);
-const SkColor kHoverAndPushedColor = SkColorSetARGB(51, 77, 144, 254);
+const SkColor kSelectedBorderColor = kBorderColor;
+const SkColor kSelectedBackgroundColor = SkColorSetARGB(0x0F, 0x4D, 0x90, 0xFE);
+const SkColor kHoverAndPushedColor = SkColorSetARGB(0x05, 0, 0, 0);
 
 // A non-interactive image view to display result icon.
 class IconView : public views::ImageView {

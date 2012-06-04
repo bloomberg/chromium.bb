@@ -35,8 +35,6 @@ const SkColor kWidgetBackgroundColor = SkColorSetARGB(0x33, 0, 0, 0);
 
 const float kModelViewAnimationScaleFactor = 0.9f;
 
-const int kPreferredWidth = 360;
-
 const int kPreferredIconDimension = 48;
 const int kPreferredCols = 4;
 const int kPreferredRows = 4;
@@ -115,8 +113,8 @@ void AppListView::InitAsBubble(
 
   apps_view_ = new AppsGridView(this, pagination_model_.get());
   apps_view_->SetLayout(kPreferredIconDimension,
-                         kPreferredCols,
-                         kPreferredRows);
+                        kPreferredCols,
+                        kPreferredRows);
   AddChildView(apps_view_);
 
   search_results_view_ = new SearchResultListView(this);
@@ -227,15 +225,19 @@ gfx::Size AppListView::GetPreferredSize() {
   if (!bubble_style_)
     return View::GetPreferredSize();
 
-  const int search_box_height = search_box_view_->GetPreferredSize().height();
-  const int grid_height = apps_view_->GetPreferredSize().height();
-  const int page_switcher_height =
-      page_switcher_view_->GetPreferredSize().height();
-  const int results_height = search_results_view_->GetPreferredSize().height();
+  const gfx::Size search_box_size = search_box_view_->GetPreferredSize();
+  const gfx::Size grid_size = apps_view_->GetPreferredSize();
+  const gfx::Size page_switcher_size = page_switcher_view_->GetPreferredSize();
+  const gfx::Size results_size = search_results_view_->GetPreferredSize();
 
-  int height = search_box_height + std::max(grid_height + page_switcher_height,
-                                            results_height);
-  return gfx::Size(kPreferredWidth, height);
+  int width = std::max(
+      std::max(search_box_size.width(), results_size.width()),
+      std::max(grid_size.width(), page_switcher_size.width()));
+  int height = search_box_size.height() +
+      std::max(grid_size.height() + page_switcher_size.height(),
+               results_size.height());
+  return gfx::Size(width + 2 * kInnerPadding,
+                   height + 2 * kInnerPadding);
 }
 
 void AppListView::Layout() {

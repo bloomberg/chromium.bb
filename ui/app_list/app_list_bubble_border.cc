@@ -24,31 +24,11 @@ const SkColor kBorderColor = SkColorSetARGB(0x26, 0, 0, 0);
 const int kBorderSize = 1;
 
 const SkColor kSearchBoxBackground = SK_ColorWHITE;
+const SkColor kContentsBackground = SkColorSetRGB(0xFC, 0xFC, 0xFC);
 
 // Colors and sizes of top separator between searchbox and grid view.
-const SkColor kTopSeparatorColor = SkColorSetRGB(0xDB, 0xDB, 0xDB);
+const SkColor kTopSeparatorColor = SkColorSetRGB(0xF0, 0xF0, 0xF0);
 const int kTopSeparatorSize = 1;
-const SkColor kTopSeparatorGradientColor1 = SkColorSetRGB(0xEF, 0xEF, 0xEF);
-const SkColor kTopSeparatorGradientColor2 = SkColorSetRGB(0xF9, 0xF9, 0xF9);
-const int kTopSeparatorGradientSize = 9;
-
-// TODO(xiyuan): Merge this with the one in skia_util.
-SkShader* CreateVerticalGradientShader(int start_point,
-                                       int end_point,
-                                       SkColor start_color,
-                                       SkColor end_color,
-                                       SkShader::TileMode mode) {
-  SkColor grad_colors[2] = { start_color, end_color};
-  SkPoint grad_points[2];
-  grad_points[0].iset(0, start_point);
-  grad_points[1].iset(0, end_point);
-
-  return SkGradientShader::CreateLinear(grad_points,
-                                        grad_colors,
-                                        NULL,
-                                        2,
-                                        mode);
-}
 
 // Builds a bubble shape for given |bounds|.
 void BuildShape(const gfx::Rect& bounds,
@@ -223,7 +203,7 @@ void AppListBubbleBorder::PaintSearchResultListBackground(
 
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(kSearchBoxBackground);
+  paint.setColor(kContentsBackground);
   canvas->DrawRect(rect, paint);
 }
 
@@ -243,12 +223,7 @@ void AppListBubbleBorder::PaintAppsGridBackground(
 
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
-  SkSafeUnref(paint.setShader(CreateVerticalGradientShader(
-      rect.y(),
-      rect.y() + kTopSeparatorGradientSize,
-      kTopSeparatorGradientColor1,
-      kTopSeparatorGradientColor2,
-      SkShader::kClamp_TileMode)));
+  paint.setColor(kContentsBackground);
   canvas->DrawRect(rect, paint);
 }
 

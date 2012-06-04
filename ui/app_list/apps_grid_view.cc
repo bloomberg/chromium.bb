@@ -13,12 +13,12 @@
 namespace {
 
 // Padding space in pixels for fixed layout.
-const int kTopLeftRightPadding = 15;
-const int kBottomPadding = 30;
+const int kLeftRightPadding = 20;
+const int kTopPadding = 1;
 
 // Preferred tile size when showing in fixed layout.
-const int kPreferredTileWidth = 82;
-const int kPreferredTileHeight = 90;
+const int kPreferredTileWidth = 88;
+const int kPreferredTileHeight = 98;
 
 }  // namespace
 
@@ -101,10 +101,10 @@ void AppsGridView::SetLayout(int icon_size, int cols, int rows_per_page) {
   cols_ = cols;
   rows_per_page_ = rows_per_page;
 
-  set_border(views::Border::CreateEmptyBorder(kTopLeftRightPadding,
-                                              kTopLeftRightPadding,
-                                              kBottomPadding,
-                                              kTopLeftRightPadding));
+  set_border(views::Border::CreateEmptyBorder(kTopPadding,
+                                              kLeftRightPadding,
+                                              0,
+                                              kLeftRightPadding));
 }
 
 void AppsGridView::SetModel(AppListModel::Apps* model) {

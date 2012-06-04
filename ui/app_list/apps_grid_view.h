@@ -27,7 +27,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                                      public PaginationModelObserver {
  public:
   AppsGridView(views::ButtonListener* listener,
-                   PaginationModel* pagination_model);
+               PaginationModel* pagination_model);
   virtual ~AppsGridView();
 
   // Calculate preferred icon size, rows and cols for given |content_size| and

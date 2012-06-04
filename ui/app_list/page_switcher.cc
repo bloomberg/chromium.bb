@@ -14,18 +14,18 @@
 
 namespace {
 
-const int kPreferredHeight = 36;
+const int kPreferredHeight = 57;
 
-const int kButtonSpacing = 10;
-const int kButtonWidth = 60;
+const int kButtonSpacing = 18;
+const int kButtonWidth = 68;
 const int kButtonHeight = 6;
 const int kButtonCornerRadius = 2;
 
-const SkColor kHoverColor = SkColorSetRGB(0x6E, 0x6E, 0x6E);
+const SkColor kHoverColor = SkColorSetRGB(0xB4, 0xB4, 0xB4);
 
-const SkColor kNormalColor = SkColorSetRGB(0xBB, 0xBB, 0xBB);
+const SkColor kNormalColor = SkColorSetRGB(0xE2, 0xE2, 0xE2);
 
-const SkColor kSelectedColor = kHoverColor;
+const SkColor kSelectedColor = SkColorSetRGB(0x46, 0x8F, 0xFC);
 
 class PageSwitcherButton : public views::CustomButton {
  public:
@@ -70,6 +70,7 @@ class PageSwitcherButton : public views::CustomButton {
                       SkIntToScalar(kButtonCornerRadius));
 
     SkPaint paint;
+    paint.setAntiAlias(true);
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(color);
     canvas->DrawPath(path, paint);

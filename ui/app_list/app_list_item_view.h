@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_item_model_observer.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/custom_button.h"
 
@@ -33,7 +34,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
                                         public views::ContextMenuController,
                                         public AppListItemModelObserver {
  public:
-  AppListItemView(AppsGridView* list_model_view,
+  AppListItemView(AppsGridView* apps_grid_view,
                   AppListItemModel* model,
                   views::ButtonListener* listener);
   virtual ~AppListItemView();
@@ -60,6 +61,9 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
  private:
   class IconOperation;
+
+  // Returns true for v2 UI.
+  bool IsV2() const;
 
   // Get icon from model and schedule background processing.
   void UpdateIcon();
@@ -92,7 +96,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   AppListItemModel* model_;
 
-  AppsGridView* list_model_view_;
+  AppsGridView* apps_grid_view_;
   views::ImageView* icon_;
   DropShadowLabel* title_;
 
@@ -103,6 +107,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   scoped_refptr<IconOperation> icon_op_;
   base::WeakPtrFactory<AppListItemView> apply_shadow_factory_;
+  gfx::ShadowValues icon_shadows_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);
 };

@@ -21,7 +21,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -33,18 +32,22 @@ namespace app_list {
 namespace {
 
 const int kTopBottomPadding = 10;
-const int kIconTitleSpacing = 10;
+const int kTopPaddingV2 = 20;
+const int kIconTitleSpacing = 7;
 
 const SkColor kTitleColor = SK_ColorWHITE;
-const SkColor kTitleColorV2 = SkColorSetARGB(0xFF, 0x88, 0x88, 0x88);
+const SkColor kTitleColorV2 = SkColorSetRGB(0x5A, 0x5A, 0x5A);
+const SkColor kTitleColorHoverV2 = SkColorSetRGB(0x3C, 0x3C, 0x3C);
+const SkColor kTitleBackgroundColorV2 = SkColorSetRGB(0xFC, 0xFC, 0xFC);
 
-// 0.33 black
-const SkColor kHoverAndPushedColor = SkColorSetARGB(0x55, 0x00, 0x00, 0x00);
+const SkColor kHoverAndPushedColor = SkColorSetARGB(0x55, 0, 0, 0);
+const SkColor kHoverAndPushedColorV2 = SkColorSetARGB(0x19, 0, 0, 0);
 
-// 0.16 black
-const SkColor kSelectedColor = SkColorSetARGB(0x2A, 0x00, 0x00, 0x00);
+const SkColor kSelectedColor = SkColorSetARGB(0x2A, 0, 0, 0);
+const SkColor kSelectedColorV2 = SkColorSetARGB(0x0D, 0, 0, 0);
 
 const SkColor kHighlightedColor = kHoverAndPushedColor;
+const SkColor kHighlightedColorV2 = kHoverAndPushedColorV2;
 
 // FontSize/IconSize ratio = 24 / 128, which means we should get 24 font size
 // when icon size is 128.
@@ -113,18 +116,17 @@ const char AppListItemView::kViewClassName[] = "ui/app_list/AppListItemView";
 class AppListItemView::IconOperation
     : public base::RefCountedThreadSafe<AppListItemView::IconOperation> {
  public:
-  IconOperation(const SkBitmap& bitmap, const gfx::Size& size)
+  IconOperation(const SkBitmap& bitmap,
+                const gfx::Size& size,
+                const gfx::ShadowValues& shadows)
       : bitmap_(bitmap),
-        size_(size) {
+        size_(size),
+        shadows_(shadows) {
   }
 
   static void Run(scoped_refptr<IconOperation> op) {
     op->ResizeAndGenerateShadow();
   }
-
-  // Padding space around icon to contain its shadow. Note it should be at least
-  // the max size of shadow radius + shadow offset in shadow generation code.
-  static const int kShadowPadding = 15;
 
   void ResizeAndGenerateShadow() {
     if (cancel_flag_.IsSet())
@@ -138,16 +140,7 @@ class AppListItemView::IconOperation
     if (cancel_flag_.IsSet())
       return;
 
-    // If you change shadow radius and shadow offset, please also update
-    // kShadowPaddingAbove.
-    const gfx::ShadowValue kShadows[] = {
-      gfx::ShadowValue(gfx::Point(0, 0), 2, SkColorSetARGB(0xCC, 0, 0, 0)),
-      gfx::ShadowValue(gfx::Point(0, 4), 4, SkColorSetARGB(0x33, 0, 0, 0)),
-      gfx::ShadowValue(gfx::Point(0, 5), 10, SkColorSetARGB(0x4C, 0, 0, 0)),
-    };
-
-    bitmap_ = SkBitmapOperations::CreateDropShadow(
-        bitmap_, gfx::ShadowValues(kShadows, kShadows + arraysize(kShadows)));
+    bitmap_ = SkBitmapOperations::CreateDropShadow(bitmap_, shadows_);
   }
 
   void Cancel() {
@@ -165,25 +158,32 @@ class AppListItemView::IconOperation
 
   SkBitmap bitmap_;
   const gfx::Size size_;
+  const gfx::ShadowValues shadows_;
 
   DISALLOW_COPY_AND_ASSIGN(IconOperation);
 };
 
-AppListItemView::AppListItemView(AppsGridView* list_model_view,
+AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
                                  AppListItemModel* model,
                                  views::ButtonListener* listener)
     : CustomButton(listener),
       model_(model),
-      list_model_view_(list_model_view),
+      apps_grid_view_(apps_grid_view),
       icon_(new StaticImageView),
       title_(new DropShadowLabel),
       selected_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(apply_shadow_factory_(this)) {
-  title_->SetBackgroundColor(0);
 
-  if (list_model_view_->fixed_layout()) {
+  if (IsV2()) {
+    title_->SetBackgroundColor(kTitleBackgroundColorV2);
     title_->SetEnabledColor(kTitleColorV2);
+
+    const gfx::ShadowValue kIconShadows[] = {
+      gfx::ShadowValue(gfx::Point(0, 2), 2, SkColorSetARGB(0x24, 0, 0, 0)),
+    };
+    icon_shadows_.assign(kIconShadows, kIconShadows + arraysize(kIconShadows));
   } else {
+    title_->SetBackgroundColor(0);
     title_->SetEnabledColor(kTitleColor);
     const gfx::ShadowValue kTitleShadows[] = {
       gfx::ShadowValue(gfx::Point(0, 0), 1, SkColorSetARGB(0x66, 0, 0, 0)),
@@ -192,7 +192,15 @@ AppListItemView::AppListItemView(AppsGridView* list_model_view,
       gfx::ShadowValue(gfx::Point(0, 2), 4, SkColorSetARGB(0x66, 0, 0, 0)),
     };
     title_->SetTextShadows(arraysize(kTitleShadows), kTitleShadows);
+
+    const gfx::ShadowValue kIconShadows[] = {
+      gfx::ShadowValue(gfx::Point(0, 0), 2, SkColorSetARGB(0xCC, 0, 0, 0)),
+      gfx::ShadowValue(gfx::Point(0, 4), 4, SkColorSetARGB(0x33, 0, 0, 0)),
+      gfx::ShadowValue(gfx::Point(0, 5), 10, SkColorSetARGB(0x4C, 0, 0, 0)),
+    };
+    icon_shadows_.assign(kIconShadows, kIconShadows + arraysize(kIconShadows));
   }
+
 
   AddChildView(icon_);
   AddChildView(title_);
@@ -205,7 +213,7 @@ AppListItemView::AppListItemView(AppsGridView* list_model_view,
   set_request_focus_on_press(false);
 
   // Don't take focus for v2 so that focus stays with the search box.
-  if (!list_model_view_->fixed_layout())
+  if (!IsV2())
     set_focusable(true);
 }
 
@@ -250,8 +258,7 @@ void AppListItemView::SetIconSize(const gfx::Size& size) {
     return;
 
   icon_size_ = size;
-  title_->SetFont(GetTitleFontForIconSize(size,
-                                          list_model_view_->fixed_layout()));
+  title_->SetFont(GetTitleFontForIconSize(size, IsV2()));
   UpdateIcon();
 }
 
@@ -263,6 +270,10 @@ void AppListItemView::SetSelected(bool selected) {
     RequestFocus();
   selected_ = selected;
   SchedulePaint();
+}
+
+bool AppListItemView::IsV2() const {
+  return apps_grid_view_->fixed_layout();
 }
 
 void AppListItemView::UpdateIcon() {
@@ -284,7 +295,7 @@ void AppListItemView::UpdateIcon() {
     icon_->SetImage(shadow);
   } else {
     // Schedule resize and shadow generation.
-    icon_op_ = new IconOperation(icon, icon_size_);
+    icon_op_ = new IconOperation(icon, icon_size_, icon_shadows_);
     base::WorkerPool::PostTaskAndReply(
         FROM_HERE,
         base::Bind(&IconOperation::Run, icon_op_),
@@ -337,16 +348,24 @@ void AppListItemView::Layout() {
 
   int left_right_padding = kLeftRightPaddingChars *
       title_->font().GetAverageCharacterWidth();
-  rect.Inset(left_right_padding, kTopBottomPadding);
-
   gfx::Size title_size = title_->GetPreferredSize();
-  int height = icon_size_.height() + kIconTitleSpacing +
-      title_size.height();
-  int y = rect.y() + (rect.height() - height) / 2;
+
+  int y = 0;
+  if (IsV2()) {
+    // Layout for v2, starting at kTopPaddingV2.
+    rect.Inset(left_right_padding, kTopPaddingV2);
+    y = rect.y();
+  } else {
+    // Layout for v1, vertically centered.
+    rect.Inset(left_right_padding, kTopBottomPadding);
+
+    int height = icon_size_.height() + kIconTitleSpacing +
+        title_size.height();
+    y = rect.y() + (rect.height() - height) / 2;
+  }
 
   gfx::Rect icon_bounds(rect.x(), y, rect.width(), icon_size_.height());
-  icon_bounds.Inset(-IconOperation::kShadowPadding,
-                    -IconOperation::kShadowPadding);
+  icon_bounds.Inset(gfx::ShadowValue::GetMargin(icon_shadows_));
   icon_->SetBoundsRect(icon_bounds);
 
   title_->SetBounds(rect.x(),
@@ -358,16 +377,21 @@ void AppListItemView::Layout() {
 void AppListItemView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect rect(GetContentsBounds());
 
+  const SkColor highlighted = IsV2() ? kHighlightedColorV2 : kHighlightedColor;
+  const SkColor hover_push = IsV2() ? kHoverAndPushedColorV2 :
+                                      kHoverAndPushedColor;
+  const SkColor selected = IsV2() ? kSelectedColorV2 : kSelectedColor;
+
   if (model_->highlighted()) {
-    canvas->FillRect(rect, kHighlightedColor);
+    canvas->FillRect(rect, highlighted);
   } else if (hover_animation_->is_animating()) {
-    int alpha = SkColorGetA(kHoverAndPushedColor) *
+    int alpha = SkColorGetA(hover_push) *
         hover_animation_->GetCurrentValue();
-    canvas->FillRect(rect, SkColorSetA(kHoverAndPushedColor, alpha));
+    canvas->FillRect(rect, SkColorSetA(hover_push, alpha));
   } else if (state() == BS_HOT || state() == BS_PUSHED) {
-    canvas->FillRect(rect, kHoverAndPushedColor);
+    canvas->FillRect(rect, hover_push);
   } else if (selected_) {
-    canvas->FillRect(rect, kSelectedColor);
+    canvas->FillRect(rect, selected);
   }
 }
 
@@ -395,10 +419,14 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 
 void AppListItemView::StateChanged() {
   if (state() == BS_HOT || state() == BS_PUSHED) {
-    list_model_view_->SetSelectedItem(this);
+    apps_grid_view_->SetSelectedItem(this);
+    if (IsV2())
+      title_->SetEnabledColor(kTitleColorHoverV2);
   } else {
-    list_model_view_->ClearSelectedItem(this);
+    apps_grid_view_->ClearSelectedItem(this);
     model_->SetHighlighted(false);
+    if (IsV2())
+      title_->SetEnabledColor(kTitleColorV2);
   }
 }
 
