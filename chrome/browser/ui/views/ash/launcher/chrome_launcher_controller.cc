@@ -155,40 +155,9 @@ ash::LauncherID ChromeLauncherController::CreateTabbedLauncherItem(
 ash::LauncherID ChromeLauncherController::CreateAppLauncherItem(
     BrowserLauncherItemController* controller,
     const std::string& app_id,
-    ash::LauncherItemStatus status,
-    int index) {
-  ash::LauncherID id = model_->next_id();
-  DCHECK(id_to_item_map_.find(id) == id_to_item_map_.end());
-  id_to_item_map_[id].item_type = TYPE_APP;
-  id_to_item_map_[id].app_id = app_id;
-  id_to_item_map_[id].controller = controller;
-
-  ash::LauncherItem item;
-  if (!controller) {
-    if (status == ash::STATUS_CLOSED)
-      item.type = ash::TYPE_APP_SHORTCUT;
-    else
-      item.type = ash::TYPE_PLATFORM_APP;
-  } else if (controller->type() ==
-             BrowserLauncherItemController::TYPE_APP_PANEL ||
-             controller->type() ==
-             BrowserLauncherItemController::TYPE_EXTENSION_PANEL) {
-    item.type = ash::TYPE_APP_PANEL;
-  } else {
-    item.type = ash::TYPE_TABBED;
-  }
-  item.is_incognito = false;
-  item.image = Extension::GetDefaultIcon(true);
-  item.status = status;
-  if (index < 0 || index >= model_->item_count())
-    model_->Add(item);
-  else
-    model_->AddAt(index, item);
-
-  if (!controller || controller->type() !=
-      BrowserLauncherItemController::TYPE_EXTENSION_PANEL)
-    app_icon_loader_->FetchImage(app_id);
-  return id;
+    ash::LauncherItemStatus status) {
+  return InsertAppLauncherItem(controller, app_id, status,
+                               model_->item_count());
 }
 
 void ChromeLauncherController::SetItemStatus(ash::LauncherID id,
@@ -528,7 +497,7 @@ void ChromeLauncherController::OnShellWindowAdded(ShellWindow* shell_window) {
       return;
     }
   }
-  CreateAppLauncherItem(NULL, app_id, ash::STATUS_RUNNING, -1);
+  CreateAppLauncherItem(NULL, app_id, ash::STATUS_RUNNING);
 }
 
 void ChromeLauncherController::OnShellWindowRemoved(ShellWindow* shell_window) {
@@ -602,7 +571,7 @@ void ChromeLauncherController::DoPinAppWithID(const std::string& app_id) {
     return;
 
   // Otherwise, create an item for it.
-  CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED, -1);
+  CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED);
   if (CanPin())
     PersistPinnedState();
 }
@@ -664,7 +633,7 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
       DCHECK(index < model_->item_count());
     } else {
       // This app wasn't pinned before, insert a new entry.
-      ash::LauncherID id = CreateAppLauncherItem(NULL, *pref_app_id,
+      ash::LauncherID id = InsertAppLauncherItem(NULL, *pref_app_id,
                                                  ash::STATUS_CLOSED, index);
       index = model_->ItemIndexByID(id);
       ++pref_app_id;
@@ -682,5 +651,41 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
 
   // Append unprocessed items from the pref to the end of the model.
   for (; pref_app_id != pinned_apps.end(); ++pref_app_id)
-      CreateAppLauncherItem(NULL, *pref_app_id, ash::STATUS_CLOSED, -1);
+    CreateAppLauncherItem(NULL, *pref_app_id, ash::STATUS_CLOSED);
+}
+
+ash::LauncherID ChromeLauncherController::InsertAppLauncherItem(
+    BrowserLauncherItemController* controller,
+    const std::string& app_id,
+    ash::LauncherItemStatus status,
+    int index) {
+  ash::LauncherID id = model_->next_id();
+  DCHECK(id_to_item_map_.find(id) == id_to_item_map_.end());
+  id_to_item_map_[id].item_type = TYPE_APP;
+  id_to_item_map_[id].app_id = app_id;
+  id_to_item_map_[id].controller = controller;
+
+  ash::LauncherItem item;
+  if (!controller) {
+    if (status == ash::STATUS_CLOSED)
+      item.type = ash::TYPE_APP_SHORTCUT;
+    else
+      item.type = ash::TYPE_PLATFORM_APP;
+  } else if (controller->type() ==
+             BrowserLauncherItemController::TYPE_APP_PANEL ||
+             controller->type() ==
+             BrowserLauncherItemController::TYPE_EXTENSION_PANEL) {
+    item.type = ash::TYPE_APP_PANEL;
+  } else {
+    item.type = ash::TYPE_TABBED;
+  }
+  item.is_incognito = false;
+  item.image = Extension::GetDefaultIcon(true);
+  item.status = status;
+  model_->AddAt(index, item);
+
+  if (!controller || controller->type() !=
+      BrowserLauncherItemController::TYPE_EXTENSION_PANEL)
+    app_icon_loader_->FetchImage(app_id);
+  return id;
 }

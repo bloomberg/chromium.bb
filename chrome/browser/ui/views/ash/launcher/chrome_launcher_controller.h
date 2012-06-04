@@ -73,21 +73,17 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Returns the single ChromeLauncherController instnace.
   static ChromeLauncherController* instance() { return instance_; }
 
-  // Creates a new tabbed item on the launcher for |updater|.
+  // Creates a new tabbed item on the launcher for |controller|.
   ash::LauncherID CreateTabbedLauncherItem(
       BrowserLauncherItemController* controller,
       IncognitoState is_incognito,
       ash::LauncherItemStatus status);
 
-  // Creates a new app item on the launcher for |updater|. If there is an
-  // existing pinned app that isn't running on the launcher, its id is returned.
-  // |index| indicates the index at which to add the item. Pass -1 to append the
-  // launcher to the existing launchers.
+  // Creates a new app item on the launcher for |controller|.
   ash::LauncherID CreateAppLauncherItem(
       BrowserLauncherItemController* controller,
       const std::string& app_id,
-      ash::LauncherItemStatus status,
-      int index);
+      ash::LauncherItemStatus status);
 
   // Updates the running status of an item.
   void SetItemStatus(ash::LauncherID id, ash::LauncherItemStatus status);
@@ -237,6 +233,14 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // Re-syncs launcher model with prefs::kPinnedLauncherApps.
   void UpdateAppLaunchersFromPref();
+
+  // Creates an app launcher to insert at |index|. Note that |index| may be
+  // adjusted by the model to meet ordering constraints.
+  ash::LauncherID InsertAppLauncherItem(
+      BrowserLauncherItemController* controller,
+      const std::string& app_id,
+      ash::LauncherItemStatus status,
+      int index);
 
   static ChromeLauncherController* instance_;
 
