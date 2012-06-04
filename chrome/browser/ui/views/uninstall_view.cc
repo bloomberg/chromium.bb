@@ -105,11 +105,11 @@ bool UninstallView::Accept() {
   if (delete_profile_->checked())
     user_selection_ = chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE;
   if (change_default_browser_ && change_default_browser_->checked()) {
-    BrowsersMap::const_iterator it = browsers_->begin();
-    std::advance(it, browsers_combo_->selected_index());
+    BrowsersMap::const_iterator i = browsers_->begin();
+    std::advance(i, browsers_combo_->selected_index());
     base::LaunchOptions options;
     options.start_hidden = true;
-    base::LaunchProcess((*it).second, options, NULL);
+    base::LaunchProcess(i->second, options, NULL);
   }
   return true;
 }
@@ -151,9 +151,9 @@ int UninstallView::GetItemCount() const {
 
 string16 UninstallView::GetItemAt(int index) {
   DCHECK_LT(index, static_cast<int>(browsers_->size()));
-  BrowsersMap::const_iterator it = browsers_->begin();
-  std::advance(it, index);
-  return WideToUTF16Hack((*it).first);
+  BrowsersMap::const_iterator i = browsers_->begin();
+  std::advance(i, index);
+  return WideToUTF16Hack(i->first);
 }
 
 namespace browser {

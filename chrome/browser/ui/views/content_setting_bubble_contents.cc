@@ -193,7 +193,7 @@ void ContentSettingBubbleContents::Init() {
       link->set_listener(this);
       link->SetElideInMiddle(true);
       popup_links_[link] = i - bubble_content.popup_items.begin();
-      layout->AddView(new Favicon((*i).bitmap, this, link));
+      layout->AddView(new Favicon(i->bitmap, this, link));
       layout->AddView(link);
       bubble_content_empty = false;
     }
