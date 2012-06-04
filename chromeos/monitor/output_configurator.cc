@@ -290,7 +290,7 @@ bool OutputConfigurator::TryRecacheOutputs(Display* display,
 }
 
 OutputConfigurator::OutputConfigurator()
-    : is_running_on_chrome_os_(false),
+    : is_running_on_chrome_os_(base::chromeos::IsRunningOnChromeOS()),
       output_count_(0),
       output_cache_(NULL),
       mirror_supported_(false),
@@ -298,12 +298,6 @@ OutputConfigurator::OutputConfigurator()
       secondary_output_index_(-1),
       xrandr_event_base_(0),
       output_state_(STATE_INVALID) {
-  // We only want to apply our logic if we are running on ChromeOS.
-  is_running_on_chrome_os_ = base::chromeos::IsRunningOnChromeOS();
-  LOG_IF(ERROR, !is_running_on_chrome_os_)
-      << "OutputConfigurator detected not ChromeOS.  All configuration calls "
-         "will fail";
-
   if (is_running_on_chrome_os_) {
     // Send the signal to powerd to tell it that we will take over output
     // control.
