@@ -44,6 +44,10 @@
 #include "ui/aura/window.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/browser/hang_monitor/hang_crash_dump_win.h"
+#endif
+
 class HungRendererDialogView;
 
 using content::RenderViewHost;
@@ -431,10 +435,17 @@ void HungRendererDialogView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == kill_button_ &&
       hung_pages_table_model_->GetRenderProcessHost()) {
+
+    base::ProcessHandle process_handle =
+        hung_pages_table_model_->GetRenderProcessHost()->GetHandle();
+
+#if defined(OS_WIN)
+    // Try to generate a crash report for the hung process.
+    CrashDumpAndTerminateHungChildProcess(process_handle);
+#else
     // Kill the process.
-    base::KillProcess(
-        hung_pages_table_model_->GetRenderProcessHost()->GetHandle(),
-        content::RESULT_CODE_HUNG, false);
+    base::KillProcess(process_handle, content::RESULT_CODE_HUNG, false);
+#endif
   }
 }
 
