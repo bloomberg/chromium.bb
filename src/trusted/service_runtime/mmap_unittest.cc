@@ -214,4 +214,36 @@ TEST_F(MmapTest, TestUnmapFileMapping) {
   NaClAddrSpaceFree(&app);
 }
 
+// Test we can map an anonymous memory mapping and that unmapping it
+// does not leave behind an address space hole.
+TEST_F(MmapTest, TestUnmapAnonymousMemoryMapping) {
+  struct NaClApp app;
+  ASSERT_EQ(NaClAppCtor(&app), 1);
+  ASSERT_EQ(NaClAllocAddrSpace(&app), LOAD_OK);
+
+  // sel_mem.c does not like having an empty memory map, so create a
+  // dummy entry that we do not later remove.
+  // TODO(mseaborn): Clean up so that this is not necessary.
+  MapShmFd(&app, 0x400000, 0x10000);
+
+  // Create an anonymous memory mapping.
+  uintptr_t addr = 0x200000;
+  size_t size = 0x100000;
+  uintptr_t mapping_addr = (uint32_t) NaClCommonSysMmapIntern(
+      &app, (void *) addr, size,
+      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+      NACL_ABI_MAP_FIXED | NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS,
+      -1, 0);
+  ASSERT_EQ(mapping_addr, addr);
+
+#if NACL_WINDOWS
+  uintptr_t sysaddr = NaClUserToSys(&app, addr);
+  CheckMapping(sysaddr, size, MEM_COMMIT, PAGE_READWRITE, MEM_PRIVATE);
+#endif
+
+  UnmapMemory(&app, addr, size);
+
+  NaClAddrSpaceFree(&app);
+}
+
 #endif
