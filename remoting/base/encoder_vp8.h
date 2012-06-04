@@ -1,15 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef REMOTING_BASE_ENCODER_VP8_H_
 #define REMOTING_BASE_ENCODER_VP8_H_
 
-#include <vector>
-
 #include "base/gtest_prod_util.h"
 #include "remoting/base/encoder.h"
-#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkRegion.h"
 
 typedef struct vpx_codec_ctx vpx_codec_ctx_t;
 typedef struct vpx_image vpx_image_t;
@@ -28,8 +26,6 @@ class EncoderVp8 : public Encoder {
       const DataAvailableCallback& data_available_callback) OVERRIDE;
 
  private:
-  typedef std::vector<SkIRect> RectVector;
-
   FRIEND_TEST_ALL_PREFIXES(EncoderVp8Test, AlignAndClipRect);
 
   // Initialize the encoder. Returns true if successful.
@@ -39,21 +35,13 @@ class EncoderVp8 : public Encoder {
   void Destroy();
 
   // Prepare |image_| for encoding. Write updated rectangles into
-  // |updated_rects|. Returns true if successful.
-  bool PrepareImage(scoped_refptr<CaptureData> capture_data,
-                    RectVector* updated_rects);
+  // |updated_region|.
+  void PrepareImage(scoped_refptr<CaptureData> capture_data,
+                    SkRegion* updated_region);
 
-  // Update the active map according to |updated_rects|. Active map is then
+  // Update the active map according to |updated_region|. Active map is then
   // given to the encoder to speed up encoding.
-  void PrepareActiveMap(const RectVector& updated_rects);
-
-  // Align the sides of the rectangle to multiples of 2 (expanding outwards),
-  // but ensuring the result stays within the screen area (width, height).
-  // If |rect| falls outside the screen area, return an empty rect.
-  //
-  // TODO(lambroslambrou): Pull this out if it's useful for other things than
-  // VP8-encoding?
-  static SkIRect AlignAndClipRect(const SkIRect& rect, int width, int height);
+  void PrepareActiveMap(const SkRegion& updated_region);
 
   // True if the encoder is initialized.
   bool initialized_;

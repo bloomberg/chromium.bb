@@ -10,7 +10,6 @@
 #include "remoting/base/capture_data.h"
 #include "remoting/base/util.h"
 #include "remoting/proto/video.pb.h"
-#include "third_party/skia/include/core/SkRegion.h"
 
 extern "C" {
 #define VPX_CODEC_DISABLE_COMPAT 1
@@ -149,26 +148,38 @@ bool EncoderVp8::Init(const SkISize& size) {
   return true;
 }
 
-// static
-SkIRect EncoderVp8::AlignAndClipRect(const SkIRect& rect,
-                                     int width, int height) {
-  SkIRect screen(SkIRect::MakeWH(RoundToTwosMultiple(width),
-                                 RoundToTwosMultiple(height)));
-  if (!screen.intersect(AlignRect(rect))) {
-    screen = SkIRect::MakeWH(0, 0);
-  }
-  return screen;
-}
-
-bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
-                              RectVector* updated_rects) {
+void EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
+                              SkRegion* updated_region) {
   // Perform RGB->YUV conversion.
-  if (capture_data->pixel_format() != media::VideoFrame::RGB32) {
-    LOG(ERROR) << "Only RGB32 is supported";
-    return false;
-  }
+  CHECK_EQ(capture_data->pixel_format(), media::VideoFrame::RGB32)
+    << "Only RGB32 is supported";
 
   const SkRegion& region = capture_data->dirty_region();
+  if (region.isEmpty()) {
+    updated_region->setEmpty();
+    return;
+  }
+
+  // Align rectangles in the region, to avoid encoding artefacts.
+  // Note that this also results in rectangles with even-aligned positions,
+  // which is a requirement for some of the conversion routines to work.
+  std::vector<SkIRect> updated_rects;
+  for (SkRegion::Iterator r(region); !r.done(); r.next()) {
+    updated_rects.push_back(AlignRect(r.rect()));
+  }
+  if (!updated_rects.empty()) {
+    updated_region->setRects(&updated_rects[0], updated_rects.size());
+  }
+
+  // Clip to the screen again, in case it has non-aligned size.
+  // Note that we round the screen down to even dimensions to satisfy the
+  // limitations of some of the conversion routines.
+  int even_width = RoundToTwosMultiple(image_->w);
+  int even_height = RoundToTwosMultiple(image_->h);
+  updated_region->op(SkRegion(SkIRect::MakeWH(even_width, even_height)),
+                     SkRegion::kIntersect_Op);
+
+  // Convert the updated region to YUV ready for encoding.
   const uint8* in = capture_data->data_planes().data[0];
   const int in_stride = capture_data->data_planes().strides[0];
   const int plane_size =
@@ -179,35 +190,26 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
   const int y_stride = image_->stride[0];
   const int uv_stride = image_->stride[1];
 
-  DCHECK(updated_rects->empty());
-  for (SkRegion::Iterator r(region); !r.done(); r.next()) {
-    // Align the rectangle, report it as updated.
-    SkIRect rect = r.rect();
-    rect = AlignAndClipRect(rect, image_->w, image_->h);
-    if (!rect.isEmpty())
-      updated_rects->push_back(rect);
-
+  for (SkRegion::Iterator r(*updated_region); !r.done(); r.next()) {
+    const SkIRect& rect = r.rect();
     ConvertRGB32ToYUVWithRect(
         in, y_out, u_out, v_out,
-        rect.fLeft, rect.fTop, rect.width(), rect.height(),
+        rect.x(), rect.y(), rect.width(), rect.height(),
         in_stride, y_stride, uv_stride);
   }
-  return true;
 }
 
-void EncoderVp8::PrepareActiveMap(const RectVector& updated_rects) {
+void EncoderVp8::PrepareActiveMap(const SkRegion& updated_region) {
   // Clear active map first.
   memset(active_map_.get(), 0, active_map_width_ * active_map_height_);
 
-  // Mark blocks at active.
-  for (size_t i = 0; i < updated_rects.size(); ++i) {
-    const SkIRect& r = updated_rects[i];
-    CHECK(r.width() && r.height());
-
-    int left = r.fLeft / kMacroBlockSize;
-    int right = (r.fRight - 1) / kMacroBlockSize;
-    int top = r.fTop / kMacroBlockSize;
-    int bottom = (r.fBottom - 1) / kMacroBlockSize;
+  // Mark updated areas active.
+  for (SkRegion::Iterator r(updated_region); !r.done(); r.next()) {
+    const SkIRect& rect = r.rect();
+    int left = rect.left() / kMacroBlockSize;
+    int right = (rect.right() - 1) / kMacroBlockSize;
+    int top = rect.top() / kMacroBlockSize;
+    int bottom = (rect.bottom() - 1) / kMacroBlockSize;
     CHECK(right < active_map_width_);
     CHECK(bottom < active_map_height_);
 
@@ -230,13 +232,12 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
     initialized_ = ret;
   }
 
-  RectVector updated_rects;
-  if (!PrepareImage(capture_data, &updated_rects)) {
-    NOTREACHED() << "Can't image data for encoding";
-  }
+  // Convert the updated capture data ready for encode.
+  SkRegion updated_region;
+  PrepareImage(capture_data, &updated_region);
 
-  // Update active map based on updated rectangles.
-  PrepareActiveMap(updated_rects);
+  // Update active map based on updated region.
+  PrepareActiveMap(updated_region);
 
   // Apply active map to the encoder.
   vpx_active_map_t act_map;
@@ -284,6 +285,7 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
     }
   }
 
+  // Construct the VideoPacket message.
   packet->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
   packet->set_flags(VideoPacket::FIRST_PACKET | VideoPacket::LAST_PACKET |
                      VideoPacket::LAST_PARTITION);
@@ -291,12 +293,12 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
   packet->mutable_format()->set_screen_height(capture_data->size().height());
   packet->set_capture_time_ms(capture_data->capture_time_ms());
   packet->set_client_sequence_number(capture_data->client_sequence_number());
-  for (size_t i = 0; i < updated_rects.size(); ++i) {
+  for (SkRegion::Iterator r(updated_region); !r.done(); r.next()) {
     Rect* rect = packet->add_dirty_rects();
-    rect->set_x(updated_rects[i].fLeft);
-    rect->set_y(updated_rects[i].fTop);
-    rect->set_width(updated_rects[i].width());
-    rect->set_height(updated_rects[i].height());
+    rect->set_x(r.rect().x());
+    rect->set_y(r.rect().y());
+    rect->set_width(r.rect().width());
+    rect->set_height(r.rect().height());
   }
 
   data_available_callback.Run(packet.Pass());
