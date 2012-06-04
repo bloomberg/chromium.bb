@@ -9,6 +9,8 @@
   # output directories (e.g. browser/jni and common/jni if needed).
   'variables': {
     'java_sources': [
+      'public/android/java/org/chromium/content/app/ContentMain.java',
+      'public/android/java/org/chromium/content/browser/AndroidBrowserProcess.java',
       'public/android/java/org/chromium/content/browser/CommandLine.java',
       'public/android/java/org/chromium/content/browser/DeviceOrientation.java',
       'public/android/java/org/chromium/content/browser/DownloadController.java',
@@ -18,6 +20,8 @@
       'public/android/java/org/chromium/content/browser/TraceEvent.java',
     ],
     'jni_headers': [
+      '<(SHARED_INTERMEDIATE_DIR)/content/jni/content_main_jni.h',
+      '<(SHARED_INTERMEDIATE_DIR)/content/jni/android_browser_process_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/command_line_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/device_orientation_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/download_controller_jni.h',

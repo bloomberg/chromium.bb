@@ -7,6 +7,8 @@ package org.chromium.content.browser;
 import android.content.Context;
 import android.widget.FrameLayout;
 
+import org.chromium.content.browser.AndroidBrowserProcess;
+
 public class ContentView extends FrameLayout {
 
     /**
@@ -30,7 +32,7 @@ public class ContentView extends FrameLayout {
      * maximum number of allowed renderers is capped by MAX_RENDERERS_LIMIT.
      */
     public static void enableMultiProcess(Context context, int maxRendererProcesses) {
-       // TODO(tedchoc): Implement.
+        AndroidBrowserProcess.initContentViewProcess(context, maxRendererProcesses);
     }
 
     /**

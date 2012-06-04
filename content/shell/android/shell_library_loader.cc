@@ -8,34 +8,18 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "content/public/app/android_library_loader_hooks.h"
-#include "content/public/app/content_main_runner.h"
-#include "content/shell/shell_main_delegate.h"
+#include "content/public/app/content_main.h"
 #include "content/shell/android/shell_manager.h"
 #include "content/shell/android/shell_view.h"
+#include "content/shell/shell_main_delegate.h"
 
 static base::android::RegistrationMethod kRegistrationMethods[] = {
     { "ShellManager", content::RegisterShellManager },
     { "ShellView", content::ShellView::Register },
 };
 
-namespace {
-  content::ContentMainRunner* g_content_main_runner = NULL;
-}
-
 // This is called by the VM when the shared library is first loaded.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-
-  // Don't call anything in base without initializing it.
-  // ContentMainRunner will do what we need.
-  g_content_main_runner = content::ContentMainRunner::Create();
-
-  // TODO(tedchoc): Set this to the main delegate once the Android specific
-  // browser process initialization gets checked in.
-  ShellMainDelegate* delegate = new ShellMainDelegate();
-
-  // TODO(jrg): find command line info from java; pass down in here.
-  g_content_main_runner->Initialize(0, NULL, delegate);
-
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!content::RegisterLibraryLoaderEntryHook(env)) {
@@ -48,12 +32,7 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
                                             arraysize(kRegistrationMethods)))
     return -1;
 
+  content::SetContentMainDelegate(new ShellMainDelegate());
+
   return JNI_VERSION_1_4;
 }
-
-
-JNI_EXPORT void JNI_OnUnload(JavaVM* vm, void* reserved) {
-  delete g_content_main_runner;
-  g_content_main_runner = NULL;
-}
-

@@ -1,4 +1,5 @@
 include_rules = [
   "+content",
   "+media/base",  # For initializing media library.
+  "+jni", # For generated JNI includes
 ]

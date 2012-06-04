@@ -184,6 +184,8 @@
     'browser/accessibility/browser_accessibility_state_impl.h',
     'browser/accessibility/browser_accessibility_win.cc',
     'browser/accessibility/browser_accessibility_win.h',
+    'browser/android/android_browser_process.cc',
+    'browser/android/android_browser_process.h',
     'browser/android/command_line.cc',
     'browser/android/command_line.h',
     'browser/android/download_controller.cc',

@@ -15,6 +15,8 @@
   'sources': [
     'app/android/content_jni_registrar.cc',
     'app/android/content_jni_registrar.h',
+    'app/android/content_main.cc',
+    'app/android/content_main.h',
     'app/android/library_loader_hooks.cc',
     'app/content_main.cc',
     'app/content_main_runner.cc',
@@ -30,6 +32,17 @@
     ['OS=="win"', {
       'dependencies': [
         '../sandbox/sandbox.gyp:sandbox',
+      ],
+    }],
+    ['OS=="android"', {
+      'source!': [
+        'app/content_main.cc',
+      ],
+      'include_dirs': [
+        '<(SHARED_INTERMEDIATE_DIR)/content',
+      ],
+      'dependencies': [
+        'content.gyp:content_jni_headers',
       ],
     }],
   ],
