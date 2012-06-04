@@ -770,8 +770,7 @@ def main():
     uploader.SyncHostPrebuilts(version, options.key, options.git_sync,
                                options.sync_binhost_conf)
 
-  if options.board:
-    assert target, 'Board specified but no target generated.'
+  if options.board or options.slave_targets:
     uploader.SyncBoardPrebuilts(version, options.key, options.git_sync,
                                 options.sync_binhost_conf,
                                 options.upload_board_tarball)
