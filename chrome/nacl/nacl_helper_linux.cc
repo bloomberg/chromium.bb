@@ -25,7 +25,7 @@
 #include "content/common/unix_domain_socket_posix.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_switches.h"
-#include "native_client/src/trusted/service_runtime/sel_addrspace.h"
+#include "native_client/src/trusted/service_runtime/sel_memory.h"
 
 namespace {
 

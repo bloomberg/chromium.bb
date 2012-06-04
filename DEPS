@@ -11,7 +11,7 @@ vars = {
   "webkit_revision": "119352",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "8774",
+  "nacl_revision": "8733",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "8673",  # native_client/DEPS: tools_rev
@@ -20,29 +20,29 @@ vars = {
   # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
   # new values.
   "nacl_toolchain_linux_x86_hash":
-      "d82ef6eea6ff6ba427efa70461c2fc411d64569f",
+      "832431536b1245b49dae211851e9e8a23e06d5e8",
   "nacl_toolchain_linux_x86_newlib_hash":
-      "849a8cf371e17a685b9429a69474f328454b5e06",
+      "3dc2a7fa55900a0a4d3258eea6bdabf5ccce6bf8",
   "nacl_toolchain_mac_x86_hash":
-      "42575a21646027d52778240c03246d4534c98956",
+      "06d431637113afe0ba14f9eaaf8049022251bcf7",
   "nacl_toolchain_mac_x86_newlib_hash":
-      "4f072a30b55ce9088ed6c6a0033dffa3a8ae301b",
+      "baa113d75a181ca88d4c3c33ccda7301ead0ae29",
   "nacl_toolchain_pnacl_linux_x86_32_hash":
-      "36d1121c16b249fe11c24b3f149a75a9da906517",
+      "bf3be22a2b473aac3ee58e99a45254f385975467",
   "nacl_toolchain_pnacl_linux_x86_64_hash":
-      "01aed2db78ee87cccf7599931c87fea244e8bd54",
+      "d75fc5f81c5ed039fde6b3f76a0425024c12e79f",
   "nacl_toolchain_pnacl_mac_x86_32_hash":
-      "333538f719ddd7742cda120cc1b70ced4d1d72ed",
+      "fefe688c8d39e4bd103c98fdda7e66d1988b2809",
   "nacl_toolchain_pnacl_translator_hash":
-      "6d8c5b8c0613556f39e5132d1a7b9b65e020e01e",
+      "fc1984dabfb21700feb2b29f17a14b15ab8f8a5b",
   "nacl_toolchain_pnacl_win_x86_32_hash":
-      "32c786bb095acfa0a0c5942e355af2ef03dec9dd",
+      "21efccfdd0c567b46ed568acbb931a686505f4dd",
   "nacl_toolchain_win_x86_hash":
-      "85d9b16cb503a10963654803c4a4f90ea6edfff2",
+      "971ffcb4dd2985c85b3b49ede095d13754145798",
   "nacl_toolchain_win_x86_newlib_hash":
-      "cd4f8209a6f87d8baf21d1610928a3def4306764",
-  "nacl_toolchain_revision": "8715",
-  "pnacl_toolchain_revision": "8751",
+      "40165d4b6c1d4c6bfdaafdf74b98adf0de83060d",
+  "nacl_toolchain_revision": "8612",
+  "pnacl_toolchain_revision": "8612",
 
   "libjingle_revision": "145",
   "libphonenumber_revision": "456",
