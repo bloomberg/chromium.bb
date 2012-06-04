@@ -58,7 +58,7 @@
 #include <signal.h>
 
 #include "base/global_descriptors_posix.h"
-#include "content/common/chrome_descriptors.h"
+#include "content/public/common/content_descriptors.h"
 
 #if !defined(OS_MACOSX)
 #include "content/public/common/zygote_fork_delegate_linux.h"

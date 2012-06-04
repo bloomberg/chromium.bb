@@ -41,7 +41,7 @@
 #include "chrome/common/chrome_version_info_posix.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
-#include "content/common/chrome_descriptors.h"
+#include "content/public/common/content_descriptors.h"
 
 #if defined(OS_ANDROID)
 #include <android/log.h>

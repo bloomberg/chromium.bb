@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/hi_res_timer_manager.h"
+#include "base/hi_res_timer_manager.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/system_monitor/system_monitor.h"

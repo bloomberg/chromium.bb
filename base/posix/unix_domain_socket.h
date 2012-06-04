@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_UNIX_DOMAIN_SOCKET_POSIX_H_
-#define CONTENT_COMMON_UNIX_DOMAIN_SOCKET_POSIX_H_
+#ifndef BASE_POSIX_UNIX_DOMAIN_SOCKET_H_
+#define BASE_POSIX_UNIX_DOMAIN_SOCKET_H_
 #pragma once
 
 #include <stdint.h>
 #include <sys/types.h>
 #include <vector>
 
-#include "content/common/content_export.h"
+#include "base/base_export.h"
 
 class Pickle;
 
-class CONTENT_EXPORT UnixDomainSocket {
+class BASE_EXPORT UnixDomainSocket {
  public:
   // Use sendmsg to write the given msg and include a vector of file
   // descriptors. Returns true if successful.
@@ -53,4 +53,4 @@ class CONTENT_EXPORT UnixDomainSocket {
                              const Pickle& request);
 };
 
-#endif  // CONTENT_COMMON_UNIX_DOMAIN_SOCKET_POSIX_H_
+#endif  // BASE_POSIX_UNIX_DOMAIN_SOCKET_POSIX_H_

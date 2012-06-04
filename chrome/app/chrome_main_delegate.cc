@@ -29,7 +29,6 @@
 #include "chrome/plugin/chrome_content_plugin_client.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/utility/chrome_content_utility_client.h"
-#include "content/common/content_counters.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -574,8 +573,9 @@ void ChromeMainDelegate::PreSandboxStartup() {
         chrome::ProcessNeedsProfileDir(process_type)));
   }
 
+  base::StatsCounterTimer stats_counter_timer("Chrome.Init");
   startup_timer_.reset(new base::StatsScope<base::StatsCounterTimer>
-                       (content::Counters::chrome_main()));
+                       (stats_counter_timer));
 
   // Enable the heap profiler as early as possible!
   EnableHeapProfiler(command_line);

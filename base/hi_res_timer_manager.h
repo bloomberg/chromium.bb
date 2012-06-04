@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_HI_RES_TIMER_MANAGER_H_
-#define CONTENT_COMMON_HI_RES_TIMER_MANAGER_H_
+#ifndef BASE_HI_RES_TIMER_MANAGER_H_
+#define BASE_HI_RES_TIMER_MANAGER_H_
 #pragma once
 
+#include "base/base_export.h"
 #include "base/system_monitor/system_monitor.h"
-#include "content/common/content_export.h"
 
 // Ensures that the Windows high resolution timer is only used
 // when not running on battery power.
-class CONTENT_EXPORT HighResolutionTimerManager
+class BASE_EXPORT HighResolutionTimerManager
     : public base::SystemMonitor::PowerObserver {
  public:
   HighResolutionTimerManager();
@@ -32,4 +32,4 @@ class CONTENT_EXPORT HighResolutionTimerManager
   DISALLOW_COPY_AND_ASSIGN(HighResolutionTimerManager);
 };
 
-#endif  // CONTENT_COMMON_HI_RES_TIMER_MANAGER_H_
+#endif  // BASE_HI_RES_TIMER_MANAGER_H_

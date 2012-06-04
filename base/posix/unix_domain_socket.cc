@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/unix_domain_socket_posix.h"
+#include "base/posix/unix_domain_socket.h"
 
 #include <errno.h>
 #include <unistd.h>

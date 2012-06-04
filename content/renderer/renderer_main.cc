@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/trace_event.h"
+#include "base/hi_res_timer_manager.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
@@ -18,8 +19,6 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
-#include "content/common/content_counters.h"
-#include "content/common/hi_res_timer_manager.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -188,8 +187,8 @@ int RendererMain(const content::MainFunctionParams& parameters) {
   content::GetContentClient()->renderer()->RegisterPPAPIInterfaceFactories(
       factory_manager);
 
-  base::StatsScope<base::StatsCounterTimer>
-      startup_timer(content::Counters::renderer_main());
+  base::StatsCounterTimer stats_counter_timer("Content.RendererInit");
+  base::StatsScope<base::StatsCounterTimer> startup_timer(stats_counter_timer);
 
   RendererMessageLoopObserver task_observer;
 #if defined(OS_MACOSX)

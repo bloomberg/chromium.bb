@@ -17,7 +17,8 @@ include_rules = [
   "+chrome/test",
   # TODO(jam): remove me once chrome only consumes content/common through its
   # public headers.
-  "+content/common",
+  "+content/common/sandbox_mac.h",
+  "+content/common/sandbox_policy.h",
   "+content/public/common",
   "+content/public/test",
   "+content/test/gpu",

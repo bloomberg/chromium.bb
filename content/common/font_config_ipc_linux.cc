@@ -11,7 +11,7 @@
 #include <sys/uio.h>
 
 #include "base/pickle.h"
-#include "content/common/unix_domain_socket_posix.h"
+#include "base/posix/unix_domain_socket.h"
 
 FontConfigIPC::FontConfigIPC(int fd)
     : fd_(fd) {

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/pickle.h"
+#include "base/posix/unix_domain_socket.h"
 #include "content/common/child_process_sandbox_support_impl_linux.h"
 #include "content/common/sandbox_methods_linux.h"
-#include "content/common/unix_domain_socket_posix.h"
 
 namespace content {
 

@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/global_descriptors_posix.h"
-#include "content/common/chrome_descriptors.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
+#include "content/public/common/content_descriptors.h"
 
 namespace WebKit {
 struct WebFontFamily;

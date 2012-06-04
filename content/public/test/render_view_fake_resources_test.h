@@ -47,8 +47,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/render_view_visitor.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

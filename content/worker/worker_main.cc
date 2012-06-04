@@ -4,12 +4,12 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/hi_res_timer_manager.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/platform_thread.h"
 #include "content/common/child_process.h"
-#include "content/common/hi_res_timer_manager.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/worker/worker_thread.h"

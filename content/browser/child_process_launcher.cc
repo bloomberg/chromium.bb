@@ -14,9 +14,9 @@
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "content/common/chrome_descriptors.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 

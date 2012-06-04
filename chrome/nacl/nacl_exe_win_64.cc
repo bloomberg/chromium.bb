@@ -4,6 +4,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/hi_res_timer_manager.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
@@ -16,7 +17,6 @@
 #include "chrome/nacl/nacl_broker_listener.h"
 #include "chrome/nacl/nacl_listener.h"
 #include "chrome/nacl/nacl_main_platform_delegate.h"
-#include "content/common/hi_res_timer_manager.h"
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"

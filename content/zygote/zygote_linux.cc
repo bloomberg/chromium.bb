@@ -23,13 +23,13 @@
 #include "base/global_descriptors_posix.h"
 #include "base/logging.h"
 #include "base/pickle.h"
-#include "content/common/chrome_descriptors.h"
+#include "base/posix/unix_domain_socket.h"
 #include "content/common/seccomp_sandbox.h"
 #include "content/common/set_process_title.h"
-#include "content/common/unix_domain_socket_posix.h"
-#include "content/public/common/zygote_fork_delegate_linux.h"
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/zygote_commands_linux.h"
+#include "content/public/common/content_descriptors.h"
+#include "content/public/common/zygote_fork_delegate_linux.h"
 
 #if defined(CHROMIUM_SELINUX)
 #include <selinux/selinux.h>

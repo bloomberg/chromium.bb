@@ -5,6 +5,7 @@
 #include "build/build_config.h"
 
 #include "base/command_line.h"
+#include "base/hi_res_timer_manager.h"
 #include "base/message_loop.h"
 #include "base/system_monitor/system_monitor.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -12,7 +13,6 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/nacl/nacl_listener.h"
 #include "chrome/nacl/nacl_main_platform_delegate.h"
-#include "content/common/hi_res_timer_manager.h"
 #include "content/public/common/main_function_params.h"
 
 // main() routine for the NaCl loader process.
