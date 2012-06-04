@@ -869,11 +869,13 @@ void SyncSetupHandler::CloseSyncSetup() {
     // and shut down sync.
     if (sync_service && !sync_service->HasSyncSetupCompleted()) {
       DVLOG(1) << "Signin aborted by user action";
+      // Calling DisableForUser() will also sign the user out on desktop
+      // platforms (platforms without sync auto-start enabled).
       sync_service->DisableForUser();
-#if !defined(OS_CHROMEOS)
-      GetSignin()->SignOut();
-#else
-      // TODO(atwilson): Move this suppression to PSS::DisableForUser()
+
+#if defined(OS_CHROMEOS)
+      // Suppress sync startup on ChromeOS, so it doesn't get restarted when
+      // the user logs in again.
       browser_sync::SyncPrefs sync_prefs(GetProfile()->GetPrefs());
       sync_prefs.SetStartSuppressed(true);
 #endif

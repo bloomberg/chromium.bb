@@ -339,6 +339,10 @@ void SigninManager::SignOut() {
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   token_service->ResetCredentialsInMemory();
   token_service->EraseTokensFromDB();
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
+      content::Source<Profile>(profile_),
+      content::NotificationService::NoDetails());
 }
 
 bool SigninManager::AuthInProgress() const {

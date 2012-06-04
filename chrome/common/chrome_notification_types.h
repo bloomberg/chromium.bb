@@ -825,14 +825,24 @@ enum NotificationType {
   // Profile. The details are a TokenAvailableDetails object.
   NOTIFICATION_TOKEN_UPDATED,
 
+  // Fired when the TokenService has had all of its tokens removed (such as due
+  // to the user signing out). The source is the TokenService. There are no
+  // details.
+  NOTIFICATION_TOKENS_CLEARED,
+
   // Sent when a user signs into Google services such as sync.
-  // The source is the Profile. The details are a GoogleServiceSignin object.
+  // The source is the Profile. The details are a
+  // GoogleServiceSigninSuccessDetails object.
   NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
 
   // Sent when a user fails to sign into Google services such as sync.
   // The source is the Profile. The details are a GoogleServiceAuthError
   // object.
   NOTIFICATION_GOOGLE_SIGNIN_FAILED,
+
+  // Sent when the currently signed-in user for a user has been signed out.
+  // The source is the Profile. There are no details.
+  NOTIFICATION_GOOGLE_SIGNED_OUT,
 
   // Autofill Notifications --------------------------------------------------
 

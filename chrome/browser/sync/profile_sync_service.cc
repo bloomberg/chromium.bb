@@ -534,7 +534,7 @@ void ProfileSyncService::DisableForUser() {
   // TODO(atwilson): Don't call SignOut() on *any* platform - move this into
   // the UI layer if needed (sync activity should never result in the user
   // being logged out of all chrome services).
-  if (!auto_start_enabled_)
+  if (!auto_start_enabled_ && !signin_->GetAuthenticatedUsername().empty())
     signin_->SignOut();
 
   NotifyObservers();

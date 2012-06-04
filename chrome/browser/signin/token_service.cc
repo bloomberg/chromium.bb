@@ -157,6 +157,11 @@ void TokenService::EraseTokensFromDB() {
   }
   if (web_data_service_.get())
     web_data_service_->RemoveAllTokens();
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TOKENS_CLEARED,
+      content::Source<TokenService>(this),
+      content::NotificationService::NoDetails());
 }
 
 bool TokenService::TokensLoadedFromDB() const {
