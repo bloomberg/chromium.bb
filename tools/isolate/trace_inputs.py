@@ -1394,7 +1394,9 @@ class Dtrace(ApiBase):
       stdout = subprocess.PIPE
       stderr = subprocess.STDOUT
     child_cmd = [
-      sys.executable, os.path.join(BASE_DIR, 'trace_child_process.py'),
+      sys.executable,
+      os.path.join(BASE_DIR, 'trace_child_process.py'),
+      '--wait',
     ]
     child = subprocess.Popen(
         child_cmd + cmd,
@@ -1489,7 +1491,12 @@ class LogmanTrace(ApiBase):
   """Uses the native Windows ETW based tracing functionality to trace a child
   process.
 
-  Caveat: this implementations doesn't track cwd or initial_cwd.
+  Caveat: this implementations doesn't track cwd or initial_cwd. It is because
+  the Windows Kernel doesn't have a concept of 'current working directory' at
+  all. A Win32 process has a map of current directories, one per drive letter
+  and it is managed by the user mode kernel32.dll. In kernel, a file is always
+  opened relative to another file_object or as an absolute path. All the current
+  working directory logic is done in user mode.
   """
   class Context(ApiBase.Context):
     """Processes a ETW log line and keeps the list of existent and non
@@ -1512,14 +1519,15 @@ class LogmanTrace(ApiBase):
         # Handle file objects that succeeded.
         self.file_objects = {}
 
-    def __init__(self, blacklist):
+    def __init__(self, blacklist, tracer_pid):
       super(LogmanTrace.Context, self).__init__(blacklist)
       self._drive_map = DosDriveMap()
       # Threads mapping to the corresponding process id.
       self._threads_active = {}
       # Process ID of the tracer, e.g. tracer_inputs.py
-      self._tracer_pid = None
-      # First process to be started by self._tracer_pid.
+      self._tracer_pid = tracer_pid
+      # First process to be started by self._tracer_pid is the executable
+      # traced.
       self._initial_pid = None
       self._line_number = 0
 
@@ -1706,33 +1714,7 @@ class LogmanTrace(ApiBase):
     def handle_Process_Any(self, line):
       pass
 
-    def handle_Process_DCStart(self, line):
-      """Gives historic information about the process tree.
-
-      Use it to extract the pid of the trace_inputs.py parent process that
-      started logman.exe.
-      """
-      #UNIQUE_PROCESS_KEY = 19
-      #PROCESS_ID = 20
-      PARENT_PID = 21
-      #SESSION_ID = 22
-      #EXIT_STATUS = 23
-      #DIRECTORY_TABLE_BASE = 24
-      #USER_SID = 25
-      IMAGE_FILE_NAME = 26
-      #COMMAND_LINE = 27
-
-      ppid = int(line[PARENT_PID], 16)
-      if line[IMAGE_FILE_NAME] == '"logman.exe"':
-        # logman's parent is trace_input.py or whatever tool using it as a
-        # library. Trace any other children started by it.
-        assert not self._tracer_pid
-        self._tracer_pid = ppid
-        logging.info('Found logman\'s parent at %d' % ppid)
-
     def handle_Process_End(self, line):
-      # Look if it is logman terminating, if so, grab the parent's process pid
-      # and inject cwd.
       pid = line[self.PID]
       if pid in self.processes:
         logging.info('Terminated: %d' % pid)
@@ -1754,11 +1736,9 @@ class LogmanTrace(ApiBase):
       pid = int(line[PROCESS_ID], 16)
       if ppid == self._tracer_pid:
         # Need to ignore processes we don't know about because the log is
-        # system-wide.
-        if line[IMAGE_FILE_NAME] == '"logman.exe"':
-          # Skip the shutdown call when "logman.exe stop" is executed.
-          return
-        self._initial_pid = self._initial_pid or pid
+        # system-wide. self._tracer_pid shall start only one process.
+        assert not self._initial_pid
+        self._initial_pid = pid
         ppid = None
       elif ppid not in self.processes:
         # Ignore
@@ -1854,10 +1834,9 @@ class LogmanTrace(ApiBase):
 
   @staticmethod
   def clean_trace(logname):
-    if os.path.isfile(logname):
-      os.remove(logname)
-    if os.path.isfile(logname + '.etl'):
-      os.remove(logname + '.etl')
+    for ext in ('', '.csv', '.etl', '.xml'):
+      if os.path.isfile(logname + ext):
+        os.remove(logname + ext)
 
   @classmethod
   def _start_log(cls, etl):
@@ -1914,51 +1893,30 @@ class LogmanTrace(ApiBase):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
 
-  @classmethod
-  def gen_trace(cls, cmd, cwd, logname, output):
-    """Uses logman.exe to start and stop the NT Kernel Logger while the
-    executable to be traced is run.
+  @staticmethod
+  def _convert_log(logname, logformat, stdout, stderr):
+    """Converts the ETL trace to text representation.
+
+    Normally, 'csv' is sufficient. If complex scripts are used (like eastern
+    languages), use 'csv_utf16'. If localization gets in the way, use 'xml'.
+
+    Arguments:
+      - logname: Base filename to convert.
+      - logformat: Text format to be generated, csv, csv_utf16 or xml.
+
+    Use "tracerpt -?" for help.
     """
-    logging.info('gen_trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
-    # Use "logman -?" for help.
-
-    etl = logname + '.etl'
-
-    stdout = stderr = None
-    if output:
-      stdout = subprocess.PIPE
-      stderr = subprocess.STDOUT
-
-    # 1. Start the log collection.
-    cls._start_log(etl)
-
-    # 2. Run the child process.
-    logging.debug('Running: %s' % cmd)
-    try:
-      child = subprocess.Popen(
-          cmd, cwd=cwd, stdin=subprocess.PIPE, stdout=stdout, stderr=stderr)
-      out = child.communicate()[0]
-    finally:
-      # 3. Stop the log collection.
-      cls._stop_log()
-
-    # 4. Convert the traces to text representation.
-    # Use "tracerpt -?" for help.
     LOCALE_INVARIANT = 0x7F
     windll.kernel32.SetThreadLocale(LOCALE_INVARIANT)
     cmd_convert = [
       'tracerpt.exe',
-      '-l', etl,
-      '-o', logname,
+      '-l', logname + '.etl',
+      '-o', logname + '.' + logformat,
       '-gmt',  # Use UTC
       '-y',  # No prompt
       # Use -of XML to get the header of each items after column 19, e.g. all
       # the actual headers of 'User Data'.
     ]
-
-    # Normally, 'csv' is sufficient. If complex scripts are used (like eastern
-    # languages), use 'csv_unicode'. If localization gets in the way, use 'xml'.
-    logformat = 'csv'
 
     if logformat == 'csv':
       # tracerpt localizes the 'Type' column, for major brainfuck
@@ -1973,9 +1931,58 @@ class LogmanTrace(ApiBase):
     else:
       assert False, logformat
     logging.debug('Running: %s' % cmd_convert)
+    # This can takes tens of minutes for large logs.
     subprocess.check_call(
         cmd_convert, stdin=subprocess.PIPE, stdout=stdout, stderr=stderr)
 
+  @classmethod
+  def gen_trace(cls, cmd, cwd, logname, output):
+    """Uses logman.exe to start and stop the NT Kernel Logger while the
+    executable to be traced is run.
+    """
+    logging.info('gen_trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
+    # Use "logman -?" for help.
+
+    stdout = stderr = None
+    if output:
+      stdout = subprocess.PIPE
+      stderr = subprocess.STDOUT
+
+    # 1. Start the log collection.
+    cls._start_log(logname + '.etl')
+
+    # 2. Run the child process.
+    logging.debug('Running: %s' % cmd)
+    try:
+      # Use trace_child_process.py so we have a clear pid owner. Since
+      # trace_inputs.py can be used as a library and could trace mulitple
+      # processes simultaneously, it makes it more complex if the executable to
+      # be traced is executed directly here. It also solves issues related to
+      # logman.exe that needs to be executed to control the kernel trace.
+      child_cmd = [
+        sys.executable,
+        os.path.join(BASE_DIR, 'trace_child_process.py'),
+      ]
+      child = subprocess.Popen(
+          child_cmd + cmd,
+          cwd=cwd,
+          stdin=subprocess.PIPE,
+          stdout=stdout,
+          stderr=stderr)
+      logging.debug('Started child pid: %d' % child.pid)
+      out = child.communicate()[0]
+    finally:
+      # 3. Stop the log collection.
+      cls._stop_log()
+
+    # 4. Convert the traces to text representation.
+    cls._convert_log(logname, 'csv', stdout, stderr)
+
+    # 5. Save metadata.
+    json.dump({
+      'pid': child.pid,
+      'format': 'csv',
+    }, open(logname, 'w'))
     return child.returncode, out
 
   @classmethod
@@ -1986,20 +1993,10 @@ class LogmanTrace(ApiBase):
       # All the NTFS metadata is in the form x:\$EXTEND or stuff like that.
       return blacklist(filepath) or re.match(r'[A-Z]\:\\\$EXTEND', filepath)
 
-    # Auto-detect the log format.
-    with open(filename, 'rb') as f:
-      hdr = f.read(2)
-      assert len(hdr) == 2
-      if hdr == '<E':
-        # It starts with <Events>.
-        logformat = 'xml'
-      elif hdr == '\xFF\xEF':
-        # utf-16 BOM.
-        logformat = 'csv_utf16'
-      else:
-        logformat = 'csv'
+    data = json.load(open(filename))
+    logformat = data['format']
 
-    context = cls.Context(blacklist_more)
+    context = cls.Context(blacklist_more, data['pid'])
 
     if logformat == 'csv_utf16':
       def utf_8_encoder(unicode_csv_data):
@@ -2018,7 +2015,8 @@ class LogmanTrace(ApiBase):
       # python internal unicode format (utf-8). Then explicitly re-encode as
       # utf8 as str instances so csv can parse it fine. Then decode the utf-8
       # str back into python unicode instances. This sounds about right.
-      for line in unicode_csv_reader(codecs.open(filename, 'r', 'utf-16')):
+      for line in unicode_csv_reader(
+          codecs.open(filename + '.' + logformat, 'r', 'utf-16')):
         # line is a list of unicode objects
         context.on_csv_line(line)
 
@@ -2033,7 +2031,7 @@ class LogmanTrace(ApiBase):
 
       # The fastest and smallest format but only supports 'ANSI' file paths.
       # E.g. the filenames are encoding in the 'current' encoding.
-      for line in ansi_csv_reader(open(filename)):
+      for line in ansi_csv_reader(open(filename + '.' + logformat)):
         # line is a list of unicode objects.
         context.on_csv_line(line)
 
