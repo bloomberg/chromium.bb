@@ -244,8 +244,9 @@ class DummyUserWallpaperDelegate : public UserWallpaperDelegate {
 
   virtual ~DummyUserWallpaperDelegate() {}
 
-  virtual const int GetUserWallpaperIndex() OVERRIDE {
-    return -1;
+  virtual void SetLoggedInUserWallpaper() OVERRIDE {
+    ash::Shell::GetInstance()->desktop_background_controller()->
+        CreateEmptyWallpaper();
   }
 
   virtual void OpenSetWallpaperPage() OVERRIDE {
@@ -809,7 +810,7 @@ void Shell::Init() {
 
   // It needs to be created after OnWindowResized has been called, otherwise the
   // widget will not paint when restoring after a browser crash.
-  desktop_background_controller_->SetLoggedInUserWallpaper();
+  user_wallpaper_delegate_->SetLoggedInUserWallpaper();
 
   window_modality_controller_.reset(new internal::WindowModalityController);
   AddRootWindowEventFilter(window_modality_controller_.get());

@@ -25,8 +25,9 @@ class UserWallpaperDelegate {
  public:
   virtual ~UserWallpaperDelegate() {}
 
-  // Gets the index of user selected wallpaper.
-  virtual const int GetUserWallpaperIndex() = 0;
+  // Loads logged in user wallpaper asynchronously and sets to current wallpaper
+  // after loaded.
+  virtual void SetLoggedInUserWallpaper() = 0;
 
   // Opens the set wallpaper page in the browser.
   virtual void OpenSetWallpaperPage() = 0;
@@ -65,13 +66,17 @@ class ASH_EXPORT DesktopBackgroundController {
   // Cancels the current wallpaper loading operation.
   void CancelPendingWallpaperOperation();
 
-  // Loads logged in user wallpaper asynchronously and sets to current wallpaper
-  // after loaded.
-  void SetLoggedInUserWallpaper();
-
   // Sets the desktop background to solid color mode and creates a solid color
   // layout.
   void SetDesktopBackgroundSolidColorMode();
+
+  // Creates an empty wallpaper. Some tests require a wallpaper widget is ready
+  // when running. However, the wallpaper widgets are now created asynchronously
+  // . If loading a real wallpaper, there are cases that these tests crash
+  // because the required widget is not ready. This function synchronously
+  // creates an empty widget for those tests to prevent crashes. An example test
+  // is SystemGestureEventFilterTest.ThreeFingerSwipe.
+  void CreateEmptyWallpaper();
 
  private:
   // An operation to asynchronously loads wallpaper.
@@ -85,14 +90,6 @@ class ASH_EXPORT DesktopBackgroundController {
   // Creates a new background widget and sets the background mode to image mode.
   // Called after wallpaper loaded successfully.
   void OnWallpaperLoadCompleted(scoped_refptr<WallpaperOperation> wo);
-
-  // Creates an empty wallpaper. Some tests require a wallpaper widget is ready
-  // when running. However, the wallpaper widgets are now created asynchronously
-  // . If loading a real wallpaper, there are cases that these tests crash
-  // because the required widget is not ready. This function synchronously
-  // creates an empty widget for those tests to prevent crashes. An example test
-  // is SystemGestureEventFilterTest.ThreeFingerSwipe.
-  void CreateEmptyWallpaper();
 
   aura::RootWindow* root_window_;
 

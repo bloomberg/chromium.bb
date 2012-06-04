@@ -99,6 +99,13 @@ DesktopBackgroundController::~DesktopBackgroundController() {
 }
 
 void DesktopBackgroundController::SetDefaultWallpaper(int index) {
+  // We should not change background when index is invalid. For instance, at
+  // login screen or stub_user login.
+  if (index == ash::GetInvalidWallpaperIndex()) {
+    CreateEmptyWallpaper();
+    return;
+  }
+
   if (previous_index_ == index)
     return;
 
@@ -129,19 +136,6 @@ void DesktopBackgroundController::CancelPendingWallpaperOperation() {
 
   // Cancel reply callback for previous request.
   weak_ptr_factory_.InvalidateWeakPtrs();
-}
-
-void DesktopBackgroundController::SetLoggedInUserWallpaper() {
-  int index = Shell::GetInstance()->user_wallpaper_delegate()->
-      GetUserWallpaperIndex();
-  // We should not change background when index is invalid. For instance, at
-  // login screen or stub_user login.
-  if (index == ash::GetInvalidWallpaperIndex()) {
-    CreateEmptyWallpaper();
-    return;
-  }
-
-  SetDefaultWallpaper(index);
 }
 
 void DesktopBackgroundController::SetDesktopBackgroundSolidColorMode() {

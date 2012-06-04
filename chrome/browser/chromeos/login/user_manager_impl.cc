@@ -358,6 +358,17 @@ void UserManagerImpl::StubUserLoggedIn() {
                             kStubDefaultImageIndex);
 }
 
+void UserManagerImpl::SetLoggedInUserWallpaper() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!IsUserLoggedIn() || IsLoggedInAsStub()) {
+    ash::Shell::GetInstance()->desktop_background_controller()->
+        SetDefaultWallpaper(ash::GetInvalidWallpaperIndex());
+    return;
+  }
+  UserSelected(GetLoggedInUser().email());
+}
+
 void UserManagerImpl::UserSelected(const std::string& email) {
   if (IsKnownUser(email)) {
     User::WallpaperType type;
@@ -955,13 +966,6 @@ void UserManagerImpl::MigrateWallpaperData() {
       }
     }
   }
-}
-
-int UserManagerImpl::GetLoggedInUserWallpaperIndex() {
-  User::WallpaperType type;
-  int index;
-  GetLoggedInUserWallpaperProperties(&type, &index);
-  return index;
 }
 
 void UserManagerImpl::GetLoggedInUserWallpaperProperties(
