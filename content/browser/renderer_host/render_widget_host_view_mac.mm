@@ -444,10 +444,10 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
   } else {
     DCHECK([[cocoa_view_ superview] isKindOfClass:[BaseView class]]);
     BaseView* superview = static_cast<BaseView*>([cocoa_view_ superview]);
-    gfx::Rect rect = [superview flipNSRectToRect:[cocoa_view_ frame]];
-    rect.set_width(rect.width());
-    rect.set_height(rect.height());
-    [cocoa_view_ setFrame:[superview flipRectToNSRect:rect]];
+    gfx::Rect rect2 = [superview flipNSRectToRect:[cocoa_view_ frame]];
+    rect2.set_width(rect.width());
+    rect2.set_height(rect.height());
+    [cocoa_view_ setFrame:[superview flipRectToNSRect:rect2]];
   }
 }
 
