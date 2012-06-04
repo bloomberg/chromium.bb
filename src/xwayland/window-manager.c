@@ -109,6 +109,7 @@ struct weston_wm_window {
 	int width, height;
 	int x, y;
 	int decorate;
+	int override_redirect;
 };
 
 static struct weston_wm_window *
@@ -691,7 +692,7 @@ weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *even
 
 static void
 weston_wm_window_create(struct weston_wm *wm,
-			xcb_window_t id, int width, int height)
+			xcb_window_t id, int width, int height, int override)
 {
 	struct weston_wm_window *window;
 	uint32_t values[1];
@@ -709,7 +710,7 @@ weston_wm_window_create(struct weston_wm *wm,
 	window->wm = wm;
 	window->id = id;
 	window->properties_dirty = 1;
-
+	window->override_redirect = override;
 	window->width = width;
 	window->height = height;
 
@@ -740,7 +741,8 @@ weston_wm_handle_create_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 		return;
 
 	weston_wm_window_create(wm, create_notify->window,
-				create_notify->width, create_notify->height);
+				create_notify->width, create_notify->height,
+				create_notify->override_redirect);
 }
 
 static void
@@ -776,7 +778,8 @@ weston_wm_handle_reparent_notify(struct weston_wm *wm, xcb_generic_event_t *even
 		reparent_notify->event);
 
 	if (reparent_notify->parent == wm->screen->root) {
-		weston_wm_window_create(wm, reparent_notify->window, 10, 10);
+		weston_wm_window_create(wm, reparent_notify->window, 10, 10,
+					reparent_notify->override_redirect);
 	} else if (!our_resource(wm, reparent_notify->parent)) {
 		window = hash_table_lookup(wm->window_hash,
 					   reparent_notify->window);
@@ -1321,7 +1324,8 @@ xserver_map_shell_surface(struct weston_wm *wm,
 						      window->surface,
 						      &shell_client);
 
-	if (!window->transient_for) {
+	/* ICCCM 4.1.1 */
+	if (!window->override_redirect) {
 		shell_interface->set_toplevel(window->shsurf);
 		return;
 	}
