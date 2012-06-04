@@ -389,8 +389,12 @@ class DownloadProtectionService::CheckClientDownloadRequest
         FROM_HERE,
         base::Bind(&CheckClientDownloadRequest::ExtractFileFeatures, this),
         base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  }
 
-    // If the request takes too long we cancel it.
+  // Start a timeout to cancel the request if it takes too long.
+  // This should only be called after we have finished accessing the file.
+  void StartTimeout() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     BrowserThread::PostDelayedTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -524,6 +528,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
         BrowserThread::IO,
         FROM_HERE,
         base::Bind(&CheckClientDownloadRequest::CheckWhitelists, this));
+
+    // We wait until after the file checks finish to start the timeout, as
+    // windows can cause permissions errors if the timeout fired while we were
+    // checking the file signature and we tried to complete the download.
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&CheckClientDownloadRequest::StartTimeout, this));
   }
 
   void ExtractSignatureFeatures() {
