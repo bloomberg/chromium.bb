@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/test_renderer_host.h"
+#include "content/public/test/test_renderer_host.h"
 
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/test_render_view_host.h"

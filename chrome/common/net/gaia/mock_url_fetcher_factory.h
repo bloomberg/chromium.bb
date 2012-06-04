@@ -12,7 +12,7 @@
 #include <string>
 
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
-#include "content/test/test_url_fetcher_factory.h"
+#include "content/public/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 
 // Responds as though ClientLogin returned from the server.

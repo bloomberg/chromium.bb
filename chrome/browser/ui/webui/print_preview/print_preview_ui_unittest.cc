@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/web_contents_tester.h"
+#include "content/public/test/web_contents_tester.h"
 #include "printing/print_job_constants.h"
 
 using content::WebContents;

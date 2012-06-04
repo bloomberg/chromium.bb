@@ -15,7 +15,7 @@
 #include "chrome/common/net/gaia/oauth2_api_call_flow.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/url_fetcher.h"
-#include "content/test/test_url_fetcher_factory.h"
+#include "content/public/test/test_url_fetcher_factory.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher_delegate.h"

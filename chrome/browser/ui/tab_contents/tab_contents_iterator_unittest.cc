@@ -18,7 +18,7 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/test_renderer_host.h"
+#include "content/public/test/test_renderer_host.h"
 
 typedef BrowserWithTestWindowTest BrowserListTest;
 

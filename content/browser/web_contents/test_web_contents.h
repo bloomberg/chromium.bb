@@ -8,7 +8,7 @@
 
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/page_transition_types.h"
-#include "content/test/web_contents_tester.h"
+#include "content/public/test/web_contents_tester.h"
 #include "webkit/glue/webpreferences.h"
 
 class SiteInstanceImpl;

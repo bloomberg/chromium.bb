@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_UNITTEST_TEST_SUITE_H_
-#define CONTENT_TEST_UNITTEST_TEST_SUITE_H_
+#ifndef CONTENT_PUBLIC_TEST_UNITTEST_TEST_SUITE_H_
+#define CONTENT_PUBLIC_TEST_UNITTEST_TEST_SUITE_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -12,6 +12,8 @@
 namespace base {
 class TestSuite;
 }
+
+namespace content {
 
 // A special test suite that also initializes WebKit once for all unittests.
 // This is useful for two reasons:
@@ -35,4 +37,6 @@ class UnitTestTestSuite {
   DISALLOW_COPY_AND_ASSIGN(UnitTestTestSuite);
 };
 
-#endif  // CONTENT_TEST_UNITTEST_TEST_SUITE_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_TEST_UNITTEST_TEST_SUITE_H_

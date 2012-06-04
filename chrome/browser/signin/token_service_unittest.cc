@@ -18,7 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "content/test/test_url_fetcher_factory.h"
+#include "content/public/test/test_url_fetcher_factory.h"
 
 using content::BrowserThread;
 

@@ -8,7 +8,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/test_shell_delegate.h"
-#include "content/test/web_contents_tester.h"
+#include "content/public/test/web_contents_tester.h"
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"

@@ -41,7 +41,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/test/test_url_fetcher_factory.h"
+#include "content/public/test/test_url_fetcher_factory.h"
 #include "libxml/globals.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"

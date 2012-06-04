@@ -5,7 +5,7 @@
 #import "content/browser/web_contents/web_drag_source_mac.h"
 
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/test/test_renderer_host.h"
+#include "content/public/test/test_renderer_host.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webdropdata.h"

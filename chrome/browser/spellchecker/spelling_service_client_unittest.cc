@@ -13,7 +13,7 @@
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_url_fetcher_factory.h"
+#include "content/public/test/test_url_fetcher_factory.h"
 #include "net/base/load_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
