@@ -186,7 +186,7 @@ class Cache(object):
   def trim(self):
     """Trims anything we don't know, make sure enough free space exists."""
     # Ensure that all files listed in the state still exist.
-    for filename in self.state:
+    for filename in self.state[:]:
       if not os.path.exists(self.path(filename)):
         logging.info('Removing lost file %s' % filename)
         self.state.remove(filename)
