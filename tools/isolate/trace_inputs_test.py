@@ -170,8 +170,14 @@ if trace_inputs.get_flavor() == 'linux':
       try:
         self._load_context([], None)
         self.fail()
-      except AssertionError:
-        pass
+      except trace_inputs.TracingFailure, e:
+        expected = (
+          'Found internal inconsitency in process lifetime detection',
+          None,
+          None,
+          None,
+          [])
+        self.assertEquals(expected, e.args)
 
     def test_close(self):
       lines = [

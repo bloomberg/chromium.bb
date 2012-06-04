@@ -57,8 +57,9 @@ def trace_test_case(
       try:
         results, simplified = trace_inputs.load_trace(logname, root_dir, api)
         break
-      except Exception:
-        print '\nFailed loading the trace for: %s' % ' '.join(cmd)
+      except trace_inputs.TracingFailure, e:
+        print >> sys.stderr, '\nTracing failed for: %s' % ' '.join(cmd)
+        print >> sys.stderr, str(e)
     if simplified:
       variables = trace_inputs.generate_dict(simplified, cwd_dir, product_dir)
     else:
