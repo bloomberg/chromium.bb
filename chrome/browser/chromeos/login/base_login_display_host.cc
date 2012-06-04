@@ -168,6 +168,8 @@ BaseLoginDisplayHost::~BaseLoginDisplayHost() {
 
 void BaseLoginDisplayHost::OnSessionStart() {
   DVLOG(1) << "Session starting";
+  if (wizard_controller_.get())
+    wizard_controller_->OnSessionStart();
   // Display host is deleted once animation is completed
   // since sign in screen widget has to stay alive.
   StartAnimation();

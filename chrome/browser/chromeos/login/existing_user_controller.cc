@@ -538,10 +538,13 @@ void ExistingUserController::OnLoginSuccess(
   is_login_in_progress_ = false;
   offline_failed_ = false;
   bool known_user = UserManager::Get()->IsKnownUser(username);
+  // TODO(ivankr): remove this as soon as .forget_usernames is removed.
   bool login_only =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kLoginScreen) == WizardController::kLoginScreenName;
-  ready_for_browser_launch_ = known_user || login_only;
+  bool skip_image_screen =
+      WizardController::default_controller()->skip_user_image_selection();
+  ready_for_browser_launch_ = known_user || login_only || skip_image_screen;
 
   bool has_cookies =
       login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION;
@@ -596,12 +599,12 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
 #endif
   } else {
     LoginUtils::Get()->DoBrowserLaunch(profile, host_);
-    // Inform |login_status_consumer_| about successful login after
-    // browser launch.  Set most params to empty since they're not needed.
-    if (login_status_consumer_)
-      login_status_consumer_->OnLoginSuccess("", "", false, false);
     host_ = NULL;
   }
+  // Inform |login_status_consumer_| about successful login. Set most params to
+  // empty since they're not needed.
+  if (login_status_consumer_)
+    login_status_consumer_->OnLoginSuccess("", "", false, false);
   login_display_->OnFadeOut();
 }
 

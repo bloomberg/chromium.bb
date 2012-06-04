@@ -4057,6 +4057,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       { u'is_guest': False,
         u'is_owner': True,
         u'email': u'example@gmail.com',
+        u'user_image': 2,  # non-negative int, 'profile', 'file'
         u'is_screen_locked': False,
         u'login_ui_type': 'nativeui', # or 'webui'
         u'is_logged_in': True}
@@ -4110,6 +4111,111 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         lambda: self._GetResultFromJSONRequest(cmd_dict, windex=None)), \
         'Chrome did not reopen the testing channel after login as guest.'
     self.SetUp()
+
+  def SkipToLogin(self, skip_image_selection=True):
+    """Skips OOBE to the login screen.
+
+    Assumes that we're at the beginning of OOBE.
+
+    Args:
+      skip_image_selection: Boolean indicating whether the user image selection
+                            screen should also be skipped.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'SkipToLogin',
+                 'skip_image_selection': skip_image_selection }
+    result = self._GetResultFromJSONRequest(cmd_dict, windex=None)
+    assert result['next_screen'] == 'login', 'Unexpected wizard transition'
+
+  def GetOOBEScreenInfo(self):
+    """Queries info about the current OOBE screen.
+
+    Returns:
+      A dictionary with the following keys:
+
+      'screen_name': The title of the current OOBE screen as a string.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'GetOOBEScreenInfo' }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def AcceptOOBENetworkScreen(self):
+    """Accepts OOBE network screen and advances to the next one.
+
+    Assumes that we're already at the OOBE network screen.
+
+    Returns:
+      A dictionary with the following keys:
+
+      'next_screen': The title of the next OOBE screen as a string.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'AcceptOOBENetworkScreen' }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def AcceptOOBEEula(self, accepted, usage_stats_reporting=False):
+    """Accepts OOBE EULA and advances to the next screen.
+
+    Assumes that we're already at the OOBE EULA screen.
+
+    Args:
+      accepted: Boolean indicating whether the EULA should be accepted.
+      usage_stats_reporting: Boolean indicating whether UMA should be enabled.
+
+    Returns:
+      A dictionary with the following keys:
+
+      'next_screen': The title of the next OOBE screen as a string.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'AcceptOOBEEula',
+                 'accepted': accepted,
+                 'usage_stats_reporting': usage_stats_reporting }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def CancelOOBEUpdate(self):
+    """Skips update on OOBE and advances to the next screen.
+
+    Returns:
+      A dictionary with the following keys:
+
+      'next_screen': The title of the next OOBE screen as a string.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'CancelOOBEUpdate' }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def PickUserImage(self, image):
+    """Chooses image for the newly created user.
+
+    Should be called immediately after login.
+
+    Args:
+      image_type: type of user image to choose. Possible values:
+        - "profile": Google profile image
+        - non-negative int: one of the default images
+
+    Returns:
+      A dictionary with the following keys:
+
+      'next_screen': The title of the next OOBE screen as a string.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'PickUserImage',
+                 'image': image }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
   def LoginAsGuest(self):
     """Login to chromeos as a guest user.

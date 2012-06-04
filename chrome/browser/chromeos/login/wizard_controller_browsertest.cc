@@ -248,14 +248,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowEulaDeclined) {
             WizardController::default_controller()->current_screen());
 }
 
-IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorNetwork) {
-  EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
-            WizardController::default_controller()->current_screen());
-  OnExit(ScreenObserver::NETWORK_OFFLINE);
-
-  EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
-}
-
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
                        ControlFlowEnterpriseEnrollmentCompleted) {
   EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
@@ -315,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
 
 // TODO(nkostylev): Add test for WebUI accelerators http://crosbug.com/22571
 
-COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 15,
+COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 13,
                add_tests_for_new_control_flow_you_just_introduced);
 
 }  // namespace chromeos

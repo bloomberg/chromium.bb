@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -58,6 +59,10 @@ void NetworkScreen::Show() {
 
 void NetworkScreen::Hide() {
   actor_->Hide();
+}
+
+std::string NetworkScreen::GetName() const {
+  return WizardController::kNetworkScreenName;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

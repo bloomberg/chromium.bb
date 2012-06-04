@@ -34,6 +34,7 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
 
   // UpdateScreenActor::Delegate implementation:
   virtual void CancelUpdate() OVERRIDE;

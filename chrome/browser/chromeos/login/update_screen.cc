@@ -232,6 +232,10 @@ void UpdateScreen::Hide() {
   is_shown_ = false;
 }
 
+std::string UpdateScreen::GetName() const {
+  return WizardController::kUpdateScreenName;
+}
+
 void UpdateScreen::PrepareToShow() {
   actor_->PrepareToShow();
 }

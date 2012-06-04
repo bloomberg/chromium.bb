@@ -28,6 +28,7 @@ class UserImageScreen: public WizardScreen,
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
 
   // CameraController::Delegate implementation:
   virtual void OnCaptureSuccess() OVERRIDE;

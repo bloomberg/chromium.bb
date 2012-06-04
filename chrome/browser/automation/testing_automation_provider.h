@@ -1331,6 +1331,50 @@ class TestingAutomationProvider : public AutomationProvider,
                              IPC::Message* reply_message);
 
 #if defined(OS_CHROMEOS)
+  // OOBE wizard.
+
+  // Accepts the network screen and continues to EULA.
+  // Example:
+  //   input: none
+  //   ouput: { "next_screen": "eula" }
+  void AcceptOOBENetworkScreen(base::DictionaryValue* args,
+                               IPC::Message* reply_message);
+
+  // Accepts or declines EULA, moving forward or back from EULA screen.
+  // Example:
+  //    input: { "accepted": true, "usage_stats_reporting": false }
+  //    output: { "next_screen": "update" }
+  void AcceptOOBEEula(base::DictionaryValue* args, IPC::Message* reply_message);
+
+  // Forces the ongoing update to cancel and proceed to the login screen.
+  // Example:
+  //    input: none
+  //    output: { "next_screen": "login" }
+  //    output: none (if update was not running)
+  void CancelOOBEUpdate(base::DictionaryValue* args,
+                        IPC::Message* reply_message);
+
+  // Chooses user image on the image picker screen and starts browser session.
+  // Example:
+  //    input: { "image": "profile" } - Google profile image
+  //    input: { "image": 2 } - default image number 2 (0-based)
+  //    output: { "next_screen": "session" }
+  void PickUserImage(base::DictionaryValue* args, IPC::Message* reply_message);
+
+  // Skips OOBE to login step. Can be called when already at login screen,
+  // in which case does nothing and sends return value immediately.
+  // Example:
+  //    input: { "skip_image_selection": true }
+  //    output: { "next_screen": "login" }
+  void SkipToLogin(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Returns info about the current OOBE screen.
+  // Example:
+  //    input: none
+  //    output: { "screen_name": "network" }
+  //    output: none  (when already logged in)
+  void GetOOBEScreenInfo(DictionaryValue* args, IPC::Message* reply_message);
+
   // Login / Logout.
   void GetLoginInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 

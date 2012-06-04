@@ -29,6 +29,7 @@ class ChromeosLogin(pyauto.PyUITest):
     cryptohome.remove_all_vaults()
     cros_ui.start(wait_for_login_prompt=False)
     pyauto.PyUITest.setUp(self)
+    self.SkipToLogin()
 
   def _ValidCredentials(self, account_type='test_google_account'):
     """Obtains a valid username and password from a data file.

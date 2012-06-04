@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
@@ -41,12 +42,27 @@ class WizardScreen;
 // interacts with screen controllers to move the user between screens.
 class WizardController : public ScreenObserver {
  public:
+  // Observes screen changes.
+  class Observer {
+   public:
+    // Called before a screen change happens.
+    virtual void OnScreenChanged(WizardScreen* next_screen) = 0;
+
+    // Called after the browser session has started.
+    virtual void OnSessionStart() = 0;
+  };
+
   WizardController(LoginDisplayHost* host, OobeDisplay* oobe_display);
   virtual ~WizardController();
 
   // Returns the default wizard controller if it has been created.
   static WizardController* default_controller() {
     return default_controller_;
+  }
+
+  // Whether the user image selection step should be skipped.
+  static bool skip_user_image_selection() {
+    return skip_user_image_selection_;
   }
 
   // Returns true if EULA has been accepted.
@@ -79,6 +95,9 @@ class WizardController : public ScreenObserver {
   // Registers OOBE preferences.
   static void RegisterPrefs(PrefService* local_state);
 
+  // Marks user image screen to be always skipped after login.
+  static void SkipImageSelectionForTesting();
+
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty. Takes ownership of |screen_parameters|.
   void Init(const std::string& first_screen_name,
@@ -87,8 +106,18 @@ class WizardController : public ScreenObserver {
   // Advances to screen defined by |screen_name| and shows it.
   void AdvanceToScreen(const std::string& screen_name);
 
+  // Advances to login screen. Should be used in for testing only.
+  void SkipToLoginForTesting();
+
   // If being at register screen proceeds to the next one.
   void SkipRegistration();
+
+  // Adds and removes an observer.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  // Called right after the browser session has started.
+  void OnSessionStart();
 
   // Skip update, go straight to enrollment after EULA is accepted.
   void SkipUpdateEnrollAfterEula();
@@ -105,6 +134,9 @@ class WizardController : public ScreenObserver {
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
   WizardScreen* current_screen() const { return current_screen_; }
+
+  // Returns true if the current wizard instance has reached the login screen.
+  bool login_screen_started() const { return login_screen_started_; }
 
   static const char kNetworkScreenName[];
   static const char kLoginScreenName[];
@@ -183,6 +215,8 @@ class WizardController : public ScreenObserver {
   // Sets delays to zero. MUST be used only for browser tests.
   static void SetZeroDelays();
 
+  static bool skip_user_image_selection_;
+
   // Screens.
   scoped_ptr<NetworkScreen> network_screen_;
   scoped_ptr<UpdateScreen> update_screen_;
@@ -232,6 +266,10 @@ class WizardController : public ScreenObserver {
   // Time when the EULA was accepted. Used to measure the duration from the EULA
   // acceptance until the Sign-In screen is displayed.
   base::Time time_eula_accepted_;
+
+  ObserverList<Observer> observer_list_;
+
+  bool login_screen_started_;
 
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentScreenTest, TestCancel);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);

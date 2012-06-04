@@ -1,10 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_SCREEN_H_
 #pragma once
+
+#include <string>
 
 #include "base/gtest_prod_util.h"
 
@@ -25,6 +27,9 @@ class WizardScreen {
   virtual void Show() = 0;
   // Makes wizard screen invisible.
   virtual void Hide() = 0;
+
+  // Returns the screen name.
+  virtual std::string GetName() const = 0;
 
  protected:
   ScreenObserver* get_screen_observer() const {

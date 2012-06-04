@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/policy/auto_enrollment_client.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
@@ -70,6 +71,10 @@ void EnterpriseEnrollmentScreen::Show() {
 void EnterpriseEnrollmentScreen::Hide() {
   is_showing_ = false;
   actor_->Hide();
+}
+
+std::string EnterpriseEnrollmentScreen::GetName() const {
+  return WizardController::kEnterpriseEnrollmentScreenName;
 }
 
 void EnterpriseEnrollmentScreen::OnOAuthTokenAvailable(

@@ -677,6 +677,14 @@
     ],
   },
 
+  # ChromeOS OOBE tests.
+  # TODO(ivankr): schedule this for running after .forget_usernames is removed.
+  'CHROMEOS_OOBE': {
+    'chromeos': [
+      'chromeos_oobe',
+    ],
+  },
+
   # ChromeOS policy tests. Some of these are shared with Desktop Chrome tests
   # but require custom setup on ChromeOS. Others are specific to ChromeOS only.
   'CHROMEOS_POLICY': {

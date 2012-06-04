@@ -29,6 +29,7 @@ class EulaScreen : public WizardScreen,
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
 
   // EulaScreenActor::Delegate implementation:
   virtual bool IsTpmEnabled() const OVERRIDE;

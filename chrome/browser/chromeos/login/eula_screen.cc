@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace chromeos {
 
@@ -35,6 +36,10 @@ void EulaScreen::Show() {
 
 void EulaScreen::Hide() {
   actor_->Hide();
+}
+
+std::string EulaScreen::GetName() const {
+  return WizardController::kEulaScreenName;
 }
 
 bool EulaScreen::IsTpmEnabled() const {

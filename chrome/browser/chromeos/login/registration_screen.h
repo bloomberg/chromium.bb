@@ -53,6 +53,9 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
   explicit RegistrationScreen(ViewScreenDelegate* delegate);
   virtual ~RegistrationScreen();
 
+  // WizardScreen overrides:
+  virtual std::string GetName() const OVERRIDE;
+
   // Handler factory for net::URLRequestFilter::AddHostnameHandler.
   static net::URLRequestJob* Factory(net::URLRequest* request,
                                      const std::string& scheme);

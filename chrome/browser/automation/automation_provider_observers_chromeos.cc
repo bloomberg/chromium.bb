@@ -13,11 +13,20 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
 using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;
+using chromeos::WizardController;
+
+namespace {
+
+// Fake screen name for the user session (reported by WizardControllerObserver).
+const char kSessionScreenName[] = "session";
+
+}
 
 NetworkManagerInitObserver::NetworkManagerInitObserver(
     AutomationProvider* automation)
@@ -48,25 +57,34 @@ void NetworkManagerInitObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   }
 }
 
-LoginWebuiReadyObserver::LoginWebuiReadyObserver(AutomationProvider* automation)
+OOBEWebuiReadyObserver::OOBEWebuiReadyObserver(AutomationProvider* automation)
     : automation_(automation->AsWeakPtr()) {
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_READY,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
-                 content::NotificationService::AllSources());
+  if (WizardController::default_controller() &&
+      WizardController::default_controller()->current_screen()) {
+    OOBEWebuiReady();
+  } else {
+    registrar_.Add(this, chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_READY,
+                   content::NotificationService::AllSources());
+  }
 }
 
-void LoginWebuiReadyObserver::Observe(
+void OOBEWebuiReadyObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_LOGIN_WEBUI_READY ||
+  DCHECK(type == chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN ||
          type == chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED ||
-         type == chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN);
+         type == chrome::NOTIFICATION_LOGIN_WEBUI_READY);
+  OOBEWebuiReady();
+}
+
+void OOBEWebuiReadyObserver::OOBEWebuiReady() {
   if (automation_)
-    automation_->OnLoginWebuiReady();
+    automation_->OnOOBEWebuiReady();
   delete this;
 }
 
@@ -98,6 +116,52 @@ void LoginObserver::OnLoginSuccess(
     bool using_oauth) {
   controller_->set_login_status_consumer(NULL);
   AutomationJSONReply(automation_, reply_message_.release()).SendSuccess(NULL);
+  delete this;
+}
+
+WizardControllerObserver::WizardControllerObserver(
+    WizardController* wizard_controller,
+    AutomationProvider* automation,
+    IPC::Message* reply_message)
+    : wizard_controller_(wizard_controller),
+      automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message) {
+  wizard_controller_->AddObserver(this);
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_READY,
+                 content::NotificationService::AllSources());
+}
+
+WizardControllerObserver::~WizardControllerObserver() {
+  wizard_controller_->RemoveObserver(this);
+}
+
+void WizardControllerObserver::OnScreenChanged(
+    chromeos::WizardScreen* next_screen) {
+  std::string screen_name = next_screen->GetName();
+  if (screen_to_wait_for_.empty() || screen_to_wait_for_ == screen_name) {
+    SendReply(screen_name);
+  } else {
+    DVLOG(2) << "Still waiting for " << screen_to_wait_for_;
+  }
+}
+
+void WizardControllerObserver::OnSessionStart() {
+  SendReply(kSessionScreenName);
+}
+
+void WizardControllerObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_LOGIN_WEBUI_READY);
+  SendReply(WizardController::kLoginScreenName);
+}
+
+void WizardControllerObserver::SendReply(const std::string& screen_name) {
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetString("next_screen", screen_name);
+  AutomationJSONReply(automation_, reply_message_.release())
+      .SendSuccess(return_value.get());
   delete this;
 }
 

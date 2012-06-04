@@ -73,7 +73,8 @@ class Error;
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {
-  class ExistingUserController;
+class ExistingUserController;
+class WizardScreen;
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -156,18 +157,20 @@ class NetworkManagerInitObserver
 // Observes when the ChromeOS login WebUI becomes ready (by showing the login
 // form, account picker, a network error or the OOBE wizard, depending on Chrome
 // flags and state).
-class LoginWebuiReadyObserver : public content::NotificationObserver {
+class OOBEWebuiReadyObserver : public content::NotificationObserver {
  public:
-  explicit LoginWebuiReadyObserver(AutomationProvider* automation);
+  explicit OOBEWebuiReadyObserver(AutomationProvider* automation);
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
  private:
+  void OOBEWebuiReady();
+
   content::NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginWebuiReadyObserver);
+  DISALLOW_COPY_AND_ASSIGN(OOBEWebuiReadyObserver);
 };
 #endif  // defined(OS_CHROMEOS)
 
@@ -715,6 +718,43 @@ class LoginObserver : public chromeos::LoginStatusConsumer {
   scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginObserver);
+};
+
+// Waits for a screen change notification from WizardController.
+class WizardControllerObserver : public chromeos::WizardController::Observer,
+                                 public content::NotificationObserver {
+ public:
+  WizardControllerObserver(chromeos::WizardController* wizard_controller,
+                           AutomationProvider* automation,
+                           IPC::Message* reply_message);
+  virtual ~WizardControllerObserver();
+
+  // If non-empty, waits for a specific change to screen with this name.
+  std::string screen_to_wait_for() { return screen_to_wait_for_; }
+  void set_screen_to_wait_for(const std::string& screen_name) {
+    screen_to_wait_for_ = screen_name;
+  }
+
+ protected:
+  // chromeos::WizardController::Observer overrides:
+  virtual void OnScreenChanged(chromeos::WizardScreen* next_screen) OVERRIDE;
+  virtual void OnSessionStart() OVERRIDE;
+
+  // content::NotificationObserver overrides:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details);
+
+  // Sends reply with the given screen name and deletes |this|.
+  void SendReply(const std::string& screen_name);
+
+  content::NotificationRegistrar registrar_;
+  chromeos::WizardController* wizard_controller_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  std::string screen_to_wait_for_;
+
+  DISALLOW_COPY_AND_ASSIGN(WizardControllerObserver);
 };
 
 // Collects SCREEN_LOCK_STATE_CHANGED notifications and returns

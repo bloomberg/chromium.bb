@@ -120,6 +120,9 @@ const char WizardController::kTestNoScreenName[] = "test:nowindow";
 // static
 WizardController* WizardController::default_controller_ = NULL;
 
+// static
+bool WizardController::skip_user_image_selection_ = false;
+
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, public:
 
@@ -135,7 +138,8 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
       host_(host),
       oobe_display_(oobe_display),
       usage_statistics_reporting_(true),
-      skip_update_enroll_after_eula_(false) {
+      skip_update_enroll_after_eula_(false),
+      login_screen_started_(false) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
 }
@@ -252,6 +256,7 @@ void WizardController::ShowLoginScreen() {
   host_->StartSignInScreen();
   smooth_show_timer_.Stop();
   oobe_display_ = NULL;
+  login_screen_started_ = true;
 }
 
 void WizardController::ResumeLoginScreen() {
@@ -323,11 +328,34 @@ void WizardController::ShowEnterpriseEnrollmentScreen() {
   SetCurrentScreen(screen);
 }
 
+void WizardController::SkipToLoginForTesting() {
+  MarkEulaAccepted();
+  PerformPostEulaActions();
+  PerformPostUpdateActions();
+  ShowLoginScreen();
+}
+
+void WizardController::SkipImageSelectionForTesting() {
+  skip_user_image_selection_ = true;
+}
+
 void WizardController::SkipRegistration() {
   if (current_screen_ == GetRegistrationScreen())
     OnRegistrationSkipped();
   else
     LOG(ERROR) << "Registration screen is not active.";
+}
+
+void WizardController::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void WizardController::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void WizardController::OnSessionStart() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnSessionStart());
 }
 
 void WizardController::SkipUpdateEnrollAfterEula() {
@@ -526,6 +554,8 @@ void WizardController::ShowCurrentScreen() {
 
   smooth_show_timer_.Stop();
 
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnScreenChanged(current_screen_));
+
   oobe_display_->ShowScreen(current_screen_);
 }
 
@@ -707,9 +737,6 @@ void WizardController::OnExit(ExitCodes exit_code) {
     case NETWORK_CONNECTED:
       OnNetworkConnected();
       break;
-    case NETWORK_OFFLINE:
-      OnNetworkOffline();
-      break;
     case CONNECTION_FAILED:
       OnConnectionFailed();
       break;
@@ -725,9 +752,6 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case USER_IMAGE_SELECTED:
       OnUserImageSelected();
-      break;
-    case USER_IMAGE_SKIPPED:
-      OnUserImageSkipped();
       break;
     case EULA_ACCEPTED:
       OnEulaAccepted();

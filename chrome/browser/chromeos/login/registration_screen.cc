@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -65,6 +66,12 @@ RegistrationScreen::RegistrationScreen(ViewScreenDelegate* delegate)
 }
 
 RegistrationScreen::~RegistrationScreen() {
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// RegistrationScreen, WizardScreen implementation:
+std::string RegistrationScreen::GetName() const {
+  return WizardController::kRegistrationScreenName;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

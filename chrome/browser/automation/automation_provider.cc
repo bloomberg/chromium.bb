@@ -224,7 +224,7 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager) &&
         !chromeos::UserManager::Get()->IsUserLoggedIn()) {
       login_webui_ready_ = false;
-      new LoginWebuiReadyObserver(this);
+      new OOBEWebuiReadyObserver(this);
     }
 
     // Wait for the network manager to initialize.
@@ -274,9 +274,9 @@ void AutomationProvider::OnNetworkLibraryInit() {
   SendInitialLoadMessage();
 }
 
-void AutomationProvider::OnLoginWebuiReady() {
+void AutomationProvider::OnOOBEWebuiReady() {
   login_webui_ready_ = true;
-  VLOG(2) << "OnLoginWebuiReady";
+  VLOG(2) << "OnOOBEWebuiReady";
   SendInitialLoadMessage();
 }
 
@@ -292,7 +292,7 @@ void AutomationProvider::DisableInitialLoadObservers() {
   use_initial_load_observers_ = false;
   OnInitialTabLoadsComplete();
   OnNetworkLibraryInit();
-  OnLoginWebuiReady();
+  OnOOBEWebuiReady();
 }
 
 int AutomationProvider::GetIndexForNavigationController(

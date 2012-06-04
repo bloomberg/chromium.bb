@@ -41,6 +41,9 @@ class HTMLPageScreen : public ViewScreen<HTMLPageView>,
   HTMLPageScreen(ViewScreenDelegate* delegate, const std::string& url);
   virtual ~HTMLPageScreen();
 
+  // WizardScreen overrides:
+  virtual std::string GetName() const OVERRIDE;
+
  protected:
   // Overrides WebPageScreen:
   virtual void OnNetworkTimeout() OVERRIDE;

@@ -114,8 +114,8 @@ class AutomationProvider
   // Called when the ChromeOS network library has finished its first update.
   void OnNetworkLibraryInit();
 
-  // Called when the chromeos WebUI login is ready.
-  void OnLoginWebuiReady();
+  // Called when the chromeos WebUI OOBE/Login is ready.
+  void OnOOBEWebuiReady();
 
   // Checks all of the initial load conditions, then sends the
   // InitialLoadsComplete message over the automation channel.

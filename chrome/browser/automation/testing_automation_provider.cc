@@ -1770,6 +1770,16 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::SimulateAsanMemoryBug;
 
 #if defined(OS_CHROMEOS)
+  handler_map["AcceptOOBENetworkScreen"] =
+      &TestingAutomationProvider::AcceptOOBENetworkScreen;
+  handler_map["AcceptOOBEEula"] = &TestingAutomationProvider::AcceptOOBEEula;
+  handler_map["CancelOOBEUpdate"] =
+      &TestingAutomationProvider::CancelOOBEUpdate;
+  handler_map["PickUserImage"] = &TestingAutomationProvider::PickUserImage;
+  handler_map["SkipToLogin"] = &TestingAutomationProvider::SkipToLogin;
+  handler_map["GetOOBEScreenInfo"] =
+      &TestingAutomationProvider::GetOOBEScreenInfo;
+
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
   handler_map["ShowCreateAccountUI"] =
       &TestingAutomationProvider::ShowCreateAccountUI;

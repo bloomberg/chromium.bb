@@ -20,15 +20,15 @@ class ScreenObserver {
   // login wizard decides what is the next view to show. There must be an
   // exit code for each way to exit the screen for each screen.
   enum ExitCodes {
+    // "Continue" was pressed on network screen and network is online.
     NETWORK_CONNECTED,
-    NETWORK_OFFLINE,
+    // Connection failed while trying to load a WebPageScreen.
     CONNECTION_FAILED,
     UPDATE_INSTALLED,
     UPDATE_NOUPDATE,
     UPDATE_ERROR_CHECKING_FOR_UPDATE,
     UPDATE_ERROR_UPDATING,
     USER_IMAGE_SELECTED,
-    USER_IMAGE_SKIPPED,
     EULA_ACCEPTED,
     EULA_BACK,
     REGISTRATION_SUCCESS,

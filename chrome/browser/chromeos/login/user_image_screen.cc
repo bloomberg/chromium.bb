@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
@@ -79,6 +80,10 @@ void UserImageScreen::Hide() {
   camera_controller_.Stop();
   if (actor_)
     actor_->Hide();
+}
+
+std::string UserImageScreen::GetName() const {
+  return WizardController::kUserImageScreenName;
 }
 
 void UserImageScreen::OnCaptureSuccess() {
