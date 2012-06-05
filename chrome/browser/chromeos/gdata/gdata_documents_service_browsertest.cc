@@ -30,7 +30,7 @@ class GDataTest : public InProcessBrowserTest {
     ASSERT_TRUE(gdata_test_server_.Start());
     service_.reset(new gdata::DocumentsService);
     service_->Initialize(browser()->profile());
-    service_->gdata_auth_service()->set_oauth2_auth_token_for_testing(
+    service_->auth_service_for_testing()->set_oauth2_auth_token_for_testing(
         net::TestServer::kGDataAuthToken);
   }
 

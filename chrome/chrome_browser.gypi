@@ -532,6 +532,8 @@
         'browser/chromeos/gdata/gdata_leveldb.h',
         'browser/chromeos/gdata/gdata_operation_registry.cc',
         'browser/chromeos/gdata/gdata_operation_registry.h',
+        'browser/chromeos/gdata/gdata_operation_runner.cc',
+        'browser/chromeos/gdata/gdata_operation_runner.h',
         'browser/chromeos/gdata/gdata_operations.cc',
         'browser/chromeos/gdata/gdata_operations.h',
         'browser/chromeos/gdata/gdata_params.cc',
