@@ -193,6 +193,25 @@ bool CustomButton::OnKeyReleased(const KeyEvent& event) {
   return true;
 }
 
+ui::GestureStatus CustomButton::OnGestureEvent(const GestureEvent& event) {
+  if (state_ == BS_DISABLED)
+    return ui::GESTURE_STATUS_UNKNOWN;
+
+  if (event.type() == ui::ET_GESTURE_TAP) {
+    SetState(BS_NORMAL);
+    NotifyClick(event);
+    return ui::GESTURE_STATUS_CONSUMED;
+  } else if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
+    SetState(BS_PUSHED);
+    if (request_focus_on_press_)
+      RequestFocus();
+    return ui::GESTURE_STATUS_CONSUMED;
+  } else {
+    SetState(BS_NORMAL);
+  }
+  return ui::GESTURE_STATUS_UNKNOWN;
+}
+
 bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
   SetState(BS_NORMAL);
   KeyEvent key_event(ui::ET_KEY_RELEASED, accelerator.key_code(),

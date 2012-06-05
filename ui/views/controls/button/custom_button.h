@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/base/events.h"
 #include "ui/views/controls/button/button.h"
 
 namespace ui {
@@ -87,6 +88,7 @@ class VIEWS_EXPORT CustomButton : public Button,
   virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const KeyEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual void ShowContextMenu(const gfx::Point& p,
                                bool is_mouse_gesture) OVERRIDE;
