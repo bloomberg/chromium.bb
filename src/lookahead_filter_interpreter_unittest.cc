@@ -35,6 +35,13 @@ class LookaheadFilterInterpreterTestInterpreter : public Interpreter {
       EXPECT_EQ(1, hwstate->finger_cnt);
       EXPECT_EQ(expected_id_, hwstate->fingers[0].tracking_id);
     }
+    if (!expected_ids_.empty()) {
+      EXPECT_EQ(expected_ids_.size(), hwstate->finger_cnt);
+      for (set<short, kMaxFingers>::iterator it = expected_ids_.begin(),
+           e = expected_ids_.end(); it != e; ++it) {
+        EXPECT_TRUE(hwstate->GetFingerState(*it));
+      }
+    }
     if (expected_flags_at_ >= 0 &&
         DoubleEq(expected_flags_at_, hwstate->timestamp) &&
                  hwstate->finger_cnt > 0) {
@@ -73,6 +80,8 @@ class LookaheadFilterInterpreterTestInterpreter : public Interpreter {
   // if expected_id_ >= 0, we expect that there is one finger with
   // the expected id.
   short expected_id_;
+  // if expected_ids_ is populated, we expect fingers w/ exactly those IDs
+  set<short, kMaxFingers> expected_ids_;
   // If we get a hardware state at time expected_flags_at_, it should have
   // the following flags set.
   unsigned expected_flags_;
@@ -966,6 +975,76 @@ TEST(LookaheadFilterInterpreterTest, CyapaDrumrollTest) {
   }
   ASSERT_TRUE(base_interpreter);
   EXPECT_TRUE(base_interpreter->expected_flags_at_occurred_);
+}
+
+struct CyapaQuickTwoFingerMoveTestInputs {
+  stime_t now;
+  float x0, y0, pressure0;
+  float x1, y1, pressure1;
+  float x2, y2, pressure2;
+};
+
+// Using data from a real log, tests that when we do a swipe with large delay
+// on Lumpy, we don't reassign finger IDs b/c we use sufficient temporary
+// delay.
+TEST(LookaheadFilterInterpreterTest, CyapaQuickTwoFingerMoveTest) {
+  LookaheadFilterInterpreterTestInterpreter* base_interpreter =
+      new LookaheadFilterInterpreterTestInterpreter;
+  LookaheadFilterInterpreter interpreter(NULL, base_interpreter);
+  interpreter.min_delay_.val_ = 0.0;
+
+  HardwareProperties initial_hwprops = {
+    0.000000,  // left edge
+    0.000000,  // top edge
+    106.666672,  // right edge
+    68.000000,  // bottom edge
+    1.000000,  // x pixels/TP width
+    1.000000,  // y pixels/TP height
+    25.400000,  // x screen DPI
+    25.400000,  // y screen DPI
+    15,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    0  // is button pad
+  };
+  interpreter.SetHardwareProperties(initial_hwprops);
+  CyapaQuickTwoFingerMoveTestInputs inputs[] = {
+    { 1.13156, 38.16,  8.10, 52.2, 57.41,  6.40, 40.5, 75.66,  6.50, 36.7 },
+    { 1.14369, 37.91, 17.50, 50.2, 56.83, 15.50, 40.5, 75.25, 15.30, 32.8 },
+    { 1.15980, 34.66, 31.60, 48.3, 53.58, 29.40, 40.5, 72.25, 29.10, 28.9 }
+  };
+  // Prime it w/ a dummy hardware state
+  stime_t timeout = -1.0;
+  HardwareState temp_hs = { 0.000001, 0, 0, 0, NULL };
+  interpreter.SyncInterpret(&temp_hs, &timeout);
+
+  base_interpreter->expected_ids_.insert(1);
+  base_interpreter->expected_ids_.insert(2);
+  base_interpreter->expected_ids_.insert(3);
+  for (size_t i = 0; i < arraysize(inputs); i++) {
+    const CyapaQuickTwoFingerMoveTestInputs& input = inputs[i];
+    FingerState fs[] = {
+      { 0, 0, 0, 0, input.pressure0, 0, input.x0, input.y0, 1, 0 },
+      { 0, 0, 0, 0, input.pressure1, 0, input.x1, input.y1, 2, 0 },
+      { 0, 0, 0, 0, input.pressure2, 0, input.x2, input.y2, 3, 0 }
+    };
+    HardwareState hs = { input.now, 0, arraysize(fs), arraysize(fs), fs };
+    timeout = -1.0;
+    interpreter.SyncInterpret(&hs, &timeout);
+    if (timeout >= 0) {
+      stime_t next_timestamp = INFINITY;
+      if (i < arraysize(inputs) - 1)
+        next_timestamp = inputs[i + 1].now;
+      stime_t now = input.now;
+      while (timeout >= 0 && (now + timeout) < next_timestamp) {
+        now += timeout;
+        timeout = -1;
+        LOG(INFO) << "calling handler timer: " << now;
+        interpreter.HandleTimer(now, &timeout);
+      }
+    }
+  }
 }
 
 }  // namespace gestures

@@ -26,7 +26,7 @@ LookaheadFilterInterpreter::LookaheadFilterInterpreter(
       min_nonsuppress_speed_(prop_reg, "Input Queue Min Nonsuppression Speed",
                              200.0),
       min_delay_(prop_reg, "Input Queue Delay", 0.017),
-      max_delay_(prop_reg, "Input Queue Max Delay", 0.013),
+      max_delay_(prop_reg, "Input Queue Max Delay", 0.017),
       split_min_period_(prop_reg, "Min Interpolate Period", 0.021),
       drumroll_speed_thresh_(prop_reg, "Drumroll Speed Thresh", 400.0),
       drumroll_max_speed_ratio_(prop_reg,

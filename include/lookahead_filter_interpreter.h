@@ -20,6 +20,7 @@
 namespace gestures {
 
 class LookaheadFilterInterpreter : public Interpreter {
+  FRIEND_TEST(LookaheadFilterInterpreterTest, CyapaQuickTwoFingerMoveTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, DrumrollTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateHwStateTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateTest);
