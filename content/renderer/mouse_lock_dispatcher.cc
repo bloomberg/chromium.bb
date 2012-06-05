@@ -32,7 +32,14 @@ bool MouseLockDispatcher::LockMouse(LockTarget* target) {
 void MouseLockDispatcher::UnlockMouse(LockTarget* target) {
   if (target && target == target_ && !pending_unlock_request_) {
     pending_unlock_request_ = true;
-    unlocked_by_target_ = true;
+
+    // When a target application voluntarily unlocks the mouse we permit
+    // relocking the mouse silently and with no user gesture requirement.
+    // Check that the lock request is not currently pending and not yet
+    // accepted by the browser process before setting |unlocked_by_target_|.
+    if (!pending_lock_request_)
+      unlocked_by_target_ = true;
+
     SendUnlockMouseRequest();
   }
 }
