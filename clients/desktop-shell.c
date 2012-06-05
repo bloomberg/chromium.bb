@@ -46,6 +46,9 @@ struct desktop {
 	struct unlock_dialog *unlock_dialog;
 	struct task unlock_task;
 	struct wl_list outputs;
+
+	struct window *busy_window;
+	struct widget *busy_widget;
 };
 
 struct surface {
@@ -651,6 +654,64 @@ background_create(struct desktop *desktop)
 	return background;
 }
 
+static const struct wl_callback_listener busy_cursor_listener;
+
+static void
+busy_cursor_frame_callback(void *data,
+			   struct wl_callback *callback, uint32_t time)
+{
+	struct input *input = data;
+	struct display *display = input_get_display(input);
+	struct desktop *desktop = display_get_user_data(display);
+	struct wl_surface *surface;
+	int index;
+
+	if (callback)
+		wl_callback_destroy(callback);
+	if (input_get_focus_widget(input) != desktop->busy_widget)
+		return;
+
+	/* FIXME: Get frame duration and number of frames from cursor. */
+	index = (time / 100) % 8;
+	input_set_pointer_image_index(input, CURSOR_WATCH, index);
+
+	surface = window_get_wl_surface(desktop->busy_window);
+	callback = wl_surface_frame(surface);
+	wl_callback_add_listener(callback, &busy_cursor_listener, input);
+}
+
+static const struct wl_callback_listener busy_cursor_listener = {
+	busy_cursor_frame_callback
+};
+
+static int
+busy_surface_enter_handler(struct widget *widget, struct input *input,
+			   float x, float y, void *data)
+{
+	busy_cursor_frame_callback(input, NULL, 0);
+
+	return CURSOR_WATCH;
+}
+
+static void
+busy_surface_create(struct desktop *desktop)
+{
+	struct wl_surface *s;
+
+	desktop->busy_window = window_create(desktop->display);
+	s = window_get_wl_surface(desktop->busy_window);
+	desktop_shell_set_busy_surface(desktop->shell, s);
+
+	desktop->busy_widget =
+		window_add_widget(desktop->busy_window, desktop);
+	/* We set the allocation to 1x1 at 0,0 so the fake enter event
+	 * at 0,0 will go to this widget. */
+	widget_set_allocation(desktop->busy_widget, 0, 0, 1, 1);
+
+	widget_set_enter_handler(desktop->busy_widget,
+				 busy_surface_enter_handler);
+}
+
 static void
 create_output(struct desktop *desktop, uint32_t id)
 {
@@ -729,6 +790,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	display_set_user_data(desktop.display, &desktop);
 	wl_display_add_global_listener(display_get_display(desktop.display),
 				       global_handler, &desktop);
 
@@ -743,6 +805,8 @@ int main(int argc, char *argv[])
 		s = window_get_wl_shell_surface(output->background->window);
 		desktop_shell_set_background(desktop.shell, output->output, s);
 	}
+
+	busy_surface_create(&desktop);
 
 	config_file = config_file_path("weston.ini");
 	ret = parse_config_file(config_file,

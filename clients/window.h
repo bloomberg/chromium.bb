@@ -389,6 +389,9 @@ input_ungrab(struct input *input);
 struct widget *
 input_get_focus_widget(struct input *input);
 
+struct display *
+input_get_display(struct input *input);
+
 struct wl_seat *
 input_get_seat(struct input *input);
 

@@ -57,6 +57,9 @@ struct desktop_shell {
 	struct weston_layer background_layer;
 	struct weston_layer lock_layer;
 
+	struct wl_listener pointer_focus_listener;
+	struct weston_surface *busy_surface;
+
 	struct {
 		struct weston_process process;
 		struct wl_client *client;
@@ -150,13 +153,6 @@ struct shell_surface {
 	} fullscreen;
 
 	struct ping_timer *ping_timer;
-
-	struct {
-		struct weston_animation current;
-		int exists;
-		int fading_in;
-		uint32_t timestamp;
-	} unresponsive_animation;
 
 	struct weston_output *fullscreen_output;
 	struct weston_output *output;
@@ -357,65 +353,68 @@ static const struct wl_pointer_grab_interface move_grab_interface = {
 };
 
 static void
-unresponsive_surface_fade(struct shell_surface *shsurf, bool reverse)
+busy_cursor_grab_focus(struct wl_pointer_grab *base,
+		       struct wl_surface *surface, int32_t x, int32_t y)
 {
-	shsurf->unresponsive_animation.fading_in = reverse ? 0 : 1;
+	struct shell_grab *grab = (struct shell_grab *) base;
+	struct wl_pointer *pointer = base->pointer;
 
-	if(!shsurf->unresponsive_animation.exists) {
-		wl_list_insert(&shsurf->surface->compositor->animation_list,
-		       &shsurf->unresponsive_animation.current.link);
-		shsurf->unresponsive_animation.exists = 1;
-		shsurf->unresponsive_animation.timestamp = weston_compositor_get_time();
-		weston_surface_damage(shsurf->surface);
+	if (grab->grab.focus != surface) {
+		shell_grab_finish(grab);
+		wl_pointer_end_grab(pointer);
+		free(grab);
 	}
 }
 
 static void
-unresponsive_fade_frame(struct weston_animation *animation,
-		struct weston_output *output, uint32_t msecs)
+busy_cursor_grab_motion(struct wl_pointer_grab *grab,
+			uint32_t time, int32_t x, int32_t y)
 {
-	struct shell_surface *shsurf =
-		container_of(animation, struct shell_surface, unresponsive_animation.current);
-	struct weston_surface *surface = shsurf->surface;
-	unsigned int step = 8;
+}
 
-	if (!surface || !shsurf)
+static void
+busy_cursor_grab_button(struct wl_pointer_grab *grab,
+			uint32_t time, uint32_t button, uint32_t state)
+{
+}
+
+static const struct wl_pointer_grab_interface busy_cursor_grab_interface = {
+	busy_cursor_grab_focus,
+	busy_cursor_grab_motion,
+	busy_cursor_grab_button,
+};
+
+static void
+set_busy_cursor(struct shell_surface *shsurf, struct wl_pointer *pointer)
+{
+	struct shell_grab *grab;
+	struct desktop_shell *shell = shsurf->shell;
+	struct weston_seat *seat = (struct weston_seat *) pointer->seat;
+	struct weston_surface *sprite;
+
+	grab = malloc(sizeof *grab);
+	if (!grab)
 		return;
 
-	if (shsurf->unresponsive_animation.fading_in) {
-		while (step < msecs - shsurf->unresponsive_animation.timestamp) {
-			if (surface->saturation > 1)
-				surface->saturation -= 5;
-			if (surface->brightness > 200)
-				surface->brightness--;
+	shell_grab_init(grab, &busy_cursor_grab_interface, shsurf);
+	grab->grab.focus = &shsurf->surface->surface;
+	wl_pointer_start_grab(pointer, &grab->grab);
+	wl_pointer_set_focus(pointer, &shell->busy_surface->surface, 0, 0);
 
-			shsurf->unresponsive_animation.timestamp += step;
-		}
+	sprite = (struct weston_surface *) seat->sprite;
+	shell->busy_surface->output = sprite->output;
+}
 
-		if (surface->saturation <= 1 && surface->brightness <= 200) {
-			wl_list_remove(&shsurf->unresponsive_animation.current.link);
-			shsurf->unresponsive_animation.exists = 0;
-		}
+static void
+end_busy_cursor(struct shell_surface *shsurf, struct wl_pointer *pointer)
+{
+	struct shell_grab *grab = (struct shell_grab *) pointer->grab;
+
+	if (grab->grab.interface == &busy_cursor_grab_interface) {
+		shell_grab_finish(grab);
+		wl_pointer_end_grab(pointer);
+		free(grab);
 	}
-	else {
-		while (step < msecs - shsurf->unresponsive_animation.timestamp) {
-			if (surface->saturation < 255)
-				surface->saturation += 5;
-			if (surface->brightness < 255)
-				surface->brightness++;
-
-			shsurf->unresponsive_animation.timestamp += step;
-		}
-
-		if (surface->saturation >= 255 && surface->brightness >= 255) {
-			surface->saturation = surface->brightness = 255;
-			wl_list_remove(&shsurf->unresponsive_animation.current.link);
-			shsurf->unresponsive_animation.exists = 0;
-		}
-	}
-
-	surface->geometry.dirty = 1;
-	weston_surface_damage(surface);
 }
 
 static void
@@ -435,10 +434,14 @@ static int
 ping_timeout_handler(void *data)
 {
 	struct shell_surface *shsurf = data;
+	struct weston_seat *seat;
 
 	/* Client is not responding */
 	shsurf->unresponsive = 1;
-	unresponsive_surface_fade(shsurf, false);
+
+	wl_list_for_each(seat, &shsurf->surface->compositor->seat_list, link)
+		if (seat->seat.pointer->focus == &shsurf->surface->surface)
+			set_busy_cursor(shsurf, seat->seat.pointer);
 
 	return 1;
 }
@@ -448,7 +451,7 @@ ping_handler(struct weston_surface *surface, uint32_t serial)
 {
 	struct shell_surface *shsurf = get_shell_surface(surface);
 	struct wl_event_loop *loop;
-	int ping_timeout = 2500;
+	int ping_timeout = 200;
 
 	if (!shsurf)
 		return;
@@ -471,17 +474,54 @@ ping_handler(struct weston_surface *surface, uint32_t serial)
 }
 
 static void
+handle_pointer_focus(struct wl_listener *listener, void *data)
+{
+	struct wl_pointer *pointer = data;
+	struct weston_surface *surface =
+		(struct weston_surface *) pointer->focus;
+	struct weston_compositor *compositor;
+	struct shell_surface *shsurf;
+	uint32_t serial;
+
+	if (!surface)
+		return;
+
+	compositor = surface->compositor;
+	shsurf = get_shell_surface(surface);
+
+	if (shsurf->unresponsive) {
+		set_busy_cursor(shsurf, pointer);
+	} else {
+		serial = wl_display_next_serial(compositor->wl_display);
+		ping_handler(surface, serial);
+	}
+}
+
+static void
 shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 							uint32_t serial)
 {
 	struct shell_surface *shsurf = resource->data;
+	struct desktop_shell *shell = shsurf->shell;
+	struct weston_seat *seat;
+	struct weston_compositor *ec = shsurf->surface->compositor;
+	struct wl_pointer *pointer;
+	int was_unresponsive;
 
 	if (shsurf->ping_timer->serial == serial) {
-		if (shsurf->unresponsive) {
-			/* Received pong from previously unresponsive client */
-			unresponsive_surface_fade(shsurf, true);
-		}
+		was_unresponsive = shsurf->unresponsive;
 		shsurf->unresponsive = 0;
+		if (was_unresponsive) {
+			/* Received pong from previously unresponsive client */
+			wl_list_for_each(seat, &ec->seat_list, link) {
+				pointer = seat->seat.pointer;
+				if (pointer->focus ==
+				    &shell->busy_surface->surface &&
+				    pointer->current ==
+				    &shsurf->surface->surface)
+					end_busy_cursor(shsurf, pointer);
+			}
+		}
 		ping_timer_destroy(shsurf);
 	}
 }
@@ -1223,9 +1263,6 @@ destroy_shell_surface(struct shell_surface *shsurf)
 	shsurf->surface->configure = NULL;
 	ping_timer_destroy(shsurf);
 
-	if (shsurf->unresponsive_animation.exists)
-		wl_list_remove(&shsurf->unresponsive_animation.current.link);
-
 	wl_list_remove(&shsurf->link);
 	free(shsurf);
 }
@@ -1291,9 +1328,6 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 
 	shsurf->shell = (struct desktop_shell *) shell;
 	shsurf->unresponsive = 0;
-	shsurf->unresponsive_animation.exists = 0;
-	shsurf->unresponsive_animation.fading_in = 0;
-	shsurf->unresponsive_animation.current.frame = unresponsive_fade_frame;
 	shsurf->saved_position_valid = false;
 	shsurf->saved_rotation_valid = false;
 	shsurf->surface = surface;
@@ -1522,11 +1556,22 @@ desktop_shell_unlock(struct wl_client *client,
 		resume_desktop(shell);
 }
 
+static void
+desktop_shell_set_busy_surface(struct wl_client *client,
+			       struct wl_resource *resource,
+			       struct wl_resource *surface_resource)
+{
+	struct desktop_shell *shell = resource->data;
+
+	shell->busy_surface = surface_resource->data;
+}
+
 static const struct desktop_shell_interface desktop_shell_implementation = {
 	desktop_shell_set_background,
 	desktop_shell_set_panel,
 	desktop_shell_set_lock_surface,
-	desktop_shell_unlock
+	desktop_shell_unlock,
+	desktop_shell_set_busy_surface
 };
 
 static enum shell_surface_type
@@ -2734,6 +2779,10 @@ shell_init(struct weston_compositor *ec)
 	shell->child.deathstamp = weston_compositor_get_time();
 	if (launch_desktop_shell_process(shell) != 0)
 		return -1;
+
+	shell->pointer_focus_listener.notify = handle_pointer_focus;
+	wl_signal_add(&ec->seat->seat.pointer->focus_signal,
+		      &shell->pointer_focus_listener);
 
 	shell_add_bindings(ec, shell);
 

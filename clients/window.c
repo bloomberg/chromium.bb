@@ -2084,6 +2084,12 @@ input_get_position(struct input *input, int32_t *x, int32_t *y)
 	*y = input->sy;
 }
 
+struct display *
+input_get_display(struct input *input)
+{
+	return input->display;
+}
+
 struct wl_seat *
 input_get_seat(struct input *input)
 {

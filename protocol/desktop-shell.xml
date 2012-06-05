@@ -23,6 +23,10 @@
 
     <request name="unlock"/>
 
+    <request name="set_busy_surface">
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+
     <!-- We'll fold most of wl_shell into this interface and then
          they'll share the configure event.  -->
     <event name="configure">
