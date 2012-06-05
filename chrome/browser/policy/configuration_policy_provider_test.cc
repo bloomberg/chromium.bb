@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/policy/asynchronous_policy_loader.h"
-#include "chrome/browser/policy/asynchronous_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_bundle.h"

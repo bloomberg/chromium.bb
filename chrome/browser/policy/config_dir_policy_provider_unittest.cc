@@ -25,7 +25,7 @@ class TestHarness : public PolicyProviderTestHarness {
 
   virtual void SetUp() OVERRIDE;
 
-  virtual AsynchronousPolicyProvider* CreateProvider(
+  virtual ConfigurationPolicyProvider* CreateProvider(
       const PolicyDefinitionList* policy_definition_list) OVERRIDE;
 
   virtual void InstallEmptyPolicy() OVERRIDE;
@@ -65,7 +65,7 @@ void TestHarness::SetUp() {
   ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
 }
 
-AsynchronousPolicyProvider* TestHarness::CreateProvider(
+ConfigurationPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
   return new ConfigDirPolicyProvider(policy_definition_list,
                                      POLICY_LEVEL_MANDATORY,

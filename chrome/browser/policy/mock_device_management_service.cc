@@ -11,19 +11,16 @@ using testing::Action;
 namespace em = enterprise_management;
 
 namespace policy {
+namespace {
 
-class MockDeviceManagementRequestJob : public DeviceManagementRequestJob {
+// Common mock request job functionality.
+class MockRequestJobBase : public DeviceManagementRequestJob {
  public:
-  MockDeviceManagementRequestJob(
-      JobType type,
-      MockDeviceManagementService* service,
-      DeviceManagementStatus status,
-      const enterprise_management::DeviceManagementResponse& response)
+  MockRequestJobBase(JobType type,
+                     MockDeviceManagementService* service)
       : DeviceManagementRequestJob(type),
-        service_(service),
-        status_(status),
-        response_(response) {}
-  virtual ~MockDeviceManagementRequestJob() {}
+        service_(service) {}
+  virtual ~MockRequestJobBase() {}
 
  protected:
   virtual void Run() OVERRIDE {
@@ -34,7 +31,6 @@ class MockDeviceManagementRequestJob : public DeviceManagementRequestJob {
                        ExtractParameter(dm_protocol::kParamUserAffiliation),
                        ExtractParameter(dm_protocol::kParamDeviceID),
                        request_);
-    callback_.Run(status_, response_);
   }
 
  private:
@@ -51,15 +47,67 @@ class MockDeviceManagementRequestJob : public DeviceManagementRequestJob {
   }
 
   MockDeviceManagementService* service_;
-  DeviceManagementStatus status_;
-  enterprise_management::DeviceManagementResponse response_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockDeviceManagementRequestJob);
+  DISALLOW_COPY_AND_ASSIGN(MockRequestJobBase);
 };
 
-ACTION_P3(CreateMockDeviceManagementRequestJob, service, status, response) {
-  return new MockDeviceManagementRequestJob(arg0, service, status, response);
+// Synchronous mock request job that immediately completes on calling Run().
+class SyncRequestJob : public MockRequestJobBase {
+ public:
+  SyncRequestJob(JobType type,
+                 MockDeviceManagementService* service,
+                 DeviceManagementStatus status,
+                 const em::DeviceManagementResponse& response)
+      : MockRequestJobBase(type, service),
+        status_(status),
+        response_(response) {}
+  virtual ~SyncRequestJob() {}
+
+ protected:
+  virtual void Run() OVERRIDE {
+    MockRequestJobBase::Run();
+    callback_.Run(status_, response_);
+  }
+
+ private:
+  DeviceManagementStatus status_;
+  em::DeviceManagementResponse response_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncRequestJob);
+};
+
+// Asynchronous job that allows the test to delay job completion.
+class AsyncRequestJob : public MockRequestJobBase,
+                        public MockDeviceManagementJob {
+ public:
+  AsyncRequestJob(JobType type, MockDeviceManagementService* service)
+      : MockRequestJobBase(type, service) {}
+  virtual ~AsyncRequestJob() {}
+
+ protected:
+  virtual void SendResponse(
+      DeviceManagementStatus status,
+      const em::DeviceManagementResponse& response) OVERRIDE {
+    callback_.Run(status, response);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AsyncRequestJob);
+};
+
+}  // namespace
+
+ACTION_P3(CreateSyncMockDeviceManagementJob, service, status, response) {
+  return new SyncRequestJob(arg0, service, status, response);
 }
+
+ACTION_P2(CreateAsyncMockDeviceManagementJob, service, mock_job) {
+  AsyncRequestJob* job = new AsyncRequestJob(arg0, service);
+  *mock_job = job;
+  return job;
+}
+
+MockDeviceManagementJob::~MockDeviceManagementJob() {}
 
 MockDeviceManagementService::MockDeviceManagementService()
     : DeviceManagementService("") {}
@@ -68,15 +116,19 @@ MockDeviceManagementService::~MockDeviceManagementService() {}
 
 Action<MockDeviceManagementService::CreateJobFunction>
     MockDeviceManagementService::SucceedJob(
-        const enterprise_management::DeviceManagementResponse& response) {
-  return CreateMockDeviceManagementRequestJob(this, DM_STATUS_SUCCESS,
-                                              response);
+        const em::DeviceManagementResponse& response) {
+  return CreateSyncMockDeviceManagementJob(this, DM_STATUS_SUCCESS, response);
 }
 
 Action<MockDeviceManagementService::CreateJobFunction>
     MockDeviceManagementService::FailJob(DeviceManagementStatus status) {
-  const enterprise_management::DeviceManagementResponse dummy_response;
-  return CreateMockDeviceManagementRequestJob(this, status, dummy_response);
+  const em::DeviceManagementResponse dummy_response;
+  return CreateSyncMockDeviceManagementJob(this, status, dummy_response);
+}
+
+Action<MockDeviceManagementService::CreateJobFunction>
+    MockDeviceManagementService::CreateAsyncJob(MockDeviceManagementJob** job) {
+  return CreateAsyncMockDeviceManagementJob(this, job);
 }
 
 }  // namespace policy

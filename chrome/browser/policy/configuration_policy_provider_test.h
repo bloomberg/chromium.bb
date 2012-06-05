@@ -24,7 +24,7 @@ class Value;
 
 namespace policy {
 
-class AsynchronousPolicyProvider;
+class ConfigurationPolicyProvider;
 struct PolicyDefinitionList;
 
 // A stripped-down policy definition list that contains entries for the
@@ -57,7 +57,7 @@ class PolicyProviderTestHarness {
   virtual void SetUp() = 0;
 
   // Create a new policy provider.
-  virtual AsynchronousPolicyProvider* CreateProvider(
+  virtual ConfigurationPolicyProvider* CreateProvider(
       const PolicyDefinitionList* policy_definition_list) = 0;
 
   // Returns the policy level and scope set by the policy provider.
@@ -108,7 +108,7 @@ class ConfigurationPolicyProviderTest
                   base::Closure install_value);
 
   scoped_ptr<PolicyProviderTestHarness> test_harness_;
-  scoped_ptr<AsynchronousPolicyProvider> provider_;
+  scoped_ptr<ConfigurationPolicyProvider> provider_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderTest);

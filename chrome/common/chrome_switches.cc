@@ -486,6 +486,9 @@ const char kEnableBundledPpapiFlash[]       = "enable-bundled-ppapi-flash";
 // This switch is not currently respected; use the disable switch instead.
 const char kEnableChromeToMobile[]          = "enable-chrome-to-mobile";
 
+// Enables the new cloud policy stack.
+const char kEnableCloudPolicyService[]      = "enable-cloud-policy-service";
+
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";

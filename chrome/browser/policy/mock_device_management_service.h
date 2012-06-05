@@ -10,9 +10,18 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
+
+class MockDeviceManagementJob {
+ public:
+  virtual ~MockDeviceManagementJob();
+  virtual void SendResponse(
+      DeviceManagementStatus status,
+      const enterprise_management::DeviceManagementResponse& response) = 0;
+};
 
 class MockDeviceManagementService : public DeviceManagementService {
  public:
@@ -36,8 +45,14 @@ class MockDeviceManagementService : public DeviceManagementService {
   // Creates a gmock action that will make the job succeed.
   testing::Action<CreateJobFunction> SucceedJob(
       const enterprise_management::DeviceManagementResponse& response);
+
   // Creates a gmock action which will fail the job with the given error.
   testing::Action<CreateJobFunction> FailJob(DeviceManagementStatus status);
+
+  // Creates a gmock action which will capture the job so the test code can
+  // delay job completion.
+  testing::Action<CreateJobFunction> CreateAsyncJob(
+      MockDeviceManagementJob** job);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDeviceManagementService);

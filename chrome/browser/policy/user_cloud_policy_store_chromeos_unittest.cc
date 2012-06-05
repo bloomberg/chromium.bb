@@ -15,6 +15,8 @@
 #include "chromeos/dbus/mock_session_manager_client.h"
 #include "content/public/test/test_browser_thread.h"
 #include "policy/policy_constants.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace em = enterprise_management;
 

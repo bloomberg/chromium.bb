@@ -12,12 +12,16 @@ namespace em = enterprise_management;
 namespace policy {
 
 CloudPolicyService::CloudPolicyService(scoped_ptr<CloudPolicyClient> client,
-                                       scoped_ptr<CloudPolicyStore> store)
+                                       CloudPolicyStore* store)
     : client_(client.Pass()),
-      store_(store.Pass()),
+      store_(store),
       refresh_state_(REFRESH_NONE) {
   client_->AddObserver(this);
   store_->AddObserver(this);
+
+  // Make sure we initialize |client_| from the policy data that might be
+  // already present in |store_|.
+  OnStoreLoaded(store_);
 }
 
 CloudPolicyService::~CloudPolicyService() {

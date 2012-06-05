@@ -64,7 +64,7 @@ class TestHarness : public PolicyProviderTestHarness {
 
   virtual void SetUp() OVERRIDE;
 
-  virtual AsynchronousPolicyProvider* CreateProvider(
+  virtual ConfigurationPolicyProvider* CreateProvider(
       const PolicyDefinitionList* policy_definition_list) OVERRIDE;
 
   virtual void InstallEmptyPolicy() OVERRIDE;
@@ -139,7 +139,7 @@ TestHarness::~TestHarness() {}
 
 void TestHarness::SetUp() {}
 
-AsynchronousPolicyProvider* TestHarness::CreateProvider(
+ConfigurationPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
   return new ConfigurationPolicyProviderWin(policy_definition_list);
 }

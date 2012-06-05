@@ -26,7 +26,7 @@ class CloudPolicyService : public CloudPolicyClient::Observer,
                            public CloudPolicyStore::Observer {
  public:
   CloudPolicyService(scoped_ptr<CloudPolicyClient> client,
-                     scoped_ptr<CloudPolicyStore> store);
+                     CloudPolicyStore* store);
   virtual ~CloudPolicyService();
 
   // Returns the domain that manages this user/device, according to the current
@@ -38,7 +38,7 @@ class CloudPolicyService : public CloudPolicyClient::Observer,
   void RefreshPolicy(const base::Closure& callback);
 
   CloudPolicyClient* client() { return client_.get(); }
-  CloudPolicyStore* store() { return store_.get(); }
+  CloudPolicyStore* store() { return store_; }
 
   // CloudPolicyClient::Observer:
   virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;
@@ -57,7 +57,7 @@ class CloudPolicyService : public CloudPolicyClient::Observer,
   scoped_ptr<CloudPolicyClient> client_;
 
   // Takes care of persisting and decoding cloud policy.
-  scoped_ptr<CloudPolicyStore> store_;
+  CloudPolicyStore* store_;
 
   // Tracks the state of a pending refresh operation, if any.
   enum {
