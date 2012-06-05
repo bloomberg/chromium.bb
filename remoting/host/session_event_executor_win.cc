@@ -50,7 +50,9 @@ SessionEventExecutorWin::SessionEventExecutorWin(
     base::MessageLoopProxy* io_message_loop,
     scoped_ptr<EventExecutor> nested_executor)
     : nested_executor_(nested_executor.Pass()),
-      message_loop_(message_loop) {
+      message_loop_(message_loop),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_ptr_(weak_ptr_factory_.GetWeakPtr()) {
   std::string channel_name =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kProcessChannelId);
 
@@ -66,6 +68,7 @@ SessionEventExecutorWin::SessionEventExecutorWin(
 }
 
 SessionEventExecutorWin::~SessionEventExecutorWin() {
+  DCHECK(MessageLoop::current() == message_loop_);
 }
 
 void SessionEventExecutorWin::OnSessionStarted(
@@ -74,7 +77,7 @@ void SessionEventExecutorWin::OnSessionStarted(
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&SessionEventExecutorWin::OnSessionStarted,
-                   base::Unretained(this), base::Passed(&client_clipboard)));
+                   weak_ptr_, base::Passed(&client_clipboard)));
     return;
   }
 
@@ -86,7 +89,7 @@ void SessionEventExecutorWin::OnSessionFinished() {
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&SessionEventExecutorWin::OnSessionFinished,
-                   base::Unretained(this)));
+                   weak_ptr_));
     return;
   }
 
@@ -99,7 +102,7 @@ void SessionEventExecutorWin::InjectClipboardEvent(
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&SessionEventExecutorWin::InjectClipboardEvent,
-                   base::Unretained(this), event));
+                   weak_ptr_, event));
     return;
   }
 
@@ -111,7 +114,7 @@ void SessionEventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&SessionEventExecutorWin::InjectKeyEvent,
-                   base::Unretained(this), event));
+                   weak_ptr_, event));
     return;
   }
 
@@ -143,7 +146,7 @@ void SessionEventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&SessionEventExecutorWin::InjectMouseEvent,
-                   base::Unretained(this), event));
+                   weak_ptr_, event));
     return;
   }
 

@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ipc/ipc_channel.h"
 
 #include "remoting/host/event_executor.h"
@@ -66,6 +67,9 @@ class SessionEventExecutorWin : public EventExecutor,
 
   // Keys currently pressed by the client, used to detect Ctrl-Alt-Del.
   std::set<uint32> pressed_keys_;
+
+  base::WeakPtrFactory<SessionEventExecutorWin> weak_ptr_factory_;
+  base::WeakPtr<SessionEventExecutorWin> weak_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionEventExecutorWin);
 };
