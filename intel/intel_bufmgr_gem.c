@@ -119,6 +119,7 @@ typedef struct _drm_intel_bufmgr_gem {
 	unsigned int has_blt : 1;
 	unsigned int has_relaxed_fencing : 1;
 	unsigned int has_llc : 1;
+	unsigned int has_wait_timeout : 1;
 	unsigned int bo_reuse : 1;
 	unsigned int no_exec : 1;
 	bool fenced_relocs;
@@ -1476,6 +1477,58 @@ static void
 drm_intel_gem_bo_wait_rendering(drm_intel_bo *bo)
 {
 	drm_intel_gem_bo_start_gtt_access(bo, 1);
+}
+
+/**
+ * Waits on a BO for the given amount of time.
+ *
+ * @bo: buffer object to wait for
+ * @timeout_ns: amount of time to wait in nanoseconds.
+ *   If value is less than 0, an infinite wait will occur.
+ *
+ * Returns 0 if the wait was successful ie. the last batch referencing the
+ * object has completed within the allotted time. Otherwise some negative return
+ * value describes the error. Of particular interest is -ETIME when the wait has
+ * failed to yield the desired result.
+ *
+ * Similar to drm_intel_gem_bo_wait_rendering except a timeout parameter allows
+ * the operation to give up after a certain amount of time. Another subtle
+ * difference is the internal locking semantics are different (this variant does
+ * not hold the lock for the duration of the wait). This makes the wait subject
+ * to a larger userspace race window.
+ *
+ * The implementation shall wait until the object is no longer actively
+ * referenced within a batch buffer at the time of the call. The wait will
+ * not guarantee that the buffer is re-issued via another thread, or an flinked
+ * handle. Userspace must make sure this race does not occur if such precision
+ * is important.
+ */
+int drm_intel_gem_bo_wait(drm_intel_bo *bo, int64_t timeout_ns)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	struct drm_i915_gem_wait wait;
+	int ret;
+
+	if (!bufmgr_gem->has_wait_timeout) {
+		DBG("%s:%d: Timed wait is not supported. Falling back to "
+		    "infinite wait\n", __FILE__, __LINE__);
+		if (timeout_ns) {
+			drm_intel_gem_bo_wait_rendering(bo);
+			return 0;
+		} else {
+			return drm_intel_gem_bo_busy(bo) ? -ETIME : 0;
+		}
+	}
+
+	wait.bo_handle = bo_gem->gem_handle;
+	wait.timeout_ns = timeout_ns;
+	wait.flags = 0;
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_WAIT, &wait);
+	if (ret == -1)
+		return -errno;
+
+	return ret;
 }
 
 /**
@@ -2897,6 +2950,10 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	gp.param = I915_PARAM_HAS_RELAXED_FENCING;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
 	bufmgr_gem->has_relaxed_fencing = ret == 0;
+
+	gp.param = I915_PARAM_HAS_WAIT_TIMEOUT;
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
+	bufmgr_gem->has_wait_timeout = ret == 0;
 
 	gp.param = I915_PARAM_HAS_LLC;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);

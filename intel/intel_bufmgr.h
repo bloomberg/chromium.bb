@@ -184,6 +184,7 @@ int drm_intel_get_pipe_from_crtc_id(drm_intel_bufmgr *bufmgr, int crtc_id);
 
 int drm_intel_get_aperture_sizes(int fd, size_t *mappable, size_t *total);
 int drm_intel_bufmgr_gem_get_devid(drm_intel_bufmgr *bufmgr);
+int drm_intel_gem_bo_wait(drm_intel_bo *bo, int64_t timeout_ns);
 
 /* drm_intel_bufmgr_fake.c */
 drm_intel_bufmgr *drm_intel_bufmgr_fake_init(int fd,
