@@ -227,8 +227,6 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->compositor = compositor;
 	surface->image = EGL_NO_IMAGE_KHR;
 	surface->alpha = 1.0;
-	surface->brightness = 1.0;
-	surface->saturation = 1.0;
 	surface->blend = 1;
 	surface->opaque_rect[0] = 0.0;
 	surface->opaque_rect[1] = 0.0;
@@ -878,8 +876,6 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 	glUniform1i(es->shader->tex_uniform, 0);
 	glUniform4fv(es->shader->color_uniform, 1, es->color);
 	glUniform1f(es->shader->alpha_uniform, es->alpha);
-	glUniform1f(es->shader->brightness_uniform, es->brightness);
-	glUniform1f(es->shader->saturation_uniform, es->saturation);
 	glUniform1f(es->shader->texwidth_uniform,
 		    (GLfloat)es->geometry.width / es->pitch);
 	if (es->blend)
@@ -2639,7 +2635,6 @@ static const char texture_fragment_shader[] =
 	"uniform sampler2D tex;\n"
 	"uniform float alpha;\n"
 	"uniform float bright;\n"
-	"uniform float saturation;\n"
 	"uniform float texwidth;\n"
 	"uniform vec4 opaque;\n"
 	"void main()\n"
@@ -2648,10 +2643,6 @@ static const char texture_fragment_shader[] =
 	"       v_texcoord.y < 0.0 || v_texcoord.y > 1.0)\n"
 	"      discard;\n"
 	"   gl_FragColor = texture2D(tex, v_texcoord)\n;"
-	"   float gray = dot(gl_FragColor.rgb, vec3(0.299, 0.587, 0.114));\n"
-	"   vec3 range = (gl_FragColor.rgb - vec3 (gray, gray, gray)) * saturation;\n"
-	"   gl_FragColor = vec4(vec3(gray + range), gl_FragColor.a);\n"
-	"   gl_FragColor = vec4(vec3(bright, bright, bright) * gl_FragColor.rgb, gl_FragColor.a);\n"
 	"   if (opaque.x <= v_texcoord.x && v_texcoord.x < opaque.y &&\n"
 	"       opaque.z <= v_texcoord.y && v_texcoord.y < opaque.w)\n"
 	"      gl_FragColor.a = 1.0;\n"
@@ -2716,8 +2707,6 @@ weston_shader_init(struct weston_shader *shader,
 	shader->proj_uniform = glGetUniformLocation(shader->program, "proj");
 	shader->tex_uniform = glGetUniformLocation(shader->program, "tex");
 	shader->alpha_uniform = glGetUniformLocation(shader->program, "alpha");
-	shader->brightness_uniform = glGetUniformLocation(shader->program, "bright");
-	shader->saturation_uniform = glGetUniformLocation(shader->program, "saturation");
 	shader->color_uniform = glGetUniformLocation(shader->program, "color");
 	shader->texwidth_uniform = glGetUniformLocation(shader->program, "texwidth");
 	shader->opaque_uniform = glGetUniformLocation(shader->program, "opaque");
