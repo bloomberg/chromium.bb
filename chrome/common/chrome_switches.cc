@@ -261,6 +261,10 @@ const char kDisableBackgroundNetworking[]   = "disable-background-networking";
 // Disables the bundled PPAPI version of Flash (if it's enabled by default).
 const char kDisableBundledPpapiFlash[]      = "disable-bundled-ppapi-flash";
 
+// Disable the ClientOAuth signin flow for connecting a profile to a Google
+// account.  When disabled, Chrome will use the ClientLogin flow instead.
+const char kDisableClientOAuthSignin[]      = "disable-client-oauth-signin";
+
 // Disables Chrome To Mobile.
 const char kDisableChromeToMobile[]         = "disable-chrome-to-mobile";
 
@@ -477,10 +481,6 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 
 // Enables the bundled PPAPI version of Flash.
 const char kEnableBundledPpapiFlash[]       = "enable-bundled-ppapi-flash";
-
-// Enables the new ClientOAuth signin flow for connecting a profile a Google
-// account.  When disabled, Chrome will use the ClientLogin flow instead.
-const char kEnableClientOAuthSignin[]       = "enable-client-oauth-signin";
 
 // Enables Chrome To Mobile.
 // This switch is not currently respected; use the disable switch instead.

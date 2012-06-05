@@ -186,8 +186,8 @@ bool AreUserNamesEqual(const string16& user1, const string16& user2) {
 }
 
 bool IsClientOAuthEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableClientOAuthSignin);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableClientOAuthSignin);
 }
 
 }  // namespace

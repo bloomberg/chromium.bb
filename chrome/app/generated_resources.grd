@@ -16378,12 +16378,12 @@ Battery full
       Dark Theme
     </message>
 
-    <message name="IDS_FLAGS_ENABLE_CLIENT_OAUTH_SIGNIN_NAME" desc="Name of about:flag option to turn on ClientOAuth sign in">
-      Enable ClientOAuth signin
+    <message name="IDS_FLAGS_DISABLE_CLIENT_OAUTH_SIGNIN_NAME" desc="Name of about:flag option to turn off ClientOAuth sign in">
+      Use ClientLogin signin
     </message>
-    <message name="IDS_FLAGS_ENABLE_CLIENT_OAUTH_SIGNIN_DESCRIPTION" desc="Description of about:flag option to turn on ClientOAuth sign in">
-      When enabled, will use ClientOAuth to connect a profile to a Google account.  Otherwise ClientLogin is used.
-      ClientOAuth permits using verification codes instead of ASPs during authentication.
+    <message name="IDS_FLAGS_DISABLE_CLIENT_OAUTH_SIGNIN_DESCRIPTION" desc="Description of about:flag option to turn off ClientOAuth sign in">
+      Enable this option to use ClientLogin to connect a profile to a Google account instead of ClientOAuth.
+      ClientLogin uses ASPs during authentication. ClientOAuth uses verification codes (i.e. OTPs) during authentication.
     </message>
 
     </messages>

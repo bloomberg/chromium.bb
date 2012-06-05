@@ -25,6 +25,11 @@ class FakeSigninManager : public SigninManager {
                            const std::string& password,
                            const std::string& login_token,
                            const std::string& login_captcha) OVERRIDE;
+  virtual void StartSignInWithCredentials(const std::string& session_index,
+                                          const std::string& username,
+                                          const std::string& password) OVERRIDE;
+  virtual void StartSignInWithOAuth(const std::string& username,
+                                    const std::string& password) OVERRIDE;
   virtual void SignOut() OVERRIDE;
 
   // Helper function to be used with ProfileKeyedService::SetTestingFactory().

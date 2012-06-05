@@ -703,11 +703,11 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-client-oauth-signin",
-    IDS_FLAGS_ENABLE_CLIENT_OAUTH_SIGNIN_NAME,
-    IDS_FLAGS_ENABLE_CLIENT_OAUTH_SIGNIN_DESCRIPTION,
+    "disable-client-oauth-signin",
+    IDS_FLAGS_DISABLE_CLIENT_OAUTH_SIGNIN_NAME,
+    IDS_FLAGS_DISABLE_CLIENT_OAUTH_SIGNIN_DESCRIPTION,
     kOsMac | kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kEnableClientOAuthSignin)
+    SINGLE_VALUE_TYPE(switches::kDisableClientOAuthSignin)
   },
 #if defined(USE_ASH)
   {

@@ -15,6 +15,18 @@ void FakeSigninManager::StartSignIn(const std::string& username,
   SetAuthenticatedUsername(username);
 }
 
+void FakeSigninManager::StartSignInWithCredentials(
+    const std::string& session_index,
+    const std::string& username,
+    const std::string& password) {
+  SetAuthenticatedUsername(username);
+}
+
+void FakeSigninManager::StartSignInWithOAuth(const std::string& username,
+                                             const std::string& password) {
+  SetAuthenticatedUsername(username);
+}
+
 void FakeSigninManager::SignOut() {
   authenticated_username_.clear();
 }

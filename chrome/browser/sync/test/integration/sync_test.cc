@@ -426,6 +426,21 @@ void SyncTest::SetupMockGaiaResponses() {
       "  \"token_type\": \"Bearer\""
       "}",
       true);
+  fake_factory_->SetFakeResponse(
+      GaiaUrls::GetInstance()->client_oauth_url(),
+      "{"
+      "  \"oauth2\": {"
+      "    \"refresh_token\": \"rt1\","
+      "    \"access_token\": \"at1\","
+      "    \"expires_in\": 3600,"
+      "    \"token_type\": \"Bearer\""
+      "  }"
+      "}",
+      true);
+  fake_factory_->SetFakeResponse(
+      GaiaUrls::GetInstance()->oauth1_login_url(),
+      "SID=sid\nLSID=lsid\nAuth=auth_token",
+      true);
 }
 
 // Start up a local sync server based on the value of server_type_, which
