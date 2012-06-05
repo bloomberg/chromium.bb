@@ -245,3 +245,7 @@ html[dir='rtl'] #extension-settings .trash {
 .extension-list-item-wrapper.may-not-disable .trash {
   visibility: hidden;
 }
+
+.may-not-disable .optional-controls {
+  display: none;
+}
