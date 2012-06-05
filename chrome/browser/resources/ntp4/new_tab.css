@@ -402,7 +402,7 @@ html[dir='rtl'] #chrome-web-store-title {
 }
 
 #footer .menu-container {
-  -webkit-flex-align: center;
+  -webkit-align-items: center;
   /* Put menus in a flexible box so the order can easily be swapped. */
   display: -webkit-flex;
   height: 100%;
