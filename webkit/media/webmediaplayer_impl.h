@@ -70,6 +70,7 @@ class WebFrame;
 }
 
 namespace media {
+class AesDecryptor;
 class MediaLog;
 }
 
@@ -278,6 +279,9 @@ class WebMediaPlayerImpl
   // relying on Pipeline to take care of default values.
   scoped_refptr<media::Pipeline> pipeline_;
   bool started_;
+
+  // The decryptor that manages decryption keys and decrypts encrypted frames.
+  scoped_ptr<media::AesDecryptor> decryptor_;
 
   scoped_ptr<media::MessageLoopFactory> message_loop_factory_;
 

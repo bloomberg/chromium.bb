@@ -21,6 +21,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
+#include "media/crypto/aes_decryptor.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/video_renderer_base.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
@@ -145,6 +146,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // Create default audio renderer.
   filter_collection_->AddAudioRenderer(
       new media::AudioRendererImpl(new media::NullAudioSink()));
+
+  decryptor_.reset(new media::AesDecryptor());
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
@@ -224,6 +227,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   if (BuildMediaSourceCollection(url, GetClient()->sourceURL(), proxy_,
                                  message_loop_factory_.get(),
                                  filter_collection_.get(),
+                                 decryptor_.get(),
                                  &video_decoder)) {
     proxy_->set_video_decoder(video_decoder);
     StartPipeline();
@@ -242,6 +246,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   BuildDefaultCollection(proxy_->data_source(),
                          message_loop_factory_.get(),
                          filter_collection_.get(),
+                         decryptor_.get(),
                          &video_decoder);
   proxy_->set_video_decoder(video_decoder);
 }
@@ -774,8 +779,7 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
       init_data_length = arraysize(kDummyInitData);
     }
 
-    proxy_->video_decoder()->decryptor()->AddKey(init_data, init_data_length,
-                                                 key, key_length);
+    decryptor_->AddKey(init_data, init_data_length, key, key_length);
 
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &WebKit::WebMediaPlayerClient::keyAdded,
