@@ -564,7 +564,7 @@ void OmxVideoDecodeAccelerator::BusyLoopInDestroying() {
   if (!component_handle_) return;
   // Can't use PostDelayedTask here because MessageLoop doesn't drain delayed
   // tasks.  Instead we sleep for 5ms.  Really.
-  base::PlatformThread::Sleep(5);
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(5));
   message_loop_->PostTask(
       FROM_HERE, base::Bind(
           &OmxVideoDecodeAccelerator::BusyLoopInDestroying, this));
