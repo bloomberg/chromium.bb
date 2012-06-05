@@ -410,19 +410,35 @@ void ExistingUserController::LoginAsGuest() {
   // Disable clicking on other windows.
   login_display_->SetUIEnabled(false);
 
-  // Check allow_guest in case this call is fired from key accelerator.
+  CrosSettingsProvider::TrustedStatus status =
+      cros_settings_->PrepareTrustedValues(
+          base::Bind(&ExistingUserController::LoginAsGuest,
+                     weak_factory_.GetWeakPtr()));
   // Must not proceed without signature verification.
-  if (CrosSettingsProvider::TRUSTED != cros_settings_->PrepareTrustedValues(
-      base::Bind(&ExistingUserController::LoginAsGuest,
-                 weak_factory_.GetWeakPtr()))) {
-    // Value of AllowGuest setting is still not verified.
-    // Another attempt will be invoked again after verification completion.
+  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+    login_display_->ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST, 1,
+                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+    // Reenable clicking on other windows and status area.
+    login_display_->SetUIEnabled(true);
+    display_email_.clear();
+    return;
+  } else if (status != CrosSettingsProvider::TRUSTED) {
+    // Value of AllowNewUser setting is still not verified.
+    // Another attempt will be invoked after verification completion.
     return;
   }
+
   bool allow_guest;
   cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
   if (!allow_guest) {
-    // Disallowed.
+    // Disallowed. The UI should normally not show the guest pod but if for some
+    // reason this has been made available to the user here is the time to tell
+    // this nicely.
+    login_display_->ShowError(IDS_LOGIN_ERROR_WHITELIST, 1,
+                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+    // Reenable clicking on other windows and status area.
+    login_display_->SetUIEnabled(true);
+    display_email_.clear();
     return;
   }
 
@@ -664,6 +680,15 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
     login_status_consumer_->OnLoginFailure(LoginFailure(
           LoginFailure::WHITELIST_CHECK_FAILED));
   }
+
+  display_email_.clear();
+}
+
+void ExistingUserController::PolicyLoadFailed() {
+  ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST, "");
+
+  // Reenable clicking on other windows and status area.
+  login_display_->SetUIEnabled(true);
 
   display_email_.clear();
 }

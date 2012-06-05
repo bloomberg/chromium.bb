@@ -9,8 +9,10 @@
 cr.define('login', function() {
   /**
    * Maximum number of offline login failures before online login.
+     @type {number}
+     @const
    */
-  const MAX_LOGIN_ATTEMPTS_IN_POD = 3;
+  var MAX_LOGIN_ATTEMPTS_IN_POD = 3;
 
   /**
    * Creates a new account picker screen div.
@@ -37,7 +39,7 @@ cr.define('login', function() {
     },
 
     // Whether this screen is shown for the first time.
-    firstShown_ : true,
+    firstShown_: true,
 
     /**
      * When the account picker is being used to lock the screen, pressing the
@@ -55,7 +57,7 @@ cr.define('login', function() {
 
     /**
      * Event handler that is invoked just before the frame is shown.
-     * @param data {string} Screen init payload.
+     * @param {string} data Screen init payload.
      */
     onBeforeShow: function(data) {
       chrome.send('hideCaptivePortal');
@@ -114,7 +116,7 @@ cr.define('login', function() {
 
      /**
       * Event handler that is invoked just before the frame is hidden.
-      * @param data {string} Screen init payload.
+      * @param {string} data Screen init payload.
       */
     onBeforeHide: function(data) {
       $('pod-row').handleHide();
@@ -127,8 +129,11 @@ cr.define('login', function() {
      */
     showErrorBubble: function(loginAttempts, error) {
       var activatedPod = $('pod-row').activatedPod;
-      if (!activatedPod)
+      if (!activatedPod) {
+        $('bubble').showContentForElement($('pod-row'), error,
+                                          cr.ui.Bubble.Attachment.RIGHT);
         return;
+      }
       if (loginAttempts > MAX_LOGIN_ATTEMPTS_IN_POD) {
         activatedPod.showSigninUI();
       } else {
@@ -142,7 +147,6 @@ cr.define('login', function() {
    * Loads givens users in pod row.
    * @param {array} users Array of user.
    * @param {boolean} animated Whether to use init animation.
-   * @public
    */
   AccountPickerScreen.loadUsers = function(users, animated) {
     $('pod-row').loadPods(users, animated);
@@ -151,7 +155,6 @@ cr.define('login', function() {
   /**
    * Updates current image of a user.
    * @param {string} username User for which to update the image.
-   * @public
    */
   AccountPickerScreen.updateUserImage = function(username) {
     $('pod-row').updateUserImage(username);
@@ -160,7 +163,6 @@ cr.define('login', function() {
   /**
    * Updates user to use gaia login.
    * @param {string} username User for which to state the state.
-   * @public
    */
   AccountPickerScreen.updateUserGaiaNeeded = function(username) {
     $('pod-row').resetUserOAuthTokenStatus(username);
@@ -169,7 +171,6 @@ cr.define('login', function() {
   /**
    * Updates Caps Lock state (for Caps Lock hint in password input field).
    * @param {boolean} enabled Whether Caps Lock is on.
-   * @public
    */
   AccountPickerScreen.setCapsLockState = function(enabled) {
     $('pod-row').classList[enabled ? 'add' : 'remove']('capslock-on');

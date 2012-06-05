@@ -114,6 +114,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void OnOffTheRecordLoginSuccess() OVERRIDE;
   virtual void OnPasswordChangeDetected() OVERRIDE;
   virtual void WhiteListCheckFailed(const std::string& email) OVERRIDE;
+  virtual void PolicyLoadFailed() OVERRIDE;
   virtual void OnOnlineChecked(
       const std::string& username, bool success) OVERRIDE;
 

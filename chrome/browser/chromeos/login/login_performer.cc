@@ -268,11 +268,19 @@ void LoginPerformer::CompleteLogin(const std::string& username,
   // Whitelist check is always performed during initial login and
   // should not be performed when ScreenLock is active (pending online auth).
   if (!ScreenLocker::default_screen_locker()) {
-    // Must not proceed without signature verification or valid user list.
-    if (CrosSettingsProvider::TRUSTED != cros_settings->PrepareTrustedValues(
+    CrosSettingsProvider::TrustedStatus status =
+        cros_settings->PrepareTrustedValues(
             base::Bind(&LoginPerformer::CompleteLogin,
                        weak_factory_.GetWeakPtr(),
-                       username, password))) {
+                       username, password));
+    // Must not proceed without signature verification.
+    if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+      if (delegate_)
+        delegate_->PolicyLoadFailed();
+      else
+        NOTREACHED();
+      return;
+    } else if (status != CrosSettingsProvider::TRUSTED) {
       // Value of AllowNewUser setting is still not verified.
       // Another attempt will be invoked after verification completion.
       return;
@@ -303,11 +311,19 @@ void LoginPerformer::Login(const std::string& username,
   // Whitelist check is always performed during initial login and
   // should not be performed when ScreenLock is active (pending online auth).
   if (!ScreenLocker::default_screen_locker()) {
-    // Must not proceed without signature verification.
-    if (CrosSettingsProvider::TRUSTED != cros_settings->PrepareTrustedValues(
+    CrosSettingsProvider::TrustedStatus status =
+        cros_settings->PrepareTrustedValues(
             base::Bind(&LoginPerformer::Login,
                        weak_factory_.GetWeakPtr(),
-                       username, password))) {
+                       username, password));
+    // Must not proceed without signature verification.
+    if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+      if (delegate_)
+        delegate_->PolicyLoadFailed();
+      else
+        NOTREACHED();
+      return;
+    } else if (status != CrosSettingsProvider::TRUSTED) {
       // Value of AllowNewUser setting is still not verified.
       // Another attempt will be invoked after verification completion.
       return;
