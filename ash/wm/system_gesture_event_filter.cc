@@ -78,6 +78,9 @@ class SystemPinchHandler {
             wm::MaximizeWindow(target_);
           } else if (phantom_state_ == PHANTOM_WINDOW_MINIMIZED) {
             wm::MinimizeWindow(target_);
+            // NOTE: Minimizing the window will cause this handler to be
+            // destroyed. So do not access anything from |this| from here.
+            return SYSTEM_GESTURE_END;
           } else {
             gfx::Rect bounds = phantom_.IsShowing() ?  phantom_.bounds() :
               target_->bounds();
@@ -360,7 +363,10 @@ void SystemGestureEventFilter::OnWindowDestroying(aura::Window* window) {
 void SystemGestureEventFilter::ClearGestureHandlerForWindow(
     aura::Window* window) {
   WindowPinchHandlerMap::iterator find = pinch_handlers_.find(window);
-  DCHECK(find != pinch_handlers_.end());
+  if (find == pinch_handlers_.end()) {
+    // The handler may have already been removed.
+    return;
+  }
   delete (*find).second;
   pinch_handlers_.erase(find);
   window->RemoveObserver(this);
