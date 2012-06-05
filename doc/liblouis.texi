@@ -1765,8 +1765,8 @@ contraction and cursor behaviour.
 @item mode
 The liblouis translation mode that should be used for this test
 (optional). If not defined defaults to 0.
-@item type
-The optional type field can have three values: "translate" (default if undeclaired), "backtranslate" or "hyphenate".
+@item testmode
+The optional testmode field can have three values: "translate" (default if undeclaired), "backtranslate" or "hyphenate".
 Declares what tests should be performed on the test data.
 @end table
 
