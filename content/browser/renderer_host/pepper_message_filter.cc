@@ -47,6 +47,8 @@
 
 #ifdef OS_WIN
 #include <windows.h>
+#elif defined(OS_MACOSX)
+#include <CoreServices/CoreServices.h>
 #endif
 
 using content::BrowserThread;
@@ -641,6 +643,8 @@ void PepperMessageFilter::OnUpdateActivity() {
   int value = 0;
   if (SystemParametersInfo(SPI_GETSCREENSAVETIMEOUT, 0, &value, 0))
     SystemParametersInfo(SPI_SETSCREENSAVETIMEOUT, value, NULL, 0);
+#elif defined(OS_MACOSX)
+  UpdateSystemActivity(OverallAct);
 #else
   // TODO(brettw) implement this for other platforms.
 #endif
