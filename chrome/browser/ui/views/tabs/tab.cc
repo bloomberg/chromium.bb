@@ -125,6 +125,25 @@ int drop_shadow_height() {
   return value;
 }
 
+// Size of icon used for throbber and favicon next to tab title.
+int tab_icon_size() {
+  static int value = -1;
+  if (value == -1) {
+    switch (ui::GetDisplayLayout()) {
+      case ui::LAYOUT_ASH:
+      case ui::LAYOUT_DESKTOP:
+        value = gfx::kFaviconSize;
+        break;
+      case ui::LAYOUT_TOUCH:
+        value = 20;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+  return value;
+}
+
 // Width of touch tabs.
 static const int kTouchWidth = 180;
 
@@ -147,7 +166,6 @@ static const int kCloseButtonVertFuzz = 1;
 #else
 static const int kCloseButtonVertFuzz = 0;
 #endif
-static const int kTabIconSize = gfx::kFaviconSize;
 // Additional horizontal offset for close button relative to title text.
 static const int kCloseButtonHorzFuzz = 7;
 
@@ -361,7 +379,7 @@ void Tab::Layout() {
 
   // The height of the content of the Tab is the largest of the favicon,
   // the title text and the close button graphic.
-  int content_height = std::max(kTabIconSize, font_height());
+  int content_height = std::max(tab_icon_size(), font_height());
   gfx::Size close_button_size(close_button()->GetPreferredSize());
   content_height = std::max(content_height, close_button_size.height());
 
@@ -369,17 +387,17 @@ void Tab::Layout() {
   showing_icon_ = ShouldShowIcon();
   if (showing_icon_) {
     // Use the size of the favicon as apps use a bigger favicon size.
-    int favicon_top = top_padding() + content_height / 2 - kTabIconSize / 2;
+    int favicon_top = top_padding() + content_height / 2 - tab_icon_size() / 2;
     int favicon_left = lb.x();
     favicon_bounds_.SetRect(favicon_left, favicon_top,
-                            kTabIconSize, kTabIconSize);
+                            tab_icon_size(), tab_icon_size());
     if (data().mini && width() < kMiniTabRendererAsNormalTabWidth) {
       // Adjust the location of the favicon when transitioning from a normal
       // tab to a mini-tab.
       int mini_delta = kMiniTabRendererAsNormalTabWidth - GetMiniWidth();
       int ideal_delta = width() - GetMiniWidth();
       if (ideal_delta < mini_delta) {
-        int ideal_x = (GetMiniWidth() - kTabIconSize) / 2;
+        int ideal_x = (GetMiniWidth() - tab_icon_size()) / 2;
         int x = favicon_bounds_.x() + static_cast<int>(
             (1 - static_cast<float>(ideal_delta) /
              static_cast<float>(mini_delta)) *
@@ -671,7 +689,7 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
 int Tab::IconCapacity() const {
   if (height() < GetMinimumUnselectedSize().height())
     return 0;
-  return (width() - left_padding() - right_padding()) / kTabIconSize;
+  return (width() - left_padding() - right_padding()) / tab_icon_size();
 }
 
 bool Tab::ShouldShowIcon() const {
