@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 
 #include <set>
+#include <vector>
 
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_types.h"
@@ -215,6 +216,10 @@ void ChromeLauncherController::Open(ash::LauncherID id, int event_flags) {
   } else {
     DCHECK_EQ(TYPE_APP, id_to_item_map_[id].item_type);
 
+    // Do nothing for pending app shortcut.
+    if (GetItemStatus(id) == ash::STATUS_IS_PENDING)
+      return;
+
     const Extension* extension =
         profile_->GetExtensionService()->GetInstalledExtension(
             id_to_item_map_[id].app_id);
@@ -345,7 +350,7 @@ void ChromeLauncherController::SetAutoHideBehavior(
 }
 
 void ChromeLauncherController::CreateNewTab() {
-  Browser *last_browser = browser::FindTabbedBrowser(
+  Browser* last_browser = browser::FindTabbedBrowser(
       GetProfileForNewWindows(), true);
 
   if (!last_browser) {
@@ -466,11 +471,15 @@ void ChromeLauncherController::Observe(
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      const Extension* extension =
-          content::Details<extensions::UnloadedExtensionInfo>(
-              details)->extension;
-      if (IsAppPinned(extension->id()))
-        DoUnpinAppsWithID(extension->id());
+      const content::Details<extensions::UnloadedExtensionInfo> unload_info(
+          details);
+      const Extension* extension = unload_info->extension;
+      if (IsAppPinned(extension->id())) {
+        if (unload_info->reason == extension_misc::UNLOAD_REASON_UNINSTALL)
+          DoUnpinAppsWithID(extension->id());
+        else
+          MarkAppPending(extension->id());
+      }
       break;
     }
     case chrome::NOTIFICATION_PREF_CHANGED: {
@@ -565,6 +574,26 @@ Profile* ChromeLauncherController::GetProfileForNewWindows() {
   return ProfileManager::GetDefaultProfileOrOffTheRecord();
 }
 
+ash::LauncherItemStatus ChromeLauncherController::GetItemStatus(
+    ash::LauncherID id) const {
+  int index = model_->ItemIndexByID(id);
+  DCHECK_GE(index, 0);
+  const ash::LauncherItem& item = model_->items()[index];
+  return item.status;
+}
+
+void ChromeLauncherController::MarkAppPending(const std::string& app_id) {
+  for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
+       i != id_to_item_map_.end(); ++i) {
+    if (i->second.item_type == TYPE_APP && i->second.app_id == app_id) {
+      if (GetItemStatus(i->first) == ash::STATUS_CLOSED)
+        SetItemStatus(i->first, ash::STATUS_IS_PENDING);
+
+      break;
+    }
+  }
+}
+
 void ChromeLauncherController::DoPinAppWithID(const std::string& app_id) {
   // If there is an item, do nothing and return.
   if (IsAppPinned(app_id))
@@ -622,6 +651,13 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
         IDToItemMap::const_iterator entry(id_to_item_map_.find(item.id));
         if (entry != id_to_item_map_.end() &&
             entry->second.app_id == *pref_app_id) {
+          // Current item will be kept. Reset its pending state and ensure
+          // its icon is loaded since it has to be valid to be in |pinned_apps|.
+          if (item.status == ash::STATUS_IS_PENDING) {
+            SetItemStatus(item.id, ash::STATUS_CLOSED);
+            app_icon_loader_->FetchImage(*pref_app_id);
+          }
+
           ++pref_app_id;
           break;
         } else {
@@ -681,11 +717,18 @@ ash::LauncherID ChromeLauncherController::InsertAppLauncherItem(
   }
   item.is_incognito = false;
   item.image = Extension::GetDefaultIcon(true);
-  item.status = status;
+  if (item.type == ash::TYPE_APP_SHORTCUT &&
+      !app_icon_loader_->IsValidID(app_id)) {
+    item.status = ash::STATUS_IS_PENDING;
+  } else {
+    item.status = status;
+  }
   model_->AddAt(index, item);
 
   if (!controller || controller->type() !=
-      BrowserLauncherItemController::TYPE_EXTENSION_PANEL)
-    app_icon_loader_->FetchImage(app_id);
+      BrowserLauncherItemController::TYPE_EXTENSION_PANEL) {
+    if (item.status != ash::STATUS_IS_PENDING)
+      app_icon_loader_->FetchImage(app_id);
+  }
   return id;
 }

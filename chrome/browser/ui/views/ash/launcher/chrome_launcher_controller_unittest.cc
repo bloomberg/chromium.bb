@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
+
+#include <string>
+#include <vector>
+
 #include "ash/launcher/launcher_model.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
@@ -11,7 +16,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -157,7 +161,7 @@ TEST_F(ChromeLauncherControllerTest, Policy) {
   EXPECT_FALSE(launcher_controller.IsAppPinned(extension3_->id()));
 }
 
-TEST_F(ChromeLauncherControllerTest, UnpinWithPending) {
+TEST_F(ChromeLauncherControllerTest, UnloadAndLoad) {
   extension_service_->AddExtension(extension3_.get());
   extension_service_->AddExtension(extension4_.get());
 
@@ -168,7 +172,30 @@ TEST_F(ChromeLauncherControllerTest, UnpinWithPending) {
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension4_->id()));
 
   extension_service_->UnloadExtension(extension3_->id(),
-                                      extension_misc::UNLOAD_REASON_UNINSTALL);
+                                      extension_misc::UNLOAD_REASON_UPDATE);
+  EXPECT_TRUE(launcher_controller.IsAppPinned(extension3_->id()));
+  EXPECT_EQ(ash::STATUS_IS_PENDING, model_.items()[1].status);
+
+  extension_service_->AddExtension(extension3_.get());
+  EXPECT_TRUE(launcher_controller.IsAppPinned(extension3_->id()));
+  EXPECT_EQ(ash::STATUS_CLOSED, model_.items()[1].status);
+
+  EXPECT_TRUE(launcher_controller.IsAppPinned(extension4_->id()));
+}
+
+TEST_F(ChromeLauncherControllerTest, UnpinWithUninstall) {
+  extension_service_->AddExtension(extension3_.get());
+  extension_service_->AddExtension(extension4_.get());
+
+  ChromeLauncherController launcher_controller(&profile_, &model_);
+  launcher_controller.Init();
+
+  EXPECT_TRUE(launcher_controller.IsAppPinned(extension3_->id()));
+  EXPECT_TRUE(launcher_controller.IsAppPinned(extension4_->id()));
+
+  extension_service_->UninstallExtension(extension3_->id(),
+                                         true, /* extension_uninstall */
+                                         NULL);
 
   EXPECT_FALSE(launcher_controller.IsAppPinned(extension3_->id()));
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension4_->id()));

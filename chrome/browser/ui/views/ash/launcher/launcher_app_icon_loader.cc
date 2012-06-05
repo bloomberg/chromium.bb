@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/web_contents.h"
 
 LauncherAppIconLoader::LauncherAppIconLoader(
@@ -80,5 +81,5 @@ const extensions::Extension* LauncherAppIconLoader::GetExtensionByID(
   ExtensionService* service = profile_->GetExtensionService();
   if (!service)
     return NULL;
-  return service->GetInstalledExtension(id);
+  return service->extensions()->GetByID(id);
 }

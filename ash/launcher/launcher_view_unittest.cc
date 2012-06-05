@@ -428,6 +428,9 @@ TEST_F(LauncherViewTest, LauncherItemStatus) {
   item.status = ash::STATUS_ATTENTION;
   model_->Set(index, item);
   ASSERT_EQ(internal::LauncherButton::STATE_ATTENTION, button->state());
+  item.status = ash::STATUS_IS_PENDING;
+  model_->Set(index, item);
+  ASSERT_EQ(internal::LauncherButton::STATE_PENDING, button->state());
 }
 
 }  // namespace test

@@ -6,6 +6,7 @@
 #define ASH_LAUNCHER_LAUNCHER_BUTTON_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/image_view.h"
 
@@ -19,11 +20,22 @@ class LauncherButton : public views::CustomButton {
  public:
   // Used to indicate the current state of the button.
   enum State {
+    // Nothing special. Usually represents an app shortcut item with no running
+    // instance.
     STATE_NORMAL    = 0,
+    // Button has mouse hovering on it.
     STATE_HOVERED   = 1 << 0,
+    // Underlying LauncherItem has a running instance.
+    //   e.g. A TYPE_TABBED item that has a window.
     STATE_RUNNING   = 1 << 1,
+    // Underlying LauncherItem is active (i.e. has focus).
     STATE_ACTIVE    = 1 << 2,
+    // Underlying LauncherItem needs user's attention.
     STATE_ATTENTION = 1 << 3,
+    // Underlying LauncherItem has pending operations.
+    //   e.g. A TYPE_APP_SHORTCUT item whose corresponding app is being
+    //        installed.
+    STATE_PENDING   = 1 << 4,
   };
 
   virtual ~LauncherButton();
@@ -91,6 +103,7 @@ class LauncherButton : public views::CustomButton {
 
  private:
   class BarView;
+  class IconPulseAnimation;
 
   // Returns true if the shelf is horizontal. If this returns false the shelf is
   // vertical.
@@ -108,10 +121,14 @@ class LauncherButton : public views::CustomButton {
   // together.
   int state_;
 
+  // Runs a pulse animation for |icon_view_|. It is created when button state
+  // has a STATE_PENDING bit and destroyed when that bit is clear.
+  scoped_ptr<IconPulseAnimation> icon_pulse_animation_;
+
   DISALLOW_COPY_AND_ASSIGN(LauncherButton);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_LAUNCHER_APP_LAUNCHER_BUTTON_H_
+#endif  // ASH_LAUNCHER_LAUNCHER_BUTTON_H_

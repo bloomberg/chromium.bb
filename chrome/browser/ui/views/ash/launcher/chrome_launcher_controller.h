@@ -227,6 +227,13 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Returns the profile used for new windows.
   Profile* GetProfileForNewWindows();
 
+  // Returns item status for given |id|.
+  ash::LauncherItemStatus GetItemStatus(ash::LauncherID id) const;
+
+  // Finds the launcher item that represents given |app_id| and updates the
+  // pending state.
+  void MarkAppPending(const std::string& app_id);
+
   // Internal helpers for pinning and unpinning that handle both
   // client-triggered and internal pinning operations.
   void DoPinAppWithID(const std::string& app_id);

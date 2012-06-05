@@ -46,10 +46,19 @@ enum LauncherItemType {
 
 // Represents the status of pinned or running app launcher items.
 enum LauncherItemStatus {
+  // A closed LauncherItem, i.e. has no live instance.
   STATUS_CLOSED,
+  // A LauncherItem that has live instance.
   STATUS_RUNNING,
+   // An active LauncherItem that has focus.
   STATUS_ACTIVE,
-  STATUS_ATTENTION
+  // A LauncherItem that needs user's attention.
+  STATUS_ATTENTION,
+  // A LauncherItem that has pending operations.
+  //   e.g. A TYEE_APP_SHORTCUT item whose application is
+  //        being installed/upgraded.
+  // Note STATUS_PENDING is a macro in WinNT.h on Windows.
+  STATUS_IS_PENDING,
 };
 
 struct ASH_EXPORT LauncherItem {
