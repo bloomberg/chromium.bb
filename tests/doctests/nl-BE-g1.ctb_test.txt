@@ -364,11 +364,8 @@ known problems.
     >>> t.braille(u'¥100.000')
     u'y#ajj/jjj'
 
+    >>> t.braille(u'Eén')
+    u'$%%n'
 
-
-
-
-
-
-
-
+    >>> t.braille(u'É-U')
+    u'>%-u'
