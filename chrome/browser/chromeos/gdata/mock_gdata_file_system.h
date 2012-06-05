@@ -40,6 +40,10 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                void(const FilePath& local_src_file_path,
                     const FilePath& remote_dest_file_path,
                     const FileOperationCallback& callback));
+  MOCK_METHOD2(OpenFile, void(const FilePath& file_path,
+                              const OpenFileCallback& callback));
+  MOCK_METHOD2(CloseFile, void(const FilePath& file_path,
+                              const CloseFileCallback& callback));
   MOCK_METHOD3(Copy, void(const FilePath& src_file_path,
                           const FilePath& dest_file_path,
                           const FileOperationCallback& callback));

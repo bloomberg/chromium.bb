@@ -1170,7 +1170,7 @@ void GDataFileSystem::FindEntryByPathSyncOnUIThread(
     const FindEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::AutoLock lock(lock_);  // To access root_.
+  base::AutoLock lock(lock_);  // To access root_, and an entry in |callback|.
   root_->FindEntryByPath(search_file_path, callback);
 }
 
@@ -4142,6 +4142,8 @@ void GDataFileSystem::MarkDirtyInCache(
     const std::string& resource_id,
     const std::string& md5,
     const GetFileFromCacheCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   FilePath* cache_file_path = new FilePath;
@@ -4166,6 +4168,8 @@ void GDataFileSystem::CommitDirtyInCache(
     const std::string& resource_id,
     const std::string& md5,
     const CacheOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
@@ -4187,6 +4191,8 @@ void GDataFileSystem::ClearDirtyInCache(
     const std::string& resource_id,
     const std::string& md5,
     const CacheOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
@@ -5102,6 +5108,180 @@ void GDataFileSystem::InitializePreferenceObserver() {
 void SetFreeDiskSpaceGetterForTesting(FreeDiskSpaceGetterInterface* getter) {
   delete global_free_disk_getter_for_testing;  // Safe to delete NULL;
   global_free_disk_getter_for_testing = getter;
+}
+
+void GDataFileSystem::OpenFile(const FilePath& file_path,
+                               const OpenFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(base::Bind(&GDataFileSystem::OpenFileOnUIThread,
+                               ui_weak_ptr_,
+                               file_path,
+                               CreateRelayCallback(callback)));
+}
+
+void GDataFileSystem::OpenFileOnUIThread(const FilePath& file_path,
+                                         const OpenFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GetFileInfoByPathAsync(
+      file_path,
+      base::Bind(&GDataFileSystem::OnGetFileInfoCompleteForOpenFile,
+                 ui_weak_ptr_,
+                 file_path,
+                 callback));
+}
+
+void GDataFileSystem::OnGetFileInfoCompleteForOpenFile(
+    const FilePath& file_path,
+    const OpenFileCallback& callback,
+    base::PlatformFileError error,
+    scoped_ptr<GDataFileProto> file_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error == base::PLATFORM_FILE_OK) {
+    if (file_info->file_md5().empty() || file_info->is_hosted_document()) {
+      // No support for opening a directory or hosted document.
+      error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    }
+  }
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error, FilePath());
+    return;
+  }
+
+  DCHECK(!file_info->gdata_entry().resource_id().empty());
+
+  // TODO(kinaba): once it is cleaned up (crbug/127048), remove the indirection.
+  // Do not call GetFileByPathOnUIThread() directly for avoiding deadlock.
+  // The current method is called as a callback from GetFileInfoByPathAsync(),
+  // which is under the lock taken.
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::GetFileByPathOnUIThread,
+                 ui_weak_ptr_,
+                 file_path,
+                 base::Bind(&GDataFileSystem::OnGetFileCompleteForOpenFile,
+                            ui_weak_ptr_,
+                            callback,
+                            base::Passed(&file_info)),
+                 GetDownloadDataCallback()));
+}
+
+void GDataFileSystem::OnGetFileCompleteForOpenFile(
+    const OpenFileCallback& callback,
+    scoped_ptr<GDataFileProto> file_info,
+    base::PlatformFileError error,
+    const FilePath& file_path,
+    const std::string& mime_type,
+    GDataFileType file_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error, FilePath());
+    return;
+  }
+
+  // OpenFileOnUIThread ensures that the file is a regular file.
+  DCHECK_EQ(REGULAR_FILE, file_type);
+
+  MarkDirtyInCache(
+      file_info->gdata_entry().resource_id(),
+      file_info->file_md5(),
+      base::Bind(&GDataFileSystem::OnMarkDirtyInCacheCompleteForOpenFile,
+                 ui_weak_ptr_,
+                 callback));
+}
+
+void GDataFileSystem::OnMarkDirtyInCacheCompleteForOpenFile(
+    const OpenFileCallback& callback,
+    base::PlatformFileError error,
+    const std::string& resource_id,
+    const std::string& md5,
+    const FilePath& cache_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!callback.is_null())
+    callback.Run(error, cache_file_path);
+}
+
+void GDataFileSystem::CloseFile(const FilePath& file_path,
+                                const CloseFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(base::Bind(&GDataFileSystem::CloseFileOnUIThread,
+                               ui_weak_ptr_,
+                               file_path,
+                               CreateRelayCallback(callback)));
+}
+
+void GDataFileSystem::CloseFileOnUIThread(const FilePath& file_path,
+                                          const CloseFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GetFileInfoByPathAsync(
+      file_path,
+      base::Bind(&GDataFileSystem::OnGetFileInfoCompleteForCloseFile,
+                 ui_weak_ptr_,
+                 file_path,
+                 callback));
+}
+
+void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
+    const FilePath& file_path,
+    const CloseFileCallback& callback,
+    base::PlatformFileError error,
+    scoped_ptr<GDataFileProto> file_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error == base::PLATFORM_FILE_OK) {
+    if (file_info->file_md5().empty() || file_info->is_hosted_document()) {
+      // No support for opening a directory or hosted document.
+      error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    }
+  }
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error);
+    return;
+  }
+
+  DCHECK(!file_info->gdata_entry().resource_id().empty());
+
+  // TODO(benchan,kinaba): Call ClearDirtyInCache instead of CommitDirtyInCache
+  // if the file has not been modified. Come up with a way to detect the
+  // intactness effectively, or provide a method for user to declare it when
+  // calling CloseFile().
+
+  // TODO(kinaba): once it is cleaned up (crbug/127048), remove the indirection.
+  // Do not call CommitDirtyInCache() directly for avoiding deadlock.
+  // The current method is called as a callback from GetFileInfoByPathAsync(),
+  // which is under the lock taken.
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &GDataFileSystem::CommitDirtyInCache,
+          ui_weak_ptr_,
+          file_info->gdata_entry().resource_id(),
+          file_info->file_md5(),
+          base::Bind(&GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile,
+                     ui_weak_ptr_,
+                     callback)));
+}
+
+void GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile(
+    const CloseFileCallback& callback,
+    base::PlatformFileError error,
+    const std::string& resource_id,
+    const std::string& md5) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!callback.is_null())
+    callback.Run(error);
 }
 
 }  // namespace gdata

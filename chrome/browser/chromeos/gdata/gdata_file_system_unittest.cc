@@ -744,6 +744,35 @@ class GDataFileSystemTest : public testing::Test {
     RunAllPendingForIO();
   }
 
+  // Verify the file identified by |resource_id| and |md5| is in the expected
+  // cache state after |OpenFile|, that is, marked dirty and has no outgoing
+  // symlink, etc.
+  void VerifyCacheStateAfterOpenFile(base::PlatformFileError error,
+                                     const std::string& resource_id,
+                                     const std::string& md5,
+                                     const FilePath& cache_file_path) {
+    expected_error_ = base::PLATFORM_FILE_OK;
+    expected_cache_state_ =
+        GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY;
+    expected_sub_dir_type_ = GDataCache::CACHE_TYPE_PERSISTENT;
+    expect_outgoing_symlink_ = false;
+    VerifyMarkDirty(error, resource_id, md5, cache_file_path);
+  }
+
+  // Verify the file identified by |resource_id| and |md5| is in the expected
+  // cache state after |CloseFile|, that is, marked dirty and has an outgoing
+  // symlink, etc.
+  void VerifyCacheStateAfterCloseFile(base::PlatformFileError error,
+                                      const std::string& resource_id,
+                                      const std::string& md5) {
+    expected_error_ = base::PLATFORM_FILE_OK;
+    expected_cache_state_ =
+        GDataCache::CACHE_STATE_PRESENT | GDataCache::CACHE_STATE_DIRTY;
+    expected_sub_dir_type_ = GDataCache::CACHE_TYPE_PERSISTENT;
+    expect_outgoing_symlink_ = true;
+    VerifyCacheFileState(error, resource_id, md5);
+  }
+
   void VerifySetMountedState(const std::string& resource_id,
                              const std::string& md5,
                              bool to_mount,
@@ -1134,6 +1163,16 @@ class GDataFileSystemTest : public testing::Test {
       quota_bytes_used_ = bytes_used;
     }
 
+    virtual void OpenFileCallback(base::PlatformFileError error,
+                                  const FilePath& file_path) {
+      last_error_ = error;
+      opened_file_path_ = file_path;
+    }
+
+    virtual void CloseFileCallback(base::PlatformFileError error) {
+      last_error_ = error;
+    }
+
     virtual void GetEntryInfoCallback(
         base::PlatformFileError error,
         const FilePath& entry_path,
@@ -1158,6 +1197,7 @@ class GDataFileSystemTest : public testing::Test {
 
     base::PlatformFileError last_error_;
     FilePath download_path_;
+    FilePath opened_file_path_;
     std::string mime_type_;
     GDataFileType file_type_;
     int64 quota_bytes_total_;
@@ -3750,6 +3790,81 @@ TEST_F(GDataFileSystemTest, RequestDirectoryRefresh) {
 
   file_system_->RequestDirectoryRefresh(FilePath(kGDataRootDirectory));
   message_loop_.RunAllPending();
+}
+
+TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
+  LoadRootFeedDocument("root_feed.json");
+
+  OpenFileCallback callback =
+      base::Bind(&CallbackHelper::OpenFileCallback,
+                 callback_helper_.get());
+  CloseFileCallback close_file_callback =
+      base::Bind(&CallbackHelper::CloseFileCallback,
+                 callback_helper_.get());
+
+  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  GDataEntry* entry = FindEntry(file_in_root);
+  GDataFile* file = entry->AsGDataFile();
+  FilePath downloaded_file = GetCachePathForFile(file);
+  const int64 file_size = entry->file_info().size;
+  const std::string file_resource_id = entry->resource_id();
+  const std::string file_md5 = file->file_md5();
+
+  // Pretend we have enough space.
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(2).WillRepeatedly(Return(file_size + kMinFreeSpace));
+
+  const std::string kExpectedFileData = "test file data";
+  mock_doc_service_->set_file_data(new std::string(kExpectedFileData));
+
+  // Before Download starts metadata from server will be fetched.
+  // We will read content url from the result.
+  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
+
+  // The file is obtained with the mock DocumentsService.
+  EXPECT_CALL(*mock_doc_service_,
+              DownloadFile(file_in_root,
+                           downloaded_file,
+                           GURL("https://file_content_url_changed/"),
+                           _, _))
+      .Times(1);
+
+  // Open file_in_root ("gdata/File 1.txt").
+  file_system_->OpenFile(file_in_root, callback);
+  RunAllPendingForIO();  // Try to get from the cache.
+  RunAllPendingForIO();  // Check if we have space before downloading.
+  RunAllPendingForIO();  // Check if we have space after downloading.
+  RunAllPendingForIO();  // Mark dirty in cache.
+
+  // Verify that the file was properly opened.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
+
+  // Verify that the file contents match the expected contents.
+  std::string cache_file_data;
+  EXPECT_TRUE(file_util::ReadFileToString(callback_helper_->opened_file_path_,
+                                          &cache_file_data));
+  EXPECT_EQ(kExpectedFileData, cache_file_data);
+
+  // Verify that the cache state was changed as expected.
+  VerifyCacheStateAfterOpenFile(callback_helper_->last_error_,
+                                file_resource_id,
+                                file_md5,
+                                callback_helper_->opened_file_path_);
+
+  // Close file_in_root ("gdata/File 1.txt").
+  file_system_->CloseFile(file_in_root, close_file_callback);
+  RunAllPendingForIO();  // Commit dirty in cache.
+
+  // Verify that the file was properly closed.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
+
+  // Verify that the cache state was changed as expected.
+  VerifyCacheStateAfterCloseFile(callback_helper_->last_error_,
+                                 file_resource_id,
+                                 file_md5);
 }
 
 }   // namespace gdata

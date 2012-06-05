@@ -95,6 +95,16 @@ typedef base::Callback<void(base::PlatformFileError error,
                             const FilePath& file_path)>
     SetMountedStateCallback;
 
+// Used to open files from the file system. |file_path| is the path on the local
+// file system for the opened file.
+typedef base::Callback<void(base::PlatformFileError error,
+                            const FilePath& file_path)>
+    OpenFileCallback;
+
+// Used to close files from the file system.
+typedef base::Callback<void(base::PlatformFileError error)>
+    CloseFileCallback;
+
 // Used for file operations like removing files.
 typedef base::Callback<void(base::PlatformFileError error,
                             base::ListValue* feed_list)>
@@ -234,6 +244,25 @@ class GDataFileSystemInterface {
       const FilePath& local_src_file_path,
       const FilePath& remote_dest_file_path,
       const FileOperationCallback& callback) = 0;
+
+  // Retrieves a file at the virtual path |file_path| on the gdata file system
+  // onto the cache, and mark it dirty. The local path to the cache file is
+  // returned to |callback|. After opening the file, both read and write
+  // on the file can be done with normal local file operations.
+  //
+  // |CloseFile| must be called when the modification to the cache is done.
+  // Otherwise, GData file system does not pick up the file for uploading.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  virtual void OpenFile(const FilePath& file_path,
+                        const OpenFileCallback& callback) = 0;
+
+  // Closes a file at the virtual path |file_path| on the gdata file system,
+  // which is opened via OpenFile(). It commits the dirty flag on the cache.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  virtual void CloseFile(const FilePath& file_path,
+                         const CloseFileCallback& callback) = 0;
 
   // Copies |src_file_path| to |dest_file_path| on the file system.
   // |src_file_path| can be a hosted document (see limitations below).
@@ -462,6 +491,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& local_src_file_path,
       const FilePath& remote_dest_file_path,
       const FileOperationCallback& callback) OVERRIDE;
+  virtual void OpenFile(const FilePath& file_path,
+                        const OpenFileCallback& callback) OVERRIDE;
+  virtual void CloseFile(const FilePath& file_path,
+                         const CloseFileCallback& callback) OVERRIDE;
   virtual void Copy(const FilePath& src_file_path,
                     const FilePath& dest_file_path,
                     const FileOperationCallback& callback) OVERRIDE;
@@ -690,6 +723,21 @@ class GDataFileSystem : public GDataFileSystemInterface,
                            const FilePath& remote_dest_file_path,
                            const FileOperationCallback& callback);
 
+  // Invoked upon completion of GetFileInfoByPathAsync initiated by OpenFile.
+  // It then continues to invoke GetFileByPath and processed to
+  // OnGetFileCompleteForOpenFile.
+  void OnGetFileInfoCompleteForOpenFile(const FilePath& file_path,
+                                        const OpenFileCallback& callback,
+                                        base::PlatformFileError error,
+                                        scoped_ptr<GDataFileProto> file_info);
+  // Invoked upon completion of GetFileInfoByPathAsync initiated by CloseFile.
+  // It then continues to invoke GetFileByPath and processed to
+  // OnGetFileCompleteForCloseFile.
+  void OnGetFileInfoCompleteForCloseFile(const FilePath& file_path,
+                                         const CloseFileCallback& callback,
+                                         base::PlatformFileError error,
+                                         scoped_ptr<GDataFileProto> file_info);
+
   // Invoked upon completion of GetFileByPath initiated by Copy. If
   // GetFileByPath reports no error, calls TransferRegularFile to transfer
   // |local_file_path| to |remote_dest_file_path|.
@@ -714,6 +762,19 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                         const FilePath& local_file_path,
                                         const std::string& unused_mime_type,
                                         GDataFileType file_type);
+
+  // Invoked upon completion of GetFileByPath initiated by OpenFile. If
+  // GetFileByPath is successful, calls MarkDirtyInCache to mark the cache
+  // file as dirty for the file identified by |file_info->resource_id| and
+  // |file_info->file_md5|.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  void OnGetFileCompleteForOpenFile(const OpenFileCallback& callback,
+                                    scoped_ptr<GDataFileProto> file_info,
+                                    base::PlatformFileError error,
+                                    const FilePath& file_path,
+                                    const std::string& mime_type,
+                                    GDataFileType file_type);
 
   // Copies a document with |resource_id| to the directory at |dir_path|
   // and names the copied document as |new_name|.
@@ -768,6 +829,28 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void OnFilePathUpdated(const FileOperationCallback& cllback,
                          base::PlatformFileError error,
                          const FilePath& file_path);
+
+  // Invoked upon completion of MarkDirtyInCache initiated by OpenFile. Invokes
+  // |callback| with |cache_file_path|, which is the path of the cache file
+  // ready for modification.
+  //
+  // Must be called on UI thread.
+  void OnMarkDirtyInCacheCompleteForOpenFile(
+      const OpenFileCallback& callback,
+      base::PlatformFileError error,
+      const std::string& resource_id,
+      const std::string& md5,
+      const FilePath& cache_file_path);
+
+  // Invoked upon completion of CommitDirtyInCache initiated by CloseFile.
+  // Invokes |callback| with any |error| reported by CommitDirtyInCache.
+  //
+  // Must be called on UI thread.
+  void OnCommitDirtyInCacheCompleteForCloseFile(
+      const CloseFileCallback& callback,
+      base::PlatformFileError error,
+      const std::string& resource_id,
+      const std::string& md5);
 
   // Callback for handling resource rename attempt.
   void OnRenameResourceCompleted(const FilePath& file_path,
@@ -1371,6 +1454,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // member functions to UI thread.
   void SearchAsyncOnUIThread(const std::string& search_query,
                              const ReadDirectoryCallback& callback);
+  void OpenFileOnUIThread(const FilePath& file_path,
+                          const OpenFileCallback& callback);
+  void CloseFileOnUIThread(const FilePath& file_path,
+                           const CloseFileCallback& callback);
   void CopyOnUIThread(const FilePath& src_file_path,
                       const FilePath& dest_file_path,
                       const FileOperationCallback& callback);
