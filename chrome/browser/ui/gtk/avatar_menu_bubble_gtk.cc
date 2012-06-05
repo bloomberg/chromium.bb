@@ -79,6 +79,7 @@ void AvatarMenuBubbleGtk::OnDestroy(GtkWidget* widget) {
 
 void AvatarMenuBubbleGtk::BubbleClosing(BubbleGtk* bubble,
                                         bool closed_by_escape) {
+  bubble_ = NULL;
 }
 
 void AvatarMenuBubbleGtk::OnAvatarMenuModelChanged(
