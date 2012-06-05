@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
+#include <unistd.h>
 
 #if defined(OS_OPENBSD)
 #include <sys/uio.h>
@@ -898,7 +899,7 @@ Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
 
   struct msghdr msg = {0};
 
-  struct iovec iov = {buffer, buffer_len};
+  struct iovec iov = {buffer, static_cast<size_t>(buffer_len)};
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
 

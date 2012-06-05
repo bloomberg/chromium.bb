@@ -4,7 +4,7 @@
 
 #include "content/public/common/sandbox_init.h"
 
-#if defined(OS_ANDROID)
+#if defined(OS_POSIX)
 #include <unistd.h>
 #endif
 

@@ -10,6 +10,7 @@
 
 #include <sys/ioctl.h>
 #include <sys/select.h>
+#include <unistd.h>
 
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"

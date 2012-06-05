@@ -12,6 +12,12 @@
       }],
     ],
   },
+  'target_defaults': {
+     # Disable narrowing-conversion-in-initialization-list warnings in that we
+     # do not want to fix it in data file "webcursor_gtk_data.h".
+     'cflags+': ['-Wno-narrowing'],
+     'cflags_cc+': ['-Wno-narrowing'],
+  },
   'targets': [
     {
       'target_name': 'webkit_resources',

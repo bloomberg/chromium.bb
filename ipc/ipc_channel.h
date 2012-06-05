@@ -8,6 +8,10 @@
 
 #include <string>
 
+#if defined(OS_POSIX)
+#include <sys/types.h>
+#endif
+
 #include "base/compiler_specific.h"
 #include "base/process.h"
 #include "ipc/ipc_channel_handle.h"

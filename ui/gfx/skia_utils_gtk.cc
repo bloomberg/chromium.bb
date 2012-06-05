@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,9 +22,9 @@ SkColor GdkColorToSkColor(GdkColor color) {
 GdkColor SkColorToGdkColor(SkColor color) {
   GdkColor gdk_color = {
       0,
-      SkColorGetR(color) * kSkiaToGDKMultiplier,
-      SkColorGetG(color) * kSkiaToGDKMultiplier,
-      SkColorGetB(color) * kSkiaToGDKMultiplier
+      static_cast<guint16>(SkColorGetR(color) * kSkiaToGDKMultiplier),
+      static_cast<guint16>(SkColorGetG(color) * kSkiaToGDKMultiplier),
+      static_cast<guint16>(SkColorGetB(color) * kSkiaToGDKMultiplier)
   };
   return gdk_color;
 }

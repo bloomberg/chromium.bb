@@ -10,6 +10,7 @@
 #else
 #define OS_POSIX 1
 #include <errno.h>
+#include <unistd.h>
 #endif
 
 #include <cstdio>

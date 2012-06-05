@@ -124,9 +124,10 @@ PP_Bool PPB_Flash_Impl::DrawGlyphs(PP_Instance instance,
   SkAutoCanvasRestore acr(canvas, true);
 
   // Clip is applied in pixels before the transform.
-  SkRect clip_rect = { clip->point.x, clip->point.y,
-                       clip->point.x + clip->size.width,
-                       clip->point.y + clip->size.height };
+  SkRect clip_rect = { SkIntToScalar(clip->point.x),
+                       SkIntToScalar(clip->point.y),
+                       SkIntToScalar(clip->point.x + clip->size.width),
+                       SkIntToScalar(clip->point.y + clip->size.height) };
   canvas->clipRect(clip_rect);
 
   // Convert & set the matrix.

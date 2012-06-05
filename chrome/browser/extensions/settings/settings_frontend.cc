@@ -100,9 +100,9 @@ SettingsStorageQuotaEnforcer::Limits GetLocalLimits() {
 
 SettingsStorageQuotaEnforcer::Limits GetSyncLimits() {
   SettingsStorageQuotaEnforcer::Limits limits = {
-    api::storage::sync::QUOTA_BYTES,
-    api::storage::sync::QUOTA_BYTES_PER_ITEM,
-    api::storage::sync::MAX_ITEMS
+    static_cast<size_t>(api::storage::sync::QUOTA_BYTES),
+    static_cast<size_t>(api::storage::sync::QUOTA_BYTES_PER_ITEM),
+    static_cast<size_t>(api::storage::sync::MAX_ITEMS)
   };
   return limits;
 }
