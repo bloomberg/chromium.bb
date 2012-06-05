@@ -159,11 +159,11 @@ void MediaStreamCaptureIndicator::CreateStatusTray() {
 void MediaStreamCaptureIndicator::EnsureStatusTrayIcon() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (tray_image_.empty()) {
-    tray_image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    tray_image_ = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_MEDIA_STREAM_CAPTURE_LED);
   }
   if (balloon_image_.empty()) {
-    balloon_image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    balloon_image_ = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_PRODUCT_LOGO_32);
   }
 }

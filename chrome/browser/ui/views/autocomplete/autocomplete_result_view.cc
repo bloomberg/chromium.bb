@@ -20,11 +20,11 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/base/native_theme/native_theme.h"
 
 namespace {
 
@@ -117,7 +117,8 @@ AutocompleteResultView::AutocompleteResultView(
           animation_(new ui::SlideAnimation(this))) {
   CHECK_GE(model_index, 0);
   if (default_icon_size_ == 0) {
-    default_icon_size_ = ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    default_icon_size_ =
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         AutocompleteMatch::TypeToIcon(AutocompleteMatch::URL_WHAT_YOU_TYPED))->
         width();
   }

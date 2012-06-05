@@ -17,6 +17,10 @@
 
 class Profile;
 
+namespace gfx {
+class ImageSkia;
+}
+
 // Model for list of Background Applications associated with a Profile (i.e.
 // extensions with kBackgroundPermission set, or hosted apps with a
 // BackgroundContents).
@@ -55,11 +59,11 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
   // that there is no icon associated with the extension, or that a pending
   // task to retrieve the icon has not completed.  See the Observer class above.
   //
-  // NOTE: The model manages the SkBitmap result, that is it "owns" the memory,
+  // NOTE: The model manages the ImageSkia result, that is it "owns" the memory,
   //       releasing it if the associated background application is unloaded.
   // NOTE: All icons are currently sized as
   //       ExtensionIconSet::EXTENSION_ICON_BITTY.
-  const SkBitmap* GetIcon(const extensions::Extension* extension);
+  const gfx::ImageSkia* GetIcon(const extensions::Extension* extension);
 
   // Return the position of |extension| within this list model.
   int GetPosition(const extensions::Extension* extension) const;

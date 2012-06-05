@@ -21,7 +21,6 @@
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
-class SkBitmap;
 class TabContents;
 typedef TabContents TabContentsWrapper;
 class TaskManagerModel;
@@ -32,6 +31,10 @@ class ProcessMetrics;
 
 namespace extensions {
 class Extension;
+}
+
+namespace gfx {
+class ImageSkia;
 }
 
 namespace net {
@@ -71,7 +74,7 @@ class TaskManager {
 
     virtual string16 GetTitle() const = 0;
     virtual string16 GetProfileName() const = 0;
-    virtual SkBitmap GetIcon() const = 0;
+    virtual gfx::ImageSkia GetIcon() const = 0;
     virtual base::ProcessHandle GetProcess() const = 0;
     virtual int GetUniqueChildProcessId() const = 0;
     virtual Type GetType() const = 0;
@@ -372,7 +375,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   bool IsBackgroundResource(int index) const;
 
   // Returns icon to be used for resource (for example a favicon).
-  SkBitmap GetResourceIcon(int index) const;
+  gfx::ImageSkia GetResourceIcon(int index) const;
 
   // Returns the group range of resource.
   GroupRange GetGroupRangeForResource(int index) const;

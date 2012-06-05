@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
 
 // Controller for the collected cookies dialog. This class stores an internal
 // copy of the CookiesTreeModel but with Cocoa-converted values (NSStrings and
-// NSImages instead of std::strings and SkBitmaps). Doing this allows us to use
+// NSImages instead of std::strings and ImageSkias). Doing this allows us to use
 // bindings for the interface. Changes are pushed to this internal model via a
 // very thin bridge (see cookies_window_controller.h).
 @interface CollectedCookiesWindowController : NSWindowController

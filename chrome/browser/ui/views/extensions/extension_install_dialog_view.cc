@@ -62,7 +62,7 @@ const int kHeadingFontSizeDelta = 1;
 
 const int kRatingFontSizeDelta = -1;
 
-void AddResourceIcon(const SkBitmap* skia_image, void* data) {
+void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
   views::View* parent = static_cast<views::View*>(data);
   views::ImageView* image_view = new views::ImageView();
   image_view->SetImage(*skia_image);
@@ -184,13 +184,13 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
   if (!is_bundle_install()) {
     // Scale down to icon size, but allow smaller icons (don't scale up).
-    const SkBitmap* bitmap = prompt.icon().ToSkBitmap();
-    gfx::Size size(bitmap->width(), bitmap->height());
+    const gfx::ImageSkia* image = prompt.icon().ToImageSkia();
+    gfx::Size size(image->width(), image->height());
     if (size.width() > kIconSize || size.height() > kIconSize)
       size = gfx::Size(kIconSize, kIconSize);
     views::ImageView* icon = new views::ImageView();
     icon->SetImageSize(size);
-    icon->SetImage(*bitmap);
+    icon->SetImage(*image);
     icon->SetHorizontalAlignment(views::ImageView::CENTER);
     icon->SetVerticalAlignment(views::ImageView::CENTER);
     int icon_row_span = 1;

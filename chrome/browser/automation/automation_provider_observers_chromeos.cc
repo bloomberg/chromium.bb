@@ -489,7 +489,7 @@ void PhotoCaptureObserver::OnCapturingStopped(
     chromeos::TakePhotoDialog* take_photo_dialog,
     chromeos::TakePhotoView* take_photo_view) {
   take_photo_dialog->Accept();
-  const SkBitmap& photo = take_photo_view->GetImage();
+  const gfx::ImageSkia& photo = take_photo_view->GetImage();
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
   if (!user_manager) {
     if (automation_) {

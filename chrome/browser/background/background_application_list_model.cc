@@ -10,9 +10,9 @@
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
+#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_source.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 using extensions::Extension;
 using extensions::ExtensionList;
@@ -72,7 +73,7 @@ class BackgroundApplicationListModel::Application
   void RequestIcon(ExtensionIconSet::Icons size);
 
   const Extension* extension_;
-  scoped_ptr<SkBitmap> icon_;
+  scoped_ptr<gfx::ImageSkia> icon_;
   BackgroundApplicationListModel* model_;
   ImageLoadingTracker tracker_;
 };
@@ -146,7 +147,7 @@ void BackgroundApplicationListModel::Application::OnImageLoaded(
     int index) {
   if (image.IsEmpty())
     return;
-  icon_.reset(image.CopySkBitmap());
+  icon_.reset(image.CopyImageSkia());
   model_->SendApplicationDataChangedNotifications(extension_);
 }
 
@@ -240,7 +241,7 @@ BackgroundApplicationListModel::FindApplication(
   return (found == applications_.end()) ? NULL : found->second;
 }
 
-const SkBitmap* BackgroundApplicationListModel::GetIcon(
+const gfx::ImageSkia* BackgroundApplicationListModel::GetIcon(
     const Extension* extension) {
   const Application* application = FindApplication(extension);
   if (application)

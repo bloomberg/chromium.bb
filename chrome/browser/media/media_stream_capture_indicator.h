@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_MEDIA_MEDIA_STREAM_CAPTURE_INDICATOR_H_
 #pragma once
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "content/public/common/media_stream_request.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/image/image_skia.h"
 
 class StatusIcon;
 class StatusTray;
@@ -130,9 +130,9 @@ class MediaStreamCaptureIndicator
   StatusIcon* status_icon_;
 
   // Icon to be displayed on the status tray.
-  SkBitmap tray_image_;
+  gfx::ImageSkia tray_image_;
 
-  SkBitmap balloon_image_;
+  gfx::ImageSkia balloon_image_;
 
   // A list that contains the usage information of the opened capture devices.
   typedef std::vector<CaptureDeviceTab> CaptureDeviceTabs;

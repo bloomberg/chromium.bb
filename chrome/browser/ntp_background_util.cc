@@ -9,16 +9,16 @@
 #include "base/logging.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 
 namespace {
 
 void PaintThemeBackground(
-    gfx::Canvas* canvas, SkBitmap* ntp_background, int tiling, int alignment,
-    const gfx::Rect& area, int tab_contents_height) {
+    gfx::Canvas* canvas, gfx::ImageSkia* ntp_background, int tiling,
+    int alignment, const gfx::Rect& area, int tab_contents_height) {
   int x_pos = 0;
   int y_pos = 0;
   int width = area.width() + ntp_background->width();
@@ -78,7 +78,8 @@ void NtpBackgroundUtil::PaintBackgroundDetachedMode(ui::ThemeProvider* tp,
     int alignment;
     if (tp->GetDisplayProperty(ThemeService::NTP_BACKGROUND_ALIGNMENT,
                                &alignment)) {
-      SkBitmap* ntp_background = tp->GetBitmapNamed(IDR_THEME_NTP_BACKGROUND);
+      gfx::ImageSkia* ntp_background =
+          tp->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
 
       PaintThemeBackground(
           canvas, ntp_background, tiling, alignment, area, tab_contents_height);

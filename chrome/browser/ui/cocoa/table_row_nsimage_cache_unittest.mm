@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace {
 
@@ -20,8 +21,8 @@ class TestTable : public TableRowNSImageCache::Table {
   virtual int RowCount() const {
     return rows_.size();
   }
-  virtual SkBitmap GetIcon(int index) const {
-    return rows_[index];
+  virtual gfx::ImageSkia GetIcon(int index) const {
+    return gfx::ImageSkia(rows_[index]);
   }
 
  private:

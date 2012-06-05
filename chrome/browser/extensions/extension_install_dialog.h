@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 
 class Profile;
-class SkBitmap;
 
 namespace base {
 class DictionaryValue;

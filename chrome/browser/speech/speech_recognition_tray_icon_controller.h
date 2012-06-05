@@ -15,6 +15,10 @@ class SkBitmap;
 class SkCanvas;
 class StatusIcon;
 
+namespace gfx {
+class ImageSkia;
+}
+
 // Manages the tray icon for speech recognition.
 class SpeechRecognitionTrayIconController
      : public base::RefCountedThreadSafe<SpeechRecognitionTrayIconController> {
@@ -30,7 +34,7 @@ class SpeechRecognitionTrayIconController
   virtual ~SpeechRecognitionTrayIconController();
 
   void Initialize();
-  void DrawVolume(SkCanvas* canvas, const SkBitmap& bitmap, float volume);
+  void DrawVolume(SkCanvas* canvas, const gfx::ImageSkia& image, float volume);
   void ShowNotificationBalloon(const string16& text);
 
   scoped_ptr<SkBitmap> mic_image_;

@@ -160,7 +160,7 @@ LocationBarView::LocationBarView(Profile* profile,
     painter_.reset(
         views::Painter::CreateImagePainter(
             *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                IDR_LOCATION_BAR_BORDER).ToSkBitmap(),
+                IDR_LOCATION_BAR_BORDER).ToImageSkia(),
             gfx::Insets(kBorderRoundCornerHeight, kBorderRoundCornerWidth,
                 kBorderRoundCornerHeight, kBorderRoundCornerWidth),
             true));
@@ -518,7 +518,7 @@ bool LocationBarView::IsLocationEntryFocusableInRootView() const {
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
-  return gfx::Size(0, GetThemeProvider()->GetBitmapNamed(mode_ == POPUP ?
+  return gfx::Size(0, GetThemeProvider()->GetImageSkiaNamed(mode_ == POPUP ?
       IDR_LOCATIONBG_POPUPMODE_CENTER : IDR_LOCATIONBG_C)->height());
 }
 
@@ -781,7 +781,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   if (painter_.get()) {
     painter_->Paint(canvas, size());
   } else if (mode_ == POPUP) {
-    canvas->TileImageInt(*GetThemeProvider()->GetBitmapNamed(
+    canvas->TileImageInt(*GetThemeProvider()->GetImageSkiaNamed(
         IDR_LOCATIONBG_POPUPMODE_CENTER), 0, 0, 0, 0, width(), height());
   }
   // When used in the app launcher, don't draw a border, the LocationBarView has

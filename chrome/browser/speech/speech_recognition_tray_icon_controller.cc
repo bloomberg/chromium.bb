@@ -33,27 +33,28 @@ const int kVolumeSteps = 6;
 // notification icon and safely destroy them on exit.
 class NotificationTrayImages {
  public:
-  SkBitmap* mic_full() { return mic_full_; }
-  SkBitmap* mic_empty() { return mic_empty_; }
-  SkBitmap* balloon_icon() { return balloon_icon_; }
+  gfx::ImageSkia* mic_full() { return mic_full_; }
+  gfx::ImageSkia* mic_empty() { return mic_empty_; }
+  gfx::ImageSkia* balloon_icon() { return balloon_icon_; }
 
  private:
   // Private constructor to enforce singleton.
   friend struct base::DefaultLazyInstanceTraits<NotificationTrayImages>;
   NotificationTrayImages();
 
-  // These bitmaps are owned by ResourceBundle and need not be destroyed.
-  SkBitmap* mic_full_; // Tray mic image with full volume.
-  SkBitmap* mic_empty_; // Tray mic image with zero volume.
-  SkBitmap* balloon_icon_; // High resolution mic for the notification balloon.
+  // These images are owned by ResourceBundle and need not be destroyed.
+  gfx::ImageSkia* mic_full_; // Tray mic image with full volume.
+  gfx::ImageSkia* mic_empty_; // Tray mic image with zero volume.
+  // High resolution mic for the notification balloon.
+  gfx::ImageSkia* balloon_icon_;
 };
 
 NotificationTrayImages::NotificationTrayImages() {
-  mic_empty_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  mic_empty_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_SPEECH_INPUT_TRAY_MIC_EMPTY);
-  mic_full_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  mic_full_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_SPEECH_INPUT_TRAY_MIC_FULL);
-  balloon_icon_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  balloon_icon_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_SPEECH_INPUT_TRAY_BALLOON_ICON);
 }
 
@@ -165,7 +166,7 @@ void SpeechRecognitionTrayIconController::Initialize() {
 
 void SpeechRecognitionTrayIconController::DrawVolume(
     SkCanvas* canvas,
-    const SkBitmap& bitmap,
+    const gfx::ImageSkia& image,
     float volume) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   buffer_image_->eraseARGB(0, 0, 0, 0);
@@ -179,7 +180,7 @@ void SpeechRecognitionTrayIconController::DrawVolume(
       kVolumeSteps;
   buffer_canvas.clipRect(SkRect::MakeLTRB(0, clip_top,
       SkIntToScalar(width), SkIntToScalar(height)));
-  buffer_canvas.drawBitmap(bitmap, 0, 0);
+  buffer_canvas.drawBitmap(image, 0, 0);
 
   canvas->drawBitmap(*buffer_image_.get(), 0, 0);
 }

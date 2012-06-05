@@ -21,6 +21,7 @@ class WebContents;
 
 namespace gfx {
 class Canvas;
+class ImageSkia;
 class Rect;
 }
 
@@ -156,22 +157,22 @@ class SpeechRecognitionBubbleBase : public SpeechRecognitionBubble {
 
   const string16& message_text() const { return message_text_; }
 
-  SkBitmap icon_image();
+  gfx::ImageSkia icon_image();
 
  private:
   void DoRecognizingAnimationStep();
   void DoWarmingUpAnimationStep();
-  void SetImage(const SkBitmap& image);
+  void SetImage(const gfx::ImageSkia& image);
 
   void DrawVolumeOverlay(SkCanvas* canvas,
-                         const SkBitmap& bitmap,
+                         const gfx::ImageSkia& image_skia,
                          float volume);
 
   // Task factory used for animation timer.
   base::WeakPtrFactory<SpeechRecognitionBubbleBase> weak_factory_;
   int animation_step_;  // Current index/step of the animation.
-  std::vector<SkBitmap> animation_frames_;
-  std::vector<SkBitmap> warming_up_frames_;
+  std::vector<gfx::ImageSkia> animation_frames_;
+  std::vector<gfx::ImageSkia> warming_up_frames_;
 
   DisplayMode display_mode_;
   string16 message_text_;  // Text displayed in DISPLAY_MODE_MESSAGE
@@ -182,7 +183,7 @@ class SpeechRecognitionBubbleBase : public SpeechRecognitionBubble {
   // WebContents in which this this bubble gets displayed.
   content::WebContents* web_contents_;
   // The current image displayed in the bubble's icon widget.
-  scoped_ptr<SkBitmap> icon_image_;
+  scoped_ptr<gfx::ImageSkia> icon_image_;
 };
 
 // This typedef is to workaround the issue with certain versions of

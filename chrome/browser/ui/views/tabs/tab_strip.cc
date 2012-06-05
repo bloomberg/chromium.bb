@@ -32,13 +32,13 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "ui/base/layout.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/view_model_utils.h"
@@ -324,10 +324,10 @@ void NewTabButton::GetHitTestMask(gfx::Path* path) const {
 
   SkScalar w = SkIntToScalar(width());
 
-  // These values are defined by the shape of the new tab bitmap. Should that
-  // bitmap ever change, these values will need to be updated. They're so
+  // These values are defined by the shape of the new tab image. Should that
+  // image ever change, these values will need to be updated. They're so
   // custom it's not really worth defining constants for.
-  // These values are correct for regular and USE_ASH versions of the bitmap.
+  // These values are correct for regular and USE_ASH versions of the image.
   path->moveTo(0, 1);
   path->lineTo(w - 7, 1);
   path->lineTo(w - 4, 4);
@@ -353,8 +353,8 @@ void NewTabButton::OnMouseReleased(const views::MouseEvent& event) {
 #endif
 
 void NewTabButton::OnPaint(gfx::Canvas* canvas) {
-  SkBitmap bitmap = GetBitmap();
-  canvas->DrawBitmapInt(bitmap, 0, height() - bitmap.height());
+  SkBitmap image = GetBitmap();
+  canvas->DrawBitmapInt(image, 0, height() - image.height());
 }
 
 bool NewTabButton::ShouldUseNativeFrame() const {
@@ -386,14 +386,16 @@ SkBitmap NewTabButton::GetBackgroundBitmap(
       break;
   }
 
-  SkBitmap* mask = GetThemeProvider()->GetBitmapNamed(IDR_NEWTAB_BUTTON_MASK);
+  gfx::ImageSkia* mask =
+      GetThemeProvider()->GetImageSkiaNamed(IDR_NEWTAB_BUTTON_MASK);
   int height = mask->height();
   int width = mask->width();
   gfx::Canvas canvas(gfx::Size(width, height), false);
 
   // For custom images the background starts at the top of the tab strip.
   // Otherwise the background starts at the top of the frame.
-  SkBitmap* background = GetThemeProvider()->GetBitmapNamed(background_id);
+  gfx::ImageSkia* background =
+      GetThemeProvider()->GetImageSkiaNamed(background_id);
   int offset_y = GetThemeProvider()->HasCustomImage(background_id) ?
       0 : background_offset_.y();
   canvas.TileImageInt(*background, GetMirroredX() + background_offset_.x(),
@@ -418,7 +420,7 @@ SkBitmap NewTabButton::GetBitmapForState(
     views::CustomButton::ButtonState state) const {
   int overlay_id = state == views::CustomButton::BS_PUSHED ?
       IDR_NEWTAB_BUTTON_P : IDR_NEWTAB_BUTTON;
-  SkBitmap* overlay = GetThemeProvider()->GetBitmapNamed(overlay_id);
+  gfx::ImageSkia* overlay = GetThemeProvider()->GetImageSkiaNamed(overlay_id);
 
   gfx::Canvas canvas(gfx::Size(overlay->width(), overlay->height()), false);
   canvas.DrawBitmapInt(GetBackgroundBitmap(state), 0, 0);

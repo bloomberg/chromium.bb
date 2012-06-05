@@ -61,7 +61,7 @@ namespace views {
 class ClientView;
 }
 
-// An enumeration of bitmap resources used by this window.
+// An enumeration of image resources used by this window.
 enum {
   FRAME_PART_IMAGE_FIRST = 0,  // Must be first.
 
@@ -291,7 +291,7 @@ ConstrainedWindowFrameView::ConstrainedWindowFrameView(
   InitWindowResources();
 
   // Constrained windows always use the custom frame - they just have a
-  // different set of bitmaps.
+  // different set of images.
   container->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

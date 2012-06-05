@@ -13,7 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace {
 
@@ -22,7 +22,7 @@ class TestResource : public TaskManager::Resource {
   TestResource(const string16& title, pid_t pid) : title_(title), pid_(pid) {}
   virtual string16 GetTitle() const OVERRIDE { return title_; }
   virtual string16 GetProfileName() const OVERRIDE { return string16(); }
-  virtual SkBitmap GetIcon() const OVERRIDE { return SkBitmap(); }
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE { return gfx::ImageSkia(); }
   virtual base::ProcessHandle GetProcess() const OVERRIDE { return pid_; }
   virtual int GetUniqueChildProcessId() const OVERRIDE {
     // In reality the unique child process ID is not the actual process ID,

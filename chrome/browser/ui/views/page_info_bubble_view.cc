@@ -55,7 +55,7 @@ class Section : public views::View,
  public:
   Section(PageInfoBubbleView* owner,
           const PageInfoModel::SectionInfo& section_info,
-          const SkBitmap* status_icon,
+          const gfx::ImageSkia* status_icon,
           bool show_cert);
   virtual ~Section();
 
@@ -191,7 +191,8 @@ void PageInfoBubbleView::LayoutSections() {
     if (count == 1 && info.type == PageInfoModel::SECTION_INFO_INTERNAL_PAGE)
       only_internal_section = true;
     layout->StartRow(0, 0);
-    const SkBitmap* icon = model_.GetIconImage(info.icon_id)->ToSkBitmap();
+    const gfx::ImageSkia* icon = model_.GetIconImage(
+        info.icon_id)->ToImageSkia();
     Section* section = new Section(this, info, icon, cert_id_ > 0);
     if (info.type == PageInfoModel::SECTION_INFO_FIRST_VISIT) {
       // This section is animated into view, so we need to set the height of it
@@ -239,7 +240,8 @@ gfx::Size PageInfoBubbleView::GetPreferredSize() {
   int count = model_.GetSectionCount();
   for (int i = 0; i < count; ++i) {
     PageInfoModel::SectionInfo info = model_.GetSectionInfo(i);
-    const SkBitmap* icon = model_.GetIconImage(info.icon_id)->ToSkBitmap();
+    const gfx::ImageSkia* icon = model_.GetIconImage(
+        info.icon_id)->ToImageSkia();
     Section section(this, info, icon, cert_id_ > 0);
     size.Enlarge(0, section.GetHeightForWidth(size.width()));
   }
@@ -313,7 +315,7 @@ void PageInfoBubbleView::AnimationProgressed(const ui::Animation* animation) {
 
 Section::Section(PageInfoBubbleView* owner,
                  const PageInfoModel::SectionInfo& section_info,
-                 const SkBitmap* state_icon,
+                 const gfx::ImageSkia* state_icon,
                  bool show_cert)
     : owner_(owner),
       info_(section_info),

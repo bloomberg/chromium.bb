@@ -147,11 +147,12 @@ FindBarView::FindBarView(FindBarHost* host)
   SetBorder(IDR_FIND_DIALOG_LEFT, IDR_FIND_DIALOG_MIDDLE,
             IDR_FIND_DIALOG_RIGHT);
 
-  preferred_height_ = rb.GetBitmapNamed(IDR_FIND_DIALOG_MIDDLE)->height();
+  preferred_height_ = rb.GetImageSkiaNamed(IDR_FIND_DIALOG_MIDDLE)->height();
 
   // Background images for the Find edit box.
-  text_box_background_ = rb.GetBitmapNamed(IDR_FIND_BOX_BACKGROUND);
-  text_box_background_left_ = rb.GetBitmapNamed(IDR_FIND_BOX_BACKGROUND_LEFT);
+  text_box_background_ = rb.GetImageSkiaNamed(IDR_FIND_BOX_BACKGROUND);
+  text_box_background_left_ =
+      rb.GetImageSkiaNamed(IDR_FIND_BOX_BACKGROUND_LEFT);
 
   EnableCanvasFlippingForRTLUI(true);
 }

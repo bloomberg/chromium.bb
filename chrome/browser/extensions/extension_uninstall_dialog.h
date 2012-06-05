@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,10 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/memory/weak_ptr.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 class MessageLoop;
 class Profile;
@@ -60,11 +60,11 @@ class ExtensionUninstallDialog
   const extensions::Extension* extension_;
 
   // The extensions icon.
-  SkBitmap icon_;
+  gfx::ImageSkia icon_;
 
  private:
   // Sets the icon that will be used in the dialog. If |icon| contains an empty
-  // bitmap, then we use a default icon instead.
+  // image, then we use a default icon instead.
   void SetIcon(const gfx::Image& image);
 
   // ImageLoadingTracker::Observer:
