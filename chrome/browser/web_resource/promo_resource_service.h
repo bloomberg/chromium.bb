@@ -20,17 +20,12 @@ class DictionaryValue;
 class AppsPromoLogoFetcher;
 class PrefService;
 class Profile;
+
 // A PromoResourceService fetches data from a web resource server to be used to
 // dynamically change the appearance of the New Tab Page. For example, it has
 // been used to fetch "tips" to be displayed on the NTP, or to display
 // promotional messages to certain groups of Chrome users.
-//
-// TODO(mirandac): Arrange for a server to be set up specifically for promo
-// messages, which have until now been piggybacked onto the old tips server
-// structure. (see http://crbug.com/70634 for details.)
-class PromoResourceService
-    : public WebResourceService,
-      public NotificationPromo::Delegate {
+class PromoResourceService : public WebResourceService {
  public:
   // Identifies types of Chrome builds for promo targeting.
   enum BuildType {
@@ -53,9 +48,6 @@ class PromoResourceService
 
   static chrome::VersionInfo::Channel GetChannel();
   static bool IsBuildTargeted(chrome::VersionInfo::Channel, int builds_allowed);
-
-  // Default server of dynamically loaded NTP HTML elements.
-  static const char* kDefaultPromoResourceServer;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, IsBuildTargetedTest);
@@ -107,53 +99,7 @@ class PromoResourceService
   // WebResourceService override.
   virtual void Unpack(const base::DictionaryValue& parsed_json) OVERRIDE;
 
-  // Unpack the web resource as a custom notification signal. Expects a start
-  // and end signal, with the promo to be shown in the tooltip of the start
-  // signal field. Delivery will be in json in the form of:
-  // {
-  //   "topic": {
-  //     "answers": [
-  //       {
-  //         "answer_id": "1067976",
-  //         "name": "promo_start",
-  //         "question": "1:24:10:20:7:0",
-  //         "tooltip":
-  //       "Click \u003ca href=http://www.google.com\u003ehere\u003c/a\u003e!",
-  //         "inproduct": "10/8/09 12:00",
-  //         "inproduct_target": null
-  //       },
-  //       {
-  //         "answer_id": "1067976",
-  //         "name": "promo_end",
-  //         "question": "",
-  //         "tooltip": "",
-  //         "inproduct": "10/8/11 12:00",
-  //         "inproduct_target": null
-  //       },
-  //       ...
-  //     ]
-  //   }
-  // }
-  //
-  // Because the promo signal data is piggybacked onto the tip server, the
-  // values don't exactly correspond with the field names:
-  //
-  // For "promo_start" or "promo_end", the date to start or stop showing the
-  // promotional line is given by the "inproduct" line.
-  // For "promo_start", the promotional line itself is given in the "tooltip"
-  // field. The "question" field gives the type of builds that should be shown
-  // this promo (see the BuildType enum in web_resource_service.cc), the
-  // number of hours that each promo group should see it, the maximum promo
-  // group that should see it, the maximum number of views of the promo,the
-  // platforms that this promo is suitable for, and a mask of features which
-  // must be present in order for the promo to be shown (0 => no feaures needed
-  // 1 => user must be logged in to gplus), separated by ":".
-  // For example, "7:24:5:10:7:0" would indicate that all groups with ids less
-  // than 5, and with dev, beta and stable builds on Windows, Mac and Linux,
-  // should see the promo a maximum of 10 times, the promo is suitable for Mac
-  // Linux and Windows platforms, and no features are required to show it. The
-  // groups ramp up so one additional group sees the promo every 24 hours.
-  //
+  // Unpack the web resource as a custom notification signal.
   void UnpackNotificationSignal(const base::DictionaryValue& parsed_json);
 
   // Unpack the promo resource as a custom logo signal. Expects a start and end
@@ -215,10 +161,6 @@ class PromoResourceService
   //         webstore logo will be used. The logo can be an HTTPS or DATA URL.
   //   answer_id: the promo's id
   void UnpackWebStoreSignal(const base::DictionaryValue& parsed_json);
-
-  // NotificationPromo::Delegate override.
-  virtual void OnNotificationParsed(double start, double end,
-                                    bool new_notification) OVERRIDE;
 
   // The profile this service belongs to.
   Profile* profile_;

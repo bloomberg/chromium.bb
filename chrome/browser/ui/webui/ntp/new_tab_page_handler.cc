@@ -75,16 +75,14 @@ void NewTabPageHandler::RegisterMessages() {
 }
 
 void NewTabPageHandler::HandleCloseNotificationPromo(const ListValue* args) {
-  scoped_refptr<NotificationPromo> notification_promo =
-      NotificationPromo::Create(Profile::FromWebUI(web_ui()), NULL);
-  notification_promo->HandleClosed();
+  NotificationPromo notification_promo(Profile::FromWebUI(web_ui()));
+  notification_promo.HandleClosed();
   Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 
 void NewTabPageHandler::HandleNotificationPromoViewed(const ListValue* args) {
-  scoped_refptr<NotificationPromo> notification_promo =
-      NotificationPromo::Create(Profile::FromWebUI(web_ui()), NULL);
-  if (notification_promo->HandleViewed())
+  NotificationPromo notification_promo(Profile::FromWebUI(web_ui()));
+  if (notification_promo.HandleViewed())
     Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 

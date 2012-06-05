@@ -44,13 +44,11 @@ static const char kWebStoreButtonProperty[] = "inproduct_target";
 static const char kWebStoreLinkProperty[] = "inproduct";
 static const char kWebStoreExpireProperty[] = "tooltip";
 
-GURL GetPromoResourceURL(bool legacy) {
+GURL GetPromoResourceURL() {
   const std::string promo_server_url = CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kPromoServerURL);
-  if (!promo_server_url.empty())
-    return GURL(promo_server_url);
-  return legacy ? GURL(PromoResourceService::kDefaultPromoResourceServer) :
-                  NotificationPromo::PromoServerURL();
+  return promo_server_url.empty() ?
+      NotificationPromo::PromoServerURL() : GURL(promo_server_url);
 }
 
 bool IsTest() {
@@ -62,12 +60,6 @@ int GetCacheUpdateDelay() {
 }
 
 }  // namespace
-
-// Server for dynamically loaded NTP HTML elements.
-const char* PromoResourceService::kDefaultPromoResourceServer =
-    "https://www.google.com/support/chrome/bin/topic/1142433/inproduct?hl=";
-
-
 
 // static
 void PromoResourceService::RegisterPrefs(PrefService* local_state) {
@@ -122,7 +114,7 @@ bool PromoResourceService::IsBuildTargeted(chrome::VersionInfo::Channel channel,
 
 PromoResourceService::PromoResourceService(Profile* profile)
     : WebResourceService(profile->GetPrefs(),
-                         GetPromoResourceURL(false),
+                         GetPromoResourceURL(),
                          true,  // append locale to URL
                          prefs::kNtpPromoResourceCacheUpdate,
                          kStartResourceFetchDelay,
@@ -149,13 +141,6 @@ void PromoResourceService::Unpack(const DictionaryValue& parsed_json) {
   UnpackWebStoreSignal(parsed_json);
 }
 
-void PromoResourceService::OnNotificationParsed(double start, double end,
-                                                bool new_notification) {
-  if (new_notification) {
-    ScheduleNotification(start, end);
-  }
-}
-
 void PromoResourceService::ScheduleNotification(double promo_start,
                                                 double promo_end) {
   if (promo_start > 0 && promo_end > 0) {
@@ -179,10 +164,13 @@ void PromoResourceService::ScheduleNotification(double promo_start,
 
 void PromoResourceService::ScheduleNotificationOnInit() {
   std::string locale = g_browser_process->GetApplicationLocale();
-  if ((GetPromoServiceVersion() != kPromoServiceVersion) ||
-      (GetPromoLocale() != locale)) {
+  if (GetPromoServiceVersion() != kPromoServiceVersion ||
+      GetPromoLocale() != locale) {
     // If the promo service has been upgraded or Chrome switched locales,
     // refresh the promos.
+    // TODO(achuith): Mixing local_state and prefs does not work for
+    // multi-profile case. We should probably store version/locale in prefs_
+    // as well.
     PrefService* local_state = g_browser_process->local_state();
     local_state->SetInteger(prefs::kNtpPromoVersion, kPromoServiceVersion);
     local_state->SetString(prefs::kNtpPromoLocale, locale);
@@ -201,6 +189,8 @@ void PromoResourceService::ScheduleNotificationOnInit() {
 void PromoResourceService::PostNotification(int64 delay_ms) {
   if (web_resource_update_scheduled_)
     return;
+  // TODO(achuith): This crashes if we post delay_ms = 0 to the message loop.
+  // during startup.
   if (delay_ms > 0) {
     web_resource_update_scheduled_ = true;
     MessageLoop::current()->PostDelayedTask(
@@ -234,16 +224,19 @@ std::string PromoResourceService::GetPromoLocale() {
 
 void PromoResourceService::UnpackNotificationSignal(
     const DictionaryValue& parsed_json) {
-  scoped_refptr<NotificationPromo> notification_promo =
-      NotificationPromo::Create(profile_, this);
-  notification_promo->InitFromJson(parsed_json);
+  NotificationPromo notification_promo(profile_);
+  notification_promo.InitFromJson(parsed_json);
+
+  if (notification_promo.new_notification()) {
+    ScheduleNotification(notification_promo.StartTimeForGroup(),
+                         notification_promo.EndTime());
+  }
 }
 
 bool PromoResourceService::CanShowNotificationPromo(Profile* profile) {
-  scoped_refptr<NotificationPromo> notification_promo =
-      NotificationPromo::Create(profile, NULL);
-  notification_promo->InitFromPrefs();
-  return notification_promo->CanShow();
+  NotificationPromo notification_promo(profile);
+  notification_promo.InitFromPrefs();
+  return notification_promo.CanShow();
 }
 
 void PromoResourceService::UnpackWebStoreSignal(
