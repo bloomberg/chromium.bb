@@ -28,7 +28,7 @@ using content::Referrer;
 using content::WebContents;
 
 PageCycler::PageCycler(Browser* browser,
-                       FilePath urls_file)
+                       const FilePath& urls_file)
     : content::WebContentsObserver(browser->GetSelectedWebContents()),
       browser_(browser),
       urls_file_(urls_file),
@@ -204,7 +204,7 @@ void PageCycler::PrepareResultsOnBackgroundThread() {
   WriteResultsOnBackgroundThread(output);
 }
 
-void PageCycler::WriteResultsOnBackgroundThread(std::string output) {
+void PageCycler::WriteResultsOnBackgroundThread(const std::string& output) {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (!output.empty()) {

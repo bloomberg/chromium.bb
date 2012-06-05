@@ -29,7 +29,7 @@ class PageCycler : public base::RefCountedThreadSafe<PageCycler>,
                    public BrowserList::Observer,
                    public content::WebContentsObserver {
  public:
-  PageCycler(Browser* browser, FilePath urls_file);
+  PageCycler(Browser* browser, const FilePath& urls_file);
 
   // Begin running the page cycler.
   void Run(const int& total_iterations);
@@ -89,9 +89,10 @@ class PageCycler : public base::RefCountedThreadSafe<PageCycler>,
   // Finalize the output strings.
   void PrepareResultsOnBackgroundThread();
 
-  // Write the data stored within output to the file indicated by |stats_file_|,
-  // if |stats_file_| is not empty. Write any errors to |errors_file_|.
-  void WriteResultsOnBackgroundThread(std::string output);
+  // Write the data stored within |output| to the file indicated by
+  // |stats_file_|, if |stats_file_| is not empty. Write any errors to
+  // |errors_file_|.
+  void WriteResultsOnBackgroundThread(const std::string& output);
 
   // Perform any necessary cleanup and exit |browser_|; virtual since tests may
   // need to override this function.
