@@ -518,6 +518,7 @@ void NetworkMenuModel::ActivatedAt(int index) {
     if (cros->ethernet_connected())
       owner_->ShowTabbedNetworkSettings(cros->ethernet_network());
   } else if (flags & (FLAG_WIFI | FLAG_ADD_WIFI |
+                      FLAG_WIMAX |
                       FLAG_CELLULAR | FLAG_ADD_CELLULAR |
                       FLAG_VPN | FLAG_ADD_VPN)) {
     ConnectToNetworkAt(index, std::string(), std::string(), -1);
