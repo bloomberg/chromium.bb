@@ -214,13 +214,22 @@ class GDataFileSystemTest : public testing::Test {
     mock_doc_service_ = NULL;
     SetFreeDiskSpaceGetterForTesting(NULL);
 
-    // Run the remaining tasks on the main thread, so that reply tasks (2nd
-    // callback of PostTaskAndReply) are run. Otherwise, there will be a leak
-    // from PostTaskAndReply() as it deletes an internal object when the
-    // reply task is run. Note that actual reply tasks (functions passed to
-    // the 2nd callback of PostTaskAndReply) will be canceled, as these are
-    // bound to weak pointers, which are invalidated in ShutdownOnUIThread().
-    message_loop_.RunAllPending();
+    // Run the remaining tasks on both the main thread and the IO thread, so
+    // that all PostTaskAndReply round trip finish (that is, both the 1st and
+    // the 2nd callbacks of PostTaskAndReply are run). Otherwise, there will be
+    // a leak from PostTaskAndReply() as it deletes an internal object when the
+    // reply task is run. Note that actual reply tasks on the file system will
+    // be canceled, as these are bound to weak pointers, which are invalidated
+    // in ShutdownOnUIThread().
+    //
+    // Note that looping only on the main thread here is not enough. The test
+    // code may have already posted a task to the IO thread as in:
+    //   io_thread->PostTaskAndReply(TaskOnIO, ReplyOnUI); // on UI thread
+    // For freeing the internal object of PostTaskAndReply, we need to run the
+    // task on IO thread and then the reply on UI thread. Although file system
+    // will wait for all IO tasks issued inside it before deleted, it is not the
+    // case for other IO, like the one in GDataSyncClient::StartInitialScan().
+    RunAllPendingForIO();
 
     profile_.reset(NULL);
     chromeos::CrosLibrary::Shutdown();
