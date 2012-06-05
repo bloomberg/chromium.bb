@@ -1498,6 +1498,9 @@ class TestingAutomationProvider : public AutomationProvider,
                            DictionaryValue* args,
                            IPC::Message* reply_message);
 
+  // Html terminal.
+  void OpenCrosh(base::DictionaryValue* args, IPC::Message* reply_message);
+
   void AddChromeosObservers();
   void RemoveChromeosObservers();
 

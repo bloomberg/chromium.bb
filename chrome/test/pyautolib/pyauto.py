@@ -5140,6 +5140,72 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
+  # HTML Terminal
+
+  def OpenCrosh(self):
+    """Open crosh.
+
+    Equivalent to pressing Ctrl-Alt-t.
+    Opens in the last active (non-incognito) window.
+
+    Waits long enough for crosh to load, but does not wait for the crosh
+    prompt. Use WaitForHtermText() for that.
+    """
+    cmd_dict = { 'command': 'OpenCrosh' }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def WaitForHtermText(self, text, msg=None, tab_index=0, windex=0):
+    """Waits for the given text in a hterm tab.
+
+    Can be used to wait for the crosh> prompt or ssh prompt.
+
+    This does not poll. It uses dom mutation observers to wait
+    for the given text to show up.
+
+    Args:
+      text: the text to wait for. Can be a regex.
+      msg: the failure message to emit if the text could not be found.
+      tab_index: the tab for the hterm tab. Default: 0.
+      windex: the window index for the hterm tab. Default: 0.
+    """
+    self.WaitForDomNode(
+        xpath='//*[contains(text(), "%s")]' % text, frame_xpath='//iframe',
+        msg=msg, tab_index=tab_index, windex=windex)
+
+  def GetHtermRowsText(self, start, end, tab_index=0, windex=0):
+    """Fetch rows from a html terminal tab.
+
+    Works for both crosh and ssh tab.
+    Uses term_.getRowsText(start, end) javascript call.
+
+    Args:
+      start: start line number (0-based).
+      end: the end line (one beyond the line of interest).
+      tab_index: the tab for the hterm tab. Default: 0.
+      windex: the window index for the hterm tab. Default: 0.
+    """
+    return self.ExecuteJavascript(
+        'domAutomationController.send(term_.getRowsText(%d, %d))' % (
+            start, end),
+        tab_index=tab_index, windex=windex)
+
+  def SendKeysToHterm(self, text, tab_index=0, windex=0):
+    """Send keys to a html terminal tab.
+
+    Works for both crosh and ssh tab.
+    Uses term_.onVTKeystroke(str) javascript call.
+
+    Args:
+      text: the text to send.
+      tab_index: the tab for the hterm tab. Default: 0.
+      windex: the window index for the hterm tab. Default: 0.
+    """
+    return self.ExecuteJavascript(
+        'term_.onVTKeystroke("%s");'
+        'domAutomationController.send("done")' % text,
+        tab_index=tab_index, windex=windex)
+
+
   def CaptureProfilePhoto(self):
     """Captures user profile photo on ChromeOS.
 

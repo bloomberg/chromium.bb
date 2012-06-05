@@ -1846,6 +1846,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["SetVolume"] = &TestingAutomationProvider::SetVolume;
   handler_map["SetMute"] = &TestingAutomationProvider::SetMute;
 
+  handler_map["OpenCrosh"] = &TestingAutomationProvider::OpenCrosh;
+
 #endif  // defined(OS_CHROMEOS)
 
   std::map<std::string, BrowserJsonHandler> browser_handler_map;

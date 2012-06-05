@@ -5,6 +5,7 @@
 #include "chrome/browser/automation/testing_automation_provider.h"
 
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
@@ -1394,6 +1395,13 @@ void TestingAutomationProvider::SetMute(DictionaryValue* args,
   }
   audio_handler->SetMuted(mute);
   reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::OpenCrosh(DictionaryValue* args,
+                                        IPC::Message* reply_message) {
+  new NavigationNotificationObserver(
+      NULL, this, reply_message, 1, false, true);
+  ash::Shell::GetInstance()->delegate()->OpenCrosh();
 }
 
 void TestingAutomationProvider::CaptureProfilePhoto(
