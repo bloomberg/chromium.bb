@@ -115,6 +115,8 @@
       '-policy.PolicyTest.testAlwaysAuthorizePlugins',
       # crbug.com/118054
       '-policy.PolicyTest.testApplicationLocaleValue',
+      # crbug.com/131258
+      '-policy.PolicyTest.testDefaultSearchProviderOptions',
       # crbug.com/96896
       '-policy.PolicyTest.testEnabledPlugins',
       # crbug.com/118123
