@@ -378,7 +378,7 @@ bool AutomationResourceMessageFilter::SendDownloadRequestToHost(
 }
 
 void AutomationResourceMessageFilter::OnSetFilteredInet(bool enable) {
-  chrome_browser_net::SetUrlRequestMocksEnabled(enable);
+  //chrome_browser_net::SetUrlRequestMocksEnabled(enable);
 }
 
 bool AutomationResourceMessageFilter::ShouldFilterCookieMessages(
