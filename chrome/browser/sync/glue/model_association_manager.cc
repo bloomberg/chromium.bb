@@ -193,6 +193,7 @@ void ModelAssociationManager::Stop() {
            waiting_to_associate_.size() > 0);
 
     if (currently_associating_) {
+      TRACE_EVENT_END0("sync", "ModelAssociation");
       DVLOG(1) << "ModelAssociationManager: stopping "
                << currently_associating_->name();
       currently_associating_->Stop();
@@ -274,6 +275,7 @@ void ModelAssociationManager::TypeStartCallback(
     DataTypeController::StartResult result,
     const SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TRACE_EVENT_END0("sync", "ModelAssociation");
 
   DVLOG(1) << "ModelAssociationManager: TypeStartCallback";
   if (state_ == ABORTED) {
