@@ -68,6 +68,15 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
                          const unsigned int timeout,
                          const net::CompletionCallback& callback);
 
+  void IsochronousTransfer(const TransferDirection direction,
+                           const uint8 endpoint,
+                           net::IOBuffer* buffer,
+                           const size_t length,
+                           const unsigned int packets,
+                           const unsigned int packet_length,
+                           const unsigned int timeout,
+                           const net::CompletionCallback& callback);
+
   // Normal code should not call this function. It is called by the platform's
   // callback mechanism in such a way that it cannot be made private. Invokes
   // the callbacks associated with a given transfer, and removes it from the
@@ -89,12 +98,11 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
   // Checks that the device has not yet been closed.
   void CheckDevice();
 
-  // Starts tracking the USB transfer associated with a platform transfer
-  // handle. Retains the buffer and copies the completion callback until the
-  // transfer finishes, whereupon it invokes the callback then releases the
-  // buffer.
-  void AddTransfer(PlatformUsbTransferHandle handle, net::IOBuffer* buffer,
-                   const net::CompletionCallback& callback);
+  // Submits a transfer and starts tracking it. Retains the buffer and copies
+  // the completion callback until the transfer finishes, whereupon it invokes
+  // the callback then releases the buffer.
+  void SubmitTransfer(PlatformUsbTransferHandle handle, net::IOBuffer* buffer,
+                      const net::CompletionCallback& callback);
 
   // The UsbService isn't referenced here to prevent a dependency cycle between
   // the service and the devices. Since a service owns every device, and is

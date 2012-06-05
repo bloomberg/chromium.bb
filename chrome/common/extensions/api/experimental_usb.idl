@@ -62,6 +62,22 @@
     long[]? data;
   };
 
+  // IsochronousTransferInfo describes a single multi-packet isochronous
+  // transfer.
+  dictionary IsochronousTransferInfo {
+    // All of the normal transfer parameters are encapsulated in the
+    // transferInfo parameters. Note that the data specified in this parameter
+    // block is split along packetLength boundaries to form the individual
+    // packets of the transfer.
+    GenericTransferInfo transferInfo;
+
+    // The total number of packets in this transfer.
+    long packets;
+
+    // The length of each of the packets in this transfer.
+    long packetLength;
+  };
+
   // When a USB event occurs the event handler specified by the DeviceOptions
   // provided to findDevice will have a UsbEvent delivered to it which will
   // contain the result of a transfer, including returned data.
@@ -137,6 +153,15 @@
     // |callback|: Invoked once the transfer has completed.
     static void interruptTransfer(Device device,
         GenericTransferInfo transferInfo, optional TransferCallback callback);
+
+    // Performs an isochronous transfer on the specific device.
+    // |device|: An open device to make the transfer on.
+    // |transferInfo|: The parameters to the transfer. See
+    // IsochronousTransferInfo.
+    // |callback|: Invoked once the transfer has been completed.
+    static void isochronousTransfer(Device device,
+        IsochronousTransferInfo transferInfo,
+        optional TransferCallback callback);
   };
 
   interface Events {

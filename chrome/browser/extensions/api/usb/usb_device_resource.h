@@ -41,6 +41,8 @@ class UsbDeviceResource : public APIResource {
   void InterruptTransfer(
       const api::experimental_usb::GenericTransferInfo& transfer);
   void BulkTransfer(const api::experimental_usb::GenericTransferInfo& transfer);
+  void IsochronousTransfer(
+      const api::experimental_usb::IsochronousTransferInfo& transfer);
 
  private:
   // Invoked by the underlying device's transfer callbacks. Indicates transfer

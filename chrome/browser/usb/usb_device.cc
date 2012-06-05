@@ -113,8 +113,7 @@ void UsbDevice::ControlTransfer(const TransferDirection direction,
   libusb_fill_control_transfer(transfer, handle_, reinterpret_cast<uint8*>(
       buffer->data()), reinterpret_cast<libusb_transfer_cb_fn>(
           &HandleTransferCompletion), this, timeout);
-  AddTransfer(transfer, buffer, callback);
-  libusb_submit_transfer(transfer);
+  SubmitTransfer(transfer, buffer, callback);
 }
 
 void UsbDevice::BulkTransfer(const TransferDirection direction,
@@ -128,8 +127,7 @@ void UsbDevice::BulkTransfer(const TransferDirection direction,
       reinterpret_cast<uint8*>(buffer->data()), length,
       reinterpret_cast<libusb_transfer_cb_fn>(&HandleTransferCompletion), this,
       timeout);
-  AddTransfer(transfer, buffer, callback);
-  libusb_submit_transfer(transfer);
+  SubmitTransfer(transfer, buffer, callback);
 }
 
 void UsbDevice::InterruptTransfer(const TransferDirection direction,
@@ -143,17 +141,35 @@ void UsbDevice::InterruptTransfer(const TransferDirection direction,
       reinterpret_cast<uint8*>(buffer->data()), length,
       reinterpret_cast<libusb_transfer_cb_fn>(&HandleTransferCompletion), this,
       timeout);
-  AddTransfer(transfer, buffer, callback);
-  libusb_submit_transfer(transfer);
+  SubmitTransfer(transfer, buffer, callback);
+}
+
+void UsbDevice::IsochronousTransfer(const TransferDirection direction,
+    const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
+    const unsigned int packets, const unsigned int packet_length,
+    const unsigned int timeout, const net::CompletionCallback& callback) {
+  CheckDevice();
+
+  struct libusb_transfer* const transfer = libusb_alloc_transfer(packets);
+  const uint8 new_endpoint = ConvertTransferDirection(direction) | endpoint;
+  libusb_fill_iso_transfer(transfer, handle_, new_endpoint,
+      reinterpret_cast<uint8*>(buffer->data()), length, packets,
+      reinterpret_cast<libusb_transfer_cb_fn>(&HandleTransferCompletion), this,
+      timeout);
+  libusb_set_iso_packet_lengths(transfer, packet_length);
+
+  SubmitTransfer(transfer, buffer, callback);
 }
 
 void UsbDevice::CheckDevice() {
   DCHECK(handle_) << "Device is already closed.";
 }
 
-void UsbDevice::AddTransfer(PlatformUsbTransferHandle handle,
-                            net::IOBuffer* buffer,
-                            const net::CompletionCallback& callback) {
+void UsbDevice::SubmitTransfer(PlatformUsbTransferHandle handle,
+                               net::IOBuffer* buffer,
+                               const net::CompletionCallback& callback) {
+  libusb_submit_transfer(handle);
+
   Transfer transfer;
   transfer.buffer = buffer;
   transfer.callback = callback;

@@ -20,6 +20,8 @@ namespace ControlTransfer = extensions::api::experimental_usb::ControlTransfer;
 namespace FindDevice = extensions::api::experimental_usb::FindDevice;
 namespace InterruptTransfer =
     extensions::api::experimental_usb::InterruptTransfer;
+namespace IsochronousTransfer =
+    extensions::api::experimental_usb::IsochronousTransfer;
 using extensions::api::experimental_usb::Device;
 using std::vector;
 
@@ -143,6 +145,28 @@ void UsbInterruptTransferFunction::Work() {
 }
 
 bool UsbInterruptTransferFunction::Respond() {
+  return true;
+}
+
+UsbIsochronousTransferFunction::UsbIsochronousTransferFunction() {}
+
+UsbIsochronousTransferFunction::~UsbIsochronousTransferFunction() {}
+
+bool UsbIsochronousTransferFunction::Prepare() {
+  parameters_ = IsochronousTransfer::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  return true;
+}
+
+void UsbIsochronousTransferFunction::Work() {
+  UsbDeviceResource* const device = controller()->GetUsbDeviceResource(
+      parameters_->device.handle);
+  if (device) {
+    device->IsochronousTransfer(parameters_->transfer_info);
+  }
+}
+
+bool UsbIsochronousTransferFunction::Respond() {
   return true;
 }
 

@@ -100,6 +100,23 @@ class UsbInterruptTransferFunction : public AsyncAPIFunction {
       parameters_;
 };
 
+class UsbIsochronousTransferFunction : public AsyncAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.isochronousTransfer");
+
+  UsbIsochronousTransferFunction();
+
+ protected:
+  virtual ~UsbIsochronousTransferFunction();
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+
+ private:
+  scoped_ptr<extensions::api::experimental_usb::IsochronousTransfer::Params>
+      parameters_;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_USB_USB_API_H_

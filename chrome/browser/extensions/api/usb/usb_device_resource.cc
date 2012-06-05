@@ -17,6 +17,7 @@
 
 using extensions::api::experimental_usb::ControlTransferInfo;
 using extensions::api::experimental_usb::GenericTransferInfo;
+using extensions::api::experimental_usb::IsochronousTransferInfo;
 using std::string;
 using std::vector;
 
@@ -181,6 +182,27 @@ void UsbDeviceResource::BulkTransfer(const GenericTransferInfo& transfer) {
   device_->BulkTransfer(direction, transfer.endpoint, buffer, size, 0,
                         base::Bind(&UsbDeviceResource::TransferComplete,
                                    base::Unretained(this), buffer, size));
+}
+
+void UsbDeviceResource::IsochronousTransfer(
+    const IsochronousTransferInfo& transfer) {
+  const GenericTransferInfo& generic_transfer = transfer.transfer_info;
+
+  unsigned int size;
+  UsbDevice::TransferDirection direction;
+  scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
+      generic_transfer);
+
+  if (!ConvertDirection(generic_transfer.direction, &direction) ||
+      !GetTransferSize(generic_transfer, &size) || !buffer) {
+    LOG(INFO) << "Malformed transfer parameters.";
+    return;
+  }
+
+  device_->IsochronousTransfer(direction, generic_transfer.endpoint, buffer,
+      size, transfer.packets, transfer.packet_length, 0, base::Bind(
+          &UsbDeviceResource::TransferComplete, base::Unretained(this), buffer,
+          size));
 }
 
 void UsbDeviceResource::TransferComplete(net::IOBuffer* buffer,
