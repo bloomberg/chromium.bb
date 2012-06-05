@@ -806,6 +806,9 @@
           },
         },
       },
+      'include_dirs': [
+        '$(DXSDK_DIR)/include',
+      ],
     }],
     ['toolkit_uses_gtk == 1', {
       'dependencies': [

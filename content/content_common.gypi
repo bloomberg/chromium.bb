@@ -432,6 +432,7 @@
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/angle/include',
+        '$(DXSDK_DIR)/include',
       ],
     }],
     ['OS=="win" and directxsdk_exists=="True"', {
