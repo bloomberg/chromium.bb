@@ -6,11 +6,26 @@
             "txt": "adásszerű"
         }, 
         {
+            "brl": "ad\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "adásszerű"
+        }, 
+        {
             "brl": "ad\"s5{net", 
             "txt": "adásszünet"
         }, 
         {
+            "brl": "ad\"s5{net", 
+            "testmode": "backtranslate", 
+            "txt": "adásszünet"
+        }, 
+        {
             "brl": "ad9s5\"mla", 
+            "txt": "adósszámla"
+        }, 
+        {
+            "brl": "ad9s5\"mla", 
+            "testmode": "backtranslate", 
             "txt": "adósszámla"
         }, 
         {
@@ -19,7 +34,18 @@
             "txt": "Agyagosszergény"
         }, 
         {
+            "brl": "$a4agos5erg16", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Agyagosszergény"
+        }, 
+        {
             "brl": "a4ag4}r}iken", 
+            "txt": "agyaggyűrűiken"
+        }, 
+        {
+            "brl": "a4ag4}r}iken", 
+            "testmode": "backtranslate", 
             "txt": "agyaggyűrűiken"
         }, 
         {
@@ -27,7 +53,17 @@
             "txt": "agyonnyom"
         }, 
         {
+            "brl": "a4on6om", 
+            "testmode": "backtranslate", 
+            "txt": "agyonnyom"
+        }, 
+        {
             "brl": "a4on602ott", 
+            "txt": "agyonnyúzott"
+        }, 
+        {
+            "brl": "a4on602ott", 
+            "testmode": "backtranslate", 
             "txt": "agyonnyúzott"
         }, 
         {
@@ -35,7 +71,17 @@
             "txt": "agyonnyűtt "
         }, 
         {
+            "brl": "a4on6}tt ", 
+            "testmode": "backtranslate", 
+            "txt": "agyonnyűtt "
+        }, 
+        {
             "brl": "\"40s5ekerek", 
+            "txt": "ágyússzekerek"
+        }, 
+        {
+            "brl": "\"40s5ekerek", 
+            "testmode": "backtranslate", 
             "txt": "ágyússzekerek"
         }, 
         {
@@ -43,7 +89,17 @@
             "txt": "ájulásszerű"
         }, 
         {
+            "brl": "\"jul\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "ájulásszerű"
+        }, 
+        {
             "brl": "ak\"csqv16", 
+            "txt": "akácsövény"
+        }, 
+        {
+            "brl": "ak\"csqv16", 
+            "testmode": "backtranslate", 
             "txt": "akácsövény"
         }, 
         {
@@ -51,7 +107,17 @@
             "txt": "ákácsövény"
         }, 
         {
+            "brl": "\"k\"csqv16", 
+            "testmode": "backtranslate", 
+            "txt": "ákácsövény"
+        }, 
+        {
             "brl": "al\"s5olg\"ja", 
+            "txt": "alásszolgája"
+        }, 
+        {
+            "brl": "al\"s5olg\"ja", 
+            "testmode": "backtranslate", 
             "txt": "alásszolgája"
         }, 
         {
@@ -59,7 +125,17 @@
             "txt": "alásszolgájuk "
         }, 
         {
+            "brl": "al\"s5olg\"juk ", 
+            "testmode": "backtranslate", 
+            "txt": "alásszolgájuk "
+        }, 
+        {
             "brl": "alkalma2\"s5erver", 
+            "txt": "alkalmazásszerver"
+        }, 
+        {
+            "brl": "alkalma2\"s5erver", 
+            "testmode": "backtranslate", 
             "txt": "alkalmazásszerver"
         }, 
         {
@@ -67,7 +143,17 @@
             "txt": "állásszög"
         }, 
         {
+            "brl": "\"ll\"s5qg", 
+            "testmode": "backtranslate", 
+            "txt": "állásszög"
+        }, 
+        {
             "brl": "alm\"s5{rke", 
+            "txt": "almásszürke"
+        }, 
+        {
+            "brl": "alm\"s5{rke", 
+            "testmode": "backtranslate", 
             "txt": "almásszürke"
         }, 
         {
@@ -75,7 +161,17 @@
             "txt": "alvásszegény"
         }, 
         {
+            "brl": "alv\"s5eg16", 
+            "testmode": "backtranslate", 
+            "txt": "alvásszegény"
+        }, 
+        {
             "brl": "alv\"s5{ks1glete", 
+            "txt": "alvásszükséglete"
+        }, 
+        {
+            "brl": "alv\"s5{ks1glete", 
+            "testmode": "backtranslate", 
             "txt": "alvásszükséglete"
         }, 
         {
@@ -83,7 +179,17 @@
             "txt": "alvászavar"
         }, 
         {
+            "brl": "alv\"s2avar", 
+            "testmode": "backtranslate", 
+            "txt": "alvászavar"
+        }, 
+        {
             "brl": "a6ag4727", 
+            "txt": "anyaggyőző"
+        }, 
+        {
+            "brl": "a6ag4727", 
+            "testmode": "backtranslate", 
             "txt": "anyaggyőző"
         }, 
         {
@@ -91,7 +197,17 @@
             "txt": "anyaggyűjtés"
         }, 
         {
+            "brl": "a6ag4}jt1s", 
+            "testmode": "backtranslate", 
+            "txt": "anyaggyűjtés"
+        }, 
+        {
             "brl": "ara6os57ke", 
+            "txt": "aranyosszőke"
+        }, 
+        {
+            "brl": "ara6os57ke", 
+            "testmode": "backtranslate", 
             "txt": "aranyosszőke"
         }, 
         {
@@ -99,7 +215,17 @@
             "txt": "árboccsúcs"
         }, 
         {
+            "brl": "\"rboc303", 
+            "testmode": "backtranslate", 
+            "txt": "árboccsúcs"
+        }, 
+        {
             "brl": "\"rb9c303", 
+            "txt": "árbóccsúcs"
+        }, 
+        {
+            "brl": "\"rb9c303", 
+            "testmode": "backtranslate", 
             "txt": "árbóccsúcs"
         }, 
         {
@@ -107,7 +233,17 @@
             "txt": "árbocsudarat"
         }, 
         {
+            "brl": "\"rbocsudarat", 
+            "testmode": "backtranslate", 
+            "txt": "árbocsudarat"
+        }, 
+        {
             "brl": "arc{reg4ullad\"s", 
+            "txt": "arcüreggyulladás"
+        }, 
+        {
+            "brl": "arc{reg4ullad\"s", 
+            "testmode": "backtranslate", 
             "txt": "arcüreggyulladás"
         }, 
         {
@@ -115,7 +251,17 @@
             "txt": "arccsont"
         }, 
         {
+            "brl": "arc3ont", 
+            "testmode": "backtranslate", 
+            "txt": "arccsont"
+        }, 
+        {
             "brl": "arcseb", 
+            "txt": "arcseb"
+        }, 
+        {
+            "brl": "arcseb", 
+            "testmode": "backtranslate", 
             "txt": "arcseb"
         }, 
         {
@@ -123,7 +269,17 @@
             "txt": "arcsebe "
         }, 
         {
+            "brl": "arcsebe ", 
+            "testmode": "backtranslate", 
+            "txt": "arcsebe "
+        }, 
+        {
             "brl": "arcs1r{l1s", 
+            "txt": "arcsérülés"
+        }, 
+        {
+            "brl": "arcs1r{l1s", 
+            "testmode": "backtranslate", 
             "txt": "arcsérülés"
         }, 
         {
@@ -131,7 +287,17 @@
             "txt": "árgusszemű"
         }, 
         {
+            "brl": "\"rgus5em}", 
+            "testmode": "backtranslate", 
+            "txt": "árgusszemű"
+        }, 
+        {
             "brl": "\"rv|2s0jtotta", 
+            "txt": "árvízsújtotta"
+        }, 
+        {
+            "brl": "\"rv|2s0jtotta", 
+            "testmode": "backtranslate", 
             "txt": "árvízsújtotta"
         }, 
         {
@@ -139,7 +305,17 @@
             "txt": "autósszemüveg"
         }, 
         {
+            "brl": "aut9s5em{veg", 
+            "testmode": "backtranslate", 
+            "txt": "autósszemüveg"
+        }, 
+        {
             "brl": "a2on6omban", 
+            "txt": "azonnyomban"
+        }, 
+        {
+            "brl": "a2on6omban", 
+            "testmode": "backtranslate", 
             "txt": "azonnyomban"
         }, 
         {
@@ -147,7 +323,17 @@
             "txt": "bádoggyűjtemény"
         }, 
         {
+            "brl": "b\"dog4}jtem16", 
+            "testmode": "backtranslate", 
+            "txt": "bádoggyűjtemény"
+        }, 
+        {
             "brl": "barn\"s57ke", 
+            "txt": "barnásszőke"
+        }, 
+        {
+            "brl": "barn\"s57ke", 
+            "testmode": "backtranslate", 
             "txt": "barnásszőke"
         }, 
         {
@@ -155,7 +341,17 @@
             "txt": "barnásszőkét"
         }, 
         {
+            "brl": "barn\"s57k1t", 
+            "testmode": "backtranslate", 
+            "txt": "barnásszőkét"
+        }, 
+        {
             "brl": "barn\"s5{rke", 
+            "txt": "barnásszürke"
+        }, 
+        {
+            "brl": "barn\"s5{rke", 
+            "testmode": "backtranslate", 
             "txt": "barnásszürke"
         }, 
         {
@@ -163,7 +359,17 @@
             "txt": "barnesszal"
         }, 
         {
+            "brl": "barne55al", 
+            "testmode": "backtranslate", 
+            "txt": "barnesszal"
+        }, 
+        {
             "brl": "be3l1s5er}en", 
+            "txt": "becslésszerűen"
+        }, 
+        {
+            "brl": "be3l1s5er}en", 
+            "testmode": "backtranslate", 
             "txt": "becslésszerűen"
         }, 
         {
@@ -172,7 +378,18 @@
             "txt": "Békésszentandrás"
         }, 
         {
+            "brl": "$b1k1s5entandr\"s", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Békésszentandrás"
+        }, 
+        {
             "brl": "b1l1s5qvet", 
+            "txt": "bélésszövet"
+        }, 
+        {
+            "brl": "b1l1s5qvet", 
+            "testmode": "backtranslate", 
             "txt": "bélésszövet"
         }, 
         {
@@ -180,7 +397,17 @@
             "txt": "bélyeggyűjtemény"
         }, 
         {
+            "brl": "b1eg4}jtem16", 
+            "testmode": "backtranslate", 
+            "txt": "bélyeggyűjtemény"
+        }, 
+        {
             "brl": "b1rcs{veg", 
+            "txt": "bércsüveg"
+        }, 
+        {
+            "brl": "b1rcs{veg", 
+            "testmode": "backtranslate", 
             "txt": "bércsüveg"
         }, 
         {
@@ -188,7 +415,17 @@
             "txt": "berendezésszerű "
         }, 
         {
+            "brl": "berende21s5er} ", 
+            "testmode": "backtranslate", 
+            "txt": "berendezésszerű "
+        }, 
+        {
             "brl": "berende21s5ett", 
+            "txt": "berendezésszett"
+        }, 
+        {
+            "brl": "berende21s5ett", 
+            "testmode": "backtranslate", 
             "txt": "berendezésszett"
         }, 
         {
@@ -196,7 +433,17 @@
             "txt": "beteggyógyász"
         }, 
         {
+            "brl": "beteg494\"5", 
+            "testmode": "backtranslate", 
+            "txt": "beteggyógyász"
+        }, 
+        {
             "brl": "bilin32qrg1s", 
+            "txt": "bilincszörgés"
+        }, 
+        {
+            "brl": "bilin32qrg1s", 
+            "testmode": "backtranslate", 
             "txt": "bilincszörgés"
         }, 
         {
@@ -204,7 +451,17 @@
             "txt": "binsenggyökér"
         }, 
         {
+            "brl": "binsen44qk1r", 
+            "testmode": "backtranslate", 
+            "txt": "binsenggyökér"
+        }, 
+        {
             "brl": "boh9csapk\"ja", 
+            "txt": "bohócsapkája"
+        }, 
+        {
+            "brl": "boh9csapk\"ja", 
+            "testmode": "backtranslate", 
             "txt": "bohócsapkája"
         }, 
         {
@@ -212,7 +469,17 @@
             "txt": "bonbonmeggy"
         }, 
         {
+            "brl": "bonbonme44", 
+            "testmode": "backtranslate", 
+            "txt": "bonbonmeggy"
+        }, 
+        {
             "brl": "bors5em", 
+            "txt": "borsszem"
+        }, 
+        {
+            "brl": "bors5em", 
+            "testmode": "backtranslate", 
             "txt": "borsszem"
         }, 
         {
@@ -220,7 +487,17 @@
             "txt": "borsszóró"
         }, 
         {
+            "brl": "bors59r9", 
+            "testmode": "backtranslate", 
+            "txt": "borsszóró"
+        }, 
+        {
             "brl": "bor2as57r}", 
+            "txt": "borzasszőrű"
+        }, 
+        {
+            "brl": "bor2as57r}", 
+            "testmode": "backtranslate", 
             "txt": "borzasszőrű"
         }, 
         {
@@ -228,7 +505,17 @@
             "txt": "borzzsír"
         }, 
         {
+            "brl": "bor2`|r", 
+            "testmode": "backtranslate", 
+            "txt": "borzzsír"
+        }, 
+        {
             "brl": "b7g1s5er}", 
+            "txt": "bőgésszerű"
+        }, 
+        {
+            "brl": "b7g1s5er}", 
+            "testmode": "backtranslate", 
             "txt": "bőgésszerű"
         }, 
         {
@@ -236,7 +523,17 @@
             "txt": "börtönnyelve"
         }, 
         {
+            "brl": "bqrtqn6elve", 
+            "testmode": "backtranslate", 
+            "txt": "börtönnyelve"
+        }, 
+        {
             "brl": "brekeg1s5er}", 
+            "txt": "brekegésszerű"
+        }, 
+        {
+            "brl": "brekeg1s5er}", 
+            "testmode": "backtranslate", 
             "txt": "brekegésszerű"
         }, 
         {
@@ -244,7 +541,17 @@
             "txt": "bronzsáska"
         }, 
         {
+            "brl": "bron2s\"ska", 
+            "testmode": "backtranslate", 
+            "txt": "bronzsáska"
+        }, 
+        {
             "brl": "bron2s\"sk\"k", 
+            "txt": "bronzsáskák"
+        }, 
+        {
+            "brl": "bron2s\"sk\"k", 
+            "testmode": "backtranslate", 
             "txt": "bronzsáskák"
         }, 
         {
@@ -252,7 +559,17 @@
             "txt": "bronzsasokkal "
         }, 
         {
+            "brl": "bron2sasokkal ", 
+            "testmode": "backtranslate", 
+            "txt": "bronzsasokkal "
+        }, 
+        {
             "brl": "bron2sisak", 
+            "txt": "bronzsisak"
+        }, 
+        {
+            "brl": "bron2sisak", 
+            "testmode": "backtranslate", 
             "txt": "bronzsisak"
         }, 
         {
@@ -260,7 +577,17 @@
             "txt": "búcsújárásszerű"
         }, 
         {
+            "brl": "b030j\"r\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "búcsújárásszerű"
+        }, 
+        {
             "brl": "b}n6omok", 
+            "txt": "bűnnyomok"
+        }, 
+        {
+            "brl": "b}n6omok", 
+            "testmode": "backtranslate", 
             "txt": "bűnnyomok"
         }, 
         {
@@ -268,7 +595,17 @@
             "txt": "chipseszacskó"
         }, 
         {
+            "brl": "chipses2a3k9", 
+            "testmode": "backtranslate", 
+            "txt": "chipseszacskó"
+        }, 
+        {
             "brl": "3ap\"s5\"m", 
+            "txt": "csapásszám"
+        }, 
+        {
+            "brl": "3ap\"s5\"m", 
+            "testmode": "backtranslate", 
             "txt": "csapásszám"
         }, 
         {
@@ -276,7 +613,17 @@
             "txt": "csárdásszóló"
         }, 
         {
+            "brl": "3\"rd\"s59l9", 
+            "testmode": "backtranslate", 
+            "txt": "csárdásszóló"
+        }, 
+        {
             "brl": "3attan\"s5er}", 
+            "txt": "csattanásszerű"
+        }, 
+        {
+            "brl": "3attan\"s5er}", 
+            "testmode": "backtranslate", 
             "txt": "csattanásszerű"
         }, 
         {
@@ -284,7 +631,17 @@
             "txt": "csavarásszerű"
         }, 
         {
+            "brl": "3avar\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "csavarásszerű"
+        }, 
+        {
             "brl": "3ik9s5\"mad9", 
+            "txt": "csikósszámadó"
+        }, 
+        {
+            "brl": "3ik9s5\"mad9", 
+            "testmode": "backtranslate", 
             "txt": "csikósszámadó"
         }, 
         {
@@ -292,7 +649,17 @@
             "txt": "csipkésszélű"
         }, 
         {
+            "brl": "3ipk1s51l}", 
+            "testmode": "backtranslate", 
+            "txt": "csipkésszélű"
+        }, 
+        {
             "brl": "3obban\"s5er}", 
+            "txt": "csobbanásszerű"
+        }, 
+        {
+            "brl": "3obban\"s5er}", 
+            "testmode": "backtranslate", 
             "txt": "csobbanásszerű"
         }, 
         {
@@ -300,7 +667,17 @@
             "txt": "csuklásszerű"
         }, 
         {
+            "brl": "3ukl\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "csuklásszerű"
+        }, 
+        {
             "brl": "di55ert\"ci9", 
+            "txt": "disszertáció"
+        }, 
+        {
+            "brl": "di55ert\"ci9", 
+            "testmode": "backtranslate", 
             "txt": "disszertáció"
         }, 
         {
@@ -308,7 +685,17 @@
             "txt": "dobpergésszerűen"
         }, 
         {
+            "brl": "dobperg1s5er}en", 
+            "testmode": "backtranslate", 
+            "txt": "dobpergésszerűen"
+        }, 
+        {
             "brl": "dqg4apj0", 
+            "txt": "döggyapjú"
+        }, 
+        {
+            "brl": "dqg4apj0", 
+            "testmode": "backtranslate", 
             "txt": "döggyapjú"
         }, 
         {
@@ -316,7 +703,17 @@
             "txt": "dőlésszög"
         }, 
         {
+            "brl": "d7l1s5qg", 
+            "testmode": "backtranslate", 
+            "txt": "dőlésszög"
+        }, 
+        {
             "brl": "dqrg1s5er}", 
+            "txt": "dörgésszerű"
+        }, 
+        {
+            "brl": "dqrg1s5er}", 
+            "testmode": "backtranslate", 
             "txt": "dörgésszerű"
         }, 
         {
@@ -324,7 +721,17 @@
             "txt": "dörgésszerű "
         }, 
         {
+            "brl": "dqrg1s5er} ", 
+            "testmode": "backtranslate", 
+            "txt": "dörgésszerű "
+        }, 
+        {
             "brl": "drago6os5\"2ad ", 
+            "txt": "dragonyosszázad "
+        }, 
+        {
+            "brl": "drago6os5\"2ad ", 
+            "testmode": "backtranslate", 
             "txt": "dragonyosszázad "
         }, 
         {
@@ -332,7 +739,17 @@
             "txt": "dragonyoszászlóalj"
         }, 
         {
+            "brl": "drago6os2\"5l9alj", 
+            "testmode": "backtranslate", 
+            "txt": "dragonyoszászlóalj"
+        }, 
+        {
             "brl": "drog4an0s", 
+            "txt": "droggyanús"
+        }, 
+        {
+            "brl": "drog4an0s", 
+            "testmode": "backtranslate", 
             "txt": "droggyanús"
         }, 
         {
@@ -340,7 +757,17 @@
             "txt": "dússzakállú"
         }, 
         {
+            "brl": "d0s5ak\"ll0", 
+            "testmode": "backtranslate", 
+            "txt": "dússzakállú"
+        }, 
+        {
             "brl": "1des5\"j0", 
+            "txt": "édesszájú"
+        }, 
+        {
+            "brl": "1des5\"j0", 
+            "testmode": "backtranslate", 
             "txt": "édesszájú"
         }, 
         {
@@ -348,7 +775,17 @@
             "txt": "édesszesztestvér"
         }, 
         {
+            "brl": "1des5e5testv1r", 
+            "testmode": "backtranslate", 
+            "txt": "édesszesztestvér"
+        }, 
+        {
             "brl": "1g1s5ab\"", 
+            "txt": "égésszabály"
+        }, 
+        {
+            "brl": "1g1s5ab\"", 
+            "testmode": "backtranslate", 
             "txt": "égésszabály"
         }, 
         {
@@ -356,7 +793,17 @@
             "txt": "égésszag"
         }, 
         {
+            "brl": "1g1s5ag", 
+            "testmode": "backtranslate", 
+            "txt": "égésszag"
+        }, 
+        {
             "brl": "1g1s5\"m", 
+            "txt": "égésszám"
+        }, 
+        {
+            "brl": "1g1s5\"m", 
+            "testmode": "backtranslate", 
             "txt": "égésszám"
         }, 
         {
@@ -364,7 +811,17 @@
             "txt": "égésszigetelés"
         }, 
         {
+            "brl": "1g1s5igetel1s", 
+            "testmode": "backtranslate", 
+            "txt": "égésszigetelés"
+        }, 
+        {
             "brl": "e4enes5\"l0", 
+            "txt": "egyenesszálú"
+        }, 
+        {
+            "brl": "e4enes5\"l0", 
+            "testmode": "backtranslate", 
             "txt": "egyenesszálú"
         }, 
         {
@@ -372,7 +829,17 @@
             "txt": "egyenesszárnyúak"
         }, 
         {
+            "brl": "e4enes5\"r60ak", 
+            "testmode": "backtranslate", 
+            "txt": "egyenesszárnyúak"
+        }, 
+        {
             "brl": "e4enes5qg", 
+            "txt": "egyenesszög"
+        }, 
+        {
+            "brl": "e4enes5qg", 
+            "testmode": "backtranslate", 
             "txt": "egyenesszög"
         }, 
         {
@@ -380,7 +847,17 @@
             "txt": "egyezség"
         }, 
         {
+            "brl": "e4e2s1g", 
+            "testmode": "backtranslate", 
+            "txt": "egyezség"
+        }, 
+        {
             "brl": "1hes5\"jat ", 
+            "txt": "éhesszájat "
+        }, 
+        {
+            "brl": "1hes5\"jat ", 
+            "testmode": "backtranslate", 
             "txt": "éhesszájat "
         }, 
         {
@@ -388,7 +865,17 @@
             "txt": "ejtőernyősszárnyak"
         }, 
         {
+            "brl": "ejt7er67s5\"r6ak", 
+            "testmode": "backtranslate", 
+            "txt": "ejtőernyősszárnyak"
+        }, 
+        {
             "brl": "ejt7er67s5\"2ad", 
+            "txt": "ejtőernyősszázad"
+        }, 
+        {
+            "brl": "ejt7er67s5\"2ad", 
+            "testmode": "backtranslate", 
             "txt": "ejtőernyősszázad"
         }, 
         {
@@ -396,7 +883,17 @@
             "txt": "ejtőernyőszászlóalj "
         }, 
         {
+            "brl": "ejt7er67s2\"5l9alj ", 
+            "testmode": "backtranslate", 
+            "txt": "ejtőernyőszászlóalj "
+        }, 
+        {
             "brl": "1kes59l\"s", 
+            "txt": "ékesszólás"
+        }, 
+        {
+            "brl": "1kes59l\"s", 
+            "testmode": "backtranslate", 
             "txt": "ékesszólás"
         }, 
         {
@@ -404,7 +901,17 @@
             "txt": "ékesszóló "
         }, 
         {
+            "brl": "1kes59l9 ", 
+            "testmode": "backtranslate", 
+            "txt": "ékesszóló "
+        }, 
+        {
             "brl": "ekh9s5ek1r", 
+            "txt": "ekhósszekér"
+        }, 
+        {
+            "brl": "ekh9s5ek1r", 
+            "testmode": "backtranslate", 
             "txt": "ekhósszekér"
         }, 
         {
@@ -412,7 +919,17 @@
             "txt": "ekhósszekerek"
         }, 
         {
+            "brl": "ekh9s5ekerek", 
+            "testmode": "backtranslate", 
+            "txt": "ekhósszekerek"
+        }, 
+        {
             "brl": "eles1g4}jt1s ", 
+            "txt": "eleséggyűjtés "
+        }, 
+        {
+            "brl": "eles1g4}jt1s ", 
+            "testmode": "backtranslate", 
             "txt": "eleséggyűjtés "
         }, 
         {
@@ -420,7 +937,17 @@
             "txt": "élesszemű"
         }, 
         {
+            "brl": "1les5em}", 
+            "testmode": "backtranslate", 
+            "txt": "élesszemű"
+        }, 
+        {
             "brl": "ell\"t\"s5er}", 
+            "txt": "ellátásszerű"
+        }, 
+        {
+            "brl": "ell\"t\"s5er}", 
+            "testmode": "backtranslate", 
             "txt": "ellátásszerű"
         }, 
         {
@@ -428,7 +955,17 @@
             "txt": "ellenállásszekrény"
         }, 
         {
+            "brl": "ellen\"ll\"s5ekr16", 
+            "testmode": "backtranslate", 
+            "txt": "ellenállásszekrény"
+        }, 
+        {
             "brl": "ellen6ilatko2at", 
+            "txt": "ellennyilatkozat"
+        }, 
+        {
+            "brl": "ellen6ilatko2at", 
+            "testmode": "backtranslate", 
             "txt": "ellennyilatkozat"
         }, 
         {
@@ -436,7 +973,17 @@
             "txt": "ellennyomás"
         }, 
         {
+            "brl": "ellen6om\"s", 
+            "testmode": "backtranslate", 
+            "txt": "ellennyomás"
+        }, 
+        {
             "brl": "elm1ncs1g", 
+            "txt": "elméncség"
+        }, 
+        {
+            "brl": "elm1ncs1g", 
+            "testmode": "backtranslate", 
             "txt": "elméncség"
         }, 
         {
@@ -444,7 +991,17 @@
             "txt": "előírásszerű "
         }, 
         {
+            "brl": "el7|r\"s5er} ", 
+            "testmode": "backtranslate", 
+            "txt": "előírásszerű "
+        }, 
+        {
             "brl": "elr1mi551k ", 
+            "txt": "elrémisszék "
+        }, 
+        {
+            "brl": "elr1mi551k ", 
+            "testmode": "backtranslate", 
             "txt": "elrémisszék "
         }, 
         {
@@ -452,7 +1009,17 @@
             "txt": "emberhússzagot "
         }, 
         {
+            "brl": "emberh0s5agot ", 
+            "testmode": "backtranslate", 
+            "txt": "emberhússzagot "
+        }, 
+        {
             "brl": "emel1s5er}", 
+            "txt": "emelésszerű"
+        }, 
+        {
+            "brl": "emel1s5er}", 
+            "testmode": "backtranslate", 
             "txt": "emelésszerű"
         }, 
         {
@@ -460,7 +1027,17 @@
             "txt": "érccsapadék, érccsengés, érccsatorna "
         }, 
         {
+            "brl": "1rc3apad1k, 1rc3eng1s, 1rc3atorna ", 
+            "testmode": "backtranslate", 
+            "txt": "érccsapadék, érccsengés, érccsatorna "
+        }, 
+        {
             "brl": "1rcsalak", 
+            "txt": "ércsalak"
+        }, 
+        {
+            "brl": "1rcsalak", 
+            "testmode": "backtranslate", 
             "txt": "ércsalak"
         }, 
         {
@@ -468,7 +1045,17 @@
             "txt": "ércsas"
         }, 
         {
+            "brl": "1rcsas", 
+            "testmode": "backtranslate", 
+            "txt": "ércsas"
+        }, 
+        {
             "brl": "1rcseem", 
+            "txt": "ércselyem"
+        }, 
+        {
+            "brl": "1rcseem", 
+            "testmode": "backtranslate", 
             "txt": "ércselyem"
         }, 
         {
@@ -476,7 +1063,17 @@
             "txt": "ércsíp, ércsípjába, ércsípláda "
         }, 
         {
+            "brl": "1rcs|p, 1rcs|pj\"ba, 1rcs|pl\"da ", 
+            "testmode": "backtranslate", 
+            "txt": "ércsíp, ércsípjába, ércsípláda "
+        }, 
+        {
             "brl": "1r3|ptet7", 
+            "txt": "ércsíptető"
+        }, 
+        {
+            "brl": "1r3|ptet7", 
+            "testmode": "backtranslate", 
             "txt": "ércsíptető"
         }, 
         {
@@ -484,7 +1081,17 @@
             "txt": "ércsisak"
         }, 
         {
+            "brl": "1rcsisak", 
+            "testmode": "backtranslate", 
+            "txt": "ércsisak"
+        }, 
+        {
             "brl": "1rcsodro6", 
+            "txt": "ércsodrony"
+        }, 
+        {
+            "brl": "1rcsodro6", 
+            "testmode": "backtranslate", 
             "txt": "ércsodrony"
         }, 
         {
@@ -492,7 +1099,17 @@
             "txt": "erőforrászabáló"
         }, 
         {
+            "brl": "er7forr\"s2ab\"l9", 
+            "testmode": "backtranslate", 
+            "txt": "erőforrászabáló"
+        }, 
+        {
             "brl": "1r21kel1s5int", 
+            "txt": "érzékelésszint"
+        }, 
+        {
+            "brl": "1r21kel1s5int", 
+            "testmode": "backtranslate", 
             "txt": "érzékelésszint"
         }, 
         {
@@ -500,7 +1117,17 @@
             "txt": "ésszerű"
         }, 
         {
+            "brl": "155er}", 
+            "testmode": "backtranslate", 
+            "txt": "ésszerű"
+        }, 
+        {
             "brl": "e5kq2sor, e5kq2sor\"n", 
+            "txt": "eszközsor, eszközsorán"
+        }, 
+        {
+            "brl": "e5kq2sor, e5kq2sor\"n", 
+            "testmode": "backtranslate", 
             "txt": "eszközsor, eszközsorán"
         }, 
         {
@@ -508,7 +1135,17 @@
             "txt": "evészavar"
         }, 
         {
+            "brl": "ev1s2avar", 
+            "testmode": "backtranslate", 
+            "txt": "evészavar"
+        }, 
+        {
             "brl": "fa4os5entek", 
+            "txt": "fagyosszentek"
+        }, 
+        {
+            "brl": "fa4os5entek", 
+            "testmode": "backtranslate", 
             "txt": "fagyosszentek"
         }, 
         {
@@ -516,7 +1153,17 @@
             "txt": "fáklyászene"
         }, 
         {
+            "brl": "f\"k\"s2ene", 
+            "testmode": "backtranslate", 
+            "txt": "fáklyászene"
+        }, 
+        {
             "brl": "farkas5\"j ", 
+            "txt": "farkasszáj "
+        }, 
+        {
+            "brl": "farkas5\"j ", 
+            "testmode": "backtranslate", 
             "txt": "farkasszáj "
         }, 
         {
@@ -524,7 +1171,17 @@
             "txt": "farkasszem"
         }, 
         {
+            "brl": "farkas5em", 
+            "testmode": "backtranslate", 
+            "txt": "farkasszem"
+        }, 
+        {
             "brl": "farkas5emet ", 
+            "txt": "farkasszemet "
+        }, 
+        {
+            "brl": "farkas5emet ", 
+            "testmode": "backtranslate", 
             "txt": "farkasszemet "
         }, 
         {
@@ -533,7 +1190,18 @@
             "txt": "Farkassziget,"
         }, 
         {
+            "brl": "$farkas5iget,", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Farkassziget,"
+        }, 
+        {
             "brl": "f\"s5\"r0", 
+            "txt": "fásszárú"
+        }, 
+        {
+            "brl": "f\"s5\"r0", 
+            "testmode": "backtranslate", 
             "txt": "fásszárú"
         }, 
         {
@@ -541,7 +1209,17 @@
             "txt": "fegyenccsoport"
         }, 
         {
+            "brl": "fe4enc3oport", 
+            "testmode": "backtranslate", 
+            "txt": "fegyenccsoport"
+        }, 
+        {
             "brl": "fe4encsapk\"t ", 
+            "txt": "fegyencsapkát "
+        }, 
+        {
+            "brl": "fe4encsapk\"t ", 
+            "testmode": "backtranslate", 
             "txt": "fegyencsapkát "
         }, 
         {
@@ -549,7 +1227,17 @@
             "txt": "fehéresszőke, fehéresszürke "
         }, 
         {
+            "brl": "feh1res57ke, feh1res5{rke ", 
+            "testmode": "backtranslate", 
+            "txt": "fehéresszőke, fehéresszürke "
+        }, 
+        {
             "brl": "feket1s5{rke", 
+            "txt": "feketésszürke"
+        }, 
+        {
+            "brl": "feket1s5{rke", 
+            "testmode": "backtranslate", 
             "txt": "feketésszürke"
         }, 
         {
@@ -557,7 +1245,17 @@
             "txt": "feleséggyilkos"
         }, 
         {
+            "brl": "feles1g4ilkos", 
+            "testmode": "backtranslate", 
+            "txt": "feleséggyilkos"
+        }, 
+        {
             "brl": "felfede21s5\"mba", 
+            "txt": "felfedezésszámba"
+        }, 
+        {
+            "brl": "felfede21s5\"mba", 
+            "testmode": "backtranslate", 
             "txt": "felfedezésszámba"
         }, 
         {
@@ -565,7 +1263,17 @@
             "txt": "felséggyilkolás"
         }, 
         {
+            "brl": "fels1g4ilkol\"s", 
+            "testmode": "backtranslate", 
+            "txt": "felséggyilkolás"
+        }, 
+        {
             "brl": "fel5erel1s5ettet", 
+            "txt": "felszerelésszettet"
+        }, 
+        {
+            "brl": "fel5erel1s5ettet", 
+            "testmode": "backtranslate", 
             "txt": "felszerelésszettet"
         }, 
         {
@@ -573,7 +1281,17 @@
             "txt": "fertőzésszerű"
         }, 
         {
+            "brl": "fert721s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "fertőzésszerű"
+        }, 
+        {
             "brl": "filc3i2ma", 
+            "txt": "filccsizma"
+        }, 
+        {
+            "brl": "filc3i2ma", 
+            "testmode": "backtranslate", 
             "txt": "filccsizma"
         }, 
         {
@@ -581,7 +1299,17 @@
             "txt": "filigránnyelű"
         }, 
         {
+            "brl": "filigr\"n6el}", 
+            "testmode": "backtranslate", 
+            "txt": "filigránnyelű"
+        }, 
+        {
             "brl": "fogas5eg", 
+            "txt": "fogasszeg"
+        }, 
+        {
+            "brl": "fogas5eg", 
+            "testmode": "backtranslate", 
             "txt": "fogasszeg"
         }, 
         {
@@ -589,7 +1317,17 @@
             "txt": "fogfájásszerű"
         }, 
         {
+            "brl": "fogf\"j\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "fogfájásszerű"
+        }, 
+        {
             "brl": "foglalko2\"s5er}", 
+            "txt": "foglalkozásszerű"
+        }, 
+        {
+            "brl": "foglalko2\"s5er}", 
+            "testmode": "backtranslate", 
             "txt": "foglalkozásszerű"
         }, 
         {
@@ -597,7 +1335,17 @@
             "txt": "foggyalu"
         }, 
         {
+            "brl": "fog4alu", 
+            "testmode": "backtranslate", 
+            "txt": "foggyalu"
+        }, 
+        {
             "brl": "fog4qk1r", 
+            "txt": "foggyökér"
+        }, 
+        {
+            "brl": "fog4qk1r", 
+            "testmode": "backtranslate", 
             "txt": "foggyökér"
         }, 
         {
@@ -605,7 +1353,17 @@
             "txt": "foggyulladás"
         }, 
         {
+            "brl": "fog4ullad\"s", 
+            "testmode": "backtranslate", 
+            "txt": "foggyulladás"
+        }, 
+        {
             "brl": "fog4}r}", 
+            "txt": "foggyűrű"
+        }, 
+        {
+            "brl": "fog4}r}", 
+            "testmode": "backtranslate", 
             "txt": "foggyűrű"
         }, 
         {
@@ -613,7 +1371,17 @@
             "txt": "forgásszabály"
         }, 
         {
+            "brl": "forg\"s5ab\"", 
+            "testmode": "backtranslate", 
+            "txt": "forgásszabály"
+        }, 
+        {
             "brl": "forr\"s5qveg", 
+            "txt": "forrásszöveg"
+        }, 
+        {
+            "brl": "forr\"s5qveg", 
+            "testmode": "backtranslate", 
             "txt": "forrásszöveg"
         }, 
         {
@@ -621,7 +1389,17 @@
             "txt": "fosszínű"
         }, 
         {
+            "brl": "fos5|n}", 
+            "testmode": "backtranslate", 
+            "txt": "fosszínű"
+        }, 
+        {
             "brl": "fqld3u5aml\"s5er}en", 
+            "txt": "földcsuszamlásszerűen"
+        }, 
+        {
+            "brl": "fqld3u5aml\"s5er}en", 
+            "testmode": "backtranslate", 
             "txt": "földcsuszamlásszerűen"
         }, 
         {
@@ -629,7 +1407,17 @@
             "txt": "fölélesszem"
         }, 
         {
+            "brl": "fql1le55em", 
+            "testmode": "backtranslate", 
+            "txt": "fölélesszem"
+        }, 
+        {
             "brl": "f727kal\"n6elet", 
+            "txt": "főzőkalánnyelet"
+        }, 
+        {
+            "brl": "f727kal\"n6elet", 
+            "testmode": "backtranslate", 
             "txt": "főzőkalánnyelet"
         }, 
         {
@@ -637,7 +1425,17 @@
             "txt": "fuvarosszekér"
         }, 
         {
+            "brl": "fuvaros5ek1r", 
+            "testmode": "backtranslate", 
+            "txt": "fuvarosszekér"
+        }, 
+        {
             "brl": "f0v9s5er5\"m", 
+            "txt": "fúvósszerszám"
+        }, 
+        {
+            "brl": "f0v9s5er5\"m", 
+            "testmode": "backtranslate", 
             "txt": "fúvósszerszám"
         }, 
         {
@@ -645,7 +1443,17 @@
             "txt": "fúvósszimfónia"
         }, 
         {
+            "brl": "f0v9s5imf9nia", 
+            "testmode": "backtranslate", 
+            "txt": "fúvósszimfónia"
+        }, 
+        {
             "brl": "f0v9s2enekar", 
+            "txt": "fúvószenekar"
+        }, 
+        {
+            "brl": "f0v9s2enekar", 
+            "testmode": "backtranslate", 
             "txt": "fúvószenekar"
         }, 
         {
@@ -653,7 +1461,17 @@
             "txt": "fűtésszag"
         }, 
         {
+            "brl": "f}t1s5ag", 
+            "testmode": "backtranslate", 
+            "txt": "fűtésszag"
+        }, 
+        {
             "brl": "garaboncsereg", 
+            "txt": "garaboncsereg"
+        }, 
+        {
+            "brl": "garaboncsereg", 
+            "testmode": "backtranslate", 
             "txt": "garaboncsereg"
         }, 
         {
@@ -661,7 +1479,17 @@
             "txt": "gázspray"
         }, 
         {
+            "brl": "g\"2spray", 
+            "testmode": "backtranslate", 
+            "txt": "gázspray"
+        }, 
+        {
             "brl": "g\"2sug\"r", 
+            "txt": "gázsugár"
+        }, 
+        {
+            "brl": "g\"2sug\"r", 
+            "testmode": "backtranslate", 
             "txt": "gázsugár"
         }, 
         {
@@ -669,7 +1497,17 @@
             "txt": "gerincsérült"
         }, 
         {
+            "brl": "gerincs1r{lt", 
+            "testmode": "backtranslate", 
+            "txt": "gerincsérült"
+        }, 
+        {
             "brl": "gerincs1rv ", 
+            "txt": "gerincsérv "
+        }, 
+        {
+            "brl": "gerincs1rv ", 
+            "testmode": "backtranslate", 
             "txt": "gerincsérv "
         }, 
         {
@@ -677,7 +1515,17 @@
             "txt": "ginszenggyökér"
         }, 
         {
+            "brl": "gin5eng4qk1r", 
+            "testmode": "backtranslate", 
+            "txt": "ginszenggyökér"
+        }, 
+        {
             "brl": "gin2eng4qk1r", 
+            "txt": "ginzenggyökér"
+        }, 
+        {
+            "brl": "gin2eng4qk1r", 
+            "testmode": "backtranslate", 
             "txt": "ginzenggyökér"
         }, 
         {
@@ -686,7 +1534,18 @@
             "txt": "Gombosszeg"
         }, 
         {
+            "brl": "$gombos5eg", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Gombosszeg"
+        }, 
+        {
             "brl": "gondvisel1s5er}", 
+            "txt": "gondviselésszerű"
+        }, 
+        {
+            "brl": "gondvisel1s5er}", 
+            "testmode": "backtranslate", 
             "txt": "gondviselésszerű"
         }, 
         {
@@ -694,7 +1553,17 @@
             "txt": "gőzsíp"
         }, 
         {
+            "brl": "g72s|p", 
+            "testmode": "backtranslate", 
+            "txt": "gőzsíp"
+        }, 
+        {
             "brl": "g72sug\"r", 
+            "txt": "gőzsugár"
+        }, 
+        {
+            "brl": "g72sug\"r", 
+            "testmode": "backtranslate", 
             "txt": "gőzsugár"
         }, 
         {
@@ -702,7 +1571,17 @@
             "txt": "gőzszivattyú"
         }, 
         {
+            "brl": "g725iva880", 
+            "testmode": "backtranslate", 
+            "txt": "gőzszivattyú"
+        }, 
+        {
             "brl": "gr\"n\"tos2\"5l9alj", 
+            "txt": "gránátoszászlóalj"
+        }, 
+        {
+            "brl": "gr\"n\"tos2\"5l9alj", 
+            "testmode": "backtranslate", 
             "txt": "gránátoszászlóalj"
         }, 
         {
@@ -710,7 +1589,17 @@
             "txt": "gúnyversszerző"
         }, 
         {
+            "brl": "g06vers5er27", 
+            "testmode": "backtranslate", 
+            "txt": "gúnyversszerző"
+        }, 
+        {
             "brl": "4alogos5\"2ad", 
+            "txt": "gyalogosszázad"
+        }, 
+        {
+            "brl": "4alogos5\"2ad", 
+            "testmode": "backtranslate", 
             "txt": "gyalogosszázad"
         }, 
         {
@@ -718,7 +1607,17 @@
             "txt": "gyalogoszászlóalj,"
         }, 
         {
+            "brl": "4alogos2\"5l9alj,", 
+            "testmode": "backtranslate", 
+            "txt": "gyalogoszászlóalj,"
+        }, 
+        {
             "brl": "4ors5\"r60", 
+            "txt": "gyorsszárnyú"
+        }, 
+        {
+            "brl": "4ors5\"r60", 
+            "testmode": "backtranslate", 
             "txt": "gyorsszárnyú"
         }, 
         {
@@ -726,7 +1625,17 @@
             "txt": "gyorsszekér "
         }, 
         {
+            "brl": "4ors5ek1r ", 
+            "testmode": "backtranslate", 
+            "txt": "gyorsszekér "
+        }, 
+        {
             "brl": "4ors5}r7", 
+            "txt": "gyorsszűrő"
+        }, 
+        {
+            "brl": "4ors5}r7", 
+            "testmode": "backtranslate", 
             "txt": "gyorsszűrő"
         }, 
         {
@@ -734,7 +1643,17 @@
             "txt": "gyújtásszabály"
         }, 
         {
+            "brl": "40jt\"s5ab\"", 
+            "testmode": "backtranslate", 
+            "txt": "gyújtásszabály"
+        }, 
+        {
             "brl": "40jt\"s`in9r", 
+            "txt": "gyújtászsinór"
+        }, 
+        {
+            "brl": "40jt\"s`in9r", 
+            "testmode": "backtranslate", 
             "txt": "gyújtászsinór"
         }, 
         {
@@ -742,7 +1661,17 @@
             "txt": "gyűlésszíne"
         }, 
         {
+            "brl": "4}l1s5|ne", 
+            "testmode": "backtranslate", 
+            "txt": "gyűlésszíne"
+        }, 
+        {
             "brl": "habar33al", 
+            "txt": "habarccsal"
+        }, 
+        {
+            "brl": "habar33al", 
+            "testmode": "backtranslate", 
             "txt": "habarccsal"
         }, 
         {
@@ -750,7 +1679,17 @@
             "txt": "habitusszerűen"
         }, 
         {
+            "brl": "habitus5er}en", 
+            "testmode": "backtranslate", 
+            "txt": "habitusszerűen"
+        }, 
+        {
             "brl": "hadia6ag4\"r", 
+            "txt": "hadianyaggyár"
+        }, 
+        {
+            "brl": "hadia6ag4\"r", 
+            "testmode": "backtranslate", 
             "txt": "hadianyaggyár"
         }, 
         {
@@ -758,7 +1697,17 @@
             "txt": "hadsereggyűjtés "
         }, 
         {
+            "brl": "hadsereg4}jt1s ", 
+            "testmode": "backtranslate", 
+            "txt": "hadsereggyűjtés "
+        }, 
+        {
             "brl": "hajl\"s5qg", 
+            "txt": "hajlásszög"
+        }, 
+        {
+            "brl": "hajl\"s5qg", 
+            "testmode": "backtranslate", 
             "txt": "hajlásszög"
         }, 
         {
@@ -766,7 +1715,17 @@
             "txt": "hajósszekerce "
         }, 
         {
+            "brl": "haj9s5ekerce ", 
+            "testmode": "backtranslate", 
+            "txt": "hajósszekerce "
+        }, 
+        {
             "brl": "haj9s5em12et", 
+            "txt": "hajósszemélyzet"
+        }, 
+        {
+            "brl": "haj9s5em12et", 
+            "testmode": "backtranslate", 
             "txt": "hajósszemélyzet"
         }, 
         {
@@ -774,7 +1733,17 @@
             "txt": "hallászavar"
         }, 
         {
+            "brl": "hall\"s2avar", 
+            "testmode": "backtranslate", 
+            "txt": "hallászavar"
+        }, 
+        {
             "brl": "halottas5ek1r ", 
+            "txt": "halottasszekér "
+        }, 
+        {
+            "brl": "halottas5ek1r ", 
+            "testmode": "backtranslate", 
             "txt": "halottasszekér "
         }, 
         {
@@ -782,7 +1751,17 @@
             "txt": "halottasszoba"
         }, 
         {
+            "brl": "halottas5oba", 
+            "testmode": "backtranslate", 
+            "txt": "halottasszoba"
+        }, 
+        {
             "brl": "halottas5ob\"ba", 
+            "txt": "halottasszobába"
+        }, 
+        {
+            "brl": "halottas5ob\"ba", 
+            "testmode": "backtranslate", 
             "txt": "halottasszobába"
         }, 
         {
@@ -790,7 +1769,17 @@
             "txt": "hamvasszőke"
         }, 
         {
+            "brl": "hamvas57ke", 
+            "testmode": "backtranslate", 
+            "txt": "hamvasszőke"
+        }, 
+        {
             "brl": "hamvas5{rke", 
+            "txt": "hamvasszürke"
+        }, 
+        {
+            "brl": "hamvas5{rke", 
+            "testmode": "backtranslate", 
             "txt": "hamvasszürke"
         }, 
         {
@@ -798,11 +1787,17 @@
             "txt": "hanggyakorlat"
         }, 
         {
-            "brl": "hang4}jtem16", 
-            "txt": "hanggyűjtemény"
+            "brl": "hang4akorlat", 
+            "testmode": "backtranslate", 
+            "txt": "hanggyakorlat"
         }, 
         {
             "brl": "h\"6\"s5ag", 
+            "txt": "hányásszag"
+        }, 
+        {
+            "brl": "h\"6\"s5ag", 
+            "testmode": "backtranslate", 
             "txt": "hányásszag"
         }, 
         {
@@ -810,7 +1805,17 @@
             "txt": "haragoszöld"
         }, 
         {
+            "brl": "haragos2qld", 
+            "testmode": "backtranslate", 
+            "txt": "haragoszöld"
+        }, 
+        {
             "brl": "harcos5ellem", 
+            "txt": "harcosszellem"
+        }, 
+        {
+            "brl": "harcos5ellem", 
+            "testmode": "backtranslate", 
             "txt": "harcosszellem"
         }, 
         {
@@ -818,7 +1823,17 @@
             "txt": "harccselekmény "
         }, 
         {
+            "brl": "harc3elekm16 ", 
+            "testmode": "backtranslate", 
+            "txt": "harccselekmény "
+        }, 
+        {
             "brl": "harc3oport", 
+            "txt": "harccsoport"
+        }, 
+        {
+            "brl": "harc3oport", 
+            "testmode": "backtranslate", 
             "txt": "harccsoport"
         }, 
         {
@@ -826,7 +1841,17 @@
             "txt": "harcsor"
         }, 
         {
+            "brl": "harcsor", 
+            "testmode": "backtranslate", 
+            "txt": "harcsor"
+        }, 
+        {
             "brl": "h\"rmas5\"m0", 
+            "txt": "hármasszámú"
+        }, 
+        {
+            "brl": "h\"rmas5\"m0", 
+            "testmode": "backtranslate", 
             "txt": "hármasszámú"
         }, 
         {
@@ -834,7 +1859,17 @@
             "txt": "hársszén"
         }, 
         {
+            "brl": "h\"rs51n", 
+            "testmode": "backtranslate", 
+            "txt": "hársszén"
+        }, 
+        {
             "brl": "h\"rs5enet", 
+            "txt": "hársszenet"
+        }, 
+        {
+            "brl": "h\"rs5enet", 
+            "testmode": "backtranslate", 
             "txt": "hársszenet"
         }, 
         {
@@ -842,7 +1877,17 @@
             "txt": "hártyásszárnyú"
         }, 
         {
+            "brl": "h\"r8\"s5\"r60", 
+            "testmode": "backtranslate", 
+            "txt": "hártyásszárnyú"
+        }, 
+        {
             "brl": "hasis5agot", 
+            "txt": "hasisszagot"
+        }, 
+        {
+            "brl": "hasis5agot", 
+            "testmode": "backtranslate", 
             "txt": "hasisszagot"
         }, 
         {
@@ -850,7 +1895,17 @@
             "txt": "hatásszünet"
         }, 
         {
+            "brl": "hat\"s5{net", 
+            "testmode": "backtranslate", 
+            "txt": "hatásszünet"
+        }, 
+        {
             "brl": "h\"`\"rkod\"s\"t", 
+            "txt": "házsárkodását"
+        }, 
+        {
+            "brl": "h\"`\"rkod\"s\"t", 
+            "testmode": "backtranslate", 
             "txt": "házsárkodását"
         }, 
         {
@@ -858,7 +1913,17 @@
             "txt": "hegyesszög"
         }, 
         {
+            "brl": "he4es5qg", 
+            "testmode": "backtranslate", 
+            "txt": "hegyesszög"
+        }, 
+        {
             "brl": "he45oros5er}", 
+            "txt": "hegyszorosszerű"
+        }, 
+        {
+            "brl": "he45oros5er}", 
+            "testmode": "backtranslate", 
             "txt": "hegyszorosszerű"
         }, 
         {
@@ -866,7 +1931,17 @@
             "txt": "hekusszagot"
         }, 
         {
+            "brl": "hekus5agot", 
+            "testmode": "backtranslate", 
+            "txt": "hekusszagot"
+        }, 
+        {
             "brl": "hentes5aktanfoam\"t", 
+            "txt": "hentesszaktanfolyamát"
+        }, 
+        {
+            "brl": "hentes5aktanfoam\"t", 
+            "testmode": "backtranslate", 
             "txt": "hentesszaktanfolyamát"
         }, 
         {
@@ -874,7 +1949,17 @@
             "txt": "hirdetésszöveg"
         }, 
         {
+            "brl": "hirdet1s5qveg", 
+            "testmode": "backtranslate", 
+            "txt": "hirdetésszöveg"
+        }, 
+        {
             "brl": "hivat\"s5er}en", 
+            "txt": "hivatásszerűen"
+        }, 
+        {
+            "brl": "hivat\"s5er}en", 
+            "testmode": "backtranslate", 
             "txt": "hivatásszerűen"
         }, 
         {
@@ -882,7 +1967,17 @@
             "txt": "hízelkedésszámba"
         }, 
         {
+            "brl": "h|2elked1s5\"mba", 
+            "testmode": "backtranslate", 
+            "txt": "hízelkedésszámba"
+        }, 
+        {
             "brl": "h9ag4ullad\"s", 
+            "txt": "hólyaggyulladás"
+        }, 
+        {
+            "brl": "h9ag4ullad\"s", 
+            "testmode": "backtranslate", 
             "txt": "hólyaggyulladás"
         }, 
         {
@@ -890,7 +1985,17 @@
             "txt": "hörgésszerű"
         }, 
         {
+            "brl": "hqrg1s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "hörgésszerű"
+        }, 
+        {
             "brl": "h7s5|n15", 
+            "txt": "hősszínész"
+        }, 
+        {
+            "brl": "h7s5|n15", 
+            "testmode": "backtranslate", 
             "txt": "hősszínész"
         }, 
         {
@@ -898,7 +2003,17 @@
             "txt": "hősszövetség "
         }, 
         {
+            "brl": "h7s5qvets1g ", 
+            "testmode": "backtranslate", 
+            "txt": "hősszövetség "
+        }, 
+        {
             "brl": "h0sleves5ag", 
+            "txt": "húslevesszag"
+        }, 
+        {
+            "brl": "h0sleves5ag", 
+            "testmode": "backtranslate", 
             "txt": "húslevesszag"
         }, 
         {
@@ -906,7 +2021,17 @@
             "txt": "hússzaft"
         }, 
         {
+            "brl": "h0s5aft", 
+            "testmode": "backtranslate", 
+            "txt": "hússzaft"
+        }, 
+        {
             "brl": "h0s5ag", 
+            "txt": "hússzag"
+        }, 
+        {
+            "brl": "h0s5ag", 
+            "testmode": "backtranslate", 
             "txt": "hússzag"
         }, 
         {
@@ -914,7 +2039,17 @@
             "txt": "hússzagú"
         }, 
         {
+            "brl": "h0s5ag0", 
+            "testmode": "backtranslate", 
+            "txt": "hússzagú"
+        }, 
+        {
             "brl": "h0s5\"ll|tm\"6 ", 
+            "txt": "hússzállítmány "
+        }, 
+        {
+            "brl": "h0s5\"ll|tm\"6 ", 
+            "testmode": "backtranslate", 
             "txt": "hússzállítmány "
         }, 
         {
@@ -922,7 +2057,17 @@
             "txt": "hússzállító"
         }, 
         {
+            "brl": "h0s5\"ll|t9", 
+            "testmode": "backtranslate", 
+            "txt": "hússzállító"
+        }, 
+        {
             "brl": "h0s5alonna", 
+            "txt": "hússzalonna"
+        }, 
+        {
+            "brl": "h0s5alonna", 
+            "testmode": "backtranslate", 
             "txt": "hússzalonna"
         }, 
         {
@@ -930,7 +2075,17 @@
             "txt": "hússzekrény"
         }, 
         {
+            "brl": "h0s5ekr16", 
+            "testmode": "backtranslate", 
+            "txt": "hússzekrény"
+        }, 
+        {
             "brl": "h0s5elet", 
+            "txt": "hússzelet"
+        }, 
+        {
+            "brl": "h0s5elet", 
+            "testmode": "backtranslate", 
             "txt": "hússzelet"
         }, 
         {
@@ -939,7 +2094,18 @@
             "txt": "Hússziget"
         }, 
         {
+            "brl": "$h0s5iget", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Hússziget"
+        }, 
+        {
             "brl": "h0s5|n}", 
+            "txt": "hússzínű"
+        }, 
+        {
+            "brl": "h0s5|n}", 
+            "testmode": "backtranslate", 
             "txt": "hússzínű"
         }, 
         {
@@ -947,7 +2113,17 @@
             "txt": "hűvösszemű"
         }, 
         {
+            "brl": "h}vqs5em}", 
+            "testmode": "backtranslate", 
+            "txt": "hűvösszemű"
+        }, 
+        {
             "brl": "ideg4enges1g", 
+            "txt": "ideggyengeség"
+        }, 
+        {
+            "brl": "ideg4enges1g", 
+            "testmode": "backtranslate", 
             "txt": "ideggyengeség"
         }, 
         {
@@ -955,7 +2131,17 @@
             "txt": "ideggyógyászat"
         }, 
         {
+            "brl": "ideg494\"5at", 
+            "testmode": "backtranslate", 
+            "txt": "ideggyógyászat"
+        }, 
+        {
             "brl": "ideg494int12et", 
+            "txt": "ideggyógyintézet"
+        }, 
+        {
+            "brl": "ideg494int12et", 
+            "testmode": "backtranslate", 
             "txt": "ideggyógyintézet"
         }, 
         {
@@ -963,7 +2149,17 @@
             "txt": "ideggyönge"
         }, 
         {
+            "brl": "ideg4qnge", 
+            "testmode": "backtranslate", 
+            "txt": "ideggyönge"
+        }, 
+        {
             "brl": "ideg4qtr7", 
+            "txt": "ideggyötrő"
+        }, 
+        {
+            "brl": "ideg4qtr7", 
+            "testmode": "backtranslate", 
             "txt": "ideggyötrő"
         }, 
         {
@@ -971,7 +2167,17 @@
             "txt": "ideggyulladás"
         }, 
         {
+            "brl": "ideg4ullad\"s", 
+            "testmode": "backtranslate", 
+            "txt": "ideggyulladás"
+        }, 
+        {
             "brl": "identit\"s2avar", 
+            "txt": "identitászavar"
+        }, 
+        {
+            "brl": "identit\"s2avar", 
+            "testmode": "backtranslate", 
             "txt": "identitászavar"
         }, 
         {
@@ -979,7 +2185,17 @@
             "txt": "időjárásszolgálat"
         }, 
         {
+            "brl": "id7j\"r\"s5olg\"lat", 
+            "testmode": "backtranslate", 
+            "txt": "időjárásszolgálat"
+        }, 
+        {
             "brl": "im\"ds\"g4}jtem16", 
+            "txt": "imádsággyűjtemény"
+        }, 
+        {
+            "brl": "im\"ds\"g4}jtem16", 
+            "testmode": "backtranslate", 
             "txt": "imádsággyűjtemény"
         }, 
         {
@@ -987,7 +2203,17 @@
             "txt": "inasszerep"
         }, 
         {
+            "brl": "inas5erep", 
+            "testmode": "backtranslate", 
+            "txt": "inasszerep"
+        }, 
+        {
             "brl": "inas5erepet ", 
+            "txt": "inasszerepet "
+        }, 
+        {
+            "brl": "inas5erepet ", 
+            "testmode": "backtranslate", 
             "txt": "inasszerepet "
         }, 
         {
@@ -995,7 +2221,17 @@
             "txt": "inasszeretetet"
         }, 
         {
+            "brl": "inas5eretetet", 
+            "testmode": "backtranslate", 
+            "txt": "inasszeretetet"
+        }, 
+        {
             "brl": "indi\"n6elv", 
+            "txt": "indiánnyelv"
+        }, 
+        {
+            "brl": "indi\"n6elv", 
+            "testmode": "backtranslate", 
             "txt": "indiánnyelv"
         }, 
         {
@@ -1003,7 +2239,17 @@
             "txt": "ínnyújtó,"
         }, 
         {
+            "brl": "|n60jt9,", 
+            "testmode": "backtranslate", 
+            "txt": "ínnyújtó,"
+        }, 
+        {
             "brl": "|n60jt9t ", 
+            "txt": "ínnyújtót "
+        }, 
+        {
+            "brl": "|n60jt9t ", 
+            "testmode": "backtranslate", 
             "txt": "ínnyújtót "
         }, 
         {
@@ -1011,7 +2257,17 @@
             "txt": "ínyencség"
         }, 
         {
+            "brl": "|6encs1g", 
+            "testmode": "backtranslate", 
+            "txt": "ínyencség"
+        }, 
+        {
             "brl": "|r\"s5eretet,", 
+            "txt": "írásszeretet,"
+        }, 
+        {
+            "brl": "|r\"s5eretet,", 
+            "testmode": "backtranslate", 
             "txt": "írásszeretet,"
         }, 
         {
@@ -1019,7 +2275,17 @@
             "txt": "irtásszél"
         }, 
         {
+            "brl": "irt\"s51l", 
+            "testmode": "backtranslate", 
+            "txt": "irtásszél"
+        }, 
+        {
             "brl": "isten6ila", 
+            "txt": "istennyila"
+        }, 
+        {
+            "brl": "isten6ila", 
+            "testmode": "backtranslate", 
             "txt": "istennyila"
         }, 
         {
@@ -1027,7 +2293,17 @@
             "txt": "járásszerű "
         }, 
         {
+            "brl": "j\"r\"s5er} ", 
+            "testmode": "backtranslate", 
+            "txt": "járásszerű "
+        }, 
+        {
             "brl": "j\"spis5obor", 
+            "txt": "jáspisszobor"
+        }, 
+        {
+            "brl": "j\"spis5obor", 
+            "testmode": "backtranslate", 
             "txt": "jáspisszobor"
         }, 
         {
@@ -1035,7 +2311,17 @@
             "txt": "jegeccsoport"
         }, 
         {
+            "brl": "jegec3oport", 
+            "testmode": "backtranslate", 
+            "txt": "jegeccsoport"
+        }, 
+        {
             "brl": "j1g4\"rt\"s", 
+            "txt": "jéggyártás"
+        }, 
+        {
+            "brl": "j1g4\"rt\"s", 
+            "testmode": "backtranslate", 
             "txt": "jéggyártás"
         }, 
         {
@@ -1043,7 +2329,17 @@
             "txt": "jelenésszerű "
         }, 
         {
+            "brl": "jelen1s5er} ", 
+            "testmode": "backtranslate", 
+            "txt": "jelenésszerű "
+        }, 
+        {
             "brl": "jelent1s5er}", 
+            "txt": "jelentésszerű"
+        }, 
+        {
+            "brl": "jelent1s5er}", 
+            "testmode": "backtranslate", 
             "txt": "jelentésszerű"
         }, 
         {
@@ -1051,7 +2347,17 @@
             "txt": "jelentésszint"
         }, 
         {
+            "brl": "jelent1s5int", 
+            "testmode": "backtranslate", 
+            "txt": "jelentésszint"
+        }, 
+        {
             "brl": "jel21s5er}", 
+            "txt": "jelzésszerű"
+        }, 
+        {
+            "brl": "jel21s5er}", 
+            "testmode": "backtranslate", 
             "txt": "jelzésszerű"
         }, 
         {
@@ -1059,7 +2365,17 @@
             "txt": "jósszavai,"
         }, 
         {
+            "brl": "j9s5avai,", 
+            "testmode": "backtranslate", 
+            "txt": "jósszavai,"
+        }, 
+        {
             "brl": "j9s5elleme,", 
+            "txt": "jósszelleme,"
+        }, 
+        {
+            "brl": "j9s5elleme,", 
+            "testmode": "backtranslate", 
             "txt": "jósszelleme,"
         }, 
         {
@@ -1067,7 +2383,17 @@
             "txt": "kabinnyíláson"
         }, 
         {
+            "brl": "kabin6|l\"son", 
+            "testmode": "backtranslate", 
+            "txt": "kabinnyíláson"
+        }, 
+        {
             "brl": "kabin6om\"s", 
+            "txt": "kabinnyomás"
+        }, 
+        {
+            "brl": "kabin6om\"s", 
+            "testmode": "backtranslate", 
             "txt": "kabinnyomás"
         }, 
         {
@@ -1075,7 +2401,17 @@
             "txt": "kakasszó"
         }, 
         {
+            "brl": "kakas59", 
+            "testmode": "backtranslate", 
+            "txt": "kakasszó"
+        }, 
+        {
             "brl": "kalap\"32eng1s", 
+            "txt": "kalapácszengés"
+        }, 
+        {
+            "brl": "kalap\"32eng1s", 
+            "testmode": "backtranslate", 
             "txt": "kalapácszengés"
         }, 
         {
@@ -1083,7 +2419,17 @@
             "txt": "kamionnyi"
         }, 
         {
+            "brl": "kamion6i", 
+            "testmode": "backtranslate", 
+            "txt": "kamionnyi"
+        }, 
+        {
             "brl": "kapar\"s5er}", 
+            "txt": "kaparásszerű"
+        }, 
+        {
+            "brl": "kapar\"s5er}", 
+            "testmode": "backtranslate", 
             "txt": "kaparásszerű"
         }, 
         {
@@ -1092,8 +2438,20 @@
             "txt": "Kaposszekcső"
         }, 
         {
+            "brl": "$kapos5ek37", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Kaposszekcső"
+        }, 
+        {
             "brl": "$kapos5erdahe", 
             "brlCursorPos": 1, 
+            "txt": "Kaposszerdahely"
+        }, 
+        {
+            "brl": "$kapos5erdahe", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
             "txt": "Kaposszerdahely"
         }, 
         {
@@ -1101,7 +2459,17 @@
             "txt": "kapusszoba"
         }, 
         {
+            "brl": "kapus5oba", 
+            "testmode": "backtranslate", 
+            "txt": "kapusszoba"
+        }, 
+        {
             "brl": "karos51k", 
+            "txt": "karosszék"
+        }, 
+        {
+            "brl": "karos51k", 
+            "testmode": "backtranslate", 
             "txt": "karosszék"
         }, 
         {
@@ -1109,7 +2477,17 @@
             "txt": "kartácszápor"
         }, 
         {
+            "brl": "kart\"32\"por", 
+            "testmode": "backtranslate", 
+            "txt": "kartácszápor"
+        }, 
+        {
             "brl": "karton6i", 
+            "txt": "kartonnyi"
+        }, 
+        {
+            "brl": "karton6i", 
+            "testmode": "backtranslate", 
             "txt": "kartonnyi"
         }, 
         {
@@ -1117,8 +2495,32 @@
             "txt": "kasszék"
         }, 
         {
+            "brl": "kas51k", 
+            "testmode": "backtranslate", 
+            "txt": "kasszék"
+        }, 
+        {
             "brl": "katal9gus5\"m", 
             "txt": "katalógusszám"
+        }, 
+        {
+            "brl": "katal9gus5\"m", 
+            "testmode": "backtranslate", 
+            "txt": "katalógusszám"
+        }, 
+        {
+            "brl": "kateki2mus5er}", 
+            "txt": "katekizmusszerű"
+        }, 
+        {
+            "brl": "kattint\"s5\"m", 
+            "testmode": "backtranslate", 
+            "txt": "kattintásszám"
+        }, 
+        {
+            "brl": "kattint\"s5\"m", 
+            "testmode": "backtranslate", 
+            "txt": "kattintásszám"
         }, 
         {
             "brl": "kateki2mus5er}", 
@@ -1129,7 +2531,17 @@
             "txt": "kavarásszerű"
         }, 
         {
+            "brl": "kavar\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "kavarásszerű"
+        }, 
+        {
             "brl": "kavi35er} ", 
+            "txt": "kavicsszerű "
+        }, 
+        {
+            "brl": "kavi35er} ", 
+            "testmode": "backtranslate", 
             "txt": "kavicsszerű "
         }, 
         {
@@ -1137,7 +2549,17 @@
             "txt": "kavicszápor"
         }, 
         {
+            "brl": "kavi32\"por", 
+            "testmode": "backtranslate", 
+            "txt": "kavicszápor"
+        }, 
+        {
             "brl": "kavi32\"to6", 
+            "txt": "kavicszátony"
+        }, 
+        {
+            "brl": "kavi32\"to6", 
+            "testmode": "backtranslate", 
             "txt": "kavicszátony"
         }, 
         {
@@ -1145,7 +2567,17 @@
             "txt": "kavicszuzalék"
         }, 
         {
+            "brl": "kavi32u2al1k", 
+            "testmode": "backtranslate", 
+            "txt": "kavicszuzalék"
+        }, 
+        {
             "brl": "k1kes5{rke", 
+            "txt": "kékesszürke"
+        }, 
+        {
+            "brl": "k1kes5{rke", 
+            "testmode": "backtranslate", 
             "txt": "kékesszürke"
         }, 
         {
@@ -1154,8 +2586,20 @@
             "txt": "Kemenesszentmárton"
         }, 
         {
+            "brl": "$kemenes5entm\"rton", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Kemenesszentmárton"
+        }, 
+        {
             "brl": "$kemenes5entp1ter", 
             "brlCursorPos": 1, 
+            "txt": "Kemenesszentpéter"
+        }, 
+        {
+            "brl": "$kemenes5entp1ter", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
             "txt": "Kemenesszentpéter"
         }, 
         {
@@ -1163,7 +2607,17 @@
             "txt": "képmásszerű "
         }, 
         {
+            "brl": "k1pm\"s5er} ", 
+            "testmode": "backtranslate", 
+            "txt": "képmásszerű "
+        }, 
+        {
             "brl": "k1p21s5er} ", 
+            "txt": "képzésszerű "
+        }, 
+        {
+            "brl": "k1p21s5er} ", 
+            "testmode": "backtranslate", 
             "txt": "képzésszerű "
         }, 
         {
@@ -1171,7 +2625,17 @@
             "txt": "képzésszervezés"
         }, 
         {
+            "brl": "k1p21s5erve21s", 
+            "testmode": "backtranslate", 
+            "txt": "képzésszervezés"
+        }, 
+        {
             "brl": "kerekes51k", 
+            "txt": "kerekesszék"
+        }, 
+        {
+            "brl": "kerekes51k", 
+            "testmode": "backtranslate", 
             "txt": "kerekesszék"
         }, 
         {
@@ -1179,7 +2643,17 @@
             "txt": "keresésszolgáltató"
         }, 
         {
+            "brl": "keres1s5olg\"ltat9", 
+            "testmode": "backtranslate", 
+            "txt": "keresésszolgáltató"
+        }, 
+        {
             "brl": "k1r1s5er}en", 
+            "txt": "kérésszerűen"
+        }, 
+        {
+            "brl": "k1r1s5er}en", 
+            "testmode": "backtranslate", 
             "txt": "kérésszerűen"
         }, 
         {
@@ -1187,7 +2661,17 @@
             "txt": "kerítésszaggató"
         }, 
         {
+            "brl": "ker|t1s5aggat9", 
+            "testmode": "backtranslate", 
+            "txt": "kerítésszaggató"
+        }, 
+        {
             "brl": "k1s50r\"s", 
+            "txt": "késszúrás"
+        }, 
+        {
+            "brl": "k1s50r\"s", 
+            "testmode": "backtranslate", 
             "txt": "késszúrás"
         }, 
         {
@@ -1195,7 +2679,17 @@
             "txt": "kevésszavú "
         }, 
         {
+            "brl": "kev1s5av0 ", 
+            "testmode": "backtranslate", 
+            "txt": "kevésszavú "
+        }, 
+        {
             "brl": "kev1s5er", 
+            "txt": "kevésszer"
+        }, 
+        {
+            "brl": "kev1s5er", 
+            "testmode": "backtranslate", 
             "txt": "kevésszer"
         }, 
         {
@@ -1203,7 +2697,17 @@
             "txt": "kifejlesszem"
         }, 
         {
+            "brl": "kifejle55em", 
+            "testmode": "backtranslate", 
+            "txt": "kifejlesszem"
+        }, 
+        {
             "brl": "kih|v\"s5er}", 
+            "txt": "kihívásszerű"
+        }, 
+        {
+            "brl": "kih|v\"s5er}", 
+            "testmode": "backtranslate", 
             "txt": "kihívásszerű"
         }, 
         {
@@ -1211,7 +2715,17 @@
             "txt": "kilenccsatorna"
         }, 
         {
+            "brl": "kilenc3atorna", 
+            "testmode": "backtranslate", 
+            "txt": "kilenccsatorna"
+        }, 
+        {
             "brl": "kilin32qrg1st ", 
+            "txt": "kilincszörgést "
+        }, 
+        {
+            "brl": "kilin32qrg1st ", 
+            "testmode": "backtranslate", 
             "txt": "kilincszörgést "
         }, 
         {
@@ -1220,7 +2734,18 @@
             "txt": "Kisszállás"
         }, 
         {
+            "brl": "$kis5\"ll\"s", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Kisszállás"
+        }, 
+        {
             "brl": "kis5\"m0", 
+            "txt": "kisszámú"
+        }, 
+        {
+            "brl": "kis5\"m0", 
+            "testmode": "backtranslate", 
             "txt": "kisszámú"
         }, 
         {
@@ -1229,11 +2754,27 @@
             "txt": "Kisszeben"
         }, 
         {
+            "brl": "$kis5eben", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Kisszeben"
+        }, 
+        {
             "brl": "kis51k", 
             "txt": "kisszék"
         }, 
         {
+            "brl": "kis51k", 
+            "testmode": "backtranslate", 
+            "txt": "kisszék"
+        }, 
+        {
             "brl": "kis5ekr16", 
+            "txt": "kisszekrény"
+        }, 
+        {
+            "brl": "kis5ekr16", 
+            "testmode": "backtranslate", 
             "txt": "kisszekrény"
         }, 
         {
@@ -1242,7 +2783,18 @@
             "txt": "Kisszentmárton"
         }, 
         {
+            "brl": "$kis5entm\"rton", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Kisszentmárton"
+        }, 
+        {
             "brl": "kis5er}", 
+            "txt": "kisszerű"
+        }, 
+        {
+            "brl": "kis5er}", 
+            "testmode": "backtranslate", 
             "txt": "kisszerű"
         }, 
         {
@@ -1251,11 +2803,27 @@
             "txt": "Kissziget"
         }, 
         {
+            "brl": "$kis5iget", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Kissziget"
+        }, 
+        {
             "brl": "kis5ob\"ban", 
             "txt": "kisszobában"
         }, 
         {
+            "brl": "kis5ob\"ban", 
+            "testmode": "backtranslate", 
+            "txt": "kisszobában"
+        }, 
+        {
             "brl": "kis59t\"r", 
+            "txt": "kisszótár"
+        }, 
+        {
+            "brl": "kis59t\"r", 
+            "testmode": "backtranslate", 
             "txt": "kisszótár"
         }, 
         {
@@ -1264,7 +2832,18 @@
             "txt": "Kiszombor"
         }, 
         {
+            "brl": "$kis2ombor", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Kiszombor"
+        }, 
+        {
             "brl": "ki5qgell1s5er}en", 
+            "txt": "kiszögellésszerűen"
+        }, 
+        {
+            "brl": "ki5qgell1s5er}en", 
+            "testmode": "backtranslate", 
             "txt": "kiszögellésszerűen"
         }, 
         {
@@ -1273,7 +2852,18 @@
             "txt": "Kiszsidány"
         }, 
         {
+            "brl": "$kis`id\"6", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Kiszsidány"
+        }, 
+        {
             "brl": "kitqr1s5er}", 
+            "txt": "kitörésszerű"
+        }, 
+        {
+            "brl": "kitqr1s5er}", 
+            "testmode": "backtranslate", 
             "txt": "kitörésszerű"
         }, 
         {
@@ -1281,7 +2871,17 @@
             "txt": "kitüntetésszalagokat"
         }, 
         {
+            "brl": "kit{ntet1s5alagokat", 
+            "testmode": "backtranslate", 
+            "txt": "kitüntetésszalagokat"
+        }, 
+        {
             "brl": "kliens5oftver", 
+            "txt": "kliensszoftver"
+        }, 
+        {
+            "brl": "kliens5oftver", 
+            "testmode": "backtranslate", 
             "txt": "kliensszoftver"
         }, 
         {
@@ -1289,7 +2889,17 @@
             "txt": "kóccsomó"
         }, 
         {
+            "brl": "k9c3om9", 
+            "testmode": "backtranslate", 
+            "txt": "kóccsomó"
+        }, 
+        {
             "brl": "koldus5\"j", 
+            "txt": "koldusszáj"
+        }, 
+        {
+            "brl": "koldus5\"j", 
+            "testmode": "backtranslate", 
             "txt": "koldusszáj"
         }, 
         {
@@ -1297,7 +2907,17 @@
             "txt": "koldusszakáll"
         }, 
         {
+            "brl": "koldus5ak\"ll", 
+            "testmode": "backtranslate", 
+            "txt": "koldusszakáll"
+        }, 
+        {
             "brl": "koldus5eg16", 
+            "txt": "koldusszegény"
+        }, 
+        {
+            "brl": "koldus5eg16", 
+            "testmode": "backtranslate", 
             "txt": "koldusszegény"
         }, 
         {
@@ -1305,7 +2925,17 @@
             "txt": "kolduszene "
         }, 
         {
+            "brl": "koldus2ene ", 
+            "testmode": "backtranslate", 
+            "txt": "kolduszene "
+        }, 
+        {
             "brl": "kommunik\"ci9s5oba", 
+            "txt": "kommunikációsszoba"
+        }, 
+        {
+            "brl": "kommunik\"ci9s5oba", 
+            "testmode": "backtranslate", 
             "txt": "kommunikációsszoba"
         }, 
         {
@@ -1313,7 +2943,17 @@
             "txt": "komposszesszor"
         }, 
         {
+            "brl": "kompo55e55or", 
+            "testmode": "backtranslate", 
+            "txt": "komposszesszor"
+        }, 
+        {
             "brl": "kompo55e55or\"tus ", 
+            "txt": "komposszesszorátus "
+        }, 
+        {
+            "brl": "kompo55e55or\"tus ", 
+            "testmode": "backtranslate", 
             "txt": "komposszesszorátus "
         }, 
         {
@@ -1321,7 +2961,17 @@
             "txt": "kormosszürke"
         }, 
         {
+            "brl": "kormos5{rke", 
+            "testmode": "backtranslate", 
+            "txt": "kormosszürke"
+        }, 
+        {
             "brl": "kos5arv", 
+            "txt": "kosszarv"
+        }, 
+        {
+            "brl": "kos5arv", 
+            "testmode": "backtranslate", 
             "txt": "kosszarv"
         }, 
         {
@@ -1329,7 +2979,17 @@
             "txt": "kosszem"
         }, 
         {
+            "brl": "kos5em", 
+            "testmode": "backtranslate", 
+            "txt": "kosszem"
+        }, 
+        {
             "brl": "kqhqg1s5er}", 
+            "txt": "köhögésszerű"
+        }, 
+        {
+            "brl": "kqhqg1s5er}", 
+            "testmode": "backtranslate", 
             "txt": "köhögésszerű"
         }, 
         {
@@ -1337,7 +2997,17 @@
             "txt": "kőművesszem"
         }, 
         {
+            "brl": "k7m}ves5em", 
+            "testmode": "backtranslate", 
+            "txt": "kőművesszem"
+        }, 
+        {
             "brl": "k7m}ves5er5\"mait ", 
+            "txt": "kőművesszerszámait "
+        }, 
+        {
+            "brl": "k7m}ves5er5\"mait ", 
+            "testmode": "backtranslate", 
             "txt": "kőművesszerszámait "
         }, 
         {
@@ -1345,7 +3015,17 @@
             "txt": "köntösszegély"
         }, 
         {
+            "brl": "kqntqs5eg1", 
+            "testmode": "backtranslate", 
+            "txt": "köntösszegély"
+        }, 
+        {
             "brl": "kq6qkl1s51les", 
+            "txt": "könyöklésszéles"
+        }, 
+        {
+            "brl": "kq6qkl1s51les", 
+            "testmode": "backtranslate", 
             "txt": "könyöklésszéles"
         }, 
         {
@@ -1353,7 +3033,17 @@
             "txt": "könyvesszekrény"
         }, 
         {
+            "brl": "kq6ves5ekr16", 
+            "testmode": "backtranslate", 
+            "txt": "könyvesszekrény"
+        }, 
+        {
             "brl": "k7ris5\"r", 
+            "txt": "kőrisszár"
+        }, 
+        {
+            "brl": "k7ris5\"r", 
+            "testmode": "backtranslate", 
             "txt": "kőrisszár"
         }, 
         {
@@ -1361,11 +3051,26 @@
             "txt": "kőrisszárat "
         }, 
         {
+            "brl": "k7ris5\"rat ", 
+            "testmode": "backtranslate", 
+            "txt": "kőrisszárat "
+        }, 
+        {
             "brl": "kqrqs5ak\"l", 
             "txt": "körösszakál"
         }, 
         {
+            "brl": "kqrqs5ak\"l", 
+            "testmode": "backtranslate", 
+            "txt": "körösszakál"
+        }, 
+        {
             "brl": "kqrqs5ak\"li ", 
+            "txt": "körösszakáli "
+        }, 
+        {
+            "brl": "kqrqs5ak\"li ", 
+            "testmode": "backtranslate", 
             "txt": "körösszakáli "
         }, 
         {
@@ -1374,7 +3079,18 @@
             "txt": "Köröszug"
         }, 
         {
+            "brl": "$kqrqs2ug", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Köröszug"
+        }, 
+        {
             "brl": "kqteless1g4akorl\"s", 
+            "txt": "kötelességgyakorlás"
+        }, 
+        {
+            "brl": "kqteless1g4akorl\"s", 
+            "testmode": "backtranslate", 
             "txt": "kötelességgyakorlás"
         }, 
         {
@@ -1382,7 +3098,17 @@
             "txt": "közsáv"
         }, 
         {
+            "brl": "kq2s\"v", 
+            "testmode": "backtranslate", 
+            "txt": "közsáv"
+        }, 
+        {
             "brl": "kq2sereg", 
+            "txt": "közsereg"
+        }, 
+        {
+            "brl": "kq2sereg", 
+            "testmode": "backtranslate", 
             "txt": "közsereg"
         }, 
         {
@@ -1390,7 +3116,17 @@
             "txt": "kudarcsorozat"
         }, 
         {
+            "brl": "kudarcsoro2at", 
+            "testmode": "backtranslate", 
+            "txt": "kudarcsorozat"
+        }, 
+        {
             "brl": "kul32qrg1s", 
+            "txt": "kulcszörgés"
+        }, 
+        {
+            "brl": "kul32qrg1s", 
+            "testmode": "backtranslate", 
             "txt": "kulcszörgés"
         }, 
         {
@@ -1398,7 +3134,17 @@
             "txt": "kuplunggyár"
         }, 
         {
+            "brl": "kuplung4\"r", 
+            "testmode": "backtranslate", 
+            "txt": "kuplunggyár"
+        }, 
+        {
             "brl": "kurucs\"g", 
+            "txt": "kurucság"
+        }, 
+        {
+            "brl": "kurucs\"g", 
+            "testmode": "backtranslate", 
             "txt": "kurucság"
         }, 
         {
@@ -1406,7 +3152,17 @@
             "txt": "küldetésszaga"
         }, 
         {
+            "brl": "k{ldet1s5aga", 
+            "testmode": "backtranslate", 
+            "txt": "küldetésszaga"
+        }, 
+        {
             "brl": "k{lqncs1g", 
+            "txt": "különcség"
+        }, 
+        {
+            "brl": "k{lqncs1g", 
+            "testmode": "backtranslate", 
             "txt": "különcség"
         }, 
         {
@@ -1414,7 +3170,17 @@
             "txt": "labirintusszerű"
         }, 
         {
+            "brl": "labirintus5er}", 
+            "testmode": "backtranslate", 
+            "txt": "labirintusszerű"
+        }, 
+        {
             "brl": "lak\"s5entel7", 
+            "txt": "lakásszentelő"
+        }, 
+        {
+            "brl": "lak\"s5entel7", 
+            "testmode": "backtranslate", 
             "txt": "lakásszentelő"
         }, 
         {
@@ -1422,7 +3188,17 @@
             "txt": "lakásszövetkezet"
         }, 
         {
+            "brl": "lak\"s5qvetke2et", 
+            "testmode": "backtranslate", 
+            "txt": "lakásszövetkezet"
+        }, 
+        {
             "brl": "lakos5\"m", 
+            "txt": "lakosszám"
+        }, 
+        {
+            "brl": "lakos5\"m", 
+            "testmode": "backtranslate", 
             "txt": "lakosszám"
         }, 
         {
@@ -1430,7 +3206,17 @@
             "txt": "lánccsörgés "
         }, 
         {
+            "brl": "l\"nc3qrg1s ", 
+            "testmode": "backtranslate", 
+            "txt": "lánccsörgés "
+        }, 
+        {
             "brl": "l\"nc5em", 
+            "txt": "láncszem"
+        }, 
+        {
+            "brl": "l\"nc5em", 
+            "testmode": "backtranslate", 
             "txt": "láncszem"
         }, 
         {
@@ -1438,7 +3224,17 @@
             "txt": "lánggyújtogató"
         }, 
         {
+            "brl": "l\"ng40jtogat9", 
+            "testmode": "backtranslate", 
+            "txt": "lánggyújtogató"
+        }, 
+        {
             "brl": "lapos5\"r0", 
+            "txt": "laposszárú"
+        }, 
+        {
+            "brl": "lapos5\"r0", 
+            "testmode": "backtranslate", 
             "txt": "laposszárú"
         }, 
         {
@@ -1446,7 +3242,17 @@
             "txt": "látásszög"
         }, 
         {
+            "brl": "l\"t\"s5qg", 
+            "testmode": "backtranslate", 
+            "txt": "látásszög"
+        }, 
+        {
             "brl": "l\"t\"s2avar", 
+            "txt": "látászavar"
+        }, 
+        {
+            "brl": "l\"t\"s2avar", 
+            "testmode": "backtranslate", 
             "txt": "látászavar"
         }, 
         {
@@ -1454,7 +3260,17 @@
             "txt": "látomásszerű"
         }, 
         {
+            "brl": "l\"tom\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "látomásszerű"
+        }, 
+        {
             "brl": "la2ac3ontv\"2", 
+            "txt": "lazaccsontváz"
+        }, 
+        {
+            "brl": "la2ac3ontv\"2", 
+            "testmode": "backtranslate", 
             "txt": "lazaccsontváz"
         }, 
         {
@@ -1462,7 +3278,17 @@
             "txt": "lázsebességgel"
         }, 
         {
+            "brl": "l\"2sebess1ggel", 
+            "testmode": "backtranslate", 
+            "txt": "lázsebességgel"
+        }, 
+        {
             "brl": "l\"2s9hajt\"s", 
+            "txt": "lázsóhajtás"
+        }, 
+        {
+            "brl": "l\"2s9hajt\"s", 
+            "testmode": "backtranslate", 
             "txt": "lázsóhajtás"
         }, 
         {
@@ -1470,7 +3296,17 @@
             "txt": "léggyök"
         }, 
         {
+            "brl": "l1g4qk", 
+            "testmode": "backtranslate", 
+            "txt": "léggyök"
+        }, 
+        {
             "brl": "l1g4qk1r ", 
+            "txt": "léggyökér "
+        }, 
+        {
+            "brl": "l1g4qk1r ", 
+            "testmode": "backtranslate", 
             "txt": "léggyökér "
         }, 
         {
@@ -1478,7 +3314,17 @@
             "txt": "lejtésszög"
         }, 
         {
+            "brl": "lejt1s5qg", 
+            "testmode": "backtranslate", 
+            "txt": "lejtésszög"
+        }, 
+        {
             "brl": "lejt1s5qge", 
+            "txt": "lejtésszöge"
+        }, 
+        {
+            "brl": "lejt1s5qge", 
+            "testmode": "backtranslate", 
             "txt": "lejtésszöge"
         }, 
         {
@@ -1486,7 +3332,17 @@
             "txt": "lemezstúdió"
         }, 
         {
+            "brl": "leme2st0di9", 
+            "testmode": "backtranslate", 
+            "txt": "lemezstúdió"
+        }, 
+        {
             "brl": "leng1s5ab\"", 
+            "txt": "lengésszabály"
+        }, 
+        {
+            "brl": "leng1s5ab\"", 
+            "testmode": "backtranslate", 
             "txt": "lengésszabály"
         }, 
         {
@@ -1494,7 +3350,17 @@
             "txt": "lépcsősszárnyú"
         }, 
         {
+            "brl": "l1p37s5\"r60", 
+            "testmode": "backtranslate", 
+            "txt": "lépcsősszárnyú"
+        }, 
+        {
             "brl": "l1p1s5\"m", 
+            "txt": "lépésszám"
+        }, 
+        {
+            "brl": "l1p1s5\"m", 
+            "testmode": "backtranslate", 
             "txt": "lépésszám"
         }, 
         {
@@ -1502,7 +3368,17 @@
             "txt": "lépészaj "
         }, 
         {
+            "brl": "l1p1s2aj ", 
+            "testmode": "backtranslate", 
+            "txt": "lépészaj "
+        }, 
+        {
             "brl": "l1pten6omon", 
+            "txt": "léptennyomon"
+        }, 
+        {
+            "brl": "l1pten6omon", 
+            "testmode": "backtranslate", 
             "txt": "léptennyomon"
         }, 
         {
@@ -1510,7 +3386,17 @@
             "txt": "levesszag"
         }, 
         {
+            "brl": "leves5ag", 
+            "testmode": "backtranslate", 
+            "txt": "levesszag"
+        }, 
+        {
             "brl": "leves5agot", 
+            "txt": "levesszagot"
+        }, 
+        {
+            "brl": "leves5agot", 
+            "testmode": "backtranslate", 
             "txt": "levesszagot"
         }, 
         {
@@ -1518,7 +3404,17 @@
             "txt": "levesszedő"
         }, 
         {
+            "brl": "leves5ed7", 
+            "testmode": "backtranslate", 
+            "txt": "levesszedő"
+        }, 
+        {
             "brl": "liberty", 
+            "txt": "liberty"
+        }, 
+        {
+            "brl": "liberty", 
+            "testmode": "backtranslate", 
             "txt": "liberty"
         }, 
         {
@@ -1526,7 +3422,17 @@
             "txt": "licenccsalád "
         }, 
         {
+            "brl": "licenc3al\"d ", 
+            "testmode": "backtranslate", 
+            "txt": "licenccsalád "
+        }, 
+        {
             "brl": "licencs1rt1s", 
+            "txt": "licencsértés"
+        }, 
+        {
+            "brl": "licencs1rt1s", 
+            "testmode": "backtranslate", 
             "txt": "licencsértés"
         }, 
         {
@@ -1534,7 +3440,17 @@
             "txt": "liszteszacskó"
         }, 
         {
+            "brl": "li5tes2a3k9", 
+            "testmode": "backtranslate", 
+            "txt": "liszteszacskó"
+        }, 
+        {
             "brl": "log4}jtem16", 
+            "txt": "loggyűjtemény"
+        }, 
+        {
+            "brl": "log4}jtem16", 
+            "testmode": "backtranslate", 
             "txt": "loggyűjtemény"
         }, 
         {
@@ -1542,7 +3458,17 @@
             "txt": "lovasszázad"
         }, 
         {
+            "brl": "lovas5\"2ad", 
+            "testmode": "backtranslate", 
+            "txt": "lovasszázad"
+        }, 
+        {
             "brl": "lovas5ekeret ", 
+            "txt": "lovasszekeret "
+        }, 
+        {
+            "brl": "lovas5ekeret ", 
+            "testmode": "backtranslate", 
             "txt": "lovasszekeret "
         }, 
         {
@@ -1550,7 +3476,17 @@
             "txt": "lökésszám"
         }, 
         {
+            "brl": "lqk1s5\"m", 
+            "testmode": "backtranslate", 
+            "txt": "lökésszám"
+        }, 
+        {
             "brl": "lqk1s5er} ", 
+            "txt": "lökésszerű "
+        }, 
+        {
+            "brl": "lqk1s5er} ", 
+            "testmode": "backtranslate", 
             "txt": "lökésszerű "
         }, 
         {
@@ -1558,7 +3494,17 @@
             "txt": "lőporosszekér"
         }, 
         {
+            "brl": "l7poros5ek1r", 
+            "testmode": "backtranslate", 
+            "txt": "lőporosszekér"
+        }, 
+        {
             "brl": "l7poros5ekerek", 
+            "txt": "lőporosszekerek"
+        }, 
+        {
+            "brl": "l7poros5ekerek", 
+            "testmode": "backtranslate", 
             "txt": "lőporosszekerek"
         }, 
         {
@@ -1566,7 +3512,17 @@
             "txt": "lőrésszerű"
         }, 
         {
+            "brl": "l7r1s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "lőrésszerű"
+        }, 
+        {
             "brl": "lugas5er}", 
+            "txt": "lugasszerű"
+        }, 
+        {
+            "brl": "lugas5er}", 
+            "testmode": "backtranslate", 
             "txt": "lugasszerű"
         }, 
         {
@@ -1574,7 +3530,17 @@
             "txt": "luxusszálloda"
         }, 
         {
+            "brl": "luxus5\"lloda", 
+            "testmode": "backtranslate", 
+            "txt": "luxusszálloda"
+        }, 
+        {
             "brl": "ma3kakapar\"s5er} ", 
+            "txt": "macskakaparásszerű "
+        }, 
+        {
+            "brl": "ma3kakapar\"s5er} ", 
+            "testmode": "backtranslate", 
             "txt": "macskakaparásszerű "
         }, 
         {
@@ -1582,7 +3548,17 @@
             "txt": "magánnyelvmesterek"
         }, 
         {
+            "brl": "mag\"n6elvmesterek", 
+            "testmode": "backtranslate", 
+            "txt": "magánnyelvmesterek"
+        }, 
+        {
             "brl": "mag\"n6ugd|jp1n2t\"r", 
+            "txt": "magánnyugdíjpénztár"
+        }, 
+        {
+            "brl": "mag\"n6ugd|jp1n2t\"r", 
+            "testmode": "backtranslate", 
             "txt": "magánnyugdíjpénztár"
         }, 
         {
@@ -1590,7 +3566,17 @@
             "txt": "magasszárú"
         }, 
         {
+            "brl": "magas5\"r0", 
+            "testmode": "backtranslate", 
+            "txt": "magasszárú"
+        }, 
+        {
             "brl": "m\"gn\"s5\"mba", 
+            "txt": "mágnásszámba"
+        }, 
+        {
+            "brl": "m\"gn\"s5\"mba", 
+            "testmode": "backtranslate", 
             "txt": "mágnásszámba"
         }, 
         {
@@ -1598,7 +3584,17 @@
             "txt": "mágnesszalag"
         }, 
         {
+            "brl": "m\"gnes5alag", 
+            "testmode": "backtranslate", 
+            "txt": "mágnesszalag"
+        }, 
+        {
             "brl": "m\"gnes5er}", 
+            "txt": "mágnesszerű"
+        }, 
+        {
+            "brl": "m\"gnes5er}", 
+            "testmode": "backtranslate", 
             "txt": "mágnesszerű"
         }, 
         {
@@ -1606,7 +3602,17 @@
             "txt": "mágneszár"
         }, 
         {
+            "brl": "m\"gnes2\"r", 
+            "testmode": "backtranslate", 
+            "txt": "mágneszár"
+        }, 
+        {
             "brl": "malacs\"g", 
+            "txt": "malacság"
+        }, 
+        {
+            "brl": "malacs\"g", 
+            "testmode": "backtranslate", 
             "txt": "malacság"
         }, 
         {
@@ -1614,7 +3620,17 @@
             "txt": "malacsült "
         }, 
         {
+            "brl": "malacs{lt ", 
+            "testmode": "backtranslate", 
+            "txt": "malacsült "
+        }, 
+        {
             "brl": "m\"lh\"s5ek1r", 
+            "txt": "málhásszekér"
+        }, 
+        {
+            "brl": "m\"lh\"s5ek1r", 
+            "testmode": "backtranslate", 
             "txt": "málhásszekér"
         }, 
         {
@@ -1622,7 +3638,17 @@
             "txt": "málhásszekereiket "
         }, 
         {
+            "brl": "m\"lh\"s5ekereiket ", 
+            "testmode": "backtranslate", 
+            "txt": "málhásszekereiket "
+        }, 
+        {
             "brl": "mandarin6elv", 
+            "txt": "mandarinnyelv"
+        }, 
+        {
+            "brl": "mandarin6elv", 
+            "testmode": "backtranslate", 
             "txt": "mandarinnyelv"
         }, 
         {
@@ -1631,8 +3657,20 @@
             "txt": "Marosszék"
         }, 
         {
+            "brl": "$maros51k", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Marosszék"
+        }, 
+        {
             "brl": "$maros5ent4qr4 ", 
             "brlCursorPos": 1, 
+            "txt": "Marosszentgyörgy "
+        }, 
+        {
+            "brl": "$maros5ent4qr4 ", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
             "txt": "Marosszentgyörgy "
         }, 
         {
@@ -1641,8 +3679,20 @@
             "txt": "Maroszug"
         }, 
         {
+            "brl": "$maros2ug", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Maroszug"
+        }, 
+        {
             "brl": "$martraver55al", 
             "brlCursorPos": 1, 
+            "txt": "Martraversszal"
+        }, 
+        {
+            "brl": "$martraver55al", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
             "txt": "Martraversszal"
         }, 
         {
@@ -1650,7 +3700,17 @@
             "txt": "másszínű"
         }, 
         {
+            "brl": "m\"s5|n}", 
+            "testmode": "backtranslate", 
+            "txt": "másszínű"
+        }, 
+        {
             "brl": "m\"s5or", 
+            "txt": "másszor"
+        }, 
+        {
+            "brl": "m\"s5or", 
+            "testmode": "backtranslate", 
             "txt": "másszor"
         }, 
         {
@@ -1658,7 +3718,17 @@
             "txt": "másszóval"
         }, 
         {
+            "brl": "m\"s59val", 
+            "testmode": "backtranslate", 
+            "txt": "másszóval"
+        }, 
+        {
             "brl": "m\"s57r}ek", 
+            "txt": "másszőrűek"
+        }, 
+        {
+            "brl": "m\"s57r}ek", 
+            "testmode": "backtranslate", 
             "txt": "másszőrűek"
         }, 
         {
@@ -1666,7 +3736,17 @@
             "txt": "mécsesszem"
         }, 
         {
+            "brl": "m13es5em", 
+            "testmode": "backtranslate", 
+            "txt": "mécsesszem"
+        }, 
+        {
             "brl": "medres51k", 
+            "txt": "medresszék"
+        }, 
+        {
+            "brl": "medres51k", 
+            "testmode": "backtranslate", 
             "txt": "medresszék"
         }, 
         {
@@ -1674,7 +3754,17 @@
             "txt": "meggybefőtt"
         }, 
         {
+            "brl": "me44bef7tt", 
+            "testmode": "backtranslate", 
+            "txt": "meggybefőtt"
+        }, 
+        {
             "brl": "me44el", 
+            "txt": "meggyel"
+        }, 
+        {
+            "brl": "me44el", 
+            "testmode": "backtranslate", 
             "txt": "meggyel"
         }, 
         {
@@ -1682,7 +3772,17 @@
             "txt": "meggyen"
         }, 
         {
+            "brl": "me44en", 
+            "testmode": "backtranslate", 
+            "txt": "meggyen"
+        }, 
+        {
             "brl": "me44es", 
+            "txt": "meggyes"
+        }, 
+        {
+            "brl": "me44es", 
+            "testmode": "backtranslate", 
             "txt": "meggyes"
         }, 
         {
@@ -1691,7 +3791,18 @@
             "txt": "Meggyesi"
         }, 
         {
+            "brl": "$me44esi", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Meggyesi"
+        }, 
+        {
             "brl": "me44et", 
+            "txt": "meggyet"
+        }, 
+        {
+            "brl": "me44et", 
+            "testmode": "backtranslate", 
             "txt": "meggyet"
         }, 
         {
@@ -1699,7 +3810,17 @@
             "txt": "meggyfa"
         }, 
         {
+            "brl": "me44fa", 
+            "testmode": "backtranslate", 
+            "txt": "meggyfa"
+        }, 
+        {
             "brl": "me44he2", 
+            "txt": "meggyhez"
+        }, 
+        {
+            "brl": "me44he2", 
+            "testmode": "backtranslate", 
             "txt": "meggyhez"
         }, 
         {
@@ -1707,7 +3828,17 @@
             "txt": "meggyízű"
         }, 
         {
+            "brl": "me44|2}", 
+            "testmode": "backtranslate", 
+            "txt": "meggyízű"
+        }, 
+        {
             "brl": "me44lekv\"r", 
+            "txt": "meggylekvár"
+        }, 
+        {
+            "brl": "me44lekv\"r", 
+            "testmode": "backtranslate", 
             "txt": "meggylekvár"
         }, 
         {
@@ -1715,7 +3846,17 @@
             "txt": "meggymag"
         }, 
         {
+            "brl": "me44mag", 
+            "testmode": "backtranslate", 
+            "txt": "meggymag"
+        }, 
+        {
             "brl": "me44nek", 
+            "txt": "meggynek"
+        }, 
+        {
+            "brl": "me44nek", 
+            "testmode": "backtranslate", 
             "txt": "meggynek"
         }, 
         {
@@ -1723,7 +3864,17 @@
             "txt": "meggypiros"
         }, 
         {
+            "brl": "me44piros", 
+            "testmode": "backtranslate", 
+            "txt": "meggypiros"
+        }, 
+        {
             "brl": "me445|n", 
+            "txt": "meggyszín"
+        }, 
+        {
+            "brl": "me445|n", 
+            "testmode": "backtranslate", 
             "txt": "meggyszín"
         }, 
         {
@@ -1732,6 +3883,16 @@
         }, 
         {
             "brl": "me44t7l", 
+            "testmode": "backtranslate", 
+            "txt": "meggytől"
+        }, 
+        {
+            "brl": "me44t7l", 
+            "txt": "meggytől"
+        }, 
+        {
+            "brl": "me44t7l", 
+            "testmode": "backtranslate", 
             "txt": "meggytől"
         }, 
         {
@@ -1739,7 +3900,17 @@
             "txt": "meggyvörös"
         }, 
         {
+            "brl": "me44vqrqs", 
+            "testmode": "backtranslate", 
+            "txt": "meggyvörös"
+        }, 
+        {
             "brl": "m1hes5|n", 
+            "txt": "méhesszín"
+        }, 
+        {
+            "brl": "m1hes5|n", 
+            "testmode": "backtranslate", 
             "txt": "méhesszín"
         }, 
         {
@@ -1747,7 +3918,17 @@
             "txt": "méhesszínben "
         }, 
         {
+            "brl": "m1hes5|nben ", 
+            "testmode": "backtranslate", 
+            "txt": "méhesszínben "
+        }, 
+        {
             "brl": "m1nes5\"r61kok", 
+            "txt": "ménesszárnyékok"
+        }, 
+        {
+            "brl": "m1nes5\"r61kok", 
+            "testmode": "backtranslate", 
             "txt": "ménesszárnyékok"
         }, 
         {
@@ -1755,7 +3936,17 @@
             "txt": "méreggyökeret"
         }, 
         {
+            "brl": "m1reg4qkeret", 
+            "testmode": "backtranslate", 
+            "txt": "méreggyökeret"
+        }, 
+        {
             "brl": "m1reg4qk1rr1", 
+            "txt": "méreggyökérré"
+        }, 
+        {
+            "brl": "m1reg4qk1rr1", 
+            "testmode": "backtranslate", 
             "txt": "méreggyökérré"
         }, 
         {
@@ -1763,7 +3954,17 @@
             "txt": "méreggyümölccsé "
         }, 
         {
+            "brl": "m1reg4{mql331 ", 
+            "testmode": "backtranslate", 
+            "txt": "méreggyümölccsé "
+        }, 
+        {
             "brl": "m1rleg4\"r", 
+            "txt": "mérleggyár"
+        }, 
+        {
+            "brl": "m1rleg4\"r", 
+            "testmode": "backtranslate", 
             "txt": "mérleggyár"
         }, 
         {
@@ -1771,7 +3972,17 @@
             "txt": "meszesszürke"
         }, 
         {
+            "brl": "me5es5{rke", 
+            "testmode": "backtranslate", 
+            "txt": "meszesszürke"
+        }, 
+        {
             "brl": "m12s\"rga", 
+            "txt": "mézsárga"
+        }, 
+        {
+            "brl": "m12s\"rga", 
+            "testmode": "backtranslate", 
             "txt": "mézsárga"
         }, 
         {
@@ -1779,7 +3990,17 @@
             "txt": "mézser"
         }, 
         {
+            "brl": "m12ser", 
+            "testmode": "backtranslate", 
+            "txt": "mézser"
+        }, 
+        {
             "brl": "m12sqr", 
+            "txt": "mézsör"
+        }, 
+        {
+            "brl": "m12sqr", 
+            "testmode": "backtranslate", 
             "txt": "mézsör"
         }, 
         {
@@ -1788,7 +4009,18 @@
             "txt": "Mikosszéplak"
         }, 
         {
+            "brl": "$mikos51plak", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Mikosszéplak"
+        }, 
+        {
             "brl": "mikrofon6|l\"s", 
+            "txt": "mikrofonnyílás"
+        }, 
+        {
+            "brl": "mikrofon6|l\"s", 
+            "testmode": "backtranslate", 
             "txt": "mikrofonnyílás"
         }, 
         {
@@ -1796,7 +4028,17 @@
             "txt": "mikronnyi"
         }, 
         {
+            "brl": "mikron6i", 
+            "testmode": "backtranslate", 
+            "txt": "mikronnyi"
+        }, 
+        {
             "brl": "mite55er", 
+            "txt": "mitesszer"
+        }, 
+        {
+            "brl": "mite55er", 
+            "testmode": "backtranslate", 
             "txt": "mitesszer"
         }, 
         {
@@ -1804,7 +4046,17 @@
             "txt": "mohaszöld"
         }, 
         {
+            "brl": "mohas2qld", 
+            "testmode": "backtranslate", 
+            "txt": "mohaszöld"
+        }, 
+        {
             "brl": "m9kus5er} ", 
+            "txt": "mókusszerű "
+        }, 
+        {
+            "brl": "m9kus5er} ", 
+            "testmode": "backtranslate", 
             "txt": "mókusszerű "
         }, 
         {
@@ -1812,7 +4064,17 @@
             "txt": "mókusszőr"
         }, 
         {
+            "brl": "m9kus57r", 
+            "testmode": "backtranslate", 
+            "txt": "mókusszőr"
+        }, 
+        {
             "brl": "motoros5\"n", 
+            "txt": "motorosszán"
+        }, 
+        {
+            "brl": "motoros5\"n", 
+            "testmode": "backtranslate", 
             "txt": "motorosszán"
         }, 
         {
@@ -1820,7 +4082,17 @@
             "txt": "mozgásszerű"
         }, 
         {
+            "brl": "mo2g\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "mozgásszerű"
+        }, 
+        {
             "brl": "mo2g\"s2avar", 
+            "txt": "mozgászavar"
+        }, 
+        {
+            "brl": "mo2g\"s2avar", 
+            "testmode": "backtranslate", 
             "txt": "mozgászavar"
         }, 
         {
@@ -1828,7 +4100,17 @@
             "txt": "munkásszálló"
         }, 
         {
+            "brl": "munk\"s5\"ll9", 
+            "testmode": "backtranslate", 
+            "txt": "munkásszálló"
+        }, 
+        {
             "brl": "mu`ikus5em", 
+            "txt": "muzsikusszem"
+        }, 
+        {
+            "brl": "mu`ikus5em", 
+            "testmode": "backtranslate", 
             "txt": "muzsikusszem"
         }, 
         {
@@ -1836,7 +4118,17 @@
             "txt": "műjéggyár"
         }, 
         {
+            "brl": "m}j1g4\"r", 
+            "testmode": "backtranslate", 
+            "txt": "műjéggyár"
+        }, 
+        {
             "brl": "m}kqd1s2avar ", 
+            "txt": "működészavar "
+        }, 
+        {
+            "brl": "m}kqd1s2avar ", 
+            "testmode": "backtranslate", 
             "txt": "működészavar "
         }, 
         {
@@ -1844,7 +4136,17 @@
             "txt": "nászutazásszerű "
         }, 
         {
+            "brl": "n\"5uta2\"s5er} ", 
+            "testmode": "backtranslate", 
+            "txt": "nászutazásszerű "
+        }, 
+        {
             "brl": "nedves5{rke", 
+            "txt": "nedvesszürke"
+        }, 
+        {
+            "brl": "nedves5{rke", 
+            "testmode": "backtranslate", 
             "txt": "nedvesszürke"
         }, 
         {
@@ -1852,11 +4154,26 @@
             "txt": "négyzetyard"
         }, 
         {
+            "brl": "n142etyard", 
+            "testmode": "backtranslate", 
+            "txt": "négyzetyard"
+        }, 
+        {
             "brl": "neh12s1g", 
             "txt": "nehézség"
         }, 
         {
+            "brl": "neh12s1g", 
+            "testmode": "backtranslate", 
+            "txt": "nehézség"
+        }, 
+        {
             "brl": "neh12s00", 
+            "txt": "nehézsúlyú"
+        }, 
+        {
+            "brl": "neh12s00", 
+            "testmode": "backtranslate", 
             "txt": "nehézsúlyú"
         }, 
         {
@@ -1865,8 +4182,20 @@
             "txt": "Nemesszalók"
         }, 
         {
+            "brl": "$nemes5al9k", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Nemesszalók"
+        }, 
+        {
             "brl": "$nemes5entandr\"s", 
             "brlCursorPos": 1, 
+            "txt": "Nemesszentandrás"
+        }, 
+        {
+            "brl": "$nemes5entandr\"s", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
             "txt": "Nemesszentandrás"
         }, 
         {
@@ -1874,7 +4203,17 @@
             "txt": "nemesszőrme"
         }, 
         {
+            "brl": "nemes57rme", 
+            "testmode": "backtranslate", 
+            "txt": "nemesszőrme"
+        }, 
+        {
             "brl": "neme2sapka", 
+            "txt": "nemezsapka"
+        }, 
+        {
+            "brl": "neme2sapka", 
+            "testmode": "backtranslate", 
             "txt": "nemezsapka"
         }, 
         {
@@ -1882,7 +4221,17 @@
             "txt": "nemezsapkát"
         }, 
         {
+            "brl": "neme2sapk\"t", 
+            "testmode": "backtranslate", 
+            "txt": "nemezsapkát"
+        }, 
+        {
             "brl": "neme2s\"tor ", 
+            "txt": "nemezsátor "
+        }, 
+        {
+            "brl": "neme2s\"tor ", 
+            "testmode": "backtranslate", 
             "txt": "nemezsátor "
         }, 
         {
@@ -1890,7 +4239,17 @@
             "txt": "nercstóla"
         }, 
         {
+            "brl": "nercst9la", 
+            "testmode": "backtranslate", 
+            "txt": "nercstóla"
+        }, 
+        {
             "brl": "6argonc3i2ma", 
+            "txt": "nyargonccsizma"
+        }, 
+        {
+            "brl": "6argonc3i2ma", 
+            "testmode": "backtranslate", 
             "txt": "nyargonccsizma"
         }, 
         {
@@ -1898,7 +4257,17 @@
             "txt": "nyereggyártók"
         }, 
         {
+            "brl": "6ereg4\"rt9k", 
+            "testmode": "backtranslate", 
+            "txt": "nyereggyártók"
+        }, 
+        {
             "brl": "6ikkan\"s5er}", 
+            "txt": "nyikkanásszerű"
+        }, 
+        {
+            "brl": "6ikkan\"s5er}", 
+            "testmode": "backtranslate", 
             "txt": "nyikkanásszerű"
         }, 
         {
@@ -1906,7 +4275,17 @@
             "txt": "nyílászáró"
         }, 
         {
+            "brl": "6|l\"s2\"r9", 
+            "testmode": "backtranslate", 
+            "txt": "nyílászáró"
+        }, 
+        {
             "brl": "6olcvan6olc", 
+            "txt": "nyolcvannyolc"
+        }, 
+        {
+            "brl": "6olcvan6olc", 
+            "testmode": "backtranslate", 
             "txt": "nyolcvannyolc"
         }, 
         {
@@ -1914,7 +4293,17 @@
             "txt": "nyolccsatornás "
         }, 
         {
+            "brl": "6olc3atorn\"s ", 
+            "testmode": "backtranslate", 
+            "txt": "nyolccsatornás "
+        }, 
+        {
             "brl": "6olcsebess1ges", 
+            "txt": "nyolcsebességes"
+        }, 
+        {
+            "brl": "6olcsebess1ges", 
+            "testmode": "backtranslate", 
             "txt": "nyolcsebességes"
         }, 
         {
@@ -1922,7 +4311,17 @@
             "txt": "nyomásszabályzó"
         }, 
         {
+            "brl": "6om\"s5ab\"29", 
+            "testmode": "backtranslate", 
+            "txt": "nyomásszabályzó"
+        }, 
+        {
             "brl": "6om\"s5er}", 
+            "txt": "nyomásszerű"
+        }, 
+        {
+            "brl": "6om\"s5er}", 
+            "testmode": "backtranslate", 
             "txt": "nyomásszerű"
         }, 
         {
@@ -1930,7 +4329,17 @@
             "txt": "ordasszőrű"
         }, 
         {
+            "brl": "ordas57r}", 
+            "testmode": "backtranslate", 
+            "txt": "ordasszőrű"
+        }, 
+        {
             "brl": "9ri\"s5alamandra", 
+            "txt": "óriásszalamandra"
+        }, 
+        {
+            "brl": "9ri\"s5alamandra", 
+            "testmode": "backtranslate", 
             "txt": "óriásszalamandra"
         }, 
         {
@@ -1938,7 +4347,17 @@
             "txt": "oroszlánnyom"
         }, 
         {
+            "brl": "oro5l\"n6om", 
+            "testmode": "backtranslate", 
+            "txt": "oroszlánnyom"
+        }, 
+        {
             "brl": "orvos5ak1rt7", 
+            "txt": "orvosszakértő"
+        }, 
+        {
+            "brl": "orvos5ak1rt7", 
+            "testmode": "backtranslate", 
             "txt": "orvosszakértő"
         }, 
         {
@@ -1946,7 +4365,17 @@
             "txt": "orvosszázados"
         }, 
         {
+            "brl": "orvos5\"2ados", 
+            "testmode": "backtranslate", 
+            "txt": "orvosszázados"
+        }, 
+        {
             "brl": "orvos5em1", 
+            "txt": "orvosszemély"
+        }, 
+        {
+            "brl": "orvos5em1", 
+            "testmode": "backtranslate", 
             "txt": "orvosszemély"
         }, 
         {
@@ -1954,7 +4383,17 @@
             "txt": "orvosszereikkel"
         }, 
         {
+            "brl": "orvos5ereikkel", 
+            "testmode": "backtranslate", 
+            "txt": "orvosszereikkel"
+        }, 
+        {
             "brl": "orvos5er}", 
+            "txt": "orvosszerű"
+        }, 
+        {
+            "brl": "orvos5er}", 
+            "testmode": "backtranslate", 
             "txt": "orvosszerű"
         }, 
         {
@@ -1962,7 +4401,17 @@
             "txt": "orvosszövetség"
         }, 
         {
+            "brl": "orvos5qvets1g", 
+            "testmode": "backtranslate", 
+            "txt": "orvosszövetség"
+        }, 
+        {
             "brl": "9vod\"s5int}", 
+            "txt": "óvodásszintű"
+        }, 
+        {
+            "brl": "9vod\"s5int}", 
+            "testmode": "backtranslate", 
             "txt": "óvodásszintű"
         }, 
         {
@@ -1970,7 +4419,17 @@
             "txt": "ökrösszekér"
         }, 
         {
+            "brl": "qkrqs5ek1r", 
+            "testmode": "backtranslate", 
+            "txt": "ökrösszekér"
+        }, 
+        {
             "brl": "qn\"ll\"s5er}", 
+            "txt": "önállásszerű"
+        }, 
+        {
+            "brl": "qn\"ll\"s5er}", 
+            "testmode": "backtranslate", 
             "txt": "önállásszerű"
         }, 
         {
@@ -1978,7 +4437,17 @@
             "txt": "önnyomása,"
         }, 
         {
+            "brl": "qn6om\"sa,", 
+            "testmode": "backtranslate", 
+            "txt": "önnyomása,"
+        }, 
+        {
             "brl": "qn6omat0 ", 
+            "txt": "önnyomatú "
+        }, 
+        {
+            "brl": "qn6omat0 ", 
+            "testmode": "backtranslate", 
             "txt": "önnyomatú "
         }, 
         {
@@ -1986,7 +4455,17 @@
             "txt": "örvénylésszerű"
         }, 
         {
+            "brl": "qrv16l1s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "örvénylésszerű"
+        }, 
+        {
             "brl": "7s5\"rma2\"s0 ", 
+            "txt": "ősszármazású "
+        }, 
+        {
+            "brl": "7s5\"rma2\"s0 ", 
+            "testmode": "backtranslate", 
             "txt": "ősszármazású "
         }, 
         {
@@ -1994,7 +4473,17 @@
             "txt": "ősszékelyek"
         }, 
         {
+            "brl": "7s51keek", 
+            "testmode": "backtranslate", 
+            "txt": "ősszékelyek"
+        }, 
+        {
             "brl": "q55ek1regetett", 
+            "txt": "összekéregetett"
+        }, 
+        {
+            "brl": "q55ek1regetett", 
+            "testmode": "backtranslate", 
             "txt": "összekéregetett"
         }, 
         {
@@ -2002,7 +4491,17 @@
             "txt": "összekéregettek"
         }, 
         {
+            "brl": "q55ek1regettek", 
+            "testmode": "backtranslate", 
+            "txt": "összekéregettek"
+        }, 
+        {
             "brl": "q55ekeresg1lt", 
+            "txt": "összekeresgélt"
+        }, 
+        {
+            "brl": "q55ekeresg1lt", 
+            "testmode": "backtranslate", 
             "txt": "összekeresgélt"
         }, 
         {
@@ -2010,7 +4509,17 @@
             "txt": "ősszel"
         }, 
         {
+            "brl": "755el", 
+            "testmode": "backtranslate", 
+            "txt": "ősszel"
+        }, 
+        {
             "brl": "7s5ellem", 
+            "txt": "ősszellem"
+        }, 
+        {
+            "brl": "7s5ellem", 
+            "testmode": "backtranslate", 
             "txt": "ősszellem"
         }, 
         {
@@ -2018,7 +4527,17 @@
             "txt": "őzsebesen"
         }, 
         {
+            "brl": "72sebesen", 
+            "testmode": "backtranslate", 
+            "txt": "őzsebesen"
+        }, 
+        {
             "brl": "72sqr1t", 
+            "txt": "őzsörét"
+        }, 
+        {
+            "brl": "72sqr1t", 
+            "testmode": "backtranslate", 
             "txt": "őzsörét"
         }, 
         {
@@ -2026,7 +4545,17 @@
             "txt": "őzsuta"
         }, 
         {
+            "brl": "72suta", 
+            "testmode": "backtranslate", 
+            "txt": "őzsuta"
+        }, 
+        {
             "brl": "padl\"s5oba", 
+            "txt": "padlásszoba"
+        }, 
+        {
+            "brl": "padl\"s5oba", 
+            "testmode": "backtranslate", 
             "txt": "padlásszoba"
         }, 
         {
@@ -2034,7 +4563,17 @@
             "txt": "padlászugoly"
         }, 
         {
+            "brl": "padl\"s2ugo", 
+            "testmode": "backtranslate", 
+            "txt": "padlászugoly"
+        }, 
+        {
             "brl": "pal9cs\"g", 
+            "txt": "palócság"
+        }, 
+        {
+            "brl": "pal9cs\"g", 
+            "testmode": "backtranslate", 
             "txt": "palócság"
         }, 
         {
@@ -2042,7 +4581,17 @@
             "txt": "papirosszeletre"
         }, 
         {
+            "brl": "papiros5eletre", 
+            "testmode": "backtranslate", 
+            "txt": "papirosszeletre"
+        }, 
+        {
             "brl": "paprik\"s5alonna-ba2\"r", 
+            "txt": "paprikásszalonna-bazár"
+        }, 
+        {
+            "brl": "paprik\"s5alonna-ba2\"r", 
+            "testmode": "backtranslate", 
             "txt": "paprikásszalonna-bazár"
         }, 
         {
@@ -2050,7 +4599,17 @@
             "txt": "papucszápor"
         }, 
         {
+            "brl": "papu32\"por", 
+            "testmode": "backtranslate", 
+            "txt": "papucszápor"
+        }, 
+        {
             "brl": "p\"rn\"s51k", 
+            "txt": "párnásszék"
+        }, 
+        {
+            "brl": "p\"rn\"s51k", 
+            "testmode": "backtranslate", 
             "txt": "párnásszék"
         }, 
         {
@@ -2058,7 +4617,17 @@
             "txt": "pátosszal"
         }, 
         {
+            "brl": "p\"to55al", 
+            "testmode": "backtranslate", 
+            "txt": "pátosszal"
+        }, 
+        {
             "brl": "pedag9gus5erve2et", 
+            "txt": "pedagógusszervezet"
+        }, 
+        {
+            "brl": "pedag9gus5erve2et", 
+            "testmode": "backtranslate", 
             "txt": "pedagógusszervezet"
         }, 
         {
@@ -2066,7 +4635,17 @@
             "txt": "pedagógusszobába"
         }, 
         {
+            "brl": "pedag9gus5ob\"ba", 
+            "testmode": "backtranslate", 
+            "txt": "pedagógusszobába"
+        }, 
+        {
             "brl": "pedag9gus5tr\"jk", 
+            "txt": "pedagógussztrájk"
+        }, 
+        {
+            "brl": "pedag9gus5tr\"jk", 
+            "testmode": "backtranslate", 
             "txt": "pedagógussztrájk"
         }, 
         {
@@ -2074,7 +4653,17 @@
             "txt": "pénzeszacskó"
         }, 
         {
+            "brl": "p1n2es2a3k9", 
+            "testmode": "backtranslate", 
+            "txt": "pénzeszacskó"
+        }, 
+        {
             "brl": "p1n2es`\"k", 
+            "txt": "pénzeszsák"
+        }, 
+        {
+            "brl": "p1n2es`\"k", 
+            "testmode": "backtranslate", 
             "txt": "pénzeszsák"
         }, 
         {
@@ -2082,7 +4671,17 @@
             "txt": "pénzzsidóságban "
         }, 
         {
+            "brl": "p1n2`id9s\"gban ", 
+            "testmode": "backtranslate", 
+            "txt": "pénzzsidóságban "
+        }, 
+        {
             "brl": "p1n2seg1", 
+            "txt": "pénzsegély"
+        }, 
+        {
+            "brl": "p1n2seg1", 
+            "testmode": "backtranslate", 
             "txt": "pénzsegély"
         }, 
         {
@@ -2090,7 +4689,17 @@
             "txt": "pénzsorozat"
         }, 
         {
+            "brl": "p1n2soro2at", 
+            "testmode": "backtranslate", 
+            "txt": "pénzsorozat"
+        }, 
+        {
             "brl": "p1n2s9v\"r", 
+            "txt": "pénzsóvár"
+        }, 
+        {
+            "brl": "p1n2s9v\"r", 
+            "testmode": "backtranslate", 
             "txt": "pénzsóvár"
         }, 
         {
@@ -2098,7 +4707,17 @@
             "txt": "pénzszűke"
         }, 
         {
+            "brl": "p1n25}ke", 
+            "testmode": "backtranslate", 
+            "txt": "pénzszűke"
+        }, 
+        {
             "brl": "perecs{t7n7", 
+            "txt": "perecsütőnő"
+        }, 
+        {
+            "brl": "perecs{t7n7", 
+            "testmode": "backtranslate", 
             "txt": "perecsütőnő"
         }, 
         {
@@ -2106,7 +4725,17 @@
             "txt": "pergamennyaláb"
         }, 
         {
+            "brl": "pergamen6al\"b", 
+            "testmode": "backtranslate", 
+            "txt": "pergamennyaláb"
+        }, 
+        {
             "brl": "piac3arnok", 
+            "txt": "piaccsarnok"
+        }, 
+        {
+            "brl": "piac3arnok", 
+            "testmode": "backtranslate", 
             "txt": "piaccsarnok"
         }, 
         {
@@ -2115,8 +4744,20 @@
             "txt": "Pilisszántó,"
         }, 
         {
+            "brl": "$pilis5\"nt9,", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Pilisszántó,"
+        }, 
+        {
             "brl": "$pilis5entkere5t", 
             "brlCursorPos": 1, 
+            "txt": "Pilisszentkereszt"
+        }, 
+        {
+            "brl": "$pilis5entkere5t", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
             "txt": "Pilisszentkereszt"
         }, 
         {
@@ -2124,7 +4765,17 @@
             "txt": "pirítósszeleteken"
         }, 
         {
+            "brl": "pir|t9s5eleteken", 
+            "testmode": "backtranslate", 
+            "txt": "pirítósszeleteken"
+        }, 
+        {
             "brl": "piros5em", 
+            "txt": "pirosszem"
+        }, 
+        {
+            "brl": "piros5em", 
+            "testmode": "backtranslate", 
             "txt": "pirosszem"
         }, 
         {
@@ -2132,7 +4783,17 @@
             "txt": "piroszászlós"
         }, 
         {
+            "brl": "piros2\"5l9s", 
+            "testmode": "backtranslate", 
+            "txt": "piroszászlós"
+        }, 
+        {
             "brl": "pi5kos57ke", 
+            "txt": "piszkosszőke"
+        }, 
+        {
+            "brl": "pi5kos57ke", 
+            "testmode": "backtranslate", 
             "txt": "piszkosszőke"
         }, 
         {
@@ -2140,7 +4801,17 @@
             "txt": "piszkosszürke "
         }, 
         {
+            "brl": "pi5kos5{rke ", 
+            "testmode": "backtranslate", 
+            "txt": "piszkosszürke "
+        }, 
+        {
             "brl": "pi5kos2qld", 
+            "txt": "piszkoszöld"
+        }, 
+        {
+            "brl": "pi5kos2qld", 
+            "testmode": "backtranslate", 
             "txt": "piszkoszöld"
         }, 
         {
@@ -2148,7 +4819,17 @@
             "txt": "pisztolylövésszerűen"
         }, 
         {
+            "brl": "pi5tolqv1s5er}en", 
+            "testmode": "backtranslate", 
+            "txt": "pisztolylövésszerűen"
+        }, 
+        {
             "brl": "pl{s5er}", 
+            "txt": "plüsszerű"
+        }, 
+        {
+            "brl": "pl{s5er}", 
+            "testmode": "backtranslate", 
             "txt": "plüsszerű"
         }, 
         {
@@ -2156,7 +4837,17 @@
             "txt": "plüsszsák"
         }, 
         {
+            "brl": "pl{ss`\"k", 
+            "testmode": "backtranslate", 
+            "txt": "plüsszsák"
+        }, 
+        {
             "brl": "pl{ss`ir\"f ", 
+            "txt": "plüsszsiráf "
+        }, 
+        {
+            "brl": "pl{ss`ir\"f ", 
+            "testmode": "backtranslate", 
             "txt": "plüsszsiráf "
         }, 
         {
@@ -2164,7 +4855,17 @@
             "txt": "plüsszsölyét"
         }, 
         {
+            "brl": "pl{ss`q1t", 
+            "testmode": "backtranslate", 
+            "txt": "plüsszsölyét"
+        }, 
+        {
             "brl": "pokr9c3|k", 
+            "txt": "pokróccsík"
+        }, 
+        {
+            "brl": "pokr9c3|k", 
+            "testmode": "backtranslate", 
             "txt": "pokróccsík"
         }, 
         {
@@ -2172,7 +4873,17 @@
             "txt": "polcsor"
         }, 
         {
+            "brl": "polcsor", 
+            "testmode": "backtranslate", 
+            "txt": "polcsor"
+        }, 
+        {
             "brl": "polic\"jkomi551r", 
+            "txt": "policájkomisszér"
+        }, 
+        {
+            "brl": "polic\"jkomi551r", 
+            "testmode": "backtranslate", 
             "txt": "policájkomisszér"
         }, 
         {
@@ -2180,7 +4891,17 @@
             "txt": "porcsérülés"
         }, 
         {
+            "brl": "porcs1r{l1s", 
+            "testmode": "backtranslate", 
+            "txt": "porcsérülés"
+        }, 
+        {
             "brl": "port\"s5oba", 
+            "txt": "portásszoba"
+        }, 
+        {
+            "brl": "port\"s5oba", 
+            "testmode": "backtranslate", 
             "txt": "portásszoba"
         }, 
         {
@@ -2188,7 +4909,17 @@
             "txt": "postásszakszervezet"
         }, 
         {
+            "brl": "post\"s5ak5erve2et", 
+            "testmode": "backtranslate", 
+            "txt": "postásszakszervezet"
+        }, 
+        {
             "brl": "prec|2s1g", 
+            "txt": "precízség"
+        }, 
+        {
+            "brl": "prec|2s1g", 
+            "testmode": "backtranslate", 
             "txt": "precízség"
         }, 
         {
@@ -2196,7 +4927,17 @@
             "txt": "présszerű"
         }, 
         {
+            "brl": "pr1s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "présszerű"
+        }, 
+        {
             "brl": "priamo55a", 
+            "txt": "priamossza"
+        }, 
+        {
+            "brl": "priamo55a", 
+            "testmode": "backtranslate", 
             "txt": "priamossza"
         }, 
         {
@@ -2204,7 +4945,17 @@
             "txt": "princséged"
         }, 
         {
+            "brl": "princs1ged", 
+            "testmode": "backtranslate", 
+            "txt": "princséged"
+        }, 
+        {
             "brl": "prog4ak", 
+            "txt": "proggyak"
+        }, 
+        {
+            "brl": "prog4ak", 
+            "testmode": "backtranslate", 
             "txt": "proggyak"
         }, 
         {
@@ -2212,7 +4963,17 @@
             "txt": "pulzusszám"
         }, 
         {
+            "brl": "pul2us5\"m", 
+            "testmode": "backtranslate", 
+            "txt": "pulzusszám"
+        }, 
+        {
             "brl": "pusk\"s5aka5", 
+            "txt": "puskásszakasz"
+        }, 
+        {
+            "brl": "pusk\"s5aka5", 
+            "testmode": "backtranslate", 
             "txt": "puskásszakasz"
         }, 
         {
@@ -2220,7 +4981,17 @@
             "txt": "puskásszázad"
         }, 
         {
+            "brl": "pusk\"s5\"2ad", 
+            "testmode": "backtranslate", 
+            "txt": "puskásszázad"
+        }, 
+        {
             "brl": "pusk\"s2\"5l9alj ", 
+            "txt": "puskászászlóalj "
+        }, 
+        {
+            "brl": "pusk\"s2\"5l9alj ", 
+            "testmode": "backtranslate", 
             "txt": "puskászászlóalj "
         }, 
         {
@@ -2228,7 +4999,17 @@
             "txt": "rácság"
         }, 
         {
+            "brl": "r\"cs\"g", 
+            "testmode": "backtranslate", 
+            "txt": "rácság"
+        }, 
+        {
             "brl": "r\"di9s5oba", 
+            "txt": "rádiósszoba"
+        }, 
+        {
+            "brl": "r\"di9s5oba", 
+            "testmode": "backtranslate", 
             "txt": "rádiósszoba"
         }, 
         {
@@ -2236,7 +5017,17 @@
             "txt": "rakásszámra"
         }, 
         {
+            "brl": "rak\"s5\"mra", 
+            "testmode": "backtranslate", 
+            "txt": "rakásszámra"
+        }, 
+        {
             "brl": "r\"ndul\"s5er}en", 
+            "txt": "rándulásszerűen"
+        }, 
+        {
+            "brl": "r\"ndul\"s5er}en", 
+            "testmode": "backtranslate", 
             "txt": "rándulásszerűen"
         }, 
         {
@@ -2244,7 +5035,17 @@
             "txt": "rántásszag"
         }, 
         {
+            "brl": "r\"nt\"s5ag", 
+            "testmode": "backtranslate", 
+            "txt": "rántásszag"
+        }, 
+        {
             "brl": "r\"nt\"s5er} ", 
+            "txt": "rántásszerű "
+        }, 
+        {
+            "brl": "r\"nt\"s5er} ", 
+            "testmode": "backtranslate", 
             "txt": "rántásszerű "
         }, 
         {
@@ -2252,7 +5053,17 @@
             "txt": "recésszárú"
         }, 
         {
+            "brl": "rec1s5\"r0", 
+            "testmode": "backtranslate", 
+            "txt": "recésszárú"
+        }, 
+        {
             "brl": "r1gis1g4}jt7", 
+            "txt": "régiséggyűjtő"
+        }, 
+        {
+            "brl": "r1gis1g4}jt7", 
+            "testmode": "backtranslate", 
             "txt": "régiséggyűjtő"
         }, 
         {
@@ -2260,7 +5071,17 @@
             "txt": "rémisszétek"
         }, 
         {
+            "brl": "r1mi551tek", 
+            "testmode": "backtranslate", 
+            "txt": "rémisszétek"
+        }, 
+        {
             "brl": "r1s2\"r\"s", 
+            "txt": "részárás"
+        }, 
+        {
+            "brl": "r1s2\"r\"s", 
+            "testmode": "backtranslate", 
             "txt": "részárás"
         }, 
         {
@@ -2268,7 +5089,17 @@
             "txt": "rendelkezésszerű"
         }, 
         {
+            "brl": "rendelke21s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "rendelkezésszerű"
+        }, 
+        {
             "brl": "rep{l1s5er}", 
+            "txt": "repülésszerű"
+        }, 
+        {
+            "brl": "rep{l1s5er}", 
+            "testmode": "backtranslate", 
             "txt": "repülésszerű"
         }, 
         {
@@ -2276,7 +5107,17 @@
             "txt": "repülősszárny"
         }, 
         {
+            "brl": "rep{l7s5\"r6", 
+            "testmode": "backtranslate", 
+            "txt": "repülősszárny"
+        }, 
+        {
             "brl": "r1`ut", 
+            "txt": "rézsut"
+        }, 
+        {
+            "brl": "r1`ut", 
+            "testmode": "backtranslate", 
             "txt": "rézsut"
         }, 
         {
@@ -2284,7 +5125,17 @@
             "txt": "ritkasággyűjtő"
         }, 
         {
+            "brl": "ritkas\"g4}jt7", 
+            "testmode": "backtranslate", 
+            "txt": "ritkasággyűjtő"
+        }, 
+        {
             "brl": "ritmus5ab\"o29", 
+            "txt": "ritmusszabályozó"
+        }, 
+        {
+            "brl": "ritmus5ab\"o29", 
+            "testmode": "backtranslate", 
             "txt": "ritmusszabályozó"
         }, 
         {
@@ -2292,7 +5143,17 @@
             "txt": "ritmuszavar"
         }, 
         {
+            "brl": "ritmus2avar", 
+            "testmode": "backtranslate", 
+            "txt": "ritmuszavar"
+        }, 
+        {
             "brl": "robban\"s5er}", 
+            "txt": "robbanásszerű"
+        }, 
+        {
+            "brl": "robban\"s5er}", 
+            "testmode": "backtranslate", 
             "txt": "robbanásszerű"
         }, 
         {
@@ -2300,7 +5161,17 @@
             "txt": "robbanászajt"
         }, 
         {
+            "brl": "robban\"s2ajt", 
+            "testmode": "backtranslate", 
+            "txt": "robbanászajt"
+        }, 
+        {
             "brl": "ron4os51l}", 
+            "txt": "rongyosszélű"
+        }, 
+        {
+            "brl": "ron4os51l}", 
+            "testmode": "backtranslate", 
             "txt": "rongyosszélű"
         }, 
         {
@@ -2308,7 +5179,17 @@
             "txt": "rosszemlékű"
         }, 
         {
+            "brl": "ro55eml1k}", 
+            "testmode": "backtranslate", 
+            "txt": "rosszemlékű"
+        }, 
+        {
             "brl": "rothad\"s5ag", 
+            "txt": "rothadásszag"
+        }, 
+        {
+            "brl": "rothad\"s5ag", 
+            "testmode": "backtranslate", 
             "txt": "rothadásszag"
         }, 
         {
@@ -2316,7 +5197,17 @@
             "txt": "rózsásszőkés"
         }, 
         {
+            "brl": "r9`\"s57k1s", 
+            "testmode": "backtranslate", 
+            "txt": "rózsásszőkés"
+        }, 
+        {
             "brl": "ro`2ab\"l\"s", 
+            "txt": "rozszabálás"
+        }, 
+        {
+            "brl": "ro`2ab\"l\"s", 
+            "testmode": "backtranslate", 
             "txt": "rozszabálás"
         }, 
         {
@@ -2324,7 +5215,17 @@
             "txt": "rubinnyaklánc"
         }, 
         {
+            "brl": "rubin6akl\"nc", 
+            "testmode": "backtranslate", 
+            "txt": "rubinnyaklánc"
+        }, 
+        {
             "brl": "ruh\"s5ekr16", 
+            "txt": "ruhásszekrény"
+        }, 
+        {
+            "brl": "ruh\"s5ekr16", 
+            "testmode": "backtranslate", 
             "txt": "ruhásszekrény"
         }, 
         {
@@ -2332,7 +5233,26 @@
             "txt": "ruhásszobámé"
         }, 
         {
+            "brl": "ruh\"s5ob\"m1", 
+            "testmode": "backtranslate", 
+            "txt": "ruhásszobámé"
+        }, 
+        {
+            "brl": "r0`os5\"j0", 
+            "txt": "rúzsosszájú"
+        }, 
+        {
+            "brl": "r0`os5\"j0", 
+            "testmode": "backtranslate", 
+            "txt": "rúzsosszájú"
+        }, 
+        {
             "brl": "s\"rg\"s5|n}", 
+            "txt": "sárgásszínű"
+        }, 
+        {
+            "brl": "s\"rg\"s5|n}", 
+            "testmode": "backtranslate", 
             "txt": "sárgásszínű"
         }, 
         {
@@ -2340,7 +5260,17 @@
             "txt": "sasszárnyú"
         }, 
         {
+            "brl": "sas5\"r60", 
+            "testmode": "backtranslate", 
+            "txt": "sasszárnyú"
+        }, 
+        {
             "brl": "sas5eg", 
+            "txt": "sasszeg"
+        }, 
+        {
+            "brl": "sas5eg", 
+            "testmode": "backtranslate", 
             "txt": "sasszeg"
         }, 
         {
@@ -2348,7 +5278,17 @@
             "txt": "sásszéna"
         }, 
         {
+            "brl": "s\"s51na", 
+            "testmode": "backtranslate", 
+            "txt": "sásszéna"
+        }, 
+        {
             "brl": "s\"s5er} ", 
+            "txt": "sásszerű "
+        }, 
+        {
+            "brl": "s\"s5er} ", 
+            "testmode": "backtranslate", 
             "txt": "sásszerű "
         }, 
         {
@@ -2356,7 +5296,17 @@
             "txt": "sasszömöd"
         }, 
         {
+            "brl": "sas5qmqd", 
+            "testmode": "backtranslate", 
+            "txt": "sasszömöd"
+        }, 
+        {
             "brl": "s\"t\"n3apat", 
+            "txt": "sátáncsapat"
+        }, 
+        {
+            "brl": "s\"t\"n3apat", 
+            "testmode": "backtranslate", 
             "txt": "sátáncsapat"
         }, 
         {
@@ -2364,7 +5314,17 @@
             "txt": "selymesszőke"
         }, 
         {
+            "brl": "semes57ke", 
+            "testmode": "backtranslate", 
+            "txt": "selymesszőke"
+        }, 
+        {
             "brl": "sereg4}jt1s", 
+            "txt": "sereggyűjtés"
+        }, 
+        {
+            "brl": "sereg4}jt1s", 
+            "testmode": "backtranslate", 
             "txt": "sereggyűjtés"
         }, 
         {
@@ -2372,7 +5332,17 @@
             "txt": "sertésszelet"
         }, 
         {
+            "brl": "sert1s5elet", 
+            "testmode": "backtranslate", 
+            "txt": "sertésszelet"
+        }, 
+        {
             "brl": "sert1s5}2pe3e61re", 
+            "txt": "sertésszűzpecsenyére"
+        }, 
+        {
+            "brl": "sert1s5}2pe3e61re", 
+            "testmode": "backtranslate", 
             "txt": "sertésszűzpecsenyére"
         }, 
         {
@@ -2380,7 +5350,17 @@
             "txt": "sertészsír"
         }, 
         {
+            "brl": "sert1s`|r", 
+            "testmode": "backtranslate", 
+            "txt": "sertészsír"
+        }, 
+        {
             "brl": "sonk\"s5elet", 
+            "txt": "sonkásszelet"
+        }, 
+        {
+            "brl": "sonk\"s5elet", 
+            "testmode": "backtranslate", 
             "txt": "sonkásszelet"
         }, 
         {
@@ -2388,7 +5368,17 @@
             "txt": "sonkásszerű "
         }, 
         {
+            "brl": "sonk\"s5er} ", 
+            "testmode": "backtranslate", 
+            "txt": "sonkásszerű "
+        }, 
+        {
             "brl": "sonk\"s`emle", 
+            "txt": "sonkászsemle"
+        }, 
+        {
+            "brl": "sonk\"s`emle", 
+            "testmode": "backtranslate", 
             "txt": "sonkászsemle"
         }, 
         {
@@ -2396,7 +5386,17 @@
             "txt": "sorscsapásszerű,"
         }, 
         {
+            "brl": "sors3ap\"s5er},", 
+            "testmode": "backtranslate", 
+            "txt": "sorscsapásszerű,"
+        }, 
+        {
             "brl": "spa6olme44en", 
+            "txt": "spanyolmeggyen"
+        }, 
+        {
+            "brl": "spa6olme44en", 
+            "testmode": "backtranslate", 
             "txt": "spanyolmeggyen"
         }, 
         {
@@ -2404,7 +5404,17 @@
             "txt": "sugárzásszerű "
         }, 
         {
+            "brl": "sug\"r2\"s5er} ", 
+            "testmode": "backtranslate", 
+            "txt": "sugárzásszerű "
+        }, 
+        {
             "brl": "sug\"r2\"s5intek", 
+            "txt": "sugárzásszintek"
+        }, 
+        {
+            "brl": "sug\"r2\"s5intek", 
+            "testmode": "backtranslate", 
             "txt": "sugárzásszintek"
         }, 
         {
@@ -2412,7 +5422,17 @@
             "txt": "suhanccsürhe"
         }, 
         {
+            "brl": "suhanc3{rhe", 
+            "testmode": "backtranslate", 
+            "txt": "suhanccsürhe"
+        }, 
+        {
             "brl": "suhancsereg", 
+            "txt": "suhancsereg"
+        }, 
+        {
+            "brl": "suhancsereg", 
+            "testmode": "backtranslate", 
             "txt": "suhancsereg"
         }, 
         {
@@ -2420,7 +5440,17 @@
             "txt": "szaglásszék"
         }, 
         {
+            "brl": "5agl\"551k", 
+            "testmode": "backtranslate", 
+            "txt": "szaglásszék"
+        }, 
+        {
             "brl": "5alon6elv, 5alon6elven ", 
+            "txt": "szalonnyelv, szalonnyelven "
+        }, 
+        {
+            "brl": "5alon6elv, 5alon6elven ", 
+            "testmode": "backtranslate", 
             "txt": "szalonnyelv, szalonnyelven "
         }, 
         {
@@ -2429,7 +5459,18 @@
             "txt": "Szamosszeg"
         }, 
         {
+            "brl": "$5amos5eg", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Szamosszeg"
+        }, 
+        {
             "brl": "5anit1c3oport", 
+            "txt": "szanitéccsoport"
+        }, 
+        {
+            "brl": "5anit1c3oport", 
+            "testmode": "backtranslate", 
             "txt": "szanitéccsoport"
         }, 
         {
@@ -2437,7 +5478,17 @@
             "txt": "szárazság"
         }, 
         {
+            "brl": "5\"ra2s\"g", 
+            "testmode": "backtranslate", 
+            "txt": "szárazság"
+        }, 
+        {
             "brl": "5\"ra2s{lt", 
+            "txt": "szárazsült"
+        }, 
+        {
+            "brl": "5\"ra2s{lt", 
+            "testmode": "backtranslate", 
             "txt": "szárazsült"
         }, 
         {
@@ -2445,7 +5496,17 @@
             "txt": "szarvasszív"
         }, 
         {
+            "brl": "5arvas5|v", 
+            "testmode": "backtranslate", 
+            "txt": "szarvasszív"
+        }, 
+        {
             "brl": "5arvas`|r", 
+            "txt": "szarvaszsír"
+        }, 
+        {
+            "brl": "5arvas`|r", 
+            "testmode": "backtranslate", 
             "txt": "szarvaszsír"
         }, 
         {
@@ -2453,11 +5514,26 @@
             "txt": "szénásszekér"
         }, 
         {
+            "brl": "51n\"s5ek1r", 
+            "testmode": "backtranslate", 
+            "txt": "szénásszekér"
+        }, 
+        {
             "brl": "5ents1ges5}2m\"ri\"m", 
             "txt": "szentségesszűzmáriám"
         }, 
         {
+            "brl": "5ents1ges5}2m\"ri\"m", 
+            "testmode": "backtranslate", 
+            "txt": "szentségesszűzmáriám"
+        }, 
+        {
             "brl": "5ents1g4al\"2\"s", 
+            "txt": "szentséggyalázás"
+        }, 
+        {
+            "brl": "5ents1g4al\"2\"s", 
+            "testmode": "backtranslate", 
             "txt": "szentséggyalázás"
         }, 
         {
@@ -2466,7 +5542,18 @@
             "txt": "Szepesszombat"
         }, 
         {
+            "brl": "$5epes5ombat", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Szepesszombat"
+        }, 
+        {
             "brl": "5er27d1s5eg1s", 
+            "txt": "szerződésszegés"
+        }, 
+        {
+            "brl": "5er27d1s5eg1s", 
+            "testmode": "backtranslate", 
             "txt": "szerződésszegés"
         }, 
         {
@@ -2474,11 +5561,26 @@
             "txt": "szerződésszegő "
         }, 
         {
+            "brl": "5er27d1s5eg7 ", 
+            "testmode": "backtranslate", 
+            "txt": "szerződésszegő "
+        }, 
+        {
             "brl": "51to55a", 
             "txt": "szétossza"
         }, 
         {
+            "brl": "51to55a", 
+            "testmode": "backtranslate", 
+            "txt": "szétossza"
+        }, 
+        {
             "brl": "51to55\"k ", 
+            "txt": "szétosszák "
+        }, 
+        {
+            "brl": "51to55\"k ", 
+            "testmode": "backtranslate", 
             "txt": "szétosszák "
         }, 
         {
@@ -2487,7 +5589,18 @@
             "txt": "Szilvásszentmárton"
         }, 
         {
+            "brl": "$5ilv\"s5entm\"rton", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Szilvásszentmárton"
+        }, 
+        {
             "brl": "5indik\"tus5er} ", 
+            "txt": "szindikátusszerű "
+        }, 
+        {
+            "brl": "5indik\"tus5er} ", 
+            "testmode": "backtranslate", 
             "txt": "szindikátusszerű "
         }, 
         {
@@ -2495,7 +5608,17 @@
             "txt": "szindikátusszervező"
         }, 
         {
+            "brl": "5indik\"tus5erve27", 
+            "testmode": "backtranslate", 
+            "txt": "szindikátusszervező"
+        }, 
+        {
             "brl": "5|n6om\"s", 
+            "txt": "színnyomás"
+        }, 
+        {
+            "brl": "5|n6om\"s", 
+            "testmode": "backtranslate", 
             "txt": "színnyomás"
         }, 
         {
@@ -2503,7 +5626,17 @@
             "txt": "szocsegély"
         }, 
         {
+            "brl": "5ocseg1", 
+            "testmode": "backtranslate", 
+            "txt": "szocsegély"
+        }, 
+        {
             "brl": "59d\"s5ifon", 
+            "txt": "szódásszifon"
+        }, 
+        {
+            "brl": "59d\"s5ifon", 
+            "testmode": "backtranslate", 
             "txt": "szódásszifon"
         }, 
         {
@@ -2511,7 +5644,17 @@
             "txt": "szokásszerű"
         }, 
         {
+            "brl": "5ok\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "szokásszerű"
+        }, 
+        {
             "brl": "59l\"s5abads\"g", 
+            "txt": "szólásszabadság"
+        }, 
+        {
+            "brl": "59l\"s5abads\"g", 
+            "testmode": "backtranslate", 
             "txt": "szólásszabadság"
         }, 
         {
@@ -2519,7 +5662,17 @@
             "txt": "szólásszapulás"
         }, 
         {
+            "brl": "59l\"s5apul\"s", 
+            "testmode": "backtranslate", 
+            "txt": "szólásszapulás"
+        }, 
+        {
             "brl": "59rako2\"s5\"mba", 
+            "txt": "szórakozásszámba"
+        }, 
+        {
+            "brl": "59rako2\"s5\"mba", 
+            "testmode": "backtranslate", 
             "txt": "szórakozásszámba"
         }, 
         {
@@ -2527,7 +5680,17 @@
             "txt": "szorongásszerű"
         }, 
         {
+            "brl": "5orong\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "szorongásszerű"
+        }, 
+        {
             "brl": "5orong\"s5int", 
+            "txt": "szorongásszint"
+        }, 
+        {
+            "brl": "5orong\"s5int", 
+            "testmode": "backtranslate", 
             "txt": "szorongásszint"
         }, 
         {
@@ -2535,7 +5698,17 @@
             "txt": "szöggyár"
         }, 
         {
+            "brl": "5qg4\"r", 
+            "testmode": "backtranslate", 
+            "txt": "szöggyár"
+        }, 
+        {
             "brl": "5qveg4}jtem16", 
+            "txt": "szöveggyűjtemény"
+        }, 
+        {
+            "brl": "5qveg4}jtem16", 
+            "testmode": "backtranslate", 
             "txt": "szöveggyűjtemény"
         }, 
         {
@@ -2543,7 +5716,17 @@
             "txt": "szúrásszerű"
         }, 
         {
+            "brl": "50r\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "szúrásszerű"
+        }, 
+        {
             "brl": "50r9s5em}", 
+            "txt": "szúrósszemű"
+        }, 
+        {
+            "brl": "50r9s5em}", 
+            "testmode": "backtranslate", 
             "txt": "szúrósszemű"
         }, 
         {
@@ -2551,7 +5734,17 @@
             "txt": "születésszabályozás"
         }, 
         {
+            "brl": "5{let1s5ab\"o2\"s", 
+            "testmode": "backtranslate", 
+            "txt": "születésszabályozás"
+        }, 
+        {
             "brl": "5}2s{lt", 
+            "txt": "szűzsült"
+        }, 
+        {
+            "brl": "5}2s{lt", 
+            "testmode": "backtranslate", 
             "txt": "szűzsült"
         }, 
         {
@@ -2559,7 +5752,17 @@
             "txt": "tágulásszabály"
         }, 
         {
+            "brl": "t\"gul\"s5ab\"", 
+            "testmode": "backtranslate", 
+            "txt": "tágulásszabály"
+        }, 
+        {
             "brl": "tag4}l1s", 
+            "txt": "taggyűlés"
+        }, 
+        {
+            "brl": "tag4}l1s", 
+            "testmode": "backtranslate", 
             "txt": "taggyűlés"
         }, 
         {
@@ -2567,7 +5770,17 @@
             "txt": "tánccsoport"
         }, 
         {
+            "brl": "t\"nc3oport", 
+            "testmode": "backtranslate", 
+            "txt": "tánccsoport"
+        }, 
+        {
             "brl": "t\"rsalg\"s5\"mba", 
+            "txt": "társalgásszámba"
+        }, 
+        {
+            "brl": "t\"rsalg\"s5\"mba", 
+            "testmode": "backtranslate", 
             "txt": "társalgásszámba"
         }, 
         {
@@ -2575,7 +5788,17 @@
             "txt": "társalgásszerű "
         }, 
         {
+            "brl": "t\"rsalg\"s5er} ", 
+            "testmode": "backtranslate", 
+            "txt": "társalgásszerű "
+        }, 
+        {
             "brl": "t\"rs5ek1r", 
+            "txt": "társszekér"
+        }, 
+        {
+            "brl": "t\"rs5ek1r", 
+            "testmode": "backtranslate", 
             "txt": "társszekér"
         }, 
         {
@@ -2583,7 +5806,17 @@
             "txt": "társszövetség"
         }, 
         {
+            "brl": "t\"rs5qvets1g", 
+            "testmode": "backtranslate", 
+            "txt": "társszövetség"
+        }, 
+        {
             "brl": "te\"s5erv|2", 
+            "txt": "teásszervíz"
+        }, 
+        {
+            "brl": "te\"s5erv|2", 
+            "testmode": "backtranslate", 
             "txt": "teásszervíz"
         }, 
         {
@@ -2591,7 +5824,17 @@
             "txt": "tejfölösszájú"
         }, 
         {
+            "brl": "tejfqlqs5\"j0", 
+            "testmode": "backtranslate", 
+            "txt": "tejfölösszájú"
+        }, 
+        {
             "brl": "telep{l1s5erke2et ", 
+            "txt": "településszerkezet "
+        }, 
+        {
+            "brl": "telep{l1s5erke2et ", 
+            "testmode": "backtranslate", 
             "txt": "településszerkezet "
         }, 
         {
@@ -2599,7 +5842,17 @@
             "txt": "templomosszakértő"
         }, 
         {
+            "brl": "templomos5ak1rt7", 
+            "testmode": "backtranslate", 
+            "txt": "templomosszakértő"
+        }, 
+        {
             "brl": "tet51s2aj", 
+            "txt": "tetszészaj"
+        }, 
+        {
+            "brl": "tet51s2aj", 
+            "testmode": "backtranslate", 
             "txt": "tetszészaj"
         }, 
         {
@@ -2607,7 +5860,17 @@
             "txt": "tetszészsivaj "
         }, 
         {
+            "brl": "tet51s`ivaj ", 
+            "testmode": "backtranslate", 
+            "txt": "tetszészsivaj "
+        }, 
+        {
             "brl": "tigris5emek ", 
+            "txt": "tigrisszemek "
+        }, 
+        {
+            "brl": "tigris5emek ", 
+            "testmode": "backtranslate", 
             "txt": "tigrisszemek "
         }, 
         {
@@ -2615,7 +5878,17 @@
             "txt": "tigrisszerű"
         }, 
         {
+            "brl": "tigris5er}", 
+            "testmode": "backtranslate", 
+            "txt": "tigrisszerű"
+        }, 
+        {
             "brl": "tipus5\"m", 
+            "txt": "tipusszám"
+        }, 
+        {
+            "brl": "tipus5\"m", 
+            "testmode": "backtranslate", 
             "txt": "tipusszám"
         }, 
         {
@@ -2623,7 +5896,17 @@
             "txt": "típusszám"
         }, 
         {
+            "brl": "t|pus5\"m", 
+            "testmode": "backtranslate", 
+            "txt": "típusszám"
+        }, 
+        {
             "brl": "t|pus5qveg", 
+            "txt": "típusszöveg"
+        }, 
+        {
+            "brl": "t|pus5qveg", 
+            "testmode": "backtranslate", 
             "txt": "típusszöveg"
         }, 
         {
@@ -2631,7 +5914,17 @@
             "txt": "típuszubbony"
         }, 
         {
+            "brl": "t|pus2ubbo6", 
+            "testmode": "backtranslate", 
+            "txt": "típuszubbony"
+        }, 
+        {
             "brl": "titkos5olg\"lat", 
+            "txt": "titkosszolgálat"
+        }, 
+        {
+            "brl": "titkos5olg\"lat", 
+            "testmode": "backtranslate", 
             "txt": "titkosszolgálat"
         }, 
         {
@@ -2639,7 +5932,17 @@
             "txt": "tizedesszállás"
         }, 
         {
+            "brl": "ti2edes5\"ll\"s", 
+            "testmode": "backtranslate", 
+            "txt": "tizedesszállás"
+        }, 
+        {
             "brl": "t|2gallon6i", 
+            "txt": "tízgallonnyi"
+        }, 
+        {
+            "brl": "t|2gallon6i", 
+            "testmode": "backtranslate", 
             "txt": "tízgallonnyi"
         }, 
         {
@@ -2647,7 +5950,17 @@
             "txt": "tojásszerű"
         }, 
         {
+            "brl": "toj\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "tojásszerű"
+        }, 
+        {
             "brl": "top\"2s\"rg\"ja", 
+            "txt": "topázsárgája"
+        }, 
+        {
+            "brl": "top\"2s\"rg\"ja", 
+            "testmode": "backtranslate", 
             "txt": "topázsárgája"
         }, 
         {
@@ -2655,7 +5968,17 @@
             "txt": "torzság"
         }, 
         {
+            "brl": "tor2s\"g", 
+            "testmode": "backtranslate", 
+            "txt": "torzság"
+        }, 
+        {
             "brl": "tqbbes5\"m", 
+            "txt": "többesszám"
+        }, 
+        {
+            "brl": "tqbbes5\"m", 
+            "testmode": "backtranslate", 
             "txt": "többesszám"
         }, 
         {
@@ -2663,7 +5986,17 @@
             "txt": "töltésszabályozó"
         }, 
         {
+            "brl": "tqlt1s5ab\"o29", 
+            "testmode": "backtranslate", 
+            "txt": "töltésszabályozó"
+        }, 
+        {
             "brl": "tqlt1s5\"m", 
+            "txt": "töltésszám"
+        }, 
+        {
+            "brl": "tqlt1s5\"m", 
+            "testmode": "backtranslate", 
             "txt": "töltésszám"
         }, 
         {
@@ -2671,7 +6004,17 @@
             "txt": "töltésszerűen"
         }, 
         {
+            "brl": "tqlt1s5er}en", 
+            "testmode": "backtranslate", 
+            "txt": "töltésszerűen"
+        }, 
+        {
             "brl": "tqrle55em", 
+            "txt": "törlesszem"
+        }, 
+        {
+            "brl": "tqrle55em", 
+            "testmode": "backtranslate", 
             "txt": "törlesszem"
         }, 
         {
@@ -2679,7 +6022,17 @@
             "txt": "tövisszár"
         }, 
         {
+            "brl": "tqvis5\"r", 
+            "testmode": "backtranslate", 
+            "txt": "tövisszár"
+        }, 
+        {
             "brl": "tqvis50r\"s", 
+            "txt": "tövisszúrás"
+        }, 
+        {
+            "brl": "tqvis50r\"s", 
+            "testmode": "backtranslate", 
             "txt": "tövisszúrás"
         }, 
         {
@@ -2687,7 +6040,17 @@
             "txt": "trichinnyavalya"
         }, 
         {
+            "brl": "trichin6avaa", 
+            "testmode": "backtranslate", 
+            "txt": "trichinnyavalya"
+        }, 
+        {
             "brl": "tud\"s5int", 
+            "txt": "tudásszint"
+        }, 
+        {
+            "brl": "tud\"s5int", 
+            "testmode": "backtranslate", 
             "txt": "tudásszint"
         }, 
         {
@@ -2695,7 +6058,17 @@
             "txt": "tudásszomj"
         }, 
         {
+            "brl": "tud\"s5omj", 
+            "testmode": "backtranslate", 
+            "txt": "tudásszomj"
+        }, 
+        {
             "brl": "t{krqs51l}", 
+            "txt": "tükrösszélű"
+        }, 
+        {
+            "brl": "t{krqs51l}", 
+            "testmode": "backtranslate", 
             "txt": "tükrösszélű"
         }, 
         {
@@ -2703,7 +6076,17 @@
             "txt": "tüntetésszerűen"
         }, 
         {
+            "brl": "t{ntet1s5er}en", 
+            "testmode": "backtranslate", 
+            "txt": "tüntetésszerűen"
+        }, 
+        {
             "brl": "t{2es5em}", 
+            "txt": "tüzesszemű"
+        }, 
+        {
+            "brl": "t{2es5em}", 
+            "testmode": "backtranslate", 
             "txt": "tüzesszemű"
         }, 
         {
@@ -2711,7 +6094,17 @@
             "txt": "tűzzsonglőr "
         }, 
         {
+            "brl": "t}2`ongl7r ", 
+            "testmode": "backtranslate", 
+            "txt": "tűzzsonglőr "
+        }, 
+        {
             "brl": "t}2sebess1g", 
+            "txt": "tűzsebesség"
+        }, 
+        {
+            "brl": "t}2sebess1g", 
+            "testmode": "backtranslate", 
             "txt": "tűzsebesség"
         }, 
         {
@@ -2719,7 +6112,17 @@
             "txt": "tűzsugár"
         }, 
         {
+            "brl": "t}2sug\"r", 
+            "testmode": "backtranslate", 
+            "txt": "tűzsugár"
+        }, 
+        {
             "brl": "udvaroncsereg", 
+            "txt": "udvaroncsereg"
+        }, 
+        {
+            "brl": "udvaroncsereg", 
+            "testmode": "backtranslate", 
             "txt": "udvaroncsereg"
         }, 
         {
@@ -2727,7 +6130,17 @@
             "txt": "ugrásszerűen"
         }, 
         {
+            "brl": "ugr\"s5er}en", 
+            "testmode": "backtranslate", 
+            "txt": "ugrásszerűen"
+        }, 
+        {
             "brl": "0joncs\"g", 
+            "txt": "újoncság"
+        }, 
+        {
+            "brl": "0joncs\"g", 
+            "testmode": "backtranslate", 
             "txt": "újoncság"
         }, 
         {
@@ -2735,7 +6148,17 @@
             "txt": "ulánusszázad"
         }, 
         {
+            "brl": "ul\"nus5\"2ad", 
+            "testmode": "backtranslate", 
+            "txt": "ulánusszázad"
+        }, 
+        {
             "brl": "university", 
+            "txt": "university"
+        }, 
+        {
+            "brl": "university", 
+            "testmode": "backtranslate", 
             "txt": "university"
         }, 
         {
@@ -2743,7 +6166,17 @@
             "txt": "utalásszerűen"
         }, 
         {
+            "brl": "utal\"s5er}en", 
+            "testmode": "backtranslate", 
+            "txt": "utalásszerűen"
+        }, 
+        {
             "brl": "ut\"np9tl\"s5\"ll|tm\"66al", 
+            "txt": "utánpótlásszállítmánnyal"
+        }, 
+        {
+            "brl": "ut\"np9tl\"s5\"ll|tm\"66al", 
+            "testmode": "backtranslate", 
             "txt": "utánpótlásszállítmánnyal"
         }, 
         {
@@ -2751,7 +6184,17 @@
             "txt": "utánnyomás"
         }, 
         {
+            "brl": "ut\"n6om\"s", 
+            "testmode": "backtranslate", 
+            "txt": "utánnyomás"
+        }, 
+        {
             "brl": "utas5\"ll|t9", 
+            "txt": "utasszállító"
+        }, 
+        {
+            "brl": "utas5\"ll|t9", 
+            "testmode": "backtranslate", 
             "txt": "utasszállító"
         }, 
         {
@@ -2759,7 +6202,17 @@
             "txt": "utasszám"
         }, 
         {
+            "brl": "utas5\"m", 
+            "testmode": "backtranslate", 
+            "txt": "utasszám"
+        }, 
+        {
             "brl": "utas5erep", 
+            "txt": "utasszerep"
+        }, 
+        {
+            "brl": "utas5erep", 
+            "testmode": "backtranslate", 
             "txt": "utasszerep"
         }, 
         {
@@ -2767,7 +6220,17 @@
             "txt": "utasszint"
         }, 
         {
+            "brl": "utas5int", 
+            "testmode": "backtranslate", 
+            "txt": "utasszint"
+        }, 
+        {
             "brl": "utas5olg\"lat", 
+            "txt": "utasszolgálat"
+        }, 
+        {
+            "brl": "utas5olg\"lat", 
+            "testmode": "backtranslate", 
             "txt": "utasszolgálat"
         }, 
         {
@@ -2775,7 +6238,17 @@
             "txt": "utazásszerű"
         }, 
         {
+            "brl": "uta2\"s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "utazásszerű"
+        }, 
+        {
             "brl": "uta2\"s5erve27", 
+            "txt": "utazásszervező"
+        }, 
+        {
+            "brl": "uta2\"s5erve27", 
+            "testmode": "backtranslate", 
             "txt": "utazásszervező"
         }, 
         {
@@ -2784,6 +6257,16 @@
         }, 
         {
             "brl": "{l1s5ak", 
+            "testmode": "backtranslate", 
+            "txt": "ülésszak"
+        }, 
+        {
+            "brl": "{l1s5ak", 
+            "txt": "ülésszak"
+        }, 
+        {
+            "brl": "{l1s5ak", 
+            "testmode": "backtranslate", 
             "txt": "ülésszak"
         }, 
         {
@@ -2791,7 +6274,17 @@
             "txt": "ütésszerű"
         }, 
         {
+            "brl": "{t1s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "ütésszerű"
+        }, 
+        {
             "brl": "{t1s2\"por ", 
+            "txt": "ütészápor "
+        }, 
+        {
+            "brl": "{t1s2\"por ", 
+            "testmode": "backtranslate", 
             "txt": "ütészápor "
         }, 
         {
@@ -2799,7 +6292,17 @@
             "txt": "üveggyapot"
         }, 
         {
+            "brl": "{veg4apot", 
+            "testmode": "backtranslate", 
+            "txt": "üveggyapot"
+        }, 
+        {
             "brl": "{veg4\"rt\"s", 
+            "txt": "üveggyártás"
+        }, 
+        {
+            "brl": "{veg4\"rt\"s", 
+            "testmode": "backtranslate", 
             "txt": "üveggyártás"
         }, 
         {
@@ -2807,7 +6310,17 @@
             "txt": "üveggyöngy"
         }, 
         {
+            "brl": "{veg4qn4", 
+            "testmode": "backtranslate", 
+            "txt": "üveggyöngy"
+        }, 
+        {
             "brl": "{veg4}r}", 
+            "txt": "üveggyűrű"
+        }, 
+        {
+            "brl": "{veg4}r}", 
+            "testmode": "backtranslate", 
             "txt": "üveggyűrű"
         }, 
         {
@@ -2815,7 +6328,17 @@
             "txt": "vagonnyi"
         }, 
         {
+            "brl": "vagon6i", 
+            "testmode": "backtranslate", 
+            "txt": "vagonnyi"
+        }, 
+        {
             "brl": "vakar33al", 
+            "txt": "vakarccsal"
+        }, 
+        {
+            "brl": "vakar33al", 
+            "testmode": "backtranslate", 
             "txt": "vakarccsal"
         }, 
         {
@@ -2823,11 +6346,26 @@
             "txt": "vallásszabadság"
         }, 
         {
+            "brl": "vall\"s5abads\"g", 
+            "testmode": "backtranslate", 
+            "txt": "vallásszabadság"
+        }, 
+        {
             "brl": "vallom\"s5\"mba", 
             "txt": "vallomásszámba"
         }, 
         {
+            "brl": "vallom\"s5\"mba", 
+            "testmode": "backtranslate", 
+            "txt": "vallomásszámba"
+        }, 
+        {
             "brl": "v\"llperec3ontj\"b9l", 
+            "txt": "vállpereccsontjából"
+        }, 
+        {
+            "brl": "v\"llperec3ontj\"b9l", 
+            "testmode": "backtranslate", 
             "txt": "vállpereccsontjából"
         }, 
         {
@@ -2836,7 +6374,18 @@
             "txt": "Vámosszabadi"
         }, 
         {
+            "brl": "$v\"mos5abadi", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Vámosszabadi"
+        }, 
+        {
             "brl": "v\"ros51pe", 
+            "txt": "városszépe"
+        }, 
+        {
+            "brl": "v\"ros51pe", 
+            "testmode": "backtranslate", 
             "txt": "városszépe"
         }, 
         {
@@ -2844,7 +6393,17 @@
             "txt": "városszerte"
         }, 
         {
+            "brl": "v\"ros5erte", 
+            "testmode": "backtranslate", 
+            "txt": "városszerte"
+        }, 
+        {
             "brl": "v\"ros5iluett", 
+            "txt": "várossziluett"
+        }, 
+        {
+            "brl": "v\"ros5iluett", 
+            "testmode": "backtranslate", 
             "txt": "várossziluett"
         }, 
         {
@@ -2852,7 +6411,17 @@
             "txt": "városzajon"
         }, 
         {
+            "brl": "v\"ros2ajon", 
+            "testmode": "backtranslate", 
+            "txt": "városzajon"
+        }, 
+        {
             "brl": "v\"ros2ajt ", 
+            "txt": "városzajt "
+        }, 
+        {
+            "brl": "v\"ros2ajt ", 
+            "testmode": "backtranslate", 
             "txt": "városzajt "
         }, 
         {
@@ -2860,7 +6429,17 @@
             "txt": "városzsarnok"
         }, 
         {
+            "brl": "v\"ros`arnok", 
+            "testmode": "backtranslate", 
+            "txt": "városzsarnok"
+        }, 
+        {
             "brl": "vasas5ako5t\"", 
+            "txt": "vasasszakosztály"
+        }, 
+        {
+            "brl": "vasas5ako5t\"", 
+            "testmode": "backtranslate", 
             "txt": "vasasszakosztály"
         }, 
         {
@@ -2868,7 +6447,17 @@
             "txt": "vasutassztrájk"
         }, 
         {
+            "brl": "vasutas5tr\"jk", 
+            "testmode": "backtranslate", 
+            "txt": "vasutassztrájk"
+        }, 
+        {
             "brl": "vas5\"ll|tm\"6", 
+            "txt": "vasszállítmány"
+        }, 
+        {
+            "brl": "vas5\"ll|tm\"6", 
+            "testmode": "backtranslate", 
             "txt": "vasszállítmány"
         }, 
         {
@@ -2877,8 +6466,20 @@
             "txt": "Vaszar"
         }, 
         {
+            "brl": "$va5ar", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Vaszar"
+        }, 
+        {
             "brl": "$v\"`nok", 
             "brlCursorPos": 1, 
+            "txt": "Vázsnok"
+        }, 
+        {
+            "brl": "$v\"`nok", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
             "txt": "Vázsnok"
         }, 
         {
@@ -2886,7 +6487,17 @@
             "txt": "végiggyakorolni"
         }, 
         {
+            "brl": "v1gig4akorolni", 
+            "testmode": "backtranslate", 
+            "txt": "végiggyakorolni"
+        }, 
+        {
             "brl": "v1gig4alogolhatja", 
+            "txt": "végiggyalogolhatja"
+        }, 
+        {
+            "brl": "v1gig4alogolhatja", 
+            "testmode": "backtranslate", 
             "txt": "végiggyalogolhatja"
         }, 
         {
@@ -2894,7 +6505,17 @@
             "txt": "vendéggyermek"
         }, 
         {
+            "brl": "vend1g4ermek", 
+            "testmode": "backtranslate", 
+            "txt": "vendéggyermek"
+        }, 
+        {
             "brl": "vend1g4{leke2et", 
+            "txt": "vendéggyülekezet"
+        }, 
+        {
+            "brl": "vend1g4{leke2et", 
+            "testmode": "backtranslate", 
             "txt": "vendéggyülekezet"
         }, 
         {
@@ -2902,7 +6523,17 @@
             "txt": "veresszakállú "
         }, 
         {
+            "brl": "veres5ak\"ll0 ", 
+            "testmode": "backtranslate", 
+            "txt": "veresszakállú "
+        }, 
+        {
             "brl": "veres5em}", 
+            "txt": "veresszemű"
+        }, 
+        {
+            "brl": "veres5em}", 
+            "testmode": "backtranslate", 
             "txt": "veresszemű"
         }, 
         {
@@ -2910,7 +6541,17 @@
             "txt": "versszak"
         }, 
         {
+            "brl": "vers5ak", 
+            "testmode": "backtranslate", 
+            "txt": "versszak"
+        }, 
+        {
             "brl": "vers5ak\"ban ", 
+            "txt": "versszakában "
+        }, 
+        {
+            "brl": "vers5ak\"ban ", 
+            "testmode": "backtranslate", 
             "txt": "versszakában "
         }, 
         {
@@ -2918,11 +6559,26 @@
             "txt": "versszerű"
         }, 
         {
+            "brl": "vers5er}", 
+            "testmode": "backtranslate", 
+            "txt": "versszerű"
+        }, 
+        {
             "brl": "v1rtes5\"2ad", 
             "txt": "vértesszázad"
         }, 
         {
+            "brl": "v1rtes5\"2ad", 
+            "testmode": "backtranslate", 
+            "txt": "vértesszázad"
+        }, 
+        {
             "brl": "v1rtes5\"2adbeli ", 
+            "txt": "vértesszázadbeli "
+        }, 
+        {
+            "brl": "v1rtes5\"2adbeli ", 
+            "testmode": "backtranslate", 
             "txt": "vértesszázadbeli "
         }, 
         {
@@ -2931,7 +6587,18 @@
             "txt": "Vértesszőlős"
         }, 
         {
+            "brl": "$v1rtes57l7s", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Vértesszőlős"
+        }, 
+        {
             "brl": "vet1s5alag", 
+            "txt": "vetésszalag"
+        }, 
+        {
+            "brl": "vet1s5alag", 
+            "testmode": "backtranslate", 
             "txt": "vetésszalag"
         }, 
         {
@@ -2939,7 +6606,17 @@
             "txt": "viccsor"
         }, 
         {
+            "brl": "viccsor", 
+            "testmode": "backtranslate", 
+            "txt": "viccsor"
+        }, 
+        {
             "brl": "vil\"goss\"g40jt\"sra", 
+            "txt": "világossággyújtásra"
+        }, 
+        {
+            "brl": "vil\"goss\"g40jt\"sra", 
+            "testmode": "backtranslate", 
             "txt": "világossággyújtásra"
         }, 
         {
@@ -2947,7 +6624,17 @@
             "txt": "világosszőke"
         }, 
         {
+            "brl": "vil\"gos57ke", 
+            "testmode": "backtranslate", 
+            "txt": "világosszőke"
+        }, 
+        {
             "brl": "vil\"gos5{rke ", 
+            "txt": "világosszürke "
+        }, 
+        {
+            "brl": "vil\"gos5{rke ", 
+            "testmode": "backtranslate", 
             "txt": "világosszürke "
         }, 
         {
@@ -2955,7 +6642,17 @@
             "txt": "világgyűlölő"
         }, 
         {
+            "brl": "vil\"g4}lql7", 
+            "testmode": "backtranslate", 
+            "txt": "világgyűlölő"
+        }, 
+        {
             "brl": "villamos51k", 
+            "txt": "villamosszék"
+        }, 
+        {
+            "brl": "villamos51k", 
+            "testmode": "backtranslate", 
             "txt": "villamosszék"
         }, 
         {
@@ -2963,7 +6660,17 @@
             "txt": "villamosszerű"
         }, 
         {
+            "brl": "villamos5er}", 
+            "testmode": "backtranslate", 
+            "txt": "villamosszerű"
+        }, 
+        {
             "brl": "villan\"s5er}en", 
+            "txt": "villanásszerűen"
+        }, 
+        {
+            "brl": "villan\"s5er}en", 
+            "testmode": "backtranslate", 
             "txt": "villanásszerűen"
         }, 
         {
@@ -2971,7 +6678,17 @@
             "txt": "virággyapjaikat"
         }, 
         {
+            "brl": "vir\"g4apjaikat", 
+            "testmode": "backtranslate", 
+            "txt": "virággyapjaikat"
+        }, 
+        {
             "brl": "vir\"g4}jtem16 ", 
+            "txt": "virággyűjtemény "
+        }, 
+        {
+            "brl": "vir\"g4}jtem16 ", 
+            "testmode": "backtranslate", 
             "txt": "virággyűjtemény "
         }, 
         {
@@ -2979,7 +6696,17 @@
             "txt": "virággyűjtés"
         }, 
         {
+            "brl": "vir\"g4}jt1s", 
+            "testmode": "backtranslate", 
+            "txt": "virággyűjtés"
+        }, 
+        {
             "brl": "virgoncs\"g", 
+            "txt": "virgoncság"
+        }, 
+        {
+            "brl": "virgoncs\"g", 
+            "testmode": "backtranslate", 
             "txt": "virgoncság"
         }, 
         {
@@ -2987,7 +6714,17 @@
             "txt": "vírusszerű"
         }, 
         {
+            "brl": "v|rus5er}", 
+            "testmode": "backtranslate", 
+            "txt": "vírusszerű"
+        }, 
+        {
             "brl": "viselked1s5er}", 
+            "txt": "viselkedésszerű"
+        }, 
+        {
+            "brl": "viselked1s5er}", 
+            "testmode": "backtranslate", 
             "txt": "viselkedésszerű"
         }, 
         {
@@ -2995,7 +6732,17 @@
             "txt": "viselkedészavar"
         }, 
         {
+            "brl": "viselked1s2avar", 
+            "testmode": "backtranslate", 
+            "txt": "viselkedészavar"
+        }, 
+        {
             "brl": "visually", 
+            "txt": "visually"
+        }, 
+        {
+            "brl": "visually", 
+            "testmode": "backtranslate", 
             "txt": "visually"
         }, 
         {
@@ -3003,7 +6750,17 @@
             "txt": "visszér"
         }, 
         {
+            "brl": "vi551r", 
+            "testmode": "backtranslate", 
+            "txt": "visszér"
+        }, 
+        {
             "brl": "vi55eres", 
+            "txt": "visszeres"
+        }, 
+        {
+            "brl": "vi55eres", 
+            "testmode": "backtranslate", 
             "txt": "visszeres"
         }, 
         {
@@ -3011,7 +6768,17 @@
             "txt": "visszérműtét "
         }, 
         {
+            "brl": "vi551rm}t1t ", 
+            "testmode": "backtranslate", 
+            "txt": "visszérműtét "
+        }, 
+        {
             "brl": "vitorl\"s5e2on", 
+            "txt": "vitorlásszezon"
+        }, 
+        {
+            "brl": "vitorl\"s5e2on", 
+            "testmode": "backtranslate", 
             "txt": "vitorlásszezon"
         }, 
         {
@@ -3019,7 +6786,17 @@
             "txt": "vizeleteszacskó "
         }, 
         {
+            "brl": "vi2eletes2a3k9 ", 
+            "testmode": "backtranslate", 
+            "txt": "vizeleteszacskó "
+        }, 
+        {
             "brl": "vi2es`emle", 
+            "txt": "vizeszsemle"
+        }, 
+        {
+            "brl": "vi2es`emle", 
+            "testmode": "backtranslate", 
             "txt": "vizeszsemle"
         }, 
         {
@@ -3027,7 +6804,17 @@
             "txt": "vízsáv"
         }, 
         {
+            "brl": "v|2s\"v", 
+            "testmode": "backtranslate", 
+            "txt": "vízsáv"
+        }, 
+        {
             "brl": "v|2sivatag ", 
+            "txt": "vízsivatag "
+        }, 
+        {
+            "brl": "v|2sivatag ", 
+            "testmode": "backtranslate", 
             "txt": "vízsivatag "
         }, 
         {
@@ -3035,7 +6822,17 @@
             "txt": "vízsodor"
         }, 
         {
+            "brl": "v|2sodor", 
+            "testmode": "backtranslate", 
+            "txt": "vízsodor"
+        }, 
+        {
             "brl": "von9s5eren\"d ", 
+            "txt": "vonósszerenád "
+        }, 
+        {
+            "brl": "von9s5eren\"d ", 
+            "testmode": "backtranslate", 
             "txt": "vonósszerenád "
         }, 
         {
@@ -3043,7 +6840,17 @@
             "txt": "vonószenekar"
         }, 
         {
+            "brl": "von9s2enekar", 
+            "testmode": "backtranslate", 
+            "txt": "vonószenekar"
+        }, 
+        {
             "brl": "vqrhe6es57ke", 
+            "txt": "vörhenyesszőke"
+        }, 
+        {
+            "brl": "vqrhe6es57ke", 
+            "testmode": "backtranslate", 
             "txt": "vörhenyesszőke"
         }, 
         {
@@ -3052,6 +6859,16 @@
         }, 
         {
             "brl": "vqrqses57ke", 
+            "testmode": "backtranslate", 
+            "txt": "vörösesszőke"
+        }, 
+        {
+            "brl": "vqrqses57ke", 
+            "txt": "vörösesszőke"
+        }, 
+        {
+            "brl": "vqrqses57ke", 
+            "testmode": "backtranslate", 
             "txt": "vörösesszőke"
         }, 
         {
@@ -3059,7 +6876,17 @@
             "txt": "vörösszakállú"
         }, 
         {
+            "brl": "vqrqs5ak\"ll0", 
+            "testmode": "backtranslate", 
+            "txt": "vörösszakállú"
+        }, 
+        {
             "brl": "vqrqs5em", 
+            "txt": "vörösszem"
+        }, 
+        {
+            "brl": "vqrqs5em", 
+            "testmode": "backtranslate", 
             "txt": "vörösszem"
         }, 
         {
@@ -3067,7 +6894,17 @@
             "txt": "vörösszínű"
         }, 
         {
+            "brl": "vqrqs5|n}", 
+            "testmode": "backtranslate", 
+            "txt": "vörösszínű"
+        }, 
+        {
             "brl": "vqrqs57ke", 
+            "txt": "vörösszőke"
+        }, 
+        {
+            "brl": "vqrqs57ke", 
+            "testmode": "backtranslate", 
             "txt": "vörösszőke"
         }, 
         {
@@ -3075,7 +6912,17 @@
             "txt": "vöröszászló"
         }, 
         {
+            "brl": "vqrqs2\"5l9", 
+            "testmode": "backtranslate", 
+            "txt": "vöröszászló"
+        }, 
+        {
             "brl": "2\"log4}r}met", 
+            "txt": "záloggyűrűmet"
+        }, 
+        {
+            "brl": "2\"log4}r}met", 
+            "testmode": "backtranslate", 
             "txt": "záloggyűrűmet"
         }, 
         {
@@ -3083,7 +6930,17 @@
             "txt": "zavarosszürke"
         }, 
         {
+            "brl": "2avaros5{rke", 
+            "testmode": "backtranslate", 
+            "txt": "zavarosszürke"
+        }, 
+        {
             "brl": "2qkken1s5er}", 
+            "txt": "zökkenésszerű"
+        }, 
+        {
+            "brl": "2qkken1s5er}", 
+            "testmode": "backtranslate", 
             "txt": "zökkenésszerű"
         }, 
         {
@@ -3091,7 +6948,17 @@
             "txt": "zörgésszerű"
         }, 
         {
+            "brl": "2qrg1s5er}", 
+            "testmode": "backtranslate", 
+            "txt": "zörgésszerű"
+        }, 
+        {
             "brl": "2uhan\"s5er}", 
+            "txt": "zuhanásszerű"
+        }, 
+        {
+            "brl": "2uhan\"s5er}", 
+            "testmode": "backtranslate", 
             "txt": "zuhanásszerű"
         }, 
         {
@@ -3099,7 +6966,17 @@
             "txt": "zsírosszén"
         }, 
         {
+            "brl": "`|ros51n", 
+            "testmode": "backtranslate", 
+            "txt": "zsírosszén"
+        }, 
+        {
             "brl": "`oldos5ok\"s", 
+            "txt": "zsoldosszokás"
+        }, 
+        {
+            "brl": "`oldos5ok\"s", 
+            "testmode": "backtranslate", 
             "txt": "zsoldosszokás"
         }, 
         {
@@ -3108,8 +6985,20 @@
             "txt": "A telefonszámom: 06-1-256-256."
         }, 
         {
+            "brl": "$a telefon5\"mom: #jf-#a-#bef-#bef.", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "A telefonszámom: 06-1-256-256."
+        }, 
+        {
             "brl": "$a fqldreng1s #g,e er7ss1g} volt.", 
             "brlCursorPos": 1, 
+            "txt": "A földrengés 7,5 erősségű volt."
+        }, 
+        {
+            "brl": "$a fqldreng1s #g,e er7ss1g} volt.", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
             "txt": "A földrengés 7,5 erősségű volt."
         }, 
         {
@@ -3118,7 +7007,18 @@
             "txt": "Tamás még nem tudta, hogy mi vár rá."
         }, 
         {
+            "brl": "$tam\"s m1g nem tudta, ho4 mi v\"r r\".", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Tamás még nem tudta, hogy mi vár rá."
+        }, 
+        {
             "brl": "($tam\"s m1g nem tudta, ho4 mi v\"r r\".)", 
+            "txt": "\"Tamás még nem tudta, hogy mi vár rá.\""
+        }, 
+        {
+            "brl": "($tam\"s m1g nem tudta, ho4 mi v\"r r\".)", 
+            "testmode": "backtranslate", 
             "txt": "\"Tamás még nem tudta, hogy mi vár rá.\""
         }, 
         {
@@ -3127,12 +7027,29 @@
             "txt": "I don't no why happened this problem."
         }, 
         {
+            "brl": "$i don'.t no why happened this problem.", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "I don't no why happened this problem."
+        }, 
+        {
             "brl": "$a2 #a#v paragrafus alapj\"n a kedve2m16 ig16be vehet7.", 
             "brlCursorPos": 1, 
             "txt": "Az 1§ paragrafus alapján a kedvezmény igénybe vehető."
         }, 
         {
+            "brl": "$a2 #a#v paragrafus alapj\"n a kedve2m16 ig16be vehet7.", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "Az 1§ paragrafus alapján a kedvezmény igénybe vehető."
+        }, 
+        {
             "brl": "- $a sivatagi karav\"n0ton, ne4ven va4 qtven m1rfqld6ire innen. $e4 $ford. $de mi nem me4{nk mag\"val. - $el7vette a2 iratt\"rc\"j\"t, 1s \"tadott $na5ifnak e4 angol fontot. - $ha vi55ajqn, keressen meg a vas0t\"llom\"s mellett a $grand $hotelban.", 
+            "txt": "– A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. – Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. – Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban."
+        }, 
+        {
+            "brl": "- $a sivatagi karav\"n0ton, ne4ven va4 qtven m1rfqld6ire innen. $e4 $ford. $de mi nem me4{nk mag\"val. - $el7vette a2 iratt\"rc\"j\"t, 1s \"tadott $na5ifnak e4 angol fontot. - $ha vi55ajqn, keressen meg a vas0t\"llom\"s mellett a $grand $hotelban.", 
+            "testmode": "backtranslate", 
             "txt": "– A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. – Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. – Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban."
         }, 
         {
@@ -3141,8 +7058,20 @@
             "txt": "A vételár 1 €."
         }, 
         {
+            "brl": "$a v1tel\"r #a <e.", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "A vételár 1 €."
+        }, 
+        {
             "brl": "$de nekem na4on nehe2emre esik a lev1l|r\"s ~n12d el a hees|r\"si hib\"kat 1s a 306a |r\"somatz.", 
             "brlCursorPos": 1, 
+            "txt": "De nekem nagyon nehezemre esik a levélírás (nézd el a helyesírási hibákat és a csúnya írásomat)."
+        }, 
+        {
+            "brl": "$de nekem na4on nehe2emre esik a lev1l|r\"s ~n12d el a hees|r\"si hib\"kat 1s a 306a |r\"somatz.", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
             "txt": "De nekem nagyon nehezemre esik a levélírás (nézd el a helyesírási hibákat és a csúnya írásomat)."
         }, 
         {
@@ -3151,12 +7080,29 @@
             "txt": "A kiállítás megnyitóján jelen volt az MVGYOSZ elnöke."
         }, 
         {
+            "brl": "$a ki\"ll|t\"s meg6it9j\"n jelen volt a2 $$mv4o5 elnqke.", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "A kiállítás megnyitóján jelen volt az MVGYOSZ elnöke."
+        }, 
+        {
             "brl": "$a pontos id7 #aa.de perc.", 
             "brlCursorPos": 1, 
             "txt": "A pontos idő 11:45 perc."
         }, 
         {
+            "brl": "$a pontos id7 #aa.de perc.", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "A pontos idő 11:45 perc."
+        }, 
+        {
             "brl": "'*$a kiad\"s 0jdons\"gai.", 
+            "txt": "•A kiadás újdonságai."
+        }, 
+        {
+            "brl": "'*$a kiad\"s 0jdons\"gai.", 
+            "testmode": "backtranslate", 
             "txt": "•A kiadás újdonságai."
         }, 
         {
@@ -3165,8 +7111,20 @@
             "txt": "A hu_list fájl nem létezik."
         }, 
         {
+            "brl": "$a hu'-list f\"jl nem l1te2ik.", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
+            "txt": "A hu_list fájl nem létezik."
+        }, 
+        {
             "brl": "$a2 e-mail c|mem: akarmi>akarmi.hu.", 
             "brlCursorPos": 1, 
+            "txt": "Az e-mail címem: akarmi@akarmi.hu."
+        }, 
+        {
+            "brl": "$a2 e-mail c|mem: akarmi>akarmi.hu.", 
+            "brlCursorPos": 1, 
+            "testmode": "backtranslate", 
             "txt": "Az e-mail címem: akarmi@akarmi.hu."
         }
     ]

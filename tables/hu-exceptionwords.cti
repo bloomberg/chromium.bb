@@ -733,6 +733,8 @@ partword villamossz 1236-24-123-123-1-134-135-234-156	For example villamosszerű
 partword zsoldossz 345-135-123-145-135-234-156	For example zsoldosszokás word
 partword gy\x0171l\x00e9ssz 1456-23456-123-16-234-156	For example gyűlésszíne word
 begword ikarossz 24-13-1-1235-135-156-156
+partword kattint\x00e1ssz 13-1-2345-2345-24-1345-2345-4-234-156	For example kattintásszám word
+begword r\x00fazsossz 1235-346-345-135-234-156	For example rúzsosszájú word
 
 #ty, lly tty related exceptions
 #This exception part containing english words with need presenting original english braille rules
