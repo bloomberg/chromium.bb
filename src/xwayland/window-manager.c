@@ -573,14 +573,16 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	if (window->cairo_surface)
 		cairo_surface_destroy(window->cairo_surface);
 
-	xcb_reparent_window(wm->conn, window->id, wm->wm_window, 0, 0);
-	xcb_destroy_window(wm->conn, window->frame_id);
-	weston_wm_window_set_state(window, ICCCM_WITHDRAWN_STATE);
+	if (window->frame_id) {
+		xcb_reparent_window(wm->conn, window->id, wm->wm_window, 0, 0);
+		xcb_destroy_window(wm->conn, window->frame_id);
+		weston_wm_window_set_state(window, ICCCM_WITHDRAWN_STATE);
+		hash_table_remove(wm->window_hash, window->frame_id);
+		window->frame_id = XCB_WINDOW_NONE;
+	}
 
-	window->frame_id = XCB_WINDOW_NONE;
 	if (wm->focus_window == window)
 		wm->focus_window = NULL;
-	hash_table_remove(wm->window_hash, window->frame_id);
 	if (window->surface)
 		wl_list_remove(&window->surface_destroy_listener.link);
 	window->surface = NULL;
