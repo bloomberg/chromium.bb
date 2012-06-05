@@ -360,7 +360,12 @@ Gallery.prototype.load = function(items, selectedItem) {
 
 Gallery.prototype.onImageContentChanged_ = function() {
   var revision = this.imageView_.getContentRevision();
-  if (revision == 0) return;  // Just loaded.
+  if (revision == 0) {
+    // Just loaded.
+    this.bubble_.hidden = true;
+    ImageUtil.setAttribute(this.filenameSpacer_, 'saved', false);
+    ImageUtil.setAttribute(this.filenameSpacer_, 'overwrite', false);
+  }  
 
   if (revision == 1) {
     // First edit.
@@ -587,9 +592,6 @@ Gallery.prototype.prefetchImage = function(id, url) {
 };
 
 Gallery.prototype.openImage = function(id, url, metadata, slide, callback) {
-  ImageUtil.setAttribute(this.filenameSpacer_, 'overwrite', false);
-  ImageUtil.setAttribute(this.filenameSpacer_, 'saved', false);
-
   this.selectedImageMetadata_ = ImageUtil.deepCopy(metadata);
   this.updateFilename_(url);
 
@@ -713,9 +715,6 @@ Gallery.prototype.onEdit_ = function() {
     this.cancelFading_();
   } else {
     this.editor_.getPrompt().hide();
-    this.bubble_.hidden = true;
-    ImageUtil.setAttribute(this.filenameSpacer_, 'saved', false);
-    ImageUtil.setAttribute(this.filenameSpacer_, 'overwrite', false);
     this.initiateFading_();
   }
 

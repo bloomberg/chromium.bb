@@ -242,7 +242,7 @@ body {
   top: 15px;
 }
 
-.gallery .filename-spacer[saved] .namebox {
+.gallery[editing] .filename-spacer[saved] .namebox {
   top: 5px;
 }
 
@@ -250,7 +250,7 @@ body {
   top: 50px;
 }
 
-.gallery .filename-spacer[saved] .options {
+.gallery[editing] .filename-spacer[saved] .options {
   top: 27px;
 }
 
@@ -324,12 +324,12 @@ body {
   color: white;
 }
 
-.gallery .filename-spacer[saved] .saved {
+.gallery[editing] .filename-spacer[saved] .saved {
   opacity: 1;
 }
 
-.gallery .filename-spacer[overwrite] .overwrite-original,
-.gallery .filename-spacer[overwrite] .overwrite-original > * {
+.gallery[editing] .filename-spacer[overwrite] .overwrite-original,
+.gallery[editing] .filename-spacer[overwrite] .overwrite-original > * {
   color: gray;
   cursor: pointer;
   opacity: 1;
@@ -345,7 +345,7 @@ body {
   width: 220px;
 }
 
-.gallery .toolbar .bubble[hidden] {
+.gallery:not([editing]) .toolbar .bubble {
   display: none;
 }
 
