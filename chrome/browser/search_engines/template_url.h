@@ -419,9 +419,6 @@ class TemplateURL {
   // TemplateURLService::GenerateKeyword().
   void ResetKeywordIfNecessary(bool force);
 
-  // Invalidates cached values on this object and its child TemplateURLRefs.
-  void InvalidateCachedValues();
-
   Profile* profile_;
   TemplateURLData data_;
   TemplateURLRef url_ref_;

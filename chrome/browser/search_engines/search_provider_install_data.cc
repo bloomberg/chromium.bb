@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_helpers.h"
+#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
@@ -133,7 +134,8 @@ void GoogleURLObserver::Observe(int type,
   if (type == chrome::NOTIFICATION_GOOGLE_URL_UPDATED) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         base::Bind(&GoogleURLChangeNotifier::OnChange, change_notifier_.get(),
-                   content::Details<const GURL>(details)->spec()));
+            content::Details<GoogleURLTracker::UpdatedDetails>(details)->second.
+                spec()));
   } else {
     // This must be the death notification.
     delete this;

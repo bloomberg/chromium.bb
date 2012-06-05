@@ -686,10 +686,3 @@ void TemplateURL::ResetKeywordIfNecessary(bool force) {
       data_.SetKeyword(TemplateURLService::GenerateKeyword(url));
   }
 }
-
-void TemplateURL::InvalidateCachedValues() {
-  url_ref_.InvalidateCachedValues();
-  suggestions_url_ref_.InvalidateCachedValues();
-  instant_url_ref_.InvalidateCachedValues();
-  ResetKeywordIfNecessary(false);
-}

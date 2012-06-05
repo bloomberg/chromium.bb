@@ -1633,7 +1633,7 @@ TEST_F(TemplateURLServiceSyncTest, PreSyncUpdates) {
   scoped_ptr<TemplateURL> sync_turl(
       new TemplateURL(prepop_turls[0]->profile(), data_copy));
   initial_data.push_back(
-      TemplateURLService::CreateSyncDataFromTemplateURL(*sync_turl.get()));
+      TemplateURLService::CreateSyncDataFromTemplateURL(*sync_turl));
 
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
       initial_data, PassProcessor(), CreateAndPassSyncErrorFactory());
@@ -1647,4 +1647,41 @@ TEST_F(TemplateURLServiceSyncTest, PreSyncUpdates) {
             change.sync_data().GetSpecifics().search_engine().keyword());
   EXPECT_EQ(new_timestamp, base::Time::FromInternalValue(
       change.sync_data().GetSpecifics().search_engine().last_modified()));
+}
+
+TEST_F(TemplateURLServiceSyncTest, SyncBaseURLs) {
+  // Verify that bringing in a remote TemplateURL that uses Google base URLs
+  // causes it to get a local keyword that matches the local base URL.
+  test_util_a_.SetGoogleBaseURL(GURL("http://google.com/"));
+  SyncDataList initial_data;
+  scoped_ptr<TemplateURL> turl(CreateTestTemplateURL(
+      ASCIIToUTF16("google.co.uk"), "{google:baseURL}search?q={searchTerms}",
+      "guid"));
+  initial_data.push_back(
+      TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
+  model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
+      PassProcessor(), CreateAndPassSyncErrorFactory());
+  TemplateURL* synced_turl = model()->GetTemplateURLForGUID("guid");
+  ASSERT_TRUE(synced_turl);
+  EXPECT_EQ(ASCIIToUTF16("google.com"), synced_turl->keyword());
+  EXPECT_EQ(0U, processor()->change_list_size());
+
+  // Remote updates to this URL's keyword should be silently ignored.
+  SyncChangeList changes;
+  changes.push_back(CreateTestSyncChange(SyncChange::ACTION_UPDATE,
+      CreateTestTemplateURL(ASCIIToUTF16("google.de"),
+          "{google:baseURL}search?q={searchTerms}", "guid")));
+  model()->ProcessSyncChanges(FROM_HERE, changes);
+  EXPECT_EQ(ASCIIToUTF16("google.com"), synced_turl->keyword());
+  EXPECT_EQ(0U, processor()->change_list_size());
+
+  // A local change to the Google base URL should update the keyword and
+  // generate a sync change.
+  test_util_a_.SetGoogleBaseURL(GURL("http://google.co.in/"));
+  EXPECT_EQ(ASCIIToUTF16("google.co.in"), synced_turl->keyword());
+  EXPECT_EQ(1U, processor()->change_list_size());
+  ASSERT_TRUE(processor()->contains_guid("guid"));
+  SyncChange change(processor()->change_for_guid("guid"));
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
+  EXPECT_EQ("google.co.in", GetKeyword(change.sync_data()));
 }

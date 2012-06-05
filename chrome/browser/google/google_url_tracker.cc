@@ -227,6 +227,7 @@ void GoogleURLTracker::GoogleURLSearchCommitted(Profile* profile) {
 
 void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url,
                                        bool redo_searches) {
+  UpdatedDetails urls(google_url_, new_google_url);
   google_url_ = new_google_url;
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetString(prefs::kLastKnownGoogleURL, google_url_.spec());
@@ -234,7 +235,7 @@ void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url,
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
       content::Source<Profile>(profile_),
-      content::Details<const GURL>(&new_google_url));
+      content::Details<UpdatedDetails>(&urls));
   need_to_prompt_ = false;
   CloseAllInfoBars(redo_searches);
 }

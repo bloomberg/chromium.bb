@@ -33,10 +33,8 @@ class SearchHostToURLsMap {
            const SearchTermsData& search_terms_data);
 
   // Removes the TemplateURL from the lookup.
-  void Remove(TemplateURL* template_url);
-
-  // Updates all search providers which have a google base url.
-  void UpdateGoogleBaseURLs(const SearchTermsData& search_terms_data);
+  void Remove(TemplateURL* template_url,
+              const SearchTermsData& search_terms_data);
 
   // Returns the first TemplateURL found with a URL using the specified |host|,
   // or NULL if there are no such TemplateURLs

@@ -37,12 +37,14 @@ void SearchHostToURLsMap::Add(TemplateURL* template_url,
   host_to_urls_map_[url.host()].insert(template_url);
 }
 
-void SearchHostToURLsMap::Remove(TemplateURL* template_url) {
+void SearchHostToURLsMap::Remove(TemplateURL* template_url,
+                                 const SearchTermsData& search_terms_data) {
   DCHECK(initialized_);
   DCHECK(template_url);
   DCHECK(!template_url->IsExtensionKeyword());
 
-  const GURL url(TemplateURLService::GenerateSearchURL(template_url));
+  const GURL url(TemplateURLService::GenerateSearchURLUsingTermsData(
+      template_url, search_terms_data));
   if (!url.is_valid() || !url.has_host())
     return;
 
@@ -55,29 +57,6 @@ void SearchHostToURLsMap::Remove(TemplateURL* template_url) {
   urls.erase(urls.find(template_url));
   if (urls.empty())
     host_to_urls_map_.erase(host_to_urls_map_.find(host));
-}
-
-void SearchHostToURLsMap::UpdateGoogleBaseURLs(
-    const SearchTermsData& search_terms_data) {
-  DCHECK(initialized_);
-
-  // Create a list of the the TemplateURLs to update.
-  TemplateURLService::TemplateURLVector t_urls_using_base_url;
-  for (HostToURLsMap::iterator i(host_to_urls_map_.begin());
-       i != host_to_urls_map_.end(); ++i) {
-    for (TemplateURLSet::const_iterator j(i->second.begin());
-         j != i->second.end(); ++j) {
-      if ((*j)->url_ref().HasGoogleBaseURLs() ||
-          (*j)->suggestions_url_ref().HasGoogleBaseURLs())
-        t_urls_using_base_url.push_back(*j);
-    }
-  }
-
-  for (TemplateURLService::TemplateURLVector::const_iterator i(
-       t_urls_using_base_url.begin()); i != t_urls_using_base_url.end(); ++i)
-    RemoveByPointer(*i);
-
-  Add(t_urls_using_base_url, search_terms_data);
 }
 
 TemplateURL* SearchHostToURLsMap::GetTemplateURLForHost(

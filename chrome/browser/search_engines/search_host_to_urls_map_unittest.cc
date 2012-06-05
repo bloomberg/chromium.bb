@@ -55,7 +55,8 @@ TEST_F(SearchHostToURLsMapTest, Add) {
 }
 
 TEST_F(SearchHostToURLsMapTest, Remove) {
-  provider_map_->Remove(t_urls_[0].get());
+  UIThreadSearchTermsData search_terms_data(NULL);
+  provider_map_->Remove(t_urls_[0].get(), search_terms_data);
 
   const TemplateURL* found_url = provider_map_->GetTemplateURLForHost(host_);
   ASSERT_EQ(t_urls_[1].get(), found_url);
@@ -69,27 +70,6 @@ TEST_F(SearchHostToURLsMapTest, Remove) {
     ASSERT_EQ(t_urls_[1].get(), *i);
   }
   ASSERT_EQ(1, url_count);
-}
-
-TEST_F(SearchHostToURLsMapTest, UpdateGoogleBaseURLs) {
-  UIThreadSearchTermsData search_terms_data(NULL);
-  std::string google_base_url = "google.com";
-  search_terms_data.SetGoogleBaseURL("http://" + google_base_url +"/");
-
-  // Add in a url with the templated Google base url.
-  TemplateURLData data;
-  data.SetURL("{google:baseURL}?q={searchTerms}");
-  TemplateURL new_t_url(NULL, data);
-  provider_map_->Add(&new_t_url, search_terms_data);
-  ASSERT_EQ(&new_t_url, provider_map_->GetTemplateURLForHost(google_base_url));
-
-  // Now change the Google base url and verify the result.
-  std::string new_google_base_url = "google.co.uk";
-  search_terms_data.SetGoogleBaseURL("http://" + new_google_base_url +"/");
-  provider_map_->UpdateGoogleBaseURLs(search_terms_data);
-  ASSERT_EQ(&new_t_url, provider_map_->GetTemplateURLForHost(
-      new_google_base_url));
-  search_terms_data.SetGoogleBaseURL(std::string());
 }
 
 TEST_F(SearchHostToURLsMapTest, GetTemplateURLForKnownHost) {

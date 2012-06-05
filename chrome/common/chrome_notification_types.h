@@ -392,7 +392,8 @@ enum NotificationType {
   // Sent when the Google URL for a profile has been updated.  Some services
   // cache this value and need to update themselves when it changes.  See
   // google_util::GetGoogleURLAndUpdateIfNecessary().  The source is the
-  // Profile, the details the new (const) GURL.
+  // Profile, the details a GoogleURLTracker::UpdatedDetails containing the old
+  // and new URLs.
   //
   // Note that because incognito mode requests for the GoogleURLTracker are
   // redirected to the non-incognito profile's copy, this notification will only

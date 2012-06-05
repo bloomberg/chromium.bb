@@ -124,6 +124,28 @@ std::string TestSearchTermsData::GoogleBaseURLValue() const {
   return google_base_url_;
 }
 
+
+// QueryHistoryCallbackImpl ---------------------------------------------------
+
+struct QueryHistoryCallbackImpl {
+  QueryHistoryCallbackImpl() : success(false) {}
+
+  void Callback(HistoryService::Handle handle,
+                bool success,
+                const history::URLRow* row,
+                history::VisitVector* visits) {
+    this->success = success;
+    if (row)
+      this->row = *row;
+    if (visits)
+      this->visits = *visits;
+  }
+
+  bool success;
+  history::URLRow row;
+  history::VisitVector visits;
+};
+
 };  // namespace
 
 
@@ -1017,25 +1039,6 @@ TEST_F(TemplateURLServiceTest, ChangeGoogleBaseValue) {
   EXPECT_EQ("google.fr", t_url->url_ref().GetHost());
   EXPECT_EQ(ASCIIToUTF16("google.fr"), t_url->keyword());
 }
-
-struct QueryHistoryCallbackImpl {
-  QueryHistoryCallbackImpl() : success(false) {}
-
-  void Callback(HistoryService::Handle handle,
-                bool success,
-                const history::URLRow* row,
-                history::VisitVector* visits) {
-    this->success = success;
-    if (row)
-      this->row = *row;
-    if (visits)
-      this->visits = *visits;
-  }
-
-  bool success;
-  history::URLRow row;
-  history::VisitVector visits;
-};
 
 // Make sure TemplateURLService generates a KEYWORD_GENERATED visit for
 // KEYWORD visits.

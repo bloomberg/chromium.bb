@@ -10,6 +10,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -244,11 +245,14 @@ string16 TemplateURLServiceTestUtil::GetAndClearSearchTerm() {
 
 void TemplateURLServiceTestUtil::SetGoogleBaseURL(const GURL& base_url) const {
   DCHECK(base_url.is_valid());
+  UIThreadSearchTermsData data(profile_.get());
+  GoogleURLTracker::UpdatedDetails urls(GURL(data.GoogleBaseURLValue()),
+                                        base_url);
   UIThreadSearchTermsData::SetGoogleBaseURL(base_url.spec());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
       content::Source<Profile>(profile_.get()),
-      content::Details<const GURL>(&base_url));
+      content::Details<GoogleURLTracker::UpdatedDetails>(&urls));
 }
 
 void TemplateURLServiceTestUtil::SetManagedDefaultSearchPreferences(

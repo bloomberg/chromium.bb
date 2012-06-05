@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -37,8 +38,8 @@ class WebContents;
 // Most consumers should only call GoogleURL(), which is guaranteed to
 // synchronously return a value at all times (even during startup or in unittest
 // mode).  Consumers who need to be notified when things change should listen to
-// the notification service for NOTIFY_GOOGLE_URL_UPDATED, and call GoogleURL()
-// again after receiving it, in order to get the updated value.
+// the notification service for NOTIFICATION_GOOGLE_URL_UPDATED, which provides
+// the original and updated values.
 //
 // To protect users' privacy and reduce server load, no updates will be
 // performed (ever) unless at least one consumer registers interest by calling
@@ -48,6 +49,9 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
                          public net::NetworkChangeNotifier::IPAddressObserver,
                          public ProfileKeyedService {
  public:
+  // The contents of the Details for a NOTIFICATION_GOOGLE_URL_UPDATED.
+  typedef std::pair<GURL, GURL> UpdatedDetails;
+
   // The constructor does different things depending on which of these values
   // you pass it.  Hopefully these are self-explanatory.
   enum Mode {
@@ -105,8 +109,8 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   void InfoBarClosed(const InfoBarTabHelper* infobar_helper);
 
   // Registers consumer interest in getting an updated URL from the server.
-  // It will be notified as chrome::GOOGLE_URL_UPDATED, so the
-  // consumer should observe this notification before calling this.
+  // Observe chrome::NOTIFICATION_GOOGLE_URL_UPDATED to be notified when the URL
+  // changes.
   void SetNeedToFetch();
 
   // Called when the five second startup sleep has finished.  Runs any pending
@@ -186,7 +190,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
                            // updated URL.  If this is never set, we won't
                            // bother to fetch anything.
                            // Consumers should observe
-                           // chrome::GOOGLE_URL_UPDATED.
+                           // chrome::NOTIFICATION_GOOGLE_URL_UPDATED.
   bool need_to_prompt_;    // True if the last fetched Google URL is not
                            // matched with current user's default Google URL
                            // nor the last prompted Google URL.

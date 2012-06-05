@@ -258,13 +258,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   string16 GetKeywordShortName(const string16& keyword,
                                bool* is_extension_keyword);
 
-  // content::NotificationObserver method. TemplateURLService listens for three
-  // notification types:
-  // . NOTIFY_HISTORY_URL_VISITED: adds keyword search terms if the visit
-  //   corresponds to a keyword.
-  // . NOTIFY_GOOGLE_URL_UPDATED: updates mapping for any keywords containing
-  //   a google base url replacement term.
-  // . PREF_CHANGED: checks whether the default search engine has changed.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -426,11 +419,13 @@ class TemplateURLService : public WebDataServiceConsumer,
   // |new_values|, but the ID for |existing_turl| is retained.  Notifying
   // observers is the responsibility of the caller.  Returns whether
   // |existing_turl| was found in |template_urls_| and thus could be updated.
+  // |old_search_terms_data| is passed to SearchHostToURLsMap::Remove().
   //
   // NOTE: This should not be called with an extension keyword as there are no
   // updates needed in that case.
   bool UpdateNoNotify(TemplateURL* existing_turl,
-                      const TemplateURL& new_values);
+                      const TemplateURL& new_values,
+                      const SearchTermsData& old_search_terms_data);
 
   // Returns the preferences we use.
   PrefService* GetPrefs();
@@ -455,7 +450,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Invoked when the Google base URL has changed. Updates the mapping for all
   // TemplateURLs that have a replacement term of {google:baseURL} or
   // {google:baseSuggestURL}.
-  void GoogleBaseURLChanged();
+  void GoogleBaseURLChanged(const GURL& old_base_url);
 
   // Update the default search.  Called at initialization or when a managed
   // preference has changed.

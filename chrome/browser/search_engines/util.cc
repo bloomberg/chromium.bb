@@ -249,7 +249,7 @@ void GetSearchProvidersUsingKeywordResult(
   DCHECK(template_urls->empty());
   DCHECK(default_search_provider);
   DCHECK(*default_search_provider == NULL);
-  DCHECK_EQ(result.GetType(), KEYWORDS_RESULT);
+  DCHECK_EQ(KEYWORDS_RESULT, result.GetType());
   DCHECK(new_resource_keyword_version);
 
   *new_resource_keyword_version = 0;
