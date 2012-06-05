@@ -24,7 +24,7 @@ void AuraTestBase::SetUp() {
   // Changing the parameters for gesture recognition shouldn't cause
   // tests to fail, so we use a separate set of parameters for unit
   // testing.
-  ui::GestureConfiguration::set_long_press_time_in_seconds(0.5);
+  ui::GestureConfiguration::set_long_press_time_in_seconds(1.0);
   ui::GestureConfiguration::set_max_seconds_between_double_click(0.7);
   ui::GestureConfiguration::
       set_max_separation_for_gesture_touches_in_pixels(150);
