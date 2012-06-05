@@ -22,6 +22,7 @@ enum GestureState {
   GS_PENDING_SYNTHETIC_CLICK,
   GS_SCROLL,
   GS_PINCH,
+  GS_PENDING_TWO_FINGER_TAP,
 };
 
 enum ScrollType {
@@ -71,6 +72,8 @@ class UI_EXPORT GestureSequence {
   // with id |point_id|.
   GesturePoint* GetPointByPointId(int point_id);
 
+  bool IsSecondTouchDownCloseEnoughForTwoFingerTap();
+
   // Functions to be called to add GestureEvents, after successful recognition.
 
   // Tap gestures.
@@ -109,6 +112,7 @@ class UI_EXPORT GestureSequence {
                           int swipe_x,
                           int swipe_y,
                           Gestures* gestures);
+  void AppendTwoFingerTapGestureEvent(Gestures* gestures);
 
   void set_state(const GestureState state) { state_ = state; }
 
@@ -133,6 +137,15 @@ class UI_EXPORT GestureSequence {
   bool TouchDown(const TouchEvent& event,
                  const GesturePoint& point,
                  Gestures* gestures);
+  bool TwoFingerTouchDown(const TouchEvent& event,
+                          const GesturePoint& point,
+                          Gestures* gestures);
+  bool TwoFingerTouchMove(const TouchEvent& event,
+                          const GesturePoint& point,
+                          Gestures* gestures);
+  bool TwoFingerTouchReleased(const TouchEvent& event,
+                              const GesturePoint& point,
+                              Gestures* gestures);
   bool ScrollEnd(const TouchEvent& event,
                  GesturePoint& point,
                  Gestures* gestures);
@@ -169,6 +182,10 @@ class UI_EXPORT GestureSequence {
 
   // This distance is updated after each PINCH_UPDATE.
   float pinch_distance_current_;
+
+  // This is the time when second touch down was received. Used for determining
+  // if a two finger double tap has happened.
+  base::TimeDelta second_touch_time_;
 
   ScrollType scroll_type_;
   scoped_ptr<base::OneShotTimer<GestureSequence> > long_press_timer_;
