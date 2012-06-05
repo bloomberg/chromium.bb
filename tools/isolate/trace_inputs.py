@@ -2423,6 +2423,12 @@ def CMDtrace(parser, args):
       help='Redirects traced executable output to /dev/null')
   options, args = parser.parse_args(args)
 
+  if not args:
+    parser.error('Please provide a command to run')
+
+  if not os.path.isabs(args[0]) and os.access(args[0], os.X_OK):
+    args[0] = os.path.abspath(args[0])
+
   api = get_api()
   try:
     return trace(options.log, args, os.getcwd(), api, options.quiet)[0]
