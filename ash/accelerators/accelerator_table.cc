@@ -18,9 +18,8 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_NONCONVERT, ui::EF_NONE, SWITCH_IME },
   { true, ui::VKEY_DBE_SBCSCHAR, ui::EF_NONE, SWITCH_IME },
   { true, ui::VKEY_DBE_DBCSCHAR, ui::EF_NONE, SWITCH_IME },
-  // Shortcuts for Koren IME.
+  // Shortcut for Koren IME.
   { true, ui::VKEY_HANGUL, ui::EF_NONE, SWITCH_IME },
-  { true, ui::VKEY_SPACE, ui::EF_SHIFT_DOWN, SWITCH_IME },
 
   { true, ui::VKEY_TAB,
     ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU },

@@ -688,14 +688,12 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     const ui::Accelerator wide_half_1(ui::VKEY_DBE_SBCSCHAR, ui::EF_NONE);
     const ui::Accelerator wide_half_2(ui::VKEY_DBE_DBCSCHAR, ui::EF_NONE);
     const ui::Accelerator hangul(ui::VKEY_HANGUL, ui::EF_NONE);
-    const ui::Accelerator shift_space(ui::VKEY_SPACE, ui::EF_SHIFT_DOWN);
     EXPECT_FALSE(GetController()->Process(control_space));
     EXPECT_FALSE(GetController()->Process(convert));
     EXPECT_FALSE(GetController()->Process(non_convert));
     EXPECT_FALSE(GetController()->Process(wide_half_1));
     EXPECT_FALSE(GetController()->Process(wide_half_2));
     EXPECT_FALSE(GetController()->Process(hangul));
-    EXPECT_FALSE(GetController()->Process(shift_space));
     DummyImeControlDelegate* delegate = new DummyImeControlDelegate(true);
     GetController()->SetImeControlDelegate(
         scoped_ptr<ImeControlDelegate>(delegate).Pass());
@@ -713,8 +711,6 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     EXPECT_EQ(4, delegate->handle_switch_ime_count());
     EXPECT_TRUE(GetController()->Process(hangul));
     EXPECT_EQ(5, delegate->handle_switch_ime_count());
-    EXPECT_TRUE(GetController()->Process(shift_space));
-    EXPECT_EQ(6, delegate->handle_switch_ime_count());
   }
 
   // Test IME shortcuts that are triggered on key release.

@@ -686,9 +686,6 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithUsLayouts) {
   EXPECT_FALSE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_HANGUL, ui::EF_NONE)));
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
-  EXPECT_FALSE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_SPACE, ui::EF_SHIFT_DOWN)));
-  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
 
   manager_->RemoveObserver(&observer);
 }
@@ -724,7 +721,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoLayout) {
   manager_->SwitchToPreviousInputMethod();
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_SPACE, ui::EF_SHIFT_DOWN)));
+      ui::Accelerator(ui::VKEY_HANGUL, ui::EF_NONE)));
   EXPECT_EQ("xkb:kr:kr104:kor", manager_->GetCurrentInputMethod().id());
 }
 
@@ -785,10 +782,10 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoIme) {
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ("xkb:kr:kr104:kor", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_SPACE, ui::EF_SHIFT_DOWN)));
+      ui::Accelerator(ui::VKEY_HANGUL, ui::EF_NONE)));
   EXPECT_EQ("mozc-hangul", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_SPACE, ui::EF_SHIFT_DOWN)));
+      ui::Accelerator(ui::VKEY_HANGUL, ui::EF_NONE)));
   EXPECT_EQ("xkb:kr:kr104:kor", manager_->GetCurrentInputMethod().id());
 }
 
