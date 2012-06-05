@@ -687,6 +687,11 @@ aura::RootWindow* Shell::GetActiveRootWindow() {
   return GetInstance()->active_root_window_;
 }
 
+aura::RootWindow* Shell::GetRootWindowAt(const gfx::Point& point) {
+  // TODO(oshima): Support multiple root windows.
+  return GetPrimaryRootWindow();
+}
+
 void Shell::Init() {
   // Install the custom factory first so that views::FocusManagers for Tray,
   // Launcher, and WallPaper could be created by the factory.

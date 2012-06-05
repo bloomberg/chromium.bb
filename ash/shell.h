@@ -152,6 +152,11 @@ class ASH_EXPORT Shell {
   // until the another window who has a different root window becomes active.
   static aura::RootWindow* GetActiveRootWindow();
 
+  // Gets the RootWindow at |point| in the virtual screen coordinates.
+  // Returns NULL if the root window does not exist at the given
+  // point.
+  static aura::RootWindow* GetRootWindowAt(const gfx::Point& point);
+
   void set_active_root_window(aura::RootWindow* active_root_window) {
     active_root_window_ = active_root_window;
   }
