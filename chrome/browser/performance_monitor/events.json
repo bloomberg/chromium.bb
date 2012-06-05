@@ -1,0 +1,127 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace": "events",
+    "types": [
+      {
+        "id": "ExtensionInstall",
+        "type": "object",
+        "description": "The event to describe the installation of an extension in Chrome.",
+        "properties": {
+          "type": {"type": "integer", "description": "The type of the event."},
+          "time": {"type": "number", "description": "The time at which the event was recorded."},
+          "extension_id": {"type": "string", "description": "The extension's id."},
+          "extension_name": {"type": "string", "description": "The extension's name."},
+          "extension_url": {"type": "string", "description": "The extension's url."},
+          "extension_location": {"type": "integer", "description": "The extension's install location."},
+          "extension_version": {"type": "string", "description": "The string reprepresentation of the extension's version."},
+          "extension_description": {"type": "string", "description": "The extension's description."}
+        }
+      },
+      {
+        "id": "ExtensionUnload",
+        "type": "object",
+        "description": "The event to describe the unloading of an extension in Chrome.",
+        "properties": {
+          "type": {"type": "integer", "description": "The type of the event."},
+          "time": {"type": "number", "description": "The time at which the event was recorded."},
+          "extension_id": {"type": "string", "description": "The extension's id."},
+          "extension_name": {"type": "string", "description": "The extension's name."},
+          "extension_url": {"type": "string", "description": "The extension's url."},
+          "extension_location": {"type": "integer", "description": "The extension's install location."},
+          "extension_version": {"type": "string", "description": "The string reprepresentation of the extension's version."},
+          "extension_description": {"type": "string", "description": "The extension's description."},
+          "unload_reason": {"type": "integer", "description": "The type of unload performed."}
+        }
+      },
+      {
+        "id": "ExtensionUninstall",
+        "type": "object",
+        "description": "The event to describe the uninstallation of an extension in Chrome.",
+        "properties": {
+          "type": {"type": "integer", "description": "The type of the event."},
+          "time": {"type": "number", "description": "The time at which the event was recorded."},
+          "extension_id": {"type": "string", "description": "The extension's id."},
+          "extension_name": {"type": "string", "description": "The extension's name."},
+          "extension_url": {"type": "string", "description": "The extension's url."},
+          "extension_location": {"type": "integer", "description": "The extension's install location."},
+          "extension_version": {"type": "string", "description": "The string reprepresentation of the extension's version."},
+          "extension_description": {"type": "string", "description": "The extension's description."}
+        }
+      },
+      {
+        "id": "ExtensionEnable",
+        "type": "object",
+        "description": "The event to describe the uninstallation of an extension in Chrome.",
+        "properties": {
+          "type": {"type": "integer", "description": "The type of the event."},
+          "time": {"type": "number", "description": "The time at which the event was recorded."},
+          "extension_id": {"type": "string", "description": "The extension's id."},
+          "extension_name": {"type": "string", "description": "The extension's name."},
+          "extension_url": {"type": "string", "description": "The extension's url."},
+          "extension_location": {"type": "integer", "description": "The extension's install location."},
+          "extension_version": {"type": "string", "description": "The string reprepresentation of the extension's version."},
+          "extension_description": {"type": "string", "description": "The extension's description."}
+        }
+      },
+      {
+        "id": "ExtensionUpdate",
+        "type": "object",
+        "description": "The event to describe the uninstallation of an extension in Chrome.",
+        "properties": {
+          "type": {"type": "integer", "description": "The type of the event."},
+          "time": {"type": "number", "description": "The time at which the event was recorded."},
+          "extension_id": {"type": "string", "description": "The extension's id."},
+          "extension_name": {"type": "string", "description": "The extension's name."},
+          "extension_url": {"type": "string", "description": "The extension's url."},
+          "extension_location": {"type": "integer", "description": "The extension's install location."},
+          "extension_version": {"type": "string", "description": "The string reprepresentation of the extension's version."},
+          "extension_description": {"type": "string", "description": "The extension's description."}
+        }
+      },
+      {
+        "id": "ChromeUpdate",
+        "type": "object",
+        "description": "The event to describe an update to Chrome; this will be recognized on startup by a change in the version number.",
+        "properties": {
+          "type": {"type": "integer", "description": "The type of the event."},
+          "time": {"type": "number", "description": "The time at which the event was recorded."},
+          "previous_version": {"type": "string", "description": "The string representation of the previous Chrome version."},
+          "current_version": {"type": "string", "description": "The string representation of the current Chrome version."}
+        }
+      },
+      {
+        "id": "RendererCrash",
+        "type": "object",
+        "description": "The event to represent a renderer crash.",
+        "properties": {
+          "type": {"type": "integer", "description": "The type of the event."},
+          "time": {"type": "number", "description": "The time at which the event was recorded."},
+          "url": {"type": "string", "description": "The crash url."}
+        }
+      },
+      {
+        "id": "RendererFreeze",
+        "type": "object",
+        "description": "The event to represent a frozen renderer (when the frozen tab popup comes up).",
+        "properties": {
+          "type": {"type": "integer", "description": "The type of the event."},
+          "time": {"type": "number", "description": "The time at which the event was recorded."},
+          "url": {"type": "string", "description": "The crash url."}
+        }
+      },
+      {
+        "id": "UncleanShutdown",
+        "type": "object",
+        "description": "The event to represent an unclean shutdown.",
+        "properties": {
+          "type": {"type": "integer", "description": "The type of the event."},
+          "time": {"type": "number", "description": "The time at which the event was recorded."}
+        }
+      }
+    ]
+  }
+]
