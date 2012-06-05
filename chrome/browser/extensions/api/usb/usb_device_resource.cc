@@ -85,7 +85,7 @@ static bool ConvertRecipient(const string& input,
 }
 
 template<class T>
-static bool GetTransferSize(const T& input, unsigned int* output) {
+static bool GetTransferSize(const T& input, size_t* output) {
   if (input.direction == kDirectionIn) {
     const int* length = input.length.get();
     if (length) {
@@ -103,7 +103,7 @@ static bool GetTransferSize(const T& input, unsigned int* output) {
 
 template<class T>
 static scoped_refptr<net::IOBuffer> CreateBufferForTransfer(const T& input) {
-  unsigned int size = 0;
+  size_t size = 0;
   if (!GetTransferSize(input, &size)) {
     return NULL;
   }
@@ -114,7 +114,7 @@ static scoped_refptr<net::IOBuffer> CreateBufferForTransfer(const T& input) {
   }
 
   const vector<int>& input_buffer = *input.data.get();
-  for (unsigned int i = 0; i < size; ++i) {
+  for (size_t i = 0; i < size; ++i) {
     buffer->data()[i] = input_buffer[i];
   }
 
@@ -135,7 +135,7 @@ void UsbDeviceResource::ControlTransfer(const ControlTransferInfo& transfer) {
   UsbDevice::TransferDirection direction;
   UsbDevice::TransferRequestType request_type;
   UsbDevice::TransferRecipient recipient;
-  unsigned int size;
+  size_t size;
   scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(transfer);
 
   if (!ConvertDirection(transfer.direction, &direction) ||
@@ -153,7 +153,7 @@ void UsbDeviceResource::ControlTransfer(const ControlTransferInfo& transfer) {
 }
 
 void UsbDeviceResource::InterruptTransfer(const GenericTransferInfo& transfer) {
-  unsigned int size;
+  size_t size;
   UsbDevice::TransferDirection direction;
   scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(transfer);
 
@@ -169,7 +169,7 @@ void UsbDeviceResource::InterruptTransfer(const GenericTransferInfo& transfer) {
 }
 
 void UsbDeviceResource::BulkTransfer(const GenericTransferInfo& transfer) {
-  unsigned int size;
+  size_t size;
   UsbDevice::TransferDirection direction;
   scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(transfer);
 
@@ -188,7 +188,7 @@ void UsbDeviceResource::IsochronousTransfer(
     const IsochronousTransferInfo& transfer) {
   const GenericTransferInfo& generic_transfer = transfer.transfer_info;
 
-  unsigned int size;
+  size_t size;
   UsbDevice::TransferDirection direction;
   scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
       generic_transfer);
@@ -210,7 +210,7 @@ void UsbDeviceResource::TransferComplete(net::IOBuffer* buffer,
                                          int success) {
   if (buffer) {
     base::ListValue *const response_buffer = new base::ListValue();
-    for (unsigned int i = 0; i < length; ++i) {
+    for (size_t i = 0; i < length; ++i) {
       const uint8_t value = buffer->data()[i] & 0xFF;
       response_buffer->Append(base::Value::CreateIntegerValue(value));
     }
