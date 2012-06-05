@@ -4,7 +4,23 @@
 
 #include "remoting/host/clipboard.h"
 
+#import <cocoa/cocoa.h>
+
+#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/sys_string_conversions.h"
+#include "base/timer.h"
+#include "remoting/base/constants.h"
+#include "remoting/proto/event.pb.h"
+#include "remoting/protocol/clipboard_stub.h"
+
+namespace {
+
+// Clipboard polling interval in milliseconds.
+const int64 kClipboardPollingIntervalMs = 500;
+
+} // namespace
 
 namespace remoting {
 
@@ -20,21 +36,72 @@ class ClipboardMac : public Clipboard {
   virtual void Stop() OVERRIDE;
 
  private:
+  void CheckClipboardForChanges();
+
+  scoped_ptr<protocol::ClipboardStub> client_clipboard_;
+  base::RepeatingTimer<ClipboardMac> clipboard_polling_timer_;
+  NSInteger current_change_count_;
+
   DISALLOW_COPY_AND_ASSIGN(ClipboardMac);
 };
 
-void ClipboardMac::Start(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
-  NOTIMPLEMENTED();
+ClipboardMac::ClipboardMac() : current_change_count_(0) {
 }
 
-void ClipboardMac::InjectClipboardEvent(
-    const protocol::ClipboardEvent& event) {
-  NOTIMPLEMENTED();
+void ClipboardMac::Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+  client_clipboard_.reset(client_clipboard.release());
+
+  // Synchronize local change-count with the pasteboard's. The change-count is
+  // used to detect clipboard changes.
+  current_change_count_ = [[NSPasteboard generalPasteboard] changeCount];
+
+  // OS X doesn't provide a clipboard-changed notification. The only way to
+  // detect clipboard changes is by polling.
+  clipboard_polling_timer_.Start(FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kClipboardPollingIntervalMs),
+      this, &ClipboardMac::CheckClipboardForChanges);
+}
+
+void ClipboardMac::InjectClipboardEvent(const protocol::ClipboardEvent& event) {
+  // Currently we only handle UTF-8 text.
+  if (event.mime_type().compare(kMimeTypeTextUtf8)) {
+    return;
+  }
+
+  // Write UTF-8 text to clipboard.
+  NSString* text = base::SysUTF8ToNSString(event.data());
+  NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
+  [pasteboard declareTypes:[NSArray arrayWithObject:NSStringPboardType]
+                     owner:nil];
+  [pasteboard setString:text forType:NSStringPboardType];
+
+  // Update local change-count to prevent this change from being picked up by
+  // CheckClipboardForChanges.
+  current_change_count_ = [[NSPasteboard generalPasteboard] changeCount];
 }
 
 void ClipboardMac::Stop() {
-  NOTIMPLEMENTED();
+  clipboard_polling_timer_.Stop();
+  client_clipboard_.reset();
+}
+
+void ClipboardMac::CheckClipboardForChanges() {
+  NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
+  NSInteger change_count = [pasteboard changeCount];
+  if (change_count == current_change_count_) {
+    return;
+  }
+  current_change_count_ = change_count;
+
+  NSString* data = [pasteboard stringForType:NSStringPboardType];
+  if (data == nil) {
+    return;
+  }
+
+  protocol::ClipboardEvent event;
+  event.set_mime_type(kMimeTypeTextUtf8);
+  event.set_data(base::SysNSStringToUTF8(data));
+  client_clipboard_->InjectClipboardEvent(event);
 }
 
 scoped_ptr<Clipboard> Clipboard::Create() {

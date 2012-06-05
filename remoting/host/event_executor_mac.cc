@@ -8,9 +8,11 @@
 #include <Carbon/Carbon.h>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/message_loop.h"
+#include "remoting/host/clipboard.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
 #include "third_party/skia/include/core/SkPoint.h"
@@ -50,13 +52,15 @@ class EventExecutorMac : public EventExecutor {
   MessageLoop* message_loop_;
   SkIPoint mouse_pos_;
   uint32 mouse_button_state_;
+  scoped_ptr<Clipboard> clipboard_;
 
   DISALLOW_COPY_AND_ASSIGN(EventExecutorMac);
 };
 
-EventExecutorMac::EventExecutorMac(
-    MessageLoop* message_loop)
-    : message_loop_(message_loop), mouse_button_state_(0) {
+EventExecutorMac::EventExecutorMac(MessageLoop* message_loop)
+    : message_loop_(message_loop),
+      mouse_button_state_(0),
+      clipboard_(Clipboard::Create()) {
   // Ensure that local hardware events are not suppressed after injecting
   // input events.  This allows LocalInputMonitor to detect if the local mouse
   // is being moved whilst a remote user is connected.
@@ -251,7 +255,16 @@ const int kUsVkeyToKeysym[256] = {
 };
 
 void EventExecutorMac::InjectClipboardEvent(const ClipboardEvent& event) {
-  // TODO(simonmorris): Implement clipboard injection.
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&EventExecutorMac::InjectClipboardEvent,
+                   base::Unretained(this),
+                   event));
+    return;
+  }
+
+  clipboard_->InjectClipboardEvent(event);
 }
 
 void EventExecutorMac::InjectKeyEvent(const KeyEvent& event) {
@@ -338,11 +351,28 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
 
 void EventExecutorMac::OnSessionStarted(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
-  return;
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&EventExecutorMac::OnSessionStarted,
+                   base::Unretained(this),
+                   base::Passed(&client_clipboard)));
+    return;
+  }
+
+  clipboard_->Start(client_clipboard.Pass());
 }
 
 void EventExecutorMac::OnSessionFinished() {
-  return;
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&EventExecutorMac::OnSessionFinished,
+                   base::Unretained(this)));
+    return;
+  }
+
+  clipboard_->Stop();
 }
 
 }  // namespace
