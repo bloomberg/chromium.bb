@@ -97,15 +97,18 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Whitelisting) {
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+#define MAYBE_Whitelisting DISABLED_Whitelisting
+#else
+#define MAYBE_Whitelisting Whitelisting
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_Whitelisting) {
   std::string id = "hdgllgikmikobbofgnabhfimcfoopgnd";
   ExtensionService* service = browser()->profile()->GetExtensionService();
 
   // Even whitelisted extensions with NPAPI should not prompt.
   EXPECT_FALSE(DidWhitelistInstallPrompt("uitest/plugins", id));
   EXPECT_TRUE(service->GetExtensionById(id, false));
-#endif  // !defined(OS_CHROMEOS)
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
@@ -135,9 +138,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
       test_data_dir_.AppendASCII("minimal_platform_app.crx"), 1));
 }
 
-// This test is disabled. See bug http://crbug.com/130951
+// This test is disabled on Windows. See bug http://crbug.com/130951
+#if defined(OS_WIN)
+#define MAYBE_PackAndInstallExtension DISABLED_PackAndInstallExtension
+#else
+#define MAYBE_PackAndInstallExtension PackAndInstallExtension
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
-                       DISABLED_PackAndInstallExtension) {
+                       MAYBE_PackAndInstallExtension) {
   if (!extensions::switch_utils::IsEasyOffStoreInstallEnabled())
     return;
 
@@ -174,10 +182,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   LOG(ERROR) << "PackAndInstallExtension: Extension install confirmed";
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, AllowOffStore) {
+// Off-store install cannot yet be disabled on Aura.
 #if defined(USE_AURA)
-  // Off-store install cannot yet be disabled on Aura.
+#define MAYBE_AllowOffStore DISABLED_AllowOffStore
 #else
+#define MAYBE_AllowOffStore AllowOffStore
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_AllowOffStore) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const bool kTestData[] = {false, true};
 
@@ -201,5 +212,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, AllowOffStore) {
           mock_ui->error()) << kTestData[i];
     }
   }
-#endif
 }
