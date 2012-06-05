@@ -25,7 +25,7 @@
 #include "chrome/nacl/nacl_listener.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_switches.h"
-#include "native_client/src/trusted/service_runtime/sel_memory.h"
+#include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 
 namespace {
 

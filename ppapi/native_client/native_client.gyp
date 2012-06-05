@@ -42,9 +42,11 @@
           'type': 'none',
           'variables': {
             'nexe_target': 'nacl_irt',
-            'out64': '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
-            'out32': '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
-            'out_arm': '<(PRODUCT_DIR)/nacl_irt_arm.nexe',
+            # These out_* fields override the default filenames, which
+            # include a "_newlib" suffix.
+            'out_newlib64': '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
+            'out_newlib32': '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
+            'out_newlib_arm': '<(PRODUCT_DIR)/nacl_irt_arm.nexe',
             'build_glibc': 0,
             'build_newlib': 1,
             'include_dirs': [
