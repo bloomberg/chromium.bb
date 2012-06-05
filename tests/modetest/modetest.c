@@ -207,6 +207,8 @@ dump_prop(uint32_t prop_id, uint64_t value)
 		printf(" immutable");
 	if (prop->flags & DRM_MODE_PROP_ENUM)
 		printf(" enum");
+	if (prop->flags & DRM_MODE_PROP_BITMASK)
+		printf(" bitmask");
 	if (prop->flags & DRM_MODE_PROP_BLOB)
 		printf(" blob");
 	printf("\n");
@@ -223,6 +225,12 @@ dump_prop(uint32_t prop_id, uint64_t value)
 		for (i = 0; i < prop->count_enums; i++)
 			printf(" %s=%llu", prop->enums[i].name,
 			       prop->enums[i].value);
+		printf("\n");
+	} else if (prop->flags & DRM_MODE_PROP_BITMASK) {
+		printf("\t\tvalues:");
+		for (i = 0; i < prop->count_enums; i++)
+			printf(" %s=0x%llx", prop->enums[i].name,
+			       (1LL << prop->enums[i].value));
 		printf("\n");
 	} else {
 		assert(prop->count_enums == 0);
