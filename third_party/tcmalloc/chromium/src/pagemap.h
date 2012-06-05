@@ -166,8 +166,11 @@ class TCMalloc_PageMap1_LazyCommit {
     // TODO(jar): We need a reservation function, but current API to this class
     // only provides an allocator.
     // Get decommitted memory.  We will commit as necessary.
+    size_t size = sizeof(*array_) << BITS;
     array_ = reinterpret_cast<void**>(VirtualAlloc(
-        NULL, sizeof(*array_) << BITS, MEM_RESERVE, PAGE_READWRITE));
+        NULL, size, MEM_RESERVE, PAGE_READWRITE));
+    tcmalloc::update_metadata_system_bytes(size);
+    tcmalloc::update_metadata_unmapped_bytes(size);
 
     // Make sure we divided LENGTH evenly.
     ASSERT(sizeof(committed_) * 8 == (LENGTH * sizeof(*array_)) >> kPageShift);
@@ -255,9 +258,8 @@ class TCMalloc_PageMap1_LazyCommit {
     ASSERT(info.RegionSize >= length);       // Entire length is uncommitted.
 #endif
 
-    // TODO(jar): We need a commit that automatically tallies metadata_bytes.
     TCMalloc_SystemCommit(start, length);
-    tcmalloc::increment_metadata_system_bytes(length);
+    tcmalloc::update_metadata_unmapped_bytes(-length);
 
 #ifndef NDEBUG
     result = VirtualQuery(start, &info, sizeof(info));

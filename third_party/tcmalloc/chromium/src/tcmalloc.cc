@@ -316,6 +316,8 @@ struct TCMallocStats {
   uint64_t central_bytes;     // Bytes in central cache
   uint64_t transfer_bytes;    // Bytes in central transfer cache
   uint64_t metadata_bytes;    // Bytes alloced for metadata
+  uint64_t metadata_unmapped_bytes;    // Address space reserved for metadata
+                                       // but is not committed.
   PageHeap::Stats pageheap;   // Stats from page heap
 };
 
@@ -342,6 +344,7 @@ static void ExtractStats(TCMallocStats* r, uint64_t* class_count,
     SpinLockHolder h(Static::pageheap_lock());
     ThreadCache::GetThreadStats(&r->thread_bytes, class_count);
     r->metadata_bytes = tcmalloc::metadata_system_bytes();
+    r->metadata_unmapped_bytes = tcmalloc::metadata_unmapped_bytes();
     r->pageheap = Static::pageheap()->stats();
     if (small_spans != NULL) {
       Static::pageheap()->GetSmallSpanStats(small_spans);
@@ -370,24 +373,30 @@ static void DumpStats(TCMalloc_Printer* out, int level) {
 
   static const double MiB = 1048576.0;
 
+  const uint64_t physical_memory_used_by_metadata =
+      stats.metadata_bytes - stats.metadata_unmapped_bytes;
+  const uint64_t unmapped_bytes =
+      stats.pageheap.unmapped_bytes + stats.metadata_unmapped_bytes;
+
   const uint64_t virtual_memory_used = (stats.pageheap.system_bytes
                                         + stats.metadata_bytes);
-  const uint64_t physical_memory_used = (virtual_memory_used
-                                         - stats.pageheap.unmapped_bytes);
+  const uint64_t physical_memory_used = virtual_memory_used - unmapped_bytes;
   const uint64_t bytes_in_use_by_app = (physical_memory_used
-                                        - stats.metadata_bytes
+                                        - physical_memory_used_by_metadata
                                         - stats.pageheap.free_bytes
                                         - stats.central_bytes
                                         - stats.transfer_bytes
                                         - stats.thread_bytes);
 
   out->printf(
-      "WASTE: %7.1f MiB committed but not used\n"
-      "WASTE: %7.1f MiB bytes committed, %7.1f MiB bytes in use\n"
+      "WASTE:   %7.1f MiB bytes in use\n"
+      "WASTE: + %7.1f MiB committed but not used\n"
+      "WASTE:   ------------\n"
+      "WASTE: = %7.1f MiB bytes committed\n"
       "WASTE: committed/used ratio of %f\n",
+      bytes_in_use_by_app / MiB,
       (stats.pageheap.committed_bytes - bytes_in_use_by_app) / MiB,
       stats.pageheap.committed_bytes / MiB,
-      bytes_in_use_by_app / MiB,
       stats.pageheap.committed_bytes / static_cast<double>(bytes_in_use_by_app)
       );
 #ifdef TCMALLOC_SMALL_BUT_SLOW
@@ -397,11 +406,12 @@ static void DumpStats(TCMalloc_Printer* out, int level) {
   out->printf(
       "------------------------------------------------\n"
       "MALLOC:   %12" PRIu64 " (%7.1f MiB) Bytes in use by application\n"
-      "MALLOC: %12" PRIu64 " (%7.1f MB) Bytes committed\n"
       "MALLOC: + %12" PRIu64 " (%7.1f MiB) Bytes in page heap freelist\n"
       "MALLOC: + %12" PRIu64 " (%7.1f MiB) Bytes in central cache freelist\n"
       "MALLOC: + %12" PRIu64 " (%7.1f MiB) Bytes in transfer cache freelist\n"
       "MALLOC: + %12" PRIu64 " (%7.1f MiB) Bytes in thread cache freelists\n"
+      "MALLOC:   ------------\n"
+      "MALLOC: = %12" PRIu64 " (%7.1f MiB) Bytes committed\n"
       "MALLOC: + %12" PRIu64 " (%7.1f MiB) Bytes in malloc metadata\n"
       "MALLOC:   ------------\n"
       "MALLOC: = %12" PRIu64 " (%7.1f MiB) Actual memory used (physical + swap)\n"
@@ -418,14 +428,14 @@ static void DumpStats(TCMalloc_Printer* out, int level) {
       "Bytes released to the OS take up virtual address space"
       " but no physical memory.\n",
       bytes_in_use_by_app, bytes_in_use_by_app / MiB,
-      stats.pageheap.committed_bytes, stats.pageheap.committed_bytes / MiB,
       stats.pageheap.free_bytes, stats.pageheap.free_bytes / MiB,
       stats.central_bytes, stats.central_bytes / MiB,
       stats.transfer_bytes, stats.transfer_bytes / MiB,
       stats.thread_bytes, stats.thread_bytes / MiB,
-      stats.metadata_bytes, stats.metadata_bytes / MiB,
+      stats.pageheap.committed_bytes, stats.pageheap.committed_bytes / MiB,
+      physical_memory_used_by_metadata , physical_memory_used_by_metadata / MiB,
       physical_memory_used, physical_memory_used / MiB,
-      stats.pageheap.unmapped_bytes, stats.pageheap.unmapped_bytes / MiB,
+      unmapped_bytes, unmapped_bytes / MiB,
       virtual_memory_used, virtual_memory_used / MiB,
       uint64_t(Static::span_allocator()->inuse()),
       uint64_t(ThreadCache::HeapsInUse()),

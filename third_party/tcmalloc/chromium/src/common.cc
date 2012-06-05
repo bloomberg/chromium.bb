@@ -193,6 +193,8 @@ void SizeMap::Init() {
 
 // Metadata allocator -- keeps stats about how many bytes allocated.
 static uint64_t metadata_system_bytes_ = 0;
+static uint64_t metadata_unmapped_bytes_ = 0;
+
 void* MetaDataAlloc(size_t bytes) {
   static size_t pagesize;
 #ifdef HAVE_GETPAGESIZE
@@ -208,9 +210,13 @@ void* MetaDataAlloc(size_t bytes) {
 }
 
 uint64_t metadata_system_bytes() { return metadata_system_bytes_; }
+uint64_t metadata_unmapped_bytes() { return metadata_unmapped_bytes_; }
 
-void increment_metadata_system_bytes(size_t bytes) {
-  metadata_system_bytes_ += bytes;
+void update_metadata_system_bytes(int diff) {
+  metadata_system_bytes_ += diff;
+}
+void update_metadata_unmapped_bytes(int diff) {
+  metadata_unmapped_bytes_ += diff;
 }
 
 }  // namespace tcmalloc

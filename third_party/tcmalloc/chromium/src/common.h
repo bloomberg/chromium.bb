@@ -248,10 +248,12 @@ void* MetaDataAlloc(size_t bytes);
 // Returns the total number of bytes allocated from the system.
 // Requires pageheap_lock is held.
 uint64_t metadata_system_bytes();
+uint64_t metadata_unmapped_bytes();
 
 // Adjust metadata_system_bytes to indicate that bytes are actually committed.
 // Requires pageheap_lock is held.
-void increment_metadata_system_bytes(size_t bytes);
+void update_metadata_system_bytes(int diff);
+void update_metadata_unmapped_bytes(int diff);
 
 // size/depth are made the same size as a pointer so that some generic
 // code below can conveniently cast them back and forth to void*.
