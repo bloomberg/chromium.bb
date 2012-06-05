@@ -28,6 +28,12 @@ RegisterList DontCareInst::defs(const Instruction i) const {
   return kCondsDontCare;
 }
 
+SafetyLevel DontCareInstRnRsRmNotPc::safety(Instruction i) const {
+  if (RegisterList(m.reg(i)).Add(s.reg(i)).Add(n.reg(i)).Contains(kRegisterPc))
+    return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
 SafetyLevel MaybeSetsConds::safety(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return MAY_BE_SAFE;
@@ -59,7 +65,27 @@ RegisterList Defs12To15CondsDontCare::defs(const Instruction i) const {
   return RegisterList(kCondsDontCare).Add(d.reg(i));
 }
 
+SafetyLevel Defs12To15RdRmRnNotPc::safety(Instruction i) const {
+  if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).Contains(kRegisterPc))
+    return UNPREDICTABLE;
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
 SafetyLevel Defs12To15RdRnRsRmNotPc::safety(
+    const Instruction i) const {
+  if (RegisterList(d.reg(i)).Add(n.reg(i)).Add(s.reg(i)).
+      Add(m.reg(i)).Contains(kRegisterPc))
+    return UNPREDICTABLE;
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+SafetyLevel Defs12To15CondsDontCareRdRnRsRmNotPc::safety(
     const Instruction i) const {
   if (RegisterList(d.reg(i)).Add(n.reg(i)).Add(s.reg(i)).
       Add(m.reg(i)).Contains(kRegisterPc))

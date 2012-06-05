@@ -138,9 +138,6 @@ class Arm32DecoderState : DecoderState {
   // the class decoders need to only be built once (and reused
   // for each call to "decode").
   const Binary2RegisterImmediateOp Binary2RegisterImmediateOp_instance_;
-  const Binary3RegisterOp Binary3RegisterOp_instance_;
-  const Binary3RegisterShiftedTest Binary3RegisterShiftedTest_instance_;
-  const Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
   const Branch Branch_instance_;
   const Breakpoint Breakpoint_instance_;
   const BxBlx BxBlx_instance_;
@@ -148,13 +145,16 @@ class Arm32DecoderState : DecoderState {
   const DataProc DataProc_instance_;
   const Defs12To15 Defs12To15_instance_;
   const Defs12To15CondsDontCare Defs12To15CondsDontCare_instance_;
+  const Defs12To15CondsDontCareRdRnRsRmNotPc Defs12To15CondsDontCareRdRnRsRmNotPc_instance_;
   const Defs12To15CondsDontCareRnRdRmNotPc Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+  const Defs12To15RdRmRnNotPc Defs12To15RdRmRnNotPc_instance_;
   const Defs12To15RdRnRsRmNotPc Defs12To15RdRnRsRmNotPc_instance_;
   const Defs12To19CondsDontCareRdRmRnNotPc Defs12To19CondsDontCareRdRmRnNotPc_instance_;
   const Defs16To19CondsDontCareRdRaRmRnNotPc Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
   const Defs16To19CondsDontCareRdRmRnNotPc Defs16To19CondsDontCareRdRmRnNotPc_instance_;
   const Deprecated Deprecated_instance_;
   const DontCareInst DontCareInst_instance_;
+  const DontCareInstRnRsRmNotPc DontCareInstRnRsRmNotPc_instance_;
   const EffectiveNoOp EffectiveNoOp_instance_;
   const Forbidden Forbidden_instance_;
   const LdrImmediate LdrImmediate_instance_;
@@ -187,7 +187,6 @@ class Arm32DecoderState : DecoderState {
   const TestIfAddressMasked TestIfAddressMasked_instance_;
   const Unary1RegisterBitRange Unary1RegisterBitRange_instance_;
   const Unary1RegisterImmediateOp Unary1RegisterImmediateOp_instance_;
-  const Unary3RegisterShiftedOp Unary3RegisterShiftedOp_instance_;
   const Undefined Undefined_instance_;
   const Unpredictable Unpredictable_instance_;
   const VectorLoad VectorLoad_instance_;

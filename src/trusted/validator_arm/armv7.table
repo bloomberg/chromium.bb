@@ -258,11 +258,17 @@ class Store3RegisterOp : LoadStore3RegisterOp
 
 +-- dp_reg_shifted (See Section A5.2.2)
 | op1(24:20) op2(6:5)
-| 0000x      -        = Binary4RegisterShiftedOp And_Rule_13_A1_P38
+| 0000x      -        = Binary4RegisterShiftedOp
+                           => Defs12To15RdRnRsRmNotPc
+                           And_Rule_13_A1_P38
                            cccc0000000unnnnddddssss0tt1mmmm RegsNotPc
-| 0001x      -        = Binary4RegisterShiftedOp Eor_Rule_46_A1_P98
+| 0001x      -        = Binary4RegisterShiftedOp
+                           => Defs12To15CondsDontCareRdRnRsRmNotPc
+                           Eor_Rule_46_A1_P98
                            cccc0000001unnnnddddssss0tt1mmmm RegsNotPc
-| 0010x      -        = Binary4RegisterShiftedOp Sub_Rule_214_A1_P424
+| 0010x      -        = Binary4RegisterShiftedOp
+                           => Defs12To15RdRnRsRmNotPc
+                           Sub_Rule_214_A1_P424
                            cccc0000010unnnnddddssss0tt1mmmm RegsNotPc
 | 0011x      -        = Binary4RegisterShiftedOp
                             => Defs12To15RdRnRsRmNotPc
@@ -274,33 +280,61 @@ class Store3RegisterOp : LoadStore3RegisterOp
                            Add_Rule_7_A1_P26 
                            cccc0000100snnnnddddssss0tt1mmmm
                            RegsNotPc
-| 0101x      -        = Binary4RegisterShiftedOp Adc_Rule_3_A1_P18
+| 0101x      -        = Binary4RegisterShiftedOp
+                           => Defs12To15RdRnRsRmNotPc
+                           Adc_Rule_3_A1_P18
                            cccc0000101unnnnddddssss0tt1mmmm RegsNotPc      
-| 0110x      -        = Binary4RegisterShiftedOp Sbc_Rule_153_A1_P306
+| 0110x      -        = Binary4RegisterShiftedOp
+                           => Defs12To15RdRnRsRmNotPc
+                           Sbc_Rule_153_A1_P306
                            cccc0000110unnnnddddssss0tt1mmmm RegsNotPc
-| 0111x      -        = Binary4RegisterShiftedOp Rsc_Rule_147_A1_P294
+| 0111x      -        = Binary4RegisterShiftedOp
+                           => Defs12To15RdRnRsRmNotPc
+                           Rsc_Rule_147_A1_P294
                            cccc0000111unnnnddddssss0tt1mmmm
-| 10001      -        = Binary3RegisterShiftedTest Tst_Rule_232_A1_P458
+| 10001      -        = Binary3RegisterShiftedTest
+                           => DontCareInstRnRsRmNotPc
+                           Tst_Rule_232_A1_P458
                            cccc00010001nnnn0000ssss0tt1mmmm RegsNotPc
-| 10011      -        = Binary3RegisterShiftedTest Teq_Rule_229_A1_P452
+| 10011      -        = Binary3RegisterShiftedTest
+                           => DontCareInstRnRsRmNotPc
+                           Teq_Rule_229_A1_P452
                            cccc00010011nnnn0000ssss0tt1mmmm RegsNotPc
-| 10101      -        = Binary3RegisterShiftedTest Cmp_Rule_37_A1_P84
+| 10101      -        = Binary3RegisterShiftedTest
+                           => DontCareInstRnRsRmNotPc
+                           Cmp_Rule_37_A1_P84
                            cccc00010101nnnn0000ssss0tt1mmmm RegsNotPc
-| 10111      -        = Binary3RegisterShiftedTest Cmn_Rule_34_A1_P78
+| 10111      -        = Binary3RegisterShiftedTest
+                           => DontCareInstRnRsRmNotPc
+                           Cmn_Rule_34_A1_P78
                            cccc00010111nnnn0000ssss0tt1mmmm RegsNotPc
-| 1100x      -        = Binary4RegisterShiftedOp Orr_Rule_115_A1_P212
+| 1100x      -        = Binary4RegisterShiftedOp
+                           => Defs12To15RdRnRsRmNotPc
+                           Orr_Rule_115_A1_P212
                            cccc0001100unnnnddddssss0tt1mmmm RegsNotPc
-| 1101x      00       = Binary3RegisterOp Lsl_Rule_89_A1_P180
+| 1101x      00       = Binary3RegisterOp
+                           => Defs12To15RdRmRnNotPc
+                           Lsl_Rule_89_A1_P180
                            cccc0001101u0000ddddmmmm0001nnnn RegsNotPc
-| "          01       = Binary3RegisterOp Lsr_Rule_91_A1_P184
+| "          01       = Binary3RegisterOp
+                           => Defs12To15RdRmRnNotPc
+                           Lsr_Rule_91_A1_P184
                            cccc0001101u0000ddddmmmm0011nnnn RegsNotPc
-| "          10       = Binary3RegisterOp Asr_Rule_15_A1_P42
+| "          10       = Binary3RegisterOp
+                           => Defs12To15RdRmRnNotPc
+                           Asr_Rule_15_A1_P42
                            cccc0001101u0000ddddmmmm0101nnnn RegsNotPc
-| "          11       = Binary3RegisterOp Ror_Rule_140_A1_P280
+| "          11       = Binary3RegisterOp
+                           => Defs12To15RdRmRnNotPc
+                           Ror_Rule_140_A1_P280
                            cccc0001101u0000ddddmmmm0111nnnn RegsNotPc
-| 1110x      -        = Binary4RegisterShiftedOp Bic_Rule_21_A1_P54
+| 1110x      -        = Binary4RegisterShiftedOp
+                           => Defs12To15RdRnRsRmNotPc
+                           Bic_Rule_21_A1_P54
                            cccc0001110unnnnddddssss0tt1mmmm RegsNotPc
-| 1111x      -        = Unary3RegisterShiftedOp Mvn_Rule_108_A1_P218
+| 1111x      -        = Unary3RegisterShiftedOp
+                           => Defs12To15RdRmRnNotPc
+                           Mvn_Rule_108_A1_P218
                            cccc0001111u0000ddddssss0tt1mmmm RegsNotPc
 +--
 
