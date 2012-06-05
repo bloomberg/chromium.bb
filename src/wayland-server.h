@@ -247,6 +247,7 @@ struct wl_pointer {
 	struct wl_resource *focus_resource;
 	struct wl_listener focus_listener;
 	uint32_t focus_serial;
+	struct wl_signal focus_signal;
 
 	struct wl_pointer_grab *grab;
 	struct wl_pointer_grab default_grab;
@@ -270,6 +271,7 @@ struct wl_keyboard {
 	struct wl_resource *focus_resource;
 	struct wl_listener focus_listener;
 	uint32_t focus_serial;
+	struct wl_signal focus_signal;
 
 	struct wl_keyboard_grab *grab;
 	struct wl_keyboard_grab default_grab;
