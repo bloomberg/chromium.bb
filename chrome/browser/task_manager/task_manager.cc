@@ -39,10 +39,10 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
-#include "ui/gfx/image/image_skia.h"
 #include "unicode/coll.h"
 
 using content::BrowserThread;
@@ -306,14 +306,14 @@ bool TaskManagerModel::IsBackgroundResource(int index) const {
   return resources_[index]->IsBackground();
 }
 
-gfx::ImageSkia TaskManagerModel::GetResourceIcon(int index) const {
+SkBitmap TaskManagerModel::GetResourceIcon(int index) const {
   CHECK_LT(index, ResourceCount());
-  gfx::ImageSkia icon = resources_[index]->GetIcon();
+  SkBitmap icon = resources_[index]->GetIcon();
   if (!icon.isNull())
     return icon;
 
-  static gfx::ImageSkia* default_icon = ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+  static SkBitmap* default_icon = ResourceBundle::GetSharedInstance().
+      GetBitmapNamed(IDR_DEFAULT_FAVICON);
   return *default_icon;
 }
 

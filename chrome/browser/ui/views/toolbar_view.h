@@ -69,9 +69,9 @@ class ToolbarView : public views::AccessiblePaneView,
   // Remove a menu listener.
   void RemoveMenuListener(views::MenuListener* listener);
 
-  // Gets an image with the icon for the app menu and any overlaid notification
+  // Gets a bitmap with the icon for the app menu and any overlaid notification
   // badge.
-  gfx::ImageSkia GetAppMenuIcon(views::CustomButton::ButtonState state);
+  SkBitmap GetAppMenuIcon(views::CustomButton::ButtonState state);
 
   virtual bool GetAcceleratorInfo(int id, ui::Accelerator* accel);
 
@@ -182,7 +182,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // Gets a badge for the wrench icon corresponding to the number of
   // unacknowledged background pages in the system.
-  gfx::ImageSkia GetBackgroundPageBadge();
+  SkBitmap GetBackgroundPageBadge();
 
   scoped_ptr<BackForwardMenuModel> back_menu_model_;
   scoped_ptr<BackForwardMenuModel> forward_menu_model_;

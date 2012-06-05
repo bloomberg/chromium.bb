@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,9 +10,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 
-namespace gfx {
-class ImageSkia;
-}
+class SkBitmap;
 
 // There are several dialogs that display tabular data with one SkBitmap
 // per row. This class converts these SkBitmaps to NSImages on demand, and
@@ -26,7 +24,7 @@ class TableRowNSImageCache {
     virtual int RowCount() const = 0;
 
     // Returns the icon of the |row|th row.
-    virtual gfx::ImageSkia GetIcon(int row) const = 0;
+    virtual SkBitmap GetIcon(int row) const = 0;
 
    protected:
     virtual ~Table() {}
@@ -55,3 +53,4 @@ class TableRowNSImageCache {
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABLE_ROW_NSIMAGE_CACHE_H_
+

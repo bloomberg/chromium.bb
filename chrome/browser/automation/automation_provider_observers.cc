@@ -79,6 +79,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
 

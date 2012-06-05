@@ -148,16 +148,15 @@ void AboutChromeView::Init() {
   throbber_->set_owned_by_client();
   throbber_->SetVisible(false);
 
-  gfx::ImageSkia* success_image = rb.GetImageSkiaNamed(IDR_UPDATE_UPTODATE);
+  SkBitmap* success_image = rb.GetBitmapNamed(IDR_UPDATE_UPTODATE);
   success_indicator_.SetImage(*success_image);
   success_indicator_.set_owned_by_client();
 
-  gfx::ImageSkia* update_available_image = rb.GetImageSkiaNamed(
-      IDR_UPDATE_AVAILABLE);
+  SkBitmap* update_available_image = rb.GetBitmapNamed(IDR_UPDATE_AVAILABLE);
   update_available_indicator_.SetImage(*update_available_image);
   update_available_indicator_.set_owned_by_client();
 
-  gfx::ImageSkia* timeout_image = rb.GetImageSkiaNamed(IDR_UPDATE_FAIL);
+  SkBitmap* timeout_image = rb.GetBitmapNamed(IDR_UPDATE_FAIL);
   timeout_indicator_.SetImage(*timeout_image);
   timeout_indicator_.set_owned_by_client();
 
@@ -165,12 +164,12 @@ void AboutChromeView::Init() {
   update_label_.set_owned_by_client();
 
   // Regular view controls we draw by ourself. First, we add the background
-  // image for the dialog. We have two different background images, one for
-  // LTR UIs and one for RTL UIs. We load the correct image based on the UI
+  // image for the dialog. We have two different background bitmaps, one for
+  // LTR UIs and one for RTL UIs. We load the correct bitmap based on the UI
   // layout of the view.
   about_dlg_background_logo_ = new views::ImageView();
-  gfx::ImageSkia* about_background_logo = rb.GetImageSkiaNamed(
-      base::i18n::IsRTL() ? IDR_ABOUT_BACKGROUND_RTL : IDR_ABOUT_BACKGROUND);
+  SkBitmap* about_background_logo = rb.GetBitmapNamed(base::i18n::IsRTL() ?
+      IDR_ABOUT_BACKGROUND_RTL : IDR_ABOUT_BACKGROUND);
 
   about_dlg_background_logo_->SetImage(*about_background_logo);
   AddChildView(about_dlg_background_logo_);
@@ -426,8 +425,8 @@ void AboutChromeView::OnPaint(gfx::Canvas* canvas) {
   // Draw the background image color (and the separator) across the dialog.
   // This will become the background for the logo image at the top of the
   // dialog.
-  gfx::ImageSkia* background = ui::ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_ABOUT_BACKGROUND_COLOR);
+  SkBitmap* background = ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_ABOUT_BACKGROUND_COLOR);
   canvas->TileImageInt(*background, 0, 0, dialog_dimensions_.width(),
                        background->height());
 

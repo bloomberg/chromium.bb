@@ -16,7 +16,6 @@
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/gfx/image/image_skia.h"
 
 namespace {
 
@@ -625,7 +624,7 @@ int TaskManagerMac::RowCount() const {
   return model_->ResourceCount();
 }
 
-gfx::ImageSkia TaskManagerMac::GetIcon(int r) const {
+SkBitmap TaskManagerMac::GetIcon(int r) const {
   return model_->GetResourceIcon(r);
 }
 

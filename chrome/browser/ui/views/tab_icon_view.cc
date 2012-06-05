@@ -11,7 +11,6 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -27,7 +26,7 @@
 #endif
 
 static bool g_initialized = false;
-static gfx::ImageSkia* g_default_favicon = NULL;
+static SkBitmap* g_default_favicon = NULL;
 
 // static
 void TabIconView::InitializeIfNeeded() {
@@ -38,13 +37,12 @@ void TabIconView::InitializeIfNeeded() {
     // The default window icon is the application icon, not the default
     // favicon.
     HICON app_icon = GetAppIcon();
-    scoped_ptr<SkBitmap> bitmap(
-        IconUtil::CreateSkBitmapFromHICON(app_icon, gfx::Size(16, 16)));
-    g_default_favicon = new gfx::ImageSkia(*bitmap);
+    g_default_favicon =
+        IconUtil::CreateSkBitmapFromHICON(app_icon, gfx::Size(16, 16));
     DestroyIcon(app_icon);
 #else
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    g_default_favicon = rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_16);
+    g_default_favicon = rb.GetBitmapNamed(IDR_PRODUCT_LOGO_16);
 #endif
   }
 }
@@ -65,8 +63,8 @@ void TabIconView::Update() {
   static int throbber_frame_count = 0;
   if (!initialized) {
     initialized = true;
-    gfx::ImageSkia throbber(*ui::ResourceBundle::GetSharedInstance().
-        GetImageSkiaNamed(IDR_THROBBER));
+    SkBitmap throbber(
+        *ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_THROBBER));
     throbber_frame_count = throbber.width() / throbber.height();
   }
 
@@ -92,19 +90,19 @@ void TabIconView::Update() {
 }
 
 void TabIconView::PaintThrobber(gfx::Canvas* canvas) {
-  gfx::ImageSkia throbber(*GetThemeProvider()->GetImageSkiaNamed(
+  SkBitmap throbber(*GetThemeProvider()->GetBitmapNamed(
       is_light_ ? IDR_THROBBER_LIGHT : IDR_THROBBER));
   int image_size = throbber.height();
   PaintIcon(canvas, throbber, throbber_frame_ * image_size, 0, image_size,
             image_size, false);
 }
 
-void TabIconView::PaintFavicon(gfx::Canvas* canvas, const SkBitmap& image) {
-  PaintIcon(canvas, image, 0, 0, image.width(), image.height(), true);
+void TabIconView::PaintFavicon(gfx::Canvas* canvas, const SkBitmap& bitmap) {
+  PaintIcon(canvas, bitmap, 0, 0, bitmap.width(), bitmap.height(), true);
 }
 
 void TabIconView::PaintIcon(gfx::Canvas* canvas,
-                            const gfx::ImageSkia& image,
+                            const SkBitmap& bitmap,
                             int src_x,
                             int src_y,
                             int src_w,
@@ -130,7 +128,7 @@ void TabIconView::PaintIcon(gfx::Canvas* canvas,
   int dest_h = static_cast<int>(float_src_h * scale);
 
   // Center the scaled image.
-  canvas->DrawBitmapInt(image, src_x, src_y, src_w, src_h,
+  canvas->DrawBitmapInt(bitmap, src_x, src_y, src_w, src_h,
                         (width() - dest_w) / 2, (height() - dest_h) / 2, dest_w,
                         dest_h, filter);
 }

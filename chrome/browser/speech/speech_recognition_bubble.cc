@@ -29,10 +29,10 @@ class SpeechRecognitionBubbleImages {
  public:
   const std::vector<SkBitmap>& spinner() { return spinner_; }
   const std::vector<SkBitmap>& warm_up() { return warm_up_; }
-  gfx::ImageSkia* mic_full() { return mic_full_; }
-  gfx::ImageSkia* mic_empty() { return mic_empty_; }
-  gfx::ImageSkia* mic_noise() { return mic_noise_; }
-  gfx::ImageSkia* mic_mask() { return mic_mask_; }
+  SkBitmap* mic_full() { return mic_full_; }
+  SkBitmap* mic_empty() { return mic_empty_; }
+  SkBitmap* mic_noise() { return mic_noise_; }
+  SkBitmap* mic_mask() { return mic_mask_; }
 
  private:
   // Private constructor to enforce singleton.
@@ -42,28 +42,28 @@ class SpeechRecognitionBubbleImages {
   std::vector<SkBitmap> spinner_;  // Frames for the progress spinner.
   std::vector<SkBitmap> warm_up_;  // Frames for the warm up animation.
 
-  // These images are owned by ResourceBundle and need not be destroyed.
-  gfx::ImageSkia* mic_full_;  // Mic image with full volume.
-  gfx::ImageSkia* mic_noise_;  // Mic image with full noise volume.
-  gfx::ImageSkia* mic_empty_;  // Mic image with zero volume.
-  gfx::ImageSkia* mic_mask_;  // Gradient mask used by the volume indicator.
+  // These bitmaps are owned by ResourceBundle and need not be destroyed.
+  SkBitmap* mic_full_;  // Mic image with full volume.
+  SkBitmap* mic_noise_;  // Mic image with full noise volume.
+  SkBitmap* mic_empty_;  // Mic image with zero volume.
+  SkBitmap* mic_mask_;  // Gradient mask used by the volume indicator.
 };
 
 SpeechRecognitionBubbleImages::SpeechRecognitionBubbleImages() {
-  mic_empty_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  mic_empty_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_SPEECH_INPUT_MIC_EMPTY);
-  mic_noise_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  mic_noise_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_SPEECH_INPUT_MIC_NOISE);
-  mic_full_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  mic_full_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_SPEECH_INPUT_MIC_FULL);
-  mic_mask_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  mic_mask_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_SPEECH_INPUT_MIC_MASK);
 
   // The sprite image consists of all the animation frames put together in one
   // horizontal/wide image. Each animation frame is square in shape within the
   // sprite.
-  const SkBitmap* spinner_image = ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_SPEECH_INPUT_SPINNER)->bitmap();
+  SkBitmap* spinner_image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_SPEECH_INPUT_SPINNER);
   int frame_size = spinner_image->height();
 
   // When recording starts up, it may take a short while (few ms or even a
@@ -85,11 +85,11 @@ SpeechRecognitionBubbleImages::SpeechRecognitionBubbleImages() {
     SkBitmap frame;
     spinner_image->extractSubset(&frame, src_rect);
 
-    // The image created by extractSubset just points to the same pixels as
+    // The bitmap created by extractSubset just points to the same pixels as
     // the original and adjusts rowBytes accordingly. However that doesn't
     // render properly and gets vertically squished in Linux due to a bug in
     // Skia. Until that gets fixed we work around by taking a real copy of it
-    // below as the copied image has the correct rowBytes and renders fine.
+    // below as the copied bitmap has the correct rowBytes and renders fine.
     SkBitmap frame_copy;
     frame.copyTo(&frame_copy, SkBitmap::kARGB_8888_Config);
     spinner_.push_back(frame_copy);
@@ -199,7 +199,7 @@ void SpeechRecognitionBubbleBase::SetMessage(const string16& text) {
 }
 
 void SpeechRecognitionBubbleBase::DrawVolumeOverlay(SkCanvas* canvas,
-                                                    const gfx::ImageSkia& image,
+                                                    const SkBitmap& bitmap,
                                                     float volume) {
   buffer_image_->eraseARGB(0, 0, 0, 0);
 
@@ -213,7 +213,7 @@ void SpeechRecognitionBubbleBase::DrawVolumeOverlay(SkCanvas* canvas,
       (((1.0f - volume) * (width * (kVolumeSteps + 1))) - width) / kVolumeSteps;
   buffer_canvas.clipRect(SkRect::MakeLTRB(0, 0,
       SkIntToScalar(width) - clip_right, SkIntToScalar(height)));
-  buffer_canvas.drawBitmap(image, 0, 0);
+  buffer_canvas.drawBitmap(bitmap, 0, 0);
   buffer_canvas.restore();
   SkPaint multiply_paint;
   multiply_paint.setXfermode(SkXfermode::Create(SkXfermode::kMultiply_Mode));
@@ -241,11 +241,11 @@ WebContents* SpeechRecognitionBubbleBase::GetWebContents() {
   return web_contents_;
 }
 
-void SpeechRecognitionBubbleBase::SetImage(const gfx::ImageSkia& image) {
-  icon_image_.reset(new gfx::ImageSkia(image));
+void SpeechRecognitionBubbleBase::SetImage(const SkBitmap& image) {
+  icon_image_.reset(new SkBitmap(image));
   UpdateImage();
 }
 
-gfx::ImageSkia SpeechRecognitionBubbleBase::icon_image() {
-  return (icon_image_ != NULL) ? *icon_image_ : gfx::ImageSkia();
+SkBitmap SpeechRecognitionBubbleBase::icon_image() {
+  return (icon_image_ != NULL) ? *icon_image_ : SkBitmap();
 }

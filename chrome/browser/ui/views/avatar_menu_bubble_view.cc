@@ -163,7 +163,7 @@ class ProfileItemView : public views::CustomButton,
   const AvatarMenuModel::Item& item() { return item_; }
 
  private:
-  static gfx::ImageSkia GetBadgedIcon(const gfx::ImageSkia& icon);
+  static SkBitmap GetBadgedIcon(const SkBitmap& icon);
 
   bool IsHighlighted();
 
@@ -180,9 +180,9 @@ ProfileItemView::ProfileItemView(const AvatarMenuModel::Item& item,
     : views::CustomButton(switch_profile_listener),
       item_(item) {
   image_view_ = new ProfileImageView();
-  gfx::ImageSkia profile_icon = *item_.icon.ToImageSkia();
+  SkBitmap profile_icon = *item_.icon.ToSkBitmap();
   if (item_.active) {
-    gfx::ImageSkia badged_icon(GetBadgedIcon(profile_icon));
+    SkBitmap badged_icon(GetBadgedIcon(profile_icon));
     image_view_->SetImage(badged_icon);
   } else {
     image_view_->SetImage(profile_icon);
@@ -241,7 +241,7 @@ void ProfileItemView::Layout() {
     icon_rect.set_size(image_view_->GetPreferredSize());
     icon_rect.set_y((height() - icon_rect.height()) / 2);
   } else {
-    const gfx::ImageSkia& icon = image_view_->GetImage();
+    const SkBitmap& icon = image_view_->GetImage();
     icon_rect = GetCenteredAndScaledRect(icon.width(), icon.height(), 0, 0,
         profiles::kAvatarIconWidth, height());
   }
@@ -312,13 +312,12 @@ void ProfileItemView::OnFocusStateChanged(bool has_focus) {
 }
 
 // static
-gfx::ImageSkia ProfileItemView::GetBadgedIcon(const gfx::ImageSkia& icon) {
+SkBitmap ProfileItemView::GetBadgedIcon(const SkBitmap& icon) {
   gfx::Rect icon_rect = GetCenteredAndScaledRect(icon.width(), icon.height(),
       0, 0, profiles::kAvatarIconWidth, kItemHeight);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia* badge = rb.GetImageNamed(
-      IDR_PROFILE_SELECTED).ToImageSkia();
+  const SkBitmap* badge = rb.GetImageNamed(IDR_PROFILE_SELECTED).ToSkBitmap();
   const float kBadgeOverlapRatioX = 1.0f / 5.0f;
   int width = icon_rect.width() + badge->width() * kBadgeOverlapRatioX;
   const float kBadgeOverlapRatioY = 1.0f / 3.0f;

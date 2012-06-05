@@ -15,6 +15,7 @@
 
 class GURL;
 class Profile;
+class SkBitmap;
 
 namespace ui {
 class TableModelObserver;

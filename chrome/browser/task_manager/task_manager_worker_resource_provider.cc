@@ -19,9 +19,9 @@
 #include "content/public/browser/worker_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image_skia.h"
 
 using content::BrowserThread;
 using content::DevToolsAgentHost;
@@ -50,7 +50,7 @@ class TaskManagerSharedWorkerResource : public TaskManager::Resource {
   // TaskManager::Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
-  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
+  virtual SkBitmap GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual int GetUniqueChildProcessId() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
@@ -65,12 +65,12 @@ class TaskManagerSharedWorkerResource : public TaskManager::Resource {
   string16 title_;
   base::ProcessHandle handle_;
 
-  static gfx::ImageSkia* default_icon_;
+  static SkBitmap* default_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerSharedWorkerResource);
 };
 
-gfx::ImageSkia* TaskManagerSharedWorkerResource::default_icon_ = NULL;
+SkBitmap* TaskManagerSharedWorkerResource::default_icon_ = NULL;
 
 TaskManagerSharedWorkerResource::TaskManagerSharedWorkerResource(
     const GURL& url,
@@ -107,10 +107,10 @@ string16 TaskManagerSharedWorkerResource::GetProfileName() const {
   return string16();
 }
 
-gfx::ImageSkia TaskManagerSharedWorkerResource::GetIcon() const {
+SkBitmap TaskManagerSharedWorkerResource::GetIcon() const {
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGIN);
+    default_icon_ = rb.GetBitmapNamed(IDR_PLUGIN);
     // TODO(jabdelmalek): use different icon for web workers.
   }
   return *default_icon_;

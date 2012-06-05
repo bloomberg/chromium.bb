@@ -58,8 +58,8 @@ void IconLabelBubbleView::SetLabel(const string16& label) {
   label_->SetText(label);
 }
 
-void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
-  image_->SetImage(image_skia);
+void IconLabelBubbleView::SetImage(const SkBitmap& bitmap) {
+  image_->SetImage(bitmap);
 }
 
 void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
@@ -92,7 +92,7 @@ gfx::Size IconLabelBubbleView::GetNonLabelSize() const {
 int IconLabelBubbleView::GetPreLabelWidth() const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return GetBubbleOuterPadding() +
-      rb.GetImageSkiaNamed(IDR_OMNIBOX_SEARCH)->width() +
+      rb.GetBitmapNamed(IDR_OMNIBOX_SEARCH)->width() +
       LocationBarView::GetItemPadding();
 }
 

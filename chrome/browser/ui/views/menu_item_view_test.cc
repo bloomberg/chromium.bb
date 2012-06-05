@@ -215,7 +215,7 @@ class MenuItemViewTestInsert : public MenuItemViewTestBase {
     inserted_item_ = menu_->AddMenuItemAt(INSERT_INDEX,
                                           1000,
                                           ASCIIToUTF16("inserted item"),
-                                          gfx::ImageSkia(),
+                                          SkBitmap(),
                                           views::MenuItemView::NORMAL);
     ASSERT_TRUE(inserted_item_);
     menu_->ChildrenChanged();
@@ -325,7 +325,7 @@ class MenuItemViewTestInsertWithSubmenu : public MenuItemViewTestBase {
     inserted_item_ = menu_->AddMenuItemAt(INSERT_INDEX,
                                           1000,
                                           ASCIIToUTF16("inserted item"),
-                                          gfx::ImageSkia(),
+                                          SkBitmap(),
                                           views::MenuItemView::NORMAL);
     ASSERT_TRUE(inserted_item_);
     menu_->ChildrenChanged();

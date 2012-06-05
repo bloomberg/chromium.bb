@@ -14,13 +14,12 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/image/image_skia.h"
 
 namespace web_ui_util {
 
-std::string GetImageDataUrl(const gfx::ImageSkia& image) {
+std::string GetImageDataUrl(const SkBitmap& bitmap) {
   std::vector<unsigned char> output;
-  gfx::PNGCodec::EncodeBGRASkBitmap(*image.bitmap(), false, &output);
+  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &output);
   std::string str_url;
   str_url.insert(str_url.end(), output.begin(), output.end());
 

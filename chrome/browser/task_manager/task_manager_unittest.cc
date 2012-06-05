@@ -12,8 +12,8 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/image/image_skia.h"
 
 namespace {
 
@@ -36,7 +36,7 @@ class TestResource : public TaskManager::Resource {
   virtual string16 GetProfileName() const OVERRIDE {
     return ASCIIToUTF16("test profile");
   }
-  virtual gfx::ImageSkia GetIcon() const { return gfx::ImageSkia(); }
+  virtual SkBitmap GetIcon() const { return SkBitmap(); }
   virtual base::ProcessHandle GetProcess() const {
     return base::GetCurrentProcessHandle();
   }

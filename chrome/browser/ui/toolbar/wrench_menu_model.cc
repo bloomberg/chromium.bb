@@ -46,12 +46,12 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
@@ -494,7 +494,7 @@ void WrenchMenuModel::Build() {
 #if defined(OS_WIN)
   SetIcon(GetIndexOfCommandId(IDC_VIEW_INCOMPATIBILITIES),
           *ui::ResourceBundle::GetSharedInstance().
-          GetImageSkiaNamed(IDR_CONFLICT_MENU));
+          GetBitmapNamed(IDR_CONFLICT_MENU));
 #endif
 
   if (!is_touch_menu) {
@@ -503,7 +503,7 @@ void WrenchMenuModel::Build() {
     if (browser_defaults::kShowHelpMenuItemIcon) {
       ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE),
-              *rb.GetImageSkiaNamed(IDR_HELP_MENU));
+              *rb.GetBitmapNamed(IDR_HELP_MENU));
     }
   }
 
@@ -535,7 +535,7 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
       if (icon_id) {
         gfx::Image& image = rb.GetImageNamed(icon_id);
         SetIcon(GetIndexOfCommandId(error->MenuItemCommandID()),
-                *image.ToImageSkia());
+                *image.ToSkBitmap());
       }
     }
   }

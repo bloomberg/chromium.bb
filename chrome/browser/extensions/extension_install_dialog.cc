@@ -7,12 +7,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
 namespace {

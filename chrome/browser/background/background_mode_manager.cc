@@ -117,7 +117,7 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
              applications_->begin();
          cursor != applications_->end();
          ++cursor, ++position) {
-      const gfx::ImageSkia* icon = applications_->GetIcon(*cursor);
+      const SkBitmap* icon = applications_->GetIcon(*cursor);
       DCHECK(position == applications_->GetPosition(*cursor));
       const std::string& name = (*cursor)->name();
       menu->AddItem(position, UTF8ToUTF16(name));
@@ -663,9 +663,9 @@ void BackgroundModeManager::CreateStatusTrayIcon() {
 
   // Set the image and add ourselves as a click observer on it.
   // TODO(rlp): Status tray icon should have submenus for each profile.
-  gfx::ImageSkia* image_skia = ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
-  status_icon_->SetImage(*image_skia);
+  SkBitmap* bitmap = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_STATUS_TRAY_ICON);
+  status_icon_->SetImage(*bitmap);
   status_icon_->SetToolTip(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   UpdateStatusTrayIconContextMenu();
 }

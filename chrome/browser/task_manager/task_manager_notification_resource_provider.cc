@@ -8,9 +8,9 @@
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_window.h"
-#include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
+#include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -20,22 +20,22 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image_skia.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerNotificationResource class
 ////////////////////////////////////////////////////////////////////////////////
 
-gfx::ImageSkia* TaskManagerNotificationResource::default_icon_ = NULL;
+SkBitmap* TaskManagerNotificationResource::default_icon_ = NULL;
 
 TaskManagerNotificationResource::TaskManagerNotificationResource(
     BalloonHost* balloon_host)
     : balloon_host_(balloon_host) {
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGIN);
+    default_icon_ = rb.GetBitmapNamed(IDR_PLUGIN);
   }
   process_handle_ =
       balloon_host_->web_contents()->GetRenderProcessHost()->GetHandle();
@@ -57,7 +57,7 @@ string16 TaskManagerNotificationResource::GetProfileName() const {
   return string16();
 }
 
-gfx::ImageSkia TaskManagerNotificationResource::GetIcon() const {
+SkBitmap TaskManagerNotificationResource::GetIcon() const {
   return *default_icon_;
 }
 

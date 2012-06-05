@@ -9,8 +9,6 @@
 #include "base/compiler_specific.h"
 #include "ui/views/view.h"
 
-class SkBitmap;
-
 namespace gfx {
 class ImageSkia;
 }
@@ -51,7 +49,7 @@ class TabIconView : public views::View {
   void PaintThrobber(gfx::Canvas* canvas);
   void PaintFavicon(gfx::Canvas* canvas, const SkBitmap& bitmap);
   void PaintIcon(gfx::Canvas* canvas,
-                 const gfx::ImageSkia& image,
+                 const SkBitmap& bitmap,
                  int src_x,
                  int src_y,
                  int src_w,

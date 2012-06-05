@@ -37,11 +37,11 @@
 
 class BaseDownloadItemModel;
 class DownloadShelfView;
+class SkBitmap;
 class DownloadShelfContextMenuView;
 
 namespace gfx {
 class Image;
-class ImageSkia;
 }
 
 namespace ui {
@@ -120,22 +120,22 @@ class DownloadItemView : public views::ButtonListener,
 
   // The image set associated with the part containing the icon and text.
   struct BodyImageSet {
-    gfx::ImageSkia* top_left;
-    gfx::ImageSkia* left;
-    gfx::ImageSkia* bottom_left;
-    gfx::ImageSkia* top;
-    gfx::ImageSkia* center;
-    gfx::ImageSkia* bottom;
-    gfx::ImageSkia* top_right;
-    gfx::ImageSkia* right;
-    gfx::ImageSkia* bottom_right;
+    SkBitmap* top_left;
+    SkBitmap* left;
+    SkBitmap* bottom_left;
+    SkBitmap* top;
+    SkBitmap* center;
+    SkBitmap* bottom;
+    SkBitmap* top_right;
+    SkBitmap* right;
+    SkBitmap* bottom_right;
   };
 
   // The image set associated with the drop-down button on the right.
   struct DropDownImageSet {
-    gfx::ImageSkia* top;
-    gfx::ImageSkia* center;
-    gfx::ImageSkia* bottom;
+    SkBitmap* top;
+    SkBitmap* center;
+    SkBitmap* bottom;
   };
 
   void OpenDownload();
@@ -143,12 +143,12 @@ class DownloadItemView : public views::ButtonListener,
   void LoadIcon();
   void LoadIconIfItemPathChanged();
 
-  // Convenience method to paint the 3 vertical images (bottom, middle, top)
+  // Convenience method to paint the 3 vertical bitmaps (bottom, middle, top)
   // that form the background.
-  void PaintImages(gfx::Canvas* canvas,
-                    const gfx::ImageSkia* top_image,
-                    const gfx::ImageSkia* center_image,
-                    const gfx::ImageSkia* bottom_image,
+  void PaintBitmaps(gfx::Canvas* canvas,
+                    const SkBitmap* top_bitmap,
+                    const SkBitmap* center_bitmap,
+                    const SkBitmap* bottom_bitmap,
                     int x,
                     int y,
                     int height,
@@ -208,7 +208,7 @@ class DownloadItemView : public views::ButtonListener,
   DropDownImageSet pushed_drop_down_image_set_;
 
   // The warning icon showns for dangerous downloads.
-  const gfx::ImageSkia* warning_icon_;
+  const SkBitmap* warning_icon_;
 
   // The model we query for display information
   content::DownloadItem* download_;

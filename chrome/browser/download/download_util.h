@@ -78,7 +78,7 @@ int GetBigProgressIconSize();
 const int kSmallProgressIconSize = 39;
 const int kBigProgressIconSize = 52;
 
-// The offset required to center the icon in the progress images.
+// The offset required to center the icon in the progress bitmaps.
 int GetBigProgressIconOffset();
 
 const int kSmallProgressIconOffset =

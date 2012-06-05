@@ -252,8 +252,8 @@ void SpeechRecognitionBubbleGtk::UpdateLayout() {
       gtk_widget_get_child_requisition(cancel_button_, &cancel_size);
       GtkRequisition label_size;
       gtk_widget_get_child_requisition(label_, &label_size);
-      gfx::ImageSkia* volume = ResourceBundle::GetSharedInstance().
-          GetImageSkiaNamed(IDR_SPEECH_INPUT_MIC_EMPTY);
+      SkBitmap* volume = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_SPEECH_INPUT_MIC_EMPTY);
       int desired_width = std::max(volume->width(), cancel_size.width) +
                           kIconHorizontalPadding * 2;
       int desired_height = volume->height() + label_size.height +
@@ -274,7 +274,7 @@ void SpeechRecognitionBubbleGtk::UpdateLayout() {
 }
 
 void SpeechRecognitionBubbleGtk::UpdateImage() {
-  gfx::ImageSkia image = icon_image();
+  SkBitmap image = icon_image();
   if (image.isNull() || !bubble_)
     return;
 

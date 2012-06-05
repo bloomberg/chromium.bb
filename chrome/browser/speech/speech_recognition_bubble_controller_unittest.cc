@@ -16,6 +16,8 @@
 using content::BrowserThread;
 using content::WebContents;
 
+class SkBitmap;
+
 namespace speech {
 
 // A mock bubble class which fakes a focus change or recognition cancel by the

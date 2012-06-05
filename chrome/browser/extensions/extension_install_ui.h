@@ -15,7 +15,6 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
@@ -81,7 +80,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     // components.ratingutils.setFractionalYellowStars). Callers pass in an
     // "appender", which will be repeatedly called back with the star images
     // that they append to the star display area.
-    typedef void(*StarAppender)(const gfx::ImageSkia*, void*);
+    typedef void(*StarAppender)(const SkBitmap*, void*);
     void AppendRatingStars(StarAppender appender, void* data) const;
     string16 GetRatingCount() const;
     string16 GetUserCount() const;

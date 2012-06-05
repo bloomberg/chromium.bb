@@ -31,6 +31,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/resource_type.h"
 
 using extensions::Extension;

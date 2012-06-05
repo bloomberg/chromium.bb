@@ -108,7 +108,7 @@ void ManageProfileHandler::SendProfileIcons() {
         cache.GetGAIAPictureOfProfileAtIndex(profile_index);
     if (icon) {
       gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
-      gaia_picture_url_ = web_ui_util::GetImageDataUrl(*icon2.ToImageSkia());
+      gaia_picture_url_ = web_ui_util::GetImageDataUrl(*icon2.ToSkBitmap());
       image_url_list.Append(Value::CreateStringValue(gaia_picture_url_));
     }
   }
@@ -268,7 +268,7 @@ void ManageProfileHandler::RequestProfileInfo(const ListValue* args) {
     gfx::Image icon = profiles::GetAvatarIconForWebUI(
         cache.GetAvatarIconOfProfileAtIndex(index), true);
     profile_value.SetString("iconURL",
-        web_ui_util::GetImageDataUrl(*icon.ToImageSkia()));
+        web_ui_util::GetImageDataUrl(*icon.ToSkBitmap()));
   } else {
     size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(index);
     profile_value.SetString("iconURL",

@@ -16,8 +16,8 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "base/value_conversions.h"
 #include "base/values.h"
+#include "base/value_conversions.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_page_zoom.h"
@@ -87,7 +87,7 @@
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
-#include "ui/gfx/image/image_skia.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -912,7 +912,7 @@ scoped_ptr<ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
       gfx::Image icon = profiles::GetAvatarIconForWebUI(
           cache.GetAvatarIconOfProfileAtIndex(i), true);
       profile_value->SetString("iconURL",
-          web_ui_util::GetImageDataUrl(*icon.ToImageSkia()));
+          web_ui_util::GetImageDataUrl(*icon.ToSkBitmap()));
     } else {
       size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(i);
       profile_value->SetString("iconURL",

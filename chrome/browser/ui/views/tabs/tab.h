@@ -117,9 +117,9 @@ class Tab : public BaseTab {
   scoped_ptr<ui::MultiAnimation> mini_title_animation_;
 
   struct TabImage {
-    gfx::ImageSkia* image_l;
-    gfx::ImageSkia* image_c;
-    gfx::ImageSkia* image_r;
+    SkBitmap* image_l;
+    SkBitmap* image_c;
+    SkBitmap* image_r;
     int l_width;
     int r_width;
     int y_offset;

@@ -15,6 +15,7 @@
 #include "ui/base/models/table_model.h"
 
 class ModelEntry;
+class SkBitmap;
 class TemplateURL;
 class TemplateURLService;
 

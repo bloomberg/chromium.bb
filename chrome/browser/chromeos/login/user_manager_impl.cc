@@ -53,7 +53,6 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/image/image_skia.h"
 
 using content::BrowserThread;
 
@@ -1283,7 +1282,7 @@ void UserManagerImpl::InitDownloadedProfileImage() {
     VLOG(1) << "Profile image initialized";
     downloaded_profile_image_ = logged_in_user_->image();
     downloaded_profile_image_data_url_ =
-        web_ui_util::GetImageDataUrl(gfx::ImageSkia(downloaded_profile_image_));
+        web_ui_util::GetImageDataUrl(downloaded_profile_image_);
   }
 }
 
@@ -1363,8 +1362,7 @@ void UserManagerImpl::OnDownloadComplete(ProfileDownloader* downloader,
   if (result == kDownloadSuccess) {
     // Check if this image is not the same as already downloaded.
     std::string new_image_data_url =
-        web_ui_util::GetImageDataUrl(gfx::ImageSkia(
-        downloader->GetProfilePicture()));
+        web_ui_util::GetImageDataUrl(downloader->GetProfilePicture());
     if (!downloaded_profile_image_data_url_.empty() &&
         new_image_data_url == downloaded_profile_image_data_url_)
       return;

@@ -16,13 +16,13 @@
 namespace gfx {
 class Canvas;
 class Font;
-class ImageSkia;
 }
-
 namespace views {
 class ImageView;
 class Label;
 }
+
+class SkBitmap;
 
 // View used to draw a bubble to the left of the address, containing an icon and
 // a label.  We use this as a base for the classes that handle the EV bubble and
@@ -36,7 +36,7 @@ class IconLabelBubbleView : public views::View {
 
   void SetFont(const gfx::Font& font);
   void SetLabel(const string16& label);
-  void SetImage(const gfx::ImageSkia& image);
+  void SetImage(const SkBitmap& bitmap);
   void set_is_extension_icon(bool is_extension_icon) {
     is_extension_icon_ = is_extension_icon;
   }

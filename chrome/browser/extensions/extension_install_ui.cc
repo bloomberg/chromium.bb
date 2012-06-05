@@ -184,14 +184,14 @@ void ExtensionInstallUI::Prompt::AppendRatingStars(
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int i;
   for (i = 0; i < rating_integer; i++) {
-    appender(rb.GetImageSkiaNamed(IDR_EXTENSIONS_RATING_STAR_ON), data);
+    appender(rb.GetBitmapNamed(IDR_EXTENSIONS_RATING_STAR_ON), data);
   }
   if (rating_fractional) {
-    appender(rb.GetImageSkiaNamed(IDR_EXTENSIONS_RATING_STAR_HALF_LEFT), data);
+    appender(rb.GetBitmapNamed(IDR_EXTENSIONS_RATING_STAR_HALF_LEFT), data);
     i++;
   }
   for (; i < kMaxExtensionRating; i++) {
-    appender(rb.GetImageSkiaNamed(IDR_EXTENSIONS_RATING_STAR_OFF), data);
+    appender(rb.GetBitmapNamed(IDR_EXTENSIONS_RATING_STAR_OFF), data);
   }
 }
 

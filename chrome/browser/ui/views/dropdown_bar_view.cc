@@ -63,7 +63,7 @@ void DropdownBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   origin = browser_view_->OffsetPointForToolbarBackgroundImage(origin);
 
   ui::ThemeProvider* tp = view->GetThemeProvider();
-  gfx::ImageSkia background = *tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
+  SkBitmap background = *tp->GetBitmapNamed(IDR_THEME_TOOLBAR);
 
   int left_edge_width = left_alpha_mask_->width();
   int right_edge_width = right_alpha_mask_->width();
@@ -129,11 +129,11 @@ void DropdownBarView::SetBackground(const gfx::ImageSkia* left_alpha_mask,
       right_alpha_mask));
 }
 
-void DropdownBarView::SetBorder(int left_border_image_id,
-                                int middle_border_image_id,
-                                int right_border_image_id) {
-  int border_image_ids[3] = {left_border_image_id, middle_border_image_id,
-      right_border_image_id};
+void DropdownBarView::SetBorder(int left_border_bitmap_id,
+                                int middle_border_bitmap_id,
+                                int right_border_bitmap_id) {
+  int border_bitmap_ids[3] = {left_border_bitmap_id, middle_border_bitmap_id,
+      right_border_bitmap_id};
   set_border(views::Border::CreateBorderPainter(
-      new views::HorizontalPainter(border_image_ids)));
+      new views::HorizontalPainter(border_bitmap_ids)));
 }

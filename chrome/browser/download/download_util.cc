@@ -183,13 +183,13 @@ void GenerateFileNameFromRequest(const DownloadItem& download_item,
 
 // Download progress painting --------------------------------------------------
 
-// Common images used for download progress animations. We load them once the
+// Common bitmaps used for download progress animations. We load them once the
 // first time we do a progress paint, then reuse them as they are always the
 // same.
-gfx::ImageSkia* g_foreground_16 = NULL;
-gfx::ImageSkia* g_background_16 = NULL;
-gfx::ImageSkia* g_foreground_32 = NULL;
-gfx::ImageSkia* g_background_32 = NULL;
+SkBitmap* g_foreground_16 = NULL;
+SkBitmap* g_background_16 = NULL;
+SkBitmap* g_foreground_32 = NULL;
+SkBitmap* g_background_32 = NULL;
 
 void PaintDownloadProgress(gfx::Canvas* canvas,
 #if defined(TOOLKIT_VIEWS)
@@ -200,24 +200,22 @@ void PaintDownloadProgress(gfx::Canvas* canvas,
                            int start_angle,
                            int percent_done,
                            PaintDownloadProgressSize size) {
-  // Load up our common images
+  // Load up our common bitmaps
   if (!g_background_16) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    g_foreground_16 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_16);
-    g_background_16 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_BACKGROUND_16);
-    g_foreground_32 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_32);
-    g_background_32 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_BACKGROUND_32);
+    g_foreground_16 = rb.GetBitmapNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_16);
+    g_background_16 = rb.GetBitmapNamed(IDR_DOWNLOAD_PROGRESS_BACKGROUND_16);
+    g_foreground_32 = rb.GetBitmapNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_32);
+    g_background_32 = rb.GetBitmapNamed(IDR_DOWNLOAD_PROGRESS_BACKGROUND_32);
   }
 
-  gfx::ImageSkia* background =
-      (size == BIG) ? g_background_32 : g_background_16;
-  gfx::ImageSkia* foreground =
-      (size == BIG) ? g_foreground_32 : g_foreground_16;
+  SkBitmap* background = (size == BIG) ? g_background_32 : g_background_16;
+  SkBitmap* foreground = (size == BIG) ? g_foreground_32 : g_foreground_16;
 
   const int kProgressIconSize = (size == BIG) ? kBigProgressIconSize :
                                                 kSmallProgressIconSize;
 
-  // We start by storing the bounds of the background and foreground images
+  // We start by storing the bounds of the background and foreground bitmaps
   // so that it is easy to mirror the bounds if the UI layout is RTL.
   gfx::Rect background_bounds(origin_x, origin_y,
                               background->width(), background->height());
@@ -300,14 +298,14 @@ void PaintDownloadComplete(gfx::Canvas* canvas,
                            int origin_y,
                            double animation_progress,
                            PaintDownloadProgressSize size) {
-  // Load up our common images.
+  // Load up our common bitmaps.
   if (!g_foreground_16) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    g_foreground_16 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_16);
-    g_foreground_32 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_32);
+    g_foreground_16 = rb.GetBitmapNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_16);
+    g_foreground_32 = rb.GetBitmapNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_32);
   }
 
-  gfx::ImageSkia* complete = (size == BIG) ? g_foreground_32 : g_foreground_16;
+  SkBitmap* complete = (size == BIG) ? g_foreground_32 : g_foreground_16;
 
   gfx::Rect complete_bounds(origin_x, origin_y,
                             complete->width(), complete->height());
@@ -332,14 +330,14 @@ void PaintDownloadInterrupted(gfx::Canvas* canvas,
                               int origin_y,
                               double animation_progress,
                               PaintDownloadProgressSize size) {
-  // Load up our common images.
+  // Load up our common bitmaps.
   if (!g_foreground_16) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    g_foreground_16 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_16);
-    g_foreground_32 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_32);
+    g_foreground_16 = rb.GetBitmapNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_16);
+    g_foreground_32 = rb.GetBitmapNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_32);
   }
 
-  gfx::ImageSkia* complete = (size == BIG) ? g_foreground_32 : g_foreground_16;
+  SkBitmap* complete = (size == BIG) ? g_foreground_32 : g_foreground_16;
 
   gfx::Rect complete_bounds(origin_x, origin_y,
                             complete->width(), complete->height());

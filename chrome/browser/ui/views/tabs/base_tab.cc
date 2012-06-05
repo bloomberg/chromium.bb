@@ -93,7 +93,7 @@ namespace {
 
 // Draws the icon image at the center of |bounds|.
 void DrawIconCenter(gfx::Canvas* canvas,
-                    const gfx::ImageSkia& image,
+                    const SkBitmap& image,
                     int image_offset,
                     int icon_width,
                     int icon_height,
@@ -422,11 +422,10 @@ void BaseTab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
   if (!initialized) {
     initialized = true;
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    gfx::ImageSkia loading_animation(*rb.GetImageSkiaNamed(IDR_THROBBER));
+    SkBitmap loading_animation(*rb.GetBitmapNamed(IDR_THROBBER));
     loading_animation_frame_count =
         loading_animation.width() / loading_animation.height();
-    gfx::ImageSkia waiting_animation(*rb.GetImageSkiaNamed(
-        IDR_THROBBER_WAITING));
+    SkBitmap waiting_animation(*rb.GetBitmapNamed(IDR_THROBBER_WAITING));
     waiting_animation_frame_count =
         waiting_animation.width() / waiting_animation.height();
     waiting_to_loading_frame_count_ratio =
@@ -461,7 +460,7 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas) {
 
   if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
     ui::ThemeProvider* tp = GetThemeProvider();
-    gfx::ImageSkia frames(*tp->GetImageSkiaNamed(
+    SkBitmap frames(*tp->GetBitmapNamed(
         (data().network_state == TabRendererData::NETWORK_STATE_WAITING) ?
         IDR_THROBBER_WAITING : IDR_THROBBER));
 
@@ -474,7 +473,7 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas) {
     canvas->ClipRect(GetLocalBounds());
     if (should_display_crashed_favicon_) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      gfx::ImageSkia crashed_favicon(*rb.GetImageSkiaNamed(IDR_SAD_FAVICON));
+      SkBitmap crashed_favicon(*rb.GetBitmapNamed(IDR_SAD_FAVICON));
       bounds.set_y(bounds.y() + favicon_hiding_offset_);
       DrawIconCenter(canvas, crashed_favicon, 0,
                      crashed_favicon.width(),

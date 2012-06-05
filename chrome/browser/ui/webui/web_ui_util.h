@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,15 +11,13 @@
 #include "base/values.h"
 #include "webkit/glue/window_open_disposition.h"
 
-namespace gfx {
-class ImageSkia;
-}
+class SkBitmap;
 
 namespace web_ui_util {
 
-// Convenience routine to convert ImageSkia object to data url
+// Convenience routine to convert SkBitmap object to data url
 // so that it can be used in WebUI.
-std::string GetImageDataUrl(const gfx::ImageSkia& image);
+std::string GetImageDataUrl(const SkBitmap& bitmap);
 
 // Convenience routine to get data url that corresponds to given
 // resource_id as an image. This function does not check if the
