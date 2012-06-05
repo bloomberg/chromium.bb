@@ -37,7 +37,7 @@ namespace nacl_arm_dec {
 // change any general purpose registers.
 class DontCareInst : public ClassDecoder {
  public:
-  inline DontCareInst() : ClassDecoder() {}
+  inline DontCareInst() {}
   virtual ~DontCareInst() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -80,7 +80,7 @@ class NoPcAssignClassDecoder : public MaybeSetsConds {
 // track if condition flags are updated.
 class NoPcAssignCondsDontCare : public DontCareInst {
  public:
-  inline NoPcAssignCondsDontCare() : DontCareInst() {}
+  inline NoPcAssignCondsDontCare() {}
   virtual ~NoPcAssignCondsDontCare() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -138,13 +138,98 @@ class Defs12To15RdRnRsRmNotPc
   static const RegSBits8To11Interface s;
   static const RegNBits16To19Interface n;
 
-  inline Defs12To15RdRnRsRmNotPc() : Defs12To15() {}
+  inline Defs12To15RdRnRsRmNotPc() {}
   virtual ~Defs12To15RdRnRsRmNotPc() {}
 
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15RdRnRsRmNotPc);
+};
+
+// Computes a value and stores it in Rd (bits 16-19). Doesn't allow
+// Rd=Pc, and doesn't care about tracking condition flags.
+class Defs16To19CondsDontCare : public NoPcAssignClassDecoder {
+ public:
+  // We use the following Rd to capture the register being set.
+  static const RegDBits16To19Interface d;
+
+  inline Defs16To19CondsDontCare() {}
+  virtual ~Defs16To19CondsDontCare() {}
+
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Defs16To19CondsDontCare);
+};
+
+// Defs16To19CondsDontCare where registers Rd, Rm, and Rn are not Pc.
+class Defs16To19CondsDontCareRdRmRnNotPc : public Defs16To19CondsDontCare {
+ public:
+  // We use the following interfaces to capture the registers used.
+  static const RegNBits0To3Interface n;
+  static const RegMBits8To11Interface m;
+
+  inline Defs16To19CondsDontCareRdRmRnNotPc() {}
+  virtual ~Defs16To19CondsDontCareRdRmRnNotPc() {}
+
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Defs16To19CondsDontCareRdRmRnNotPc);
+};
+
+// Defs16To19CondsDontCare where registers Rd, Ra, Rm, and Rn are not Pc.
+class Defs16To19CondsDontCareRdRaRmRnNotPc : public Defs16To19CondsDontCare {
+ public:
+  // We use the following interfaces to capture the registers used.
+  static const RegNBits0To3Interface n;
+  static const RegMBits8To11Interface m;
+  static const RegABits12To15Interface a;
+
+  inline Defs16To19CondsDontCareRdRaRmRnNotPc() {}
+  virtual ~Defs16To19CondsDontCareRdRaRmRnNotPc() {}
+
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Defs16To19CondsDontCareRdRaRmRnNotPc);
+};
+
+// Computes a value and stores it in Rd_hi(16-19) an Rd_lo(12-15),
+// doesn't allow PC for either, and doesn't care about tracking
+// condition flags. Also doesn't allow Rd_hi == Rd_lo.
+class Defs12To19CondsDontCare : public NoPcAssignClassDecoder {
+ public:
+  // We use the following interfaces to capture the registers being set.
+  static const RegDBits12To15Interface d_lo;
+  static const RegDBits16To19Interface d_hi;
+
+  inline Defs12To19CondsDontCare() {}
+  virtual ~Defs12To19CondsDontCare() {}
+
+  virtual RegisterList defs(Instruction i) const;
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To19CondsDontCare);
+};
+
+// Defs12To19CondsDontCare where registers Rd_hi, Rd_lo, Rm, and Rn
+// are not PC.
+class Defs12To19CondsDontCareRdRmRnNotPc : public Defs12To19CondsDontCare {
+ public:
+  // We use the following interfaces to capture the registers being tested.
+  static const RegNBits0To3Interface n;
+  static const RegMBits8To11Interface m;
+
+  inline Defs12To19CondsDontCareRdRmRnNotPc() {}
+  virtual ~Defs12To19CondsDontCareRdRmRnNotPc() {}
+
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To19CondsDontCareRdRmRnNotPc);
 };
 
 // Defs12To15 where registers Rn(16, 19), Rd(12, 15), and Rm(3, 0)

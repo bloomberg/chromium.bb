@@ -139,10 +139,7 @@ class Arm32DecoderState : DecoderState {
   // for each call to "decode").
   const Binary2RegisterImmediateOp Binary2RegisterImmediateOp_instance_;
   const Binary3RegisterOp Binary3RegisterOp_instance_;
-  const Binary3RegisterOpAltA Binary3RegisterOpAltA_instance_;
   const Binary3RegisterShiftedTest Binary3RegisterShiftedTest_instance_;
-  const Binary4RegisterDualOp Binary4RegisterDualOp_instance_;
-  const Binary4RegisterDualResult Binary4RegisterDualResult_instance_;
   const Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
   const Branch Branch_instance_;
   const Breakpoint Breakpoint_instance_;
@@ -153,6 +150,9 @@ class Arm32DecoderState : DecoderState {
   const Defs12To15CondsDontCare Defs12To15CondsDontCare_instance_;
   const Defs12To15CondsDontCareRnRdRmNotPc Defs12To15CondsDontCareRnRdRmNotPc_instance_;
   const Defs12To15RdRnRsRmNotPc Defs12To15RdRnRsRmNotPc_instance_;
+  const Defs12To19CondsDontCareRdRmRnNotPc Defs12To19CondsDontCareRdRmRnNotPc_instance_;
+  const Defs16To19CondsDontCareRdRaRmRnNotPc Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
+  const Defs16To19CondsDontCareRdRmRnNotPc Defs16To19CondsDontCareRdRmRnNotPc_instance_;
   const Deprecated Deprecated_instance_;
   const DontCareInst DontCareInst_instance_;
   const EffectiveNoOp EffectiveNoOp_instance_;

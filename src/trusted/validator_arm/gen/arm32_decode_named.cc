@@ -587,14 +587,25 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store(
 const NamedClassDecoder& NamedArm32DecoderState::decode_half_mult(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if ((insn.Bits() & 0x00600000) == 0x00400000 /* op1(22:21) == 10 */)
-    return LongMultiply_None_instance_;
+  if ((insn.Bits() & 0x00600000) == 0x00000000 /* op1(22:21) == 00 */ &&
+      true)
+    return Binary4RegisterDualOp_Smlaxx_Rule_166_A1_P330_instance_;
 
-  if ((insn.Bits() & 0x00600000) == 0x00600000 /* op1(22:21) == 11 */)
-    return Multiply_None_instance_;
+  if ((insn.Bits() & 0x00600000) == 0x00200000 /* op1(22:21) == 01 */ &&
+      (insn.Bits() & 0x00000020) == 0x00000000 /* op(5:5) == 0 */)
+    return Binary4RegisterDualOp_Smlawx_Rule_171_A1_340_instance_;
 
-  if ((insn.Bits() & 0x00400000) == 0x00000000 /* op1(22:21) == 0x */)
-    return Multiply_None_instance_;
+  if ((insn.Bits() & 0x00600000) == 0x00200000 /* op1(22:21) == 01 */ &&
+      (insn.Bits() & 0x00000020) == 0x00000020 /* op(5:5) == 1 */)
+    return Binary3RegisterOpAltA_Smulwx_Rule_180_A1_P358_instance_;
+
+  if ((insn.Bits() & 0x00600000) == 0x00400000 /* op1(22:21) == 10 */ &&
+      true)
+    return Binary4RegisterDualResult_Smlalxx_Rule_169_A1_P336_instance_;
+
+  if ((insn.Bits() & 0x00600000) == 0x00600000 /* op1(22:21) == 11 */ &&
+      true)
+    return Binary3RegisterOpAltA_Smulxx_Rule_178_P354_instance_;
 
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: half_mult could not parse %08X",

@@ -17,10 +17,7 @@ namespace nacl_arm_dec {
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Binary2RegisterImmediateOp_instance_()
   , Binary3RegisterOp_instance_()
-  , Binary3RegisterOpAltA_instance_()
   , Binary3RegisterShiftedTest_instance_()
-  , Binary4RegisterDualOp_instance_()
-  , Binary4RegisterDualResult_instance_()
   , Binary4RegisterShiftedOp_instance_()
   , Branch_instance_()
   , Breakpoint_instance_()
@@ -31,6 +28,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Defs12To15CondsDontCare_instance_()
   , Defs12To15CondsDontCareRnRdRmNotPc_instance_()
   , Defs12To15RdRnRsRmNotPc_instance_()
+  , Defs12To19CondsDontCareRdRmRnNotPc_instance_()
+  , Defs16To19CondsDontCareRdRaRmRnNotPc_instance_()
+  , Defs16To19CondsDontCareRdRmRnNotPc_instance_()
   , Deprecated_instance_()
   , DontCareInst_instance_()
   , EffectiveNoOp_instance_()
@@ -433,14 +433,25 @@ const ClassDecoder& Arm32DecoderState::decode_half_mult(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
-  if ((insn.Bits() & 0x00600000) == 0x00400000 /* op1(22:21) == 10 */)
-    return LongMultiply_instance_;
+  if ((insn.Bits() & 0x00600000) == 0x00000000 /* op1(22:21) == 00 */ &&
+      true)
+    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
 
-  if ((insn.Bits() & 0x00600000) == 0x00600000 /* op1(22:21) == 11 */)
-    return Multiply_instance_;
+  if ((insn.Bits() & 0x00600000) == 0x00200000 /* op1(22:21) == 01 */ &&
+      (insn.Bits() & 0x00000020) == 0x00000000 /* op(5:5) == 0 */)
+    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
 
-  if ((insn.Bits() & 0x00400000) == 0x00000000 /* op1(22:21) == 0x */)
-    return Multiply_instance_;
+  if ((insn.Bits() & 0x00600000) == 0x00200000 /* op1(22:21) == 01 */ &&
+      (insn.Bits() & 0x00000020) == 0x00000020 /* op(5:5) == 1 */)
+    return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
+
+  if ((insn.Bits() & 0x00600000) == 0x00400000 /* op1(22:21) == 10 */ &&
+      true)
+    return Defs12To19CondsDontCareRdRmRnNotPc_instance_;
+
+  if ((insn.Bits() & 0x00600000) == 0x00600000 /* op1(22:21) == 11 */ &&
+      true)
+    return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
 
   // Catch any attempt to fall though ...
   fprintf(stderr, "TABLE IS INCOMPLETE: half_mult could not parse %08X",
@@ -822,22 +833,22 @@ const ClassDecoder& Arm32DecoderState::decode_mult(
 {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00F00000) == 0x00400000 /* op(23:20) == 0100 */)
-    return Binary4RegisterDualResult_instance_;
+    return Defs12To19CondsDontCareRdRmRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00F00000) == 0x00600000 /* op(23:20) == 0110 */)
-    return Binary4RegisterDualOp_instance_;
+    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00D00000) == 0x00500000 /* op(23:20) == 01x1 */)
     return Undefined_instance_;
 
   if ((insn.Bits() & 0x00E00000) == 0x00000000 /* op(23:20) == 000x */)
-    return Binary3RegisterOpAltA_instance_;
+    return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00E00000) == 0x00200000 /* op(23:20) == 001x */)
-    return Binary4RegisterDualOp_instance_;
+    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00800000) == 0x00800000 /* op(23:20) == 1xxx */)
-    return Binary4RegisterDualResult_instance_;
+    return Defs12To19CondsDontCareRdRmRnNotPc_instance_;
 
   // Catch any attempt to fall though ...
   fprintf(stderr, "TABLE IS INCOMPLETE: mult could not parse %08X",
