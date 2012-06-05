@@ -10,9 +10,9 @@
 
 /* Default state **************************************************************/
 
-button:not(.custom-appearance):not(.link-button),
-input[type='button']:not(.custom-appearance):not(.link-button),
-input[type='submit']:not(.custom-appearance):not(.link-button),
+:-webkit-any(button,
+             input[type='button'],
+             input[type='submit']):not(.custom-appearance):not(.link-button),
 select,
 input[type='checkbox'],
 input[type='radio'] {
@@ -29,9 +29,9 @@ input[type='radio'] {
   text-shadow: 0 1px 0 rgb(240, 240, 240);
 }
 
-button:not(.custom-appearance):not(.link-button),
-input[type='button']:not(.custom-appearance):not(.link-button),
-input[type='submit']:not(.custom-appearance):not(.link-button),
+:-webkit-any(button,
+             input[type='button'],
+             input[type='submit']):not(.custom-appearance):not(.link-button),
 select {
   min-height: 2em;
   min-width: 4em;
@@ -47,9 +47,9 @@ select {
 </if>
 }
 
-button:not(.custom-appearance):not(.link-button),
-input[type='button']:not(.custom-appearance):not(.link-button),
-input[type='submit']:not(.custom-appearance):not(.link-button) {
+:-webkit-any(button,
+             input[type='button'],
+             input[type='submit']):not(.custom-appearance):not(.link-button) {
   -webkit-padding-end: 10px;
   -webkit-padding-start: 10px;
 }
@@ -150,12 +150,14 @@ input[type='radio']:checked::before {
 
 /* Hover **********************************************************************/
 
-button:not(.custom-appearance):not(.link-button):enabled:hover,
-input[type='button']:not(.custom-appearance):not(.link-button):enabled:hover,
-input[type='submit']:not(.custom-appearance):not(.link-button):enabled:hover,
-select:enabled:hover,
-input[type='checkbox']:enabled:hover,
-input[type='radio']:enabled:hover {
+:enabled:hover:-webkit-any(
+    select,
+    input[type='checkbox'],
+    input[type='radio'],
+    :-webkit-any(
+        button,
+        input[type='button'],
+        input[type='submit']):not(.custom-appearance):not(.link-button)) {
   background-image: -webkit-linear-gradient(#f0f0f0, #f0f0f0 38%, #e0e0e0);
   border-color: rgba(0, 0, 0, 0.3);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12),
@@ -163,7 +165,7 @@ input[type='radio']:enabled:hover {
   color: black;
 }
 
-select:enabled:hover {
+:enabled:hover:-webkit-any(select) {
   /* OVERRIDE */
   background-image: url('../images/select.png'),
       -webkit-linear-gradient(#f0f0f0, #f0f0f0 38%, #e0e0e0);
@@ -171,18 +173,20 @@ select:enabled:hover {
 
 /* Active *********************************************************************/
 
-button:not(.custom-appearance):not(.link-button):enabled:active,
-input[type='button']:not(.custom-appearance):not(.link-button):enabled:active,
-input[type='submit']:not(.custom-appearance):not(.link-button):enabled:active,
-select:enabled:active,
-input[type='checkbox']:enabled:active,
-input[type='radio']:enabled:active {
+:enabled:active:-webkit-any(
+    select,
+    input[type='checkbox'],
+    input[type='radio'],
+    :-webkit-any(
+        button,
+        input[type='button'],
+        input[type='submit']):not(.custom-appearance):not(.link-button)) {
   background-image: -webkit-linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
   box-shadow: none;
   text-shadow: none;
 }
 
-select:enabled:active {
+:enabled:active:-webkit-any(select) {
   /* OVERRIDE */
   background-image: url('../images/select.png'),
       -webkit-linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
@@ -190,9 +194,10 @@ select:enabled:active {
 
 /* Disabled *******************************************************************/
 
-button:not(.custom-appearance):not(.link-button):disabled,
-input[type='button']:not(.custom-appearance):not(.link-button):disabled,
-input[type='submit']:not(.custom-appearance):not(.link-button):disabled,
+:disabled:-webkit-any(
+    button,
+    input[type='button'],
+    input[type='submit']):not(.custom-appearance):not(.link-button),
 select:disabled {
   background-image: -webkit-linear-gradient(#f1f1f1, #f1f1f1 38%, #e6e6e6);
   border-color: rgba(80, 80, 80, 0.2);
@@ -202,36 +207,39 @@ select:disabled {
 }
 
 select:disabled {
+  /* OVERRIDE */
   background-image: url('../images/disabled_select.png'),
       -webkit-linear-gradient(#f1f1f1, #f1f1f1 38%, #e6e6e6);
 }
 
-input[type='checkbox']:disabled,
-input[type='radio']:disabled {
+input:disabled:-webkit-any([type='checkbox'],
+                           [type='radio']) {
   opacity: .75;
 }
 
-input[type='password']:disabled,
-input[type='search']:disabled,
-input[type='text']:disabled,
-input[type='url']:disabled,
-input:not([type]):disabled {
+input:disabled:-webkit-any([type='password'],
+                           [type='search'],
+                           [type='text'],
+                           [type='url'],
+                           :not([type])) {
   color: #999;
 }
 
 /* Focus **********************************************************************/
 
-button:not(.custom-appearance):not(.link-button):enabled:focus,
-input[type='button']:not(.custom-appearance):enabled:focus,
-input[type='checkbox']:enabled:focus,
-input[type='password']:enabled:focus,
-input[type='radio']:enabled:focus,
-input[type='search']:enabled:focus,
-input[type='submit']:not(.custom-appearance):enabled:focus,
-input[type='text']:enabled:focus,
-input[type='url']:enabled:focus,
-input:not([type]):enabled:focus,
-select:enabled:focus {
+:enabled:focus:-webkit-any(
+    select,
+    input[type='checkbox'],
+    input[type='password'],
+    input[type='radio'],
+    input[type='search'],
+    input[type='text'],
+    input[type='url'],
+    input:not([type]),
+    :-webkit-any(
+         button,
+         input[type='button'],
+         input[type='submit']):not(.custom-appearance):not(.link-button)) {
   /* OVERRIDE */
   -webkit-transition: border-color 200ms;
   /* We use border color because it follows the border radius (unlike outline).
@@ -288,25 +296,21 @@ select:enabled:focus {
   margin: 0.65em 0;
 }
 
-.checkbox label,
-.radio label {
+:-webkit-any(.checkbox, .radio) label {
   /* Don't expand horizontally: <http://crbug.com/112091>. */
   display: -webkit-inline-box;
 }
 
-.checkbox label input ~ span,
-.radio label input ~ span {
+:-webkit-any(.checkbox, .radio) label input ~ span {
   -webkit-margin-start: 0.6em;
   /* Make sure long spans wrap at the same horizontal position they start. */
   display: block;
 }
 
-.checkbox label:hover,
-.radio label:hover {
+:-webkit-any(.checkbox, .radio) label:hover {
   color: black;
 }
 
-label > input[type=checkbox]:disabled ~ span,
-label > input[type=radio]:disabled ~ span {
+label > input:disabled:-webkit-any([type='checkbox'], [type='radio']) ~ span {
   color: #999;
 }
