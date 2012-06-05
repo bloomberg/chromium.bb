@@ -50,7 +50,7 @@ void RequestSurroundingText(PP_Instance instance) {
 
   // Just fake out a RequestSurroundingText message to the proxy for the PPP
   // interface.
-  InterfaceProxy* proxy = dispatcher->GetInterfaceProxy(API_ID_PPB_TEXT_INPUT);
+  InterfaceProxy* proxy = dispatcher->GetInterfaceProxy(API_ID_PPP_TEXT_INPUT);
   if (!proxy)
     return;
   proxy->OnMessageReceived(PpapiMsg_PPPTextInput_RequestSurroundingText(
