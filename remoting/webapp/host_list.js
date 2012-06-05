@@ -91,12 +91,10 @@ remoting.HostList.prototype.refresh = function(onDone) {
   /** @param {string?} token The OAuth2 token. */
   var getHosts = function(token) {
     if (token) {
-      // TODO(simonmorris): Pass the access token in a header, not a URL
-      // parameter, when crbug.com/116574 has a better fix.
-      var params = { 'access_token': token };
+      var headers = { 'Authorization': 'OAuth ' + token };
       remoting.xhr.get(
           'https://www.googleapis.com/chromoting/v1/@me/hosts',
-          parseHostListResponse, params);
+          parseHostListResponse, '', headers);
     } else {
       that.lastError_ = remoting.Error.AUTHENTICATION_FAILED;
       onDone(false);
