@@ -115,8 +115,6 @@
       '-policy.PolicyTest.testAlwaysAuthorizePlugins',
       # crbug.com/118054
       '-policy.PolicyTest.testApplicationLocaleValue',
-      # crbug.com/103379
-      '-policy.PolicyTest.testDisable3DAPIs',
       # crbug.com/96896
       '-policy.PolicyTest.testEnabledPlugins',
       # crbug.com/118123
@@ -155,6 +153,8 @@
       '-omnibox.OmniboxTest.testIncognitoAppSearchWithVeryLongAppName',
       # crbug.com/117569
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
+      # crbug.com/103379
+      '-policy.PolicyTest.testDisable3DAPIs',
       # crbug.com/104227
       '-sync.SyncIntegrationTest',
       # crbug.com/88679
@@ -174,9 +174,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/117317
-      '-policy',
-      '-policy_prefs_ui',
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-autofill',
       # Autofill on Mac. crbug.com/95165
@@ -258,6 +255,8 @@
       '-instant',
       # crbug.com/91033
       '-omnibox.OmniboxTest.testOmniboxSearchHistory',
+      # crbug.com/103379
+      '-policy.PolicyTest.testDisable3DAPIs',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
       '-sync',
       # crbug.com/66072
