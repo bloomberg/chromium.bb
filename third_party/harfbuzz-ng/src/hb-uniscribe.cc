@@ -223,11 +223,10 @@ hb_uniscribe_font_get_hfont (hb_font_t *font)
 
 
 hb_bool_t
-hb_uniscribe_shape (hb_font_t          *font,
-		    hb_buffer_t        *buffer,
-		    const hb_feature_t *features,
-		    unsigned int        num_features,
-		    const char * const *shaper_options)
+_hb_uniscribe_shape (hb_font_t          *font,
+		     hb_buffer_t        *buffer,
+		     const hb_feature_t *features,
+		     unsigned int        num_features)
 {
   buffer->guess_properties ();
 
@@ -359,6 +358,9 @@ retry:
 				glyphs + glyphs_offset,
 				glyph_props + glyphs_offset,
 				(int *) &glyphs_len);
+
+      for (unsigned int j = chars_offset; j < chars_offset + item_chars_len; j++)
+        log_clusters[j] += glyphs_offset;
 
       if (unlikely (items[i].a.fNoGlyphIndex))
 	FAIL ("ScriptShapeOpenType() set fNoGlyphIndex");
