@@ -131,6 +131,8 @@
       '-sync.SyncTest.testPersonalStuffSyncSection',
       # crbug.com/95140
       '-translate.TranslateTest.testGoBackAndForwardToTranslatePage',
+      # crbug.com/124913
+      '-infobars.OneClickInfobarTest.testNoSameIDSigninForTwoProfiles',
     ],
 
     'win': [
@@ -189,8 +191,6 @@
       '-fullscreen_mouselock.FullscreenMouselockTest.testNoMouseLockWhenCancelFS',
       # crbug.com/114244
       '-imports.ImportsTest.testImportSafariDataTwice',
-      # Test fails due to keychain popup: crbug.com/124913
-      '-infobars.OneClickInfobarTest.testNoSameIDSigninForTwoProfiles',
       # crbug.com/121484
       '-multiprofile.MultiprofileTest.test20NewProfiles',
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
