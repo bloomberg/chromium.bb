@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,7 +116,8 @@ void TestScrollBy() {
 void TestSetTickMarks() {
   PP_Resource scrollbar = PPBScrollbarDev()->Create(pp_instance(),
                                                     kVertical);
-  uint32_t thickness = PPBScrollbarDev()->GetThickness(scrollbar);
+  // GetThickness returns uint32_t, but PP_Rect initializers must be int32_t.
+  int32_t thickness = PPBScrollbarDev()->GetThickness(scrollbar);
   const int32_t kCount = 2;
   PP_Rect tick_marks[kCount] = {
       { {0, 0}, {thickness, 1} },
@@ -142,4 +143,3 @@ void SetupTests() {
 
 void SetupPluginInterfaces() {
 }
-
