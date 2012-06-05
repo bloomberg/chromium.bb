@@ -27,8 +27,7 @@ aura::Window* GetContainerForWindow(aura::Window* window) {
 }
 
 bool IsSystemModal(aura::Window* window) {
-  return window->transient_parent() &&
-      window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM;
+  return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM;
 }
 
 bool IsWindowModal(aura::Window* window) {
