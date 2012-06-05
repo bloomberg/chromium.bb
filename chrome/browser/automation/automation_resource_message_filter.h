@@ -148,8 +148,6 @@ class AutomationResourceMessageFilter
       AutomationResourceMessageFilter* filter);
 
  private:
-  void OnSetFilteredInet(bool enable);
-
   // Resumes pending jobs from the old AutomationResourceMessageFilter instance
   // passed in.
   static void ResumeJobsForPendingView(

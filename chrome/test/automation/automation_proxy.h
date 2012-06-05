@@ -145,10 +145,6 @@ class AutomationProxy : public IPC::Channel::Listener,
   // On failure, returns NULL.
   scoped_refptr<WindowProxy> GetActiveWindow();
 
-  // Tells the browser to enable or disable network request filtering.  Returns
-  // false if the message fails to send to the browser.
-  bool SetFilteredInet(bool enabled) WARN_UNUSED_RESULT;
-
   // Sends the browser a new proxy configuration to start using. Returns true
   // if the proxy config was successfully sent, false otherwise.
   bool SendProxyConfig(const std::string& new_proxy_config) WARN_UNUSED_RESULT;

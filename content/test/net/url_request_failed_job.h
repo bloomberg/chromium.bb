@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_job.h"
 
@@ -23,13 +22,13 @@ class URLRequestFailedJob : public net::URLRequestJob {
   virtual void Start() OVERRIDE;
 
   // Adds the testing URLs to the net::URLRequestFilter.
-  CONTENT_EXPORT static void AddUrlHandler();
+  static void AddUrlHandler();
 
   // Given a net error code, constructs a mock URL that will return that error
   // asynchronously when started.  |net_error| must be a valid net error code
   // other than net::OK and net::ERR_IO_PENDING.
-  CONTENT_EXPORT static GURL GetMockHttpUrl(int net_error);
-  CONTENT_EXPORT static GURL GetMockHttpsUrl(int net_error);
+  static GURL GetMockHttpUrl(int net_error);
+  static GURL GetMockHttpsUrl(int net_error);
 
  private:
   static net::URLRequestJob* Factory(net::URLRequest* request,

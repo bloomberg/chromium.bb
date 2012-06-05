@@ -299,10 +299,6 @@ bool AutomationProxy::GetMetricEventDuration(const std::string& event_name,
                                                        duration_ms));
 }
 
-bool AutomationProxy::SetFilteredInet(bool enabled) {
-  return Send(new AutomationMsg_SetFilteredInet(enabled));
-}
-
 bool AutomationProxy::SendProxyConfig(const std::string& new_proxy_config) {
   return Send(new AutomationMsg_SetProxyConfig(new_proxy_config));
 }

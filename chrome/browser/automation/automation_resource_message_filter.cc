@@ -145,8 +145,6 @@ bool AutomationResourceMessageFilter::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP_EX(AutomationResourceMessageFilter,
                            message,
                            deserialize_success)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetFilteredInet,
-                        OnSetFilteredInet)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetCookiesHostResponse,
                         OnGetCookiesHostResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -375,10 +373,6 @@ bool AutomationResourceMessageFilter::SendDownloadRequestToHost(
 
   return Send(new AutomationMsg_DownloadRequestInHost(tab_handle,
                                                       automation_request_id));
-}
-
-void AutomationResourceMessageFilter::OnSetFilteredInet(bool enable) {
-  //chrome_browser_net::SetUrlRequestMocksEnabled(enable);
 }
 
 bool AutomationResourceMessageFilter::ShouldFilterCookieMessages(

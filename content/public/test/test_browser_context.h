@@ -54,6 +54,6 @@ class TestBrowserContext : public BrowserContext {
   DISALLOW_COPY_AND_ASSIGN(TestBrowserContext);
 };
 
-}
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_TEST_BROWSER_CONTEXT_H_

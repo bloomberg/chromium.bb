@@ -242,7 +242,6 @@ class AutomationProvider
                           bool press_escape_en_route,
                           IPC::Message* reply_message);
   void HandleUnused(const IPC::Message& message, int handle);
-  void SetFilteredInet(const IPC::Message& message, bool enabled);
   void GetFilteredInetHitCount(int* hit_count);
   void SetProxyConfig(const std::string& new_proxy_config);
 

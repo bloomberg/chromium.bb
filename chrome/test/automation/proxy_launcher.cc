@@ -123,11 +123,6 @@ bool ProxyLauncher::WaitForBrowserLaunch(bool wait_for_initial_loads) {
 #endif
   }
 
-  if (!automation()->SetFilteredInet(ShouldFilterInet())) {
-    LOG(ERROR) << "SetFilteredInet failed.";
-    return false;
-  }
-
   return true;
 }
 
@@ -227,8 +222,6 @@ void ProxyLauncher::QuitBrowser() {
 
   base::TimeTicks quit_start = base::TimeTicks::Now();
 
-  EXPECT_TRUE(automation()->SetFilteredInet(false));
-
   if (WINDOW_CLOSE == shutdown_type_) {
     int window_count = 0;
     EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
@@ -292,7 +285,6 @@ void ProxyLauncher::TerminateBrowser() {
 
   base::TimeTicks quit_start = base::TimeTicks::Now();
 
-  EXPECT_TRUE(automation()->SetFilteredInet(false));
 #if defined(OS_WIN) && !defined(USE_AURA)
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());

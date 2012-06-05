@@ -10,12 +10,11 @@
 
 #include <string>
 
-#include "content/common/content_export.h"
 #include "net/url_request/url_request_file_job.h"
 
 class FilePath;
 
-class CONTENT_EXPORT URLRequestMockHTTPJob : public net::URLRequestFileJob {
+class URLRequestMockHTTPJob : public net::URLRequestFileJob {
  public:
   URLRequestMockHTTPJob(net::URLRequest* request, const FilePath& file_path);
 

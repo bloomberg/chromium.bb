@@ -253,13 +253,9 @@ IPC::Message* BackwardsCompatAutomationMessageFilter::Rewrite(
   // If we're not using an old version, don't rewrite the message.
   if (!old_version_)
     return message;
-  const uint32 kOldSetFilteredInetType = 287,
-               kOldSendJSONRequestType = 1301;
+  const uint32 kOldSendJSONRequestType = 1301;
   int type = -1;
   switch (message->type()) {
-    case AutomationMsg_SetFilteredInet::ID:
-      type = kOldSetFilteredInetType;
-      break;
     case AutomationMsg_SendJSONRequest::ID:
       type = kOldSendJSONRequestType;
       break;

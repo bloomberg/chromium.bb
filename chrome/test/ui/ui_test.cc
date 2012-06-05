@@ -163,10 +163,6 @@ ProxyLauncher::LaunchState UITestBase::DefaultLaunchState() {
   return state;
 }
 
-bool UITestBase::ShouldFilterInet() {
-  return true;
-}
-
 void UITestBase::SetLaunchSwitches() {
   // All flags added here should also be added in ExtraChromeFlags() in
   // chrome/test/pyautolib/pyauto.py as well to take effect for all tests

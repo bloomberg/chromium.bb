@@ -15,19 +15,18 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/content_export.h"
 #include "net/url_request/url_request_job.h"
 
 class URLRequestSlowDownloadJob : public net::URLRequestJob {
  public:
   // Test URLs.
-  CONTENT_EXPORT static const char kUnknownSizeUrl[];
-  CONTENT_EXPORT static const char kKnownSizeUrl[];
-  CONTENT_EXPORT static const char kFinishDownloadUrl[];
+  static const char kUnknownSizeUrl[];
+  static const char kKnownSizeUrl[];
+  static const char kFinishDownloadUrl[];
 
   // Download sizes.
-  CONTENT_EXPORT static const int kFirstDownloadSize;
-  CONTENT_EXPORT static const int kSecondDownloadSize;
+  static const int kFirstDownloadSize;
+  static const int kSecondDownloadSize;
 
   // Timer callback, used to check to see if we should finish our download and
   // send the second chunk.
@@ -46,10 +45,10 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
 
   // Returns the current number of URLRequestSlowDownloadJobs that have
   // not yet completed.
-  CONTENT_EXPORT static size_t NumberOutstandingRequests();
+  static size_t NumberOutstandingRequests();
 
   // Adds the testing URLs to the net::URLRequestFilter.
-  CONTENT_EXPORT static void AddUrlHandler();
+  static void AddUrlHandler();
 
  private:
   explicit URLRequestSlowDownloadJob(net::URLRequest* request);

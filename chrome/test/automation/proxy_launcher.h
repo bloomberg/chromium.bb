@@ -144,10 +144,6 @@ class ProxyLauncher {
   // Disconnects the testing IPC from the browser.
   void DisconnectFromRunningBrowser();
 
-  virtual bool ShouldFilterInet() {
-    return true;
-  }
-
  private:
   bool WaitForBrowserLaunch(bool wait_for_initial_loads) WARN_UNUSED_RESULT;
 

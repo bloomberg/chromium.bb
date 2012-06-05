@@ -1433,12 +1433,6 @@
         'browser/net/url_fixer_upper.h',
         'browser/net/url_info.cc',
         'browser/net/url_info.h',
-        # TODO:  These should be moved to test_support (see below), but
-        # are currently used by production code in automation_provider.cc.
-        'browser/net/url_request_mock_link_doctor_job.cc',
-        'browser/net/url_request_mock_link_doctor_job.h',
-        'browser/net/url_request_mock_util.cc',
-        'browser/net/url_request_mock_util.h',
         'browser/notifications/balloon.cc',
         'browser/notifications/balloon.h',
         'browser/notifications/balloon_collection.cc',

@@ -214,7 +214,7 @@ IPC_MESSAGE_CONTROL1(AutomationMsg_InitialNewTabUILoadComplete,
                     int /* time */)
 
 // This tells the browser to enable or disable the filtered network layer.
-IPC_MESSAGE_CONTROL1(AutomationMsg_SetFilteredInet,
+IPC_MESSAGE_CONTROL1(AutomationMsg_DEPRECATED_SetFilteredInet,
                      bool /* enabled */)
 
 // Gets the directory that downloads will occur in for the active profile.
