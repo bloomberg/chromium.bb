@@ -97,6 +97,10 @@ class TraceInputsBase(unittest.TestCase):
       cmd.extend([os.path.join('data', 'trace_inputs', 'child1.py'), '--child'])
     return cmd
 
+  @staticmethod
+  def _size(*args):
+    return os.stat(os.path.join(ROOT_DIR, *args)).st_size
+
 
 class TraceInputs(TraceInputsBase):
   def _execute(self, mode, command, cwd):
@@ -147,10 +151,6 @@ class TraceInputs(TraceInputsBase):
     actual = self._execute('read', ['--root-dir', ROOT_DIR], cwd=ROOT_DIR)
     self.assertEquals(expected, actual)
     self.assertEquals(trace_expected, trace_actual)
-
-  @staticmethod
-  def _size(*args):
-    return os.stat(os.path.join(ROOT_DIR, *args)).st_size
 
   def test_trace_json(self):
     expected = {
@@ -260,8 +260,6 @@ class TraceInputsImport(TraceInputsBase):
     self.assertEquals([], simplified)
 
   def test_trace(self):
-    size_t_i_s = os.stat(FULLNAME).st_size
-    size_t_i = os.stat(os.path.join(ROOT_DIR, 'trace_inputs.py')).st_size
     expected = {
       'root': {
         'children': [
@@ -272,11 +270,11 @@ class TraceInputsImport(TraceInputsBase):
             'files': [
               {
                 'path': os.path.join(u'data', 'trace_inputs', 'child2.py'),
-                'size': 776,
+                'size': self._size('data', 'trace_inputs', 'child2.py'),
               },
               {
                 'path': os.path.join(u'data', 'trace_inputs', 'test_file.txt'),
-                'size': 4,
+                'size': self._size('data', 'trace_inputs', 'test_file.txt'),
               },
             ],
             'initial_cwd': self.initial_cwd,
@@ -291,15 +289,15 @@ class TraceInputsImport(TraceInputsBase):
         'files': [
           {
             'path': os.path.join(u'data', 'trace_inputs', 'child1.py'),
-            'size': 1364,
+            'size': self._size('data', 'trace_inputs', 'child1.py'),
           },
           {
             'path': u'trace_inputs.py',
-            'size': size_t_i,
+            'size': self._size('trace_inputs.py'),
           },
           {
             'path': u'trace_inputs_smoke_test.py',
-            'size': size_t_i_s,
+            'size': self._size('trace_inputs_smoke_test.py'),
           },
         ],
         'initial_cwd': self.initial_cwd,
