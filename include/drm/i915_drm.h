@@ -33,6 +33,7 @@
  * subject to backwards-compatibility constraints.
  */
 
+
 /* Each region is a minimum of 16k, and there are at most 255 of them.
  */
 #define I915_NR_TEX_REGIONS 255	/* table size 2k - maximum due to use
@@ -287,7 +288,8 @@ typedef struct drm_i915_irq_wait {
 #define I915_PARAM_HAS_EXEC_CONSTANTS	 14
 #define I915_PARAM_HAS_RELAXED_DELTA	 15
 #define I915_PARAM_HAS_GEN7_SOL_RESET	 16
-#define I915_PARAM_HAS_LLC		 17
+#define I915_PARAM_HAS_LLC     	 	 17
+#define I915_PARAM_HAS_ALIASING_PPGTT	 18
 
 typedef struct drm_i915_getparam {
 	int param;
