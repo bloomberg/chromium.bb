@@ -123,12 +123,6 @@ chromeos::CellularNetwork* GetCellularNetwork() {
   return NULL;
 }
 
-chromeos::CellularNetwork* GetCellularNetwork(
-    const std::string& service_path) {
-  return chromeos::CrosLibrary::Get()->
-      GetNetworkLibrary()->FindCellularNetworkByPath(service_path);
-}
-
 }  // namespace
 
 // Observes IPC messages from the rederer and notifies JS if frame loading error
@@ -294,6 +288,10 @@ class MobileSetupHandler
   bool ConnectionTimeout();
   // Verify the state of cellular network and modify internal state.
   void EvaluateCellularNetwork(chromeos::CellularNetwork* network);
+  // Finds cellular network given device |meid|, reattach network change
+  // observer if |reattach_observer| flag is set.
+  chromeos::CellularNetwork* FindCellularNetworkByMeid(const std::string& meid,
+                                                       bool reattach_observer);
   // Check the current cellular network for error conditions.
   bool GotActivationError(chromeos::CellularNetwork* network,
                           std::string* error);
@@ -337,6 +335,7 @@ class MobileSetupHandler
   scoped_refptr<CellularConfigDocument> cellular_config_;
   // Internal handler state.
   PlanActivationState state_;
+  std::string meid_;
   std::string service_path_;
   // Flags that control if wifi and ethernet connection needs to be restored
   // after the activation of cellular network.
@@ -449,7 +448,10 @@ MobileSetupUIHTMLSource::MobileSetupUIHTMLSource(
 void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
                                                bool is_incognito,
                                                int request_id) {
-  chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
+  chromeos::CellularNetwork* network =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+          FindCellularNetworkByPath(service_path_);
+
   // If we are activating, shutting down, or logging in, |network| may not
   // be available.
   if (!network || !network->SupportsActivation()) {
@@ -541,7 +543,7 @@ void MobileSetupHandler::OnNetworkManagerChanged(
   // reappeared after disappearing earlier in the activation
   // process, there's no need to re-establish the NetworkObserver,
   // because the service path remains the same.
-  EvaluateCellularNetwork(GetCellularNetwork(service_path_));
+  EvaluateCellularNetwork(FindCellularNetworkByMeid(meid_, true));
 }
 
 void MobileSetupHandler::OnNetworkChanged(chromeos::NetworkLibrary* cros,
@@ -549,7 +551,9 @@ void MobileSetupHandler::OnNetworkChanged(chromeos::NetworkLibrary* cros,
   if (state_ == PLAN_ACTIVATION_PAGE_LOADING)
     return;
   DCHECK(network && network->type() == chromeos::TYPE_CELLULAR);
-  EvaluateCellularNetwork(GetCellularNetwork(network->service_path()));
+  EvaluateCellularNetwork(
+      static_cast<chromeos::CellularNetwork*>(
+          const_cast<chromeos::Network*>(network)));
 }
 
 void MobileSetupHandler::HandleStartActivation(const ListValue* args) {
@@ -580,7 +584,7 @@ void MobileSetupHandler::HandlePaymentPortalLoad(const ListValue* args) {
   std::string result;
   if (!args->GetString(0, &result))
     return;
-  chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
+  chromeos::CellularNetwork* network = FindCellularNetworkByMeid(meid_, true);
   if (!network) {
     ChangeState(NULL, PLAN_ACTIVATION_ERROR,
                 GetErrorMessage(kErrorNoService));
@@ -608,12 +612,36 @@ void MobileSetupHandler::HandlePaymentPortalLoad(const ListValue* args) {
   }
 }
 
+chromeos::CellularNetwork* MobileSetupHandler::FindCellularNetworkByMeid(
+    const std::string& meid, bool reattach_observer) {
+  chromeos::NetworkLibrary* lib =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  for (chromeos::CellularNetworkVector::const_iterator it =
+           lib->cellular_networks().begin();
+       it != lib->cellular_networks().end(); ++it) {
+    const chromeos::NetworkDevice* device =
+        lib->FindNetworkDeviceByPath((*it)->device_path());
+    if (device && meid == device->meid()) {
+      chromeos::CellularNetwork* network = *it;
+      // If service path has changed, reattach the event observer for this
+      // network service.
+      if (reattach_observer && service_path_ != network->service_path()) {
+        lib->RemoveObserverForAllNetworks(this);
+        lib->AddNetworkObserver(network->service_path(), this);
+        service_path_ = network->service_path();
+      }
+      return network;
+    }
+  }
+  return NULL;
+}
+
 void MobileSetupHandler::StartActivation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UMA_HISTOGRAM_COUNTS("Cellular.MobileSetupStart", 1);
   chromeos::NetworkLibrary* lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
+  chromeos::CellularNetwork* network = FindCellularNetworkByMeid(meid_, true);
   // Check if we can start activation process.
   if (!network || already_running_) {
     std::string error;
@@ -648,7 +676,7 @@ void MobileSetupHandler::RetryOTASP() {
 
 void MobileSetupHandler::ContinueConnecting(int delay) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
+  chromeos::CellularNetwork* network = FindCellularNetworkByMeid(meid_, true);
   if (network && network->connecting_or_connected()) {
     EvaluateCellularNetwork(network);
   } else {
@@ -674,7 +702,7 @@ void MobileSetupHandler::SetTransactionStatus(const std::string& status) {
 
 void MobileSetupHandler::StartOTASP() {
   state_ = PLAN_ACTIVATION_START_OTASP;
-  chromeos::CellularNetwork* network = GetCellularNetwork();
+  chromeos::CellularNetwork* network = FindCellularNetworkByMeid(meid_, true);
   if (network &&
       network->connected() &&
       network->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATED) {
@@ -693,7 +721,7 @@ void MobileSetupHandler::ReconnectTimerFired() {
       state_ != PLAN_ACTIVATION_RECONNECTING_PAYMENT &&
       state_ != PLAN_ACTIVATION_RECONNECTING_OTASP)
     return;
-  chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
+  chromeos::CellularNetwork* network = FindCellularNetworkByMeid(meid_, true);
   if (!network) {
     // No service, try again since this is probably just transient condition.
     LOG(WARNING) << "Service not present at reconnect attempt.";
@@ -1388,10 +1416,25 @@ std::string MobileSetupHandler::GetErrorMessage(const std::string& code) {
 
 void MobileSetupHandler::StartActivationOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
-  if (!network || !network->SupportsActivation())
-    return;
+  chromeos::NetworkLibrary* lib =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
 
+  chromeos::CellularNetwork* network =
+      lib->FindCellularNetworkByPath(service_path_);
+
+  if (!network || !network->SupportsActivation()) {
+    LOG(ERROR) << "Cellular service can't be found: " << service_path_;
+    return;
+  }
+
+  const chromeos::NetworkDevice* device =
+      lib->FindNetworkDeviceByPath(network->device_path());
+  if (!device) {
+    LOG(ERROR) << "Cellular device can't be found: " << network->device_path();
+    return;
+  }
+
+  meid_ = device->meid();
   if (!chromeos::CrosLibrary::Get()->GetNetworkLibrary()->IsLocked())
     SetupActivationProcess(network);
   else
