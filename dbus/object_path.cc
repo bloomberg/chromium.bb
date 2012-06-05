@@ -4,7 +4,13 @@
 
 #include "dbus/object_path.h"
 
+#include "dbus/string_util.h"
+
 namespace dbus {
+
+bool ObjectPath::IsValid() const {
+  return IsValidObjectPath(value_);
+}
 
 bool ObjectPath::operator<(const ObjectPath& that) const {
   return value_ < that.value_;

@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "dbus/object_path.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
@@ -482,6 +483,8 @@ void MessageWriter::AppendDouble(double value) {
 }
 
 void MessageWriter::AppendString(const std::string& value) {
+  // D-Bus Specification (0.19) says a string "must be valid UTF-8".
+  CHECK(IsStringUTF8(value));
   const char* pointer = value.c_str();
   AppendBasic(DBUS_TYPE_STRING, &pointer);
   // TODO(satorux): It may make sense to return an error here, as the
@@ -490,6 +493,7 @@ void MessageWriter::AppendString(const std::string& value) {
 }
 
 void MessageWriter::AppendObjectPath(const ObjectPath& value) {
+  CHECK(value.IsValid());
   const char* pointer = value.value().c_str();
   AppendBasic(DBUS_TYPE_OBJECT_PATH, &pointer);
 }
