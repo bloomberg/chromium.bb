@@ -19,27 +19,6 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 
-class NaClFileRpcServer {
- public:
-  static void StreamAsFile(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      const char* url,
-      int32_t callback_id);
-  static void GetFileDesc(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      const char* url,
-      NaClSrpcImcDescType* file_desc);
-
- private:
-  NaClFileRpcServer();
-  NaClFileRpcServer(const NaClFileRpcServer&);
-  void operator=(const NaClFileRpcServer);
-};  // class NaClFileRpcServer
-
 class PpbRpcServer {
  public:
   static void PPB_GetInterface(

@@ -50,7 +50,6 @@
           'plugin_globals.cc',
           'plugin_instance_data.cc',
           'plugin_main.cc',
-          'plugin_nacl_file.cc',
           'plugin_opengles.cc',
           'plugin_ppb.cc',
           'plugin_ppb_audio.cc',

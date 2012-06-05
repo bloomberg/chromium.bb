@@ -23,37 +23,6 @@
 
 namespace {
 
-static void StreamAsFileDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  UNREFERENCED_PARAMETER(outputs);
-  NaClFileRpcServer::StreamAsFile(
-      rpc,
-      done,
-      inputs[0]->u.ival,
-      inputs[1]->arrays.str,
-      inputs[2]->u.ival
-  );
-}
-
-static void GetFileDescDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  NaClFileRpcServer::GetFileDesc(
-      rpc,
-      done,
-      inputs[0]->u.ival,
-      inputs[1]->arrays.str,
-      &(outputs[0]->u.hval)
-  );
-}
-
 static void PPB_GetInterfaceDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -3112,8 +3081,6 @@ static void PPB_Zoom_ZoomLimitsChangedDispatcher(
 }  // namespace
 
 NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
-  { "StreamAsFile:isi:", StreamAsFileDispatcher },
-  { "GetFileDesc:is:h", GetFileDescDispatcher },
   { "PPB_GetInterface:s:i", PPB_GetInterfaceDispatcher },
   { "PPB_Audio_Create:ii:i", PPB_Audio_CreateDispatcher },
   { "PPB_Audio_IsAudio:i:i", PPB_Audio_IsAudioDispatcher },

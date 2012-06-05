@@ -24,44 +24,6 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_core.h"
 
-NaClSrpcError NaClFileRpcClient::StreamAsFile(
-    NaClSrpcChannel* channel,
-    PP_Instance instance,
-    const char* url,
-    int32_t callback_id)  {
-  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
-         ("%s: PPAPI calls are not supported off the main thread\n",
-          __FUNCTION__));
-  NaClSrpcError retval;
-  retval = NaClSrpcInvokeBySignature(
-      channel,
-      "StreamAsFile:isi:",
-      instance,
-      url,
-      callback_id
-  );
-  return retval;
-}
-
-NaClSrpcError NaClFileRpcClient::GetFileDesc(
-    NaClSrpcChannel* channel,
-    PP_Instance instance,
-    const char* url,
-    NaClSrpcImcDescType* file_desc)  {
-  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
-         ("%s: PPAPI calls are not supported off the main thread\n",
-          __FUNCTION__));
-  NaClSrpcError retval;
-  retval = NaClSrpcInvokeBySignature(
-      channel,
-      "GetFileDesc:is:h",
-      instance,
-      url,
-      file_desc
-  );
-  return retval;
-}
-
 NaClSrpcError PpbRpcClient::PPB_GetInterface(
     NaClSrpcChannel* channel,
     const char* interface_name,

@@ -56,7 +56,6 @@ all_units = [
      'name': 'PpbRpcs',
      'file_basename': 'ppb_rpc',
      'srpc_files': [
-         'nacl_file.srpc',
          'ppb.srpc',
          'ppb_audio.srpc',
          'ppb_audio_config.srpc',
