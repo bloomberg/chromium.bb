@@ -58,6 +58,10 @@ def OverrideConfigForTrybot(build_config, remote_trybot):
     if remote_trybot:
       my_config['chroot_replace'] = True
 
+    if (my_config['build_type'] == constants.PALADIN_TYPE
+        and not my_config['arm']):
+      my_config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
+
   return copy_config
 
 
@@ -215,6 +219,9 @@ _settings = dict(
 # TODO(sosa): Deprecate binary.
 # build_type -- Type of builder.  Check constants.BUILD_TYPE_DUMP_ORDER.
   build_type=constants.PFQ_TYPE,
+
+# arm -- Whether the board we are building is arm-based.
+  arm = False,
 
   archive_build_debug=False,
 
@@ -386,6 +393,7 @@ generic_boards = set([
 # Arch-specific mixins.
 
 arm = _config(
+  arm = True,
   # VM/tests are broken on arm.
   unittests=False,
   vm_tests=None,
