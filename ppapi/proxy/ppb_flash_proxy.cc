@@ -20,12 +20,15 @@
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_print.h"
 #include "ppapi/proxy/host_dispatcher.h"
+#include "ppapi/proxy/pepper_file_messages.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/proxy_module.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/dir_contents.h"
+#include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
@@ -427,18 +430,6 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgReadClipboardData)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_WriteClipboardData,
                         OnHostMsgWriteClipboardData)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_OpenFile,
-                        OnHostMsgOpenFile)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_RenameFile,
-                        OnHostMsgRenameFile)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_DeleteFileOrDir,
-                        OnHostMsgDeleteFileOrDir)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_CreateDir,
-                        OnHostMsgCreateDir)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_QueryFile,
-                        OnHostMsgQueryFile)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetDirContents,
-                        OnHostMsgGetDirContents)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_OpenFileRef,
                         OnHostMsgOpenFileRef)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_QueryFileRef,
@@ -687,102 +678,128 @@ void PPB_Flash_Proxy::ClearThreadAdapterForInstance(PP_Instance instance) {
     g_module_local_thread_adapter->ClearInstanceRouting(instance);
 }
 
-int32_t PPB_Flash_Proxy::OpenFile(PP_Instance instance,
+int32_t PPB_Flash_Proxy::OpenFile(PP_Instance,
                                   const char* path,
                                   int32_t mode,
                                   PP_FileHandle* file) {
-  if (!g_module_local_thread_adapter)
-    return PP_ERROR_FAILED;
+  int flags = 0;
+  if (!path ||
+      !ppapi::PepperFileOpenFlagsToPlatformFileFlags(mode, &flags) ||
+      !file)
+    return PP_ERROR_BADARGUMENT;
 
-  int32_t result = PP_ERROR_FAILED;
-  IPC::PlatformFileForTransit transit;
-  g_module_local_thread_adapter->Send(instance,
-      new PpapiHostMsg_PPBFlash_OpenFile(
-          API_ID_PPB_FLASH, instance, path, mode, &transit, &result));
-  *file = IPC::PlatformFileForTransitToPlatformFile(transit);
-  return result;
-}
+  base::PlatformFileError error;
+  IPC::PlatformFileForTransit transit_file;
+  ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
+                                    FilePath::FromUTF8Unsafe(path));
 
-int32_t PPB_Flash_Proxy::RenameFile(PP_Instance instance,
-                                    const char* path_from,
-                                    const char* path_to) {
-  if (!g_module_local_thread_adapter)
-    return PP_ERROR_FAILED;
-
-  int32_t result = PP_ERROR_FAILED;
-  g_module_local_thread_adapter->Send(instance,
-      new PpapiHostMsg_PPBFlash_RenameFile(
-          API_ID_PPB_FLASH, instance, path_from, path_to, &result));
-  return result;
-}
-
-int32_t PPB_Flash_Proxy::DeleteFileOrDir(PP_Instance instance,
-                                         const char* path,
-                                         PP_Bool recursive) {
-  if (!g_module_local_thread_adapter)
-    return PP_ERROR_FAILED;
-
-  int32_t result = PP_ERROR_FAILED;
-  g_module_local_thread_adapter->Send(instance,
-      new PpapiHostMsg_PPBFlash_DeleteFileOrDir(
-          API_ID_PPB_FLASH, instance, path, recursive, &result));
-  return result;
-}
-
-int32_t PPB_Flash_Proxy::CreateDir(PP_Instance instance, const char* path) {
-  if (!g_module_local_thread_adapter)
-    return PP_ERROR_FAILED;
-
-  int32_t result = PP_ERROR_FAILED;
-  g_module_local_thread_adapter->Send(instance,
-      new PpapiHostMsg_PPBFlash_CreateDir(
-          API_ID_PPB_FLASH, instance, path, &result));
-  return result;
-}
-
-int32_t PPB_Flash_Proxy::QueryFile(PP_Instance instance,
-                                   const char* path,
-                                   PP_FileInfo* info) {
-  if (!g_module_local_thread_adapter)
-    return PP_ERROR_FAILED;
-
-  int32_t result = PP_ERROR_FAILED;
-  g_module_local_thread_adapter->Send(instance,
-      new PpapiHostMsg_PPBFlash_QueryFile(
-          API_ID_PPB_FLASH, instance, path, info, &result));
-  return result;
-}
-
-int32_t PPB_Flash_Proxy::GetDirContents(PP_Instance instance,
-                                        const char* path,
-                                        PP_DirContents_Dev** contents) {
-  if (!g_module_local_thread_adapter)
-    return PP_ERROR_FAILED;
-
-  int32_t result = PP_ERROR_FAILED;
-  std::vector<SerializedDirEntry> entries;
-  g_module_local_thread_adapter->Send(instance,
-      new PpapiHostMsg_PPBFlash_GetDirContents(
-          API_ID_PPB_FLASH, instance, path, &entries, &result));
-
-  if (result != PP_OK)
-    return result;
-
-  // Copy the serialized dir entries to the output struct.
-  *contents = new PP_DirContents_Dev;
-  (*contents)->count = static_cast<int32_t>(entries.size());
-  (*contents)->entries = new PP_DirEntry_Dev[entries.size()];
-  for (size_t i = 0; i < entries.size(); i++) {
-    const SerializedDirEntry& source = entries[i];
-    PP_DirEntry_Dev* dest = &(*contents)->entries[i];
-
-    char* name_copy = new char[source.name.size() + 1];
-    memcpy(name_copy, source.name.c_str(), source.name.size() + 1);
-    dest->name = name_copy;
-    dest->is_dir = PP_FromBool(source.is_dir);
+  if (PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+          new PepperFileMsg_OpenFile(pepper_path, flags,
+                                     &error, &transit_file))) {
+    *file = IPC::PlatformFileForTransitToPlatformFile(transit_file);
+  } else {
+    *file = base::kInvalidPlatformFileValue;
+    error = base::PLATFORM_FILE_ERROR_FAILED;
   }
 
-  return result;
+  return ppapi::PlatformFileErrorToPepperError(error);
+}
+
+int32_t PPB_Flash_Proxy::RenameFile(PP_Instance,
+                                    const char* from_path,
+                                    const char* to_path) {
+  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  ppapi::PepperFilePath pepper_from(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
+                                    FilePath::FromUTF8Unsafe(from_path));
+  ppapi::PepperFilePath pepper_to(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
+                                  FilePath::FromUTF8Unsafe(to_path));
+
+  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+      new PepperFileMsg_RenameFile(pepper_from, pepper_to, &error));
+
+  return ppapi::PlatformFileErrorToPepperError(error);
+}
+
+int32_t PPB_Flash_Proxy::DeleteFileOrDir(PP_Instance,
+                                         const char* path,
+                                         PP_Bool recursive) {
+  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
+                                    FilePath::FromUTF8Unsafe(path));
+
+  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+      new PepperFileMsg_DeleteFileOrDir(pepper_path,
+                                        PP_ToBool(recursive),
+                                        &error));
+
+  return ppapi::PlatformFileErrorToPepperError(error);
+}
+
+int32_t PPB_Flash_Proxy::CreateDir(PP_Instance, const char* path) {
+  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
+                                    FilePath::FromUTF8Unsafe(path));
+
+  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+      new PepperFileMsg_CreateDir(pepper_path, &error));
+
+  return ppapi::PlatformFileErrorToPepperError(error);
+}
+
+int32_t PPB_Flash_Proxy::QueryFile(PP_Instance,
+                                   const char* path,
+                                   PP_FileInfo* info) {
+  base::PlatformFileInfo file_info;
+  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
+                                    FilePath::FromUTF8Unsafe(path));
+
+  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+      new PepperFileMsg_QueryFile(pepper_path, &file_info, &error));
+
+  if (error == base::PLATFORM_FILE_OK) {
+    info->size = file_info.size;
+    info->creation_time = TimeToPPTime(file_info.creation_time);
+    info->last_access_time = TimeToPPTime(file_info.last_accessed);
+    info->last_modified_time = TimeToPPTime(file_info.last_modified);
+    info->system_type = PP_FILESYSTEMTYPE_EXTERNAL;
+    if (file_info.is_directory)
+        info->type = PP_FILETYPE_DIRECTORY;
+    else
+      info->type = PP_FILETYPE_REGULAR;
+  }
+
+  return ppapi::PlatformFileErrorToPepperError(error);
+}
+
+int32_t PPB_Flash_Proxy::GetDirContents(PP_Instance,
+                                        const char* path,
+                                        PP_DirContents_Dev** contents) {
+  ppapi::DirContents entries;
+  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  ppapi::PepperFilePath pepper_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
+                                    FilePath::FromUTF8Unsafe(path));
+
+  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+      new PepperFileMsg_GetDirContents(pepper_path, &entries, &error));
+
+  if (error == base::PLATFORM_FILE_OK) {
+    // Copy the serialized dir entries to the output struct.
+    *contents = new PP_DirContents_Dev;
+    (*contents)->count = static_cast<int32_t>(entries.size());
+    (*contents)->entries = new PP_DirEntry_Dev[entries.size()];
+    for (size_t i = 0; i < entries.size(); i++) {
+      const ppapi::DirEntry& source = entries[i];
+      PP_DirEntry_Dev* dest = &(*contents)->entries[i];
+      std::string name = source.name.AsUTF8Unsafe();
+      char* name_copy = new char[name.size() + 1];
+      memcpy(name_copy, name.c_str(), name.size() + 1);
+      dest->name = name_copy;
+      dest->is_dir = PP_FromBool(source.is_dir);
+    }
+  }
+
+  return ppapi::PlatformFileErrorToPepperError(error);
 }
 
 int32_t PPB_Flash_Proxy::OpenFileRef(PP_Instance instance,
@@ -1046,101 +1063,6 @@ void PPB_Flash_Proxy::OnHostMsgWriteClipboardData(
         << "Write to clipboard failed unexpectedly.";
     (void)result;  // Prevent warning in release mode.
   }
-}
-
-void PPB_Flash_Proxy::OnHostMsgOpenFile(
-    PP_Instance instance,
-    const std::string& path,
-    int32_t mode,
-    IPC::PlatformFileForTransit* file_handle,
-    int32_t* result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    base::PlatformFile file;
-    *result = enter.functions()->GetFlashAPI()->OpenFile(
-        instance, path.c_str(), mode, &file);
-    *file_handle = PlatformFileToPlatformFileForTransit(
-        dispatcher(), result, file);
-  } else {
-    *result = PP_ERROR_BADARGUMENT;
-  }
-}
-
-void PPB_Flash_Proxy::OnHostMsgRenameFile(PP_Instance instance,
-                                          const std::string& from_path,
-                                          const std::string& to_path,
-                                          int32_t* result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    *result = enter.functions()->GetFlashAPI()->RenameFile(
-        instance, from_path.c_str(), to_path.c_str());
-  } else {
-    *result = PP_ERROR_BADARGUMENT;
-  }
-}
-
-void PPB_Flash_Proxy::OnHostMsgDeleteFileOrDir(PP_Instance instance,
-                                               const std::string& path,
-                                               PP_Bool recursive,
-                                               int32_t* result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    *result = enter.functions()->GetFlashAPI()->DeleteFileOrDir(
-        instance, path.c_str(), recursive);
-  } else {
-    *result = PP_ERROR_BADARGUMENT;
-  }
-}
-
-void PPB_Flash_Proxy::OnHostMsgCreateDir(PP_Instance instance,
-                                         const std::string& path,
-                                         int32_t* result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    *result = enter.functions()->GetFlashAPI()->CreateDir(
-        instance, path.c_str());
-  } else {
-    *result = PP_ERROR_BADARGUMENT;
-  }
-}
-
-void PPB_Flash_Proxy::OnHostMsgQueryFile(PP_Instance instance,
-                                         const std::string& path,
-                                         PP_FileInfo* info,
-                                         int32_t* result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    *result = enter.functions()->GetFlashAPI()->QueryFile(
-        instance, path.c_str(), info);
-  } else {
-    *result = PP_ERROR_BADARGUMENT;
-  }
-}
-
-void PPB_Flash_Proxy::OnHostMsgGetDirContents(
-    PP_Instance instance,
-    const std::string& path,
-    std::vector<SerializedDirEntry>* entries,
-    int32_t* result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.failed()) {
-    *result = PP_ERROR_BADARGUMENT;
-    return;
-  }
-
-  PP_DirContents_Dev* contents = NULL;
-  *result = enter.functions()->GetFlashAPI()->GetDirContents(
-      instance, path.c_str(), &contents);
-  if (*result != PP_OK)
-    return;
-
-  // Convert the list of entries to the serialized version.
-  entries->resize(contents->count);
-  for (int32_t i = 0; i < contents->count; i++) {
-    (*entries)[i].name.assign(contents->entries[i].name);
-    (*entries)[i].is_dir = PP_ToBool(contents->entries[i].is_dir);
-  }
-  enter.functions()->GetFlashAPI()->FreeDirContents(instance, contents);
 }
 
 void PPB_Flash_Proxy::OnHostMsgOpenFileRef(

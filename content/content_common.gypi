@@ -269,8 +269,6 @@
     'common/p2p_messages.h',
     'common/p2p_sockets.h',
     'common/page_zoom.cc',
-    'common/pepper_file_messages.cc',
-    'common/pepper_file_messages.h',
     'common/pepper_messages.h',
     'common/pepper_plugin_registry.cc',
     'common/pepper_plugin_registry.h',
