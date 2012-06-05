@@ -17,13 +17,6 @@ env.Append(CPPPATH=['${TARGET_ROOT}'])
 if env.Bit('windows'):
   env.Append(CPPDEFINES=['WIN32'])
 
-# normally comment out -- uncomment out to test the pedantic removal
-# check below.
-#if env.Bit('linux') or env.Bit('mac'):
-#  env.FilterOut(CCFLAGS=['-pedantic'])
-#  env.FilterOut(CCFLAGS=['-Wall'])
-
-
 # Make a copy of debug CRT for now.
 # TODO(bradnelson): there should be a better way to generalize this requirement.
 crt = []

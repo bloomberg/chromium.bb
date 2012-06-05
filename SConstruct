@@ -740,10 +740,8 @@ tests_to_disable_qemu = set([
     'run_atomic_ops_test',
     'run_atomic_ops_nexe_test',
     'run_egyptian_cotton_test',
-    'run_gio_shm_unbounded_test',
     'run_many_threads_sequential_test',
     'run_mmap_atomicity_test',
-    'run_mmap_test',
     # http://code.google.com/p/nativeclient/issues/detail?id=2142
     'run_nacl_semaphore_test',
     'run_nacl_tls_unittest',
@@ -753,7 +751,6 @@ tests_to_disable_qemu = set([
     'run_thread_stack_alloc_test',
     'run_thread_suspension_test',
     'run_thread_test',
-    'run_tool_tests',
 ])
 
 tests_to_disable = set()
