@@ -575,7 +575,7 @@ drmModePropertyPtr drmModeGetProperty(int fd, uint32_t property_id)
 	if (prop.count_values)
 		prop.values_ptr = VOID2U64(drmMalloc(prop.count_values * sizeof(uint64_t)));
 
-	if (prop.count_enum_blobs && (prop.flags & DRM_MODE_PROP_ENUM))
+	if (prop.count_enum_blobs && (prop.flags & (DRM_MODE_PROP_ENUM | DRM_MODE_PROP_BITMASK)))
 		prop.enum_blob_ptr = VOID2U64(drmMalloc(prop.count_enum_blobs * sizeof(struct drm_mode_property_enum)));
 
 	if (prop.count_enum_blobs && (prop.flags & DRM_MODE_PROP_BLOB)) {
@@ -597,7 +597,7 @@ drmModePropertyPtr drmModeGetProperty(int fd, uint32_t property_id)
 	r->flags = prop.flags;
 	if (prop.count_values)
 		r->values = drmAllocCpy(U642VOID(prop.values_ptr), prop.count_values, sizeof(uint64_t));
-	if (prop.flags & DRM_MODE_PROP_ENUM) {
+	if (prop.flags & (DRM_MODE_PROP_ENUM | DRM_MODE_PROP_BITMASK)) {
 		r->count_enums = prop.count_enum_blobs;
 		r->enums = drmAllocCpy(U642VOID(prop.enum_blob_ptr), prop.count_enum_blobs, sizeof(struct drm_mode_property_enum));
 	} else if (prop.flags & DRM_MODE_PROP_BLOB) {
