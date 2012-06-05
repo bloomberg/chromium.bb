@@ -86,10 +86,9 @@ void PluginInstaller::AddVersion(const Version& version,
 
 PluginInstaller::SecurityStatus PluginInstaller::GetSecurityStatus(
     const webkit::WebPluginInfo& plugin) const {
-  // If there are no versions defined, the plug-in is alway considered
-  // up-to-date.
+  // If there are no versions defined, the plug-in should require authorization.
   if (versions_.empty())
-    return SECURITY_STATUS_UP_TO_DATE;
+    return SECURITY_STATUS_REQUIRES_AUTHORIZATION;
 
   scoped_ptr<Version> version(
       webkit::npapi::PluginGroup::CreateVersionFromString(plugin.version));
