@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBSITE_SETTINGS_H_
-#define CHROME_BROWSER_WEBSITE_SETTINGS_H_
+#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_H_
+#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
@@ -65,18 +65,6 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
     SITE_IDENTITY_STATUS_INTERNAL_PAGE,
   };
 
-  // Creates a |WebsiteSettingsModel| incl. a |WebsiteSettingsUI| and displays
-  // the UI. The |url| contains the omnibox URL of the currently active tab,
-  // |parent| contains the currently active window, |profile| contains the
-  // currently active profile and |ssl| contains the |SSLStatus| of the
-  // connection to the website in the currently active tab that is wrapped by
-  // the |tab_contents_wrapper|.
-  static void Show(gfx::NativeWindow parent,
-                   Profile* profile,
-                   TabContentsWrapper* tab_contents_wrapper,
-                   const GURL& url,
-                   const content::SSLStatus& ssl);
-
   // Creates a WebsiteSettings for the passed |url| using the given |ssl| status
   // object to determine the status of the site's connection. The
   // |WebsiteSettings| takes ownership of the |ui|.
@@ -86,11 +74,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
                   const GURL& url,
                   const content::SSLStatus& ssl,
                   content::CertStore* cert_store);
-
-  // This method is called when the WebsiteSettingsUI is closed. It triggers
-  // the destruction of this |WebsiteSettings| object. So it is not safe to use
-  // this object afterwards. Any pointers to this object will be invalid.
-  void OnUIClosing();
+  virtual ~WebsiteSettings();
 
   // This method is called when ever a permission setting is changed.
   void OnSitePermissionChanged(ContentSettingsType type,
@@ -128,8 +112,6 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   virtual void OnSiteDataAccessed() OVERRIDE;
 
  private:
-  virtual ~WebsiteSettings();
-
   // Initializes the |WebsiteSettings|.
   void Init(Profile* profile,
             const GURL& url,
@@ -154,7 +136,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // specific data (local stored objects like cookies), site specific
   // permissions (location, popup, plugin, etc.  permissions) and site specific
   // information (identity, connection status, etc.).
-  scoped_ptr<WebsiteSettingsUI> ui_;
+  WebsiteSettingsUI* ui_;
 
   // The Omnibox URL of the website for which to display site permissions and
   // site information.
@@ -204,4 +186,4 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettings);
 };
 
-#endif  // CHROME_BROWSER_WEBSITE_SETTINGS_H_
+#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_H_

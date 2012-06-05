@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_UI_H_
-#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_UI_H_
+#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_UI_H_
+#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_UI_H_
 #pragma once
 
 #include <string>
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/browser/website_settings.h"
+#include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -83,10 +83,6 @@ class WebsiteSettingsUI {
 
   virtual ~WebsiteSettingsUI();
 
-  // Sets the |presenter| of the WebsiteSettingsUI that is responsible for
-  // setting the data to display in the UI.
-  virtual void SetPresenter(WebsiteSettings* presenter) = 0;
-
   // Sets cookie information.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) = 0;
 
@@ -108,4 +104,4 @@ class PermissionInfoList
     : public std::vector<WebsiteSettingsUI::PermissionInfo> {
 };
 
-#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_UI_H_
+#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_UI_H_

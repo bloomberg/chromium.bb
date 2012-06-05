@@ -70,13 +70,13 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/task_manager_gtk.h"
 #include "chrome/browser/ui/gtk/update_recommended_dialog.h"
+#include "chrome/browser/ui/gtk/website_settings_popup_gtk.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/page_info_bubble.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/website_settings.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -1132,11 +1132,8 @@ void BrowserWindowGtk::ShowWebsiteSettings(
     const GURL& url,
     const content::SSLStatus& ssl,
     bool show_history) {
-    WebsiteSettings::Show(GetNativeHandle(),
-                          profile,
-                          tab_contents_wrapper,
-                          url,
-                          ssl);
+    WebsiteSettingsPopupGtk::Show(GetNativeHandle(), profile,
+                                  tab_contents_wrapper, url, ssl);
 }
 
 void BrowserWindowGtk::ShowAppMenu() {

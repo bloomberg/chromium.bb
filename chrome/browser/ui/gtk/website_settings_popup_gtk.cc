@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/gtk/website_settings_popup_gtk.h"
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -20,8 +18,10 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/website_settings.h"
+#include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/cert_store.h"
+#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -69,10 +69,21 @@ std::string PermissionValueToString(ContentSetting value) {
 
 }  // namespace
 
+// static
+void WebsiteSettingsPopupGtk::Show(gfx::NativeWindow parent,
+                                   Profile* profile,
+                                   TabContentsWrapper* tab_contents_wrapper,
+                                   const GURL& url,
+                                   const content::SSLStatus& ssl) {
+  new WebsiteSettingsPopupGtk(parent, profile, tab_contents_wrapper, url, ssl);
+}
+
 WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
     gfx::NativeWindow parent,
     Profile* profile,
-    TabContentsWrapper* tab_contents_wrapper)
+    TabContentsWrapper* tab_contents_wrapper,
+    const GURL& url,
+    const content::SSLStatus& ssl)
     : parent_(parent),
       contents_(NULL),
       theme_service_(GtkThemeService::GetFrom(profile)),
@@ -110,19 +121,21 @@ WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
     NOTREACHED();
     return;
   }
+
+  presenter_.reset(new WebsiteSettings(this, profile,
+                                       tab_contents_wrapper->content_settings(),
+                                       url, ssl,
+                                       content::CertStore::GetInstance()));
 }
 
 WebsiteSettingsPopupGtk::~WebsiteSettingsPopupGtk() {
 }
 
-void WebsiteSettingsPopupGtk::SetPresenter(WebsiteSettings* presenter) {
-  presenter_ = presenter;
-}
-
 void WebsiteSettingsPopupGtk::BubbleClosing(BubbleGtk* bubble,
                                             bool closed_by_escape) {
-  if (presenter_)
-    presenter_->OnUIClosing();
+  if (presenter_.get())
+    presenter_.reset();
+  delete this;
 }
 
 void WebsiteSettingsPopupGtk::InitContents() {
@@ -494,7 +507,7 @@ void WebsiteSettingsPopupGtk::OnPermissionsSettingsLinkClicked(
     GtkWidget* widget) {
   browser_->OpenURL(OpenURLParams(
       GURL(std::string(
-          chrome::kChromeUISettingsURL) + chrome::kContentSettingsSubPage),
+           chrome::kChromeUISettingsURL) + chrome::kContentSettingsSubPage),
       content::Referrer(),
       NEW_FOREGROUND_TAB,
       content::PAGE_TRANSITION_LINK,
@@ -513,9 +526,9 @@ void WebsiteSettingsPopupGtk::OnPermissionChanged(GtkWidget* widget) {
   int type = -1;
   gtk_tree_model_get(store, &it, 1, &value, 2, &type, -1);
 
-  if (presenter_)
+  if (presenter_.get())
     presenter_->OnSitePermissionChanged(ContentSettingsType(type),
-                                       ContentSetting(value));
+                                        ContentSetting(value));
 }
 
 void WebsiteSettingsPopupGtk::OnViewCertLinkClicked(GtkWidget* widget) {

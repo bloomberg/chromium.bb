@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/website_settings.h"
+#include "chrome/browser/ui/website_settings/website_settings.h"
 
 #include "base/at_exit.h"
 #include "base/message_loop.h"
@@ -10,7 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/ui/website_settings_ui.h"
+#include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -57,7 +57,6 @@ class MockCertStore : public content::CertStore {
 class MockWebsiteSettingsUI : public WebsiteSettingsUI {
  public:
   virtual ~MockWebsiteSettingsUI() {}
-  MOCK_METHOD1(SetPresenter, void(WebsiteSettings* presenter));
   MOCK_METHOD1(SetCookieInfo, void(const CookieInfoList& cookie_info_list));
   MOCK_METHOD1(SetPermissionInfo,
                void(const PermissionInfoList& permission_info_list));
@@ -103,22 +102,20 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
         .WillRepeatedly(DoAll(SetArgPointee<1>(cert_), Return(true)));
 
     // Setup mock ui.
-    mock_ui_ = new MockWebsiteSettingsUI();
+    mock_ui_.reset(new MockWebsiteSettingsUI());
   }
 
   virtual void TearDown() {
-    ASSERT_TRUE(website_settings_) << "No WebsiteSettings instance created.";
-    // Call OnUIClosing to destroy the |website_settings| object.
-    EXPECT_CALL(*mock_ui_, SetPresenter(NULL));
-    website_settings_->OnUIClosing();
+    ASSERT_TRUE(website_settings_.get())
+        << "No WebsiteSettings instance created.";
     RenderViewHostTestHarness::TearDown();
+    website_settings_.reset();
   }
 
   void SetDefaultUIExpectations(MockWebsiteSettingsUI* mock_ui) {
     // During creation |WebsiteSettings| makes the following calls to the ui.
     EXPECT_CALL(*mock_ui, SetPermissionInfo(_));
     EXPECT_CALL(*mock_ui, SetIdentityInfo(_));
-    EXPECT_CALL(*mock_ui, SetPresenter(_));
     EXPECT_CALL(*mock_ui, SetCookieInfo(_));
     EXPECT_CALL(*mock_ui, SetFirstVisit(string16()));
   }
@@ -126,29 +123,26 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   const GURL& url() const { return url_; }
   MockCertStore* cert_store() { return &cert_store_; }
   int cert_id() { return cert_id_; }
-  MockWebsiteSettingsUI* mock_ui() { return mock_ui_; }
+  MockWebsiteSettingsUI* mock_ui() { return mock_ui_.get(); }
   const SSLStatus& ssl() { return ssl_; }
   TabSpecificContentSettings* tab_specific_content_settings() {
     return tab_specific_content_settings_.get();
   }
 
   WebsiteSettings* website_settings() {
-    if (!website_settings_) {
-      website_settings_ = new WebsiteSettings(
+    if (!website_settings_.get()) {
+      website_settings_.reset(new WebsiteSettings(
           mock_ui(), profile(), tab_specific_content_settings_.get(), url(),
-          ssl(), cert_store());
+          ssl(), cert_store()));
     }
-    return website_settings_;
+    return website_settings_.get();
   }
 
   SSLStatus ssl_;
 
  private:
-  // The |Website_settings| object deletes itself after the OnUIClosing()
-  // method is called.
-  WebsiteSettings* website_settings_;  // Weak pointer.
-  // The UI is owned by |web_site_settings_|.
-  MockWebsiteSettingsUI* mock_ui_;  // Weak pointer.
+  scoped_ptr<WebsiteSettings> website_settings_;
+  scoped_ptr<MockWebsiteSettingsUI> mock_ui_;
   int cert_id_;
   scoped_refptr<net::X509Certificate> cert_;
   content::TestBrowserThread browser_thread_;
@@ -206,7 +200,6 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
 TEST_F(WebsiteSettingsTest, OnSiteDataAccessed) {
   EXPECT_CALL(*mock_ui(), SetPermissionInfo(_));
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
-  EXPECT_CALL(*mock_ui(), SetPresenter(_));
   EXPECT_CALL(*mock_ui(), SetFirstVisit(string16()));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_)).Times(2);
 

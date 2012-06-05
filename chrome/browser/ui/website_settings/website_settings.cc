@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/website_settings.h"
+#include "chrome/browser/ui/website_settings/website_settings.h"
 
 #include <string>
 #include <vector>
@@ -25,7 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/website_settings_ui.h"
+#include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
@@ -40,10 +40,6 @@
 #include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/website_settings_popup_gtk.h"
-#endif
 
 using content::BrowserThread;
 
@@ -74,7 +70,6 @@ WebsiteSettings::WebsiteSettings(
       site_connection_status_(SITE_CONNECTION_STATUS_UNKNOWN),
       cert_store_(cert_store),
       content_settings_(profile->GetHostContentSettingsMap()) {
-  ui_->SetPresenter(this);
   Init(profile, url, ssl);
 
   HistoryService* history_service =
@@ -94,11 +89,6 @@ WebsiteSettings::WebsiteSettings(
 }
 
 WebsiteSettings::~WebsiteSettings() {
-}
-
-void WebsiteSettings::OnUIClosing() {
-  ui_->SetPresenter(NULL);
-  delete this;
 }
 
 void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
@@ -501,23 +491,4 @@ void WebsiteSettings::PresentHistoryInfo(base::Time first_visit) {
 
   }
   ui_->SetFirstVisit(first_visit_text);
-}
-
-// static
-void WebsiteSettings::Show(gfx::NativeWindow parent,
-                           Profile* profile,
-                           TabContentsWrapper* tab_contents_wrapper,
-                           const GURL& url,
-                           const content::SSLStatus& ssl) {
-#if defined(TOOLKIT_GTK)
-  // The WebsiteSettingsModel will delete itself after the UI is closed.
-  new WebsiteSettings(new WebsiteSettingsPopupGtk(parent,
-                                                  profile,
-                                                  tab_contents_wrapper),
-                      profile,
-                      tab_contents_wrapper->content_settings(),
-                      url,
-                      ssl,
-                      content::CertStore::GetInstance());
-#endif
 }
