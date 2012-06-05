@@ -193,9 +193,8 @@ TEST_F(ChromeLauncherControllerTest, UnpinWithUninstall) {
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension3_->id()));
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension4_->id()));
 
-  extension_service_->UninstallExtension(extension3_->id(),
-                                         true, /* extension_uninstall */
-                                         NULL);
+  extension_service_->UnloadExtension(extension3_->id(),
+                                      extension_misc::UNLOAD_REASON_UNINSTALL);
 
   EXPECT_FALSE(launcher_controller.IsAppPinned(extension3_->id()));
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension4_->id()));
