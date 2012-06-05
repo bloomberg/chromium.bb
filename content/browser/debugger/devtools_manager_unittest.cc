@@ -6,7 +6,6 @@
 #include "base/time.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
-#include "content/browser/mock_content_browser_client.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/web_contents/test_web_contents.h"
 #include "content/common/view_messages.h"
@@ -14,6 +13,7 @@
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/test/test_content_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -92,7 +92,7 @@ class TestWebContentsDelegate : public content::WebContentsDelegate {
 };
 
 class DevToolsManagerTestBrowserClient
-    : public content::MockContentBrowserClient {
+    : public content::TestContentBrowserClient {
  public:
   DevToolsManagerTestBrowserClient() {
   }
@@ -118,7 +118,7 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
  protected:
   virtual void SetUp() OVERRIDE {
     original_browser_client_ = content::GetContentClient()->browser();
-    content::GetContentClient()->set_browser(&browser_client_);
+    content::GetContentClient()->set_browser_for_testing(&browser_client_);
 
     RenderViewHostImplTestHarness::SetUp();
     TestDevToolsClientHost::ResetCounters();
@@ -126,7 +126,8 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
 
   virtual void TearDown() OVERRIDE {
     RenderViewHostImplTestHarness::TearDown();
-    content::GetContentClient()->set_browser(original_browser_client_);
+    content::GetContentClient()->set_browser_for_testing(
+        original_browser_client_);
   }
 
  private:

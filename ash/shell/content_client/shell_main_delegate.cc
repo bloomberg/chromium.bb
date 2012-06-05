@@ -9,9 +9,6 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "content/public/common/content_switches.h"
-#include "content/shell/shell_content_plugin_client.h"
-#include "content/shell/shell_content_renderer_client.h"
-#include "content/shell/shell_content_utility_client.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -30,7 +27,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
   content::SetContentClient(&content_client_);
-  InitializeShellContentClient(process_type);
 
   return false;
 }
@@ -39,31 +35,9 @@ void ShellMainDelegate::PreSandboxStartup() {
   InitializeResourceBundle();
 }
 
-#if defined(OS_POSIX)
-
-void ShellMainDelegate::ZygoteForked() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-  InitializeShellContentClient(process_type);
-}
-#endif
-
-void ShellMainDelegate::InitializeShellContentClient(
-    const std::string& process_type) {
-  if (process_type.empty()) {
-    browser_client_.reset(new ShellContentBrowserClient);
-    content::GetContentClient()->set_browser(browser_client_.get());
-  } else if (process_type == switches::kRendererProcess) {
-    renderer_client_.reset(new content::ShellContentRendererClient);
-    content::GetContentClient()->set_renderer(renderer_client_.get());
-  } else if (process_type == switches::kPluginProcess) {
-    plugin_client_.reset(new content::ShellContentPluginClient);
-    content::GetContentClient()->set_plugin(plugin_client_.get());
-  } else if (process_type == switches::kUtilityProcess) {
-    utility_client_.reset(new content::ShellContentUtilityClient);
-    content::GetContentClient()->set_utility(utility_client_.get());
-  }
+content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
+  browser_client_.reset(new ShellContentBrowserClient);
+  return browser_client_.get();
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {

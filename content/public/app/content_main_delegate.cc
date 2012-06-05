@@ -4,6 +4,11 @@
 
 #include "content/public/app/content_main_delegate.h"
 
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/plugin/content_plugin_client.h"
+#include "content/public/renderer/content_renderer_client.h"
+#include "content/public/utility/content_utility_client.h"
+
 namespace content {
 
 bool ContentMainDelegate::BasicStartupComplete(int* exit_code) {
@@ -39,5 +44,21 @@ ZygoteForkDelegate* ContentMainDelegate::ZygoteStarting() {
 }
 
 #endif
+
+ContentBrowserClient* ContentMainDelegate::CreateContentBrowserClient() {
+  return new ContentBrowserClient();
+}
+
+ContentPluginClient* ContentMainDelegate::CreateContentPluginClient() {
+  return new ContentPluginClient();
+}
+
+ContentRendererClient* ContentMainDelegate::CreateContentRendererClient() {
+  return new ContentRendererClient();
+}
+
+ContentUtilityClient* ContentMainDelegate::CreateContentUtilityClient() {
+  return new ContentUtilityClient();
+}
 
 }  // namespace content

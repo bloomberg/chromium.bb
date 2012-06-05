@@ -105,7 +105,7 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
     DCHECK(!content::GetContentClient());
     content_client_.reset(new chrome::ChromeContentClient);
     browser_content_client_.reset(new chrome::ChromeContentBrowserClient());
-    content_client_->set_browser(browser_content_client_.get());
+    content_client_->set_browser_for_testing(browser_content_client_.get());
     content::SetContentClient(content_client_.get());
 
     SetUpHostResolver();

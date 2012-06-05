@@ -5,5 +5,5 @@ include_rules = [
   # included directly by embedders of content/.  It must however be
   # available to code in content/public.
   "+content/common/content_export.h",
-  "+content/public",
+  "+content/public/common",
 ]

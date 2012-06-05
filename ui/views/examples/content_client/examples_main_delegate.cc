@@ -11,9 +11,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "content/public/common/content_switches.h"
-#include "content/shell/shell_content_plugin_client.h"
-#include "content/shell/shell_content_renderer_client.h"
-#include "content/shell/shell_content_utility_client.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/views/examples/content_client/examples_content_browser_client.h"
@@ -47,7 +44,6 @@ bool ExamplesMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
   content::SetContentClient(&content_client_);
-  InitializeShellContentClient(process_type);
 
   bool success = logging::InitLogging(NULL,
       logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
@@ -66,30 +62,10 @@ void ExamplesMainDelegate::PreSandboxStartup() {
   InitializeResourceBundle();
 }
 
-#if defined(OS_POSIX)
-void ExamplesMainDelegate::ZygoteForked() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-  InitializeShellContentClient(process_type);
-}
-#endif
-
-void ExamplesMainDelegate::InitializeShellContentClient(
-    const std::string& process_type) {
-  if (process_type.empty()) {
-    browser_client_.reset(new ExamplesContentBrowserClient);
-    content::GetContentClient()->set_browser(browser_client_.get());
-  } else if (process_type == switches::kRendererProcess) {
-    renderer_client_.reset(new content::ShellContentRendererClient);
-    content::GetContentClient()->set_renderer(renderer_client_.get());
-  } else if (process_type == switches::kPluginProcess) {
-    plugin_client_.reset(new content::ShellContentPluginClient);
-    content::GetContentClient()->set_plugin(plugin_client_.get());
-  } else if (process_type == switches::kUtilityProcess) {
-    utility_client_.reset(new content::ShellContentUtilityClient);
-    content::GetContentClient()->set_utility(utility_client_.get());
-  }
+content::ContentBrowserClient*
+    ExamplesMainDelegate::CreateContentBrowserClient() {
+  browser_client_.reset(new ExamplesContentBrowserClient);
+  return browser_client_.get();
 }
 
 void ExamplesMainDelegate::InitializeResourceBundle() {

@@ -68,11 +68,11 @@ class ReplaceContentClientRenderer {
   explicit ReplaceContentClientRenderer(
       content::ContentRendererClient* new_renderer) {
     saved_renderer_ = content::GetContentClient()->renderer();
-    content::GetContentClient()->set_renderer(new_renderer);
+    content::GetContentClient()->set_renderer_for_testing(new_renderer);
   }
   ~ReplaceContentClientRenderer() {
     // Restore the original renderer.
-    content::GetContentClient()->set_renderer(saved_renderer_);
+    content::GetContentClient()->set_renderer_for_testing(saved_renderer_);
   }
  private:
   content::ContentRendererClient* saved_renderer_;
@@ -123,7 +123,7 @@ void WebRTCAudioDeviceTest::SetUp() {
   // Main parts are inspired by the RenderViewFakeResourcesTest.
   // Note that, the IPC part is not utilized in this test.
   saved_content_renderer_.reset(
-      new ReplaceContentClientRenderer(&mock_content_renderer_client_));
+      new ReplaceContentClientRenderer(&content_renderer_client_));
   mock_process_.reset(new WebRTCMockRenderProcess());
   ui_thread_.reset(new content::TestBrowserThread(content::BrowserThread::UI,
                                                   MessageLoop::current()));

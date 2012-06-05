@@ -4,7 +4,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/mock_content_browser_client.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
@@ -24,6 +23,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_notification_tracker.h"
+#include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -108,7 +108,7 @@ class RenderViewHostManagerTestClient : public TestContentClient {
 };
 
 class RenderViewHostManagerTestBrowserClient
-    : public content::MockContentBrowserClient {
+    : public content::TestContentBrowserClient {
  public:
   RenderViewHostManagerTestBrowserClient() {}
   virtual ~RenderViewHostManagerTestBrowserClient() {}
@@ -117,7 +117,7 @@ class RenderViewHostManagerTestBrowserClient
     factory_.set_should_create_webui(should_create_webui);
   }
 
-  // content::MockContentBrowserClient implementation.
+  // content::TestContentBrowserClient implementation.
   virtual content::WebUIControllerFactory*
       GetWebUIControllerFactory() OVERRIDE {
     return &factory_;
@@ -139,13 +139,13 @@ class RenderViewHostManagerTest
     old_client_ = content::GetContentClient();
     old_browser_client_ = content::GetContentClient()->browser();
     content::SetContentClient(&client_);
-    content::GetContentClient()->set_browser(&browser_client_);
+    content::GetContentClient()->set_browser_for_testing(&browser_client_);
     url_util::AddStandardScheme(chrome::kChromeUIScheme);
   }
 
   virtual void TearDown() OVERRIDE {
     RenderViewHostImplTestHarness::TearDown();
-    content::GetContentClient()->set_browser(old_browser_client_);
+    content::GetContentClient()->set_browser_for_testing(old_browser_client_);
     content::SetContentClient(old_client_);
   }
 

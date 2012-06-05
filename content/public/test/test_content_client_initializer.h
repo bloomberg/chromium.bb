@@ -14,8 +14,8 @@ class NotificationServiceImpl;
 namespace content {
 
 class ContentClient;
-class MockContentBrowserClient;
 class MockRenderProcessHostFactory;
+class TestContentBrowserClient;
 class TestRenderViewHostFactory;
 
 // Initializes various objects needed to run unit tests that use content::
@@ -34,7 +34,7 @@ class TestContentClientInitializer {
  private:
   scoped_ptr<NotificationServiceImpl> notification_service_;
   scoped_ptr<ContentClient> content_client_;
-  scoped_ptr<MockContentBrowserClient> content_browser_client_;
+  scoped_ptr<TestContentBrowserClient> content_browser_client_;
   scoped_ptr<content::MockRenderProcessHostFactory> rph_factory_;
   scoped_ptr<TestRenderViewHostFactory> test_render_view_host_factory_;
 

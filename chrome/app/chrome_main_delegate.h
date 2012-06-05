@@ -17,20 +17,15 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   ChromeMainDelegate();
   virtual ~ChromeMainDelegate();
 
+ private:
+  // content::ContentMainDelegate implementation:
   virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
-
-#if defined(OS_MACOSX)
-  void InitMacCrashReporter(const CommandLine& command_line,
-                            const std::string& process_type);
-#endif  // defined(OS_MACOSX)
-
   virtual void PreSandboxStartup() OVERRIDE;
   virtual void SandboxInitialized(const std::string& process_type) OVERRIDE;
   virtual int RunProcess(
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) OVERRIDE;
   virtual void ProcessExiting(const std::string& process_type) OVERRIDE;
-
 #if defined(OS_MACOSX)
   virtual bool ProcessRegistersWithSystemProcess(
       const std::string& process_type) OVERRIDE;
@@ -41,8 +36,17 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   virtual content::ZygoteForkDelegate* ZygoteStarting() OVERRIDE;
   virtual void ZygoteForked() OVERRIDE;
 #endif
+  virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
+  virtual content::ContentPluginClient* CreateContentPluginClient() OVERRIDE;
+  virtual content::ContentRendererClient*
+      CreateContentRendererClient() OVERRIDE;
+  virtual content::ContentUtilityClient* CreateContentUtilityClient() OVERRIDE;
 
- private:
+#if defined(OS_MACOSX)
+  void InitMacCrashReporter(const CommandLine& command_line,
+                            const std::string& process_type);
+#endif  // defined(OS_MACOSX)
+
   chrome::ChromeContentClient chrome_content_client_;
   scoped_ptr<base::StatsScope<base::StatsCounterTimer> > startup_timer_;
 

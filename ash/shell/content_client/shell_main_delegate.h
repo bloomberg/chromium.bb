@@ -29,18 +29,12 @@ class ShellMainDelegate : public content::ContentMainDelegate {
 
   virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
   virtual void PreSandboxStartup() OVERRIDE;
-#if defined(OS_POSIX)
-  virtual void ZygoteForked() OVERRIDE;
-#endif  // OS_MACOSX
+  virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
 
  private:
-  void InitializeShellContentClient(const std::string& process_type);
   void InitializeResourceBundle();
 
   scoped_ptr<ShellContentBrowserClient> browser_client_;
-  scoped_ptr<content::ShellContentRendererClient> renderer_client_;
-  scoped_ptr<content::ShellContentPluginClient> plugin_client_;
-  scoped_ptr<content::ShellContentUtilityClient> utility_client_;
   content::ShellContentClient content_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellMainDelegate);

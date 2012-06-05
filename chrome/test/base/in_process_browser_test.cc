@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -37,7 +38,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_launcher.h"
-#include "content/renderer/mock_content_renderer_client.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
 #include "ui/compositor/compositor_switches.h"
@@ -114,8 +114,8 @@ void InProcessBrowserTest::SetUp() {
   if (command_line->HasSwitch(switches::kSingleProcess)) {
     content::RenderProcessHost::set_run_renderer_in_process(true);
     single_process_renderer_client_.reset(
-        new content::MockContentRendererClient);
-    content::GetContentClient()->set_renderer(
+        new chrome::ChromeContentRendererClient);
+    content::GetContentClient()->set_renderer_for_testing(
         single_process_renderer_client_.get());
   }
 

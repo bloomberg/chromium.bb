@@ -5,7 +5,6 @@
 #include "content/test/content_test_suite.h"
 
 #include "base/logging.h"
-#include "content/browser/mock_content_browser_client.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"

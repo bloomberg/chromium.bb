@@ -51,7 +51,8 @@ ChromeRenderViewTest::~ChromeRenderViewTest() {
 }
 
 void ChromeRenderViewTest::SetUp() {
-  content::GetContentClient()->set_renderer(&chrome_content_renderer_client_);
+  content::GetContentClient()->set_renderer_for_testing(
+      &chrome_content_renderer_client_);
   extension_dispatcher_ = new ExtensionDispatcher();
   chrome_content_renderer_client_.SetExtensionDispatcher(extension_dispatcher_);
 

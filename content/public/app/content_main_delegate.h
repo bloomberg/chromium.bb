@@ -13,6 +13,10 @@
 
 namespace content {
 
+class ContentBrowserClient;
+class ContentPluginClient;
+class ContentRendererClient;
+class ContentUtilityClient;
 class ZygoteForkDelegate;
 struct MainFunctionParams;
 
@@ -68,6 +72,17 @@ class CONTENT_EXPORT ContentMainDelegate {
   // Called every time the zygote process forks.
   virtual void ZygoteForked() {}
 #endif  // OS_MACOSX
+
+ protected:
+  friend class ContentClientInitializer;
+
+  // Called once per relevant process type to allow the embedder to customize
+  // content. If an embedder wants the default (empty) implementation, don't
+  // override this.
+  virtual ContentBrowserClient* CreateContentBrowserClient();
+  virtual ContentPluginClient* CreateContentPluginClient();
+  virtual ContentRendererClient* CreateContentRendererClient();
+  virtual ContentUtilityClient* CreateContentUtilityClient();
 };
 
 }  // namespace content

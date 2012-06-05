@@ -14,11 +14,10 @@ namespace content {
 // Embedder API for participating in plugin logic.
 class CONTENT_EXPORT ContentPluginClient {
  public:
+  virtual ~ContentPluginClient() {}
+
   // Notifies that a plugin process has started.
   virtual void PluginProcessStarted(const string16& plugin_name) {}
-
- protected:
-  virtual ~ContentPluginClient() {}
 };
 
 }  // namespace content

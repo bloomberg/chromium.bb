@@ -124,7 +124,7 @@ void RenderViewTest::SetUp() {
   // Subclasses can set the ContentClient's renderer before calling
   // RenderViewTest::SetUp().
   if (!GetContentClient()->renderer())
-    GetContentClient()->set_renderer(&content_renderer_client_);
+    GetContentClient()->set_renderer_for_testing(&content_renderer_client_);
 
   // Subclasses can set render_thread_ with their own implementation before
   // calling RenderViewTest::SetUp().

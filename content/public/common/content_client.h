@@ -73,13 +73,9 @@ class CONTENT_EXPORT ContentClient {
   virtual ~ContentClient();
 
   ContentBrowserClient* browser() { return browser_; }
-  void set_browser(ContentBrowserClient* c) { browser_ = c; }
   ContentPluginClient* plugin() { return plugin_; }
-  void set_plugin(ContentPluginClient* p) { plugin_ = p; }
   ContentRendererClient* renderer() { return renderer_; }
-  void set_renderer(ContentRendererClient* r) { renderer_ = r; }
   ContentUtilityClient* utility() { return utility_; }
-  void set_utility(ContentUtilityClient* u) { utility_ = u; }
 
   // Sets the currently active URL.  Use GURL() to clear the URL.
   virtual void SetActiveURL(const GURL& url) {}
@@ -139,7 +135,12 @@ class CONTENT_EXPORT ContentClient {
       int* sandbox_profile_resource_id) const;
 #endif
 
+  void set_browser_for_testing(ContentBrowserClient* c) { browser_ = c; }
+  void set_renderer_for_testing(ContentRendererClient* r) { renderer_ = r; }
+
  private:
+  friend class ContentClientInitializer;  // To set these pointers.
+
   // The embedder API for participating in browser logic.
   ContentBrowserClient* browser_;
   // The embedder API for participating in plugin logic.

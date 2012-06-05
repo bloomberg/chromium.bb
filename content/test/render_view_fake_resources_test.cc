@@ -57,7 +57,7 @@ void RenderViewFakeResourcesTest::SetUp() {
   // but we use a real RenderThread so that we can use the ResourceDispatcher
   // to fetch network resources.  These are then served canned content
   // in OnRequestResource().
-  GetContentClient()->set_renderer(&content_renderer_client_);
+  GetContentClient()->set_renderer_for_testing(&content_renderer_client_);
   // Generate a unique channel id so that multiple instances of the test can
   // run in parallel.
   std::string channel_id = IPC::Channel::GenerateVerifiedChannelID(

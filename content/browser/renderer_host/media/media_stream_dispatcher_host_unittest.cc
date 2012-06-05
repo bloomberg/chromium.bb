@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/mock_content_browser_client.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
@@ -15,6 +14,7 @@
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/test/mock_resource_context.h"
+#include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/audio/audio_manager.h"
@@ -37,7 +37,7 @@ const int kPageRequestId = 7;
 namespace media_stream {
 
 class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
-                                      public content::MockContentBrowserClient {
+                                      public content::TestContentBrowserClient {
  public:
   MockMediaStreamDispatcherHost(content::ResourceContext* resource_context,
                                 MessageLoop* message_loop,
@@ -179,7 +179,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     old_browser_client_ = content::GetContentClient()->browser();
     content_client_.reset(new TestContentClient);
     content::SetContentClient(content_client_.get());
-    content_client_->set_browser(host_);
+    content_client_->set_browser_for_testing(host_);
   }
 
   virtual void TearDown() {
@@ -187,7 +187,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     SyncWithVideoCaptureManagerThread();
 
     // Recover the old browser client and content client.
-    content::GetContentClient()->set_browser(old_browser_client_);
+    content::GetContentClient()->set_browser_for_testing(old_browser_client_);
     content::SetContentClient(old_client_);
     content_client_.reset();
   }

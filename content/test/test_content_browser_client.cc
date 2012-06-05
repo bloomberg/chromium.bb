@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/mock_content_browser_client.h"
+#include "content/test/test_content_browser_client.h"
 
 #include <string>
 
@@ -15,13 +15,13 @@
 
 namespace content {
 
-MockContentBrowserClient::MockContentBrowserClient() {
+TestContentBrowserClient::TestContentBrowserClient() {
 }
 
-MockContentBrowserClient::~MockContentBrowserClient() {
+TestContentBrowserClient::~TestContentBrowserClient() {
 }
 
-WebContentsView* MockContentBrowserClient::OverrideCreateWebContentsView(
+WebContentsView* TestContentBrowserClient::OverrideCreateWebContentsView(
     WebContents* web_contents,
     RenderViewHostDelegateView** render_view_host_delegate_view) {
   TestWebContentsView* rv = new TestWebContentsView;
@@ -29,7 +29,7 @@ WebContentsView* MockContentBrowserClient::OverrideCreateWebContentsView(
   return rv;
 }
 
-FilePath MockContentBrowserClient::GetDefaultDownloadDirectory() {
+FilePath TestContentBrowserClient::GetDefaultDownloadDirectory() {
   if (!download_dir_.IsValid()) {
     bool result = download_dir_.CreateUniqueTempDir();
     CHECK(result);

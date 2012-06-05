@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
-#include "content/renderer/mock_content_renderer_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "media/base/channel_layout.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -164,7 +164,7 @@ class WebRTCAudioDeviceTest
 
   scoped_ptr<ReplaceContentClientRenderer> saved_content_renderer_;
   MessageLoopForUI message_loop_;
-  content::MockContentRendererClient mock_content_renderer_client_;
+  content::ContentRendererClient content_renderer_client_;
   RenderThreadImpl* render_thread_;  // Owned by mock_process_.
   scoped_ptr<WebRTCMockRenderProcess> mock_process_;
   scoped_ptr<MockMediaObserver> media_observer_;

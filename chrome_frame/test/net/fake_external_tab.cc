@@ -147,17 +147,19 @@ class FakeMainDelegate : public content::ContentMainDelegate {
     logging_win::InstallTestLogCollector(
         testing::UnitTest::GetInstance());
 
-    // Initialize the content client.
     content::SetContentClient(&g_chrome_content_client.Get());
-
-    // Override the default ContentBrowserClient to let Chrome participate in
-    // content logic.  We use a subclass of Chrome's implementation,
-    // FakeContentBrowserClient, to override CreateBrowserMainParts.  Must
-    // be done before any tabs are created.
-    content::GetContentClient()->set_browser(&g_browser_client.Get());
-    content::GetContentClient()->set_renderer(&g_renderer_client.Get());
+    content::GetContentClient()->set_renderer_for_testing(
+        &g_renderer_client.Get());
     return false;
   }
+
+  // Override the default ContentBrowserClient to let Chrome participate in
+  // content logic.  We use a subclass of Chrome's implementation,
+  // FakeContentBrowserClient, to override CreateBrowserMainParts.  Must
+  // be done before any tabs are created.
+  virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE {
+    return &g_browser_client.Get();
+  };
 };
 
 void FilterDisabledTests() {
