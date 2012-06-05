@@ -619,8 +619,10 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	uint32_t *k;
 	uint32_t i, set;
 	wl_fixed_t x, y;
+	int count;
 
 	prev = NULL;
+	count = 0;
 	while (x11_compositor_next_event(c, &event, mask)) {
 		switch (prev ? prev->response_type & ~0x80 : 0x80) {
 		case XCB_KEY_RELEASE:
@@ -756,6 +758,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			break;
 		}
 
+		count++;
 		if (prev != event)
 			free (event);
 	}
@@ -774,7 +777,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		break;
 	}
 
-	return event != NULL;
+	return count;
 }
 
 #define F(field) offsetof(struct x11_compositor, field)
