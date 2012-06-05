@@ -202,7 +202,7 @@ typedef std::vector<URLRow> URLRows;
 enum VisitSource {
   SOURCE_SYNCED = 0,         // Synchronized from somewhere else.
   SOURCE_BROWSED = 1,        // User browsed.
-  SOURCE_EXTENSION = 2,      // Added by an externsion.
+  SOURCE_EXTENSION = 2,      // Added by an extension.
   SOURCE_FIREFOX_IMPORTED = 3,
   SOURCE_IE_IMPORTED = 4,
   SOURCE_SAFARI_IMPORTED = 5,

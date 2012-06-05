@@ -1548,7 +1548,8 @@ void HistoryBackend::QueryFilteredURLs(
 
     if (extended_info) {
       VisitVector visits;
-      db_->GetVisitsForURL(current_data->GetID(), &visits);
+      db_->GetVisitsForURL(
+          db_->GetSegmentRepresentationURL(current_data->GetID()), &visits);
       if (visits.size() > 0) {
         url.extended_info.total_visits = visits.size();
         for (size_t i = 0; i < visits.size(); ++i) {
@@ -1558,7 +1559,7 @@ void HistoryBackend::QueryFilteredURLs(
             url.extended_info.last_visit_time = visits[i].visit_time;
           }
         }
-        // TODO(macourteau): implement the url.debug.visits stat.
+        // TODO(macourteau): implement the url.extended_info.visits stat.
       }
     }
     result.push_back(url);
