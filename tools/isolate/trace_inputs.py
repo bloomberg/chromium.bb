@@ -56,6 +56,18 @@ class TracingFailure(Exception):
     self.line = line
     self.extra = args
 
+  def __str__(self):
+    out = self.description
+    if self.pid:
+      out += '\npid: %d' % self.pid
+    if self.line_number:
+      out += '\nline: %d' % self.line_number
+    if self.line:
+      out += '\n%s' % self.line
+    if self.extra:
+      out += '\n' + ', '.join(map(str, filter(None, self.extra)))
+    return out
+
 
 ## OS-specific functions
 
@@ -737,7 +749,7 @@ class Strace(ApiBase):
 
       # Arguments parsing.
       RE_CHDIR = re.compile(r'^\"(.+?)\"$')
-      RE_EXECVE = re.compile(r'^\"(.+?)\", \[(.+)\], \[\/\* \d\d vars \*\/\]$')
+      RE_EXECVE = re.compile(r'^\"(.+?)\", \[(.+)\], \[\/\* \d+ vars? \*\/\]$')
       RE_OPEN2 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+)$')
       RE_OPEN3 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+), (\d+)$')
       RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
@@ -770,6 +782,7 @@ class Strace(ApiBase):
           return str(self.render())
 
       def __init__(self, root, pid):
+        logging.info('%s(%s, %d)' % (self.__class__.__name__, root, pid))
         super(Strace.Context.Process, self).__init__(root, pid, None, None)
         # The dict key is the function name of the pending call, like 'open'
         # or 'execve'.
@@ -897,11 +910,15 @@ class Strace(ApiBase):
       def handle_execve(self, args, result):
         if result != '0':
           return
-        m = self.RE_EXECVE.match(args)
-        filepath = m.group(1)
+        match = self.RE_EXECVE.match(args)
+        if not match:
+          raise TracingFailure(
+              'Failed to process execve(%s)' % args,
+              None, None, None)
+        filepath = match.group(1)
         self._handle_file(filepath)
         self.executable = self.RelativePath(self.get_cwd(), filepath)
-        self.command = process_quoted_arguments(m.group(2))
+        self.command = process_quoted_arguments(match.group(2))
 
       def handle_exit_group(self, _args, _result):
         """Removes cwd."""
@@ -1569,6 +1586,7 @@ class Dtrace(ApiBase):
       self.processes[pid].cwd = cwd2
 
     def handle_open_nocancel(self, pid, args):
+      """Redirects to handle_open()."""
       return self.handle_open(pid, args)
 
     def handle_open(self, pid, args):
@@ -1784,6 +1802,7 @@ class LogmanTrace(ApiBase):
         self.file_objects = {}
 
     def __init__(self, blacklist, tracer_pid):
+      logging.info('%s(%d)' % (self.__class__.__name__, tracer_pid))
       super(LogmanTrace.Context, self).__init__(blacklist)
       self._drive_map = DosDriveMap()
       # Threads mapping to the corresponding process id.
@@ -2042,6 +2061,9 @@ class LogmanTrace(ApiBase):
         # TODO(maruel): That's not strictly true either.
         cmd0 += '.exe'
       if cmd0.endswith(proc.executable) and os.path.isfile(cmd0):
+        # Fix the path.
+        cmd0 = cmd0.replace('/', os.path.sep)
+        cmd0 = os.path.normpath(cmd0)
         proc.executable = get_native_path_case(cmd0)
       logging.info(
           'New child: %s -> %d %s' % (ppid, pid, proc.executable))
@@ -2418,9 +2440,10 @@ def CMDread(parser, args):
       action='append',
       dest='variables',
       metavar='VAR_NAME directory',
+      default=[],
       help=('Variables to replace relative directories against. Example: '
-            '"-v HOME /home/%s" will replace all occurence of your home dir '
-            'with <(HOME)') % getpass.getuser())
+            '"-v \'$HOME\' \'/home/%s\'" will replace all occurence of your '
+            'home dir with $HOME') % getpass.getuser())
   parser.add_option(
       '--root-dir',
       help='Root directory to base everything off it. Anything outside of this '
