@@ -87,6 +87,8 @@
 #include "content/renderer/render_view_mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_accessibility.h"
+#include "content/renderer/renderer_accessibility_complete.h"
+#include "content/renderer/renderer_accessibility_focus_only.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webcolorchooser_impl.h"
 #include "content/renderer/speech_recognition_dispatcher.h"
@@ -290,10 +292,12 @@ using base::Time;
 using base::TimeDelta;
 using content::DocumentState;
 using content::NavigationState;
+using content::Referrer;
 using content::RenderThread;
 using content::RenderViewObserver;
 using content::RenderViewVisitor;
-using content::Referrer;
+using content::RendererAccessibilityComplete;
+using content::RendererAccessibilityFocusOnly;
 using content::V8ValueConverter;
 using webkit::forms::FormField;
 using webkit::forms::PasswordForm;
@@ -534,6 +538,7 @@ RenderViewImpl::RenderViewImpl(
       media_stream_impl_(NULL),
       p2p_socket_dispatcher_(NULL),
       devtools_agent_(NULL),
+      accessibility_mode_(AccessibilityModeOff),
       renderer_accessibility_(NULL),
       java_bridge_dispatcher_(NULL),
       mouse_lock_dispatcher_(NULL),
@@ -545,7 +550,6 @@ RenderViewImpl::RenderViewImpl(
       guest_to_embedder_channel_(guest_to_embedder_channel),
       guest_pp_instance_(0),
       guest_uninitialized_context_(NULL),
-      accessibility_mode_(accessibility_mode),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)) {
   routing_id_ = routing_id;
   surface_id_ = surface_id;
@@ -620,9 +624,11 @@ RenderViewImpl::RenderViewImpl(
   // The next group of objects all implement RenderViewObserver, so are deleted
   // along with the RenderView automatically.
   devtools_agent_ = new DevToolsAgent(this);
-  renderer_accessibility_ = new RendererAccessibility(this, accessibility_mode);
   mouse_lock_dispatcher_ = new RenderViewMouseLockDispatcher(this);
   intents_host_ = new WebIntentsHost(this);
+
+  // Create renderer_accessibility_ if needed.
+  OnSetAccessibilityMode(accessibility_mode);
 
   new IdleUserDetector(this);
 
@@ -951,6 +957,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnSetHistoryLengthAndPrune)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(JavaBridgeMsg_Init, OnJavaBridgeInit)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetAccessibilityMode, OnSetAccessibilityMode)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
@@ -2123,7 +2130,10 @@ int RenderViewImpl::historyForwardListCount() {
 void RenderViewImpl::postAccessibilityNotification(
     const WebAccessibilityObject& obj,
     WebAccessibilityNotification notification) {
-  renderer_accessibility_->PostAccessibilityNotification(obj, notification);
+  if (renderer_accessibility_) {
+    renderer_accessibility_->HandleWebAccessibilityNotification(
+        obj, notification);
+  }
 }
 
 void RenderViewImpl::didUpdateInspectorSetting(const WebString& key,
@@ -3741,17 +3751,29 @@ WebKit::WebNode RenderViewImpl::GetContextMenuNode() const {
   return context_menu_node_;
 }
 
-bool RenderViewImpl::IsEditableNode(const WebKit::WebNode& node) const {
-  bool is_editable_node = false;
-  if (!node.isNull()) {
-    if (node.isContentEditable()) {
-      is_editable_node = true;
-    } else if (node.isElementNode()) {
-      is_editable_node =
-          node.toConst<WebElement>().isTextFormControlElement();
+bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
+  if (node.isNull())
+    return false;
+
+  if (node.isContentEditable())
+    return true;
+
+  if (node.isElementNode()) {
+    const WebElement& element = node.toConst<WebElement>();
+    if (element.isTextFormControlElement())
+      return true;
+
+    // Also return true if it has an ARIA role of 'textbox'.
+    for (unsigned i = 0; i < element.attributeCount(); ++i) {
+      if (LowerCaseEqualsASCII(element.attributeLocalName(i), "role")) {
+        if (LowerCaseEqualsASCII(element.attributeValue(i), "textbox"))
+          return true;
+        break;
+      }
     }
   }
-  return is_editable_node;
+
+  return false;
 }
 
 void RenderViewImpl::GuestReady(PP_Instance instance) {
@@ -4949,6 +4971,20 @@ void RenderViewImpl::OnSetBackground(const SkBitmap& background) {
     webview()->setIsTransparent(!background.empty());
 
   SetBackground(background);
+}
+
+void RenderViewImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
+  if (accessibility_mode_ == new_mode)
+    return;
+  accessibility_mode_ = new_mode;
+  if (renderer_accessibility_) {
+    delete renderer_accessibility_;
+    renderer_accessibility_ = NULL;
+  }
+  if (accessibility_mode_ == AccessibilityModeComplete)
+    renderer_accessibility_ = new RendererAccessibilityComplete(this);
+  else if (accessibility_mode_ == AccessibilityModeEditableTextOnly)
+    renderer_accessibility_ = new RendererAccessibilityFocusOnly(this);
 }
 
 void RenderViewImpl::OnSetActive(bool active) {

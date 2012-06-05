@@ -77,7 +77,6 @@ class NotificationProvider;
 class PepperDeviceTest;
 struct PP_NetAddress_Private;
 class RenderWidgetFullscreenPepper;
-class RendererAccessibility;
 class RendererWebColorChooserImpl;
 class SkBitmap;
 class InputTagSpeechDispatcher;
@@ -98,6 +97,7 @@ class NavigationState;
 class P2PSocketDispatcher;
 class RenderViewObserver;
 class RenderViewTest;
+class RendererAccessibility;
 struct CustomContextMenuContext;
 struct FileChooserParams;
 struct SelectedFileInfo;
@@ -759,6 +759,7 @@ class RenderViewImpl : public RenderWidget,
   // For unit tests.
   friend class ExternalPopupMenuTest;
   friend class PepperDeviceTest;
+  friend class RendererAccessibilityTest;
   friend class content::RenderViewTest;
 
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
@@ -940,6 +941,7 @@ class RenderViewImpl : public RenderWidget,
                            bool notify_result);
   void OnSelectAll();
   void OnSelectRange(const gfx::Point& start, const gfx::Point& end);
+  CONTENT_EXPORT void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnSetActive(bool active);
   void OnSetAltErrorPageURL(const GURL& gurl);
   void OnSetBackground(const SkBitmap& background);
@@ -1306,7 +1308,12 @@ class RenderViewImpl : public RenderWidget,
 
   DevToolsAgent* devtools_agent_;
 
-  RendererAccessibility* renderer_accessibility_;
+  // The current accessibility mode.
+  AccessibilityMode accessibility_mode_;
+
+  // Only valid if |accessibility_mode_| is anything other than
+  // AccessibilityModeOff.
+  content::RendererAccessibility* renderer_accessibility_;
 
   // Java Bridge dispatcher attached to this view; lazily initialized.
   JavaBridgeDispatcher* java_bridge_dispatcher_;
@@ -1412,9 +1419,6 @@ class RenderViewImpl : public RenderWidget,
   // These are the attributes originally passed into createGraphicsContext3D
   // before the guest_to_embedder_channel was ready.
   WebKit::WebGraphicsContext3D::Attributes guest_attributes_;
-
-  // The accessibility mode.
-  AccessibilityMode accessibility_mode_;
 
   // NOTE: pepper_delegate_ should be last member because its constructor calls
   // AddObservers method of RenderViewImpl from c-tor.

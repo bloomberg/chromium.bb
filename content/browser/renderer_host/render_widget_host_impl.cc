@@ -1670,7 +1670,7 @@ void RenderWidgetHostImpl::SetEditCommandsForNextKeyEvent(
 }
 
 void RenderWidgetHostImpl::SetAccessibilityMode(AccessibilityMode mode) {
-  Send(new AccessibilityMsg_SetMode(routing_id_, mode));
+  Send(new ViewMsg_SetAccessibilityMode(routing_id_, mode));
 }
 
 void RenderWidgetHostImpl::AccessibilityDoDefaultAction(int object_id) {

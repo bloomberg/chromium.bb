@@ -95,7 +95,6 @@ enum AccessibilityNotification {
 
 #endif  // CONTENT_COMMON_ACCESSIBILITY_MESSAGES_H_
 
-IPC_ENUM_TRAITS(AccessibilityMode)
 IPC_ENUM_TRAITS(AccessibilityNotification)
 
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::BoolAttribute)
@@ -140,10 +139,6 @@ IPC_STRUCT_BEGIN(AccessibilityHostMsg_NotificationParams)
 IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.
-
-// Change the accessibility mode in the renderer process.
-IPC_MESSAGE_ROUTED1(AccessibilityMsg_SetMode,
-                    AccessibilityMode)
 
 // Relay a request from assistive technology to set focus to a given node.
 IPC_MESSAGE_ROUTED1(AccessibilityMsg_SetFocus,

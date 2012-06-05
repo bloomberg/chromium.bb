@@ -79,8 +79,8 @@ class CONTENT_EXPORT RenderView : public IPC::Message::Sender {
   // Gets the node that the context menu was pressed over.
   virtual WebKit::WebNode GetContextMenuNode() const = 0;
 
-  // Returns true if the parameter node is a textfield, text area or a content
-  // editable div.
+  // Returns true if the parameter node is a textfield, text area, a content
+  // editable div, or has an ARIA role of textbox.
   virtual bool IsEditableNode(const WebKit::WebNode& node) const = 0;
 
   // Create a new NPAPI/Pepper plugin depending on |info|. Returns NULL if no

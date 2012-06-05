@@ -55,6 +55,7 @@
 
 #define IPC_MESSAGE_START ViewMsgStart
 
+IPC_ENUM_TRAITS(AccessibilityMode)
 IPC_ENUM_TRAITS(ChannelLayout)
 IPC_ENUM_TRAITS(CSSColors::CSSColorName)
 IPC_ENUM_TRAITS(NavigationGesture)
@@ -1235,6 +1236,10 @@ IPC_MESSAGE_CONTROL1(ViewMsg_TempCrashWithData,
 // white-on-black.
 IPC_MESSAGE_ROUTED1(ViewMsg_InvertWebContent,
                     bool /* invert */)
+
+// Change the accessibility mode in the renderer process.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetAccessibilityMode,
+                    AccessibilityMode)
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
