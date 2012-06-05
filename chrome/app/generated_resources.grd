@@ -5229,11 +5229,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHOW_FPS_COUNTER_DESCRIPTION" desc="Description of the 'Show FPS counter' lab.">
         Shows a page's actual frame rate, in frames per second, when hardware acceleration is active.
       </message>
-      <message name="IDS_FLAGS_ACCELERATED_FILTERS" desc="Name of the 'Accelerated SVG and CSS Filters' lab.">
-        GPU Accelerated SVG and CSS Filters
+      <message name="IDS_FLAGS_ACCELERATED_FILTERS" desc="Name of the 'Accelerated SVG Filters' lab.">
+        GPU Accelerated SVG Filters
       </message>
-      <message name="IDS_FLAGS_ACCELERATED_FILTERS_DESCRIPTION" desc="Description of the 'Accelerated SVG and CSS Filters' lab.">
-        Use the GPU to accelerate rendering of SVG and CSS filters.
+      <message name="IDS_FLAGS_ACCELERATED_FILTERS_DESCRIPTION" desc="Description of the 'Accelerated SVG Filters' lab.">
+        Use the GPU to accelerate rendering of SVG filters.
       </message>
       <message name="IDS_FLAGS_COMPOSITE_TO_TEXTURE_NAME" desc="Name of the 'Offscreen Compositing' lab.">
         Composite to Texture
