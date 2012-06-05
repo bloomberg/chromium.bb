@@ -94,6 +94,9 @@ class SystemGestureEventFilter : public aura::EventFilter,
   // A device swipe gesture is in progress.
   bool is_scrubbing_;
 
+  class LongPressAffordanceAnimation;
+  scoped_ptr<LongPressAffordanceAnimation> long_press_affordance_;
+
   DISALLOW_COPY_AND_ASSIGN(SystemGestureEventFilter);
 };
 

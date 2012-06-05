@@ -8,22 +8,46 @@
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
+#include "base/timer.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/animation/animation.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/linear_animation.h"
+#include "ui/base/gestures/gesture_configuration.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/size.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace {
+using views::Widget;
 
 const int kSystemPinchPoints = 4;
+
+const int kAffordanceRadius = 40;
+const int kAffordanceWidth = 3;
+const SkColor kAffordanceFullColor = SkColorSetARGB(125, 0, 0, 255);
+const SkColor kAffordanceEmptyColor = SkColorSetARGB(50, 0, 0, 255);
+const int kAffordanceFrameRateHz = 60;
+const int kAffordanceStartDelay = 300;
 
 const double kPinchThresholdForMaximize = 1.5;
 const double kPinchThresholdForMinimize = 0.7;
@@ -44,10 +68,176 @@ aura::Window* GetTargetForSystemGestureEvent(aura::Window* target) {
   return system_target;
 }
 
+Widget* CreateAffordanceWidget() {
+  Widget* widget = new Widget;
+  Widget::InitParams params;
+  params.type = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.keep_on_top = true;
+  params.accept_events = false;
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.transparent = true;
+  widget->Init(params);
+  widget->SetOpacity(0xFF);
+  widget->GetNativeWindow()->SetParent(ash::Shell::GetInstance()->GetContainer(
+      ash::internal::kShellWindowId_OverlayContainer));
+  ash::SetWindowVisibilityAnimationTransition(widget->GetNativeView(),
+      ash::ANIMATE_HIDE);
+  return widget;
 }
+
+// View of the LongPressAffordanceAnimation. Draws the actual contents and
+// updates as the animation proceeds. It also maintains the views::Widget that
+// the animation is shown in.
+// Currently the affordance is to simply show an empty circle and fill it up as
+// the animation proceeds.
+// TODO(varunjain): Change the look of this affordance when we get official UX.
+class LongPressAffordanceView : public views::View {
+ public:
+  explicit LongPressAffordanceView(const gfx::Point& event_location)
+      : views::View(),
+        widget_(CreateAffordanceWidget()),
+        current_angle_(0) {
+    widget_->SetContentsView(this);
+    widget_->SetAlwaysOnTop(true);
+
+    // We are owned by the LongPressAffordance.
+    set_owned_by_client();
+    widget_->SetBounds(gfx::Rect(event_location.x() - kAffordanceRadius,
+                                 event_location.y() - kAffordanceRadius,
+                                 GetPreferredSize().width(),
+                                 GetPreferredSize().height()));
+    widget_->Show();
+  }
+
+  virtual ~LongPressAffordanceView() {
+    widget_->Hide();
+  }
+
+  void UpdateWithAnimation(ui::Animation* animation) {
+    // Update the portion of the circle filled so far and re-draw.
+    current_angle_ = animation->CurrentValueBetween(0, 360);
+    SchedulePaint();
+  }
+
+ private:
+  // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    return gfx::Size(2 * kAffordanceRadius, 2 * kAffordanceRadius);
+  }
+
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    SkPaint paint;
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(kAffordanceWidth);
+    paint.setColor(kAffordanceEmptyColor);
+
+    // Draw empty circle.
+    canvas->DrawCircle(gfx::Point(kAffordanceRadius, kAffordanceRadius),
+        kAffordanceRadius - kAffordanceWidth, paint);
+
+    // Then draw the portion filled so far by the animation.
+    SkPath path;
+    path.addArc(
+        SkRect::MakeXYWH(kAffordanceWidth, kAffordanceWidth,
+                         2 * (kAffordanceRadius - kAffordanceWidth),
+                         2 * (kAffordanceRadius - kAffordanceWidth)),
+        -90, current_angle_);
+    paint.setColor(kAffordanceFullColor);
+    canvas->DrawPath(path, paint);
+  }
+
+  scoped_ptr<Widget> widget_;
+  int current_angle_;
+
+  DISALLOW_COPY_AND_ASSIGN(LongPressAffordanceView);
+};
+
+}  // namespace
 
 namespace ash {
 namespace internal {
+
+// LongPressAffordanceAnimation displays an animated affordance that is shown
+// on a TAP_DOWN gesture. The animation completes on a LONG_PRESS gesture, or is
+// canceled and hidden if any other event is received before that.
+class SystemGestureEventFilter::LongPressAffordanceAnimation
+    : public ui::AnimationDelegate,
+      public ui::LinearAnimation {
+ public:
+  LongPressAffordanceAnimation()
+      : ui::LinearAnimation(kAffordanceFrameRateHz, this),
+        view_(NULL) {
+    int duration =
+        ui::GestureConfiguration::long_press_time_in_seconds() * 1000 -
+        kAffordanceStartDelay;
+    SetDuration(duration);
+  }
+
+  void ProcessEvent(aura::Window* target, aura::LocatedEvent* event) {
+    gfx::Point event_location;
+    switch (event->type()) {
+      case ui::ET_GESTURE_TAP_DOWN:
+        // Start animation.
+        tap_down_location_ = event->root_location();
+        timer_.Start(FROM_HERE,
+                     base::TimeDelta::FromMilliseconds(kAffordanceStartDelay),
+                     this,
+                     &LongPressAffordanceAnimation::StartAnimation);
+        break;
+      case ui::ET_TOUCH_MOVED:
+        // We do not want to stop the animation on every TOUCH_MOVED. Instead,
+        // we will rely on SCROLL_BEGIN to break the animation when the user
+        // moves their finger.
+        break;
+      case ui::ET_GESTURE_LONG_PRESS:
+        if (is_animating())
+          End();
+        // fall through to default to reset the view.
+      default:
+        // On all other touch and gesture events, we hide the animation.
+        StopAnimation();
+        break;
+    }
+  }
+
+ private:
+  void StartAnimation() {
+    view_.reset(new LongPressAffordanceView(tap_down_location_));
+    Start();
+  }
+
+  void StopAnimation() {
+    if (timer_.IsRunning())
+      timer_.Stop();
+    if (is_animating())
+      Stop();
+    view_.reset();
+  }
+
+  // Overridden from ui::LinearAnimation.
+  virtual void AnimateToState(double state) OVERRIDE {
+    DCHECK(view_.get());
+    view_->UpdateWithAnimation(this);
+  }
+
+  // Overridden from ui::AnimationDelegate.
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
+    view_.reset();
+  }
+
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+  }
+
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
+    view_.reset();
+  }
+
+  scoped_ptr<LongPressAffordanceView> view_;
+  gfx::Point tap_down_location_;
+  base::OneShotTimer<LongPressAffordanceAnimation> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(LongPressAffordanceAnimation);
+};
 
 class SystemPinchHandler {
  public:
@@ -247,7 +437,8 @@ SystemGestureEventFilter::SystemGestureEventFilter()
       overlap_percent_(5),
       start_location_(BEZEL_START_UNSET),
       orientation_(SCROLL_ORIENTATION_UNSET),
-      is_scrubbing_(false){
+      is_scrubbing_(false),
+      long_press_affordance_(new LongPressAffordanceAnimation) {
 }
 
 SystemGestureEventFilter::~SystemGestureEventFilter() {
@@ -266,11 +457,13 @@ bool SystemGestureEventFilter::PreHandleMouseEvent(aura::Window* target,
 ui::TouchStatus SystemGestureEventFilter::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
+  long_press_affordance_->ProcessEvent(target, event);
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     aura::Window* target, aura::GestureEvent* event) {
+  long_press_affordance_->ProcessEvent(target, event);
   if (!target || target == target->GetRootWindow()) {
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN: {
