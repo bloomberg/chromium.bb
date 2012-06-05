@@ -535,7 +535,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::string VersionString() const;
   const std::string& name() const { return name_; }
   const std::string& non_localized_name() const { return non_localized_name_; }
-  const std::string public_key() const { return public_key_; }
+  // Base64-encoded version of the key used to sign this extension.
+  // In pseudocode, returns
+  // base::Base64Encode(RSAPrivateKey(pem_file).ExportPublicKey()).
+  const std::string& public_key() const { return public_key_; }
   const std::string& description() const { return description_; }
   int manifest_version() const { return manifest_version_; }
   bool converted_from_user_script() const {
