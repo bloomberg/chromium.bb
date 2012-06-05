@@ -526,7 +526,8 @@ void BufferedDataSource::ReadCallback(
 
     if (host() && total_bytes_ != kPositionNotSpecified) {
       host()->SetTotalBytes(total_bytes_);
-      host()->AddBufferedByteRange(last_read_start_, total_bytes_);
+      host()->AddBufferedByteRange(loader_->first_byte_position(),
+                                   total_bytes_);
     }
   }
   DoneRead_Locked(bytes_read);
@@ -566,8 +567,9 @@ void BufferedDataSource::NetworkEventCallback() {
       host()->SetNetworkActivity(is_downloading_data);
   }
 
-  if (host() && current_buffered_position > last_read_start_)
-    host()->AddBufferedByteRange(last_read_start_, current_buffered_position);
+  int64 start = loader_->first_byte_position();
+  if (host() && current_buffered_position > start)
+    host()->AddBufferedByteRange(start, current_buffered_position);
 }
 
 void BufferedDataSource::UpdateHostState_Locked() {
@@ -579,8 +581,9 @@ void BufferedDataSource::UpdateHostState_Locked() {
 
   if (total_bytes_ != kPositionNotSpecified)
     host()->SetTotalBytes(total_bytes_);
-  if (buffered_bytes_ > last_read_start_)
-    host()->AddBufferedByteRange(last_read_start_, buffered_bytes_);
+  int64 start = loader_->first_byte_position();
+  if (buffered_bytes_ > start)
+    host()->AddBufferedByteRange(start, buffered_bytes_);
 }
 
 }  // namespace webkit_media

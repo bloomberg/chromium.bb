@@ -716,6 +716,10 @@ void BufferedResourceLoader::ReadInternal() {
   DoneRead(kOk, read);
 }
 
+int64 BufferedResourceLoader::first_byte_position() const {
+  return first_byte_position_;
+}
+
 // static
 bool BufferedResourceLoader::ParseContentRange(
     const std::string& content_range_str, int64* first_byte_position,

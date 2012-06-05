@@ -183,6 +183,9 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // accordingly.
   void SetBitrate(int bitrate);
 
+  // Return the |first_byte_position| passed into the ctor.
+  int64 first_byte_position() const;
+
   // Parse a Content-Range header into its component pieces and return true if
   // each of the expected elements was found & parsed correctly.
   // |*instance_size| may be set to kPositionNotSpecified if the range ends in
@@ -281,8 +284,8 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   size_t saved_forward_capacity_;
 
   GURL url_;
-  int64 first_byte_position_;
-  int64 last_byte_position_;
+  const int64 first_byte_position_;
+  const int64 last_byte_position_;
   bool single_origin_;
 
   // Closure that listens to network events.
