@@ -2513,18 +2513,18 @@
             "txt": "katekizmusszerű"
         }, 
         {
-            "brl": "kattint\"s5\"m", 
-            "testmode": "backtranslate", 
-            "txt": "kattintásszám"
-        }, 
-        {
-            "brl": "kattint\"s5\"m", 
-            "testmode": "backtranslate", 
-            "txt": "kattintásszám"
-        }, 
-        {
             "brl": "kateki2mus5er}", 
+            "testmode": "backtranslate", 
             "txt": "katekizmusszerű"
+        }, 
+        {
+            "brl": "kattint\"s5\"m", 
+            "txt": "kattintásszám"
+        }, 
+        {
+            "brl": "kattint\"s5\"m", 
+            "testmode": "backtranslate", 
+            "txt": "kattintásszám"
         }, 
         {
             "brl": "kavar\"s5er}", 
