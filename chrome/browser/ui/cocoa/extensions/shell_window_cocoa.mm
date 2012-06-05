@@ -42,7 +42,7 @@ ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
   [window setTitle:base::SysUTF8ToNSString(extension->name())];
 
   NSView* view = web_contents()->GetView()->GetNativeView();
-  [view setFrame:rect];
+  [view setFrame:[[window contentView] bounds]];
   [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   [[window contentView] addSubview:view];
 
