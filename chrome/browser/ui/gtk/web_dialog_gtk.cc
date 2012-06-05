@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/web_dialog_controller.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -30,10 +29,8 @@ namespace browser {
 
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 Profile* profile,
-                                Browser* browser,
                                 WebDialogDelegate* delegate) {
-  WebDialogGtk* web_dialog =
-      new WebDialogGtk(profile, browser, delegate, parent);
+  WebDialogGtk* web_dialog = new WebDialogGtk(profile, delegate, parent);
   return web_dialog->InitDialog();
 }
 
@@ -63,14 +60,12 @@ void SetDialogStyle() {
 // WebDialogGtk, public:
 
 WebDialogGtk::WebDialogGtk(Profile* profile,
-                           Browser* browser,
                            WebDialogDelegate* delegate,
                            gfx::NativeWindow parent_window)
     : WebDialogWebContentsDelegate(profile),
       delegate_(delegate),
       parent_window_(parent_window),
-      dialog_(NULL),
-      dialog_controller_(new WebDialogController(this, profile, browser)) {
+      dialog_(NULL) {
 }
 
 WebDialogGtk::~WebDialogGtk() {
