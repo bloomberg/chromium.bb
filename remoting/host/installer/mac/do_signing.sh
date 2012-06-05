@@ -21,7 +21,7 @@ readonly ME
 # 'true' to use Iceberg, 'false' to use Packages.
 # TODO(garykac) Switch completely to Packages so we can sign for 10.8.
 # (crbug.com/127267)
-USE_ICEBERG=true
+USE_ICEBERG=false
 
 declare -a g_cleanup_dirs
 

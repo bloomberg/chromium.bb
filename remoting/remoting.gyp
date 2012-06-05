@@ -185,7 +185,7 @@
       'host/installer/mac/Scripts/keystone_install.sh',
       'host/installer/mac/Scripts/remoting_postflight.sh',
       'host/installer/mac/Scripts/remoting_preflight.sh',
-      'host/installer/mac/Keystone/GoogleSoftwareUpdate.pkg.zip',
+      'host/installer/mac/Keystone/GoogleSoftwareUpdate.pkg',
       '<(DEPTH)/chrome/installer/mac/pkg-dmg',
     ],
   },
