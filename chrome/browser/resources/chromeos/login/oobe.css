@@ -371,31 +371,31 @@ html[oobe=old] #connect {
 /* TODO(nkostylev): Extract common style for OOBE steps. */
 html[oobe=new] #connect {
   min-height: 304px;
-  padding: 70px 17px 21px 17px;
+  padding: 70px 17px 21px;
   width: 688px;
 }
 
 html[oobe=new] #eula {
   min-height: 304px;
-  padding: 70px 17px 21px 17px;
+  padding: 70px 17px 21px;
   width: 688px;
 }
 
 html[oobe=new] #update {
   min-height: 284px;
-  padding: 70px 17px 69px 17px;    /* Screen has no controls. */
+  padding: 70px 17px 69px;    /* Screen has no controls. */
   width: 688px;
 }
 
 html[oobe=new] #gaia-signin {
   height: 470px;
-  padding: 70px 17px 69px 17px;    /* Screen has no controls. */
+  padding: 70px 17px 69px;    /* Screen has no controls. */
   width: 688px;
 }
 
 html[oobe=new] #user-image {
   min-height: 352px;
-  padding: 70px 17px 21px 17px;
+  padding: 70px 17px 21px;
   width: 688px;
 }
 

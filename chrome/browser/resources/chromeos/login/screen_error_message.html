@@ -1,33 +1,38 @@
 <div id="error-message" class="step faded hidden show-offline-message">
-  <div id="error-message-screen-title">
-    <span id="error-message-title" i18n-content="offlineMessageTitle"
-        class="show-with-offline-message"></span>
-    <span id="captive-portal-title" i18n-content="captivePortalTitle"
-        class="show-with-captive-portal show-with-proxy-error"></span>
+  <div class="step-logo">
+    <img src="chrome://theme/IDR_PRODUCT_LOGO">
   </div>
-  <div id="error-message-body">
-    <span id="offline-message-text" i18n-content="offlineMessageBody"
-        class="show-with-offline-message"></span>
-    <div id="captive-portal-message-text"
-        class="show-with-captive-portal"></div>
-    <div id="captive-portal-proxy-message-text"
-        class="show-with-captive-portal"></div>
-    <div id="proxy-message-text"
-        class="show-with-proxy-error"></div>
-  </div>
-  <div id="offline-network-control" class="control-with-label">
-    <label for="offline-networks-list-dropdown" i18n-content="selectNetwork"
-        class="flexible-label dont-show-with-captive-portal"></label>
-    <label for="offline-networks-list-dropdown"
-        i18n-content="selectAnotherNetwork"
-        class="flexible-label show-with-captive-portal"></label>
-    <div class="menu-area">
-      <div id="offline-networks-list" class="menu-control">
+  <div class="step-contents">
+    <div id="error-message-screen-title">
+      <span id="error-message-title" i18n-content="offlineMessageTitle"
+          class="show-with-offline-message"></span>
+      <span id="captive-portal-title" i18n-content="captivePortalTitle"
+          class="show-with-captive-portal show-with-proxy-error"></span>
+    </div>
+    <div id="error-message-body">
+      <span id="offline-message-text" i18n-content="offlineMessageBody"
+          class="show-with-offline-message"></span>
+      <div id="captive-portal-message-text"
+          class="show-with-captive-portal"></div>
+      <div id="captive-portal-proxy-message-text"
+          class="show-with-captive-portal"></div>
+      <div id="proxy-message-text"
+          class="show-with-proxy-error"></div>
+    </div>
+    <div id="offline-network-control" class="control-with-label">
+      <label for="offline-networks-list-dropdown" i18n-content="selectNetwork"
+          class="flexible-label dont-show-with-captive-portal"></label>
+      <label for="offline-networks-list-dropdown"
+          i18n-content="selectAnotherNetwork"
+          class="flexible-label show-with-captive-portal"></label>
+      <div class="menu-area">
+        <div id="offline-networks-list" class="menu-control">
+        </div>
       </div>
     </div>
+    <div id="error-guest-signin"
+        class="show-with-offline-message show-with-captive-portal"></div>
+    <div id="error-offline-login"
+        class="show-with-offline-message show-with-captive-portal"></div>
   </div>
-  <div id="error-guest-signin"
-      class="show-with-offline-message show-with-captive-portal"></div>
-  <div id="error-offline-login"
-      class="show-with-offline-message show-with-captive-portal"></div>
 </div>

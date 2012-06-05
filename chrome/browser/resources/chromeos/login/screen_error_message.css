@@ -3,6 +3,13 @@
  * found in the LICENSE file.
  */
 
+html[oobe=new] #error-message {
+  min-height: 184px;
+  /* Screen has no controls but has padding at the last text message */
+  padding: 70px 17px 50px;
+  width: 688px;
+}
+
 #error-message-screen-title {
   -webkit-margin-end: 60px;
   -webkit-margin-start: 60px;
