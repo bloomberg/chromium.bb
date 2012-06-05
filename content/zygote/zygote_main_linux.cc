@@ -504,14 +504,38 @@ static bool EnterSandbox(bool* using_suid_sandbox, bool* has_started_new_init) {
 
   const char* const sandbox_fd_string = getenv(kSUIDSandboxVar);
   if (sandbox_fd_string) {
+    char* endptr;
     // Use the SUID sandbox.  This still allows the seccomp sandbox to
     // be enabled by the process later.
     *using_suid_sandbox = true;
 
-    char* endptr;
+    // Check if the SUID sandbox provides the correct API version.
+    const char* const sandbox_api_string =
+                        getenv(base::kSandboxEnvironmentApiProvides);
+    // Assume API version 0 if no environment was found
+    long sandbox_api_num = 0;
+    if (sandbox_api_string) {
+      errno = 0;
+      sandbox_api_num = strtol(sandbox_api_string, &endptr, 10);
+      if (errno || *endptr) {
+        return false;
+      }
+    }
+
+    if (sandbox_api_num != base::kSUIDSandboxApiNumber) {
+      LOG(WARNING) << "You are using a wrong version of the setuid binary!\n"
+       "Please read "
+       "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment."
+       "\n\n";
+    }
+
+    // Get the file descriptor to signal the chroot helper.
+    errno = 0;
     const long fd_long = strtol(sandbox_fd_string, &endptr, 10);
-    if (!*sandbox_fd_string || *endptr || fd_long < 0 || fd_long > INT_MAX)
+    if (errno || !*sandbox_fd_string || *endptr || fd_long < 0 ||
+        fd_long > INT_MAX) {
       return false;
+    }
     const int fd = fd_long;
 
     static const char kMsgChrootMe = 'C';

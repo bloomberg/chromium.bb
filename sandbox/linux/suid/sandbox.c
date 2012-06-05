@@ -42,6 +42,12 @@
 
 static const char kSandboxDescriptorEnvironmentVarName[] = "SBX_D";
 static const char kSandboxHelperPidEnvironmentVarName[] = "SBX_HELPER_PID";
+
+// Should be kept in sync with base/linux_util.h
+static const long kSUIDSandboxApiNumber = 0;
+static const char kSandboxEnvironmentApiRequest[] = "SBX_CHROME_API_RQ";
+static const char kSandboxEnvironmentApiProvides[] = "SBX_CHROME_API_PRV";
+
 // This number must be kept in sync with common/zygote_commands_linux.h
 static const int kZygoteIdFd = 7;
 
@@ -361,14 +367,59 @@ static bool SetupChildEnvironment() {
   return true;
 }
 
+bool CheckAndExportApiVersion() {
+  // Check the environment to see if a specific API version was requested.
+  // assume version 0 if none.
+  long api_number = -1;
+  char *api_string = getenv(kSandboxEnvironmentApiRequest);
+  if (!api_string) {
+    api_number = 0;
+  } else {
+    errno = 0;
+    char* endptr = NULL;
+    api_number = strtol(api_string, &endptr, 10);
+    if (!endptr || *endptr || errno != 0)
+      return false;
+  }
+
+  // Warn only for now.
+  if (api_number != kSUIDSandboxApiNumber) {
+    fprintf(stderr, "The setuid sandbox provides API version %ld, "
+      "but you need %ld\n"
+      "Please read "
+      "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment."
+      "\n\n",
+      kSUIDSandboxApiNumber,
+      api_number);
+  }
+
+  // Export our version so that the sandboxed process can verify it did not
+  // use an old sandbox.
+  char version_string[64];
+  snprintf(version_string, sizeof(version_string), "%ld",
+           kSUIDSandboxApiNumber);
+  if (setenv(kSandboxEnvironmentApiProvides, version_string, 1)) {
+    perror("setenv");
+    return false;
+  }
+
+  return true;
+}
+
 int main(int argc, char **argv) {
   if (argc <= 1) {
-    if (argc == 0) {
+    if (argc <= 0) {
       return 1;
     }
 
     fprintf(stderr, "Usage: %s <renderer process> <args...>\n", argv[0]);
     return 1;
+  }
+
+  // Allow someone to query our API version
+  if (argc == 2 && 0 == strcmp(argv[1], kSuidSandboxGetApiSwitch)) {
+    printf("%ld\n", kSUIDSandboxApiNumber);
+    return 0;
   }
 
   // In the SUID sandbox, if we succeed in calling MoveToNewNamespaces()
@@ -425,6 +476,11 @@ int main(int argc, char **argv) {
     return AdjustLowMemoryMargin(margin_mb);
   }
 #endif
+
+  // Protect the core setuid sandbox functionality with an API version
+  if (!CheckAndExportApiVersion()) {
+    return 1;
+  }
 
   if (!MoveToNewNamespaces())
     return 1;

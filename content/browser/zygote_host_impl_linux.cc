@@ -38,6 +38,14 @@
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif
 
+// Set an environment variable that reflects the API version we expect from the
+// setuid sandbox. Old versions of the sandbox will ignore this.
+static void SetSandboxAPIEnvironmentVariable() {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  env->SetVar(base::kSandboxEnvironmentApiRequest,
+              base::IntToString(base::kSUIDSandboxApiNumber));
+}
+
 static void SaveSUIDUnsafeEnvironmentVariables() {
   // The ELF loader will clear many environment variables so we save them to
   // different names here so that the SUID sandbox can resolve them for the
@@ -146,6 +154,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
       cmd_line.PrependWrapper(sandbox_binary_);
 
       SaveSUIDUnsafeEnvironmentVariables();
+      SetSandboxAPIEnvironmentVariable();
     } else {
       LOG(FATAL) << "The SUID sandbox helper binary was found, but is not "
                     "configured correctly. Rather than run without sandboxing "
