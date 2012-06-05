@@ -101,6 +101,8 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
 
+static bool g_sandbox_enabled = true;
+
 //------------------------------------------------------------------------------
 
 class RendererWebKitPlatformSupportImpl::MimeRegistry
@@ -164,9 +166,14 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
     : clipboard_client_(new RendererClipboardClient),
       clipboard_(new webkit_glue::WebClipboardImpl(clipboard_client_.get())),
       mime_registry_(new RendererWebKitPlatformSupportImpl::MimeRegistry),
-      sandbox_support_(new RendererWebKitPlatformSupportImpl::SandboxSupport),
       sudden_termination_disables_(0),
       shared_worker_repository_(new WebSharedWorkerRepositoryImpl) {
+  if (g_sandbox_enabled) {
+    sandbox_support_.reset(
+        new RendererWebKitPlatformSupportImpl::SandboxSupport);
+  } else {
+    DVLOG(1) << "Disabling sandbox support for testing.";
+  }
 }
 
 RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportImpl() {
@@ -716,6 +723,14 @@ RendererWebKitPlatformSupportImpl::createMediaStreamCenter(
   if (!render_thread)
     return NULL;
   return render_thread->CreateMediaStreamCenter(client);
+}
+
+// static
+bool RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(
+    bool enable) {
+  bool was_enabled = g_sandbox_enabled;
+  g_sandbox_enabled = enable;
+  return was_enabled;
 }
 
 GpuChannelHostFactory*

@@ -92,6 +92,15 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual WebKit::WebMediaStreamCenter* createMediaStreamCenter(
       WebKit::WebMediaStreamCenterClient* client) OVERRIDE;
 
+  // Disables the WebSandboxSupport implementation for testing.
+  // Tests that do not set up a full sandbox environment should call
+  // SetSandboxEnabledForTesting(false) _before_ creating any instances
+  // of this class, to ensure that we don't attempt to use sandbox-related
+  // file descriptors or other resources.
+  //
+  // Returns the previous |enable| value.
+  static bool SetSandboxEnabledForTesting(bool enable);
+
  protected:
   virtual GpuChannelHostFactory* GetGpuChannelHostFactory() OVERRIDE;
 

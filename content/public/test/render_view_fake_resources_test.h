@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -139,6 +139,10 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
  private:
   // A helper for GoBack and GoForward.
   void GoToOffset(int offset, const WebKit::WebHistoryItem& history_item);
+
+  // The previous state for whether sandbox support was enabled in
+  // RenderViewWebKitPlatformSupportImpl.
+  bool sandbox_was_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewFakeResourcesTest);
 };

@@ -99,7 +99,7 @@ class PhishingClassifierDelegateTest
   scoped_ptr<ClientPhishingRequest> verdict_;
 };
 
-TEST_F(PhishingClassifierDelegateTest, DISABLED_Navigation) {
+TEST_F(PhishingClassifierDelegateTest, Navigation) {
   MockPhishingClassifier* classifier =
       new StrictMock<MockPhishingClassifier>(view());
   PhishingClassifierDelegate* delegate =
@@ -223,7 +223,7 @@ TEST_F(PhishingClassifierDelegateTest, DISABLED_Navigation) {
   EXPECT_CALL(*classifier, CancelPendingClassification());
 }
 
-TEST_F(PhishingClassifierDelegateTest, DISABLED_NoScorer) {
+TEST_F(PhishingClassifierDelegateTest, NoScorer) {
   // For this test, we'll create the delegate with no scorer available yet.
   MockPhishingClassifier* classifier =
       new StrictMock<MockPhishingClassifier>(view());
@@ -260,7 +260,7 @@ TEST_F(PhishingClassifierDelegateTest, DISABLED_NoScorer) {
   EXPECT_CALL(*classifier, CancelPendingClassification());
 }
 
-TEST_F(PhishingClassifierDelegateTest, DISABLED_NoScorer_Ref) {
+TEST_F(PhishingClassifierDelegateTest, NoScorer_Ref) {
   // Similar to the last test, but navigates within the page before
   // setting the scorer.
   MockPhishingClassifier* classifier =
@@ -292,7 +292,7 @@ TEST_F(PhishingClassifierDelegateTest, DISABLED_NoScorer_Ref) {
   EXPECT_CALL(*classifier, CancelPendingClassification());
 }
 
-TEST_F(PhishingClassifierDelegateTest, DISABLED_NoStartPhishingDetection) {
+TEST_F(PhishingClassifierDelegateTest, NoStartPhishingDetection) {
   // Tests the behavior when OnStartPhishingDetection has not yet been called
   // when the page load finishes.
   MockPhishingClassifier* classifier =
@@ -365,7 +365,7 @@ TEST_F(PhishingClassifierDelegateTest, DISABLED_NoStartPhishingDetection) {
   EXPECT_CALL(*classifier, CancelPendingClassification());
 }
 
-TEST_F(PhishingClassifierDelegateTest, DISABLED_IgnorePreliminaryCapture) {
+TEST_F(PhishingClassifierDelegateTest, IgnorePreliminaryCapture) {
   // Tests that preliminary PageCaptured notifications are ignored.
   MockPhishingClassifier* classifier =
       new StrictMock<MockPhishingClassifier>(view());
@@ -397,7 +397,7 @@ TEST_F(PhishingClassifierDelegateTest, DISABLED_IgnorePreliminaryCapture) {
   EXPECT_CALL(*classifier, CancelPendingClassification());
 }
 
-TEST_F(PhishingClassifierDelegateTest, DISABLED_DuplicatePageCapture) {
+TEST_F(PhishingClassifierDelegateTest, DuplicatePageCapture) {
   // Tests that a second PageCaptured notification causes classification to
   // be cancelled.
   MockPhishingClassifier* classifier =
@@ -431,7 +431,7 @@ TEST_F(PhishingClassifierDelegateTest, DISABLED_DuplicatePageCapture) {
   EXPECT_CALL(*classifier, CancelPendingClassification());
 }
 
-TEST_F(PhishingClassifierDelegateTest, DISABLED_PhishingDetectionDone) {
+TEST_F(PhishingClassifierDelegateTest, PhishingDetectionDone) {
   // Tests that a PhishingDetectionDone IPC is sent to the browser
   // whenever we finish classification.
   MockPhishingClassifier* classifier =

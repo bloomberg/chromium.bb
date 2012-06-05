@@ -188,6 +188,10 @@ class WebRTCAudioDeviceTest
   // These are initialized when we set up our IO thread.
   bool has_input_devices_;
   bool has_output_devices_;
+
+  // The previous state for whether sandbox support was enabled in
+  // RenderViewWebKitPlatformSupportImpl.
+  bool sandbox_was_enabled_;
 };
 
 // A very basic implementation of webrtc::Transport that acts as a transport

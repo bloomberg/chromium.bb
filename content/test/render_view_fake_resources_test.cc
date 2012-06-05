@@ -14,6 +14,7 @@
 #include "content/public/common/resource_response.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "content/test/mock_render_process.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/upload_data.h"
@@ -68,6 +69,8 @@ void RenderViewFakeResourcesTest::SetUp() {
 
   webkit_glue::SetJavaScriptFlags("--expose-gc");
   mock_process_.reset(new MockRenderProcess);
+  sandbox_was_enabled_ =
+      RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(false);
   render_thread_ = new RenderThreadImpl(channel_id);
 
   // Tell the renderer to create a view, then wait until it's ready.
@@ -97,6 +100,8 @@ void RenderViewFakeResourcesTest::TearDown() {
   } while (view_);
 
   mock_process_.reset();
+  RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(
+      sandbox_was_enabled_);
 }
 
 RenderView* RenderViewFakeResourcesTest::view() {

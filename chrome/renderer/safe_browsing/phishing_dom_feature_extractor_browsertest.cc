@@ -92,7 +92,7 @@ class PhishingDOMFeatureExtractorTest
   base::WeakPtrFactory<PhishingDOMFeatureExtractorTest> weak_factory_;
 };
 
-TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_FormFeatures) {
+TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
   responses_["http://host.com/"] =
@@ -150,7 +150,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_FormFeatures) {
   EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
 }
 
-TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_LinkFeatures) {
+TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
   responses_["http://www.host.com/"] =
@@ -192,7 +192,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_LinkFeatures) {
   EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
 }
 
-TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_ScriptAndImageFeatures) {
+TEST_F(PhishingDOMFeatureExtractorTest, ScriptAndImageFeatures) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
   responses_["http://host.com/"] =
@@ -223,7 +223,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_ScriptAndImageFeatures) {
   EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
 }
 
-TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_SubFrames) {
+TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
 
@@ -358,7 +358,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, Continuation) {
   EXPECT_FALSE(ExtractFeatures(&features));
 }
 
-TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_SubframeRemoval) {
+TEST_F(PhishingDOMFeatureExtractorTest, SubframeRemoval) {
   // In this test, we'll advance the feature extractor so that it is positioned
   // inside an iframe, and have it pause due to exceeding the chunk time limit.
   // Then, prior to continuation, the iframe is removed from the document.

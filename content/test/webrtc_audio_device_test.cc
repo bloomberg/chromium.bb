@@ -20,11 +20,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/mock_resource_context.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -137,6 +138,8 @@ void WebRTCAudioDeviceTest::SetUp() {
                  base::Unretained(this), kThreadName));
   WaitForIOThreadCompletion();
 
+  sandbox_was_enabled_ =
+      RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(false);
   render_thread_ = new RenderThreadImpl(kThreadName);
 }
 
@@ -166,6 +169,8 @@ void WebRTCAudioDeviceTest::TearDown() {
                  base::Unretained((this))));
   WaitForIOThreadCompletion();
   mock_process_.reset();
+  RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(
+      sandbox_was_enabled_);
 }
 
 bool WebRTCAudioDeviceTest::Send(IPC::Message* message) {
