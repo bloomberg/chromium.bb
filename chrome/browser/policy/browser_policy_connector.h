@@ -153,8 +153,7 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // local_state is initialized.
   void CompleteInitialization();
 
-  static ConfigurationPolicyProvider* CreateManagedPlatformProvider();
-  static ConfigurationPolicyProvider* CreateRecommendedPlatformProvider();
+  static ConfigurationPolicyProvider* CreatePlatformProvider();
 
   // Used to convert policies to preferences. The providers declared below
   // trigger policy updates during destruction via OnProviderGoingAway(), which
@@ -162,8 +161,7 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // Therefore, it's important to destroy |handler_list_| after the providers.
   ConfigurationPolicyHandlerList handler_list_;
 
-  scoped_ptr<ConfigurationPolicyProvider> managed_platform_provider_;
-  scoped_ptr<ConfigurationPolicyProvider> recommended_platform_provider_;
+  scoped_ptr<ConfigurationPolicyProvider> platform_provider_;
 
   scoped_ptr<CloudPolicyProvider> managed_cloud_provider_;
   scoped_ptr<CloudPolicyProvider> recommended_cloud_provider_;

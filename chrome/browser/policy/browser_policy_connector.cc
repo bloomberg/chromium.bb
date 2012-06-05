@@ -38,7 +38,7 @@
 #include "chrome/browser/policy/policy_loader_mac.h"
 #include "chrome/browser/preferences_mac.h"
 #elif defined(OS_POSIX)
-#include "chrome/browser/policy/config_dir_policy_provider.h"
+#include "chrome/browser/policy/config_dir_policy_loader.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -120,8 +120,7 @@ BrowserPolicyConnector::~BrowserPolicyConnector() {
 }
 
 void BrowserPolicyConnector::Init() {
-  managed_platform_provider_.reset(CreateManagedPlatformProvider());
-  recommended_platform_provider_.reset(CreateRecommendedPlatformProvider());
+  platform_provider_.reset(CreatePlatformProvider());
 
 #if defined(OS_CHROMEOS)
   // The CloudPolicyProvider blocks asynchronous Profile creation until a login
@@ -163,12 +162,10 @@ PolicyService* BrowserPolicyConnector::CreatePolicyService(
     Profile* profile) {
   // |providers| in decreasing order of priority.
   PolicyServiceImpl::Providers providers;
-  if (managed_platform_provider_.get())
-    providers.push_back(managed_platform_provider_.get());
+  if (platform_provider_.get())
+    providers.push_back(platform_provider_.get());
   if (managed_cloud_provider_.get())
     providers.push_back(managed_cloud_provider_.get());
-  if (recommended_platform_provider_.get())
-    providers.push_back(recommended_platform_provider_.get());
   if (recommended_cloud_provider_.get())
     providers.push_back(recommended_cloud_provider_.get());
 
@@ -557,7 +554,7 @@ void BrowserPolicyConnector::CompleteInitialization() {
 
 // static
 ConfigurationPolicyProvider*
-    BrowserPolicyConnector::CreateManagedPlatformProvider() {
+    BrowserPolicyConnector::CreatePlatformProvider() {
   const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
 #if defined(OS_WIN)
   return new ConfigurationPolicyProviderWin(policy_list);
@@ -568,31 +565,9 @@ ConfigurationPolicyProvider*
 #elif defined(OS_POSIX)
   FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-    return new ConfigDirPolicyProvider(
-        policy_list,
-        POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_MACHINE,
-        config_dir_path.Append(FILE_PATH_LITERAL("managed")));
-  } else {
-    return NULL;
-  }
-#else
-  return NULL;
-#endif
-}
-
-// static
-ConfigurationPolicyProvider*
-    BrowserPolicyConnector::CreateRecommendedPlatformProvider() {
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
-  FilePath config_dir_path;
-  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-    return new ConfigDirPolicyProvider(
-        policy_list,
-        POLICY_LEVEL_RECOMMENDED,
-        POLICY_SCOPE_MACHINE,
-        config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
+    scoped_ptr<AsyncPolicyLoader> loader(
+        new ConfigDirPolicyLoader(config_dir_path, POLICY_SCOPE_MACHINE));
+    return new AsyncPolicyProvider(policy_list, loader.Pass());
   } else {
     return NULL;
   }
