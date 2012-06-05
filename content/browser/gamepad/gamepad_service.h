@@ -36,6 +36,9 @@ class GamepadService : public NotificationObserver {
 
   base::SharedMemoryHandle GetSharedMemoryHandle(base::ProcessHandle handle);
 
+  // Stop/join with the background thread in GamepadProvider |provider_|.
+  void Terminate();
+
  private:
   friend struct DefaultSingletonTraits<GamepadService>;
   GamepadService();

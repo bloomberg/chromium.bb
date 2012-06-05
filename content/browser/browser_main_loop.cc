@@ -17,6 +17,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/save_file_manager.h"
+#include "content/browser/gamepad/gamepad_service.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
@@ -473,6 +474,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   ImageTransportFactory::Terminate();
 #endif
   BrowserGpuChannelHostFactory::Terminate();
+
+  GamepadService::GetInstance()->Terminate();
 
   // Must be size_t so we can subtract from it.
   for (size_t thread_id = BrowserThread::ID_COUNT - 1;

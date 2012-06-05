@@ -17,8 +17,7 @@
 namespace content {
 
 GamepadService::GamepadService() :
-    num_readers_(0),
-    provider_(new GamepadProvider) {
+    num_readers_(0) {
 }
 
 GamepadService::~GamepadService() {
@@ -34,7 +33,10 @@ void GamepadService::Start(
     RenderProcessHost* associated_rph) {
   num_readers_++;
   DCHECK(num_readers_ > 0);
-  provider_->SetDataFetcher(data_fetcher);
+  if (provider_ == NULL) {
+    provider_.reset(new GamepadProvider);
+    provider_->SetDataFetcher(data_fetcher);
+  }
   provider_->Resume();
 
   BrowserThread::PostTask(
@@ -43,6 +45,10 @@ void GamepadService::Start(
       base::Bind(&GamepadService::RegisterForCloseNotification,
                  base::Unretained(this),
                  associated_rph));
+}
+
+void GamepadService::Terminate() {
+  provider_.reset();
 }
 
 void GamepadService::RegisterForCloseNotification(RenderProcessHost* rph) {
