@@ -385,17 +385,6 @@ NSString* LoadSandboxTemplate(int sandbox_type) {
                                length:common_sandbox_definition.length()
                              encoding:NSUTF8StringEncoding]);
 
-#if defined(COMPONENT_BUILD)
-  // dlopen() fails without file-read-metadata access if the executable image
-  // contains LC_RPATH load commands. The components build uses those.
-  // See http://crbug.com/127465
-  if (base::mac::IsOSSnowLeopardOrEarlier()) {
-    NSString* suffixed = [common_sandbox_prefix_data
-        stringByAppendingString:@"\n(allow file-read-metadata)\n"];
-    common_sandbox_prefix_data.reset([suffixed retain]);
-  }
-#endif
-
   scoped_nsobject<NSString> sandbox_data(
       [[NSString alloc] initWithBytes:sandbox_definition.data()
                                length:sandbox_definition.length()
@@ -554,6 +543,17 @@ bool Sandbox::EnableSandbox(int sandbox_type,
     // Sandbox rules only for versions before 10.6.
     [tokens_to_remove addObject:@";BEFORE_10.6"];
   }
+
+  substitutions["COMPONENT_BUILD_WORKAROUND"] = SandboxSubstring("");
+#if defined(COMPONENT_BUILD)
+  // dlopen() fails without file-read-metadata access if the executable image
+  // contains LC_RPATH load commands. The components build uses those.
+  // See http://crbug.com/127465
+  if (base::mac::IsOSSnowLeopardOrEarlier()) {
+    substitutions["COMPONENT_BUILD_WORKAROUND"] =
+        SandboxSubstring("(allow file-read-metadata)");
+  }
+#endif
 
   // All information needed to assemble the final profile has been collected.
   // Merge it all together.
