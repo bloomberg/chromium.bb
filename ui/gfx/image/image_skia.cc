@@ -156,7 +156,7 @@ int ImageSkia::height() const {
   return isNull() ? 0 : storage_->size().height();
 }
 
-bool ImageSkia::extractSubset(ImageSkia* dst, SkIRect& subset) const {
+bool ImageSkia::extractSubset(ImageSkia* dst, const SkIRect& subset) const {
   if (isNull())
     return false;
   SkBitmap dst_bitmap;

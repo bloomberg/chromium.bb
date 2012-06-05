@@ -104,7 +104,7 @@ class UI_EXPORT ImageSkia {
   // Operates on bitmap at index 0 if available.
   // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
   // done.
-  bool extractSubset(ImageSkia* dst, SkIRect& subset) const;
+  bool extractSubset(ImageSkia* dst, const SkIRect& subset) const;
 
   // Returns pointer to an SkBitmap contained by this object.
   // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
