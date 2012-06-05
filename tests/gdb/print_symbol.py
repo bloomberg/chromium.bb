@@ -16,6 +16,7 @@ def test(gdb):
   assert gdb.GetResultClass(gdb.SendRequest('finish')) == 'running'
   assert gdb.GetAsyncStatus(gdb.GetResponse()) == 'stopped'
   assert gdb.GetExpressionResult('global_var') == '1'
+  assert gdb.GetExpressionResult('local_var') == '3'
   gdb.SendRequest('quit')
 
 

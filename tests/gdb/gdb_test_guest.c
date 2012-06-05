@@ -11,7 +11,8 @@ void set_global_var(int arg) {
 }
 
 int main() {
-  global_var = 2;
+  int local_var = 3;
+  global_var = 2 + local_var * 0; /* Use local variable to prevent warning. */
   set_global_var(1);
   return global_var;
 }
