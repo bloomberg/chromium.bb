@@ -63,7 +63,8 @@ class ShellWindowViews : public ShellWindow,
   virtual void DeleteDelegate() OVERRIDE;
 
   // views::ButtonListener
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
  protected:
   // Overridden from views::View.
