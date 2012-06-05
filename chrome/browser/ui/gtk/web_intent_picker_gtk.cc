@@ -247,17 +247,8 @@ void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model,
   GtkWidget* service_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   // TODO(gbillock): Eventually get the service icon button here.
   // Maybe add a title or something too?
-  close_button_.reset(
-      CustomDrawButton::CloseButton(GetThemeService(wrapper_)));
-  g_signal_connect(close_button_->widget(),
-                   "clicked",
-                   G_CALLBACK(OnCloseButtonClickThunk),
-                   this);
-  gtk_widget_set_can_focus(close_button_->widget(), FALSE);
-  GtkWidget* close_vbox = gtk_vbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(close_vbox), close_button_->widget(),
-                     FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(service_hbox), close_vbox, FALSE, FALSE, 0);
+
+  AddCloseButton(contents_);
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
   gtk_box_pack_start(GTK_BOX(vbox), service_hbox, TRUE, TRUE, 0);
@@ -284,6 +275,48 @@ void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model,
 void WebIntentPickerGtk::OnInlineDispositionAutoResize(const gfx::Size& size) {
   gtk_widget_set_size_request(tab_contents_container_->widget(),
                               size.width(), size.height());
+}
+
+void WebIntentPickerGtk::OnPendingAsyncCompleted() {
+  // Requests to both the WebIntentService and the Chrome Web Store have
+  // completed. If there are any services, installed or suggested, there's
+  // nothing to do.
+  if (model_->GetInstalledServiceCount() ||
+      model_->GetSuggestedExtensionCount())
+    return;
+
+  // If there are no installed or suggested services at this point,
+  // inform the user about it.
+
+  // Replace the picker contents with dialog box.
+  gtk_util::RemoveAllChildren(contents_);
+
+  GtkWidget* sub_contents = CreateSubContents(contents_);
+
+  AddCloseButton(contents_);
+  AddTitle(sub_contents);
+
+  // Replace the dialog header.
+  gtk_label_set_text(
+      GTK_LABEL(header_label_),
+      l10n_util::GetStringUTF8(IDS_INTENT_PICKER_NO_SERVICES_TITLE).c_str());
+
+  // Add the message text.
+  GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(sub_contents), hbox, TRUE, TRUE, 0);
+  GtkThemeService* theme_service = GetThemeService(wrapper_);
+  GtkWidget* no_service_label = theme_service->BuildLabel(
+      l10n_util::GetStringUTF8(IDS_INTENT_PICKER_NO_SERVICES).c_str(),
+      ui::kGdkBlack);
+  gtk_label_set_line_wrap(GTK_LABEL(no_service_label), TRUE);
+  gtk_misc_set_alignment(GTK_MISC(no_service_label), 0, 0);
+  // Set the label width to the size of |sub_contents|, which we don't have
+  // access to yet, by calculating the main content width minus borders.
+  gtk_util::SetLabelWidth(no_service_label,
+                          kMainContentWidth - 2 * ui::kContentAreaBorder);
+  gtk_box_pack_start(GTK_BOX(hbox), no_service_label, TRUE, TRUE, 0);
+
+  gtk_widget_show_all(contents_);
 }
 
 GtkWidget* WebIntentPickerGtk::GetWidgetRoot() {
@@ -393,36 +426,9 @@ void WebIntentPickerGtk::InitContents() {
   contents_ = gtk_vbox_new(FALSE, 0);
   gtk_widget_set_size_request(contents_, kMainContentWidth, -1);
 
-  // Hbox containing the close button.
-  GtkWidget* close_hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(contents_), close_hbox, TRUE, TRUE, 0);
-
-  close_button_.reset(
-      CustomDrawButton::CloseButton(GetThemeService(wrapper_)));
-  g_signal_connect(close_button_->widget(), "clicked",
-                   G_CALLBACK(OnCloseButtonClickThunk), this);
-  gtk_widget_set_can_focus(close_button_->widget(), FALSE);
-  gtk_box_pack_end(GTK_BOX(close_hbox), close_button_->widget(),
-                   FALSE, FALSE, 0);
-
-  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(
-      GTK_ALIGNMENT(alignment), 0, ui::kContentAreaBorder,
-      ui::kContentAreaBorder, ui::kContentAreaBorder);
-  gtk_box_pack_end(GTK_BOX(contents_), alignment, TRUE, TRUE, 0);
-
-  GtkWidget* sub_contents = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
-  gtk_container_add(GTK_CONTAINER(alignment), sub_contents);
-
-  // Hbox containing the header label.
-  GtkWidget* header_hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(sub_contents), header_hbox, TRUE, TRUE, 0);
-
-  // Label text will be set in the call to SetActionString().
-  header_label_ = theme_service->BuildLabel(std::string(), ui::kGdkBlack);
-  gtk_util::ForceFontSizePixels(header_label_, kHeaderLabelPixelSize);
-  gtk_box_pack_start(GTK_BOX(header_hbox), header_label_, TRUE, TRUE, 0);
-  gtk_misc_set_alignment(GTK_MISC(header_label_), 0, 0);
+  AddCloseButton(contents_);
+  GtkWidget* sub_contents = CreateSubContents(contents_);
+  AddTitle(sub_contents);
 
   // Add separation between the installed services list and the app suggestions.
   GtkWidget* button_alignment = gtk_alignment_new(0.5, 0, 0, 0);
@@ -478,6 +484,46 @@ void WebIntentPickerGtk::InitContents() {
   throbber_.reset(new ThrobberGtk(theme_service));
 
   g_signal_connect(contents_, "destroy", G_CALLBACK(&OnDestroyThunk), this);
+}
+
+GtkWidget* WebIntentPickerGtk::CreateSubContents(GtkWidget* box) {
+  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_alignment_set_padding(
+      GTK_ALIGNMENT(alignment), 0, ui::kContentAreaBorder,
+      ui::kContentAreaBorder, ui::kContentAreaBorder);
+  gtk_box_pack_end(GTK_BOX(box), alignment, TRUE, TRUE, 0);
+
+  GtkWidget* sub_contents = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
+  gtk_container_add(GTK_CONTAINER(alignment), sub_contents);
+  return sub_contents;
+}
+
+void WebIntentPickerGtk::AddCloseButton(GtkWidget* containingBox) {
+
+  // Hbox containing the close button.
+  GtkWidget* close_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(containingBox), close_hbox, TRUE, TRUE, 0);
+
+  close_button_.reset(
+      CustomDrawButton::CloseButton(GetThemeService(wrapper_)));
+  g_signal_connect(close_button_->widget(), "clicked",
+                   G_CALLBACK(OnCloseButtonClickThunk), this);
+  gtk_widget_set_can_focus(close_button_->widget(), FALSE);
+  gtk_box_pack_end(GTK_BOX(close_hbox), close_button_->widget(),
+                   FALSE, FALSE, 0);
+}
+
+void WebIntentPickerGtk::AddTitle(GtkWidget* containingBox) {
+  // Hbox containing the header label.
+  GtkWidget* header_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(containingBox), header_hbox, TRUE, TRUE, 0);
+
+  // Label text will be set in the call to SetActionString().
+  header_label_ = GetThemeService(wrapper_)->BuildLabel(
+      std::string(), ui::kGdkBlack);
+  gtk_util::ForceFontSizePixels(header_label_, kHeaderLabelPixelSize);
+  gtk_box_pack_start(GTK_BOX(header_hbox), header_label_, TRUE, TRUE, 0);
+  gtk_misc_set_alignment(GTK_MISC(header_label_), 0, 0);
 }
 
 void WebIntentPickerGtk::UpdateInstalledServices() {

@@ -16097,6 +16097,12 @@ Battery full
     <message name="IDS_INTENT_PICKER_MORE_SUGGESTIONS" desc="Link text providing a Chrome Web Store link to select more apps.">
       More suggestions
     </message>
+    <message name="IDS_INTENT_PICKER_NO_SERVICES_TITLE" desc="Heading for text explaining that there are neither installed nor suggested services available">
+      Uh oh.
+    </message>
+    <message name="IDS_INTENT_PICKER_NO_SERVICES" desc="Prompt indicating to the user that there are neither any matching services installed locally, nor does the Chrome Web Store offer any suggestions for this action either.">
+      No services for this action are installed, and there are no service recommendations for this action in the Chrome Web Store either.
+    </message>
     <message name="IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE" desc="Link text that, when clicked, allows the user to choose an alternate intent service from the picker.">
       or use another service...
     </message>

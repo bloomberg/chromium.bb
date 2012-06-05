@@ -56,6 +56,8 @@ class WebIntentPickerGtk : public WebIntentPicker,
                                    const GURL& url) OVERRIDE;
   virtual void OnInlineDispositionAutoResize(const gfx::Size& size) OVERRIDE;
 
+  virtual void OnPendingAsyncCompleted() OVERRIDE;
+
   // ConstrainedWindowGtkDelegate implementation.
   virtual GtkWidget* GetWidgetRoot() OVERRIDE;
   virtual GtkWidget* GetFocusWidget() OVERRIDE;
@@ -84,6 +86,15 @@ class WebIntentPickerGtk : public WebIntentPicker,
   // Initialize the contents of the picker. After this call, contents_ will be
   // non-NULL.
   void InitContents();
+
+  // Create the (inset relative to |box|) container for dialog elements.
+  GtkWidget* CreateSubContents(GtkWidget* box);
+
+  // Add a close button to dialog contents
+  void AddCloseButton(GtkWidget* containingBox);
+
+  // Add title to dialog contents
+  void AddTitle(GtkWidget* containingBox);
 
   // Update the installed service buttons from |model_|.
   void UpdateInstalledServices();
