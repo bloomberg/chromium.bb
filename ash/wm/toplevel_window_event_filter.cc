@@ -148,44 +148,40 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
       HandleDrag(target, event);
       break;
     }
-    case ui::ET_GESTURE_SCROLL_END: {
+    case ui::ET_GESTURE_SCROLL_END:
       if (!in_gesture_resize_)
         return ui::GESTURE_STATUS_UNKNOWN;
-      DefaultWindowResizer* default_resizer =
-          static_cast<DefaultWindowResizer*>(window_resizer_.get());
-      bool changed_size =
-          default_resizer ?  default_resizer->changed_size() : false;
-      aura::Window* window =
-          default_resizer ?  default_resizer->target_window() : NULL;
-      bool drag_done = false;
-
-      if (window && !changed_size) {
-        if (fabs(event->delta_y()) > kMinVertVelocityForWindowMinimize) {
-          // Minimize/maximize.
-          window->SetProperty(aura::client::kShowStateKey,
-              event->delta_y() > 0 ? ui::SHOW_STATE_MINIMIZED :
-                                     ui::SHOW_STATE_MAXIMIZED);
-          drag_done = true;
-        } else if (fabs(event->delta_x()) > kMinHorizVelocityForWindowSwipe) {
-          // Snap left/right.
-          internal::SnapSizer sizer(window,
-              gfx::Point(),
-              event->delta_x() < 0 ? internal::SnapSizer::LEFT_EDGE :
-              internal::SnapSizer::RIGHT_EDGE,
-              Shell::GetInstance()->GetGridSize());
-
-          ui::ScopedLayerAnimationSettings scoped_setter(
-              window->layer()->GetAnimator());
-          scoped_setter.SetPreemptionStrategy(
-              ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-          window->SetBounds(sizer.target_bounds());
-          drag_done = true;
-        }
-      }
-
-      if (!drag_done)
-        CompleteDrag(DRAG_COMPLETE, event->flags());
+      CompleteDrag(DRAG_COMPLETE, event->flags());
       in_gesture_resize_ = false;
+      break;
+
+    case ui::ET_SCROLL_FLING_START: {
+      int component =
+          target->delegate()->GetNonClientComponent(event->location());
+      if (WindowResizer::GetBoundsChangeForWindowComponent(component) == 0)
+        return ui::GESTURE_STATUS_UNKNOWN;
+      if (!wm::IsWindowNormal(target))
+        return ui::GESTURE_STATUS_UNKNOWN;
+
+      if (fabs(event->delta_y()) > kMinVertVelocityForWindowMinimize) {
+        // Minimize/maximize.
+        target->SetProperty(aura::client::kShowStateKey,
+            event->delta_y() > 0 ? ui::SHOW_STATE_MINIMIZED :
+                                   ui::SHOW_STATE_MAXIMIZED);
+      } else if (fabs(event->delta_x()) > kMinHorizVelocityForWindowSwipe) {
+        // Snap left/right.
+        internal::SnapSizer sizer(target,
+            gfx::Point(),
+            event->delta_x() < 0 ? internal::SnapSizer::LEFT_EDGE :
+            internal::SnapSizer::RIGHT_EDGE,
+            Shell::GetInstance()->GetGridSize());
+
+        ui::ScopedLayerAnimationSettings scoped_setter(
+            target->layer()->GetAnimator());
+        scoped_setter.SetPreemptionStrategy(
+            ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+        target->SetBounds(sizer.target_bounds());
+      }
       break;
     }
     default:

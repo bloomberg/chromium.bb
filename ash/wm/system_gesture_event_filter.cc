@@ -24,6 +24,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/linear_animation.h"
@@ -347,6 +348,8 @@ class SystemPinchHandler {
       case ui::ET_GESTURE_MULTIFINGER_SWIPE: {
         // Snap for left/right swipes.
         if (event.delta_x()) {
+          ui::ScopedLayerAnimationSettings settings(
+              target_->layer()->GetAnimator());
           SnapSizer sizer(target_,
               gfx::Point(),
               event.delta_x() < 0 ? internal::SnapSizer::LEFT_EDGE :

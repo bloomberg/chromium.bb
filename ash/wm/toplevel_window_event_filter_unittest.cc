@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/snap_sizer.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -445,6 +446,90 @@ TEST_F(ToplevelWindowEventFilterTest, DragSnaps) {
   generator.ReleaseLeftButton();
   EXPECT_EQ(8, target->bounds().x());
   EXPECT_EQ(24, target->bounds().y());
+}
+
+// Verifies that touch-gestures drag the window correctly.
+TEST_F(ToplevelWindowEventFilterTest, GestureDrag) {
+  const int kGridSize = 8;
+  SetGridSize(kGridSize);
+  scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       target.get());
+  gfx::Rect old_bounds = target->bounds();
+  gfx::Point location(5, 5);
+
+  // Snap right;
+  generator.MoveMouseTo(location);
+  generator.PressTouch();
+  generator.SendTouchScrollEvents(location,
+      base::Time::NowFromSystemTime() - base::Time(),
+      100, 0,
+      0,
+      5,
+      10);
+  generator.ReleaseTouch();
+  RunAllPendingInMessageLoop();
+
+  // Verify that the window has moved after the gesture.
+  EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
+  {
+    internal::SnapSizer sizer(target.get(), location,
+        internal::SnapSizer::RIGHT_EDGE, kGridSize);
+    EXPECT_EQ(sizer.target_bounds().ToString(), target->bounds().ToString());
+  }
+
+  old_bounds = target->bounds();
+
+  // Snap left.
+  generator.MoveMouseRelativeTo(target.get(), location);
+  generator.PressTouch();
+  generator.SendTouchScrollEvents(location,
+      base::Time::NowFromSystemTime() - base::Time(),
+      -100, 0,
+      0,
+      5,
+      10);
+  generator.ReleaseTouch();
+  RunAllPendingInMessageLoop();
+
+  EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
+  {
+    internal::SnapSizer sizer(target.get(), location,
+        internal::SnapSizer::LEFT_EDGE, kGridSize);
+    EXPECT_EQ(sizer.target_bounds().ToString(), target->bounds().ToString());
+  }
+
+  old_bounds = target->bounds();
+  // Maximize.
+  generator.MoveMouseRelativeTo(target.get(), location);
+  generator.PressTouch();
+  generator.SendTouchScrollEvents(location,
+      base::Time::NowFromSystemTime() - base::Time(),
+      0, -100,
+      0,
+      5,
+      10);
+  generator.ReleaseTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
+  EXPECT_TRUE(wm::IsWindowMaximized(target.get()));
+
+  wm::RestoreWindow(target.get());
+  target->SetBounds(old_bounds);
+
+  // Minimize.
+  generator.MoveMouseRelativeTo(target.get(), location);
+  generator.PressTouch();
+  generator.SendTouchScrollEvents(location,
+      base::Time::NowFromSystemTime() - base::Time(),
+      0, 100,
+      0,
+      5,
+      10);
+  generator.ReleaseTouch();
+  RunAllPendingInMessageLoop();
+  EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
+  EXPECT_TRUE(wm::IsWindowMinimized(target.get()));
 }
 
 // Verifies pressing escape resets the bounds to the original bounds.

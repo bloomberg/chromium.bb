@@ -10,6 +10,10 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 
+namespace base {
+class TimeDelta;
+}
+
 namespace aura {
 class Event;
 class RootWindow;
@@ -93,6 +97,15 @@ class EventGenerator {
   // Generates press, move and release event to move touch
   // to be the given |point|.
   void PressMoveAndReleaseTouchTo(const gfx::Point& point);
+
+  // Generates a number of touch-move events to generate scroll-gesture events.
+  void SendTouchScrollEvents(const gfx::Point& start_location,
+                             const base::TimeDelta& start_time,
+                             int dx,
+                             int dy,
+                             int touch_id,
+                             int time_step_ms,
+                             int num_steps);
 
   void PressMoveAndReleaseTouchTo(int x, int y) {
     PressMoveAndReleaseTouchTo(gfx::Point(x, y));
