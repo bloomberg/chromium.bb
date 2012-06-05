@@ -197,7 +197,6 @@
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/win/shell.h"
 #endif  // OS_WIN
 
