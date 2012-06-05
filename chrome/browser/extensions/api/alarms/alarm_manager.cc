@@ -24,7 +24,7 @@ namespace {
 const char kOnAlarmEvent[] = "alarms.onAlarm";
 
 // The minimum period between polling for alarms to run.
-const base::TimeDelta kMinPollPeriod = base::TimeDelta::FromMinutes(5);
+const base::TimeDelta kDefaultMinPollPeriod = base::TimeDelta::FromMinutes(5);
 
 class DefaultAlarmDelegate : public AlarmManager::Delegate {
  public:
@@ -68,8 +68,7 @@ AlarmManager::~AlarmManager() {
 
 void AlarmManager::AddAlarm(const std::string& extension_id,
                             const linked_ptr<Alarm>& alarm) {
-  base::TimeDelta alarm_time = base::TimeDelta::FromMicroseconds(
-      alarm->delay_in_minutes * base::Time::kMicrosecondsPerMinute);
+  base::TimeDelta alarm_time = TimeDeltaFromDelay(alarm->delay_in_minutes);
   AddAlarmImpl(extension_id, alarm, alarm_time);
   WriteToPrefs(extension_id);
 }
@@ -272,7 +271,16 @@ void AlarmManager::PollAlarms() {
     }
   }
 
-  ScheduleNextPoll(kMinPollPeriod);
+  // Schedule the next poll. The soonest it may happen is after
+  // kDefaultMinPollPeriod or after the shortest scheduled delay of any alarm,
+  // whichever comes sooner.
+  base::TimeDelta min_poll_period = kDefaultMinPollPeriod;
+  for (AlarmRuntimeInfoMap::iterator it = scheduled_times_.begin();
+       it != scheduled_times_.end(); ++it) {
+    min_poll_period = std::min(TimeDeltaFromDelay(it->first->delay_in_minutes),
+                               min_poll_period);
+  }
+  ScheduleNextPoll(min_poll_period);
 }
 
 void AlarmManager::Observe(

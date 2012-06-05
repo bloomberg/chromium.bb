@@ -371,9 +371,30 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
     alarm_manager_->AddAlarmImpl(extension_->id(), alarm,
                                  base::TimeDelta::FromSeconds(0));
     MessageLoop::current()->Run();
-    // 5 minutes is the default minimum period (kMinPollPeriod).
-    EXPECT_EQ(alarm_manager_->last_poll_time_ + base::TimeDelta::FromMinutes(5),
+    EXPECT_EQ(alarm_manager_->last_poll_time_ + base::TimeDelta::FromMinutes(3),
               alarm_manager_->next_poll_time_);
+    alarm_manager_->RemoveAllAlarms(extension_->id());
+  }
+  {
+    RunFunction(new AlarmsCreateFunction(),
+                "[\"a\", {\"delayInMinutes\": 2, \"repeating\": true}]");
+    alarm_manager_->RemoveAlarm(extension_->id(), "a");
+    linked_ptr<AlarmManager::Alarm> alarm2(new AlarmManager::Alarm());
+    alarm2->name = "bb";
+    alarm2->delay_in_minutes = 4;
+    alarm2->repeating = true;
+    alarm_manager_->AddAlarmImpl(extension_->id(), alarm2,
+                                 base::TimeDelta::FromMinutes(3));
+    linked_ptr<AlarmManager::Alarm> alarm3(new AlarmManager::Alarm());
+    alarm3->name = "ccc";
+    alarm3->delay_in_minutes = 25;
+    alarm3->repeating = true;
+    alarm_manager_->AddAlarmImpl(extension_->id(), alarm3,
+                                 base::TimeDelta::FromSeconds(0));
+    MessageLoop::current()->Run();
+    EXPECT_EQ(alarm_manager_->last_poll_time_ + base::TimeDelta::FromMinutes(4),
+              alarm_manager_->next_poll_time_);
+    alarm_manager_->RemoveAllAlarms(extension_->id());
   }
 }
 
