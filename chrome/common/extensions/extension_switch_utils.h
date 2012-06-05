@@ -10,7 +10,7 @@ namespace extensions {
 
 namespace switch_utils {
 
-bool IsOffStoreInstallEnabled();
+bool IsEasyOffStoreInstallEnabled();
 
 bool IsActionBoxEnabled();
 

@@ -11,14 +11,14 @@ namespace extensions {
 
 namespace switch_utils {
 
-bool IsOffStoreInstallEnabled() {
-  // Disabling off-store installation is not yet implemented for Aura. Not sure
-  // what the Aura equivalent for this UI is.
+bool IsEasyOffStoreInstallEnabled() {
+  // Disabling easy off-store installation is not yet implemented for Aura. Not
+  // sure what the Aura equivalent for this UI is.
 #if defined(USE_AURA)
   return true;
 #else
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableOffStoreExtensionInstall);
+      switches::kEnableEasyOffStoreExtensionInstall);
 #endif
 }
 

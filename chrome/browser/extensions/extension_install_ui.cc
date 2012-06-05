@@ -328,7 +328,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
   // we need the UI confirmation.
   if (extension->is_theme()) {
     if (extension->from_webstore() ||
-        extensions::switch_utils::IsOffStoreInstallEnabled()) {
+        extensions::switch_utils::IsEasyOffStoreInstallEnabled()) {
       delegate->InstallUIProceed();
       return;
     }

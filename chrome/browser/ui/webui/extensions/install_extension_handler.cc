@@ -35,7 +35,7 @@ void InstallExtensionHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALL_DROP_TARGET));
   localized_strings->SetBoolean(
       "offStoreInstallEnabled",
-      extensions::switch_utils::IsOffStoreInstallEnabled());
+      extensions::switch_utils::IsEasyOffStoreInstallEnabled());
 }
 
 void InstallExtensionHandler::RegisterMessages() {

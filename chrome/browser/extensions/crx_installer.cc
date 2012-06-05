@@ -244,7 +244,7 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
   }
 
   if (install_cause_ == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD) {
-    if (extensions::switch_utils::IsOffStoreInstallEnabled()) {
+    if (extensions::switch_utils::IsEasyOffStoreInstallEnabled()) {
       const char* kHistogramName = "Extensions.OffStoreInstallDecisionEasy";
       if (is_gallery_install()) {
         UMA_HISTOGRAM_ENUMERATION(kHistogramName, OnStoreInstall,

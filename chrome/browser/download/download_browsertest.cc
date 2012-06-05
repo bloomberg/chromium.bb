@@ -1653,7 +1653,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_AutoOpen) {
 // Download an extension.  Expect a dangerous download warning.
 // Deny the download.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
-  if (!extensions::switch_utils::IsOffStoreInstallEnabled())
+  if (!extensions::switch_utils::IsEasyOffStoreInstallEnabled())
     return;
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
@@ -1680,7 +1680,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
 // Download an extension.  Expect a dangerous download warning.
 // Allow the download, deny the install.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
-  if (!extensions::switch_utils::IsOffStoreInstallEnabled())
+  if (!extensions::switch_utils::IsEasyOffStoreInstallEnabled())
     return;
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
@@ -1713,7 +1713,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
 // Download an extension.  Expect a dangerous download warning.
 // Allow the download, and the install.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
-  if (!extensions::switch_utils::IsOffStoreInstallEnabled())
+  if (!extensions::switch_utils::IsEasyOffStoreInstallEnabled())
     return;
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
@@ -1772,7 +1772,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInvalid) {
 
 // Install a large (100kb) theme.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
-  if (!extensions::switch_utils::IsOffStoreInstallEnabled())
+  if (!extensions::switch_utils::IsEasyOffStoreInstallEnabled())
     return;
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kLargeThemePath));

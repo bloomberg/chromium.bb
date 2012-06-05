@@ -496,7 +496,7 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
   // Extensions that are not from the gallery are considered dangerous.
   // When off-store install is disabled we skip this, since in this case, we
   // will not offer to install the extension.
-  if (extensions::switch_utils::IsOffStoreInstallEnabled() &&
+  if (extensions::switch_utils::IsEasyOffStoreInstallEnabled() &&
       download_crx_util::IsExtensionDownload(download) &&
       !WebstoreInstaller::GetAssociatedApproval(download)) {
     return true;

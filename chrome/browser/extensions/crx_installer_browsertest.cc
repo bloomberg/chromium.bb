@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
 // This test is disabled. See bug http://crbug.com/130951
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
                        DISABLED_PackAndInstallExtension) {
-  if (!extensions::switch_utils::IsOffStoreInstallEnabled())
+  if (!extensions::switch_utils::IsEasyOffStoreInstallEnabled())
     return;
 
   const int kNumDownloadsExpected = 1;
