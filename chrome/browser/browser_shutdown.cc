@@ -121,11 +121,6 @@ bool ShutdownPreThreadsStop() {
   chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker(
       "BrowserShutdownStarted", false);
 #endif
-  // During shutdown we will end up some blocking operations.  But the
-  // work needs to get done and we're going to wait for them no matter
-  // what thread they're on, so don't worry about it slowing down
-  // shutdown.
-  base::ThreadRestrictions::SetIOAllowed(true);
 
   // Shutdown the IPC channel to the service processes.
   ServiceProcessControl::GetInstance()->Disconnect();
