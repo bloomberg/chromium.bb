@@ -67,7 +67,7 @@ OOBEWebuiReadyObserver::OOBEWebuiReadyObserver(AutomationProvider* automation)
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
                    content::NotificationService::AllSources());
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_READY,
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_LOADED,
                    content::NotificationService::AllSources());
   }
 }
@@ -78,7 +78,7 @@ void OOBEWebuiReadyObserver::Observe(
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN ||
          type == chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED ||
-         type == chrome::NOTIFICATION_LOGIN_WEBUI_READY);
+         type == chrome::NOTIFICATION_LOGIN_WEBUI_LOADED);
   OOBEWebuiReady();
 }
 
@@ -127,7 +127,7 @@ WizardControllerObserver::WizardControllerObserver(
       automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
   wizard_controller_->AddObserver(this);
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_READY,
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_LOADED,
                  content::NotificationService::AllSources());
 }
 
@@ -153,7 +153,7 @@ void WizardControllerObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_LOGIN_WEBUI_READY);
+  DCHECK(type == chrome::NOTIFICATION_LOGIN_WEBUI_LOADED);
   SendReply(WizardController::kLoginScreenName);
 }
 

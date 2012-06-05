@@ -942,7 +942,7 @@ void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
   }
   if (!gaia_silent_load_) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGIN_WEBUI_READY,
+        chrome::NOTIFICATION_LOGIN_WEBUI_LOADED,
         content::NotificationService::AllSources(),
         content::NotificationService::NoDetails());
   } else {

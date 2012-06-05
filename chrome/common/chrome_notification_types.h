@@ -896,25 +896,61 @@ enum NotificationType {
   // Sent when webui lock screen is ready.
   NOTIFICATION_LOCK_WEBUI_READY,
 
-  // Sent when webui login screen is ready and gaia iframe has loaded.
-  NOTIFICATION_LOGIN_WEBUI_READY,
+  // Sent when GAIA iframe has been loaded.
+  // First paint event after this fires NOTIFICATION_LOGIN_WEBUI_VISIBLE.
+  // Possible scenarios:
+  // 1. Boot into device that has user pods display disabled or no users.
+  //    Note that booting with network not connected would first generate
+  //    NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN.
+  // 2. From the user pods list, open "Add User" for the second time
+  //    (see below).
+  // TODO(nkostylev): Send this notification any time "Add User" is activated
+  //                  even if it has been silently preloaded on boot.
+  // Not sent on "silent preload" i.e. when booting into login screen
+  // with user pods, GAIA frame is silently preloaded in the background.
+  // Activating it ("Add User") for the first time would not generate this
+  // notification.
+  NOTIFICATION_LOGIN_WEBUI_LOADED,
 
   // Sent when the user images on the WebUI login screen have all been loaded.
+  // "Normal boot" i.e. for the device with at least one user would generate
+  // this one on boot.
+  // First paint event after this fires NOTIFICATION_LOGIN_WEBUI_VISIBLE.
   NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
 
-  // Sent when the login WebUI is considered to be fully visible.
-  // That momemnt is tracked as the first paint event after one of the:
+  // Sent when a network error message is displayed on the WebUI login screen.
+  // First paint event of this fires NOTIFICATION_LOGIN_WEBUI_VISIBLE.
+  NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
+
+  // Sent when the first OOBE screen has been displayed. Note that the screen
+  // may not be fully rendered at this point.
+  // First paint event after this fires NOTIFICATION_LOGIN_WEBUI_VISIBLE.
+  NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
+
+  // Sent when the specific part of login WebUI is considered to be visible.
+  // That moment is tracked as the first paint event after one of the:
   // 1. NOTIFICATION_LOGIN_USER_IMAGES_LOADED
-  // 2. NOTIFICATION_LOGIN_WEBUI_READY
+  // 2. NOTIFICATION_LOGIN_WEBUI_LOADED
   // 3. NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN
   // 4. NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN
+  //
+  // Possible series of notifications:
+  // 1. Boot into fresh OOBE
+  //    NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN
+  //    NOTIFICATION_LOGIN_WEBUI_VISIBLE
+  // 2. Boot into user pods list (normal boot)
+  //    NOTIFICATION_LOGIN_USER_IMAGES_LOADED
+  //    NOTIFICATION_LOGIN_WEBUI_VISIBLE
+  // 3. Boot into GAIA sign in UI (user pods display disabled or no users):
+  //    if no network is connected or flaky network
+  //    (NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN +
+  //     NOTIFICATION_LOGIN_WEBUI_VISIBLE)
+  //    NOTIFICATION_LOGIN_WEBUI_LOADED
+  //    NOTIFICATION_LOGIN_WEBUI_VISIBLE
   NOTIFICATION_LOGIN_WEBUI_VISIBLE,
 
   // Sent when proxy dialog is closed.
   NOTIFICATION_LOGIN_PROXY_CHANGED,
-
-  // Sent when a network error message is displayed on the WebUI login screen.
-  NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
 
   // Sent when the user list has changed due to a policy change.
   NOTIFICATION_POLICY_USER_LIST_CHANGED,
@@ -924,10 +960,6 @@ enum NotificationType {
 
   // Sent when the window manager's layout mode has changed.
   NOTIFICATION_LAYOUT_MODE_CHANGED,
-
-  // Sent when the first OOBE screen has been displayed.  Note that the screen
-  // may not be fully rendered at this point.
-  NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
 
   // Sent when the screen lock state has changed. The source is
   // ScreenLocker and the details is a bool specifing that the
