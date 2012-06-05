@@ -55,6 +55,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/monitor.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -81,25 +83,31 @@ const char kNetworkInfoKeyPolicyManaged[] = "policyManaged";
 class NetworkInfoDictionary {
  public:
   // Initializes the dictionary with default values.
-  NetworkInfoDictionary();
+  explicit NetworkInfoDictionary(float bitmapScale);
 
   // Copies in service path, connect{ing|ed|able} flags and connection type from
   // the provided network object. Also chooses an appropriate icon based on the
   // network type.
-  explicit NetworkInfoDictionary(const chromeos::Network* network);
+  NetworkInfoDictionary(const chromeos::Network* network,
+                        float bitmapScape);
 
   // Initializes a remembered network entry, pulling information from the passed
   // network object and the corresponding remembered network object. |network|
   // may be NULL.
   NetworkInfoDictionary(const chromeos::Network* network,
-                        const chromeos::Network* remembered);
+                        const chromeos::Network* remembered,
+                        float bitmapScale);
 
   // Setters for filling in information.
   void set_service_path(const std::string& service_path) {
     service_path_ = service_path;
   }
   void set_icon(const gfx::ImageSkia& icon) {
-    icon_url_ = icon.isNull() ? "" : web_ui_util::GetImageDataUrl(icon);
+    float actualScale;
+    SkBitmap bitmap = icon.GetBitmapForScale(bitmap_scale_factor_,
+                                             bitmap_scale_factor_,
+                                             &actualScale);
+    icon_url_ = icon.isNull() ? "" : web_ui_util::GetImageDataUrl(bitmap);
   }
   void set_name(const std::string& name) {
     name_ = name;
@@ -150,11 +158,13 @@ class NetworkInfoDictionary {
   chromeos::ActivationState activation_state_;
   bool needs_new_plan_;
   bool policy_managed_;
+  float bitmap_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkInfoDictionary);
 };
 
-NetworkInfoDictionary::NetworkInfoDictionary() {
+NetworkInfoDictionary::NetworkInfoDictionary(float bitmapScale)
+  : bitmap_scale_factor_(bitmapScale) {
   set_connecting(false);
   set_connected(false);
   set_connectable(false);
@@ -165,7 +175,9 @@ NetworkInfoDictionary::NetworkInfoDictionary() {
   set_policy_managed(false);
 }
 
-NetworkInfoDictionary::NetworkInfoDictionary(const chromeos::Network* network) {
+NetworkInfoDictionary::NetworkInfoDictionary(const chromeos::Network* network,
+                                             float bitmapScale)
+  : bitmap_scale_factor_(bitmapScale) {
   set_service_path(network->service_path());
   set_icon(chromeos::NetworkMenuIcon::GetImage(network,
       chromeos::NetworkMenuIcon::COLOR_DARK));
@@ -182,7 +194,9 @@ NetworkInfoDictionary::NetworkInfoDictionary(const chromeos::Network* network) {
 
 NetworkInfoDictionary::NetworkInfoDictionary(
     const chromeos::Network* network,
-    const chromeos::Network* remembered) {
+    const chromeos::Network* remembered,
+    float bitmapScale)
+  : bitmap_scale_factor_(bitmapScale) {
   set_service_path(remembered->service_path());
   set_icon(chromeos::NetworkMenuIcon::GetImage(
       network ? network : remembered, chromeos::NetworkMenuIcon::COLOR_DARK));
@@ -1115,6 +1129,12 @@ Browser* InternetOptionsHandler::GetAppropriateBrowser() {
       ProfileManager::GetDefaultProfileOrOffTheRecord());
 }
 
+float InternetOptionsHandler::GetIconScaleFactor() {
+  gfx::NativeWindow window = GetNativeWindow();
+  gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(window);
+  return monitor.device_scale_factor();
+}
+
 void InternetOptionsHandler::NetworkCommandCallback(const ListValue* args) {
   std::string str_type;
   std::string service_path;
@@ -1305,7 +1325,8 @@ ListValue* InternetOptionsHandler::GetWiredList() {
     const chromeos::EthernetNetwork* ethernet_network =
         cros_->ethernet_network();
     if (ethernet_network) {
-      NetworkInfoDictionary network_dict(ethernet_network);
+      NetworkInfoDictionary network_dict(ethernet_network,
+                                         GetIconScaleFactor());
       network_dict.set_name(
           l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)),
       list->Append(network_dict.BuildDictionary());
@@ -1320,7 +1341,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   const chromeos::WifiNetworkVector& wifi_networks = cros_->wifi_networks();
   for (chromeos::WifiNetworkVector::const_iterator it =
       wifi_networks.begin(); it != wifi_networks.end(); ++it) {
-    NetworkInfoDictionary network_dict(*it);
+    NetworkInfoDictionary network_dict(*it, GetIconScaleFactor());
     network_dict.set_connectable(cros_->CanConnectToNetwork(*it));
     list->Append(network_dict.BuildDictionary());
   }
@@ -1328,7 +1349,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   const chromeos::WimaxNetworkVector& wimax_networks = cros_->wimax_networks();
   for (chromeos::WimaxNetworkVector::const_iterator it =
       wimax_networks.begin(); it != wimax_networks.end(); ++it) {
-    NetworkInfoDictionary network_dict(*it);
+    NetworkInfoDictionary network_dict(*it, GetIconScaleFactor());
     network_dict.set_connectable(cros_->CanConnectToNetwork(*it));
     list->Append(network_dict.BuildDictionary());
   }
@@ -1337,7 +1358,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
       cros_->cellular_networks();
   for (chromeos::CellularNetworkVector::const_iterator it =
       cellular_networks.begin(); it != cellular_networks.end(); ++it) {
-    NetworkInfoDictionary network_dict(*it);
+    NetworkInfoDictionary network_dict(*it, GetIconScaleFactor());
     network_dict.set_connectable(cros_->CanConnectToNetwork(*it));
     network_dict.set_activation_state((*it)->activation_state());
     network_dict.set_needs_new_plan(
@@ -1348,7 +1369,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   const chromeos::NetworkDevice* cellular_device = cros_->FindCellularDevice();
   if (cellular_device && cellular_device->support_network_scan() &&
       cros_->cellular_enabled()) {
-    NetworkInfoDictionary network_dict;
+    NetworkInfoDictionary network_dict(GetIconScaleFactor());
     network_dict.set_service_path(kOtherNetworksFakePath);
     network_dict.set_icon(
         chromeos::NetworkMenuIcon::GetDisconnectedImage(
@@ -1372,7 +1393,7 @@ ListValue* InternetOptionsHandler::GetVPNList() {
       cros_->virtual_networks();
   for (chromeos::VirtualNetworkVector::const_iterator it =
       virtual_networks.begin(); it != virtual_networks.end(); ++it) {
-    NetworkInfoDictionary network_dict(*it);
+    NetworkInfoDictionary network_dict(*it, GetIconScaleFactor());
     network_dict.set_connectable(cros_->CanConnectToNetwork(*it));
     list->Append(network_dict.BuildDictionary());
   }
@@ -1390,7 +1411,9 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
     chromeos::WifiNetwork* wifi = static_cast<chromeos::WifiNetwork*>(
         cros_->FindNetworkByUniqueId(remembered->unique_id()));
 
-    NetworkInfoDictionary network_dict(wifi, remembered);
+    NetworkInfoDictionary network_dict(wifi,
+                                       remembered,
+                                       GetIconScaleFactor());
     list->Append(network_dict.BuildDictionary());
   }
 
@@ -1401,7 +1424,9 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
     chromeos::VirtualNetwork* vpn = static_cast<chromeos::VirtualNetwork*>(
         cros_->FindNetworkByUniqueId(remembered->unique_id()));
 
-    NetworkInfoDictionary network_dict(vpn, remembered);
+    NetworkInfoDictionary network_dict(vpn,
+                                       remembered,
+                                       GetIconScaleFactor());
     list->Append(network_dict.BuildDictionary());
   }
 

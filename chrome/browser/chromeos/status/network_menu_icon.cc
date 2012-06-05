@@ -733,26 +733,37 @@ const gfx::ImageSkia NetworkMenuIcon::GenerateImageFromComponents(
     const gfx::ImageSkia* bottom_left_badge,
     const gfx::ImageSkia* bottom_right_badge) {
   DCHECK(!icon.empty());
-  gfx::Canvas canvas(icon, false);
-
-  if (top_left_badge) {
-    canvas.DrawBitmapInt(*top_left_badge, kBadgeLeftX, kBadgeTopY);
+  gfx::ImageSkia badged;
+  int dip_width = icon.width();
+  int dip_height = icon.height();
+  std::vector<SkBitmap> bitmaps = icon.bitmaps();
+  for (std::vector<SkBitmap> ::const_iterator it = bitmaps.begin();
+       it != bitmaps.end(); ++it) {
+    gfx::Canvas canvas(*it, false);
+    int px_width = it->width();
+    float dip_scale = (float) px_width / (float) dip_width;
+    // TODO(kevers): This looks ugly, but gfx::Canvas::Scale is restricted to
+    // integer scale factors.  Consider adding a method to gfx::Canvas for
+    // float scale factors.
+    canvas.sk_canvas()->scale(SkFloatToScalar(dip_scale),
+                              SkFloatToScalar(dip_scale));
+    if (top_left_badge)
+      canvas.DrawBitmapInt(*top_left_badge, kBadgeLeftX, kBadgeTopY);
+    if (top_right_badge)
+      canvas.DrawBitmapInt(*top_right_badge,
+                           dip_width - top_right_badge->width(),
+                           kBadgeTopY);
+    if (bottom_left_badge)
+      canvas.DrawBitmapInt(*bottom_left_badge,
+                           kBadgeLeftX,
+                           dip_height - bottom_left_badge->height());
+    if (bottom_right_badge)
+      canvas.DrawBitmapInt(*bottom_right_badge,
+                           dip_width - bottom_right_badge->width(),
+                           dip_height - bottom_right_badge->height());
+    badged.AddBitmapForScale(canvas.ExtractBitmap(), dip_scale);
   }
-  if (top_right_badge) {
-    int x = icon.width() - top_right_badge->width();
-    canvas.DrawBitmapInt(*top_right_badge, x, kBadgeTopY);
-  }
-  if (bottom_left_badge) {
-    int y = icon.height() - bottom_left_badge->height();
-    canvas.DrawBitmapInt(*bottom_left_badge, kBadgeLeftX, y);
-  }
-  if (bottom_right_badge) {
-    int x = icon.width() - bottom_right_badge->width();
-    int y = icon.height() - bottom_right_badge->height();
-    canvas.DrawBitmapInt(*bottom_right_badge, x, y);
-  }
-
-  return gfx::ImageSkia(canvas.ExtractBitmap());
+  return badged;
 }
 
 // We blend connecting icons with a black image to generate a faded icon.
@@ -779,6 +790,10 @@ const gfx::ImageSkia NetworkMenuIcon::GetImage(const Network* network,
   // Maintain a static (global) icon map. Note: Icons are never destroyed;
   // it is assumed that a finite and reasonable number of network icons will be
   // created during a session.
+
+  // TODO(pkotwicz): Invalidate cache when a new image resolution becomes
+  // avaiable.
+
   typedef std::map<std::string, NetworkIcon*> NetworkIconMap;
   static NetworkIconMap* icon_map_dark = NULL;
   static NetworkIconMap* icon_map_light = NULL;

@@ -151,6 +151,7 @@ list:not([disabled]) > .network-group[selected] {
 .network-icon {
   -webkit-margin-end: 8px;
   background-position: left top;
+  background-size: 25px;
   display: -webkit-box;
   height: 25px;
   width: 25px;
@@ -314,6 +315,7 @@ list:not([disabled]) > .network-group[selected] {
 .network-menu-item {
   -webkit-padding-start: 32px;
   background: left center no-repeat;
+  background-size: 25px;
   display: -webkit-box;
   height: 32px;
   margin-left: 4px;
