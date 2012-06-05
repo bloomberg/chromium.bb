@@ -2634,7 +2634,6 @@ static const char texture_fragment_shader[] =
 	"varying vec2 v_texcoord;\n"
 	"uniform sampler2D tex;\n"
 	"uniform float alpha;\n"
-	"uniform float bright;\n"
 	"uniform float texwidth;\n"
 	"uniform vec4 opaque;\n"
 	"void main()\n"
