@@ -793,7 +793,7 @@ class Sample(dict):
       finally:
         old_zip_file.close()
 
-    zip_file = zipfile.ZipFile(zip_path, 'w')
+    zip_file = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
 
     try:
       for root, dirs, files in sorted_walk(sample_path):
