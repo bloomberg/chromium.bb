@@ -308,6 +308,7 @@ extern const char kDesktopNotificationAllowedOrigins[];  // OBSOLETE
 extern const char kDesktopNotificationDeniedOrigins[];  // OBSOLETE
 extern const char kDesktopNotificationPosition[];
 extern const char kDefaultContentSettings[];
+extern const char kContentSettingsClearOnExitMigrated[];
 extern const char kContentSettingsVersion[];
 extern const char kContentSettingsPatterns[];  // OBSOLETE
 extern const char kContentSettingsPatternPairs[];

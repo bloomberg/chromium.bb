@@ -201,9 +201,8 @@ class HostContentSettingsMap
       ContentSettingsType content_type,
       content_settings::ProviderInterface* provider) const;
 
-  // Various migration methods (old cookie, popup and per-host data gets
-  // migrated to the new format).
-  void MigrateObsoleteCookiePref();
+  // Migrate the Clear on exit pref into equivalent content settings.
+  void MigrateObsoleteClearOnExitPref();
 
   // Adds content settings for |content_type| and |resource_identifier|,
   // provided by |provider|, into |settings|. If |incognito| is true, adds only

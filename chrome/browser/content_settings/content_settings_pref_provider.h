@@ -88,6 +88,7 @@ class PrefProvider : public ObservableProvider,
       const base::Value* value,
       DictionaryValue* pattern_pairs_settings);
 
+  void MigrateObsoleteClearOnExitPref();
   void MigrateObsoleteContentSettingsPatternPref();
   void MigrateObsoleteGeolocationPref();
   void MigrateObsoleteNotificationsPrefs();

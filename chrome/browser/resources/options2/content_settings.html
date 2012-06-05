@@ -30,7 +30,9 @@
             <span i18n-content="cookies_block_3rd_party"></span>
           </label>
         </div>
-        <div class="checkbox" guest-visibility="disabled">
+        <!-- TODO(jochen): remove the div with the clear cookies on exit option
+                           once this has shipped. -->
+        <div class="checkbox" guest-visibility="disabled" hidden>
           <label>
             <input id="clear-cookies-on-exit"
                 pref="profile.clear_site_data_on_exit" type="checkbox">

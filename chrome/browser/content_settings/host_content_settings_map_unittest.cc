@@ -1040,3 +1040,44 @@ TEST_F(HostContentSettingsMapTest, ShouldAllowAllContent) {
             host_content_settings_map->GetContentSetting(
                 embedder, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
 }
+
+TEST_F(HostContentSettingsMapTest, MigrateClearOnExit) {
+  TestingProfile profile;
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+
+  prefs->SetBoolean(prefs::kClearSiteDataOnExit, true);
+
+  scoped_ptr<Value> patterns(base::JSONReader::Read(
+      "{\"[*.]example.com,*\":{\"cookies\": 1},"
+      " \"[*.]other.com,*\":{\"cookies\": 2},"
+      " \"[*.]third.com,*\":{\"cookies\": 4}}"));
+  profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *patterns);
+
+  scoped_ptr<Value> defaults(base::JSONReader::Read("{\"cookies\": 1}"));
+  profile.GetPrefs()->Set(prefs::kDefaultContentSettings, *defaults);
+
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+
+  EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_COOKIES, NULL));
+  EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
+            host_content_settings_map->GetContentSetting(
+                GURL("http://example.com"),
+                GURL("http://example.com"),
+                CONTENT_SETTINGS_TYPE_COOKIES,
+                std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                GURL("http://other.com"),
+                GURL("http://other.com"),
+                CONTENT_SETTINGS_TYPE_COOKIES,
+                std::string()));
+  EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
+            host_content_settings_map->GetContentSetting(
+                GURL("http://third.com"),
+                GURL("http://third.com"),
+                CONTENT_SETTINGS_TYPE_COOKIES,
+                std::string()));
+}

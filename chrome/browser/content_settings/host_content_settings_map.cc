@@ -118,6 +118,11 @@ HostContentSettingsMap::HostContentSettingsMap(
       new content_settings::DefaultProvider(prefs_, is_off_the_record_);
   default_provider->AddObserver(this);
   content_settings_providers_[DEFAULT_PROVIDER] = default_provider;
+
+  if (!is_off_the_record_) {
+    // Migrate obsolete preferences.
+    MigrateObsoleteClearOnExitPref();
+  }
 }
 
 void HostContentSettingsMap::RegisterExtensionService(
@@ -151,6 +156,8 @@ void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kContentSettingsDefaultWhitelistVersion,
                              0, PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kContentSettingsClearOnExitMigrated,
+                             false, PrefService::SYNCABLE_PREF);
 
   // Register the prefs for the content settings providers.
   content_settings::DefaultProvider::RegisterUserPrefs(prefs);
@@ -411,6 +418,57 @@ void HostContentSettingsMap::ShutdownOnUIThread() {
   }
 }
 
+void HostContentSettingsMap::MigrateObsoleteClearOnExitPref() {
+  // Don't migrate more than once.
+  if (prefs_->HasPrefPath(prefs::kContentSettingsClearOnExitMigrated) &&
+      prefs_->GetBoolean(prefs::kContentSettingsClearOnExitMigrated)) {
+    return;
+  }
+
+  if (!prefs_->GetBoolean(prefs::kClearSiteDataOnExit)) {
+    // Nothing to be done
+    prefs_->SetBoolean(prefs::kContentSettingsClearOnExitMigrated, true);
+    return;
+  }
+
+  // Change the default cookie settings:
+  //  old              new
+  //  ---------------- ----------------
+  //  ALLOW            SESSION_ONLY
+  //  SESSION_ONLY     SESSION_ONLY
+  //  BLOCK            BLOCK
+  ContentSetting default_setting = GetDefaultContentSettingFromProvider(
+      CONTENT_SETTINGS_TYPE_COOKIES,
+      content_settings_providers_[DEFAULT_PROVIDER]);
+  if (default_setting == CONTENT_SETTING_ALLOW) {
+    SetDefaultContentSetting(
+        CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_SESSION_ONLY);
+  }
+
+  // Change the exceptions using the same rules.
+  ContentSettingsForOneType exceptions;
+  AddSettingsForOneType(content_settings_providers_[PREF_PROVIDER],
+                        PREF_PROVIDER,
+                        CONTENT_SETTINGS_TYPE_COOKIES,
+                        "",
+                        &exceptions,
+                        false);
+  for (ContentSettingsForOneType::iterator it = exceptions.begin();
+       it != exceptions.end(); ++it) {
+    if (it->setting != CONTENT_SETTING_ALLOW)
+      continue;
+    SetWebsiteSetting(
+        it->primary_pattern,
+        it->secondary_pattern,
+        CONTENT_SETTINGS_TYPE_COOKIES,
+        "",
+        Value::CreateIntegerValue(CONTENT_SETTING_SESSION_ONLY));
+  }
+
+  prefs_->SetBoolean(prefs::kContentSettingsClearOnExitMigrated, true);
+}
+
+
 void HostContentSettingsMap::AddSettingsForOneType(
     const content_settings::ProviderInterface* provider,
     ProviderType provider_type,
@@ -422,7 +480,6 @@ void HostContentSettingsMap::AddSettingsForOneType(
       provider->GetRuleIterator(content_type,
                                 resource_identifier,
                                 incognito));
-  ContentSettingsPattern wildcard = ContentSettingsPattern::Wildcard();
   while (rule_iterator->HasNext()) {
     const content_settings::Rule& rule = rule_iterator->Next();
     settings->push_back(ContentSettingPatternSource(

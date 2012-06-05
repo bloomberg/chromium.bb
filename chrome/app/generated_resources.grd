@@ -6660,7 +6660,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Allow local data to be set (recommended)
       </message>
       <message name="IDS_COOKIES_SESSION_ONLY_RADIO" desc="A radio button in the Content Settings dialog for allowing cookies and other site data for the current session only.">
-        Allow local data to be set for the current session only
+        Keep local data only until I quit my browser
       </message>
       <message name="IDS_COOKIES_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking cookies and other site data from being stored on your computer.">
         Block sites from setting any data
@@ -6871,7 +6871,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Ask
       </message>
       <message name="IDS_EXCEPTIONS_SESSION_ONLY_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is allow but only for the duration of the session for a given domain.">
-        Session only
+        Clear on exit
       </message>
       <message name="IDS_EXCEPTIONS_BLOCK_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is blocked for a given domain.">
         Block
