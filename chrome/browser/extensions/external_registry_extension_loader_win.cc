@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_handle.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -45,6 +47,7 @@ void ExternalRegistryExtensionLoader::StartLoading() {
 
 void ExternalRegistryExtensionLoader::LoadOnFileThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::TimeTicks start_time = base::TimeTicks::Now();
   scoped_ptr<DictionaryValue> prefs(new DictionaryValue);
 
   // A map of IDs, to weed out duplicates between HKCU and HKLM.
@@ -144,6 +147,8 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
   }
 
   prefs_.reset(prefs.release());
+  HISTOGRAM_TIMES("Extensions.ExternalRegistryLoaderWin",
+                  base::TimeTicks::Now() - start_time);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ExternalRegistryExtensionLoader::LoadFinished, this));
