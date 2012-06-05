@@ -766,6 +766,7 @@ internal_paladin.add_config('lumpy-paladin',
 internal_paladin.add_config('link-paladin',
   boards=['link'],
   paladin_builder_name='link paladin',
+  vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 )
 
 internal_paladin.add_config('kiev-paladin',
@@ -921,7 +922,6 @@ _release.add_config('lumpy-release',
 _release.add_config('link-release',
   boards=['link'],
   prebuilts=False,
-  vm_tests=None,
 )
 
 _release.add_config('kiev-release',
