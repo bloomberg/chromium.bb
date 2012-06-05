@@ -21,7 +21,6 @@ http://dev.chromium.org/developers/testing/isolated-testing
 """
 
 import hashlib
-import json
 import logging
 import optparse
 import os
@@ -219,12 +218,6 @@ def result_to_state(filename):
   return filename.rsplit('.', 1)[0] + '.state'
 
 
-def write_json(stream, data):
-  """Writes data to a stream as json."""
-  json.dump(data, stream, indent=2, sort_keys=True)
-  stream.write('\n')
-
-
 def determine_root_dir(relative_root, infiles):
   """For a list of infiles, determines the deepest root directory that is
   referenced indirectly.
@@ -296,8 +289,7 @@ class Flattenable(object):
     """Loads the data from a file or return an empty instance."""
     out = cls()
     try:
-      with open(filename, 'r') as f:
-        out = cls.load(json.load(f))
+      out = cls.load(trace_inputs.read_json(filename))
       logging.debug('Loaded %s(%s)' % (cls.__name__, filename))
     except (IOError, ValueError):
       logging.warn('Failed to load %s' % filename)
@@ -460,13 +452,12 @@ class CompleteState(object):
 
   def save_files(self):
     """Saves both self.result and self.saved_state."""
-    with open(self.result_file, 'wb') as f:
-      write_json(f, self.result.flatten())
+    trace_inputs.write_json(self.result_file, self.result.flatten(), False)
     total_bytes = sum(i.get('size', 0) for i in self.result.files.itervalues())
     if total_bytes:
       logging.debug('Total size: %d bytes' % total_bytes)
-    with open(result_to_state(self.result_file), 'wb') as f:
-      write_json(f, self.saved_state.flatten())
+    trace_inputs.write_json(
+        result_to_state(self.result_file), self.saved_state.flatten(), False)
 
   @property
   def root_dir(self):

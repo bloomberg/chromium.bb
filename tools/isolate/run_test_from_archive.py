@@ -177,7 +177,7 @@ class Cache(object):
       os.makedirs(self.cache_dir)
     if os.path.isfile(self.state_file):
       try:
-        self.state = json.load(open(self.state_file, 'rb'))
+        self.state = json.load(open(self.state_file, 'r'))
       except ValueError:
         # Too bad. The file will be overwritten and the cache cleared.
         pass

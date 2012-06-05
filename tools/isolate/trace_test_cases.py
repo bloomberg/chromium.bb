@@ -10,7 +10,6 @@ This is mainly written to work around bugs in strace w.r.t. browser_tests.
 """
 
 import fnmatch
-import json
 import multiprocessing
 import optparse
 import os
@@ -149,13 +148,7 @@ def trace_test_cases(
     pool.terminate()
     raise
   finally:
-    with open('%s.test_cases' % executable, 'w') as f:
-      if len(out) > 20:
-        # Pack it dense since the file is going to be pretty large.
-        json.dump(out, f, separators=(',',':'))
-      else:
-        # Keep it human readable.
-        json.dump(out, f, indent=2, sort_keys=True)
+    trace_inputs.write_json('%s.test_cases' % executable, out, len(out) > 20)
     pool.close()
     pool.join()
 

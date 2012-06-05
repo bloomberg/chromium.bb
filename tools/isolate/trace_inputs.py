@@ -341,6 +341,29 @@ def process_quoted_arguments(text):
   return out
 
 
+def read_json(filepath):
+  with open(filepath, 'r') as f:
+    return json.load(f)
+
+
+def write_json(filepath_or_handle, data, dense):
+  """Writes data into filepath or file handle encoded as json.
+
+  If dense is True, the json is packed. Otherwise, it is human readable.
+  """
+  if hasattr(filepath_or_handle, 'write'):
+    if dense:
+      filepath_or_handle.write(json.dumps(data, separators=(',',':')))
+    else:
+      filepath_or_handle.write(json.dumps(data, sort_keys=True, indent=2))
+  else:
+    with open(filepath_or_handle, 'wb') as f:
+      if dense:
+        json.dump(data, f, separators=(',',':'))
+      else:
+        json.dump(data, f, sort_keys=True, indent=2)
+
+
 class ApiBase(object):
   """OS-agnostic API to trace a process and its children."""
   class Context(object):
@@ -1009,21 +1032,18 @@ class Strace(ApiBase):
     out = child.communicate()[0]
     # Once it's done, write metadata into the log file to be able to follow the
     # pid files.
-    with open(logname, 'wb') as f:
-      json.dump(
-          {
-            'cwd': cwd,
-            # The pid of strace process, not very useful.
-            'pid': child.pid,
-          },
-          f)
+    value = {
+      'cwd': cwd,
+      # The pid of strace process, not very useful.
+      'pid': child.pid,
+    }
+    write_json(logname, value, False)
     return child.returncode, out
 
   @classmethod
   def parse_log(cls, filename, blacklist):
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
-    with open(filename, 'r') as f:
-      data = json.load(f)
+    data = read_json(filename)
     context = cls.Context(blacklist, data['cwd'])
     for pidfile in glob.iglob(filename + '.*'):
       pid = pidfile.rsplit('.', 1)[1]
@@ -2243,10 +2263,11 @@ class LogmanTrace(ApiBase):
     cls._convert_log(logname, 'csv')
 
     # 5. Save metadata.
-    json.dump({
+    value = {
       'pid': child.pid,
       'format': 'csv',
-    }, open(logname, 'w'))
+    }
+    write_json(logname, value, False)
     return child.returncode, out
 
   @classmethod
@@ -2257,7 +2278,7 @@ class LogmanTrace(ApiBase):
       # All the NTFS metadata is in the form x:\$EXTEND or stuff like that.
       return blacklist(filepath) or re.match(r'[A-Z]\:\\\$EXTEND', filepath)
 
-    data = json.load(open(filename))
+    data = read_json(filename)
     logformat = data['format']
 
     context = cls.Context(blacklist_more, data['pid'])
@@ -2417,7 +2438,7 @@ def CMDread(parser, args):
     results, simplified = load_trace(options.log, options.root_dir, api)
 
     if options.json:
-      json.dump(results.flatten(), sys.stdout)
+      write_json(sys.stdout, results.flatten(), False)
     else:
       print('Total: %d' % len(results.files))
       print('Non existent: %d' % len(results.non_existent))
