@@ -148,16 +148,23 @@ class ChromotingMixIn(object):
         'document.getElementById("access-code-display").innerText',
         tab_index, windex)
 
-  def Connect(self, access_code, tab_index=1, windex=0):
+  def Connect(self, access_code, wait_for_frame, tab_index=1, windex=0):
     """Connects to a Chromoting host and starts the session.
 
     Returns:
       True on success; False otherwise.
     """
-    return self._ExecuteAndWaitForMode(
+    if not self._ExecuteAndWaitForMode(
         'document.getElementById("access-code-entry").value = "%s";'
         'remoting.connectIt2Me();' % access_code,
-        'IN_SESSION', tab_index, windex)
+        'IN_SESSION', tab_index, windex):
+      return False
+
+    if wait_for_frame and not self._WaitForJavascriptCondition(
+        'remoting.clientSession && remoting.clientSession.hasReceivedFrame()',
+        tab_index, windex):
+      return False
+    return True
 
   def CancelShare(self, tab_index=1, windex=0):
     """Stops sharing the desktop on the host side.

@@ -52,7 +52,7 @@ class ChromotingBasic(chromoting.ChromotingMixIn, pyauto.PyUITest):
     if client_local:
       client.LaunchApp(self._app)
 
-    self.assertTrue(client.Connect(access_code, client_tab_index),
+    self.assertTrue(client.Connect(access_code, True, client_tab_index),
                     msg='The client attempted to connect to the host, '
                         'but the chromoting session did not start.')
 
