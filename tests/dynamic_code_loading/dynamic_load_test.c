@@ -485,6 +485,7 @@ int TestMain() {
   RUN_TEST(test_deleting_code);
   RUN_TEST(test_deleting_zero_size);
   RUN_TEST(test_deleting_code_from_invalid_ranges);
+  RUN_TEST(test_threaded_delete);
   RUN_TEST(test_stress);
   /*
    * TODO(ncbray) reenable when kernel bug is fixed.

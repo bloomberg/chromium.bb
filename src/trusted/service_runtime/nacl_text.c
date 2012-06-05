@@ -894,12 +894,6 @@ int32_t NaClTextSysDyncode_Delete(struct NaClAppThread *natp,
     return -NACL_ABI_EINVAL;
   }
 
-  dest_addr = NaClUserToSysAddrRange(nap, dest, size);
-  if (kNaClBadAddress == dest_addr) {
-    NaClLog(1, "NaClTextSysDyncode_Delete: Address out of range\n");
-    return -NACL_ABI_EFAULT;
-  }
-
   if (0 == size) {
     /* Nothing to delete.  Just update our generation. */
     int gen;
@@ -910,6 +904,12 @@ int32_t NaClTextSysDyncode_Delete(struct NaClAppThread *natp,
     /* set our generation */
     NaClSetThreadGeneration(natp, gen);
     return 0;
+  }
+
+  dest_addr = NaClUserToSysAddrRange(nap, dest, size);
+  if (kNaClBadAddress == dest_addr) {
+    NaClLog(1, "NaClTextSysDyncode_Delete: Address out of range\n");
+    return -NACL_ABI_EFAULT;
   }
 
   NaClXMutexLock(&nap->dynamic_load_mutex);

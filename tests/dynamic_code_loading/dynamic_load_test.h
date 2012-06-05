@@ -28,4 +28,6 @@ void fill_nops(uint8_t *data, size_t size);
 
 void test_threaded_loads(void);
 
+void test_threaded_delete(void);
+
 #endif  /* NATIVE_CLIENT_TESTS_DYNAMIC_CODE_LOADING_DYNAMIC_LOAD_TEST_H_ */
