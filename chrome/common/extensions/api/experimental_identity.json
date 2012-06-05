@@ -5,7 +5,6 @@
 [
   {
     "namespace": "experimental.identity",
-    "nodoc": true,
     "types": [],
     "events": [],
     "functions": [
