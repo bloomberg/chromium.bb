@@ -21,6 +21,7 @@
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
@@ -188,6 +189,20 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
   if (focused_ == focused)
     return;
   focused_ = focused;
+
+  // Expand the panel if the minimized panel is activated by means other than
+  // clicking on its titlebar. This is the workaround to support restoring the
+  // minimized panel by other means, like alt-tabbing, win-tabbing, or clicking
+  // the taskbar icon. Note that this workaround does not work for one edge
+  // case: the mouse happens to be at the minimized panel when the user tries to
+  // bring up the panel with the above alternatives.
+  // When the user clicks on the minimized panel, the panel expansion will be
+  // done when we process the mouse button pressed message.
+  if (focused_ && panel_->IsMinimized() &&
+      gfx::Screen::GetWindowAtCursorScreenPoint() !=
+          widget->GetNativeWindow()) {
+    panel_->Restore();
+  }
 
   panel()->OnActiveStateChanged(focused);
 }
@@ -459,9 +474,11 @@ bool PanelBrowserView::OnTitlebarMouseDragged(
   if (mouse_dragging_state_ == NO_DRAGGING &&
       ExceededDragThreshold(delta_x, delta_y)) {
     // When a drag begins, we do not want to the client area to still receive
-    // the focus.
-    old_focused_view_ = GetFocusManager()->GetFocusedView();
-    GetFocusManager()->SetFocusedView(GetFrameView());
+    // the focus. We do not need to do this for the unfocused minimized panel.
+    if (!panel_->IsMinimized()) {
+      old_focused_view_ = GetFocusManager()->GetFocusedView();
+      GetFocusManager()->SetFocusedView(GetFrameView());
+    }
 
     panel_->manager()->StartDragging(panel_.get(), last_mouse_location_);
     mouse_dragging_state_ = DRAGGING_STARTED;
