@@ -28,6 +28,11 @@ using ::testing::_;
 
 namespace gdata {
 
+// Action used to set mock expectations for GetFileByResourceId().
+ACTION_P4(MockGetFileByResourceId, error, local_path, mime_type, file_type) {
+  arg1.Run(error, local_path, mime_type, file_type);
+}
+
 class GDataSyncClientTest : public testing::Test {
  public:
   GDataSyncClientTest()
@@ -94,6 +99,17 @@ class GDataSyncClientTest : public testing::Test {
     sync_client_->OnNetworkManagerChanged(mock_network_library_);
   }
 
+  // Sets up MockNetworkLibrary as if it's connected to wimax network.
+  void ConnectToWimax() {
+    active_network_.reset(
+        chromeos::Network::CreateForTesting(chromeos::TYPE_WIMAX));
+    EXPECT_CALL(*mock_network_library_, active_network())
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(active_network_.get())));
+    chromeos::Network::TestApi(active_network_.get()).SetConnected(true);
+    sync_client_->OnNetworkManagerChanged(mock_network_library_);
+  }
+
   // Sets up MockNetworkLibrary as if it's disconnected.
   void ConnectToNone() {
     active_network_.reset(
@@ -141,6 +157,18 @@ class GDataSyncClientTest : public testing::Test {
     message_loop_.Quit();
   }
 
+  // Sets the expectation for MockGDataFileSystem::GetFileByResourceId(),
+  // that simulates successful retrieval of a file for the given resource ID.
+  void SetExpectationForGetFileByResourceId(const std::string& resource_id) {
+    EXPECT_CALL(*mock_file_system_,
+                GetFileByResourceId(resource_id, _, _))
+        .WillOnce(MockGetFileByResourceId(
+            base::PLATFORM_FILE_OK,
+            FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
+            std::string("mime_type_does_not_matter"),
+            REGULAR_FILE));
+  }
+
  protected:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -151,11 +179,6 @@ class GDataSyncClientTest : public testing::Test {
   chromeos::MockNetworkLibrary* mock_network_library_;
   scoped_ptr<chromeos::Network> active_network_;
 };
-
-// Action used to set mock expectations for GetFileByResourceId().
-ACTION_P4(MockGetFileByResourceId, error, local_path, mime_type, file_type) {
-  arg1.Run(error, local_path, mime_type, file_type);
-}
 
 TEST_F(GDataSyncClientTest, StartInitialScan) {
   SetUpTestFiles();
@@ -264,30 +287,49 @@ TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarEnabled) {
 
   // The three files will be fetched by GetFileByResourceId(), as fetching
   // over cellular network is explicitly enabled.
-  EXPECT_CALL(*mock_file_system_,
-              GetFileByResourceId("resource_id_not_fetched_foo", _, _))
-      .WillOnce(MockGetFileByResourceId(
-          base::PLATFORM_FILE_OK,
-          FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
-          std::string("mime_type_does_not_matter"),
-          REGULAR_FILE));
-  EXPECT_CALL(*mock_file_system_,
-              GetFileByResourceId("resource_id_not_fetched_bar", _, _))
-      .WillOnce(MockGetFileByResourceId(
-          base::PLATFORM_FILE_OK,
-          FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
-          std::string("mime_type_does_not_matter"),
-          REGULAR_FILE));
-  EXPECT_CALL(*mock_file_system_,
-              GetFileByResourceId("resource_id_not_fetched_baz", _, _))
-      .WillOnce(MockGetFileByResourceId(
-          base::PLATFORM_FILE_OK,
-          FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
-          std::string("mime_type_does_not_matter"),
-          REGULAR_FILE));
+  SetExpectationForGetFileByResourceId("resource_id_not_fetched_foo");
+  SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
+  SetExpectationForGetFileByResourceId("resource_id_not_fetched_baz");
 
   // Then connect to cellular. This will kick off StartFetchLoop().
   ConnectToCellular();
+}
+
+TEST_F(GDataSyncClientTest, StartFetchLoop_WimaxDisabled) {
+  SetUpTestFiles();
+  ConnectToWifi();  // First connect to Wifi.
+
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
+
+  // The three files will not be fetched by GetFileByResourceId(), as
+  // fetching over wimax network is disabled by default.
+  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
+
+  // Then connect to wimax. This will kick off StartFetchLoop().
+  ConnectToWimax();
+}
+
+TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarEnabledWithWimax) {
+  SetUpTestFiles();
+  ConnectToWifi();  // First connect to Wifi.
+
+  // Enable fetching over cellular network. This includes wimax.
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableGDataOverCellular, false);
+
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
+
+  // The three files will be fetched by GetFileByResourceId(), as fetching
+  // over cellular network, which includes wimax, is explicitly enabled.
+  SetExpectationForGetFileByResourceId("resource_id_not_fetched_foo");
+  SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
+  SetExpectationForGetFileByResourceId("resource_id_not_fetched_baz");
+
+  // Then connect to wimax. This will kick off StartFetchLoop().
+  ConnectToWimax();
 }
 
 TEST_F(GDataSyncClientTest, StartFetchLoop_GDataDisabled) {

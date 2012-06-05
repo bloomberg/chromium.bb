@@ -181,8 +181,10 @@ bool GDataSyncClient::ShouldStopFetchLoop() {
   // Should stop if the current connection is on cellular network, and
   // fetching is disabled over cellular.
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGDataOverCellular) &&
-      active_network->type() == chromeos::TYPE_CELLULAR)
+      (active_network->type() == chromeos::TYPE_CELLULAR ||
+       active_network->type() == chromeos::TYPE_WIMAX)) {
     return true;
+  }
 
   return false;
 }
