@@ -110,9 +110,6 @@ class ConnectionToHost : public SignalStrategy::Listener,
 
   void NotifyIfChannelsReady();
 
-  // Callback for |video_reader_|.
-  void OnVideoPacket(VideoPacket* packet);
-
   void CloseOnError(ErrorCode error);
 
   // Stops writing in the channels.
