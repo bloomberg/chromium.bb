@@ -63,7 +63,7 @@ bool HasMultipleWords(const string16& text) {
   return false;
 }
 
-};
+}  // namespace
 
 
 // SearchProvider::Providers --------------------------------------------------
@@ -96,6 +96,8 @@ SearchProvider::SearchProvider(ACProviderListener* listener, Profile* profile)
     : AutocompleteProvider(listener, profile, "Search"),
       providers_(TemplateURLServiceFactory::GetForProfile(profile)),
       suggest_results_pending_(0),
+      has_suggested_relevance_(false),
+      verbatim_relevance_(-1),
       have_suggest_results_(false),
       instant_finalized_(false) {
   // We use GetSuggestNumberOfGroups() as the group ID to mean "not in field
@@ -308,7 +310,6 @@ void SearchProvider::Run() {
 
 void SearchProvider::Stop() {
   StopSuggest();
-  ClearResults();
   done_ = true;
   default_provider_suggest_text_.clear();
 }
@@ -441,7 +442,9 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
 
   // We can't keep running any previous query, so halt it.
   StopSuggest();
-  ClearResults();
+
+  // Remove existing results that cannot inline autocomplete the new input.
+  RemoveStaleResults();
 
   // We can't start a new query if we're only allowed synchronous results.
   if (input_.matches_requested() != AutocompleteInput::ALL_MATCHES)
@@ -528,7 +531,58 @@ void SearchProvider::ClearResults() {
   default_suggest_results_.clear();
   keyword_navigation_results_.clear();
   default_navigation_results_.clear();
+  has_suggested_relevance_ = false;
+  verbatim_relevance_ = -1;
   have_suggest_results_ = false;
+}
+
+void SearchProvider::RemoveStaleResults() {
+  RemoveStaleSuggestResults(&keyword_suggest_results_, true);
+  RemoveStaleSuggestResults(&default_suggest_results_, false);
+  RemoveStaleNavigationResults(&keyword_navigation_results_, true);
+  RemoveStaleNavigationResults(&default_navigation_results_, false);
+}
+
+void SearchProvider::RemoveStaleSuggestResults(SuggestResults* list,
+                                               bool is_keyword) {
+  const string16& input = is_keyword ? keyword_input_text_ : input_.text();
+  for (SuggestResults::iterator i = list->begin(); i < list->end();)
+    i = StartsWith(i->suggestion(), input, false) ? (i + 1) : list->erase(i);
+}
+
+void SearchProvider::RemoveStaleNavigationResults(NavigationResults* list,
+                                                  bool is_keyword) {
+  const string16& input = is_keyword ? keyword_input_text_ : input_.text();
+  for (NavigationResults::iterator i = list->begin(); i < list->end();) {
+    const string16 fill(AutocompleteInput::FormattedStringWithEquivalentMeaning(
+        i->url(), StringForURLDisplay(i->url(), true, false)));
+    i = URLPrefix::BestURLPrefix(fill, input) ? (i + 1) : list->erase(i);
+  }
+}
+
+void SearchProvider::ApplyCalculatedRelevance() {
+  ApplyCalculatedSuggestRelevance(&keyword_suggest_results_, true);
+  ApplyCalculatedSuggestRelevance(&default_suggest_results_, false);
+  ApplyCalculatedNavigationRelevance(&keyword_navigation_results_, true);
+  ApplyCalculatedNavigationRelevance(&default_navigation_results_, false);
+  has_suggested_relevance_ = false;
+  verbatim_relevance_ = -1;
+}
+
+void SearchProvider::ApplyCalculatedSuggestRelevance(SuggestResults* list,
+                                                     bool is_keyword) {
+  for (size_t i = 0; i < list->size(); ++i) {
+    (*list)[i].set_relevance(CalculateRelevanceForSuggestion(is_keyword) +
+                             (list->size() - i - 1));
+  }
+}
+
+void SearchProvider::ApplyCalculatedNavigationRelevance(NavigationResults* list,
+                                                        bool is_keyword) {
+  for (size_t i = 0; i < list->size(); ++i) {
+    (*list)[i].set_relevance(CalculateRelevanceForNavigation(is_keyword) +
+                             (list->size() - i - 1));
+  }
 }
 
 net::URLFetcher* SearchProvider::CreateSuggestFetcher(
@@ -564,12 +618,28 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
 
   // 4th element: Disregard the query URL list for now.
 
+  // Reset suggested relevance information from the default provider.
+  if (!is_keyword) {
+    has_suggested_relevance_ = false;
+    verbatim_relevance_ = -1;
+  }
+
   // 5th element: Optional key-value pairs from the Suggest server.
   ListValue* types = NULL;
-  DictionaryValue* dict_val = NULL;
-  if (root_list->GetDictionary(4, &dict_val)) {
-    // Parse Google Suggest specific type extension.
-    dict_val->GetList("google:suggesttype", &types);
+  ListValue* relevances = NULL;
+  DictionaryValue* extras = NULL;
+  if (root_list->GetDictionary(4, &extras)) {
+    extras->GetList("google:suggesttype", &types);
+
+    // Only accept relevance suggestions if Instant is disabled.
+    if (!is_keyword && !InstantController::IsEnabled(profile_)) {
+      // Discard this list if its size does not match that of the suggestions.
+      if (extras->GetList("google:suggestrelevance", &relevances) &&
+          relevances->GetSize() != results->GetSize())
+        relevances = NULL;
+
+      extras->GetInteger("google:verbatimrelevance", &verbatim_relevance_);
+    }
   }
 
   SuggestResults* suggest_results =
@@ -577,46 +647,46 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
   NavigationResults* navigation_results =
       is_keyword ? &keyword_navigation_results_ : &default_navigation_results_;
 
-  string16 result;
-  bool results_updated = false;
+  // Clear the previous results now that new results are available.
+  suggest_results->clear();
+  navigation_results->clear();
+
+  string16 result, title;
+  std::string type;
+  int relevance = -1;
   for (size_t index = 0; results->GetString(index, &result); ++index) {
     // Google search may return empty suggestions for weird input characters,
     // they make no sense at all and can cause problems in our code.
     if (result.empty())
       continue;
 
-    std::string type;
+    // Apply valid suggested relevance scores; discard invalid lists.
+    if (relevances != NULL && !relevances->GetInteger(index, &relevance))
+      relevances = NULL;
     if (types && types->GetString(index, &type) && (type == "NAVIGATION")) {
-      if (navigation_results->size() < kMaxMatches) {
-        // Do not blindly trust the URL coming from the server to be valid.
-        GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(result), std::string()));
-        if (url.is_valid()) {
-          string16 description;
-          if (descriptions != NULL)
-            descriptions->GetString(index, &description);
-          // Decrement the relevance for successive results to preserve order.
-          int relevance = CalculateRelevanceForNavigation(is_keyword) +
-                          (kMaxMatches - navigation_results->size() - 1);
-          navigation_results->push_back(
-              NavigationResult(url, description, relevance));
-          results_updated = true;
-        }
+      // Do not blindly trust the URL coming from the server to be valid.
+      GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(result), std::string()));
+      if (url.is_valid()) {
+        if (descriptions != NULL)
+          descriptions->GetString(index, &title);
+        navigation_results->push_back(NavigationResult(url, title, relevance));
       }
     } else {
-      // TODO(kochi): Currently we treat a calculator result as a query, but it
-      // is better to have better presentation for caluculator results.
-      if (suggest_results->size() < kMaxMatches) {
-        // Decrement the relevance for successive results to preserve order.
-        int relevance = CalculateRelevanceForSuggestion(is_keyword) +
-                        (kMaxMatches - suggest_results->size() - 1);
-        suggest_results->push_back(SuggestResult(result, relevance));
-        results_updated = true;
-      }
+      // TODO(kochi): Improve calculator result presentation.
+      suggest_results->push_back(SuggestResult(result, relevance));
     }
   }
 
+  // Apply calculated relevance scores if a valid list was not provided.
+  if (relevances == NULL) {
+    ApplyCalculatedSuggestRelevance(suggest_results, is_keyword);
+    ApplyCalculatedNavigationRelevance(navigation_results, is_keyword);
+  } else if (!is_keyword) {
+    has_suggested_relevance_ = true;
+  }
+
   have_suggest_results_ = true;
-  return results_updated;
+  return true;
 }
 
 void SearchProvider::ConvertResultsToAutocompleteMatches() {
@@ -633,9 +703,11 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   int did_not_accept_default_suggestion = default_suggest_results_.empty() ?
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
       TemplateURLRef::NO_SUGGESTION_CHOSEN;
-  AddMatchToMap(input_.text(), input_.text(), verbatim_relevance,
-                AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
-                did_not_accept_default_suggestion, false, &map);
+  if (verbatim_relevance > 0) {
+    AddMatchToMap(input_.text(), input_.text(), verbatim_relevance,
+                  AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                  did_not_accept_default_suggestion, false, &map);
+  }
   const size_t what_you_typed_size = map.size();
   if (!default_provider_suggest_text_.empty()) {
     AddMatchToMap(input_.text() + default_provider_suggest_text_,
@@ -667,6 +739,17 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       matches_.end(), &AutocompleteMatch::MoreRelevant);
   if (matches_.size() > max_total_matches)
     matches_.erase(matches_.begin() + max_total_matches, matches_.end());
+
+  // The top result must be inlinable; apply calculated scores if it is not.
+  if (!matches_.empty() &&
+      (has_suggested_relevance_ || verbatim_relevance_ >= 0) &&
+      (matches_.front().type == AutocompleteMatch::SEARCH_SUGGEST ||
+       matches_.front().type == AutocompleteMatch::NAVSUGGEST) &&
+      matches_.front().inline_autocomplete_offset == string16::npos &&
+      matches_.front().fill_into_edit != input_.text()) {
+    ApplyCalculatedRelevance();
+    ConvertResultsToAutocompleteMatches();
+  }
 
   UpdateStarredStateOfMatches();
   UpdateDone();
@@ -796,6 +879,9 @@ void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
 }
 
 int SearchProvider::CalculateRelevanceForWhatYouTyped() const {
+  if (verbatim_relevance_ >= 0 && !input_.prevent_inline_autocomplete())
+    return verbatim_relevance_;
+
   if (!providers_.keyword_provider().empty())
     return 250;
 

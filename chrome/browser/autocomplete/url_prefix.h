@@ -18,7 +18,7 @@ typedef std::vector<URLPrefix> URLPrefixes;
 struct URLPrefix {
   URLPrefix(const string16& prefix, size_t num_components);
 
-  // Returns a vector of valid URL prefixes.
+  // Returns a vector of URL prefixes sorted by descending number of components.
   static const URLPrefixes& GetURLPrefixes();
 
   // Returns if the argument is a valid URL prefix.
@@ -27,6 +27,7 @@ struct URLPrefix {
   // Returns the prefix with the most components that begins |text|, or NULL.
   // |prefix_suffix| (which may be empty) is appended to every attempted prefix,
   // which is useful for finding the innermost match of user input in a URL.
+  // Performs case insensitive string comparison.
   static const URLPrefix* BestURLPrefix(const string16& text,
                                         const string16& prefix_suffix);
 

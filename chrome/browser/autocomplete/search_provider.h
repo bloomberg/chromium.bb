@@ -89,6 +89,7 @@ class SearchProvider : public AutocompleteProvider,
   static const int kKeywordProviderURLFetcherID;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestRelevanceExperiment);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInline);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineSchemeSubstring);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineDomainClassify);
@@ -226,6 +227,17 @@ class SearchProvider : public AutocompleteProvider,
   // Clears the current results.
   void ClearResults();
 
+  // Remove results that cannot inline auto-complete the current input.
+  void RemoveStaleResults();
+  void RemoveStaleSuggestResults(SuggestResults* list, bool is_keyword);
+  void RemoveStaleNavigationResults(NavigationResults* list, bool is_keyword);
+
+  // Apply calculated relevance scores to the current results.
+  void ApplyCalculatedRelevance();
+  void ApplyCalculatedSuggestRelevance(SuggestResults* list, bool is_keyword);
+  void ApplyCalculatedNavigationRelevance(NavigationResults* list,
+                                          bool is_keyword);
+
   // Creates a URLFetcher requesting suggest results from the specified
   // |suggestions_url|. The caller owns the returned URLFetcher.
   net::URLFetcher* CreateSuggestFetcher(
@@ -342,6 +354,13 @@ class SearchProvider : public AutocompleteProvider,
   // Navigational suggestions returned by the server.
   NavigationResults keyword_navigation_results_;
   NavigationResults default_navigation_results_;
+
+  // A flag indicating use of server supplied relevance scores.
+  bool has_suggested_relevance_;
+
+  // The server supplied verbatim relevance score. Negative values indicate that
+  // there is no suggested score; a value of 0 suppresses the verbatim result.
+  int verbatim_relevance_;
 
   // Whether suggest_results_ is valid.
   bool have_suggest_results_;

@@ -173,6 +173,9 @@
 // secondary provider is the default provider. If the user has not typed a
 // keyword, then the primary provider corresponds to the default provider.
 //
+// Search providers may supply relevance values along with their results to be
+// used in place of client-side calculated values.
+//
 // The value column gives the ranking returned from the various providers.
 // ++: a series of matches with relevance from n up to (n + max_matches).
 // --: relevance score falls off over time (discounted 50 points @ 15 minutes,

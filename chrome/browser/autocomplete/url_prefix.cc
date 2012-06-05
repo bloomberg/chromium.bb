@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/url_prefix.h"
 
 #include "base/basictypes.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 
 URLPrefix::URLPrefix(const string16& prefix, size_t num_components)
@@ -40,15 +41,9 @@ bool URLPrefix::IsURLPrefix(const string16& prefix) {
 // static
 const URLPrefix* URLPrefix::BestURLPrefix(const string16& text,
                                           const string16& prefix_suffix) {
-  const URLPrefix* best_prefix = NULL;
   const URLPrefixes& list = GetURLPrefixes();
-  for (URLPrefixes::const_iterator i = list.begin(); i != list.end(); ++i) {
-    if (!best_prefix || (i->num_components > best_prefix->num_components)) {
-      string16 prefix_with_suffix(i->prefix + prefix_suffix);
-      if ((text.length() >= prefix_with_suffix.length()) &&
-          !text.compare(0, prefix_with_suffix.length(), prefix_with_suffix))
-        best_prefix = &(*i);
-    }
-  }
-  return best_prefix;
+  for (URLPrefixes::const_iterator i = list.begin(); i != list.end(); ++i)
+    if (StartsWith(text, i->prefix + prefix_suffix, false))
+      return &(*i);
+  return NULL;
 }
