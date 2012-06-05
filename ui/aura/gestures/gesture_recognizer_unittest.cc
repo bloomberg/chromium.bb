@@ -9,6 +9,7 @@
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/gestures/gesture_configuration.h"
@@ -35,6 +36,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   GestureEventConsumeDelegate()
       : tap_(false),
         tap_down_(false),
+        tap_up_(false),
         double_tap_(false),
         scroll_begin_(false),
         scroll_update_(false),
@@ -58,6 +60,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   void Reset() {
     tap_ = false;
     tap_down_ = false;
+    tap_up_ = false;
     double_tap_ = false;
     scroll_begin_ = false;
     scroll_update_ = false;
@@ -82,6 +85,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
 
   bool tap() const { return tap_; }
   bool tap_down() const { return tap_down_; }
+  bool tap_up() const { return tap_up_; }
   bool double_tap() const { return double_tap_; }
   bool scroll_begin() const { return scroll_begin_; }
   bool scroll_update() const { return scroll_update_; }
@@ -120,6 +124,9 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
       case ui::ET_GESTURE_TAP_DOWN:
         tap_down_ = true;
         break;
+      case ui::ET_GESTURE_TAP_UP:
+        tap_up_ = true;
+        break;
       case ui::ET_GESTURE_DOUBLE_TAP:
         double_tap_ = true;
         break;
@@ -154,8 +161,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         EXPECT_TRUE(scroll_end_);
         fling_ = true;
         break;
-      case ui::ET_GESTURE_TAP_UP:
-        break;
       case ui::ET_GESTURE_TWO_FINGER_TAP:
         two_finger_tap_ = true;
         break;
@@ -168,6 +173,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
  private:
   bool tap_;
   bool tap_down_;
+  bool tap_up_;
   bool double_tap_;
   bool scroll_begin_;
   bool scroll_update_;
@@ -1752,6 +1758,31 @@ TEST_F(GestureRecognizerTest, NoTapWithPreventDefaultedRelease) {
   delegate->Reset();
   delegate->ReceivedAckPreventDefaulted();
   EXPECT_FALSE(delegate->tap());
+}
+
+TEST_F(GestureRecognizerTest, CaptureSendsTapUp) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  TestGestureRecognizer* gesture_recognizer =
+      new TestGestureRecognizer(root_window());
+  root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
+
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, gfx::Rect(10, 10, 300, 300), NULL));
+  EventGenerator generator(root_window());
+
+  generator.MoveMouseRelativeTo(window.get(), gfx::Point(10, 10));
+  generator.PressTouch();
+  RunAllPendingInMessageLoop();
+
+  EXPECT_TRUE(delegate->tap_down());
+
+  scoped_ptr<aura::Window> capture(CreateTestWindowWithBounds(
+      gfx::Rect(10, 10, 200, 200), NULL));
+  capture->SetCapture();
+  RunAllPendingInMessageLoop();
+
+  EXPECT_TRUE(delegate->tap_up());
 }
 
 TEST_F(GestureRecognizerTest, TwoFingerTap) {

@@ -197,6 +197,8 @@ bool Slider::OnKeyPressed(const views::KeyEvent& event) {
 
 ui::GestureStatus Slider::OnGestureEvent(const views::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+      event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+      event.type() == ui::ET_GESTURE_SCROLL_END ||
       event.type() == ui::ET_GESTURE_TAP_DOWN) {
     MoveButtonTo(event.location());
     return ui::GESTURE_STATUS_CONSUMED;

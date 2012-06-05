@@ -99,6 +99,12 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   virtual int GetScrollIncrement(bool is_page, bool is_positive);
 
  private:
+  // Changes to 'pushed' state and starts a timer to scroll repeatedly.
+  void ProcessPressEvent(const LocatedEvent& event);
+
+  // Resets state to 'normal' and stops the repeater.
+  void ResetState();
+
   // Called when the mouse is pressed down in the track area.
   void TrackClicked();
 

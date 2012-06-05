@@ -112,25 +112,8 @@ void BaseScrollBar::ScrollByContentsOffset(int contents_offset) {
 // BaseScrollBar, View implementation:
 
 bool BaseScrollBar::OnMousePressed(const MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton()) {
-    SetThumbTrackState(CustomButton::BS_PUSHED);
-    gfx::Rect thumb_bounds = thumb_->bounds();
-    if (IsHorizontal()) {
-      if (event.x() < thumb_bounds.x()) {
-        last_scroll_amount_ = SCROLL_PREV_PAGE;
-      } else if (event.x() > thumb_bounds.right()) {
-        last_scroll_amount_ = SCROLL_NEXT_PAGE;
-      }
-    } else {
-      if (event.y() < thumb_bounds.y()) {
-        last_scroll_amount_ = SCROLL_PREV_PAGE;
-      } else if (event.y() > thumb_bounds.bottom()) {
-        last_scroll_amount_ = SCROLL_NEXT_PAGE;
-      }
-    }
-    TrackClicked();
-    repeater_.Start();
-  }
+  if (event.IsOnlyLeftMouseButton())
+    ProcessPressEvent(event);
   return true;
 }
 
@@ -139,8 +122,7 @@ void BaseScrollBar::OnMouseReleased(const MouseEvent& event) {
 }
 
 void BaseScrollBar::OnMouseCaptureLost() {
-  SetThumbTrackState(CustomButton::BS_NORMAL);
-  repeater_.Stop();
+  ResetState();
 }
 
 bool BaseScrollBar::OnKeyPressed(const KeyEvent& event) {
@@ -185,7 +167,28 @@ bool BaseScrollBar::OnKeyPressed(const KeyEvent& event) {
 }
 
 ui::GestureStatus BaseScrollBar::OnGestureEvent(const GestureEvent& event) {
-  if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE) {
+  if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
+    ProcessPressEvent(event);
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+
+  if (event.type() == ui::ET_GESTURE_LONG_PRESS) {
+    // For a long-press, the repeater started in tap-down should continue. So
+    // return early.
+    return ui::GESTURE_STATUS_UNKNOWN;
+  }
+
+  ResetState();
+
+  if (event.type() == ui::ET_GESTURE_TAP) {
+    // TAP_DOWN would have already scrolled some amount. So scrolling again on
+    // TAP is not necessary.
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+
+  if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+      event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+      event.type() == ui::ET_GESTURE_SCROLL_END) {
     ScrollByContentsOffset(IsHorizontal() ? event.delta_x() : event.delta_y());
     return ui::GESTURE_STATUS_CONSUMED;
   }
@@ -365,6 +368,31 @@ int BaseScrollBar::GetScrollIncrement(bool is_page, bool is_positive) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BaseScrollBar, private:
+
+void BaseScrollBar::ProcessPressEvent(const LocatedEvent& event) {
+  SetThumbTrackState(CustomButton::BS_PUSHED);
+  gfx::Rect thumb_bounds = thumb_->bounds();
+  if (IsHorizontal()) {
+    if (event.x() < thumb_bounds.x()) {
+      last_scroll_amount_ = SCROLL_PREV_PAGE;
+    } else if (event.x() > thumb_bounds.right()) {
+      last_scroll_amount_ = SCROLL_NEXT_PAGE;
+    }
+  } else {
+    if (event.y() < thumb_bounds.y()) {
+      last_scroll_amount_ = SCROLL_PREV_PAGE;
+    } else if (event.y() > thumb_bounds.bottom()) {
+      last_scroll_amount_ = SCROLL_NEXT_PAGE;
+    }
+  }
+  TrackClicked();
+  repeater_.Start();
+}
+
+void BaseScrollBar::ResetState() {
+  SetThumbTrackState(CustomButton::BS_NORMAL);
+  repeater_.Stop();
+}
 
 void BaseScrollBar::TrackClicked() {
   if (last_scroll_amount_ != SCROLL_NONE)

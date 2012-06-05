@@ -401,10 +401,22 @@ bool ScrollView::OnKeyPressed(const KeyEvent& event) {
 
 ui::GestureStatus ScrollView::OnGestureEvent(const GestureEvent& event) {
   ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
-  if (vert_sb_->visible())
-    status = vert_sb_->OnGestureEvent(event);
-  if (status == ui::GESTURE_STATUS_UNKNOWN && horiz_sb_->visible())
-    status = horiz_sb_->OnGestureEvent(event);
+
+  // If the event happened on one of the scrollbars, then those events are
+  // sent directly to the scrollbars. Otherwise, only scroll events are sent to
+  // the scrollbars.
+  bool scroll_event = event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+                      event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+                      event.type() == ui::ET_GESTURE_SCROLL_END;
+
+  if (vert_sb_->visible()) {
+    if (vert_sb_->bounds().Contains(event.location()) || scroll_event)
+      status = vert_sb_->OnGestureEvent(event);
+  }
+  if (status == ui::GESTURE_STATUS_UNKNOWN && horiz_sb_->visible()) {
+    if (horiz_sb_->bounds().Contains(event.location()) || scroll_event)
+      status = horiz_sb_->OnGestureEvent(event);
+  }
   return status;
 }
 

@@ -511,7 +511,7 @@ bool SystemTray::PerformAction(const views::Event& event) {
     bubble_->Close();
   } else {
     int arrow_offset = -1;
-    if (event.IsMouseEvent() || event.IsTouchEvent()) {
+    if (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_TAP) {
       const views::LocatedEvent& located_event =
           static_cast<const views::LocatedEvent&>(event);
       if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM)

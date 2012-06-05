@@ -102,6 +102,15 @@ void ActionableView::OnPaintFocusBorder(gfx::Canvas* canvas) {
   }
 }
 
+ui::GestureStatus ActionableView::OnGestureEvent(
+    const views::GestureEvent& event) {
+  if (event.type() == ui::ET_GESTURE_TAP) {
+    return PerformAction(event) ? ui::GESTURE_STATUS_CONSUMED :
+                                  ui::GESTURE_STATUS_UNKNOWN;
+  }
+  return ui::GESTURE_STATUS_UNKNOWN;
+}
+
 void ActionableView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
   state->name = accessible_name_;

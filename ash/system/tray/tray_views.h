@@ -73,6 +73,8 @@ class ASH_EXPORT ActionableView : public views::View {
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
