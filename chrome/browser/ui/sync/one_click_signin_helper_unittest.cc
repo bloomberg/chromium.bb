@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/site_instance.h"
@@ -23,7 +24,7 @@
 
 namespace {
 
-class OneClickSigninHelperTest : public testing::Test {
+class OneClickSigninHelperTest : public ChromeRenderViewHostTestHarness {
  public:
   OneClickSigninHelperTest() : signin_manager_(NULL) {
   }
@@ -49,7 +50,6 @@ class OneClickSigninHelperTest : public testing::Test {
 
  private:
   // Members to fake that we are on the UI thread.
-  MessageLoop message_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
 
   // Mock objects used during tests.  The objects need to be torn down in the
@@ -67,6 +67,7 @@ void OneClickSigninHelperTest::TearDown() {
   profile_.reset();
   ui_thread_.reset();
   MessageLoop::current()->RunAllPending();
+  ChromeRenderViewHostTestHarness::TearDown();
 }
 
 void OneClickSigninHelperTest::MarkCurrentThreadAsUIThread() {

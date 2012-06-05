@@ -5558,16 +5558,6 @@
    fun:_ZN17UtilityThreadImpl13OnLoadPluginsERKSt6vectorI8FilePathSaIS1_EE
 }
 {
-   bug_125129
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN*RenderProcessHostImplC1EPN*14BrowserContextE
-   fun:_ZN16SiteInstanceImpl10GetProcessEv
-   ...
-   fun:_ZN*_*_Test8TestBodyEv
-}
-{
    bug_127716
    Memcheck:Leak
    fun:_Znw*
