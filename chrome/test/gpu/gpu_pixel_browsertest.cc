@@ -40,7 +40,9 @@ const char kGeneratedDir[] = "generated-dir";
 const char kReferenceDir[] = "reference-dir";
 
 // Corner shadow size.
-const int kCornerDecorationSize = 10;
+const int kCornerDecorationSize = 15;
+// Side shadow size.
+const int kSideDecorationSize = 2;
 
 // Reads and decodes a PNG image to a bitmap. Returns true on success. The PNG
 // should have been encoded using |gfx::PNGCodec::Encode|.
@@ -317,9 +319,11 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       for (int x = 0; x < gen_bmp.width(); ++x) {
         for (int y = 0; y < gen_bmp.height(); ++y) {
           if (skip_bottom_corners &&
-              (x < kCornerDecorationSize ||
-               x >= gen_bmp.width() - kCornerDecorationSize) &&
-              y >= gen_bmp.height() - kCornerDecorationSize)
+              (((x < kCornerDecorationSize ||
+                 x >= gen_bmp.width() - kCornerDecorationSize) &&
+                y >= gen_bmp.height() - kCornerDecorationSize) ||
+               (x < kSideDecorationSize ||
+                x >= gen_bmp.width() - kSideDecorationSize)))
             continue;
           if ((*gen_bmp.getAddr32(x, y) & kAlphaMask) !=
               (*ref_bmp->getAddr32(x, y) & kAlphaMask)) {
