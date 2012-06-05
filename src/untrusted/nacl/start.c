@@ -8,6 +8,7 @@
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/untrusted/nacl/tls.h"
+#include "native_client/src/untrusted/nacl/nacl_auxv.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_startup.h"
 
@@ -16,6 +17,8 @@ void __libc_init_array(void);
 void __libc_fini_array(void);
 
 int main(int argc, char **argv, char **envp);
+
+Elf32_auxv_t *__nacl_auxv;
 
 /*
  * This is the true entry point for untrusted code.
@@ -29,6 +32,7 @@ void _start(uint32_t *info) {
   Elf32_auxv_t *auxv = nacl_startup_auxv(info);
 
   environ = envp;
+  __nacl_auxv = auxv;
 
   __libnacl_irt_init(auxv);
 

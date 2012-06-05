@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -8,27 +8,32 @@
  * Native Client support for thread local storage
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
+#include "native_client/src/include/elf32.h"
+#include "native_client/src/include/elf_auxv.h"
+#include "native_client/src/untrusted/nacl/nacl_auxv.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/tls_params.h"
 
 /*
- * Symbols defined by the linker, we copy those sections using them
- * as templates.
+ * Symbols defined by the linker, we copy those sections using them as
+ * templates.  These are defined by older hacked-up nacl-binutils linkers,
+ * but not by the next-generation (upstream) linkers.  To make this code
+ * compatible with both kinds of linker, we use these only as weak
+ * references.  With a linker that provides them, they will always be
+ * defined.  With another linker, they will always be zero and we rely
+ * on such a linker using a layout wherein the phdrs are visible in the
+ * address space and sel_ldr will give us AT_PHDR pointing at them.
  */
 
 /* @IGNORE_LINES_FOR_CODE_HYGIENE[3] */
-extern char __tls_template_start;
-extern char __tls_template_tdata_end;
-extern char __tls_template_end;
-
-/* Locate the TLS sections using symbols created by the linker. */
-#define TLS_TDATA_START (&__tls_template_start)
-#define TLS_TDATA_SIZE  (&__tls_template_tdata_end - TLS_TDATA_START)
-#define TLS_TBSS_SIZE   (&__tls_template_end - &__tls_template_tdata_end)
+extern char __tls_template_start __attribute__((weak));
+extern char __tls_template_tdata_end __attribute__((weak));
+extern char __tls_template_end __attribute__((weak));
 
 /*
  * In a proper implementation, there is no single fixed alignment for the
@@ -39,7 +44,82 @@ extern char __tls_template_end;
  * that the linker has been hacked always to give it 16-byte alignment and
  * we hope that the actual requirement is no larger than that.
  */
-#define TLS_ALIGNMENT   16
+#define TLS_PRESUMED_ALIGNMENT   16
+
+/*
+ * Collect information about the TLS initializer data here.
+ * The first call to get_tls_info() fills in all the data,
+ * based either on PT_TLS or on link-time values and presumptions.
+ */
+
+struct tls_info {
+  const void *tdata_start;  /* Address of .tdata (initializer data) */
+  size_t tdata_size;        /* Size of .tdata (initializer data) */
+  size_t tbss_size;         /* Size of .tbss (zero-fill space after .tdata) */
+  size_t tls_alignment;     /* Alignment required for TLS segment */
+};
+
+static const struct tls_info *get_tls_info(void) {
+  static struct tls_info cached_tls_info;
+  if (cached_tls_info.tls_alignment == 0) {
+    /*
+     * This is the first call, so we have to figure out the data.
+     * See if we have access to our own PT_TLS fields to tell from there.
+     */
+    if (__nacl_auxv != NULL) {
+      const Elf32_auxv_t *av;
+      const Elf32_Phdr *phdr = NULL;
+      int phnum = 0;
+      bool phentsize_ok = false;
+      for (av = __nacl_auxv; av->a_type != AT_NULL; ++av) {
+        switch (av->a_type) {
+          case AT_PHENT:
+            phentsize_ok = av->a_un.a_val == sizeof(Elf32_Phdr);
+            break;
+          case AT_PHDR:
+            phdr = (const Elf32_Phdr *) av->a_un.a_val;
+            break;
+          case AT_PHNUM:
+            phnum = av->a_un.a_val;
+            break;
+          default:
+            continue;
+        }
+        if (phentsize_ok && phdr != NULL && phnum != 0)
+          break;
+      }
+      if (phentsize_ok && phdr != NULL) {
+        /*
+         * We have phdrs we can see.  Now find our PT_TLS.
+         */
+        for (int i = 0; i < phnum; ++i) {
+          if (phdr[i].p_type == PT_TLS) {
+            cached_tls_info.tls_alignment = phdr[i].p_align;
+            cached_tls_info.tdata_start = (const void *) phdr[i].p_vaddr;
+            cached_tls_info.tdata_size = phdr[i].p_filesz;
+            cached_tls_info.tbss_size = phdr[i].p_memsz - phdr[i].p_filesz;
+            break;
+          }
+        }
+      }
+    }
+
+    if (cached_tls_info.tls_alignment == 0) {
+      /*
+       * We didn't find anything that way, so we have to assume that
+       * we were built with the hacked-up linker that provides symbols
+       * and forces the alignment.
+       */
+      cached_tls_info.tls_alignment = TLS_PRESUMED_ALIGNMENT;
+      cached_tls_info.tdata_start = &__tls_template_start;
+      cached_tls_info.tdata_size = (&__tls_template_tdata_end -
+                                    &__tls_template_start);
+      cached_tls_info.tbss_size = (&__tls_template_end -
+                                   &__tls_template_tdata_end);
+    }
+  }
+  return &cached_tls_info;
+}
 
 static size_t aligned_size(size_t size, size_t alignment) {
   return (size + alignment - 1) & -alignment;
@@ -49,8 +129,9 @@ static char *aligned_addr(void *start, size_t alignment) {
   return (void *) aligned_size((size_t) start, alignment);
 }
 
-static char *tp_from_combined_area(void *combined_area, size_t tdb_size) {
-  size_t tls_size = TLS_TDATA_SIZE + TLS_TBSS_SIZE;
+static char *tp_from_combined_area(const struct tls_info *info,
+                                   void *combined_area, size_t tdb_size) {
+  size_t tls_size = info->tdata_size + info->tbss_size;
   ptrdiff_t tdboff = __nacl_tp_tdb_offset(tdb_size);
   if (tdboff < 0) {
     /*
@@ -71,7 +152,7 @@ static char *tp_from_combined_area(void *combined_area, size_t tdb_size) {
      * Instead, align from the putative end of the TDB, to decide where
      * $tp--the true end of the TDB--should actually lie.
      */
-    size_t align = aligned_size(TLS_ALIGNMENT, __nacl_tp_alignment());
+    size_t align = aligned_size(info->tls_alignment, __nacl_tp_alignment());
     return aligned_addr((char *) combined_area + tdb_size, align);
   } else {
     /*
@@ -85,28 +166,26 @@ static char *tp_from_combined_area(void *combined_area, size_t tdb_size) {
      *                    |
      *                    +--- first word's value is $tp address
      */
-    size_t align = aligned_size(TLS_ALIGNMENT, __nacl_tp_alignment());
+    size_t align = aligned_size(info->tls_alignment, __nacl_tp_alignment());
     return aligned_addr((char *) combined_area + tls_size, align);
   }
 }
 
-static void *tls_from_tp(void *tp, size_t tls_size) {
-  return aligned_addr((char *) tp + __nacl_tp_tls_offset(tls_size),
-                      TLS_ALIGNMENT);
-}
-
 void *__nacl_tls_data_bss_initialize_from_template(void *combined_area,
                                                    size_t tdb_size) {
-  size_t tls_size = TLS_TDATA_SIZE + TLS_TBSS_SIZE;
-  void *tp = tp_from_combined_area(combined_area, tdb_size);
-  char *start = tls_from_tp(tp, tls_size);
-  memcpy(start, TLS_TDATA_START, TLS_TDATA_SIZE);
-  memset(start + TLS_TDATA_SIZE, 0, TLS_TBSS_SIZE);
+  const struct tls_info *info = get_tls_info();
+  size_t tls_size = info->tdata_size + info->tbss_size;
+  void *tp = tp_from_combined_area(info, combined_area, tdb_size);
+  char *start = aligned_addr((char *) tp + __nacl_tp_tls_offset(tls_size),
+                             info->tls_alignment);
+  memcpy(start, info->tdata_start, info->tdata_size);
+  memset(start + info->tdata_size, 0, info->tbss_size);
   return tp;
 }
 
 size_t __nacl_tls_combined_size(size_t tdb_size) {
-  size_t tls_size = TLS_TDATA_SIZE + TLS_TBSS_SIZE;
+  const struct tls_info *info = get_tls_info();
+  size_t tls_size = info->tdata_size + info->tbss_size;
   ptrdiff_t tlsoff = __nacl_tp_tls_offset(tls_size);
   if (tlsoff > 0) {
     /*
@@ -124,7 +203,7 @@ size_t __nacl_tls_combined_size(size_t tdb_size) {
      * The TDB alignment doesn't matter too much.
      */
     return (tdb_size + __nacl_tp_alignment() - 1 +
-            tlsoff + tls_size + TLS_ALIGNMENT - 1);
+            tlsoff + tls_size + info->tls_alignment - 1);
   } else {
     /*
      * x86 case:
@@ -139,7 +218,7 @@ size_t __nacl_tls_combined_size(size_t tdb_size) {
      *
      * The TDB alignment doesn't matter too much.
      */
-    size_t align = aligned_size(TLS_ALIGNMENT, __nacl_tp_alignment());
+    size_t align = aligned_size(info->tls_alignment, __nacl_tp_alignment());
     return align - 1 + tls_size + tdb_size;
   }
 }

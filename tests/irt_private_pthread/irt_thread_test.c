@@ -13,6 +13,7 @@
 
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
+#include "native_client/src/untrusted/nacl/nacl_auxv.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 
 
@@ -142,6 +143,15 @@ int main(void) {
   return 1;
 }
 
+
+/*
+ * We define this here because code shared with the generic application
+ * environment (src/untrusted/nacl/tls.c) uses it.  But N.B. we don't
+ * initialize it in _start because its use is to look for AT_PHDR inside
+ * it, but when that's present it refers to the application image, not the
+ * IRT image.
+ */
+Elf32_auxv_t *__nacl_auxv;
 
 void _start(uint32_t *info) {
   __pthread_initialize();
