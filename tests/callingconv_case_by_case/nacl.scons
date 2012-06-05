@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -63,8 +63,12 @@ def MakeCrossEnvs(base_env, extra_gcc_flags, extra_pnacl_flags):
 
 if not env.Bit('bitcode'):
   # For gcc, only do a self-consistency test.
-  # Assume for nacl-gcc the bots have at least sse2.
-  envlist, link_env = MakeSelfTestEnv(env, ['-msse2'])
+  if env.Bit('target_x86'):
+    # Assume for nacl-gcc the bots have at least SSE2.
+    extra_flags = ['-msse2']
+  else:
+    extra_flags = []
+  envlist, link_env = MakeSelfTestEnv(env, extra_flags)
   test_configurations.append((envlist, link_env, ''))
 else:
   envlist, link_env = MakeSelfTestEnv(env, [])
