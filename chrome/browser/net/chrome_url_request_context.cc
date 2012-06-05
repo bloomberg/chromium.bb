@@ -262,15 +262,6 @@ void ChromeURLRequestContextGetter::Observe(
               &ChromeURLRequestContextGetter::OnDefaultCharsetChange,
               this,
               default_charset));
-    } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
-      bool clear_site_data =
-          prefs->GetBoolean(prefs::kClearSiteDataOnExit);
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &ChromeURLRequestContextGetter::OnClearSiteDataOnExitChange,
-              this,
-              clear_site_data));
     }
   } else {
     NOTREACHED();
@@ -283,7 +274,6 @@ void ChromeURLRequestContextGetter::RegisterPrefsObserver(Profile* profile) {
   registrar_.Init(profile->GetPrefs());
   registrar_.Add(prefs::kAcceptLanguages, this);
   registrar_.Add(prefs::kDefaultCharset, this);
-  registrar_.Add(prefs::kClearSiteDataOnExit, this);
 }
 
 void ChromeURLRequestContextGetter::OnAcceptLanguageChange(
@@ -294,19 +284,6 @@ void ChromeURLRequestContextGetter::OnAcceptLanguageChange(
 void ChromeURLRequestContextGetter::OnDefaultCharsetChange(
     const std::string& default_charset) {
   GetIOContext()->OnDefaultCharsetChange(default_charset);
-}
-
-void ChromeURLRequestContextGetter::OnClearSiteDataOnExitChange(
-    bool clear_site_data) {
-  net::CookieMonster* cookie_monster =
-      GetURLRequestContext()->cookie_store()->GetCookieMonster();
-
-  // If there is no cookie monster, this function does nothing. If
-  // clear_site_data is true, this is most certainly not the expected behavior.
-  DCHECK(!clear_site_data || cookie_monster);
-
-  if (cookie_monster)
-    cookie_monster->SetClearPersistentStoreOnExit(clear_site_data);
 }
 
 // ----------------------------------------------------------------------------

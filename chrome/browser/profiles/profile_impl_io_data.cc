@@ -229,9 +229,6 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
       new chrome_browser_net::HttpServerPropertiesManager(pref_service));
   ChromeNetworkDelegate::InitializeReferrersEnabled(
       io_data_->enable_referrers(), pref_service);
-  io_data_->clear_local_state_on_exit()->Init(
-      prefs::kClearSiteDataOnExit, pref_service, NULL);
-  io_data_->clear_local_state_on_exit()->MoveToThread(BrowserThread::IO);
   io_data_->session_startup_pref()->Init(
       prefs::kRestoreOnStartup, pref_service, NULL);
   io_data_->session_startup_pref()->MoveToThread(BrowserThread::IO);
@@ -251,8 +248,7 @@ ProfileImplIOData::LazyParams::LazyParams()
 ProfileImplIOData::LazyParams::~LazyParams() {}
 
 ProfileImplIOData::ProfileImplIOData()
-    : ProfileIOData(false),
-      clear_local_state_on_exit_(false) {}
+    : ProfileIOData(false) {}
 ProfileImplIOData::~ProfileImplIOData() {
   DestroyResourceContext();
 
@@ -262,9 +258,6 @@ ProfileImplIOData::~ProfileImplIOData() {
 
 void ProfileImplIOData::LazyInitializeInternal(
     ProfileParams* profile_params) const {
-  // Keep track of clear_local_state_on_exit for isolated apps.
-  clear_local_state_on_exit_ = profile_params->clear_local_state_on_exit;
-
   ChromeURLRequestContext* main_context = main_request_context();
   ChromeURLRequestContext* extensions_context = extensions_request_context();
   media_request_context_.reset(new ChromeURLRequestContext);
@@ -353,8 +346,6 @@ void ProfileImplIOData::LazyInitializeInternal(
             lazy_params_->cookie_path,
             lazy_params_->restore_old_session_cookies,
             new ClearOnExitPolicy(lazy_params_->special_storage_policy));
-    cookie_db->SetClearLocalStateOnExit(
-        profile_params->clear_local_state_on_exit);
     cookie_store =
         new net::CookieMonster(cookie_db.get(),
                                profile_params->cookie_monster_delegate);
@@ -384,8 +375,6 @@ void ProfileImplIOData::LazyInitializeInternal(
         new SQLiteServerBoundCertStore(
             lazy_params_->server_bound_cert_path,
             new ClearOnExitPolicy(lazy_params_->special_storage_policy));
-    server_bound_cert_db->SetClearLocalStateOnExit(
-        profile_params->clear_local_state_on_exit);
     server_bound_cert_service = new net::ServerBoundCertService(
         new net::DefaultServerBoundCertStore(server_bound_cert_db.get()),
         base::WorkerPool::GetTaskRunner(true));
@@ -511,7 +500,6 @@ ProfileImplIOData::InitializeAppRequestContext(
 
     scoped_refptr<SQLitePersistentCookieStore> cookie_db =
         new SQLitePersistentCookieStore(cookie_path, false, NULL);
-    cookie_db->SetClearLocalStateOnExit(clear_local_state_on_exit_);
     // TODO(creis): We should have a cookie delegate for notifying the cookie
     // extensions API, but we need to update it to understand isolated apps
     // first.

@@ -173,7 +173,6 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
   // ChromeURLRequestContext.
   void OnAcceptLanguageChange(const std::string& accept_language);
   void OnDefaultCharsetChange(const std::string& default_charset);
-  void OnClearSiteDataOnExitChange(bool clear_site_data);
 
   PrefChangeRegistrar registrar_;
 

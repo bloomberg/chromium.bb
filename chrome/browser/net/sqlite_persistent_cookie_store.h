@@ -45,7 +45,7 @@ class SQLitePersistentCookieStore
       const net::CookieMonster::CanonicalCookie& cc) OVERRIDE;
   virtual void DeleteCookie(
       const net::CookieMonster::CanonicalCookie& cc) OVERRIDE;
-  virtual void SetClearLocalStateOnExit(bool clear_local_state) OVERRIDE;
+  virtual void SetForceKeepSessionState() OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
 
  protected:

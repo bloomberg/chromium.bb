@@ -425,8 +425,8 @@ void AppCacheService::CheckResponseHelper::OnReadDataComplete(int result) {
 AppCacheService::AppCacheService(quota::QuotaManagerProxy* quota_manager_proxy)
     : appcache_policy_(NULL), quota_client_(NULL),
       quota_manager_proxy_(quota_manager_proxy),
-      request_context_(NULL), clear_local_state_on_exit_(false),
-      save_session_state_(false) {
+      request_context_(NULL),
+      force_keep_session_state_(false) {
   if (quota_manager_proxy_) {
     quota_client_ = new AppCacheQuotaClient(this);
     quota_manager_proxy_->RegisterClient(quota_client_);

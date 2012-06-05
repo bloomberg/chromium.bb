@@ -205,9 +205,6 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled,
                              false,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit,
-                             false,
-                             PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kProfileShortcutCreated,
                              false,
                              PrefService::UNSYNCABLE_PREF);
@@ -218,6 +215,11 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
                             "",
                             PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kRestoreSessionStateDialogShown,
+                             false,
+                             PrefService::SYNCABLE_PREF);
+
+  // Deprecated. Kept around for migration.
+  prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit,
                              false,
                              PrefService::SYNCABLE_PREF);
 }
@@ -232,7 +234,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       host_content_settings_map_(NULL),
       history_service_created_(false),
       favicon_service_created_(false),
-      clear_local_state_on_exit_(false),
       start_time_(Time::Now()),
       delegate_(delegate),
       predictor_(NULL),
@@ -290,7 +291,6 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
   PrefService* prefs = GetPrefs();
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kSpeechRecognitionFilterProfanities, this);
-  pref_change_registrar_.Add(prefs::kClearSiteDataOnExit, this);
   pref_change_registrar_.Add(prefs::kGoogleServicesUsername, this);
   pref_change_registrar_.Add(prefs::kDefaultZoomLevel, this);
   pref_change_registrar_.Add(prefs::kProfileAvatarIndex, this);
@@ -338,15 +338,6 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
   }
 
   InitRegisteredProtocolHandlers();
-
-  clear_local_state_on_exit_ = prefs->GetBoolean(prefs::kClearSiteDataOnExit);
-  if (clear_local_state_on_exit_) {
-    content::RecordAction(
-        UserMetricsAction("ClearSiteDataOnExitEnabled"));
-  } else {
-    content::RecordAction(
-        UserMetricsAction("ClearSiteDataOnExitDisabled"));
-  }
 
   InstantController::RecordMetrics(this);
 
@@ -494,9 +485,6 @@ ProfileImpl::~ProfileImpl() {
       content::NotificationService::NoDetails());
   bool prefs_loaded = prefs_->GetInitializationStatus() !=
       PrefService::INITIALIZATION_STATUS_WAITING;
-  // Honor the "clear local state" setting.
-  if (clear_local_state_on_exit_)
-    BrowserContext::ClearLocalOnDestruction(this);
 
 #if defined(ENABLE_SESSION_SERVICE)
   StopCreateSessionServiceTimer();
@@ -929,9 +917,6 @@ void ProfileImpl::Observe(int type,
           speech_prefs->SetFilterProfanities(prefs->GetBoolean(
               prefs::kSpeechRecognitionFilterProfanities));
         }
-      } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
-        clear_local_state_on_exit_ =
-            prefs->GetBoolean(prefs::kClearSiteDataOnExit);
       } else if (*pref_name_in == prefs::kGoogleServicesUsername) {
         UpdateProfileUserNameCache();
       } else if (*pref_name_in == prefs::kProfileAvatarIndex) {

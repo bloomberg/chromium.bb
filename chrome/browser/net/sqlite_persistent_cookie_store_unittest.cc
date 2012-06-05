@@ -118,30 +118,6 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   scoped_refptr<SQLitePersistentCookieStore> store_;
 };
 
-TEST_F(SQLitePersistentCookieStoreTest, KeepOnDestruction) {
-  InitializeStore(false);
-  // Put some data - any data - on disk, to have something to keep.
-  AddCookie("A", "B", "foo.bar", "/", base::Time::Now());
-  store_->SetClearLocalStateOnExit(false);
-  DestroyStore();
-
-  ASSERT_TRUE(file_util::PathExists(
-      temp_dir_.path().Append(chrome::kCookieFilename)));
-  ASSERT_TRUE(file_util::Delete(
-      temp_dir_.path().Append(chrome::kCookieFilename), false));
-}
-
-TEST_F(SQLitePersistentCookieStoreTest, RemoveOnDestruction) {
-  InitializeStore(false);
-  // Put some data - any data - on disk, to have something to remove.
-  AddCookie("A", "B", "foo.bar", "/", base::Time::Now());
-  store_->SetClearLocalStateOnExit(true);
-  DestroyStore();
-
-  ASSERT_FALSE(file_util::PathExists(
-      temp_dir_.path().Append(chrome::kCookieFilename)));
-}
-
 TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
   InitializeStore(false);
   AddCookie("A", "B", "foo.bar", "/", base::Time::Now());
@@ -516,7 +492,26 @@ TEST_F(SQLitePersistentCookieStoreTest, TestClearOnExitPolicy) {
                                           t, t, t,
                                           true, false, true, true));
 
+  // First, check that we can override the policy.
+  store_->SetForceKeepSessionState();
+
   // Force the store to write its data to the disk.
+  DestroyStore();
+
+  // Create a store test that the cookie on session_origin does not exist.
+  store_ = new SQLitePersistentCookieStore(
+      temp_dir_.path().Append(chrome::kCookieFilename),
+      false,
+      clear_policy.get());
+  Load(&cookies);
+
+  EXPECT_EQ(4U, cookies.size());
+  EXPECT_TRUE(IsCookiePresent(&cookies, protected_origin, "A", "1", false));
+  EXPECT_TRUE(IsCookiePresent(&cookies, session_origin, "B", "2", false));
+  EXPECT_TRUE(IsCookiePresent(&cookies, other_origin, "C", "3", false));
+  EXPECT_TRUE(IsCookiePresent(&cookies, session_origin, "D", "4", true));
+
+  // This time, the clear on exit policy should be in effect.
   DestroyStore();
 
   // Create a store test that the cookie on session_origin does not exist.

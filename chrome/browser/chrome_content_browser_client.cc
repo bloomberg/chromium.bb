@@ -914,8 +914,12 @@ bool ChromeContentBrowserClient::AllowSaveLocalState(
     content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
+  CookieSettings* cookie_settings = io_data->GetCookieSettings();
+  ContentSetting setting = cookie_settings->GetDefaultCookieSetting(NULL);
 
-  return !io_data->clear_local_state_on_exit()->GetValue();
+  // TODO(bauerb): Should we also disallow local state if the default is BLOCK?
+  // Could we even support per-origin settings?
+  return setting != CONTENT_SETTING_SESSION_ONLY;
 }
 
 bool ChromeContentBrowserClient::AllowWorkerDatabase(

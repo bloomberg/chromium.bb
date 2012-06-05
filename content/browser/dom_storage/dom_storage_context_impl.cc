@@ -178,21 +178,12 @@ void DOMStorageContextImpl::PurgeMemory() {
       base::Bind(&DomStorageContext::PurgeMemory, context_));
 }
 
-void DOMStorageContextImpl::SetClearLocalState(bool clear_local_state) {
+void DOMStorageContextImpl::SetForceKeepSessionState() {
   DCHECK(context_);
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
       DomStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DomStorageContext::SetClearLocalState, context_,
-                 clear_local_state));
-}
-
-void DOMStorageContextImpl::SaveSessionState() {
-  DCHECK(context_);
-  context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE,
-      DomStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DomStorageContext::SaveSessionState, context_));
+      base::Bind(&DomStorageContext::SetForceKeepSessionState, context_));
 }
 
 void DOMStorageContextImpl::Shutdown() {

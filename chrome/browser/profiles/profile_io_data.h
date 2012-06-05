@@ -91,10 +91,6 @@ class ProfileIOData {
   DesktopNotificationService* GetNotificationService() const;
 #endif
 
-  BooleanPrefMember* clear_local_state_on_exit()  const {
-    return &clear_local_state_on_exit_;
-  }
-
   IntegerPrefMember* session_startup_pref() const {
     return &session_startup_pref_;
   }
@@ -149,7 +145,6 @@ class ProfileIOData {
     ~ProfileParams();
 
     FilePath path;
-    bool clear_local_state_on_exit;
     std::string accept_language;
     std::string accept_charset;
     std::string referrer_charset;
@@ -302,7 +297,6 @@ class ProfileIOData {
 
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;
-  mutable BooleanPrefMember clear_local_state_on_exit_;
   mutable BooleanPrefMember safe_browsing_enabled_;
   // TODO(marja): Remove session_startup_pref_ if no longer needed.
   mutable IntegerPrefMember session_startup_pref_;

@@ -36,7 +36,7 @@ class SQLiteServerBoundCertStore
       const net::DefaultServerBoundCertStore::ServerBoundCert& cert) OVERRIDE;
   virtual void DeleteServerBoundCert(
       const net::DefaultServerBoundCertStore::ServerBoundCert& cert) OVERRIDE;
-  virtual void SetClearLocalStateOnExit(bool clear_local_state) OVERRIDE;
+  virtual void SetForceKeepSessionState() OVERRIDE;
   virtual void Flush(const base::Closure& completion_task) OVERRIDE;
 
  protected:

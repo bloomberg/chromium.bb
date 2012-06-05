@@ -98,8 +98,7 @@ DatabaseTracker::DatabaseTracker(
     base::MessageLoopProxy* db_tracker_thread)
     : is_initialized_(false),
       is_incognito_(is_incognito),
-      clear_local_state_on_exit_(false),
-      save_session_state_(false),
+      force_keep_session_state_(false),
       shutting_down_(false),
       profile_path_(profile_path),
       db_dir_(is_incognito_ ?
@@ -810,7 +809,7 @@ void DatabaseTracker::DeleteIncognitoDBDirectory() {
     file_util::Delete(incognito_db_dir, true);
 }
 
-void DatabaseTracker::ClearLocalState(bool clear_all_databases) {
+void DatabaseTracker::ClearSessionOnlyOrigins() {
   shutting_down_ = true;
 
   bool has_session_only_databases =
@@ -818,7 +817,7 @@ void DatabaseTracker::ClearLocalState(bool clear_all_databases) {
       special_storage_policy_->HasSessionOnlyOrigins();
 
   // Clearing only session-only databases, and there are none.
-  if (!clear_all_databases && !has_session_only_databases)
+  if (!has_session_only_databases)
     return;
 
   if (!LazyInit())
@@ -831,14 +830,10 @@ void DatabaseTracker::ClearLocalState(bool clear_all_databases) {
        origin != origin_identifiers.end(); ++origin) {
     GURL origin_url =
         webkit_database::DatabaseUtil::GetOriginFromIdentifier(*origin);
-    if (!clear_all_databases &&
-        !special_storage_policy_->IsStorageSessionOnly(origin_url)) {
+    if (!special_storage_policy_->IsStorageSessionOnly(origin_url))
       continue;
-    }
-    if (special_storage_policy_.get() &&
-        special_storage_policy_->IsStorageProtected(origin_url)) {
+    if (special_storage_policy_->IsStorageProtected(origin_url))
       continue;
-    }
     webkit_database::OriginInfo origin_info;
     std::vector<string16> databases;
     GetOriginInfo(*origin, &origin_info);
@@ -869,35 +864,19 @@ void DatabaseTracker::Shutdown() {
   }
   if (is_incognito_)
     DeleteIncognitoDBDirectory();
-  else if (!save_session_state_)
-    ClearLocalState(clear_local_state_on_exit_);
+  else if (!force_keep_session_state_)
+    ClearSessionOnlyOrigins();
 }
 
-void DatabaseTracker::SetClearLocalStateOnExit(bool clear_local_state_on_exit) {
+void DatabaseTracker::SetForceKeepSessionState() {
   DCHECK(db_tracker_thread_.get());
   if (!db_tracker_thread_->BelongsToCurrentThread()) {
     db_tracker_thread_->PostTask(
         FROM_HERE,
-        base::Bind(&DatabaseTracker::SetClearLocalStateOnExit, this,
-                   clear_local_state_on_exit));
+        base::Bind(&DatabaseTracker::SetForceKeepSessionState, this));
     return;
   }
-  if (shutting_down_) {
-    NOTREACHED();
-    return;
-  }
-  clear_local_state_on_exit_ = clear_local_state_on_exit;
-}
-
-void DatabaseTracker::SaveSessionState() {
-  DCHECK(db_tracker_thread_.get());
-  if (!db_tracker_thread_->BelongsToCurrentThread()) {
-    db_tracker_thread_->PostTask(
-        FROM_HERE,
-        base::Bind(&DatabaseTracker::SaveSessionState, this));
-    return;
-  }
-  save_session_state_ = true;
+  force_keep_session_state_ = true;
 }
 
 }  // namespace webkit_database

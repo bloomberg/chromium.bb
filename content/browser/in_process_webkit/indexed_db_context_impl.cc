@@ -61,11 +61,9 @@ void GetAllOriginsAndPaths(
   }
 }
 
-// If clear_all_databases is true, deletes all databases not protected by
-// special storage policy. Otherwise deletes session-only databases.
-void ClearLocalState(
+// Deletes session-only databases.
+void ClearSessionOnlyOrigins(
     const FilePath& indexeddb_path,
-    bool clear_all_databases,
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   std::vector<GURL> origins;
@@ -75,12 +73,9 @@ void ClearLocalState(
   std::vector<FilePath>::const_iterator file_path_iter = file_paths.begin();
   for (std::vector<GURL>::const_iterator iter = origins.begin();
        iter != origins.end(); ++iter, ++file_path_iter) {
-    if (!clear_all_databases &&
-        !special_storage_policy->IsStorageSessionOnly(*iter)) {
+    if (!special_storage_policy->IsStorageSessionOnly(*iter))
       continue;
-    }
-    if (special_storage_policy.get() &&
-        special_storage_policy->IsStorageProtected(*iter))
+    if (special_storage_policy->IsStorageProtected(*iter))
       continue;
     file_util::Delete(*file_path_iter, true);
   }
@@ -93,8 +88,7 @@ IndexedDBContextImpl::IndexedDBContextImpl(
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::MessageLoopProxy* webkit_thread_loop)
-    : clear_local_state_on_exit_(false),
-      save_session_state_(false),
+    : force_keep_session_state_(false),
       special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy) {
   if (!data_path.empty())
@@ -237,7 +231,7 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
   if (data_path_.empty())
     return;
 
-  if (save_session_state_)
+  if (force_keep_session_state_)
     return;
 
   bool has_session_only_databases =
@@ -245,14 +239,15 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
       special_storage_policy_->HasSessionOnlyOrigins();
 
   // Clearning only session-only databases, and there are none.
-  if (!clear_local_state_on_exit_ && !has_session_only_databases)
+  if (!has_session_only_databases)
     return;
 
   // No WEBKIT thread here means we are running in a unit test where no clean
   // up is needed.
   BrowserThread::PostTask(
       BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-      base::Bind(&ClearLocalState, data_path_, clear_local_state_on_exit_,
+      base::Bind(&ClearSessionOnlyOrigins,
+                 data_path_,
                  special_storage_policy_));
 }
 

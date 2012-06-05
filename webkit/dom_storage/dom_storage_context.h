@@ -117,11 +117,8 @@ class DomStorageContext
   // what data to keep and what data to discard at shutdown.
   // The policy is not so straight forward to describe, see
   // the implementation for details.
-  void SetClearLocalState(bool clear_local_state) {
-    clear_local_state_ = clear_local_state;
-  }
-  void SaveSessionState() {
-    save_session_state_ = true;
+  void SetForceKeepSessionState() {
+    force_keep_session_state_ = true;
   }
 
   // Called when the owning BrowserContext is ending.
@@ -168,7 +165,7 @@ class DomStorageContext
 
   ~DomStorageContext();
 
-  void ClearLocalStateInCommitSequence();
+  void ClearSessionOnlyOrigins();
 
   // Collection of namespaces keyed by id.
   StorageNamespaceMap namespaces_;
@@ -192,8 +189,7 @@ class DomStorageContext
   base::AtomicSequenceNumber session_id_sequence_;
 
   bool is_shutdown_;
-  bool clear_local_state_;
-  bool save_session_state_;
+  bool force_keep_session_state_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 };
 

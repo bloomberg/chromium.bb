@@ -66,7 +66,7 @@ class SQLitePersistentCookieStore::Backend
       : path_(path),
         db_(NULL),
         num_pending_(0),
-        clear_local_state_on_exit_(false),
+        force_keep_session_state_(false),
         initialized_(false),
         restore_old_session_cookies_(restore_old_session_cookies),
         clear_on_exit_policy_(clear_on_exit_policy),
@@ -98,7 +98,7 @@ class SQLitePersistentCookieStore::Backend
   // before the object is destructed.
   void Close();
 
-  void SetClearLocalStateOnExit(bool clear_local_state);
+  void SetForceKeepSessionState();
 
  private:
   friend class base::RefCountedThreadSafe<SQLitePersistentCookieStore::Backend>;
@@ -196,9 +196,9 @@ class SQLitePersistentCookieStore::Backend
   typedef std::list<PendingOperation*> PendingOperationsList;
   PendingOperationsList pending_;
   PendingOperationsList::size_type num_pending_;
-  // True if the persistent store should be deleted upon destruction.
-  bool clear_local_state_on_exit_;
-  // Guard |cookies_|, |pending_|, |num_pending_|, |clear_local_state_on_exit_|
+  // True if the persistent store should skip delete on exit rules.
+  bool force_keep_session_state_;
+  // Guard |cookies_|, |pending_|, |num_pending_|, |force_keep_session_state_|
   base::Lock lock_;
 
   // Temporary buffer for cookies loaded from DB. Accumulates cookies to reduce
@@ -921,15 +921,12 @@ void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
   // Commit any pending operations
   Commit();
 
-  if (!clear_local_state_on_exit_ && clear_on_exit_policy_.get() &&
+  if (!force_keep_session_state_ && clear_on_exit_policy_.get() &&
       clear_on_exit_policy_->HasClearOnExitOrigins()) {
     DeleteSessionCookiesOnShutdown();
   }
 
   db_.reset();
-
-  if (clear_local_state_on_exit_)
-    file_util::Delete(path_, false);
 }
 
 void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnShutdown() {
@@ -973,10 +970,9 @@ void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnShutdown() {
     LOG(WARNING) << "Unable to delete cookies on shutdown.";
 }
 
-void SQLitePersistentCookieStore::Backend::SetClearLocalStateOnExit(
-    bool clear_local_state) {
+void SQLitePersistentCookieStore::Backend::SetForceKeepSessionState() {
   base::AutoLock locked(lock_);
-  clear_local_state_on_exit_ = clear_local_state;
+  force_keep_session_state_ = true;
 }
 
 void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnStartup() {
@@ -1021,10 +1017,9 @@ void SQLitePersistentCookieStore::DeleteCookie(
     backend_->DeleteCookie(cc);
 }
 
-void SQLitePersistentCookieStore::SetClearLocalStateOnExit(
-    bool clear_local_state) {
+void SQLitePersistentCookieStore::SetForceKeepSessionState() {
   if (backend_.get())
-    backend_->SetClearLocalStateOnExit(clear_local_state);
+    backend_->SetForceKeepSessionState();
 }
 
 void SQLitePersistentCookieStore::Flush(const base::Closure& callback) {

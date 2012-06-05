@@ -164,8 +164,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   scoped_ptr<ProfileParams> params(new ProfileParams);
   params->path = profile->GetPath();
-  params->clear_local_state_on_exit =
-      pref_service->GetBoolean(prefs::kClearSiteDataOnExit);
 
   // Set up Accept-Language and Accept-Charset header values
   params->accept_language = net::HttpUtil::GenerateAcceptLanguageHeader(
@@ -249,8 +247,7 @@ void ProfileIOData::AppRequestContext::SetHttpTransactionFactory(
 ProfileIOData::AppRequestContext::~AppRequestContext() {}
 
 ProfileIOData::ProfileParams::ProfileParams()
-    : clear_local_state_on_exit(false),
-      io_thread(NULL),
+    : io_thread(NULL),
 #if defined(ENABLE_NOTIFICATIONS)
       notification_service(NULL),
 #endif
@@ -574,7 +571,6 @@ void ProfileIOData::ShutdownOnUIThread() {
 #if !defined(OS_CHROMEOS)
   enable_metrics_.Destroy();
 #endif
-  clear_local_state_on_exit_.Destroy();
   safe_browsing_enabled_.Destroy();
   session_startup_pref_.Destroy();
 #if defined(ENABLE_CONFIGURATION_POLICY)

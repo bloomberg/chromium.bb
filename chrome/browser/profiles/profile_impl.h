@@ -230,7 +230,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
   bool history_service_created_;
   bool favicon_service_created_;
-  bool clear_local_state_on_exit_;
 
   // Whether or not the last session exited cleanly. This is set only once.
   bool last_session_exited_cleanly_;

@@ -49,8 +49,7 @@ class CONTENT_EXPORT DOMStorageContextImpl :
   // what data to keep and what data to discard at shutdown.
   // The policy is not so straight forward to describe, see
   // the implementation for details.
-  void SetClearLocalState(bool clear_local_state);
-  void SaveSessionState();
+  void SetForceKeepSessionState();
 
   // Called when the BrowserContext/Profile is going away.
   void Shutdown();

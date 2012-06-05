@@ -82,37 +82,6 @@ class SQLiteServerBoundCertStoreTest : public testing::Test {
   scoped_refptr<SQLiteServerBoundCertStore> store_;
 };
 
-TEST_F(SQLiteServerBoundCertStoreTest, KeepOnDestruction) {
-  store_->SetClearLocalStateOnExit(false);
-  store_ = NULL;
-  // Make sure we wait until the destructor has run.
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
-  ASSERT_TRUE(helper->Run());
-
-  ASSERT_TRUE(file_util::PathExists(
-      temp_dir_.path().Append(chrome::kOBCertFilename)));
-  ASSERT_TRUE(file_util::Delete(
-      temp_dir_.path().Append(chrome::kOBCertFilename), false));
-}
-
-TEST_F(SQLiteServerBoundCertStoreTest, RemoveOnDestruction) {
-  store_->SetClearLocalStateOnExit(true);
-  // Replace the store effectively destroying the current one and forcing it
-  // to write its data to disk. Then we can see if after loading it again it
-  // is still there.
-  store_ = NULL;
-  // Make sure we wait until the destructor has run.
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
-  ASSERT_TRUE(helper->Run());
-
-  ASSERT_FALSE(file_util::PathExists(
-      temp_dir_.path().Append(chrome::kOBCertFilename)));
-}
-
 // Test if data is stored as expected in the SQLite database.
 TEST_F(SQLiteServerBoundCertStoreTest, TestPersistence) {
   store_->AddServerBoundCert(
@@ -540,17 +509,9 @@ bool CertificateExistsInList(
 
 // Tests the interaction with the clear on exit policy.
 TEST_F(SQLiteServerBoundCertStoreTest, TestClearOnExitPolicy) {
-  // First, delete a possibly existing store.
-  store_->SetClearLocalStateOnExit(true);
-  store_ = NULL;
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
-  ASSERT_TRUE(helper->Run());
-
   // Create a new store with three certificates in it.
   store_ = new SQLiteServerBoundCertStore(
-      temp_dir_.path().Append(chrome::kOBCertFilename), NULL);
+      temp_dir_.path().AppendASCII("ClearOnExitDB"), NULL);
 
   ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
   ASSERT_TRUE(store_->Load(&certs.get()));
@@ -580,6 +541,9 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestClearOnExitPolicy) {
 
   // Write out the certificates to disk.
   store_ = NULL;
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
   ASSERT_TRUE(helper->Run());
 
   // Load the store again with a clear on exit policy.
@@ -591,17 +555,31 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestClearOnExitPolicy) {
   storage_policy->AddSessionOnly(GURL("https://protected.com"));
   storage_policy->AddProtected(GURL("https://protected.com"));
   store_ = new SQLiteServerBoundCertStore(
-      temp_dir_.path().Append(chrome::kOBCertFilename), clear_policy.get());
+      temp_dir_.path().AppendASCII("ClearOnExitDB"), clear_policy.get());
   ASSERT_TRUE(store_->Load(&certs.get()));
   ASSERT_EQ(3U, certs.size());
 
-  // Delete the store. This should apply the clear on exit policy.
+  // We've put a exit policy in place, but force the state to be saved.
+  store_->SetForceKeepSessionState();
+  store_ = NULL;
+  ASSERT_TRUE(helper->Run());
+
+  // Reload the store and check that the certs are still there.
+  store_ = new SQLiteServerBoundCertStore(
+      temp_dir_.path().AppendASCII("ClearOnExitDB"), clear_policy.get());
+
+  // Reload and test for persistence
+  certs.reset();
+  ASSERT_TRUE(store_->Load(&certs.get()));
+  ASSERT_EQ(3U, certs.size());
+
+  // Delete the store. This time, the exit policy should be in place.
   store_ = NULL;
   // Make sure we wait until the destructor has run.
   ASSERT_TRUE(helper->Run());
 
   store_ = new SQLiteServerBoundCertStore(
-      temp_dir_.path().Append(chrome::kOBCertFilename), clear_policy.get());
+      temp_dir_.path().AppendASCII("ClearOnExitDB"), clear_policy.get());
 
   // Reload and test for persistence
   certs.reset();

@@ -50,13 +50,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // The indexed db file extension.
   static const FilePath::CharType kIndexedDBExtension[];
 
-  void set_clear_local_state_on_exit(bool clear_local_state) {
-    clear_local_state_on_exit_ = clear_local_state;
-  }
-
-  // Disables the exit-time deletion for all data (also session-only data).
-  void SaveSessionState() {
-    save_session_state_ = true;
+  // Disables the exit-time deletion of session-only data.
+  void SetForceKeepSessionState() {
+    force_keep_session_state_ = true;
   }
 
   // IndexedDBContext implementation:
@@ -89,7 +85,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ClearLocalState);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ClearSessionOnlyDatabases);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, SaveSessionState);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, SetForceKeepSessionState);
   friend class IndexedDBQuotaClientTest;
 
   typedef std::map<GURL, int64> OriginToSizeMap;
@@ -121,9 +117,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   scoped_ptr<WebKit::WebIDBFactory> idb_factory_;
   FilePath data_path_;
-  bool clear_local_state_on_exit_;
   // If true, nothing (not even session-only data) should be deleted on exit.
-  bool save_session_state_;
+  bool force_keep_session_state_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
   scoped_ptr<std::set<GURL> > origin_set_;

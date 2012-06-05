@@ -157,7 +157,6 @@ class ProfileImplIOData : public ProfileIOData {
 
   // Parameters needed for isolated apps.
   FilePath app_path_;
-  mutable bool clear_local_state_on_exit_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImplIOData);
 };

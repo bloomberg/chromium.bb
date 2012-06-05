@@ -141,26 +141,7 @@ TEST_F(DomStorageContextTest, SessionOnly) {
   VerifySingleOriginRemains(kOrigin);
 }
 
-TEST_F(DomStorageContextTest, ClearLocalState) {
-  const GURL kProtectedOrigin("http://www.protected.com/");
-  storage_policy_->AddProtected(kProtectedOrigin);
-
-  // Store data for a normal and a protected origin, setup shutdown options
-  // to clear normal local state, then shutdown and let things flush.
-  NullableString16 old_value;
-  EXPECT_TRUE(context_->GetStorageNamespace(kLocalStorageNamespaceId)->
-      OpenStorageArea(kOrigin)->SetItem(kKey, kValue, &old_value));
-  EXPECT_TRUE(context_->GetStorageNamespace(kLocalStorageNamespaceId)->
-      OpenStorageArea(kProtectedOrigin)->SetItem(kKey, kValue, &old_value));
-  context_->SetClearLocalState(true);
-  context_->Shutdown();
-  context_ = NULL;
-  MessageLoop::current()->RunAllPending();
-
-  VerifySingleOriginRemains(kProtectedOrigin);
-}
-
-TEST_F(DomStorageContextTest, SaveSessionState) {
+TEST_F(DomStorageContextTest, SetForceKeepSessionState) {
   const GURL kSessionOnlyOrigin("http://www.sessiononly.com/");
   storage_policy_->AddSessionOnly(kSessionOnlyOrigin);
 
@@ -169,8 +150,7 @@ TEST_F(DomStorageContextTest, SaveSessionState) {
   NullableString16 old_value;
   EXPECT_TRUE(context_->GetStorageNamespace(kLocalStorageNamespaceId)->
       OpenStorageArea(kSessionOnlyOrigin)->SetItem(kKey, kValue, &old_value));
-  context_->SetClearLocalState(true);
-  context_->SaveSessionState();  // Should override clear behavior.
+  context_->SetForceKeepSessionState();  // Should override clear behavior.
   context_->Shutdown();
   context_ = NULL;
   MessageLoop::current()->RunAllPending();

@@ -75,17 +75,15 @@ bool DeleteGroupAndRelatedRecords(AppCacheDatabase* database,
 }
 
 // Destroys |database|. If there is appcache data to be deleted
-// (|save_session_state| is false), deletes all appcache data (if
-// |clear_all_data| is true), or session-only appcache data (otherwise).
-void CleanUpOnDatabaseThread(
+// (|force_keep_session_state| is false), deletes session-only appcache data.
+void ClearSessionOnlyOrigins(
     AppCacheDatabase* database,
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
-    bool clear_all_appcaches,
-    bool save_session_state) {
+    bool force_keep_session_state) {
   scoped_ptr<AppCacheDatabase> database_to_delete(database);
 
   // If saving session state, only delete the database.
-  if (save_session_state)
+  if (force_keep_session_state)
     return;
 
   bool has_session_only_appcaches =
@@ -93,7 +91,7 @@ void CleanUpOnDatabaseThread(
       special_storage_policy->HasSessionOnlyOrigins();
 
   // Clearning only session-only databases, and there are none.
-  if (!clear_all_appcaches && !has_session_only_appcaches)
+  if (!has_session_only_appcaches)
     return;
 
   std::set<GURL> origins;
@@ -109,8 +107,7 @@ void CleanUpOnDatabaseThread(
 
   std::set<GURL>::const_iterator origin;
   for (origin = origins.begin(); origin != origins.end(); ++origin) {
-    if (!clear_all_appcaches &&
-        !special_storage_policy->IsStorageSessionOnly(*origin))
+    if (!special_storage_policy->IsStorageSessionOnly(*origin))
       continue;
     if (special_storage_policy &&
         special_storage_policy->IsStorageProtected(*origin))
@@ -1315,10 +1312,9 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
   if (database_ &&
       !db_thread_->PostTask(
           FROM_HERE,
-          base::Bind(&CleanUpOnDatabaseThread, database_,
+          base::Bind(&ClearSessionOnlyOrigins, database_,
                      make_scoped_refptr(service_->special_storage_policy()),
-                     service()->clear_local_state_on_exit(),
-                     service()->save_session_state()))) {
+                     service()->force_keep_session_state()))) {
     delete database_;
   }
 }

@@ -31,8 +31,7 @@ DomStorageContext::DomStorageContext(
       sessionstorage_directory_(sessionstorage_directory),
       task_runner_(task_runner),
       is_shutdown_(false),
-      clear_local_state_(false),
-      save_session_state_(false),
+      force_keep_session_state_(false),
       special_storage_policy_(special_storage_policy) {
   // AtomicSequenceNum starts at 0 but we want to start session
   // namespace ids at one since zero is reserved for the
@@ -115,21 +114,21 @@ void DomStorageContext::Shutdown() {
 
   // Respect the content policy settings about what to
   // keep and what to discard.
-  if (save_session_state_)
+  if (force_keep_session_state_)
     return;  // Keep everything.
 
   bool has_session_only_origins =
       special_storage_policy_.get() &&
       special_storage_policy_->HasSessionOnlyOrigins();
 
-  if (clear_local_state_ || has_session_only_origins) {
+  if (has_session_only_origins) {
     // We may have to delete something. We continue on the
     // commit sequence after area shutdown tasks have cycled
     // thru that sequence (and closed their database files).
     bool success = task_runner_->PostShutdownBlockingTask(
         FROM_HERE,
         DomStorageTaskRunner::COMMIT_SEQUENCE,
-        base::Bind(&DomStorageContext::ClearLocalStateInCommitSequence, this));
+        base::Bind(&DomStorageContext::ClearSessionOnlyOrigins, this));
     DCHECK(success);
   }
 }
@@ -200,17 +199,15 @@ void DomStorageContext::CloneSessionNamespace(
     CreateSessionNamespace(new_id);
 }
 
-void DomStorageContext::ClearLocalStateInCommitSequence() {
+void DomStorageContext::ClearSessionOnlyOrigins() {
   std::vector<UsageInfo> infos;
   const bool kDontIncludeFileInfo = false;
   GetUsageInfo(&infos, kDontIncludeFileInfo);
   for (size_t i = 0; i < infos.size(); ++i) {
     const GURL& origin = infos[i].origin;
-    if (special_storage_policy_ &&
-        special_storage_policy_->IsStorageProtected(origin))
+    if (special_storage_policy_->IsStorageProtected(origin))
       continue;
-    if (!clear_local_state_ &&
-        !special_storage_policy_->IsStorageSessionOnly(origin))
+    if (!special_storage_policy_->IsStorageSessionOnly(origin))
       continue;
 
     const bool kNotRecursive = false;

@@ -36,7 +36,7 @@ class SQLiteServerBoundCertStore::Backend
       : path_(path),
         db_(NULL),
         num_pending_(0),
-        clear_local_state_on_exit_(false),
+        force_keep_session_state_(false),
         clear_on_exit_policy_(clear_on_exit_policy) {
   }
 
@@ -59,7 +59,7 @@ class SQLiteServerBoundCertStore::Backend
   // before the object is destructed.
   void Close();
 
-  void SetClearLocalStateOnExit(bool clear_local_state);
+  void SetForceKeepSessionState();
 
  private:
   friend class base::RefCountedThreadSafe<SQLiteServerBoundCertStore::Backend>;
@@ -114,9 +114,9 @@ class SQLiteServerBoundCertStore::Backend
   typedef std::list<PendingOperation*> PendingOperationsList;
   PendingOperationsList pending_;
   PendingOperationsList::size_type num_pending_;
-  // True if the persistent store should be deleted upon destruction.
-  bool clear_local_state_on_exit_;
-  // Guard |pending_|, |num_pending_| and |clear_local_state_on_exit_|.
+  // True if the persistent store should skip clear on exit rules.
+  bool force_keep_session_state_;
+  // Guard |pending_|, |num_pending_| and |force_keep_session_state_|.
   base::Lock lock_;
 
   // Cache of origins we have certificates stored for.
@@ -476,15 +476,12 @@ void SQLiteServerBoundCertStore::Backend::InternalBackgroundClose() {
   // Commit any pending operations
   Commit();
 
-  if (!clear_local_state_on_exit_ && clear_on_exit_policy_.get() &&
+  if (!force_keep_session_state_ && clear_on_exit_policy_.get() &&
       clear_on_exit_policy_->HasClearOnExitOrigins()) {
     DeleteCertificatesOnShutdown();
   }
 
   db_.reset();
-
-  if (clear_local_state_on_exit_)
-    file_util::Delete(path_, false);
 }
 
 void SQLiteServerBoundCertStore::Backend::DeleteCertificatesOnShutdown() {
@@ -523,10 +520,9 @@ void SQLiteServerBoundCertStore::Backend::DeleteCertificatesOnShutdown() {
     LOG(WARNING) << "Unable to delete certificates on shutdown.";
 }
 
-void SQLiteServerBoundCertStore::Backend::SetClearLocalStateOnExit(
-    bool clear_local_state) {
+void SQLiteServerBoundCertStore::Backend::SetForceKeepSessionState() {
   base::AutoLock locked(lock_);
-  clear_local_state_on_exit_ = clear_local_state;
+  force_keep_session_state_ = true;
 }
 
 SQLiteServerBoundCertStore::SQLiteServerBoundCertStore(
@@ -552,10 +548,9 @@ void SQLiteServerBoundCertStore::DeleteServerBoundCert(
     backend_->DeleteServerBoundCert(cert);
 }
 
-void SQLiteServerBoundCertStore::SetClearLocalStateOnExit(
-    bool clear_local_state) {
+void SQLiteServerBoundCertStore::SetForceKeepSessionState() {
   if (backend_.get())
-    backend_->SetClearLocalStateOnExit(clear_local_state);
+    backend_->SetForceKeepSessionState();
 }
 
 void SQLiteServerBoundCertStore::Flush(const base::Closure& completion_task) {

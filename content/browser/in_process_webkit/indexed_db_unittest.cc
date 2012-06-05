@@ -36,55 +36,6 @@ class IndexedDBTest : public testing::Test {
   BrowserThreadImpl io_thread_;
 };
 
-TEST_F(IndexedDBTest, ClearLocalState) {
-  ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
-  FilePath protected_path;
-  FilePath unprotected_path;
-
-  // Create the scope which will ensure we run the destructor of the webkit
-  // context which should trigger the clean up.
-  {
-    content::TestBrowserContext browser_context;
-
-    // Test our assumptions about what is protected and what is not.
-    const GURL kProtectedOrigin("https://foo/");
-    const GURL kUnprotectedOrigin("http://foo/");
-    scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
-        new quota::MockSpecialStoragePolicy;
-    special_storage_policy->AddProtected(kProtectedOrigin);
-    browser_context.SetSpecialStoragePolicy(special_storage_policy);
-    quota::SpecialStoragePolicy* policy =
-        browser_context.GetSpecialStoragePolicy();
-    ASSERT_TRUE(policy->IsStorageProtected(kProtectedOrigin));
-    ASSERT_FALSE(policy->IsStorageProtected(kUnprotectedOrigin));
-
-    // Create some indexedDB paths.
-    // With the levelDB backend, these are directories.
-    IndexedDBContextImpl* idb_context =
-        static_cast<IndexedDBContextImpl*>(
-            BrowserContext::GetIndexedDBContext(&browser_context));
-    idb_context->set_data_path_for_testing(temp_dir.path());
-    protected_path = idb_context->GetFilePathForTesting(
-        DatabaseUtil::GetOriginIdentifier(kProtectedOrigin));
-    unprotected_path = idb_context->GetFilePathForTesting(
-        DatabaseUtil::GetOriginIdentifier(kUnprotectedOrigin));
-    ASSERT_TRUE(file_util::CreateDirectory(protected_path));
-    ASSERT_TRUE(file_util::CreateDirectory(unprotected_path));
-
-    // Setup to clear all unprotected origins on exit.
-    idb_context->set_clear_local_state_on_exit(true);
-    message_loop_.RunAllPending();
-  }
-
-  // Make sure we wait until the destructor has run.
-  message_loop_.RunAllPending();
-
-  ASSERT_TRUE(file_util::DirectoryExists(protected_path));
-  ASSERT_FALSE(file_util::DirectoryExists(unprotected_path));
-}
-
 TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -128,7 +79,7 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   EXPECT_FALSE(file_util::DirectoryExists(session_only_path));
 }
 
-TEST_F(IndexedDBTest, SaveSessionState) {
+TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -154,11 +105,10 @@ TEST_F(IndexedDBTest, SaveSessionState) {
 
     // Override the storage policy with our own.
     idb_context->special_storage_policy_ = special_storage_policy;
-    idb_context->set_clear_local_state_on_exit(true);
     idb_context->set_data_path_for_testing(temp_dir.path());
 
     // Save session state. This should bypass the destruction-time deletion.
-    idb_context->SaveSessionState();
+    idb_context->SetForceKeepSessionState();
 
     normal_path = idb_context->GetFilePathForTesting(
         DatabaseUtil::GetOriginIdentifier(kNormalOrigin));
@@ -172,7 +122,7 @@ TEST_F(IndexedDBTest, SaveSessionState) {
   // Make sure we wait until the destructor has run.
   message_loop_.RunAllPending();
 
-  // No data was cleared because of SaveSessionState.
+  // No data was cleared because of SetForceKeepSessionState.
   EXPECT_TRUE(file_util::DirectoryExists(normal_path));
   EXPECT_TRUE(file_util::DirectoryExists(session_only_path));
 }

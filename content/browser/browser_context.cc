@@ -11,6 +11,8 @@
 #include "content/browser/resource_context_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_constants.h"
+#include "net/base/server_bound_cert_service.h"
+#include "net/base/server_bound_cert_store.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -111,14 +113,16 @@ void CreateQuotaManagerAndClients(BrowserContext* context) {
 
 void SaveSessionStateOnIOThread(ResourceContext* resource_context) {
   resource_context->GetRequestContext()->cookie_store()->GetCookieMonster()->
-      SaveSessionCookies();
-  ResourceContext::GetAppCacheService(resource_context)->set_save_session_state(
-      true);
+      SetForceKeepSessionState();
+  resource_context->GetRequestContext()->server_bound_cert_service()->
+      GetCertStore()->SetForceKeepSessionState();
+  ResourceContext::GetAppCacheService(resource_context)->
+      set_force_keep_session_state();
 }
 
 void SaveSessionStateOnWebkitThread(
     scoped_refptr<IndexedDBContextImpl> indexed_db_context) {
-  indexed_db_context->SaveSessionState();
+  indexed_db_context->SetForceKeepSessionState();
 }
 
 void PurgeMemoryOnIOThread(ResourceContext* resource_context) {
@@ -181,7 +185,7 @@ void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {
 }
 
 void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
-  GetDatabaseTracker(browser_context)->SaveSessionState();
+  GetDatabaseTracker(browser_context)->SetForceKeepSessionState();
 
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(
@@ -190,7 +194,7 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
                    browser_context->GetResourceContext()));
   }
 
-  GetDOMStorageContextImpl(browser_context)->SaveSessionState();
+  GetDOMStorageContextImpl(browser_context)->SetForceKeepSessionState();
 
   if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
     IndexedDBContextImpl* indexed_db = static_cast<IndexedDBContextImpl*>(
@@ -199,23 +203,6 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
         BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
         base::Bind(&SaveSessionStateOnWebkitThread,
                    make_scoped_refptr(indexed_db)));
-  }
-}
-
-void BrowserContext::ClearLocalOnDestruction(BrowserContext* browser_context) {
-  GetDOMStorageContextImpl(browser_context)->SetClearLocalState(true);
-
-  IndexedDBContextImpl* indexed_db = static_cast<IndexedDBContextImpl*>(
-      GetIndexedDBContext(browser_context));
-  indexed_db->set_clear_local_state_on_exit(true);
-
-  GetDatabaseTracker(browser_context)->SetClearLocalStateOnExit(true);
-
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(&appcache::AppCacheService::set_clear_local_state_on_exit,
-              base::Unretained(GetAppCacheService(browser_context)), true));
   }
 }
 

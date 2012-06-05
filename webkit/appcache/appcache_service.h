@@ -143,16 +143,9 @@ class APPCACHE_EXPORT AppCacheService {
 
   AppCacheStorage* storage() const { return storage_.get(); }
 
-  bool clear_local_state_on_exit() const { return clear_local_state_on_exit_; }
-  void set_clear_local_state_on_exit(bool clear_local_state_on_exit) {
-    clear_local_state_on_exit_ = clear_local_state_on_exit; }
-
-  bool save_session_state() const { return save_session_state_; }
-  // If |save_session_state| is true, disables the exit-time deletion for all
-  // data (also session-only data).
-  void set_save_session_state(bool save_session_state) {
-    save_session_state_ = save_session_state;
-  }
+  // Disables the exit-time deletion of session-only data.
+  void set_force_keep_session_state() { force_keep_session_state_ = true; }
+  bool force_keep_session_state() const { return force_keep_session_state_; }
 
  protected:
   friend class AppCacheStorageImplTest;
@@ -177,9 +170,8 @@ class APPCACHE_EXPORT AppCacheService {
   BackendMap backends_;  // One 'backend' per child process.
   // Context for use during cache updates.
   net::URLRequestContext* request_context_;
-  bool clear_local_state_on_exit_;
   // If true, nothing (not even session-only data) should be deleted on exit.
-  bool save_session_state_;
+  bool force_keep_session_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheService);
 };
