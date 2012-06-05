@@ -286,17 +286,8 @@ TEST_F(NativeWidgetAuraTest, ReleaseCaptureOnTouchRelease) {
   widget->SetCapture(view);
   EXPECT_TRUE(widget->HasCapture());
 
-  // Press outside the bounds of the widget, it should still go to |view| since
-  // it set the capture.
-  aura::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(241, 251), 2,
-                          base::TimeDelta());
-  root_window()->DispatchTouchEvent(&press2);
-  EXPECT_TRUE(view->got_gesture_event());
-  view->clear_got_gesture_event();
-  EXPECT_TRUE(widget->HasCapture());
-
   // Generate a release, this should trigger releasing capture.
-  aura::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(241, 251), 2,
+  aura::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(41, 51), 1,
                            base::TimeDelta());
   root_window()->DispatchTouchEvent(&release);
   EXPECT_TRUE(view->got_gesture_event());

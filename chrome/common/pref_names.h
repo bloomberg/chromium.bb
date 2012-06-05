@@ -700,6 +700,7 @@ extern const char kUseDefaultPinnedApps[];
 extern const char kPinnedLauncherApps[];
 
 extern const char kLongPressTimeInSeconds[];
+extern const char kMaxDistanceForTwoFingerTapInPixels[];
 extern const char kMaxSecondsBetweenDoubleClick[];
 extern const char kMaxSeparationForGestureTouchesInPixels[];
 extern const char kMaxSwipeDeviationRatio[];
