@@ -55,11 +55,12 @@ def trace_test_case(
         continue
       duration = time.time() - start
       try:
-        results, simplified = trace_inputs.load_trace(logname, root_dir, api)
+        results = trace_inputs.load_trace(logname, root_dir, api)
         break
       except trace_inputs.TracingFailure, e:
         print >> sys.stderr, '\nTracing failed for: %s' % ' '.join(cmd)
         print >> sys.stderr, str(e)
+    simplified = trace_inputs.extract_directories(root_dir, results.files)
     if simplified:
       variables = isolate_common.generate_dict(simplified, cwd_dir, product_dir)
     else:

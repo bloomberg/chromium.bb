@@ -2406,8 +2406,7 @@ def load_trace(logfile, root_dir, api):
   results = api.parse_log(logfile, get_blacklist(api))
   if root_dir:
     results = results.strip_root(root_dir)
-  simplified = extract_directories(root_dir, results.files)
-  return results, simplified
+  return results
 
 
 def CMDclean(parser, args):
@@ -2467,8 +2466,8 @@ def CMDread(parser, args):
 
   api = get_api()
   try:
-    results, simplified = load_trace(options.log, options.root_dir, api)
-
+    results = load_trace(options.log, options.root_dir, api)
+    simplified = extract_directories(options.root_dir, results.files)
     if options.json:
       write_json(sys.stdout, results.flatten(), False)
     else:

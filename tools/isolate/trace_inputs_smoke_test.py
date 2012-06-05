@@ -42,9 +42,11 @@ class TraceInputsBase(unittest.TestCase):
     # - OSX replaces /usr/bin/python with /usr/bin/python2.7.
     self.cwd = os.path.join(ROOT_DIR, u'data')
     self.initial_cwd = self.cwd
+    self.expected_cwd = ROOT_DIR
     if sys.platform == 'win32':
       # Not supported on Windows.
       self.initial_cwd = None
+      self.expected_cwd = None
 
     # There's 3 kinds of references to python, self.executable,
     # self.real_executable and self.naked_executable. It depends how python was
@@ -236,12 +238,11 @@ class TraceInputsImport(TraceInputsBase):
     #self.assertEquals('', output)
     return self.trace_inputs.load_trace(self.log, ROOT_DIR, api)
 
-  def test_trace_wrong_path(self):
-    # Deliberately start the trace from the wrong path. Starts it from the
-    # directory 'data' so 'data/data/trace_inputs/child1.py' is not accessible,
-    # so child2.py process is not started.
-    results, simplified = self._execute(self.get_child_command(False))
-    expected = {
+  def _gen_dict_wrong_path(self):
+    """Returns the expected flattened Results when child1.py is called with the
+    wrong relative path.
+    """
+    return {
       'root': {
         'children': [],
         'command': [
@@ -254,13 +255,60 @@ class TraceInputsImport(TraceInputsBase):
         'initial_cwd': self.initial_cwd,
       },
     }
-    actual = results.flatten()
-    self.assertTrue(actual['root'].pop('pid'))
-    self.assertEquals(expected, actual)
-    self.assertEquals([], simplified)
 
-  def test_trace(self):
-    expected = {
+  def _gen_dict_full(self):
+    """Returns the expected flattened Results when child1.py is called with
+    --child.
+    """
+    return {
+      'root': {
+        'children': [
+          {
+            'children': [],
+            'command': ['python', 'child2.py'],
+            'executable': self.naked_executable,
+            'files': [
+              {
+                'path': os.path.join(u'data', 'trace_inputs', 'child2.py'),
+                'size': self._size(u'data', 'trace_inputs', 'child2.py'),
+              },
+              {
+                'path': os.path.join(u'data', 'trace_inputs', 'test_file.txt'),
+                'size': 4,
+              },
+            ],
+            'initial_cwd': self.expected_cwd,
+          },
+        ],
+        'command': [
+          self.executable,
+          os.path.join('data', 'trace_inputs', 'child1.py'),
+          '--child',
+        ],
+        'executable': self.real_executable,
+        'files': [
+          {
+            'path': os.path.join(u'data', 'trace_inputs', 'child1.py'),
+            'size': self._size(u'data', 'trace_inputs', 'child1.py'),
+          },
+          {
+            'path': u'trace_inputs.py',
+            'size': self._size('trace_inputs.py'),
+          },
+          {
+            'path': u'trace_inputs_smoke_test.py',
+            'size': self._size('trace_inputs_smoke_test.py'),
+          },
+        ],
+        'initial_cwd': self.expected_cwd,
+      },
+    }
+
+  def _gen_dict_full_gyp(self):
+    """Returns the expected flattened Results when child1.py is called with
+    --child-gyp.
+    """
+    return {
       'root': {
         'children': [
           {
@@ -303,7 +351,20 @@ class TraceInputsImport(TraceInputsBase):
         'initial_cwd': self.initial_cwd,
       },
     }
-    results, simplified = self._execute(self.get_child_command(True))
+
+  def test_trace_wrong_path(self):
+    # Deliberately start the trace from the wrong path. Starts it from the
+    # directory 'data' so 'data/data/trace_inputs/child1.py' is not accessible,
+    # so child2.py process is not started.
+    results = self._execute(self.get_child_command(False))
+    expected = self._gen_dict_wrong_path()
+    actual = results.flatten()
+    self.assertTrue(actual['root'].pop('pid'))
+    self.assertEquals(expected, actual)
+
+  def test_trace(self):
+    expected = self._gen_dict_full_gyp()
+    results = self._execute(self.get_child_command(True))
     actual = results.flatten()
     self.assertTrue(actual['root'].pop('pid'))
     self.assertTrue(actual['root']['children'][0].pop('pid'))
@@ -313,8 +374,8 @@ class TraceInputsImport(TraceInputsBase):
       u'trace_inputs.py',
       u'trace_inputs_smoke_test.py',
     ]
+    simplified = self.trace_inputs.extract_directories(ROOT_DIR, results.files)
     self.assertEquals(files, [f.path for f in simplified])
-
 
 
 if __name__ == '__main__':
