@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path_watcher.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -21,7 +22,6 @@
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/dns_config_service_win.h"
-#include "net/dns/file_path_watcher_wrapper.h"
 
 namespace net {
 namespace internal {
@@ -53,12 +53,10 @@ class RegistryWatcher : public base::win::ObjectWatcher::Delegate,
     DCHECK(CalledOnValidThread());
     bool succeeded = (key_.StartWatching() == ERROR_SUCCESS) &&
                       watcher_.StartWatching(key_.watch_event(), this);
-    if (!succeeded) {
-      if (key_.Valid()) {
-        watcher_.StopWatching();
-        key_.StopWatching();
-        key_.Close();
-      }
+    if (!succeeded && key_.Valid()) {
+      watcher_.StopWatching();
+      key_.StopWatching();
+      key_.Close();
     }
     if (!callback_.is_null())
       callback_.Run(succeeded);
@@ -125,8 +123,8 @@ class DnsConfigWatcher::Core {
     }
   }
 
-  void OnHostsChanged(bool succeeded) {
-    if (succeeded) {
+  void OnHostsChanged(const FilePath& path, bool error) {
+    if (!error) {
       NetworkChangeNotifier::NotifyObserversOfDNSChange(
           NetworkChangeNotifier::CHANGE_DNS_HOSTS);
     } else {
@@ -140,7 +138,7 @@ class DnsConfigWatcher::Core {
   RegistryWatcher tcpip6_watcher_;
   RegistryWatcher dnscache_watcher_;
   RegistryWatcher policy_watcher_;
-  FilePathWatcherWrapper hosts_watcher_;
+  base::files::FilePathWatcher hosts_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };

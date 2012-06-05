@@ -9,11 +9,11 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_path_watcher.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/network_change_notifier.h"
-#include "net/dns/file_path_watcher_wrapper.h"
 
 #if defined(OS_MACOSX)
 #include "net/dns/notify_watcher_mac.h"
@@ -36,6 +36,7 @@ class ConfigWatcher {
   bool Watch(const base::Callback<void(bool succeeded)>& callback) {
     return watcher_.Watch(kDnsNotifyKey, callback);
   }
+
  private:
   NotifyWatcherMac watcher_;
 };
@@ -50,11 +51,22 @@ static const FilePath::CharType* kFilePathConfig =
 
 class ConfigWatcher {
  public:
-  bool Watch(const base::Callback<void(bool succeeded)>& callback) {
-    return watcher_.Watch(FilePath(kFilePathConfig), callback);
+  typedef base::Callback<void(bool succeeded)> CallbackType;
+
+  bool Watch(const CallbackType& callback) {
+    callback_ = callback;
+    return watcher_.Watch(FilePath(kFilePathConfig),
+                          base::Bind(&ConfigWatcher::OnCallback,
+                                     base::Unretained(this)));
   }
+
  private:
-  FilePathWatcherWrapper watcher_;
+  void OnCallback(const FilePath& path, bool error) {
+    callback_.Run(!error);
+  }
+
+  base::files::FilePathWatcher watcher_;
+  CallbackType callback_;
 };
 #endif
 
@@ -93,8 +105,8 @@ class DnsConfigWatcher::Core {
     }
   }
 
-  void OnHostsChanged(bool succeeded) {
-    if (succeeded) {
+  void OnHostsChanged(const FilePath& path, bool error) {
+    if (!error) {
       NetworkChangeNotifier::NotifyObserversOfDNSChange(
           NetworkChangeNotifier::CHANGE_DNS_HOSTS);
     } else {
@@ -105,7 +117,7 @@ class DnsConfigWatcher::Core {
   }
 
   ConfigWatcher config_watcher_;
-  FilePathWatcherWrapper hosts_watcher_;
+  base::files::FilePathWatcher hosts_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
