@@ -27,7 +27,7 @@
 
 class BookmarkBarGtk;
 class Browser;
-class BrowserTitlebar;
+class BrowserTitlebarBase;
 class BrowserToolbarGtk;
 class DownloadShelfGtk;
 class ExtensionKeybindingRegistryGtk;
@@ -60,11 +60,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // Separating initialization from constructor allows invocation of virtual
   // functions during initialization.
   virtual void Init();
-
-  // Returns whether to draw the content drop shadow on the sides and bottom
-  // of the browser window. When false, we still draw a shadow on the top of
-  // the toolbar (under the tab strip), but do not round the top corners.
-  virtual bool ShouldDrawContentDropShadow() const;
 
   // Overridden from BrowserWindow:
   virtual void Show() OVERRIDE;
@@ -217,6 +212,11 @@ class BrowserWindowGtk : public BrowserWindow,
   // onbeforeunload handler that prevents us from closing.
   bool CanClose() const;
 
+  // Returns whether to draw the content drop shadow on the sides and bottom
+  // of the browser window. When false, we still draw a shadow on the top of
+  // the toolbar (under the tab strip), but do not round the top corners.
+  bool ShouldDrawContentDropShadow() const;
+
   bool ShouldShowWindowIcon() const;
 
   // Add the find bar widget to the window hierarchy.
@@ -238,7 +238,7 @@ class BrowserWindowGtk : public BrowserWindow,
 
   GtkWindow* window() const { return window_; }
 
-  BrowserTitlebar* titlebar() const { return titlebar_.get(); }
+  BrowserTitlebarBase* titlebar() const { return titlebar_.get(); }
 
   GtkWidget* titlebar_widget() const;
 
@@ -263,8 +263,8 @@ class BrowserWindowGtk : public BrowserWindow,
  protected:
   virtual void DestroyBrowser() OVERRIDE;
 
-  // Returns an instance of |BrowserTitlebar| to be used for this window.
-  virtual BrowserTitlebar* CreateBrowserTitlebar();
+  // Returns an instance of |BrowserTitlebarBase| to be used for this window.
+  virtual BrowserTitlebarBase* CreateBrowserTitlebar();
 
   // Checks to see if the mouse pointer at |x|, |y| is over the border of the
   // custom frame (a spot that should trigger a window resize). Returns true if
@@ -276,8 +276,8 @@ class BrowserWindowGtk : public BrowserWindow,
   // returned.
   virtual GdkRegion* GetWindowShape(int width, int height) const;
 
-  // Draws the border, including resizable corners, for the custom frame.
-  virtual void DrawCustomFrameBorder(GtkWidget* widget);
+  // Draws the frame, including background, border and drop shadow.
+  virtual void DrawFrame(GtkWidget* widget, GdkEventExpose* event);
 
   virtual bool HandleTitleBarLeftMousePress(GdkEventButton* event,
                                             guint32 last_click_time,
@@ -298,20 +298,8 @@ class BrowserWindowGtk : public BrowserWindow,
   // Returns |true| if we should use the custom frame.
   virtual bool UseCustomFrame() const;
 
-  // Whether we should draw the tab background instead of the theme_frame
-  // background because this window is a popup.
-  virtual bool UsingCustomPopupFrame() const;
-
   // Called when the window size changed.
   virtual void OnSizeChanged(int width, int height);
-
-  // Draws the normal custom frame using theme_frame.
-  virtual void DrawCustomFrame(cairo_t* cr, GtkWidget* widget,
-                               GdkEventExpose* event);
-
-  // Draws the tab image as the frame so we can write legible text.
-  virtual void DrawPopupFrame(cairo_t* cr, GtkWidget* widget,
-                              GdkEventExpose* event);
 
   // 'focus-in-event' handler.
   virtual void HandleFocusIn(GtkWidget* widget, GdkEventFocus* event);
@@ -361,6 +349,19 @@ class BrowserWindowGtk : public BrowserWindow,
   // Connect accelerators that aren't connected to menu items (like ctrl-o,
   // ctrl-l, etc.).
   void ConnectAccelerators();
+
+  // Whether we should draw the tab background instead of the theme_frame
+  // background because this window is a popup.
+  bool UsingCustomPopupFrame() const;
+
+  // Draws the normal custom frame using theme_frame.
+  void DrawCustomFrame(cairo_t* cr, GtkWidget* widget, GdkEventExpose* event);
+
+  // Draws the tab image as the frame so we can write legible text.
+  void DrawPopupFrame(cairo_t* cr, GtkWidget* widget, GdkEventExpose* event);
+
+  // Draws the border, including resizable corners, for the custom frame.
+  void DrawCustomFrameBorder(GtkWidget* widget);
 
   // Change whether we're showing the custom blue frame.
   // Must be called once at startup.
@@ -488,7 +489,7 @@ class BrowserWindowGtk : public BrowserWindow,
   scoped_ptr<GlobalMenuBar> global_menu_bar_;
 
   // The container for the titlebar + tab strip.
-  scoped_ptr<BrowserTitlebar> titlebar_;
+  scoped_ptr<BrowserTitlebarBase> titlebar_;
 
   // The object that manages all of the widgets in the toolbar.
   scoped_ptr<BrowserToolbarGtk> toolbar_;

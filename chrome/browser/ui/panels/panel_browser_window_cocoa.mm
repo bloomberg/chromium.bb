@@ -364,7 +364,8 @@ class NativePanelTestingCocoa : public NativePanelTesting {
   virtual bool VerifyActiveState(bool is_active) OVERRIDE;
   virtual bool IsWindowSizeKnown() const OVERRIDE;
   virtual bool IsAnimatingBounds() const OVERRIDE;
-  virtual bool IsButtonVisible(TitlebarButtonType button_type) const OVERRIDE;
+  virtual bool IsButtonVisible(
+      panel::TitlebarButtonType button_type) const OVERRIDE;
 
  private:
   PanelTitlebarViewCocoa* titlebar() const;
@@ -438,13 +439,13 @@ bool NativePanelTestingCocoa::IsAnimatingBounds() const {
 }
 
 bool NativePanelTestingCocoa::IsButtonVisible(
-    TitlebarButtonType button_type) const {
+    panel::TitlebarButtonType button_type) const {
   switch (button_type) {
-    case CLOSE_BUTTON:
+    case panel::CLOSE_BUTTON:
       return ![[titlebar() closeButton] isHidden];
-    case MINIMIZE_BUTTON:
+    case panel::MINIMIZE_BUTTON:
       return ![[titlebar() minimizeButton] isHidden];
-    case RESTORE_BUTTON:
+    case panel::RESTORE_BUTTON:
       return ![[titlebar() restoreButton] isHidden];
     default:
       NOTREACHED();

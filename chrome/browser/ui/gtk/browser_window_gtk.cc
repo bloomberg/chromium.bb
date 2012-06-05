@@ -437,7 +437,11 @@ void BrowserWindowGtk::Init() {
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
                                                GdkEventExpose* event) {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::OnCustomFrameExpose");
+  DrawFrame(widget, event);
+  return FALSE;  // Allow subwidgets to paint.
+}
 
+void BrowserWindowGtk::DrawFrame(GtkWidget* widget, GdkEventExpose* event) {
   // Draw the default background.
   cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(widget));
   gdk_cairo_rectangle(cr, &event->area);
@@ -455,8 +459,6 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
 
   if (UseCustomFrame() && !IsMaximized())
     DrawCustomFrameBorder(widget);
-
-  return FALSE;  // Allow subwidgets to paint.
 }
 
 void BrowserWindowGtk::DrawCustomFrameBorder(GtkWidget* widget) {
@@ -2476,7 +2478,7 @@ bool BrowserWindowGtk::UsingCustomPopupFrame() const {
   return !theme_provider->UsingNativeTheme() && browser()->is_type_popup();
 }
 
-BrowserTitlebar* BrowserWindowGtk::CreateBrowserTitlebar() {
+BrowserTitlebarBase* BrowserWindowGtk::CreateBrowserTitlebar() {
   return new BrowserTitlebar(this, window_);
 }
 

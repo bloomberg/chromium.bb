@@ -16,6 +16,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/ui/gtk/browser_titlebar_base.h"
+#include "chrome/browser/ui/gtk/titlebar_throb_animation.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -33,7 +35,8 @@ namespace content {
 class WebContents;
 }
 
-class BrowserTitlebar : public content::NotificationObserver,
+class BrowserTitlebar : public BrowserTitlebarBase,
+                        public content::NotificationObserver,
                         public ui::ActiveWindowWatcherXObserver,
                         public ui::SimpleMenuModel::Delegate {
  public:
@@ -44,71 +47,36 @@ class BrowserTitlebar : public content::NotificationObserver,
   BrowserTitlebar(BrowserWindowGtk* browser_window, GtkWindow* window);
   virtual ~BrowserTitlebar();
 
-  // Updates the theme supplied background color and image.
-  virtual void UpdateButtonBackground(CustomDrawButton* button);
-
-  // Updates the title and icon when in app or popup/panel mode (no tabstrip).
-  virtual void UpdateTitleAndIcon();
-
-  GtkWidget* widget() {
-    return container_;
-  }
-
-  void set_window(GtkWindow* window) { window_ = window; }
-
-  // Build the titlebar, the space above the tab strip, and (maybe) the min,
-  // max, close buttons. |container_| is the gtk container that we put the
-  // widget into.
-  void Init();
-
   // Builds the buttons based on the metacity |button_string|.
   void BuildButtons(const std::string& button_string);
 
-  // Update the appearance of the title bar based on whether we're showing a
-  // custom frame or not.  If |use_custom_frame| is true, we show an extra
-  // tall titlebar and the min/max/close buttons.
-  void UpdateCustomFrame(bool use_custom_frame);
+  // Overriden from BrowserTitlebarBase.
+  virtual void Init() OVERRIDE;
+  virtual void UpdateTitleAndIcon() OVERRIDE;
+  virtual void UpdateCustomFrame(bool use_custom_frame) OVERRIDE;
+  virtual void UpdateThrobber(content::WebContents* web_contents) OVERRIDE;
+  virtual void ShowContextMenu(GdkEventButton* event) OVERRIDE;
+  virtual GtkWidget* widget() const OVERRIDE;
+  virtual void set_window(GtkWindow* window) OVERRIDE;
+  virtual AvatarMenuButtonGtk* avatar_button() const OVERRIDE;
 
-  // Called by the browser asking us to update the loading throbber.
-  // |web_contents| is the tab that is associated with the window throbber.
-  // |web_contents| can be null.
-  void UpdateThrobber(content::WebContents* web_contents);
+ private:
+  class ContextMenuModel : public ui::SimpleMenuModel {
+   public:
+    explicit ContextMenuModel(ui::SimpleMenuModel::Delegate* delegate);
+  };
 
-  // On Windows, right clicking in the titlebar background brings up the system
-  // menu.  There's no such thing on linux, so we just show the menu items we
-  // add to the menu.
-  void ShowContextMenu(GdkEventButton* event);
-
-  AvatarMenuButtonGtk* avatar_button() { return avatar_button_.get(); }
-
- protected:
   // Builds the button as denoted by |button_token|. Returns true if the button
   // is created successfully.
-  virtual bool BuildButton(const std::string& button_token, bool left_side);
+  bool BuildButton(const std::string& button_token, bool left_side);
 
   // Retrieves the 3 image ids (IDR_) and a tooltip id (IDS) for the purpose of
   // painting a CustomDraw button.
-  virtual void GetButtonResources(const std::string& button_name,
-                                  int* normal_image_id,
-                                  int* pressed_image_id,
-                                  int* hover_image_id,
-                                  int* tooltip_id) const;
-
-  // Returns the spacing around outside of titlebar buttons.
-  virtual int GetButtonOuterPadding() const;
-
-  // Returns the spacing between buttons of the titlebar.
-  virtual int GetButtonSpacing() const;
-
-  // Called when a button is clicked.
-  virtual void HandleButtonClick(GtkWidget* button);
-
-  // Show the menu that the user gets from left-clicking the favicon.
-  virtual void ShowFaviconMenu(GdkEventButton* event);
-
-  // Updates the color of the title bar. Called whenever we have a state
-  // change in the window.
-  virtual void UpdateTextColor();
+  void GetButtonResources(const std::string& button_name,
+                          int* normal_image_id,
+                          int* pressed_image_id,
+                          int* hover_image_id,
+                          int* tooltip_id) const;
 
   // Constructs a CustomDraw button given button name and left or right side of
   // the titlebar where the button is placed.
@@ -121,40 +89,12 @@ class BrowserTitlebar : public content::NotificationObserver,
   // settings to get absolutely horrid combinations of buttons on both sides.
   GtkWidget* GetButtonHBox(bool left_side);
 
-  CustomDrawButton* minimize_button() const { return minimize_button_.get(); }
-  CustomDrawButton* maximize_button() const { return maximize_button_.get(); }
-  CustomDrawButton* restore_button() const { return restore_button_.get(); }
-  CustomDrawButton* close_button() const { return close_button_.get(); }
-  GtkWidget* app_mode_title() const { return app_mode_title_; }
+  // Updates the theme supplied background color and image.
+  void UpdateButtonBackground(CustomDrawButton* button);
 
-  GtkThemeService* theme_service() const { return theme_service_; }
-
- private:
-  // A helper class to keep track of which frame of the throbber animation
-  // we're showing.
-  class Throbber {
-   public:
-    Throbber() : current_frame_(0), current_waiting_frame_(0) {}
-
-    // Get the next frame in the animation. The image is owned by the throbber
-    // so the caller doesn't need to unref.  |is_waiting| is true if we're
-    // still waiting for a response.
-    GdkPixbuf* GetNextFrame(bool is_waiting);
-
-    // Reset back to the first frame.
-    void Reset();
-   private:
-    // Make sure the frames are loaded.
-    static void InitFrames();
-
-    int current_frame_;
-    int current_waiting_frame_;
-  };
-
-  class ContextMenuModel : public ui::SimpleMenuModel {
-   public:
-    explicit ContextMenuModel(ui::SimpleMenuModel::Delegate* delegate);
-  };
+  // Updates the color of the title bar. Called whenever we have a state
+  // change in the window.
+  void UpdateTextColor();
 
   // Update the titlebar spacing based on the custom frame and maximized state.
   void UpdateTitlebarAlignment();
@@ -287,7 +227,7 @@ class BrowserTitlebar : public content::NotificationObserver,
   scoped_ptr<PopupPageMenuModel> favicon_menu_model_;
 
   // The throbber used when the window is in app mode or popup window mode.
-  Throbber throbber_;
+  TitlebarThrobAnimation throbber_;
 
   // The avatar button.
   scoped_ptr<AvatarMenuButtonGtk> avatar_button_;

@@ -5,17 +5,34 @@
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_TITLEBAR_GTK_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_TITLEBAR_GTK_H_
 
-#include "chrome/browser/ui/gtk/browser_titlebar.h"
+#include <gtk/gtk.h>
+
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/gtk/browser_titlebar_base.h"
+#include "chrome/browser/ui/gtk/titlebar_throb_animation.h"
+#include "chrome/browser/ui/panels/panel_constants.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/skia_util.h"
 
+class CustomDrawButton;
+class GtkThemeService;
 class PanelBrowserWindowGtk;
 
-class PanelBrowserTitlebarGtk : public BrowserTitlebar {
+namespace content {
+class WebContents;
+}
+
+class PanelBrowserTitlebarGtk : public BrowserTitlebarBase,
+                                public content::NotificationObserver {
  public:
   PanelBrowserTitlebarGtk(PanelBrowserWindowGtk* browser_window,
                           GtkWindow* window);
   virtual ~PanelBrowserTitlebarGtk();
 
+  void UpdateTextColor();
   void UpdateMinimizeRestoreButtonVisibility();
 
   // When a panel appears in the same position as the one of the panel being
@@ -30,41 +47,72 @@ class PanelBrowserTitlebarGtk : public BrowserTitlebar {
   //   https://bugzilla.gnome.org/show_bug.cgi?id=667841
   void SendEnterNotifyToCloseButtonIfUnderMouse();
 
-  // Overridden from BrowserTitlebar:
-  virtual void UpdateButtonBackground(CustomDrawButton* button) OVERRIDE;
+  // Overriden from BrowserTitlebarBase.
+  virtual void Init() OVERRIDE;
   virtual void UpdateTitleAndIcon() OVERRIDE;
-  virtual void UpdateTextColor() OVERRIDE;
-
- protected:
-  // Overridden from BrowserTitlebar:
-  virtual bool BuildButton(const std::string& button_token,
-                           bool left_side) OVERRIDE;
-  virtual void GetButtonResources(const std::string& button_name,
-                                  int* normal_image_id,
-                                  int* pressed_image_id,
-                                  int* hover_image_id,
-                                  int* tooltip_id) const OVERRIDE;
-  virtual int GetButtonOuterPadding() const OVERRIDE;
-  virtual int GetButtonSpacing() const OVERRIDE;
-  virtual void HandleButtonClick(GtkWidget* button) OVERRIDE;
-  virtual void ShowFaviconMenu(GdkEventButton* event) OVERRIDE;
+  virtual void UpdateCustomFrame(bool use_custom_frame) OVERRIDE;
+  virtual void UpdateThrobber(content::WebContents* web_contents) OVERRIDE;
+  virtual void ShowContextMenu(GdkEventButton* event) OVERRIDE;
+  virtual GtkWidget* widget() const OVERRIDE;
+  virtual void set_window(GtkWindow* window) OVERRIDE;
+  virtual AvatarMenuButtonGtk* avatar_button() const OVERRIDE;
 
  private:
   friend class NativePanelTestingGtk;
 
-  CustomDrawButton* unminimize_button() const {
-    return unminimize_button_.get();
-  }
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  void BuildButtons();
+  CustomDrawButton* CreateButton(panel::TitlebarButtonType button_type);
+  void GetButtonResources(panel::TitlebarButtonType button_type,
+                          int* normal_image_id,
+                          int* pressed_image_id,
+                          int* hover_image_id,
+                          int* tooltip_id) const;
+  GtkWidget* GetButtonHBox();
+
+  // Callback for changes to window state.  This includes minimizing/restoring
+  // the window.
+  CHROMEG_CALLBACK_1(PanelBrowserTitlebarGtk, gboolean, OnWindowStateChanged,
+                     GtkWindow*, GdkEventWindowState*);
+
+  // Callback for minimize/restore/close buttons.
+  CHROMEGTK_CALLBACK_0(PanelBrowserTitlebarGtk, void, OnButtonClicked);
+
+  CustomDrawButton* close_button() const { return close_button_.get(); }
+  CustomDrawButton* minimize_button() const { return minimize_button_.get(); }
+  CustomDrawButton* restore_button() const { return restore_button_.get(); }
 
   SkColor GetTextColor() const;
 
+  // Pointers to the browser window that owns us and its GtkWindow.
   PanelBrowserWindowGtk* browser_window_;
+  GtkWindow* window_;
 
-  // All other buttons, including close and minimize buttons, are defined in
-  // the base class BrowserTitlebar. This is indeed our restore button. But
-  // we name it differently to avoid the confusion with restore_button defined
-  // in the base class and used for unmaximize purpose.
-  scoped_ptr<CustomDrawButton> unminimize_button_;
+  // The container widget the holds the hbox which contains the whole titlebar.
+  GtkWidget* container_;
+
+  // VBoxes that holds the minimize/restore/close buttons box.
+  GtkWidget* titlebar_right_buttons_vbox_;
+
+  // HBoxes that contains the actual min/max/close buttons.
+  GtkWidget* titlebar_right_buttons_hbox_;
+
+  // The icon and page title.
+  GtkWidget* icon_;
+  GtkWidget* title_;
+
+  // The buttons.
+  scoped_ptr<CustomDrawButton> close_button_;
+  scoped_ptr<CustomDrawButton> minimize_button_;
+  scoped_ptr<CustomDrawButton> restore_button_;
+
+  TitlebarThrobAnimation throbber_;
+  GtkThemeService* theme_service_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserTitlebarGtk);
 };

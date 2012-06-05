@@ -28,6 +28,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   enum PaintState {
     PAINT_AS_ACTIVE,
     PAINT_AS_INACTIVE,
+    PAINT_AS_MINIMIZED,
     PAINT_FOR_ATTENTION
   };
 
@@ -37,7 +38,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   // BrowserWindowGtk override
   virtual void Init() OVERRIDE;
-  virtual bool ShouldDrawContentDropShadow() const OVERRIDE;
 
   // BrowserWindow overrides
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
@@ -47,16 +47,16 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  PaintState GetPaintState() const;
+  bool UsingDefaultTheme() const;
 
   Panel* panel() const { return panel_.get(); }
+  PaintState paint_state() const { return paint_state_; }
 
  protected:
   // BrowserWindowGtk overrides
-  virtual BrowserTitlebar* CreateBrowserTitlebar() OVERRIDE;
+  virtual BrowserTitlebarBase* CreateBrowserTitlebar() OVERRIDE;
   virtual bool GetWindowEdge(int x, int y, GdkWindowEdge* edge) OVERRIDE;
   virtual GdkRegion* GetWindowShape(int width, int height) const OVERRIDE;
-  virtual void DrawCustomFrameBorder(GtkWidget* widget) OVERRIDE;
   virtual bool HandleTitleBarLeftMousePress(
       GdkEventButton* event,
       guint32 last_click_time,
@@ -68,12 +68,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void SaveWindowPosition() OVERRIDE;
   virtual void SetGeometryHints() OVERRIDE;
   virtual bool UseCustomFrame() const OVERRIDE;
-  virtual bool UsingCustomPopupFrame() const OVERRIDE;
+  virtual void DrawFrame(GtkWidget* widget, GdkEventExpose* event) OVERRIDE;
   virtual void OnSizeChanged(int width, int height) OVERRIDE;
-  virtual void DrawCustomFrame(cairo_t* cr, GtkWidget* widget,
-                               GdkEventExpose* event) OVERRIDE;
-  virtual void DrawPopupFrame(cairo_t* cr, GtkWidget* widget,
-                              GdkEventExpose* event) OVERRIDE;
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
 
   // Overridden from NativePanel:
@@ -138,8 +134,10 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   PanelBrowserTitlebarGtk* GetPanelTitlebar() const;
 
-  // Returns the theme image to paint the frame.
-  const gfx::Image* GetThemeFrameImage() const;
+  // Returns the image to paint the frame.
+  const gfx::Image* GetFrameBackground() const;
+  const gfx::Image* GetDefaultFrameBackground() const;
+  const gfx::Image* GetThemedFrameBackground() const;
 
   CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean,
                        OnTitlebarButtonReleaseEvent, GdkEventButton*);
@@ -151,6 +149,9 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   // Size of window frame. Empty until the window has been allocated and sized.
   gfx::Size frame_size_;
+
+  // Indicates different painting state, active, drawing attention or else.
+  PaintState paint_state_;
 
   // Indicates that the panel is currently drawing attention.
   bool is_drawing_attention_;

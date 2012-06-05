@@ -9,149 +9,270 @@
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_window_gtk.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/gtk/gtk_compat.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/skia_utils_gtk.h"
 
 namespace {
 
+// Padding around the titlebar.
+const int kPanelTitlebarPaddingTop = 7;
+const int kPanelTitlebarPaddingBottom = 7;
+const int kPanelTitlebarPaddingLeft = 4;
+const int kPanelTitlebarPaddingRight = 9;
+
 // Spacing between buttons of panel's titlebar.
-const int kPanelButtonSpacing = 7;
+const int kPanelButtonSpacing = 9;
 
-// Spacing around outside of panel's titlebar buttons.
-const int kPanelButtonOuterPadding = 7;
+// Spacing between the icon and the title text.
+const int kPanelIconTitleSpacing = 9;
 
-// Markup for painting title as bold.
-const char* const kTitleMarkupPrefix = "<span font_weight='bold'>";
+// Color used to draw title text under default theme.
+const SkColor kTitleTextDefaultColor = SkColorSetRGB(0xf9, 0xf9, 0xf9);
+
+// Markup used to paint the title with the desired font.
+const char* const kTitleMarkupPrefix = "<span face='Arial' size='11264'>";
 const char* const kTitleMarkupSuffix = "</span>";
-
-// Colors used to draw title in attention mode.
-const SkColor kAttentionTitleTextDefaultColor = SK_ColorWHITE;
-
-// Alpha value used in drawing inactive titlebar under non-default theme.
-const U8CPU kInactiveAlphaBlending = 0x80;
-
-SkColor BlendSkColorWithAlpha(SkColor fg_color, SkColor bg_color, U8CPU alpha) {
-  if (alpha == 255)
-      return fg_color;
-  double fg_ratio = alpha / 255.0;
-  double bg_ratio = 1.0 - fg_ratio;
-  return SkColorSetRGB(
-      (SkColorGetR(fg_color) * fg_ratio + SkColorGetR(bg_color) * bg_ratio),
-      (SkColorGetG(fg_color) * fg_ratio + SkColorGetG(bg_color) * bg_ratio),
-      (SkColorGetB(fg_color) * fg_ratio + SkColorGetB(bg_color) * bg_ratio));
-}
 
 }  // namespace
 
 PanelBrowserTitlebarGtk::PanelBrowserTitlebarGtk(
     PanelBrowserWindowGtk* browser_window, GtkWindow* window)
-    : BrowserTitlebar(browser_window, window),
-      browser_window_(browser_window) {
+    : browser_window_(browser_window),
+      window_(window),
+      container_(NULL),
+      titlebar_right_buttons_vbox_(NULL),
+      titlebar_right_buttons_hbox_(NULL),
+      icon_(NULL),
+      title_(NULL),
+      theme_service_(NULL) {
 }
 
 PanelBrowserTitlebarGtk::~PanelBrowserTitlebarGtk() {
 }
 
-SkColor PanelBrowserTitlebarGtk::GetTextColor() const {
-  PanelBrowserWindowGtk::PaintState paint_state =
-      browser_window_->GetPaintState();
-  if (paint_state == PanelBrowserWindowGtk::PAINT_FOR_ATTENTION)
-    return kAttentionTitleTextDefaultColor;
+void PanelBrowserTitlebarGtk::Init() {
+  container_ = gtk_event_box_new();
+  gtk_widget_set_name(container_, "chrome-panel-titlebar");
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(container_), FALSE);
 
-  return paint_state == PanelBrowserWindowGtk::PAINT_AS_ACTIVE ?
-      theme_service()->GetColor(ThemeService::COLOR_TAB_TEXT) :
-      BlendSkColorWithAlpha(
-          theme_service()->GetColor(ThemeService::COLOR_BACKGROUND_TAB_TEXT),
-          theme_service()->GetColor(ThemeService::COLOR_TOOLBAR),
-          kInactiveAlphaBlending);
+  // We use an alignment to control the titlebar paddings.
+  GtkWidget* container_alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_container_add(GTK_CONTAINER(container_), container_alignment);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(container_alignment),
+                            kPanelTitlebarPaddingTop,
+                            kPanelTitlebarPaddingBottom,
+                            kPanelTitlebarPaddingLeft,
+                            kPanelTitlebarPaddingRight);
+
+  // Add a container box.
+  GtkWidget* container_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(container_alignment), container_hbox);
+
+  g_signal_connect(window_, "window-state-event",
+                   G_CALLBACK(OnWindowStateChangedThunk), this);
+
+  // Add minimize/restore and close buttons. Panel buttons are always placed
+  // on the right part of the titlebar.
+  titlebar_right_buttons_vbox_ = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(container_hbox), titlebar_right_buttons_vbox_,
+                   FALSE, FALSE, 0);
+  BuildButtons();
+
+  // Add hbox for holding icon and title.
+  GtkWidget* icon_title_hbox = gtk_hbox_new(FALSE, kPanelIconTitleSpacing);
+  gtk_box_pack_start(GTK_BOX(container_hbox), icon_title_hbox, TRUE, TRUE, 0);
+
+  // Add icon. We use the app logo as a placeholder image so the title doesn't
+  // jump around.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  icon_ = gtk_image_new_from_pixbuf(rb.GetNativeImageNamed(
+      IDR_PRODUCT_LOGO_16, ui::ResourceBundle::RTL_ENABLED).ToGdkPixbuf());
+  g_object_set_data(G_OBJECT(icon_), "left-align-popup",
+                    reinterpret_cast<void*>(true));
+  gtk_box_pack_start(GTK_BOX(icon_title_hbox), icon_, FALSE, FALSE, 0);
+
+  // Add title.
+  title_ = gtk_label_new(NULL);
+  gtk_label_set_ellipsize(GTK_LABEL(title_), PANGO_ELLIPSIZE_END);
+  gtk_misc_set_alignment(GTK_MISC(title_), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(icon_title_hbox), title_, TRUE, TRUE, 0);
+
+  UpdateTitleAndIcon();
+
+  theme_service_ = GtkThemeService::GetFrom(
+      browser_window_->panel()->profile());
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+                 content::Source<ThemeService>(theme_service_));
+  theme_service_->InitThemesFor(this);
+
+  gtk_widget_show_all(container_);
 }
 
-void PanelBrowserTitlebarGtk::UpdateButtonBackground(CustomDrawButton* button) {
-  // Don't need to update background since we're using transparent background.
+SkColor PanelBrowserTitlebarGtk::GetTextColor() const {
+  if (browser_window_->UsingDefaultTheme())
+    return kTitleTextDefaultColor;
+  return theme_service_->GetColor(browser_window_->paint_state() ==
+      PanelBrowserWindowGtk::PAINT_AS_ACTIVE ?
+          ThemeService::COLOR_TAB_TEXT :
+          ThemeService::COLOR_BACKGROUND_TAB_TEXT);
+}
+
+void PanelBrowserTitlebarGtk::BuildButtons() {
+  minimize_button_.reset(CreateButton(panel::MINIMIZE_BUTTON));
+  restore_button_.reset(CreateButton(panel::RESTORE_BUTTON));
+  close_button_.reset(CreateButton(panel::CLOSE_BUTTON));
+
+  // We control visibility of minimize and restore buttons.
+  gtk_widget_set_no_show_all(minimize_button_->widget(), TRUE);
+  gtk_widget_set_no_show_all(restore_button_->widget(), TRUE);
+
+  // Now show the correct widgets in the two hierarchies.
+  UpdateMinimizeRestoreButtonVisibility();
+}
+
+CustomDrawButton* PanelBrowserTitlebarGtk::CreateButton(
+    panel::TitlebarButtonType button_type) {
+  int normal_image_id;
+  int pressed_image_id;
+  int hover_image_id;
+  int tooltip_id;
+  GetButtonResources(button_type, &normal_image_id, &pressed_image_id,
+                     &hover_image_id, &tooltip_id);
+
+  CustomDrawButton* button = new CustomDrawButton(normal_image_id,
+                                                  pressed_image_id,
+                                                  hover_image_id,
+                                                  0);
+  gtk_widget_add_events(GTK_WIDGET(button->widget()), GDK_POINTER_MOTION_MASK);
+  g_signal_connect(button->widget(), "clicked",
+                   G_CALLBACK(OnButtonClickedThunk), this);
+
+  std::string localized_tooltip = l10n_util::GetStringUTF8(tooltip_id);
+  gtk_widget_set_tooltip_text(button->widget(),
+                              localized_tooltip.c_str());
+
+  GtkWidget* box = GetButtonHBox();
+  gtk_box_pack_start(GTK_BOX(box), button->widget(), FALSE, FALSE, 0);
+  return button;
+}
+
+void PanelBrowserTitlebarGtk::GetButtonResources(
+    panel::TitlebarButtonType button_type,
+    int* normal_image_id,
+    int* pressed_image_id,
+    int* hover_image_id,
+    int* tooltip_id) const {
+  switch (button_type) {
+    case panel::CLOSE_BUTTON:
+      *normal_image_id = IDR_PANEL_CLOSE;
+      *pressed_image_id = IDR_PANEL_CLOSE_C;
+      *hover_image_id = IDR_PANEL_CLOSE_H;
+      *tooltip_id = IDS_PANEL_CLOSE_TOOLTIP;
+      break;
+    case panel::MINIMIZE_BUTTON:
+      *normal_image_id = IDR_PANEL_MINIMIZE;
+      *pressed_image_id = IDR_PANEL_MINIMIZE_C;
+      *hover_image_id = IDR_PANEL_MINIMIZE_H;
+      *tooltip_id = IDS_PANEL_MINIMIZE_TOOLTIP;
+      break;
+    case panel::RESTORE_BUTTON:
+      *normal_image_id = IDR_PANEL_RESTORE;
+      *pressed_image_id = IDR_PANEL_RESTORE_C;
+      *hover_image_id = IDR_PANEL_RESTORE_H;
+      *tooltip_id = IDS_PANEL_RESTORE_TOOLTIP;
+      break;
+  }
+}
+
+GtkWidget* PanelBrowserTitlebarGtk::GetButtonHBox() {
+  if (!titlebar_right_buttons_hbox_) {
+    // We put the minimize/restore/close buttons in a vbox so they are top
+    // aligned (up to padding) and don't vertically stretch.
+    titlebar_right_buttons_hbox_ = gtk_hbox_new(FALSE, kPanelButtonSpacing);
+    gtk_box_pack_start(GTK_BOX(titlebar_right_buttons_vbox_),
+                       titlebar_right_buttons_hbox_, FALSE, FALSE, 0);
+  }
+
+  return titlebar_right_buttons_hbox_;
+}
+
+void PanelBrowserTitlebarGtk::UpdateCustomFrame(bool use_custom_frame) {
+  // Nothing to do.
 }
 
 void PanelBrowserTitlebarGtk::UpdateTitleAndIcon() {
-  DCHECK(app_mode_title());
+  std::string title_text =
+      UTF16ToUTF8(browser_window_->panel()->GetWindowTitle());
 
-  std::string title = UTF16ToUTF8(browser_window_->panel()->GetWindowTitle());
-
-  // Add the markup to show the title as bold.
-  gchar* escaped_title = g_markup_escape_text(title.c_str(), -1);
-  gchar* title_with_markup = g_strconcat(kTitleMarkupPrefix,
-                                         escaped_title,
-                                         kTitleMarkupSuffix,
-                                         NULL);
-  gtk_label_set_markup(GTK_LABEL(app_mode_title()), title_with_markup);
-  g_free(escaped_title);
-  g_free(title_with_markup);
+  // Add the markup to show the title in the desired font.
+  gchar* escaped_title_text = g_markup_escape_text(title_text.c_str(), -1);
+  gchar* title_text_with_markup = g_strconcat(kTitleMarkupPrefix,
+                                              escaped_title_text,
+                                              kTitleMarkupSuffix,
+                                              NULL);
+  gtk_label_set_markup(GTK_LABEL(title_), title_text_with_markup);
+  g_free(escaped_title_text);
+  g_free(title_text_with_markup);
 }
 
-bool PanelBrowserTitlebarGtk::BuildButton(const std::string& button_token,
-                                          bool left_side) {
-  // Panel only shows close and minimize/restore buttons.
-  if (button_token != "close" && button_token != "minimize")
-    return false;
+void PanelBrowserTitlebarGtk::UpdateThrobber(
+    content::WebContents* web_contents) {
+  if (web_contents && web_contents->IsLoading()) {
+    GdkPixbuf* icon_pixbuf =
+        throbber_.GetNextFrame(web_contents->IsWaitingForResponse());
+    gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), icon_pixbuf);
+  } else {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  if (!BrowserTitlebar::BuildButton(button_token, left_side))
-    return false;
+    SkBitmap icon = browser_window_->panel()->GetCurrentPageIcon();
+    if (icon.empty()) {
+      // Fallback to the Chromium icon if the page has no icon.
+      gtk_image_set_from_pixbuf(GTK_IMAGE(icon_),
+          rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16).ToGdkPixbuf());
+    } else {
+      GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
+      gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), icon_pixbuf);
+      g_object_unref(icon_pixbuf);
+    }
 
-  if (button_token == "minimize") {
-    // Create unminimze button, used to expand the minimized panel.
-    unminimize_button_.reset(CreateTitlebarButton("unminimize", left_side));
-
-    // We control visibility of minimize and unminimize buttons.
-    gtk_widget_set_no_show_all(minimize_button()->widget(), TRUE);
-    gtk_widget_set_no_show_all(unminimize_button_->widget(), TRUE);
-  }
-  return true;
-}
-
-void PanelBrowserTitlebarGtk::GetButtonResources(const std::string& button_name,
-                                                 int* normal_image_id,
-                                                 int* pressed_image_id,
-                                                 int* hover_image_id,
-                                                 int* tooltip_id) const {
-  if (button_name == "close") {
-    *normal_image_id = IDR_PANEL_CLOSE;
-    *pressed_image_id = 0;
-    *hover_image_id = IDR_PANEL_CLOSE_H;
-    *tooltip_id = IDS_PANEL_CLOSE_TOOLTIP;
-  } else if (button_name == "minimize") {
-    *normal_image_id = IDR_PANEL_MINIMIZE;
-    *pressed_image_id = 0;
-    *hover_image_id = IDR_PANEL_MINIMIZE_H;
-    *tooltip_id = IDS_PANEL_MINIMIZE_TOOLTIP;
-  } else if (button_name == "unminimize") {
-    *normal_image_id = IDR_PANEL_RESTORE;
-    *pressed_image_id = 0;
-    *hover_image_id = IDR_PANEL_RESTORE_H;
-    *tooltip_id = IDS_PANEL_RESTORE_TOOLTIP;
+    throbber_.Reset();
   }
 }
 
-int PanelBrowserTitlebarGtk::GetButtonOuterPadding() const {
-  return kPanelButtonOuterPadding;
+void PanelBrowserTitlebarGtk::ShowContextMenu(GdkEventButton* event) {
+  // Panel does not show any context menu.
 }
 
-int PanelBrowserTitlebarGtk::GetButtonSpacing() const {
-  return kPanelButtonSpacing;
+void PanelBrowserTitlebarGtk::UpdateTextColor() {
+  GdkColor text_color = gfx::SkColorToGdkColor(GetTextColor());
+  gtk_util::SetLabelColor(title_, &text_color);
 }
 
 void PanelBrowserTitlebarGtk::UpdateMinimizeRestoreButtonVisibility() {
-  if (!unminimize_button_.get() || !minimize_button())
-    return;
-
   Panel* panel = browser_window_->panel();
-  gtk_widget_set_visible(minimize_button()->widget(), panel->CanMinimize());
-  gtk_widget_set_visible(unminimize_button_->widget(), panel->CanRestore());
+  gtk_widget_set_visible(minimize_button_->widget(), panel->CanMinimize());
+  gtk_widget_set_visible(restore_button_->widget(), panel->CanRestore());
 }
 
-void PanelBrowserTitlebarGtk::HandleButtonClick(GtkWidget* button) {
-  if (close_button() && close_button()->widget() == button) {
+gboolean PanelBrowserTitlebarGtk::OnWindowStateChanged(
+    GtkWindow* window, GdkEventWindowState* event) {
+  UpdateTextColor();
+  return FALSE;
+}
+
+void PanelBrowserTitlebarGtk::OnButtonClicked(GtkWidget* button) {
+  if (close_button_->widget() == button) {
     browser_window_->panel()->Close();
     return;
   }
@@ -159,12 +280,11 @@ void PanelBrowserTitlebarGtk::HandleButtonClick(GtkWidget* button) {
   GdkEvent* event = gtk_get_current_event();
   DCHECK(event && event->type == GDK_BUTTON_RELEASE);
 
-  if (minimize_button() && minimize_button()->widget() == button) {
+  if (minimize_button_->widget() == button) {
     browser_window_->panel()->OnMinimizeButtonClicked(
         (event->button.state & GDK_CONTROL_MASK) ?
             panel::APPLY_TO_ALL : panel::NO_MODIFIER);
-  } else if (unminimize_button_.get() &&
-             unminimize_button_->widget() == button) {
+  } else if (restore_button_->widget() == button) {
     browser_window_->panel()->OnRestoreButtonClicked(
         (event->button.state & GDK_CONTROL_MASK) ?
             panel::APPLY_TO_ALL : panel::NO_MODIFIER);
@@ -173,15 +293,17 @@ void PanelBrowserTitlebarGtk::HandleButtonClick(GtkWidget* button) {
   gdk_event_free(event);
 }
 
-void PanelBrowserTitlebarGtk::ShowFaviconMenu(GdkEventButton* event) {
-  // Favicon menu is not supported in panels.
-}
-
-void PanelBrowserTitlebarGtk::UpdateTextColor() {
-  DCHECK(app_mode_title());
-
-  GdkColor text_color = gfx::SkColorToGdkColor(GetTextColor());
-  gtk_util::SetLabelColor(app_mode_title(), &text_color);
+void PanelBrowserTitlebarGtk::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
+      UpdateTextColor();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void PanelBrowserTitlebarGtk::SendEnterNotifyToCloseButtonIfUnderMouse() {
@@ -223,4 +345,17 @@ void PanelBrowserTitlebarGtk::SendEnterNotifyToCloseButtonIfUnderMouse() {
   g_signal_emit_by_name(GTK_OBJECT(close_button()->widget()),
                         "enter-notify-event", event,
                         &return_value);
+}
+
+GtkWidget* PanelBrowserTitlebarGtk::widget() const {
+  return container_;
+}
+
+void PanelBrowserTitlebarGtk::set_window(GtkWindow* window) {
+  window_ = window;
+}
+
+AvatarMenuButtonGtk* PanelBrowserTitlebarGtk::avatar_button() const {
+  // Not supported in panel.
+  return NULL;
 }

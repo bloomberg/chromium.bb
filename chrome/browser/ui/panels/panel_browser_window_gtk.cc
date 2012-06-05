@@ -11,10 +11,10 @@
 #include "chrome/browser/ui/gtk/browser_titlebar.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
-#include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_titlebar_gtk.h"
+#include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/panels/panel_drag_gtk.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
@@ -23,49 +23,61 @@
 #include "content/public/browser/notification_service.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
-#include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/skia_util.h"
 
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
 
 namespace {
 
-// Colors used to draw titlebar and frame for drawing attention under default
-// theme. It is also used in non-default theme since attention color is not
-// defined in the theme.
-const SkColor kAttentionBackgroundColorStart = SkColorSetRGB(0xff, 0xab, 0x57);
-const SkColor kAttentionBackgroundColorEnd = SkColorSetRGB(0xe6, 0x9a, 0x4e);
+// Colors used to draw frame background under default theme.
+const SkColor kActiveBackgroundDefaultColor = SkColorSetRGB(0x3a, 0x3c, 0x3c);
+const SkColor kInactiveBackgroundDefaultColor = SkColorSetRGB(0x7a, 0x7c, 0x7c);
+const SkColor kAttentionBackgroundDefaultColor =
+    SkColorSetRGB(0xff, 0xab, 0x57);
+const SkColor kMinimizeBackgroundDefaultColor = SkColorSetRGB(0xf5, 0xf4, 0xf0);
+const SkColor kMinimizeBorderDefaultColor = SkColorSetRGB(0xc9, 0xc9, 0xc9);
+
+// Color used to draw the divider line between the titlebar and the client area.
+const SkColor kDividerColor = SkColorSetRGB(0x5a, 0x5c, 0x5c);
 
 // Set minimium width for window really small.
 const int kMinWindowWidth = 26;
 
-gfx::Image* CreateGradientImage(SkColor start_color, SkColor end_color) {
-  // Though the height of titlebar, used for creating gradient, cannot be
-  // pre-determined, we use a reasonably bigger value that is obtained from
-  // the experimentation and should work for most cases.
-  const int gradient_size = 32;
-  SkShader* shader = gfx::CreateGradientShader(
-      0, gradient_size, start_color, end_color);
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setAntiAlias(true);
-  paint.setShader(shader);
-  shader->unref();
-  gfx::Canvas canvas(gfx::Size(1, gradient_size), true);
-  canvas.DrawRect(gfx::Rect(0, 0, 1, gradient_size), paint);
+gfx::Image* CreateImageForColor(SkColor color) {
+  gfx::Canvas canvas(gfx::Size(1, 1), true);
+  canvas.DrawColor(color);
   return new gfx::Image(canvas.ExtractBitmap());
 }
 
-gfx::Image* GetAttentionBackgroundImage() {
+const gfx::Image* GetActiveBackgroundDefaultImage() {
   static gfx::Image* image = NULL;
-  if (!image) {
-    image = CreateGradientImage(kAttentionBackgroundColorStart,
-                                kAttentionBackgroundColorEnd);
-  }
+  if (!image)
+    image = CreateImageForColor(kActiveBackgroundDefaultColor);
+  return image;
+}
+
+const gfx::Image* GetInactiveBackgroundDefaultImage() {
+  static gfx::Image* image = NULL;
+  if (!image)
+    image = CreateImageForColor(kInactiveBackgroundDefaultColor);
+  return image;
+}
+
+const gfx::Image* GetAttentionBackgroundDefaultImage() {
+  static gfx::Image* image = NULL;
+  if (!image)
+    image = CreateImageForColor(kAttentionBackgroundDefaultColor);
+  return image;
+}
+
+const gfx::Image* GetMinimizeBackgroundDefaultImage() {
+  static gfx::Image* image = NULL;
+  if (!image)
+    image = CreateImageForColor(kMinimizeBackgroundDefaultColor);
   return image;
 }
 
@@ -85,6 +97,7 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
     : BrowserWindowGtk(browser),
       panel_(panel),
       bounds_(bounds),
+      paint_state_(PAINT_AS_INACTIVE),
       is_drawing_attention_(false) {
 }
 
@@ -116,11 +129,7 @@ void PanelBrowserWindowGtk::Init() {
       content::Source<GtkWindow>(window()));
 }
 
-bool PanelBrowserWindowGtk::ShouldDrawContentDropShadow() const {
-  return !panel_->IsMinimized();
-}
-
-BrowserTitlebar* PanelBrowserWindowGtk::CreateBrowserTitlebar() {
+BrowserTitlebarBase* PanelBrowserWindowGtk::CreateBrowserTitlebar() {
   return new PanelBrowserTitlebarGtk(this, window());
 }
 
@@ -128,10 +137,13 @@ PanelBrowserTitlebarGtk* PanelBrowserWindowGtk::GetPanelTitlebar() const {
   return static_cast<PanelBrowserTitlebarGtk*>(titlebar());
 }
 
-PanelBrowserWindowGtk::PaintState PanelBrowserWindowGtk::GetPaintState() const {
-  if (is_drawing_attention_)
-    return PAINT_FOR_ATTENTION;
-  return IsActive() ? PAINT_AS_ACTIVE : PAINT_AS_INACTIVE;
+bool PanelBrowserWindowGtk::UsingDefaultTheme() const {
+  // No theme is provided for attention painting.
+  if (paint_state_ == PAINT_FOR_ATTENTION)
+    return true;
+
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(panel_->profile());
+  return theme_provider->UsingDefaultTheme();
 }
 
 bool PanelBrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
@@ -171,20 +183,70 @@ GdkRegion* PanelBrowserWindowGtk::GetWindowShape(int width, int height) const {
   return mask;
 }
 
-void PanelBrowserWindowGtk::DrawCustomFrameBorder(GtkWidget* widget) {
-  static NineBox* custom_frame_border = NULL;
-  if (!custom_frame_border) {
-    custom_frame_border = new NineBox(IDR_WINDOW_TOP_LEFT_CORNER,
-                                      IDR_WINDOW_TOP_CENTER,
-                                      IDR_WINDOW_TOP_RIGHT_CORNER,
-                                      IDR_WINDOW_LEFT_SIDE,
-                                      0,
-                                      IDR_WINDOW_RIGHT_SIDE,
-                                      IDR_PANEL_BOTTOM_LEFT_CORNER,
-                                      IDR_WINDOW_BOTTOM_CENTER,
-                                      IDR_PANEL_BOTTOM_RIGHT_CORNER);
+bool PanelBrowserWindowGtk::UseCustomFrame() const {
+  // We always use custom frame for panels.
+  return true;
+}
+
+void PanelBrowserWindowGtk::DrawFrame(GtkWidget* widget,
+                                      GdkEventExpose* event) {
+  cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(widget));
+  gdk_cairo_rectangle(cr, &event->area);
+  cairo_clip(cr);
+
+  // Update the painting state.
+  int window_height = gdk_window_get_height(gtk_widget_get_window(widget));
+  if (is_drawing_attention_)
+    paint_state_ = PAINT_FOR_ATTENTION;
+  else if (window_height <= panel::kMinimizedPanelHeight)
+    paint_state_ = PAINT_AS_MINIMIZED;
+  else if (IsActive())
+    paint_state_ = PAINT_AS_ACTIVE;
+  else
+    paint_state_ = PAINT_AS_INACTIVE;
+
+  // Draw the background.
+  gfx::CairoCachedSurface* surface = GetFrameBackground()->ToCairo();
+  surface->SetSource(cr, widget, 0, 0);
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  cairo_rectangle(cr, event->area.x, event->area.y,
+                  event->area.width, event->area.height);
+  cairo_fill(cr);
+
+  // Draw the divider only if we're showing more than titlebar.
+  if (window_height > panel::kTitlebarHeight) {
+    cairo_set_source_rgb(cr,
+                         SkColorGetR(kDividerColor) / 255.0,
+                         SkColorGetG(kDividerColor) / 255.0,
+                         SkColorGetB(kDividerColor) / 255.0);
+    cairo_rectangle(cr, 0, panel::kTitlebarHeight - 1, bounds_.width(), 1);
+    cairo_fill(cr);
   }
-  custom_frame_border->RenderToWidget(widget);
+
+  // Draw the border for the minimized panel only.
+  if (paint_state_ == PAINT_AS_MINIMIZED) {
+    cairo_move_to(cr, 0, 3);
+    cairo_line_to(cr, 1, 2);
+    cairo_line_to(cr, 1, 1);
+    cairo_line_to(cr, 2, 1);
+    cairo_line_to(cr, 3, 0);
+    cairo_line_to(cr, event->area.width - 3, 0);
+    cairo_line_to(cr, event->area.width - 2, 1);
+    cairo_line_to(cr, event->area.width - 1, 1);
+    cairo_line_to(cr, event->area.width - 1, 2);
+    cairo_line_to(cr, event->area.width - 1, 3);
+    cairo_line_to(cr, event->area.width - 1, event->area.height - 1);
+    cairo_line_to(cr, 0, event->area.height - 1);
+    cairo_close_path(cr);
+    cairo_set_source_rgb(cr,
+                         SkColorGetR(kMinimizeBorderDefaultColor) / 255.0,
+                         SkColorGetG(kMinimizeBorderDefaultColor) / 255.0,
+                         SkColorGetB(kMinimizeBorderDefaultColor) / 255.0);
+    cairo_set_line_width(cr, 1.0);
+    cairo_stroke(cr);
+  }
+
+  cairo_destroy(cr);
 }
 
 void PanelBrowserWindowGtk::EnsureDragHelperCreated() {
@@ -270,51 +332,31 @@ void PanelBrowserWindowGtk::OnSizeChanged(int width, int height) {
       content::NotificationService::NoDetails());
 }
 
-bool PanelBrowserWindowGtk::UseCustomFrame() const {
-  // We always use custom frame for panels.
-  return true;
+const gfx::Image* PanelBrowserWindowGtk::GetFrameBackground() const {
+  return UsingDefaultTheme() ?
+      GetDefaultFrameBackground() : GetThemedFrameBackground();
 }
 
-bool PanelBrowserWindowGtk::UsingCustomPopupFrame() const {
-  // We do not draw custom popup frame.
-  return false;
-}
-
-void PanelBrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
-                                           GtkWidget* widget,
-                                           GdkEventExpose* event) {
-  NOTREACHED();
-}
-
-const gfx::Image* PanelBrowserWindowGtk::GetThemeFrameImage() const {
-  PaintState paint_state = GetPaintState();
-  if (paint_state == PAINT_FOR_ATTENTION)
-    return GetAttentionBackgroundImage();
-
-  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
-      GetPanelBrowser()->profile());
-  if (theme_provider->UsingDefaultTheme()) {
-    // We choose to use the window frame theme to paint panels for the default
-    // theme. This is because the default tab theme does not work well for the
-    // user to recognize active and inactive panels.
-    return theme_provider->GetImageNamed(paint_state == PAINT_AS_ACTIVE ?
-        IDR_THEME_FRAME : IDR_THEME_FRAME_INACTIVE);
+const gfx::Image* PanelBrowserWindowGtk::GetDefaultFrameBackground() const {
+  switch (paint_state_) {
+    case PAINT_AS_INACTIVE:
+      return GetInactiveBackgroundDefaultImage();
+    case PAINT_AS_ACTIVE:
+      return GetActiveBackgroundDefaultImage();
+    case PAINT_AS_MINIMIZED:
+      return GetMinimizeBackgroundDefaultImage();
+    case PAINT_FOR_ATTENTION:
+      return GetAttentionBackgroundDefaultImage();
+    default:
+      NOTREACHED();
+      return GetInactiveBackgroundDefaultImage();
   }
-
-  return theme_provider->GetImageNamed(paint_state == PAINT_AS_ACTIVE ?
-      IDR_THEME_TOOLBAR : IDR_THEME_TAB_BACKGROUND);
 }
 
-void PanelBrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
-                                            GtkWidget* widget,
-                                            GdkEventExpose* event) {
-  gfx::CairoCachedSurface* surface = GetThemeFrameImage()->ToCairo();
-
-  surface->SetSource(cr, widget, 0, 0);
-  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-  cairo_rectangle(cr, event->area.x, event->area.y,
-                  event->area.width, event->area.height);
-  cairo_fill(cr);
+const gfx::Image* PanelBrowserWindowGtk::GetThemedFrameBackground() const {
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(panel_->profile());
+  return theme_provider->GetImageNamed(paint_state_ == PAINT_AS_ACTIVE ?
+      IDR_THEME_TOOLBAR : IDR_THEME_TAB_BACKGROUND);
 }
 
 void PanelBrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
@@ -324,6 +366,7 @@ void PanelBrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   if (!window() || was_active == is_active)  // State didn't change.
     return;
 
+  GetPanelTitlebar()->UpdateTextColor();
   panel_->OnActiveStateChanged(is_active);
 }
 
@@ -600,7 +643,8 @@ class NativePanelTestingGtk : public NativePanelTesting {
   virtual void WaitForWindowCreationToComplete() const OVERRIDE;
   virtual bool IsWindowSizeKnown() const OVERRIDE;
   virtual bool IsAnimatingBounds() const OVERRIDE;
-  virtual bool IsButtonVisible(TitlebarButtonType button_type) const OVERRIDE;
+  virtual bool IsButtonVisible(
+      panel::TitlebarButtonType button_type) const OVERRIDE;
 
   PanelBrowserWindowGtk* panel_browser_window_gtk_;
 };
@@ -703,19 +747,19 @@ bool NativePanelTestingGtk::IsAnimatingBounds() const {
 }
 
 bool NativePanelTestingGtk::IsButtonVisible(
-    TitlebarButtonType button_type) const {
+    panel::TitlebarButtonType button_type) const {
   PanelBrowserTitlebarGtk* titlebar =
       panel_browser_window_gtk_->GetPanelTitlebar();
   CustomDrawButton* button;
   switch (button_type) {
-    case CLOSE_BUTTON:
+    case panel::CLOSE_BUTTON:
       button = titlebar->close_button();
       break;
-    case MINIMIZE_BUTTON:
+    case panel::MINIMIZE_BUTTON:
       button = titlebar->minimize_button();
       break;
-    case RESTORE_BUTTON:
-      button = titlebar->unminimize_button();
+    case panel::RESTORE_BUTTON:
+      button = titlebar->restore_button();
       break;
     default:
       NOTREACHED();

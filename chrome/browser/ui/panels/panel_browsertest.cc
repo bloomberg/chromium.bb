@@ -291,26 +291,17 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
   EXPECT_TRUE(panel2->always_on_top());
   EXPECT_TRUE(panel3->always_on_top());
 
-  EXPECT_TRUE(panel1_testing->IsButtonVisible(
-      NativePanelTesting::CLOSE_BUTTON));
-  EXPECT_TRUE(panel2_testing->IsButtonVisible(
-      NativePanelTesting::CLOSE_BUTTON));
-  EXPECT_TRUE(panel3_testing->IsButtonVisible(
-      NativePanelTesting::CLOSE_BUTTON));
+  EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::CLOSE_BUTTON));
+  EXPECT_TRUE(panel2_testing->IsButtonVisible(panel::CLOSE_BUTTON));
+  EXPECT_TRUE(panel3_testing->IsButtonVisible(panel::CLOSE_BUTTON));
 
-  EXPECT_TRUE(panel1_testing->IsButtonVisible(
-      NativePanelTesting::MINIMIZE_BUTTON));
-  EXPECT_FALSE(panel2_testing->IsButtonVisible(
-      NativePanelTesting::MINIMIZE_BUTTON));
-  EXPECT_FALSE(panel3_testing->IsButtonVisible(
-      NativePanelTesting::MINIMIZE_BUTTON));
+  EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
+  EXPECT_FALSE(panel2_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
+  EXPECT_FALSE(panel3_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
 
-  EXPECT_FALSE(panel1_testing->IsButtonVisible(
-      NativePanelTesting::RESTORE_BUTTON));
-  EXPECT_TRUE(panel2_testing->IsButtonVisible(
-      NativePanelTesting::RESTORE_BUTTON));
-  EXPECT_TRUE(panel3_testing->IsButtonVisible(
-      NativePanelTesting::RESTORE_BUTTON));
+  EXPECT_FALSE(panel1_testing->IsButtonVisible(panel::RESTORE_BUTTON));
+  EXPECT_TRUE(panel2_testing->IsButtonVisible(panel::RESTORE_BUTTON));
+  EXPECT_TRUE(panel3_testing->IsButtonVisible(panel::RESTORE_BUTTON));
 
   EXPECT_EQ(panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM,
             panel1->CanResizeByMouse());

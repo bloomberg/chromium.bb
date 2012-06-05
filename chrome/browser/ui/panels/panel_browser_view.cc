@@ -630,7 +630,8 @@ class NativePanelTestingWin : public NativePanelTesting {
   virtual bool VerifyActiveState(bool is_active) OVERRIDE;
   virtual bool IsWindowSizeKnown() const OVERRIDE;
   virtual bool IsAnimatingBounds() const OVERRIDE;
-  virtual bool IsButtonVisible(TitlebarButtonType button_type) const OVERRIDE;
+  virtual bool IsButtonVisible(
+      panel::TitlebarButtonType button_type) const OVERRIDE;
 
   PanelBrowserView* panel_browser_view_;
 };
@@ -690,15 +691,15 @@ bool NativePanelTestingWin::IsAnimatingBounds() const {
 }
 
 bool NativePanelTestingWin::IsButtonVisible(
-    TitlebarButtonType button_type) const {
+    panel::TitlebarButtonType button_type) const {
   PanelBrowserFrameView* frame_view = panel_browser_view_->GetFrameView();
 
   switch (button_type) {
-    case CLOSE_BUTTON:
+    case panel::CLOSE_BUTTON:
       return frame_view->close_button_->visible();
-    case MINIMIZE_BUTTON:
+    case panel::MINIMIZE_BUTTON:
       return frame_view->minimize_button_->visible();
-    case RESTORE_BUTTON:
+    case panel::RESTORE_BUTTON:
       return frame_view->restore_button_->visible();
     default:
       NOTREACHED();

@@ -25,6 +25,13 @@ static const int kMinimizedPanelHeight = 4;
 // The height in pixels of the titlebar.
 static const int kTitlebarHeight = 32;
 
+// Different types of buttons that can be shown on panel's titlebar.
+enum TitlebarButtonType {
+  CLOSE_BUTTON,
+  MINIMIZE_BUTTON,
+  RESTORE_BUTTON
+};
+
 // Different platforms use different modifier keys to change the behavior
 // of a mouse click. This enum captures the meaning of the modifier rather
 // than the actual modifier key to generalize across platforms.
