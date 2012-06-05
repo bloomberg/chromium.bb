@@ -16,13 +16,11 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "googleurl/src/gurl.h"
 
+class BalloonCollectionImplAsh;
 class Notification;
 class Profile;
 
 namespace chromeos {
-
-class BalloonCollectionImplAura;
-typedef class BalloonCollectionImplAura BalloonCollectionImplType;
 
 // The system notification object handles the display of a system notification
 
@@ -90,7 +88,7 @@ class SystemNotification : public PowerManagerClient::Observer {
   void ShowNotification(const Notification& notify);
 
   Profile* profile_;
-  BalloonCollectionImplType* collection_;
+  BalloonCollectionImplAsh* collection_;
   scoped_refptr<NotificationDelegate> delegate_;
   string16 message_;
   string16 link_;

@@ -40,7 +40,8 @@ class BalloonView {
   // The total size of the view.
   virtual gfx::Size GetSize() const = 0;
 
-  // The host for the view's contents.
+  // The host for the view's contents. May be NULL if an implementation does
+  // not have a host associated with it (i.e. does not do html rendering).
   virtual BalloonHost* GetHost() const = 0;
 };
 
@@ -79,14 +80,11 @@ class Balloon {
   // min/max restrictions.
   void ResizeDueToAutoResize(const gfx::Size& size);
 
-  // Provides a view for this balloon.  Ownership transfers
-  // to this object.
+  // Provides a view for this balloon.  Ownership transfers to this object.
   void set_view(BalloonView* balloon_view);
 
   // Returns the balloon view associated with the balloon.
-  BalloonView* view() const {
-    return balloon_view_.get();
-  }
+  BalloonView* balloon_view() const { return balloon_view_.get(); }
 
   // Returns the viewing size for the balloon (content + frame).
   gfx::Size GetViewSize() const { return balloon_view_->GetSize(); }

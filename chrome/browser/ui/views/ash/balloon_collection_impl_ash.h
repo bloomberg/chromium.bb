@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_BALLOON_COLLECTION_IMPL_AURA_H_
-#define CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_BALLOON_COLLECTION_IMPL_AURA_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_ASH_BALLOON_COLLECTION_IMPL_ASH_H_
+#define CHROME_BROWSER_UI_VIEWS_ASH_BALLOON_COLLECTION_IMPL_ASH_H_
 #pragma once
 
 #include <set>
@@ -11,14 +11,12 @@
 #include "chrome/browser/chromeos/notifications/balloon_view_host_chromeos.h"  // MessageCallback
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 
-namespace chromeos {
-
 // Wrapper on top of ::BalloonCollectionImpl to provide an interface for
 // chromeos::SystemNotification.
-class BalloonCollectionImplAura : public ::BalloonCollectionImpl {
+class BalloonCollectionImplAsh : public ::BalloonCollectionImpl {
  public:
-  BalloonCollectionImplAura();
-  virtual ~BalloonCollectionImplAura();
+  BalloonCollectionImplAsh();
+  virtual ~BalloonCollectionImplAsh();
 
   // Adds a callback for WebUI message. Returns true if the callback
   // is succssfully registered, or false otherwise. It fails to add if
@@ -28,10 +26,10 @@ class BalloonCollectionImplAura : public ::BalloonCollectionImpl {
   bool AddWebUIMessageCallback(
       const Notification& notification,
       const std::string& message,
-      const BalloonViewHost::MessageCallback& callback);
+      const chromeos::BalloonViewHost::MessageCallback& callback);
 
   // Adds a new system notification.
-  // |sticky| is ignored in the Aura implementation; desktop notifications
+  // |sticky| is ignored in the Ash implementation; desktop notifications
   // are always sticky (i.e. they need to be dismissed explicitly).
   void AddSystemNotification(const Notification& notification,
                              Profile* profile,
@@ -44,7 +42,7 @@ class BalloonCollectionImplAura : public ::BalloonCollectionImpl {
   // visibility of the notification.
   bool UpdateNotification(const Notification& notification);
 
-  // On Aura this behaves the same as UpdateNotification.
+  // On Ash this behaves the same as UpdateNotification.
   bool UpdateAndShowNotification(const Notification& notification);
 
  protected:
@@ -58,9 +56,7 @@ class BalloonCollectionImplAura : public ::BalloonCollectionImpl {
   // MakeBalloon to determine whether or not to enable Web UI.
   std::set<std::string> system_notifications_;
 
-  DISALLOW_COPY_AND_ASSIGN(BalloonCollectionImplAura);
+  DISALLOW_COPY_AND_ASSIGN(BalloonCollectionImplAsh);
 };
 
-}  // namespace chromeos
-
-#endif  // CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_BALLOON_COLLECTION_IMPL_AURA_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_ASH_BALLOON_COLLECTION_IMPL_ASH_H_
