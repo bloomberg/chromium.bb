@@ -70,8 +70,6 @@
         'common/test_url_constants.h',
         'gpu/gpu_idirect3d9_mock_win.cc',
         'gpu/gpu_idirect3d9_mock_win.h',
-        'renderer/mock_content_renderer_client.cc',
-        'renderer/mock_content_renderer_client.h',
         'test/accessibility_test_utils_win.cc',
         'test/browser_test_base.cc',
         'test/browser_test_base.h',
