@@ -369,6 +369,7 @@ void dump_framebuffers(void)
 
 static void dump_planes(void)
 {
+	drmModeObjectPropertiesPtr props;
 	drmModePlaneRes *plane_resources;
 	drmModePlane *ovr;
 	unsigned int i, j;
@@ -402,6 +403,19 @@ static void dump_planes(void)
 		for (j = 0; j < ovr->count_formats; j++)
 			printf(" %4.4s", (char *)&ovr->formats[j]);
 		printf("\n");
+
+		printf("  props:\n");
+		props = drmModeObjectGetProperties(fd, ovr->plane_id,
+						   DRM_MODE_OBJECT_PLANE);
+		if (props) {
+			for (j = 0; j < props->count_props; j++)
+				dump_prop(props->props[j],
+					  props->prop_values[j]);
+			drmModeFreeObjectProperties(props);
+		} else {
+			printf("\tcould not get plane properties: %s\n",
+			       strerror(errno));
+		}
 
 		drmModeFreePlane(ovr);
 	}
