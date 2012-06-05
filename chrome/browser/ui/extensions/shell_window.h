@@ -76,9 +76,6 @@ class ShellWindow : public content::NotificationObserver,
   // startup and from within UpdateWindowTitle().
   virtual string16 GetTitle() const;
 
-  virtual void SetFullscreen(bool fullscreen) {}
-  virtual bool IsFullscreenOrPending() const;
-
  private:
   // PlatformAppBrowserTest needs access to web_contents()
   friend class PlatformAppBrowserTest;
@@ -108,10 +105,6 @@ class ShellWindow : public content::NotificationObserver,
       content::WebContents* source, const gfx::Rect& pos) OVERRIDE;
   virtual void NavigationStateChanged(const content::WebContents* source,
                                       unsigned changed_flags) OVERRIDE;
-  virtual void ToggleFullscreenModeForTab(content::WebContents* source,
-                                          bool enter_fullscreen) OVERRIDE;
-  virtual bool IsFullscreenForTabOrPending(
-      const content::WebContents* source) const OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
