@@ -13,8 +13,7 @@ M : Move          \l\
 D : Down          \l\
 S : Stationary    \l\
 C : Cancel        \l\
-R : Release       \l\
-M_Delay : Move after a certain delay}"
+R : Release       \l}"  
 shape = record]
 
 subgraph none_pending {
@@ -26,12 +25,8 @@ GS_PENDING_SYNTHETIC_CLICK ->  GS_NO_GESTURE [label= "C0\n R0"];
 
 GS_SCROLL ->  GS_SCROLL [label= "M0"];
 GS_SCROLL ->  GS_NO_GESTURE [label= "C0\n R0\n"];
-GS_PENDING_SYNTHETIC_CLICK ->  GS_PENDING_TWO_FINGER_TAP [label= "D1"];
-GS_SCROLL ->  GS_PENDING_TWO_FINGER_TAP [label= "D1"];
-GS_PENDING_TWO_FINGER_TAP -> GS_PINCH [label= "M0\n M1"];
-GS_PENDING_TWO_FINGER_TAP -> GS_PINCH [label= "M_Delay0\n M_Delay1"];
-GS_PENDING_TWO_FINGER_TAP -> GS_PINCH [label= "D2"];
-GS_PENDING_TWO_FINGER_TAP -> GS_SCROLL [label= "R0\n R1\n C0\n C1"];
+GS_PENDING_SYNTHETIC_CLICK ->  GS_PINCH [label= "D1"];
+GS_SCROLL ->  GS_PINCH [label= "D1"];
 GS_PINCH ->  GS_PINCH [label= "M0\n M1"];
 GS_PINCH ->  GS_SCROLL [label= "C0\n R0\n C1\n R1"];
 

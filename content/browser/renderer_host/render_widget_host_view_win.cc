@@ -377,12 +377,6 @@ WebKit::WebInputEvent::Type ConvertToWebInputEvent(ui::EventType t) {
       return WebKit::WebGestureEvent::GesturePinchEnd;
     case ui::ET_GESTURE_PINCH_UPDATE:
       return WebKit::WebGestureEvent::GesturePinchUpdate;
-    case ui::ET_GESTURE_TAP_UP:
-      return WebKit::WebGestureEvent::Undefined;
-    case ui::ET_GESTURE_MULTIFINGER_SWIPE:
-      return WebKit::WebGestureEvent::Undefined;
-    case ui::ET_GESTURE_TWO_FINGER_TAP:
-      return WebKit::WebGestureEvent::Undefined;
     case ui::ET_TOUCH_PRESSED:
       return WebKit::WebInputEvent::TouchStart;
     case ui::ET_TOUCH_MOVED:

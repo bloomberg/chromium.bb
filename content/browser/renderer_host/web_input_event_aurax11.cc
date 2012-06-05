@@ -365,9 +365,6 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     case ui::ET_GESTURE_LONG_PRESS:
       gesture_event.type = WebKit::WebInputEvent::GestureLongPress;
       break;
-    case ui::ET_GESTURE_TWO_FINGER_TAP:
-      gesture_event.type = WebKit::WebInputEvent::GestureTwoFingerTap;
-      break;
     case ui::ET_GESTURE_TAP_UP:
     case ui::ET_GESTURE_MULTIFINGER_SWIPE:
       break;

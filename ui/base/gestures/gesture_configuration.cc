@@ -10,7 +10,6 @@ namespace ui {
 // associated list of prefs in gesture_prefs_aura.cc.
 int GestureConfiguration::default_radius_ = 15;
 double GestureConfiguration::long_press_time_in_seconds_ = 1.0;
-double GestureConfiguration::max_distance_for_two_finger_tap_in_pixels_ = 300;
 int GestureConfiguration::max_radius_ = 100;
 double GestureConfiguration::max_seconds_between_double_click_ = 0.7;
 double

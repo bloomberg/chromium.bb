@@ -88,27 +88,6 @@ enum EdgeStateSignatureType {
   GST_SCROLL_SECOND_PRESSED =
       G(GS_SCROLL, 1, TS_PRESSED, false),
 
-  GST_PENDING_TWO_FINGER_TAP_FIRST_RELEASED =
-      G(GS_PENDING_TWO_FINGER_TAP, 0, TS_RELEASED, false),
-
-  GST_PENDING_TWO_FINGER_TAP_SECOND_RELEASED =
-      G(GS_PENDING_TWO_FINGER_TAP, 1, TS_RELEASED, false),
-
-  GST_PENDING_TWO_FINGER_TAP_FIRST_MOVED =
-      G(GS_PENDING_TWO_FINGER_TAP, 0, TS_MOVED, false),
-
-  GST_PENDING_TWO_FINGER_TAP_SECOND_MOVED =
-      G(GS_PENDING_TWO_FINGER_TAP, 1, TS_MOVED, false),
-
-  GST_PENDING_TWO_FINGER_TAP_FIRST_CANCELLED =
-      G(GS_PENDING_TWO_FINGER_TAP, 0, TS_CANCELLED, false),
-
-  GST_PENDING_TWO_FINGER_TAP_SECOND_CANCELLED =
-      G(GS_PENDING_TWO_FINGER_TAP, 1, TS_CANCELLED, false),
-
-  GST_PENDING_TWO_FINGER_TAP_THIRD_PRESSED =
-      G(GS_PENDING_TWO_FINGER_TAP, 2, TS_PRESSED, false),
-
   GST_PINCH_FIRST_MOVED =
       G(GS_PINCH, 0, TS_MOVED, false),
 
@@ -283,30 +262,8 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       break;
     case GST_SCROLL_SECOND_PRESSED:
     case GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED:
-      if (IsSecondTouchDownCloseEnoughForTwoFingerTap()) {
-        TwoFingerTouchDown(event, point, gestures.get());
-        set_state(GS_PENDING_TWO_FINGER_TAP);
-      } else {
-        PinchStart(event, point, gestures.get());
-        set_state(GS_PINCH);
-      }
-      break;
-    case GST_PENDING_TWO_FINGER_TAP_FIRST_RELEASED:
-    case GST_PENDING_TWO_FINGER_TAP_SECOND_RELEASED:
-      TwoFingerTouchReleased(event, point, gestures.get());
-      set_state(GS_SCROLL);
-      break;
-    case GST_PENDING_TWO_FINGER_TAP_FIRST_MOVED:
-    case GST_PENDING_TWO_FINGER_TAP_SECOND_MOVED:
-      if (TwoFingerTouchMove(event, point, gestures.get()))
-        set_state(GS_PINCH);
-      break;
-    case GST_PENDING_TWO_FINGER_TAP_FIRST_CANCELLED:
-    case GST_PENDING_TWO_FINGER_TAP_SECOND_CANCELLED:
+      // Once pinch starts, we immediately break rail scroll.
       scroll_type_ = ST_FREE;
-      set_state(GS_SCROLL);
-      break;
-    case GST_PENDING_TWO_FINGER_TAP_THIRD_PRESSED:
       PinchStart(event, point, gestures.get());
       set_state(GS_PINCH);
       break;
@@ -455,18 +412,6 @@ GesturePoint* GestureSequence::GetPointByPointId(int point_id) {
   }
   NOTREACHED();
   return NULL;
-}
-
-bool GestureSequence::IsSecondTouchDownCloseEnoughForTwoFingerTap() {
-  gfx::Point p1 = GetPointByPointId(0)->last_touch_position();
-  gfx::Point p2 = GetPointByPointId(1)->last_touch_position();
-  double max_distance =
-      ui::GestureConfiguration::max_distance_for_two_finger_tap_in_pixels();
-  double distance = (p1.x() - p2.x()) * (p1.x() - p2.x()) +
-      (p1.y() - p2.y()) * (p1.y() - p2.y());
-  if (distance < max_distance * max_distance)
-    return true;
-  return false;
 }
 
 void GestureSequence::AppendTapDownGestureEvent(const GesturePoint& point,
@@ -636,16 +581,6 @@ void GestureSequence::AppendSwipeGesture(const GesturePoint& point,
       swipe_x, swipe_y, ComputeTouchBitmask(points_)));
 }
 
-void GestureSequence::AppendTwoFingerTapGestureEvent(Gestures* gestures) {
-  const GesturePoint* point = GetPointByPointId(0);
-  gestures->push_back(helper_->CreateGestureEvent(
-      ui::ET_GESTURE_TWO_FINGER_TAP,
-      point->enclosing_rectangle().CenterPoint(),
-      flags_,
-      base::Time::FromDoubleT(point->last_touch_time()),
-      0.f, 0.f, 1 << point->touch_id()));
-}
-
 bool GestureSequence::Click(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
   DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK);
@@ -714,42 +649,6 @@ bool GestureSequence::TouchDown(const TouchEvent& event,
   return true;
 }
 
-bool GestureSequence::TwoFingerTouchDown(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
-  DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK || state_ == GS_SCROLL);
-  if (state_ == GS_SCROLL) {
-    AppendScrollGestureEnd(point, point.last_touch_position(), gestures,
-        0.f, 0.f);
-  }
-  second_touch_time_ = event.GetTimestamp();
-  return true;
-}
-
-bool GestureSequence::TwoFingerTouchMove(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
-  DCHECK(state_ == GS_PENDING_TWO_FINGER_TAP);
-
-  base::TimeDelta time_delta = event.GetTimestamp() - second_touch_time_;
-  base::TimeDelta max_delta = base::TimeDelta::FromMilliseconds(1000 *
-      ui::GestureConfiguration::max_touch_down_duration_in_seconds_for_click());
-  if (time_delta > max_delta || !point.IsInsideManhattanSquare(event)) {
-    PinchStart(event, point, gestures);
-    return true;
-  }
-  return false;
-}
-
-bool GestureSequence::TwoFingerTouchReleased(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
-  DCHECK(state_ == GS_PENDING_TWO_FINGER_TAP);
-  base::TimeDelta time_delta = event.GetTimestamp() - second_touch_time_;
-  base::TimeDelta max_delta = base::TimeDelta::FromMilliseconds(1000 *
-      ui::GestureConfiguration::max_touch_down_duration_in_seconds_for_click());
-  if (time_delta < max_delta && point.IsInsideManhattanSquare(event))
-    AppendTwoFingerTapGestureEvent(gestures);
-  return true;
-}
-
 void GestureSequence::AppendLongPressGestureEvent() {
   const GesturePoint* point = GetPointByPointId(0);
   scoped_ptr<GestureEvent> gesture(helper_->CreateGestureEvent(
@@ -777,11 +676,8 @@ bool GestureSequence::ScrollEnd(const TouchEvent& event,
 bool GestureSequence::PinchStart(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
   DCHECK(state_ == GS_SCROLL ||
-         state_ == GS_PENDING_SYNTHETIC_CLICK ||
-         state_ == GS_PENDING_TWO_FINGER_TAP);
-
-  // Once pinch starts, we immediately break rail scroll.
-  scroll_type_ = ST_FREE;
+         state_ == GS_PENDING_SYNTHETIC_CLICK);
+  AppendTapDownGestureEvent(point, gestures);
 
   const GesturePoint* point1 = GetPointByPointId(0);
   const GesturePoint* point2 = GetPointByPointId(1);
@@ -790,8 +686,7 @@ bool GestureSequence::PinchStart(const TouchEvent& event,
   pinch_distance_start_ = pinch_distance_current_;
   AppendPinchGestureBegin(*point1, *point2, gestures);
 
-  if (state_ == GS_PENDING_SYNTHETIC_CLICK ||
-      state_ == GS_PENDING_TWO_FINGER_TAP) {
+  if (state_ == GS_PENDING_SYNTHETIC_CLICK) {
     gfx::Point center = bounding_box_.CenterPoint();
     AppendScrollGestureBegin(point, center, gestures);
   }

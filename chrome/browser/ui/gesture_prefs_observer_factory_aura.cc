@@ -89,9 +89,6 @@ void GesturePrefsObserver::Update() {
   GestureConfiguration::set_long_press_time_in_seconds(
       prefs_->GetDouble(
           prefs::kLongPressTimeInSeconds));
-  GestureConfiguration::set_max_distance_for_two_finger_tap_in_pixels(
-      prefs_->GetDouble(
-          prefs::kMaxDistanceForTwoFingerTapInPixels));
   GestureConfiguration::set_max_seconds_between_double_click(
       prefs_->GetDouble(
           prefs::kMaxSecondsBetweenDoubleClick));
@@ -162,10 +159,6 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDoublePref(
       prefs::kLongPressTimeInSeconds,
       GestureConfiguration::long_press_time_in_seconds(),
-      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDoublePref(
-      prefs::kMaxDistanceForTwoFingerTapInPixels,
-      GestureConfiguration::max_distance_for_two_finger_tap_in_pixels(),
       PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMaxSecondsBetweenDoubleClick,

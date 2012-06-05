@@ -44,7 +44,6 @@ class GesturePoint {
   bool IsInFlickWindow(const TouchEvent& event);
   bool IsInHorizontalRailWindow() const;
   bool IsInVerticalRailWindow() const;
-  bool IsInsideManhattanSquare(const TouchEvent& event) const;
   bool HasEnoughDataToEstablishRail() const;
   bool BreaksHorizontalRail();
   bool BreaksVerticalRail();
@@ -90,6 +89,7 @@ class GesturePoint {
   // Various statistical functions to manipulate gestures.
   bool IsInClickTimeWindow() const;
   bool IsInSecondClickTimeWindow() const;
+  bool IsInsideManhattanSquare(const TouchEvent& event) const;
   bool IsSecondClickInsideManhattanSquare(const TouchEvent& event) const;
   bool IsOverMinFlickSpeed();
 
