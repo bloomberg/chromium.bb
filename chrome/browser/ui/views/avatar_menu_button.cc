@@ -69,7 +69,7 @@ void DrawTaskBarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
           profiles::kAvatarIconWidth - x * 2, profiles::kAvatarIconHeight));
       source_bitmap = &squarer_bitmap;
     } else {
-      // The bitmaps size has changed. Resize what we have.
+      // The image's size has changed. Resize what we have.
       source_bitmap = bitmap;
     }
     // Since the target size is so small, we use our best resizer. Never pass
@@ -108,7 +108,7 @@ void AvatarMenuButton::OnPaint(gfx::Canvas* canvas) {
   if (old_height_ != height() || button_icon_.isNull()) {
     old_height_ = height();
     button_icon_ = *profiles::GetAvatarIconForTitleBar(
-        *icon_, is_gaia_picture_, width(), height()).ToSkBitmap();
+        *icon_, is_gaia_picture_, width(), height()).ToImageSkia();
   }
 
   // Scale the image to fit the width of the button.
@@ -141,7 +141,7 @@ bool AvatarMenuButton::HitTest(const gfx::Point& point) const {
 void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
                                      bool is_gaia_picture) {
   icon_.reset(new gfx::Image(icon));
-  button_icon_ = SkBitmap();
+  button_icon_ = gfx::ImageSkia();
   is_gaia_picture_ = is_gaia_picture;
   SchedulePaint();
 }

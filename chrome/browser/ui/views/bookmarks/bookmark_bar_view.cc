@@ -94,10 +94,10 @@ const char BookmarkBarView::kViewClassName[] =
 static const int kButtonPadding = 0;
 
 // Icon to display when one isn't found for the page.
-static SkBitmap* kDefaultFavicon = NULL;
+static gfx::ImageSkia* kDefaultFavicon = NULL;
 
 // Icon used for folders.
-static SkBitmap* kFolderIcon = NULL;
+static gfx::ImageSkia* kFolderIcon = NULL;
 
 // Offset for where the menu is shown relative to the bottom of the
 // BookmarkBarView.
@@ -358,11 +358,11 @@ const int BookmarkBarView::kNewtabVerticalPadding = 12;
 // static
 bool BookmarkBarView::testing_ = false;
 
-// Returns the bitmap to use for starred folders.
-static const SkBitmap& GetFolderIcon() {
+// Returns the image to use for starred folders.
+static const gfx::ImageSkia& GetFolderIcon() {
   if (!kFolderIcon) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    kFolderIcon = rb.GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
+    kFolderIcon = rb.GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
   }
   return *kFolderIcon;
 }
@@ -1120,7 +1120,7 @@ void BookmarkBarView::Init() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   if (!kDefaultFavicon)
-    kDefaultFavicon = rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
+    kDefaultFavicon = rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
 
   // Child views are traversed in the order they are added. Make sure the order
   // they are added matches the visual order.
@@ -1195,7 +1195,7 @@ MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
 MenuButton* BookmarkBarView::CreateOverflowButton() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   MenuButton* button = new OverFlowButton(this);
-  button->SetIcon(*rb.GetBitmapNamed(IDR_BOOKMARK_BAR_CHEVRONS));
+  button->SetIcon(*rb.GetImageSkiaNamed(IDR_BOOKMARK_BAR_CHEVRONS));
 
   // The overflow button's image contains an arrow and therefore it is a
   // direction sensitive image and we need to flip it if the UI layout is

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -58,6 +59,7 @@
 #include "third_party/sqlite/sqlite3.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_MACOSX)
@@ -222,7 +224,7 @@ bool TaskManagerRendererResource::SupportNetworkUsage() const {
 ////////////////////////////////////////////////////////////////////////////////
 
 // static
-SkBitmap* TaskManagerTabContentsResource::prerender_icon_ = NULL;
+gfx::ImageSkia* TaskManagerTabContentsResource::prerender_icon_ = NULL;
 
 TaskManagerTabContentsResource::TaskManagerTabContentsResource(
     TabContentsWrapper* tab_contents)
@@ -233,7 +235,7 @@ TaskManagerTabContentsResource::TaskManagerTabContentsResource(
       is_instant_preview_(false) {
   if (!prerender_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    prerender_icon_ = rb.GetBitmapNamed(IDR_PRERENDER);
+    prerender_icon_ = rb.GetImageSkiaNamed(IDR_PRERENDER);
   }
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
@@ -322,7 +324,7 @@ string16 TaskManagerTabContentsResource::GetProfileName() const {
     return cache.GetNameOfProfileAtIndex(index);
 }
 
-SkBitmap TaskManagerTabContentsResource::GetIcon() const {
+gfx::ImageSkia TaskManagerTabContentsResource::GetIcon() const {
   if (IsPrerendering())
     return *prerender_icon_;
   return tab_contents_->favicon_tab_helper()->GetFavicon();
@@ -528,7 +530,7 @@ void TaskManagerTabContentsResourceProvider::Observe(int type,
 // TaskManagerBackgroundContentsResource class
 ////////////////////////////////////////////////////////////////////////////////
 
-SkBitmap* TaskManagerBackgroundContentsResource::default_icon_ = NULL;
+gfx::ImageSkia* TaskManagerBackgroundContentsResource::default_icon_ = NULL;
 
 // TODO(atwilson): http://crbug.com/116893
 // HACK: if the process handle is invalid, we use the current process's handle.
@@ -549,7 +551,7 @@ TaskManagerBackgroundContentsResource::TaskManagerBackgroundContentsResource(
   // TODO(atwilson): Use the favicon when that's available.
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_icon_ = rb.GetBitmapNamed(IDR_PLUGIN);
+    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGIN);
   }
   // Ensure that the string has the appropriate direction markers (see comment
   // in TaskManagerTabContentsResource::GetTitle()).
@@ -576,7 +578,7 @@ string16 TaskManagerBackgroundContentsResource::GetProfileName() const {
   return string16();
 }
 
-SkBitmap TaskManagerBackgroundContentsResource::GetIcon() const {
+gfx::ImageSkia TaskManagerBackgroundContentsResource::GetIcon() const {
   return *default_icon_;
 }
 
@@ -785,7 +787,7 @@ void TaskManagerBackgroundContentsResourceProvider::Observe(
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerChildProcessResource class
 ////////////////////////////////////////////////////////////////////////////////
-SkBitmap* TaskManagerChildProcessResource::default_icon_ = NULL;
+gfx::ImageSkia* TaskManagerChildProcessResource::default_icon_ = NULL;
 
 TaskManagerChildProcessResource::TaskManagerChildProcessResource(
     content::ProcessType type,
@@ -802,7 +804,7 @@ TaskManagerChildProcessResource::TaskManagerChildProcessResource(
   pid_ = base::GetProcId(handle);
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_icon_ = rb.GetBitmapNamed(IDR_PLUGIN);
+    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGIN);
     // TODO(jabdelmalek): use different icon for web workers.
   }
 }
@@ -822,7 +824,7 @@ string16 TaskManagerChildProcessResource::GetProfileName() const {
   return string16();
 }
 
-SkBitmap TaskManagerChildProcessResource::GetIcon() const {
+gfx::ImageSkia TaskManagerChildProcessResource::GetIcon() const {
   return *default_icon_;
 }
 
@@ -1108,14 +1110,14 @@ void TaskManagerChildProcessResourceProvider::ChildProcessDataRetreived(
 // TaskManagerExtensionProcessResource class
 ////////////////////////////////////////////////////////////////////////////////
 
-SkBitmap* TaskManagerExtensionProcessResource::default_icon_ = NULL;
+gfx::ImageSkia* TaskManagerExtensionProcessResource::default_icon_ = NULL;
 
 TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
     content::RenderViewHost* render_view_host)
     : render_view_host_(render_view_host) {
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_icon_ = rb.GetBitmapNamed(IDR_PLUGIN);
+    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGIN);
   }
   process_handle_ = render_view_host_->GetProcess()->GetHandle();
   unique_process_id_ = render_view_host->GetProcess()->GetID();
@@ -1150,7 +1152,7 @@ string16 TaskManagerExtensionProcessResource::GetProfileName() const {
     return cache.GetNameOfProfileAtIndex(index);
 }
 
-SkBitmap TaskManagerExtensionProcessResource::GetIcon() const {
+gfx::ImageSkia TaskManagerExtensionProcessResource::GetIcon() const {
   return *default_icon_;
 }
 
@@ -1366,7 +1368,7 @@ void TaskManagerExtensionProcessResourceProvider::RemoveFromTaskManager(
 // TaskManagerBrowserProcessResource class
 ////////////////////////////////////////////////////////////////////////////////
 
-SkBitmap* TaskManagerBrowserProcessResource::default_icon_ = NULL;
+gfx::ImageSkia* TaskManagerBrowserProcessResource::default_icon_ = NULL;
 
 TaskManagerBrowserProcessResource::TaskManagerBrowserProcessResource()
     : title_() {
@@ -1377,13 +1379,14 @@ TaskManagerBrowserProcessResource::TaskManagerBrowserProcessResource()
   if (!default_icon_) {
     HICON icon = GetAppIcon();
     if (icon) {
-      default_icon_ = IconUtil::CreateSkBitmapFromHICON(icon);
+      scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(icon));
+      default_icon_ = new gfx::ImageSkia(*bitmap);
     }
   }
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_icon_ = rb.GetBitmapNamed(IDR_PRODUCT_LOGO_16);
+    default_icon_ = rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_16);
   }
 #elif defined(OS_MACOSX)
   if (!default_icon_) {
@@ -1413,7 +1416,7 @@ string16 TaskManagerBrowserProcessResource::GetProfileName() const {
   return string16();
 }
 
-SkBitmap TaskManagerBrowserProcessResource::GetIcon() const {
+gfx::ImageSkia TaskManagerBrowserProcessResource::GetIcon() const {
   return *default_icon_;
 }
 

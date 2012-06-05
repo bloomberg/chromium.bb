@@ -31,13 +31,13 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/events.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/root_view.h"
@@ -106,8 +106,8 @@ class DockView : public views::View {
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-    SkBitmap* high_icon = rb.GetBitmapNamed(IDR_DOCK_HIGH);
-    SkBitmap* wide_icon = rb.GetBitmapNamed(IDR_DOCK_WIDE);
+    gfx::ImageSkia* high_icon = rb.GetImageSkiaNamed(IDR_DOCK_HIGH);
+    gfx::ImageSkia* wide_icon = rb.GetImageSkiaNamed(IDR_DOCK_WIDE);
 
     canvas->Save();
     bool rtl_ui = base::i18n::IsRTL();
@@ -126,8 +126,8 @@ class DockView : public views::View {
         canvas->DrawBitmapInt(*high_icon, x_of_active_tab,
                               (height() - high_icon->height()) / 2);
         if (type_ == DockInfo::LEFT_OF_WINDOW) {
-          DrawBitmapWithAlpha(canvas, *high_icon, x_of_inactive_tab,
-                              (height() - high_icon->height()) / 2);
+          DrawImageWithAlpha(canvas, *high_icon, x_of_inactive_tab,
+                             (height() - high_icon->height()) / 2);
         }
         break;
 
@@ -139,8 +139,8 @@ class DockView : public views::View {
         canvas->DrawBitmapInt(*high_icon, x_of_active_tab,
                               (height() - high_icon->height()) / 2);
         if (type_ == DockInfo::RIGHT_OF_WINDOW) {
-         DrawBitmapWithAlpha(canvas, *high_icon, x_of_inactive_tab,
-                             (height() - high_icon->height()) / 2);
+         DrawImageWithAlpha(canvas, *high_icon, x_of_inactive_tab,
+                           (height() - high_icon->height()) / 2);
         }
         break;
 
@@ -150,7 +150,7 @@ class DockView : public views::View {
         break;
 
       case DockInfo::MAXIMIZE: {
-        SkBitmap* max_icon = rb.GetBitmapNamed(IDR_DOCK_MAX);
+        gfx::ImageSkia* max_icon = rb.GetImageSkiaNamed(IDR_DOCK_MAX);
         canvas->DrawBitmapInt(*max_icon, (width() - max_icon->width()) / 2,
                               (height() - max_icon->height()) / 2);
         break;
@@ -161,7 +161,7 @@ class DockView : public views::View {
         canvas->DrawBitmapInt(*wide_icon, (width() - wide_icon->width()) / 2,
                               height() / 2 + kTabSpacing / 2);
         if (type_ == DockInfo::BOTTOM_OF_WINDOW) {
-          DrawBitmapWithAlpha(canvas, *wide_icon,
+          DrawImageWithAlpha(canvas, *wide_icon,
               (width() - wide_icon->width()) / 2,
               height() / 2 - kTabSpacing / 2 - wide_icon->height());
         }
@@ -175,8 +175,8 @@ class DockView : public views::View {
   }
 
  private:
-  void DrawBitmapWithAlpha(gfx::Canvas* canvas, const SkBitmap& image,
-                           int x, int y) {
+  void DrawImageWithAlpha(gfx::Canvas* canvas, const gfx::ImageSkia& image,
+                          int x, int y) {
     SkPaint paint;
     paint.setAlpha(128);
     canvas->DrawBitmapInt(image, x, y, paint);

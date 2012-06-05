@@ -60,7 +60,7 @@ class AvatarMenuButton : public views::MenuButton,
 
   // Use a scoped ptr because gfx::Image doesn't have a default constructor.
   scoped_ptr<gfx::Image> icon_;
-  SkBitmap button_icon_;
+  gfx::ImageSkia button_icon_;
   bool is_gaia_picture_;
   int old_height_;
 

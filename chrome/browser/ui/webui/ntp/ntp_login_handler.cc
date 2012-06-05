@@ -212,7 +212,8 @@ void NTPLoginHandler::UpdateLogin() {
         const gfx::Image* image =
             cache.GetGAIAPictureOfProfileAtIndex(profile_index);
         if (image)
-          icon_url = web_ui_util::GetImageDataUrl(GetGAIAPictureForNTP(*image));
+          icon_url = web_ui_util::GetImageDataUrl(gfx::ImageSkia(
+              GetGAIAPictureForNTP(*image)));
       }
       if (header.empty())
         header = CreateSpanWithClass(UTF8ToUTF16(username), "profile-name");

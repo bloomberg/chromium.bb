@@ -51,8 +51,8 @@ class SpeechRecognitionBubbleView
 
   void UpdateLayout(SpeechRecognitionBubbleBase::DisplayMode mode,
                     const string16& message_text,
-                    const SkBitmap& image);
-  void SetImage(const SkBitmap& image);
+                    const gfx::ImageSkia& image);
+  void SetImage(const gfx::ImageSkia& image);
 
   // views::BubbleDelegateView methods.
   virtual void OnWidgetActivationChanged(views::Widget* widget,
@@ -109,7 +109,7 @@ SpeechRecognitionBubbleView::SpeechRecognitionBubbleView(
       cancel_(NULL),
       mic_settings_(NULL),
       display_mode_(SpeechRecognitionBubbleBase::DISPLAY_MODE_WARM_UP),
-      kIconLayoutMinWidth(ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      kIconLayoutMinWidth(ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                           IDR_SPEECH_INPUT_MIC_EMPTY)->width()) {
   // The bubble lifetime is managed by its controller; closing on escape or
   // explicitly closing on deactivation will cause unexpected behavior.
@@ -175,7 +175,7 @@ void SpeechRecognitionBubbleView::Init() {
 void SpeechRecognitionBubbleView::UpdateLayout(
     SpeechRecognitionBubbleBase::DisplayMode mode,
     const string16& message_text,
-    const SkBitmap& image) {
+    const gfx::ImageSkia& image) {
   display_mode_ = mode;
   bool is_message = (mode == SpeechRecognitionBubbleBase::DISPLAY_MODE_MESSAGE);
   icon_->SetVisible(!is_message);
@@ -210,7 +210,7 @@ void SpeechRecognitionBubbleView::UpdateLayout(
   SizeToContents();
 }
 
-void SpeechRecognitionBubbleView::SetImage(const SkBitmap& image) {
+void SpeechRecognitionBubbleView::SetImage(const gfx::ImageSkia& image) {
   icon_->SetImage(image);
 }
 

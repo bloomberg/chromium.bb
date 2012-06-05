@@ -80,7 +80,7 @@ const int kPopupBottomSpacingGlass = 1;
 // corner of the wrench menu).
 const int kBadgeTopMargin = 2;
 
-SkBitmap* kPopupBackgroundEdge = NULL;
+gfx::ImageSkia* kPopupBackgroundEdge = NULL;
 
 // The omnibox border has some additional shadow, so we use less vertical
 // spacing than ToolbarView::kVertSpacing.
@@ -137,7 +137,7 @@ ToolbarView::ToolbarView(Browser* browser)
 
   if (!kPopupBackgroundEdge) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    kPopupBackgroundEdge = rb.GetBitmapNamed(IDR_LOCATIONBG_POPUPMODE_EDGE);
+    kPopupBackgroundEdge = rb.GetImageSkiaNamed(IDR_LOCATIONBG_POPUPMODE_EDGE);
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
@@ -275,7 +275,8 @@ void ToolbarView::RemoveMenuListener(views::MenuListener* listener) {
   menu_listeners_.RemoveObserver(listener);
 }
 
-SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
+gfx::ImageSkia ToolbarView::GetAppMenuIcon(
+    views::CustomButton::ButtonState state) {
   ui::ThemeProvider* tp = GetThemeProvider();
 
   int id = 0;
@@ -285,7 +286,7 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
     case views::CustomButton::BS_PUSHED: id = IDR_TOOLS_P; break;
     default:                             NOTREACHED();     break;
   }
-  SkBitmap icon = *tp->GetBitmapNamed(id);
+  gfx::ImageSkia icon = *tp->GetImageSkiaNamed(id);
 
 #if defined(OS_WIN)
   // Keep track of whether we were showing the badge before, so we don't send
@@ -307,24 +308,24 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
   // Draw the chrome app menu icon onto the canvas.
   scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(icon, false));
 
-  SkBitmap badge;
+  gfx::ImageSkia badge;
   // Only one badge can be active at any given time. The Upgrade notification
   // is deemed most important, then the DLL conflict badge.
   if (ShouldShowUpgradeRecommended()) {
-    badge = *tp->GetBitmapNamed(
+    badge = *tp->GetImageSkiaNamed(
         UpgradeDetector::GetInstance()->GetIconResourceID(
             UpgradeDetector::UPGRADE_ICON_TYPE_BADGE));
   } else if (ShouldShowIncompatibilityWarning()) {
 #if defined(OS_WIN)
     if (!was_showing)
       content::RecordAction(UserMetricsAction("ConflictBadge"));
-    badge = *tp->GetBitmapNamed(IDR_CONFLICT_BADGE);
+    badge = *tp->GetImageSkiaNamed(IDR_CONFLICT_BADGE);
     incompatibility_badge_showing = true;
 #else
     NOTREACHED();
 #endif
   } else if (error_badge_id) {
-    badge = *tp->GetBitmapNamed(error_badge_id);
+    badge = *tp->GetImageSkiaNamed(error_badge_id);
   } else {
     NOTREACHED();
   }
@@ -541,10 +542,10 @@ gfx::Size ToolbarView::GetPreferredSize() {
         browser_actions_->GetPreferredSize().width() +
         app_menu_->GetPreferredSize().width() + kRightEdgeSpacing;
 
-    CR_DEFINE_STATIC_LOCAL(SkBitmap, normal_background, ());
+    CR_DEFINE_STATIC_LOCAL(gfx::ImageSkia, normal_background, ());
     if (normal_background.isNull()) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      normal_background = *rb.GetBitmapNamed(IDR_CONTENT_TOP_CENTER);
+      normal_background = *rb.GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);
     }
 
     return gfx::Size(min_width,

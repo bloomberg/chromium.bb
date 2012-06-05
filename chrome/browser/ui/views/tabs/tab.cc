@@ -244,7 +244,7 @@ gfx::Size Tab::GetBasicMinimumUnselectedSize() {
 
   gfx::Size minimum_size;
   minimum_size.set_width(left_padding() + right_padding());
-  // Since we use bitmap images, the real minimum height of the image is
+  // Since we use image images, the real minimum height of the image is
   // defined most accurately by the height of the end cap images.
   minimum_size.set_height(tab_active_.image_l->height());
   return minimum_size;
@@ -500,7 +500,7 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   gfx::Canvas background_canvas(size(), false);
   PaintInactiveTabBackground(&background_canvas);
 
-  SkBitmap background_image = background_canvas.ExtractBitmap();
+  gfx::ImageSkia background_image = background_canvas.ExtractBitmap();
 
   // Draw a radial gradient to hover_canvas.
   gfx::Canvas hover_canvas(size(), false);
@@ -529,7 +529,7 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
                         paint);
 
   // Draw the radial gradient clipped to the background into hover_image.
-  SkBitmap hover_image = SkBitmapOperations::CreateMaskedBitmap(
+  gfx::ImageSkia hover_image = SkBitmapOperations::CreateMaskedBitmap(
       hover_canvas.ExtractBitmap(), background_image);
 
   // Draw the tab background to the canvas.
@@ -559,7 +559,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
                                 IDR_THEME_TAB_BACKGROUND;
   }
 
-  SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(tab_id);
+  gfx::ImageSkia* tab_bg = GetThemeProvider()->GetImageSkiaNamed(tab_id);
 
   TabImage* tab_image = &tab_active_;
   TabImage* tab_inactive_image = &tab_inactive_;
@@ -571,16 +571,16 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   int bg_offset_y = GetThemeProvider()->HasCustomImage(tab_id) ?
       0 : background_offset_.y();
 
-  // We need a gfx::Canvas object to be able to extract the bitmap from.
+  // We need a gfx::Canvas object to be able to extract the image from.
   // We draw everything to this canvas and then output it to the canvas
   // parameter in addition to using it to mask the hover glow if needed.
   gfx::Canvas background_canvas(size(), false);
 
   // Draw left edge.  Don't draw over the toolbar, as we're not the foreground
   // tab.
-  SkBitmap tab_l = SkBitmapOperations::CreateTiledBitmap(
+  gfx::ImageSkia tab_l = SkBitmapOperations::CreateTiledBitmap(
       *tab_bg, offset, bg_offset_y, tab_image->l_width, height());
-  SkBitmap theme_l =
+  gfx::ImageSkia theme_l =
       SkBitmapOperations::CreateMaskedBitmap(tab_l, *alpha->image_l);
   background_canvas.DrawBitmapInt(theme_l,
       0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
@@ -588,10 +588,10 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
       false);
 
   // Draw right edge.  Again, don't draw over the toolbar.
-  SkBitmap tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
+  gfx::ImageSkia tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
       offset + width() - tab_image->r_width, bg_offset_y,
       tab_image->r_width, height());
-  SkBitmap theme_r =
+  gfx::ImageSkia theme_r =
       SkBitmapOperations::CreateMaskedBitmap(tab_r, *alpha->image_r);
   background_canvas.DrawBitmapInt(theme_r,
       0, 0, theme_r.width(), theme_r.height() - kToolbarOverlap,
@@ -632,22 +632,23 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
   ui::ThemeProvider* tp = GetThemeProvider();
   DCHECK(tp) << "Unable to get theme provider";
 
-  SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(IDR_THEME_TOOLBAR);
+  gfx::ImageSkia* tab_bg =
+      GetThemeProvider()->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
 
   TabImage* tab_image = &tab_active_;
   TabImage* alpha = &tab_alpha_;
 
   // Draw left edge.
-  SkBitmap tab_l = SkBitmapOperations::CreateTiledBitmap(
+  gfx::ImageSkia tab_l = SkBitmapOperations::CreateTiledBitmap(
       *tab_bg, offset, 0, tab_image->l_width, height());
-  SkBitmap theme_l =
+  gfx::ImageSkia theme_l =
       SkBitmapOperations::CreateMaskedBitmap(tab_l, *alpha->image_l);
   canvas->DrawBitmapInt(theme_l, 0, 0);
 
   // Draw right edge.
-  SkBitmap tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
+  gfx::ImageSkia tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
       offset + width() - tab_image->r_width, 0, tab_image->r_width, height());
-  SkBitmap theme_r =
+  gfx::ImageSkia theme_r =
       SkBitmapOperations::CreateMaskedBitmap(tab_r, *alpha->image_r);
   canvas->DrawBitmapInt(theme_r, width() - tab_image->r_width, 0);
 
@@ -728,18 +729,18 @@ void Tab::LoadTabImages() {
   // We're not letting people override tab images just yet.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  tab_alpha_.image_l = rb.GetBitmapNamed(IDR_TAB_ALPHA_LEFT);
-  tab_alpha_.image_r = rb.GetBitmapNamed(IDR_TAB_ALPHA_RIGHT);
+  tab_alpha_.image_l = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_LEFT);
+  tab_alpha_.image_r = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_RIGHT);
 
-  tab_active_.image_l = rb.GetBitmapNamed(IDR_TAB_ACTIVE_LEFT);
-  tab_active_.image_c = rb.GetBitmapNamed(IDR_TAB_ACTIVE_CENTER);
-  tab_active_.image_r = rb.GetBitmapNamed(IDR_TAB_ACTIVE_RIGHT);
+  tab_active_.image_l = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_LEFT);
+  tab_active_.image_c = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_CENTER);
+  tab_active_.image_r = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_RIGHT);
   tab_active_.l_width = tab_active_.image_l->width();
   tab_active_.r_width = tab_active_.image_r->width();
 
-  tab_inactive_.image_l = rb.GetBitmapNamed(IDR_TAB_INACTIVE_LEFT);
-  tab_inactive_.image_c = rb.GetBitmapNamed(IDR_TAB_INACTIVE_CENTER);
-  tab_inactive_.image_r = rb.GetBitmapNamed(IDR_TAB_INACTIVE_RIGHT);
+  tab_inactive_.image_l = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_LEFT);
+  tab_inactive_.image_c = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_CENTER);
+  tab_inactive_.image_r = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_RIGHT);
   tab_inactive_.l_width = tab_inactive_.image_l->width();
   tab_inactive_.r_width = tab_inactive_.image_r->width();
 }

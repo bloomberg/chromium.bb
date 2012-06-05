@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,11 @@
 #include "chrome/browser/ui/cocoa/table_row_nsimage_cache.h"
 
 @class WindowSizeAutosaver;
-class SkBitmap;
 class TaskManagerMac;
+
+namespace gfx {
+class ImageSkia;
+}
 
 // This class is responsible for loading the task manager window and for
 // managing it.
@@ -85,7 +88,7 @@ class TaskManagerMac : public TaskManagerModelObserver,
 
   // TableRowNSImageCache::Table
   virtual int RowCount() const OVERRIDE;
-  virtual SkBitmap GetIcon(int r) const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon(int r) const OVERRIDE;
 
   // Creates the task manager if it doesn't exist; otherwise, it activates the
   // existing task manager window. Highlights background resources if

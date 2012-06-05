@@ -140,10 +140,10 @@ class FindBarView : public DropdownBarView,
 
   // The background image for the Find text box, which we draw behind the Find
   // box to provide the Chrome look to the edge of the text box.
-  const SkBitmap* text_box_background_;
+  const gfx::ImageSkia* text_box_background_;
 
   // The rounded edge on the left side of the Find text box.
-  const SkBitmap* text_box_background_left_;
+  const gfx::ImageSkia* text_box_background_left_;
 
   DISALLOW_COPY_AND_ASSIGN(FindBarView);
 };

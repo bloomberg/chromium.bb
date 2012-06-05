@@ -108,18 +108,19 @@ void ExtensionInfoBar::OnImageLoaded(const gfx::Image& image,
   if (!GetDelegate())
     return;  // The delegate can go away while we asynchronously load images.
 
-  const SkBitmap* icon = NULL;
+  const gfx::ImageSkia* icon = NULL;
   // Fall back on the default extension icon on failure.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (image.IsEmpty())
-    icon = rb.GetImageNamed(IDR_EXTENSIONS_SECTION).ToSkBitmap();
+    icon = rb.GetImageNamed(IDR_EXTENSIONS_SECTION).ToImageSkia();
   else
-    icon = image.ToSkBitmap();
+    icon = image.ToImageSkia();
 
-  const SkBitmap* drop_image = rb.GetImageNamed(IDR_APP_DROPARROW).ToSkBitmap();
+  const gfx::ImageSkia* drop_image =
+      rb.GetImageNamed(IDR_APP_DROPARROW).ToImageSkia();
 
   int image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
-  // The margin between the extension icon and the drop-down arrow bitmap.
+  // The margin between the extension icon and the drop-down arrow image.
   static const int kDropArrowLeftMargin = 3;
   scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(
       gfx::Size(image_size + kDropArrowLeftMargin + drop_image->width(),

@@ -7,10 +7,10 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -30,17 +30,18 @@ void DetachableToolbarView::PaintBackgroundAttachedMode(
   ui::ThemeProvider* tp = view->GetThemeProvider();
   canvas->FillRect(view->GetLocalBounds(),
                    tp->GetColor(ThemeService::COLOR_TOOLBAR));
-  canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR),
+  canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
                        background_origin.x(), background_origin.y(), 0, 0,
                        view->width(), view->height());
 #if defined(USE_ASH)
   // Ash provides additional lightening at the edges of the toolbar.
-  SkBitmap* toolbar_left = tp->GetBitmapNamed(IDR_TOOLBAR_SHADE_LEFT);
+  gfx::ImageSkia* toolbar_left = tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_LEFT);
   canvas->TileImageInt(*toolbar_left,
                        0, 0,
                        0, 0,
                        toolbar_left->width(), view->height());
-  SkBitmap* toolbar_right = tp->GetBitmapNamed(IDR_TOOLBAR_SHADE_RIGHT);
+  gfx::ImageSkia* toolbar_right =
+      tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_RIGHT);
   canvas->TileImageInt(*toolbar_right,
                        0, 0,
                        view->width() - toolbar_right->width(), 0,

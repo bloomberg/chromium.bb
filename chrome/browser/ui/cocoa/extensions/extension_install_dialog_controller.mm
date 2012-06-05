@@ -30,7 +30,7 @@ using extensions::BundleInstaller;
 @interface ExtensionInstallDialogController ()
 - (BOOL)isBundleInstall;
 - (BOOL)isInlineInstall;
-- (void)appendRatingStar:(const SkBitmap*)skiaImage;
+- (void)appendRatingStar:(const gfx::ImageSkia*)skiaImage;
 @end
 
 namespace {
@@ -66,7 +66,7 @@ void OffsetControlVerticallyToFitContent(NSControl* control,
   [control setFrameOrigin:origin];
 }
 
-void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
+void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
   ExtensionInstallDialogController* controller =
       static_cast<ExtensionInstallDialogController*>(data);
   [controller appendRatingStar:skiaImage];
@@ -297,7 +297,7 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
   return prompt_->type() == ExtensionInstallUI::INLINE_INSTALL_PROMPT;
 }
 
-- (void)appendRatingStar:(const SkBitmap*)skiaImage {
+- (void)appendRatingStar:(const gfx::ImageSkia*)skiaImage {
   NSImage* image = gfx::SkBitmapToNSImageWithColorSpace(
       *skiaImage, base::mac::GetSystemColorSpace());
   NSRect frame = NSMakeRect(0, 0, skiaImage->width(), skiaImage->height());

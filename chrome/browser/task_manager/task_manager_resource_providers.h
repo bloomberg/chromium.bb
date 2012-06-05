@@ -114,7 +114,7 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   virtual Type GetType() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
-  virtual SkBitmap GetIcon() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual TabContentsWrapper* GetTabContents() const OVERRIDE;
   virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
@@ -124,7 +124,7 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   // Returns true if contains content rendered by an extension.
   bool HostsExtension() const;
 
-  static SkBitmap* prerender_icon_;
+  static gfx::ImageSkia* prerender_icon_;
   TabContentsWrapper* tab_contents_;
   bool is_instant_preview_;
 
@@ -184,7 +184,7 @@ class TaskManagerBackgroundContentsResource
   // TaskManager::Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
-  virtual SkBitmap GetIcon() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual bool IsBackground() const OVERRIDE;
 
   const string16& application_name() const { return application_name_; }
@@ -196,7 +196,7 @@ class TaskManagerBackgroundContentsResource
   // The icon painted for BackgroundContents.
   // TODO(atwilson): Use the favicon when there's a way to get the favicon for
   // BackgroundContents.
-  static SkBitmap* default_icon_;
+  static gfx::ImageSkia* default_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerBackgroundContentsResource);
 };
@@ -257,7 +257,7 @@ class TaskManagerChildProcessResource : public TaskManager::Resource {
   // TaskManager::Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
-  virtual SkBitmap GetIcon() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual int GetUniqueChildProcessId() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
@@ -283,7 +283,7 @@ class TaskManagerChildProcessResource : public TaskManager::Resource {
   // The icon painted for the child processs.
   // TODO(jcampan): we should have plugin specific icons for well-known
   // plugins.
-  static SkBitmap* default_icon_;
+  static gfx::ImageSkia* default_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerChildProcessResource);
 };
@@ -354,7 +354,7 @@ class TaskManagerExtensionProcessResource : public TaskManager::Resource {
   // TaskManager::Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
-  virtual SkBitmap GetIcon() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual int GetUniqueChildProcessId() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
@@ -372,7 +372,7 @@ class TaskManagerExtensionProcessResource : public TaskManager::Resource {
 
  private:
   // The icon painted for the extension process.
-  static SkBitmap* default_icon_;
+  static gfx::ImageSkia* default_icon_;
 
   content::RenderViewHost* render_view_host_;
 
@@ -437,7 +437,7 @@ class TaskManagerNotificationResource : public TaskManager::Resource {
   // TaskManager::Resource interface
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
-  virtual SkBitmap GetIcon() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual int GetUniqueChildProcessId() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
@@ -448,7 +448,7 @@ class TaskManagerNotificationResource : public TaskManager::Resource {
 
  private:
   // The icon painted for notifications.       .
-  static SkBitmap* default_icon_;
+  static gfx::ImageSkia* default_icon_;
 
   // Non-owned pointer to the balloon host.
   BalloonHost* balloon_host_;
@@ -509,7 +509,7 @@ class TaskManagerBrowserProcessResource : public TaskManager::Resource {
   // TaskManager::Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
-  virtual SkBitmap GetIcon() const OVERRIDE;
+  virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual int GetUniqueChildProcessId() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
@@ -528,7 +528,7 @@ class TaskManagerBrowserProcessResource : public TaskManager::Resource {
   base::ProcessHandle process_;
   mutable string16 title_;
 
-  static SkBitmap* default_icon_;
+  static gfx::ImageSkia* default_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerBrowserProcessResource);
 };

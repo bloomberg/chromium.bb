@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace {
 
@@ -72,7 +73,7 @@ void DesktopNotificationBalloon::DisplayBalloon(const SkBitmap& icon,
                                                 const string16& contents) {
   GURL icon_url;
   if (!icon.empty())
-    icon_url = GURL(web_ui_util::GetImageDataUrl(icon));
+    icon_url = GURL(web_ui_util::GetImageDataUrl(gfx::ImageSkia(icon)));
 
   GURL content_url(DesktopNotificationService::CreateDataUrl(
       icon_url, title, contents, WebKit::WebTextDirectionDefault));

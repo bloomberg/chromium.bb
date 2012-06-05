@@ -249,7 +249,7 @@ void DownloadFileIconExtractorImpl::OnIconLoadComplete(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string url;
   if (icon)
-    url = web_ui_util::GetImageDataUrl(*icon->ToSkBitmap());
+    url = web_ui_util::GetImageDataUrl(*icon->ToImageSkia());
   callback_.Run(url);
 }
 

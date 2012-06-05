@@ -46,14 +46,14 @@ void ExtensionUninstallDialog::ConfirmUninstall(
 void ExtensionUninstallDialog::SetIcon(const gfx::Image& image) {
   if (image.IsEmpty()) {
     if (extension_->is_app()) {
-      icon_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      icon_ = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_APP_DEFAULT_ICON);
     } else {
-      icon_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      icon_ = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_EXTENSION_DEFAULT_ICON);
     }
   } else {
-    icon_ = *image.ToSkBitmap();
+    icon_ = *image.ToImageSkia();
   }
 }
 

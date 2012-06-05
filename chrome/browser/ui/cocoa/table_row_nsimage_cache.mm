@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 TableRowNSImageCache::TableRowNSImageCache(Table* model)
     : model_(model),
@@ -66,7 +66,7 @@ NSImage* TableRowNSImageCache::GetImageForRow(int row) {
   DCHECK_LT(row, static_cast<int>([icon_images_ count]));
   NSImage* image = static_cast<NSImage*>([icon_images_ pointerAtIndex:row]);
   if (!image) {
-    const SkBitmap bitmap_icon =
+    const gfx::ImageSkia bitmap_icon =
         model_->GetIcon(row);
     // This means GetIcon() will get called until it returns a non-empty bitmap.
     // Empty bitmaps are intentionally not cached.

@@ -21,25 +21,25 @@ ThemeBackground::ThemeBackground(BrowserView* browser_view)
 }
 
 void ThemeBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
-  SkBitmap* background;
+  gfx::ImageSkia* background;
 
   // Never theme app and popup windows.
   if (!browser_view_->IsBrowserTypeNormal()) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     if (browser_view_->IsActive())
-      background = rb.GetBitmapNamed(IDR_FRAME);
+      background = rb.GetImageSkiaNamed(IDR_FRAME);
     else
-      background = rb.GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
+      background = rb.GetImageSkiaNamed(IDR_THEME_FRAME_INACTIVE);
   } else {
     Profile* profile = browser_view_->browser()->profile();
     ui::ThemeProvider* theme = ThemeServiceFactory::GetForProfile(profile);
 
     if (browser_view_->IsActive()) {
-      background = theme->GetBitmapNamed(
+      background = theme->GetImageSkiaNamed(
           profile->IsOffTheRecord() ?
           IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME);
     } else {
-      background = theme->GetBitmapNamed(
+      background = theme->GetImageSkiaNamed(
           profile->IsOffTheRecord() ?
           IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE);
     }

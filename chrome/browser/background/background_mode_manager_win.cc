@@ -11,13 +11,13 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/background/background_mode_manager.h"
-#include "chrome/installer/util/auto_launch_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/installer/util/auto_launch_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image_skia.h"
 
 using content::BrowserThread;
 
@@ -38,7 +38,7 @@ void BackgroundModeManager::DisplayAppInstalledNotification(
   // a background app has been installed.
   CreateStatusTrayIcon();
   status_icon_->DisplayBalloon(
-      SkBitmap(),
+      gfx::ImageSkia(),
       l10n_util::GetStringUTF16(IDS_BACKGROUND_APP_INSTALLED_BALLOON_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_BACKGROUND_APP_INSTALLED_BALLOON_BODY,
