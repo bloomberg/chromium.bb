@@ -22,7 +22,8 @@ class ExtensionPermissionSet;
 class MessageLoop;
 class Profile;
 class InfoBarDelegate;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace base {
 class DictionaryValue;

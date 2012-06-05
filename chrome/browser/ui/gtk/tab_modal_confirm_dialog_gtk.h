@@ -13,7 +13,8 @@
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 
 // Displays a tab-modal dialog, i.e. a dialog that will block the current page

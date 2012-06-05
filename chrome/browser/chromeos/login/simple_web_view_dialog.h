@@ -19,7 +19,8 @@
 
 class Profile;
 class ReloadButton;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class ToolbarModel;
 
 namespace views {

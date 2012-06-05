@@ -25,7 +25,8 @@
 class CustomDrawButton;
 class GURL;
 class TabContentsContainerGtk;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class ThrobberGtk;
 class WebIntentPickerDelegate;
 

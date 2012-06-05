@@ -8,7 +8,8 @@
 
 #include "base/basictypes.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 struct WebApplicationInfo;
 
 // Objects implement this interface to get notified about changes in the

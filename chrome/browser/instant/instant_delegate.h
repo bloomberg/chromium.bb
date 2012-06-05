@@ -9,7 +9,8 @@
 #include "base/string16.h"
 #include "chrome/common/instant_types.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace gfx {
 class Rect;

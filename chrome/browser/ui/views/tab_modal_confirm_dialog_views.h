@@ -9,7 +9,8 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 
 namespace views {

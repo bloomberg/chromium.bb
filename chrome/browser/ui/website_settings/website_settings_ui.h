@@ -19,7 +19,8 @@ class CookieInfoList;
 class GURL;
 class PermissionInfoList;
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class WebsiteSettings;
 
 namespace content {

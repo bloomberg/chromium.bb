@@ -22,7 +22,8 @@
 #include "ui/gfx/size.h"
 
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 struct FaviconURL;
 
 namespace base {

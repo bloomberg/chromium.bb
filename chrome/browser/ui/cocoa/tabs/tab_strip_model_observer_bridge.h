@@ -11,7 +11,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TabStripModel;
 
 // A C++ bridge class to handle receiving notifications from the C++ tab strip

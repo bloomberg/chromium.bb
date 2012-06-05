@@ -19,7 +19,8 @@
 class ExtensionWindowController;
 class GURL;
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace content {
 class WebContents;

@@ -12,7 +12,8 @@
 class Browser;
 class Profile;
 class SkBitmap;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 class TemplateURL;
 

@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_UI_BLOCKED_CONTENT_BLOCKED_CONTENT_TAB_HELPER_DELEGATE_H_
 #pragma once
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Objects implement this interface to get notified about changes in the
 // BlockedContentTabHelper and to provide necessary functionality.

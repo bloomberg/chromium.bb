@@ -22,7 +22,8 @@ class Browser;
 class CommandLine;
 class GURL;
 class PrefService;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // class containing helpers for BrowserMain to spin up a new instance and
 // initialize the profile.

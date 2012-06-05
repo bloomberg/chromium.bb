@@ -14,7 +14,8 @@
 
 class BlockedContentContainer;
 class BlockedContentTabHelperDelegate;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Per-tab class to manage blocked popups.
 class BlockedContentTabHelper : public content::WebContentsObserver {

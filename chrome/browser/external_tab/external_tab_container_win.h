@@ -31,7 +31,8 @@ class AutomationProvider;
 class Browser;
 class Profile;
 class TabContentsContainer;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class RenderViewContextMenuViews;
 struct NavigationInfo;
 

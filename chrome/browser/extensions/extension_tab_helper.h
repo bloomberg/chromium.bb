@@ -18,7 +18,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class ExtensionTabHelperDelegate;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 struct WebApplicationInfo;
 
 namespace content {

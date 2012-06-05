@@ -17,7 +17,8 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class StatusBubbleGtk;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace content {
 class WebContents;

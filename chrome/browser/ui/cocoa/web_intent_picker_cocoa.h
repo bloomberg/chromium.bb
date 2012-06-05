@@ -16,7 +16,8 @@
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 
 class ConstrainedWindow;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 @class WebIntentPickerSheetController;
 class WebIntentInlineDispositionDelegate;
 

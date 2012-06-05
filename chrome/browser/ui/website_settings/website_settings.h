@@ -23,7 +23,8 @@ struct SSLStatus;
 
 class HostContentSettingsMap;
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class WebsiteSettingsUI;
 
 // The |WebsiteSettings| provides information about a website's permissions,

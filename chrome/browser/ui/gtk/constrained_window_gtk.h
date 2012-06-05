@@ -15,7 +15,8 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 typedef struct _GdkColor GdkColor;
 class ChromeWebContentsViewDelegateGtk;
 

@@ -21,7 +21,8 @@
 
 class BackgroundContents;
 class BalloonHost;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace content {
 class RenderViewHost;

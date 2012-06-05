@@ -13,7 +13,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "printing/printed_pages_source.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 struct PrintHostMsg_DidPrintPage_Params;
 
 namespace content {

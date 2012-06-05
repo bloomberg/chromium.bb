@@ -13,7 +13,8 @@
 
 struct BookmarkNodeData;
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace base {
 class ListValue;

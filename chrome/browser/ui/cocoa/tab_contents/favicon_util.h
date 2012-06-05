@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_FAVICON_UTIL_H_
 
 @class NSImage;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace mac {
 

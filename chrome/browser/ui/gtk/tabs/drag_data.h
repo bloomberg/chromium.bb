@@ -10,7 +10,8 @@
 
 #include "base/basictypes.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TabGtk;
 
 namespace content {

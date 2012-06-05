@@ -10,7 +10,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace prerender {
 

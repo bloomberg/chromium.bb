@@ -25,7 +25,8 @@ class GURL;
 class LocationBar;
 class Profile;
 class StatusBubble;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TemplateURL;
 #if !defined(OS_MACOSX)
 class ToolbarView;

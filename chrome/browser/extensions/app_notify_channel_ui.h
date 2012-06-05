@@ -12,7 +12,8 @@
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // An interface for prompting a user to sign in to sync so that we can create
 // an app notification channel for one of their apps.

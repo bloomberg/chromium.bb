@@ -10,7 +10,8 @@
 #include "content/public/browser/notification_types.h"
 
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace browser {
 struct NavigateParams;

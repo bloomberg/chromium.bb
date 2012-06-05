@@ -11,7 +11,8 @@
 class Browser;
 class GURL;
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TabStripModel;
 
 namespace base {

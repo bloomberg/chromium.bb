@@ -18,7 +18,8 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class DownloadRequestInfoBarDelegate;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace content {
 class NavigationController;

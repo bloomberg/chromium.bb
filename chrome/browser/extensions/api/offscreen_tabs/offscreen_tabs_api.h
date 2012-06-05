@@ -28,7 +28,8 @@
 
 class BackingStore;
 class SkBitmap;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 namespace content {
 class WebContents;
 }  // namespace content

@@ -12,7 +12,8 @@
 namespace base {
 class DictionaryValue;
 }
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Implementation of both the browserAction and pageAction APIs.
 //

@@ -13,7 +13,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class ZoomObserver;
 
 // Per-tab class to manage the Omnibox zoom icon.

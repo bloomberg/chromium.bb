@@ -10,7 +10,8 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class PrintPreviewUI;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_DidPreviewDocument_Params;
 struct PrintHostMsg_DidPreviewPage_Params;

@@ -11,7 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 
 // Displays a tab-modal dialog, i.e. a dialog that will block the current page

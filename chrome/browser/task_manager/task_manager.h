@@ -22,7 +22,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class SkBitmap;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TaskManagerModel;
 
 namespace base {

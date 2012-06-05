@@ -48,7 +48,8 @@ class PageActionImageView;
 class Profile;
 class SelectedKeywordView;
 class StarView;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TemplateURLService;
 
 namespace views {

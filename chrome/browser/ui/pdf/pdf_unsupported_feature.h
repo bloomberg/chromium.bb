@@ -8,7 +8,8 @@
 
 #include "base/basictypes.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Call this when a tab encounters a PDF that has features which our internal
 // viewer doesn't support.  Will take care of puting up an infobar to inform the

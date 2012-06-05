@@ -10,7 +10,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 class PrintPreviewContextMenuObserver : public RenderViewContextMenuObserver {
  public:

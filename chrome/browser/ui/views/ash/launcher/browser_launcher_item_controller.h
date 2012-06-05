@@ -20,7 +20,8 @@
 class Browser;
 class ChromeLauncherController;
 class LauncherFaviconLoader;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace ash {
 class LauncherModel;

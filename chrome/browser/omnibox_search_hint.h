@@ -14,7 +14,8 @@
 #include "content/public/browser/notification_registrar.h"
 
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // This class is responsible for showing an info-bar that tells the user she
 // can type her search query directly in the omnibox.

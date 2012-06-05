@@ -16,7 +16,8 @@
 #include "content/public/common/page_transition_types.h"
 
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TabStripModelDelegate;
 class TabStripModelOrderController;
 

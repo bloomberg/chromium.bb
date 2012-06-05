@@ -14,7 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 
 namespace ui {

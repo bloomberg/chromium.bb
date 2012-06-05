@@ -11,7 +11,8 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/browser_list.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Iterates through all web view hosts in all browser windows. Because the
 // renderers act asynchronously, getting a host through this interface does

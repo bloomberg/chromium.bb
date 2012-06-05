@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -60,15 +60,15 @@ using content::WebContents;
 
 namespace {
 
-static base::LazyInstance<base::PropertyAccessor<TabContentsWrapper*> >
+static base::LazyInstance<base::PropertyAccessor<TabContents*> >
     g_tab_contents_wrapper_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsWrapper, public:
+// TabContents, public:
 
-TabContentsWrapper::TabContentsWrapper(WebContents* contents)
+TabContents::TabContents(WebContents* contents)
     : content::WebContentsObserver(contents),
       in_destructor_(false),
       web_contents_(contents) {
@@ -167,12 +167,12 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
 #endif
 }
 
-TabContentsWrapper::~TabContentsWrapper() {
+TabContents::~TabContents() {
   in_destructor_ = true;
 
   // Need to reset |thumbnail_generator_| here before |web_contents_| is
   // deleted because destructing |web_contents_| can end up causing the
-  // thumbnailer to generate a thumbnail. Since TabContentsWrapper can be
+  // thumbnailer to generate a thumbnail. Since TabContents can be
   // destructed during shutdown, trying to generate a thumbnail by sending an
   // IPC message to the GPU process is not safe. Sending
   // chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED can also cause the thumbnailer
@@ -182,7 +182,7 @@ TabContentsWrapper::~TabContentsWrapper() {
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContentsWrapper>(this),
+      content::Source<TabContents>(this),
       content::NotificationService::NoDetails());
 
   // Need to tear down infobars before the WebContents goes away.
@@ -190,14 +190,13 @@ TabContentsWrapper::~TabContentsWrapper() {
   infobar_tab_helper_.reset();
 }
 
-base::PropertyAccessor<TabContentsWrapper*>*
-    TabContentsWrapper::property_accessor() {
+base::PropertyAccessor<TabContents*>* TabContents::property_accessor() {
   return g_tab_contents_wrapper_property_accessor.Pointer();
 }
 
-TabContentsWrapper* TabContentsWrapper::Clone() {
+TabContents* TabContents::Clone() {
   WebContents* new_contents = web_contents()->Clone();
-  TabContentsWrapper* new_wrapper = new TabContentsWrapper(new_contents);
+  TabContents* new_wrapper = new TabContents(new_contents);
 
   // TODO(avi): Can we generalize this so that knowledge of the functionings of
   // the tab helpers isn't required here?
@@ -207,35 +206,35 @@ TabContentsWrapper* TabContentsWrapper::Clone() {
 }
 
 // static
-TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
+TabContents* TabContents::GetCurrentWrapperForContents(
     WebContents* contents) {
-  TabContentsWrapper** wrapper =
+  TabContents** wrapper =
       property_accessor()->GetProperty(contents->GetPropertyBag());
 
   return wrapper ? *wrapper : NULL;
 }
 
 // static
-const TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
+const TabContents* TabContents::GetCurrentWrapperForContents(
     const WebContents* contents) {
-  TabContentsWrapper* const* wrapper =
+  TabContents* const* wrapper =
       property_accessor()->GetProperty(contents->GetPropertyBag());
 
   return wrapper ? *wrapper : NULL;
 }
 
-WebContents* TabContentsWrapper::web_contents() const {
+WebContents* TabContents::web_contents() const {
   return web_contents_.get();
 }
 
-Profile* TabContentsWrapper::profile() const {
+Profile* TabContents::profile() const {
   return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsObserver overrides
 
-void TabContentsWrapper::WebContentsDestroyed(WebContents* tab) {
+void TabContents::WebContentsDestroyed(WebContents* tab) {
   // Destruction of the WebContents should only be done by us from our
   // destructor. Otherwise it's very likely we (or one of the helpers we own)
   // will attempt to access the WebContents and we'll crash.

@@ -26,7 +26,8 @@ class DraggedViewGtk;
 class TabGtk;
 class TabStripGtk;
 class TabStripModel;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 class DraggedTabControllerGtk : public content::NotificationObserver,
                                 public content::WebContentsDelegate {

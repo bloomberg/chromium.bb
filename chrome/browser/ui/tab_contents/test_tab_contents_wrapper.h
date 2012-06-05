@@ -9,7 +9,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace content {
 class WebContents;

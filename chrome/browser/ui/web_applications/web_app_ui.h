@@ -10,7 +10,8 @@
 
 #include "chrome/browser/shell_integration.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace web_app {
 

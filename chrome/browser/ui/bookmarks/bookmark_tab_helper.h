@@ -11,7 +11,8 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class BookmarkTabHelperDelegate;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 struct BookmarkNodeData;
 
 // Per-tab class to manage bookmarks.

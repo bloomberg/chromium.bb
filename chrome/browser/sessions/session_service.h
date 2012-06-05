@@ -23,7 +23,8 @@
 
 class Profile;
 class SessionCommand;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 struct SessionTab;
 struct SessionWindow;
 

@@ -36,7 +36,8 @@ class CreditCard;
 class PersonalDataManager;
 class PrefService;
 class ProfileSyncService;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 struct ViewHostMsg_FrameNavigate_Params;
 

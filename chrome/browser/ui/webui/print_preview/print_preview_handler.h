@@ -20,7 +20,8 @@
 
 class FilePath;
 class PrintSystemTaskProxy;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace base {
 class DictionaryValue;

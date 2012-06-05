@@ -30,7 +30,8 @@ class BrowserLauncherItemController;
 class BrowserLauncherItemControllerTest;
 class PrefService;
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // ChromeLauncherController manages the launcher items needed for tabbed
 // browsers (BrowserLauncherItemController) and browser shortcuts.

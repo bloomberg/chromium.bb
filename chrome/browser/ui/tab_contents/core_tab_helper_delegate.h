@@ -8,7 +8,8 @@
 
 #include "base/basictypes.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Objects implement this interface to get notified about changes in the
 // TabContentsWrapper and to provide necessary functionality.

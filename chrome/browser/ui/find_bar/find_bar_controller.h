@@ -16,7 +16,8 @@ class Rect;
 }
 
 class FindBar;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 class FindBarController : public content::NotificationObserver {
  public:

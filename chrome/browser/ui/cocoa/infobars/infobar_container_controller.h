@@ -18,7 +18,8 @@
 class InfoBar;
 class InfoBarDelegate;
 class InfoBarNotificationObserver;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TabStripModel;
 
 // Protocol for basic container methods, as needed by an InfoBarController.

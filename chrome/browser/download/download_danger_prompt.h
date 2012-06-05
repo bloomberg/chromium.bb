@@ -9,7 +9,8 @@
 #include "base/callback_forward.h"
 
 class ConstrainedWindow;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace content {
 class DownloadItem;

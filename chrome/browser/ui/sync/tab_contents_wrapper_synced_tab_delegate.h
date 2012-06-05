@@ -10,7 +10,8 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 class TabContentsWrapperSyncedTabDelegate
     : public browser_sync::SyncedTabDelegate {

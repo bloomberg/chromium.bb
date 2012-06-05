@@ -14,7 +14,8 @@
 #include "content/public/common/media_stream_request.h"
 
 class MessageLoop;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // This class configures an infobar shown when a page requests access to a
 // user's microphone and/or video camera.  The user is shown a message asking

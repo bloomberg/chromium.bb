@@ -18,7 +18,8 @@ class ConstrainedWindow;
 class CookieInfoView;
 class CookiesTreeModel;
 class InfobarView;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace views {
 class Label;

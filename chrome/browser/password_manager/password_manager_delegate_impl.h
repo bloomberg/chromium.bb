@@ -10,7 +10,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 class PasswordManagerDelegateImpl : public PasswordManagerDelegate {
  public:

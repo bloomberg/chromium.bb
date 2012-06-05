@@ -16,7 +16,8 @@
 class Browser;
 class WebDialogWindowDelegateBridge;
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // This controller manages a dialog box with properties and HTML content taken
 // from a WebDialogDelegate object.

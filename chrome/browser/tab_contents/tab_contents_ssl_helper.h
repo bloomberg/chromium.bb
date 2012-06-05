@@ -13,7 +13,8 @@
 #include "base/memory/ref_counted.h"
 
 class SSLAddCertHandler;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace net {
 class HttpNetworkSession;

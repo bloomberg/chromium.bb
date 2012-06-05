@@ -29,7 +29,8 @@ class WebView;
 class Widget;
 }
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace chromeos {
 

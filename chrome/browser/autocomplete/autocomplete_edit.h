@@ -27,7 +27,8 @@ class InstantController;
 class OmniboxView;
 class Profile;
 class SkBitmap;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace gfx {
 class Rect;

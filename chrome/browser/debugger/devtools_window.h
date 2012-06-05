@@ -27,7 +27,8 @@ class Browser;
 class BrowserWindow;
 class PrefService;
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace base {
 class Value;

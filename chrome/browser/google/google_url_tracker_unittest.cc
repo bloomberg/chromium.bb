@@ -20,7 +20,8 @@
 #include "content/public/test/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // TestNotificationObserver ---------------------------------------------------
 

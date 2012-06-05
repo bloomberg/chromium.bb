@@ -8,7 +8,8 @@
 
 #include "content/public/browser/web_contents_observer.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Per-tab class to handle PDF messages.
 class PDFTabObserver : public content::WebContentsObserver {

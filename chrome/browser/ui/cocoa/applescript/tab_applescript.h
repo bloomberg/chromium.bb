@@ -9,7 +9,8 @@
 
 #import "chrome/browser/ui/cocoa/applescript/element_applescript.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Represents a tab scriptable item in applescript.
 @interface TabAppleScript : ElementAppleScript {

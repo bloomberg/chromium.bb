@@ -17,7 +17,8 @@
 @class GTMWindowSheetController;
 @class NSView;
 @class NSWindow;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Base class for constrained dialog delegates. Never inherit from this
 // directly.

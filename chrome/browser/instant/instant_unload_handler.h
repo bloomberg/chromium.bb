@@ -9,7 +9,8 @@
 #include "base/memory/scoped_vector.h"
 
 class Browser;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // InstantUnloadHandler makes sure the before unload and unload handler is run
 // when using instant. When the user commits the instant preview the existing

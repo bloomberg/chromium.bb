@@ -8,7 +8,8 @@
 
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Interface for objects that wish to be notified of changes in ZoomController.
 class ZoomObserver {

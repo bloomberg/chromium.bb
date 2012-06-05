@@ -9,7 +9,8 @@
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 
 class AutofillManager;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // This test class is meant to give tests a base AutofillExternalDelegate
 // class that requires no additional work to compile with (i.e. all the

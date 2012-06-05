@@ -9,7 +9,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/common/page_transition_types.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModelOrderController

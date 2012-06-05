@@ -16,7 +16,8 @@
 @class CollectedCookiesWindowController;
 @class CookieDetailsViewController;
 @class VerticalGradientView;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // The constrained window delegate reponsible for managing the collected
 // cookies dialog.

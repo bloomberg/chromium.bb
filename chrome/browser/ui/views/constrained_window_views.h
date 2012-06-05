@@ -12,7 +12,8 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace views {
 namespace internal {

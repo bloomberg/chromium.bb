@@ -10,7 +10,8 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Chrome needs to intercept content drag events so it can dispatch them to the
 // bookmarks and extensions system.

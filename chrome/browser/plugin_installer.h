@@ -16,7 +16,8 @@
 
 class FilePath;
 class PluginInstallerObserver;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class WeakPluginInstallerObserver;
 
 namespace content {

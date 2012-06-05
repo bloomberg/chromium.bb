@@ -51,7 +51,8 @@ class MessageLoop;
 class Profile;
 class ScopedTempDir;
 class SkBitmap;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TemplateURLService;
 
 namespace browser {

@@ -14,7 +14,8 @@
 #include "content/public/browser/notification_registrar.h"
 
 class GURL;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace content {
 struct LoadCommittedDetails;

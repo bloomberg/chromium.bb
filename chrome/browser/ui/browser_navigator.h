@@ -17,7 +17,8 @@
 
 class Browser;
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace browser {
 

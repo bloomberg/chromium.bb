@@ -9,7 +9,8 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class SkBitmap;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Per-tab class to handle snapshot functionality.
 class SnapshotTabHelper : public content::WebContentsObserver {

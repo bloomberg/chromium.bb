@@ -34,7 +34,8 @@ class TextButton;
 
 class CertificateSelectorTableModel;
 class ConstrainedWindow;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 class SSLClientCertificateSelector : public SSLClientAuthObserver,
                                      public views::DialogDelegateView,

@@ -22,7 +22,8 @@ class EditSearchEngineControllerDelegate;
 class FindBar;
 class GURL;
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TemplateURL;
 
 namespace content {

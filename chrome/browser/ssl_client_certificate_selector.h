@@ -8,7 +8,8 @@
 
 #include "base/callback_forward.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace net {
 class HttpNetworkSession;

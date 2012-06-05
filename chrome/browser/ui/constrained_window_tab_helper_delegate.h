@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_UI_CONSTRAINED_WINDOW_TAB_HELPER_DELEGATE_H_
 #pragma once
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 class ConstrainedWindowTabHelperDelegate {
  public:

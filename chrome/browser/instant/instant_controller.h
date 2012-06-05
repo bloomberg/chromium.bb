@@ -29,7 +29,8 @@ class InstantLoader;
 class InstantTest;
 class PrefService;
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TemplateURL;
 
 // InstantController maintains a WebContents that is intended to give a preview

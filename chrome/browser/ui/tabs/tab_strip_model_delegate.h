@@ -14,7 +14,8 @@ class Browser;
 class DockInfo;
 class GURL;
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 namespace content {
 class SiteInstance;
 struct Referrer;

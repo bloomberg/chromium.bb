@@ -13,7 +13,8 @@
 #include "base/string16.h"
 #include "ui/gfx/size.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class WebIntentPickerDelegate;
 class WebIntentPickerModel;
 

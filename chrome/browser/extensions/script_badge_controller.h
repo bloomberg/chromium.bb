@@ -20,7 +20,8 @@
 
 class ExtensionAction;
 class ExtensionService;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace IPC {
 class Message;

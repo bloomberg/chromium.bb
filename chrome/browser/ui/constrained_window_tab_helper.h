@@ -12,7 +12,8 @@
 
 class ConstrainedWindow;
 class ConstrainedWindowTabHelperDelegate;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Per-tab class to manage constrained windows.
 class ConstrainedWindowTabHelper : public content::WebContentsObserver {

@@ -26,7 +26,8 @@
 class Browser;
 struct DefaultWebIntentService;
 class GURL;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class WebIntentPicker;
 class WebIntentPickerModel;
 

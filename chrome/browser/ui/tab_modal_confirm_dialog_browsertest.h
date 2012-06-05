@@ -21,7 +21,8 @@ typedef TabModalConfirmDialogViews TabModalConfirmDialog;
 #endif
 
 class MockTabModalConfirmDialogDelegate;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 
 class TabModalConfirmDialogTest : public InProcessBrowserTest {

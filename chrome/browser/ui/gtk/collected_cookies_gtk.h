@@ -20,7 +20,8 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 class CookiesTreeModel;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // CollectedCookiesGtk is a dialog that displays the allowed and blocked
 // cookies of the current tab contents.  To display the dialog, invoke

@@ -16,7 +16,8 @@
 #include "ui/views/window/dialog_delegate.h"
 
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class SkBitmap;
 
 namespace extensions {

@@ -13,7 +13,8 @@
 #include "chrome/browser/extensions/location_bar_controller.h"
 
 class ExtensionService;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace extensions {
 

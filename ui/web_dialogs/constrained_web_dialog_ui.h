@@ -12,7 +12,8 @@
 
 class ConstrainedWindow;
 class Profile;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class WebDialogWebContentsDelegate;
 
 namespace base {

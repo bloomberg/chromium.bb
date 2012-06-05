@@ -18,7 +18,8 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Takes ownership of TabContentsWrappers that are unrequested popup windows.
 class BlockedContentContainer : public BlockedContentTabHelperDelegate,

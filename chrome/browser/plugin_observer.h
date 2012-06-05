@@ -16,7 +16,8 @@
 class GURL;
 class InfoBarDelegate;
 class PluginFinder;
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 class PluginInstaller;

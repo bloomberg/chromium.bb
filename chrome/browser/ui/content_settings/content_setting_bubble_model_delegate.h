@@ -8,7 +8,8 @@
 
 #include "chrome/common/content_settings_types.h"
 
-class TabContentsWrapper;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 // Delegate which is used by ContentSettingBubbleModel class.
 class ContentSettingBubbleModelDelegate {
