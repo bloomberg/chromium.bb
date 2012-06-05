@@ -23,13 +23,22 @@ Please see the liblouis documentation for information of how to add a new harnes
 
 @author: Mesar Hameed <mhameed@src.gnome.org>
 @author: Michael Whapples <mwhapples@aim.com>
+@author: Hammer Attila <hammera@pickup.hu>
 """
 
 import json
 import os
-from louis import translate
+import sys
+from louis import translate, backTranslateString
 from louis import noContractions, compbrlAtCursor, dotsIO, comp8Dots, pass1Only, compbrlLeftCursor, otherTrans, ucBrl
 from glob import iglob
+
+PY2 = sys.version_info[0] == 2
+
+def u(a):
+    if PY2:
+        return a.encode("utf-8")
+    return a
 
 modes = {
     'noContractions': noContractions,
@@ -52,7 +61,7 @@ def showCurPos(length, pos1, marker1="^", pos2=None, marker2="*"):
     return "".join(display)
 
 class BrailleTest():
-    def __init__(self, harnessName, table, txt, brl, mode=0, cursorPos=None, brlCursorPos=None, comment=None):
+    def __init__(self, harnessName, table, txt, brl, mode=0, cursorPos=None, brlCursorPos=None, comment=None, test_type=None):
         self.harnessName = harnessName
         self.table = table
         self.txt = txt
@@ -60,11 +69,14 @@ class BrailleTest():
         self.mode = mode if not mode else modes[mode]
         self.cursorPos = cursorPos
         self.expectedBrlCursorPos = brlCursorPos
+        self.comment = comment
+        self.test_type = 'translate' if not test_type else test_type
 
     def __str__(self):
         return "%s: %s" % (self.harnessName, self.txt)
 
-    def check_braille(self):
+    def check_translate(self):
+        if self.test_type != 'translate': return
         if self.cursorPos is not None:
             tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.txt, mode=self.mode, cursorPos=self.cursorPos)
         else:
@@ -78,7 +90,20 @@ class BrailleTest():
             template % ("actual brl:", tBrl),
             "--- end ---",
         ]
-        assert tBrl == self.expectedBrl, "\n".join(report).encode("utf-8")
+        assert tBrl == self.expectedBrl, u("\n".join(report))
+
+    def check_backtranslate(self):
+        if self.test_type != 'backtranslate': return
+        backtranslate_output = backTranslateString(self.table, self.expectedBrl, None, mode=self.mode)
+        template = "%-25s '%s'"
+        report = [
+            self.__str__(),
+            "--- Backtranslate failure: ---",
+            template % ("expected word:", self.txt),
+            template % ("actual backtranslated word:", backtranslate_output),
+            "--- end ---",
+        ]
+        assert backtranslate_output == self.txt, u("\n".join(report))
 
     def check_cursor(self):
         if self.cursorPos == None: return
@@ -89,10 +114,11 @@ class BrailleTest():
             self.__str__(),
             "--- Braille Cursor Difference Failure: ---",
             template % ("received brl:", tBrl),
-            template % ("BRLCursorAt %d expected %d:" %(tBrlCurPos, self.expectedBrlCursorPos), etBrlCurPosStr),
+            template % ("BRLCursorAt %d expected %d:" %(tBrlCurPos, self.expectedBrlCursorPos), 
+                        etBrlCurPosStr),
             "--- end ---"
         ]
-        assert tBrlCurPos == self.expectedBrlCursorPos, "\n".join(report).encode("utf-8")
+        assert tBrlCurPos == self.expectedBrlCursorPos, u("\n".join(report))
 
 def test_allCases():
     harness_dir = "harness"
@@ -114,10 +140,10 @@ def test_allCases():
         harnessModule = json.load(f, encoding="UTF-8")
         f.close()
         print("Processing %s" %harness)
-        tableList = [harnessModule['table'].encode('UTF-8')]
+        tableList = [u(harnessModule['table'])]
 
         for test in harnessModule['tests']:
             bt = BrailleTest(harness, tableList, **test)
-            yield bt.check_braille
+            yield bt.check_translate
             yield bt.check_cursor
-
+            yield bt.check_backtranslate
