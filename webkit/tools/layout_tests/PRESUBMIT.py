@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,7 +8,7 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts for
 details on the presubmit API built into gcl.
 """
 
-TEST_EXPECTATIONS = 'test_expectations.txt'
+TEST_EXPECTATIONS_FILENAMES = ['test_expectations.txt', 'TestExpectations']
 
 def LintTestFiles(input_api, output_api):
   current_dir = str(input_api.PresubmitLocalPath())
@@ -45,7 +45,7 @@ def LintTestFiles(input_api, output_api):
 
 def LintTestExpectations(input_api, output_api):
   for path in input_api.LocalPaths():
-    if TEST_EXPECTATIONS == input_api.os_path.basename(path):
+    if input_api.os_path.basename(path) in TEST_EXPECTATIONS_FILENAMES:
       return LintTestFiles(input_api, output_api)
   return []
 

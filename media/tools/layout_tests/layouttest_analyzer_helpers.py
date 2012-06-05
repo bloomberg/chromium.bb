@@ -20,6 +20,10 @@ import urllib
 from bug import Bug
 from test_expectations_history import TestExpectationsHistory
 
+DEFAULT_TEST_EXPECTATION_PATH = ('trunk/LayoutTests/platform/chromium/'
+    'TestExpectations')
+LEGACY_DEFAULT_TEST_EXPECTATION_PATH = ('trunk/LayoutTests/platform/chromium/'
+    'test_expectations.txt')
 
 class AnalyzerResultMap:
   """A class to deal with joined result produed by the analyzer.
@@ -405,11 +409,17 @@ def GetRevisionString(prev_time, current_time, diff_map):
     rev_date = rev_infos[-1][3]
     for rev_info in rev_infos:
       (old_rev, new_rev, author, date, _, target_lines) = rev_info
-      link = urllib.unquote('http://trac.webkit.org/changeset?new=%d%40trunk'
-                            '%2FLayoutTests%2Fplatform%2Fchromium%2F'
-                            'test_expectations.txt&old=%d%40trunk%2F'
-                            'LayoutTests%2Fplatform%2Fchromium%2F'
-                            'test_expectations.txt') % (new_rev, old_rev)
+
+      # test_expectations.txt was renamed to TestExpectations at r119317.
+      new_path = DEFAULT_TEST_EXPECTATION_PATH
+      if new_rev < 119317:
+        new_path = LEGACY_DEFAULT_TEST_EXPECTATION_PATH
+      old_path = DEFAULT_TEST_EXPECTATION_PATH
+      if old_rev < 119317:
+        old_path = LEGACY_DEFAULT_TEST_EXPECTATION_PATH
+
+      link = 'http://trac.webkit.org/changeset?new=%d@%s&old=%d@%s' % (new_rev,
+          new_path, old_rev, old_path)
       rev_str += '<ul><a href="%s">%s->%s</a>\n' % (link, old_rev, new_rev)
       simple_rev_str = '<a href="%s">%s->%s</a>,' % (link, old_rev, new_rev)
       rev_str += '<li>%s</li>\n' % author

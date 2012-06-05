@@ -11,7 +11,7 @@ import urllib2
 # TODO(imasaki): support multiple test expectations files.
 DEFAULT_TEST_EXPECTATION_LOCATION = (
     'http://svn.webkit.org/repository/webkit/trunk/'
-    'LayoutTests/platform/chromium/test_expectations.txt')
+    'LayoutTests/platform/chromium/TestExpectations')
 
 # The following is from test expectation syntax. The detail can be found in
 # http://www.chromium.org/developers/testing/
