@@ -239,6 +239,19 @@ class PowerManagerClientImpl : public PowerManagerClient {
     RequestIdleNotification(0);
   }
 
+  virtual void NotifyVideoActivity(
+      const base::TimeTicks& last_activity_time) OVERRIDE {
+    dbus::MethodCall method_call(
+        power_manager::kPowerManagerInterface,
+        power_manager::kHandleVideoActivityMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendInt64(last_activity_time.ToInternalValue());
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
   virtual void RequestPowerStateOverrides(
       uint32 request_id,
       uint32 duration,
@@ -640,6 +653,8 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
 
   virtual void RequestIdleNotification(int64 threshold) OVERRIDE {}
   virtual void RequestActiveNotification() OVERRIDE {}
+  virtual void NotifyVideoActivity(
+      const base::TimeTicks& last_activity_time) OVERRIDE {}
   virtual void RequestPowerStateOverrides(
       uint32 request_id,
       uint32 duration,

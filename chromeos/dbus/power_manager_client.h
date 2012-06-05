@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/time.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 
@@ -170,6 +171,10 @@ class CHROMEOS_EXPORT PowerManagerClient {
   // Requests that the observers be notified in case of an Idle->Active event.
   // NOTE: Like the previous request, this will also get triggered exactly once.
   virtual void RequestActiveNotification() = 0;
+
+  // Notifies the power manager that a video is currently playing.
+  virtual void NotifyVideoActivity(
+      const base::TimeTicks& last_activity_time) = 0;
 
   // Override the current power state on the machine. The overrides will be
   // applied to the request ID specified. To specify a new request; use 0 as

@@ -17,7 +17,7 @@ class ResumeObserver;
 class ScreenDimmingObserver;
 class ScreenLockObserver;
 class SessionManagerObserver;
-class VideoPropertyWriter;
+class VideoActivityNotifier;
 }  // namespace chromeos
 
 namespace policy {
@@ -56,7 +56,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<chromeos::SessionManagerObserver> session_manager_observer_;
   scoped_ptr<chromeos::PowerButtonObserver> power_button_observer_;
   scoped_ptr<chromeos::PowerStateOverride> power_state_override_;
-  scoped_ptr<chromeos::VideoPropertyWriter> video_property_writer_;
+  scoped_ptr<chromeos::VideoActivityNotifier> video_activity_notifier_;
   scoped_ptr<chromeos::ScreenDimmingObserver> screen_dimming_observer_;
   scoped_ptr<policy::NetworkConfigurationUpdater> network_config_updater_;
 
