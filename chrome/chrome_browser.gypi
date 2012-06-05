@@ -2224,6 +2224,8 @@
         'browser/tab_contents/render_view_context_menu_gtk.h',
         'browser/tab_contents/render_view_context_menu_mac.h',
         'browser/tab_contents/render_view_context_menu_mac.mm',
+        'browser/tab_contents/render_view_context_menu_win.cc',
+        'browser/tab_contents/render_view_context_menu_win.h',
         'browser/tab_contents/render_view_context_menu_observer.cc',
         'browser/tab_contents/render_view_context_menu_observer.h',
         'browser/tab_contents/retargeting_details.h',
