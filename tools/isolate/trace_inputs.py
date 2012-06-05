@@ -640,12 +640,16 @@ class Results(object):
     return Results(self.process.strip_root(root))
 
 
-def extract_directories(files):
+def extract_directories(root_dir, files):
   """Detects if all the files in a directory are in |files| and if so, replace
   the individual files by a Results.Directory instance.
 
-  Takes an array of Results.File instances and returns an array of
+  Takes a list of Results.File instances and returns a shorter list of
   Results.File and Results.Directory instances.
+
+  Arguments:
+    - root_dir: Optional base directory that shouldn't be search further.
+    - files: list of Results.File instances.
   """
   assert not any(isinstance(f, Results.Directory) for f in files)
   # Remove non existent files.
@@ -659,11 +663,9 @@ def extract_directories(files):
     return f in ('.git', '.svn') or f.endswith('.pyc')
 
   # Creates a {directory: {filename: File}} mapping, up to root.
-  root = files[0].root
-  assert root.endswith(os.path.sep)
   buckets = {}
-  if root:
-    buckets[root.rstrip(os.path.sep)] = {}
+  if root_dir:
+    buckets[root_dir.rstrip(os.path.sep)] = {}
   for fileobj in files:
     path = fileobj.full_path
     directory = os.path.dirname(path)
@@ -675,18 +677,19 @@ def extract_directories(files):
     while True:
       old_d = directory
       directory = os.path.dirname(directory)
-      if directory + os.path.sep == root or directory == old_d:
+      if directory + os.path.sep == root_dir or directory == old_d:
         break
       buckets.setdefault(directory, {})
 
+  root_prefix = len(root_dir) + 1 if root_dir else 0
   for directory in sorted(buckets, reverse=True):
     actual = set(f for f in os.listdir(directory) if not blacklist(f))
     expected = set(buckets[directory])
     if not (actual - expected):
       parent = os.path.dirname(directory)
       buckets[parent][os.path.basename(directory)] = Results.Directory(
-        root,
-        directory[len(root):],
+        root_dir,
+        directory[root_prefix:],
         sum(f.size for f in buckets[directory].itervalues()),
         sum(f.nb_files for f in buckets[directory].itervalues()))
       # Remove the whole bucket.
@@ -2403,7 +2406,7 @@ def load_trace(logfile, root_dir, api):
   results = api.parse_log(logfile, get_blacklist(api))
   if root_dir:
     results = results.strip_root(root_dir)
-  simplified = extract_directories(results.files)
+  simplified = extract_directories(root_dir, results.files)
   return results, simplified
 
 
