@@ -2,36 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/balloon_collection_impl_ash.h"
+#include "chrome/browser/chromeos/notifications/balloon_collection_impl_aura.h"
 
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/ui/views/notifications/balloon_view_views.h"
+#include "chrome/browser/ui/views/notifications/balloon_view.h"
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
 
-BalloonCollectionImplAsh::BalloonCollectionImplAsh() {
+namespace chromeos {
+
+BalloonCollectionImplAura::BalloonCollectionImplAura() {
 }
 
-BalloonCollectionImplAsh::~BalloonCollectionImplAsh() {
+BalloonCollectionImplAura::~BalloonCollectionImplAura() {
 }
 
-bool BalloonCollectionImplAsh::AddWebUIMessageCallback(
+bool BalloonCollectionImplAura::AddWebUIMessageCallback(
     const Notification& notification,
     const std::string& message,
-    const chromeos::BalloonViewHost::MessageCallback& callback) {
+    const BalloonViewHost::MessageCallback& callback) {
   Balloon* balloon = base().FindBalloon(notification);
   if (!balloon)
     return false;
 
-  BalloonHost* balloon_host = balloon->balloon_view()->GetHost();
-  if (!balloon_host)
-    return false;
-  chromeos::BalloonViewHost* balloon_view_host =
-      static_cast<chromeos::BalloonViewHost*>(balloon_host);
-  return balloon_view_host->AddWebUIMessageCallback(message, callback);
+  BalloonViewHost* host =
+      static_cast<chromeos::BalloonViewHost*>(balloon->view()->GetHost());
+  return host->AddWebUIMessageCallback(message, callback);
 }
 
-void BalloonCollectionImplAsh::AddSystemNotification(
+void BalloonCollectionImplAura::AddSystemNotification(
     const Notification& notification,
     Profile* profile,
     bool sticky) {
@@ -44,7 +43,7 @@ void BalloonCollectionImplAsh::AddSystemNotification(
   AddImpl(notification, profile, true /* add to front*/);
 }
 
-bool BalloonCollectionImplAsh::UpdateNotification(
+bool BalloonCollectionImplAura::UpdateNotification(
     const Notification& notification) {
   Balloon* balloon = base().FindBalloon(notification);
   if (!balloon)
@@ -53,12 +52,12 @@ bool BalloonCollectionImplAsh::UpdateNotification(
   return true;
 }
 
-bool BalloonCollectionImplAsh::UpdateAndShowNotification(
+bool BalloonCollectionImplAura::UpdateAndShowNotification(
     const Notification& notification) {
   return UpdateNotification(notification);
 }
 
-Balloon* BalloonCollectionImplAsh::MakeBalloon(
+Balloon* BalloonCollectionImplAura::MakeBalloon(
     const Notification& notification, Profile* profile) {
   Balloon* balloon = new Balloon(notification, profile, this);
   ::BalloonViewImpl* balloon_view = new ::BalloonViewImpl(this);
@@ -71,7 +70,9 @@ Balloon* BalloonCollectionImplAsh::MakeBalloon(
   return balloon;
 }
 
+}  // namespace chromeos
+
 // static
 BalloonCollection* BalloonCollection::Create() {
-  return new BalloonCollectionImplAsh();
+  return new chromeos::BalloonCollectionImplAura();
 }

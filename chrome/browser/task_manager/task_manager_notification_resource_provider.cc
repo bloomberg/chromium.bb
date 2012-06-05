@@ -124,9 +124,7 @@ void TaskManagerNotificationResourceProvider::StartUpdating() {
   const BalloonCollection::Balloons& balloons = collection->GetActiveBalloons();
   for (BalloonCollection::Balloons::const_iterator it = balloons.begin();
        it != balloons.end(); ++it) {
-    BalloonHost* balloon_host = (*it)->balloon_view()->GetHost();
-    if (balloon_host)
-      AddToTaskManager(balloon_host);
+    AddToTaskManager((*it)->view()->GetHost());
   }
 
   // Register for notifications about extension process changes.

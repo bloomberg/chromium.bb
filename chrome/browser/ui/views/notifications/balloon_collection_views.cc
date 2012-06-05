@@ -5,7 +5,7 @@
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 
 #include "chrome/browser/notifications/balloon.h"
-#include "chrome/browser/ui/views/notifications/balloon_view_views.h"
+#include "chrome/browser/ui/views/notifications/balloon_view.h"
 #include "ui/base/events.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"

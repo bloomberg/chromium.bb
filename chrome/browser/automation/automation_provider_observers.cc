@@ -2355,8 +2355,7 @@ bool AreActiveNotificationProcessesReady() {
       manager->balloon_collection()->GetActiveBalloons();
   BalloonCollection::Balloons::const_iterator iter;
   for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
-    BalloonHost* balloon_host = (*iter)->balloon_view()->GetHost();
-    if (balloon_host && !balloon_host->IsRenderViewReady())
+    if (!(*iter)->view()->GetHost()->IsRenderViewReady())
       return false;
   }
   return true;
@@ -2414,12 +2413,11 @@ void GetAllNotificationsObserver::SendMessage() {
        ++balloon_iter) {
     base::DictionaryValue* note = NotificationToJson(
         &(*balloon_iter)->notification());
-    BalloonHost* balloon_host = (*balloon_iter)->balloon_view()->GetHost();
-    if (balloon_host) {
-      int pid = base::GetProcId(balloon_host->web_contents()->
-                                GetRenderViewHost()->GetProcess()->GetHandle());
-      note->SetInteger("pid", pid);
-    }
+    BalloonView* view = (*balloon_iter)->view();
+    note->SetInteger(
+        "pid",
+        base::GetProcId(view->GetHost()->web_contents()->GetRenderViewHost()->
+            GetProcess()-> GetHandle()));
     list->Append(note);
   }
   std::vector<const Notification*> queued_notes;

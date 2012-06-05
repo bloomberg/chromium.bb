@@ -6,10 +6,10 @@
 
 #include "base/callback.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/notifications/balloon_collection_impl_aura.h"
 #include "chrome/browser/chromeos/notifications/system_notification_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/ui/views/ash/balloon_collection_impl_ash.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
@@ -17,7 +17,7 @@ namespace chromeos {
 
 void SystemNotification::Init(int icon_resource_id) {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-  collection_ = static_cast<BalloonCollectionImplAsh*>(
+  collection_ = static_cast<BalloonCollectionImplType*>(
       g_browser_process->notification_ui_manager()->balloon_collection());
   std::string url = web_ui_util::GetImageDataUrlFromResource(icon_resource_id);
   DCHECK(!url.empty());
