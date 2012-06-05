@@ -213,14 +213,10 @@ cr.define('tracing', function() {
         else
           this.traceEvents_ = data;
       }
-      if (data.systemTraceEvents) {
+
+      if (data.systemTraceEvents)
         this.systemTraceEvents_ = data.systemTraceEvents;
-      } else { // path for loading traces saved without metadata
-        if (!data.length)
-          console.log('Expected an array when loading the trace file');
-        else
-          this.systemTraceEvents_ = data;
-      }
+
       var e = new cr.Event('loadTraceFileComplete');
       e.events = this.traceEvents_;
       this.dispatchEvent(e);
