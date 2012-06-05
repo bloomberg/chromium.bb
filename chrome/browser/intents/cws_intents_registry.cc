@@ -24,6 +24,64 @@ namespace {
 const char kCWSIntentServiceURL[] =
   "https://www.googleapis.com/chromewebstore/v1.1b/items/intent";
 
+// Parses a JSON |response| from the CWS into a list of suggested extensions,
+// stored in |intents|. |intents| must not be NULL.
+void ParseResponse(const std::string& response,
+                   CWSIntentsRegistry::IntentExtensionList* intents) {
+  std::string error;
+  scoped_ptr<Value> parsed_response;
+  JSONStringValueSerializer serializer(response);
+  parsed_response.reset(serializer.Deserialize(NULL, &error));
+  if (parsed_response.get() == NULL)
+    return;
+
+  DictionaryValue* response_dict = NULL;
+  if (!parsed_response->GetAsDictionary(&response_dict) || !response_dict)
+    return;
+
+  ListValue* items;
+  if (!response_dict->GetList("items", &items))
+    return;
+
+  for (ListValue::const_iterator iter(items->begin());
+       iter != items->end(); ++iter) {
+    DictionaryValue* item = static_cast<DictionaryValue*>(*iter);
+
+    // All fields are mandatory - skip this result if any field isn't found.
+    CWSIntentsRegistry::IntentExtensionInfo info;
+    if (!item->GetString("id", &info.id))
+      continue;
+
+    if (!item->GetInteger("num_ratings", &info.num_ratings))
+      continue;
+
+    if (!item->GetDouble("average_rating", &info.average_rating))
+      continue;
+
+    if (!item->GetString("manifest", &info.manifest))
+      continue;
+
+    std::string manifest_utf8 = UTF16ToUTF8(info.manifest);
+    JSONStringValueSerializer manifest_serializer(manifest_utf8);
+    scoped_ptr<Value> manifest_value;
+    manifest_value.reset(manifest_serializer.Deserialize(NULL, &error));
+    if (manifest_value.get() == NULL)
+      continue;
+
+    DictionaryValue* manifest_dict;
+    manifest_value->GetAsDictionary(&manifest_dict);
+    if (!manifest_dict->GetString("name", &info.name))
+      continue;
+
+    string16 url_string;
+    if (!item->GetString("icon_url", &url_string))
+      continue;
+    info.icon_url = GURL(url_string);
+
+    intents->push_back(info);
+  }
+}
+
 }  // namespace
 
 // Internal object representing all data associated with a single query.
@@ -75,62 +133,9 @@ void CWSIntentsRegistry::OnURLFetchComplete(const net::URLFetcher* source) {
   source->GetResponseAsString(&response);
 
   // TODO(groby): Do we really only accept 200, or any 2xx codes?
-  if (source->GetResponseCode() != 200)
-    return;
-
-  std::string error;
-  scoped_ptr<Value> parsed_response;
-  JSONStringValueSerializer serializer(response);
-  parsed_response.reset(serializer.Deserialize(NULL, &error));
-  if (parsed_response.get() == NULL)
-    return;
-
-  DictionaryValue* response_dict = NULL;
-  if (!parsed_response->GetAsDictionary(&response_dict) || !response_dict)
-    return;
-
-  ListValue* items;
-  if (!response_dict->GetList("items", &items))
-    return;
-
   IntentExtensionList intents;
-  for (ListValue::const_iterator iter(items->begin());
-       iter != items->end(); ++iter) {
-    DictionaryValue* item = static_cast<DictionaryValue*>(*iter);
-
-    // All fields are mandatory - skip this result if we can't find a field.
-    IntentExtensionInfo info;
-    if (!item->GetString("id", &info.id))
-      continue;
-
-    if (!item->GetInteger("num_ratings", &info.num_ratings))
-      continue;
-
-    if (!item->GetDouble("average_rating", &info.average_rating))
-      continue;
-
-    if (!item->GetString("manifest", &info.manifest))
-      continue;
-
-    std::string manifest_utf8 = UTF16ToUTF8(info.manifest);
-    JSONStringValueSerializer manifest_serializer(manifest_utf8);
-    scoped_ptr<Value> manifest_value;
-    manifest_value.reset(manifest_serializer.Deserialize(NULL, &error));
-    if (manifest_value.get() == NULL)
-      continue;
-
-    DictionaryValue* manifest_dict;
-    manifest_value->GetAsDictionary(&manifest_dict);
-    if (!manifest_dict->GetString("name", &info.name))
-      continue;
-
-    string16 url_string;
-    if (!item->GetString("icon_url", &url_string))
-      continue;
-    info.icon_url = GURL(url_string);
-
-    intents.push_back(info);
-  }
+  if (source->GetResponseCode() == 200)
+    ParseResponse(response, &intents);
 
   if (!query->callback.is_null())
     query->callback.Run(intents);
