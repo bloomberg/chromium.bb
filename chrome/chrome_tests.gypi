@@ -1347,6 +1347,7 @@
         'browser/plugin_finder_unittest.cc',
         'browser/plugin_installer_unittest.cc',
         'browser/plugin_prefs_unittest.cc',
+        'browser/policy/async_policy_provider_unittest.cc',
         'browser/policy/asynchronous_policy_loader_unittest.cc',
         'browser/policy/asynchronous_policy_provider_unittest.cc',
         'browser/policy/asynchronous_policy_test_base.cc',
