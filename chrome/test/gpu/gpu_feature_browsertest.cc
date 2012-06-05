@@ -415,9 +415,13 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, RafNoDamage) {
   if (!analyzer_.get())
     return;
 
+  // Search for matching name on begin event or async_begin event (any begin).
+  Query query_raf =
+      (Query::EventPhase() == Query::Phase(TRACE_EVENT_PHASE_BEGIN) ||
+       Query::EventPhase() == Query::Phase(TRACE_EVENT_PHASE_ASYNC_BEGIN)) &&
+      Query::EventName() == Query::String("___RafWithNoDamage___");
   TraceEventVector events;
-  size_t num_events = analyzer_->FindEvents(
-      Query::MatchBeginName("___RafWithNoDamage___"), &events);
+  size_t num_events = analyzer_->FindEvents(query_raf, &events);
 
   trace_analyzer::RateStats stats;
   trace_analyzer::RateStatsOptions stats_options;
