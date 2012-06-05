@@ -209,7 +209,7 @@ ui::GestureStatus CustomButton::OnGestureEvent(const GestureEvent& event) {
   } else {
     SetState(BS_NORMAL);
   }
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return Button::OnGestureEvent(event);
 }
 
 bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
