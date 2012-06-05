@@ -53,6 +53,8 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/extensions except for
         # tests and mocks.
+        'browser/extensions/admin_policy.cc',
+        'browser/extensions/admin_policy.h',
         'browser/extensions/api/api_function.cc',
         'browser/extensions/api/api_function.h',
         'browser/extensions/api/api_resource.cc',

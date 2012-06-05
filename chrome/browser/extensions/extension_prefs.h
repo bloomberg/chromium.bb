@@ -210,27 +210,18 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   void SetAppNotificationDisabled(const std::string& extension_id, bool value);
 
   // ManagementPolicy::Provider
+  // These methods apply admin policy to extensions.
   virtual std::string GetPolicyProviderName() const OVERRIDE;
-  // Returns true if the extension is allowed by admin policy white- and
-  // blacklists.
   virtual bool UserMayLoad(const extensions::Extension* extension,
                            string16* error) const OVERRIDE;
-  // Returns false if the extension is required to remain running, as determined
-  // by Extension::IsRequired(). In practice this enforces the admin policy
-  // forcelist.
   virtual bool UserMayModifySettings(const extensions::Extension* extension,
                                      string16* error) const OVERRIDE;
-  // Returns true if the extension is required to remain running, as determined
-  // by Extension::IsRequired(). In practice this enforces the admin policy
-  // forcelist.
   virtual bool MustRemainEnabled(const extensions::Extension* extension,
                                  string16* error) const OVERRIDE;
 
-  // Checks if extensions are blacklisted by default, by policy. When true, this
-  // means that even extensions without an ID should be blacklisted (e.g.
-  // from the command line, or when loaded as an unpacked extension).
-  // IsExtensionAllowedByPolicy() also takes this into account, and should be
-  // used instead when the extension ID is known.
+  // Checks if extensions are blacklisted by default, by policy.
+  // The ManagementPolicy::Provider methods also take this into account, and
+  // should be used instead when the extension ID is known.
   bool ExtensionsBlacklistedByDefault() const;
 
   // Returns the last value set via SetLastPingDay. If there isn't such a
@@ -527,12 +518,6 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   const base::DictionaryValue* GetExtensionControlledPrefs(
       const std::string& id,
       bool incognito) const;
-
-  // Internal implementation for certain ManagementPolicy::Delegate methods.
-  // Returns |modifiable_value| if the extension can be modified.
-  bool ManagementPolicyImpl(const extensions::Extension* extension,
-                            string16* error,
-                            bool modifiable_value) const;
 
   // Checks if kPrefBlacklist is set to true in the DictionaryValue.
   // Return false if the value is false or kPrefBlacklist does not exist.
