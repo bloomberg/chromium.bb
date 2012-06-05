@@ -257,7 +257,7 @@
         <!-- TODO(jamescook): Is this right? -->
         <include name="IDR_THEME_TOOLBAR_INACTIVE" file="touch_100_percent/theme_toolbar_default_inactive2.png" type="BINDATA" />
       </if>
-      <include name="IDR_THROBBER_WAITING" file="touch_100_percent/throbber_waiting.png" type="BINDATA" />
+      <include name="IDR_THROBBER_WAITING" file="default_200_percent/throbber_waiting.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
         <include name="IDR_TOOLS" file="touch_200_percent/browser_tools_normal.png" type="BINDATA" />
         <include name="IDR_TOOLS_H" file="touch_200_percent/browser_tools_hover.png" type="BINDATA" />
