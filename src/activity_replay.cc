@@ -490,7 +490,7 @@ bool ActivityReplay::Replay(Interpreter* interpreter) {
           Log("Input Finger ID: %d", hs.fingers[i].tracking_id);
         last_gs = interpreter->SyncInterpret(&hs, &last_timeout_req);
         if (last_gs)
-          Log("Ouput Gesture: %s", last_gs->String().c_str());
+          Log("Output Gesture: %s", last_gs->String().c_str());
         break;
       }
       case ActivityLog::kTimerCallback:
@@ -498,7 +498,7 @@ bool ActivityReplay::Replay(Interpreter* interpreter) {
         last_gs = interpreter->HandleTimer(entry->details.timestamp,
                                            &last_timeout_req);
         if (last_gs)
-          Log("Ouput Gesture: %s", last_gs->String().c_str());
+          Log("Output Gesture: %s", last_gs->String().c_str());
         break;
       case ActivityLog::kCallbackRequest:
         if (!DoubleEq(last_timeout_req, entry->details.timestamp)) {
