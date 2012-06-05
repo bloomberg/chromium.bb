@@ -1725,10 +1725,10 @@ input_set_focus_widget(struct input *input, struct widget *focus,
 		widget = focus;
 		if (input->grab)
 			widget = input->grab;
+		input->focus_widget = focus;
 		if (widget->enter_handler)
 			pointer = widget->enter_handler(focus, input, x, y,
 							widget->user_data);
-		input->focus_widget = focus;
 
 		input_set_pointer_image(input, pointer);
 	}
