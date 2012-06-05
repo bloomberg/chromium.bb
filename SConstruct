@@ -3560,6 +3560,8 @@ if nacl_irt_env.Bit('bitcode'):
 # IRT-private TLS from user TLS.
 if nacl_irt_env.Bit('bitcode'):
   nacl_irt_env.Append(LINKFLAGS=['--pnacl-allow-native', '-Wt,-mtls-use-call'])
+elif nacl_irt_env.Bit('target_arm'):
+  nacl_irt_env.Append(CCFLAGS=['-mtp=soft'])
 else:
   nacl_irt_env.Append(CCFLAGS=['-mtls-use-call'])
 
