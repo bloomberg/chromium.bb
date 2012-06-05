@@ -102,7 +102,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   FilePath swiftshader_path_;
 
-  // Current card force-blacklisted due to GPU crashes.
+  // Current card force-blacklisted due to GPU crashes, or disabled through
+  // the --disable-gpu commandline switch.
   bool card_blacklisted_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImpl);

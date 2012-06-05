@@ -134,6 +134,10 @@ const char kDisableImageTransportSurface[]  = "disable-image-transport-surface";
 const char kDisableInteractiveFormValidation[] =
     "disable-interactive-form-validation";
 
+// Disables GPU hardware acceleration.  If software renderer is not in place,
+// then the GPU process won't launch.
+const char kDisableGpu[]                    = "disable-gpu";
+
 // Disable the thread that crashes the GPU process if it stops responding to
 // messages.
 const char kDisableGpuWatchdog[]            = "disable-gpu-watchdog";

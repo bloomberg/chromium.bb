@@ -63,6 +63,8 @@ void GpuDataManagerImpl::Initialize() {
       gpu_info_ = gpu_info;
     }
   }
+  if (command_line->HasSwitch(switches::kDisableGpu))
+    BlacklistCard();
 }
 
 GpuDataManagerImpl::~GpuDataManagerImpl() {
@@ -134,6 +136,9 @@ bool GpuDataManagerImpl::GpuAccessAllowed() {
     return true;
 
   if (!gpu_info_.gpu_accessible)
+    return false;
+
+  if (card_blacklisted_)
     return false;
 
   // We only need to block GPU process if more features are disallowed other
@@ -290,13 +295,7 @@ bool GpuDataManagerImpl::ShouldUseSoftwareRendering() {
 void GpuDataManagerImpl::BlacklistCard() {
   card_blacklisted_ = true;
 
-  {
-    base::AutoLock auto_lock(gpu_info_lock_);
-    int flags = gpu_feature_type_;
-    flags |= content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING |
-             content::GPU_FEATURE_TYPE_WEBGL;
-    gpu_feature_type_ = static_cast<GpuFeatureType>(flags);
-  }
+  gpu_feature_type_ = content::GPU_FEATURE_TYPE_ALL;
 
   EnableSoftwareRenderingIfNecessary();
   NotifyGpuInfoUpdate();
