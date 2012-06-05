@@ -1195,7 +1195,7 @@ gfx::NativeWindow Browser::BrowserShowWebDialog(
   if (!parent_window)
     parent_window = window_->GetNativeHandle();
 
-  return browser::ShowWebDialog(parent_window, profile_, delegate);
+  return browser::ShowWebDialog(parent_window, profile_, this, delegate);
 }
 
 void Browser::BrowserRenderWidgetShowing() {

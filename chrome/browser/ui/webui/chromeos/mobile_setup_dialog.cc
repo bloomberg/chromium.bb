@@ -80,6 +80,7 @@ void MobileSetupDialogDelegate::ShowDialog() {
   dialog_window_ = browser::ShowWebDialog(
       NULL,
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      NULL,
       this);
 }
 

@@ -5,7 +5,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/test_web_dialog_delegate.h"
-#include "chrome/browser/ui/webui/web_dialog_controller.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -16,14 +15,10 @@ namespace {
 
 class TestDialogClosedDelegate : public test::TestWebDialogDelegate {
  public:
-  explicit TestDialogClosedDelegate(Browser* browser)
+  TestDialogClosedDelegate()
       : test::TestWebDialogDelegate(
             GURL(chrome::kChromeUIChromeURLsURL)),
         dialog_closed_(false) {
-    if (browser) {
-      web_dialog_controller_.reset(
-          new WebDialogController(this, browser->profile(), browser));
-    }
   }
 
   bool dialog_closed() const { return dialog_closed_; }
@@ -37,7 +32,6 @@ class TestDialogClosedDelegate : public test::TestWebDialogDelegate {
   }
 
  private:
-  scoped_ptr<WebDialogController> web_dialog_controller_;
   bool dialog_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDialogClosedDelegate);
@@ -54,8 +48,7 @@ class WebDialogControllerBrowserTest : public InProcessBrowserTest {
 // that browser is closed the dialog created by that browser is closed.
 IN_PROC_BROWSER_TEST_F(WebDialogControllerBrowserTest, IncognitoBrowser) {
   Browser* browser = CreateIncognitoBrowser();
-  scoped_ptr<TestDialogClosedDelegate> delegate(
-      new TestDialogClosedDelegate(browser));
+  scoped_ptr<TestDialogClosedDelegate> delegate(new TestDialogClosedDelegate());
 
   // Create the dialog and make sure the initial "closed" state is what we
   // expect.

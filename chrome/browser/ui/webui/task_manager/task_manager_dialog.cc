@@ -196,6 +196,7 @@ void TaskManagerDialogImpl::OnCloseDialog() {
 void TaskManagerDialogImpl::OpenWebDialog() {
   window_ = browser::ShowWebDialog(NULL,
                                    ProfileManager::GetDefaultProfile(),
+                                   NULL,
                                    this);
 }
 

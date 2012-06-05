@@ -57,7 +57,7 @@ LoginWebDialog::~LoginWebDialog() {
 
 void LoginWebDialog::Show() {
   views::Widget::CreateWindowWithParent(
-      new WebDialogView(ProfileManager::GetDefaultProfile(), this),
+      new WebDialogView(ProfileManager::GetDefaultProfile(), NULL, this),
       parent_window_)->Show();
   is_open_ = true;
 }

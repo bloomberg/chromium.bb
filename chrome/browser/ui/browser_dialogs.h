@@ -49,6 +49,7 @@ void ShowAboutIPCDialog();
 // to do so, i.e. before OnDialogClosed() is called on the delegate.
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 Profile* profile,
+                                Browser* browser,
                                 ui::WebDialogDelegate* delegate);
 
 // Shows the collected cookies dialog box.
