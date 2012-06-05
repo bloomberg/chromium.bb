@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/browser/policy/asynchronous_policy_test_base.h"
+#include "chrome/browser/policy/policy_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,6 +42,25 @@ extern const char kKeyDictionary[];
 extern const PolicyDefinitionList kList;
 
 }  // namespace test_policy_definitions
+
+class PolicyTestBase : public testing::Test {
+ public:
+  PolicyTestBase();
+  virtual ~PolicyTestBase();
+
+  // testing::Test:
+  virtual void TearDown() OVERRIDE;
+
+ protected:
+  // Create an actual IO loop (needed by FilePathWatcher).
+  MessageLoopForIO loop_;
+
+ private:
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(PolicyTestBase);
+};
 
 // An interface for creating a test policy provider and creating a policy
 // provider instance for testing. Used as the parameter to the abstract
@@ -92,7 +111,7 @@ typedef PolicyProviderTestHarness* (*CreatePolicyProviderTestHarness)();
 // policy provider implementation, passing in a suitable harness factory
 // function as the test parameter.
 class ConfigurationPolicyProviderTest
-    : public AsynchronousPolicyTestBase,
+    : public PolicyTestBase,
       public testing::WithParamInterface<CreatePolicyProviderTestHarness> {
  protected:
   ConfigurationPolicyProviderTest();

@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/async_policy_provider.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"
 #include "chrome/browser/policy/cloud_policy_service.h"
@@ -34,7 +35,8 @@
 #if defined(OS_WIN)
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/policy/configuration_policy_provider_mac.h"
+#include "chrome/browser/policy/policy_loader_mac.h"
+#include "chrome/browser/preferences_mac.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/policy/config_dir_policy_provider.h"
 #endif
@@ -560,7 +562,9 @@ ConfigurationPolicyProvider*
 #if defined(OS_WIN)
   return new ConfigurationPolicyProviderWin(policy_list);
 #elif defined(OS_MACOSX)
-  return new ConfigurationPolicyProviderMac(policy_list);
+  scoped_ptr<AsyncPolicyLoader> loader(
+      new PolicyLoaderMac(policy_list, new MacPreferences()));
+  return new AsyncPolicyProvider(policy_list, loader.Pass());
 #elif defined(OS_POSIX)
   FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {

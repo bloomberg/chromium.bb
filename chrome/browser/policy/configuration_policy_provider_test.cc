@@ -14,6 +14,7 @@
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using content::BrowserThread;
 using ::testing::Mock;
 using ::testing::_;
 
@@ -41,6 +42,16 @@ const PolicyDefinitionList kList = {
 
 }  // namespace test_policy_definitions
 
+PolicyTestBase::PolicyTestBase()
+    : ui_thread_(BrowserThread::UI, &loop_),
+      file_thread_(BrowserThread::FILE, &loop_) {}
+
+PolicyTestBase::~PolicyTestBase() {}
+
+void PolicyTestBase::TearDown() {
+  loop_.RunAllPending();
+}
+
 PolicyProviderTestHarness::PolicyProviderTestHarness(PolicyLevel level,
                                                      PolicyScope scope)
     : level_(level), scope_(scope) {}
@@ -60,7 +71,7 @@ ConfigurationPolicyProviderTest::ConfigurationPolicyProviderTest() {}
 ConfigurationPolicyProviderTest::~ConfigurationPolicyProviderTest() {}
 
 void ConfigurationPolicyProviderTest::SetUp() {
-  AsynchronousPolicyTestBase::SetUp();
+  PolicyTestBase::SetUp();
 
   test_harness_.reset((*GetParam())());
   test_harness_->SetUp();
@@ -79,7 +90,7 @@ void ConfigurationPolicyProviderTest::TearDown() {
   // Give providers the chance to clean up after themselves on the file thread.
   provider_.reset();
 
-  AsynchronousPolicyTestBase::TearDown();
+  PolicyTestBase::TearDown();
 }
 
 void ConfigurationPolicyProviderTest::CheckValue(
