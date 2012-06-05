@@ -19,7 +19,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/zygote_host_linux.h"
 #include "content/public/common/process_type.h"
 #include "grit/chromium_strings.h"
 
@@ -174,25 +173,17 @@ static void GetProcessDataMemoryInformation(
 
 // Find all children of the given process.
 static void GetAllChildren(const std::vector<Process>& processes,
-                           const pid_t root, const pid_t zygote,
-                           std::vector<pid_t>* out) {
+                           const pid_t root, std::vector<pid_t>* out) {
   out->clear();
   out->push_back(root);
 
   std::set<pid_t> wavefront, next_wavefront;
   wavefront.insert(root);
-  bool zygote_found = zygote ? false : true;
 
   while (wavefront.size()) {
     for (std::vector<Process>::const_iterator
          i = processes.begin(); i != processes.end(); ++i) {
-      // Handle the zygote separately. With the SUID sandbox and a separate
-      // pid namespace, the zygote's parent process is not the browser.
-      if (!zygote_found && zygote == i->pid) {
-        zygote_found = true;
-        out->push_back(i->pid);
-        next_wavefront.insert(i->pid);
-      } else if (wavefront.count(i->parent)) {
+      if (wavefront.count(i->parent)) {
         out->push_back(i->pid);
         next_wavefront.insert(i->pid);
       }
@@ -240,8 +231,7 @@ void MemoryDetails::CollectProcessData(
   }
 
   std::vector<pid_t> current_browser_processes;
-  const pid_t zygote = content::ZygoteHost::GetInstance()->GetPid();
-  GetAllChildren(processes, getpid(), zygote, &current_browser_processes);
+  GetAllChildren(processes, getpid(), &current_browser_processes);
   ProcessData current_browser;
   GetProcessDataMemoryInformation(current_browser_processes, &current_browser);
   current_browser.name = WideToUTF16(chrome::kBrowserAppName);
@@ -268,7 +258,7 @@ void MemoryDetails::CollectProcessData(
   for (std::set<pid_t>::const_iterator
        i = browsers_found.begin(); i != browsers_found.end(); ++i) {
     std::vector<pid_t> browser_processes;
-    GetAllChildren(processes, *i, 0, &browser_processes);
+    GetAllChildren(processes, *i, &browser_processes);
     ProcessData browser;
     GetProcessDataMemoryInformation(browser_processes, &browser);
 
