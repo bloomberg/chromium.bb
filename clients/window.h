@@ -368,6 +368,9 @@ void
 input_set_pointer_image(struct input *input, int pointer);
 
 void
+input_set_pointer_image_index(struct input *input, int pointer, int index);
+
+void
 input_get_position(struct input *input, int32_t *x, int32_t *y);
 
 #define MOD_SHIFT_MASK		0x01

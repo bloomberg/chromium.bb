@@ -2275,20 +2275,22 @@ static const struct wl_data_device_listener data_device_listener = {
 };
 
 void
-input_set_pointer_image(struct input *input, int pointer)
+input_set_pointer_image_index(struct input *input, int pointer, int index)
 {
 	struct wl_buffer *buffer;
 	struct wl_cursor *cursor;
 	struct wl_cursor_image *image;
 
-	if (pointer == input->current_cursor)
-		return;
-
 	cursor = input->display->cursors[pointer];
 	if (!cursor)
 		return;
 
-	image = cursor->images[0];
+	if (index >= (int) cursor->image_count) {
+		fprintf(stderr, "cursor index out of range\n");
+		return;
+	}
+
+	image = cursor->images[index];
 	buffer = wl_cursor_image_get_buffer(image);
 	if (!buffer)
 		return;
@@ -2296,6 +2298,15 @@ input_set_pointer_image(struct input *input, int pointer)
 	input->current_cursor = pointer;
 	wl_pointer_attach(input->pointer, input->pointer_enter_serial,
 			  buffer, image->hotspot_x, image->hotspot_y);
+}
+
+void
+input_set_pointer_image(struct input *input, int pointer)
+{
+	if (pointer == input->current_cursor)
+		return;
+
+	input_set_pointer_image_index(input, pointer, 0);
 }
 
 struct wl_data_device *
