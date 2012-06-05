@@ -1,0 +1,12 @@
+{
+  "arg1": "This",
+  "arg2": {
+    "arg": 2
+  },
+  "arg3": "test",
+  "arg4": [
+    "incredible",
+    "amazing",
+    "awesome"
+  ]
+}

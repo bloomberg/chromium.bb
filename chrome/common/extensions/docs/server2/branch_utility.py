@@ -18,7 +18,7 @@ class BranchUtility(object):
 
   def GetChannelNameFromPath(self, path):
     first_part = path.split('/')[0]
-    if first_part in ['trunk', 'dev', 'beta', 'stable']:
+    if first_part in ['trunk', 'dev', 'beta', 'stable', 'local']:
       return first_part
     else:
       return 'stable'
@@ -27,8 +27,8 @@ class BranchUtility(object):
     """Returns an empty string if the branch number cannot be found.
     Throws exception on network errors.
     """
-    if channel_name == 'trunk':
-      return 'trunk'
+    if channel_name == 'trunk' or channel_name == 'local':
+      return channel_name
 
     fetch_data = self.urlfetch.fetch(self.omaha_proxy_url)
     if fetch_data.content == '':
