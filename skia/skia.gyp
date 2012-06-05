@@ -316,6 +316,9 @@
         '../third_party/skia/src/core/SkWriter32.cpp',
         '../third_party/skia/src/core/SkXfermode.cpp',
 
+        '../third_party/skia/src/pipe/SkGPipeRead.cpp',
+        '../third_party/skia/src/pipe/SkGPipeWrite.cpp',
+
         '../third_party/skia/src/effects/Sk1DPathEffect.cpp',
         '../third_party/skia/src/effects/Sk2DPathEffect.cpp',
         '../third_party/skia/src/effects/SkAvoidXfermode.cpp',
@@ -762,6 +765,7 @@
         'config',
         '../third_party/skia/include/config',
         '../third_party/skia/include/core',
+        '../third_party/skia/include/pipe',
         '../third_party/skia/include/effects',
         '../third_party/skia/include/gpu',
         '../third_party/skia/include/gpu/gl',

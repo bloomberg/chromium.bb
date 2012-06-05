@@ -50,6 +50,12 @@
 
 BUGCR130283 : svg/W3C-SVG-1.1/painting-stroke-04-t.svg = TEXT
 
-// END OVERRIDES HERE (this line ensures that the file is newline-terminated)
+BUGCR131188 : css3/filters/effect-combined-hw.html = IMAGE
+BUGCR131188 : css3/filters/effect-grayscale-hw.html = IMAGE
+BUGCR131188 : css3/filters/effect-hue-rotate-hw.html = IMAGE
+BUGCR131188 : css3/filters/effect-saturate-hw.html = IMAGE
+BUGCR131188 : css3/filters/effect-sepia-hw.html = IMAGE
+BUGCR131188 : platform/chromium/virtual/gpu/fast/canvas/fillrect_gradient.html = IMAGE
 
+// END OVERRIDES HERE (this line ensures that the file is newline-terminated)
 
