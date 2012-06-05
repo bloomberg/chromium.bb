@@ -65,6 +65,8 @@ class CommandBufferProxyImpl
   virtual bool SetSurfaceVisible(bool visible) OVERRIDE;
   virtual bool DiscardBackbuffer() OVERRIDE;
   virtual bool EnsureBackbuffer() OVERRIDE;
+  virtual uint32 InsertSyncPoint() OVERRIDE;
+  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE;
   virtual void SetMemoryAllocationChangedCallback(
       const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
           callback) OVERRIDE;

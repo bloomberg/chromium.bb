@@ -60,6 +60,15 @@ bool PpapiCommandBufferProxy::EnsureBackbuffer() {
   return true;
 }
 
+uint32 PpapiCommandBufferProxy::InsertSyncPoint() {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+void PpapiCommandBufferProxy::WaitSyncPoint(uint32 sync_point) {
+  NOTIMPLEMENTED();
+}
+
 void PpapiCommandBufferProxy::SetMemoryAllocationChangedCallback(
       const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
           callback) {
@@ -277,4 +286,3 @@ void PpapiCommandBufferProxy::UpdateState(
 
 }  // namespace proxy
 }  // namespace ppapi
-

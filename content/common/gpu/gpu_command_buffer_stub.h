@@ -6,8 +6,7 @@
 #define CONTENT_COMMON_GPU_GPU_COMMAND_BUFFER_STUB_H_
 #pragma once
 
-#if defined(ENABLE_GPU)
-
+#include <deque>
 #include <string>
 #include <vector>
 
@@ -167,6 +166,10 @@ class GpuCommandBufferStub
   void AddDestructionObserver(DestructionObserver* observer);
   void RemoveDestructionObserver(DestructionObserver* observer);
 
+  // Associates a sync point to this stub. When the stub is destroyed, it will
+  // retire all sync points that haven't been previously retired.
+  void AddSyncPoint(uint32 sync_point);
+
  private:
   void Destroy();
 
@@ -204,6 +207,10 @@ class GpuCommandBufferStub
 
   void OnDiscardBackbuffer();
   void OnEnsureBackbuffer();
+
+  void OnRetireSyncPoint(uint32 sync_point);
+  void OnWaitSyncPoint(uint32 sync_point);
+  void OnSyncPointRetired();
 
   void OnSetClientHasMemoryAllocationChangedCallback(bool);
 
@@ -255,9 +262,10 @@ class GpuCommandBufferStub
 
   ObserverList<DestructionObserver> destruction_observers_;
 
+  // A queue of sync points associated with this stub.
+  std::deque<uint32> sync_points_;
+
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };
-
-#endif  // defined(ENABLE_GPU)
 
 #endif  // CONTENT_COMMON_GPU_GPU_COMMAND_BUFFER_STUB_H_

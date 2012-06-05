@@ -18,6 +18,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_watchdog.h"
 #include "content/common/gpu/image_transport_surface.h"
+#include "content/common/gpu/sync_point_manager.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "ui/gl/gl_bindings.h"
@@ -131,6 +132,10 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnDiscardBackbuffer)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_EnsureBackbuffer,
                         OnEnsureBackbuffer)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RetireSyncPoint,
+                        OnRetireSyncPoint)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_WaitSyncPoint,
+                        OnWaitSyncPoint)
     IPC_MESSAGE_HANDLER(
         GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback,
         OnSetClientHasMemoryAllocationChangedCallback)
@@ -200,6 +205,9 @@ void GpuCommandBufferStub::OnReschedule() {
 }
 
 void GpuCommandBufferStub::Destroy() {
+  while (!sync_points_.empty())
+    OnRetireSyncPoint(sync_points_.front());
+
   // The scheduler has raw references to the decoder and the command buffer so
   // destroy it before those.
   scheduler_.reset();
@@ -606,6 +614,34 @@ void GpuCommandBufferStub::OnEnsureBackbuffer() {
   if (!surface_)
     return;
   surface_->SetBackbufferAllocation(true);
+}
+
+void GpuCommandBufferStub::AddSyncPoint(uint32 sync_point) {
+  sync_points_.push_back(sync_point);
+}
+
+void GpuCommandBufferStub::OnRetireSyncPoint(uint32 sync_point) {
+  DCHECK(!sync_points_.empty() && sync_points_.front() == sync_point);
+  sync_points_.pop_front();
+  GpuChannelManager* manager = channel_->gpu_channel_manager();
+  manager->sync_point_manager()->RetireSyncPoint(sync_point);
+}
+
+void GpuCommandBufferStub::OnWaitSyncPoint(uint32 sync_point) {
+  if (!scheduler_.get())
+    return;
+  scheduler_->SetScheduled(false);
+  GpuChannelManager* manager = channel_->gpu_channel_manager();
+  manager->sync_point_manager()->AddSyncPointCallback(
+      sync_point,
+      base::Bind(&GpuCommandBufferStub::OnSyncPointRetired,
+                 this->AsWeakPtr()));
+}
+
+void GpuCommandBufferStub::OnSyncPointRetired() {
+  if (!scheduler_.get())
+    return;
+  scheduler_->SetScheduled(true);
 }
 
 void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(

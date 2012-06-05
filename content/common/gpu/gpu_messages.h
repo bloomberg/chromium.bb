@@ -458,6 +458,23 @@ IPC_MESSAGE_ROUTED1(
     GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback,
     bool /* has_callback */)
 
+// Inserts a sync point into the channel. This is handled on the IO thread, so
+// can be expected to be reasonably fast, but the sync point is actually
+// retired in order with respect to the other calls. The sync point is shared
+// across channels.
+IPC_SYNC_MESSAGE_ROUTED0_1(GpuCommandBufferMsg_InsertSyncPoint,
+                           uint32 /* sync_point */)
+
+// Retires the sync point. Note: this message is not sent explicitly by the
+// renderer, but is synthesized by the GPU process.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_RetireSyncPoint,
+                    uint32 /* sync_point */)
+
+// Makes this command buffer wait on a sync point. Command buffer message
+// execution will be delayed until the sync point has been reached.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_WaitSyncPoint,
+                    uint32 /* sync_point */)
+
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Messages
 // These messages are sent from Renderer process to GPU process.

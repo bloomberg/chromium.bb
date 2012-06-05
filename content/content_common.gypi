@@ -199,6 +199,8 @@
     'common/gpu/media/mac_video_decode_accelerator.mm',
     'common/gpu/media/gpu_video_decode_accelerator.cc',
     'common/gpu/media/gpu_video_decode_accelerator.h',
+    'common/gpu/sync_point_manager.h',
+    'common/gpu/sync_point_manager.cc',
     'common/gpu/texture_image_transport_surface.h',
     'common/gpu/texture_image_transport_surface.cc',
     'common/handle_enumerator_win.cc',

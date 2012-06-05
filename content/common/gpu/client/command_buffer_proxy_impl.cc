@@ -416,6 +416,16 @@ bool CommandBufferProxyImpl::EnsureBackbuffer() {
   return Send(new GpuCommandBufferMsg_EnsureBackbuffer(route_id_));
 }
 
+uint32 CommandBufferProxyImpl::InsertSyncPoint() {
+  uint32 sync_point = 0;
+  Send(new GpuCommandBufferMsg_InsertSyncPoint(route_id_, &sync_point));
+  return sync_point;
+}
+
+void CommandBufferProxyImpl::WaitSyncPoint(uint32 sync_point) {
+  Send(new GpuCommandBufferMsg_WaitSyncPoint(route_id_, sync_point));
+}
+
 bool CommandBufferProxyImpl::SetParent(
     CommandBufferProxy* parent_command_buffer,
     uint32 parent_texture_id) {

@@ -9,6 +9,7 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/sync_point_manager.h"
 #include "ui/gl/gl_share_group.h"
 
 GpuChannelManager::GpuChannelManager(ChildThread* gpu_child_thread,
@@ -21,7 +22,8 @@ GpuChannelManager::GpuChannelManager(ChildThread* gpu_child_thread,
       gpu_child_thread_(gpu_child_thread),
       ALLOW_THIS_IN_INITIALIZER_LIST(gpu_memory_manager_(this,
           GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit)),
-      watchdog_(watchdog) {
+      watchdog_(watchdog),
+      sync_point_manager_(new SyncPointManager) {
   DCHECK(gpu_child_thread);
   DCHECK(io_message_loop);
   DCHECK(shutdown_event);

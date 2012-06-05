@@ -11,14 +11,18 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/message_loop_proxy.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/sync_point_manager.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "ipc/ipc_channel.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 
@@ -32,7 +36,101 @@ namespace {
 // allow a pattern of alternating fast and slow frames to occur.
 const int64 kHandleMoreWorkPeriodMs = 2;
 const int64 kHandleMoreWorkPeriodBusyMs = 1;
-}
+
+// This filter handles the GpuCommandBufferMsg_InsertSyncPoint message on the IO
+// thread, generating the sync point ID and responding immediately, and then
+// posting a task to insert the GpuCommandBufferMsg_RetireSyncPoint message into
+// the channel's queue.
+class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
+ public:
+  // Takes ownership of gpu_channel (see below).
+  SyncPointMessageFilter(base::WeakPtr<GpuChannel>* gpu_channel,
+                         scoped_refptr<SyncPointManager> sync_point_manager,
+                         scoped_refptr<base::MessageLoopProxy> message_loop)
+      : gpu_channel_(gpu_channel),
+        channel_(NULL),
+        sync_point_manager_(sync_point_manager),
+        message_loop_(message_loop) {
+  }
+
+  virtual void OnFilterAdded(IPC::Channel* channel) {
+    DCHECK(!channel_);
+    channel_ = channel;
+  }
+
+  virtual void OnFilterRemoved() {
+    DCHECK(channel_);
+    channel_ = NULL;
+  }
+
+  virtual bool OnMessageReceived(const IPC::Message& message) {
+    DCHECK(channel_);
+    if (message.type() == GpuCommandBufferMsg_InsertSyncPoint::ID) {
+      uint32 sync_point = sync_point_manager_->GenerateSyncPoint();
+      IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
+      GpuCommandBufferMsg_InsertSyncPoint::WriteReplyParams(reply, sync_point);
+      channel_->Send(reply);
+      message_loop_->PostTask(FROM_HERE, base::Bind(
+          &SyncPointMessageFilter::InsertSyncPointOnMainThread,
+          gpu_channel_,
+          sync_point_manager_,
+          message.routing_id(),
+          sync_point));
+      return true;
+    } else if (message.type() == GpuCommandBufferMsg_RetireSyncPoint::ID) {
+      // This message should not be sent explicitly by the renderer.
+      NOTREACHED();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+ protected:
+  virtual ~SyncPointMessageFilter() {
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &SyncPointMessageFilter::DeleteWeakPtrOnMainThread, gpu_channel_));
+  }
+
+ private:
+  static void InsertSyncPointOnMainThread(
+      base::WeakPtr<GpuChannel>* gpu_channel,
+      scoped_refptr<SyncPointManager> manager,
+      int32 routing_id,
+      uint32 sync_point) {
+    // This function must ensure that the sync point will be retired. Normally
+    // we'll find the stub based on the routing ID, and associate the sync point
+    // with it, but if that fails for any reason (channel or stub already
+    // deleted, invalid routing id), we need to retire the sync point
+    // immediately.
+    if (gpu_channel->get()) {
+      GpuCommandBufferStub* stub = gpu_channel->get()->LookupCommandBuffer(
+          routing_id);
+      if (stub) {
+        stub->AddSyncPoint(sync_point);
+        GpuCommandBufferMsg_RetireSyncPoint message(routing_id, sync_point);
+        gpu_channel->get()->OnMessageReceived(message);
+        return;
+      }
+    }
+    manager->RetireSyncPoint(sync_point);
+  }
+
+  static void DeleteWeakPtrOnMainThread(
+      base::WeakPtr<GpuChannel>* gpu_channel) {
+    delete gpu_channel;
+  }
+
+  // NOTE: this is a pointer to a weak pointer. It is never dereferenced on the
+  // IO thread, it's only passed through - therefore the WeakPtr assumptions are
+  // respected.
+  base::WeakPtr<GpuChannel>* gpu_channel_;
+  IPC::Channel* channel_;
+  scoped_refptr<SyncPointManager> sync_point_manager_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
+};
+
+}  // anonymous namespace
 
 GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        GpuWatchdog* watchdog,
@@ -72,6 +170,14 @@ bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
       io_message_loop,
       false,
       shutdown_event));
+
+  base::WeakPtr<GpuChannel>* weak_ptr(new base::WeakPtr<GpuChannel>(
+      weak_factory_.GetWeakPtr()));
+  scoped_refptr<SyncPointMessageFilter> filter(new SyncPointMessageFilter(
+      weak_ptr,
+      gpu_channel_manager_->sync_point_manager(),
+      base::MessageLoopProxy::current()));
+  channel_->AddFilter(filter);
 
   return true;
 }
