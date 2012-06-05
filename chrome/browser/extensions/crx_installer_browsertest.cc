@@ -178,9 +178,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, AllowOffStore) {
 #if defined(USE_AURA)
   // Off-store install cannot yet be disabled on Aura.
 #else
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableOffStoreExtensionInstall, "0");
-
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const bool kTestData[] = {false, true};
 
@@ -188,6 +185,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, AllowOffStore) {
     MockInstallUI* mock_ui = new MockInstallUI(browser()->profile());
     scoped_refptr<CrxInstaller> crx_installer(
         CrxInstaller::Create(service, mock_ui));
+    crx_installer->set_install_cause(
+        extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
     crx_installer->set_allow_off_store_install(kTestData[i]);
 
     crx_installer->InstallCrx(test_data_dir_.AppendASCII("good.crx"));

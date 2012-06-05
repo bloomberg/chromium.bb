@@ -64,7 +64,9 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
           service,
           CreateExtensionInstallUI(profile),
           WebstoreInstaller::GetAssociatedApproval(download_item)));
+
   installer->set_delete_source(true);
+  installer->set_install_cause(extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
 
   if (UserScript::IsURLUserScript(download_item.GetURL(),
                                   download_item.GetMimeType())) {
@@ -80,7 +82,6 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
     if (is_gallery_download)
       installer->set_original_download_url(download_item.GetOriginalUrl());
     installer->set_allow_silent_install(is_gallery_download);
-    installer->set_install_cause(extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
     installer->InstallCrx(download_item.GetFullPath());
   }
 

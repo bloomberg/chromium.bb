@@ -303,6 +303,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     scoped_refptr<CrxInstaller> installer(
         CrxInstaller::Create(service, install_ui));
     installer->set_expected_id(id);
+    installer->set_allow_off_store_install(true);
     installer->set_is_gallery_install(from_webstore);
 
     content::NotificationRegistrar registrar;

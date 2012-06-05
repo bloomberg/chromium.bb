@@ -57,13 +57,11 @@ using extensions::PermissionsUpdater;
 namespace {
 
 // Used in histograms; do not change order.
-enum WebStoreInstallDecision {
-  InstallAllowedBecauseStore,
-  InstallAllowedBecauseTheme,
-  InstallAllowedBecauseAllAllowed,
-  InstallAllowedBecauseThisAllowed,
-  InstallDisallowedBecauseOffStore,
-  NumWebStoreInstallDecision
+enum OffStoreInstallDecision {
+  OnStoreInstall,
+  OffStoreInstallAllowed,
+  OffStoreInstallDisallowed,
+  NumOffStoreInstallDecision
 };
 
 }  // namespace
@@ -206,27 +204,6 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(error);
 
-  const char* kHistogramName = "Extensions.WebStoreInstallDecision";
-  if (is_gallery_install()) {
-    UMA_HISTOGRAM_ENUMERATION(kHistogramName, InstallAllowedBecauseStore,
-                              NumWebStoreInstallDecision);
-  } else if (extension->is_theme()) {
-    UMA_HISTOGRAM_ENUMERATION(kHistogramName, InstallAllowedBecauseTheme,
-                              NumWebStoreInstallDecision);
-  } else if (extensions::switch_utils::IsOffStoreInstallEnabled()) {
-    UMA_HISTOGRAM_ENUMERATION(kHistogramName, InstallAllowedBecauseAllAllowed,
-                              NumWebStoreInstallDecision);
-  } else if (allow_off_store_install_) {
-    UMA_HISTOGRAM_ENUMERATION(kHistogramName, InstallAllowedBecauseThisAllowed,
-                              NumWebStoreInstallDecision);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(kHistogramName, InstallDisallowedBecauseOffStore,
-                              NumWebStoreInstallDecision);
-    *error = l10n_util::GetStringUTF16(
-        IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE);
-    return false;
-  }
-
   // Make sure the expected ID matches if one was supplied or if we want to
   // bypass the prompt.
   if ((approved_ || !expected_id_.empty()) &&
@@ -264,6 +241,34 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
   if (!extensions_enabled_) {
     *error = l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_NOT_ENABLED);
     return false;
+  }
+
+  if (install_cause_ == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD) {
+    if (extensions::switch_utils::IsOffStoreInstallEnabled()) {
+      const char* kHistogramName = "Extensions.OffStoreInstallDecisionEasy";
+      if (is_gallery_install()) {
+        UMA_HISTOGRAM_ENUMERATION(kHistogramName, OnStoreInstall,
+                                  NumOffStoreInstallDecision);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(kHistogramName, OffStoreInstallAllowed,
+                                  NumOffStoreInstallDecision);
+      }
+    } else {
+      const char* kHistogramName = "Extensions.OffStoreInstallDecisionHard";
+      if (is_gallery_install()) {
+        UMA_HISTOGRAM_ENUMERATION(kHistogramName, OnStoreInstall,
+                                  NumOffStoreInstallDecision);
+      } else if (allow_off_store_install_) {
+        UMA_HISTOGRAM_ENUMERATION(kHistogramName, OffStoreInstallAllowed,
+                                  NumOffStoreInstallDecision);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(kHistogramName, OffStoreInstallDisallowed,
+                                  NumOffStoreInstallDecision);
+        *error = l10n_util::GetStringUTF16(
+            IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE);
+        return false;
+      }
+    }
   }
 
   if (extension_->is_app()) {
