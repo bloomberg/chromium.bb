@@ -560,32 +560,14 @@ gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
 }
 
 void RenderWidgetHostViewMac::UpdateCursor(const WebCursor& cursor) {
-  current_cursor_ = cursor;
-  UpdateCursorIfNecessary();
-}
-
-void RenderWidgetHostViewMac::UpdateCursorIfNecessary() {
-  // Do something special (as Win Chromium does) for arrow cursor while loading
-  // a page? TODO(avi): decide
-
-  // Don't update the cursor if a context menu is being shown.
-  if (IsShowingContextMenu())
-    return;
-
-  // Can we synchronize to the event stream? Switch to -[NSWindow
-  // mouseLocationOutsideOfEventStream] if we cannot. TODO(avi): test and see
-  NSEvent* event = [[cocoa_view_ window] currentEvent];
-  if ([event window] != [cocoa_view_ window])
-    return;
-
-  NSCursor* ns_cursor = current_cursor_.GetNativeCursor();
-  [ns_cursor set];
+  WebCursor web_cursor = cursor;
+  [cocoa_view_ updateCursor:web_cursor.GetNativeCursor()];
 }
 
 void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
   is_loading_ = is_loading;
   // If we ever decide to show the waiting cursor while the page is loading
-  // like Chrome does on Windows, call |UpdateCursorIfNecessary()| here.
+  // like Chrome does on Windows, call |UpdateCursor()| here.
 }
 
 void RenderWidgetHostViewMac::TextInputStateChanged(
@@ -766,11 +748,6 @@ void RenderWidgetHostViewMac::SelectionChanged(const string16& text,
 
 void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
   content::RenderWidgetHostViewBase::SetShowingContextMenu(showing);
-
-  // If the menu was closed, restore the cursor to the saved version initially,
-  // as the renderer will not re-send it if there was no change.
-  if (!showing)
-    UpdateCursorIfNecessary();
 
   // Create a fake mouse event to inform the render widget that the mouse
   // left or entered.
@@ -1317,6 +1294,13 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
   [super dealloc];
+}
+
+- (void)resetCursorRects {
+  if (currentCursor_) {
+    [self addCursorRect:[self visibleRect] cursor:currentCursor_];
+    [currentCursor_ setOnMouseEntered:YES];
+  }
 }
 
 - (void)setRWHVDelegate:(NSObject<RenderWidgetHostViewMacDelegate>*)delegate {
@@ -2922,6 +2906,14 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   RenderWidgetHostImpl* widget = renderWidgetHostView_->render_widget_host_;
   if (widget)
     widget->Send(new ViewMsg_SetInLiveResize(widget->GetRoutingID(), false));
+}
+
+- (void)updateCursor:(NSCursor*)cursor {
+  if (currentCursor_ == cursor)
+    return;
+
+  currentCursor_.reset(cursor, base::scoped_policy::RETAIN);
+  [[self window] invalidateCursorRectsForView:self];
 }
 
 @end

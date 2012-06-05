@@ -66,6 +66,9 @@ class RenderWidgetHostImpl;
 
   NSWindow* lastWindow_;  // weak
 
+  // The cursor for the page. This is passed up from the renderer.
+  scoped_nsobject<NSCursor> currentCursor_;
+
   // Variables used by our implementaion of the NSTextInput protocol.
   // An input method of Mac calls the methods of this protocol not only to
   // notify an application of its status, but also to retrieve the status of
@@ -154,7 +157,7 @@ class RenderWidgetHostImpl;
 // Evaluates the event in the context of plugin IME, if plugin IME is enabled.
 // Returns YES if the event was handled.
 - (BOOL)postProcessEventForPluginIme:(NSEvent*)event;
-
+- (void)updateCursor:(NSCursor*)cursor;
 @end
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -388,9 +391,6 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   // Returns whether this render view is a popup (autocomplete window).
   bool IsPopup() const;
 
-  // Updates the display cursor if the current event is over the view's window.
-  void UpdateCursorIfNecessary();
-
   // Shuts down the render_widget_host_.  This is a separate function so we can
   // invoke it from the message loop.
   void ShutdownHost();
@@ -403,9 +403,6 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   // The associated view. This is weak and is inserted into the view hierarchy
   // to own this RenderWidgetHostViewMac object.
   RenderWidgetHostViewCocoa* cocoa_view_;
-
-  // The cursor for the page. This is passed up from the renderer.
-  WebCursor current_cursor_;
 
   // Indicates if the page is loading.
   bool is_loading_;
