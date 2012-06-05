@@ -778,7 +778,7 @@ TabDragController::DragBrowserToNewTabStrip(
     target_tabstrip->OwnDragController(this);
     // Disable animations so that we don't see a close animation on aero.
     browser_widget->SetVisibilityChangedAnimationsEnabled(false);
-    browser_widget->ReleaseMouseCapture();
+    browser_widget->ReleaseCapture();
     // EndMoveLoop is going to snap the window back to its original location.
     // Hide it so users don't see this.
     browser_widget->Hide();
@@ -1118,7 +1118,7 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
   // window has mouse capture. This is important so that if activation changes
   // the drag isn't prematurely canceled.
   if (detach_into_browser_) {
-    attached_tabstrip_->GetWidget()->SetMouseCapture(attached_tabstrip_);
+    attached_tabstrip_->GetWidget()->SetCapture(attached_tabstrip_);
     attached_tabstrip_->OwnDragController(this);
   }
 
@@ -1136,7 +1136,7 @@ void TabDragController::Detach() {
   // reattach ownership is transfered.
   if (detach_into_browser_) {
     attached_tabstrip_->ReleaseDragController();
-    attached_tabstrip_->GetWidget()->ReleaseMouseCapture();
+    attached_tabstrip_->GetWidget()->ReleaseCapture();
   }
 
   mouse_move_direction_ = kMovedMouseLeft | kMovedMouseRight;
@@ -1253,7 +1253,7 @@ void TabDragController::RunMoveLoop() {
   // destroying the drag loop. Release mouse capture ourself before this while
   // the DragController isn't owned by the TabStrip.
   attached_tabstrip_->ReleaseDragController();
-  attached_tabstrip_->GetWidget()->ReleaseMouseCapture();
+  attached_tabstrip_->GetWidget()->ReleaseCapture();
   attached_tabstrip_->OwnDragController(this);
   views::Widget::MoveLoopResult result = move_loop_widget_->RunMoveLoop();
   content::NotificationService::current()->Notify(
@@ -1284,7 +1284,7 @@ void TabDragController::RunMoveLoop() {
       tab_strip_to_attach_to_after_exit_ = NULL;
     }
     DCHECK(attached_tabstrip_);
-    attached_tabstrip_->GetWidget()->SetMouseCapture(attached_tabstrip_);
+    attached_tabstrip_->GetWidget()->SetCapture(attached_tabstrip_);
   } else if (active_) {
     EndDrag(result == views::Widget::MOVE_LOOP_CANCELED);
   }

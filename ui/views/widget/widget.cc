@@ -169,6 +169,7 @@ Widget::Widget()
       native_widget_initialized_(false),
       native_widget_destroyed_(false),
       is_mouse_button_pressed_(false),
+      is_touch_down_(false),
       last_mouse_event_was_move_(false) {
 }
 
@@ -824,16 +825,23 @@ NativeWidget* Widget::native_widget() {
   return native_widget_;
 }
 
-void Widget::SetMouseCapture(views::View* view) {
-  is_mouse_button_pressed_ = true;
+void Widget::SetCapture(views::View* view) {
+  if (internal::NativeWidgetPrivate::IsMouseButtonDown())
+    is_mouse_button_pressed_ = true;
+  if (internal::NativeWidgetPrivate::IsTouchDown())
+    is_touch_down_ = true;
   root_view_->SetMouseHandler(view);
   if (!native_widget_->HasCapture())
     native_widget_->SetCapture();
 }
 
-void Widget::ReleaseMouseCapture() {
+void Widget::ReleaseCapture() {
   if (native_widget_->HasCapture())
     native_widget_->ReleaseCapture();
+}
+
+bool Widget::HasCapture() {
+  return native_widget_->HasCapture();
 }
 
 const Event* Widget::GetCurrentEvent() {
@@ -1087,8 +1095,9 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
 }
 
 void Widget::OnMouseCaptureLost() {
-  if (is_mouse_button_pressed_)
+  if (is_mouse_button_pressed_ || is_touch_down_)
     GetRootView()->OnMouseCaptureLost();
+  is_touch_down_ = false;
   is_mouse_button_pressed_ = false;
 }
 
@@ -1099,6 +1108,22 @@ ui::TouchStatus Widget::OnTouchEvent(const TouchEvent& event) {
 
 ui::GestureStatus Widget::OnGestureEvent(const GestureEvent& event) {
   ScopedEvent scoped(this, event);
+  switch (event.type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      is_touch_down_ = true;
+      // We explicitly don't capture here. Not capturing enables multiple
+      // widgets to get tap events at the same time. Views (such as tab
+      // dragging) may explicitly capture.
+      break;
+
+    case ui::ET_GESTURE_TAP_UP:
+      is_touch_down_ = false;
+      ReleaseCapture();
+      break;
+
+    default:
+      break;
+  }
   return GetRootView()->OnGestureEvent(event);
 }
 

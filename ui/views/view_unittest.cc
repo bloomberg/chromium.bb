@@ -602,6 +602,10 @@ TEST_F(ViewTest, GestureEvent) {
   EXPECT_EQ(gfx::Point(10, 10), v2->location_);
   EXPECT_EQ(ui::ET_UNKNOWN, v1->last_gesture_event_type_);
 
+  // Simulate an up so that RootView is no longer targetting |v3|.
+  GestureEventForTest g1_up(ui::ET_GESTURE_TAP_UP, 110, 110, 0);
+  root->OnGestureEvent(g1_up);
+
   v1->Reset();
   v2->Reset();
   v3->Reset();
@@ -612,6 +616,15 @@ TEST_F(ViewTest, GestureEvent) {
   EXPECT_EQ(ui::ET_GESTURE_TAP, v1->last_gesture_event_type_);
   EXPECT_EQ(gfx::Point(80, 80), v1->location_);
   EXPECT_EQ(ui::ET_UNKNOWN, v2->last_gesture_event_type_);
+
+  // Send event |g1| again. Even though the coordinates target |v3| it should go
+  // to |v1| as that is the view the touch was initially down on.
+  v1->last_gesture_event_type_ = ui::ET_UNKNOWN;
+  v3->last_gesture_event_type_ = ui::ET_UNKNOWN;
+  root->OnGestureEvent(g1);
+  EXPECT_EQ(ui::ET_GESTURE_TAP, v1->last_gesture_event_type_);
+  EXPECT_EQ(ui::ET_UNKNOWN, v3->last_gesture_event_type_);
+  EXPECT_EQ("110,110", v1->location_.ToString());
 
   widget->CloseNow();
 }

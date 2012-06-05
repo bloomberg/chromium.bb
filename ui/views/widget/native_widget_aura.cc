@@ -985,5 +985,10 @@ bool NativeWidgetPrivate::IsMouseButtonDown() {
   return aura::Env::GetInstance()->is_mouse_button_down();
 }
 
+// static
+bool NativeWidgetPrivate::IsTouchDown() {
+  return aura::Env::GetInstance()->is_touch_down();
+}
+
 }  // namespace internal
 }  // namespace views

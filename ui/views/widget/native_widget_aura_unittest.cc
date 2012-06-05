@@ -5,10 +5,13 @@
 #include "ui/views/widget/native_widget_aura.h"
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/aura_switches.h"
 #include "ui/aura/env.h"
+#include "ui/aura/event.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
@@ -16,6 +19,7 @@
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -175,6 +179,133 @@ TEST_F(NativeWidgetAuraTest, GetClientAreaScreenBounds) {
   EXPECT_EQ(20, client_bounds.y());
   EXPECT_EQ(300, client_bounds.width());
   EXPECT_EQ(400, client_bounds.height());
+}
+
+namespace {
+
+// View subclass that tracks whether it has gotten a gesture event.
+class GestureTrackingView : public views::View {
+ public:
+  GestureTrackingView()
+      : got_gesture_event_(false),
+        consume_gesture_event_(true) {}
+
+  void set_consume_gesture_event(bool value) {
+    consume_gesture_event_ = value;
+  }
+
+  void clear_got_gesture_event() {
+    got_gesture_event_ = false;
+  }
+  bool got_gesture_event() const {
+    return got_gesture_event_;
+  }
+
+  // View overrides:
+  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE {
+    got_gesture_event_ = true;
+    return consume_gesture_event_ ? ui::GESTURE_STATUS_CONSUMED :
+        ui::GESTURE_STATUS_UNKNOWN;
+  }
+
+ private:
+  // Was OnGestureEvent() invoked?
+  bool got_gesture_event_;
+
+  // Dictates what OnGestureEvent() returns.
+  bool consume_gesture_event_;
+
+  DISALLOW_COPY_AND_ASSIGN(GestureTrackingView);
+};
+
+}  // namespace
+
+// Verifies a capture isn't set on touch press and that the view that gets
+// the press gets the release.
+TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAuraDisableMouseEventsFromTouch);
+  // Create two views (both sized the same). |child| is configured not to
+  // consume the gesture event.
+  GestureTrackingView* view = new GestureTrackingView();
+  GestureTrackingView* child = new GestureTrackingView();
+  child->set_consume_gesture_event(false);
+  view->SetLayoutManager(new FillLayout);
+  view->AddChildView(child);
+  scoped_ptr<TestWidget> widget(new TestWidget());
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 100, 200);
+  widget->Init(params);
+  widget->SetContentsView(view);
+  widget->Show();
+
+  aura::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(41, 51), 1,
+                         base::TimeDelta());
+  root_window()->DispatchTouchEvent(&press);
+  // Both views should get the press.
+  EXPECT_TRUE(view->got_gesture_event());
+  EXPECT_TRUE(child->got_gesture_event());
+  view->clear_got_gesture_event();
+  child->clear_got_gesture_event();
+  // Touch events should not automatically grab capture.
+  EXPECT_FALSE(widget->HasCapture());
+
+  // Release touch. Only |view| should get the release since that it consumed
+  // the press.
+  aura::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(250, 251), 1,
+                           base::TimeDelta());
+  root_window()->DispatchTouchEvent(&release);
+  EXPECT_TRUE(view->got_gesture_event());
+  EXPECT_FALSE(child->got_gesture_event());
+  view->clear_got_gesture_event();
+
+  // Work around for bug in NativeWidgetAura.
+  // TODO: fix bug and remove this.
+  widget->Close();
+}
+
+TEST_F(NativeWidgetAuraTest, ReleaseCaptureOnTouchRelease) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAuraDisableMouseEventsFromTouch);
+  GestureTrackingView* view = new GestureTrackingView();
+  scoped_ptr<TestWidget> widget(new TestWidget());
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 100, 200);
+  widget->Init(params);
+  widget->SetContentsView(view);
+  widget->Show();
+
+  aura::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(41, 51), 1,
+                         base::TimeDelta());
+  root_window()->DispatchTouchEvent(&press);
+  EXPECT_TRUE(view->got_gesture_event());
+  view->clear_got_gesture_event();
+  // Set the capture.
+  widget->SetCapture(view);
+  EXPECT_TRUE(widget->HasCapture());
+
+  // Press outside the bounds of the widget, it should still go to |view| since
+  // it set the capture.
+  aura::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(241, 251), 2,
+                          base::TimeDelta());
+  root_window()->DispatchTouchEvent(&press2);
+  EXPECT_TRUE(view->got_gesture_event());
+  view->clear_got_gesture_event();
+  EXPECT_TRUE(widget->HasCapture());
+
+  // Generate a release, this should trigger releasing capture.
+  aura::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(241, 251), 2,
+                           base::TimeDelta());
+  root_window()->DispatchTouchEvent(&release);
+  EXPECT_TRUE(view->got_gesture_event());
+  view->clear_got_gesture_event();
+  EXPECT_FALSE(widget->HasCapture());
+
+  // Work around for bug in NativeWidgetAura.
+  // TODO: fix bug and remove this.
+  widget->Close();
 }
 
 }  // namespace

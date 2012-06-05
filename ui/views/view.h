@@ -600,6 +600,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Note: if the mouse handler is no longer connected to a
   // view hierarchy, events won't be sent.
   //
+  // TODO(sky): rename this.
   virtual void SetMouseHandler(View* new_mouse_handler);
 
   // Invoked when a key is pressed or released.
@@ -1272,10 +1273,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // RootView will invoke this with incoming TouchEvents. Returns the result
   // of OnTouchEvent.
   ui::TouchStatus ProcessTouchEvent(const TouchEvent& event);
-
-  // RootView will invoke this with incoming GestureEvents. Returns the result
-  // of OnGestureEvent.
-  ui::GestureStatus ProcessGestureEvent(const GestureEvent& event);
 
   // Accelerators --------------------------------------------------------------
 

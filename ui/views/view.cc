@@ -829,8 +829,8 @@ ui::GestureStatus View::OnGestureEvent(const GestureEvent& event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 
-void View::SetMouseHandler(View *new_mouse_handler) {
-  // It is valid for new_mouse_handler to be NULL
+void View::SetMouseHandler(View* new_mouse_handler) {
+  // |new_mouse_handler| may be NULL.
   if (parent_)
     parent_->SetMouseHandler(new_mouse_handler);
 }
@@ -854,12 +854,6 @@ ui::TextInputClient* View::GetTextInputClient() {
 InputMethod* View::GetInputMethod() {
   Widget* widget = GetWidget();
   return widget ? widget->GetInputMethod() : NULL;
-}
-
-ui::GestureStatus View::ProcessGestureEvent(const GestureEvent& event) {
-  // TODO(Gajen): Implement a grab scheme similar to as as is found in
-  //              MousePressed.
-  return OnGestureEvent(event);
 }
 
 // Accelerators ----------------------------------------------------------------

@@ -68,6 +68,9 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   // Returns true if any mouse button is currently down.
   static bool IsMouseButtonDown();
 
+  // Returns true if any touch device is currently down.
+  static bool IsTouchDown();
+
   // Initializes the NativeWidget.
   virtual void InitNativeWidget(const Widget::InitParams& params) = 0;
 

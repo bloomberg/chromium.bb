@@ -566,11 +566,15 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     return native_widget_;
   }
 
-  // Sets mouse capture on the specified view.
-  void SetMouseCapture(views::View* view);
+  // Sets capture to the specified view. This makes it so that all mouse, touch
+  // and gesture events go to |view|.
+  void SetCapture(views::View* view);
 
-  // Releases mouse capture.
-  void ReleaseMouseCapture();
+  // Releases capture.
+  void ReleaseCapture();
+
+  // Returns true if the widget has capture.
+  bool HasCapture();
 
   // Returns the current event being processed. If there are multiple events
   // being processed at the same time (e.g. one event triggers another event),
@@ -772,6 +776,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // TODO(beng): Remove NativeWidgetGtk's dependence on these:
   // If true, the mouse is currently down.
   bool is_mouse_button_pressed_;
+
+  // If true, a touch device is currently down.
+  bool is_touch_down_;
 
   // TODO(beng): Remove NativeWidgetGtk's dependence on these:
   // The following are used to detect duplicate mouse move events and not
