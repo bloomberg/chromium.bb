@@ -323,7 +323,7 @@ class Binary3RegisterOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOp);
 };
 
-// Models a 2-register load/store immediate operation of the forms:
+// Models a 2-register load/store 8-bit immediate operation of the forms:
 // Op<c> <Rt>, [<Rn>{, #+/-<imm8>}]
 // Op<c> <Rt>, [<Rn>], #+/-<imm8>
 // Op<c> <Rt>, [<Rn>, #+/-<imm8>]!
@@ -338,7 +338,7 @@ class Binary3RegisterOp : public ClassDecoder {
 // if Rt=15 then Unpredictable
 // if wback && (Rn=15 or Rn=Rt) then unpredictable.
 // NaCl disallows writing to PC.
-class LoadStore2RegisterImmediateOp : public ClassDecoder {
+class LoadStore2RegisterImm8Op : public ClassDecoder {
  public:
   static const Imm4Bits0To3Interface imm4L;
   static const Imm4Bits8To11Interface imm4H;
@@ -348,8 +348,8 @@ class LoadStore2RegisterImmediateOp : public ClassDecoder {
   static const AddOffsetBit23Interface direction;
   static const PrePostIndexingBit24Interface indexing;
   static const ConditionBits28To31Interface cond;
-  inline LoadStore2RegisterImmediateOp() : ClassDecoder() {}
-  virtual ~LoadStore2RegisterImmediateOp() {}
+  inline LoadStore2RegisterImm8Op() : ClassDecoder(), is_load_(false) {}
+  virtual ~LoadStore2RegisterImm8Op() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(const Instruction i) const;
@@ -357,75 +357,175 @@ class LoadStore2RegisterImmediateOp : public ClassDecoder {
     return indexing.IsPostIndexing(i) || writes.IsDefined(i);
   }
 
+ protected:
+  bool is_load_;  // true if load (rather than store).
+
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImmediateOp);
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImm8Op);
 };
 
 // Defines the virtuals for a load immediate instruction.
-class Load2RegisterImmediateOp : public LoadStore2RegisterImmediateOp {
+class Load2RegisterImm8Op : public LoadStore2RegisterImm8Op {
  public:
-  inline Load2RegisterImmediateOp() : LoadStore2RegisterImmediateOp() {}
-  virtual ~Load2RegisterImmediateOp() {}
+  inline Load2RegisterImm8Op() : LoadStore2RegisterImm8Op() {
+    is_load_ = true;
+  }
+  virtual ~Load2RegisterImm8Op() {}
   virtual RegisterList defs(Instruction i) const;
   virtual bool offset_is_immediate(Instruction i) const;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Load2RegisterImmediateOp);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Load2RegisterImm8Op);
 };
 
 // Defines the virtuals for a store immediate instruction.
-class Store2RegisterImmediateOp : public LoadStore2RegisterImmediateOp {
+class Store2RegisterImm8Op : public LoadStore2RegisterImm8Op {
  public:
-  inline Store2RegisterImmediateOp() : LoadStore2RegisterImmediateOp() {}
-  virtual ~Store2RegisterImmediateOp() {}
+  inline Store2RegisterImm8Op() : LoadStore2RegisterImm8Op() {
+    is_load_ = false;
+  }
+  virtual ~Store2RegisterImm8Op() {}
   virtual RegisterList defs(Instruction i) const;
 
  protected:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImmediateOp);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImm8Op);
 };
 
 // Models a 2-register immediate load/store operation where the source/target
 // is double wide (i.e.  Rt and Rt2).
-class LoadStore2RegisterImmediateDoubleOp
-    : public LoadStore2RegisterImmediateOp {
+class LoadStore2RegisterImm8DoubleOp
+    : public LoadStore2RegisterImm8Op {
  public:
   // Interface for components in the instruction (and not inherited).
   static const RegT2Bits12To15Interface t2;
 
-  LoadStore2RegisterImmediateDoubleOp()
-      : LoadStore2RegisterImmediateOp() {}
-  virtual ~LoadStore2RegisterImmediateDoubleOp() {}
+  LoadStore2RegisterImm8DoubleOp()
+      : LoadStore2RegisterImm8Op() {}
+  virtual ~LoadStore2RegisterImm8DoubleOp() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImmediateDoubleOp);
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImm8DoubleOp);
 };
 
 // Defines the virtuals for a load immediate double instruction.
-class Load2RegisterImmediateDoubleOp
-    : public LoadStore2RegisterImmediateDoubleOp {
+class Load2RegisterImm8DoubleOp
+    : public LoadStore2RegisterImm8DoubleOp {
  public:
-  inline Load2RegisterImmediateDoubleOp()
-      : LoadStore2RegisterImmediateDoubleOp() {}
-  virtual ~Load2RegisterImmediateDoubleOp() {}
+  inline Load2RegisterImm8DoubleOp() : LoadStore2RegisterImm8DoubleOp() {
+    is_load_ = true;
+  }
+  virtual ~Load2RegisterImm8DoubleOp() {}
   virtual RegisterList defs(Instruction i) const;
   virtual bool offset_is_immediate(Instruction i) const;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Load2RegisterImmediateDoubleOp);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Load2RegisterImm8DoubleOp);
 };
 
 // Defines the virtuals for a store immediate double instruction.
-class Store2RegisterImmediateDoubleOp
-    : public LoadStore2RegisterImmediateDoubleOp {
+class Store2RegisterImm8DoubleOp
+    : public LoadStore2RegisterImm8DoubleOp {
  public:
-  inline Store2RegisterImmediateDoubleOp()
-      : LoadStore2RegisterImmediateDoubleOp() {}
-  virtual ~Store2RegisterImmediateDoubleOp() {}
+  inline Store2RegisterImm8DoubleOp()
+      : LoadStore2RegisterImm8DoubleOp() {
+    is_load_ = false;
+  }
+  virtual ~Store2RegisterImm8DoubleOp() {}
   virtual RegisterList defs(Instruction i) const;
 
  protected:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImmediateDoubleOp);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImm8DoubleOp);
+};
+
+// Models a 2-register load/store 12-bit immediate operation of the forms:
+// Op<c> <Rt>, [<Rn> {, #+/-<imm12>}]
+// Op<c> <Rt>, [<Rn>], #+/-<imm12>
+// Op<c> <Rt>, [<Rn>, #+/-<imm12>]
+// +--------+------+--+--+--+--+--+--------+--------+------------------------+
+// |31302928|272625|24|23|22|21|20|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+------+--+--+--+--+--+--------+--------+------------------------+
+// |  conds |      | P| U|  | w|  |   Rn   |   Rt   |        imm12           |
+// +--------+------+--+--+--+--+--+--------+--------+------------------------+
+// wback = (P=0 || W==1)
+//
+// if P=0 and W=1, should not parse as this instruction.
+// if wback && (Rn=15 or Rn=Rt) then unpredictable.
+// NaCl disallows writing to PC.
+//
+// Note: NaCl disallows Rt=PC for stores (not just loads), even
+// though it isn't a requirement of the corresponding baseline
+// classees. This is done so that StrImmediate (in the actual class
+// decoders) behave the same as instances of this. This simplifies
+// what we need to model in actual classes.
+//
+// For store register immediate (Str rule 194, A1 on page 384):
+// if Rn=Sp && P=1 && U=0 && W=1 && imm12=4, then PUSH (A8.6.123, A2 on A8-248).
+//    Note: This is just a special case instruction that behaves like a
+//    Store2RegisterImm12Op instruction. That is, the push saves the
+//    value of Rt at Sp-4, and then decrements sp by 4. Since this doesn't
+//    effect the NaCl constraints we need for such stores, we do not model
+//    it as a special instruction.
+//
+// For load register immediate (Ldr rule 59, A1 on page 122):
+// If Rn=Sp && P=0 && U=1 && W=0 && imm12=4, then POP ().
+//    Note: This is just a speciial case instruction that behaves like a
+//    Load2RegisterImm12Op instruction. That is, the pop loads from the
+//    top of stack the value of Rt, and then increments the stack by 4. Since
+//    this doesn't effect the NaCl constraints we need for such loads, we do
+//    not model it as a special instruction.
+class LoadStore2RegisterImm12Op : public ClassDecoder {
+ public:
+  static const Imm12Bits0To11Interface imm12;
+  static const RegTBits12To15Interface t;
+  static const RegNBits16To19Interface n;
+  static const WritesBit21Interface writes;
+  static const AddOffsetBit23Interface direction;
+  static const PrePostIndexingBit24Interface indexing;
+  static const ConditionBits28To31Interface cond;
+  inline LoadStore2RegisterImm12Op() : ClassDecoder() , is_load_(false) {}
+  virtual ~LoadStore2RegisterImm12Op() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual Register base_address_register(const Instruction i) const;
+  inline bool HasWriteBack(const Instruction i) const {
+    return indexing.IsPostIndexing(i) || writes.IsDefined(i);
+  }
+
+ protected:
+  bool is_load_;  // true if load (rather than store).
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImm12Op);
+};
+
+// Defines the virtuals for a load immediate instruction.
+class Load2RegisterImm12Op : public LoadStore2RegisterImm12Op {
+ public:
+  inline Load2RegisterImm12Op() : LoadStore2RegisterImm12Op() {
+    is_load_ = true;
+  }
+  virtual ~Load2RegisterImm12Op() {}
+  virtual RegisterList defs(Instruction i) const;
+  virtual bool offset_is_immediate(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Load2RegisterImm12Op);
+};
+
+// Defines the virtuals for a store immediate instruction.
+// Note: See class LoadStore2RegisterImm12Op for more information
+// on how PUSH (i.e. when Rn=Sp && U=0 && W=1 && Imm12=4) is handled.
+class Store2RegisterImm12Op : public LoadStore2RegisterImm12Op {
+ public:
+  inline Store2RegisterImm12Op() : LoadStore2RegisterImm12Op() {
+    is_load_ = false;
+  }
+  virtual ~Store2RegisterImm12Op() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ protected:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImm12Op);
 };
 
 // Models a 3-register binary operation of the form:
@@ -607,13 +707,16 @@ class LoadStore3RegisterOp : public ClassDecoder {
   static const PrePostIndexingBit24Interface indexing;
   static const ConditionBits28To31Interface cond;
 
-  inline LoadStore3RegisterOp() : ClassDecoder() {}
+  inline LoadStore3RegisterOp() : ClassDecoder(), is_load_(false) {}
   virtual ~LoadStore3RegisterOp() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual Register base_address_register(const Instruction i) const;
   inline bool HasWriteBack(const Instruction i) const {
     return indexing.IsPostIndexing(i) || writes.IsDefined(i);
   }
+
+ protected:
+  bool is_load_;  // true if load (rather than store).
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore3RegisterOp);
@@ -622,7 +725,9 @@ class LoadStore3RegisterOp : public ClassDecoder {
 // Defines the virtuals for a load register instruction.
 class Load3RegisterOp : public LoadStore3RegisterOp {
  public:
-  inline Load3RegisterOp() : LoadStore3RegisterOp() {}
+  inline Load3RegisterOp() : LoadStore3RegisterOp() {
+    is_load_ = true;
+  }
   virtual ~Load3RegisterOp() {}
   virtual RegisterList defs(Instruction i) const;
 
@@ -633,7 +738,9 @@ class Load3RegisterOp : public LoadStore3RegisterOp {
 // Defines the virtuals for a store register instruction.
 class Store3RegisterOp : public LoadStore3RegisterOp {
  public:
-  inline Store3RegisterOp() : LoadStore3RegisterOp() {}
+  inline Store3RegisterOp() : LoadStore3RegisterOp() {
+    is_load_ = false;
+  }
   virtual ~Store3RegisterOp() {}
   virtual RegisterList defs(Instruction i) const;
 
@@ -659,7 +766,9 @@ class LoadStore3RegisterDoubleOp : public LoadStore3RegisterOp {
 // Defines the virtuals for a load double register instruction
 class Load3RegisterDoubleOp : public LoadStore3RegisterDoubleOp {
  public:
-  Load3RegisterDoubleOp() : LoadStore3RegisterDoubleOp() {}
+  Load3RegisterDoubleOp() : LoadStore3RegisterDoubleOp() {
+    is_load_ = true;
+  }
   virtual ~Load3RegisterDoubleOp() {}
   virtual RegisterList defs(Instruction i) const;
 
@@ -670,12 +779,95 @@ class Load3RegisterDoubleOp : public LoadStore3RegisterDoubleOp {
 // Defines the virtuals for s store double register instruction.
 class Store3RegisterDoubleOp : public LoadStore3RegisterDoubleOp {
  public:
-  Store3RegisterDoubleOp() : LoadStore3RegisterDoubleOp() {}
+  Store3RegisterDoubleOp() : LoadStore3RegisterDoubleOp() {
+    is_load_ = false;
+  }
   virtual ~Store3RegisterDoubleOp() {}
   virtual RegisterList defs(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Store3RegisterDoubleOp);
+};
+
+// Models a 3-register with (shifted) immediate 5 load/store operation of
+// the forms:
+// Op<c> <Rt>, [<Rn>, +/-<Rm> {, <shift>}]{!}
+// Op<c> <Rt>, [<Rn>], +-<Rm> {, <shift>}
+// +------+------+--+--+--+--+--+--------+--------+----------+----+--+---------+
+// |31..28|272625|24|23|22|21|20|19181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0 |
+// +------+------+--+--+--+--+--+--------+--------+----------+----+--+---------+
+// | cond |      | P| U|  | W|  |   Rm   |   Rt   |   imm5   |type|  |    Rm   |
+// +------+------+--+--+--+--+--+--------+--------+----------+----+--+---------+
+// wback = (P=0 || W=1)
+//
+// If P=0 and W=1, should not parse as this instruction.
+// If Rm=15 then unpredicatble.
+// If wback && (Rn=15 or Rn=Rt) then unpredictable.
+// if ArchVersion() < 6 && wback && Rm=Rn then unpredictable.
+// NaCl Disallows writing to PC.
+//
+// Note: We NaCl disallow Rt=PC for stores (not just loads), even
+// though it isn't a requirement of the corresponding baseline
+// classes. This is done so that StrRegister (in the actual class
+// decoders) behave the same as this. This simplifies what we need to
+// model in actual classes.
+class LoadStore3RegisterImm5Op : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegMBits0To3Interface m;
+  static const RegTBits12To15Interface t;
+  static const RegNBits16To19Interface n;
+  static const WritesBit21Interface writes;
+  static const AddOffsetBit23Interface direction;
+  static const PrePostIndexingBit24Interface indexing;
+  static const ConditionBits28To31Interface cond;
+  static const ShiftTypeBits5To6Interface shift_type;
+  static const Imm5Bits7To11Interface imm;
+
+  inline LoadStore3RegisterImm5Op() : ClassDecoder(), is_load_(false) {}
+  virtual ~LoadStore3RegisterImm5Op() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual Register base_address_register(const Instruction i) const;
+  inline bool HasWriteBack(const Instruction i) const {
+    return indexing.IsPostIndexing(i) || writes.IsDefined(i);
+  }
+
+  // The immediate value stored in the instruction.
+  inline uint32_t ImmediateValue(const Instruction& i) const {
+    return shift_type.DecodeImmShift(i, imm.value(i));
+  }
+
+ protected:
+  bool is_load_;  // true if load (rather than store).
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore3RegisterImm5Op);
+};
+
+// Defines the virtuals for a load register instruction.
+class Load3RegisterImm5Op : public LoadStore3RegisterImm5Op {
+ public:
+  inline Load3RegisterImm5Op() : LoadStore3RegisterImm5Op() {
+    is_load_ = true;
+  }
+  virtual ~Load3RegisterImm5Op() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Load3RegisterImm5Op);
+};
+
+// Defines the virtuals for a store register instruction.
+class Store3RegisterImm5Op : public LoadStore3RegisterImm5Op {
+ public:
+  inline Store3RegisterImm5Op() : LoadStore3RegisterImm5Op() {
+    is_load_ = false;
+  }
+  virtual ~Store3RegisterImm5Op() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Store3RegisterImm5Op);
 };
 
 // Models a 2-register immediate-shifted unary operation of the form:

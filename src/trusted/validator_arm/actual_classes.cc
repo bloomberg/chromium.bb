@@ -269,7 +269,12 @@ SafetyLevel StrImmediate::safety(const Instruction i) const {
   }
 
   if (HasWriteBack(i) &&
-      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)))) {
+      (n.reg(i).Equals(kRegisterPc))) {
+    // NOTE: The manual states that that it is also unpredictable
+    // when HasWriteBack(i) and Rn=Rt. However, the compilers
+    // may not check for this. For the moment, we are changing
+    // the code to ignore this case for stores.
+    // TODO(karl): Should we not allow this?
     return UNPREDICTABLE;
   }
 
@@ -289,9 +294,14 @@ SafetyLevel StrImmediateDouble::safety(const Instruction i) const {
     return UNPREDICTABLE;
   }
 
-  if (HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
-    return UNPREDICTABLE;
-  }
+  // NOTE: The manual states that that it is also unpredictable
+  // when HasWriteBack(i) and Rn=Rt. However, the compilers
+  // may not check for this. For the moment, we are changing
+  // the code to ignore this case for stores.
+  // TODO(karl): Should we not allow this?
+  // if (HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
+  //   return UNPREDICTABLE;
+  // }
 
   // Now apply non-double width restrictions for this instruction.
   return StrImmediate::safety(i);
@@ -336,7 +346,12 @@ SafetyLevel StrRegister::safety(const Instruction i) const {
   }
 
   if (HasWriteBack(i) &&
-      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)))) {
+      (n.reg(i).Equals(kRegisterPc))) {
+    // NOTE: The manual states that that it is also unpredictable
+    // when HasWriteBack(i) and Rn=Rt. However, the compilers
+    // may not check for this. For the moment, we are changing
+    // the code to ignore this case for stores.
+    // TODO(karl): Should we not allow this?
     return UNPREDICTABLE;
   }
 
@@ -517,8 +532,12 @@ SafetyLevel StrRegisterDouble::safety(const Instruction i) const {
   }
 
   if (HasWriteBack(i) &&
-      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)) ||
-       n.reg(i).Equals(t2.reg(i)))) {
+      (n.reg(i).Equals(kRegisterPc))) {
+    // NOTE: The manual states that that it is also unpredictable
+    // when HasWriteBack(i) and Rn=Rt or Rn=Rt2. However, the compilers
+    // may not check for this. For the moment, we are changing
+    // the code to ignore this case for stores.
+    // TODO(karl): Should we not allow this?
     return UNPREDICTABLE;
   }
 
