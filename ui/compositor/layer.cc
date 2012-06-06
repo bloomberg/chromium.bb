@@ -514,11 +514,16 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
   if (bounds == bounds_)
     return;
 
+  base::Closure closure;
+  if (delegate_)
+    closure = delegate_->PrepareForLayerBoundsChange();
   bool was_move = bounds_.size() == bounds.size();
   bounds_ = bounds;
 
   RecomputeTransform();
   RecomputeDrawsContentAndUVRect();
+  if (!closure.is_null())
+    closure.Run();
 
   if (was_move) {
     // Don't schedule a draw if we're invisible. We'll schedule one

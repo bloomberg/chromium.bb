@@ -6,6 +6,9 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -546,6 +549,11 @@ void* Window::GetNativeWindowProperty(const char* key) const {
   return reinterpret_cast<void*>(GetPropertyInternal(key, 0));
 }
 
+void Window::OnDeviceScaleFactorChanged(float device_scale_factor) {
+  if (delegate_)
+    delegate_->OnDeviceScaleFactorChanged(device_scale_factor);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Window, private:
 
@@ -588,33 +596,10 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
     actual_new_bounds.set_height(
         std::max(min_size.height(), actual_new_bounds.height()));
   }
-  RootWindow* root_window = GetRootWindow();
-
-  bool contained_mouse =
-      IsVisible() &&
-      root_window && ContainsPointInRoot(root_window->last_mouse_location());
-
-  const gfx::Rect old_bounds = GetTargetBounds();
 
   // Always need to set the layer's bounds -- even if it is to the same thing.
   // This may cause important side effects such as stopping animation.
   layer_->SetBounds(actual_new_bounds);
-
-  // If we're not changing the effective bounds, then we can bail early and skip
-  // notifying our listeners.
-  if (old_bounds == actual_new_bounds)
-    return;
-
-  if (layout_manager_.get())
-    layout_manager_->OnWindowResized();
-  if (delegate_)
-    delegate_->OnBoundsChanged(old_bounds, actual_new_bounds);
-  FOR_EACH_OBSERVER(WindowObserver,
-                    observers_,
-                    OnWindowBoundsChanged(this, old_bounds, actual_new_bounds));
-
-  if (root_window)
-    root_window->OnWindowBoundsChanged(this, contained_mouse);
 }
 
 void Window::SetVisible(bool visible) {
@@ -808,14 +793,34 @@ void Window::NotifyAddedToRootWindow() {
   }
 }
 
+void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds,
+                                  bool contained_mouse) {
+  if (layout_manager_.get())
+    layout_manager_->OnWindowResized();
+  if (delegate_)
+    delegate_->OnBoundsChanged(old_bounds, bounds());
+  FOR_EACH_OBSERVER(WindowObserver,
+                    observers_,
+                    OnWindowBoundsChanged(this, old_bounds, bounds()));
+  RootWindow* root_window = GetRootWindow();
+  if (root_window)
+    root_window->OnWindowBoundsChanged(this, contained_mouse);
+}
+
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
   if (delegate_)
     delegate_->OnPaint(canvas);
 }
 
-void Window::OnDeviceScaleFactorChanged(float device_scale_factor) {
-  if (delegate_)
-    delegate_->OnDeviceScaleFactorChanged(device_scale_factor);
+base::Closure Window::PrepareForLayerBoundsChange() {
+  bool contains_mouse = false;
+  if (IsVisible()) {
+    RootWindow* root_window = GetRootWindow();
+    contains_mouse =
+        root_window && ContainsPointInRoot(root_window->last_mouse_location());
+  }
+  return base::Bind(&Window::OnLayerBoundsChanged, base::Unretained(this),
+                    bounds(), contains_mouse);
 }
 
 void Window::UpdateLayerName(const std::string& name) {

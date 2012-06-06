@@ -235,6 +235,10 @@ void ImageGrid::ImagePainter::OnDeviceScaleFactorChanged(
   // Redrawing will take care of scale factor change.
 }
 
+base::Closure ImageGrid::ImagePainter::PrepareForLayerBoundsChange() {
+  return base::Closure();
+}
+
 // static
 gfx::Size ImageGrid::GetImageSize(const gfx::Image* image) {
   return image ?

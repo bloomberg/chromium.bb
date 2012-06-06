@@ -388,11 +388,18 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Notifies observers registered with this Window (and its subtree) when the
   // Window has been added or is about to be removed from a RootWindow.
-  void NotifyAddedToRootWindow();
   void NotifyRemovingFromRootWindow();
+  void NotifyAddedToRootWindow();
+
+  // Invoked from the closure returned by PrepareForLayerBoundsChange() after
+  // the bounds of the layer has changed. |old_bounds| is the previous bounds of
+  // the layer, and |contained_mouse| is true if the mouse was previously within
+  // the window's bounds.
+  void OnLayerBoundsChanged(const gfx::Rect& old_bounds, bool contained_mouse);
 
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
+  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
 
   // Updates the layer name with a name based on the window's name and id.
   void UpdateLayerName(const std::string& name);

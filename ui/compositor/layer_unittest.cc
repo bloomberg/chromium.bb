@@ -134,6 +134,10 @@ class ColoredLayer : public Layer, public LayerDelegate {
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
   }
 
+  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
+    return base::Closure();
+  }
+
  private:
   SkColor color_;
 };
@@ -247,6 +251,10 @@ class TestLayerDelegate : public LayerDelegate {
     device_scale_factor_ = device_scale_factor;
   }
 
+  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
+    return base::Closure();
+  }
+
   void reset() {
     color_index_ = 0;
     paint_size_.SetSize(0, 0);
@@ -284,6 +292,9 @@ class DrawTreeLayerDelegate : public LayerDelegate {
   }
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
   }
+  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
+    return base::Closure();
+  }
 
   bool painted_;
 
@@ -301,6 +312,9 @@ class NullLayerDelegate : public LayerDelegate {
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
   }
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
+  }
+  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
+    return base::Closure();
   }
 
   DISALLOW_COPY_AND_ASSIGN(NullLayerDelegate);
@@ -1033,6 +1047,10 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
   }
 
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
+  }
+
+  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
+    return base::Closure();
   }
 
   int paint_count_;

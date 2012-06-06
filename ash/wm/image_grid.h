@@ -140,6 +140,7 @@ class ASH_EXPORT ImageGrid {
     // ui::LayerDelegate implementation:
     virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
     virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
+    virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
 
    private:
     friend class TestAPI;

@@ -2038,5 +2038,67 @@ TEST_F(WindowTest, DeleteWindowFromOnWindowDestroyed) {
   parent.reset();
 }
 
+namespace {
+
+// Used by DelegateNotifiedAsBoundsChange to verify OnBoundsChanged() is
+// invoked.
+class BoundsChangeDelegate : public TestWindowDelegate {
+ public:
+  BoundsChangeDelegate() : bounds_changed_(false) {}
+
+  void clear_bounds_changed() { bounds_changed_ = false; }
+  bool bounds_changed() const {
+    return bounds_changed_;
+  }
+
+  // Window
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
+                               const gfx::Rect& new_bounds) OVERRIDE {
+    bounds_changed_ = true;
+  }
+
+ private:
+  // Was OnBoundsChanged() invoked?
+  bool bounds_changed_;
+
+  DISALLOW_COPY_AND_ASSIGN(BoundsChangeDelegate);
+};
+
+}  // namespace
+
+// Verifies the delegate is notified when the actual bounds of the layer
+// change.
+TEST_F(WindowTest, DelegateNotifiedAsBoundsChange) {
+  BoundsChangeDelegate delegate;
+
+  // We cannot short-circuit animations in this test.
+  ui::LayerAnimator::set_disable_animations_for_test(false);
+
+  scoped_ptr<Window> window(
+      CreateTestWindowWithDelegate(&delegate, 1,
+                                   gfx::Rect(0, 0, 100, 100), NULL));
+  window->layer()->GetAnimator()->set_disable_timer_for_test(true);
+
+  delegate.clear_bounds_changed();
+
+  // Animate to a different position.
+  {
+    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    window->SetBounds(gfx::Rect(100, 100, 100, 100));
+  }
+
+  // Bounds shouldn't immediately have changed.
+  EXPECT_EQ("0,0 100x100", window->bounds().ToString());
+  EXPECT_FALSE(delegate.bounds_changed());
+
+  // Animate to the end, which should notify of the change.
+  base::TimeTicks start_time =
+      window->layer()->GetAnimator()->last_step_time();
+  ui::AnimationContainerElement* element = window->layer()->GetAnimator();
+  element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
+  EXPECT_TRUE(delegate.bounds_changed());
+  EXPECT_NE("0,0 100x100", window->bounds().ToString());
+}
+
 }  // namespace test
 }  // namespace aura

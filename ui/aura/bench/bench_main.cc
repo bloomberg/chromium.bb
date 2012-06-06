@@ -67,6 +67,10 @@ class ColoredLayer : public Layer, public LayerDelegate {
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
   }
 
+  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
+    return base::Closure();
+  }
+
   void set_color(SkColor color) { color_ = color; }
   void set_draw(bool draw) { draw_ = draw; }
 

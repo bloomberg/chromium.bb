@@ -6,6 +6,7 @@
 #define UI_COMPOSITOR_LAYER_DELEGATE_H_
 #pragma once
 
+#include "base/callback_forward.h"
 #include "ui/compositor/compositor_export.h"
 
 namespace gfx {
@@ -23,6 +24,10 @@ class COMPOSITOR_EXPORT LayerDelegate {
 
   // Called when the layer's device scale factor has changed.
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) = 0;
+
+  // Invoked prior to the bounds changing. The returned closured is run after
+  // the bounds change.
+  virtual base::Closure PrepareForLayerBoundsChange() = 0;
 
  protected:
   virtual ~LayerDelegate() {}
