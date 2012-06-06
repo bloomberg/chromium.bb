@@ -2438,3 +2438,10 @@
    fun:_ZN3gfx30VideoDecodeAccelerationSupport6CreateEiiiPKvm
    fun:_ZN3gfx46VideoDecodeAccelerationSupportTest_Create_Test8TestBodyEv
 }
+{
+   bug_131361
+   Memcheck:Overlap
+   fun:memcpy
+   ...
+   fun:_ZN2v88internal18GvnBasicBlockState32*
+}
