@@ -13,6 +13,7 @@
 #include "native_client/src/trusted/gdb_rsp/abi.h"
 #include "native_client/src/trusted/port/mutex.h"
 #include "native_client/src/trusted/port/thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
 /*
@@ -102,17 +103,9 @@ static int8_t ExceptionToSignal(int ex) {
 class Thread : public IThread {
  public:
   Thread(uint32_t id, struct NaClAppThread *natp)
-      : ref_(1), id_(id), handle_(NULL), natp_(natp), state_(RUNNING) {
-    handle_ = OpenThread(THREAD_ALL_ACCESS, false, id);
-    if (NULL == handle_) state_ = DEAD;
-  }
+      : ref_(1), id_(id), natp_(natp), state_(RUNNING) {}
 
-  ~Thread() {
-    if (NULL == handle_) return;
-
-    // This should always succeed, so ignore the return.
-    (void) CloseHandle(handle_);
-  }
+  ~Thread() {}
 
   uint32_t GetId() {
     return id_;
@@ -127,11 +120,11 @@ class Thread : public IThread {
     if (state_ != RUNNING) return false;
 
     // Attempt to suspend the thread
-    DWORD count = SuspendThread(handle_);
+    DWORD count = SuspendThread(natp_->thread.tid);
 
     CONTEXT win_context;
     win_context.ContextFlags = CONTEXT_ALL;
-    if (!GetThreadContext(handle_, &win_context)) {
+    if (!GetThreadContext(natp_->thread.tid, &win_context)) {
       NaClLog(LOG_FATAL, "Thread::Suspend: GetThreadContext failed\n");
     }
     NaClSignalContextFromHandler(&context_, &win_context);
@@ -151,12 +144,12 @@ class Thread : public IThread {
     CONTEXT win_context;
     win_context.ContextFlags = CONTEXT_ALL;
     NaClSignalContextToHandler(&win_context, &context_);
-    if (!SetThreadContext(handle_, &win_context)) {
+    if (!SetThreadContext(natp_->thread.tid, &win_context)) {
       NaClLog(LOG_FATAL, "Thread::Resume: SetThreadContext failed\n");
     }
 
     // Attempt to resume the thread
-    if (ResumeThread(handle_) != -1) {
+    if (ResumeThread(natp_->thread.tid) != -1) {
       state_ = RUNNING;
       return true;
     }
@@ -254,7 +247,6 @@ class Thread : public IThread {
   uint32_t id_;
   struct NaClAppThread *natp_;
   State  state_;
-  HANDLE handle_;
   struct NaClSignalContext context_;
 
   friend class IThread;
@@ -270,11 +262,6 @@ IThread* IThread::Create(uint32_t id, struct NaClAppThread* natp) {
   }
 
   thread = new Thread(id, natp);
-  if (NULL == thread->handle_) {
-    delete thread;
-    return NULL;
-  }
-
   map[id] = thread;
   return thread;
 }
