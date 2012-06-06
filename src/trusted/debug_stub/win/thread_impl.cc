@@ -10,16 +10,22 @@
 #include <stdexcept>
 
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/gdb_rsp/abi.h"
 #include "native_client/src/trusted/port/mutex.h"
 #include "native_client/src/trusted/port/thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
 /*
  * Define the OS specific portions of IThread interface.
  */
 
 namespace {
+
+const int kX86TrapFlag = 1 << 8;
+
 const int kDBG_PRINTEXCEPTION_C = 0x40010006;
-}
+
+}  // namespace
 
 namespace port {
 
@@ -93,128 +99,11 @@ static int8_t ExceptionToSignal(int ex) {
 }
 
 
-#ifdef _WIN64
-static void *GetPointerToRegInCtx(CONTEXT *ctx, int32_t num) {
-  switch (num) {
-    case 0: return &ctx->Rax;
-    case 1: return &ctx->Rbx;
-    case 2: return &ctx->Rcx;
-    case 3: return &ctx->Rdx;
-    case 4: return &ctx->Rsi;
-    case 5: return &ctx->Rdi;
-    case 6: return &ctx->Rbp;
-    case 7: return &ctx->Rsp;
-    case 8: return &ctx->R8;
-    case 9: return &ctx->R9;
-    case 10:return &ctx->R10;
-    case 11:return &ctx->R11;
-    case 12:return &ctx->R12;
-    case 13:return &ctx->R13;
-    case 14:return &ctx->R14;
-    case 15:return &ctx->R15;
-    case 16:return &ctx->Rip;
-    case 17:return &ctx->EFlags;
-    case 18:return &ctx->SegCs;
-    case 19:return &ctx->SegSs;
-    case 20:return &ctx->SegDs;
-    case 21:return &ctx->SegEs;
-    case 22:return &ctx->SegFs;
-    case 23:return &ctx->SegGs;
-  }
-
-  throw std::out_of_range("Register index out of range.");
-}
-
-static int GetSizeofRegInCtx(int32_t num) {
-  CONTEXT *ctx = NULL;
-  switch (num) {
-    case 0: return sizeof ctx->Rax;
-    case 1: return sizeof ctx->Rbx;
-    case 2: return sizeof ctx->Rcx;
-    case 3: return sizeof ctx->Rdx;
-    case 4: return sizeof ctx->Rsi;
-    case 5: return sizeof ctx->Rdi;
-    case 6: return sizeof ctx->Rbp;
-    case 7: return sizeof ctx->Rsp;
-    case 8: return sizeof ctx->R8;
-    case 9: return sizeof ctx->R9;
-    case 10:return sizeof ctx->R10;
-    case 11:return sizeof ctx->R11;
-    case 12:return sizeof ctx->R12;
-    case 13:return sizeof ctx->R13;
-    case 14:return sizeof ctx->R14;
-    case 15:return sizeof ctx->R15;
-    case 16:return sizeof ctx->Rip;
-    case 17:return sizeof ctx->EFlags;
-    case 18:return sizeof ctx->SegCs;
-    case 19:return sizeof ctx->SegSs;
-    case 20:return sizeof ctx->SegDs;
-    case 21:return sizeof ctx->SegEs;
-    case 22:return sizeof ctx->SegFs;
-    case 23:return sizeof ctx->SegGs;
-  }
-
-  throw std::out_of_range("Register index out of range.");
-}
-
-#else
-
-static void *GetPointerToRegInCtx(CONTEXT *ctx, int32_t num) {
-  switch (num) {
-    case 0: return &ctx->Eax;
-    case 1: return &ctx->Ecx;
-    case 2: return &ctx->Edx;
-    case 3: return &ctx->Ebx;
-    case 4: return &ctx->Ebp;
-    case 5: return &ctx->Esp;
-    case 6: return &ctx->Esi;
-    case 7: return &ctx->Edi;
-    case 8: return &ctx->Eip;
-    case 9: return &ctx->EFlags;
-    case 10:return &ctx->SegCs;
-    case 11:return &ctx->SegSs;
-    case 12:return &ctx->SegDs;
-    case 13:return &ctx->SegEs;
-    case 14:return &ctx->SegFs;
-    case 15:return &ctx->SegGs;
-  }
-
-  throw std::out_of_range("Register index out of range.");
-}
-
-static int GetSizeofRegInCtx(int32_t num) {
-  CONTEXT *ctx = NULL;
-  switch (num) {
-    case 0: return sizeof ctx->Eax;
-    case 1: return sizeof ctx->Ecx;
-    case 2: return sizeof ctx->Edx;
-    case 3: return sizeof ctx->Ebx;
-    case 4: return sizeof ctx->Ebp;
-    case 5: return sizeof ctx->Esp;
-    case 6: return sizeof ctx->Esi;
-    case 7: return sizeof ctx->Edi;
-    case 8: return sizeof ctx->Eip;
-    case 9: return sizeof ctx->EFlags;
-    case 10:return sizeof ctx->SegCs;
-    case 11:return sizeof ctx->SegSs;
-    case 12:return sizeof ctx->SegDs;
-    case 13:return sizeof ctx->SegEs;
-    case 14:return sizeof ctx->SegFs;
-    case 15:return sizeof ctx->SegGs;
-  }
-
-  throw std::out_of_range("Register index out of range.");
-}
-#endif
-
-
 class Thread : public IThread {
  public:
   Thread(uint32_t id, struct NaClAppThread *natp)
       : ref_(1), id_(id), handle_(NULL), natp_(natp), state_(RUNNING) {
     handle_ = OpenThread(THREAD_ALL_ACCESS, false, id);
-    memset(&context_, 0, sizeof(context_));
-    context_.ContextFlags = CONTEXT_ALL;
     if (NULL == handle_) state_ = DEAD;
   }
 
@@ -240,9 +129,12 @@ class Thread : public IThread {
     // Attempt to suspend the thread
     DWORD count = SuspendThread(handle_);
 
-    // Ignore result, since there is nothing we can do about
-    // it at this point.
-    (void) GetThreadContext(handle_, &context_);
+    CONTEXT win_context;
+    win_context.ContextFlags = CONTEXT_ALL;
+    if (!GetThreadContext(handle_, &win_context)) {
+      NaClLog(LOG_FATAL, "Thread::Suspend: GetThreadContext failed\n");
+    }
+    NaClSignalContextFromHandler(&context_, &win_context);
 
     if (count != -1) {
       state_ = SUSPENDED;
@@ -256,9 +148,12 @@ class Thread : public IThread {
     MutexLock lock(ThreadGetLock());
     if (state_ != SUSPENDED) return false;
 
-    // Ignore result, since there is nothing we can do about
-    // it at this point if the set fails.
-    (void) SetThreadContext(handle_, &context_);
+    CONTEXT win_context;
+    win_context.ContextFlags = CONTEXT_ALL;
+    NaClSignalContextToHandler(&win_context, &context_);
+    if (!SetThreadContext(handle_, &win_context)) {
+      NaClLog(LOG_FATAL, "Thread::Resume: SetThreadContext failed\n");
+    }
 
     // Attempt to resume the thread
     if (ResumeThread(handle_) != -1) {
@@ -269,38 +164,33 @@ class Thread : public IThread {
     return false;
   }
 
-  #define TRAP_FLAG (1 << 8)
   virtual bool SetStep(bool on) {
-    if ((state_ == RUNNING) || (state_ == DEAD)) return false;
-
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
     if (on) {
-      context_.EFlags |= TRAP_FLAG;
+      context_.flags |= kX86TrapFlag;
     } else {
-      context_.EFlags &= ~TRAP_FLAG;
+      context_.flags &= ~kX86TrapFlag;
     }
     return true;
+#else
+    // TODO(mseaborn): Implement for ARM.
+    UNREFERENCED_PARAMETER(on);
+    return false;
+#endif
   }
 
   virtual bool GetRegister(uint32_t index, void *dst, uint32_t len) {
-    uint32_t clen = GetSizeofRegInCtx(index);
-    void* src = GetPointerToRegInCtx(&context_, index);
-
-    // TODO(noelallen) we assume big endian
-    if (clen < len) len = clen;
-    memcpy(dst, src, len);
-
-    return true;
+    const gdb_rsp::Abi *abi = gdb_rsp::Abi::Get();
+    const gdb_rsp::Abi::RegDef *reg = abi->GetRegisterDef(index);
+    memcpy(dst, (char *) &context_ + reg->offset_, len);
+    return false;
   }
 
-  virtual bool SetRegister(uint32_t index, void* src, uint32_t len) {
-    uint32_t clen = GetSizeofRegInCtx(index);
-    void* dst = GetPointerToRegInCtx(&context_, index);
-
-    // TODO(noelallen) we assume big endian
-    if (clen < len) len = clen;
-    memcpy(dst, src, len);
-
-    return true;
+  virtual bool SetRegister(uint32_t index, void *src, uint32_t len) {
+    const gdb_rsp::Abi *abi = gdb_rsp::Abi::Get();
+    const gdb_rsp::Abi::RegDef *reg = abi->GetRegisterDef(index);
+    memcpy((char *) &context_ + reg->offset_, src, len);
+    return false;
   }
 
   virtual void* GetContext() { return &context_; }
@@ -347,11 +237,11 @@ class Thread : public IThread {
 #endif
     }
 
-    void *ctx = thread->GetContext();
-
-    memcpy(ctx, ep->ContextRecord, sizeof(CONTEXT));
+    struct NaClSignalContext *context =
+        (struct NaClSignalContext *)thread->GetContext();
+    NaClSignalContextFromHandler(context, ep->ContextRecord);
     if (NULL != s_CatchFunc) s_CatchFunc(id, sig, s_CatchCookie);
-    memcpy(ep->ContextRecord, ctx, sizeof(CONTEXT));
+    NaClSignalContextToHandler(ep->ContextRecord, context);
 
     thread->state_ = old_state;
     Release(thread);
@@ -365,7 +255,7 @@ class Thread : public IThread {
   struct NaClAppThread *natp_;
   State  state_;
   HANDLE handle_;
-  CONTEXT context_;
+  struct NaClSignalContext context_;
 
   friend class IThread;
 };
