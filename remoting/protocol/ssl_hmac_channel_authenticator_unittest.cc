@@ -8,6 +8,8 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/test/test_timeouts.h"
+#include "base/timer.h"
 #include "base/path_service.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/cert_test_util.h"
@@ -35,14 +37,19 @@ class MockChannelDoneCallback {
   MOCK_METHOD2(OnDone, void(net::Error error, net::StreamSocket* socket));
 };
 
+ACTION_P(QuitThreadOnCounter, counter) {
+  --(*counter);
+  EXPECT_GE(*counter, 0);
+  if (*counter == 0)
+    MessageLoop::current()->Quit();
+}
+
 }  // namespace
 
 class SslHmacChannelAuthenticatorTest : public testing::Test {
  public:
-  SslHmacChannelAuthenticatorTest() {
-  }
-  virtual ~SslHmacChannelAuthenticatorTest() {
-  }
+  SslHmacChannelAuthenticatorTest() {}
+  virtual ~SslHmacChannelAuthenticatorTest() {}
 
  protected:
   virtual void SetUp() OVERRIDE {
@@ -77,15 +84,28 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
         base::Bind(&SslHmacChannelAuthenticatorTest::OnHostConnected,
                    base::Unretained(this)));
 
+    // Expect two callbacks to be called - the client callback and the host
+    // callback.
+    int callback_counter = 2;
+
     if (expected_fail) {
-      EXPECT_CALL(client_callback_, OnDone(net::ERR_FAILED, NULL));
-      EXPECT_CALL(host_callback_, OnDone(net::ERR_FAILED, NULL));
+      EXPECT_CALL(client_callback_, OnDone(net::ERR_FAILED, NULL))
+          .WillOnce(QuitThreadOnCounter(&callback_counter));
+      EXPECT_CALL(host_callback_, OnDone(net::ERR_FAILED, NULL))
+          .WillOnce(QuitThreadOnCounter(&callback_counter));
     } else {
-      EXPECT_CALL(client_callback_, OnDone(net::OK, NotNull()));
-      EXPECT_CALL(host_callback_, OnDone(net::OK, NotNull()));
+      EXPECT_CALL(client_callback_, OnDone(net::OK, NotNull()))
+          .WillOnce(QuitThreadOnCounter(&callback_counter));
+      EXPECT_CALL(host_callback_, OnDone(net::OK, NotNull()))
+          .WillOnce(QuitThreadOnCounter(&callback_counter));
     }
 
-    message_loop_.RunAllPending();
+    // Ensure that .Run() does not run unbounded if the callbacks are never
+    // called.
+    base::Timer shutdown_timer(false, false);
+    shutdown_timer.Start(FROM_HERE, TestTimeouts::action_timeout(),
+                         MessageLoop::QuitClosure());
+    message_loop_.Run();
   }
 
   void OnHostConnected(net::Error error,
@@ -125,8 +145,8 @@ TEST_F(SslHmacChannelAuthenticatorTest, SuccessfulAuth) {
 
   RunChannelAuth(false);
 
-  EXPECT_TRUE(client_socket_.get() != NULL);
-  EXPECT_TRUE(host_socket_.get() != NULL);
+  ASSERT_TRUE(client_socket_.get() != NULL);
+  ASSERT_TRUE(host_socket_.get() != NULL);
 
   StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
                                 100, 2);
@@ -145,7 +165,7 @@ TEST_F(SslHmacChannelAuthenticatorTest, InvalidChannelSecret) {
 
   RunChannelAuth(true);
 
-  EXPECT_TRUE(host_socket_.get() == NULL);
+  ASSERT_TRUE(host_socket_.get() == NULL);
 }
 
 }  // namespace protocol
