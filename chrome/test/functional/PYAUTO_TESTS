@@ -336,14 +336,6 @@
       '-extensions.ExtensionsTest.testDisableEnableExtension',
       # Need internal data dirs in autotest package. crosbug.com/6855
       '-find_in_page.FindMatchTests.testSearchInPDF',
-      # crbug.com/125112
-      '-fullscreen_mouselock.FullscreenMouselockTest.testFullScreenMouseLockHooks',
-      '-fullscreen_mouselock.FullscreenMouselockTest.testMouseLockExitWhenAlertDialogShow',
-      '-fullscreen_mouselock.FullscreenMouselockTest.testMouseLockInBrowserFS',
-      '-fullscreen_mouselock.FullscreenMouselockTest.testNoMouseLockRequest',
-      '-fullscreen_mouselock.FullscreenMouselockTest.testNoMouseLockWhenCancelFS',
-      '-fullscreen_mouselock.FullscreenMouselockTest.testNoTabFSExitWhenJSExitMouseLock',
-      '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForAllowMouseLock',
       # crbug.com/129498
       '-https.SSLTest.testSSLCertAuthorityOK',
       '-https.SSLTest.testSSLCertOK',
