@@ -489,7 +489,7 @@ handle_pointer_focus(struct wl_listener *listener, void *data)
 	compositor = surface->compositor;
 	shsurf = get_shell_surface(surface);
 
-	if (shsurf->unresponsive) {
+	if (shsurf && shsurf->unresponsive) {
 		set_busy_cursor(shsurf, pointer);
 	} else {
 		serial = wl_display_next_serial(compositor->wl_display);
