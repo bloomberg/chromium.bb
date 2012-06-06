@@ -3088,6 +3088,12 @@ load_module(const char *name, const char *entrypoint, void **handle)
 	return init;
 }
 
+static const char xdg_error_message[] =
+	"fatal: environment variable XDG_RUNTIME_DIR is not set.\n"
+	"Refer to your distribution on how to get it, or\n"
+	"http://www.freedesktop.org/wiki/Specifications/basedir-spec\n"
+	"on how to implement it.\n";
+
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
@@ -3128,6 +3134,11 @@ int main(int argc, char *argv[])
 
 	argc = parse_options(core_options,
 			     ARRAY_LENGTH(core_options), argc, argv);
+
+	if (!getenv("XDG_RUNTIME_DIR")) {
+		fprintf(stderr, xdg_error_message);
+		exit(EXIT_FAILURE);
+	}
 
 	display = wl_display_create();
 
