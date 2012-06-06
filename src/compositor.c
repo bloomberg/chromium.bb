@@ -2279,7 +2279,6 @@ static void
 weston_xkb_info_new_keymap(struct weston_xkb_info *xkb_info)
 {
 	char *keymap_str;
-	char *path;
 
 	xkb_info->ctrl_mod = xkb_map_mod_get_index(xkb_info->keymap,
 						   XKB_MOD_NAME_CTRL);
@@ -2302,46 +2301,30 @@ weston_xkb_info_new_keymap(struct weston_xkb_info *xkb_info)
 	}
 	xkb_info->keymap_size = strlen(keymap_str) + 1;
 
-	/* Create a temporary file in /dev/shm to use for mapping the keymap,
-	 * and then unlink it as soon as we can. */
-	path = strdup("/dev/shm/weston-keymap-XXXXXX");
-	if (path == NULL) {
-		fprintf(stderr, "failed to allocate keymap path\n");
-		goto err_keymap_str;
-	}
-
-	xkb_info->keymap_fd = mkostemp(path, O_CLOEXEC);
+	xkb_info->keymap_fd = os_create_anonymous_file(xkb_info->keymap_size);
 	if (xkb_info->keymap_fd < 0) {
-		fprintf(stderr, "failed to create temporary keymap file\n");
-		goto err_path;
-	}
-	unlink(path);
-
-	if (ftruncate(xkb_info->keymap_fd, xkb_info->keymap_size) != 0) {
-		fprintf(stderr, "failed to enlarage temporary keymap file\n");
-		goto err_path;
+		fprintf(stderr,
+			"creating a keymap file for %lu bytes failed: %m\n",
+			(unsigned long) xkb_info->keymap_size);
+		goto err_keymap_str;
 	}
 
 	xkb_info->keymap_area = mmap(NULL, xkb_info->keymap_size,
 				     PROT_READ | PROT_WRITE,
 				     MAP_SHARED, xkb_info->keymap_fd, 0);
 	if (xkb_info->keymap_area == MAP_FAILED) {
-		fprintf(stderr, "failed to mmap() %lu bytes on %s\n",
-			(unsigned long) xkb_info->keymap_size,
-			path);
+		fprintf(stderr, "failed to mmap() %lu bytes\n",
+			(unsigned long) xkb_info->keymap_size);
 		goto err_dev_zero;
 	}
 	strcpy(xkb_info->keymap_area, keymap_str);
 	free(keymap_str);
-	free(path);
 
 	return;
 
 err_dev_zero:
 	close(xkb_info->keymap_fd);
 	xkb_info->keymap_fd = -1;
-err_path:
-	free(path);
 err_keymap_str:
 	free(keymap_str);
 	exit(EXIT_FAILURE);

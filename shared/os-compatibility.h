@@ -23,6 +23,10 @@
 #ifndef OS_COMPATIBILITY_H
 #define OS_COMPATIBILITY_H
 
+#include <sys/types.h>
+
+#include "../config.h"
+
 #ifdef HAVE_EXECINFO_H
 #include <execinfo.h>
 #else
@@ -38,5 +42,8 @@ os_socketpair_cloexec(int domain, int type, int protocol, int *sv);
 
 int
 os_epoll_create_cloexec(void);
+
+int
+os_create_anonymous_file(off_t size);
 
 #endif /* OS_COMPATIBILITY_H */

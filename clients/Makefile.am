@@ -27,11 +27,15 @@ simple_egl_SOURCES = simple-egl.c
 simple_egl_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
 simple_egl_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
 
-simple_shm_SOURCES = simple-shm.c
+simple_shm_SOURCES = simple-shm.c 		\
+	../shared/os-compatibility.c		\
+	../shared/os-compatibility.h
 simple_shm_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
 simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS)
 
-simple_touch_SOURCES = simple-touch.c
+simple_touch_SOURCES = simple-touch.c		\
+	../shared/os-compatibility.c		\
+	../shared/os-compatibility.h
 simple_touch_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
 simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS)
 endif

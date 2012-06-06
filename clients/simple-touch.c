@@ -32,6 +32,7 @@
 #include <GLES2/gl2.h>
 #include <wayland-client.h>
 #include <wayland-egl.h>
+#include "../shared/os-compatibility.h"
 
 struct touch {
 	struct wl_display *display;
@@ -55,26 +56,20 @@ static void
 create_shm_buffer(struct touch *touch)
 {
 	struct wl_shm_pool *pool;
-	char filename[] = "/tmp/wayland-shm-XXXXXX";
 	int fd, size, stride;
 
-	fd = mkstemp(filename);
-	if (fd < 0) {
-		fprintf(stderr, "open %s failed: %m\n", filename);
-		exit(1);
-	}
 	stride = touch->width * 4;
 	size = stride * touch->height;
-	if (ftruncate(fd, size) < 0) {
-		fprintf(stderr, "ftruncate failed: %m\n");
-		close(fd);
+
+	fd = os_create_anonymous_file(size);
+	if (fd < 0) {
+		fprintf(stderr, "creating a buffer file for %d B failed: %m\n",
+			size);
 		exit(1);
 	}
 
 	touch->data =
 		mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	unlink(filename);
-
 	if (touch->data == MAP_FAILED) {
 		fprintf(stderr, "mmap failed: %m\n");
 		close(fd);

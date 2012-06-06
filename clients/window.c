@@ -424,24 +424,17 @@ shm_surface_data_destroy(void *p)
 static struct wl_shm_pool *
 make_shm_pool(struct display *display, int size, void **data)
 {
-	char filename[] = "/tmp/wayland-shm-XXXXXX";
 	struct wl_shm_pool *pool;
 	int fd;
 
-	fd = mkstemp(filename);
+	fd = os_create_anonymous_file(size);
 	if (fd < 0) {
-		fprintf(stderr, "open %s failed: %m\n", filename);
-		return NULL;
-	}
-	if (ftruncate(fd, size) < 0) {
-		fprintf(stderr, "ftruncate failed: %m\n");
-		close(fd);
+		fprintf(stderr, "creating a buffer file for %d B failed: %m\n",
+			size);
 		return NULL;
 	}
 
 	*data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	unlink(filename);
-
 	if (*data == MAP_FAILED) {
 		fprintf(stderr, "mmap failed: %m\n");
 		close(fd);

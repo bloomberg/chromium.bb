@@ -33,6 +33,7 @@
 
 #include <wayland-client.h>
 #include "screenshooter-client-protocol.h"
+#include "../shared/os-compatibility.h"
 
 /* The screenshooter is a good example of a custom object exposed by
  * the compositor and serves as a test bed for implementing client
@@ -127,28 +128,22 @@ handle_global(struct wl_display *display, uint32_t id,
 static struct wl_buffer *
 create_shm_buffer(int width, int height, void **data_out)
 {
-	char filename[] = "/tmp/wayland-shm-XXXXXX";
 	struct wl_shm_pool *pool;
 	struct wl_buffer *buffer;
 	int fd, size, stride;
 	void *data;
 
-	fd = mkstemp(filename);
-	if (fd < 0) {
-		fprintf(stderr, "open %s failed: %m\n", filename);
-		return NULL;
-	}
 	stride = width * 4;
 	size = stride * height;
-	if (ftruncate(fd, size) < 0) {
-		fprintf(stderr, "ftruncate failed: %m\n");
-		close(fd);
+
+	fd = os_create_anonymous_file(size);
+	if (fd < 0) {
+		fprintf(stderr, "creating a buffer file for %d B failed: %m\n",
+			size);
 		return NULL;
 	}
 
 	data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	unlink(filename);
-
 	if (data == MAP_FAILED) {
 		fprintf(stderr, "mmap failed: %m\n");
 		close(fd);
