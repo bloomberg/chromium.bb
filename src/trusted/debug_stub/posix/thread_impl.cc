@@ -42,15 +42,11 @@ static IThread::ThreadMap_t *ThreadGetMap() {
 class Thread : public IThread {
  public:
   Thread(uint32_t id, struct NaClAppThread *natp)
-      : ref_(1), id_(id), natp_(natp), state_(DEAD) {}
+      : ref_(1), id_(id), natp_(natp) {}
   ~Thread() {}
 
   uint32_t GetId() {
     return id_;
-  }
-
-  State GetState() {
-    return state_;
   }
 
   virtual bool Suspend() {
@@ -105,15 +101,12 @@ class Thread : public IThread {
     if (NaClSignalContextIsUntrusted(&context)) {
       uint32_t thread_id = IPlatform::GetCurrentThread();
       Thread* thread = static_cast<Thread*>(Acquire(thread_id));
-      State old_state = thread->state_;
-      thread->state_ = SIGNALED;
       thread->context_ = context;
 
       if (s_CatchFunc != NULL)
         s_CatchFunc(thread_id, signal, s_CatchCookie);
 
       NaClSignalContextToHandler(ucontext, &thread->context_);
-      thread->state_ = old_state;
       Release(thread);
       return NACL_SIGNAL_RETURN;
     } else {
@@ -126,7 +119,6 @@ class Thread : public IThread {
   uint32_t ref_;
   uint32_t id_;
   struct NaClAppThread *natp_;
-  State  state_;
   struct NaClSignalContext context_;
 
   friend class IThread;

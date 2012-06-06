@@ -68,7 +68,6 @@ class ThreadMock : public IThread {
   ~ThreadMock() { delete[] ctx_; }
 
   uint32_t GetId() { return id_; }
-  State GetState() { return IThread::SIGNALED; }
 
   bool SetStep(bool on) {
     (void) on;

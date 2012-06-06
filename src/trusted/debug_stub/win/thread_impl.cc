@@ -103,21 +103,15 @@ static int8_t ExceptionToSignal(int ex) {
 class Thread : public IThread {
  public:
   Thread(uint32_t id, struct NaClAppThread *natp)
-      : ref_(1), id_(id), natp_(natp), state_(RUNNING) {}
-
+      : ref_(1), id_(id), natp_(natp) {}
   ~Thread() {}
 
   uint32_t GetId() {
     return id_;
   }
 
-  State GetState() {
-    return state_;
-  }
-
   virtual bool Suspend() {
     MutexLock lock(ThreadGetLock());
-    if (state_ != RUNNING) return false;
 
     // Attempt to suspend the thread
     DWORD count = SuspendThread(natp_->thread.tid);
@@ -130,7 +124,6 @@ class Thread : public IThread {
     NaClSignalContextFromHandler(&context_, &win_context);
 
     if (count != -1) {
-      state_ = SUSPENDED;
       return true;
     }
 
@@ -139,7 +132,6 @@ class Thread : public IThread {
 
   virtual bool Resume() {
     MutexLock lock(ThreadGetLock());
-    if (state_ != SUSPENDED) return false;
 
     CONTEXT win_context;
     win_context.ContextFlags = CONTEXT_ALL;
@@ -150,7 +142,6 @@ class Thread : public IThread {
 
     // Attempt to resume the thread
     if (ResumeThread(natp_->thread.tid) != -1) {
-      state_ = RUNNING;
       return true;
     }
 
@@ -210,8 +201,6 @@ class Thread : public IThread {
     // If we are not tracking this thread, then ignore it
     if (NULL == thread) return EXCEPTION_CONTINUE_SEARCH;
 
-    State old_state = thread->state_;
-    thread->state_ = SIGNALED;
     int8_t sig = ExceptionToSignal(ep->ExceptionRecord->ExceptionCode);
 
     // Handle EXCEPTION_BREAKPOINT SEH/VEH handler special case:
@@ -236,7 +225,6 @@ class Thread : public IThread {
     if (NULL != s_CatchFunc) s_CatchFunc(id, sig, s_CatchCookie);
     NaClSignalContextToHandler(ep->ContextRecord, context);
 
-    thread->state_ = old_state;
     Release(thread);
     return EXCEPTION_CONTINUE_EXECUTION;
   }
@@ -246,7 +234,6 @@ class Thread : public IThread {
   uint32_t ref_;
   uint32_t id_;
   struct NaClAppThread *natp_;
-  State  state_;
   struct NaClSignalContext context_;
 
   friend class IThread;

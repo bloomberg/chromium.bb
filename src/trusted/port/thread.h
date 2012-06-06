@@ -28,19 +28,10 @@ namespace port {
 
 class IThread {
  public:
-  enum State {
-    DEAD     =-1,  // The thread has exited or been killed
-    RUNNING  = 0,  // The thread is currently running
-    SUSPENDED= 1,  // The thread has been suspended
-    SIGNALED = 2,  // The thread is signaled
-    SYSCALL  = 3   // In a sys call, it's registers can not be modified.
-  };
-
   typedef void (*CatchFunc_t)(uint32_t id, int8_t sig, void *cookie);
   typedef std::map<uint32_t, IThread*> ThreadMap_t;
 
   virtual uint32_t GetId() = 0;
-  virtual State GetState() = 0;
 
   virtual bool SetStep(bool on) = 0;
 
@@ -64,4 +55,3 @@ class IThread {
 }  // namespace port
 
 #endif  // PORT_THREAD_H_
-
