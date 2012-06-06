@@ -167,9 +167,11 @@ GURL CWSIntentsRegistry::BuildQueryURL(const string16& action,
                                        const string16& type) {
   GURL request(kCWSIntentServiceURL);
   request = chrome_common_net::AppendQueryParameter(request, "intent",
-                                                     UTF16ToUTF8(action));
+                                                    UTF16ToUTF8(action));
   request = chrome_common_net::AppendQueryParameter(request, "mime_types",
-                                                     UTF16ToUTF8(type));
+                                                    UTF16ToUTF8(type));
+  request = chrome_common_net::AppendQueryParameter(request, "start_index",
+                                                    "0");
   if (web_intents::kApiKey[0]) {
     request = chrome_common_net::AppendQueryParameter(request, "key",
                                                        web_intents::kApiKey);
