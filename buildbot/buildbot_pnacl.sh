@@ -143,6 +143,22 @@ handle-error() {
 clobber-chrome-tmp() {
   # Try to clobber /tmp/ contents to clear temporary chrome files.
   rm -rf /tmp/.org.chromium.Chromium.*
+
+  # On Windows we may have additional files left by chrome/pepper's
+  # StreamToFile-style url requests.  These are files with names like
+  # 1AB9.tmp in the windows %TEMP% or %TMP%. Clobber these too.
+  # See: http://code.google.com/p/nativeclient/issues/detail?id=1981
+  #
+  # Here, we assume that the buildbot script is running Cygwin...
+  # In Cygwin, $TEMP is not equal to %TEMP%, because Cygwin overrides
+  # $TEMP to be /tmp.  Meanwhile, windows chrome uses %TEMP%.
+  # Long story short, we do a hack and check for for $LOCALAPPDATA\Temp\
+  # which is the closest thing to %TEMP% (at least the default) that we can
+  # access from within Cygwin.
+  if [[ "$(uname -s)" =~ CYGWIN ]]; then
+    find ${LOCALAPPDATA}/Temp -regex ".*[0-9]+\.tmp" -print0 | \
+      xargs -0 rm -rf
+  fi
 }
 
 # Clear out object, and temporary directories.
