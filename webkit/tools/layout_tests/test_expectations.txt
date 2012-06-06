@@ -1,6 +1,6 @@
 // This file should almost always be empty. Normally Chromium test expectations
 // are only put here temporarily, and moved to
-// src/third_party/WebKit/LayoutTests/platform/chromium/test_expectations.txt
+// src/third_party/WebKit/LayoutTests/platform/chromium/TestExpectations
 // where they will remain until they are rebaselined.
 //
 //
@@ -13,7 +13,10 @@
 //
 // 2. BEFORE landing your Chromium CL, land a WebKit CL adding those same
 // expected failures to
-// src/third_party/WebKit/LayoutTests/platform/chromium/test_expectations.txt .
+// src/third_party/WebKit/LayoutTests/platform/chromium/TestExpectations .
+// If you are unable to do this yourself, please get a WebKit Committer to do
+// it for you, or at least coordinate with a current WebKit Gardener to make
+// sure she is aware of the pending breakages.
 //
 // 3. AFTER you have landed the WebKit test_expectations CL, you can land your
 // Chromium CL.  Be sure to include your expected failures in this file, so
@@ -24,7 +27,7 @@
 // Every time Chromium's "WebKit Gardener" rolls the WebKit DEPS within
 // Chromium, he will delete ALL expectations within this file.  (By then, they
 // will be redundant, because you already landed those same expectations in
-// src/third_party/WebKit/LayoutTests/platform/chromium/test_expectations.txt .
+// src/third_party/WebKit/LayoutTests/platform/chromium/TestExpectations .
 // Right?)
 //
 // EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
