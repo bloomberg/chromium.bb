@@ -93,6 +93,7 @@ class UI_EXPORT NativeTheme {
     bool checked;
     bool indeterminate;  // Whether the button state is indeterminate.
     bool is_default;  // Whether the button is default button.
+    bool is_focused;
     bool has_border;
     int classic_state;  // Used on Windows when uxtheme is not available.
     SkColor background_color;

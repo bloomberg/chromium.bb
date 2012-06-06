@@ -487,9 +487,9 @@ void NativeThemeBase::PaintRadio(SkCanvas* canvas,
 }
 
 void NativeThemeBase::PaintButton(SkCanvas* canvas,
-                                   State state,
-                                   const gfx::Rect& rect,
-                                   const ButtonExtraParams& button) const {
+                                  State state,
+                                  const gfx::Rect& rect,
+                                  const ButtonExtraParams& button) const {
   SkPaint paint;
   const int kRight = rect.right();
   const int kBottom = rect.bottom();
@@ -531,10 +531,14 @@ void NativeThemeBase::PaintButton(SkCanvas* canvas,
   paint.setShader(NULL);
 
   if (button.has_border) {
-    const int kBorderAlpha = state == kHovered ? 0x80 : 0x55;
+    int border_alpha = state == kHovered ? 0x80 : 0x55;
+    if (button.is_focused) {
+      border_alpha = 0xff;
+      paint.setColor(GetSystemColor(kColorId_FocusedBorderColor));
+    }
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(1));
-    paint.setARGB(kBorderAlpha, 0, 0, 0);
+    paint.setAlpha(border_alpha);
     skrect.inset(SkFloatToScalar(.5f), SkFloatToScalar(.5f));
     canvas->drawRoundRect(skrect, SkIntToScalar(1), SkIntToScalar(1), paint);
   }

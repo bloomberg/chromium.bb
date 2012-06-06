@@ -30,6 +30,8 @@ static RECT WebRectToRECT(const WebRect& rect) {
 static ui::NativeTheme::State WebButtonStateToGfx(
     int part, int state, ui::NativeTheme::ButtonExtraParams* extra) {
   ui::NativeTheme::State gfx_state = ui::NativeTheme::kNormal;
+  // Native buttons have a different focus style.
+  extra->is_focused = false;
 
   if (part == BP_PUSHBUTTON) {
     switch (state) {

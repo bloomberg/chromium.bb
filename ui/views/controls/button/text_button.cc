@@ -469,6 +469,7 @@ void TextButtonBase::GetExtraParams(
   params->button.checked = false;
   params->button.indeterminate = false;
   params->button.is_default = false;
+  params->button.is_focused = false;
   params->button.has_border = false;
   params->button.classic_state = 0;
   params->button.background_color =
@@ -850,7 +851,8 @@ void NativeTextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
     canvas->DrawFocusRect(rect);
   }
 #else
-  TextButton::OnPaintFocusBorder(canvas);
+  // Paint nothing, focus will be indicated with a border highlight drawn by
+  // NativeThemeBase::PaintButton.
 #endif
 }
 
@@ -858,6 +860,14 @@ void NativeTextButton::GetExtraParams(
     ui::NativeTheme::ExtraParams* params) const {
   TextButton::GetExtraParams(params);
   params->button.has_border = true;
+#if !defined(OS_WIN)
+  // Windows may paint a dotted focus rect in
+  // NativeTextButton::OnPaintFocusBorder. To avoid getting two focus
+  // indications (A dotted rect and a highlighted border) only set is_focused on
+  // non windows platforms.
+  params->button.is_focused = HasFocus() &&
+      (focusable() || IsAccessibilityFocusable());
+#endif
 }
 
 }  // namespace views

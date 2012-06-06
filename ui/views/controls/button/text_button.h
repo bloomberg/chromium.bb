@@ -401,15 +401,15 @@ class VIEWS_EXPORT NativeTextButton : public TextButton {
   explicit NativeTextButton(ButtonListener* listener);
   NativeTextButton(ButtonListener* listener, const string16& text);
 
+  // Overridden from View:
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+
   // Overridden from TextButton:
   virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 
  private:
   void Init();
-
-  // Overridden from View:
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from TextButton:
   virtual void GetExtraParams(

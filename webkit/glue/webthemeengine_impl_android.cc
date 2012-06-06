@@ -107,6 +107,8 @@ static void GetNativeThemeExtraParams(
           extra_params->button.isDefault;
       native_theme_extra_params->button.has_border =
           extra_params->button.hasBorder;
+      // Native buttons have a different focus style.
+      native_theme_extra_params->button.is_focused = false;
       native_theme_extra_params->button.background_color =
           extra_params->button.backgroundColor;
       break;
