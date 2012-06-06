@@ -8,7 +8,7 @@
       'chromium_code': 1,
     },
     'include_dirs': [
-      '../../../..',
+      '<(DEPTH)',
     ],
   },
   'targets' : [
@@ -16,15 +16,12 @@
       'target_name': 'virtual_driver_setup',
       'type': 'executable',
       'dependencies': [
-        '../../../../base/base.gyp:base',
+        '../virtual_driver.gyp:virtual_driver_lib',
+        '<(DEPTH)/base/base.gyp:base',
         'virtual_driver_setup_resources',
       ],
       'sources': [
         'setup.cc',
-        '../virtual_driver_consts.h',
-        '../virtual_driver_consts.cc',
-        '../virtual_driver_helpers.h',
-        '../virtual_driver_helpers.cc',
         '../virtual_driver_common_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/virtual_driver_setup_resources/virtual_driver_setup_resources_ar.rc',
         '<(SHARED_INTERMEDIATE_DIR)/virtual_driver_setup_resources/virtual_driver_setup_resources_bg.rc',

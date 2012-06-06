@@ -15,10 +15,10 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/win/scoped_handle.h"
+#include "cloud_print/service/service_state.h"
+#include "cloud_print/service/service_switches.h"
 #include "cloud_print/service/win/chrome_launcher.h"
 #include "cloud_print/service/win/resource.h"
-#include "cloud_print/service/win/service_state.h"
-#include "cloud_print/service/win/service_switches.h"
 
 namespace {
 
