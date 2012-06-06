@@ -93,7 +93,7 @@ EXTRA_ENV = {
   'TRIPLE_X8632': 'i686-none-nacl-gnu',
   'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
 
-  'LLC_FLAGS_COMMON': '-asm-verbose=false -tail-merge-threshold=50 ' +
+  'LLC_FLAGS_COMMON': '-tail-merge-threshold=50 ' +
                       '${PIC ? -relocation-model=pic} ' +
                       #  -force-tls-non-pic makes the code generator (llc)
                       # do the work that would otherwise be done by
