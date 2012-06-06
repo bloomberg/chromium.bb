@@ -5,7 +5,7 @@
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 
 #include "chrome/browser/notifications/balloon.h"
-#include "chrome/browser/ui/views/notifications/balloon_view.h"
+#include "chrome/browser/ui/views/notifications/balloon_view_views.h"
 #include "ui/base/events.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
@@ -107,7 +107,7 @@ void BalloonCollectionImpl::SetPositionPreference(
   PositionBalloons(true);
 }
 
-#if !(defined(USE_AURA) && defined(OS_CHROMEOS))
+#if !(defined(USE_ASH) && defined(OS_CHROMEOS))
 // static
 BalloonCollection* BalloonCollection::Create() {
   return new BalloonCollectionImpl();
