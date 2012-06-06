@@ -5275,6 +5275,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_THREADED_COMPOSITING_MODE_DESCRIPTION" desc="Description of the 'Threaded compositing mode' lab.">
         Uses a secondary thread to perform web page compositing. This allows smooth scrolling, even when the main thread is unresponsive.
       </message>
+      <message name="IDS_FLAGS_DISABLE_ACCELERATED_2D_CANVAS_NAME" desc="Name of the 'Disable accelerated 2D canvas' lab.">
+        Disable accelerated 2D canvas
+      </message>
+      <message name="IDS_FLAGS_DISABLE_ACCELERATED_2D_CANVAS_DESCRIPTION" desc="Description of the 'Disable accelerated 2D canvas' lab.">
+        Disables the use of the GPU to perform 2d canvas rendering and instead uses software rendering.
+      </message>
       <message name="IDS_FLAGS_DISABLE_DEFERRED_2D_CANVAS_NAME" desc="Name of the 'Disable deferred 2D canvas' lab.">
         Disable deferred 2D canvas
       </message>

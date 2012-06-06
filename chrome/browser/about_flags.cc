@@ -197,6 +197,13 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kThreadedCompositingModeChoices)
   },
   {
+    "disable-accelerated-2d-canvas",
+    IDS_FLAGS_DISABLE_ACCELERATED_2D_CANVAS_NAME,
+    IDS_FLAGS_DISABLE_ACCELERATED_2D_CANVAS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDisableAccelerated2dCanvas)
+  },
+  {
     "disable-deferred-2d-canvas",
     IDS_FLAGS_DISABLE_DEFERRED_2D_CANVAS_NAME,
     IDS_FLAGS_DISABLE_DEFERRED_2D_CANVAS_DESCRIPTION,
