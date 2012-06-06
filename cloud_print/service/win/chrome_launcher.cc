@@ -12,7 +12,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
-#include "cloud_print/service/win/service_switches.h"
+#include "cloud_print/service/service_switches.h"
 
 namespace {
 
