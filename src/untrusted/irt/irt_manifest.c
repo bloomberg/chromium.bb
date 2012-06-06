@@ -44,6 +44,10 @@ static int get_manifest_channel_locked(struct NaClSrpcChannel **result) {
   *result = NULL;
 
   status = irt_nameservice_lookup("ManifestNameService", O_RDWR, &manifest);
+  if (NACL_NAME_SERVICE_SUCCESS != status) {
+    print_error("ManifestNameService lookup failed\n");
+    return EIO;
+  }
 
   if (-1 == manifest) {
     print_error("Manifest descriptor is invalid\n");
