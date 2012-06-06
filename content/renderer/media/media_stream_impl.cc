@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/capture_video_decoder.h"
@@ -63,8 +64,8 @@ static void CreateWebKitSourceVector(
     WebKit::WebVector<WebKit::WebMediaStreamSource>& webkit_sources) {
   ASSERT(devices.size() == webkit_sources.size());
   for (size_t i = 0; i < devices.size(); ++i) {
-    std::string source_id = label + base::UintToString(
-        static_cast<unsigned int>(i));
+    std::string source_id = StringPrintf("%s%d%u", label.c_str(), type,
+                                         static_cast<unsigned int>(i));
     webkit_sources[i].initialize(
           UTF8ToUTF16(source_id),
           type,
