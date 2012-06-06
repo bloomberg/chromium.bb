@@ -38,3 +38,13 @@ window.personalbar = stubBar;
 window.scrollbars = stubBar;
 window.statusbar = stubBar;
 window.toolbar = stubBar;
+
+// Disable onunload, onbeforeunload.
+window.__defineSetter__('onbeforeunload', stub);
+window.__defineSetter__('onunload', stub);
+window.addEventListener = function(type) {
+  if (type === 'unload' || type === 'beforeunload')
+    stub();
+  else
+    return Window.prototype.addEventListener.apply(window, arguments);
+};

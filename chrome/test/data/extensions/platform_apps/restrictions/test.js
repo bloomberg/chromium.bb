@@ -103,6 +103,22 @@ chrome.test.runTests([
     succeed();
   },
 
+  function testBlockedEvents() {
+    var eventHandler = function() { fail('event handled'); };
+    var blockedEvents = ['unload', 'beforeunload'];
+
+    for (var i = 0; i < blockedEvents.length; ++i) {
+      assertThrowsError(function() {
+        window['on' + blockedEvents[i]] = eventHandler;
+      });
+      assertThrowsError(function() {
+        window.addEventListener(blockedEvents[i], eventHandler);
+      });
+    }
+
+    succeed();
+  },
+
   function testBars() {
     var bars = ['locationbar', 'menubar', 'personalbar',
                 'scrollbars', 'statusbar', 'toolbar'];
