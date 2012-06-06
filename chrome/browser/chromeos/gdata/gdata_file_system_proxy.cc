@@ -35,7 +35,7 @@ const char kFeedField[] = "feed";
 // GDataFileSystemProxy::CreateSnapshotFile().
 void CallSnapshotFileCallback(
     const FileSystemOperationInterface::SnapshotFileCallback& callback,
-    base::PlatformFileInfo file_info,
+    const base::PlatformFileInfo& file_info,
     base::PlatformFileError error,
     const FilePath& local_path,
     const std::string& unused_mime_type,
@@ -51,7 +51,16 @@ void CallSnapshotFileCallback(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   }
 
-  callback.Run(error, file_info, local_path, file_ref);
+  // When reading file, last modified time specified in file info will be
+  // compared to the last modified time of the local version of the drive file.
+  // Since those two values don't generally match (last modification time on the
+  // drive server vs. last modification time of the local, downloaded file), so
+  // we have to opt out from this check. We do this by unsetting last_modified
+  // value in the file info passed to the CreateSnapshot caller.
+  base::PlatformFileInfo final_file_info(file_info);
+  final_file_info.last_modified = base::Time();
+
+  callback.Run(error, final_file_info, local_path, file_ref);
 }
 
 }  // namespace

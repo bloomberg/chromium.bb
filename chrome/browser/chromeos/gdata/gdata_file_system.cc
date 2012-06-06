@@ -1037,12 +1037,6 @@ void GDataFileSystem::OnUpdateChecked(ContentOrigin initial_origin,
   }
 }
 
-bool GDataFileSystem::SetCacheRootPathForTesting(const FilePath& root_path) {
-  cache_paths_.clear();
-  SetCachePaths(root_path);
-  return true;
-}
-
 GDataFileSystem::~GDataFileSystem() {
   // This should be called from UI thread, from GDataSystemService shutdown.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

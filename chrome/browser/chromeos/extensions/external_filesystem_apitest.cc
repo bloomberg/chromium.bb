@@ -190,14 +190,6 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
 
   virtual ~RemoteFileSystemExtensionApiTest() {}
 
-  virtual void SetUp() OVERRIDE {
-    FilePath tmp_dir_path;
-    PathService::Get(base::DIR_TEMP, &tmp_dir_path);
-    ASSERT_TRUE(test_cache_root_.CreateUniqueTempDirUnderPath(tmp_dir_path));
-
-    ExtensionApiTest::SetUp();
-  }
-
   // Sets up GDataFileSystem that will be used in the test.
   // NOTE: Remote mount point should get added to mount poitn provider when
   // getLocalFileSystem is called from filebrowser_component extension.
@@ -206,18 +198,14 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
         gdata::GDataSystemServiceFactory::GetForProfile(browser()->profile());
     EXPECT_TRUE(system_service && system_service->file_system());
 
-    mock_documents_service_ = new gdata::MockDocumentsService();
+    mock_documents_service_.reset(new gdata::MockDocumentsService());
     operation_registry_.reset(new gdata::GDataOperationRegistry());
     system_service->file_system()->SetDocumentsServiceForTesting(
-        mock_documents_service_);
-
-    EXPECT_TRUE(system_service->file_system()->SetCacheRootPathForTesting(
-        test_cache_root_.path()));
+        mock_documents_service_.get());
   }
 
  protected:
-  ScopedTempDir test_cache_root_;
-  gdata::MockDocumentsService* mock_documents_service_;
+  scoped_ptr<gdata::MockDocumentsService> mock_documents_service_;
   scoped_ptr<gdata::GDataOperationRegistry> operation_registry_;
 };
 
@@ -265,10 +253,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
       "filebrowser_component", "write.html", kComponentFlags)) << message_;
 }
 
-// Failing on Linux ChromeOS builds.
-// http://crbug.com/128759
 IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
-                       DISABLED_RemoteMountPoint) {
+                       RemoteMountPoint) {
   SetupGDataFileSystemForTest();
 
   EXPECT_CALL(*mock_documents_service_, GetAccountMetadata(_)).Times(1);
