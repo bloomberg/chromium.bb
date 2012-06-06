@@ -9,10 +9,17 @@
 cr.define('login', function() {
   /**
    * Maximum number of offline login failures before online login.
-     @type {number}
-     @const
+   * @type {number}
+   * @const
    */
   var MAX_LOGIN_ATTEMPTS_IN_POD = 3;
+
+  /**
+   * Whether to preselect the first pod automatically on login screen.
+   * @type {boolean}
+   * @const
+   */
+  var PRESELECT_FIRST_POD = true;
 
   /**
    * Creates a new account picker screen div.
@@ -69,7 +76,9 @@ cr.define('login', function() {
       var lockedPod = podRow.lockedPod;
       $('add-user-header-bar-item').hidden = !!lockedPod;
       $('sign-out-user-item').hidden = !lockedPod;
-      if (lockedPod) {
+      var preselectedPod = PRESELECT_FIRST_POD ?
+          lockedPod || podRow.pods[0] : lockedPod;
+      if (preselectedPod) {
         // TODO(altimofeev): empirically I investigated that focus isn't
         // set correctly if following CSS rules are present:
         //
@@ -82,10 +91,10 @@ cr.define('login', function() {
         //
         // Workaround is either delete these rules or delay the focus setting.
         var self = this;
-        lockedPod.addEventListener('webkitTransitionEnd', function f(e) {
-          if (e.target == lockedPod) {
-            podRow.focusPod(lockedPod);
-            lockedPod.removeEventListener(f);
+        preselectedPod.addEventListener('webkitTransitionEnd', function f(e) {
+          if (e.target == preselectedPod) {
+            podRow.focusPod(preselectedPod);
+            preselectedPod.removeEventListener(f);
             // Delay the accountPickerReady signal so that if there are any
             // timeouts waiting to fire we can process these first. This was
             // causing crbug.com/112218 as the account pod was sometimes focuse

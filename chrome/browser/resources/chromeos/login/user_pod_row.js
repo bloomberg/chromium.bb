@@ -659,16 +659,29 @@ cr.define('login', function() {
         }
       }
 
+      var hadFocus = !!this.focusedPod_;
       this.focusedPod_ = podToFocus;
       if (podToFocus) {
         podToFocus.classList.remove('faded');
         podToFocus.classList.add('focused');
         podToFocus.reset(true);  // Reset and give focus.
         this.scrollPodIntoView(podToFocus);
-        this.loadWallpaperTimeout_ = window.setTimeout(function() {
-          chrome.send('userSelectedDelayed', [podToFocus.user.username]);
-        }, WALLPAPER_LOAD_DELAY_MS);
+        // Load wallpaper immediately if there no pod was focused previously,
+        // otherwise delay loading to let user tab through pods without lag.
+        if (hadFocus) {
+          this.loadWallpaperTimeout_ = window.setTimeout(
+              this.loadWallpaper_.bind(this), WALLPAPER_LOAD_DELAY_MS);
+        } else {
+          this.loadWallpaper_();
+        }
+      } else {
+        // TODO(ivankr): reset wallpaper.
       }
+    },
+
+    loadWallpaper_: function() {
+      if (this.focusedPod_)
+        chrome.send('userSelectedDelayed', [this.focusedPod_.user.username]);
     },
 
     /**
