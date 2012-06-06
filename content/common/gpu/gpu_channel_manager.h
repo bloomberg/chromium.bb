@@ -24,6 +24,12 @@ namespace gfx {
 class GLShareGroup;
 }
 
+namespace gpu {
+namespace gles2 {
+class MailboxManager;
+}
+}
+
 namespace IPC {
 struct ChannelHandle;
 }
@@ -107,6 +113,7 @@ class GpuChannelManager : public IPC::Channel::Listener,
   typedef base::hash_map<int, scoped_refptr<GpuChannel> > GpuChannelMap;
   GpuChannelMap gpu_channels_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
+  scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
   GpuMemoryManager gpu_memory_manager_;
   GpuWatchdog* watchdog_;
   scoped_refptr<SyncPointManager> sync_point_manager_;

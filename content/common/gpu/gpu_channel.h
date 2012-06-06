@@ -43,6 +43,7 @@ class GpuChannel : public IPC::Channel::Listener,
   GpuChannel(GpuChannelManager* gpu_channel_manager,
              GpuWatchdog* watchdog,
              gfx::GLShareGroup* share_group,
+             gpu::gles2::MailboxManager* mailbox_manager,
              int client_id,
              bool software);
 

@@ -10,6 +10,7 @@
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/sync_point_manager.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "ui/gl/gl_share_group.h"
 
 GpuChannelManager::GpuChannelManager(ChildThread* gpu_child_thread,
@@ -89,15 +90,21 @@ void GpuChannelManager::OnEstablishChannel(int client_id, bool share_context) {
   IPC::ChannelHandle channel_handle;
 
   gfx::GLShareGroup* share_group = NULL;
+  gpu::gles2::MailboxManager* mailbox_manager = NULL;
   if (share_context) {
-    if (!share_group_)
+    if (!share_group_) {
       share_group_ = new gfx::GLShareGroup;
+      DCHECK(!mailbox_manager_);
+      mailbox_manager_ = new gpu::gles2::MailboxManager;
+    }
     share_group = share_group_;
+    mailbox_manager = mailbox_manager_;
   }
 
   scoped_refptr<GpuChannel> channel = new GpuChannel(this,
                                                      watchdog_,
                                                      share_group,
+                                                     mailbox_manager,
                                                      client_id,
                                                      false);
   if (channel->Init(io_message_loop_, shutdown_event_)) {
