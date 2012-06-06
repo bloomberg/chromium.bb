@@ -54,6 +54,7 @@ class ExtensionPermissionMessage {
     kAllPageContent,
     kPrivacy,
     kManagedMode,
+    kInput,
     kEnumBoundary
   };
 

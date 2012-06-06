@@ -583,7 +583,6 @@ TEST(ExtensionPermissionsTest, PermissionMessages) {
 
   // The ime, proxy, and webRequest permissions are warned as part of host
   // permission checks.
-  skip.insert(ExtensionAPIPermission::kInput);
   skip.insert(ExtensionAPIPermission::kProxy);
   skip.insert(ExtensionAPIPermission::kWebRequest);
   skip.insert(ExtensionAPIPermission::kWebRequestBlocking);

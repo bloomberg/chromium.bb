@@ -250,8 +250,8 @@ void ExtensionAPIPermission::RegisterAllPermissions(
   info->RegisterPermission(
       kIdle, "idle", 0, ExtensionPermissionMessage::kNone, kFlagNone);
   info->RegisterPermission(
-      kInput, "input", 0, ExtensionPermissionMessage::kNone,
-      kFlagImpliesFullURLAccess);
+      kInput, "input", IDS_EXTENSION_PROMPT_WARNING_INPUT,
+      ExtensionPermissionMessage::kInput, kFlagNone);
   info->RegisterPermission(
       kManagement, "management", IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
       ExtensionPermissionMessage::kManagement, kFlagNone);
