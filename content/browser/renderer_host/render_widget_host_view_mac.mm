@@ -2236,6 +2236,13 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     RenderWidgetHostImpl* rwh = renderWidgetHostView_->render_widget_host_;
     rwh->Send(new AccessibilityMsg_SetFocus(
         rwh->GetRoutingID(), accessibilityObjectId));
+
+    // Immediately set the focused item even though we have not officially set
+    // focus on it as VoiceOver expects to get the focused item after this
+    // method returns.
+    BrowserAccessibilityManager* manager =
+        renderWidgetHostView_->GetBrowserAccessibilityManager();
+    manager->SetFocus(manager->GetFromRendererID(accessibilityObjectId), false);
   }
 }
 
