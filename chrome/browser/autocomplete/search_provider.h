@@ -280,9 +280,11 @@ class SearchProvider : public AutocompleteProvider,
                               bool is_keyword,
                               MatchMap* map);
 
-  // Determines the relevance for a particular match.  We use different scoring
-  // algorithms for the different types of matches.
-  int CalculateRelevanceForWhatYouTyped() const;
+  // Get the relevance score for the verbatim result; this value may be provided
+  // by the suggest server; otherwise it is calculated locally.
+  int GetVerbatimRelevance() const;
+  // Calculate the relevance score for the verbatim result.
+  int CalculateRelevanceForVerbatim() const;
   // |time| is the time at which this query was last seen.  |is_keyword|
   // indicates whether the results correspond to the keyword provider or default
   // provider. |prevent_inline_autocomplete| is true if we should not inline

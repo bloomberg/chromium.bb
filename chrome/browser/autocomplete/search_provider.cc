@@ -162,8 +162,7 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
         TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
         TemplateURLRef::NO_SUGGESTION_CHOSEN;
   MatchMap match_map;
-  AddMatchToMap(text, adjusted_input_text,
-                CalculateRelevanceForWhatYouTyped() + 1,
+  AddMatchToMap(text, adjusted_input_text, GetVerbatimRelevance() + 1,
                 AutocompleteMatch::SEARCH_SUGGEST,
                 did_not_accept_default_suggestion, false, &match_map);
   if (!match_map.empty()) {
@@ -699,7 +698,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       TemplateURLRef::NO_SUGGESTION_CHOSEN;
   // Keyword what you typed results are handled by the KeywordProvider.
 
-  int verbatim_relevance = CalculateRelevanceForWhatYouTyped();
+  int verbatim_relevance = GetVerbatimRelevance();
   int did_not_accept_default_suggestion = default_suggest_results_.empty() ?
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
       TemplateURLRef::NO_SUGGESTION_CHOSEN;
@@ -740,15 +739,27 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   if (matches_.size() > max_total_matches)
     matches_.erase(matches_.begin() + max_total_matches, matches_.end());
 
-  // The top result must be inlinable; apply calculated scores if it is not.
+  // Check constraints that may be violated by suggested relevances.
   if (!matches_.empty() &&
       (has_suggested_relevance_ || verbatim_relevance_ >= 0) &&
       (matches_.front().type == AutocompleteMatch::SEARCH_SUGGEST ||
-       matches_.front().type == AutocompleteMatch::NAVSUGGEST) &&
-      matches_.front().inline_autocomplete_offset == string16::npos &&
-      matches_.front().fill_into_edit != input_.text()) {
-    ApplyCalculatedRelevance();
-    ConvertResultsToAutocompleteMatches();
+       matches_.front().type == AutocompleteMatch::NAVSUGGEST)) {
+    bool reconstruct_matches = false;
+    if (matches_.front().inline_autocomplete_offset == string16::npos &&
+        matches_.front().fill_into_edit != input_.text()) {
+      // Disregard all suggested relevances if the top result is not inlinable.
+      ApplyCalculatedRelevance();
+      reconstruct_matches = true;
+    } else if (matches_.front().relevance < CalculateRelevanceForVerbatim()) {
+      // Disregard the suggested verbatim relevance if the top score is
+      // potentially lower than other providers' non-inlinable suggestions.
+      verbatim_relevance_ = -1;
+      reconstruct_matches = true;
+    }
+    if (reconstruct_matches) {
+      ConvertResultsToAutocompleteMatches();
+      return;
+    }
   }
 
   UpdateStarredStateOfMatches();
@@ -878,10 +889,13 @@ void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
   }
 }
 
-int SearchProvider::CalculateRelevanceForWhatYouTyped() const {
+int SearchProvider::GetVerbatimRelevance() const {
   if (verbatim_relevance_ >= 0 && !input_.prevent_inline_autocomplete())
     return verbatim_relevance_;
+  return CalculateRelevanceForVerbatim();
+}
 
+int SearchProvider::CalculateRelevanceForVerbatim() const {
   if (!providers_.keyword_provider().empty())
     return 250;
 

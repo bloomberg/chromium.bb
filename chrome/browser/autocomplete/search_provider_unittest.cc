@@ -720,99 +720,137 @@ TEST_F(SearchProviderTest, SuggestRelevance) {
 TEST_F(SearchProviderTest, SuggestRelevanceExperiment) {
   const std::string kNotApplicable("Not Applicable");
   struct {
-    const std::string input;
     const std::string json;
     const std::string matches[4];
   } cases[] = {
     // Ensure that suggestrelevance scores reorder matches.
-    { "a", "[\"a\",[\"b\", \"c\"],[],[],{\"google:suggestrelevance\":[1, 2]}]",
+    { "[\"a\",[\"b\", \"c\"],[],[],{\"google:suggestrelevance\":[1, 2]}]",
       { "a", "c", "b", kNotApplicable } },
-    { "a", "[\"a\",[\"http://b.com\", \"http://c.com\"],[],[],"
-            "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
-             "\"google:suggestrelevance\":[1, 2]}]",
+    { "[\"a\",[\"http://b.com\", \"http://c.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
+        "\"google:suggestrelevance\":[1, 2]}]",
       { "a", "c.com", kNotApplicable, kNotApplicable } },
 
     // Ensure that verbatimrelevance scores reorder or suppress what-you-typed.
     // Negative values will have no effect; the calculated value will be used.
-    { "a", "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":1}]",
-      { "a1", "a", kNotApplicable, kNotApplicable } },
-    { "a", "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":0}]",
-      { "a1", kNotApplicable, kNotApplicable, kNotApplicable } },
-    { "a", "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":-1}]",
+    { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":9999,"
+                             "\"google:suggestrelevance\":[9998]}]",
       { "a", "a1", kNotApplicable, kNotApplicable } },
-    { "a", "[\"a\",[\"http://a.com\"],[],[],"
-            "{\"google:suggesttype\":[\"NAVIGATION\"],"
-             "\"google:verbatimrelevance\":1}]",
-      { "a.com", "a", kNotApplicable, kNotApplicable } },
-    { "a", "[\"a\",[\"http://a.com\"],[],[],"
-            "{\"google:suggesttype\":[\"NAVIGATION\"],"
-             "\"google:verbatimrelevance\":0}]",
-      { "a.com", kNotApplicable, kNotApplicable, kNotApplicable } },
-    { "a", "[\"a\",[\"http://a.com\"],[],[],"
-            "{\"google:suggesttype\":[\"NAVIGATION\"],"
-             "\"google:verbatimrelevance\":-1}]",
+    { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":9998,"
+                             "\"google:suggestrelevance\":[9999]}]",
+      { "a1", "a", kNotApplicable, kNotApplicable } },
+    { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":0,"
+                             "\"google:suggestrelevance\":[9999]}]",
+      { "a1", kNotApplicable, kNotApplicable, kNotApplicable } },
+    { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":-1,"
+                             "\"google:suggestrelevance\":[9999]}]",
+      { "a1", "a", kNotApplicable, kNotApplicable } },
+    { "[\"a\",[\"http://a.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\"],"
+        "\"google:verbatimrelevance\":9999,"
+        "\"google:suggestrelevance\":[9998]}]",
       { "a", "a.com", kNotApplicable, kNotApplicable } },
+    { "[\"a\",[\"http://a.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\"],"
+        "\"google:verbatimrelevance\":9998,"
+        "\"google:suggestrelevance\":[9999]}]",
+      { "a.com", "a", kNotApplicable, kNotApplicable } },
+    { "[\"a\",[\"http://a.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\"],"
+        "\"google:verbatimrelevance\":0,"
+        "\"google:suggestrelevance\":[9999]}]",
+      { "a.com", kNotApplicable, kNotApplicable, kNotApplicable } },
+    { "[\"a\",[\"http://a.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\"],"
+        "\"google:verbatimrelevance\":-1,"
+        "\"google:suggestrelevance\":[9999]}]",
+      { "a.com", "a", kNotApplicable, kNotApplicable } },
 
     // Ensure that both types of relevance scores reorder matches together.
-    { "a", "[\"a\",[\"a1\", \"a2\"],[],[],{\"google:suggestrelevance\":[3, 1],"
-                                          "\"google:verbatimrelevance\":2}]",
+    { "[\"a\",[\"a1\", \"a2\"],[],[],{\"google:suggestrelevance\":[9999, 9997],"
+                                     "\"google:verbatimrelevance\":9998}]",
       { "a1", "a", "a2", kNotApplicable } },
 
     // Ensure that only inlinable matches may be ranked as the highest result.
-    // If the server suggests relevance scores that violate this constraint,
-    // then all other matches are ranked lower than the what-you-typed result.
-    { "a", "[\"a\",[\"b\"],[],[],{\"google:verbatimrelevance\":0}]",
+    // Ignore all suggested relevance scores if this constraint is violated.
+    { "[\"a\",[\"b\"],[],[],{\"google:suggestrelevance\":[9999]}]",
       { "a", "b", kNotApplicable, kNotApplicable } },
-    { "a", "[\"a\",[\"b\"],[],[],{\"google:suggestrelevance\":[9999]}]",
+    { "[\"a\",[\"b\"],[],[],{\"google:suggestrelevance\":[9999],"
+                            "\"google:verbatimrelevance\":0}]",
       { "a", "b", kNotApplicable, kNotApplicable } },
-    { "a", "[\"a\",[\"b\"],[],[],{\"google:suggestrelevance\":[9999],"
-                                 "\"google:verbatimrelevance\":0}]",
-      { "a", "b", kNotApplicable, kNotApplicable } },
-    { "a", "[\"a\",[\"http://b.com\"],[],[],"
-            "{\"google:suggesttype\":[\"NAVIGATION\"],"
-             "\"google:verbatimrelevance\":0}]",
+    { "[\"a\",[\"http://b.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\"],"
+        "\"google:suggestrelevance\":[9999]}]",
       { "a", "b.com", kNotApplicable, kNotApplicable } },
-    { "a", "[\"a\",[\"http://b.com\"],[],[],"
-            "{\"google:suggesttype\":[\"NAVIGATION\"],"
-             "\"google:suggestrelevance\":[9999]}]",
-      { "a", "b.com", kNotApplicable, kNotApplicable } },
-    { "a", "[\"a\",[\"http://b.com\"],[],[],"
-            "{\"google:suggesttype\":[\"NAVIGATION\"],"
-             "\"google:suggestrelevance\":[9999],"
-             "\"google:verbatimrelevance\":0}]",
+    { "[\"a\",[\"http://b.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\"],"
+        "\"google:suggestrelevance\":[9999],"
+        "\"google:verbatimrelevance\":0}]",
       { "a", "b.com", kNotApplicable, kNotApplicable } },
 
+    // Ensure that the top result is ranked as highly as calculated verbatim.
+    // Ignore the suggested verbatim relevance if this constraint is violated.
+    { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":0}]",
+      { "a", "a1", kNotApplicable, kNotApplicable } },
+    { "[\"a\",[\"a1\"],[],[],{\"google:verbatimrelevance\":1}]",
+      { "a", "a1", kNotApplicable, kNotApplicable } },
+    { "[\"a\",[\"a1\"],[],[],{\"google:suggestrelevance\":[1],"
+                             "\"google:verbatimrelevance\":0}]",
+      { "a", "a1", kNotApplicable, kNotApplicable } },
+    { "[\"a\",[\"a1\", \"a2\"],[],[],{\"google:suggestrelevance\":[1, 2],"
+                                     "\"google:verbatimrelevance\":0}]",
+      { "a", "a2", "a1", kNotApplicable } },
+    { "[\"a\",[\"http://a.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\"],"
+        "\"google:suggestrelevance\":[1],"
+        "\"google:verbatimrelevance\":0}]",
+      { "a", "a.com", kNotApplicable, kNotApplicable } },
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
+        "\"google:suggestrelevance\":[1, 2],"
+        "\"google:verbatimrelevance\":0}]",
+      { "a", "a2.com", kNotApplicable, kNotApplicable } },
+
     // Ensure that all suggestions are considered, regardless of order.
-    { "a", "[\"a\",[\"b\", \"c\", \"d\", \"e\", \"f\", \"g\", \"h\"],[],[],"
-            "{\"google:suggestrelevance\":[1, 2, 3, 4, 5, 6, 7]}]",
+    { "[\"a\",[\"b\", \"c\", \"d\", \"e\", \"f\", \"g\", \"h\"],[],[],"
+       "{\"google:suggestrelevance\":[1, 2, 3, 4, 5, 6, 7]}]",
       { "a", "h", "g", "f" } },
-    { "a", "[\"a\",[\"http://b.com\", \"http://c.com\", \"http://d.com\","
-                   "\"http://e.com\", \"http://f.com\", \"http://g.com\","
-                   "\"http://h.com\"],[],[],"
-            "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\","
-                                     "\"NAVIGATION\", \"NAVIGATION\","
-                                     "\"NAVIGATION\", \"NAVIGATION\","
-                                     "\"NAVIGATION\"],"
-             "\"google:suggestrelevance\":[1, 2, 3, 4, 5, 6, 7]}]",
+    { "[\"a\",[\"http://b.com\", \"http://c.com\", \"http://d.com\","
+              "\"http://e.com\", \"http://f.com\", \"http://g.com\","
+              "\"http://h.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\","
+                                "\"NAVIGATION\", \"NAVIGATION\","
+                                "\"NAVIGATION\", \"NAVIGATION\","
+                                "\"NAVIGATION\"],"
+        "\"google:suggestrelevance\":[1, 2, 3, 4, 5, 6, 7]}]",
       { "a", "h.com", kNotApplicable, kNotApplicable } },
 
     // Ensure that incorrectly sized suggestion relevance lists are ignored.
-    { "a", "[\"a\",[\"a1\", \"a2\"],[],[],{\"google:suggestrelevance\":[1]}]",
+    { "[\"a\",[\"a1\", \"a2\"],[],[],{\"google:suggestrelevance\":[1]}]",
       { "a", "a1", "a2", kNotApplicable } },
-    { "a", "[\"a\",[\"a1\"],[],[],{\"google:suggestrelevance\":[9999, 1]}]",
+    { "[\"a\",[\"a1\"],[],[],{\"google:suggestrelevance\":[9999, 1]}]",
       { "a", "a1", kNotApplicable, kNotApplicable } },
-    { "a", "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
-            "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
-             "\"google:suggestrelevance\":[1]}]",
+    { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
+        "\"google:suggestrelevance\":[1]}]",
       { "a", "a1.com", kNotApplicable, kNotApplicable } },
-    { "a", "[\"a\",[\"http://a1.com\"],[],[],"
-            "{\"google:suggesttype\":[\"NAVIGATION\"],"
-             "\"google:suggestrelevance\":[9999, 1]}]",
+    { "[\"a\",[\"http://a1.com\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\"],"
+       "\"google:suggestrelevance\":[9999, 1]}]",
       { "a", "a1.com", kNotApplicable, kNotApplicable } },
+
+    // Ensure that all 'verbatim' results are merged with their maximum score.
+    { "[\"a\",[\"a\", \"a1\", \"a2\"],[],[],"
+       "{\"google:suggestrelevance\":[9998, 9997, 9999]}]",
+      { "a2", "a", "a1", kNotApplicable } },
+    { "[\"a\",[\"a\", \"a1\", \"a2\"],[],[],"
+       "{\"google:suggestrelevance\":[9998, 9997, 9999],"
+        "\"google:verbatimrelevance\":0}]",
+      { "a2", "a", "a1", kNotApplicable } },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
-    QueryForInput(ASCIIToUTF16(cases[i].input), false);
+    QueryForInput(ASCIIToUTF16("a"), false);
     TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
         SearchProvider::kDefaultProviderURLFetcherID);
     fetcher->set_response_code(200);
@@ -821,10 +859,12 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperiment) {
     RunTillProviderDone();
 
     const ACMatches& matches = provider_->matches();
+    // The top match must inline and score as highly as calculated verbatim.
     EXPECT_NE(string16::npos, matches[0].inline_autocomplete_offset);
+    EXPECT_GE(matches[0].relevance, 1300);
 
     size_t j = 0;
-    // Ensure that the supplied matches equal the expectations.
+    // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j)
       EXPECT_EQ(ASCIIToUTF16(cases[i].matches[j]), matches[j].contents);
     // Ensure that no expected matches are missing.
