@@ -762,6 +762,24 @@ everything-translator() {
   driver-install-translator
 }
 
+#@ translator-archive-pexes <tarball> -archive gold and llc pexes
+#@                           <tarball> should be an absolute pathname
+translator-archive-universal-pexes() {
+  local tarball=$1
+  local prefix="${NACL_ROOT}/pnacl/build/translator-universal-srpc-newlib"
+  local pexe_ld="${prefix}/binutils-gold-sb/gold/ld-new"
+  local pexe_llc="${prefix}/llvm-sb/Release+Asserts/bin/llc"
+
+  file ${pexe_ld}
+  ls -l ${pexe_ld}
+
+  file ${pexe_llc}
+  ls -l ${pexe_llc}
+
+  # strip all path components
+  tar cjf ${tarball}  --transform 's!^.*/!!' ${pexe_ld} ${pexe_llc}
+}
+
 #+ translator-clean-all  - Clean all translator install/build directories
 translator-clean-all() {
   StepBanner "TRANSLATOR" "Clean all"

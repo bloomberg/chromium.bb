@@ -95,8 +95,8 @@ DownloadArmTrustedToolchain() {
   local rev=$1
   local tarball=$2
   curl -L \
-     ${URL_PREFIX_RAW}/${BASE_ARM_TOOLCHAIN}/${rev}/naclsdk_linux_arm-trusted.tgz
-     -o $2
+     ${URL_PREFIX_RAW}/${BASE_ARM_TOOLCHAIN}/${rev}/naclsdk_linux_arm-trusted.tgz \
+     -o ${tarball}
 }
 
 ShowRecentArmTrustedToolchains() {
@@ -138,9 +138,9 @@ DownloadArmUntrustedToolchains() {
   local label=$2
   local tarball=$3
 
-   curl -L \
-     ${URL_PREFIX}/${BASE_ARM_TOOLCHAIN}/${rev}/naclsdk_${label}.tgz
-     -o $2
+  curl -L \
+      ${URL_PREFIX}/${BASE_ARM_TOOLCHAIN}/${rev}/naclsdk_${label}.tgz \
+      -o ${tarball}
 }
 
 ShowRecentArmUntrustedToolchains() {
@@ -161,18 +161,18 @@ ShowRecentArmUntrustedToolchains() {
 
 UploadArchivedPexes() {
   local rev=$1
-  local tarball=$2
+  local label="archived_pexes_$2.tar.bz2"
+  local tarball=$3
 
-  UploadArmToolchain ${rev} archived_pexes.tar.bz2 ${tarball}
+  UploadArmToolchain ${rev} ${label} ${tarball}
 }
 
 DownloadArchivedPexes() {
   local rev=$1
-  local tarball=$2
+  local label="archived_pexes_$2.tar.bz2"
+  local tarball=$3
 
-   curl -L \
-     ${URL_PREFIX}/${BASE_ARM_TOOLCHAIN}/${rev}/archived_pexes.tar.bz2 \
-     -o $2
+  curl -L ${URL_PREFIX}/${BASE_ARM_TOOLCHAIN}/${rev}/${label} -o ${tarball}
 }
 
 ######################################################################
