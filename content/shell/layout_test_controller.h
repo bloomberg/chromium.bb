@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_SHELL_RENDER_VIEW_OBSERVER_H_
-#define CONTENT_SHELL_SHELL_RENDER_VIEW_OBSERVER_H_
+#ifndef CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_H_
+#define CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_H_
 #pragma once
 
 #include "content/public/renderer/render_view_observer.h"
 
 namespace content {
 
-// This class holds the content_shell specific parts of RenderView, and has the
-// same lifetime.
-class ShellRenderViewObserver : public RenderViewObserver {
+// This is the renderer side of the layout test controller.
+class LayoutTestController : public RenderViewObserver {
  public:
-  explicit ShellRenderViewObserver(RenderView* render_view);
-  virtual ~ShellRenderViewObserver();
+  explicit LayoutTestController(RenderView* render_view);
+  virtual ~LayoutTestController();
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -25,9 +24,9 @@ class ShellRenderViewObserver : public RenderViewObserver {
   // Message handlers.
   void OnCaptureTextDump(bool as_text, bool printing, bool recursive);
 
-  DISALLOW_COPY_AND_ASSIGN(ShellRenderViewObserver);
+  DISALLOW_COPY_AND_ASSIGN(LayoutTestController);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_SHELL_RENDER_VIEW_OBSERVER_H_
+#endif  // CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_H_

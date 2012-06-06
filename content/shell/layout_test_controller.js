@@ -9,6 +9,7 @@ var layoutTestController = layoutTestController || {};
   native function SetDumpAsText();
   native function SetDumpChildFramesAsText();
   native function SetPrinting();
+  native function SetShouldStayOnPageAfterHandlingBeforeUnload();
   native function SetWaitUntilDone();
 
   layoutTestController = new function() {
@@ -16,6 +17,8 @@ var layoutTestController = layoutTestController || {};
     this.dumpAsText = SetDumpAsText;
     this.dumpChildFramesAsText = SetDumpChildFramesAsText;
     this.setPrinting = SetPrinting;
+    this.setShouldStayOnPageAfterHandlingBeforeUnload =
+        SetShouldStayOnPageAfterHandlingBeforeUnload;
     this.waitUntilDone = SetWaitUntilDone;
   }();
 })();
