@@ -66,6 +66,7 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, LowPressureTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, OneToTwoJumpTest);
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, SensorJumpTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, TrackingIdMappingTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, TwoToOneJumpTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, WarpOnSwapTest);
@@ -145,6 +146,10 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   // Set WARP flags for fingers immediately after 2->1 finger transitions
   void SuppressTwoToOneFingerJump(HardwareState* hwstate);
 
+  // Suppress the sensor jump by shortening the jump distance in half instead
+  // of warping the whole displacement.
+  void SuppressSensorJump(HardwareState* hwstate);
+
   // Starting finger positions of the two-finger gesture.
   FingerPosition start_pos_[kMaxSemiMtFingers];
 
@@ -172,6 +177,9 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
 
   bool is_semi_mt_device_;
 
+  // Sensor jump flags for fingers per axis.
+  bool sensor_jump_[kMaxSemiMtFingers][2];
+
   // True if the interpreter is effective in gesture pipeline.
   BoolProperty interpreter_enabled_;
 
@@ -189,6 +197,12 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   DoubleProperty non_linear_bottom_;
   DoubleProperty non_linear_left_;
   DoubleProperty non_linear_right_;
+
+  // The minimum distance of a sensor jump.
+  DoubleProperty min_jump_distance_;
+
+  // The maximum distance of a sensor jump.
+  DoubleProperty max_jump_distance_;
 
   scoped_ptr<Interpreter> next_;
 };

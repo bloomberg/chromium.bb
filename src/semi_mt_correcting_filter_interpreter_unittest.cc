@@ -734,4 +734,54 @@ TEST(SemiMtCorrectingFilterInterpreterTest, WarpOnSwapTest) {
     }
   }
 }
+
+TEST(SemiMtCorrectingFilterInterpreterTest, SensorJumpTest) {
+  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
+      new SemiMtCorrectingFilterInterpreterTestInterpreter;
+  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 74, 0, 2874, 4106, 1098, 0 },  // 0
+    { 0, 0, 0, 0, 74, 0, 3460, 2565, 1101, 0 },
+
+    { 0, 0, 0, 0, 74, 0, 2874, 4106, 1098, 0 },  // 2
+    { 0, 0, 0, 0, 74, 0, 3460, 2500, 1101, 0 },  // a small move in Y
+
+    { 0, 0, 0, 0, 74, 0, 2874, 4034, 1098, 0 },  // 4
+    { 0, 0, 0, 0, 74, 0, 3485, 1367, 1101, 0 },  // a big jump in Y
+
+    { 0, 0, 0, 0, 74, 0, 2874, 4034, 1098, 0 },  // 6
+    { 0, 0, 0, 0, 74, 0, 3485, 1667, 1101, 0 },  // a sensor jump in Y
+
+  };
+
+  HardwareState hs[] = {
+    // time, buttons, finger count, touch count, fingers
+    { 42004.644897, 0, 2, 2, &fs[0] },  // 0
+    { 42004.669832, 0, 2, 2, &fs[2] },  // 1
+    { 42004.689832, 0, 2, 2, &fs[4] },  // 2
+    { 42004.709832, 0, 2, 2, &fs[6] },  // 3 (a sensor jump report)
+  };
+
+  HardwareProperties hwprops = {
+    1217, 1061, 5733, 4798,  // left, top, right, bottom
+    47, 65, 133, 133,  // x res, y res, x DPI, y DPI
+    2, 3,  // max_fingers, max_touch
+    false, true, true  // t5r2, semi_mt, is_button_pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+  interpreter.interpreter_enabled_.val_ = 1;
+  interpreter.min_jump_distance_.val_ = 150.0;
+  interpreter.max_jump_distance_.val_ = 910.0;
+
+  for (size_t i = 0; i < arraysize(hs); i++) {
+    interpreter.SyncInterpret(&hs[i], NULL);
+    if (i == 3)
+      EXPECT_TRUE(interpreter.sensor_jump_[1][1]);
+    else
+      EXPECT_FALSE(interpreter.sensor_jump_[1][1]);
+  }
+}
 }  // namespace gestures

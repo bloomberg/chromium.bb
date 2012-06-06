@@ -23,7 +23,9 @@ SemiMtCorrectingFilterInterpreter::SemiMtCorrectingFilterInterpreter(
       non_linear_top_(prop_reg, "SemiMT Non Linear Area Top", 1250.0),
       non_linear_bottom_(prop_reg, "SemiMT Non Linear Area Bottom", 4570.0),
       non_linear_left_(prop_reg, "SemiMT Non Linear Area Left", 1360.0),
-      non_linear_right_(prop_reg, "SemiMT Non Linear Area Right", 5560.0) {
+      non_linear_right_(prop_reg, "SemiMT Non Linear Area Right", 5560.0),
+      min_jump_distance_(prop_reg, "SemiMT Min Sensor Jump Distance", 150.0),
+      max_jump_distance_(prop_reg, "SemiMT Max Sensor Jump Distance", 910.0) {
   ClearHistory();
   next_.reset(next);
 }
@@ -40,6 +42,7 @@ Gesture* SemiMtCorrectingFilterInterpreter::SyncInterpret(
       SuppressTwoToOneFingerJump(hwstate);
       SuppressOneToTwoFingerJump(hwstate);
       CorrectFingerPosition(hwstate);
+      SuppressSensorJump(hwstate);
       UpdateHistory(hwstate);
     } else {
       ClearHistory();
@@ -145,6 +148,7 @@ void SemiMtCorrectingFilterInterpreter::UpdateFingerPattern(
   bool center_crossed_stationary_y =
       (stationary_was_top && (center.y < stationary_pos.y)) ||
       (!stationary_was_top && (center.y > stationary_pos.y));
+
   if (center_crossed_stationary_x)
     SwapFingerPatternX(hwstate);
   if (center_crossed_stationary_y)
@@ -313,5 +317,42 @@ void SemiMtCorrectingFilterInterpreter::LowPressureFilter(
       ((prev_hwstate_.finger_cnt > 0) &&
       (pressure < hysteresis_pressure_.val_)))
     hwstate->finger_cnt = hwstate->touch_cnt = 0;
+}
+
+void SemiMtCorrectingFilterInterpreter::SuppressSensorJump(
+    HardwareState* hwstate) {
+  if (hwstate->finger_cnt != kMaxSemiMtFingers)
+    return;
+  // Skip the check for the first 2f report.
+  if (prev_hwstate_.finger_cnt != kMaxSemiMtFingers) {
+    memset(sensor_jump_, 0, sizeof(sensor_jump_));
+    return;
+  }
+  for (size_t i = 0; i < hwstate->finger_cnt; i++) {
+    struct FingerState *current = &hwstate->fingers[i];
+    struct FingerState *prev =
+        prev_hwstate_.GetFingerState(current->tracking_id);
+    if (prev == NULL)
+      continue;
+    float FingerState::* const fields[] = { &FingerState::position_x,
+                                            &FingerState::position_y };
+    for (size_t j = 0 ; j < arraysize(fields); j++) {
+      // Skip if there is a jump in previous report.
+      if (sensor_jump_[i][j]) {
+        sensor_jump_[i][j] = false;
+        continue;
+      }
+
+      float FingerState::* const field = fields[j];
+      float delta = current->*field - prev->*field;
+      float abs_delta = fabsf(delta);
+      if (abs_delta >= min_jump_distance_.val_ &&
+          abs_delta <= max_jump_distance_.val_) {
+        sensor_jump_[i][j] = true;
+        // Shorten the jump by half.
+        current->*field -= (delta / 2);
+      }
+    }
+  }
 }
 }  // namespace gestures
