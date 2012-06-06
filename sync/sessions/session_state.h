@@ -13,160 +13,21 @@
 #define SYNC_SESSIONS_SESSION_STATE_H_
 #pragma once
 
-#include <map>
 #include <set>
-#include <string>
-#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/syncproto.h"
-#include "sync/protocol/sync_protocol_error.h"
+#include "sync/sessions/error_counters.h"
+#include "sync/sessions/syncer_status.h"
 #include "sync/syncable/model_type.h"
-#include "sync/syncable/model_type_payload_map.h"
-#include "sync/syncable/syncable.h"
-
-namespace base {
-class DictionaryValue;
-}
+#include "sync/syncable/syncable_id.h"
 
 namespace browser_sync {
 namespace sessions {
 
 class UpdateProgress;
-
-// A container for the source of a sync session. This includes the update
-// source, the datatypes triggering the sync session, and possible session
-// specific payloads which should be sent to the server.
-struct SyncSourceInfo {
-  SyncSourceInfo();
-  explicit SyncSourceInfo(const syncable::ModelTypePayloadMap& t);
-  SyncSourceInfo(
-      const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& u,
-      const syncable::ModelTypePayloadMap& t);
-  ~SyncSourceInfo();
-
-  // Caller takes ownership of the returned dictionary.
-  base::DictionaryValue* ToValue() const;
-
-  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source;
-  syncable::ModelTypePayloadMap types;
-};
-
-// Data pertaining to the status of an active Syncer object.
-struct SyncerStatus {
-  SyncerStatus();
-  ~SyncerStatus();
-
-  // Caller takes ownership of the returned dictionary.
-  base::DictionaryValue* ToValue() const;
-
-  // True when we get such an INVALID_STORE error from the server.
-  bool invalid_store;
-  int num_successful_commits;
-  // This is needed for monitoring extensions activity.
-  int num_successful_bookmark_commits;
-
-  // Download event counters.
-  int num_updates_downloaded_total;
-  int num_tombstone_updates_downloaded_total;
-  int num_reflected_updates_downloaded_total;
-
-  // If the syncer encountered a MIGRATION_DONE code, these are the types that
-  // the client must now "migrate", by purging and re-downloading all updates.
-  syncable::ModelTypeSet types_needing_local_migration;
-
-  // Overwrites due to conflict resolution counters.
-  int num_local_overwrites;
-  int num_server_overwrites;
-};
-
-// Counters for various errors that can occur repeatedly during a sync session.
-// TODO(lipalani) : Rename this structure to Error.
-struct ErrorCounters {
-  ErrorCounters();
-
-  // Any protocol errors that we received during this sync session.
-  SyncProtocolError sync_protocol_error;
-
-  // Records the most recent results of PostCommit and GetUpdates commands.
-  SyncerError last_download_updates_result;
-  SyncerError last_post_commit_result;
-  SyncerError last_process_commit_response_result;
-};
-
-// An immutable snapshot of state from a SyncSession.  Convenient to use as
-// part of notifications as it is inherently thread-safe.
-// TODO(zea): if copying this all over the place starts getting expensive,
-// consider passing around immutable references instead of values.
-// Default copy and assign welcome.
-class SyncSessionSnapshot {
- public:
-  SyncSessionSnapshot();
-  SyncSessionSnapshot(
-      const SyncerStatus& syncer_status,
-      const ErrorCounters& errors,
-      int64 num_server_changes_remaining,
-      bool is_share_usable,
-      syncable::ModelTypeSet initial_sync_ended,
-      const syncable::ModelTypePayloadMap& download_progress_markers,
-      bool more_to_sync,
-      bool is_silenced,
-      int num_encryption_conflicts,
-      int num_hierarchy_conflicts,
-      int num_simple_conflicts,
-      int num_server_conflicts,
-      const SyncSourceInfo& source,
-      bool notifications_enabled,
-      size_t num_entries,
-      base::Time sync_start_time,
-      bool retry_scheduled);
-  ~SyncSessionSnapshot();
-
-  // Caller takes ownership of the returned dictionary.
-  base::DictionaryValue* ToValue() const;
-
-  std::string ToString() const;
-
-  SyncerStatus syncer_status() const;
-  ErrorCounters errors() const;
-  int64 num_server_changes_remaining() const;
-  bool is_share_usable() const;
-  syncable::ModelTypeSet initial_sync_ended() const;
-  syncable::ModelTypePayloadMap download_progress_markers() const;
-  bool has_more_to_sync() const;
-  bool is_silenced() const;
-  int num_encryption_conflicts() const;
-  int num_hierarchy_conflicts() const;
-  int num_simple_conflicts() const;
-  int num_server_conflicts() const;
-  bool did_commit_items() const;
-  SyncSourceInfo source() const;
-  bool notifications_enabled() const;
-  size_t num_entries() const;
-  base::Time sync_start_time() const;
-  bool retry_scheduled() const;
-
- private:
-  SyncerStatus syncer_status_;
-  ErrorCounters errors_;
-  int64 num_server_changes_remaining_;
-  bool is_share_usable_;
-  syncable::ModelTypeSet initial_sync_ended_;
-  syncable::ModelTypePayloadMap download_progress_markers_;
-  bool has_more_to_sync_;
-  bool is_silenced_;
-  int num_encryption_conflicts_;
-  int num_hierarchy_conflicts_;
-  int num_simple_conflicts_;
-  int num_server_conflicts_;
-  SyncSourceInfo source_;
-  bool notifications_enabled_;
-  size_t num_entries_;
-  base::Time sync_start_time_;
-  bool retry_scheduled_;
-};
 
 // Tracks progress of conflicts and their resolutions.
 class ConflictProgress {

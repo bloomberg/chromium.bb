@@ -29,6 +29,7 @@
 #include "sync/sessions/session_state.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/sessions/sync_session_context.h"
+#include "sync/sessions/sync_session_snapshot.h"
 #include "sync/syncable/model_type.h"
 #include "sync/util/extensions_activity_monitor.h"
 

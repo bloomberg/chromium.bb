@@ -8,7 +8,7 @@
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "sync/sessions/session_state.h"
+#include "sync/sessions/sync_session_snapshot.h"
 
 using passwords_helper::SetDecryptionPassphrase;
 using passwords_helper::SetEncryptionPassphrase;

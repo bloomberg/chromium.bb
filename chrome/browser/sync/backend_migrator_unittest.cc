@@ -12,7 +12,6 @@
 #include "sync/internal_api/test_user_share.h"
 #include "sync/internal_api/write_transaction.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/sessions/session_state.h"
 #include "sync/syncable/model_type_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

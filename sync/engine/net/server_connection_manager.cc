@@ -18,6 +18,7 @@
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncproto.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/syncable/syncable.h"
 
 namespace browser_sync {
 

@@ -11,8 +11,9 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"
 #include "sync/protocol/sync_protocol_error.h"
-#include "sync/sessions/session_state.h"
+#include "sync/sessions/sync_session_snapshot.h"
 #include "sync/syncable/model_type.h"
+#include "sync/syncable/model_type_payload_map.h"
 #include "sync/util/weak_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

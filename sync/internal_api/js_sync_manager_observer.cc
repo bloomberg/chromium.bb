@@ -15,6 +15,7 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/sessions/session_state.h"
+#include "sync/sessions/sync_session_snapshot.h"
 #include "sync/syncable/model_type.h"
 
 namespace browser_sync {

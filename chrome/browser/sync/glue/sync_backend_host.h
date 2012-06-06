@@ -26,7 +26,7 @@
 #include "sync/notifier/sync_notifier_factory.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
-#include "sync/sessions/session_state.h"
+#include "sync/sessions/sync_session_snapshot.h"
 #include "sync/syncable/model_type.h"
 #include "sync/util/report_unrecoverable_error_function.h"
 #include "sync/util/unrecoverable_error_handler.h"

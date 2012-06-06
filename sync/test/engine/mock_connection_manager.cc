@@ -11,8 +11,9 @@
 #include "base/location.h"
 #include "base/stringprintf.h"
 #include "sync/engine/syncer_proto_util.h"
-#include "sync/test/engine/test_id_factory.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
+#include "sync/syncable/syncable.h"
+#include "sync/test/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::HttpResponse;

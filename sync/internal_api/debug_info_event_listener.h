@@ -14,6 +14,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/sessions/session_state.h"
+#include "sync/sessions/sync_session_snapshot.h"
 #include "sync/util/weak_handle.h"
 
 namespace sync_api {

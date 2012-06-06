@@ -14,7 +14,7 @@
 #include "sync/internal_api/user_share.h"
 #include "sync/js/js_reply_handler.h"
 #include "sync/protocol/encryption.pb.h"
-#include "sync/sessions/session_state.h"
+#include "sync/sessions/sync_session_snapshot.h"
 #include "sync/syncable/syncable.h"
 
 using browser_sync::ModelSafeRoutingInfo;

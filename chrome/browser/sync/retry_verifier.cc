@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "sync/engine/polling_constants.h"
-#include "sync/sessions/session_state.h"
+#include "sync/sessions/sync_session_snapshot.h"
 
 namespace browser_sync {
 

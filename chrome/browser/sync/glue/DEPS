@@ -18,7 +18,7 @@ include_rules = [
   "+sync/notifier/sync_notifier_observer.h",
   "+sync/syncable/model_type.h",
   "+sync/syncable/model_type_payload_map.h",
-  "+sync/sessions/session_state.h",
+  "+sync/sessions/sync_session_snapshot.h",
 
   # Mocks/tests.
   "+sync/engine/syncapi_mock.h",

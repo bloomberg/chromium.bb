@@ -6,7 +6,7 @@ include_rules = [
   "+sync/internal_api",
   "+sync/js",
   "+sync/notifier/invalidation_state_tracker.h",
-  "+sync/sessions/session_state.h",
+  "+sync/sessions/sync_session_snapshot.h",
   "+sync/syncable/model_type.h",
   "+sync/syncable/model_type_payload_map.h",
   "+sync/syncable/model_type_test_util.h",

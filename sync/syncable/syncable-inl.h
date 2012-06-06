@@ -6,6 +6,8 @@
 #define SYNC_SYNCABLE_SYNCABLE_INL_H_
 #pragma once
 
+#include "sync/syncable/syncable.h"
+
 namespace syncable {
 
 template <typename FieldType, FieldType field_index>
