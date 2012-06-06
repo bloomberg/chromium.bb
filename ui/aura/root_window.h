@@ -399,7 +399,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // How many holds are outstanding. We try to defer dispatching mouse moves
   // while the count is > 0.
   int mouse_move_hold_count_;
-  bool should_hold_mouse_moves_;
   scoped_ptr<MouseEvent> held_mouse_move_;
 
   CompositorLock* compositor_lock_;

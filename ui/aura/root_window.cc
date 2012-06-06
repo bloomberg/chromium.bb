@@ -130,13 +130,10 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       draw_on_compositing_end_(false),
       defer_draw_scheduling_(false),
       mouse_move_hold_count_(0),
-      should_hold_mouse_moves_(false),
       compositor_lock_(NULL),
       draw_on_compositor_unlock_(false),
       draw_trace_count_(0) {
   SetName("RootWindow");
-  should_hold_mouse_moves_ = !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAuraDisableHoldMouseMoves);
 
   compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget()));
   DCHECK(compositor_.get());
@@ -520,17 +517,14 @@ void RootWindow::ToggleFullScreen() {
 #endif
 
 void RootWindow::HoldMouseMoves() {
-  if (should_hold_mouse_moves_)
-    ++mouse_move_hold_count_;
+  ++mouse_move_hold_count_;
 }
 
 void RootWindow::ReleaseMouseMoves() {
-  if (should_hold_mouse_moves_) {
-    --mouse_move_hold_count_;
-    DCHECK_GE(mouse_move_hold_count_, 0);
-    if (!mouse_move_hold_count_)
-      DispatchHeldMouseMove();
-  }
+  --mouse_move_hold_count_;
+  DCHECK_GE(mouse_move_hold_count_, 0);
+  if (!mouse_move_hold_count_)
+    DispatchHeldMouseMove();
 }
 
 scoped_refptr<CompositorLock> RootWindow::GetCompositorLock() {

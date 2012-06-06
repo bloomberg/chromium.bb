@@ -495,15 +495,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAuraGoogleDialogFrames)
   },
 #endif
-#if defined(USE_AURA)
-  {
-    "aura-disable-hold-mouse-moves",
-    IDS_FLAGS_AURA_DISABLE_HOLD_MOUSE_MOVES_NAME,
-    IDS_FLAGS_AURA_DISABLE_HOLD_MOUSE_MOVES_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kAuraDisableHoldMouseMoves)
-  },
-#endif  // defined(USE_AURA)
   {
     "enable-gamepad",
     IDS_FLAGS_ENABLE_GAMEPAD_NAME,
