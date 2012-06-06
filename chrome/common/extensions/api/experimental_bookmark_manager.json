@@ -209,6 +209,17 @@
             {"name": "result", "type": "boolean"}
           ]}
         ]
+      },
+      {
+        "name": "canOpenNewWindows",
+        "type": "function",
+        "description": "Whether bookmarks can be opened in new windows",
+        "nodoc": "true",
+        "parameters": [
+          {"type": "function", "name": "callback", "parameters": [
+            {"name": "result", "type": "boolean"}
+          ]}
+        ]
       }
     ],
     "events": [

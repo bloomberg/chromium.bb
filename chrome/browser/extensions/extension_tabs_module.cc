@@ -77,6 +77,10 @@
 #include "chrome/browser/ui/views/ash/panel_view_aura.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif  // OS_WIN
+
 namespace Get = extensions::api::windows::Get;
 namespace GetAll = extensions::api::windows::GetAll;
 namespace GetCurrent = extensions::api::windows::GetCurrent;
@@ -213,6 +217,29 @@ QueryArg ParseBoolQueryArg(base::DictionaryValue* query, const char* key) {
     return value ? MATCH_TRUE : MATCH_FALSE;
   }
   return NOT_SET;
+}
+
+Browser* CreateBrowserWindow(const Browser::CreateParams& params,
+                             Profile* profile,
+                             const std::string& extension_id) {
+  bool use_existing_browser_window = false;
+
+#if defined(OS_WIN)
+  // In Windows 8 metro mode we only allow new windows to be created if the
+  // extension id is valid in which case it is created as an application window
+  if (extension_id.empty() && base::win::GetMetroModule())
+    use_existing_browser_window = true;
+#endif  // OS_WIN
+
+  Browser* new_window = NULL;
+  if (use_existing_browser_window)
+    // The false parameter passed below is to ensure that we find a browser
+    // object matching the profile passed in, instead of the original profile
+    new_window = browser::FindTabbedBrowser(profile, false);
+
+  if (!new_window)
+    new_window = Browser::CreateWithParams(params);
+  return new_window;
 }
 
 }  // namespace
@@ -585,7 +612,9 @@ bool CreateWindowFunction::RunImpl() {
         window_profile);
   }
   create_params.initial_show_state = ui::SHOW_STATE_NORMAL;
-  Browser* new_window = Browser::CreateWithParams(create_params);
+
+  Browser* new_window = CreateBrowserWindow(create_params, window_profile,
+                                            extension_id);
 
   for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i) {
     TabContentsWrapper* tab = new_window->AddSelectedTabWithURL(

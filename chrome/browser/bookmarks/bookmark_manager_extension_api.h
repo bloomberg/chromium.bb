@@ -182,4 +182,17 @@ class RecordLaunchBookmarkFunction : public BookmarksFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class CanOpenNewWindowsBookmarkFunction : public BookmarksFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.bookmarkManager.canOpenNewWindows");
+
+ protected:
+  virtual ~CanOpenNewWindowsBookmarkFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_MANAGER_EXTENSION_API_H_

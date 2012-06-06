@@ -180,6 +180,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<DropBookmarkManagerFunction>();
   RegisterFunction<GetSubtreeBookmarkManagerFunction>();
   RegisterFunction<CanEditBookmarkManagerFunction>();
+  RegisterFunction<CanOpenNewWindowsBookmarkFunction>();
 
   // History
   RegisterFunction<AddUrlHistoryFunction>();

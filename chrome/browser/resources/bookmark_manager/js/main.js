@@ -852,6 +852,14 @@ chrome.systemPrivate.getIncognitoModeAvailability(function(result) {
 });
 
 /**
+ * New Windows are not allowed in Windows 8 metro mode.
+ */
+var canOpenNewWindows = true;
+chrome.experimental.bookmarkManager.canOpenNewWindows(function(result) {
+    canOpenNewWindows = result;
+});
+
+/**
  * Helper function that updates the canExecute and labels for the open-like
  * commands.
  * @param {!cr.ui.CanExecuteEvent} e The event fired by the command system.
@@ -891,7 +899,8 @@ function updateOpenCommands(e, command) {
       command.label = loadTimeData.getString(multiple ?
           'open_all_new_window' : 'open_in_new_window');
       // Disabled when incognito is forced.
-      commandDisabled = incognitoModeAvailability == 'forced';
+      commandDisabled = incognitoModeAvailability == 'forced' ||
+          !canOpenNewWindows;
       break;
     case 'open-incognito-window-command':
       command.label = loadTimeData.getString(multiple ?

@@ -29,6 +29,10 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif  // OS_WIN
+
 namespace keys = bookmark_extension_api_constants;
 
 using content::WebContents;
@@ -498,5 +502,17 @@ bool CanEditBookmarkManagerFunction::RunImpl() {
 
 bool RecordLaunchBookmarkFunction::RunImpl() {
   bookmark_utils::RecordBookmarkLaunch(bookmark_utils::LAUNCH_MANAGER);
+  return true;
+}
+
+bool CanOpenNewWindowsBookmarkFunction::RunImpl() {
+  bool can_open_new_windows = true;
+
+#if defined(OS_WIN)
+  if (base::win::GetMetroModule())
+    can_open_new_windows = false;
+#endif  // OS_WIN
+
+  result_.reset(Value::CreateBooleanValue(can_open_new_windows));
   return true;
 }
