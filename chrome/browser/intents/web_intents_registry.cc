@@ -41,37 +41,7 @@ bool MimeTypesAreEqual(const string16& type1, const string16& type2) {
 // "*" is also accepted as a valid MIME type.
 // The passed |type_str| should have no leading or trailing whitespace.
 bool IsMimeType(const string16& type_str) {
-  // MIME types are always ASCII and case-insensitive (at least, the top-level
-  // and secondary types we care about).
-  if (!IsStringASCII(type_str))
-    return false;
-  std::string raw_type = UTF16ToASCII(type_str);
-  StringToLowerASCII(&raw_type);
-
-  // See http://www.iana.org/assignments/media-types/index.html
-  if (StartsWithASCII(raw_type, "application/", false) ||
-      StartsWithASCII(raw_type, "audio/", false) ||
-      StartsWithASCII(raw_type, "example/", false) ||
-      StartsWithASCII(raw_type, "image/", false) ||
-      StartsWithASCII(raw_type, "message/", false) ||
-      StartsWithASCII(raw_type, "model/", false) ||
-      StartsWithASCII(raw_type, "multipart/", false) ||
-      StartsWithASCII(raw_type, "text/", false) ||
-      StartsWithASCII(raw_type, "video/", false) ||
-      raw_type == "*/*" || raw_type == "*") {
-    return true;
-  }
-
-  // If there's a "/" separator character, and the token before it is
-  // "x-" + (ascii characters), it is also a MIME type.
-  size_t slash = raw_type.find('/');
-  if (slash < 3 || slash == std::string::npos || slash == raw_type.length() - 1)
-    return false;
-
-  if (StartsWithASCII(raw_type, "x-", false))
-    return true;
-
-  return false;
+  return net::IsMimeType(UTF16ToUTF8(type_str));
 }
 
 // Compares two web intents type specifiers to see if there is a match.
