@@ -198,7 +198,11 @@ ui::GestureStatus CustomButton::OnGestureEvent(const GestureEvent& event) {
     return ui::GESTURE_STATUS_UNKNOWN;
 
   if (event.type() == ui::ET_GESTURE_TAP) {
-    SetState(BS_NORMAL);
+    // Set the button state to hot and start the animation fully faded in. The
+    // TAP_UP event issued immediately after will set the state to BS_NORMAL
+    // beginning the fade out animation. See http://crbug.com/131184.
+    SetState(BS_HOT);
+    hover_animation_->Reset(1.0);
     NotifyClick(event);
     return ui::GESTURE_STATUS_CONSUMED;
   } else if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
