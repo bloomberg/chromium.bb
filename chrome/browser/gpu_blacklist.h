@@ -253,6 +253,12 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
    private:
     friend class base::RefCounted<GpuBlacklistEntry>;
 
+    enum MultiGpuStyle {
+      kMultiGpuStyleOptimus,
+      kMultiGpuStyleAMDSwitchable,
+      kMultiGpuStyleNone
+    };
+
     GpuBlacklistEntry();
     ~GpuBlacklistEntry() { }
 
@@ -268,6 +274,8 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
     bool SetVendorId(const std::string& vendor_id_string);
 
     bool AddDeviceId(const std::string& device_id_string);
+
+    bool SetMultiGpuStyle(const std::string& multi_gpu_style_string);
 
     bool SetDriverVendorInfo(const std::string& vendor_op,
                              const std::string& vendor_value);
@@ -303,6 +311,8 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
 
     void AddException(ScopedGpuBlacklistEntry exception);
 
+    static MultiGpuStyle StringToMultiGpuStyle(const std::string& style);
+
     uint32 id_;
     bool disabled_;
     std::string description_;
@@ -311,6 +321,7 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
     scoped_ptr<OsInfo> os_info_;
     uint32 vendor_id_;
     std::vector<uint32> device_id_list_;
+    MultiGpuStyle multi_gpu_style_;
     scoped_ptr<StringInfo> driver_vendor_info_;
     scoped_ptr<VersionInfo> driver_version_info_;
     scoped_ptr<VersionInfo> driver_date_info_;

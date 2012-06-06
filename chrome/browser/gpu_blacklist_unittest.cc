@@ -755,3 +755,66 @@ TEST_F(GpuBlacklistTest, DisabledEntry) {
       content::GPU_FEATURE_TYPE_ALL, flag_entries, disabled);
   EXPECT_EQ(flag_entries.size(), 1u);
 }
+
+TEST_F(GpuBlacklistTest, Optimus) {
+  const std::string optimus_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"os\": {\n"
+      "        \"type\": \"linux\"\n"
+      "      },\n"
+      "      \"multi_gpu_style\": \"optimus\",\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  scoped_ptr<Version> os_version(Version::GetVersionFromString("10.6.4"));
+
+  content::GPUInfo gpu_info;
+  gpu_info.optimus = true;
+
+  scoped_ptr<GpuBlacklist> blacklist(Create());
+  EXPECT_TRUE(blacklist->LoadGpuBlacklist(
+      optimus_json, GpuBlacklist::kAllOs));
+  GpuFeatureType type = blacklist->DetermineGpuFeatureType(
+      GpuBlacklist::kOsLinux, os_version.get(), gpu_info);
+  EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
+}
+
+TEST_F(GpuBlacklistTest, AMDSwitchable) {
+  const std::string amd_switchable_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"os\": {\n"
+      "        \"type\": \"macosx\"\n"
+      "      },\n"
+      "      \"multi_gpu_style\": \"amd_switchable\",\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  scoped_ptr<Version> os_version(Version::GetVersionFromString("10.6.4"));
+
+  content::GPUInfo gpu_info;
+  gpu_info.amd_switchable = true;
+
+  scoped_ptr<GpuBlacklist> blacklist(Create());
+  EXPECT_TRUE(blacklist->LoadGpuBlacklist(
+      amd_switchable_json, GpuBlacklist::kAllOs));
+  GpuFeatureType type = blacklist->DetermineGpuFeatureType(
+      GpuBlacklist::kOsMacosx, os_version.get(), gpu_info);
+  EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
+}
+

@@ -39,6 +39,9 @@ Version* GetDateFromString(const std::string& date_string) {
   return Version::GetVersionFromString(date_as_version_string);
 }
 
+const char kMultiGpuStyleStringAMDSwitchable[] = "amd_switchable";
+const char kMultiGpuStyleStringOptimus[] = "optimus";
+
 }  // namespace anonymous
 
 GpuBlacklist::VersionInfo::VersionInfo(const std::string& version_op,
@@ -334,6 +337,15 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
+  std::string multi_gpu_style;
+  if (value->GetString("multi_gpu_style", &multi_gpu_style)) {
+    if (!entry->SetMultiGpuStyle(multi_gpu_style)) {
+      LOG(WARNING) << "Malformed multi_gpu_style entry " << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
   DictionaryValue* driver_vendor_value = NULL;
   if (value->GetDictionary("driver_vendor", &driver_vendor_value)) {
     std::string vendor_op;
@@ -515,6 +527,7 @@ GpuBlacklist::GpuBlacklistEntry::GpuBlacklistEntry()
     : id_(0),
       disabled_(false),
       vendor_id_(0),
+      multi_gpu_style_(kMultiGpuStyleNone),
       feature_type_(content::GPU_FEATURE_TYPE_UNKNOWN),
       contains_unknown_fields_(false),
       contains_unknown_features_(false) {
@@ -557,6 +570,15 @@ bool GpuBlacklist::GpuBlacklistEntry::AddDeviceId(
     return true;
   }
   return false;
+}
+
+bool GpuBlacklist::GpuBlacklistEntry::SetMultiGpuStyle(
+    const std::string& multi_gpu_style_string) {
+  MultiGpuStyle style = StringToMultiGpuStyle(multi_gpu_style_string);
+  if (style == kMultiGpuStyleNone)
+    return false;
+  multi_gpu_style_ = style;
+  return true;
 }
 
 bool GpuBlacklist::GpuBlacklistEntry::SetDriverVendorInfo(
@@ -661,6 +683,17 @@ void GpuBlacklist::GpuBlacklistEntry::AddException(
   exceptions_.push_back(exception);
 }
 
+// static
+GpuBlacklist::GpuBlacklistEntry::MultiGpuStyle
+GpuBlacklist::GpuBlacklistEntry::StringToMultiGpuStyle(
+    const std::string& style) {
+  if (style == kMultiGpuStyleStringOptimus)
+    return kMultiGpuStyleOptimus;
+  if (style == kMultiGpuStyleStringAMDSwitchable)
+    return kMultiGpuStyleAMDSwitchable;
+  return kMultiGpuStyleNone;
+}
+
 bool GpuBlacklist::GpuBlacklistEntry::Contains(
     OsType os_type, const Version& os_version,
     const content::GPUInfo& gpu_info) const {
@@ -679,6 +712,18 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
     }
     if (!found)
       return false;
+  }
+  switch (multi_gpu_style_) {
+    case kMultiGpuStyleOptimus:
+      if (!gpu_info.optimus)
+        return false;
+      break;
+    case kMultiGpuStyleAMDSwitchable:
+      if (!gpu_info.amd_switchable)
+        return false;
+      break;
+    default:
+      break;
   }
   if (driver_vendor_info_.get() != NULL &&
       !driver_vendor_info_->Contains(gpu_info.driver_vendor))
