@@ -645,11 +645,6 @@ bool DeviceSettingsProvider::MitigateMissingPolicy() {
   migration_helper_->AddMigrationValue(
       kAccountsPrefAllowNewUser, base::Value::CreateBooleanValue(true));
   migration_helper_->MigrateValues();
-  // The last step is to pretend we loaded policy correctly and call everyone.
-  std::vector<base::Closure> callbacks;
-  callbacks.swap(callbacks_);
-  for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i].Run();
   return true;
 }
 
@@ -714,10 +709,6 @@ void DeviceSettingsProvider::OnRetrievePolicyCompleted(
                                    g_browser_process->local_state());
       UpdateValuesCache();
       trusted_status_ = TRUSTED;
-      std::vector<base::Closure> callbacks;
-      callbacks.swap(callbacks_);
-      for (size_t i = 0; i < callbacks.size(); ++i)
-        callbacks[i].Run();
       // TODO(pastarmovj): Make those side effects responsibility of the
       // respective subsystems.
       ApplySideEffects();
@@ -746,6 +737,11 @@ void DeviceSettingsProvider::OnRetrievePolicyCompleted(
       break;
     }
   }
+  // Notify the observers we are done.
+  std::vector<base::Closure> callbacks;
+  callbacks.swap(callbacks_);
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i].Run();
 }
 
 }  // namespace chromeos
