@@ -261,7 +261,7 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
 bool ToplevelWindowEventFilter::HandleMouseMoved(aura::Window* target,
                                                  aura::LocatedEvent* event) {
   // TODO(jamescook): Move the resize cursor update code into here from
-  // RootWindowEventFilter?
+  // CompoundEventFilter?
   internal::ResizeShadowController* controller =
       Shell::GetInstance()->resize_shadow_controller();
   if (controller) {

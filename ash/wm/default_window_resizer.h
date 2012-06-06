@@ -9,12 +9,6 @@
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
 
-namespace aura {
-namespace shared {
-class RootWindowEventFilter;
-}
-}
-
 namespace ash {
 
 // WindowResizer is used by ToplevelWindowEventFilter to handle dragging, moving
@@ -50,8 +44,6 @@ class ASH_EXPORT DefaultWindowResizer : public WindowResizer {
 
   // Set to true once Drag() is invoked and the bounds of the window change.
   bool did_move_or_resize_;
-
-  aura::shared::RootWindowEventFilter* root_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultWindowResizer);
 };

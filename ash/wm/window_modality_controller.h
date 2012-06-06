@@ -26,7 +26,7 @@ namespace internal {
 
 // WindowModalityController is an event filter that consumes events sent to
 // windows that are the transient parents of window-modal windows. This filter
-// must be added to the RootWindowEventFilter so that activation works properly.
+// must be added to the CompoundEventFilter so that activation works properly.
 class WindowModalityController : public aura::EventFilter,
                                  public aura::EnvObserver,
                                  public aura::WindowObserver {

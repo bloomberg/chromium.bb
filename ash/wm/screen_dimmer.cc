@@ -43,7 +43,7 @@ void ScreenDimmer::SetDimming(bool should_dim) {
     dimming_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     dimming_layer_->SetColor(SK_ColorBLACK);
     dimming_layer_->SetOpacity(0.0f);
-    ui::Layer* root_layer = Shell::GetPrimaryRootWindow()->layer();
+    ui::Layer* root_layer = root_window_->layer();
     dimming_layer_->SetBounds(root_layer->bounds());
     root_layer->Add(dimming_layer_.get());
     root_layer->StackAtTop(dimming_layer_.get());
