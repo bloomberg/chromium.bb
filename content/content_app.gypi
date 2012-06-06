@@ -35,7 +35,7 @@
       ],
     }],
     ['OS=="android"', {
-      'source!': [
+      'sources!': [
         'app/content_main.cc',
       ],
       'include_dirs': [
