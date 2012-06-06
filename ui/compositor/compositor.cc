@@ -131,7 +131,10 @@ Compositor::Compositor(CompositorDelegate* delegate,
       widget_(widget),
       root_web_layer_(WebKit::WebLayer::create()),
       swap_posted_(false),
-      device_scale_factor_(0.0f) {
+      device_scale_factor_(0.0f),
+      last_started_frame_(0),
+      last_ended_frame_(0),
+      disable_schedule_composite_(false) {
   WebKit::WebLayerTreeView::Settings settings;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   settings.showFPSCounter =
@@ -203,6 +206,8 @@ void Compositor::SetRootLayer(Layer* root_layer) {
 void Compositor::Draw(bool force_clear) {
   if (!root_layer_)
     return;
+
+  last_started_frame_++;
 
   // TODO(nduca): Temporary while compositor calls
   // compositeImmediately() directly.
@@ -290,8 +295,12 @@ void Compositor::updateAnimations(double frameBeginTime) {
 }
 
 void Compositor::layout() {
+  // We're sending damage that will be addressed during this composite
+  // cycle, so we don't need to schedule another composite to address it.
+  disable_schedule_composite_ = true;
   if (root_layer_)
     root_layer_->SendDamagedRects();
+  disable_schedule_composite_ = false;
 }
 
 void Compositor::applyScrollAndScale(const WebKit::WebSize& scrollDelta,
@@ -323,7 +332,8 @@ void Compositor::didCompleteSwapBuffers() {
 }
 
 void Compositor::scheduleComposite() {
-  ScheduleDraw();
+  if (!disable_schedule_composite_)
+    ScheduleDraw();
 }
 
 void Compositor::SwizzleRGBAToBGRAAndFlip(unsigned char* pixels,
@@ -350,6 +360,7 @@ void Compositor::SwizzleRGBAToBGRAAndFlip(unsigned char* pixels,
 }
 
 void Compositor::NotifyEnd() {
+  last_ended_frame_++;
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingEnded(this));

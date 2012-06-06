@@ -404,8 +404,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   CompositorLock* compositor_lock_;
   bool draw_on_compositor_unlock_;
 
-  int draw_trace_count_;
-
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };
 

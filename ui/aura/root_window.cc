@@ -131,8 +131,7 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       defer_draw_scheduling_(false),
       mouse_move_hold_count_(0),
       compositor_lock_(NULL),
-      draw_on_compositor_unlock_(false),
-      draw_trace_count_(0) {
+      draw_on_compositor_unlock_(false) {
   SetName("RootWindow");
 
   compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget()));
@@ -229,21 +228,20 @@ bool RootWindow::ConfineCursorToWindow() {
 }
 
 void RootWindow::Draw() {
+  defer_draw_scheduling_ = false;
   if (waiting_on_compositing_end_) {
     draw_on_compositing_end_ = true;
-    defer_draw_scheduling_ = false;
     return;
   }
   if (compositor_lock_) {
     draw_on_compositor_unlock_ = true;
-    defer_draw_scheduling_ = false;
     return;
   }
   waiting_on_compositing_end_ = true;
 
-  TRACE_EVENT_ASYNC_BEGIN0("ui", "RootWindow::Draw", draw_trace_count_++);
+  TRACE_EVENT_ASYNC_BEGIN0("ui", "RootWindow::Draw",
+                           compositor_->last_started_frame() + 1);
 
-  defer_draw_scheduling_ = false;
   compositor_->Draw(false);
 }
 
@@ -585,7 +583,8 @@ void RootWindow::OnCompositingStarted(ui::Compositor*) {
 }
 
 void RootWindow::OnCompositingEnded(ui::Compositor*) {
-  TRACE_EVENT_ASYNC_END0("ui", "RootWindow::Draw", draw_trace_count_);
+  TRACE_EVENT_ASYNC_END0("ui", "RootWindow::Draw",
+                         compositor_->last_ended_frame());
   waiting_on_compositing_end_ = false;
   if (draw_on_compositing_end_) {
     draw_on_compositing_end_ = false;

@@ -214,6 +214,9 @@ class COMPOSITOR_EXPORT Compositor
   virtual void didCompleteSwapBuffers();
   virtual void scheduleComposite();
 
+  int last_started_frame() { return last_started_frame_; }
+  int last_ended_frame() { return last_ended_frame_; }
+
  private:
   friend class base::RefCounted<Compositor>;
 
@@ -244,6 +247,11 @@ class COMPOSITOR_EXPORT Compositor
   // The device scale factor of the monitor that this compositor is compositing
   // layers on.
   float device_scale_factor_;
+
+  int last_started_frame_;
+  int last_ended_frame_;
+
+  bool disable_schedule_composite_;
 };
 
 }  // namespace ui
