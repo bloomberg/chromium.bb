@@ -18,6 +18,16 @@
 #include "googleurl/src/gurl.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+enum {
+  NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7,
+  NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8
+};
+
+#endif // MAC_OS_X_VERSION_10_7
+
 // Receives notification that the window is closing so that it can start the
 // tear-down process. Is responsible for deleting itself when done.
 @interface ContentShellWindowDelegate : NSObject<NSWindowDelegate> {
@@ -160,6 +170,12 @@ void Shell::PlatformCreateWindow(int width, int height) {
   // Note that this takes window coordinates.
   [window_ setContentMinSize:min_size];
 
+  // Set the shell window to participate in Lion Fullscreen mode. Set
+  // Setting this flag has no effect on Snow Leopard or earlier.
+  NSUInteger collectionBehavior = [window_ collectionBehavior];
+  collectionBehavior |= NSWindowCollectionBehaviorFullScreenPrimary;
+  [window_ setCollectionBehavior:collectionBehavior];
+
   // Rely on the window delegate to clean us up rather than immediately
   // releasing when the window gets closed. We use the delegate to do
   // everything from the autorelease pool so the shell isn't on the stack
@@ -218,7 +234,8 @@ void Shell::PlatformResizeSubViews() {
 }
 
 void Shell::PlatformSetTitle(const string16& title) {
-  // Meaningless on the Mac; widgets don't have a "title" attribute
+  NSString* title_string = base::SysUTF16ToNSString(title);
+  [window_ setTitle:title_string];
 }
 
 void Shell::Close() {
