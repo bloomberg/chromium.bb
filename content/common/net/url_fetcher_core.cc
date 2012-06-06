@@ -20,10 +20,17 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_throttler_manager.h"
 
+namespace {
+
+const int kBufferSize = 4096;
+const int kUploadProgressTimerInterval = 100;
+bool g_interception_enabled = false;
+
+}  // namespace
+
 namespace content {
 
-static const int kBufferSize = 4096;
-static const int kUploadProgressTimerInterval = 100;
+// URLFetcherCore::Registry ---------------------------------------------------
 
 URLFetcherCore::Registry::Registry() {}
 URLFetcherCore::Registry::~Registry() {}
@@ -43,9 +50,8 @@ void URLFetcherCore::Registry::CancelAll() {
     (*fetchers_.begin())->CancelURLRequest();
 }
 
-// static
-base::LazyInstance<URLFetcherCore::Registry>
-    URLFetcherCore::g_registry = LAZY_INSTANCE_INITIALIZER;
+
+// URLFetcherCore::FileWriter -------------------------------------------------
 
 URLFetcherCore::FileWriter::FileWriter(
     URLFetcherCore* core,
@@ -164,6 +170,26 @@ void URLFetcherCore::FileWriter::CloseFileAndCompleteRequest() {
   }
 }
 
+void URLFetcherCore::FileWriter::RemoveFile() {
+  DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
+
+  // Close the file if it is open.
+  if (file_handle_ != base::kInvalidPlatformFileValue) {
+    base::FileUtilProxy::Close(
+        file_message_loop_proxy_, file_handle_,
+        base::FileUtilProxy::StatusCallback());  // No callback: Ignore errors.
+    file_handle_ = base::kInvalidPlatformFileValue;
+  }
+
+  if (!file_path_.empty()) {
+    base::FileUtilProxy::Delete(
+        file_message_loop_proxy_, file_path_,
+        false,  // No need to recurse, as the path is to a file.
+        base::FileUtilProxy::StatusCallback());  // No callback: Ignore errors.
+    DisownFile();
+  }
+}
+
 void URLFetcherCore::FileWriter::DidCreateFile(
     const FilePath& file_path,
     base::PlatformFileError error_code,
@@ -220,27 +246,12 @@ void URLFetcherCore::FileWriter::DidCloseFile(
   core_->RetryOrCompleteUrlFetch();
 }
 
-void URLFetcherCore::FileWriter::RemoveFile() {
-  DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
-  // Close the file if it is open.
-  if (file_handle_ != base::kInvalidPlatformFileValue) {
-    base::FileUtilProxy::Close(
-        file_message_loop_proxy_, file_handle_,
-        base::FileUtilProxy::StatusCallback());  // No callback: Ignore errors.
-    file_handle_ = base::kInvalidPlatformFileValue;
-  }
+// URLFetcherCore -------------------------------------------------------------
 
-  if (!file_path_.empty()) {
-    base::FileUtilProxy::Delete(
-        file_message_loop_proxy_, file_path_,
-        false,  // No need to recurse, as the path is to a file.
-        base::FileUtilProxy::StatusCallback());  // No callback: Ignore errors.
-    DisownFile();
-  }
-}
-
-static bool g_interception_enabled = false;
+// static
+base::LazyInstance<URLFetcherCore::Registry>
+    URLFetcherCore::g_registry = LAZY_INSTANCE_INITIALIZER;
 
 URLFetcherCore::URLFetcherCore(net::URLFetcher* fetcher,
                                const GURL& original_url,
@@ -270,12 +281,6 @@ URLFetcherCore::URLFetcherCore(net::URLFetcher* fetcher,
   CHECK(original_url_.is_valid());
 }
 
-URLFetcherCore::~URLFetcherCore() {
-  // |request_| should be NULL.  If not, it's unsafe to delete it here since we
-  // may not be on the IO thread.
-  DCHECK(!request_.get());
-}
-
 void URLFetcherCore::Start() {
   DCHECK(delegate_loop_proxy_);
   DCHECK(request_context_getter_) << "We need an URLRequestContext!";
@@ -289,40 +294,6 @@ void URLFetcherCore::Start() {
 
   io_message_loop_proxy_->PostTask(
       FROM_HERE, base::Bind(&URLFetcherCore::StartOnIOThread, this));
-}
-
-void URLFetcherCore::StartOnIOThread() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-
-  switch (response_destination_) {
-    case STRING:
-      StartURLRequestWhenAppropriate();
-      break;
-
-    case PERMANENT_FILE:
-    case TEMP_FILE:
-      DCHECK(file_message_loop_proxy_.get())
-          << "Need to set the file message loop proxy.";
-
-      file_writer_.reset(new FileWriter(this, file_message_loop_proxy_));
-
-      // If the file is successfully created,
-      // URLFetcherCore::StartURLRequestWhenAppropriate() will be called.
-      switch (response_destination_) {
-        case PERMANENT_FILE:
-          file_writer_->CreateFileAtPath(response_destination_file_path_);
-          break;
-        case TEMP_FILE:
-          file_writer_->CreateTempFile();
-          break;
-        default:
-          NOTREACHED();
-      }
-      break;
-
-    default:
-      NOTREACHED();
-  }
 }
 
 void URLFetcherCore::Stop() {
@@ -426,7 +397,6 @@ void URLFetcherCore::SetMaxRetries(int max_retries) {
 int URLFetcherCore::GetMaxRetries() const {
   return max_retries_;
 }
-
 
 base::TimeDelta URLFetcherCore::GetBackoffDelay() const {
   return backoff_delay_;
@@ -537,18 +507,6 @@ bool URLFetcherCore::GetResponseAsFilePath(bool take_ownership,
   return true;
 }
 
-void URLFetcherCore::CancelAll() {
-  g_registry.Get().CancelAll();
-}
-
-int URLFetcherCore::GetNumFetcherCores() {
-  return g_registry.Get().size();
-}
-
-void URLFetcherCore::SetEnableInterceptionForTests(bool enabled) {
-  g_interception_enabled = enabled;
-}
-
 void URLFetcherCore::OnResponseStarted(net::URLRequest* request) {
   DCHECK_EQ(request, request_.get());
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
@@ -561,46 +519,6 @@ void URLFetcherCore::OnResponseStarted(net::URLRequest* request) {
   }
 
   ReadResponse();
-}
-
-void URLFetcherCore::CompleteAddingUploadDataChunk(
-    const std::string& content, bool is_last_chunk) {
-  if (was_cancelled_) {
-    // Since CompleteAddingUploadDataChunk() is posted as a *delayed* task, it
-    // may run after the URLFetcher was already stopped.
-    return;
-  }
-  DCHECK(is_chunked_upload_);
-  DCHECK(request_.get());
-  DCHECK(!content.empty());
-  request_->AppendChunkToUpload(content.data(),
-                                static_cast<int>(content.length()),
-                                is_last_chunk);
-}
-
-// Return true if the write was done and reading may continue.
-// Return false if the write is pending, and the next read will
-// be done later.
-bool URLFetcherCore::WriteBuffer(int num_bytes) {
-  bool write_complete = false;
-  switch (response_destination_) {
-    case STRING:
-      data_.append(buffer_->data(), num_bytes);
-      write_complete = true;
-      break;
-
-    case PERMANENT_FILE:
-    case TEMP_FILE:
-      file_writer_->WriteBuffer(num_bytes);
-      // WriteBuffer() sends a request the file thread.
-      // The write is not done yet.
-      write_complete = false;
-      break;
-
-    default:
-      NOTREACHED();
-  }
-  return write_complete;
 }
 
 void URLFetcherCore::OnReadCompleted(net::URLRequest* request,
@@ -655,61 +573,56 @@ void URLFetcherCore::OnReadCompleted(net::URLRequest* request,
   }
 }
 
-void URLFetcherCore::RetryOrCompleteUrlFetch() {
+void URLFetcherCore::CancelAll() {
+  g_registry.Get().CancelAll();
+}
+
+int URLFetcherCore::GetNumFetcherCores() {
+  return g_registry.Get().size();
+}
+
+void URLFetcherCore::SetEnableInterceptionForTests(bool enabled) {
+  g_interception_enabled = enabled;
+}
+
+URLFetcherCore::~URLFetcherCore() {
+  // |request_| should be NULL.  If not, it's unsafe to delete it here since we
+  // may not be on the IO thread.
+  DCHECK(!request_.get());
+}
+
+void URLFetcherCore::StartOnIOThread() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  base::TimeDelta backoff_delay;
 
-  // Checks the response from server.
-  if (response_code_ >= 500 ||
-      status_.error() == net::ERR_TEMPORARILY_THROTTLED) {
-    // When encountering a server error, we will send the request again
-    // after backoff time.
-    ++num_retries_;
+  switch (response_destination_) {
+    case STRING:
+      StartURLRequestWhenAppropriate();
+      break;
 
-    // Note that backoff_delay may be 0 because (a) the
-    // URLRequestThrottlerManager and related code does not
-    // necessarily back off on the first error, (b) it only backs off
-    // on some of the 5xx status codes, (c) not all URLRequestContexts
-    // have a throttler manager.
-    base::TimeTicks backoff_release_time = GetBackoffReleaseTime();
-    backoff_delay = backoff_release_time - base::TimeTicks::Now();
-    if (backoff_delay < base::TimeDelta())
-      backoff_delay = base::TimeDelta();
+    case PERMANENT_FILE:
+    case TEMP_FILE:
+      DCHECK(file_message_loop_proxy_.get())
+          << "Need to set the file message loop proxy.";
 
-    if (automatically_retry_on_5xx_ && num_retries_ <= max_retries_) {
-      StartOnIOThread();
-      return;
-    }
-  } else {
-    backoff_delay = base::TimeDelta();
+      file_writer_.reset(new FileWriter(this, file_message_loop_proxy_));
+
+      // If the file is successfully created,
+      // URLFetcherCore::StartURLRequestWhenAppropriate() will be called.
+      switch (response_destination_) {
+        case PERMANENT_FILE:
+          file_writer_->CreateFileAtPath(response_destination_file_path_);
+          break;
+        case TEMP_FILE:
+          file_writer_->CreateTempFile();
+          break;
+        default:
+          NOTREACHED();
+      }
+      break;
+
+    default:
+      NOTREACHED();
   }
-  request_context_getter_ = NULL;
-  first_party_for_cookies_ = GURL();
-  url_request_data_key_ = NULL;
-  url_request_create_data_callback_.Reset();
-  bool posted = delegate_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&URLFetcherCore::OnCompletedURLRequest, this, backoff_delay));
-
-  // If the delegate message loop does not exist any more, then the delegate
-  // should be gone too.
-  DCHECK(posted || !delegate_);
-}
-
-void URLFetcherCore::ReadResponse() {
-  // Some servers may treat HEAD requests as GET requests.  To free up the
-  // network connection as soon as possible, signal that the request has
-  // completed immediately, without trying to read any data back (all we care
-  // about is the response code and headers, which we already have).
-  int bytes_read = 0;
-  if (request_->status().is_success() &&
-      (request_type_ != net::URLFetcher::HEAD))
-    request_->Read(buffer_, kBufferSize, &bytes_read);
-  OnReadCompleted(request_.get(), bytes_read);
-}
-
-void URLFetcherCore::DisownFile() {
-  file_writer_->DisownFile();
 }
 
 void URLFetcherCore::StartURLRequest() {
@@ -860,6 +773,151 @@ void URLFetcherCore::OnCompletedURLRequest(
   }
 }
 
+void URLFetcherCore::InformDelegateFetchIsComplete() {
+  DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
+  if (delegate_)
+    delegate_->OnURLFetchComplete(fetcher_);
+}
+
+void URLFetcherCore::NotifyMalformedContent() {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  if (url_throttler_entry_ != NULL) {
+    int status_code = response_code_;
+    if (status_code == net::URLFetcher::RESPONSE_CODE_INVALID) {
+      // The status code will generally be known by the time clients
+      // call the |ReceivedContentWasMalformed()| function (which ends up
+      // calling the current function) but if it's not, we need to assume
+      // the response was successful so that the total failure count
+      // used to calculate exponential back-off goes up.
+      status_code = 200;
+    }
+    url_throttler_entry_->ReceivedContentWasMalformed(status_code);
+  }
+}
+
+void URLFetcherCore::RetryOrCompleteUrlFetch() {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  base::TimeDelta backoff_delay;
+
+  // Checks the response from server.
+  if (response_code_ >= 500 ||
+      status_.error() == net::ERR_TEMPORARILY_THROTTLED) {
+    // When encountering a server error, we will send the request again
+    // after backoff time.
+    ++num_retries_;
+
+    // Note that backoff_delay may be 0 because (a) the
+    // URLRequestThrottlerManager and related code does not
+    // necessarily back off on the first error, (b) it only backs off
+    // on some of the 5xx status codes, (c) not all URLRequestContexts
+    // have a throttler manager.
+    base::TimeTicks backoff_release_time = GetBackoffReleaseTime();
+    backoff_delay = backoff_release_time - base::TimeTicks::Now();
+    if (backoff_delay < base::TimeDelta())
+      backoff_delay = base::TimeDelta();
+
+    if (automatically_retry_on_5xx_ && num_retries_ <= max_retries_) {
+      StartOnIOThread();
+      return;
+    }
+  } else {
+    backoff_delay = base::TimeDelta();
+  }
+  request_context_getter_ = NULL;
+  first_party_for_cookies_ = GURL();
+  url_request_data_key_ = NULL;
+  url_request_create_data_callback_.Reset();
+  bool posted = delegate_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&URLFetcherCore::OnCompletedURLRequest, this, backoff_delay));
+
+  // If the delegate message loop does not exist any more, then the delegate
+  // should be gone too.
+  DCHECK(posted || !delegate_);
+}
+
+void URLFetcherCore::ReleaseRequest() {
+  upload_progress_checker_timer_.reset();
+  request_.reset();
+  g_registry.Get().RemoveURLFetcherCore(this);
+}
+
+base::TimeTicks URLFetcherCore::GetBackoffReleaseTime() {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  if (original_url_throttler_entry_) {
+    base::TimeTicks original_url_backoff =
+        original_url_throttler_entry_->GetExponentialBackoffReleaseTime();
+    base::TimeTicks destination_url_backoff;
+    if (url_throttler_entry_ != NULL &&
+        original_url_throttler_entry_ != url_throttler_entry_) {
+      destination_url_backoff =
+          url_throttler_entry_->GetExponentialBackoffReleaseTime();
+    }
+
+    return original_url_backoff > destination_url_backoff ?
+        original_url_backoff : destination_url_backoff;
+  } else {
+    return base::TimeTicks();
+  }
+}
+
+void URLFetcherCore::CompleteAddingUploadDataChunk(
+    const std::string& content, bool is_last_chunk) {
+  if (was_cancelled_) {
+    // Since CompleteAddingUploadDataChunk() is posted as a *delayed* task, it
+    // may run after the URLFetcher was already stopped.
+    return;
+  }
+  DCHECK(is_chunked_upload_);
+  DCHECK(request_.get());
+  DCHECK(!content.empty());
+  request_->AppendChunkToUpload(content.data(),
+                                static_cast<int>(content.length()),
+                                is_last_chunk);
+}
+
+// Return true if the write was done and reading may continue.
+// Return false if the write is pending, and the next read will
+// be done later.
+bool URLFetcherCore::WriteBuffer(int num_bytes) {
+  bool write_complete = false;
+  switch (response_destination_) {
+    case STRING:
+      data_.append(buffer_->data(), num_bytes);
+      write_complete = true;
+      break;
+
+    case PERMANENT_FILE:
+    case TEMP_FILE:
+      file_writer_->WriteBuffer(num_bytes);
+      // WriteBuffer() sends a request the file thread.
+      // The write is not done yet.
+      write_complete = false;
+      break;
+
+    default:
+      NOTREACHED();
+  }
+  return write_complete;
+}
+
+void URLFetcherCore::ReadResponse() {
+  // Some servers may treat HEAD requests as GET requests.  To free up the
+  // network connection as soon as possible, signal that the request has
+  // completed immediately, without trying to read any data back (all we care
+  // about is the response code and headers, which we already have).
+  int bytes_read = 0;
+  if (request_->status().is_success() &&
+      (request_type_ != net::URLFetcher::HEAD))
+    request_->Read(buffer_, kBufferSize, &bytes_read);
+  OnReadCompleted(request_.get(), bytes_read);
+}
+
+void URLFetcherCore::DisownFile() {
+  file_writer_->DisownFile();
+}
+
 void URLFetcherCore::InformDelegateUploadProgress() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   if (request_.get()) {
@@ -919,54 +977,6 @@ void URLFetcherCore::InformDelegateDownloadDataInDelegateThread(
   DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
   if (delegate_)
     delegate_->OnURLFetchDownloadData(fetcher_, download_data.Pass());
-}
-
-void URLFetcherCore::InformDelegateFetchIsComplete() {
-  DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
-  if (delegate_)
-    delegate_->OnURLFetchComplete(fetcher_);
-}
-
-void URLFetcherCore::NotifyMalformedContent() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  if (url_throttler_entry_ != NULL) {
-    int status_code = response_code_;
-    if (status_code == net::URLFetcher::RESPONSE_CODE_INVALID) {
-      // The status code will generally be known by the time clients
-      // call the |ReceivedContentWasMalformed()| function (which ends up
-      // calling the current function) but if it's not, we need to assume
-      // the response was successful so that the total failure count
-      // used to calculate exponential back-off goes up.
-      status_code = 200;
-    }
-    url_throttler_entry_->ReceivedContentWasMalformed(status_code);
-  }
-}
-
-void URLFetcherCore::ReleaseRequest() {
-  upload_progress_checker_timer_.reset();
-  request_.reset();
-  g_registry.Get().RemoveURLFetcherCore(this);
-}
-
-base::TimeTicks URLFetcherCore::GetBackoffReleaseTime() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-
-  if (original_url_throttler_entry_) {
-    base::TimeTicks original_url_backoff =
-        original_url_throttler_entry_->GetExponentialBackoffReleaseTime();
-    base::TimeTicks destination_url_backoff;
-    if (url_throttler_entry_ != NULL &&
-        original_url_throttler_entry_ != url_throttler_entry_) {
-      destination_url_backoff =
-          url_throttler_entry_->GetExponentialBackoffReleaseTime();
-    }
-
-    return original_url_backoff > destination_url_backoff ?
-        original_url_backoff : destination_url_backoff;
-  } else {
-    return base::TimeTicks();
-  }
 }
 
 }  // namespace content
