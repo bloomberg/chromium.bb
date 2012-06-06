@@ -10,14 +10,13 @@ var animationSpeed = 10; // ms
 var canvas;
 var canvasContext;
 var loggedInImage;
-var pollIntervalMin = 1000 * 60;  // 1 minute
-var pollIntervalMax = 1000 * 60 * 60;  // 1 hour
+var pollIntervalMin = 5;  // 5 minutes
+var pollIntervalMax = 60;  // 1 hour
 var requestFailureCount = 0;  // used for exponential backoff
-var requestTimeout = 1000 * 2;  // 5 seconds
+var requestTimeout = 1000 * 2;  // 2 seconds
 var rotation = 0;
 var unreadCount = -1;
 var loadingAnimation = new LoadingAnimation();
-var requestTimerId;
 
 function getGmailUrl() {
   var url = "https://mail.google.com/";
@@ -111,20 +110,16 @@ function init() {
 }
 
 function scheduleRequest() {
-  if (requestTimerId) {
-    window.clearTimeout(requestTimerId);
-  }
   var randomness = Math.random() * 2;
   var exponent = Math.pow(2, requestFailureCount);
   var multiplier = Math.max(randomness * exponent, 1);
   var delay = Math.min(multiplier * pollIntervalMin, pollIntervalMax);
-  delay = Math.round(delay);
 
-  requestTimerId = window.setTimeout(startRequest, delay);
+  chrome.alarms.create({'delayInMinutes': delay});
 }
 
 // ajax stuff
-function startRequest() {
+function startRequest(alarm) {
   getInboxCount(
     function(count) {
       loadingAnimation.stop();
@@ -138,6 +133,8 @@ function startRequest() {
     }
   );
 }
+
+chrome.alarms.onAlarm.addListener(startRequest);
 
 function getInboxCount(onSuccess, onError) {
   var xhr = new XMLHttpRequest();
@@ -180,11 +177,11 @@ function getInboxCount(onSuccess, onError) {
       }
 
       handleError();
-    }
+    };
 
     xhr.onerror = function(error) {
       handleError();
-    }
+    };
 
     xhr.open("GET", getFeedUrl(), true);
     xhr.send(null);

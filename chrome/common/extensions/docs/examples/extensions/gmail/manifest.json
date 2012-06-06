@@ -1,5 +1,6 @@
 {
   "background": {
+    "persistent": false,
     "page": "background.html"
   },
   "browser_action": {
@@ -13,9 +14,9 @@
   "name": "__MSG_gmailcheck_name__",
   "options_page": "options.html",
   "permissions": [
-    "tabs", "http://*.google.com/", "https://*.google.com/"
+    "alarms", "tabs", "http://*.google.com/", "https://*.google.com/"
    ],
-  "version": "3.3",
-
+  "version": "4.0",
+  "minimum_chrome_version": "21",
   "manifest_version": 2
 }

@@ -1412,6 +1412,8 @@
     },
     {
       "api_calls": [
+        "chrome.alarms.create",
+        "chrome.alarms.onAlarm",
         "chrome.browserAction.onClicked",
         "chrome.browserAction.setBadgeBackgroundColor",
         "chrome.browserAction.setBadgeText",
@@ -1426,6 +1428,7 @@
       "crx_path": null,
       "description": "Displays the number of unread messages in your Google Mail inbox. You can also click the button to open your inbox.",
       "features": [
+        "alarms",
         "background_page",
         "browser_action",
         "options_page",
@@ -1440,7 +1443,7 @@
         "http://",
         "https://"
       ],
-      "search_string": "GOOGLE MAIL CHECKER DISPLAYS THE NUMBER OF UNREAD MESSAGES IN YOUR GOOGLE MAIL INBOX. YOU CAN ALSO CLICK THE BUTTON TO OPEN YOUR INBOX. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE",
+      "search_string": "GOOGLE MAIL CHECKER DISPLAYS THE NUMBER OF UNREAD MESSAGES IN YOUR GOOGLE MAIL INBOX. YOU CAN ALSO CLICK THE BUTTON TO OPEN YOUR INBOX. ALARMS BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.ALARMS.CREATE CHROME.ALARMS.ONALARM CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE",
       "source_files": [
         "_locales/ar/messages.json",
         "_locales/bg/messages.json",
@@ -1490,7 +1493,7 @@
         "options.html",
         "options.js"
       ],
-      "source_hash": "13f0a37272c82d2fd1f0ea295ebf46ce99018337",
+      "source_hash": "c8ac69a20f96d6f09f9f0fe0a069582af92ff219",
       "zip_path": "examples/extensions/gmail.zip"
     },
     {
