@@ -684,6 +684,9 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // to a view and are only updated by the renderer after this initial value.
   IPC_STRUCT_MEMBER(int32, next_page_id)
 
+  // The properties of the screen associated with the view.
+  IPC_STRUCT_MEMBER(WebKit::WebScreenInfo, screen_info)
+
   // The name of the channel with which a guest talks to its embedder.
   // If this newly created RenderView has no embedder this string will be
   // empty.
@@ -1766,13 +1769,6 @@ IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_LoadFont,
                            base::SharedMemoryHandle /* font data */,
                            uint32 /* font id */)
 #endif
-
-// Returns WebScreenInfo corresponding to the view.
-// TODO(shess): Provide a mapping from reply_msg->routing_id() to
-// HWND so that we can eliminate the NativeViewId parameter.
-IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetScreenInfo,
-                           gfx::NativeViewId /* view */,
-                           WebKit::WebScreenInfo /* results */)
 
 // Send the tooltip text for the current mouse position to the browser.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,

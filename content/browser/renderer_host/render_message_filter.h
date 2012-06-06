@@ -144,8 +144,6 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
 #if defined(OS_WIN) && !defined(USE_AURA)
   // On Windows, we handle these on the IO thread to avoid a deadlock with
   // plugins.  On non-Windows systems, we need to handle them on the UI thread.
-  void OnGetScreenInfo(gfx::NativeViewId window,
-                       WebKit::WebScreenInfo* results);
   void OnGetWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
   void OnGetRootWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
 #endif

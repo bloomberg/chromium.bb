@@ -209,6 +209,7 @@ class RenderViewImpl : public RenderWidget,
       bool is_renderer_created,
       bool swapped_out,
       int32 next_page_id,
+      const WebKit::WebScreenInfo& screen_info,
       content::GuestToEmbedderChannel* guest_to_embedder_channel,
       AccessibilityMode accessibility_mode);
 
@@ -805,6 +806,7 @@ class RenderViewImpl : public RenderWidget,
                  bool is_renderer_created,
                  bool swapped_out,
                  int32 next_page_id,
+                 const WebKit::WebScreenInfo& screen_info,
                  content::GuestToEmbedderChannel* guest_to_embedder_channel,
                  AccessibilityMode accessibility_mode);
 

@@ -340,7 +340,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     // On Windows, we handle these on the IO thread to avoid a deadlock with
     // plugins.  On non-Windows systems, we need to handle them on the UI
     // thread.
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnGetScreenInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnGetWindowRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnGetRootWindowRect)
 #endif
