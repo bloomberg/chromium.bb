@@ -210,12 +210,8 @@
       '-passwords',
       # crbug.com/97140
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
-      # crbug.com/131303
-      '-policy.PolicyTest.testSavingBrowserHistoryDisabled',
-      '-policy.PolicyTest.testSetDownloadDirectory',
-      '-policy.PolicyTest.testStartupOptionsHomepage',
-      '-policy.PolicyTest.testStartupOptionsURLs',
-      '-policy.PolicyTest.testTranslateEnabled',
+      # crbug.com/130094
+      '-policy',
       '-policy_prefs_ui.PolicyPrefsUITest.testToggleUserPolicyTogglesBanner',
       '-policy_prefs_ui.PolicyPrefsUITest.testUserPoliciesShowBanner',
       # crbug.com/69619
