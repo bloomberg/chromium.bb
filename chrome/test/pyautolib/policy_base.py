@@ -257,7 +257,7 @@ class PolicyTestBase(pyauto.PyUITest):
     else:
       policies_location_base = '/etc/chromium'
 
-    if os.path.isdir(policies_location_base):
+    if os.path.exists(policies_location_base):
       logging.debug('Removing directory %s' % policies_location_base)
       subprocess.call(['suid-python', sudo_cmd_file,
                        'remove_dir', policies_location_base])
@@ -289,6 +289,11 @@ class PolicyTestBase(pyauto.PyUITest):
 
     policies_location = os.path.join('/Library', 'Managed Preferences',
                                      getpass.getuser())
+
+    if os.path.exists(policies_location):
+      logging.debug('Removing directory %s' % policies_location)
+      subprocess.call(['suid-python', sudo_cmd_file,
+                       'remove_dir', policies_location])
 
     if user_policy is not None:
       policies_tmp_file = os.path.join('/tmp', policies_file_base)

@@ -13,13 +13,14 @@ import sys
 def main():
   assert os.geteuid() == 0, 'Need superuser privileges'
   if sys.argv[1] == 'copy':
+    assert os.path.isdir(sys.argv[3])
     shutil.copy(sys.argv[2], sys.argv[3])
     dirList = os.listdir(sys.argv[3])
     for fname in dirList:
       filename = os.path.join(sys.argv[3], fname)
       os.chmod(filename, 0755)
   elif sys.argv[1] == 'setup_dir':
-    os.system('mkdir -p "%s"' % sys.argv[2])
+    os.makedirs(sys.argv[2])
   elif sys.argv[1] == 'perm_dir':
     os.system('chmod -R 755 "%s/../.."' % sys.argv[2])
   elif sys.argv[1] == 'remove_dir':
