@@ -222,8 +222,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<content::GeolocationPermissionContext>
       geolocation_permission_context_;
-  scoped_refptr<content::SpeechRecognitionPreferences>
-      speech_recognition_preferences_;
   scoped_ptr<GAIAInfoUpdateService> gaia_info_update_service_;
   scoped_refptr<HistoryService> history_service_;
   scoped_ptr<FaviconService> favicon_service_;

@@ -57,7 +57,6 @@ class ResetDefaultProxyConfigServiceTask;
 
 
 namespace content {
-class SpeechRecognitionPreferences;
 class WebUI;
 }
 

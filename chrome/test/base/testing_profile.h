@@ -16,7 +16,6 @@
 
 namespace content {
 class MockResourceContext;
-class SpeechRecognitionPreferences;
 }
 
 namespace history {
@@ -304,9 +303,6 @@ class TestingProfile : public Profile {
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<content::GeolocationPermissionContext>
       geolocation_permission_context_;
-
-  scoped_refptr<content::SpeechRecognitionPreferences>
-      speech_recognition_preferences_;
 
   FilePath last_selected_directory_;
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.

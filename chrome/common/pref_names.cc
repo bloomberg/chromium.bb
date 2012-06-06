@@ -728,6 +728,11 @@ const char kSpeechRecognitionFilterProfanities[] =
 const char kSpeechInputTrayNotificationShown[] =
     "browser.speechinput_tray_notification_shown";
 
+// List of speech recognition context names (extensions or websites) for which
+// the tray notification balloon has already been shown.
+const char kSpeechRecognitionTrayNotificationShownContexts[] =
+    "browser.speechinput_tray_notification_shown_contexts";
+
 // Boolean controlling whether history saving is disabled.
 const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 

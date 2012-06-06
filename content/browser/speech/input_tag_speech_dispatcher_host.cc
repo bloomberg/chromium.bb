@@ -80,6 +80,7 @@ void InputTagSpeechDispatcherHost::OnStartRecognition(
   config.origin_url = params.origin_url;
   config.initial_context = context;
   config.url_request_context_getter = url_request_context_getter_.get();
+  DCHECK(recognition_preferences_.get());
   config.filter_profanities = recognition_preferences_->FilterProfanities();
   config.event_listener = this;
 

@@ -269,6 +269,7 @@ extern const char kDeauthorizeContentLicenses[];
 extern const char kEnableSpellCheck[];
 extern const char kSpeechInputTrayNotificationShown[];
 extern const char kSpeechRecognitionFilterProfanities[];
+extern const char kSpeechRecognitionTrayNotificationShownContexts[];
 extern const char kEnabledLabsExperiments[];
 extern const char kEnableAutoSpellCorrect[];
 extern const char kSavingBrowserHistoryDisabled[];

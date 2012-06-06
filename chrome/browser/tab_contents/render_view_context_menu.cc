@@ -38,6 +38,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
@@ -69,7 +70,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/speech_recognition_preferences.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_restriction.h"
@@ -218,7 +218,6 @@ bool ShouldShowTranslateItem(const GURL& page_url) {
 
   return true;
 }
-
 }  // namespace
 
 // static
@@ -1417,11 +1416,13 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
       return false;
 #endif  // OS_MACOSX
 
+#if defined(ENABLE_INPUT_SPEECH)
   // Check box for menu item 'Block offensive words'.
   if (id == IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES) {
-    return profile_->GetPrefs()->GetBoolean(
-        prefs::kSpeechRecognitionFilterProfanities);
+    return ChromeSpeechRecognitionPreferences::GetForProfile(profile_)->
+        FilterProfanities();
   }
+#endif
 
   return false;
 }
@@ -1849,15 +1850,13 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
     }
 
+#if defined(ENABLE_INPUT_SPEECH)
     case IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES: {
-      PrefService* prefs = profile_->GetPrefs();
-      const bool filter = !prefs->GetBoolean(
-          prefs::kSpeechRecognitionFilterProfanities);
-      prefs->SetBoolean(prefs::kSpeechRecognitionFilterProfanities, filter);
-      profile_->GetSpeechRecognitionPreferences()->SetFilterProfanities(filter);
+      ChromeSpeechRecognitionPreferences::GetForProfile(profile_)->
+          ToggleFilterProfanities();
       break;
     }
-
+#endif
     case IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT: {
       GURL url(chrome::kSpeechInputAboutURL);
       GURL localized_url = google_util::AppendGoogleLocaleParam(url);

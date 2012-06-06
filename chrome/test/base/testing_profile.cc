@@ -625,10 +625,7 @@ TestingProfile::GetGeolocationPermissionContext() {
 content::SpeechRecognitionPreferences*
     TestingProfile::GetSpeechRecognitionPreferences() {
 #if defined(ENABLE_INPUT_SPEECH)
-  if (!speech_recognition_preferences_.get())
-    speech_recognition_preferences_ =
-        new ChromeSpeechRecognitionPreferences(GetPrefs());
-  return speech_recognition_preferences_.get();
+  return ChromeSpeechRecognitionPreferences::GetForProfile(this);
 #else
   return NULL;
 #endif

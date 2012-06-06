@@ -290,7 +290,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
 void ProfileImpl::DoFinalInit(bool is_new_profile) {
   PrefService* prefs = GetPrefs();
   pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(prefs::kSpeechRecognitionFilterProfanities, this);
   pref_change_registrar_.Add(prefs::kGoogleServicesUsername, this);
   pref_change_registrar_.Add(prefs::kDefaultZoomLevel, this);
   pref_change_registrar_.Add(prefs::kProfileAvatarIndex, this);
@@ -775,13 +774,9 @@ content::GeolocationPermissionContext*
 }
 
 content::SpeechRecognitionPreferences*
-    ProfileImpl::GetSpeechRecognitionPreferences() {
+ProfileImpl::GetSpeechRecognitionPreferences() {
 #if defined(ENABLE_INPUT_SPEECH)
-  if (!speech_recognition_preferences_.get()) {
-    speech_recognition_preferences_ =
-        new ChromeSpeechRecognitionPreferences(GetPrefs());
-  }
-  return speech_recognition_preferences_.get();
+  return ChromeSpeechRecognitionPreferences::GetForProfile(this);
 #else
   return NULL;
 #endif
@@ -911,14 +906,7 @@ void ProfileImpl::Observe(int type,
       std::string* pref_name_in = content::Details<std::string>(details).ptr();
       PrefService* prefs = content::Source<PrefService>(source).ptr();
       DCHECK(pref_name_in && prefs);
-      if (*pref_name_in == prefs::kSpeechRecognitionFilterProfanities) {
-        content::SpeechRecognitionPreferences* speech_prefs =
-            GetSpeechRecognitionPreferences();
-        if (speech_prefs) {
-          speech_prefs->SetFilterProfanities(prefs->GetBoolean(
-              prefs::kSpeechRecognitionFilterProfanities));
-        }
-      } else if (*pref_name_in == prefs::kGoogleServicesUsername) {
+      if (*pref_name_in == prefs::kGoogleServicesUsername) {
         UpdateProfileUserNameCache();
       } else if (*pref_name_in == prefs::kProfileAvatarIndex) {
         UpdateProfileAvatarCache();

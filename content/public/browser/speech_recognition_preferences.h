@@ -13,12 +13,10 @@ namespace content {
 class SpeechRecognitionPreferences
     : public base::RefCountedThreadSafe<SpeechRecognitionPreferences> {
  public:
-  // Only to be called on the IO thread.
   virtual bool FilterProfanities() const = 0;
 
-  virtual void SetFilterProfanities(bool filter_profanities) = 0;
-
  protected:
+  SpeechRecognitionPreferences() {}
   virtual ~SpeechRecognitionPreferences() {}
 
  private:

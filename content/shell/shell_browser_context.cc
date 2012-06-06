@@ -75,8 +75,6 @@ class ShellSpeechRecognitionPreferences : public SpeechRecognitionPreferences {
     return false;
   }
 
-  virtual void SetFilterProfanities(bool filter_profanities) OVERRIDE {}
-
  protected:
   virtual ~ShellSpeechRecognitionPreferences() {}
 
