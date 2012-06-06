@@ -39,6 +39,9 @@ Library
 #include "louis.h"
 #include "config.h"
 
+#define QUOTESUB 28 /*Stand-in for double quotes in strings*/
+
+
 /* Contributed by Michel Such <michel.such@free.fr */
 #ifdef _WIN32
 
@@ -1476,8 +1479,7 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 		  ok = 1;
 		  break;
 		case 34:
-		  result->chars[count++] = '\\';
-		  character = 34;
+		  character = QUOTESUB;
 		  ok = 1;
 		  break;
 		case 'X':
@@ -2065,16 +2067,14 @@ passGetString ()
 	  compileError (passNested, "unterminated string");
 	  return 0;
 	}
-      if (passLine.chars[passLinepos] == '\"')
-	{
-	  if (passLine.chars[passLinepos - 1] == '\\'
-	      && passLine.chars[passLinepos - 2] != '\\')
-	    passHoldString.length--;
-	  else
-	    break;
-	}
-      passHoldString.chars[passHoldString.length++] =
-	passLine.chars[passLinepos++];
+      if (passLine.chars[passLinepos] = 34)
+      break;
+      if (passLine.chars[passLinepos] == QUOTESUB)
+      passHoldString.chars[passHoldString.length++] = 34;
+      else
+      passHoldString.chars[passHoldString.length++] = 
+      passLine.chars[passLinepos];
+      passLinepos++;
     }
   passHoldString.chars[passHoldString.length] = 0;
   passLinepos++;
