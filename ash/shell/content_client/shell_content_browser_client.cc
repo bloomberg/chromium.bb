@@ -10,7 +10,6 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_devtools_delegate.h"
-#include "content/shell/shell_render_view_host_observer.h"
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/shell_switches.h"
 #include "googleurl/src/gurl.h"
@@ -34,7 +33,6 @@ content::BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
 
 void ShellContentBrowserClient::RenderViewHostCreated(
     content::RenderViewHost* render_view_host) {
-  new content::ShellRenderViewHostObserver(render_view_host);
 }
 
 void ShellContentBrowserClient::ResourceDispatcherHostCreated() {

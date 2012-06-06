@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/shell_render_view_host_observer.h"
+#include "content/shell/layout_test_controller_host.h"
 
 #include <iostream>
 
@@ -12,19 +12,35 @@
 
 namespace content {
 
-ShellRenderViewHostObserver::ShellRenderViewHostObserver(
+std::map<RenderViewHost*, LayoutTestControllerHost*>
+    LayoutTestControllerHost::controllers_;
+
+// static
+LayoutTestControllerHost* LayoutTestControllerHost::FromRenderViewHost(
+    RenderViewHost* render_view_host) {
+  const std::map<RenderViewHost*, LayoutTestControllerHost*>::iterator it =
+      controllers_.find(render_view_host);
+  if (it == controllers_.end())
+    return NULL;
+  return it->second;
+}
+
+LayoutTestControllerHost::LayoutTestControllerHost(
     RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host),
       dump_as_text_(false),
-      is_printing_(false),
       dump_child_frames_(false),
+      is_printing_(false),
+      should_stay_on_page_after_handling_before_unload_(false),
       wait_until_done_(false) {
+  controllers_[render_view_host] = this;
 }
 
-ShellRenderViewHostObserver::~ShellRenderViewHostObserver() {
+LayoutTestControllerHost::~LayoutTestControllerHost() {
+  controllers_.erase(render_view_host());
 }
 
-void ShellRenderViewHostObserver::CaptureDump() {
+void LayoutTestControllerHost::CaptureDump() {
   render_view_host()->Send(
       new ShellViewMsg_CaptureTextDump(render_view_host()->GetRoutingID(),
                                        dump_as_text_,
@@ -32,10 +48,10 @@ void ShellRenderViewHostObserver::CaptureDump() {
                                        dump_child_frames_));
 }
 
-bool ShellRenderViewHostObserver::OnMessageReceived(
+bool LayoutTestControllerHost::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ShellRenderViewHostObserver, message)
+  IPC_BEGIN_MESSAGE_MAP(LayoutTestControllerHost, message)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TextDump, OnTextDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotifyDone, OnNotifyDone)
@@ -43,6 +59,9 @@ bool ShellRenderViewHostObserver::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DumpChildFramesAsText,
                         OnDumpChildFramesAsText)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetPrinting, OnSetPrinting)
+    IPC_MESSAGE_HANDLER(
+        ShellViewHostMsg_SetShouldStayOnPageAfterHandlingBeforeUnload,
+        OnSetShouldStayOnPageAfterHandlingBeforeUnload)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_WaitUntilDone, OnWaitUntilDone)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -50,14 +69,14 @@ bool ShellRenderViewHostObserver::OnMessageReceived(
   return handled;
 }
 
-void ShellRenderViewHostObserver::OnDidFinishLoad() {
+void LayoutTestControllerHost::OnDidFinishLoad() {
   if (wait_until_done_)
     return;
 
   CaptureDump();
 }
 
-void ShellRenderViewHostObserver::OnTextDump(const std::string& dump) {
+void LayoutTestControllerHost::OnTextDump(const std::string& dump) {
   std::cout << dump;
   std::cout << "#EOF\n";
   std::cerr << "#EOF\n";
@@ -65,23 +84,28 @@ void ShellRenderViewHostObserver::OnTextDump(const std::string& dump) {
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
-void ShellRenderViewHostObserver::OnNotifyDone() {
+void LayoutTestControllerHost::OnNotifyDone() {
   CaptureDump();
 }
 
-void ShellRenderViewHostObserver::OnDumpAsText() {
+void LayoutTestControllerHost::OnDumpAsText() {
   dump_as_text_ = true;
 }
 
-void ShellRenderViewHostObserver::OnSetPrinting() {
+void LayoutTestControllerHost::OnSetPrinting() {
   is_printing_ = true;
 }
 
-void ShellRenderViewHostObserver::OnDumpChildFramesAsText() {
+void LayoutTestControllerHost::OnSetShouldStayOnPageAfterHandlingBeforeUnload(
+    bool should_stay_on_page) {
+  should_stay_on_page_after_handling_before_unload_ = should_stay_on_page;
+}
+
+void LayoutTestControllerHost::OnDumpChildFramesAsText() {
   dump_child_frames_ = true;
 }
 
-void ShellRenderViewHostObserver::OnWaitUntilDone() {
+void LayoutTestControllerHost::OnWaitUntilDone() {
   wait_until_done_ = true;
 }
 

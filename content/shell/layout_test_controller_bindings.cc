@@ -76,6 +76,20 @@ v8::Handle<v8::Value> SetPrinting(const v8::Arguments& args) {
   return v8::Undefined();
 }
 
+v8::Handle<v8::Value> SetShouldStayOnPageAfterHandlingBeforeUnload(
+    const v8::Arguments& args) {
+  RenderView* view = GetCurrentRenderView();
+  if (!view)
+    return v8::Undefined();
+
+  if (args.Length() != 1 || args[0]->IsBoolean())
+    return v8::Undefined();
+
+  view->Send(new ShellViewHostMsg_SetShouldStayOnPageAfterHandlingBeforeUnload(
+      view->GetRoutingID(), args[0]->BooleanValue()));
+  return v8::Undefined();
+}
+
 v8::Handle<v8::Value> SetWaitUntilDone(const v8::Arguments& args) {
   RenderView* view = GetCurrentRenderView();
   if (!view)
