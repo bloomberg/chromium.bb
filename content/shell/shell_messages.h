@@ -28,7 +28,4 @@ IPC_MESSAGE_ROUTED0(ShellViewHostMsg_NotifyDone)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DumpAsText)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DumpChildFramesAsText)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_SetPrinting)
-IPC_MESSAGE_ROUTED1(
-    ShellViewHostMsg_SetShouldStayOnPageAfterHandlingBeforeUnload,
-    bool /* should_stay_on_page */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_WaitUntilDone)

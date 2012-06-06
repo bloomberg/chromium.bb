@@ -4,10 +4,8 @@
 
 #include "content/shell/shell_content_renderer_client.h"
 
-#include "base/command_line.h"
-#include "content/shell/layout_test_controller.h"
 #include "content/shell/shell_render_process_observer.h"
-#include "content/shell/shell_switches.h"
+#include "content/shell/shell_render_view_observer.h"
 #include "v8/include/v8.h"
 
 namespace content {
@@ -23,10 +21,7 @@ void ShellContentRendererClient::RenderThreadStarted() {
 }
 
 void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    return;
-
-  new content::LayoutTestController(render_view);
+  new content::ShellRenderViewObserver(render_view);
 }
 
 }  // namespace content

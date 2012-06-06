@@ -9,8 +9,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "content/public/browser/web_contents.h"
-#include "content/shell/layout_test_controller_host.h"
 #include "content/shell/shell_javascript_dialog.h"
 #include "content/shell/shell_switches.h"
 #include "net/base/net_util.h"
@@ -78,12 +76,7 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
     const DialogClosedCallback& callback) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     std::cout << "CONFIRM NAVIGATION: " << UTF16ToUTF8(message_text) << "\n";
-    LayoutTestControllerHost* controller =
-        LayoutTestControllerHost::FromRenderViewHost(
-            web_contents->GetRenderViewHost());
-    callback.Run(
-        !controller->should_stay_on_page_after_handling_before_unload(),
-        string16());
+    callback.Run(true, string16());
     return;
   }
 

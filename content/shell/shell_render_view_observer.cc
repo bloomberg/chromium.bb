@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/layout_test_controller.h"
+#include "content/shell/shell_render_view_observer.h"
 
 #include "base/stringprintf.h"
 #include "content/public/renderer/render_view.h"
@@ -85,22 +85,21 @@ std::string DumpFrameScrollPosition(WebFrame* frame, bool recursive) {
 }
 
 }  // namespace
-
-LayoutTestController::LayoutTestController(RenderView* render_view)
+ShellRenderViewObserver::ShellRenderViewObserver(RenderView* render_view)
     : RenderViewObserver(render_view) {
 }
 
-LayoutTestController::~LayoutTestController() {
+ShellRenderViewObserver::~ShellRenderViewObserver() {
 }
 
-void LayoutTestController::DidFinishLoad(WebFrame* frame) {
+void ShellRenderViewObserver::DidFinishLoad(WebFrame* frame) {
   if (!frame->parent())
     Send(new ShellViewHostMsg_DidFinishLoad(routing_id()));
 }
 
-bool LayoutTestController::OnMessageReceived(const IPC::Message& message) {
+bool ShellRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(LayoutTestController, message)
+  IPC_BEGIN_MESSAGE_MAP(ShellRenderViewObserver, message)
     IPC_MESSAGE_HANDLER(ShellViewMsg_CaptureTextDump, OnCaptureTextDump)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -108,9 +107,9 @@ bool LayoutTestController::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void LayoutTestController::OnCaptureTextDump(bool as_text,
-                                             bool printing,
-                                             bool recursive) {
+void ShellRenderViewObserver::OnCaptureTextDump(bool as_text,
+                                                bool printing,
+                                                bool recursive) {
   WebFrame* frame = render_view()->GetWebView()->mainFrame();
   std::string dump;
   if (as_text) {
