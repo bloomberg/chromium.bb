@@ -6822,6 +6822,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_GEOLOCATION_EXCEPTION_TITLE" desc="Title for geolocation exceptions dialog">
         Location exceptions
       </message>
+      <message name="IDS_GEOLOCATION_SET_BY_HOVER" desc="Hover text for URL in a list of exceptions, preceding the name of the granting hosted app.">
+        Set by app:
+      </message>
       <message name="IDS_NOTIFICATIONS_TAB_LABEL" desc="Label for Notifications tab on Content Settings dialog">
         Notifications
       </message>

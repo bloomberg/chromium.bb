@@ -127,6 +127,19 @@ cr.define('options.contentSettings', function() {
         this.editable = false;
       }
 
+      // If the exception comes from a hosted app, display the name and the
+      // icon of the app.
+      if (this.dataItem.source == 'HostedApp') {
+        this.title =
+            loadTimeData.getString('set_by') + ' ' + this.dataItem.appName;
+        var button = this.querySelector('.row-delete-button');
+        // Use the host app's favicon (16px, match bigger size).
+        // See c/b/ui/webui/extensions/extension_icon_source.h
+        // for a description of the chrome://extension-icon URL.
+        button.style.backgroundImage =
+            'url(\'chrome://extension-icon/' + this.dataItem.appId + '/16/1\')';
+      }
+
       var listItem = this;
       // Handle events on the editable nodes.
       input.oninput = function(event) {

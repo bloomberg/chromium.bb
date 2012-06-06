@@ -64,6 +64,8 @@ const char* kDisplayPattern = "displayPattern";
 const char* kSetting = "setting";
 const char* kOrigin = "origin";
 const char* kSource = "source";
+const char* kAppName = "appName";
+const char* kAppId = "appId";
 const char* kEmbeddingOrigin = "embeddingOrigin";
 
 const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
@@ -195,6 +197,21 @@ DictionaryValue* GetNotificationExceptionForPage(
   return exception;
 }
 
+// Add an "Allow"-entry to the list of |exceptions| for a |url_pattern| from
+// the web extent of a hosted |app|.
+void AddExceptionForHostedApp(const std::string& url_pattern,
+    const extensions::Extension& app, ListValue* exceptions) {
+  DictionaryValue* exception = new DictionaryValue();
+  exception->SetString(kDisplayPattern, url_pattern);
+  exception->SetString(kSetting, ContentSettingToString(CONTENT_SETTING_ALLOW));
+  exception->SetString(kOrigin, url_pattern);
+  exception->SetString(kEmbeddingOrigin, url_pattern);
+  exception->SetString(kSource, "HostedApp");
+  exception->SetString(kAppName, app.name());
+  exception->SetString(kAppId, app.id());
+  exceptions->Append(exception);
+}
+
 // Asks the |profile| for hosted apps which have the |permission| set, and
 // adds their web extent and launch URL to the |exceptions| list.
 void AddExceptionsGrantedByHostedApps(
@@ -215,29 +232,15 @@ void AddExceptionsGrantedByHostedApps(
     // Add patterns from web extent.
     for (URLPatternSet::const_iterator pattern = web_extent.begin();
          pattern != web_extent.end(); ++pattern) {
-      std::string pattern_string = pattern->GetAsString();
-      DictionaryValue* exception = new DictionaryValue();
-      exception->SetString(kDisplayPattern, pattern_string);
-      exception->SetString(kSetting,
-                           ContentSettingToString(CONTENT_SETTING_ALLOW));
-      exception->SetString(kOrigin, pattern_string);
-      exception->SetString(kEmbeddingOrigin, pattern_string);
-      exception->SetString(kSource, "HostedApp");
-      exceptions->Append(exception);
+      std::string url_pattern = pattern->GetAsString();
+      AddExceptionForHostedApp(url_pattern, **extension, exceptions);
     }
     // Retrieve the launch URL.
     std::string launch_url_string = (*extension)->launch_web_url();
     GURL launch_url(launch_url_string);
     // Skip adding the launch URL if it is part of the web extent.
     if (web_extent.MatchesURL(launch_url)) continue;
-    DictionaryValue* exception = new DictionaryValue();
-    exception->SetString(kDisplayPattern, launch_url_string);
-    exception->SetString(kSetting,
-                         ContentSettingToString(CONTENT_SETTING_ALLOW));
-    exception->SetString(kOrigin, launch_url_string);
-    exception->SetString(kEmbeddingOrigin, launch_url_string);
-    exception->SetString(kSource, "HostedApp");
-    exceptions->Append(exception);
+    AddExceptionForHostedApp(launch_url_string, **extension, exceptions);
   }
 }
 
@@ -306,6 +309,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "location_allow", IDS_GEOLOCATION_ALLOW_RADIO },
     { "location_ask", IDS_GEOLOCATION_ASK_RADIO },
     { "location_block", IDS_GEOLOCATION_BLOCK_RADIO },
+    { "set_by", IDS_GEOLOCATION_SET_BY_HOVER },
     // Notifications filter.
     { "notifications_tab_label", IDS_NOTIFICATIONS_TAB_LABEL },
     { "notifications_header", IDS_NOTIFICATIONS_HEADER },

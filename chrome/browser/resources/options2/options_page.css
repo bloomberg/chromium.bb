@@ -289,6 +289,13 @@ list .row-delete-button[disabled] {
   pointer-events: none;
 }
 
+/* HostedApp entries use the disabled closing button to display the App's
+ * favicon, as an indicator that instead of deleting the permission here
+ * the user has to remove the hosted app.*/
+list div[role='listitem'][managedby='HostedApp'] .row-delete-button {
+  opacity: 1;
+}
+
 list .row-delete-button:hover {
   background-image: url('../../../../ui/resources/close_bar_h.png');
 }
