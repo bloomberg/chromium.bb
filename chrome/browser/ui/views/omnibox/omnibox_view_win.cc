@@ -476,16 +476,6 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
   SetReadOnly(popup_window_mode_);
   SetFont(font_.GetNativeFont());
 
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    // Locally define CLSID_TextInputPanel to avoid issues with multiply defined
-    // or undefined symbols if we include peninputpanel_i.c.
-    const GUID CLSID_TextInputPanel = {0xf9b189d7, 0x228b, 0x4f2b, 0x86, 0x50,\
-                0xb9, 0x7f, 0x59, 0xe0, 0x2c, 0x8c};
-    keyboard_.CreateInstance(CLSID_TextInputPanel, NULL, CLSCTX_INPROC);
-    if (keyboard_ != NULL)
-      keyboard_->put_AttachedEditWindow(m_hWnd);
-  }
-
   // NOTE: Do not use SetWordBreakProcEx() here, that is no longer supported as
   // of Rich Edit 2.0 onward.
   SendMessage(m_hWnd, EM_SETWORDBREAKPROC, 0,
@@ -1472,10 +1462,6 @@ LRESULT OmniboxViewWin::OnPointerDown(UINT message,
 
 LRESULT OmniboxViewWin::OnPointerUp(UINT message, WPARAM wparam,
                                     LPARAM lparam) {
-  // ITextInputPanel is not supported on all platforms.  NULL is fine.
-  if (keyboard_ != NULL)
-    keyboard_->SetInPlaceVisibility(true);
-
   SetMsgHandled(false);
 
   return 0;

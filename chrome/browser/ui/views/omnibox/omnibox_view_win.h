@@ -539,10 +539,6 @@ class OmniboxViewWin
   // The native view host.
   views::NativeViewHost* native_view_host_;
 
-  // ITextInputPanel to allow us to show the Windows virtual keyboard when a
-  // user touches the Omnibox.
-  base::win::ScopedComPtr<ITextInputPanel> keyboard_;
-
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewWin);
 };
 
