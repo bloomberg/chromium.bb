@@ -80,7 +80,7 @@ GURL GetWebstoreInstallURL(
     params.push_back("installsource=" + install_source);
   params.push_back("lang=" + g_browser_process->GetApplicationLocale());
   params.push_back("uc");
-  std::string url_string = extension_urls::GetWebstoreUpdateUrl().spec();
+  std::string url_string = extension_urls::GetWebstoreUpdateUrl(true).spec();
 
   GURL url(url_string + "?response=redirect&x=" +
       net::EscapeQueryParamValue(JoinString(params, '&'), true));

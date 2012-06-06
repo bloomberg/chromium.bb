@@ -31,11 +31,12 @@ namespace extension_urls {
   // etc.) about an extension from the webstore as JSON.
   GURL GetWebstoreItemJsonDataURL(const std::string& extension_id);
 
-  // Return the update URL used by gallery/webstore extensions/apps.
-  GURL GetWebstoreUpdateUrl();
+  // Return the update URL used by gallery/webstore extensions/apps. The
+  // |secure| parameter will be ignored if the update URL is overriden with
+  // --apps-gallery-update-url.
+  GURL GetWebstoreUpdateUrl(bool secure);
 
-  // Returns whether the URL is the webstore update URL (just considering host
-  // and path, not scheme, query, etc.)
+  // Returns whether the URL is the webstore update URL (secure or not).
   bool IsWebstoreUpdateUrl(const GURL& update_url);
 
   // Returns true if the URL points to an extension blacklist.

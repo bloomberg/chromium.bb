@@ -43,6 +43,8 @@ GURL GetWebstoreItemJsonDataURL(const std::string& extension_id) {
   return GURL(GetWebstoreLaunchURL() + "/inlineinstall/detail/" + extension_id);
 }
 
+const char kGalleryUpdateHttpUrl[] =
+    "http://clients2.google.com/service/update2/crx";
 const char kGalleryUpdateHttpsUrl[] =
     "https://clients2.google.com/service/update2/crx";
 // TODO(battre): Delete the HTTP URL once the blacklist is downloaded via HTTPS.
@@ -51,22 +53,17 @@ const char kExtensionBlocklistUrlPrefix[] =
 const char kExtensionBlocklistHttpsUrlPrefix[] =
     "https://www.gstatic.com/chrome/extensions/blacklist";
 
-GURL GetWebstoreUpdateUrl() {
+GURL GetWebstoreUpdateUrl(bool secure) {
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
   if (cmdline->HasSwitch(switches::kAppsGalleryUpdateURL))
     return GURL(cmdline->GetSwitchValueASCII(switches::kAppsGalleryUpdateURL));
   else
-    return GURL(kGalleryUpdateHttpsUrl);
+    return GURL(secure ? kGalleryUpdateHttpsUrl : kGalleryUpdateHttpUrl);
 }
 
 bool IsWebstoreUpdateUrl(const GURL& update_url) {
-  GURL store_url = GetWebstoreUpdateUrl();
-  if (update_url == store_url) {
-    return true;
-  } else {
-    return (update_url.host() == store_url.host() &&
-            update_url.path() == store_url.path());
-  }
+  return update_url == GetWebstoreUpdateUrl(false) ||
+         update_url == GetWebstoreUpdateUrl(true);
 }
 
 bool IsBlacklistUpdateUrl(const GURL& url) {

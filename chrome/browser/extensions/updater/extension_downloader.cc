@@ -187,8 +187,7 @@ void ExtensionDownloader::StartBlacklistUpdate(
   // url here to avoid DNS hijacking of the blacklist, which is not validated
   // by a public key signature like .crx files are.
   ManifestFetchData* blacklist_fetch =
-      new ManifestFetchData(extension_urls::GetWebstoreUpdateUrl());
-  DCHECK(blacklist_fetch->base_url().SchemeIsSecure());
+      new ManifestFetchData(extension_urls::GetWebstoreUpdateUrl(true));
   blacklist_fetch->AddExtension(kBlacklistAppID, version, &ping_data, "",
                                 kDefaultInstallSource);
   StartUpdateCheck(blacklist_fetch);
@@ -206,11 +205,6 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
     return false;
   }
 
-  // Make sure we use SSL for store-hosted extensions.
-  if (extension_urls::IsWebstoreUpdateUrl(update_url) &&
-      !update_url.SchemeIsSecure())
-    update_url = extension_urls::GetWebstoreUpdateUrl();
-
   // Skip extensions with empty IDs.
   if (id.empty()) {
     LOG(WARNING) << "Found extension with empty ID";
@@ -222,7 +216,9 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
   } else if (update_url.is_empty()) {
     url_stats_.no_url_count++;
     // Fill in default update URL.
-    update_url = extension_urls::GetWebstoreUpdateUrl();
+    //
+    // TODO(akalin): Figure out if we should use the HTTPS version.
+    update_url = extension_urls::GetWebstoreUpdateUrl(false);
   } else {
     url_stats_.other_url_count++;
   }
@@ -251,7 +247,7 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
   // webstore update URL.
   if (!extension_urls::IsWebstoreUpdateUrl(update_url) &&
       MetricsServiceHelper::IsMetricsReportingEnabled()) {
-    update_urls.push_back(extension_urls::GetWebstoreUpdateUrl());
+    update_urls.push_back(extension_urls::GetWebstoreUpdateUrl(false));
   }
 
   for (size_t i = 0; i < update_urls.size(); ++i) {
@@ -436,27 +432,17 @@ void ExtensionDownloader::HandleManifestResults(
     const UpdateManifest::Result* update = &(results->list.at(updates[i]));
     const std::string& id = update->extension_id;
     not_updated.erase(id);
-
-    GURL crx_url = update->crx_url;
     if (id != kBlacklistAppID) {
       NotifyUpdateFound(update->extension_id);
     } else {
       // The URL of the blacklist file is returned by the server and we need to
       // be sure that we continue to be able to reliably detect whether a URL
       // references a blacklist file.
-      DCHECK(extension_urls::IsBlacklistUpdateUrl(crx_url)) << crx_url;
-
-      // Force https (crbug.com/129587).
-      if (!crx_url.SchemeIsSecure()) {
-        url_canon::Replacements<char> replacements;
-        std::string scheme("https");
-        replacements.SetScheme(scheme.c_str(),
-                               url_parse::Component(0, scheme.size()));
-        crx_url = crx_url.ReplaceComponents(replacements);
-      }
+      DCHECK(extension_urls::IsBlacklistUpdateUrl(update->crx_url))
+          << update->crx_url;
     }
-    FetchUpdatedExtension(update->extension_id, crx_url, update->package_hash,
-                          update->version);
+    FetchUpdatedExtension(update->extension_id, update->crx_url,
+                          update->package_hash, update->version);
   }
 
   // If the manifest response included a <daystart> element, we want to save
