@@ -328,7 +328,7 @@ int BrowserViewLayout::LayoutTabStripRegion() {
                                    ps.width(),
                                    ps.height());
       }
-    } {
+    } else {
       // We hide the button if the incognito profile is not alive.
       // Note that Layout() is not called to all browser windows automatically
       // when a profile goes away but we rely in the metro_driver.dll to call
