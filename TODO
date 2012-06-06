@@ -1,13 +1,45 @@
 This HACKING file describes the development environment.  	-*- org -*-
 
+When a task is done and accepted, consider moving it into the NEWS file, with a bit of extra info.
+
+= 2.5 =
+
 * Document the changes to LOUIS_TABLEPATH
-- Fix the problem that it always looks in the standard PATH even if
-  that was not in the environment var
+
+* remove runHarness.py, put inplace nosetests (p2/3) and runharnessV2
 
 * [mh] Document the test harness with its use of json
 
+* [mh] (google issue 9) bindings should provide variable to pick up  table location at runtime.
+
+= near term =
+
+* all table files should be unicode encoded.
+
+* harness data braille field should be unicode braille, not ascii braille+liblouis extended braille.
+
 * Mapping between table filenames, human readable names, and translatable strings, needs to be accessible from bindings.
   Will remove the need of redefining translatable names for the tables in orca, nvda, blaster etc.
+
+* Fix the problem that LOUIS_TABLEPATH always looks in the standard PATH even if
+ that was not in the environment var
+
+* Add more test harness data for languages.
+
+* [mh] compBrlLeftCursor is wrong, provide test case for correct behaviour
+  Once corrected, consider merging compBrlLeftCursor and compBrlAtCursor, since neither provide the needed behaviour, but the corrected version should.
+
+* [mh] test case for non-null terminated string when chars are undefined.
+
+* fix bug described by squash_space.c
+
+= unallocated =
+
+* (google issue 16) infinite loop in lou_backtranslate.
+
+* (google issue 6) italword opcode not documented
+
+* (google issue 4) problem with contraction cursor position and compBrlAtCursor.
 
 * Add java bindings
 It would be nice to have some canonical java bindings. There are
@@ -40,3 +72,9 @@ When used with dictionary based tables liblouis is very slow. The
 issue is probably that the hash key is not very well suited for this
 use case and there will be tons of collisions, making the lookup
 essentially linear.
+
+mh: if a braille table is declared as a dictionary, it sounds like the table is wrongly written, and should be a candidate for rewriting.
+    Braille contractions are defined as rules, not as instances. The dictionary data should be pulled out to provide test data.
+
+    
+
