@@ -188,6 +188,8 @@
     'browser/android/android_browser_process.h',
     'browser/android/command_line.cc',
     'browser/android/command_line.h',
+    'browser/android/device_info.cc',
+    'browser/android/device_info.h',
     'browser/android/download_controller.cc',
     'browser/android/download_controller.h',
     'browser/android/jni_helper.cc',
