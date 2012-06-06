@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,7 @@ class BackingStoreSkia : public BackingStore {
   SkBitmap bitmap_;
 
   scoped_ptr<SkCanvas> canvas_;
+  int device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(BackingStoreSkia);
 };

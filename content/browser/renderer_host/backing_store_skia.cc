@@ -4,7 +4,9 @@
 
 #include "content/browser/renderer_host/backing_store_skia.h"
 
+#include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/public/browser/render_widget_host.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/canvas.h"
@@ -19,8 +21,11 @@ static const int kMaxVideoLayerSize = 23170;
 
 BackingStoreSkia::BackingStoreSkia(content::RenderWidgetHost* widget,
                                    const gfx::Size& size)
-    : BackingStore(widget, size) {
-  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
+    : BackingStore(widget, size),
+      device_scale_factor_(content::GetDIPScaleFactor(widget->GetView())) {
+  gfx::Size pixel_size = size.Scale(device_scale_factor_);
+  bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
+      pixel_size.width(), pixel_size.height());
   bitmap_.allocPixels();
   canvas_.reset(new SkCanvas(bitmap_));
 }
@@ -30,14 +35,15 @@ BackingStoreSkia::~BackingStoreSkia() {
 
 void BackingStoreSkia::SkiaShowRect(const gfx::Point& point,
                                     gfx::Canvas* canvas) {
+  const gfx::Point scaled_point = point.Scale(device_scale_factor_);
   canvas->sk_canvas()->drawBitmap(bitmap_,
-      SkIntToScalar(point.x()), SkIntToScalar(point.y()));
+      SkIntToScalar(scaled_point.x()), SkIntToScalar(scaled_point.y()));
 }
 
 size_t BackingStoreSkia::MemorySize() {
   // NOTE: The computation may be different when the canvas is a subrectangle of
   // a larger bitmap.
-  return size().GetArea() * 4;
+  return size().Scale(device_scale_factor_).GetArea() * 4;
 }
 
 void BackingStoreSkia::PaintToBackingStore(
@@ -51,8 +57,10 @@ void BackingStoreSkia::PaintToBackingStore(
   if (bitmap_rect.IsEmpty())
     return;
 
-  const int width = bitmap_rect.width();
-  const int height = bitmap_rect.height();
+  gfx::Rect pixel_rect = bitmap_rect.Scale(device_scale_factor_);
+
+  const int width = pixel_rect.width();
+  const int height = pixel_rect.height();
 
   if (width <= 0 || width > kMaxVideoLayerSize ||
       height <= 0 || height > kMaxVideoLayerSize)
@@ -69,9 +77,9 @@ void BackingStoreSkia::PaintToBackingStore(
   sk_bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   sk_bitmap.setPixels(dib->memory());
   for (size_t i = 0; i < copy_rects.size(); i++) {
-    const gfx::Rect& copy_rect = copy_rects[i];
-    int x = copy_rect.x() - bitmap_rect.x();
-    int y = copy_rect.y() - bitmap_rect.y();
+    const gfx::Rect copy_rect = copy_rects[i].Scale(device_scale_factor_);
+    int x = copy_rect.x() - pixel_rect.x();
+    int y = copy_rect.y() - pixel_rect.y();
     int w = copy_rect.width();
     int h = copy_rect.height();
     SkIRect srcrect = SkIRect::MakeXYWH(x, y, w, h);
@@ -85,18 +93,21 @@ void BackingStoreSkia::PaintToBackingStore(
 void BackingStoreSkia::ScrollBackingStore(int dx, int dy,
                                           const gfx::Rect& clip_rect,
                                           const gfx::Size& view_size) {
-  int x = std::min(clip_rect.x(), clip_rect.x() - dx);
-  int y = std::min(clip_rect.y(), clip_rect.y() - dy);
-  int w = clip_rect.width() + abs(dx);
-  int h = clip_rect.height() + abs(dy);
+  gfx::Rect pixel_rect = clip_rect.Scale(device_scale_factor_);
+  int x = std::min(pixel_rect.x(), pixel_rect.x() - dx);
+  int y = std::min(pixel_rect.y(), pixel_rect.y() - dy);
+  int w = pixel_rect.width() + abs(dx);
+  int h = pixel_rect.height() + abs(dy);
   SkIRect rect = SkIRect::MakeXYWH(x, y, w, h);
   bitmap_.scrollRect(&rect, dx, dy);
 }
 
 bool BackingStoreSkia::CopyFromBackingStore(const gfx::Rect& rect,
                                             skia::PlatformCanvas* output) {
-  const int width = std::min(size().width(), rect.width());
-  const int height = std::min(size().height(), rect.height());
+  const int width =
+      std::min(size().width(), rect.width()) * device_scale_factor_;
+  const int height =
+      std::min(size().height(), rect.height()) * device_scale_factor_;
   if (!output->initialize(width, height, true))
     return false;
 

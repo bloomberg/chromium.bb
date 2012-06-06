@@ -71,6 +71,8 @@ using WebKit::WebVector;
 using WebKit::WebWidget;
 using content::RenderThread;
 
+static const int kStandardDPI = 160;
+
 RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
                            const WebKit::WebScreenInfo& screen_info,
                            bool swapped_out)
@@ -105,12 +107,16 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       animation_update_pending_(false),
       invalidation_task_posted_(false),
       screen_info_(screen_info),
+      device_scale_factor_(1),
       invert_(false) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
   has_disable_gpu_vsync_switch_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuVsync);
+#if defined(OS_CHROMEOS)
+  device_scale_factor_ = screen_info.verticalDPI / kStandardDPI;
+#endif
 }
 
 RenderWidget::~RenderWidget() {
@@ -933,9 +939,10 @@ void RenderWidget::DoDeferredUpdate() {
     pending_update_params_->copy_rects.push_back(optimized_copy_rect);
   } else if (!is_accelerated_compositing_active_) {
     // Compute a buffer for painting and cache it.
+    gfx::Rect pixel_bounds = bounds.Scale(device_scale_factor_);
     scoped_ptr<skia::PlatformCanvas> canvas(
         RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
-                                                   bounds));
+                                                   pixel_bounds));
     if (!canvas.get()) {
       NOTREACHED();
       return;
@@ -943,10 +950,12 @@ void RenderWidget::DoDeferredUpdate() {
 
     // We may get back a smaller canvas than we asked for.
     // TODO(darin): This seems like it could cause painting problems!
-    DCHECK_EQ(bounds.width(), canvas->getDevice()->width());
-    DCHECK_EQ(bounds.height(), canvas->getDevice()->height());
-    bounds.set_width(canvas->getDevice()->width());
-    bounds.set_height(canvas->getDevice()->height());
+    DCHECK_EQ(pixel_bounds.width(), canvas->getDevice()->width());
+    DCHECK_EQ(pixel_bounds.height(), canvas->getDevice()->height());
+    pixel_bounds.set_width(canvas->getDevice()->width());
+    pixel_bounds.set_height(canvas->getDevice()->height());
+    bounds.set_width(pixel_bounds.width() / device_scale_factor_);
+    bounds.set_height(pixel_bounds.height() / device_scale_factor_);
 
     HISTOGRAM_COUNTS_100("MPArch.RW_PaintRectCount", update.paint_rects.size());
 
@@ -960,7 +969,7 @@ void RenderWidget::DoDeferredUpdate() {
       copy_rects.push_back(scroll_damage);
 
     for (size_t i = 0; i < copy_rects.size(); ++i)
-      PaintRect(copy_rects[i], bounds.origin(), canvas.get());
+      PaintRect(copy_rects[i], pixel_bounds.origin(), canvas.get());
 
     // Software FPS tick for performance tests. The accelerated path traces the
     // frame events in didCommitAndDrawCompositorFrame. See throughput_tests.cc.

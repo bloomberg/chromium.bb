@@ -246,6 +246,7 @@ void RenderWidgetHostViewAura::InitAsChild(
     gfx::NativeView parent_view) {
   window_->Init(ui::LAYER_TEXTURED);
   window_->SetName("RenderWidgetHostViewAura");
+  window_->layer()->set_scale_content(false);
 }
 
 void RenderWidgetHostViewAura::InitAsPopup(
@@ -259,6 +260,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
   window_->SetName("RenderWidgetHostViewAura");
 
   window_->SetParent(NULL);
+  window_->layer()->set_scale_content(false);
   SetBounds(pos);
   Show();
 }
@@ -490,13 +492,6 @@ void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
   // the UpdateRect/AcceleratedSurfaceBuffersSwapped messages so that we have
   // fewer inconsistent temporary states.
   needs_update_texture_ = true;
-
-  // Don't scale contents on high density screen when content is accelerated
-  // because renderer takes care of it.
-  // TODO(pkotwicz): Implement DIP backing store such that renderer always
-  // scales web contents.
-  window_->layer()->set_scale_content(
-      !host_->is_accelerated_compositing_active());
 }
 
 void RenderWidgetHostViewAura::UpdateExternalTexture() {

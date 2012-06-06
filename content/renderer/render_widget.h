@@ -524,6 +524,10 @@ class CONTENT_EXPORT RenderWidget
   // Properties of the screen hosting this RenderWidget instance.
   WebKit::WebScreenInfo screen_info_;
 
+  // The device scale factor. This value is computed from the DPI entries in
+  // |screen_info_| on some platforms, and defaults to 1 on other platforms.
+  int device_scale_factor_;
+
   // Set to true if we should invert all pixels.
   bool invert_;
 
