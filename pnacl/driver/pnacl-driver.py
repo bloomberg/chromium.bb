@@ -57,7 +57,7 @@ EXTRA_ENV = {
   'BIAS_X8664'  : '-D__amd64__ -D__amd64 -D__x86_64__ -D__x86_64 -D__core2__',
 
   'OPT_LEVEL'   : '0',
-  'CC_FLAGS'    : '-O${OPT_LEVEL} -fno-common ${PTHREAD ? -pthreads} ' +
+  'CC_FLAGS'    : '-O${OPT_LEVEL} -fno-common ${PTHREAD ? -pthread} ' +
                   '-nostdinc -DNACL_LINUX=1 ${BIAS_%BIAS%} ' +
                   '-ccc-host-triple le32-unknown-nacl',
 
