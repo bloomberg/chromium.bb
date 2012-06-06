@@ -449,11 +449,6 @@ User& UserManagerImpl::GetLoggedInUser() {
   return *logged_in_user_;
 }
 
-bool UserManagerImpl::IsDisplayNameUnique(
-    const string16& display_name) const {
-  return display_name_count_[display_name] < 2;
-}
-
 void UserManagerImpl::SaveUserOAuthStatus(
     const std::string& username,
     User::OAuthTokenStatus oauth_token_status) {
@@ -498,6 +493,35 @@ User::OAuthTokenStatus UserManagerImpl::LoadUserOAuthStatus(
   }
 
   return User::OAUTH_TOKEN_STATUS_UNKNOWN;
+}
+
+void UserManagerImpl::SaveUserDisplayName(const std::string& username,
+                                          const string16& display_name) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  User* user = const_cast<User*>(FindUser(username));
+  if (!user)
+    return;  // Ignore if there is no such user.
+
+  user->set_display_name(display_name);
+
+  // Do not update local store if the user is ephemeral.
+  if (IsEphemeralUser(username))
+    return;
+
+  PrefService* local_state = g_browser_process->local_state();
+
+  DictionaryPrefUpdate display_name_update(local_state,
+                                           UserManager::kUserDisplayName);
+  display_name_update->SetWithoutPathExpansion(
+      username,
+      base::Value::CreateStringValue(display_name));
+}
+
+string16 UserManagerImpl::GetUserDisplayName(
+    const std::string& username) const {
+  const User* user = FindUser(username);
+  return user ? user->display_name() : string16();
 }
 
 void UserManagerImpl::SaveUserDisplayEmail(const std::string& username,
@@ -740,6 +764,8 @@ void UserManagerImpl::EnsureUsersLoaded() {
       local_state->GetList(UserManager::kLoggedInUsers);
   const DictionaryValue* prefs_images =
       local_state->GetDictionary(UserManager::kUserImages);
+  const DictionaryValue* prefs_display_names =
+      local_state->GetDictionary(UserManager::kUserDisplayName);
   const DictionaryValue* prefs_display_emails =
       local_state->GetDictionary(UserManager::kUserDisplayEmail);
 
@@ -800,6 +826,13 @@ void UserManagerImpl::EnsureUsersLoaded() {
               NOTREACHED();
             }
           }
+        }
+
+        string16 display_name;
+        if (prefs_display_names &&
+            prefs_display_names->GetStringWithoutPathExpansion(
+                email, &display_name)) {
+          user->set_display_name(display_name);
         }
 
         std::string display_email;
@@ -1348,10 +1381,18 @@ void UserManagerImpl::OnDownloadComplete(ProfileDownloader* downloader,
   ProfileDownloadResult result;
   if (!success) {
     result = kDownloadFailure;
-  } else if (downloader->GetProfilePicture().isNull()) {
-    result = kDownloadDefault;
   } else {
-    result = kDownloadSuccess;
+    if (downloader->GetProfileFullName().empty()) {
+      SaveUserDisplayName(GetLoggedInUser().email(),
+          UTF8ToUTF16(GetLoggedInUser().email()));
+    } else {
+      SaveUserDisplayName(GetLoggedInUser().email(),
+          downloader->GetProfileFullName());
+    }
+    if (downloader->GetProfilePicture().isNull())
+      result = kDownloadDefault;
+    else
+      result = kDownloadSuccess;
   }
   UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
       result, kDownloadResultsCount);
@@ -1399,8 +1440,6 @@ void UserManagerImpl::OnDownloadComplete(ProfileDownloader* downloader,
 User* UserManagerImpl::CreateUser(const std::string& email) const {
   User* user = new User(email, email == kGuestUser);
   user->set_oauth_token_status(LoadUserOAuthStatus(email));
-  // Used to determine whether user's display name is unique.
-  ++display_name_count_[user->GetDisplayName()];
   return user;
 }
 
@@ -1451,11 +1490,13 @@ void UserManagerImpl::RemoveUserFromListInternal(const std::string& email) {
   prefs_oauth_update->GetIntegerWithoutPathExpansion(email, &oauth_status);
   prefs_oauth_update->RemoveWithoutPathExpansion(email, NULL);
 
+  DictionaryPrefUpdate prefs_display_name_update(prefs, kUserDisplayName);
+  prefs_display_name_update->RemoveWithoutPathExpansion(email, NULL);
+
   DictionaryPrefUpdate prefs_display_email_update(prefs, kUserDisplayEmail);
   prefs_display_email_update->RemoveWithoutPathExpansion(email, NULL);
 
   if (user_to_remove != users_.end()) {
-    --display_name_count_[(*user_to_remove)->GetDisplayName()];
     delete *user_to_remove;
     users_.erase(user_to_remove);
   }

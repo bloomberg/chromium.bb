@@ -31,9 +31,11 @@ class MockUserManager : public UserManager {
   MOCK_METHOD1(RemoveUserFromList, void(const std::string&));
   MOCK_CONST_METHOD1(IsKnownUser, bool(const std::string&));
   MOCK_CONST_METHOD1(FindUser, const User*(const std::string&));
-  MOCK_CONST_METHOD1(IsDisplayNameUnique, bool(const string16&));
   MOCK_METHOD2(SaveUserOAuthStatus, void(const std::string&,
                                          User::OAuthTokenStatus));
+  MOCK_METHOD2(SaveUserDisplayName, void(const std::string&,
+                                         const string16&));
+  MOCK_CONST_METHOD1(GetUserDisplayName, string16(const std::string&));
   MOCK_METHOD2(SaveUserDisplayEmail, void(const std::string&,
                                           const std::string&));
   MOCK_METHOD2(GetLoggedInUserWallpaperProperties, void(User::WallpaperType*,

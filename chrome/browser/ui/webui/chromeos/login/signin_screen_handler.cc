@@ -875,8 +875,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
       user_dict->SetString(kKeyUsername, email);
       user_dict->SetString(kKeyEmailAddress, (*it)->display_email());
       user_dict->SetString(kKeyDisplayName, (*it)->GetDisplayName());
-      if ((*it)->NeedsNameTooltip())
-        user_dict->SetString(kKeyNameTooltip, (*it)->GetNameTooltip());
+      user_dict->SetString(kKeyNameTooltip, (*it)->email());
       user_dict->SetInteger(kKeyOauthTokenStatus, (*it)->oauth_token_status());
       user_dict->SetBoolean(kKeySignedIn, signed_in);
 

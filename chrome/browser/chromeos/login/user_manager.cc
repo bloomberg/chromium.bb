@@ -17,6 +17,7 @@ const char UserManager::kUserWallpapers[] = "UserWallpapers";
 const char UserManager::kUserWallpapersProperties[] =
     "UserWallpapersProperties";
 const char UserManager::kUserImages[] = "UserImages";
+const char UserManager::kUserDisplayName[] = "UserDisplayName";
 const char UserManager::kUserDisplayEmail[] = "UserDisplayEmail";
 const char UserManager::kUserOAuthTokenStatus[] = "OAuthTokenStatus";
 
@@ -85,6 +86,8 @@ void UserManager::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterDictionaryPref(kUserImages,
                                       PrefService::UNSYNCABLE_PREF);
   local_state->RegisterDictionaryPref(kUserOAuthTokenStatus,
+                                      PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterDictionaryPref(kUserDisplayName,
                                       PrefService::UNSYNCABLE_PREF);
   local_state->RegisterDictionaryPref(kUserDisplayEmail,
                                       PrefService::UNSYNCABLE_PREF);

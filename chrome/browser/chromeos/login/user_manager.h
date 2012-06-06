@@ -49,6 +49,9 @@ class UserManager {
   // A dictionary that maps usernames to file paths to their images.
   static const char kUserImages[];
 
+  // A dictionary that maps usernames to the displayed name.
+  static const char kUserDisplayName[];
+
   // A dictionary that maps usernames to the displayed (non-canonical) emails.
   static const char kUserDisplayEmail[];
 
@@ -138,13 +141,21 @@ class UserManager {
   virtual const User& GetLoggedInUser() const = 0;
   virtual User& GetLoggedInUser() = 0;
 
-  // Returns true if given display name is unique.
-  virtual bool IsDisplayNameUnique(const string16& display_name) const = 0;
-
   // Saves user's oauth token status in local state preferences.
   virtual void SaveUserOAuthStatus(
       const std::string& username,
       User::OAuthTokenStatus oauth_token_status) = 0;
+
+  // Saves user's displayed name in local state preferences.
+  // Ignored If there is no such user.
+  virtual void SaveUserDisplayName(const std::string& username,
+                                   const string16& display_name) = 0;
+
+  // Returns the display name for user |username| if it is known (was
+  // previously set by a |SaveUserDisplayName| call).
+  // Otherwise, returns an empty string.
+  virtual string16 GetUserDisplayName(
+      const std::string& username) const = 0;
 
   // Saves user's displayed (non-canonical) email in local state preferences.
   // Ignored If there is no such user.

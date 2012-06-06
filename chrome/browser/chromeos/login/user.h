@@ -57,13 +57,6 @@ class User {
   // Returns the account name part of the email.
   std::string GetAccountName() const;
 
-  // Tooltip contains user's display name and his email domain to distinguish
-  // this user from the other one with the same display name.
-  string16 GetNameTooltip() const;
-
-  // Returns true if some users have same display name.
-  bool NeedsNameTooltip() const;
-
   // The image for this user.
   const gfx::ImageSkia& image() const { return image_; }
   int image_index() const { return image_index_; }
@@ -76,6 +69,9 @@ class User {
 
   // OAuth token status for this user.
   OAuthTokenStatus oauth_token_status() const { return oauth_token_status_; }
+
+  // The displayed user name.
+  string16 display_name() const { return display_name_; }
 
   // The displayed (non-canonical) user email.
   std::string display_email() const { return display_email_; }
@@ -105,11 +101,16 @@ class User {
     oauth_token_status_ = status;
   }
 
+  void set_display_name(const string16& display_name) {
+    display_name_ = display_name;
+  }
+
   void set_display_email(const std::string& display_email) {
     display_email_ = display_email;
   }
 
   std::string email_;
+  string16 display_name_;
   // The displayed user email, defaults to |email_|.
   std::string display_email_;
   gfx::ImageSkia image_;

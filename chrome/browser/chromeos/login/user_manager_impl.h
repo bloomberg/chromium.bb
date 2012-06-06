@@ -57,11 +57,13 @@ class UserManagerImpl : public UserManager,
   virtual const User* FindUser(const std::string& email) const OVERRIDE;
   virtual const User& GetLoggedInUser() const OVERRIDE;
   virtual User& GetLoggedInUser() OVERRIDE;
-  virtual bool IsDisplayNameUnique(
-      const string16& display_name) const OVERRIDE;
   virtual void SaveUserOAuthStatus(
       const std::string& username,
       User::OAuthTokenStatus oauth_token_status) OVERRIDE;
+  virtual void SaveUserDisplayName(const std::string& username,
+                                   const string16& display_name) OVERRIDE;
+  virtual string16 GetUserDisplayName(
+      const std::string& username) const OVERRIDE;
   virtual void SaveUserDisplayEmail(const std::string& username,
                                     const std::string& display_email) OVERRIDE;
   virtual std::string GetUserDisplayEmail(
@@ -285,10 +287,6 @@ class UserManagerImpl : public UserManager,
   // List of all known users. User instances are owned by |this| and deleted
   // when users are removed by |RemoveUserFromListInternal|.
   mutable UserList users_;
-
-  // Map of users' display names used to determine which users have unique
-  // display names.
-  mutable base::hash_map<string16, size_t> display_name_count_;
 
   // The logged-in user. NULL until a user has logged in, then points to one
   // of the User instances in |users_|, the |guest_user_| instance or an
