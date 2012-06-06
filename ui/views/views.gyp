@@ -104,6 +104,7 @@
         'controls/link.cc',
         'controls/link.h',
         'controls/link_listener.h',
+        'controls/menu/display_change_listener_aura.cc',
         'controls/menu/menu.cc',
         'controls/menu/menu.h',
         'controls/menu/menu_2.cc',

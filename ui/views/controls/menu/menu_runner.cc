@@ -247,6 +247,16 @@ bool MenuRunnerImpl::ShouldShowMnemonics(MenuButton* button) {
   return show_mnemonics;
 }
 
+// In theory we could implement this every where, but for now we're only
+// implementing it on aura.
+#if !defined(USE_AURA)
+// static
+DisplayChangeListener* DisplayChangeListener::Create(Widget* widget,
+                                                     MenuRunner* runner) {
+  return NULL;
+}
+#endif
+
 }  // namespace internal
 
 MenuRunner::MenuRunner(MenuItemView* menu)
@@ -266,6 +276,13 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
                                             const gfx::Rect& bounds,
                                             MenuItemView::AnchorPosition anchor,
                                             int32 types) {
+  // The parent of the nested menu will have created a DisplayChangeListener, so
+  // we avoid creating a DisplayChangeListener if nested. Drop menus are
+  // transient, so we don't cancel in that case.
+  if ((types & (IS_NESTED | FOR_DROP)) == 0) {
+    display_change_listener_.reset(
+        internal::DisplayChangeListener::Create(parent, this));
+  }
   return holder_->RunMenuAt(parent, button, bounds, anchor, types);
 }
 

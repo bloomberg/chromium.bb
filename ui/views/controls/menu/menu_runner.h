@@ -16,6 +16,7 @@ class MenuButton;
 class Widget;
 
 namespace internal {
+class DisplayChangeListener;
 class MenuRunnerImpl;
 }
 
@@ -93,8 +94,30 @@ class VIEWS_EXPORT MenuRunner {
  private:
   internal::MenuRunnerImpl* holder_;
 
+  scoped_ptr<internal::DisplayChangeListener> display_change_listener_;
+
   DISALLOW_COPY_AND_ASSIGN(MenuRunner);
 };
+
+namespace internal {
+
+// DisplayChangeListener is intended to listen for changes in the display size
+// and cancel the menu. DisplayChangeListener is created when the menu is
+// shown.
+class DisplayChangeListener {
+ public:
+  virtual ~DisplayChangeListener() {}
+
+  // Creates the platform specified DisplayChangeListener, or NULL if there
+  // isn't one. Caller owns the returned value.
+  static DisplayChangeListener* Create(Widget* parent,
+                                       MenuRunner* runner);
+
+ protected:
+  DisplayChangeListener() {}
+};
+
+}
 
 }  // namespace views
 
