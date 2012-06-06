@@ -93,6 +93,7 @@ using WebKit::WebMediaPlayerAction;
 using WebKit::WebPluginAction;
 using WebKit::WebString;
 using WebKit::WebURL;
+using content::BrowserContext;
 using content::ChildProcessSecurityPolicy;
 using content::DownloadManager;
 using content::DownloadUrlParameters;
@@ -1520,8 +1521,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       const GURL& url = params_.link_url;
       content::DownloadSaveInfo save_info;
       save_info.prompt_for_save_location = true;
-      DownloadManager* dlm =
-          DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
+      DownloadManager* dlm = BrowserContext::GetDownloadManager(profile_);
       scoped_ptr<DownloadUrlParameters> dl_params(
           DownloadUrlParameters::FromWebContents(
             source_web_contents_, url, save_info));
@@ -1548,8 +1548,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         if (entry)
           post_id = entry->GetPostID();
       }
-      DownloadManager* dlm =
-          DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
+      DownloadManager* dlm = BrowserContext::GetDownloadManager(profile_);
       scoped_ptr<DownloadUrlParameters> dl_params(
           DownloadUrlParameters::FromWebContents(
             source_web_contents_, url, save_info));

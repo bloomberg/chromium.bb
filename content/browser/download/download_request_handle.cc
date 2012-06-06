@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
 using content::RenderViewHostImpl;
@@ -56,7 +57,7 @@ DownloadManager* DownloadRequestHandle::GetDownloadManager() const {
   content::BrowserContext* context = rph->GetBrowserContext();
   if (context == NULL)
     return NULL;
-  return context->GetDownloadManager();
+  return BrowserContext::GetDownloadManager(context);
 }
 
 void DownloadRequestHandle::PauseRequest() const {

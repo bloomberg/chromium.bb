@@ -16,6 +16,7 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "net/base/file_stream.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
@@ -127,7 +128,8 @@ void DragDownloadFile::InitiateDownload() {
   }
 #endif
 
-  download_manager_ = web_contents_->GetBrowserContext()->GetDownloadManager();
+  download_manager_ = BrowserContext::GetDownloadManager(
+      web_contents_->GetBrowserContext());
   download_manager_observer_added_ = true;
   download_manager_->AddObserver(this);
 

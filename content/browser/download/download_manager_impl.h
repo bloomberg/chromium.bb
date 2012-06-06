@@ -25,10 +25,10 @@ class CONTENT_EXPORT DownloadManagerImpl
     : public content::DownloadManager,
       public DownloadItemImpl::Delegate {
  public:
-  DownloadManagerImpl(content::DownloadManagerDelegate* delegate,
-                      net::NetLog* net_log);
+  explicit DownloadManagerImpl(net::NetLog* net_log);
 
   // content::DownloadManager functions.
+  virtual void SetDelegate(content::DownloadManagerDelegate* delegate) OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void GetTemporaryDownloads(const FilePath& dir_path,
                                      DownloadVector* result) OVERRIDE;

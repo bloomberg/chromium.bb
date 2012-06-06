@@ -57,6 +57,7 @@
 #include "chrome/browser/download/save_package_file_picker_chromeos.h"
 #endif
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadId;
 using content::DownloadItem;
@@ -109,7 +110,13 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
 ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
 }
 
+void ChromeDownloadManagerDelegate::ProfileShutdown() {
+  download_history_.reset();
+  download_prefs_.reset();
+}
+
 void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
+  AddRef();  // Will be balanced in Shutdown().
   download_manager_ = dm;
   download_history_.reset(new DownloadHistory(profile_));
   download_history_->Load(
@@ -118,16 +125,15 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
 }
 
 void ChromeDownloadManagerDelegate::Shutdown() {
-  download_history_.reset();
-  download_prefs_.reset();
+  Release();  // Balance the AddRef in SetDownloadManager.
 }
 
 DownloadId ChromeDownloadManagerDelegate::GetNextId() {
   if (!profile_->IsOffTheRecord())
     return DownloadId(this, next_download_id_++);
 
-  return profile_->GetOriginalProfile()->GetDownloadManager()->delegate()->
-      GetNextId();
+  return BrowserContext::GetDownloadManager(profile_->GetOriginalProfile())->
+      delegate()->GetNextId();
 }
 
 bool ChromeDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {

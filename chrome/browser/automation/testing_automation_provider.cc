@@ -177,6 +177,7 @@ using automation::Error;
 using automation::ErrorCode;
 using automation_util::SendErrorIfModalDialogActive;
 using content::BrowserChildProcessHostIterator;
+using content::BrowserContext;
 using content::BrowserThread;
 using content::ChildProcessHost;
 using content::DownloadItem;
@@ -1148,7 +1149,8 @@ void TestingAutomationProvider::GetDownloadDirectory(
     int handle, FilePath* download_directory) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    DownloadManager* dlm = tab->GetBrowserContext()->GetDownloadManager();
+    DownloadManager* dlm =
+        BrowserContext::GetDownloadManager(tab->GetBrowserContext());
     *download_directory =
         DownloadPrefs::FromDownloadManager(dlm)->download_path();
   }
@@ -2628,7 +2630,7 @@ void TestingAutomationProvider::GetDownloadsInfo(Browser* browser,
 
   if (download_service->HasCreatedDownloadManager()) {
     std::vector<DownloadItem*> downloads;
-    download_service->GetDownloadManager()->
+    BrowserContext::GetDownloadManager(browser->profile())->
         GetAllDownloads(FilePath(), &downloads);
 
     for (std::vector<DownloadItem*>::iterator it = downloads.begin();
@@ -2663,7 +2665,8 @@ void TestingAutomationProvider::WaitForAllDownloadsToComplete(
 
   // This observer will delete itself.
   new AllDownloadsCompleteObserver(
-      this, reply_message, download_service->GetDownloadManager(),
+      this, reply_message,
+      BrowserContext::GetDownloadManager(browser->profile()),
       pre_download_ids);
 }
 
@@ -2709,7 +2712,8 @@ void TestingAutomationProvider::PerformActionOnDownload(
     return;
   }
 
-  DownloadManager* download_manager = download_service->GetDownloadManager();
+  DownloadManager* download_manager =
+      BrowserContext::GetDownloadManager(browser->profile());
   DownloadItem* selected_item = GetDownloadItemFromId(id, download_manager);
   if (!selected_item) {
     AutomationJSONReply(this, reply_message)
@@ -3330,8 +3334,7 @@ void TestingAutomationProvider::SaveTabContents(
   }
   // The observer will delete itself when done.
   new SavePackageNotificationObserver(
-      DownloadServiceFactory::GetForProfile(
-          browser->profile())->GetDownloadManager(),
+      BrowserContext::GetDownloadManager(browser->profile()),
       this, reply_message);
 }
 

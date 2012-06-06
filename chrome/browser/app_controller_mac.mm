@@ -74,6 +74,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
 using content::UserMetricsAction;
@@ -676,7 +677,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       DownloadServiceFactory::GetForProfile(profiles[i]);
     DownloadManager* download_manager =
         (download_service->HasCreatedDownloadManager() ?
-         download_service->GetDownloadManager() : NULL);
+         BrowserContext::GetDownloadManager(profiles[i]) : NULL);
     if (download_manager && download_manager->InProgressCount() > 0) {
       int downloadCount = download_manager->InProgressCount();
       if ([self userWillWaitForInProgressDownloads:downloadCount]) {

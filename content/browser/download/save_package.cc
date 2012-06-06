@@ -45,6 +45,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
 
 using base::Time;
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::NavigationEntry;
@@ -263,7 +264,8 @@ void SavePackage::InternalInit() {
   file_manager_ = rdh->save_file_manager();
   DCHECK(file_manager_);
 
-  download_manager_ = web_contents()->GetBrowserContext()->GetDownloadManager();
+  download_manager_ = BrowserContext::GetDownloadManager(
+      web_contents()->GetBrowserContext());
   DCHECK(download_manager_);
 
   download_stats::RecordSavePackageEvent(download_stats::SAVE_PACKAGE_STARTED);

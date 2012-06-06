@@ -47,6 +47,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadId;
 using content::DownloadItem;
@@ -313,12 +314,12 @@ void GetManagers(
     Profile* profile,
     bool include_incognito,
     DownloadManager** manager, DownloadManager** incognito_manager) {
-  *manager = DownloadServiceFactory::GetForProfile(profile)->
-      GetDownloadManager();
+  *manager = BrowserContext::GetDownloadManager(profile);
   *incognito_manager = NULL;
-  if (include_incognito && profile->HasOffTheRecordProfile())
-    *incognito_manager = DownloadServiceFactory::GetForProfile(profile->
-        GetOffTheRecordProfile())->GetDownloadManager();
+  if (include_incognito && profile->HasOffTheRecordProfile()) {
+    *incognito_manager = BrowserContext::GetDownloadManager(
+        profile->GetOffTheRecordProfile());
+  }
 }
 
 DownloadItem* GetActiveItemInternal(

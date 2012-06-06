@@ -39,6 +39,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/screen.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
@@ -1598,7 +1599,7 @@ class DownloadObserver : public content::DownloadManager::Observer {
  public:
   explicit DownloadObserver(Profile* profile)
       : download_manager_(
-          DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager()),
+            BrowserContext::GetDownloadManager(profile)),
         saw_download_(false),
         waiting_(false) {
     download_manager_->AddObserver(this);

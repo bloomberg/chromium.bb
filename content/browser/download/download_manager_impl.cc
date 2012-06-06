@@ -140,13 +140,6 @@ void EnsureNoPendingDownloadJobsOnIO(bool* result) {
 
 namespace content {
 
-// static
-DownloadManager* DownloadManager::Create(
-    content::DownloadManagerDelegate* delegate,
-    net::NetLog* net_log) {
-  return new DownloadManagerImpl(delegate, net_log);
-}
-
 bool DownloadManager::EnsureNoPendingDownloadsForTesting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   bool result = true;
@@ -159,14 +152,12 @@ bool DownloadManager::EnsureNoPendingDownloadsForTesting() {
 
 }  // namespace content
 
-DownloadManagerImpl::DownloadManagerImpl(
-    content::DownloadManagerDelegate* delegate,
-    net::NetLog* net_log)
-        : shutdown_needed_(false),
-          browser_context_(NULL),
-          file_manager_(NULL),
-          delegate_(delegate),
-          net_log_(net_log) {
+DownloadManagerImpl::DownloadManagerImpl(net::NetLog* net_log)
+    : shutdown_needed_(false),
+      browser_context_(NULL),
+      file_manager_(NULL),
+      delegate_(NULL),
+      net_log_(net_log) {
 }
 
 DownloadManagerImpl::~DownloadManagerImpl() {
@@ -183,6 +174,11 @@ bool DownloadManagerImpl::ShouldOpenDownload(DownloadItem* item) {
 
 bool DownloadManagerImpl::ShouldOpenFileBasedOnExtension(const FilePath& path) {
   return delegate_->ShouldOpenFileBasedOnExtension(path);
+}
+
+void DownloadManagerImpl::SetDelegate(
+    content::DownloadManagerDelegate* delegate) {
+  delegate_ = delegate;
 }
 
 void DownloadManagerImpl::Shutdown() {
@@ -249,7 +245,8 @@ void DownloadManagerImpl::Shutdown() {
   DCHECK(save_page_downloads_.empty());
 
   file_manager_ = NULL;
-  delegate_->Shutdown();
+  if (delegate_)
+    delegate_->Shutdown();
 }
 
 void DownloadManagerImpl::GetTemporaryDownloads(

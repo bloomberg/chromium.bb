@@ -104,19 +104,15 @@ DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
 
 class TestDownloadManagerDelegate : public content::DownloadManagerDelegate {
  public:
-  TestDownloadManagerDelegate()
+  explicit TestDownloadManagerDelegate(content::DownloadManager* dm)
       : mark_content_dangerous_(false),
         prompt_user_for_save_location_(false),
         should_complete_download_(true),
-        download_manager_(NULL) {
+        download_manager_(dm) {
   }
 
   void set_download_directory(const FilePath& path) {
     download_directory_ = path;
-  }
-
-  void set_download_manager(content::DownloadManager* dm) {
-    download_manager_ = dm;
   }
 
   void set_prompt_user_for_save_location(bool value) {
@@ -262,13 +258,13 @@ class DownloadManagerTest : public testing::Test {
 
   DownloadManagerTest()
       : browser_context(new content::TestBrowserContext()),
-        download_manager_delegate_(new TestDownloadManagerDelegate()),
-        download_manager_(new DownloadManagerImpl(
-            download_manager_delegate_.get(), NULL)),
+        download_manager_(new DownloadManagerImpl(NULL)),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {
+    download_manager_delegate_.reset(
+        new TestDownloadManagerDelegate(download_manager_.get()));
+    download_manager_->SetDelegate(download_manager_delegate_.get());
     download_manager_->Init(browser_context.get());
-    download_manager_delegate_->set_download_manager(download_manager_);
   }
 
   ~DownloadManagerTest() {

@@ -57,7 +57,7 @@
 #endif
 
 using content::BrowserThread;
-using content::DownloadManager;
+using content::DownloadManagerDelegate;
 using content::HostZoomMap;
 
 namespace {
@@ -258,8 +258,9 @@ PrefService* OffTheRecordProfileImpl::GetOffTheRecordPrefs() {
   return prefs_;
 }
 
-DownloadManager* OffTheRecordProfileImpl::GetDownloadManager() {
-  return DownloadServiceFactory::GetForProfile(this)->GetDownloadManager();
+DownloadManagerDelegate* OffTheRecordProfileImpl::GetDownloadManagerDelegate() {
+  return DownloadServiceFactory::GetForProfile(this)->
+      GetDownloadManagerDelegate();
 }
 
 net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {

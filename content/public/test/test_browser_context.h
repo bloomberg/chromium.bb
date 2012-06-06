@@ -30,7 +30,7 @@ class TestBrowserContext : public BrowserContext {
 
   virtual FilePath GetPath() OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
-  virtual DownloadManager* GetDownloadManager() OVERRIDE;
+  virtual DownloadManagerDelegate* GetDownloadManagerDelegate() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;

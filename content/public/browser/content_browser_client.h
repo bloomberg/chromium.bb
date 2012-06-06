@@ -20,7 +20,6 @@ class CommandLine;
 class FilePath;
 class GURL;
 class PluginProcessHost;
-class ResourceDispatcherHost;
 
 namespace webkit_glue {
 struct WebPreferences;
@@ -353,7 +352,7 @@ class CONTENT_EXPORT ContentBrowserClient {
                                             ResourceContext* context);
 
   // Notifies the embedder that the ResourceDispatcherHost has been created.
-  // This is when it can optionally add a delegate or ResourceQueueDelegates.
+  // This is when it can optionally add a delegate.
   virtual void ResourceDispatcherHostCreated() {}
 
   // Allows the embedder to return a delegate for the SpeechRecognitionManager.

@@ -43,6 +43,7 @@
 #include "chrome/browser/download/save_package_file_picker.h"
 #endif
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
@@ -115,8 +116,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
   DownloadManager* GetDownloadManager() const {
     DownloadManager* download_manager =
-        DownloadServiceFactory::GetForProfile(
-            browser()->profile())->GetDownloadManager();
+        BrowserContext::GetDownloadManager(browser()->profile());
     EXPECT_TRUE(download_manager);
     return download_manager;
   }

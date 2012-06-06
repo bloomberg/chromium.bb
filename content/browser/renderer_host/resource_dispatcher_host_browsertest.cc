@@ -25,6 +25,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
 
@@ -190,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        SniffNoContentTypeNoData) {
   // Make sure no downloads start.
-  GetBrowserContext()->GetDownloadManager()->AddObserver(this);
+  BrowserContext::GetDownloadManager(GetBrowserContext())->AddObserver(this);
   CheckTitleTest(GetMockURL("content-sniffer-test3.html"),
                  "Content Sniffer Test 3", 1);
   EXPECT_EQ(1, browser()->tab_count());
@@ -248,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        SyncXMLHttpRequest_DuringUnload) {
   ASSERT_TRUE(test_server()->Start());
-  GetBrowserContext()->GetDownloadManager()->AddObserver(this);
+  BrowserContext::GetDownloadManager(GetBrowserContext())->AddObserver(this);
 
   CheckTitleTest(
       test_server()->GetURL("files/sync_xmlhttprequest_during_unload.html"),

@@ -64,6 +64,7 @@
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
@@ -85,8 +86,6 @@ class PickSuggestedFileDelegate : public ChromeDownloadManagerDelegate {
  public:
   explicit PickSuggestedFileDelegate(Profile* profile)
       : ChromeDownloadManagerDelegate(profile) {
-    SetDownloadManager(
-        DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager());
   }
 
   virtual void ChooseDownloadPath(WebContents* web_contents,
@@ -186,8 +185,7 @@ class MockAutoConfirmExtensionInstallUI : public ExtensionInstallUI {
 };
 
 static DownloadManager* DownloadManagerForBrowser(Browser* browser) {
-  return DownloadServiceFactory::GetForProfile(browser->profile())
-      ->GetDownloadManager();
+  return BrowserContext::GetDownloadManager(browser->profile());
 }
 
 class TestRenderViewContextMenu : public RenderViewContextMenu {
@@ -1401,7 +1399,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultiDownload) {
   observer1->WaitForFinished();
 
   std::vector<DownloadItem*> downloads;
-  browser()->profile()->GetDownloadManager()->SearchDownloads(
+  DownloadManagerForBrowser(browser())->SearchDownloads(
       string16(), &downloads);
   ASSERT_EQ(1u, downloads.size());
   ASSERT_EQ(DownloadItem::IN_PROGRESS, downloads[0]->GetState());
@@ -1416,7 +1414,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultiDownload) {
 
   // Should now have 2 items on the download shelf.
   downloads.clear();
-  browser()->profile()->GetDownloadManager()->SearchDownloads(
+  DownloadManagerForBrowser(browser())->SearchDownloads(
       string16(), &downloads);
   ASSERT_EQ(2u, downloads.size());
   // We don't know the order of the downloads.

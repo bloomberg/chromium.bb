@@ -23,6 +23,7 @@ class MockDownloadManager : public content::DownloadManager {
   MockDownloadManager();
 
   // DownloadManager:
+  MOCK_METHOD1(SetDelegate, void(DownloadManagerDelegate* delegate));
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD2(GetTemporaryDownloads, void(const FilePath& dir_path,
                                            DownloadVector* result));

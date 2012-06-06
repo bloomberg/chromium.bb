@@ -12,8 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_context.h"
 
-class DownloadManager;
-
 namespace content {
 
 class DownloadManagerDelegate;
@@ -29,7 +27,7 @@ class ShellBrowserContext : public BrowserContext {
   // BrowserContext implementation.
   virtual FilePath GetPath() OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
-  virtual DownloadManager* GetDownloadManager() OVERRIDE;
+  virtual DownloadManagerDelegate* GetDownloadManagerDelegate() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;
@@ -50,7 +48,6 @@ class ShellBrowserContext : public BrowserContext {
   FilePath path_;
   scoped_ptr<ResourceContext> resource_context_;
   scoped_refptr<ShellDownloadManagerDelegate> download_manager_delegate_;
-  scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
   scoped_refptr<SpeechRecognitionPreferences> speech_recognition_preferences_;

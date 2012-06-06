@@ -98,6 +98,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #endif  // defined(TOOLKIT_GTK)
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
 using content::OpenURLParams;
@@ -1058,8 +1059,8 @@ void BrowserOptionsHandler::MouseExists(bool exists) {
 
 void BrowserOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
-  DownloadManager* manager =
-      web_ui()->GetWebContents()->GetBrowserContext()->GetDownloadManager();
+  DownloadManager* manager = BrowserContext::GetDownloadManager(
+      web_ui()->GetWebContents()->GetBrowserContext());
   if (manager)
     DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
 }
@@ -1369,8 +1370,8 @@ void BrowserOptionsHandler::SetupPageZoomSelector() {
 void BrowserOptionsHandler::SetupAutoOpenFileTypes() {
   // Set the hidden state for the AutoOpenFileTypesResetToDefault button.
   // We show the button if the user has any auto-open file types registered.
-  DownloadManager* manager =
-      web_ui()->GetWebContents()->GetBrowserContext()->GetDownloadManager();
+  DownloadManager* manager = BrowserContext::GetDownloadManager(
+      web_ui()->GetWebContents()->GetBrowserContext());
   bool display = manager &&
       DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed();
   base::FundamentalValue value(display);

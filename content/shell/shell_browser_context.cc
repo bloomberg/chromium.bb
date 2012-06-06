@@ -126,15 +126,9 @@ bool ShellBrowserContext::IsOffTheRecord() const {
   return false;
 }
 
-DownloadManager* ShellBrowserContext::GetDownloadManager()  {
-  if (!download_manager_.get()) {
-    download_manager_delegate_ = new ShellDownloadManagerDelegate();
-    download_manager_ = DownloadManager::Create(download_manager_delegate_,
-                                                NULL);
-    download_manager_delegate_->SetDownloadManager(download_manager_.get());
-    download_manager_->Init(this);
-  }
-  return download_manager_.get();
+DownloadManagerDelegate* ShellBrowserContext::GetDownloadManagerDelegate()  {
+  download_manager_delegate_ = new ShellDownloadManagerDelegate();
+  return download_manager_delegate_.get();
 }
 
 net::URLRequestContextGetter* ShellBrowserContext::GetRequestContext()  {

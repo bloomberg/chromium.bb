@@ -27,6 +27,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::BrowserContext;
 using content::DownloadManager;
 using content::WebContents;
 
@@ -89,8 +90,7 @@ ChromeWebUIDataSource* CreateDownloadsUIHTMLSource() {
 
 DownloadsUI::DownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  DownloadManager* dlm =
-      DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager();
+  DownloadManager* dlm = BrowserContext::GetDownloadManager(profile);
 
   DownloadsDOMHandler* handler = new DownloadsDOMHandler(dlm);
   web_ui->AddMessageHandler(handler);

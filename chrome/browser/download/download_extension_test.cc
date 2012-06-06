@@ -28,6 +28,7 @@
 #include "net/base/net_util.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
@@ -75,9 +76,7 @@ class DownloadExtensionTest : public InProcessBrowserTest {
   }
 
   virtual DownloadManager* GetDownloadManager() {
-    DownloadService* download_service =
-        DownloadServiceFactory::GetForProfile(current_browser()->profile());
-    return download_service->GetDownloadManager();
+    return BrowserContext::GetDownloadManager(current_browser()->profile());
   }
 
   // Creates a set of history downloads based on the provided |history_info|

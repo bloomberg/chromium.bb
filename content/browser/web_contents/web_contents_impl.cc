@@ -122,6 +122,7 @@
 //   the user goes back.  The process only stays live if another tab is using
 //   it, but if so, the existing frame relationships will be maintained.
 
+using content::BrowserContext;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::DevToolsManagerImpl;
@@ -1154,10 +1155,10 @@ void WebContentsImpl::CreateNewWindow(
   // WebContentsView. In the future, we may want to create the view separately.
   WebContentsImpl* new_contents = new WebContentsImpl(
       GetBrowserContext(),
-      site_instance,
-      route_id,
-      this,
-      params.opener_suppressed ? NULL : this,
+                          site_instance,
+                          route_id,
+                          this,
+                          params.opener_suppressed ? NULL : this,
       static_cast<SessionStorageNamespaceImpl*>(session_storage_namespace));
   new_contents->set_opener_web_ui_type(GetWebUITypeForCurrentState());
 
@@ -3044,7 +3045,8 @@ void WebContentsImpl::SetEncoding(const std::string& encoding) {
 void WebContentsImpl::SaveURL(const GURL& url,
                               const content::Referrer& referrer,
                               bool is_main_frame) {
-  DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
+  DownloadManager* dlm =
+      BrowserContext::GetDownloadManager(GetBrowserContext());
   if (!dlm)
     return;
   int64 post_id = -1;

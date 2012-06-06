@@ -201,6 +201,7 @@ class ChromeDownloadManagerDelegateTest : public ::testing::Test {
 
   // ::testing::Test
   virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   // Verifies and clears test expectations for |delegate_| and
   // |download_manager_|.
@@ -266,6 +267,10 @@ ChromeDownloadManagerDelegateTest::ChromeDownloadManagerDelegateTest()
 void ChromeDownloadManagerDelegateTest::SetUp() {
   ASSERT_TRUE(test_download_dir_.CreateUniqueTempDir());
   SetDefaultDownloadPath(test_download_dir_.path());
+}
+
+void ChromeDownloadManagerDelegateTest::TearDown() {
+  delegate_->Shutdown();
 }
 
 void ChromeDownloadManagerDelegateTest::VerifyAndClearExpectations() {

@@ -107,7 +107,7 @@
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
-using content::DownloadManager;
+using content::DownloadManagerDelegate;
 using content::HostZoomMap;
 using content::UserMetricsAction;
 
@@ -831,8 +831,9 @@ history::ShortcutsBackend* ProfileImpl::GetShortcutsBackend() {
   return shortcuts_backend_.get();
 }
 
-DownloadManager* ProfileImpl::GetDownloadManager() {
-  return DownloadServiceFactory::GetForProfile(this)->GetDownloadManager();
+DownloadManagerDelegate* ProfileImpl::GetDownloadManagerDelegate() {
+  return DownloadServiceFactory::GetForProfile(this)->
+      GetDownloadManagerDelegate();
 }
 
 bool ProfileImpl::DidLastSessionExitCleanly() {

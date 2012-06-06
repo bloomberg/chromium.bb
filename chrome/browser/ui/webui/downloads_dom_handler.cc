@@ -45,6 +45,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #endif
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::UserMetricsAction;
 
@@ -101,8 +102,8 @@ DownloadsDOMHandler::DownloadsDOMHandler(content::DownloadManager* dlm)
   // Figure out our parent DownloadManager, if any.
   Profile* original_profile = profile->GetOriginalProfile();
   if (original_profile != profile) {
-    original_profile_download_manager_ = DownloadServiceFactory::GetForProfile(
-        original_profile)->GetDownloadManager();
+    original_profile_download_manager_ =
+        BrowserContext::GetDownloadManager(original_profile);
   }
 }
 

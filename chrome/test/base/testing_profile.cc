@@ -68,7 +68,7 @@
 
 using base::Time;
 using content::BrowserThread;
-using content::DownloadManager;
+using content::DownloadManagerDelegate;
 using testing::NiceMock;
 using testing::Return;
 
@@ -541,7 +541,7 @@ history::TopSites* TestingProfile::GetTopSitesWithoutCreating() {
   return top_sites_.get();
 }
 
-DownloadManager* TestingProfile::GetDownloadManager() {
+DownloadManagerDelegate* TestingProfile::GetDownloadManagerDelegate() {
   return NULL;
 }
 

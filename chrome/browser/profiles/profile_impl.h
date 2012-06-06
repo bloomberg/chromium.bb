@@ -54,7 +54,8 @@ class ProfileImpl : public Profile,
 
   // content::BrowserContext implementation:
   virtual FilePath GetPath() OVERRIDE;
-  virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
+  virtual content::DownloadManagerDelegate*
+      GetDownloadManagerDelegate() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;

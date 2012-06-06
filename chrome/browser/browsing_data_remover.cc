@@ -265,7 +265,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   if (remove_mask & REMOVE_DOWNLOADS) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
     DownloadManager* download_manager =
-        DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
+        BrowserContext::GetDownloadManager(profile_);
     download_manager->RemoveDownloadsBetween(delete_begin_, delete_end_);
     download_manager->ClearLastDownloadPath();
   }

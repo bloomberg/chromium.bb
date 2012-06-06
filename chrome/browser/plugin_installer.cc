@@ -27,8 +27,10 @@
 #include "net/url_request/url_request.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
+using content::DownloadManager;
 using content::ResourceDispatcherHost;
 
 namespace {
@@ -192,8 +194,8 @@ void PluginInstaller::StartInstalling(TabContentsWrapper* wrapper) {
   state_ = INSTALLER_STATE_DOWNLOADING;
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadStarted());
   content::WebContents* web_contents = wrapper->web_contents();
-  DownloadService* download_service =
-      DownloadServiceFactory::GetForProfile(wrapper->profile());
+  DownloadManager* download_manager =
+      BrowserContext::GetDownloadManager(wrapper->profile());
   download_util::RecordDownloadSource(
       download_util::INITIATED_BY_PLUGIN_INSTALLER);
   BrowserThread::PostTask(
@@ -205,8 +207,7 @@ void PluginInstaller::StartInstalling(TabContentsWrapper* wrapper) {
                  web_contents->GetRenderViewHost()->GetRoutingID(),
                  base::Bind(&PluginInstaller::DownloadStarted,
                             base::Unretained(this),
-                            make_scoped_refptr(
-                                download_service->GetDownloadManager()))));
+                            make_scoped_refptr(download_manager))));
 }
 
 void PluginInstaller::DownloadStarted(

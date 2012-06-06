@@ -164,8 +164,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 
   LOG(ERROR) << "PackAndInstallExtension: Getting download manager";
   content::DownloadManager* download_manager =
-      DownloadServiceFactory::GetForProfile(
-          browser()->profile())->GetDownloadManager();
+      content::BrowserContext::GetDownloadManager(browser()->profile());
 
   LOG(ERROR) << "PackAndInstallExtension: Setting observer";
   scoped_ptr<DownloadTestObserver> observer(

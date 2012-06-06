@@ -36,7 +36,7 @@ bool TestBrowserContext::IsOffTheRecord() const {
   return false;
 }
 
-DownloadManager* TestBrowserContext::GetDownloadManager() {
+DownloadManagerDelegate* TestBrowserContext::GetDownloadManagerDelegate() {
   return NULL;
 }
 

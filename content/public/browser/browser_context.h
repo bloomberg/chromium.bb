@@ -37,6 +37,7 @@ namespace content {
 
 class DOMStorageContext;
 class DownloadManager;
+class DownloadManagerDelegate;
 class GeolocationPermissionContext;
 class IndexedDBContext;
 class ResourceContext;
@@ -46,6 +47,7 @@ class SpeechRecognitionPreferences;
 // It lives on the UI thread.
 class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
  public:
+  static DownloadManager* GetDownloadManager(BrowserContext* browser_context);
   static quota::QuotaManager* GetQuotaManager(BrowserContext* browser_context);
   static DOMStorageContext* GetDOMStorageContext(
       BrowserContext* browser_context);
@@ -80,9 +82,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // This doesn't belong here; http://crbug.com/89628
   virtual bool IsOffTheRecord() const = 0;
 
-  // Returns the DownloadManager associated with this context.
-  virtual content::DownloadManager* GetDownloadManager() = 0;
-
   // Returns the request context information associated with this context.  Call
   // this only on the UI thread, since it can send notifications that should
   // happen on the UI thread.
@@ -103,6 +102,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Returns the resource context.
   virtual ResourceContext* GetResourceContext() = 0;
+
+  // Returns the DownloadManagerDelegate for this context. This will be called
+  // once per context. It's valid to return NULL.
+  virtual DownloadManagerDelegate* GetDownloadManagerDelegate() = 0;
 
   // Returns the geolocation permission context for this context.
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;

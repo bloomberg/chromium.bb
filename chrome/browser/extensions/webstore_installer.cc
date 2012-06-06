@@ -38,9 +38,11 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadId;
 using content::DownloadItem;
+using content::DownloadManager;
 using content::NavigationController;
 using content::DownloadUrlParameters;
 
@@ -191,7 +193,7 @@ void WebstoreInstaller::Start() {
   }
 
   FilePath download_path = DownloadPrefs::FromDownloadManager(
-      profile_->GetDownloadManager())->download_path();
+      BrowserContext::GetDownloadManager(profile_))->download_path();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&GetDownloadFilePath, download_path, id_,
@@ -264,7 +266,8 @@ void WebstoreInstaller::OnDownloadStarted(DownloadId id, net::Error error) {
 
   CHECK(id.IsValid());
 
-  content::DownloadManager* download_manager = profile_->GetDownloadManager();
+  DownloadManager* download_manager =
+      BrowserContext::GetDownloadManager(profile_);
   download_item_ = download_manager->GetActiveDownloadItem(id.local());
   download_item_->AddObserver(this);
   if (approval_.get())
@@ -323,7 +326,7 @@ void WebstoreInstaller::StartDownload(const FilePath& file) {
       content::Referrer(controller_->GetActiveEntry()->GetURL(),
                         WebKit::WebReferrerPolicyDefault));
   params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted, this));
-  profile_->GetDownloadManager()->DownloadUrl(params.Pass());
+  BrowserContext::GetDownloadManager(profile_)->DownloadUrl(params.Pass());
 }
 
 void WebstoreInstaller::ReportFailure(const std::string& error) {

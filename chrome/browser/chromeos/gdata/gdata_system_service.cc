@@ -15,9 +15,12 @@
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 
 namespace gdata {
@@ -48,8 +51,7 @@ void GDataSystemService::Initialize() {
 
   content::DownloadManager* download_manager =
     g_browser_process->download_status_updater() ?
-        DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager() :
-        NULL;
+        BrowserContext::GetDownloadManager(profile_) : NULL;
   download_observer_->Initialize(
       uploader_.get(),
       download_manager,
