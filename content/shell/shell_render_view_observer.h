@@ -19,10 +19,11 @@ class ShellRenderViewObserver : public RenderViewObserver {
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
 
  private:
   // Message handlers.
-  void OnCaptureTextDump(bool recursive);
+  void OnCaptureTextDump(bool as_text, bool printing, bool recursive);
 
   DISALLOW_COPY_AND_ASSIGN(ShellRenderViewObserver);
 };

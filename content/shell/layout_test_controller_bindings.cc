@@ -67,6 +67,15 @@ v8::Handle<v8::Value> SetDumpChildFramesAsText(const v8::Arguments& args) {
   return v8::Undefined();
 }
 
+v8::Handle<v8::Value> SetPrinting(const v8::Arguments& args) {
+  RenderView* view = GetCurrentRenderView();
+  if (!view)
+    return v8::Undefined();
+
+  view->Send(new ShellViewHostMsg_SetPrinting(view->GetRoutingID()));
+  return v8::Undefined();
+}
+
 v8::Handle<v8::Value> SetWaitUntilDone(const v8::Arguments& args) {
   RenderView* view = GetCurrentRenderView();
   if (!view)
@@ -99,6 +108,8 @@ LayoutTestControllerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
     return v8::FunctionTemplate::New(SetDumpAsText);
   if (name->Equals(v8::String::New("SetDumpChildFramesAsText")))
     return v8::FunctionTemplate::New(SetDumpChildFramesAsText);
+  if (name->Equals(v8::String::New("SetPrinting")))
+    return v8::FunctionTemplate::New(SetPrinting);
   if (name->Equals(v8::String::New("SetWaitUntilDone")))
     return v8::FunctionTemplate::New(SetWaitUntilDone);
 

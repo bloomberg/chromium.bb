@@ -4,6 +4,7 @@
 
 #include "content/shell/shell_render_view_observer.h"
 
+#include "base/stringprintf.h"
 #include "content/public/renderer/render_view.h"
 #include "content/shell/shell_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
@@ -15,6 +16,7 @@
 
 using WebKit::WebFrame;
 using WebKit::WebElement;
+using WebKit::WebSize;
 
 namespace content {
 
@@ -29,8 +31,16 @@ std::string DumpDocumentText(WebFrame* frame) {
   return documentElement.innerText().utf8();
 }
 
-std::string DumpFramesAsText(WebFrame* frame, bool recursive) {
+std::string DumpDocumentPrintedText(WebFrame* frame) {
+  return frame->renderTreeAsText(WebFrame::RenderAsTextPrinting).utf8();
+}
+
+std::string DumpFramesAsText(WebFrame* frame, bool printing, bool recursive) {
   std::string result;
+
+  // Cannot do printed format for anything other than HTML.
+  if (printing && !frame->document().isHTMLDocument())
+    return std::string();
 
   // Add header for all but the main frame. Skip emtpy frames.
   if (frame->parent() && !frame->document().documentElement().isNull()) {
@@ -39,13 +49,36 @@ std::string DumpFramesAsText(WebFrame* frame, bool recursive) {
     result.append("'\n--------\n");
   }
 
-  result.append(DumpDocumentText(frame));
+  result.append(
+      printing ? DumpDocumentPrintedText(frame) : DumpDocumentText(frame));
   result.append("\n");
 
   if (recursive) {
     for (WebFrame* child = frame->firstChild(); child;
          child = child->nextSibling()) {
-      result.append(DumpFramesAsText(child, recursive));
+      result.append(DumpFramesAsText(child, printing, recursive));
+    }
+  }
+  return result;
+}
+
+std::string DumpFrameScrollPosition(WebFrame* frame, bool recursive) {
+  std::string result;
+
+  WebSize offset = frame->scrollOffset();
+  if (offset.width > 0 || offset.height > 0) {
+    if (frame->parent()) {
+      result.append(
+          base::StringPrintf("frame '%s' ", frame->name().utf8().data()));
+    }
+    result.append(
+        base::StringPrintf("scrolled to %d,%d\n", offset.width, offset.height));
+  }
+
+  if (recursive) {
+    for (WebFrame* child = frame->firstChild(); child;
+         child = child->nextSibling()) {
+      result.append(DumpFrameScrollPosition(child, recursive));
     }
   }
   return result;
@@ -59,6 +92,11 @@ ShellRenderViewObserver::ShellRenderViewObserver(RenderView* render_view)
 ShellRenderViewObserver::~ShellRenderViewObserver() {
 }
 
+void ShellRenderViewObserver::DidFinishLoad(WebFrame* frame) {
+  if (!frame->parent())
+    Send(new ShellViewHostMsg_DidFinishLoad(routing_id()));
+}
+
 bool ShellRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ShellRenderViewObserver, message)
@@ -69,9 +107,21 @@ bool ShellRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ShellRenderViewObserver::OnCaptureTextDump(bool recursive) {
-  std::string dump =
-      DumpFramesAsText(render_view()->GetWebView()->mainFrame(), recursive);
+void ShellRenderViewObserver::OnCaptureTextDump(bool as_text,
+                                                bool printing,
+                                                bool recursive) {
+  WebFrame* frame = render_view()->GetWebView()->mainFrame();
+  std::string dump;
+  if (as_text) {
+    dump = DumpFramesAsText(frame, printing, recursive);
+  } else {
+    WebFrame::RenderAsTextControls render_text_behavior =
+        WebFrame::RenderAsTextNormal;
+    if (printing)
+      render_text_behavior |= WebFrame::RenderAsTextPrinting;
+    dump = frame->renderTreeAsText(render_text_behavior).utf8();
+    dump.append(DumpFrameScrollPosition(frame, recursive));
+  }
   Send(new ShellViewHostMsg_TextDump(routing_id(), dump));
 }
 

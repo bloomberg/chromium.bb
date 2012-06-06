@@ -4,9 +4,13 @@
 
 #include "content/shell/shell_javascript_dialog_creator.h"
 
+#include <iostream>
+
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "content/shell/shell_javascript_dialog.h"
+#include "content/shell/shell_switches.h"
 #include "net/base/net_util.h"
 
 namespace content {
@@ -26,6 +30,20 @@ void ShellJavaScriptDialogCreator::RunJavaScriptDialog(
     const string16& default_prompt_text,
     const DialogClosedCallback& callback,
     bool* did_suppress_message) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+    if (javascript_message_type == JAVASCRIPT_MESSAGE_TYPE_ALERT) {
+      std::cout << "ALERT: " << UTF16ToUTF8(message_text) << "\n";
+    } else if (javascript_message_type == JAVASCRIPT_MESSAGE_TYPE_CONFIRM) {
+      std::cout << "CONFIRM: " << UTF16ToUTF8(message_text) << "\n";
+    } else {  // JAVASCRIPT_MESSAGE_TYPE_PROMPT
+      std::cout << "PROMPT: " << UTF16ToUTF8(message_text);
+      std::cout << ", default text: " << UTF16ToUTF8(default_prompt_text);
+      std::cout << "\n";
+    }
+    callback.Run(true, string16());
+    return;
+  }
+
 #if defined(OS_MACOSX) || defined(OS_WIN)
   *did_suppress_message = false;
 
@@ -56,6 +74,12 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
     const string16& message_text,
     bool is_reload,
     const DialogClosedCallback& callback) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+    std::cout << "CONFIRM NAVIGATION: " << UTF16ToUTF8(message_text) << "\n";
+    callback.Run(true, string16());
+    return;
+  }
+
 #if defined(OS_MACOSX) || defined(OS_WIN)
   if (dialog_.get()) {
     // Seriously!?

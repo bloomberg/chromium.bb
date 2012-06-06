@@ -8,12 +8,14 @@ var layoutTestController = layoutTestController || {};
   native function NotifyDone();
   native function SetDumpAsText();
   native function SetDumpChildFramesAsText();
+  native function SetPrinting();
   native function SetWaitUntilDone();
 
   layoutTestController = new function() {
     this.notifyDone = NotifyDone;
     this.dumpAsText = SetDumpAsText;
     this.dumpChildFramesAsText = SetDumpChildFramesAsText;
+    this.setPrinting = SetPrinting;
     this.waitUntilDone = SetWaitUntilDone;
   }();
 })();

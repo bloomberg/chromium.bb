@@ -90,6 +90,9 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
       if (test_string[0] == '\0')
         continue;
 
+      // Test header.
+      std::cout << "Content-Type: text/plain\n";
+
       content::Shell::CreateNewWindow(browser_context,
                                       GetURLForLayoutTest(test_string),
                                       NULL,

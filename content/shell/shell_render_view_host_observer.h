@@ -21,16 +21,23 @@ class ShellRenderViewHostObserver : public RenderViewHostObserver {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
+  void CaptureDump();
+
   // Message handlers.
+  void OnDidFinishLoad();
   void OnTextDump(const std::string& dump);
 
   // layoutTestController handlers.
   void OnNotifyDone();
   void OnDumpAsText();
   void OnDumpChildFramesAsText();
+  void OnSetPrinting();
   void OnWaitUntilDone();
 
+  bool dump_as_text_;
+  bool is_printing_;
   bool dump_child_frames_;
+  bool wait_until_done_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellRenderViewHostObserver);
 };
