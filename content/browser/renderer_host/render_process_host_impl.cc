@@ -393,11 +393,11 @@ bool RenderProcessHostImpl::Init() {
     in_process_renderer_.reset(new RendererMainThread(channel_id));
 
     base::Thread::Options options;
-#if !defined(TOOLKIT_GTK)
+#if !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
     // In-process plugins require this to be a UI message loop.
     options.message_loop_type = MessageLoop::TYPE_UI;
 #else
-    // We can't have multiple UI loops on GTK, so we don't support
+    // We can't have multiple UI loops on GTK and Android, so we don't support
     // in-process plugins.
     options.message_loop_type = MessageLoop::TYPE_DEFAULT;
 #endif
