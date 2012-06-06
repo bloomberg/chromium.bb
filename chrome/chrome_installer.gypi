@@ -936,7 +936,6 @@
               'files': [
                 '<(PRODUCT_DIR)/goobsdiff',
                 '<(PRODUCT_DIR)/goobspatch',
-                '<(PRODUCT_DIR)/keychain_reauthorize',
                 '<(PRODUCT_DIR)/liblzma_decompress.dylib',
                 '<(PRODUCT_DIR)/xz',
                 '<(PRODUCT_DIR)/xzdec',
