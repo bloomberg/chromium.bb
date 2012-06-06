@@ -84,6 +84,12 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
       content::NavigationController::ReloadType reload_type) OVERRIDE;
 
  private:
+  friend class ExtensionUITest;
+
+  // Allows injection for testing by friend classes.
+  ExtensionSettingsHandler(ExtensionService* service,
+                           extensions::ManagementPolicy* policy);
+
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
@@ -171,7 +177,6 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   void InspectExtensionHost(ExtensionHost* host);
 
   // Our model.  Outlives us since it's owned by our containing profile.
-  // Note: This may be NULL in unit tests.
   ExtensionService* extension_service_;
 
   // A convenience member, filled once the extension_service_ is known.

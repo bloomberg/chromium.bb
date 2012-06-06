@@ -56,6 +56,7 @@ using content::RenderViewHost;
 using content::WebContents;
 using extensions::Extension;
 using extensions::ExtensionUpdater;
+using extensions::ManagementPolicy;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -80,6 +81,15 @@ ExtensionSettingsHandler::~ExtensionSettingsHandler() {
   registrar_.RemoveAll();
 }
 
+ExtensionSettingsHandler::ExtensionSettingsHandler(ExtensionService* service,
+                                                   ManagementPolicy* policy)
+    : extension_service_(service),
+      management_policy_(policy),
+      ignore_notifications_(false),
+      deleting_rvh_(NULL),
+      registered_for_notifications_(false) {
+}
+
 // static
 void ExtensionSettingsHandler::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kExtensionsUIDeveloperMode,
@@ -92,18 +102,11 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     const std::vector<ExtensionPage>& pages,
     const ExtensionWarningSet* warnings_set) {
   DictionaryValue* extension_data = new DictionaryValue();
-  bool enabled = extension_service_ ?
-                 extension_service_->IsExtensionEnabled(extension->id()) :
-                 true;
+  bool enabled = extension_service_->IsExtensionEnabled(extension->id());
   extension->GetBasicInfo(enabled, extension_data);
 
-  if (management_policy_) {
-    extension_data->SetBoolean("userModifiable",
-        management_policy_->UserMayModifySettings(extension, NULL));
-  } else {
-    // This should only happen in testing.
-    extension_data->SetBoolean("userModifiable", true);
-  }
+  extension_data->SetBoolean("userModifiable",
+      management_policy_->UserMayModifySettings(extension, NULL));
 
   GURL icon =
       ExtensionIconSource::GetIconURL(extension,
@@ -115,16 +118,13 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetString("icon", icon.spec());
   extension_data->SetBoolean("isUnpacked",
                              extension->location() == Extension::LOAD);
-  extension_data->SetBoolean("terminated", extension_service_ ?
-      extension_service_->terminated_extensions()->Contains(extension->id()) :
-      false);
-  extension_data->SetBoolean("enabledIncognito", extension_service_ ?
-      extension_service_->IsIncognitoEnabled(extension->id()) :
-      false);
+  extension_data->SetBoolean("terminated",
+      extension_service_->terminated_extensions()->Contains(extension->id()));
+  extension_data->SetBoolean("enabledIncognito",
+      extension_service_->IsIncognitoEnabled(extension->id()));
   extension_data->SetBoolean("wantsFileAccess", extension->wants_file_access());
-  extension_data->SetBoolean("allowFileAccess", extension_service_ ?
-      extension_service_->AllowFileAccess(extension) :
-      false);
+  extension_data->SetBoolean("allowFileAccess",
+                             extension_service_->AllowFileAccess(extension));
   extension_data->SetBoolean("allow_activity",
       enabled && CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityUI));
@@ -141,8 +141,7 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   else
     extension_data->SetInteger("order", 2);
 
-  if (extension_service_ &&
-      !extension_service_->extension_prefs()->
+  if (!extension_service_->extension_prefs()->
           GetBrowserActionVisibility(extension)) {
     extension_data->SetBoolean("enable_show_button", true);
   }
@@ -296,10 +295,13 @@ void ExtensionSettingsHandler::NavigateToPendingEntry(const GURL& url,
 }
 
 void ExtensionSettingsHandler::RegisterMessages() {
-  extension_service_ = Profile::FromWebUI(web_ui())->GetOriginalProfile()->
-      GetExtensionService();
-
-  if (extension_service_) {
+  // Don't override an |extension_service_| or |management_policy_| injected
+  // for testing.
+  if (!extension_service_) {
+    extension_service_ = Profile::FromWebUI(web_ui())->GetOriginalProfile()->
+        GetExtensionService();
+  }
+  if (!management_policy_) {
     management_policy_ = ExtensionSystem::Get(
         extension_service_->profile())->management_policy();
   }
