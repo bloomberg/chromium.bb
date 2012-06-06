@@ -1315,8 +1315,25 @@ class Dtrace(ApiBase):
     # $ grep syscall probes.txt | less
     #    or use dtrace directly:
     # $ sudo dtrace -l -P syscall | less
-
+    #
+    # trackedpid is an associative array where its value can be 0, 1 or 2.
+    # 0 is for untracked processes and is the default value for items not
+    #   in the associative array.
+    # 1 is for tracked processes.
+    # 2 is for trace_child_process.py only. It is not tracked itself but
+    #   all its decendants are.
     D_CODE = """
+      dtrace:::BEGIN {
+        /* Since the child process is already started, initialize
+           current_processes to 1. */
+        current_processes = 1;
+        logindex = 0;
+        trackedpid[TRACER_PID] = 2;
+        printf("%d %d %s_%s(\\"%s\\")\\n",
+               logindex, TRACER_PID, probeprov, probename, CWD);
+        logindex++;
+      }
+
       proc:::start /trackedpid[ppid]/ {
         trackedpid[pid] = 1;
         current_processes += 1;
@@ -1352,12 +1369,14 @@ class Dtrace(ApiBase):
         self->open_arg2 = arg2;
       }
       syscall::open*:return /trackedpid[pid] == 1 && errno == 0/ {
+        this->open_arg0 = copyinstr(self->open_arg0);
         printf("%d %d %s(\\"%s\\", 0x%x, 0x%x)\\n",
                logindex, pid, probefunc,
-               copyinstr(self->open_arg0),
+               this->open_arg0,
                self->open_arg1,
                self->open_arg2);
         logindex++;
+        this->open_arg0 = 0;
       }
       syscall::open*:return /trackedpid[pid] == 1/ {
         self->open_arg0 = 0;
@@ -1370,152 +1389,136 @@ class Dtrace(ApiBase):
         self->rename_arg1 = arg1;
       }
       syscall::rename:return /trackedpid[pid] == 1 && errno == 0/ {
+        this->rename_arg0 = copyinstr(self->rename_arg0);
+        this->rename_arg1 = copyinstr(self->rename_arg1);
         printf("%d %d %s(\\"%s\\", \\"%s\\")\\n",
                logindex, pid, probefunc,
-               copyinstr(self->rename_arg0),
-               copyinstr(self->rename_arg1));
+               this->rename_arg0,
+               this->rename_arg1);
         logindex++;
+        this->rename_arg0 = 0;
+        this->rename_arg1 = 0;
       }
       syscall::rename:return /trackedpid[pid] == 1/ {
         self->rename_arg0 = 0;
         self->rename_arg1 = 0;
       }
 
-      /* Track chdir, it's painful because it is only receiving relative path */
+      /* Track chdir, it's painful because it is only receiving relative path.
+       */
       syscall::chdir:entry /trackedpid[pid] == 1/ {
         self->chdir_arg0 = arg0;
       }
       syscall::chdir:return /trackedpid[pid] == 1 && errno == 0/ {
+        this->chdir_arg0 = copyinstr(self->chdir_arg0);
         printf("%d %d %s(\\"%s\\")\\n",
                logindex, pid, probefunc,
-               copyinstr(self->chdir_arg0));
+               this->chdir_arg0);
         logindex++;
+        this->chdir_arg0 = 0;
       }
       syscall::chdir:return /trackedpid[pid] == 1/ {
         self->chdir_arg0 = 0;
       }
-    """
+      """
 
+    # execve-specific code, tends to throw a lot of exceptions.
     D_CODE_EXECVE = """
       /* Finally what we care about! */
-      syscall::exec*:entry /trackedpid[pid] == 1/ {
-        self->e_arg0 = copyinstr(arg0);
+      syscall::exec*:entry /trackedpid[pid]/ {
+        self->exec_arg0 = copyinstr(arg0);
         /* Incrementally probe for a NULL in the argv parameter of execve() to
          * figure out argc. */
         /* TODO(maruel): Skip the remaining copyin() when a NULL pointer was
          * found. */
-        self->argc = 0;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->exec_argc = 0;
+        /* Probe for argc==1 */
+        this->exec_argv = (user_addr_t*)copyin(
+             arg1, sizeof(user_addr_t) * (self->exec_argc + 1));
+        self->exec_argc = this->exec_argv[self->exec_argc] ?
+            (self->exec_argc + 1) : self->exec_argc;
+
+        /* Probe for argc==2 */
+        this->exec_argv = (user_addr_t*)copyin(
+             arg1, sizeof(user_addr_t) * (self->exec_argc + 1));
+        self->exec_argc = this->exec_argv[self->exec_argc] ?
+            (self->exec_argc + 1) : self->exec_argc;
+
+        /* Probe for argc==3 */
+        this->exec_argv = (user_addr_t*)copyin(
+             arg1, sizeof(user_addr_t) * (self->exec_argc + 1));
+        self->exec_argc = this->exec_argv[self->exec_argc] ?
+            (self->exec_argc + 1) : self->exec_argc;
+
+        /* Probe for argc==4 */
+        this->exec_argv = (user_addr_t*)copyin(
+             arg1, sizeof(user_addr_t) * (self->exec_argc + 1));
+        self->exec_argc = this->exec_argv[self->exec_argc] ?
+            (self->exec_argc + 1) : self->exec_argc;
 
         /* Copy the inputs strings since there is no guarantee they'll be
          * present after the call completed. */
-        self->args[0] = (self->argc > 0) ? copyinstr(self->argv[0]) : "";
-        self->args[1] = (self->argc > 1) ? copyinstr(self->argv[1]) : "";
-        self->args[2] = (self->argc > 2) ? copyinstr(self->argv[2]) : "";
-        self->args[3] = (self->argc > 3) ? copyinstr(self->argv[3]) : "";
-        self->args[4] = (self->argc > 4) ? copyinstr(self->argv[4]) : "";
-        self->args[5] = (self->argc > 5) ? copyinstr(self->argv[5]) : "";
-        self->args[6] = (self->argc > 6) ? copyinstr(self->argv[6]) : "";
-        self->args[7] = (self->argc > 7) ? copyinstr(self->argv[7]) : "";
-        self->args[8] = (self->argc > 8) ? copyinstr(self->argv[8]) : "";
-        self->args[9] = (self->argc > 9) ? copyinstr(self->argv[9]) : "";
+        self->exec_argv0 = (self->exec_argc > 0) ?
+            copyinstr(this->exec_argv[0]) : "";
+        self->exec_argv1 = (self->exec_argc > 1) ?
+            copyinstr(this->exec_argv[1]) : "";
+        self->exec_argv2 = (self->exec_argc > 2) ?
+            copyinstr(this->exec_argv[2]) : "";
+        self->exec_argv3 = (self->exec_argc > 3) ?
+            copyinstr(this->exec_argv[3]) : "";
+        this->exec_argv = 0;
       }
-      syscall::exec*:return /trackedpid[pid] == 1 && errno == 0/ {
-        /* We need to join strings here, as using multiple printf() would cause
-         * tearing when multiple threads/processes are traced. */
+      syscall::exec*:return /trackedpid[pid] && errno == 0/ {
+        /* We need to join strings here, as using multiple printf() would
+         * cause tearing when multiple threads/processes are traced. */
         this->args = "";
-        this->args = strjoin(this->args, (self->argc > 0) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 0) ? self->args[0] : "");
-        this->args = strjoin(this->args, (self->argc > 0) ? "\\"" : "");
+        /* Process exec_argv[0] */
+        this->args = strjoin(
+            this->args, (self->exec_argc > 0) ? ", \\"" : "");
+        this->args = strjoin(
+            this->args, (self->exec_argc > 0) ? self->exec_argv0 : "");
+        this->args = strjoin(this->args, (self->exec_argc > 0) ? "\\"" : "");
 
-        this->args = strjoin(this->args, (self->argc > 1) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 1) ? self->args[1] : "");
-        this->args = strjoin(this->args, (self->argc > 1) ? "\\"" : "");
+        /* Process exec_argv[1] */
+        this->args = strjoin(
+            this->args, (self->exec_argc > 1) ? ", \\"" : "");
+        this->args = strjoin(
+            this->args, (self->exec_argc > 1) ? self->exec_argv1 : "");
+        this->args = strjoin(this->args, (self->exec_argc > 1) ? "\\"" : "");
 
-        this->args = strjoin(this->args, (self->argc > 2) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 2) ? self->args[2] : "");
-        this->args = strjoin(this->args, (self->argc > 2) ? "\\"" : "");
+        /* Process exec_argv[2] */
+        this->args = strjoin(
+            this->args, (self->exec_argc > 2) ? ", \\"" : "");
+        this->args = strjoin(
+            this->args, (self->exec_argc > 2) ? self->exec_argv2 : "");
+        this->args = strjoin(this->args, (self->exec_argc > 2) ? "\\"" : "");
 
-        this->args = strjoin(this->args, (self->argc > 3) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 3) ? self->args[3] : "");
-        this->args = strjoin(this->args, (self->argc > 3) ? "\\"" : "");
+        /* Process exec_argv[3] */
+        this->args = strjoin(
+            this->args, (self->exec_argc > 3) ? ", \\"" : "");
+        this->args = strjoin(
+            this->args, (self->exec_argc > 3) ? self->exec_argv3 : "");
+        this->args = strjoin(this->args, (self->exec_argc > 3) ? "\\"" : "");
 
-        this->args = strjoin(this->args, (self->argc > 4) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 4) ? self->args[4] : "");
-        this->args = strjoin(this->args, (self->argc > 4) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 5) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 5) ? self->args[5] : "");
-        this->args = strjoin(this->args, (self->argc > 5) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 6) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 6) ? self->args[6] : "");
-        this->args = strjoin(this->args, (self->argc > 6) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 7) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 7) ? self->args[7] : "");
-        this->args = strjoin(this->args, (self->argc > 7) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 8) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 8) ? self->args[8] : "");
-        this->args = strjoin(this->args, (self->argc > 8) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 9) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 9) ? self->args[9]: "");
-        this->args = strjoin(this->args, (self->argc > 9) ? "\\"" : "");
-
-        /* Prints self->argc to permits verifying the internal consistency since
-         * this code is quite fishy. */
+        /* Prints self->exec_argc to permits verifying the internal
+         * consistency since this code is quite fishy. */
         printf("%d %d %s(\\"%s\\", [%d%s])\\n",
                logindex, pid, probefunc,
-               self->e_arg0,
-               self->argc,
+               self->exec_arg0,
+               self->exec_argc,
                this->args);
         logindex++;
+        this->args = 0;
       }
-      syscall::exec*:return /trackedpid[pid] == 1/ {
-        self->e_arg0 = 0;
-        self->argc = 0;
-        self->args[0] = 0;
-        self->args[1] = 0;
-        self->args[2] = 0;
-        self->args[3] = 0;
-        self->args[4] = 0;
-        self->args[5] = 0;
-        self->args[6] = 0;
-        self->args[7] = 0;
-        self->args[8] = 0;
-        self->args[9] = 0;
+      syscall::exec*:return /trackedpid[pid]/ {
+        self->exec_arg0 = 0;
+        self->exec_argc = 0;
+        self->exec_argv0 = 0;
+        self->exec_argv1 = 0;
+        self->exec_argv2 = 0;
+        self->exec_argv3 = 0;
       }
-    """
+      """
 
     # Code currently not used.
     D_EXTRANEOUS = """
@@ -1574,7 +1577,7 @@ class Dtrace(ApiBase):
         syscall::unlink:return,
         syscall::utimes:return,
       */
-    """
+      """
 
     @classmethod
     def code(cls, pid, cwd):
@@ -1585,27 +1588,14 @@ class Dtrace(ApiBase):
       running at that point so:
       - no proc_start() is logged for it.
       - there is no way to figure out the absolute path of cwd in kernel on OSX
-
-      Since the child process is already started, initialize current_processes
-      to 1.
       """
-      pid = str(pid)
       cwd = os.path.realpath(cwd).replace('\\', '\\\\').replace('%', '%%')
       return (
-          'dtrace:::BEGIN {\n'
-          '  current_processes = 1;\n'
-          '  logindex = 0;\n'
-          # trackedpid is an associative array where its value can be 0, 1 or 2.
-          # 0 is for untracked processes and is the default value for items not
-          #   in the associative array.
-          # 1 is for tracked processes.
-          # 2 is for trace_child_process.py only. It is not tracked itself but
-          #   all its decendants are.
-          '  trackedpid[' + pid + '] = 2;\n'
-          '  printf("%d %d %s_%s(\\"' + cwd + '\\")\\n",\n'
-          '      logindex, ' + pid + ', probeprov, probename);\n'
-          '  logindex++;\n'
-          '}\n') + cls.D_CODE + cls.D_CODE_EXECVE
+          'inline int TRACER_PID = %d;\n'
+          'inline string CWD = "%s";\n'
+          '\n'
+          '%s\n'
+          '%s') % (pid, cwd, cls.D_CODE, cls.D_CODE_EXECVE)
 
     @classmethod
     def trace(cls, cmd, cwd, logname, output):
@@ -2295,8 +2285,8 @@ class LogmanTrace(ApiBase):
       # entertainment. I can't imagine any sane reason to do that.
       cmd_convert.extend(['-of', 'CSV'])
     elif logformat == 'csv_utf16':
-      # This causes it to use UTF-16, which doubles the log size but ensures the
-      # log is readable for non-ASCII characters.
+      # This causes it to use UTF-16, which doubles the log size but ensures
+      # the log is readable for non-ASCII characters.
       cmd_convert.extend(['-of', 'CSV', '-en', 'Unicode'])
     elif logformat == 'xml':
       cmd_convert.extend(['-of', 'XML'])
@@ -2479,13 +2469,13 @@ def trace(logfile, cmd, cwd, api, output):
 
 
 def load_trace(logfile, root_dir, api):
-  """Loads a trace file and returns the processed file lists.
+  """Loads a trace file and returns the Results instance.
 
   Arguments:
-  - logfile: file to load.
-  - root_dir: root directory to use to determine if a file is relevant to the
+  - logfile: File to load.
+  - root_dir: Root directory to use to determine if a file is relevant to the
               trace or not.
-  - api: a tracing api instance.
+  - api: A tracing api instance.
   """
   results = api.parse_log(logfile, get_blacklist(api))
   if root_dir:
