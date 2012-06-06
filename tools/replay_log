@@ -94,39 +94,83 @@ binarydata/${LOG_FILE}?id=${LOG_IDNUM}&logIndex=0"
   fi
 fi
 
+# Convert the infile from a relative path to the realpath since we will
+# change directory below.
+original_infile="$infile"
+infile="$(realpath $infile)"
+
 # Go to the Gestures source root
 cd $(dirname "$0")/..
 
 make -j $(fgrep processor /proc/cpuinfo | wc -l) test
 
-# Get input filetype
-intype="$(file -b "${infile}" | cut -d ' ' -f 1)"
-# Extra check in case file gets ASCII wrong
-if [ "$(head -n 1 "${infile}")" = "{" ]; then
-  intype="ASCII"
-fi
+expand_input_file() {
+  # Get input filetype
+  intype="$(file -b "${infile}" | cut -d ' ' -f 1)"
+  # Extra check in case file gets ASCII wrong
+  if [ "$(head -n 1 "${infile}")" = "{" ]; then
+    intype="ASCII"
+  fi
 
-if [ "$intype" = "bzip2" ]; then
-  # Expand to the bzip2ed file within
-  zlogs="$(bzcat "$infile" | uudecode -o - | tar xvf -)"
-  # take newest log and reduce to next case
-  mv "$(ls -t $zlogs | grep touchpad_activity | head -n 1)" log.gz
-  rm -f $zlogs
-  infile="log.gz"
-  intype="gzip"
-fi
+  if [ "$intype" = "bzip2" ]; then
+    # Expand to the bzip2ed file within
+    zlogs="$(bzcat "$infile" | uudecode -o - | tar xvf -)"
+    # take newest log and reduce to next case
+    mv "$(ls -t $zlogs | grep touchpad_activity | head -n 1)" log.gz
+    rm -f $zlogs
+    infile="log.gz"
+    intype="gzip"
+  fi
 
-if [ "$intype" = "gzip" ]; then
-  zcat "$infile" > log.txt
-  infile="log.txt"
-  intype="ASCII"
-fi
+  if [ "$intype" = "gzip" ]; then
+    zcat "$infile" > log.txt
+    infile="log.txt"
+    intype="ASCII"
+  fi
 
-if [ "$intype" != "ASCII" ]; then
-  echo "Unable to read input file"
-  exit 1
-fi
+  if [ "$intype" != "ASCII" ]; then
+    echo "Unable to read input file"
+    exit 1
+  fi
+}
 
-./test --gtest_also_run_disabled_tests \
+run_test() {
+  expand_input_file
+  # We would like the shell to survive no matter whether ./test succeeds or not.
+  result=0
+  ./test --gtest_also_run_disabled_tests \
     --gtest_filter="ActivityReplayTest.DISABLED_SimpleTest" \
-    --outfile="$FLAGS_out" --only_honor="$FLAGS_only_honor" --in="$infile"
+    --outfile="$FLAGS_out" --only_honor="$FLAGS_only_honor" --in="$infile" ||
+    result=$?
+}
+
+# If infile is a file, test this log as before and there is no redirection.
+# If infile is a directory, test all logs in the directory, and output
+# the test statistics at the end.
+if [ -f "$infile" ]; then
+  echo "$original_infile is a file."
+  run_test
+elif [ -d "$infile" ]; then
+  statistics_result="$(mktemp)"
+  echo -e "\nInput directory: $original_infile\n" > $statistics_result
+  indir="$infile"
+  files=$(ls "$indir")
+  count=0
+  passed=0
+  for file in $files; do
+    infile="$indir/$file"
+    if [ -f "$infile" ]; then
+      run_test
+      if [ $result -eq 0 ]; then
+        echo "[  PASSED  ] $original_infile/$file" >> $statistics_result
+        passed=$(($passed + 1))
+      else
+        echo "[  FAILED  ] $original_infile/$file" >> $statistics_result
+      fi
+      count=$(($count + 1))
+    fi
+  done
+  cat $statistics_result
+  rm -fr $statistics_result
+  echo -e "\n$passed out of $count tests passed.\n"
+fi
