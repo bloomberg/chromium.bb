@@ -17,7 +17,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_details.h"
@@ -90,7 +90,7 @@ void ClosedDelegateTracker::Clear() {
 // GeolocationPermissionContextTests ------------------------------------------
 
 // This class sets up GeolocationArbitrator.
-class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
+class GeolocationPermissionContextTests : public TabContentsTestHarness {
  public:
   GeolocationPermissionContextTests();
 
@@ -110,7 +110,7 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
   }
   int bridge_id() const { return 42; }  // Not relevant at this level.
   InfoBarTabHelper* infobar_tab_helper() {
-    return contents_wrapper()->infobar_tab_helper();
+    return tab_contents()->infobar_tab_helper();
   }
 
   void RequestGeolocationPermission(int render_process_id,
@@ -136,7 +136,7 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
   ScopedVector<TabContentsWrapper> extra_tabs_;
 
  private:
-  // TabContentsWrapperTestHarness:
+  // TabContentsTestHarness:
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
@@ -149,7 +149,7 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
 };
 
 GeolocationPermissionContextTests::GeolocationPermissionContextTests()
-    : TabContentsWrapperTestHarness(),
+    : TabContentsTestHarness(),
       ui_thread_(BrowserThread::UI, MessageLoop::current()),
       db_thread_(BrowserThread::DB) {
 }
@@ -218,7 +218,7 @@ void GeolocationPermissionContextTests::CheckTabContentsState(
     const GURL& requesting_frame,
     ContentSetting expected_content_setting) {
   TabSpecificContentSettings* content_settings =
-      contents_wrapper()->content_settings();
+      tab_contents()->content_settings();
   const GeolocationSettingsState::StateMap& state_map =
       content_settings->geolocation_settings_state().state_map();
   EXPECT_EQ(1U, state_map.count(requesting_frame.GetOrigin()));
@@ -232,14 +232,14 @@ void GeolocationPermissionContextTests::CheckTabContentsState(
 
 void GeolocationPermissionContextTests::SetUp() {
   db_thread_.Start();
-  TabContentsWrapperTestHarness::SetUp();
+  TabContentsTestHarness::SetUp();
   geolocation_permission_context_ =
       new ChromeGeolocationPermissionContext(profile());
 }
 
 void GeolocationPermissionContextTests::TearDown() {
   extra_tabs_.reset();
-  TabContentsWrapperTestHarness::TearDown();
+  TabContentsTestHarness::TearDown();
   // Schedule another task on the DB thread to notify us that it's safe to
   // carry on with the test.
   base::WaitableEvent done(false, false);

@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
@@ -17,7 +17,7 @@
 
 using content::BrowserThread;
 
-class ContentSettingImageModelTest : public TabContentsWrapperTestHarness {
+class ContentSettingImageModelTest : public TabContentsTestHarness {
  public:
   ContentSettingImageModelTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
@@ -30,7 +30,7 @@ class ContentSettingImageModelTest : public TabContentsWrapperTestHarness {
 
 TEST_F(ContentSettingImageModelTest, UpdateFromWebContents) {
   TabSpecificContentSettings* content_settings =
-      contents_wrapper()->content_settings();
+      tab_contents()->content_settings();
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(
      ContentSettingImageModel::CreateContentSettingImageModel(
          CONTENT_SETTINGS_TYPE_IMAGES));
@@ -49,7 +49,7 @@ TEST_F(ContentSettingImageModelTest, UpdateFromWebContents) {
 
 TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   TabSpecificContentSettings* content_settings =
-      contents_wrapper()->content_settings();
+      tab_contents()->content_settings();
   profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(

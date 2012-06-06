@@ -108,8 +108,12 @@ class TabContents : public content::WebContentsObserver {
   // general case, please do NOT use this; plumb TabContents through the chrome/
   // code instead of WebContents.
   static TabContents* GetCurrentWrapperForContents(
-      content::WebContents* contents);
+      content::WebContents* contents);  // DEPRECATED
   static const TabContents* GetCurrentWrapperForContents(
+      const content::WebContents* contents);  // DEPRECATED
+  static TabContents* GetOwningTabContentsForWebContents(
+      content::WebContents* contents);
+  static const TabContents* GetOwningTabContentsForWebContents(
       const content::WebContents* contents);
 
   // Returns the WebContents that this owns.

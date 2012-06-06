@@ -9,7 +9,7 @@
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -73,17 +73,17 @@ class MockAutofillManager : public AutofillManager {
 
 }  // namespace
 
-class AutofillExternalDelegateUnitTest : public TabContentsWrapperTestHarness {
+class AutofillExternalDelegateUnitTest : public TabContentsTestHarness {
  public:
   AutofillExternalDelegateUnitTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
   virtual ~AutofillExternalDelegateUnitTest() {}
 
   virtual void SetUp() OVERRIDE {
-    TabContentsWrapperTestHarness::SetUp();
-    autofill_manager_ = new MockAutofillManager(contents_wrapper());
+    TabContentsTestHarness::SetUp();
+    autofill_manager_ = new MockAutofillManager(tab_contents());
     external_delegate_.reset(new MockAutofillExternalDelegate(
-        contents_wrapper(),
+        tab_contents(),
         autofill_manager_));
   }
 

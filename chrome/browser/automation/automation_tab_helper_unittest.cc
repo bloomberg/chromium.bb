@@ -8,7 +8,7 @@
 #include "chrome/browser/automation/automation_tab_helper.h"
 #include "chrome/browser/automation/mock_tab_event_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,14 +16,14 @@
 using content::BrowserThread;
 using testing::_;
 
-class AutomationTabHelperTest : public TabContentsWrapperTestHarness {
+class AutomationTabHelperTest : public TabContentsTestHarness {
  public:
   AutomationTabHelperTest()
-      : TabContentsWrapperTestHarness(),
+      : TabContentsTestHarness(),
         browser_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
-    TabContentsWrapperTestHarness::SetUp();
+    TabContentsTestHarness::SetUp();
     mock_observer_.StartObserving(tab_helper());
   }
 
@@ -39,7 +39,7 @@ class AutomationTabHelperTest : public TabContentsWrapperTestHarness {
   }
 
   void TabContentsDestroyed() {
-    tab_helper()->WebContentsDestroyed(contents_wrapper()->web_contents());
+    tab_helper()->WebContentsDestroyed(tab_contents()->web_contents());
   }
 
   void WillPerformClientRedirect(int64 frame_id) {
@@ -51,7 +51,7 @@ class AutomationTabHelperTest : public TabContentsWrapperTestHarness {
   }
 
   AutomationTabHelper* tab_helper() {
-    return contents_wrapper()->automation_tab_helper();
+    return tab_contents()->automation_tab_helper();
   }
 
   content::TestBrowserThread browser_thread_;

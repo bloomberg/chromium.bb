@@ -61,7 +61,7 @@ using content::WebContents;
 namespace {
 
 static base::LazyInstance<base::PropertyAccessor<TabContents*> >
-    g_tab_contents_wrapper_property_accessor = LAZY_INSTANCE_INITIALIZER;
+    g_tab_contents_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -73,7 +73,7 @@ TabContents::TabContents(WebContents* contents)
       in_destructor_(false),
       web_contents_(contents) {
   DCHECK(contents);
-  DCHECK(!GetCurrentWrapperForContents(contents));
+  DCHECK(!GetOwningTabContentsForWebContents(contents));
 
   chrome::SetViewType(contents, chrome::VIEW_TYPE_TAB_CONTENTS);
 
@@ -191,36 +191,48 @@ TabContents::~TabContents() {
 }
 
 base::PropertyAccessor<TabContents*>* TabContents::property_accessor() {
-  return g_tab_contents_wrapper_property_accessor.Pointer();
+  return g_tab_contents_property_accessor.Pointer();
 }
 
 TabContents* TabContents::Clone() {
-  WebContents* new_contents = web_contents()->Clone();
-  TabContents* new_wrapper = new TabContents(new_contents);
+  WebContents* new_web_contents = web_contents()->Clone();
+  TabContents* new_tab_contents = new TabContents(new_web_contents);
 
   // TODO(avi): Can we generalize this so that knowledge of the functionings of
   // the tab helpers isn't required here?
-  new_wrapper->extension_tab_helper()->CopyStateFrom(
+  new_tab_contents->extension_tab_helper()->CopyStateFrom(
       *extension_tab_helper_.get());
-  return new_wrapper;
+  return new_tab_contents;
 }
 
-// static
+// static deprecated
 TabContents* TabContents::GetCurrentWrapperForContents(
     WebContents* contents) {
-  TabContents** wrapper =
-      property_accessor()->GetProperty(contents->GetPropertyBag());
+  return GetOwningTabContentsForWebContents(contents);
+}
 
-  return wrapper ? *wrapper : NULL;
+// static deprecated
+const TabContents* TabContents::GetCurrentWrapperForContents(
+    const WebContents* contents) {
+  return GetOwningTabContentsForWebContents(contents);
 }
 
 // static
-const TabContents* TabContents::GetCurrentWrapperForContents(
-    const WebContents* contents) {
-  TabContents* const* wrapper =
+TabContents* TabContents::GetOwningTabContentsForWebContents(
+    WebContents* contents) {
+  TabContents** tab_contents =
       property_accessor()->GetProperty(contents->GetPropertyBag());
 
-  return wrapper ? *wrapper : NULL;
+  return tab_contents ? *tab_contents : NULL;
+}
+
+// static
+const TabContents* TabContents::GetOwningTabContentsForWebContents(
+    const WebContents* contents) {
+  TabContents* const* tab_contents =
+      property_accessor()->GetProperty(contents->GetPropertyBag());
+
+  return tab_contents ? *tab_contents : NULL;
 }
 
 WebContents* TabContents::web_contents() const {

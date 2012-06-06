@@ -26,12 +26,12 @@ TabContentsIterator::TabContentsIterator()
 }
 
 void TabContentsIterator::Advance() {
-  // The current WebContents should be valid unless we are at the beginning.
+  // The current TabContents should be valid unless we are at the beginning.
   DCHECK(cur_ || (web_view_index_ == -1 &&
                   browser_iterator_ == BrowserList::begin()))
       << "Trying to advance past the end";
 
-  // Update cur_ to the next WebContents in the list.
+  // Update cur_ to the next TabContents in the list.
   while (browser_iterator_ != BrowserList::end()) {
     if (++web_view_index_ >= (*browser_iterator_)->tab_count()) {
       // Advance to the next Browser in the list.
@@ -40,20 +40,20 @@ void TabContentsIterator::Advance() {
       continue;
     }
 
-    TabContentsWrapper* next_tab =
+    TabContents* next_tab =
         (*browser_iterator_)->GetTabContentsWrapperAt(web_view_index_);
     if (next_tab) {
       cur_ = next_tab;
       return;
     }
   }
-  // If no more WebContents from Browsers, check the BackgroundPrintingManager.
+  // If no more TabContents from Browsers, check the BackgroundPrintingManager.
   while (bg_printing_iterator_ != GetBackgroundPrintingManager()->end()) {
     cur_ = *bg_printing_iterator_;
     CHECK(cur_);
     ++bg_printing_iterator_;
     return;
   }
-  // Reached the end - no more WebContents.
+  // Reached the end - no more TabContents.
   cur_ = NULL;
 }

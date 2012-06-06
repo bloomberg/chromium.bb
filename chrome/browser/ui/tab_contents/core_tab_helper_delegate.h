@@ -9,18 +9,17 @@
 #include "base/basictypes.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 // Objects implement this interface to get notified about changes in the
-// TabContentsWrapper and to provide necessary functionality.
+// TabContents and to provide necessary functionality.
 //
-// This is considered part of the TabContentsWrapper "core" interface. If a
-// piece of code interacts with TabContentWrappers, it is guaranteed that it
-// will need to handle all of these callbacks.
+// This is considered part of the TabContents "core" interface. If a piece of
+// code interacts with TabContent, it is guaranteed that it will need to handle
+// all of these callbacks.
 class CoreTabHelperDelegate {
  public:
-  virtual void SwapTabContents(TabContentsWrapper* old_tc,
-                               TabContentsWrapper* new_tc) = 0;
+  virtual void SwapTabContents(TabContents* old_tc,
+                               TabContents* new_tc) = 0;
 
  protected:
   virtual ~CoreTabHelperDelegate();

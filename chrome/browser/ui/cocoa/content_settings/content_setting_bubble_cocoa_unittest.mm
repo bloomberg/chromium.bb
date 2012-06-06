@@ -11,7 +11,7 @@
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -35,7 +35,7 @@ class DummyContentSettingBubbleModel : public ContentSettingBubbleModel {
 };
 
 class ContentSettingBubbleControllerTest
-    : public TabContentsWrapperTestHarness {
+    : public TabContentsTestHarness {
  public:
   ContentSettingBubbleControllerTest();
   virtual ~ContentSettingBubbleControllerTest();
@@ -47,7 +47,7 @@ class ContentSettingBubbleControllerTest
 };
 
 ContentSettingBubbleControllerTest::ContentSettingBubbleControllerTest()
-    : TabContentsWrapperTestHarness(),
+    : TabContentsTestHarness(),
       browser_thread_(BrowserThread::UI, &message_loop_) {
 }
 
@@ -80,7 +80,7 @@ TEST_F(ContentSettingBubbleControllerTest, Init) {
       [parent.get() orderBack:nil];
 
     ContentSettingBubbleController* controller = [ContentSettingBubbleController
-        showForModel:new DummyContentSettingBubbleModel(contents_wrapper(),
+        showForModel:new DummyContentSettingBubbleModel(tab_contents(),
                                                         profile(),
                                                         settingsType)
         parentWindow:parent

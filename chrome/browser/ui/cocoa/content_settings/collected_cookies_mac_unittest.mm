@@ -7,7 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 
@@ -16,7 +16,7 @@ using content::BrowserThread;
 namespace {
 
 class CollectedCookiesWindowControllerTest
-    : public TabContentsWrapperTestHarness {
+    : public TabContentsTestHarness {
  public:
   CollectedCookiesWindowControllerTest()
       : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()) {
@@ -29,7 +29,7 @@ class CollectedCookiesWindowControllerTest
 TEST_F(CollectedCookiesWindowControllerTest, Construction) {
   CollectedCookiesWindowController* controller =
       [[CollectedCookiesWindowController alloc]
-          initWithTabContentsWrapper:contents_wrapper()];
+          initWithTabContentsWrapper:tab_contents()];
 
   [controller release];
 }

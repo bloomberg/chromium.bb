@@ -5,16 +5,16 @@
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 
-class ConstrainedWindowTabHelperUnit : public TabContentsWrapperTestHarness {
+class ConstrainedWindowTabHelperUnit : public TabContentsTestHarness {
  public:
   ConstrainedWindowTabHelperUnit()
-      : TabContentsWrapperTestHarness(),
+      : TabContentsTestHarness(),
         ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
@@ -42,16 +42,15 @@ class ConstrainedWindowCloseTest : public ConstrainedWindow {
 };
 
 TEST_F(ConstrainedWindowTabHelperUnit, ConstrainedWindows) {
-  ConstrainedWindowCloseTest window(contents_wrapper());
+  ConstrainedWindowCloseTest window(tab_contents());
   window.close_count = 0;
 
   const int kWindowCount = 4;
   for (int i = 0; i < kWindowCount; i++) {
-    contents_wrapper()->constrained_window_tab_helper()->AddConstrainedDialog(
+    tab_contents()->constrained_window_tab_helper()->AddConstrainedDialog(
         &window);
   }
   EXPECT_EQ(window.close_count, 0);
-  contents_wrapper()->constrained_window_tab_helper()->
-      CloseConstrainedWindows();
+  tab_contents()->constrained_window_tab_helper()->CloseConstrainedWindows();
   EXPECT_EQ(window.close_count, kWindowCount);
 }

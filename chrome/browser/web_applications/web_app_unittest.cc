@@ -7,7 +7,7 @@
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/test/base/testing_profile.h"
@@ -18,7 +18,7 @@
 using content::BrowserThread;
 using content::RenderViewHostTester;
 
-class WebApplicationTest : public TabContentsWrapperTestHarness {
+class WebApplicationTest : public TabContentsTestHarness {
  public:
   WebApplicationTest() : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
@@ -40,7 +40,7 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
       rvh(),
       ExtensionHostMsg_DidGetApplicationInfo(0, 0, web_app_info));
   ShellIntegration::ShortcutInfo info;
-  web_app::GetShortcutInfoForTab(contents_wrapper(), &info);
+  web_app::GetShortcutInfoForTab(tab_contents(), &info);
 
   EXPECT_EQ(title, info.title);
   EXPECT_EQ(description, info.description);

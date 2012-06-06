@@ -2,40 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
 
-TabContentsWrapperTestHarness::TabContentsWrapperTestHarness()
+TabContentsTestHarness::TabContentsTestHarness()
     : ChromeRenderViewHostTestHarness() {
 }
 
-TabContentsWrapperTestHarness::~TabContentsWrapperTestHarness() {
+TabContentsTestHarness::~TabContentsTestHarness() {
 }
 
-WebContents* TabContentsWrapperTestHarness::web_contents() {
-  return contents_wrapper_.get() ? contents_wrapper_->web_contents() : NULL;
+WebContents* TabContentsTestHarness::web_contents() {
+  return tab_contents_.get() ? tab_contents_->web_contents() : NULL;
 }
 
-TabContentsWrapper* TabContentsWrapperTestHarness::contents_wrapper() {
-  return contents_wrapper_.get();
+TabContents* TabContentsTestHarness::tab_contents() {
+  return tab_contents_.get();
 }
 
-void TabContentsWrapperTestHarness::SetContents(WebContents* contents) {
-  contents_wrapper_.reset(contents ? new TabContentsWrapper(contents) : NULL);
+void TabContentsTestHarness::SetContents(WebContents* contents) {
+  tab_contents_.reset(contents ? new TabContents(contents) : NULL);
 }
 
-void TabContentsWrapperTestHarness::SetUp() {
+void TabContentsTestHarness::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
   SetContents(CreateTestWebContents());
 }
 
-void TabContentsWrapperTestHarness::TearDown() {
-  contents_wrapper_.reset();
+void TabContentsTestHarness::TearDown() {
+  tab_contents_.reset();
 
   // Make sure that we flush any messages related to WebContents destruction
   // before we destroy the browser context.

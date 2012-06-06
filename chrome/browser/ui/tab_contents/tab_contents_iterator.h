@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser_list.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 // Iterates through all web view hosts in all browser windows. Because the
 // renderers act asynchronously, getting a host through this interface does
@@ -21,7 +20,7 @@ typedef TabContents TabContentsWrapper;
 //
 // Example:
 //   for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
-//     TabContentsWrapper* cur = *iterator;
+//     TabContents* cur = *iterator;
 //     -or-
 //     iterator->operationOnTabContents();
 //     ...
@@ -34,28 +33,28 @@ class TabContentsIterator {
   bool done() const { return cur_ == NULL; }
 
   // Returns the Browser instance associated with the current
-  // TabContentsWrapper. Valid as long as !done()
+  // TabContents. Valid as long as !done()
   Browser* browser() const {
     if (browser_iterator_ != BrowserList::end())
       return *browser_iterator_;
     return NULL;
   }
 
-  // Returns the current TabContentsWrapper, valid as long as !Done()
-  TabContentsWrapper* operator->() const {
+  // Returns the current TabContents, valid as long as !Done()
+  TabContents* operator->() const {
     return cur_;
   }
-  TabContentsWrapper* operator*() const {
+  TabContents* operator*() const {
     return cur_;
   }
 
   // Incrementing operators, valid as long as !Done()
-  TabContentsWrapper* operator++() {  // ++preincrement
+  TabContents* operator++() {  // ++preincrement
     Advance();
     return cur_;
   }
-  TabContentsWrapper* operator++(int) {  // postincrement++
-    TabContentsWrapper* tmp = cur_;
+  TabContents* operator++(int) {  // postincrement++
+    TabContents* tmp = cur_;
     Advance();
     return tmp;
   }
@@ -72,13 +71,13 @@ class TabContentsIterator {
   // tab index into the current Browser of the current web view
   int web_view_index_;
 
-  // iterator over the TabContentsWrappers doing background printing.
-  std::set<TabContentsWrapper*>::const_iterator bg_printing_iterator_;
+  // iterator over the TabContentss doing background printing.
+  std::set<TabContents*>::const_iterator bg_printing_iterator_;
 
-  // Current TabContentsWrapper, or NULL if we're at the end of the list. This
+  // Current TabContents, or NULL if we're at the end of the list. This
   // can be extracted given the browser iterator and index, but it's nice to
   // cache this since the caller may access the current host many times.
-  TabContentsWrapper* cur_;
+  TabContents* cur_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsIterator);
 };

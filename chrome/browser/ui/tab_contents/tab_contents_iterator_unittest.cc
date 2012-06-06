@@ -10,7 +10,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -33,7 +33,7 @@ size_t CountAllTabs() {
 }
 
 // Helper function to navigate to the print preview page.
-void NavigateToPrintUrl(TabContentsWrapper* tab, int page_id) {
+void NavigateToPrintUrl(TabContents* tab, int page_id) {
   content::RenderViewHostTester::For(
       tab->web_contents()->GetRenderViewHost())->SendNavigate(
           page_id, GURL(chrome::kChromeUIPrintURL));
@@ -191,7 +191,7 @@ TEST_F(BrowserListTest, TabContentsIteratorBackgroundPrinting) {
 
   // Grab a tab and give ownership to BackgroundPrintingManager.
   TabContentsIterator tab_iterator;
-  TabContentsWrapper* tab = *tab_iterator;
+  TabContents* tab = *tab_iterator;
   int page_id = 1;
   NavigateToPrintUrl(tab, page_id++);
 
@@ -221,12 +221,12 @@ TEST_F(BrowserListTest, TabContentsIteratorBackgroundPrinting) {
   // Tell BackgroundPrintingManager to take ownership of all tabs.
   // Save the tabs in |owned_tabs| because manipulating tabs in the middle of
   // TabContentsIterator is a bad idea.
-  std::vector<TabContentsWrapper*> owned_tabs;
+  std::vector<TabContents*> owned_tabs;
   for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
     NavigateToPrintUrl(*iterator, page_id++);
     owned_tabs.push_back(*iterator);
   }
-  for (std::vector<TabContentsWrapper*>::iterator it = owned_tabs.begin();
+  for (std::vector<TabContents*>::iterator it = owned_tabs.begin();
        it != owned_tabs.end(); ++it) {
     bg_print_manager->OwnPrintPreviewTab(*it);
   }
@@ -234,7 +234,7 @@ TEST_F(BrowserListTest, TabContentsIteratorBackgroundPrinting) {
   EXPECT_EQ(6U, CountAllTabs());
 
   // Delete all tabs to clean up.
-  for (std::vector<TabContentsWrapper*>::iterator it = owned_tabs.begin();
+  for (std::vector<TabContents*>::iterator it = owned_tabs.begin();
        it != owned_tabs.end(); ++it) {
     delete *it;
   }

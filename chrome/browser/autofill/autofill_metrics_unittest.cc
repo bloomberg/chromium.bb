@@ -15,7 +15,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -253,7 +253,7 @@ class TestAutofillManager : public AutofillManager {
 
 }  // namespace
 
-class AutofillMetricsTest : public TabContentsWrapperTestHarness {
+class AutofillMetricsTest : public TabContentsTestHarness {
  public:
   AutofillMetricsTest();
   virtual ~AutofillMetricsTest();
@@ -276,7 +276,7 @@ class AutofillMetricsTest : public TabContentsWrapperTestHarness {
 };
 
 AutofillMetricsTest::AutofillMetricsTest()
-  : TabContentsWrapperTestHarness(),
+  : TabContentsTestHarness(),
     ui_thread_(BrowserThread::UI, &message_loop_),
     file_thread_(BrowserThread::FILE) {
 }
@@ -293,8 +293,8 @@ void AutofillMetricsTest::SetUp() {
   PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
       profile, NULL);
 
-  TabContentsWrapperTestHarness::SetUp();
-  autofill_manager_ = new TestAutofillManager(contents_wrapper(),
+  TabContentsTestHarness::SetUp();
+  autofill_manager_ = new TestAutofillManager(tab_contents(),
                                               &personal_data_);
 
   file_thread_.Start();
@@ -302,7 +302,7 @@ void AutofillMetricsTest::SetUp() {
 
 void AutofillMetricsTest::TearDown() {
   file_thread_.Stop();
-  TabContentsWrapperTestHarness::TearDown();
+  TabContentsTestHarness::TearDown();
 }
 
 AutofillCCInfoBarDelegate* AutofillMetricsTest::CreateDelegate(
@@ -314,7 +314,7 @@ AutofillCCInfoBarDelegate* AutofillMetricsTest::CreateDelegate(
   CreditCard* credit_card = new CreditCard();
   if (created_card)
     *created_card = credit_card;
-  return new AutofillCCInfoBarDelegate(contents_wrapper()->infobar_tab_helper(),
+  return new AutofillCCInfoBarDelegate(tab_contents()->infobar_tab_helper(),
                                        credit_card,
                                        &personal_data_,
                                        metric_logger);

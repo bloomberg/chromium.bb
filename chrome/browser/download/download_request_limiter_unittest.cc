@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -15,7 +15,7 @@
 using content::BrowserThread;
 using content::WebContents;
 
-class DownloadRequestLimiterTest : public TabContentsWrapperTestHarness {
+class DownloadRequestLimiterTest : public TabContentsTestHarness {
  public:
   DownloadRequestLimiterTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
@@ -25,7 +25,7 @@ class DownloadRequestLimiterTest : public TabContentsWrapperTestHarness {
   }
 
   virtual void SetUp() {
-    TabContentsWrapperTestHarness::SetUp();
+    TabContentsTestHarness::SetUp();
 
     allow_download_ = true;
     ask_allow_count_ = cancel_count_ = continue_count_ = 0;
@@ -37,7 +37,7 @@ class DownloadRequestLimiterTest : public TabContentsWrapperTestHarness {
 
   virtual void TearDown() {
     UnsetDelegate();
-    TabContentsWrapperTestHarness::TearDown();
+    TabContentsTestHarness::TearDown();
   }
 
   virtual void UnsetDelegate() {
@@ -234,7 +234,7 @@ TEST_F(DownloadRequestLimiterTest,
 
 TEST_F(DownloadRequestLimiterTest,
        DownloadRequestLimiter_RawWebContents) {
-  // By-pass TabContentsWrapperTestHarness and use
+  // By-pass TabContentsTestHarness and use
   // RenderViewHostTestHarness::CreateTestWebContents() directly so that there
   // will be no TabContentsWrapper for web_contents.
   scoped_ptr<WebContents> web_contents(CreateTestWebContents());

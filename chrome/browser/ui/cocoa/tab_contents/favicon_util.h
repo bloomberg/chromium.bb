@@ -7,14 +7,13 @@
 
 @class NSImage;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace mac {
 
-// Returns an autoreleased favicon for a given TabContentsWrapper. If |contents|
+// Returns an autoreleased favicon for a given TabContents. If |contents|
 // is NULL or there's no favicon for the NavigationEntry, this will return the
 // default image.
-NSImage* FaviconForTabContents(TabContentsWrapper* contents);
+NSImage* FaviconForTabContents(TabContents* contents);
 
 }  // namespace mac
 

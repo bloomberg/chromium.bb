@@ -23,7 +23,7 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -56,7 +56,7 @@ using testing::Pointee;
 using testing::Property;
 using WebKit::WebContextMenuData;
 
-class TranslateManagerTest : public TabContentsWrapperTestHarness,
+class TranslateManagerTest : public TabContentsTestHarness,
                              public content::NotificationObserver {
  public:
   TranslateManagerTest()
@@ -101,7 +101,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
   }
 
   InfoBarTabHelper* infobar_tab_helper() {
-    return contents_wrapper()->infobar_tab_helper();
+    return tab_contents()->infobar_tab_helper();
   }
 
   // Returns the translate infobar if there is 1 infobar and it is a translate
@@ -168,7 +168,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
   virtual void SetUp() {
     WebKit::initialize(webkit_platform_support_.Get());
     // Access the TranslateManager singleton so it is created before we call
-    // TabContentsWrapperTestHarness::SetUp() to match what's done in Chrome,
+    // TabContentsTestHarness::SetUp() to match what's done in Chrome,
     // where the TranslateManager is created before the WebContents.  This
     // matters as they both register for similar events and we want the
     // notifications to happen in the same sequence (TranslateManager first,
@@ -179,12 +179,12 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
     TranslateManager::GetInstance()->
         set_translate_script_expiration_delay(60 * 60 * 1000);
 
-    TabContentsWrapperTestHarness::SetUp();
+    TabContentsTestHarness::SetUp();
 
     notification_registrar_.Add(this,
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
         content::Source<InfoBarTabHelper>(
-            contents_wrapper()->infobar_tab_helper()));
+            tab_contents()->infobar_tab_helper()));
   }
 
   virtual void TearDown() {
@@ -193,9 +193,9 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
     notification_registrar_.Remove(this,
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
         content::Source<InfoBarTabHelper>(
-            contents_wrapper()->infobar_tab_helper()));
+            tab_contents()->infobar_tab_helper()));
 
-    TabContentsWrapperTestHarness::TearDown();
+    TabContentsTestHarness::TearDown();
     WebKit::shutdown();
   }
 

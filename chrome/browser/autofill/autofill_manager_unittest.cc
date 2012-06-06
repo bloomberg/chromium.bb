@@ -27,7 +27,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -579,12 +579,12 @@ class TestAutofillManager : public AutofillManager {
 
 }  // namespace
 
-class AutofillManagerTest : public TabContentsWrapperTestHarness {
+class AutofillManagerTest : public TabContentsTestHarness {
  public:
   typedef AutofillManager::GUIDPair GUIDPair;
 
   AutofillManagerTest()
-      : TabContentsWrapperTestHarness(),
+      : TabContentsTestHarness(),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE) {
   }
@@ -601,8 +601,8 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
     PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
         profile, TestPersonalDataManager::Build);
 
-    TabContentsWrapperTestHarness::SetUp();
-    autofill_manager_ = new TestAutofillManager(contents_wrapper(),
+    TabContentsTestHarness::SetUp();
+    autofill_manager_ = new TestAutofillManager(tab_contents(),
                                                 &personal_data_);
 
     file_thread_.Start();
@@ -610,7 +610,7 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
 
   virtual void TearDown() OVERRIDE {
     file_thread_.Stop();
-    TabContentsWrapperTestHarness::TearDown();
+    TabContentsTestHarness::TearDown();
   }
 
   void UpdatePasswordGenerationState(bool new_renderer) {
@@ -633,7 +633,7 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
   }
 
   void AutocompleteSuggestionsReturned(const std::vector<string16>& result) {
-    contents_wrapper()->autocomplete_history_manager()->
+    tab_contents()->autocomplete_history_manager()->
         SendSuggestions(&result);
   }
 
@@ -681,7 +681,7 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
     if (unique_ids)
       *unique_ids = autofill_param.e;
 
-    contents_wrapper()->autocomplete_history_manager()->CancelPendingQuery();
+    tab_contents()->autocomplete_history_manager()->CancelPendingQuery();
     process()->sink().ClearMessages();
     return true;
   }
@@ -3097,7 +3097,7 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
 
 // Test our external delegate is called at the right time.
 TEST_F(AutofillManagerTest, TestExternalDelegate) {
-  MockAutofillExternalDelegate external_delegate(contents_wrapper(),
+  MockAutofillExternalDelegate external_delegate(tab_contents(),
                                                  autofill_manager_);
   EXPECT_CALL(external_delegate, OnQuery(_, _, _, _, _));
   autofill_manager_->SetExternalDelegate(&external_delegate);
@@ -3127,11 +3127,11 @@ TEST_F(AutofillManagerTest, TestTabContentsWithExternalDelegate) {
   WebContents* contents = CreateTestWebContents();
   SetContents(contents);
 
-  AutofillManager* autofill_manager = contents_wrapper()->autofill_manager();
+  AutofillManager* autofill_manager = tab_contents()->autofill_manager();
   EXPECT_TRUE(autofill_manager->external_delegate());
 
   AutocompleteHistoryManager* autocomplete_history_manager =
-      contents_wrapper()->autocomplete_history_manager();
+      tab_contents()->autocomplete_history_manager();
   EXPECT_TRUE(autocomplete_history_manager->external_delegate());
 }
 

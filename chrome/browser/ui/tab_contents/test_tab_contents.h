@@ -2,27 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TAB_CONTENTS_TEST_TAB_CONTENTS_WRAPPER_H_
-#define CHROME_BROWSER_UI_TAB_CONTENTS_TEST_TAB_CONTENTS_WRAPPER_H_
+#ifndef CHROME_BROWSER_UI_TAB_CONTENTS_TEST_TAB_CONTENTS_H_
+#define CHROME_BROWSER_UI_TAB_CONTENTS_TEST_TAB_CONTENTS_H_
 #pragma once
 
 #include "base/compiler_specific.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace content {
 class WebContents;
 }
 
-class TabContentsWrapperTestHarness : public ChromeRenderViewHostTestHarness {
+class TabContentsTestHarness : public ChromeRenderViewHostTestHarness {
  public:
-  TabContentsWrapperTestHarness();
-  virtual ~TabContentsWrapperTestHarness();
+  TabContentsTestHarness();
+  virtual ~TabContentsTestHarness();
 
   virtual content::WebContents* web_contents() OVERRIDE;
-  TabContentsWrapper* contents_wrapper();
+  TabContents* tab_contents();
 
   virtual void SetContents(content::WebContents* contents) OVERRIDE;
 
@@ -31,9 +30,9 @@ class TabContentsWrapperTestHarness : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  scoped_ptr<TabContentsWrapper> contents_wrapper_;
+  scoped_ptr<TabContents> tab_contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsWrapperTestHarness);
+  DISALLOW_COPY_AND_ASSIGN(TabContentsTestHarness);
 };
 
-#endif  // CHROME_BROWSER_UI_TAB_CONTENTS_TEST_TAB_CONTENTS_WRAPPER_H_
+#endif  // CHROME_BROWSER_UI_TAB_CONTENTS_TEST_TAB_CONTENTS_H_

@@ -8,14 +8,14 @@
 
 #include "base/mac/mac_util.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 
 namespace mac {
 
-NSImage* FaviconForTabContents(TabContentsWrapper* contents) {
+NSImage* FaviconForTabContents(TabContents* contents) {
   // FaviconTabHelper returns IDR_DEFAULT_FAVICON, which is a rasterized version
   // of the Mac PDF. Use the PDF so the icon in the Omnibox matches the default
   // favicon.
