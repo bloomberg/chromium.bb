@@ -155,6 +155,8 @@
     "chrome.experimental.fontSettings.setDefaultFontSize": "experimental.fontSettings.html#method-setDefaultFontSize",
     "chrome.experimental.fontSettings.setFont": "experimental.fontSettings.html#method-setFont",
     "chrome.experimental.fontSettings.setMinimumFontSize": "experimental.fontSettings.html#method-setMinimumFontSize",
+    "chrome.experimental.identity.getAuthToken": "experimental.identity.html#method-getAuthToken",
+    "chrome.experimental.identity.launchWebAuthFlow": "experimental.identity.html#method-launchWebAuthFlow",
     "chrome.experimental.idltest.getArrayBuffer": "experimental.idltest.html#method-getArrayBuffer",
     "chrome.experimental.idltest.nocompileFunc": "experimental.idltest.html#method-nocompileFunc",
     "chrome.experimental.idltest.sendArrayBuffer": "experimental.idltest.html#method-sendArrayBuffer",
@@ -229,6 +231,7 @@
     "chrome.experimental.usb.controlTransfer": "experimental.usb.html#method-controlTransfer",
     "chrome.experimental.usb.findDevice": "experimental.usb.html#method-findDevice",
     "chrome.experimental.usb.interruptTransfer": "experimental.usb.html#method-interruptTransfer",
+    "chrome.experimental.usb.isochronousTransfer": "experimental.usb.html#method-isochronousTransfer",
     "chrome.experimental.usb.onEvent": "experimental.usb.html#event-onEvent",
     "chrome.extension.connect": "extension.html#method-connect",
     "chrome.extension.getBackgroundPage": "extension.html#method-getBackgroundPage",
@@ -995,6 +998,32 @@
       ],
       "source_hash": "c5db61c81caf131ac6b32c6a80a22a03cb45f34b",
       "zip_path": "examples/api/contextMenus/basic.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.contextMenus.create",
+        "chrome.contextMenus.onClicked",
+        "chrome.runtime.onInstalled"
+      ],
+      "crx_path": null,
+      "description": "Shows some of the features of the Context Menus API using an event page",
+      "features": [
+        "background_page",
+        "contextMenus"
+      ],
+      "icon": null,
+      "id": "82fdc54d98adc279e8bbb7be60fff477cd1294a5",
+      "name": "Context Menus Sample (with Event Page)",
+      "packaged_app": false,
+      "path": "examples/api/contextMenus/event_page/",
+      "protocols": [],
+      "search_string": "CONTEXT MENUS SAMPLE (WITH EVENT PAGE) SHOWS SOME OF THE FEATURES OF THE CONTEXT MENUS API USING AN EVENT PAGE BACKGROUND_PAGE CONTEXTMENUS CHROME.CONTEXTMENUS.CREATE CHROME.CONTEXTMENUS.ONCLICKED CHROME.RUNTIME.ONINSTALLED",
+      "source_files": [
+        "manifest.json",
+        "sample.js"
+      ],
+      "source_hash": "35fecf3b24d8b487263539c5671e51f2657b71de",
+      "zip_path": "examples/api/contextMenus/event_page.zip"
     },
     {
       "api_calls": [

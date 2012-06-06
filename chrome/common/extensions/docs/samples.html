@@ -215,6 +215,7 @@
   "6871d09f4a96bf9d4b6cc724d00e909cee0f3902": "CONTENT SCRIPT CROSS-DOMAIN XMLHTTPREQUEST EXAMPLE DEMONSTRATES MAKING CROSS DOMAIN REQUESTS FROM A CONTENT SCRIPT BY PUTTING TWITTER TRENDS ON GOOGLE NEWS.",
   "e1f97e61e28ff33131d66dd28a4ed70a77874a51": "CONTENT SETTINGS SHOWS THE CONTENT SETTINGS FOR THE CURRENT SITE. BROWSER_ACTION CONTENTSETTINGS TABS CHROME.TABS.GET",
   "5d81304a17cf7ac2887484f730fbd2b01e51e166": "CONTEXT MENUS SAMPLE SHOWS SOME OF THE FEATURES OF THE CONTEXT MENUS API BACKGROUND_PAGE CONTEXTMENUS CHROME.CONTEXTMENUS.CREATE",
+  "82fdc54d98adc279e8bbb7be60fff477cd1294a5": "CONTEXT MENUS SAMPLE (WITH EVENT PAGE) SHOWS SOME OF THE FEATURES OF THE CONTEXT MENUS API USING AN EVENT PAGE BACKGROUND_PAGE CONTEXTMENUS CHROME.CONTEXTMENUS.CREATE CHROME.CONTEXTMENUS.ONCLICKED CHROME.RUNTIME.ONINSTALLED",
   "4daa6becd0899a54776d9cf7f09613ed1a9f4d77": "COOKIE API TEST EXTENSION TESTING COOKIE API BACKGROUND_PAGE BROWSER_ACTION COOKIES TABS CHROME.BROWSERACTION.ONCLICKED CHROME.COOKIES.GET CHROME.COOKIES.GETALL CHROME.COOKIES.ONCHANGED CHROME.COOKIES.REMOVE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL",
   "9e4fd06300ee2b3a171e1f30d1b70f8f10152c2b": "DOWNLOAD SELECTED LINKS SELECT LINKS ON A PAGE AND DOWNLOAD THEM. BROWSER_ACTION EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DOWNLOADS.DOWNLOAD CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
   "028eb5364924344029bcbe1d527f132fc72b34e5": "EMAIL THIS PAGE (BY GOOGLE) THIS EXTENSION ADDS AN EMAIL BUTTON TO THE TOOLBAR WHICH ALLOWS YOU TO EMAIL THE PAGE LINK USING YOUR DEFAULT MAIL CLIENT OR GMAIL. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.CONNECT CHROME.EXTENSION.ONCONNECT CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.UPDATE",
@@ -1244,6 +1245,44 @@
   </div>
   <div>
     <a href="examples/api/contextMenus/basic.zip">Download source</a>
+    <!-- Only show the Install CRX link if a CRX file is provided -->
+  </div>
+</div><div class="sample" id="82fdc54d98adc279e8bbb7be60fff477cd1294a5">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a href="#82fdc54d98adc279e8bbb7be60fff477cd1294a5">Context Menus Sample (with Event Page)</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong>
+      <span> and</span>
+    </span><span>
+      <strong>contextMenus</strong>
+    </span>
+  </p>
+  <p>Shows some of the features of the Context Menus API using an event page</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="contextMenus.html#method-create">chrome.contextMenus.create</a></code>
+      </li><li>
+        <code><a href="contextMenus.html#event-onClicked">chrome.contextMenus.onClicked</a></code>
+      </li><li>
+        <code><a href="runtime.html#event-onInstalled">chrome.runtime.onInstalled</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="examples/api/contextMenus/event_page/manifest.json">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="examples/api/contextMenus/event_page/sample.js">sample.js</a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a href="examples/api/contextMenus/event_page.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
   </div>
 </div><div class="sample" id="4daa6becd0899a54776d9cf7f09613ed1a9f4d77">
