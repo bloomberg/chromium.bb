@@ -486,6 +486,7 @@ tc-generate-and-archive-pexes() {
 
 # These are also suitable for local TC sanity testing
 tc-tests-large() {
+  local is_try=$1
   # newlib
   scons-stage "x86-32" "--mode=opt-host,nacl -j8 -k" "${TC_TESTS}"
   scons-stage "x86-64" "--mode=opt-host,nacl -j8 -k" "${TC_TESTS}"
@@ -499,7 +500,9 @@ tc-tests-large() {
               "--mode=opt-host,nacl -j8 -k --nacl_glibc pnacl_generate_pexe=0" \
               "${TC_TESTS}"
 
-  tc-generate-and-archive-pexes
+  if ! ${is_try} ; then
+      tc-generate-and-archive-pexes
+  fi
 
   # we run the browser tests last since they tend to be flaky
   # and will terminate the testing unless  FAIL_FAST=false
@@ -526,7 +529,7 @@ mode-buildbot-tc-x8664-linux() {
   FAIL_FAST=false
   TOOLCHAIN_LABEL=pnacl_linux_x86_64
   tc-build-all ${TOOLCHAIN_LABEL} ${is_try} true
-  tc-tests-large
+  tc-tests-large ${is_try}
 }
 
 mode-buildbot-tc-x8632-linux() {
