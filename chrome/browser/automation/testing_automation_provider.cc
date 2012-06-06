@@ -585,7 +585,11 @@ void TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
 
       // TODO(darin): avoid conversion to GURL.
       OpenURLParams params(
-          url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
+          url, Referrer(), CURRENT_TAB,
+          content::PageTransitionFromInt(
+              content::PAGE_TRANSITION_TYPED |
+              content::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+          false);
       browser->OpenURL(params);
       return;
     }
@@ -612,7 +616,11 @@ void TestingAutomationProvider::NavigationAsync(int handle,
       // Don't add any listener unless a callback mechanism is desired.
       // TODO(vibhor): Do this if such a requirement arises in future.
       OpenURLParams params(
-          url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
+          url, Referrer(), CURRENT_TAB,
+          content::PageTransitionFromInt(
+              content::PAGE_TRANSITION_TYPED |
+              content::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+          false);
       browser->OpenURL(params);
       *status = true;
     }
@@ -6057,9 +6065,13 @@ void TestingAutomationProvider::NavigateToURL(
   new NavigationNotificationObserver(
       &web_contents->GetController(), this, reply_message,
       navigation_count, false, true);
-  browser->OpenURLFromTab(web_contents, OpenURLParams(
+  OpenURLParams params(
       GURL(url), content::Referrer(), CURRENT_TAB,
-      content::PAGE_TRANSITION_TYPED, false));
+      content::PageTransitionFromInt(
+          content::PAGE_TRANSITION_TYPED |
+          content::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+      false);
+  browser->OpenURLFromTab(web_contents, params);
 }
 
 void TestingAutomationProvider::WaitUntilNavigationCompletes(
