@@ -94,7 +94,8 @@ class URLIndexPrivateData
    public:
     AddHistoryMatch(const URLIndexPrivateData& private_data,
                     const string16& lower_string,
-                    const String16Vector& lower_terms);
+                    const String16Vector& lower_terms,
+                    const base::Time now);
     ~AddHistoryMatch();
 
     void operator()(const HistoryID history_id);
@@ -106,6 +107,7 @@ class URLIndexPrivateData
     ScoredHistoryMatches scored_matches_;
     const string16& lower_string_;
     const String16Vector& lower_terms_;
+    const base::Time now_;
   };
 
   // A helper predicate class used to filter excess history items when the
@@ -262,22 +264,57 @@ class URLIndexPrivateData
   // calculating a raw score based on 1) starting position of each term
   // in the user input, 2) completeness of each term's match, 3) ordering
   // of the occurrence of each term (i.e. they appear in order), 4) last
-  // visit time, and 5) number of visits.
+  // visit time (compared to |now|), and 5) number of visits.
   // This raw score allows the results to be ordered and can be used
   // to influence the final score calculated by the client of this
   // index. Returns a ScoredHistoryMatch structure with the raw score and
   // substring matching metrics.
-  static ScoredHistoryMatch ScoredMatchForURL(
+  ScoredHistoryMatch ScoredMatchForURL(
       const URLRow& row,
       const string16& lower_string,
       const String16Vector& terms_vector,
-      const RowWordStarts& word_starts);
+      const RowWordStarts& word_starts,
+      const base::Time now) const;
 
   // Calculates a component score based on position, ordering and total
   // substring match size using metrics recorded in |matches|. |max_length|
   // is the length of the string against which the terms are being searched.
+  // Only used in "old" scoring.
   static int ScoreComponentForMatches(const TermMatches& matches,
                                       size_t max_length);
+
+  // Start of functions used only in "new" scoring ------------------------
+
+  // Return a topicality score based on how many matches appear in the
+  // |url| and the page's title and where they are (e.g., at word
+  // boundaries).  |url_matches| and |title_matches| provide details
+  // about where the matches in the URL and title are and what terms
+  // (identified by a term number < |num_terms|) match where.
+  // |word_starts| explains where word boundaries are.
+  static float GetTopicalityScore(const int num_terms,
+                                  const string16& url,
+                                  const TermMatches& url_matches,
+                                  const TermMatches& title_matches,
+                                  const RowWordStarts& word_starts);
+
+  // Precalculates raw_term_score_to_topicality_score_, used in
+  // GetTopicalityScore().
+  static void FillInTermScoreToTopicalityScoreArray();
+
+  // Returns a recency score based on |last_visit_days_ago|, which is
+  // how many days ago the page was last visited.
+  static float GetRecencyScore(int last_visit_days_ago);
+
+  // Pre-calculates days_ago_to_recency_numerator_, used in
+  // GetRecencyScore().
+  static void FillInDaysAgoToRecencyScoreArray();
+
+  // Returns a popularity score based on |typed_count| and
+  // |visit_count|.
+  static float GetPopularityScore(int typed_count,
+                                  int visit_count);
+
+  // End of functions used only in "new" scoring --------------------------
 
   // Encode a data structure into the protobuf |cache|.
   void SavePrivateData(imui::InMemoryURLIndexCacheItem* cache) const;
@@ -356,6 +393,30 @@ class URLIndexPrivateData
   WordStartsMap word_starts_map_;
 
   // End of data members that are cached ---------------------------------------
+
+  // Pre-computed information to speed up calculating recency scores.
+  // |days_ago_to_recency_score_| is a simple array mapping how long
+  // ago a page was visited (in days) to the recency score we should
+  // assign it.  This allows easy lookups of scores without requiring
+  // math.  This is initialized upon first use of GetRecencyScore(),
+  // which calls FillInDaysAgoToRecencyScoreArray(),
+  static const int kDaysToPrecomputeRecencyScoresFor = 366;
+  static float* days_ago_to_recency_score_;
+
+  // Pre-computed information to speed up calculating topicality
+  // scores.  |raw_term_score_to_topicality_score_| is a simple array
+  // mapping how raw terms scores (a weighted sum of the number of
+  // hits for the term, weighted by how important the hit is:
+  // hostname, path, etc.) to the topicality score we should assign
+  // it.  This allows easy lookups of scores without requiring math.
+  // This is initialized upon first use of GetTopicalityScore(),
+  // which calls FillInTermScoreToTopicalityScoreArray().
+  static const int kMaxRawTermScore = 30;
+  static float* raw_term_score_to_topicality_score_;
+
+  // Whether to use new-score or old-scoring.  Set in the constructor
+  // by examining command line flags.
+  bool use_new_scoring_;
 
   // For unit testing only. Specifies the version of the cache file to be saved.
   // Used only for testing upgrading of an older version of the cache upon

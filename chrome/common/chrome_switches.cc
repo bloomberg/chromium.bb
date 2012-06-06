@@ -921,6 +921,18 @@ const char kNotifyCloudPrintTokenExpired[]  = "notify-cp-token-expired";
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";
 
+// Controls whether to use the fancy new scoring (takes into account
+// word breaks, does better balancing of topicality, recency, etc.) for
+// HistoryQuickProvider.
+const char kOmniboxHistoryQuickProviderNewScoring[] =
+    "omnibox-history-quick-provider-new-scoring";
+// The value the kOmniboxHistoryQuickProviderNewScoring switch may have,
+// as in "--omnibox-history-quick-provider-new-scoring=1".  1 means
+// enable new scoring.  All other values means use old scoring ( == current
+// behavior as of 6/2012).
+const char kOmniboxHistoryQuickProviderNewScoringEnabled[] =
+    "1";
+
 // Controls whether the omnibox's HistoryQuickProvider is allowed to
 // inline suggestions.
 const char kOmniboxInlineHistoryQuickProvider[] =
