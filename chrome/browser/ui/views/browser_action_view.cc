@@ -213,6 +213,9 @@ bool BrowserActionButton::OnMousePressed(const views::MouseEvent& event) {
                      : TextButton::OnMousePressed(event);
   }
 
+  // See comments in MenuButton::Activate() as to why this is needed.
+  SetMouseHandler(NULL);
+
   ShowContextMenu(gfx::Point(), true);
   return false;
 }
