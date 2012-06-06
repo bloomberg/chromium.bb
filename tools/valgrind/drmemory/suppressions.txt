@@ -315,7 +315,7 @@ system call NtGdiDeleteObjectApp
 # GDI usage errors in 3rd-party components
 WARNING
 name=http://crbug.com/119552 a
-system call NtGdiDeleteObjectApp                            
+system call NtGdiDeleteObjectApp
 ...
 *!OmniboxViewWin::*
 
@@ -328,7 +328,7 @@ system call Nt*
 WARNING
 name=http://crbug.com/119552 c
 # optional gdi32.dll frame followed by user32.dll
-# TODO(bruening): once have 
+# TODO(bruening): once have
 # http://code.google.com/p/drmemory/issues/detail?id=846
 # I would do "gdi32.dll!...\nuser32.dll!*"
 *32.dll!*
@@ -347,5 +347,5 @@ riched20.dll!*
 WARNING
 name=http://crbug.com/120157
 # "ReleaseDC called from different thread than GetDC"
-system call NtUserCallOneParam.RELEASEDC                    
+system call NtUserCallOneParam.RELEASEDC
 *!*FontCache::CacheElement::~CacheElement
