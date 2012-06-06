@@ -128,7 +128,11 @@ class TestExtensionURLRequestContextGetter
 };
 
 ProfileKeyedService* CreateTestDesktopNotificationService(Profile* profile) {
+#if defined(ENABLE_NOTIFICATIONS)
   return new DesktopNotificationService(profile, NULL);
+#else
+  return NULL;
+#endif
 }
 
 }  // namespace

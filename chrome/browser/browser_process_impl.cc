@@ -806,9 +806,11 @@ void BrowserProcessImpl::CreateIntranetRedirectDetector() {
 }
 
 void BrowserProcessImpl::CreateNotificationUIManager() {
+#if defined(ENABLE_NOTIFICATIONS)
   DCHECK(notification_ui_manager_.get() == NULL);
   notification_ui_manager_.reset(NotificationUIManager::Create(local_state()));
   created_notification_ui_manager_ = true;
+#endif
 }
 
 void BrowserProcessImpl::CreateTabCloseableStateWatcher() {
