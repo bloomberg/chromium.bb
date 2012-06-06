@@ -121,6 +121,16 @@ Closure* NewPermanentCallback(
                                           arg1, arg2, arg3, arg4));
 }
 
+// Creates a Closure that runs |callback| on |arg|. The returned Closure owns
+// |callback|.
+template <typename ArgType>
+Closure* NewPermanentCallback(
+    INVALIDATION_CALLBACK1_TYPE(ArgType)* callback,
+    typename internal::Identity<ArgType>::type arg) {
+  return new ::base::Closure(::base::Bind(
+      &::base::Callback<void(ArgType)>::Run, base::Owned(callback), arg));
+}
+
 }  // namespace invalidation
 
 #endif  // GOOGLE_CACHEINVALIDATION_DEPS_CALLBACK_H_
