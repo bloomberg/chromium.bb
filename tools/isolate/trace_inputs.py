@@ -953,15 +953,6 @@ class Strace(ApiBase):
       prefix = 'handle_'
       return [i[len(prefix):] for i in dir(cls.Process) if i.startswith(prefix)]
 
-  @staticmethod
-  def clean_trace(logname):
-    if os.path.isfile(logname):
-      os.remove(logname)
-    # Also delete any pid specific file from previous traces.
-    for i in glob.iglob(logname + '.*'):
-      if i.rsplit('.', 1)[1].isdigit():
-        os.remove(i)
-
   @classmethod
   def gen_trace(cls, cmd, cwd, logname, output):
     """Runs strace on an executable.
@@ -997,6 +988,15 @@ class Strace(ApiBase):
     }
     write_json(logname, value, False)
     return child.returncode, out
+
+  @staticmethod
+  def clean_trace(logname):
+    if os.path.isfile(logname):
+      os.remove(logname)
+    # Also delete any pid specific file from previous traces.
+    for i in glob.iglob(logname + '.*'):
+      if i.rsplit('.', 1)[1].isdigit():
+        os.remove(i)
 
   @classmethod
   def parse_log(cls, filename, blacklist):
@@ -1042,329 +1042,6 @@ class Dtrace(ApiBase):
     '/usr',
     '/var',
   )
-
-  # pylint: disable=C0301
-  #
-  # To understand the following code, you'll want to take a look at:
-  # http://developers.sun.com/solaris/articles/dtrace_quickref/dtrace_quickref.html
-  # https://wikis.oracle.com/display/DTrace/Variables
-  # http://docs.oracle.com/cd/E19205-01/820-4221/
-  #
-  # 0. Dump all the valid probes into a text file. It is important, you
-  #    want to redirect into a file and you don't want to constantly 'sudo'.
-  # $ sudo dtrace -l > probes.txt
-  #
-  # 1. Count the number of probes:
-  # $ wc -l probes.txt
-  # 81823  # On OSX 10.7, including 1 header line.
-  #
-  # 2. List providers, intentionally skipping all the 'syspolicy10925' and the
-  #    likes and skipping the header with NR>1:
-  # $ awk 'NR>1 { print $2 }' probes.txt | sort | uniq | grep -v '[[:digit:]]'
-  # dtrace
-  # fbt
-  # io
-  # ip
-  # lockstat
-  # mach_trap
-  # proc
-  # profile
-  # sched
-  # syscall
-  # tcp
-  # vminfo
-  #
-  # 3. List of valid probes:
-  # $ grep syscall probes.txt | less
-  #    or use dtrace directly:
-  # $ sudo dtrace -l -P syscall | less
-
-  D_CODE = """
-      proc:::start /trackedpid[ppid]/ {
-        trackedpid[pid] = 1;
-        current_processes += 1;
-        printf("%d %d %s_%s(%d, \\"%s\\", %d)\\n",
-               logindex, pid, probeprov, probename,
-               ppid,
-               execname,
-               current_processes);
-        logindex++;
-      }
-      proc:::exit /trackedpid[pid] && current_processes == 1/ {
-        /* Last process is exiting. */
-        trackedpid[pid] = 0;
-        current_processes -= 1;
-        printf("%d %d %s_%s(%d)\\n",
-               logindex, pid, probeprov, probename,
-               current_processes);
-        logindex++;
-        exit(0);
-      }
-      proc:::exit /trackedpid[pid]/ {
-        trackedpid[pid] = 0;
-        current_processes -= 1;
-        printf("%d %d %s_%s(%d)\\n",
-               logindex, pid, probeprov, probename,
-               current_processes);
-        logindex++;
-      }
-
-      /* Finally what we care about! */
-      syscall::exec*:entry /trackedpid[pid] == 1/ {
-        self->e_arg0 = copyinstr(arg0);
-        /* Incrementally probe for a NULL in the argv parameter of execve() to
-         * figure out argc. */
-        /* TODO(maruel): Skip the remaining copyin() when a NULL pointer was
-         * found. */
-        self->argc = 0;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
-        self->argv = (user_addr_t*)copyin(
-            arg1, sizeof(user_addr_t) * (self->argc + 1));
-
-        /* Copy the inputs strings since there is no guarantee they'll be
-         * present after the call completed. */
-        self->args[0] = (self->argc > 0) ? copyinstr(self->argv[0]) : "";
-        self->args[1] = (self->argc > 1) ? copyinstr(self->argv[1]) : "";
-        self->args[2] = (self->argc > 2) ? copyinstr(self->argv[2]) : "";
-        self->args[3] = (self->argc > 3) ? copyinstr(self->argv[3]) : "";
-        self->args[4] = (self->argc > 4) ? copyinstr(self->argv[4]) : "";
-        self->args[5] = (self->argc > 5) ? copyinstr(self->argv[5]) : "";
-        self->args[6] = (self->argc > 6) ? copyinstr(self->argv[6]) : "";
-        self->args[7] = (self->argc > 7) ? copyinstr(self->argv[7]) : "";
-        self->args[8] = (self->argc > 8) ? copyinstr(self->argv[8]) : "";
-        self->args[9] = (self->argc > 9) ? copyinstr(self->argv[9]) : "";
-      }
-      syscall::exec*:return /trackedpid[pid] == 1 && errno == 0/ {
-        /* We need to join strings here, as using multiple printf() would cause
-         * tearing when multiple threads/processes are traced. */
-        this->args = "";
-        this->args = strjoin(this->args, (self->argc > 0) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 0) ? self->args[0] : "");
-        this->args = strjoin(this->args, (self->argc > 0) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 1) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 1) ? self->args[1] : "");
-        this->args = strjoin(this->args, (self->argc > 1) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 2) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 2) ? self->args[2] : "");
-        this->args = strjoin(this->args, (self->argc > 2) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 3) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 3) ? self->args[3] : "");
-        this->args = strjoin(this->args, (self->argc > 3) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 4) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 4) ? self->args[4] : "");
-        this->args = strjoin(this->args, (self->argc > 4) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 5) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 5) ? self->args[5] : "");
-        this->args = strjoin(this->args, (self->argc > 5) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 6) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 6) ? self->args[6] : "");
-        this->args = strjoin(this->args, (self->argc > 6) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 7) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 7) ? self->args[7] : "");
-        this->args = strjoin(this->args, (self->argc > 7) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 8) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 8) ? self->args[8] : "");
-        this->args = strjoin(this->args, (self->argc > 8) ? "\\"" : "");
-
-        this->args = strjoin(this->args, (self->argc > 9) ? ", \\"" : "");
-        this->args = strjoin(this->args, (self->argc > 9) ? self->args[9]: "");
-        this->args = strjoin(this->args, (self->argc > 9) ? "\\"" : "");
-
-        /* Prints self->argc to permits verifying the internal consistency since
-         * this code is quite fishy. */
-        printf("%d %d %s(\\"%s\\", [%d%s])\\n",
-               logindex, pid, probefunc,
-               self->e_arg0,
-               self->argc,
-               this->args);
-        logindex++;
-      }
-      syscall::exec*:return /trackedpid[pid] == 1/ {
-        self->e_arg0 = 0;
-        self->argc = 0;
-        self->args[0] = 0;
-        self->args[1] = 0;
-        self->args[2] = 0;
-        self->args[3] = 0;
-        self->args[4] = 0;
-        self->args[5] = 0;
-        self->args[6] = 0;
-        self->args[7] = 0;
-        self->args[8] = 0;
-        self->args[9] = 0;
-      }
-
-      /* These are a good learning experience, since it traces a lot of things
-       * related to the process and child processes.
-       * Warning: it generates a gigantic log. For example, tracing
-       * "data/trace_inputs/child1.py --child" generates a 2mb log and takes
-       * several minutes to execute.
-       */
-      /*
-      mach_trap::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
-        printf("%d %d %s_%s() = %d\\n",
-                logindex, pid, probeprov, probefunc, errno);
-        logindex++;
-      }
-      proc::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
-        printf("%d %d %s_%s() = %d\\n",
-                logindex, pid, probeprov, probefunc, errno);
-        logindex++;
-      }
-      sched::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
-        printf("%d %d %s_%s() = %d\\n",
-                logindex, pid, probeprov, probefunc, errno);
-        logindex++;
-      }
-      syscall::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
-        printf("%d %d %s_%s() = %d\\n",
-                logindex, pid, probeprov, probefunc, errno);
-        logindex++;
-      }
-      vminfo::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
-        printf("%d %d %s_%s() = %d\\n",
-                logindex, pid, probeprov, probefunc, errno);
-        logindex++;
-      }
-      */
-
-      syscall::open*:entry /trackedpid[pid] == 1/ {
-        self->open_arg0 = arg0;
-        self->open_arg1 = arg1;
-        self->open_arg2 = arg2;
-      }
-      syscall::open*:return /trackedpid[pid] == 1 && errno == 0/ {
-        printf("%d %d %s(\\"%s\\", 0x%x, 0x%x)\\n",
-               logindex, pid, probefunc,
-               copyinstr(self->open_arg0),
-               self->open_arg1,
-               self->open_arg2);
-        logindex++;
-      }
-      syscall::open*:return /trackedpid[pid] == 1/ {
-        self->open_arg0 = 0;
-        self->open_arg1 = 0;
-        self->open_arg2 = 0;
-      }
-
-      syscall::rename:entry /trackedpid[pid] == 1/ {
-        self->rename_arg0 = arg0;
-        self->rename_arg1 = arg1;
-      }
-      syscall::rename:return /trackedpid[pid] == 1 && errno == 0/ {
-        printf("%d %d %s(\\"%s\\", \\"%s\\")\\n",
-               logindex, pid, probefunc,
-               copyinstr(self->rename_arg0),
-               copyinstr(self->rename_arg1));
-        logindex++;
-      }
-      syscall::rename:return /trackedpid[pid] == 1/ {
-        self->rename_arg0 = 0;
-        self->rename_arg1 = 0;
-      }
-
-      /* Track chdir, it's painful because it is only receiving relative path */
-      syscall::chdir:entry /trackedpid[pid] == 1/ {
-        self->chdir_arg0 = arg0;
-      }
-      syscall::chdir:return /trackedpid[pid] == 1 && errno == 0/ {
-        printf("%d %d %s(\\"%s\\")\\n",
-               logindex, pid, probefunc,
-               copyinstr(self->chdir_arg0));
-        logindex++;
-      }
-      syscall::chdir:return /trackedpid[pid] == 1/ {
-        self->chdir_arg0 = 0;
-      }
-      /* TODO(maruel): *stat* functions and friends
-        syscall::access:return,
-        syscall::chdir:return,
-        syscall::chflags:return,
-        syscall::chown:return,
-        syscall::chroot:return,
-        syscall::getattrlist:return,
-        syscall::getxattr:return,
-        syscall::lchown:return,
-        syscall::lstat64:return,
-        syscall::lstat:return,
-        syscall::mkdir:return,
-        syscall::pathconf:return,
-        syscall::readlink:return,
-        syscall::removexattr:return,
-        syscall::setxattr:return,
-        syscall::stat64:return,
-        syscall::stat:return,
-        syscall::truncate:return,
-        syscall::unlink:return,
-        syscall::utimes:return,
-      */
-      """
-
-  @classmethod
-  def code(cls, pid, cwd):
-    """Setups the D code to implement child process tracking.
-
-    Injects the pid and the initial cwd into the trace header for context.
-    The reason is that the child process trace_child_process.py is already
-    running at that point so:
-    - no proc_start() is logged for it.
-    - there is no way to figure out the absolute path of cwd in kernel on OSX
-
-    Since the child process is already started, initialize current_processes to
-    1.
-
-    """
-    pid = str(pid)
-    cwd = os.path.realpath(cwd).replace('\\', '\\\\').replace('%', '%%')
-    return (
-        'dtrace:::BEGIN {\n'
-        '  current_processes = 1;\n'
-        '  logindex = 0;\n'
-        # trackedpid is an associative array where its value can be 0, 1 or 2.
-        # 0 is for untracked processes and is the default value for items not
-        #   in the associative array.
-        # 1 is for tracked processes.
-        # 2 is for trace_child_process.py only. It is not tracked itself but
-        #   all its decendants are.
-        '  trackedpid[' + pid + '] = 2;\n'
-        '  printf("%d %d %s_%s(\\"' + cwd + '\\")\\n",\n'
-        '      logindex, ' + pid + ', probeprov, probename);\n'
-        '  logindex++;\n'
-        '}\n') + cls.D_CODE
 
   class Context(ApiBase.Context):
     # Format: index pid function(args)
@@ -1567,10 +1244,333 @@ class Dtrace(ApiBase):
       """Is called for all the event traces that are not handled."""
       raise NotImplementedError('Please implement me')
 
-  @staticmethod
-  def clean_trace(logname):
-    if os.path.isfile(logname):
-      os.remove(logname)
+  # pylint: disable=C0301
+  #
+  # To understand the following code, you'll want to take a look at:
+  # http://developers.sun.com/solaris/articles/dtrace_quickref/dtrace_quickref.html
+  # https://wikis.oracle.com/display/DTrace/Variables
+  # http://docs.oracle.com/cd/E19205-01/820-4221/
+  #
+  # 0. Dump all the valid probes into a text file. It is important, you
+  #    want to redirect into a file and you don't want to constantly 'sudo'.
+  # $ sudo dtrace -l > probes.txt
+  #
+  # 1. Count the number of probes:
+  # $ wc -l probes.txt
+  # 81823  # On OSX 10.7, including 1 header line.
+  #
+  # 2. List providers, intentionally skipping all the 'syspolicy10925' and the
+  #    likes and skipping the header with NR>1:
+  # $ awk 'NR>1 { print $2 }' probes.txt | sort | uniq | grep -v '[[:digit:]]'
+  # dtrace
+  # fbt
+  # io
+  # ip
+  # lockstat
+  # mach_trap
+  # proc
+  # profile
+  # sched
+  # syscall
+  # tcp
+  # vminfo
+  #
+  # 3. List of valid probes:
+  # $ grep syscall probes.txt | less
+  #    or use dtrace directly:
+  # $ sudo dtrace -l -P syscall | less
+
+  D_CODE = """
+      proc:::start /trackedpid[ppid]/ {
+        trackedpid[pid] = 1;
+        current_processes += 1;
+        printf("%d %d %s_%s(%d, \\"%s\\", %d)\\n",
+               logindex, pid, probeprov, probename,
+               ppid,
+               execname,
+               current_processes);
+        logindex++;
+      }
+      proc:::exit /trackedpid[pid] && current_processes == 1/ {
+        /* Last process is exiting. */
+        trackedpid[pid] = 0;
+        current_processes -= 1;
+        printf("%d %d %s_%s(%d)\\n",
+               logindex, pid, probeprov, probename,
+               current_processes);
+        logindex++;
+        exit(0);
+      }
+      proc:::exit /trackedpid[pid]/ {
+        trackedpid[pid] = 0;
+        current_processes -= 1;
+        printf("%d %d %s_%s(%d)\\n",
+               logindex, pid, probeprov, probename,
+               current_processes);
+        logindex++;
+      }
+
+      syscall::open*:entry /trackedpid[pid] == 1/ {
+        self->open_arg0 = arg0;
+        self->open_arg1 = arg1;
+        self->open_arg2 = arg2;
+      }
+      syscall::open*:return /trackedpid[pid] == 1 && errno == 0/ {
+        printf("%d %d %s(\\"%s\\", 0x%x, 0x%x)\\n",
+               logindex, pid, probefunc,
+               copyinstr(self->open_arg0),
+               self->open_arg1,
+               self->open_arg2);
+        logindex++;
+      }
+      syscall::open*:return /trackedpid[pid] == 1/ {
+        self->open_arg0 = 0;
+        self->open_arg1 = 0;
+        self->open_arg2 = 0;
+      }
+
+      syscall::rename:entry /trackedpid[pid] == 1/ {
+        self->rename_arg0 = arg0;
+        self->rename_arg1 = arg1;
+      }
+      syscall::rename:return /trackedpid[pid] == 1 && errno == 0/ {
+        printf("%d %d %s(\\"%s\\", \\"%s\\")\\n",
+               logindex, pid, probefunc,
+               copyinstr(self->rename_arg0),
+               copyinstr(self->rename_arg1));
+        logindex++;
+      }
+      syscall::rename:return /trackedpid[pid] == 1/ {
+        self->rename_arg0 = 0;
+        self->rename_arg1 = 0;
+      }
+
+      /* Track chdir, it's painful because it is only receiving relative path */
+      syscall::chdir:entry /trackedpid[pid] == 1/ {
+        self->chdir_arg0 = arg0;
+      }
+      syscall::chdir:return /trackedpid[pid] == 1 && errno == 0/ {
+        printf("%d %d %s(\\"%s\\")\\n",
+               logindex, pid, probefunc,
+               copyinstr(self->chdir_arg0));
+        logindex++;
+      }
+      syscall::chdir:return /trackedpid[pid] == 1/ {
+        self->chdir_arg0 = 0;
+      }
+    """
+
+  D_CODE_EXECVE = """
+      /* Finally what we care about! */
+      syscall::exec*:entry /trackedpid[pid] == 1/ {
+        self->e_arg0 = copyinstr(arg0);
+        /* Incrementally probe for a NULL in the argv parameter of execve() to
+         * figure out argc. */
+        /* TODO(maruel): Skip the remaining copyin() when a NULL pointer was
+         * found. */
+        self->argc = 0;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+        self->argc = self->argv[self->argc] ? (self->argc + 1) : self->argc;
+        self->argv = (user_addr_t*)copyin(
+            arg1, sizeof(user_addr_t) * (self->argc + 1));
+
+        /* Copy the inputs strings since there is no guarantee they'll be
+         * present after the call completed. */
+        self->args[0] = (self->argc > 0) ? copyinstr(self->argv[0]) : "";
+        self->args[1] = (self->argc > 1) ? copyinstr(self->argv[1]) : "";
+        self->args[2] = (self->argc > 2) ? copyinstr(self->argv[2]) : "";
+        self->args[3] = (self->argc > 3) ? copyinstr(self->argv[3]) : "";
+        self->args[4] = (self->argc > 4) ? copyinstr(self->argv[4]) : "";
+        self->args[5] = (self->argc > 5) ? copyinstr(self->argv[5]) : "";
+        self->args[6] = (self->argc > 6) ? copyinstr(self->argv[6]) : "";
+        self->args[7] = (self->argc > 7) ? copyinstr(self->argv[7]) : "";
+        self->args[8] = (self->argc > 8) ? copyinstr(self->argv[8]) : "";
+        self->args[9] = (self->argc > 9) ? copyinstr(self->argv[9]) : "";
+      }
+      syscall::exec*:return /trackedpid[pid] == 1 && errno == 0/ {
+        /* We need to join strings here, as using multiple printf() would cause
+         * tearing when multiple threads/processes are traced. */
+        this->args = "";
+        this->args = strjoin(this->args, (self->argc > 0) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 0) ? self->args[0] : "");
+        this->args = strjoin(this->args, (self->argc > 0) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 1) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 1) ? self->args[1] : "");
+        this->args = strjoin(this->args, (self->argc > 1) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 2) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 2) ? self->args[2] : "");
+        this->args = strjoin(this->args, (self->argc > 2) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 3) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 3) ? self->args[3] : "");
+        this->args = strjoin(this->args, (self->argc > 3) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 4) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 4) ? self->args[4] : "");
+        this->args = strjoin(this->args, (self->argc > 4) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 5) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 5) ? self->args[5] : "");
+        this->args = strjoin(this->args, (self->argc > 5) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 6) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 6) ? self->args[6] : "");
+        this->args = strjoin(this->args, (self->argc > 6) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 7) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 7) ? self->args[7] : "");
+        this->args = strjoin(this->args, (self->argc > 7) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 8) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 8) ? self->args[8] : "");
+        this->args = strjoin(this->args, (self->argc > 8) ? "\\"" : "");
+
+        this->args = strjoin(this->args, (self->argc > 9) ? ", \\"" : "");
+        this->args = strjoin(this->args, (self->argc > 9) ? self->args[9]: "");
+        this->args = strjoin(this->args, (self->argc > 9) ? "\\"" : "");
+
+        /* Prints self->argc to permits verifying the internal consistency since
+         * this code is quite fishy. */
+        printf("%d %d %s(\\"%s\\", [%d%s])\\n",
+               logindex, pid, probefunc,
+               self->e_arg0,
+               self->argc,
+               this->args);
+        logindex++;
+      }
+      syscall::exec*:return /trackedpid[pid] == 1/ {
+        self->e_arg0 = 0;
+        self->argc = 0;
+        self->args[0] = 0;
+        self->args[1] = 0;
+        self->args[2] = 0;
+        self->args[3] = 0;
+        self->args[4] = 0;
+        self->args[5] = 0;
+        self->args[6] = 0;
+        self->args[7] = 0;
+        self->args[8] = 0;
+        self->args[9] = 0;
+      }
+    """
+
+  # Code currently not used.
+  D_EXTRANEOUS = """
+      /* These are a good learning experience, since it traces a lot of things
+       * related to the process and child processes.
+       * Warning: it generates a gigantic log. For example, tracing
+       * "data/trace_inputs/child1.py --child" generates a 2mb log and takes
+       * several minutes to execute.
+       */
+      /*
+      mach_trap::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
+        printf("%d %d %s_%s() = %d\\n",
+               logindex, pid, probeprov, probefunc, errno);
+        logindex++;
+      }
+      proc::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
+        printf("%d %d %s_%s() = %d\\n",
+               logindex, pid, probeprov, probefunc, errno);
+        logindex++;
+      }
+      sched::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
+        printf("%d %d %s_%s() = %d\\n",
+               logindex, pid, probeprov, probefunc, errno);
+        logindex++;
+      }
+      syscall::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
+        printf("%d %d %s_%s() = %d\\n",
+               logindex, pid, probeprov, probefunc, errno);
+        logindex++;
+      }
+      vminfo::: /trackedpid[pid] == 1 || trackedpid[ppid]/ {
+        printf("%d %d %s_%s() = %d\\n",
+               logindex, pid, probeprov, probefunc, errno);
+        logindex++;
+      }
+      */
+      /* TODO(maruel): *stat* functions and friends
+        syscall::access:return,
+        syscall::chdir:return,
+        syscall::chflags:return,
+        syscall::chown:return,
+        syscall::chroot:return,
+        syscall::getattrlist:return,
+        syscall::getxattr:return,
+        syscall::lchown:return,
+        syscall::lstat64:return,
+        syscall::lstat:return,
+        syscall::mkdir:return,
+        syscall::pathconf:return,
+        syscall::readlink:return,
+        syscall::removexattr:return,
+        syscall::setxattr:return,
+        syscall::stat64:return,
+        syscall::stat:return,
+        syscall::truncate:return,
+        syscall::unlink:return,
+        syscall::utimes:return,
+      */
+    """
+
+  @classmethod
+  def code(cls, pid, cwd):
+    """Setups the D code to implement child process tracking.
+
+    Injects the pid and the initial cwd into the trace header for context.
+    The reason is that the child process trace_child_process.py is already
+    running at that point so:
+    - no proc_start() is logged for it.
+    - there is no way to figure out the absolute path of cwd in kernel on OSX
+
+    Since the child process is already started, initialize current_processes to
+    1.
+
+    """
+    pid = str(pid)
+    cwd = os.path.realpath(cwd).replace('\\', '\\\\').replace('%', '%%')
+    return (
+        'dtrace:::BEGIN {\n'
+        '  current_processes = 1;\n'
+        '  logindex = 0;\n'
+        # trackedpid is an associative array where its value can be 0, 1 or 2.
+        # 0 is for untracked processes and is the default value for items not
+        #   in the associative array.
+        # 1 is for tracked processes.
+        # 2 is for trace_child_process.py only. It is not tracked itself but
+        #   all its decendants are.
+        '  trackedpid[' + pid + '] = 2;\n'
+        '  printf("%d %d %s_%s(\\"' + cwd + '\\")\\n",\n'
+        '      logindex, ' + pid + ', probeprov, probename);\n'
+        '  logindex++;\n'
+        '}\n') + cls.D_CODE + cls.D_CODE_EXECVE
 
   @classmethod
   def gen_trace(cls, cmd, cwd, logname, output):
@@ -1653,14 +1653,6 @@ class Dtrace(ApiBase):
 
     return dtrace.returncode or child.returncode, out
 
-  @classmethod
-  def parse_log(cls, filename, blacklist):
-    logging.info('parse_log(%s, %s)' % (filename, blacklist))
-    context = cls.Context(blacklist)
-    for line in open(filename, 'rb'):
-      context.on_line(line)
-    return context.to_results()
-
   @staticmethod
   def _sort_log(logname):
     """Sorts the log back in order when each call occured.
@@ -1684,6 +1676,19 @@ class Dtrace(ApiBase):
           None, None, None, logname)
     with open(logname, 'wb') as logfile:
       logfile.write(''.join(lines))
+
+  @staticmethod
+  def clean_trace(logname):
+    if os.path.isfile(logname):
+      os.remove(logname)
+
+  @classmethod
+  def parse_log(cls, filename, blacklist):
+    logging.info('parse_log(%s, %s)' % (filename, blacklist))
+    context = cls.Context(blacklist)
+    for line in open(filename, 'rb'):
+      context.on_line(line)
+    return context.to_results()
 
 
 class LogmanTrace(ApiBase):
@@ -2047,39 +2052,56 @@ class LogmanTrace(ApiBase):
       """If you have too many of these, check your hardware."""
       pass
 
-  def __init__(self):
-    super(LogmanTrace, self).__init__()
-    # Most ignores need to be determined at runtime.
-    self.IGNORED = set([os.path.dirname(sys.executable)])
-    # Add many directories from environment variables.
-    vars_to_ignore = (
-      'APPDATA',
-      'LOCALAPPDATA',
-      'ProgramData',
-      'ProgramFiles',
-      'ProgramFiles(x86)',
-      'ProgramW6432',
-      'SystemRoot',
-      'TEMP',
-      'TMP',
-    )
-    for i in vars_to_ignore:
-      if os.environ.get(i):
-        self.IGNORED.add(os.environ[i])
+  @classmethod
+  def gen_trace(cls, cmd, cwd, logname, output):
+    """Uses logman.exe to start and stop the NT Kernel Logger while the
+    executable to be traced is run.
+    """
+    logging.info('gen_trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
+    # Use "logman -?" for help.
 
-    # Also add their short path name equivalents.
-    for i in list(self.IGNORED):
-      self.IGNORED.add(GetShortPathName(i.replace('/', os.path.sep)))
+    stdout = stderr = None
+    if output:
+      stdout = subprocess.PIPE
+      stderr = subprocess.STDOUT
 
-    # Add these last since they have no short path name equivalent.
-    self.IGNORED.add('\\SystemRoot')
-    self.IGNORED = tuple(sorted(self.IGNORED))
+    # 1. Start the log collection.
+    cls._start_log(logname + '.etl')
 
-  @staticmethod
-  def clean_trace(logname):
-    for ext in ('', '.csv', '.etl', '.xml'):
-      if os.path.isfile(logname + ext):
-        os.remove(logname + ext)
+    # 2. Run the child process.
+    logging.debug('Running: %s' % cmd)
+    try:
+      # Use trace_child_process.py so we have a clear pid owner. Since
+      # trace_inputs.py can be used as a library and could trace mulitple
+      # processes simultaneously, it makes it more complex if the executable to
+      # be traced is executed directly here. It also solves issues related to
+      # logman.exe that needs to be executed to control the kernel trace.
+      child_cmd = [
+        sys.executable,
+        os.path.join(BASE_DIR, 'trace_child_process.py'),
+      ]
+      child = subprocess.Popen(
+          child_cmd + cmd,
+          cwd=cwd,
+          stdin=subprocess.PIPE,
+          stdout=stdout,
+          stderr=stderr)
+      logging.debug('Started child pid: %d' % child.pid)
+      out = child.communicate()[0]
+    finally:
+      # 3. Stop the log collection.
+      cls._stop_log()
+
+    # 4. Convert the traces to text representation.
+    cls._convert_log(logname, 'csv')
+
+    # 5. Save metadata.
+    value = {
+      'pid': child.pid,
+      'format': 'csv',
+    }
+    write_json(logname, value, False)
+    return child.returncode, out
 
   @classmethod
   def _start_log(cls, etl):
@@ -2136,6 +2158,34 @@ class LogmanTrace(ApiBase):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
 
+  def __init__(self):
+    super(LogmanTrace, self).__init__()
+    # Most ignores need to be determined at runtime.
+    self.IGNORED = set([os.path.dirname(sys.executable)])
+    # Add many directories from environment variables.
+    vars_to_ignore = (
+      'APPDATA',
+      'LOCALAPPDATA',
+      'ProgramData',
+      'ProgramFiles',
+      'ProgramFiles(x86)',
+      'ProgramW6432',
+      'SystemRoot',
+      'TEMP',
+      'TMP',
+    )
+    for i in vars_to_ignore:
+      if os.environ.get(i):
+        self.IGNORED.add(os.environ[i])
+
+    # Also add their short path name equivalents.
+    for i in list(self.IGNORED):
+      self.IGNORED.add(GetShortPathName(i.replace('/', os.path.sep)))
+
+    # Add these last since they have no short path name equivalent.
+    self.IGNORED.add('\\SystemRoot')
+    self.IGNORED = tuple(sorted(self.IGNORED))
+
   @staticmethod
   def _convert_log(logname, logformat):
     """Converts the ETL trace to text representation.
@@ -2182,56 +2232,11 @@ class LogmanTrace(ApiBase):
         stdout=sys.stderr,
         stderr=sys.stderr)
 
-  @classmethod
-  def gen_trace(cls, cmd, cwd, logname, output):
-    """Uses logman.exe to start and stop the NT Kernel Logger while the
-    executable to be traced is run.
-    """
-    logging.info('gen_trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
-    # Use "logman -?" for help.
-
-    stdout = stderr = None
-    if output:
-      stdout = subprocess.PIPE
-      stderr = subprocess.STDOUT
-
-    # 1. Start the log collection.
-    cls._start_log(logname + '.etl')
-
-    # 2. Run the child process.
-    logging.debug('Running: %s' % cmd)
-    try:
-      # Use trace_child_process.py so we have a clear pid owner. Since
-      # trace_inputs.py can be used as a library and could trace mulitple
-      # processes simultaneously, it makes it more complex if the executable to
-      # be traced is executed directly here. It also solves issues related to
-      # logman.exe that needs to be executed to control the kernel trace.
-      child_cmd = [
-        sys.executable,
-        os.path.join(BASE_DIR, 'trace_child_process.py'),
-      ]
-      child = subprocess.Popen(
-          child_cmd + cmd,
-          cwd=cwd,
-          stdin=subprocess.PIPE,
-          stdout=stdout,
-          stderr=stderr)
-      logging.debug('Started child pid: %d' % child.pid)
-      out = child.communicate()[0]
-    finally:
-      # 3. Stop the log collection.
-      cls._stop_log()
-
-    # 4. Convert the traces to text representation.
-    cls._convert_log(logname, 'csv')
-
-    # 5. Save metadata.
-    value = {
-      'pid': child.pid,
-      'format': 'csv',
-    }
-    write_json(logname, value, False)
-    return child.returncode, out
+  @staticmethod
+  def clean_trace(logname):
+    for ext in ('', '.csv', '.etl', '.xml'):
+      if os.path.isfile(logname + ext):
+        os.remove(logname + ext)
 
   @classmethod
   def parse_log(cls, filename, blacklist):
