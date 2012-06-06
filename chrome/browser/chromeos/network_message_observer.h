@@ -35,11 +35,13 @@ class NetworkMessageObserver
   static bool IsApplicableBackupPlan(const CellularDataPlan* plan,
                                      const CellularDataPlan* other_plan);
  private:
-  virtual void OpenMobileSetupPage(const base::ListValue* args);
+  virtual void OpenMobileSetupPage(const std::string& service_path,
+                                   const base::ListValue* args);
   virtual void OpenMoreInfoPage(const base::ListValue* args);
   virtual void InitNewPlan(const CellularDataPlan* plan);
   virtual void ShowNeedsPlanNotification(const CellularNetwork* cellular);
-  virtual void ShowNoDataNotification(CellularDataPlanType plan_type);
+  virtual void ShowNoDataNotification(const CellularNetwork* cellular,
+                                      CellularDataPlanType plan_type);
   virtual void ShowLowDataNotification(const CellularDataPlan* plan);
 
   // NetworkLibrary::NetworkManagerObserver implementation.

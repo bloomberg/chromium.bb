@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/mobile/mobile_activator.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -19,15 +20,18 @@
 #include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
+using chromeos::CellularNetwork;
+using chromeos::MobileActivator;
 using content::BrowserThread;
 using content::WebContents;
 using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 
-class MobileSetupDialogDelegate : public WebDialogDelegate {
+class MobileSetupDialogDelegate : public WebDialogDelegate,
+                                  public MobileActivator::Observer {
  public:
   static MobileSetupDialogDelegate* GetInstance();
-  void ShowDialog();
+  void ShowDialog(const std::string& service_path);
 
  protected:
   friend struct DefaultSingletonTraits<MobileSetupDialogDelegate>;
@@ -45,6 +49,9 @@ class MobileSetupDialogDelegate : public WebDialogDelegate {
       std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
+  virtual void OnDialogShown(
+      content::WebUI* webui,
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
   virtual void OnCloseContents(WebContents* source,
                                bool* out_close_dialog) OVERRIDE;
@@ -52,16 +59,23 @@ class MobileSetupDialogDelegate : public WebDialogDelegate {
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
 
+  // MobileActivator::Observer overrides.
+  virtual void OnActivationStateChanged(
+      CellularNetwork* network,
+      MobileActivator::PlanActivationState state,
+      const std::string& error_description) OVERRIDE;
+
  private:
   gfx::NativeWindow dialog_window_;
-
+  // Cellular network service path.
+  std::string service_path_;
   DISALLOW_COPY_AND_ASSIGN(MobileSetupDialogDelegate);
 };
 
 // static
-void MobileSetupDialog::Show() {
+void MobileSetupDialog::Show(const std::string& service_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MobileSetupDialogDelegate::GetInstance()->ShowDialog();
+  MobileSetupDialogDelegate::GetInstance()->ShowDialog(service_path);
 }
 
 // static
@@ -74,9 +88,11 @@ MobileSetupDialogDelegate::MobileSetupDialogDelegate() : dialog_window_(NULL) {
 }
 
 MobileSetupDialogDelegate::~MobileSetupDialogDelegate() {
+  MobileActivator::GetInstance()->RemoveObserver(this);
 }
 
-void MobileSetupDialogDelegate::ShowDialog() {
+void MobileSetupDialogDelegate::ShowDialog(const std::string& service_path) {
+  service_path_ = service_path;
   dialog_window_ = browser::ShowWebDialog(
       NULL,
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
@@ -93,11 +109,13 @@ string16 MobileSetupDialogDelegate::GetDialogTitle() const {
 }
 
 GURL MobileSetupDialogDelegate::GetDialogContentURL() const {
-  return GURL(chrome::kChromeUIMobileSetupURL);
+  std::string url(chrome::kChromeUIMobileSetupURL);
+  url.append(service_path_);
+  return GURL(url);
 }
 
 void MobileSetupDialogDelegate::GetWebUIMessageHandlers(
-    std::vector<WebUIMessageHandler*>* handlers) const{
+    std::vector<WebUIMessageHandler*>* handlers) const {
 }
 
 void MobileSetupDialogDelegate::GetDialogSize(gfx::Size* size) const {
@@ -108,13 +126,20 @@ std::string MobileSetupDialogDelegate::GetDialogArgs() const {
   return std::string();
 }
 
+void MobileSetupDialogDelegate::OnDialogShown(
+    content::WebUI* webui, content::RenderViewHost* render_view_host) {
+  MobileActivator::GetInstance()->AddObserver(this);
+}
+
+
 void MobileSetupDialogDelegate::OnDialogClosed(const std::string& json_retval) {
+  MobileActivator::GetInstance()->RemoveObserver(this);
   dialog_window_ = NULL;
 }
 
 void MobileSetupDialogDelegate::OnCloseContents(WebContents* source,
                                                 bool* out_close_dialog) {
-  if (!dialog_window_) {
+  if (!dialog_window_ || !MobileActivator::GetInstance()->RunningActivation()) {
     *out_close_dialog = true;
     return;
   }
@@ -132,4 +157,10 @@ bool MobileSetupDialogDelegate::ShouldShowDialogTitle() const {
 bool MobileSetupDialogDelegate::HandleContextMenu(
     const content::ContextMenuParams& params) {
   return true;
+}
+
+void MobileSetupDialogDelegate::OnActivationStateChanged(
+    CellularNetwork* network,
+    MobileActivator::PlanActivationState state,
+    const std::string& error_description) {
 }

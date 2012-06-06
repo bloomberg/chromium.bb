@@ -75,7 +75,7 @@ void ShellDelegateImpl::OpenFileManager() {
 void ShellDelegateImpl::OpenCrosh() {
 }
 
-void ShellDelegateImpl::OpenMobileSetup() {
+void ShellDelegateImpl::OpenMobileSetup(const std::string& service_path) {
 }
 
 void ShellDelegateImpl::RestoreTab() {

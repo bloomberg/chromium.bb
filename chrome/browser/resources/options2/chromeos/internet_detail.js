@@ -81,16 +81,16 @@ cr.define('options.internet', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
       options.internet.CellularPlanElement.decorate($('plan-list'));
-      this.initializePageContents_();
-      this.showNetworkDetails_();
+      var params = parseQueryParams(window.location);
+      this.initializePageContents_(params);
+      this.showNetworkDetails_(params);
     },
 
     /**
      * Auto-activates the network details dialog if network information
      * is included in the URL.
      */
-    showNetworkDetails_: function() {
-      var params = parseQueryParams(window.location);
+    showNetworkDetails_: function(params) {
       var servicePath = params.servicePath;
       var networkType = params.networkType;
       if (!servicePath || !servicePath.length ||
@@ -103,7 +103,7 @@ cr.define('options.internet', function() {
     /**
      * Initializes the contents of the page.
      */
-    initializePageContents_: function() {
+    initializePageContents_: function(params) {
       $('details-internet-dismiss').addEventListener('click', function(event) {
         DetailsInternetPage.setDetails();
       });
@@ -124,7 +124,7 @@ cr.define('options.internet', function() {
       });
 
       $('buyplan-details').addEventListener('click', function(event) {
-        chrome.send('buyDataPlan');
+        chrome.send('buyDataPlan', [params.servicePath]);
         OptionsPage.closeOverlay();
       });
 

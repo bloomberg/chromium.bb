@@ -170,12 +170,14 @@ void NetworkLibraryImplStub::Init() {
   cellular1->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
   AddStubNetwork(cellular1, PROFILE_NONE);
 
-  CellularNetwork* cellular2 = new CellularNetwork("cellular2");
+  CellularNetwork* cellular2 = new CellularNetwork("/cellular2");
   cellular2->set_name("Fake Cellular 2");
   cellular2->set_strength(50);
   cellular2->set_activation_state(ACTIVATION_STATE_NOT_ACTIVATED);
   cellular2->set_network_technology(NETWORK_TECHNOLOGY_UMTS);
   cellular2->set_roaming_state(ROAMING_STATE_ROAMING);
+  cellular2->set_payment_url(std::string("http://www.google.com"));
+  cellular2->set_usage_url(std::string("http://www.google.com"));
   AddStubNetwork(cellular2, PROFILE_NONE);
 
   CellularNetwork* cellular3 = new CellularNetwork("cellular3");

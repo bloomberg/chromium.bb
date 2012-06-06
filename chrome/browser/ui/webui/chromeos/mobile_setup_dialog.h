@@ -13,7 +13,7 @@
 
 class MobileSetupDialog {
  public:
-  static void Show();
+  static void Show(const std::string& service_path);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MobileSetupDialog);

@@ -188,8 +188,6 @@ void OfflineLoadPage::CommandReceived(const std::string& cmd) {
     interstitial_page_->DontProceed();
   } else if (command == "open_network_settings") {
     ash::Shell::GetInstance()->tray_delegate()->ShowNetworkSettings();
-  } else if (command == "open_activate_broadband") {
-    ash::Shell::GetInstance()->delegate()->OpenMobileSetup();
   } else {
     LOG(WARNING) << "Unknown command:" << cmd;
   }

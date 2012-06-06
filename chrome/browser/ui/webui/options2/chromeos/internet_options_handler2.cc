@@ -592,7 +592,13 @@ void InternetOptionsHandler::ShowMorePlanInfoCallback(const ListValue* args) {
 void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {
   if (!web_ui())
     return;
-  ash::Shell::GetInstance()->delegate()->OpenMobileSetup();
+
+  std::string service_path;
+  if (args->GetSize() != 1 || !args->GetString(0, &service_path)) {
+    NOTREACHED();
+    return;
+  }
+  ash::Shell::GetInstance()->delegate()->OpenMobileSetup(service_path);
 }
 
 void InternetOptionsHandler::SetApnCallback(const ListValue* args) {
@@ -1231,7 +1237,7 @@ void InternetOptionsHandler::HandleCellularButtonClick(
     } else if (command == "disconnect") {
       cros_->DisconnectFromNetwork(cellular);
     } else if (command == "activate") {
-      ash::Shell::GetInstance()->delegate()->OpenMobileSetup();
+      ash::Shell::GetInstance()->delegate()->OpenMobileSetup(service_path);
     } else if (command == "options") {
       PopulateDictionaryDetails(cellular);
     }

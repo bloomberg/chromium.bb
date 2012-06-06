@@ -95,7 +95,8 @@ void ActivateCellular(const chromeos::CellularNetwork* cellular) {
   if (!chromeos::UserManager::Get()->IsSessionStarted())
     return;
 
-  ash::Shell::GetInstance()->delegate()->OpenMobileSetup();
+  ash::Shell::GetInstance()->delegate()->OpenMobileSetup(
+      cellular->service_path());
 }
 
 // Decides whether a network should be highlighted in the UI.

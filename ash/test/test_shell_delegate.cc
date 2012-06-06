@@ -60,7 +60,7 @@ void TestShellDelegate::OpenFileManager() {
 void TestShellDelegate::OpenCrosh() {
 }
 
-void TestShellDelegate::OpenMobileSetup() {
+void TestShellDelegate::OpenMobileSetup(const std::string& service_path) {
 }
 
 void TestShellDelegate::RestoreTab() {

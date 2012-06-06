@@ -186,16 +186,18 @@ void ChromeShellDelegate::OpenCrosh() {
 #endif
 }
 
-void ChromeShellDelegate::OpenMobileSetup() {
+void ChromeShellDelegate::OpenMobileSetup(const std::string& service_path) {
 #if defined(OS_CHROMEOS)
   Browser* browser = browser::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableMobileSetupDialog)) {
-    MobileSetupDialog::Show();
+    MobileSetupDialog::Show(service_path);
   } else {
+    std::string url(chrome::kChromeUIMobileSetupURL);
+    url.append(service_path);
     browser->OpenURL(
-        content::OpenURLParams(GURL(chrome::kChromeUIMobileSetupURL),
+        content::OpenURLParams(GURL(url),
                                content::Referrer(),
                                NEW_FOREGROUND_TAB,
                                content::PAGE_TRANSITION_LINK,

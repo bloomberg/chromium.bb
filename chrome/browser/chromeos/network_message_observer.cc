@@ -175,8 +175,9 @@ bool NetworkMessageObserver::IsApplicableBackupPlan(
   return has_data && will_apply;
 }
 
-void NetworkMessageObserver::OpenMobileSetupPage(const ListValue* args) {
-  ash::Shell::GetInstance()->delegate()->OpenMobileSetup();
+void NetworkMessageObserver::OpenMobileSetupPage(
+    const std::string& service_path, const ListValue* args) {
+  ash::Shell::GetInstance()->delegate()->OpenMobileSetup(service_path);
 }
 
 void NetworkMessageObserver::OpenMoreInfoPage(const ListValue* args) {
@@ -220,11 +221,14 @@ void NetworkMessageObserver::ShowNeedsPlanNotification(
           IDS_NETWORK_NO_DATA_PLAN_MESSAGE,
           UTF8ToUTF16(cellular->name())),
       l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
-      base::Bind(&NetworkMessageObserver::OpenMobileSetupPage, AsWeakPtr()),
+      base::Bind(&NetworkMessageObserver::OpenMobileSetupPage,
+                 AsWeakPtr(),
+                 cellular->service_path()),
       false, false);
 }
 
 void NetworkMessageObserver::ShowNoDataNotification(
+    const CellularNetwork* cellular,
     CellularDataPlanType plan_type) {
   notification_low_data_->Hide();  // Hide previous low data notification.
   string16 message = plan_type == CELLULAR_DATA_PLAN_UNLIMITED ?
@@ -233,7 +237,9 @@ void NetworkMessageObserver::ShowNoDataNotification(
                                  ASCIIToUTF16("0"));
   notification_no_data_->Show(message,
       l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
-      base::Bind(&NetworkMessageObserver::OpenMobileSetupPage, AsWeakPtr()),
+      base::Bind(&NetworkMessageObserver::OpenMobileSetupPage,
+                 AsWeakPtr(),
+                 cellular->service_path()),
       false, false);
 }
 
@@ -325,7 +331,7 @@ void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* cros) {
     // If previously, we had low data, we know that a plan was near expiring.
     // In that case, because the plan disappeared, we assume that it expired.
     if (cellular_data_left_ == CellularNetwork::DATA_LOW) {
-      ShowNoDataNotification(cellular_data_plan_type_);
+      ShowNoDataNotification(cellular, cellular_data_plan_type_);
     } else if (cellular->needs_new_plan()) {
       ShowNeedsPlanNotification(cellular);
     }
@@ -356,7 +362,7 @@ void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* cros) {
   }
 
   if (cellular->data_left() == CellularNetwork::DATA_NONE) {
-    ShowNoDataNotification(current_plan->plan_type);
+    ShowNoDataNotification(cellular, current_plan->plan_type);
   } else if (cellular->data_left() == CellularNetwork::DATA_VERY_LOW) {
     // Only show low data notification if we transition to very low data
     // and we are on the same plan. This is so that users don't get a

@@ -751,6 +751,8 @@
         'browser/chromeos/low_memory_observer.h',
         'browser/chromeos/media/media_player.cc',
         'browser/chromeos/media/media_player.h',
+        'browser/chromeos/mobile/mobile_activator.cc',
+        'browser/chromeos/mobile/mobile_activator.h',
         'browser/chromeos/mobile_config.cc',
         'browser/chromeos/mobile_config.h',
         'browser/chromeos/net/cros_network_change_notifier_factory.cc',
