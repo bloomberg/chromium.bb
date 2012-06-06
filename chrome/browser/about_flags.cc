@@ -709,13 +709,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(USE_ASH)
   {
-    "enable-applist-v2",
-    IDS_FLAGS_ENABLE_APPLIST_V2_NAME,
-    IDS_FLAGS_ENABLE_APPLIST_V2_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(ash::switches::kEnableAppListV2),
-  },
-  {
     "show-launcher-alignment-menu",
     IDS_FLAGS_SHOW_LAUNCHER_ALIGNMENT_MENU_NAME,
     IDS_FLAGS_SHOW_LAUNCHER_ALIGNMENT_MENU_DESCRIPTION,

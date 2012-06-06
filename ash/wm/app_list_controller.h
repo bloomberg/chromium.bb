@@ -37,9 +37,6 @@ class AppListController : public aura::EventFilter,
   AppListController();
   virtual ~AppListController();
 
-  // Returns true if AppListV2 is enabled.
-  static bool UseAppListV2();
-
   // Show/hide app list window.
   void SetVisible(bool visible);
 
@@ -61,21 +58,8 @@ class AppListController : public aura::EventFilter,
   // Forgets the view.
   void ResetView();
 
-  // Starts show/hide animation. ScheduleAnimation is the master who manages
-  // when to call sub animations. There are three sub animations: background
-  // dimming, browser windows scale/fade and app list scale/fade. The background
-  // dimming runs in parallel with the other two and spans the whole animation
-  // time. The rest sub animations run in two steps. On showing, the first step
-  // is browser windows scale-out and fade-out and the 2nd step is app list
-  // scale-in and fade-in. The 2nd step animation is started via a timer and
-  // there is is a little overlap between the two animations. Hiding animation
-  // is the reverse of the showing animation.
+  // Starts show/hide animation.
   void ScheduleAnimation();
-
-  void ScheduleBrowserWindowsAnimationForContainer(aura::Window* container);
-  void ScheduleBrowserWindowsAnimation();
-  void ScheduleDimmingAnimation();
-  void ScheduleAppListAnimation();
 
   // aura::EventFilter overrides:
   virtual bool PreHandleKeyEvent(aura::Window* target,

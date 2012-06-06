@@ -76,7 +76,9 @@
       ],
       'sources': [
         'apps_grid_view_unittest.cc',
-        'run_all_unittests.cc',
+        'test/app_list_test_suite.cc',
+        'test/app_list_test_suite.h',
+        'test/run_all_unittests.cc',
       ],
     },
   ],
