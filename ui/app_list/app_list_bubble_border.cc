@@ -295,7 +295,8 @@ gfx::Rect AppListBubbleBorder::GetBounds(
     // Arrow at top.
     return gfx::Rect(
         gfx::Point(anchor_center_x - arrow_tip_x,
-                   position_relative_to.bottom() - shadow_padding.top()),
+                   position_relative_to.bottom() - shadow_padding.top() -
+                       kArrowHeight),
         border_size);
   } else if (arrow_location() == views::BubbleBorder::BOTTOM_LEFT ||
       arrow_location() == views::BubbleBorder::BOTTOM_RIGHT) {
@@ -303,13 +304,14 @@ gfx::Rect AppListBubbleBorder::GetBounds(
     return gfx::Rect(
         gfx::Point(anchor_center_x - arrow_tip_x,
                    position_relative_to.y() - border_size.height() +
-                       shadow_padding.bottom()),
+                       shadow_padding.bottom() + kArrowHeight),
         border_size);
   } else if (arrow_location() == views::BubbleBorder::LEFT_TOP ||
       arrow_location() == views::BubbleBorder::LEFT_BOTTOM) {
     // Arrow on left.
     return gfx::Rect(
-        gfx::Point(position_relative_to.right() - shadow_padding.left(),
+        gfx::Point(position_relative_to.right() - shadow_padding.left() -
+                       kArrowHeight,
                    anchor_center_y - arrow_tip_y),
         border_size);
   } else if (arrow_location() == views::BubbleBorder::RIGHT_TOP ||
@@ -317,7 +319,7 @@ gfx::Rect AppListBubbleBorder::GetBounds(
     // Arrow on right.
     return gfx::Rect(
         gfx::Point(position_relative_to.x() - border_size.width() +
-                       shadow_padding.right(),
+                       shadow_padding.right() + kArrowHeight,
                    anchor_center_y - arrow_tip_y),
         border_size);
   }
