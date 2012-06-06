@@ -151,6 +151,7 @@ void AlarmManager::OnAlarm(const std::string& extension_id,
   const Alarm* alarm = it.second->get();
   delegate_->OnAlarm(extension_id, *alarm);
 
+  std::string extension_id_copy(extension_id);
   if (!alarm->repeating) {
     RemoveAlarmIterator(it);
   } else {
@@ -158,8 +159,7 @@ void AlarmManager::OnAlarm(const std::string& extension_id,
     scheduled_times_[alarm].time =
         last_poll_time_ + TimeDeltaFromDelay(alarm->delay_in_minutes);
   }
-
-  WriteToPrefs(extension_id);
+  WriteToPrefs(extension_id_copy);
 }
 
 void AlarmManager::AddAlarmImpl(const std::string& extension_id,
