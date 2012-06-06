@@ -91,7 +91,7 @@ class ThreadMock : public IThread {
   bool Suspend() { return true; }
   bool Resume()  { return true; }
 
-  virtual void *GetContext() { return ctx_; }
+  virtual struct NaClSignalContext *GetContext() { return NULL; }
 
  private:
   uint8_t *ctx_;

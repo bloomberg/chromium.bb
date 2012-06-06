@@ -36,12 +36,10 @@ static enum NaClSignalResult SignalHandler(int signal, void *ucontext) {
     uint32_t thread_id = IPlatform::GetCurrentThread();
     IThread* thread = IThread::Acquire(thread_id);
 
-    struct NaClSignalContext *context =
-        (struct NaClSignalContext *)thread->GetContext();
-    NaClSignalContextFromHandler(context, ucontext);
+    NaClSignalContextFromHandler(thread->GetContext(), ucontext);
     if (s_CatchFunc != NULL)
       s_CatchFunc(thread_id, signal, s_CatchCookie);
-    NaClSignalContextToHandler(ucontext, context);
+    NaClSignalContextToHandler(ucontext, thread->GetContext());
 
     IThread::Release(thread);
     return NACL_SIGNAL_RETURN;
@@ -114,7 +112,7 @@ class Thread : public IThread {
     return false;
   }
 
-  virtual void* GetContext() { return &context_; }
+  virtual struct NaClSignalContext *GetContext() { return &context_; }
 
  private:
   uint32_t ref_;

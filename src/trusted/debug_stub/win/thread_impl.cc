@@ -139,11 +139,9 @@ static LONG NTAPI ExceptionCatch(PEXCEPTION_POINTERS ep) {
 #endif
   }
 
-  struct NaClSignalContext *context =
-      (struct NaClSignalContext *)thread->GetContext();
-  NaClSignalContextFromHandler(context, ep->ContextRecord);
+  NaClSignalContextFromHandler(thread->GetContext(), ep->ContextRecord);
   if (NULL != s_CatchFunc) s_CatchFunc(id, sig, s_CatchCookie);
-  NaClSignalContextToHandler(ep->ContextRecord, context);
+  NaClSignalContextToHandler(ep->ContextRecord, thread->GetContext());
 
   IThread::Release(thread);
   return EXCEPTION_CONTINUE_EXECUTION;
@@ -227,7 +225,7 @@ class Thread : public IThread {
     return false;
   }
 
-  virtual void* GetContext() { return &context_; }
+  virtual struct NaClSignalContext *GetContext() { return &context_; }
 
  private:
   uint32_t ref_;

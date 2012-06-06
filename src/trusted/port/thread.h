@@ -23,6 +23,7 @@
 #include "native_client/src/trusted/port/std_types.h"
 
 struct NaClAppThread;
+struct NaClSignalContext;
 
 namespace port {
 
@@ -41,7 +42,7 @@ class IThread {
   virtual bool Suspend() = 0;
   virtual bool Resume() = 0;
 
-  virtual void *GetContext() = 0;
+  virtual struct NaClSignalContext *GetContext() = 0;
 
   static IThread *Create(uint32_t id, struct NaClAppThread *natp);
   static IThread *Acquire(uint32_t id);
