@@ -38,6 +38,11 @@
               "url": {
                 "type": "string",
                 "description": "The URL that initiates the auth flow"
+              },
+              "interactive": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether to launch auth flow in interactive mode. Default is false."
               }
             }
           },

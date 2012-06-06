@@ -35,6 +35,11 @@ namespace extensions {
 class WebAuthFlow : public content::WebContentsDelegate,
                     public WebAuthFlowWindow::Delegate {
  public:
+  enum Mode {
+    INTERACTIVE,  // Show UI to the user if necessary.
+    SILENT        // No UI should be shown.
+  };
+
   class Delegate {
    public:
     // Called when the auth flow is completed successfully.
@@ -62,7 +67,8 @@ class WebAuthFlow : public content::WebContentsDelegate,
   WebAuthFlow(Delegate* delegate,
               content::BrowserContext* browser_context,
               const std::string& extension_id,
-              const GURL& provider_url);
+              const GURL& provider_url,
+              Mode mode);
   virtual ~WebAuthFlow();
 
   // Starts the flow.
@@ -97,6 +103,7 @@ class WebAuthFlow : public content::WebContentsDelegate,
   Delegate* delegate_;
   content::BrowserContext* browser_context_;
   GURL provider_url_;
+  Mode mode_;
   // List of valid redirect URL prefixes.
   std::vector<std::string> valid_prefixes_;
 

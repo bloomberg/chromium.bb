@@ -19,7 +19,6 @@ namespace {
 
 const char kInvalidClientId[] = "Invalid OAuth2 Client ID.";
 const char kInvalidScopes[] = "Invalid OAuth2 scopes.";
-const char kUrlFieldRequired[] = "Missing required field: url";
 const char kInvalidRedirect[] = "Did not redirect to the right URL.";
 
 }  // namespace
@@ -76,20 +75,22 @@ LaunchWebAuthFlowFunction::LaunchWebAuthFlowFunction() {}
 LaunchWebAuthFlowFunction::~LaunchWebAuthFlowFunction() {}
 
 bool LaunchWebAuthFlowFunction::RunImpl() {
-  DictionaryValue* arg1 = NULL;
-  std::string url;
+  DictionaryValue* arg = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &arg));
 
-  if (!args_.get() ||
-      !args_->GetDictionary(0, &arg1) ||
-      !arg1->GetString("url", &url)) {
-    error_ = kUrlFieldRequired;
-    return false;
-  }
+  std::string url;
+  EXTENSION_FUNCTION_VALIDATE(arg->GetString("url", &url));
+
+  bool interactive = false;
+  arg->GetBoolean("interactive", &interactive);
+
+  WebAuthFlow::Mode mode = interactive ?
+      WebAuthFlow::INTERACTIVE : WebAuthFlow::SILENT;
 
   AddRef();  // Balanced in OnAuthFlowSuccess/Failure.
   GURL auth_url(url);
   auth_flow_.reset(new WebAuthFlow(
-      this, profile(), GetExtension()->id(), auth_url));
+      this, profile(), GetExtension()->id(), auth_url, mode));
   auth_flow_->Start();
   return true;
 }

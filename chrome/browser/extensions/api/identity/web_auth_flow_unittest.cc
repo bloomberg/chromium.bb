@@ -47,11 +47,14 @@ class MockWebAuthFlow : public WebAuthFlow {
      WebAuthFlow::Delegate* delegate,
      BrowserContext* browser_context,
      const std::string& extension_id,
-     const GURL& provider_url)
-     : WebAuthFlow(delegate,
-                   browser_context,
-                   extension_id,
-                   provider_url),
+     const GURL& provider_url,
+     bool interactive)
+     : WebAuthFlow(
+           delegate,
+           browser_context,
+           extension_id,
+           provider_url,
+           interactive ? WebAuthFlow::INTERACTIVE : WebAuthFlow::SILENT),
        browser_context_(browser_context),
        web_contents_(NULL),
        window_(NULL) { }
@@ -109,8 +112,11 @@ class WebAuthFlowTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  void CreateAuthFlow(const std::string& extension_id, const GURL& url) {
-    flow_.reset(new MockWebAuthFlow(&delegate_, profile(), extension_id, url));
+  void CreateAuthFlow(const std::string& extension_id,
+                      const GURL& url,
+                      bool interactive) {
+    flow_.reset(new MockWebAuthFlow(
+        &delegate_, profile(), extension_id, url, interactive));
   }
 
   MockWebAuthFlow& flow() {
@@ -134,12 +140,23 @@ class WebAuthFlowTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<MockWebAuthFlow> flow_;
 };
 
-TEST_F(WebAuthFlowTest, SilentRedirectToChromiumAppUrl) {
+TEST_F(WebAuthFlowTest, SilentRedirectToChromiumAppUrlNonInteractive) {
   std::string ext_id = "abcdefghij";
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("https://abcdefghij.chromiumapp.org/google_cb");
 
-  CreateAuthFlow(ext_id, url);
+  CreateAuthFlow(ext_id, url, false);
+  EXPECT_CALL(delegate_, OnAuthFlowSuccess(result.spec())).Times(1);
+  flow_->Start();
+  flow_->contents_tester()->NavigateAndCommit(result);
+}
+
+TEST_F(WebAuthFlowTest, SilentRedirectToChromiumAppUrlInteractive) {
+  std::string ext_id = "abcdefghij";
+  GURL url("https://accounts.google.com/o/oauth2/auth");
+  GURL result("https://abcdefghij.chromiumapp.org/google_cb");
+
+  CreateAuthFlow(ext_id, url, true);
   EXPECT_CALL(delegate_, OnAuthFlowSuccess(result.spec())).Times(1);
   flow_->Start();
   flow_->contents_tester()->NavigateAndCommit(result);
@@ -150,10 +167,20 @@ TEST_F(WebAuthFlowTest, SilentRedirectToChromeExtensionSchemeUrl) {
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("chrome-extension://abcdefghij/google_cb");
 
-  CreateAuthFlow(ext_id, url);
+  CreateAuthFlow(ext_id, url, true);
   EXPECT_CALL(delegate_, OnAuthFlowSuccess(result.spec())).Times(1);
   flow_->Start();
   flow_->contents_tester()->NavigateAndCommit(result);
+}
+
+TEST_F(WebAuthFlowTest, NeedsUIButNonInteractive) {
+  std::string ext_id = "abcdefghij";
+  GURL url("https://accounts.google.com/o/oauth2/auth");
+
+  CreateAuthFlow(ext_id, url, false);
+  EXPECT_CALL(delegate_, OnAuthFlowFailure()).Times(1);
+  flow_->Start();
+  flow_->contents_tester()->TestSetIsLoading(false);
 }
 
 TEST_F(WebAuthFlowTest, UIResultsInSuccess) {
@@ -161,7 +188,7 @@ TEST_F(WebAuthFlowTest, UIResultsInSuccess) {
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("chrome-extension://abcdefghij/google_cb");
 
-  CreateAuthFlow(ext_id, url);
+  CreateAuthFlow(ext_id, url, true);
   EXPECT_CALL(delegate_, OnAuthFlowSuccess(result.spec())).Times(1);
   flow_->Start();
   flow_->contents_tester()->TestSetIsLoading(false);
@@ -174,7 +201,7 @@ TEST_F(WebAuthFlowTest, UIClosedByUser) {
   GURL url("https://accounts.google.com/o/oauth2/auth");
   GURL result("chrome-extension://abcdefghij/google_cb");
 
-  CreateAuthFlow(ext_id, url);
+  CreateAuthFlow(ext_id, url, true);
   EXPECT_CALL(delegate_, OnAuthFlowFailure()).Times(1);
   flow_->Start();
   flow_->contents_tester()->TestSetIsLoading(false);
@@ -186,7 +213,7 @@ TEST_F(WebAuthFlowTest, IsValidRedirectUrl) {
   std::string ext_id = "abcdefghij";
   GURL url("https://accounts.google.com/o/oauth2/auth");
 
-  CreateAuthFlow(ext_id, url);
+  CreateAuthFlow(ext_id, url, false);
 
   // Positive cases.
   EXPECT_TRUE(CallIsValidRedirectUrl(

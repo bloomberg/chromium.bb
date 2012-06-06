@@ -44,10 +44,12 @@ WebAuthFlow::WebAuthFlow(
     Delegate* delegate,
     BrowserContext* browser_context,
     const std::string& extension_id,
-    const GURL& provider_url)
+    const GURL& provider_url,
+    Mode mode)
     : delegate_(delegate),
       browser_context_(browser_context),
       provider_url_(provider_url),
+      mode_(mode),
       contents_(NULL),
       window_(NULL) {
   InitValidRedirectUrlPrefixes(extension_id);
@@ -107,7 +109,6 @@ void WebAuthFlow::NavigationStateChanged(
 
   if (IsValidRedirectUrl(url)) {
     ReportResult(url);
-    return;
   }
 }
 
@@ -121,15 +122,20 @@ WebAuthFlowWindow* WebAuthFlow::CreateAuthWindow() {
 }
 
 void WebAuthFlow::OnUrlLoaded() {
-  if (!window_) {
-    window_ = CreateAuthWindow();
-    // TODO(munjal): Remove this null check once we have implementations
-    // of WebAuthFlowWindow on all platforms.
-    if (!window_)
-      ReportResult(GURL());
-    else
-      window_->Show();
+  // Do nothing if a window is already created.
+  if (window_)
+    return;
+
+  // Report results directly if not in interactive mode.
+  if (mode_ != WebAuthFlow::INTERACTIVE) {
+    ReportResult(GURL());
+    return;
   }
+
+  // We are in interactive mode and window is not shown yet; create
+  // and show the window.
+  window_ = CreateAuthWindow();
+  window_->Show();
 }
 
 void WebAuthFlow::OnClose() {
