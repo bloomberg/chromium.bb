@@ -133,7 +133,7 @@ DownloadId ChromeDownloadManagerDelegate::GetNextId() {
     return DownloadId(this, next_download_id_++);
 
   return BrowserContext::GetDownloadManager(profile_->GetOriginalProfile())->
-      delegate()->GetNextId();
+      GetDelegate()->GetNextId();
 }
 
 bool ChromeDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {

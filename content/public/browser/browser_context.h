@@ -104,7 +104,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual ResourceContext* GetResourceContext() = 0;
 
   // Returns the DownloadManagerDelegate for this context. This will be called
-  // once per context. It's valid to return NULL.
+  // once per context. The embedder owns the delegate and is responsible for
+  // ensuring that it outlives DownloadManager. It's valid to return NULL.
   virtual DownloadManagerDelegate* GetDownloadManagerDelegate() = 0;
 
   // Returns the geolocation permission context for this context.

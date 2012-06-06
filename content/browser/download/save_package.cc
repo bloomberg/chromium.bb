@@ -339,7 +339,7 @@ void SavePackage::OnMHTMLGenerated(const FilePath& path, int64 size) {
   // GDataDownloadObserver::ShouldUpload() to return true.
   // ShouldCompleteDownload() may depend on the gdata uploader to finish.
   download_->OnAllDataSaved(size, DownloadItem::kEmptyFileHash);
-  if (download_manager_->delegate()->ShouldCompleteDownload(
+  if (download_manager_->GetDelegate()->ShouldCompleteDownload(
         download_, base::Bind(&SavePackage::Finish, this)))
     Finish();
 }
@@ -1238,7 +1238,7 @@ void SavePackage::GetSaveInfo() {
   // before calling to it.
   FilePath website_save_dir, download_save_dir;
   DCHECK(download_manager_);
-  download_manager_->delegate()->GetSaveDir(
+  download_manager_->GetDelegate()->GetSaveDir(
       web_contents(), &website_save_dir, &download_save_dir);
   std::string mime_type = web_contents()->GetContentsMimeType();
   std::string accept_languages =
@@ -1308,7 +1308,7 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
   if (can_save_as_complete)
     default_extension = kDefaultHtmlExtension;
 
-  download_manager_->delegate()->ChooseSavePath(
+  download_manager_->GetDelegate()->ChooseSavePath(
       web_contents(),
       suggested_path,
       default_extension,

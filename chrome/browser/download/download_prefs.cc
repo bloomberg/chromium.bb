@@ -111,7 +111,8 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
 DownloadPrefs* DownloadPrefs::FromDownloadManager(
     DownloadManager* download_manager) {
   ChromeDownloadManagerDelegate* delegate =
-      static_cast<ChromeDownloadManagerDelegate*>(download_manager->delegate());
+      static_cast<ChromeDownloadManagerDelegate*>(
+          download_manager->GetDelegate());
   return delegate->download_prefs();
 }
 

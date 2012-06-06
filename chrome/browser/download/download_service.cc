@@ -27,8 +27,8 @@ DownloadService::~DownloadService() {}
 
 void DownloadService::OnManagerCreated(
     const DownloadService::OnManagerCreatedCallback& cb) {
-  DownloadManager* dm = BrowserContext::GetDownloadManager(profile_);
   if (download_manager_created_) {
+    DownloadManager* dm = BrowserContext::GetDownloadManager(profile_);
     cb.Run(dm);
   } else {
     on_manager_created_callbacks_.push_back(cb);
@@ -92,7 +92,7 @@ void DownloadService::SetDownloadManagerDelegateForTesting(
     ChromeDownloadManagerDelegate* new_delegate) {
   // Guarantee everything is properly initialized.
   DownloadManager* dm = BrowserContext::GetDownloadManager(profile_);
-  dm->SetDownloadManagerDelegate(new_delegate);
+  dm->SetDelegate(new_delegate);
   new_delegate->SetDownloadManager(dm);
   manager_delegate_ = new_delegate;
 }

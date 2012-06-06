@@ -181,6 +181,10 @@ void DownloadManagerImpl::SetDelegate(
   delegate_ = delegate;
 }
 
+content::DownloadManagerDelegate* DownloadManagerImpl::GetDelegate() const {
+  return delegate_;
+}
+
 void DownloadManagerImpl::Shutdown() {
   VLOG(20) << __FUNCTION__ << "()"
            << " shutdown_needed_ = " << shutdown_needed_;
@@ -704,15 +708,6 @@ void DownloadManagerImpl::RemoveFromActiveList(DownloadItem* download) {
 
 bool DownloadManagerImpl::GenerateFileHash() {
   return delegate_->GenerateFileHash();
-}
-
-content::DownloadManagerDelegate* DownloadManagerImpl::delegate() const {
-  return delegate_;
-}
-
-void DownloadManagerImpl::SetDownloadManagerDelegate(
-    content::DownloadManagerDelegate* delegate) {
-  delegate_ = delegate;
 }
 
 int DownloadManagerImpl::RemoveDownloadItems(

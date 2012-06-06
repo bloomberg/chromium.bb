@@ -24,6 +24,7 @@ class MockDownloadManager : public content::DownloadManager {
 
   // DownloadManager:
   MOCK_METHOD1(SetDelegate, void(DownloadManagerDelegate* delegate));
+  MOCK_CONST_METHOD0(GetDelegate, content::DownloadManagerDelegate*());
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD2(GetTemporaryDownloads, void(const FilePath& dir_path,
                                            DownloadVector* result));
@@ -81,9 +82,6 @@ class MockDownloadManager : public content::DownloadManager {
   MOCK_METHOD1(SavePageDownloadFinished, void(content::DownloadItem* download));
   MOCK_METHOD1(GetActiveDownloadItem, content::DownloadItem*(int id));
   MOCK_METHOD0(GenerateFileHash, bool());
-  MOCK_CONST_METHOD0(delegate, content::DownloadManagerDelegate*());
-  MOCK_METHOD1(SetDownloadManagerDelegate, void(
-      content::DownloadManagerDelegate* delegate));
   MOCK_METHOD2(ContinueDownloadWithPath, void(content::DownloadItem* download,
                                               const FilePath& chosen_file));
   MOCK_METHOD1(GetActiveDownload, content::DownloadItem*(int32 download_id));

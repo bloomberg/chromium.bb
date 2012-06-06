@@ -125,7 +125,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     // Query the history system.
     ChromeDownloadManagerDelegate* delegate =
       static_cast<ChromeDownloadManagerDelegate*>(
-          GetDownloadManager()->delegate());
+          GetDownloadManager()->GetDelegate());
     delegate->download_history()->Load(
         base::Bind(&SavePageBrowserTest::OnQueryDownloadEntriesComplete,
                    base::Unretained(this)));

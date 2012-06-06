@@ -29,6 +29,7 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // content::DownloadManager functions.
   virtual void SetDelegate(content::DownloadManagerDelegate* delegate) OVERRIDE;
+  virtual content::DownloadManagerDelegate* GetDelegate() const OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void GetTemporaryDownloads(const FilePath& dir_path,
                                      DownloadVector* result) OVERRIDE;
@@ -84,9 +85,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       content::DownloadItem* download) OVERRIDE;
   virtual content::DownloadItem* GetActiveDownloadItem(int id) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
-  virtual content::DownloadManagerDelegate* delegate() const OVERRIDE;
-  virtual void SetDownloadManagerDelegate(
-      content::DownloadManagerDelegate* delegate) OVERRIDE;
 
   // Overridden from DownloadItemImpl::Delegate
   // (Note that |GetBrowserContext| are present in both interfaces.)

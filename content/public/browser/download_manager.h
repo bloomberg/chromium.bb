@@ -64,9 +64,10 @@ class CONTENT_EXPORT DownloadManager
   // classes have no pending downloads.
   static bool EnsureNoPendingDownloadsForTesting();
 
-  // Sets the delegate for this DownloadManager. The delegate has to live past
-  // its Shutdown method being called.
+  // Sets/Gets the delegate for this DownloadManager. The delegate has to live
+  // past its Shutdown method being called (by the DownloadManager).
   virtual void SetDelegate(DownloadManagerDelegate* delegate) = 0;
+  virtual DownloadManagerDelegate* GetDelegate() const = 0;
 
   // Shutdown the download manager. Called by content before destruction.
   virtual void Shutdown() = 0;
@@ -230,13 +231,6 @@ class CONTENT_EXPORT DownloadManager
   virtual DownloadItem* GetActiveDownloadItem(int id) = 0;
 
   virtual bool GenerateFileHash() = 0;
-
-  virtual DownloadManagerDelegate* delegate() const = 0;
-
-  // For testing only.  May be called from tests indirectly (through
-  // other for testing only methods).
-  virtual void SetDownloadManagerDelegate(
-      DownloadManagerDelegate* delegate) = 0;
 
  protected:
   virtual ~DownloadManager() {}
