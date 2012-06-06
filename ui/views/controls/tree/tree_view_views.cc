@@ -653,7 +653,7 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
     icon_x = bounds.right() - icon_x - open_icon_.width();
   else
     icon_x += bounds.x();
-  canvas->DrawImageInt(
+  canvas->DrawBitmapInt(
       icon, icon_x,
       bounds.y() + (bounds.height() - icon.height()) / 2);
 

@@ -98,8 +98,8 @@ void GlowHoverController::Draw(gfx::Canvas* canvas,
   }
   gfx::ImageSkia result = SkBitmapOperations::CreateMaskedBitmap(
       hover_canvas.ExtractBitmap(), mask_image);
-  canvas->DrawImageInt(result, (view_->width() - mask_image.width()) / 2,
-                       (view_->height() - mask_image.height()) / 2);
+  canvas->DrawBitmapInt(result, (view_->width() - mask_image.width()) / 2,
+                        (view_->height() - mask_image.height()) / 2);
 }
 
 void GlowHoverController::AnimationEnded(const ui::Animation* animation) {

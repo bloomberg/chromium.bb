@@ -216,7 +216,7 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
     gfx::Rect check_rect(0, 0, check_image->width(), check_image->height());
     int y = avatar_image->height() - check_image->height();
     int x = avatar_image->width() - check_image->width() + kCheckMarkXOffset;
-    canvas.DrawImageInt(*check_image, x, y);
+    canvas.DrawBitmapInt(*check_image, x, y);
 
     SkBitmap final_image = canvas.ExtractBitmap();
     avatar_pixbuf = gfx::GdkPixbufFromSkBitmap(final_image);

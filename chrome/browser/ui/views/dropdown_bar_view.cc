@@ -77,12 +77,12 @@ void DropdownBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   SkPaint paint;
   paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
   // Draw left edge.
-  canvas->DrawImageInt(*left_alpha_mask_, 0, 0, left_edge_width, mask_height,
+  canvas->DrawBitmapInt(*left_alpha_mask_, 0, 0, left_edge_width, mask_height,
       0, 0, left_edge_width, height, false, paint);
 
   // Draw right edge.
   int x_right_edge = view->bounds().width() - right_edge_width;
-  canvas->DrawImageInt(*right_alpha_mask_, 0, 0, right_edge_width,
+  canvas->DrawBitmapInt(*right_alpha_mask_, 0, 0, right_edge_width,
       mask_height, x_right_edge, 0, right_edge_width, height, false, paint);
 }
 
@@ -115,7 +115,7 @@ void DropdownBarView::OnPaint(gfx::Canvas* canvas) {
      canvas->Translate(bounds().origin());
      OnPaintBackground(&animating_edges);
      OnPaintBorder(&animating_edges);
-     canvas->DrawImageInt(animating_edges.ExtractBitmap(), bounds().x(),
+     canvas->DrawBitmapInt(animating_edges.ExtractBitmap(), bounds().x(),
          animation_offset());
   }
 }

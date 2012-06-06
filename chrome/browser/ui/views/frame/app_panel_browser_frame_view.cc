@@ -361,11 +361,11 @@ void AppPanelBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   canvas->TileImageInt(*theme_frame, 0, 0, width(), theme_frame->height());
 
   // Top.
-  canvas->DrawImageInt(*top_left_corner, 0, 0);
+  canvas->DrawBitmapInt(*top_left_corner, 0, 0);
   canvas->TileImageInt(*top_edge, top_left_corner->width(), 0,
                        width() - top_right_corner->width(), top_edge->height());
-  canvas->DrawImageInt(*top_right_corner,
-                       width() - top_right_corner->width(), 0);
+  canvas->DrawBitmapInt(*top_right_corner,
+                        width() - top_right_corner->width(), 0);
 
   // Right.
   canvas->TileImageInt(*right_edge, width() - right_edge->width(),
@@ -373,15 +373,15 @@ void AppPanelBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
       height() - top_right_corner->height() - bottom_right_corner->height());
 
   // Bottom.
-  canvas->DrawImageInt(*bottom_right_corner,
-                       width() - bottom_right_corner->width(),
-                       height() - bottom_right_corner->height());
+  canvas->DrawBitmapInt(*bottom_right_corner,
+                        width() - bottom_right_corner->width(),
+                        height() - bottom_right_corner->height());
   canvas->TileImageInt(*bottom_edge, bottom_left_corner->width(),
       height() - bottom_edge->height(),
       width() - bottom_left_corner->width() - bottom_right_corner->width(),
       bottom_edge->height());
-  canvas->DrawImageInt(*bottom_left_corner, 0,
-                       height() - bottom_left_corner->height());
+  canvas->DrawBitmapInt(*bottom_left_corner, 0,
+                        height() - bottom_left_corner->height());
 
   // Left.
   canvas->TileImageInt(*left_edge, 0, top_left_corner->height(),
@@ -431,11 +431,11 @@ void AppPanelBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 
   // Top.
   int top_edge_y = client_area_top - top->height();
-  canvas->DrawImageInt(*top_left, client_area_bounds.x() - top_left->width(),
-                       top_edge_y);
+  canvas->DrawBitmapInt(*top_left, client_area_bounds.x() - top_left->width(),
+                        top_edge_y);
   canvas->TileImageInt(*top, client_area_bounds.x(), top_edge_y,
                        client_area_bounds.width(), top->height());
-  canvas->DrawImageInt(*top_right, client_area_bounds.right(), top_edge_y);
+  canvas->DrawBitmapInt(*top_right, client_area_bounds.right(), top_edge_y);
 
   // Right.
   int client_area_bottom =
@@ -445,11 +445,11 @@ void AppPanelBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
                        right->width(), client_area_height);
 
   // Bottom.
-  canvas->DrawImageInt(*bottom_right, client_area_bounds.right(),
-                       client_area_bottom);
+  canvas->DrawBitmapInt(*bottom_right, client_area_bounds.right(),
+                        client_area_bottom);
   canvas->TileImageInt(*bottom, client_area_bounds.x(), client_area_bottom,
                        client_area_bounds.width(), bottom_right->height());
-  canvas->DrawImageInt(*bottom_left,
+  canvas->DrawBitmapInt(*bottom_left,
       client_area_bounds.x() - bottom_left->width(), client_area_bottom);
 
   // Left.

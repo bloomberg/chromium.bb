@@ -128,9 +128,9 @@ class NativeThemeBase : public NativeTheme {
   bool IntersectsClipRectInt(SkCanvas* canvas,
                              int x, int y, int w, int h) const;
 
-  void DrawImageInt(SkCanvas* canvas, const gfx::ImageSkia& image,
-                    int src_x, int src_y, int src_w, int src_h,
-                    int dest_x, int dest_y, int dest_w, int dest_h) const;
+  void DrawBitmapInt(SkCanvas* canvas, const gfx::ImageSkia& image,
+                     int src_x, int src_y, int src_w, int src_h,
+                     int dest_x, int dest_y, int dest_w, int dest_h) const;
 
   void DrawTiledImage(SkCanvas* canvas,
                       const gfx::ImageSkia& image,

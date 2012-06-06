@@ -128,7 +128,7 @@ void AvatarMenuButton::OnPaint(gfx::Canvas* canvas) {
   // incognito image has shadows at the top that make the apparent center below
   // the real center.
   int dst_y = Round((height() - dst_height) / 2.0);
-  canvas->DrawImageInt(button_icon_, 0, 0, button_icon_.width(),
+  canvas->DrawBitmapInt(button_icon_, 0, 0, button_icon_.width(),
       button_icon_.height(), dst_x, dst_y, dst_width, dst_height, false);
 }
 

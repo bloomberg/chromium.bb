@@ -89,7 +89,7 @@ gfx::ImageSkia* GetRtlSubmenuArrowImage() {
     const gfx::ImageSkia* r = rb.GetImageNamed(IDR_MENU_ARROW).ToImageSkia();
     gfx::Canvas canvas(gfx::Size(r->width(), r->height()), false);
     canvas.Scale(-1, 1);
-    canvas.DrawImageInt(*r, - r->width(), 0);
+    canvas.DrawBitmapInt(*r, - r->width(), 0);
     kRtlArrow = new gfx::ImageSkia(canvas.ExtractBitmap());
   }
   return kRtlArrow;

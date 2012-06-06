@@ -354,7 +354,7 @@ void NewTabButton::OnMouseReleased(const views::MouseEvent& event) {
 
 void NewTabButton::OnPaint(gfx::Canvas* canvas) {
   SkBitmap image = GetBitmap();
-  canvas->DrawImageInt(image, 0, height() - image.height());
+  canvas->DrawBitmapInt(image, 0, height() - image.height());
 }
 
 bool NewTabButton::ShouldUseNativeFrame() const {
@@ -423,14 +423,14 @@ SkBitmap NewTabButton::GetBitmapForState(
   gfx::ImageSkia* overlay = GetThemeProvider()->GetImageSkiaNamed(overlay_id);
 
   gfx::Canvas canvas(gfx::Size(overlay->width(), overlay->height()), false);
-  canvas.DrawImageInt(GetBackgroundBitmap(state), 0, 0);
+  canvas.DrawBitmapInt(GetBackgroundBitmap(state), 0, 0);
 
   // Draw the button border with a slight alpha.
   const int kNativeFrameOverlayAlpha = 178;
   const int kOpaqueFrameOverlayAlpha = 230;
   canvas.SaveLayerAlpha(ShouldUseNativeFrame() ?
       kNativeFrameOverlayAlpha : kOpaqueFrameOverlayAlpha);
-  canvas.DrawImageInt(*overlay, 0, 0);
+  canvas.DrawBitmapInt(*overlay, 0, 0);
   canvas.Restore();
 
   return canvas.ExtractBitmap();

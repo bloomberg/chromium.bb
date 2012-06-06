@@ -617,8 +617,8 @@ void AutocompleteResultView::OnPaint(gfx::Canvas* canvas) {
   if (!match_.associated_keyword.get() ||
       keyword_icon_->x() > icon_bounds_.right()) {
     // Paint the icon.
-    canvas->DrawImageInt(*GetIcon(), GetMirroredXForRect(icon_bounds_),
-                         icon_bounds_.y());
+    canvas->DrawBitmapInt(*GetIcon(), GetMirroredXForRect(icon_bounds_),
+                          icon_bounds_.y());
 
     // Paint the text.
     int x = GetMirroredXForRect(text_bounds_);

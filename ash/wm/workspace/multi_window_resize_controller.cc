@@ -75,7 +75,7 @@ class MultiWindowResizeController::ResizeView : public views::View {
     return gfx::Size(image_->width(), image_->height());
   }
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->DrawImageInt(*image_, 0, 0);
+    canvas->DrawBitmapInt(*image_, 0, 0);
   }
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
     gfx::Point location(event.location());

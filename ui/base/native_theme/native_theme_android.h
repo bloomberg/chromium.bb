@@ -115,16 +115,16 @@ class NativeThemeAndroid : public NativeTheme {
 
   // Draw the dest rectangle with the given image which might be scaled if its
   // size is not same as target rectangle.
-  void DrawImageInt(SkCanvas* canvas,
-                    const gfx::ImageSkia& image,
-                    int src_x,
-                    int src_y,
-                    int src_w,
-                    int src_h,
-                    int dest_x,
-                    int dest_y,
-                    int dest_w,
-                    int dest_h) const;
+  void DrawBitmapInt(SkCanvas* canvas,
+                     const gfx::ImageSkia& image,
+                     int src_x,
+                     int src_y,
+                     int src_w,
+                     int src_h,
+                     int dest_x,
+                     int dest_y,
+                     int dest_w,
+                     int dest_h) const;
 
   // Draw the target rectangle with the |bitmap| accroding the given
   // |tile_scale_x| and |tile_scale_y|

@@ -307,23 +307,23 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
 
   // Mask out the top left corner.
-  canvas->DrawImageInt(*toolbar_left_mask, left_x, y, paint);
+  canvas->DrawBitmapInt(*toolbar_left_mask, left_x, y, paint);
 
   // Mask out the top right corner.
   int right_x =
       x + w + kContentEdgeShadowThickness - toolbar_right_mask->width();
-  canvas->DrawImageInt(*toolbar_right_mask, right_x, y, paint);
+  canvas->DrawBitmapInt(*toolbar_right_mask, right_x, y, paint);
 
   // Draw left edge.
-  canvas->DrawImageInt(*toolbar_left, left_x, y);
+  canvas->DrawBitmapInt(*toolbar_left, left_x, y);
 
   // Draw center edge.
   canvas->TileImageInt(*toolbar_center, left_x + toolbar_left->width(), y,
       right_x - (left_x + toolbar_left->width()), toolbar_center->height());
 
   // Right edge.
-  canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
-                       right_x, y);
+  canvas->DrawBitmapInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
+                        right_x, y);
 
   // Draw the content/toolbar separator.
   canvas->FillRect(gfx::Rect(x + kClientEdgeThickness,
@@ -350,7 +350,7 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   gfx::ImageSkia* right = tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
   canvas->TileImageInt(*right, client_area_bounds.right(), client_area_top,
                        right->width(), client_area_height);
-  canvas->DrawImageInt(
+  canvas->DrawBitmapInt(
       *tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
       client_area_bounds.right(), client_area_bottom);
   gfx::ImageSkia* bottom = tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
@@ -359,7 +359,7 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
       bottom->height());
   gfx::ImageSkia* bottom_left =
       tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER);
-  canvas->DrawImageInt(*bottom_left,
+  canvas->DrawBitmapInt(*bottom_left,
       client_area_bounds.x() - bottom_left->width(), client_area_bottom);
   gfx::ImageSkia* left = tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE);
   canvas->TileImageInt(*left, client_area_bounds.x() - left->width(),

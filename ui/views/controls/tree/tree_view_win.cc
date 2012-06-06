@@ -696,7 +696,7 @@ HIMAGELIST TreeView::CreateImageList() {
         // Draw our icons into this canvas.
         int height_offset = (height - model_images[i].height()) / 2;
         int width_offset = (width - model_images[i].width()) / 2;
-        canvas.DrawImageInt(model_images[i], width_offset, height_offset);
+        canvas.DrawBitmapInt(model_images[i], width_offset, height_offset);
         model_icon = IconUtil::CreateHICONFromSkBitmap(canvas.ExtractBitmap());
       } else {
         model_icon = IconUtil::CreateHICONFromSkBitmap(model_images[i]);

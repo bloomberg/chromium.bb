@@ -551,15 +551,15 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
       hover_canvas.ExtractBitmap(), background_image);
 
   // Draw the tab background to the canvas.
-  canvas->DrawImageInt(background_image, 0, 0);
+  canvas->DrawBitmapInt(background_image, 0, 0);
 
   // And then the gradient on top of that.
   if (mini_title_animation_->current_part_index() == 2) {
     canvas->SaveLayerAlpha(mini_title_animation_->CurrentValueBetween(255, 0));
-    canvas->DrawImageInt(hover_image, 0, 0);
+    canvas->DrawBitmapInt(hover_image, 0, 0);
     canvas->Restore();
   } else {
-    canvas->DrawImageInt(hover_image, 0, 0);
+    canvas->DrawBitmapInt(hover_image, 0, 0);
   }
 }
 
@@ -600,7 +600,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
       *tab_bg, offset, bg_offset_y, tab_image->l_width, height());
   gfx::ImageSkia theme_l =
       SkBitmapOperations::CreateMaskedBitmap(tab_l, *alpha->image_l);
-  background_canvas.DrawImageInt(theme_l,
+  background_canvas.DrawBitmapInt(theme_l,
       0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
       0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
       false);
@@ -611,7 +611,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
       tab_image->r_width, height());
   gfx::ImageSkia theme_r =
       SkBitmapOperations::CreateMaskedBitmap(tab_r, *alpha->image_r);
-  background_canvas.DrawImageInt(theme_r,
+  background_canvas.DrawBitmapInt(theme_r,
       0, 0, theme_r.width(), theme_r.height() - kToolbarOverlap,
       width() - theme_r.width(), 0, theme_r.width(),
       theme_r.height() - kToolbarOverlap, false);
@@ -627,7 +627,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
      width() - tab_image->l_width - tab_image->r_width,
      height() - drop_shadow_height() - kToolbarOverlap - tab_image->y_offset);
 
-  canvas->DrawImageInt(background_canvas.ExtractBitmap(), 0, 0);
+  canvas->DrawBitmapInt(background_canvas.ExtractBitmap(), 0, 0);
 
   if (!GetThemeProvider()->HasCustomImage(tab_id) &&
       hover_controller().ShouldDraw()) {
@@ -635,14 +635,14 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   }
 
   // Now draw the highlights/shadows around the tab edge.
-  canvas->DrawImageInt(*tab_inactive_image->image_l, 0, 0);
+  canvas->DrawBitmapInt(*tab_inactive_image->image_l, 0, 0);
   canvas->TileImageInt(*tab_inactive_image->image_c,
                        tab_inactive_image->l_width, 0,
                        width() - tab_inactive_image->l_width -
                            tab_inactive_image->r_width,
                        height());
-  canvas->DrawImageInt(*tab_inactive_image->image_r,
-                       width() - tab_inactive_image->r_width, 0);
+  canvas->DrawBitmapInt(*tab_inactive_image->image_r,
+                        width() - tab_inactive_image->r_width, 0);
 }
 
 void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
@@ -661,14 +661,14 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
       *tab_bg, offset, 0, tab_image->l_width, height());
   gfx::ImageSkia theme_l =
       SkBitmapOperations::CreateMaskedBitmap(tab_l, *alpha->image_l);
-  canvas->DrawImageInt(theme_l, 0, 0);
+  canvas->DrawBitmapInt(theme_l, 0, 0);
 
   // Draw right edge.
   gfx::ImageSkia tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
       offset + width() - tab_image->r_width, 0, tab_image->r_width, height());
   gfx::ImageSkia theme_r =
       SkBitmapOperations::CreateMaskedBitmap(tab_r, *alpha->image_r);
-  canvas->DrawImageInt(theme_r, width() - tab_image->r_width, 0);
+  canvas->DrawBitmapInt(theme_r, width() - tab_image->r_width, 0);
 
   // Draw center.  Instead of masking out the top portion we simply skip over it
   // by incrementing by GetDropShadowHeight(), since it's a simple rectangle.
@@ -681,10 +681,10 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
      height() - drop_shadow_height() - tab_image->y_offset);
 
   // Now draw the highlights/shadows around the tab edge.
-  canvas->DrawImageInt(*tab_image->image_l, 0, 0);
+  canvas->DrawBitmapInt(*tab_image->image_l, 0, 0);
   canvas->TileImageInt(*tab_image->image_c, tab_image->l_width, 0,
       width() - tab_image->l_width - tab_image->r_width, height());
-  canvas->DrawImageInt(*tab_image->image_r, width() - tab_image->r_width, 0);
+  canvas->DrawBitmapInt(*tab_image->image_r, width() - tab_image->r_width, 0);
 }
 
 int Tab::IconCapacity() const {

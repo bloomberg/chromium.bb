@@ -86,7 +86,7 @@ SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
   // Render the badge bitmap and overlay into a canvas.
   scoped_ptr<gfx::Canvas> canvas(
       new gfx::Canvas(gfx::Size(badge_width, icon.height()), false));
-  canvas->DrawImageInt(icon, 0, 0);
+  canvas->DrawBitmapInt(icon, 0, 0);
 
   // Draw the text overlay centered horizontally and vertically. Skia expects
   // us to specify the lower left coordinate of the text box, which is why we

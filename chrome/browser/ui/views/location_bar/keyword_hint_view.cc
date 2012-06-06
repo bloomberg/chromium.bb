@@ -88,9 +88,9 @@ void KeywordHintView::OnPaint(gfx::Canvas* canvas) {
                               kTabButtonImage->width(),
                               kTabButtonImage->height());
   tab_button_bounds.set_x(GetMirroredXForRect(tab_button_bounds));
-  canvas->DrawImageInt(*kTabButtonImage,
-                       tab_button_bounds.x(),
-                       tab_button_bounds.y());
+  canvas->DrawBitmapInt(*kTabButtonImage,
+                        tab_button_bounds.x(),
+                        tab_button_bounds.y());
 }
 
 gfx::Size KeywordHintView::GetPreferredSize() {

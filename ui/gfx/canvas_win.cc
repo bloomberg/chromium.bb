@@ -455,7 +455,7 @@ void Canvas::DrawStringWithHalo(const string16& text,
   }
 
   // Draw the halo bitmap with blur.
-  DrawImageInt(text_bitmap, x - 1, y - 1);
+  DrawBitmapInt(text_bitmap, x - 1, y - 1);
 }
 
 void Canvas::DrawFadeTruncatingString(

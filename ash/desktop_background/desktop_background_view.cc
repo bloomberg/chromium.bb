@@ -103,7 +103,7 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
     }
 
     gfx::Rect wallpaper_cropped_rect = wallpaper_rect.Center(cropped_size);
-    canvas->DrawImageInt(wallpaper_,
+    canvas->DrawBitmapInt(wallpaper_,
         wallpaper_cropped_rect.x(), wallpaper_cropped_rect.y(),
         wallpaper_cropped_rect.width(), wallpaper_cropped_rect.height(),
         0, 0, width(), height(),
@@ -112,11 +112,11 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
     canvas->TileImageInt(wallpaper_, 0, 0, width(), height());
   } else if (wallpaper_layout_ == ash::STRETCH) {
     // This is generally not recommended as it may show artifacts.
-    canvas->DrawImageInt(wallpaper_, 0, 0, wallpaper_.width(),
+    canvas->DrawBitmapInt(wallpaper_, 0, 0, wallpaper_.width(),
         wallpaper_.height(), 0, 0, width(), height(), true);
   } else {
     // All other are simply centered, and not scaled (but may be clipped).
-     canvas->DrawImageInt(wallpaper_, (width() - wallpaper_.width()) / 2,
+     canvas->DrawBitmapInt(wallpaper_, (width() - wallpaper_.width()) / 2,
          (height() - wallpaper_.height()) / 2);
   }
 }

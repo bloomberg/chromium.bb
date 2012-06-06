@@ -118,19 +118,19 @@ class BitmapScrollBarThumb : public BaseScrollBarThumb {
  protected:
   // View overrides:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->DrawImageInt(*start_cap_image(), 0, 0);
+    canvas->DrawBitmapInt(*start_cap_image(), 0, 0);
     int top_cap_height = start_cap_image()->height();
     int bottom_cap_height = end_cap_image()->height();
     int thumb_body_height = height() - top_cap_height - bottom_cap_height;
     canvas->TileImageInt(*background_image(), 0, top_cap_height,
                          background_image()->width(), thumb_body_height);
-    canvas->DrawImageInt(*end_cap_image(), 0,
-                         height() - bottom_cap_height);
+    canvas->DrawBitmapInt(*end_cap_image(), 0,
+                          height() - bottom_cap_height);
 
     // Paint the grippy over the track.
     int grippy_x = (width() - grippy_image()->width()) / 2;
     int grippy_y = (thumb_body_height - grippy_image()->height()) / 2;
-    canvas->DrawImageInt(*grippy_image(), grippy_x, grippy_y);
+    canvas->DrawBitmapInt(*grippy_image(), grippy_x, grippy_y);
   }
 
  private:

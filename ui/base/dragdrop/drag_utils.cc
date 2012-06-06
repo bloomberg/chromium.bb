@@ -41,7 +41,7 @@ void CreateDragImageForFile(const FilePath& file_name,
   gfx::Canvas canvas(gfx::Size(width, height), false /* translucent */);
 
   // Paint the icon.
-  canvas.DrawImageInt(*icon, (width - icon->width()) / 2, 0);
+  canvas.DrawBitmapInt(*icon, (width - icon->width()) / 2, 0);
 
   string16 name = file_name.BaseName().LossyDisplayName();
   const int flags = gfx::Canvas::TEXT_ALIGN_CENTER;

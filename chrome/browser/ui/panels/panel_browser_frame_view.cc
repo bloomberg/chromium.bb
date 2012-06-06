@@ -698,17 +698,17 @@ void PanelBrowserFrameView::PaintFrameBackground(gfx::Canvas* canvas) {
   // transition which looks bad.
 
   // Left border, below title-bar.
-  canvas->DrawImageInt(*image, 0, top_area_height - 1, thickness, 1,
+  canvas->DrawBitmapInt(*image, 0, top_area_height - 1, thickness, 1,
       0, top_area_height, thickness, height() - top_area_height, false);
 
   // Right border, below title-bar.
-  canvas->DrawImageInt(*image, (width() % image->width()) - thickness,
+  canvas->DrawBitmapInt(*image, (width() % image->width()) - thickness,
       top_area_height - 1, thickness, 1,
       width() - thickness, top_area_height,
       thickness, height() - top_area_height, false);
 
   // Bottom border.
-  canvas->DrawImageInt(*image, 0, top_area_height - 1, image->width(), 1,
+  canvas->DrawBitmapInt(*image, 0, top_area_height - 1, image->width(), 1,
       0, height() - thickness, width(), thickness, false);
 }
 
@@ -720,11 +720,11 @@ void PanelBrowserFrameView::PaintFrameEdge(gfx::Canvas* canvas) {
 
   // Draw the top border.
   const EdgeResources& frame_edges = GetFrameEdges();
-  canvas->DrawImageInt(*(frame_edges.top_left), 0, 0);
+  canvas->DrawBitmapInt(*(frame_edges.top_left), 0, 0);
   canvas->TileImageInt(
       *(frame_edges.top), frame_edges.top_left->width(), 0,
       width() - frame_edges.top_right->width(), frame_edges.top->height());
-  canvas->DrawImageInt(
+  canvas->DrawBitmapInt(
       *(frame_edges.top_right),
       width() - frame_edges.top_right->width(), 0);
 
@@ -736,7 +736,7 @@ void PanelBrowserFrameView::PaintFrameEdge(gfx::Canvas* canvas) {
           frame_edges.bottom_right->height());
 
   // Draw the bottom border.
-  canvas->DrawImageInt(
+  canvas->DrawBitmapInt(
       *(frame_edges.bottom_right),
       width() - frame_edges.bottom_right->width(),
       height() - frame_edges.bottom_right->height());
@@ -746,7 +746,7 @@ void PanelBrowserFrameView::PaintFrameEdge(gfx::Canvas* canvas) {
       width() - frame_edges.bottom_left->width() -
           frame_edges.bottom_right->width(),
       frame_edges.bottom->height());
-  canvas->DrawImageInt(
+  canvas->DrawBitmapInt(
       *(frame_edges.bottom_left), 0,
       height() - frame_edges.bottom_left->height());
 

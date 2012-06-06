@@ -227,7 +227,7 @@ void ImageGrid::ImagePainter::SetClipRect(const gfx::Rect& clip_rect,
 void ImageGrid::ImagePainter::OnPaintLayer(gfx::Canvas* canvas) {
   if (!clip_rect_.IsEmpty())
     canvas->ClipRect(clip_rect_);
-  canvas->DrawImageInt(*(image_->ToImageSkia()), 0, 0);
+  canvas->DrawBitmapInt(*(image_->ToImageSkia()), 0, 0);
 }
 
 void ImageGrid::ImagePainter::OnDeviceScaleFactorChanged(

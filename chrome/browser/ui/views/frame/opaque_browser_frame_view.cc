@@ -671,10 +671,10 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
 
   // Mask the left edge.
   int left_x = x - kContentEdgeShadowThickness;
-  canvas->DrawImageInt(*toolbar_left_mask, 0, 0, toolbar_left_mask->width(),
-                       split_point, left_x, y, toolbar_left_mask->width(),
-                       split_point, false, paint);
-  canvas->DrawImageInt(*toolbar_left_mask, 0,
+  canvas->DrawBitmapInt(*toolbar_left_mask, 0, 0, toolbar_left_mask->width(),
+                        split_point, left_x, y, toolbar_left_mask->width(),
+                        split_point, false, paint);
+  canvas->DrawBitmapInt(*toolbar_left_mask, 0,
       toolbar_left_mask->height() - bottom_edge_height,
       toolbar_left_mask->width(), bottom_edge_height, left_x, bottom_y,
       toolbar_left_mask->width(), bottom_edge_height, false, paint);
@@ -682,18 +682,18 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   // Mask the right edge.
   int right_x =
       x + w - toolbar_right_mask->width() + kContentEdgeShadowThickness;
-  canvas->DrawImageInt(*toolbar_right_mask, 0, 0, toolbar_right_mask->width(),
-                       split_point, right_x, y, toolbar_right_mask->width(),
-                       split_point, false, paint);
-  canvas->DrawImageInt(*toolbar_right_mask, 0,
+  canvas->DrawBitmapInt(*toolbar_right_mask, 0, 0, toolbar_right_mask->width(),
+                        split_point, right_x, y, toolbar_right_mask->width(),
+                        split_point, false, paint);
+  canvas->DrawBitmapInt(*toolbar_right_mask, 0,
       toolbar_right_mask->height() - bottom_edge_height,
       toolbar_right_mask->width(), bottom_edge_height, right_x, bottom_y,
       toolbar_right_mask->width(), bottom_edge_height, false, paint);
   canvas->Restore();
 
-  canvas->DrawImageInt(*toolbar_left, 0, 0, toolbar_left->width(), split_point,
-                       left_x, y, toolbar_left->width(), split_point, false);
-  canvas->DrawImageInt(*toolbar_left, 0,
+  canvas->DrawBitmapInt(*toolbar_left, 0, 0, toolbar_left->width(), split_point,
+                        left_x, y, toolbar_left->width(), split_point, false);
+  canvas->DrawBitmapInt(*toolbar_left, 0,
       toolbar_left->height() - bottom_edge_height, toolbar_left->width(),
       bottom_edge_height, left_x, bottom_y, toolbar_left->width(),
       bottom_edge_height, false);
@@ -706,9 +706,9 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
 
   gfx::ImageSkia* toolbar_right = tp->GetImageSkiaNamed(
       IDR_CONTENT_TOP_RIGHT_CORNER);
-  canvas->DrawImageInt(*toolbar_right, 0, 0, toolbar_right->width(),
+  canvas->DrawBitmapInt(*toolbar_right, 0, 0, toolbar_right->width(),
       split_point, right_x, y, toolbar_right->width(), split_point, false);
-  canvas->DrawImageInt(*toolbar_right, 0,
+  canvas->DrawBitmapInt(*toolbar_right, 0,
       toolbar_right->height() - bottom_edge_height, toolbar_right->width(),
       bottom_edge_height, right_x, bottom_y, toolbar_right->width(),
       bottom_edge_height, false);
@@ -747,12 +747,12 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
     int top_edge_y = client_area_top - top_center->height();
     int height = client_area_top - top_edge_y;
 
-    canvas->DrawImageInt(*top_left, 0, 0, top_left->width(), height,
+    canvas->DrawBitmapInt(*top_left, 0, 0, top_left->width(), height,
         client_area_bounds.x() - top_left->width(), top_edge_y,
         top_left->width(), height, false);
     canvas->TileImageInt(*top_center, 0, 0, client_area_bounds.x(), top_edge_y,
       client_area_bounds.width(), std::min(height, top_center->height()));
-    canvas->DrawImageInt(*top_right, 0, 0, top_right->width(), height,
+    canvas->DrawBitmapInt(*top_right, 0, 0, top_right->width(), height,
         client_area_bounds.right(), top_edge_y,
         top_right->width(), height, false);
 
@@ -772,7 +772,7 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   gfx::ImageSkia* right = tp->GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
   canvas->TileImageInt(*right, client_area_bounds.right(), image_top,
                        right->width(), image_height);
-  canvas->DrawImageInt(
+  canvas->DrawBitmapInt(
       *tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
       client_area_bounds.right(), client_area_bottom);
   gfx::ImageSkia* bottom = tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
@@ -781,7 +781,7 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
       bottom->height());
   gfx::ImageSkia* bottom_left =
       tp->GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER);
-  canvas->DrawImageInt(*bottom_left,
+  canvas->DrawBitmapInt(*bottom_left,
       client_area_bounds.x() - bottom_left->width(), client_area_bottom);
   gfx::ImageSkia* left = tp->GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE);
   canvas->TileImageInt(*left, client_area_bounds.x() - left->width(),
