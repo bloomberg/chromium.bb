@@ -261,21 +261,6 @@ bool IsIsolatedAppInProcess(const GURL& site_url,
   return false;
 }
 
-// If |url| has an extension or isolated app (not a hosted app) associated with
-// it, return it.  Otherwise return null.
-const Extension* GetExtensionOrIsolatedApp(const GURL& url,
-                                           ExtensionService* service) {
-  const Extension* extension =
-      service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(url));
-  // Ignore hosted apps that aren't isolated apps.
-  if (extension &&
-      extension->is_hosted_app() &&
-      !extension->is_storage_isolated())
-    extension = NULL;
-  return extension;
-}
-
-
 bool CertMatchesFilter(const net::X509Certificate& cert,
                        const base::DictionaryValue& filter) {
   // TODO(markusheintz): This is the minimal required filter implementation.
@@ -646,29 +631,28 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
                  site_instance->GetId()));
 }
 
-bool ChromeContentBrowserClient::ShouldSwapBrowsingInstanceForNavigation(
-    content::BrowserContext* browser_context,
+bool ChromeContentBrowserClient::ShouldSwapProcessesForNavigation(
     const GURL& current_url,
     const GURL& new_url) {
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  ExtensionService* service = profile->GetExtensionService();
-  if (!service)
-    return false;
+  if (current_url.is_empty()) {
+    // Always choose a new process when navigating to extension URLs. The
+    // process grouping logic will combine all of a given extension's pages
+    // into the same process.
+    if (new_url.SchemeIs(chrome::kExtensionScheme))
+      return true;
 
-  // We must use a new BrowsingInstance (forcing a process swap and disabling
-  // scripting by existing tabs) if one of the URLs is an extension and the
-  // other is not the exact same extension.
-  //
-  // We ignore hosted apps here so that other tabs in their BrowsingInstance can
-  // script them.  Navigations to/from a hosted app will still trigger a
-  // SiteInstance swap in RenderViewHostManager.
-  //
-  // However, we do use a new BrowsingInstance for isolated apps, which should
-  // not be scriptable by other tabs.
-  const Extension* current_extension =
-      GetExtensionOrIsolatedApp(current_url, service);
-  const Extension* new_extension = GetExtensionOrIsolatedApp(new_url, service);
-  return current_extension != new_extension;
+    return false;
+  }
+
+  // Also, we must switch if one is an extension and the other is not the exact
+  // same extension.
+  if (current_url.SchemeIs(chrome::kExtensionScheme) ||
+      new_url.SchemeIs(chrome::kExtensionScheme)) {
+    if (current_url.GetOrigin() != new_url.GetOrigin())
+      return true;
+  }
+
+  return false;
 }
 
 bool ChromeContentBrowserClient::ShouldSwapProcessesForRedirect(

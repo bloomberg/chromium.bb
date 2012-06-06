@@ -97,8 +97,7 @@ class DevToolsManagerTestBrowserClient
   DevToolsManagerTestBrowserClient() {
   }
 
-  virtual bool ShouldSwapBrowsingInstanceForNavigation(
-      content::BrowserContext* browser_context,
+  virtual bool ShouldSwapProcessesForNavigation(
       const GURL& current_url,
       const GURL& new_url) OVERRIDE {
     return true;

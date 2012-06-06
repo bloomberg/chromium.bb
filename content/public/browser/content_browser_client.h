@@ -149,13 +149,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void SiteInstanceDeleting(SiteInstance* site_instance) {}
 
   // Returns true if for the navigation from |current_url| to |new_url|,
-  // a new SiteInstance and BrowsingInstance should be created (even if we are
-  // in a process model that doesn't usually swap).  This forces a process swap
-  // and severs script connections with existing tabs.
-  virtual bool ShouldSwapBrowsingInstanceForNavigation(
-      BrowserContext* browser_context,
-      const GURL& current_url,
-      const GURL& new_url);
+  // processes should be swapped (even if we are in a process model that
+  // doesn't usually swap).
+  virtual bool ShouldSwapProcessesForNavigation(const GURL& current_url,
+                                                const GURL& new_url);
 
   // Returns true if the given navigation redirect should cause a renderer
   // process swap.
