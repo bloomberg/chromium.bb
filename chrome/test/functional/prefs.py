@@ -11,10 +11,18 @@ import pyauto_functional  # Must be imported before pyauto
 import pyauto
 import test_utils
 
+from webdriver_pages import settings
+from webdriver_pages.settings import Behaviors, ContentTypes
+
+
 class PrefsTest(pyauto.PyUITest):
   """TestCase for Preferences."""
 
   INFOBAR_TYPE = 'rph_infobar'
+
+  def setUp(self):
+    pyauto.PyUITest.setUp(self)
+    self._driver = self.NewWebDriver()
 
   def Debug(self):
     """Test method for experimentation.
@@ -147,9 +155,6 @@ class PrefsTest(pyauto.PyUITest):
     # GetBrowserInfo() call seems to fail later on in this test. Call it early.
     # crbug.com/89000
     branding = self.GetBrowserInfo()['properties']['branding']
-    from webdriver_pages import settings
-    from webdriver_pages.settings import Behaviors, ContentTypes
-    driver = self.NewWebDriver()
     url = self.GetFileURLForPath(os.path.join(  # triggers geolocation
         self.DataDir(), 'geolocation', 'geolocation_on_load.html'))
     self.assertEqual(3,  # default state
@@ -165,7 +170,7 @@ class PrefsTest(pyauto.PyUITest):
     # Fails on Win7/Vista Chromium bots.  crbug.com/89000
     if (self.IsWin7() or self.IsWinVista()) and branding == 'Chromium':
       return
-    behavior = driver.execute_async_script(
+    behavior = self._driver.execute_async_script(
         'triggerGeoWithCallback(arguments[arguments.length - 1]);')
     self.assertEqual(
         behavior, Behaviors.BLOCK,
@@ -236,16 +241,13 @@ class PrefsTest(pyauto.PyUITest):
     The test verifies the blocked hostname pattern entry on the Geolocations
     exceptions page.
     """
-    from webdriver_pages import settings
-    from webdriver_pages.settings import Behaviors, ContentTypes
-    driver = self.NewWebDriver()
     # Ask for permission when site wants to track.
     self.SetPrefs(pyauto.kGeolocationDefaultContentSetting, 3)
     self.NavigateToURL(
         self.GetHttpURLForDataPath('geolocation', 'geolocation_on_load.html'))
     self.assertTrue(self.WaitForInfobarCount(1))
     self.PerformActionOnInfobar('cancel', infobar_index=0)  # Deny tracking.
-    behavior = driver.execute_async_script(
+    behavior = self._driver.execute_async_script(
         'triggerGeoWithCallback(arguments[arguments.length - 1]);')
     self.assertEqual(
         behavior, Behaviors.BLOCK,
@@ -305,12 +307,9 @@ class PrefsTest(pyauto.PyUITest):
 
   def testBlockImagesForHostname(self):
     """Verify images blocked for defined hostname pattern."""
-    from webdriver_pages import settings
-    from webdriver_pages.settings import Behaviors, ContentTypes
     url = 'http://www.google.com'
-    driver = self.NewWebDriver()
     page = settings.ManageExceptionsPage.FromNavigation(
-        driver, ContentTypes.IMAGES)
+        self._driver, ContentTypes.IMAGES)
     pattern, behavior = (url, Behaviors.BLOCK)
     # Add an exception BLOCK for hostname pattern 'www.google.com'.
     page.AddNewException(pattern, behavior)
@@ -320,12 +319,9 @@ class PrefsTest(pyauto.PyUITest):
 
   def testAllowImagesForHostname(self):
     """Verify images allowed for defined hostname pattern."""
-    from webdriver_pages import settings
-    from webdriver_pages.settings import Behaviors, ContentTypes
     url = 'http://www.google.com'
-    driver = self.NewWebDriver()
     page = settings.ManageExceptionsPage.FromNavigation(
-        driver, ContentTypes.IMAGES)
+        self._driver, ContentTypes.IMAGES)
     pattern, behavior = (url, Behaviors.ALLOW)
     # Add an exception ALLOW for hostname pattern 'www.google.com'.
     page.AddNewException(pattern, behavior)
@@ -337,13 +333,18 @@ class PrefsTest(pyauto.PyUITest):
     """Verify sites that ask to be default handlers registers correctly."""
     url = self.GetHttpURLForDataPath('settings', 'protocol_handler.html')
     self.NavigateToURL(url)
+    # Returns a dictionary with the custom handler.
+    asked_handler_dict = self._driver.execute_script(
+        'return registerCustomHandler()')
     self.PerformActionOnInfobar(
         'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
             self, self.INFOBAR_TYPE))
-    driver = self.NewWebDriver()
-    driver.find_element_by_id('test_protocol').click()
+    self._driver.find_element_by_id('test_protocol').click()
     self.assertTrue(
-        driver.execute_script('return verifyQueryConformsToProtocol();'),
+        self._driver.execute_script(
+            'return doesQueryConformsToProtocol("%s", "%s")'
+            % (asked_handler_dict['query_key'],
+               asked_handler_dict['query_value'])),
         msg='Protocol did not register correctly.')
 
 
