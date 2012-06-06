@@ -1082,12 +1082,6 @@
    fun:ProfileManagerTest::TearDown
 }
 {
-   bug_100608
-   Heapcheck:Leak
-   ...
-   fun:SQLitePersistentCookieStore::Backend::LoadCookiesForDomains
-}
-{
    bug_102831_a
    Heapcheck:Leak
    ...

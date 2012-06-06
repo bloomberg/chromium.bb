@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+#include <set>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
@@ -23,6 +26,9 @@
 #include "webkit/quota/mock_special_storage_policy.h"
 
 using content::BrowserThread;
+using net::CookieMonster;
+
+typedef std::vector<CookieMonster::CanonicalCookie*> CanonicalCookieVector;
 
 class SQLitePersistentCookieStoreTest : public testing::Test {
  public:
@@ -35,21 +41,19 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
         db_thread_event_(false, false) {
   }
 
-  void OnLoaded(
-      const std::vector<net::CookieMonster::CanonicalCookie*>& cookies) {
+  void OnLoaded(const CanonicalCookieVector& cookies) {
     cookies_ = cookies;
     loaded_event_.Signal();
   }
 
-  void OnKeyLoaded(
-      const std::vector<net::CookieMonster::CanonicalCookie*>& cookies) {
+  void OnKeyLoaded(const CanonicalCookieVector& cookies) {
     cookies_ = cookies;
     key_loaded_event_.Signal();
   }
 
-  void Load(std::vector<net::CookieMonster::CanonicalCookie*>* cookies) {
+  void Load(CanonicalCookieVector* cookies) {
     store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                                base::Unretained(this)));
+                            base::Unretained(this)));
     loaded_event_.Wait();
     *cookies = cookies_;
   }
@@ -64,9 +68,8 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
     ASSERT_TRUE(helper->Run());
   }
 
-  void CreateAndLoad(
-      bool restore_old_session_cookies,
-      std::vector<net::CookieMonster::CanonicalCookie*>* cookies) {
+  void CreateAndLoad(bool restore_old_session_cookies,
+                     CanonicalCookieVector* cookies) {
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.path().Append(chrome::kCookieFilename),
         restore_old_session_cookies,
@@ -75,9 +78,9 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   }
 
   void InitializeStore(bool restore_old_session_cookies) {
-    std::vector<net::CookieMonster::CanonicalCookie*> cookies;
+    CanonicalCookieVector cookies;
     CreateAndLoad(restore_old_session_cookies, &cookies);
-    ASSERT_EQ(0u, cookies.size());
+    ASSERT_EQ(0U, cookies.size());
   }
 
   // We have to create this method to wrap WaitableEvent::Wait, since we cannot
@@ -93,10 +96,10 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
                  const std::string& path,
                  const base::Time& creation) {
     store_->AddCookie(
-        net::CookieMonster::CanonicalCookie(GURL(), name, value, domain, path,
-                                            std::string(), std::string(),
-                                            creation, creation, creation,
-                                            false, false, true, true));
+        CookieMonster::CanonicalCookie(GURL(), name, value, domain, path,
+                                       std::string(), std::string(),
+                                       creation, creation, creation,
+                                       false, false, true, true));
   }
 
   virtual void SetUp() {
@@ -113,7 +116,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   base::WaitableEvent loaded_event_;
   base::WaitableEvent key_loaded_event_;
   base::WaitableEvent db_thread_event_;
-  std::vector<net::CookieMonster::CanonicalCookie*> cookies_;
+  CanonicalCookieVector cookies_;
   ScopedTempDir temp_dir_;
   scoped_refptr<SQLitePersistentCookieStore> store_;
 };
@@ -124,7 +127,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
   DestroyStore();
 
   // Load up the store and verify that it has good data in it.
-  std::vector<net::CookieMonster::CanonicalCookie*> cookies;
+  CanonicalCookieVector cookies;
   CreateAndLoad(false, &cookies);
   ASSERT_EQ(1U, cookies.size());
   ASSERT_STREQ("foo.bar", cookies[0]->Domain().c_str());
@@ -167,7 +170,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
   // is still there.
   DestroyStore();
   // Reload and test for persistence
-  std::vector<net::CookieMonster::CanonicalCookie*> cookies;
+  CanonicalCookieVector cookies;
   CreateAndLoad(false, &cookies);
   ASSERT_EQ(1U, cookies.size());
   ASSERT_STREQ("foo.bar", cookies[0]->Domain().c_str());
@@ -227,8 +230,9 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   key_loaded_event_.Wait();
   ASSERT_EQ(loaded_event_.IsSignaled(), false);
   std::set<std::string> cookies_loaded;
-  for (std::vector<net::CookieMonster::CanonicalCookie*>::iterator
-       it = cookies_.begin(); it != cookies_.end(); ++it) {
+  for (CanonicalCookieVector::const_iterator it = cookies_.begin();
+       it != cookies_.end();
+       ++it) {
     cookies_loaded.insert((*it)->Domain().c_str());
   }
   STLDeleteElements(&cookies_);
@@ -239,8 +243,9 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
 
   db_thread_event_.Signal();
   loaded_event_.Wait();
-  for (std::vector<net::CookieMonster::CanonicalCookie*>::iterator
-       it = cookies_.begin(); it != cookies_.end(); ++it) {
+  for (CanonicalCookieVector::const_iterator it = cookies_.begin();
+       it != cookies_.end();
+       ++it) {
     cookies_loaded.insert((*it)->Domain().c_str());
   }
   ASSERT_EQ(4U, cookies_loaded.size());
@@ -328,7 +333,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
 
   // Add a session cookie.
   store_->AddCookie(
-      net::CookieMonster::CanonicalCookie(
+      CookieMonster::CanonicalCookie(
           GURL(), "C", "D", "sessioncookie.com", "/", std::string(),
           std::string(), base::Time::Now(), base::Time::Now(),
           base::Time::Now(), false, false, true, false /*is_persistent*/));
@@ -338,7 +343,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
 
   // Create a store that loads session cookies and test that the session cookie
   // was loaded.
-  std::vector<net::CookieMonster::CanonicalCookie*> cookies;
+  CanonicalCookieVector cookies;
   CreateAndLoad(true, &cookies);
 
   ASSERT_EQ(1U, cookies.size());
@@ -355,7 +360,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
 
   // Add a session cookie.
   store_->AddCookie(
-      net::CookieMonster::CanonicalCookie(
+      CookieMonster::CanonicalCookie(
           GURL(), "C", "D", "sessioncookie.com", "/", std::string(),
           std::string(), base::Time::Now(), base::Time::Now(),
           base::Time::Now(), false, false, true, false /*is_persistent*/));
@@ -365,7 +370,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
 
   // Create a store that doesn't load old session cookies and test that the
   // session cookie was not loaded.
-  std::vector<net::CookieMonster::CanonicalCookie*> cookies;
+  CanonicalCookieVector cookies;
   CreateAndLoad(false, &cookies);
   ASSERT_EQ(0U, cookies.size());
 
@@ -381,27 +386,30 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
 
 TEST_F(SQLitePersistentCookieStoreTest, PersistHasExpiresAndIsPersistent) {
   InitializeStore(true);
+  static const char kSessionHasExpiresName[] = "session-hasexpires";
+  static const char kSessionNoExpiresName[] = "session-noexpires";
+  static const char kPersistentName[] = "persistent";
 
   // Add a session cookie with has_expires = false, and another session cookie
   // with has_expires = true.
   store_->AddCookie(
-      net::CookieMonster::CanonicalCookie(
-          GURL(), "session-hasexpires", "val", "sessioncookie.com", "/",
+      CookieMonster::CanonicalCookie(
+          GURL(), kSessionHasExpiresName, "val", "sessioncookie.com", "/",
           std::string(), std::string(),
           base::Time::Now() - base::TimeDelta::FromDays(3), base::Time::Now(),
           base::Time::Now(), false, false, true /* has_expires */,
           false /* is_persistent */));
   store_->AddCookie(
-      net::CookieMonster::CanonicalCookie(
-          GURL(), "session-noexpires", "val", "sessioncookie.com", "/",
+      CookieMonster::CanonicalCookie(
+          GURL(), kSessionNoExpiresName, "val", "sessioncookie.com", "/",
           std::string(), std::string(),
           base::Time::Now() - base::TimeDelta::FromDays(2), base::Time::Now(),
           base::Time::Now(), false, false, false /* has_expires */,
           false /* is_persistent */));
   // Add a persistent cookie.
   store_->AddCookie(
-      net::CookieMonster::CanonicalCookie(
-          GURL(), "persistent", "val", "sessioncookie.com", "/",
+      CookieMonster::CanonicalCookie(
+          GURL(), kPersistentName, "val", "sessioncookie.com", "/",
           std::string(), std::string(),
           base::Time::Now() - base::TimeDelta::FromDays(1), base::Time::Now(),
           base::Time::Now(), false, false, true /* has_expires */,
@@ -412,23 +420,32 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistHasExpiresAndIsPersistent) {
 
   // Create a store that loads session cookies and test that the the DoesExpire
   // and IsPersistent attributes are restored.
-  std::vector<net::CookieMonster::CanonicalCookie*> cookies;
+  CanonicalCookieVector cookies;
   CreateAndLoad(true, &cookies);
   ASSERT_EQ(3U, cookies.size());
 
-  std::map<std::string, net::CookieMonster::CanonicalCookie*> cookie_map;
-  std::vector<net::CookieMonster::CanonicalCookie*>::const_iterator it;
-  for (it = cookies.begin(); it != cookies.end(); ++it)
+  std::map<std::string, CookieMonster::CanonicalCookie*> cookie_map;
+  for (CanonicalCookieVector::const_iterator it = cookies.begin();
+       it != cookies.end();
+       ++it) {
     cookie_map[(*it)->Name()] = *it;
+  }
 
-  EXPECT_TRUE(cookie_map["session-hasexpires"]->DoesExpire());
-  EXPECT_FALSE(cookie_map["session-hasexpires"]->IsPersistent());
+  std::map<std::string, CookieMonster::CanonicalCookie*>::const_iterator it =
+      cookie_map.find(kSessionHasExpiresName);
+  ASSERT_TRUE(it != cookie_map.end());
+  EXPECT_TRUE(cookie_map[kSessionHasExpiresName]->DoesExpire());
+  EXPECT_FALSE(cookie_map[kSessionHasExpiresName]->IsPersistent());
 
-  EXPECT_FALSE(cookie_map["session-noexpires"]->DoesExpire());
-  EXPECT_FALSE(cookie_map["session-noexpires"]->IsPersistent());
+  it = cookie_map.find(kSessionNoExpiresName);
+  ASSERT_TRUE(it != cookie_map.end());
+  EXPECT_FALSE(cookie_map[kSessionNoExpiresName]->DoesExpire());
+  EXPECT_FALSE(cookie_map[kSessionNoExpiresName]->IsPersistent());
 
-  EXPECT_TRUE(cookie_map["persistent"]->DoesExpire());
-  EXPECT_TRUE(cookie_map["persistent"]->IsPersistent());
+  it = cookie_map.find(kPersistentName);
+  ASSERT_TRUE(it != cookie_map.end());
+  EXPECT_TRUE(cookie_map[kPersistentName]->DoesExpire());
+  EXPECT_TRUE(cookie_map[kPersistentName]->IsPersistent());
 
   STLDeleteElements(&cookies);
 }
@@ -436,17 +453,16 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistHasExpiresAndIsPersistent) {
 namespace {
 
 // True if the given cookie is in the vector.
-bool IsCookiePresent(
-    std::vector<net::CookieMonster::CanonicalCookie*>* cookies,
-    const std::string& domain,
-    const std::string& name,
-    const std::string& value,
-    bool secure) {
-  for (unsigned i = 0; i < cookies->size(); ++i) {
-    if ((*cookies)[i]->Domain() == domain &&
-        (*cookies)[i]->Name() == name &&
-        (*cookies)[i]->Value() == value &&
-        (*cookies)[i]->IsSecure() == secure) {
+bool IsCookiePresent(const CanonicalCookieVector& cookies,
+                     const std::string& domain,
+                     const std::string& name,
+                     const std::string& value,
+                     bool secure) {
+  for (unsigned i = 0; i < cookies.size(); ++i) {
+    if (cookies[i]->Domain() == domain &&
+        cookies[i]->Name() == name &&
+        cookies[i]->Value() == value &&
+        cookies[i]->IsSecure() == secure) {
       return true;
     }
   }
@@ -469,7 +485,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestClearOnExitPolicy) {
       GURL(std::string("http://") + protected_origin));
   storage_policy->AddSessionOnly(
       GURL(std::string("http://") + session_origin));
-  std::vector<net::CookieMonster::CanonicalCookie*> cookies;
+  CanonicalCookieVector cookies;
   store_ = new SQLitePersistentCookieStore(
       temp_dir_.path().Append(chrome::kCookieFilename),
       false,
@@ -487,10 +503,10 @@ TEST_F(SQLitePersistentCookieStoreTest, TestClearOnExitPolicy) {
   // A secure cookie on session_origin.
   t += base::TimeDelta::FromInternalValue(10);
   store_->AddCookie(
-      net::CookieMonster::CanonicalCookie(GURL(), "D", "4", session_origin, "/",
-                                          std::string(), std::string(),
-                                          t, t, t,
-                                          true, false, true, true));
+      CookieMonster::CanonicalCookie(GURL(), "D", "4", session_origin, "/",
+                                     std::string(), std::string(),
+                                     t, t, t,
+                                     true, false, true, true));
 
   // First, check that we can override the policy.
   store_->SetForceKeepSessionState();
@@ -506,13 +522,14 @@ TEST_F(SQLitePersistentCookieStoreTest, TestClearOnExitPolicy) {
   Load(&cookies);
 
   EXPECT_EQ(4U, cookies.size());
-  EXPECT_TRUE(IsCookiePresent(&cookies, protected_origin, "A", "1", false));
-  EXPECT_TRUE(IsCookiePresent(&cookies, session_origin, "B", "2", false));
-  EXPECT_TRUE(IsCookiePresent(&cookies, other_origin, "C", "3", false));
-  EXPECT_TRUE(IsCookiePresent(&cookies, session_origin, "D", "4", true));
+  EXPECT_TRUE(IsCookiePresent(cookies, protected_origin, "A", "1", false));
+  EXPECT_TRUE(IsCookiePresent(cookies, session_origin, "B", "2", false));
+  EXPECT_TRUE(IsCookiePresent(cookies, other_origin, "C", "3", false));
+  EXPECT_TRUE(IsCookiePresent(cookies, session_origin, "D", "4", true));
 
   // This time, the clear on exit policy should be in effect.
   DestroyStore();
+  STLDeleteElements(&cookies);
 
   // Create a store test that the cookie on session_origin does not exist.
   store_ = new SQLitePersistentCookieStore(
@@ -522,9 +539,10 @@ TEST_F(SQLitePersistentCookieStoreTest, TestClearOnExitPolicy) {
   Load(&cookies);
 
   EXPECT_EQ(3U, cookies.size());
-  EXPECT_TRUE(IsCookiePresent(&cookies, protected_origin, "A", "1", false));
-  EXPECT_TRUE(IsCookiePresent(&cookies, other_origin, "C", "3", false));
-  EXPECT_TRUE(IsCookiePresent(&cookies, session_origin, "D", "4", true));
+  EXPECT_TRUE(IsCookiePresent(cookies, protected_origin, "A", "1", false));
+  EXPECT_TRUE(IsCookiePresent(cookies, other_origin, "C", "3", false));
+  EXPECT_TRUE(IsCookiePresent(cookies, session_origin, "D", "4", true));
 
   DestroyStore();
+  STLDeleteElements(&cookies);
 }

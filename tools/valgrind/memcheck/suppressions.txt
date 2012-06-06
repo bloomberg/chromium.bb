@@ -3912,12 +3912,6 @@
    fun:_ZN25TestingAutomationProvider42NavigateToURLBlockUntilNavigationsCompleteEiRK4GURLiPN3IPC7MessageE
 }
 {
-   bug_100608
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN27SQLitePersistentCookieStore7Backend21LoadCookiesForDomainsERKSt3setISsSt4lessISsESaISsEE
-}
-{
    bug_100647
    Memcheck:Leak
    fun:_Znw*
