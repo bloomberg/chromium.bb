@@ -206,7 +206,9 @@ static int r6_init_hw_info(struct radeon_surface_manager *surf_man)
         surf_man->hw_info.num_pipes = 8;
         break;
     default:
-        return -EINVAL;
+        surf_man->hw_info.num_pipes = 8;
+        surf_man->hw_info.allow_2d = 0;
+        break;
     }
 
     switch ((tiling_config & 0x30) >> 4) {
@@ -217,7 +219,9 @@ static int r6_init_hw_info(struct radeon_surface_manager *surf_man)
         surf_man->hw_info.num_banks = 8;
         break;
     default:
-        return -EINVAL;
+        surf_man->hw_info.num_banks = 8;
+        surf_man->hw_info.allow_2d = 0;
+        break;
     }
 
     switch ((tiling_config & 0xc0) >> 6) {
@@ -228,7 +232,9 @@ static int r6_init_hw_info(struct radeon_surface_manager *surf_man)
         surf_man->hw_info.group_bytes = 512;
         break;
     default:
-        return -EINVAL;
+        surf_man->hw_info.group_bytes = 256;
+        surf_man->hw_info.allow_2d = 0;
+        break;
     }
     return 0;
 }
@@ -458,7 +464,9 @@ static int eg_init_hw_info(struct radeon_surface_manager *surf_man)
         surf_man->hw_info.num_pipes = 8;
         break;
     default:
-        return -EINVAL;
+        surf_man->hw_info.num_pipes = 8;
+        surf_man->hw_info.allow_2d = 0;
+        break;
     }
 
     switch ((tiling_config & 0xf0) >> 4) {
@@ -472,7 +480,9 @@ static int eg_init_hw_info(struct radeon_surface_manager *surf_man)
         surf_man->hw_info.num_banks = 16;
         break;
     default:
-        return -EINVAL;
+        surf_man->hw_info.num_banks = 8;
+        surf_man->hw_info.allow_2d = 0;
+        break;
     }
 
     switch ((tiling_config & 0xf00) >> 8) {
@@ -483,7 +493,9 @@ static int eg_init_hw_info(struct radeon_surface_manager *surf_man)
         surf_man->hw_info.group_bytes = 512;
         break;
     default:
-        return -EINVAL;
+        surf_man->hw_info.group_bytes = 256;
+        surf_man->hw_info.allow_2d = 0;
+        break;
     }
 
     switch ((tiling_config & 0xf000) >> 12) {
@@ -497,7 +509,9 @@ static int eg_init_hw_info(struct radeon_surface_manager *surf_man)
         surf_man->hw_info.row_size = 4096;
         break;
     default:
-        return -EINVAL;
+        surf_man->hw_info.row_size = 4096;
+        surf_man->hw_info.allow_2d = 0;
+        break;
     }
     return 0;
 }
