@@ -120,6 +120,8 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
   runTestCase(painterTestStripCookiesURLRequest());
   runTestCase(painterTestDontStripCookiesSPDYSession());
   runTestCase(painterTestStripCookiesSPDYSession());
+  runTestCase(painterTestExtraCustomParameter());
+  runTestCase(painterTestMissingCustomParameter());
 
   testDone();
 });
@@ -1388,6 +1390,82 @@ function painterTestStripCookiesSPDYSession() {
   testCase.enableSecurityStripping = true;
   testCase.expectedText =
       testCase.expectedText.replace(/MyLittlePony/g, '[value was stripped]');
+  return testCase;
+}
+
+/**
+ * Tests that when there are more custom parameters than we expect for an
+ * event type, they are printed out in addition to the custom formatting.
+ */
+function painterTestExtraCustomParameter() {
+  var testCase = {};
+  testCase.tickOffset = '1337911098446';
+
+  testCase.logEntries = [
+    {
+      'params': {
+        'headers': [
+          'Host: www.google.com',
+          'Connection: keep-alive'
+        ],
+        'line': 'GET / HTTP/1.1\r\n',
+        // This is unexpected!
+        'hello': 'yo dawg, i heard you like strings'
+      },
+      'phase': LogEventPhase.PHASE_NONE,
+      'source': {
+        'id': 146,
+        'type': LogSourceType.URL_REQUEST
+      },
+      'time': '953534910',
+      'type': LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS
+    },
+  ];
+
+  testCase.expectedText =
+    't=1338864633356 [st=0]  HTTP_TRANSACTION_SEND_REQUEST_HEADERS\n' +
+    '                        --> GET / HTTP/1.1\n' +
+    '                            Host: www.google.com\n' +
+    '                            Connection: keep-alive\n' +
+    '                        --> hello = "yo dawg, i heard you like strings"';
+
+  return testCase;
+}
+
+/**
+ * Tests that when the custom parameters for an event type don't match
+ * what we expect, we fall back to default formatting.
+ */
+function painterTestMissingCustomParameter() {
+  var testCase = {};
+  testCase.tickOffset = '1337911098446';
+
+  testCase.logEntries = [
+    {
+      'params': {
+        // The expectation is for this to be called "headers".
+        'headersWRONG': [
+          'Host: www.google.com',
+          'Connection: keep-alive'
+        ],
+        'line': 'GET / HTTP/1.1\r\n'
+      },
+      'phase': LogEventPhase.PHASE_NONE,
+      'source': {
+        'id': 146,
+        'type': LogSourceType.URL_REQUEST
+      },
+      'time': '953534910',
+      'type': LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS
+    },
+  ];
+
+  testCase.expectedText =
+'t=1338864633356 [st=0]  HTTP_TRANSACTION_SEND_REQUEST_HEADERS\n' +
+'                        --> headersWRONG = ["Host: www.google.com",' +
+    '"Connection: keep-alive"]\n' +
+'                        --> line = "GET / HTTP/1.1\\r\\n"';
+
   return testCase;
 }
 

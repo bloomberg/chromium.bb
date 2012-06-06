@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * TODO(eroman): This needs better presentation, and cleaner code. This
- *               implementation is more of a transitionary step as
- *               the old net-internals is replaced.
- */
+// TODO(eroman): put these methods into a namespace.
 
 var printLogEntriesAsText;
 var proxySettingsToString;
@@ -31,6 +27,7 @@ function canCollapseBeginWithEnd(beginEntry) {
 printLogEntriesAsText = function(logEntries, parent, enableSecurityStripping) {
   var entries = LogGroupEntry.createArrayFrom(logEntries);
   var tablePrinter = new TablePrinter();
+  var parameterOutputter = new ParameterOutputter(tablePrinter);
 
   if (entries.length == 0)
     return;
@@ -74,12 +71,11 @@ printLogEntriesAsText = function(logEntries, parent, enableSecurityStripping) {
     }
 
     // Output the extra parameters.
-    if (entry.orig.params != undefined) {
+    if (typeof entry.orig.params == 'object') {
       // Those 5 skipped cells are: two for "t=", and three for "st=".
       tablePrinter.setNewRowCellIndent(5 + entry.getDepth());
-      addRowsForExtraParams(tablePrinter,
-                            entry.orig,
-                            enableSecurityStripping);
+      writeParameters(entry.orig, enableSecurityStripping, parameterOutputter);
+
       tablePrinter.setNewRowCellIndent(0);
     }
   }
@@ -90,18 +86,17 @@ printLogEntriesAsText = function(logEntries, parent, enableSecurityStripping) {
 
 /**
  * |hexString| must be a string of hexadecimal characters with no whitespace,
- * whose length is a multiple of two.  Returns a string spanning multiple lines,
- * with the hexadecimal characters from |hexString| on the left, in groups of
+ * whose length is a multiple of two.  Writes multiple lines to |out| with
+ * the hexadecimal characters from |hexString| on the left, in groups of
  * two, and their corresponding ASCII characters on the right.
  *
  * |asciiCharsPerLine| specifies how many ASCII characters will be put on each
  * line of the output string.
  */
-function formatHexString(hexString, asciiCharsPerLine) {
+function writeHexString(hexString, asciiCharsPerLine, out) {
   // Number of transferred bytes in a line of output.  Length of a
   // line is roughly 4 times larger.
   var hexCharsPerLine = 2 * asciiCharsPerLine;
-  var out = [];
   for (var i = 0; i < hexString.length; i += hexCharsPerLine) {
     var hexLine = '';
     var asciiLine = '';
@@ -121,112 +116,186 @@ function formatHexString(hexString, asciiCharsPerLine) {
       }
     }
 
-    // Max sure the ASCII text on last line of output lines up with previous
+    // Make the ASCII text for the last line of output align with the previous
     // lines.
     hexLine += makeRepeatedString(' ', 3 * asciiCharsPerLine - hexLine.length);
-    out.push('   ' + hexLine + '  ' + asciiLine);
-  }
-  return out.join('\n');
-}
-
-/**
- * Splits |text| in shorter strings around linebreaks.  For each of the
- * resulting strings, adds a row to |tablePrinter| with a cell containing
- * that text, linking to |link|.  |link| may be null.
- */
-function addTextRows(tablePrinter, text, link) {
-  var textLines = text.split('\n');
-
-  for (var i = 0; i < textLines.length; ++i) {
-    tablePrinter.addRow();
-    var cell = tablePrinter.addCell(textLines[i]);
-    cell.link = link;
-    cell.allowOverflow = true;
+    out.writeLine('   ' + hexLine + '  ' + asciiLine);
   }
 }
 
 /**
- * Returns a list of FormattedTextInfo objects for |entry|'s |params|.
+ * Wrapper around a TablePrinter to simplify outputting lines of text for event
+ * parameters.
  */
-function addRowsForExtraParams(tablePrinter, entry, enableSecurityStripping) {
-  // Format the extra parameters (use a custom formatter for certain types,
-  // but default to displaying as JSON).
+var ParameterOutputter = (function() {
+  /**
+   * @constructor
+   */
+  function ParameterOutputter(tablePrinter) {
+    this.tablePrinter_ = tablePrinter;
+  }
 
+  ParameterOutputter.prototype = {
+    /**
+     * Outputs a single line.
+     */
+    writeLine: function(line) {
+      this.tablePrinter_.addRow();
+      var cell = this.tablePrinter_.addCell(line);
+      cell.allowOverflow = true;
+      return cell;
+    },
+
+    /**
+     * Outputs a key=value line which looks like:
+     *
+     *   --> key = value
+     */
+    writeArrowKeyValue: function(key, value, link) {
+      var cell = this.writeLine(kArrow + key + ' = ' + value);
+      cell.link = link;
+    },
+
+    /**
+     * Outputs a key= line which looks like:
+     *
+     *   --> key =
+     */
+    writeArrowKey: function(key) {
+      this.writeLine(kArrow + key + ' =');
+    },
+
+    /**
+     * Outputs multiple lines, each indented by numSpaces.
+     * For instance if numSpaces=8 it might look like this:
+     *
+     *         line 1
+     *         line 2
+     *         line 3
+     */
+    writeSpaceIndentedLines: function(numSpaces, lines) {
+      var prefix = makeRepeatedString(' ', numSpaces);
+      for (var i = 0; i < lines.length; ++i)
+        this.writeLine(prefix + lines[i]);
+    },
+
+    /**
+     * Outputs multiple lines such that the first line has
+     * an arrow pointing at it, and subsequent lines
+     * align with the first one. For example:
+     *
+     *   --> line 1
+     *       line 2
+     *       line 3
+     */
+    writeArrowIndentedLines: function(lines) {
+      if (lines.length == 0)
+        return;
+
+      this.writeLine(kArrow + lines[0]);
+
+      for (var i = 1; i < lines.length; ++i)
+        this.writeLine(kArrowIndentation + lines[i]);
+    }
+  };
+
+  var kArrow = ' --> ';
+  var kArrowIndentation = '     ';
+
+  return ParameterOutputter;
+})();  // end of ParameterOutputter
+
+/**
+ * Formats the parameters for |entry| to |out| using a custom.
+ *
+ * Certain event types will have custom pretty printers. Everything else will
+ * default to a JSON-like format.
+ */
+function writeParameters(entry, enableSecurityStripping, out) {
   // If security stripping is enabled, remove data as needed.
   if (enableSecurityStripping)
     entry = stripCookiesAndLoginInfo(entry);
 
-  switch (entry.type) {
+  // Use any parameter writer available for this event type.
+  var paramsWriter = getParamaterWriterForEventType(entry.type);
+  var consumedParams = {};
+  if (paramsWriter)
+    paramsWriter(entry, out, consumedParams);
+
+  // Write any un-consumed parameters.
+  for (var k in entry.params) {
+    if (consumedParams[k])
+      continue;
+    defaultWriteParameter(k, entry.params[k], out);
+  }
+}
+
+/**
+ * Finds a writer to format the parameters for events of type |eventType|.
+ *
+ * @return {function} The returned function "writer" can be invoked
+ *                    as |writer(entry, writer, consumedParams)|. It will
+ *                    output the parameters of |entry| to |out|, and fill
+ *                    |consumedParams| with the keys of the parameters
+ *                    consumed. If no writer is available for |eventType| then
+ *                    returns null.
+ */
+function getParamaterWriterForEventType(eventType) {
+  switch (eventType) {
     case LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS:
     case LogEventType.HTTP_TRANSACTION_SEND_TUNNEL_HEADERS:
-      addTextRows(tablePrinter,
-                  getTextForRequestHeadersExtraParam(entry),
-                  null);
-      return;
-
-    case LogEventType.HTTP_TRANSACTION_READ_RESPONSE_HEADERS:
-    case LogEventType.HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS:
-      addTextRows(tablePrinter,
-                  getTextForResponseHeadersExtraParam(entry),
-                  null);
-      return;
+      return writeParamsForRequestHeaders;
 
     case LogEventType.PROXY_CONFIG_CHANGED:
-      addTextRows(tablePrinter,
-                  getTextForProxyConfigChangedExtraParam(entry),
-                  null);
-      return;
+      return writeParamsForProxyConfigChanged;
 
     case LogEventType.CERT_VERIFIER_JOB:
     case LogEventType.SSL_CERTIFICATES_RECEIVED:
-      addTextRows(tablePrinter,
-                  getTextForCertificatesExtraParam(entry),
-                  null);
-      return;
-
-    default:
-      for (var k in entry.params) {
-        if (k == 'headers' && entry.params[k] instanceof Array) {
-          addTextRows(tablePrinter,
-                      getTextForResponseHeadersExtraParam(entry),
-                      null);
-          continue;
-        }
-        var value = entry.params[k];
-        // For transferred bytes, display the bytes in hex and ASCII.
-        if (k == 'hex_encoded_bytes') {
-          addTextRows(tablePrinter, ' --> ' + k + ' =');
-          addTextRows(tablePrinter, formatHexString(value, 20));
-          continue;
-        }
-
-        var paramStr = ' --> ' + k + ' = ';
-
-        // Handle source_dependency entries - add link and map source type to
-        // string.
-        if (k == 'source_dependency' && typeof value == 'object') {
-          var link = '#events&s=' + value.id;
-          var sourceType = LogSourceTypeNames[value.type];
-          paramStr += value.id + ' (' + sourceType + ')';
-          addTextRows(tablePrinter, paramStr, link);
-          continue;
-        }
-
-        paramStr += JSON.stringify(value);
-
-        // Append the symbolic name for certain constants. (This relies
-        // on particular naming of event parameters to infer the type).
-        if (typeof value == 'number') {
-          if (k == 'net_error') {
-            paramStr += ' (' + netErrorToString(value) + ')';
-          } else if (k == 'load_flags') {
-            paramStr += ' (' + getLoadFlagSymbolicString(value) + ')';
-          }
-        }
-
-        addTextRows(tablePrinter, paramStr, null);
-      }
+      return writeParamsForCertificates;
   }
+  return null;
+}
+
+/**
+ * Default parameter writer that outputs a visualization of field named |key|
+ * with value |value| to |out|.
+ */
+function defaultWriteParameter(key, value, out) {
+  if (key == 'headers' && value instanceof Array) {
+    out.writeArrowIndentedLines(value);
+    return;
+  }
+
+  // For transferred bytes, display the bytes in hex and ASCII.
+  if (key == 'hex_encoded_bytes' && typeof value == 'string') {
+    out.writeArrowKey(key);
+    writeHexString(value, 20, out);
+    return;
+  }
+
+  // Handle source_dependency entries - add link and map source type to
+  // string.
+  if (key == 'source_dependency' && typeof value == 'object') {
+    var link = '#events&s=' + value.id;
+    var valueStr = value.id + ' (' + LogSourceTypeNames[value.type] + ')';
+    out.writeArrowKeyValue(key, valueStr, link);
+    return;
+  }
+
+  if (key == 'net_error' && typeof value == 'number') {
+    var valueStr = value + ' (' + netErrorToString(value) + ')';
+    out.writeArrowKeyValue(key, valueStr);
+    return;
+  }
+
+  if (key == 'load_flags' && typeof value == 'number') {
+    var valueStr = value + ' (' + getLoadFlagSymbolicString(value) + ')';
+    out.writeArrowKeyValue(key, valueStr);
+    return;
+  }
+
+  // Otherwise just default to JSON formatting of the value.
+  out.writeArrowKeyValue(key, JSON.stringify(value));
 }
 
 /**
@@ -250,6 +319,8 @@ function getLoadFlagSymbolicString(loadFlag) {
 }
 
 /**
+ * TODO(eroman): get rid of this, as it is only used by 1 callsite.
+ *
  * Indent |lines| by |start|.
  *
  * For example, if |start| = ' -> ' and |lines| = ['line1', 'line2', 'line3']
@@ -336,56 +407,68 @@ stripCookiesAndLoginInfo = function(entry) {
   return entry;
 }
 
-function getTextForRequestHeadersExtraParam(entry) {
+/**
+ * Outputs the request header parameters of |entry| to |out|.
+ */
+function writeParamsForRequestHeaders(entry, out, consumedParams) {
   var params = entry.params;
+
+  if (!(typeof params.line == 'string') || !(params.headers instanceof Array)) {
+    // Unrecognized params.
+    return;
+  }
 
   // Strip the trailing CRLF that params.line contains.
   var lineWithoutCRLF = params.line.replace(/\r\n$/g, '');
-  return indentLines(' --> ', [lineWithoutCRLF].concat(params.headers));
+  out.writeArrowIndentedLines([lineWithoutCRLF].concat(params.headers));
+
+  consumedParams.line = true;
+  consumedParams.headers = true;
 }
 
-function getTextForResponseHeadersExtraParam(entry) {
-  return indentLines(' --> ', entry.params.headers);
-}
-
-/*
- * Pretty-prints the contents of an X509CertificateNetLogParam value.
- * @param {LogGroupEntry} A LogGroupEntry for an X509CertificateNetLogParam.
- * @return {string} A formatted string containing all the certificates, in
- *     PEM-encoded form.
+/**
+ * Outputs the certificate parameters of |entry| to |out|.
  */
-function getTextForCertificatesExtraParam(entry) {
-  if (!entry.params || !entry.params.certificates) {
-    // Some events, such as LogEventType.CERT_VERIFIER_JOB, only log
-    // certificates on the begin event.
-    return '';
+function writeParamsForCertificates(entry, out, consumedParams) {
+  if (!(entry.params.certificates instanceof Array)) {
+    // Unrecognized params.
+    return;
   }
 
   var certs = entry.params.certificates.reduce(function(previous, current) {
     return previous.concat(current.split('\n'));
   }, new Array());
-  return ' --> certificates =\n' + indentLines('        ', certs);
+
+  out.writeArrowKey('certificates');
+  out.writeSpaceIndentedLines(8, certs);
+
+  consumedParams.certificates = true;
 }
 
-function getTextForProxyConfigChangedExtraParam(entry) {
+function writeParamsForProxyConfigChanged(entry, out, consumedParams) {
   var params = entry.params;
-  var out = '';
-  var indentation = '        ';
 
-  if (params.old_config) {
+  if (typeof params.new_config != 'object') {
+    // Unrecognized params.
+    return;
+  }
+
+  if (typeof params.old_config == 'object') {
     var oldConfigString = proxySettingsToString(params.old_config);
     // The previous configuration may not be present in the case of
     // the initial proxy settings fetch.
-    out += ' --> old_config =\n' +
-           indentLines(indentation, oldConfigString.split('\n'));
-    out += '\n';
+    out.writeArrowKey('old_config');
+
+    out.writeSpaceIndentedLines(8, oldConfigString.split('\n'));
+
+    consumedParams.old_config = true;
   }
 
   var newConfigString = proxySettingsToString(params.new_config);
-  out += ' --> new_config =\n' +
-         indentLines(indentation, newConfigString.split('\n'));
+  out.writeArrowKey('new_config');
+  out.writeSpaceIndentedLines(8, newConfigString.split('\n'));
 
-  return out;
+  consumedParams.new_config = true;
 }
 
 function getTextForEvent(entry) {
