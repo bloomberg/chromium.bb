@@ -78,7 +78,7 @@ class Channel::ChannelImpl::ReaderThreadRunner
   int pipe_;
   base::Callback<void (scoped_ptr<std::vector<char> >)> data_read_callback_;
   base::Callback<void ()> failure_callback_;
-  base::MessageLoopProxy* main_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> main_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ReaderThreadRunner);
 };
@@ -151,6 +151,7 @@ bool Channel::ChannelImpl::Connect() {
   waiting_connect_ = false;
   // If there were any messages queued before connection, send them.
   ProcessOutgoingMessages();
+  return true;
 }
 
 void Channel::ChannelImpl::Close() {
