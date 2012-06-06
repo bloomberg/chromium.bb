@@ -68,21 +68,28 @@ class OutOfProcessPPAPITest : public PPAPITest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 };
 
-// NaCl plugin test runner.
+// NaCl plugin test runner for Newlib runtime.
 class PPAPINaClTest : public PPAPITestBase {
  public:
-  PPAPINaClTest();
-
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+};
 
+// NaCl plugin test runner for Newlib runtime.
+class PPAPINaClNewlibTest : public PPAPINaClTest {
+ public:
+  virtual std::string BuildQuery(const std::string& base,
+                                 const std::string& test_case) OVERRIDE;
+};
+
+// NaCl plugin test runner for GNU-libc runtime.
+class PPAPINaClGLibcTest : public PPAPINaClTest {
+ public:
   virtual std::string BuildQuery(const std::string& base,
                                  const std::string& test_case) OVERRIDE;
 };
 
 class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
  public:
-  PPAPINaClTestDisallowedSockets();
-
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 
   virtual std::string BuildQuery(const std::string& base,
