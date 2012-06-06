@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -336,9 +337,13 @@ void AutocompleteMatch::ValidateClassifications(
   for (ACMatchClassifications::const_iterator i(classifications.begin() + 1);
        i != classifications.end(); ++i) {
     DCHECK_GT(i->offset, last_offset)
-        << "Classification unsorted for \"" << text << '"';
+        << " Classification for \"" << text << "\" with offset of " << i->offset
+        << " is unsorted in relation to last offset of " << last_offset
+        << ". Provider: " << (provider ? provider->name() : "None") << ".";
     DCHECK_LT(i->offset, text.length())
-        << "Classification out of bounds for \"" << text << '"';
+        << " Classification of [" << i->offset << "," << text.length()
+        << "] is out of bounds for \"" << text << "\". Provider: "
+        << (provider ? provider->name() : "None") << ".";
     last_offset = i->offset;
   }
 }
