@@ -382,7 +382,7 @@ function setConnectionInterruptedButtonsText_() {
  */
 function parseServerResponse_(xhr) {
   remoting.supportHostsXhr_ = null;
-  console.log('parseServerResponse: xhr = ' + xhr);
+  console.log('parseServerResponse: xhr =', xhr);
   if (xhr.status == 200) {
     var host = /** @type {{data: {jabberId: string, publicKey: string}}} */
         jsonParseSafe(xhr.responseText);

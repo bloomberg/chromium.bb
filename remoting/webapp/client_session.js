@@ -426,7 +426,7 @@ remoting.ClientSession.prototype.hasReceivedFrame = function() {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.sendIq_ = function(msg) {
-  console.log(remoting.formatIq.prettifySendIq(msg));
+  console.log(remoting.timestamp(), remoting.formatIq.prettifySendIq(msg));
   // Extract the session id, so we can close the session later.
   var parser = new DOMParser();
   var iqNode = parser.parseFromString(msg, 'text/xml').firstChild;
@@ -465,7 +465,8 @@ remoting.ClientSession.prototype.connectPluginToWcs_ =
   var forwardIq = plugin.onIncomingIq.bind(plugin);
   /** @param {string} stanza The IQ stanza received. */
   var onIncomingIq = function(stanza) {
-    console.log(remoting.formatIq.prettifyReceiveIq(stanza));
+    console.log(remoting.timestamp(),
+                remoting.formatIq.prettifyReceiveIq(stanza));
     forwardIq(stanza);
   }
   remoting.wcs.setOnIq(onIncomingIq);
