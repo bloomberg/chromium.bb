@@ -892,7 +892,6 @@
           'target_name': 'installer_packaging',
           'type': 'none',
           'dependencies': [
-            'keychain_reauthorize',
             'installer/mac/third_party/bsdiff/goobsdiff.gyp:*',
             'installer/mac/third_party/xz/xz.gyp:*',
           ],
@@ -966,15 +965,15 @@
                 }],  # branding=="Chrome" and buildtype=="Official"
               ],  # conditions
             },
+            {
+              'destination': '<(mac_packaging_dir)/.keychain_reauthorize',
+              'files': [
+                'installer/mac/internal/keychain_reauthorize/com.google.Chrome',
+                'installer/mac/internal/keychain_reauthorize/com.google.Chrome.canary',
+              ],
+            },
           ],  # copies
         },  # target: installer_packaging
-        {
-          'target_name': 'keychain_reauthorize',
-          'type': 'executable',
-          'sources': [
-            'installer/mac/keychain_reauthorize_main.cc',
-          ],
-        },  # target: keychain_reauthorize
         {
           'target_name': 'gcapi_lib',
           'type': 'static_library',

@@ -89,9 +89,7 @@ void ChromeBrowserMainPartsMac::PreEarlyInitialization() {
     // have to run again.
     //
     // This is kicked off by a special stub executable during an automatic
-    // update. See chrome/installer/mac/keychain_reauthorize_main.cc. This is
-    // done during update installation in additon to browser app launch to
-    // help reauthorize Keychain items for users who never restart Chrome.
+    // update. See chrome/installer/mac/keychain_reauthorize_main.cc.
     chrome::browser::mac::KeychainReauthorizeIfNeeded(
         kKeychainReauthorizeAtUpdatePref, kKeychainReauthorizeAtUpdateMaxTries);
 
@@ -179,13 +177,6 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   // |-application:openFiles:|, since we already handle them directly.
   [[NSUserDefaults standardUserDefaults]
       setObject:@"NO" forKey:@"NSTreatUnknownArgumentsAsOpen"];
-
-  // Do Keychain reauthorization at browser app launch. This gets two chances
-  // to run. If the first try doesn't complete successfully (crashes or is
-  // interrupted for any reason), there will be a second chance. Once this
-  // step completes successfully, it should never have to run again.
-  chrome::browser::mac::KeychainReauthorizeIfNeeded(
-      kKeychainReauthorizeAtLaunchPref, kKeychainReauthorizeAtLaunchMaxTries);
 }
 
 void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {
