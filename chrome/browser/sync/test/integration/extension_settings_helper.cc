@@ -40,7 +40,7 @@ void GetAllSettingsOnFileThread(
     base::WaitableEvent* signal,
     ValueStore* storage) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  out->reset(storage->Get().settings().DeepCopy());
+  out->swap(storage->Get()->settings());
   signal->Signal();
 }
 

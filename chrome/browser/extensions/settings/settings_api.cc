@@ -71,32 +71,30 @@ void SettingsFunction::RunWithStorageOnFileThread(ValueStore* storage) {
       base::Bind(&SettingsFunction::SendResponse, this, success));
 }
 
-bool SettingsFunction::UseReadResult(
-    const ValueStore::ReadResult& result) {
+bool SettingsFunction::UseReadResult(ValueStore::ReadResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (result.HasError()) {
-    error_ = result.error();
+  if (result->HasError()) {
+    error_ = result->error();
     return false;
   }
 
-  result_.reset(result.settings().DeepCopy());
+  result_ = result->settings().Pass();
   return true;
 }
 
-bool SettingsFunction::UseWriteResult(
-    const ValueStore::WriteResult& result) {
+bool SettingsFunction::UseWriteResult(ValueStore::WriteResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (result.HasError()) {
-    error_ = result.error();
+  if (result->HasError()) {
+    error_ = result->error();
     return false;
   }
 
-  if (!result.changes().empty()) {
+  if (!result->changes().empty()) {
     observers_->Notify(
         &SettingsObserver::OnSettingsChanged,
         extension_id(),
         settings_namespace_,
-        ValueStoreChange::ToJson(result.changes()));
+        ValueStoreChange::ToJson(result->changes()));
   }
 
   return true;
@@ -177,21 +175,20 @@ bool GetSettingsFunction::RunWithStorage(ValueStore* storage) {
 
     case Value::TYPE_DICTIONARY: {
       DictionaryValue* as_dict = static_cast<DictionaryValue*>(input);
-      ValueStore::ReadResult result =
-          storage->Get(GetKeys(*as_dict));
-      if (result.HasError()) {
-        return UseReadResult(result);
+      ValueStore::ReadResult result = storage->Get(GetKeys(*as_dict));
+      if (result->HasError()) {
+        return UseReadResult(result.Pass());
       }
 
       DictionaryValue* with_default_values = as_dict->DeepCopy();
-      with_default_values->MergeDictionary(&result.settings());
+      with_default_values->MergeDictionary(result->settings().get());
       return UseReadResult(
-          ValueStore::ReadResult(with_default_values));
+          ValueStore::MakeReadResult(with_default_values));
     }
 
     default:
       return UseReadResult(
-          ValueStore::ReadResult(kUnsupportedArgumentType));
+          ValueStore::MakeReadResult(kUnsupportedArgumentType));
   }
 }
 
@@ -262,7 +259,7 @@ bool RemoveSettingsFunction::RunWithStorage(ValueStore* storage) {
 
     default:
       return UseWriteResult(
-          ValueStore::WriteResult(kUnsupportedArgumentType));
+          ValueStore::MakeWriteResult(kUnsupportedArgumentType));
   };
 }
 

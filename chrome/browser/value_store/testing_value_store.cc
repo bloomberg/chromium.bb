@@ -11,11 +11,11 @@ namespace {
 const char* kGenericErrorMessage = "TestingSettingsStorage configured to error";
 
 ValueStore::ReadResult ReadResultError() {
-  return ValueStore::ReadResult(kGenericErrorMessage);
+  return ValueStore::MakeReadResult(kGenericErrorMessage);
 }
 
 ValueStore::WriteResult WriteResultError() {
-  return ValueStore::WriteResult(kGenericErrorMessage);
+  return ValueStore::MakeWriteResult(kGenericErrorMessage);
 }
 
 std::vector<std::string> CreateVector(const std::string& string) {
@@ -73,14 +73,14 @@ ValueStore::ReadResult TestingSettingsStorage::Get(
       settings->SetWithoutPathExpansion(*it, value->DeepCopy());
     }
   }
-  return ReadResult(settings);
+  return MakeReadResult(settings);
 }
 
 ValueStore::ReadResult TestingSettingsStorage::Get() {
   if (fail_all_requests_) {
     return ReadResultError();
   }
-  return ReadResult(storage_.DeepCopy());
+  return MakeReadResult(storage_.DeepCopy());
 }
 
 ValueStore::WriteResult TestingSettingsStorage::Set(
@@ -109,7 +109,7 @@ ValueStore::WriteResult TestingSettingsStorage::Set(
       storage_.SetWithoutPathExpansion(it.key(), it.value().DeepCopy());
     }
   }
-  return WriteResult(changes.release());
+  return MakeWriteResult(changes.release());
 }
 
 ValueStore::WriteResult TestingSettingsStorage::Remove(
@@ -132,7 +132,7 @@ ValueStore::WriteResult TestingSettingsStorage::Remove(
       changes->push_back(ValueStoreChange(*it, old_value, NULL));
     }
   }
-  return WriteResult(changes.release());
+  return MakeWriteResult(changes.release());
 }
 
 ValueStore::WriteResult TestingSettingsStorage::Clear() {

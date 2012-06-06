@@ -159,12 +159,13 @@ SyncDataList SettingsBackend::GetAllSyncData(
   for (std::set<std::string>::const_iterator it = known_extension_ids.begin();
       it != known_extension_ids.end(); ++it) {
     ValueStore::ReadResult maybe_settings = GetStorage(*it)->Get();
-    if (maybe_settings.HasError()) {
+    if (maybe_settings->HasError()) {
       LOG(WARNING) << "Failed to get settings for " << *it << ": " <<
-          maybe_settings.error();
+          maybe_settings->error();
       continue;
     }
-    AddAllSyncData(*it, maybe_settings.settings(), type, &all_sync_data);
+    AddAllSyncData(*it, *maybe_settings->settings().get(),
+                   type, &all_sync_data);
   }
 
   return all_sync_data;

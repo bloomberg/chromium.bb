@@ -55,6 +55,21 @@ class LeveldbValueStore : public ValueStore {
       // Will be reset() with the result, if any.
       scoped_ptr<Value>* setting);
 
+  // Adds a setting to a WriteBatch, and logs the change in |changes|. For
+  // use with WriteToDb.
+  bool AddToBatch(
+      ValueStore::WriteOptions options,
+      const std::string& key,
+      const base::Value& value,
+      leveldb::WriteBatch* batch,
+      ValueStoreChangeList* changes);
+
+  // Commits the changes in |batch| to the database, and returns a WriteResult
+  // with the changes.
+  WriteResult WriteToDb(
+      leveldb::WriteBatch* batch,
+      scoped_ptr<ValueStoreChangeList> changes);
+
   // Returns whether the database is empty.
   bool IsEmpty();
 

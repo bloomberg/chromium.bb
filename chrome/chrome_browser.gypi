@@ -4038,6 +4038,8 @@
         'browser/user_style_sheet_watcher.h',
         'browser/user_style_sheet_watcher_factory.cc',
         'browser/user_style_sheet_watcher_factory.h',
+        'browser/value_store/caching_value_store.cc',
+        'browser/value_store/caching_value_store.h',
         'browser/value_store/failing_value_store.cc',
         'browser/value_store/failing_value_store.h',
         'browser/value_store/leveldb_value_store.cc',

@@ -71,13 +71,13 @@ testing::AssertionResult ValuesEq(
 testing::AssertionResult SettingsEq(
     const char* _1, const char* _2,
     const DictionaryValue& expected,
-    const ValueStore::ReadResult& actual) {
-  if (actual.HasError()) {
+    ValueStore::ReadResult actual) {
+  if (actual->HasError()) {
     return testing::AssertionFailure() <<
         "Expected: " << GetJson(expected) <<
-        ", actual has error: " << actual.error();
+        ", actual has error: " << actual->error();
   }
-  return ValuesEq(_1, _2, &expected, &actual.settings());
+  return ValuesEq(_1, _2, &expected, actual->settings().get());
 }
 
 // SyncChangeProcessor which just records the changes made, accessed after
@@ -1358,7 +1358,7 @@ TEST_F(ExtensionSettingsSyncTest,
 
   // Large local change rejected and doesn't get sent out.
   ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
-  EXPECT_TRUE(storage1->Set(DEFAULTS, "large_value", large_value).HasError());
+  EXPECT_TRUE(storage1->Set(DEFAULTS, "large_value", large_value)->HasError());
   EXPECT_EQ(0u, sync_processor_->changes().size());
 
   // Large incoming change should still get accepted.

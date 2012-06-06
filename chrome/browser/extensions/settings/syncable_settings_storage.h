@@ -65,7 +65,7 @@ class SyncableSettingsStorage : public ValueStore {
 
  private:
   // Sends the changes from |result| to sync if it's enabled.
-  void SyncResultIfEnabled(ValueStore::WriteResult result);
+  void SyncResultIfEnabled(const ValueStore::WriteResult& result);
 
   // Sends all local settings to sync (synced settings assumed to be empty).
   SyncError SendLocalSettingsToSync(

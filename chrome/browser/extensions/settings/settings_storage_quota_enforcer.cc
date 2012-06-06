@@ -70,7 +70,7 @@ ValueStore::WriteResult QuotaExceededFor(Resource resource) {
     default:
       NOTREACHED();
   }
-  return ValueStore::WriteResult(kExceededQuotaErrorMessage);
+  return ValueStore::MakeWriteResult(kExceededQuotaErrorMessage);
 }
 
 }  // namespace
@@ -79,14 +79,14 @@ SettingsStorageQuotaEnforcer::SettingsStorageQuotaEnforcer(
     const Limits& limits, ValueStore* delegate)
     : limits_(limits), delegate_(delegate), used_total_(0) {
   ReadResult maybe_settings = delegate_->Get();
-  if (maybe_settings.HasError()) {
+  if (maybe_settings->HasError()) {
     LOG(WARNING) << "Failed to get initial settings for quota: " <<
-        maybe_settings.error();
+        maybe_settings->error();
     return;
   }
 
-  for (DictionaryValue::Iterator it(maybe_settings.settings()); it.HasNext();
-      it.Advance()) {
+  for (DictionaryValue::Iterator it(*maybe_settings->settings().get());
+       it.HasNext(); it.Advance()) {
     Allocate(
         it.key(), it.value(), &used_total_, &used_per_setting_);
   }
@@ -136,7 +136,7 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
   std::map<std::string, size_t> new_used_per_setting = used_per_setting_;
   Allocate(key, value, &new_used_total, &new_used_per_setting);
 
-  if (options != IGNORE_QUOTA) {
+  if (!(options & IGNORE_QUOTA)) {
     if (new_used_total > limits_.quota_bytes) {
       return QuotaExceededFor(QUOTA_BYTES);
     }
@@ -149,13 +149,13 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
   }
 
   WriteResult result = delegate_->Set(options, key, value);
-  if (result.HasError()) {
-    return result;
+  if (result->HasError()) {
+    return result.Pass();
   }
 
   used_total_ = new_used_total;
   used_per_setting_.swap(new_used_per_setting);
-  return result;
+  return result.Pass();
 }
 
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
@@ -165,13 +165,13 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
   for (DictionaryValue::Iterator it(values); it.HasNext(); it.Advance()) {
     Allocate(it.key(), it.value(), &new_used_total, &new_used_per_setting);
 
-    if (options != IGNORE_QUOTA &&
+    if (!(options & IGNORE_QUOTA) &&
         new_used_per_setting[it.key()] > limits_.quota_bytes_per_item) {
       return QuotaExceededFor(QUOTA_BYTES_PER_ITEM);
     }
   }
 
-  if (options != IGNORE_QUOTA) {
+  if (!(options & IGNORE_QUOTA)) {
     if (new_used_total > limits_.quota_bytes) {
       return QuotaExceededFor(QUOTA_BYTES);
     }
@@ -181,49 +181,49 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
   }
 
   WriteResult result = delegate_->Set(options, values);
-  if (result.HasError()) {
-    return result;
+  if (result->HasError()) {
+    return result.Pass();
   }
 
   used_total_ = new_used_total;
   used_per_setting_ = new_used_per_setting;
-  return result;
+  return result.Pass();
 }
 
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Remove(
     const std::string& key) {
   WriteResult result = delegate_->Remove(key);
-  if (result.HasError()) {
-    return result;
+  if (result->HasError()) {
+    return result.Pass();
   }
   Free(&used_total_, &used_per_setting_, key);
-  return result;
+  return result.Pass();
 }
 
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Remove(
     const std::vector<std::string>& keys) {
   WriteResult result = delegate_->Remove(keys);
-  if (result.HasError()) {
-    return result;
+  if (result->HasError()) {
+    return result.Pass();
   }
 
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
     Free(&used_total_, &used_per_setting_, *it);
   }
-  return result;
+  return result.Pass();
 }
 
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Clear() {
   WriteResult result = delegate_->Clear();
-  if (result.HasError()) {
-    return result;
+  if (result->HasError()) {
+    return result.Pass();
   }
 
   while (!used_per_setting_.empty()) {
     Free(&used_total_, &used_per_setting_, used_per_setting_.begin()->first);
   }
-  return result;
+  return result.Pass();
 }
 
 }  // namespace extensions

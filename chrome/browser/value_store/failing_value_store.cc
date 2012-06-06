@@ -11,11 +11,11 @@ namespace {
 const char* kGenericErrorMessage = "Failed to initialize settings";
 
 ValueStore::ReadResult ReadResultError() {
-  return ValueStore::ReadResult(kGenericErrorMessage);
+  return ValueStore::MakeReadResult(kGenericErrorMessage);
 }
 
 ValueStore::WriteResult WriteResultError() {
-  return ValueStore::WriteResult(kGenericErrorMessage);
+  return ValueStore::MakeWriteResult(kGenericErrorMessage);
 }
 
 }  // namespace

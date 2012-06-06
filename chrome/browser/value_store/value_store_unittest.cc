@@ -68,14 +68,14 @@ bool ValuesEqual(
 testing::AssertionResult SettingsEq(
     const char* _1, const char* _2,
     const DictionaryValue& expected,
-    const ValueStore::ReadResult& actual_result) {
-  if (actual_result.HasError()) {
+    ValueStore::ReadResult actual_result) {
+  if (actual_result->HasError()) {
     return testing::AssertionFailure() <<
-        "Result has error: " << actual_result.error();
+        "Result has error: " << actual_result->error();
   }
 
   std::string error;
-  if (!ValuesEqual(&expected, &actual_result.settings(), &error)) {
+  if (!ValuesEqual(&expected, actual_result->settings().get(), &error)) {
     return testing::AssertionFailure() << error;
   }
 
@@ -87,13 +87,13 @@ testing::AssertionResult SettingsEq(
 testing::AssertionResult ChangesEq(
     const char* _1, const char* _2,
     const ValueStoreChangeList& expected,
-    const ValueStore::WriteResult& actual_result) {
-  if (actual_result.HasError()) {
+    ValueStore::WriteResult actual_result) {
+  if (actual_result->HasError()) {
     return testing::AssertionFailure() <<
-        "Result has error: " << actual_result.error();
+        "Result has error: " << actual_result->error();
   }
 
-  const ValueStoreChangeList& actual = actual_result.changes();
+  const ValueStoreChangeList& actual = actual_result->changes();
   if (expected.size() != actual.size()) {
     return testing::AssertionFailure() <<
         "Actual has wrong size, expecting " << expected.size() <<

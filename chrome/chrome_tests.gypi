@@ -1816,6 +1816,7 @@
         'browser/ui/window_snapshot/window_snapshot_mac_unittest.mm',
         'browser/chrome_to_mobile_service_unittest.cc',
         'browser/user_style_sheet_watcher_unittest.cc',
+        'browser/value_store/caching_value_store_unittest.cc',
         'browser/value_store/leveldb_value_store_unittest.cc',
         'browser/value_store/testing_value_store_unittest.cc',
         'browser/value_store/value_store_unittest.cc',

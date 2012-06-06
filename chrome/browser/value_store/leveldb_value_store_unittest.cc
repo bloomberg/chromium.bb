@@ -7,8 +7,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/value_store/leveldb_value_store.h"
 
-namespace extensions {
-
 namespace {
 
 ValueStore* Param(const FilePath& file_path) {
@@ -21,5 +19,3 @@ INSTANTIATE_TEST_CASE_P(
     LeveldbValueStore,
     ValueStoreTest,
     testing::Values(&Param));
-
-}  // namespace extensions

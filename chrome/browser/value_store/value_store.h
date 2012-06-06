@@ -19,19 +19,19 @@
 // destruction.
 class ValueStore {
  public:
-  // The result of a read operation (Get). Safe/efficient to copy.
-  class ReadResult {
+  // The result of a read operation (Get).
+  class ReadResultType {
    public:
     // Ownership of |settings| taken.
-    explicit ReadResult(DictionaryValue* settings);
-    explicit ReadResult(const std::string& error);
-    ~ReadResult();
+    explicit ReadResultType(DictionaryValue* settings);
+    explicit ReadResultType(const std::string& error);
+    ~ReadResultType();
 
     // Gets the settings read from the storage. Note that this represents
     // the root object. If you request the value for key "foo", that value will
     // be in |settings.foo|.
     // Must only be called if HasError() is false.
-    const DictionaryValue& settings() const;
+    scoped_ptr<DictionaryValue>& settings();
 
     // Gets whether the operation failed.
     bool HasError() const;
@@ -41,27 +41,20 @@ class ValueStore {
     const std::string& error() const;
 
    private:
-    class Inner : public base::RefCountedThreadSafe<Inner> {
-     public:
-      Inner(DictionaryValue* settings, const std::string& error);
-      const scoped_ptr<DictionaryValue> settings_;
-      const std::string error_;
+    scoped_ptr<DictionaryValue> settings_;
+    const std::string error_;
 
-     private:
-      friend class base::RefCountedThreadSafe<Inner>;
-      virtual ~Inner();
-    };
-
-    scoped_refptr<Inner> inner_;
+    DISALLOW_COPY_AND_ASSIGN(ReadResultType);
   };
+  typedef scoped_ptr<ReadResultType> ReadResult;
 
-  // The result of a write operation (Set/Remove/Clear). Safe/efficient to copy.
-  class WriteResult {
+  // The result of a write operation (Set/Remove/Clear).
+  class WriteResultType {
    public:
     // Ownership of |changes| taken.
-    explicit WriteResult(ValueStoreChangeList* changes);
-    explicit WriteResult(const std::string& error);
-    ~WriteResult();
+    explicit WriteResultType(ValueStoreChangeList* changes);
+    explicit WriteResultType(const std::string& error);
+    ~WriteResultType();
 
     // Gets the list of changes to the settings which resulted from the write.
     // Must only be called if HasError() is false.
@@ -75,30 +68,42 @@ class ValueStore {
     const std::string& error() const;
 
    private:
-    class Inner : public base::RefCountedThreadSafe<Inner> {
-     public:
-      Inner(ValueStoreChangeList* changes, const std::string& error);
-      const scoped_ptr<ValueStoreChangeList> changes_;
-      const std::string error_;
+    const scoped_ptr<ValueStoreChangeList> changes_;
+    const std::string error_;
 
-     private:
-      friend class base::RefCountedThreadSafe<Inner>;
-      virtual ~Inner();
-    };
-
-    scoped_refptr<Inner> inner_;
+    DISALLOW_COPY_AND_ASSIGN(WriteResultType);
   };
+  typedef scoped_ptr<WriteResultType> WriteResult;
 
   // Options for write operations.
-  enum WriteOptions {
+  enum WriteOptionsValues {
     // Callers should usually use this.
-    DEFAULTS,
+    DEFAULTS = 0,
 
     // Ignore any quota restrictions.
-    IGNORE_QUOTA,
+    IGNORE_QUOTA = 1<<1,
+
+    // Don't generate the changes for a WriteResult.
+    NO_GENERATE_CHANGES = 1<<2,
+
+    // Don't check the old value before writing a new value. This will also
+    // result in an empty |old_value| in the WriteResult::changes list.
+    NO_CHECK_OLD_VALUE = 1<<3
   };
+  typedef int WriteOptions;
 
   virtual ~ValueStore() {}
+
+  // Helpers for making a Read/WriteResult.
+  template<typename T>
+  static ReadResult MakeReadResult(T arg) {
+    return ReadResult(new ReadResultType(arg));
+  }
+
+  template<typename T>
+  static WriteResult MakeWriteResult(T arg) {
+    return WriteResult(new WriteResultType(arg));
+  }
 
   // Gets the amount of space being used by a single value, in bytes.
   // Note: The GetBytesInUse methods are only used by extension settings at the

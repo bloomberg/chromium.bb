@@ -39,12 +39,12 @@ class SettingsFunction : public AsyncExtensionFunction {
 
   // Sets error_ or result_ depending on the value of a storage ReadResult, and
   // returns whether the result implies success (i.e. !error).
-  bool UseReadResult(const ValueStore::ReadResult& result);
+  bool UseReadResult(ValueStore::ReadResult result);
 
   // Sets error_ depending on the value of a storage WriteResult, sends a
   // change notification if needed, and returns whether the result implies
   // success (i.e. !error).
-  bool UseWriteResult(const ValueStore::WriteResult& result);
+  bool UseWriteResult(ValueStore::WriteResult result);
 
  private:
   // Called via PostTask from RunImpl.  Calls RunWithStorage and then

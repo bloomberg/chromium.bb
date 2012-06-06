@@ -82,7 +82,7 @@ LeveldbValueStore::~LeveldbValueStore() {
     // Close |db_| now to release any lock on the directory.
     db_.reset();
     if (!file_util::Delete(db_path_, true)) {
-      LOG(WARNING) << "Failed to delete extension settings directory " <<
+      LOG(WARNING) << "Failed to delete LeveldbValueStore database " <<
           db_path_.value();
     }
   }
@@ -112,13 +112,13 @@ ValueStore::ReadResult LeveldbValueStore::Get(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<Value> setting;
   if (!ReadFromDb(leveldb::ReadOptions(), key, &setting)) {
-    return ReadResult(kGenericOnFailureMessage);
+    return MakeReadResult(kGenericOnFailureMessage);
   }
   DictionaryValue* settings = new DictionaryValue();
   if (setting.get()) {
     settings->SetWithoutPathExpansion(key, setting.release());
   }
-  return ReadResult(settings);
+  return MakeReadResult(settings);
 }
 
 ValueStore::ReadResult LeveldbValueStore::Get(
@@ -135,14 +135,14 @@ ValueStore::ReadResult LeveldbValueStore::Get(
       it != keys.end(); ++it) {
     scoped_ptr<Value> setting;
     if (!ReadFromDb(options, *it, &setting)) {
-      return ReadResult(kGenericOnFailureMessage);
+      return MakeReadResult(kGenericOnFailureMessage);
     }
     if (setting.get()) {
       settings->SetWithoutPathExpansion(*it, setting.release());
     }
   }
 
-  return ReadResult(settings.release());
+  return MakeReadResult(settings.release());
 }
 
 ValueStore::ReadResult LeveldbValueStore::Get() {
@@ -168,50 +168,35 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
 
   if (!it->status().ok()) {
     LOG(ERROR) << "DB iteration failed: " << it->status().ToString();
-    return ReadResult(kGenericOnFailureMessage);
+    return MakeReadResult(kGenericOnFailureMessage);
   }
 
-  return ReadResult(settings.release());
+  return MakeReadResult(settings.release());
 }
 
 ValueStore::WriteResult LeveldbValueStore::Set(
     WriteOptions options, const std::string& key, const Value& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DictionaryValue settings;
-  settings.SetWithoutPathExpansion(key, value.DeepCopy());
-  return Set(options, settings);
+
+  leveldb::WriteBatch batch;
+  scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
+  AddToBatch(options, key, value, &batch, changes.get());
+  return WriteToDb(&batch, changes.Pass());
 }
 
 ValueStore::WriteResult LeveldbValueStore::Set(
     WriteOptions options, const DictionaryValue& settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  std::string value_as_json;
   leveldb::WriteBatch batch;
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
 
   for (DictionaryValue::Iterator it(settings); it.HasNext(); it.Advance()) {
-    scoped_ptr<Value> old_value;
-    if (!ReadFromDb(leveldb::ReadOptions(), it.key(), &old_value)) {
-      return WriteResult(kGenericOnFailureMessage);
-    }
-
-    if (!old_value.get() || !old_value->Equals(&it.value())) {
-      changes->push_back(
-          ValueStoreChange(
-              it.key(), old_value.release(), it.value().DeepCopy()));
-      base::JSONWriter::Write(&it.value(), &value_as_json);
-      batch.Put(it.key(), value_as_json);
-    }
+    if (!AddToBatch(options, it.key(), it.value(), &batch, changes.get()))
+      return MakeWriteResult(kGenericOnFailureMessage);
   }
 
-  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
-  if (!status.ok()) {
-    LOG(WARNING) << "DB batch write failed: " << status.ToString();
-    return WriteResult(kGenericOnFailureMessage);
-  }
-
-  return WriteResult(changes.release());
+  return WriteToDb(&batch, changes.Pass());
 }
 
 ValueStore::WriteResult LeveldbValueStore::Remove(
@@ -227,14 +212,13 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   leveldb::WriteBatch batch;
-  scoped_ptr<ValueStoreChangeList> changes(
-      new ValueStoreChangeList());
+  scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
 
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
     scoped_ptr<Value> old_value;
     if (!ReadFromDb(leveldb::ReadOptions(), *it, &old_value)) {
-      return WriteResult(kGenericOnFailureMessage);
+      return MakeWriteResult(kGenericOnFailureMessage);
     }
 
     if (old_value.get()) {
@@ -247,10 +231,10 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
   if (!status.ok() && !status.IsNotFound()) {
     LOG(WARNING) << "DB batch delete failed: " << status.ToString();
-    return WriteResult(kGenericOnFailureMessage);
+    return MakeWriteResult(kGenericOnFailureMessage);
   }
 
-  return WriteResult(changes.release());
+  return MakeWriteResult(changes.release());
 }
 
 ValueStore::WriteResult LeveldbValueStore::Clear() {
@@ -279,16 +263,16 @@ ValueStore::WriteResult LeveldbValueStore::Clear() {
 
   if (!it->status().ok()) {
     LOG(WARNING) << "Clear iteration failed: " << it->status().ToString();
-    return WriteResult(kGenericOnFailureMessage);
+    return MakeWriteResult(kGenericOnFailureMessage);
   }
 
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
   if (!status.ok() && !status.IsNotFound()) {
     LOG(WARNING) << "Clear failed: " << status.ToString();
-    return WriteResult(kGenericOnFailureMessage);
+    return MakeWriteResult(kGenericOnFailureMessage);
   }
 
-  return WriteResult(changes.release());
+  return MakeWriteResult(changes.release());
 }
 
 bool LeveldbValueStore::ReadFromDb(
@@ -319,6 +303,43 @@ bool LeveldbValueStore::ReadFromDb(
 
   setting->reset(value);
   return true;
+}
+
+bool LeveldbValueStore::AddToBatch(
+    ValueStore::WriteOptions options,
+    const std::string& key,
+    const base::Value& value,
+    leveldb::WriteBatch* batch,
+    ValueStoreChangeList* changes) {
+  scoped_ptr<Value> old_value;
+  if (!(options & NO_CHECK_OLD_VALUE)) {
+    if (!ReadFromDb(leveldb::ReadOptions(), key, &old_value))
+      return false;
+  }
+
+  if (!old_value.get() || !old_value->Equals(&value)) {
+    if (!(options & NO_GENERATE_CHANGES)) {
+      changes->push_back(
+          ValueStoreChange(key, old_value.release(), value.DeepCopy()));
+    }
+    std::string value_as_json;
+    base::JSONWriter::Write(&value, &value_as_json);
+    batch->Put(key, value_as_json);
+  }
+
+  return true;
+}
+
+ValueStore::WriteResult LeveldbValueStore::WriteToDb(
+    leveldb::WriteBatch* batch,
+    scoped_ptr<ValueStoreChangeList> changes) {
+  leveldb::Status status = db_->Write(leveldb::WriteOptions(), batch);
+  if (!status.ok()) {
+    LOG(WARNING) << "DB batch write failed: " << status.ToString();
+    return MakeWriteResult(kGenericOnFailureMessage);
+  }
+
+  return MakeWriteResult(changes.release());
 }
 
 bool LeveldbValueStore::IsEmpty() {

@@ -6,71 +6,58 @@
 
 #include "base/logging.h"
 
-// Implementation of ReadResult.
+// Implementation of ReadResultType.
 
-ValueStore::ReadResult::ReadResult(DictionaryValue* settings)
-    : inner_(new Inner(settings, "")) {
+ValueStore::ReadResultType::ReadResultType(DictionaryValue* settings)
+    : settings_(settings) {
   DCHECK(settings);
 }
 
-ValueStore::ReadResult::ReadResult(const std::string& error)
-    : inner_(new Inner(NULL, error)) {
+ValueStore::ReadResultType::ReadResultType(const std::string& error)
+    : error_(error) {
   DCHECK(!error.empty());
 }
 
-ValueStore::ReadResult::~ReadResult() {}
+ValueStore::ReadResultType::~ReadResultType() {}
 
-bool ValueStore::ReadResult::HasError() const {
-  return !inner_->error_.empty();
+bool ValueStore::ReadResultType::HasError() const {
+  return !error_.empty();
 }
 
-const DictionaryValue& ValueStore::ReadResult::settings() const {
+scoped_ptr<DictionaryValue>& ValueStore::ReadResultType::settings() {
   DCHECK(!HasError());
-  return *inner_->settings_;
+  return settings_;
 }
 
-const std::string& ValueStore::ReadResult::error() const {
+const std::string& ValueStore::ReadResultType::error() const {
   DCHECK(HasError());
-  return inner_->error_;
+  return error_;
 }
 
-ValueStore::ReadResult::Inner::Inner(
-    DictionaryValue* settings, const std::string& error)
-    : settings_(settings), error_(error) {}
+// Implementation of WriteResultType.
 
-ValueStore::ReadResult::Inner::~Inner() {}
-
-// Implementation of WriteResult.
-
-ValueStore::WriteResult::WriteResult(
-    ValueStoreChangeList* changes) : inner_(new Inner(changes, "")) {
+ValueStore::WriteResultType::WriteResultType(ValueStoreChangeList* changes)
+    : changes_(changes) {
   DCHECK(changes);
 }
 
-ValueStore::WriteResult::WriteResult(const std::string& error)
-    : inner_(new Inner(NULL, error)) {
+ValueStore::WriteResultType::WriteResultType(const std::string& error)
+    : error_(error) {
   DCHECK(!error.empty());
 }
 
-ValueStore::WriteResult::~WriteResult() {}
+ValueStore::WriteResultType::~WriteResultType() {}
 
-bool ValueStore::WriteResult::HasError() const {
-  return !inner_->error_.empty();
+bool ValueStore::WriteResultType::HasError() const {
+  return !error_.empty();
 }
 
-const ValueStoreChangeList&
-ValueStore::WriteResult::changes() const {
+const ValueStoreChangeList& ValueStore::WriteResultType::changes() const {
   DCHECK(!HasError());
-  return *inner_->changes_;
+  return *changes_;
 }
 
-const std::string& ValueStore::WriteResult::error() const {
+const std::string& ValueStore::WriteResultType::error() const {
   DCHECK(HasError());
-  return inner_->error_;
+  return error_;
 }
-
-ValueStore::WriteResult::Inner::Inner(
-    ValueStoreChangeList* changes, const std::string& error)
-    : changes_(changes), error_(error) {}
-
-ValueStore::WriteResult::Inner::~Inner() {}

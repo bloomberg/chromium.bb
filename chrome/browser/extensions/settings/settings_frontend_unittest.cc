@@ -116,13 +116,13 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   {
     StringValue bar("bar");
     ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
-    ASSERT_FALSE(result.HasError());
+    ASSERT_FALSE(result->HasError());
   }
 
   {
     ValueStore::ReadResult result = storage->Get();
-    ASSERT_FALSE(result.HasError());
-    EXPECT_FALSE(result.settings().empty());
+    ASSERT_FALSE(result->HasError());
+    EXPECT_FALSE(result->settings()->empty());
   }
 
   ResetFrontend();
@@ -130,8 +130,8 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
 
   {
     ValueStore::ReadResult result = storage->Get();
-    ASSERT_FALSE(result.HasError());
-    EXPECT_FALSE(result.settings().empty());
+    ASSERT_FALSE(result->HasError());
+    EXPECT_FALSE(result->settings()->empty());
   }
 }
 
@@ -145,7 +145,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   {
     StringValue bar("bar");
     ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
-    ASSERT_FALSE(result.HasError());
+    ASSERT_FALSE(result->HasError());
   }
 
   // This would be triggered by extension uninstall via an ExtensionDataDeleter.
@@ -156,8 +156,8 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   storage = util::GetStorage(id, frontend_.get());
   {
     ValueStore::ReadResult result = storage->Get();
-    ASSERT_FALSE(result.HasError());
-    EXPECT_TRUE(result.settings().empty());
+    ASSERT_FALSE(result->HasError());
+    EXPECT_TRUE(result->settings()->empty());
   }
 }
 
@@ -171,7 +171,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   {
     StringValue bar("bar");
     ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
-    ASSERT_FALSE(result.HasError());
+    ASSERT_FALSE(result->HasError());
     EXPECT_TRUE(file_util::PathExists(temp_dir_.path()));
   }
 
@@ -179,7 +179,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   // leveldb database to be deleted from disk.
   {
     ValueStore::WriteResult result = storage->Clear();
-    ASSERT_FALSE(result.HasError());
+    ASSERT_FALSE(result->HasError());
     EXPECT_TRUE(file_util::PathExists(temp_dir_.path()));
   }
 
@@ -203,10 +203,10 @@ TEST_F(ExtensionSettingsFrontendTest,
   ValueStore* storage = util::GetStorage(id, frontend_.get());
   ASSERT_TRUE(storage != NULL);
 
-  EXPECT_TRUE(storage->Get().HasError());
-  EXPECT_TRUE(storage->Clear().HasError());
-  EXPECT_TRUE(storage->Set(DEFAULTS, "foo", bar).HasError());
-  EXPECT_TRUE(storage->Remove("foo").HasError());
+  EXPECT_TRUE(storage->Get()->HasError());
+  EXPECT_TRUE(storage->Clear()->HasError());
+  EXPECT_TRUE(storage->Set(DEFAULTS, "foo", bar)->HasError());
+  EXPECT_TRUE(storage->Remove("foo")->HasError());
 
   // For simplicity: just always fail those requests, even if the leveldb
   // storage areas start working.
@@ -215,10 +215,10 @@ TEST_F(ExtensionSettingsFrontendTest,
   storage = util::GetStorage(id, frontend_.get());
   ASSERT_TRUE(storage != NULL);
 
-  EXPECT_TRUE(storage->Get().HasError());
-  EXPECT_TRUE(storage->Clear().HasError());
-  EXPECT_TRUE(storage->Set(DEFAULTS, "foo", bar).HasError());
-  EXPECT_TRUE(storage->Remove("foo").HasError());
+  EXPECT_TRUE(storage->Get()->HasError());
+  EXPECT_TRUE(storage->Clear()->HasError());
+  EXPECT_TRUE(storage->Set(DEFAULTS, "foo", bar)->HasError());
+  EXPECT_TRUE(storage->Remove("foo")->HasError());
 }
 
 #if defined(OS_WIN)
@@ -245,7 +245,7 @@ TEST_F(ExtensionSettingsFrontendTest,
   }
 
   EXPECT_TRUE(sync_storage->Set(
-      ValueStore::DEFAULTS, "WillError", *kilobyte).HasError());
+      ValueStore::DEFAULTS, "WillError", *kilobyte)->HasError());
 
   // Local storage shouldn't run out after ~100K.
   for (int i = 0; i < 100; ++i) {
@@ -254,7 +254,7 @@ TEST_F(ExtensionSettingsFrontendTest,
   }
 
   EXPECT_FALSE(local_storage->Set(
-      ValueStore::DEFAULTS, "WontError", *kilobyte).HasError());
+      ValueStore::DEFAULTS, "WontError", *kilobyte)->HasError());
 
   // Local storage should run out after ~5MB.
   scoped_ptr<Value> megabyte = CreateMegabyte();
@@ -264,7 +264,7 @@ TEST_F(ExtensionSettingsFrontendTest,
   }
 
   EXPECT_TRUE(local_storage->Set(
-      ValueStore::DEFAULTS, "WillError", *megabyte).HasError());
+      ValueStore::DEFAULTS, "WillError", *megabyte)->HasError());
 }
 
 // In other tests, we assume that the result of GetStorage is a pointer to the
@@ -282,7 +282,7 @@ static void UnlimitedSyncStorageTestCallback(ValueStore* sync_storage) {
   }
 
   EXPECT_TRUE(sync_storage->Set(
-      ValueStore::DEFAULTS, "WillError", *kilobyte).HasError());
+      ValueStore::DEFAULTS, "WillError", *kilobyte)->HasError());
 }
 
 static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
@@ -294,7 +294,7 @@ static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
   }
 
   EXPECT_FALSE(local_storage->Set(
-      ValueStore::DEFAULTS, "WontError", *megabyte).HasError());
+      ValueStore::DEFAULTS, "WontError", *megabyte)->HasError());
 }
 
 #if defined(OS_WIN)
