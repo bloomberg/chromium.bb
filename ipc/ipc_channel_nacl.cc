@@ -194,6 +194,12 @@ void Channel::ChannelImpl::DidRecvMsg(scoped_ptr<std::vector<char> > buffer) {
     return;
 
   read_queue_.push_back(linked_ptr<std::vector<char> >(buffer.release()));
+
+  // In POSIX, we would be told when there are bytes to read by implementing
+  // OnFileCanReadWithoutBlocking in MessageLoopForIO::Watcher. In NaCl, we
+  // instead know at this point because the reader thread posted some data to
+  // us.
+  ProcessIncomingMessages();
 }
 
 void Channel::ChannelImpl::ReadDidFail() {
