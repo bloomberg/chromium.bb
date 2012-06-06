@@ -25,8 +25,8 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "sandbox/linux/seccomp_bpf/sandbox_bpf.h"
-#include "sandbox/linux/seccomp_bpf/util.h"
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/seccomp-bpf/util.h"
 
 #define ERR EPERM
 

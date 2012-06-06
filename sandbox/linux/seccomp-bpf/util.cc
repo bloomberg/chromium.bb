@@ -12,8 +12,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "sandbox/linux/seccomp_bpf/sandbox_bpf.h"
-#include "sandbox/linux/seccomp_bpf/util.h"
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/seccomp-bpf/util.h"
 
 namespace playground2 {
 

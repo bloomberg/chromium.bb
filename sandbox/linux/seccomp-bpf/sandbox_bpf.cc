@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/linux/seccomp_bpf/sandbox_bpf.h"
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
 // The kernel gives us a sandbox, we turn it into a playground :-)
 // This is version 2 of the playground; version 1 was built on top of
