@@ -376,103 +376,6 @@ def write_json(filepath_or_handle, data, dense):
         json.dump(data, f, sort_keys=True, indent=2)
 
 
-class ApiBase(object):
-  """OS-agnostic API to trace a process and its children."""
-  class Context(object):
-    """Processes one log line at a time and keeps the list of traced processes.
-    """
-    class Process(object):
-      """Keeps context for one traced child process.
-
-      Logs all the files this process touched. Ignores directories.
-      """
-      def __init__(self, root, pid, initial_cwd, parentid):
-        """root is a reference to the Context."""
-        # Check internal consistency.
-        assert isinstance(root, ApiBase.Context)
-        assert isinstance(pid, int), repr(pid)
-        self.root = weakref.ref(root)
-        self.pid = pid
-        # Children are pids.
-        self.children = []
-        self.parentid = parentid
-        self.initial_cwd = initial_cwd
-        self.cwd = None
-        self.files = set()
-        self.executable = None
-        self.command = None
-
-        if parentid:
-          self.root().processes[parentid].children.append(pid)
-
-      def to_results_process(self):
-        """Resolves file case sensitivity and or late-bound strings."""
-        children = [
-          self.root().processes[c].to_results_process() for c in self.children
-        ]
-        # When resolving files, it's normal to get dupe because a file could be
-        # opened multiple times with different case. Resolve the deduplication
-        # here.
-        def render_to_string_and_fix_case(x):
-          """Returns the native file path case if the file exists.
-
-          Converts late-bound strings.
-          """
-          if not x:
-            return x
-          # TODO(maruel): Do not upconvert to unicode here, on linux we don't
-          # know the file path encoding so they must be treated as bytes.
-          x = unicode(x)
-          if not os.path.exists(x):
-            return x
-          return get_native_path_case(x)
-
-        return Results.Process(
-            self.pid,
-            set(map(render_to_string_and_fix_case, self.files)),
-            render_to_string_and_fix_case(self.executable),
-            self.command,
-            render_to_string_and_fix_case(self.initial_cwd),
-            children)
-
-      def add_file(self, filepath):
-        if self.root().blacklist(unicode(filepath)):
-          return
-        logging.debug('add_file(%d, %s)' % (self.pid, filepath))
-        self.files.add(filepath)
-
-    def __init__(self, blacklist):
-      self.blacklist = blacklist
-      self.processes = {}
-
-  @staticmethod
-  def clean_trace(logname):
-    """Deletes the old log."""
-    raise NotImplementedError()
-
-  @classmethod
-  def gen_trace(cls, cmd, cwd, logname, output):
-    """Runs the OS-specific trace program on an executable.
-
-    Since the logs are per pid, we need to log the list of the initial pid.
-    """
-    raise NotImplementedError(cls.__class__.__name__)
-
-  @classmethod
-  def parse_log(cls, filename, blacklist):
-    """Processes a trace log and returns the files opened and the files that do
-    not exist.
-
-    It does not track directories.
-
-    Most of the time, files that do not exist are temporary test files that
-    should be put in /tmp instead. See http://crbug.com/116251.
-
-    Returns a tuple (existing files, non existing files, nb_processes_created)
-    """
-    raise NotImplementedError(cls.__class__.__name__)
-
-
 class Results(object):
   """Results of a trace session."""
 
@@ -640,66 +543,101 @@ class Results(object):
     return Results(self.process.strip_root(root))
 
 
-def extract_directories(root_dir, files):
-  """Detects if all the files in a directory are in |files| and if so, replace
-  the individual files by a Results.Directory instance.
+class ApiBase(object):
+  """OS-agnostic API to trace a process and its children."""
+  class Context(object):
+    """Processes one log line at a time and keeps the list of traced processes.
+    """
+    class Process(object):
+      """Keeps context for one traced child process.
 
-  Takes a list of Results.File instances and returns a shorter list of
-  Results.File and Results.Directory instances.
+      Logs all the files this process touched. Ignores directories.
+      """
+      def __init__(self, root, pid, initial_cwd, parentid):
+        """root is a reference to the Context."""
+        # Check internal consistency.
+        assert isinstance(root, ApiBase.Context)
+        assert isinstance(pid, int), repr(pid)
+        self.root = weakref.ref(root)
+        self.pid = pid
+        # Children are pids.
+        self.children = []
+        self.parentid = parentid
+        self.initial_cwd = initial_cwd
+        self.cwd = None
+        self.files = set()
+        self.executable = None
+        self.command = None
 
-  Arguments:
-    - root_dir: Optional base directory that shouldn't be search further.
-    - files: list of Results.File instances.
-  """
-  assert not any(isinstance(f, Results.Directory) for f in files)
-  # Remove non existent files.
-  files = [f for f in files if f.existent]
-  if not files:
-    return files
-  # All files must share the same root, which can be None.
-  assert len(set(f.root for f in files)) == 1, set(f.root for f in files)
+        if parentid:
+          self.root().processes[parentid].children.append(pid)
 
-  def blacklist(f):
-    return f in ('.git', '.svn') or f.endswith('.pyc')
+      def to_results_process(self):
+        """Resolves file case sensitivity and or late-bound strings."""
+        children = [
+          self.root().processes[c].to_results_process() for c in self.children
+        ]
+        # When resolving files, it's normal to get dupe because a file could be
+        # opened multiple times with different case. Resolve the deduplication
+        # here.
+        def render_to_string_and_fix_case(x):
+          """Returns the native file path case if the file exists.
 
-  # Creates a {directory: {filename: File}} mapping, up to root.
-  buckets = {}
-  if root_dir:
-    buckets[root_dir.rstrip(os.path.sep)] = {}
-  for fileobj in files:
-    path = fileobj.full_path
-    directory = os.path.dirname(path)
-    # Do not use os.path.basename() so trailing os.path.sep is kept.
-    basename = path[len(directory)+1:]
-    files_in_directory = buckets.setdefault(directory, {})
-    files_in_directory[basename] = fileobj
-    # Add all the directories recursively up to root.
-    while True:
-      old_d = directory
-      directory = os.path.dirname(directory)
-      if directory + os.path.sep == root_dir or directory == old_d:
-        break
-      buckets.setdefault(directory, {})
+          Converts late-bound strings.
+          """
+          if not x:
+            return x
+          # TODO(maruel): Do not upconvert to unicode here, on linux we don't
+          # know the file path encoding so they must be treated as bytes.
+          x = unicode(x)
+          if not os.path.exists(x):
+            return x
+          return get_native_path_case(x)
 
-  root_prefix = len(root_dir) + 1 if root_dir else 0
-  for directory in sorted(buckets, reverse=True):
-    actual = set(f for f in os.listdir(directory) if not blacklist(f))
-    expected = set(buckets[directory])
-    if not (actual - expected):
-      parent = os.path.dirname(directory)
-      buckets[parent][os.path.basename(directory)] = Results.Directory(
-        root_dir,
-        directory[root_prefix:],
-        sum(f.size for f in buckets[directory].itervalues()),
-        sum(f.nb_files for f in buckets[directory].itervalues()))
-      # Remove the whole bucket.
-      del buckets[directory]
+        return Results.Process(
+            self.pid,
+            set(map(render_to_string_and_fix_case, self.files)),
+            render_to_string_and_fix_case(self.executable),
+            self.command,
+            render_to_string_and_fix_case(self.initial_cwd),
+            children)
 
-  # Reverse the mapping with what remains. The original instances are returned,
-  # so the cached meta data is kept.
-  return sorted(
-      sum((x.values() for x in buckets.itervalues()), []),
-      key=lambda x: x.path)
+      def add_file(self, filepath):
+        if self.root().blacklist(unicode(filepath)):
+          return
+        logging.debug('add_file(%d, %s)' % (self.pid, filepath))
+        self.files.add(filepath)
+
+    def __init__(self, blacklist):
+      self.blacklist = blacklist
+      self.processes = {}
+
+  @staticmethod
+  def clean_trace(logname):
+    """Deletes the old log."""
+    raise NotImplementedError()
+
+  @classmethod
+  def gen_trace(cls, cmd, cwd, logname, output):
+    """Runs the OS-specific trace program on an executable.
+
+    Since the logs are per pid, we need to log the list of the initial pid.
+    """
+    raise NotImplementedError(cls.__class__.__name__)
+
+  @classmethod
+  def parse_log(cls, filename, blacklist):
+    """Processes a trace log and returns the files opened and the files that do
+    not exist.
+
+    It does not track directories.
+
+    Most of the time, files that do not exist are temporary test files that
+    should be put in /tmp instead. See http://crbug.com/116251.
+
+    Returns a tuple (existing files, non existing files, nb_processes_created)
+    """
+    raise NotImplementedError(cls.__class__.__name__)
 
 
 class Strace(ApiBase):
@@ -1759,35 +1697,35 @@ class LogmanTrace(ApiBase):
   opened relative to another file_object or as an absolute path. All the current
   working directory logic is done in user mode.
   """
+  # The basic headers.
+  EXPECTED_HEADER = [
+    u'Event Name',
+    u'Type',
+    u'Event ID',
+    u'Version',
+    u'Channel',
+    u'Level',  # 5
+    u'Opcode',
+    u'Task',
+    u'Keyword',
+    u'PID',
+    u'TID',  # 10
+    u'Processor Number',
+    u'Instance ID',
+    u'Parent Instance ID',
+    u'Activity ID',
+    u'Related Activity ID',  # 15
+    u'Clock-Time',
+    u'Kernel(ms)',  # Both have a resolution of ~15ms which makes them
+    u'User(ms)',    # pretty much useless.
+    u'User Data',   # Extra arguments that are event-specific.
+  ]
   class Context(ApiBase.Context):
     """Processes a ETW log line and keeps the list of existent and non
     existent files accessed.
 
     Ignores directories.
     """
-    # The basic headers.
-    EXPECTED_HEADER = [
-      u'Event Name',
-      u'Type',
-      u'Event ID',
-      u'Version',
-      u'Channel',
-      u'Level',  # 5
-      u'Opcode',
-      u'Task',
-      u'Keyword',
-      u'PID',
-      u'TID',  # 10
-      u'Processor Number',
-      u'Instance ID',
-      u'Parent Instance ID',
-      u'Activity ID',
-      u'Related Activity ID',  # 15
-      u'Clock-Time',
-      u'Kernel(ms)',  # Both have a resolution of ~15ms which makes them
-      u'User(ms)',    # pretty much useless.
-      u'User Data',   # Extra arguments that are event-specific.
-    ]
     # Only the useful headers common to all entries are listed there. Any column
     # at 19 or higher is dependent on the specific event.
     EVENT_NAME = 0
@@ -1824,7 +1762,7 @@ class LogmanTrace(ApiBase):
       self._line_number += 1
       try:
         if self._line_number == 1:
-          if line != self.EXPECTED_HEADER:
+          if line != LogmanTrace.EXPECTED_HEADER:
             raise TracingFailure(
                 'Found malformed header: %s' % ' '.join(line),
                 None, None, None)
@@ -2376,6 +2314,68 @@ def get_blacklist(api):
       f.endswith('.pyc') or
       git_path in f or
       svn_path in f)
+
+
+def extract_directories(root_dir, files):
+  """Detects if all the files in a directory are in |files| and if so, replace
+  the individual files by a Results.Directory instance.
+
+  Takes a list of Results.File instances and returns a shorter list of
+  Results.File and Results.Directory instances.
+
+  Arguments:
+    - root_dir: Optional base directory that shouldn't be search further.
+    - files: list of Results.File instances.
+  """
+  assert not any(isinstance(f, Results.Directory) for f in files)
+  # Remove non existent files.
+  files = [f for f in files if f.existent]
+  if not files:
+    return files
+  # All files must share the same root, which can be None.
+  assert len(set(f.root for f in files)) == 1, set(f.root for f in files)
+
+  def blacklist(f):
+    return f in ('.git', '.svn') or f.endswith('.pyc')
+
+  # Creates a {directory: {filename: File}} mapping, up to root.
+  buckets = {}
+  if root_dir:
+    buckets[root_dir.rstrip(os.path.sep)] = {}
+  for fileobj in files:
+    path = fileobj.full_path
+    directory = os.path.dirname(path)
+    # Do not use os.path.basename() so trailing os.path.sep is kept.
+    basename = path[len(directory)+1:]
+    files_in_directory = buckets.setdefault(directory, {})
+    files_in_directory[basename] = fileobj
+    # Add all the directories recursively up to root.
+    while True:
+      old_d = directory
+      directory = os.path.dirname(directory)
+      if directory + os.path.sep == root_dir or directory == old_d:
+        break
+      buckets.setdefault(directory, {})
+
+  root_prefix = len(root_dir) + 1 if root_dir else 0
+  for directory in sorted(buckets, reverse=True):
+    actual = set(f for f in os.listdir(directory) if not blacklist(f))
+    expected = set(buckets[directory])
+    if not (actual - expected):
+      parent = os.path.dirname(directory)
+      buckets[parent][os.path.basename(directory)] = Results.Directory(
+        root_dir,
+        directory[root_prefix:],
+        sum(f.size for f in buckets[directory].itervalues()),
+        sum(f.nb_files for f in buckets[directory].itervalues()))
+      # Remove the whole bucket.
+      del buckets[directory]
+
+  # Reverse the mapping with what remains. The original instances are returned,
+  # so the cached meta data is kept.
+  return sorted(
+      sum((x.values() for x in buckets.itervalues()), []),
+      key=lambda x: x.path)
 
 
 def trace(logfile, cmd, cwd, api, output):
