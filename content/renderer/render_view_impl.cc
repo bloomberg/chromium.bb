@@ -2834,9 +2834,18 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
       command_line.HasSwitch(switches::kEnableViewport);
   bool enable_fixed_layout =
       command_line.HasSwitch(switches::kEnableFixedLayout);
+  bool enable_pinch = enable_viewport ||
+                      command_line.HasSwitch(switches::kEnablePinch);
 
   webview()->enableFixedLayoutMode(enable_fixed_layout || enable_viewport);
   webview()->settings()->setFixedElementsLayoutRelativeToFrame(true);
+  if (!enable_pinch &&
+      webkit_preferences_.apply_default_device_scale_factor_in_compositor &&
+      webkit_preferences_.default_device_scale_factor != 1) {
+    // Page scaling is disabled by default when applying a scale factor in the
+    // compositor since they are currently incompatible.
+    webview()->setPageScaleFactorLimits(1, 1);
+  }
 
   if (enable_viewport) {
     webview()->settings()->setViewportEnabled(true);
