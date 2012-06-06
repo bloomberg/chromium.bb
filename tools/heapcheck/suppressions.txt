@@ -281,9 +281,9 @@
    fun:ssl2_BeginClientHandshake
    fun:ssl_Do1stHandshake
    fun:SSL_ForceHandshake
-   fun:net::SSLClientSocketNSS::DoHandshake
-   fun:net::SSLClientSocketNSS::DoHandshakeLoop
-   fun:net::SSLClientSocketNSS::Connect
+   fun:net::SSLClientSocketNSS::Core::DoHandshake
+   fun:net::SSLClientSocketNSS::Core::DoHandshakeLoop
+   fun:net::SSLClientSocketNSS::Core::Connect
 }
 {
    bug_17540
