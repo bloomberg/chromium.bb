@@ -41,10 +41,10 @@ Target::Target(const Abi* abi)
     sig_done_(NULL),
     session_(NULL),
     ctx_(NULL),
-    cur_signal_(-1),
+    cur_signal_(0),
     sig_thread_(0),
-    run_thread_(-1),
-    reg_thread_(-1),
+    run_thread_(0),
+    reg_thread_(0),
     mem_base_(0) {
   if (NULL == abi_) abi_ = Abi::Get();
 }
@@ -226,11 +226,16 @@ void Target::Run(Session *ses) {
     uint32_t id = 0;
 
     // If no signal is waiting for this iteration...
-    if (-1 == cur_signal_) {
+    if (0 == cur_signal_) {
       // but the debugger is talking to us then force a break
       if (ses->DataAvailable()) {
-        // set signal to 0 to signify paused
-        cur_signal_ = 0;
+        // GDB should have tried to interrupt the target.
+        // See http://sourceware.org/gdb/current/onlinedocs/gdb/Interrupts.html
+        // TODO(eaeltsin): should we verify the interrupt sequence?
+
+        // Indicate we have no current thread.
+        // TODO(eaeltsin): or pick any thread? Add a test.
+        // See http://code.google.com/p/nativeclient/issues/detail?id=2743
         sig_thread_ = 0;
 
         // put all the threads to sleep.
@@ -249,7 +254,7 @@ void Target::Run(Session *ses) {
       }
     } else {
       // otherwise there really is an exception so get the id of the thread
-      id = GetRegThreadId();
+      id = sig_thread_;
 
       // Reset single stepping.
       IThread *thread = threads_[id];
@@ -316,7 +321,7 @@ void Target::Run(Session *ses) {
     }
 
     // Reset the signal value
-    cur_signal_ = -1;
+    cur_signal_ = 0;
 
     // If there is no signaled thread, then we were interrupted by GDB, and
     // there is no signal handler waiting.

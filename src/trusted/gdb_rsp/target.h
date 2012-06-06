@@ -146,16 +146,20 @@ class Target {
 
   uint8_t *ctx_;         // Context Scratchpad
 
-  // The current signal and signaling thread data is protected by
-  // the mutex, and can only be owned by one thread at a time.
-  // These values should only be written via the "Signal" member,
-  // which will ensure that a new signal does not overwrite a
-  // previous signal.
+  // Signal being processed.
+  // Set to 0 when execution was interrupted by GDB and not by a signal.
   volatile int8_t cur_signal_;
+
+  // Signaled thread id.
+  // Set to 0 when execution was interrupted by GDB and not by a signal.
   volatile uint32_t sig_thread_;
 
-  uint32_t run_thread_;   // Which thread to issue step commands on
-  uint32_t reg_thread_;   // Which thread to issue context (reg) commands on
+  // Thread for subsequent step and continue operations.
+  uint32_t run_thread_;
+
+  // Thread for subsequent registers access operations.
+  uint32_t reg_thread_;
+
   uint64_t mem_base_;
 };
 
