@@ -76,9 +76,9 @@ def CompressUsingLZMA(build_dir, compressed_file, input_file):
           # Older 7zip versions can support these settings, as these changes
           # rely on existing functionality in the lzma format.
           '-m0=BCJ2',
-          '-m1=LZMA:d26:fb64',
-          '-m2=LZMA:d20:fb64:mf=bt2',
-          '-m3=LZMA:d20:fb64:mf=bt2',
+          '-m1=LZMA:d27:fb128',
+          '-m2=LZMA:d22:fb128:mf=bt2',
+          '-m3=LZMA:d22:fb128:mf=bt2',
           '-mb0:1',
           '-mb0s1:2',
           '-mb0s2:3',
