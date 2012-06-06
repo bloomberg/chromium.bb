@@ -2067,7 +2067,7 @@ passGetString ()
 	  compileError (passNested, "unterminated string");
 	  return 0;
 	}
-      if (passLine.chars[passLinepos] = 34)
+      if (passLine.chars[passLinepos] == 34)
       break;
       if (passLine.chars[passLinepos] == QUOTESUB)
       passHoldString.chars[passHoldString.length++] = 34;
