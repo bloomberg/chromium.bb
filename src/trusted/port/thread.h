@@ -47,6 +47,8 @@ class IThread {
   static IThread *Create(uint32_t id, struct NaClAppThread *natp);
   static IThread *Acquire(uint32_t id);
   static void Release(IThread *thread);
+  static void SuspendOneThread(IThread *thread, struct NaClAppThread *natp);
+  static void ResumeOneThread(IThread *thread, struct NaClAppThread *natp);
   static void SetExceptionCatch(CatchFunc_t func, void *cookie);
 
  protected:

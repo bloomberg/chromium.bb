@@ -159,41 +159,13 @@ class Thread : public IThread {
   }
 
   virtual bool Suspend() {
-    MutexLock lock(ThreadGetLock());
-
-    // Attempt to suspend the thread
-    DWORD count = SuspendThread(natp_->thread.tid);
-
-    CONTEXT win_context;
-    win_context.ContextFlags = CONTEXT_ALL;
-    if (!GetThreadContext(natp_->thread.tid, &win_context)) {
-      NaClLog(LOG_FATAL, "Thread::Suspend: GetThreadContext failed\n");
-    }
-    NaClSignalContextFromHandler(&context_, &win_context);
-
-    if (count != -1) {
-      return true;
-    }
-
-    return false;
+    SuspendOneThread(this, natp_);
+    return true;
   }
 
   virtual bool Resume() {
-    MutexLock lock(ThreadGetLock());
-
-    CONTEXT win_context;
-    win_context.ContextFlags = CONTEXT_ALL;
-    NaClSignalContextToHandler(&win_context, &context_);
-    if (!SetThreadContext(natp_->thread.tid, &win_context)) {
-      NaClLog(LOG_FATAL, "Thread::Resume: SetThreadContext failed\n");
-    }
-
-    // Attempt to resume the thread
-    if (ResumeThread(natp_->thread.tid) != -1) {
-      return true;
-    }
-
-    return false;
+    ResumeOneThread(this, natp_);
+    return true;
   }
 
   virtual bool SetStep(bool on) {
@@ -272,6 +244,32 @@ void IThread::Release(IThread *ithread) {
   if (thread->ref_ == 0) {
     ThreadGetMap()->erase(thread->id_);
     delete static_cast<IThread*>(thread);
+  }
+}
+
+void IThread::SuspendOneThread(IThread *thread, struct NaClAppThread *natp) {
+  if (SuspendThread(natp->thread.tid) == -1) {
+    NaClLog(LOG_FATAL, "IThread::SuspendOneThread: SuspendThread failed\n");
+  }
+
+  CONTEXT win_context;
+  win_context.ContextFlags = CONTEXT_ALL;
+  if (!GetThreadContext(natp->thread.tid, &win_context)) {
+    NaClLog(LOG_FATAL, "IThread::SuspendOneThread: GetThreadContext failed\n");
+  }
+  NaClSignalContextFromHandler(thread->GetContext(), &win_context);
+}
+
+void IThread::ResumeOneThread(IThread *thread, struct NaClAppThread *natp) {
+  CONTEXT win_context;
+  win_context.ContextFlags = CONTEXT_ALL;
+  NaClSignalContextToHandler(&win_context, thread->GetContext());
+  if (!SetThreadContext(natp->thread.tid, &win_context)) {
+    NaClLog(LOG_FATAL, "IThread::ResumeOneThread: SetThreadContext failed\n");
+  }
+
+  if (ResumeThread(natp->thread.tid) == -1) {
+    NaClLog(LOG_FATAL, "IThread::ResumeOneThread: ResumeThread failed\n");
   }
 }
 

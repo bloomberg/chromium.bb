@@ -70,16 +70,13 @@ class Thread : public IThread {
   }
 
   virtual bool Suspend() {
-    // TODO(mseaborn): Implement this.  Unlike with Windows'
-    // SuspendThread(), a thread cannot be suspended from another
-    // thread in Unix.  We would have to send the thread a signal to
-    // ask it to suspend.
-    return false;
+    SuspendOneThread(this, natp_);
+    return true;
   }
 
   virtual bool Resume() {
-    // TODO(mseaborn): Implement this.
-    return false;
+    ResumeOneThread(this, natp_);
+    return true;
   }
 
   // TODO(mseaborn): Similar logic is duplicated in the Windows version.
@@ -163,6 +160,14 @@ void IThread::Release(IThread *ithread) {
     ThreadGetMap()->erase(thread->id_);
     delete static_cast<IThread*>(thread);
   }
+}
+
+void IThread::SuspendOneThread(IThread *, struct NaClAppThread *) {
+  // TODO(eaeltsin): implement this.
+}
+
+void IThread::ResumeOneThread(IThread *, struct NaClAppThread *) {
+  // TODO(eaeltsin): implement this.
 }
 
 void IThread::SetExceptionCatch(IThread::CatchFunc_t func, void *cookie) {
