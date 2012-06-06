@@ -300,7 +300,8 @@ var SourceEntry = (function() {
      * of |parent|.
      */
     printAsText: function(parent) {
-      printLogEntriesAsText(this.entries_, parent);
+      printLogEntriesAsText(this.entries_, parent,
+                            SourceTracker.getInstance().getSecurityStripping());
     }
   };
 

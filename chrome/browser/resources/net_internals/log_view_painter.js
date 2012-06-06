@@ -28,7 +28,7 @@ function canCollapseBeginWithEnd(beginEntry) {
  * Adds a child pre element to the end of |parent|, and writes the
  * formatted contents of |logEntries| to it.
  */
-printLogEntriesAsText = function(logEntries, parent) {
+printLogEntriesAsText = function(logEntries, parent, enableSecurityStripping) {
   var entries = LogGroupEntry.createArrayFrom(logEntries);
   var tablePrinter = new TablePrinter();
 
@@ -79,7 +79,7 @@ printLogEntriesAsText = function(logEntries, parent) {
       tablePrinter.setNewRowCellIndent(5 + entry.getDepth());
       addRowsForExtraParams(tablePrinter,
                             entry.orig,
-                            SourceTracker.getInstance().getSecurityStripping());
+                            enableSecurityStripping);
       tablePrinter.setNewRowCellIndent(0);
     }
   }
