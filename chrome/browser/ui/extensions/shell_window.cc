@@ -100,7 +100,7 @@ bool ShellWindowController::IsVisibleToExtension(
 }  // namespace internal
 
 ShellWindow::CreateParams::CreateParams()
-  : frame(ShellWindow::CreateParams::FRAME_CUSTOM),
+  : frame(ShellWindow::CreateParams::FRAME_CHROME),
     bounds(10, 10, kDefaultWidth, kDefaultHeight) {
 }
 
