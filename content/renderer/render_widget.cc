@@ -1678,6 +1678,10 @@ WebScreenInfo RenderWidget::screenInfo() {
   return screen_info_;
 }
 
+float RenderWidget::deviceScaleFactor() {
+  return device_scale_factor_;
+}
+
 void RenderWidget::resetInputMethod() {
   if (!input_method_is_active_)
     return;

@@ -2861,6 +2861,8 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
         webview()->setFixedLayoutSize(WebSize(width,height));
     }
   }
+  webview()->setDeviceScaleFactor(
+      webkit_preferences_.default_device_scale_factor);
 }
 
 void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {

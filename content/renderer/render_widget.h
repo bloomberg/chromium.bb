@@ -141,6 +141,7 @@ class CONTENT_EXPORT RenderWidget
   virtual WebKit::WebRect windowResizerRect();
   virtual WebKit::WebRect rootWindowRect();
   virtual WebKit::WebScreenInfo screenInfo();
+  virtual float deviceScaleFactor();
   virtual void resetInputMethod();
 
   // Called when a plugin is moved.  These events are queued up and sent with
