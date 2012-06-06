@@ -21,6 +21,15 @@ const char kValidationCacheSequenceName[] = "NaClValidationCache";
 const FilePath::CharType kValidationCacheFileName[] =
     FILE_PATH_LITERAL("nacl_validation_cache.bin");
 
+#if defined(CHROMEOS)
+// TODO(ncbray) enable on ChromeOS.
+// http://code.google.com/p/chromium/issues/detail?id=131218
+const bool kValidationCacheEnabledByDefault = false;
+#else
+const bool kValidationCacheEnabledByDefault = true;
+#endif
+
+
 enum ValidationCacheStatus {
   CACHE_MISS = 0,
   CACHE_HIT,
@@ -92,7 +101,9 @@ NaClBrowser::NaClBrowser()
       irt_filepath_(),
       irt_state_(NaClResourceUninitialized),
       validation_cache_file_path_(),
-      validation_cache_is_enabled_(CheckEnvVar("NACL_VALIDATION_CACHE", true)),
+      validation_cache_is_enabled_(
+          CheckEnvVar("NACL_VALIDATION_CACHE",
+                      kValidationCacheEnabledByDefault)),
       validation_cache_is_modified_(false),
       validation_cache_state_(NaClResourceUninitialized),
       ok_(true) {
