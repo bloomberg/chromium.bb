@@ -11,9 +11,9 @@
 string16 MacAddressAsString16(const uint8 mac_as_int[6]) {
   // mac_as_int is big-endian. Write in byte chunks.
   // Format is XX-XX-XX-XX-XX-XX.
-  static const wchar_t* const kMacFormatString =
-      L"%02x-%02x-%02x-%02x-%02x-%02x";
-  return WideToUTF16(base::StringPrintf(kMacFormatString,
+  static const char* const kMacFormatString =
+      "%02x-%02x-%02x-%02x-%02x-%02x";
+  return ASCIIToUTF16(base::StringPrintf(kMacFormatString,
                                         mac_as_int[0],
                                         mac_as_int[1],
                                         mac_as_int[2],
