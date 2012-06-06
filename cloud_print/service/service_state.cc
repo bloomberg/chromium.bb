@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cloud_print/service/win/service_state.h"
+#include "cloud_print/service/service_state.h"
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
