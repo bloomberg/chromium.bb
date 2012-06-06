@@ -2208,6 +2208,15 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       rwh->GetRoutingID(), accessibilityObjectId));
 }
 
+// VoiceOver uses this method to move the caret to the beginning of the next
+// word in a text field.
+- (void)accessibilitySetTextSelection:(int32)accId
+                          startOffset:(int32)startOffset
+                            endOffset:(int32)endOffset {
+  RenderWidgetHostImpl* rwh = renderWidgetHostView_->render_widget_host_;
+  rwh->AccessibilitySetTextSelection(accId, startOffset, endOffset);
+}
+
 // Convert a web accessibility's location in web coordinates into a cocoa
 // screen coordinate.
 - (NSPoint)accessibilityPointInScreen:

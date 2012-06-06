@@ -18,6 +18,9 @@
 
 - (NSPoint)accessibilityPointInScreen:(BrowserAccessibilityCocoa*)accessibility;
 - (void)doDefaultAction:(int32)accessibilityObjectId;
+- (void)accessibilitySetTextSelection:(int32)accId
+                          startOffset:(int32)startOffset
+                            endOffset:(int32)endOffset;
 - (void)performShowMenuAction:(BrowserAccessibilityCocoa*)accessibility;
 - (void)setAccessibilityFocus:(BOOL)focus
               accessibilityId:(int32)accessibilityObjectId;
@@ -32,6 +35,10 @@
   return NSZeroPoint;
 }
 - (void)doDefaultAction:(int32)accessibilityObjectId {
+}
+- (void)accessibilitySetTextSelection:(int32)accId
+                          startOffset:(int32)startOffset
+                            endOffset:(int32)endOffset {
 }
 - (void)performShowMenuAction:(BrowserAccessibilityCocoa*)accessibility {
 }

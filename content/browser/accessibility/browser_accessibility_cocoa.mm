@@ -967,6 +967,11 @@ NSDictionary* attributeToMethodNameMap = nil;
         WebAccessibility::ATTR_CAN_SET_VALUE, &canSetValue);
     return canSetValue;
   }
+  if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute] &&
+      ([[self role] isEqualToString:NSAccessibilityTextFieldRole] ||
+       [[self role] isEqualToString:NSAccessibilityTextAreaRole]))
+    return YES;
+
   return NO;
 }
 
@@ -1005,6 +1010,13 @@ NSDictionary* attributeToMethodNameMap = nil;
     BOOL focused = [focusedNumber intValue];
     [delegate_ setAccessibilityFocus:focused
                      accessibilityId:browserAccessibility_->renderer_id()];
+  }
+  if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
+    NSRange range = [(NSValue*)value rangeValue];
+    [delegate_
+        accessibilitySetTextSelection:browserAccessibility_->renderer_id()
+        startOffset:range.location
+        endOffset:range.location + range.length];
   }
 }
 
