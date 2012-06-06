@@ -868,6 +868,22 @@ def CMDissue(parser, args):
   return 0
 
 
+def CMDcomments(parser, args):
+  """show review comments of the current changelist"""
+  (_, args) = parser.parse_args(args)
+  if args:
+    parser.error('Unsupported argument: %s' % args)
+
+  cl = Changelist()
+  if cl.GetIssue():
+    data = cl.RpcServer().get_issue_properties(cl.GetIssue(), True)
+    for message in sorted(data['messages'], key=lambda x: x['date']):
+      print '\n%s  %s' % (message['date'].split('.', 1)[0], message['sender'])
+      if message['text'].strip():
+        print '\n'.join('  ' + l for l in message['text'].splitlines())
+  return 0
+
+
 def CreateDescriptionFromLog(args):
   """Pulls out the commit log to use as a base for the CL description."""
   log_args = []
@@ -1079,7 +1095,7 @@ def CMDupload(parser, args):
         '\nWARNING: Use -t or --title to set the title of the patchset.\n'
         'In the near future, -m or --message will send a message instead.\n'
         'See http://goo.gl/JGg0Z for details.\n')
-    
+
   # Make sure index is up-to-date before running diff-index.
   RunGit(['update-index', '--refresh', '-q'], error_ok=True)
   if RunGit(['diff-index', 'HEAD']):
