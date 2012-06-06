@@ -45,10 +45,7 @@ void NaClAddrSpaceFree(struct NaClApp *nap) {
    */
   NaClXMutexLock(&nap->mu);
 
-  if ((*nap->effp->vtbl->UnmapMemory)(nap->effp, nap->mem_start,
-                                      addrsp_size) != 0) {
-    NaClLog(LOG_FATAL, "NaClAddrSpaceFree: UnmapMemory() failed\n");
-  }
+  (*nap->effp->vtbl->UnmapMemory)(nap->effp, nap->mem_start, addrsp_size);
 
   NaClXMutexUnlock(&nap->mu);
 }

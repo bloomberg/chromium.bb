@@ -8,10 +8,14 @@
 // NaCl inter-module communication primitives.
 
 #include <windows.h>
+
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/desc/nacl_desc_effector.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 // This function is a no-op on Windows because there is no need to
 // override the Windows definition of NaClCreateMemoryObject(): it
@@ -35,7 +39,10 @@ Handle CreateMemoryObject(size_t length, bool executable) {
   return (memory == NULL) ? kInvalidHandle : memory;
 }
 
-void* Map(void* start, size_t length, int prot, int flags,
+// TODO(mseaborn): Reduce duplication between this function and
+// NaClHostDescMap().
+void* Map(struct NaClDescEffector* effp,
+          void* start, size_t length, int prot, int flags,
           Handle memory, off_t offset) {
   static DWORD prot_to_access[] = {
     0,  // NACL_ABI_PROT_NONE is not accepted: see below.
@@ -69,9 +76,24 @@ void* Map(void* start, size_t length, int prot, int flags,
     desired_access = FILE_MAP_COPY;
   }
 
-  start = MapViewOfFileEx(memory, desired_access, 0, offset, length,
-                          (flags & kMapFixed) ? start : 0);
-  return (NULL != start) ? start : kMapFailed;
+  CHECK((flags & kMapFixed) != 0);
+  for (size_t chunk_offset = 0;
+       chunk_offset < length;
+       chunk_offset += NACL_MAP_PAGESIZE) {
+    uintptr_t chunk_addr = (uintptr_t) start + chunk_offset;
+
+    (*effp->vtbl->UnmapMemory)(effp, chunk_addr, NACL_MAP_PAGESIZE);
+
+    void* mapped = MapViewOfFileEx(memory, desired_access,
+                                   0, (off_t) (offset + chunk_offset),
+                                   NACL_MAP_PAGESIZE,
+                                   (void*) chunk_addr);
+    if (mapped != (void*) chunk_addr) {
+      NaClLog(LOG_FATAL, "nacl::Map: MapViewOfFileEx() failed, error %d\n",
+              GetLastError());
+    }
+  }
+  return start;
 }
 
 int Unmap(void* start, size_t length) {

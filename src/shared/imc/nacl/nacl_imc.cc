@@ -82,7 +82,8 @@ Handle CreateMemoryObject(size_t length, bool executable) {
   return imc_mem_obj_create(length);
 }
 
-void* Map(void* start, size_t length, int prot, int flags,
+void* Map(struct NaClDescEffector* effp,
+          void* start, size_t length, int prot, int flags,
           Handle memory, off_t offset) {
   static int posix_prot[4] = {
     PROT_NONE,

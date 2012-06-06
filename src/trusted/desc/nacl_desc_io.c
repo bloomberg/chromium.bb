@@ -114,11 +114,8 @@ static uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
                                    int                     flags,
                                    nacl_off64_t            offset) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
-  int                   rv;
   uintptr_t             status;
   uintptr_t             addr;
-  uintptr_t             end_addr;
-  nacl_off64_t          tmp_off;
 
   /*
    * prot must be PROT_NONE or a combination of PROT_{READ|WRITE}
@@ -145,39 +142,15 @@ static uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
   }
   flags |= NACL_ABI_MAP_FIXED;
 
-  for (addr = (uintptr_t) start_addr,
-           end_addr = addr + len,
-           tmp_off = offset;
-       addr < end_addr;
-       addr += NACL_MAP_PAGESIZE,
-           tmp_off += NACL_MAP_PAGESIZE) {
-    size_t map_size;
-
-    if (0 != (rv = (*effp->vtbl->UnmapMemory)(effp,
-                                              addr,
-                                              NACL_MAP_PAGESIZE))) {
-      NaClLog(LOG_FATAL,
-              ("NaClDescIoDescMap: error %d --"
-               " could not unmap 0x%08"NACL_PRIxPTR
-               ", length 0x%"NACL_PRIxS"\n"),
-              rv,
-              addr,
-              (size_t) NACL_MAP_PAGESIZE);
-    }
-
-    map_size = end_addr - addr;
-    if (map_size > NACL_MAP_PAGESIZE) {
-      map_size = NACL_MAP_PAGESIZE;
-    }
-    status = NaClHostDescMap((NULL == self) ? NULL : self->hd,
-                             (void *) addr,
-                             map_size,
-                             prot,
-                             flags,
-                             tmp_off);
-    if (NACL_MAP_FAILED == (void *) status) {
-      return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
-    }
+  status = NaClHostDescMap((NULL == self) ? NULL : self->hd,
+                           effp,
+                           (void *) start_addr,
+                           len,
+                           prot,
+                           flags,
+                           offset);
+  if (NACL_MAP_FAILED == (void *) status) {
+    return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
   }
   return (uintptr_t) start_addr;
 }

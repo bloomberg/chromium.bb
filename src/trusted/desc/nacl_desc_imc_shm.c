@@ -110,14 +110,11 @@ static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
                                    nacl_off64_t            offset) {
   struct NaClDescImcShm  *self = (struct NaClDescImcShm *) vself;
 
-  int           rv;
   int           nacl_imc_prot;
   int           nacl_imc_flags;
   uintptr_t     addr;
-  uintptr_t     end_addr;
   void          *result;
   nacl_off64_t  tmp_off64;
-  off_t         tmp_off;
 
   NaClLog(4,
           "NaClDescImcShmMmap(,,0x%08"NACL_PRIxPTR",0x%"NACL_PRIxS","
@@ -188,67 +185,20 @@ static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
     return -NACL_ABI_EOVERFLOW;
   }
 
-  /*
-   * For *x, we just map with MAP_FIXED and the kernel takes care of
-   * atomically unmapping any existing memory.  For Windows, we must
-   * unmap existing memory first, which creates a race condition,
-   * where some other innocent thread puts some other memory into the
-   * hole, and that memory becomes vulnerable to attack by the
-   * untrusted NaCl application.
-   *
-   * For now, abort the process.  We will need to figure out how to
-   * re-architect this code to do the address space move, since it is
-   * deep surgery and we'll need to ensure that all threads have
-   * stopped and any addresses derived from the old address space
-   * would not be on any thread's call stack, i.e., stop the thread in
-   * user space or before entering real service runtime code.  This
-   * means that no application thread may be indefinitely blocked
-   * performing a service call in the service runtime, since otherwise
-   * there is no way for us to stop all threads.
-   *
-   * TODO(bsy): We will probably return an internal error code
-   * -NACL_ABI_E_MOVE_ADDRESS_SPACE to ask the caller to do the address space
-   * dance.
-   */
-  for (addr = (uintptr_t) start_addr,
-           end_addr = addr + len,
-           tmp_off = (off_t) offset;
-       addr < end_addr;
-       addr += NACL_MAP_PAGESIZE, tmp_off += NACL_MAP_PAGESIZE) {
-
-    /*
-     * Minimize the time between the unmap and the map for the same
-     * page: we interleave the unmap and map for the pages, rather
-     * than do all the unmap first and then do all of the map
-     * operations.
-     */
-    if (0 !=
-        (rv = (*effp->vtbl->UnmapMemory)(effp,
-                                         addr,
-                                         NACL_MAP_PAGESIZE))) {
-      NaClLog(LOG_FATAL,
-              ("NaClDescImcShmMap: error %d --"
-               " could not unmap 0x%08"NACL_PRIxPTR", length 0x%x\n"),
-              rv,
-              addr,
-              NACL_MAP_PAGESIZE);
-    }
-
-    result = NaClMap((void *) addr,
-                     NACL_MAP_PAGESIZE,
-                     nacl_imc_prot,
-                     nacl_imc_flags,
-                     self->h,
-                     tmp_off);
-    if (NACL_MAP_FAILED == result) {
-      return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
-    }
-    if (0 != (NACL_ABI_MAP_FIXED & flags) && result != (void *) addr) {
-      NaClLog(LOG_FATAL,
-              ("NaClDescImcShmMap: NACL_MAP_FIXED but"
-               " got 0x%08"NACL_PRIxPTR" instead of 0x%08"NACL_PRIxPTR"\n"),
-              (uintptr_t) result, addr);
-    }
+  result = NaClMap(effp,
+                   (void *) start_addr,
+                   len,
+                   nacl_imc_prot,
+                   nacl_imc_flags,
+                   self->h,
+                   (off_t) offset);
+  if (NACL_MAP_FAILED == result) {
+    return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
+  }
+  if (0 != (NACL_ABI_MAP_FIXED & flags) && result != (void *) start_addr) {
+    NaClLog(LOG_FATAL,
+            ("NaClDescImcShmMap: NACL_MAP_FIXED but got %p instead of %p\n"),
+            result, start_addr);
   }
   return (uintptr_t) start_addr;
 }

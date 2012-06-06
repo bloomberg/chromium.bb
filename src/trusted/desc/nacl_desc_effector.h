@@ -62,9 +62,9 @@ struct NaClDescEffectorVtbl {
    *
    * This is NOT used by the NaClDesc's own Unmap method.
    */
-  int (*UnmapMemory)(struct NaClDescEffector  *vself,
-                     uintptr_t                sysaddr,
-                     size_t                   nbytes);
+  void (*UnmapMemory)(struct NaClDescEffector  *vself,
+                      uintptr_t                sysaddr,
+                      size_t                   nbytes);
 };
 
 EXTERN_C_END

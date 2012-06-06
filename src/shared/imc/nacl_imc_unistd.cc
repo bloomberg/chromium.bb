@@ -176,8 +176,11 @@ Handle CreateMemoryObject(size_t length, bool executable) {
   return TryShmOrTempOpen(length, kShmOpenPrefix, false);
 }
 
-void* Map(void* start, size_t length, int prot, int flags,
+void* Map(struct NaClDescEffector* effp,
+          void* start, size_t length, int prot, int flags,
           Handle memory, off_t offset) {
+  UNREFERENCED_PARAMETER(effp);
+
   static const int kPosixProt[] = {
     PROT_NONE,
     PROT_READ,

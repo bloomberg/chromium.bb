@@ -30,6 +30,7 @@
 EXTERN_C_BEGIN
 
 struct nacl_abi_stat;
+struct NaClDescEffector;
 struct NaClHostDesc;
 
 /*
@@ -134,6 +135,7 @@ extern int NaClXlateNaClSyncStatus(NaClSyncStatus status);
  * 4GB file max
  */
 extern uintptr_t NaClHostDescMap(struct NaClHostDesc  *d,
+                                 struct NaClDescEffector *effp,
                                  void                 *start_addr,
                                  size_t               len,
                                  int                  prot,

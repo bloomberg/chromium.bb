@@ -30,6 +30,8 @@
 
 #include <sys/types.h>
 
+struct NaClDescEffector;
+
 /**
  * Contains primitive NaCl socket and shared memory functions.
  */
@@ -334,7 +336,8 @@ void* const kMapFailed = reinterpret_cast<void*>(-1);
  *                will be mapped.
  *  @return A pointer to the mapped area, and kMapFailed upon error.
  */
-void* Map(void* start, size_t length, int prot, int flags,
+void* Map(struct NaClDescEffector* effp,
+          void* start, size_t length, int prot, int flags,
           Handle memory, off_t offset);
 
 /**

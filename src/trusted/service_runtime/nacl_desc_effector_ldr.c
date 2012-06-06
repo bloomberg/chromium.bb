@@ -36,9 +36,9 @@ static void NaClDescEffLdrDtor(struct NaClDescEffector *vself) {
 }
 
 #if NACL_WINDOWS
-static int NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
-                                     uintptr_t                sysaddr,
-                                     size_t                   nbytes) {
+static void NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
+                                      uintptr_t                sysaddr,
+                                      size_t                   nbytes) {
   struct NaClDescEffectorLdr  *self = (struct NaClDescEffectorLdr *) vself;
   uintptr_t                   addr;
   uintptr_t                   endaddr;
@@ -87,19 +87,16 @@ static int NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
       }
     }
   }
-
-  return 0;
 }
 
 #else  /* NACL_WINDOWS */
 
-static int NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
-                                     uintptr_t                sysaddr,
-                                     size_t                   nbytes) {
+static void NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
+                                      uintptr_t                sysaddr,
+                                      size_t                   nbytes) {
   UNREFERENCED_PARAMETER(vself);
   UNREFERENCED_PARAMETER(sysaddr);
   UNREFERENCED_PARAMETER(nbytes);
-  return 0;
 }
 #endif  /* NACL_WINDOWS */
 

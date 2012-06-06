@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -62,9 +62,10 @@ NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
   return nacl::CreateMemoryObject(length, executable ? true : false);
 }
 
-void* NaClMap(void* start, size_t length, int prot, int flags,
+void* NaClMap(struct NaClDescEffector* effp, void* start,
+              size_t length, int prot, int flags,
               NaClHandle memory, off_t offset) {
-  return nacl::Map(start, length, prot, flags, memory, offset);
+  return nacl::Map(effp, start, length, prot, flags, memory, offset);
 }
 
 int NaClUnmap(void* start, size_t length) {

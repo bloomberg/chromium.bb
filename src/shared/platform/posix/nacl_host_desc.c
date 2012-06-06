@@ -101,6 +101,7 @@ static INLINE int NaClMapFlagMap(int nacl_map_flags) {
  * TODO(bsy): handle the !NACL_ABI_MAP_FIXED case.
  */
 uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
+                          struct NaClDescEffector *effp,
                           void                *start_addr,
                           size_t              len,
                           int                 prot,
@@ -110,6 +111,7 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   void  *map_addr;
   int   host_prot;
   int   host_flags;
+  UNREFERENCED_PARAMETER(effp);
 
   NaClLog(4,
           ("NaClHostDescMap(0x%08"NACL_PRIxPTR", "

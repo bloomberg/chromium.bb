@@ -20,6 +20,7 @@
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
+#include "native_client/src/trusted/desc/nacl_desc_effector.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
@@ -108,7 +109,12 @@ static INLINE size_t size_min(size_t a, size_t b) {
  * TODO(bsy): handle the !NACL_ABI_MAP_FIXED case.
  */
 
+/*
+ * TODO(mseaborn): Reduce duplication between this function and
+ * nacl::Map()/NaClMap().
+ */
 uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
+                          struct NaClDescEffector *effp,
                           void                *start_addr,
                           size_t              len,
                           int                 prot,
@@ -202,12 +208,16 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
     for (chunk_offset = 0;
          chunk_offset < len;
          chunk_offset += NACL_MAP_PAGESIZE) {
+      uintptr_t chunk_addr = addr + chunk_offset;
+
+      (*effp->vtbl->UnmapMemory)(effp, chunk_addr, NACL_MAP_PAGESIZE);
+
       NaClLog(3,
               "NaClHostDescMap: VirtualAlloc(0x%08x,,%x,%x)\n",
               (void *) (addr + chunk_offset),
               MEM_COMMIT | MEM_RESERVE,
               flProtect);
-      map_result = (uintptr_t) VirtualAlloc((void *) (addr + chunk_offset),
+      map_result = (uintptr_t) VirtualAlloc((void *) chunk_addr,
                                             NACL_MAP_PAGESIZE,
                                             MEM_COMMIT | MEM_RESERVE,
                                             flProtect);
@@ -250,9 +260,12 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   for (chunk_offset = 0;
        chunk_offset < len;
        chunk_offset += NACL_MAP_PAGESIZE) {
+    uintptr_t chunk_addr = addr + chunk_offset;
     nacl_off64_t net_offset;
     uint32_t net_offset_high;
     uint32_t net_offset_low;
+
+    (*effp->vtbl->UnmapMemory)(effp, chunk_addr, NACL_MAP_PAGESIZE);
 
     chunk_size = size_min(len - chunk_offset, NACL_MAP_PAGESIZE);
     /* in case MapViewOfFile cares that we exceed the file size */
@@ -264,7 +277,7 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
                                              net_offset_high,
                                              net_offset_low,
                                              chunk_size,
-                                             (void *) (addr + chunk_offset));
+                                             (void *) chunk_addr);
     if ((addr + chunk_offset) != map_result) {
       DWORD err = GetLastError();
       NaClLog(LOG_INFO,

@@ -22,6 +22,8 @@
 #endif  /* __native_client__ */
 
 
+struct NaClDescEffector;
+
 #ifdef __cplusplus
 extern "C" {
 #endif  /* __cplusplus */
@@ -295,7 +297,8 @@ NaClHandle NaClCreateMemoryObject(size_t length, int executable);
  * If NACL_MAP_FIXED is also set, NaClMap() tries to map the memory object at
  * the address specified by start.
  */
-void* NaClMap(void* start, size_t length, int prot, int flags,
+void* NaClMap(struct NaClDescEffector* effp,
+              void* start, size_t length, int prot, int flags,
               NaClHandle memory, off_t offset);
 
 /*
