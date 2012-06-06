@@ -9,10 +9,10 @@
 
 namespace {
 
-// This function will be called via an injected thread in the hung plugin
-// process. calling DumpProcessWithoutCrash causes breakpad to capture a dump of
+// This function will be called via an injected thread in the hung child
+// process. Calling DumpProcessWithoutCrash causes breakpad to capture a dump of
 // the process.
-DWORD WINAPI HungPluginDumpAndExit(void*) {
+DWORD WINAPI HungChildProcessDumpAndExit(void*) {
   typedef void (__cdecl *DumpProcessFunction)();
   DumpProcessFunction request_dump = reinterpret_cast<DumpProcessFunction>(
       GetProcAddress(GetModuleHandle(chrome::kBrowserProcessExecutableName),
@@ -33,8 +33,8 @@ static const int kGenerateDumpTimeoutMS = 10000;
 void CrashDumpAndTerminateHungChildProcess(HANDLE hprocess) {
   // Before terminating the process we try collecting a dump. Which
   // a transient thread in the child process will do for us.
-  HANDLE remote_thread = CreateRemoteThread(hprocess, NULL, 0,
-                                            &HungPluginDumpAndExit, 0, 0, NULL);
+  HANDLE remote_thread = CreateRemoteThread(
+      hprocess, NULL, 0, &HungChildProcessDumpAndExit, 0, 0, NULL);
   if (remote_thread) {
     WaitForSingleObject(remote_thread, kGenerateDumpTimeoutMS);
     CloseHandle(remote_thread);
