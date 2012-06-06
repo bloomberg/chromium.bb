@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
@@ -1797,6 +1798,7 @@ LRESULT RenderWidgetHostViewWin::OnImeRequest(
 
 LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
                                               LPARAM lparam, BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnMouseEvent");
   handled = TRUE;
 
   // Windows sends (fake) mouse messages for touch events.  Ignore these since
@@ -1865,8 +1867,10 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
           GetParent().ScreenToClient(&cursor_pos);
           parent_msg_lparam = MAKELPARAM(cursor_pos.x, cursor_pos.y);
         }
-        if (SendMessage(GetParent(), message, wparam, parent_msg_lparam) != 0)
+        if (SendMessage(GetParent(), message, wparam, parent_msg_lparam) != 0) {
+          TRACE_EVENT0("browser", "EarlyOut_SentToParent");
           return 1;
+        }
       }
     }
   }
@@ -1877,6 +1881,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
 
 LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
                                             LPARAM lparam, BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnKeyEvent");
   handled = TRUE;
 
   // When Escape is pressed, force fullscreen windows to close if necessary.
@@ -1975,6 +1980,7 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
 
 LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
                                               LPARAM lparam, BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnWheelEvent");
   // Forward the mouse-wheel message to the window under the mouse if it belongs
   // to us.
   if (message == WM_MOUSEWHEEL &&
@@ -2185,6 +2191,7 @@ bool WebTouchState::UpdateTouchPoint(
 
 LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
                                               LPARAM lparam, BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnTouchEvent");
   // TODO(jschuh): Add support for an arbitrary number of touchpoints.
   size_t total = std::min(static_cast<int>(LOWORD(wparam)),
       static_cast<int>(WebKit::WebTouchEvent::touchesLengthCap));
@@ -2192,6 +2199,7 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
 
   if (!total || !GetTouchInputInfo((HTOUCHINPUT)lparam, total,
                                    points, sizeof(TOUCHINPUT))) {
+    TRACE_EVENT0("browser", "EarlyOut_NothingToDo");
     return 0;
   }
 
@@ -2269,6 +2277,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT message,
 
 LRESULT RenderWidgetHostViewWin::OnGestureEvent(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnGestureEvent");
 
   handled = FALSE;
 
@@ -2780,8 +2789,12 @@ bool RenderWidgetHostViewWin::ForwardGestureEventToRenderer(
 void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
                                                           WPARAM wparam,
                                                           LPARAM lparam) {
-  if (!render_widget_host_)
+  TRACE_EVENT0("browser",
+               "RenderWidgetHostViewWin::ForwardMouseEventToRenderer");
+  if (!render_widget_host_) {
+    TRACE_EVENT0("browser", "EarlyOut_NoRWH");
     return;
+  }
 
   WebMouseEvent event(
       WebInputEventFactory::mouseEvent(m_hWnd, message, wparam, lparam));
@@ -2891,6 +2904,7 @@ void RenderWidgetHostViewWin::MoveCursorToCenterIfNecessary() {
 void RenderWidgetHostViewWin::HandleLockedMouseEvent(UINT message,
                                                      WPARAM wparam,
                                                      LPARAM lparam) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::HandleLockedMouseEvent");
   DCHECK(mouse_locked_);
 
   if (message == WM_MOUSEMOVE && move_to_center_request_.pending) {

@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/tap_suppression_controller.h"
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -128,6 +129,8 @@ void TapSuppressionController::GestureFlingCancelAck(bool processed) {
       break;
     case MD_STASHED:
       if (!processed) {
+        TRACE_EVENT0("browser",
+                     "TapSuppressionController::GestureFlingCancelAck");
         mouse_down_timer_.Stop();
         render_widget_host_->ForwardMouseEvent(stashed_mouse_down_);
         state_ = NOTHING;
@@ -159,6 +162,8 @@ void TapSuppressionController::MouseDownTimerExpired() {
       state_ = NOTHING;
       break;
     case MD_STASHED:
+      TRACE_EVENT0("browser",
+                   "TapSuppressionController::MouseDownTimerExpired");
       render_widget_host_->ForwardMouseEvent(stashed_mouse_down_);
       state_ = NOTHING;
       break;

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -967,6 +968,7 @@ void RenderWidgetHostViewAura::OnBlur() {
 }
 
 bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnKeyEvent");
   if (popup_child_host_view_ && popup_child_host_view_->NeedsInputGrab() &&
       popup_child_host_view_->OnKeyEvent(event))
     return true;
@@ -1007,6 +1009,7 @@ int RenderWidgetHostViewAura::GetNonClientComponent(
 }
 
 bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnMouseEvent");
   if (mouse_locked_) {
     WebKit::WebMouseEvent mouse_event = content::MakeWebMouseEvent(event);
     gfx::Point center = window_->bounds().CenterPoint();
@@ -1080,6 +1083,7 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
 
 ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
     aura::TouchEvent* event) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnTouchEvent");
   // Update the touch event first.
   WebKit::WebTouchPoint* point = content::UpdateWebTouchEvent(event,
       &touch_event_);
@@ -1097,6 +1101,7 @@ ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
 
 ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
     aura::GestureEvent* event) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnGestureEvent");
   // Pinch gestures are currently disabled by default. See crbug.com/128477.
   if ((event->type() == ui::ET_GESTURE_PINCH_BEGIN ||
       event->type() == ui::ET_GESTURE_PINCH_UPDATE ||

@@ -214,6 +214,8 @@ class RenderWidgetHostViewGtkWidget {
   static gboolean OnKeyPressReleaseEvent(GtkWidget* widget,
                                          GdkEventKey* event,
                                          RenderWidgetHostViewGtk* host_view) {
+    TRACE_EVENT0("browser",
+                 "RenderWidgetHostViewGtkWidget::OnKeyPressReleaseEvent");
     // Force popups or fullscreen windows to close on Escape so they won't keep
     // the keyboard grabbed or be stuck onscreen if the renderer is hanging.
     bool should_close_on_escape =
@@ -300,6 +302,8 @@ class RenderWidgetHostViewGtkWidget {
       GtkWidget* widget,
       GdkEventButton* event,
       RenderWidgetHostViewGtk* host_view) {
+    TRACE_EVENT0("browser",
+                 "RenderWidgetHostViewGtkWidget::OnButtonPressReleaseEvent");
 
     if (event->type != GDK_BUTTON_RELEASE)
       host_view->set_last_mouse_down(event);
@@ -364,6 +368,8 @@ class RenderWidgetHostViewGtkWidget {
   static gboolean OnMouseMoveEvent(GtkWidget* widget,
                                    GdkEventMotion* event,
                                    RenderWidgetHostViewGtk* host_view) {
+    TRACE_EVENT0("browser",
+                 "RenderWidgetHostViewGtkWidget::OnMouseMoveEvent");
     // We want to translate the coordinates of events that do not originate
     // from this widget to be relative to the top left of the widget.
     GtkWidget* event_widget = gtk_get_event_widget(
@@ -410,6 +416,8 @@ class RenderWidgetHostViewGtkWidget {
   static gboolean OnCrossingEvent(GtkWidget* widget,
                                   GdkEventCrossing* event,
                                   RenderWidgetHostViewGtk* host_view) {
+    TRACE_EVENT0("browser",
+                 "RenderWidgetHostViewGtkWidget::OnCrossingEvent");
     const int any_button_mask =
         GDK_BUTTON1_MASK |
         GDK_BUTTON2_MASK |
@@ -519,6 +527,8 @@ class RenderWidgetHostViewGtkWidget {
   static gboolean OnMouseScrollEvent(GtkWidget* widget,
                                      GdkEventScroll* event,
                                      RenderWidgetHostViewGtk* host_view) {
+    TRACE_EVENT0("browser",
+                 "RenderWidgetHostViewGtkWidget::OnMouseScrollEvent");
     // If the user is holding shift, translate it into a horizontal scroll. We
     // don't care what other modifiers the user may be holding (zooming is
     // handled at the WebContentsView level).
