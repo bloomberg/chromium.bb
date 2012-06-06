@@ -495,12 +495,6 @@ class LocalTouchEvent :
     return data().touches[index_].force;
   }
 
-  // Returns a copy of this touch event. Used when queueing events for
-  // asynchronous gesture recognition.
-  virtual TouchEvent* Copy() const OVERRIDE {
-    return new LocalTouchEvent(data(), GetEventType(), GetTimestamp());
-  }
-
   // Returns a copy of the touch event at the specified index.
   const LocalTouchEvent& Index( size_t index) {
     const int touch_history_size = 40;

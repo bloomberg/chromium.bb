@@ -26,10 +26,6 @@ class UI_EXPORT TouchEvent {
   virtual float RadiusY() const = 0;
   virtual float RotationAngle() const = 0;
   virtual float Force() const = 0;
-
-  // Returns a copy of this touch event. Used when queueing events for
-  // asynchronous gesture recognition.
-  virtual TouchEvent* Copy() const = 0;
 };
 
 // An abstract type to represent gesture-events.

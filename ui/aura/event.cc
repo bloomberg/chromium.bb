@@ -311,14 +311,6 @@ base::TimeDelta TouchEvent::GetTimestamp() const {
   return time_stamp();
 }
 
-TouchEvent* TouchEvent::Copy() const {
-#if defined(OS_WIN)
-  if (native_event().message)
-    return new TouchEvent(::CopyNativeEvent(native_event()));
-#endif
-  return new TouchEvent(*this, NULL, NULL);
-}
-
 float TouchEvent::RadiusX() const {
   return radius_x_;
 }

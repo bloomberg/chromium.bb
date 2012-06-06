@@ -219,7 +219,6 @@ class AURA_EXPORT TouchEvent : public LocatedEvent,
   virtual int GetTouchId() const OVERRIDE;
   virtual int GetEventFlags() const OVERRIDE;
   virtual base::TimeDelta GetTimestamp() const OVERRIDE;
-  virtual TouchEvent* Copy() const OVERRIDE;
   virtual float RadiusX() const OVERRIDE;
   virtual float RadiusY() const OVERRIDE;
   virtual float RotationAngle() const OVERRIDE;

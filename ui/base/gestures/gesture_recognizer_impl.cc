@@ -29,60 +29,89 @@ class ScopedPop {
   DISALLOW_COPY_AND_ASSIGN(ScopedPop);
 };
 
-// CancelledTouchEvent mirrors a ui::TouchEvent object, except for the
-// type, which is always ET_TOUCH_CANCELLED.
-class CancelledTouchEvent : public ui::TouchEvent {
+// CancelledTouchEvent mirrors a ui::TouchEvent object.
+class MirroredTouchEvent : public ui::TouchEvent {
  public:
-  explicit CancelledTouchEvent(ui::TouchEvent* real)
-      : src_event_(real) {
+  explicit MirroredTouchEvent(const ui::TouchEvent* real)
+      : type_(real->GetEventType()),
+        location_(real->GetLocation()),
+        touch_id_(real->GetTouchId()),
+        flags_(real->GetEventFlags()),
+        timestamp_(real->GetTimestamp()),
+        radius_x_(real->RadiusX()),
+        radius_y_(real->RadiusY()),
+        rotation_angle_(real->RotationAngle()),
+        force_(real->Force()) {
   }
 
-  virtual ~CancelledTouchEvent() {
+  virtual ~MirroredTouchEvent() {
   }
 
- private:
   // Overridden from ui::TouchEvent.
   virtual ui::EventType GetEventType() const OVERRIDE {
-    return ui::ET_TOUCH_CANCELLED;
+    return type_;
   }
 
   virtual gfx::Point GetLocation() const OVERRIDE {
-    return src_event_->GetLocation();
+    return location_;
   }
 
   virtual int GetTouchId() const OVERRIDE {
-    return src_event_->GetTouchId();
+    return touch_id_;
   }
 
   virtual int GetEventFlags() const OVERRIDE {
-    return src_event_->GetEventFlags();
+    return flags_;
   }
 
   virtual base::TimeDelta GetTimestamp() const OVERRIDE {
-    return src_event_->GetTimestamp();
-  }
-
-  virtual ui::TouchEvent* Copy() const OVERRIDE {
-    return NULL;
+    return timestamp_;
   }
 
   virtual float RadiusX() const OVERRIDE {
-    return src_event_->RadiusX();
+    return radius_x_;
   }
 
   virtual float RadiusY() const OVERRIDE {
-    return src_event_->RadiusY();
+    return radius_y_;
   }
 
   virtual float RotationAngle() const OVERRIDE {
-    return src_event_->RotationAngle();
+    return rotation_angle_;
   }
 
   virtual float Force() const OVERRIDE {
-    return src_event_->Force();
+    return force_;
   }
 
-  ui::TouchEvent* src_event_;
+ protected:
+  void set_type(const ui::EventType type) { type_ = type; }
+
+ private:
+  ui::EventType type_;
+  gfx::Point location_;
+  int touch_id_;
+  int flags_;
+  base::TimeDelta timestamp_;
+  float radius_x_;
+  float radius_y_;
+  float rotation_angle_;
+  float force_;
+
+  DISALLOW_COPY_AND_ASSIGN(MirroredTouchEvent);
+};
+
+// A mirrored event, except for the type, which is always ET_TOUCH_CANCELLED.
+class CancelledTouchEvent : public MirroredTouchEvent {
+ public:
+  explicit CancelledTouchEvent(const ui::TouchEvent* src)
+      : MirroredTouchEvent(src) {
+    set_type(ui::ET_TOUCH_CANCELLED);
+  }
+
+  virtual ~CancelledTouchEvent() {}
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(CancelledTouchEvent);
 };
 
@@ -211,7 +240,7 @@ void GestureRecognizerImpl::QueueTouchEventForGesture(GestureConsumer* consumer,
                                                       const TouchEvent& event) {
   if (!event_queue_[consumer])
     event_queue_[consumer] = new std::queue<TouchEvent*>();
-  event_queue_[consumer]->push(event.Copy());
+  event_queue_[consumer]->push(new MirroredTouchEvent(&event));
 }
 
 GestureSequence::Gestures* GestureRecognizerImpl::AdvanceTouchQueue(

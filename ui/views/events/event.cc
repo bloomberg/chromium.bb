@@ -166,11 +166,6 @@ base::TimeDelta TouchEvent::GetTimestamp() const {
   return base::TimeDelta::FromMilliseconds(time_stamp().ToDoubleT() * 1000);
 }
 
-TouchEvent* TouchEvent::Copy() const {
-  return new TouchEvent(type(), location().x(), location().y(),
-      flags(), touch_id_, radius_x_, radius_y_, rotation_angle_, force_);
-}
-
 float TouchEvent::RadiusX() const {
   return radius_x_;
 }
