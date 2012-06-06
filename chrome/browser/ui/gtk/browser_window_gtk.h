@@ -40,6 +40,10 @@ class StatusBubbleGtk;
 class TabContentsContainerGtk;
 class TabStripGtk;
 
+namespace autofill {
+class PasswordGenerator;
+}
+
 namespace extensions {
 class Extension;
 }
@@ -169,6 +173,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE;
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& rect,
+      autofill::PasswordGenerator* password_generator,
       const webkit::forms::PasswordForm& form) OVERRIDE;
 
   // Overridden from NotificationObserver:

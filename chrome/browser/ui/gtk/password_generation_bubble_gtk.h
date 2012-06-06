@@ -8,10 +8,14 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/autofill/password_generator.h"
+#include "base/basictypes.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/rect.h"
 #include "webkit/forms/password_form.h"
+
+namespace autofill {
+class PasswordGenerator;
+}
 
 namespace content {
 class RenderViewHost;
@@ -32,6 +36,7 @@ class PasswordGenerationBubbleGtk {
                               GtkWidget* anchor_widget,
                               Profile* profile,
                               content::RenderViewHost* render_view_host,
+                              autofill::PasswordGenerator* password_generator,
                               PasswordManager* password_manager);
   virtual ~PasswordGenerationBubbleGtk();
 
@@ -52,11 +57,12 @@ class PasswordGenerationBubbleGtk {
   // RenderViewHost associated with the button that spawned this bubble.
   content::RenderViewHost* render_view_host_;
 
+  // Object that deals with generating passwords. The class won't take the
+  // ownership of it.
+  autofill::PasswordGenerator* password_generator_;
+
   // PasswordManager for this tab.
   PasswordManager* password_manager_;
-
-  // Class that deals with generating passwords.
-  autofill::PasswordGenerator password_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationBubbleGtk);
 };

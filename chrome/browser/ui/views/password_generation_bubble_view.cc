@@ -31,6 +31,7 @@ PasswordGenerationBubbleView::PasswordGenerationBubbleView(
     const webkit::forms::PasswordForm& form,
     views::View* anchor_view,
     content::RenderViewHost* render_view_host,
+    autofill::PasswordGenerator* password_generator,
     content::PageNavigator* navigator,
     PasswordManager* password_manager)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
@@ -39,6 +40,7 @@ PasswordGenerationBubbleView::PasswordGenerationBubbleView(
       anchor_rect_(anchor_rect),
       form_(form),
       render_view_host_(render_view_host),
+      password_generator_(password_generator),
       navigator_(navigator),
       password_manager_(password_manager) {}
 
@@ -51,7 +53,8 @@ void PasswordGenerationBubbleView::Init() {
                                                ASCIIToUTF16("Try It"));
 
   text_field_ = new views::Textfield();
-  text_field_->SetText(ASCIIToUTF16(password_generator_.Generate()));
+  text_field_->SetText(
+      ASCIIToUTF16(password_generator_->Generate()));
 
   views::Label* title_label = new views::Label(
       ASCIIToUTF16("Password Suggestion"));

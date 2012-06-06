@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/gtk/password_generation_bubble_gtk.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/password_generator.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -29,10 +30,12 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
     GtkWidget* anchor_widget,
     Profile* profile,
     content::RenderViewHost* render_view_host,
+    autofill::PasswordGenerator* password_generator,
     PasswordManager* password_manager)
     : profile_(profile),
       form_(form),
       render_view_host_(render_view_host),
+      password_generator_(password_generator),
       password_manager_(password_manager) {
   // TODO(gcasto): Localize text after we have finalized the UI.
   // crbug.com/118062
@@ -53,7 +56,7 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
   GtkWidget* password_line = gtk_hbox_new(FALSE, kHorizontalSpacing);
   text_field_ = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(text_field_),
-                     password_generator_.Generate().c_str());
+                     password_generator_->Generate().c_str());
   gtk_entry_set_max_length(GTK_ENTRY(text_field_), 15);
   GtkWidget* accept_button = gtk_button_new_with_label("Try It");
   gtk_box_pack_start(GTK_BOX(password_line), text_field_, TRUE, TRUE, 0);

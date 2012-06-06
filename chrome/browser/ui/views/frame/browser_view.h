@@ -58,6 +58,10 @@ class JumpList;
 class BrowserLauncherItemController;
 #endif
 
+namespace autofill {
+class PasswordGenerator;
+}
+
 namespace extensions {
 class Extension;
 }
@@ -322,6 +326,7 @@ class BrowserView : public BrowserWindow,
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE;
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& rect,
+      autofill::PasswordGenerator* password_generator,
       const webkit::forms::PasswordForm& form) OVERRIDE;
 
   // Overridden from BrowserWindowTesting:

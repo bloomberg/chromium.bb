@@ -1282,6 +1282,7 @@ void BrowserWindowGtk::ShowAvatarBubbleFromAvatarButton() {
 
 void BrowserWindowGtk::ShowPasswordGenerationBubble(
     const gfx::Rect& rect,
+    autofill::PasswordGenerator* password_generator,
     const webkit::forms::PasswordForm& form) {
   WebContents* web_contents = browser_->GetSelectedWebContents();
   if (!web_contents || !web_contents->GetContentNativeView()) {
@@ -1298,6 +1299,7 @@ void BrowserWindowGtk::ShowPasswordGenerationBubble(
                                   web_contents->GetContentNativeView(),
                                   browser()->profile(),
                                   web_contents->GetRenderViewHost(),
+                                  password_generator,
                                   tab_contents->password_manager());
 }
 

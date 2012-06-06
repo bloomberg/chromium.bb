@@ -200,8 +200,9 @@ IPC_MESSAGE_ROUTED0(AutofillHostMsg_HideAutofillPopup)
 // Instructs the browser to show the password generation bubble at the
 // specified location. This location should be specified in the renderers
 // coordinate system. Form is the form associated with the password field.
-IPC_MESSAGE_ROUTED2(AutofillHostMsg_ShowPasswordGenerationPopup,
+IPC_MESSAGE_ROUTED3(AutofillHostMsg_ShowPasswordGenerationPopup,
                     gfx::Rect /* source location */,
+                    int /* max length of the password */,
                     webkit::forms::PasswordForm)
 
 // Instruct the browser that a password mapping has been found for a field.

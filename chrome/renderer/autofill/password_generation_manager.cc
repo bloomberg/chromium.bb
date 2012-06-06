@@ -112,6 +112,7 @@ void PasswordGenerationManager::handleClick(WebKit::WebInputElement& element) {
   if (password_form) {
     Send(new AutofillHostMsg_ShowPasswordGenerationPopup(routing_id(),
                                                          rect,
+                                                         element.maxLength(),
                                                          *password_form));
   }
 }

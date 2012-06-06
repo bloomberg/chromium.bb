@@ -28,6 +28,7 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/autofill/password_generator.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/phone_number.h"
@@ -719,13 +720,16 @@ void AutofillManager::OnHideAutofillPopup() {
 
 void AutofillManager::OnShowPasswordGenerationPopup(
     const gfx::Rect& bounds,
+    int max_length,
     const webkit::forms::PasswordForm& form) {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
   Browser* browser = browser::FindLastActiveWithProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-  browser->window()->ShowPasswordGenerationBubble(bounds, form);
+  password_generator_.reset(new autofill::PasswordGenerator(max_length));
+  browser->window()->ShowPasswordGenerationBubble(
+      bounds, password_generator_.get(), form);
 #endif  // #if defined(OS_ANDROID)
 }
 

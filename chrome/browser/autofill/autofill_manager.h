@@ -41,6 +41,10 @@ typedef TabContents TabContentsWrapper;
 
 struct ViewHostMsg_FrameNavigate_Params;
 
+namespace autofill {
+class PasswordGenerator;
+}
+
 namespace content {
 class RenderViewHost;
 }
@@ -96,6 +100,7 @@ class AutofillManager : public content::NotificationObserver,
   void OnShowAutofillDialog();
   void OnDidPreviewAutofillFormData();
   void OnShowPasswordGenerationPopup(const gfx::Rect& bounds,
+                                     int max_length,
                                      const webkit::forms::PasswordForm& form);
 
   // Remove the credit card or Autofill profile that matches |unique_id|
@@ -361,6 +366,8 @@ class AutofillManager : public content::NotificationObserver,
   base::WeakPtr<ProfileSyncService> sync_service_;
   // Listens for changes to the 'enabled' state for password generation.
   PrefChangeRegistrar registrar_;
+  // To be passed to the password generation UI to generate the password.
+  scoped_ptr<autofill::PasswordGenerator> password_generator_;
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;

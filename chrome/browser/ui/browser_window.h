@@ -32,6 +32,9 @@ class TemplateURL;
 class ToolbarView;
 #endif
 
+namespace autofill {
+class PasswordGenerator;
+}
 namespace content {
 class WebContents;
 struct NativeWebKeyboardEvent;
@@ -379,12 +382,15 @@ class BrowserWindow : public BaseWindow {
   // Shows the avatar bubble on the window frame off of the avatar button.
   virtual void ShowAvatarBubbleFromAvatarButton() = 0;
 
-  // Show bubble for password generation positioned relative to |rect|. |form|
-  // is the form that contains the password field that the bubble will be
-  // associated with. A stub implementation is provided since this feature is
-  // currently not available on mac.
+  // Show bubble for password generation positioned relative to |rect|. The
+  // subclasses implementing this interface do not own the |password_generator|
+  // object which is passed to generate the password. |form| is the form that
+  // contains the password field that the bubble will be associated with. A
+  // stub implementation is provided since this feature is currently not
+  // available on mac.
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& rect,
+      autofill::PasswordGenerator* password_generator,
       const webkit::forms::PasswordForm& form) {}
 
  protected:

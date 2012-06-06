@@ -2407,6 +2407,7 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton() {
 
 void BrowserView::ShowPasswordGenerationBubble(
     const gfx::Rect& rect,
+    autofill::PasswordGenerator* password_generator,
     const webkit::forms::PasswordForm& form) {
   // Create a rect in the content bounds that the bubble will point to.
   gfx::Point origin(rect.origin());
@@ -2424,6 +2425,7 @@ void BrowserView::ShowPasswordGenerationBubble(
                                        form,
                                        this,
                                        web_contents->GetRenderViewHost(),
+                                       password_generator,
                                        browser_.get(),
                                        wrapper->password_manager());
 

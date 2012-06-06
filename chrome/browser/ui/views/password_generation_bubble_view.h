@@ -6,13 +6,17 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORD_GENERATION_BUBBLE_VIEW_H_
 #pragma once
 
-#include "chrome/browser/autofill/password_generator.h"
+#include "base/basictypes.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
 #include "webkit/forms/password_form.h"
+
+namespace autofill {
+class PasswordGenerator;
+}
 
 namespace content {
 class PageNavigator;
@@ -38,6 +42,7 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
                                const webkit::forms::PasswordForm& form,
                                views::View* anchor_view,
                                content::RenderViewHost* render_view_host,
+                               autofill::PasswordGenerator* password_generator,
                                content::PageNavigator* navigator,
                                PasswordManager* password_manager);
   virtual ~PasswordGenerationBubbleView();
@@ -70,15 +75,15 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
   // RenderViewHost associated with the button that spawned this bubble.
   content::RenderViewHost* render_view_host_;
 
+  // Object to generate passwords. The class won't take the ownership of it.
+  autofill::PasswordGenerator* password_generator_;
+
   // An object used to handle page loads that originate from link clicks
   // within this UI.
   content::PageNavigator* navigator_;
 
   // PasswordManager associated with this tab.
   PasswordManager* password_manager_;
-
-  // Class to generate passwords
-  autofill::PasswordGenerator password_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationBubbleView);
 };
