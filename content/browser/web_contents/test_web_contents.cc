@@ -200,7 +200,8 @@ void TestWebContents::SetHistoryLengthAndPrune(
 
 void TestWebContents::CreateNewWindow(
     int route_id,
-    const ViewHostMsg_CreateWindow_Params& params) {
+    const ViewHostMsg_CreateWindow_Params& params,
+    SessionStorageNamespace* session_storage_namespace) {
 }
 
 void TestWebContents::CreateNewWidget(int route_id,

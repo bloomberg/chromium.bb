@@ -48,6 +48,7 @@ namespace content {
 class BrowserContext;
 class RenderViewHost;
 class RenderViewHostDelegateView;
+class SessionStorageNamespace;
 class WebContents;
 struct ContextMenuParams;
 struct FileChooserParams;
@@ -353,7 +354,8 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // the Windows function which is actually a #define.
   virtual void CreateNewWindow(
       int route_id,
-      const ViewHostMsg_CreateWindow_Params& params) {}
+      const ViewHostMsg_CreateWindow_Params& params,
+      SessionStorageNamespace* session_storage_namespace) {}
 
   // The page is trying to open a new widget (e.g. a select popup). The
   // widget should be created associated with the given route, but it should

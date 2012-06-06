@@ -21,6 +21,8 @@ class SessionStorageNamespaceImpl
     : NON_EXPORTED_BASE(public content::SessionStorageNamespace) {
  public:
   explicit SessionStorageNamespaceImpl(DOMStorageContextImpl* context);
+  SessionStorageNamespaceImpl(DOMStorageContextImpl* context,
+                              int64 namepace_id_to_clone);
   int64 id() const;
   SessionStorageNamespaceImpl* Clone();
 

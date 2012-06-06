@@ -14,11 +14,13 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
+#include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/common/view_messages.h"
 
 using content::BrowserThread;
 using content::RenderViewHostImpl;
 using content::ResourceDispatcherHostImpl;
+using content::SessionStorageNamespace;
 
 namespace {
 
@@ -256,7 +258,8 @@ void RenderWidgetHelper::CreateNewWindow(
     bool no_javascript_access,
     base::ProcessHandle render_process,
     int* route_id,
-    int* surface_id) {
+    int* surface_id,
+    SessionStorageNamespace* session_storage_namespace) {
   if (params.opener_suppressed || no_javascript_access) {
     // If the opener is supppressed or script access is disallowed, we should
     // open the window in a new BrowsingInstance, and thus a new process. That
@@ -278,16 +281,18 @@ void RenderWidgetHelper::CreateNewWindow(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&RenderWidgetHelper::OnCreateWindowOnUI,
-                 this, params, *route_id));
+                 this, params, *route_id,
+                 make_scoped_refptr(session_storage_namespace)));
 }
 
 void RenderWidgetHelper::OnCreateWindowOnUI(
     const ViewHostMsg_CreateWindow_Params& params,
-    int route_id) {
+    int route_id,
+    SessionStorageNamespace* session_storage_namespace) {
   RenderViewHostImpl* host =
       RenderViewHostImpl::FromID(render_process_id_, params.opener_id);
   if (host)
-    host->CreateNewWindow(route_id, params);
+    host->CreateNewWindow(route_id, params, session_storage_namespace);
 
   // We only need to resume blocked requests if we used a valid route_id.
   // See CreateNewWindow.

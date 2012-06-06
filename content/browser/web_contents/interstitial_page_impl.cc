@@ -50,6 +50,7 @@ using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
 using content::ResourceDispatcherHostImpl;
+using content::SessionStorageNamespace;
 using content::SiteInstance;
 using content::WebContents;
 using content::WebContentsView;
@@ -623,7 +624,8 @@ gfx::Rect InterstitialPageImpl::GetRootWindowResizerRect() const {
 
 void InterstitialPageImpl::CreateNewWindow(
     int route_id,
-    const ViewHostMsg_CreateWindow_Params& params) {
+    const ViewHostMsg_CreateWindow_Params& params,
+    SessionStorageNamespace* session_storage_namespace) {
   NOTREACHED() << "InterstitialPage does not support showing popups yet.";
 }
 

@@ -23,12 +23,18 @@ DomStorageSession::DomStorageSession(DomStorageContext* context)
 }
 
 DomStorageSession* DomStorageSession::Clone() {
-  int64 clone_id = context_->AllocateSessionId();
-  context_->task_runner()->PostTask(
+  return CloneFrom(context_, namespace_id_);
+}
+
+// static
+DomStorageSession* DomStorageSession::CloneFrom(DomStorageContext* context,
+                                                int64 namepace_id_to_clone) {
+  int64 clone_id = context->AllocateSessionId();
+  context->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&DomStorageContext::CloneSessionNamespace,
-                 context_, namespace_id_, clone_id));
-  return new DomStorageSession(context_, clone_id);
+                 context, namepace_id_to_clone, clone_id));
+  return new DomStorageSession(context, clone_id);
 }
 
 DomStorageSession::DomStorageSession(DomStorageContext* context,

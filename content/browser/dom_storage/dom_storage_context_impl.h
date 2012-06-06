@@ -54,10 +54,6 @@ class CONTENT_EXPORT DOMStorageContextImpl :
   // Called when the BrowserContext/Profile is going away.
   void Shutdown();
 
-  // See render_message_filter.cc for details.
-  // TODO(michaeln): Remove this method when that bug is fixed.
-  int64 LeakyCloneSessionStorage(int64 existing_namespace_id);
-
  private:
   friend class DOMStorageMessageFilter;  // for access to context()
   friend class SessionStorageNamespaceImpl;  // ditto

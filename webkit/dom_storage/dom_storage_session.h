@@ -24,6 +24,9 @@ class DomStorageSession
   int64 namespace_id() const { return namespace_id_; }
   DomStorageSession* Clone();
 
+  static DomStorageSession* CloneFrom(DomStorageContext* context,
+                                      int64 namepace_id_to_clone);
+
  private:
   friend class base::RefCountedThreadSafe<DomStorageSession>;
 

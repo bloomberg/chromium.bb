@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service_impl.h"
@@ -425,20 +426,18 @@ void RenderMessageFilter::OnMsgCreateWindow(
     return;
   }
 
-  // TODO(michaeln): Fix this.
-  // This is a bug in the existing impl, session storage is effectively
-  // leaked when created thru this code path (window.open()) since there
-  // is no balancing DeleteSessionStorage() for this Clone() call anywhere
-  // in the codebase. I'm replicating the bug for now.
-  *cloned_session_storage_namespace_id =
-      dom_storage_context_->LeakyCloneSessionStorage(
-          params.session_storage_namespace_id);
+  // This will clone the sessionStorage for namespace_id_to_clone.
+  scoped_refptr<SessionStorageNamespaceImpl> session_storage_namespace =
+      new SessionStorageNamespaceImpl(dom_storage_context_,
+                                      params.session_storage_namespace_id);
+  *cloned_session_storage_namespace_id = session_storage_namespace->id();
 
   render_widget_helper_->CreateNewWindow(params,
                                          no_javascript_access,
                                          peer_handle(),
                                          route_id,
-                                         surface_id);
+                                         surface_id,
+                                         session_storage_namespace.get());
 }
 
 void RenderMessageFilter::OnMsgCreateWidget(int opener_id,

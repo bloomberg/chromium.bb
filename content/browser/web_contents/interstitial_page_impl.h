@@ -101,7 +101,8 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void CreateNewWindow(
       int route_id,
-      const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
+      const ViewHostMsg_CreateWindow_Params& params,
+      content::SessionStorageNamespace* session_storage_namespace) OVERRIDE;
   virtual void CreateNewWidget(int route_id,
                                WebKit::WebPopupType popup_type) OVERRIDE;
   virtual void CreateNewFullscreenWidget(int route_id) OVERRIDE;

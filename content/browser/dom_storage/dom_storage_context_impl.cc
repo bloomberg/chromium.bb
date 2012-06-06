@@ -193,14 +193,3 @@ void DOMStorageContextImpl::Shutdown() {
       DomStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&DomStorageContext::Shutdown, context_));
 }
-
-int64 DOMStorageContextImpl::LeakyCloneSessionStorage(
-    int64 existing_namespace_id) {
-  DCHECK(context_);
-  int64 clone_id = context_->AllocateSessionId();
-  context_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&DomStorageContext::CloneSessionNamespace, context_,
-                 existing_namespace_id, clone_id));
-  return clone_id;
-}

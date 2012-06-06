@@ -1133,7 +1133,8 @@ void WebContentsImpl::LostMouseLock() {
 
 void WebContentsImpl::CreateNewWindow(
     int route_id,
-    const ViewHostMsg_CreateWindow_Params& params) {
+    const ViewHostMsg_CreateWindow_Params& params,
+    SessionStorageNamespace* session_storage_namespace) {
   if (delegate_ && !delegate_->ShouldCreateWebContents(
           this, route_id, params.window_container_type, params.frame_name,
           params.target_url)) {
@@ -1151,13 +1152,13 @@ void WebContentsImpl::CreateNewWindow(
 
   // Create the new web contents. This will automatically create the new
   // WebContentsView. In the future, we may want to create the view separately.
-  WebContentsImpl* new_contents =
-      new WebContentsImpl(GetBrowserContext(),
-                          site_instance,
-                          route_id,
-                          this,
-                          params.opener_suppressed ? NULL : this,
-                          NULL);
+  WebContentsImpl* new_contents = new WebContentsImpl(
+      GetBrowserContext(),
+      site_instance,
+      route_id,
+      this,
+      params.opener_suppressed ? NULL : this,
+      static_cast<SessionStorageNamespaceImpl*>(session_storage_namespace));
   new_contents->set_opener_web_ui_type(GetWebUITypeForCurrentState());
 
   if (!params.opener_suppressed) {

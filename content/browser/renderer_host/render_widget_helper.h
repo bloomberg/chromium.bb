@@ -32,6 +32,7 @@ class TimeDelta;
 
 namespace content {
 class ResourceDispatcherHostImpl;
+class SessionStorageNamespace;
 }
 
 struct ViewHostMsg_CreateWindow_Params;
@@ -143,11 +144,13 @@ class RenderWidgetHelper
   // Called on the IO thread when a BackingStore message is received.
   void DidReceiveBackingStoreMsg(const IPC::Message& msg);
 
-  void CreateNewWindow(const ViewHostMsg_CreateWindow_Params& params,
-                       bool no_javascript_access,
-                       base::ProcessHandle render_process,
-                       int* route_id,
-                       int* surface_id);
+  void CreateNewWindow(
+      const ViewHostMsg_CreateWindow_Params& params,
+      bool no_javascript_access,
+      base::ProcessHandle render_process,
+      int* route_id,
+      int* surface_id,
+      content::SessionStorageNamespace* session_storage_namespace);
   void CreateNewWidget(int opener_id,
                        WebKit::WebPopupType popup_type,
                        int* route_id,
@@ -192,8 +195,10 @@ class RenderWidgetHelper
   void OnDispatchBackingStoreMsg(BackingStoreMsgProxy* proxy);
 
   // Called on the UI thread to finish creating a window.
-  void OnCreateWindowOnUI(const ViewHostMsg_CreateWindow_Params& params,
-                          int route_id);
+  void OnCreateWindowOnUI(
+      const ViewHostMsg_CreateWindow_Params& params,
+      int route_id,
+      content::SessionStorageNamespace* session_storage_namespace);
 
   // Called on the IO thread after a window was created on the UI thread.
   void OnCreateWindowOnIO(int route_id);

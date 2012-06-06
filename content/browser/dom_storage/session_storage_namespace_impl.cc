@@ -7,11 +7,18 @@
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "webkit/dom_storage/dom_storage_session.h"
 
+using dom_storage::DomStorageContext;
 using dom_storage::DomStorageSession;
 
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
     DOMStorageContextImpl* context)
     : session_(new DomStorageSession(context->context())) {
+}
+
+SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
+    DOMStorageContextImpl* context, int64 namepace_id_to_clone)
+    : session_(DomStorageSession::CloneFrom(context->context(),
+                                            namepace_id_to_clone)) {
 }
 
 int64 SessionStorageNamespaceImpl::id() const {

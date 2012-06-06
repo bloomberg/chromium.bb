@@ -966,8 +966,9 @@ bool RenderViewHostImpl::IsRenderView() const {
 
 void RenderViewHostImpl::CreateNewWindow(
     int route_id,
-    const ViewHostMsg_CreateWindow_Params& params) {
-  delegate_->CreateNewWindow(route_id, params);
+    const ViewHostMsg_CreateWindow_Params& params,
+    SessionStorageNamespace* session_storage_namespace) {
+  delegate_->CreateNewWindow(route_id, params, session_storage_namespace);
 }
 
 void RenderViewHostImpl::CreateNewWidget(int route_id,
