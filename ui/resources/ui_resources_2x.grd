@@ -157,7 +157,9 @@
         <include name="IDR_AURA_UBER_TRAY_HELP" file="default_200_percent/aura/status_help.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_HELP_HOVER" file="default_200_percent/aura/status_help_h.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_LOCALE" file="default_100_percent/aura/status_locale.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_WEB_NOTIFICATON" file="default_200_percent/aura/statusbar_notifications.png" type="BINDATA" />
       </if>
+
       <if expr="is_posix and not is_macosx and not pp_ifdef('use_aura')">
         <include name="IDR_CHECKBOX_DISABLED_INDETERMINATE" file="default_100_percent/linux-checkbox-disabled-indeterminate.png" type="BINDATA" />
         <include name="IDR_CHECKBOX_DISABLED_OFF" file="default_100_percent/linux-checkbox-disabled-off.png" type="BINDATA" />
