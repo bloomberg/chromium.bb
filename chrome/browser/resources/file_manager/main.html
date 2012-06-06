@@ -137,18 +137,21 @@
       <div class=dialog-main>
         <div class=dialog-header>
           <div class=breadcrumbs></div>
-          <input id="search-box" type="search" tabindex="4">
+          <input id="search-box" type="search" tabindex="4"
+              i18n-values="aria-label:SEARCH_TEXT_LABEL">
 
           <div class="right buttonbar">
             <div>
-              <button class="left small" id="detail-view" tabindex="5">
+              <button class="left small" id="detail-view" tabindex="5"
+                  i18n-values="aria-label:DETAIL_VIEW_TOOLTIP">
                 <img src="images/view_list_black_12x12.png">
               </button>
               <div class="tooltip" i18n-content=DETAIL_VIEW_TOOLTIP
                    >[DETAIL VIEW]</div>
             </div>
               <div>
-               <button class="right small" id="thumbnail-view" tabindex="6">
+               <button class="right small" id="thumbnail-view" tabindex="6"
+                   i18n-values="aria-label:THUMBNAIL_VIEW_TOOLTIP">
                 <img src="images/view_thumbs_black_12x12.png">
               </button>
               <div class="tooltip" i18n-content=THUMBNAIL_VIEW_TOOLTIP
