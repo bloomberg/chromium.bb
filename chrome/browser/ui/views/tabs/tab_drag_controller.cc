@@ -123,8 +123,8 @@ class DockView : public views::View {
       case DockInfo::LEFT_HALF:
         if (!rtl_ui)
           std::swap(x_of_active_tab, x_of_inactive_tab);
-        canvas->DrawBitmapInt(*high_icon, x_of_active_tab,
-                              (height() - high_icon->height()) / 2);
+        canvas->DrawImageInt(*high_icon, x_of_active_tab,
+                             (height() - high_icon->height()) / 2);
         if (type_ == DockInfo::LEFT_OF_WINDOW) {
           DrawImageWithAlpha(canvas, *high_icon, x_of_inactive_tab,
                              (height() - high_icon->height()) / 2);
@@ -136,8 +136,8 @@ class DockView : public views::View {
       case DockInfo::RIGHT_HALF:
         if (rtl_ui)
           std::swap(x_of_active_tab, x_of_inactive_tab);
-        canvas->DrawBitmapInt(*high_icon, x_of_active_tab,
-                              (height() - high_icon->height()) / 2);
+        canvas->DrawImageInt(*high_icon, x_of_active_tab,
+                             (height() - high_icon->height()) / 2);
         if (type_ == DockInfo::RIGHT_OF_WINDOW) {
          DrawImageWithAlpha(canvas, *high_icon, x_of_inactive_tab,
                            (height() - high_icon->height()) / 2);
@@ -145,21 +145,21 @@ class DockView : public views::View {
         break;
 
       case DockInfo::TOP_OF_WINDOW:
-        canvas->DrawBitmapInt(*wide_icon, (width() - wide_icon->width()) / 2,
-                              height() / 2 - high_icon->height());
+        canvas->DrawImageInt(*wide_icon, (width() - wide_icon->width()) / 2,
+                             height() / 2 - high_icon->height());
         break;
 
       case DockInfo::MAXIMIZE: {
         gfx::ImageSkia* max_icon = rb.GetImageSkiaNamed(IDR_DOCK_MAX);
-        canvas->DrawBitmapInt(*max_icon, (width() - max_icon->width()) / 2,
-                              (height() - max_icon->height()) / 2);
+        canvas->DrawImageInt(*max_icon, (width() - max_icon->width()) / 2,
+                             (height() - max_icon->height()) / 2);
         break;
       }
 
       case DockInfo::BOTTOM_HALF:
       case DockInfo::BOTTOM_OF_WINDOW:
-        canvas->DrawBitmapInt(*wide_icon, (width() - wide_icon->width()) / 2,
-                              height() / 2 + kTabSpacing / 2);
+        canvas->DrawImageInt(*wide_icon, (width() - wide_icon->width()) / 2,
+                             height() / 2 + kTabSpacing / 2);
         if (type_ == DockInfo::BOTTOM_OF_WINDOW) {
           DrawImageWithAlpha(canvas, *wide_icon,
               (width() - wide_icon->width()) / 2,
@@ -179,7 +179,7 @@ class DockView : public views::View {
                           int x, int y) {
     SkPaint paint;
     paint.setAlpha(128);
-    canvas->DrawBitmapInt(image, x, y, paint);
+    canvas->DrawImageInt(image, x, y, paint);
   }
 
   DockInfo::Type type_;

@@ -91,12 +91,12 @@ void TabbedLauncherButton::IconView::OnPaint(gfx::Canvas* canvas) {
     int x = (width() - animating_image_.width()) / 2;
     int y = (height() - animating_image_.height()) / 2;
     canvas->SaveLayerAlpha(animation_->CurrentValueBetween(255, 0));
-    canvas->DrawBitmapInt(animating_image_, x, y);
+    canvas->DrawImageInt(animating_image_, x, y);
     canvas->Restore();
   } else {
     int x = (width() - image_.width()) / 2;
     int y = (height() - image_.height()) / 2;
-    canvas->DrawBitmapInt(image_, x, y);
+    canvas->DrawImageInt(image_, x, y);
   }
 }
 

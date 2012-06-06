@@ -105,10 +105,10 @@ void DrawIconCenter(gfx::Canvas* canvas,
   // NOTE: the clipping is a work around for 69528, it shouldn't be necessary.
   canvas->Save();
   canvas->ClipRect(gfx::Rect(dst_x, dst_y, icon_width, icon_height));
-  canvas->DrawBitmapInt(image,
-                        image_offset, 0, icon_width, icon_height,
-                        dst_x, dst_y, icon_width, icon_height,
-                        filter);
+  canvas->DrawImageInt(image,
+                       image_offset, 0, icon_width, icon_height,
+                       dst_x, dst_y, icon_width, icon_height,
+                       filter);
   canvas->Restore();
 }
 

@@ -325,10 +325,10 @@ gfx::ImageSkia ProfileItemView::GetBadgedIcon(const gfx::ImageSkia& icon) {
   int height = icon_rect.height() + badge->height() * kBadgeOverlapRatioY;
 
   gfx::Canvas canvas(gfx::Size(width, height), false);
-  canvas.DrawBitmapInt(icon, 0, 0, icon.width(), icon.height(), 0, 0,
-                       icon_rect.width(), icon_rect.height(), true);
-  canvas.DrawBitmapInt(*badge, width - badge->width(),
-                       height - badge->height());
+  canvas.DrawImageInt(icon, 0, 0, icon.width(), icon.height(), 0, 0,
+                      icon_rect.width(), icon_rect.height(), true);
+  canvas.DrawImageInt(*badge, width - badge->width(),
+                      height - badge->height());
   return canvas.ExtractBitmap();
 }
 

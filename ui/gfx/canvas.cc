@@ -38,7 +38,7 @@ Canvas::Canvas(const SkBitmap& bitmap, bool is_opaque)
     : owned_canvas_(new skia::PlatformCanvas(bitmap.width(), bitmap.height(),
                                              is_opaque)),
       canvas_(owned_canvas_.get()) {
-  DrawBitmapInt(bitmap, 0, 0);
+  DrawImageInt(bitmap, 0, 0);
 }
 
 Canvas::Canvas()
@@ -253,14 +253,14 @@ void Canvas::DrawFocusRect(const gfx::Rect& rect) {
   DrawDashedRect(rect, SK_ColorGRAY);
 }
 
-void Canvas::DrawBitmapInt(const gfx::ImageSkia& image, int x, int y) {
+void Canvas::DrawImageInt(const gfx::ImageSkia& image, int x, int y) {
   SkPaint paint;
-  DrawBitmapInt(image, x, y, paint);
+  DrawImageInt(image, x, y, paint);
 }
 
-void Canvas::DrawBitmapInt(const gfx::ImageSkia& image,
-                           int x, int y,
-                           const SkPaint& paint) {
+void Canvas::DrawImageInt(const gfx::ImageSkia& image,
+                          int x, int y,
+                          const SkPaint& paint) {
   float bitmap_scale;
   const SkBitmap& bitmap = GetBitmapToPaint(image, &bitmap_scale);
   if (bitmap.isNull())
@@ -276,20 +276,20 @@ void Canvas::DrawBitmapInt(const gfx::ImageSkia& image,
   canvas_->restore();
 }
 
-void Canvas::DrawBitmapInt(const gfx::ImageSkia& image,
-                           int src_x, int src_y, int src_w, int src_h,
-                           int dest_x, int dest_y, int dest_w, int dest_h,
-                           bool filter) {
+void Canvas::DrawImageInt(const gfx::ImageSkia& image,
+                          int src_x, int src_y, int src_w, int src_h,
+                          int dest_x, int dest_y, int dest_w, int dest_h,
+                          bool filter) {
   SkPaint p;
-  DrawBitmapInt(image, src_x, src_y, src_w, src_h, dest_x, dest_y,
-                dest_w, dest_h, filter, p);
+  DrawImageInt(image, src_x, src_y, src_w, src_h, dest_x, dest_y,
+               dest_w, dest_h, filter, p);
 }
 
-void Canvas::DrawBitmapInt(const gfx::ImageSkia& image,
-                           int src_x, int src_y, int src_w, int src_h,
-                           int dest_x, int dest_y, int dest_w, int dest_h,
-                           bool filter,
-                           const SkPaint& paint) {
+void Canvas::DrawImageInt(const gfx::ImageSkia& image,
+                          int src_x, int src_y, int src_w, int src_h,
+                          int dest_x, int dest_y, int dest_w, int dest_h,
+                          bool filter,
+                          const SkPaint& paint) {
   DLOG_ASSERT(src_x + src_w < std::numeric_limits<int16_t>::max() &&
               src_y + src_h < std::numeric_limits<int16_t>::max());
   if (src_w <= 0 || src_h <= 0) {

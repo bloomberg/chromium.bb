@@ -366,13 +366,13 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
 
   // Draw the theme frame overlay, if available.
   if (theme_frame_overlay)
-    canvas->DrawBitmapInt(*theme_frame_overlay, 0, 0);
+    canvas->DrawImageInt(*theme_frame_overlay, 0, 0);
 
   // Separator between the maximize and close buttons.  It overlaps the left
   // edge of the close button.
-  canvas->DrawBitmapInt(*button_separator_,
-                        close_button_->x(),
-                        close_button_->y());
+  canvas->DrawImageInt(*button_separator_,
+                       close_button_->x(),
+                       close_button_->y());
 
   // We don't need the extra lightness in the edges when we're at the top edge
   // of the screen.
@@ -383,22 +383,22 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
 
   // Draw the top corners and edge.
   int top_left_height = top_left_corner_->height();
-  canvas->DrawBitmapInt(*top_left_corner_,
-                        0, 0, top_left_corner_->width(), top_left_height,
-                        0, 0, top_left_corner_->width(), top_left_height,
-                        false);
+  canvas->DrawImageInt(*top_left_corner_,
+                       0, 0, top_left_corner_->width(), top_left_height,
+                       0, 0, top_left_corner_->width(), top_left_height,
+                       false);
   canvas->TileImageInt(*top_edge_,
       top_left_corner_->width(),
       0,
       view->width() - top_left_corner_->width() - top_right_corner_->width(),
       top_edge_->height());
   int top_right_height = top_right_corner_->height();
-  canvas->DrawBitmapInt(*top_right_corner_,
-                        0, 0,
-                        top_right_corner_->width(), top_right_height,
-                        view->width() - top_right_corner_->width(), 0,
-                        top_right_corner_->width(), top_right_height,
-                        false);
+  canvas->DrawImageInt(*top_right_corner_,
+                       0, 0,
+                       top_right_corner_->width(), top_right_height,
+                       view->width() - top_right_corner_->width(), 0,
+                       top_right_corner_->width(), top_right_height,
+                       false);
 
   // Header left edge.
   int header_left_height = theme_frame->height() - top_left_height;

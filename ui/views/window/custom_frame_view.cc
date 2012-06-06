@@ -396,11 +396,11 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 
   // Top.
   int top_edge_y = client_area_top - top->height();
-  canvas->DrawBitmapInt(*top_left, client_area_bounds.x() - top_left->width(),
-                        top_edge_y);
+  canvas->DrawImageInt(*top_left, client_area_bounds.x() - top_left->width(),
+                       top_edge_y);
   canvas->TileImageInt(*top, client_area_bounds.x(), top_edge_y,
                        client_area_bounds.width(), top->height());
-  canvas->DrawBitmapInt(*top_right, client_area_bounds.right(), top_edge_y);
+  canvas->DrawImageInt(*top_right, client_area_bounds.right(), top_edge_y);
 
   // Right.
   int client_area_bottom =
@@ -410,11 +410,11 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
                        right->width(), client_area_height);
 
   // Bottom.
-  canvas->DrawBitmapInt(*bottom_right, client_area_bounds.right(),
-                        client_area_bottom);
+  canvas->DrawImageInt(*bottom_right, client_area_bounds.right(),
+                       client_area_bottom);
   canvas->TileImageInt(*bottom, client_area_bounds.x(), client_area_bottom,
                        client_area_bounds.width(), bottom_right->height());
-  canvas->DrawBitmapInt(*bottom_left,
+  canvas->DrawImageInt(*bottom_left,
       client_area_bounds.x() - bottom_left->width(), client_area_bottom);
 
   // Left.

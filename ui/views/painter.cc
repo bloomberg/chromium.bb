@@ -75,32 +75,32 @@ class ImagePainter : public Painter {
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
     if (size.width() == image_.width() && size.height() == image_.height()) {
       // Early out if the size we're to render at equals the size of the image.
-      canvas->DrawBitmapInt(image_, 0, 0);
+      canvas->DrawImageInt(image_, 0, 0);
       return;
     }
     // Upper left.
-    canvas->DrawBitmapInt(image_, 0, 0, insets_.left(), insets_.top(),
-                          0, 0, insets_.left(), insets_.top(), true);
+    canvas->DrawImageInt(image_, 0, 0, insets_.left(), insets_.top(),
+                         0, 0, insets_.left(), insets_.top(), true);
     // Top edge.
-    canvas->DrawBitmapInt(
+    canvas->DrawImageInt(
         image_,
         insets_.left(), 0, image_.width() - insets_.width(), insets_.top(),
         insets_.left(), 0, size.width() - insets_.width(), insets_.top(), true);
     // Upper right.
-    canvas->DrawBitmapInt(
+    canvas->DrawImageInt(
         image_,
         image_.width() - insets_.right(), 0, insets_.right(), insets_.top(),
         size.width() - insets_.right(), 0, insets_.right(), insets_.top(),
         true);
     // Right edge.
-    canvas->DrawBitmapInt(
+    canvas->DrawImageInt(
         image_,
         image_.width() - insets_.right(), insets_.top(),
         insets_.right(), image_.height() - insets_.height(),
         size.width() - insets_.right(), insets_.top(), insets_.right(),
         size.height() - insets_.height(), true);
     // Bottom right.
-    canvas->DrawBitmapInt(
+    canvas->DrawImageInt(
         image_,
         image_.width() - insets_.right(), image_.height() - insets_.bottom(),
         insets_.right(), insets_.bottom(),
@@ -108,7 +108,7 @@ class ImagePainter : public Painter {
         size.height() - insets_.bottom(), insets_.right(),
         insets_.bottom(), true);
     // Bottom edge.
-    canvas->DrawBitmapInt(
+    canvas->DrawImageInt(
         image_,
         insets_.left(), image_.height() - insets_.bottom(),
         image_.width() - insets_.width(), insets_.bottom(),
@@ -116,21 +116,21 @@ class ImagePainter : public Painter {
         size.width() - insets_.width(),
         insets_.bottom(), true);
     // Bottom left.
-    canvas->DrawBitmapInt(
+    canvas->DrawImageInt(
         image_,
         0, image_.height() - insets_.bottom(), insets_.left(),
         insets_.bottom(),
         0, size.height() - insets_.bottom(), insets_.left(), insets_.bottom(),
         true);
     // Left.
-    canvas->DrawBitmapInt(
+    canvas->DrawImageInt(
         image_,
         0, insets_.top(), insets_.left(), image_.height() - insets_.height(),
         0, insets_.top(), insets_.left(), size.height() - insets_.height(),
         true);
     // Center.
     if (paint_center_) {
-      canvas->DrawBitmapInt(
+      canvas->DrawImageInt(
           image_,
           insets_.left(), insets_.top(),
           image_.width() - insets_.width(), image_.height() - insets_.height(),
@@ -193,9 +193,9 @@ void HorizontalPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
     // No room to paint.
     return;
   }
-  canvas->DrawBitmapInt(*images_[LEFT], 0, 0);
-  canvas->DrawBitmapInt(*images_[RIGHT],
-                        size.width() - images_[RIGHT]->width(), 0);
+  canvas->DrawImageInt(*images_[LEFT], 0, 0);
+  canvas->DrawImageInt(*images_[RIGHT],
+                       size.width() - images_[RIGHT]->width(), 0);
   canvas->TileImageInt(*images_[CENTER], images_[LEFT]->width(), 0,
       size.width() - images_[LEFT]->width() - images_[RIGHT]->width(), height_);
 }

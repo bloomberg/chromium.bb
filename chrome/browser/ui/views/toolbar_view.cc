@@ -330,7 +330,7 @@ gfx::ImageSkia ToolbarView::GetAppMenuIcon(
     NOTREACHED();
   }
 
-  canvas->DrawBitmapInt(badge, icon.width() - badge.width(), kBadgeTopMargin);
+  canvas->DrawImageInt(badge, icon.width() - badge.width(), kBadgeTopMargin);
 
   return canvas->ExtractBitmap();
 }
@@ -655,9 +655,9 @@ void ToolbarView::OnPaint(gfx::Canvas* canvas) {
   // when they're flush against the edge of the screen they just look glitchy.
   if (!browser_->window() || !browser_->window()->IsMaximized()) {
     int top_spacing = PopupTopSpacing();
-    canvas->DrawBitmapInt(*kPopupBackgroundEdge, 0, top_spacing);
-    canvas->DrawBitmapInt(*kPopupBackgroundEdge,
-                          width() - kPopupBackgroundEdge->width(), top_spacing);
+    canvas->DrawImageInt(*kPopupBackgroundEdge, 0, top_spacing);
+    canvas->DrawImageInt(*kPopupBackgroundEdge,
+                         width() - kPopupBackgroundEdge->width(), top_spacing);
   }
 
   // For glass, we need to draw a black line below the location bar to separate

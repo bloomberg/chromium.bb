@@ -234,10 +234,10 @@ void PaintDownloadProgress(gfx::Canvas* canvas,
 
   // Draw the background progress image.
   SkPaint background_paint;
-  canvas->DrawBitmapInt(*background,
-                        background_bounds.x(),
-                        background_bounds.y(),
-                        background_paint);
+  canvas->DrawImageInt(*background,
+                       background_bounds.x(),
+                       background_bounds.y(),
+                       background_paint);
 
   // Layer the foreground progress image in an arc proportional to the download
   // progress. The arc grows clockwise, starting in the midnight position, as
@@ -286,10 +286,10 @@ void PaintDownloadProgress(gfx::Canvas* canvas,
     return;
   }
 
-  canvas->DrawBitmapInt(*foreground,
-                        foreground_bounds.x(),
-                        foreground_bounds.y(),
-                        foreground_paint);
+  canvas->DrawImageInt(*foreground,
+                       foreground_bounds.x(),
+                       foreground_bounds.y(),
+                       foreground_paint);
 }
 
 void PaintDownloadComplete(gfx::Canvas* canvas,
@@ -320,7 +320,7 @@ void PaintDownloadComplete(gfx::Canvas* canvas,
   // at zero opacity.
   canvas->SaveLayerAlpha(GetOpacity(animation_progress), complete_bounds);
   canvas->sk_canvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
-  canvas->DrawBitmapInt(*complete, complete_bounds.x(), complete_bounds.y());
+  canvas->DrawImageInt(*complete, complete_bounds.x(), complete_bounds.y());
   canvas->Restore();
 }
 
@@ -352,7 +352,7 @@ void PaintDownloadInterrupted(gfx::Canvas* canvas,
   // at full opacity.
   canvas->SaveLayerAlpha(GetOpacity(1.0 - animation_progress), complete_bounds);
   canvas->sk_canvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
-  canvas->DrawBitmapInt(*complete, complete_bounds.x(), complete_bounds.y());
+  canvas->DrawImageInt(*complete, complete_bounds.x(), complete_bounds.y());
   canvas->Restore();
 }
 

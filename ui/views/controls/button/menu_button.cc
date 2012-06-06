@@ -153,7 +153,7 @@ void MenuButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                            menu_marker_->width(),
                            menu_marker_->height());
     arrow_bounds.set_x(GetMirroredXForRect(arrow_bounds));
-    canvas->DrawBitmapInt(*menu_marker_, arrow_bounds.x(), arrow_bounds.y());
+    canvas->DrawImageInt(*menu_marker_, arrow_bounds.x(), arrow_bounds.y());
   }
 }
 

@@ -28,7 +28,7 @@ static SkBitmap ApplyPadding(const SkBitmap& source,
   scoped_ptr<gfx::Canvas> result(
       new gfx::Canvas(gfx::Size(source.width() + padding.width(),
                                 source.height() + padding.height()), false));
-  result->DrawBitmapInt(
+  result->DrawImageInt(
       source,
       0, 0, source.width(), source.height(),
       padding.left(), padding.top(), source.width(), source.height(),

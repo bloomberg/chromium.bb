@@ -166,24 +166,24 @@ void TextButtonBorder::Paint(const View& view,
   int br_width = set.bottom_right->width();
   int br_height = set.bottom_right->height();
 
-  canvas->DrawBitmapInt(*set.top_left, 0, 0);
-  canvas->DrawBitmapInt(*set.top, 0, 0, set.top->width(), t_height, tl_width, 0,
+  canvas->DrawImageInt(*set.top_left, 0, 0);
+  canvas->DrawImageInt(*set.top, 0, 0, set.top->width(), t_height, tl_width, 0,
       width - tl_width - set.top_right->width(), t_height, false);
-  canvas->DrawBitmapInt(*set.top_right, width - set.top_right->width(), 0);
-  canvas->DrawBitmapInt(*set.left, 0, 0, l_width, set.left->height(), 0,
+  canvas->DrawImageInt(*set.top_right, width - set.top_right->width(), 0);
+  canvas->DrawImageInt(*set.left, 0, 0, l_width, set.left->height(), 0,
       tl_height, tl_width, height - tl_height - bl_height, false);
-  canvas->DrawBitmapInt(*set.center, 0, 0, set.center->width(),
+  canvas->DrawImageInt(*set.center, 0, 0, set.center->width(),
       set.center->height(), l_width, t_height, width - l_width - r_width,
       height - t_height - b_height, false);
-  canvas->DrawBitmapInt(*set.right, 0, 0, r_width, set.right->height(),
-                        width - r_width, tr_height, r_width,
-                        height - tr_height - br_height, false);
-  canvas->DrawBitmapInt(*set.bottom_left, 0, height - bl_height);
-  canvas->DrawBitmapInt(*set.bottom, 0, 0, set.bottom->width(), b_height,
-                        bl_width, height - b_height,
-                        width - bl_width - br_width, b_height, false);
-  canvas->DrawBitmapInt(*set.bottom_right, width - br_width,
-                        height -  br_height);
+  canvas->DrawImageInt(*set.right, 0, 0, r_width, set.right->height(),
+                       width - r_width, tr_height, r_width,
+                       height - tr_height - br_height, false);
+  canvas->DrawImageInt(*set.bottom_left, 0, height - bl_height);
+  canvas->DrawImageInt(*set.bottom, 0, 0, set.bottom->width(), b_height,
+                       bl_width, height - b_height,
+                       width - bl_width - br_width, b_height, false);
+  canvas->DrawImageInt(*set.bottom_right, width - br_width,
+                       height -  br_height);
 }
 
 void TextButtonBorder::GetInsets(gfx::Insets* insets) const {
@@ -744,7 +744,7 @@ void TextButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     // Mirroring the icon position if necessary.
     gfx::Rect icon_bounds(icon_x, icon_y, icon.width(), icon.height());
     icon_bounds.set_x(GetMirroredXForRect(icon_bounds));
-    canvas->DrawBitmapInt(icon, icon_bounds.x(), icon_bounds.y());
+    canvas->DrawImageInt(icon, icon_bounds.x(), icon_bounds.y());
   }
 }
 

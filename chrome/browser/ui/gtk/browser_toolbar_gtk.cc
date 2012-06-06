@@ -686,9 +686,9 @@ gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
   gfx::CanvasSkiaPaint canvas(expose, false);
   int x_offset = base::i18n::IsRTL() ? 0 : allocation.width - badge->width();
   int y_offset = 0;
-  canvas.DrawBitmapInt(*badge,
-                       allocation.x + x_offset,
-                       allocation.y + y_offset);
+  canvas.DrawImageInt(*badge,
+                      allocation.x + x_offset,
+                      allocation.y + y_offset);
 
   return FALSE;
 }

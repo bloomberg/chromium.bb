@@ -1264,7 +1264,7 @@ LRESULT TableView::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
                   SkXfermode::kSrc_Mode);
               // + 1 for padding (we declared the image as 18x18 in the list-
               // view when they are 16x16 so we get an extra pixel of padding).
-              canvas.DrawBitmapInt(image, 0, 0,
+              canvas.DrawImageInt(image, 0, 0,
                                    image.width(), image.height(),
                                    1, 1,
                                    gfx::kFaviconSize, gfx::kFaviconSize, true);

@@ -894,12 +894,12 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     }
     icon_x = GetMirroredXWithWidthInView(icon_x, icon->width());
     if (enabled()) {
-      canvas->DrawBitmapInt(*icon, icon_x, icon_y);
+      canvas->DrawImageInt(*icon, icon_x, icon_y);
     } else {
       // Use an alpha to make the image look disabled.
       SkPaint paint;
       paint.setAlpha(120);
-      canvas->DrawBitmapInt(*icon, icon_x, icon_y, paint);
+      canvas->DrawImageInt(*icon, icon_x, icon_y, paint);
     }
   }
 }
@@ -940,19 +940,19 @@ void DownloadItemView::PaintImages(gfx::Canvas* canvas,
                                    int x, int y, int height, int width) {
   int middle_height = height - top_image->height() - bottom_image->height();
   // Draw the top.
-  canvas->DrawBitmapInt(*top_image,
-                        0, 0, top_image->width(), top_image->height(),
-                        x, y, width, top_image->height(), false);
+  canvas->DrawImageInt(*top_image,
+                       0, 0, top_image->width(), top_image->height(),
+                       x, y, width, top_image->height(), false);
   y += top_image->height();
   // Draw the center.
-  canvas->DrawBitmapInt(*center_image,
-                        0, 0, center_image->width(), center_image->height(),
-                        x, y, width, middle_height, false);
+  canvas->DrawImageInt(*center_image,
+                       0, 0, center_image->width(), center_image->height(),
+                       x, y, width, middle_height, false);
   y += middle_height;
   // Draw the bottom.
-  canvas->DrawBitmapInt(*bottom_image,
-                        0, 0, bottom_image->width(), bottom_image->height(),
-                        x, y, width, bottom_image->height(), false);
+  canvas->DrawImageInt(*bottom_image,
+                       0, 0, bottom_image->width(), bottom_image->height(),
+                       x, y, width, bottom_image->height(), false);
 }
 
 void DownloadItemView::SetState(State body_state, State drop_down_state) {

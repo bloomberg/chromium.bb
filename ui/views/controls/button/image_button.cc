@@ -92,12 +92,12 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
       y = height() - img.height();
 
     if (!background_image_.empty())
-      canvas->DrawBitmapInt(background_image_, x, y);
+      canvas->DrawImageInt(background_image_, x, y);
 
-    canvas->DrawBitmapInt(img, x, y);
+    canvas->DrawImageInt(img, x, y);
 
     if (!overlay_image_.empty())
-      canvas->DrawBitmapInt(overlay_image_, x, y);
+      canvas->DrawImageInt(overlay_image_, x, y);
   }
   OnPaintFocusBorder(canvas);
 }

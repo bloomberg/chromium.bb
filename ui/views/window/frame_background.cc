@@ -66,17 +66,17 @@ void FrameBackground::PaintRestored(gfx::Canvas* canvas, View* view) const {
 
   // Draw the theme frame overlay, if available.
   if (theme_overlay_image_)
-    canvas->DrawBitmapInt(*theme_overlay_image_, 0, 0);
+    canvas->DrawImageInt(*theme_overlay_image_, 0, 0);
 
   // Draw the top corners and edge, scaling the corner images down if they
   // are too big and relative to the vertical space available.
   int top_left_height =
       std::min(top_left_corner_->height(),
                view->height() - bottom_left_corner_->height());
-  canvas->DrawBitmapInt(*top_left_corner_,
-                        0, 0, top_left_corner_->width(), top_left_height,
-                        0, 0, top_left_corner_->width(), top_left_height,
-                        false);
+  canvas->DrawImageInt(*top_left_corner_,
+                       0, 0, top_left_corner_->width(), top_left_height,
+                       0, 0, top_left_corner_->width(), top_left_height,
+                       false);
   canvas->TileImageInt(*top_edge_,
       top_left_corner_->width(),
       0,
@@ -85,12 +85,12 @@ void FrameBackground::PaintRestored(gfx::Canvas* canvas, View* view) const {
   int top_right_height =
       std::min(top_right_corner_->height(),
                view->height() - bottom_right_corner_->height());
-  canvas->DrawBitmapInt(*top_right_corner_,
-                        0, 0,
-                        top_right_corner_->width(), top_right_height,
-                        view->width() - top_right_corner_->width(), 0,
-                        top_right_corner_->width(), top_right_height,
-                        false);
+  canvas->DrawImageInt(*top_right_corner_,
+                       0, 0,
+                       top_right_corner_->width(), top_right_height,
+                       view->width() - top_right_corner_->width(), 0,
+                       top_right_corner_->width(), top_right_height,
+                       false);
 
   // Right edge.
   int right_edge_height =
@@ -102,9 +102,9 @@ void FrameBackground::PaintRestored(gfx::Canvas* canvas, View* view) const {
                        right_edge_height);
 
   // Bottom corners and edge.
-  canvas->DrawBitmapInt(*bottom_right_corner_,
-                        view->width() - bottom_right_corner_->width(),
-                        view->height() - bottom_right_corner_->height());
+  canvas->DrawImageInt(*bottom_right_corner_,
+                       view->width() - bottom_right_corner_->width(),
+                       view->height() - bottom_right_corner_->height());
   canvas->TileImageInt(
       *bottom_edge_,
       bottom_left_corner_->width(),
@@ -112,8 +112,8 @@ void FrameBackground::PaintRestored(gfx::Canvas* canvas, View* view) const {
       view->width() - bottom_left_corner_->width()
           - bottom_right_corner_->width(),
       bottom_edge_->height());
-  canvas->DrawBitmapInt(*bottom_left_corner_, 0,
-                        view->height() - bottom_left_corner_->height());
+  canvas->DrawImageInt(*bottom_left_corner_, 0,
+                       view->height() - bottom_left_corner_->height());
 
   // Left edge.
   int left_edge_height =
@@ -145,9 +145,9 @@ void FrameBackground::PaintMaximized(gfx::Canvas* canvas, View* view) const {
     DCHECK(maximized_top_left_ && maximized_top_right_);
     left_offset = maximized_top_left_->width();
     right_offset = maximized_top_right_->width();
-    canvas->DrawBitmapInt(*maximized_top_left_, 0, 0);
-    canvas->DrawBitmapInt(*maximized_top_right_,
-                          view->width() - right_offset, 0);
+    canvas->DrawImageInt(*maximized_top_left_, 0, 0);
+    canvas->DrawImageInt(*maximized_top_right_,
+                         view->width() - right_offset, 0);
   }
 
   // Draw the theme frame.
@@ -158,7 +158,7 @@ void FrameBackground::PaintMaximized(gfx::Canvas* canvas, View* view) const {
                        theme_image_->height());
   // Draw the theme frame overlay, if available.
   if (theme_overlay_image_)
-    canvas->DrawBitmapInt(*theme_overlay_image_, 0, theme_background_y_);
+    canvas->DrawImageInt(*theme_overlay_image_, 0, theme_background_y_);
 }
 
 void FrameBackground::PaintFrameColor(gfx::Canvas* canvas, View* view) const {

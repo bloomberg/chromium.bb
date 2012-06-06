@@ -83,10 +83,10 @@ void Throbber::OnPaint(gfx::Canvas* canvas) {
 
   int image_size = frames_->height();
   int image_offset = current_frame * image_size;
-  canvas->DrawBitmapInt(*frames_,
-                        image_offset, 0, image_size, image_size,
-                        0, 0, image_size, image_size,
-                        false);
+  canvas->DrawImageInt(*frames_,
+                       image_offset, 0, image_size, image_size,
+                       0, 0, image_size, image_size,
+                       false);
 }
 
 
@@ -162,7 +162,7 @@ void CheckmarkThrobber::OnPaint(gfx::Canvas* canvas) {
   if (checked_) {
     int checkmark_x = (width() - checkmark_->width()) / 2;
     int checkmark_y = (height() - checkmark_->height()) / 2;
-    canvas->DrawBitmapInt(*checkmark_, checkmark_x, checkmark_y);
+    canvas->DrawImageInt(*checkmark_, checkmark_x, checkmark_y);
   }
 }
 

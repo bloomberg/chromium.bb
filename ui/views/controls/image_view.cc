@@ -121,11 +121,11 @@ void ImageView::OnPaint(gfx::Canvas* canvas) {
     // Resize case
     SkPaint paint;
     paint.setFilterBitmap(true);
-    canvas->DrawBitmapInt(image_, 0, 0, image_.width(), image_.height(),
+    canvas->DrawImageInt(image_, 0, 0, image_.width(), image_.height(),
         image_bounds.x(), image_bounds.y(), image_bounds.width(),
         image_bounds.height(), true, paint);
   } else {
-    canvas->DrawBitmapInt(image_, image_bounds.x(), image_bounds.y());
+    canvas->DrawImageInt(image_, image_bounds.x(), image_bounds.y());
   }
 }
 
