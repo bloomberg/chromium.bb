@@ -2087,6 +2087,13 @@ def CommandTestFileDumpCheck(env,
   """Create a test that disassembles a binary (|target|) and checks for
   patterns in the |check_file|.  Disassembly is done using |objdump_flags|.
   """
+
+  # Do not try to run OBJDUMP if 'built_elsewhere', since that *might* mean
+  # that a toolchain is not even present.  E.g., the arm hw buildbots do
+  # not have the pnacl toolchain. We should be able to look for the host
+  # ARM objdump though... a TODO(jvoung) for when there is time.
+  if env.Bit('built_elsewhere'):
+    return []
   if ShouldTranslateToNexe(env, target):
     target_obj = GetTranslatedNexe(env, target)
   else:

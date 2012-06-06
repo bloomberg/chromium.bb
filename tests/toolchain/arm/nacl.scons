@@ -7,12 +7,9 @@ Import('env')
 
 # Test ARM float ABI to ensure that it is the hard ABI and not soft.
 
-# Do not try to run OBJDUMP if 'built_elsewhere', since that *might*
-# mean that a toolchain is not even present. E.g., the arm buildbots
-# do not have the pnacl toolchain, since that is built for x86 hosts.
-if (not env.Bit('build_arm') or
-    env.Bit('built_elsewhere') or
-    env.Bit('pnacl_generate_pexe')):
+# Only test ARM.  Since we are only generating a .o file, do not run
+# in pexe mode, only run as a nonpexe_test.
+if (not env.Bit('build_arm') or env.Bit('pnacl_generate_pexe')):
   Return()
 
 # Force native .o generation and optimization (so that checks are cleaner).

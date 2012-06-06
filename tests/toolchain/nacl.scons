@@ -256,6 +256,4 @@ node = debug_env.CommandTestFileDumpCheck('dwarf_local_var_objdump.out',
                                           '-W')
 debug_env.AddNodeToTestSuite(node,
                              ['small_tests', 'toolchain_tests'],
-                             'run_dwarf_local_var_objdump_test',
-                 # http://code.google.com/p/nativeclient/issues/detail?id=2809
-                             is_broken=env.Bit('bitcode'))
+                             'run_dwarf_local_var_objdump_test')

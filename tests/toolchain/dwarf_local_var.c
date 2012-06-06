@@ -17,14 +17,16 @@ extern int bar(int x) __attribute__((noinline));
 
 __attribute__((noinline)) int foo(int dwarf_test_param) {
   /* CHECK: DW_TAG_formal_parameter */
-  /* CHECK: DW_AT_name.*dwarf_test_param */
+  /* CHECK: DW_AT_name.* dwarf_test_param */
+  /* CHECK: DW_AT_decl_line.* 18 */
   return bar(dwarf_test_param);
 }
 
 int main(int argc, char* argv[]) {
-  /* CHECK: DW_TAG_variable */
-  /* CHECK: DW_AT_name.*dwarf_test_local */
   int dwarf_test_local;
+  /* CHECK: DW_TAG_variable */
+  /* CHECK: DW_AT_name.* dwarf_test_local */
+  /* CHECK: DW_AT_decl_line.* 26 */
 
   /* Try to trick the optimizer to preserve dwarf_test_local. */
   if (argc != 55) {
