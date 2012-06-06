@@ -13,19 +13,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cloud_print {
-
 const wchar_t kChromeExePath[] = L"google\\chrome\\application\\chrometest.exe";
-const wchar_t kChromePathRegValue[] =L"PathToChromeTestExe";
-const bool kIsUnittest = true;
-
-namespace {
-
 const wchar_t kAlternateChromeExePath[] =
     L"google\\chrome\\application\\chrometestalternate.exe";
-
-const wchar_t kChromePathRegKey[] = L"Software\\Google\\CloudPrint";
-
-}  // namespace
+const wchar_t kChromePathRegValue[] =L"PathToChromeTestExe";
 
 class PortMonitorTest : public testing::Test  {
  public:

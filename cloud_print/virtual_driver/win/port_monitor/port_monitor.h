@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,8 +79,8 @@ BOOL WINAPI MonitorUiConfigureOrDeletePortUI(const wchar_t*,
                                              const wchar_t* port_name);
 
 extern const wchar_t kChromeExePath[];
+extern const wchar_t kChromePathRegKey[];
 extern const wchar_t kChromePathRegValue[];
-extern const bool kIsUnittest;
 
 }   // namespace cloud_print
 

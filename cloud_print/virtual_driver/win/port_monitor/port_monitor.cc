@@ -30,15 +30,17 @@
 
 namespace cloud_print {
 
-namespace {
-
+#ifndef UNIT_TEST
+const wchar_t kChromeExePath[] = L"google\\chrome\\application\\chrome.exe";
+const wchar_t kChromePathRegValue[] = L"PathToChromeExe";
+#endif
 const wchar_t kIePath[] = L"Internet Explorer\\iexplore.exe";
-
 const char kChromeInstallUrl[] =
     "http://google.com/cloudprint/learn/chrome.html";
 
 const wchar_t kChromePathRegKey[] = L"Software\\Google\\CloudPrint";
 
+namespace {
 const wchar_t kXpsMimeType[] = L"application/vnd.ms-xpsdocument";
 
 const size_t kMaxCommandLineLen = 0x7FFF;
@@ -88,6 +90,36 @@ MONITOR2 g_monitor_2 = {
   Monitor2XcvClosePort,
   Monitor2Shutdown
 };
+
+// Returns true if Xps support is installed.
+bool XpsIsInstalled() {
+  FilePath xps_path;
+  if (!SUCCEEDED(GetPrinterDriverDir(&xps_path))) {
+    return false;
+  }
+  xps_path = xps_path.Append(L"mxdwdrv.dll");
+  if (!file_util::PathExists(xps_path)) {
+    return false;
+  }
+  return true;
+}
+
+// Returns true if registration/unregistration can be attempted.
+bool CanRegister() {
+  if (!XpsIsInstalled()) {
+    return false;
+  }
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    base::IntegrityLevel level = base::INTEGRITY_UNKNOWN;
+    if (!GetProcessIntegrityLevel(base::GetCurrentProcessHandle(), &level)) {
+      return false;
+    }
+    if (level != base::HIGH_INTEGRITY) {
+      return false;
+    }
+  }
+  return true;
+}
 
 // Frees any objects referenced by port_data and sets pointers to NULL.
 void CleanupPortData(PortData* port_data) {
@@ -202,8 +234,8 @@ bool LaunchPrintDialog(const string16& xps_path,
 // rather than the generic chrome download page.  See
 // http://code.google.com/p/chromium/issues/detail?id=112019
 void LaunchChromeDownloadPage() {
-  if (kIsUnittest)
-    return;
+// Probably best to NOT launch IE from a unit test.
+#ifndef UNIT_TEST
   HANDLE token = NULL;
   if (!GetUserToken(&token)) {
     LOG(ERROR) << "Unable to get user token.";
@@ -220,6 +252,7 @@ void LaunchChromeDownloadPage() {
   base::LaunchOptions options;
   options.as_user = token_scoped;
   base::LaunchProcess(command_line, options, NULL);
+#endif
 }
 
 // Returns false if the print job is being run in a context
@@ -620,3 +653,33 @@ MONITORUI* WINAPI InitializePrintMonitorUI(void) {
   return &cloud_print::g_monitor_ui;
 }
 
+HRESULT WINAPI DllRegisterServer(void) {
+  base::AtExitManager at_exit_manager;
+  if (!cloud_print::CanRegister()) {
+    return E_ACCESSDENIED;
+  }
+  MONITOR_INFO_2 monitor_info = {0};
+  // YUCK!!!  I can either copy the constant, const_cast, or define my own
+  // MONITOR_INFO_2 that will take const strings.
+  FilePath dll_path(cloud_print::GetPortMonitorDllName());
+  monitor_info.pDLLName = const_cast<LPWSTR>(dll_path.value().c_str());
+  monitor_info.pName = const_cast<LPWSTR>(dll_path.value().c_str());
+  if (AddMonitor(NULL, 2, reinterpret_cast<BYTE*>(&monitor_info))) {
+    return S_OK;
+  }
+  return cloud_print::GetLastHResult();
+}
+
+HRESULT WINAPI DllUnregisterServer(void) {
+  base::AtExitManager at_exit_manager;
+  if (!cloud_print::CanRegister()) {
+    return E_ACCESSDENIED;
+  }
+  FilePath dll_path(cloud_print::GetPortMonitorDllName());
+  if (DeleteMonitor(NULL,
+                    NULL,
+                    const_cast<LPWSTR>(dll_path.value().c_str()))) {
+    return S_OK;
+  }
+  return cloud_print::GetLastHResult();
+}
