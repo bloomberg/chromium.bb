@@ -216,8 +216,8 @@ class PathContext(object):
     handle.close()
     build_numbers = re.findall(r'<a href="([0-9][0-9].*)/">', dirindex)
     final_list = []
-    start_index = '0'
-    end_index = '0'
+    start_index = 0
+    end_index = 0
     i = 0
 
     parsed_build_numbers = [LooseVersion(x) for x in build_numbers]
