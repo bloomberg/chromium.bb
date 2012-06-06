@@ -34,9 +34,9 @@ class SessionStorageDatabaseTest : public testing::Test {
 
   // Helpers.
   static bool IsNamespaceKey(const std::string& key,
-                             int64* namespace_id);
+                             std::string* namespace_id);
   static bool IsNamespaceOriginKey(const std::string& key,
-                                   int64* namespace_id);
+                                   std::string* namespace_id);
   static bool IsMapRefCountKey(const std::string& key,
                                int64* map_id);
   static bool IsMapValueKey(const std::string& key,
@@ -46,14 +46,15 @@ class SessionStorageDatabaseTest : public testing::Test {
   void CheckDatabaseConsistency() const;
   void CheckEmptyDatabase() const;
   void DumpData() const;
-  void CheckAreaData(int64 namespace_id,
+  void CheckAreaData(const std::string& namespace_id,
                      const GURL& origin,
                      const ValuesMap& reference) const;
   void CompareValuesMaps(const ValuesMap& map1, const ValuesMap& map2) const;
-  std::string GetMapForArea(int64 namespace_id,
+  void CheckNamespaceIds(
+      const std::set<std::string>& expected_namespace_ids) const;
+  std::string GetMapForArea(const std::string& namespace_id,
                             const GURL& origin) const;
   int64 GetMapRefCount(const std::string& map_id) const;
-  int64 NextNamespaceId() const;
 
   ScopedTempDir temp_dir_;
   scoped_refptr<SessionStorageDatabase> db_;
@@ -61,6 +62,9 @@ class SessionStorageDatabaseTest : public testing::Test {
   // Test data.
   const GURL kOrigin1;
   const GURL kOrigin2;
+  const std::string kNamespace1;
+  const std::string kNamespace2;
+  const std::string kNamespaceClone;
   const string16 kKey1;
   const string16 kKey2;
   const string16 kKey3;
@@ -76,6 +80,9 @@ class SessionStorageDatabaseTest : public testing::Test {
 SessionStorageDatabaseTest::SessionStorageDatabaseTest()
     : kOrigin1("http://www.origin1.com"),
       kOrigin2("http://www.origin2.com"),
+      kNamespace1("1"),
+      kNamespace2("namespace2"),
+      kNamespaceClone("wascloned"),
       kKey1(ASCIIToUTF16("key1")),
       kKey2(ASCIIToUTF16("key2")),
       kKey3(ASCIIToUTF16("key3")),
@@ -99,7 +106,7 @@ void SessionStorageDatabaseTest::ResetDatabase() {
 
 // static
 bool SessionStorageDatabaseTest::IsNamespaceKey(const std::string& key,
-                                                int64* namespace_id) {
+                                                std::string* namespace_id) {
   std::string namespace_prefix = SessionStorageDatabase::NamespacePrefix();
   if (key.find(namespace_prefix) != 0)
     return false;
@@ -111,17 +118,16 @@ bool SessionStorageDatabaseTest::IsNamespaceKey(const std::string& key,
     return false;
 
   // Key is of the form "namespace-<namespaceid>-".
-  std::string namespace_id_str = key.substr(
+  *namespace_id = key.substr(
       namespace_prefix.length(),
       second_dash - namespace_prefix.length());
-  bool conversion_ok = base::StringToInt64(namespace_id_str, namespace_id);
-  EXPECT_TRUE(conversion_ok);
   return true;
 }
 
 // static
-bool SessionStorageDatabaseTest::IsNamespaceOriginKey(const std::string& key,
-                                                      int64* namespace_id) {
+bool SessionStorageDatabaseTest::IsNamespaceOriginKey(
+    const std::string& key,
+    std::string* namespace_id) {
   std::string namespace_prefix = SessionStorageDatabase::NamespacePrefix();
   if (key.find(namespace_prefix) != 0)
     return false;
@@ -131,11 +137,9 @@ bool SessionStorageDatabaseTest::IsNamespaceOriginKey(const std::string& key,
 
   // Key is of the form "namespace-<namespaceid>-<origin>", and the value
   // is the map id.
-  std::string namespace_id_str = key.substr(
+  *namespace_id = key.substr(
       namespace_prefix.length(),
       second_dash - namespace_prefix.length());
-  bool conversion_ok = base::StringToInt64(namespace_id_str, namespace_id);
-  EXPECT_TRUE(conversion_ok);
   return true;
 }
 
@@ -192,38 +196,32 @@ void SessionStorageDatabaseTest::CheckDatabaseConsistency() const {
   // For detecting rubbish keys.
   size_t valid_keys = 0;
 
-  std::string next_namespace_id_key =
-      SessionStorageDatabase::NextNamespaceIdKey();
   std::string next_map_id_key = SessionStorageDatabase::NextMapIdKey();
   // Check the namespace start key.
   if (data.find(SessionStorageDatabase::NamespacePrefix()) == data.end()) {
     // If there is no namespace start key, the database may contain only counter
     // keys.
     for (DataMap::const_iterator it = data.begin(); it != data.end(); ++it) {
-      ASSERT_TRUE(it->first == next_namespace_id_key ||
-                  it->first == next_map_id_key);
+      ASSERT_TRUE(it->first == next_map_id_key);
     }
     return;
   }
   ++valid_keys;
 
   // Iterate the "namespace-" keys.
-  std::set<int64> found_namespace_ids;
-  int64 max_namespace_id = -1;
+  std::set<std::string> found_namespace_ids;
   std::map<int64, int64> expected_map_refcounts;
   int64 max_map_id = -1;
 
   for (DataMap::const_iterator it = data.begin(); it != data.end(); ++it) {
-    int64 namespace_id;
+    std::string namespace_id;
     std::string origin;
     if (IsNamespaceKey(it->first, &namespace_id)) {
-      ASSERT_GT(namespace_id, 0);
       found_namespace_ids.insert(namespace_id);
-      max_namespace_id = std::max(namespace_id, max_namespace_id);
       ++valid_keys;
     } else if (IsNamespaceOriginKey(
         it->first, &namespace_id)) {
-      // Check that the corresponding "namespace-<namespaceid>" key exists. It
+      // Check that the corresponding "namespace-<namespaceid>-" key exists. It
       // has been read by now, since the keys are stored in order.
       ASSERT_TRUE(found_namespace_ids.find(namespace_id) !=
                   found_namespace_ids.end());
@@ -235,15 +233,6 @@ void SessionStorageDatabaseTest::CheckDatabaseConsistency() const {
       max_map_id = std::max(map_id, max_map_id);
       ++valid_keys;
     }
-  }
-  if (max_namespace_id != -1) {
-    // The database contains namespaces.
-    ASSERT_TRUE(data.find(next_namespace_id_key) != data.end());
-    int64 next_namespace_id;
-    bool conversion_ok =
-        base::StringToInt64(data[next_namespace_id_key], &next_namespace_id);
-    ASSERT_TRUE(conversion_ok);
-    ASSERT_GT(next_namespace_id, max_namespace_id);
   }
   if (max_map_id != -1) {
     // The database contains maps.
@@ -280,10 +269,6 @@ void SessionStorageDatabaseTest::CheckDatabaseConsistency() const {
   // Check that all maps referred to exist.
   ASSERT_TRUE(expected_map_refcounts.empty());
 
-  // Count valid keys.
-  if (data.find(next_namespace_id_key) != data.end())
-    ++valid_keys;
-
   if (data.find(next_map_id_key) != data.end())
     ++valid_keys;
 
@@ -295,8 +280,6 @@ void SessionStorageDatabaseTest::CheckEmptyDatabase() const {
   ReadData(&data);
   size_t valid_keys = 0;
   if (data.find(SessionStorageDatabase::NamespacePrefix()) != data.end())
-    ++valid_keys;
-  if (data.find(SessionStorageDatabase::NextNamespaceIdKey()) != data.end())
     ++valid_keys;
   if (data.find(SessionStorageDatabase::NextMapIdKey()) != data.end())
     ++valid_keys;
@@ -324,7 +307,8 @@ void SessionStorageDatabaseTest::DumpData() const {
 }
 
 void SessionStorageDatabaseTest::CheckAreaData(
-    int64 namespace_id, const GURL& origin, const ValuesMap& reference) const {
+    const std::string& namespace_id, const GURL& origin,
+    const ValuesMap& reference) const {
   ValuesMap values;
   db_->ReadAreaValues(namespace_id, origin, &values);
   CompareValuesMaps(values, reference);
@@ -344,11 +328,24 @@ void SessionStorageDatabaseTest::CompareValuesMaps(
   }
 }
 
+void SessionStorageDatabaseTest::CheckNamespaceIds(
+    const std::set<std::string>& expected_namespace_ids) const {
+  std::vector<std::string> namespace_ids;
+  EXPECT_TRUE(db_->ReadNamespaceIds(&namespace_ids));
+  EXPECT_EQ(expected_namespace_ids.size(), namespace_ids.size());
+  for (std::vector<std::string>::const_iterator it = namespace_ids.begin();
+       it != namespace_ids.end(); ++it) {
+    LOG(WARNING) << *it;
+    EXPECT_TRUE(expected_namespace_ids.find(*it) !=
+                expected_namespace_ids.end());
+  }
+}
+
 std::string SessionStorageDatabaseTest::GetMapForArea(
-    int64 namespace_id, const GURL& origin) const {
+    const std::string& namespace_id, const GURL& origin) const {
   bool exists;
   std::string map_id;
-  EXPECT_TRUE(db_->GetMapForArea(namespace_id, origin,
+  EXPECT_TRUE(db_->GetMapForArea(namespace_id, origin.spec(),
                                  &exists, &map_id));
   EXPECT_TRUE(exists);
   return map_id;
@@ -359,12 +356,6 @@ int64 SessionStorageDatabaseTest::GetMapRefCount(
   int64 ref_count;
   EXPECT_TRUE(db_->GetMapRefCount(map_id, &ref_count));
   return ref_count;
-}
-
-int64 SessionStorageDatabaseTest::NextNamespaceId() const {
-  int64 next_namespace_id;
-  EXPECT_TRUE(db_->GetNextNamespaceId(&next_namespace_id));
-  return next_namespace_id;
 }
 
 TEST_F(SessionStorageDatabaseTest, EmptyDatabaseSanityCheck) {
@@ -384,10 +375,10 @@ TEST_F(SessionStorageDatabaseTest, WriteDataForOneOrigin) {
     reference[kKey1] = kValue1;
     reference[kKey2] = kValue2;
     reference[kKey3] = kValue3;
-    EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, changes));
+    EXPECT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, changes));
   }
   CheckDatabaseConsistency();
-  CheckAreaData(1, kOrigin1, reference);
+  CheckAreaData(kNamespace1, kOrigin1, reference);
 
   // Overwrite and delete values.
   {
@@ -396,10 +387,10 @@ TEST_F(SessionStorageDatabaseTest, WriteDataForOneOrigin) {
     changes[kKey3] = kValueNull;
     reference[kKey1] = kValue4;
     reference.erase(kKey3);
-    EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, changes));
+    EXPECT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, changes));
   }
   CheckDatabaseConsistency();
-  CheckAreaData(1, kOrigin1, reference);
+  CheckAreaData(kNamespace1, kOrigin1, reference);
 
   // Clear data before writing.
   {
@@ -407,10 +398,10 @@ TEST_F(SessionStorageDatabaseTest, WriteDataForOneOrigin) {
     changes[kKey2] = kValue2;
     reference.erase(kKey1);
     reference[kKey2] = kValue2;
-    EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin1, true, changes));
+    EXPECT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, true, changes));
   }
   CheckDatabaseConsistency();
-  CheckAreaData(1, kOrigin1, reference);
+  CheckAreaData(kNamespace1, kOrigin1, reference);
 }
 
 TEST_F(SessionStorageDatabaseTest, WriteDataForTwoOrigins) {
@@ -419,17 +410,17 @@ TEST_F(SessionStorageDatabaseTest, WriteDataForTwoOrigins) {
   data1[kKey1] = kValue1;
   data1[kKey2] = kValue2;
   data1[kKey3] = kValue3;
-  EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
+  EXPECT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data1));
 
   ValuesMap data2;
   data2[kKey1] = kValue4;
   data2[kKey2] = kValue1;
   data2[kKey3] = kValue2;
-  EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin2, false, data2));
+  EXPECT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin2, false, data2));
 
   CheckDatabaseConsistency();
-  CheckAreaData(1, kOrigin1, data1);
-  CheckAreaData(1, kOrigin2, data2);
+  CheckAreaData(kNamespace1, kOrigin1, data1);
+  CheckAreaData(kNamespace1, kOrigin2, data2);
 }
 
 TEST_F(SessionStorageDatabaseTest, WriteDataForTwoNamespaces) {
@@ -438,24 +429,24 @@ TEST_F(SessionStorageDatabaseTest, WriteDataForTwoNamespaces) {
   data11[kKey1] = kValue1;
   data11[kKey2] = kValue2;
   data11[kKey3] = kValue3;
-  EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data11));
+  EXPECT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data11));
   ValuesMap data12;
   data12[kKey2] = kValue4;
   data12[kKey3] = kValue3;
-  EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin2, false, data12));
+  EXPECT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin2, false, data12));
   ValuesMap data21;
   data21[kKey1] = kValue2;
   data21[kKey2] = kValue4;
-  EXPECT_TRUE(db_->CommitAreaChanges(2, kOrigin1, false, data21));
+  EXPECT_TRUE(db_->CommitAreaChanges(kNamespace2, kOrigin1, false, data21));
   ValuesMap data22;
   data22[kKey2] = kValue1;
   data22[kKey3] = kValue2;
-  EXPECT_TRUE(db_->CommitAreaChanges(2, kOrigin2, false, data22));
+  EXPECT_TRUE(db_->CommitAreaChanges(kNamespace2, kOrigin2, false, data22));
   CheckDatabaseConsistency();
-  CheckAreaData(1, kOrigin1, data11);
-  CheckAreaData(1, kOrigin2, data12);
-  CheckAreaData(2, kOrigin1, data21);
-  CheckAreaData(2, kOrigin2, data22);
+  CheckAreaData(kNamespace1, kOrigin1, data11);
+  CheckAreaData(kNamespace1, kOrigin2, data12);
+  CheckAreaData(kNamespace2, kOrigin1, data21);
+  CheckAreaData(kNamespace2, kOrigin2, data22);
 }
 
 TEST_F(SessionStorageDatabaseTest, ShallowCopy) {
@@ -464,32 +455,34 @@ TEST_F(SessionStorageDatabaseTest, ShallowCopy) {
   data1[kKey1] = kValue1;
   data1[kKey2] = kValue2;
   data1[kKey3] = kValue3;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data1));
   ValuesMap data2;
   data2[kKey1] = kValue2;
   data2[kKey3] = kValue1;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin2, false, data2));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin2, false, data2));
   // Make a shallow copy.
-  EXPECT_TRUE(db_->CloneNamespace(1, 5));
+  EXPECT_TRUE(db_->CloneNamespace(kNamespace1, kNamespaceClone));
   // Now both namespaces should have the same data.
   CheckDatabaseConsistency();
-  CheckAreaData(1, kOrigin1, data1);
-  CheckAreaData(1, kOrigin2, data2);
-  CheckAreaData(5, kOrigin1, data1);
-  CheckAreaData(5, kOrigin2, data2);
+  CheckAreaData(kNamespace1, kOrigin1, data1);
+  CheckAreaData(kNamespace1, kOrigin2, data2);
+  CheckAreaData(kNamespaceClone, kOrigin1, data1);
+  CheckAreaData(kNamespaceClone, kOrigin2, data2);
   // Both the namespaces refer to the same maps.
-  EXPECT_EQ(GetMapForArea(1, kOrigin1), GetMapForArea(5, kOrigin1));
-  EXPECT_EQ(GetMapForArea(1, kOrigin2), GetMapForArea(5, kOrigin2));
-  EXPECT_EQ(2, GetMapRefCount(GetMapForArea(1, kOrigin1)));
-  EXPECT_EQ(2, GetMapRefCount(GetMapForArea(1, kOrigin2)));
+  EXPECT_EQ(GetMapForArea(kNamespace1, kOrigin1),
+            GetMapForArea(kNamespaceClone, kOrigin1));
+  EXPECT_EQ(GetMapForArea(kNamespace1, kOrigin2),
+            GetMapForArea(kNamespaceClone, kOrigin2));
+  EXPECT_EQ(2, GetMapRefCount(GetMapForArea(kNamespace1, kOrigin1)));
+  EXPECT_EQ(2, GetMapRefCount(GetMapForArea(kNamespace1, kOrigin2)));
 }
 
 TEST_F(SessionStorageDatabaseTest, WriteIntoShallowCopy) {
   ValuesMap data1;
   data1[kKey1] = kValue1;
   data1[kKey2] = kValue2;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
-  EXPECT_TRUE(db_->CloneNamespace(1, 5));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data1));
+  EXPECT_TRUE(db_->CloneNamespace(kNamespace1, kNamespaceClone));
 
   // Write data into a shallow copy.
   ValuesMap changes;
@@ -499,17 +492,19 @@ TEST_F(SessionStorageDatabaseTest, WriteIntoShallowCopy) {
   changes[kKey3] = kValue4;
   reference[kKey2] = kValue4;
   reference[kKey3] = kValue4;
-  EXPECT_TRUE(db_->CommitAreaChanges(5, kOrigin1, false, changes));
+  EXPECT_TRUE(db_->CommitAreaChanges(kNamespaceClone, kOrigin1, false,
+                                     changes));
 
   // Values in the original namespace were not changed.
-  CheckAreaData(1, kOrigin1, data1);
+  CheckAreaData(kNamespace1, kOrigin1, data1);
   // But values in the copy were.
-  CheckAreaData(5, kOrigin1, reference);
+  CheckAreaData(kNamespaceClone, kOrigin1, reference);
 
   // The namespaces no longer refer to the same map.
-  EXPECT_NE(GetMapForArea(1, kOrigin1), GetMapForArea(5, kOrigin1));
-  EXPECT_EQ(1, GetMapRefCount(GetMapForArea(1, kOrigin1)));
-  EXPECT_EQ(1, GetMapRefCount(GetMapForArea(5, kOrigin1)));
+  EXPECT_NE(GetMapForArea(kNamespace1, kOrigin1),
+            GetMapForArea(kNamespaceClone, kOrigin1));
+  EXPECT_EQ(1, GetMapRefCount(GetMapForArea(kNamespace1, kOrigin1)));
+  EXPECT_EQ(1, GetMapRefCount(GetMapForArea(kNamespaceClone, kOrigin1)));
 }
 
 TEST_F(SessionStorageDatabaseTest, ManyShallowCopies) {
@@ -518,52 +513,60 @@ TEST_F(SessionStorageDatabaseTest, ManyShallowCopies) {
   data1[kKey1] = kValue1;
   data1[kKey2] = kValue2;
   data1[kKey3] = kValue3;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data1));
   ValuesMap data2;
   data2[kKey1] = kValue2;
   data2[kKey3] = kValue1;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin2, false, data2));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin2, false, data2));
 
   // Make a two shallow copies.
-  EXPECT_TRUE(db_->CloneNamespace(1, 5));
-  EXPECT_TRUE(db_->CloneNamespace(1, 6));
+  EXPECT_TRUE(db_->CloneNamespace(kNamespace1, kNamespaceClone));
+  std::string another_clone("another_cloned");
+  EXPECT_TRUE(db_->CloneNamespace(kNamespace1, another_clone));
 
   // Make a shallow copy of a shallow copy.
-  EXPECT_TRUE(db_->CloneNamespace(6, 7));
+  std::string clone_of_clone("clone_of_clone");
+  EXPECT_TRUE(db_->CloneNamespace(another_clone, clone_of_clone));
 
   // Now all namespaces should have the same data.
   CheckDatabaseConsistency();
-  CheckAreaData(1, kOrigin1, data1);
-  CheckAreaData(5, kOrigin1, data1);
-  CheckAreaData(6, kOrigin1, data1);
-  CheckAreaData(7, kOrigin1, data1);
-  CheckAreaData(1, kOrigin2, data2);
-  CheckAreaData(5, kOrigin2, data2);
-  CheckAreaData(6, kOrigin2, data2);
-  CheckAreaData(7, kOrigin2, data2);
+  CheckAreaData(kNamespace1, kOrigin1, data1);
+  CheckAreaData(kNamespaceClone, kOrigin1, data1);
+  CheckAreaData(another_clone, kOrigin1, data1);
+  CheckAreaData(clone_of_clone, kOrigin1, data1);
+  CheckAreaData(kNamespace1, kOrigin2, data2);
+  CheckAreaData(kNamespaceClone, kOrigin2, data2);
+  CheckAreaData(another_clone, kOrigin2, data2);
+  CheckAreaData(clone_of_clone, kOrigin2, data2);
 
   // All namespaces refer to the same maps.
-  EXPECT_EQ(GetMapForArea(1, kOrigin1), GetMapForArea(5, kOrigin1));
-  EXPECT_EQ(GetMapForArea(1, kOrigin2), GetMapForArea(5, kOrigin2));
-  EXPECT_EQ(GetMapForArea(1, kOrigin1), GetMapForArea(6, kOrigin1));
-  EXPECT_EQ(GetMapForArea(1, kOrigin2), GetMapForArea(6, kOrigin2));
-  EXPECT_EQ(GetMapForArea(1, kOrigin1), GetMapForArea(7, kOrigin1));
-  EXPECT_EQ(GetMapForArea(1, kOrigin2), GetMapForArea(7, kOrigin2));
+  EXPECT_EQ(GetMapForArea(kNamespace1, kOrigin1),
+            GetMapForArea(kNamespaceClone, kOrigin1));
+  EXPECT_EQ(GetMapForArea(kNamespace1, kOrigin2),
+            GetMapForArea(kNamespaceClone, kOrigin2));
+  EXPECT_EQ(GetMapForArea(kNamespace1, kOrigin1),
+            GetMapForArea(another_clone, kOrigin1));
+  EXPECT_EQ(GetMapForArea(kNamespace1, kOrigin2),
+            GetMapForArea(another_clone, kOrigin2));
+  EXPECT_EQ(GetMapForArea(kNamespace1, kOrigin1),
+            GetMapForArea(clone_of_clone, kOrigin1));
+  EXPECT_EQ(GetMapForArea(kNamespace1, kOrigin2),
+            GetMapForArea(clone_of_clone, kOrigin2));
 
   // Check the ref counts.
-  EXPECT_EQ(4, GetMapRefCount(GetMapForArea(1, kOrigin1)));
-  EXPECT_EQ(4, GetMapRefCount(GetMapForArea(1, kOrigin2)));
+  EXPECT_EQ(4, GetMapRefCount(GetMapForArea(kNamespace1, kOrigin1)));
+  EXPECT_EQ(4, GetMapRefCount(GetMapForArea(kNamespace1, kOrigin2)));
 }
 
 TEST_F(SessionStorageDatabaseTest, DisassociateShallowCopy) {
   ValuesMap data1;
   data1[kKey1] = kValue1;
   data1[kKey2] = kValue2;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
-  EXPECT_TRUE(db_->CloneNamespace(1, 5));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data1));
+  EXPECT_TRUE(db_->CloneNamespace(kNamespace1, kNamespaceClone));
 
   // Disassoaciate the shallow copy.
-  EXPECT_TRUE(db_->DeleteArea(5, kOrigin1));
+  EXPECT_TRUE(db_->DeleteArea(kNamespaceClone, kOrigin1));
   CheckDatabaseConsistency();
 
   // Now new data can be written to that map.
@@ -574,13 +577,14 @@ TEST_F(SessionStorageDatabaseTest, DisassociateShallowCopy) {
   changes[kKey3] = kValue4;
   reference[kKey2] = kValue4;
   reference[kKey3] = kValue4;
-  EXPECT_TRUE(db_->CommitAreaChanges(5, kOrigin1, false, changes));
+  EXPECT_TRUE(db_->CommitAreaChanges(kNamespaceClone, kOrigin1, false,
+                                     changes));
 
   // Values in the original map were not changed.
-  CheckAreaData(1, kOrigin1, data1);
+  CheckAreaData(kNamespace1, kOrigin1, data1);
 
   // But values in the disassociated map were.
-  CheckAreaData(5, kOrigin1, reference);
+  CheckAreaData(kNamespaceClone, kOrigin1, reference);
 }
 
 TEST_F(SessionStorageDatabaseTest, DeleteNamespace) {
@@ -588,12 +592,12 @@ TEST_F(SessionStorageDatabaseTest, DeleteNamespace) {
   data1[kKey1] = kValue1;
   data1[kKey2] = kValue2;
   data1[kKey3] = kValue3;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data1));
   ValuesMap data2;
   data2[kKey2] = kValue4;
   data2[kKey3] = kValue3;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin2, false, data2));
-  EXPECT_TRUE(db_->DeleteNamespace(1));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin2, false, data2));
+  EXPECT_TRUE(db_->DeleteNamespace(kNamespace1));
   CheckDatabaseConsistency();
   CheckEmptyDatabase();
 }
@@ -604,23 +608,23 @@ TEST_F(SessionStorageDatabaseTest, DeleteNamespaceWithShallowCopy) {
   data1[kKey1] = kValue1;
   data1[kKey2] = kValue2;
   data1[kKey3] = kValue3;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data1));
   ValuesMap data2;
   data2[kKey1] = kValue2;
   data2[kKey3] = kValue1;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin2, false, data2));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin2, false, data2));
 
   // Make a shallow copy and delete the original namespace.
-  EXPECT_TRUE(db_->CloneNamespace(1, 5));;
-  EXPECT_TRUE(db_->DeleteNamespace(1));
+  EXPECT_TRUE(db_->CloneNamespace(kNamespace1, kNamespaceClone));
+  EXPECT_TRUE(db_->DeleteNamespace(kNamespace1));
 
   // The original namespace has no data.
   CheckDatabaseConsistency();
-  CheckAreaData(1, kOrigin1, ValuesMap());
-  CheckAreaData(1, kOrigin2, ValuesMap());
+  CheckAreaData(kNamespace1, kOrigin1, ValuesMap());
+  CheckAreaData(kNamespace1, kOrigin2, ValuesMap());
   // But the copy persists.
-  CheckAreaData(5, kOrigin1, data1);
-  CheckAreaData(5, kOrigin2, data2);
+  CheckAreaData(kNamespaceClone, kOrigin1, data1);
+  CheckAreaData(kNamespaceClone, kOrigin2, data2);
 }
 
 TEST_F(SessionStorageDatabaseTest, DeleteArea) {
@@ -629,18 +633,18 @@ TEST_F(SessionStorageDatabaseTest, DeleteArea) {
   data1[kKey1] = kValue1;
   data1[kKey2] = kValue2;
   data1[kKey3] = kValue3;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data1));
   ValuesMap data2;
   data2[kKey1] = kValue2;
   data2[kKey3] = kValue1;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin2, false, data2));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin2, false, data2));
 
-  EXPECT_TRUE(db_->DeleteArea(1, kOrigin2));
+  EXPECT_TRUE(db_->DeleteArea(kNamespace1, kOrigin2));
   CheckDatabaseConsistency();
   // The data for the non-deleted origin persists.
-  CheckAreaData(1, kOrigin1, data1);
+  CheckAreaData(kNamespace1, kOrigin1, data1);
   // The data for the deleted origin is gone.
-  CheckAreaData(1, kOrigin2, ValuesMap());
+  CheckAreaData(kNamespace1, kOrigin2, ValuesMap());
 }
 
 TEST_F(SessionStorageDatabaseTest, DeleteAreaWithShallowCopy) {
@@ -649,23 +653,23 @@ TEST_F(SessionStorageDatabaseTest, DeleteAreaWithShallowCopy) {
   data1[kKey1] = kValue1;
   data1[kKey2] = kValue2;
   data1[kKey3] = kValue3;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data1));
   ValuesMap data2;
   data2[kKey1] = kValue2;
   data2[kKey3] = kValue1;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin2, false, data2));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin2, false, data2));
 
   // Make a shallow copy and delete an origin from the original namespace.
-  EXPECT_TRUE(db_->CloneNamespace(1, 5));
-  EXPECT_TRUE(db_->DeleteArea(1, kOrigin1));
+  EXPECT_TRUE(db_->CloneNamespace(kNamespace1, kNamespaceClone));
+  EXPECT_TRUE(db_->DeleteArea(kNamespace1, kOrigin1));
   CheckDatabaseConsistency();
 
   // The original namespace has data for only the non-deleted origin.
-  CheckAreaData(1, kOrigin1, ValuesMap());
-  CheckAreaData(1, kOrigin2, data2);
+  CheckAreaData(kNamespace1, kOrigin1, ValuesMap());
+  CheckAreaData(kNamespace1, kOrigin2, data2);
   // But the copy persists.
-  CheckAreaData(5, kOrigin1, data1);
-  CheckAreaData(5, kOrigin2, data2);
+  CheckAreaData(kNamespaceClone, kOrigin1, data1);
+  CheckAreaData(kNamespaceClone, kOrigin2, data2);
 }
 
 TEST_F(SessionStorageDatabaseTest, WriteRawBytes) {
@@ -675,199 +679,49 @@ TEST_F(SessionStorageDatabaseTest, WriteRawBytes) {
   string16 string_with_raw_data;
   string_with_raw_data.assign(reinterpret_cast<char16*>(raw_data), 5);
   changes[kKey1] = NullableString16(string_with_raw_data, false);
-  EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, changes));
+  EXPECT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, changes));
   CheckDatabaseConsistency();
   ValuesMap values;
-  db_->ReadAreaValues(1, kOrigin1, &values);
+  db_->ReadAreaValues(kNamespace1, kOrigin1, &values);
   const unsigned char* data =
       reinterpret_cast<const unsigned char*>(values[kKey1].string().data());
   for (int i = 0; i < 10; ++i)
     EXPECT_EQ(raw_data[i], data[i]);
 }
 
-TEST_F(SessionStorageDatabaseTest, NextNamespaceId) {
-  // Create namespaces, check the next namespace id.
-  ValuesMap data1;
-  data1[kKey1] = kValue1;
-  data1[kKey2] = kValue2;
-  ASSERT_TRUE(db_->CommitAreaChanges(10, kOrigin1, false, data1));
-  EXPECT_EQ(10 + 1, NextNamespaceId());
-  ASSERT_TRUE(db_->CommitAreaChanges(343, kOrigin1, false, data1));
-  EXPECT_EQ(343 + 1, NextNamespaceId());
-  ASSERT_TRUE(db_->CommitAreaChanges(99, kOrigin1, false, data1));
-  EXPECT_EQ(343 + 1, NextNamespaceId());
-
-  // Close the database and recreate it.
-  ResetDatabase();
-
-  // The next namespace id is persisted.
-  EXPECT_EQ(344, NextNamespaceId());
-
-  // Create more namespaces.
-  EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
-  EXPECT_EQ(344 + 1 + 1, NextNamespaceId());
-
-  EXPECT_TRUE(db_->CommitAreaChanges(959, kOrigin1, false, data1));
-  EXPECT_EQ(344 + 959 + 1, NextNamespaceId());
-}
-
-TEST_F(SessionStorageDatabaseTest, NamespaceOffset) {
-  // Create a namespace with id 1.
-  ValuesMap data1;
-  data1[kKey1] = kValue1;
-  data1[kKey2] = kValue2;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
-
-  // Close the database and recreate it.
-  ResetDatabase();
-
-  // Create another namespace with id 1.
-  ValuesMap data2;
-  data2[kKey1] = kValue3;
-  EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data2));
-
-  // Now the values for namespace 1 are the new ones.
-  CheckAreaData(1, kOrigin1, data2);
-
-  // The values for the old namespace 1 are still accessible via id -1.
-  CheckAreaData(-1, kOrigin1, data1);
-}
-
-TEST_F(SessionStorageDatabaseTest, NamespaceOffsetCloneNamespace) {
-  // Create a namespace with id 1.
-  ValuesMap data1;
-  data1[kKey1] = kValue1;
-  data1[kKey2] = kValue2;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
-
-  // Close the database and recreate it.
-  ResetDatabase();
-
-  // Create another namespace with id 1.
-  ValuesMap data2;
-  data2[kKey1] = kValue3;
-  EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data2));
-
-  // Make a shallow copy of the newly created namespace.
-  EXPECT_TRUE(db_->CloneNamespace(1, 20));
-
-  // The clone contains values from the newly created namespace.
-  CheckAreaData(20, kOrigin1, data2);
-  CheckAreaData(1, kOrigin1, data2);
-
-  // The values for the old namespace 1 are still accessible via id -1.
-  CheckAreaData(-1, kOrigin1, data1);
-
-  // Close the database and recreate it.
-  ResetDatabase();
-
-  // The namespace and the clone are still accessible.
-  CheckAreaData(-1, kOrigin1, data2);
-  CheckAreaData(-20, kOrigin1, data2);
-  CheckAreaData(-22, kOrigin1, data1);
-}
-
-TEST_F(SessionStorageDatabaseTest, NamespaceOffsetWriteIntoShallowCopy) {
-  // Create a namespace with id 1.
-  ValuesMap data1;
-  data1[kKey1] = kValue1;
-  data1[kKey2] = kValue2;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
-
-  // Close the database and recreate it.
-  ResetDatabase();
-
-  // Create another namespace with id 1.
-  ValuesMap data2;
-  data2[kKey1] = kValue3;
-  EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data2));
-
-  // Make a shallow copy of the newly created namespace.
-  EXPECT_TRUE(db_->CloneNamespace(1, 20));
-
-  // Now the values can be altered and a deep copy will be made.
-  ValuesMap data3;
-  data3[kKey1] = kValue2;
-  EXPECT_TRUE(db_->CommitAreaChanges(20, kOrigin1, false, data3));
-
-  CheckAreaData(20, kOrigin1, data3);
-  CheckAreaData(1, kOrigin1, data2);
-
-  // The values for the old namespace 1 are still accessible via id -1.
-  CheckAreaData(-1, kOrigin1, data1);
-
-  // Close the database and recreate it.
-  ResetDatabase();
-
-  // The namespace and the deep copy are still accessible.
-  CheckAreaData(-1, kOrigin1, data3);
-  CheckAreaData(-20, kOrigin1, data2);
-  CheckAreaData(-22, kOrigin1, data1);
-}
-
-TEST_F(SessionStorageDatabaseTest, NamespaceOffsetDeleteArea) {
-  // Create a namespace with id 1.
-  ValuesMap data1;
-  data1[kKey1] = kValue1;
-  data1[kKey2] = kValue2;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
-
-  // Close the database and recreate it.
-  ResetDatabase();
-
-  // Create another namespace with id 1.
-  ValuesMap data2;
-  data2[kKey1] = kValue3;
-  EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data2));
-
-  // Delete kOrigin1 from the newly created namespace.
-  EXPECT_TRUE(db_->DeleteArea(1, kOrigin1));
-
-  // Namespace 1 is empty.
-  CheckAreaData(1, kOrigin1, ValuesMap());
-
-  // The values for the old namespace 1 are still accessible via id -1.
-  CheckAreaData(-1, kOrigin1, data1);
-}
-
-TEST_F(SessionStorageDatabaseTest, NamespaceOffsetDeleteNamespace) {
-  // Create a namespace with id 1.
-  ValuesMap data1;
-  data1[kKey1] = kValue1;
-  data1[kKey2] = kValue2;
-  ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
-
-  // Close the database and recreate it.
-  ResetDatabase();
-
-  // Create another namespace with id 1.
-  ValuesMap data2;
-  data2[kKey1] = kValue3;
-  EXPECT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data2));
-
-  // Delete the newly created namespace.
-  EXPECT_TRUE(db_->DeleteNamespace(1));
-
-  // Namespace 1 is empty.
-  CheckAreaData(1, kOrigin1, ValuesMap());
-
-  // The values for the old namespace 1 are still accessible via id -1.
-  CheckAreaData(-1, kOrigin1, data1);
-}
-
 TEST_F(SessionStorageDatabaseTest, DeleteNamespaceConfusion) {
   // Regression test for a bug where a namespace with id 10 prevented deleting
   // the namespace with id 1.
 
-  // Create namespace with IDs 0 to 10. The real IDs in the DB will correspond
-  // to these IDs.
   ValuesMap data1;
   data1[kKey1] = kValue1;
-  for (int i = 0; i <= 10; ++i)
-    ASSERT_TRUE(db_->CommitAreaChanges(i, kOrigin1, false, data1));
+  ASSERT_TRUE(db_->CommitAreaChanges("foobar", kOrigin1, false, data1));
+  ASSERT_TRUE(db_->CommitAreaChanges("foobarbaz", kOrigin1, false, data1));
 
   // Delete the namespace with ID 1.
-  EXPECT_TRUE(db_->DeleteNamespace(1));
+  EXPECT_TRUE(db_->DeleteNamespace("foobar"));
+}
+
+TEST_F(SessionStorageDatabaseTest, ReadNamespaceIds) {
+  ValuesMap data1;
+  data1[kKey1] = kValue1;
+  data1[kKey2] = kValue2;
+  data1[kKey3] = kValue3;
+  std::set<std::string> expected_namespace_ids;
+
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data1));
+  expected_namespace_ids.insert(kNamespace1);
+  CheckNamespaceIds(expected_namespace_ids);
+
+  ASSERT_TRUE(db_->CloneNamespace(kNamespace1, kNamespaceClone));
+  expected_namespace_ids.insert(kNamespaceClone);
+  CheckNamespaceIds(expected_namespace_ids);
+
+  ASSERT_TRUE(db_->DeleteNamespace(kNamespace1));
+  expected_namespace_ids.erase(kNamespace1);
+  CheckNamespaceIds(expected_namespace_ids);
+
+  CheckDatabaseConsistency();
 }
 
 }  // namespace dom_storage

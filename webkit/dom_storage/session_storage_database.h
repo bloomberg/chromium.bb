@@ -37,7 +37,7 @@ class SessionStorageDatabase :
   // assumed to be empty and any duplicate keys will be overwritten. If the
   // database exists on disk then it will be opened. If it does not exist then
   // it will not be created and |result| will be unmodified.
-  void ReadAreaValues(int64 namespace_id,
+  void ReadAreaValues(const std::string& namespace_id,
                       const GURL& origin,
                       ValuesMap* result);
 
@@ -47,20 +47,24 @@ class SessionStorageDatabase :
   // be removed and all others will be inserted/updated as appropriate. It is
   // allowed to write data into a shallow copy created by CloneNamespace, and in
   // that case the copy will be made deep before writing the values.
-  bool CommitAreaChanges(int64 namespace_id,
+  bool CommitAreaChanges(const std::string& namespace_id,
                          const GURL& origin,
                          bool clear_all_first,
                          const ValuesMap& changes);
 
   // Creates shallow copies of the areas for |namespace_id| and associates them
   // with |new_namespace_id|.
-  bool CloneNamespace(int64 namespace_id, int64 new_namespace_id);
+  bool CloneNamespace(const std::string& namespace_id,
+                      const std::string& new_namespace_id);
 
   // Deletes the data for |namespace_id| and |origin|.
-  bool DeleteArea(int64 namespace_id, const GURL& origin);
+  bool DeleteArea(const std::string& namespace_id, const GURL& origin);
 
   // Deletes the data for |namespace_id|.
-  bool DeleteNamespace(int64 namespace_id);
+  bool DeleteNamespace(const std::string& namespace_id);
+
+  // Reads all namespace IDs from the database.
+  bool ReadNamespaceIds(std::vector<std::string>* namespace_ids);
 
  private:
   friend class base::RefCountedThreadSafe<SessionStorageDatabase>;
@@ -97,42 +101,30 @@ class SessionStorageDatabase :
   // Creates a namespace for |namespace_id| and updates the next namespace id if
   // needed. If |ok_if_exists| is false, checks that the namespace didn't exist
   // before.
-  bool CreateNamespace(int64 namespace_id,
+  bool CreateNamespace(const std::string& namespace_id,
                        bool ok_if_exists,
                        leveldb::WriteBatch* batch);
-  // Reads the next namespace id.
-  bool GetNextNamespaceId(int64* next_namespace_id);
-  bool UpdateNextNamespaceId(int64 namespace_id,
-                             leveldb::WriteBatch* batch);
+
   // Reads the areas assoiated with |namespace_id| and puts the (origin, map_id)
   // pairs into |areas|.
-  bool GetAreasInNamespace(int64 namespace_id,
-                           std::map<std::string, std::string>* areas);
-  bool GetAreasInNamespace(const std::string& namespace_id_str,
+  bool GetAreasInNamespace(const std::string& namespace_id,
                            std::map<std::string, std::string>* areas);
 
   // Adds an association between |origin| and |map_id| into the namespace
   // |namespace_id|.
-  void AddAreaToNamespace(int64 namespace_id,
+  void AddAreaToNamespace(const std::string& namespace_id,
                           const std::string& origin,
                           const std::string& map_id,
                           leveldb::WriteBatch* batch);
 
   // Helpers for deleting data for |namespace_id| and |origin|.
-  bool DeleteArea(int64 namespace_id,
-                  const std::string& origin,
-                  leveldb::WriteBatch* batch);
-  bool DeleteArea(const std::string& namespace_id_str,
-                  const std::string& origin,
-                  leveldb::WriteBatch* batch);
+  bool DeleteAreaHelper(const std::string& namespace_id,
+                        const std::string& origin,
+                        leveldb::WriteBatch* batch);
 
   // Retrieves the map id for |namespace_id| and |origin|. It's not an error if
   // the map doesn't exist.
-  bool GetMapForArea(int64 namespace_id,
-                     const GURL& origin,
-                     bool* exists,
-                     std::string* map_id);
-  bool GetMapForArea(const std::string& namespace_id_str,
+  bool GetMapForArea(const std::string& namespace_id,
                      const std::string& origin,
                      bool* exists,
                      std::string* map_id);
@@ -141,7 +133,7 @@ class SessionStorageDatabase :
   // id of the created map. If there is a map for |namespace_id| and |origin|,
   // this just overwrites the map id. The caller is responsible for decreasing
   // the ref count.
-  bool CreateMapForArea(int64 namespace_id,
+  bool CreateMapForArea(const std::string& namespace_id,
                         const GURL& origin,
                         std::string* map_id,
                         leveldb::WriteBatch* batch);
@@ -171,27 +163,19 @@ class SessionStorageDatabase :
   // Breaks the association between (|namespace_id|, |origin|) and |map_id| and
   // creates a new map for (|namespace_id|, |origin|). Copies the data from the
   // old map if |copy_data| is true.
-  bool DeepCopyArea(int64 namespace_id,
+  bool DeepCopyArea(const std::string& namespace_id,
                     const GURL& origin,
                     bool copy_data,
                     std::string* map_id,
                     leveldb::WriteBatch* batch);
 
   // Helper functions for creating the keys needed for the schema.
-  static std::string NamespaceStartKey(const std::string& namespace_id_str);
-  static std::string NamespaceStartKey(int64 namespace_id,
-                                       int64 namespace_offset);
-  static std::string NamespaceKey(const std::string& namespace_id_str,
+  static std::string NamespaceStartKey(const std::string& namespace_id);
+  static std::string NamespaceKey(const std::string& namespace_id,
                                   const std::string& origin);
-  static std::string NamespaceKey(int64 namespace_id,
-                                  int64 namespace_offset,
-                                  const GURL& origin);
-  static std::string NamespaceIdStr(int64 namespace_id, int64 namespace_offset);
   static const char* NamespacePrefix();
   static std::string MapRefCountKey(const std::string& map_id);
   static std::string MapKey(const std::string& map_id, const std::string& key);
-  static const char* MapPrefix();
-  static const char* NextNamespaceIdKey();
   static const char* NextMapIdKey();
 
   scoped_ptr<leveldb::DB> db_;
@@ -204,14 +188,6 @@ class SessionStorageDatabase :
   bool db_error_;
   // True if the database is in an inconsistent state.
   bool is_inconsistent_;
-
-  // On startup, we read the next ununsed namespace id from the database. It
-  // will be the offset for namespace ids. The actual id of a namespace in the
-  // database will be: id passed to the API function + namespace_offset_. The
-  // namespace ids which are handled as int64 (named namespace_id) don't contain
-  // the offset yet. The namespaces ids which are handled as strings (named
-  // namesapce_id_str) contain the offset.
-  int64 namespace_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageDatabase);
 };

@@ -32,7 +32,6 @@
 // | namespace-3-                   | dummy                              |
 // | namespace-3-origin1            | 3 (deep copy)                      |
 // | namespace-3-origin2            | 2 (shallow copy)                   |
-// | next-namespace-id              | 4                                  |
 // | next-map-id                    | 4                                  |
 
 namespace dom_storage {
@@ -40,14 +39,13 @@ namespace dom_storage {
 SessionStorageDatabase::SessionStorageDatabase(const FilePath& file_path)
     : file_path_(file_path),
       db_error_(false),
-      is_inconsistent_(false),
-      namespace_offset_(0) {
+      is_inconsistent_(false) {
 }
 
 SessionStorageDatabase::~SessionStorageDatabase() {
 }
 
-void SessionStorageDatabase::ReadAreaValues(int64 namespace_id,
+void SessionStorageDatabase::ReadAreaValues(const std::string& namespace_id,
                                             const GURL& origin,
                                             ValuesMap* result) {
   // We don't create a database if it doesn't exist. In that case, there is
@@ -56,13 +54,13 @@ void SessionStorageDatabase::ReadAreaValues(int64 namespace_id,
     return;
   std::string map_id;
   bool exists;
-  if (!GetMapForArea(namespace_id, origin, &exists, &map_id))
+  if (!GetMapForArea(namespace_id, origin.spec(), &exists, &map_id))
     return;
   if (exists)
     ReadMap(map_id, result, false);
 }
 
-bool SessionStorageDatabase::CommitAreaChanges(int64 namespace_id,
+bool SessionStorageDatabase::CommitAreaChanges(const std::string& namespace_id,
                                                const GURL& origin,
                                                bool clear_all_first,
                                                const ValuesMap& changes) {
@@ -80,7 +78,7 @@ bool SessionStorageDatabase::CommitAreaChanges(int64 namespace_id,
 
   std::string map_id;
   bool exists;
-  if (!GetMapForArea(namespace_id, origin, &exists, &map_id))
+  if (!GetMapForArea(namespace_id, origin.spec(), &exists, &map_id))
     return false;
   if (exists) {
     int64 ref_count;
@@ -109,8 +107,8 @@ bool SessionStorageDatabase::CommitAreaChanges(int64 namespace_id,
   return DatabaseErrorCheck(s.ok());
 }
 
-bool SessionStorageDatabase::CloneNamespace(int64 namespace_id,
-                                            int64 new_namespace_id) {
+bool SessionStorageDatabase::CloneNamespace(
+    const std::string& namespace_id, const std::string& new_namespace_id) {
   // Go through all origins in the namespace |namespace_id|, create placeholders
   // for them in |new_namespace_id|, and associate them with the existing maps.
 
@@ -152,20 +150,20 @@ bool SessionStorageDatabase::CloneNamespace(int64 namespace_id,
   return DatabaseErrorCheck(s.ok());
 }
 
-bool SessionStorageDatabase::DeleteArea(int64 namespace_id,
+bool SessionStorageDatabase::DeleteArea(const std::string& namespace_id,
                                         const GURL& origin) {
   if (!LazyOpen(false)) {
     // No need to create the database if it doesn't exist.
     return true;
   }
   leveldb::WriteBatch batch;
-  if (!DeleteArea(namespace_id, origin.spec(), &batch))
+  if (!DeleteAreaHelper(namespace_id, origin.spec(), &batch))
     return false;
   leveldb::Status s = db_->Write(leveldb::WriteOptions(), &batch);
   return DatabaseErrorCheck(s.ok());
 }
 
-bool SessionStorageDatabase::DeleteNamespace(int64 namespace_id) {
+bool SessionStorageDatabase::DeleteNamespace(const std::string& namespace_id) {
   if (!LazyOpen(false)) {
     // No need to create the database if it doesn't exist.
     return true;
@@ -178,12 +176,51 @@ bool SessionStorageDatabase::DeleteNamespace(int64 namespace_id) {
   for (std::map<std::string, std::string>::const_iterator it = areas.begin();
        it != areas.end(); ++it) {
     const std::string& origin = it->first;
-    if (!DeleteArea(namespace_id, origin, &batch))
+    if (!DeleteAreaHelper(namespace_id, origin, &batch))
       return false;
   }
-  batch.Delete(NamespaceStartKey(namespace_id, namespace_offset_));
+  batch.Delete(NamespaceStartKey(namespace_id));
   leveldb::Status s = db_->Write(leveldb::WriteOptions(), &batch);
   return DatabaseErrorCheck(s.ok());
+}
+
+bool SessionStorageDatabase::ReadNamespaceIds(
+    std::vector<std::string>* namespace_ids) {
+  if (!LazyOpen(true))
+    return false;
+
+  std::string namespace_prefix = NamespacePrefix();
+  scoped_ptr<leveldb::Iterator> it(db_->NewIterator(leveldb::ReadOptions()));
+  it->Seek(namespace_prefix);
+  if (it->status().IsNotFound())
+    return true;
+
+  if (!DatabaseErrorCheck(it->status().ok()))
+    return false;
+
+  // Skip the dummy entry "namespace-" and iterate the namespaces.
+  std::string current_namespace_start_key;
+  for (it->Next(); it->Valid(); it->Next()) {
+    std::string key = it->key().ToString();
+    if (key.find(namespace_prefix) != 0) {
+      // Iterated past the "namespace-" keys.
+      break;
+    }
+    // For each namespace, the first key is "namespace-<namespaceid>-", and the
+    // subsequent keys are "namespace-<namespaceid>-<origin>". Read the unique
+    // "<namespaceid>" parts from the keys.
+    if (current_namespace_start_key.empty() ||
+        key.substr(0, current_namespace_start_key.length()) !=
+        current_namespace_start_key) {
+      // The key is of the form "namespace-<namespaceid>-" for a new
+      // <namespaceid>.
+      current_namespace_start_key = key;
+      namespace_ids->push_back(
+          key.substr(namespace_prefix.length(),
+                     key.length() - namespace_prefix.length() - 1));
+    }
+  }
+  return true;
 }
 
 bool SessionStorageDatabase::LazyOpen(bool create_if_needed) {
@@ -224,8 +261,7 @@ bool SessionStorageDatabase::LazyOpen(bool create_if_needed) {
     }
   }
   db_.reset(db);
-
-  return GetNextNamespaceId(&namespace_offset_);
+  return true;
 }
 
 leveldb::Status SessionStorageDatabase::TryToOpen(leveldb::DB** db) {
@@ -272,7 +308,7 @@ bool SessionStorageDatabase::DatabaseErrorCheck(bool ok) {
   return false;
 }
 
-bool SessionStorageDatabase::CreateNamespace(int64 namespace_id,
+bool SessionStorageDatabase::CreateNamespace(const std::string& namespace_id,
                                              bool ok_if_exists,
                                              leveldb::WriteBatch* batch) {
   leveldb::Slice namespace_prefix = NamespacePrefix();
@@ -284,56 +320,21 @@ bool SessionStorageDatabase::CreateNamespace(int64 namespace_id,
   if (s.IsNotFound())
     batch->Put(namespace_prefix, "");
 
-  std::string namespace_start_key =
-      NamespaceStartKey(namespace_id, namespace_offset_);
+  std::string namespace_start_key = NamespaceStartKey(namespace_id);
   s = db_->Get(leveldb::ReadOptions(), namespace_start_key, &dummy);
   if (!DatabaseErrorCheck(s.ok() || s.IsNotFound()))
     return false;
   if (s.IsNotFound()) {
     batch->Put(namespace_start_key, "");
-    return UpdateNextNamespaceId(namespace_id, batch);
+    return true;
   }
   return CallerErrorCheck(ok_if_exists);
 }
 
-bool SessionStorageDatabase::GetNextNamespaceId(int64* next_namespace_id) {
-  std::string next_namespace_id_string;
-  leveldb::Status s = db_->Get(leveldb::ReadOptions(), NextNamespaceIdKey(),
-                               &next_namespace_id_string);
-  if (!DatabaseErrorCheck(s.ok() || s.IsNotFound()))
-    return false;
-  if (s.IsNotFound()) {
-    *next_namespace_id = 0;
-    return true;
-  }
-  bool conversion_ok =
-      base::StringToInt64(next_namespace_id_string, next_namespace_id);
-  return ConsistencyCheck(conversion_ok);
-}
-
-bool SessionStorageDatabase::UpdateNextNamespaceId(int64 namespace_id,
-                                                   leveldb::WriteBatch* batch) {
-  int64 next_namespace_id;
-  if (!GetNextNamespaceId(&next_namespace_id))
-    return false;
-  if (next_namespace_id < namespace_id + namespace_offset_ + 1) {
-    next_namespace_id = namespace_id + namespace_offset_ + 1;
-    batch->Put(NextNamespaceIdKey(), base::Int64ToString(next_namespace_id));
-  }
-  return true;
-}
-
 bool SessionStorageDatabase::GetAreasInNamespace(
-    int64 namespace_id,
+    const std::string& namespace_id,
     std::map<std::string, std::string>* areas) {
-  return GetAreasInNamespace(NamespaceIdStr(namespace_id, namespace_offset_),
-                             areas);
-}
-
-bool SessionStorageDatabase::GetAreasInNamespace(
-    const std::string& namespace_id_str,
-    std::map<std::string, std::string>* areas) {
-  std::string namespace_start_key = NamespaceStartKey(namespace_id_str);
+  std::string namespace_start_key = NamespaceStartKey(namespace_id);
   scoped_ptr<leveldb::Iterator> it(db_->NewIterator(leveldb::ReadOptions()));
   it->Seek(namespace_start_key);
   if (it->status().IsNotFound()) {
@@ -358,51 +359,35 @@ bool SessionStorageDatabase::GetAreasInNamespace(
   return true;
 }
 
-void SessionStorageDatabase::AddAreaToNamespace(int64 namespace_id,
+void SessionStorageDatabase::AddAreaToNamespace(const std::string& namespace_id,
                                                 const std::string& origin,
                                                 const std::string& map_id,
                                                 leveldb::WriteBatch* batch) {
-  std::string namespace_key = NamespaceKey(
-      NamespaceIdStr(namespace_id, namespace_offset_), origin);
+  std::string namespace_key = NamespaceKey(namespace_id, origin);
   batch->Put(namespace_key, map_id);
 }
 
-bool SessionStorageDatabase::DeleteArea(int64 namespace_id,
-                                        const std::string& origin,
-                                        leveldb::WriteBatch* batch) {
-  return DeleteArea(NamespaceIdStr(namespace_id, namespace_offset_),
-                    origin, batch);
-}
-
-bool SessionStorageDatabase::DeleteArea(const std::string& namespace_id_str,
-                                        const std::string& origin,
-                                        leveldb::WriteBatch* batch) {
+bool SessionStorageDatabase::DeleteAreaHelper(
+    const std::string& namespace_id,
+    const std::string& origin,
+    leveldb::WriteBatch* batch) {
   std::string map_id;
   bool exists;
-  if (!GetMapForArea(namespace_id_str, origin, &exists, &map_id))
+  if (!GetMapForArea(namespace_id, origin, &exists, &map_id))
     return false;
   if (!exists)
     return true;  // Nothing to delete.
   if (!DecreaseMapRefCount(map_id, 1, batch))
     return false;
-  std::string namespace_key = NamespaceKey(namespace_id_str, origin);
+  std::string namespace_key = NamespaceKey(namespace_id, origin);
   batch->Delete(namespace_key);
   return true;
 }
 
-bool SessionStorageDatabase::GetMapForArea(int64 namespace_id,
-                                           const GURL& origin,
-                                           bool* exists,
-                                           std::string* map_id) {
-  return GetMapForArea(
-      base::Int64ToString(namespace_id + namespace_offset_),
-      origin.spec(), exists, map_id);
-}
-
-bool SessionStorageDatabase::GetMapForArea(const std::string& namespace_id_str,
+bool SessionStorageDatabase::GetMapForArea(const std::string& namespace_id,
                                            const std::string& origin,
                                            bool* exists, std::string* map_id) {
-  std::string namespace_key = NamespaceKey(namespace_id_str, origin);
+  std::string namespace_key = NamespaceKey(namespace_id, origin);
   leveldb::Status s = db_->Get(leveldb::ReadOptions(), namespace_key, map_id);
   if (s.IsNotFound()) {
     *exists = false;
@@ -412,7 +397,7 @@ bool SessionStorageDatabase::GetMapForArea(const std::string& namespace_id_str,
   return DatabaseErrorCheck(s.ok());
 }
 
-bool SessionStorageDatabase::CreateMapForArea(int64 namespace_id,
+bool SessionStorageDatabase::CreateMapForArea(const std::string& namespace_id,
                                               const GURL& origin,
                                               std::string* map_id,
                                               leveldb::WriteBatch* batch) {
@@ -429,8 +414,7 @@ bool SessionStorageDatabase::CreateMapForArea(int64 namespace_id,
       return false;
   }
   batch->Put(next_map_id_key, base::Int64ToString(++next_map_id));
-  std::string namespace_key =
-      NamespaceKey(namespace_id, namespace_offset_, origin);
+  std::string namespace_key = NamespaceKey(namespace_id, origin.spec());
   batch->Put(namespace_key, *map_id);
   batch->Put(MapRefCountKey(*map_id), "1");
   return true;
@@ -542,7 +526,7 @@ bool SessionStorageDatabase::ClearMap(const std::string& map_id,
 }
 
 bool SessionStorageDatabase::DeepCopyArea(
-    int64 namespace_id, const GURL& origin, bool copy_data,
+    const std::string& namespace_id, const GURL& origin, bool copy_data,
     std::string* map_id, leveldb::WriteBatch* batch) {
   // Example, data before deep copy:
   // | namespace-1- (1 = namespace id)| dummy               |
@@ -579,30 +563,14 @@ bool SessionStorageDatabase::DeepCopyArea(
 }
 
 std::string SessionStorageDatabase::NamespaceStartKey(
-    const std::string& namespace_id_str) {
-  return base::StringPrintf("namespace-%s-", namespace_id_str.c_str());
-}
-
-std::string SessionStorageDatabase::NamespaceStartKey(int64 namespace_id,
-                                                      int64 namespace_offset) {
-  return NamespaceStartKey(NamespaceIdStr(namespace_id, namespace_offset));
+    const std::string& namespace_id) {
+  return base::StringPrintf("namespace-%s-", namespace_id.c_str());
 }
 
 std::string SessionStorageDatabase::NamespaceKey(
-    const std::string& namespace_id_str, const std::string& origin) {
-  return base::StringPrintf("namespace-%s-%s", namespace_id_str.c_str(),
+    const std::string& namespace_id, const std::string& origin) {
+  return base::StringPrintf("namespace-%s-%s", namespace_id.c_str(),
                             origin.c_str());
-}
-
-std::string SessionStorageDatabase::NamespaceKey(
-    int64 namespace_id, int64 namespace_offset, const GURL& origin) {
-  return NamespaceKey(NamespaceIdStr(namespace_id, namespace_offset),
-                      origin.spec());
-}
-
-std::string SessionStorageDatabase::NamespaceIdStr(int64 namespace_id,
-                                                   int64 namespace_offset) {
-  return base::Int64ToString(namespace_id + namespace_offset);
 }
 
 const char* SessionStorageDatabase::NamespacePrefix() {
@@ -616,10 +584,6 @@ std::string SessionStorageDatabase::MapRefCountKey(const std::string& map_id) {
 std::string SessionStorageDatabase::MapKey(const std::string& map_id,
                                            const std::string& key) {
   return base::StringPrintf("map-%s-%s", map_id.c_str(), key.c_str());
-}
-
-const char* SessionStorageDatabase::NextNamespaceIdKey() {
-  return "next-namespace-id";
 }
 
 const char* SessionStorageDatabase::NextMapIdKey() {
