@@ -86,11 +86,11 @@
                         long port,
                         ConnectCallback callback);
 
-    // Binds the local address for UDP socket. Currently, it does not support
+    // Binds the local address for socket. Currently, it does not support
     // TCP socket.
     // |socketId| : The socketId.
-    // |address| : The address of the remote machine.
-    // |port| : The port of the remote machine.
+    // |address| : The address of the local machine.
+    // |port| : The port of the local machine.
     // |callback| : Called when the bind attempt is complete.
     static void bind(long socketId,
                      DOMString address,
