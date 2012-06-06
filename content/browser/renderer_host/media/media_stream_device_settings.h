@@ -45,6 +45,10 @@ class CONTENT_EXPORT MediaStreamDeviceSettings
                                  const StreamOptions& stream_components,
                                  const GURL& security_origin);
 
+  // Called to remove a pending request of capture device usage when the user
+  // has no action for the media stream InfoBar.
+  void RemovePendingCaptureRequest(const std::string& label);
+
   // Called to pass in an array of available devices for a request represented
   // by |label|. There could be multiple calls for a request.
   void AvailableDevices(const std::string& label, MediaStreamType stream_type,

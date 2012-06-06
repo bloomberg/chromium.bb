@@ -214,8 +214,13 @@ void MediaStreamDispatcherHost::OnCancelGenerateStream(int render_view_id,
   DVLOG(1) << "MediaStreamDispatcherHost::OnCancelGenerateStream("
            << render_view_id << ", "
            << page_request_id << ")";
-  // TODO(perkj): Implement
-  NOTIMPLEMENTED();
+
+  for (StreamMap::iterator it = streams_.begin(); it != streams_.end(); ++it) {
+    if (it->second.render_view_id == render_view_id &&
+        it->second.page_request_id == page_request_id) {
+      manager()->CancelGenerateStream(it->first);
+    }
+  }
 }
 
 void MediaStreamDispatcherHost::OnStopGeneratedStream(

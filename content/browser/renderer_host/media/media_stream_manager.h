@@ -85,6 +85,9 @@ class CONTENT_EXPORT MediaStreamManager
   // StreamGenerated hasn't been called.
   void CancelRequests(MediaStreamRequester* requester);
 
+  // Cancel generate stream.
+  void CancelGenerateStream(const std::string& label);
+
   // Closes generated stream.
   void StopGeneratedStream(const std::string& label);
 

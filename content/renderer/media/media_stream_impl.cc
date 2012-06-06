@@ -262,6 +262,7 @@ void MediaStreamImpl::OnStreamGenerated(
   MediaRequestMap::iterator it = user_media_requests_.find(request_id);
   if (it == user_media_requests_.end()) {
     DVLOG(1) << "Request ID not found";
+    media_stream_dispatcher_->StopStream(label);
     return;
   }
 
@@ -354,6 +355,17 @@ void MediaStreamImpl::OnDeviceOpenFailed(int request_id) {
 }
 
 void MediaStreamImpl::FrameWillClose(WebKit::WebFrame* frame) {
+  MediaRequestMap::iterator request_it = user_media_requests_.begin();
+  while (request_it != user_media_requests_.end()) {
+    if (request_it->second.frame_ == frame) {
+      DVLOG(1) << "MediaStreamImpl::FrameWillClose: "
+               << "Cancel user media request " << request_it->first;
+      cancelUserMediaRequest(request_it->second.request_);
+      request_it = user_media_requests_.begin();
+    } else {
+      ++request_it;
+    }
+  }
   LocalNativeStreamMap::iterator it = local_media_streams_.begin();
   while (it != local_media_streams_.end()) {
     if (it->second == frame) {

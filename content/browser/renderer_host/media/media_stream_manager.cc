@@ -214,6 +214,42 @@ void MediaStreamManager::CancelRequests(MediaStreamRequester* requester) {
   }
 }
 
+void MediaStreamManager::CancelGenerateStream(const std::string& label) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  DeviceRequests::iterator it = requests_.find(label);
+  if (it != requests_.end()) {
+    // The request isn't complete.
+    if (!RequestDone(it->second)) {
+      DeviceRequest* request = &(it->second);
+      if (request->state[content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE] ==
+          DeviceRequest::kOpening) {
+        for (StreamDeviceInfoArray::iterator it =
+             request->audio_devices.begin(); it != request->audio_devices.end();
+             ++it) {
+          if (it->in_use) {
+            audio_input_device_manager()->Close(it->session_id);
+          }
+        }
+      }
+      if (request->state[content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE] ==
+          DeviceRequest::kOpening) {
+        for (StreamDeviceInfoArray::iterator it =
+             request->video_devices.begin(); it != request->video_devices.end();
+             ++it) {
+          if (it->in_use) {
+            video_capture_manager()->Close(it->session_id);
+          }
+        }
+      }
+      requests_.erase(it);
+    } else {
+      StopGeneratedStream(label);
+    }
+    device_settings_->RemovePendingCaptureRequest(label);
+  }
+}
+
 void MediaStreamManager::StopGeneratedStream(const std::string& label) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Find the request and close all open devices for the request.

@@ -134,6 +134,18 @@ void MediaStreamDeviceSettings::RequestCaptureDeviceUsage(
       render_process_id, render_view_id, security_origin, request_options)));
 }
 
+void MediaStreamDeviceSettings::RemovePendingCaptureRequest(
+    const std::string& label) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  SettingsRequests::iterator request_it = requests_.find(label);
+  if (request_it != requests_.end()) {
+    MediaStreamDeviceSettingsRequest* request = request_it->second;
+    requests_.erase(request_it);
+    delete request;
+  }
+}
+
 void MediaStreamDeviceSettings::AvailableDevices(
     const std::string& label,
     MediaStreamType stream_type,
