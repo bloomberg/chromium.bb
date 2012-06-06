@@ -156,7 +156,7 @@ clobber-chrome-tmp() {
   # which is the closest thing to %TEMP% (at least the default) that we can
   # access from within Cygwin.
   if [[ "$(uname -s)" =~ CYGWIN ]]; then
-    find ${LOCALAPPDATA}/Temp -regex ".*[0-9]+\.tmp" -print0 | \
+    find ${LOCALAPPDATA}/Temp -regex ".*[0-9a-fA-F]+\.tmp" -print0 | \
       xargs -0 rm -rf
   fi
 }
