@@ -159,6 +159,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
     switches::kDisableDesktopNotifications,
 #endif
     switches::kDisableFileSystem,
+    switches::kDisableSeccompFilterSandbox,
   };
   cmd_line->CopySwitchesFrom(*CommandLine::ForCurrentProcess(), kSwitchNames,
                              arraysize(kSwitchNames));
