@@ -422,7 +422,7 @@ class ValgrindTool(BaseTool):
                                             text=True)
     f = os.fdopen(fd, "w")
     f.write('#!/bin/bash\n'
-            'echo "Started Valgrind wrapper for this test, PID=$$"\n')
+            'echo "Started Valgrind wrapper for this test, PID=$$" >&2\n')
 
     # Try to get the test case name by looking at the program arguments.
     # i.e. Chromium ui_tests and friends pass --test-name arg.
