@@ -7,8 +7,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/test/test_timeouts.h"
-#include "base/timer.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/cert_test_util.h"
 #include "remoting/protocol/authenticator.h"
@@ -23,24 +21,15 @@ using testing::SaveArg;
 namespace remoting {
 namespace protocol {
 
-namespace {
-
-ACTION_P(QuitThreadOnCounter, counter) {
-  --(*counter);
-  EXPECT_GE(*counter, 0);
-  if (*counter == 0)
-    MessageLoop::current()->Quit();
+AuthenticatorTestBase::MockChannelDoneCallback::MockChannelDoneCallback() {
+}
+AuthenticatorTestBase::MockChannelDoneCallback::~MockChannelDoneCallback() {
 }
 
-}  // namespace
-
-AuthenticatorTestBase::MockChannelDoneCallback::MockChannelDoneCallback() {}
-
-AuthenticatorTestBase::MockChannelDoneCallback::~MockChannelDoneCallback() {}
-
-AuthenticatorTestBase::AuthenticatorTestBase() {}
-
-AuthenticatorTestBase::~AuthenticatorTestBase() {}
+AuthenticatorTestBase::AuthenticatorTestBase() {
+}
+AuthenticatorTestBase::~AuthenticatorTestBase() {
+}
 
 void AuthenticatorTestBase::SetUp() {
   FilePath certs_dir(net::GetTestCertsDirectory());
@@ -110,40 +99,22 @@ void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {
   net::StreamSocket* client_socket = NULL;
   net::StreamSocket* host_socket = NULL;
 
-  // Expect two callbacks to be called - the client callback and the host
-  // callback.
-  int callback_counter = 2;
-
   EXPECT_CALL(client_callback_, OnDone(net::OK, _))
-      .WillOnce(DoAll(SaveArg<1>(&client_socket),
-                      QuitThreadOnCounter(&callback_counter)));
+      .WillOnce(SaveArg<1>(&client_socket));
   if (expected_fail) {
-    EXPECT_CALL(host_callback_, OnDone(net::ERR_FAILED, NULL))
-         .WillOnce(QuitThreadOnCounter(&callback_counter));
+    EXPECT_CALL(host_callback_, OnDone(net::ERR_FAILED, NULL));
   } else {
     EXPECT_CALL(host_callback_, OnDone(net::OK, _))
-        .WillOnce(DoAll(SaveArg<1>(&host_socket),
-                        QuitThreadOnCounter(&callback_counter)));
+        .WillOnce(SaveArg<1>(&host_socket));
   }
 
-  // Ensure that .Run() does not run unbounded if the callbacks are never
-  // called.
-  base::Timer shutdown_timer(false, false);
-  shutdown_timer.Start(FROM_HERE, TestTimeouts::action_timeout(),
-                       MessageLoop::QuitClosure());
-  message_loop_.Run();
-  shutdown_timer.Stop();
+  message_loop_.RunAllPending();
 
   testing::Mock::VerifyAndClearExpectations(&client_callback_);
   testing::Mock::VerifyAndClearExpectations(&host_callback_);
 
   client_socket_.reset(client_socket);
   host_socket_.reset(host_socket);
-
-  if (!expected_fail) {
-    ASSERT_TRUE(client_socket_.get() != NULL);
-    ASSERT_TRUE(host_socket_.get() != NULL);
-  }
 }
 
 void AuthenticatorTestBase::OnHostConnected(
