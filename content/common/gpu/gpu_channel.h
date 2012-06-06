@@ -33,6 +33,10 @@ class MessageLoopProxy;
 class WaitableEvent;
 }
 
+namespace gpu {
+struct RefCountedCounter;
+}
+
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.
 class GpuChannel : public IPC::Channel::Listener,
@@ -106,6 +110,15 @@ class GpuChannel : public IPC::Channel::Listener,
   // discrete GPU even if they would otherwise use the integrated GPU.
   bool ShouldPreferDiscreteGpu() const;
 
+  gpu::RefCountedCounter* MessagesPendingCount() {
+    return unprocessed_messages_.get();
+  }
+
+  // If preempt_by_counter->count is non-zero, any stub on this channel
+  // should stop issuing GL commands. Setting this to NULL stops deferral.
+  void SetPreemptByCounter(
+      scoped_refptr<gpu::RefCountedCounter> preempt_by_counter);
+
  protected:
   virtual ~GpuChannel();
 
@@ -141,6 +154,14 @@ class GpuChannel : public IPC::Channel::Listener,
   GpuChannelManager* gpu_channel_manager_;
 
   scoped_ptr<IPC::SyncChannel> channel_;
+
+  // Number of routed messages for pending processing on a stub.
+  scoped_refptr<gpu::RefCountedCounter> unprocessed_messages_;
+
+  // If non-NULL, all stubs on this channel should stop processing GL
+  // commands (via their GpuScheduler) when preempt_by_counter_->count
+  // is non-zero.
+  scoped_refptr<gpu::RefCountedCounter> preempt_by_counter_;
 
   std::deque<IPC::Message*> deferred_messages_;
 

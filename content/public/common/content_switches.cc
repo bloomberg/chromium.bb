@@ -579,6 +579,10 @@ const char kTraceStartupFile[]              = "trace-startup-file";
 // --startup-trace-file=none was supplied.
 const char kTraceStartupDuration[]          = "trace-startup-duration";
 
+// Prioritizes the UI's command stream in the GPU process
+extern const char kUIPrioritizeInGpuProcess[] =
+    "ui-prioritize-in-gpu-process";
+
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[]                     = "user-agent";
 

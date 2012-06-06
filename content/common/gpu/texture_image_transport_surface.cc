@@ -4,9 +4,11 @@
 
 #include "content/common/gpu/texture_image_transport_surface.h"
 
+#include "base/command_line.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -116,7 +118,14 @@ bool TextureImageTransportSurface::Initialize() {
         texture.info, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   }
 
-  return helper_->Initialize();
+  if (!helper_->Initialize())
+    return false;
+
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess))
+    helper_->SetPreemptByCounter(parent_channel->MessagesPendingCount());
+
+  return true;
 }
 
 void TextureImageTransportSurface::Destroy() {
@@ -205,6 +214,7 @@ void TextureImageTransportSurface::OnWillDestroyStub(
     GpuCommandBufferStub* stub) {
   if (stub == parent_stub_) {
     ReleaseParentStub();
+    helper_->SetPreemptByCounter(NULL);
   } else {
     stub->RemoveDestructionObserver(this);
 

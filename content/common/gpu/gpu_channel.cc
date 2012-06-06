@@ -21,6 +21,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gl/gl_context.h"
@@ -36,6 +37,27 @@ namespace {
 // allow a pattern of alternating fast and slow frames to occur.
 const int64 kHandleMoreWorkPeriodMs = 2;
 const int64 kHandleMoreWorkPeriodBusyMs = 1;
+
+// A filter used to detect messages before they are processed on
+// the main thread.
+class MessageCounter : public IPC::ChannelProxy::MessageFilter {
+ public:
+  MessageCounter(
+      scoped_refptr<gpu::RefCountedCounter> unprocessed_messages)
+    : unprocessed_messages_(unprocessed_messages) {
+  }
+
+  // IPC::ChannelProxy::MessageFilter implementation:
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
+    unprocessed_messages_->IncCount();
+    return false;
+  }
+
+ private:
+  virtual ~MessageCounter() {}
+
+  scoped_refptr<gpu::RefCountedCounter> unprocessed_messages_;
+};
 
 // This filter handles the GpuCommandBufferMsg_InsertSyncPoint message on the IO
 // thread, generating the sync point ID and responding immediately, and then
@@ -139,6 +161,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        int client_id,
                        bool software)
     : gpu_channel_manager_(gpu_channel_manager),
+      unprocessed_messages_(new gpu::RefCountedCounter),
       client_id_(client_id),
       share_group_(share_group ? share_group : new gfx::GLShareGroup),
       mailbox_manager_(mailbox ? mailbox : new gpu::gles2::MailboxManager),
@@ -180,6 +203,8 @@ bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
       base::MessageLoopProxy::current()));
   channel_->AddFilter(filter);
 
+  channel_->AddFilter(new MessageCounter(unprocessed_messages_));
+
   return true;
 }
 
@@ -198,6 +223,9 @@ int GpuChannel::TakeRendererFileDescriptor() {
 #endif  // defined(OS_POSIX)
 
 bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
+  // Drop the count that was incremented on the IO thread because we are
+  // about to process that message.
+  unprocessed_messages_->DecCount();
   if (log_messages_) {
     DVLOG(1) << "received message @" << &message << " on channel @" << this
              << " with type " << message.type();
@@ -224,13 +252,16 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
       }
 
       deferred_messages_.insert(point, new IPC::Message(message));
+      unprocessed_messages_->IncCount();
     } else {
       // Move GetStateFast commands to the head of the queue, so the renderer
       // doesn't have to wait any longer than necessary.
       deferred_messages_.push_front(new IPC::Message(message));
+      unprocessed_messages_->IncCount();
     }
   } else {
     deferred_messages_.push_back(new IPC::Message(message));
+    unprocessed_messages_->IncCount();
   }
 
   OnScheduled();
@@ -314,6 +345,8 @@ void GpuChannel::CreateViewCommandBuffer(
       surface_id,
       watchdog_,
       software_));
+  if (preempt_by_counter_.get())
+    stub->SetPreemptByCounter(preempt_by_counter_);
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
 #endif  // ENABLE_GPU
@@ -349,7 +382,19 @@ bool GpuChannel::ShouldPreferDiscreteGpu() const {
   return num_contexts_preferring_discrete_gpu_ > 0;
 }
 
-GpuChannel::~GpuChannel() {}
+void GpuChannel::SetPreemptByCounter(
+    scoped_refptr<gpu::RefCountedCounter> preempt_by_counter) {
+  preempt_by_counter_ = preempt_by_counter;
+
+  for (StubMap::Iterator<GpuCommandBufferStub> it(&stubs_);
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->SetPreemptByCounter(preempt_by_counter_);
+  }
+}
+
+GpuChannel::~GpuChannel() {
+  unprocessed_messages_->Reset();
+}
 
 void GpuChannel::OnDestroy() {
   TRACE_EVENT0("gpu", "GpuChannel::OnDestroy");
@@ -385,6 +430,7 @@ void GpuChannel::HandleMessage() {
       if (m->type() == GpuCommandBufferMsg_Echo::ID) {
         stub->DelayEcho(m);
         deferred_messages_.pop_front();
+        unprocessed_messages_->DecCount();
         if (!deferred_messages_.empty())
           OnScheduled();
       }
@@ -393,6 +439,8 @@ void GpuChannel::HandleMessage() {
 
     scoped_ptr<IPC::Message> message(m);
     deferred_messages_.pop_front();
+    unprocessed_messages_->DecCount();
+
     processed_get_state_fast_ =
         (message->type() == GpuCommandBufferMsg_GetStateFast::ID);
     // Handle deferred control messages.
@@ -411,6 +459,7 @@ void GpuChannel::HandleMessage() {
         if (stub->HasUnprocessedCommands()) {
           deferred_messages_.push_front(new GpuCommandBufferMsg_Rescheduled(
               stub->route_id()));
+          unprocessed_messages_->IncCount();
         }
 
         ScheduleDelayedWork(stub, kHandleMoreWorkPeriodMs);
@@ -473,6 +522,8 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       route_id,
       0, watchdog_,
       software_));
+  if (preempt_by_counter_.get())
+    stub->SetPreemptByCounter(preempt_by_counter_);
   router_.AddRoute(route_id, stub.get());
   stubs_.AddWithID(stub.release(), route_id);
   TRACE_EVENT1("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer",

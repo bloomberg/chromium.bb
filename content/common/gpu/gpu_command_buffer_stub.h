@@ -146,6 +146,7 @@ class GpuCommandBufferStub
 
   gpu::gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
   gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
+  GpuChannel* channel() const { return channel_; }
 
   // Identifies the target surface.
   int32 surface_id() const {
@@ -169,6 +170,8 @@ class GpuCommandBufferStub
   // Associates a sync point to this stub. When the stub is destroyed, it will
   // retire all sync points that haven't been previously retired.
   void AddSyncPoint(uint32 sync_point);
+
+  void SetPreemptByCounter(scoped_refptr<gpu::RefCountedCounter> counter);
 
  private:
   void Destroy();
@@ -264,6 +267,8 @@ class GpuCommandBufferStub
 
   // A queue of sync points associated with this stub.
   std::deque<uint32> sync_points_;
+
+  scoped_refptr<gpu::RefCountedCounter> preempt_by_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };

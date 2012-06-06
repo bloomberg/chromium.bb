@@ -160,6 +160,11 @@ void ImageTransportHelper::DeferToFence(base::Closure task) {
   scheduler->DeferToFence(task);
 }
 
+void ImageTransportHelper::SetPreemptByCounter(
+    scoped_refptr<gpu::RefCountedCounter> preempt_by_counter) {
+  stub_->channel()->SetPreemptByCounter(preempt_by_counter);
+}
+
 bool ImageTransportHelper::MakeCurrent() {
   gpu::gles2::GLES2Decoder* decoder = Decoder();
   if (!decoder)

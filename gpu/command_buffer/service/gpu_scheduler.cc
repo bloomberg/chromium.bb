@@ -32,7 +32,8 @@ GpuScheduler::GpuScheduler(
       parser_(NULL),
       unscheduled_count_(0),
       rescheduled_count_(0),
-      reschedule_task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      reschedule_task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      was_preempted_(false) {
 }
 
 GpuScheduler::~GpuScheduler() {
@@ -63,6 +64,17 @@ void GpuScheduler::PutChanged() {
 
   error::Error error = error::kNoError;
   while (!parser_->IsEmpty()) {
+    if (preempt_by_counter_.get() &&
+        !was_preempted_ &&
+        !preempt_by_counter_->IsZero()) {
+      TRACE_COUNTER_ID1("gpu","GpuScheduler::Preempted", this, 1);
+      was_preempted_ = true;
+      return;
+    } else if (was_preempted_) {
+      TRACE_COUNTER_ID1("gpu","GpuScheduler::Preempted", this, 0);
+      was_preempted_ = false;
+    }
+
     DCHECK(IsScheduled());
     DCHECK(unschedule_fences_.empty());
 

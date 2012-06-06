@@ -37,7 +37,7 @@ class GLSurface;
 
 namespace gpu {
 class GpuScheduler;
-
+struct RefCountedCounter;
 namespace gles2 {
 class GLES2Decoder;
 }
@@ -115,6 +115,9 @@ class ImageTransportHelper : public IPC::Channel::Listener {
   void SetScheduled(bool is_scheduled);
 
   void DeferToFence(base::Closure task);
+
+  void SetPreemptByCounter(
+      scoped_refptr<gpu::RefCountedCounter> preempt_by_counter);
 
   // Make the surface's context current.
   bool MakeCurrent();

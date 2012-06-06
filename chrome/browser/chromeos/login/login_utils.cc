@@ -1186,6 +1186,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ash::switches::kAuraNoShadows,
       ash::switches::kAuraPanelManager,
       ::switches::kUIEnablePartialSwap,
+      ::switches::kUIPrioritizeInGpuProcess,
 #if defined(USE_CRAS)
       ::switches::kUseCras,
 #endif

@@ -1,4 +1,4 @@
- // Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,8 +84,10 @@ GpuCommandBufferStub::~GpuCommandBufferStub() {
 bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   // Ensure the appropriate GL context is current before handling any IPC
   // messages directed at the command buffer. This ensures that the message
-  // handler can assume that the context is current.
-  if (decoder_.get()) {
+  // handler can assume that the context is current (not necessary for
+  // Echo, which just sends an IPC).
+  if (decoder_.get() &&
+      message.type() != GpuCommandBufferMsg_Echo::ID) {
     if (!decoder_->MakeCurrent()) {
       DLOG(ERROR) << "Context lost because MakeCurrent failed.";
       command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
@@ -261,6 +263,8 @@ void GpuCommandBufferStub::OnInitialize(
   scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
                                          decoder_.get(),
                                          decoder_.get()));
+  if (preempt_by_counter_.get())
+    scheduler_->SetPreemptByCounter(preempt_by_counter_);
 
   decoder_->set_engine(scheduler_.get());
 
@@ -673,6 +677,13 @@ void GpuCommandBufferStub::AddDestructionObserver(
 void GpuCommandBufferStub::RemoveDestructionObserver(
     DestructionObserver* observer) {
   destruction_observers_.RemoveObserver(observer);
+}
+
+void GpuCommandBufferStub::SetPreemptByCounter(
+   scoped_refptr<gpu::RefCountedCounter> counter) {
+  preempt_by_counter_ = counter;
+  if (scheduler_.get())
+    scheduler_->SetPreemptByCounter(preempt_by_counter_);
 }
 
 gfx::Size GpuCommandBufferStub::GetSurfaceSize() const {
