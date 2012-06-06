@@ -308,22 +308,25 @@ connect_to_socket(struct wl_display *display, const char *name)
 	const char *runtime_dir;
 	size_t name_size;
 
-	display->fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
-	if (display->fd < 0)
-		return -1;
-
 	runtime_dir = getenv("XDG_RUNTIME_DIR");
-	if (runtime_dir == NULL) {
-		runtime_dir = ".";
+	if (!runtime_dir) {
 		fprintf(stderr,
-			"XDG_RUNTIME_DIR not set, falling back to %s\n",
-			runtime_dir);
+			"error: XDG_RUNTIME_DIR not set in the environment.\n");
+
+		/* to prevent programs reporting
+		 * "failed to create display: Success" */
+		errno = ENOENT;
+		return -1;
 	}
 
 	if (name == NULL)
 		name = getenv("WAYLAND_DISPLAY");
 	if (name == NULL)
 		name = "wayland-0";
+
+	display->fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
+	if (display->fd < 0)
+		return -1;
 
 	memset(&addr, 0, sizeof addr);
 	addr.sun_family = AF_LOCAL;
