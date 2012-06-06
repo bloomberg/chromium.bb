@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,13 @@
                    withEvent:[NSApp currentEvent]
                      forView:self];
   }
+}
+
+// Override to retain the controller, in case a closure is pumped that deletes
+// the DownloadItemController while the menu is open <http://crbug.com/129826>.
+- (void)rightMouseDown:(NSEvent*)event {
+  scoped_nsobject<DownloadItemController> ref([controller_ retain]);
+  [super rightMouseDown:event];
 }
 
 - (void)menuDidClose:(NSMenu*)menu {
