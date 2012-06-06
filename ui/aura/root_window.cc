@@ -486,8 +486,8 @@ void RootWindow::SetCapture(Window* window) {
     if (mouse_moved_handler_ || mouse_button_flags_ != 0)
       mouse_moved_handler_ = capture_window_;
   } else {
-    // When capture is lost, we must reset the event handlers.
-    mouse_moved_handler_ = NULL;
+    // Make sure mouse_moved_handler gets updated.
+    SynthesizeMouseMoveEvent();
   }
   mouse_pressed_handler_ = NULL;
 }

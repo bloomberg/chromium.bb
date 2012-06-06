@@ -758,6 +758,12 @@ class MouseEnterExitWindowDelegate : public TestWindowDelegate {
   bool entered() const { return entered_; }
   bool exited() const { return exited_; }
 
+  // Clear the entered / exited states.
+  void ResetExpectations() {
+    entered_ = false;
+    exited_ = false;
+  }
+
  private:
   bool entered_;
   bool exited_;
@@ -789,6 +795,98 @@ TEST_F(WindowTest, MouseEnterExit) {
   EXPECT_TRUE(d2.entered());
   EXPECT_FALSE(d2.exited());
 }
+
+#if !defined(OS_WIN)
+// Verifies that the WindowDelegate receives MouseExit and MouseEnter events for
+// mouse transitions from window to window, even if the entered window sets
+// and releases capture.
+TEST_F(WindowTest, MouseEnterExitWithClick) {
+  MouseEnterExitWindowDelegate d1;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
+  MouseEnterExitWindowDelegate d2;
+  scoped_ptr<Window> w2(
+      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50), NULL));
+
+  test::EventGenerator generator(root_window());
+  generator.MoveMouseToCenterOf(w1.get());
+  EXPECT_TRUE(d1.entered());
+  EXPECT_FALSE(d1.exited());
+  EXPECT_FALSE(d2.entered());
+  EXPECT_FALSE(d2.exited());
+
+  // Emmulate what Views does on a click by grabbing and releasing capture.
+  generator.PressLeftButton();
+  w1->SetCapture();
+  w1->ReleaseCapture();
+  generator.ReleaseLeftButton();
+
+  generator.MoveMouseToCenterOf(w2.get());
+  EXPECT_TRUE(d1.entered());
+  EXPECT_TRUE(d1.exited());
+  EXPECT_TRUE(d2.entered());
+  EXPECT_FALSE(d2.exited());
+}
+
+// Temporarily disabled for windows. See crbug.com/112222.
+// Verifies that enter / exits are sent if windows appear and are deleted
+// under the current mouse position..
+TEST_F(WindowTest, MouseEnterExitWithDelete) {
+  MouseEnterExitWindowDelegate d1;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
+
+  test::EventGenerator generator(root_window());
+  generator.MoveMouseToCenterOf(w1.get());
+  EXPECT_TRUE(d1.entered());
+  EXPECT_FALSE(d1.exited());
+
+  {
+    MouseEnterExitWindowDelegate d2;
+    scoped_ptr<Window> w2(
+        CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(10, 10, 50, 50), NULL));
+    // Enters / exits can be send asynchronously.
+    RunAllPendingInMessageLoop();
+    EXPECT_TRUE(d1.entered());
+    EXPECT_TRUE(d1.exited());
+    EXPECT_TRUE(d2.entered());
+    EXPECT_FALSE(d2.exited());
+    d1.ResetExpectations();
+  }
+  // Enters / exits can be send asynchronously.
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(d1.entered());
+}
+
+// Verifies that enter / exits are sent if windows appear and are hidden
+// under the current mouse position..
+TEST_F(WindowTest, MouseEnterExitWithHide) {
+  MouseEnterExitWindowDelegate d1;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
+
+  test::EventGenerator generator(root_window());
+  generator.MoveMouseToCenterOf(w1.get());
+  EXPECT_TRUE(d1.entered());
+  EXPECT_FALSE(d1.exited());
+
+  MouseEnterExitWindowDelegate d2;
+  scoped_ptr<Window> w2(
+      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(10, 10, 50, 50), NULL));
+  // Enters / exits can be send asynchronously.
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(d1.entered());
+  EXPECT_TRUE(d1.exited());
+  EXPECT_TRUE(d2.entered());
+  EXPECT_FALSE(d2.exited());
+
+  d1.ResetExpectations();
+  w2->Hide();
+  // Enters / exits can be send asynchronously.
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(d1.entered());
+}
+#endif
 
 // Creates a window with a delegate (w111) that can handle events at a lower
 // z-index than a window without a delegate (w12). w12 is sized to fill the
