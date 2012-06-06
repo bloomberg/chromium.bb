@@ -804,6 +804,8 @@
         'browser/chromeos/power/screen_dimming_observer.h',
         'browser/chromeos/power/screen_lock_observer.cc',
         'browser/chromeos/power/screen_lock_observer.h',
+        'browser/chromeos/power/user_activity_notifier.cc',
+        'browser/chromeos/power/user_activity_notifier.h',
         'browser/chromeos/power/video_activity_notifier.cc',
         'browser/chromeos/power/video_activity_notifier.h',
         'browser/chromeos/preferences.cc',

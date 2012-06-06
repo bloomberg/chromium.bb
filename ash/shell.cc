@@ -54,6 +54,7 @@
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/toplevel_window_event_filter.h"
+#include "ash/wm/user_activity_detector.h"
 #include "ash/wm/video_detector.h"
 #include "ash/wm/visibility_controller.h"
 #include "ash/wm/window_cycle_controller.h"
@@ -588,6 +589,7 @@ Shell::~Shell() {
   aura::Env::GetInstance()->cursor_manager()->set_delegate(NULL);
 
   // Please keep in same order as in Init() because it's easy to miss one.
+  RemoveEnvEventFilter(user_activity_detector_.get());
   RemoveEnvEventFilter(key_rewriter_filter_.get());
   RemoveEnvEventFilter(partial_screenshot_filter_.get());
   RemoveEnvEventFilter(input_method_filter_.get());
@@ -730,24 +732,25 @@ void Shell::Init() {
 #endif
   shell_context_menu_.reset(new internal::ShellContextMenu);
 
-  // KeyRewriterEventFilter must be the first one.
+  // The order in which event filters are added is significant.
   DCHECK(!GetEnvEventFilterCount());
+  user_activity_detector_.reset(new UserActivityDetector);
+  AddEnvEventFilter(user_activity_detector_.get());
+
+  DCHECK_EQ(1U, GetEnvEventFilterCount());
   key_rewriter_filter_.reset(new internal::KeyRewriterEventFilter);
   AddEnvEventFilter(key_rewriter_filter_.get());
 
-  // PartialScreenshotEventFilter must be the second one to capture key
-  // events when the taking partial screenshot UI is there.
-  DCHECK_EQ(1U, GetEnvEventFilterCount());
+  DCHECK_EQ(2U, GetEnvEventFilterCount());
   partial_screenshot_filter_.reset(new internal::PartialScreenshotEventFilter);
   AddEnvEventFilter(partial_screenshot_filter_.get());
   AddShellObserver(partial_screenshot_filter_.get());
 
-  // InputMethodEventFilter must be the third one. It has to be added before
-  // AcceleratorFilter.
-  DCHECK_EQ(2U, GetEnvEventFilterCount());
+  DCHECK_EQ(3U, GetEnvEventFilterCount());
   input_method_filter_.reset(new aura::shared::InputMethodEventFilter());
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window);
   AddEnvEventFilter(input_method_filter_.get());
+
 #if !defined(OS_MACOSX)
   accelerator_filter_.reset(new internal::AcceleratorFilter);
   AddEnvEventFilter(accelerator_filter_.get());

@@ -70,6 +70,7 @@ class ShellDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
 class SystemTray;
+class UserActivityDetector;
 class UserWallpaperDelegate;
 class VideoDetector;
 class WindowCycleController;
@@ -248,6 +249,9 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   PowerButtonController* power_button_controller() {
     return power_button_controller_.get();
   }
+  UserActivityDetector* user_activity_detector() {
+    return user_activity_detector_.get();
+  }
   VideoDetector* video_detector() {
     return video_detector_.get();
   }
@@ -396,6 +400,7 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   scoped_ptr<internal::VisibilityController> visibility_controller_;
   scoped_ptr<DesktopBackgroundController> desktop_background_controller_;
   scoped_ptr<PowerButtonController> power_button_controller_;
+  scoped_ptr<UserActivityDetector> user_activity_detector_;
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;
   scoped_ptr<internal::FocusCycler> focus_cycler_;

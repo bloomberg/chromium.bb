@@ -48,6 +48,7 @@
 #include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/power/screen_dimming_observer.h"
 #include "chrome/browser/chromeos/power/screen_lock_observer.h"
+#include "chrome/browser/chromeos/power/user_activity_notifier.h"
 #include "chrome/browser/chromeos/power/video_activity_notifier.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
@@ -451,6 +452,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // These are dependent on the ash::Shell singleton already having been
   // initialized.
   power_button_observer_.reset(new chromeos::PowerButtonObserver);
+  user_activity_notifier_.reset(new chromeos::UserActivityNotifier);
   video_activity_notifier_.reset(new chromeos::VideoActivityNotifier);
   screen_dimming_observer_.reset(new chromeos::ScreenDimmingObserver);
 
@@ -500,8 +502,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   chromeos::WebSocketProxyController::Shutdown();
 
-  // Let VideoActivityNotifier unregister itself as an observer of the
-  // ash::Shell singleton before the shell is destroyed.
+  // Let classes unregister themselves as observers of the ash::Shell singleton
+  // before the shell is destroyed.
+  user_activity_notifier_.reset();
   video_activity_notifier_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.

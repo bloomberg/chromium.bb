@@ -172,6 +172,11 @@ class CHROMEOS_EXPORT PowerManagerClient {
   // NOTE: Like the previous request, this will also get triggered exactly once.
   virtual void RequestActiveNotification() = 0;
 
+  // Notifies the power manager that the user is active (i.e. generating input
+  // events).
+  virtual void NotifyUserActivity(
+      const base::TimeTicks& last_activity_time) = 0;
+
   // Notifies the power manager that a video is currently playing.
   virtual void NotifyVideoActivity(
       const base::TimeTicks& last_activity_time) = 0;
