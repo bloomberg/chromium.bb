@@ -50,8 +50,11 @@ class WebMediaPlayerAndroid :
   // Set |incognito_mode_| to true if in incognito mode.
   static void InitIncognito(bool incognito_mode);
 
-  // Resource loading.
+  // TODO(fischman): remove the single-param version once WebKit stops calling
+  // it.
   virtual void load(const WebKit::WebURL& url);
+  // Resource loading.
+  virtual void load(const WebKit::WebURL& url, CORSMode cors_mode);
   virtual void cancelLoad();
 
   // Playback controls.

@@ -105,6 +105,7 @@ static void ComputeTargetBufferWindow(float playback_rate, int bitrate,
 
 BufferedResourceLoader::BufferedResourceLoader(
     const GURL& url,
+    CORSMode cors_mode,
     int64 first_byte_position,
     int64 last_byte_position,
     DeferStrategy strategy,
@@ -118,6 +119,7 @@ BufferedResourceLoader::BufferedResourceLoader(
       range_supported_(false),
       saved_forward_capacity_(0),
       url_(url),
+      cors_mode_(cors_mode),
       first_byte_position_(first_byte_position),
       last_byte_position_(last_byte_position),
       single_origin_(true),
@@ -184,9 +186,15 @@ void BufferedResourceLoader::Start(
     loader = test_loader_.Pass();
   } else {
     WebURLLoaderOptions options;
-    options.allowCredentials = true;
-    options.crossOriginRequestPolicy =
-        WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
+    if (cors_mode_ == kUnspecified) {
+      options.crossOriginRequestPolicy =
+          WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
+    } else {
+      options.crossOriginRequestPolicy =
+          WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
+      if (cors_mode_ == kUseCredentials)
+        options.allowCredentials = true;
+    }
     loader.reset(frame->createAssociatedURLLoader(options));
   }
 
@@ -526,7 +534,10 @@ void BufferedResourceLoader::didFail(
     WebURLLoader* loader,
     const WebURLError& error) {
   DVLOG(1) << "didFail: reason=" << error.reason
-           << " isCancellation=" << error.isCancellation;
+           << ", isCancellation=" << error.isCancellation
+           << ", domain=" << error.domain.utf8().data()
+           << ", localizedDescription="
+           << error.localizedDescription.utf8().data();
   DCHECK(active_loader_.get());
 
   // We don't need to continue loading after failure.

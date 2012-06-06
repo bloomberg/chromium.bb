@@ -65,7 +65,11 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
     kCacheMiss,
   };
 
+  // Keep in sync with WebMediaPlayer::CORSMode.
+  enum CORSMode { kUnspecified, kAnonymous, kUseCredentials };
+
   // |url| - URL for the resource to be loaded.
+  // |cors_mode| - HTML media element's crossorigin attribute.
   // |first_byte_position| - First byte to start loading from,
   // |kPositionNotSpecified| for not specified.
   // |last_byte_position| - Last byte to be loaded,
@@ -73,13 +77,15 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // |strategy| is the initial loading strategy to use.
   // |bitrate| is the bitrate of the media, 0 if unknown.
   // |playback_rate| is the current playback rate of the media.
-  BufferedResourceLoader(const GURL& url,
-                         int64 first_byte_position,
-                         int64 last_byte_position,
-                         DeferStrategy strategy,
-                         int bitrate,
-                         float playback_rate,
-                         media::MediaLog* media_log);
+  BufferedResourceLoader(
+      const GURL& url,
+      CORSMode cors_mode,
+      int64 first_byte_position,
+      int64 last_byte_position,
+      DeferStrategy strategy,
+      int bitrate,
+      float playback_rate,
+      media::MediaLog* media_log);
   virtual ~BufferedResourceLoader();
 
   // Start the resource loading with the specified URL and range.
@@ -284,6 +290,7 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   size_t saved_forward_capacity_;
 
   GURL url_;
+  CORSMode cors_mode_;
   const int64 first_byte_position_;
   const int64 last_byte_position_;
   bool single_origin_;

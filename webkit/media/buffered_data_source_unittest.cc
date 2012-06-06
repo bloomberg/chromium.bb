@@ -97,6 +97,7 @@ class BufferedDataSourceTest : public testing::Test {
   void Initialize(media::PipelineStatus expected) {
     ExpectCreateResourceLoader();
     data_source_->Initialize(response_generator_.gurl(),
+                             BufferedResourceLoader::kUnspecified,
                              media::NewExpectedStatusCB(expected));
     message_loop_.RunAllPending();
   }

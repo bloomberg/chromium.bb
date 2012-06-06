@@ -62,6 +62,7 @@ BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
       BufferedResourceLoader::kThresholdDefer;
 
   return new BufferedResourceLoader(url_,
+                                    cors_mode_,
                                     first_byte_position,
                                     last_byte_position,
                                     strategy,
@@ -81,11 +82,13 @@ void BufferedDataSource::set_host(media::DataSourceHost* host) {
 
 void BufferedDataSource::Initialize(
     const GURL& url,
+    BufferedResourceLoader::CORSMode cors_mode,
     const media::PipelineStatusCB& initialize_cb) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(!initialize_cb.is_null());
   DCHECK(!loader_.get());
   url_ = url;
+  cors_mode_ = cors_mode;
 
   initialize_cb_ = initialize_cb;
 

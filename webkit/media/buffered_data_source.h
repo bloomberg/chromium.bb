@@ -35,12 +35,14 @@ class BufferedDataSource : public media::DataSource {
                      WebKit::WebFrame* frame,
                      media::MediaLog* media_log);
 
-  // Initialize this object using |url|. This object calls |status_cb| when
-  // initialization has completed.
+  // Initialize this object using |url| and |cors_mode|, and call |status_cb|
+  // when initialization has completed.
   //
   // Method called on the render thread.
-  void Initialize(const GURL& url,
-                  const media::PipelineStatusCB& status_cb);
+  void Initialize(
+      const GURL& url,
+      BufferedResourceLoader::CORSMode cors_mode,
+      const media::PipelineStatusCB& status_cb);
 
   // Adjusts the buffering algorithm based on the given preload value.
   void SetPreload(Preload preload);
@@ -139,6 +141,8 @@ class BufferedDataSource : public media::DataSource {
 
   // URL of the resource requested.
   GURL url_;
+  // crossorigin attribute on the corresponding HTML media element, if any.
+  BufferedResourceLoader::CORSMode cors_mode_;
 
   // Members for total bytes of the requested object. It is written once on
   // render thread but may be read from any thread. However reading of this

@@ -84,7 +84,8 @@ class BufferedResourceLoaderTest : public testing::Test {
     last_position_ = last_position;
 
     loader_.reset(new BufferedResourceLoader(
-        gurl_, first_position_, last_position_,
+        gurl_, BufferedResourceLoader::kUnspecified,
+        first_position_, last_position_,
         BufferedResourceLoader::kThresholdDefer, 0, 0,
         new media::MediaLog()));
 
