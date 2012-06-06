@@ -912,6 +912,7 @@ SyncError TemplateURLService::ProcessSyncChanges(
         error = sync_error_factory_->CreateAndUploadError(
             FROM_HERE,
             "ProcessSyncChanges failed on ChangeType ACTION_DELETE");
+        LOG(ERROR) << "Trying to delete a non-existent TemplateURL.";
         continue;
       }
       bool delete_default = (existing_turl == GetDefaultSearchProvider());
@@ -933,6 +934,7 @@ SyncError TemplateURLService::ProcessSyncChanges(
         error = sync_error_factory_->CreateAndUploadError(
             FROM_HERE,
             "ProcessSyncChanges failed on ChangeType ACTION_ADD");
+        LOG(ERROR) << "Trying to add an existing TemplateURL.";
         continue;
       }
       std::string guid = turl->sync_guid();
@@ -953,6 +955,7 @@ SyncError TemplateURLService::ProcessSyncChanges(
         error = sync_error_factory_->CreateAndUploadError(
             FROM_HERE,
             "ProcessSyncChanges failed on ChangeType ACTION_UPDATE");
+        LOG(ERROR) << "Trying to update a non-existent TemplateURL.";
         continue;
       }
       // Possibly resolve a keyword conflict if they have the same keywords but
