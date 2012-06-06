@@ -3991,19 +3991,9 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7WebCoreL18makeExternalStringERKN3WTF6StringE
-   fun:_ZN7WebCore11StringCache20v8ExternalStringSlowEPN3WTF10StringImplE
-   fun:_ZN7WebCore11StringCache16v8ExternalStringEPN3WTF10StringImplE
+   fun:_ZN7WebCore11StringCache20v8ExternalStringSlow*
+   fun:_ZN7WebCore11StringCache16v8ExternalStringEPN*
    fun:_ZN7WebCore16v8ExternalStringERKN3WTF6String*
-}
-{
-   bug_101145d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCoreL18makeExternalStringERKN3WTF6StringE
-   fun:_ZN7WebCore11StringCache20v8ExternalStringSlowEPN3WTF10StringImplEPN2v87IsolateE
-   fun:_ZN7WebCore11StringCache16v8ExternalStringEPN3WTF10StringImplEPN2v87IsolateE
-   fun:_ZN7WebCore16v8ExternalStringERKN3WTF6StringEPN2v87IsolateE
-   fun:_ZN7WebCore8v8StringERKN3WTF6StringEPN2v87IsolateE
 }
 {
    bug_101146a
@@ -4738,9 +4728,9 @@
    fun:_ZN7WebCore11ImageBuffer19transformColorSpaceENS_10ColorSpaceES1_
    fun:_ZN7WebCore23RenderSVGResourceFilter17postApplyResourceEPNS_12RenderObjectERPNS_15GraphicsContextEtPKNS_4PathEPKNS_14RenderSVGShapeE
    ...
-   fun:_ZN7WebCore14RenderSVGShape5paintERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore14RenderSVGShape5paintERNS_9PaintInfoERKNS_*
    ...
-   fun:_ZN7WebCore13RenderSVGRoot*paint*PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore13RenderSVGRoot*paint*PaintInfoERKNS_*
 }
 {
    bug_109613
@@ -5602,6 +5592,19 @@
    ...
    fun:_ZNK7WebCore11RenderLayer15parentClipRectsEPKS0_PNS_12RenderRegionENS_13ClipRectsTypeERNS_9ClipRectsENS_29OverlayScrollbarSizeRelevancyE
    fun:_ZNK7WebCore11RenderLayer18backgroundClipRectEPKS0_PNS_12RenderRegionENS_13ClipRectsTypeENS_29OverlayScrollbarSizeRelevancyE
+}
+{
+   bug_131351
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN7WebCore15FlexBoxIterator4nextEv
+   ...
+   fun:_ZN7WebCore27RenderDeprecatedFlexibleBox19layoutHorizontalBoxEb
+   fun:_ZN7WebCore27RenderDeprecatedFlexibleBox11layoutBlockEbNS_20FractionalLayoutUnitE
+   ...
+   fun:_ZN7WebCore11RenderBlock6layoutEv
+   fun:_ZN7WebCore10RenderView6layoutEv
+   fun:_ZN7WebCore9FrameView6layoutEb
 }
 
 #-----------------------------------------------------------------------
