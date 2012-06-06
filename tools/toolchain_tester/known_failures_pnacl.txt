@@ -6,8 +6,6 @@
 # ======================================================================
 # alignment issues using __alignof__ (or stack alignment)
 alloca-1.c arm
-alloca-1.c x86-64,O0
-alloca-1.c x86-32
 # setjmp/longjmp TODO
 built-in-setjmp.c
 # ??? (funny shenanigans with bitfields)
