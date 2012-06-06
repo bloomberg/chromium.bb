@@ -191,6 +191,13 @@
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
+  "sandboxed_pages": {
+    "channel": "stable",
+    "extension_types": [
+      "extension", "platform_app"
+    ],
+    "min_manifest_version": 2
+  },
   "signature": {
     "channel": "stable",
     "extension_types": "all"

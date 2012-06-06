@@ -330,6 +330,15 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns true if the specified resource is web accessible.
   bool IsResourceWebAccessible(const std::string& relative_path) const;
 
+  // Returns true if the specified page is sandboxed (served in a unique
+  // origin).
+  bool IsSandboxedPage(const std::string& relative_path) const;
+
+  // Returns the Content Security Policy that the specified resource should be
+  // served with.
+  std::string GetResourceContentSecurityPolicy(const std::string& relative_path)
+      const;
+
   // Returns true when 'web_accessible_resources' are defined for the extension.
   bool HasWebAccessibleResources() const;
 
@@ -630,10 +639,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool from_webstore() const { return (creation_flags_ & FROM_WEBSTORE) != 0; }
   bool from_bookmark() const { return (creation_flags_ & FROM_BOOKMARK) != 0; }
 
-  const std::string& content_security_policy() const {
-    return content_security_policy_;
-  }
-
   // App-related.
   bool is_app() const {
     return is_packaged_app() || is_hosted_app() || is_platform_app();
@@ -742,6 +747,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadPlugins(string16* error);
   bool LoadNaClModules(string16* error);
   bool LoadWebAccessibleResources(string16* error);
+  bool LoadSandboxedPages(string16* error);
   bool CheckRequirements(string16* error);
   bool LoadDefaultLocale(string16* error);
   bool LoadOfflineEnabled(string16* error);
@@ -949,6 +955,15 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Optional list of web accessible extension resources.
   base::hash_set<std::string> web_accessible_resources_;
+
+  // Optional list of extension pages that are sandboxed (served from a unique
+  // origin with a different Content Security Policy).
+  base::hash_set<std::string> sandboxed_pages_;
+
+  // Content Security Policy that should be used to enforce the sandbox used
+  // by sandboxed pages (guaranteed to have the "sandbox" directive without the
+  // "allow-same-origin" token).
+  std::string sandboxed_pages_content_security_policy_;
 
   // Optional URL to a master page of which a single instance should be always
   // loaded in the background.

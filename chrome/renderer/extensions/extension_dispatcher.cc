@@ -896,6 +896,16 @@ Feature::Context ExtensionDispatcher::ClassifyJavaScriptContext(
   if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS)
     return Feature::CONTENT_SCRIPT_CONTEXT;
 
+  // We have an explicit check for sandboxed pages first since:
+  // 1. Sandboxed pages run in the same process as regular extension pages, so
+  //    the extension is considered active.
+  // 2. ScriptContext creation (which triggers bindings injection) happens
+  //    before the SecurityContext is updated with the sandbox flags (after
+  //    reading the CSP header), so url_info.url().securityOrigin() is not
+  //    unique yet.
+  if (extensions_.IsSandboxedPage(url_info))
+    return Feature::WEB_PAGE_CONTEXT;
+
   if (IsExtensionActive(extension_id))
     return Feature::BLESSED_EXTENSION_CONTEXT;
 
@@ -934,8 +944,8 @@ bool ExtensionDispatcher::CheckCurrentContextAccessToExtensionAPI(
     return false;
   }
 
-  if (!IsExtensionActive(context->extension()->id()) &&
-      ExtensionAPI::GetSharedInstance()->IsPrivileged(function_name)) {
+  if (ExtensionAPI::GetSharedInstance()->IsPrivileged(function_name) &&
+      context->context_type() != Feature::BLESSED_EXTENSION_CONTEXT) {
     static const char kMessage[] =
         "%s can only be used in an extension process.";
     std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
@@ -943,6 +953,15 @@ bool ExtensionDispatcher::CheckCurrentContextAccessToExtensionAPI(
         v8::Exception::Error(v8::String::New(error_msg.c_str())));
     return false;
   }
+
+  // We should never end up with sandboxed contexts trying to invoke extension
+  // APIs, they don't get extension bindings injected. If we end up here it
+  // means that a sandboxed page somehow managed to invoke an API anyway, so
+  // we should abort.
+  WebKit::WebFrame* frame = context->web_frame();
+  ExtensionURLInfo url_info(frame->document().securityOrigin(),
+      UserScriptSlave::GetDataSourceURLForFrame(frame));
+  CHECK(!extensions_.IsSandboxedPage(url_info));
 
   return true;
 }

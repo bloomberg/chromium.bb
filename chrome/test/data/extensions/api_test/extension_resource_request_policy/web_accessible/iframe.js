@@ -4,7 +4,7 @@
 
 // Test that both static <iframe> tags and dynamically generated ones can be
 // loaded by their parent extension (iframe-contents.html is not listed in
-// web_acessible_resources).
+// web_accessible_resources).
 var staticIframeLoaded = false;
 function iframeLoaded() {
   if (staticIframeLoaded) {

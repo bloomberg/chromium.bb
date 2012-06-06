@@ -18,6 +18,11 @@ const char kDefaultSrc[] = "default-src";
 const char kScriptSrc[] = "script-src";
 const char kObjectSrc[] = "object-src";
 
+const char kSandboxDirectiveName[] = "sandbox";
+const char kAllowSameOriginToken[] = "allow-same-origin";
+const char kAllowTopNavigation[] = "allow-top-navigation";
+const char kAllowPopups[] = "allow-popups";
+
 struct DirectiveStatus {
   explicit DirectiveStatus(const char* name)
     : directive_name(name)
@@ -117,6 +122,48 @@ bool ContentSecurityPolicyIsSecure(const std::string& policy) {
 
   return default_src_status.seen_in_policy ||
       (script_src_status.seen_in_policy && object_src_status.seen_in_policy);
+}
+
+bool ContentSecurityPolicyIsSandboxed(
+    const std::string& policy, Extension::Type type) {
+  // See http://www.w3.org/TR/CSP/#parse-a-csp-policy for parsing algorithm.
+  std::vector<std::string> directives;
+  base::SplitString(policy, ';', &directives);
+
+  bool seen_sandbox = false;
+
+  for (size_t i = 0; i < directives.size(); ++i) {
+    std::string& input = directives[i];
+    StringTokenizer tokenizer(input, " \t\r\n");
+    if (!tokenizer.GetNext())
+      continue;
+
+    std::string directive_name = tokenizer.token();
+    StringToLowerASCII(&directive_name);
+
+    if (directive_name != kSandboxDirectiveName)
+      continue;
+
+    seen_sandbox = true;
+
+    while (tokenizer.GetNext()) {
+      std::string token = tokenizer.token();
+      StringToLowerASCII(&token);
+
+      // The same origin token negates the sandboxing.
+      if (token == kAllowSameOriginToken)
+        return false;
+
+      // Platform apps don't allow navigation (and have a separate windowing
+      // API that should be used for popups)
+      if (type == Extension::TYPE_PLATFORM_APP) {
+        if (token == kAllowTopNavigation || token == kAllowPopups)
+          return false;
+      }
+    }
+  }
+
+  return seen_sandbox;
 }
 
 }  // csp_validator

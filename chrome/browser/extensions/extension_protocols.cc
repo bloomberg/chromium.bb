@@ -278,10 +278,12 @@ ExtensionProtocolHandler::MaybeCreateJob(net::URLRequest* request) const {
   std::string content_security_policy;
   bool send_cors_header = false;
   if (extension) {
-    content_security_policy = extension->content_security_policy();
+    std::string resource_path = request->url().path();
+    content_security_policy =
+        extension->GetResourceContentSecurityPolicy(resource_path);
     if ((extension->manifest_version() >= 2 ||
              extension->HasWebAccessibleResources()) &&
-        extension->IsResourceWebAccessible(request->url().path()))
+        extension->IsResourceWebAccessible(resource_path))
       send_cors_header = true;
   }
 

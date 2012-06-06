@@ -100,6 +100,8 @@ namespace extension_manifest_keys {
   extern const char kPublicKey[];
   extern const char kRequirements[];
   extern const char kRunAt[];
+  extern const char kSandboxedPages[];
+  extern const char kSandboxedPagesCSP[];
   extern const char kShiftKey[];
   extern const char kShortcutKey[];
   extern const char kSignature[];
@@ -275,6 +277,9 @@ namespace extension_manifest_errors {
   extern const char kInvalidRequirement[];
   extern const char kInvalidRequirements[];
   extern const char kInvalidRunAt[];
+  extern const char kInvalidSandboxedPagesList[];
+  extern const char kInvalidSandboxedPage[];
+  extern const char kInvalidSandboxedPagesCSP[];
   extern const char kInvalidSignature[];
   extern const char kInvalidTheme[];
   extern const char kInvalidThemeColors[];

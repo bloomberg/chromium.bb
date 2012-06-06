@@ -232,6 +232,8 @@
                   <a href="#manifest_version">manifest_version</a>
                 </li><li>
                   <a href="#web_accessible_resources">web_accessible_resources</a>
+                </li><li>
+                  <a href="#sandboxed_pages">sandboxed_pages</a>
                 </li>
               </ol>
             </li>
@@ -288,7 +290,8 @@ are <b>name</b> and <b>version</b>.
   "<a href="npapi.html">plugins</a>": [...],
   "<a href="#requirements">requirements</a>": {...},
   "<a href="autoupdate.html">update_url</a>": "http://<em>path/to/updateInfo</em>.xml",
-  "<a href="#web_accessible_resources">web_accessible_resources</a>": [...]
+  "<a href="#web_accessible_resources">web_accessible_resources</a>": [...],
+  "<a href="#sandboxed_pages">sandboxed_pages</a>": [...]
 }
 </pre>
 <a name="H2-1"></a><h2>Field details</h2>
@@ -428,7 +431,7 @@ A dictionary that specifies all intent handlers provided by this extension or ap
   "version": "1",
   "intents": {
     "http://webintents.org/share": [
-      { 
+      {
         "type": ["text/uri-list"],
         "href": "/services/sharelink.html",
         "title" : "Sample Link Sharing Intent",
@@ -441,11 +444,11 @@ A dictionary that specifies all intent handlers provided by this extension or ap
         "disposition" : "window"
       }
     ]
-  }  
+  }
 }
 </pre>
 <p>
-The value of "type" is an array of mime types that is supported by this handler. The "href" indicates the URL of the page that handles the intent. For hosted apps, these URLs must be within the allowed set of URLs. For extensions, all URLs are inside the extension and considered relative to the extension root URL. 
+The value of "type" is an array of mime types that is supported by this handler. The "href" indicates the URL of the page that handles the intent. For hosted apps, these URLs must be within the allowed set of URLs. For extensions, all URLs are inside the extension and considered relative to the extension root URL.
 </p>
 <p>
 The "title" is displayed in the intent picker UI when the user initiates the action specific to the handler.
@@ -780,7 +783,7 @@ table.
 <tr>
   <td> "unlimitedStorage"</td>
   <td> Provides an unlimited quota for storing HTML5 client-side data,
-       such as databases and local storage files. 
+       such as databases and local storage files.
        Without this permission, the extension is limited to
        5 MB of local storage.
       <p class="note">
@@ -789,7 +792,7 @@ table.
       (see issue <a href="http://crbug.com/58985">58985</a>).
       Also, it doesn't currently work with wildcard subdomains such as
       <code>http://*.example.com</code>.
-      </p>       
+      </p>
   </td>
 </tr><tr>
 </tr><tr>
@@ -938,11 +941,10 @@ mechanisms like XHR.
 <p>
 Injected content scripts themselves do not need to be whitelisted.
 </p>
-<h4>Default Availablility</h4>
+<h4>Default Availability</h4>
 <p>
-Resources inside of packages using <a href="#manifest_version">
-  <code>manifest_version</code>
-</a> 2 or above are <strong>blocked by default</strong>, and must be whitelisted
+Resources inside of packages using <a href="#manifest_version"><code>manifest_version</code></a>
+2 or above are <strong>blocked by default</strong>, and must be whitelisted
 for use via this property.
 </p>
 <p>
@@ -950,6 +952,54 @@ Resources inside of packages using <code>manifest_version</code> 1 are available
 by default, but <em>if</em> you do set this property, then it will be treated as
 a complete list of all whitelisted resources. Resources not listed will be
 blocked.
+</p>
+<h3 id="sandboxed_pages">sandboxed_pages</h3>
+<p>
+A list of paths (relative to the package root) to pages that are to be served
+in a sandboxed unique origin, and optionally a Content Security Policy to use
+with them. Being in a sandbox has two implications:
+</p>
+<ol>
+<li>A sandboxed page will not have access to extension or app APIs, or
+direct access to non-sandboxed pages (it may communicate with them via
+<code>postMessage()</code>).</li>
+<li>A sandboxed page is not subject to the
+<a href="contentSecurityPolicy.html">Content Security Policy (CSP)</a> used
+by the rest of the app or extension (it has its own separate CSP value). This
+means that, for example, it can use inline script and <code>eval</code>.</li>
+</ol>
+<p>For example, here's how to specify that two extension pages are to be served
+in a sandbox with a custom CSP:</p>
+<pre>{
+  ...
+  "sandboxed_pages": {
+    "pages": [
+      "page1.html",
+      "directory/page2.html"
+    ]
+    <i>// content_security_policy is optional.</i>
+    "content_security_policy":
+        "sandbox allow-scripts: script-src https://www.google.com"
+  ],
+  ...
+}</pre>
+<p>
+The sandbox is enforced by using the
+<a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-iframe-element.html#attr-iframe-sandbox">HTML5 sandbox</a>
+with the tokens <code>allow-scripts allow-forms</code>. You can specify a
+different CSP value to use instead, but it must have the <code>sandbox</code>
+directive and may not have the <code>allow-same-origin</code> token.
+</p>
+<p>
+Note that you only need to list pages that you expected to be loaded in
+windows or frames. Resources used by sandboxed pages (e.g. stylesheets or
+JavaScript source files) do not need to appear in the
+<code>sandboxed_page</code> list, they will use the sandbox of the page
+that embeds them.
+</p>
+<p>
+Sandboxed page may only be specified when using
+<a href="#manifest_version"><code>manifest_version</code></a> 2 or above.
 </p>
 </div>
         <!-- API PAGE -->

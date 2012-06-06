@@ -7,6 +7,8 @@
 
 using extensions::csp_validator::ContentSecurityPolicyIsLegal;
 using extensions::csp_validator::ContentSecurityPolicyIsSecure;
+using extensions::csp_validator::ContentSecurityPolicyIsSandboxed;
+using extensions::Extension;
 
 TEST(ExtensionCSPValidator, IsLegal) {
   EXPECT_TRUE(ContentSecurityPolicyIsLegal("foo"));
@@ -74,4 +76,35 @@ TEST(ExtensionCSPValidator, IsSecure) {
       "default-src 'self' google.com"));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https://*.google.com"));
+}
+
+TEST(ExtensionCSPValidator, IsSandboxed) {
+  EXPECT_FALSE(ContentSecurityPolicyIsSandboxed("", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSandboxed(
+      "img-src https://google.com", Extension::TYPE_EXTENSION));
+
+  // Sandbox directive is required.
+  EXPECT_TRUE(ContentSecurityPolicyIsSandboxed(
+      "sandbox", Extension::TYPE_EXTENSION));
+
+  // Additional sandbox tokens are OK.
+  EXPECT_TRUE(ContentSecurityPolicyIsSandboxed(
+      "sandbox allow-scripts", Extension::TYPE_EXTENSION));
+  // Except for allow-same-origin.
+  EXPECT_FALSE(ContentSecurityPolicyIsSandboxed(
+      "sandbox allow-same-origin", Extension::TYPE_EXTENSION));
+
+  // Additional directives are OK.
+  EXPECT_TRUE(ContentSecurityPolicyIsSandboxed(
+      "sandbox; img-src https://google.com", Extension::TYPE_EXTENSION));
+
+  // Extensions allow navigation and popups, platform apps don't.
+  EXPECT_TRUE(ContentSecurityPolicyIsSandboxed(
+      "sandbox allow-top-navigation", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSandboxed(
+      "sandbox allow-top-navigation", Extension::TYPE_PLATFORM_APP));
+  EXPECT_TRUE(ContentSecurityPolicyIsSandboxed(
+      "sandbox allow-popups", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSandboxed(
+      "sandbox allow-popups", Extension::TYPE_PLATFORM_APP));
 }

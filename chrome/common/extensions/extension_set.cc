@@ -128,7 +128,7 @@ const Extension* ExtensionSet::GetByID(const std::string& id) const {
 
 bool ExtensionSet::ExtensionBindingsAllowed(
     const ExtensionURLInfo& info) const {
-  if (info.origin().isUnique())
+  if (info.origin().isUnique() || IsSandboxedPage(info))
     return false;
 
   if (info.url().SchemeIs(chrome::kExtensionScheme))
@@ -141,5 +141,18 @@ bool ExtensionSet::ExtensionBindingsAllowed(
       return true;
   }
 
+  return false;
+}
+
+bool ExtensionSet::IsSandboxedPage(const ExtensionURLInfo& info) const {
+  if (info.origin().isUnique())
+    return true;
+
+  if (info.url().SchemeIs(chrome::kExtensionScheme)) {
+    const Extension* extension = GetByID(info.url().host());
+    if (extension) {
+      return extension->IsSandboxedPage(info.url().path());
+    }
+  }
   return false;
 }

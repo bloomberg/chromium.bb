@@ -1886,6 +1886,7 @@
         'common/extensions/manifest_tests/extension_manifests_pageaction_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_platformapp_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_portsinpermissions_unittest.cc',
+        'common/extensions/manifest_tests/extension_manifests_sandboxed_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_storage_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_tts_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_ui_unittest.cc',
@@ -2798,6 +2799,7 @@
         'browser/extensions/platform_app_browsertest_util.cc',
         'browser/extensions/platform_app_browsertest_util.h',
         'browser/extensions/process_management_browsertest.cc',
+        'browser/extensions/sandboxed_pages_apitest.cc',
         'browser/extensions/settings/settings_apitest.cc',
         'browser/extensions/stubs_apitest.cc',
         'browser/extensions/system/system_apitest.cc',
@@ -3277,7 +3279,7 @@
             # Mac, which does not use hunspell by default.
             'browser/spellchecker/spellcheck_host_browsertest.cc',
             # ProcessSingletonMac doesn't do anything.
-            'browser/process_singleton_browsertest.cc',            
+            'browser/process_singleton_browsertest.cc',
           ],
         }, { # else: OS != "mac"
           'sources!': [
@@ -3339,7 +3341,7 @@
             '../content/browser/accessibility/dump_accessibility_tree_helper_win.cc',
             '../content/browser/accessibility/dump_accessibility_tree_helper.cc',
           ]
-        }, { # else: use_aura == 0 
+        }, { # else: use_aura == 0
           'sources!': [
             'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
         ],

@@ -41,7 +41,7 @@ class ExtensionURLInfo {
 // The one true extension container. Extensions are identified by their id.
 // Only one extension can be in the set with a given ID.
 class ExtensionSet {
-public:
+ public:
   typedef std::pair<FilePath, std::string> ExtensionPathAndDefaultLocale;
   typedef std::map<std::string, scoped_refptr<const extensions::Extension> >
       ExtensionMap;
@@ -128,6 +128,10 @@ public:
   // to make api calls. Note that this is independent of what extension
   // permissions the given extension has been granted.
   bool ExtensionBindingsAllowed(const ExtensionURLInfo& info) const;
+
+  // Returns true if |info| is an extension page that is to be served in a
+  // unique sandboxed origin.
+  bool IsSandboxedPage(const ExtensionURLInfo& info) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionSetTest, ExtensionSet);

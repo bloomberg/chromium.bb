@@ -61,6 +61,7 @@ namespace info_keys = extension_info_keys;
 namespace switch_utils = extensions::switch_utils;
 
 using extensions::csp_validator::ContentSecurityPolicyIsLegal;
+using extensions::csp_validator::ContentSecurityPolicyIsSandboxed;
 using extensions::csp_validator::ContentSecurityPolicyIsSecure;
 
 namespace extensions {
@@ -101,6 +102,9 @@ const char kDefaultPlatformAppContentSecurityPolicy[] =
    "media-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
    "frame-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
    "font-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";";
+
+const char kDefaultSandboxedPageContentSecurityPolicy[] =
+    "sandbox allow-scripts allow-forms";
 
 // Converts a normal hexadecimal string into the alphabet used by extensions.
 // We use the characters 'a'-'p' instead of '0'-'f' to avoid ever having a
@@ -524,6 +528,17 @@ bool Extension::HasWebAccessibleResources() const {
     return true;
 
   return false;
+}
+
+bool Extension::IsSandboxedPage(const std::string& relative_path) const {
+  return sandboxed_pages_.find(relative_path) != sandboxed_pages_.end();
+}
+
+
+std::string Extension::GetResourceContentSecurityPolicy(
+    const std::string& relative_path) const {
+  return IsSandboxedPage(relative_path) ?
+      sandboxed_pages_content_security_policy_ : content_security_policy_;
 }
 
 bool Extension::GenerateId(const std::string& input, std::string* output) {
@@ -1280,6 +1295,7 @@ bool Extension::LoadSharedFeatures(
       !LoadPlugins(error) ||
       !LoadNaClModules(error) ||
       !LoadWebAccessibleResources(error) ||
+      !LoadSandboxedPages(error) ||
       !CheckRequirements(error) ||
       !LoadDefaultLocale(error) ||
       !LoadOfflineEnabled(error) ||
@@ -1551,7 +1567,7 @@ bool Extension::LoadNaClModules(string16* error) {
 bool Extension::LoadWebAccessibleResources(string16* error) {
   if (!manifest_->HasKey(keys::kWebAccessibleResources))
     return true;
-  ListValue* list_value;
+  ListValue* list_value = NULL;
   if (!manifest_->GetList(keys::kWebAccessibleResources, &list_value)) {
     *error = ASCIIToUTF16(errors::kInvalidWebAccessibleResourcesList);
     return false;
@@ -1566,6 +1582,53 @@ bool Extension::LoadWebAccessibleResources(string16* error) {
     if (relative_path[0] != '/')
       relative_path = '/' + relative_path;
     web_accessible_resources_.insert(relative_path);
+  }
+
+  return true;
+}
+
+bool Extension::LoadSandboxedPages(string16* error) {
+  // Can't use HasKey, since it doesn't do path expansion.
+  Value* ignored = NULL;
+  if (!manifest_->Get(keys::kSandboxedPages, &ignored))
+    return true;
+
+  ListValue* list_value = NULL;
+  if (!manifest_->GetList(keys::kSandboxedPages, &list_value)) {
+    *error = ASCIIToUTF16(errors::kInvalidSandboxedPagesList);
+    return false;
+  }
+  for (size_t i = 0; i < list_value->GetSize(); ++i) {
+    std::string relative_path;
+    if (!list_value->GetString(i, &relative_path)) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidSandboxedPage, base::IntToString(i));
+      return false;
+    }
+    if (relative_path[0] != '/')
+      relative_path = '/' + relative_path;
+    sandboxed_pages_.insert(relative_path);
+  }
+
+  if (manifest_->Get(keys::kSandboxedPagesCSP, &ignored)) {
+    if (!manifest_->GetString(
+        keys::kSandboxedPagesCSP, &sandboxed_pages_content_security_policy_)) {
+      *error = ASCIIToUTF16(errors::kInvalidSandboxedPagesCSP);
+      return false;
+    }
+
+    if (!ContentSecurityPolicyIsLegal(
+            sandboxed_pages_content_security_policy_) ||
+        !ContentSecurityPolicyIsSandboxed(
+            sandboxed_pages_content_security_policy_, GetType())) {
+      *error = ASCIIToUTF16(errors::kInvalidSandboxedPagesCSP);
+      return false;
+    }
+  } else {
+    sandboxed_pages_content_security_policy_ =
+        kDefaultSandboxedPageContentSecurityPolicy;
+    CHECK(ContentSecurityPolicyIsSandboxed(
+        sandboxed_pages_content_security_policy_, GetType()));
   }
 
   return true;

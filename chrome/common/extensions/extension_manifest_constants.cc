@@ -92,6 +92,8 @@ const char kPluginsPublic[] = "public";
 const char kPublicKey[] = "key";
 const char kRequirements[] = "requirements";
 const char kRunAt[] = "run_at";
+const char kSandboxedPages[] = "sandboxed_pages.pages";
+const char kSandboxedPagesCSP[] = "sandboxed_pages.content_security_policy";
 const char kShiftKey[] = "shiftKey";
 const char kShortcutKey[] = "shortcutKey";
 const char kSignature[] = "signature";
@@ -391,6 +393,12 @@ const char kInvalidRequirements[] =
     "Invalid value for 'requirements'";
 const char kInvalidRunAt[] =
     "Invalid value for 'content_scripts[*].run_at'.";
+const char kInvalidSandboxedPagesList[] =
+    "Invalid value for 'sandboxed_pages.pages'.";
+const char kInvalidSandboxedPage[] =
+    "Invalid value for 'sandboxed_pages.pages[*]'.";
+const char kInvalidSandboxedPagesCSP[] =
+    "Invalid value for 'sandboxed_pages.content_security_policy'.";
 const char kInvalidSignature[] =
     "Value 'signature' is missing or invalid.";
 const char kInvalidTheme[] =
