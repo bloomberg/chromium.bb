@@ -418,6 +418,7 @@ NSDictionary *readConfigurationData(const char *configFile) {
   [googleDictionary_ setObject:@"comments" forKey:@BREAKPAD_COMMENTS];
   [googleDictionary_ setObject:@"prod" forKey:@BREAKPAD_PRODUCT];
   [googleDictionary_ setObject:@"ver" forKey:@BREAKPAD_VERSION];
+  [googleDictionary_ setObject:@"guid" forKey:@"guid"];
 
   [socorroDictionary_ setObject:@"Comments" forKey:@BREAKPAD_COMMENTS];
   [socorroDictionary_ setObject:@"CrashTime"
