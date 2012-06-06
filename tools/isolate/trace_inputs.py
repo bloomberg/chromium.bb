@@ -1775,6 +1775,7 @@ class LogmanTrace(ApiBase):
     PROCESSOR_ID = 11
     TIMESTAMP = 16
     NULL_GUID = '{00000000-0000-0000-0000-000000000000}'
+    USER_DATA = 19
 
     class Process(ApiBase.Context.Process):
       def __init__(self, *args):
@@ -1878,35 +1879,35 @@ class LogmanTrace(ApiBase):
       tid = int(tid, 16)
       return self.processes.get(self._threads_active.get(tid))
 
-    @staticmethod
-    def handle_EventTrace_Header(line):
+    @classmethod
+    def handle_EventTrace_Header(cls, line):
       """Verifies no event was dropped, e.g. no buffer overrun occured."""
-      BUFFER_SIZE = 19
-      #VERSION = 20
-      #PROVIDER_VERSION = 21
-      #NUMBER_OF_PROCESSORS = 22
-      #END_TIME = 23
-      #TIMER_RESOLUTION = 24
-      #MAX_FILE_SIZE = 25
-      #LOG_FILE_MODE = 26
-      #BUFFERS_WRITTEN = 27
-      #START_BUFFERS = 28
-      #POINTER_SIZE = 29
-      EVENTS_LOST = 30
-      #CPU_SPEED = 31
-      #LOGGER_NAME = 32
-      #LOG_FILE_NAME = 33
-      #BOOT_TIME = 34
-      #PERF_FREQ = 35
-      #START_TIME = 36
-      #RESERVED_FLAGS = 37
-      #BUFFERS_LOST = 38
-      #SESSION_NAME_STRING = 39
-      #LOG_FILE_NAME_STRING = 40
+      BUFFER_SIZE = cls.USER_DATA
+      #VERSION = cls.USER_DATA + 1
+      #PROVIDER_VERSION = cls.USER_DATA + 2
+      #NUMBER_OF_PROCESSORS = cls.USER_DATA + 3
+      #END_TIME = cls.USER_DATA + 4
+      #TIMER_RESOLUTION = cls.USER_DATA + 5
+      #MAX_FILE_SIZE = cls.USER_DATA + 6
+      #LOG_FILE_MODE = cls.USER_DATA + 7
+      #BUFFERS_WRITTEN = cls.USER_DATA + 8
+      #START_BUFFERS = cls.USER_DATA + 9
+      #POINTER_SIZE = cls.USER_DATA + 10
+      EVENTS_LOST = cls.USER_DATA + 11
+      #CPU_SPEED = cls.USER_DATA + 12
+      #LOGGER_NAME = cls.USER_DATA + 13
+      #LOG_FILE_NAME = cls.USER_DATA + 14
+      #BOOT_TIME = cls.USER_DATA + 15
+      #PERF_FREQ = cls.USER_DATA + 16
+      #START_TIME = cls.USER_DATA + 17
+      #RESERVED_FLAGS = cls.USER_DATA + 18
+      #BUFFERS_LOST = cls.USER_DATA + 19
+      #SESSION_NAME_STRING = cls.USER_DATA + 20
+      #LOG_FILE_NAME_STRING = cls.USER_DATA + 21
       if line[EVENTS_LOST] != '0':
         raise TracingFailure(
-            ( 'Events were lost during trace, please increase the buffer size '
-              'from %s') % line[BUFFER_SIZE],
+            ( '%s events were lost during trace, please increase the buffer '
+              'size from %s') % (line[EVENTS_LOST], line[BUFFER_SIZE]),
             None, None, None)
 
     def handle_EventTrace_Any(self, line):
@@ -1918,10 +1919,10 @@ class LogmanTrace(ApiBase):
       Note that FileIo_Close is not used since if a file was opened properly but
       not closed before the process exits, only Cleanup will be logged.
       """
-      #IRP = 19
-      TTID = 20  # Thread ID, that's what we want.
-      FILE_OBJECT = 21
-      #FILE_KEY = 22
+      #IRP = self.USER_DATA
+      TTID = self.USER_DATA + 1  # Thread ID, that's what we want.
+      FILE_OBJECT = self.USER_DATA + 2
+      #FILE_KEY = self.USER_DATA + 3
       proc = self._thread_to_process(line[TTID])
       if not proc:
         # Not a process we care about.
@@ -1944,13 +1945,13 @@ class LogmanTrace(ApiBase):
       succeeded, so keep track of the file_object and check that it is
       eventually closed with FileIo_Cleanup.
       """
-      #IRP = 19
-      TTID = 20  # Thread ID, that's what we want.
-      FILE_OBJECT = 21
-      #CREATE_OPTIONS = 22
-      #FILE_ATTRIBUTES = 23
-      #SHARE_ACCESS = 24
-      OPEN_PATH = 25
+      #IRP = self.USER_DATA
+      TTID = self.USER_DATA + 1  # Thread ID, that's what we want.
+      FILE_OBJECT = self.USER_DATA + 2
+      #CREATE_OPTIONS = self.USER_DATA + 3
+      #FILE_ATTRIBUTES = self.USER_DATA + 4
+      #self.USER_DATA + SHARE_ACCESS = 5
+      OPEN_PATH = self.USER_DATA + 6
 
       proc = self._thread_to_process(line[TTID])
       if not proc:
@@ -1989,15 +1990,15 @@ class LogmanTrace(ApiBase):
 
     def handle_Process_Start(self, line):
       """Handles a new child process started by PID."""
-      #UNIQUE_PROCESS_KEY = 19
-      PROCESS_ID = 20
-      #PARENT_PID = 21
-      #SESSION_ID = 22
-      #EXIT_STATUS = 23
-      #DIRECTORY_TABLE_BASE = 24
-      #USER_SID = 25
-      IMAGE_FILE_NAME = 26
-      COMMAND_LINE = 27
+      #UNIQUE_PROCESS_KEY = self.USER_DATA
+      PROCESS_ID = self.USER_DATA + 1
+      #PARENT_PID = self.USER_DATA + 2
+      #SESSION_ID = self.USER_DATA + 3
+      #EXIT_STATUS = self.USER_DATA + 4
+      #DIRECTORY_TABLE_BASE = self.USER_DATA + 5
+      #USER_SID = self.USER_DATA + 6
+      IMAGE_FILE_NAME = self.USER_DATA + 7
+      COMMAND_LINE = self.USER_DATA + 8
 
       ppid = line[self.PID]
       pid = int(line[PROCESS_ID], 16)
