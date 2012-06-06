@@ -99,6 +99,56 @@ static int8_t ExceptionToSignal(int ex) {
   return SIGILL;
 }
 
+static LONG NTAPI ExceptionCatch(PEXCEPTION_POINTERS ep) {
+  uint32_t id = static_cast<uint32_t>(GetCurrentThreadId());
+  IThread* thread = IThread::Acquire(id);
+
+  // This 2 lines is a fix for the bug:
+  // 366: Linux GDB doesn't work for Chrome
+  // http://code.google.com/p/nativeclient/issues/detail?id=366
+  // When debug stub thread opens socket to listen (for RSP debugger),
+  // it triggers some component to send DBG_PRINTEXCEPTION(with string
+  // "swi_lsp: non-browser app; disable"), then VEH handler goes into wait
+  // for debugger to resolve exception.
+  // But debugger is not connected, and debug thread is not listening on
+  // connection! It get stuck.
+  // Ignoring this exception - for now - helps debug stub start on chrome.
+  // Now it can listen on RSP connection and can get debugger connected etc.
+  if (kDBG_PRINTEXCEPTION_C == ep->ExceptionRecord->ExceptionCode) {
+    return EXCEPTION_CONTINUE_EXECUTION;
+  }
+
+  // If we are not tracking this thread, then ignore it
+  if (NULL == thread) return EXCEPTION_CONTINUE_SEARCH;
+
+  int8_t sig = ExceptionToSignal(ep->ExceptionRecord->ExceptionCode);
+
+  // Handle EXCEPTION_BREAKPOINT SEH/VEH handler special case:
+  // Here instruction pointer from the CONTEXT structure points to the int3
+  // instruction, not after the int3 instruction.
+  // This is different from the hardware context, and (thus) different from
+  // the context obtained via GetThreadContext on Windows and from signal
+  // handler context on Linux.
+  // See http://code.google.com/p/nativeclient/issues/detail?id=1730.
+  // We adjust instruction pointer to match the hardware.
+  if (ep->ExceptionRecord->ExceptionCode == EXCEPTION_BREAKPOINT) {
+#if NACL_BUILD_SUBARCH == 64
+    ep->ContextRecord->Rip += 1;
+#else
+    ep->ContextRecord->Eip += 1;
+#endif
+  }
+
+  struct NaClSignalContext *context =
+      (struct NaClSignalContext *)thread->GetContext();
+  NaClSignalContextFromHandler(context, ep->ContextRecord);
+  if (NULL != s_CatchFunc) s_CatchFunc(id, sig, s_CatchCookie);
+  NaClSignalContextToHandler(ep->ContextRecord, context);
+
+  IThread::Release(thread);
+  return EXCEPTION_CONTINUE_EXECUTION;
+}
+
 
 class Thread : public IThread {
  public:
@@ -179,57 +229,6 @@ class Thread : public IThread {
 
   virtual void* GetContext() { return &context_; }
 
-  static LONG NTAPI ExceptionCatch(PEXCEPTION_POINTERS ep) {
-    uint32_t id = static_cast<uint32_t>(GetCurrentThreadId());
-    Thread* thread = static_cast<Thread*>(Acquire(id));
-
-    // This 2 lines is a fix for the bug:
-    // 366: Linux GDB doesn't work for Chrome
-    // http://code.google.com/p/nativeclient/issues/detail?id=366
-    // When debug stub thread opens socket to listen (for RSP debugger),
-    // it triggers some component to send DBG_PRINTEXCEPTION(with string
-    // "swi_lsp: non-browser app; disable"), then VEH handler goes into wait
-    // for debugger to resolve exception.
-    // But debugger is not connected, and debug thread is not listening on
-    // connection! It get stuck.
-    // Ignoring this exception - for now - helps debug stub start on chrome.
-    // Now it can listen on RSP connection and can get debugger connected etc.
-    if (kDBG_PRINTEXCEPTION_C == ep->ExceptionRecord->ExceptionCode) {
-      return EXCEPTION_CONTINUE_EXECUTION;
-    }
-
-    // If we are not tracking this thread, then ignore it
-    if (NULL == thread) return EXCEPTION_CONTINUE_SEARCH;
-
-    int8_t sig = ExceptionToSignal(ep->ExceptionRecord->ExceptionCode);
-
-    // Handle EXCEPTION_BREAKPOINT SEH/VEH handler special case:
-    // Here instruction pointer from the CONTEXT structure points to the int3
-    // instruction, not after the int3 instruction.
-    // This is different from the hardware context, and (thus) different from
-    // the context obtained via GetThreadContext on Windows and from signal
-    // handler context on Linux.
-    // See http://code.google.com/p/nativeclient/issues/detail?id=1730.
-    // We adjust instruction pointer to match the hardware.
-    if (ep->ExceptionRecord->ExceptionCode == EXCEPTION_BREAKPOINT) {
-#if NACL_BUILD_SUBARCH == 64
-      ep->ContextRecord->Rip += 1;
-#else
-      ep->ContextRecord->Eip += 1;
-#endif
-    }
-
-    struct NaClSignalContext *context =
-        (struct NaClSignalContext *)thread->GetContext();
-    NaClSignalContextFromHandler(context, ep->ContextRecord);
-    if (NULL != s_CatchFunc) s_CatchFunc(id, sig, s_CatchCookie);
-    NaClSignalContextToHandler(ep->ContextRecord, context);
-
-    Release(thread);
-    return EXCEPTION_CONTINUE_EXECUTION;
-  }
-
-
  private:
   uint32_t ref_;
   uint32_t id_;
@@ -285,7 +284,7 @@ void IThread::SetExceptionCatch(IThread::CatchFunc_t func, void *cookie) {
   if (NULL != s_OldCatch) RemoveVectoredExceptionHandler(s_OldCatch);
 
   // Add the new one, at the front of the list
-  s_OldCatch = AddVectoredExceptionHandler(1, Thread::ExceptionCatch);
+  s_OldCatch = AddVectoredExceptionHandler(1, ExceptionCatch);
   s_CatchFunc = func;
   s_CatchCookie = cookie;
 }

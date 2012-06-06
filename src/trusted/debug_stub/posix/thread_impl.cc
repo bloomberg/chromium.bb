@@ -29,6 +29,28 @@ namespace port {
 static IThread::CatchFunc_t s_CatchFunc = NULL;
 static void* s_CatchCookie = NULL;
 
+static enum NaClSignalResult SignalHandler(int signal, void *ucontext) {
+  struct NaClSignalContext context;
+  NaClSignalContextFromHandler(&context, ucontext);
+  if (NaClSignalContextIsUntrusted(&context)) {
+    uint32_t thread_id = IPlatform::GetCurrentThread();
+    IThread* thread = IThread::Acquire(thread_id);
+
+    struct NaClSignalContext *context =
+        (struct NaClSignalContext *)thread->GetContext();
+    NaClSignalContextFromHandler(context, ucontext);
+    if (s_CatchFunc != NULL)
+      s_CatchFunc(thread_id, signal, s_CatchCookie);
+    NaClSignalContextToHandler(ucontext, context);
+
+    IThread::Release(thread);
+    return NACL_SIGNAL_RETURN;
+  } else {
+    // Do not attempt to debug crashes in trusted code.
+    return NACL_SIGNAL_SEARCH;
+  }
+}
+
 static IMutex* ThreadGetLock() {
   static IMutex* mutex_ = IMutex::Allocate();
   return mutex_;
@@ -92,28 +114,7 @@ class Thread : public IThread {
     return false;
   }
 
-  // This is not used and could be removed.
-  virtual void* GetContext() { return NULL; }
-
-  static enum NaClSignalResult SignalHandler(int signal, void *ucontext) {
-    struct NaClSignalContext context;
-    NaClSignalContextFromHandler(&context, ucontext);
-    if (NaClSignalContextIsUntrusted(&context)) {
-      uint32_t thread_id = IPlatform::GetCurrentThread();
-      Thread* thread = static_cast<Thread*>(Acquire(thread_id));
-      thread->context_ = context;
-
-      if (s_CatchFunc != NULL)
-        s_CatchFunc(thread_id, signal, s_CatchCookie);
-
-      NaClSignalContextToHandler(ucontext, &thread->context_);
-      Release(thread);
-      return NACL_SIGNAL_RETURN;
-    } else {
-      // Do not attempt to debug crashes in trusted code.
-      return NACL_SIGNAL_SEARCH;
-    }
-  }
+  virtual void* GetContext() { return &context_; }
 
  private:
   uint32_t ref_;
@@ -167,7 +168,7 @@ void IThread::Release(IThread *ithread) {
 }
 
 void IThread::SetExceptionCatch(IThread::CatchFunc_t func, void *cookie) {
-  NaClSignalHandlerAdd(Thread::SignalHandler);
+  NaClSignalHandlerAdd(SignalHandler);
   s_CatchFunc = func;
   s_CatchCookie = cookie;
 }
