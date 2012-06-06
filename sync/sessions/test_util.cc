@@ -38,6 +38,15 @@ void SimulateSuccess(sessions::SyncSession* session,
     ADD_FAILURE() << "Shouldn't have more to sync";
   }
   ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
+  session->SetFinished();
+  if (end == SYNCER_END) {
+    session->mutable_status_controller()->set_last_download_updates_result(
+        SYNCER_OK);
+    session->mutable_status_controller()->set_last_post_commit_result(
+        SYNCER_OK);
+    session->mutable_status_controller()->
+        set_last_process_commit_response_result(SYNCER_OK);
+  }
 }
 
 void SimulateThrottledImpl(sessions::SyncSession* session,

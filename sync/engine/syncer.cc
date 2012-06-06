@@ -241,8 +241,10 @@ void Syncer::SyncShare(sessions::SyncSession* session,
              << "current step: " << SyncerStepToString(current_step) << ", "
              << "next step: " << SyncerStepToString(next_step) << ", "
              << "snapshot: " << session->TakeSnapshot().ToString();
-    if (last_step == current_step)
+    if (last_step == current_step) {
+      session->SetFinished();
       break;
+    }
     current_step = next_step;
   }
 }

@@ -59,7 +59,8 @@ SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate,
       delegate_(delegate),
       workers_(workers),
       routing_info_(routing_info),
-      enabled_groups_(ComputeEnabledGroups(routing_info_, workers_)) {
+      enabled_groups_(ComputeEnabledGroups(routing_info_, workers_)),
+      finished_(false) {
   status_controller_.reset(new StatusController(routing_info_));
   std::sort(workers_.begin(), workers_.end());
 }
@@ -127,6 +128,7 @@ void SyncSession::RebaseRoutingInfoWithLatest(const SyncSession& session) {
 }
 
 void SyncSession::PrepareForAnotherSyncCycle() {
+  finished_ = false;
   source_.updates_source =
       sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION;
   status_controller_.reset(new StatusController(routing_info_));
@@ -226,21 +228,41 @@ namespace {
 // successfully.
 //
 bool IsError(SyncerError error) {
-  return error != UNSET
-      && error != SYNCER_OK;
+  return error != UNSET && error != SYNCER_OK;
+}
+
+// Returns false iff one of the command results had an error.
+bool HadErrors(const ErrorCounters& error) {
+  const bool download_updates_error =
+      IsError(error.last_download_updates_result);
+  const bool post_commit_error = IsError(error.last_post_commit_result);
+  const bool process_commit_response_error =
+      IsError(error.last_process_commit_response_result);
+  return download_updates_error ||
+         post_commit_error ||
+         process_commit_response_error;
 }
 }  // namespace
 
 bool SyncSession::Succeeded() const {
-  const bool download_updates_error =
-      IsError(status_controller_->error().last_download_updates_result);
-  const bool post_commit_error =
-      IsError(status_controller_->error().last_post_commit_result);
-  const bool process_commit_response_error =
-      IsError(status_controller_->error().last_process_commit_response_result);
-  return !download_updates_error
-      && !post_commit_error
-      && !process_commit_response_error;
+  const ErrorCounters& error = status_controller_->error();
+  return finished_ && !HadErrors(error);
+}
+
+bool SyncSession::SuccessfullyReachedServer() const {
+  const ErrorCounters& error = status_controller_->error();
+  bool reached_server = error.last_download_updates_result == SYNCER_OK ||
+                        error.last_post_commit_result == SYNCER_OK ||
+                        error.last_process_commit_response_result == SYNCER_OK;
+  // It's possible that we reached the server on one attempt, then had an error
+  // on the next (or didn't perform some of the server-communicating commands).
+  // We want to verify that, for all commands attempted, we successfully spoke
+  // with the server. Therefore, we verify no errors and at least one SYNCER_OK.
+  return reached_server && !HadErrors(error);
+}
+
+void SyncSession::SetFinished() {
+  finished_ = true;
 }
 
 }  // namespace sessions

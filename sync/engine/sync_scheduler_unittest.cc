@@ -733,6 +733,22 @@ TEST_F(SyncSchedulerTest, HasMoreToSync) {
   // cause our expectation to break.
 }
 
+// Test that continuations can go into backoff.
+TEST_F(SyncSchedulerTest, HasMoreToSyncThenFails) {
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+    .WillOnce(Invoke(sessions::test_util::SimulateHasMoreToSync))
+    .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
+                    QuitLoopNowAction()));
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(), FROM_HERE);
+
+  // We should detect the failure on the second sync share, and go into backoff.
+  EXPECT_TRUE(RunAndGetBackoff());
+}
+
 // Test that no syncing occurs when throttled.
 TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
   const ModelTypeSet types(syncable::BOOKMARKS);
@@ -862,7 +878,7 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(1)
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
-          RecordSyncShareMultiple(&r, 1U)));
+                            RecordSyncShareMultiple(&r, 1U)));
   EXPECT_CALL(*delay(), GetDelay(_)).
       WillRepeatedly(Return(TimeDelta::FromDays(1)));
 
@@ -881,7 +897,7 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(1)
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
-          RecordSyncShare(&r)));
+                      RecordSyncShare(&r)));
 
   // We schedule a nudge with enough delay (10X poll interval) that at least
   // one or two polls would have taken place.  The nudge should succeed.
@@ -894,12 +910,16 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             r.snapshots[1].source().updates_source);
 
-  EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(0);
+  // Cleanup is not affected by backoff, but it should not relieve it either.
+  EXPECT_CALL(*syncer(),
+              SyncShare(_, CLEANUP_DISABLED_TYPES, CLEANUP_DISABLED_TYPES))
+      .WillOnce(Invoke(sessions::test_util::SimulateSuccess));
   EXPECT_CALL(*delay(), GetDelay(_)).Times(0);
 
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
   RunLoop();
 
+  scheduler()->ScheduleCleanupDisabledTypes();
   scheduler()->ScheduleConfig(
       types, GetUpdatesCallerInfo::RECONFIGURATION);
   PumpLoop();
@@ -1053,7 +1073,7 @@ TEST_F(SyncSchedulerTest, GetRecommendedDelay) {
 TEST_F(SyncSchedulerTest, SyncerSteps) {
   // Nudges.
   EXPECT_CALL(*syncer(), SyncShare(_, SYNCER_BEGIN, SYNCER_END))
-      .Times(1);
+      .WillOnce(Invoke(sessions::test_util::SimulateSuccess));
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
   RunLoop();
 
@@ -1068,7 +1088,7 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
 
   // ClearUserData.
   EXPECT_CALL(*syncer(), SyncShare(_, CLEAR_PRIVATE_DATA, CLEAR_PRIVATE_DATA))
-      .Times(1);
+      .WillOnce(Invoke(sessions::test_util::SimulateSuccess));
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
   RunLoop();
 
@@ -1080,7 +1100,8 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   Mock::VerifyAndClearExpectations(syncer());
 
   // Configuration.
-  EXPECT_CALL(*syncer(), SyncShare(_, DOWNLOAD_UPDATES, APPLY_UPDATES));
+  EXPECT_CALL(*syncer(), SyncShare(_, DOWNLOAD_UPDATES, APPLY_UPDATES))
+      .WillOnce(Invoke(sessions::test_util::SimulateSuccess));
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
   RunLoop();
 
@@ -1094,7 +1115,8 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
 
   // Cleanup disabled types.
   EXPECT_CALL(*syncer(),
-              SyncShare(_, CLEANUP_DISABLED_TYPES, CLEANUP_DISABLED_TYPES));
+              SyncShare(_, CLEANUP_DISABLED_TYPES, CLEANUP_DISABLED_TYPES))
+      .WillOnce(Invoke(sessions::test_util::SimulateSuccess));
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
   RunLoop();
 
@@ -1109,7 +1131,8 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   // Poll.
   EXPECT_CALL(*syncer(), SyncShare(_, SYNCER_BEGIN, SYNCER_END))
       .Times(AtLeast(1))
-      .WillRepeatedly(QuitLoopNowAction());
+      .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateSuccess),
+                            QuitLoopNowAction()));
   const TimeDelta poll(TimeDelta::FromMilliseconds(10));
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
 

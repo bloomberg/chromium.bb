@@ -881,13 +881,9 @@ void SyncScheduler::ScheduleNextSync(const SyncSessionJob& old_job) {
   AdjustPolling(&old_job);
 
   if (old_job.session->Succeeded()) {
-    // Success implies backoff relief.  Note that if this was a
-    // "one-off" job (i.e. purpose ==
-    // SyncSessionJob::{CLEAR_USER_DATA,CLEANUP_DISABLED_TYPES}), if
-    // there was work to do before it ran this wont have changed, as
-    // jobs like this don't run a full sync cycle.  So we don't need
-    // special code here.
-    wait_interval_.reset();
+    // Only reset backoff if we actually reached the server.
+    if (old_job.session->SuccessfullyReachedServer())
+      wait_interval_.reset();
     SDVLOG(2) << "Job succeeded so not scheduling more jobs";
     return;
   }

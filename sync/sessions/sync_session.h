@@ -113,7 +113,7 @@ class SyncSession {
   // engine again.
   bool HasMoreToSync() const;
 
-  // Returns true if there we did not detect any errors in this session.
+  // Returns true if we completely ran the session without errors.
   //
   // There are many errors that could prevent a sync cycle from succeeding.
   // These include invalid local state, inability to contact the server,
@@ -128,6 +128,10 @@ class SyncSession {
   // session yet, or if ResetTransientState() has been called on this session
   // since the last call to SyncShare.
   bool Succeeded() const;
+
+  // Returns true if we reached the server successfully and the server did not
+  // return any error codes. Returns false if no connection was attempted.
+  bool SuccessfullyReachedServer() const;
 
   // Collects all state pertaining to how and why |s| originated and unions it
   // with corresponding state in |this|, leaving |s| unchanged.  Allows |this|
@@ -177,6 +181,9 @@ class SyncSession {
   // Returns the set of enabled groups that have verified updates.
   std::set<ModelSafeGroup> GetEnabledGroupsWithVerifiedUpdates() const;
 
+  // Mark the session has having finished all the sync steps it needed.
+  void SetFinished();
+
  private:
   // Extend the encapsulation boundary to utilities for internal member
   // assignments. This way, the scope of these actions is explicit, they can't
@@ -213,6 +220,10 @@ class SyncSession {
   // The set of groups with enabled types.  Computed from
   // |routing_info_|.
   std::set<ModelSafeGroup> enabled_groups_;
+
+  // Whether this session has reached its last step or not. Gets reset on each
+  // new cycle (via PrepareForAnotherSyncCycle).
+  bool finished_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSession);
 };
