@@ -7,6 +7,7 @@
     'msvs_use_common_release': 0,
     'msvs_use_common_linker_extras': 0,
     'mini_installer_internal_deps%': 0,
+    'mini_installer_official_deps%': 0,
   },
   'includes': [
     '../../build/win_precompile.gypi',
@@ -265,7 +266,7 @@
         },
       ],
     }],
-    [ 'mini_installer_internal_deps == 1', {
+    [ 'mini_installer_internal_deps == 1 or mini_installer_official_deps == 1', {
       'target_defaults': {
         'dependencies': [
           'mini_installer/support/mini_installer_support.gyp:*',
