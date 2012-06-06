@@ -2514,8 +2514,8 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Temporary status shown when a user has clicked to open a downloaded file.">
         Opening <ph name="FILE">$1<ex>image.jpg</ex></ph>...
       </message>
-      <message name="IDS_DOWNLOAD_STATUS_CANCELED" desc="Text that appears under the downloaded files that have been canceled.">
-        Canceled
+      <message name="IDS_DOWNLOAD_STATUS_CANCELLED" desc="Text that appears under the downloaded files that have been cancelled.">
+        Cancelled
       </message>
       <message name="IDS_DOWNLOAD_STATUS_REMOVED" desc="Text that appears under the downloaded files that have been removed.">
         Removed
@@ -2619,9 +2619,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           Show in Finder
         </message>
       </if>
-      <message name="IDS_DOWNLOAD_TAB_CANCELED"
-               desc="Text that appears next to the downloaded files that have been canceled">
-        Canceled
+      <message name="IDS_DOWNLOAD_TAB_CANCELLED"
+               desc="Text that appears next to the downloaded files that have been cancelled">
+        Cancelled
       </message>
       <message name="IDS_DOWNLOAD_FILE_REMOVED"
                desc="Text that appears next to the downloaded files that have been removed">
@@ -10403,8 +10403,8 @@ The following application will be launched if you accept this request:
       <message name="IDS_SAVE_PAGE_STATUS_COMPLETED" desc="Save page status: completed">
         Completed
       </message>
-      <message name="IDS_SAVE_PAGE_STATUS_CANCELED" desc="Save page status: canceled">
-        Canceled
+      <message name="IDS_SAVE_PAGE_STATUS_CANCELLED" desc="Save page status: cancelled">
+        Cancelled
       </message>
       <message name="IDS_SAVE_PAGE_PROGRESS" desc="Text string for saving page progress, the number of saved files and total files">
         <ph name="SAVED_FILES">$1<ex>5</ex></ph> / <ph name="TOTAL_FILES">$2<ex>13</ex></ph> files
@@ -11714,12 +11714,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Skip syncing encrypted data?
       </message>
       <if expr="pp_ifdef('android')">
-        <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING" desc="Mobile: Warning message when the passphrase entry is canceled.">
+        <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING" desc="Mobile: Warning message when the passphrase entry is cancelled.">
           Without a passphrase, your passwords and other encrypted data will not be synced on this mobile device.
         </message>
       </if>
       <if expr="not pp_ifdef('android')">
-        <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING" desc="Warning message when the passphrase entry is canceled.">
+        <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING" desc="Warning message when the passphrase entry is cancelled.">
           Without a passphrase, your passwords and other encrypted data will not be synced on this computer.
         </message>
       </if>

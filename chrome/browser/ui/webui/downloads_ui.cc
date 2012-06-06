@@ -45,7 +45,7 @@ ChromeWebUIDataSource* CreateDownloadsUIHTMLSource() {
                              IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER);
 
   // Status.
-  source->AddLocalizedString("status_cancelled", IDS_DOWNLOAD_TAB_CANCELED);
+  source->AddLocalizedString("status_cancelled", IDS_DOWNLOAD_TAB_CANCELLED);
   source->AddLocalizedString("status_removed", IDS_DOWNLOAD_FILE_REMOVED);
   source->AddLocalizedString("status_paused", IDS_DOWNLOAD_PROGRESS_PAUSED);
 

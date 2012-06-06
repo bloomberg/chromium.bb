@@ -126,7 +126,7 @@ string16 DownloadItemModel::GetStatusText() {
       }
       break;
     case DownloadItem::CANCELLED:
-      status_text = l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELED);
+      status_text = l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
       break;
     case DownloadItem::REMOVING:
       break;
@@ -298,7 +298,7 @@ string16 BaseDownloadItemModel::InterruptReasonStatusMessage(int reason) {
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_SHUTDOWN;
       break;
     case content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
-      string_id = IDS_DOWNLOAD_STATUS_CANCELED;
+      string_id = IDS_DOWNLOAD_STATUS_CANCELLED;
       break;
     default:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
@@ -357,7 +357,7 @@ string16 BaseDownloadItemModel::InterruptReasonMessage(int reason) {
       string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_SHUTDOWN;
       break;
     case content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
-      string_id = IDS_DOWNLOAD_STATUS_CANCELED;
+      string_id = IDS_DOWNLOAD_STATUS_CANCELLED;
       break;
     default:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
