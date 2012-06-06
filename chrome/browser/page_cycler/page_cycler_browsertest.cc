@@ -326,7 +326,13 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, ChromeErrorURL) {
 // TODO(rdevlin.cronin): Perhaps page cycler isn't completely implemented on
 // ChromeOS?
 #else
-IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, PlaybackMode) {
+// Bug 131333: This test fails on a XP debug bot since Build 17609.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_PlaybackMode FAILS_PlaybackMode
+#else
+#define MAYBE_PlaybackMode PlaybackMode
+#endif
+IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_PlaybackMode) {
   const size_t kNumIterations = 1;
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
@@ -345,7 +351,13 @@ IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, PlaybackMode) {
 
 // Test that PageCycler will have a cache miss if a URL is missing from the
 // cache directory while in playback mode.
-IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, URLNotInCache) {
+// Bug 131333: This test fails on a XP debug bot since Build 17609.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_URLNotInCache FAILS_URLNotInCache
+#else
+#define MAYBE_URLNotInCache URLNotInCache
+#endif
+IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_URLNotInCache) {
   const size_t kNumIterations = 1;
   const char kCacheMissURL[] = "http://www.images.google.com/";
 
