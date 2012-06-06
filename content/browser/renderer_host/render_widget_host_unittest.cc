@@ -35,6 +35,7 @@ using content::MockRenderProcessHost;
 using content::NativeWebKeyboardEvent;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
+using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseWheelEvent;
 
@@ -227,6 +228,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   using RenderWidgetHostImpl::in_flight_size_;
   using RenderWidgetHostImpl::is_hidden_;
   using RenderWidgetHostImpl::resize_ack_pending_;
+  using RenderWidgetHostImpl::coalesced_gesture_events_;
 
   bool unresponsive_timer_fired() const {
     return unresponsive_timer_fired_;
@@ -339,6 +341,17 @@ class RenderWidgetHostTest : public testing::Test {
     wheel_event.deltaY = dY;
     wheel_event.modifiers = modifiers;
     host_->ForwardWheelEvent(wheel_event);
+  }
+
+  // Inject synthetic WebGestureEvent instances.
+  void SimulateGestureEvent(float dX, float dY, int modifiers,
+                            WebInputEvent::Type type) {
+    WebGestureEvent gesture_event;
+    gesture_event.type = type;
+    gesture_event.deltaX = dX;
+    gesture_event.deltaY = dY;
+    gesture_event.modifiers = modifiers;
+    host_->ForwardGestureEvent(gesture_event);
   }
 
   MessageLoopForUI message_loop_;
@@ -770,6 +783,78 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
 
   // After the final ack, the queue should be empty.
   SendInputEventACK(WebInputEvent::MouseWheel, true);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(0U, process_->sink().message_count());
+}
+
+TEST_F(RenderWidgetHostTest, CoalescesGesturesEvents) {
+  process_->sink().ClearMessages();
+  // Only GestureScrollUpdate events can be coalesced.
+  // Simulate gesture events.
+
+  // Sent.
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureScrollBegin);
+
+  // Enqueued.
+  SimulateGestureEvent(8, -5, 0, WebInputEvent::GestureScrollUpdate);
+
+  // Make sure that the queue contains what we think it should.
+  WebGestureEvent merged_event = host_->coalesced_gesture_events_.back();
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
+
+  // Coalesced.
+  SimulateGestureEvent(8, -6, 0, WebInputEvent::GestureScrollUpdate);
+
+  // Check that coalescing updated the correct values.
+  merged_event = host_->coalesced_gesture_events_.back();
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
+  EXPECT_EQ(0, merged_event.modifiers);
+  EXPECT_EQ(16, merged_event.deltaX);
+  EXPECT_EQ(-11, merged_event.deltaY);
+
+  // Enqueued.
+  SimulateGestureEvent(8, -7, 1, WebInputEvent::GestureScrollUpdate);
+
+  // Check that we didn't wrongly coalesce.
+  merged_event = host_->coalesced_gesture_events_.back();
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
+  EXPECT_EQ(1, merged_event.modifiers);
+
+  // Different.
+  SimulateGestureEvent(9, -8, 0, WebInputEvent::GestureScrollEnd);
+
+  // Check that only the first event was sent.
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+              ViewMsg_HandleInputEvent::ID));
+  process_->sink().ClearMessages();
+
+  // Check that the ACK sends the second message.
+  SendInputEventACK(WebInputEvent::GestureScrollBegin, true);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+              ViewMsg_HandleInputEvent::ID));
+  process_->sink().ClearMessages();
+
+  // Ack for queued coalesced event.
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate, true);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+              ViewMsg_HandleInputEvent::ID));
+  process_->sink().ClearMessages();
+
+  // Ack for queued uncoalesced event.
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate, true);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+              ViewMsg_HandleInputEvent::ID));
+  process_->sink().ClearMessages();
+
+  // After the final ack, the queue should be empty.
+  SendInputEventACK(WebInputEvent::GestureScrollEnd, true);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(0U, process_->sink().message_count());
 }

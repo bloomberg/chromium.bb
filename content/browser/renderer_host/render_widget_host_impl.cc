@@ -82,6 +82,14 @@ bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
          last_event.momentumPhase == new_event.momentumPhase;
 }
 
+// Returns |true| if two gesture events should be coalesced.
+bool ShouldCoalesceGestureEvents(const WebKit::WebGestureEvent& last_event,
+                                 const WebKit::WebGestureEvent& new_event) {
+  return new_event.type == WebInputEvent::GestureScrollUpdate &&
+      last_event.type == new_event.type &&
+      last_event.modifiers == new_event.modifiers;
+}
+
 }  // namespace
 
 namespace content {
@@ -118,6 +126,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       should_auto_resize_(false),
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
+      gesture_event_pending_(false),
       needs_repainting_on_restore_(false),
       is_unresponsive_(false),
       in_flight_event_count_(0),
@@ -816,6 +825,24 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
+  if (gesture_event_pending_) {
+   if (coalesced_gesture_events_.empty() ||
+       !ShouldCoalesceGestureEvents(coalesced_gesture_events_.back(),
+                                    gesture_event)) {
+     coalesced_gesture_events_.push_back(gesture_event);
+    } else {
+      WebGestureEvent* last_gesture_event =
+          &coalesced_gesture_events_.back();
+      last_gesture_event->deltaX += gesture_event.deltaX;
+      last_gesture_event->deltaY += gesture_event.deltaY;
+      DCHECK_GE(gesture_event.timeStampSeconds,
+                last_gesture_event->timeStampSeconds);
+      last_gesture_event->timeStampSeconds = gesture_event.timeStampSeconds;
+    }
+    return;
+  }
+  gesture_event_pending_ = true;
+
   if (gesture_event.type == WebInputEvent::GestureFlingCancel)
     tap_suppression_controller_->GestureFlingCancel(
         gesture_event.timeStampSeconds);
@@ -962,6 +989,10 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   next_mouse_move_.reset();
   mouse_wheel_pending_ = false;
   coalesced_mouse_wheel_events_.clear();
+
+  // Must reset these to ensure that gesture events work with a new renderer.
+  coalesced_gesture_events_.clear();
+  gesture_event_pending_ = false;
 
   // Must reset these to ensure that keyboard events work with a new renderer.
   key_queue_.clear();
@@ -1401,8 +1432,8 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
     ProcessWheelAck(processed);
   } else if (WebInputEvent::isTouchEventType(type)) {
     ProcessTouchAck(event_type, processed);
-  } else if (type == WebInputEvent::GestureFlingCancel) {
-    tap_suppression_controller_->GestureFlingCancelAck(processed);
+  } else if (WebInputEvent::isGestureEventType(type)) {
+    ProcessGestureAck(processed, type);
   }
 
   // This is used only for testing, and the other end does not use the
@@ -1431,6 +1462,21 @@ void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
 
   if (!processed && !is_hidden_ && view_)
     view_->UnhandledWheelEvent(current_wheel_event_);
+}
+
+void RenderWidgetHostImpl::ProcessGestureAck(bool processed, int type) {
+  if (type == WebInputEvent::GestureFlingCancel)
+    tap_suppression_controller_->GestureFlingCancelAck(processed);
+
+  gesture_event_pending_ = false;
+
+  // Now send the next (coalesced) gesture event.
+  if (!coalesced_gesture_events_.empty()) {
+    WebGestureEvent next_gesture_event =
+        coalesced_gesture_events_.front();
+    coalesced_gesture_events_.pop_front();
+    ForwardGestureEvent(next_gesture_event);
+  }
 }
 
 void RenderWidgetHostImpl::ProcessTouchAck(
