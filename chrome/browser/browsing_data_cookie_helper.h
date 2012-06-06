@@ -15,7 +15,6 @@
 #include "net/cookies/cookie_monster.h"
 
 class GURL;
-class Profile;
 
 namespace net {
 class URLRequestContextGetter;
@@ -29,7 +28,8 @@ class URLRequestContextGetter;
 class BrowsingDataCookieHelper
     : public base::RefCountedThreadSafe<BrowsingDataCookieHelper> {
  public:
-  explicit BrowsingDataCookieHelper(Profile* profile);
+  explicit BrowsingDataCookieHelper(
+      net::URLRequestContextGetter* request_context_getter);
 
   // Starts the fetching process, which will notify its completion via
   // callback.
@@ -44,7 +44,10 @@ class BrowsingDataCookieHelper
  protected:
   friend class base::RefCountedThreadSafe<BrowsingDataCookieHelper>;
   virtual ~BrowsingDataCookieHelper();
-  Profile* profile() { return profile_; }
+
+  net::URLRequestContextGetter* request_context_getter() {
+    return request_context_getter_;
+  }
 
  private:
   // Fetch the cookies. This must be called in the IO thread.
@@ -66,8 +69,6 @@ class BrowsingDataCookieHelper
   // This only mutates on the UI thread.
   bool is_fetching_;
 
-  Profile* profile_;
-
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // This only mutates on the UI thread.
@@ -83,7 +84,8 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
  public:
   typedef std::map<GURL, net::CookieList*> OriginCookieListMap;
 
-  explicit CannedBrowsingDataCookieHelper(Profile* profile);
+  explicit CannedBrowsingDataCookieHelper(
+      net::URLRequestContextGetter* request_context);
 
   // Return a copy of the cookie helper. Only one consumer can use the
   // StartFetching method at a time, so we need to create a copy of the helper

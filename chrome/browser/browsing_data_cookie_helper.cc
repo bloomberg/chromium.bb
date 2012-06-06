@@ -19,10 +19,10 @@
 
 using content::BrowserThread;
 
-BrowsingDataCookieHelper::BrowsingDataCookieHelper(Profile* profile)
-  : is_fetching_(false),
-    profile_(profile),
-    request_context_getter_(profile->GetRequestContext()) {
+BrowsingDataCookieHelper::BrowsingDataCookieHelper(
+    net::URLRequestContextGetter* request_context_getter)
+    : is_fetching_(false),
+      request_context_getter_(request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -93,8 +93,8 @@ void BrowsingDataCookieHelper::DeleteCookieOnIOThread(
 }
 
 CannedBrowsingDataCookieHelper::CannedBrowsingDataCookieHelper(
-    Profile* profile)
-    : BrowsingDataCookieHelper(profile) {
+    net::URLRequestContextGetter* request_context_getter)
+    : BrowsingDataCookieHelper(request_context_getter) {
 }
 
 CannedBrowsingDataCookieHelper::~CannedBrowsingDataCookieHelper() {
@@ -104,7 +104,7 @@ CannedBrowsingDataCookieHelper::~CannedBrowsingDataCookieHelper() {
 CannedBrowsingDataCookieHelper* CannedBrowsingDataCookieHelper::Clone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CannedBrowsingDataCookieHelper* clone =
-      new CannedBrowsingDataCookieHelper(profile());
+      new CannedBrowsingDataCookieHelper(request_context_getter());
 
   for (OriginCookieListMap::iterator it = origin_cookie_list_map_.begin();
        it != origin_cookie_list_map_.end();

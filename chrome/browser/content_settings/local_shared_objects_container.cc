@@ -18,7 +18,8 @@
 
 LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
     : appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
-      cookies_(new CannedBrowsingDataCookieHelper(profile)),
+      cookies_(new CannedBrowsingDataCookieHelper(
+          profile->GetRequestContext())),
       databases_(new CannedBrowsingDataDatabaseHelper(profile)),
       file_systems_(new CannedBrowsingDataFileSystemHelper(profile)),
       indexed_dbs_(new CannedBrowsingDataIndexedDBHelper()),

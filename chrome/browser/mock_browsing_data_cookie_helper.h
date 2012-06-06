@@ -14,7 +14,8 @@
 // Mock for BrowsingDataCookieHelper.
 class MockBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
  public:
-  explicit MockBrowsingDataCookieHelper(Profile* profile);
+  explicit MockBrowsingDataCookieHelper(
+      net::URLRequestContextGetter* request_context_getter);
 
   // BrowsingDataCookieHelper methods.
   virtual void StartFetching(
@@ -38,7 +39,6 @@ class MockBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
  private:
   virtual ~MockBrowsingDataCookieHelper();
 
-  Profile* profile_;
   net::CookieMonster::GetCookieListCallback callback_;
 
   net::CookieList cookie_list_;

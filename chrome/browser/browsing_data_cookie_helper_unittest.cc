@@ -124,7 +124,7 @@ class BrowsingDataCookieHelperTest : public testing::Test {
 TEST_F(BrowsingDataCookieHelperTest, FetchData) {
   CreateCookiesForTest();
   scoped_refptr<BrowsingDataCookieHelper> cookie_helper(
-      new BrowsingDataCookieHelper(testing_profile_.get()));
+      new BrowsingDataCookieHelper(testing_profile_->GetRequestContext()));
 
   cookie_helper->StartFetching(
       base::Bind(&BrowsingDataCookieHelperTest::FetchCallback,
@@ -137,7 +137,7 @@ TEST_F(BrowsingDataCookieHelperTest, FetchData) {
 TEST_F(BrowsingDataCookieHelperTest, DeleteCookie) {
   CreateCookiesForTest();
   scoped_refptr<BrowsingDataCookieHelper> cookie_helper(
-      new BrowsingDataCookieHelper(testing_profile_.get()));
+      new BrowsingDataCookieHelper(testing_profile_->GetRequestContext()));
 
   cookie_helper->StartFetching(
       base::Bind(&BrowsingDataCookieHelperTest::FetchCallback,
@@ -160,7 +160,8 @@ TEST_F(BrowsingDataCookieHelperTest, CannedUnique) {
   net::CookieList cookie;
 
   scoped_refptr<CannedBrowsingDataCookieHelper> helper(
-      new CannedBrowsingDataCookieHelper(testing_profile_.get()));
+      new CannedBrowsingDataCookieHelper(
+          testing_profile_->GetRequestContext()));
 
   ASSERT_TRUE(helper->empty());
   helper->AddChangedCookie(origin, origin, "A=1", net::CookieOptions());
@@ -183,7 +184,8 @@ TEST_F(BrowsingDataCookieHelperTest, CannedEmpty) {
   const GURL url_google("http://www.google.com");
 
   scoped_refptr<CannedBrowsingDataCookieHelper> helper(
-      new CannedBrowsingDataCookieHelper(testing_profile_.get()));
+      new CannedBrowsingDataCookieHelper(
+          testing_profile_->GetRequestContext()));
 
   ASSERT_TRUE(helper->empty());
   helper->AddChangedCookie(url_google, url_google, "a=1",
@@ -210,7 +212,8 @@ TEST_F(BrowsingDataCookieHelperTest, CannedDifferentFrames) {
   GURL request_url("http://www.google.com");
 
   scoped_refptr<CannedBrowsingDataCookieHelper> helper(
-      new CannedBrowsingDataCookieHelper(testing_profile_.get()));
+      new CannedBrowsingDataCookieHelper(
+          testing_profile_->GetRequestContext()));
 
   ASSERT_TRUE(helper->empty());
   helper->AddChangedCookie(frame1_url, request_url, "a=1",

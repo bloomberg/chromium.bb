@@ -51,7 +51,7 @@ class CookiesTreeModelTest : public testing::Test {
     profile_.reset(new TestingProfile());
     profile_->CreateRequestContext();
     mock_browsing_data_cookie_helper_ =
-      new MockBrowsingDataCookieHelper(profile_.get());
+      new MockBrowsingDataCookieHelper(profile_->GetRequestContext());
     mock_browsing_data_database_helper_ =
       new MockBrowsingDataDatabaseHelper(profile_.get());
     mock_browsing_data_local_storage_helper_ =

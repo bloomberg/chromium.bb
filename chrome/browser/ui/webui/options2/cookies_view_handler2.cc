@@ -163,7 +163,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
   if (!cookies_tree_model_.get()) {
     Profile* profile = Profile::FromWebUI(web_ui());
     cookies_tree_model_.reset(new CookiesTreeModel(
-        new BrowsingDataCookieHelper(profile),
+        new BrowsingDataCookieHelper(profile->GetRequestContext()),
         new BrowsingDataDatabaseHelper(profile),
         new BrowsingDataLocalStorageHelper(profile),
         NULL,

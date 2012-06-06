@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 
-MockBrowsingDataCookieHelper::MockBrowsingDataCookieHelper(Profile* profile)
-    : BrowsingDataCookieHelper(profile),
-      profile_(profile) {
+MockBrowsingDataCookieHelper::MockBrowsingDataCookieHelper(
+    net::URLRequestContextGetter* request_context_getter)
+    : BrowsingDataCookieHelper(request_context_getter) {
 }
 
 MockBrowsingDataCookieHelper::~MockBrowsingDataCookieHelper() {
