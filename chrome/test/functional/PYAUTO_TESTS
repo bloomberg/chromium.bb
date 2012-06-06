@@ -129,6 +129,8 @@
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # crbug.com/112051
       '-prefs_ui.PrefsUITest.testChangeExceptionBehaviorUI',
+      # crbug.com/131212
+      '-process_count',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
       # crbug.com/95140
@@ -579,8 +581,6 @@
       # crbug.com/109035
       '-youtube.YoutubeTest.testPlayerBytes',
       '-youtube.YoutubeTest.testPlayerResolution',
-      # crbug.com/131212
-      '-process_count',
     ],
 
     'chromeos': [
