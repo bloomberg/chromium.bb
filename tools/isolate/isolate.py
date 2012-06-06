@@ -585,7 +585,7 @@ def MODEtrace(_outdir, state):
   try:
     result = 0
     if not os.path.isfile(logfile):
-      result, _ = api.gen_trace(
+      result, _ = api.get_tracer().trace(
           state.result.command,
           os.path.join(state.root_dir, state.result.relative_cwd),
           logfile,

@@ -612,18 +612,52 @@ class ApiBase(object):
       self.blacklist = blacklist
       self.processes = {}
 
+  class Tracer(object):
+    """During it's lifetime, the tracing subsystem is enabled."""
+    def __init__(self, logname):
+      self._logname = logname
+      self._initialized = True
+
+    def trace(self, cmd, cwd, tracename, output):
+      """Runs the OS-specific trace program on an executable.
+
+      Arguments:
+      - cmd: The command (a list) to run.
+      - cwd: Current directory to start the child process in.
+      - tracename: Name of the trace in the logname file.
+      - output: If False, redirects output to PIPEs.
+
+      Returns a tuple (resultcode, output) and updates the internal trace
+      entries.
+      """
+      raise NotImplementedError(self.__class__.__name__)
+
+    def close(self):
+      self._initialized = False
+
+    def __enter__(self):
+      """Enables 'with' statement."""
+      return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+      """Enables 'with' statement."""
+      self.close()
+
+  def get_tracer(self, logname=None):
+    """Returns an ApiBase.Tracer instance.
+
+    Initializes the tracing subsystem, which is a requirement for kernel-based
+    tracers. Only one tracer instance should be live at a time!
+
+    logname is the filepath to the json file that will contain the meta-data
+    about the logs.
+    """
+    return self.Tracer(logname)
+
   @staticmethod
   def clean_trace(logname):
     """Deletes the old log."""
     raise NotImplementedError()
-
-  @classmethod
-  def gen_trace(cls, cmd, cwd, logname, output):
-    """Runs the OS-specific trace program on an executable.
-
-    Since the logs are per pid, we need to log the list of the initial pid.
-    """
-    raise NotImplementedError(cls.__class__.__name__)
 
   @classmethod
   def parse_log(cls, filename, blacklist):
@@ -953,41 +987,42 @@ class Strace(ApiBase):
       prefix = 'handle_'
       return [i[len(prefix):] for i in dir(cls.Process) if i.startswith(prefix)]
 
-  @classmethod
-  def gen_trace(cls, cmd, cwd, logname, output):
-    """Runs strace on an executable.
+  class Tracer(ApiBase.Tracer):
+    @classmethod
+    def trace(cls, cmd, cwd, logname, output):
+      """Runs strace on an executable.
 
-    Since the logs are per pid, we need to log the list of the initial pid.
-    """
-    logging.info('gen_trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
-    stdout = stderr = None
-    if output:
-      stdout = subprocess.PIPE
-      stderr = subprocess.STDOUT
-    traces = ','.join(cls.Context.traces())
-    trace_cmd = [
-      'strace',
-      '-ff',
-      '-s', '256',
-      '-e', 'trace=%s' % traces,
-      '-o', logname,
-    ]
-    child = subprocess.Popen(
-        trace_cmd + cmd,
-        cwd=cwd,
-        stdin=subprocess.PIPE,
-        stdout=stdout,
-        stderr=stderr)
-    out = child.communicate()[0]
-    # Once it's done, write metadata into the log file to be able to follow the
-    # pid files.
-    value = {
-      'cwd': cwd,
-      # The pid of strace process, not very useful.
-      'pid': child.pid,
-    }
-    write_json(logname, value, False)
-    return child.returncode, out
+      Since the logs are per pid, we need to log the list of the initial pid.
+      """
+      logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
+      stdout = stderr = None
+      if output:
+        stdout = subprocess.PIPE
+        stderr = subprocess.STDOUT
+      traces = ','.join(Strace.Context.traces())
+      trace_cmd = [
+        'strace',
+        '-ff',
+        '-s', '256',
+        '-e', 'trace=%s' % traces,
+        '-o', logname,
+      ]
+      child = subprocess.Popen(
+          trace_cmd + cmd,
+          cwd=cwd,
+          stdin=subprocess.PIPE,
+          stdout=stdout,
+          stderr=stderr)
+      out = child.communicate()[0]
+      # Once it's done, write metadata into the log file to be able to follow
+      # the pid files.
+      value = {
+        'cwd': cwd,
+        # The pid of strace process, not very useful.
+        'pid': child.pid,
+      }
+      write_json(logname, value, False)
+      return child.returncode, out
 
   @staticmethod
   def clean_trace(logname):
@@ -1244,43 +1279,44 @@ class Dtrace(ApiBase):
       """Is called for all the event traces that are not handled."""
       raise NotImplementedError('Please implement me')
 
-  # pylint: disable=C0301
-  #
-  # To understand the following code, you'll want to take a look at:
-  # http://developers.sun.com/solaris/articles/dtrace_quickref/dtrace_quickref.html
-  # https://wikis.oracle.com/display/DTrace/Variables
-  # http://docs.oracle.com/cd/E19205-01/820-4221/
-  #
-  # 0. Dump all the valid probes into a text file. It is important, you
-  #    want to redirect into a file and you don't want to constantly 'sudo'.
-  # $ sudo dtrace -l > probes.txt
-  #
-  # 1. Count the number of probes:
-  # $ wc -l probes.txt
-  # 81823  # On OSX 10.7, including 1 header line.
-  #
-  # 2. List providers, intentionally skipping all the 'syspolicy10925' and the
-  #    likes and skipping the header with NR>1:
-  # $ awk 'NR>1 { print $2 }' probes.txt | sort | uniq | grep -v '[[:digit:]]'
-  # dtrace
-  # fbt
-  # io
-  # ip
-  # lockstat
-  # mach_trap
-  # proc
-  # profile
-  # sched
-  # syscall
-  # tcp
-  # vminfo
-  #
-  # 3. List of valid probes:
-  # $ grep syscall probes.txt | less
-  #    or use dtrace directly:
-  # $ sudo dtrace -l -P syscall | less
+  class Tracer(ApiBase.Tracer):
+    # pylint: disable=C0301
+    #
+    # To understand the following code, you'll want to take a look at:
+    # http://developers.sun.com/solaris/articles/dtrace_quickref/dtrace_quickref.html
+    # https://wikis.oracle.com/display/DTrace/Variables
+    # http://docs.oracle.com/cd/E19205-01/820-4221/
+    #
+    # 0. Dump all the valid probes into a text file. It is important, you
+    #    want to redirect into a file and you don't want to constantly 'sudo'.
+    # $ sudo dtrace -l > probes.txt
+    #
+    # 1. Count the number of probes:
+    # $ wc -l probes.txt
+    # 81823  # On OSX 10.7, including 1 header line.
+    #
+    # 2. List providers, intentionally skipping all the 'syspolicy10925' and the
+    #    likes and skipping the header with NR>1:
+    # $ awk 'NR>1 { print $2 }' probes.txt | sort | uniq | grep -v '[[:digit:]]'
+    # dtrace
+    # fbt
+    # io
+    # ip
+    # lockstat
+    # mach_trap
+    # proc
+    # profile
+    # sched
+    # syscall
+    # tcp
+    # vminfo
+    #
+    # 3. List of valid probes:
+    # $ grep syscall probes.txt | less
+    #    or use dtrace directly:
+    # $ sudo dtrace -l -P syscall | less
 
-  D_CODE = """
+    D_CODE = """
       proc:::start /trackedpid[ppid]/ {
         trackedpid[pid] = 1;
         current_processes += 1;
@@ -1360,7 +1396,7 @@ class Dtrace(ApiBase):
       }
     """
 
-  D_CODE_EXECVE = """
+    D_CODE_EXECVE = """
       /* Finally what we care about! */
       syscall::exec*:entry /trackedpid[pid] == 1/ {
         self->e_arg0 = copyinstr(arg0);
@@ -1481,8 +1517,8 @@ class Dtrace(ApiBase):
       }
     """
 
-  # Code currently not used.
-  D_EXTRANEOUS = """
+    # Code currently not used.
+    D_EXTRANEOUS = """
       /* These are a good learning experience, since it traces a lot of things
        * related to the process and child processes.
        * Warning: it generates a gigantic log. For example, tracing
@@ -1540,142 +1576,141 @@ class Dtrace(ApiBase):
       */
     """
 
-  @classmethod
-  def code(cls, pid, cwd):
-    """Setups the D code to implement child process tracking.
+    @classmethod
+    def code(cls, pid, cwd):
+      """Setups the D code to implement child process tracking.
 
-    Injects the pid and the initial cwd into the trace header for context.
-    The reason is that the child process trace_child_process.py is already
-    running at that point so:
-    - no proc_start() is logged for it.
-    - there is no way to figure out the absolute path of cwd in kernel on OSX
+      Injects the pid and the initial cwd into the trace header for context.
+      The reason is that the child process trace_child_process.py is already
+      running at that point so:
+      - no proc_start() is logged for it.
+      - there is no way to figure out the absolute path of cwd in kernel on OSX
 
-    Since the child process is already started, initialize current_processes to
-    1.
+      Since the child process is already started, initialize current_processes
+      to 1.
+      """
+      pid = str(pid)
+      cwd = os.path.realpath(cwd).replace('\\', '\\\\').replace('%', '%%')
+      return (
+          'dtrace:::BEGIN {\n'
+          '  current_processes = 1;\n'
+          '  logindex = 0;\n'
+          # trackedpid is an associative array where its value can be 0, 1 or 2.
+          # 0 is for untracked processes and is the default value for items not
+          #   in the associative array.
+          # 1 is for tracked processes.
+          # 2 is for trace_child_process.py only. It is not tracked itself but
+          #   all its decendants are.
+          '  trackedpid[' + pid + '] = 2;\n'
+          '  printf("%d %d %s_%s(\\"' + cwd + '\\")\\n",\n'
+          '      logindex, ' + pid + ', probeprov, probename);\n'
+          '  logindex++;\n'
+          '}\n') + cls.D_CODE + cls.D_CODE_EXECVE
 
-    """
-    pid = str(pid)
-    cwd = os.path.realpath(cwd).replace('\\', '\\\\').replace('%', '%%')
-    return (
-        'dtrace:::BEGIN {\n'
-        '  current_processes = 1;\n'
-        '  logindex = 0;\n'
-        # trackedpid is an associative array where its value can be 0, 1 or 2.
-        # 0 is for untracked processes and is the default value for items not
-        #   in the associative array.
-        # 1 is for tracked processes.
-        # 2 is for trace_child_process.py only. It is not tracked itself but
-        #   all its decendants are.
-        '  trackedpid[' + pid + '] = 2;\n'
-        '  printf("%d %d %s_%s(\\"' + cwd + '\\")\\n",\n'
-        '      logindex, ' + pid + ', probeprov, probename);\n'
-        '  logindex++;\n'
-        '}\n') + cls.D_CODE + cls.D_CODE_EXECVE
+    @classmethod
+    def trace(cls, cmd, cwd, logname, output):
+      """Runs dtrace on an executable.
 
-  @classmethod
-  def gen_trace(cls, cmd, cwd, logname, output):
-    """Runs dtrace on an executable.
+      This dtruss is broken when it starts the process itself or when tracing
+      child processes, this code starts a wrapper process
+      trace_child_process.py, which waits for dtrace to start, then
+      trace_child_process.py starts the executable to trace.
+      """
+      logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
+      logging.info('Running: %s' % cmd)
+      signal = 'Go!'
+      logging.debug('Our pid: %d' % os.getpid())
 
-    This dtruss is broken when it starts the process itself or when tracing
-    child processes, this code starts a wrapper process trace_child_process.py,
-    which waits for dtrace to start, then trace_child_process.py starts the
-    executable to trace.
-    """
-    logging.info('gen_trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
-    logging.info('Running: %s' % cmd)
-    signal = 'Go!'
-    logging.debug('Our pid: %d' % os.getpid())
+      # Part 1: start the child process.
+      stdout = stderr = None
+      if output:
+        stdout = subprocess.PIPE
+        stderr = subprocess.STDOUT
+      child_cmd = [
+        sys.executable,
+        os.path.join(BASE_DIR, 'trace_child_process.py'),
+        '--wait',
+      ]
+      child = subprocess.Popen(
+          child_cmd + cmd,
+          stdin=subprocess.PIPE,
+          stdout=stdout,
+          stderr=stderr,
+          cwd=cwd)
+      logging.debug('Started child pid: %d' % child.pid)
 
-    # Part 1: start the child process.
-    stdout = stderr = None
-    if output:
-      stdout = subprocess.PIPE
-      stderr = subprocess.STDOUT
-    child_cmd = [
-      sys.executable,
-      os.path.join(BASE_DIR, 'trace_child_process.py'),
-      '--wait',
-    ]
-    child = subprocess.Popen(
-        child_cmd + cmd,
-        stdin=subprocess.PIPE,
-        stdout=stdout,
-        stderr=stderr,
-        cwd=cwd)
-    logging.debug('Started child pid: %d' % child.pid)
+      # Part 2: start dtrace process.
+      # Note: do not use the -p flag. It's useless if the initial process quits
+      # too fast, resulting in missing traces from the grand-children. The D
+      # code manages the dtrace lifetime itself.
+      trace_cmd = [
+        'sudo',
+        'dtrace',
+        '-x', 'dynvarsize=4m',
+        '-x', 'evaltime=exec',
+        '-n', cls.code(child.pid, cwd),
+        '-o', '/dev/stderr',
+        '-q',
+      ]
+      with open(logname, 'w') as logfile:
+        dtrace = subprocess.Popen(
+            trace_cmd, stdout=logfile, stderr=subprocess.STDOUT)
+      logging.debug('Started dtrace pid: %d' % dtrace.pid)
 
-    # Part 2: start dtrace process.
-    # Note: do not use the -p flag. It's useless if the initial process quits
-    # too fast, resulting in missing traces from the grand-children. The D code
-    # manages the dtrace lifetime itself.
-    trace_cmd = [
-      'sudo',
-      'dtrace',
-      '-x', 'dynvarsize=4m',
-      '-x', 'evaltime=exec',
-      '-n', cls.code(child.pid, cwd),
-      '-o', '/dev/stderr',
-      '-q',
-    ]
-    with open(logname, 'w') as logfile:
-      dtrace = subprocess.Popen(
-          trace_cmd, stdout=logfile, stderr=subprocess.STDOUT)
-    logging.debug('Started dtrace pid: %d' % dtrace.pid)
+      # Part 3: Read until one line is printed, which signifies dtrace is up and
+      # ready.
+      with open(logname, 'r') as logfile:
+        while 'dtrace_BEGIN' not in logfile.readline():
+          if dtrace.poll() is not None:
+            break
 
-    # Part 3: Read until one line is printed, which signifies dtrace is up and
-    # ready.
-    with open(logname, 'r') as logfile:
-      while 'dtrace_BEGIN' not in logfile.readline():
-        if dtrace.poll() is not None:
-          break
+      try:
+        # Part 4: We can now tell our child to go.
+        # TODO(maruel): Another pipe than stdin could be used instead. This
+        # would be more consistent with the other tracing methods.
+        out = child.communicate(signal)[0]
 
-    try:
-      # Part 4: We can now tell our child to go.
-      # TODO(maruel): Another pipe than stdin could be used instead. This would
-      # be more consistent with the other tracing methods.
-      out = child.communicate(signal)[0]
-
-      dtrace.wait()
-      if dtrace.returncode != 0:
-        print 'dtrace failure: %d' % dtrace.returncode
-        with open(logname) as logfile:
-          print ''.join(logfile.readlines()[-100:])
-        # Find a better way.
-        os.remove(logname)
-      else:
-        # Short the log right away to simplify our life. There isn't much
-        # advantage in keeping it out of order.
+        dtrace.wait()
+        if dtrace.returncode != 0:
+          print 'dtrace failure: %d' % dtrace.returncode
+          with open(logname) as logfile:
+            print ''.join(logfile.readlines()[-100:])
+          # Find a better way.
+          os.remove(logname)
+        else:
+          # Short the log right away to simplify our life. There isn't much
+          # advantage in keeping it out of order.
+          cls._sort_log(logname)
+      except KeyboardInterrupt:
+        # Still sort when testing.
         cls._sort_log(logname)
-    except KeyboardInterrupt:
-      # Still sort when testing.
-      cls._sort_log(logname)
-      raise
+        raise
 
-    return dtrace.returncode or child.returncode, out
+      return dtrace.returncode or child.returncode, out
 
-  @staticmethod
-  def _sort_log(logname):
-    """Sorts the log back in order when each call occured.
+    @staticmethod
+    def _sort_log(logname):
+      """Sorts the log back in order when each call occured.
 
-    dtrace doesn't save the buffer in strict order since it keeps one buffer per
-    CPU.
-    """
-    with open(logname, 'rb') as logfile:
-      lines = [l for l in logfile if l.strip()]
-    errors = [l for l in lines if l.startswith('dtrace:')]
-    if errors:
-      raise TracingFailure(
-          'Found errors in the trace: %s' % '\n'.join(errors),
-          None, None, None, logname)
-    try:
-      lines = sorted(lines, key=lambda l: int(l.split(' ', 1)[0]))
-    except ValueError:
-      raise TracingFailure(
-          'Found errors in the trace: %s' % '\n'.join(
-              l for l in lines if l.split(' ', 1)[0].isdigit()),
-          None, None, None, logname)
-    with open(logname, 'wb') as logfile:
-      logfile.write(''.join(lines))
+      dtrace doesn't save the buffer in strict order since it keeps one buffer
+        per CPU.
+      """
+      with open(logname, 'rb') as logfile:
+        lines = [l for l in logfile if l.strip()]
+      errors = [l for l in lines if l.startswith('dtrace:')]
+      if errors:
+        raise TracingFailure(
+            'Found errors in the trace: %s' % '\n'.join(errors),
+            None, None, None, logname)
+      try:
+        lines = sorted(lines, key=lambda l: int(l.split(' ', 1)[0]))
+      except ValueError:
+        raise TracingFailure(
+            'Found errors in the trace: %s' % '\n'.join(
+                l for l in lines if l.split(' ', 1)[0].isdigit()),
+            None, None, None, logname)
+      with open(logname, 'wb') as logfile:
+        logfile.write(''.join(lines))
 
   @staticmethod
   def clean_trace(logname):
@@ -2052,111 +2087,154 @@ class LogmanTrace(ApiBase):
       """If you have too many of these, check your hardware."""
       pass
 
-  @classmethod
-  def gen_trace(cls, cmd, cwd, logname, output):
-    """Uses logman.exe to start and stop the NT Kernel Logger while the
-    executable to be traced is run.
-    """
-    logging.info('gen_trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
-    # Use "logman -?" for help.
+  class Tracer(ApiBase.Tracer):
+    @classmethod
+    def trace(cls, cmd, cwd, logname, output):
+      """Uses logman.exe to start and stop the NT Kernel Logger while the
+      executable to be traced is run.
+      """
+      logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
+      # Use "logman -?" for help.
 
-    stdout = stderr = None
-    if output:
-      stdout = subprocess.PIPE
-      stderr = subprocess.STDOUT
+      stdout = stderr = None
+      if output:
+        stdout = subprocess.PIPE
+        stderr = subprocess.STDOUT
 
-    # 1. Start the log collection.
-    cls._start_log(logname + '.etl')
+      # 1. Start the log collection.
+      cls._start_log(logname + '.etl')
 
-    # 2. Run the child process.
-    logging.debug('Running: %s' % cmd)
-    try:
-      # Use trace_child_process.py so we have a clear pid owner. Since
-      # trace_inputs.py can be used as a library and could trace mulitple
-      # processes simultaneously, it makes it more complex if the executable to
-      # be traced is executed directly here. It also solves issues related to
-      # logman.exe that needs to be executed to control the kernel trace.
-      child_cmd = [
-        sys.executable,
-        os.path.join(BASE_DIR, 'trace_child_process.py'),
+      # 2. Run the child process.
+      logging.debug('Running: %s' % cmd)
+      try:
+        # Use trace_child_process.py so we have a clear pid owner. Since
+        # trace_inputs.py can be used as a library and could trace mulitple
+        # processes simultaneously, it makes it more complex if the executable
+        # to be traced is executed directly here. It also solves issues related
+        # to logman.exe that needs to be executed to control the kernel trace.
+        child_cmd = [
+          sys.executable,
+          os.path.join(BASE_DIR, 'trace_child_process.py'),
+        ]
+        child = subprocess.Popen(
+            child_cmd + cmd,
+            cwd=cwd,
+            stdin=subprocess.PIPE,
+            stdout=stdout,
+            stderr=stderr)
+        logging.debug('Started child pid: %d' % child.pid)
+        out = child.communicate()[0]
+      finally:
+        # 3. Stop the log collection.
+        cls._stop_log()
+
+      # 4. Convert the traces to text representation.
+      cls._convert_log(logname, 'csv')
+
+      # 5. Save metadata.
+      value = {
+        'pid': child.pid,
+        'format': 'csv',
+      }
+      write_json(logname, value, False)
+      return child.returncode, out
+
+    @classmethod
+    def _start_log(cls, etl):
+      """Starts the log collection.
+
+      One can get the list of potentially interesting providers with:
+      "logman query providers | findstr /i file"
+      """
+      cmd_start = [
+        'logman.exe',
+        'start',
+        'NT Kernel Logger',
+        '-p', '{9e814aad-3204-11d2-9a82-006008a86939}',
+        # splitio,fileiocompletion,syscall,file,cswitch,img
+        '(process,fileio,thread)',
+        '-o', etl,
+        '-ets',  # Send directly to kernel
+        # Values extracted out of thin air.
+        '-bs', '1024',
+        '-nb', '200', '512',
       ]
-      child = subprocess.Popen(
-          child_cmd + cmd,
-          cwd=cwd,
-          stdin=subprocess.PIPE,
-          stdout=stdout,
-          stderr=stderr)
-      logging.debug('Started child pid: %d' % child.pid)
-      out = child.communicate()[0]
-    finally:
-      # 3. Stop the log collection.
-      cls._stop_log()
+      logging.debug('Running: %s' % cmd_start)
+      try:
+        subprocess.check_call(
+            cmd_start,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+      except subprocess.CalledProcessError, e:
+        if e.returncode == -2147024891:
+          print >> sys.stderr, 'Please restart with an elevated admin prompt'
+        elif e.returncode == -2144337737:
+          print >> sys.stderr, (
+              'A kernel trace was already running, stop it and try again')
+        raise
 
-    # 4. Convert the traces to text representation.
-    cls._convert_log(logname, 'csv')
-
-    # 5. Save metadata.
-    value = {
-      'pid': child.pid,
-      'format': 'csv',
-    }
-    write_json(logname, value, False)
-    return child.returncode, out
-
-  @classmethod
-  def _start_log(cls, etl):
-    """Starts the log collection.
-
-    Requires administrative access. logman.exe is synchronous so no need for a
-    "warmup" call.  'Windows Kernel Trace' is *localized* so use its GUID
-    instead.  The GUID constant name is SystemTraceControlGuid. Lovely.
-
-    One can get the list of potentially interesting providers with:
-    "logman query providers | findstr /i file"
-    """
-    cmd_start = [
-      'logman.exe',
-      'start',
-      'NT Kernel Logger',
-      '-p', '{9e814aad-3204-11d2-9a82-006008a86939}',
-      # splitio,fileiocompletion,syscall,file,cswitch,img
-      '(process,fileio,thread)',
-      '-o', etl,
-      '-ets',  # Send directly to kernel
-      # Values extracted out of thin air.
-      '-bs', '1024',
-      '-nb', '200', '512',
-    ]
-    logging.debug('Running: %s' % cmd_start)
-    try:
+    @staticmethod
+    def _stop_log():
+      """Stops the kernel log collection."""
+      cmd_stop = [
+        'logman.exe',
+        'stop',
+        'NT Kernel Logger',
+        '-ets',  # Sends the command directly to the kernel.
+      ]
+      logging.debug('Running: %s' % cmd_stop)
       subprocess.check_call(
-          cmd_start,
+          cmd_stop,
           stdin=subprocess.PIPE,
           stdout=subprocess.PIPE,
           stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError, e:
-      if e.returncode == -2147024891:
-        print >> sys.stderr, 'Please restart with an elevated admin prompt'
-      elif e.returncode == -2144337737:
-        print >> sys.stderr, (
-            'A kernel trace was already running, stop it and try again')
-      raise
 
-  @staticmethod
-  def _stop_log():
-    """Stops the kernel log collection."""
-    cmd_stop = [
-      'logman.exe',
-      'stop',
-      'NT Kernel Logger',
-      '-ets',  # Sends the command directly to the kernel.
-    ]
-    logging.debug('Running: %s' % cmd_stop)
-    subprocess.check_call(
-        cmd_stop,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
+    @staticmethod
+    def _convert_log(logname, logformat):
+      """Converts the ETL trace to text representation.
+
+      Normally, 'csv' is sufficient. If complex scripts are used (like eastern
+      languages), use 'csv_utf16'. If localization gets in the way, use 'xml'.
+
+      Arguments:
+        - logname: Base filename to convert.
+        - logformat: Text format to be generated, csv, csv_utf16 or xml.
+
+      Use "tracerpt -?" for help.
+      """
+      LOCALE_INVARIANT = 0x7F
+      windll.kernel32.SetThreadLocale(LOCALE_INVARIANT)
+      cmd_convert = [
+        'tracerpt.exe',
+        '-l', logname + '.etl',
+        '-o', logname + '.' + logformat,
+        '-gmt',  # Use UTC
+        '-y',  # No prompt
+        # Use -of XML to get the header of each items after column 19, e.g. all
+        # the actual headers of 'User Data'.
+      ]
+
+      if logformat == 'csv':
+        # tracerpt localizes the 'Type' column, for major brainfuck
+        # entertainment. I can't imagine any sane reason to do that.
+        cmd_convert.extend(['-of', 'CSV'])
+      elif logformat == 'csv_utf16':
+        # This causes it to use UTF-16, which doubles the log size but ensures
+        # the log is readable for non-ASCII characters.
+        cmd_convert.extend(['-of', 'CSV', '-en', 'Unicode'])
+      elif logformat == 'xml':
+        cmd_convert.extend(['-of', 'XML'])
+      else:
+        raise ValueError('Unexpected log format \'%s\'' % logformat)
+      logging.debug('Running: %s' % cmd_convert)
+      # This can takes tens of minutes for large logs.
+      # Redirects all output to stderr.
+      subprocess.check_call(
+          cmd_convert,
+          stdin=subprocess.PIPE,
+          stdout=sys.stderr,
+          stderr=sys.stderr)
 
   def __init__(self):
     super(LogmanTrace, self).__init__()
@@ -2396,7 +2474,7 @@ def trace(logfile, cmd, cwd, api, output):
   cmd = fix_python_path(cmd)
   assert os.path.isabs(cmd[0]), cmd[0]
   api.clean_trace(logfile)
-  return api.gen_trace(cmd, cwd, logfile, output)
+  return api.get_tracer().trace(cmd, cwd, logfile, output)
 
 
 def load_trace(logfile, root_dir, api):
