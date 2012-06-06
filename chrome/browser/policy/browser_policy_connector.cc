@@ -33,7 +33,7 @@
 #include "policy/policy_constants.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/policy/configuration_policy_provider_win.h"
+#include "chrome/browser/policy/policy_loader_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/policy/policy_loader_mac.h"
 #include "chrome/browser/preferences_mac.h"
@@ -557,7 +557,8 @@ ConfigurationPolicyProvider*
     BrowserPolicyConnector::CreatePlatformProvider() {
   const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
 #if defined(OS_WIN)
-  return new ConfigurationPolicyProviderWin(policy_list);
+  scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderWin(policy_list));
+  return new AsyncPolicyProvider(policy_list, loader.Pass());
 #elif defined(OS_MACOSX)
   scoped_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderMac(policy_list, new MacPreferences()));
