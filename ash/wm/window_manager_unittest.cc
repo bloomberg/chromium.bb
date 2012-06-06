@@ -10,11 +10,13 @@
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/activation_delegate.h"
+#include "ui/aura/cursor_manager.h"
+#include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/shared/input_method_event_filter.h"
-#include "ui/aura/shared/root_window_event_filter.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_event_filter.h"
@@ -23,9 +25,6 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
-
-// TODO(erg,beng): This file is misnamed; it really acts as an integration test
-// between most of the ash::Shell() objects, not just RootWindowEventFitler.
 
 namespace {
 
@@ -37,7 +36,7 @@ base::TimeDelta getTime() {
 
 namespace ash {
 
-typedef test::AshTestBase RootWindowEventFilterTest;
+typedef test::AshTestBase WindowManagerTest;
 
 class NonFocusableDelegate : public aura::test::TestWindowDelegate {
  public:
@@ -70,11 +69,11 @@ class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(HitTestWindowDelegate);
 };
 
-TEST_F(RootWindowEventFilterTest, Focus) {
+TEST_F(WindowManagerTest, Focus) {
   // The IME event filter interferes with the basic key event propagation we
   // attempt to do here, so we remove it.
   Shell::TestApi shell_test(Shell::GetInstance());
-  Shell::GetInstance()->RemoveRootWindowEventFilter(
+  Shell::GetInstance()->RemoveEnvEventFilter(
       shell_test.input_method_event_filter());
 
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
@@ -179,7 +178,7 @@ TEST_F(RootWindowEventFilterTest, Focus) {
 }
 
 // Various assertion testing for activating windows.
-TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
+TEST_F(WindowManagerTest, ActivateOnMouse) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
   test::TestActivationDelegate d1;
@@ -295,7 +294,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
 }
 
 // Essentially the same as ActivateOnMouse, but for touch events.
-TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
+TEST_F(WindowManagerTest, ActivateOnTouch) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
   test::TestActivationDelegate d1;
@@ -365,7 +364,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   EXPECT_EQ(0, d1.lost_active_count());
 }
 
-TEST_F(RootWindowEventFilterTest, MouseEventCursors) {
+TEST_F(WindowManagerTest, MouseEventCursors) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   // Disable ash grid so that test can place a window at
   // specific location.
@@ -441,7 +440,7 @@ TEST_F(RootWindowEventFilterTest, MouseEventCursors) {
 #else
 #define MAYBE_TransformActivate TransformActivate
 #endif
-TEST_F(RootWindowEventFilterTest, MAYBE_TransformActivate) {
+TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
   // Disable ash grid so that test can place a window at
   // specific location.
   ash::Shell::GetInstance()->DisableWorkspaceGridLayout();
@@ -490,11 +489,11 @@ TEST_F(RootWindowEventFilterTest, MAYBE_TransformActivate) {
   EXPECT_EQ(w1.get(), w1->GetFocusManager()->GetFocusedWindow());
 }
 
-TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
+TEST_F(WindowManagerTest, AdditionalFilters) {
   // The IME event filter interferes with the basic key event propagation we
   // attempt to do here, so we remove it.
   Shell::TestApi shell_test(Shell::GetInstance());
-  Shell::GetInstance()->RemoveRootWindowEventFilter(
+  Shell::GetInstance()->RemoveEnvEventFilter(
       shell_test.input_method_event_filter());
 
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
@@ -509,11 +508,10 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
   scoped_ptr<aura::test::TestEventFilter> f2(new aura::test::TestEventFilter);
 
   // Adds them to root window event filter.
-  aura::shared::RootWindowEventFilter* root_window_filter =
-      static_cast<aura::shared::RootWindowEventFilter*>(
-          root_window->event_filter());
-  root_window_filter->AddFilter(f1.get());
-  root_window_filter->AddFilter(f2.get());
+  aura::shared::CompoundEventFilter* env_filter =
+      Shell::GetInstance()->env_filter();
+  env_filter->AddFilter(f1.get());
+  env_filter->AddFilter(f2.get());
 
   // Dispatches mouse and keyboard events.
   aura::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
@@ -551,7 +549,7 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
   f2->ResetCounts();
 
   // Remove f1 from additonal filters list.
-  root_window_filter->RemoveFilter(f1.get());
+  env_filter->RemoveFilter(f1.get());
 
   // Dispatches events.
   root_window->DispatchKeyEvent(&key_event);
@@ -563,20 +561,21 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
   EXPECT_EQ(1, f2->key_event_count());
   EXPECT_EQ(1, f2->mouse_event_count());
 
-  root_window_filter->RemoveFilter(f2.get());
+  env_filter->RemoveFilter(f2.get());
 }
 
 // We should show and hide the cursor in response to mouse and touch events as
 // requested.
-TEST_F(RootWindowEventFilterTest, UpdateCursorVisibility) {
+TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   root_window->SetBounds(gfx::Rect(0, 0, 500, 500));
   scoped_ptr<aura::Window> window(aura::test::CreateTestWindow(
       SK_ColorWHITE, -1, gfx::Rect(0, 0, 500, 500), NULL));
 
-  aura::shared::RootWindowEventFilter* root_window_filter =
-      static_cast<aura::shared::RootWindowEventFilter*>(
-          root_window->event_filter());
+  aura::shared::CompoundEventFilter* env_filter =
+      Shell::GetInstance()->env_filter();
+  aura::CursorManager* cursor_manager =
+      aura::Env::GetInstance()->cursor_manager();
 
   aura::MouseEvent mouse_moved(
       ui::ET_MOUSE_MOVED, gfx::Point(0, 0), gfx::Point(0, 0), 0x0);
@@ -585,21 +584,21 @@ TEST_F(RootWindowEventFilterTest, UpdateCursorVisibility) {
   aura::TouchEvent touch_pressed2(
       ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 1, getTime());
 
-  root_window_filter->set_update_cursor_visibility(true);
+  env_filter->set_update_cursor_visibility(true);
   root_window->DispatchMouseEvent(&mouse_moved);
-  EXPECT_TRUE(root_window->cursor_shown());
+  EXPECT_TRUE(cursor_manager->cursor_visible());
   root_window->DispatchTouchEvent(&touch_pressed1);
-  EXPECT_FALSE(root_window->cursor_shown());
+  EXPECT_FALSE(cursor_manager->cursor_visible());
   root_window->DispatchMouseEvent(&mouse_moved);
-  EXPECT_TRUE(root_window->cursor_shown());
+  EXPECT_TRUE(cursor_manager->cursor_visible());
 
-  root_window_filter->set_update_cursor_visibility(false);
-  root_window->ShowCursor(false);
+  env_filter->set_update_cursor_visibility(false);
+  cursor_manager->ShowCursor(false);
   root_window->DispatchMouseEvent(&mouse_moved);
-  EXPECT_FALSE(root_window->cursor_shown());
-  root_window->ShowCursor(true);
+  EXPECT_FALSE(cursor_manager->cursor_visible());
+  cursor_manager->ShowCursor(true);
   root_window->DispatchTouchEvent(&touch_pressed2);
-  EXPECT_TRUE(root_window->cursor_shown());
+  EXPECT_TRUE(cursor_manager->cursor_visible());
 }
 
 }  // namespace ash

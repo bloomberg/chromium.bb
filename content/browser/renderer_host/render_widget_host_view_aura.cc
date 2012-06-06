@@ -27,6 +27,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/aura/cursor_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -720,7 +721,7 @@ bool RenderWidgetHostViewAura::LockMouse() {
   mouse_locked_ = true;
 
   root_window->SetCapture(window_);
-  root_window->ShowCursor(false);
+  aura::Env::GetInstance()->cursor_manager()->ShowCursor(false);
   synthetic_move_sent_ = true;
   root_window->MoveCursorTo(window_->bounds().CenterPoint());
   if (aura::client::GetTooltipClient(root_window))
@@ -737,7 +738,7 @@ void RenderWidgetHostViewAura::UnlockMouse() {
 
   root_window->ReleaseCapture(window_);
   root_window->MoveCursorTo(unlocked_global_mouse_position_);
-  root_window->ShowCursor(true);
+  aura::Env::GetInstance()->cursor_manager()->ShowCursor(true);
   if (aura::client::GetTooltipClient(root_window))
     aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(true);
 

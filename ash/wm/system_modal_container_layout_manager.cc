@@ -191,7 +191,7 @@ void SystemModalContainerLayoutManager::CreateModalScreen() {
     modal_screen_->SetContentsView(new ScreenView);
     modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
 
-    Shell::GetInstance()->AddRootWindowEventFilter(modality_filter_.get());
+    Shell::GetInstance()->AddEnvEventFilter(modality_filter_.get());
   }
 
   ui::ScopedLayerAnimationSettings settings(
@@ -202,7 +202,7 @@ void SystemModalContainerLayoutManager::CreateModalScreen() {
 }
 
 void SystemModalContainerLayoutManager::DestroyModalScreen() {
-  Shell::GetInstance()->RemoveRootWindowEventFilter(modality_filter_.get());
+  Shell::GetInstance()->RemoveEnvEventFilter(modality_filter_.get());
   ui::ScopedLayerAnimationSettings settings(
       modal_screen_->GetNativeView()->layer()->GetAnimator());
   modal_screen_->Close();

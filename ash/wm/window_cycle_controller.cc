@@ -159,14 +159,14 @@ void WindowCycleController::StopCycling() {
   windows_.reset();
   // Remove our key event filter.
   if (event_filter_.get()) {
-    Shell::GetInstance()->RemoveRootWindowEventFilter(event_filter_.get());
+    Shell::GetInstance()->RemoveEnvEventFilter(event_filter_.get());
     event_filter_.reset();
   }
 }
 
 void WindowCycleController::InstallEventFilter() {
   event_filter_.reset(new WindowCycleEventFilter());
-  Shell::GetInstance()->AddRootWindowEventFilter(event_filter_.get());
+  Shell::GetInstance()->AddEnvEventFilter(event_filter_.get());
 }
 
 }  // namespace ash

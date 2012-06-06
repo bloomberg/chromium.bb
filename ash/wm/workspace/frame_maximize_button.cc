@@ -62,11 +62,11 @@ class FrameMaximizeButton::EscapeEventFilter : public aura::EventFilter {
 FrameMaximizeButton::EscapeEventFilter::EscapeEventFilter(
     FrameMaximizeButton* button)
     : button_(button) {
-  Shell::GetInstance()->AddRootWindowEventFilter(this);
+  Shell::GetInstance()->AddEnvEventFilter(this);
 }
 
 FrameMaximizeButton::EscapeEventFilter::~EscapeEventFilter() {
-  Shell::GetInstance()->RemoveRootWindowEventFilter(this);
+  Shell::GetInstance()->RemoveEnvEventFilter(this);
 }
 
 bool FrameMaximizeButton::EscapeEventFilter::PreHandleKeyEvent(

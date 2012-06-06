@@ -8,12 +8,19 @@
 #include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "ui/aura/cursor_manager.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
 namespace ash {
 namespace test {
+namespace {
+bool cursor_visible() {
+  return aura::Env::GetInstance()->cursor_manager()->cursor_visible();
+}
+}
 
 // Fake implementation of PowerButtonControllerDelegate that just logs requests
 // to lock the screen and shut down the device.
@@ -114,7 +121,7 @@ TEST_F(PowerButtonControllerTest, LegacyLockAndShutDown) {
       test_api_->ContainerGroupIsAnimated(
           PowerButtonController::ALL_CONTAINERS,
           PowerButtonController::ANIMATION_FAST_CLOSE));
-  EXPECT_FALSE(Shell::GetPrimaryRootWindow()->cursor_shown());
+  EXPECT_FALSE(cursor_visible());
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
   test_api_->trigger_real_shutdown_timeout();
   EXPECT_EQ(1, delegate_->num_shutdown_requests());
@@ -481,7 +488,7 @@ TEST_F(PowerButtonControllerTest, ShutdownWithoutButton) {
           PowerButtonController::ALL_CONTAINERS,
           PowerButtonController::ANIMATION_HIDE));
   EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
-  EXPECT_FALSE(Shell::GetPrimaryRootWindow()->cursor_shown());
+  EXPECT_FALSE(cursor_visible());
 }
 
 // Test that we display the fast-close animation and shut down when we get an
@@ -498,7 +505,7 @@ TEST_F(PowerButtonControllerTest, RequestShutdownFromLoginScreen) {
           PowerButtonController::SCREEN_LOCKER_AND_RELATED_CONTAINERS,
           PowerButtonController::ANIMATION_FAST_CLOSE));
   EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
-  EXPECT_FALSE(Shell::GetPrimaryRootWindow()->cursor_shown());
+  EXPECT_FALSE(cursor_visible());
 
   EXPECT_EQ(0, delegate_->num_shutdown_requests());
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
@@ -519,7 +526,7 @@ TEST_F(PowerButtonControllerTest, RequestShutdownFromLockScreen) {
           PowerButtonController::SCREEN_LOCKER_AND_RELATED_CONTAINERS,
           PowerButtonController::ANIMATION_FAST_CLOSE));
   EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
-  EXPECT_FALSE(Shell::GetPrimaryRootWindow()->cursor_shown());
+  EXPECT_FALSE(cursor_visible());
 
   EXPECT_EQ(0, delegate_->num_shutdown_requests());
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());

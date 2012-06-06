@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "ui/aura/env.h"
+
+#include "ui/aura/cursor_manager.h"
 #include "ui/aura/env_observer.h"
+#include "ui/aura/event_filter.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
@@ -60,6 +63,10 @@ void Env::SetMonitorManager(MonitorManager* monitor_manager) {
   // Update the monitor manager with latest info.
   monitor_change_observer_->NotifyMonitorChange();
 #endif
+}
+
+void Env::SetEventFilter(EventFilter* event_filter) {
+  event_filter_.reset(event_filter);
 }
 
 #if !defined(OS_MACOSX)

@@ -12,7 +12,8 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
-#include "ui/aura/shared/root_window_event_filter.h"
+#include "ui/aura/cursor_manager.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -44,8 +45,7 @@ const int WorkspaceWindowResizer::kMinOnscreenSize = 20;
 const int WorkspaceWindowResizer::kMinOnscreenHeight = 32;
 
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
-  if (root_filter_)
-    root_filter_->UnlockCursor();
+  aura::Env::GetInstance()->cursor_manager()->UnlockCursor();
 }
 
 // static
@@ -148,15 +148,12 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
     : details_(details),
       attached_windows_(attached_windows),
       did_move_or_resize_(false),
-      root_filter_(NULL),
       total_min_(0),
       total_initial_size_(0),
       snap_type_(SNAP_NONE),
       num_mouse_moves_since_bounds_change_(0) {
   DCHECK(details_.is_resizable);
-  root_filter_ = Shell::GetInstance()->root_filter();
-  if (root_filter_)
-    root_filter_->LockCursor();
+  aura::Env::GetInstance()->cursor_manager()->LockCursor();
 
   // Only support attaching to the right/bottom.
   DCHECK(attached_windows_.empty() ||

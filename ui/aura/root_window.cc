@@ -72,6 +72,8 @@ void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
       filters->push_back(target->event_filter());
     target = target->parent();
   }
+  if (Env::GetInstance()->event_filter())
+    filters->push_back(Env::GetInstance()->event_filter());
 }
 
 float GetDeviceScaleFactorFromMonitor(const aura::Window* window) {
@@ -118,7 +120,6 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       mouse_button_flags_(0),
       touch_ids_down_(0),
       last_cursor_(ui::kCursorNull),
-      cursor_shown_(true),
       capture_window_(NULL),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),

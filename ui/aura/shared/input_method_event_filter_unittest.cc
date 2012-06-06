@@ -8,7 +8,7 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/shared/root_window_event_filter.h"
+#include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_activation_client.h"
@@ -29,8 +29,8 @@ namespace test {
 typedef AuraTestBase InputMethodEventFilterTest;
 
 TEST_F(InputMethodEventFilterTest, TestInputMethodProperty) {
-  aura::shared::RootWindowEventFilter* root_filter =
-      new aura::shared::RootWindowEventFilter(root_window());
+  aura::shared::CompoundEventFilter* root_filter =
+      new aura::shared::CompoundEventFilter;
   root_window()->SetEventFilter(root_filter);
 
   // Add the InputMethodEventFilter before the TestEventFilter.
@@ -51,8 +51,8 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   aura::client::SetActivationClient(root_window(),
                                     new TestActivationClient(root_window()));
 
-  aura::shared::RootWindowEventFilter* root_filter =
-      new shared::RootWindowEventFilter(root_window());
+  aura::shared::CompoundEventFilter* root_filter =
+      new shared::CompoundEventFilter;
   root_window()->SetEventFilter(root_filter);
 
   // Add the InputMethodEventFilter before the TestEventFilter.

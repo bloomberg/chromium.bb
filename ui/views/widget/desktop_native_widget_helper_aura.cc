@@ -6,12 +6,13 @@
 
 #include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/cursor_manager.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/shared/input_method_event_filter.h"
-#include "ui/aura/shared/root_window_event_filter.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 #if defined(OS_WIN)
@@ -109,12 +110,16 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
     // will probably be SetBounds()ed soon.
     bounds.set_size(gfx::Size(100, 100));
   }
+  // TODO(erg): Implement aura::CursorManager::Delegate to control
+  // cursor's shape and visibility.
+
   root_window_.reset(new aura::RootWindow(bounds));
   root_window_->Init();
   root_window_->set_focus_manager(new aura::FocusManager);
 
-  root_window_event_filter_ =
-      new aura::shared::RootWindowEventFilter(root_window_.get());
+  // No event filter for aura::Env. Create CompoundEvnetFilter per RootWindow.
+  root_window_event_filter_ = new aura::shared::CompoundEventFilter;
+  // Pass ownership of the filter to the root_window.
   root_window_->SetEventFilter(root_window_event_filter_);
 
   input_method_filter_.reset(new aura::shared::InputMethodEventFilter());

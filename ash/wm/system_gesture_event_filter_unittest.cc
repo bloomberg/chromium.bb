@@ -119,7 +119,7 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
 
   // Without the event filter, the touch shouldn't be consumed by the
   // system event handler.
-  Shell::GetInstance()->RemoveRootWindowEventFilter(
+  Shell::GetInstance()->RemoveEnvEventFilter(
       shell_test.system_gesture_event_filter());
 
   aura::GestureEvent* event2 = new aura::GestureEvent(

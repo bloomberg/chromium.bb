@@ -78,11 +78,11 @@ ShelfLayoutManager::AutoHideEventFilter::AutoHideEventFilter(
     ShelfLayoutManager* shelf)
     : shelf_(shelf),
       in_mouse_drag_(false) {
-  Shell::GetInstance()->AddRootWindowEventFilter(this);
+  Shell::GetInstance()->AddEnvEventFilter(this);
 }
 
 ShelfLayoutManager::AutoHideEventFilter::~AutoHideEventFilter() {
-  Shell::GetInstance()->RemoveRootWindowEventFilter(this);
+  Shell::GetInstance()->RemoveEnvEventFilter(this);
 }
 
 bool ShelfLayoutManager::AutoHideEventFilter::PreHandleKeyEvent(

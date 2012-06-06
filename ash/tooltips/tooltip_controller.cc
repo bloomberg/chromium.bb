@@ -13,6 +13,8 @@
 #include "base/string_split.h"
 #include "base/time.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/cursor_manager.h"
+#include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -375,7 +377,7 @@ void TooltipController::TooltipTimerFired() {
 
 void TooltipController::UpdateIfRequired() {
   if (!tooltips_enabled_ || mouse_pressed_ || IsDragDropInProgress() ||
-      !Shell::GetPrimaryRootWindow()->cursor_shown()) {
+      !aura::Env::GetInstance()->cursor_manager()->cursor_visible()) {
     tooltip_->Hide();
     return;
   }

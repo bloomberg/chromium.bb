@@ -416,12 +416,12 @@ SystemTrayBubble::SystemTrayBubble(
       anchor_type_(ANCHOR_TYPE_TRAY),
       autoclose_delay_(0) {
   if (bubble_type_ != BUBBLE_TYPE_NOTIFICATION)
-    Shell::GetInstance()->AddRootWindowEventFilter(this);
+    Shell::GetInstance()->AddEnvEventFilter(this);
 }
 
 SystemTrayBubble::~SystemTrayBubble() {
   if (bubble_type_ != BUBBLE_TYPE_NOTIFICATION)
-    Shell::GetInstance()->RemoveRootWindowEventFilter(this);
+    Shell::GetInstance()->RemoveEnvEventFilter(this);
 
   DestroyItemViews();
   // Reset the host pointer in bubble_view_ in case its destruction is deferred.

@@ -69,13 +69,14 @@
 #include "grit/ui_resources.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/user_action_client.h"
+#include "ui/aura/cursor_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/shared/input_method_event_filter.h"
-#include "ui/aura/shared/root_window_event_filter.h"
 #include "ui/aura/ui_controls_aura.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -562,7 +563,7 @@ internal::WorkspaceController* Shell::TestApi::workspace_controller() {
 Shell::Shell(ShellDelegate* delegate)
     : root_window_(aura::MonitorManager::CreateRootWindowForPrimaryMonitor()),
       screen_(new ScreenAsh(root_window_.get())),
-      root_filter_(NULL),
+      env_filter_(NULL),
       delegate_(delegate),
 #if defined(OS_CHROMEOS)
       output_configurator_(new chromeos::OutputConfigurator()),
@@ -584,26 +585,27 @@ Shell::Shell(ShellDelegate* delegate)
 
 Shell::~Shell() {
   views::FocusManagerFactory::Install(NULL);
+  aura::Env::GetInstance()->cursor_manager()->set_delegate(NULL);
 
   // Please keep in same order as in Init() because it's easy to miss one.
-  RemoveRootWindowEventFilter(key_rewriter_filter_.get());
-  RemoveRootWindowEventFilter(partial_screenshot_filter_.get());
-  RemoveRootWindowEventFilter(input_method_filter_.get());
-  RemoveRootWindowEventFilter(window_modality_controller_.get());
-  RemoveRootWindowEventFilter(system_gesture_filter_.get());
-  RemoveRootWindowEventFilter(slow_animation_filter_.get());
+  RemoveEnvEventFilter(key_rewriter_filter_.get());
+  RemoveEnvEventFilter(partial_screenshot_filter_.get());
+  RemoveEnvEventFilter(input_method_filter_.get());
+  RemoveEnvEventFilter(window_modality_controller_.get());
+  RemoveEnvEventFilter(system_gesture_filter_.get());
+  RemoveEnvEventFilter(slow_animation_filter_.get());
 #if !defined(OS_MACOSX)
-  RemoveRootWindowEventFilter(accelerator_filter_.get());
+  RemoveEnvEventFilter(accelerator_filter_.get());
 #endif
   if (touch_observer_hud_.get())
-    RemoveRootWindowEventFilter(touch_observer_hud_.get());
+    RemoveEnvEventFilter(touch_observer_hud_.get());
 
   // Close background widget now so that the focus manager of the
   // widget gets deleted in the final message loop run.
   root_window_layout_->SetBackgroundWidget(NULL);
 
   // TooltipController is deleted with the Shell so removing its references.
-  RemoveRootWindowEventFilter(tooltip_controller_.get());
+  RemoveEnvEventFilter(tooltip_controller_.get());
   aura::client::SetTooltipClient(GetPrimaryRootWindow(), NULL);
 
   // Make sure we delete WorkspaceController before launcher is
@@ -708,13 +710,18 @@ void Shell::Init() {
   // Launcher, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
+  env_filter_ = new aura::shared::CompoundEventFilter;
+  // Pass ownership of the filter to the Env.
+  aura::Env::GetInstance()->SetEventFilter(env_filter_);
+
+  aura::Env::GetInstance()->cursor_manager()->set_delegate(this);
+
   aura::RootWindow* root_window = GetPrimaryRootWindow();
   active_root_window_ = root_window;
 
   focus_manager_.reset(new aura::FocusManager);
   root_window_->set_focus_manager(focus_manager_.get());
 
-  root_filter_ = new aura::shared::RootWindowEventFilter(root_window);
 #if !defined(OS_MACOSX)
   nested_dispatcher_controller_.reset(new NestedDispatcherController);
   aura::client::SetDispatcherClient(root_window,
@@ -722,41 +729,39 @@ void Shell::Init() {
   accelerator_controller_.reset(new AcceleratorController);
 #endif
   shell_context_menu_.reset(new internal::ShellContextMenu);
-  // Pass ownership of the filter to the root window.
-  root_window->SetEventFilter(root_filter_);
 
   // KeyRewriterEventFilter must be the first one.
-  DCHECK(!GetRootWindowEventFilterCount());
+  DCHECK(!GetEnvEventFilterCount());
   key_rewriter_filter_.reset(new internal::KeyRewriterEventFilter);
-  AddRootWindowEventFilter(key_rewriter_filter_.get());
+  AddEnvEventFilter(key_rewriter_filter_.get());
 
   // PartialScreenshotEventFilter must be the second one to capture key
   // events when the taking partial screenshot UI is there.
-  DCHECK_EQ(1U, GetRootWindowEventFilterCount());
+  DCHECK_EQ(1U, GetEnvEventFilterCount());
   partial_screenshot_filter_.reset(new internal::PartialScreenshotEventFilter);
-  AddRootWindowEventFilter(partial_screenshot_filter_.get());
+  AddEnvEventFilter(partial_screenshot_filter_.get());
   AddShellObserver(partial_screenshot_filter_.get());
 
   // InputMethodEventFilter must be the third one. It has to be added before
   // AcceleratorFilter.
-  DCHECK_EQ(2U, GetRootWindowEventFilterCount());
+  DCHECK_EQ(2U, GetEnvEventFilterCount());
   input_method_filter_.reset(new aura::shared::InputMethodEventFilter());
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window);
-  AddRootWindowEventFilter(input_method_filter_.get());
+  AddEnvEventFilter(input_method_filter_.get());
 #if !defined(OS_MACOSX)
   accelerator_filter_.reset(new internal::AcceleratorFilter);
-  AddRootWindowEventFilter(accelerator_filter_.get());
+  AddEnvEventFilter(accelerator_filter_.get());
 #endif
 
   system_gesture_filter_.reset(new internal::SystemGestureEventFilter);
-  AddRootWindowEventFilter(system_gesture_filter_.get());
+  AddEnvEventFilter(system_gesture_filter_.get());
 
   slow_animation_filter_.reset(new internal::SlowAnimationEventFilter);
-  AddRootWindowEventFilter(slow_animation_filter_.get());
+  AddEnvEventFilter(slow_animation_filter_.get());
 
   root_window->SetCursor(ui::kCursorPointer);
   if (initially_hide_cursor_)
-    root_window->ShowCursor(false);
+    aura::Env::GetInstance()->cursor_manager()->ShowCursor(false);
 
   activation_controller_.reset(
       new internal::ActivationController(focus_manager_.get()));
@@ -768,7 +773,7 @@ void Shell::Init() {
 
   if (command_line->HasSwitch(switches::kAshTouchHud)) {
     touch_observer_hud_.reset(new internal::TouchObserverHUD);
-    AddRootWindowEventFilter(touch_observer_hud_.get());
+    AddEnvEventFilter(touch_observer_hud_.get());
   }
 
   stacking_controller_.reset(new internal::StackingController);
@@ -829,7 +834,7 @@ void Shell::Init() {
   user_wallpaper_delegate_->SetLoggedInUserWallpaper();
 
   window_modality_controller_.reset(new internal::WindowModalityController);
-  AddRootWindowEventFilter(window_modality_controller_.get());
+  AddEnvEventFilter(window_modality_controller_.get());
 
   visibility_controller_.reset(new internal::VisibilityController);
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
@@ -841,7 +846,7 @@ void Shell::Init() {
       new internal::TooltipController(drag_drop_controller_.get()));
   aura::client::SetTooltipClient(root_window, tooltip_controller_.get());
 
-  AddRootWindowEventFilter(tooltip_controller_.get());
+  AddEnvEventFilter(tooltip_controller_.get());
 
   magnification_controller_.reset(new internal::MagnificationController);
   high_contrast_controller_.reset(new HighContrastController);
@@ -862,19 +867,16 @@ const aura::Window* Shell::GetContainer(int container_id) const {
   return GetPrimaryRootWindow()->GetChildById(container_id);
 }
 
-void Shell::AddRootWindowEventFilter(aura::EventFilter* filter) {
-  static_cast<aura::shared::RootWindowEventFilter*>(
-      GetPrimaryRootWindow()->event_filter())->AddFilter(filter);
+void Shell::AddEnvEventFilter(aura::EventFilter* filter) {
+  env_filter_->AddFilter(filter);
 }
 
-void Shell::RemoveRootWindowEventFilter(aura::EventFilter* filter) {
-  static_cast<aura::shared::RootWindowEventFilter*>(
-      GetPrimaryRootWindow()->event_filter())->RemoveFilter(filter);
+void Shell::RemoveEnvEventFilter(aura::EventFilter* filter) {
+  env_filter_->RemoveFilter(filter);
 }
 
-size_t Shell::GetRootWindowEventFilterCount() const {
-  return static_cast<aura::shared::RootWindowEventFilter*>(
-      GetPrimaryRootWindow()->event_filter())->GetFilterCount();
+size_t Shell::GetEnvEventFilterCount() const {
+  return env_filter_->GetFilterCount();
 }
 
 void Shell::ShowBackgroundMenu(views::Widget* widget,
@@ -1069,6 +1071,15 @@ void Shell::InitLayoutManagers() {
 void Shell::DisableWorkspaceGridLayout() {
   if (workspace_controller_.get())
     workspace_controller_->workspace_manager()->set_grid_size(0);
+}
+
+void Shell::SetCursor(gfx::NativeCursor cursor) {
+  // TODO(oshima): set cursor to all root windows.
+  GetPrimaryRootWindow()->SetCursor(cursor);
+}
+
+void Shell::ShowCursor(bool visible) {
+  GetPrimaryRootWindow()->ShowCursor(visible);
 }
 
 }  // namespace ash

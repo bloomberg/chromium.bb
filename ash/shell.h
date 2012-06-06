@@ -17,6 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "ui/aura/cursor_delegate.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/size.h"
 
@@ -32,8 +33,8 @@ namespace client {
 class UserActionClient;
 }
 namespace shared {
+class CompoundEventFilter;
 class InputMethodEventFilter;
-class RootWindowEventFilter;
 }
 }
 namespace chromeos {
@@ -107,7 +108,7 @@ class WorkspaceController;
 //
 // Upon creation, the Shell sets itself as the RootWindow's delegate, which
 // takes ownership of the Shell.
-class ASH_EXPORT Shell {
+class ASH_EXPORT Shell : aura::CursorDelegate {
  public:
   enum Direction {
     FORWARD,
@@ -168,10 +169,10 @@ class ASH_EXPORT Shell {
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
 
-  // Adds or removes |filter| from the RootWindowEventFilter.
-  void AddRootWindowEventFilter(aura::EventFilter* filter);
-  void RemoveRootWindowEventFilter(aura::EventFilter* filter);
-  size_t GetRootWindowEventFilterCount() const;
+  // Adds or removes |filter| from the aura::Env's CompoundEventFilter.
+  void AddEnvEventFilter(aura::EventFilter* filter);
+  void RemoveEnvEventFilter(aura::EventFilter* filter);
+  size_t GetEnvEventFilterCount() const;
 
   // Shows the background menu over |widget|.
   void ShowBackgroundMenu(views::Widget* widget, const gfx::Point& location);
@@ -229,8 +230,8 @@ class ASH_EXPORT Shell {
   }
 #endif  // !defined(OS_MACOSX)
 
-  aura::shared::RootWindowEventFilter* root_filter() {
-    return root_filter_;
+  aura::shared::CompoundEventFilter* env_filter() {
+    return env_filter_;
   }
   internal::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
@@ -332,8 +333,8 @@ class ASH_EXPORT Shell {
 #endif  // defined(OS_CHROMEOS)
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(RootWindowEventFilterTest, MouseEventCursors);
-  FRIEND_TEST_ALL_PREFIXES(RootWindowEventFilterTest, TransformActivate);
+  FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
+  FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, TransformActivate);
 
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
 
@@ -348,6 +349,10 @@ class ASH_EXPORT Shell {
   // Disables the workspace grid layout.
   void DisableWorkspaceGridLayout();
 
+  // aura::CursorManager::Delegate overrides:
+  virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
+  virtual void ShowCursor(bool visible) OVERRIDE;
+
   static Shell* instance_;
 
   // If set before the Shell is initialized, the mouse cursor will be hidden
@@ -360,7 +365,8 @@ class ASH_EXPORT Shell {
   // Active root window. Never become NULL.
   aura::RootWindow* active_root_window_;
 
-  aura::shared::RootWindowEventFilter* root_filter_;  // not owned
+  // The CompoundEventFilter owned by aura::Env object.
+  aura::shared::CompoundEventFilter* env_filter_;
 
   std::vector<WindowAndBoundsPair> to_restore_;
 

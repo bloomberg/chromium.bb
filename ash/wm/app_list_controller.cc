@@ -151,7 +151,7 @@ void AppListController::SetView(app_list::AppListView* view) {
     view_ = view;
     views::Widget* widget = view_->GetWidget();
     widget->AddObserver(this);
-    Shell::GetInstance()->AddRootWindowEventFilter(this);
+    Shell::GetInstance()->AddEnvEventFilter(this);
     widget->GetNativeView()->GetRootWindow()->AddRootWindowObserver(this);
     widget->GetNativeView()->GetFocusManager()->AddObserver(this);
     widget->SetOpacity(0);
@@ -170,7 +170,7 @@ void AppListController::ResetView() {
   views::Widget* widget = view_->GetWidget();
   widget->RemoveObserver(this);
   GetLayer(widget)->GetAnimator()->RemoveObserver(this);
-  Shell::GetInstance()->RemoveRootWindowEventFilter(this);
+  Shell::GetInstance()->RemoveEnvEventFilter(this);
   widget->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
   widget->GetNativeView()->GetFocusManager()->RemoveObserver(this);
   view_ = NULL;
