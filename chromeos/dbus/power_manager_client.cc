@@ -36,6 +36,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
     NUM_LOCK_SCREEN_STATES
   };
 
+  enum UnlockScreensState {
+    UNLOCK_SCREEN_REQUESTED,  // Unlock screen is requested.
+    UNLOCK_SCREEN_REQUEST_SUCCEEDED,  // Method call succeeded.
+    UNLOCK_SCREEN_REQUEST_FAILED,  // Method call failed.
+    UNLOCK_SCREEN_FINISHED,  // Signal is received.
+    NUM_UNLOCK_SCREEN_STATES
+  };
+
   explicit PowerManagerClientImpl(dbus::Bus* bus)
       : power_manager_proxy_(NULL),
         screen_locked_(false),
@@ -305,7 +313,18 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   virtual void NotifyScreenUnlockRequested() OVERRIDE {
-    SimpleMethodCallToPowerManager(power_manager::kRequestUnlockScreenMethod);
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kRequestUnlockScreenMethod);
+    UMA_HISTOGRAM_ENUMERATION("LockScreen.UnlockScreenPath",
+                              UNLOCK_SCREEN_REQUESTED,
+                              NUM_UNLOCK_SCREEN_STATES);
+    power_manager_proxy_->CallMethodWithErrorCallback(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&PowerManagerClientImpl::OnScreenUnlockRequested,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::OnScreenUnlockRequestedError,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   virtual void NotifyScreenUnlockCompleted() OVERRIDE {
@@ -498,6 +517,27 @@ class PowerManagerClientImpl : public PowerManagerClient {
                               NUM_LOCK_SCREEN_STATES);
   }
 
+  void OnScreenUnlockRequested(dbus::Response* response) {
+    UMA_HISTOGRAM_ENUMERATION("LockScreen.UnlockScreenPath",
+                              UNLOCK_SCREEN_REQUEST_SUCCEEDED,
+                              NUM_UNLOCK_SCREEN_STATES);
+  }
+
+  void OnScreenUnlockRequestedError(dbus::ErrorResponse* error_response) {
+    if (error_response) {
+      dbus::MessageReader reader(error_response);
+      std::string error_message;
+      reader.PopString(&error_message);
+      LOG(ERROR) << "Failed to call ScreenUnlockRequested: "
+                 << error_response->GetErrorName()
+                 << ": " << error_message;
+    }
+    UMA_HISTOGRAM_ENUMERATION("LockScreen.UnlockScreenPath",
+                              UNLOCK_SCREEN_REQUEST_FAILED,
+                              NUM_UNLOCK_SCREEN_STATES);
+  }
+
+
   void OnGetScreenBrightnessPercent(
       const GetScreenBrightnessPercentCallback& callback,
       dbus::Response* response) {
@@ -528,6 +568,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   void ScreenUnlockSignalReceived(dbus::Signal* signal) {
     screen_locked_ = false;
+    UMA_HISTOGRAM_ENUMERATION("LockScreen.UnlockScreenPath",
+                              UNLOCK_SCREEN_FINISHED,
+                              NUM_UNLOCK_SCREEN_STATES);
     FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen());
   }
 
