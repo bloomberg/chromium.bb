@@ -42,7 +42,7 @@
             'src/libusb/os',
           ],
           'conditions': [
-            [ 'OS == "linux"', {
+            [ 'OS == "linux" or OS == "android"', {
               'sources': [
                 'src/libusb/os/linux_usbfs.c',
                 'src/libusb/os/threads_posix.c',

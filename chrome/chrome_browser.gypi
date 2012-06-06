@@ -53,6 +53,7 @@
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
+        '../third_party/libusb/libusb.gyp:libusb',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/zlib/zlib.gyp:zlib',
@@ -4703,11 +4704,6 @@
             ['exclude', '^browser/ui/webui/signin/'],
             ['exclude', '^browser/ui/webui/sync_promo'],
             ['exclude', '^browser/usb/'],
-          ],
-        }],
-        ['OS!="android"', {
-          'dependencies': [
-            '../third_party/libusb/libusb.gyp:libusb',
           ],
         }],
         ['OS=="mac"', {
