@@ -257,8 +257,9 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
       ROLE_SYSTEM_TOOLBAR);
 }
 
+// http://crbug.com/114111
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       TestAboutChromeViewAccObj) {
+                       DISABLED_TestAboutChromeViewAccObj) {
   //  Firstly, test that the WindowDelegate got updated.
   views::Widget* about_chrome_window =
       GetBrowserView()->DoShowAboutChromeDialog();
