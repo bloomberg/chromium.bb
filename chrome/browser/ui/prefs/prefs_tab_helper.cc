@@ -130,18 +130,30 @@ void RegisterFontFamilyMapObserver(PrefChangeRegistrar* registrar,
   }
 }
 
-struct PerScriptFontDefault {
+struct FontDefault {
   const char* pref_name;
   int resource_id;
+
+  // The locale that matches the script this default pref is for. When the
+  // locale of the browser process is |native_locale|, the default is not
+  // registered to avoid overriding the user's font pref (see comments in
+  // PrefTabsHelper::RegisterUserPrefs). For example, for an Arabic font pref,
+  // |native_locale| is "ar". When |native_locale| is NULL, the default is
+  // registered regardless of locale.
   const char* native_locale;
 };
 
-// Per-script font pref defaults.  The prefs that have defaults vary by
-// platform, since not all platforms have fonts for all scripts for all generic
-// families.
+// Font pref defaults.  The prefs that have defaults vary by platform, since not
+// all platforms have fonts for all scripts for all generic families.
 // TODO(falken): add proper defaults when possible for all
 // platforms/scripts/generic families.
-const PerScriptFontDefault kPerScriptFontDefaults[] = {
+const FontDefault kFontDefaults[] = {
+  { prefs::kWebKitStandardFontFamily, IDS_STANDARD_FONT_FAMILY, NULL },
+  { prefs::kWebKitFixedFontFamily, IDS_FIXED_FONT_FAMILY, NULL },
+  { prefs::kWebKitSerifFontFamily, IDS_SERIF_FONT_FAMILY, NULL },
+  { prefs::kWebKitSansSerifFontFamily, IDS_SANS_SERIF_FONT_FAMILY, NULL },
+  { prefs::kWebKitCursiveFontFamily, IDS_CURSIVE_FONT_FAMILY, NULL },
+  { prefs::kWebKitFantasyFontFamily, IDS_FANTASY_FONT_FAMILY, NULL },
 #if defined(OS_CHROMEOS)
   { prefs::kWebKitStandardFontFamilyArabic, IDS_STANDARD_FONT_FAMILY_ARABIC,
     "ar" },
@@ -240,13 +252,7 @@ const PerScriptFontDefault kPerScriptFontDefaults[] = {
 #endif
 };
 
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)
-// To avoid Clang warning, only define kPerScriptFontDefaultsLength when it is
-// non-zero.  When it is zero, code like
-//  for (size_t i = 0; i < kPerScriptFontDefaultsLength; ++i)
-// causes a warning due to comparison of unsigned expression < 0.
-const size_t kPerScriptFontDefaultsLength = arraysize(kPerScriptFontDefaults);
-#endif
+const size_t kFontDefaultsLength = arraysize(kFontDefaults);
 
 const struct {
   const char* from;
@@ -420,32 +426,11 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterLocalizedStringPref(prefs::kDefaultCharset,
                                      IDS_DEFAULT_ENCODING,
                                      PrefService::SYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitStandardFontFamily,
-                                     IDS_STANDARD_FONT_FAMILY,
-                                     PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitFixedFontFamily,
-                                     IDS_FIXED_FONT_FAMILY,
-                                     PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitSerifFontFamily,
-                                     IDS_SERIF_FONT_FAMILY,
-                                     PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitSansSerifFontFamily,
-                                     IDS_SANS_SERIF_FONT_FAMILY,
-                                     PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitCursiveFontFamily,
-                                     IDS_CURSIVE_FONT_FAMILY,
-                                     PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitFantasyFontFamily,
-                                     IDS_FANTASY_FONT_FAMILY,
-                                     PrefService::UNSYNCABLE_PREF);
 
-  // Register per-script font prefs that have defaults.
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)
-  // As explained by its definition, kPerScriptFontDefaultsLength is only
-  // defined for platforms where it would be non-zero.
+  // Register font prefs that have defaults.
   std::string locale = g_browser_process->GetApplicationLocale();
-  for (size_t i = 0; i < kPerScriptFontDefaultsLength; ++i) {
-    const PerScriptFontDefault& pref = kPerScriptFontDefaults[i];
+  for (size_t i = 0; i < kFontDefaultsLength; ++i) {
+    const FontDefault& pref = kFontDefaults[i];
     // Suppress default per-script font when the script matches the browser's
     // locale.  Otherwise, the default would override the user's preferences
     // when viewing pages in their native language.  This would be bad
@@ -453,15 +438,15 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
     // their per-script font prefs.  This code can possibly be removed later if
     // users can easily access per-script font prefs (e.g., via the extensions
     // workflow), or the problem turns out to not be really critical after all.
-    if (!StartsWithASCII(locale, pref.native_locale, false)) {
+    if (pref.native_locale == NULL ||
+        !StartsWithASCII(locale, pref.native_locale, false)) {
       prefs->RegisterLocalizedStringPref(pref.pref_name,
                                          pref.resource_id,
                                          PrefService::UNSYNCABLE_PREF);
     }
   }
-#endif
 
-  // Register the rest of the per-script font prefs.
+  // Register font prefs that don't have defaults.
   RegisterFontFamilyMap(prefs, prefs::kWebKitStandardFontFamilyMap);
   RegisterFontFamilyMap(prefs, prefs::kWebKitFixedFontFamilyMap);
   RegisterFontFamilyMap(prefs, prefs::kWebKitSerifFontFamilyMap);
