@@ -7,7 +7,12 @@ var href = window.location.href;
 var queryBegin = href.lastIndexOf('?') + 1;
 var port = href.slice(queryBegin);
 var url = 'wss://localhost:' + port;
-var ws = new WebSocket(url);
+var ws;
+var cb = function() {
+  ws = new WebSocket(url);
+  ws.onclose = cb;
+}
+cb();
 </script>
 </head>
 </html>

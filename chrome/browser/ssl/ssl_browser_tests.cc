@@ -522,7 +522,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoForward) {
 }
 
 // Visit a HTTP page which request WSS connection to a server providing invalid
-// certificate. Close the page while WSS connection waits for UI.
+// certificate. Close the page while WSS connection waits for SSLManager's
+// response from UI thread.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndClose) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
@@ -542,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndClose) {
       https_server_expired_.host_port_pair().port());
   GURL slaveUrl(slaveUrlPath);
 
-  // Create tabs and visit pages which create hanging WebSocket connections.
+  // Create tabs and visit pages which keep on creating wss connections.
   TabContentsWrapper* tabs[16];
   for (int i = 0; i < 16; ++i) {
     tabs[i] = browser()->AddSelectedTabWithURL(
@@ -550,8 +551,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndClose) {
   }
   browser()->SelectNextTab();
 
-  // Visit a page which causes a hanging WebSocket connection. After waiting
-  // for two round trip time, the title will be changed to 'PASS'.
+  // Visit a page which waits for one TLS handshake failure.
+  // The title will be changed to 'PASS'.
   ui_test_utils::NavigateToURL(browser(), masterUrl);
   const string16 result = watcher.WaitAndGetTitle();
   EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
