@@ -332,6 +332,9 @@ void OutOfProcessPPAPITest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kPpapiOutOfProcess);
 }
 
+PPAPINaClTest::PPAPINaClTest() {
+}
+
 void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
   PPAPITestBase::SetUpCommandLine(command_line);
 
@@ -345,17 +348,13 @@ void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
 }
 
 // Append the correct mode and testcase string
-std::string PPAPINaClNewlibTest::BuildQuery(const std::string& base,
+std::string PPAPINaClTest::BuildQuery(const std::string& base,
                                       const std::string& test_case) {
-  return StringPrintf("%smode=nacl_newlib&testcase=%s", base.c_str(),
+  return StringPrintf("%smode=nacl&testcase=%s", base.c_str(),
                       test_case.c_str());
 }
 
-// Append the correct mode and testcase string
-std::string PPAPINaClGLibcTest::BuildQuery(const std::string& base,
-                                      const std::string& test_case) {
-  return StringPrintf("%smode=nacl_glibc&testcase=%s", base.c_str(),
-                      test_case.c_str());
+PPAPINaClTestDisallowedSockets::PPAPINaClTestDisallowedSockets() {
 }
 
 void PPAPINaClTestDisallowedSockets::SetUpCommandLine(
@@ -374,7 +373,7 @@ void PPAPINaClTestDisallowedSockets::SetUpCommandLine(
 std::string PPAPINaClTestDisallowedSockets::BuildQuery(
     const std::string& base,
     const std::string& test_case) {
-  return StringPrintf("%smode=nacl_newlib&testcase=%s", base.c_str(),
+  return StringPrintf("%smode=nacl&testcase=%s", base.c_str(),
                       test_case.c_str());
 }
 
@@ -442,10 +441,7 @@ std::string PPAPINaClTestDisallowedSockets::BuildQuery(
 
 // NaCl based PPAPI tests
 #define TEST_PPAPI_NACL_VIA_HTTP(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClTest, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
 
@@ -457,28 +453,19 @@ std::string PPAPINaClTestDisallowedSockets::BuildQuery(
 
 // NaCl based PPAPI tests with SSL server
 #define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClTest, test_name) { \
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
     }
 
 // NaCl based PPAPI tests with WebSocket server
 #define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClTest, test_name) { \
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     }
 
 // NaCl based PPAPI tests requiring an Audio device.
 #define TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestViaHTTPIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClTest, test_name) { \
       RunTestViaHTTPIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
     }
 #endif
