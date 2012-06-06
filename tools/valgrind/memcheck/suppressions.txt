@@ -5192,9 +5192,6 @@
    fun:_ZN11WebViewHost23createGraphicsContext3DERKN6WebKit20WebGraphicsContext3D10AttributesE
    fun:_ZN6WebKit11WebViewImpl33createCompositorGraphicsContext3DEv
    fun:_ZN6WebKit11WebViewImpl15createContext3DEv
-   fun:_ZN6WebKit20WebLayerTreeViewImpl13createContextEv
-   fun:_ZN7WebCore15CCLayerTreeHost13createContextEv
-   fun:_ZN7WebCore19CCSingleThreadProxy17initializeContextEv
 }
 {
    bug_122195
