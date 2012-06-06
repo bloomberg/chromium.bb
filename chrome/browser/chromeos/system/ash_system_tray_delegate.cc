@@ -229,6 +229,17 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
     bluetooth_adapter_->RemoveObserver(this);
+
+    // Stop observing gdata operations.
+    Profile* profile = ProfileManager::GetDefaultProfile();
+    if (gdata::util::IsGDataAvailable(profile)) {
+      GDataSystemService* system_service =
+          GDataSystemServiceFactory::FindForProfile(profile);
+      if (system_service && system_service->file_system()) {
+        system_service->file_system()->GetOperationRegistry()->
+            RemoveObserver(this);
+      }
+    }
   }
 
   // Overridden from ash::SystemTrayDelegate:

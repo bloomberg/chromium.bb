@@ -299,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
   // This one is called on exit, but we don't care much about it, as long as it
   // retunrs something valid (i.e. not NULL).
   EXPECT_CALL(*mock_documents_service_, operation_registry()).
-      WillOnce(Return(operation_registry_.get()));
+      WillRepeatedly(Return(operation_registry_.get()));
 
   // All is set... RUN THE TEST.
   EXPECT_TRUE(RunExtensionTest("filesystem_handler")) << message_;
