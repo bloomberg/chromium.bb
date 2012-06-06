@@ -1091,6 +1091,16 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	socklen_t size, name_size;
 	const char *runtime_dir;
 
+	runtime_dir = getenv("XDG_RUNTIME_DIR");
+	if (!runtime_dir) {
+		wl_log("error: XDG_RUNTIME_DIR not set in the environment\n");
+
+		/* to prevent programs reporting
+		 * "failed to add socket: Success" */
+		errno = ENOENT;
+		return -1;
+	}
+
 	s = malloc(sizeof *s);
 	if (s == NULL)
 		return -1;
@@ -1099,13 +1109,6 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	if (s->fd < 0) {
 		free(s);
 		return -1;
-	}
-
-	runtime_dir = getenv("XDG_RUNTIME_DIR");
-	if (runtime_dir == NULL) {
-		runtime_dir = ".";
-		wl_log("XDG_RUNTIME_DIR not set, falling back to %s\n",
-			runtime_dir);
 	}
 
 	if (name == NULL)
