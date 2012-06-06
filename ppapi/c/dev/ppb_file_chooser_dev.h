@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_file_chooser_dev.idl modified Thu May 17 09:04:27 2012. */
+/* From dev/ppb_file_chooser_dev.idl modified Mon Jun  4 12:44:29 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
 #define PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
@@ -96,6 +96,16 @@ struct PPB_FileChooser_Dev_0_6 {
    * touch event. The callback is called with PP_OK on successful completion
    * with a file (or files) selected, PP_ERROR_USERCANCEL if the user selected
    * no file, or another error code from pp_errors.h on failure.
+   *
+   * <b>Subtle note:</b> This function will only work when the tab containing
+   * the plugin is visible. Show() will fail if the tab is in the background.
+   * Since it's not normally possible to get input events while invisible, this
+   * is not normally an issue. But there is a race condition because events are
+   * processed asynchronously. If the user clicks and switches tabs very
+   * quickly, a plugin could believe the tab is visible while Chrome believes
+   * it is invisible and the Show() call will fail. This will not generally
+   * cause user confusion since the user will have switched tabs and will not
+   * want to see a file chooser from a different tab.
    *
    * @param[in] chooser The file chooser resource.
    *
