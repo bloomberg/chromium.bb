@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -45,6 +45,12 @@ struct Gio;  /* fwd */
  */
 struct GioVtbl {
   /*
+   * Will implicitly close if not already closed, but no error
+   * reporting, other than possibly logging.
+   */
+  void    (*Dtor)(struct Gio  *vself);
+
+  /*
    * Read virtual fn.  Like read syscall: returns number of bytes
    * actually read, -1 on error, so 0 indcates EOF.  Depending on
    * subclass, there may be short reads even before EOF, but all short
@@ -77,17 +83,17 @@ struct GioVtbl {
                   off_t       offset,
                   int         whence);
 
-  /* only used for write, 0 on success, -1 on error */
+  /* Only used for write, 0 on success, -1 on error */
   int     (*Flush)(struct Gio *vself);
 
-  /* returns 0 on success, -1 on error */
-  int     (*Close)(struct Gio *vself);
-
   /*
-   * Will implicitly close if not already closed, but no error
-   * reporting, other than possibly logging.
+   * Returns 0 on success, -1 on error.  Implicitly Flush.  If Flush
+   * succeeds, deallocate system-level resources.  After Close, no
+   * other operations should be performed other than Dtor.  Close
+   * might be merged with the Dtor, except that the Dtor cannot report
+   * errors.
    */
-  void    (*Dtor)(struct Gio  *vself);
+  int     (*Close)(struct Gio *vself);
 };
 
 struct Gio {

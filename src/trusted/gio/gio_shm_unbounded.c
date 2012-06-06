@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -300,12 +300,12 @@ static void NaClGioShmUnboundedDtor(struct Gio *vself) {
 }
 
 const struct GioVtbl kNaClGioShmUnboundedVtbl = {
+  NaClGioShmUnboundedDtor,
   NaClGioShmUnboundedRead,
   NaClGioShmUnboundedWrite,
   NaClGioShmUnboundedSeek,
   NaClGioShmUnboundedFlush,
   NaClGioShmUnboundedClose,
-  NaClGioShmUnboundedDtor,
 };
 
 int NaClGioShmUnboundedCtor(struct NaClGioShmUnbounded *self) {

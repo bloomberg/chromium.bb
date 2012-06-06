@@ -309,12 +309,12 @@ static void NaClGioShmDtor(struct Gio *vself) {
 }
 
 const struct GioVtbl kNaClGioShmVtbl = {
+  NaClGioShmDtor,
   NaClGioShmRead,
   NaClGioShmWrite,
   NaClGioShmSeek,
   NaClGioShmFlush,
   NaClGioShmClose,
-  NaClGioShmDtor,
 };
 
 
