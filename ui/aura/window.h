@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
@@ -75,6 +76,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Initializes the window. This creates the window's layer.
   void Init(ui::LayerType layer_type);
+
+  // Creates a new layer for the window. Erases the layer-owned bounds, so the
+  // caller may wish to set new bounds and other state on the window/layer.
+  // Returns the old layer, which can be used for animations. Caller owns the
+  // memory for the returned layer and must delete it when animation completes.
+  ui::Layer* RecreateLayer() WARN_UNUSED_RESULT;
 
   void set_owned_by_parent(bool owned_by_parent) {
     owned_by_parent_ = owned_by_parent;

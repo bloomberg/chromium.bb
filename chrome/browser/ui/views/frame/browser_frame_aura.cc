@@ -24,6 +24,8 @@
 #include "ash/wm/property_util.h"
 #endif
 
+using aura::Window;
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAura::WindowPropertyWatcher
 
@@ -82,6 +84,14 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
     ash::SetPersistsAcrossAllWorkspaces(
         GetNativeWindow(),
         ash::WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_NO);
+  }
+  // HACK: Don't animate app windows. They delete and rebuild their frame on
+  // maximize, which breaks the layer animations. We probably shouldn't rebuild
+  // the frame view on this transition.
+  // TODO(jamescook): Fix app window animation.  http://crbug.com/131293
+  if (browser_view->browser()->is_app()) {
+    Window* window = GetNativeWindow();
+    window->SetProperty(aura::client::kAnimationsDisabledKey, true);
   }
 #endif
 }

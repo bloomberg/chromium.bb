@@ -108,6 +108,8 @@ class BenchCompositorObserver : public ui::CompositorObserver {
     }
   }
 
+  virtual void OnCompositingAborted(Compositor* compositor) OVERRIDE {}
+
   virtual void Draw() {}
 
   int frames() const { return frames_; }

@@ -67,9 +67,5 @@ void Workspace::SetWindowBounds(aura::Window* window, const gfx::Rect& bounds) {
   workspace_manager_->SetWindowBounds(window, bounds);
 }
 
-void Workspace::SetIgnoredWindow(aura::Window* window) {
-  workspace_manager_->set_ignored_window(window);
-}
-
 }  // namespace internal
 }  // namespace ash

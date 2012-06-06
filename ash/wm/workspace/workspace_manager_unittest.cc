@@ -30,7 +30,7 @@ namespace internal {
 
 class WorkspaceManagerTest : public test::AshTestBase {
  public:
-  WorkspaceManagerTest() {}
+  WorkspaceManagerTest() : manager_(NULL) {}
   virtual ~WorkspaceManagerTest() {}
 
   aura::Window* CreateTestWindowUnparented() {
@@ -571,7 +571,7 @@ TEST_F(WorkspaceManagerTest, PersistAcrossAllWorkspaces) {
 }
 
 // Verifies Show()ing a minimized window that persists across all workspaces
-// unminimizes thew indow.
+// unminimizes the window.
 TEST_F(WorkspaceManagerTest, ShowMinimizedPersistWindow) {
   // Create a window that persists across all workspaces.
   scoped_ptr<Window> w1(CreateTestWindow());

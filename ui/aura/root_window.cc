@@ -602,6 +602,9 @@ void RootWindow::OnCompositingEnded(ui::Compositor*) {
   }
 }
 
+void RootWindow::OnCompositingAborted(ui::Compositor*) {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, ui::LayerDelegate implementation:
 
