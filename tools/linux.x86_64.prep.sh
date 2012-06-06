@@ -111,6 +111,8 @@ fi
 ensure_installed '/usr/include/openssl/aes.h' 'libssl-dev'
 # gtk-2.0 is required for both 32 and 64-bit systems
 ensure_installed '/usr/include/gtk-2.0/gtk/gtk.h' 'libgtk2.0-dev'
+# expat is needed by gdb
+ensure_installed '/usr/include/expat.h' 'libexpat-dev'
 
 cat > "$f" << \EOF
 int main(void) { return sizeof(long) == 8; }
