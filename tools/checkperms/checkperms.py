@@ -139,6 +139,8 @@ IGNORED_FILENAMES = (
 # File paths starting with one of these will be ignored as well.
 IGNORED_PATHS = (
   # TODO(maruel): Detect ELF files.
+  'chrome/test/data/extensions/uitest/plugins',
+  'chrome/test/data/extensions/uitest/plugins_private',
   'chrome/test/data/webrtc/linux/peerconnection_server',
   'chrome/installer/mac/sign_app.sh.in',
   'chrome/installer/mac/sign_versioned_dir.sh.in',
