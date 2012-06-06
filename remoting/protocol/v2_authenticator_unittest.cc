@@ -61,9 +61,6 @@ TEST_F(V2AuthenticatorTest, SuccessfulAuth) {
   host_auth_ = host_->CreateChannelAuthenticator();
   RunChannelAuth(false);
 
-  EXPECT_TRUE(client_socket_.get() != NULL);
-  EXPECT_TRUE(host_socket_.get() != NULL);
-
   StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
                                 kMessageSize, kMessages);
 
