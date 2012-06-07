@@ -144,26 +144,11 @@
           'target_name': 'sandbox',
           'type': 'none',
           'conditions': [
-            # Only compile in the seccomp mode 1 code for the flag combination
+            # Only compile in the seccomp code for the flag combination
             # where we support it.
             [ 'OS=="linux" and target_arch!="arm" and toolkit_views==0 and selinux==0', {
               'dependencies': [
                 '../seccompsandbox/seccomp.gyp:seccomp_sandbox',
-              ],
-            }],
-            # This does not include Android.
-            [ 'OS=="linux"', {
-              'type': 'static_library',
-              # Always compile seccomp mode 2 code on Linux
-              'sources': [
-                'linux/seccomp-bpf/sandbox_bpf.cc',
-                'linux/seccomp-bpf/sandbox_bpf.h',
-              ],
-              'dependencies': [
-                '../base/base.gyp:base',
-              ],
-              'include_dirs': [
-                '..',
               ],
             }],
           ],
