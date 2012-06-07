@@ -101,6 +101,7 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   int ret_code = 1;
   struct NaClEnvCleanser env_cleanser;
   int skip_qualification;
+  int handle_signals = args->enable_debug_stub;
 
 #if NACL_OSX
   /* Mac dynamic libraries cannot access the environ variable directly. */
@@ -216,7 +217,7 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   if (args->enable_exception_handling) {
     nap->enable_exception_handling = 1;
 #if NACL_LINUX
-    NaClSignalHandlerInit();
+    handle_signals = 1;
 #elif NACL_OSX
     if (!NaClInterceptMachExceptions()) {
       NaClLog(LOG_FATAL, "NaClChromeMainStart: "
@@ -228,6 +229,10 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
 #else
 # error Unknown host OS
 #endif
+  }
+
+  if (handle_signals) {
+    NaClSignalHandlerInit();
   }
 
   /* Give debuggers a well known point at which xlate_base is known.  */
