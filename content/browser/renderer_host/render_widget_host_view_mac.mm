@@ -1201,10 +1201,6 @@ void RenderWidgetHostViewMac::GotSoftwareFrame() {
   }
 }
 
-gfx::Rect RenderWidgetHostViewMac::GetViewCocoaBounds() const {
-  return gfx::Rect(NSRectToCGRect([cocoa_view_ bounds]));
-}
-
 void RenderWidgetHostViewMac::SetActive(bool active) {
   if (render_widget_host_)
     render_widget_host_->SetActive(active);
