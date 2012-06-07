@@ -251,7 +251,7 @@ void NTPResourceCache::Observe(int type,
     new_tab_incognito_css_ = NULL;
     new_tab_css_ = NULL;
   } else if (chrome::NOTIFICATION_PREF_CHANGED == type ||
-              chrome::NTP4_INTRO_PREF_CHANGED) {
+             chrome::NTP4_INTRO_PREF_CHANGED == type) {
     // A change occurred to one of the preferences we care about, so flush the
     // cache.
     new_tab_incognito_html_ = NULL;
