@@ -69,6 +69,11 @@ squash_space_SOURCES =				\
 	brl_checks.h				\
 	squash_space.c
 
+hyphenate_SOURCES =				\
+	brl_checks.c				\
+	brl_checks.h				\
+	hyphenate.c
+
 check_PROGRAMS =				\
 	pass2					\
 	pass2_inpos				\
@@ -82,7 +87,8 @@ check_PROGRAMS =				\
 	lastworditalafter			\
 	en_gb_g1_italics			\
 	letterDefTest				\
-	squash_space
+	squash_space				\
+	hyphenate
 
 dist_check_SCRIPTS =		\
 	check_all_tables.pl	\

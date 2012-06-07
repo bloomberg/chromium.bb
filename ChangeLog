@@ -1,3 +1,10 @@
+2012-06-07  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/Makefile.am (check_PROGRAMS):
+	* tests/brl_checks.c (check_hyphenation):
+	* tests/brl_checks.h:
+	* tests/hyphenate.c (main): Add a test program hyphenation.
+
 2012-06-01  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/Makefile.am:

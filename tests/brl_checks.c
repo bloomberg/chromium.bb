@@ -179,3 +179,43 @@ recieved=%d ('%c')\n", str, i, str[i], expected_pos[i], cursor_pos, (char) outbu
 
   return rv;
 }
+
+/* Check if a string is hyphenated as expected. Return 0 if the
+   hyphenation is as expected and 1 otherwise. */
+int
+check_hyphenation(const char *tableList, const char *str, const char *expected)
+{
+  widechar *inbuf;
+  char *hyphens;
+  int inlen;
+  int rv = 0;
+
+  inlen = strlen(str);
+  inbuf = malloc(sizeof(widechar) * (inlen + 1));
+  if (!extParseChars(str, inbuf))
+    {
+      printf("Cannot parse input string.\n");
+      return 1;
+    }
+  hyphens = malloc(sizeof(char) * (inlen + 1));
+
+  if (!lou_hyphenate(tableList, inbuf, inlen, hyphens, 0))
+    {
+      printf("Hyphenation failed.\n");
+      return 1;
+    }
+
+  if (strcmp(expected, hyphens))
+    {
+      printf("Input:    '%s'\n", str);
+      printf("Expected: '%s'\n", expected);
+      printf("Received: '%s'\n", hyphens);
+      rv = 1;
+    }
+
+  free(inbuf);
+  free(hyphens);
+  lou_free();
+  return rv;
+
+}
