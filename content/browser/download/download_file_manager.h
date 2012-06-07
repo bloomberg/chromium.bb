@@ -63,6 +63,7 @@ class FilePath;
 namespace content {
 class ByteStreamReader;
 class DownloadFile;
+class DownloadId;
 class DownloadManager;
 }
 
@@ -101,10 +102,12 @@ class CONTENT_EXPORT DownloadFileManager
   // Called on shutdown on the UI thread.
   virtual void Shutdown();
 
-  // Called on UI thread to make DownloadFileManager start the download.
-  virtual void StartDownload(scoped_ptr<DownloadCreateInfo> info,
-                             scoped_ptr<content::ByteStreamReader> stream,
-                             const DownloadRequestHandle& request_handle);
+  // Called on UI thread to make DownloadFileManager start the download. Creates
+  // and returns the DownloadId of the download.
+  virtual content::DownloadId StartDownload(
+      scoped_ptr<DownloadCreateInfo> info,
+      scoped_ptr<content::ByteStreamReader> stream,
+      const DownloadRequestHandle& request_handle);
 
   // Handlers for notifications sent from the UI thread and run on the
   // FILE thread.  These are both terminal actions with respect to the

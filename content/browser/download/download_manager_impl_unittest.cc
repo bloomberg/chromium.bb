@@ -100,8 +100,6 @@ DownloadFile* MockDownloadFileFactory::CreateFile(
   return NULL;
 }
 
-DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
-
 class TestDownloadManagerDelegate : public content::DownloadManagerDelegate {
  public:
   explicit TestDownloadManagerDelegate(content::DownloadManager* dm)
@@ -286,24 +284,21 @@ class DownloadManagerTest : public testing::Test {
     return true;
   }
 
-  void AddDownloadToFileManager(int id, DownloadFile* download_file) {
-    file_manager()->downloads_[DownloadId(kValidIdDomain, id)] =
+  void AddDownloadToFileManager(DownloadId id, DownloadFile* download_file) {
+    file_manager()->downloads_[id] =
       download_file;
   }
 
-  void AddMockDownloadToFileManager(int id, MockDownloadFile* download_file) {
+  void AddMockDownloadToFileManager(DownloadId id,
+                                    MockDownloadFile* download_file) {
     AddDownloadToFileManager(id, download_file);
     EXPECT_CALL(*download_file, GetDownloadManager())
         .WillRepeatedly(Return(download_manager_));
   }
 
-  void OnResponseCompleted(int32 download_id, int64 size,
+  void OnResponseCompleted(DownloadId download_id, int64 size,
                            const std::string& hash) {
-    download_manager_->OnResponseCompleted(download_id, size, hash);
-  }
-
-  void FileSelected(const FilePath& path, int32 download_id) {
-    download_manager_->FileSelected(path, download_id);
+    download_manager_->OnResponseCompleted(download_id.local(), size, hash);
   }
 
   void ContinueDownloadWithPath(DownloadItem* download, const FilePath& path) {
@@ -313,16 +308,16 @@ class DownloadManagerTest : public testing::Test {
     download_manager_->OnTargetPathAvailable(download);
   }
 
-  void OnDownloadInterrupted(int32 download_id, int64 size,
+  void OnDownloadInterrupted(DownloadId download_id, int64 size,
                              const std::string& hash_state,
                              content::DownloadInterruptReason reason) {
-    download_manager_->OnDownloadInterrupted(download_id, size,
+    download_manager_->OnDownloadInterrupted(download_id.local(), size,
                                              hash_state, reason);
   }
 
   // Get the download item with ID |id|.
-  DownloadItem* GetActiveDownloadItem(int32 id) {
-    return download_manager_->GetActiveDownload(id);
+  DownloadItem* GetActiveDownloadItem(DownloadId id) {
+    return download_manager_->GetActiveDownload(id.local());
   }
 
   FilePath GetPathInDownloadsDir(const FilePath::StringType& fragment) {
@@ -554,18 +549,16 @@ TEST_F(DownloadManagerTest, MAYBE_StartDownload) {
     // responsible for deleting it.  In these unit tests, however, we
     // don't call the function that deletes it, so we do so ourselves.
     scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-    const DownloadId id = DownloadId(kValidIdDomain, static_cast<int>(i));
-    info->download_id = id;
     info->prompt_user_for_save_location = kStartDownloadCases[i].save_as;
     info->url_chain.push_back(GURL(kStartDownloadCases[i].url));
     info->mime_type = kStartDownloadCases[i].mime_type;
     download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
-  scoped_ptr<content::ByteStreamWriter> stream_writer;
-  scoped_ptr<content::ByteStreamReader> stream_reader;
-  content::CreateByteStream(message_loop_.message_loop_proxy(),
-                            message_loop_.message_loop_proxy(),
-                            kTestDataLen, &stream_writer, &stream_reader);
+    scoped_ptr<content::ByteStreamWriter> stream_writer;
+    scoped_ptr<content::ByteStreamReader> stream_reader;
+    content::CreateByteStream(message_loop_.message_loop_proxy(),
+                              message_loop_.message_loop_proxy(),
+                              kTestDataLen, &stream_writer, &stream_reader);
 
     DownloadFile* download_file(
         new DownloadFileImpl(info.get(),
@@ -574,7 +567,7 @@ TEST_F(DownloadManagerTest, MAYBE_StartDownload) {
                              download_manager_, false,
                              scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
                              net::BoundNetLog()));
-    AddDownloadToFileManager(info->download_id.local(), download_file);
+    AddDownloadToFileManager(info->download_id, download_file);
     download_file->Initialize();
     download_manager_->StartDownload(info->download_id.local());
     message_loop_.RunAllPending();
@@ -583,9 +576,9 @@ TEST_F(DownloadManagerTest, MAYBE_StartDownload) {
     // select file dialog.
     // Note that DownloadManager::FileSelectionCanceled() is never called.
     EXPECT_EQ(kStartDownloadCases[i].expected_save_as,
-              observer.ShowedFileDialogForId(i));
+              observer.ShowedFileDialogForId(info->download_id.local()));
 
-    file_manager()->CancelDownload(id);
+    file_manager()->CancelDownload(info->download_id);
   }
 }
 
@@ -817,7 +810,6 @@ TEST_F(DownloadManagerTest, DownloadFilenameTest) {
     scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
 
     SCOPED_TRACE(testing::Message() << "Running test case " << i);
-    info->download_id = DownloadId(kValidIdDomain, i);
     info->url_chain.push_back(GURL());
 
     MockDownloadFile* download_file(
@@ -833,7 +825,6 @@ TEST_F(DownloadManagerTest, DownloadFilenameTest) {
     FilePath expected_final_path =
         GetPathInDownloadsDir(test_case.expected_final_path);
 
-    AddMockDownloadToFileManager(info->download_id.local(), download_file);
     EXPECT_CALL(*download_file, Rename(expected_intermediate_path))
         .WillOnce(Return(net::OK));
     EXPECT_CALL(*download_file, Rename(expected_final_path))
@@ -844,11 +835,12 @@ TEST_F(DownloadManagerTest, DownloadFilenameTest) {
     EXPECT_CALL(*download_file, Detach());
 
     download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
-    DownloadItem* download = GetActiveDownloadItem(i);
+    AddMockDownloadToFileManager(info->download_id, download_file);
+    DownloadItem* download = GetActiveDownloadItem(info->download_id);
     ASSERT_TRUE(download != NULL);
 
     if (test_case.completion == COMPLETES_BEFORE_RENAME)
-      OnResponseCompleted(i, 1024, std::string("fake_hash"));
+      OnResponseCompleted(info->download_id, 1024, std::string("fake_hash"));
 
     download->OnTargetPathDetermined(
         target_path, test_case.target_disposition,
@@ -858,11 +850,11 @@ TEST_F(DownloadManagerTest, DownloadFilenameTest) {
     download_manager_delegate_->SetIntermediatePath(
         intermediate_path, test_case.overwrite_intermediate_path);
     download_manager_delegate_->SetShouldCompleteDownload(false);
-    download_manager_->RestartDownload(i);
+    download_manager_->RestartDownload(info->download_id.local());
     message_loop_.RunAllPending();
 
     if (test_case.completion == COMPLETES_AFTER_RENAME) {
-      OnResponseCompleted(i, 1024, std::string("fake_hash"));
+      OnResponseCompleted(info->download_id, 1024, std::string("fake_hash"));
       message_loop_.RunAllPending();
     }
 
@@ -893,7 +885,6 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   // responsible for deleting it.  In these unit tests, however, we
   // don't call the function that deletes it, so we do so ourselves.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  info->download_id = DownloadId(kValidIdDomain, 0);
   info->prompt_user_for_save_location = false;
   info->url_chain.push_back(GURL());
   info->total_bytes = static_cast<int64>(kTestDataLen);
@@ -902,30 +893,29 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
 
   MockDownloadFile* download_file(new NiceMock<MockDownloadFile>());
 
-  // |download_file| is owned by DownloadFileManager.
-  AddMockDownloadToFileManager(info->download_id.local(), download_file);
-
   EXPECT_CALL(*download_file, Rename(cr_path))
       .WillOnce(Return(net::OK));
   EXPECT_CALL(*download_file, Cancel());
 
   download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
+  // |download_file| is owned by DownloadFileManager.
+  AddMockDownloadToFileManager(info->download_id, download_file);
 
-  DownloadItem* download = GetActiveDownloadItem(0);
+  DownloadItem* download = GetActiveDownloadItem(info->download_id);
   ASSERT_TRUE(download != NULL);
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
 
   ContinueDownloadWithPath(download, new_path);
   message_loop_.RunAllPending();
-  EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
+  EXPECT_TRUE(GetActiveDownloadItem(info->download_id) != NULL);
 
   int64 error_size = 3;
-  OnDownloadInterrupted(0, error_size, "",
+  OnDownloadInterrupted(info->download_id, error_size, "",
                         content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
   message_loop_.RunAllPending();
 
-  EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);
+  EXPECT_TRUE(GetActiveDownloadItem(info->download_id) == NULL);
   EXPECT_TRUE(observer->hit_state(DownloadItem::IN_PROGRESS));
   EXPECT_TRUE(observer->hit_state(DownloadItem::INTERRUPTED));
   EXPECT_FALSE(observer->hit_state(DownloadItem::COMPLETE));
@@ -974,8 +964,6 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadFileErrorTest) {
   // responsible for deleting it.  In these unit tests, however, we
   // don't call the function that deletes it, so we do so ourselves.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  static const int32 local_id = 0;
-  info->download_id = DownloadId(kValidIdDomain, local_id);
   info->prompt_user_for_save_location = false;
   info->url_chain.push_back(GURL());
   info->total_bytes = static_cast<int64>(kTestDataLen * 3);
@@ -987,14 +975,14 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadFileErrorTest) {
                             message_loop_.message_loop_proxy(),
                             kTestDataLen, &stream_input, &stream_output);
 
+  download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
+
   // Create a download file that we can insert errors into.
   scoped_ptr<DownloadFileWithErrors> download_file(new DownloadFileWithErrors(
       info.get(), stream_output.Pass(), download_manager_, false));
   download_file->Initialize();
 
-  download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
-
-  DownloadItem* download = GetActiveDownloadItem(0);
+  DownloadItem* download = GetActiveDownloadItem(info->download_id);
   ASSERT_TRUE(download != NULL);
 
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
@@ -1006,7 +994,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadFileErrorTest) {
   // Finalize the file name.
   ContinueDownloadWithPath(download, path);
   message_loop_.RunAllPending();
-  EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
+  EXPECT_TRUE(GetActiveDownloadItem(info->download_id) != NULL);
 
   // Add more data.
   WriteCopyToStream(kTestData, kTestDataLen, stream_input.get());
@@ -1017,7 +1005,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadFileErrorTest) {
   message_loop_.RunAllPending();
 
   // Check the state.  The download should have been interrupted.
-  EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);
+  EXPECT_TRUE(GetActiveDownloadItem(info->download_id) == NULL);
   EXPECT_TRUE(observer->hit_state(DownloadItem::IN_PROGRESS));
   EXPECT_TRUE(observer->hit_state(DownloadItem::INTERRUPTED));
   EXPECT_FALSE(observer->hit_state(DownloadItem::COMPLETE));
@@ -1043,15 +1031,12 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   // responsible for deleting it.  In these unit tests, however, we
   // don't call the function that deletes it, so we do so ourselves.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  DownloadId id = DownloadId(kValidIdDomain, 0);
-  info->download_id = id;
   info->prompt_user_for_save_location = false;
   info->url_chain.push_back(GURL());
   const FilePath new_path(FILE_PATH_LITERAL("foo.zip"));
   const FilePath cr_path(GetTempDownloadPath(new_path));
 
   MockDownloadFile* download_file(new NiceMock<MockDownloadFile>());
-  AddMockDownloadToFileManager(info->download_id.local(), download_file);
 
   // |download_file| is owned by DownloadFileManager.
   EXPECT_CALL(*download_file, Rename(cr_path))
@@ -1059,8 +1044,9 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   EXPECT_CALL(*download_file, Cancel());
 
   download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
+  AddMockDownloadToFileManager(info->download_id, download_file);
 
-  DownloadItem* download = GetActiveDownloadItem(0);
+  DownloadItem* download = GetActiveDownloadItem(info->download_id);
   ASSERT_TRUE(download != NULL);
 
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
@@ -1068,12 +1054,12 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
 
   ContinueDownloadWithPath(download, new_path);
   message_loop_.RunAllPending();
-  EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
+  EXPECT_TRUE(GetActiveDownloadItem(info->download_id) != NULL);
 
   download->Cancel(false);
   message_loop_.RunAllPending();
 
-  EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
+  EXPECT_TRUE(GetActiveDownloadItem(info->download_id) != NULL);
   EXPECT_TRUE(observer->hit_state(DownloadItem::IN_PROGRESS));
   EXPECT_TRUE(observer->hit_state(DownloadItem::CANCELLED));
   EXPECT_FALSE(observer->hit_state(DownloadItem::INTERRUPTED));
@@ -1084,7 +1070,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   EXPECT_FALSE(download->GetFileExternallyRemoved());
   EXPECT_EQ(DownloadItem::CANCELLED, download->GetState());
 
-  file_manager()->CancelDownload(id);
+  file_manager()->CancelDownload(info->download_id);
 
   EXPECT_FALSE(file_util::PathExists(new_path));
   EXPECT_FALSE(file_util::PathExists(cr_path));
@@ -1121,7 +1107,6 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
   // responsible for deleting it.  In these unit tests, however, we
   // don't call the function that deletes it, so we do so ourselves.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  info->download_id = DownloadId(kValidIdDomain, 0);
   info->prompt_user_for_save_location = true;
   info->url_chain.push_back(GURL());
   scoped_ptr<content::ByteStreamWriter> stream_input;
@@ -1132,7 +1117,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
 
   download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
-  DownloadItem* download = GetActiveDownloadItem(0);
+  DownloadItem* download = GetActiveDownloadItem(info->download_id);
   ASSERT_TRUE(download != NULL);
 
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
@@ -1152,20 +1137,20 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
   // This creates the .temp version of the file.
   download_file->Initialize();
   // |download_file| is owned by DownloadFileManager.
-  AddDownloadToFileManager(info->download_id.local(), download_file);
+  AddDownloadToFileManager(info->download_id, download_file);
 
   ContinueDownloadWithPath(download, new_path);
   message_loop_.RunAllPending();
-  EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
+  EXPECT_TRUE(GetActiveDownloadItem(info->download_id) != NULL);
 
   WriteCopyToStream(kTestData, kTestDataLen, stream_input.get());
 
   // Finish the download.
-  OnResponseCompleted(0, kTestDataLen, "");
+  OnResponseCompleted(info->download_id, kTestDataLen, "");
   message_loop_.RunAllPending();
 
   // Download is complete.
-  EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);
+  EXPECT_TRUE(GetActiveDownloadItem(info->download_id) == NULL);
   EXPECT_TRUE(observer->hit_state(DownloadItem::IN_PROGRESS));
   EXPECT_FALSE(observer->hit_state(DownloadItem::CANCELLED));
   EXPECT_FALSE(observer->hit_state(DownloadItem::INTERRUPTED));
@@ -1201,7 +1186,6 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
   // responsible for deleting it.  In these unit tests, however, we
   // don't call the function that deletes it, so we do so ourselves.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  info->download_id = DownloadId(kValidIdDomain, 0);
   info->prompt_user_for_save_location = true;
   info->url_chain.push_back(GURL());
   scoped_ptr<content::ByteStreamWriter> stream_input;
@@ -1212,7 +1196,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
 
   download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
-  DownloadItem* download = GetActiveDownloadItem(0);
+  DownloadItem* download = GetActiveDownloadItem(info->download_id);
   ASSERT_TRUE(download != NULL);
 
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
@@ -1232,20 +1216,20 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
   // This creates the .temp version of the file.
   download_file->Initialize();
   // |download_file| is owned by DownloadFileManager.
-  AddDownloadToFileManager(info->download_id.local(), download_file);
+  AddDownloadToFileManager(info->download_id, download_file);
 
   ContinueDownloadWithPath(download, new_path);
   message_loop_.RunAllPending();
-  EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
+  EXPECT_TRUE(GetActiveDownloadItem(info->download_id) != NULL);
 
   WriteCopyToStream(kTestData, kTestDataLen, stream_input.get());
 
   // Finish the download.
-  OnResponseCompleted(0, kTestDataLen, "");
+  OnResponseCompleted(info->download_id, kTestDataLen, "");
   message_loop_.RunAllPending();
 
   // Download is complete.
-  EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);
+  EXPECT_TRUE(GetActiveDownloadItem(info->download_id) == NULL);
   EXPECT_TRUE(observer->hit_state(DownloadItem::IN_PROGRESS));
   EXPECT_FALSE(observer->hit_state(DownloadItem::CANCELLED));
   EXPECT_FALSE(observer->hit_state(DownloadItem::INTERRUPTED));
@@ -1264,7 +1248,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
   download->OnDownloadedFileRemoved();
   message_loop_.RunAllPending();
 
-  EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);
+  EXPECT_TRUE(GetActiveDownloadItem(info->download_id) == NULL);
   EXPECT_TRUE(observer->hit_state(DownloadItem::IN_PROGRESS));
   EXPECT_FALSE(observer->hit_state(DownloadItem::CANCELLED));
   EXPECT_FALSE(observer->hit_state(DownloadItem::INTERRUPTED));

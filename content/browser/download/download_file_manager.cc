@@ -152,7 +152,7 @@ void DownloadFileManager::UpdateInProgressDownloads() {
   }
 }
 
-void DownloadFileManager::StartDownload(
+DownloadId DownloadFileManager::StartDownload(
     scoped_ptr<DownloadCreateInfo> info,
     scoped_ptr<content::ByteStreamReader> stream,
     const DownloadRequestHandle& request_handle) {
@@ -166,6 +166,7 @@ void DownloadFileManager::StartDownload(
   // the download file's events.
   net::BoundNetLog bound_net_log =
       manager->CreateDownloadItem(info.get(), request_handle);
+  DownloadId download_id = info->download_id;
   bool hash_needed = manager->GenerateFileHash();
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
@@ -174,6 +175,7 @@ void DownloadFileManager::StartDownload(
                  request_handle,
                  make_scoped_refptr(manager),
                  hash_needed, bound_net_log));
+  return download_id;
 }
 
 // This method will be sent via a user action, or shutdown on the UI thread, and

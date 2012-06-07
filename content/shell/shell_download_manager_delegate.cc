@@ -35,11 +35,6 @@ void ShellDownloadManagerDelegate::SetDownloadManager(
   download_manager_ = download_manager;
 }
 
-DownloadId ShellDownloadManagerDelegate::GetNextId() {
-  static int next_id;
-  return DownloadId(this, ++next_id);
-}
-
 bool ShellDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
   DownloadItem* download =
       download_manager_->GetActiveDownloadItem(download_id);

@@ -71,10 +71,9 @@ static void StartOnUIThread(
       started_cb.Run(DownloadId(), net::ERR_ACCESS_DENIED);
     return;
   }
-  DownloadId download_id = download_manager->GetDelegate()->GetNextId();
-  info->download_id = download_id;
 
-  download_file_manager->StartDownload(info.Pass(), stream.Pass(), handle);
+  DownloadId download_id =
+      download_file_manager->StartDownload(info.Pass(), stream.Pass(), handle);
 
   if (!started_cb.is_null())
     started_cb.Run(download_id, net::OK);

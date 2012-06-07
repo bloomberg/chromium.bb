@@ -339,9 +339,11 @@ void SavePackage::OnMHTMLGenerated(const FilePath& path, int64 size) {
   // GDataDownloadObserver::ShouldUpload() to return true.
   // ShouldCompleteDownload() may depend on the gdata uploader to finish.
   download_->OnAllDataSaved(size, DownloadItem::kEmptyFileHash);
-  if (download_manager_->GetDelegate()->ShouldCompleteDownload(
-        download_, base::Bind(&SavePackage::Finish, this)))
+  if (!download_manager_->GetDelegate() ||
+      download_manager_->GetDelegate()->ShouldCompleteDownload(
+          download_, base::Bind(&SavePackage::Finish, this))) {
     Finish();
+  }
 }
 
 // On POSIX, the length of |pure_file_name| + |file_name_ext| is further
@@ -1238,8 +1240,10 @@ void SavePackage::GetSaveInfo() {
   // before calling to it.
   FilePath website_save_dir, download_save_dir;
   DCHECK(download_manager_);
-  download_manager_->GetDelegate()->GetSaveDir(
-      web_contents(), &website_save_dir, &download_save_dir);
+  if (download_manager_->GetDelegate()) {
+    download_manager_->GetDelegate()->GetSaveDir(
+        web_contents(), &website_save_dir, &download_save_dir);
+  }
   std::string mime_type = web_contents()->GetContentsMimeType();
   std::string accept_languages =
       content::GetContentClient()->browser()->GetAcceptLangs(
@@ -1301,7 +1305,7 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
   // The WebContents which owns this SavePackage may have disappeared during
   // the UI->FILE->UI thread hop of
   // GetSaveInfo->CreateDirectoryOnFileThread->ContinueGetSaveInfo.
-  if (!web_contents())
+  if (!web_contents() || !download_manager_->GetDelegate())
     return;
 
   FilePath::StringType default_extension;

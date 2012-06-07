@@ -87,10 +87,11 @@ class MockDownloadFileManager : public DownloadFileManager {
   MOCK_METHOD3(MockStartDownload,
                void(DownloadCreateInfo*, content::ByteStreamReader*,
                     const DownloadRequestHandle&));
-  virtual void StartDownload(scoped_ptr<DownloadCreateInfo> info,
+  virtual DownloadId StartDownload(scoped_ptr<DownloadCreateInfo> info,
                             scoped_ptr<content::ByteStreamReader> stream,
                             const DownloadRequestHandle& request_handle) {
     MockStartDownload(info.release(), stream.release(), request_handle);
+    return DownloadId();
   }
 
   MOCK_METHOD1(CancelDownload, void(DownloadId));

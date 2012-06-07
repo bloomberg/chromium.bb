@@ -165,14 +165,28 @@ DownloadManagerImpl::~DownloadManagerImpl() {
 }
 
 DownloadId DownloadManagerImpl::GetNextId() {
-  return delegate_->GetNextId();
+  DownloadId id;
+  if (delegate_)
+   id = delegate_->GetNextId();
+  if (!id.IsValid()) {
+    static int next_id;
+    id = DownloadId(browser_context_, ++next_id);
+  }
+
+  return id;
 }
 
 bool DownloadManagerImpl::ShouldOpenDownload(DownloadItem* item) {
+  if (!delegate_)
+    return true;
+
   return delegate_->ShouldOpenDownload(item);
 }
 
 bool DownloadManagerImpl::ShouldOpenFileBasedOnExtension(const FilePath& path) {
+  if (!delegate_)
+    return false;
+
   return delegate_->ShouldOpenFileBasedOnExtension(path);
 }
 
@@ -226,7 +240,8 @@ void DownloadManagerImpl::Shutdown() {
       download->Delete(DownloadItem::DELETE_DUE_TO_BROWSER_SHUTDOWN);
     } else if (download->IsPartialDownload()) {
       download->Cancel(false);
-      delegate_->UpdateItemInPersistentStore(download);
+      if (delegate_)
+        delegate_->UpdateItemInPersistentStore(download);
     }
   }
 
@@ -325,7 +340,7 @@ bool DownloadManagerImpl::Init(content::BrowserContext* browser_context) {
 void DownloadManagerImpl::StartDownload(int32 download_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (delegate_->ShouldStartDownload(download_id))
+  if (!delegate_ || delegate_->ShouldStartDownload(download_id))
     RestartDownload(download_id);
 }
 
@@ -385,10 +400,14 @@ void DownloadManagerImpl::RestartDownload(int32 download_id) {
     // We must ask the user for the place to put the download.
     WebContents* contents = download->GetWebContents();
 
-    delegate_->ChooseDownloadPath(contents, download->GetTargetFilePath(),
-                                  download_id);
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      SelectFileDialogDisplayed(this, download_id));
+    if (delegate_) {
+      delegate_->ChooseDownloadPath(contents, download->GetTargetFilePath(),
+                                    download_id);
+      FOR_EACH_OBSERVER(Observer, observers_,
+                        SelectFileDialogDisplayed(this, download_id));
+    } else {
+      FileSelectionCanceled(download_id);
+    }
   } else {
     // No prompting for download, just continue with the current target path.
     OnTargetPathAvailable(download);
@@ -409,6 +428,7 @@ net::BoundNetLog DownloadManagerImpl::CreateDownloadItem(
 
   net::BoundNetLog bound_net_log =
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
+  info->download_id = GetNextId();
   DownloadItem* download = new DownloadItemImpl(
       this, *info, new DownloadRequestHandle(request_handle),
       browser_context_->IsOffTheRecord(), bound_net_log);
@@ -445,7 +465,8 @@ DownloadItem* DownloadManagerImpl::CreateSavePackageDownloadItem(
   save_page_downloads_[download->GetId()] = download;
 
   // Will notify the observer in the callback.
-  delegate_->AddItemToPersistentStore(download);
+  if (delegate_)
+    delegate_->AddItemToPersistentStore(download);
 
   return download;
 }
@@ -470,8 +491,13 @@ void DownloadManagerImpl::OnTargetPathAvailable(DownloadItem* download) {
   //               filename. Unnecessary renames may cause bugs like
   //               http://crbug.com/74187.
   bool ok_to_overwrite = true;
-  FilePath intermediate_path =
-      delegate_->GetIntermediatePath(*download, &ok_to_overwrite);
+  FilePath intermediate_path;
+  if (delegate_) {
+    intermediate_path =
+        delegate_->GetIntermediatePath(*download, &ok_to_overwrite);
+  } else {
+    intermediate_path = download->GetTargetFilePath();
+  }
   // We want the intermediate and target paths to refer to the same directory so
   // that they are both on the same device and subject to same
   // space/permission/availability constraints.
@@ -491,7 +517,8 @@ void DownloadManagerImpl::UpdateDownload(int32 download_id,
     DownloadItem* download = it->second;
     if (download->IsInProgress()) {
       download->UpdateProgress(bytes_so_far, bytes_per_sec, hash_state);
-      delegate_->UpdateItemInPersistentStore(download);
+      if (delegate_)
+        delegate_->UpdateItemInPersistentStore(download);
     }
   }
 }
@@ -607,7 +634,7 @@ void DownloadManagerImpl::MaybeCompleteDownload(DownloadItem* download) {
   // trying to set it to a different cb.  TODO(benjhayden): Change the callback
   // to point directly to the item instead of |this| when DownloadItem supports
   // weak-ptrs.
-  if (!delegate_->ShouldCompleteDownload(download, base::Bind(
+  if (delegate_ && !delegate_->ShouldCompleteDownload(download, base::Bind(
           &DownloadManagerImpl::MaybeCompleteDownloadById,
           this, download->GetId())))
     return;
@@ -615,7 +642,8 @@ void DownloadManagerImpl::MaybeCompleteDownload(DownloadItem* download) {
   VLOG(20) << __FUNCTION__ << "()" << " executing: download = "
            << download->DebugString(false);
 
-  delegate_->UpdateItemInPersistentStore(download);
+  if (delegate_)
+    delegate_->UpdateItemInPersistentStore(download);
   download->OnDownloadCompleting(file_manager_);
 }
 
@@ -628,7 +656,8 @@ void DownloadManagerImpl::MaybeCompleteDownloadById(int download_id) {
 void DownloadManagerImpl::DownloadCompleted(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(download);
-  delegate_->UpdateItemInPersistentStore(download);
+  if (delegate_)
+    delegate_->UpdateItemInPersistentStore(download);
   active_downloads_.erase(download->GetId());
   AssertStateConsistent(download);
 }
@@ -702,12 +731,13 @@ void DownloadManagerImpl::RemoveFromActiveList(DownloadItem* download) {
   // don't have a valid db_handle yet.
   if (download->IsPersisted()) {
     active_downloads_.erase(download->GetId());
-    delegate_->UpdateItemInPersistentStore(download);
+    if (delegate_)
+      delegate_->UpdateItemInPersistentStore(download);
   }
 }
 
 bool DownloadManagerImpl::GenerateFileHash() {
-  return delegate_->GenerateFileHash();
+  return delegate_ && delegate_->GenerateFileHash();
 }
 
 int DownloadManagerImpl::RemoveDownloadItems(
@@ -741,7 +771,8 @@ void DownloadManagerImpl::DownloadRemoved(DownloadItem* download) {
     return;
 
   // Make history update.
-  delegate_->RemoveItemFromPersistentStore(download);
+  if (delegate_)
+    delegate_->RemoveItemFromPersistentStore(download);
 
   // Remove from our tables and delete.
   int downloads_count = RemoveDownloadItems(DownloadVector(1, download));
@@ -750,7 +781,8 @@ void DownloadManagerImpl::DownloadRemoved(DownloadItem* download) {
 
 int DownloadManagerImpl::RemoveDownloadsBetween(base::Time remove_begin,
                                                 base::Time remove_end) {
-  delegate_->RemoveItemsFromPersistentStoreBetween(remove_begin, remove_end);
+  if (delegate_)
+    delegate_->RemoveItemsFromPersistentStoreBetween(remove_begin, remove_end);
 
   // All downloads visible to the user will be in the history,
   // so scan that map.
@@ -930,7 +962,8 @@ void DownloadManagerImpl::OnDownloadItemAddedToPersistentStore(
   } else {
     DCHECK(download->IsCancelled());
     active_downloads_.erase(download_id);
-    delegate_->UpdateItemInPersistentStore(download);
+    if (delegate_)
+      delegate_->UpdateItemInPersistentStore(download);
     download->UpdateObservers();
   }
 }
@@ -942,7 +975,7 @@ void DownloadManagerImpl::ShowDownloadInBrowser(DownloadItem* download) {
 
   // If the contents no longer exists, we ask the embedder to suggest another
   // contents.
-  if (!content)
+  if (!content && delegate_)
     content = delegate_->GetAlternativeWebContentsToNotifyForDownload();
 
   if (content && content->GetDelegate())
@@ -1076,7 +1109,8 @@ void DownloadManagerImpl::OnSavePageItemAddedToPersistentStore(
 
 void DownloadManagerImpl::SavePageDownloadFinished(DownloadItem* download) {
   if (download->IsPersisted()) {
-    delegate_->UpdateItemInPersistentStore(download);
+    if (delegate_)
+      delegate_->UpdateItemInPersistentStore(download);
     DCHECK(ContainsKey(save_page_downloads_, download->GetId()));
     save_page_downloads_.erase(download->GetId());
 
@@ -1089,7 +1123,8 @@ void DownloadManagerImpl::SavePageDownloadFinished(DownloadItem* download) {
 }
 
 void DownloadManagerImpl::DownloadOpened(DownloadItem* download) {
-  delegate_->UpdateItemInPersistentStore(download);
+  if (delegate_)
+    delegate_->UpdateItemInPersistentStore(download);
   int num_unopened = 0;
   for (DownloadMap::iterator it = history_downloads_.begin();
        it != history_downloads_.end(); ++it) {
@@ -1104,7 +1139,8 @@ void DownloadManagerImpl::DownloadRenamedToIntermediateName(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // If the rename failed, we receive an OnDownloadInterrupted() call before we
   // receive the DownloadRenamedToIntermediateName() call.
-  delegate_->AddItemToPersistentStore(download);
+  if (delegate_)
+    delegate_->AddItemToPersistentStore(download);
 }
 
 void DownloadManagerImpl::DownloadRenamedToFinalName(
@@ -1112,8 +1148,10 @@ void DownloadManagerImpl::DownloadRenamedToFinalName(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // If the rename failed, we receive an OnDownloadInterrupted() call before we
   // receive the DownloadRenamedToFinalName() call.
-  delegate_->UpdatePathForItemInPersistentStore(download,
-                                                download->GetFullPath());
+  if (delegate_) {
+    delegate_->UpdatePathForItemInPersistentStore(
+        download, download->GetFullPath());
+  }
 }
 
 void DownloadManagerImpl::SetFileManagerForTesting(
