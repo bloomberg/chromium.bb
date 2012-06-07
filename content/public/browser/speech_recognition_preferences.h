@@ -16,7 +16,6 @@ class SpeechRecognitionPreferences
   virtual bool FilterProfanities() const = 0;
 
  protected:
-  SpeechRecognitionPreferences() {}
   virtual ~SpeechRecognitionPreferences() {}
 
  private:

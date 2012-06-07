@@ -49,8 +49,6 @@ class ShellBrowserContext : public BrowserContext {
   scoped_ptr<ResourceContext> resource_context_;
   scoped_refptr<ShellDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
-  scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
-  scoped_refptr<SpeechRecognitionPreferences> speech_recognition_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);
 };

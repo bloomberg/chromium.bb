@@ -10,10 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/threading/thread.h"
-#include "content/public/browser/download_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/geolocation_permission_context.h"
-#include "content/public/browser/speech_recognition_preferences.h"
 #include "content/shell/shell_download_manager_delegate.h"
 #include "content/shell/shell_resource_context.h"
 #include "content/shell/shell_url_request_context_getter.h"
@@ -36,51 +33,6 @@ namespace {
 const char kDotConfigDir[] = ".config";
 const char kXdgConfigHomeEnvVar[] = "XDG_CONFIG_HOME";
 #endif
-
-class ShellGeolocationPermissionContext : public GeolocationPermissionContext {
- public:
-  ShellGeolocationPermissionContext() {}
-
-  // GeolocationPermissionContext implementation).
-  virtual void RequestGeolocationPermission(
-      int render_process_id,
-      int render_view_id,
-      int bridge_id,
-      const GURL& requesting_frame,
-      base::Callback<void(bool)> callback) OVERRIDE {
-    NOTIMPLEMENTED();
-  }
-
-  virtual void CancelGeolocationPermissionRequest(
-      int render_process_id,
-      int render_view_id,
-      int bridge_id,
-      const GURL& requesting_frame) OVERRIDE {
-    NOTIMPLEMENTED();
-  }
-
- protected:
-  virtual ~ShellGeolocationPermissionContext() {};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShellGeolocationPermissionContext);
-};
-
-class ShellSpeechRecognitionPreferences : public SpeechRecognitionPreferences {
- public:
-  ShellSpeechRecognitionPreferences() {}
-
-  // Overridden from SpeechRecognitionPreferences:
-  virtual bool FilterProfanities() const OVERRIDE {
-    return false;
-  }
-
- protected:
-  virtual ~ShellSpeechRecognitionPreferences() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShellSpeechRecognitionPreferences);
-};
 
 }  // namespace
 
@@ -160,18 +112,12 @@ ResourceContext* ShellBrowserContext::GetResourceContext()  {
 
 GeolocationPermissionContext*
     ShellBrowserContext::GetGeolocationPermissionContext()  {
-  if (!geolocation_permission_context_) {
-    geolocation_permission_context_ =
-        new ShellGeolocationPermissionContext();
-  }
-  return geolocation_permission_context_;
+  return NULL;
 }
 
 SpeechRecognitionPreferences*
     ShellBrowserContext::GetSpeechRecognitionPreferences() {
-  if (!speech_recognition_preferences_.get())
-    speech_recognition_preferences_ = new ShellSpeechRecognitionPreferences();
-  return speech_recognition_preferences_.get();
+  return NULL;
 }
 
 bool ShellBrowserContext::DidLastSessionExitCleanly()  {

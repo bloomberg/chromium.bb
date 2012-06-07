@@ -108,11 +108,13 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // ensuring that it outlives DownloadManager. It's valid to return NULL.
   virtual DownloadManagerDelegate* GetDownloadManagerDelegate() = 0;
 
-  // Returns the geolocation permission context for this context.
+  // Returns the geolocation permission context for this context. It's valid to
+  // return NULL, in which case geolocation requests will always be allowed.
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;
 
   // Returns the speech input preferences. SpeechRecognitionPreferences is a
-  // ref counted class, so callers should take a reference if needed.
+  // ref counted class, so callers should take a reference if needed. It's valid
+  // to return NULL.
   virtual SpeechRecognitionPreferences* GetSpeechRecognitionPreferences() = 0;
 
   // Returns true if the last time this context was open it was exited cleanly.
