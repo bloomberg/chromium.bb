@@ -67,8 +67,9 @@ bool DownloadService::HasCreatedDownloadManager() {
 }
 
 int DownloadService::DownloadCount() const {
-  DownloadManager* dm = BrowserContext::GetDownloadManager(profile_);
-  return download_manager_created_ ? dm->InProgressCount() : 0;
+  if (!download_manager_created_)
+    return 0;
+  return BrowserContext::GetDownloadManager(profile_)->InProgressCount();
 }
 
 // static
