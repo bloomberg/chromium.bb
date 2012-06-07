@@ -45,6 +45,7 @@ using ::testing::Ne;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::ReturnNull;
+using ::testing::StrictMock;
 using ::testing::_;
 
 using base::Value;
@@ -196,13 +197,19 @@ class GDataFileSystemTest : public testing::Test {
     ASSERT_FALSE(file_system_);
     file_system_ = new GDataFileSystem(profile_.get(),
                                        mock_doc_service_);
-    file_system_->Initialize();
 
-    mock_sync_client_.reset(new MockGDataSyncClient);
+    mock_sync_client_.reset(new StrictMock<MockGDataSyncClient>);
     file_system_->AddObserver(mock_sync_client_.get());
 
-    mock_directory_observer_.reset(new MockDirectoryChangeObserver);
+    mock_directory_observer_.reset(new StrictMock<MockDirectoryChangeObserver>);
     file_system_->AddObserver(mock_directory_observer_.get());
+
+    file_system_->Initialize();
+    // Initialize() initiates the cache initialization on the blocking thread
+    // pool. Block until it's done to ensure that the cache initialization is
+    // done for every test. Otherwise, completion timing is nondeterministic.
+    EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+    RunAllPendingForIO();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -874,7 +881,12 @@ class GDataFileSystemTest : public testing::Test {
       }
     }
     DVLOG(1) << "PrepareForInitCacheTest finished";
+    // Temporarily remove the mock sync client while rescanning. Otherwise,
+    // OnCacheInitialized() is called again here, which breaks the
+    // expectation set in SetUp().
+    file_system_->RemoveObserver(mock_sync_client_.get());
     file_system_->InitializeCacheOnIOThreadPool();  // Force a re-scan.
+    file_system_->AddObserver(mock_sync_client_.get());
   }
 
   void TestInitializeCache() {
@@ -1217,8 +1229,8 @@ class GDataFileSystemTest : public testing::Test {
   GDataFileSystem* file_system_;
   MockDocumentsService* mock_doc_service_;
   MockFreeDiskSpaceGetter* mock_free_disk_space_checker_;
-  scoped_ptr<MockGDataSyncClient> mock_sync_client_;
-  scoped_ptr<MockDirectoryChangeObserver> mock_directory_observer_;
+  scoped_ptr<StrictMock<MockGDataSyncClient> > mock_sync_client_;
+  scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
 
   int num_callback_invocations_;
   base::PlatformFileError expected_error_;
@@ -1615,8 +1627,6 @@ TEST_F(GDataFileSystemTest, CachedFeedLoading) {
 }
 
 TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   LoadRootFeedDocument("root_feed.json");
 
   FileOperationCallback callback =
@@ -1673,8 +1683,6 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
 }
 
 TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   LoadRootFeedDocument("root_feed.json");
 
   FileOperationCallback callback =
@@ -2082,8 +2090,6 @@ TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
 }
 
 TEST_F(GDataFileSystemTest, RemoveEntries) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   LoadRootFeedDocument("root_feed.json");
 
   FilePath nonexisting_file(FILE_PATH_LITERAL("drive/Dummy file.txt"));
@@ -2306,8 +2312,6 @@ TEST_F(GDataFileSystemTest, GetCacheFilePath) {
 }
 
 TEST_F(GDataFileSystemTest, StoreToCacheSimple) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -2357,8 +2361,6 @@ TEST_F(GDataFileSystemTest, StoreToCacheSimple) {
 }
 
 TEST_F(GDataFileSystemTest, GetFromCacheSimple) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   // First store a file to cache.
@@ -2389,8 +2391,6 @@ TEST_F(GDataFileSystemTest, GetFromCacheSimple) {
 }
 
 TEST_F(GDataFileSystemTest, RemoveFromCacheSimple) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   // Use alphanumeric characters for resource id.
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -2417,7 +2417,6 @@ TEST_F(GDataFileSystemTest, RemoveFromCacheSimple) {
 }
 
 TEST_F(GDataFileSystemTest, PinAndUnpin) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
@@ -2484,8 +2483,6 @@ TEST_F(GDataFileSystemTest, PinAndUnpin) {
 }
 
 TEST_F(GDataFileSystemTest, StoreToCachePinned) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
@@ -2515,8 +2512,6 @@ TEST_F(GDataFileSystemTest, StoreToCachePinned) {
 }
 
 TEST_F(GDataFileSystemTest, GetFromCachePinned) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
@@ -2547,8 +2542,6 @@ TEST_F(GDataFileSystemTest, GetFromCachePinned) {
 }
 
 TEST_F(GDataFileSystemTest, RemoveFromCachePinned) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   // Use alphanumeric characters for resource_id.
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -2585,8 +2578,6 @@ TEST_F(GDataFileSystemTest, RemoveFromCachePinned) {
 }
 
 TEST_F(GDataFileSystemTest, DirtyCacheSimple) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -2619,8 +2610,6 @@ TEST_F(GDataFileSystemTest, DirtyCacheSimple) {
 }
 
 TEST_F(GDataFileSystemTest, DirtyCachePinned) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
@@ -2661,7 +2650,6 @@ TEST_F(GDataFileSystemTest, DirtyCachePinned) {
 }
 
 TEST_F(GDataFileSystemTest, PinAndUnpinDirtyCache) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
@@ -2705,8 +2693,6 @@ TEST_F(GDataFileSystemTest, PinAndUnpinDirtyCache) {
 }
 
 TEST_F(GDataFileSystemTest, DirtyCacheRepetitive) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -2778,8 +2764,6 @@ TEST_F(GDataFileSystemTest, DirtyCacheRepetitive) {
 }
 
 TEST_F(GDataFileSystemTest, DirtyCacheInvalid) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -2839,8 +2823,6 @@ TEST_F(GDataFileSystemTest, DirtyCacheInvalid) {
 }
 
 TEST_F(GDataFileSystemTest, RemoveFromDirtyCache) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
@@ -2871,8 +2853,6 @@ TEST_F(GDataFileSystemTest, RemoveFromDirtyCache) {
 }
 
 TEST_F(GDataFileSystemTest, GetCacheState) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   // Populate gdata file system.
   LoadRootFeedDocument("root_feed.json");
 
@@ -2937,8 +2917,6 @@ TEST_F(GDataFileSystemTest, GetCacheState) {
 }
 
 TEST_F(GDataFileSystemTest, InitializeCache) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(2);
-
   PrepareForInitCacheTest();
   TestInitializeCache();
 }
@@ -2965,6 +2943,8 @@ TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
   LoadRootFeedDocument("root_feed.json");
   EXPECT_CALL(*mock_doc_service_,
               CreateDirectory(_, "Sample Directory Title", _)).Times(1);
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
   // Set last error so it's not a valid error code.
   callback_helper_->last_error_ = static_cast<base::PlatformFileError>(1);
@@ -2981,8 +2961,6 @@ TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
 }
 
 TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -3025,8 +3003,6 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
 }
 
 TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -3066,8 +3042,6 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
 }
 
 TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -3130,8 +3104,6 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
 }
 
 TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -3177,8 +3149,6 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
 }
 
 TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -3219,8 +3189,6 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
 }
 
 TEST_F(GDataFileSystemTest, GetFileByPath_HostedDocument) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -3243,7 +3211,6 @@ TEST_F(GDataFileSystemTest, GetFileByPath_HostedDocument) {
 }
 
 TEST_F(GDataFileSystemTest, GetFileByResourceId) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
@@ -3284,8 +3251,6 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId) {
 }
 
 TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -3712,8 +3677,6 @@ TEST_F(GDataFileSystemTest, ContentSearch_CreateDirectory) {
 }
 
 TEST_F(GDataFileSystemTest, GetAvailableSpace) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   GetAvailableSpaceCallback callback =
       base::Bind(&CallbackHelper::GetAvailableSpaceCallback,
                  callback_helper_.get());
@@ -3734,8 +3697,6 @@ TEST_F(GDataFileSystemTest, GetAvailableSpace) {
 }
 
 TEST_F(GDataFileSystemTest, MountUnmount) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   FilePath file_path;
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -3793,8 +3754,6 @@ TEST_F(GDataFileSystemTest, RequestDirectoryRefresh) {
 }
 
 TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
   LoadRootFeedDocument("root_feed.json");
 
   OpenFileCallback callback =
