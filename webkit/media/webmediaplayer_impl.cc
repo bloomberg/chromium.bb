@@ -548,6 +548,10 @@ bool WebMediaPlayerImpl::hasSingleSecurityOrigin() const {
   return true;
 }
 
+bool WebMediaPlayerImpl::didPassCORSAccessCheck() const {
+  return proxy_ && proxy_->DidPassCORSAccessCheck();
+}
+
 WebMediaPlayer::MovieLoadType WebMediaPlayerImpl::movieLoadType() const {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 

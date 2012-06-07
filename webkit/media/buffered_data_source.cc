@@ -126,6 +126,10 @@ bool BufferedDataSource::HasSingleOrigin() {
   return loader_->HasSingleOrigin();
 }
 
+bool BufferedDataSource::DidPassCORSAccessCheck() const {
+  return loader_.get() && loader_->DidPassCORSAccessCheck();
+}
+
 void BufferedDataSource::Abort() {
   DCHECK(MessageLoop::current() == render_loop_);
 

@@ -76,6 +76,8 @@ class WebMediaPlayerProxy
   void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out);
   void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame);
   bool HasSingleOrigin();
+  bool DidPassCORSAccessCheck() const;
+
   void AbortDataSource();
 
   // Methods for Pipeline -> WebMediaPlayerImpl communication.

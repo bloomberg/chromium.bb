@@ -172,6 +172,7 @@ class WebMediaPlayerImpl
   virtual unsigned long long totalBytes() const;
 
   virtual bool hasSingleSecurityOrigin() const;
+  virtual bool didPassCORSAccessCheck() const;
   virtual WebKit::WebMediaPlayer::MovieLoadType movieLoadType() const;
 
   virtual float mediaTimeForTimeValue(float timeValue) const;

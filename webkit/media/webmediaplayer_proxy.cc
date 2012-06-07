@@ -70,6 +70,13 @@ bool WebMediaPlayerProxy::HasSingleOrigin() {
   return true;
 }
 
+bool WebMediaPlayerProxy::DidPassCORSAccessCheck() const {
+  DCHECK(render_loop_->BelongsToCurrentThread());
+  if (data_source_)
+    return data_source_->DidPassCORSAccessCheck();
+  return false;
+}
+
 void WebMediaPlayerProxy::AbortDataSource() {
   DCHECK(render_loop_->BelongsToCurrentThread());
   if (data_source_)

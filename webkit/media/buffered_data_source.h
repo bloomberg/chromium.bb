@@ -53,6 +53,9 @@ class BufferedDataSource : public media::DataSource {
   // Method called on the render thread.
   bool HasSingleOrigin();
 
+  // Returns true if the media resource passed a CORS access control check.
+  bool DidPassCORSAccessCheck() const;
+
   // Cancels initialization, any pending loaders, and any pending read calls
   // from the demuxer. The caller is expected to release its reference to this
   // object and never call it again.

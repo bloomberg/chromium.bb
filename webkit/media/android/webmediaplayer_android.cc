@@ -322,6 +322,10 @@ bool WebMediaPlayerAndroid::hasSingleSecurityOrigin() const {
   return false;
 }
 
+bool WebMediaPlayerAndroid::didPassCORSAccessCheck() const {
+  return false;
+}
+
 WebMediaPlayer::MovieLoadType
     WebMediaPlayerAndroid::movieLoadType() const {
   // Deprecated.

@@ -175,6 +175,10 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Only valid to call after Start() has completed.
   bool HasSingleOrigin() const;
 
+  // Returns true if the media resource passed a CORS access control check.
+  // Only valid to call after Start() has completed.
+  bool DidPassCORSAccessCheck() const;
+
   // Sets the defer strategy to the given value unless it seems unwise.
   // Specifically downgrade kNeverDefer to kThresholdDefer if we know the
   // current response will not be used to satisfy future requests (the cache
