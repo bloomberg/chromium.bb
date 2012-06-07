@@ -193,16 +193,10 @@ void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
   state_ = IN_PROGRESS;
   fetcher_.reset(content::URLFetcher::Create(
       GURL(alternate_nav_url_), net::URLFetcher::HEAD, this));
+  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->SetRequestContext(
       controller_->GetBrowserContext()->GetRequestContext());
   fetcher_->SetStopOnRedirect(true);
-
-  content::WebContents* web_contents = controller_->GetWebContents();
-  content::AssociateURLFetcherWithRenderView(
-      fetcher_.get(),
-      web_contents->GetURL(),
-      web_contents->GetRenderProcessHost()->GetID(),
-      web_contents->GetRenderViewHost()->GetRoutingID());
   fetcher_->Start();
 }
 
