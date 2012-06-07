@@ -34,20 +34,36 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
                                         public views::ContextMenuController,
                                         public AppListItemModelObserver {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
-
   AppListItemView(AppsGridView* apps_grid_view,
                   AppListItemModel* model,
                   views::ButtonListener* listener);
   virtual ~AppListItemView();
 
+  static gfx::Size GetPreferredSizeForIconSize(const gfx::Size& icon_size);
+
+  // For testing. Testing calls this function to set minimum title width in
+  // pixels to get rid dependency on default font width.
+  static void SetMinTitleWidth(int width);
+
+  void SetSelected(bool selected);
+  bool selected() const {
+    return selected_;
+  }
+
   void SetIconSize(const gfx::Size& size);
 
-  AppListItemModel* model() const { return model_; }
+  AppListItemModel* model() const {
+    return model_;
+  }
+
+  // Internal class name.
+  static const char kViewClassName[];
 
  private:
   class IconOperation;
+
+  // Returns true for v2 UI.
+  bool IsV2() const;
 
   // Get icon from model and schedule background processing.
   void UpdateIcon();
@@ -66,6 +82,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   // views::View overrides:
   virtual std::string GetClassName() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
@@ -86,6 +103,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   scoped_ptr<views::MenuRunner> context_menu_runner_;
 
   gfx::Size icon_size_;
+  bool selected_;
 
   scoped_refptr<IconOperation> icon_op_;
   base::WeakPtrFactory<AppListItemView> apply_shadow_factory_;

@@ -40,6 +40,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   virtual ~AppListView();
 
   // Initializes the widget.
+  void InitAsFullscreenWidget(gfx::NativeView parent,
+                              const gfx::Rect& screen_bounds,
+                              const gfx::Rect& work_area);
   void InitAsBubble(gfx::NativeView parent,
                     views::View* anchor,
                     views::BubbleBorder::ArrowLocation arrow_location);
@@ -47,9 +50,16 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   void SetBubbleArrowLocation(
       views::BubbleBorder::ArrowLocation arrow_location);
 
+  void AnimateShow(int duration_ms);
+  void AnimateHide(int duration_ms);
+
   void Close();
 
-  void UpdateBounds();
+  void UpdateBounds(const gfx::Rect& screen_bounds,
+                    const gfx::Rect& work_area);
+
+  bool bubble_style() const { return bubble_style_; }
+  SearchBoxView* search_box() const { return search_box_view_; }
 
  private:
   // Creates models to use.
@@ -62,6 +72,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -83,12 +94,17 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // PaginationModel for model view and page switcher.
   scoped_ptr<PaginationModel> pagination_model_;
 
+  bool bubble_style_;
   AppListBubbleBorder* bubble_border_;  // Owned by views hierarchy.
 
-  AppsGridView* apps_grid_view_;  // Owned by views hierarchy.
+  AppsGridView* apps_view_;  // Owned by views hierarchy.
   PageSwitcher* page_switcher_view_;  // Owned by views hierarchy.
   SearchBoxView* search_box_view_;  // Owned by views hierarchy.
   SearchResultListView* search_results_view_;  // Owned by views hierarchy.
+
+  // Work area in screen coordinates to layout app list. This is used for
+  // full screen mode.
+  gfx::Rect work_area_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };

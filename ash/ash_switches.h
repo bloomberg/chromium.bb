@@ -24,6 +24,7 @@ ASH_EXPORT extern const char kAuraGoogleDialogFrames[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 ASH_EXPORT extern const char kAuraNoShadows[];
 ASH_EXPORT extern const char kAuraPanelManager[];
+ASH_EXPORT extern const char kEnableAppListV2[];
 
 }  // namespace switches
 }  // namespace ash

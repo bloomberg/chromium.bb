@@ -173,13 +173,24 @@ void CreateSpecialContainers(aura::RootWindow* root_window) {
                   "PanelContainer",
                   non_lock_screen_containers);
 
+  // V1 Applist container is below launcher container.
+  bool use_v2_applist = internal::AppListController::UseAppListV2();
+  if (!use_v2_applist) {
+    CreateContainer(internal::kShellWindowId_AppListContainer,
+                    "AppListContainer",
+                    non_lock_screen_containers);
+  }
+
   CreateContainer(internal::kShellWindowId_LauncherContainer,
                   "LauncherContainer",
                   non_lock_screen_containers);
 
-  CreateContainer(internal::kShellWindowId_AppListContainer,
-                  "AppListContainer",
-                  non_lock_screen_containers);
+  // V2 Applist container is above launcher container.
+  if (use_v2_applist) {
+    CreateContainer(internal::kShellWindowId_AppListContainer,
+                    "AppListContainer",
+                    non_lock_screen_containers);
+  }
 
   aura::Window* modal_container = CreateContainer(
       internal::kShellWindowId_SystemModalContainer,

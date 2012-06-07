@@ -30,6 +30,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                PaginationModel* pagination_model);
   virtual ~AppsGridView();
 
+  // Calculate preferred icon size, rows and cols for given |content_size| and
+  // |num_of_tiles|.
+  static void CalculateLayout(const gfx::Size& content_size,
+                              int num_of_tiles,
+                              gfx::Size* icon_size,
+                              int* rows,
+                              int* cols);
+
   // Sets fixed layout parameters. After setting this, CalculateLayout below
   // is no longer called to dynamically choosing those layout params.
   void SetLayout(int icon_size, int cols, int rows_per_page);
@@ -39,11 +47,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   void SetSelectedItem(AppListItemView* item);
   void ClearSelectedItem(AppListItemView* item);
-  bool IsSelectedItem(const AppListItemView* item) const;
 
-  void EnsureItemVisible(const AppListItemView* item);
+  int tiles_per_page() const {
+    return cols_ * rows_per_page_;
+  }
 
-  int tiles_per_page() const { return cols_ * rows_per_page_; }
+  bool fixed_layout() const {
+    return fixed_layout_;
+  }
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -72,6 +83,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   views::ButtonListener* listener_;
   PaginationModel* pagination_model_;  // Owned by AppListView.
 
+  bool fixed_layout_;
   gfx::Size icon_size_;
   int cols_;
   int rows_per_page_;

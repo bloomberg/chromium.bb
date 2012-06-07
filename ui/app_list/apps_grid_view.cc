@@ -29,6 +29,7 @@ AppsGridView::AppsGridView(views::ButtonListener* listener,
     : model_(NULL),
       listener_(listener),
       pagination_model_(pagination_model),
+      fixed_layout_(false),
       cols_(0),
       rows_per_page_(0),
       selected_item_index_(-1) {
@@ -42,7 +43,60 @@ AppsGridView::~AppsGridView() {
   pagination_model_->RemoveObserver(this);
 }
 
+void AppsGridView::CalculateLayout(const gfx::Size& content_size,
+                                       int num_of_tiles,
+                                       gfx::Size* icon_size,
+                                       int* rows,
+                                       int* cols) {
+  DCHECK(!content_size.IsEmpty() && num_of_tiles);
+
+  // Icon sizes to try.
+  const int kIconSizes[] = { 128, 96, 64, 48, 32 };
+
+  double aspect = static_cast<double>(content_size.width()) /
+      content_size.height();
+
+  // Chooses the biggest icon size that could fit all tiles.
+  gfx::Size tile_size;
+  for (size_t i = 0; i < arraysize(kIconSizes); ++i) {
+    icon_size->SetSize(kIconSizes[i], kIconSizes[i]);
+    tile_size = AppListItemView::GetPreferredSizeForIconSize(
+        *icon_size);
+
+    int max_cols = content_size.width() / tile_size.width();
+    int max_rows = content_size.height() / tile_size.height();
+
+    // Skip if |tile_size| could not fit into |content_size|.
+    if (max_cols * max_rows < num_of_tiles)
+      continue;
+
+    // Find a rows/cols pair that has a aspect ratio closest to |aspect|.
+    double min_aspect_diff = 1e5;
+    for (int c = std::max(max_cols / 2, 1); c <= max_cols; ++c) {
+      int r = std::min((num_of_tiles - 1) / c + 1, max_rows);
+      if (c * r < num_of_tiles)
+        continue;
+
+      double aspect_diff = fabs(static_cast<double>(c) / r - aspect);
+      if (aspect_diff < min_aspect_diff) {
+        *cols = c;
+        *rows = r;
+        min_aspect_diff = aspect_diff;
+      }
+    }
+
+    DCHECK((*rows) * (*cols) >= num_of_tiles);
+    return;
+  }
+
+  // No icon size that could fit all tiles.
+  *cols = std::max(content_size.width() / tile_size.width(), 1);
+  *rows = (num_of_tiles - 1) / (*cols) + 1;
+}
+
 void AppsGridView::SetLayout(int icon_size, int cols, int rows_per_page) {
+  fixed_layout_ = true;
+
   icon_size_.SetSize(icon_size, icon_size);
   cols_ = cols;
   rows_per_page_ = rows_per_page;
@@ -75,18 +129,10 @@ void AppsGridView::ClearSelectedItem(AppListItemView* item) {
     SetSelectedItemByIndex(-1);
 }
 
-bool AppsGridView::IsSelectedItem(const AppListItemView* item) const {
-  return selected_item_index_ != -1 &&
-      selected_item_index_ == GetIndexOf(item);
-}
-
-void AppsGridView::EnsureItemVisible(const AppListItemView* item) {
-  int index = GetIndexOf(item);
-  if (index >= 0 && tiles_per_page())
-    pagination_model_->SelectPage(index / tiles_per_page());
-}
-
 gfx::Size AppsGridView::GetPreferredSize() {
+  if (!fixed_layout_)
+    return gfx::Size();
+
   gfx::Insets insets(GetInsets());
   gfx::Size tile_size = gfx::Size(kPreferredTileWidth, kPreferredTileHeight);
   return gfx::Size(tile_size.width() * cols_ + insets.width(),
@@ -95,11 +141,29 @@ gfx::Size AppsGridView::GetPreferredSize() {
 
 void AppsGridView::Layout() {
   gfx::Rect rect(GetContentsBounds());
-  if (rect.IsEmpty() || child_count() == 0 || !tiles_per_page())
+  if (rect.IsEmpty() || child_count() == 0)
     return;
 
-  gfx::Size tile_size(kPreferredTileWidth, kPreferredTileHeight);
+  gfx::Size tile_size;
+  if (fixed_layout_) {
+    tile_size = gfx::Size(kPreferredTileWidth, kPreferredTileHeight);
+  } else {
+    int rows = 0;
+    CalculateLayout(rect.size(), child_count(), &icon_size_, &rows, &cols_);
 
+    tile_size = AppListItemView::GetPreferredSizeForIconSize(
+        icon_size_);
+    rows_per_page_ = tile_size.height() ?
+        std::max(rect.height() / tile_size.height(), 1) : 1;
+
+    tile_size.set_width(std::max(rect.width() / (cols_ + 1),
+                                 tile_size.width()));
+    tile_size.set_height(std::max(rect.height() / (rows_per_page_ + 1),
+                                  tile_size.height()));
+  }
+
+  if (!tiles_per_page())
+    return;
 
   pagination_model_->SetTotalPages((child_count() - 1) / tiles_per_page() + 1);
   if (pagination_model_->selected_page() < 0)
@@ -218,13 +282,13 @@ void AppsGridView::SetSelectedItemByIndex(int index) {
     return;
 
   if (selected_item_index_ >= 0)
-    GetItemViewAtIndex(selected_item_index_)->SchedulePaint();
+    GetItemViewAtIndex(selected_item_index_)->SetSelected(false);
 
   if (index < 0 || index >= child_count()) {
     selected_item_index_ = -1;
   } else {
     selected_item_index_ = index;
-    GetItemViewAtIndex(selected_item_index_)->SchedulePaint();
+    GetItemViewAtIndex(selected_item_index_)->SetSelected(true);
 
     if (tiles_per_page())
       pagination_model_->SelectPage(selected_item_index_ / tiles_per_page());
