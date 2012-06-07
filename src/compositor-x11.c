@@ -26,7 +26,6 @@
 #endif
 
 #include <stddef.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
@@ -46,6 +45,7 @@
 
 #include "compositor.h"
 #include "../shared/config-parser.h"
+#include "log.h"
 
 struct x11_compositor {
 	struct weston_compositor	 base;
@@ -196,29 +196,29 @@ x11_compositor_init_egl(struct x11_compositor *c)
 
 	c->base.display = eglGetDisplay(c->dpy);
 	if (c->base.display == NULL) {
-		fprintf(stderr, "failed to create display\n");
+		weston_log("failed to create display\n");
 		return -1;
 	}
 
 	if (!eglInitialize(c->base.display, &major, &minor)) {
-		fprintf(stderr, "failed to initialize display\n");
+		weston_log("failed to initialize display\n");
 		return -1;
 	}
 
 	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
-		fprintf(stderr, "failed to bind EGL_OPENGL_ES_API\n");
+		weston_log("failed to bind EGL_OPENGL_ES_API\n");
 		return -1;
 	}
    	if (!eglChooseConfig(c->base.display, config_attribs,
 			     &c->base.config, 1, &n) || n == 0) {
-		fprintf(stderr, "failed to choose config: %d\n", n);
+		weston_log("failed to choose config: %d\n", n);
 		return -1;
 	}
 
 	c->base.context = eglCreateContext(c->base.display, c->base.config,
 					   EGL_NO_CONTEXT, context_attribs);
 	if (c->base.context == NULL) {
-		fprintf(stderr, "failed to create context\n");
+		weston_log("failed to create context\n");
 		return -1;
 	}
 
@@ -226,13 +226,13 @@ x11_compositor_init_egl(struct x11_compositor *c)
 						   c->base.config,
 						   pbuffer_attribs);
 	if (c->dummy_pbuffer == NULL) {
-		fprintf(stderr, "failed to create dummy pbuffer\n");
+		weston_log("failed to create dummy pbuffer\n");
 		return -1;
 	}
 
 	if (!eglMakeCurrent(c->base.display, c->dummy_pbuffer,
 			    c->dummy_pbuffer, c->base.context)) {
-		fprintf(stderr, "failed to make context current\n");
+		weston_log("failed to make context current\n");
 		return -1;
 	}
 
@@ -261,7 +261,7 @@ x11_output_repaint(struct weston_output *output_base,
 
 	if (!eglMakeCurrent(compositor->base.display, output->egl_surface,
 			    output->egl_surface, compositor->base.context)) {
-		fprintf(stderr, "failed to make current\n");
+		weston_log("failed to make current\n");
 		return;
 	}
 
@@ -500,12 +500,12 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 		eglCreateWindowSurface(c->base.display, c->base.config,
 				       output->window, NULL);
 	if (!output->egl_surface) {
-		fprintf(stderr, "failed to create window surface\n");
+		weston_log("failed to create window surface\n");
 		return -1;
 	}
 	if (!eglMakeCurrent(c->base.display, output->egl_surface,
 			    output->egl_surface, c->base.context)) {
-		fprintf(stderr, "failed to make surface current\n");
+		weston_log("failed to make surface current\n");
 		return -1;
 	}
 

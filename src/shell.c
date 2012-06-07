@@ -36,6 +36,7 @@
 #include "compositor.h"
 #include "desktop-shell-server-protocol.h"
 #include "../shared/config-parser.h"
+#include "log.h"
 
 enum animation_type {
 	ANIMATION_NONE,
@@ -975,7 +976,7 @@ create_black_surface(struct weston_compositor *ec,
 
 	surface = weston_surface_create(ec);
 	if (surface == NULL) {
-		fprintf(stderr, "no memory\n");
+		weston_log("no memory\n");
 		return NULL;
 	}
 
@@ -1316,13 +1317,13 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 	struct shell_surface *shsurf;
 
 	if (surface->configure) {
-		fprintf(stderr, "surface->configure already set\n");
+		weston_log("surface->configure already set\n");
 		return NULL;
 	}
 
 	shsurf = calloc(1, sizeof *shsurf);
 	if (!shsurf) {
-		fprintf(stderr, "no memory to allocate shell surface\n");
+		weston_log("no memory to allocate shell surface\n");
 		return NULL;
 	}
 
@@ -1415,7 +1416,7 @@ launch_screensaver(struct desktop_shell *shell)
 		return;
 
 	if (shell->screensaver.process.pid != 0) {
-		fprintf(stderr, "old screensaver still running\n");
+		weston_log("old screensaver still running\n");
 		return;
 	}
 
@@ -1498,7 +1499,7 @@ handle_lock_surface_destroy(struct wl_listener *listener, void *data)
 	struct desktop_shell *shell =
 	    container_of(listener, struct desktop_shell, lock_surface_listener);
 
-	fprintf(stderr, "lock surface gone\n");
+	weston_log("lock surface gone\n");
 	shell->lock_surface = NULL;
 }
 
@@ -2327,11 +2328,11 @@ desktop_shell_sigchld(struct weston_process *process, int status)
 
 	shell->child.deathcount++;
 	if (shell->child.deathcount > 5) {
-		fprintf(stderr, "weston-desktop-shell died, giving up.\n");
+		weston_log("weston-desktop-shell died, giving up.\n");
 		return;
 	}
 
-	fprintf(stderr, "weston-desktop-shell died, respawning...\n");
+	weston_log("weston-desktop-shell died, respawning...\n");
 	launch_desktop_shell_process(shell);
 }
 

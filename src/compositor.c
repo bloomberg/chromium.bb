@@ -70,7 +70,7 @@ sigchld_handler(int signal_number, void *data)
 	}
 
 	if (&p->link == &child_process_list) {
-		fprintf(stderr, "unknown child process exited\n");
+		weston_log("unknown child process exited\n");
 		return 1;
 	}
 
@@ -113,7 +113,7 @@ child_client_exec(int sockfd, const char *path)
 	 * non-CLOEXEC fd to pass through exec. */
 	clientfd = dup(sockfd);
 	if (clientfd == -1) {
-		fprintf(stderr, "compositor: dup failed: %m\n");
+		weston_log("compositor: dup failed: %m\n");
 		return;
 	}
 
@@ -121,7 +121,7 @@ child_client_exec(int sockfd, const char *path)
 	setenv("WAYLAND_SOCKET", s, 1);
 
 	if (execl(path, path, NULL) < 0)
-		fprintf(stderr, "compositor: executing '%s' failed: %m\n",
+		weston_log("compositor: executing '%s' failed: %m\n",
 			path);
 }
 
@@ -136,7 +136,7 @@ weston_client_launch(struct weston_compositor *compositor,
 	struct wl_client *client;
 
 	if (os_socketpair_cloexec(AF_UNIX, SOCK_STREAM, 0, sv) < 0) {
-		fprintf(stderr, "weston_client_launch: "
+		weston_log("weston_client_launch: "
 			"socketpair failed while launching '%s': %m\n",
 			path);
 		return NULL;
@@ -146,7 +146,7 @@ weston_client_launch(struct weston_compositor *compositor,
 	if (pid == -1) {
 		close(sv[0]);
 		close(sv[1]);
-		fprintf(stderr,  "weston_client_launch: "
+		weston_log("weston_client_launch: "
 			"fork failed while launching '%s': %m\n", path);
 		return NULL;
 	}
@@ -161,7 +161,7 @@ weston_client_launch(struct weston_compositor *compositor,
 	client = wl_client_create(compositor->wl_display, sv[0]);
 	if (!client) {
 		close(sv[0]);
-		fprintf(stderr, "weston_client_launch: "
+		weston_log("weston_client_launch: "
 			"wl_client_create failed while launching '%s'.\n",
 			path);
 		return NULL;
@@ -279,7 +279,7 @@ surface_to_global_float(struct weston_surface *surface,
 		weston_matrix_transform(&surface->transform.matrix, &v);
 
 		if (fabsf(v.f[3]) < 1e-6) {
-			fprintf(stderr, "warning: numerical instability in "
+			weston_log("warning: numerical instability in "
 				"weston_surface_to_global(), divisor = %g\n",
 				v.f[3]);
 			*x = 0;
@@ -387,7 +387,7 @@ weston_surface_update_transform_enable(struct weston_surface *surface)
 
 	if (weston_matrix_invert(inverse, matrix) < 0) {
 		/* Oops, bad total transformation, not invertible */
-		fprintf(stderr, "error: weston_surface %p"
+		weston_log("error: weston_surface %p"
 			" transformation not invertible.\n", surface);
 		return -1;
 	}
@@ -471,7 +471,7 @@ surface_from_global_float(struct weston_surface *surface,
 		weston_matrix_transform(&surface->transform.inverse, &v);
 
 		if (fabsf(v.f[3]) < 1e-6) {
-			fprintf(stderr, "warning: numerical instability in "
+			weston_log("warning: numerical instability in "
 				"weston_surface_from_global(), divisor = %g\n",
 				v.f[3]);
 			*sx = 0;
@@ -1961,7 +1961,7 @@ touch_set_focus(struct weston_seat *ws, struct wl_surface *surface)
 			find_resource_for_client(&seat->touch->resource_list,
 						 surface->resource.client);
 		if (!resource) {
-			fprintf(stderr, "couldn't find resource\n");
+			weston_log("couldn't find resource\n");
 			return;
 		}
 
@@ -2232,7 +2232,7 @@ static void weston_compositor_xkb_init(struct weston_compositor *ec,
 	if (ec->xkb_context == NULL) {
 		ec->xkb_context = xkb_context_new(0);
 		if (ec->xkb_context == NULL) {
-			fprintf(stderr, "failed to create XKB context\n");
+			weston_log("failed to create XKB context\n");
 			exit(1);
 		}
 	}
@@ -2291,15 +2291,14 @@ weston_xkb_info_new_keymap(struct weston_xkb_info *xkb_info)
 
 	keymap_str = xkb_map_get_as_string(xkb_info->keymap);
 	if (keymap_str == NULL) {
-		fprintf(stderr, "failed to get string version of keymap\n");
+		weston_log("failed to get string version of keymap\n");
 		exit(EXIT_FAILURE);
 	}
 	xkb_info->keymap_size = strlen(keymap_str) + 1;
 
 	xkb_info->keymap_fd = os_create_anonymous_file(xkb_info->keymap_size);
 	if (xkb_info->keymap_fd < 0) {
-		fprintf(stderr,
-			"creating a keymap file for %lu bytes failed: %m\n",
+		weston_log("creating a keymap file for %lu bytes failed: %m\n",
 			(unsigned long) xkb_info->keymap_size);
 		goto err_keymap_str;
 	}
@@ -2308,7 +2307,7 @@ weston_xkb_info_new_keymap(struct weston_xkb_info *xkb_info)
 				     PROT_READ | PROT_WRITE,
 				     MAP_SHARED, xkb_info->keymap_fd, 0);
 	if (xkb_info->keymap_area == MAP_FAILED) {
-		fprintf(stderr, "failed to mmap() %lu bytes\n",
+		weston_log("failed to mmap() %lu bytes\n",
 			(unsigned long) xkb_info->keymap_size);
 		goto err_dev_zero;
 	}
@@ -2335,9 +2334,8 @@ weston_compositor_build_global_keymap(struct weston_compositor *ec)
 						     &ec->xkb_names,
 						     0);
 	if (ec->xkb_info.keymap == NULL) {
-		fprintf(stderr, "failed to compile global XKB keymap\n");
-		fprintf(stderr,
-			"  tried rules %s, model %s, layout %s, variant %s, "
+		weston_log("failed to compile global XKB keymap\n");
+		weston_log("  tried rules %s, model %s, layout %s, variant %s, "
 			"options %s",
 			ec->xkb_names.rules, ec->xkb_names.model,
 			ec->xkb_names.layout, ec->xkb_names.variant,
@@ -2366,7 +2364,7 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 
 	seat->xkb_state.state = xkb_state_new(seat->xkb_info.keymap);
 	if (seat->xkb_state.state == NULL) {
-		fprintf(stderr, "failed to initialise XKB state\n");
+		weston_log("failed to initialise XKB state\n");
 		exit(1);
 	}
 
@@ -2648,7 +2646,7 @@ compile_shader(GLenum type, const char *source)
 	glGetShaderiv(s, GL_COMPILE_STATUS, &status);
 	if (!status) {
 		glGetShaderInfoLog(s, sizeof msg, NULL, msg);
-		fprintf(stderr, "shader info: %s\n", msg);
+		weston_log("shader info: %s\n", msg);
 		return GL_NONE;
 	}
 
@@ -2677,7 +2675,7 @@ weston_shader_init(struct weston_shader *shader,
 	glGetProgramiv(shader->program, GL_LINK_STATUS, &status);
 	if (!status) {
 		glGetProgramInfoLog(shader->program, sizeof msg, NULL, msg);
-		fprintf(stderr, "link info: %s\n", msg);
+		weston_log("link info: %s\n", msg);
 		return -1;
 	}
 
@@ -2925,13 +2923,12 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	extensions = (const char *) glGetString(GL_EXTENSIONS);
 	if (!extensions) {
-		fprintf(stderr, "Retrieving GL extension string failed.\n");
+		weston_log("Retrieving GL extension string failed.\n");
 		return -1;
 	}
 
 	if (!strstr(extensions, "GL_EXT_texture_format_BGRA8888")) {
-		fprintf(stderr,
-			"GL_EXT_texture_format_BGRA8888 not available\n");
+		weston_log("GL_EXT_texture_format_BGRA8888 not available\n");
 		return -1;
 	}
 
@@ -2946,7 +2943,7 @@ weston_compositor_init(struct weston_compositor *ec,
 	extensions =
 		(const char *) eglQueryString(ec->display, EGL_EXTENSIONS);
 	if (!extensions) {
-		fprintf(stderr, "Retrieving EGL extension string failed.\n");
+		weston_log("Retrieving EGL extension string failed.\n");
 		return -1;
 	}
 
@@ -3026,7 +3023,7 @@ static int on_term_signal(int signal_number, void *data)
 {
 	struct wl_display *display = data;
 
-	fprintf(stderr, "caught signal %d\n", signal_number);
+	weston_log("caught signal %d\n", signal_number);
 	wl_display_terminate(display);
 
 	return 1;
@@ -3039,12 +3036,12 @@ on_segv_signal(int s, siginfo_t *siginfo, void *context)
 	int i, count;
 	Dl_info info;
 
-	fprintf(stderr, "caught segv\n");
+	weston_log("caught segv\n");
 
 	count = backtrace(buffer, ARRAY_LENGTH(buffer));
 	for (i = 0; i < count; i++) {
 		dladdr(buffer[i], &info);
-		fprintf(stderr, "  [%016lx]  %s  (%s)\n",
+		weston_log("  [%016lx]  %s  (%s)\n",
 			(long) buffer[i],
 			info.dli_sname ? info.dli_sname : "--",
 			info.dli_fname);
@@ -3067,15 +3064,13 @@ load_module(const char *name, const char *entrypoint, void **handle)
 
 	module = dlopen(path, RTLD_LAZY);
 	if (!module) {
-		fprintf(stderr,
-			"failed to load module '%s': %s\n", path, dlerror());
+		weston_log("failed to load module '%s': %s\n", path, dlerror());
 		return NULL;
 	}
 
 	init = dlsym(module, entrypoint);
 	if (!init) {
-		fprintf(stderr,
-			"failed to lookup init function in '%s': %s\n",
+		weston_log("failed to lookup init function in '%s': %s\n",
 			path, dlerror());
 		return NULL;
 	}
@@ -3134,7 +3129,7 @@ int main(int argc, char *argv[])
 			     ARRAY_LENGTH(core_options), argc, argv);
 
 	if (!getenv("XDG_RUNTIME_DIR")) {
-		fprintf(stderr, xdg_error_message);
+		weston_log(xdg_error_message);
 		exit(EXIT_FAILURE);
 	}
 
@@ -3179,12 +3174,12 @@ int main(int argc, char *argv[])
 
 	ec = backend_init(display, argc, argv, config_file);
 	if (ec == NULL) {
-		fprintf(stderr, "failed to create compositor\n");
+		weston_log("failed to create compositor\n");
 		exit(EXIT_FAILURE);
 	}
 
 	for (i = 1; argv[i]; i++)
-		fprintf(stderr, "unhandled option: %s\n", argv[i]);
+		weston_log("unhandled option: %s\n", argv[i]);
 	if (argv[1])
 		exit(EXIT_FAILURE);
 
@@ -3215,7 +3210,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 
 	if (wl_display_add_socket(display, socket_name)) {
-		fprintf(stderr, "failed to add socket: %m\n");
+		weston_log("failed to add socket: %m\n");
 		exit(EXIT_FAILURE);
 	}
 

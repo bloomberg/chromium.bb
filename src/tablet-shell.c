@@ -23,12 +23,12 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <linux/input.h>
 
 #include "compositor.h"
 #include "tablet-shell-server-protocol.h"
+#include "log.h"
 
 /*
  * TODO: Don't fade back from black until we've received a lockscreen
@@ -104,8 +104,7 @@ tablet_shell_sigchld(struct weston_process *process, int status)
 
 	shell->process.pid = 0;
 
-	fprintf(stderr,
-		"weston-tablet-shell crashed, exit code %d\n", status);
+	weston_log("weston-tablet-shell crashed, exit code %d\n", status);
 }
 
 static void
@@ -115,7 +114,7 @@ tablet_shell_set_state(struct tablet_shell *shell, int state)
 		"STARTING", "LOCKED", "HOME", "SWITCHER", "TASK"
 	};
 
-	fprintf(stderr, "switching to state %s (from %s)\n",
+	weston_log("switching to state %s (from %s)\n",
 		states[state], states[shell->state]);
 	shell->previous_state = shell->state;
 	shell->state = state;
@@ -363,7 +362,7 @@ tablet_shell_create_client(struct wl_client *client,
 	tablet_client->surface = NULL;
 	shell->current_client = tablet_client;
 
-	fprintf(stderr, "created client %p, id %d, name %s, fd %d\n",
+	weston_log("created client %p, id %d, name %s, fd %d\n",
 		tablet_client->client, id, name, fd);
 }
 

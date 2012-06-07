@@ -23,7 +23,6 @@
 
 #define _GNU_SOURCE
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -36,6 +35,7 @@
 
 #include "compositor.h"
 #include "evdev.h"
+#include "log.h"
 
 struct wfd_compositor {
 	struct weston_compositor base;
@@ -137,36 +137,36 @@ init_egl(struct wfd_compositor *ec)
 	ec->gbm = gbm_create_device(ec->wfd_fd);
 	ec->base.display = eglGetDisplay(ec->gbm);
 	if (ec->base.display == NULL) {
-		fprintf(stderr, "failed to create display\n");
+		weston_log("failed to create display\n");
 		return -1;
 	}
 
 	if (!eglInitialize(ec->base.display, &major, &minor)) {
-		fprintf(stderr, "failed to initialize display\n");
+		weston_log("failed to initialize display\n");
 		return -1;
 	}
 
 	extensions = eglQueryString(ec->base.display, EGL_EXTENSIONS);
 	if (!strstr(extensions, "EGL_KHR_surfaceless_gles2")) {
-		fprintf(stderr, "EGL_KHR_surfaceless_gles2 not available\n");
+		weston_log("EGL_KHR_surfaceless_gles2 not available\n");
 		return -1;
 	}
 
 	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
-		fprintf(stderr, "failed to bind api EGL_OPENGL_ES_API\n");
+		weston_log("failed to bind api EGL_OPENGL_ES_API\n");
 		return -1;
 	}
 
 	ec->base.context = eglCreateContext(ec->base.display, NULL,
 					    EGL_NO_CONTEXT, context_attribs);
 	if (ec->base.context == NULL) {
-		fprintf(stderr, "failed to create context\n");
+		weston_log("failed to create context\n");
 		return -1;
 	}
 
 	if (!eglMakeCurrent(ec->base.display, EGL_NO_SURFACE,
 			    EGL_NO_SURFACE, ec->base.context)) {
-		fprintf(stderr, "failed to make context current\n");
+		weston_log("failed to make context current\n");
 		return -1;
 	}
 
@@ -272,7 +272,7 @@ create_output_for_port(struct wfd_compositor *ec,
 
 	num_modes = wfdGetPortModes(ec->dev, output->port, NULL, 0);
 	if (num_modes < 1) {
-		fprintf(stderr, "failed to get port mode\n");
+		weston_log("failed to get port mode\n");
 		goto cleanup_port;
 	}
 
@@ -300,7 +300,7 @@ create_output_for_port(struct wfd_compositor *ec,
 		}
 	}
 	if (output->base.current == NULL) {
-		fprintf(stderr, "failed to find a native mode\n");
+		weston_log("failed to find a native mode\n");
 		goto cleanup_port;
 	}
 
@@ -314,7 +314,7 @@ create_output_for_port(struct wfd_compositor *ec,
 	num_pipelines = wfdGetPortAttribi(ec->dev, output->port,
 					  WFD_PORT_PIPELINE_ID_COUNT);
 	if (num_pipelines < 1) {
-		fprintf(stderr, "failed to get a bindable pipeline\n");
+		weston_log("failed to get a bindable pipeline\n");
 		goto cleanup_port;
 	}
 	pipelines = calloc(num_pipelines, sizeof *pipelines);
@@ -333,7 +333,7 @@ create_output_for_port(struct wfd_compositor *ec,
 		}
 	}
 	if (output->pipeline_id == WFD_INVALID_PIPELINE_ID) {
-		fprintf(stderr, "no pipeline found for port: %d\n", port);
+		weston_log("no pipeline found for port: %d\n", port);
 		goto cleanup_pipelines;
 	}
 
@@ -348,7 +348,7 @@ create_output_for_port(struct wfd_compositor *ec,
 
 	output->pipeline = wfdCreatePipeline(ec->dev, output->pipeline_id, NULL);
 	if (output->pipeline == WFD_INVALID_HANDLE) {
-		fprintf(stderr, "failed to create a pipeline\n");
+		weston_log("failed to create a pipeline\n");
 		goto cleanup_weston_output;
 	}
 
@@ -367,7 +367,7 @@ create_output_for_port(struct wfd_compositor *ec,
 							 EGL_NATIVE_PIXMAP_KHR,
 							 output->bo[i], NULL);
 
-		printf("output->image[i]: %p\n", output->image[i]);
+		weston_log("output->image[i]: %p\n", output->image[i]);
 		ec->base.image_target_renderbuffer_storage(GL_RENDERBUFFER,
 							   output->image[i]);
 		output->source[i] =
@@ -375,7 +375,7 @@ create_output_for_port(struct wfd_compositor *ec,
 						 output->image[i], NULL);
 
 		if (output->source[i] == WFD_INVALID_HANDLE) {
-			fprintf(stderr, "failed to create source\n");
+			weston_log("failed to create source\n");
 			goto cleanup_pipeline;
 		}
 	}
@@ -616,25 +616,25 @@ wfd_compositor_create(struct wl_display *display,
 
 	ec->udev = udev_new();
 	if (ec->udev == NULL) {
-		fprintf(stderr, "failed to initialize udev context\n");
+		weston_log("failed to initialize udev context\n");
 		return NULL;
 	}
 
 	ec->dev = wfdCreateDevice(WFD_DEFAULT_DEVICE_ID, NULL);
 	if (ec->dev == WFD_INVALID_HANDLE) {
-		fprintf(stderr, "failed to create wfd device\n");
+		weston_log("failed to create wfd device\n");
 		return NULL;
 	}
 
 	ec->event = wfdCreateEvent(ec->dev, NULL);
 	if (ec->event == WFD_INVALID_HANDLE) {
-		fprintf(stderr, "failed to create wfd event\n");
+		weston_log("failed to create wfd event\n");
 		return NULL;
 	}
 
 	ec->base.wl_display = display;
 	if (init_egl(ec) < 0) {
-		fprintf(stderr, "failed to initialize egl\n");
+		weston_log("failed to initialize egl\n");
 		return NULL;
 	}
 
@@ -649,7 +649,7 @@ wfd_compositor_create(struct wl_display *display,
 		return NULL;
 
 	if (create_outputs(ec, connector) < 0) {
-		fprintf(stderr, "failed to create outputs\n");
+		weston_log("failed to create outputs\n");
 		return NULL;
 	}
 

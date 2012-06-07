@@ -35,6 +35,7 @@
 #include <sys/stat.h>
 
 #include "compositor.h"
+#include "log.h"
 
 /* Introduced in 2.6.38 */
 #ifndef K_OFF
@@ -91,19 +92,19 @@ try_open_vt(struct tty *tty)
 
 	tty0 = open("/dev/tty0", O_WRONLY | O_CLOEXEC);
 	if (tty0 < 0) {
-		fprintf(stderr, "could not open tty0: %m\n");
+		weston_log("could not open tty0: %m\n");
 		return -1;
 	}
 
 	if (ioctl(tty0, VT_OPENQRY, &tty->vt) < 0 || tty->vt == -1) {
-		fprintf(stderr, "could not open tty0: %m\n");
+		weston_log("could not open tty0: %m\n");
 		close(tty0);
 		return -1;
 	}
 
 	close(tty0);
 	snprintf(filename, sizeof filename, "/dev/tty%d", tty->vt);
-	fprintf(stderr, "compositor: using new vt %s\n", filename);
+	weston_log("compositor: using new vt %s\n", filename);
 	fd = open(filename, O_RDWR | O_NOCTTY | O_CLOEXEC);
 	if (fd < 0)
 		return fd;
@@ -144,7 +145,7 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 
 	if (tty_nr > 0) {
 		snprintf(filename, sizeof filename, "/dev/tty%d", tty_nr);
-		fprintf(stderr, "compositor: using %s\n", filename);
+		weston_log("compositor: using %s\n", filename);
 		tty->fd = open(filename, O_RDWR | O_NOCTTY | O_CLOEXEC);
 		tty->vt = tty_nr;
 	} else if (fstat(tty->fd, &buf) == 0 &&
@@ -160,7 +161,7 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	}
 
 	if (tty->fd <= 0) {
-		fprintf(stderr, "failed to open tty: %m\n");
+		weston_log("failed to open tty: %m\n");
 		free(tty);
 		return NULL;
 	}
@@ -173,13 +174,13 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	if (tty->starting_vt != tty->vt) {
 		if (ioctl(tty->fd, VT_ACTIVATE, tty->vt) < 0 ||
 		    ioctl(tty->fd, VT_WAITACTIVE, tty->vt) < 0) {
-			fprintf(stderr, "failed to swtich to new vt\n");
+			weston_log("failed to swtich to new vt\n");
 			return NULL;
 		}
 	}
 
 	if (tcgetattr(tty->fd, &tty->terminal_attributes) < 0) {
-		fprintf(stderr, "could not get terminal attributes: %m\n");
+		weston_log("could not get terminal attributes: %m\n");
 		goto err;
 	}
 
@@ -191,7 +192,7 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	raw_attributes.c_oflag |= OPOST | OCRNL;
 
 	if (tcsetattr(tty->fd, TCSANOW, &raw_attributes) < 0)
-		fprintf(stderr, "could not put terminal into raw mode: %m\n");
+		weston_log("could not put terminal into raw mode: %m\n");
 
 	loop = wl_display_get_event_loop(compositor->wl_display);
 
@@ -210,13 +211,13 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	}
 
 	if (ret) {
-		fprintf(stderr, "failed to set K_OFF keyboard mode on tty: %m\n");
+		weston_log("failed to set K_OFF keyboard mode on tty: %m\n");
 		goto err_attr;
 	}
 
 	ret = ioctl(tty->fd, KDSETMODE, KD_GRAPHICS);
 	if (ret) {
-		fprintf(stderr, "failed to set KD_GRAPHICS mode on tty: %m\n");
+		weston_log("failed to set KD_GRAPHICS mode on tty: %m\n");
 		goto err_kdkbmode;
 	}
 
@@ -225,7 +226,7 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	mode.relsig = SIGUSR1;
 	mode.acqsig = SIGUSR1;
 	if (ioctl(tty->fd, VT_SETMODE, &mode) < 0) {
-		fprintf(stderr, "failed to take control of vt handling\n");
+		weston_log("failed to take control of vt handling\n");
 		goto err_kdmode;
 	}
 
@@ -265,19 +266,17 @@ tty_destroy(struct tty *tty)
 		wl_event_source_remove(tty->input_source);
 
 	if (ioctl(tty->fd, KDSKBMODE, tty->kb_mode))
-		fprintf(stderr, "failed to restore keyboard mode: %m\n");
+		weston_log("failed to restore keyboard mode: %m\n");
 
 	if (ioctl(tty->fd, KDSETMODE, KD_TEXT))
-		fprintf(stderr,
-			"failed to set KD_TEXT mode on tty: %m\n");
+		weston_log("failed to set KD_TEXT mode on tty: %m\n");
 
 	if (tcsetattr(tty->fd, TCSANOW, &tty->terminal_attributes) < 0)
-		fprintf(stderr,
-			"could not restore terminal to canonical mode\n");
+		weston_log("could not restore terminal to canonical mode\n");
 
 	mode.mode = VT_AUTO;
 	if (ioctl(tty->fd, VT_SETMODE, &mode) < 0)
-		fprintf(stderr, "could not reset vt handling\n");
+		weston_log("could not reset vt handling\n");
 
 	if (tty->has_vt && tty->vt != tty->starting_vt) {
 		ioctl(tty->fd, VT_ACTIVATE, tty->starting_vt);

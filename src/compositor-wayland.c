@@ -42,6 +42,7 @@
 #include <EGL/eglext.h>
 
 #include "compositor.h"
+#include "log.h"
 
 struct wayland_compositor {
 	struct weston_compositor	 base;
@@ -217,7 +218,7 @@ create_border(struct wayland_compositor *c)
 
 	image = load_image(DATADIR "/weston/border.png");
 	if (!image) {
-		fprintf(stderr, "could'nt load border image\n");
+		weston_log("could'nt load border image\n");
 		return;
 	}
 
@@ -266,35 +267,35 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 
 	c->base.display = eglGetDisplay(c->parent.display);
 	if (c->base.display == NULL) {
-		fprintf(stderr, "failed to create display\n");
+		weston_log("failed to create display\n");
 		return -1;
 	}
 
 	if (!eglInitialize(c->base.display, &major, &minor)) {
-		fprintf(stderr, "failed to initialize display\n");
+		weston_log("failed to initialize display\n");
 		return -1;
 	}
 
 	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
-		fprintf(stderr, "failed to bind EGL_OPENGL_ES_API\n");
+		weston_log("failed to bind EGL_OPENGL_ES_API\n");
 		return -1;
 	}
    	if (!eglChooseConfig(c->base.display, config_attribs,
 			     &c->base.config, 1, &n) || n == 0) {
-		fprintf(stderr, "failed to choose config: %d\n", n);
+		weston_log("failed to choose config: %d\n", n);
 		return -1;
 	}
 
 	c->base.context = eglCreateContext(c->base.display, c->base.config,
 					   EGL_NO_CONTEXT, context_attribs);
 	if (c->base.context == NULL) {
-		fprintf(stderr, "failed to create context\n");
+		weston_log("failed to create context\n");
 		return -1;
 	}
 
 	c->dummy_pixmap = wl_egl_pixmap_create(10, 10, 0);
 	if (!c->dummy_pixmap) {
-		fprintf(stderr, "failure to create dummy_pixmap\n");
+		weston_log("failure to create dummy_pixmap\n");
 		return -1;
 	}
 
@@ -303,7 +304,7 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 				       c->dummy_pixmap, NULL);
 	if (!eglMakeCurrent(c->base.display, c->dummy_egl_surface,
 			    c->dummy_egl_surface, c->base.context)) {
-		fprintf(stderr, "failed to make context current\n");
+		weston_log("failed to make context current\n");
 		return -1;
 	}
 
@@ -335,7 +336,7 @@ wayland_output_repaint(struct weston_output *output_base,
 
 	if (!eglMakeCurrent(compositor->base.display, output->egl_surface,
 			    output->egl_surface, compositor->base.context)) {
-		fprintf(stderr, "failed to make current\n");
+		weston_log("failed to make current\n");
 		return;
 	}
 
@@ -405,7 +406,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 				     width + c->border.left + c->border.right,
 				     height + c->border.top + c->border.bottom);
 	if (!output->parent.egl_window) {
-		fprintf(stderr, "failure to create wl_egl_window\n");
+		weston_log("failure to create wl_egl_window\n");
 		goto cleanup_output;
 	}
 
@@ -413,13 +414,13 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 		eglCreateWindowSurface(c->base.display, c->base.config,
 				       output->parent.egl_window, NULL);
 	if (!output->egl_surface) {
-		fprintf(stderr, "failed to create window surface\n");
+		weston_log("failed to create window surface\n");
 		goto cleanup_window;
 	}
 
 	if (!eglMakeCurrent(c->base.display, output->egl_surface,
 			    output->egl_surface, c->base.context)) {
-		fprintf(stderr, "failed to make surface current\n");
+		weston_log("failed to make surface current\n");
 		goto cleanup_surface;
 		return -1;
 	}
@@ -591,7 +592,7 @@ input_handle_keymap(void *data, struct wl_keyboard *keyboard, uint32_t format,
 	close(fd);
 
 	if (!keymap) {
-		fprintf(stderr, "failed to compile keymap\n");
+		weston_log("failed to compile keymap\n");
 		return;
 	}
 
@@ -812,7 +813,7 @@ wayland_compositor_create(struct wl_display *display,
 	c->parent.display = wl_display_connect(display_name);
 
 	if (c->parent.display == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
+		weston_log("failed to create display: %m\n");
 		return NULL;
 	}
 

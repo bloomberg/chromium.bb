@@ -96,7 +96,7 @@ print_egl_error_state(void)
 	EGLint code;
 
 	code = eglGetError();
-	fprintf(stderr, "EGL error state: %s (0x%04lx)\n",
+	weston_log("EGL error state: %s (0x%04lx)\n",
 		egl_error_string(code), (long)code);
 }
 
@@ -113,7 +113,7 @@ android_output_make_current(struct android_output *output)
 		if (errored)
 			return -1;
 		errored = 1;
-		fprintf(stderr, "Failed to make EGL context current.\n");
+		weston_log("Failed to make EGL context current.\n");
 		print_egl_error_state();
 		return -1;
 	}
@@ -151,7 +151,7 @@ android_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 	ret = eglSwapBuffers(compositor->base.display, output->egl_surface);
 	if (ret == EGL_FALSE && !errored) {
 		errored = 1;
-		fprintf(stderr, "Failed in eglSwapBuffers.\n");
+		weston_log("Failed in eglSwapBuffers.\n");
 		print_egl_error_state();
 	}
 
@@ -325,27 +325,27 @@ android_init_egl(struct android_compositor *compositor,
 
 	compositor->base.display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (compositor->base.display == EGL_NO_DISPLAY) {
-		fprintf(stderr, "Failed to create EGL display.\n");
+		weston_log("Failed to create EGL display.\n");
 		print_egl_error_state();
 		return -1;
 	}
 
 	ret = eglInitialize(compositor->base.display, &eglmajor, &eglminor);
 	if (!ret) {
-		fprintf(stderr, "Failed to initialise EGL.\n");
+		weston_log("Failed to initialise EGL.\n");
 		print_egl_error_state();
 		return -1;
 	}
 
 	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
-		fprintf(stderr, "Failed to bind EGL_OPENGL_ES_API.\n");
+		weston_log("Failed to bind EGL_OPENGL_ES_API.\n");
 		print_egl_error_state();
 		return -1;
 	}
 
 	ret = android_egl_choose_config(compositor, output->fb, config_attrs);
 	if (ret < 0) {
-		fprintf(stderr, "Failed to find an EGL config.\n");
+		weston_log("Failed to find an EGL config.\n");
 		print_egl_error_state();
 		return -1;
 	}
@@ -355,7 +355,7 @@ android_init_egl(struct android_compositor *compositor,
 						    EGL_NO_CONTEXT,
 						    context_attrs);
 	if (compositor->base.context == EGL_NO_CONTEXT) {
-		fprintf(stderr, "Failed to create a GL ES 2 context.\n");
+		weston_log("Failed to create a GL ES 2 context.\n");
 		print_egl_error_state();
 		return -1;
 	}
@@ -365,7 +365,7 @@ android_init_egl(struct android_compositor *compositor,
 						     output->fb->native_window,
 						     NULL);
 	if (output->egl_surface == EGL_NO_SURFACE) {
-		fprintf(stderr, "Failed to create FB EGLSurface.\n");
+		weston_log("Failed to create FB EGLSurface.\n");
 		print_egl_error_state();
 		return -1;
 	}

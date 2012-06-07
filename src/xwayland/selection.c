@@ -23,12 +23,12 @@
 #define _GNU_SOURCE
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 
 #include "xwayland.h"
+#include "../log.h"
 
 static int
 weston_wm_write_property(int fd, uint32_t mask, void *data)
@@ -46,11 +46,11 @@ weston_wm_write_property(int fd, uint32_t mask, void *data)
 		free(wm->property_reply);
 		wl_event_source_remove(wm->property_source);
 		close(fd);
-		fprintf(stderr, "write error to target fd: %m\n");
+		weston_log("write error to target fd: %m\n");
 		return 1;
 	}
 
-	fprintf(stderr, "wrote %d (chunk size %d) of %d bytes\n",
+	weston_log("wrote %d (chunk size %d) of %d bytes\n",
 		wm->property_start + len,
 		len, xcb_get_property_value_length(wm->property_reply));
 
@@ -64,7 +64,7 @@ weston_wm_write_property(int fd, uint32_t mask, void *data)
 					    wm->selection_window,
 					    wm->atom.wl_selection);
 		} else {
-			fprintf(stderr, "transfer complete\n");
+			weston_log("transfer complete\n");
 			close(fd);
 		}
 	}
@@ -100,7 +100,7 @@ weston_wm_get_incr_chunk(struct weston_wm *wm)
 					     wm);
 		wm->property_reply = reply;
 	} else {
-		fprintf(stderr, "transfer complete\n");
+		weston_log("transfer complete\n");
 		close(wm->data_source_fd);
 		free(reply);
 	}
@@ -345,20 +345,20 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 
 	len = read(fd, p, available);
 	if (len == -1) {
-		fprintf(stderr, "read error from data source: %m\n");
+		weston_log("read error from data source: %m\n");
 		weston_wm_send_selection_notify(wm, XCB_ATOM_NONE);
 		wl_event_source_remove(wm->property_source);
 		close(fd);
 		wl_array_release(&wm->source_data);
 	}
 
-	fprintf(stderr, "read %d (available %d, mask 0x%x) bytes: \"%.*s\"\n",
+	weston_log("read %d (available %d, mask 0x%x) bytes: \"%.*s\"\n",
 		len, available, mask, len, (char *) p);
 
 	wm->source_data.size = current + len;
 	if (wm->source_data.size >= incr_chunk_size) {
 		if (!wm->incr) {
-			fprintf(stderr, "got %zu bytes, starting incr\n",
+			weston_log("got %zu bytes, starting incr\n",
 				wm->source_data.size);
 			wm->incr = 1;
 			xcb_change_property(wm->conn,
@@ -373,19 +373,19 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 			wl_event_source_remove(wm->property_source);
 			weston_wm_send_selection_notify(wm, wm->selection_request.property);
 		} else if (wm->selection_property_set) {
-			fprintf(stderr, "got %zu bytes, waiting for "
+			weston_log("got %zu bytes, waiting for "
 				"property delete\n", wm->source_data.size);
 
 			wm->flush_property_on_delete = 1;
 			wl_event_source_remove(wm->property_source);
 		} else {
-			fprintf(stderr, "got %zu bytes, "
+			weston_log("got %zu bytes, "
 				"property deleted, seting new property\n",
 				wm->source_data.size);
 			weston_wm_flush_source_data(wm);
 		}
 	} else if (len == 0 && !wm->incr) {
-		fprintf(stderr, "non-incr transfer complete\n");
+		weston_log("non-incr transfer complete\n");
 		/* Non-incr transfer all done. */
 		weston_wm_flush_source_data(wm);
 		weston_wm_send_selection_notify(wm, wm->selection_request.property);
@@ -395,14 +395,14 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 		wl_array_release(&wm->source_data);
 		wm->selection_request.requestor = XCB_NONE;
 	} else if (len == 0 && wm->incr) {
-		fprintf(stderr, "incr transfer complete\n");
+		weston_log("incr transfer complete\n");
 
 		wm->flush_property_on_delete = 1;
 		if (wm->selection_property_set) {
-			fprintf(stderr, "got %zu bytes, waiting for "
+			weston_log("got %zu bytes, waiting for "
 				"property delete\n", wm->source_data.size);
 		} else {
-			fprintf(stderr, "got %zu bytes, "
+			weston_log("got %zu bytes, "
 				"property deleted, seting new property\n",
 				wm->source_data.size);
 			weston_wm_flush_source_data(wm);
@@ -413,7 +413,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 		wm->data_source_fd = -1;
 		close(fd);
 	} else {
-		fprintf(stderr, "nothing happened, buffered the bytes\n");
+		weston_log("nothing happened, buffered the bytes\n");
 	}
 
 	return 1;
@@ -427,7 +427,7 @@ weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_ty
 	int p[2];
 
 	if (pipe2(p, O_CLOEXEC | O_NONBLOCK) == -1) {
-		fprintf(stderr, "pipe2 failed: %m\n");
+		weston_log("pipe2 failed: %m\n");
 		weston_wm_send_selection_notify(wm, XCB_ATOM_NONE);
 		return;
 	}
@@ -450,11 +450,11 @@ weston_wm_send_incr_chunk(struct weston_wm *wm)
 {
 	int length;
 
-	fprintf(stderr, "property deleted\n");
+	weston_log("property deleted\n");
 
 	wm->selection_property_set = 0;
 	if (wm->flush_property_on_delete) {
-		fprintf(stderr, "setting new property, %zu bytes\n",
+		weston_log("setting new property, %zu bytes\n",
 			wm->source_data.size);
 		wm->flush_property_on_delete = 0;
 		length = weston_wm_flush_source_data(wm);
@@ -510,11 +510,11 @@ weston_wm_handle_selection_request(struct weston_wm *wm,
 	xcb_selection_request_event_t *selection_request =
 		(xcb_selection_request_event_t *) event;
 
-	fprintf(stderr, "selection request, %s, ",
+	weston_log("selection request, %s, ",
 		get_atom_name(wm->conn, selection_request->selection));
-	fprintf(stderr, "target %s, ",
+	weston_log_continue("target %s, ",
 		get_atom_name(wm->conn, selection_request->target));
-	fprintf(stderr, "property %s\n",
+	weston_log_continue("property %s\n",
 		get_atom_name(wm->conn, selection_request->property));
 
 	wm->selection_request = *selection_request;
@@ -539,7 +539,7 @@ weston_wm_handle_selection_request(struct weston_wm *wm,
 		weston_wm_send_data(wm, wm->atom.utf8_string,
 				  "text/plain;charset=utf-8");
 	} else {
-		fprintf(stderr, "can only handle UTF8_STRING targets...\n");
+		weston_log("can only handle UTF8_STRING targets...\n");
 		weston_wm_send_selection_notify(wm, XCB_ATOM_NONE);
 	}
 }
@@ -553,7 +553,7 @@ weston_wm_handle_xfixes_selection_notify(struct weston_wm *wm,
 	struct weston_compositor *compositor;
 	uint32_t serial;
 
-	printf("xfixes selection notify event: owner %d\n",
+	weston_log("xfixes selection notify event: owner %d\n",
 	       xfixes_selection_notify->owner);
 
 	if (xfixes_selection_notify->owner == XCB_WINDOW_NONE) {
@@ -577,7 +577,7 @@ weston_wm_handle_xfixes_selection_notify(struct weston_wm *wm,
 	 * answer TIMESTAMP conversion requests correctly. */
 	if (xfixes_selection_notify->owner == wm->selection_window) {
 		wm->selection_timestamp = xfixes_selection_notify->timestamp;
-		fprintf(stderr, "our window, skipping\n");
+		weston_log("our window, skipping\n");
 		return;
 	}
 
@@ -641,7 +641,7 @@ weston_wm_set_selection(struct wl_listener *listener, void *data)
 	end = (const char **)
 		((char *) source->mime_types.data + source->mime_types.size);
 	while (p < end) {
-		fprintf(stderr, "  %s\n", *p);
+		weston_log("  %s\n", *p);
 		if (strcmp(*p, "text/plain") == 0 ||
 		    strcmp(*p, "text/plain;charset=utf-8") == 0)
 			has_text_plain = 1;

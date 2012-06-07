@@ -34,6 +34,7 @@
 
 #include "xwayland.h"
 #include "xserver-server-protocol.h"
+#include "../log.h"
 
 
 static int
@@ -44,7 +45,7 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 	int sv[2], client_fd;
 
 	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
-		fprintf(stderr, "socketpair failed\n");
+		weston_log("socketpair failed\n");
 		return 1;
 	}
 
@@ -71,11 +72,11 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 			  "-nolisten", "all",
 			  "-terminate",
 			  NULL) < 0)
-			fprintf(stderr, "exec failed: %m\n");
+			weston_log("exec failed: %m\n");
 		exit(-1);
 
 	default:
-		fprintf(stderr, "forked X server, pid %d\n", mxs->process.pid);
+		weston_log("forked X server, pid %d\n", mxs->process.pid);
 
 		close(sv[1]);
 		mxs->client = wl_client_create(mxs->wl_display, sv[0]);
@@ -87,7 +88,7 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 		break;
 
 	case -1:
-		fprintf(stderr, "failed to fork\n");
+		weston_log( "failed to fork\n");
 		break;
 	}
 
@@ -135,14 +136,14 @@ weston_xserver_cleanup(struct weston_process *process, int status)
 				     weston_xserver_handle_event, mxs);
 
 	if (mxs->wm) {
-		fprintf(stderr, "xserver exited, code %d\n", status);
+		weston_log("xserver exited, code %d\n", status);
 		weston_wm_destroy(mxs->wm);
 		mxs->wm = NULL;
 	} else {
 		/* If the X server crashes before it binds to the
 		 * xserver interface, shut down and don't try
 		 * again. */
-		fprintf(stderr, "xserver crashing too fast: %d\n", status);
+		weston_log("xserver crashing too fast: %d\n", status);
 		weston_xserver_shutdown(mxs);
 	}
 }
@@ -164,7 +165,7 @@ bind_xserver(struct wl_client *client,
 
 	wxs->wm = weston_wm_create(wxs);
 	if (wxs->wm == NULL) {
-		fprintf(stderr, "failed to create wm\n");
+		weston_log("failed to create wm\n");
 	}
 
 	xserver_send_listen_socket(wxs->resource, wxs->abstract_fd);
@@ -187,7 +188,7 @@ bind_to_abstract_socket(int display)
 			     "%c/tmp/.X11-unix/X%d", 0, display);
 	size = offsetof(struct sockaddr_un, sun_path) + name_size;
 	if (bind(fd, (struct sockaddr *) &addr, size) < 0) {
-		fprintf(stderr, "failed to bind to @%s: %s\n",
+		weston_log("failed to bind to @%s: %s\n",
 			addr.sun_path + 1, strerror(errno));
 		close(fd);
 		return -1;
@@ -218,7 +219,7 @@ bind_to_unix_socket(int display)
 	size = offsetof(struct sockaddr_un, sun_path) + name_size;
 	unlink(addr.sun_path);
 	if (bind(fd, (struct sockaddr *) &addr, size) < 0) {
-		fprintf(stderr, "failed to bind to %s (%s)\n",
+		weston_log("failed to bind to %s (%s)\n",
 			addr.sun_path, strerror(errno));
 		close(fd);
 		return -1;
@@ -245,7 +246,7 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 	if (fd < 0 && errno == EEXIST) {
 		fd = open(lockfile, O_CLOEXEC, O_RDONLY);
 		if (fd < 0 || read(fd, pid, 11) != 11) {
-			fprintf(stderr, "can't read lock file %s: %s\n",
+			weston_log("can't read lock file %s: %s\n",
 				lockfile, strerror(errno));
 			errno = EEXIST;
 			return -1;
@@ -253,7 +254,7 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 
 		other = strtol(pid, &end, 0);
 		if (end != pid + 10) {
-			fprintf(stderr, "can't parse lock file %s\n",
+			weston_log("can't parse lock file %s\n",
 				lockfile);
 			close(fd);
 			errno = EEXIST;
@@ -262,8 +263,7 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 
 		if (kill(other, 0) < 0 && errno == ESRCH) {
 			/* stale lock file; unlink and try again */
-			fprintf(stderr,
-				"unlinking stale lock file %s\n", lockfile);
+			weston_log("unlinking stale lock file %s\n", lockfile);
 			close(fd);
 			if (unlink(lockfile))
 				/* If we fail to unlink, return EEXIST
@@ -277,7 +277,7 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 		errno = EEXIST;
 		return -1;
 	} else if (fd < 0) {
-		fprintf(stderr, "failed to create lock file %s: %s\n",
+		weston_log("failed to create lock file %s: %s\n",
 			lockfile, strerror(errno));
 		return -1;
 	}
@@ -356,7 +356,7 @@ weston_xserver_init(struct weston_compositor *compositor)
 	}
 
 	snprintf(display_name, sizeof display_name, ":%d", mxs->display);
-	fprintf(stderr, "xserver listening on display %s\n", display_name);
+	weston_log("xserver listening on display %s\n", display_name);
 	setenv("DISPLAY", display_name, 1);
 
 	mxs->loop = wl_display_get_event_loop(display);

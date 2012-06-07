@@ -20,7 +20,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <linux/input.h>
@@ -32,6 +31,7 @@
 #include "evdev.h"
 #include "evdev-private.h"
 #include "launcher-util.h"
+#include "log.h"
 
 static void
 evdev_led_update(struct weston_seat *seat_base, enum weston_led leds)
@@ -498,7 +498,7 @@ evdev_input_device_create(struct evdev_seat *master,
 	if (device->is_mt) {
 		device->mtdev = mtdev_new_open(device->fd);
 		if (!device->mtdev)
-			fprintf(stderr, "mtdev failed to open for %s\n", path);
+			weston_log("mtdev failed to open for %s\n", path);
 	}
 
 	device->source = wl_event_loop_add_fd(ec->input_loop, device->fd,
@@ -576,7 +576,7 @@ evdev_notify_keyboard_focus(struct evdev_seat *seat)
 		ret = ioctl(device->fd,
 			    EVIOCGKEY(sizeof evdev_keys), evdev_keys);
 		if (ret < 0) {
-			fprintf(stderr, "failed to get keys for device %s\n",
+			weston_log("failed to get keys for device %s\n",
 				device->devnode);
 			continue;
 		}
@@ -629,7 +629,7 @@ evdev_add_devices(struct udev *udev, struct weston_seat *seat_base)
 	evdev_notify_keyboard_focus(seat);
 
 	if (wl_list_empty(&seat->devices_list)) {
-		fprintf(stderr,
+		weston_log(
 			"warning: no input devices on entering Weston. "
 			"Possible causes:\n"
 			"\t- no permissions to read /dev/input/event*\n"
@@ -685,7 +685,7 @@ evdev_enable_udev_monitor(struct udev *udev, struct weston_seat *seat_base)
 
 	master->udev_monitor = udev_monitor_new_from_netlink(udev, "udev");
 	if (!master->udev_monitor) {
-		fprintf(stderr, "udev: failed to create the udev monitor\n");
+		weston_log("udev: failed to create the udev monitor\n");
 		return 0;
 	}
 
@@ -693,7 +693,7 @@ evdev_enable_udev_monitor(struct udev *udev, struct weston_seat *seat_base)
 			"input", NULL);
 
 	if (udev_monitor_enable_receiving(master->udev_monitor)) {
-		fprintf(stderr, "udev: failed to bind the udev monitor\n");
+		weston_log("udev: failed to bind the udev monitor\n");
 		udev_monitor_unref(master->udev_monitor);
 		return 0;
 	}
