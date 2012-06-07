@@ -1,47 +1,45 @@
-This HACKING file describes the development environment.  	-*- org -*-
+This file describes the TODO items for the liblouis project.  	-*- org -*-
 
-When a task is done and accepted, consider moving it into the NEWS file, with a bit of extra info.
+When a task is done and accepted, consider moving it into the NEWS
+file, with a bit of extra info.
 
-= 2.5 =
+* 2.5
+** Document the changes to LOUIS_TABLEPATH
 
-* Document the changes to LOUIS_TABLEPATH
+** remove runHarness.py, put inplace nosetests (p2/3) and runharnessV2
 
-* remove runHarness.py, put inplace nosetests (p2/3) and runharnessV2
+** [mh] Document the test harness with its use of json
 
-* [mh] Document the test harness with its use of json
+** [mh] (google issue 9) bindings should provide variable to pick up table location at runtime.
 
-* [mh] (google issue 9) bindings should provide variable to pick up  table location at runtime.
+* near term
+** all table files should be unicode encoded.
 
-= near term =
+** harness data braille field should be unicode braille, not ascii braille+liblouis extended braille.
 
-* all table files should be unicode encoded.
+** Mapping between table filenames, human readable names, and translatable strings, needs to be accessible from bindings.
+   Will remove the need of redefining translatable names for the tables in orca, nvda, blaster etc.
 
-* harness data braille field should be unicode braille, not ascii braille+liblouis extended braille.
+** Fix the problem that LOUIS_TABLEPATH always looks in the standard PATH even if
+  that was not in the environment var
 
-* Mapping between table filenames, human readable names, and translatable strings, needs to be accessible from bindings.
-  Will remove the need of redefining translatable names for the tables in orca, nvda, blaster etc.
+** Add more test harness data for languages.
 
-* Fix the problem that LOUIS_TABLEPATH always looks in the standard PATH even if
- that was not in the environment var
+** [mh] compBrlLeftCursor is wrong, provide test case for correct behaviour
+   Once corrected, consider merging compBrlLeftCursor and compBrlAtCursor, since neither provide the needed behaviour, but the corrected version should.
 
-* Add more test harness data for languages.
+** [mh] test case for non-null terminated string when chars are undefined.
 
-* [mh] compBrlLeftCursor is wrong, provide test case for correct behaviour
-  Once corrected, consider merging compBrlLeftCursor and compBrlAtCursor, since neither provide the needed behaviour, but the corrected version should.
+** fix bug described by squash_space.c
 
-* [mh] test case for non-null terminated string when chars are undefined.
+* unallocated
+** (google issue 16) infinite loop in lou_backtranslate.
 
-* fix bug described by squash_space.c
+** (google issue 6) italword opcode not documented
 
-= unallocated =
+** (google issue 4) problem with contraction cursor position and compBrlAtCursor.
 
-* (google issue 16) infinite loop in lou_backtranslate.
-
-* (google issue 6) italword opcode not documented
-
-* (google issue 4) problem with contraction cursor position and compBrlAtCursor.
-
-* Add java bindings
+** Add java bindings
 It would be nice to have some canonical java bindings. There are
 several potential candidates:
 - Bindings by Michael Whapples
@@ -49,25 +47,25 @@ several potential candidates:
 - port jni bindings from utdml
 - new jna bindings by Bert Frees
 
-* Enhance the API to handle pre-hyphenated text
+** Enhance the API to handle pre-hyphenated text
 This basically just means to port the code which is in the java
 bindings to C so that it can be used from other bindings
 
-* Add readline support to all the tools
+** Add readline support to all the tools
 
-* Add Berts fabulous table debugger/tracer
+** Add Berts fabulous table debugger/tracer
 There is a as yet unannounced tool that allows you to see which
 opcodes have been used for a particular translation. Written in Java
 using Berts new java bindings mentioned above
 
-* Use portable malloc from gnulib 
+** Use portable malloc from gnulib 
 to get rid of the windows #ifdefs
 
-* Update gnulib
+** Update gnulib
 
-* Enhance translation table compiler to issue warnings
+** Enhance translation table compiler to issue warnings
 
-* Optimize for use with large tables
+** Optimize for use with large tables
 When used with dictionary based tables liblouis is very slow. The
 issue is probably that the hash key is not very well suited for this
 use case and there will be tons of collisions, making the lookup
