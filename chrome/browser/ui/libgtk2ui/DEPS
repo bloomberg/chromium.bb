@@ -1,0 +1,5 @@
+# libgtk2ui must be disconnected from all other GTK code.
+include_rules = [
+  "-ui/base/gtk",
+  "-chrome/browser/ui/gtk",
+]

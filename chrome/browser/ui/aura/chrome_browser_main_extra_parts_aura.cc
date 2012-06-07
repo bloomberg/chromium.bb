@@ -15,6 +15,10 @@
 #include "ui/aura/single_monitor_manager.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/native_widget_aura.h"
+#if defined(OS_LINUX)
+#include "ui/base/linux_ui.h"
+#include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
+#endif
 #endif  // !USE_ASH
 
 ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura() {
@@ -26,6 +30,11 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
   aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
   stacking_client_.reset(new aura::DesktopStackingClient);
 #endif  // !USE_ASH
+
+#if !defined(USE_ASH) && defined(OS_LINUX)
+  // TODO(erg): Refactor this into a dlopen call when we add a GTK3 port.
+  ui::LinuxUI::SetInstance(BuildGtk2UI());
+#endif
 }
 
 void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {

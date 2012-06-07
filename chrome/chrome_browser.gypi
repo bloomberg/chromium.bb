@@ -4415,6 +4415,13 @@
             '../ui/app_list/app_list.gyp:app_list',
           ],
         }],
+        ['use_aura==1 and use_ash==0 and OS=="linux"', {
+          'dependencies': [
+            # gtk2 is the only component that can interact with gtk2 in our new
+            # world.
+            'browser/ui/libgtk2ui/libgtk2ui.gyp:gtk2ui',
+          ],
+        }],
         ['use_aura==1', {
           'sources/': [
             ['exclude', '^browser/automation/automation_provider_win.cc'],

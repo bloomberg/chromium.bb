@@ -30,6 +30,10 @@
 #include "ui/views/widget/native_widget_win.h"
 #endif
 
+#if defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
+#include "ui/base/linux_ui.h"
+#endif
+
 using content::BrowserThread;
 using content::UserMetricsAction;
 using extensions::Extension;
@@ -240,6 +244,12 @@ const gfx::Image* ThemeService::GetImageNamed(int id) const {
 
   if (theme_pack_.get())
     image = theme_pack_->GetImageNamed(id);
+
+#if defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
+  const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
+  if (!image && linux_ui)
+    image = linux_ui->GetThemeImageNamed(id);
+#endif
 
   if (!image)
     image = &rb_.GetNativeImageNamed(id);
