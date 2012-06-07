@@ -28,7 +28,6 @@ class BrowserWindow;
 class PrefService;
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace base {
 class Value;
@@ -48,8 +47,7 @@ class DevToolsWindow : private content::NotificationObserver,
  public:
   static const char kDevToolsApp[];
   static void RegisterUserPrefs(PrefService* prefs);
-  static TabContentsWrapper* GetDevToolsContents(
-      content::WebContents* inspected_tab);
+  static TabContents* GetDevToolsContents(content::WebContents* inspected_tab);
   static bool IsDevToolsWindow(content::RenderViewHost* window_rvh);
 
   static DevToolsWindow* OpenDevToolsWindowForWorker(
@@ -73,7 +71,7 @@ class DevToolsWindow : private content::NotificationObserver,
 
   void Show(DevToolsToggleAction action);
 
-  TabContentsWrapper* tab_contents() { return tab_contents_; }
+  TabContents* tab_contents() { return tab_contents_; }
   Browser* browser() { return browser_; }  // For tests.
   bool is_docked() { return docked_; }
   content::DevToolsClientHost* devtools_client_host() {
@@ -84,7 +82,7 @@ class DevToolsWindow : private content::NotificationObserver,
   static DevToolsWindow* Create(Profile* profile,
                                 content::RenderViewHost* inspected_rvh,
                                 bool docked, bool shared_worker_frontend);
-  DevToolsWindow(TabContentsWrapper* tab_contents, Profile* profile,
+  DevToolsWindow(TabContents* tab_contents, Profile* profile,
                  content::RenderViewHost* inspected_rvh, bool docked);
 
   void CreateDevToolsBrowser();
@@ -154,8 +152,8 @@ class DevToolsWindow : private content::NotificationObserver,
   void RequestSetDocked(bool docked);
 
   Profile* profile_;
-  TabContentsWrapper* inspected_tab_;
-  TabContentsWrapper* tab_contents_;
+  TabContents* inspected_tab_;
+  TabContents* tab_contents_;
   Browser* browser_;
   bool docked_;
   bool is_loaded_;

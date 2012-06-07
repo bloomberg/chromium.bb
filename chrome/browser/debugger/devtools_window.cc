@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -81,8 +81,7 @@ void DevToolsWindow::RegisterUserPrefs(PrefService* prefs) {
 }
 
 // static
-TabContentsWrapper* DevToolsWindow::GetDevToolsContents(
-    WebContents* inspected_tab) {
+TabContents* DevToolsWindow::GetDevToolsContents(WebContents* inspected_tab) {
   if (!inspected_tab)
     return NULL;
 
@@ -172,8 +171,8 @@ DevToolsWindow* DevToolsWindow::Create(
     RenderViewHost* inspected_rvh,
     bool docked,
     bool shared_worker_frontend) {
-  // Create TabContentsWrapper with devtools.
-  TabContentsWrapper* tab_contents =
+  // Create TabContents with devtools.
+  TabContents* tab_contents =
       Browser::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
   tab_contents->web_contents()->GetRenderViewHost()->AllowBindings(
       content::BINDINGS_POLICY_WEB_UI);
@@ -185,7 +184,7 @@ DevToolsWindow* DevToolsWindow::Create(
   return new DevToolsWindow(tab_contents, profile, inspected_rvh, docked);
 }
 
-DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
+DevToolsWindow::DevToolsWindow(TabContents* tab_contents,
                                Profile* profile,
                                RenderViewHost* inspected_rvh,
                                bool docked)
@@ -228,7 +227,7 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
   if (inspected_rvh) {
     WebContents* tab = WebContents::FromRenderViewHost(inspected_rvh);
     if (tab)
-      inspected_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab);
+      inspected_tab_ = TabContents::GetOwningTabContentsForWebContents(tab);
   }
 }
 
@@ -263,13 +262,13 @@ void DevToolsWindow::InspectedContentsClosing() {
 }
 
 void DevToolsWindow::ContentsReplaced(WebContents* new_contents) {
-  TabContentsWrapper* new_tab_wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(new_contents);
-  DCHECK(new_tab_wrapper);
-  if (!new_tab_wrapper)
+  TabContents* new_tab_contents =
+      TabContents::GetOwningTabContentsForWebContents(new_contents);
+  DCHECK(new_tab_contents);
+  if (!new_tab_contents)
       return;
-  DCHECK_EQ(profile_, new_tab_wrapper->profile());
-  inspected_tab_ = new_tab_wrapper;
+  DCHECK_EQ(profile_, new_tab_contents->profile());
+  inspected_tab_ = new_tab_contents;
 }
 
 void DevToolsWindow::Show(DevToolsToggleAction action) {
