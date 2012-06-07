@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "net/base/capturing_net_log.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_log.h"
 #include "net/base/test_completion_callback.h"
@@ -87,14 +86,13 @@ void AddChunkedOps(base::StringPiece data, size_t chunk_size, net::IoMode mode,
 
 class FakeSSLClientSocketTest : public testing::Test {
  protected:
-  FakeSSLClientSocketTest()
-      : capturing_net_log_(net::CapturingNetLog::kUnbounded) {}
+  FakeSSLClientSocketTest() {}
 
   virtual ~FakeSSLClientSocketTest() {}
 
   net::StreamSocket* MakeClientSocket() {
     return mock_client_socket_factory_.CreateTransportClientSocket(
-        net::AddressList(), &capturing_net_log_, net::NetLog::Source());
+        net::AddressList(), NULL, net::NetLog::Source());
   }
 
   void SetData(const net::MockConnect& mock_connect,
@@ -264,7 +262,6 @@ class FakeSSLClientSocketTest : public testing::Test {
   // MockTCPClientSocket needs a message loop.
   MessageLoop message_loop_;
 
-  net::CapturingNetLog capturing_net_log_;
   net::MockClientSocketFactory mock_client_socket_factory_;
   scoped_ptr<net::StaticSocketDataProvider> static_socket_data_provider_;
 };
