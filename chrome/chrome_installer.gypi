@@ -964,14 +964,39 @@
                 }],  # branding=="Chrome" and buildtype=="Official"
               ],  # conditions
             },
+          ],  # copies
+          'actions': [
             {
-              'destination': '<(mac_packaging_dir)/.keychain_reauthorize',
-              'files': [
-                'installer/mac/internal/keychain_reauthorize/com.google.Chrome',
-                'installer/mac/internal/keychain_reauthorize/com.google.Chrome.canary',
+              # copy_keychain_reauthorize.sh explains why this isn't in a
+              # 'copies' block, but briefly: this is a prebuilt signed binary
+              # component that relies on a correct signature to function
+              # properly, and a normal 'copies' block sadly makes a trivial
+              # modification to the file such that its signature is no longer
+              # valid.
+              'action_name': 'Copy keychain_reauthorize',
+              'variables': {
+                'keychain_reauthorize_path': 'tools/build/mac/copy_keychain_reauthorize.sh',
+                'keychain_reauthorize_normal_path': 'installer/mac/internal/keychain_reauthorize/com.google.Chrome',
+                'keychain_reauthorize_canary_path': 'installer/mac/internal/keychain_reauthorize/com.google.Chrome.canary',
+                'keychain_reauthorize_output_dir': '<(mac_packaging_dir)/.keychain_reauthorize',
+              },
+              'inputs': [
+                '<(keychain_reauthorize_path)',
+                '<(keychain_reauthorize_normal_path)',
+                '<(keychain_reauthorize_canary_path)',
+              ],
+              'outputs': [
+                '<(keychain_reauthorize_output_dir)/com.google.Chrome',
+                '<(keychain_reauthorize_output_dir)/com.google.Chrome.canary',
+              ],
+              'action': [
+                '<(keychain_reauthorize_path)',
+                '<(keychain_reauthorize_output_dir)',
+                '<(keychain_reauthorize_normal_path)',
+                '<(keychain_reauthorize_canary_path)',
               ],
             },
-          ],  # copies
+          ],  # actions
         },  # target: installer_packaging
         {
           'target_name': 'gcapi_lib',
