@@ -24,11 +24,8 @@ void Nop() {}
 
 }  // namespace
 
-AsyncPolicyProvider::AsyncPolicyProvider(
-    const PolicyDefinitionList* policy_list,
-    scoped_ptr<AsyncPolicyLoader> loader)
-    : ConfigurationPolicyProvider(policy_list),
-      loader_(loader.release()),
+AsyncPolicyProvider::AsyncPolicyProvider(scoped_ptr<AsyncPolicyLoader> loader)
+    : loader_(loader.release()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   // The FILE thread isn't ready early during startup. Post a task to the
   // current loop to resume initialization on FILE once the loops are spinning.

@@ -23,7 +23,6 @@ class CloudPolicyProvider : public ConfigurationPolicyProvider,
                             public CloudPolicyCacheBase::Observer {
  public:
   CloudPolicyProvider(BrowserPolicyConnector* browser_policy_connector,
-                      const PolicyDefinitionList* policy_list,
                       PolicyLevel level);
   virtual ~CloudPolicyProvider();
 

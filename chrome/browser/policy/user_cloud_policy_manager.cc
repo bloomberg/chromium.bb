@@ -16,7 +16,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "policy/policy_constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/policy/user_cloud_policy_store_chromeos.h"
@@ -43,11 +42,9 @@ const FilePath::CharType kPolicyCacheFile[] = FILE_PATH_LITERAL("Policy");
 }  // namespace
 
 UserCloudPolicyManager::UserCloudPolicyManager(
-    const PolicyDefinitionList* policy_list,
     scoped_ptr<CloudPolicyStore> store,
     bool wait_for_policy_fetch)
-    : ConfigurationPolicyProvider(policy_list),
-      wait_for_policy_fetch_(wait_for_policy_fetch),
+    : wait_for_policy_fetch_(wait_for_policy_fetch),
       wait_for_policy_refresh_(false),
       store_(store.Pass()) {
   store_->Load();
@@ -78,8 +75,7 @@ scoped_ptr<UserCloudPolicyManager> UserCloudPolicyManager::Create(
           chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
           token_cache_file, policy_cache_file));
   return scoped_ptr<UserCloudPolicyManager>(
-      new UserCloudPolicyManager(GetChromePolicyDefinitionList(),
-                                 store.Pass(), wait_for_policy_fetch));
+      new UserCloudPolicyManager(store.Pass(), wait_for_policy_fetch));
 }
 #endif
 

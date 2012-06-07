@@ -68,10 +68,7 @@ ConfigurationPolicyProvider::Observer::~Observer() {}
 void ConfigurationPolicyProvider::Observer::OnProviderGoingAway(
     ConfigurationPolicyProvider* provider) {}
 
-ConfigurationPolicyProvider::ConfigurationPolicyProvider(
-    const PolicyDefinitionList* policy_list)
-    : policy_definition_list_(policy_list) {
-}
+ConfigurationPolicyProvider::ConfigurationPolicyProvider() {}
 
 ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {
   FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,

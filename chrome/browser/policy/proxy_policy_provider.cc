@@ -4,12 +4,9 @@
 
 #include "chrome/browser/policy/proxy_policy_provider.h"
 
-#include "policy/policy_constants.h"
-
 namespace policy {
 
-ProxyPolicyProvider::ProxyPolicyProvider()
-    : ConfigurationPolicyProvider(GetChromePolicyDefinitionList()) {}
+ProxyPolicyProvider::ProxyPolicyProvider() {}
 
 ProxyPolicyProvider::~ProxyPolicyProvider() {}
 

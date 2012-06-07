@@ -59,7 +59,6 @@ class CloudPolicyProviderTest : public testing::Test {
  protected:
   CloudPolicyProviderTest()
       : cloud_policy_provider_(&browser_policy_connector_,
-                               GetChromePolicyDefinitionList(),
                                POLICY_LEVEL_MANDATORY) {}
 
   void SetUp() OVERRIDE {

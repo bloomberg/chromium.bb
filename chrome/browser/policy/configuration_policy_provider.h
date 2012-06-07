@@ -13,8 +13,6 @@
 
 namespace policy {
 
-struct PolicyDefinitionList;
-
 // A mostly-abstract super class for platform-specific policy providers.
 // Platform-specific policy providers (Windows Group Policy, gconf,
 // etc.) should implement a subclass of this class.
@@ -27,7 +25,7 @@ class ConfigurationPolicyProvider {
     virtual void OnProviderGoingAway(ConfigurationPolicyProvider* provider);
   };
 
-  explicit ConfigurationPolicyProvider(const PolicyDefinitionList* policy_list);
+  ConfigurationPolicyProvider();
 
   virtual ~ConfigurationPolicyProvider();
 
@@ -52,10 +50,6 @@ class ConfigurationPolicyProvider {
   // The observers are notified after the policies are updated.
   void UpdatePolicy(scoped_ptr<PolicyBundle> bundle);
 
-  const PolicyDefinitionList* policy_definition_list() const {
-    return policy_definition_list_;
-  }
-
  private:
   friend class ConfigurationPolicyObserverRegistrar;
 
@@ -64,9 +58,6 @@ class ConfigurationPolicyProvider {
 
   // The policies currently configured at this provider.
   PolicyBundle policy_bundle_;
-
-  // Contains the default mapping from policy values to the actual names.
-  const PolicyDefinitionList* policy_definition_list_;
 
   ObserverList<Observer, true> observer_list_;
 

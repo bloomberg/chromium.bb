@@ -142,7 +142,7 @@ void TestHarness::SetUp() {}
 ConfigurationPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_list) {
   scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderWin(policy_list));
-  return new AsyncPolicyProvider(policy_list, loader.Pass());
+  return new AsyncPolicyProvider(loader.Pass());
 }
 
 void TestHarness::InstallEmptyPolicy() {}

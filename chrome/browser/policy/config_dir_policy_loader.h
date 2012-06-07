@@ -17,8 +17,6 @@ class Value;
 
 namespace policy {
 
-struct PolicyDefinitionList;
-
 // A policy loader implementation backed by a set of files in a given
 // directory. The files should contain JSON-formatted policy settings. They are
 // merged together and the result is returned in a PolicyBundle.

@@ -160,7 +160,7 @@ ConfigurationPolicyProvider* TestHarness::CreateProvider(
   prefs_ = new MockPreferences();
   scoped_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderMac(policy_definition_list, prefs_));
-  return new AsyncPolicyProvider(policy_definition_list, loader.Pass());
+  return new AsyncPolicyProvider(loader.Pass());
 }
 
 void TestHarness::InstallEmptyPolicy() {}
@@ -226,8 +226,7 @@ class PolicyLoaderMacTest : public PolicyTestBase {
   PolicyLoaderMacTest()
       : prefs_(new MockPreferences()),
         loader_(new PolicyLoaderMac(&test_policy_definitions::kList, prefs_)),
-        provider_(&test_policy_definitions::kList,
-                  scoped_ptr<AsyncPolicyLoader>(loader_)) {}
+        provider_(scoped_ptr<AsyncPolicyLoader>(loader_)) {}
   virtual ~PolicyLoaderMacTest() {}
 
   MockPreferences* prefs_;

@@ -137,11 +137,9 @@ void BrowserPolicyConnector::Init() {
     if (!command_line->HasSwitch(switches::kEnableCloudPolicyService)) {
       managed_cloud_provider_.reset(new CloudPolicyProvider(
           this,
-          GetChromePolicyDefinitionList(),
           POLICY_LEVEL_MANDATORY));
       recommended_cloud_provider_.reset(new CloudPolicyProvider(
           this,
-          GetChromePolicyDefinitionList(),
           POLICY_LEVEL_RECOMMENDED));
     }
   }
@@ -553,22 +551,22 @@ void BrowserPolicyConnector::CompleteInitialization() {
 }
 
 // static
-ConfigurationPolicyProvider*
-    BrowserPolicyConnector::CreatePlatformProvider() {
-  const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
+ConfigurationPolicyProvider* BrowserPolicyConnector::CreatePlatformProvider() {
 #if defined(OS_WIN)
+  const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
   scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderWin(policy_list));
-  return new AsyncPolicyProvider(policy_list, loader.Pass());
+  return new AsyncPolicyProvider(loader.Pass());
 #elif defined(OS_MACOSX)
+  const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
   scoped_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderMac(policy_list, new MacPreferences()));
-  return new AsyncPolicyProvider(policy_list, loader.Pass());
+  return new AsyncPolicyProvider(loader.Pass());
 #elif defined(OS_POSIX)
   FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
     scoped_ptr<AsyncPolicyLoader> loader(
         new ConfigDirPolicyLoader(config_dir_path, POLICY_SCOPE_MACHINE));
-    return new AsyncPolicyProvider(policy_list, loader.Pass());
+    return new AsyncPolicyProvider(loader.Pass());
   } else {
     return NULL;
   }

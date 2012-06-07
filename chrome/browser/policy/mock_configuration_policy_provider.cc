@@ -8,12 +8,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/policy_bundle.h"
-#include "policy/policy_constants.h"
 
 namespace policy {
 
-MockConfigurationPolicyProvider::MockConfigurationPolicyProvider()
-    : ConfigurationPolicyProvider(GetChromePolicyDefinitionList()) {}
+MockConfigurationPolicyProvider::MockConfigurationPolicyProvider() {}
 
 MockConfigurationPolicyProvider::~MockConfigurationPolicyProvider() {}
 

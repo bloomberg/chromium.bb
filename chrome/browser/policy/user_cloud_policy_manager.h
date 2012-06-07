@@ -30,8 +30,7 @@ class UserCloudPolicyManager : public ConfigurationPolicyProvider,
  public:
   // If |wait_for_policy| fetch is true, IsInitializationComplete() will return
   // false as long as there hasn't been a successful policy fetch.
-  UserCloudPolicyManager(const PolicyDefinitionList* policy_list,
-                         scoped_ptr<CloudPolicyStore> store,
+  UserCloudPolicyManager(scoped_ptr<CloudPolicyStore> store,
                          bool wait_for_policy_fetch);
   virtual ~UserCloudPolicyManager();
 

@@ -102,8 +102,7 @@ void AsyncPolicyProviderTest::SetUp() {
   EXPECT_CALL(*loader_, MockLoad()).WillOnce(Return(&initial_bundle_));
 
   provider_.reset(
-      new AsyncPolicyProvider(GetChromePolicyDefinitionList(),
-                              scoped_ptr<AsyncPolicyLoader>(loader_)));
+      new AsyncPolicyProvider(scoped_ptr<AsyncPolicyLoader>(loader_)));
   // Verify that the initial load is done synchronously:
   EXPECT_TRUE(provider_->policies().Equals(initial_bundle_));
 

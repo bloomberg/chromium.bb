@@ -13,10 +13,8 @@ namespace policy {
 
 CloudPolicyProvider::CloudPolicyProvider(
     BrowserPolicyConnector* browser_policy_connector,
-    const PolicyDefinitionList* policy_list,
     PolicyLevel level)
-    : ConfigurationPolicyProvider(policy_list),
-      browser_policy_connector_(browser_policy_connector),
+    : browser_policy_connector_(browser_policy_connector),
       level_(level),
       initialization_complete_(false) {
   for (size_t i = 0; i < CACHE_SIZE; ++i)

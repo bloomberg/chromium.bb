@@ -75,8 +75,7 @@ ConfigurationPolicyProvider* TestHarness::CreateProvider(
   store_ = new MockCloudPolicyStore();
   store_->NotifyStoreLoaded();
   EXPECT_CALL(*store_, Load());
-  return new UserCloudPolicyManager(policy_definition_list,
-                                    scoped_ptr<CloudPolicyStore>(store_).Pass(),
+  return new UserCloudPolicyManager(scoped_ptr<CloudPolicyStore>(store_).Pass(),
                                     false);
 }
 
@@ -159,8 +158,7 @@ class UserCloudPolicyManagerTest : public testing::Test {
     store_ = new MockCloudPolicyStore();
     EXPECT_CALL(*store_, Load());
     manager_.reset(
-        new UserCloudPolicyManager(policy::GetChromePolicyDefinitionList(),
-                                   scoped_ptr<CloudPolicyStore>(store_).Pass(),
+        new UserCloudPolicyManager(scoped_ptr<CloudPolicyStore>(store_).Pass(),
                                    wait_for_policy_fetch));
     registrar_.Init(manager_.get(), &observer_);
   }

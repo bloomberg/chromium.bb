@@ -28,8 +28,7 @@ class PolicyBundle;
 class AsyncPolicyProvider : public ConfigurationPolicyProvider,
                             public base::NonThreadSafe {
  public:
-  AsyncPolicyProvider(const PolicyDefinitionList* policy_list,
-                      scoped_ptr<AsyncPolicyLoader> loader);
+  explicit AsyncPolicyProvider(scoped_ptr<AsyncPolicyLoader> loader);
   virtual ~AsyncPolicyProvider();
 
   // ConfigurationPolicyProvider implementation.
