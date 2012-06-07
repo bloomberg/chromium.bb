@@ -185,17 +185,6 @@ void Target::Signal(uint32_t id, int8_t sig, bool wait) {
     // Now lock the target, sleeping all active threads
     MutexLock lock(mutex_);
 
-    // Suspend all threads except this one
-    uint32_t curId;
-    bool more = GetFirstThreadId(&curId);
-    while (more) {
-      if (curId != id) {
-        IThread *thread = threads_[curId];
-        thread->Suspend();
-      }
-      more = GetNextThreadId(&curId);
-    }
-
     // Signal the stub (Run thread) that we are ready to process
     // a trap, by updating the signal information and releasing
     // the lock.
@@ -238,14 +227,12 @@ void Target::Run(Session *ses) {
         // See http://code.google.com/p/nativeclient/issues/detail?id=2743
         sig_thread_ = 0;
 
-        // put all the threads to sleep.
+        // Suspend all threads.
         uint32_t curId;
         bool more = GetFirstThreadId(&curId);
         while (more) {
-          if (curId != id) {
-            IThread *thread = threads_[curId];
-            thread->Suspend();
-          }
+          IThread *thread = threads_[curId];
+          thread->Suspend();
           more = GetNextThreadId(&curId);
         }
       } else {
@@ -255,6 +242,19 @@ void Target::Run(Session *ses) {
     } else {
       // otherwise there really is an exception so get the id of the thread
       id = sig_thread_;
+
+      // Suspend all threads except signaled.
+      // Signaled thread is effectively suspended already, being waiting in
+      // a signal handler.
+      uint32_t curId;
+      bool more = GetFirstThreadId(&curId);
+      while (more) {
+        if (curId != id) {
+          IThread *thread = threads_[curId];
+          thread->Suspend();
+        }
+        more = GetNextThreadId(&curId);
+      }
 
       // Reset single stepping.
       IThread *thread = threads_[id];
@@ -766,7 +766,3 @@ IThread* Target::GetThread(uint32_t id) {
 
 
 }  // namespace gdb_rsp
-
-
-
-
