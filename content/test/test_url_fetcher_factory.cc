@@ -98,6 +98,9 @@ void TestURLFetcher::SetURLRequestUserData(
     const CreateDataCallback& create_data_callback) {
 }
 
+void TestURLFetcher::SetStopOnRedirect(bool stop_on_redirect) {
+}
+
 void TestURLFetcher::SetAutomaticallyRetryOn5xx(bool retry) {
 }
 

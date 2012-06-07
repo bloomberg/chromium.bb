@@ -86,7 +86,13 @@ class URLFetcherTest : public testing::Test,
   virtual void CreateFetcher(const GURL& url);
 
   // net::URLFetcherDelegate
+  // Subclasses that override this should either call this function or
+  // CleanupAfterFetchComplete() at the end of their processing, depending on
+  // whether they want to check for a non-empty HTTP 200 response or not.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  // Deletes |fetcher| and terminates the message loop.
+  void CleanupAfterFetchComplete();
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy() {
     return io_message_loop_proxy_;
@@ -140,6 +146,10 @@ void URLFetcherTest::OnURLFetchComplete(const net::URLFetcher* source) {
   EXPECT_TRUE(source->GetResponseAsString(&data));
   EXPECT_FALSE(data.empty());
 
+  CleanupAfterFetchComplete();
+}
+
+void URLFetcherTest::CleanupAfterFetchComplete() {
   delete fetcher_;  // Have to delete this here and not in the destructor,
                     // because the destructor won't necessarily run on the
                     // same thread that CreateFetcher() did.
@@ -218,6 +228,24 @@ class URLFetcherSocketAddressTest : public URLFetcherTest {
  protected:
   std::string expected_host_;
   uint16 expected_port_;
+};
+
+// Version of URLFetcherTest that tests stopping on a redirect.
+class URLFetcherStopOnRedirectTest : public URLFetcherTest {
+ public:
+  URLFetcherStopOnRedirectTest();
+  virtual ~URLFetcherStopOnRedirectTest();
+
+  // URLFetcherTest override.
+  virtual void CreateFetcher(const GURL& url) OVERRIDE;
+  // net::URLFetcherDelegate
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+ protected:
+  // The URL we should be redirected to.
+  static const char* kRedirectTarget;
+
+  bool callback_called_;  // Set to true in OnURLFetchComplete().
 };
 
 // Version of URLFetcherTest that tests overload protection.
@@ -409,9 +437,8 @@ void URLFetcherDownloadProgressCancelTest::OnURLFetchDownloadProgress(
     const net::URLFetcher* source, int64 current, int64 total) {
   EXPECT_FALSE(cancelled_);
   if (!cancelled_) {
-    delete fetcher_;
     cancelled_ = true;
-    io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    CleanupAfterFetchComplete();
   }
 }
 
@@ -419,8 +446,7 @@ void URLFetcherDownloadProgressCancelTest::OnURLFetchComplete(
     const net::URLFetcher* source) {
   // Should have been cancelled.
   ADD_FAILURE();
-  delete fetcher_;
-  io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  CleanupAfterFetchComplete();
 }
 
 void URLFetcherUploadProgressTest::CreateFetcher(const GURL& url) {
@@ -469,6 +495,34 @@ void URLFetcherSocketAddressTest::OnURLFetchComplete(
   URLFetcherTest::OnURLFetchComplete(source);
 }
 
+// static
+const char* URLFetcherStopOnRedirectTest::kRedirectTarget =
+    "http://redirect.target.com";
+
+URLFetcherStopOnRedirectTest::URLFetcherStopOnRedirectTest()
+    : callback_called_(false) {
+}
+
+URLFetcherStopOnRedirectTest::~URLFetcherStopOnRedirectTest() {
+}
+
+void URLFetcherStopOnRedirectTest::CreateFetcher(const GURL& url) {
+  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy(), request_context()));
+  fetcher_->SetStopOnRedirect(true);
+  fetcher_->Start();
+}
+
+void URLFetcherStopOnRedirectTest::OnURLFetchComplete(
+    const net::URLFetcher* source) {
+  callback_called_ = true;
+  EXPECT_EQ(GURL(kRedirectTarget), source->GetURL());
+  EXPECT_EQ(net::URLRequestStatus::CANCELED, source->GetStatus().status());
+  EXPECT_EQ(301, source->GetResponseCode());
+  CleanupAfterFetchComplete();
+}
+
 void URLFetcherProtectTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
@@ -478,8 +532,7 @@ void URLFetcherProtectTest::CreateFetcher(const GURL& url) {
   fetcher_->Start();
 }
 
-void URLFetcherProtectTest::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+void URLFetcherProtectTest::OnURLFetchComplete(const net::URLFetcher* source) {
   const TimeDelta one_second = TimeDelta::FromMilliseconds(1000);
   if (source->GetResponseCode() >= 500) {
     // Now running ServerUnavailable test.
@@ -489,8 +542,7 @@ void URLFetcherProtectTest::OnURLFetchComplete(
     std::string data;
     EXPECT_TRUE(source->GetResponseAsString(&data));
     EXPECT_FALSE(data.empty());
-    delete fetcher_;
-    io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    CleanupAfterFetchComplete();
   } else {
     // Now running Overload test.
     static int count = 0;
@@ -538,8 +590,7 @@ void URLFetcherProtectTestPassedThrough::OnURLFetchComplete(
     ADD_FAILURE();
   }
 
-  delete fetcher_;
-  io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  CleanupAfterFetchComplete();
 }
 
 
@@ -566,10 +617,7 @@ void URLFetcherBadHTTPSTest::OnURLFetchComplete(
   std::string data;
   EXPECT_TRUE(source->GetResponseAsString(&data));
   EXPECT_TRUE(data.empty());
-
-  // The rest is the same as URLFetcherTest::OnURLFetchComplete.
-  delete fetcher_;
-  io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  CleanupAfterFetchComplete();
 }
 
 void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
@@ -590,8 +638,7 @@ void URLFetcherCancelTest::OnURLFetchComplete(
     const net::URLFetcher* source) {
   // We should have cancelled the request before completion.
   ADD_FAILURE();
-  delete fetcher_;
-  io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  CleanupAfterFetchComplete();
 }
 
 void URLFetcherCancelTest::CancelRequest() {
@@ -615,13 +662,7 @@ void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
     fetcher_->Start();
   } else {
     EXPECT_EQ(data, data_);
-    delete fetcher_;  // Have to delete this here and not in the destructor,
-                      // because the destructor won't necessarily run on the
-                      // same thread that CreateFetcher() did.
-
-    io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    // If the current message loop is not the IO loop, it will be shut down when
-    // the main loop returns and this thread subsequently goes out of scope.
+    CleanupAfterFetchComplete();
   }
 }
 
@@ -663,9 +704,7 @@ void URLFetcherFileTest::OnURLFetchComplete(const net::URLFetcher* source) {
     EXPECT_TRUE(fetcher_->FileErrorOccurred(&error_code));
     EXPECT_EQ(expected_file_error_, error_code);
   }
-  delete fetcher_;
-
-  io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  CleanupAfterFetchComplete();
 }
 
 TEST_F(URLFetcherTest, SameThreadsTest) {
@@ -819,6 +858,18 @@ TEST_F(URLFetcherSocketAddressTest, SocketAddress) {
   CreateFetcher(test_server.GetURL("files/with-headers.html"));
   MessageLoop::current()->Run();
   // The actual tests are in the URLFetcherSocketAddressTest fixture.
+}
+
+TEST_F(URLFetcherStopOnRedirectTest, StopOnRedirect) {
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  CreateFetcher(
+      test_server.GetURL(std::string("server-redirect?") + kRedirectTarget));
+  MessageLoop::current()->Run();
+  EXPECT_TRUE(callback_called_);
 }
 
 TEST_F(URLFetcherProtectTest, Overload) {

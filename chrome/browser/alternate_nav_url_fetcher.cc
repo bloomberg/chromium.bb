@@ -195,6 +195,7 @@ void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
       GURL(alternate_nav_url_), net::URLFetcher::HEAD, this));
   fetcher_->SetRequestContext(
       controller_->GetBrowserContext()->GetRequestContext());
+  fetcher_->SetStopOnRedirect(true);
 
   content::WebContents* web_contents = controller_->GetWebContents();
   content::AssociateURLFetcherWithRenderView(
@@ -209,25 +210,20 @@ void AlternateNavURLFetcher::SetStatusFromURLFetch(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code) {
-  if (!status.is_success() ||
-      // HTTP 2xx, 401, and 407 all indicate that the target address exists.
-      (((response_code / 100) != 2) &&
-       (response_code != 401) && (response_code != 407)) ||
-      // Fail if we're redirected to a common location.
-      // This happens for ISPs/DNS providers/etc. who return
-      // provider-controlled pages to arbitrary user navigation attempts.
-      // Because this can result in infobars on large fractions of user
-      // searches, we don't show automatic infobars for these.  Note that users
-      // can still choose to explicitly navigate to or search for pages in
-      // these domains, and can still get infobars for cases that wind up on
-      // other domains (e.g. legit intranet sites), we're just trying to avoid
-      // erroneously harassing the user with our own UI prompts.
-      net::RegistryControlledDomainService::SameDomainOrHost(url,
-          IntranetRedirectDetector::RedirectOrigin())) {
-    state_ = FAILED;
-    return;
+  if (status.is_success()) {
+    // HTTP 2xx, 401, and 407 all indicate that the target address exists.
+    state_ = (((response_code / 100) == 2) || (response_code == 401) ||
+        (response_code == 407)) ? SUCCEEDED : FAILED;
+  } else {
+    // If we got HTTP 3xx, we'll have auto-canceled; treat this as evidence the
+    // target address exists as long as we're not redirected to a common
+    // location every time, lest we annoy the user with infobars on everything
+    // they type.  See comments on IntranetRedirectDetector.
+    state_ = ((status.status() == net::URLRequestStatus::CANCELED) &&
+      ((response_code / 100) == 3) &&
+      !net::RegistryControlledDomainService::SameDomainOrHost(url,
+          IntranetRedirectDetector::RedirectOrigin())) ? SUCCEEDED : FAILED;
   }
-  state_ = SUCCEEDED;
 }
 
 void AlternateNavURLFetcher::ShowInfobarIfPossible() {

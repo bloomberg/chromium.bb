@@ -61,6 +61,7 @@ class CONTENT_EXPORT URLFetcherImpl : public net::URLFetcher {
   virtual void SetURLRequestUserData(
       const void* key,
       const CreateDataCallback& create_data_callback) OVERRIDE;
+  virtual void SetStopOnRedirect(bool stop_on_redirect) OVERRIDE;
   virtual void SetAutomaticallyRetryOn5xx(bool retry) OVERRIDE;
   virtual void SetMaxRetries(int max_retries) OVERRIDE;
   virtual int GetMaxRetries() const OVERRIDE;

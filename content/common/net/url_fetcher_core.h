@@ -89,6 +89,7 @@ class URLFetcherCore
   void SetURLRequestUserData(
       const void* key,
       const net::URLFetcher::CreateDataCallback& create_data_callback);
+  void SetStopOnRedirect(bool stop_on_redirect);
   void SetAutomaticallyRetryOn5xx(bool retry);
   void SetMaxRetries(int max_retries);
   int GetMaxRetries() const;
@@ -119,10 +120,12 @@ class URLFetcherCore
                              FilePath* out_response_path);
 
   // Overridden from net::URLRequest::Delegate:
-  virtual void OnResponseStarted(
-      net::URLRequest* request) OVERRIDE;
-  virtual void OnReadCompleted(
-      net::URLRequest* request, int bytes_read) OVERRIDE;
+  virtual void OnReceivedRedirect(net::URLRequest* request,
+                                  const GURL& new_url,
+                                  bool* defer_redirect) OVERRIDE;
+  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
+  virtual void OnReadCompleted(net::URLRequest* request,
+                               int bytes_read) OVERRIDE;
 
   net::URLFetcherDelegate* delegate() const { return delegate_; }
   static void CancelAll();
@@ -170,8 +173,8 @@ class URLFetcherCore
    public:
     FileWriter(URLFetcherCore* core,
                scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy);
-
     ~FileWriter();
+
     void CreateFileAtPath(const FilePath& file_path);
     void CreateTempFile();
 
@@ -369,6 +372,15 @@ class URLFetcherCore
 
   // Path to the file where the response is written.
   FilePath response_destination_file_path_;
+
+  // By default any server-initiated redirects are automatically followed.  If
+  // this flag is set to true, however, a redirect will halt the fetch and call
+  // back to to the delegate immediately.
+  bool stop_on_redirect_;
+  // True when we're actually stopped due to a redirect halted by the above.  We
+  // use this to ensure that |url_| is set to the redirect destination rather
+  // than the originally-fetched URL.
+  bool stopped_on_redirect_;
 
   // If |automatically_retry_on_5xx_| is false, 5xx responses will be
   // propagated to the observer, if it is true URLFetcher will automatically

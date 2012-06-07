@@ -133,6 +133,10 @@ void URLFetcherImpl::SetURLRequestUserData(
   core_->SetURLRequestUserData(key, create_data_callback);
 }
 
+void URLFetcherImpl::SetStopOnRedirect(bool stop_on_redirect) {
+  core_->SetStopOnRedirect(stop_on_redirect);
+}
+
 void URLFetcherImpl::SetAutomaticallyRetryOn5xx(bool retry) {
   core_->SetAutomaticallyRetryOn5xx(retry);
 }

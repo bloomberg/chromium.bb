@@ -273,6 +273,8 @@ URLFetcherCore::URLFetcherCore(net::URLFetcher* fetcher,
       num_retries_(0),
       was_cancelled_(false),
       response_destination_(STRING),
+      stop_on_redirect_(false),
+      stopped_on_redirect_(false),
       automatically_retry_on_5xx_(true),
       max_retries_(0),
       current_upload_bytes_(-1),
@@ -384,6 +386,10 @@ void URLFetcherCore::SetURLRequestUserData(
   DCHECK(!create_data_callback.is_null());
   url_request_data_key_ = key;
   url_request_create_data_callback_ = create_data_callback;
+}
+
+void URLFetcherCore::SetStopOnRedirect(bool stop_on_redirect) {
+  stop_on_redirect_ = true;
 }
 
 void URLFetcherCore::SetAutomaticallyRetryOn5xx(bool retry) {
@@ -507,6 +513,21 @@ bool URLFetcherCore::GetResponseAsFilePath(bool take_ownership,
   return true;
 }
 
+void URLFetcherCore::OnReceivedRedirect(net::URLRequest* request,
+                                        const GURL& new_url,
+                                        bool* defer_redirect) {
+  DCHECK_EQ(request, request_.get());
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  if (stop_on_redirect_) {
+    stopped_on_redirect_ = true;
+    url_ = new_url;
+    response_code_ = request_->GetResponseCode();
+    was_fetched_via_proxy_ = request_->was_fetched_via_proxy();
+    request->Cancel();
+    OnReadCompleted(request, 0);
+  }
+}
+
 void URLFetcherCore::OnResponseStarted(net::URLRequest* request) {
   DCHECK_EQ(request, request_.get());
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
@@ -526,7 +547,8 @@ void URLFetcherCore::OnReadCompleted(net::URLRequest* request,
   DCHECK(request == request_);
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
-  url_ = request->url();
+  if (!stopped_on_redirect_)
+    url_ = request->url();
   net::URLRequestThrottlerManager* throttler_manager =
       request->context()->throttler_manager();
   if (throttler_manager) {
