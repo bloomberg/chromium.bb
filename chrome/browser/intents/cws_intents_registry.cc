@@ -83,8 +83,8 @@ void ParseResponse(const std::string& response,
       continue;
 
     DictionaryValue* manifest_dict;
-    manifest_value->GetAsDictionary(&manifest_dict);
-    if (!manifest_dict->GetString("name", &info.name))
+    if (!manifest_value->GetAsDictionary(&manifest_dict) ||
+        !manifest_dict->GetString("name", &info.name))
       continue;
 
     string16 url_string;
