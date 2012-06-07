@@ -105,6 +105,18 @@ extern "C" void __declspec(dllexport) __cdecl DumpProcessWithoutCrash() {
   }
 }
 
+DWORD WINAPI DumpProcessWithoutCrashThread(void*) {
+  DumpProcessWithoutCrash();
+  return 0;
+}
+
+// Injects a thread into a remote process to dump state when there is no crash.
+extern "C" HANDLE __declspec(dllexport) __cdecl
+InjectDumpProcessWithoutCrash(HANDLE process) {
+  return CreateRemoteThread(process, NULL, 0, DumpProcessWithoutCrashThread,
+                            0, 0, NULL);
+}
+
 // Reduces the size of the string |str| to a max of 64 chars. Required because
 // breakpad's CustomInfoEntry raises an invalid_parameter error if the string
 // we want to set is longer.
