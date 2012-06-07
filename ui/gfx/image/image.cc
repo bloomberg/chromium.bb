@@ -29,8 +29,6 @@ namespace gfx {
 namespace internal {
 
 #if defined(OS_MACOSX)
-// This is a wrapper around gfx::NSImageToSkBitmap() because this cross-platform
-// file cannot include the [square brackets] of ObjC.
 ImageSkia NSImageToImageSkia(NSImage* image);
 NSImage* ImageSkiaToNSImage(const ImageSkia* image);
 #endif
