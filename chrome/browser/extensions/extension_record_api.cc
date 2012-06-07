@@ -32,7 +32,7 @@ void ProductionProcessStrategy::RunProcess(const CommandLine& line) {
 }
 
 RunPageCyclerFunction::RunPageCyclerFunction(ProcessStrategy* strategy)
-    : base_command_line_(*CommandLine::ForCurrentProcess()),
+    : repeat_count_(1), base_command_line_(*CommandLine::ForCurrentProcess()),
     process_strategy_(strategy) {}
 
 RunPageCyclerFunction::~RunPageCyclerFunction() {}
@@ -96,8 +96,11 @@ void RunPageCyclerFunction::RunTestBrowser() {
   // Add the user-data-dir switch, since this is common to both call types.
   line.AppendSwitchPath(switches::kUserDataDir, user_data_dir_);
 
-  // Do the same for visit-urls, creating a temp file to communicate the
-  // URL list to the test browser.
+  // Test browsers must run as if they are not in first-run mode
+  line.AppendSwitch(switches::kNoFirstRun);
+
+  // Create and fill a temp file to communicate the URL list to the test
+  // browser.
   FilePath url_path;
   file_util::CreateTemporaryFile(&url_path);
   file_util::WriteFile(url_path, url_contents_.c_str(), url_contents_.size());
@@ -155,6 +158,7 @@ bool CaptureURLsFunction::ParseJSParameters() {
 
   url_contents_ = JoinString(params->urls, '\n');
   user_data_dir_ = FilePath::FromUTF8Unsafe(params->cache_directory_path);
+  repeat_count_ = params->repeat_count;
 
   return true;
 }
@@ -162,6 +166,9 @@ bool CaptureURLsFunction::ParseJSParameters() {
 // CaptureURLsFunction adds "record-mode" to sub-browser call, and returns
 // just the (possibly empty) error list.
 void CaptureURLsFunction::AddSwitches(CommandLine* line) {
+  line->AppendSwitchASCII(switches::kVisitURLsCount,
+                          base::Int64ToString(repeat_count_));
+
   if (!line->HasSwitch(switches::kRecordMode))
     line->AppendSwitch(switches::kRecordMode);
 }
@@ -176,12 +183,11 @@ void CaptureURLsFunction::Finish() {
 
 ReplayURLsFunction::ReplayURLsFunction()
     : RunPageCyclerFunction(new ProductionProcessStrategy()),
-    repeat_count_(1), run_time_ms_(0) {
+    run_time_ms_(0) {
 }
 
 ReplayURLsFunction::ReplayURLsFunction(ProcessStrategy* strategy)
-    : RunPageCyclerFunction(strategy),
-    repeat_count_(1), run_time_ms_(0) {
+    : RunPageCyclerFunction(strategy), run_time_ms_(0) {
 }
 
 ReplayURLsFunction::~ReplayURLsFunction() {}
@@ -195,10 +201,9 @@ bool ReplayURLsFunction::ParseJSParameters() {
 
   url_contents_ = JoinString(params->urls, '\n');
   user_data_dir_ = FilePath::FromUTF8Unsafe(params->capture_directory_path);
+  repeat_count_ = params->repeat_count;
 
   if (params->details.get()) {
-    if (params->details->repeat_count.get())
-      repeat_count_ = *params->details->repeat_count;
     if (params->details->extension_path.get())
       extension_path_ =
           FilePath::FromUTF8Unsafe(*params->details->extension_path);

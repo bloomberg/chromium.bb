@@ -4101,7 +4101,7 @@
         'browser/webdata/web_intents_table.cc',
         'browser/webdata/web_intents_table.h',
         'test/base/test_switches.cc',
-        'test/base/test_switches.cc',
+        'test/base/test_switches.h',
         'test/base/chrome_process_util.cc',
         'test/base/chrome_process_util.h',
         'test/base/chrome_process_util_mac.cc',

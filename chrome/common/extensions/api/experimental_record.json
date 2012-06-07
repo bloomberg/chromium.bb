@@ -7,8 +7,7 @@
         "type": "object",
         "description": "",
         "properties": {
-          "extensionPath": {"type": "string", "optional": true, "description": "A path to an extension to run in the session. Should be an unpacked extension."},
-          "repeatCount": {"type": "integer", "optional": true, "description": "Number of times to repeat sequence. Defaults to 1."}
+          "extensionPath": {"type": "string", "optional": true, "description": "A path to an extension to run in the session. Should be an unpacked extension."}
         }
       },
       {
@@ -38,9 +37,8 @@
             "name": "cacheDirectoryPath"
           },
           {
-            "$ref": "SessionDetails",
-            "name": "details",
-            "optional": true
+            "type": "integer", 
+            "name": "repeatCount" 
           },
           {
             "name": "callback",
@@ -70,6 +68,10 @@
           {
             "type": "string",
             "name": "captureDirectoryPath"
+          },
+          {
+            "type": "integer", 
+            "name": "repeatCount" 
           },
           {
             "$ref": "SessionDetails",

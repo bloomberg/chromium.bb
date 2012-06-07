@@ -83,7 +83,6 @@ class MockPageCycler : public PageCycler {
   }
 
  private:
-
   // We need to override Finish() because the calls to exit the browser in a
   // real PageCycler do not work in unittests (they interfere with later tests).
   virtual void Finish() OVERRIDE {

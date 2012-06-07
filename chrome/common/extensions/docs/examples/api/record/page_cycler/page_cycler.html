@@ -23,8 +23,8 @@ found in the LICENSE file. -->
     <div id="capture-tab" class="tab">
       <h1>Set Up Page Cycling Test</h1>
       <p>
-        <b>Set up the list of URLs, and a cache directory.  "Prepare Test" will do
-        a preliminary visit of all the URLs, caching them in the indicated
+        <b>Set up the list of URLs, and a cache directory.  "Prepare Test" will
+        do a preliminary visit of all the URLs, caching them in the indicated
         directory.</b>
       </p>
       <div id="capture-errors-display" class="error-list-hide">
@@ -39,6 +39,10 @@ found in the LICENSE file. -->
       <div class="entry-field">
         <span class="control-label">Cache directory:</span><br/>
         <input id="capture-cache-dir" type="text" class="dir-choice"/>
+      </div>
+      <div class="entry-field">
+        <span class="control-label">Repeat count: </span>
+        <input id="capture-repeat-count" type="text" value="1"/>
       </div>
   
       <div class="command-button">
@@ -64,12 +68,12 @@ found in the LICENSE file. -->
         <span id="replay-cache-dir"></span>
       </div>
       <div class="entry-field">
-        <span class="control-label">Extension directory: </span>
-        <input id="extension-dir" type="text" class="dir-choice"/>
+        <span class="control-label">Repeat count: </span>
+        <span id="replay-repeat-count"></span>
       </div>
       <div class="entry-field">
-        <span class="control-label">Repeat count: </span>
-        <input id="repeat-count" type="text" value="1"/>
+        <span class="control-label">Extension directory: </span>
+        <input id="extension-dir" type="text" class="dir-choice"/>
       </div>
       <div>
          <p class="control-label">Result of Replay</p>

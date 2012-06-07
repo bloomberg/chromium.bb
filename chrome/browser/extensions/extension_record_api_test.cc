@@ -37,7 +37,8 @@ const std::string kTestStatistics = "Sample Stat 1\nSample Stat 2\n";
 // Standard capture parameters, with a mix of good and bad URLs, and
 // a hole for filling in the user data dir.
 const char kCaptureArgs1[] =
-    "[[\"URL 1\", \"URL 2(bad)\", \"URL 3\", \"URL 4(bad)\"], \"%s\"]";
+    "[[\"URL 1\", \"URL 2(bad)\", \"URL 3\", \"URL 4(bad)\"]"
+    ", \"%s\", 2]";
 
 // Standard playback parameters, with the same mix of good and bad URLs
 // as the capture parameters, a hole for filling in the user data dir, and
@@ -46,7 +47,7 @@ const char kCaptureArgs1[] =
 // and repeat-counting are hard to emulate in the test ProcessStrategy.
 const char kPlaybackArgs1[] =
     "[[\"URL 1\", \"URL 2(bad)\", \"URL 3\", \"URL 4(bad)\"], \"%s\""
-    ", {\"extensionPath\": \"MockExtension\", \"repeatCount\": 2}]";
+    ", 2, {\"extensionPath\": \"MockExtension\"}]";
 
 // Use this as the value of FilePath switches (e.g. user-data-dir) that
 // should be replaced by the record methods.

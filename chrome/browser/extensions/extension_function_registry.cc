@@ -240,6 +240,10 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<ExtensionTestSendMessageFunction>();
   RegisterFunction<ExtensionTestGetConfigFunction>();
 
+  // Record.
+  RegisterFunction<CaptureURLsFunction>();
+  RegisterFunction<ReplayURLsFunction>();
+
   // Accessibility.
   RegisterFunction<GetFocusedControlFunction>();
   RegisterFunction<SetAccessibilityEnabledFunction>();

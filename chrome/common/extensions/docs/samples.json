@@ -2142,9 +2142,10 @@
         "manifest.json",
         "page_cycler.css",
         "page_cycler.html",
-        "page_cycler.js"
+        "page_cycler.js",
+        "ui_page_cycler.js"
       ],
-      "source_hash": "1c84857b5a433f4907dfd44a3d1032da3fce33cb",
+      "source_hash": "959ddab802b06128d041e2aa4d2437f005e81c4d",
       "zip_path": "examples/api/record/page_cycler.zip"
     },
     {

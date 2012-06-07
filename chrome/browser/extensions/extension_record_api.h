@@ -90,6 +90,7 @@ class RunPageCyclerFunction : public AsyncExtensionFunction {
 
   FilePath user_data_dir_;
   std::string url_contents_;
+  int repeat_count_;
   std::vector<std::string> errors_;
 
   // Base CommandLine on which to build the test browser CommandLine
@@ -143,7 +144,6 @@ class ReplayURLsFunction : public RunPageCyclerFunction {
 
   // These three data are additional information added to the sub-browser
   // commandline.
-  int repeat_count_;
   FilePath extension_path_;
   FilePath stats_file_path_;
 
