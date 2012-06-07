@@ -630,7 +630,7 @@ void FileTaskExecutor::SetupPermissionsAndDispatchEvent(
   // Get tab id.
   Browser* current_browser = browser();
   if (current_browser) {
-    WebContents* contents = current_browser->GetSelectedWebContents();
+    WebContents* contents = current_browser->GetActiveWebContents();
     if (contents)
       details->SetInteger("tab_id", ExtensionTabUtil::GetTabId(contents));
   }

@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
@@ -101,8 +101,7 @@ class StubBubbleModelDelegate : public ContentSettingBubbleModelDelegate {
   virtual ~StubBubbleModelDelegate() {}
 
   // ContentSettingBubbleModelDelegate implementation:
-  virtual void ShowCollectedCookiesDialog(
-      TabContentsWrapper* contents) OVERRIDE {
+  virtual void ShowCollectedCookiesDialog(TabContents* contents) OVERRIDE {
   }
 
   virtual void ShowContentSettingsPage(ContentSettingsType type) OVERRIDE {
@@ -151,7 +150,7 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
                           MSG_ROUTING_NONE,
                           NULL,
                           NULL);
-  wrapper_.reset(new TabContentsWrapper(web_contents));
+  tab_contents_.reset(new TabContents(web_contents));
   web_view_->SetWebContents(web_contents);
   web_contents->SetDelegate(this);
   web_view_->LoadInitialURL(url);

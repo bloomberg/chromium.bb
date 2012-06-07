@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -149,7 +149,7 @@ void WebUILoginView::Init(views::Widget* login_window) {
                           MSG_ROUTING_NONE,
                           NULL,
                           NULL);
-  wrapper_.reset(new TabContentsWrapper(web_contents));
+  tab_contents_.reset(new TabContents(web_contents));
   webui_login_->SetWebContents(web_contents);
 
   web_contents->SetDelegate(this);
@@ -209,7 +209,7 @@ void WebUILoginView::LoadURL(const GURL & url) {
     background.allocPixels();
     background.eraseARGB(0x00, 0x00, 0x00, 0x00);
     content::RenderViewHost* host =
-        wrapper_->web_contents()->GetRenderViewHost();
+        tab_contents_->web_contents()->GetRenderViewHost();
     host->GetView()->SetBackground(background);
   }
 }

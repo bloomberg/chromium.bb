@@ -30,7 +30,6 @@ class Widget;
 }
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace chromeos {
 
@@ -124,10 +123,10 @@ class WebUILoginView : public views::WidgetDelegateView,
 
   content::NotificationRegistrar registrar_;
 
-  // TabContentsWrapper for the WebView.
+  // TabContents for the WebView.
   // TODO: this is needed for password manager, should be refactored/replaced
   //       so that this code can move to src/ash.
-  scoped_ptr<TabContentsWrapper> wrapper_;
+  scoped_ptr<TabContents> tab_contents_;
 
   // Login window which shows the view.
   views::Widget* login_window_;

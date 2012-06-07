@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/select_file_dialog.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/api/file_browser_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -106,7 +106,7 @@ bool FileSelectorImpl::DoSelectFile(const FilePath& suggested_name,
   if (!browser->window())
     return false;
 
-  TabContentsWrapper* tab_contents = browser->GetSelectedTabContentsWrapper();
+  TabContents* tab_contents = browser->GetActiveTabContents();
   if (!tab_contents)
     return false;
 

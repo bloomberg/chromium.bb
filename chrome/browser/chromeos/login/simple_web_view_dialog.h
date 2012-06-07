@@ -20,7 +20,6 @@
 class Profile;
 class ReloadButton;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class ToolbarModel;
 
 namespace views {
@@ -111,7 +110,7 @@ class SimpleWebViewDialog : public views::ButtonListener,
   LocationBarView* location_bar_;
   views::WebView* web_view_;
   // TODO: remove, needed to create a password manager for web_view_'s WC.
-  scoped_ptr<TabContentsWrapper> wrapper_;
+  scoped_ptr<TabContents> tab_contents_;
 
   // Contains |web_view_| while it isn't owned by the view.
   scoped_ptr<views::WebView> web_view_container_;

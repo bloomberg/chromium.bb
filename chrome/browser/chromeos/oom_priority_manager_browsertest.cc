@@ -107,9 +107,9 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
       content::NotificationService::AllSources());
   browser()->SelectNumberedTab(0);
   reload1.Wait();
-  // Make sure the FindBarController gets the right TabContentsWrapper.
+  // Make sure the FindBarController gets the right TabContents.
   EXPECT_EQ(browser()->GetFindBarController()->tab_contents(),
-            browser()->GetSelectedTabContentsWrapper());
+            browser()->GetActiveTabContents());
   EXPECT_EQ(0, browser()->active_index());
   EXPECT_FALSE(browser()->IsTabDiscarded(0));
   EXPECT_TRUE(browser()->IsTabDiscarded(1));
