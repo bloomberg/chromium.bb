@@ -16,6 +16,7 @@ extern "C" {
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -105,6 +106,38 @@ NOINLINE void FatalStringQuoteException(const std::string& str) {
 
 namespace sandbox {
 
+// static
+NSString* Sandbox::AllowMetadataForPath(const FilePath& allowed_path) {
+  // Collect a list of all parent directories.
+  FilePath last_path = allowed_path;
+  std::vector<FilePath> subpaths;
+  for (FilePath path = allowed_path;
+       path.value() != last_path.value();
+       path = path.DirName()) {
+    subpaths.push_back(path);
+    last_path = path;
+  }
+
+  // Iterate through all parents and allow stat() on them explicitly.
+  NSString* sandbox_command = @"(allow file-read-metadata ";
+  for (std::vector<FilePath>::reverse_iterator i = subpaths.rbegin();
+       i != subpaths.rend();
+       ++i) {
+    std::string subdir_escaped;
+    if (!QuotePlainString(i->value(), &subdir_escaped)) {
+      FatalStringQuoteException(i->value());
+      return nil;
+    }
+
+    NSString* subdir_escaped_ns =
+        base::SysUTF8ToNSString(subdir_escaped.c_str());
+    sandbox_command =
+        [sandbox_command stringByAppendingFormat:@"(literal \"%@\")",
+            subdir_escaped_ns];
+  }
+
+  return [sandbox_command stringByAppendingString:@")"];
+}
 
 // static
 bool Sandbox::QuotePlainString(const std::string& src_utf8, std::string* dst) {
@@ -294,36 +327,11 @@ NSString* Sandbox::BuildAllowDirectoryAccessSandboxString(
   // needed so the caller doesn't need to worry about things like /var
   // being a link to /private/var (like in the paths CreateNewTempDirectory()
   // returns).
-  FilePath allowed_dir_canonical(allowed_dir);
-  GetCanonicalSandboxPath(&allowed_dir_canonical);
+  FilePath allowed_dir_canonical = GetCanonicalSandboxPath(allowed_dir);
 
-  // Collect a list of all parent directories.
-  FilePath last_path = allowed_dir_canonical;
-  std::vector<FilePath> subpaths;
-  for (FilePath path = allowed_dir_canonical.DirName();
-       path.value() != last_path.value();
-       path = path.DirName()) {
-    subpaths.push_back(path);
-    last_path = path;
-  }
-
-  // Iterate through all parents and allow stat() on them explicitly.
-  NSString* sandbox_command = @"(allow file-read-metadata ";
-  for (std::vector<FilePath>::reverse_iterator i = subpaths.rbegin();
-       i != subpaths.rend();
-       ++i) {
-    std::string subdir_escaped;
-    if (!QuotePlainString(i->value(), &subdir_escaped)) {
-      FatalStringQuoteException(i->value());
-      return nil;
-    }
-
-    NSString* subdir_escaped_ns =
-        base::SysUTF8ToNSString(subdir_escaped.c_str());
-    sandbox_command =
-        [sandbox_command stringByAppendingFormat:@"(literal \"%@\")",
-            subdir_escaped_ns];
-  }
+  NSString* sandbox_command = AllowMetadataForPath(allowed_dir_canonical);
+  sandbox_command = [sandbox_command
+      substringToIndex:[sandbox_command length] - 1];  // strip trailing ')'
 
   // Finally append the leaf directory.  Unlike its parents (for which only
   // stat() should be allowed), the leaf directory needs full access.
@@ -524,8 +532,7 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   // (see renderer.sb for details).
   std::string home_dir = [NSHomeDirectory() fileSystemRepresentation];
 
-  FilePath home_dir_canonical(home_dir);
-  GetCanonicalSandboxPath(&home_dir_canonical);
+  FilePath home_dir_canonical = GetCanonicalSandboxPath(FilePath(home_dir));
 
   substitutions["USER_HOMEDIR_AS_LITERAL"] =
       SandboxSubstring(home_dir_canonical.value(),
@@ -550,8 +557,12 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   // contains LC_RPATH load commands. The components build uses those.
   // See http://crbug.com/127465
   if (base::mac::IsOSSnowLeopardOrEarlier()) {
+    FilePath bundle_executable = base::mac::NSStringToFilePath(
+        [base::mac::MainBundle() executablePath]);
+    NSString* sandbox_command = AllowMetadataForPath(
+        GetCanonicalSandboxPath(bundle_executable));
     substitutions["COMPONENT_BUILD_WORKAROUND"] =
-        SandboxSubstring("(allow file-read-metadata)");
+        SandboxSubstring(base::SysNSStringToUTF8(sandbox_command));
   }
 #endif
 
@@ -576,23 +587,23 @@ bool Sandbox::EnableSandbox(int sandbox_type,
 }
 
 // static
-void Sandbox::GetCanonicalSandboxPath(FilePath* path) {
-  int fd = HANDLE_EINTR(open(path->value().c_str(), O_RDONLY));
+FilePath Sandbox::GetCanonicalSandboxPath(const FilePath& path) {
+  int fd = HANDLE_EINTR(open(path.value().c_str(), O_RDONLY));
   if (fd < 0) {
     DPLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
-                 << path->value();
-    return;
+                 << path.value();
+    return path;
   }
   file_util::ScopedFD file_closer(&fd);
 
   FilePath::CharType canonical_path[MAXPATHLEN];
   if (HANDLE_EINTR(fcntl(fd, F_GETPATH, canonical_path)) != 0) {
     DPLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
-                 << path->value();
-    return;
+                 << path.value();
+    return path;
   }
 
-  *path = FilePath(canonical_path);
+  return FilePath(canonical_path);
 }
 
 }  // namespace sandbox

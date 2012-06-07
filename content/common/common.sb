@@ -35,5 +35,7 @@
 ; Needed for IPC on 10.6
 ;10.6_OR_ABOVE (allow ipc-posix-shm)
 
+; Component build workaround for a dyld bug, used on OS X <= 10.6.
+; Enables reading file metadata for the Chrome bundle and its parent paths.
 ; http://crbug.com/127465
 @COMPONENT_BUILD_WORKAROUND@
