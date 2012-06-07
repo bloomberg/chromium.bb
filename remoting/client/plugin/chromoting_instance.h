@@ -25,7 +25,6 @@
 #endif
 
 #include "ppapi/cpp/instance.h"
-#include "remoting/base/scoped_thread_proxy.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/key_event_mapper.h"
 #include "remoting/client/plugin/mac_key_event_processor.h"
@@ -220,7 +219,7 @@ class ChromotingInstance :
   // connection.
   scoped_refptr<PepperXmppProxy> xmpp_proxy_;
 
-  scoped_ptr<ScopedThreadProxy> thread_proxy_;
+  base::WeakPtrFactory<ChromotingInstance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingInstance);
 };

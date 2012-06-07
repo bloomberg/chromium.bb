@@ -40,7 +40,7 @@ ChromotingClient::ChromotingClient(const ClientConfig& config,
       client_done_(client_done),
       packet_being_processed_(false),
       last_sequence_number_(0),
-      thread_proxy_(context_->network_message_loop()) {
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 ChromotingClient::~ChromotingClient() {
@@ -56,6 +56,9 @@ void ChromotingClient::Start(
           config_.authentication_tag,
           config_.shared_secret, config_.authentication_methods));
 
+  // Create a WeakPtr to ourself for to use for all posted tasks.
+  weak_ptr_ = weak_factory_.GetWeakPtr();
+
   connection_->Connect(xmpp_proxy, config_.local_jid, config_.host_jid,
                        config_.host_public_key, transport_factory.Pass(),
                        authenticator.Pass(), this, this, this, this);
@@ -69,7 +72,7 @@ void ChromotingClient::Stop(const base::Closure& shutdown_task) {
   if (!message_loop()->BelongsToCurrentThread()) {
     message_loop()->PostTask(
         FROM_HERE, base::Bind(&ChromotingClient::Stop,
-                              base::Unretained(this), shutdown_task));
+                              weak_ptr_, shutdown_task));
     return;
   }
 
@@ -81,7 +84,7 @@ void ChromotingClient::Stop(const base::Closure& shutdown_task) {
   }
 
   connection_->Disconnect(base::Bind(&ChromotingClient::OnDisconnected,
-                                     base::Unretained(this), shutdown_task));
+                                     weak_ptr_, shutdown_task));
 }
 
 void ChromotingClient::OnDisconnected(const base::Closure& shutdown_task) {
@@ -191,7 +194,7 @@ base::MessageLoopProxy* ChromotingClient::message_loop() {
 void ChromotingClient::OnPacketDone(bool last_packet,
                                     base::Time decode_start) {
   if (!message_loop()->BelongsToCurrentThread()) {
-    thread_proxy_.PostTask(FROM_HERE, base::Bind(
+    message_loop()->PostTask(FROM_HERE, base::Bind(
         &ChromotingClient::OnPacketDone, base::Unretained(this),
         last_packet, decode_start));
     return;
@@ -215,8 +218,8 @@ void ChromotingClient::OnPacketDone(bool last_packet,
 
 void ChromotingClient::Initialize() {
   if (!message_loop()->BelongsToCurrentThread()) {
-    thread_proxy_.PostTask(FROM_HERE, base::Bind(
-        &ChromotingClient::Initialize, base::Unretained(this)));
+    message_loop()->PostTask(FROM_HERE, base::Bind(
+        &ChromotingClient::Initialize, weak_ptr_));
     return;
   }
 

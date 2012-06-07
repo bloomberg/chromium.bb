@@ -1040,8 +1040,6 @@
         'base/rate_counter.h',
         'base/running_average.cc',
         'base/running_average.h',
-        'base/scoped_thread_proxy.cc',
-        'base/scoped_thread_proxy.h',
         'base/util.cc',
         'base/util.h',
       ],

@@ -16,7 +16,8 @@ HostUserInterface::HostUserInterface(ChromotingHostContext* context)
     : host_(NULL),
       context_(context),
       is_monitoring_local_inputs_(false),
-      ui_thread_proxy_(context->ui_message_loop()) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_ptr_(weak_factory_.GetWeakPtr()) {
 }
 
 HostUserInterface::~HostUserInterface() {
@@ -24,8 +25,6 @@ HostUserInterface::~HostUserInterface() {
 
   MonitorLocalInputs(false);
   ShowDisconnectWindow(false, std::string());
-
-  ui_thread_proxy_.Detach();
 }
 
 void HostUserInterface::Start(ChromotingHost* host,
@@ -42,19 +41,23 @@ void HostUserInterface::Start(ChromotingHost* host,
 }
 
 void HostUserInterface::OnClientAuthenticated(const std::string& jid) {
+  DCHECK(network_message_loop()->BelongsToCurrentThread());
+
   authenticated_jid_ = jid;
 
   std::string username = jid.substr(0, jid.find('/'));
-  ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
+  ui_message_loop()->PostTask(FROM_HERE, base::Bind(
       &HostUserInterface::ProcessOnClientAuthenticated,
-      base::Unretained(this), username));
+      weak_ptr_, username));
 }
 
 void HostUserInterface::OnClientDisconnected(const std::string& jid) {
+  DCHECK(network_message_loop()->BelongsToCurrentThread());
+
   if (jid == authenticated_jid_) {
-    ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
+    ui_message_loop()->PostTask(FROM_HERE, base::Bind(
         &HostUserInterface::ProcessOnClientDisconnected,
-        base::Unretained(this)));
+        weak_ptr_));
   }
 }
 
@@ -62,20 +65,20 @@ void HostUserInterface::OnAccessDenied(const std::string& jid) {
 }
 
 void HostUserInterface::OnShutdown() {
+  DCHECK(network_message_loop()->BelongsToCurrentThread());
+
   // Host status observers must be removed on the network thread, so
   // it must happen here instead of in the destructor.
   host_->RemoveStatusObserver(this);
   host_ = NULL;
-  disconnect_callback_ = base::Closure();
 }
 
 void HostUserInterface::OnDisconnectCallback() {
   DCHECK(ui_message_loop()->BelongsToCurrentThread());
-  DCHECK(!disconnect_callback_.is_null());
 
   MonitorLocalInputs(false);
   ShowDisconnectWindow(false, std::string());
-  disconnect_callback_.Run();
+  DisconnectSession();
 }
 
 base::MessageLoopProxy* HostUserInterface::network_message_loop() const {
@@ -86,7 +89,10 @@ base::MessageLoopProxy* HostUserInterface::ui_message_loop() const {
 }
 
 void HostUserInterface::DisconnectSession() const {
-  return disconnect_callback_.Run();
+  DCHECK(ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(!disconnect_callback_.is_null());
+
+  disconnect_callback_.Run();
 }
 
 void HostUserInterface::ProcessOnClientAuthenticated(
@@ -140,7 +146,7 @@ void HostUserInterface::ShowDisconnectWindow(bool show,
     disconnect_window_->Show(
         host_,
         base::Bind(&HostUserInterface::OnDisconnectCallback,
-                   base::Unretained(this)),
+                   weak_ptr_),
         username);
   } else {
     disconnect_window_->Hide();

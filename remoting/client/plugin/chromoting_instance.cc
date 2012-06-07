@@ -91,18 +91,20 @@ std::string ConnectionErrorToString(ChromotingInstance::ConnectionError error) {
   return "";
 }
 
-}  // namespace
-
 // This flag blocks LOGs to the UI if we're already in the middle of logging
 // to the UI. This prevents a potential infinite loop if we encounter an error
 // while sending the log message to the UI.
-static bool g_logging_to_plugin = false;
-static bool g_has_logging_instance = false;
-static ChromotingInstance* g_logging_instance = NULL;
-static logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
-
-static base::LazyInstance<base::Lock>::Leaky
+bool g_logging_to_plugin = false;
+bool g_has_logging_instance = false;
+base::LazyInstance<scoped_refptr<base::SingleThreadTaskRunner> >::Leaky
+    g_logging_task_runner = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::WeakPtr<ChromotingInstance> >::Leaky
+    g_logging_instance = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::Leaky
     g_logging_lock = LAZY_INSTANCE_INITIALIZER;
+logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
+
+}  // namespace
 
 // String sent in the "hello" message to the plugin to describe features.
 const char ChromotingInstance::kApiFeatures[] =
@@ -134,7 +136,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       plugin_message_loop_(
           new PluginMessageLoopProxy(&plugin_thread_delegate_)),
       context_(plugin_message_loop_),
-      thread_proxy_(new ScopedThreadProxy(plugin_message_loop_)) {
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
 
@@ -152,10 +154,6 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
 ChromotingInstance::~ChromotingInstance() {
   DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
-  // Detach the log proxy so we don't log anything else to the UI.
-  // This needs to be done before the instance is unregistered for logging.
-  thread_proxy_->Detach();
-
   // Unregister this instance so that debug log messages will no longer be sent
   // to it. This will stop all logging in all Chromoting instances.
   UnregisterLoggingInstance();
@@ -170,10 +168,7 @@ ChromotingInstance::~ChromotingInstance() {
   // Stopping the context shuts down all chromoting threads.
   context_.Stop();
 
-  // Delete |thread_proxy_| before we detach |plugin_message_loop_|,
-  // otherwise ScopedThreadProxy may DCHECK when being destroyed.
-  thread_proxy_.reset();
-
+  // Ensure that nothing touches the plugin thread delegate after this point.
   plugin_message_loop_->Detach();
 }
 
@@ -625,7 +620,8 @@ void ChromotingInstance::RegisterLoggingInstance() {
   // and display them to the user.
   // If multiple plugins are run, then the last one registered will handle all
   // logging for all instances.
-  g_logging_instance = this;
+  g_logging_instance.Get() = weak_factory_.GetWeakPtr();
+  g_logging_task_runner.Get() = plugin_message_loop_;
   g_has_logging_instance = true;
 }
 
@@ -633,12 +629,13 @@ void ChromotingInstance::UnregisterLoggingInstance() {
   base::AutoLock lock(g_logging_lock.Get());
 
   // Don't unregister unless we're the currently registered instance.
-  if (this != g_logging_instance)
+  if (this != g_logging_instance.Get().get())
     return;
 
   // Unregister this instance for logging.
   g_has_logging_instance = false;
-  g_logging_instance = NULL;
+  g_logging_instance.Get().reset();
+  g_logging_task_runner.Get() = NULL;
 
   VLOG(1) << "Unregistering global log handler";
 }
@@ -660,24 +657,28 @@ bool ChromotingInstance::LogToUI(int severity, const char* file, int line,
   // the lock and check |g_logging_instance| unnecessarily. This is not
   // problematic because we always set |g_logging_instance| inside a lock.
   if (g_has_logging_instance) {
-    // Do not LOG anything while holding this lock or else the code will
-    // deadlock while trying to re-get the lock we're already in.
-    base::AutoLock lock(g_logging_lock.Get());
-    if (g_logging_instance &&
-        // If |g_logging_to_plugin| is set and we're on the logging thread, then
-        // this LOG message came from handling a previous LOG message and we
-        // should skip it to avoid an infinite loop of LOG messages.
-        // We don't have a lock around |g_in_processtoui|, but that's OK since
-        // the value is only read/written on the logging thread.
-        (!g_logging_instance->plugin_message_loop_->BelongsToCurrentThread() ||
-         !g_logging_to_plugin)) {
+    scoped_refptr<base::SingleThreadTaskRunner> logging_task_runner;
+    base::WeakPtr<ChromotingInstance> logging_instance;
+
+    {
+      base::AutoLock lock(g_logging_lock.Get());
+      // If we're on the logging thread and |g_logging_to_plugin| is set then
+      // this LOG message came from handling a previous LOG message and we
+      // should skip it to avoid an infinite loop of LOG messages.
+      if (!g_logging_task_runner.Get()->BelongsToCurrentThread() ||
+          !g_logging_to_plugin) {
+        logging_task_runner = g_logging_task_runner.Get();
+        logging_instance = g_logging_instance.Get();
+      }
+    }
+
+    if (logging_task_runner.get()) {
       std::string message = remoting::GetTimestampString();
       message += (str.c_str() + message_start);
-      // |thread_proxy_| is safe to use here because we detach it before
-      // tearing down the |g_logging_instance|.
-      g_logging_instance->thread_proxy_->PostTask(
+
+      logging_task_runner->PostTask(
           FROM_HERE, base::Bind(&ChromotingInstance::ProcessLogToUI,
-                                base::Unretained(g_logging_instance), message));
+                                logging_instance, message));
     }
   }
 
@@ -692,6 +693,7 @@ void ChromotingInstance::ProcessLogToUI(const std::string& message) {
   // This flag (which is set only here) is used to prevent LogToUI from posting
   // new tasks while we're in the middle of servicing a LOG call. This can
   // happen if the call to LogDebugInfo tries to LOG anything.
+  // Since it is read on the plugin thread, we don't need to lock to set it.
   g_logging_to_plugin = true;
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetString("message", message);

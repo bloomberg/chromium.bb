@@ -10,8 +10,8 @@
 #include <list>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "remoting/base/scoped_thread_proxy.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_stats.h"
 #include "remoting/client/chromoting_view.h"
@@ -124,7 +124,9 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   // Keep track of the last sequence number bounced back from the host.
   int64 last_sequence_number_;
 
-  ScopedThreadProxy thread_proxy_;
+  // WeakPtr used to avoid tasks accessing the client after it is deleted.
+  base::WeakPtrFactory<ChromotingClient> weak_factory_;
+  base::WeakPtr<ChromotingClient> weak_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingClient);
 };

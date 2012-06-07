@@ -24,29 +24,15 @@ static const int kContinueWindowHideTimeoutMs = 60 * 1000;
 
 namespace remoting {
 
-class It2MeHostUserInterface::TimerTask {
- public:
-  TimerTask(base::MessageLoopProxy* message_loop,
-            const base::Closure& task,
-            int delay_ms)
-      : thread_proxy_(message_loop) {
-    thread_proxy_.PostDelayedTask(FROM_HERE, task, delay_ms);
-  }
-
- private:
-  ScopedThreadProxy thread_proxy_;
-};
-
-
 It2MeHostUserInterface::It2MeHostUserInterface(ChromotingHostContext* context)
-    : HostUserInterface(context) {
+    : HostUserInterface(context),
+      ALLOW_THIS_IN_INITIALIZER_LIST(timer_weak_factory_(this)) {
 }
 
 It2MeHostUserInterface::~It2MeHostUserInterface() {
   DCHECK(ui_message_loop()->BelongsToCurrentThread());
 
   ShowContinueWindow(false);
-  StartContinueWindowTimer(false);
 }
 
 void It2MeHostUserInterface::Start(ChromotingHost* host,
@@ -103,7 +89,6 @@ void It2MeHostUserInterface::ContinueSession(bool continue_session) {
 
   if (continue_session) {
     get_host()->PauseSession(false);
-    timer_task_.reset();
     StartContinueWindowTimer(true);
   } else {
     DisconnectSession();
@@ -116,11 +101,13 @@ void It2MeHostUserInterface::OnContinueWindowTimer() {
   get_host()->PauseSession(true);
   ShowContinueWindow(true);
 
-  timer_task_.reset(new TimerTask(
-      ui_message_loop(),
+  // Cancel any pending timer and post one to hide the continue window.
+  timer_weak_factory_.InvalidateWeakPtrs();
+  ui_message_loop()->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&It2MeHostUserInterface::OnShutdownHostTimer,
-                 base::Unretained(this)),
-      kContinueWindowHideTimeoutMs));
+                 timer_weak_factory_.GetWeakPtr()),
+      kContinueWindowHideTimeoutMs);
 }
 
 void It2MeHostUserInterface::OnShutdownHostTimer() {
@@ -144,14 +131,14 @@ void It2MeHostUserInterface::ShowContinueWindow(bool show) {
 void It2MeHostUserInterface::StartContinueWindowTimer(bool start) {
   DCHECK(ui_message_loop()->BelongsToCurrentThread());
 
+  // Abandon previous timer events by invalidating their weak pointer to us.
+  timer_weak_factory_.InvalidateWeakPtrs();
   if (start) {
-    timer_task_.reset(new TimerTask(
-        ui_message_loop(),
+    ui_message_loop()->PostDelayedTask(
+        FROM_HERE,
         base::Bind(&It2MeHostUserInterface::OnContinueWindowTimer,
-                   base::Unretained(this)),
-        kContinueWindowShowTimeoutMs));
-  } else {
-    timer_task_.reset();
+                   timer_weak_factory_.GetWeakPtr()),
+        kContinueWindowShowTimeoutMs);
   }
 }
 
