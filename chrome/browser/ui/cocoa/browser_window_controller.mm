@@ -695,8 +695,8 @@ enum {
   // (bounded by available width).
   const CGFloat kProportion = 0.6;
   CGFloat zoomedWidth =
-      std::max(kProportion * frame.size.width,
-               std::min(kProportion * frame.size.height, frame.size.width));
+      std::max(kProportion * NSWidth(frame),
+               std::min(kProportion * NSHeight(frame), NSWidth(frame)));
 
   WebContents* contents = browser_->GetSelectedWebContents();
   if (contents) {
@@ -705,17 +705,17 @@ enum {
     CGFloat intrinsicWidth = static_cast<CGFloat>(
         contents->GetPreferredSize().width() + kScrollbarWidth);
     zoomedWidth = std::max(zoomedWidth,
-                           std::min(intrinsicWidth, frame.size.width));
+                           std::min(intrinsicWidth, NSWidth(frame)));
   }
 
   // Never shrink from the current size on zoom (see above).
   NSRect currentFrame = [[self window] frame];
-  zoomedWidth = std::max(zoomedWidth, currentFrame.size.width);
+  zoomedWidth = std::max(zoomedWidth, NSWidth(currentFrame));
 
   // |frame| determines our maximum extents. We need to set the origin of the
   // frame -- and only move it left if necessary.
-  if (currentFrame.origin.x + zoomedWidth > frame.origin.x + frame.size.width)
-    frame.origin.x = frame.origin.x + frame.size.width - zoomedWidth;
+  if (currentFrame.origin.x + zoomedWidth > NSMaxX(frame))
+    frame.origin.x = NSMaxX(frame) - zoomedWidth;
   else
     frame.origin.x = currentFrame.origin.x;
 
@@ -738,7 +738,7 @@ enum {
   CGFloat newScreenOverlapArea = 0.0;
   for (NSScreen* screen in [NSScreen screens]) {
     NSRect overlap = NSIntersectionRect(newFrame, [screen frame]);
-    CGFloat overlapArea = overlap.size.width * overlap.size.height;
+    CGFloat overlapArea = NSWidth(overlap) * NSHeight(overlap);
     if (overlapArea > newScreenOverlapArea) {
       newScreen = screen;
       newScreenOverlapArea = overlapArea;
@@ -765,9 +765,10 @@ enum {
   NSRect curFrame = [window frame];
   NSRect newScrIntersectCurFr = NSIntersectionRect([newScreen frame], curFrame);
   NSRect curScrIntersectCurFr = NSIntersectionRect([curScreen frame], curFrame);
-  if (newScrIntersectCurFr.size.width*newScrIntersectCurFr.size.height >=
-      (curScrIntersectCurFr.size.width*curScrIntersectCurFr.size.height - 1.0))
+  if (NSWidth(newScrIntersectCurFr) * NSHeight(newScrIntersectCurFr) >=
+      (NSWidth(curScrIntersectCurFr) * NSHeight(curScrIntersectCurFr) - 1.0)) {
     return YES;
+  }
 
   // If it wasn't reasonable, return NO.
   return NO;
@@ -796,7 +797,7 @@ enum {
 
   // We are "zoomed" if we occupy the full vertical space.
   bool isZoomed = (windowFrame.origin.y == workarea.origin.y &&
-                   windowFrame.size.height == workarea.size.height);
+                   NSHeight(windowFrame) == NSHeight(workarea));
 
   // If we're shrinking the window....
   if (deltaH < 0) {
@@ -859,7 +860,7 @@ enum {
     if (windowFrame.origin.y < workarea.origin.y) {
       windowFrame.origin.y = workarea.origin.y;
       windowFrame.size.height =
-          std::min(windowFrame.size.height, workarea.size.height);
+          std::min(NSHeight(windowFrame), NSHeight(workarea));
     }
 
     // Record (if applicable) how much we grew the window in either direction.
@@ -917,7 +918,7 @@ enum {
   if ((shouldAdjustBookmarkHeight && view == [bookmarkBarController_ view]) ||
       view == [downloadShelfController_ view]) {
     [[self window] disableScreenUpdatesUntilFlush];
-    CGFloat deltaH = height - frame.size.height;
+    CGFloat deltaH = height - NSHeight(frame);
     if ([self adjustWindowHeightBy:deltaH] &&
         view == [downloadShelfController_ view]) {
       // If the window height didn't change, the download shelf will change the
@@ -1185,8 +1186,7 @@ enum {
   NSRect growBoxRect =
       [[self tabContentArea] convertRect:[window _growBoxRect] fromView:nil];
   growBoxRect.origin.y =
-      [[self tabContentArea] frame].size.height - growBoxRect.size.height -
-      growBoxRect.origin.y;
+      NSHeight([[self tabContentArea] frame]) - NSMaxY(growBoxRect);
   return growBoxRect;
 }
 
@@ -1315,11 +1315,9 @@ enum {
   NSWindow* sourceWindow = [tabView window];
   NSRect windowRect = [sourceWindow frame];
   NSScreen* screen = [sourceWindow screen];
-  windowRect.origin.y =
-      [screen frame].size.height - windowRect.size.height -
-          windowRect.origin.y;
+  windowRect.origin.y = NSHeight([screen frame]) - NSMaxY(windowRect);
   gfx::Rect browserRect(windowRect.origin.x, windowRect.origin.y,
-                        windowRect.size.width, windowRect.size.height);
+                        NSWidth(windowRect), NSHeight(windowRect));
 
   NSRect sourceTabRect = [tabView frame];
   NSView* tabStrip = [self tabStripView];
@@ -1927,7 +1925,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // Account for the bookmark bar height if it is currently in the detached
   // state on the new tab page.
   if ([bookmarkBarController_ isInState:(bookmarks::kDetachedState)])
-    frame.size.height += [[bookmarkBarController_ view] bounds].size.height;
+    frame.size.height += NSHeight([[bookmarkBarController_ view] bounds]);
 
   return frame;
 }

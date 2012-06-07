@@ -390,7 +390,7 @@ using content::DownloadItem;
   if (![self secondaryTitle] || statusAlpha_ <= 0)
     return;
 
-  CGFloat textWidth = innerFrame.size.width -
+  CGFloat textWidth = NSWidth(innerFrame) -
       (kTextPosLeft + kTextPaddingRight + kDropdownAreaWidth);
   NSString* secondaryText = [self elideStatus:textWidth];
   NSColor* secondaryColor =
@@ -492,7 +492,7 @@ using content::DownloadItem;
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   // Draw title
-  CGFloat textWidth = cellFrame.size.width -
+  CGFloat textWidth = NSWidth(cellFrame) -
       (kTextPosLeft + kTextPaddingRight + kDropdownAreaWidth);
   [self setTitle:[self elideTitle:textWidth]];
 

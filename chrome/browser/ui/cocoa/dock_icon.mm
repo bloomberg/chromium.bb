@@ -66,8 +66,8 @@ const int64 kUpdateFrequencyMs = 200;
 
   NSRect badgeRect = [self bounds];
   badgeRect.size.height = (int)(kBadgeFraction * badgeRect.size.height);
-  int newWidth = kBadgeFraction * badgeRect.size.width;
-  badgeRect.origin.x = badgeRect.size.width - newWidth;
+  int newWidth = kBadgeFraction * NSWidth(badgeRect);
+  badgeRect.origin.x = NSWidth(badgeRect) - newWidth;
   badgeRect.size.width = newWidth;
 
   CGFloat badgeRadius = NSMidY(badgeRect);
@@ -75,8 +75,7 @@ const int64 kUpdateFrequencyMs = 200;
   badgeRect.origin.x -= kBadgeIndent;
   badgeRect.origin.y += kBadgeIndent;
 
-  NSPoint badgeCenter = NSMakePoint(NSMidX(badgeRect),
-                                    NSMidY(badgeRect));
+  NSPoint badgeCenter = NSMakePoint(NSMidX(badgeRect), NSMidY(badgeRect));
 
   // Background
   NSColor* backgroundColor = [NSColor colorWithCalibratedRed:0.85

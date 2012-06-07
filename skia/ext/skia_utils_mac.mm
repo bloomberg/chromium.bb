@@ -138,10 +138,7 @@ CGAffineTransform SkMatrixToCGAffineTransform(const SkMatrix& matrix) {
 
 SkRect CGRectToSkRect(const CGRect& rect) {
   SkRect sk_rect = {
-    rect.origin.x,
-    rect.origin.y,
-    rect.origin.x + rect.size.width,
-    rect.origin.y + rect.size.height,
+    rect.origin.x, rect.origin.y, CGRectGetMaxX(rect), CGRectGetMaxY(rect)
   };
   return sk_rect;
 }

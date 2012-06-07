@@ -43,8 +43,8 @@ WebViewHost* WebViewHost::Create(NSView* parent_view,
   host->webview()->setDevToolsAgentClient(dev_tools_client);
   prefs.Apply(host->webview());
   host->webview()->initializeMainFrame(delegate);
-  host->webwidget_->resize(WebSize(content_rect.size.width,
-                                   content_rect.size.height));
+  host->webwidget_->resize(WebSize(NSWidth(content_rect),
+                                   NSHeight(content_rect)));
 
   return host;
 }

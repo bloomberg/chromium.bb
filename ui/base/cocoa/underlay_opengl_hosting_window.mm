@@ -99,8 +99,7 @@ void RootDidAddSubview(id self, SEL _cmd, NSView* subview) {
   //
   // (This is checked here because UnderlayOpenGLHostingWindow is the base of
   // most Chromium windows, not because this is related to its functionality.)
-  DCHECK(contentRect.size.width > 0 &&
-         contentRect.size.height > 0);
+  DCHECK(!NSIsEmptyRect(contentRect));
   if ((self = [super initWithContentRect:contentRect
                                styleMask:windowStyle
                                  backing:bufferingType

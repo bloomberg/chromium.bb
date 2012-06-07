@@ -34,15 +34,15 @@ TEST_F(BaseViewTest, flipNSRectToRect) {
   gfx::Rect converted = [view_ flipNSRectToRect:convert];
   EXPECT_EQ(converted.x(), 10);
   EXPECT_EQ(converted.y(), 40);  // Due to view being 100px tall.
-  EXPECT_EQ(converted.width(), convert.size.width);
-  EXPECT_EQ(converted.height(), convert.size.height);
+  EXPECT_EQ(converted.width(), NSWidth(convert));
+  EXPECT_EQ(converted.height(), NSHeight(convert));
 
   // Go back the other way.
   NSRect back_again = [view_ flipRectToNSRect:converted];
-  EXPECT_EQ(back_again.origin.x, convert.origin.x);
-  EXPECT_EQ(back_again.origin.y, convert.origin.y);
-  EXPECT_EQ(back_again.size.width, convert.size.width);
-  EXPECT_EQ(back_again.size.height, convert.size.height);
+  EXPECT_EQ(NSMinX(back_again), NSMinX(convert));
+  EXPECT_EQ(NSMinY(back_again), NSMinY(convert));
+  EXPECT_EQ(NSWidth(back_again), NSWidth(convert));
+  EXPECT_EQ(NSHeight(back_again), NSHeight(convert));
 }
 
 }  // namespace

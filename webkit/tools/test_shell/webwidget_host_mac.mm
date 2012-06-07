@@ -44,8 +44,8 @@ WebWidgetHost* WebWidgetHost::Create(NSView* parent_view,
   // ui::SetWindowUserData(host->hwnd_, host);
 
   host->webwidget_ = WebPopupMenu::create(client);
-  host->webwidget_->resize(WebSize(content_rect.size.width,
-                                   content_rect.size.height));
+  host->webwidget_->resize(WebSize(NSWidth(content_rect),
+                                   NSHeight(content_rect)));
   return host;
 }
 

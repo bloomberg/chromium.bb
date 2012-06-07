@@ -173,7 +173,7 @@ void ShowConfirmBubble(gfx::NativeView view,
   // Add the ok button and the cancel button to the first row if we have either
   // of them.
   CGFloat left = kButtonHEdgeMargin;
-  CGFloat right = frameRect.size.width - kButtonHEdgeMargin;
+  CGFloat right = NSWidth(frameRect) - kButtonHEdgeMargin;
   CGFloat bottom = kButtonVEdgeMargin;
   CGFloat height = 0;
   if ([controller_ hasOkButton]) {
@@ -185,11 +185,11 @@ void ShowConfirmBubble(gfx::NativeView view,
     [okButton_.get() setAction:@selector(ok:)];
     [okButton_.get() sizeToFit];
     NSRect okButtonRect = [okButton_.get() frame];
-    right -= okButtonRect.size.width;
+    right -= NSWidth(okButtonRect);
     okButtonRect.origin.x = right;
     [okButton_.get() setFrame:okButtonRect];
     [self addSubview:okButton_.get()];
-    height = std::max(height, okButtonRect.size.height);
+    height = std::max(height, NSHeight(okButtonRect));
   }
   if ([controller_ hasCancelButton]) {
     cancelButton_.reset([[NSButton alloc]
@@ -200,16 +200,16 @@ void ShowConfirmBubble(gfx::NativeView view,
     [cancelButton_.get() setAction:@selector(cancel:)];
     [cancelButton_.get() sizeToFit];
     NSRect cancelButtonRect = [cancelButton_.get() frame];
-    right -= cancelButtonRect.size.width + kButtonHEdgeMargin;
+    right -= NSWidth(cancelButtonRect) + kButtonHEdgeMargin;
     cancelButtonRect.origin.x = right;
     [cancelButton_.get() setFrame:cancelButtonRect];
     [self addSubview:cancelButton_.get()];
-    height = std::max(height, cancelButtonRect.size.height);
+    height = std::max(height, NSHeight(cancelButtonRect));
   }
 
   // Add the message label (and the link label) to the second row.
   left = kButtonHEdgeMargin;
-  right = frameRect.size.width;
+  right = NSWidth(frameRect);
   bottom += height + kRelatedControlVerticalSpacing;
   height = 0;
   messageLabel_.reset([[ConfirmBubbleTextView alloc]
@@ -238,12 +238,12 @@ void ShowConfirmBubble(gfx::NativeView view,
   [messageLabel_.get() setDrawsBackground:NO];
   [messageLabel_.get() setDelegate:self];
   [messageLabel_.get() sizeToFit];
-  height = [messageLabel_.get() frame].size.height;
+  height = NSHeight([messageLabel_.get() frame]);
   [self addSubview:messageLabel_.get()];
 
   // Add the icon and the title label to the third row.
   left = kButtonHEdgeMargin;
-  right = frameRect.size.width;
+  right = NSWidth(frameRect);
   bottom += height + kLabelToControlVerticalSpacing;
   height = 0;
   NSImage* iconImage = [controller_ icon];
@@ -252,8 +252,8 @@ void ShowConfirmBubble(gfx::NativeView view,
         left, bottom, [iconImage size].width, [iconImage size].height)]);
     [icon_.get() setImage:iconImage];
     [self addSubview:icon_.get()];
-    left += [icon_.get() frame].size.width + kRelatedControlHorizontalSpacing;
-    height = std::max(height, [icon_.get() frame].size.height);
+    left += NSWidth([icon_.get() frame]) + kRelatedControlHorizontalSpacing;
+    height = std::max(height, NSHeight([icon_.get() frame]));
   }
   titleLabel_.reset([[NSTextView alloc]
       initWithFrame:NSMakeRect(left, bottom, right - left, 0)]);
@@ -265,13 +265,13 @@ void ShowConfirmBubble(gfx::NativeView view,
   [titleLabel_.get() setDrawsBackground:NO];
   [titleLabel_.get() sizeToFit];
   [self addSubview:titleLabel_.get()];
-  height = std::max(height, [titleLabel_.get() frame].size.height);
+  height = std::max(height, NSHeight([titleLabel_.get() frame]));
 
   // Adjust the frame rectangle of this bubble so we can show all controls.
   NSRect parentRect = [parent_ frame];
   frameRect.size.height = bottom + height + kButtonVEdgeMargin;
-  frameRect.origin.x = (parentRect.size.width - frameRect.size.width) / 2;
-  frameRect.origin.y = parentRect.size.height - frameRect.size.height;
+  frameRect.origin.x = (NSWidth(parentRect) - NSWidth(frameRect)) / 2;
+  frameRect.origin.y = NSHeight(parentRect) - NSHeight(frameRect);
   [self setFrame:frameRect];
 }
 

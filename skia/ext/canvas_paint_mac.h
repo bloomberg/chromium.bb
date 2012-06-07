@@ -74,7 +74,7 @@ class CanvasPaintT : public T {
   // Returns true if the invalid region is empty. The caller should call this
   // function to determine if anything needs painting.
   bool is_empty() const {
-    return rectangle_.size.width == 0 || rectangle_.size.height == 0;
+    return NSIsEmptyRect(rectangle_);
   }
 
   const NSRect& rectangle() const {
@@ -84,8 +84,8 @@ class CanvasPaintT : public T {
  private:
   void init(bool opaque) {
     PlatformCanvas* canvas = GetPlatformCanvas(this);
-    if (!canvas->initialize(rectangle_.size.width,
-                            rectangle_.size.height,
+    if (!canvas->initialize(NSWidth(rectangle_),
+                            NSHeight(rectangle_),
                             opaque, NULL)) {
       // Cause a deliberate crash;
       *(volatile char*) 0 = 0;
@@ -94,8 +94,8 @@ class CanvasPaintT : public T {
 
     // Need to translate so that the dirty region appears at the origin of the
     // surface.
-    canvas->translate(-SkDoubleToScalar(rectangle_.origin.x),
-                      -SkDoubleToScalar(rectangle_.origin.y));
+    canvas->translate(-SkDoubleToScalar(NSMinX(rectangle_)),
+                      -SkDoubleToScalar(NSMinY(rectangle_)));
 
     context_ = GetBitmapContext(GetTopDevice(*canvas));
   }

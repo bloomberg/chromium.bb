@@ -72,8 +72,8 @@ gfx::Rect ShellWindowCocoa::GetRestoredBounds() const {
   // Flip coordinates based on the primary screen.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
   NSRect frame = [window() frame];
-  gfx::Rect bounds(frame.origin.x, 0, frame.size.width, frame.size.height);
-  bounds.set_y([screen frame].size.height - frame.origin.y - frame.size.height);
+  gfx::Rect bounds(frame.origin.x, 0, NSWidth(frame), NSHeight(frame));
+  bounds.set_y(NSHeight([screen frame]) - NSMaxY(frame));
   return bounds;
 }
 
@@ -135,8 +135,7 @@ void ShellWindowCocoa::SetBounds(const gfx::Rect& bounds) {
                                    checked_bounds.height());
   // Flip coordinates based on the primary screen.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
-  cocoa_bounds.origin.y =
-      [screen frame].size.height - checked_bounds.height() - checked_bounds.y();
+  cocoa_bounds.origin.y = NSHeight([screen frame]) - checked_bounds.bottom();
 
   [window() setFrame:cocoa_bounds display:YES];
 }

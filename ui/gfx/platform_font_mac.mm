@@ -107,7 +107,7 @@ void PlatformFontMac::CalculateMetrics() {
   height_ = [layout_manager defaultLineHeightForFont:font];
   ascent_ = [font ascender];
   average_width_ =
-      [font boundingRectForGlyph:[font glyphWithName:@"x"]].size.width;
+      NSWidth([font boundingRectForGlyph:[font glyphWithName:@"x"]]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
