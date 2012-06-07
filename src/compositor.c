@@ -1656,16 +1656,19 @@ weston_surface_activate(struct weston_surface *surface,
 {
 	struct weston_compositor *compositor = seat->compositor;
 
-	wl_keyboard_set_focus(seat->seat.keyboard, &surface->surface);
-	wl_data_device_set_keyboard_focus(&seat->seat);
+	if (seat->seat.keyboard) {
+		wl_keyboard_set_focus(seat->seat.keyboard, &surface->surface);
+		wl_data_device_set_keyboard_focus(&seat->seat);
 
-	if (seat->seat.keyboard->focus_resource) {
-		wl_keyboard_send_modifiers(seat->seat.keyboard->focus_resource,
-					   wl_display_next_serial(compositor->wl_display),
-					   seat->xkb_state.mods_depressed,
-					   seat->xkb_state.mods_latched,
-					   seat->xkb_state.mods_locked,
-					   seat->xkb_state.group);
+		if (seat->seat.keyboard->focus_resource) {
+			wl_keyboard_send_modifiers(
+				seat->seat.keyboard->focus_resource,
+				wl_display_next_serial(compositor->wl_display),
+				seat->xkb_state.mods_depressed,
+				seat->xkb_state.mods_latched,
+				seat->xkb_state.mods_locked,
+				seat->xkb_state.group);
+		}
 	}
 
 	wl_signal_emit(&compositor->activate_signal, surface);
