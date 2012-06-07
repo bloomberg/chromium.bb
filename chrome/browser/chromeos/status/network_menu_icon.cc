@@ -169,10 +169,10 @@ const gfx::ImageSkia GetVpnResource(int resource_id) {
   const gfx::ImageSkia* ethernet_icon = rb.GetImageSkiaNamed(resource_id);
   gfx::Canvas canvas(
       gfx::Size(ethernet_icon->width(), ethernet_icon->height()), false);
-  canvas.DrawBitmapInt(*ethernet_icon, 0, 0);
+  canvas.DrawImageInt(*ethernet_icon, 0, 0);
   const gfx::ImageSkia* vpn_badge = rb.GetImageSkiaNamed(kVpnBadgeId);
   int y = ethernet_icon->height() - vpn_badge->height();
-  canvas.DrawBitmapInt(*vpn_badge, kBadgeLeftX, y);
+  canvas.DrawImageInt(*vpn_badge, kBadgeLeftX, y);
   return canvas.ExtractBitmap();
 }
 
@@ -748,19 +748,19 @@ const gfx::ImageSkia NetworkMenuIcon::GenerateImageFromComponents(
     canvas.sk_canvas()->scale(SkFloatToScalar(dip_scale),
                               SkFloatToScalar(dip_scale));
     if (top_left_badge)
-      canvas.DrawBitmapInt(*top_left_badge, kBadgeLeftX, kBadgeTopY);
+      canvas.DrawImageInt(*top_left_badge, kBadgeLeftX, kBadgeTopY);
     if (top_right_badge)
-      canvas.DrawBitmapInt(*top_right_badge,
-                           dip_width - top_right_badge->width(),
-                           kBadgeTopY);
+      canvas.DrawImageInt(*top_right_badge,
+                          dip_width - top_right_badge->width(),
+                          kBadgeTopY);
     if (bottom_left_badge)
-      canvas.DrawBitmapInt(*bottom_left_badge,
-                           kBadgeLeftX,
-                           dip_height - bottom_left_badge->height());
+      canvas.DrawImageInt(*bottom_left_badge,
+                          kBadgeLeftX,
+                          dip_height - bottom_left_badge->height());
     if (bottom_right_badge)
-      canvas.DrawBitmapInt(*bottom_right_badge,
-                           dip_width - bottom_right_badge->width(),
-                           dip_height - bottom_right_badge->height());
+      canvas.DrawImageInt(*bottom_right_badge,
+                          dip_width - bottom_right_badge->width(),
+                          dip_height - bottom_right_badge->height());
     badged.AddBitmapForScale(canvas.ExtractBitmap(), dip_scale);
   }
   return badged;

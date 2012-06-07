@@ -252,7 +252,7 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
       gfx::ImageSkia image = model_->GetIcon(i);
       if (!image.isNull()) {
         int image_x = GetMirroredXWithWidthInView(text_x, image.width());
-        canvas->DrawBitmapInt(
+        canvas->DrawImageInt(
             image, 0, 0, image.width(), image.height(),
             image_x, row_bounds.y() + (row_bounds.height() - kImageSize) / 2,
             kImageSize, kImageSize, true);

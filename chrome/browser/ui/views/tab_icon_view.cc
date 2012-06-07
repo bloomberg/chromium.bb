@@ -130,9 +130,9 @@ void TabIconView::PaintIcon(gfx::Canvas* canvas,
   int dest_h = static_cast<int>(float_src_h * scale);
 
   // Center the scaled image.
-  canvas->DrawBitmapInt(image, src_x, src_y, src_w, src_h,
-                        (width() - dest_w) / 2, (height() - dest_h) / 2, dest_w,
-                        dest_h, filter);
+  canvas->DrawImageInt(image, src_x, src_y, src_w, src_h,
+                       (width() - dest_w) / 2, (height() - dest_h) / 2, dest_w,
+                       dest_h, filter);
 }
 
 void TabIconView::OnPaint(gfx::Canvas* canvas) {

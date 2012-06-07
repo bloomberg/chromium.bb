@@ -50,7 +50,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     // Don't use config.check_width here as it's padded to force more padding.
     gfx::Rect check_bounds(icon_x, icon_y, check->width(), icon_height);
     AdjustBoundsForRTLUI(&check_bounds);
-    canvas->DrawBitmapInt(*check, check_bounds.x(), check_bounds.y());
+    canvas->DrawImageInt(*check, check_bounds.x(), check_bounds.y());
   } else if (type_ == RADIO) {
     const gfx::ImageSkia* image =
         GetRadioButtonImage(GetDelegate()->IsItemChecked(GetCommand()));
@@ -61,7 +61,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                            image->width(),
                            image->height());
     AdjustBoundsForRTLUI(&radio_bounds);
-    canvas->DrawBitmapInt(*image, radio_bounds.x(), radio_bounds.y());
+    canvas->DrawImageInt(*image, radio_bounds.x(), radio_bounds.y());
   }
 
   // Render the foreground.
@@ -96,9 +96,9 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     if (!enabled()) {
       SkPaint paint;
       paint.setAlpha(120);
-      canvas->DrawBitmapInt(icon_, icon_bounds.x(), icon_bounds.y(), paint);
+      canvas->DrawImageInt(icon_, icon_bounds.x(), icon_bounds.y(), paint);
     } else {
-      canvas->DrawBitmapInt(icon_, icon_bounds.x(), icon_bounds.y());
+      canvas->DrawImageInt(icon_, icon_bounds.x(), icon_bounds.y());
     }
   }
 
@@ -110,8 +110,8 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                                          config.arrow_width) / 2,
                            config.arrow_width, height());
     AdjustBoundsForRTLUI(&arrow_bounds);
-    canvas->DrawBitmapInt(*GetSubmenuArrowImage(),
-                          arrow_bounds.x(), arrow_bounds.y());
+    canvas->DrawImageInt(*GetSubmenuArrowImage(),
+                         arrow_bounds.x(), arrow_bounds.y());
   }
 }
 

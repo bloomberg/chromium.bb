@@ -118,9 +118,9 @@ class AppNonClientFrameViewAura::ControlView
     views::View::OnPaint(canvas);
 
     // Separator overlaps the left edge of the close button.
-    canvas->DrawBitmapInt(*separator_,
-                          close_button_->x(), 0);
-    canvas->DrawBitmapInt(*shadow_, 0, kShadowHeightStretch);
+    canvas->DrawImageInt(*separator_,
+                         close_button_->x(), 0);
+    canvas->DrawImageInt(*shadow_, 0, kShadowHeightStretch);
   }
 
   void ButtonPressed(views::Button* sender,

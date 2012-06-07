@@ -301,7 +301,7 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
                          disclosure_arrow_->width(),
                          disclosure_arrow_->height());
   AdjustBoundsForRTLUI(&arrow_bounds);
-  canvas->DrawBitmapInt(*disclosure_arrow_, arrow_bounds.x(), arrow_bounds.y());
+  canvas->DrawImageInt(*disclosure_arrow_, arrow_bounds.x(), arrow_bounds.y());
 
   canvas->Restore();
 }

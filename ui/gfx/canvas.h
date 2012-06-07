@@ -245,16 +245,16 @@ class UI_EXPORT Canvas {
   // corner of the bitmap is rendered at the specified location.
   // Parameters are specified relative to current canvas scale not in pixels.
   // Thus, |x| is 2 pixels if canvas scale = 2 & |x| = 1.
-  void DrawBitmapInt(const gfx::ImageSkia&, int x, int y);
+  void DrawImageInt(const gfx::ImageSkia&, int x, int y);
 
   // Draws an image with the origin at the specified location, using the
   // specified paint. The upper left corner of the bitmap is rendered at the
   // specified location.
   // Parameters are specified relative to current canvas scale not in pixels.
   // Thus, |x| is 2 pixels if canvas scale = 2 & |x| = 1.
-  void DrawBitmapInt(const gfx::ImageSkia& image,
-                     int x, int y,
-                     const SkPaint& paint);
+  void DrawImageInt(const gfx::ImageSkia& image,
+                    int x, int y,
+                    const SkPaint& paint);
 
   // Draws a portion of an image in the specified location. The src parameters
   // correspond to the region of the bitmap to draw in the region defined
@@ -268,15 +268,15 @@ class UI_EXPORT Canvas {
   // An optional custom SkPaint can be provided.
   // Parameters are specified relative to current canvas scale not in pixels.
   // Thus, |x| is 2 pixels if canvas scale = 2 & |x| = 1.
-  void DrawBitmapInt(const gfx::ImageSkia& image,
-                     int src_x, int src_y, int src_w, int src_h,
-                     int dest_x, int dest_y, int dest_w, int dest_h,
-                     bool filter);
-  void DrawBitmapInt(const gfx::ImageSkia& image,
-                     int src_x, int src_y, int src_w, int src_h,
-                     int dest_x, int dest_y, int dest_w, int dest_h,
-                     bool filter,
-                     const SkPaint& paint);
+  void DrawImageInt(const gfx::ImageSkia& image,
+                    int src_x, int src_y, int src_w, int src_h,
+                    int dest_x, int dest_y, int dest_w, int dest_h,
+                    bool filter);
+  void DrawImageInt(const gfx::ImageSkia& image,
+                    int src_x, int src_y, int src_w, int src_h,
+                    int dest_x, int dest_y, int dest_w, int dest_h,
+                    bool filter,
+                    const SkPaint& paint);
 
   // Draws text with the specified color, font and location. The text is
   // aligned to the left, vertically centered, clipped to the region. If the

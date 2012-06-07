@@ -257,8 +257,8 @@ class ResizeCorner : public views::View {
 
     gfx::ImageSkia* image = ui::ResourceBundle::GetSharedInstance().
         GetImageSkiaNamed(IDR_TEXTAREA_RESIZER);
-    canvas->DrawBitmapInt(*image, width() - image->width(),
-                          height() - image->height());
+    canvas->DrawImageInt(*image, width() - image->width(),
+                         height() - image->height());
   }
 
   static gfx::Size GetSize() {

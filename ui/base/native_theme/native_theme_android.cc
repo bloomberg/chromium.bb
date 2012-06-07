@@ -295,7 +295,7 @@ void NativeThemeAndroid::PaintCheckbox(SkCanvas* canvas,
   }
 
   gfx::Rect bounds = rect.Center(gfx::Size(image->width(), image->height()));
-  DrawBitmapInt(canvas, *image, 0, 0, image->width(), image->height(),
+  DrawImageInt(canvas, *image, 0, 0, image->width(), image->height(),
       bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
@@ -316,7 +316,7 @@ void NativeThemeAndroid::PaintRadio(SkCanvas* canvas,
   }
 
   gfx::Rect bounds = rect.Center(gfx::Size(image->width(), image->height()));
-  DrawBitmapInt(canvas, *image, 0, 0, image->width(), image->height(),
+  DrawImageInt(canvas, *image, 0, 0, image->width(), image->height(),
       bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
@@ -631,14 +631,14 @@ void NativeThemeAndroid::PaintProgressBar(
 
   int dest_left_border_width = static_cast<int>(left_border_image->width() *
       tile_scale);
-  DrawBitmapInt(canvas, *left_border_image, 0, 0, left_border_image->width(),
+  DrawImageInt(canvas, *left_border_image, 0, 0, left_border_image->width(),
       left_border_image->height(), rect.x(), rect.y(), dest_left_border_width,
       rect.height());
 
   int dest_right_border_width = static_cast<int>(right_border_image->width() *
       tile_scale);
   int dest_x = rect.right() - dest_right_border_width;
-  DrawBitmapInt(canvas, *right_border_image, 0, 0, right_border_image->width(),
+  DrawImageInt(canvas, *right_border_image, 0, 0, right_border_image->width(),
       right_border_image->height(), dest_x, rect.y(), dest_right_border_width,
       rect.height());
 }
@@ -654,7 +654,7 @@ bool NativeThemeAndroid::IntersectsClipRectInt(SkCanvas* canvas,
                      SkIntToScalar(y + h));
 }
 
-void NativeThemeAndroid::DrawBitmapInt(SkCanvas* canvas,
+void NativeThemeAndroid::DrawImageInt(SkCanvas* canvas,
                                        const gfx::ImageSkia& image,
                                        int src_x,
                                        int src_y,
@@ -664,7 +664,7 @@ void NativeThemeAndroid::DrawBitmapInt(SkCanvas* canvas,
                                        int dest_y,
                                        int dest_w,
                                        int dest_h) const {
-  gfx::Canvas(canvas).DrawBitmapInt(image, src_x, src_y, src_w, src_h,
+  gfx::Canvas(canvas).DrawImageInt(image, src_x, src_y, src_w, src_h,
       dest_x, dest_y, dest_w, dest_h, true);
 }
 

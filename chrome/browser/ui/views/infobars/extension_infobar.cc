@@ -125,10 +125,10 @@ void ExtensionInfoBar::OnImageLoaded(const gfx::Image& image,
   scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(
       gfx::Size(image_size + kDropArrowLeftMargin + drop_image->width(),
                 image_size), false));
-  canvas->DrawBitmapInt(*icon, 0, 0, icon->width(), icon->height(), 0, 0,
-                        image_size, image_size, false);
-  canvas->DrawBitmapInt(*drop_image, image_size + kDropArrowLeftMargin,
-                        image_size / 2);
+  canvas->DrawImageInt(*icon, 0, 0, icon->width(), icon->height(), 0, 0,
+                       image_size, image_size, false);
+  canvas->DrawImageInt(*drop_image, image_size + kDropArrowLeftMargin,
+                       image_size / 2);
   menu_->SetIcon(canvas->ExtractBitmap());
   menu_->SetVisible(true);
 

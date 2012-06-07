@@ -324,7 +324,7 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
   }
 
   // Top left corner.
-  canvas->DrawBitmapInt(*images_->top_left, left, top);
+  canvas->DrawImageInt(*images_->top_left, left, top);
 
   // Top edge.
   if (arrow_location_ == TOP_LEFT || arrow_location_ == TOP_RIGHT) {
@@ -353,7 +353,7 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
   }
 
   // Top right corner.
-  canvas->DrawBitmapInt(*images_->top_right, right - tr_width, top);
+  canvas->DrawImageInt(*images_->top_right, right - tr_width, top);
 
   // Right edge.
   if (arrow_location_ == RIGHT_TOP || arrow_location_ == RIGHT_BOTTOM) {
@@ -384,9 +384,9 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
   }
 
   // Bottom right corner.
-  canvas->DrawBitmapInt(*images_->bottom_right,
-                        right - br_width,
-                        bottom - br_height);
+  canvas->DrawImageInt(*images_->bottom_right,
+                       right - br_width,
+                       bottom - br_height);
 
   // Bottom edge.
   if (arrow_location_ == BOTTOM_LEFT || arrow_location_ == BOTTOM_RIGHT) {
@@ -417,7 +417,7 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
   }
 
   // Bottom left corner.
-  canvas->DrawBitmapInt(*images_->bottom_left, left, bottom - bl_height);
+  canvas->DrawImageInt(*images_->bottom_left, left, bottom - bl_height);
 }
 
 void BubbleBorder::DrawEdgeWithArrow(gfx::Canvas* canvas,
@@ -446,7 +446,7 @@ void BubbleBorder::DrawEdgeWithArrow(gfx::Canvas* canvas,
         is_horizontal ? edge->height() : before_arrow);
   }
 
-  canvas->DrawBitmapInt(*arrow,
+  canvas->DrawImageInt(*arrow,
       start_x + (is_horizontal ? before_arrow : offset),
       start_y + (is_horizontal ? offset : before_arrow));
 
