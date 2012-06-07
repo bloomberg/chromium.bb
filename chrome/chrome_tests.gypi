@@ -4550,7 +4550,7 @@
             '../sql/sql.gyp:sql_unittests',
             '../content/content.gyp:content_unittests',
             'unit_tests',
-            #'sync_unit_tests',
+            '../sync/sync.gyp:sync_unit_tests',
           ],  # 'dependencies'
           'conditions': [
             ['OS=="win"', {
@@ -4566,6 +4566,19 @@
                 # Win bot needs to be turned into an interactive bot.
                 'interactive_ui_tests',
                 'browser_tests',
+                '../courgette/courgette.gyp:courgette_unittests',
+                '../crypto/crypto.gyp:crypto_unittests',
+                'chromedriver_unittests',
+                '../net/net.gyp:curvecp_unittests',
+                '../build/temp_gyp/googleurl.gyp:googleurl_unittests',
+                'gpu_tests',
+                '../jingle/jingle.gyp:jingle_unittests',
+                '../net/net.gyp:net_perftests',
+                'performance_ui_tests',
+                'reliability_tests',
+                'safe_browsing_tests',
+                'sync_integration_tests',
+                '../third_party/WebKit/Source/WebKit/chromium/WebKitUnitTests.gyp:webkit_unit_tests',
               ]}],
             ['OS=="mac"', {
               'dependencies': [
