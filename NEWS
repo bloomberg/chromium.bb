@@ -41,6 +41,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - Fixed a couple of bugs with hyphenation (documentation, Python
      bindings and a number of buffer overruns in the C library).
      Thanks Milan Zamazal <pdm@brailcom.org> for reporting this.
+   - Fix a bug in the $a. matcher in the multipass rules where only 32
+     chars were matched. It now matches 0xffff chars.
 
 ** Braille Table Improvements
    - The grand table cleanup: Reorganize the tables to remove

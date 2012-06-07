@@ -1,5 +1,11 @@
 2012-06-07  Christian Egli  <christian.egli@sbs.ch>
 
+	* liblouis/compileTranslationTable.c (compilePassOpcode): Increase
+	the number of chars matched in a $a. expression from 32 to 0xffff.
+
+	* doc/liblouis.texi (The Context and Multipass Opcodes): Document
+	the fact that context $a. matches are limited to 0xffff
+
 	* python/louis/__init__.py.in (hyphenate): Now that we know that
 	hyphens array should be inlen+1 adapt the Python bindings
 	accordingly.

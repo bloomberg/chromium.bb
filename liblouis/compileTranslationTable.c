@@ -2960,7 +2960,7 @@ compilePassOpcode (FileInfo * nested, TranslationTableOpcode opcode)
 		{
 		  passLinepos++;
 		  passInstructions[passIC++] = 1;
-		  passInstructions[passIC++] = 32;
+		  passInstructions[passIC++] = 0xffff;
 		  break;
 		}
 	      passGetNumber ();

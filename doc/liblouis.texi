@@ -1479,9 +1479,12 @@ checked to make sure that at least the first number of characters with
 the attributes are present, but no more than the second number. If
 only one number is present, then exactly that many characters must
 have the attributes. A period instead of the numbers indicates an
-indefinite number of characters. This suboperand is valid in all test
-parts but not in action parts. For the characters which can be used in 
-attribute strings, see the following table.
+indefinite number of characters (for technical reasons the number of
+characters that are actually matched is limited to 65535).
+
+This suboperand is valid in all test parts but not in action parts.
+For the characters which can be used in attribute strings, see the
+following table.
 
 @item ! (exclamation point) 
 reverses the logical meaning of the suboperand which follows. For
