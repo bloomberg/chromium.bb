@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,12 +79,14 @@ void NotificationServiceImpl::RemoveObserver(
       observers_[type][source.map_key()];
   if (observer_list) {
     observer_list->RemoveObserver(observer);
+    if (!observer_list->size()) {
+      observers_[type].erase(source.map_key());
+      delete observer_list;
+    }
 #ifndef NDEBUG
     --observer_counts_[type];
 #endif
   }
-
-  // TODO(jhughes): Remove observer list from map if empty?
 }
 
 void NotificationServiceImpl::Notify(
