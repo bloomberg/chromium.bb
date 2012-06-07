@@ -36,8 +36,8 @@ class PrerenderWebMediaPlayer
       media::MediaLog* media_log);
   virtual ~PrerenderWebMediaPlayer();
 
-  // WebMediaPlayer methods:
-  virtual void load(const WebKit::WebURL& url) OVERRIDE;
+  // WebMediaPlayerImpl methods:
+  virtual void load(const WebKit::WebURL& url, CORSMode cors_mode) OVERRIDE;
   virtual void cancelLoad() OVERRIDE;
 
  private:
@@ -49,6 +49,7 @@ class PrerenderWebMediaPlayer
   bool is_prerendering_;
   bool url_loaded_;
   scoped_ptr<WebKit::WebURL> url_to_load_;
+  CORSMode cors_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderWebMediaPlayer);
 };

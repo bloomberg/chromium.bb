@@ -34,24 +34,28 @@ PrerenderWebMediaPlayer::PrerenderWebMediaPlayer(
                          media_stream_client,
                          media_log),
       is_prerendering_(true),
-      url_loaded_(false) {
+      url_loaded_(false),
+      cors_mode_(CORSModeUnspecified) {
 }
 
 PrerenderWebMediaPlayer::~PrerenderWebMediaPlayer() {}
 
-void PrerenderWebMediaPlayer::load(const WebKit::WebURL& url) {
+void PrerenderWebMediaPlayer::load(const WebKit::WebURL& url,
+                                   CORSMode cors_mode) {
   DCHECK(!url_loaded_);
   if (is_prerendering_) {
     url_to_load_.reset(new WebKit::WebURL(url));
+    cors_mode_ = cors_mode;
     return;
   }
   url_loaded_ = true;
-  WebMediaPlayerImpl::load(url);
+  WebMediaPlayerImpl::load(url, cors_mode);
 }
 
 void PrerenderWebMediaPlayer::cancelLoad() {
   if (is_prerendering_) {
     url_to_load_.reset(NULL);
+    cors_mode_ = CORSModeUnspecified;
     return;
   }
   WebMediaPlayerImpl::cancelLoad();
@@ -73,7 +77,7 @@ void PrerenderWebMediaPlayer::OnSetIsPrerendering(bool is_prerendering) {
   if (is_prerendering_ && !is_prerendering) {
     is_prerendering_ = false;
     if (url_to_load_.get())
-      load(*url_to_load_);
+      load(*url_to_load_, cors_mode_);
   }
 }
 
