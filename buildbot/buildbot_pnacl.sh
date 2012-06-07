@@ -9,6 +9,9 @@ set -o errexit
 
 # Tell build.sh and test.sh that we're a bot.
 export PNACL_BUILDBOT=true
+# Make TC bots print all log output to console (this variable only affects
+# build.sh output)
+export PNACL_VERBOSE=true
 
 # If true, terminate script when first scons error is encountered.
 FAIL_FAST=${FAIL_FAST:-true}
@@ -554,8 +557,6 @@ mode-buildbot-tc-x8632-mac() {
   local is_try=$1
   FAIL_FAST=false
   TOOLCHAIN_LABEL=pnacl_mac_x86_32
-  # To avoid timing out, since this bot is slow.
-  export PNACL_VERBOSE=true
   # We can't test ARM because we do not have QEMU for Mac.
   # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
   tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false
