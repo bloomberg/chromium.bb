@@ -2184,33 +2184,33 @@ This function is exactly the inverse of @code{lou_translate}.
 
 @example
 int lou_hyphenate (
-    const char * tableList, 
-    const widechar * const inbuf, 
+    const char *tableList, 
+    const widechar *inbuf, 
     int inlen, 
     char *hyphens, 
     int mode);
 @end example
 
 This function looks at the characters in @code{inbuf} and if it finds
-a sequence of letters attempts to hyphenate it as a word. Note 
-that lou_hyphenate operates on single words only, and spaces or 
-punctuation marks between letters are not allowed. Leading and
-trailing punctuation marks are ignored. The table named by the
-@code{tableList} parameter must contain a hyphenation table. If it does
-not, the function does nothing. @code{inlen} is the length of the
-character string in @code{inbuf}. @code{hyphens} is an array of
-characters and must be of size @code{inlen}. If hyphenation is
-successful it will have a 1 at the beginning of each syllable and a 0
-elsewhere. If the @code{mode} parameter is 0 @code{inbuf} is assumed
-to contain untranslated characters. Any nonzero value means that
-@code{inbuf} contains a translation. In this case, it is
-back-translated, hyphenation is performed, and it is re-translated so
-that the hyphens can be placed correctly. The @code{lou_translate} and
-@code{lou_backTranslate} functions are used in this process.
-@code{lou_hyphenate} returns 1 if hyphenation was successful and 0
-otherwise. In the latter case, the contents of the @code{hyphens}
-parameter are undefined. This function was provided for use in
-liblouisxml.
+a sequence of letters attempts to hyphenate it as a word. Note that
+lou_hyphenate operates on single words only, and spaces or punctuation
+marks between letters are not allowed. Leading and trailing
+punctuation marks are ignored. The table named by the @code{tableList}
+parameter must contain a hyphenation table. If it does not, the
+function does nothing. @code{inlen} is the length of the character
+string in @code{inbuf}. @code{hyphens} is an array of characters and
+must be of size @code{inlen} + 1 (to account for the NULL terminator).
+If hyphenation is successful it will have a 1 at the beginning of each
+syllable and a 0 elsewhere. If the @code{mode} parameter is 0
+@code{inbuf} is assumed to contain untranslated characters. Any
+nonzero value means that @code{inbuf} contains a translation. In this
+case, it is back-translated, hyphenation is performed, and it is
+re-translated so that the hyphens can be placed correctly. The
+@code{lou_translate} and @code{lou_backTranslate} functions are used
+in this process. @code{lou_hyphenate} returns 1 if hyphenation was
+successful and 0 otherwise. In the latter case, the contents of the
+@code{hyphens} parameter are undefined. This function was provided for
+use in liblouisxml.
 
 @node lou_compileString, lou_dotsToChar, lou_hyphenate, Programming with liblouis
 @section lou_compileString

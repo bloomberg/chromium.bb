@@ -262,7 +262,7 @@ def hyphenate(tableList, inbuf, mode=0):
     tablesString = _createTablesString(tableList)
     inbuf = createStr(inbuf)
     inlen = c_int(len(inbuf))
-    hyphen_string = create_string_buffer(inlen.value)
+    hyphen_string = create_string_buffer(inlen.value + 1) 
     if not liblouis.lou_hyphenate(tablesString, inbuf, inlen, hyphen_string, mode):
         raise RuntimeError("Can't hyphenate tables %s, inbuf %s, mode %d" %(tablesString, inbuf, mode))
     return hyphen_string.value.decode("ASCII")

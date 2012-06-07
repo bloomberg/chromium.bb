@@ -38,6 +38,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      are involved
    - Fixed a number of bugs with the letter, uppercase and lowercase
      opcodes when dealing with Unicode
+   - Fixed a couple of bugs with hyphenation (documentation, Python
+     bindings and a number of buffer overruns in the C library).
+     Thanks Milan Zamazal <pdm@brailcom.org> for reporting this.
 
 ** Braille Table Improvements
    - The grand table cleanup: Reorganize the tables to remove

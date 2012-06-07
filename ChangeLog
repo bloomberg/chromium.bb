@@ -1,5 +1,12 @@
 2012-06-07  Christian Egli  <christian.egli@sbs.ch>
 
+	* python/louis/__init__.py.in (hyphenate): Now that we know that
+	hyphens array should be inlen+1 adapt the Python bindings
+	accordingly.
+
+	* doc/liblouis.texi (lou_hyphenate): Fix a documentation bug with
+	lou_hyphenate. The length of the hyphens array should be inlen+1.
+
 	* tests/Makefile.am (check_PROGRAMS):
 	* tests/brl_checks.c (check_hyphenation):
 	* tests/brl_checks.h:
