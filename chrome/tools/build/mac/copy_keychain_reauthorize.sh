@@ -18,5 +18,9 @@ fi
 TARGET_DIR="${1}"
 shift
 
+# Because ninja (and maybe make) had been making symbolic links in
+# ${TARGET_DIR}, blow the whole thing away and start fresh.
+rm -rf "${TARGET_DIR}"
+
 mkdir -p "${TARGET_DIR}"
 cp "${@}" "${TARGET_DIR}"
