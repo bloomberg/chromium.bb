@@ -748,6 +748,7 @@
        'media.media_scrub_perf',
        'media.media_seek_perf',
        'media.media_stat_perf',
+       'media.mixed_audio_latency_perf',
      ],
   },
 
