@@ -546,14 +546,14 @@ bool RenderWidgetHostViewMac::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
+  NSRect bounds = [cocoa_view_ bounds];
   // TODO(shess): In case of !window, the view has been removed from
   // the view hierarchy because the tab isn't main.  Could retrieve
   // the information from the main tab for our window.
   NSWindow* enclosing_window = ApparentWindowForView(cocoa_view_);
   if (!enclosing_window)
-    return gfx::Rect();
+    return gfx::Rect(gfx::Size(NSWidth(bounds), NSHeight(bounds)));
 
-  NSRect bounds = [cocoa_view_ bounds];
   bounds = [cocoa_view_ convertRect:bounds toView:nil];
   bounds.origin = [enclosing_window convertBaseToScreen:bounds.origin];
   return FlipNSRectToRectScreen(bounds);
@@ -1199,10 +1199,6 @@ void RenderWidgetHostViewMac::GotSoftwareFrame() {
       compositing_iosurface_->UnrefIOSurface();
     }
   }
-}
-
-gfx::Rect RenderWidgetHostViewMac::GetViewCocoaBounds() const {
-  return gfx::Rect(NSRectToCGRect([cocoa_view_ bounds]));
 }
 
 void RenderWidgetHostViewMac::SetActive(bool active) {

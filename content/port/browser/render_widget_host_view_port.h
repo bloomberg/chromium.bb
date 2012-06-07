@@ -183,12 +183,6 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // Called just before GetBackingStore blocks for an updated frame.
   virtual void AboutToWaitForBackingStoreMsg() = 0;
 
-  // Retrieve the bounds of the view, in cocoa view coordinates.
-  // If the UI scale factor is 2, |GetViewBounds()| will return a size of e.g.
-  // (400, 300) in pixels, while this method will return (200, 150).
-  // Even though this returns an gfx::Rect, the result is NOT IN PIXELS.
-  virtual gfx::Rect GetViewCocoaBounds() const = 0;
-
   // Informs the view that a plugin gained or lost focus.
   virtual void PluginFocusChanged(bool focused, int plugin_id) = 0;
 
