@@ -190,6 +190,22 @@ const char kWebKitSerifFontFamilyArabic[] =
     "webkit.webprefs.fonts.serif.Arab";
 const char kWebKitSansSerifFontFamilyArabic[] =
     "webkit.webprefs.fonts.sansserif.Arab";
+const char kWebKitStandardFontFamilyCyrillic[] =
+    "webkit.webprefs.fonts.standard.Cyrl";
+const char kWebKitFixedFontFamilyCyrillic[] =
+    "webkit.webprefs.fonts.fixed.Cyrl";
+const char kWebKitSerifFontFamilyCyrillic[] =
+    "webkit.webprefs.fonts.serif.Cyrl";
+const char kWebKitSansSerifFontFamilyCyrillic[] =
+    "webkit.webprefs.fonts.sansserif.Cyrl";
+const char kWebKitStandardFontFamilyGreek[] =
+    "webkit.webprefs.fonts.standard.Grek";
+const char kWebKitFixedFontFamilyGreek[] =
+    "webkit.webprefs.fonts.fixed.Grek";
+const char kWebKitSerifFontFamilyGreek[] =
+    "webkit.webprefs.fonts.serif.Grek";
+const char kWebKitSansSerifFontFamilyGreek[] =
+    "webkit.webprefs.fonts.sansserif.Grek";
 const char kWebKitStandardFontFamilyJapanese[] =
     "webkit.webprefs.fonts.standard.Hrkt";
 const char kWebKitFixedFontFamilyJapanese[] =

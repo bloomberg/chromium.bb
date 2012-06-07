@@ -167,6 +167,54 @@
       </message>
 
       <!-- The default value for |WebPreference::standard_font_family_map| for
+           Cyrillic script. -->
+      <message name="IDS_STANDARD_FONT_FAMILY_CYRILLIC" use_name_for_id="true">
+        Times New Roman
+      </message>
+
+      <!-- The default value for |WebPreference::fixed_font_family_map| for
+           Cyrillic script. -->
+      <message name="IDS_FIXED_FONT_FAMILY_CYRILLIC" use_name_for_id="true">
+        Courier New
+      </message>
+
+      <!-- The default value for |WebPreference::serif_font_family_map| for
+           Cyrillic script. -->
+      <message name="IDS_SERIF_FONT_FAMILY_CYRILLIC" use_name_for_id="true">
+        Times New Roman
+      </message>
+
+      <!-- The default value for |WebPreference::sans_serif_font_family_map| for
+           Cyrillic script.  -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_CYRILLIC" use_name_for_id="true">
+        Arial
+      </message>
+
+      <!-- The default value for |WebPreference::standard_font_family_map| for
+           Greek script. -->
+      <message name="IDS_STANDARD_FONT_FAMILY_GREEK" use_name_for_id="true">
+        Times New Roman
+      </message>
+
+      <!-- The default value for |WebPreference::fixed_font_family_map| for
+           Greek script. -->
+      <message name="IDS_FIXED_FONT_FAMILY_GREEK" use_name_for_id="true">
+        Courier New
+      </message>
+
+      <!-- The default value for |WebPreference::serif_font_family_map| for
+           Greek script. -->
+      <message name="IDS_SERIF_FONT_FAMILY_GREEK" use_name_for_id="true">
+        Times New Roman
+      </message>
+
+      <!-- The default value for |WebPreference::sans_serif_font_family_map| for
+           Greek script.  -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_GREEK" use_name_for_id="true">
+        Arial
+      </message>
+
+      <!-- The default value for |WebPreference::standard_font_family_map| for
            Japanese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_JAPANESE" use_name_for_id="true">
         MS PGothic
