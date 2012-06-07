@@ -59,9 +59,6 @@ class ShellWindow : public content::NotificationObserver,
                              const CreateParams params);
 
   const SessionID& session_id() const { return session_id_; }
-  const ExtensionWindowController* extension_window_controller() const {
-    return extension_window_controller_.get();
-  }
   const extensions::Extension* extension() const { return extension_; }
   content::WebContents* web_contents() const { return web_contents_; }
 
@@ -128,7 +125,6 @@ class ShellWindow : public content::NotificationObserver,
   // web_contents_ is owned by contents_wrapper_.
   content::WebContents* web_contents_;
   content::NotificationRegistrar registrar_;
-  scoped_ptr<ExtensionWindowController> extension_window_controller_;
   ExtensionFunctionDispatcher extension_function_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);

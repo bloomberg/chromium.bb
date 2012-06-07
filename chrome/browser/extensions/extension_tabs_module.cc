@@ -564,18 +564,6 @@ bool CreateWindowFunction::RunImpl() {
           window_type = Browser::TYPE_PANEL;
         else
           window_type = Browser::TYPE_POPUP;
-      } else if (type_str == keys::kWindowTypeValueShell &&
-          GetExtension()->is_platform_app()) {
-        // TODO(jeremya): remove this method of creating shell windows.
-        GURL window_url = urls.empty() ? GURL(chrome::kAboutBlankURL) : urls[0];
-        ShellWindow::CreateParams params;
-        params.bounds = window_bounds;
-        ShellWindow* shell_window = ShellWindow::Create(
-            window_profile, GetExtension(), window_url, params);
-        shell_window->Show();
-        result_.reset(shell_window->extension_window_controller()->
-            CreateWindowValueWithTabs());
-        return true;
       } else if (type_str != keys::kWindowTypeValueNormal) {
         error_ = keys::kInvalidWindowTypeError;
         return false;

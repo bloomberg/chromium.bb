@@ -7,7 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
-#include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/intents/web_intents_util.h"
@@ -40,64 +39,6 @@ namespace {
 static const int kDefaultWidth = 512;
 static const int kDefaultHeight = 384;
 }  // namespace
-
-namespace internal {
-
-class ShellWindowController : public ExtensionWindowController {
- public:
-  ShellWindowController(ShellWindow* shell_window, Profile* profile);
-
-  // Overriden from ExtensionWindowController
-  virtual int GetWindowId() const OVERRIDE;
-  virtual std::string GetWindowTypeText() const OVERRIDE;
-  virtual base::DictionaryValue* CreateWindowValueWithTabs() const OVERRIDE;
-  virtual bool CanClose(Reason* reason) const OVERRIDE;
-  virtual void SetFullscreenMode(bool is_fullscreen,
-                                 const GURL& extension_url) const OVERRIDE;
-  virtual bool IsVisibleToExtension(
-      const extensions::Extension* extension) const OVERRIDE;
-
- private:
-  ShellWindow* shell_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellWindowController);
-};
-
-ShellWindowController::ShellWindowController(
-    ShellWindow* shell_window,
-    Profile* profile)
-    : ExtensionWindowController(shell_window, profile),
-      shell_window_(shell_window) {
-}
-
-int ShellWindowController::GetWindowId() const {
-  return static_cast<int>(shell_window_->session_id().id());
-}
-
-std::string ShellWindowController::GetWindowTypeText() const {
-  return extension_tabs_module_constants::kWindowTypeValueShell;
-}
-
-base::DictionaryValue* ShellWindowController::CreateWindowValueWithTabs()
-    const {
-  return CreateWindowValue();
-}
-
-bool ShellWindowController::CanClose(Reason* reason) const {
-  return true;
-}
-
-void ShellWindowController::SetFullscreenMode(bool is_fullscreen,
-                                              const GURL& extension_url) const {
-  // TODO(mihaip): implement
-}
-
-bool ShellWindowController::IsVisibleToExtension(
-    const extensions::Extension* extension) const {
-  return shell_window_->extension() == extension;
-}
-
-}  // namespace internal
 
 ShellWindow::CreateParams::CreateParams()
   : frame(ShellWindow::CreateParams::FRAME_CHROME),
@@ -143,10 +84,6 @@ ShellWindow::ShellWindow(Profile* profile,
 
   // Prevent the browser process from shutting down while this window is open.
   browser::StartKeepAlive();
-
-  // Make this window available to the extension API.
-  extension_window_controller_.reset(
-      new internal::ShellWindowController(this, profile_));
 
   ShellWindowRegistry::Get(profile_)->AddShellWindow(this);
 }
@@ -213,7 +150,7 @@ bool ShellWindow::IsPopupOrPanel(const WebContents* source) const {
 
 void ShellWindow::MoveContents(WebContents* source, const gfx::Rect& pos) {
   DCHECK(source == web_contents_);
-  extension_window_controller_->window()->SetBounds(pos);
+  SetBounds(pos);
 }
 
 void ShellWindow::NavigationStateChanged(
@@ -244,7 +181,7 @@ void ShellWindow::Observe(int type,
 }
 
 ExtensionWindowController* ShellWindow::GetExtensionWindowController() const {
-  return extension_window_controller_.get();
+  return NULL;
 }
 
 void ShellWindow::OnRequest(const ExtensionHostMsg_Request_Params& params) {

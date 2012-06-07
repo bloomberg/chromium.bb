@@ -217,7 +217,7 @@
   },
   "tabs": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "packaged_app"]
   },
   "terminalPrivate": {
     "channel": "stable",

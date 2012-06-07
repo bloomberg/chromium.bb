@@ -5,51 +5,26 @@
 var callbackPass = chrome.test.callbackPass;
 
 chrome.experimental.app.onLaunched.addListener(function() {
-  // Only a few chrome.windows.* API methods are tested, it is assumed that the
-  // full API is tested elsewhere.
   chrome.test.runTests([
    function testCreateWindow() {
-      var getShellWindowCount = function(callback) {
-        chrome.windows.getAll(function(windows) {
-          callback(windows.filter(
-              function(window) { return window.type == 'shell' }).length);
-        });
-      };
+     chrome.appWindow.create('test.html', {}, callbackPass(function (win) {
+       chrome.test.assertTrue(typeof win.window === 'object');
+     }))
+   },
 
-      getShellWindowCount(callbackPass(function(shellWindowCount) {
-        chrome.test.assertEq(0, shellWindowCount);
-        chrome.windows.create(
-            {type: 'shell', width: 128, height: 128},
-            callbackPass(function() {
-              getShellWindowCount(callbackPass(function(shellWindowCount) {
-                chrome.test.assertEq(1, shellWindowCount);
-              }));
-            }));
-        }));
-    },
-
-    function testUpdateWindowWidth() {
-      chrome.windows.create(
-          {type: 'shell', width: 128, height: 128},
-          callbackPass(function(window) {
-            chrome.windows.update(
-                window.id,
-                // 256 is a width that will snap to the Aura grid, thus this
-                // should be the actual width on Aura (when read back).
-                {width: 256, height: 128},
-                callbackPass(function() {
-                  // The timeout is rather lame, but reading back the width from
-                  // the window manager (on Linux) immediately still reports the
-                  // old value.
-                  setTimeout(callbackPass(function() {
-                    chrome.windows.getCurrent(callbackPass(function(window) {
-                      chrome.test.assertEq(256, window.width);
-                    }));
-                  }), 1000);
-                }));
-          }));
-    },
-
-
+   function testUpdateWindowWidth() {
+     chrome.appWindow.create('test.html',
+         {width:512, height:384, frame:'custom'},
+         callbackPass(function(win) {
+           // TODO(jeremya): assert that width and height specified in options
+           // above specify the innerWidth, not the outerWidth.
+           //chrome.test.assertEq(512, win.outerWidth);
+           //chrome.test.assertEq(384, win.outerHeight);
+           var oldWidth = win.outerWidth, oldHeight = win.outerHeight;
+           win.resizeBy(-256, 0);
+           chrome.test.assertEq(oldWidth - 256, win.outerWidth);
+           chrome.test.assertEq(oldHeight, win.outerHeight);
+         }));
+   },
   ]);
 });

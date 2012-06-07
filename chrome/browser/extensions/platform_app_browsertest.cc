@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ExtensionWindowingApis) {
 
   // Launch a platform app that shows a window.
   ExtensionTestMessageListener launched_listener("Launched", false);
-  const Extension* platform_app = LoadAndLaunchPlatformApp("minimal");
+  LoadAndLaunchPlatformApp("minimal");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   ASSERT_EQ(1U, GetShellWindowCount());
   ShellWindowRegistry::ShellWindowSet shell_windows =
@@ -164,18 +164,17 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ExtensionWindowingApis) {
   ASSERT_FALSE(RunGetWindowFunctionForExtension(shell_window_id, extension));
 
   // The app can also only see one window (its own).
-  ASSERT_EQ(1U, RunGetWindowsFunctionForExtension(platform_app));
-  ASSERT_TRUE(RunGetWindowFunctionForExtension(shell_window_id, platform_app));
+  // TODO(jeremya): add an extension function to get a shell window by ID, and
+  // to get a list of all the shell windows, so we can test this.
 
   // Launch another platform app that also shows a window.
   ExtensionTestMessageListener launched_listener2("Launched", false);
-  const Extension* platform_app2 = LoadAndLaunchPlatformApp("context_menu");
+  LoadAndLaunchPlatformApp("context_menu");
   ASSERT_TRUE(launched_listener2.WaitUntilSatisfied());
 
   // There are two total shell windows, but each app can only see its own.
   ASSERT_EQ(2U, GetShellWindowCount());
-  ASSERT_EQ(1U, RunGetWindowsFunctionForExtension(platform_app));
-  ASSERT_EQ(1U, RunGetWindowsFunctionForExtension(platform_app2));
+  // TODO(jeremya): as above, this requires more extension functions.
 }
 
 // TODO(benwells): fix these tests for ChromeOS.

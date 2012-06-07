@@ -367,8 +367,6 @@ void ExtensionAPIPermission::RegisterAllPermissions(
 
   // Register aliases.
   info->RegisterAlias("unlimitedStorage", kOldUnlimitedStoragePermission);
-  // TODO(mihaip): Remove this alias for platform apps, and only give them
-  // access to the chrome.windows.* APIs, but not the chrome.tabs.* ones.
   info->RegisterAlias("tabs", kWindowsPermission);
   // TODO(mihaip): Should be removed for the M20 branch, see
   // http://crbug.com/120447 for more details.

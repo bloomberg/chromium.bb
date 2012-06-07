@@ -67,7 +67,6 @@ const char kWindowTypeValueNormal[] = "normal";
 const char kWindowTypeValuePopup[] = "popup";
 const char kWindowTypeValuePanel[] = "panel";
 const char kWindowTypeValueApp[] = "app";
-const char kWindowTypeValueShell[] = "shell";
 
 const char kCanOnlyMoveTabsWithinNormalWindowsError[] = "Tabs can only be "
     "moved to and from normal windows.";
