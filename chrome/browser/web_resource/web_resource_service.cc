@@ -224,17 +224,19 @@ void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
   // Delete the URLFetcher when this function exits.
   scoped_ptr<net::URLFetcher> clean_up_fetcher(url_fetcher_.release());
 
-  // Don't parse data if attempt to download was unsuccessful.
-  // Stop loading new web resource data, and silently exit.
-  if (!source->GetStatus().is_success() || (source->GetResponseCode() != 200))
-    return;
+  if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
+    std::string data;
+    source->GetResponseAsString(&data);
 
-  std::string data;
-  source->GetResponseAsString(&data);
-
-  // UnpackerClient releases itself.
-  UnpackerClient* client = new UnpackerClient(this);
-  client->Start(data);
+    // UnpackerClient calls EndFetch and releases itself on completion.
+    UnpackerClient* client = new UnpackerClient(this);
+    client->Start(data);
+  } else {
+    // Don't parse data if attempt to download was unsuccessful.
+    // Stop loading new web resource data, and silently exit.
+    // We do not call UnpackerClient, so we need to call EndFetch ourselves.
+    EndFetch();
+  }
 
   Release();
 }
