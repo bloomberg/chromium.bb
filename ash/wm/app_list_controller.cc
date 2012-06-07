@@ -156,6 +156,16 @@ void AppListController::ScheduleAnimation() {
   layer->SetOpacity(is_visible_ ? 1.0 : 0.0);
 }
 
+void AppListController::ProcessLocatedEvent(const aura::LocatedEvent& event) {
+  if (view_ && is_visible_) {
+    views::Widget* widget = view_->GetWidget();
+    if (!widget->GetNativeView()->GetBoundsInRootWindow().Contains(
+        event.root_location())) {
+      SetVisible(false);
+    }
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListController, aura::EventFilter implementation:
 
@@ -166,12 +176,8 @@ bool AppListController::PreHandleKeyEvent(aura::Window* target,
 
 bool AppListController::PreHandleMouseEvent(aura::Window* target,
                                             aura::MouseEvent* event) {
-  if (view_ && is_visible_ && event->type() == ui::ET_MOUSE_PRESSED) {
-    views::Widget* widget = view_->GetWidget();
-    aura::MouseEvent translated(*event, target, widget->GetNativeView());
-    if (!widget->GetNativeView()->ContainsPoint(translated.location()))
-      SetVisible(false);
-  }
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    ProcessLocatedEvent(*event);
   return false;
 }
 
@@ -184,6 +190,8 @@ ui::TouchStatus AppListController::PreHandleTouchEvent(
 ui::GestureStatus AppListController::PreHandleGestureEvent(
     aura::Window* target,
     aura::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP)
+    ProcessLocatedEvent(*event);
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

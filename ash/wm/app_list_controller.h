@@ -20,6 +20,10 @@ namespace app_list {
 class AppListView;
 }
 
+namespace aura {
+class LocatedEvent;
+}
+
 namespace ash {
 namespace internal {
 
@@ -60,6 +64,8 @@ class AppListController : public aura::EventFilter,
 
   // Starts show/hide animation.
   void ScheduleAnimation();
+
+  void ProcessLocatedEvent(const aura::LocatedEvent& event);
 
   // aura::EventFilter overrides:
   virtual bool PreHandleKeyEvent(aura::Window* target,
