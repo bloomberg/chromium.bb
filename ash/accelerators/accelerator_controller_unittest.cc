@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_table.h"
 #include "ash/caps_lock_delegate.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/screenshot_delegate.h"
@@ -375,6 +376,72 @@ TEST_F(AcceleratorControllerTest, IsRegistered) {
   EXPECT_FALSE(GetController()->IsRegistered(accelerator_shift_a));
   GetController()->UnregisterAll(&target);
   EXPECT_FALSE(GetController()->IsRegistered(accelerator_a));
+}
+
+TEST_F(AcceleratorControllerTest, WindowSnap) {
+  scoped_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithBounds(gfx::Rect(5, 5, 20, 20), NULL));
+  const ui::Accelerator dummy;
+
+  wm::ActivateWindow(window.get());
+
+  {
+    GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
+    gfx::Rect snap_left = window->bounds();
+    GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
+    EXPECT_NE(window->bounds().ToString(), snap_left.ToString());
+
+    GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
+    EXPECT_NE(window->bounds().ToString(), snap_left.ToString());
+
+    // It should cycle back to the first snapped position.
+    GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
+    EXPECT_EQ(window->bounds().ToString(), snap_left.ToString());
+  }
+  {
+    GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
+    gfx::Rect snap_right = window->bounds();
+    GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
+    EXPECT_NE(window->bounds().ToString(), snap_right.ToString());
+
+    GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
+    EXPECT_NE(window->bounds().ToString(), snap_right.ToString());
+
+    // It should cycle back to the first snapped position.
+    GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
+    EXPECT_EQ(window->bounds().ToString(), snap_right.ToString());
+  }
+  {
+    gfx::Rect normal_bounds = window->bounds();
+
+    GetController()->PerformAction(WINDOW_MAXIMIZE_RESTORE, dummy);
+    EXPECT_TRUE(wm::IsWindowMaximized(window.get()));
+    EXPECT_NE(normal_bounds.ToString(), window->bounds().ToString());
+
+    GetController()->PerformAction(WINDOW_MAXIMIZE_RESTORE, dummy);
+    EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+    EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
+
+    GetController()->PerformAction(WINDOW_MAXIMIZE_RESTORE, dummy);
+    GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
+    EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+
+    GetController()->PerformAction(WINDOW_MAXIMIZE_RESTORE, dummy);
+    GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
+    EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+
+    GetController()->PerformAction(WINDOW_MAXIMIZE_RESTORE, dummy);
+    EXPECT_TRUE(wm::IsWindowMaximized(window.get()));
+    GetController()->PerformAction(WINDOW_MINIMIZE, dummy);
+    EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+    EXPECT_TRUE(wm::IsWindowMinimized(window.get()));
+    wm::RestoreWindow(window.get());
+    wm::ActivateWindow(window.get());
+  }
+  {
+    GetController()->PerformAction(WINDOW_MINIMIZE, dummy);
+    EXPECT_TRUE(wm::IsWindowMinimized(window.get()));
+  }
 }
 
 #if defined(OS_WIN) || defined(USE_X11)

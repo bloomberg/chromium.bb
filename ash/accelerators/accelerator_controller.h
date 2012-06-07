@@ -59,6 +59,12 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // Returns true if the |accelerator| is registered.
   bool IsRegistered(const ui::Accelerator& accelerator) const;
 
+  // Performs the specified action. The |accelerator| may provide additional
+  // data the action needs. Returns whether an action was performed
+  // successfully.
+  bool PerformAction(int action,
+                     const ui::Accelerator& accelerator);
+
   // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool CanHandleAccelerators() const OVERRIDE;

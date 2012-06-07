@@ -261,41 +261,8 @@ bool AcceleratorController::IsRegistered(
   return accelerator_manager_->GetCurrentTarget(accelerator) != NULL;
 }
 
-void AcceleratorController::SetBrightnessControlDelegate(
-    scoped_ptr<BrightnessControlDelegate> brightness_control_delegate) {
-  brightness_control_delegate_.swap(brightness_control_delegate);
-}
-
-void AcceleratorController::SetCapsLockDelegate(
-    scoped_ptr<CapsLockDelegate> caps_lock_delegate) {
-  caps_lock_delegate_.swap(caps_lock_delegate);
-}
-
-void AcceleratorController::SetImeControlDelegate(
-    scoped_ptr<ImeControlDelegate> ime_control_delegate) {
-  ime_control_delegate_.swap(ime_control_delegate);
-}
-
-void AcceleratorController::SetScreenshotDelegate(
-    scoped_ptr<ScreenshotDelegate> screenshot_delegate) {
-  screenshot_delegate_.swap(screenshot_delegate);
-}
-
-void AcceleratorController::SetVolumeControlDelegate(
-    scoped_ptr<VolumeControlDelegate> volume_control_delegate) {
-  volume_control_delegate_.swap(volume_control_delegate);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// AcceleratorController, ui::AcceleratorTarget implementation:
-
-bool AcceleratorController::AcceleratorPressed(
-    const ui::Accelerator& accelerator) {
-  std::map<ui::Accelerator, int>::const_iterator it =
-      accelerators_.find(accelerator);
-  DCHECK(it != accelerators_.end());
-  AcceleratorAction action = static_cast<AcceleratorAction>(it->second);
-
+bool AcceleratorController::PerformAction(int action,
+                                          const ui::Accelerator& accelerator) {
   ash::Shell* shell = ash::Shell::GetInstance();
   bool at_login_screen = false;
 #if defined(OS_CHROMEOS)
@@ -467,7 +434,13 @@ bool AcceleratorController::AcceleratorPressed(
           action == WINDOW_SNAP_LEFT ? internal::SnapSizer::LEFT_EDGE :
                                        internal::SnapSizer::RIGHT_EDGE,
           shell->GetGridSize());
-      window->SetBounds(sizer.GetSnapBounds(window->bounds()));
+      if (wm::IsWindowFullscreen(window) ||
+          wm::IsWindowMaximized(window)) {
+        SetRestoreBounds(window, sizer.GetSnapBounds(window->bounds()));
+        wm::RestoreWindow(window);
+      } else {
+        window->SetBounds(sizer.GetSnapBounds(window->bounds()));
+      }
       return true;
     }
     case WINDOW_MINIMIZE: {
@@ -521,9 +494,45 @@ bool AcceleratorController::AcceleratorPressed(
       return true;
 #endif
     default:
-      NOTREACHED() << "Unhandled action " << it->second;
+      NOTREACHED() << "Unhandled action " << action;
   }
   return false;
+}
+
+void AcceleratorController::SetBrightnessControlDelegate(
+    scoped_ptr<BrightnessControlDelegate> brightness_control_delegate) {
+  brightness_control_delegate_.swap(brightness_control_delegate);
+}
+
+void AcceleratorController::SetCapsLockDelegate(
+    scoped_ptr<CapsLockDelegate> caps_lock_delegate) {
+  caps_lock_delegate_.swap(caps_lock_delegate);
+}
+
+void AcceleratorController::SetImeControlDelegate(
+    scoped_ptr<ImeControlDelegate> ime_control_delegate) {
+  ime_control_delegate_.swap(ime_control_delegate);
+}
+
+void AcceleratorController::SetScreenshotDelegate(
+    scoped_ptr<ScreenshotDelegate> screenshot_delegate) {
+  screenshot_delegate_.swap(screenshot_delegate);
+}
+
+void AcceleratorController::SetVolumeControlDelegate(
+    scoped_ptr<VolumeControlDelegate> volume_control_delegate) {
+  volume_control_delegate_.swap(volume_control_delegate);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AcceleratorController, ui::AcceleratorTarget implementation:
+
+bool AcceleratorController::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  std::map<ui::Accelerator, int>::const_iterator it =
+      accelerators_.find(accelerator);
+  DCHECK(it != accelerators_.end());
+  return PerformAction(static_cast<AcceleratorAction>(it->second), accelerator);
 }
 
 void AcceleratorController::SwitchToWindow(int window) {
