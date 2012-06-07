@@ -87,9 +87,6 @@ class SafeBrowsingTabObserver;
 // when a tab is displayed, or could make sense in other cases we use HTML. It
 // may makes sense to push down into WebContents and make configurable, or at
 // least to make easy for other WebContents hosts to include and support.
-//
-// TODO(avi): Eventually, this class will become TabContents as far as
-// the browser front-end is concerned.
 class TabContents : public content::WebContentsObserver {
  public:
   // Takes ownership of |contents|, which must be heap-allocated (as it lives

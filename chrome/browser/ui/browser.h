@@ -389,12 +389,16 @@ class Browser : public TabStripModelDelegate,
   int GetIndexOfController(
       const content::NavigationController* controller) const;
 
-  // TODO(dpapad): Rename to GetActiveTabContentsWrapper().
-  TabContentsWrapper* GetSelectedTabContentsWrapper() const;
-  // A convenient version of the above which returns the TCW's WebContents.
-  content::WebContents* GetSelectedWebContents() const;
-  TabContentsWrapper* GetTabContentsWrapperAt(int index) const;
-  // A convenient version of the above which returns the TCW's WebContents.
+  TabContents* GetSelectedTabContentsWrapper() const;  // DEPRECATED
+  TabContents* GetActiveTabContents() const;
+  // A convenient version of the above which returns the TabContents's
+  // WebContents.
+  content::WebContents* GetSelectedWebContents() const;  // DEPRECATED
+  content::WebContents* GetActiveWebContents() const;
+  TabContents* GetTabContentsWrapperAt(int index) const;  // DEPRECATED
+  TabContents* GetTabContentsAt(int index) const;
+  // A convenient version of the above which returns the TabContents's
+  // WebContents.
   content::WebContents* GetWebContentsAt(int index) const;
   void ActivateTabAt(int index, bool user_gesture);
   bool IsTabPinned(int index) const;
@@ -413,14 +417,13 @@ class Browser : public TabStripModelDelegate,
   int GetIndexForInsertionDuringRestore(int relative_index);
 
   // Adds a selected tab with the specified URL and transition, returns the
-  // created TabContentsWrapper.
-  TabContentsWrapper* AddSelectedTabWithURL(
-      const GURL& url,
-      content::PageTransition transition);
+  // created TabContents.
+  TabContents* AddSelectedTabWithURL(const GURL& url,
+                                     content::PageTransition transition);
 
-  // Add a new tab, given a TabContentsWrapper. A WebContents appropriate to
+  // Add a new tab, given a TabContents. A WebContents appropriate to
   // display the last committed entry is created and returned.
-  content::WebContents* AddTab(TabContentsWrapper* tab_contents,
+  content::WebContents* AddTab(TabContents* tab_contents,
                                content::PageTransition type);
 
   // Add a tab with its session history restored from the SessionRestore
@@ -704,12 +707,12 @@ class Browser : public TabStripModelDelegate,
 
   // Called by browser::Navigate() when a navigation has occurred in a tab in
   // this Browser. Updates the UI for the start of this navigation.
-  void UpdateUIForNavigationInTab(TabContentsWrapper* contents,
+  void UpdateUIForNavigationInTab(TabContents* contents,
                                   content::PageTransition transition,
                                   bool user_initiated);
 
-  // Shows the cookies collected in the tab contents wrapper.
-  void ShowCollectedCookiesDialog(TabContentsWrapper* wrapper);
+  // Shows the cookies collected in the tab contents.
+  void ShowCollectedCookiesDialog(TabContents* tab_contents);
 
   // Interface implementations ////////////////////////////////////////////////
 
@@ -726,9 +729,9 @@ class Browser : public TabStripModelDelegate,
   virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
 
-  // Centralized method for creating a TabContentsWrapper, configuring and
+  // Centralized method for creating a TabContents, configuring and
   // installing all its supporting objects and observers.
-  static TabContentsWrapper* TabContentsFactory(
+  static TabContents* TabContentsFactory(
       Profile* profile,
       content::SiteInstance* site_instance,
       int routing_id,
@@ -736,18 +739,18 @@ class Browser : public TabStripModelDelegate,
       content::SessionStorageNamespace* session_storage_namespace);
 
   // Overridden from TabStripModelDelegate:
-  virtual TabContentsWrapper* AddBlankTab(bool foreground) OVERRIDE;
-  virtual TabContentsWrapper* AddBlankTabAt(int index,
-                                            bool foreground) OVERRIDE;
+  virtual TabContents* AddBlankTab(bool foreground) OVERRIDE;
+  virtual TabContents* AddBlankTabAt(int index,
+                                     bool foreground) OVERRIDE;
   virtual Browser* CreateNewStripWithContents(
-      TabContentsWrapper* detached_contents,
+      TabContents* detached_contents,
       const gfx::Rect& window_bounds,
       const DockInfo& dock_info,
       bool maximize) OVERRIDE;
   virtual int GetDragActions() const OVERRIDE;
-  // Construct a TabContentsWrapper for a given URL, profile and transition
-  // type. If instance is not null, its process will be used to render the tab.
-  virtual TabContentsWrapper* CreateTabContentsForURL(
+  // Construct a TabContents for a given URL, profile and transition type. If
+  // instance is not null, its process will be used to render the tab.
+  virtual TabContents* CreateTabContentsForURL(
       const GURL& url,
       const content::Referrer& referrer,
       Profile* profile,
@@ -757,9 +760,8 @@ class Browser : public TabStripModelDelegate,
   virtual bool CanDuplicateContentsAt(int index) OVERRIDE;
   virtual void DuplicateContentsAt(int index) OVERRIDE;
   virtual void CloseFrameAfterDragSession() OVERRIDE;
-  virtual void CreateHistoricalTab(TabContentsWrapper* contents) OVERRIDE;
-  virtual bool RunUnloadListenerBeforeClosing(
-      TabContentsWrapper* contents) OVERRIDE;
+  virtual void CreateHistoricalTab(TabContents* contents) OVERRIDE;
+  virtual bool RunUnloadListenerBeforeClosing(TabContents* contents) OVERRIDE;
   virtual bool CanCloseContents(std::vector<int>* indices) OVERRIDE;
   virtual bool CanBookmarkAllTabs() const OVERRIDE;
   virtual void BookmarkAllTabs() OVERRIDE;
@@ -769,26 +771,26 @@ class Browser : public TabStripModelDelegate,
   virtual bool LargeIconsPermitted() const OVERRIDE;
 
   // Overridden from TabStripModelObserver:
-  virtual void TabInsertedAt(TabContentsWrapper* contents,
+  virtual void TabInsertedAt(TabContents* contents,
                              int index,
                              bool foreground) OVERRIDE;
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            TabContentsWrapper* contents,
+                            TabContents* contents,
                             int index) OVERRIDE;
-  virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
-  virtual void TabDeactivated(TabContentsWrapper* contents) OVERRIDE;
-  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
-                                TabContentsWrapper* new_contents,
+  virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
+  virtual void TabDeactivated(TabContents* contents) OVERRIDE;
+  virtual void ActiveTabChanged(TabContents* old_contents,
+                                TabContents* new_contents,
                                 int index,
                                 bool user_gesture) OVERRIDE;
-  virtual void TabMoved(TabContentsWrapper* contents,
+  virtual void TabMoved(TabContents* contents,
                         int from_index,
                         int to_index) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             TabContentsWrapper* old_contents,
-                             TabContentsWrapper* new_contents,
+                             TabContents* old_contents,
+                             TabContents* new_contents,
                              int index) OVERRIDE;
-  virtual void TabPinnedStateChanged(TabContentsWrapper* contents,
+  virtual void TabPinnedStateChanged(TabContents* contents,
                                      int index) OVERRIDE;
   virtual void TabStripEmpty() OVERRIDE;
 
@@ -829,7 +831,7 @@ class Browser : public TabStripModelDelegate,
   }
 
  protected:
-  // Wrapper for the factory method in BrowserWindow. This allows subclasses to
+  // Funnel for the factory method in BrowserWindow. This allows subclasses to
   // set their own window.
   virtual BrowserWindow* CreateBrowserWindow();
 
@@ -1004,37 +1006,37 @@ class Browser : public TabStripModelDelegate,
 
   // Overridden from CoreTabHelperDelegate:
   // Note that the caller is responsible for deleting |old_tab_contents|.
-  virtual void SwapTabContents(TabContentsWrapper* old_tab_contents,
-                               TabContentsWrapper* new_tab_contents) OVERRIDE;
+  virtual void SwapTabContents(TabContents* old_tab_contents,
+                               TabContents* new_tab_contents) OVERRIDE;
 
   // Overridden from SearchEngineTabHelperDelegate:
   virtual void ConfirmAddSearchProvider(TemplateURL* template_url,
                                         Profile* profile) OVERRIDE;
 
   // Overridden from ConstrainedWindowTabHelperDelegate:
-  virtual void SetTabContentBlocked(TabContentsWrapper* contents,
+  virtual void SetTabContentBlocked(TabContents* contents,
                                     bool blocked) OVERRIDE;
 
   // Overridden from BlockedContentTabHelperDelegate:
-  virtual TabContentsWrapper* GetConstrainingContentsWrapper(
-      TabContentsWrapper* source) OVERRIDE;
+  virtual TabContents* GetConstrainingContentsWrapper(
+      TabContents* source) OVERRIDE;
 
   // Overridden from BookmarkTabHelperDelegate:
-  virtual void URLStarredChanged(TabContentsWrapper* source,
+  virtual void URLStarredChanged(TabContents* source,
                                  bool starred) OVERRIDE;
 
   // Overridden from ZoomObserver:
-  virtual void OnZoomIconChanged(TabContentsWrapper* source,
+  virtual void OnZoomIconChanged(TabContents* source,
                                  ZoomController::ZoomIconState state) OVERRIDE;
-  virtual void OnZoomChanged(TabContentsWrapper* source,
+  virtual void OnZoomChanged(TabContents* source,
                              int zoom_percent,
                              bool can_show_bubble) OVERRIDE;
 
   // Overridden from ExtensionTabHelperDelegate:
-  virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,
+  virtual void OnDidGetApplicationInfo(TabContents* source,
                                        int32 page_id) OVERRIDE;
   virtual void OnInstallApplication(
-      TabContentsWrapper* source,
+      TabContents* source,
       const WebApplicationInfo& app_info) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:
@@ -1051,14 +1053,14 @@ class Browser : public TabStripModelDelegate,
   virtual void OnStateChanged() OVERRIDE;
 
   // Overriden from InstantDelegate:
-  virtual void ShowInstant(TabContentsWrapper* preview_contents) OVERRIDE;
+  virtual void ShowInstant(TabContents* preview_contents) OVERRIDE;
   virtual void HideInstant() OVERRIDE;
-  virtual void CommitInstant(TabContentsWrapper* preview_contents) OVERRIDE;
+  virtual void CommitInstant(TabContents* preview_contents) OVERRIDE;
   virtual void SetSuggestedText(const string16& text,
                                 InstantCompleteBehavior behavior) OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual void InstantPreviewFocused() OVERRIDE;
-  virtual TabContentsWrapper* GetInstantHostTabContents() const OVERRIDE;
+  virtual TabContents* GetInstantHostTabContents() const OVERRIDE;
 
   // Command and state updating ///////////////////////////////////////////////
 
@@ -1197,9 +1199,9 @@ class Browser : public TabStripModelDelegate,
 
   // Assorted utility functions ///////////////////////////////////////////////
 
-  // Sets the delegate of all the parts of the |TabContentsWrapper| that
+  // Sets the delegate of all the parts of the TabContents that
   // are needed.
-  void SetAsDelegate(TabContentsWrapper* tab, Browser* delegate);
+  void SetAsDelegate(TabContents* tab, Browser* delegate);
 
   // Shows the Find Bar, optionally selecting the next entry that matches the
   // existing search string for that Tab. |forward_direction| controls the
@@ -1211,8 +1213,7 @@ class Browser : public TabStripModelDelegate,
   //             after a return to the message loop.
   void CloseFrame();
 
-  void TabDetachedAtImpl(TabContentsWrapper* contents,
-      int index, DetachType type);
+  void TabDetachedAtImpl(TabContents* contents, int index, DetachType type);
 
   // Create a preference dictionary for the provided application name, in the
   // given user profile. This is done only once per application name / per
@@ -1251,10 +1252,10 @@ class Browser : public TabStripModelDelegate,
   void CreateInstantIfNecessary();
 
   // Opens view-source tab for given tab contents.
-  void ViewSource(TabContentsWrapper* tab);
+  void ViewSource(TabContents* tab);
 
   // Opens view-source tab for any frame within given tab contents.
-  void ViewSource(TabContentsWrapper* tab,
+  void ViewSource(TabContents* tab,
                   const GURL& url,
                   const std::string& content_state);
 
