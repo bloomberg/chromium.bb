@@ -16,25 +16,6 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-// TODO(shess): Debugging for http://crbug.com/97285
-//
-// The hypothesis at #67 is that OnChannelError() is being called, but
-// the channel is not being removed from the cache.  Add code to
-// record the stack trace in OnChannelError(), and push it to breakpad
-// when the error case happens.
-#if defined(OS_MACOSX)
-#include "base/debug/stack_trace.h"
-#include "base/mac/crash_logging.h"
-#include "base/sys_string_conversions.h"
-
-namespace {
-
-// Breakpad key for the OnChannelError() backtrace.
-const char* kErrorTraceKey = "channel_error_bt";
-
-}  // namespace
-#endif
-
 typedef base::hash_map<std::string, scoped_refptr<NPChannelBase> > ChannelMap;
 static base::LazyInstance<ChannelMap>::Leaky
      g_channels = LAZY_INSTANCE_INITIALIZER;
@@ -54,22 +35,6 @@ NPChannelBase* NPChannelBase::GetChannel(
     channel = factory();
   } else {
     channel = iter->second;
-#if defined(OS_POSIX)
-    // Investigation for crbug.com/97285.
-#if defined(OS_MACOSX)
-    // If error_trace_ is set, that implies !channel_valid().  Log the
-    // trace under a breakpad key for debugging.  If there is no
-    // error_trace_, that implies that the Init() below is failing
-    // somehow.
-    if (channel->error_trace_.get()) {
-      size_t count = 0;
-      const void* const* addresses = channel->error_trace_->Addresses(&count);
-      base::mac::SetCrashKeyFromAddresses(
-          base::SysUTF8ToNSString(kErrorTraceKey), addresses, count);
-    }
-#endif
-    CHECK(channel->channel_valid() || channel_handle.socket.fd != -1);
-#endif
   }
 
   DCHECK(channel != NULL);
@@ -287,10 +252,6 @@ bool NPChannelBase::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void NPChannelBase::OnChannelError() {
-#if defined(OS_MACOSX)
-  error_trace_.reset(new base::debug::StackTrace());
-#endif
-
   channel_valid_ = false;
 }
 

@@ -21,14 +21,6 @@
 
 namespace base {
 class MessageLoopProxy;
-
-// TODO(shess): Debugging for http://crbug.com/97285
-#if defined(OS_MACOSX)
-namespace debug {
-class StackTrace;
-}
-#endif
-
 }
 
 #if defined(COMPILER_GCC)
@@ -188,12 +180,6 @@ class NPChannelBase : public IPC::Channel::Listener,
   // A channel is invalid if it is disconnected as a result of a channel
   // error. This flag is used to indicate the same.
   bool channel_valid_;
-
-#if defined(OS_MACOSX)
-  // TODO(shess): Debugging for http://crbug.com/97285
-  // Records the stack backtrace from OnChannelError().
-  scoped_ptr<base::debug::StackTrace> error_trace_;
-#endif
 
   // Track whether we're dispatching a message with the unblock flag; works like
   // a refcount, 0 when we're not.
