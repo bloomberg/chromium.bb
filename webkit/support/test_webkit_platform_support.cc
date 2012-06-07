@@ -324,8 +324,57 @@ TestWebKitPlatformSupport::createLocalStorageNamespace(
   return dom_storage_system_.CreateLocalStorageNamespace();
 }
 
+// Wrap a WebKit::WebIDBFactory to rewrite the data directory to
+// a scoped temp directory. In multiprocess Chromium this is rewritten
+// to a real profile directory during IPC.
+class TestWebIDBFactory : public WebKit::WebIDBFactory {
+ public:
+  TestWebIDBFactory()
+      : factory_(WebKit::WebIDBFactory::create()) {
+    // Create a new temp directory for Indexed DB storage, specific to this
+    // factory. If this fails, WebKit uses in-memory storage.
+    if (!indexed_db_dir_.CreateUniqueTempDir()) {
+      LOG(WARNING) << "Failed to create a temp dir for Indexed DB, "
+          "using in-memory storage.";
+      DCHECK(indexed_db_dir_.path().empty());
+    }
+    data_dir_ = webkit_support::GetAbsoluteWebStringFromUTF8Path(
+      indexed_db_dir_.path().AsUTF8Unsafe());
+  }
+
+  virtual void getDatabaseNames(WebKit::WebIDBCallbacks* callbacks,
+                                const WebKit::WebSecurityOrigin& origin,
+                                WebKit::WebFrame* frame,
+                                const WebString& dataDir) {
+    factory_->getDatabaseNames(callbacks, origin, frame,
+                               dataDir.isEmpty() ? data_dir_ : dataDir);
+  }
+
+  virtual void open(const WebString& name,
+                    WebKit::WebIDBCallbacks* callbacks,
+                    const WebKit::WebSecurityOrigin& origin,
+                    WebKit::WebFrame* frame,
+                    const WebString& dataDir) {
+    factory_->open(name, callbacks, origin, frame,
+                   dataDir.isEmpty() ? data_dir_ : dataDir);
+  }
+
+  virtual void deleteDatabase(const WebString& name,
+                              WebKit::WebIDBCallbacks* callbacks,
+                              const WebKit::WebSecurityOrigin& origin,
+                              WebKit::WebFrame* frame,
+                              const WebString& dataDir) {
+    factory_->deleteDatabase(name, callbacks, origin, frame,
+                             dataDir.isEmpty() ? data_dir_ : dataDir);
+  }
+ private:
+  scoped_ptr<WebIDBFactory> factory_;
+  ScopedTempDir indexed_db_dir_;
+  WebString data_dir_;
+};
+
 WebKit::WebIDBFactory* TestWebKitPlatformSupport::idbFactory() {
-  return WebKit::WebIDBFactory::create();
+  return new TestWebIDBFactory();
 }
 
 void TestWebKitPlatformSupport::createIDBKeysFromSerializedValuesAndKeyPath(
