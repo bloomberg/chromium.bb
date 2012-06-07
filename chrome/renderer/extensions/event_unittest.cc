@@ -14,6 +14,7 @@ class EventUnittest : public ModuleSystemTest {
     module_system_->RunString("chrome = {};", "setup-chrome");
 
     RegisterModule("event", IDR_EVENT_BINDINGS_JS);
+    RegisterModule("schemaUtils", IDR_SCHEMA_UTILS_JS);
     RegisterModule("utils", IDR_UTILS_JS);
 
     // Mock out the native handler for event_bindings. These mocks will fail if

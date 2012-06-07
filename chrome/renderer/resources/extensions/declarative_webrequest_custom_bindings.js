@@ -6,6 +6,7 @@
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var utils = require('utils');
+var validate = require('schemaUtils').validate;
 
 chromeHidden.registerCustomHook('declarativeWebRequest', function(api) {
   // Returns the schema definition of type |typeId| defined in |namespace|.
@@ -29,7 +30,7 @@ chromeHidden.registerCustomHook('declarativeWebRequest', function(api) {
     }
     instance.instanceType = 'declarativeWebRequest.' + typeId;
     var schema = getSchema('declarativeWebRequest', typeId);
-    chromeHidden.validate([instance], [schema]);
+    validate([instance], [schema]);
   }
 
   // Setup all data types for the declarative webRequest API.

@@ -5,6 +5,8 @@
 // Custom bindings for the storage API.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var normalizeArgumentsAndValidate =
+    require('schemaUtils').normalizeArgumentsAndValidate
 var sendRequest = require('sendRequest').sendRequest;
 
 chromeHidden.registerCustomType('storage.StorageArea', function() {
@@ -22,18 +24,20 @@ chromeHidden.registerCustomType('storage.StorageArea', function() {
     // TODO(kalman): Put as a method on CustomBindingsObject and re-use (or
     // even generate) for other APIs that need to do this. Same for other
     // callers of registerCustomType().
+    var self = this;
     function bindApiFunction(functionName) {
-      this[functionName] = function() {
-        var schema = this.parameters[functionName];
-        chromeHidden.validate(arguments, schema);
+      self[functionName] = function() {
+        var funSchema = this.functionSchemas[functionName];
+        var args = Array.prototype.slice.call(arguments);
+        args = normalizeArgumentsAndValidate(args, funSchema);
         return sendRequest(
             'storage.' + functionName,
-            [namespace].concat(Array.prototype.slice.call(arguments)),
-            extendSchema(schema));
+            [namespace].concat(args),
+            extendSchema(funSchema.definition.parameters));
       };
     }
     var apiFunctions = ['get', 'set', 'remove', 'clear', 'getBytesInUse'];
-    apiFunctions.forEach(bindApiFunction.bind(this));
+    apiFunctions.forEach(bindApiFunction);
   }
 
   return StorageArea;

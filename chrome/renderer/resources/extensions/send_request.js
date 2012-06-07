@@ -4,6 +4,7 @@
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var natives = requireNative('sendRequest');
+var validate = require('schemaUtils').validate;
 
 // Callback handling.
 var requests = [];
@@ -44,8 +45,7 @@ chromeHidden.handleResponse = function(requestId, name,
           if (request.callbackSchema.parameters.length > 1) {
             throw new Error("Callbacks may only define one parameter");
           }
-          chromeHidden.validate(callbackArgs,
-              request.callbackSchema.parameters);
+          validate(callbackArgs, request.callbackSchema.parameters);
         } catch (exception) {
           return "Callback validation error during " + name + " -- " +
                  exception.stack;
@@ -72,9 +72,8 @@ function prepareRequest(args, argSchemas) {
 
   // Look for callback param.
   if (argSchemas.length > 0 &&
-      args.length == argSchemas.length &&
       argSchemas[argSchemas.length - 1].type == "function") {
-    request.callback = args[argSchemas.length - 1];
+    request.callback = args[args.length - 1];
     request.callbackSchema = argSchemas[argSchemas.length - 1];
     --argCount;
   }

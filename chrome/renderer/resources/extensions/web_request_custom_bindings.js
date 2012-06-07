@@ -9,6 +9,7 @@ var GetUniqueSubEventName = webRequestNatives.GetUniqueSubEventName;
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
+var validate = require('schemaUtils').validate;
 
 // WebRequestEvent object. This is used for special webRequest events with
 // extra parameters. Each invocation of addListener creates a new named
@@ -63,8 +64,7 @@ WebRequestEvent.prototype.addListener =
   var subEventName = GetUniqueSubEventName(this.eventName_);
   // Note: this could fail to validate, in which case we would not add the
   // subEvent listener.
-  chromeHidden.validate(Array.prototype.slice.call(arguments, 1),
-                        this.extraArgSchemas_);
+  validate(Array.prototype.slice.call(arguments, 1), this.extraArgSchemas_);
   chromeHidden.internalAPIs.webRequestInternal.addEventListener(
       cb, opt_filter, opt_extraInfo, this.eventName_, subEventName);
 

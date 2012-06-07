@@ -540,6 +540,7 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("apitest", IDR_EXTENSION_APITEST_JS);
 
   // Libraries.
+  source_map_.RegisterSource("schemaUtils", IDR_SCHEMA_UTILS_JS);
   source_map_.RegisterSource("sendRequest", IDR_SEND_REQUEST_JS);
   source_map_.RegisterSource("setIcon", IDR_SET_ICON_JS);
   source_map_.RegisterSource("utils", IDR_UTILS_JS);

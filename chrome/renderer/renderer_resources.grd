@@ -30,6 +30,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_SCHEMA_GENERATED_BINDINGS_JS" file="resources\extensions\schema_generated_bindings.js" type="BINDATA" />
 
       <!-- Libraries. -->
+      <include name="IDR_SCHEMA_UTILS_JS" file="resources\extensions\schema_utils.js" type="BINDATA" />
       <include name="IDR_SEND_REQUEST_JS" file="resources\extensions\send_request.js" type="BINDATA" />
       <include name="IDR_SET_ICON_JS" file="resources\extensions\set_icon.js" type="BINDATA" />
       <include name="IDR_UTILS_JS" file="resources\extensions\utils.js" type="BINDATA" />

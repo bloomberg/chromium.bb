@@ -7,6 +7,7 @@
   var DetachEvent = eventBindingsNatives.DetachEvent;
   var sendRequest = require('sendRequest').sendRequest;
   var utils = require('utils');
+  var validate = require('schemaUtils').validate;
 
   var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
   var GetExtensionAPIDefinition =
@@ -99,12 +100,11 @@
     // Validate event arguments (the data that is passed to the callbacks)
     // if we are in debug.
     if (opt_argSchemas &&
-        chromeHidden.validateCallbacks &&
-        chromeHidden.validate) {
+        chromeHidden.validateCallbacks) {
 
       this.validateEventArgs_ = function(args) {
         try {
-          chromeHidden.validate(args, opt_argSchemas);
+          validate(args, opt_argSchemas);
         } catch (exception) {
           return "Event validation error during " + opt_eventName + " -- " +
                  exception;
@@ -306,8 +306,8 @@
       var conditionsSchema = buildArrayOfChoicesSchema(conditions);
       var actionsSchema = buildArrayOfChoicesSchema(actions);
       rules.forEach(function(rule) {
-        chromeHidden.validate([rule.conditions], [conditionsSchema]);
-        chromeHidden.validate([rule.actions], [actionsSchema]);
+        validate([rule.conditions], [conditionsSchema]);
+        validate([rule.actions], [actionsSchema]);
       })
     };
 

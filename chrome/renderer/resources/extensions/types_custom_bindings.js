@@ -6,6 +6,7 @@
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
+var validate = require('schemaUtils').validate;
 
 chromeHidden.registerCustomType('types.ChromeSetting', function() {
 
@@ -17,23 +18,23 @@ chromeHidden.registerCustomType('types.ChromeSetting', function() {
 
   function ChromeSetting(prefKey, valueSchema) {
     this.get = function(details, callback) {
-      var getSchema = this.parameters.get;
-      chromeHidden.validate([details, callback], getSchema);
+      var getSchema = this.functionSchemas.get.definition.parameters;
+      validate([details, callback], getSchema);
       return sendRequest('types.ChromeSetting.get',
                          [prefKey, details, callback],
                          extendSchema(getSchema));
     };
     this.set = function(details, callback) {
-      var setSchema = this.parameters.set.slice();
+      var setSchema = this.functionSchemas.set.definition.parameters.slice();
       setSchema[0].properties.value = valueSchema;
-      chromeHidden.validate([details, callback], setSchema);
+      validate([details, callback], setSchema);
       return sendRequest('types.ChromeSetting.set',
                          [prefKey, details, callback],
                          extendSchema(setSchema));
     };
     this.clear = function(details, callback) {
-      var clearSchema = this.parameters.clear;
-      chromeHidden.validate([details, callback], clearSchema);
+      var clearSchema = this.functionSchemas.clear.definition.parameters;
+      validate([details, callback], clearSchema);
       return sendRequest('types.ChromeSetting.clear',
                          [prefKey, details, callback],
                          extendSchema(clearSchema));
