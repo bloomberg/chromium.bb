@@ -2781,8 +2781,9 @@ shell_init(struct weston_compositor *ec)
 		return -1;
 
 	shell->pointer_focus_listener.notify = handle_pointer_focus;
-	wl_signal_add(&ec->seat->seat.pointer->focus_signal,
-		      &shell->pointer_focus_listener);
+	if (ec->seat->seat.pointer)
+		wl_signal_add(&ec->seat->seat.pointer->focus_signal,
+			      &shell->pointer_focus_listener);
 
 	shell_add_bindings(ec, shell);
 
