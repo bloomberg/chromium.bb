@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Mon Jun 04 14:36:17 2012. */
+/* From private/ppb_flash.idl modified Thu Jun  7 12:05:41 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -259,31 +259,5 @@ struct PPB_Flash_12_2 {
  * @}
  */
 
-/**
- * The old version of the interface, which cannot be generated from IDL.
- * TODO(viettrungluu): Remove this when enough time has passed. crbug.com/104184
- */
-#define PPB_FLASH_INTERFACE_11_0 "PPB_Flash;11"
-struct PPB_Flash_11 {
-  void (*SetInstanceAlwaysOnTop)(PP_Instance instance, PP_Bool on_top);
-  PP_Bool (*DrawGlyphs)(PP_Instance instance,
-                        PP_Resource pp_image_data,
-                        const struct PP_FontDescription_Dev* font_desc,
-                        uint32_t color,
-                        struct PP_Point position,
-                        struct PP_Rect clip,
-                        const float transformation[3][3],
-                        uint32_t glyph_count,
-                        const uint16_t glyph_indices[],
-                        const struct PP_Point glyph_advances[]);
-  struct PP_Var (*GetProxyForURL)(PP_Instance instance, const char* url);
-  int32_t (*Navigate)(PP_Resource request_info,
-                      const char* target,
-                      bool from_user_action);
-  void (*RunMessageLoop)(PP_Instance instance);
-  void (*QuitMessageLoop)(PP_Instance instance);
-  double (*GetLocalTimeZoneOffset)(PP_Instance instance, PP_Time t);
-  struct PP_Var (*GetCommandLineArgs)(PP_Module module);
-};
 #endif  /* PPAPI_C_PRIVATE_PPB_FLASH_H_ */
 

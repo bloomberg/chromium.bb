@@ -82,8 +82,7 @@ bool Flash::IsAvailable() {
   return has_interface<PPB_Flash_12_3>() ||
          has_interface<PPB_Flash_12_2>() ||
          has_interface<PPB_Flash_12_1>() ||
-         has_interface<PPB_Flash_12_0>() ||
-         has_interface<PPB_Flash_11>();
+         has_interface<PPB_Flash_12_0>();
 }
 
 // static
