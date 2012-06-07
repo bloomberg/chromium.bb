@@ -11831,14 +11831,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Sync service is not available for your domain.
       </message>
 
-      <!-- Sync Signin Flag -->
-      <message name="IDS_ENABLE_SYNC_SIGNIN_NAME" desc="Title of the enable sync signin flag." >
-        Enable sync signin
-      </message>
-      <message name="IDS_ENABLE_SYNC_SIGNIN_DESCRIPTION" desc="Description of the enable sync signin flag.">
-        Enables a new sync signin flow where all signin UI is forwarded to chrome:signin.
-      </message>
-
       <!-- Web Store login dialog strings -->
       <message name="IDS_WEB_STORE_LOGIN_INTRODUCTION_1" desc="The first message to display in the Web Store login dialog.">
         To use the Chrome Web Store, you must sign in with a Google Account.

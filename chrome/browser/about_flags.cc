@@ -657,13 +657,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-sync-signin",
-    IDS_ENABLE_SYNC_SIGNIN_NAME,
-    IDS_ENABLE_SYNC_SIGNIN_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableSyncSignin)
-  },
-  {
     "enable-platform-apps",
     IDS_FLAGS_ENABLE_PLATFORM_APPS_NAME,
     IDS_FLAGS_ENABLE_PLATFORM_APPS_DESCRIPTION,

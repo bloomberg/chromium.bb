@@ -609,9 +609,6 @@ const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 // Enables experimental suggestions pane in New Tab page.
 const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
 
-// Enables the new Sync Signin flow, i.e., chrome:signin for all signins.
-const char kEnableSyncSignin[]              = "enable-sync-signin";
-
 // Disables syncing browser sessions. Will override kEnableSyncTabs.
 const char kDisableSyncTabs[]               = "disable-sync-tabs";
 
