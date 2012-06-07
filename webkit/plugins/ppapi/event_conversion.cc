@@ -36,6 +36,43 @@ namespace ppapi {
 
 namespace {
 
+// Verify the modifier flags WebKit uses match the Pepper ones. If these start
+// not matching, we'll need to write conversion code to preserve the Pepper
+// values (since plugins will be depending on them).
+COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_SHIFTKEY) ==
+               static_cast<int>(WebInputEvent::ShiftKey),
+               ShiftKeyMatches);
+COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_CONTROLKEY) ==
+               static_cast<int>(WebInputEvent::ControlKey),
+               ControlKeyMatches);
+COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_ALTKEY) ==
+               static_cast<int>(WebInputEvent::AltKey),
+               AltKeyMatches);
+COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_METAKEY) ==
+               static_cast<int>(WebInputEvent::MetaKey),
+               MetaKeyMatches);
+COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_ISKEYPAD) ==
+               static_cast<int>(WebInputEvent::IsKeyPad),
+               KeyPadMatches);
+COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_ISAUTOREPEAT) ==
+               static_cast<int>(WebInputEvent::IsAutoRepeat),
+               AutoRepeatMatches);
+COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN) ==
+               static_cast<int>(WebInputEvent::LeftButtonDown),
+               LeftButtonMatches);
+COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN) ==
+               static_cast<int>(WebInputEvent::MiddleButtonDown),
+               MiddleButtonMatches);
+COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_RIGHTBUTTONDOWN) ==
+               static_cast<int>(WebInputEvent::RightButtonDown),
+               RightButtonMatches);
+COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY) ==
+               static_cast<int>(WebInputEvent::CapsLockOn),
+               CapsLockMatches);
+COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_NUMLOCKKEY) ==
+               static_cast<int>(WebInputEvent::NumLockOn),
+               NumLockMatches);
+
 PP_InputEvent_Type ConvertEventTypes(WebInputEvent::Type wetype) {
   switch (wetype) {
     case WebInputEvent::MouseDown:
