@@ -101,5 +101,23 @@
         '..',
       ],
     },
+    {
+      'target_name': 'dbus_test_server',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:test_support_base',
+        '../base/base.gyp:base',
+        '../build/linux/system.gyp:dbus',
+        'dbus',
+      ],
+      'sources': [
+        'test_server.cc',
+        'test_service.cc',
+        'test_service.h',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+    },
   ],
 }
