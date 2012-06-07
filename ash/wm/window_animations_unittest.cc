@@ -6,6 +6,7 @@
 
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "base/time.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/animation_container_element.h"
@@ -157,6 +158,36 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   EXPECT_EQ(ui::Transform(), window->layer()->GetTargetTransform());
 
   RunAllPendingInMessageLoop();
+}
+
+TEST_F(WindowAnimationsTest, GetCrossFadeDuration) {
+  gfx::Rect empty;
+  gfx::Rect screen(0, 0, 1000, 500);
+
+  // No change takes no time.
+  EXPECT_EQ(0, GetCrossFadeDuration(empty, empty).InMilliseconds());
+  EXPECT_EQ(0, GetCrossFadeDuration(screen, screen).InMilliseconds());
+
+  // Small changes are fast.
+  gfx::Rect almost_screen(10, 10, 900, 400);
+  EXPECT_EQ(220, GetCrossFadeDuration(almost_screen, screen).InMilliseconds());
+  EXPECT_EQ(220, GetCrossFadeDuration(screen, almost_screen).InMilliseconds());
+
+  // Large changes are slow.
+  gfx::Rect small(10, 10, 100, 100);
+  EXPECT_EQ(380, GetCrossFadeDuration(small, screen).InMilliseconds());
+  EXPECT_EQ(380, GetCrossFadeDuration(screen, small).InMilliseconds());
+
+  // Medium changes take medium time.
+  gfx::Rect half_screen(10, 10, 500, 250);
+  EXPECT_EQ(300, GetCrossFadeDuration(half_screen, screen).InMilliseconds());
+  EXPECT_EQ(300, GetCrossFadeDuration(screen, half_screen).InMilliseconds());
+
+  // Change is based on width.
+  gfx::Rect narrow(10, 10, 100, 500);
+  gfx::Rect wide(10, 10, 900, 500);
+  EXPECT_EQ(380, GetCrossFadeDuration(narrow, screen).InMilliseconds());
+  EXPECT_EQ(220, GetCrossFadeDuration(wide, screen).InMilliseconds());
 }
 
 }  // namespace internal
