@@ -718,6 +718,8 @@ weston_surface_destroy(struct weston_surface *surface)
 	/* Not a valid way to destroy a client surface */
 	assert(surface->surface.resource.client == NULL);
 
+	wl_signal_emit(&surface->surface.resource.destroy_signal,
+		       &surface->surface.resource);
 	destroy_surface(&surface->surface.resource);
 }
 
