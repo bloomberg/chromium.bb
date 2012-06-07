@@ -25,6 +25,10 @@ namespace {
 
 // The DPI threshold to detect high density screen.
 // Higher DPI than this will use device_scale_factor=2.
+// Note: This value has to be kept in sync with the mouse/touchpad driver
+// which controls mouse pointer acceleration. If you need to update this value,
+// please update the bug (crosbug.com/31628) first and make sure that the
+// driver will use the same value.
 const unsigned int kHighDensityDIPThreshold = 160;
 
 // 1 inch in mm.
