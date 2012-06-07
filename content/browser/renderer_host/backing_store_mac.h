@@ -12,7 +12,11 @@
 
 class BackingStoreMac : public BackingStore {
  public:
-  BackingStoreMac(content::RenderWidgetHost* widget, const gfx::Size& size);
+  // |size| is in view units, |device_scale_factor| is the backingScaleFactor.
+  // The pixel size of the backing store is size.Scale(device_scale_factor).
+  BackingStoreMac(content::RenderWidgetHost* widget,
+                  const gfx::Size& size,
+                  float device_scale_factor);
   virtual ~BackingStoreMac();
 
   // A CGLayer that stores the contents of the backing store, cached in GPU
@@ -54,6 +58,9 @@ class BackingStoreMac : public BackingStore {
 
   base::mac::ScopedCFTypeRef<CGContextRef> cg_bitmap_;
   base::mac::ScopedCFTypeRef<CGLayerRef> cg_layer_;
+
+  // Number of physical pixels per view unit. This is 1 or 2 in practice.
+  float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(BackingStoreMac);
 };

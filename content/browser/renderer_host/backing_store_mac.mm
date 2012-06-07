@@ -27,12 +27,14 @@
 // all or mostly on the GPU, which is good for performance.
 
 BackingStoreMac::BackingStoreMac(content::RenderWidgetHost* widget,
-                                 const gfx::Size& size)
-    : BackingStore(widget, size) {
+                                 const gfx::Size& size,
+                                 float device_scale_factor)
+    : BackingStore(widget, size), device_scale_factor_(device_scale_factor) {
   cg_layer_.reset(CreateCGLayer());
   if (!cg_layer_) {
     // The view isn't in a window yet.  Use a CGBitmapContext for now.
     cg_bitmap_.reset(CreateCGBitmapContext());
+    CGContextScaleCTM(cg_bitmap_, device_scale_factor_, device_scale_factor_);
   }
 }
 
@@ -53,32 +55,37 @@ void BackingStoreMac::PaintToBackingStore(
   if (!dib)
     return;
 
+  gfx::Size pixel_size = size().Scale(device_scale_factor_);
+  gfx::Rect pixel_bitmap_rect = bitmap_rect.Scale(device_scale_factor_);
+
   base::mac::ScopedCFTypeRef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithData(NULL, dib->memory(),
-      bitmap_rect.width() * bitmap_rect.height() * 4, NULL));
+      pixel_bitmap_rect.width() * pixel_bitmap_rect.height() * 4, NULL));
 
   base::mac::ScopedCFTypeRef<CGImageRef> bitmap_image(
-      CGImageCreate(bitmap_rect.width(), bitmap_rect.height(), 8, 32,
-          4 * bitmap_rect.width(), base::mac::GetSystemColorSpace(),
+      CGImageCreate(pixel_bitmap_rect.width(), pixel_bitmap_rect.height(),
+          8, 32, 4 * pixel_bitmap_rect.width(),
+          base::mac::GetSystemColorSpace(),
           kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
           data_provider, NULL, false, kCGRenderingIntentDefault));
 
   for (size_t i = 0; i < copy_rects.size(); i++) {
     const gfx::Rect& copy_rect = copy_rects[i];
+    gfx::Rect pixel_copy_rect = copy_rect.Scale(device_scale_factor_);
 
     // Only the subpixels given by copy_rect have pixels to copy.
     base::mac::ScopedCFTypeRef<CGImageRef> image(
         CGImageCreateWithImageInRect(bitmap_image, CGRectMake(
-            copy_rect.x() - bitmap_rect.x(),
-            copy_rect.y() - bitmap_rect.y(),
-            copy_rect.width(),
-            copy_rect.height())));
+            pixel_copy_rect.x() - pixel_bitmap_rect.x(),
+            pixel_copy_rect.y() - pixel_bitmap_rect.y(),
+            pixel_copy_rect.width(),
+            pixel_copy_rect.height())));
 
     if (!cg_layer()) {
       // The view may have moved to a window.  Try to get a CGLayer.
       cg_layer_.reset(CreateCGLayer());
       if (cg_layer()) {
-        // now that we have a layer, copy the cached image into it
+        // Now that we have a layer, copy the cached image into it.
         base::mac::ScopedCFTypeRef<CGImageRef> bitmap_image(
             CGBitmapContextCreateImage(cg_bitmap_));
         CGContextDrawImage(CGLayerGetContext(cg_layer()),
@@ -110,6 +117,7 @@ void BackingStoreMac::PaintToBackingStore(
 
 bool BackingStoreMac::CopyFromBackingStore(const gfx::Rect& rect,
                                            skia::PlatformCanvas* output) {
+  // TODO(thakis): Make sure this works with HiDPI backing stores.
   if (!output->initialize(rect.width(), rect.height(), true))
     return false;
 
@@ -223,6 +231,8 @@ CGLayerRef BackingStoreMac::CreateCGLayer() {
       [ns_context graphicsPort]);
   DCHECK(cg_context);
 
+  // Note: This takes the backingScaleFactor of cg_context into account. The
+  // bitmap backing |layer| with be size().Scale(2) in HiDPI mode automatically.
   CGLayerRef layer = CGLayerCreateWithContext(cg_context,
                                               size().ToCGSize(),
                                               NULL);
@@ -232,11 +242,13 @@ CGLayerRef BackingStoreMac::CreateCGLayer() {
 }
 
 CGContextRef BackingStoreMac::CreateCGBitmapContext() {
+  gfx::Size pixel_size = size().Scale(device_scale_factor_);
   // A CGBitmapContext serves as a stand-in for the layer before the view is
   // in a containing window.
   CGContextRef context = CGBitmapContextCreate(NULL,
-                                               size().width(), size().height(),
-                                               8, size().width() * 4,
+                                               pixel_size.width(),
+                                               pixel_size.height(),
+                                               8, pixel_size.width() * 4,
                                                base::mac::GetSystemColorSpace(),
                                                kCGImageAlphaPremultipliedFirst |
                                                    kCGBitmapByteOrder32Host);

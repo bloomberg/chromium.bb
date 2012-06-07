@@ -780,7 +780,8 @@ bool RenderWidgetHostViewMac::IsPopup() const {
 
 BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
     const gfx::Size& size) {
-  return new BackingStoreMac(render_widget_host_, size);
+  // TODO(thakis): Pass correct scale factor.
+  return new BackingStoreMac(render_widget_host_, size, 1.0);
 }
 
 void RenderWidgetHostViewMac::CopyFromCompositingSurface(
