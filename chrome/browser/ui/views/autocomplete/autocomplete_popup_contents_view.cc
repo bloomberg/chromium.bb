@@ -329,23 +329,15 @@ views::View* AutocompletePopupContentsView::GetEventHandlerForPoint(
 bool AutocompletePopupContentsView::OnMousePressed(
     const views::MouseEvent& event) {
   ignore_mouse_drag_ = false;  // See comment on |ignore_mouse_drag_| in header.
-  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
-    size_t index = GetIndexForPoint(event.location());
-    model_->SetHoveredLine(index);
-    if (HasMatchAt(index) && event.IsLeftMouseButton())
-      model_->SetSelectedLine(index, false, false);
-  }
+  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton())
+    UpdateLineEvent(event, event.IsLeftMouseButton());
   return true;
 }
 
 bool AutocompletePopupContentsView::OnMouseDragged(
     const views::MouseEvent& event) {
-  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
-    size_t index = GetIndexForPoint(event.location());
-    model_->SetHoveredLine(index);
-    if (!ignore_mouse_drag_ && HasMatchAt(index) && event.IsLeftMouseButton())
-      model_->SetSelectedLine(index, false, false);
-  }
+  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton())
+    UpdateLineEvent(event, !ignore_mouse_drag_ && event.IsLeftMouseButton());
   return true;
 }
 
@@ -356,11 +348,10 @@ void AutocompletePopupContentsView::OnMouseReleased(
     return;
   }
 
-  size_t index = GetIndexForPoint(event.location());
-  if (event.IsOnlyMiddleMouseButton())
-    OpenIndex(index, NEW_BACKGROUND_TAB);
-  else if (event.IsOnlyLeftMouseButton())
-    OpenIndex(index, CURRENT_TAB);
+  if (event.IsOnlyMiddleMouseButton() || event.IsOnlyLeftMouseButton()) {
+    OpenSelectedLine(event, event.IsOnlyLeftMouseButton() ? CURRENT_TAB :
+                                                            NEW_BACKGROUND_TAB);
+  }
 }
 
 void AutocompletePopupContentsView::OnMouseCaptureLost() {
@@ -380,6 +371,24 @@ void AutocompletePopupContentsView::OnMouseEntered(
 void AutocompletePopupContentsView::OnMouseExited(
     const views::MouseEvent& event) {
   model_->SetHoveredLine(AutocompletePopupModel::kNoMatch);
+}
+
+ui::GestureStatus AutocompletePopupContentsView::OnGestureEvent(
+    const views::GestureEvent& event) {
+  switch (event.type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      UpdateLineEvent(event, true);
+      break;
+    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_SCROLL_END:
+      OpenSelectedLine(event, CURRENT_TAB);
+      break;
+    default:
+      return ui::GESTURE_STATUS_UNKNOWN;
+  }
+  return ui::GESTURE_STATUS_CONSUMED;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -546,4 +555,20 @@ gfx::Rect AutocompletePopupContentsView::CalculateTargetBounds(int h) {
   location_bar_bounds.set_origin(location_bar_origin);
   return bubble_border_->GetBounds(
       location_bar_bounds, gfx::Size(location_bar_bounds.width(), h));
+}
+
+void AutocompletePopupContentsView::UpdateLineEvent(
+    const views::LocatedEvent& event,
+    bool should_set_selected_line) {
+  size_t index = GetIndexForPoint(event.location());
+  model_->SetHoveredLine(index);
+  if (HasMatchAt(index) && should_set_selected_line)
+    model_->SetSelectedLine(index, false, false);
+}
+
+void AutocompletePopupContentsView::OpenSelectedLine(
+    const views::LocatedEvent& event,
+    WindowOpenDisposition disposition) {
+  size_t index = GetIndexForPoint(event.location());
+  OpenIndex(index, disposition);
 }

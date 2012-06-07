@@ -73,6 +73,8 @@ class AutocompletePopupContentsView : public views::View,
   virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& event) OVERRIDE;
 
  protected:
   AutocompletePopupContentsView(const gfx::Font& font,
@@ -131,6 +133,16 @@ class AutocompletePopupContentsView : public views::View,
   // coordinates. Returns AutocompletePopupModel::kNoMatch if there isn't a
   // match at the specified point.
   size_t GetIndexForPoint(const gfx::Point& point);
+
+  // Processes a located event (e.g. mouse/gesture) and sets the selection/hover
+  // state of a line in the list.
+  void UpdateLineEvent(const views::LocatedEvent& event,
+                       bool should_set_selected_line);
+
+  // Opens an entry from the list depending on the event and the selected
+  // disposition.
+  void OpenSelectedLine(const views::LocatedEvent& event,
+                        WindowOpenDisposition disposition);
 
   // Returns the target bounds given the specified content height.
   gfx::Rect CalculateTargetBounds(int h);
