@@ -13,6 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/media/avc_config_record_builder.h"
+#include "content/common/gpu/media/h264_parser.h"
 #include "media/video/video_decode_accelerator.h"
 
 namespace base {
@@ -34,12 +36,6 @@ class CONTENT_EXPORT MacVideoDecodeAccelerator
 
   // Set the OpenGL context to use.
   void SetCGLContext(CGLContextObj cgl_context);
-
-  // Set extra data required to initialize the H.264 video decoder.
-  // TODO(sail): Move this into Initialize.
-  bool SetConfigInfo(uint32_t frame_width,
-                     uint32_t frame_height,
-                     const std::vector<uint8_t>& avc_data);
 
   // media::VideoDecodeAccelerator implementation.
   virtual bool Initialize(media::VideoCodecProfile profile) OVERRIDE;
@@ -65,6 +61,13 @@ class CONTENT_EXPORT MacVideoDecodeAccelerator
 
   // Stop the component when any error is detected.
   void StopOnError(media::VideoDecodeAccelerator::Error error);
+
+  // Create the decoder.
+  bool CreateDecoder(const std::vector<uint8_t>& extra_data);
+
+  // Send the given NALU to the decoder.
+  void DecodeNALU(const content::H264NALU& nalu,
+                  int32 bitstream_buffer_id);
 
   // Calls the client's initialize completed callback.
   void NotifyInitializeDone();
@@ -112,14 +115,14 @@ class CONTENT_EXPORT MacVideoDecodeAccelerator
   // The context to use to perform OpenGL operations.
   CGLContextObj cgl_context_;
 
-  // The number of bytes used to store the frame buffer size.
-  size_t nalu_len_field_size_;
+  // Flag to check if AVC decoder configuration record has been built.
+  bool did_build_config_record_;
 
-  // Size of a video frame.
-  gfx::Size frame_size_;
+  // Parser for the H264 stream.
+  content::H264Parser h264_parser_;
 
-  // Flag to check if pictures have been requested from the client.
-  bool did_request_pictures_;
+  // Utility to build the AVC configuration record.
+  content::AVCConfigRecordBuilder config_record_builder_;
 };
 
 #endif  // CONTENT_COMMON_GPU_MEDIA_VIDEO_DECODE_ACCELERATOR_MAC_H_

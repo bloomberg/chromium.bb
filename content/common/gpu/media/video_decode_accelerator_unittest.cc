@@ -76,17 +76,6 @@ const FilePath::CharType* test_video_data =
     FILE_PATH_LITERAL("test-25fps.h264:320:240:250:258:50:175:1");
 #endif
 
-// AAVC data required to initialize the H.264 video decoder.
-// TODO(sail): Remove this and build the AVC configuration record instead.
-const uint8 MP4_EXTRA_DATA[] = {
-  0x01, 0x64, 0x00, 0x1f,    0xff, 0xe1, 0x00, 0x19,
-  0x67, 0x64, 0x00, 0x1f,    0xac, 0x34, 0xec, 0x05,
-  0x00, 0x5b, 0xa1, 0x00,    0x00, 0x03, 0x00, 0x01,
-  0x00, 0x00, 0x03, 0x00,    0x32, 0x0f, 0x18, 0x31,
-  0x38, 0x01, 0x00, 0x05,    0x68, 0xef, 0xb2, 0xc8,
-  0xb0,
-};
-
 // Parse |data| into its constituent parts and set the various output fields
 // accordingly.  CHECK-fails on unexpected or missing required data.
 // Unspecified optional fields are set to -1.
@@ -329,12 +318,6 @@ void EglRenderingVDAClient::CreateDecoder() {
       new MacVideoDecodeAccelerator(this);
   decoder->SetCGLContext(
       static_cast<CGLContextObj>(rendering_helper_->GetGLContext()));
-  std::vector<uint8> avc_data(MP4_EXTRA_DATA,
-                                MP4_EXTRA_DATA + arraysize(MP4_EXTRA_DATA));
-  if (!decoder->SetConfigInfo(frame_width_, frame_height_, avc_data)) {
-    SetState(CS_ERROR);
-    return;
-  }
 #endif  // OS_WIN
   decoder_ = decoder.release();
   SetState(CS_DECODER_SET);

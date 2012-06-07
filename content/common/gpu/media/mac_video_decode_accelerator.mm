@@ -95,33 +95,12 @@ static bool BindImageToTexture(CGLContextObj context,
 MacVideoDecodeAccelerator::MacVideoDecodeAccelerator(
     media::VideoDecodeAccelerator::Client* client)
     : client_(client),
-      cgl_context_(NULL),
-      nalu_len_field_size_(0),
-      did_request_pictures_(false) {
+      cgl_context_(NULL) {
 }
 
 void MacVideoDecodeAccelerator::SetCGLContext(CGLContextObj cgl_context) {
   DCHECK(CalledOnValidThread());
   cgl_context_ = cgl_context;
-}
-
-bool MacVideoDecodeAccelerator::SetConfigInfo(
-    uint32_t frame_width,
-    uint32_t frame_height,
-    const std::vector<uint8_t>& avc_data) {
-  DCHECK(CalledOnValidThread());
-  frame_size_ = gfx::Size(frame_width, frame_height);
-  nalu_len_field_size_ = (avc_data[4] & 0x03) + 1;
-
-  DCHECK(!vda_support_.get());
-  vda_support_ = new gfx::VideoDecodeAccelerationSupport();
-  gfx::VideoDecodeAccelerationSupport::Status status = vda_support_->Create(
-      frame_size_.width(), frame_size_.height(), kCVPixelFormatType_422YpCbCr8,
-      &avc_data.front(), avc_data.size());
-  RETURN_ON_FAILURE(status == gfx::VideoDecodeAccelerationSupport::SUCCESS,
-                    "Creating video decoder failed with error: " << status,
-                    PLATFORM_FAILURE, false);
-  return true;
 }
 
 bool MacVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
@@ -146,46 +125,37 @@ void MacVideoDecodeAccelerator::Decode(
   RETURN_ON_FAILURE(memory.Map(bitstream_buffer.size()),
                     "Failed to SharedMemory::Map().", UNREADABLE_INPUT,);
 
-  size_t buffer_size = bitstream_buffer.size();
-  RETURN_ON_FAILURE(buffer_size > nalu_len_field_size_,
-                    "Bitstream contains invalid data.", INVALID_ARGUMENT,);
-
-  // The decoder can only handle slice types 1-5.
-  const uint8_t* buffer = static_cast<const uint8_t*>(memory.memory());
-  uint8_t nalu_type = buffer[nalu_len_field_size_] & 0x1f;
-  if (nalu_type < 1 || nalu_type > 5) {
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &MacVideoDecodeAccelerator::NotifyInputBufferRead, this,
-        bitstream_buffer.id()));
-    return;
-  }
-
-  // Keep a ref counted copy of the buffer.
-  std::vector<uint8_t> vbuffer(buffer, buffer + buffer_size);
-  scoped_refptr<base::RefCountedBytes> bytes(
-      base::RefCountedBytes::TakeVector(&vbuffer));
-
-  // Store the buffer size at the beginning of the buffer as the decoder
-  // expects.
-  size_t frame_buffer_size = buffer_size - nalu_len_field_size_;
-  const uint64_t max_frame_buffer_size =
-      (1llu << (nalu_len_field_size_ * 8)) - 1;
-  DCHECK_LE(nalu_len_field_size_, 4u);
-  RETURN_ON_FAILURE(frame_buffer_size <= max_frame_buffer_size,
-                    "Bitstream buffer is too large.", INVALID_ARGUMENT,);
-  for (size_t i = 0; i < nalu_len_field_size_; ++i) {
-    size_t shift = nalu_len_field_size_ * 8 - (i + 1) * 8;
-    bytes->data()[i] = (frame_buffer_size >> shift) & 0xff;
-  }
-
-  vda_support_->Decode(bytes->front(), bytes->size(),
-                       base::Bind(&MacVideoDecodeAccelerator::OnFrameReady,
-                                  this, bitstream_buffer.id(), bytes));
-
-  if (!did_request_pictures_) {
-    did_request_pictures_ = true;
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &MacVideoDecodeAccelerator::RequestPictures, this));
+  h264_parser_.SetStream(static_cast<const uint8_t*>(memory.memory()),
+                         bitstream_buffer.size());
+  while (true) {
+    content::H264NALU nalu;
+    content::H264Parser::Result result = h264_parser_.AdvanceToNextNALU(&nalu);
+    if (result == content::H264Parser::kEOStream) {
+      MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+          &MacVideoDecodeAccelerator::NotifyInputBufferRead, this,
+          bitstream_buffer.id()));
+      return;
+    }
+    RETURN_ON_FAILURE(result == content::H264Parser::kOk,
+                      "Unable to parse bitstream.", UNREADABLE_INPUT,);
+    if (!did_build_config_record_) {
+      std::vector<uint8_t> config_record;
+      RETURN_ON_FAILURE(config_record_builder_.ProcessNALU(&h264_parser_, nalu,
+                                                           &config_record),
+                        "Unable to build AVC configuraiton record.",
+                        UNREADABLE_INPUT,);
+      if (!config_record.empty()) {
+        did_build_config_record_ = true;
+        if (!CreateDecoder(config_record))
+          return;
+      }
+    }
+    // If the decoder has been created and this is a slice type then pass it
+    // to the decoder.
+    if (vda_support_.get() && nalu.nal_unit_type >= 1 &&
+        nalu.nal_unit_type <= 5) {
+      DecodeNALU(nalu, bitstream_buffer.id());
+    }
   }
 }
 
@@ -219,7 +189,7 @@ void MacVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
 
 void MacVideoDecodeAccelerator::Flush() {
   DCHECK(CalledOnValidThread());
-  RETURN_ON_FAILURE(client_,
+  RETURN_ON_FAILURE(vda_support_,
                     "Call to Flush() during invalid state.", ILLEGAL_STATE,);
   vda_support_->Flush(true);
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
@@ -228,7 +198,7 @@ void MacVideoDecodeAccelerator::Flush() {
 
 void MacVideoDecodeAccelerator::Reset() {
   DCHECK(CalledOnValidThread());
-  RETURN_ON_FAILURE(client_,
+  RETURN_ON_FAILURE(vda_support_,
                     "Call to Reset() during invalid state.", ILLEGAL_STATE,);
   vda_support_->Flush(false);
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
@@ -269,7 +239,8 @@ void MacVideoDecodeAccelerator::OnFrameReady(
     SendImages();
   }
   // TODO(sail): this assumes Decode() is handed a single NALU at a time. Make
-  // that assumption go away.
+  // that assumption go away. See VideoDecodeAcceleratorTest.DecodeVariations
+  // for an example of a test the fails due to this assumption.
   client_->NotifyEndOfBitstreamBuffer(bitstream_buffer_id);
 }
 
@@ -303,14 +274,62 @@ void MacVideoDecodeAccelerator::StopOnError(
   Destroy();
 }
 
+bool MacVideoDecodeAccelerator::CreateDecoder(
+    const std::vector<uint8_t>& extra_data) {
+  DCHECK(client_);
+  DCHECK(!vda_support_.get());
+
+  vda_support_ = new gfx::VideoDecodeAccelerationSupport();
+  gfx::VideoDecodeAccelerationSupport::Status status = vda_support_->Create(
+      config_record_builder_.coded_width(),
+      config_record_builder_.coded_height(),
+      kCVPixelFormatType_422YpCbCr8,
+      &extra_data[0], extra_data.size());
+  RETURN_ON_FAILURE(status == gfx::VideoDecodeAccelerationSupport::SUCCESS,
+                    "Creating video decoder failed with error: " << status,
+                    PLATFORM_FAILURE, false);
+
+  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+      &MacVideoDecodeAccelerator::RequestPictures, this));
+  return true;
+}
+
+void MacVideoDecodeAccelerator::DecodeNALU(const content::H264NALU& nalu,
+                                           int32 bitstream_buffer_id) {
+  // Assume the NALU length field size is 4 bytes.
+  const int kNALULengthFieldSize = 4;
+  std::vector<uint8_t> data(kNALULengthFieldSize + nalu.size);
+
+  // Store the buffer size at the beginning of the buffer as the decoder
+  // expects.
+  for (size_t i = 0; i < kNALULengthFieldSize; ++i) {
+    size_t shift = kNALULengthFieldSize * 8 - (i + 1) * 8;
+    data[i] = (nalu.size >> shift) & 0xff;
+  }
+
+  // Copy the NALU data.
+  memcpy(&data[kNALULengthFieldSize], nalu.data, nalu.size);
+
+  // Keep a ref counted copy of the buffer.
+  scoped_refptr<base::RefCountedBytes> bytes(
+      base::RefCountedBytes::TakeVector(&data));
+  vda_support_->Decode(bytes->front(), bytes->size(),
+                       base::Bind(&MacVideoDecodeAccelerator::OnFrameReady,
+                                  this, bitstream_buffer_id, bytes));
+}
+
 void MacVideoDecodeAccelerator::NotifyInitializeDone() {
   if (client_)
     client_->NotifyInitializeDone();
 }
 
 void MacVideoDecodeAccelerator::RequestPictures() {
-  if (client_)
-    client_->ProvidePictureBuffers(kNumPictureBuffers, frame_size_);
+  if (client_) {
+    client_->ProvidePictureBuffers(
+        kNumPictureBuffers,
+        gfx::Size(config_record_builder_.coded_width(),
+                  config_record_builder_.coded_height()));
+  }
 }
 
 void MacVideoDecodeAccelerator::NotifyFlushDone() {

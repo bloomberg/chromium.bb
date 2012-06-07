@@ -12,12 +12,13 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
 // For explanations of each struct and its members, see H.264 specification
 // at http://www.itu.int/rec/T-REC-H.264.
-struct H264NALU {
+struct CONTENT_EXPORT H264NALU {
   H264NALU();
 
   enum Type {
@@ -43,10 +44,11 @@ struct H264NALU {
 
 enum { kH264ScalingList4x4Length = 16, kH264ScalingList8x8Length = 64, };
 
-struct H264SPS {
+struct CONTENT_EXPORT H264SPS {
   H264SPS();
 
   int profile_idc;
+  int constraint_setx_flag;
   int level_idc;
   int seq_parameter_set_id;
 
@@ -84,7 +86,7 @@ struct H264SPS {
   int chroma_array_type;
 };
 
-struct H264PPS {
+struct CONTENT_EXPORT H264PPS {
   H264PPS();
 
   int pic_parameter_set_id;
@@ -112,7 +114,7 @@ struct H264PPS {
   int second_chroma_qp_index_offset;
 };
 
-struct H264ModificationOfPicNum {
+struct CONTENT_EXPORT H264ModificationOfPicNum {
   int modification_of_pic_nums_idc;
   union {
     int abs_diff_pic_num_minus1;
@@ -120,7 +122,7 @@ struct H264ModificationOfPicNum {
   };
 };
 
-struct H264WeightingFactors {
+struct CONTENT_EXPORT H264WeightingFactors {
   bool luma_weight_flag;
   bool chroma_weight_flag;
   int luma_weight[32];
@@ -129,7 +131,7 @@ struct H264WeightingFactors {
   int chroma_offset[32][2];
 };
 
-struct H264DecRefPicMarking {
+struct CONTENT_EXPORT H264DecRefPicMarking {
   int memory_mgmnt_control_operation;
   int difference_of_pic_nums_minus1;
   int long_term_pic_num;
@@ -137,7 +139,7 @@ struct H264DecRefPicMarking {
   int max_long_term_frame_idx_plus1;
 };
 
-struct H264SliceHeader {
+struct CONTENT_EXPORT H264SliceHeader {
   H264SliceHeader();
 
   enum {
@@ -238,7 +240,7 @@ struct H264SEIMessage {
 
 // Class to parse an Annex-B H.264 stream,
 // as specified in chapters 7 and Annex B of the H.264 spec.
-class H264Parser {
+class CONTENT_EXPORT H264Parser {
  public:
   enum Result {
     kOk,

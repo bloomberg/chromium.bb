@@ -195,6 +195,10 @@
     'common/gpu/image_transport_surface_linux.cc',
     'common/gpu/image_transport_surface_mac.cc',
     'common/gpu/image_transport_surface_win.cc',
+    'common/gpu/media/avc_config_record_builder.cc',
+    'common/gpu/media/avc_config_record_builder.h',
+    'common/gpu/media/h264_parser.cc',
+    'common/gpu/media/h264_parser.h',
     'common/gpu/media/mac_video_decode_accelerator.h',
     'common/gpu/media/mac_video_decode_accelerator.mm',
     'common/gpu/media/gpu_video_decode_accelerator.cc',
@@ -391,12 +395,6 @@
           '-lGLESv2',
         ],
       },
-    }],
-    ['chromeos == 1', {
-      'sources': [
-        'common/gpu/media/h264_parser.cc',
-        'common/gpu/media/h264_parser.h',
-      ],
     }],
     ['OS=="win"', {
       'dependencies': [

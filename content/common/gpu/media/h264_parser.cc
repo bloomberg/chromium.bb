@@ -142,7 +142,8 @@ bool H264Parser::H264BitReader::HasMoreRBSPData() {
   // Last byte, look for stop bit;
   // We have more RBSP data if the last non-zero bit we find is not the
   // first available bit.
-  return curr_byte_ & ((1 << (num_remaining_bits_in_curr_byte_ - 1)) - 1);
+  return (curr_byte_ &
+          ((1 << (num_remaining_bits_in_curr_byte_ - 1)) - 1)) != 0;
 }
 
 #define READ_BITS_OR_RETURN(num_bits, out)                                    \
@@ -153,6 +154,16 @@ do {                                                                          \
     return kInvalidStream;                                                    \
   }                                                                           \
   *out = _out;                                                                \
+} while (0)
+
+#define READ_BOOL_OR_RETURN(out)                                              \
+do {                                                                          \
+  int _out;                                                                   \
+  if (!br_.ReadBits(1, &_out)) {                                              \
+    DVLOG(1) << "Error in stream: unexpected EOS while trying to read " #out; \
+    return kInvalidStream;                                                    \
+  }                                                                           \
+  *out = _out != 0;                                                           \
 } while (0)
 
 #define READ_UE_OR_RETURN(out)                                               \
@@ -541,7 +552,7 @@ H264Parser::Result H264Parser::ParseSPSScalingLists(H264SPS* sps) {
 
   // Parse scaling_list4x4.
   for (int i = 0; i < 6; ++i) {
-    READ_BITS_OR_RETURN(1, &seq_scaling_list_present_flag);
+    READ_BOOL_OR_RETURN(&seq_scaling_list_present_flag);
 
     if (seq_scaling_list_present_flag) {
       res = ParseScalingList(sizeof(sps->scaling_list4x4[i]),
@@ -559,8 +570,8 @@ H264Parser::Result H264Parser::ParseSPSScalingLists(H264SPS* sps) {
   }
 
   // Parse scaling_list8x8.
-  for (int i = 0; i < (sps->chroma_format_idc != 3) ? 2 : 6; ++i) {
-    READ_BITS_OR_RETURN(1, &seq_scaling_list_present_flag);
+  for (int i = 0; i < ((sps->chroma_format_idc != 3) ? 2 : 6); ++i) {
+    READ_BOOL_OR_RETURN(&seq_scaling_list_present_flag);
 
     if (seq_scaling_list_present_flag) {
       res = ParseScalingList(sizeof(sps->scaling_list8x8[i]),
@@ -588,7 +599,7 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
   Result res;
 
   for (int i = 0; i < 6; ++i) {
-    READ_BITS_OR_RETURN(1, &pic_scaling_list_present_flag);
+    READ_BOOL_OR_RETURN(&pic_scaling_list_present_flag);
 
     if (pic_scaling_list_present_flag) {
       res = ParseScalingList(sizeof(pps->scaling_list4x4[i]),
@@ -613,8 +624,8 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
   }
 
   if (pps->transform_8x8_mode_flag) {
-    for (int i = 0; i < (sps.chroma_format_idc != 3) ? 2 : 6; ++i) {
-      READ_BITS_OR_RETURN(1, &pic_scaling_list_present_flag);
+    for (int i = 0; i < ((sps.chroma_format_idc != 3) ? 2 : 6); ++i) {
+      READ_BOOL_OR_RETURN(&pic_scaling_list_present_flag);
 
       if (pic_scaling_list_present_flag) {
         res = ParseScalingList(sizeof(pps->scaling_list8x8[i]),
@@ -657,8 +668,8 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
   scoped_ptr<H264SPS> sps(new H264SPS());
 
   READ_BITS_OR_RETURN(8, &sps->profile_idc);
-  // Skip constraint_setx_flag and reserved flags.
-  READ_BITS_OR_RETURN(8, &data);
+  READ_BITS_OR_RETURN(6, &sps->constraint_setx_flag);
+  READ_BITS_OR_RETURN(2, &data);
   READ_BITS_OR_RETURN(8, &sps->level_idc);
   READ_UE_OR_RETURN(&sps->seq_parameter_set_id);
   TRUE_OR_RETURN(sps->seq_parameter_set_id < 32);
@@ -672,7 +683,7 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
     TRUE_OR_RETURN(sps->chroma_format_idc < 4);
 
     if (sps->chroma_format_idc == 3)
-      READ_BITS_OR_RETURN(1, &sps->separate_colour_plane_flag);
+      READ_BOOL_OR_RETURN(&sps->separate_colour_plane_flag);
 
     if (sps->separate_colour_plane_flag)
       sps->chroma_array_type = 0;
@@ -685,8 +696,8 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
     READ_UE_OR_RETURN(&sps->bit_depth_chroma_minus8);
     TRUE_OR_RETURN(sps->bit_depth_chroma_minus8 < 7);
 
-    READ_BITS_OR_RETURN(1, &sps->qpprime_y_zero_transform_bypass_flag);
-    READ_BITS_OR_RETURN(1, &sps->seq_scaling_matrix_present_flag);
+    READ_BOOL_OR_RETURN(&sps->qpprime_y_zero_transform_bypass_flag);
+    READ_BOOL_OR_RETURN(&sps->seq_scaling_matrix_present_flag);
 
     if (sps->seq_scaling_matrix_present_flag) {
       DVLOG(4) << "Scaling matrix present";
@@ -708,7 +719,7 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
     READ_UE_OR_RETURN(&sps->log2_max_pic_order_cnt_lsb_minus4);
     TRUE_OR_RETURN(sps->log2_max_pic_order_cnt_lsb_minus4 < 13);
   } else if (sps->pic_order_cnt_type == 1) {
-    READ_BITS_OR_RETURN(1, &sps->delta_pic_order_always_zero_flag);
+    READ_BOOL_OR_RETURN(&sps->delta_pic_order_always_zero_flag);
     READ_SE_OR_RETURN(&sps->offset_for_non_ref_pic);
     READ_SE_OR_RETURN(&sps->offset_for_top_to_bottom_field);
     READ_UE_OR_RETURN(&sps->num_ref_frames_in_pic_order_cnt_cycle);
@@ -717,7 +728,7 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
   }
 
   READ_UE_OR_RETURN(&sps->max_num_ref_frames);
-  READ_BITS_OR_RETURN(1, &sps->gaps_in_frame_num_value_allowed_flag);
+  READ_BOOL_OR_RETURN(&sps->gaps_in_frame_num_value_allowed_flag);
 
   if (sps->gaps_in_frame_num_value_allowed_flag)
     return kUnsupportedStream;
@@ -725,13 +736,13 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
   READ_UE_OR_RETURN(&sps->pic_width_in_mbs_minus1);
   READ_UE_OR_RETURN(&sps->pic_height_in_map_units_minus1);
 
-  READ_BITS_OR_RETURN(1, &sps->frame_mbs_only_flag);
+  READ_BOOL_OR_RETURN(&sps->frame_mbs_only_flag);
   if (!sps->frame_mbs_only_flag)
-    READ_BITS_OR_RETURN(1, &sps->mb_adaptive_frame_field_flag);
+    READ_BOOL_OR_RETURN(&sps->mb_adaptive_frame_field_flag);
 
-  READ_BITS_OR_RETURN(1, &sps->direct_8x8_inference_flag);
+  READ_BOOL_OR_RETURN(&sps->direct_8x8_inference_flag);
 
-  READ_BITS_OR_RETURN(1, &sps->frame_cropping_flag);
+  READ_BOOL_OR_RETURN(&sps->frame_cropping_flag);
   if (sps->frame_cropping_flag) {
     READ_UE_OR_RETURN(&sps->frame_crop_left_offset);
     READ_UE_OR_RETURN(&sps->frame_crop_right_offset);
@@ -739,7 +750,7 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
     READ_UE_OR_RETURN(&sps->frame_crop_bottom_offset);
   }
 
-  READ_BITS_OR_RETURN(1, &sps->vui_parameters_present_flag);
+  READ_BOOL_OR_RETURN(&sps->vui_parameters_present_flag);
   if (sps->vui_parameters_present_flag) {
     DVLOG(1) << "VUI parameters present in SPS, ignoring";
   }
@@ -768,8 +779,8 @@ H264Parser::Result H264Parser::ParsePPS(int* pps_id) {
   sps = GetSPS(pps->seq_parameter_set_id);
   TRUE_OR_RETURN(sps);
 
-  READ_BITS_OR_RETURN(1, &pps->entropy_coding_mode_flag);
-  READ_BITS_OR_RETURN(1, &pps->bottom_field_pic_order_in_frame_present_flag);
+  READ_BOOL_OR_RETURN(&pps->entropy_coding_mode_flag);
+  READ_BOOL_OR_RETURN(&pps->bottom_field_pic_order_in_frame_present_flag);
 
   READ_UE_OR_RETURN(&pps->num_slice_groups_minus1);
   if (pps->num_slice_groups_minus1 > 1) {
@@ -783,7 +794,7 @@ H264Parser::Result H264Parser::ParsePPS(int* pps_id) {
   READ_UE_OR_RETURN(&pps->num_ref_idx_l1_default_active_minus1);
   TRUE_OR_RETURN(pps->num_ref_idx_l1_default_active_minus1 < 32);
 
-  READ_BITS_OR_RETURN(1, &pps->weighted_pred_flag);
+  READ_BOOL_OR_RETURN(&pps->weighted_pred_flag);
   READ_BITS_OR_RETURN(2, &pps->weighted_bipred_idc);
   TRUE_OR_RETURN(pps->weighted_bipred_idc < 3);
 
@@ -796,13 +807,13 @@ H264Parser::Result H264Parser::ParsePPS(int* pps_id) {
   READ_SE_OR_RETURN(&pps->chroma_qp_index_offset);
   IN_RANGE_OR_RETURN(pps->chroma_qp_index_offset, -12, 12);
 
-  READ_BITS_OR_RETURN(1, &pps->deblocking_filter_control_present_flag);
-  READ_BITS_OR_RETURN(1, &pps->constrained_intra_pred_flag);
-  READ_BITS_OR_RETURN(1, &pps->redundant_pic_cnt_present_flag);
+  READ_BOOL_OR_RETURN(&pps->deblocking_filter_control_present_flag);
+  READ_BOOL_OR_RETURN(&pps->constrained_intra_pred_flag);
+  READ_BOOL_OR_RETURN(&pps->redundant_pic_cnt_present_flag);
 
   if (br_.HasMoreRBSPData()) {
-    READ_BITS_OR_RETURN(1, &pps->transform_8x8_mode_flag);
-    READ_BITS_OR_RETURN(1, &pps->pic_scaling_matrix_present_flag);
+    READ_BOOL_OR_RETURN(&pps->transform_8x8_mode_flag);
+    READ_BOOL_OR_RETURN(&pps->pic_scaling_matrix_present_flag);
 
     if (pps->pic_scaling_matrix_present_flag) {
       DVLOG(4) << "Picture scaling matrix present";
@@ -870,7 +881,7 @@ H264Parser::Result H264Parser::ParseRefPicListModifications(
   Result res;
 
   if (!shdr->IsISlice() && !shdr->IsSISlice()) {
-    READ_BITS_OR_RETURN(1, &shdr->ref_pic_list_modification_flag_l0);
+    READ_BOOL_OR_RETURN(&shdr->ref_pic_list_modification_flag_l0);
     if (shdr->ref_pic_list_modification_flag_l0) {
       res = ParseRefPicListModification(shdr->num_ref_idx_l0_active_minus1,
                                         shdr->ref_list_l0_modifications);
@@ -880,7 +891,7 @@ H264Parser::Result H264Parser::ParseRefPicListModifications(
   }
 
   if (shdr->IsBSlice()) {
-    READ_BITS_OR_RETURN(1, &shdr->ref_pic_list_modification_flag_l1);
+    READ_BOOL_OR_RETURN(&shdr->ref_pic_list_modification_flag_l1);
     if (shdr->ref_pic_list_modification_flag_l1) {
       res = ParseRefPicListModification(shdr->num_ref_idx_l1_active_minus1,
                                         shdr->ref_list_l1_modifications);
@@ -903,7 +914,7 @@ H264Parser::Result H264Parser::ParseWeightingFactors(
   int def_chroma_weight = 1 << chroma_log2_weight_denom;
 
   for (int i = 0; i < num_ref_idx_active_minus1 + 1; ++i) {
-    READ_BITS_OR_RETURN(1, &w_facts->luma_weight_flag);
+    READ_BOOL_OR_RETURN(&w_facts->luma_weight_flag);
     if (w_facts->luma_weight_flag) {
       READ_SE_OR_RETURN(&w_facts->luma_weight[i]);
       IN_RANGE_OR_RETURN(w_facts->luma_weight[i], -128, 127);
@@ -916,7 +927,7 @@ H264Parser::Result H264Parser::ParseWeightingFactors(
     }
 
     if (chroma_array_type != 0) {
-      READ_BITS_OR_RETURN(1, &w_facts->chroma_weight_flag);
+      READ_BOOL_OR_RETURN(&w_facts->chroma_weight_flag);
       if (w_facts->chroma_weight_flag) {
         for (int j = 0; j < 2; ++j) {
           READ_SE_OR_RETURN(&w_facts->chroma_weight[i][j]);
@@ -969,10 +980,10 @@ H264Parser::Result H264Parser::ParsePredWeightTable(const H264SPS& sps,
 
 H264Parser::Result H264Parser::ParseDecRefPicMarking(H264SliceHeader *shdr) {
   if (shdr->idr_pic_flag) {
-    READ_BITS_OR_RETURN(1, &shdr->no_output_of_prior_pics_flag);
-    READ_BITS_OR_RETURN(1, &shdr->long_term_reference_flag);
+    READ_BOOL_OR_RETURN(&shdr->no_output_of_prior_pics_flag);
+    READ_BOOL_OR_RETURN(&shdr->long_term_reference_flag);
   } else {
-    READ_BITS_OR_RETURN(1, &shdr->adaptive_ref_pic_marking_mode_flag);
+    READ_BOOL_OR_RETURN(&shdr->adaptive_ref_pic_marking_mode_flag);
 
     H264DecRefPicMarking* marking;
     if (shdr->adaptive_ref_pic_marking_mode_flag) {
@@ -1046,7 +1057,7 @@ H264Parser::Result H264Parser::ParseSliceHeader(const H264NALU& nalu,
   READ_BITS_OR_RETURN(sps->log2_max_frame_num_minus4 + 4,
                       &shdr->frame_num);
   if (!sps->frame_mbs_only_flag) {
-    READ_BITS_OR_RETURN(1, &shdr->field_pic_flag);
+    READ_BOOL_OR_RETURN(&shdr->field_pic_flag);
     if (shdr->field_pic_flag) {
       DVLOG(1) << "Interlaced streams not supported";
       return kUnsupportedStream;
@@ -1077,10 +1088,10 @@ H264Parser::Result H264Parser::ParseSliceHeader(const H264NALU& nalu,
   }
 
   if (shdr->IsBSlice())
-    READ_BITS_OR_RETURN(1, &shdr->direct_spatial_mv_pred_flag);
+    READ_BOOL_OR_RETURN(&shdr->direct_spatial_mv_pred_flag);
 
   if (shdr->IsPSlice() || shdr->IsSPSlice() || shdr->IsBSlice()) {
-    READ_BITS_OR_RETURN(1, &shdr->num_ref_idx_active_override_flag);
+    READ_BOOL_OR_RETURN(&shdr->num_ref_idx_active_override_flag);
     if (shdr->num_ref_idx_active_override_flag) {
       READ_UE_OR_RETURN(&shdr->num_ref_idx_l0_active_minus1);
       if (shdr->IsBSlice())
@@ -1131,7 +1142,7 @@ H264Parser::Result H264Parser::ParseSliceHeader(const H264NALU& nalu,
 
   if (shdr->IsSPSlice() || shdr->IsSISlice()) {
     if (shdr->IsSPSlice())
-      READ_BITS_OR_RETURN(1, &shdr->sp_for_switch_flag);
+      READ_BOOL_OR_RETURN(&shdr->sp_for_switch_flag);
     READ_SE_OR_RETURN(&shdr->slice_qs_delta);
   }
 
@@ -1182,8 +1193,8 @@ H264Parser::Result H264Parser::ParseSEI(H264SEIMessage* sei_msg) {
   switch (sei_msg->type) {
     case H264SEIMessage::kSEIRecoveryPoint:
       READ_UE_OR_RETURN(&sei_msg->recovery_point.recovery_frame_cnt);
-      READ_BITS_OR_RETURN(1, &sei_msg->recovery_point.exact_match_flag);
-      READ_BITS_OR_RETURN(1, &sei_msg->recovery_point.broken_link_flag);
+      READ_BOOL_OR_RETURN(&sei_msg->recovery_point.exact_match_flag);
+      READ_BOOL_OR_RETURN(&sei_msg->recovery_point.broken_link_flag);
       READ_BITS_OR_RETURN(2,
           &sei_msg->recovery_point.changing_slice_group_idc);
       break;

@@ -183,6 +183,7 @@
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
         'content_browser',
+        'content_common',
         'content_gpu',
         'content_plugin',
         'content_renderer',
@@ -292,6 +293,7 @@
         'common/mac/font_descriptor_unittest.mm',
         'common/gpu/gpu_info_unittest.cc',
         'common/gpu/gpu_memory_manager_unittest.cc',
+        'common/gpu/media/avc_config_record_builder_unittest.cc',
         'common/indexed_db/indexed_db_dispatcher_unittest.cc',
         'common/inter_process_time_ticks_converter_unittest.cc',
         'common/net/url_fetcher_impl_unittest.cc',
