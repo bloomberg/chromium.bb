@@ -817,7 +817,7 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   void PrepareForInitCacheTest() {
-    RunAllPendingForIO();  // Allow InitializeCacheOnIOThreadPool to finish.
+    RunAllPendingForIO();  // Allow InitializeCacheOnBlockingPool to finish.
 
     DVLOG(1) << "PrepareForInitCacheTest start";
     // Create gdata cache sub directories.
@@ -831,8 +831,8 @@ class GDataFileSystemTest : public testing::Test {
         file_system_->cache_paths_[GDataCache::CACHE_TYPE_OUTGOING]));
 
     // Dump some files into cache dirs so that
-    // GDataFileSystem::InitializeCacheIOThreadPool would scan through them and
-    // populate cache map accordingly.
+    // GDataFileSystem::InitializeCacheOnBlockingPool would scan through them
+    // and populate cache map accordingly.
 
     // Copy files from data dir to cache dir to act as cached files.
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(initial_cache_resources); ++i) {
@@ -885,7 +885,8 @@ class GDataFileSystemTest : public testing::Test {
     // OnCacheInitialized() is called again here, which breaks the
     // expectation set in SetUp().
     file_system_->RemoveObserver(mock_sync_client_.get());
-    file_system_->InitializeCacheOnIOThreadPool();  // Force a re-scan.
+    file_system_->RequestInitializeCacheForTesting();  // Force a re-scan.
+    RunAllPendingForIO();  // Wait until the initialization is done.
     file_system_->AddObserver(mock_sync_client_.get());
   }
 

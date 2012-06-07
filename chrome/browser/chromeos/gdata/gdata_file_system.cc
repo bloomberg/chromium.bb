@@ -123,6 +123,13 @@ struct LoadRootFeedParams {
   const FindEntryCallback callback;
 };
 
+// Helper to call IsRunningSequenceOnCurrentThread().
+bool IsRunningSequenceOnCurrentThread(
+    const base::SequencedWorkerPool::SequenceToken& sequence_token) {
+  return BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
+      sequence_token);
+}
+
 // Returns true if file system is due to be serialized on disk based on it
 // |serialized_size| and |last_serialized| timestamp.
 bool ShouldSerializeFileSystemNow(size_t serialized_size,
@@ -286,7 +293,7 @@ base::PlatformFileError ChangeFilePermissions(const FilePath& file_path,
   return error;
 }
 
-// Modifies cache state of file on IO thread pool, which involves:
+// Modifies cache state of file on blocking pool, which involves:
 // - moving or copying file (per |file_operation_type|) from |source_path| to
 //  |dest_path| if they're different
 // - deleting symlink if |symlink_path| is not empty
@@ -382,7 +389,7 @@ base::PlatformFileError ModifyCacheState(
 }
 
 // Deletes all files that match |path_to_delete_pattern| except for
-// |path_to_keep| on IO thread pool.
+// |path_to_keep| on blocking pool.
 // If |path_to_keep| is empty, all files in |path_to_delete_pattern| are
 // deleted.
 void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
@@ -564,7 +571,7 @@ class InitialLoadObserver : public GDataFileSystemInterface::Observer {
 };
 
 // Saves the string |serialized_proto| to a file at |path| on a blocking thread.
-void SaveProtoOnIOThreadPool(const FilePath& path,
+void SaveProtoOnBlockingPool(const FilePath& path,
                              scoped_ptr<std::string> serialized_proto) {
   const int file_size = static_cast<int>(serialized_proto->length());
   if (file_util::WriteFile(path, serialized_proto->data(), file_size) !=
@@ -580,7 +587,7 @@ void SaveProtoOnIOThreadPool(const FilePath& path,
 
 // Loads the file at |path| into the string |serialized_proto| on a blocking
 // thread.
-void LoadProtoOnIOThreadPool(const FilePath& path,
+void LoadProtoOnBlockingPool(const FilePath& path,
                              LoadRootFeedParams* params) {
   base::PlatformFileInfo info;
   if (!file_util::GetFileInfo(path, &info)) {
@@ -596,8 +603,8 @@ void LoadProtoOnIOThreadPool(const FilePath& path,
   params->load_error = base::PLATFORM_FILE_OK;
 }
 
-// Loads json file content content from |file_path| on IO thread pool.
-void LoadJsonFileOnIOThreadPool(
+// Loads json file content content from |file_path| on blocking pool.
+void LoadJsonFileOnBlockingPool(
     const FilePath& file_path,
     base::PlatformFileError* error,
     base::Value* result) {
@@ -639,9 +646,9 @@ void LoadJsonFileOnIOThreadPool(
   }
 }
 
-// Saves json file content content in |feed| to |file_pathname| on IO thread
+// Saves json file content content in |feed| to |file_pathname| on blocking
 // pool.
-void SaveFeedOnIOThreadPool(
+void SaveFeedOnBlockingPool(
     const FilePath& file_path,
     scoped_ptr<base::Value> feed) {
   std::string json;
@@ -668,7 +675,7 @@ void SaveFeedOnIOThreadPool(
 // Reads properties of |local_file| and fills in values of UploadFileInfo.
 // TODO(satorux,achuith): We should just get the file size in this function.
 // The rest of the work can be done on UI/IO thread.
-void CreateUploadFileInfoOnIOThreadPool(
+void CreateUploadFileInfoOnBlockingPool(
     const FilePath& local_file,
     const FilePath& remote_dest_file,
     base::PlatformFileError* error,
@@ -700,9 +707,9 @@ void CreateUploadFileInfoOnIOThreadPool(
 }
 
 // Checks if a local file at |local_file_path| is a JSON file referencing a
-// hosted document on IO thread poll, and if so, gets the resource ID of the
+// hosted document on blocking pool, and if so, gets the resource ID of the
 // document.
-void GetDocumentResourceIdOnIOThreadPool(
+void GetDocumentResourceIdOnBlockingPool(
     const FilePath& local_file_path,
     std::string* resource_id) {
   DCHECK(resource_id);
@@ -718,8 +725,8 @@ void GetDocumentResourceIdOnIOThreadPool(
 }
 
 // Creates a temporary JSON file representing a document with |edit_url|
-// and |resource_id| under |document_dir| on IO thread pool.
-void CreateDocumentJsonFileOnIOThreadPool(
+// and |resource_id| under |document_dir| on blocking pool.
+void CreateDocumentJsonFileOnBlockingPool(
     const FilePath& document_dir,
     const GURL& edit_url,
     const std::string& resource_id,
@@ -766,7 +773,7 @@ bool ShouldCreateDirectory(const FilePath& directory_path) {
 // file system using file_util::CopyFile. |error| is set to
 // base::PLATFORM_FILE_OK on success or base::PLATFORM_FILE_ERROR_FAILED
 // otherwise.
-void CopyLocalFileOnIOThreadPool(
+void CopyLocalFileOnBlockingPool(
     const FilePath& src_file_path,
     const FilePath& dest_file_path,
     base::PlatformFileError* error) {
@@ -1006,7 +1013,7 @@ void GDataFileSystem::Initialize() {
 
   PostBlockingPoolSequencedTask(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::InitializeCacheOnIOThreadPool,
+      base::Bind(&GDataFileSystem::InitializeCacheOnBlockingPool,
                  base::Unretained(this)));
 }
 
@@ -1046,8 +1053,8 @@ GDataFileSystem::~GDataFileSystem() {
   {
     // http://crbug.com/125220
     base::ThreadRestrictions::ScopedAllowWait allow_wait;
-    // We should wait if there is any pending tasks posted to the worker
-    // thread pool. on_io_completed_ won't be signaled iff |num_pending_tasks_|
+    // We should wait if there is any pending tasks posted to the blocking
+    // pool. on_io_completed_ won't be signaled iff |num_pending_tasks_|
     // is greater that 0.
     // We don't have to lock with |num_pending_tasks_lock_| here, since number
     // of pending tasks can only decrease at this point (Number of pending class
@@ -1369,7 +1376,7 @@ void GDataFileSystem::TransferFileFromLocalToRemote(
   std::string* resource_id = new std::string;
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GetDocumentResourceIdOnIOThreadPool,
+      base::Bind(&GetDocumentResourceIdOnBlockingPool,
                  local_src_file_path,
                  resource_id),
       base::Bind(&GDataFileSystem::TransferFileForResourceId,
@@ -1416,7 +1423,7 @@ void GDataFileSystem::TransferRegularFile(
   UploadFileInfo* upload_file_info = new UploadFileInfo;
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&CreateUploadFileInfoOnIOThreadPool,
+      base::Bind(&CreateUploadFileInfoOnBlockingPool,
                  local_file_path,
                  remote_dest_file_path,
                  error,
@@ -1622,12 +1629,12 @@ void GDataFileSystem::OnGetFileCompleteForTransferFile(
 
   // GetFileByPath downloads the file from gdata to a local cache, which is then
   // copied to the actual destination path on the local file system using
-  // CopyLocalFileOnIOThreadPool.
+  // CopyLocalFileOnBlockingPool.
   base::PlatformFileError* copy_file_error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&CopyLocalFileOnIOThreadPool,
+      base::Bind(&CopyLocalFileOnBlockingPool,
                  local_file_path,
                  local_dest_file_path,
                  copy_file_error),
@@ -2058,7 +2065,7 @@ void GDataFileSystem::GetFileByPathOnUIThread(
     GDataFileType* file_type = new GDataFileType(REGULAR_FILE);
     PostBlockingPoolSequencedTaskAndReply(
         FROM_HERE,
-        base::Bind(&CreateDocumentJsonFileOnIOThreadPool,
+        base::Bind(&CreateDocumentJsonFileOnBlockingPool,
                    GetCacheDirectoryPath(
                        GDataCache::CACHE_TYPE_TMP_DOCUMENTS),
                    file_properties.alternate_url,
@@ -2614,11 +2621,11 @@ void GDataFileSystem::GetCacheStateOnUIThread(
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   int* cache_state = new int(GDataCache::CACHE_STATE_NONE);
 
-  // GetCacheStateOnIOThreadPool won't do file IO, but post it to the thread
+  // GetCacheStateOnBlockingPool won't do file IO, but post it to the thread
   // pool, as it must be performed after the cache is initialized.
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::GetCacheStateOnIOThreadPool,
+      base::Bind(&GDataFileSystem::GetCacheStateOnBlockingPool,
                  base::Unretained(this),
                  resource_id,
                  md5,
@@ -2722,7 +2729,7 @@ void GDataFileSystem::SetMountedStateOnUIThread(
   FilePath* cache_file_path = new FilePath;
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::SetMountedStateOnIOThreadPool,
+      base::Bind(&GDataFileSystem::SetMountedStateOnBlockingPool,
                  base::Unretained(this),
                  file_path,
                  to_mount,
@@ -2734,11 +2741,12 @@ void GDataFileSystem::SetMountedStateOnUIThread(
                  base::Owned(cache_file_path)));
 }
 
-void GDataFileSystem::SetMountedStateOnIOThreadPool(
+void GDataFileSystem::SetMountedStateOnBlockingPool(
     const FilePath& file_path,
     bool to_mount,
     base::PlatformFileError *error,
     FilePath* cache_file_path) {
+  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
   DCHECK(error);
   DCHECK(cache_file_path);
 
@@ -3070,7 +3078,7 @@ void GDataFileSystem::LoadRootFeedFromCache(
                                                       should_load_from_server,
                                                       callback);
   BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
-      base::Bind(&LoadProtoOnIOThreadPool, path, params),
+      base::Bind(&LoadProtoOnBlockingPool, path, params),
       base::Bind(&GDataFileSystem::OnProtoLoaded,
                  ui_weak_ptr_,
                  base::Owned(params)));
@@ -3158,7 +3166,7 @@ void GDataFileSystem::SaveFileSystemAsProto() {
   root_->set_serialized_size(serialized_proto->size());
   PostBlockingPoolSequencedTask(
       FROM_HERE,
-      base::Bind(&SaveProtoOnIOThreadPool, path,
+      base::Bind(&SaveProtoOnBlockingPool, path,
                  base::Passed(serialized_proto.Pass())));
 }
 
@@ -3260,7 +3268,7 @@ void GDataFileSystem::SaveFeed(scoped_ptr<base::Value> feed,
                                const FilePath& name) {
   PostBlockingPoolSequencedTask(
       FROM_HERE,
-      base::Bind(&SaveFeedOnIOThreadPool,
+      base::Bind(&SaveFeedOnBlockingPool,
                  GetCacheDirectoryPath(
                      GDataCache::CACHE_TYPE_META).Append(name),
                  base::Passed(&feed)));
@@ -4069,7 +4077,7 @@ void GDataFileSystem::StoreToCache(const std::string& resource_id,
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::StoreToCacheOnIOThreadPool,
+      base::Bind(&GDataFileSystem::StoreToCacheOnBlockingPool,
                  base::Unretained(this),
                  resource_id,
                  md5,
@@ -4092,7 +4100,7 @@ void GDataFileSystem::Pin(const std::string& resource_id,
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::PinOnIOThreadPool,
+      base::Bind(&GDataFileSystem::PinOnBlockingPool,
                  base::Unretained(this),
                  resource_id,
                  md5,
@@ -4115,7 +4123,7 @@ void GDataFileSystem::Unpin(const std::string& resource_id,
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::UnpinOnIOThreadPool,
+      base::Bind(&GDataFileSystem::UnpinOnBlockingPool,
                  base::Unretained(this),
                  resource_id,
                  md5,
@@ -4140,7 +4148,7 @@ void GDataFileSystem::MarkDirtyInCache(
   FilePath* cache_file_path = new FilePath;
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::MarkDirtyInCacheOnIOThreadPool,
+      base::Bind(&GDataFileSystem::MarkDirtyInCacheOnBlockingPool,
                  base::Unretained(this),
                  resource_id,
                  md5,
@@ -4165,7 +4173,7 @@ void GDataFileSystem::CommitDirtyInCache(
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::CommitDirtyInCacheOnIOThreadPool,
+      base::Bind(&GDataFileSystem::CommitDirtyInCacheOnBlockingPool,
                  base::Unretained(this),
                  resource_id,
                  md5,
@@ -4188,7 +4196,7 @@ void GDataFileSystem::ClearDirtyInCache(
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::ClearDirtyInCacheOnIOThreadPool,
+      base::Bind(&GDataFileSystem::ClearDirtyInCacheOnBlockingPool,
                  base::Unretained(this),
                  resource_id,
                  md5,
@@ -4208,7 +4216,7 @@ void GDataFileSystem::RemoveFromCache(const std::string& resource_id,
 
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::RemoveFromCacheOnIOThreadPool,
+      base::Bind(&GDataFileSystem::RemoveFromCacheOnBlockingPool,
                  base::Unretained(this),
                  resource_id,
                  error),
@@ -4219,9 +4227,20 @@ void GDataFileSystem::RemoveFromCache(const std::string& resource_id,
                  ""  /* md5 */));
 }
 
-//========= GDataFileSystem: Cache tasks that ran on io thread pool ============
+void GDataFileSystem::RequestInitializeCacheForTesting() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-void GDataFileSystem::InitializeCacheOnIOThreadPool() {
+  PostBlockingPoolSequencedTask(
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::InitializeCacheOnBlockingPool,
+                 base::Unretained(this)));
+}
+
+//========= GDataFileSystem: Cache tasks that ran on blocking pool ============
+
+void GDataFileSystem::InitializeCacheOnBlockingPool() {
+  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
+
   base::PlatformFileError error = CreateCacheDirectories(cache_paths_);
   if (error != base::PLATFORM_FILE_OK)
     return;
@@ -4259,11 +4278,12 @@ void GDataFileSystem::InitializeCacheOnIOThreadPool() {
   DVLOG(1) << "Directory scan finished";
 }
 
-void GDataFileSystem::GetFileFromCacheOnIOThreadPool(
+void GDataFileSystem::GetFileFromCacheOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5,
     base::PlatformFileError* error,
     FilePath* cache_file_path) {
+  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
   DCHECK(error);
   DCHECK(cache_file_path);
 
@@ -4291,11 +4311,12 @@ void GDataFileSystem::GetFileFromCacheOnIOThreadPool(
   }
 }
 
-void GDataFileSystem::GetCacheStateOnIOThreadPool(
+void GDataFileSystem::GetCacheStateOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5,
     base::PlatformFileError* error,
     int* cache_state) {
+  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
   DCHECK(error);
   DCHECK(cache_state);
 
@@ -4317,12 +4338,13 @@ void GDataFileSystem::GetCacheStateOnIOThreadPool(
   }
 }
 
-void GDataFileSystem::StoreToCacheOnIOThreadPool(
+void GDataFileSystem::StoreToCacheOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5,
     const FilePath& source_path,
     FileOperationType file_operation_type,
     base::PlatformFileError* error) {
+  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
   DCHECK(error);
 
   base::AutoLock lock(lock_);  // For cache access.
@@ -4403,10 +4425,11 @@ void GDataFileSystem::StoreToCacheOnIOThreadPool(
   }
 }
 
-void GDataFileSystem::PinOnIOThreadPool(const std::string& resource_id,
+void GDataFileSystem::PinOnBlockingPool(const std::string& resource_id,
                                         const std::string& md5,
                                         FileOperationType file_operation_type,
                                         base::PlatformFileError* error) {
+  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
   DCHECK(error);
 
   base::AutoLock lock(lock_);  // For cache access.
@@ -4494,10 +4517,11 @@ void GDataFileSystem::PinOnIOThreadPool(const std::string& resource_id,
   }
 }
 
-void GDataFileSystem::UnpinOnIOThreadPool(const std::string& resource_id,
+void GDataFileSystem::UnpinOnBlockingPool(const std::string& resource_id,
                                           const std::string& md5,
                                           FileOperationType file_operation_type,
                                           base::PlatformFileError* error) {
+  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
   DCHECK(error);
 
   base::AutoLock lock(lock_);  // For cache access.
@@ -4576,12 +4600,13 @@ void GDataFileSystem::UnpinOnIOThreadPool(const std::string& resource_id,
   }
 }
 
-void GDataFileSystem::MarkDirtyInCacheOnIOThreadPool(
+void GDataFileSystem::MarkDirtyInCacheOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5,
     FileOperationType file_operation_type,
     base::PlatformFileError* error,
     FilePath* cache_file_path) {
+  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
   DCHECK(error);
   DCHECK(cache_file_path);
 
@@ -4682,11 +4707,12 @@ void GDataFileSystem::MarkDirtyInCacheOnIOThreadPool(
   }
 }
 
-void GDataFileSystem::CommitDirtyInCacheOnIOThreadPool(
+void GDataFileSystem::CommitDirtyInCacheOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5,
     FileOperationType file_operation_type,
     base::PlatformFileError* error) {
+  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
   DCHECK(error);
 
   base::AutoLock lock(lock_);  // For cache access.
@@ -4745,11 +4771,12 @@ void GDataFileSystem::CommitDirtyInCacheOnIOThreadPool(
                             true /* create symlink */);
 }
 
-void GDataFileSystem::ClearDirtyInCacheOnIOThreadPool(
+void GDataFileSystem::ClearDirtyInCacheOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5,
     FileOperationType file_operation_type,
     base::PlatformFileError* error) {
+  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
   DCHECK(error);
 
   base::AutoLock lock(lock_);  // For cache access.
@@ -4838,15 +4865,16 @@ void GDataFileSystem::ClearDirtyInCacheOnIOThreadPool(
   }
 }
 
-void GDataFileSystem::RemoveFromCacheOnIOThreadPool(
+void GDataFileSystem::RemoveFromCacheOnBlockingPool(
     const std::string& resource_id,
     base::PlatformFileError* error) {
+  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
   DCHECK(error);
 
   base::AutoLock lock(lock_);  // For cache access.
 
   // MD5 is not passed into RemoveFromCache and hence
-  // RemoveFromCacheOnIOThreadPool, because we would delete all cache files
+  // RemoveFromCacheOnBlockingPool, because we would delete all cache files
   // corresponding to <resource_id> regardless of the md5.
   // So, search for entry in cache without taking md5 into account.
   scoped_ptr<GDataCache::CacheEntry> cache_entry = cache_->GetCacheEntry(
@@ -4909,7 +4937,7 @@ void GDataFileSystem::RemoveFromCacheOnIOThreadPool(
   *error = base::PLATFORM_FILE_OK;
 }
 
-//=== GDataFileSystem: Cache callbacks for tasks that ran on io thread pool ====
+//=== GDataFileSystem: Cache callbacks for tasks that ran on blocking pool ====
 
 void GDataFileSystem::OnFilePinned(base::PlatformFileError* error,
                                    const std::string& resource_id,
@@ -5022,7 +5050,7 @@ void GDataFileSystem::GetFileFromCacheByResourceIdAndMd5(
   FilePath* cache_file_path = new FilePath;
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::GetFileFromCacheOnIOThreadPool,
+      base::Bind(&GDataFileSystem::GetFileFromCacheOnBlockingPool,
                  base::Unretained(this),
                  resource_id,
                  md5,
@@ -5036,7 +5064,9 @@ void GDataFileSystem::GetFileFromCacheByResourceIdAndMd5(
                  base::Owned(cache_file_path)));
 }
 
-void GDataFileSystem::RunTaskOnIOThreadPool(const base::Closure& task) {
+void GDataFileSystem::RunTaskOnBlockingPool(const base::Closure& task) {
+  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
+
   task.Run();
 
   {
@@ -5063,12 +5093,12 @@ void GDataFileSystem::PostBlockingPoolSequencedTaskAndReply(
     const base::Closure& reply_task) {
   {
     // Note that we cannot use |lock_| as lock_ can be held before this
-    // function is called (i.e. InitializeCacheOnIOThreadPool does).
+    // function is called (i.e. InitializeCacheOnBlockingPool does).
     base::AutoLock lock(num_pending_tasks_lock_);
 
     // Initiate the sequenced task. We should Reset() here rather than on the
-    // blocking thread pool, as Reset() will cause a deadlock if it's called
-    // while Wait() is being called in the destructor.
+    // blocking pool, as Reset() will cause a deadlock if it's called while
+    // Wait() is being called in the destructor.
     //
     // Signaling on_io_completed_ is closely coupled with number of pending
     // tasks. We signal it when the number decreases to 0. Because of that, we
@@ -5083,7 +5113,7 @@ void GDataFileSystem::PostBlockingPoolSequencedTaskAndReply(
   const bool posted = pool->GetSequencedTaskRunner(sequence_token_)->
       PostTaskAndReply(
           from_here,
-          base::Bind(&GDataFileSystem::RunTaskOnIOThreadPool,
+          base::Bind(&GDataFileSystem::RunTaskOnBlockingPool,
                      base::Unretained(this),
                      request_task),
           reply_task);

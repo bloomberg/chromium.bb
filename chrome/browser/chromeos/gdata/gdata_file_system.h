@@ -105,7 +105,7 @@ typedef base::Callback<void(base::PlatformFileError error,
                             int64 bytes_used)>
     GetAvailableSpaceCallback;
 
-// Used by GDataFileSystem::GetDocumentResourceIdOnIOThreadPool to return
+// Used by GDataFileSystem::GetDocumentResourceIdOnBlockingPool to return
 // the resource ID read from a document JSON file on the local file system.
 typedef base::Callback<void(const std::string& resource_id)>
     GetDocumentResourceIdCallback;
@@ -737,7 +737,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Invoked upon completion of GetFileByPath initiated by
   // TransferFileFromRemoteToLocal. If GetFileByPath reports no error, calls
-  // CopyLocalFileOnIOThreadPoll to copy |local_file_path| to
+  // CopyLocalFileOnBlockingPool to copy |local_file_path| to
   // |local_dest_file_path|.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
@@ -1203,74 +1203,79 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void RemoveFromCache(const std::string& resource_id,
                        const CacheOperationCallback& callback);
 
-  // Cache tasks that run on IO thread pool, posted from above cache entry
+  // Requests to initialize the cache for testing.
+  //
+  // Must be called on UI thread.
+  void RequestInitializeCacheForTesting();
+
+  // Cache tasks that run on blocking pool, posted from above cache entry
   // points.
 
-  // Task posted from InitializeCacheIfNecessary to run on IO thread pool.
+  // Task posted from InitializeCacheIfNecessary to run on blocking pool.
   // Creates cache directory and its sub-directories if they don't exist,
   // or scans blobs sub-directory for files and their attributes and updates the
   // info into cache map.
-  void InitializeCacheOnIOThreadPool();
+  void InitializeCacheOnBlockingPool();
 
-  // Task posted from GetFileFromCacheInternal to run on IO thread pool.
+  // Task posted from GetFileFromCacheInternal to run on blocking pool.
   // Checks if file corresponding to |resource_id| and |md5| exists in cache
   // map.
   // Even though this task doesn't involve IO operations, it still runs on the
-  // IO thread pool, to force synchronization of all tasks on IO thread pool,
+  // blocking pool, to force synchronization of all tasks on blocking pool,
   // e.g. this absolute must execute after InitailizeCacheOnIOTheadPool.
-  void GetFileFromCacheOnIOThreadPool(
+  void GetFileFromCacheOnBlockingPool(
       const std::string& resource_id,
       const std::string& md5,
       base::PlatformFileError* error,
       FilePath* cache_file_path);
 
-  // Task posted from GetCacheState to run on IO thread pool.
+  // Task posted from GetCacheState to run on blocking pool.
   // Checks if file corresponding to |resource_id| and |md5| exists in cache
   // map.  If yes, returns its cache state; otherwise, returns CACHE_STATE_NONE.
   // Even though this task doesn't involve IO operations, it still runs on the
-  // IO thread pool, to force synchronization of all tasks on IO thread pool,
+  // blocking pool, to force synchronization of all tasks on blocking pool,
   // e.g. this absolutely must execute after InitailizeCacheOnIOTheadPool.
-  void GetCacheStateOnIOThreadPool(
+  void GetCacheStateOnBlockingPool(
       const std::string& resource_id,
       const std::string& md5,
       base::PlatformFileError* error,
       int* cache_state);
 
-  // Task posted from StoreToCache to run on IO thread pool:
+  // Task posted from StoreToCache to run on blocking pool:
   // - moves or copies (per |file_operation_type|) |source_path|
   //   to |dest_path| in the cache dir
   // - if necessary, creates symlink
   // - deletes stale cached versions of |resource_id| in
   //   |dest_path|'s directory.
-  void StoreToCacheOnIOThreadPool(
+  void StoreToCacheOnBlockingPool(
       const std::string& resource_id,
       const std::string& md5,
       const FilePath& source_path,
       FileOperationType file_operation_type,
       base::PlatformFileError* error);
 
-  // Task posted from Pin to modify cache state on the IO thread pool, which
+  // Task posted from Pin to modify cache state on the blocking pool, which
   // involves the following:
   // - moves |source_path| to |dest_path| in persistent dir if
   //   file is not dirty
   // - creates symlink in pinned dir that references downloaded or locally
   //   modified file
-  void PinOnIOThreadPool(const std::string& resource_id,
+  void PinOnBlockingPool(const std::string& resource_id,
                          const std::string& md5,
                          FileOperationType file_operation_type,
                          base::PlatformFileError* error);
 
-  // Task posted from Unpin to modify cache state on the IO thread pool, which
+  // Task posted from Unpin to modify cache state on the blocking pool, which
   // involves the following:
   // - moves |source_path| to |dest_path| in tmp dir if file is
   //   not dirty
   // - deletes symlink from pinned dir
-  void UnpinOnIOThreadPool(const std::string& resource_id,
+  void UnpinOnBlockingPool(const std::string& resource_id,
                            const std::string& md5,
                            FileOperationType file_operation_type,
                            base::PlatformFileError* error);
 
-  // Task posted from SetMountedState to modify cache state on the IO thread
+  // Task posted from SetMountedState to modify cache state on the blocking
   // pool, which involves the following:
   // - moves |source_path| to |dest_path|, where
   //   if we're mounting: |source_path| is the unmounted path and has .<md5>
@@ -1278,31 +1283,31 @@ class GDataFileSystem : public GDataFileSystemInterface,
   //       and has .<md5>.mounted extension;
   //   if we're unmounting: the opposite is true for the two paths, i.e.
   //       |dest_path| is the mounted path and |source_path| the unmounted path.
-  void SetMountedStateOnIOThreadPool(const FilePath& file_path,
+  void SetMountedStateOnBlockingPool(const FilePath& file_path,
                                      bool to_mount,
                                      base::PlatformFileError* error,
                                      FilePath* cache_file_path);
 
-  // Task posted from MarkDirtyInCache to modify cache state on the IO thread
+  // Task posted from MarkDirtyInCache to modify cache state on the blocking
   // pool, which involves the following:
   // - moves |source_path| to |dest_path| in persistent dir, where
   //   |source_path| has .<md5> extension and |dest_path| has .local extension
   // - if file is pinned, updates symlink in pinned dir to reference dirty file
-  void MarkDirtyInCacheOnIOThreadPool(const std::string& resource_id,
+  void MarkDirtyInCacheOnBlockingPool(const std::string& resource_id,
                                       const std::string& md5,
                                       FileOperationType file_operation_type,
                                       base::PlatformFileError* error,
                                       FilePath* cache_file_path);
 
-  // Task posted from CommitDirtyInCache to modify cache state on the IO thread
+  // Task posted from CommitDirtyInCache to modify cache state on the blocking
   // pool, i.e. creates symlink in outgoing dir to reference dirty file in
   // persistent dir.
-  void CommitDirtyInCacheOnIOThreadPool(const std::string& resource_id,
+  void CommitDirtyInCacheOnBlockingPool(const std::string& resource_id,
                                         const std::string& md5,
                                         FileOperationType file_operation_type,
                                         base::PlatformFileError* error);
 
-  // Task posted from ClearDirtyInCache to modify cache state on the IO thread
+  // Task posted from ClearDirtyInCache to modify cache state on the blocking
   // pool, which involves the following:
   // - moves |source_path| to |dest_path| in persistent dir if
   //   file is pinned or tmp dir otherwise, where |source_path| has .local
@@ -1310,20 +1315,20 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // - deletes symlink in outgoing dir
   // - if file is pinned, updates symlink in pinned dir to reference
   //   |dest_path|
-  void ClearDirtyInCacheOnIOThreadPool(const std::string& resource_id,
+  void ClearDirtyInCacheOnBlockingPool(const std::string& resource_id,
                                        const std::string& md5,
                                        FileOperationType file_operation_type,
                                        base::PlatformFileError* error);
 
-  // Task posted from RemoveFromCache to do the following on the IO thread pool:
+  // Task posted from RemoveFromCache to do the following on the blocking pool:
   // - remove all delete stale cache versions corresponding to |resource_id| in
   //   persistent, tmp and pinned directories
   // - remove entry corresponding to |resource_id| from cache map.
-  void RemoveFromCacheOnIOThreadPool(const std::string& resource_id,
+  void RemoveFromCacheOnBlockingPool(const std::string& resource_id,
                                      base::PlatformFileError* error);
 
   // Cache intermediate callbacks, that run on calling thread, for above cache
-  // tasks that were run on IO thread pool.
+  // tasks that were run on blocking pool.
 
   // Callback for Pin. Runs |callback| and notifies the observers.
   void OnFilePinned(base::PlatformFileError* error,
@@ -1382,13 +1387,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
       GDataCache::CacheSubDirectoryType sub_dir_type,
       GDataCache::CacheMap* cache_map);
 
-  // Wrapper task around any sequenced task that runs on IO thread pool that
+  // Wrapper task around any sequenced task that runs on blocking pool that
   // makes sure |in_shutdown_| and |on_io_completed_| are handled properly in
   // the right order.
-  void RunTaskOnIOThreadPool(const base::Closure& task);
+  void RunTaskOnBlockingPool(const base::Closure& task);
 
   // Wrapper around BrowserThread::PostTask to post
-  // RunTaskOnIOThreadPool task to the blocking thread pool.
+  // RunTaskOnBlockingPool task to the blocking pool.
   void PostBlockingPoolSequencedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task);
@@ -1508,14 +1513,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
   std::vector<FilePath> cache_paths_;
 
   // Waitable events used to block destructor until all the tasks on blocking
-  // thread pool are run.
+  // pool are run.
   scoped_ptr<base::WaitableEvent> on_io_completed_;
 
   // True if cache initialization has started, is in progress or has completed,
   // we only want to initialize cache once.
   bool cache_initialization_started_;
 
-  // Number of pending tasks on the blocking thread pool.
+  // Number of pending tasks on the blocking pool.
   int num_pending_tasks_;
   base::Lock num_pending_tasks_lock_;
 

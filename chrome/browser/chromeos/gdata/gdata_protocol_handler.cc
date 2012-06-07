@@ -62,7 +62,7 @@ void EmptyCompletionCallback(int) {
 }
 
 // Helper function that reads file size.
-void GetFileSizeOnIOThreadPool(const FilePath& file_path,
+void GetFileSizeOnBlockingPool(const FilePath& file_path,
                                int64* file_size) {
   if (!file_util::GetFileSize(file_path, file_size))
     *file_size = 0;
@@ -140,7 +140,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
                              const std::string& mime_type,
                              GDataFileType file_type);
 
-  // Helper callback for GetFileSizeOnIOThreadPool that sets |remaining_bytes_|
+  // Helper callback for GetFileSizeOnBlockingPool that sets |remaining_bytes_|
   // to |file_size|, and notifies result for Start().
   void OnGetFileSize(int64 *file_size);
 
@@ -643,12 +643,12 @@ void GDataURLRequestJob::OnGetFileByResourceId(
     return;
 
   // Even though we're already on BrowserThread::IO thread,
-  // file_util::GetFileSize can only be called IO thread pool, so post a task
-  // to blocking pool instead.
+  // file_util::GetFileSize can only be called on a thread with file
+  // operations allowed, so post a task to blocking pool instead.
   int64* file_size = new int64(0);
   BrowserThread::GetBlockingPool()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GetFileSizeOnIOThreadPool,
+      base::Bind(&GetFileSizeOnBlockingPool,
                  local_file_path_,
                  base::Unretained(file_size)),
       base::Bind(&GDataURLRequestJob::OnGetFileSize,
