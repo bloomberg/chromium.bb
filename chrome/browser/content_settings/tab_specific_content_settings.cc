@@ -28,6 +28,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -42,6 +43,19 @@ namespace {
 typedef std::list<TabSpecificContentSettings*> TabSpecificList;
 static base::LazyInstance<TabSpecificList> g_tab_specific =
     LAZY_INSTANCE_INITIALIZER;
+
+class InterstitialHostObserver : public content::RenderViewHostObserver {
+ public:
+  explicit InterstitialHostObserver(RenderViewHost* rvh)
+      : content::RenderViewHostObserver(rvh) {}
+
+  // content::RenderViewHostObserver overrides.
+  virtual void RenderViewHostInitialized() OVERRIDE {
+    Send(new ChromeViewMsg_SetAsInterstitial(routing_id()));
+    delete this;
+  }
+};
+
 }
 
 TabSpecificContentSettings::SiteDataObserver::SiteDataObserver(
@@ -435,8 +449,9 @@ void TabSpecificContentSettings::ClearGeolocationContentSettings() {
 
 void TabSpecificContentSettings::RenderViewForInterstitialPageCreated(
     RenderViewHost* render_view_host) {
-  render_view_host->Send(new ChromeViewMsg_SetAsInterstitial(
-      render_view_host->GetRoutingID()));
+  // We want to tell the renderer-side code to ignore content settings for this
+  // page but we must wait until the RenderView is created.
+  new InterstitialHostObserver(render_view_host);
 }
 
 bool TabSpecificContentSettings::OnMessageReceived(
