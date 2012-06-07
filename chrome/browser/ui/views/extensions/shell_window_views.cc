@@ -182,6 +182,7 @@ ShellWindowViews::ShellWindowViews(Profile* profile,
     : ShellWindow(profile, extension, url),
       title_view_(NULL),
       web_view_(NULL),
+      is_fullscreen_(false),
       use_custom_frame_(
           win_params.frame == ShellWindow::CreateParams::FRAME_CUSTOM) {
   window_ = new views::Widget;
@@ -217,6 +218,18 @@ void ShellWindowViews::ViewHierarchyChanged(
     AddChildView(web_view_);
     web_view_->SetWebContents(web_contents());
   }
+}
+
+void ShellWindowViews::SetFullscreen(bool fullscreen) {
+  is_fullscreen_ = fullscreen;
+  window_->SetFullscreen(fullscreen);
+  // TODO(jeremya) we need to call RenderViewHost::ExitFullscreen() if we
+  // ever drop the window out of fullscreen in response to something that
+  // wasn't the app calling webkitCancelFullScreen().
+}
+
+bool ShellWindowViews::IsFullscreenOrPending() const {
+  return is_fullscreen_;
 }
 
 ShellWindowViews::~ShellWindowViews() {
@@ -360,8 +373,8 @@ void ShellWindowViews::OnViewWasResized() {
   int height = sz.height(), width = sz.width();
   int radius = 1;
   gfx::Path path;
-  if (GetWidget()->IsMaximized()) {
-    // Don't round the corners when the window is maximized.
+  if (window_->IsMaximized() || window_->IsFullscreen()) {
+    // Don't round the corners when the window is maximized or fullscreen.
     path.addRect(0, 0, width, height);
   } else {
     if (use_custom_frame_) {
@@ -383,14 +396,18 @@ void ShellWindowViews::OnViewWasResized() {
   SetWindowRgn(web_contents()->GetNativeView(), path.CreateNativeRegion(), 1);
 
   SkRegion* rgn = new SkRegion;
-  if (caption_region_.Get())
-    rgn->op(*caption_region_.Get(), SkRegion::kUnion_Op);
-  if (!GetWidget()->IsMaximized()) {
-    if (use_custom_frame_)
-      rgn->op(0, 0, width, kResizeBorderWidth, SkRegion::kUnion_Op);
-    rgn->op(0, 0, kResizeBorderWidth, height, SkRegion::kUnion_Op);
-    rgn->op(width - kResizeBorderWidth, 0, width, height, SkRegion::kUnion_Op);
-    rgn->op(0, height - kResizeBorderWidth, width, height, SkRegion::kUnion_Op);
+  if (!window_->IsFullscreen()) {
+    if (caption_region_.Get())
+      rgn->op(*caption_region_.Get(), SkRegion::kUnion_Op);
+    if (!window_->IsMaximized()) {
+      if (use_custom_frame_)
+        rgn->op(0, 0, width, kResizeBorderWidth, SkRegion::kUnion_Op);
+      rgn->op(0, 0, kResizeBorderWidth, height, SkRegion::kUnion_Op);
+      rgn->op(width - kResizeBorderWidth, 0, width, height,
+          SkRegion::kUnion_Op);
+      rgn->op(0, height - kResizeBorderWidth, width, height,
+          SkRegion::kUnion_Op);
+    }
   }
   web_contents()->GetRenderViewHost()->GetView()->SetClickthroughRegion(rgn);
 #endif
@@ -402,9 +419,15 @@ void ShellWindowViews::Layout() {
     web_view_->SetBounds(0, 0, width(), height());
   } else {
     DCHECK(title_view_);
-    title_view_->SetBounds(0, 0, width(), kCaptionHeight);
-    web_view_->SetBounds(0, kCaptionHeight,
-        width(), height() - kCaptionHeight);
+    if (window_->IsFullscreen()) {
+      title_view_->SetVisible(false);
+      web_view_->SetBounds(0, 0, width(), height());
+    } else {
+      title_view_->SetVisible(true);
+      title_view_->SetBounds(0, 0, width(), kCaptionHeight);
+      web_view_->SetBounds(0, kCaptionHeight,
+          width(), height() - kCaptionHeight);
+    }
   }
   OnViewWasResized();
 }

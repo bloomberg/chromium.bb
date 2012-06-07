@@ -70,6 +70,8 @@ class ShellWindowViews : public ShellWindow,
 
   // ShellWindow implementation.
   virtual void UpdateWindowTitle() OVERRIDE;
+  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
+  virtual bool IsFullscreenOrPending() const OVERRIDE;
 
  private:
   friend class ShellWindowFrameView;
@@ -85,6 +87,7 @@ class ShellWindowViews : public ShellWindow,
   views::View* title_view_;
   views::WebView* web_view_;
   views::Widget* window_;
+  bool is_fullscreen_;
 
   gfx::ScopedSkRegion caption_region_;
 

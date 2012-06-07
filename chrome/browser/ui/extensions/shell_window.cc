@@ -60,6 +60,11 @@ ShellWindow::ShellWindow(Profile* profile,
       extension_(extension),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(profile, this)) {
+  // TODO(jeremya) this should all be done in an Init() method, not in the
+  // constructor. During this code, WebContents will be calling
+  // WebContentsDelegate methods, but at this point the vftables for the
+  // subclass are not yet in place, since it's still halfway through its
+  // constructor. As a result, overridden virtual methods won't be called.
   web_contents_ = WebContents::Create(
       profile, SiteInstance::CreateForURL(profile, url), MSG_ROUTING_NONE, NULL,
       NULL);
@@ -97,6 +102,10 @@ ShellWindow::~ShellWindow() {
 
   // Remove shutdown prevention.
   browser::EndKeepAlive();
+}
+
+bool ShellWindow::IsFullscreenOrPending() const {
+  return false;
 }
 
 string16 ShellWindow::GetTitle() const {
@@ -158,6 +167,18 @@ void ShellWindow::NavigationStateChanged(
   DCHECK(source == web_contents_);
   if (changed_flags & content::INVALIDATE_TYPE_TITLE)
     UpdateWindowTitle();
+}
+
+void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,
+                                             bool enter_fullscreen) {
+  DCHECK(source == web_contents_);
+  SetFullscreen(enter_fullscreen);
+}
+
+bool ShellWindow::IsFullscreenForTabOrPending(
+    const content::WebContents* source) const {
+  DCHECK(source == web_contents_);
+  return IsFullscreenOrPending();
 }
 
 void ShellWindow::Observe(int type,
