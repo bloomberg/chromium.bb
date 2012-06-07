@@ -219,7 +219,7 @@ class FileSystemMountPointProviderTest : public testing::Test {
 #if defined(OS_CHROMEOS)
     ExternalFileSystemMountPointProvider* external_provider =
         file_system_context_->external_provider();
-    external_provider->AddMountPoint(FilePath(kMountPoint));
+    external_provider->AddLocalMountPoint(FilePath(kMountPoint));
 #endif
   }
 
@@ -254,6 +254,7 @@ class FileSystemMountPointProviderTest : public testing::Test {
 
  private:
   ScopedTempDir data_dir_;
+  MessageLoop message_loop_;
   base::WeakPtrFactory<FileSystemMountPointProviderTest> weak_factory_;
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;

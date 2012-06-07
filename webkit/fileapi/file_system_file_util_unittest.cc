@@ -5,6 +5,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -149,6 +150,7 @@ class FileSystemFileUtilTest : public testing::Test {
   }
 
  private:
+  MessageLoop message_loop_;
   DISALLOW_COPY_AND_ASSIGN(FileSystemFileUtilTest);
 };
 

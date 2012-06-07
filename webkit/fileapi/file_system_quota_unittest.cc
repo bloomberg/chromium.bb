@@ -162,6 +162,7 @@ class FileSystemQuotaTest
   FileSystemTestOriginHelper test_helper_;
 
   ScopedTempDir work_dir_;
+  MessageLoop message_loop_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
 
   base::WeakPtrFactory<FileSystemQuotaTest> weak_factory_;

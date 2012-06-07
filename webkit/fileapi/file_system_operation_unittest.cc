@@ -379,6 +379,7 @@ class FileSystemOperationTest
   scoped_refptr<ShareableFileReference> shareable_file_ref_;
 
  private:
+  MessageLoop message_loop_;
   scoped_refptr<QuotaManager> quota_manager_;
   scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
 

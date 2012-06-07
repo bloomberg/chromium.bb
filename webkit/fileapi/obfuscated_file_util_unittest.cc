@@ -597,6 +597,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
  private:
   ScopedTempDir data_dir_;
+  MessageLoop message_loop_;
   ObfuscatedFileUtil* obfuscated_file_util_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
   scoped_refptr<FileSystemContext> file_system_context_;

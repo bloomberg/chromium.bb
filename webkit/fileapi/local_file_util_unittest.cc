@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
@@ -97,6 +98,7 @@ class LocalFileUtilTest : public testing::Test {
  private:
   scoped_ptr<LocalFileUtil> local_file_util_;
   ScopedTempDir data_dir_;
+  MessageLoop message_loop_;
   FileSystemTestOriginHelper test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileUtilTest);

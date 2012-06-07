@@ -53,6 +53,7 @@ class SandboxMountPointProviderOriginEnumeratorTest : public testing::Test {
   }
 
   ScopedTempDir data_dir_;
+  MessageLoop message_loop_;
   scoped_ptr<SandboxMountPointProvider> sandbox_provider_;
 };
 
@@ -344,6 +345,7 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
 
  protected:
   ScopedTempDir data_dir_;
+  MessageLoop message_loop_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::WeakPtrFactory<SandboxMountPointProviderMigrationTest> weak_factory_;
 };

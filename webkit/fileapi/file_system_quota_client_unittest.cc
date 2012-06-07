@@ -249,6 +249,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   }
 
   ScopedTempDir data_dir_;
+  MessageLoop message_loop_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::WeakPtrFactory<FileSystemQuotaClientTest> weak_factory_;
   int64 usage_;

@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// NOTE: These tests are run as part of "unit_tests" (in chrome/test) rather
-// than as part of test_shell_tests because they rely on being able to
-// instantiate a MessageLoop of type TYPE_IO.  test_shell_tests uses TYPE_UI,
-// which net::TestCompletionCallback doesn't allow.
-
 #include "webkit/fileapi/local_file_stream_writer.h"
 
 #include <string>

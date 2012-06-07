@@ -9,6 +9,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -209,6 +210,7 @@ class IsolatedFileUtilTest : public testing::Test {
   }
 
   ScopedTempDir data_dir_;
+  MessageLoop message_loop_;
   std::string filesystem_id_;
   scoped_refptr<FileSystemContext> file_system_context_;
   std::map<FilePath, FilePath> toplevel_root_map_;
