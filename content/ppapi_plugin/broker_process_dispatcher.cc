@@ -82,17 +82,32 @@ bool BrokerProcessDispatcher::ClearSiteData(const FilePath& plugin_data_path,
                                             uint64 max_age) {
   if (!get_plugin_interface_)
     return false;
-  const PPP_Flash_BrowserOperations_1_0* browser_interface =
+
+  const PPP_Flash_BrowserOperations_1_1* browser_interface =
+      static_cast<const PPP_Flash_BrowserOperations_1_1*>(
+          get_plugin_interface_(PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_1));
+  if (browser_interface) {
+    std::string data_str = ConvertPluginDataPath(plugin_data_path);
+    browser_interface->ClearSiteData(data_str.c_str(),
+                                     site.empty() ? NULL : site.c_str(),
+                                     flags, max_age);
+    return true;
+  }
+
+  // TODO(viettrungluu): Remove this (and the 1.0 interface) sometime after M21
+  // goes to Stable.
+  const PPP_Flash_BrowserOperations_1_0* browser_interface_1_0 =
       static_cast<const PPP_Flash_BrowserOperations_1_0*>(
           get_plugin_interface_(PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_0));
-  if (!browser_interface)
-    return false;
+  if (browser_interface_1_0) {
+    std::string data_str = ConvertPluginDataPath(plugin_data_path);
+    browser_interface_1_0->ClearSiteData(data_str.c_str(),
+                                         site.empty() ? NULL : site.c_str(),
+                                         flags, max_age);
+    return true;
+  }
 
-  std::string data_str = ConvertPluginDataPath(plugin_data_path);
-  browser_interface->ClearSiteData(data_str.c_str(),
-                                   site.empty() ? NULL : site.c_str(),
-                                   flags, max_age);
-  return true;
+  return false;
 }
 
 bool BrokerProcessDispatcher::DeauthorizeContentLicenses(
