@@ -86,4 +86,9 @@ bool ShellNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
   return true;
 }
 
+bool ShellNetworkDelegate::OnCanThrottleRequest(
+    const net::URLRequest& request) const {
+  return false;
+}
+
 }  // namespace content

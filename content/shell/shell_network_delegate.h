@@ -54,6 +54,8 @@ class ShellNetworkDelegate : public net::NetworkDelegate {
                               net::CookieOptions* options) OVERRIDE;
   virtual bool OnCanAccessFile(const net::URLRequest& request,
                                const FilePath& path) const OVERRIDE;
+  virtual bool OnCanThrottleRequest(
+      const net::URLRequest& request) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ShellNetworkDelegate);
 };

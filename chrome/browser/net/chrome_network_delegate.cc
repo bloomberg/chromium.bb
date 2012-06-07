@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
@@ -129,6 +130,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       cookie_settings_(cookie_settings),
       extension_info_map_(extension_info_map),
       enable_referrers_(enable_referrers),
+      never_throttle_requests_(false),
       url_blacklist_manager_(url_blacklist_manager) {
   DCHECK(event_router);
   DCHECK(enable_referrers);
@@ -136,6 +138,10 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
 }
 
 ChromeNetworkDelegate::~ChromeNetworkDelegate() {}
+
+void ChromeNetworkDelegate::NeverThrottleRequests() {
+  never_throttle_requests_ = true;
+}
 
 // static
 void ChromeNetworkDelegate::InitializeReferrersEnabled(
@@ -353,4 +359,14 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
 #else
   return true;
 #endif  // defined(OS_CHROMEOS)
+}
+
+bool ChromeNetworkDelegate::OnCanThrottleRequest(
+    const net::URLRequest& request) const {
+  if (never_throttle_requests_) {
+    return false;
+  }
+
+  return request.first_party_for_cookies().scheme() !=
+      chrome::kExtensionScheme;
 }

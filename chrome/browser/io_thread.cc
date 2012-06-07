@@ -395,13 +395,18 @@ void IOThread::Init() {
 
   globals_->extension_event_router_forwarder =
       extension_event_router_forwarder_;
-  globals_->system_network_delegate.reset(new ChromeNetworkDelegate(
+  ChromeNetworkDelegate* network_delegate = new ChromeNetworkDelegate(
       extension_event_router_forwarder_,
       NULL,
       NULL,
       NULL,
       NULL,
-      &system_enable_referrers_));
+      &system_enable_referrers_);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableExtensionsHttpThrottling)) {
+    network_delegate->NeverThrottleRequests();
+  }
+  globals_->system_network_delegate.reset(network_delegate);
   globals_->host_resolver.reset(
       CreateGlobalHostResolver(net_log_));
   globals_->cert_verifier.reset(net::CertVerifier::CreateDefault());
@@ -447,13 +452,9 @@ void IOThread::Init() {
       new net::FtpNetworkLayer(globals_->host_resolver.get()));
 
   globals_->throttler_manager.reset(new net::URLRequestThrottlerManager());
+  globals_->throttler_manager->set_net_log(net_log_);
   // Always done in production, disabled only for unit tests.
   globals_->throttler_manager->set_enable_thread_checks(true);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableExtensionsHttpThrottling)) {
-    globals_->throttler_manager->set_enforce_throttling(false);
-  }
-  globals_->throttler_manager->set_net_log(net_log_);
 
   globals_->proxy_script_fetcher_context.reset(
       ConstructProxyScriptFetcherContext(globals_, net_log_));

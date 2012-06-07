@@ -177,6 +177,11 @@ class TestShellNetworkDelegate : public net::NetworkDelegate {
                                const FilePath& path) const OVERRIDE {
     return true;
   }
+  virtual bool OnCanThrottleRequest(
+      const net::URLRequest& request) const OVERRIDE {
+    return false;
+  }
+
 };
 
 TestShellRequestContextParams* g_request_context_params = NULL;

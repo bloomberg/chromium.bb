@@ -42,6 +42,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
       BooleanPrefMember* enable_referrers);
   virtual ~ChromeNetworkDelegate();
 
+  // Causes |OnCanThrottleRequest| to never return true.
+  void NeverThrottleRequests();
+
   // Binds |enable_referrers| to |pref_service| and moves it to the IO thread.
   // This method should be called on the UI thread.
   static void InitializeReferrersEnabled(BooleanPrefMember* enable_referrers,
@@ -88,6 +91,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
                               net::CookieOptions* options) OVERRIDE;
   virtual bool OnCanAccessFile(const net::URLRequest& request,
                                const FilePath& path) const OVERRIDE;
+  virtual bool OnCanThrottleRequest(
+      const net::URLRequest& request) const OVERRIDE;
 
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
   void* profile_;
@@ -97,6 +102,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   // Weak, owned by our owner.
   BooleanPrefMember* enable_referrers_;
+
+  // True if OnCanThrottleRequest should always return false.
+  bool never_throttle_requests_;
 
   // Weak, owned by our owner.
   const policy::URLBlacklistManager* url_blacklist_manager_;
