@@ -122,7 +122,9 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
 
   class VersionInfo {
    public:
+    // If version_style is empty, it defaults to kNumerical.
     VersionInfo(const std::string& version_op,
+                const std::string& version_style,
                 const std::string& version_string,
                 const std::string& version_string2);
     ~VersionInfo();
@@ -130,11 +132,23 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
     // Determines if a given version is included in the VersionInfo range.
     bool Contains(const Version& version) const;
 
+    // Determine if the version_style is lexical.
+    bool IsLexical() const;
+
     // Determines if the VersionInfo contains valid information.
     bool IsValid() const;
 
    private:
+    enum VersionStyle {
+      kVersionStyleNumerical,
+      kVersionStyleLexical,
+      kVersionStyleUnknown
+    };
+
+    static VersionStyle StringToVersionStyle(const std::string& version_style);
+
     NumericOp op_;
+    VersionStyle version_style_;
     scoped_ptr<Version> version_;
     scoped_ptr<Version> version2_;
   };
@@ -281,6 +295,7 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
                              const std::string& vendor_value);
 
     bool SetDriverVersionInfo(const std::string& version_op,
+                              const std::string& version_style,
                               const std::string& version_string,
                               const std::string& version_string2);
 

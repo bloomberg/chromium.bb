@@ -818,3 +818,56 @@ TEST_F(GpuBlacklistTest, AMDSwitchable) {
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
 }
 
+TEST_F(GpuBlacklistTest, LexicalDriverVersion) {
+  const std::string lexical_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"os\": {\n"
+      "        \"type\": \"linux\"\n"
+      "      },\n"
+      "      \"vendor_id\": \"0x1002\",\n"
+      "      \"driver_version\": {\n"
+      "        \"op\": \"<\",\n"
+      "        \"style\": \"lexical\",\n"
+      "        \"number\": \"8.201\"\n"
+      "      },\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  scoped_ptr<Version> os_version(Version::GetVersionFromString("10.6.4"));
+
+  content::GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x1002;
+
+  scoped_ptr<GpuBlacklist> blacklist(Create());
+  EXPECT_TRUE(blacklist->LoadGpuBlacklist(
+      lexical_json, GpuBlacklist::kAllOs));
+
+  gpu_info.driver_version = "8.109";
+  GpuFeatureType type = blacklist->DetermineGpuFeatureType(
+      GpuBlacklist::kOsLinux, os_version.get(), gpu_info);
+  EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
+
+  gpu_info.driver_version = "8.2";
+  type = blacklist->DetermineGpuFeatureType(
+      GpuBlacklist::kOsLinux, os_version.get(), gpu_info);
+  EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
+
+  gpu_info.driver_version = "8.21";
+  type = blacklist->DetermineGpuFeatureType(
+      GpuBlacklist::kOsLinux, os_version.get(), gpu_info);
+  EXPECT_EQ(type, 0);
+
+  gpu_info.driver_version = "8.2010";
+  type = blacklist->DetermineGpuFeatureType(
+      GpuBlacklist::kOsLinux, os_version.get(), gpu_info);
+  EXPECT_EQ(type, 0);
+}
+
