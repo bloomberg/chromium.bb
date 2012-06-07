@@ -2102,5 +2102,28 @@ TEST_F(GestureRecognizerTest, VeryWideTwoFingerTouchDownShouldBeAPinch) {
   EXPECT_TRUE(delegate->pinch_begin());
 }
 
+// Verifies if a window is the target of multiple touch-ids and we hide the
+// window everything is cleaned up correctly.
+TEST_F(GestureRecognizerTest, FlushAllOnHide) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  gfx::Rect bounds(0, 0, 200, 200);
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowWithDelegate(delegate.get(), 0, bounds, NULL));
+  const int kTouchId1 = 8;
+  const int kTouchId2 = 2;
+  TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10),
+                    kTouchId1, GetTime());
+  root_window()->DispatchTouchEvent(&press1);
+  TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(20, 20),
+                    kTouchId2, GetTime());
+  root_window()->DispatchTouchEvent(&press2);
+  window->Hide();
+  EXPECT_EQ(NULL,
+            root_window()->gesture_recognizer()->GetTouchLockedTarget(&press1));
+  EXPECT_EQ(NULL,
+            root_window()->gesture_recognizer()->GetTouchLockedTarget(&press2));
+}
+
 }  // namespace test
 }  // namespace aura

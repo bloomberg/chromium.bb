@@ -468,7 +468,7 @@ void RootWindow::SetCapture(Window* window) {
   if (capture_window_ == window)
     return;
 
-  gesture_recognizer_->CancelNonCapturedTouches(window);
+  gesture_recognizer_->TransferEventsTo(capture_window_, window);
 
   aura::Window* old_capture_window = capture_window_;
   capture_window_ = window;

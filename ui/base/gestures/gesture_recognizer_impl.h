@@ -18,32 +18,27 @@
 #include "ui/gfx/point.h"
 
 namespace ui {
-class TouchEvent;
-class GestureEvent;
-class GestureSequence;
 class GestureConsumer;
+class GestureEvent;
 class GestureEventHelper;
+class GestureSequence;
+class TouchEvent;
 
 class UI_EXPORT GestureRecognizerImpl : public GestureRecognizer {
  public:
+  typedef std::map<int, GestureConsumer*> TouchIdToConsumerMap;
+
   explicit GestureRecognizerImpl(GestureEventHelper* helper);
   virtual ~GestureRecognizerImpl();
 
-  // Checks if this finger is already down, if so, returns the current target.
-  // Otherwise, returns NULL.
+  // Overridden from GestureRecognizer
   virtual GestureConsumer* GetTouchLockedTarget(TouchEvent* event) OVERRIDE;
-
-  // Returns the target of the touches the gesture is composed of.
   virtual GestureConsumer* GetTargetForGestureEvent(
       GestureEvent* event) OVERRIDE;
-
   virtual GestureConsumer* GetTargetForLocation(
       const gfx::Point& location) OVERRIDE;
-
-  // Each touch which isn't targeted to capturer results in a touch
-  // cancel event. These touches are then targeted to
-  // gesture_consumer_ignorer.
-  virtual void CancelNonCapturedTouches(GestureConsumer* capturer) OVERRIDE;
+  virtual void TransferEventsTo(GestureConsumer* current_consumer,
+                                GestureConsumer* new_consumer) OVERRIDE;
 
  protected:
   virtual GestureSequence* CreateSequence(GestureEventHelper* helper);
@@ -65,13 +60,12 @@ class UI_EXPORT GestureRecognizerImpl : public GestureRecognizer {
   std::map<GestureConsumer*, TouchEventQueue*> event_queue_;
   std::map<GestureConsumer*, GestureSequence*> consumer_sequence_;
 
-  // Both touch_id_target_ and touch_id_target_for_gestures_
-  // map a touch-id to its target window.
-  // touch_ids are removed from touch_id_target_ on ET_TOUCH_RELEASE
-  // and ET_TOUCH_CANCEL. touch_id_target_for_gestures_ never has touch_ids
-  // removed.
-  std::map<int, GestureConsumer*> touch_id_target_;
-  std::map<int, GestureConsumer*> touch_id_target_for_gestures_;
+  // Both |touch_id_target_| and |touch_id_target_for_gestures_| map a touch-id
+  // to its target window.  touch-ids are removed from |touch_id_target_| on
+  // ET_TOUCH_RELEASE and ET_TOUCH_CANCEL. |touch_id_target_for_gestures_| are
+  // removed in FlushTouchQueue().
+  TouchIdToConsumerMap touch_id_target_;
+  TouchIdToConsumerMap touch_id_target_for_gestures_;
 
   // Touches cancelled by touch capture are routed to the
   // gesture_consumer_ignorer_.

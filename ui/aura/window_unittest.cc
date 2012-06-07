@@ -21,6 +21,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_property.h"
+#include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/compositor/layer.h"
@@ -34,7 +35,31 @@ DECLARE_WINDOW_PROPERTY_TYPE(int)
 namespace aura {
 namespace test {
 
-typedef AuraTestBase WindowTest;
+class WindowTest : public AuraTestBase {
+ public:
+  WindowTest() : max_separation_(0) {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    AuraTestBase::SetUp();
+    // TODO: there needs to be an easier way to do this.
+    max_separation_ = ui::GestureConfiguration::
+        max_separation_for_gesture_touches_in_pixels();
+    ui::GestureConfiguration::
+        set_max_separation_for_gesture_touches_in_pixels(0);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    AuraTestBase::TearDown();
+    ui::GestureConfiguration::
+        set_max_separation_for_gesture_touches_in_pixels(max_separation_);
+  }
+
+ private:
+  int max_separation_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowTest);
+};
 
 namespace {
 
@@ -659,6 +684,54 @@ TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
                      base::TimeDelta::FromMilliseconds(50));
   root_window()->DispatchTouchEvent(&release);
   EXPECT_EQ(2, delegate.gesture_event_count());
+}
+
+// Assertions around SetCapture() and touch/gestures.
+TEST_F(WindowTest, TransferCaptureTouchEvents) {
+  // Touch on |w1|.
+  CaptureWindowDelegateImpl d1;
+  scoped_ptr<Window> w1(CreateTestWindowWithDelegate(
+      &d1, 0, gfx::Rect(0, 0, 20, 20), NULL));
+  TouchEvent p1(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
+  root_window()->DispatchTouchEvent(&p1);
+  EXPECT_EQ(1, d1.gesture_event_count());
+  d1.ResetCounts();
+
+  // Touch on |w2| with a different id.
+  CaptureWindowDelegateImpl d2;
+  scoped_ptr<Window> w2(CreateTestWindowWithDelegate(
+      &d2, 0, gfx::Rect(40, 0, 40, 20), NULL));
+  TouchEvent p2(ui::ET_TOUCH_PRESSED, gfx::Point(41, 10), 1, getTime());
+  root_window()->DispatchTouchEvent(&p2);
+  EXPECT_EQ(0, d1.gesture_event_count());
+  EXPECT_EQ(1, d2.gesture_event_count());
+  d1.ResetCounts();
+  d2.ResetCounts();
+
+  // Set capture on |w2|, this should send a cancel to |w1| but not |w2|.
+  w2->SetCapture();
+  EXPECT_EQ(1, d1.gesture_event_count());
+  EXPECT_EQ(0, d2.gesture_event_count());
+  d1.ResetCounts();
+  d2.ResetCounts();
+
+  CaptureWindowDelegateImpl d3;
+  scoped_ptr<Window> w3(CreateTestWindowWithDelegate(
+                            &d3, 0, gfx::Rect(0, 0, 100, 101), NULL));
+  // Set capture on w3. No new events should be received.
+  w3->SetCapture();
+  EXPECT_EQ(0, d1.gesture_event_count());
+  EXPECT_EQ(0, d2.gesture_event_count());
+  EXPECT_EQ(0, d3.gesture_event_count());
+
+  // Move touch id originally associated with |w2|. Since capture was transfered
+  // from 2 to 3 only |w3| should get the event.
+  TouchEvent m3(ui::ET_TOUCH_MOVED, gfx::Point(110, 105), 1, getTime());
+  root_window()->DispatchTouchEvent(&m3);
+  EXPECT_EQ(0, d1.gesture_event_count());
+  EXPECT_EQ(0, d2.gesture_event_count());
+  // |w3| gets two events, both scroll related.
+  EXPECT_EQ(2, d3.gesture_event_count());
 }
 
 // Changes capture while capture is already ongoing.
