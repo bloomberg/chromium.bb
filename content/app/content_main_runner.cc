@@ -384,7 +384,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   ContentMainRunnerImpl()
       : is_initialized_(false),
         is_shutdown_(false),
-        completed_basic_startup_(false) {
+        completed_basic_startup_(false),
+        delegate_(NULL) {
   }
 
   ~ContentMainRunnerImpl() {

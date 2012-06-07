@@ -9,7 +9,8 @@ namespace ppapi {
 Preferences::Preferences()
     : default_font_size(0),
       default_fixed_font_size(0),
-      is_3d_supported(true) {
+      is_3d_supported(true),
+      is_stage3d_supported(false) {
 }
 
 Preferences::Preferences(const webkit_glue::WebPreferences& prefs)
