@@ -395,6 +395,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
   // This should only be called after we have finished accessing the file.
   void StartTimeout() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!service_) {
+      // Request has already been cancelled.
+      return;
+    }
     BrowserThread::PostDelayedTask(
         BrowserThread::UI,
         FROM_HERE,
