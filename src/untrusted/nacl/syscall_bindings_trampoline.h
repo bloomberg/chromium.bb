@@ -11,7 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_NACL_SYSCALL_BINDINGS_TRAMPOLINE_H
 #define NATIVE_CLIENT_SRC_UNTRUSTED_NACL_SYSCALL_BINDINGS_TRAMPOLINE_H
 
-#if __cplusplus
+#if defined(__cplusplus)
 extern "C" {
 #endif
 
@@ -211,7 +211,7 @@ typedef int (*TYPE_nacl_test_infoleak) (void);
 
 typedef int (*TYPE_nacl_test_crash) (int crash_type);
 
-#if __cplusplus
+#if defined(__cplusplus)
 }
 #endif
 

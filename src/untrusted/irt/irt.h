@@ -19,7 +19,7 @@ struct PP_StartFunctions;
 struct PP_ThreadFunctions;
 struct NaClExceptionContext;
 
-#if __cplusplus
+#if defined(__cplusplus)
 extern "C" {
 #endif
 
@@ -182,7 +182,7 @@ struct nacl_irt_dev_exception_handling {
   int (*exception_clear_flag)(void);
 };
 
-#if __cplusplus
+#if defined(__cplusplus)
 }
 #endif
 

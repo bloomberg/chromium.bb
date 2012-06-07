@@ -33,13 +33,17 @@
 #if NACL_LINUX
 # define NACL_HAS_STRNDUP   1
 
-/* could use TLS, or TSD */
+/* We could use TSD, but TLS variables are faster */
 # define NACL_USE_TLS       1
+# define NACL_USE_TSD       0
+# define NACL_USE_TLSALLOC  0
 
 #elif NACL_OSX
 # define NACL_HAS_STRNDUP   0
-/* can only use TSD */
+/* We can only use TSD because Mac OS X does not have TLS variables */
+# define NACL_USE_TLS       0
 # define NACL_USE_TSD       1
+# define NACL_USE_TLSALLOC  0
 
 #elif NACL_WINDOWS
 /*

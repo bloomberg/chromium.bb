@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -235,7 +235,7 @@ struct timezone {
 
 # include <inttypes.h>
 
-# if __native_client__
+# if defined(__native_client__)
 #  define NACL_PRIdPTR PRId32
 #  define NACL_PRIiPTR PRIi32
 #  define NACL_PRIoPTR PRIo32
