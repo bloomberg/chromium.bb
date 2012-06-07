@@ -3,14 +3,12 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  *
- * A style sheet for Chrome platform apps.
+ * A style sheet for Chrome apps.
  */
 
 @namespace "http://www.w3.org/1999/xhtml";
 
 body {
-  background-color: #cccccf;
-  color: #333;
   -webkit-user-select: none;
   cursor: default;
 }
