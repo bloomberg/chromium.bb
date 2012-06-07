@@ -345,45 +345,24 @@ TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest) {
     { 0.06, 0, 1, 1, &fs[3] },
   };
 
-  HardwareProperties hwprops = {
-    1217, 5733, 1061, 4798,  // left, top, right, bottom
-    1.0, 1.0, 133, 133,  // x res, y res, x DPI, y DPI
-    2, 3, 0, 1, 1  // max_fingers, max_touch, t5r2, semi_mt, is_button_pad
-  };
-
-  interpreter.SetHardwareProperties(hwprops);
-  interpreter.interpreter_enabled_.val_ = true;
-
-  float non_linear_left = interpreter.non_linear_left_.val_;
-  float non_linear_right = interpreter.non_linear_right_.val_;
-  float non_linear_top = interpreter.non_linear_top_.val_;
-  float non_linear_bottom = interpreter.non_linear_bottom_.val_;
+  interpreter.non_linear_left_.val_ = 1360.0;
+  interpreter.non_linear_right_.val_ = 5560.0;
+  interpreter.non_linear_top_.val_ = 1250.0;
+  interpreter.non_linear_bottom_.val_ = 4570.0;
 
   // Test if finger positions are corrected when a finger is located
   // in the non-linear clipping area.
-  vector<FingerPosition> result;
-  FingerPosition finger_position1 = { non_linear_left, 3088 };
-  result.push_back(finger_position1);
-  base_interpreter->expected_coordinates_.push_back(result);
-  interpreter.SyncInterpret(&hs[0], NULL);
+  interpreter.ClipNonLinearFingerPosition(&hs[0]);
+  EXPECT_EQ(interpreter.non_linear_left_.val_, fs[0].position_x);
 
-  result.clear();
-  FingerPosition finger_position2 = { non_linear_right, 3088 };
-  result.push_back(finger_position2);
-  base_interpreter->expected_coordinates_.push_back(result);
-  interpreter.SyncInterpret(&hs[1], NULL);
+  interpreter.ClipNonLinearFingerPosition(&hs[1]);
+  EXPECT_EQ(interpreter.non_linear_right_.val_, fs[1].position_x);
 
-  result.clear();
-  FingerPosition finger_position3 = { 4118, non_linear_top };
-  result.push_back(finger_position3);
-  base_interpreter->expected_coordinates_.push_back(result);
-  interpreter.SyncInterpret(&hs[2], NULL);
+  interpreter.ClipNonLinearFingerPosition(&hs[2]);
+  EXPECT_EQ(interpreter.non_linear_top_.val_, fs[2].position_y);
 
-  result.clear();
-  FingerPosition finger_position4 = { 4118, non_linear_bottom };
-  result.push_back(finger_position4);
-  base_interpreter->expected_coordinates_.push_back(result);
-  interpreter.SyncInterpret(&hs[3], NULL);
+  interpreter.ClipNonLinearFingerPosition(&hs[3]);
+  EXPECT_EQ(interpreter.non_linear_bottom_.val_, fs[3].position_y);
 }
 
 TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest) {
