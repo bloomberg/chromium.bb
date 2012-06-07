@@ -76,8 +76,8 @@ tc-archive-translator-pexes() {
   # NOTE: the build script needs an absolute pathname
   local tarball="$(pwd)/pnacl-translator-pexe.tar.bz2"
   ${PNACL_BUILD} translator-archive-universal-pexes ${tarball}
-  ${UP_DOWN_LOAD} UploadArchivedPexes \
-      ${BUILDBOT_GOT_REVISION} translator ${tarball}
+  ${UP_DOWN_LOAD} UploadArchivedPexesTranslator \
+      ${BUILDBOT_GOT_REVISION} ${tarball}
 }
 
 tc-archive-translator() {
@@ -491,7 +491,7 @@ tc-generate-and-archive-pexes() {
   prune-scons-out
   tar cfj ${tarball} --directory ${build_dir} .
   ls -l ${tarball}
-  ${UP_DOWN_LOAD} UploadArchivedPexes ${BUILDBOT_GOT_REVISION} scons ${tarball}
+  ${UP_DOWN_LOAD} UploadArchivedPexesScons ${BUILDBOT_GOT_REVISION} ${tarball}
 }
 
 # These are also suitable for local TC sanity testing

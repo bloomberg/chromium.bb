@@ -6,14 +6,22 @@
 # Run toolchain torture tests and llvm testsuite tests.
 # For now, run on linux64, build and run unsandboxed newlib tests
 # for all 3 architectures.
+# Note: This script builds the toolchain from scratch but does
+#       not build the translators and hence the translators
+#       are from an older revision, see comment below.
 
 set -o xtrace
 set -o nounset
 set -o errexit
 
-readonly PNACL_BUILD=pnacl/build.sh
-readonly TORTURE_TEST=tools/toolchain_tester/torture_test.sh
-readonly LLVM_TESTSUITE=pnacl/scripts/llvm-test-suite.sh
+# This hopefully needs to be updated rarely
+ARCHIVED_PEXE_TRANSLATOR_REV=8834
+
+
+readonly PNACL_BUILD="pnacl/build.sh"
+readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
+readonly TORTURE_TEST="tools/toolchain_tester/torture_test.sh"
+readonly LLVM_TESTSUITE="pnacl/scripts/llvm-test-suite.sh"
 # build.sh, llvm test suite and torture tests all use this value
 export PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-4}
 
@@ -51,6 +59,7 @@ build-sbtc-prerequisites() {
     -j ${PNACL_CONCURRENCY}
 }
 
+
 scons-tests-pic() {
   local platform=$1
 
@@ -60,6 +69,7 @@ scons-tests-pic() {
                nacl_pic=1  pnacl_generate_pexe=0"
   ${SCONS_COMMON} ${extra} platform=${platform} smoke_tests || handle-error
 }
+
 
 scons-tests-translator() {
   local platform=$1
@@ -74,7 +84,63 @@ scons-tests-translator() {
       ${SCONS_COMMON} ${extra} platform=${platform} ${group} || handle-error
   done
 }
-####
+
+
+archived-pexe-translator-test() {
+  local arch=$1
+  echo "@@@BUILD_STEP archived_pexe_translator \
+        $arch rev ${ARCHIVED_PEXE_TRANSLATOR_REV} @@@"
+  local dir="$(pwd)/pexe_archive"
+  local tarball="${dir}/pexes.tar.bz2"
+  local measure_cmd="/usr/bin/time -v"
+  local strip="toolchain/pnacl_linux_x86_64/newlib/bin/pnacl-strip"
+  local sb_translator="${measure_cmd} \
+                       toolchain/pnacl_translator/bin/pnacl-translate"
+  rm -rf ${dir}
+  mkdir -p ${dir}
+
+  ${UP_DOWN_LOAD} DownloadArchivedPexesTranslator \
+      ${ARCHIVED_PEXE_TRANSLATOR_REV} ${tarball}
+  tar jxf ${tarball} --directory ${dir}
+
+  # do different kinds of stripping - so we can compare sizes
+  # we will use the smallest, i.e.  "ext=.strip-all" for translation
+  # Note: other tests using archived pexes do not use stripped versions
+  #       so we get some coverage for the debug info handling inside of the
+  #       translator.
+  ${strip} --strip-all   ${dir}/ld-new -o ${dir}/ld-new.strip-all
+  ${strip} --strip-debug ${dir}/ld-new -o ${dir}/ld-new.strip-debug
+  ${strip} --strip-all   ${dir}/llc    -o ${dir}/llc.strip-all
+  ${strip} --strip-debug ${dir}/llc    -o ${dir}/llc.strip-debug
+  # http://code.google.com/p/nativeclient/issues/detail?id=2840
+  # x86-64 will crash when ext=""
+  # pexe archive rev: 8834
+  # pre-built translator rev: 8759
+  local ext=".strip-all"
+
+
+  # Note, that the arch flag has two functions:
+  # 1) it selects the target arch for the translator
+  # 2) combined with --pnacl-sb it selects the host arch for the
+  #    sandboxed translators
+  local flags="-arch ${arch} --pnacl-sb --pnacl-driver-verbose"
+  if [[ ${arch} = arm ]] ; then
+      # We need to enable qemu magic for arm
+      flags="${flags} --pnacl-use-emulator"
+  fi
+
+  ${sb_translator} ${flags} ${dir}/ld-new${ext} -o ${dir}/ld-new-${arch}.nexe
+  # This takes about 17min on arm with qemu
+  # With an unstripped pexe arm runs out of space (also after 17min):
+  # "terminate called after throwing an instance of 'std::bad_alloc'"
+  {sb_translator} ${flags} ${dir}/llc${ext} -o ${dir}/llc-${arch}.nexe
+
+  ls -l ${dir}
+  file ${dir}/*
+  # TODO(robertm): actually run the new sandboxed translator images
+  #                on themselves
+}
+
 
 tc-test-bot() {
   local archset="$1"
@@ -110,16 +176,18 @@ tc-test-bot() {
     # Note: we do not build the sandboxed translator on this bot
     # because this would add another 20min to the build time.
     # The upshot of this is that we are using the sandboxed
-    # toolchain which is currently deps in.
+    # toolchain which is currently deps'ed in.
     # There is a small upside here: we will notice that bitcode has
     # changed in a way that is incompatible with older translators.
     # Todo(pnacl-team): rethink this.
     scons-tests-translator ${arch}
+
+    archived-pexe-translator-test ${arch}
   done
 
 }
 
-####
+
 if [ $# = 0 ]; then
     tc-test-bot "x86-64 x86-32 arm"
 else

@@ -164,6 +164,8 @@ UploadArchivedPexes() {
   local label="archived_pexes_$2.tar.bz2"
   local tarball=$3
 
+  # TODO(robertm,bradn): find another place to store this and
+  #                      negotiate long term storage guarantees
   UploadArmToolchain ${rev} ${label} ${tarball}
 }
 
@@ -172,9 +174,32 @@ DownloadArchivedPexes() {
   local label="archived_pexes_$2.tar.bz2"
   local tarball=$3
 
-  curl -L ${URL_PREFIX}/${BASE_ARM_TOOLCHAIN}/${rev}/${label} -o ${tarball}
+  curl -L ${URL_PREFIX_RAW}/${BASE_ARM_TOOLCHAIN}/${rev}/${label} -o ${tarball}
 }
 
+UploadArchivedPexesScons() {
+    UploadArchivedPexes $1 "scons" $2
+}
+
+DownloadArchivedPexesScons() {
+    DownloadArchivedPexes $1 "scons" $2
+}
+
+UploadArchivedPexesTranslator() {
+    UploadArchivedPexes $1 "translator" $2
+}
+
+DownloadArchivedPexesTranslator() {
+    DownloadArchivedPexes $1 "translator" $2
+}
+
+UploadArchivedPexesSpec2k() {
+    UploadArchivedPexes $1 "spec2k" $2
+}
+
+DownloadArchivedPexesSpec2k() {
+    DownloadArchivedPexes $1 "spec2k" $2
+}
 ######################################################################
 # ARM BETWEEN BOTS
 ######################################################################
