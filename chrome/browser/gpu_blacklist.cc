@@ -77,7 +77,8 @@ GpuBlacklist::VersionInfo::VersionInfo(
     const std::string& version_op,
     const std::string& version_style,
     const std::string& version_string,
-    const std::string& version_string2) {
+    const std::string& version_string2)
+    : version_style_(kVersionStyleNumerical) {
   op_ = StringToNumericOp(version_op);
   if (op_ == kUnknown || op_ == kAny)
     return;
