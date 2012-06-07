@@ -368,8 +368,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     case ui::ET_GESTURE_TWO_FINGER_TAP:
       gesture_event.type = WebKit::WebInputEvent::GestureTwoFingerTap;
       break;
-    case ui::ET_GESTURE_BEGIN:
-    case ui::ET_GESTURE_END:
+    case ui::ET_GESTURE_TAP_UP:
     case ui::ET_GESTURE_MULTIFINGER_SWIPE:
       break;
     default:

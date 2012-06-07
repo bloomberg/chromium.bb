@@ -626,8 +626,7 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
   TouchEvent press(ui::ET_TOUCH_PRESSED,
                    gfx::Point(10, 10), 0, getTime());
   root_window()->DispatchTouchEvent(&press);
-  // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
-  EXPECT_EQ(2, delegate1.gesture_event_count());
+  EXPECT_EQ(1, delegate1.gesture_event_count());
   delegate1.ResetCounts();
   w2->SetCapture();
 
@@ -659,8 +658,7 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
                     gfx::Point(10, 10), 0, getTime());
   root_window()->DispatchTouchEvent(&press2);
   EXPECT_EQ(0, delegate1.gesture_event_count());
-  // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
-  EXPECT_EQ(2, delegate2.gesture_event_count());
+  EXPECT_EQ(1, delegate2.gesture_event_count());
 }
 
 TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
@@ -672,8 +670,7 @@ TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
                    gfx::Point(10, 10), 0, getTime());
   root_window()->DispatchTouchEvent(&press);
 
-  // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
-  EXPECT_EQ(2, delegate.gesture_event_count());
+  EXPECT_EQ(1, delegate.gesture_event_count());
   delegate.ResetCounts();
 
   window->SetCapture();

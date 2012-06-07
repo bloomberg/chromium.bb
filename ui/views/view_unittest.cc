@@ -603,7 +603,7 @@ TEST_F(ViewTest, GestureEvent) {
   EXPECT_EQ(ui::ET_UNKNOWN, v1->last_gesture_event_type_);
 
   // Simulate an up so that RootView is no longer targetting |v3|.
-  GestureEventForTest g1_up(ui::ET_GESTURE_END, 110, 110, 0);
+  GestureEventForTest g1_up(ui::ET_GESTURE_TAP_UP, 110, 110, 0);
   root->OnGestureEvent(g1_up);
 
   v1->Reset();

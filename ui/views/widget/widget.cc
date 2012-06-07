@@ -1116,11 +1116,9 @@ ui::GestureStatus Widget::OnGestureEvent(const GestureEvent& event) {
       // dragging) may explicitly capture.
       break;
 
-    case ui::ET_GESTURE_END:
-      if (event.delta_x() == 1) {
-        is_touch_down_ = false;
-        ReleaseCapture();
-      }
+    case ui::ET_GESTURE_TAP_UP:
+      is_touch_down_ = false;
+      ReleaseCapture();
       break;
 
     default:
